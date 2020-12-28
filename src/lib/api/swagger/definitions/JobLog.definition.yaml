@@ -1,0 +1,228 @@
+definitions:
+  # Object used when listing one item
+  JobLog_response:
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 200
+      message:
+        type: "string"
+        example: "successful operation"
+      data:
+        type: "object"
+        $ref: "#/definitions/JobLog"
+  # Object used when listing multiple items
+  JobLog_collection:
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 200
+      message:
+        type: "string"
+        example: "successful operation"
+      data:
+        type: "array"
+        items:
+          $ref: "#/definitions/JobLog"
+  # Object used when creating an item
+  JobLog_response_created:
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 201
+      message:
+        type: "string"
+        example: "Created"
+      id:
+        type: "string"
+        example: 5c0fb100ec2339ed5bea6303
+      data:
+        $ref: "#/definitions/JobLog"
+  # Object used when creating an item
+  JobLog_response_updated:
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 200
+      message:
+        type: "string"
+        example: "successful operation"
+      id:
+        type: "string"
+        example: 5c0fb100ec2339ed5bea6303
+      data:
+        $ref: "#/definitions/JobLog"
+  JobLog:
+    required: ["uuid"]
+    properties:
+      _id:
+        type: "string"
+        description: "The unique ID"
+        example: "5c78a060c15bca840749e44b"
+        readOnly: true
+        x-ui:
+          grid:
+            hide: false
+            label: _id
+            width:  "0"
+          form:
+            hide: true
+            label: _id
+      uuid:
+        type: "string"
+        description: "Job UUID"
+        example: "eb2ad97c-18c8-4d75-9e24-7ec836b9719c"
+        x-ui:
+          grid:
+            hide: true
+            label: Job UUID
+            width:  "0"
+          form:
+            hide: true
+            label: Job UUID
+      from:
+        type: "object"
+        description: "Object representing a valid user that did request this job"
+        default: {}
+        readOnly: true
+        x-ui:
+          sub_form_exclude: true
+          grid:
+            hide: true
+            label: From
+            width:  "*"
+          form:
+            type: text # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: true
+            label: From
+      to:
+        type: "object"
+        default: {}
+        readOnly: true
+        x-ui:
+          sub_form_exclude: true
+          grid:
+            hide: true
+            label: To
+            width:  "*"
+          form:
+            type: text # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: true
+            label: To
+      companyId:
+        type: "integer"
+        format: "int32"
+        example: 201
+        description: "Legacy Agency ID"
+        x-ui:
+          collection-link: Agency
+          collection-link-value: companyId
+          collection-link-label: name
+          grid:
+            hide: false
+            label: Agency
+            width:  "*"
+          form:
+            type: autocomplete # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Agency
+            selection-limit: 1
+      action:
+        type: "string"
+        description: "Action name to be executed against an entity service layer"
+        example: "create"
+        x-ui:
+          grid:
+            hide: false
+            label: Action
+            width:  "150"
+          form:
+            hide: true
+            label: Action
+      entity:
+        type: "string"
+        description: "Entity name"
+        example: "User"
+        x-ui:
+          grid:
+            hide: false
+            label: Entity
+            width:  "150"
+          form:
+            hide: true
+            label: Entity
+      payload:
+        type: "object"
+        description: "Data payload sent when requesting a job"
+        default: {}
+        readOnly: true
+        x-ui:
+          sub_form_exclude: true
+          grid:
+            hide: true
+            label: Payload
+            width:  "*"
+          form:
+            type: text # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: true
+            label: Payload
+      data:
+        type: "object"
+        description: "Data result of a job request"
+        default: {}
+        readOnly: true
+        x-ui:
+          sub_form_exclude: true
+          grid:
+            hide: true
+            label: Data
+            width:  "*"
+          form:
+            type: text # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: true
+            label: Data
+      success:
+        type: "boolean"
+        description: Is the job proper executed?
+        default: false
+        x-ui:
+          grid:
+            hide: false
+            label: Success
+            width:  "150"
+          form:
+            hide: true
+            label: Success
+      error:
+        type: "boolean"
+        description: Is there any error on job execution?
+        default: false
+        x-ui:
+          grid:
+            hide: false
+            label: Error
+            width:  "150"
+          form:
+            hide: true
+            label: Error
+      status:
+        type: "string"
+        description: "Job status"
+        example: "Done"
+        x-ui:
+          grid:
+            hide: false
+            label: Status
+            width:  "150"
+          form:
+            hide: true
+            label: Status
+      #source:
+      #  type: "string"
+      #  description: "Application name where the job is requested from"
+      #  example: "cairs-application-foundation-framework"
+

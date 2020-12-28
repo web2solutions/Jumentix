@@ -1,0 +1,47 @@
+{
+    "test": {
+        "user": "apiuser",
+        "pass": "MoreThanAFeeling",
+        "host": "192.168.1.48",
+        "server_dir": "/home/apiuser/Jumentix",
+        "default": {
+            "commit_message": "automated commit -  Deploy System"
+        }
+    },
+    "test-mac": {
+        "user": "apiuser",
+        "pass": "MoreThenAFeeling",
+        "host": "192.168.204.201",
+        "server_dir": "/home/apiuser/Jumentix",
+        "default": {
+            "commit_message": "automated commit -  Deploy System"
+        }
+    },
+    "CI": {
+        "user": "apiuser",
+        "pass": "MoreThanAFeeling",
+        "host": "192.168.1.48",
+        "server_dir": "/home/apiuser/Jumentix",
+        "default": {
+            "commit_message": "automated commit -  Deploy System"
+        }
+    },
+    "travis": {
+        "user": "apiuser",
+        "pass": "MoreThanAFeeling",
+        "host": "192.168.1.48",
+        "server_dir": "/home/apiuser/Jumentix",
+        "default": {
+            "commit_message": "automated commit -  Deploy System"
+        }
+    },
+    "production": {
+        "user": "apiuser",
+        "pass": "MoreThanAFeeling",
+        "host": "192.168.1.48",
+        "server_dir": "/home/apiuser/Jumentix",
+        "default": {
+            "commit_message": "automated commit -  Deploy System"
+        }
+    }
+}

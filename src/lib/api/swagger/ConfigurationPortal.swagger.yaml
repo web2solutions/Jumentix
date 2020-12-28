@@ -1,0 +1,195 @@
+/api/ConfigurationPortal:
+  x-swagger-router-controller: ConfigurationPortal
+# list
+  get:
+    operationId: list
+    produces:
+      - "application/json"
+    consumes:
+      - "application/json"
+    security:
+      - Bearer: []
+    x-security-scopes:
+      - admin
+      - agency
+    tags:
+      - Portal Configuration
+    summary: Get the list of Portal Configurations
+    description: Get the list of Portal Configurations
+    parameters:
+      - name: "offset"
+        description: "Number of instances/rows to skip"
+        in: query
+        type: integer
+        required: false
+        default: 0
+      - name: "limit"
+        description: "Number of instances/rows to fetch"
+        in: query
+        type: integer
+        required: false
+        #default: 300
+      - name: sort
+        description: Sort object to list data as string
+        in: query
+        required: false
+        type: string
+      - name: where
+        description: Where object to list data as string
+        in: query
+        required: false
+        type: string
+      - name: filters
+        description: Kendo filtering object as string
+        in: query
+        required: false
+        type: string
+      - in: query
+        name: attributes
+        description: Attributes to display on listing
+        type: string
+        required: false
+        #default: "_id, name, label, kind, createdAt, updatedAt,  createdBy, updatedBy, active, deleted, _history"
+      - in: query
+        name: populate
+        description: Comman separated list of fields to populate as document
+        type: string
+        required: false
+    responses:
+      200:
+        description: Success.
+        schema:
+          type: array
+          items:
+            $ref: "#/definitions/ConfigurationPortal_collection"
+      404:
+        $ref: '#/responses/404'
+      500:
+        $ref: '#/responses/500'
+# create
+  post:
+    operationId: create
+    produces:
+      - "application/json"
+    consumes:
+      - "application/json"
+    security:
+      - Bearer: []
+    x-security-scopes:
+      - admin
+      - agency
+    tags:
+      - Portal Configuration
+    summary: Create a new Portal Configuration
+    description: Create a new Portal Configuration
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: "#/definitions/ConfigurationPortal"
+    responses:
+      201:
+        description: Success.
+        schema:
+          $ref: "#/definitions/ConfigurationPortal_response_created"
+      500:
+        $ref: '#/responses/500'
+
+/api/ConfigurationPortal/{id}:
+  x-swagger-router-controller: ConfigurationPortal
+# read
+  get:
+    operationId: read
+    produces:
+      - "application/json"
+    consumes:
+      - "application/json"
+    security:
+      - Bearer: []
+    x-security-scopes:
+      - admin
+      - agency
+    tags:
+      - Portal Configuration
+    summary: Get a Portal Configuration by id
+    description: Get a Portal Configuration by id
+    parameters:
+      - name: id
+        description: id
+        in: path
+        required: true
+        type: string
+    responses:
+      200:
+        description: Success.
+        schema:
+          $ref: "#/definitions/ConfigurationPortal_response"
+      500:
+        $ref: '#/responses/500'
+# update
+  put:
+    operationId: update
+    produces:
+      - "application/json"
+    consumes:
+      - "application/json"
+    security:
+      - Bearer: []
+    x-security-scopes:
+      - admin
+      - agency
+    tags:
+      - Portal Configuration
+    summary: Update a Portal Configuration by id
+    description: Update a Portal Configuration by id
+    parameters:
+      - name: id
+        description: id
+        in: path
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: "#/definitions/ConfigurationPortal"
+    responses:
+      200:
+        description: Success.
+        schema:
+          $ref: "#/definitions/ConfigurationPortal_response_updated"
+      500:
+        $ref: '#/responses/500'
+  # restore
+  patch:
+    operationId: restore
+    produces:
+      - "application/json"
+    consumes:
+      - "application/json"
+    security:
+      - Bearer: []
+    x-security-scopes:
+      - admin
+      - agency
+    tags:
+      - Portal Configuration
+    summary: Restore a soft deleted Portal Configuration
+    description: >
+      Call this end point to restore a resource that was soft delete. 
+      
+      Only admin and agency can restore records.
+    parameters:
+      - name: id
+        description: The resource unique identifier
+        in: path
+        required: true
+        type: string
+    responses:
+      200:
+        $ref: '#/responses/restored'
+      500:
+        $ref: '#/responses/500'
+      403:
+        $ref: '#/responses/403'

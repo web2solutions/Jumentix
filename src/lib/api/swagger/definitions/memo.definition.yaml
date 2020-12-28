@@ -1,0 +1,106 @@
+definitions:
+  # Object used when listing one item
+  memo:
+    required: ["memo"]
+    x-child: true
+    description: Memos
+    properties:
+      _id:
+        type: "string"
+        description: The identifier
+        example: "5c78a060c15bca840749e44b"
+        readOnly: true
+        x-ui:
+          grid:
+            hide: false
+            label: _id
+            width:  "0"
+          form:
+            hide: true
+            label: _id
+      memo:
+        description: 'Memo text'
+        type: "string"
+        example: "My memo text"
+        x-ui:
+          grid:
+            hide: false
+            label: Memo
+            width:  150
+          form:
+            hide: false
+            label: Memo
+            type: editor # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+      createdBy:
+        description: "Created By"
+        type: "string"
+        example: "5c78a060c15bca840749e44b"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          collection-link: Human
+          collection-link-value: _id
+          collection-link-label: name
+          grid:
+            hide: false
+            label: Created By
+            width:  120
+          form:
+            type: combobox # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Created By
+            selection-limit: 1
+      createdAt:
+        description: "Created At"
+        type: "string"
+        format: "date-time"
+        #nullable: true
+        example: "2017-07-21"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          grid:
+            hide: false
+            label: Created At
+            width:  120
+          form:
+            type: date # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, date-time
+            hide: false
+            label: Created At
+      updatedBy:
+        description: "Updated By"
+        type: "string"
+        example: "5c78a060c15bca840749e44b"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          collection-link: Human
+          collection-link-value: _id
+          collection-link-label: name
+          grid:
+            hide: false
+            label: Updated By
+            width:  120
+          form:
+            type: combobox # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Updated By
+            selection-limit: 1
+      updatedAt:
+        description: "Updated At"
+        type: "string"
+        format: "date-time"
+        #nullable: true
+        example: "2017-07-21"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          grid:
+            hide: false
+            label: Updated At
+            width:  120
+          form:
+            type: date # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, date-time
+            hide: false
+            label: Updated At
+      

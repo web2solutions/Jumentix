@@ -1,0 +1,360 @@
+definitions:
+  # Object used when listing one item
+  AuthorizenetCreditCardPayment_response:
+    properties:
+      code:
+        type: 'integer'
+        format: 'int32'
+        example: 200
+      message:
+        type: 'string'
+        example: 'successful operation'
+      data:
+        type: 'object'
+        $ref: '#/definitions/AuthorizenetCreditCardPayment'
+  # Object used when listing multiple items
+  AuthorizenetCreditCardPayment_collection:
+    properties:
+      code:
+        type: 'integer'
+        format: 'int32'
+        example: 200
+      message:
+        type: 'string'
+        example: 'successful operation'
+      data:
+        type: 'array'
+        items:
+          $ref: '#/definitions/AuthorizenetCreditCardPayment'
+  # Object used when creating an item
+  AuthorizenetCreditCardPayment_response_created:
+    properties:
+      code:
+        type: 'integer'
+        format: 'int32'
+        example: 201
+      message:
+        type: 'string'
+        example: 'Created'
+      id:
+        type: 'string'
+        example: 5c0fb100ec2339ed5bea6303
+      data:
+        $ref: '#/definitions/AuthorizenetCreditCardPayment'
+  # Object used when creating an item
+  AuthorizenetCreditCardPayment_response_updated:
+    properties:
+      code:
+        type: 'integer'
+        format: 'int32'
+        example: 200
+      message:
+        type: 'string'
+        example: 'successful operation'
+      id:
+        type: 'string'
+        example: 5c0fb100ec2339ed5bea6303
+      data:
+        $ref: '#/definitions/AuthorizenetCreditCardPayment'
+  AuthorizenetCreditCardPayment:
+    required: ['invoice', 'description', 'amount', 'creditCard', 'billTo', 'shipTo']
+    properties:
+      _id:
+        type: 'string'
+        example: '5c78a060c15bca840749e44b'
+        readOnly: true
+        x-ui:
+          grid:
+            hide: false
+            label: _id
+            width: '0'
+          form:
+            hide: true
+            label: _id
+      invoice:
+        description: Service
+        type: 'string'
+        example: '5c78a060c15bca840749e44b'
+        x-ui:
+          collection-link: Service
+          collection-link-value: _id
+          collection-link-label: name
+          grid:
+            hide: false
+            label: Type
+            width: '120'
+          form:
+            type: combobox # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Service
+            selection-limit: 1
+      description:
+        description: 'Payment description'
+        type: 'string'
+        example: 'Payment name'
+        x-ui:
+          grid:
+            hide: false
+            label: Description
+            width: '180'
+          form:
+            type: text # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Payment description
+      amount:
+        description: Amount
+        type: 'number'
+        x-format: currency
+        format: 'float'
+        example: 5.49
+        default: 0
+        x-ui:
+          grid:
+            hide: false
+            label: Amount
+            width: '100'
+          form:
+            type: number # select, combobox, text, radio, switch, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Amount
+      recurringBilling:
+        type: 'boolean'
+        description: Is recurring billing?
+        default: false
+        x-ui:
+          grid:
+            hide: false
+            label: Recurring
+            width: 90
+          form:
+            type: switch # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Recurring billing
+      status:
+        description: Payment Satus
+        type: 'string'
+        enum: ['Approved', 'Failed']
+        example: 'Failed'
+        default: 'Failed'
+        x-ui:
+          grid:
+            hide: false
+            label: Payment Status
+            width: '*'
+          form:
+            type: select # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            options: ['Approved', 'Failed']
+            label: Payment Status
+      transactionId:
+        description: Transaction ID
+        type: "string"
+        readOnly: true
+        x-editable: false
+        x-virtual: true
+        x-ui:
+          grid:
+            hide: true
+            label:  Transaction ID
+            width:  "300"
+          form:
+            hide: false
+            label:  Transaction ID
+      orderDetails:
+        description: Order details
+        type: 'object'
+        readOnly: true
+        x-editable: false
+        default: {}
+        x-ui:
+          sub_form_exclude: true
+          grid:
+            hide: true
+            label: Order details
+            width: '*'
+          form:
+            hide: true
+            label: Order details
+      creditCard:
+        description: Credit Card
+        type: 'object'
+        readOnly: true
+        x-editable: false
+        default: {}
+        x-ui:
+          sub_form_exclude: true
+          grid:
+            hide: true
+            label: Credit Card
+            width: '*'
+          form:
+            hide: true
+            label: Credit Card
+      tax:
+        description: Tax cost
+        type: 'object'
+        $ref: '#/definitions/invoiceAdditionalCost'
+        readOnly: true
+        x-editable: false
+        default: {}
+        x-ui:
+          sub_form_exclude: true
+          grid:
+            hide: true
+            label: Tax cost
+            width: '*'
+          form:
+            hide: true
+            label: Tax cost
+      duty:
+        description: Duty cost
+        type: 'object'
+        $ref: '#/definitions/invoiceAdditionalCost'
+        readOnly: true
+        x-editable: false
+        default: {}
+        x-ui:
+          sub_form_exclude: true
+          grid:
+            hide: true
+            label: Duty cost
+            width: '*'
+          form:
+            hide: true
+            label: Duty cost
+      shipping:
+        description: Shipping cost
+        type: 'object'
+        $ref: '#/definitions/invoiceAdditionalCost'
+        readOnly: true
+        x-editable: false
+        default: {}
+        x-ui:
+          sub_form_exclude: true
+          grid:
+            hide: true
+            label: Shipping cost
+            width: '*'
+          form:
+            hide: true
+            label: Shipping cost
+      billTo:
+        description: Bill to
+        type: 'object'
+        $ref: '#/definitions/billAndShipTo'
+        readOnly: true
+        x-editable: false
+        default: {}
+        x-ui:
+          sub_form_exclude: true
+          grid:
+            hide: true
+            label: Bill to
+            width: '*'
+          form:
+            hide: true
+            label: Bill to
+      shipTo:
+        description: Ship to
+        type: 'object'
+        $ref: '#/definitions/billAndShipTo'
+        readOnly: true
+        x-editable: false
+        default: {}
+        x-ui:
+          sub_form_exclude: true
+          grid:
+            hide: true
+            label: Ship to
+            width: '*'
+          form:
+            hide: true
+            label: Ship to
+      response:
+        description: Service response
+        type: 'object'
+        # $ref: '#/definitions/invoiceAdditionalCost'
+        readOnly: true
+        x-editable: false
+        default: {}
+        x-ui:
+          sub_form_exclude: true
+          grid:
+            hide: true
+            label: Service response
+            width: '*'
+          form:
+            hide: true
+            label: Service response
+      createdBy:
+        description: "Created By"
+        type: "string"
+        example: "5c78a060c15bca840749e44b"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          collection-link: Human
+          collection-link-value: _id
+          collection-link-label: name
+          grid:
+            hide: false
+            label: Created By
+            width:  120
+          form:
+            type: combobox # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Created By
+            selection-limit: 1
+      createdAt:
+        description: "Created At"
+        type: "string"
+        format: "date-time"
+        #nullable: true
+        example: "2017-07-21"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          grid:
+            hide: false
+            label: Created At
+            width:  120
+          form:
+            type: date-time # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, date-time
+            hide: false
+            label: Created At
+      updatedBy:
+        description: "Updated By"
+        type: "string"
+        example: "5c78a060c15bca840749e44b"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          collection-link: Human
+          collection-link-value: _id
+          collection-link-label: name
+          grid:
+            hide: false
+            label: Updated By
+            width:  120
+          form:
+            type: combobox # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Updated By
+            selection-limit: 1
+      updatedAt:
+        description: "Updated At"
+        type: "string"
+        format: "date-time"
+        #nullable: true
+        example: "2017-07-21"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          grid:
+            hide: false
+            label: Updated At
+            width:  120
+          form:
+            type: date-time # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, date-time
+            hide: false
+            label: Updated At

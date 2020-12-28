@@ -1,0 +1,311 @@
+/* global describe, it */
+
+import http from 'http';
+import assert from 'assert';
+import request from 'request';
+import config from '../src/config';
+import _mqConfig from '../src/config/mq';
+import amqp from 'amqplib/callback_api';
+import
+{
+    isDefined,
+    isArray,
+    isNumber
+}
+from '../src/lib/util'
+
+
+const env = process.env.NODE_ENV || "development",
+    conf = config[env],
+    host = `http://${conf.server.ip}:${conf.server.port}`,
+    mqConfig = _mqConfig[env],
+    connString = mqConfig.rabbitUser + ":" + mqConfig.rabbitPassword + "@" + mqConfig.rabbitServer + ":" + mqConfig.rabbitPort + "/?heartbeat=" + mqConfig.rabbitHeartBeat;
+
+let token = ''
+let humanId = ''
+
+let users = [
+    {
+        type: 'admin',
+        account: {
+            username : 'admin@admin.com',
+            password : '3c9909afec25354d551dae21590bb26e38d53f2173b8d3dc3eee4c047e7ab1c1eb8b85103e3be7ba613b31bb5c9c36214dc9f14a42fd7a2fdb84856bca5c44c2'
+        }
+    },
+    {
+        type: 'caseworker',
+        account: {
+            username : 'caseworker@caseworker.com',
+            password : '3c9909afec25354d551dae21590bb26e38d53f2173b8d3dc3eee4c047e7ab1c1eb8b85103e3be7ba613b31bb5c9c36214dc9f14a42fd7a2fdb84856bca5c44c2'
+        }
+    },
+    {
+        type: 'agency',
+        account: {
+            username : 'agency@agency.com',
+            password : '3c9909afec25354d551dae21590bb26e38d53f2173b8d3dc3eee4c047e7ab1c1eb8b85103e3be7ba613b31bb5c9c36214dc9f14a42fd7a2fdb84856bca5c44c2'
+        }
+    }
+]
+let i = 0;
+while (i < 100) {
+    for(let index in users)
+    {
+        let user = users[index]
+        //console.log(user)
+        if(!!!user.account) continue;
+        describe(`#--- Login Test suite for - ${user.type} ${user.account.username}`, () =>
+        {
+            let options = {
+                method: `POST`,
+                url: `${host}/auth/local`,
+                json: {
+                    username: user.account.username,
+                    password: user.account.password
+                }
+            };
+            describe(`Testing as  ${user.type} user`, () =>
+            {
+                describe(`Login as  ${user.type} testing`, () =>
+                {
+                    it(`/auth/local should return 200 (Login Success)`, done =>
+                    {
+                        //console.log('>>>>> calling auth')
+                        request(options, function(error, res, body)
+                        {
+                            //console.log( body )
+                            if (error)
+                                throw new Error(error);
+                            token = body.token;
+
+                            assert.equal(200, res.statusCode);
+
+                            done();
+                            //console.log('>>>>> auth response')
+                        });
+
+                    });
+                });
+
+                describe(`Login as  ${user.type} testing`, () =>
+                {
+                    it(`/auth/local should return 200 (Login Success)`, done =>
+                    {
+                        //console.log('>>>>> calling auth')
+                        request(options, function(error, res, body)
+                        {
+                            //console.log( body )
+                            if (error)
+                                throw new Error(error);
+                            token = body.token;
+
+                            assert.equal(200, res.statusCode);
+
+                            done();
+                            //console.log('>>>>> auth response')
+                        });
+
+                    });
+                });
+
+                describe(`Login as  ${user.type} testing`, () =>
+                {
+                    it(`/auth/local should return 200 (Login Success)`, done =>
+                    {
+                        //console.log('>>>>> calling auth')
+                        request(options, function(error, res, body)
+                        {
+                            //console.log( body )
+                            if (error)
+                                throw new Error(error);
+                            token = body.token;
+
+                            assert.equal(200, res.statusCode);
+
+                            done();
+                            //console.log('>>>>> auth response')
+                        });
+
+                    });
+                });
+
+                describe(`Login as  ${user.type} testing`, () =>
+                {
+                    it(`/auth/local should return 200 (Login Success)`, done =>
+                    {
+                        //console.log('>>>>> calling auth')
+                        request(options, function(error, res, body)
+                        {
+                            //console.log( body )
+                            if (error)
+                                throw new Error(error);
+                            token = body.token;
+
+                            assert.equal(200, res.statusCode);
+
+                            done();
+                            //console.log('>>>>> auth response')
+                        });
+
+                    });
+                });
+
+                describe(`Login as  ${user.type} testing`, () =>
+                {
+                    it(`/auth/local should return 200 (Login Success)`, done =>
+                    {
+                        //console.log('>>>>> calling auth')
+                        request(options, function(error, res, body)
+                        {
+                            //console.log( body )
+                            if (error)
+                                throw new Error(error);
+                            token = body.token;
+
+                            assert.equal(200, res.statusCode);
+
+                            done();
+                            //console.log('>>>>> auth response')
+                        });
+
+                    });
+                });
+
+                describe(`Login as  ${user.type} testing`, () =>
+                {
+                    it(`/auth/local should return 200 (Login Success)`, done =>
+                    {
+                        //console.log('>>>>> calling auth')
+                        request(options, function(error, res, body)
+                        {
+                            //console.log( body )
+                            if (error)
+                                throw new Error(error);
+                            token = body.token;
+
+                            assert.equal(200, res.statusCode);
+
+                            done();
+                            //console.log('>>>>> auth response')
+                        });
+
+                    });
+                });
+
+                describe(`Login as  ${user.type} testing`, () =>
+                {
+                    it(`/auth/local should return 200 (Login Success)`, done =>
+                    {
+                        //console.log('>>>>> calling auth')
+                        request(options, function(error, res, body)
+                        {
+                            //console.log( body )
+                            if (error)
+                                throw new Error(error);
+                            token = body.token;
+
+                            assert.equal(200, res.statusCode);
+
+                            done();
+                            //console.log('>>>>> auth response')
+                        });
+
+                    });
+                });
+
+                describe(`Login as  ${user.type} testing`, () =>
+                {
+                    it(`/auth/local should return 200 (Login Success)`, done =>
+                    {
+                        //console.log('>>>>> calling auth')
+                        request(options, function(error, res, body)
+                        {
+                            //console.log( body )
+                            if (error)
+                                throw new Error(error);
+                            token = body.token;
+
+                            assert.equal(200, res.statusCode);
+
+                            done();
+                            //console.log('>>>>> auth response')
+                        });
+
+                    });
+                });
+
+                describe(`Login as  ${user.type} testing`, () =>
+                {
+                    it(`/auth/local should return 200 (Login Success)`, done =>
+                    {
+                        //console.log('>>>>> calling auth')
+                        request(options, function(error, res, body)
+                        {
+                            //console.log( body )
+                            if (error)
+                                throw new Error(error);
+                            token = body.token;
+
+                            assert.equal(200, res.statusCode);
+
+                            done();
+                            //console.log('>>>>> auth response')
+                        });
+
+                    });
+                });
+
+                describe(`Login as  ${user.type} testing`, () =>
+                {
+                    it(`/auth/local should return 200 (Login Success)`, done =>
+                    {
+                        //console.log('>>>>> calling auth')
+                        request(options, function(error, res, body)
+                        {
+                            //console.log( body )
+                            if (error)
+                                throw new Error(error);
+                            token = body.token;
+
+                            assert.equal(200, res.statusCode);
+
+                            done();
+                            //console.log('>>>>> auth response')
+                        });
+
+                    });
+                });
+
+                describe(` ${user.type} Logout testing`, () =>
+                {
+                    it(`/auth/logout should return 200 (Logout)`, done =>
+                    {
+                        let options = {
+                            method : `DELETE`,
+                            url : `${host}/auth/logout`,
+                            headers :
+                            {
+                                'authorization' : `Bearer ${token}`
+                            }
+                        };
+                        request(options, function(error, res, body)
+                        {
+                            //console.log(body)
+                            if (error)
+                                throw new Error(error);
+                            assert.equal(200, res.statusCode);
+                            done();
+
+                        });
+                    });
+                });
+            });
+            // end admin
+        });
+    }
+  i++;
+}
+
+
+
+

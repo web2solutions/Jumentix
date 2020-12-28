@@ -1,0 +1,142 @@
+definitions:
+  # Object used when listing one item
+  address:
+    description: Addresses
+    x-child: true
+    required: ["type","line_1","city","country"]
+    properties:
+      _id:
+        type: "string"
+        description: The identifier
+        example: "5c78a060c15bca840749e44b"
+        readOnly: true
+        x-ui:
+          grid:
+            hide: false
+            label: _id
+            width:  "0"
+          form:
+            hide: true
+            label: _id
+      type:
+        description: 'Address Type'
+        type: "string"
+        enum: ["Home", "Work", "Vacation", "Billing"]
+        example: "Home"
+        default: "Home"
+        x-ui:
+          grid:
+            hide: false
+            label: Type
+            width:  90
+          form:
+            type: select # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Address Type
+            options: ["Home", "Work", "Vacation", "Billing"]
+            selection-limit: 1
+      line_1:
+        description: 'Address Line 1'
+        type: "string"
+        example: "1120 N Street"
+        minLength: 4
+        x-ui:
+          grid:
+            hide: false
+            label: Line 1
+            width:  120
+          form:
+            hide: false
+            label: Address Line 1
+      line_2:
+        description: 'Address Line 2'
+        type: "string"
+        x-ui:
+          grid:
+            hide: false
+            label: Address Line 2
+            width:  120
+          form:
+            hide: false
+            label: Address Line 2
+      city:
+        description: 'City Name'
+        type: "string"
+        example: "Los Angeles"
+        minLength: 3
+        x-ui:
+          grid:
+            hide: false
+            label: City
+            width:  120
+          form:
+            hide: false
+            label: City
+      state:
+        description: 'State'
+        type: "string"
+        example: "California"
+        # enum: ['Alabama','Alaska','American Samoa','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','District of Columbia','Federated States of Micronesia','Florida','Georgia','Guam','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Marshall Islands','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Northern Mariana Islands','Ohio','Oklahoma','Oregon','Palau','Pennsylvania','Puerto Rico','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virgin Island','Virginia','Washington','West Virginia','Wisconsin','Wyoming']
+        x-ui:
+          grid:
+            hide: false
+            label: State
+            width: 120
+          form:
+            # type: combobox # select, combobox, text, radio, switch, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: State
+            # selection-limit: 1
+      country:
+        description: 'Country Name'
+        type: "string"
+        example: "USA"
+        enum: ["Afghanistan","Albania","Algeria","Andorra","Angola","Anguilla","Antigua &amp; Barbuda","Argentina","Armenia","Aruba","Australia","Austria","Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bermuda","Bhutan","Bolivia","Bosnia &amp; Herzegovina","Botswana","Brazil","British Virgin Islands","Brunei","Bulgaria","Burkina Faso","Burundi","Cambodia","Cameroon","Cape Verde","Cayman Islands","Chad","Chile","China","Colombia","Congo","Cook Islands","Costa Rica","Cote D Ivoire","Croatia","Cruise Ship","Cuba","Cyprus","Czech Republic","Denmark","Djibouti","Dominica","Dominican Republic","Ecuador","Egypt","El Salvador","Equatorial Guinea","Estonia","Ethiopia","Falkland Islands","Faroe Islands","Fiji","Finland","France","French Polynesia","French West Indies","Gabon","Gambia","Georgia","Germany","Ghana","Gibraltar","Greece","Greenland","Grenada","Guam","Guatemala","Guernsey","Guinea","Guinea Bissau","Guyana","Haiti","Honduras","Hong Kong","Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland","Isle of Man","Israel","Italy","Jamaica","Japan","Jersey","Jordan","Kazakhstan","Kenya","Kuwait","Kyrgyz Republic","Laos","Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein","Lithuania","Luxembourg","Macau","Macedonia","Madagascar","Malawi","Malaysia","Maldives","Mali","Malta","Mauritania","Mauritius","Mexico","Moldova","Monaco","Mongolia","Montenegro","Montserrat","Morocco","Mozambique","Namibia","Nepal","Netherlands","Netherlands Antilles","New Caledonia","New Zealand","Nicaragua","Niger","Nigeria","Norway","Oman","Pakistan","Palestine","Panama","Papua New Guinea","Paraguay","Peru","Philippines","Poland","Portugal","Puerto Rico","Qatar","Reunion","Romania","Russia","Rwanda","Saint Pierre &amp; Miquelon","Samoa","San Marino","Satellite","Saudi Arabia","Senegal","Serbia","Seychelles","Sierra Leone","Singapore","Slovakia","Slovenia","South Africa","South Korea","Spain","Sri Lanka","St Kitts &amp; Nevis","St Lucia","St Vincent","St. Lucia","Sudan","Suriname","Swaziland","Sweden","Switzerland","Syria","Taiwan","Tajikistan","Tanzania","Thailand","Timor L'Este","Togo","Tonga","Trinidad &amp; Tobago","Tunisia","Turkey","Turkmenistan","Turks &amp; Caicos","Uganda","Ukraine","United Arab Emirates","United Kingdom", 'United States of America', "Uruguay","Uzbekistan","Venezuela","Vietnam","Virgin Islands (US)","Yemen","Zambia","Zimbabwe"]
+        x-ui:
+          grid:
+            hide: false
+            label: Country
+            width: 120
+          form:
+            type: select # select, combobox, text, radio, switch, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Country
+            selection-limit: 1
+      zip:
+        description: 'Postal Code'
+        type: "string"
+        format: 'zip'
+        example: 942873
+        x-ui:
+          grid:
+            hide: false
+            label: Postal Code
+            width:  100
+          form:
+            hide: false
+            label: Postal Code
+      geolocation:
+        description: 'Geolocation coords'
+        type: "string"
+        example: "-20.6523942 -40.485365"
+        x-ui:
+          grid:
+            hide: false
+            label: Geolocation
+            width:  120
+          form:
+            hide: false
+            label: Geolocation
+      isDefault:
+        type: "boolean"
+        description: Is this address the default address?
+        default: false
+        x-ui:
+          grid:
+            hide: false
+            label: Is Default?
+            width:  120
+          form:
+            type: switch # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Is Default?

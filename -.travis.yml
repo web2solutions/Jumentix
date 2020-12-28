@@ -1,0 +1,21 @@
+sudo: required
+language: node_js
+node_js:
+#  - node
+  - 9
+#  - 8
+#  - 7
+#  - 6
+services:
+  - mongodb
+  - redis-server
+  - rabbitmq
+before_script:
+  - sudo rabbitmqctl add_user rabbitmq rabbitmq
+  - sudo rabbitmqctl set_user_tags rabbitmq administrator
+  - sudo rabbitmqctl set_permissions -p / rabbitmq ".*" ".*" ".*"
+install:
+  - npm install
+script:
+  - export NODE_ENV=travis && npm test
+fail_fast: true

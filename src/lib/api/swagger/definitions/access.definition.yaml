@@ -1,0 +1,164 @@
+definitions:
+  access:
+    required: ["date"]
+    x-child: true
+    properties:
+      _id:
+        type: "string"
+        description: The identifier
+        example: "5c78a060c15bca840749e44b"
+        readOnly: true
+        x-ui:
+          grid:
+            hide: false
+            label: _id
+            width:  "0"
+          form:
+            hide: true
+            label: _id
+      session_id:
+        description: 'Session ID'
+        type: "string"
+        example: ""
+        readOnly: true
+        x-ui:
+          grid:
+            hide: false
+            label: Session ID
+            width:  "70"
+          form:
+            hide: false
+            label: Session ID
+      date:
+        type: "string"
+        format: "date-time"
+        example: "2017-07-21T17:32:28Z"
+        description: The User's login date
+        readOnly: true
+        x-ui:
+          sub_form_exclude: true
+          grid:
+            hide: false
+            label: Date
+            width:  "150"
+          form:
+            hide: true
+            label: Date
+      device:
+        description: 'Device'
+        type: "string"
+        example: "Desktop"
+        readOnly: true
+        x-ui:
+          grid:
+            hide: false
+            label: Device
+            width:  "100"
+          form:
+            hide: false
+            label: Device
+      os:
+        description: 'OS'
+        type: "string"
+        example: "Mac OS X"
+        readOnly: true
+        x-ui:
+          grid:
+            hide: false
+            label: OS
+            width:  "150"
+          form:
+            hide: false
+            label: OS
+      browser:
+        description: 'Browser'
+        type: "string"
+        example: "Chrome"
+        readOnly: true
+        x-ui:
+          grid:
+            hide: false
+            label: Browser
+            width:  "100"
+          form:
+            hide: false
+            label: Browser
+      user_agent:
+        description: 'Browser user agent'
+        type: "string"
+        example: ""
+        readOnly: true
+        x-ui:
+          grid:
+            hide: true
+            label: User agent
+            width:  "*"
+          form:
+            hide: false
+            label: User agent
+      ip:
+        description: 'IP address'
+        type: "string"
+        example: "198.156.23.5"
+        readOnly: true
+        x-ui:
+          grid:
+            hide: false
+            label: IP
+            width:  "*"
+          form:
+            hide: false
+            label: IP
+      country:
+        description: 'Country'
+        type: "string"
+        example: "United States"
+        readOnly: true
+        x-ui:
+          grid:
+            hide: false
+            label: Country
+            width:  "*"
+          form:
+            hide: false
+            label: Country
+      state:
+        description: 'State'
+        type: "string"
+        example: "Florida"
+        readOnly: true
+        x-ui:
+          grid:
+            hide: false
+            label: State
+            width:  "*"
+          form:
+            hide: false
+            label: State
+      city:
+        description: 'City'
+        type: "string"
+        example: "Miami"
+        readOnly: true
+        x-ui:
+          grid:
+            hide: false
+            label: City
+            width:  "*"
+          form:
+            hide: false
+            label: City
+      geolocation:
+        description: 'Geolocation coords'
+        type: "string"
+        x-format: "map"
+        example: "-20.6523942 -40.485365"
+        readOnly: true
+        x-ui:
+          grid:
+            hide: true
+            label: Geolocation
+            width:  "*"
+          form:
+            hide: false
+            label: Geolocation

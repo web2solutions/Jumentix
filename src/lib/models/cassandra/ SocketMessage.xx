@@ -1,0 +1,40 @@
+module.exports = {
+  fields: {
+    from: {
+      type: 'map',
+      typeDef: '<varchar, text>'
+    },
+    to: {
+      type: 'map',
+      typeDef: '<varchar, text>'
+    },
+    companyId: 'text',
+    type: 'text',
+    sent: {
+      type: 'int',
+      default: 0
+    },
+    channel: 'text',
+    read: {
+      type: [],
+      required: [true, 'Read list is required.']
+    },
+    people: {
+      type: [],
+      required: [true, 'People list is required.']
+    },
+    subject: 'text',
+    message: 'text',
+    data: {
+      type: 'map',
+      typeDef: '<varchar, text>',
+      default: {}
+    },
+    items: {
+      type: 'list',
+      typeDef: '<varchar>',
+      default: []
+    }
+  },
+  key: ['name']
+}

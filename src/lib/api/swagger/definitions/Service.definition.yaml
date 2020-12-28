@@ -1,0 +1,269 @@
+definitions:
+  # Object used when listing one item
+  Service_response:
+    properties:
+      code:
+        type: 'integer'
+        format: 'int32'
+        example: 200
+      message:
+        type: 'string'
+        example: 'successful operation'
+      data:
+        type: 'object'
+        $ref: '#/definitions/Service'
+  # Object used when listing multiple items
+  Service_collection:
+    properties:
+      code:
+        type: 'integer'
+        format: 'int32'
+        example: 200
+      message:
+        type: 'string'
+        example: 'successful operation'
+      data:
+        type: 'array'
+        items:
+          $ref: '#/definitions/Service'
+  # Object used when creating an item
+  Service_response_created:
+    properties:
+      code:
+        type: 'integer'
+        format: 'int32'
+        example: 201
+      message:
+        type: 'string'
+        example: 'Created'
+      id:
+        type: 'string'
+        example: 5c0fb100ec2339ed5bea6303
+      data:
+        $ref: '#/definitions/Service'
+  # Object used when creating an item
+  Service_response_updated:
+    properties:
+      code:
+        type: 'integer'
+        format: 'int32'
+        example: 200
+      message:
+        type: 'string'
+        example: 'successful operation'
+      id:
+        type: 'string'
+        example: 5c0fb100ec2339ed5bea6303
+      data:
+        $ref: '#/definitions/Service'
+  Service:
+    required: ['name', 'unity', 'unityCost', 'unityPrice', 'duration']
+    properties:
+      _id:
+        type: 'string'
+        example: '5c78a060c15bca840749e44b'
+        readOnly: true
+        x-ui:
+          grid:
+            hide: false
+            label: _id
+            width: '0'
+          form:
+            hide: true
+            label: _id
+      name:
+        description: 'Service name'
+        type: 'string'
+        example: 'Service name'
+        x-ui:
+          grid:
+            hide: false
+            label: Service Name
+            width: '180'
+          form:
+            type: text # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Service Name
+      description:
+        description: 'Service description'
+        type: 'string'
+        example: 'Service name'
+        x-ui:
+          grid:
+            hide: false
+            label: Description
+            width: '180'
+          form:
+            type: text # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Service description
+      #type:
+      #  description: Service Type
+      #  type: 'string'
+      #  example: '5c78a060c15bca840749e44b'
+      #  x-ui:
+      #    collection-link: ServiceType
+      #    collection-link-value: _id
+      #    collection-link-label: name
+      #    grid:
+      #      hide: false
+      #      label: Type
+      #      width: '120'
+      #    form:
+      #      type: combobox # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+      #      hide: false
+      #      label: Service Type
+      #      selection-limit: 1
+      unity:
+        description: 'Unit type'
+        type: 'string'
+        enum: ['Day', 'Hour']
+        example: 'Hour'
+        default: 'Hour'
+        x-ui:
+          grid:
+            hide: false
+            label: Unit Type
+            width: '100'
+          form:
+            type: select # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            options: ['Day', 'Hour']
+            label: Unit Type
+      duration:
+        description: Duration
+        type: 'number'
+        format: 'float'
+        minimum: 0.5
+        example: 1
+        default: 1
+        x-ui:
+          grid:
+            hide: false
+            label: Unit Type
+            width: '100'
+          form:
+            type: select # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Unit Type
+      unityCost:
+        description: 'Cost per unity'
+        type: 'number'
+        x-format: currency
+        format: 'float'
+        example: 5.49
+        default: 0
+        x-ui:
+          grid:
+            hide: false
+            label: Cost Per Unit
+            width: '100'
+          form:
+            type: number # select, combobox, text, radio, switch, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Cost Per Unit
+      unityPrice:
+        description: 'Default price per unity'
+        type: 'number'
+        x-format: currency
+        format: 'float'
+        example: 10.55
+        default: 0
+        x-ui:
+          grid:
+            hide: false
+            label: Price Per Unit
+            width: '100'
+          form:
+            type: number # select, combobox, text, radio, switch, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Price Per Unit
+      file:
+        description: 'File attachments'
+        type: 'array'
+        items:
+          $ref: '#/definitions/file'
+        #default: []
+        x-uploader: true
+        x-ui:
+          grid:
+            hide: true
+            label: Files
+            width: '*'
+          form:
+            type: grid # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: true
+            label: Files
+            isSchema: true
+      createdBy:
+        description: "Created By"
+        type: "string"
+        example: "5c78a060c15bca840749e44b"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          collection-link: Human
+          collection-link-value: _id
+          collection-link-label: name
+          grid:
+            hide: false
+            label: Created By
+            width:  120
+          form:
+            type: combobox # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Created By
+            selection-limit: 1
+      createdAt:
+        description: "Created At"
+        type: "string"
+        format: "date-time"
+        #nullable: true
+        example: "2017-07-21"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          grid:
+            hide: false
+            label: Created At
+            width:  120
+          form:
+            type: date-time # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, date-time
+            hide: false
+            label: Created At
+      updatedBy:
+        description: "Updated By"
+        type: "string"
+        example: "5c78a060c15bca840749e44b"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          collection-link: Human
+          collection-link-value: _id
+          collection-link-label: name
+          grid:
+            hide: false
+            label: Updated By
+            width:  120
+          form:
+            type: combobox # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Updated By
+            selection-limit: 1
+      updatedAt:
+        description: "Updated At"
+        type: "string"
+        format: "date-time"
+        #nullable: true
+        example: "2017-07-21"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          grid:
+            hide: false
+            label: Updated At
+            width:  120
+          form:
+            type: date-time # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, date-time
+            hide: false
+            label: Updated At

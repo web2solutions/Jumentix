@@ -1,0 +1,58 @@
+definitions:
+  # Object used when listing one item
+  sub_role:
+    required: ["name", "label", "abbreviation"]
+    x-child: true
+    properties:
+      _id:
+        type: "string"
+        description: "File identifier"
+        example: "5c78a060c15bca840749e44b"
+        readOnly: true
+        x-ui:
+          grid:
+            hide: false
+            label: _id
+            width:  "0"
+          form:
+            hide: true
+            label: _id
+      name:
+        type: "string"
+        description: "The role name"
+        example: "Adoptive Parent"
+        x-ui:
+          grid:
+            hide: false
+            label: Role Name
+            width: "*"
+          form:
+            type: text # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Role Name
+      label:
+        type: "string"
+        description: "The role label"
+        example: "Adoptive Parent"
+        x-ui:
+          grid:
+            hide: false
+            label: Role label
+            width: "*"
+          form:
+            type: text # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Role label
+      abbreviation:
+        type: "string"
+        description: "The role name abbreviation"
+        example: "AP"
+        x-ui:
+          grid:
+            hide: false
+            label: Role Abbreviation
+            width: "*"
+          form:
+            type: text # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Role Abbreviation

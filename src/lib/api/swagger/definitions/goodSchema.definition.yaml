@@ -1,0 +1,99 @@
+definitions:
+  # Object used when listing one item
+  goodSchema:
+    required: ["good", "type", "unityPrice", "quantity", "unity"]
+    x-child: true
+    properties:
+      _id:
+        type: "string"
+        description: The identifier
+        example: "5c78a060c15bca840749e44b"
+        readOnly: true
+        x-ui:
+          grid:
+            hide: false
+            label: _id
+            width:  "0"
+          form:
+            hide: true
+            label: _id
+      good:
+        type: "string"
+        description: "Good name"
+        example: "5c78a060c15bca840749e44b"
+        x-ui:
+          collection-link: Good
+          collection-link-value: _id
+          collection-link-label: name
+          grid:
+            hide: false
+            label: Good
+            width: "*"
+          form:
+            type: autocomplete # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Good
+            selection-limit: 1
+      type:
+        description: 'Type of good'
+        type: "string"
+        enum: ["Product", "Service"]
+        example: "Product"
+        default: "Service"
+        x-ui:
+          grid:
+            hide: false
+            label: Good Type
+            width: "*"
+          form:
+            type: select # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            options: ["Product", "Service"]
+            label: Good Type
+      unity:
+        description: 'Unit type'
+        type: "string"
+        enum: ["Unity","Days","Hours","Milestone"]
+        example: "Hours"
+        default: "Unity"
+        x-ui:
+          grid:
+            hide: false
+            label: Unit Type
+            width: "100"
+          form:
+            type: select # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            options: ["Unity","Days","Hours","Milestone"]
+            label: Unit Type
+      unityPrice:
+        type: "number"
+        x-format: currency
+        format: "float"
+        description: "Event total Price"
+        example: 150
+        default: 0
+        x-ui:
+          grid:
+            hide: false
+            label: Price
+            width: "150"
+          form:
+            type: number # select, combobox, text, radio, switch, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Price
+      quantity:
+        description: "Quantity"
+        type: "integer"
+        format: "int32"
+        example: 100
+        default: 0
+        x-ui:
+          grid:
+            hide: false
+            label: Quantity
+            width:  "*"
+          form:
+            type: text # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Quantity

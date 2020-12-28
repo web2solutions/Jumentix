@@ -1,0 +1,15 @@
+{
+  "restartable": "rs",
+  "ignore": [
+    ".git"
+  ],
+  "verbose": false,
+  "events": {
+    "restart": "osascript -e 'display notification \"App restarted due to:\n'$FILENAME'\" with title \"nodemon\"'"
+  },
+  "watch": [
+    "dist/"
+  ],
+  "delay": "10000ms",
+  "ext": "js json yaml"
+}

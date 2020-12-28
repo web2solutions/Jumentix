@@ -1,0 +1,118 @@
+# JumentiX RESTful Central Auth API Legacy support
+/api/authentication:
+  x-swagger-router-controller: local.controller
+# callback
+  post:
+    operationId: callback
+    tags:
+      - Authentication
+      - User
+    summary: Signin
+    description: Login
+    produces:
+      - "application/json"
+    consumes:
+      - "application/json"
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - "username"
+            - "password"
+          properties:
+            info:
+              type: object
+            username:
+              type: string
+              example: eduardo
+              default: eduardo
+            password:
+              type: string
+              format: password
+              example: 3c9909afec25354d551dae21590bb26e38d53f2173b8d3dc3eee4c047e7ab1c1eb8b85103e3be7ba613b31bb5c9c36214dc9f14a42fd7a2fdb84856bca5c44c2
+              default: 3c9909afec25354d551dae21590bb26e38d53f2173b8d3dc3eee4c047e7ab1c1eb8b85103e3be7ba613b31bb5c9c36214dc9f14a42fd7a2fdb84856bca5c44c2
+#      - name: username
+#        in: formData
+#        description: username
+#        required: true
+#        type: string
+#      - name: password
+#        in: formData
+#        description: password
+#        required: true
+#        type: string
+#        format: password
+    responses:
+      200:
+        description: Success.
+        schema:
+            type: object
+            properties:
+              token:
+                type: string
+      422:
+        $ref: '#/responses/auth-422'
+      500:
+        $ref: '#/responses/auth-500'
+/auth/local:
+  x-swagger-router-controller: local.controller
+  # callback
+  post:
+    operationId: callback
+    tags:
+      - Authentication
+      - User
+    summary: Signin
+    description: Login
+    produces:
+      - 'application/json'
+    consumes:
+      - 'application/json'
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - 'username'
+            - 'password'
+          properties:
+            info:
+              type: object
+            username:
+              type: string
+              example: eduardo
+              default: eduardo
+            password:
+              type: string
+              format: password
+              example: 3c9909afec25354d551dae21590bb26e38d53f2173b8d3dc3eee4c047e7ab1c1eb8b85103e3be7ba613b31bb5c9c36214dc9f14a42fd7a2fdb84856bca5c44c2
+              default: 3c9909afec25354d551dae21590bb26e38d53f2173b8d3dc3eee4c047e7ab1c1eb8b85103e3be7ba613b31bb5c9c36214dc9f14a42fd7a2fdb84856bca5c44c2
+    #      - name: username
+    #        in: formData
+    #        description: username
+    #        required: true
+    #        type: string
+    #      - name: password
+    #        in: formData
+    #        description: password
+    #        required: true
+    #        type: string
+    #        format: password
+    responses:
+      200:
+        description: Success.
+        schema:
+          type: object
+          properties:
+            token:
+              type: string
+      422:
+        $ref: '#/responses/auth-422'
+      500:
+        $ref: '#/responses/auth-500'
+

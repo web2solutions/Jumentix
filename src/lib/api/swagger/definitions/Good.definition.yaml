@@ -1,0 +1,262 @@
+definitions:
+  # Object used when listing one item
+  Good_response:
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 200
+      message:
+        type: "string"
+        example: "successful operation"
+      data:
+        type: "object"
+        $ref: "#/definitions/Good"
+  # Object used when listing multiple items
+  Good_collection:
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 200
+      message:
+        type: "string"
+        example: "successful operation"
+      data:
+        type: "array"
+        items:
+          $ref: "#/definitions/Good"
+  # Object used when creating an item
+  Good_response_created:
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 201
+      message:
+        type: "string"
+        example: "Created"
+      id:
+        type: "string"
+        example: 5c0fb100ec2339ed5bea6303
+      data:
+        $ref: "#/definitions/Good"
+  # Object used when creating an item
+  Good_response_updated:
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 200
+      message:
+        type: "string"
+        example: "successful operation"
+      id:
+        type: "string"
+        example: 5c0fb100ec2339ed5bea6303
+      data:
+        $ref: "#/definitions/Good"
+  Good:
+    required: ["name","type","unity","unityCost","unityPrice"]
+    properties:
+      _id:
+        type: "string"
+        example: '5c78a060c15bca840749e44b'
+        readOnly: true
+        x-ui:
+          grid:
+            hide: false
+            label: _id
+            width:  "0"
+          form:
+            hide: true
+            label: _id
+      name:
+        description: 'Good name'
+        type: "string"
+        example: 'Good name'
+        x-ui:
+          grid:
+            hide: false
+            label: Good Name
+            width: "180"
+          form:
+            type: text # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Good Name
+      type:
+        description: 'Type of good'
+        type: "string"
+        enum: ["Product", "Service"]
+        example: "Product"
+        default: "Service"
+        x-ui:
+          grid:
+            hide: false
+            label: Good Type
+            width: "*"
+          form:
+            type: select # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            options: ["Product", "Service"]
+            label: Good Type
+      #class:
+      #  description: 'type of item'
+      #  type: "string"
+      #  example: "Class name"
+      #  x-ui:
+      #    grid:
+      #      hide: false
+      #      label: Good Class
+      #      width: "*"
+      #    form:
+      #      type: text # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+      #      hide: false
+      #      label: Good Class
+      unity:
+        description: 'Unit type'
+        type: "string"
+        enum: ["Unity","Days","Hours","Milestone"]
+        example: "Hours"
+        default: "Unity"
+        x-ui:
+          grid:
+            hide: false
+            label: Unit Type
+            width: "100"
+          form:
+            type: select # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            options: ["Unity","Days","Hours","Milestone"]
+            label: Unit Type
+      #amount:
+      #  description: 'Default amount per quantity'
+      #  type: "number"
+      #  x-format: currency
+      #  format: "float"
+      #  example: 10.55
+      #  default: 0
+      #  x-ui:
+      #    grid:
+      #      hide: false
+      #      label: Amount
+      #      width: "100"
+      #    form:
+      #      type: number # select, combobox, text, radio, switch, switch, textarea, autocomplete, date, time, grid
+      #      hide: false
+      #      label: Amount
+      unityCost:
+        description: 'Cost per unity'
+        type: "number"
+        x-format: currency
+        format: "float"
+        example: 5.49
+        default: 0
+        x-ui:
+          grid:
+            hide: false
+            label: Cost Per Unit
+            width: "100"
+          form:
+            type: number # select, combobox, text, radio, switch, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Cost Per Unit
+      unityPrice:
+        description: 'Default price per unity'
+        type: "number"
+        x-format: currency
+        format: "float"
+        example: 10.55
+        default: 0
+        x-ui:
+          grid:
+            hide: false
+            label: Price Per Unit
+            width: "100"
+          form:
+            type: number # select, combobox, text, radio, switch, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Price Per Unit
+      discount:
+        description: 'Given discount'
+        type: "number"
+        x-format: currency
+        format: "float"
+        example: 1.53
+        default: 0
+        x-ui:
+          grid:
+            hide: false
+            label: Discount
+            width: "100"
+          form:
+            type: number # select, combobox, text, radio, switch, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Discount
+      #category:
+      #  description: 'Finance category'
+      #  type: "string"
+      #  example: '5c78a060c15bca840749e44b'
+      #  x-ui:
+      #    collection-link: FinanceCategory
+      #    collection-link-value: _id
+      #    collection-link-label: name
+      #    grid:
+      #      hide: true
+      #      label: Finance Category
+      #      width: "*"
+      #    form:
+      #      type: combobox # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+      #      hide: false
+      #      label: Finance Category
+      #      selection-limit: 1
+      #sub_category:
+      #  description: 'Finance sub category'
+      #  type: "string"
+      #  example: '5c78a060c15bca840749e44b'
+      #  x-ui:
+      #    collection-link: FinanceSubCategory
+      #    collection-link-value: _id
+      #    collection-link-label: name
+      #    grid:
+      #      hide: true
+      #      label: Finance Sub Category
+      #      width: "*"
+      #    form:
+      #      type: combobox # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+      #      hide: false
+      #      label: Finance Sub Category
+      #      selection-limit: 1
+      #factor:
+      #  type: "array"
+      #  description: "Factors"
+      #  items:
+      #    $ref: "#/definitions/factor"
+      #  x-ui:
+      #    grid:
+      #      hide: true
+      #      label: Factors
+      #      width: "*"
+      #    form:
+      #      type: grid # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+      #      hide: false
+      #      label: Factors
+      #      isSchema: true
+      #  default: []
+      file:
+        description: "File attachments"
+        type: "array"
+        items:
+          $ref: "#/definitions/file"
+        #default: []
+        x-uploader: true
+        x-ui:
+          grid:
+            hide: true
+            label: Files
+            width:  "*"
+          form:
+            type: grid # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: true
+            label: Files
+            isSchema: true

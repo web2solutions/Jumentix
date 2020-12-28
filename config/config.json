@@ -1,0 +1,144 @@
+{
+    "development": {
+        "host": "192.168.1.19",
+        "username": "sa",
+        "password": "I4GotIt",
+        "database": "MAPATQB_Test",
+        "__username": "map_prod",
+        "__password": "6uC@zE0nPdH#",
+        "__database": "MAPROLESCDMAP",
+        "host": "192.168.1.19",
+        "dialect": "mssql",
+        "dialectOptions": {
+            "encrypt": true
+        },
+        "encrypt": true,
+        "options": {
+            "encrypt": true
+        },
+        "migrationStorage": "json",
+        "logging": false,
+        "benchmark": false,
+        "timezone": "America/New_York",
+        "operatorsAliases": false,
+        "define": {
+            "charset": "utf8",
+            "collate": "utf8_general_ci",
+            "timestamps": true
+        },
+        "charset" : "utf8",
+        "pagingDefaultLimit": 300
+    },
+    "CI": {
+        "host": "192.168.1.19",
+        "username": "sa",
+        "password": "I4GotIt",
+        "database": "MAPATQB_Test",
+        "__username": "map_prod",
+        "__password": "6uC@zE0nPdH#",
+        "__database": "MAPROLESCDMAP",
+        "host": "192.168.1.19",
+        "dialect": "mssql",
+        "dialectOptions": {
+            "encrypt": true
+        },
+        "encrypt": true,
+        "options": {
+            "encrypt": true
+        },
+        "migrationStorage": "json",
+        "logging": false,
+        "benchmark": false,
+        "timezone": "America/New_York",
+        "operatorsAliases": false,
+        "define": {
+            "charset": "utf8",
+            "collate": "utf8_general_ci",
+            "timestamps": true
+        },
+        "charset" : "utf8",
+        "pagingDefaultLimit": 300
+    },
+    "travis": {
+        "host": "192.168.1.19",
+        "username": "sa",
+        "password": "I4GotIt",
+        "database": "MAPATQB_Test",
+        "__username": "map_prod",
+        "__password": "6uC@zE0nPdH#",
+        "__database": "MAPROLESCDMAP",
+        "host": "192.168.1.19",
+        "dialect": "mssql",
+        "dialectOptions": {
+            "encrypt": true
+        },
+        "encrypt": true,
+        "options": {
+            "encrypt": true
+        },
+        "migrationStorage": "json",
+        "logging": false,
+        "benchmark": false,
+        "timezone": "America/New_York",
+        "operatorsAliases": false,
+        "define": {
+            "charset": "utf8",
+            "collate": "utf8_general_ci",
+            "timestamps": true
+        },
+        "charset" : "utf8",
+        "pagingDefaultLimit": 300
+    },
+    "test": {
+       "username": "sa",
+        "password": "I4GotIt",
+        "database": "MAPATQB_Test",
+        "host": "192.168.1.19",
+        "dialect": "mssql",
+        "dialectOptions": {
+            "encrypt": true
+        },
+        "encrypt": true,
+        "options": {
+            "encrypt": true
+        },
+        "migrationStorage": "json",
+        "logging": true,
+        "benchmark": false,
+        "timezone": "America/New_York",
+        "operatorsAliases": false,
+        "define": {
+            "charset": "utf8",
+            "collate": "utf8_general_ci",
+            "timestamps": true
+        },
+        "charset" : "utf8",
+        "pagingDefaultLimit": 300
+    },
+    "production": {
+        "username": "sa",
+        "password": "I4GotIt",
+        "database": "MAPATQB_Test",
+        "host": "192.168.1.19",
+        "dialect": "mssql",
+        "dialectOptions": {
+            "encrypt": true
+        },
+        "encrypt": true,
+        "options": {
+            "encrypt": true
+        },
+        "migrationStorage": "json",
+        "logging": false,
+        "benchmark": false,
+        "timezone": "America/New_York",
+        "operatorsAliases": false,
+        "define": {
+            "charset": "utf8",
+            "collate": "utf8_general_ci",
+            "timestamps": true
+        },
+        "charset" : "utf8",
+        "pagingDefaultLimit": 300
+    }
+}

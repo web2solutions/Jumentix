@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for src/lib/api/controllers/Bulk.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../../../prettify.css" />
+    <link rel="stylesheet" href="../../../../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../../../../index.html">all files</a> / <a href="index.html">src/lib/api/controllers/</a> Bulk.js
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">18.07% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>15/83</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">5.13% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>2/39</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">25% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>1/4</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">12.82% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>5/39</span>
+      </div>
+      <div class='fl pad1y'>
+        <span class="strong">2 branches</span>
+        <span class="quiet">Ignored</span>  &nbsp;&nbsp;&nbsp;&nbsp;
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112</td><td class="line-coverage quiet"><span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" >i</span>mport app from '../../../app'
+import RabbitEnvelop from '../../RabbitEnvelop'
+import { errorResponse, notFound, result } from '../../response'
+import { copy, isDate, isObject } from '../../util'
+&nbsp;
+/**
+    Create an entity by sending a message to it queue.
+*/
+export <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >async function <span class="fstat-no" title="function not covered" >bulkListAllCollections(req, res) {</span></span></span></span></span>
+  // console.log('INSIDE BULK &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;')
+  let <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >_</span></span>errors = []</span></span></span></span>
+  let <span class="cstat-no" title="statement not covered" >_data = []</span>
+  let <span class="cstat-no" title="statement not covered" >collections = req.swagger.params.collections.value || '{}'</span>
+  let <span class="cstat-no" title="statement not covered" >lastSyncDate = req.swagger.params.lastSyncDate.value || false</span>
+  // let collections = '{ "Human": "Human" }'
+  let <span class="cstat-no" title="statement not covered" >allData = {}</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  collections = JSON.parse(collections)</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (!isObject(collections)) {</span>
+<span class="cstat-no" title="statement not covered" >    _errors.push('Colections must be a valid JSON')</span>
+  }
+&nbsp;
+  if (req.user) {
+    for (let <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >k</span></span></span></span>ey in <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >c</span></span>ollections) {</span>
+      let <span class="cstat-no" title="statement not covered" >envelop = new RabbitEnvelop({</span>
+        from: req.user,
+&nbsp;
+        entity: key,
+        action: 'getAll',
+        payload: {
+          returnAll: true
+          // where: {
+          //    updatedAt: {"$gte": new Date(2012, 7, 14), "$lt": new Date(2012, 7, 15)}
+          // }
+        }
+      })
+<span class="cstat-no" title="statement not covered" >      if (lastSyncDate) {</span>
+        // console.log('lastSyncDate', lastSyncDate)
+        // console.log('isDate', isDate(new Date(lastSyncDate)))
+        // emulate swagger payload
+        let <span class="cstat-no" title="statement not covered" >where = {</span>
+          schema: true,
+          value: JSON.stringify({
+            updatedAt: {
+              $gte: new Date(lastSyncDate)
+            }
+          })
+        }
+<span class="cstat-no" title="statement not covered" >        envelop.payload.where = where</span>
+      }
+      // console.log(key)
+      if (app.mapperRPC) {
+        if (
+<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >          a</span></span>pp.mapperRPC.services[key] &amp;&amp;</span>
+          app.mapperRPC.services[key] !== null
+        ) {
+          try {
+            let {
+<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >              e</span>rror,</span>
+<span class="cstat-no" title="statement not covered" >              data,</span>
+<span class="cstat-no" title="statement not covered" >              status,</span>
+<span class="cstat-no" title="statement not covered" >              count,</span>
+<span class="cstat-no" title="statement not covered" >              pages,</span>
+<span class="cstat-no" title="statement not covered" >              limit,</span>
+<span class="cstat-no" title="statement not covered" >              page</span>
+            } = await <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >a</span></span></span></span>pp.mapperRPC.services[key].getAll(envelop)</span>
+<span class="cstat-no" title="statement not covered" >            if (error) {</span>
+<span class="cstat-no" title="statement not covered" >              _errors.push(error)</span>
+            } else {
+<span class="cstat-no" title="statement not covered" >              if (data) {</span>
+<span class="cstat-no" title="statement not covered" >                allData[key] = data</span>
+              }
+            }
+          } catch (e) {
+            // console.log(key)
+<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >            _</span></span></span>errors.push({</span>
+              error: e
+            })
+<span class="cstat-no" title="statement not covered" >            _errors.push({</span>
+              error: key + ' does not exist'
+            })
+          }
+        } else {
+<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >          _</span></span>errors.push({</span>
+            error: key + ' does not exist'
+          })
+        }
+      } else {
+<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >        _</span></span>errors.push({</span>
+          error: 'RPC mapper is null'
+        })
+      }
+    }
+  } else {
+<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >    _</span></span></span></span>errors.push('There is no user set for this request')</span>
+  }
+&nbsp;
+  if (<span class="cstat-no" title="statement not covered" >_errors.length &gt; 0) {</span>
+    // app.console.warn( _errors )
+    return <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >r</span></span>esult(res, {</span>
+      message: 'Could not Bulk list the collections',
+      error: _errors
+    })
+  }
+&nbsp;
+  return <span class="cstat-no" title="statement not covered" >result(res, {</span>
+    message: 'Bulk list all collections is done',
+    data: allData
+  })
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Wed Nov 25 2020 16:19:18 GMT-0200 (Brasilia Summer Time)
+</div>
+</div>
+<script src="../../../../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../../../../sorter.js"></script>
+</body>
+</html>

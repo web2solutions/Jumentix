@@ -1,0 +1,91 @@
+definitions:
+  # Object used when listing one item
+  telefoneConsumidor:
+    description: Phone numbers
+    required: ["type","country_code","area_number","number"]
+    x-child: true
+    properties:
+      _id:
+        type: "string"
+        description: The identifier
+        example: "5c78a060c15bca840749e44b"
+        readOnly: true
+        x-ui:
+          grid:
+            hide: false
+            label: _id
+            width:  "0"
+          form:
+            hide: true
+            label: _id
+      type:
+        description: 'Phone Type'
+        type: "string"
+        enum: ["Home", "Work", "Vacation", "Billing"]
+        example: "Home"
+        default: "Home"
+        x-ui:
+          grid:
+            hide: false
+            label: Type
+            width:  90
+          form:
+            type: select # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Phone Type
+            options: ["Home", "Work", "Vacation", "Billing"]
+            selection-limit: 1
+      country_code:
+        description: 'Country code'
+        type: "string"
+        default: "+1"
+        example: "+1"
+        format: "country-code"
+        x-ui:
+          grid:
+            hide: false
+            label: Country code
+            width:  90
+          form:
+            type: combobox
+            hide: false
+            label: Country code
+      area_number:
+        description: 'Area Number'
+        type: "string"
+        example: "1234"
+        minLength: 2
+        x-ui:
+          grid:
+            hide: false
+            label: Area
+            width:  "90"
+          form:
+            hide: false
+            label: Area
+      number:
+        description: 'Phone Number'
+        type: "string"
+        example: "9428739999"
+        minLength: 5
+        x-ui:
+          grid:
+            hide: false
+            label: Number
+            width:  150
+          form:
+            hide: false
+            label: Number
+      isDefault:
+        type: "boolean"
+        description: Is this address the default address?
+        default: false
+        x-ui:
+          grid:
+            hide: false
+            label: Is Default?
+            width:  120
+          form:
+            type: switch # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Is Default?

@@ -1,0 +1,29 @@
+definitions:
+  # Object used when listing multiple items
+  Bulk_collection:
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 200
+      message:
+        type: "string"
+        example: "successful operation"
+      data:
+        type: "array"
+        items:
+          $ref: "#/definitions/Collections"
+  Collections:
+    properties:
+      name:
+        type: "string"
+        description: Collection Name
+        example: "Human"
+        x-ui:
+          grid:
+            hide: false
+            label: Name
+            width:  "0"
+          form:
+            hide: true
+            label: Name

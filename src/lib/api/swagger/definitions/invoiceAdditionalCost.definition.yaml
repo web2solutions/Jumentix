@@ -1,0 +1,63 @@
+definitions:
+  # Object used when listing one item
+  invoiceAdditionalCost:
+    required: ["name", "description", "amount"]
+    x-child: true
+    description: Memos
+    properties:
+      _id:
+        type: "string"
+        description: The identifier
+        example: "5c78a060c15bca840749e44b"
+        readOnly: true
+        x-ui:
+          grid:
+            hide: false
+            label: _id
+            width:  "0"
+          form:
+            hide: true
+            label: _id
+      name:
+        description: 'Cost name'
+        type: 'string'
+        example: 'Cost name'
+        x-ui:
+          grid:
+            hide: false
+            label: Cost Name
+            width: '180'
+          form:
+            type: text # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Cost Name
+      description:
+        description: 'Cost description'
+        type: 'string'
+        example: 'Cost name'
+        x-ui:
+          grid:
+            hide: false
+            label: Description
+            width: '180'
+          form:
+            type: text # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Cost description
+      amount:
+        description: Amount
+        type: 'number'
+        x-format: currency
+        format: 'float'
+        example: 5.49
+        default: 0
+        x-ui:
+          grid:
+            hide: false
+            label: Amount
+            width: '100'
+          form:
+            type: number # select, combobox, text, radio, switch, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Amount
+      

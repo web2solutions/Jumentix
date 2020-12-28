@@ -1,0 +1,24 @@
+definitions:
+  # Object used when listing one item
+  template:
+    required: ["name","type","title","body"]
+    x-child: true
+    properties:
+      name:
+        description: 'Template Name'
+        type: "string"
+        example: "Sample Template"
+      type:
+        description: 'Template Type'
+        type: "string"
+        enum: ["E-mail", "Invoice"]
+        example: "Invoice"
+        default: "Invoice"
+      title:
+        description: 'Template Title'
+        type: "string"
+        example: "Sample Title"
+      body:
+        description: 'Template Body'
+        type: "string"
+        example: "Sample Body"

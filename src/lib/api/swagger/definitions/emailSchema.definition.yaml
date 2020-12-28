@@ -1,0 +1,67 @@
+definitions:
+  # Object used when listing one item
+  email:
+    description: E-mail addresses
+    x-child: true
+    required: ["type","email"]
+    properties:
+      _id:
+        type: "string"
+        description: The identifier
+        example: "5c78a060c15bca840749e44b"
+        readOnly: true
+        x-ui:
+          grid:
+            hide: false
+            label: _id
+            width:  "0"
+          form:
+            hide: true
+            label: _id
+      type:
+        description: 'E-mail Type'
+        type: "string"
+        enum: ["Home", "Work", "Vacation", "Billing"]
+        example: "Home"
+        default: "Home"
+        x-ui:
+          grid:
+            hide: false
+            label: Type
+            width:  "90"
+          form:
+            type: select # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: E-mail Type
+            options: ["Home", "Work", "Vacation", "Billing"]
+            selection-limit: 1
+      email:
+        description: 'E-mail address'
+        type: "string"
+        format: email
+        example: "myname@mycompany.com"
+        x-ui:
+          grid:
+            hide: false
+            label: E-mail
+            width:  "210"
+          form:
+            hide: false
+            label: E-mail address
+            format: email
+      isDefault:
+        type: "boolean"
+        description: Is this address the default address?
+        default: false
+        x-ui:
+          grid:
+            hide: false
+            label: Is Default?
+            width:  120
+          form:
+            type: switch # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Is Default?
+    example:
+      type: Work
+      email: myname@mycompany.com

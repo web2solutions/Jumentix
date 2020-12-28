@@ -1,0 +1,527 @@
+/api/AuthorizenetCreditCardPayment:
+  x-swagger-router-controller: AuthorizenetCreditCardPayment
+# list
+  get:
+    operationId: list
+    produces:
+      - "application/json"
+    consumes:
+      - "application/json"
+    security:
+      - Bearer: []
+    x-security-scopes:
+      - admin
+      - staff
+      - parent
+      - child
+      - caseworker
+      - manager
+      - agency
+    tags:
+      - Authorize.net 
+      - credit card
+      - creditcard
+      - payment
+      - Service Payment
+      - Product Payment
+      - Invoice Payment
+    summary: Get the list of Authorize.net credit card payments
+    description: Get the list of Authorize.net credit card payments
+    parameters:
+      - name: "offset"
+        description: "Number of instances/rows to skip"
+        in: query
+        type: integer
+        required: false
+        default: 0
+      - name: "limit"
+        description: "Number of instances/rows to fetch"
+        in: query
+        type: integer
+        required: false
+        #default: 300
+      - name: sort
+        description: Sort object to list data as string
+        in: query
+        required: false
+        type: string
+      - name: where
+        description: Where object to list data as string
+        in: query
+        required: false
+        type: string
+      - name: filters
+        description: Kendo filtering object as string
+        in: query
+        required: false
+        type: string
+      - in: query
+        name: attributes
+        description: Attributes to display on listing
+        type: string
+        required: false
+        #default: "_id, name, label, kind, createdAt, updatedAt,  createdBy, updatedBy, active, deleted, _history"
+      - in: query
+        name: populate
+        description: Comman separated list of fields to populate as document
+        type: string
+        required: false
+    responses:
+      200:
+        description: Success.
+        schema:
+          type: array
+          items:
+            $ref: "#/definitions/AuthorizenetCreditCardPayment_collection"
+      404:
+        $ref: '#/responses/404'
+      500:
+        $ref: '#/responses/500'
+# create
+  post:
+    operationId: create
+    produces:
+      - "application/json"
+    consumes:
+      - "application/json"
+    security:
+      - Bearer: []
+    x-security-scopes:
+      - admin
+      - staff
+      - parent
+      - child
+      - Serviceworker
+      - manager
+      - agency
+    tags:
+      - Authorize.net 
+      - credit card
+      - creditcard
+      - payment
+      - Service Payment
+      - Product Payment
+      - Invoice Payment
+    summary: Create a new Authorize.net credit card payment 
+    description: Create a new Authorize.net credit card payment 
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: "#/definitions/AuthorizenetCreditCardPayment"
+    responses:
+      201:
+        description: Success.
+        schema:
+          $ref: "#/definitions/AuthorizenetCreditCardPayment_response_created"
+      500:
+        $ref: '#/responses/500'
+
+/api/AuthorizenetCreditCardPayment/{id}:
+  x-swagger-router-controller: AuthorizenetCreditCardPayment
+# read
+  get:
+    operationId: read
+    produces:
+      - "application/json"
+    consumes:
+      - "application/json"
+    security:
+      - Bearer: []
+    x-security-scopes:
+      - admin
+      - staff
+      - parent
+      - child
+      - Serviceworker
+      - manager
+      - agency
+    tags:
+      - Authorize.net 
+      - credit card
+      - creditcard
+      - payment
+      - Service Payment
+      - Product Payment
+      - Invoice Payment
+    summary: Get a Authorize.net credit card payment  by id
+    description: Get a Authorize.net credit card payment  by id
+    parameters:
+      - name: id
+        description: id
+        in: path
+        required: true
+        type: string
+    responses:
+      200:
+        description: Success.
+        schema:
+          $ref: "#/definitions/AuthorizenetCreditCardPayment_response"
+      500:
+        $ref: '#/responses/500'
+# update
+  put:
+    operationId: update
+    produces:
+      - "application/json"
+    consumes:
+      - "application/json"
+    security:
+      - Bearer: []
+    x-security-scopes:
+      - admin
+      - staff
+      - parent
+      - child
+      - Serviceworker
+      - manager
+      - agency
+    tags:
+      - Authorize.net 
+      - credit card
+      - creditcard
+      - payment
+      - Service Payment
+      - Product Payment
+      - Invoice Payment
+    summary: Update a Authorize.net credit card payment  by id
+    description: Update a Authorize.net credit card payment  by id
+    parameters:
+      - name: id
+        description: id
+        in: path
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: "#/definitions/AuthorizenetCreditCardPayment"
+    responses:
+      200:
+        description: Success.
+        schema:
+          $ref: "#/definitions/AuthorizenetCreditCardPayment_response_updated"
+      500:
+        $ref: '#/responses/500'
+# destroy
+  delete:
+    operationId: destroy
+    produces:
+      - "application/json"
+    consumes:
+      - "application/json"
+    security:
+      - Bearer: []
+    x-security-scopes:
+      - admin
+      - staff
+      - parent
+      - child
+      - Serviceworker
+      - manager
+      - agency
+    tags:
+      - Authorize.net 
+      - credit card
+      - creditcard
+      - payment
+      - Service Payment
+      - Product Payment
+      - Invoice Payment
+    summary: Delete a Authorize.net credit card payment  by id
+    description: >
+      Call this end point to soft delete or hard delete a resource. 
+      
+      Only admin and agency can hard delete records.
+    parameters:
+      - name: id
+        description: id
+        in: path
+        required: true
+        type: string
+      - name: mode
+        description: >
+          The `delete mode`. 
+          
+          Options: 
+
+          `soft`: virtual delete.
+
+          `hard`: phisical delete.
+        in: query
+        type: string
+        required: false
+        default: soft
+        enum: ["soft", "hard"]
+    responses:
+      200:
+        $ref: '#/responses/deleted'
+      500:
+        $ref: '#/responses/500'
+      403:
+        $ref: '#/responses/403'
+  # restore
+  patch:
+    operationId: restore
+    produces:
+      - "application/json"
+    consumes:
+      - "application/json"
+    security:
+      - Bearer: []
+    x-security-scopes:
+      - admin
+      - agency
+    tags:
+      - Authorize.net 
+      - credit card
+      - creditcard
+      - payment
+      - Service Payment
+      - Product Payment
+      - Invoice Payment
+    summary: Restore a soft deleted Authorize.net credit card payment 
+    description: >
+      Call this end point to restore a resource that was soft delete. 
+      
+      Only admin and agency can restore records.
+    parameters:
+      - name: id
+        description: The resource unique identifier
+        in: path
+        required: true
+        type: string
+    responses:
+      200:
+        $ref: '#/responses/restored'
+      500:
+        $ref: '#/responses/500'
+      403:
+        $ref: '#/responses/403'
+
+/api/files/AuthorizenetCreditCardPayment/{id}:
+  x-swagger-router-controller: AuthorizenetCreditCardPayment
+  # restore
+  patch:
+    operationId: Upload
+    produces:
+      - "application/json"
+    consumes:
+      - "multipart/form-data"
+    security:
+      - Bearer: []
+    x-security-scopes:
+      - admin
+      - agency
+    tags:
+      - Authorize.net 
+      - credit card
+      - creditcard
+      - payment
+      - Service Payment
+      - Product Payment
+      - Invoice Payment
+      - Service
+      - Uploader
+    summary: Upload files to a document
+    description: >
+      Upload files to a document
+    parameters:
+      - name: id
+        description: The resource unique identifier
+        in: path
+        required: true
+        type: string
+      - name: file
+        description: The file to upload.
+        in: formData
+        required: true
+        type: file
+    responses:
+      200:
+        $ref: '#/definitions/AuthorizenetCreditCardPayment_response'
+      500:
+        $ref: '#/responses/500'
+      403:
+        $ref: '#/responses/403'
+
+/api/subDocument/AuthorizenetCreditCardPayment/{id}/{field}:
+  x-swagger-router-controller: AuthorizenetCreditCardPayment
+  # restore
+  post:
+    operationId: AddSubDocument
+    produces:
+      - "application/json"
+    consumes:
+      - "application/json"
+    security:
+      - Bearer: []
+    x-security-scopes:
+      - admin
+      - staff
+      - parent
+      - child
+      - caseworker
+      - manager
+      - agency
+    tags:
+      - Authorize.net 
+      - credit card
+      - creditcard
+      - payment
+      - Service Payment
+      - Product Payment
+      - Invoice Payment
+    summary: Add sub document
+    description: Add sub document
+    parameters:
+      - name: id
+        description: id
+        in: path
+        required: true
+        type: string
+      - name: field
+        description: field
+        in: path
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          additionalProperties: true
+    responses:
+      201:
+        description: Success.
+        schema:
+          $ref: "#/definitions/AuthorizenetCreditCardPayment_response_created"
+      500:
+        $ref: '#/responses/500'
+      403:
+        $ref: '#/responses/403'
+      404:
+        $ref: '#/responses/403'
+      400:
+        $ref: '#/responses/400'
+      401:
+        $ref: '#/responses/400'
+  put:
+    operationId: EditSubDocument
+    produces:
+      - "application/json"
+    consumes:
+      - "application/json"
+    security:
+      - Bearer: []
+    x-security-scopes:
+      - admin
+      - staff
+      - parent
+      - child
+      - caseworker
+      - manager
+      - agency
+    tags:
+      - Authorize.net 
+      - credit card
+      - creditcard
+      - payment
+      - Service Payment
+      - Product Payment
+      - Invoice Payment
+    summary: Edit sub document
+    description: Edit sub document
+    parameters:
+      - name: id
+        description: id
+        in: path
+        required: true
+        type: string
+      - name: field
+        description: field
+        in: path
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          additionalProperties: true
+    responses:
+      201:
+        description: Success.
+        schema:
+          $ref: "#/definitions/AuthorizenetCreditCardPayment_response_created"
+      500:
+        $ref: '#/responses/500'
+      403:
+        $ref: '#/responses/403'
+      404:
+        $ref: '#/responses/403'
+      400:
+        $ref: '#/responses/400'
+      401:
+        $ref: '#/responses/400'
+  delete:
+    operationId: DeleteSubDocument
+    produces:
+      - "application/json"
+    consumes:
+      - "application/json"
+    security:
+      - Bearer: []
+    x-security-scopes:
+      - admin
+      - staff
+      - parent
+      - child
+      - caseworker
+      - manager
+      - agency
+    tags:
+      - Authorize.net 
+      - credit card
+      - creditcard
+      - payment
+      - Service Payment
+      - Product Payment
+      - Invoice Payment
+    summary: Delete a sub document by id
+    description: >
+      Call this end point to soft delete or hard delete a resource. 
+      
+      Only admin and agency can hard delete records.
+    parameters:
+      - name: id
+        description: id
+        in: path
+        required: true
+        type: string
+      - name: field
+        description: field
+        in: path
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          additionalProperties: true
+    responses:
+      200:
+        $ref: '#/responses/deleted'
+      500:
+        $ref: '#/responses/500'
+      403:
+        $ref: '#/responses/403'
+      404:
+        $ref: '#/responses/403'
+      400:
+        $ref: '#/responses/400'
+      401:
+        $ref: '#/responses/400'

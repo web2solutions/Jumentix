@@ -1,0 +1,94 @@
+definitions:
+  # Object used when listing one item
+  organizationHumanRelationSchema:
+    required: ["human","role","startDate"]
+    x-child: true
+    properties:
+      _id:
+        type: "string"
+        description: "ID"
+        example: "5c78a060c15bca840749e44a"
+        x-ui:
+          grid:
+            hide: false
+            label: _id
+            width:  "0"
+          form:
+            hide: true
+            label: _id
+      human:
+        type: "string"
+        description: "People"
+        example: '5c78a060c15bca840749e44b'
+        x-ui:
+          collection-link: Human
+          collection-link-value: _id
+          collection-link-label: name
+          grid:
+            hide: false
+            label: People
+            width:  "180"
+          form:
+            type: autocomplete # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: People
+            selection-limit: 1
+      role:
+        description: "Role"
+        type: "string"
+        example: "5c78a060c15bca840749e44c"
+        x-ui:
+          collection-link: Role
+          collection-link-value: _id
+          collection-link-label: label
+          grid:
+            hide: false
+            label: Role
+            width:  "150"
+          form:
+            type: autocomplete # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Role
+            selection-limit: 1
+      boss_level:
+        type: "integer"
+        example: "1"
+        default: 0
+        description: "Boss level"
+        x-ui:
+          grid:
+            hide: false
+            label: Boss level
+            width:  "120"
+          form:
+            type: text # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time
+            hide: false
+            label: Boss level
+      startDate:
+        type: "string"
+        format: "date-time"
+        example: "2017-07-21T17:32:28Z"
+        description: "Date when the relationship started"
+        x-ui:
+          grid:
+            hide: false
+            label: Start Date
+            width:  "120"
+          form:
+            type: date # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time
+            hide: false
+            label: Start Date
+      endDate:
+        type: "string"
+        format: "date-time"
+        example: "2017-07-21T17:32:28Z"
+        description: "Date when the relationship ended"
+        x-ui:
+          grid:
+            hide: false
+            label: End Date
+            width:  "120"
+          form:
+            type: date # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time
+            hide: false
+            label: End Date

@@ -1,0 +1,195 @@
+definitions:
+  # Object used when listing one item
+  Role_response:
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 200
+      message:
+        type: "string"
+        example: "successful operation"
+      data:
+        type: "object"
+        $ref: "#/definitions/Role"
+  # Object used when listing multiple items
+  Role_collection:
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 200
+      message:
+        type: "string"
+        example: "successful operation"
+      data:
+        type: "array"
+        items:
+          $ref: "#/definitions/Role"
+  # Object used when creating an item
+  Role_response_created:
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 201
+      message:
+        type: "string"
+        example: "Created"
+      id:
+        type: "string"
+        example: 5c0fb100ec2339ed5bea6303
+      data:
+        $ref: "#/definitions/Role"
+  # Object used when creating an item
+  Role_response_updated:
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 200
+      message:
+        type: "string"
+        example: "successful operation"
+      id:
+        type: "string"
+        example: 5c0fb100ec2339ed5bea6303
+      data:
+        $ref: "#/definitions/Role"
+  Role:
+    required: ["name","label","type"]
+    properties:
+      _id:
+        type: "string"
+        description: "The program identifier"
+        example: "5c78a060c15bca840749e44b"
+        #readOnly: true
+        x-editable: false
+        x-ui:
+          grid:
+            hide: true
+            label: _id
+            width:  "0"
+          form:
+            hide: true
+            label: _id
+      name:
+        type: "string"
+        description: "The role name"
+        example: "Adoptive Parent"
+        minLength: 3
+        maxLength: 30
+        x-editable: false
+        x-ui:
+          grid:
+            hide: false
+            label: Role Name
+            width: 300
+          form:
+            type: text # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Role Name
+      label:
+        type: "string"
+        description: "The role label"
+        example: "Adoptive Parent"
+        minLength: 3
+        maxLength: 30
+        x-ui:
+          grid:
+            hide: false
+            label: Role label
+            width: 300
+          form:
+            type: text # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Role label
+      type:
+        type: "string"
+        description: Role type
+        default: "Family"
+        enum: ["Family", "Service", "Social", "Couple", "Other"]
+        x-editable: false
+        x-ui:
+          grid:
+            hide: false
+            label: Role type
+            width: 100
+          form:
+            type: select # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Role type
+            # options: ["Family", "Service", "Social", "Couple", "Other"]
+            selection-limit: 1
+      createdBy:
+        description: "Created By"
+        type: "string"
+        example: "5c78a060c15bca840749e44b"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          collection-link: Human
+          collection-link-value: _id
+          collection-link-label: name
+          grid:
+            hide: false
+            label: Created By
+            width:  120
+          form:
+            type: combobox # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Created By
+            selection-limit: 1
+      createdAt:
+        description: "Created At"
+        type: "string"
+        format: "date-time"
+        #nullable: true
+        example: "2017-07-21"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          grid:
+            hide: false
+            label: Created At
+            width:  120
+          form:
+            type: date-time # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, date-time
+            hide: false
+            label: Created At
+      updatedBy:
+        description: "Updated By"
+        type: "string"
+        example: "5c78a060c15bca840749e44b"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          collection-link: Human
+          collection-link-value: _id
+          collection-link-label: name
+          grid:
+            hide: false
+            label: Updated By
+            width:  120
+          form:
+            type: combobox # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Updated By
+            selection-limit: 1
+      updatedAt:
+        description: "Updated At"
+        type: "string"
+        format: "date-time"
+        #nullable: true
+        example: "2017-07-21"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          grid:
+            hide: false
+            label: Updated At
+            width:  120
+          form:
+            type: date-time # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, date-time
+            hide: false
+            label: Updated At

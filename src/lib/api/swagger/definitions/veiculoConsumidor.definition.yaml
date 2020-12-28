@@ -1,0 +1,238 @@
+definitions:
+  # Object used when listing one item
+  veiculoConsumidor:
+    #type: "object"
+    #default: {}
+    description: Veículos
+    required: ["marca", "modelo"]
+    x-child: true
+    properties:
+      _id:
+        type: "string"
+        description: The identifier
+        example: "5c78a060c15bca840749e44b"
+        readOnly: true
+        x-ui:
+          grid:
+            hide: false
+            label: _id
+            width:  "0"
+          form:
+            hide: true
+            label: _id
+      placa:
+        description: Placa
+        type: "string"
+        x-ui:
+          grid:
+            hide: false
+            label: Placa
+            width:  120
+          form:
+            hide: false
+            label: Placa
+      chassi:
+        description: Chassi
+        type: 'string'
+        x-ui:
+          grid:
+            hide: false
+            label: Chassi
+            width: 120
+          form:
+            hide: false
+            label: Chassi
+      renavam:
+        description: Renavam
+        type: 'string'
+        x-ui:
+          grid:
+            hide: false
+            label: Renavam
+            width: 120
+          form:
+            hide: false
+            label: Ranavam
+      combustivel:
+        description: Combustivel
+        type: 'string'
+        x-ui:
+          grid:
+            hide: false
+            label: Combustivel
+            width: 120
+          form:
+            hide: false
+            label: Combustivel
+      marca:
+        description: Marca
+        type: 'string'
+        x-ui:
+          grid:
+            hide: false
+            label: Marca
+            width: 120
+          form:
+            hide: false
+            label: Marca
+      modelo:
+        description: Modelo
+        type: 'string'
+        x-ui:
+          grid:
+            hide: false
+            label: Modelo
+            width: 120
+          form:
+            hide: false
+            label: Modelo
+      anobase:
+        description: Ano base
+        type: 'string'
+        x-ui:
+          grid:
+            hide: false
+            label: Ano base
+            width: 120
+          form:
+            hide: false
+            label: Ano base
+      anomodelo:
+        description: Ano modelo
+        type: 'string'
+        x-ui:
+          grid:
+            hide: false
+            label: Ano modelo
+            width: 120
+          form:
+            hide: false
+            label: Ano modelo
+      datainclusao:
+        description: 'Data inclusão'
+        type: 'string'
+        format: 'date'
+        #nullable: true
+        example: '2017-07-21'
+        x-ui:
+          grid:
+            hide: true
+            label: Inclusão
+            width: '120'
+          form:
+            type: date # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time
+            hide: false
+            label: Data de inclusão
+      datalicenca:
+        description: 'Data inclusão'
+        type: 'string'
+        format: 'date'
+        #nullable: true
+        example: '2017-07-21'
+        x-ui:
+          grid:
+            hide: true
+            label: Inclusão
+            width: '120'
+          form:
+            type: date # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time
+            hide: false
+            label: Data de inclusão
+      fipe:
+        type: 'number'
+        x-format: currency
+        format: 'float'
+        description: Valor FIPE
+        example: 150
+        default: 0
+        x-ui:
+          grid:
+            hide: false
+            label: FIPE
+            width: '150'
+          form:
+            type: number # select, combobox, text, radio, switch, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Valor FIPE
+      endereco:
+        description: Endereço
+        type: "string"
+        x-ui:
+          grid:
+            hide: false
+            label: Endereço
+            width:  120
+          form:
+            hide: false
+            label: Endereço
+      numero:
+        description: Número
+        type: 'string'
+        x-ui:
+          grid:
+            hide: false
+            label: Número
+            width: 120
+          form:
+            hide: false
+            label: Número
+      complemento:
+        description: Complemento
+        type: 'string'
+        x-ui:
+          grid:
+            hide: false
+            label: Complemento
+            width: 120
+          form:
+            hide: false
+            label: Complemento
+      bairro:
+        description: Bairro
+        type: 'string'
+        x-ui:
+          grid:
+            hide: false
+            label: Bairro
+            width: 120
+          form:
+            hide: false
+            label: Bairro
+      cidade:
+        description: Cidade
+        type: "string"
+        example: "São Paulo"
+        x-ui:
+          grid:
+            hide: false
+            label: Cidade
+            width:  120
+          form:
+            hide: false
+            label: Cidade
+      estado:
+        description: Estado
+        type: "string"
+        example: "São Paulo"
+        x-ui:
+          grid:
+            hide: false
+            label: Estado
+            width: 120
+          form:
+            hide: false
+            label: Estado
+      cep:
+        description: CEP
+        type: 'string'
+        example: '00000-000'
+        #format: 'zip'
+        x-ui:
+          grid:
+            hide: false
+            label: CEP
+            width: 120
+          form:
+            hide: false
+            label: CEP
+    

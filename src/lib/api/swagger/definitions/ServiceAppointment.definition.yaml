@@ -1,0 +1,458 @@
+definitions:
+  # Object used when listing one item
+  ServiceAppointment_response:
+    properties:
+      code:
+        type: 'integer'
+        format: 'int32'
+        example: 200
+      message:
+        type: 'string'
+        example: 'successful operation'
+      data:
+        type: 'object'
+        $ref: '#/definitions/ServiceAppointment'
+  # Object used when listing multiple items
+  ServiceAppointment_collection:
+    properties:
+      code:
+        type: 'integer'
+        format: 'int32'
+        example: 200
+      message:
+        type: 'string'
+        example: 'successful operation'
+      data:
+        type: 'array'
+        items:
+          $ref: '#/definitions/ServiceAppointment'
+  # Object used when creating an item
+  ServiceAppointment_response_created:
+    properties:
+      code:
+        type: 'integer'
+        format: 'int32'
+        example: 201
+      message:
+        type: 'string'
+        example: 'Created'
+      id:
+        type: 'string'
+        example: 5c0fb100ec2339ed5bea6303
+      data:
+        $ref: '#/definitions/ServiceAppointment'
+  # Object used when creating an item
+  ServiceAppointment_response_updated:
+    properties:
+      code:
+        type: 'integer'
+        format: 'int32'
+        example: 200
+      message:
+        type: 'string'
+        example: 'successful operation'
+      id:
+        type: 'string'
+        example: 5c0fb100ec2339ed5bea6303
+      data:
+        $ref: '#/definitions/ServiceAppointment'
+  ServiceAppointment:
+    required: ['service', 'title', 'description', 'attendant', 'attendee', 'unity', 'duration', 'startDate']
+    properties:
+      _id:
+        type: 'string'
+        example: '5c78a060c15bca840749e44b'
+        readOnly: true
+        x-ui:
+          grid:
+            hide: false
+            label: _id
+            width: '0'
+          form:
+            hide: true
+            label: _id
+      service:
+        description: Service
+        type: 'string'
+        example: '5c78a060c15bca840749e44b'
+        x-ui:
+          collection-link: Service
+          collection-link-value: _id
+          collection-link-label: name
+          grid:
+            hide: false
+            label: Type
+            width: '120'
+          form:
+            type: combobox # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Service
+            selection-limit: 1
+      title:
+        description: Title
+        type: "string"
+        example: Meet doctor
+        minLength: 2
+        x-ui:
+          grid:
+            hide: false
+            label: Title
+            width:  "120"
+          form:
+            hide: false
+            label: Title
+      description:
+        description: Description
+        type: "string"
+        example: Meet doctor at home
+        #minLength: 2
+        x-ui:
+          grid:
+            hide: false
+            label: Description
+            width:  "120"
+          form:
+            hide: false
+            label: Description
+      attendant:
+        description: Attendant
+        type: "string"
+        example: "5c78a060c15bca840749e44b"
+        x-ui:
+          collection-link: Human
+          collection-link-value: _id
+          collection-link-label: name
+          grid:
+            hide: false
+            label: Attendant
+            width:  "120"
+          form:
+            type: combobox # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Attendant
+            selection-limit: 1
+      attendee:
+        description: Attendee
+        type: 'string'
+        example: '5c78a060c15bca840749e44b'
+        x-ui:
+          collection-link: Human
+          collection-link-value: _id
+          collection-link-label: name
+          grid:
+            hide: false
+            label: Attendee
+            width: '120'
+          form:
+            type: combobox # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Attendee
+            selection-limit: 1
+      unity:
+        description: 'Unit type'
+        type: 'string'
+        enum: ['Day', 'Hour']
+        example: 'Hour'
+        default: 'Hour'
+        x-ui:
+          grid:
+            hide: false
+            label: Unit Type
+            width: '100'
+          form:
+            type: select # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            options: ['Day', 'Hour']
+            label: Unit Type
+      duration:
+        description: Duration
+        type: 'number'
+        format: 'float'
+        minimum: 0.5
+        example: 1
+        default: 1
+        x-ui:
+          grid:
+            hide: false
+            label: Duration
+            width: '100'
+          form:
+            type: select # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Duration
+      #quantity:
+      #  description: Quantity
+      #  type: 'integer'
+      #  x-format: integer
+      #  format: int32
+      #  example: 5
+      #  default: 1
+      #  minimum: 1
+      #  x-ui:
+      #    grid:
+      #      hide: false
+      #      label: Quantity
+      #      width: '150'
+      #    form:
+      #      type: number # select, combobox, text, radio, switch, switch, textarea, autocomplete, date, time, grid
+      #      hide: false
+      #      label: Quantity
+      #session:
+      #  description: Session dates
+      #  type: 'array'
+      #  items:
+      #    $ref: '#/definitions/appointmentSession'
+      #  #default: []
+      #  x-ui:
+      #    grid:
+      #      hide: true
+      #      label: Dates
+      #      width: '120'
+      #    form:
+      #      type: grid # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+      #      hide: false
+      #      label: Session dates
+      #      isSchema: true
+      startDate:
+        description: Start when
+        type: 'string'
+        format: 'date-time'
+        #nullable: true
+        example: '2017-07-21T17:32:28Z'
+        x-ui:
+          grid:
+            hide: true
+            label: Start
+            width: '120'
+          form:
+            type: date-time # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time
+            hide: false
+            label: Start
+      endDate:
+        description: End when
+        type: 'string'
+        format: 'date-time'
+        #nullable: true
+        example: '2017-07-21T17:32:28Z'
+        x-ui:
+          grid:
+            hide: true
+            label: End
+            width: '120'
+          form:
+            type: date-time # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time
+            hide: false
+            label: End
+      read:
+        type: 'boolean'
+        description: Is Read?
+        default: false
+        x-ui:
+          grid:
+            hide: true
+            label: Is Read?
+            width: '*'
+          form:
+            type: switch # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Is Read?
+      paymentType:
+        type: 'array'
+        description: 'Payment type'
+        items:
+          type: 'string'
+          enum: ['Credit Card']
+        x-ui:
+          grid:
+            hide: true
+            label: Payment type
+            width: '*'
+          form:
+            type: select # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            options: ['Credit Card']
+            label: Payment type
+            selection-limit: 1
+      dueDate:
+        description: 'Invoice due date'
+        type: "string"
+        format: "date"
+        example: "2019-05-21"
+        x-ui:
+          grid:
+            hide: false
+            label: Due Date
+            width: "140"
+            align: "right"
+          form:
+            type: date # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Due Date
+      paidDate:
+        description: 'Invoice paid date'
+        type: "string"
+        format: "date"
+        example: "2019-05-20"
+        x-ui:
+          grid:
+            hide: false
+            label: Paid Date
+            width: "140"
+            align: "right"
+          form:
+            type: date # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Paid Date
+      status:
+        description: 'Invoice Status'
+        type: 'string'
+        enum: ['Open', 'Closed', 'Paid', 'Overdue', 'Deleted', 'Canceled']
+        example: 'Open'
+        default: 'Open'
+        x-ui:
+          grid:
+            hide: false
+            label: Invoice Status
+            width: '*'
+          form:
+            type: select # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            options: ['Open', 'Closed', 'Paid', 'Overdue', 'Deleted', 'Canceled']
+            label: Invoice Status
+      billTo:
+        description: Bill to
+        type: "array"
+        items:
+          $ref: "#/definitions/billAndShipTo"
+        #default: []
+        x-ui:
+          grid:
+            hide: true
+            label: Bill to
+            width:  "*"
+          form:
+            type: grid # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Bill to
+            isSchema: true
+      shipTo:
+        description: Ship to
+        type: "array"
+        items:
+          $ref: "#/definitions/billAndShipTo"
+        #default: []
+        x-ui:
+          grid:
+            hide: true
+            label: Ship to
+            width:  "*"
+          form:
+            type: grid # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Ship to
+            isSchema: true
+      memo:
+        description: 'Memo notes'
+        type: 'array'
+        items:
+          $ref: '#/definitions/memo'
+        #default: []
+        x-ui:
+          grid:
+            hide: true
+            label: Memo
+            width: '120'
+          form:
+            type: grid # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Memo
+            isSchema: true
+      file:
+        description: 'File attachments'
+        type: 'array'
+        items:
+          $ref: '#/definitions/file'
+        #default: []
+        x-uploader: true
+        x-ui:
+          grid:
+            hide: true
+            label: Files
+            width: '*'
+          form:
+            type: grid # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: true
+            label: Files
+            isSchema: true
+      createdBy:
+        description: "Created By"
+        type: "string"
+        example: "5c78a060c15bca840749e44b"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          collection-link: Human
+          collection-link-value: _id
+          collection-link-label: name
+          grid:
+            hide: false
+            label: Created By
+            width:  120
+          form:
+            type: combobox # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Created By
+            selection-limit: 1
+      createdAt:
+        description: "Created At"
+        type: "string"
+        format: "date-time"
+        #nullable: true
+        example: "2017-07-21"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          grid:
+            hide: false
+            label: Created At
+            width:  120
+          form:
+            type: date-time # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, date-time
+            hide: false
+            label: Created At
+      updatedBy:
+        description: "Updated By"
+        type: "string"
+        example: "5c78a060c15bca840749e44b"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          collection-link: Human
+          collection-link-value: _id
+          collection-link-label: name
+          grid:
+            hide: false
+            label: Updated By
+            width:  120
+          form:
+            type: combobox # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Updated By
+            selection-limit: 1
+      updatedAt:
+        description: "Updated At"
+        type: "string"
+        format: "date-time"
+        #nullable: true
+        example: "2017-07-21"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          grid:
+            hide: false
+            label: Updated At
+            width:  120
+          form:
+            type: date-time # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, date-time
+            hide: false
+            label: Updated At

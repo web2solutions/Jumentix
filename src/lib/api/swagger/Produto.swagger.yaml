@@ -1,0 +1,475 @@
+/api/Produto:
+  x-swagger-router-controller: Produto
+# list
+  get:
+    operationId: list
+    produces:
+      - "application/json"
+    consumes:
+      - "application/json"
+    security:
+      - Bearer: []
+    x-security-scopes:
+      - admin
+      - staff
+      - parent
+      - child
+      - caseworker
+      - manager
+      - agency
+    tags:
+      - Produto
+    summary: Get the list of Produtos
+    description: Get the list of Produtos
+    parameters:
+      - name: "offset"
+        description: "Number of instances/rows to skip"
+        in: query
+        type: integer
+        required: false
+        default: 0
+      - name: "limit"
+        description: "Number of instances/rows to fetch"
+        in: query
+        type: integer
+        required: false
+        #default: 300
+      - name: sort
+        description: Sort object to list data as string
+        in: query
+        required: false
+        type: string
+        #example: '{"_id":-1}'
+      - name: where
+        description: Where object to list data as string
+        in: query
+        required: false
+        type: string
+        #example: '{"_id":-1}'
+      - name: pipeline
+        description: Mongo pipeline to use on aggregate
+        in: query
+        required: false
+        type: string
+        #example: '{"_id":-1}'
+      - name: filters
+        description: Kendo filtering object as string
+        in: query
+        required: false
+        type: string
+      - in: query
+        name: attributes
+        description: Attributes to display on listing
+        type: string
+        required: false
+        #default: "_id,user,userId,companyId,first_name,last_name,email,address,phone,gender,photo,organization,spouse,birth_parent,adoptive_parent,birth_child,adoptive_child,adoptive_child,client,other_people,programs,cases,groups,createdAt,updatedAt, createdBy, updatedBy,active,deleted,_history"
+        #example: "_id,first_name"
+      - in: query
+        name: populate
+        description: Comman separated list of fields to populate as document
+        type: string
+        required: false
+    responses:
+      200:
+        description: Success.
+        schema:
+          type: array
+          items:
+            $ref: "#/definitions/Produto_collection"
+      404:
+        $ref: '#/responses/404'
+      500:
+        $ref: '#/responses/500'
+# create
+  post:
+    operationId: create
+    produces:
+      - "application/json"
+    consumes:
+      - "application/json"
+    security:
+      - Bearer: []
+    x-security-scopes:
+      - admin
+      - staff
+      - parent
+      - child
+      - caseworker
+      - manager
+      - agency
+    tags:
+      - Produto
+    summary: Create a new Produto
+    description: Create a new Produto
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: "#/definitions/Produto"
+    responses:
+      201:
+        description: Success.
+        schema:
+          $ref: "#/definitions/Produto_response_created"
+      500:
+        $ref: '#/responses/500'
+
+/api/Produto/{id}:
+  x-swagger-router-controller: Produto
+# read
+  get:
+    operationId: read
+    produces:
+      - "application/json"
+    consumes:
+      - "application/json"
+    security:
+      - Bearer: []
+    x-security-scopes:
+      - admin
+      - staff
+      - parent
+      - child
+      - caseworker
+      - manager
+      - agency
+    tags:
+      - Produto
+    summary: Get a Produto by id
+    description: Get a Produto by id
+    parameters:
+      - name: id
+        description: The resource unique identifier
+        in: path
+        required: true
+        type: string
+    responses:
+      200:
+        description: Success.
+        schema:
+          $ref: "#/definitions/Produto_response"
+      500:
+        $ref: '#/responses/500'
+# update
+  put:
+    operationId: update
+    produces:
+      - "application/json"
+    consumes:
+      - "application/json"
+    security:
+      - Bearer: []
+    x-security-scopes:
+      - admin
+      - staff
+      - parent
+      - child
+      - caseworker
+      - manager
+      - agency
+    tags:
+      - Produto
+    summary: Update a Produto by id
+    description: Update a Produto by id
+    parameters:
+      - name: id
+        description: The resource unique identifier
+        in: path
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: "#/definitions/Produto"
+    responses:
+      200:
+        description: Success.
+        schema:
+          $ref: "#/definitions/Produto_response_updated"
+      500:
+        $ref: '#/responses/500'
+# soft destroy AND hard destroy
+  delete:
+    operationId: destroy
+    produces:
+      - "application/json"
+    consumes:
+      - "application/json"
+    security:
+      - Bearer: []
+    x-security-scopes:
+      - admin
+      - staff
+      - parent
+      - child
+      - caseworker
+      - manager
+      - agency
+    tags:
+      - Produto
+    summary: Delete a Produto by id
+    description: >
+      Call this end point to soft delete or hard delete a resource. 
+      
+      Only admin and agency can hard delete records.
+    parameters:
+      - name: id
+        description: The resource unique identifier
+        in: path
+        required: true
+        type: string
+      - name: "mode"
+        description: >
+          The `delete mode`. 
+          
+          Options: 
+
+          `soft`: virtual delete.
+
+          `hard`: phisical delete.
+        in: query
+        type: string
+        required: false
+        default: soft
+        enum: ["soft", "hard"]
+    responses:
+      200:
+        $ref: '#/responses/deleted'
+      500:
+        $ref: '#/responses/500'
+      403:
+        $ref: '#/responses/403'
+  # restore
+  patch:
+    operationId: restore
+    produces:
+      - "application/json"
+    consumes:
+      - "application/json"
+    security:
+      - Bearer: []
+    x-security-scopes:
+      - admin
+      - agency
+    tags:
+      - Produto
+    summary: Restore a soft deleted ProdutoRelationship
+    description: >
+      Call this end point to restore a resource that was soft delete. 
+      
+      Only admin and agency can restore records.
+    parameters:
+      - name: id
+        description: The resource unique identifier
+        in: path
+        required: true
+        type: string
+    responses:
+      200:
+        $ref: '#/responses/restored'
+      500:
+        $ref: '#/responses/500'
+      403:
+        $ref: '#/responses/403'
+
+/api/files/Produto/{id}:
+  x-swagger-router-controller: Produto
+  # restore
+  patch:
+    operationId: Upload
+    produces:
+      - "application/json"
+    consumes:
+      - "multipart/form-data"
+    security:
+      - Bearer: []
+    x-security-scopes:
+      - admin
+      - agency
+    tags:
+      - Produto
+      - Uploader
+    summary: Upload files to a document
+    description: >
+      Upload files to a document
+    parameters:
+      - name: id
+        description: The resource unique identifier
+        in: path
+        required: true
+        type: string
+      - name: file
+        description: The file to upload.
+        in: formData
+        required: true
+        type: file
+    responses:
+      200:
+        $ref: '#/definitions/Produto_response'
+      500:
+        $ref: '#/responses/500'
+      403:
+        $ref: '#/responses/403'
+
+/api/subDocument/Produto/{id}/{field}:
+  x-swagger-router-controller: Produto
+  # restore
+  post:
+    operationId: AddSubDocument
+    produces:
+      - "application/json"
+    consumes:
+      - "application/json"
+    security:
+      - Bearer: []
+    x-security-scopes:
+      - admin
+      - staff
+      - parent
+      - child
+      - caseworker
+      - manager
+      - agency
+    tags:
+      - Produto
+    summary: Add sub document
+    description: Add sub document
+    parameters:
+      - name: id
+        description: id
+        in: path
+        required: true
+        type: string
+      - name: field
+        description: field
+        in: path
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          additionalProperties: true
+    responses:
+      201:
+        description: Success.
+        schema:
+          $ref: "#/definitions/Produto_response_created"
+      500:
+        $ref: '#/responses/500'
+      403:
+        $ref: '#/responses/403'
+      404:
+        $ref: '#/responses/403'
+      400:
+        $ref: '#/responses/400'
+      401:
+        $ref: '#/responses/400'
+  put:
+    operationId: EditSubDocument
+    produces:
+      - "application/json"
+    consumes:
+      - "application/json"
+    security:
+      - Bearer: []
+    x-security-scopes:
+      - admin
+      - staff
+      - parent
+      - child
+      - caseworker
+      - manager
+      - agency
+    tags:
+      - Produto
+    summary: Edit sub document
+    description: Edit sub document
+    parameters:
+      - name: id
+        description: id
+        in: path
+        required: true
+        type: string
+      - name: field
+        description: field
+        in: path
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          additionalProperties: true
+    responses:
+      201:
+        description: Success.
+        schema:
+          $ref: "#/definitions/Produto_response_created"
+      500:
+        $ref: '#/responses/500'
+      403:
+        $ref: '#/responses/403'
+      404:
+        $ref: '#/responses/403'
+      400:
+        $ref: '#/responses/400'
+      401:
+        $ref: '#/responses/400'
+  delete:
+    operationId: DeleteSubDocument
+    produces:
+      - "application/json"
+    consumes:
+      - "application/json"
+    security:
+      - Bearer: []
+    x-security-scopes:
+      - admin
+      - staff
+      - parent
+      - child
+      - caseworker
+      - manager
+      - agency
+    tags:
+      - Produto
+    summary: Delete a sub document by id
+    description: >
+      Call this end point to soft delete or hard delete a resource. 
+      
+      Only admin and agency can hard delete records.
+    parameters:
+      - name: id
+        description: id
+        in: path
+        required: true
+        type: string
+      - name: field
+        description: field
+        in: path
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          additionalProperties: true
+    responses:
+      200:
+        $ref: '#/responses/deleted'
+      500:
+        $ref: '#/responses/500'
+      403:
+        $ref: '#/responses/403'
+      404:
+        $ref: '#/responses/403'
+      400:
+        $ref: '#/responses/400'
+      401:
+        $ref: '#/responses/400'

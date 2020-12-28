@@ -1,0 +1,816 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for src/lib/services/SuiteCRM.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../../prettify.css" />
+    <link rel="stylesheet" href="../../../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../../../index.html">all files</a> / <a href="index.html">src/lib/services/</a> SuiteCRM.js
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">22.03% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>39/177</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">12.16% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>9/74</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">36.84% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>7/19</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">11.83% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>11/93</span>
+      </div>
+      <div class='fl pad1y'>
+        <span class="strong">4 branches</span>
+        <span class="quiet">Ignored</span>  &nbsp;&nbsp;&nbsp;&nbsp;
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">'use strict'
+&nbsp;
+import querystring from 'querystring'
+import Service from '../Job/Service'
+&nbsp;
+/**
+ * Class representing a SuiteCRM Service
+ * @extends Service
+ */
+class SuiteCRM extends <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >S</span></span></span>ervice {
+  /**
+   * Creates a SuiteCRM Service
+   * @constructor
+   * @param {object} application - the application object which this service is plugged to
+   */
+  constructor(application) {
+    /** call super is mandatory and shall to be called first. */
+    super(<span class="branch-1 cbranch-no" title="branch not covered" >a</span>pplication) // mandatory to call
+&nbsp;
+    this.entity = 'SuiteCRM'
+  }
+&nbsp;
+  /**
+   * Create account on SuiteCRM
+   * @function
+   * @param {object} job - mandatory - a job object representing the job information to create a Entity
+   * @param {buffer} msg - a buffer representing the rabbitmq message
+   * @return {object} { error, data, status }
+   */
+  async accountCreate(<span class="fstat-no" title="function not covered" >job, <span class="cstat-no" title="statement not covered" >m</span>sg = false) {</span>
+    /**
+            Validate job payload
+            mandatory run this PRIOR trying to execute any job
+        */
+    if (!<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >t</span></span>his.isValidJob(job, msg)) {</span></span></span></span>
+      return <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >{</span></span> error: `Invalid task` }</span>
+    }
+&nbsp;
+    let <span class="cstat-no" title="statement not covered" >self = this,</span>
+      error = null,
+      data = null,
+      status = null
+    const <span class="cstat-no" title="statement not covered" >uri = self.application.config.suitecrm.apiURL + `account_api.php`,</span>
+      payload = job.payload
+<span class="cstat-no" title="statement not covered" >    payload.access_token = self.application.config.suitecrm.accessToken</span>
+<span class="cstat-no" title="statement not covered" >    console.log(payload)</span>
+    try {
+      let <span class="cstat-no" title="statement not covered" >r</span>esponse = await <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >s</span>elf.axios.post(uri, querystring.stringify(payload))</span>
+<span class="cstat-no" title="statement not covered" >      data = response.data.message</span>
+<span class="cstat-no" title="statement not covered" >      if (response.data.id === null) {</span>
+<span class="cstat-no" title="statement not covered" >        status = 400</span>
+<span class="cstat-no" title="statement not covered" >        error = response.data.message</span>
+<span class="cstat-no" title="statement not covered" >        if (response.data.message === 'Invalid Access Token') {</span>
+<span class="cstat-no" title="statement not covered" >          status = 401</span>
+        }
+<span class="cstat-no" title="statement not covered" >        this.jobNotDone(</span>
+          job,
+          msg,
+          `error creating account at ${this.entity} - ${response.data.message}`
+        )
+      } else {
+<span class="cstat-no" title="statement not covered" >        status = 201</span>
+<span class="cstat-no" title="statement not covered" >        this.jobDone(job, data, msg)</span>
+      }
+    } catch (e) {
+<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >      s</span></span></span>tatus = 400</span>
+<span class="cstat-no" title="statement not covered" >      error = e</span>
+<span class="cstat-no" title="statement not covered" >      data = e.response.data</span>
+<span class="cstat-no" title="statement not covered" >      status = e.response.status</span>
+<span class="cstat-no" title="statement not covered" >      this.jobNotDone(</span>
+        job,
+        msg,
+        `error creating account at ${this.entity} - ${error}`
+      )
+    }
+<span class="cstat-no" title="statement not covered" >    console.log({ error, data, status })</span>
+    return { error, data, status }
+  }
+&nbsp;
+  /**
+   * Create contact on SuiteCRM
+   * @function
+   * @param {object} job - mandatory - a job object representing the job information to create a Entity
+   * @param {buffer} msg - a buffer representing the rabbitmq message
+   * @return {object} { error, data, status }
+   */
+  async contactCreate(<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ><span class="fstat-no" title="function not covered" >j</span></span></span>ob, <span class="cstat-no" title="statement not covered" >m</span>sg = false) {</span>
+    /**
+            Validate job payload
+            mandatory run this PRIOR trying to execute any job
+        */
+    if (!<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >t</span></span>his.isValidJob(job, msg)) {</span></span></span></span>
+      return <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >{</span></span> error: `Invalid task` }</span>
+    }
+&nbsp;
+    let <span class="cstat-no" title="statement not covered" >self = this,</span>
+      error = null,
+      data = null,
+      status = null
+    const <span class="cstat-no" title="statement not covered" >uri = self.application.config.suitecrm.apiURL + `contact_api.php`,</span>
+      payload = job.payload
+<span class="cstat-no" title="statement not covered" >    payload.access_token = self.application.config.suitecrm.accessToken</span>
+&nbsp;
+    try {
+      let <span class="cstat-no" title="statement not covered" >r</span>esponse = await <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >s</span>elf.axios.post(uri, querystring.stringify(payload))</span>
+<span class="cstat-no" title="statement not covered" >      data = response.data.message</span>
+<span class="cstat-no" title="statement not covered" >      if (response.data.id === null) {</span>
+<span class="cstat-no" title="statement not covered" >        status = 400</span>
+<span class="cstat-no" title="statement not covered" >        error = response.data.message</span>
+<span class="cstat-no" title="statement not covered" >        if (response.data.message === 'Invalid Access Token') {</span>
+<span class="cstat-no" title="statement not covered" >          status = 401</span>
+        }
+<span class="cstat-no" title="statement not covered" >        this.jobNotDone(</span>
+          job,
+          msg,
+          `error creating account at ${this.entity} - ${response.data.message}`
+        )
+      } else {
+<span class="cstat-no" title="statement not covered" >        status = 201</span>
+<span class="cstat-no" title="statement not covered" >        this.jobDone(job, data, msg)</span>
+      }
+    } catch (e) {
+<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >      e</span></span></span>rror = e</span>
+<span class="cstat-no" title="statement not covered" >      data = e.response.data</span>
+<span class="cstat-no" title="statement not covered" >      status = e.response.status</span>
+<span class="cstat-no" title="statement not covered" >      this.jobNotDone(</span>
+        job,
+        msg,
+        `error creating contact at ${this.entity} - ${error}`
+      )
+    }
+<span class="cstat-no" title="statement not covered" >    console.log({ error, data, status })</span>
+    return { error, data, status }
+  }
+&nbsp;
+  /**
+   * update account on SuiteCRM
+   * @function
+   * @param {object} job - mandatory - a job object representing the job information to create a Entity
+   * @param {buffer} msg - a buffer representing the rabbitmq message
+   * @return {object} { error, data, status }
+   */
+  async accountUpdate(<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ><span class="fstat-no" title="function not covered" >j</span></span></span>ob, <span class="cstat-no" title="statement not covered" >m</span>sg = false) {</span>
+    /**
+            Validate job payload
+            mandatory run this PRIOR trying to execute any job
+        */
+    if (!<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >t</span></span>his.isValidJob(job, msg)) {</span></span></span></span>
+      return <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >{</span></span> error: `Invalid task` }</span>
+    }
+&nbsp;
+    let <span class="cstat-no" title="statement not covered" >self = this,</span>
+      error = null,
+      data = null,
+      status = null
+    const <span class="cstat-no" title="statement not covered" >uri = self.application.config.suitecrm.apiURL + `account_api.php`,</span>
+      payload = job.payload
+<span class="cstat-no" title="statement not covered" >    payload.access_token = self.application.config.suitecrm.accessToken</span>
+&nbsp;
+    try {
+      let <span class="cstat-no" title="statement not covered" >r</span>esponse = await <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >s</span>elf.axios.post(uri, querystring.stringify(payload))</span>
+<span class="cstat-no" title="statement not covered" >      data = response.data.message</span>
+<span class="cstat-no" title="statement not covered" >      if (response.data.id === null) {</span>
+<span class="cstat-no" title="statement not covered" >        status = 400</span>
+<span class="cstat-no" title="statement not covered" >        error = response.data.message</span>
+<span class="cstat-no" title="statement not covered" >        if (response.data.message === 'Invalid Access Token') {</span>
+<span class="cstat-no" title="statement not covered" >          status = 401</span>
+        }
+<span class="cstat-no" title="statement not covered" >        this.jobNotDone(</span>
+          job,
+          msg,
+          `error creating account at ${this.entity} - ${response.data.message}`
+        )
+      } else {
+<span class="cstat-no" title="statement not covered" >        status = 200</span>
+<span class="cstat-no" title="statement not covered" >        this.jobDone(job, data, msg)</span>
+      }
+    } catch (e) {
+<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >      e</span></span></span>rror = e</span>
+<span class="cstat-no" title="statement not covered" >      data = e.response.data</span>
+<span class="cstat-no" title="statement not covered" >      status = e.response.status</span>
+<span class="cstat-no" title="statement not covered" >      this.jobNotDone(</span>
+        job,
+        msg,
+        `error creating account at ${this.entity} - ${error}`
+      )
+    }
+<span class="cstat-no" title="statement not covered" >    console.log({ error, data, status })</span>
+    return { error, data, status }
+  }
+&nbsp;
+  /**
+   * Update contact on SuiteCRM
+   * @function
+   * @param {object} job - mandatory - a job object representing the job information to create a Entity
+   * @param {buffer} msg - a buffer representing the rabbitmq message
+   * @return {object} { error, data, status }
+   */
+  async contactUpdate(<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ><span class="fstat-no" title="function not covered" >j</span></span></span>ob, <span class="cstat-no" title="statement not covered" >m</span>sg = false) {</span>
+    /**
+            Validate job payload
+            mandatory run this PRIOR trying to execute any job
+        */
+    if (!<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >t</span></span>his.isValidJob(job, msg)) {</span></span></span></span>
+      return <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >{</span></span> error: `Invalid task` }</span>
+    }
+&nbsp;
+    let <span class="cstat-no" title="statement not covered" >self = this,</span>
+      error = null,
+      data = null,
+      status = null
+    const <span class="cstat-no" title="statement not covered" >uri = self.application.config.suitecrm.apiURL + `contact_api.php`,</span>
+      payload = job.payload
+<span class="cstat-no" title="statement not covered" >    payload.access_token = self.application.config.suitecrm.accessToken</span>
+&nbsp;
+    try {
+      let <span class="cstat-no" title="statement not covered" >r</span>esponse = await <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >s</span>elf.axios.post(uri, querystring.stringify(payload))</span>
+<span class="cstat-no" title="statement not covered" >      data = response.data.message</span>
+<span class="cstat-no" title="statement not covered" >      if (response.data.id === null) {</span>
+<span class="cstat-no" title="statement not covered" >        status = 400</span>
+<span class="cstat-no" title="statement not covered" >        error = response.data.message</span>
+<span class="cstat-no" title="statement not covered" >        if (response.data.message === 'Invalid Access Token') {</span>
+<span class="cstat-no" title="statement not covered" >          status = 401</span>
+        }
+<span class="cstat-no" title="statement not covered" >        this.jobNotDone(</span>
+          job,
+          msg,
+          `error creating account at ${this.entity} - ${response.data.message}`
+        )
+      } else {
+<span class="cstat-no" title="statement not covered" >        status = 200</span>
+<span class="cstat-no" title="statement not covered" >        this.jobDone(job, data, msg)</span>
+      }
+    } catch (e) {
+<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >      e</span></span></span>rror = e</span>
+<span class="cstat-no" title="statement not covered" >      data = e.response.data</span>
+<span class="cstat-no" title="statement not covered" >      status = e.response.status</span>
+<span class="cstat-no" title="statement not covered" >      this.jobNotDone(</span>
+        job,
+        msg,
+        `error creating contact at ${this.entity} - ${error}`
+      )
+    }
+<span class="cstat-no" title="statement not covered" >    console.log({ error, data, status })</span>
+    return { error, data, status }
+  }
+}
+&nbsp;
+export default SuiteCRM
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Wed Nov 25 2020 16:19:18 GMT-0200 (Brasilia Summer Time)
+</div>
+</div>
+<script src="../../../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../../../sorter.js"></script>
+</body>
+</html>

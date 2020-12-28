@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for src/lib/swagger/index.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../../prettify.css" />
+    <link rel="stylesheet" href="../../../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../../../index.html">all files</a> / <a href="index.html">src/lib/swagger/</a> index.js
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">93.65% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>59/63</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">88.24% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>15/17</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">90% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>9/10</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">92.11% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>35/38</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line high'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101</td><td class="line-coverage quiet"><span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">67×</span>
+<span class="cline-any cline-yes">67×</span>
+<span class="cline-any cline-yes">208×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">208×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import swaggerTools from 'swagger-tools'
+import express from 'express'
+import path from 'path'
+import YAML from 'yamljs'
+// import wrap from 'express-async-wrap';
+import { mw } from '../auth/services/mw.service'
+import { genericErrorHandler, generic404, error } from '../response'
+import { Setup } from '../api/controllers/Setup'
+&nbsp;
+export function start(webapp, application) {
+  return new Promise(async (resolve, reject) =&gt; {
+    let error = false
+    let swaggerConfig = await require('./config').default(webapp, application)
+    let routerConfig = {
+      controllers: [
+        `${application.config.app.base}/api/controllers`,
+        `${application.config.app.base}/auth/controllers`
+      ],
+      useStubs: false // If you want use examples.
+    }
+    swaggerTools.initializeMiddleware(swaggerConfig, (middleware) =&gt; {
+      try {
+        // Interpret Swagger resources and attach metadata to request - must be first in swagger-tools middleware chain
+        webapp.use(middleware.swaggerMetadata())
+&nbsp;
+        // Provide the security handlers
+        webapp.use(middleware.swaggerSecurity({ Bearer: mw }))
+&nbsp;
+        // Validate Swagger requests
+        webapp.use(
+          middleware.swaggerValidator({
+            validateResponse: false
+          })
+        )
+&nbsp;
+        // Route validated requests to appropriate controller
+        webapp.use(middleware.swaggerRouter(routerConfig))
+&nbsp;
+        router(webapp, application, swaggerConfig)
+&nbsp;
+        // Serve the Swagger documents and Swagger UI
+        //   http://localhost:8000/docs =&gt; Swagger UI
+        //   http://localhost:8000/api-docs =&gt; Swagger document
+        // console.log('XXXCCCCCCCC', path.join(__dirname, './ui'))
+        webapp.use(
+          middleware.swaggerUi({
+            apiDocs: '/api-docs',
+            swaggerUi: '/docs',
+            swaggerUiDir: path.join(__dirname, './ui')
+          })
+        )
+&nbsp;
+        // install extra middleware
+&nbsp;
+        webapp.get('/application/setup', Setup)
+&nbsp;
+        webapp.use(generic404)
+        webapp.use(genericErrorHandler)
+&nbsp;
+        resolve({ error })
+      } catch (e) {
+        // statements
+<span class="cstat-no" title="statement not covered" >        console.log(e)</span>
+<span class="cstat-no" title="statement not covered" >        resolve({ error: e })</span>
+      }
+    })
+  })
+}
+&nbsp;
+function router(webapp, application, swaggerConfig) {
+  // Remove Routers from /docs with property x-hide: true
+&nbsp;
+  try {
+    Object.keys(swaggerConfig.paths).forEach((keyParent, i) =&gt; {
+      let parent = swaggerConfig.paths[keyParent]
+      Object.keys(parent).forEach((keyChild, j) =&gt; {
+        let child = swaggerConfig.paths[keyParent][keyChild]
+&nbsp;
+        if (
+          typeof <span class="branch-0 cbranch-no" title="branch not covered" >c</span>hild === 'object' &amp;&amp;
+          'x-hide' in child &amp;&amp;
+          child['x-hide'] === true
+        ) {
+          delete swaggerConfig.paths[keyParent][keyChild]
+        }
+      })
+    })
+&nbsp;
+    // If Swagger is enabled then the router is enabled!
+    <span class="missing-if-branch" title="else path not taken" >E</span>if (application.config.app.swagger.enabled) {
+      w</span>ebapp.get(`/swagger.json`, <span class="fstat-no" title="function not covered" >(req, res) =&gt; <span class="cstat-no" title="statement not covered" >r</span>es.json(swaggerConfig))
+      webapp.use(
+        '/docs',
+        express.static(`${application.config.app.base}/lib/swagger/ui`)
+      )
+    }
+  } catch (e) {
+<span class="cstat-no" title="statement not covered" >    console.log('&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;', e)</span>
+  }
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Wed Nov 25 2020 16:19:18 GMT-0200 (Brasilia Summer Time)
+</div>
+</div>
+<script src="../../../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../../../sorter.js"></script>
+</body>
+</html>

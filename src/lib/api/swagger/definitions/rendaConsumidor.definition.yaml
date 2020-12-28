@@ -1,0 +1,50 @@
+definitions:
+  # Object used when listing one item
+  rendaConsumidor:
+    #type: "object"
+    #default: {}
+    description: Rendas
+    x-child: true
+    required: ["valor"]
+    properties:
+      _id:
+        type: "string"
+        description: The identifier
+        example: "5c78a060c15bca840749e44b"
+        readOnly: true
+        x-ui:
+          grid:
+            hide: false
+            label: _id
+            width:  "0"
+          form:
+            hide: true
+            label: _id
+      valor:
+        type: 'number'
+        x-format: currency
+        format: 'float'
+        description: Valor renda
+        example: 150
+        default: 0
+        x-ui:
+          grid:
+            hide: false
+            label: Renda
+            width: '150'
+          form:
+            type: number # select, combobox, text, radio, switch, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Renda
+      pagador:
+        description: Empresa Pagadora
+        type: 'string'
+        example: Company LTDA
+        x-ui:
+          grid:
+            hide: false
+            label: Pagador
+            width: 120
+          form:
+            hide: false
+            label: Empresa Pagadora

@@ -1,0 +1,539 @@
+definitions:
+  # Object used when listing one item
+  Consumidor_response:
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 200
+      message:
+        type: "string"
+        example: "successful operation"
+      data:
+        type: "object"
+        $ref: "#/definitions/Consumidor"
+  # Object used when listing multiple items
+  Consumidor_collection:
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 200
+      message:
+        type: "string"
+        example: "successful operation"
+      data:
+        type: "array"
+        items:
+          $ref: "#/definitions/Consumidor"
+  # Object used when creating an item
+  Consumidor_response_created:
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 201
+      message:
+        type: "string"
+        example: "Created"
+      id:
+        type: "string"
+        example: 5c0fb100ec2339ed5bea6303
+      data:
+        $ref: "#/definitions/Consumidor"
+  # Object used when creating an item
+  Consumidor_response_updated:
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 200
+      message:
+        type: "string"
+        example: "successful operation"
+      id:
+        type: "string"
+        example: 5c0fb100ec2339ed5bea6303
+      data:
+        $ref: "#/definitions/Consumidor"
+  Consumidor:
+    required: ["nome"]
+    properties:
+      _id:
+        type: "string"
+        description: The Consumidor identifier
+        example: "5c78a060c15bca840749e44b"
+        readOnly: true
+        x-ui:
+          grid:
+            hide: false
+            label: _id
+            width:  "0"
+          form:
+            hide: true
+            label: _id
+      avatar:
+        description: "Avatar - It can be the path of a file on CDN or a base64 encoded file. If you provide a base64 image hash it will be saved as file on CDN."
+        type: "string"
+        format: "base64"
+        example: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/sdf........"
+        x-ui:
+          grid:
+            hide: true
+            label: Avatar
+            width:  "*"
+          form:
+            type: base64
+            hide: false
+            label: Avatar
+            accept: "image/png, image/jpeg"
+            file-size: 0.5
+            media-type: avatar # avatar, image, document
+      nome:
+        description: "Nome do consumidor"
+        type: "string"
+        example: Meu Nome Completo
+        x-ui:
+          grid:
+            hide: false
+            label: Nome
+            width:  "300"
+          form:
+            hide: false
+            label: Nome
+      nome_social:
+        description: "Nome social do consumidor"
+        type: "string"
+        example: Meu nome social
+        x-ui:
+          grid:
+            hide: true
+            label: Nome social
+            width:  "150"
+          form:
+            hide: false
+            label: Nome social
+      nascimento:
+        description: "Data de nascimento do consumidor"
+        type: "string"
+        format: "date"
+        #nullable: true
+        example: "2017-07-21"
+        x-ui:
+          grid:
+            hide: true
+            label: Nascimento
+            width:  "120"
+          form:
+            type: date # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time
+            hide: false
+            label: Nascimento
+      mae:
+        description: "Mãe do consumidor"
+        type: "string"
+        example: "5c78a060c15bca840749e44b"
+        x-ui:
+          collection-link: Consumidor
+          collection-link-value: _id
+          collection-link-label: nome
+          grid:
+            hide: false
+            label: Mãe
+            width:  "120"
+          form:
+            type: combobox # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Mãe
+            selection-limit: 1
+      pai:
+        description: "Pai do consumidor"
+        type: "string"
+        example: "5c78a060c15bca840749e44b"
+        x-ui:
+          collection-link: Consumidor
+          collection-link-value: _id
+          collection-link-label: nome
+          grid:
+            hide: false
+            label: Pai
+            width:  "120"
+          form:
+            type: combobox # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Pai
+            selection-limit: 1
+      sexo:
+        description: Sexo
+        type: "string"
+        enum: ["Homem", "Mulher"]
+        example: "Homem"
+        default: "Homem"
+        x-ui:
+          grid:
+            hide: false
+            label: Sexo
+            width:  "100"
+          form:
+            type: select # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time
+            hide: false
+            label: Sexo
+            options: ["Homem","Mulher"]
+            selection-limit: 1
+      documento:
+        description: "Documento - It can be the path of a file on CDN or a base64 encoded file. If you provide a base64 image hash it will be saved as file on CDN."
+        type: "string"
+        format: "base64"
+        example: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/sdf........"
+        x-ui:
+          grid:
+            hide: true
+            label: Documento
+            width:  "120"
+          form:
+            type: base64
+            hide: false
+            label: Documento
+            accept: "image/png, image/jpeg"
+            file-size: 0.5
+            media-type: avatar # avatar, image, document
+      cpf:
+        description: "CPF do consumidor"
+        type: "string"
+        example: 000.000.000-00
+        x-ui:
+          grid:
+            hide: false
+            label: CPF
+            width:  "150"
+          form:
+            hide: false
+            label: CPF
+      titulo_eleitor:
+        description: Título de Eleitor
+        type: "string"
+        example: 000.000.000-00
+        x-ui:
+          grid:
+            hide: false
+            label: Título de Eleitor
+            width:  "150"
+          form:
+            hide: false
+            label: Título de Eleitor
+      #raca_cor:
+      #  description: Raça cor
+      #  type: "string"
+      #  enum: ["Branca","Preta","Parda","Amarela","Indígena"]
+      #  example: "Heterosexual/Straight"
+      #  default: "Heterosexual/Straight"
+      #  x-ui:
+      #    grid:
+      #      hide: false
+      #      label: Raça cor
+      #      width:  "100"
+      #    form:
+      #      type: select # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time
+      #      hide: false
+      #      label: Raça cor
+      #      options: ["Branca","Preta","Parda","Amarela","Indígena"]
+      #      selection-limit: 1
+      raca_descricao:
+        description: Raça descrição
+        type: "string"
+        enum: ["Branca","Preta","Parda","Amarela","Indígena"]
+        example: "Amarela"
+        default: "Branca"
+        x-ui:
+          grid:
+            hide: false
+            label: Raça descrição
+            width:  "100"
+          form:
+            type: select # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time
+            hide: false
+            label: Raça descrição
+            options: ["Branca","Preta","Parda","Amarela","Indígena"]
+            selection-limit: 1
+      nacionalidade:
+        description: Nacionalidade
+        type: "string"
+        example: Brasileiro
+        default: Brasileiro
+        x-ui:
+          grid:
+            hide: false
+            label: Nacionalidade
+            width:  "150"
+          form:
+            hide: false
+            label: Nacionalidade
+      pais_nascimento:
+        description: País de nascimento
+        type: "string"
+        example: "Brazil"
+        default: 'Brazil'
+        enum: ["Afghanistan","Albania","Algeria","Andorra","Angola","Anguilla","Antigua &amp; Barbuda","Argentina","Armenia","Aruba","Australia","Austria","Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bermuda","Bhutan","Bolivia","Bosnia &amp; Herzegovina","Botswana","Brazil","British Virgin Islands","Brunei","Bulgaria","Burkina Faso","Burundi","Cambodia","Cameroon","Cape Verde","Cayman Islands","Chad","Chile","China","Colombia","Congo","Cook Islands","Costa Rica","Cote D Ivoire","Croatia","Cruise Ship","Cuba","Cyprus","Czech Republic","Denmark","Djibouti","Dominica","Dominican Republic","Ecuador","Egypt","El Salvador","Equatorial Guinea","Estonia","Ethiopia","Falkland Islands","Faroe Islands","Fiji","Finland","France","French Polynesia","French West Indies","Gabon","Gambia","Georgia","Germany","Ghana","Gibraltar","Greece","Greenland","Grenada","Guam","Guatemala","Guernsey","Guinea","Guinea Bissau","Guyana","Haiti","Honduras","Hong Kong","Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland","Isle of Man","Israel","Italy","Jamaica","Japan","Jersey","Jordan","Kazakhstan","Kenya","Kuwait","Kyrgyz Republic","Laos","Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein","Lithuania","Luxembourg","Macau","Macedonia","Madagascar","Malawi","Malaysia","Maldives","Mali","Malta","Mauritania","Mauritius","Mexico","Moldova","Monaco","Mongolia","Montenegro","Montserrat","Morocco","Mozambique","Namibia","Nepal","Netherlands","Netherlands Antilles","New Caledonia","New Zealand","Nicaragua","Niger","Nigeria","Norway","Oman","Pakistan","Palestine","Panama","Papua New Guinea","Paraguay","Peru","Philippines","Poland","Portugal","Puerto Rico","Qatar","Reunion","Romania","Russia","Rwanda","Saint Pierre &amp; Miquelon","Samoa","San Marino","Satellite","Saudi Arabia","Senegal","Serbia","Seychelles","Sierra Leone","Singapore","Slovakia","Slovenia","South Africa","South Korea","Spain","Sri Lanka","St Kitts &amp; Nevis","St Lucia","St Vincent","St. Lucia","Sudan","Suriname","Swaziland","Sweden","Switzerland","Syria","Taiwan","Tajikistan","Tanzania","Thailand","Timor L'Este","Togo","Tonga","Trinidad &amp; Tobago","Tunisia","Turkey","Turkmenistan","Turks &amp; Caicos","Uganda","Ukraine","United Arab Emirates","United Kingdom", 'United States of America', "Uruguay","Uzbekistan","Venezuela","Vietnam","Virgin Islands (US)","Yemen","Zambia","Zimbabwe"]
+        x-ui:
+          grid:
+            hide: false
+            label: País de nascimento
+            width: 120
+          form:
+            type: select # select, combobox, text, radio, switch, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: País de nascimento
+            selection-limit: 1
+      municipio_nascimento:
+        description: Município de nascimento
+        type: "string"
+        example: São Paulo
+        #default: São Paulo
+        x-ui:
+          grid:
+            hide: false
+            label: Município de nascimento
+            width:  "150"
+          form:
+            hide: false
+            label: Município de nascimento
+      pais_residencia:
+        description: País de residência
+        type: "string"
+        example: "Brazil"
+        enum: ["Afghanistan","Albania","Algeria","Andorra","Angola","Anguilla","Antigua &amp; Barbuda","Argentina","Armenia","Aruba","Australia","Austria","Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bermuda","Bhutan","Bolivia","Bosnia &amp; Herzegovina","Botswana","Brazil","British Virgin Islands","Brunei","Bulgaria","Burkina Faso","Burundi","Cambodia","Cameroon","Cape Verde","Cayman Islands","Chad","Chile","China","Colombia","Congo","Cook Islands","Costa Rica","Cote D Ivoire","Croatia","Cruise Ship","Cuba","Cyprus","Czech Republic","Denmark","Djibouti","Dominica","Dominican Republic","Ecuador","Egypt","El Salvador","Equatorial Guinea","Estonia","Ethiopia","Falkland Islands","Faroe Islands","Fiji","Finland","France","French Polynesia","French West Indies","Gabon","Gambia","Georgia","Germany","Ghana","Gibraltar","Greece","Greenland","Grenada","Guam","Guatemala","Guernsey","Guinea","Guinea Bissau","Guyana","Haiti","Honduras","Hong Kong","Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland","Isle of Man","Israel","Italy","Jamaica","Japan","Jersey","Jordan","Kazakhstan","Kenya","Kuwait","Kyrgyz Republic","Laos","Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein","Lithuania","Luxembourg","Macau","Macedonia","Madagascar","Malawi","Malaysia","Maldives","Mali","Malta","Mauritania","Mauritius","Mexico","Moldova","Monaco","Mongolia","Montenegro","Montserrat","Morocco","Mozambique","Namibia","Nepal","Netherlands","Netherlands Antilles","New Caledonia","New Zealand","Nicaragua","Niger","Nigeria","Norway","Oman","Pakistan","Palestine","Panama","Papua New Guinea","Paraguay","Peru","Philippines","Poland","Portugal","Puerto Rico","Qatar","Reunion","Romania","Russia","Rwanda","Saint Pierre &amp; Miquelon","Samoa","San Marino","Satellite","Saudi Arabia","Senegal","Serbia","Seychelles","Sierra Leone","Singapore","Slovakia","Slovenia","South Africa","South Korea","Spain","Sri Lanka","St Kitts &amp; Nevis","St Lucia","St Vincent","St. Lucia","Sudan","Suriname","Swaziland","Sweden","Switzerland","Syria","Taiwan","Tajikistan","Tanzania","Thailand","Timor L'Este","Togo","Tonga","Trinidad &amp; Tobago","Tunisia","Turkey","Turkmenistan","Turks &amp; Caicos","Uganda","Ukraine","United Arab Emirates","United Kingdom", 'United States of America', "Uruguay","Uzbekistan","Venezuela","Vietnam","Virgin Islands (US)","Yemen","Zambia","Zimbabwe"]
+        x-ui:
+          grid:
+            hide: false
+            label: País de residência
+            width: 120
+          form:
+            type: select # select, combobox, text, radio, switch, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: País de residência
+            selection-limit: 1
+      email_principal:
+        description: E-mail principal
+        type: "string"
+        #format: email
+        example: "myname@mycompany.com"
+        x-ui:
+          grid:
+            hide: false
+            label: E-mail principal
+            width:  "210"
+          form:
+            hide: false
+            label: E-mail principal
+            format: email
+      nomade:
+        type: "boolean"
+        description: Nômade
+        default: false
+        x-ui:
+          grid:
+            hide: false
+            label: Nômade
+            width:  90
+          form:
+            type: switch # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Nômade
+      obito:
+        type: "boolean"
+        description: Óbito
+        default: false
+        x-ui:
+          grid:
+            hide: false
+            label: Óbito
+            width:  90
+          form:
+            type: switch # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Óbito
+      estado_civil:
+        description: País de nascimento
+        type: "string"
+        example: "Brazil"
+        enum: ["Solteiro", "Casado", "Viúvo", "Separado judicialmente", "Divorciado"]
+        x-ui:
+          grid:
+            hide: false
+            label: País de nascimento
+            width: 120
+          form:
+            type: select # select, combobox, text, radio, switch, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: País de nascimento
+            selection-limit: 1
+      # multi record fields ======>>>>>>>>>>
+      sociedades:
+        description: Sociedades
+        type: 'array'
+        items:
+          $ref: '#/definitions/sociedadeConsumidor'
+        default: []
+        x-ui:
+          grid:
+            hide: true
+            label: Sociedades
+            width: '120'
+          form:
+            type: grid # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Sociedades
+            isSchema: true
+      imoveis:
+        description: Imóveis
+        type: 'array'
+        items:
+          $ref: '#/definitions/imovelConsumidor'
+        default: []
+        x-ui:
+          grid:
+            hide: true
+            label: Imóveis
+            width: '120'
+          form:
+            type: grid # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Imóveis
+            isSchema: true
+      veiculos:
+        description: Veículos
+        type: 'array'
+        items:
+          $ref: '#/definitions/veiculoConsumidor'
+        default: []
+        x-ui:
+          grid:
+            hide: true
+            label: Veículos
+            width: '120'
+          form:
+            type: grid # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Veículos
+            isSchema: true
+      enderecos:
+        description: Endereços
+        type: "array"
+        items:
+          $ref: "#/definitions/enderecoConsumidor"
+        default: []
+        x-ui:
+          grid:
+            hide: true
+            label: Endereços
+            width:  "120"
+          form:
+            type: grid # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Endereços
+            isSchema: true
+      telefones:
+        description: Telefones
+        type: 'array'
+        items:
+          $ref: '#/definitions/telefoneConsumidor'
+        default: []
+        x-ui:
+          grid:
+            hide: true
+            label: Telefones
+            width: '120'
+          form:
+            type: grid # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Telefones
+            isSchema: true
+      file:
+        description: Anexos
+        type: "array"
+        items:
+          $ref: "#/definitions/file"
+        #default: []
+        x-uploader: true
+        x-ui:
+          grid:
+            hide: true
+            label: Anexos
+            width:  "120"
+          form:
+            type: grid # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Anexos
+            isSchema: true
+      createdBy:
+        description: "Created By"
+        type: "string"
+        example: "5c78a060c15bca840749e44b"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          collection-link: Human
+          collection-link-value: _id
+          collection-link-label: first_name
+          grid:
+            hide: true
+            label: Created By
+            width:  120
+          form:
+            type: combobox # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Created By
+            selection-limit: 1
+      createdAt:
+        description: "Created At"
+        type: "string"
+        format: "date-time"
+        #nullable: true
+        example: "2017-07-21"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          grid:
+            hide: true
+            label: Created At
+            width:  120
+          form:
+            type: date-time # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, date-time
+            hide: false
+            label: Created At
+      updatedBy:
+        description: "Updated By"
+        type: "string"
+        example: "5c78a060c15bca840749e44b"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          collection-link: Human
+          collection-link-value: _id
+          collection-link-label: first_name
+          grid:
+            hide: true
+            label: Updated By
+            width:  120
+          form:
+            type: combobox # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Updated By
+            selection-limit: 1
+      updatedAt:
+        description: "Updated At"
+        type: "string"
+        format: "date-time"
+        #nullable: true
+        example: "2017-07-21"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          grid:
+            hide: true
+            label: Updated At
+            width:  120
+          form:
+            type: date-time # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, date-time
+            hide: false
+            label: Updated At
+

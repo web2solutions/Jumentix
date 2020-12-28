@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for src/lib/ExpressServer.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../../index.html">all files</a> / <a href="index.html">src/lib/</a> ExpressServer.js
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">81.68% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>107/131</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">64.58% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>31/48</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>17/17</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">91.84% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>45/49</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line high'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">10×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">10×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">'use strict'
+&nbsp;
+import * as ExpressGeneralMiddlewares from './express'
+import * as PassportIntegration from './auth/services/router.service'
+import * as SwaggerIntegration from './swagger'
+import express from 'express'
+import http from 'http'
+// import swaggerTools from 'swagger-tools'
+&nbsp;
+// import { generic404, genericErrorHandler } from './response'
+&nbsp;
+// mixin
+<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="missing-if-branch" title="else path not taken" >E</span>c</span></span></span></span></span></span></span>onst ExpressServer = <span class="cstat-no" title="statement not covered" >(ExpressServer) =&gt;</span>
+  class extends <span class="branch-10 cbranch-no" title="branch not covered" >E</span>xpressServer {
+    async startExpress (<span class="branch-1 cbranch-no" title="branch not covered" >c</span>) {
+      const error = false
+      c</span> = c || <span class="branch-1 cbranch-no" title="branch not covered" >{}
+      try {
+        this.webapp = null
+        this.io = null
+        // this.port = this.config.app.server.port
+&nbsp;
+        this.createWebServer()
+        const ssr = await this.startServer()
+        if (<span class="missing-if-branch" title="else path not taken" >E</span>ssr.error) {
+          return <span class="cstat-no" title="statement not covered" >{ error: ssr.error }</span>
+        }
+        if (<span class="missing-if-branch" title="if path not taken" >I</span>c.io) {
+          const mr = await <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >t</span></span>his.startMediator()
+          if (<span class="missing-if-branch" title="else path not taken" >E</span>mr.error) {
+            return <span class="cstat-no" title="statement not covered" >{ error: mr.error }</span>
+          }
+        }
+&nbsp;
+        return { error }
+      } catch (e) {
+<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="branch-5 cbranch-no" title="branch not covered" >        c</span></span>onsole.log(e)</span></span>
+<span class="cstat-no" title="statement not covered" >        this.console.warn('error starting Express', e)</span>
+        return { error: e }
+      }
+    }
+&nbsp;
+    createWebServer () <span class="branch-6 cbranch-no" title="branch not covered" >{</span>
+      this.webapp = express()
+      this.server = http.Server(this.webapp)
+    }
+&nbsp;
+    listenServer () {
+      const self = this
+      const error = false
+      return new Promise(function (resolve, reject) {
+        try {
+          self.server.listen(self.config.app.server.port, () =&gt; {
+            self.console.info(
+              ' Webserver is ready and listening to port *: ' +
+                self.config.app.server.port
+            )
+            resolve({ error })
+          })
+        } catch (e) {
+          // statements
+<span class="cstat-no" title="statement not covered" >          console.log(e)</span>
+<span class="cstat-no" title="statement not covered" >          reject(Error({ error: e }))</span>
+        }
+      })
+    }
+&nbsp;
+    async startServer () {
+      const self = this
+      let error = false
+      try {
+        // Express
+        const em = await ExpressGeneralMiddlewares.start(self.webapp, self)
+        if (<span class="missing-if-branch" title="else path not taken" >E</span>em.error) {
+          return <span class="cstat-no" title="statement not covered" >{ error: em.error }</span>
+        }
+&nbsp;
+        // PassportIntegration
+        const pi = await PassportIntegration.start(self.webapp, self)
+        if (<span class="missing-if-branch" title="else path not taken" >E</span>pi.error) {
+          return <span class="cstat-no" title="statement not covered" >{ error: pi.error }</span>
+        }
+&nbsp;
+        // Swagger
+        const si = await SwaggerIntegration.start(self.webapp, self)
+        if (<span class="missing-if-branch" title="else path not taken" >E</span>si.error) {
+          return <span class="cstat-no" title="statement not covered" >{ error: si.error }</span>
+        }
+        await this.listenServer()
+      } catch (err) {
+<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="branch-8 cbranch-no" title="branch not covered" >        e</span></span>rror = err</span></span>
+      }
+&nbsp;
+      return { error }
+    }
+  }
+&nbsp;
+export default ExpressServer
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Wed Nov 25 2020 16:19:18 GMT-0200 (Brasilia Summer Time)
+</div>
+</div>
+<script src="../../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../../sorter.js"></script>
+</body>
+</html>

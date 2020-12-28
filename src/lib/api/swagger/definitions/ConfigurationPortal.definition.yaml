@@ -1,0 +1,104 @@
+definitions:
+  # Object used when listing one item
+  ConfigurationPortal_response:
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 200
+      message:
+        type: "string"
+        example: "successful operation"
+      data:
+        type: "object"
+        $ref: "#/definitions/ConfigurationPortal"
+  # Object used when listing multiple items
+  ConfigurationPortal_collection:
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 200
+      message:
+        type: "string"
+        example: "successful operation"
+      data:
+        type: "array"
+        items:
+          $ref: "#/definitions/ConfigurationPortal"
+  # Object used when creating an item
+  ConfigurationPortal_response_created:
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 201
+      message:
+        type: "string"
+        example: "Created"
+      id:
+        type: "string"
+        example: 5c0fb100ec2339ed5bea6303
+      data:
+        $ref: "#/definitions/ConfigurationPortal"
+  # Object used when creating an item
+  ConfigurationPortal_response_updated:
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 200
+      message:
+        type: "string"
+        example: "successful operation"
+      id:
+        type: "string"
+        example: 5c0fb100ec2339ed5bea6303
+      data:
+        $ref: "#/definitions/ConfigurationPortal"
+  ConfigurationPortal:
+    required: ["title","logo"]
+    properties:
+      _id:
+        type: "string"
+        description: "The identifier"
+        example: "5c78a060c15bca840749e44b"
+        readOnly: true
+        x-ui:
+          grid:
+            hide: false
+            label: _id
+            width:  "0"
+          form:
+            hide: true
+            label: _id
+      title:
+        type: "string"
+        description: "The Portal Title. It is displayed as title in browser's window"
+        example: "Demo"
+        x-ui:
+          grid:
+            hide: false
+            label: Portal Title
+            width: "*"
+          form:
+            type: text # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Portal Title
+      logo:
+        description: "Logo - Will be displayed at top left side"
+        type: "string"
+        format: "base64"
+        example: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/sdf........"
+        x-ui:
+          grid:
+            hide: true
+            label: Logo
+            width:  "*"
+          form:
+            type: base64
+            hide: false
+            label: Logo
+            accept: "image/png, image/jpeg"
+            file-size: 0.5
+            media-type: logo # logo, image, document

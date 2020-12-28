@@ -1,0 +1,237 @@
+definitions:
+  # Object used when listing one item
+  Organization_response:
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 200
+      message:
+        type: "string"
+        example: "successful operation"
+      data:
+        type: "object"
+        $ref: "#/definitions/Organization"
+  # Object used when listing multiple items
+  Organization_collection:
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 200
+      message:
+        type: "string"
+        example: "successful operation"
+      data:
+        type: "array"
+        items:
+          $ref: "#/definitions/Organization"
+  # Object used when creating an item
+  Organization_response_created:
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 201
+      message:
+        type: "string"
+        example: "Created"
+      id:
+        type: "string"
+        example: 5c0fb100ec2339ed5bea6303
+      data:
+        $ref: "#/definitions/Organization"
+  # Object used when creating an item
+  Organization_response_updated:
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 200
+      message:
+        type: "string"
+        example: "successful operation"
+      id:
+        type: "string"
+        example: 5c0fb100ec2339ed5bea6303
+      data:
+        $ref: "#/definitions/Organization"
+  Organization:
+    required: ["name"]
+    properties:
+      _id:
+        type: "string"
+        description: "The Organization identifier"
+        example: "5c78a060c15bca840749e44b"
+        readOnly: true
+        x-ui:
+          grid:
+            hide: false
+            label: _id
+            width: "0"
+          form:
+            hide: true
+            label: _id
+      name:
+        description: "Organization Name"
+        type: "string"
+        example: "Pepsi"
+        x-ui:
+          grid:
+            hide: false
+            label: Name
+            width:  "*"
+          form:
+            hide: false
+            label: Name
+      feid_number:
+        description: "FEID Number"
+        type: "string"
+        format: feid
+        example: "80-0860591"
+        x-ui:
+          grid:
+            hide: false
+            label: FEID
+            width:  "100"
+          form:
+            hide: false
+            label: FEID
+      referral_source:
+        description: "Referral Source"
+        type: "string"
+        x-ui:
+          grid:
+            hide: true
+            label: Referral
+            width:  "*"
+          form:
+            hide: false
+            label: Referral
+      license_number:
+        description: "License Number"
+        type: "string"
+        x-ui:
+          grid:
+            hide: true
+            label: License
+            width:  "*"
+          form:
+            hide: false
+            label: License
+      license_expire_date:
+        description: "License Expire Date"
+        type: "string"
+        format: "date"
+        #nullable: true
+        example: "2017-07-21"
+        x-ui:
+          grid:
+            hide: true
+            label: Expire Date
+            width:  "*"
+          form:
+            type: date # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time
+            hide: false
+            label: Expire Date
+      services:
+        type: "array"
+        #enum: ["admin", "staff", "parent", "child", "agency", "caseworker", "manager"]
+        description: Organization services
+        items:
+          type: "string"
+        default: []
+        x-ui:
+          collection-link: Service
+          collection-link-value: _id
+          collection-link-label: service
+          grid:
+            hide: true
+            label: Services
+            width:  "*"
+          form:
+            type: select # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Services
+            selection-limit: 0
+      human:
+        type: "array"
+        description: "People on this Organization"
+        items:
+          $ref: "#/definitions/organizationHumanRelationSchema"
+        default: []
+        x-ui:
+          grid:
+            hide: true
+            label: People
+            width:  "*"
+          form:
+            type: grid # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: People
+            isSchema: true
+      email:
+        description: "Email Address"
+        type: "array"
+        items:
+          $ref: "#/definitions/email"
+        default: []
+        x-ui:
+          grid:
+            hide: true
+            label: Email Address
+            width:  "*"
+          form:
+            type: grid # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Email Address
+            isSchema: true
+      address:
+        description: "Address"
+        type: "array"
+        items:
+          $ref: "#/definitions/address"
+        default: []
+        x-ui:
+          grid:
+            hide: true
+            label: Address
+            width:  "*"
+          form:
+            type: grid # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Address
+            isSchema: true
+      phone:
+        description: "Phone"
+        type: "array"
+        items:
+          $ref: "#/definitions/phone"
+        default: []
+        x-ui:
+          grid:
+            hide: true
+            label: Phone
+            width:  "*"
+          form:
+            type: grid # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Phone
+            isSchema: true
+      file:
+        description: "File attachments"
+        type: "array"
+        items:
+          $ref: "#/definitions/file"
+        #default: []
+        x-uploader: true
+        x-ui:
+          grid:
+            hide: true
+            label: Files
+            width:  "*"
+          form:
+            type: grid # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Files
+            isSchema: true

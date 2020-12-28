@@ -1,0 +1,176 @@
+definitions:
+  # Object used when listing one item
+  file:
+    description: File upload
+    required: ["label", "name"]
+    x-child: true
+    properties:
+      _id:
+        type: "string"
+        description: "File identifier"
+        example: "5c78a060c15bca840749e44b"
+        readOnly: true
+        x-ui:
+          grid:
+            hide: false
+            label: _id
+            width:  "0"
+          form:
+            hide: true
+            label: _id
+      name:
+        description: 'Name'
+        type: "string"
+        example: "myfilename.jpg"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          grid:
+            hide: false
+            label: File Name
+            width:  150
+          form:
+            type: text
+            hide: true
+            label: File Name
+      label:
+        description: 'File Label - please provide an associated label . Labels may be used when searching.'
+        type: "string"
+        example: "my document version one"
+        x-ui:
+          grid:
+            hide: false
+            label: File Label
+            width:  150
+          form:
+            type: text
+            hide: false
+            label: File Label
+      file:
+        description:  |
+          Please select an file to upload to this document.
+          Please make sure you understand the allowed file type and limit size.
+          Files larger than limit will be ignored.
+          Not allowed file types will be ignored.
+        type: "string"
+        format: "file"
+        #example: "servergeneratedname.jpg"
+        #readOnly: true
+        x-ui:
+          grid:
+            hide: true
+            label: Select a file
+            width:  "*"
+          form:
+            type: file
+            accept: "image/*, text/plain, application/pdf, video/*, audio/*"
+            file-size: 30
+            hide: false
+            label: Select a file
+      mimetype:
+        description: 'File mime type'
+        type: "string"
+        example: "image/jpg"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          grid:
+            hide: false
+            label: Mime Type
+            width:  100
+          form:
+            hide: true
+            label: Mime Type
+      path:
+        description: 'File path'
+        type: "string"
+        example: "public/uploads/abc.jpg"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          grid:
+            hide: true
+            label: File Path
+            width:  "*"
+          form:
+            hide: true
+            label: File Path
+      webPath:
+        description: 'Web Path'
+        type: "string"
+        example: "public/uploads/abc.jpg"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          grid:
+            hide: true
+            label: Web Path
+            width:  "*"
+          form:
+            hide: true
+            label: Web Path
+      size:
+        description: 'File size'
+        type: "integer"
+        format: "int32"
+        example: 12300
+        readOnly: true
+        x-editable: false
+        x-ui:
+          grid:
+            hide: false
+            label: File Size
+            width:  100
+          form:
+            hide: true
+            label: File Size
+      createdBy:
+        description: "Uploaded By"
+        type: "string"
+        example: "5c78a060c15bca840749e44b"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          collection-link: Human
+          collection-link-value: _id
+          collection-link-label: name
+          grid:
+            hide: false
+            label: Uploaded By
+            width:  120
+          form:
+            type: combobox # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: true
+            label: Uploaded By
+            selection-limit: 1
+      createdAt:
+        description: "Uploaded At"
+        type: "string"
+        format: "date-time"
+        #nullable: true
+        example: "2017-07-21"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          grid:
+            hide: false
+            label: Uploaded At
+            width:  120
+          form:
+            type: date # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, date-time
+            hide: true
+            label: Uploaded At
+      memo:
+        description: 'Memo text'
+        type: "string"
+        #example: "servergeneratedname.jpg"
+        #readOnly: true
+        x-ui:
+          grid:
+            hide: false
+            label: Memo text
+            width:  200
+          form:
+            type: editor
+            hide: false
+            label: Memo text

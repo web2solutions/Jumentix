@@ -1,0 +1,687 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for src/lib/api/controllers/UserAdmin.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../../../prettify.css" />
+    <link rel="stylesheet" href="../../../../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../../../../index.html">all files</a> / <a href="index.html">src/lib/api/controllers/</a> UserAdmin.js
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">22.29% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>35/157</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">32.73% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>18/55</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">25% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>7/28</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">19.67% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>12/61</span>
+      </div>
+      <div class='fl pad1y'>
+        <span class="strong">14 branches</span>
+        <span class="quiet">Ignored</span>  &nbsp;&nbsp;&nbsp;&nbsp;
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207</td><td class="line-coverage quiet"><span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" >i</span>mport { result, notFound, errorResponse, accepted } from '../../response'
+import RabbitEnvelop from '../../RabbitEnvelop'
+import app from '../../../app'
+import { copy } from '../../util'
+&nbsp;
+const entity = 'User',
+  queue = `JumentiX.${entity}`,
+  primaryKeyName = '_id'
+&nbsp;
+// Read a user
+export <span class="fstat-no" title="function not covered" >async function <span class="fstat-no" title="function not covered" >read(req, res) {</span></span>
+  try {
+    const // set Service Procedure name
+<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >      a</span></span></span>ction = 'getOne',</span></span></span></span>
+      // set who asked for the job
+<span class="cstat-no" title="statement not covered" >      from = req.user,</span>
+      // set payload to execute the job
+<span class="cstat-no" title="statement not covered" >      payload = {</span>
+        username: req.swagger.params.username.value
+      },
+      // create a job request message
+<span class="cstat-no" title="statement not covered" >      job = new RabbitEnvelop({ from, entity, action, payload }),</span>
+      // execute the job
+      { <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >e</span></span>rror, <span class="cstat-no" title="statement not covered" >d</span>ata, <span class="cstat-no" title="statement not covered" >s</span>tatus } = await <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >a</span>pp.mapperRPC.services[entity][action](</span>
+        job
+      ),
+      // set job message
+<span class="cstat-no" title="statement not covered" >      message = (error.message || error, action + ' ' + entity)</span>
+&nbsp;
+    // check if is there a error executing the job
+    if (<span class="cstat-no" title="statement not covered" >error) {</span>
+      return <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >e</span></span>rrorResponse(res, { error, message }, status)</span>
+    }
+    // respond job result
+    return <span class="cstat-no" title="statement not covered" >result(res, { data, message })</span>
+  } catch (error) {
+    return <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >e</span></span>rrorResponse(res, { error, message: error.message })</span>
+  }
+}
+&nbsp;
+// Get current user
+export <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >a</span>sync function <span class="fstat-no" title="function not covered" >me(req, res) {</span></span></span>
+  const <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >u</span></span>ser = req.user</span></span></span></span>
+<span class="cstat-no" title="statement not covered" >  delete user.session.id</span>
+  return result(res, { data: user })
+}
+&nbsp;
+/*
+ * Administrator
+ */
+&nbsp;
+// List of user's
+export <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >a</span>sync function <span class="fstat-no" title="function not covered" >listAdmin(req, res) {</span></span>
+  try {
+    const // set Service Procedure name
+<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >      a</span></span></span>ction = 'getAll',</span></span></span></span>
+      // set who asked for the job
+<span class="cstat-no" title="statement not covered" >      from = req.user,</span>
+      // create a job request message
+<span class="cstat-no" title="statement not covered" >      job = new RabbitEnvelop({ from, entity, action }),</span>
+      // execute the job
+      {
+<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >        e</span>rror,</span>
+<span class="cstat-no" title="statement not covered" >        data,</span>
+<span class="cstat-no" title="statement not covered" >        status,</span>
+<span class="cstat-no" title="statement not covered" >        count,</span>
+<span class="cstat-no" title="statement not covered" >        pages,</span>
+<span class="cstat-no" title="statement not covered" >        limit,</span>
+<span class="cstat-no" title="statement not covered" >        page,</span>
+<span class="cstat-no" title="statement not covered" >        isCache</span>
+      } = await <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >a</span>pp.mapperRPC.services[entity][action](job),</span>
+      // set job message
+<span class="cstat-no" title="statement not covered" >      message = (error.message || error, action + ' ' + entity)</span>
+&nbsp;
+    // check if is there a error executing the job
+    if (<span class="cstat-no" title="statement not covered" >error) {</span>
+      return <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >e</span></span>rrorResponse(res, { error, message }, status)</span>
+    }
+    // respond job result
+    return <span class="cstat-no" title="statement not covered" >result(res, { data, count, pages, limit, page, message, isCache })</span>
+  } catch (error) {
+    return <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >e</span></span>rrorResponse(res, { error, message: error.message })</span>
+  }
+}
+&nbsp;
+/**
+    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    Following WRITE operations are performed by sending messages to Entity's queue
+    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+*/
+&nbsp;
+// Create a user
+export <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >a</span>sync function <span class="fstat-no" title="function not covered" >create(req, res) {</span></span>
+  try {
+    const // set Service Procedure name
+<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >      a</span></span></span>ction = 'create',</span></span></span></span>
+      // set who asked for the job
+      from = req.user,
+      // set payload to execute the job
+      payload = req.body,
+      // create a job request message
+      job = new RabbitEnvelop({ from, entity, action, payload }),
+      // set job message
+      message =
+        'Your request is being processed and you be notified coming soon.',
+      // set message to Entity's queue
+      { sent, error, status } = app.sender.send.messageToQueue(queue, job)
+&nbsp;
+    // check if is there a error executing the job
+    if (<span class="cstat-no" title="statement not covered" >error) {</span>
+      return <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >e</span></span>rrorResponse(res, { error, message: error.message }, status)</span>
+    }
+    // respond
+    return <span class="cstat-no" title="statement not covered" >accepted(res, { data: job, message })</span>
+  } catch (error) {
+    return <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >e</span></span>rrorResponse(res, { error, message: error.message })</span>
+  }
+}
+&nbsp;
+// Update user
+export <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >a</span>sync function <span class="fstat-no" title="function not covered" >update(req, res) {</span></span>
+  try {
+    const // set Service Procedure name
+<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >      a</span></span></span>ction = 'update',</span></span></span></span>
+      // set who asked for the job
+      from = req.user,
+      // set payload to execute the job
+      payload = copy(req.body, { [primaryKeyName]: req.user._id }),
+      // create a job request message
+      job = new RabbitEnvelop({ from, entity, action, payload }),
+      // set job message
+      message =
+        'Your request is being processed and you be notified coming soon.',
+      // set message to Entity's queue
+      { sent, error, status } = app.sender.send.messageToQueue(queue, job)
+&nbsp;
+    // check if is there a error executing the job
+    if (<span class="cstat-no" title="statement not covered" >error) {</span>
+      return <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >e</span></span>rrorResponse(res, { error, message: error.message }, status)</span>
+    }
+    // respond
+    return <span class="cstat-no" title="statement not covered" >accepted(res, { data: job, message })</span>
+  } catch (error) {
+    return <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >e</span></span>rrorResponse(res, { error, message: error.message })</span>
+  }
+}
+&nbsp;
+// Update a user
+export <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >a</span>sync function <span class="fstat-no" title="function not covered" >updateAdmin(req, res) {</span></span>
+  try {
+    const // set Service Procedure name
+<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >      a</span></span></span>ction = 'update',</span></span></span></span>
+      // set who asked for the job
+      from = req.user,
+      // set payload to execute the job
+      payload = copy(req.body, {
+        [primaryKeyName]: req.swagger.params.id.value
+      }),
+      // create a job request message
+      job = new RabbitEnvelop({ from, entity, action, payload }),
+      // set job message
+      message =
+        'Your request is being processed and you be notified coming soon.',
+      // set message to Entity's queue
+      { sent, error, status } = app.sender.send.messageToQueue(queue, job)
+&nbsp;
+    // check if is there a error executing the job
+    if (<span class="cstat-no" title="statement not covered" >error) {</span>
+      return <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >e</span></span>rrorResponse(res, { error, message: error.message }, status)</span>
+    }
+    // respond
+    return <span class="cstat-no" title="statement not covered" >accepted(res, { data: job, message })</span>
+  } catch (error) {
+    return <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >e</span></span>rrorResponse(res, { error, message: error.message })</span>
+  }
+}
+&nbsp;
+// Destroy a user
+export <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >a</span>sync function <span class="fstat-no" title="function not covered" >destroyAdmin(req, res, next) {</span></span>
+  try {
+    const // set Service Procedure name
+<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >      a</span></span></span>ction = 'delete',</span></span></span></span>
+      // set who asked for the job
+      from = req.user,
+      // set payload to execute the job
+      payload = {
+        [primaryKeyName]: req.swagger.params.id.value
+      },
+      // create a job request message
+      job = new RabbitEnvelop({ from, entity, action, payload }),
+      // set job message
+      message =
+        'Your request is being processed and you be notified coming soon.',
+      // set message to Entity's queue
+      { sent, error, status } = app.sender.send.messageToQueue(queue, job)
+&nbsp;
+    // check if is there a error executing the job
+    if (<span class="cstat-no" title="statement not covered" >error) {</span>
+      return <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >e</span></span>rrorResponse(res, { error, message: error.message }, status)</span>
+    }
+    // respond
+    return <span class="cstat-no" title="statement not covered" >accepted(res, { data: job, message })</span>
+  } catch (error) {
+    return <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >e</span></span>rrorResponse(res, { error, message: error.message })</span>
+  }
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Wed Nov 25 2020 16:19:18 GMT-0200 (Brasilia Summer Time)
+</div>
+</div>
+<script src="../../../../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../../../../sorter.js"></script>
+</body>
+</html>

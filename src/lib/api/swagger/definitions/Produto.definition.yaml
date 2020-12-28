@@ -1,0 +1,235 @@
+definitions:
+  # Object used when listing one item
+  Produto_response:
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 200
+      message:
+        type: "string"
+        example: "successful operation"
+      data:
+        type: "object"
+        $ref: "#/definitions/Produto"
+  # Object used when listing multiple items
+  Produto_collection:
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 200
+      message:
+        type: "string"
+        example: "successful operation"
+      data:
+        type: "array"
+        items:
+          $ref: "#/definitions/Produto"
+  # Object used when creating an item
+  Produto_response_created:
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 201
+      message:
+        type: "string"
+        example: "Created"
+      id:
+        type: "string"
+        example: 5c0fb100ec2339ed5bea6303
+      data:
+        $ref: "#/definitions/Produto"
+  # Object used when creating an item
+  Produto_response_updated:
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 200
+      message:
+        type: "string"
+        example: "successful operation"
+      id:
+        type: "string"
+        example: 5c0fb100ec2339ed5bea6303
+      data:
+        $ref: "#/definitions/Produto"
+  Produto:
+    required: ["nome"]
+    properties:
+      _id:
+        type: "string"
+        description: The Produto identifier
+        example: "5c78a060c15bca840749e44b"
+        readOnly: true
+        x-ui:
+          grid:
+            hide: false
+            label: _id
+            width:  "0"
+          form:
+            hide: true
+            label: _id
+      nome:
+        description: "Nome do produto"
+        type: "string"
+        x-ui:
+          grid:
+            hide: false
+            label: Nome
+            width:  "300"
+          form:
+            hide: false
+            label: Nome
+      descricao:
+        description: Descrição
+        type: 'string'
+        x-ui:
+          grid:
+            hide: false
+            label: Descrição
+            width: '300'
+          form:
+            hide: false
+            label: Descrição
+      preco:
+        type: 'number'
+        x-format: currency
+        format: 'float'
+        description: Preço
+        example: 150
+        default: 0
+        x-ui:
+          grid:
+            hide: false
+            label: Preço
+            width: '150'
+          form:
+            type: number # select, combobox, text, radio, switch, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Preço
+      estoque:
+        type: 'integer'
+        x-format: integer
+        format: int32
+        description: Estoque
+        example: 150
+        default: 0
+        x-ui:
+          grid:
+            hide: false
+            label: Estoque
+            width: '150'
+          form:
+            type: number # select, combobox, text, radio, switch, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Estoque
+      fornecedor:
+        description: Fornecedor
+        type: 'string'
+        example: '5c78a060c15bca840749e44b'
+        x-ui:
+          collection-link: Fornecedor
+          collection-link-value: _id
+          collection-link-label: nome
+          grid:
+            hide: false
+            label: Fornecedor
+            width: '120'
+          form:
+            type: combobox # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Fornecedor
+            selection-limit: 1
+      file:
+        description: Anexos
+        type: "array"
+        items:
+          $ref: "#/definitions/file"
+        #default: []
+        x-uploader: true
+        x-ui:
+          grid:
+            hide: true
+            label: Anexos
+            width:  "120"
+          form:
+            type: grid # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Anexos
+            isSchema: true
+      createdBy:
+        description: "Created By"
+        type: "string"
+        example: "5c78a060c15bca840749e44b"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          collection-link: Human
+          collection-link-value: _id
+          collection-link-label: first_name
+          grid:
+            hide: true
+            label: Created By
+            width:  120
+          form:
+            type: combobox # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Created By
+            selection-limit: 1
+      createdAt:
+        description: "Created At"
+        type: "string"
+        format: "date-time"
+        #nullable: true
+        example: "2017-07-21"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          grid:
+            hide: true
+            label: Created At
+            width:  120
+          form:
+            type: date-time # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, date-time
+            hide: false
+            label: Created At
+      updatedBy:
+        description: "Updated By"
+        type: "string"
+        example: "5c78a060c15bca840749e44b"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          collection-link: Human
+          collection-link-value: _id
+          collection-link-label: first_name
+          grid:
+            hide: true
+            label: Updated By
+            width:  120
+          form:
+            type: combobox # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Updated By
+            selection-limit: 1
+      updatedAt:
+        description: "Updated At"
+        type: "string"
+        format: "date-time"
+        #nullable: true
+        example: "2017-07-21"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          grid:
+            hide: true
+            label: Updated At
+            width:  120
+          form:
+            type: date-time # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, date-time
+            hide: false
+            label: Updated At
+

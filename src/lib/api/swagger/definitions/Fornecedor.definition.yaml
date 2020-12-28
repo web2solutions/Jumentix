@@ -1,0 +1,203 @@
+definitions:
+  # Object used when listing one item
+  Fornecedor_response:
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 200
+      message:
+        type: "string"
+        example: "successful operation"
+      data:
+        type: "object"
+        $ref: "#/definitions/Fornecedor"
+  # Object used when listing multiple items
+  Fornecedor_collection:
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 200
+      message:
+        type: "string"
+        example: "successful operation"
+      data:
+        type: "array"
+        items:
+          $ref: "#/definitions/Fornecedor"
+  # Object used when creating an item
+  Fornecedor_response_created:
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 201
+      message:
+        type: "string"
+        example: "Created"
+      id:
+        type: "string"
+        example: 5c0fb100ec2339ed5bea6303
+      data:
+        $ref: "#/definitions/Fornecedor"
+  # Object used when creating an item
+  Fornecedor_response_updated:
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 200
+      message:
+        type: "string"
+        example: "successful operation"
+      id:
+        type: "string"
+        example: 5c0fb100ec2339ed5bea6303
+      data:
+        $ref: "#/definitions/Fornecedor"
+  Fornecedor:
+    required: ["nome"]
+    properties:
+      _id:
+        type: "string"
+        description: The Fornecedor identifier
+        example: "5c78a060c15bca840749e44b"
+        readOnly: true
+        x-ui:
+          grid:
+            hide: false
+            label: _id
+            width:  "0"
+          form:
+            hide: true
+            label: _id
+      nome:
+        description: "Nome do Fornecedor"
+        type: "string"
+        x-ui:
+          grid:
+            hide: false
+            label: Nome
+            width:  "300"
+          form:
+            hide: false
+            label: Nome
+      descricao:
+        description: Descrição
+        type: 'string'
+        x-ui:
+          grid:
+            hide: false
+            label: Descrição
+            width: '300'
+          form:
+            hide: false
+            label: Descrição
+      logo:
+        description: Logo
+        type: 'string'
+        format: 'base64'
+        example: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/sdf........'
+        x-ui:
+          grid:
+            hide: true
+            label: Logo
+            width: '120'
+          form:
+            type: base64
+            hide: false
+            label: Logo
+            accept: 'image/png, image/jpeg'
+            file-size: 0.5
+            media-type: avatar # avatar, image, document
+
+      file:
+        description: Anexos
+        type: "array"
+        items:
+          $ref: "#/definitions/file"
+        #default: []
+        x-uploader: true
+        x-ui:
+          grid:
+            hide: true
+            label: Anexos
+            width:  "120"
+          form:
+            type: grid # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, grid
+            hide: false
+            label: Anexos
+            isSchema: true
+      createdBy:
+        description: "Created By"
+        type: "string"
+        example: "5c78a060c15bca840749e44b"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          collection-link: Human
+          collection-link-value: _id
+          collection-link-label: first_name
+          grid:
+            hide: true
+            label: Created By
+            width:  120
+          form:
+            type: combobox # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Created By
+            selection-limit: 1
+      createdAt:
+        description: "Created At"
+        type: "string"
+        format: "date-time"
+        #nullable: true
+        example: "2017-07-21"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          grid:
+            hide: true
+            label: Created At
+            width:  120
+          form:
+            type: date-time # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, date-time
+            hide: false
+            label: Created At
+      updatedBy:
+        description: "Updated By"
+        type: "string"
+        example: "5c78a060c15bca840749e44b"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          collection-link: Human
+          collection-link-value: _id
+          collection-link-label: first_name
+          grid:
+            hide: true
+            label: Updated By
+            width:  120
+          form:
+            type: combobox # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete
+            hide: false
+            label: Updated By
+            selection-limit: 1
+      updatedAt:
+        description: "Updated At"
+        type: "string"
+        format: "date-time"
+        #nullable: true
+        example: "2017-07-21"
+        readOnly: true
+        x-editable: false
+        x-ui:
+          grid:
+            hide: true
+            label: Updated At
+            width:  120
+          form:
+            type: date-time # select, combobox, text,  radio, checkbox, switch, textarea, autocomplete, date, time, date-time
+            hide: false
+            label: Updated At
