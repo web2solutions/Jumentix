@@ -7,14 +7,7 @@
 
 Application foundation for REST and Realtime Node.JS micro service applications
 
-Read docs at: [https://web2solutions.github.io/Jumentix/](https://web2solutions.github.io/Jumentix/)
-
-
-> `CircleCI` [![CircleCI](https://circleci.com/gh/web2solutions/Jumentix/tree/master.svg?style=svg&circle-token=89993e712f694f8c77e0aaf8d74686aa337bf6f5)](https://circleci.com/gh/web2solutions/Jumentix/tree/master) [![codecov](https://codecov.io/gh/web2solutions/JumentiX/branch/master/graph/badge.svg?token=weHb2Qp2hK)](https://codecov.io/gh/web2solutions/JumentiX) ![deps](https://img.shields.io/librariesio/github/web2solutions/JumentiX) [![Known Vulnerabilities](https://snyk.io/test/github/web2solutions/Jumentix/badge.svg)](https://snyk.io/test/github/web2solutions/Jumentix) ![codesize](https://img.shields.io/github/languages/code-size/web2solutions/JumentiX
-) ![activity](https://img.shields.io/github/commit-activity/y/web2solutions/Jumentix) ![last commit](https://img.shields.io/github/last-commit/web2solutions/JumentiX) ![issues](https://img.shields.io/github/issues-closed/web2solutions/Jumentix) ![issues](https://img.shields.io/github/issues/web2solutions/Jumentix)
- ![pr](https://img.shields.io/github/issues-pr-closed/web2solutions/Jumentix)
-![license](https://img.shields.io/github/license/web2solutions/Jumentix) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/1d1e51b8918c44c78d129b2f697f62b9)](https://www.codacy.com/gh/web2solutions/Jumentix/dashboard?utm_source=github.com&utm_medium=referral&utm_content=web2solutions/Jumentix&utm_campaign=Badge_Grade)
-
+Read docs at: [https://web2solutions.github.io/Jumentix/](https://web2solutions.github.io/Jumentix/) - Outdated
 
 
 
