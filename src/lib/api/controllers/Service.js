@@ -1,32 +1,20 @@
-import { result, errorResponse, accepted, created } from '../../response'
-import RabbitEnvelop from '../../RabbitEnvelop'
-import app from '../../../app'
-import { copy, uuid } from '../../util'
-import multer from 'multer'
 import * as fs from 'fs'
-import { promisify } from 'util'
+
+import { accepted, created, errorResponse, result } from '../../response'
+import { copy, uuid } from '../../util'
+
+import RabbitEnvelop from '../../RabbitEnvelop'
+import multer from 'multer'
 import path from 'path'
+import { promisify } from 'util'
+
 const writeFileAsync = promisify(fs.writeFile)
 
 const entity = 'Service'
 const queue = `JumentiX.${entity}`
 const primaryKeyName = '_id'
 
-fs.existsSync(app.cdnDIR + entity) || fs.mkdirSync(app.cdnDIR + entity)
-// console.log('app', app.mapperRPC)
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    console.log('destination')
-    cb(null, path.resolve(app.cdnDIR + entity))
-  },
-  filename: function (req, file, cb) {
-    console.log('filename')
-    cb(null, file.originalname)
-  }
-})
-const upload = multer({
-  storage: storage
-}).single('file')
+// CRITICAL MOVE TO SERVICE LAYER fs.existsSync(app.cdnDIR + entity) || fs.mkdirSync(app.cdnDIR + entity)
 
 /**
     Add sub document
@@ -42,14 +30,16 @@ export async function AddSubDocument (req, res, next) {
   try {
     const // set Service Procedure name
       action = 'add_sub_document'
-      // set who asked for the job
+    // set who asked for the job
     const from = req.user
     // set payload to execute the job
     const payload = { _id, document: req.body, subCollectionName: field }
     // create a job request message
     const job = new RabbitEnvelop({ from, entity, action, payload })
     // execute the job
-    const response = await app.mapperRPC.services[entity][action](job)
+    const response = await req.application.mapperRPC.services[entity][action](
+      job
+    )
 
     // check if is there a error executing the job
     if (response.error) {
@@ -80,14 +70,16 @@ export async function EditSubDocument (req, res, next) {
   try {
     const // set Service Procedure name
       action = 'edit_sub_document'
-      // set who asked for the job
+    // set who asked for the job
     const from = req.user
     // set payload to execute the job
     const payload = { _id, document: req.body, subCollectionName: field }
     // create a job request message
     const job = new RabbitEnvelop({ from, entity, action, payload })
     // execute the job
-    const response = await app.mapperRPC.services[entity][action](job)
+    const response = await req.application.mapperRPC.services[entity][action](
+      job
+    )
 
     // check if is there a error executing the job
     if (response.error) {
@@ -118,14 +110,16 @@ export async function DeleteSubDocument (req, res, next) {
   try {
     const // set Service Procedure name
       action = 'delete_sub_document'
-      // set who asked for the job
+    // set who asked for the job
     const from = req.user
     // set payload to execute the job
     const payload = { _id, document: req.body, subCollectionName: field }
     // create a job request message
     const job = new RabbitEnvelop({ from, entity, action, payload })
     // execute the job
-    const response = await app.mapperRPC.services[entity][action](job)
+    const response = await req.application.mapperRPC.services[entity][action](
+      job
+    )
 
     // check if is there a error executing the job
     if (response.error) {
@@ -146,23 +140,27 @@ export async function DeleteSubDocument (req, res, next) {
     List Entities by consuming it service layer
 */
 export async function list (req, res) {
-  // console.log(app.mapperRPC);
+  // console.log(req.application.mapperRPC);
   try {
     const // set Service Procedure name
       action = 'getAll'
-      // set who asked for the job
+    // set who asked for the job
     const from = req.user
     // set payload to execute the job
     const payload = req.swagger.params
     // create a job request message
     const job = new RabbitEnvelop({ from, entity, action, payload })
     // execute the job
-    const response = await app.mapperRPC.services[entity][action](job)
+    const response = await req.application.mapperRPC.services[entity][action](
+      job
+    )
 
     // check if is there a error executing the job
     if (response.error) {
       return errorResponse(res, response, response.status)
     }
+    // console.error('>>>>>>>>>>>>>>>>>>', app)
+    console.error('>>>>>>>>>>>>>>>>>>', req.application)
     // respond job result
     return result(res, response)
   } catch (error) {
@@ -181,7 +179,7 @@ export async function read (req, res) {
   try {
     const // set Service Procedure name
       action = 'getById'
-      // set who asked for the job
+    // set who asked for the job
     const from = req.user
     // set payload to execute the job
     const payload = {
@@ -190,7 +188,9 @@ export async function read (req, res) {
     // create a job request message
     const job = new RabbitEnvelop({ from, entity, action, payload })
     // execute the job
-    const response = await app.mapperRPC.services[entity][action](job)
+    const response = await req.application.mapperRPC.services[entity][action](
+      job
+    )
 
     // check if is there a error executing the job
     if (response.error) {
@@ -216,14 +216,49 @@ export async function create (req, res) {
   try {
     const // set Service Procedure name
       action = 'create'
-      // set who asked for the job
+    // set who asked for the job
     const from = req.user
     // set payload to execute the job
     const payload = req.body
     // create a job request message
     const job = new RabbitEnvelop({ from, entity, action, payload })
     // execute the job
-    const response = await app.mapperRPC.services[entity][action](job)
+    const response = await req.application.mapperRPC.services[entity][action](
+      job
+    )
+
+    // check if is there a error executing the job
+    if (response.error) {
+      return errorResponse(res, response, response.status)
+    }
+    // respond
+    return created(res, response)
+  } catch (error) {
+    return errorResponse(res, {
+      error,
+      message: error.message || error,
+      status: 500
+    })
+  }
+}
+
+/**
+    Register user
+*/
+export async function register (req, res) {
+  try {
+    const // set Service Procedure name
+      action = 'register'
+    // set who asked for the job
+    const from = req.application.getServerUser()
+    // set payload to execute the job
+    const payload = req.body
+    // create a job request message
+    const job = new RabbitEnvelop({ from, entity, action, payload })
+    // execute the job
+    const response = await req.application.mapperRPC.services[entity][action](
+      job
+    )
 
     // check if is there a error executing the job
     if (response.error) {
@@ -247,7 +282,7 @@ export async function update (req, res) {
   try {
     const // set Service Procedure name
       action = 'update'
-      // set who asked for the job
+    // set who asked for the job
     const from = req.user
     // set payload to execute the job
     const payload = copy(req.body, {
@@ -256,7 +291,9 @@ export async function update (req, res) {
     // create a job request message
     const job = new RabbitEnvelop({ from, entity, action, payload })
     // execute the job
-    const response = await app.mapperRPC.services[entity][action](job)
+    const response = await req.application.mapperRPC.services[entity][action](
+      job
+    )
 
     // check if is there a error executing the job
     if (response.error) {
@@ -286,14 +323,16 @@ export async function destroy (req, res) {
   try {
     const // set who asked for the job
       from = req.user
-      // set payload to execute the job
+    // set payload to execute the job
     const payload = {
       [primaryKeyName]: req.swagger.params.id.value
     }
     // create a job request message
     const job = new RabbitEnvelop({ from, entity, action, payload })
     // execute the job
-    const response = await app.mapperRPC.services[entity][action](job)
+    const response = await req.application.mapperRPC.services[entity][action](
+      job
+    )
 
     // check if is there a error executing the job
     if (response.error) {
@@ -314,7 +353,7 @@ export async function restore (req, res) {
   try {
     const // set Service Procedure name
       action = 'restore'
-      // set who asked for the job
+    // set who asked for the job
     const from = req.user
     // set payload to execute the job
     const payload = {
@@ -323,7 +362,9 @@ export async function restore (req, res) {
     // create a job request message
     const job = new RabbitEnvelop({ from, entity, action, payload })
     // execute the job
-    const response = await app.mapperRPC.services[entity][action](job)
+    const response = await req.application.mapperRPC.services[entity][action](
+      job
+    )
 
     // check if is there a error executing the job
     if (response.error) {
@@ -341,6 +382,18 @@ export async function restore (req, res) {
 }
 
 function _Upload (req, res, next) {
+  const upload = multer({
+    storage: multer.diskStorage({
+      destination: function (req, file, cb) {
+        console.log('destination')
+        cb(null, path.resolve(req.application.cdnDIR + entity))
+      },
+      filename: function (req, file, cb) {
+        console.log('filename')
+        cb(null, file.originalname)
+      }
+    })
+  }).single('file')
   return new Promise(function (resolve, reject) {
     upload(req, res, async function (error) {
       // console.log(arguments)
@@ -353,25 +406,26 @@ function _Upload (req, res, next) {
         })
       } else {
         // console.log('File uploaded successfully.',  req.files);
-
+        // console.log(req.files)
         const nameArray = req.files.file.name.split('.')
         const typeArray = req.files.file.mimetype.split('/')
         const typeOfFile = typeArray[0]
         const fileExtension = nameArray[nameArray.length - 1]
-        const finalFileName = `${typeOfFile}_${
-          req.user.userId || uuid()
-        }_${uuid()}.${fileExtension}`
+        const finalFileName = `${typeOfFile}_${req.user.userId ||
+          uuid()}_${uuid()}.${fileExtension}`
 
-        fs.existsSync(path.resolve(app.cdnDIR + entity)) ||
-          fs.mkdirSync(path.resolve(app.cdnDIR + entity))
+        fs.existsSync(path.resolve(req.application.cdnDIR + entity)) ||
+          fs.mkdirSync(path.resolve(req.application.cdnDIR + entity))
         const ioResult = await writeFileAsync(
-          `${path.resolve(app.cdnDIR + entity)}/${finalFileName}`,
+          `${path.resolve(req.application.cdnDIR + entity)}/${finalFileName}`,
           req.files.file.data,
           'binary'
         )
         let resp = JSON.parse(JSON.stringify(req.files))
         resp.file.name = finalFileName
-        resp.file.path = `${path.resolve(app.cdnDIR + entity)}/${finalFileName}`
+        resp.file.path = `${path.resolve(
+          req.application.cdnDIR + entity
+        )}/${finalFileName}`
 
         delete resp.data
         resp = JSON.parse(JSON.stringify(resp))
@@ -393,28 +447,32 @@ export async function Upload (req, res, next) {
   const label = req.body.label
   const memo = req.body.memo
   const { error, data } = await _Upload(req, res, next)
-
+  // console.log({ error, data })
   const entityId = req.swagger.params.id.value
   const fileDocument = JSON.parse(JSON.stringify(data))
+  // console.log(fileDocument)
   delete fileDocument.file.data
   delete fileDocument.file.truncated
   delete fileDocument.file.encoding
   fileDocument.file._id = fileDocId
   fileDocument.file.label = label
+  fileDocument.file.file = fileDocument.file.name
   fileDocument.file.memo = memo
-  fileDocument.file.createdBy = req.user.userId
-
+  fileDocument.file.createdBy = req.user.human._id
+  // console.log(fileDocument)
   try {
     const // set Service Procedure name
       action = 'add_file'
-      // set who asked for the job
+    // set who asked for the job
     const from = req.user
     // set payload to execute the job
     const payload = copy(fileDocument, { [primaryKeyName]: entityId })
     // create a job request message
     const job = new RabbitEnvelop({ from, entity, action, payload })
     // execute the job
-    const response = await app.mapperRPC.services[entity][action](job)
+    const response = await req.application.mapperRPC.services[entity][action](
+      job
+    )
 
     // check if is there a error executing the job
     if (response.error) {
@@ -446,7 +504,7 @@ export async function createAsync (req, res) {
   try {
     const // set Service Procedure name
       action = 'create'
-      // set who asked for the job
+    // set who asked for the job
     const from = req.user
     // set payload to execute the job
     const payload = req.body
@@ -454,9 +512,12 @@ export async function createAsync (req, res) {
     const job = new RabbitEnvelop({ from, entity, action, payload })
     // set job message
     const message =
-        'Your request is being processed and you be notified coming soon.'
+      'Your request is being processed and you be notified coming soon.'
     // set message to Entity's queue
-    const { sent, error, status } = app.sender.send.messageToQueue(queue, job)
+    const { sent, error, status } = req.application.sender.send.messageToQueue(
+      queue,
+      job
+    )
 
     // check if is there a error executing the job
     if (error) {
@@ -480,7 +541,7 @@ export async function updateAsync (req, res) {
   try {
     const // set Service Procedure name
       action = 'update'
-      // set who asked for the job
+    // set who asked for the job
     const from = req.user
     // set payload to execute the job
     const payload = copy(req.body, {
@@ -490,9 +551,12 @@ export async function updateAsync (req, res) {
     const job = new RabbitEnvelop({ from, entity, action, payload })
     // set job message
     const message =
-        'Your request is being processed and you be notified coming soon.'
+      'Your request is being processed and you be notified coming soon.'
     // set message to Entity's queue
-    const { sent, error, status } = app.sender.send.messageToQueue(queue, job)
+    const { sent, error, status } = req.application.sender.send.messageToQueue(
+      queue,
+      job
+    )
 
     // check if is there a error executing the job
     if (error) {
@@ -516,7 +580,7 @@ export async function destroyAsync (req, res) {
   try {
     const // set Service Procedure name
       action = 'delete'
-      // set who asked for the job
+    // set who asked for the job
     const from = req.user
     // set payload to execute the job
     const payload = {
@@ -526,9 +590,12 @@ export async function destroyAsync (req, res) {
     const job = new RabbitEnvelop({ from, entity, action, payload })
     // set job message
     const message =
-        'Your request is being processed and you be notified coming soon.'
+      'Your request is being processed and you be notified coming soon.'
     // set message to Entity's queue
-    const { sent, error, status } = app.sender.send.messageToQueue(queue, job)
+    const { sent, error, status } = req.application.sender.send.messageToQueue(
+      queue,
+      job
+    )
 
     // check if is there a error executing the job
     if (error) {

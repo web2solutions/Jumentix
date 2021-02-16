@@ -38,6 +38,11 @@ export async function start(webapp, application) {
       })
     )
 
+    webapp.use(function (req, res, next) {
+      req.application = application
+      next()
+    })
+
     /* if ("twitter" in config.oAuth && config.oAuth.twitter.enabled)
             webapp.use(session({
                 secret: config.secret,

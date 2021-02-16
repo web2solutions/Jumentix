@@ -150,5 +150,5 @@
         "webpack-stream": "^3.2.0"
     },
     "private": true,
-    "build": 56
+    "build": 0
 }

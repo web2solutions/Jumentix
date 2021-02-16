@@ -10,7 +10,6 @@ dist/build.css
 dist/build.js
 dist/index.html
 
-.env
 
 # Editor directories and files
 .idea

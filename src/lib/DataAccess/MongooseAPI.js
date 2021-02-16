@@ -39,7 +39,8 @@ const MongooseAPI = (MongooseAPI) =>
           document_id: '' + r._id,
           document: JSON.parse(JSON.stringify(r)),
           version: r.__v,
-          updatedBy: userId
+          updatedBy: userId,
+          // createdAt: 
         })
       } catch (err) {
         console.log(err.message, error)

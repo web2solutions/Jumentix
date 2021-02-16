@@ -14,23 +14,34 @@ class DataAPI {
    * @constructor
    * @param {object} application - the application object which this service is plugged to
    */
-  // constructor(application) {}
+  constructor (application) {
+    this.historyStore = 'elastic'
+  }
 
   async addHistory (record) {
-    // console.error(record)
-    // const history = new this.application.$cassandra.instance.History(record)
-    // await history.saveAsync()
+    let error = null
+    let data = null
     try {
-      const r = await this.application.$elastic.index({
-        id: record.document_id,
-        index: 'historyyyy',
-        type: '_doc', // uncomment this line if you are using Elasticsearch ≤ 6
-        body: record
-      })
-      console.error(r)
-    } catch (error) {
-      console.log(error)
+      if (this.historyStore === 'elastic') {
+        const history = await this.application.$elastic.index({
+          id: record.document_id,
+          index: 'historyyyy',
+          type: '_doc', // uncomment this line if you are using Elasticsearch ≤ 6
+          body: record
+        })
+        data = history
+      } else if (this.historyStore === 'cassandra') {
+        const history = new this.application.$cassandra.instance.History(record)
+        await history.saveAsync()
+        data = history
+      } else {
+        throw Error('History is not being saved')
+      }
+    } catch (e) {
+      error = e
+      data = null
     }
+    return { error, data }
   }
 
   // ======================= COMMON API
