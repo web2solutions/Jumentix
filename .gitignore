@@ -28,3 +28,4 @@ logs/
 dist/
 
 sequelize-meta\.json
+.env
