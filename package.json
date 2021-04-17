@@ -38,7 +38,7 @@
         "_simple": "npm stop && pm2 start pm2.simple.config.js",
         "_stop": "pm2 stop pm2.simple.config.js  && pm2 delete pm2.simple.config.js ",
         "simple": "npm run build && cd dist && nodemon dist/app.js",
-        "cluster": "npm run build && cd dist && npm run cluster",
+        "cluster": "npm run build && cd dist && pm2 start pm2.cluster.config.js",
         "update": "pm2 update",
         "eslint-fix": "eslint src/**/**/**/**/**/*.js --fix",
         "format-code": "prettier-eslint --write \"src/**/*.js\" \"src/**/*.vue\""
