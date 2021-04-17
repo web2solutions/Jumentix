@@ -17,7 +17,7 @@ const app = new MsRESTAPI({
   sequelize: false, // require VPN connection
   mongo: true, // required for mediator,
   mediator: true,
-  cassandra: true,
+  cassandra: false,
   elastic: true,
   jobLogReader: false // is this an worker that reads logs ? set to false if it is an API
 })
