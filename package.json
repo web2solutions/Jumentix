@@ -75,7 +75,7 @@
     "test:integration:derby-js": "NODE_ENV=dev jest ./apps/backend-template/test/integration/Derby-JS",
     "test:integration:adonis-js": "NODE_ENV=dev jest ./apps/backend-template/test/integration/Adonis-JS",
     "test:integration:total-js": "NODE_ENV=dev jest ./apps/backend-template/test/integration/Total-JS",
-    "test:integration:service-management": "NODE_ENV=dev jest ./apps/backend-template/test/integration/ServiceManagement --runInBand",
+    "test:integration:service-management": "NODE_ENV=dev node ci-cd/run-service-management-integration.js",
     "test:integration:service-mangement": "npm run test:integration:service-management",
     "test:integration:realtime:websocket": "NODE_ENV=dev jest ./apps/backend-template/test/integration/realtime/websocket.basic.integration.test.ts --runInBand --coverage=false",
     "test:integration:realtime:grpc": "NODE_ENV=dev jest ./apps/backend-template/test/integration/realtime/grpc.basic.integration.test.ts --runInBand --coverage=false",
