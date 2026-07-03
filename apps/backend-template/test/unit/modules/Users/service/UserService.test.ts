@@ -202,6 +202,10 @@ describe('user service', () => {
 
     await service.getOneById(baseUser.id);
     expect(mockedGetUserById).toHaveBeenCalledTimes(2);
+
+    cacheService.get.mockResolvedValueOnce(baseUser);
+    await service.getOneById(baseUser.id);
+    expect(mockedGetUserById).toHaveBeenCalledTimes(2);
   });
 
   it('covers update/delete and lock conflict behavior', async () => {

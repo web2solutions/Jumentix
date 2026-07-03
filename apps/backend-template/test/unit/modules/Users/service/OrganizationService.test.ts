@@ -81,6 +81,14 @@ describe('organization service', () => {
     expect(dataRepository.getOneById).toHaveBeenCalledTimes(1);
 
     await service.getAll({ ids: ['o1', 'o2'] as any }, { page: 1, size: 10 });
+    cacheService.get.mockResolvedValueOnce({
+      page: 1,
+      size: 10,
+      total: 1,
+      result: [{ id: 'o1', name: 'Org' }]
+    });
+    await service.getAll({}, { page: 1, size: 10 });
+    expect(dataRepository.getAll).toHaveBeenCalledTimes(1);
 
     await service.update('o1', { name: 'Org Updated' } as any);
     expect(cacheService.bumpVersion).toHaveBeenCalledWith('organizations');
