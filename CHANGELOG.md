@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- 2026-07-03 fix(test): use development NODE_ENV in auth service env fixture - web2solutions
 - 2026-07-03 fix(test): make env typing resilient under pnpm next globals - web2solutions
 - 2026-07-03 fix(ci): stabilize affected-scope detection and website lint deps - web2solutions
 - 2026-07-03 fix(ci): avoid changed-files arg overflow in monorepo workflow - web2solutions
