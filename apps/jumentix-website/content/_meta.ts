@@ -1,5 +1,4 @@
 export default {
-  index: 'Introduction',
   jumentix: {
     title: 'Jumentix Docs'
   },
