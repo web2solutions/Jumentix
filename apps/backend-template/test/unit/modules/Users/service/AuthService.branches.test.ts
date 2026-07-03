@@ -50,7 +50,7 @@ describe('auth service extra branches', () => {
   beforeEach(() => {
     process.env = {
       ...originalEnv,
-      NODE_ENV: 'dev',
+      NODE_ENV: 'development',
       AAA_ENABLE_BASIC_AUTH: 'yes'
     };
   });
