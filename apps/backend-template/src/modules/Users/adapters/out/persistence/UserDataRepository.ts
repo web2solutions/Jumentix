@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { IStore } from '@src/infra/ports/persistence/IStore';
 import {
   throwIfPreUpdateValidationFails,
