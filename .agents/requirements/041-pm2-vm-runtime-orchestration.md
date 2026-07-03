@@ -18,9 +18,9 @@ VM-hosted environments (`dev`, `staging`, `production`) must use PM2 as the offi
    - `staging`
    - `production`
 6. Package scripts that boot runtime adapters from:
-   - `src/interface/HTTP/adapters`
-   - `src/interface/gRPC/adapters`
-   - `src/interface/WebSocket/adapters`
+   - `apps/backend-template/src/interface/HTTP/adapters`
+   - `apps/backend-template/src/interface/gRPC/adapters`
+   - `apps/backend-template/src/interface/WebSocket/adapters`
    must use PM2-based startup flow.
 
 ## Validation

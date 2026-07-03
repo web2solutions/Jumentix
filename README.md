@@ -414,6 +414,7 @@ Migration progress and wave-by-wave acceptance criteria are tracked in [JumentiX
 | Architecture | [Architecture and Structure](documentation/md/ARCHITECTURE-AND-STRUCTURE.md) | Folder structure, boundaries, and layer responsibilities. |
 | Runtime and Ops | [Setup, Runtime, and API](documentation/md/SETUP-RUNTIME-AND-API.md) | Setup, commands, runtime adapters, and API docs endpoints. |
 | Runtime Contract | [Runtime Environment Contracts](documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md) | Canonical env keys, startup entrypoints, PM2 process model, and Service Management env API. |
+| Runtime Optimization | [Cache Service and Read Caching](documentation/md/CACHE-SERVICE-AND-ENDPOINT-CACHING.md) | Cache contract, service wiring, read-through strategy, and invalidation model for read endpoints. |
 | Integration Contracts | [Events and Messages Map](documentation/md/EVENTS-AND-MESSAGES-MAP.md) | Event and mediator contract map. |
 | Error Contracts | [Error Contracts and Responses](documentation/md/ERROR-CONTRACTS-AND-RESPONSES.md) | Error codes, mapping, and HTTP response contracts. |
 | Quality | [Testing, CI, and Quality](documentation/md/TESTING-CI-AND-QUALITY.md) | Test strategy, CI gate, coverage policy, Sonar/Codecov. |
@@ -460,6 +461,7 @@ Migration progress and wave-by-wave acceptance criteria are tracked in [JumentiX
 - [Users Organization Model](documentation/md/domains/users/ORGANIZATION-MODEL.md)
 - [CI Troubleshooting](documentation/md/CI-TROUBLESHOOTING.md)
 - [Service Management Application](documentation/md/SERVICE-MANAGEMENT-APPLICATION.md)
+- [Cache Service and Read Caching](documentation/md/CACHE-SERVICE-AND-ENDPOINT-CACHING.md)
 - [Domain Designer Features and Usage](documentation/md/DOMAIN-DESIGNER-FEATURES-AND-USAGE.md)
 - [HTTP Adapters Index](documentation/md/adapters/http/README.md)
 - [WebSocket Realtime API](documentation/md/adapters/realtime/WEBSOCKET-API.md)

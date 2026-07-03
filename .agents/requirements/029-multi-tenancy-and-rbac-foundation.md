@@ -17,5 +17,5 @@ Most products require tenant isolation and role-based authorization early, witho
 Active
 
 ## Notes
-- Users domain RBAC rules are centralized in `src/modules/Users/domain/security/Rbac.ts`.
+- Users domain RBAC rules are centralized in `apps/backend-template/src/modules/Users/domain/security/Rbac.ts`.
 - `User` model and auth flow enforce organization binding for tenant roles.

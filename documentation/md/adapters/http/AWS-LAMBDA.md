@@ -6,8 +6,8 @@ Deploy handlers as function-based services with Serverless.
 
 ## Entrypoints
 
-- `src/interface/aws/lambda/handlers/`
-- `src/interface/HTTP/adapters/serverless/*`
+- `apps/backend-template/src/interface/aws/lambda/handlers/`
+- `apps/backend-template/src/interface/HTTP/adapters/serverless/*`
 
 ## Build a Service with Lambda
 

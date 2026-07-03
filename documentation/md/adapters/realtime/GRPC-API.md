@@ -5,8 +5,8 @@ This guide is exclusively for the gRPC realtime interface.
 ## Scope
 
 - Transport: gRPC
-- Server implementation: `src/interface/gRPC/gRPCAPI.ts`
-- Proto contract: `src/interface/gRPC/proto/async-api.proto`
+- Server implementation: `apps/backend-template/src/interface/gRPC/gRPCAPI.ts`
+- Proto contract: `apps/backend-template/src/interface/gRPC/proto/async-api.proto`
 - SDK client: `sdk-clients/grpc/GrpcApiClient.ts`
 - AsyncAPI source: `spec/asyncapi/1.0.0.grpc.yml`
 

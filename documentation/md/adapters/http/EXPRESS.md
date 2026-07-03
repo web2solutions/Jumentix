@@ -6,8 +6,8 @@ Use Express as your REST inbound adapter.
 
 ## Entrypoints
 
-- `src/interface/HTTP/adapters/express/express.ts`
-- `src/interface/HTTP/adapters/start-rest-api.ts` (environment-driven bootstrap)
+- `apps/backend-template/src/interface/HTTP/adapters/express/express.ts`
+- `apps/backend-template/src/interface/HTTP/adapters/start-rest-api.ts` (environment-driven bootstrap)
 
 ## Build a Service with Express
 

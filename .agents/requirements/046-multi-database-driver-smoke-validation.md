@@ -22,16 +22,16 @@ Mandatory outcomes:
   - `Aurora`
   - `RDS`
 - Add per-database compose files:
-  - `docker-compose-postgresql.yml`
-  - `docker-compose-mysql.yml`
-  - `docker-compose-mssql.yml`
-  - `docker-compose-oracle.yml`
-  - `docker-compose-mongodb.yml`
-  - `docker-compose-cassandra.yml`
-  - `docker-compose-dynamodb.yml`
-  - `docker-compose-firebase.yml`
-  - `docker-compose-aurora.yml`
-  - `docker-compose-rds.yml`
+  - `apps/backend-template/docker-compose-postgresql.yml`
+  - `apps/backend-template/docker-compose-mysql.yml`
+  - `apps/backend-template/docker-compose-mssql.yml`
+  - `apps/backend-template/docker-compose-oracle.yml`
+  - `apps/backend-template/docker-compose-mongodb.yml`
+  - `apps/backend-template/docker-compose-cassandra.yml`
+  - `apps/backend-template/docker-compose-dynamodb.yml`
+  - `apps/backend-template/docker-compose-firebase.yml`
+  - `apps/backend-template/docker-compose-aurora.yml`
+  - `apps/backend-template/docker-compose-rds.yml`
 - Add package scripts for:
   - per-driver smoke test execution
   - compose up/down helpers

@@ -6,7 +6,7 @@ Expose API operations through Feathers runtime adapter.
 
 ## Entrypoints
 
-- `src/interface/HTTP/adapters/feathers/feathers.ts`
+- `apps/backend-template/src/interface/HTTP/adapters/feathers/feathers.ts`
 
 ## Build a Service with Feathers
 

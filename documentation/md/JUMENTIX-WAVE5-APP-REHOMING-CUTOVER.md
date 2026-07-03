@@ -24,9 +24,9 @@ Path rewrite companion:
 
 Move these root directories into `apps/backend-template`:
 
-- `src/`
+- `apps/backend-template/src/`
 - `spec/`
-- `test/`
+- `apps/backend-template/test/`
 - `pm2/`
 - `seed/`
 - `serverless.ts`
@@ -34,11 +34,21 @@ Move these root directories into `apps/backend-template`:
 
 Status:
 
-- In progress.
-- Workspace-level operational ownership already added under `apps/backend-template/package.json` (build/test/integration/ci gate/runtime starters), mapped to root runtime as a compatibility bridge.
-- PM2 ecosystem ownership already moved to `apps/backend-template/pm2/*` while keeping runtime entrypoint behavior unchanged.
-- Seed ownership moved to `apps/backend-template/seed` with `@seed` path mapping rewired.
-- Next cutover slice is physical file move with path rewrites.
+- Completed on July 2, 2026.
+- Physical move completed for runtime directories:
+  - `apps/backend-template/src/` -> `apps/backend-template/src/`
+  - `apps/backend-template/test/` -> `apps/backend-template/test/`
+  - `docker/` + `docker-compose*.yml` -> `apps/backend-template/*`
+  - `OASdoc/` + `AsyncAPIdoc/` -> `apps/backend-template/*`
+- PM2 ecosystem ownership now lives at root `pm2/*`.
+- Wave closeout evidence:
+  - PR #112: `https://github.com/web2solutions/aaa-typescript-boilerplate/pull/112`
+  - Normalization issue: `https://github.com/web2solutions/aaa-typescript-boilerplate/issues/113`
+  - CI stabilization issue: `https://github.com/web2solutions/aaa-typescript-boilerplate/issues/114`
+  - Serverless path issue: `https://github.com/web2solutions/aaa-typescript-boilerplate/issues/115`
+- Residual tasks moved to dedicated follow-up:
+  - Governance closure and evidence mapping (`#116`)
+  - Wave 6 CI/release hardening subtasks (`#94`, `#98`, `#99`)
 
 Keep shared root assets in root:
 
@@ -52,7 +62,7 @@ Keep shared root assets in root:
 
 Move:
 
-- `/service-management/*` -> `apps/service-management/*`
+- `/service-management/*` (legacy) -> `apps/service-management/*`
 
 Update all runtime references:
 
@@ -116,3 +126,5 @@ If any step fails:
 3. PM2 profiles run successfully with new app paths.
 4. CI gates and coverage thresholds remain green.
 5. README/docs/agents reflect final app locations.
+
+Status: satisfied for Wave 5 baseline; residual items tracked in follow-up issues.

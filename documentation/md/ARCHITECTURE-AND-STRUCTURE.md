@@ -3,7 +3,7 @@
 ## Project Structure (Current)
 
 ```txt
-src/
+apps/backend-template/src/
   config/
   infra/                           # cross-cutting infrastructure adapters
   interface/                       # HTTP runtime adapters and transport plumbing

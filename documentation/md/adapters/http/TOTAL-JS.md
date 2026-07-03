@@ -6,7 +6,7 @@ Use Total.js runtime bridge as HTTP inbound adapter.
 
 ## Entrypoints
 
-- `src/interface/HTTP/adapters/total-js/total-js.ts`
+- `apps/backend-template/src/interface/HTTP/adapters/total-js/total-js.ts`
 
 ## Build a Service with Total.js
 

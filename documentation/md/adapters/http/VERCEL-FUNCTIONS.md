@@ -6,7 +6,7 @@ Expose API operations through Vercel-style function handlers (`req`/`res`).
 
 ## Entrypoints
 
-- `src/interface/HTTP/adapters/vercel-functions/vercel-functions.ts`
+- `apps/backend-template/src/interface/HTTP/adapters/vercel-functions/vercel-functions.ts`
 
 ## Build a Service with Vercel Functions
 

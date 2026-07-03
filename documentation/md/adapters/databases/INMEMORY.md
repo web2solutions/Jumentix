@@ -6,8 +6,8 @@ Default official adapter for local development and deterministic tests.
 
 ## Entrypoints
 
-- `src/infra/persistence/InMemoryDatabase/InMemoryDbClient.ts`
-- `src/infra/persistence/compileDatabaseClient.ts`
+- `apps/backend-template/src/infra/persistence/InMemoryDatabase/InMemoryDbClient.ts`
+- `apps/backend-template/src/infra/persistence/compileDatabaseClient.ts`
 
 ## Build Services with InMemory
 

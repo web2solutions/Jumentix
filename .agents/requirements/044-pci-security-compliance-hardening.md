@@ -19,18 +19,18 @@ Access control, authentication flows, and error contracts must align with PCI-or
 
 ## Current implementation anchors
 
-- `src/modules/Users/service/AuthService.ts`
-- `src/modules/Users/adapters/in/http/controllers/UserController.ts`
-- `src/modules/Users/adapters/in/http/controllers/OrganizationController.ts`
-- `src/shared/utils.ts`
-- `src/config/security.ts`
-- `src/infra/audit/InMemorySecurityAuditRepository.ts`
-- `test/unit/modules/Users/service/AuthService.branches.test.ts`
-- `test/unit/modules/Users/interface/controller/controllers.test.ts`
-- `test/unit/config/security.test.ts`
-- `test/unit/shared/utils.errorExposure.test.ts`
-- `test/unit/infra/audit/InMemorySecurityAuditRepository.test.ts`
-- `test/unit/modules/Users/service/AuthService.audit.test.ts`
+- `apps/backend-template/src/modules/Users/service/AuthService.ts`
+- `apps/backend-template/src/modules/Users/adapters/in/http/controllers/UserController.ts`
+- `apps/backend-template/src/modules/Users/adapters/in/http/controllers/OrganizationController.ts`
+- `apps/backend-template/src/shared/utils.ts`
+- `apps/backend-template/src/config/security.ts`
+- `apps/backend-template/src/infra/audit/InMemorySecurityAuditRepository.ts`
+- `apps/backend-template/test/unit/modules/Users/service/AuthService.branches.test.ts`
+- `apps/backend-template/test/unit/modules/Users/interface/controller/controllers.test.ts`
+- `apps/backend-template/test/unit/config/security.test.ts`
+- `apps/backend-template/test/unit/shared/utils.errorExposure.test.ts`
+- `apps/backend-template/test/unit/infra/audit/InMemorySecurityAuditRepository.test.ts`
+- `apps/backend-template/test/unit/modules/Users/service/AuthService.audit.test.ts`
 - `package.json` (`ci:security-smoke` inside `ci:gate`)
 - `documentation/md/SECURITY-RUNBOOK-PCI.md`
 

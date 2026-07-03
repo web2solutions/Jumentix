@@ -6,8 +6,8 @@ This document defines the official test matrix for realtime interfaces (`WebSock
 
 Covered interfaces:
 
-- `src/interface/WebSocket/WebSocketAPI.ts`
-- `src/interface/gRPC/gRPCAPI.ts`
+- `apps/backend-template/src/interface/WebSocket/WebSocketAPI.ts`
+- `apps/backend-template/src/interface/gRPC/gRPCAPI.ts`
 - Socket.IO horizontal adapters:
   - `cluster`
   - `redis-streams`
@@ -18,21 +18,21 @@ Covered interfaces:
 
 WebSocket:
 
-- `test/unit/interface/WebSocket/WebSocketAPI.test.ts`
-- `test/unit/interface/WebSocket/adapters/start-websocket-api.test.ts`
-- `test/unit/interface/WebSocket/adapters/socket-io.bootstrap.test.ts`
-- `test/unit/interface/WebSocket/clusterAdapter.test.ts`
-- `test/unit/interface/WebSocket/redisStreamsAdapter.test.ts`
+- `apps/backend-template/test/unit/interface/WebSocket/WebSocketAPI.test.ts`
+- `apps/backend-template/test/unit/interface/WebSocket/adapters/start-websocket-api.test.ts`
+- `apps/backend-template/test/unit/interface/WebSocket/adapters/socket-io.bootstrap.test.ts`
+- `apps/backend-template/test/unit/interface/WebSocket/clusterAdapter.test.ts`
+- `apps/backend-template/test/unit/interface/WebSocket/redisStreamsAdapter.test.ts`
 
 gRPC:
 
-- `test/unit/interface/gRPC/gRPCAPI.test.ts`
-- `test/unit/interface/gRPC/adapters/start-grpc-api.test.ts`
-- `test/unit/interface/gRPC/adapters/grpc.bootstrap.test.ts`
+- `apps/backend-template/test/unit/interface/gRPC/gRPCAPI.test.ts`
+- `apps/backend-template/test/unit/interface/gRPC/adapters/start-grpc-api.test.ts`
+- `apps/backend-template/test/unit/interface/gRPC/adapters/grpc.bootstrap.test.ts`
 
 Shared realtime core:
 
-- `test/unit/interface/Async/RealtimeAPIBase.test.ts`
+- `apps/backend-template/test/unit/interface/Async/RealtimeAPIBase.test.ts`
 
 Run:
 
@@ -44,12 +44,12 @@ npm run test:unit
 
 Protocol-level integration:
 
-- `test/integration/realtime/websocket.basic.integration.test.ts`
-- `test/integration/realtime/grpc.basic.integration.test.ts`
+- `apps/backend-template/test/integration/realtime/websocket.basic.integration.test.ts`
+- `apps/backend-template/test/integration/realtime/grpc.basic.integration.test.ts`
 
 Redis multi-instance integration:
 
-- `test/integration/realtime/socketio.redis-streams.multi-instance.test.ts`
+- `apps/backend-template/test/integration/realtime/socketio.redis-streams.multi-instance.test.ts`
 
 Run basic realtime integrations:
 
@@ -67,7 +67,7 @@ npm run test:integration:realtime:redis-streams
 
 Local realtime smoke:
 
-- `test/smoke/realtime/RealtimeApis.smoke.test.ts`
+- `apps/backend-template/test/smoke/realtime/RealtimeApis.smoke.test.ts`
 
 Run:
 

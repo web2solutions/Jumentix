@@ -25,7 +25,7 @@ npm run start:cli
 
 All commands start the same CLI entrypoint:
 
-- `src/interface/CLI/index.ts`
+- `apps/backend-template/src/interface/CLI/index.ts`
 
 Bootstrap/scaffold command:
 
@@ -122,17 +122,17 @@ Field definition includes:
 
 Central validation helpers and registries:
 
-- `src/shared/openapi/OpenApi31DataEntity.ts`
+- `apps/backend-template/src/shared/openapi/OpenApi31DataEntity.ts`
 
 Domain model enforcement:
 
-- `src/modules/port/BaseModel.ts`
+- `apps/backend-template/src/modules/port/BaseModel.ts`
   - `throwIfFieldSchemaIsNotOpenApi31Compliant(...)`
   - `throwIfDataEntitySchemaIsNotOpenApi31Compliant(...)`
 
 Implemented domain schema example:
 
-- `src/modules/Users/domain/Model/User.ts`
+- `apps/backend-template/src/modules/Users/domain/Model/User.ts`
   - static `dataEntitySchema`
 
 ## Persistence
@@ -143,7 +143,7 @@ CLI data is persisted in:
 
 The file is managed by:
 
-- `src/interface/CLI/core/catalogStorage.ts`
+- `apps/backend-template/src/interface/CLI/core/catalogStorage.ts`
 
 ## Architectural Notes
 
@@ -155,7 +155,7 @@ The file is managed by:
 
 CLI behavior is covered by unit tests under:
 
-- `test/unit/interface/CLI/`
+- `apps/backend-template/test/unit/interface/CLI/`
 
 This ensures new CLI features and flows remain stable and coverage-compliant.
 
@@ -163,7 +163,7 @@ This ensures new CLI features and flows remain stable and coverage-compliant.
 
 The visual design surface moved to:
 
-- `service-management/`
+- `apps/service-management/`
 
 See:
 

@@ -6,7 +6,7 @@ Run HTTP interface via Derby.js adapter.
 
 ## Entrypoints
 
-- `src/interface/HTTP/adapters/derby-js/derby-js.ts`
+- `apps/backend-template/src/interface/HTTP/adapters/derby-js/derby-js.ts`
 
 ## Build a Service with Derby.js
 

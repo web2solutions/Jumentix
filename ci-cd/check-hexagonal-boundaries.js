@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = process.cwd();
-const CONTROLLERS_ROOT = path.resolve(ROOT, 'src/modules');
+const CONTROLLERS_ROOT = path.resolve(ROOT, 'apps/backend-template/src/modules');
 const ALLOWED_SERVICE_IMPORT = /\/service\/ports\//;
 const CONTROLLER_PATH_MARKERS = [
   `${path.sep}interface${path.sep}controller${path.sep}`,

@@ -12,6 +12,6 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint ./src --ext .ts",
-    "test": "echo \"No tests yet for @jumentix/adapter-runtime-bootstrap\""
+    "test": "npm run typecheck"
   }
 }

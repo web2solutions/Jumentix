@@ -6,7 +6,7 @@ Run API operations with LoopBack runtime integration.
 
 ## Entrypoints
 
-- `src/interface/HTTP/adapters/loopback/loopback.ts`
+- `apps/backend-template/src/interface/HTTP/adapters/loopback/loopback.ts`
 
 ## Build a Service with LoopBack
 
