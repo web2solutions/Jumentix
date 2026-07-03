@@ -3,6 +3,11 @@
 This file tracks the project ownership fixes proposed before adding new features.
 Keep every item in either `Done` or `Open`, and move items as they are completed.
 
+Governance note:
+- Canonical task management source is GitHub Project **Jumentix**:
+  - https://github.com/users/web2solutions/projects/1
+- This file is a local reference snapshot only and must not be treated as authoritative task state.
+
 GitHub tracking:
 - Open TODO items are mirrored in GitHub Issues with label `todo-mvp`:
   - https://github.com/web2solutions/aaa-typescript-boilerplate/issues?q=is%3Aissue+is%3Aopen+label%3Atodo-mvp

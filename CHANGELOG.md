@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- 2026-07-02 chore(governance): define GitHub Project as single source of truth - web2solutions
 - 2026-07-02 test(cache): raise patch coverage to 100 for cached read branches - web2solutions
 - 2026-07-02 feat(monorepo): finalize rehome, governance gates, and backlog closeout - web2solutions
 - 2026-07-02 fix(ci): resolve service-management integration test path in monorepo - web2solutions

@@ -79,6 +79,7 @@ Use these files as living constraints for future maintenance and feature develop
 - [061-cache-service-read-caching-governance](requirements/061-cache-service-read-caching-governance.md)
 - [062-workspace-dependency-boundaries-governance](requirements/062-workspace-dependency-boundaries-governance.md)
 - [063-workspace-coverage-policy-governance](requirements/063-workspace-coverage-policy-governance.md)
+- [064-github-project-single-source-of-truth](requirements/064-github-project-single-source-of-truth.md)
 - [Data Entity Documentation Agent](data-entity-documentation-agent.md)
 - [Domain Modeling Agent](domain-modeling-agent.md)
 - [Domain Designer Agent](domain-designer-agent.md)
