@@ -80,5 +80,6 @@ if (require.main === module) {
 module.exports = {
   computeAffectedWorkspaces,
   isDocsOnlyPath,
-  normalizePath
+  normalizePath,
+  readChangedFiles
 };

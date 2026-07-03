@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-const { resolveCiPlan } = require('../../../../../ci-cd/run-monorepo-ci');
+const { resolveCiPlan, resolveInputFiles } = require('../../../../../ci-cd/run-monorepo-ci');
 
 describe('run-monorepo-ci', () => {
   it('returns docs-only lightweight plan', () => {
@@ -35,5 +35,24 @@ describe('run-monorepo-ci', () => {
       ['npm', ['run', 'build', '--prefix', 'packages/sdk-rest-client']],
       ['npm', ['run', 'test', '--prefix', 'packages/sdk-rest-client']]
     ]);
+  });
+
+  it('uses explicit argv files when provided', () => {
+    expect.hasAssertions();
+    const files = resolveInputFiles(['README.md', 'apps/backend-template/package.json'], {
+      baseRef: 'origin/main'
+    });
+    expect(files).toStrictEqual(['README.md', 'apps/backend-template/package.json']);
+  });
+
+  it('reads changed files from git base ref when argv is empty', () => {
+    expect.hasAssertions();
+    const readChangedFiles = jest.fn().mockReturnValue([
+      'apps/backend-template/src/index.ts'
+    ]);
+
+    const files = resolveInputFiles([], { baseRef: 'origin/main', readChangedFiles });
+    expect(files).toStrictEqual(['apps/backend-template/src/index.ts']);
+    expect(readChangedFiles).toHaveBeenCalledWith('origin/main');
   });
 });

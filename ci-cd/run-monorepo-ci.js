@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 const { spawnSync } = require('child_process');
-const { computeAffectedWorkspaces } = require('./check-affected-workspaces');
+const { computeAffectedWorkspaces, readChangedFiles } = require('./check-affected-workspaces');
 
 function runCommand(command, args, cwd = process.cwd()) {
   const result = spawnSync(command, args, { cwd, stdio: 'inherit' });
@@ -33,8 +33,21 @@ function resolveCiPlan(affected) {
   return commands;
 }
 
+function resolveInputFiles(argvFiles = [], options = {}) {
+  const files = argvFiles.map((file) => String(file || '').trim()).filter(Boolean);
+  if (files.length > 0) {
+    return files;
+  }
+
+  const baseRef = String(options.baseRef || process.env.AAA_CI_BASE_REF || 'origin/main');
+  const readChanged = typeof options.readChangedFiles === 'function'
+    ? options.readChangedFiles
+    : readChangedFiles;
+  return readChanged(baseRef);
+}
+
 function run() {
-  const files = process.argv.slice(2).map((file) => String(file || '').trim()).filter(Boolean);
+  const files = resolveInputFiles(process.argv.slice(2));
   const affected = computeAffectedWorkspaces(files);
   const commands = resolveCiPlan(affected);
 
@@ -54,5 +67,6 @@ if (require.main === module) {
 }
 
 module.exports = {
-  resolveCiPlan
+  resolveCiPlan,
+  resolveInputFiles
 };
