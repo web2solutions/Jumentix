@@ -20,6 +20,7 @@ import { theme } from '../theme';
 import './global.css';
 
 export const metadata = config.metadata;
+export const dynamic = 'force-dynamic';
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const pageMap = await getPageMap();
