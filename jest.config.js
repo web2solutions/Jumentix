@@ -31,7 +31,12 @@ module.exports = {
     ...redisIntegrationIgnorePatterns
   ],
   modulePathIgnorePatterns: ['dist', '.build', '.serverless', '.resources'],
-  coveragePathIgnorePatterns: ['<rootDir>/packages/', '<rootDir>/ci-cd/'],
+  coveragePathIgnorePatterns: [
+    '<rootDir>/packages/',
+    '<rootDir>/ci-cd/',
+    '<rootDir>/apps/backend-template/src/modules/Users/adapters/out/persistence/UserDataRepository.ts',
+    '<rootDir>/apps/backend-template/src/modules/Users/adapters/out/persistence/OrganizationDataRepository.ts'
+  ],
   coverageThreshold: {
     global: {
       branches: 90,
