@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- 2026-07-03 fix(website): stop generating invalid jumentix index meta entry - web2solutions
 - 2026-07-03 fix(website): remove invalid root index entry from nextra meta - web2solutions
 - 2026-07-03 fix(website): remove test-only type defs from build tsconfig - web2solutions
 - 2026-07-03 fix(website): exclude test files from Next production typecheck - web2solutions
