@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- 2026-07-03 fix(website): harden mdx-safe miro link rendering - web2solutions
 - 2026-07-03 fix(website): resolve CI build deps and MDX link syntax - web2solutions
 - 2026-07-03 fix(test): use development NODE_ENV in auth service env fixture - web2solutions
 - 2026-07-03 fix(test): make env typing resilient under pnpm next globals - web2solutions

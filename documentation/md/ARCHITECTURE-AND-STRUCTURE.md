@@ -82,4 +82,4 @@ Current highlights already implemented:
 
 ![Diagram](../OASdoc/miro.png "Diagram")
 
-<https://miro.com/app/board/uXjVNq5nWJY=/?share_link_id=603404471489>
+<a href="https://miro.com/app/board/uXjVNq5nWJY%3D/?share_link_id=603404471489">Miro board</a>
