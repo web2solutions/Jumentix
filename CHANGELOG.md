@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- 2026-07-03 fix(website): remove unresolved local image from architecture doc - web2solutions
 - 2026-07-03 fix(docs): make architecture miro link mdx-safe at source - web2solutions
 - 2026-07-03 fix(website): harden mdx-safe miro link rendering - web2solutions
 - 2026-07-03 fix(website): resolve CI build deps and MDX link syntax - web2solutions
