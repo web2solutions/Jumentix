@@ -44,14 +44,16 @@ function computeAffectedWorkspaces(files) {
     }
 
     if (file.startsWith('apps/')) {
-      const [_, appName] = file.split('/');
-      if (appName) appsSet.add(appName);
+      const appSegments = file.split('/');
+      const appName = appSegments[1];
+      if (appName && appSegments.length >= 3) appsSet.add(appName);
       continue;
     }
 
     if (file.startsWith('packages/')) {
-      const [__, packageName] = file.split('/');
-      if (packageName) packagesSet.add(packageName);
+      const packageSegments = file.split('/');
+      const packageName = packageSegments[1];
+      if (packageName && packageSegments.length >= 3) packagesSet.add(packageName);
     }
   }
 

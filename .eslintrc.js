@@ -50,6 +50,7 @@ module.exports = {
         packageDir: [
           __dirname,
           path.join(__dirname, 'apps/backend-template'),
+          path.join(__dirname, 'apps/jumentix-website'),
           path.join(__dirname, 'packages/sdk-rest-client'),
           path.join(__dirname, 'packages/sdk-websocket-client'),
           path.join(__dirname, 'packages/sdk-grpc-client'),

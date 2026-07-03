@@ -40,4 +40,15 @@ describe('check-affected-workspaces', () => {
     expect(result.apps).toStrictEqual([]);
     expect(result.packages).toStrictEqual([]);
   });
+
+  it('ignores root files directly under apps/ and packages/ folders', () => {
+    expect.hasAssertions();
+    const result = computeAffectedWorkspaces([
+      'apps/README.md',
+      'packages/README.md',
+      'packages/sdk-rest-client/src/index.ts'
+    ]);
+    expect(result.apps).toStrictEqual([]);
+    expect(result.packages).toStrictEqual(['sdk-rest-client']);
+  });
 });
