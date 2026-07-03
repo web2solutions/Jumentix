@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- 2026-07-03 fix(website): remove test-only type defs from build tsconfig - web2solutions
 - 2026-07-03 fix(website): exclude test files from Next production typecheck - web2solutions
 - 2026-07-03 fix(website): add missing next-themes runtime dependency - web2solutions
 - 2026-07-03 fix(website): exclude storybook config from production typecheck - web2solutions
