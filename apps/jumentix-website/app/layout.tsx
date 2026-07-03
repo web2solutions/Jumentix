@@ -8,14 +8,13 @@ import '@/theme/global.css';
 
 import { Analytics } from '@vercel/analytics/react';
 import { Layout } from 'nextra-theme-docs';
-import { Banner, Head } from 'nextra/components';
+import { Head } from 'nextra/components';
 import { getPageMap } from 'nextra/page-map';
 import { ColorSchemeScript, mantineHtmlProps, MantineProvider } from '@mantine/core';
 // !! End of important imports !!
 
 import { MantineFooter, MantineNavBar } from '@/components';
 import config from '@/config';
-import pack from '../package.json';
 import { theme } from '../theme';
 
 import './global.css';
@@ -42,12 +41,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         <MantineProvider theme={theme} defaultColorScheme={head.mantine.defaultColorScheme}>
           <Layout
-            banner={
-              <Banner storageKey={`release-notes-${pack.version}`}>
-                🚀 Jumentix enterprise website MVP in progress -{' '}
-                <a href="/docs/jumentix">Explore generated docs</a>
-              </Banner>
-            }
             navbar={<MantineNavBar />}
             pageMap={pageMap}
             docsRepositoryBase={nextraLayout.docsRepositoryBase}
