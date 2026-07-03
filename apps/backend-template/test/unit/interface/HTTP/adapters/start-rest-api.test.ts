@@ -13,7 +13,7 @@ describe('start-rest-api adapter loader', () => {
       return {};
     });
     const { startRestApiAdapter } = await import('@src/interface/HTTP/adapters/start-rest-api');
-    await startRestApiAdapter({ AAA_HTTP_FRAMEWORK: 'express' } as NodeJS.ProcessEnv);
+    await startRestApiAdapter({ AAA_HTTP_FRAMEWORK: 'express' } as unknown as NodeJS.ProcessEnv);
     expect(expressAdapterEvaluated).toHaveBeenCalledTimes(1);
   });
 
@@ -25,14 +25,14 @@ describe('start-rest-api adapter loader', () => {
       return {};
     });
     const { startRestApiAdapter } = await import('@src/interface/HTTP/adapters/start-rest-api');
-    await startRestApiAdapter({ AAA_HTTP_FRAMEWORK: 'fastify' } as NodeJS.ProcessEnv);
+    await startRestApiAdapter({ AAA_HTTP_FRAMEWORK: 'fastify' } as unknown as NodeJS.ProcessEnv);
     expect(fastifyAdapterEvaluated).toHaveBeenCalledTimes(1);
   });
 
   it('throws for unsupported framework', async () => {
     expect.assertions(1);
     const { startRestApiAdapter } = await import('@src/interface/HTTP/adapters/start-rest-api');
-    await expect(startRestApiAdapter({ AAA_HTTP_FRAMEWORK: 'unknown-http' } as NodeJS.ProcessEnv))
+    await expect(startRestApiAdapter({ AAA_HTTP_FRAMEWORK: 'unknown-http' } as unknown as NodeJS.ProcessEnv))
       .rejects
       .toThrow('Unsupported AAA_HTTP_FRAMEWORK');
   });
