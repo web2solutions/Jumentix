@@ -17,4 +17,4 @@ Active
 
 ## Notes
 - Current implementation uses generic relational-style base store:
-  - `src/infra/persistence/InMemoryDatabase/Stores/InMemoryRelationalStore.ts`
+  - `apps/backend-template/src/infra/persistence/InMemoryDatabase/Stores/InMemoryRelationalStore.ts`

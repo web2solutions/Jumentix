@@ -6,8 +6,8 @@ Use Hyper-Express as high-performance REST adapter.
 
 ## Entrypoints
 
-- `src/interface/HTTP/adapters/hyper-express/hyper-express.ts`
-- `src/interface/HTTP/adapters/start-rest-api.ts`
+- `apps/backend-template/src/interface/HTTP/adapters/hyper-express/hyper-express.ts`
+- `apps/backend-template/src/interface/HTTP/adapters/start-rest-api.ts`
 
 ## Build a Service with Hyper-Express
 

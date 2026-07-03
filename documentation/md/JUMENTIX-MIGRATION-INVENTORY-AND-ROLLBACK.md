@@ -59,21 +59,21 @@ This document defines concrete migration guardrails for the JumentiX monorepo tr
 
 ## Apps
 
-- `src/` + runtime bootstraps -> `apps/backend-template/src/` (staged migration with compatibility scripts).
-- `service-management/` -> `apps/service-management/`.
+- `apps/backend-template/src/` + runtime bootstraps -> `apps/backend-template/src/` (staged migration with compatibility scripts).
+- `apps/service-management/` -> `apps/service-management/`.
 
 ## Packages
 
 - `bin/aaa-bootstrap.js` + bootstrap logic -> `packages/cli-init/`.
-- `src/infra/messages/*` + `src/modules/port/IMessage*` -> `packages/message-mediator/`.
-- `src/infra/persistence/KeyValueStorage/*` -> `packages/key-value-storage/`.
-- `src/infra/mutex/*` -> `packages/mutex-service/`.
-- `src/infra/ports/persistence/IStore.ts` + `src/infra/persistence/port/IDatabaseClient.ts` -> `packages/persistence-contracts/`.
-- `src/infra/persistence/external/BaseExternalDataRepository.ts` -> `packages/external-persistence-core/`.
-- `src/infra/persistence/external/ExternalStoreProxy.ts` -> `packages/external-store-proxy/`.
-- `src/infra/persistence/external/*.ts` concrete db adapters -> `packages/external-db-repositories/`.
-- `src/infra/persistence/compileDatabaseClient.ts` -> `packages/database-client-factory/`.
-- `src/interface/runtime/RuntimeEnvironment.ts` + runtime infra compiler usage -> `packages/runtime-infra/`.
+- `apps/backend-template/src/infra/messages/*` + `apps/backend-template/src/modules/port/IMessage*` -> `packages/message-mediator/`.
+- `apps/backend-template/src/infra/persistence/KeyValueStorage/*` -> `packages/key-value-storage/`.
+- `apps/backend-template/src/infra/mutex/*` -> `packages/mutex-service/`.
+- `apps/backend-template/src/infra/ports/persistence/IStore.ts` + `apps/backend-template/src/infra/persistence/port/IDatabaseClient.ts` -> `packages/persistence-contracts/`.
+- `apps/backend-template/src/infra/persistence/external/BaseExternalDataRepository.ts` -> `packages/external-persistence-core/`.
+- `apps/backend-template/src/infra/persistence/external/ExternalStoreProxy.ts` -> `packages/external-store-proxy/`.
+- `apps/backend-template/src/infra/persistence/external/*.ts` concrete db adapters -> `packages/external-db-repositories/`.
+- `apps/backend-template/src/infra/persistence/compileDatabaseClient.ts` -> `packages/database-client-factory/`.
+- `apps/backend-template/src/interface/runtime/RuntimeEnvironment.ts` + runtime infra compiler usage -> `packages/runtime-infra/`.
 - adapter bootstrap composition helpers -> `packages/adapter-runtime-bootstrap/`.
 - `sdk-clients/rest|websocket|grpc` canonical sources -> `packages/sdk-*` (legacy `sdk-clients` remains compatibility bridge).
 

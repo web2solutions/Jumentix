@@ -4,9 +4,9 @@
 `User` is the aggregate root of the Users domain. It encapsulates identity, profile data, credentials, roles, tenant organization binding, and child value objects (`emails`, `documents`, `phones`), and is responsible for enforcing mutation rules.
 
 ## Source of truth
-- `src/modules/Users/domain/Model/User.ts`
-- `src/modules/Users/domain/Entity/IUser.ts`
-- `src/modules/port/BaseModel.ts`
+- `apps/backend-template/src/modules/Users/domain/Model/User.ts`
+- `apps/backend-template/src/modules/Users/domain/Entity/IUser.ts`
+- `apps/backend-template/src/modules/port/BaseModel.ts`
 
 ## Construction
 Constructor accepts `UserFactory` (internal type extending `RequestCreateUser`) and applies defaults:

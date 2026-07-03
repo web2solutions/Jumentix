@@ -9,7 +9,7 @@ Local development must provide containerized support services for the platform i
 3. Document startup/teardown commands and expected caveats.
 
 ## Implementation Notes
-- Compose file: `docker-compose-platform-services.yml`.
+- Compose file: `apps/backend-template/docker-compose-platform-services.yml`.
 - Scripts:
   - `npm run docker:compose:platform-services`
   - `npm run docker:stop:platform-services`

@@ -164,6 +164,8 @@ function validateRouteResolution() {
       const controllerCandidates = [
         path.join(
           root,
+          'apps',
+          'backend-template',
           'src',
           'modules',
           moduleName,
@@ -175,6 +177,8 @@ function validateRouteResolution() {
         ),
         path.join(
           root,
+          'apps',
+          'backend-template',
           'src',
           'modules',
           moduleName,
@@ -206,6 +210,8 @@ function validateRouteResolution() {
         FRAMEWORKS.forEach((framework) => {
           const handlerFile = path.join(
             root,
+            'apps',
+            'backend-template',
             'src',
             'modules',
             moduleName,

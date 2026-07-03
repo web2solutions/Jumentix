@@ -216,7 +216,9 @@ Run targeted checks:
 npm run deps:check-cycles
 npm run arch:check-boundaries
 npm run arch:check-users-legacy-imports
+npm run arch:check-workspace-boundaries
 npm run workspace:check-quality
+npm run workspace:check-coverage-policy
 npm run release:governance:check
 npm run oas:check-routes
 npm run test:unit

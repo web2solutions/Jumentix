@@ -5,12 +5,12 @@ const path = require('path');
 const ROOT = process.cwd();
 const EXTENSIONS = ['.ts', '.tsx', '.js', '.mjs', '.cjs'];
 const CORE_DIRS = [
-  'src/modules/Users/domain',
-  'src/modules/Users/features',
-  'src/modules/Users/service',
-  'src/modules/Users/infra/repository',
-  'src/modules/Users/composition',
-  'src/modules/port'
+  'apps/backend-template/src/modules/Users/domain',
+  'apps/backend-template/src/modules/Users/features',
+  'apps/backend-template/src/modules/Users/service',
+  'apps/backend-template/src/modules/Users/infra/repository',
+  'apps/backend-template/src/modules/Users/composition',
+  'apps/backend-template/src/modules/port'
 ].map((dir) => path.resolve(ROOT, dir));
 
 const importRegex = /from\s+['"]([^'"]+)['"]|require\(['"]([^'"]+)['"]\)/g;
@@ -38,7 +38,7 @@ const walk = (dirPath, files = []) => {
 const resolveImport = (sourceFile, specifier) => {
   let candidateBase;
   if (specifier.startsWith('@src/')) {
-    candidateBase = path.resolve(ROOT, 'src', specifier.slice('@src/'.length));
+    candidateBase = path.resolve(ROOT, 'apps/backend-template/src', specifier.slice('@src/'.length));
   } else if (specifier.startsWith('.')) {
     candidateBase = path.resolve(path.dirname(sourceFile), specifier);
   } else {

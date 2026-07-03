@@ -5,11 +5,11 @@
 Runtime startup must be driven by environment variables and editable through Service Management:
 
 - Split startup entrypoints:
-  - `src/interface/HTTP/adapters/start-rest-api.ts`
-  - `src/interface/WebSocket/adapters/start-websocket-api.ts`
-  - `src/interface/gRPC/adapters/start-grpc-api.ts`
+  - `apps/backend-template/src/interface/HTTP/adapters/start-rest-api.ts`
+  - `apps/backend-template/src/interface/WebSocket/adapters/start-websocket-api.ts`
+  - `apps/backend-template/src/interface/gRPC/adapters/start-grpc-api.ts`
 - PM2 must start REST, WebSocket, and gRPC as separate processes.
-- Runtime selection keys must exist in all `src/config/.env*` files:
+- Runtime selection keys must exist in all `apps/backend-template/src/config/.env*` files:
   - `AAA_HTTP_FRAMEWORK` (default `express`)
   - `AAA_REALTIME_API` (default `no`)
   - `AAA_REALTIME_API_PROTOCOL` (default `websocket`)

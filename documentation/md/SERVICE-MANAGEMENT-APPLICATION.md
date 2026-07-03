@@ -2,16 +2,16 @@
 
 The previous `domaindesigner` static app was consolidated into:
 
-- `service-management/`
+- `apps/service-management/`
 
 It is now a tabbed suite for service lifecycle design.
 
 Core implementation files:
 
-- `service-management/index.html`
-- `service-management/script.js`
-- `service-management/styles.css`
-- `service-management/server.js`
+- `apps/service-management/index.html`
+- `apps/service-management/script.js`
+- `apps/service-management/styles.css`
+- `apps/service-management/server.js`
 
 ## Tabs
 
@@ -49,9 +49,9 @@ Core implementation files:
      - `AAA_REALTIME_API_PROTOCOL`
      - `AAA_REALTIME_API_DATABASE_DRIVER`
    - Runtime env editor targets the selected environment file:
-     - `dev` -> `src/config/.env.dev`
-     - `staging` -> `src/config/.env.staging`
-     - `ci` -> `src/config/.env.ci`
+    - `dev` -> `apps/backend-template/src/config/.env.dev`
+    - `staging` -> `apps/backend-template/src/config/.env.staging`
+    - `ci` -> `apps/backend-template/src/config/.env.ci`
 4. **Deploy Management**
    - Tracks deploy targets and runtime deployment metadata.
 
@@ -81,7 +81,7 @@ Recommended dev path:
 - `GET /api/runtime/env?environment=dev|staging|ci`
 - `POST /api/runtime/env`
 
-The server persists approved runtime keys to files under `src/config/`.
+The server persists approved runtime keys to files under `apps/backend-template/src/config/`.
 
 ## Runtime Edit Flow
 
@@ -100,11 +100,11 @@ The server persists approved runtime keys to files under `src/config/`.
 
 Service-level container templates are provided in:
 
-- `docker/services/`
+- `apps/backend-template/docker/services/`
 
 Orchestrated profiles:
 
-- `docker-compose-service-templates.yml`
+- `apps/backend-template/docker-compose-service-templates.yml`
 
 ## Tests
 
@@ -117,5 +117,5 @@ npm run test:integration:service-management
 Unit smoke for roadmap feature presence:
 
 ```bash
-NODE_ENV=dev npx jest test/unit/service-management/mvp.roadmap.features.test.ts --runInBand
+NODE_ENV=dev npx jest apps/backend-template/test/unit/service-management/mvp.roadmap.features.test.ts --runInBand
 ```

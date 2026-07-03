@@ -5,7 +5,7 @@ Canonical contracts for Socket.IO realtime transport.
 ## Source of Truth
 
 - `spec/asyncapi/1.0.0.websocket.yml`
-- `src/interface/WebSocket/WebSocketAPI.ts`
+- `apps/backend-template/src/interface/WebSocket/WebSocketAPI.ts`
 
 ## Envelope: Request
 

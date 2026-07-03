@@ -104,7 +104,7 @@ Exit Criteria:
 
 Current status:
 
-- Extracted and bridged (`src/modules/port/*` + `src/infra/messages/*` now re-export package contracts/adapters).
+- Extracted and bridged (`apps/backend-template/src/modules/port/*` + `apps/backend-template/src/infra/messages/*` now re-export package contracts/adapters).
 - Runtime compile helper migration completed with compatibility bridge.
 
 ### Milestone 3 - SDK Split

@@ -16,3 +16,13 @@ Wave 5 moves runtime applications into workspace app boundaries. Without a stric
 - `documentation/md/JUMENTIX-WAVE5-APP-REHOMING-CUTOVER.md` exists and is referenced by the execution plan and README index.
 - `.agents/project-todos.md` Wave 5 progress references the cutover document.
 - No Wave 5 PR is considered done without green CI gates and coverage threshold compliance.
+
+## Evidence (closed baseline)
+
+- PR: `https://github.com/web2solutions/aaa-typescript-boilerplate/pull/112`
+- Closeout issues:
+  - `https://github.com/web2solutions/aaa-typescript-boilerplate/issues/113`
+  - `https://github.com/web2solutions/aaa-typescript-boilerplate/issues/114`
+  - `https://github.com/web2solutions/aaa-typescript-boilerplate/issues/115`
+- Residual governance follow-up:
+  - `https://github.com/web2solutions/aaa-typescript-boilerplate/issues/116`

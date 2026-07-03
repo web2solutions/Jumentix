@@ -1,7 +1,7 @@
 {
-  "name": "aaa-typescript-boilerplate",
+  "name": "jumentix",
   "version": "0.0.2",
-  "description": "This is a boilerplate to build REST APIs, Monolithic Modular and Microservice applications with Typescript.",
+  "description": "Build services from the ground up with AAA (Authentication, Authorization, Accounting) principles in mind. This is a boilerplate complete services network with a service management system, REST API, gRPC API, WebSocket API, and more.",
   "packageManager": "pnpm@9.15.3",
   "main": "apps/backend-template/src/interface/HTTP/adapters/fastify.ts",
   "bin": {
@@ -25,6 +25,8 @@
     "deps:check-cycles": "node ci-cd/check-core-import-cycles.js",
     "arch:check-boundaries": "node ci-cd/check-hexagonal-boundaries.js",
     "arch:check-users-legacy-imports": "node ci-cd/check-users-legacy-imports.js",
+    "arch:check-workspace-boundaries": "node ci-cd/check-workspace-boundaries.js",
+    "workspace:check-coverage-policy": "node ci-cd/check-workspace-coverage-policy.js",
     "workspace:check-quality": "node ci-cd/check-workspace-quality.js",
     "ci:affected": "node ci-cd/check-affected-workspaces.js",
     "ci:monorepo": "node ci-cd/run-monorepo-ci.js",
@@ -35,7 +37,7 @@
     "serverless:check-handlers": "node ci-cd/check-serverless-handler-paths.js",
     "ci:smoke": "AAA_JWT_TOKEN_SECRET_KEY=${AAA_JWT_TOKEN_SECRET_KEY:-ci_jwt_secret_key} NODE_ENV=ci node ci-cd/run-api-smoke.js",
     "ci:security-smoke": "NODE_ENV=ci node ci-cd/run-security-smoke.js",
-    "ci:gate": "npm run lint && npm run deps:check-cycles && npm run arch:check-boundaries && npm run arch:check-users-legacy-imports && npm run workspace:check-quality && npm run release:governance:check && npm run test:unit && npm run ci:security-smoke && npm run oas:check-routes && npm run serverless:check-handlers && npm run build:dev && npm run ci:smoke",
+    "ci:gate": "npm run lint && npm run deps:check-cycles && npm run arch:check-boundaries && npm run arch:check-users-legacy-imports && npm run arch:check-workspace-boundaries && npm run workspace:check-quality && npm run workspace:check-coverage-policy && npm run release:governance:check && npm run test:unit && npm run ci:security-smoke && npm run oas:check-routes && npm run serverless:check-handlers && npm run build:dev && npm run ci:smoke",
     "ci:gate:strict": "npm run ci:gate && npm run coverage:patch",
     "dev": "npm run pm2:start:dev:restapi",
     "pm2:list": "pm2 ls",

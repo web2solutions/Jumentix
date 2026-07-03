@@ -1,16 +1,16 @@
 const nodeMajor = Number(process.versions.node.split('.')[0]);
 const unsupportedRuntimeIgnorePatterns = nodeMajor > 22
   ? [
-    '<rootDir>/test/integration/Hyper-Express/',
-    '<rootDir>/test/integration/Restify/',
-    '<rootDir>/test/integration/mutex/redis.restify.test.ts'
+    '<rootDir>/apps/backend-template/test/integration/Hyper-Express/',
+    '<rootDir>/apps/backend-template/test/integration/Restify/',
+    '<rootDir>/apps/backend-template/test/integration/mutex/redis.restify.test.ts'
   ]
   : [];
 const redisIntegrationIgnorePatterns = process.env.RUN_REDIS_INTEGRATION
   ? []
   : [
-    '<rootDir>/test/integration/mutex/',
-    '<rootDir>/test/integration/realtime/socketio.redis-streams.multi-instance.test.ts'
+    '<rootDir>/apps/backend-template/test/integration/mutex/',
+    '<rootDir>/apps/backend-template/test/integration/realtime/socketio.redis-streams.multi-instance.test.ts'
   ];
 
 module.exports = {
@@ -21,9 +21,9 @@ module.exports = {
   coverageDirectory: 'coverage',
   testEnvironment: 'node',
   moduleNameMapper: {
-    '@src/(.*)$': '<rootDir>/src/$1',
+    '@src/(.*)$': '<rootDir>/apps/backend-template/src/$1',
     '@seed/(.*)$': '<rootDir>/apps/backend-template/seed/$1',
-    '@test/(.*)$': '<rootDir>/test/$1',
+    '@test/(.*)$': '<rootDir>/apps/backend-template/test/$1',
     '@jumentix/(.*)$': '<rootDir>/packages/$1/src',
   },
   testPathIgnorePatterns: [

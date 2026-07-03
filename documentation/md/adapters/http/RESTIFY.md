@@ -6,8 +6,8 @@ Use Restify as REST adapter where Restify middleware/runtime behavior is require
 
 ## Entrypoints
 
-- `src/interface/HTTP/adapters/restify/restify.ts`
-- `src/interface/HTTP/adapters/start-rest-api.ts`
+- `apps/backend-template/src/interface/HTTP/adapters/restify/restify.ts`
+- `apps/backend-template/src/interface/HTTP/adapters/start-rest-api.ts`
 
 ## Build a Service with Restify
 

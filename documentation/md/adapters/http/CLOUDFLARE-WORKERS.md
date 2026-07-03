@@ -6,7 +6,7 @@ Run HTTP APIs in Cloudflare Workers style (`fetch` contract), without Express ru
 
 ## Entrypoints
 
-- `src/interface/HTTP/adapters/cloudflare-workers/cloudflare-workers.ts`
+- `apps/backend-template/src/interface/HTTP/adapters/cloudflare-workers/cloudflare-workers.ts`
 
 ## Build a Service with Cloudflare Workers
 

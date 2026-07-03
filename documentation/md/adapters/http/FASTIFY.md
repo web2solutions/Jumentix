@@ -6,8 +6,8 @@ Use Fastify as your REST inbound adapter with Fastify-native server features.
 
 ## Entrypoints
 
-- `src/interface/HTTP/adapters/fastify/fastify.ts`
-- `src/interface/HTTP/adapters/start-rest-api.ts`
+- `apps/backend-template/src/interface/HTTP/adapters/fastify/fastify.ts`
+- `apps/backend-template/src/interface/HTTP/adapters/start-rest-api.ts`
 
 ## Build a Service with Fastify
 

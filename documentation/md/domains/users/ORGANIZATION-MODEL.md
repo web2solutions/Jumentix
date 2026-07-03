@@ -4,9 +4,9 @@
 `Organization` is the tenant aggregate in the Users domain. It models organization identity, communication channels, and membership references to users.
 
 ## Source of truth
-- `src/modules/Users/domain/Model/Organization.ts`
-- `src/modules/Users/domain/Entity/IOrganization.ts`
-- `src/modules/Users/service/OrganizationService.ts`
+- `apps/backend-template/src/modules/Users/domain/Model/Organization.ts`
+- `apps/backend-template/src/modules/Users/domain/Entity/IOrganization.ts`
+- `apps/backend-template/src/modules/Users/service/OrganizationService.ts`
 
 ## Construction
 Constructor accepts `RequestCreateOrganization` + optional metadata.

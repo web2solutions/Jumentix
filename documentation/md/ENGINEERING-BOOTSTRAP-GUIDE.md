@@ -15,7 +15,7 @@ Current workspace layout:
 - `apps/backend-template`: runtime app ownership for backend bootstrap profiles and PM2 ecosystems.
 - `apps/service-management`: service management web app and runtime server.
 - `packages/*`: reusable internal packages (message mediator, SDK clients, infra adapters).
-- root `src/`: incremental migration bridge while app/package ownership is finalized.
+- root `apps/backend-template/src/`: incremental migration bridge while app/package ownership is finalized.
 
 Core orchestration commands:
 
@@ -165,7 +165,7 @@ npm run pm2:start:dev:websocket-rest
 npm run pm2:start:dev:grpc-rest
 ```
 
-These profiles start service-management alongside backend adapters using `apps/backend-template/pm2/*`.
+These profiles start service-management alongside backend adapters using `pm2/*`.
 
 ### Quality and CI parity
 

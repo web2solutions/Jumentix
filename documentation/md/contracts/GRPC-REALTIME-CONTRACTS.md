@@ -4,9 +4,9 @@ Canonical contracts for gRPC realtime transport.
 
 ## Source of Truth
 
-- `src/interface/gRPC/proto/async-api.proto`
+- `apps/backend-template/src/interface/gRPC/proto/async-api.proto`
 - `spec/asyncapi/1.0.0.grpc.yml`
-- `src/interface/gRPC/gRPCAPI.ts`
+- `apps/backend-template/src/interface/gRPC/gRPCAPI.ts`
 
 ## Service Definition
 

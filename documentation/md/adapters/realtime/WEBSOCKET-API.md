@@ -5,7 +5,7 @@ This guide is exclusively for the Socket.IO realtime interface.
 ## Scope
 
 - Transport: WebSocket (Socket.IO protocol)
-- Server implementation: `src/interface/WebSocket/WebSocketAPI.ts`
+- Server implementation: `apps/backend-template/src/interface/WebSocket/WebSocketAPI.ts`
 - SDK client: `sdk-clients/websocket/WebSocketApiClient.ts`
 - AsyncAPI source: `spec/asyncapi/1.0.0.websocket.yml`
 
@@ -41,8 +41,8 @@ Fallback resolution order for Redis connection:
 
 Implementation files:
 
-- `src/interface/WebSocket/adapters/socket-io/redisStreamsAdapter.ts`
-- `src/interface/WebSocket/adapters/socket-io/socket-io.ts`
+- `apps/backend-template/src/interface/WebSocket/adapters/socket-io/redisStreamsAdapter.ts`
+- `apps/backend-template/src/interface/WebSocket/adapters/socket-io/socket-io.ts`
 
 ## Multi-thread Resilience with Socket.IO Cluster Adapter
 
@@ -55,9 +55,9 @@ AAA_WEBSOCKET_CLUSTER_WORKERS=4
 
 Implementation files:
 
-- `src/interface/WebSocket/adapters/socket-io/clusterAdapter.ts`
-- `src/interface/WebSocket/adapters/start-websocket-api.ts`
-- `src/interface/WebSocket/adapters/socket-io/socket-io.ts`
+- `apps/backend-template/src/interface/WebSocket/adapters/socket-io/clusterAdapter.ts`
+- `apps/backend-template/src/interface/WebSocket/adapters/start-websocket-api.ts`
+- `apps/backend-template/src/interface/WebSocket/adapters/socket-io/socket-io.ts`
 
 Notes:
 
@@ -69,7 +69,7 @@ Notes:
 
 A dedicated integration test validates resilience with 2 Socket.IO servers + Redis:
 
-- `test/integration/realtime/socketio.redis-streams.multi-instance.test.ts`
+- `apps/backend-template/test/integration/realtime/socketio.redis-streams.multi-instance.test.ts`
 
 Run it with Docker:
 

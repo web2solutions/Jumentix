@@ -6,7 +6,7 @@ Expose API operations through Adonis.js runtime bridge.
 
 ## Entrypoints
 
-- `src/interface/HTTP/adapters/adonis-js/adonis-js.ts`
+- `apps/backend-template/src/interface/HTTP/adapters/adonis-js/adonis-js.ts`
 
 ## Build a Service with Adonis.js
 

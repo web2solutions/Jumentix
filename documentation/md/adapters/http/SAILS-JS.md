@@ -6,7 +6,7 @@ Use Sails.js runtime as HTTP inbound interface.
 
 ## Entrypoints
 
-- `src/interface/HTTP/adapters/sails-js/sails-js.ts`
+- `apps/backend-template/src/interface/HTTP/adapters/sails-js/sails-js.ts`
 
 ## Build a Service with Sails.js
 

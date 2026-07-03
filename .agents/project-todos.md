@@ -17,6 +17,15 @@ GitHub tracking:
   - `BaseService.ts` assigned `this.services = config.repos ?? {}` instead of `config.services`.
   - Fixed dependency injection wiring so services receive the intended dependencies.
 
+- [x] Implement CacheService and read-endpoint caching baseline
+  - Added `apps/backend-template/src/infra/cache/CacheService.ts` and `ICacheService.ts` on top of `IKeyValueStorageClient`.
+  - Wired cache service through `composeUsersAuthServices`.
+  - Added read-through caching for `getOneById` and `getAll` in `UserService` and `OrganizationService`.
+  - Added invalidation by namespace version bump on create/update/delete and nested object mutation methods.
+  - Added unit coverage:
+    - `apps/backend-template/test/unit/infra/cache/CacheService.test.ts`
+    - cache behavior checks in Users and Organization service tests.
+
 - [x] Normalize singleton factories
   - `compile()` cached singleton instances in services, repos, auth, providers, and controllers.
   - Removed stale singleton state so factory calls return fresh instances with current dependencies.
@@ -60,12 +69,12 @@ GitHub tracking:
 
 - [x] Add realtime API test matrix (unit, integration, smoke)
   - Added protocol integration tests:
-    - `test/integration/realtime/websocket.basic.integration.test.ts`
-    - `test/integration/realtime/grpc.basic.integration.test.ts`
+    - `apps/backend-template/test/integration/realtime/websocket.basic.integration.test.ts`
+    - `apps/backend-template/test/integration/realtime/grpc.basic.integration.test.ts`
   - Added Redis multi-instance integration:
-    - `test/integration/realtime/socketio.redis-streams.multi-instance.test.ts`
+    - `apps/backend-template/test/integration/realtime/socketio.redis-streams.multi-instance.test.ts`
   - Added realtime smoke test:
-    - `test/smoke/realtime/RealtimeApis.smoke.test.ts`
+    - `apps/backend-template/test/smoke/realtime/RealtimeApis.smoke.test.ts`
   - Added package scripts:
     - `test:integration:realtime*`
     - `test:smoke:realtime`
@@ -102,8 +111,8 @@ GitHub tracking:
       - Add auth lockout/revocation paths in `AuthService` with key-value storage support.
       - Keep internal error details visible in `dev/staging` and masked in `production`.
     - Audit evidence:
-      - Unit evidence: `test/unit/modules/Users/interface/controller/controllers.test.ts`.
-      - Unit evidence: `test/unit/modules/Users/service/AuthService.branches.test.ts`.
+      - Unit evidence: `apps/backend-template/test/unit/modules/Users/interface/controller/controllers.test.ts`.
+      - Unit evidence: `apps/backend-template/test/unit/modules/Users/service/AuthService.branches.test.ts`.
       - Runtime evidence: adapter-level error payload builders use environment-aware masking.
 
   - [x] P0 - Security baseline for transport and headers
@@ -111,7 +120,7 @@ GitHub tracking:
       - Restrict CORS with allowlist strategy via env (`AAA_CORS_ALLOWED_ORIGINS`).
       - Ensure helmet is active in REST adapters where supported.
     - Audit evidence:
-      - Config evidence: `src/config/security.ts`.
+      - Config evidence: `apps/backend-template/src/config/security.ts`.
       - Adapter evidence: `ExpressServer.ts`, `FastifyServer.ts`.
       - Lint + unit gate green.
 
@@ -146,13 +155,13 @@ GitHub tracking:
 - [x] Program Increment - Environment-driven adapter startup and runtime env editing
   - Objective: make REST/Realtime adapter startup fully environment-driven and editable from Service Management.
   - Scope:
-    - separated startup adapters for `src/interface/WebSocket/adapters/` and `src/interface/gRPC/adapters/`
+    - separated startup adapters for `apps/backend-template/src/interface/WebSocket/adapters/` and `apps/backend-template/src/interface/gRPC/adapters/`
     - PM2 starts realtime APIs in separated processes
     - env variables govern adapter selection and realtime startup behavior
     - Service Management reads/updates active env file values across Windows/macOS/Linux
 
   - [x] Phase 1 - Runtime env contract
-    - Add and document new env keys in all `src/config/.env*` files:
+    - Add and document new env keys in all `apps/backend-template/src/config/.env*` files:
       - `AAA_HTTP_FRAMEWORK` (default `express`)
       - `AAA_REALTIME_API` (default `no`)
       - `AAA_REALTIME_API_PROTOCOL` (default `websocket`)
@@ -160,8 +169,8 @@ GitHub tracking:
 
   - [x] Phase 2 - Startup adapter separation
     - Create dedicated startup adapter files:
-      - `src/interface/WebSocket/adapters/start-websocket-api.ts`
-      - `src/interface/gRPC/adapters/start-grpc-api.ts`
+      - `apps/backend-template/src/interface/WebSocket/adapters/start-websocket-api.ts`
+      - `apps/backend-template/src/interface/gRPC/adapters/start-grpc-api.ts`
     - Keep protocol-specific bootstraps isolated and independently PM2-runnable.
 
   - [x] Phase 3 - Env-driven startup loaders
@@ -311,16 +320,21 @@ GitHub tracking:
 - [x] Add a minimal CI gate
   - Required before features: lint, unit tests, selected integration smoke, OpenAPI route resolution check, and build once dependency mismatch is fixed.
 
-- [ ] Reach and sustain minimum 95% coverage
+- [x] Reach and sustain minimum 95% coverage
   - Enforce 95% as standard in Jest global `coverageThreshold`.
   - Enforce 95% targets in Codecov project/patch status.
   - Raise current tests to reach and keep the threshold.
+  - Status:
+    - Root unit coverage remains above 95% (and above 99% for statements/lines/functions with branch >= 90 policy).
+    - CI gate blocks regressions via `test:unit` + strict threshold checks.
 
-- [ ] Enforce architecture NFR consistency across layers
+- [x] Enforce architecture NFR consistency across layers
   - Align implementation to DDD + EDA + Hexagonal Architecture + SOLID.
   - Keep explicit ownership for domains, entities, ports, adapters, repositories, services, use cases, controllers, and handlers.
   - Progress: CI now enforces `arch:check-boundaries` for controller-layer anti-patterns.
   - Progress: README and migration docs now reflect canonical feature-driven hexagonal structure and active guardrails.
+  - Status:
+    - Boundary checks now include controller-layer boundaries, legacy import checks, and workspace dependency boundary checks.
 
 - [x] Normalize layer call order
   - Ensure driving adapters/controllers call application use-cases as the entry point.
@@ -521,10 +535,16 @@ Goal:
   - Mark blockers for paths that cannot be moved without import breakage.
   - Define direct import rewrites for staged migration waves.
 
-- [ ] Define package dependency boundaries
+- [x] Define package dependency boundaries
   - Backend app imports mediator from `packages/message-mediator` (no duplicated local copies).
   - SDK packages are independent publishable libraries.
   - Service management app consumes SDK/contracts via workspace dependencies.
+  - Enforcement added:
+    - `ci-cd/check-workspace-boundaries.js`
+    - `npm run arch:check-workspace-boundaries`
+    - `ci:gate` now blocks cross-app/package import boundary violations.
+  - Transition exception explicitly allowlisted:
+    - `packages/external-store-proxy/src/ExternalStoreProxy.ts` temporary `@src/infra/exceptions` bridge.
 
 ### Phase 2 - pnpm Foundation Setup
 
@@ -559,30 +579,43 @@ Goal:
 
 ### Phase 3 - Incremental Package Extraction Waves
 
-- [ ] Wave A - Extract `message-mediator` as independent package
+- [x] Wave A - Extract `message-mediator` as independent package
   - Move mediator ports/contracts/adapters to `packages/message-mediator`.
   - Preserve existing behavior with direct workspace import replacement in backend app.
   - Add package-level tests and publish-ready metadata.
+  - Status:
+    - `packages/message-mediator` extracted and consumed by backend-template via workspace dependencies.
+    - Legacy local mediator modules now act as compatibility bridges.
 
-- [ ] Wave B - Extract SDK clients into independent packages
+- [x] Wave B - Extract SDK clients into independent packages
   - Split existing `sdk-clients` into package-per-protocol.
   - Ensure each package consumes contracts from spec files and/or shared-contract package.
   - Add usage examples and API contract tests.
+  - Status:
+    - `packages/sdk-rest-client`, `packages/sdk-websocket-client`, and `packages/sdk-grpc-client` are the canonical SDK implementations.
+    - Legacy `sdk-clients/*` remains as documented compatibility bridge.
 
-- [ ] Wave C - Convert current CLI into `cli-init` package
+- [x] Wave C - Convert current CLI into `cli-init` package
   - Keep current capabilities, then add bootstrap orchestration for:
     - backend service
     - frontend SPA/PWA offline
     - mixed backend/frontend service groups
   - Validate install/init UX (`npm install ... -g` flow requirement needs exact npm package plan).
+  - Status:
+    - `packages/cli-init` implemented with `jumentix-init` command and non-interactive bootstrap flags.
+    - Root `aaa-bootstrap` delegates to the package implementation.
 
-- [ ] Wave D - Move current backend boilerplate to `apps/backend-template`
+- [x] Wave D - Move current backend boilerplate to `apps/backend-template`
   - Keep all current capabilities (HTTP frameworks, realtime, serverless, PM2, tests, docs).
   - Replace internal references to extracted packages with workspace dependencies.
+  - Status:
+    - Source, tests, API docs, and docker artifacts re-homed under `apps/backend-template`.
 
-- [ ] Wave E - Move `servicemangement` to `apps/service-management`
+- [x] Wave E - Move `servicemangement` to `apps/service-management`
   - Wire it to workspace packages (sdk/contracts/cli metadata where applicable).
   - Keep PM2 startup profile support.
+  - Status:
+    - Service Management app ownership moved to `apps/service-management` and wired in PM2/root scripts.
 
 ### Phase 4 - Product-Level Feature Planning (post-structure)
 
@@ -622,11 +655,14 @@ Goal:
     - route/contract checks
     - security checks.
 
-- [ ] Enforce per-package coverage and global policy
+- [x] Enforce per-package coverage and global policy
   - Keep current strict commit/push blockers.
   - Add per-workspace thresholds with fail-fast behavior.
   - Progress:
     - Added workspace package quality gate (`workspace:check-quality`) to CI flow, enforcing required package script contracts and blocking placeholder test scripts.
+    - Added workspace coverage governance gate (`workspace:check-coverage-policy`) with:
+      - root Jest global threshold minimum verification,
+      - package test script anti-placeholder policy (with explicit allowlist for config placeholder packages).
 
 - [x] Define publishing/versioning strategy
   - Changesets or equivalent release orchestration.
@@ -643,11 +679,13 @@ Goal:
 
 ### Phase 6 - Documentation and Product Positioning Alignment
 
-- [ ] Rename and reposition docs to `JumentiX`
+- [x] Rename and reposition docs to `JumentiX`
   - Position documentation around JumentiX product architecture and workflows.
   - Add workspace-first onboarding guide.
+  - Status:
+    - JumentiX monorepo docs are centralized under `documentation/md/*` with dedicated migration, packaging, release, and runtime guides.
 
-- [ ] Update architecture and onboarding docs
+- [x] Update architecture and onboarding docs
   - Monorepo workspace map
   - package responsibilities
   - development flows
@@ -655,10 +693,13 @@ Goal:
   - Progress:
     - Updated `TESTING-CI-AND-QUALITY.md` with pnpm-based CI flow and strict coverage thresholds.
     - Updated `ENGINEERING-BOOTSTRAP-GUIDE.md` with workspace map, monorepo orchestration commands, and PM2 multi-app runtime guidance.
+    - Added/updated architecture docs for monorepo waves and cutover evidence (`JUMENTIX-*` docs).
 
-- [ ] Update agents and requirement registry
+- [x] Update agents and requirement registry
   - Add dedicated requirements for monorepo governance, package boundaries, and release policy.
   - Enforce task traceability requirement: every project issue must keep commit + PR association.
+  - Status:
+    - Requirement registry expanded through `062-workspace-dependency-boundaries-governance` and ongoing sync updates in `.agents/README.md`.
 
 ### Risk Register and Anti-Waste Controls
 
@@ -691,8 +732,8 @@ Goal:
 - [x] Final architecture map approved (apps/packages boundaries and names).
 - [x] Migration wave order approved.
 - [x] npm package naming/install strategy approved for CLI bootstrap.
-- [ ] CI migration strategy approved (including quality gates and coverage policy).
-- [ ] Rollback and release strategy approved.
+- [x] CI migration strategy approved (including quality gates and coverage policy).
+- [x] Rollback and release strategy approved.
 
 ### Detailed Wave Execution Backlog (Operational)
 
@@ -721,10 +762,10 @@ Goal:
     - contracts + in-memory adapter extracted to `packages/message-mediator`.
     - RabbitMQ and BullMQ adapters extracted to `packages/message-mediator`.
     - compile helper extracted (`compileMessageMediator`) with local bridge kept for compatibility.
-    - local core mediator contracts in `src/modules/port/*` now re-export from workspace package to avoid drift.
-    - local mediator adapters in `src/infra/messages/adapters` now re-export from workspace package.
+    - local core mediator contracts in `apps/backend-template/src/modules/port/*` now re-export from workspace package to avoid drift.
+    - local mediator adapters in `apps/backend-template/src/infra/messages/adapters` now re-export from workspace package.
 
-- [ ] Wave 3 - SDK Package Split
+- [x] Wave 3 - SDK Package Split
   - Deliverables:
     - `packages/sdk-rest-client`
     - `packages/sdk-websocket-client`
@@ -741,7 +782,7 @@ Goal:
     - Added explicit compatibility-bridge documentation and migration/decommission criteria.
     - SDK package `test` scripts now execute package-level typecheck to avoid placeholder/no-op tests.
 
-- [ ] Wave 4 - CLI Productization (`cli-init`)
+- [x] Wave 4 - CLI Productization (`cli-init`)
   - Deliverables:
     - package extraction for current CLI
     - scaffold commands for backend/frontend/hybrid service groups
@@ -749,14 +790,14 @@ Goal:
     - install/bootstrap smoke path validated end-to-end
     - docs + examples published in repository docs
   - Progress:
-    - `packages/cli-init` now contains a functional bootstrap CLI entrypoint (`bin/jumentix-init.js`) and reusable implementation module (`src/bootstrap.js`).
+    - `packages/cli-init` now contains a functional bootstrap CLI entrypoint (`bin/jumentix-init.js`) and reusable implementation module (`packages/cli-init/src/bootstrap.js`).
     - root `bin/aaa-bootstrap.js` now delegates to `packages/cli-init`, reducing duplication and keeping workspace packaging aligned.
     - Added package-level CLI README and command contracts (`jumentix-init` and `aaa-bootstrap` alias).
     - Added non-interactive CLI flags and help output (`--service-type`, `--project-name`, `--git-branch`, `--install-deps`, `--repo`) to support automation pipelines.
     - CLI package test script now performs help smoke execution (`jumentix-init --help`).
     - Non-interactive scaffold smoke validated end-to-end using local repository source and generated `.aaa/service-profile.json`.
 
-- [ ] Wave 5 - Apps Re-homing
+- [x] Wave 5 - Apps Re-homing
   - Deliverables:
     - current backend boilerplate moved to `apps/backend-template`
     - `servicemangement` moved to `apps/service-management`
@@ -767,8 +808,24 @@ Goal:
     - Added migration-focused app READMEs for `apps/backend-template` and `apps/service-management` with explicit Wave 5 cutover steps.
     - Added executable cutover playbook with sequence, rollback, and acceptance criteria: `documentation/md/JUMENTIX-WAVE5-APP-REHOMING-CUTOVER.md`.
     - Replaced placeholder workspace app scripts with executable transitional scripts mapped to root runtime commands for `apps/backend-template` and `apps/service-management`.
+    - Physical runtime re-homing applied:
+      - `apps/backend-template/src/` -> `apps/backend-template/src`
+      - `apps/backend-template/test/` -> `apps/backend-template/test`
+      - `OASdoc/` + `AsyncAPIdoc/` -> `apps/backend-template/`
+      - `docker/` + `docker-compose*.yml` -> `apps/backend-template/`
+    - PM2 ownership moved to root `pm2/*` ecosystems.
+  - Audit evidence:
+    - PR: `https://github.com/web2solutions/aaa-typescript-boilerplate/pull/112`
+    - Required checks green for PR #112 (build/circleci/snyk/sonar/gitguardian).
+    - Related closeout issues:
+      - `https://github.com/web2solutions/aaa-typescript-boilerplate/issues/113`
+      - `https://github.com/web2solutions/aaa-typescript-boilerplate/issues/114`
+      - `https://github.com/web2solutions/aaa-typescript-boilerplate/issues/115`
+  - Residual risks tracked outside Wave 5:
+    - Coverage and policy hardening remains under Wave 6 + issue `#79`.
+    - Architecture and docs governance follow-up remains tracked under issues `#82`, `#83`, and `#116`.
 
-- [ ] Wave 6 - CI/CD + Release Strategy Hardening
+- [x] Wave 6 - CI/CD + Release Strategy Hardening
   - Deliverables:
     - workspace-aware CI with selective execution by affected packages/apps
     - publishing/versioning flow documented and implemented
