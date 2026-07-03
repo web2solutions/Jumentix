@@ -60,7 +60,6 @@ ${body}
 async function writeMetaFile(entries) {
   const lines = [
     'export default {',
-    "  index: 'Jumentix Docs',",
     ...entries.map((entry) => `  '${entry.slug}': '${escapeForSingleQuotedTs(entry.title)}',`),
     '};',
     '',

@@ -1,5 +1,4 @@
 export default {
-  index: 'Jumentix Docs',
   overview: 'Jumentix Overview',
   'architecture-structure': 'Architecture and Structure',
   'rest-api-guide': 'Creating REST API with Jumentix',
