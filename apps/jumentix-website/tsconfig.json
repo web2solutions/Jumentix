@@ -35,13 +35,12 @@
     ]
   },
   "exclude": [
-    "node_modules"
+    "node_modules",
+    ".storybook"
   ],
   "include": [
     "**/*.ts",
     "**/*.tsx",
-    ".storybook/main.ts",
-    ".storybook/preview.tsx",
     "svg.d.ts",
     "next-env.d.ts",
     ".next/types/**/*.ts",
