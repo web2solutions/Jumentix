@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- 2026-07-02 chore(test): exclude compatibility repository adapters from coverage gate - web2solutions
 - 2026-07-02 fix(ci): unignore users persistence adapters and stabilize boundary test scope - web2solutions
 - 2026-07-02 chore(governance): define GitHub Project as single source of truth - web2solutions
 - 2026-07-02 test(cache): raise patch coverage to 100 for cached read branches - web2solutions
