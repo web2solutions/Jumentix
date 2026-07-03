@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const {
   validateControllerFile,
-  readImports
+  readImports: readHexImports
 } = require('../../../../../ci-cd/check-hexagonal-boundaries');
 
 describe('check-hexagonal-boundaries', () => {
   it('parses import statements', () => {
     expect.hasAssertions();
-    const imports = readImports(`
+    const imports = readHexImports(`
       import { A } from "@src/modules/Users/application/ports/IUserUseCases";
       import { B } from "@src/interface/HTTP/ports";
     `);
@@ -30,7 +30,7 @@ describe('check-hexagonal-boundaries', () => {
     `;
     const violations = validateControllerFile(
       source,
-      readImports(source),
+      readHexImports(source),
       'src/modules/Users/adapters/in/http/controllers/BrokenController.ts'
     );
 
@@ -55,7 +55,7 @@ describe('check-hexagonal-boundaries', () => {
     `;
     const violations = validateControllerFile(
       source,
-      readImports(source),
+      readHexImports(source),
       'src/modules/Users/adapters/in/http/controllers/UserController.ts'
     );
     expect(violations).toStrictEqual([]);

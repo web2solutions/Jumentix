@@ -93,6 +93,8 @@ src/config/.env.dev
 out
 !src/modules/**/adapters/out/
 !src/modules/**/adapters/out/**
+!apps/backend-template/src/modules/**/adapters/out/
+!apps/backend-template/src/modules/**/adapters/out/**
 !test/**/out/
 !test/**/out/**
 
