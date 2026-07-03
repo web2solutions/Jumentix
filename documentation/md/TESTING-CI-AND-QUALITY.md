@@ -97,8 +97,9 @@ Included checks:
 
 Local enforcement:
 
-- `.husky/pre-commit` runs `npm run lint && npm run test:unit`
-- `.husky/pre-push` runs `npm run ci:gate`
+- `.husky/pre-commit` runs `npm run changelog:update && git add CHANGELOG.md && npm run lint && npm run test:unit`
+- `.husky/pre-push` runs `npm run ci:gate:strict`
+- `post-commit` is mutation-free (no auto-amend, no bypass flags)
 - `.husky/commit-msg` runs commitlint (`@commitlint/config-conventional`)
 - `.husky/post-commit` updates `CHANGELOG.md` from Git history and auto-amends the commit when needed
 

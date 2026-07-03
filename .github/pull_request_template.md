@@ -23,10 +23,19 @@ Include links to issue(s), incident(s), backlog items, or Sonar/Codecov check UR
 - GitHub Project: `Jumentix` (`https://github.com/users/web2solutions/projects/1`)
 - Project item link(s):
 - Issue link(s):
+- Issue ID list (comma separated):
 - Item status at PR creation:
 - Target cycle (`Start date` -> `End date`):
 - Priority group for this PR (`P0` / `P1` / `P2`):
 - [ ] This PR contains tasks from only one priority group.
+
+## Bidirectional Traceability (Required)
+
+- [ ] Every linked issue already contains this PR URL.
+- [ ] Every linked issue already contains commit hash/range evidence.
+- [ ] PR description includes mapping of task -> commit(s).
+- Task -> commit(s) mapping:
+  - `#issue`:
 
 ## Scope of Change
 

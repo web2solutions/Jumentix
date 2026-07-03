@@ -7,10 +7,71 @@ Governance note:
 - Canonical task management source is GitHub Project **Jumentix**:
   - https://github.com/users/web2solutions/projects/1
 - This file is a local reference snapshot only and must not be treated as authoritative task state.
+- Task/PR governance:
+  - Traceability must be bidirectional (`issue -> PR/commit` and `PR -> issue/task mapping`) per requirement 055.
+- NFR governance:
+  - All user-requested non-functional requirements must be captured in `.agents/requirements` and indexed in `.agents/NFR-REGISTRY.md` (requirement 068).
 
 GitHub tracking:
 - Open TODO items are mirrored in GitHub Issues with label `todo-mvp`:
   - https://github.com/web2solutions/aaa-typescript-boilerplate/issues?q=is%3Aissue+is%3Aopen+label%3Atodo-mvp
+
+## Documentation Round (EPIC #117)
+
+- Epic: https://github.com/web2solutions/aaa-typescript-boilerplate/issues/117
+- Child tasks:
+  - [x] #118 Root README positioning + global index
+  - [x] #119 Backend Template technical docs hub
+  - [x] #120 Service Management technical docs + SPA/PWA guide
+  - [x] #121 REST and Realtime API guides
+  - [x] #122 SaaS monolith + microservices guides
+  - [x] #123 Docs governance + cross-link validation
+
+## Website Round (EPIC #124)
+
+- Epic: https://github.com/web2solutions/aaa-typescript-boilerplate/issues/124
+- Status: Planned and decomposed in GitHub Project Jumentix (awaiting implementation order)
+- Governance fields:
+  - Estimates: defined for epic and all child tasks
+  - Start/End dates: defined for epic and all child tasks
+  - Iteration assignment: tracked by labels `iteration-a` and `iteration-b` (project Iteration field is currently unconfigured with zero cycles)
+
+### Detailed execution plan
+
+1. Planning and conversion strategy
+  - [~] #125 IA, sitemap, and conversion funnel definition (5 pts) - implemented in workspace, awaiting PR/commit linkage for closure
+  - Schedule: 2026-07-06 -> 2026-07-20 (`iteration-a`)
+  - Outcome: approved navigation model, CTA strategy, and markdown-source mapping.
+
+2. Website bootstrap and architecture
+  - [~] #126 Scaffold app in `apps/jumentix-website` using Vercel Mantine + Nextra template (8 pts) - in progress
+  - Schedule: 2026-07-06 -> 2026-07-20 (`iteration-a`)
+  - Outcome: stable static app baseline, theme system, and scalable project structure.
+
+3. Data foundation from markdown
+  - [~] #127 Markdown-to-site static content pipeline (8 pts) - implemented in workspace, awaiting PR/commit linkage for closure
+  - Schedule: 2026-07-06 -> 2026-07-20 (`iteration-a`)
+  - Outcome: deterministic MD ingestion and normalized content metadata for website sections.
+
+4. Conversion-focused commercial experience
+  - [~] #128 Commercial pages and lead-conversion CTA implementation (8 pts) - implemented in workspace, awaiting PR/commit linkage for closure
+  - Schedule: 2026-07-06 -> 2026-07-20 (`iteration-a`)
+  - Outcome: persuasive enterprise messaging and complete buyer journey pages.
+
+5. Launch readiness
+  - [~] #129 SEO and performance baseline (5 pts) - implemented in workspace, awaiting PR/commit linkage for closure
+  - Schedule: 2026-07-21 -> 2026-08-03 (`iteration-b`)
+  - Outcome: metadata, sitemap, and performance baseline for commercial publication.
+
+6. Deployment integration
+  - [~] #130 Vercel deploy scripts and package integration (5 pts) - implemented in workspace, awaiting PR/commit linkage for closure
+  - Schedule: 2026-07-21 -> 2026-08-03 (`iteration-b`)
+  - Outcome: one-command deploy flow from `package.json` and reproducible publishing process.
+
+7. Governance closure
+  - [~] #131 Agents/docs/project tracking synchronization (3 pts) - implemented in workspace, awaiting PR/commit linkage for closure
+  - Schedule: 2026-07-21 -> 2026-08-03 (`iteration-b`)
+  - Outcome: full traceability issue -> implementation -> PR, with updated requirements/docs.
 
 ## Done
 
@@ -844,3 +905,18 @@ Goal:
     - Added `ci-cd/run-monorepo-ci.js` + `npm run ci:monorepo` with scope-based execution (docs-only lightweight checks or strict gate + affected apps/packages workflow).
     - Updated CI pipelines to execute monorepo-aware flow (`ci:monorepo`) with pnpm dependency setup in GitHub Actions and CircleCI.
     - Hardened `arch:check-boundaries` to scan real HTTP controllers under `adapters/in/http/controllers` and enforce application use-case imports.
+
+### Documentation Round (EPIC #117)
+
+- [ ] Create root Jumentix marketing README with complete component index and required solution sections.
+  - Epic: `https://github.com/web2solutions/aaa-typescript-boilerplate/issues/117`
+  - GitHub Project source of truth: `https://github.com/users/web2solutions/projects/1`
+- [ ] Reorganize component/project docs under component folders (`apps/*`, `packages/*`) and add technical hubs.
+- [ ] Ensure root README links to all component docs and all required guides:
+  - SPA/PWA
+  - REST API
+  - Realtime API
+  - SaaS Monolith
+  - SaaS Microservices
+- [ ] Add technical-rich docs for backend-template and service-management with architecture, integrations, and examples.
+- [ ] Validate documentation navigation integrity (root index + component hubs with no dead links).

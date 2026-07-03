@@ -2,6 +2,10 @@
 
 Workspace app target for backend-template migration.
 
+Technical hub:
+
+- [Backend Template Documentation](./documentation/README.md)
+
 ## Current status
 
 - Transitional workspace app with executable scripts mapped to the current root runtime.

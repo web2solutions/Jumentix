@@ -21,6 +21,7 @@
 Detailed feature usage:
 
 - [Domain Designer Features and Usage](../../documentation/md/DOMAIN-DESIGNER-FEATURES-AND-USAGE.md)
+- [Service Management Technical Documentation](./documentation/README.md)
 
 ## Tabs
 
