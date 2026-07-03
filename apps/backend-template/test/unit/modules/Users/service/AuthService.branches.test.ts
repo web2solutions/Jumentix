@@ -201,7 +201,7 @@ describe('auth service extra branches', () => {
 
   it('covers production credential masking and basic schema disablement', async () => {
     expect.hasAssertions();
-    process.env.NODE_ENV = 'production';
+    (process.env as any).NODE_ENV = 'production';
     process.env.AAA_ENABLE_BASIC_AUTH = 'no';
 
     const { service, passwordCryptoService } = setup();
@@ -309,7 +309,7 @@ describe('auth service extra branches', () => {
     process.env.AAA_AUTH_MAX_LOGIN_ATTEMPTS = '';
     process.env.AAA_AUTH_LOGIN_WINDOW_SECONDS = '';
     process.env.AAA_AUTH_LOCKOUT_SECONDS = '';
-    process.env.NODE_ENV = 'prod';
+    (process.env as any).NODE_ENV = 'prod';
     const { service, passwordCryptoService } = setup();
     passwordCryptoService.compare.mockResolvedValueOnce(false);
     const failed = await service.authenticate('john', 'invalid', EAuthSchemaType.Bearer);

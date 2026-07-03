@@ -44,7 +44,7 @@ describe('start-websocket-api loader', () => {
     const started = await startWebSocketApiAdapter({
       AAA_REALTIME_API: 'yes',
       AAA_REALTIME_API_PROTOCOL: 'websocket'
-    } as NodeJS.ProcessEnv);
+    } as unknown as NodeJS.ProcessEnv);
     expect(started).toBe(true);
     expect(websocketLoaderAdapterStart).toHaveBeenCalledTimes(1);
   });
@@ -55,7 +55,7 @@ describe('start-websocket-api loader', () => {
     const started = await startWebSocketApiAdapter({
       AAA_REALTIME_API: 'yes',
       AAA_REALTIME_API_PROTOCOL: 'grpc'
-    } as NodeJS.ProcessEnv);
+    } as unknown as NodeJS.ProcessEnv);
     expect(started).toBe(false);
     expect(websocketLoaderAdapterStart).toHaveBeenCalledTimes(0);
   });
@@ -82,7 +82,7 @@ describe('start-websocket-api loader', () => {
       AAA_REALTIME_API: 'yes',
       AAA_REALTIME_API_PROTOCOL: 'websocket',
       AAA_WEBSOCKET_SOCKETIO_ADAPTER: 'cluster'
-    } as NodeJS.ProcessEnv);
+    } as unknown as NodeJS.ProcessEnv);
 
     expect(setupSocketIoClusterPrimaryMock).toHaveBeenCalledTimes(1);
     expect(clusterForkMock).toHaveBeenCalledTimes(3);
@@ -104,7 +104,7 @@ describe('start-websocket-api loader', () => {
       AAA_REALTIME_API: 'yes',
       AAA_REALTIME_API_PROTOCOL: 'websocket',
       AAA_WEBSOCKET_SOCKETIO_ADAPTER: 'cluster'
-    } as NodeJS.ProcessEnv);
+    } as unknown as NodeJS.ProcessEnv);
 
     expect(started).toBe(true);
     expect(websocketLoaderAdapterStart).toHaveBeenCalledTimes(1);

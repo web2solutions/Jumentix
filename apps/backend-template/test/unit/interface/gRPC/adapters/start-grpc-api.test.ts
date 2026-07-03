@@ -17,7 +17,7 @@ describe('start-grpc-api loader', () => {
     const started = await startGrpcApiAdapter({
       AAA_REALTIME_API: 'yes',
       AAA_REALTIME_API_PROTOCOL: 'grpc'
-    } as NodeJS.ProcessEnv);
+    } as unknown as NodeJS.ProcessEnv);
     expect(started).toBe(true);
     expect(grpcLoaderAdapterStart).toHaveBeenCalledTimes(1);
   });
@@ -28,7 +28,7 @@ describe('start-grpc-api loader', () => {
     const started = await startGrpcApiAdapter({
       AAA_REALTIME_API: 'yes',
       AAA_REALTIME_API_PROTOCOL: 'websocket'
-    } as NodeJS.ProcessEnv);
+    } as unknown as NodeJS.ProcessEnv);
     expect(started).toBe(false);
     expect(grpcLoaderAdapterStart).toHaveBeenCalledTimes(0);
   });

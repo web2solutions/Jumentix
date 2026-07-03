@@ -8,11 +8,11 @@ describe('redisStreamsAdapter', () => {
     expect.hasAssertions();
     expect(isRedisStreamsSocketIoEnabled({
       AAA_WEBSOCKET_SOCKETIO_ADAPTER: 'redis-streams'
-    } as NodeJS.ProcessEnv)).toBe(true);
+    } as unknown as NodeJS.ProcessEnv)).toBe(true);
 
     expect(isRedisStreamsSocketIoEnabled({
       AAA_WEBSOCKET_SOCKETIO_ADAPTER: 'none'
-    } as NodeJS.ProcessEnv)).toBe(false);
+    } as unknown as NodeJS.ProcessEnv)).toBe(false);
   });
 
   it('should prefer websocket specific redis url when provided', () => {
@@ -20,7 +20,7 @@ describe('redisStreamsAdapter', () => {
     const url = buildRedisConnectionUrl({
       AAA_WEBSOCKET_REDIS_URL: 'redis://10.0.0.9:6379/3',
       AAA_REDIS_URL: 'redis://10.0.0.1:6379/1'
-    } as NodeJS.ProcessEnv);
+    } as unknown as NodeJS.ProcessEnv);
     expect(url).toBe('redis://10.0.0.9:6379/3');
   });
 
@@ -28,7 +28,7 @@ describe('redisStreamsAdapter', () => {
     expect.hasAssertions();
     const url = buildRedisConnectionUrl({
       AAA_REDIS_URL: 'redis://10.0.0.1:6379/1'
-    } as NodeJS.ProcessEnv);
+    } as unknown as NodeJS.ProcessEnv);
     expect(url).toBe('redis://10.0.0.1:6379/1');
   });
 
@@ -40,7 +40,7 @@ describe('redisStreamsAdapter', () => {
       AAA_REDIS_PORT: '6380',
       AAA_REDIS_DATABASE: '5',
       AAA_REDIS_PASSWORD: redisTestPassword
-    } as NodeJS.ProcessEnv);
+    } as unknown as NodeJS.ProcessEnv);
     expect(url).toBe(`redis://:${redisTestPassword}@127.0.0.1:6380/5`);
   });
 });

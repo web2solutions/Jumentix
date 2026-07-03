@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- 2026-07-03 fix(ci): stabilize affected-scope detection and website lint deps - web2solutions
 - 2026-07-03 fix(ci): avoid changed-files arg overflow in monorepo workflow - web2solutions
 - 2026-07-03 feat(website): add commercial site foundation and npm/vercel integration - web2solutions
 - 2026-07-02 fix(ci): ignore compatibility user repository files in coverage threshold - web2solutions
