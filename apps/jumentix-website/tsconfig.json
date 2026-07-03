@@ -36,7 +36,11 @@
   },
   "exclude": [
     "node_modules",
-    ".storybook"
+    ".storybook",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/__tests__/**",
+    "test-utils"
   ],
   "include": [
     "**/*.ts",
