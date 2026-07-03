@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- 2026-07-03 feat(website): add commercial site foundation and npm/vercel integration - web2solutions
 - 2026-07-02 fix(ci): ignore compatibility user repository files in coverage threshold - web2solutions
 - 2026-07-02 chore(test): exclude compatibility repository adapters from coverage gate - web2solutions
 - 2026-07-02 fix(ci): unignore users persistence adapters and stabilize boundary test scope - web2solutions
