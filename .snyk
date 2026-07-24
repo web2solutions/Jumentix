@@ -28,3 +28,7 @@ ignore:
     - '*':
         reason: "PostCSS vulnerability inherited from Next.js transitive postcss@8.4.x; awaiting upstream next/nextra dependency update."
         expires: "2026-10-31T23:59:59.000Z"
+  GHSA-r28c-9q8g-f849:
+    - '*':
+        reason: "Website stack still includes transitive PostCSS chains until upstream ecosystem updates are available."
+        expires: "2026-10-31T23:59:59.000Z"
