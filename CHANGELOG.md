@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- 2026-07-24 fix(security): bump next and fastify stacks to patch known advisories - web2solutions
 - 2026-07-24 feat(website): stabilize docs routing and branding; chore(monorepo): pnpm docs/scripts alignment - web2solutions
 - 2026-07-03 fix(website): force dynamic rendering to avoid not-found prerender failure - web2solutions
 - 2026-07-03 fix(website): remove banner from root layout to avoid prerender crash - web2solutions
