@@ -32,3 +32,31 @@ ignore:
     - '*':
         reason: "Website stack still includes transitive PostCSS chains until upstream ecosystem updates are available."
         expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-FINDMYWAY-8055229:
+    - '*':
+        reason: "Tracked via GHSA-c96f-x56v-gq3h in restify transitive dependency chain."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-FINDMYWAY-1038269:
+    - '*':
+        reason: "Tracked via GHSA-rrr8-f88r-h8q6 in restify transitive dependency chain."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-ADMZIP-17954277:
+    - '*':
+        reason: "Tracked via GHSA-xcpc-8h2w-3j85 in cassandra-driver transitive dependency chain."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-SHELLQUOTE-16799355:
+    - '*':
+        reason: "Tracked via GHSA-395f-4hp3-45gv in tooling dependency chain."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-POSTCSS-16189065:
+    - '*':
+        reason: "Tracked via GHSA-r28c-9q8g-f849 in next.js transitive dependency chain."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-POSTCSS-5926692:
+    - '*':
+        reason: "Tracked via GHSA-6g55-p6wh-862q in next.js transitive dependency chain."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-SHARP-18184418:
+    - '*':
+        reason: "Tracked via GHSA-f88m-g3jw-g9cj in next.js transitive dependency chain."
+        expires: "2026-10-31T23:59:59.000Z"

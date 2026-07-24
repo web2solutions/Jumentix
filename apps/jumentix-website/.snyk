@@ -12,3 +12,15 @@ ignore:
     - '*':
         reason: "Next.js transitive postcss source-map chain currently upstream-managed."
         expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-POSTCSS-16189065:
+    - '*':
+        reason: "Next.js transitive PostCSS source-map chain currently upstream-managed."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-POSTCSS-5926692:
+    - '*':
+        reason: "Next.js transitive PostCSS advisory currently upstream-managed."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-SHARP-18184418:
+    - '*':
+        reason: "Next.js/Nextra transitive sharp chain currently upstream-managed."
+        expires: "2026-10-31T23:59:59.000Z"

@@ -16,3 +16,19 @@ ignore:
     - '*':
         reason: "Concurrently transitive shell-quote advisory tracked while upstream release is validated."
         expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-FINDMYWAY-8055229:
+    - '*':
+        reason: "Tracked via restify transitive find-my-way advisory."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-FINDMYWAY-1038269:
+    - '*':
+        reason: "Tracked via restify transitive find-my-way advisory."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-ADMZIP-17954277:
+    - '*':
+        reason: "Tracked via cassandra-driver transitive adm-zip advisory."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-SHELLQUOTE-16799355:
+    - '*':
+        reason: "Tracked via tooling transitive shell-quote advisory."
+        expires: "2026-10-31T23:59:59.000Z"
