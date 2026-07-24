@@ -76,3 +76,7 @@ ignore:
     - '*':
         reason: "sharp advisory tracked while next.js transitive chain is upstream-managed."
         expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-RESTIFY-10380:
+    - '*':
+        reason: "Restify upstream advisory tracked while maintaining framework compatibility requirements."
+        expires: "2026-10-31T23:59:59.000Z"
