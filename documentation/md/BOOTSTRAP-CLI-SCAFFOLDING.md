@@ -14,10 +14,10 @@ Workspace ownership:
 
 ## Usage
 
-Install globally (or run with `npx` from package registry):
+Install globally (or run with `pnpm dlx` from package registry):
 
 ```bash
-npm install -g @jumentix/cli-init
+pnpm add -g @jumentix/cli-init
 jumentix-init
 aaa-bootstrap
 ```
@@ -25,7 +25,7 @@ aaa-bootstrap
 Local repository usage:
 
 ```bash
-npm run cli:bootstrap
+pnpm run cli:bootstrap
 ```
 
 Non-interactive usage:

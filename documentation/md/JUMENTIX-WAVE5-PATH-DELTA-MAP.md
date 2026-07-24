@@ -60,7 +60,7 @@ This map tracks runtime path rewrites for the backend-template and service-manag
 
 ## Validation checklist
 
-- `npm run oas:check-routes` green with `apps/backend-template/src` resolution.
-- `npm run test:unit` green using `apps/backend-template/test/unit`.
+- `pnpm run oas:check-routes` green with `apps/backend-template/src` resolution.
+- `pnpm run test:unit` green using `apps/backend-template/test/unit`.
 - PM2 dev/staging/prod startup scripts reference `pm2/*` ecosystems.
 - Service Management app still starts from `apps/service-management/server.js`.

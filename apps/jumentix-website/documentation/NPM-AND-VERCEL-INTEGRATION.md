@@ -15,9 +15,9 @@ Configured in root `.npmrc`:
 Validation commands:
 
 ```bash
-npm run npm:whoami
-npm run npm:org:check:xpertminds
-npm run npm:publish:dry-run:packages
+pnpm run npm:whoami
+pnpm run npm:org:check:xpertminds
+pnpm run npm:publish:dry-run:packages
 ```
 
 Note:
@@ -34,11 +34,11 @@ Target Vercel user/scope:
 Root commands:
 
 ```bash
-npm run website:vercel:link
-npm run website:vercel:pull:preview
-npm run website:vercel:pull:prod
-npm run website:deploy:vercel:preview
-npm run website:deploy:vercel
+pnpm run website:vercel:link
+pnpm run website:vercel:pull:preview
+pnpm run website:vercel:pull:prod
+pnpm run website:deploy:vercel:preview
+pnpm run website:deploy:vercel
 ```
 
 App commands (`apps/jumentix-website`):

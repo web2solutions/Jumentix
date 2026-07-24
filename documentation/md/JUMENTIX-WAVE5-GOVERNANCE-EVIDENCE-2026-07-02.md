@@ -16,7 +16,7 @@ This snapshot records governance evidence for monorepo Wave 5 closeout tasks tra
 Validated locally:
 
 ```bash
-npm run ci:gate
+pnpm run ci:gate
 ```
 
 Result: **pass** (lint + architecture checks + unit + OAS route resolution + build + smoke).
@@ -26,7 +26,7 @@ Result: **pass** (lint + architecture checks + unit + OAS route resolution + bui
 Added explicit validation command:
 
 ```bash
-npm run serverless:check-handlers
+pnpm run serverless:check-handlers
 ```
 
 Result: **pass** (`34` handlers resolved to existing files).

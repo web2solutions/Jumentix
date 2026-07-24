@@ -51,9 +51,9 @@ Implemented in repository:
   - `packages/cli-init` now exposes executable bin entrypoints and owns the bootstrap implementation used by root CLI wrapper.
   - CLI package now includes package-level README with command contract.
 - Wave 6 startup in progress:
-  - added affected-workspace detector (`npm run ci:affected`) to classify file deltas by `root`, `apps/*`, `packages/*`, and docs-only scope as a base primitive for selective monorepo CI execution.
-  - added release dry-run scripts (`npm run release:dry-run`, `release:dry-run:packages`, `release:dry-run:apps`) to verify package artifact readiness and app workspace build/test script contracts.
-  - added monorepo CI runner (`npm run ci:monorepo`) that executes lightweight docs-only validation or strict gate + affected app/package commands depending on changed scope.
+  - added affected-workspace detector (`pnpm run ci:affected`) to classify file deltas by `root`, `apps/*`, `packages/*`, and docs-only scope as a base primitive for selective monorepo CI execution.
+  - added release dry-run scripts (`pnpm run release:dry-run`, `release:dry-run:packages`, `release:dry-run:apps`) to verify package artifact readiness and app workspace build/test script contracts.
+  - added monorepo CI runner (`pnpm run ci:monorepo`) that executes lightweight docs-only validation or strict gate + affected app/package commands depending on changed scope.
   - CI pipelines aligned to monorepo flow: GitHub Actions now installs with pnpm and runs scope-aware `ci:monorepo`; CircleCI now installs pnpm and executes `ci:monorepo`.
 - reusable package extraction in progress:
   - `packages/message-mediator` (with local bridge exports in backend code)

@@ -296,7 +296,7 @@ export class RabbitMqMessageMediatorAdapter implements IMessageMediator {
       return await import('amqplib');
     } catch (error) {
       const err = new Error(
-        'RabbitMQ adapter requires package "amqplib". Install with: npm install amqplib'
+        'RabbitMQ adapter requires package "amqplib". Install with: pnpm install amqplib'
       );
       (err as any).cause = error as Error;
       throw err;

@@ -243,7 +243,7 @@ export class BullMqMessageMediatorAdapter implements IMessageMediator {
       return await import('bullmq');
     } catch (error) {
       const err = new Error(
-        'BullMQ adapter requires package "bullmq". Install with: npm install bullmq'
+        'BullMQ adapter requires package "bullmq". Install with: pnpm install bullmq'
       );
       (err as any).cause = error as Error;
       throw err;

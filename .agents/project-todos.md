@@ -908,15 +908,15 @@ Goal:
 
 ### Documentation Round (EPIC #117)
 
-- [ ] Create root Jumentix marketing README with complete component index and required solution sections.
+- [x] Create root Jumentix marketing README with complete component index and required solution sections.
   - Epic: `https://github.com/web2solutions/aaa-typescript-boilerplate/issues/117`
   - GitHub Project source of truth: `https://github.com/users/web2solutions/projects/1`
-- [ ] Reorganize component/project docs under component folders (`apps/*`, `packages/*`) and add technical hubs.
-- [ ] Ensure root README links to all component docs and all required guides:
+- [x] Reorganize component/project docs under component folders (`apps/*`, `packages/*`) and add technical hubs.
+- [x] Ensure root README links to all component docs and all required guides:
   - SPA/PWA
   - REST API
   - Realtime API
   - SaaS Monolith
   - SaaS Microservices
-- [ ] Add technical-rich docs for backend-template and service-management with architecture, integrations, and examples.
-- [ ] Validate documentation navigation integrity (root index + component hubs with no dead links).
+- [x] Add technical-rich docs for backend-template and service-management with architecture, integrations, and examples.
+- [x] Validate documentation navigation integrity (root index + component hubs with no dead links).

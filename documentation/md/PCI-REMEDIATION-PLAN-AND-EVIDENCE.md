@@ -55,7 +55,7 @@ This document defines the remediation plan in sprint order and maps technical ev
 3. Quality-gate proof
    - CI local gate verifies lint, boundary checks, tests, OAS route resolution, build and smoke.
    - Evidence command:
-     - `npm run ci:gate`
+     - `pnpm run ci:gate`
 
 ### P2 - Operational maturity controls (completed)
 
@@ -75,7 +75,7 @@ This document defines the remediation plan in sprint order and maps technical ev
      - `documentation/md/SECURITY-RUNBOOK-PCI.md`
 3. Security smoke checks in CI
    - Explicit job asserting production error masking and CORS deny behavior.
-   - Status: implemented via `npm run ci:security-smoke` and included in `npm run ci:gate`.
+   - Status: implemented via `pnpm run ci:security-smoke` and included in `pnpm run ci:gate`.
 
 ## Audit evidence checklist
 

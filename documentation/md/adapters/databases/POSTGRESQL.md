@@ -9,7 +9,7 @@ Sequelize-based SQL client profile.
 1. Start container:
 
 ```bash
-npm run docker:up:postgresql
+pnpm run docker:up:postgresql
 ```
 
 2. Set env:

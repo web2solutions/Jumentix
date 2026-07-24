@@ -9,7 +9,7 @@ Sequelize + mysql2 profile.
 1. Start container:
 
 ```bash
-npm run docker:up:mysql
+pnpm run docker:up:mysql
 ```
 
 2. Set env:

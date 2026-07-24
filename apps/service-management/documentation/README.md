@@ -19,14 +19,34 @@
 - Service runtime configuration and environment editing.
 - Deployment target planning for VM/function-based platforms.
 
+## Architecture Snapshot
+
+- Frontend workspace with tabbed tools for domain design, interface planning, and runtime/deploy configuration.
+- Reads and updates active `.env` profiles through Service Management backend endpoints.
+- Keeps generated modeling artifacts aligned with backend contract expectations.
+
+## Integration Examples
+
+Run Service Management as standalone tool:
+
+```bash
+pnpm run dev:service-management
+```
+
+Run full local profile (Service Management + REST profile via PM2):
+
+```bash
+pnpm run dev
+```
+
 ## Run
 
 ```bash
-npm run dev:service-management
+pnpm run dev:service-management
 ```
 
 or full development profile:
 
 ```bash
-npm run dev
+pnpm run dev
 ```

@@ -18,9 +18,9 @@ This supports faster iteration when creating new bounded contexts, aggregates, e
 Use any of the following commands:
 
 ```bash
-npm run cli
-npm run dev:cli
-npm run start:cli
+pnpm run cli
+pnpm run dev:cli
+pnpm run start:cli
 ```
 
 All commands start the same CLI entrypoint:
@@ -30,7 +30,7 @@ All commands start the same CLI entrypoint:
 Bootstrap/scaffold command:
 
 ```bash
-npm run cli:bootstrap
+pnpm run cli:bootstrap
 ```
 
 The bootstrap flow is also exposed as installable bin command:

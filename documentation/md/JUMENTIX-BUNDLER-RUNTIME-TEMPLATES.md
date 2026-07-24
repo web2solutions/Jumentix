@@ -35,7 +35,7 @@ Define baseline templates by artifact type so the bootstrap CLI and workspace pa
   - `release:dry-run`
   - `release:dry-run:packages`
   - `release:dry-run:apps`
-- CI gate includes release governance validation through `npm run release:governance:check`.
+- CI gate includes release governance validation through `pnpm run release:governance:check`.
 
 ## CLI Scaffold Mapping
 

@@ -9,7 +9,7 @@ Cassandra driver profile.
 1. Start container:
 
 ```bash
-npm run docker:up:cassandra
+pnpm run docker:up:cassandra
 ```
 
 2. Set env:

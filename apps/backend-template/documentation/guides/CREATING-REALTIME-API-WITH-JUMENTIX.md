@@ -13,9 +13,9 @@ Set env profile:
 Start runtime profile:
 
 ```bash
-npm run dev:websocket
+pnpm run dev:websocket
 # or
-npm run dev:grpc
+pnpm run dev:grpc
 ```
 
 ## 2. Define Async Contracts
@@ -36,8 +36,8 @@ Realtime services run with REST as secondary interface. Use REST docs and endpoi
 ## 5. Validate Realtime Stability
 
 ```bash
-npm run test:integration:realtime
-npm run test:smoke:realtime
+pnpm run test:integration:realtime
+pnpm run test:smoke:realtime
 ```
 
 ## References

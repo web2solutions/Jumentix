@@ -144,7 +144,7 @@ Leia os requerimentos a seguir e crie um plano detalhado de execução, adicione
 
 - a especificacao open API em /Users/eduardoalmeida/apps/apps/apps/aaa-typescript-boilerplate/spec/1.0.0.yml deve sempre conter a descricao dos ports objects referentes a inputs the entradas e respostas dos end points.
 
-Quando um engenheiro de software for usar o "aaa-typescript-boilerplate" para criar um sofware, ele deverá usar o npm install para instalar somente a CLI toll que permitirá ele fazer o scafold do novo projeto, clonando o "aaa-typescript-boilerplate" do github na pasta de trabalho local e configurando todo o projeto de acordo com o tipo de servico que o engenheiro quer desenvolver, por enquanto os tipos de servicos sao:
+Quando um engenheiro de software for usar o "aaa-typescript-boilerplate" para criar um sofware, ele deverá usar o pnpm install para instalar somente a CLI toll que permitirá ele fazer o scafold do novo projeto, clonando o "aaa-typescript-boilerplate" do github na pasta de trabalho local e configurando todo o projeto de acordo com o tipo de servico que o engenheiro quer desenvolver, por enquanto os tipos de servicos sao:
 
 - Servidor com interface HTTP/REST, servindo documentacao da API com swagger e open api, com possibilidade de servir arquivos estaticos para um SPA por exemplo
 - Servidor com interface websocket, o servidor irá expor o controller, recebendo request seguindo o padrao esperado e respondendo com possibilidade de servir arquivos estaticos para um SPA por exemplo
@@ -460,7 +460,7 @@ O nome "JumentiX" é uma alusão ao animal famoso no Brasil chamado Jumento, que
 
 Vide o mascote na imagem https://camo.githubusercontent.com/c02ee6896511af4bee5b20800df049a75b2ec01bc59578bf5ac0b2aaa97d64b7/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6372656174696f6e2e686f777273652e636f6d2f3130303033303037372d6e6f726d616c2e706e67
 
-para começar o jumentix, bastará o desenvolvedor rodar `npm install jumentix@init -g` no terminal i isso ira baixar e instalar pacote o CLI que será usado para download e instalcao de de componentes e bootstrap de codigo
+para começar o jumentix, bastará o desenvolvedor rodar `pnpm install jumentix@init -g` no terminal i isso ira baixar e instalar pacote o CLI que será usado para download e instalcao de de componentes e bootstrap de codigo
 
 O Jumentix permite criar desde monolitos modulares prontos para serem desacoplados em micro servicos, até um grupo ilimitado de multiplo servicos.
 
@@ -478,17 +478,15 @@ O mono repo tem configurações genericas de bundler e configuracoes expandidas 
 
 Atualmente os servicos de dominios do backend comunicam entre si Via uma implementacao de Message Mediator. Essa classe deverá ser distribuida como um pacote npm e importada nos servicos backend.
 
-Cada projeto terá seu proprio conjunto de testes e suites.
-
-Para fazer commits em um component / projeto do jumentix, é necessario e somente ncessario rodar os testes relacionados á aquele projeto
+Cada projeto terá seu proprio conjunto de testes e suites organizados dentro de seus projetos.
 
 O Jumentix continuará usando o pm2 para gerenciamento de ambientes como o aaa-typescript-boilerplate já faz atualmente, a diferença é que ele irá rodar mais servicos backend e agora tambem frontend.
 
 
-Projects / component:
+Projects / components:
 
 - CI the current CLI tool - will be distributed as NPM package and will be used to bostrap a new Jumentix structure.
-- backend boilerplate - current aaa-typescript-boilerplate, project used to create different services as it already does, all the files related to the current aaa-typescript-boilerplate, like src, documentation, node_modules, OASDoc, seed, test, AsynAPIDOC, serverless, etc.
+- backend boilerplate - current aaa-typescript-boilerplate, project used to create different services as it already does, all the files related to the current aaa-typescript-boilerplate, like src, documentation, node_modules, OASDoc, seed, test, AsynAPIDOC, serverless, etc., docker, coverage
 - sdk-clients - npm independent libraries that will be imported in front end applications to consume the back end APIs
 - service management - a WEB tool 
 - Message Mediator - the current Message Mediatior implementation shuould be deccouples and served as npm independent library that will be imported in backend applications rather than being requiring multiple distributions of the class accroos the multiple backend applications created using the backend boilerplate
@@ -501,3 +499,234 @@ Projects / component:
 
 
 leia o arquivo ele representa a implementacao de um banco de dados, nesse caso, in memory. em passos anteriores, criamos suporte para sequelize, mongoose e diversos frameworks e solucoes para acesso á banco dados. é necessário criar DbClients para cada uma das implemtacoes que fizemos. também é preciso alterar os adpatadores de interfaces HTTP de cada framework na pasta src/interface/HTTP/adapters/, um exemplo é o /Users/eduardoalmeida/apps/apps/apps/aaa-typescript-boilerplate/src/interface/HTTP/adapters/express/express.ts. o adaptador deve ler a variavel de ambiente process.env.AAA_DATABASE_DRIVER e identificar qual driver de banco dados deve utlizar e importar
+
+
+--------
+
+Leia os requerimentos a seguir e crie um plano detalhado de execução, salve no todo e aguarde por novas ordens.
+
+Quero plano detalhado para evitar perda de tempo com implemtações incertas.
+
+-- Round de documentação.
+
+Crie um readme file para o Jumentix explicando o que o JUmentix faz, público alvo, razões para usar o Jumentix, Vantagens do Jumentix comparando com outras solucões.
+
+Organize as documentações de projetos / componentes Jumentix já existentes dentro da pasta de cada projeto.
+
+O Readme principal deve conter um index. Esse é um padrão do projeto. No index deve have acesso para a documentação de todos os components Jumentix.
+
+O Readme do Mono repo deve focar na venda do Jumentix como uma ferramenta que funciona como fábrica de software, para times de desenvovimento e donos de produtos que querem lançar SaaS monolitos ou baseados em micro servicos, do 0 á produção em poucos dias, com arquitetura agnóstica e 100% escalavel.
+
+O readme principal passa a ser responsável pela visão mercadólogica do Jumentix enquando a documenação de cada projeto será técnica, rica em detalhes, explicando integrações, vantagens, possibilidades de desenvolvimento, exemplos de código, explicação detalhada de arquitetura. A navegação entre toda a documentação deve ser possível através da documentação do monorepo.
+
+Sessoes que a documentação deve ter:
+
+- Criando SPA PWA com com o Jumentix.
+- Criando uma API REST com o Jumentix.
+- Criando uma API Realtime com o Jumentix.
+- Criando uma SaaS monolito, backend e frontend com o Jumentix.
+- Criando uma SaaS com arquitura em microserviços o Jumentix.
+
+Crie um épico só para documentação. Após o planejamento detalhado em tarefas, execute o plano.
+
+Use sempre o github como gerenciador de projeto e tarefas. Isso é padrão do projeto.
+
+--------
+
+ 
+
+
+
+- o diretorio "backend-template" não é um app, mas sim um pacote que será utilizado para gerar apps do tipo backend. O jumentix gera apps backend e front end.
+
+
+----
+
+
+https://vercel.com/templates/next.js/mantine-ui-nextra
+
+
+Leia os requerimentos a seguir e crie um plano detalhado de execução, salve no todo e aguarde por novas ordens.
+
+Quero plano detalhado para evitar perda de tempo com implemtações incertas.
+
+Além de engenheiro de software, Agora você é especialista em marketing digital e em conversão de leads.
+
+O Jumentix precisa de um website comercial para vendê-lo como produto.
+
+Crie um website com conteúdo estático, utilizando os arquivos MD de todo documentação do Jumentix como base de dados.
+
+O site será criado no diretorio apps/jumentix-website.
+
+O website será publicado na vercel.
+
+Leia e utilize o template: https://vercel.com/templates/next.js/mantine-ui-nextra
+
+Preciso fazer deploy para a vercel rodand um compando do package.json.
+
+Faça toda a integração necessároa
+
+Crie um épico só para o site. Após o planejamento detalhado em tarefas, execute o plano.
+
+Use sempre o github como gerenciador de projeto e tarefas. Isso é padrão do projeto.
+
+
+----
+
+In ERP,
+
+In Products CRUD:
+
+- Customs Catalog Item field in forms: sort items, put items that have no associated product in the top. Each dropdown value list "Catalog item name", CAS, HS and NCM. Aditionally display the products code from Products table that are associated to that Catalog item
+- Put button next to "Customs Catalog Item" to create a new "Customs Catalog Item" from Product forms and allow to associate the new "Customs Catalog Item"
+- Add new "Manufacture date" in "Scientific Information" area.
+- Display all new fields in Product "CARD" on grid rows
+
+
+---[-]
+
+- NN328928765BR has no events and should have.
+- several tracking numbers in entire in all timelines from all CRUDS from logistic management are not showing the asscociate 17track events in UI.
+- NN328928765BR should be in Dest. Customs
+- 382386563776, NN285538765BR, 	NN328928765BR, ND720492541BR incomplete events information. review all shipment log areas in all timelines
+
+- in logistic management -> Shipping Management, GRID rows CARDS show order details - products, customs
+- the button "Reset Tracking Data" must unregister all trackingnumbers from 17track api
+- in App config, shipping settings, after the field "Shipping Fee Brazil Agent → Customer (USD)", add a new "Postal service tax" field.  default value is 18,10. This new field is now part of the logic everywehere we do customs calculations for pacages sent to Brasil, including the federal and ICMS tax, explicity sum and display the new "Postal service tax". This field is a BRL currency field. And it is included only in the formulaes which calculates the customs taxes in BRL in ORDERS CRUD and invoices
+- delivered trackin numbers have no stored data. Delievered tracking numbers must always store the entire events set from 17track. Downalod and styore it. The Uupdate buttons should download the entire events records from all including delivered packages
+- Shipping history in all timelines are showing only the first one events and should show all in order.
+- when editing tracking number, memo field is not being saved.
+- Daily shipping events is shown and suddenly disappear in Unified Tracking.
+- make all timelines closed in Unified Tracking. The user will click to open what they want to see, add aditionally the memo information text to the retracted items, so user can identify what is each shipment and decide which to open.
+- Unified Tracking allow user to select how many items to display in the screen. Default 100, sorted by progress, delivered on bottom, preparing on top. allow filtering and sorting in the screen.
+- Unified Tracking is not being automatically updated when there changes in the background.
+
+
+
+
+
+
+- Orders -> Orders TAB CRUD GRID ROW CARD, add payment tabs and list out the associated OrderPayments information
+- Orders -> OrderPayments Tab GRID - group payment transactions per order.
+- Orders -> Create and Edit forms: When updating the organization field of an Order, changing the order ownership, do a cascade update with all linked objects, changing it organinzation too.
+
+in Organization CRUD: 
+- a help icon with the explanation of each button in toobar
+- allow to create a new ERP user in "New Organization" form, allowing to set a nwe user as organization owner, that user is always admin
+
+
+Review all CRUDS that have memo field:
+- memo fields: show in cards in all GRIDS of all CRUDs that have memo fields
+
+
+
+Create the Product Catalog variant data entity based current Product data entity, clone it, remove "stock" and "br stock"fields from it, once it is just a virtual representation of Product catalog variant
+
+in product catalog -> Catalog Listing -> display associated variants data in each grid row CARD
+
+Create a new "SoldProduct" data entity. Clone of Product.
+
+Now, the Product data entity officially represents a phisical inventory of an organization. 
+
+so, it no longer has the columns "stock" and "br stock".
+
+add the fields: "batch", "serial number" to Products Data entity. 
+remove fields "stock" and br stock
+
+All the current itens in inventory perteins to "KetchP" organization
+
+the BR stock, logically, now are the Inventory of X-Synth peptides in X-synth address, add new items in inventory for X-synth cloning the items from "KetchP" that has itens in current "br stock".
+
+The current items from  "KetchP" inventory are all "unit type" "set".
+The current items from  "X-synth" inventory are all "unit type" "un".
+
+So, if the inventory has 100 units of an item to sell, it must have 100 correlated records in Product data entity.
+
+Each product has a exclusive serial number and pertains to a batch number.
+
+Whenever an item is sold, it is moved to "SoldProduct" data entity and is no longer available in inventory.
+
+Whenever an order is placed, when selecting a new product line item, associate it with a inventory item. So when the order is paid and shipped, it is moved to "SoldProduct" and can not be reverted anymore. 
+So now orders can track the serial number and batch of sold items.
+
+The paid order must reference the sold items from "SoldProduct".
+
+To add items in inventory (products) it now requires serial number, batch, manufacture date
+
+Allow superadmin "copy" inventory items between organizations prompting for proper new serial number, batch, manufacture date
+
+Update CRUDS, FORMS, GRIDS of all correlated data entities.
+
+
+
+In storefront, now the fast deliver items are now only items from X-Synth inventory. List products from both inventories in storefront but with clear separation of concern,
+
+In storefront, clients registered in brazil only see items from X-synth.
+
+Products -> Product Listing:
+- make Country of Origin a dropdown field
+- display photos in pop up window in same screen
+
+
+----
+
+add a new Customs catalog Category data entity. There are 2 categorie: Cosmetics with the HS number 3304.99 and "Natural Mica Powder for Arts & Crafts" with the HS 2525.20.
+
+All current itens in Customs catalog are are from Cosmetics  Customs catalog Category.
+
+
+----
+
+
+
+- The the new Customs Catalog Category data entity and full COMPLETE CRUD with FORMS, GRIDS, GRID row CARDS, pop up window to edit records. Add the categories: - "Skin Care and Cosmetics", - "Arts, painting, and crafts". All the current items in Customs Catalog are from "Skin Care and Cosmetics", link it. update Customs Catalog CRUDs to support the new category field, FORMs, GRID and grid row card. 
+- Product Catalog Variants must be linked to Customs Catalog items as the same way that Products are. So, when adding new "Product" into the inventory, theu will inherit it from the associated "Product Catalog Variant", in the Variant Listing Product Catalog Variant CRUD, show the associate Customs catlog item for each item. Update the FORM, GRID and GRID row CARD
+
+
+
+
+
+arts, painting, and crafts
+
+----
+
+- Inventory Listing nest item per name -> code, so the grid should not list several entries with same product name
+- Product Batches CRUD must show progress, update automatically after migrating and changing recordsm use same standards of previous crUDS
+
+Product photos field is now managed at Product Batch level. Update the data entiees and UI CRUDS, forms, grids, CARDS details
+
+
+------------
+- LLC
+- Tax Id
+- Stripe or ebanx.
+
+
+
+2 H24    ->       240
+2 TR60    ->      320
+2 RT60    ->      512
+1 2S10    ->       84
+1 G5K    ->        80
+1 KP10    ->       64
+1 PIN5    ->       48
+1 FN1    ->       240
+1 VP5    ->        96
+1 ML10    ->       56
+1 5AD    ->        88
+1 MA10    ->       48
+1 NP810    ->      40
+1 NET5    ->       64
+1 XT100    ->     160
+1 TSM5    ->      104
+1 MS20     ->     104
+1 CP10     ->     104
+1 CP20     ->     200
+1 5AD     ->       88
+1 DS10     ->      72
+1 BC10     ->      56
+1 IG1      ->     200
+1 CND10      ->   140
+1 ET10      ->     36
+1 PIN5      ->     48
+1 KS10      ->     72

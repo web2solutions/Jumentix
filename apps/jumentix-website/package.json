@@ -5,8 +5,8 @@
   "packageManager": "pnpm@9.15.3",
   "scripts": {
     "content:sync": "node ./scripts/sync-markdown-content.mjs",
-    "predev": "pnpm run content:sync",
-    "prebuild": "pnpm run content:sync",
+    "predev": "node ./scripts/sync-markdown-content.mjs",
+    "prebuild": "node ./scripts/sync-markdown-content.mjs",
     "dev": "next dev -p 3010",
     "build": "next build",
     "start": "next start -p 3010",

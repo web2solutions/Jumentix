@@ -142,15 +142,15 @@ Paste exact commands and summarized results.
 Do not mark items as done unless actually executed.
 -->
 
-- [ ] `npm run lint`
-- [ ] `npm run deps:check-cycles`
-- [ ] `npm run arch:check-boundaries`
-- [ ] `npm run arch:check-users-legacy-imports`
-- [ ] `npm run test:unit`
-- [ ] `npm run oas:check-routes`
-- [ ] `npm run build:dev`
-- [ ] `npm run ci:smoke`
-- [ ] `npm run ci:gate`
+- [ ] `pnpm run lint`
+- [ ] `pnpm run deps:check-cycles`
+- [ ] `pnpm run arch:check-boundaries`
+- [ ] `pnpm run arch:check-users-legacy-imports`
+- [ ] `pnpm run test:unit`
+- [ ] `pnpm run oas:check-routes`
+- [ ] `pnpm run build:dev`
+- [ ] `pnpm run ci:smoke`
+- [ ] `pnpm run ci:gate`
 
 ### Coverage
 
@@ -206,7 +206,7 @@ List top risks and how each is mitigated.
 
 - [ ] README updated (if needed)
 - [ ] Additional docs updated (if needed)
-- [ ] Changelog updated/synced (`npm run changelog:update`)
+- [ ] Changelog updated/synced (`pnpm run changelog:update`)
 
 ## Reviewer Checklist
 

@@ -16,25 +16,25 @@
 Install dependencies:
 
 ```bash
-npm install
+pnpm install
 ```
 
 Run Redis (if needed):
 
 ```bash
-npm run docker:composeredis
+pnpm run docker:composeredis
 ```
 
 Run messaging services (RabbitMQ + Redis) with Docker:
 
 ```bash
-npm run docker:composemessaging
+pnpm run docker:composemessaging
 ```
 
 Run only RabbitMQ (useful when Redis is already running):
 
 ```bash
-npm run docker:composerabbit
+pnpm run docker:composerabbit
 ```
 
 ## Message Mediator Adapter
@@ -106,34 +106,34 @@ Behavior summary:
 Dev (auto-starts `service-management`):
 
 ```bash
-npm run pm2:start:dev:restapi
-npm run pm2:start:dev:websocket-rest
-npm run pm2:start:dev:grpc-rest
+pnpm run pm2:start:dev:restapi
+pnpm run pm2:start:dev:websocket-rest
+pnpm run pm2:start:dev:grpc-rest
 ```
 
 Staging:
 
 ```bash
-npm run pm2:start:staging:restapi
-npm run pm2:start:staging:websocket-rest
-npm run pm2:start:staging:grpc-rest
+pnpm run pm2:start:staging:restapi
+pnpm run pm2:start:staging:websocket-rest
+pnpm run pm2:start:staging:grpc-rest
 ```
 
 Production:
 
 ```bash
-npm run pm2:start:prod:restapi
-npm run pm2:start:prod:websocket-rest
-npm run pm2:start:prod:grpc-rest
+pnpm run pm2:start:prod:restapi
+pnpm run pm2:start:prod:websocket-rest
+pnpm run pm2:start:prod:grpc-rest
 ```
 
 PM2 operations:
 
 ```bash
-npm run pm2:list
-npm run pm2:logs
-npm run pm2:stop:all
-npm run pm2:delete:all
+pnpm run pm2:list
+pnpm run pm2:logs
+pnpm run pm2:stop:all
+pnpm run pm2:delete:all
 ```
 
 Service Management can read and persist these runtime env values through:
@@ -175,26 +175,26 @@ Response payload example:
 HTTP adapters (all routed through `start-rest-api` loader with `AAA_HTTP_FRAMEWORK`):
 
 ```bash
-npm run dev:express
-npm run dev:fastify
-npm run dev:restify
-npm run dev:hyper-express
-npm run dev:cloudflare-workers
-npm run dev:vercel-functions
-npm run dev:loopback
-npm run dev:sails-js
-npm run dev:feathers
-npm run dev:derby-js
-npm run dev:adonis-js
-npm run dev:total-js
+pnpm run dev:express
+pnpm run dev:fastify
+pnpm run dev:restify
+pnpm run dev:hyper-express
+pnpm run dev:cloudflare-workers
+pnpm run dev:vercel-functions
+pnpm run dev:loopback
+pnpm run dev:sails-js
+pnpm run dev:feathers
+pnpm run dev:derby-js
+pnpm run dev:adonis-js
+pnpm run dev:total-js
 ```
 
 Generic REST loader commands:
 
 ```bash
 # uses AAA_HTTP_FRAMEWORK from env file (default express)
-npm run dev:http
-npm run prod:http
+pnpm run dev:http
+pnpm run prod:http
 ```
 
 Equivalent direct loader style:
@@ -207,27 +207,27 @@ AAA_HTTP_FRAMEWORK=cloudflare-workers pm2 start ./apps/backend-template/src/inte
 Combined service profiles:
 
 ```bash
-npm run dev:websocket
-npm run dev:grpc
-npm run test:integration:service-management
+pnpm run dev:websocket
+pnpm run dev:grpc
+pnpm run test:integration:service-management
 ```
 
 Serverless dev mode:
 
 ```bash
-npm run dev:serverless
+pnpm run dev:serverless
 ```
 
 Developer automation CLI:
 
 ```bash
-npm run dev:cli
+pnpm run dev:cli
 ```
 
 Service Management app (PM2-served):
 
 ```bash
-npm run dev:service-management
+pnpm run dev:service-management
 ```
 
 ![serverless dev mode](../images/sls.png "serverless dev mode")

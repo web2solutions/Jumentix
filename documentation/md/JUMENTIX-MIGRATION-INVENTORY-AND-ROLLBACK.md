@@ -23,7 +23,7 @@ This document defines concrete migration guardrails for the JumentiX monorepo tr
 - CLI package name: `@jumentix/cli-init`.
 - Bootstrap command:
   - current compatibility command: `aaa-bootstrap`
-  - official global install target: `npm install -g @jumentix/cli-init`
+  - official global install target: `pnpm add -g @jumentix/cli-init`
   - runtime command: `jumentix-init`
 
 ## Branch, Tag, and Rollback Strategy
@@ -51,8 +51,8 @@ This document defines concrete migration guardrails for the JumentiX monorepo tr
 1. Identify failing wave branch and latest stable pre-wave tag.
 2. Revert wave PR(s) from `dev` in reverse order if partially merged.
 3. Re-run mandatory gates:
-   - `npm run ci:gate`
-   - `npm run coverage:patch`
+   - `pnpm run ci:gate`
+   - `pnpm run coverage:patch`
 4. If rollback is required in production-like branches, fast-forward only from pre-wave tag and re-apply safe commits.
 
 ## Inventory Mapping (Current -> Target)

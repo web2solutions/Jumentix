@@ -2,7 +2,7 @@
 
 This guide helps diagnose and fix the most common failures in local gates and CI pipelines.
 
-## 1) `npm install` fails with `EBADENGINE`
+## 1) `pnpm install` fails with `EBADENGINE`
 
 Symptoms:
 - install fails with `Unsupported engine`
@@ -16,8 +16,8 @@ Fix:
 ```bash
 nvm use
 node -v
-npm -v
-npm run check-node-version
+pnpm -v
+pnpm run check-node-version
 ```
 
 Expected:
@@ -41,7 +41,7 @@ Cause:
 Fix:
 
 ```bash
-NODE_ENV=ci npm run test:unit
+NODE_ENV=ci pnpm run test:unit
 ```
 
 Ensure at least one valid file exists for CI fallback:
@@ -61,7 +61,7 @@ Symptoms:
 Fix:
 
 ```bash
-npm run oas:check-routes
+pnpm run oas:check-routes
 ```
 
 Checklist:
@@ -86,7 +86,7 @@ Common causes:
 Fix:
 
 ```bash
-npm run test:unit
+pnpm run test:unit
 ls coverage/lcov.info
 ```
 
@@ -114,7 +114,7 @@ Current standard:
 Fix:
 
 ```bash
-npm run test:unit
+pnpm run test:unit
 ```
 
 Then add or improve tests in changed code paths until thresholds are reached.
@@ -134,7 +134,7 @@ Cause:
 Fix:
 
 ```bash
-npm run prepare
+pnpm run prepare
 ls .husky
 ```
 
@@ -155,8 +155,8 @@ Cause:
 Fix:
 
 ```bash
-npm run docker:composeredis
-npm run ci:smoke
+pnpm run docker:composeredis
+pnpm run ci:smoke
 ```
 
 If needed, verify env keys used by tests:
@@ -168,14 +168,14 @@ If needed, verify env keys used by tests:
 Run this sequence to isolate failing gate stages quickly:
 
 ```bash
-npm run lint
-npm run deps:check-cycles
-npm run arch:check-boundaries
-npm run arch:check-users-legacy-imports
-npm run test:unit
-npm run oas:check-routes
-npm run build:dev
-npm run ci:smoke
+pnpm run lint
+pnpm run deps:check-cycles
+pnpm run arch:check-boundaries
+pnpm run arch:check-users-legacy-imports
+pnpm run test:unit
+pnpm run oas:check-routes
+pnpm run build:dev
+pnpm run ci:smoke
 ```
 
-This is the same order used by `npm run ci:gate`.
+This is the same order used by `pnpm run ci:gate`.

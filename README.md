@@ -21,6 +21,7 @@ Jumentix is a monorepo product that works as a software factory for engineering 
 - [Business ROI](#business-roi)
 - [Who Benefits](#who-benefits)
 - [What You Can Launch](#what-you-can-launch)
+- [Launch Playbooks](#launch-playbooks)
 - [Adoption Paths](#adoption-paths)
 - [Strategic Positioning](#strategic-positioning)
 - [Technical Documentation](#technical-documentation)
@@ -64,6 +65,14 @@ Jumentix eliminates this waste. Your team starts from a production-grade softwar
 - Backend services as functions
 - Modular SaaS monoliths ready for decomposition
 - Microservice ecosystems with shared contracts and governance
+
+## Launch Playbooks
+
+- [Creating SPA/PWA with Jumentix](./apps/service-management/documentation/guides/CREATING-SPA-PWA-WITH-JUMENTIX.md)
+- [Creating a REST API with Jumentix](./apps/backend-template/documentation/guides/CREATING-REST-API-WITH-JUMENTIX.md)
+- [Creating a Realtime API with Jumentix](./apps/backend-template/documentation/guides/CREATING-REALTIME-API-WITH-JUMENTIX.md)
+- [Creating a SaaS Monolith with Jumentix](./documentation/md/guides/CREATING-SAAS-MONOLITH-WITH-JUMENTIX.md)
+- [Creating SaaS Microservices with Jumentix](./documentation/md/guides/CREATING-SAAS-MICROSERVICES-WITH-JUMENTIX.md)
 
 ## Adoption Paths
 

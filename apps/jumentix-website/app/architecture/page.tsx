@@ -1,4 +1,4 @@
-import { Card, Container, List, Stack, Text, Title } from '@mantine/core';
+import { Card, Container, List, Stack, Text, Title, ListItem } from '@mantine/core';
 
 export default function ArchitecturePage() {
   return (
@@ -11,10 +11,10 @@ export default function ArchitecturePage() {
         </Text>
         <Card withBorder>
           <List spacing="xs">
-            <List.Item>Domain-first module boundaries</List.Item>
-            <List.Item>Ports and adapters isolation</List.Item>
-            <List.Item>Contract-driven interface exposure</List.Item>
-            <List.Item>Event and message flow consistency</List.Item>
+            <ListItem>Domain-first module boundaries</ListItem>
+            <ListItem>Ports and adapters isolation</ListItem>
+            <ListItem>Contract-driven interface exposure</ListItem>
+            <ListItem>Event and message flow consistency</ListItem>
           </List>
         </Card>
       </Stack>
