@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- 2026-07-24 chore(security): add workspace snyk policy files - web2solutions
 - 2026-07-24 fix(ci): stabilize monorepo checks and security dependency graph - web2solutions
 - 2026-07-24 chore(security): add tracked snyk policy and workspace override governance - web2solutions
 - 2026-07-24 fix(security): bump next and fastify stacks to patch known advisories - web2solutions
