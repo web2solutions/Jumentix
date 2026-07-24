@@ -24,3 +24,15 @@ ignore:
     - '*':
         reason: "Next.js/Nextra transitive sharp chain currently upstream-managed."
         expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-SHARP-18184259:
+    - '*':
+        reason: "libvips transitive advisory in Next.js sharp chain currently upstream-managed."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-SHARP-18184262:
+    - '*':
+        reason: "libvips transitive advisory in Next.js sharp chain currently upstream-managed."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-SHARP-18184416:
+    - '*':
+        reason: "libvips transitive advisory in Next.js sharp chain currently upstream-managed."
+        expires: "2026-10-31T23:59:59.000Z"

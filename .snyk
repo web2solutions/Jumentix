@@ -60,3 +60,19 @@ ignore:
     - '*':
         reason: "Tracked via GHSA-f88m-g3jw-g9cj in next.js transitive dependency chain."
         expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-SHARP-18184259:
+    - '*':
+        reason: "libvips transitive advisory in next.js sharp chain; waiting upstream ecosystem update."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-SHARP-18184262:
+    - '*':
+        reason: "libvips transitive advisory in next.js sharp chain; waiting upstream ecosystem update."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-SHARP-18184416:
+    - '*':
+        reason: "libvips transitive advisory in next.js sharp chain; waiting upstream ecosystem update."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-SHARP-5922108:
+    - '*':
+        reason: "sharp advisory tracked while next.js transitive chain is upstream-managed."
+        expires: "2026-10-31T23:59:59.000Z"
