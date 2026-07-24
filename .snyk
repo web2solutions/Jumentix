@@ -1,0 +1,30 @@
+version: v1.25.0
+ignore:
+  GHSA-rrr8-f88r-h8q6:
+    - '*':
+        reason: "Restify 11.1.0 depends on find-my-way 7.x and currently has no patched major-compatible release."
+        expires: "2026-10-31T23:59:59.000Z"
+  GHSA-c96f-x56v-gq3h:
+    - '*':
+        reason: "Restify transport remains required for adapter compatibility; awaiting upstream fix to consume patched find-my-way."
+        expires: "2026-10-31T23:59:59.000Z"
+  GHSA-m6fv-jmcg-4jfg:
+    - '*':
+        reason: "send vulnerability inherited through restify path only; tracked until restify publishes patched dependency chain."
+        expires: "2026-10-31T23:59:59.000Z"
+  GHSA-xcpc-8h2w-3j85:
+    - '*':
+        reason: "Inherited via cassandra-driver transitive dependency; awaiting upstream release with adm-zip >=0.6.0."
+        expires: "2026-10-31T23:59:59.000Z"
+  GHSA-395f-4hp3-45gv:
+    - '*':
+        reason: "Inherited through concurrently legacy chain in local tooling path; tracked for next dependency refresh wave."
+        expires: "2026-10-31T23:59:59.000Z"
+  GHSA-f88m-g3jw-g9cj:
+    - '*':
+        reason: "Next.js 16.2.11 still resolves sharp 0.34.x transitively in current Nextra stack; monitored until upstream bump."
+        expires: "2026-10-31T23:59:59.000Z"
+  GHSA-6g55-p6wh-862q:
+    - '*':
+        reason: "PostCSS vulnerability inherited from Next.js transitive postcss@8.4.x; awaiting upstream next/nextra dependency update."
+        expires: "2026-10-31T23:59:59.000Z"
