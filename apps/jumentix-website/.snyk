@@ -1,0 +1,14 @@
+version: v1.25.0
+ignore:
+  GHSA-f88m-g3jw-g9cj:
+    - '*':
+        reason: "Next.js/Nextra transitive sharp chain still pinned upstream; tracked until ecosystem update."
+        expires: "2026-10-31T23:59:59.000Z"
+  GHSA-6g55-p6wh-862q:
+    - '*':
+        reason: "Next.js transitive postcss@8.4.x currently upstream-managed."
+        expires: "2026-10-31T23:59:59.000Z"
+  GHSA-r28c-9q8g-f849:
+    - '*':
+        reason: "Next.js transitive postcss source-map chain currently upstream-managed."
+        expires: "2026-10-31T23:59:59.000Z"
