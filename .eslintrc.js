@@ -1,6 +1,9 @@
 const path = require('path');
 
 module.exports = {
+    ignorePatterns: [
+      'apps/jumentix-website/next-env.d.ts'
+    ],
     parser: '@typescript-eslint/parser',
     'parserOptions': {
       'project': 'tsconfig.json',

@@ -6,7 +6,8 @@ const { spawnSync } = require('child_process');
 const CANDIDATE_UNIT_DIRS = ['apps/backend-template/test/unit', 'test/unit'];
 
 function run() {
-  const root = process.cwd();
+  const root = path.resolve(__dirname, '..');
+  process.chdir(root);
   const testTarget = CANDIDATE_UNIT_DIRS.find((target) => fs.existsSync(path.join(root, target)));
 
   if (!testTarget) {
