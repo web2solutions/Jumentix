@@ -1,9 +1,10 @@
 # Changelog
 
-<!-- This file is generated from Git history. Run `npm run changelog:update` to refresh it. -->
+<!-- This file is generated from Git history. Run `pnpm run changelog:update` to refresh it. -->
 
 ## Unreleased
 
+- 2026-07-03 fix(website): force dynamic rendering to avoid not-found prerender failure - web2solutions
 - 2026-07-03 fix(website): remove banner from root layout to avoid prerender crash - web2solutions
 - 2026-07-03 fix(website): stop generating invalid jumentix index meta entry - web2solutions
 - 2026-07-03 fix(website): remove invalid root index entry from nextra meta - web2solutions

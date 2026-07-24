@@ -16,12 +16,12 @@ Use Fastify as your REST inbound adapter with Fastify-native server features.
 3. Run:
 
 ```bash
-npm run dev:fastify
+pnpm run dev:fastify
 ```
 
 ## Production
 
 ```bash
-npm run prod:fastify
+pnpm run prod:fastify
 ```
 

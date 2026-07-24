@@ -9,7 +9,7 @@ Sequelize + Oracle profile.
 1. Start container:
 
 ```bash
-npm run docker:up:oracle
+pnpm run docker:up:oracle
 ```
 
 2. Set env:

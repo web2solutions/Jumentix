@@ -66,8 +66,8 @@ This application is served via PM2:
 
 Commands:
 
-- `npm run dev:service-management`
-- `npm run dev` (auto-starts service management + REST profile)
+- `pnpm run dev:service-management`
+- `pnpm run dev` (auto-starts service management + REST profile)
 
 ## Runtime Env API
 

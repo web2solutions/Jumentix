@@ -20,10 +20,10 @@ Current workspace layout:
 Core orchestration commands:
 
 ```bash
-npm run mono:build
-npm run mono:test
-npm run mono:lint
-npm run mono:typecheck
+pnpm run mono:build
+pnpm run mono:test
+pnpm run mono:lint
+pnpm run mono:typecheck
 ```
 
 ## 1. Before you start
@@ -37,15 +37,15 @@ npm run mono:typecheck
 ### Install dependencies
 
 ```bash
-npm install
+pnpm install
 ```
 
 ### Run baseline checks
 
 ```bash
-npm run lint
-npm run test:unit
-npm run oas:check-routes
+pnpm run lint
+pnpm run test:unit
+pnpm run oas:check-routes
 ```
 
 ## 2. Understand the architecture flow
@@ -150,19 +150,19 @@ Recommended practice:
 ### Development runtime
 
 ```bash
-npm run dev:express
-npm run dev:fastify
-npm run dev:restify
-npm run dev:hyper-express
-npm run dev:serverless
+pnpm run dev:express
+pnpm run dev:fastify
+pnpm run dev:restify
+pnpm run dev:hyper-express
+pnpm run dev:serverless
 ```
 
 ### PM2 multi-app (monorepo)
 
 ```bash
-npm run pm2:start:dev:restapi
-npm run pm2:start:dev:websocket-rest
-npm run pm2:start:dev:grpc-rest
+pnpm run pm2:start:dev:restapi
+pnpm run pm2:start:dev:websocket-rest
+pnpm run pm2:start:dev:grpc-rest
 ```
 
 These profiles start service-management alongside backend adapters using `pm2/*`.
@@ -170,13 +170,13 @@ These profiles start service-management alongside backend adapters using `pm2/*`
 ### Quality and CI parity
 
 ```bash
-npm run lint
-npm run test:unit
-npm run oas:check-routes
-npm run build:dev
-npm run ci:smoke
-npm run ci:gate
-npm run ci:monorepo
+pnpm run lint
+pnpm run test:unit
+pnpm run oas:check-routes
+pnpm run build:dev
+pnpm run ci:smoke
+pnpm run ci:gate
+pnpm run ci:monorepo
 ```
 
 ## 9. Definition of done for new features
@@ -187,7 +187,7 @@ A feature should be considered done when:
 - Business behavior is covered by unit tests.
 - Critical endpoint path has integration coverage.
 - No sensitive fields leak in API responses.
-- `npm run ci:gate` passes locally and in CI.
+- `pnpm run ci:gate` passes locally and in CI.
 
 ## 10. Common pitfalls to avoid
 

@@ -15,6 +15,6 @@ Expose API operations through Feathers runtime adapter.
 3. Run:
 
 ```bash
-npm run dev:feathers
+pnpm run dev:feathers
 ```
 

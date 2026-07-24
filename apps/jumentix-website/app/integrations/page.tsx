@@ -1,4 +1,4 @@
-import { Card, Container, List, SimpleGrid, Stack, Text, Title } from '@mantine/core';
+import { Card, Container, List, SimpleGrid, Stack, Text, Title, ListItem } from '@mantine/core';
 
 export default function IntegrationsPage() {
   return (
@@ -13,17 +13,17 @@ export default function IntegrationsPage() {
           <Card withBorder>
             <Title order={4}>Interface Adapters</Title>
             <List mt="sm" spacing="xs">
-              <List.Item>REST adapters (Express, Fastify, Restify, and more)</List.Item>
-              <List.Item>Realtime adapters (WebSocket, gRPC)</List.Item>
-              <List.Item>Function adapters (Cloud providers and edge runtimes)</List.Item>
+              <ListItem>REST adapters (Express, Fastify, Restify, and more)</ListItem>
+              <ListItem>Realtime adapters (WebSocket, gRPC)</ListItem>
+              <ListItem>Function adapters (Cloud providers and edge runtimes)</ListItem>
             </List>
           </Card>
           <Card withBorder>
             <Title order={4}>Data and Messaging</Title>
             <List mt="sm" spacing="xs">
-              <List.Item>SQL and NoSQL repository adapters</List.Item>
-              <List.Item>In-memory official adapter for local development</List.Item>
-              <List.Item>Message mediator with request/response and pub/sub patterns</List.Item>
+              <ListItem>SQL and NoSQL repository adapters</ListItem>
+              <ListItem>In-memory official adapter for local development</ListItem>
+              <ListItem>Message mediator with request/response and pub/sub patterns</ListItem>
             </List>
           </Card>
         </SimpleGrid>

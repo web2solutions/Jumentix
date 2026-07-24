@@ -37,7 +37,7 @@ Shared realtime core:
 Run:
 
 ```bash
-npm run test:unit
+pnpm run test:unit
 ```
 
 ## 2) Integration Tests
@@ -54,13 +54,13 @@ Redis multi-instance integration:
 Run basic realtime integrations:
 
 ```bash
-npm run test:integration:realtime
+pnpm run test:integration:realtime
 ```
 
 Run Redis multi-instance integration (requires Redis):
 
 ```bash
-npm run test:integration:realtime:redis-streams
+pnpm run test:integration:realtime:redis-streams
 ```
 
 ## 3) Smoke Tests
@@ -72,13 +72,13 @@ Local realtime smoke:
 Run:
 
 ```bash
-npm run test:smoke:realtime
+pnpm run test:smoke:realtime
 ```
 
 End-to-end Redis smoke (Docker + multi-instance + cleanup):
 
 ```bash
-npm run smoke:realtime:redis-streams
+pnpm run smoke:realtime:redis-streams
 ```
 
 ## CI Behavior

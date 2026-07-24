@@ -15,6 +15,6 @@ Expose API operations through Vercel-style function handlers (`req`/`res`).
 3. Run:
 
 ```bash
-npm run dev:vercel-functions
+pnpm run dev:vercel-functions
 ```
 

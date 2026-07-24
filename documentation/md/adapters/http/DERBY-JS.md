@@ -15,6 +15,6 @@ Run HTTP interface via Derby.js adapter.
 3. Run:
 
 ```bash
-npm run dev:derby-js
+pnpm run dev:derby-js
 ```
 

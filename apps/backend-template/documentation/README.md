@@ -36,3 +36,29 @@ This is the technical documentation hub for the backend template application use
 - REST runtime loaders and adapters in `apps/backend-template/src/interface/HTTP`.
 - Realtime runtime loaders and adapters in `apps/backend-template/src/interface/WebSocket` and `apps/backend-template/src/interface/gRPC`.
 - PM2 profiles from repo root `pm2/` for dev/staging/production process orchestration.
+
+## Architecture Snapshot
+
+- Domain modules expose use cases and controllers through inbound adapters.
+- Outbound concerns (database, key-value, messaging) are injected via shared runtime packages.
+- API contracts are OpenAPI-first for REST and AsyncAPI-first for realtime channels.
+
+## Integration Examples
+
+REST profile with explicit framework selection:
+
+```bash
+AAA_HTTP_FRAMEWORK=fastify pnpm run dev:http
+```
+
+WebSocket + REST fallback profile:
+
+```bash
+AAA_REALTIME_API=yes AAA_REALTIME_API_PROTOCOL=websocket pnpm run dev:websocket
+```
+
+gRPC + REST fallback profile:
+
+```bash
+AAA_REALTIME_API=yes AAA_REALTIME_API_PROTOCOL=grpc pnpm run dev:grpc
+```

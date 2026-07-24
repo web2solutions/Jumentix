@@ -1,5 +1,4 @@
-import Link from 'next/link';
-import { Button, Card, Container, Group, List, Stack, Text, Title } from '@mantine/core';
+import { Button, Card, Container, Group, List, Stack, Text, Title, ListItem } from '@mantine/core';
 
 type UseCaseTemplateProps = {
   title: string;
@@ -17,15 +16,15 @@ export function UseCaseTemplate({ title, summary, bullets }: UseCaseTemplateProp
           <Title order={3}>Why teams choose this path</Title>
           <List mt="sm" spacing="xs">
             {bullets.map((bullet) => (
-              <List.Item key={bullet}>{bullet}</List.Item>
+              <ListItem key={bullet}>{bullet}</ListItem>
             ))}
           </List>
         </Card>
         <Group>
-          <Button component={Link} href="/contact">
+          <Button component="a" href="/contact">
             Start a Pilot
           </Button>
-          <Button component={Link} href="/docs/jumentix" variant="light">
+          <Button component="a" href="/docs/jumentix" variant="light">
             View Technical Docs
           </Button>
         </Group>

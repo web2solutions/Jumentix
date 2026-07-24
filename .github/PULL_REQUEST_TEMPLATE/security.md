@@ -35,9 +35,9 @@
 
 ## Validation Evidence
 
-- [ ] `npm run lint`
-- [ ] `npm run test:unit`
-- [ ] `npm run ci:gate`
+- [ ] `pnpm run lint`
+- [ ] `pnpm run test:unit`
+- [ ] `pnpm run ci:gate`
 - [ ] Sonar check passing
 - [ ] Codecov passing
 

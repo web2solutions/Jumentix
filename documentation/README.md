@@ -16,6 +16,14 @@
 - [Workspace Packages](../packages/README.md)
 - [Tooling](../tooling/README.md)
 
+## Solution Playbooks
+
+- [Creating SPA/PWA with Jumentix](../apps/service-management/documentation/guides/CREATING-SPA-PWA-WITH-JUMENTIX.md)
+- [Creating a REST API with Jumentix](../apps/backend-template/documentation/guides/CREATING-REST-API-WITH-JUMENTIX.md)
+- [Creating a Realtime API with Jumentix](../apps/backend-template/documentation/guides/CREATING-REALTIME-API-WITH-JUMENTIX.md)
+- [Creating a SaaS Monolith with Jumentix](./md/guides/CREATING-SAAS-MONOLITH-WITH-JUMENTIX.md)
+- [Creating SaaS Microservices with Jumentix](./md/guides/CREATING-SAAS-MICROSERVICES-WITH-JUMENTIX.md)
+
 ## Architecture and Contracts
 
 - [Events and Messages Map](./md/EVENTS-AND-MESSAGES-MAP.md)

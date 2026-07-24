@@ -5,44 +5,44 @@
 Run full test suite:
 
 ```bash
-npm test
+pnpm test
 ```
 
 Run unit tests:
 
 ```bash
-npm run test:unit
+pnpm run test:unit
 ```
 
 Run integration tests:
 
 ```bash
-npm run test:integration
+pnpm run test:integration
 ```
 
 Run realtime integration tests:
 
 ```bash
-npm run test:integration:realtime
+pnpm run test:integration:realtime
 ```
 
 Run Redis-backed multi-instance realtime integration:
 
 ```bash
-npm run test:integration:realtime:redis-streams
+pnpm run test:integration:realtime:redis-streams
 ```
 
 Run database driver smoke tests:
 
 ```bash
-npm run test:smoke:db:all
+pnpm run test:smoke:db:all
 ```
 
 Run realtime smoke tests:
 
 ```bash
-npm run test:smoke:realtime
-npm run smoke:realtime:redis-streams
+pnpm run test:smoke:realtime
+pnpm run smoke:realtime:redis-streams
 ```
 
 `test:smoke:db:all` orchestrates each driver-specific smoke command, including
@@ -51,26 +51,26 @@ automatic `docker compose up/down` for container-backed databases.
 Container-backed smoke shortcuts:
 
 ```bash
-npm run smoke:db:postgresql
-npm run smoke:db:mysql
-npm run smoke:db:mssql
-npm run smoke:db:oracle
-npm run smoke:db:mongodb
-npm run smoke:db:cassandra
-npm run smoke:db:dynamodb
-npm run smoke:db:firebase
-npm run smoke:db:aurora
-npm run smoke:db:rds
+pnpm run smoke:db:postgresql
+pnpm run smoke:db:mysql
+pnpm run smoke:db:mssql
+pnpm run smoke:db:oracle
+pnpm run smoke:db:mongodb
+pnpm run smoke:db:cassandra
+pnpm run smoke:db:dynamodb
+pnpm run smoke:db:firebase
+pnpm run smoke:db:aurora
+pnpm run smoke:db:rds
 ```
 
 Per runtime:
 
 ```bash
-npm run test:integration:express
-npm run test:integration:fastify
-npm run test:integration:restify
-npm run test:integration:lambda
-npm run test:integration:hyper-express
+pnpm run test:integration:express
+pnpm run test:integration:fastify
+pnpm run test:integration:restify
+pnpm run test:integration:lambda
+pnpm run test:integration:hyper-express
 ```
 
 ## CI and Quality Gates
@@ -78,7 +78,7 @@ npm run test:integration:hyper-express
 Main gate:
 
 ```bash
-npm run ci:gate
+pnpm run ci:gate
 ```
 
 Included checks:
@@ -97,8 +97,8 @@ Included checks:
 
 Local enforcement:
 
-- `.husky/pre-commit` runs `npm run changelog:update && git add CHANGELOG.md && npm run lint && npm run test:unit`
-- `.husky/pre-push` runs `npm run ci:gate:strict`
+- `.husky/pre-commit` runs `pnpm run changelog:update && git add CHANGELOG.md && pnpm run lint && pnpm run test:unit`
+- `.husky/pre-push` runs `pnpm run ci:gate:strict`
 - `post-commit` is mutation-free (no auto-amend, no bypass flags)
 - `.husky/commit-msg` runs commitlint (`@commitlint/config-conventional`)
 - `.husky/post-commit` updates `CHANGELOG.md` from Git history and auto-amends the commit when needed
@@ -114,19 +114,19 @@ SonarQube Cloud coverage import:
 
 | Integration | Purpose | Where it is configured | What to run / requirements |
 |------------|---------|-------------------------|-----------------------------|
-| CircleCI | Main pipeline for lint + tests + architecture checks + smoke + upload coverage | `.circleci/config.yml` | Installs with `pnpm`, runs `npm run ci:monorepo` |
-| GitHub Actions (tests) | Secondary CI validation on push/PR | `.github/workflows/test.yml` | Uses Node `22.x`, installs with `pnpm`, runs scope-aware `npm run ci:monorepo -- <changed-files>` |
-| GitHub Actions (SonarQube Cloud) | Static analysis + quality gate + coverage import | `.github/workflows/sonarqube-cloud.yml`, `sonar-project.properties` | Requires `SONAR_TOKEN`; runs `npm run test:unit` first |
+| CircleCI | Main pipeline for lint + tests + architecture checks + smoke + upload coverage | `.circleci/config.yml` | Installs with `pnpm`, runs `pnpm run ci:monorepo` |
+| GitHub Actions (tests) | Secondary CI validation on push/PR | `.github/workflows/test.yml` | Uses Node `22.x`, installs with `pnpm`, runs scope-aware `pnpm run ci:monorepo -- <changed-files>` |
+| GitHub Actions (SonarQube Cloud) | Static analysis + quality gate + coverage import | `.github/workflows/sonarqube-cloud.yml`, `sonar-project.properties` | Requires `SONAR_TOKEN`; runs `pnpm run test:unit` first |
 | Codecov | Coverage status checks for project and patch | `codecov.yml` | Target is `95%` for project and patch |
 | Jest coverage gate | Local hard gate to prevent low-coverage merges | `jest.config.js` | Global thresholds: `lines/statements >= 95%`, `branches/functions >= 80%` |
-| Husky | Local Git hooks for quality checks | `.husky/*` | Installed by `npm run prepare` |
-| Commitlint + Commitizen | Conventional commits and guided commit flow | `commitlint.config.js`, `package.json` | `npm run commit` |
-| Changelog sync automation | Keeps `CHANGELOG.md` aligned with Git history | `ci-cd/update-changelog.js`, `.husky/post-commit` | `npm run changelog:update`, `npm run changelog:check` |
-| Release governance check | Enforces release script contracts and package publish metadata | `ci-cd/check-release-governance.js` | `npm run release:governance:check` |
-| OpenAPI route resolution check | Ensures each operationId maps to handlers and controller methods | `ci-cd/check-oas-route-resolution.js` | `npm run oas:check-routes` |
-| Hexagonal boundary check | Blocks controller-layer violations | `ci-cd/check-hexagonal-boundaries.js` | `npm run arch:check-boundaries` |
-| Core import cycle check | Prevents cyclic dependencies in core namespaces | `ci-cd/check-core-import-cycles.js` | `npm run deps:check-cycles` |
-| Legacy namespace check | Blocks new imports from old Users namespaces | `ci-cd/check-users-legacy-imports.js` | `npm run arch:check-users-legacy-imports` |
+| Husky | Local Git hooks for quality checks | `.husky/*` | Installed by `pnpm run prepare` |
+| Commitlint + Commitizen | Conventional commits and guided commit flow | `commitlint.config.js`, `package.json` | `pnpm run commit` |
+| Changelog sync automation | Keeps `CHANGELOG.md` aligned with Git history | `ci-cd/update-changelog.js`, `.husky/post-commit` | `pnpm run changelog:update`, `pnpm run changelog:check` |
+| Release governance check | Enforces release script contracts and package publish metadata | `ci-cd/check-release-governance.js` | `pnpm run release:governance:check` |
+| OpenAPI route resolution check | Ensures each operationId maps to handlers and controller methods | `ci-cd/check-oas-route-resolution.js` | `pnpm run oas:check-routes` |
+| Hexagonal boundary check | Blocks controller-layer violations | `ci-cd/check-hexagonal-boundaries.js` | `pnpm run arch:check-boundaries` |
+| Core import cycle check | Prevents cyclic dependencies in core namespaces | `ci-cd/check-core-import-cycles.js` | `pnpm run deps:check-cycles` |
+| Legacy namespace check | Blocks new imports from old Users namespaces | `ci-cd/check-users-legacy-imports.js` | `pnpm run arch:check-users-legacy-imports` |
 
 ### CI Platforms and Responsibilities
 
@@ -134,7 +134,7 @@ SonarQube Cloud coverage import:
 
 - Pipeline file: `.circleci/config.yml`
 - Uses `cimg/node:22.23` plus `redis:latest`
-- Installs `pnpm@9.15.3`, runs `pnpm install --no-frozen-lockfile`, waits for Redis, executes `npm run ci:monorepo`, uploads coverage with Codecov orb
+- Installs `pnpm@9.15.3`, runs `pnpm install --no-frozen-lockfile`, waits for Redis, executes `pnpm run ci:monorepo`, uploads coverage with Codecov orb
 - This is the primary all-in-one gate
 
 #### GitHub Actions - Test Workflow
@@ -143,7 +143,7 @@ SonarQube Cloud coverage import:
 - Triggers on:
   - `push` to `main` and `dev`
   - `pull_request` to `main`
-- Sets up Redis (with password), installs `pnpm`, computes changed files against `main`, runs `npm run ci:monorepo -- <changed-files>`
+- Sets up Redis (with password), installs `pnpm`, computes changed files against `main`, runs `pnpm run ci:monorepo -- <changed-files>`
 - Uses docs-only lightweight checks or strict gate + affected app/package flow depending on delta scope
 
 #### GitHub Actions - SonarQube Cloud Workflow
@@ -173,7 +173,7 @@ The project is locked to Node 22:
 
 - `package.json` -> `"engines": { "node": ">=22.0.0 <23.0.0" }`
 - `.npmrc` -> `engine-strict=true`
-- `preinstall` script -> `npm run check-node-version`
+- `preinstall` script -> `pnpm run check-node-version`
 - `ci-cd/check-node-version.js` validates `process.version` against `engines.node`
 - `.nvmrc` and `.node-version` are both pinned to `22.0.0`
 
@@ -182,7 +182,7 @@ Recommended local setup:
 ```bash
 nvm use
 node -v
-npm -v
+pnpm -v
 ```
 
 ### Environment and Secrets in CI
@@ -208,22 +208,22 @@ Environment bootstrap during tests:
 Run full gate:
 
 ```bash
-npm run ci:gate
+pnpm run ci:gate
 ```
 
 Run targeted checks:
 
 ```bash
-npm run deps:check-cycles
-npm run arch:check-boundaries
-npm run arch:check-users-legacy-imports
-npm run arch:check-workspace-boundaries
-npm run workspace:check-quality
-npm run workspace:check-coverage-policy
-npm run release:governance:check
-npm run oas:check-routes
-npm run test:unit
-npm run ci:smoke
+pnpm run deps:check-cycles
+pnpm run arch:check-boundaries
+pnpm run arch:check-users-legacy-imports
+pnpm run arch:check-workspace-boundaries
+pnpm run workspace:check-quality
+pnpm run workspace:check-coverage-policy
+pnpm run release:governance:check
+pnpm run oas:check-routes
+pnpm run test:unit
+pnpm run ci:smoke
 ```
 
 ### Troubleshooting (CI / SonarQube / Codecov)

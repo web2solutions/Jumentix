@@ -198,7 +198,7 @@ async function run() {
     const gitBranch = cliArgs.gitBranch || (await prompt.ask('Git branch to clone (default: main): ')) || 'main';
     const installDeps = typeof cliArgs.installDeps === 'boolean'
       ? cliArgs.installDeps
-      : (((await prompt.ask('Run npm install after scaffold? (Y/n): ')) || 'y').toLowerCase() !== 'n');
+      : (((await prompt.ask('Run pnpm install after scaffold? (Y/n): ')) || 'y').toLowerCase() !== 'n');
     const repository = cliArgs.repository || BOILERPLATE_REPOSITORY;
 
     console.log('\nCloning boilerplate repository...');

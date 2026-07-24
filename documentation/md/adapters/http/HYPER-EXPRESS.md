@@ -16,12 +16,12 @@ Use Hyper-Express as high-performance REST adapter.
 3. Run:
 
 ```bash
-npm run dev:hyper-express
+pnpm run dev:hyper-express
 ```
 
 ## Production
 
 ```bash
-npm run prod:hyper-express
+pnpm run prod:hyper-express
 ```
 

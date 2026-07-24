@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "npm run typecheck",
+    "test": "pnpm run typecheck",
     "lint": "echo \"sdk-grpc-client: lint managed by root workspace\"",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },

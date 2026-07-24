@@ -9,7 +9,7 @@ Sequelize + tedious profile.
 1. Start container:
 
 ```bash
-npm run docker:up:mssql
+pnpm run docker:up:mssql
 ```
 
 2. Set env:

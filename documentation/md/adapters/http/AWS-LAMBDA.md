@@ -17,7 +17,7 @@ Deploy handlers as function-based services with Serverless.
 4. Run local mode:
 
 ```bash
-npm run dev:serverless
+pnpm run dev:serverless
 ```
 
 ## Notes

@@ -34,24 +34,24 @@ This boilerplate now supports runtime selection of multiple database drivers thr
 - Run all configured smoke drivers:
 
 ```bash
-npm run test:smoke:db:all
+pnpm run test:smoke:db:all
 ```
 
 - Run one driver only:
 
 ```bash
-npm run test:smoke:db:postgresql
-npm run test:smoke:db:mysql
-npm run test:smoke:db:mssql
-npm run test:smoke:db:oracle
-npm run test:smoke:db:mongo
-npm run test:smoke:db:cassandra
-npm run test:smoke:db:dynamodb
-npm run test:smoke:db:firebase
-npm run test:smoke:db:aurora
-npm run test:smoke:db:rds
-npm run test:smoke:db:sqlite
-npm run test:smoke:db:inmemory
+pnpm run test:smoke:db:postgresql
+pnpm run test:smoke:db:mysql
+pnpm run test:smoke:db:mssql
+pnpm run test:smoke:db:oracle
+pnpm run test:smoke:db:mongo
+pnpm run test:smoke:db:cassandra
+pnpm run test:smoke:db:dynamodb
+pnpm run test:smoke:db:firebase
+pnpm run test:smoke:db:aurora
+pnpm run test:smoke:db:rds
+pnpm run test:smoke:db:sqlite
+pnpm run test:smoke:db:inmemory
 ```
 
 ### Driver Filter
@@ -61,7 +61,7 @@ npm run test:smoke:db:inmemory
 Example:
 
 ```bash
-AAA_DB_SMOKE_DRIVERS=PostgreSQL,MySQL npm run test:smoke:db
+AAA_DB_SMOKE_DRIVERS=PostgreSQL,MySQL pnpm run test:smoke:db
 ```
 
 ## Docker Compose Files Per Database
@@ -82,16 +82,16 @@ AAA_DB_SMOKE_DRIVERS=PostgreSQL,MySQL npm run test:smoke:db
 Each workflow starts container -> runs smoke test -> stops container:
 
 ```bash
-npm run smoke:db:postgresql
-npm run smoke:db:mysql
-npm run smoke:db:mssql
-npm run smoke:db:oracle
-npm run smoke:db:mongodb
-npm run smoke:db:cassandra
-npm run smoke:db:dynamodb
-npm run smoke:db:firebase
-npm run smoke:db:aurora
-npm run smoke:db:rds
+pnpm run smoke:db:postgresql
+pnpm run smoke:db:mysql
+pnpm run smoke:db:mssql
+pnpm run smoke:db:oracle
+pnpm run smoke:db:mongodb
+pnpm run smoke:db:cassandra
+pnpm run smoke:db:dynamodb
+pnpm run smoke:db:firebase
+pnpm run smoke:db:aurora
+pnpm run smoke:db:rds
 ```
 
 ## Environment Variables

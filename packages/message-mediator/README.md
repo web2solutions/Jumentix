@@ -10,6 +10,3 @@ Current extracted scope:
 - RabbitMQ mediator adapter
 - BullMQ mediator adapter
 - environment-aware `compileMessageMediator` helper
-
-Pending extraction waves:
-- compile/runtime selection helpers

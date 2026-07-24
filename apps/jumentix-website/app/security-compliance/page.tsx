@@ -1,4 +1,4 @@
-import { Card, Container, List, Stack, Text, Title } from '@mantine/core';
+import { Card, Container, List, Stack, Text, Title, ListItem } from '@mantine/core';
 
 export default function SecurityCompliancePage() {
   return (
@@ -11,10 +11,10 @@ export default function SecurityCompliancePage() {
         </Text>
         <Card withBorder>
           <List spacing="xs">
-            <List.Item>Auth and RBAC hardening with test evidence</List.Item>
-            <List.Item>Production error masking with non-production observability support</List.Item>
-            <List.Item>Coverage and CI gates as quality control barriers</List.Item>
-            <List.Item>Issue/PR traceability standards for auditability</List.Item>
+            <ListItem>Auth and RBAC hardening with test evidence</ListItem>
+            <ListItem>Production error masking with non-production observability support</ListItem>
+            <ListItem>Coverage and CI gates as quality control barriers</ListItem>
+            <ListItem>Issue/PR traceability standards for auditability</ListItem>
           </List>
         </Card>
       </Stack>

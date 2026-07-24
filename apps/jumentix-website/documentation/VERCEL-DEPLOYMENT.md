@@ -10,13 +10,13 @@ Issue tracking:
 From repository root:
 
 ```bash
-npm run website:deploy:vercel
+pnpm run website:deploy:vercel
 ```
 
 Preview deployment:
 
 ```bash
-npm run website:deploy:vercel:preview
+pnpm run website:deploy:vercel:preview
 ```
 
 From app workspace directly:

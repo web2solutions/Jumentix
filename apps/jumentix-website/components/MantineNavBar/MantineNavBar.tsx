@@ -1,7 +1,7 @@
 'use client';
 
 import { Navbar } from 'nextra-theme-docs';
-import { ActionIcon, Group, Text, Tooltip } from '@mantine/core';
+import { ActionIcon, Group, Image, Text, Tooltip } from '@mantine/core';
 import { IconBooks, IconMessages } from '@tabler/icons-react';
 import { ColorSchemeControl } from '../ColorSchemeControl/ColorSchemeControl';
 import { Logo } from '../Logo/Logo';
@@ -21,6 +21,13 @@ export const MantineNavBar = () => {
       <Navbar
         logo={
           <Group align="center" gap={4}>
+            <Image
+              src="/brand/jumentix-mascot.png"
+              alt="Jumentix mascot"
+              w={26}
+              h={26}
+              radius="xl"
+            />
             <Logo />
             <Text size="lg" fw={300} c="blue" visibleFrom="xl">
               Jumentix

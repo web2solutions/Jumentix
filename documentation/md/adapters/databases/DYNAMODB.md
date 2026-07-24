@@ -9,7 +9,7 @@ AWS SDK DynamoDB client profile.
 1. Start local container:
 
 ```bash
-npm run docker:up:dynamodb
+pnpm run docker:up:dynamodb
 ```
 
 2. Set env:

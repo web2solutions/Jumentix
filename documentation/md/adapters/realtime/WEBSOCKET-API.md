@@ -74,13 +74,13 @@ A dedicated integration test validates resilience with 2 Socket.IO servers + Red
 Run it with Docker:
 
 ```bash
-npm run smoke:realtime:redis-streams
+pnpm run smoke:realtime:redis-streams
 ```
 
 Or run only the test (requires Redis running):
 
 ```bash
-npm run test:integration:realtime:redis-streams
+pnpm run test:integration:realtime:redis-streams
 ```
 
 ## Runtime Flow

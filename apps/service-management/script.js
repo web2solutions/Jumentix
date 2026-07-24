@@ -518,19 +518,19 @@ function renderServiceConfiguration() {
     'rest-api': {
       kind: 'REST API',
       processCount: 1,
-      pm2Command: 'npm run pm2:start:dev:restapi',
+      pm2Command: 'pnpm run pm2:start:dev:restapi',
       processes: ['REST API']
     },
     'websocket-rest-api': {
       kind: 'WebSocket API + REST API',
       processCount: 2,
-      pm2Command: 'npm run pm2:start:dev:websocket-rest',
+      pm2Command: 'pnpm run pm2:start:dev:websocket-rest',
       processes: ['REST API', 'WebSocket API']
     },
     'grpc-rest-api': {
       kind: 'gRPC API + REST API',
       processCount: 2,
-      pm2Command: 'npm run pm2:start:dev:grpc-rest',
+      pm2Command: 'pnpm run pm2:start:dev:grpc-rest',
       processes: ['REST API', 'gRPC API']
     }
   };
