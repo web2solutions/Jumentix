@@ -8,6 +8,10 @@
 
 - Technical requirements and specialized agents:
   - `.agents/README.md`
+  - `.agents/AGENT-REGISTRY.md`
+  - `AGENTS.md` (Codex)
+  - `CLAUDE.md` (Claude Code)
+  - `GROK.md` (Grok)
 - Project todos and delivery status:
   - `.agents/project-todos.md`
 - GitHub issue tracking for migrated TODOs:

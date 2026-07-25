@@ -25,6 +25,14 @@ Protect Jumentix delivery by ensuring every change is spec-first, traceable, and
    - `SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`
    - `SPEC-DELIVERY-GATES-AND-EVIDENCE.md`
    - `SPEC-OPERATING-MODEL-BY-COMPONENT.md`
+7. Enforce multi-agent instruction parity across:
+   - `AGENTS.md` (Codex)
+   - `CLAUDE.md` (Claude Code)
+   - `GROK.md` (Grok)
+8. Enforce Agent Registry compliance:
+   - pre-task registration in `.agents/AGENT-REGISTRY.md`
+   - planning assignment to available agents only
+   - mandatory `main` + `dev` branch checks before execution
 
 ## Required Artifacts Per Change
 

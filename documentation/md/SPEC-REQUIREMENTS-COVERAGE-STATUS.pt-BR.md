@@ -10,9 +10,9 @@ Este documento certifica a cobertura atual dos requisitos implementados pelos re
 
 Data: `2026-07-25`
 
-1. Arquivos de requisitos em `.agents/requirements`: `77`
-2. IDs de requisitos exclusivos: `75`
-3. IDs cobertos em `SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`: `75`
+1. Arquivos de requisitos em `.agents/requirements`: `80`
+2. IDs de requisitos exclusivos: `78`
+3. IDs cobertos em `SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`: `78`
 4. Status de cobertura: `100%`
 
 Notas:
@@ -22,9 +22,9 @@ Notas:
 
 ## Cobertura de requisitos não funcionais
 
-IDs NFR cobertos (`32`):
+IDs NFR cobertos (`35`):
 
-`001`, `011`, `014`, `015`, `016`, `017`, `018`, `020`, `025`, `029`, `036`, `041`, `042`, `043`, `044`, `050`, `053`, `056`, `057`, `063`, `064`, `065`, `066`, `067`, `068`, `069`, `070`, `071`, `072`, `073`, `074`, `075`
+`001`, `011`, `014`, `015`, `016`, `017`, `018`, `020`, `025`, `029`, `036`, `041`, `042`, `043`, `044`, `050`, `053`, `056`, `057`, `063`, `064`, `065`, `066`, `067`, `068`, `069`, `070`, `071`, `072`, `073`, `074`, `075`, `076`, `077`, `078`
 
 Fontes de mapeamento NFR:
 
