@@ -116,3 +116,27 @@ ignore:
     - '*':
         reason: "Transitive in analyzer tooling chain; tracked until upstream resolution."
         expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-BODYPARSER-17906397:
+    - '*':
+        reason: "body-parser advisory is transitive in legacy runtime adapters; scheduled for coordinated dependency refresh."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-INFLIGHT-6095116:
+    - '*':
+        reason: "inflight is a transitive legacy dependency with no upstream patch available."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-SEND-7926862:
+    - '*':
+        reason: "Restify adapter compatibility currently requires this transitive send chain until upstream refresh."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-UUID-16133035:
+    - '*':
+        reason: "uuid advisory is transitive via sequelize/restify and tracked until ecosystem major upgrades are viable."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-DOMPURIFY-18170233:
+    - '*':
+        reason: "Transitive via nextra/mermaid toolchain in website docs stack; awaiting upstream patch rollout."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-SIRV-12558119:
+    - '*':
+        reason: "Transitive via webpack-bundle-analyzer path in docs tooling; pending upstream dependency upgrade."
+        expires: "2026-10-31T23:59:59.000Z"

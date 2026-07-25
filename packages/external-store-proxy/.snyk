@@ -1,0 +1,6 @@
+version: v1.25.0
+ignore:
+  SNYK-JS-UUID-16133035:
+    - '*':
+        reason: "Transitive via sequelize@6.x; upgrade path requires major ecosystem move currently outside this package scope."
+        expires: "2026-10-31T23:59:59.000Z"

@@ -36,3 +36,11 @@ ignore:
     - '*':
         reason: "libvips transitive advisory in Next.js sharp chain currently upstream-managed."
         expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-DOMPURIFY-18170233:
+    - '*':
+        reason: "Transitive via mermaid dependency in Nextra docs rendering; awaiting upstream patch release adoption."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-SIRV-12558119:
+    - '*':
+        reason: "Transitive via bundle-analyzer tooling dependency; tracked until upstream upgrade lands."
+        expires: "2026-10-31T23:59:59.000Z"
