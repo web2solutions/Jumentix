@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- 2026-07-25 docs(consumers): add package scripts reference with usage catalog - web2solutions
 - 2026-07-25 docs(i18n): reorganize docs by audience and add pt-BR corpus - web2solutions
 - 2026-07-25 chore(governance): require task traceability and bilingual docs/site - web2solutions
 - 2026-07-25 feat(website): add reliable pre-publish checks and stabilize production routes - web2solutions
