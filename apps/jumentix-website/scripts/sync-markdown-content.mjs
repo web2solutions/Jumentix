@@ -25,6 +25,13 @@ function escapeForSingleQuotedTs(value) {
   return value.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 }
 
+function toTsObjectKey(key) {
+  if (/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key)) {
+    return key;
+  }
+  return `'${escapeForSingleQuotedTs(key)}'`;
+}
+
 function sanitizeDocBody(markdown) {
   const normalized = normalizeLineEndings(markdown).trim();
   if (normalized.length === 0) {
@@ -58,9 +65,15 @@ ${body}
 }
 
 async function writeMetaFile(entries) {
+  const mappedLines = entries.map((entry, index) => {
+    const key = toTsObjectKey(entry.slug);
+    const isLast = index === entries.length - 1;
+    return `  ${key}: '${escapeForSingleQuotedTs(entry.title)}'${isLast ? '' : ','}`;
+  });
+
   const lines = [
     'export default {',
-    ...entries.map((entry) => `  '${entry.slug}': '${escapeForSingleQuotedTs(entry.title)}',`),
+    ...mappedLines,
     '};',
     '',
   ];

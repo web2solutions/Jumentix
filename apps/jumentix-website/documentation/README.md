@@ -2,6 +2,11 @@
 
 Technical documentation for the commercial website application.
 
+Audience contract:
+
+- Website must prioritize consumer-facing content.
+- Planning/migration/internal maintainer documentation must stay in creator/internal docs and must not be surfaced as primary website content.
+
 ## Index
 
 - [Website IA and Conversion Plan](./WEBSITE-IA-AND-CONVERSION-PLAN.md)

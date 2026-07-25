@@ -14,6 +14,7 @@ Project communication surfaces (documentation and website) must support English 
 4. Software docs, product docs, and spec docs must be kept in sync and versioned together.
 5. Documentation must have English and Portuguese versions.
 6. Jumentix website must provide English and Portuguese versions for its content and navigation.
+7. `.agents` and `.github` governance/automation files must remain English-only and must not receive Portuguese mirrored versions.
 
 ## Acceptance Criteria
 

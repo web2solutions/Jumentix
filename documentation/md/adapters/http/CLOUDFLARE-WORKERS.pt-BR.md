@@ -1,0 +1,26 @@
+<!--
+Arquivo gerado automaticamente a partir de: documentation/md/adapters/http/CLOUDFLARE-WORKERS.md
+Idioma alvo: Português (Brasil)
+-->
+# Adaptador de trabalhadores Cloudflare
+
+## Propósito
+
+Execute APIs HTTP no estilo Cloudflare Workers (contrato `fetch`), sem tempo de execução Express.
+
+## Pontos de entrada
+
+- `apps/backend-template/src/interface/HTTP/adapters/cloudflare-workers/cloudflare-workers.ts`
+
+## Crie um serviço com trabalhadores da Cloudflare
+
+1. Implemente manipuladores de operações para esta estrutura.
+2. Mantenha as camadas de domínio e de caso de uso compartilhadas com outros adaptadores.
+3. Use o despachante de busca de trabalhadores.
+4. Execute:
+
+```bash
+pnpm run dev:cloudflare-workers
+```
+
+

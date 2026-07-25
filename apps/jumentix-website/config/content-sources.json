@@ -3,13 +3,13 @@
     "slug": "overview",
     "title": "Jumentix Overview",
     "description": "Product and monorepo overview.",
-    "source": "../../documentation/md/PROJECT-OVERVIEW.md"
+    "source": "../../documentation/consumers/PRODUCT-OVERVIEW.md"
   },
   {
     "slug": "architecture-structure",
     "title": "Architecture and Structure",
     "description": "Core architecture principles and project structure.",
-    "source": "../../documentation/md/ARCHITECTURE-AND-STRUCTURE.md"
+    "source": "../../documentation/consumers/ARCHITECTURE.md"
   },
   {
     "slug": "rest-api-guide",
@@ -45,12 +45,12 @@
     "slug": "security-pci",
     "title": "Security and PCI Hardening",
     "description": "Security compliance and hardening evidence.",
-    "source": "../../documentation/md/PCI-REMEDIATION-PLAN-AND-EVIDENCE.md"
+    "source": "../../documentation/consumers/SECURITY-AND-COMPLIANCE.md"
   },
   {
     "slug": "runtime-contracts",
     "title": "Runtime Environment Contracts",
     "description": "Environment and runtime behavior contracts.",
-    "source": "../../documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md"
+    "source": "../../documentation/consumers/RUNTIME-CAPABILITIES.md"
   }
 ]

@@ -90,7 +90,8 @@ Jumentix is not just a template repository. It is an extensible software factory
 
 Technical development documentation is intentionally separated from this commercial README.
 
-- [Technical Documentation Index](documentation/README.md)
+- [Documentation Hub (EN)](documentation/README.md)
+- [Hub de Documentação (PT-BR)](documentation/README.pt-BR.md)
 
 ## Project Governance
 
