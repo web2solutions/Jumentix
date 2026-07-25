@@ -84,3 +84,35 @@ ignore:
     - '*':
         reason: "protobufjs advisory is transitive via grpc proto-loader; awaiting upstream dependency bump."
         expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-NEXT-18233133:
+    - '*':
+        reason: "Legacy template dependency chain tracked; active website package already upgraded."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-NEXT-18233136:
+    - '*':
+        reason: "Legacy template dependency chain tracked; active website package already upgraded."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-NEXT-18233752:
+    - '*':
+        reason: "Legacy template dependency chain tracked; active website package already upgraded."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-BRACEEXPANSION-17706650:
+    - '*':
+        reason: "Transitive in documentation website stack; awaiting upstream patch adoption."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-BRACES-6838727:
+    - '*':
+        reason: "Transitive in documentation website stack; awaiting upstream patch adoption."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-CROSSSPAWN-8303230:
+    - '*':
+        reason: "Transitive in documentation website stack; awaiting upstream patch adoption."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-WS-17344547:
+    - '*':
+        reason: "Transitive in analyzer tooling chain; tracked until upstream resolution."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-WS-7266574:
+    - '*':
+        reason: "Transitive in analyzer tooling chain; tracked until upstream resolution."
+        expires: "2026-10-31T23:59:59.000Z"
