@@ -26,6 +26,9 @@ This documentation set defines how product intent, architecture constraints, con
 11. [Spec Operating Model by Component](./SPEC-OPERATING-MODEL-BY-COMPONENT.md)
 12. [Spec Project Board Contract](./SPEC-PROJECT-BOARD-CONTRACT.md)
 13. [Spec Requirements Coverage Status](./SPEC-REQUIREMENTS-COVERAGE-STATUS.md)
+14. [Spec Engineering Practices and Git Policy](./SPEC-ENGINEERING-PRACTICES-AND-GIT-POLICY.md)
+15. [Spec Security and Compliance Practices](./SPEC-SECURITY-AND-COMPLIANCE-PRACTICES.md)
+16. [Spec Jumentix Component System](./SPEC-JUMENTIX-COMPONENT-SYSTEM.md)
 
 ## Mandatory Principle
 

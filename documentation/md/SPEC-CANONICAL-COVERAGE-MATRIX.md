@@ -18,10 +18,13 @@ This matrix ensures that all known Jumentix knowledge areas are covered by Spec 
 | Project governance rules | `JUMENTIX-PROJECT-GOVERNANCE.md` | `SPEC-GOVERNANCE-AND-TRACEABILITY.md` | Mandatory issue/project/PR traceability |
 | Board governance contract | GitHub Project fields, iterations, labels, lifecycle status | `SPEC-PROJECT-BOARD-CONTRACT.md` | missing board metadata blocks closure |
 | Coding standards and implementation discipline | existing engineering guidance + lint/test policies | `SPEC-ARCHITECTURE-CODING-STANDARDS.md` | Lint + architecture checks |
+| Git workflow and commit governance | husky hooks, commitlint, project governance policy | `SPEC-ENGINEERING-PRACTICES-AND-GIT-POLICY.md` | commit hooks + CI governance gates |
 | Architecture principles and design | `ARCHITECTURE-AND-STRUCTURE.md`, migration docs, architecture NFRs | `SPEC-ARCHITECTURE-CODING-STANDARDS.md`, `SPEC-KNOWLEDGE-SOURCE-MAP.md` | Boundary checks + cycle checks |
 | Component ownership and sync | `apps/*`, `packages/*`, `.agents/*` | `SPEC-OPERATING-MODEL-BY-COMPONENT.md` | docs + requirement sync checks |
+| Product composition clarity (libraries/tools/templates/components) | workspace structure + package/app docs | `SPEC-JUMENTIX-COMPONENT-SYSTEM.md` | composition docs + governance sync |
 | Runtime/deployment model | runtime docs, PM2 docs, env contracts | `SPEC-KNOWLEDGE-SOURCE-MAP.md`, `SPEC-LIFECYCLE-AND-WORKFLOW.md` | Build/smoke/runtime checks |
 | Security and compliance rules | PCI docs, security requirements, security smoke | `SPEC-ARCHITECTURE-CODING-STANDARDS.md`, `SPEC-GOVERNANCE-AND-TRACEABILITY.md` | Security smoke + CI gates |
+| Security/compliance engineering practices | security runbook, remediation policy, CI security gates | `SPEC-SECURITY-AND-COMPLIANCE-PRACTICES.md` | security checks + auditable PR evidence |
 | Quality and coverage policy | `TESTING-CI-AND-QUALITY.md`, CI scripts | `SPEC-LIFECYCLE-AND-WORKFLOW.md`, `SPEC-GOVERNANCE-AND-TRACEABILITY.md` | Coverage thresholds + strict pre-push |
 | Gate evidence packaging | PR description, CI outputs, security outputs | `SPEC-DELIVERY-GATES-AND-EVIDENCE.md` | merge blocked when evidence is missing |
 

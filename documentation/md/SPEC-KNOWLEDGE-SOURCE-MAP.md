@@ -19,6 +19,7 @@ When conflicts happen, resolution order is:
 
 - Root positioning: `README.md`
 - Project overview: `documentation/md/PROJECT-OVERVIEW.md`
+- Product composition system: `documentation/md/SPEC-JUMENTIX-COMPONENT-SYSTEM.md`
 - Project board: `https://github.com/users/web2solutions/projects/1`
 - Issues backlog: `https://github.com/web2solutions/aaa-typescript-boilerplate/issues`
 
@@ -58,6 +59,7 @@ When conflicts happen, resolution order is:
 - CI troubleshooting: `documentation/md/CI-TROUBLESHOOTING.md`
 - PCI runbook: `documentation/md/SECURITY-RUNBOOK-PCI.md`
 - PCI remediation plan: `documentation/md/PCI-REMEDIATION-PLAN-AND-EVIDENCE.md`
+- Security/compliance spec contract: `documentation/md/SPEC-SECURITY-AND-COMPLIANCE-PRACTICES.md`
 - Security hardening requirement: `.agents/requirements/044-pci-security-compliance-hardening.md`
 
 ## Governance and Process
@@ -65,6 +67,7 @@ When conflicts happen, resolution order is:
 - Project governance: `documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`
 - Project management bridge: `documentation/md/PROJECT-MANAGEMENT.md`
 - Project board contract: `documentation/md/SPEC-PROJECT-BOARD-CONTRACT.md`
+- Engineering practices + git policy: `documentation/md/SPEC-ENGINEERING-PRACTICES-AND-GIT-POLICY.md`
 - NFR capture policy: `.agents/requirements/068-nfr-capture-and-registry-governance.md`
 - Commit/push integrity: `.agents/requirements/065-commit-push-integrity-and-real-ci-enforcement.md`
 
@@ -98,3 +101,6 @@ The following documents consolidate cross-source knowledge and must be updated w
 4. `SPEC-DELIVERY-GATES-AND-EVIDENCE.md`
 5. `SPEC-OPERATING-MODEL-BY-COMPONENT.md`
 6. `SPEC-PROJECT-BOARD-CONTRACT.md`
+7. `SPEC-ENGINEERING-PRACTICES-AND-GIT-POLICY.md`
+8. `SPEC-SECURITY-AND-COMPLIANCE-PRACTICES.md`
+9. `SPEC-JUMENTIX-COMPONENT-SYSTEM.md`

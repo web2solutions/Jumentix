@@ -44,6 +44,9 @@ This file consolidates non-functional requirements already requested and stored 
 - `070` npm organization and vercel scope integration governance.
 - `071` Spec Development Driven governance baseline.
 - `072` Spec Development Driven canonical knowledge coverage.
+- `073` Engineering practices (git, commit messages, lint, coding best practices) represented in specs.
+- `074` Security and compliance practices represented in specs.
+- `075` Jumentix composition (libraries, tools, templates, components) represented in specs.
 
 ## Rule of Use
 

@@ -75,6 +75,51 @@ GitHub tracking:
 
 ## Done
 
+- [x] Make Jumentix composition explicit in specs (libraries, tools, templates, components)
+  - Added canonical composition spec:
+    - `documentation/md/SPEC-JUMENTIX-COMPONENT-SYSTEM.md`
+  - Synced spec navigation and maps:
+    - `documentation/md/SPEC-DEVELOPMENT-DRIVEN-INDEX.md`
+    - `documentation/README.md`
+    - `documentation/md/SPEC-CANONICAL-COVERAGE-MATRIX.md`
+    - `documentation/md/SPEC-KNOWLEDGE-SOURCE-MAP.md`
+  - Added governance requirement:
+    - `.agents/requirements/075-jumentix-composition-clarity-in-specs.md`
+    - `.agents/README.md`
+    - `.agents/NFR-REGISTRY.md`
+  - Synced requirements coverage docs:
+    - `documentation/md/SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`
+    - `documentation/md/SPEC-REQUIREMENTS-COVERAGE-STATUS.md`
+
+- [x] Include security and compliance practices as explicit Spec Development Driven contracts
+  - Added dedicated security/compliance spec:
+    - `documentation/md/SPEC-SECURITY-AND-COMPLIANCE-PRACTICES.md`
+  - Synced indexes and source maps:
+    - `documentation/md/SPEC-DEVELOPMENT-DRIVEN-INDEX.md`
+    - `documentation/README.md`
+    - `documentation/md/SPEC-CANONICAL-COVERAGE-MATRIX.md`
+    - `documentation/md/SPEC-KNOWLEDGE-SOURCE-MAP.md`
+  - Added governance requirement:
+    - `.agents/requirements/074-security-compliance-practices-in-specs.md`
+    - `.agents/README.md`
+    - `.agents/NFR-REGISTRY.md`
+  - Synced requirements coverage docs:
+    - `documentation/md/SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`
+    - `documentation/md/SPEC-REQUIREMENTS-COVERAGE-STATUS.md`
+
+- [x] Represent project engineering requirements inside Spec Development Driven docs
+  - Added dedicated spec policy:
+    - `documentation/md/SPEC-ENGINEERING-PRACTICES-AND-GIT-POLICY.md`
+  - Synced spec indexes and maps:
+    - `documentation/md/SPEC-DEVELOPMENT-DRIVEN-INDEX.md`
+    - `documentation/README.md`
+    - `documentation/md/SPEC-CANONICAL-COVERAGE-MATRIX.md`
+    - `documentation/md/SPEC-KNOWLEDGE-SOURCE-MAP.md`
+  - Added governance requirement:
+    - `.agents/requirements/073-engineering-practices-git-lint-coding-governance.md`
+    - `.agents/README.md`
+    - `.agents/NFR-REGISTRY.md`
+
 - [x] Enforce 100% spec coverage for implemented functional and non-functional requirements
   - Completed requirement coverage attestation:
     - `documentation/md/SPEC-REQUIREMENTS-COVERAGE-STATUS.md`
