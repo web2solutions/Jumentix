@@ -86,7 +86,9 @@ export default {
   gitHub: {
     repo: 'web2solutions/aaa-typescript-boilerplate',
     apiUrl: 'https://api.github.com',
-    releasesUrl: 'https://api.github.com/repos/web2solutions/aaa-typescript-boilerplate/releases'
+    releasesUrl: 'https://api.github.com/repos/web2solutions/aaa-typescript-boilerplate/releases',
+    commitsUrl: 'https://api.github.com/repos/web2solutions/aaa-typescript-boilerplate/commits',
+    defaultBranch: 'dev'
   },
 
   /**

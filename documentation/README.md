@@ -33,6 +33,7 @@
 - [Backend Template Documentation](../apps/backend-template/documentation/README.md)
 - [Service Management Documentation](../apps/service-management/documentation/README.md)
 - [Jumentix Website](../apps/jumentix-website/README.md)
+- [Jumentix Website Technical Docs](../apps/jumentix-website/documentation/README.md)
 - [Workspace Packages](../packages/README.md)
 - [Tooling](../tooling/README.md)
 

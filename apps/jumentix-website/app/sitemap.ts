@@ -13,6 +13,7 @@ const staticRoutes = [
   '/use-cases/spa-pwa',
   '/architecture',
   '/integrations',
+  '/changelog',
   '/security-compliance',
   '/pricing-or-engagement',
   '/contact',

@@ -34,12 +34,14 @@ File:
 Configured values:
 
 - `framework`: `nextjs`
-- `installCommand`: `pnpm install`
-- `buildCommand`: `pnpm run build`
-- `devCommand`: `pnpm run dev`
+- `installCommand`: `npm install --no-audit --no-fund`
+- `buildCommand`: `npm run build`
+- `devCommand`: `npm run dev`
 - `outputDirectory`: `.next`
 
 ## Notes
 
 - Website content is static-first and generated from markdown sources using `content:sync`.
 - `prebuild` runs content synchronization automatically before build.
+- Root deployment scripts are intentionally scope-agnostic (no forced `--scope`) to support
+  personal-account and team-account Vercel contexts.

@@ -75,6 +75,18 @@ GitHub tracking:
 
 ## Done
 
+- [x] Update project documentation for website changelog feature and deployment workflow
+  - Added changelog feature documentation:
+    - `apps/jumentix-website/documentation/CHANGELOG-PAGE.md`
+  - Added website technical docs index:
+    - `apps/jumentix-website/documentation/README.md`
+  - Updated deployment/integration docs to match current Vercel command strategy:
+    - `apps/jumentix-website/documentation/VERCEL-DEPLOYMENT.md`
+    - `apps/jumentix-website/documentation/NPM-AND-VERCEL-INTEGRATION.md`
+  - Updated monorepo docs hub and root positioning:
+    - `documentation/README.md`
+    - `README.md`
+
 - [x] Make Jumentix composition explicit in specs (libraries, tools, templates, components)
   - Added canonical composition spec:
     - `documentation/md/SPEC-JUMENTIX-COMPONENT-SYSTEM.md`
