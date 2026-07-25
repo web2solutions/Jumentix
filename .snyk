@@ -80,3 +80,7 @@ ignore:
     - '*':
         reason: "Restify upstream advisory tracked while maintaining framework compatibility requirements."
         expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-PROTOBUFJS-17900550:
+    - '*':
+        reason: "protobufjs advisory is transitive via grpc proto-loader; awaiting upstream dependency bump."
+        expires: "2026-10-31T23:59:59.000Z"

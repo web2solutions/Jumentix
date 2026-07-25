@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- 2026-07-24 chore(security): track restify snyk advisory in policy - web2solutions
 - 2026-07-24 chore(security): extend snyk ignore map for sharp transitive advisories - web2solutions
 - 2026-07-24 chore(security): map snyk policy ids for transitive advisories - web2solutions
 - 2026-07-24 chore(security): add workspace snyk policy files - web2solutions

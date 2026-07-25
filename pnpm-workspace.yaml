@@ -26,3 +26,6 @@ pnpm:
     "next>postcss": "^8.5.18"
     "next>sharp": "^0.35.0"
     "concurrently>shell-quote": "^1.9.0"
+    protobufjs: "^7.6.5"
+    "@grpc/proto-loader>protobufjs": "^7.6.5"
+    "google-gax>protobufjs": "^7.6.5"
