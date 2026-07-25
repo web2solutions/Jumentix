@@ -10,6 +10,7 @@ It focuses on capabilities, integration paths, and how to launch software with J
 - [Architecture for Consumers](./ARCHITECTURE.md)
 - [Runtime Capabilities](./RUNTIME-CAPABILITIES.md)
 - [Security and Compliance](./SECURITY-AND-COMPLIANCE.md)
+- [Package Scripts Reference](./PACKAGE-SCRIPTS-REFERENCE.md)
 
 ## Build Guides
 

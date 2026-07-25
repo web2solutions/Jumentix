@@ -20,6 +20,7 @@
     "mono:typecheck": "pnpm -r --workspace-concurrency=1 --if-present typecheck",
     "docs:translate:ptbr": "node tooling/scripts/generate-ptbr-docs.mjs",
     "docs:translate:ptbr:links": "node tooling/scripts/patch-ptbr-links.mjs",
+    "docs:consumers:package-scripts": "node tooling/scripts/generate-consumer-package-scripts-docs.mjs",
     "prepare": "husky install",
     "changelog:update": "node ci-cd/update-changelog.js",
     "changelog:check": "node ci-cd/update-changelog.js --check",
