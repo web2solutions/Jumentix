@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- 2026-07-25 feat(website): add reliable pre-publish checks and stabilize production routes - web2solutions
 - 2026-07-25 docs(spec): codify engineering, security, and product composition governance - web2solutions
 - 2026-07-25 docs(spec): enforce 100% functional and NFR requirements coverage in specs - web2solutions
 - 2026-07-24 docs(spec): establish canonical Spec Development Driven knowledge system - web2solutions
