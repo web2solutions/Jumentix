@@ -39,13 +39,33 @@ const contentTypeByExtension = {
   '.ico': 'image/x-icon'
 };
 
+function buildStaticManifest() {
+  const manifest = new Map();
+  const walk = (currentPath) => {
+    const entries = fs.readdirSync(currentPath, { withFileTypes: true });
+    entries.forEach((entry) => {
+      const absoluteEntryPath = path.join(currentPath, entry.name);
+      if (entry.isDirectory()) {
+        if (entry.name === 'node_modules' || entry.name.startsWith('.')) return;
+        walk(absoluteEntryPath);
+        return;
+      }
+      const relative = path.relative(rootDirectory, absoluteEntryPath).split(path.sep).join('/');
+      manifest.set(relative, absoluteEntryPath);
+    });
+  };
+  walk(rootDirectory);
+  return manifest;
+}
+
+const staticManifest = buildStaticManifest();
+
 function resolveRequestPath(urlPath) {
   const cleanPath = String(urlPath || '/').split('?')[0];
-  const normalized = cleanPath === '/' ? '/index.html' : cleanPath;
-  const absoluteFilePath = path.resolve(rootDirectory, `.${normalized}`);
-  const normalizedRoot = `${path.resolve(rootDirectory)}${path.sep}`;
-  if (absoluteFilePath !== path.resolve(rootDirectory) && !absoluteFilePath.startsWith(normalizedRoot)) return null;
-  return absoluteFilePath;
+  const normalized = cleanPath === '/' ? 'index.html' : cleanPath.replace(/^\/+/, '');
+  const safePath = path.posix.normalize(`/${normalized}`).replace(/^\/+/, '');
+  if (!safePath || safePath.includes('..')) return null;
+  return safePath;
 }
 
 function normalizeEnvironment(runtime) {
@@ -140,9 +160,17 @@ function updateRuntimeEnv(runtime, values) {
 }
 
 function writeJson(response, statusCode, payload) {
+  const sanitizedJson = JSON.stringify(payload)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
   response.statusCode = statusCode;
   response.setHeader('Content-Type', 'application/json; charset=utf-8');
-  response.end(JSON.stringify(payload));
+  response.setHeader('X-Content-Type-Options', 'nosniff');
+  response.write(sanitizedJson);
+  response.end();
 }
 
 function readBody(request, callback) {
@@ -158,8 +186,7 @@ function readBody(request, callback) {
 const server = http.createServer((request, response) => {
   const requestUrl = new URL(request.url || '/', `http://${host}:${port}`);
   if (request.method === 'GET' && requestUrl.pathname === '/api/runtime/env') {
-    const runtime = requestUrl.searchParams.get('environment');
-    const payload = readRuntimeEnv(runtime);
+    const payload = readRuntimeEnv(process.env.NODE_ENV || 'dev');
     writeJson(response, 200, payload);
     return;
   }
@@ -168,7 +195,7 @@ const server = http.createServer((request, response) => {
     readBody(request, (rawBody) => {
       try {
         const parsed = rawBody ? JSON.parse(rawBody) : {};
-        const payload = updateRuntimeEnv(parsed.environment, parsed.values || {});
+        const payload = updateRuntimeEnv(process.env.NODE_ENV || 'dev', parsed.values || {});
         writeJson(response, 200, payload);
       } catch (error) {
         writeJson(response, 400, {
@@ -180,10 +207,16 @@ const server = http.createServer((request, response) => {
     return;
   }
 
-  const filePath = resolveRequestPath(request.url);
-  if (!filePath) {
+  const relativePath = resolveRequestPath(request.url);
+  if (!relativePath) {
     response.statusCode = 403;
     response.end('Forbidden');
+    return;
+  }
+  const filePath = staticManifest.get(relativePath);
+  if (!filePath) {
+    response.statusCode = 404;
+    response.end('Not Found');
     return;
   }
 

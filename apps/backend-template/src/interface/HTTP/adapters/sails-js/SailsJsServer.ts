@@ -27,14 +27,50 @@ class SailsJsServer extends HTTPBaseServer<any> {
 
   private readonly routes: Record<string, any> = {};
 
+  private staticDocs: Record<string, Map<string, string>> = {};
+
+  private static normalizeDocRequestPath(rawPath: string, prefix: string): string {
+    const pathname = String(rawPath || '').split('?')[0];
+    const trimmed = pathname.startsWith(prefix) ? pathname.slice(prefix.length) : pathname;
+    const candidate = trimmed.replace(/^\/+/, '') || 'index.html';
+    const normalized = path.posix.normalize(`/${candidate}`).replace(/^\/+/, '');
+    if (!normalized || normalized.includes('..')) return '';
+    return normalized;
+  }
+
+  private loadStaticDocManifest(docFolder: string): Map<string, string> {
+    const manifest = new Map<string, string>();
+    const absoluteFolder = path.resolve(process.cwd(), docFolder);
+    if (!fs.existsSync(absoluteFolder)) return manifest;
+
+    const walk = (currentPath: string) => {
+      const entries = fs.readdirSync(currentPath, { withFileTypes: true });
+      entries.forEach((entry) => {
+        const absoluteEntryPath = path.join(currentPath, entry.name);
+        if (entry.isDirectory()) {
+          walk(absoluteEntryPath);
+          return;
+        }
+        const relative = path.relative(absoluteFolder, absoluteEntryPath).split(path.sep).join('/');
+        manifest.set(relative, absoluteEntryPath);
+      });
+    };
+
+    walk(absoluteFolder);
+    return manifest;
+  }
+
   private registerStaticDocsRoutes(): void {
-    const rootDir = process.cwd();
+    this.staticDocs.OASdoc = this.loadStaticDocManifest('apps/backend-template/OASdoc');
+    this.staticDocs.AsyncAPIdoc = this.loadStaticDocManifest('apps/backend-template/AsyncAPIdoc');
     const register = (prefix: string, folder: string) => {
+      const manifestKey = prefix.replace('/', '');
       this.routes[`GET ${prefix}/*`] = (req: any, res: any) => {
         const rawPath = req.path || req.url || '';
-        const relative = rawPath.replace(`${prefix}/`, '') || 'index.html';
-        const absolute = path.join(rootDir, folder, relative);
-        if (!fs.existsSync(absolute)) {
+        const normalizedPath = SailsJsServer.normalizeDocRequestPath(rawPath, prefix);
+        const manifest = this.staticDocs[manifestKey] || this.loadStaticDocManifest(folder);
+        const absolute = normalizedPath ? manifest.get(normalizedPath) : undefined;
+        if (!absolute || !fs.existsSync(absolute)) {
           if (res.status) res.status(404);
           return res.send ? res.send('Not found') : undefined;
         }

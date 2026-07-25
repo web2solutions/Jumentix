@@ -28,6 +28,8 @@ class DerbyJsServer extends HTTPBaseServer<any> {
 
   private server: Server | undefined;
 
+  private staticDocs: Record<string, Map<string, string>> = {};
+
   private static getContentType(fileName: string): string {
     if (fileName.endsWith('.html')) return 'text/html; charset=utf-8';
     if (fileName.endsWith('.js')) return 'application/javascript; charset=utf-8';
@@ -37,6 +39,37 @@ class DerbyJsServer extends HTTPBaseServer<any> {
     if (fileName.endsWith('.png')) return 'image/png';
     if (fileName.endsWith('.jpg') || fileName.endsWith('.jpeg')) return 'image/jpeg';
     return 'text/plain; charset=utf-8';
+  }
+
+  private static normalizeDocRequestPath(rawUrl: string, prefix: string): string {
+    const pathname = rawUrl.split('?')[0];
+    const trimmed = pathname.startsWith(prefix) ? pathname.slice(prefix.length) : pathname;
+    const candidate = trimmed.replace(/^\/+/, '') || 'index.html';
+    const normalized = path.posix.normalize(`/${candidate}`).replace(/^\/+/, '');
+    if (!normalized || normalized.includes('..')) return '';
+    return normalized;
+  }
+
+  private loadStaticDocManifest(docFolder: string): Map<string, string> {
+    const manifest = new Map<string, string>();
+    const absoluteFolder = path.resolve(process.cwd(), docFolder);
+    if (!fs.existsSync(absoluteFolder)) return manifest;
+
+    const walk = (currentPath: string) => {
+      const entries = fs.readdirSync(currentPath, { withFileTypes: true });
+      entries.forEach((entry) => {
+        const absoluteEntryPath = path.join(currentPath, entry.name);
+        if (entry.isDirectory()) {
+          walk(absoluteEntryPath);
+          return;
+        }
+        const relative = path.relative(absoluteFolder, absoluteEntryPath).split(path.sep).join('/');
+        manifest.set(relative, absoluteEntryPath);
+      });
+    };
+
+    walk(absoluteFolder);
+    return manifest;
   }
 
   constructor() {
@@ -117,12 +150,15 @@ class DerbyJsServer extends HTTPBaseServer<any> {
   }
 
   private registerStaticDocsRoutes(): void {
-    const rootDir = process.cwd();
+    this.staticDocs.OASdoc = this.loadStaticDocManifest('apps/backend-template/OASdoc');
+    this.staticDocs.AsyncAPIdoc = this.loadStaticDocManifest('apps/backend-template/AsyncAPIdoc');
     const register = (prefix: string, docFolder: string) => {
+      const manifestKey = prefix.replace('/', '');
       this.router.on('GET', `${prefix}/*`, async (request: any, response: any) => {
-        const filePath = (request.url || '').replace(`${prefix}/`, '') || 'index.html';
-        const absolutePath = path.join(rootDir, docFolder, filePath);
-        if (!fs.existsSync(absolutePath)) {
+        const normalizedPath = DerbyJsServer.normalizeDocRequestPath(request.url || '', prefix);
+        const manifest = this.staticDocs[manifestKey] || this.loadStaticDocManifest(docFolder);
+        const absolutePath = normalizedPath ? manifest.get(normalizedPath) : undefined;
+        if (!absolutePath || !fs.existsSync(absolutePath)) {
           response.statusCode = 404;
           response.end('Not found');
           return;

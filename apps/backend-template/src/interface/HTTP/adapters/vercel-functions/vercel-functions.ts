@@ -1,6 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import fs from 'node:fs';
-import path from 'node:path';
 
 import { RestAPI } from '@src/interface/HTTP/RestAPI';
 import {
@@ -61,29 +59,20 @@ class VercelFunctionsServer extends HTTPBaseServer<Record<string, never>> {
 
   private readonly routes: RegisteredRoute[] = [];
 
-  private static getContentType(fileName: string): string {
-    if (fileName.endsWith('.html')) return 'text/html; charset=utf-8';
-    if (fileName.endsWith('.js')) return 'application/javascript; charset=utf-8';
-    if (fileName.endsWith('.css')) return 'text/css; charset=utf-8';
-    if (fileName.endsWith('.json')) return 'application/json; charset=utf-8';
-    return 'text/plain; charset=utf-8';
+  private static escapeText(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   private static tryServeStaticDoc(pathname: string, res: VercelResponse): boolean {
-    const rootDir = process.cwd();
-    const resolve = (prefix: string, folder: string): string | undefined => {
-      if (!pathname.startsWith(prefix)) return undefined;
-      const relative = pathname.replace(`${prefix}/`, '') || 'index.html';
-      return path.join(rootDir, folder, relative);
-    };
-    const absolutePath = resolve('/OASdoc', 'apps/backend-template/OASdoc') || resolve('/AsyncAPIdoc', 'apps/backend-template/AsyncAPIdoc');
-    if (!absolutePath) return false;
-    if (!fs.existsSync(absolutePath)) {
-      res.status(404).json({ message: 'Not found' });
-      return true;
-    }
-    res.setHeader('content-type', VercelFunctionsServer.getContentType(absolutePath));
-    res.status(200).send(fs.readFileSync(absolutePath));
+    if (!pathname.startsWith('/OASdoc') && !pathname.startsWith('/AsyncAPIdoc')) return false;
+    res.status(501).json({
+      message: 'Static docs are not served by this serverless adapter. Use the primary REST API docs endpoint.'
+    });
     return true;
   }
 
@@ -127,8 +116,8 @@ class VercelFunctionsServer extends HTTPBaseServer<Record<string, never>> {
   }
 
   private static getUrl(req: VercelRequest): URL {
-    const protocol = (req.headers['x-forwarded-proto'] as string) || 'https';
-    const host = (req.headers.host as string) || 'localhost';
+    const protocol = 'https';
+    const host = 'localhost';
     const requestPath = req.url || '/';
     return new URL(`${protocol}://${host}${requestPath}`);
   }
@@ -176,10 +165,10 @@ class VercelFunctionsServer extends HTTPBaseServer<Record<string, never>> {
 
     if (result !== undefined && !res.writableEnded) {
       if (typeof result === 'string') {
-        res.status(200).send(result);
-      } else {
-        res.status(200).json(result);
+        res.status(200).json({ message: VercelFunctionsServer.escapeText(result) });
+        return;
       }
+      res.status(200).json(result);
     }
   }
 

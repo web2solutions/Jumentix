@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- 2026-07-24 chore(security): expand snyk policy for transitive website/template findings - web2solutions
 - 2026-07-24 chore(security): suppress protobufjs transitive snyk finding - web2solutions
 - 2026-07-24 chore(security): track restify snyk advisory in policy - web2solutions
 - 2026-07-24 chore(security): extend snyk ignore map for sharp transitive advisories - web2solutions
