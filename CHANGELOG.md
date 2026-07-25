@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- 2026-07-25 fix(ci): repair github workflows for pnpm monorepo - web2solutions
 - 2026-07-25 fix(ci): avoid secrets context in workflow if for SonarCloud - web2solutions
 - 2026-07-25 docs(consumers): add package scripts reference with usage catalog - web2solutions
 - 2026-07-25 docs(i18n): reorganize docs by audience and add pt-BR corpus - web2solutions
