@@ -42,6 +42,8 @@ This file consolidates non-functional requirements already requested and stored 
 - `068` NFR capture and registry governance.
 - `069` Website commercial/static/vercel governance.
 - `070` npm organization and vercel scope integration governance.
+- `071` Spec Development Driven governance baseline.
+- `072` Spec Development Driven canonical knowledge coverage.
 
 ## Rule of Use
 
