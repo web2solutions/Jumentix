@@ -24,6 +24,9 @@
 - [Spec Operating Model by Component](./md/SPEC-OPERATING-MODEL-BY-COMPONENT.md)
 - [Spec Project Board Contract](./md/SPEC-PROJECT-BOARD-CONTRACT.md)
 - [Spec Requirements Coverage Status](./md/SPEC-REQUIREMENTS-COVERAGE-STATUS.md)
+- [Spec Engineering Practices and Git Policy](./md/SPEC-ENGINEERING-PRACTICES-AND-GIT-POLICY.md)
+- [Spec Security and Compliance Practices](./md/SPEC-SECURITY-AND-COMPLIANCE-PRACTICES.md)
+- [Spec Jumentix Component System](./md/SPEC-JUMENTIX-COMPONENT-SYSTEM.md)
 
 ## Component Hubs
 

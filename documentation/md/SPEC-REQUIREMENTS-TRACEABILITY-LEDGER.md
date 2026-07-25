@@ -78,7 +78,7 @@ For any change, identify impacted requirement IDs and ensure:
 
 ## F. Quality, Security, and Compliance Gates
 
-- `011`, `014`, `020`, `044`, `063`, `065`
+- `011`, `014`, `020`, `044`, `063`, `065`, `074`
 - Spec resources:
   - `documentation/md/TESTING-CI-AND-QUALITY.md`
   - `documentation/md/SECURITY-RUNBOOK-PCI.md`
@@ -91,7 +91,7 @@ For any change, identify impacted requirement IDs and ensure:
 
 ## G. Documentation and Governance Process
 
-- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `056`, `057`, `064`, `066`, `067`, `068`, `071`, `072`
+- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `056`, `057`, `064`, `066`, `067`, `068`, `071`, `072`, `073`, `075`
 - Spec resources:
   - `documentation/README.md`
   - `documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`
@@ -125,6 +125,6 @@ If impacted requirement IDs are not mapped before implementation, the change is 
 
 As of `2026-07-25`, this ledger covers all unique requirement IDs currently registered in `.agents/requirements`:
 
-1. Unique IDs in requirements registry: `72`
-2. Unique IDs mapped in this ledger: `72`
+1. Unique IDs in requirements registry: `75`
+2. Unique IDs mapped in this ledger: `75`
 3. Missing IDs: `none`
