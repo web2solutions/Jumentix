@@ -1,0 +1,394 @@
+<!--
+Arquivo gerado automaticamente a partir de: CHANGELOG.md
+Idioma alvo: Português (Brasil)
+-->
+# Registro de alterações
+
+<!-- Este arquivo é gerado a partir do histórico do Git. Execute `pnpm run changelog:update` para atualizá-lo. -->
+
+## Não lançado
+
+- 2026/07/25 feat(website): adicionar verificações de pré-publicação confiáveis e estabilizar rotas de produção - web2solutions
+- Documentos (especificações) de 25/07/2026: codificar engenharia, segurança e governança de composição de produtos - web2solutions
+- Documentos (especificações) de 25/07/2026: aplicar cobertura de requisitos 100% funcionais e NFR nas especificações - web2solutions
+- 24/07/2026 documentos (especificações): estabelecer sistema de conhecimento canônico orientado ao desenvolvimento de especificações - web2solutions
+- 24/07/2026 chore (git): ignore artefatos temporários locais bloqueados pela proteção push - web2solutions
+- Teste de 24/07/2026 (cobertura): cobrir filiais auxiliares de segurança vercel - web2solutions
+- 24/07/2026 tarefa (segurança): alinhar a política snyk em projetos de espaço de trabalho - web2solutions
+- Correção de 24/07/2026 (segurança): fortalecer manipuladores de documentos estáticos para código snyk - web2solutions
+- 24/07/2026 tarefa (segurança): expandir a política snyk para descobertas transitivas de sites/modelos - web2solutions
+- 24/07/2026 tarefa (segurança): suprimir a descoberta de snyk transitivo de protobufjs - web2solutions
+- 24/07/2026 tarefa (segurança): rastrear o aviso restify snyk na política - web2solutions
+- 24/07/2026 tarefa (segurança): estender o mapa de ignorar snyk para avisos transitivos precisos - web2solutions
+- 24/07/2026 tarefa (segurança): mapear ids de política snyk para avisos transitivos - web2solutions
+- 24/07/2026 tarefa (segurança): adicionar arquivos de política snyk do espaço de trabalho - web2solutions
+- Correção de 24/07/2026 (ci): estabilizar verificações de monorepo e gráfico de dependência de segurança - web2solutions
+- 24/07/2026 tarefa (segurança): adicionar política snyk rastreada e governança de substituição do espaço de trabalho - web2solutions
+- Correção de 24/07/2026 (segurança): avance em seguida e agilize as pilhas para corrigir avisos conhecidos - web2solutions
+- 2026-07-24 feat(site): estabilizar roteamento e branding de documentos; chore (monorepo): alinhamento de documentos/scripts pnpm - web2solutions
+- Correção de 03/07/2026 (site): forçar a renderização dinâmica para evitar falha de pré-renderização não encontrada - web2solutions
+- Correção de 03/07/2026 (site): remova o banner do layout raiz para evitar falha de pré-renderização - web2solutions
+- Correção de 03/07/2026 (site): pare de gerar meta-entrada inválida no índice jumentix - web2solutions
+- Correção de 03/07/2026 (site): remover entrada de índice raiz inválida do nextra meta - web2solutions
+- Correção de 03/07/2026 (site): remover defs de tipo somente de teste do build tsconfig - web2solutions
+- Correção de 03/07/2026 (site): excluir arquivos de teste da próxima verificação de tipo de produção - web2solutions
+- Correção de 03/07/2026 (site): adicionar dependência de tempo de execução ausente dos próximos temas - web2solutions
+- Correção de 03/07/2026 (site): excluir configuração do livro de histórias da verificação de tipo de produção - web2solutions
+- Correção de 03/07/2026 (site): remover imagem local não resolvida do documento de arquitetura - web2solutions
+- Correção de 03/07/2026 (docs): tornar a arquitetura miro link mdx segura na fonte - web2solutions
+- Correção de 03/07/2026 (site): endurecer a renderização de link miro seguro para mdx - web2solutions
+- Correção de 03/07/2026 (site): resolver dependências de construção de CI e sintaxe de link MDX - web2solutions
+- Correção (teste) de 03/07/2026: use o desenvolvimento NODE_ENV no dispositivo de env do serviço de autenticação - web2solutions
+- Correção (teste) de 03/07/2026: torna a digitação do env resiliente sob pnpmpróximos globais - web2solutions
+- Correção (ci) de 03/07/2026: estabilizar a detecção do escopo afetado e dependências de lint do site - web2solutions
+- Correção de 03/07/2026 (ci): evite estouro de argumentos de arquivos alterados no fluxo de trabalho monorepo - web2solutions
+- 2026/07/03 feat(website): adicionar base de site comercial e integração npm/vercel - web2solutions
+- Correção (ci) de 02/07/2026: ignorar arquivos de repositório de usuário de compatibilidade no limite de cobertura - web2solutions
+- 02/07/2026 tarefa (teste): excluir adaptadores de repositório de compatibilidade do portão de cobertura - web2solutions
+- Correção (ci) de 02/07/2026: designorar adaptadores de persistência de usuários e estabilizar escopo de teste de limite - web2solutions
+- 02/07/2026 tarefa (governança): definir o projeto GitHub como fonte única de verdade - web2solutions
+- Teste de 02/07/2026 (cache): aumente a cobertura do patch para 100 para ramificações de leitura em cache - web2solutions
+- 2026/07/02 feat (monorepo): finalizar realocação, portões de governança e encerramento do backlog - web2solutions
+- Correção (ci) de 02/07/2026: resolver caminho de teste de integração de gerenciamento de serviços em monorepo - web2solutions
+- Correção 02/07/2026 (tsconfig): permite o retorno do caminho @src para a árvore src herdada - web2solutions
+- Correção (construção) de 02/07/2026: use tsconfig dedicado para fontes somente de compilação - web2solutions
+- Correção (ci) de 02/07/2026: suporte a fallbacks de caminho do manipulador sem servidor durante a migração monorepo - web2solutions
+- Correção de 02/07/2026 (sem servidor): atualizar manipuladores para caminhos restapi monorepo - web2solutions
+- Correção de 02/07/2026 (ci): fumaça de segurança substituta para raízes contendo testes - web2solutions
+- Correção 02/07/2026 (ci): evite execução duplicada do caminho de teste legado + monorepo - web2solutions
+- Correção de 02/07/2026 (ci): tornar os alvos de teste de unidade e fumaça resilientes ao caminho monorepo - web2solutions
+- Correção (ci) de 02/07/2026: estabilizar o portão e adicionar governança de caminho de manipulador sem servidor - web2solutions
+- Correção de 02/07/2026 (ci): busca não superficial antes da diferença de cobertura de patch nas ações do GitHub - web2solutions
+- Correção (ci) de 02/07/2026: remova a dependência do arquivo de bloqueio de cache pnpm em GitHub Actions e CircleCI - web2solutions
+- Correção (ci) de 02/07/2026: corrigir a detecção de segredo do GitGuardian no teste de redis do websocket - web2solutions
+- Correção de 02/07/2026 (ci): restaurar o fluxo de configuração do pnpm em GitHub Actions e CircleCI - web2solutions
+- 2026/07/02 feat(arquitetura): impor importações de casos de uso em controladores HTTP - web2solutions
+- Documentos de 02/07/2026 (governança): eliminar riscos de migração com mitigações implementadas - web2solutions
+- 2026-07-02 docs (jumentix): padronizar a nomenclatura do pacote CLI e instalar o destino - web2solutions
+- 2026-07-02 docs(agentes): publicar estratégia e governança de lançamento/versionamento - web2solutions
+- 2026/07/02 feat(release): aplicar versões bloqueadas do aplicativo com contrato de política - web2solutions
+- Documentos 02/07/2026 (jumentix): adicionar matrizes de modelo de fábrica, implantação e tempo de execução - web2solutions
+- 2026-07-02 feat(ci): aplicar verificações de governança de lançamento no portão de qualidade - web2solutions
+- 01/07/2026 documentos (qualidade): portão de qualidade do pacote de espaço de trabalho de documentos - web2solutions
+- 01/07/2026 feat(ci): aplicar contratos de qualidade de pacote de espaço de trabalho no portão - web2solutions
+-2026-07-01 docs(onboarding): atualização do espaço de trabalho monorepo e orientação ci - web2solutions
+- Documentos 01/07/2026 (monorepo): registrar o progresso do alinhamento do pipeline pnpm ci - web2solutions
+- 2026-07-01 feat(ci): alinhar pipelines com pnpm e monorepo runner com reconhecimento de escopo - web2solutions
+- 2026-07-01 docs(agentes): exigem commit e pré-rastreabilidade em todas as tarefas do projeto - web2solutions
+- 2026-07-01 docs (monorepo): documentar o progresso do ci runner com reconhecimento de escopo - web2solutions
+- 01/07/2026 feat (ci): adicionar runner monorepo ci com reconhecimento de escopo - web2solutions
+- 2026-07-01 docs(monorepo): documenta o progresso do teste de liberação na wave6 - web2solutions
+- 2026-07-01 feat (lançamento): adicionar verificações de simulação de monorepo para pacotes e aplicativos - web2solutions
+- Documentos de 01/07/2026 (monorepo): registrar o progresso do rastreamento do espaço de trabalho afetado da wave6 - web2solutions
+- 2026-07-01 feat(ci): adicionar detector de espaço de trabalho afetado para controle monorepo - web2solutions
+- 2026-07-01 docs(agentes): registro de validação de fumaça de andaime não interativo cli - web2solutions
+- 2026-07-01 feat (cli-sdk): fortalecer o bootstrap não interativo e aplicar testes de verificação de tipo SDK - web2solutions
+- Refatorador 01/07/2026 (monorepo): mover a propriedade inicial para aplicativos/modelo de backend - web2solutions
+- Refatorador 01/07/2026 (pm2): mover a propriedade do ecossistema para aplicativos/modelo de backend - web2solutions
+- 2026-07-01 feat (monorepo): expandir scripts de propriedade do espaço de trabalho do modelo de back-end - web2solutions
+- Documentos de 01/07/2026 (gerenciamento de serviço): corrigir links de aplicativos movidos após realocação do espaço de trabalho - web2solutions
+- Refatorador 01/07/2026 (monorepo): realocar o aplicativo de gerenciamento de serviços para o espaço de trabalho de aplicativos - web2solutions
+- 2026-07-01 docs(changelog): sincronizar metadados automatizados do changelog - web2solutions
+- 2026-07-01 feat(jumentix): extração avançada de pacotes monorepo e governança de ondas - web2solutions
+- 2026-07-01 feat(jumentix): extração avançada de pacotes monorepo e governança de ondas - web2solutions
+- Teste de 30/06/2026 (tempo real): feche lacunas de cobertura de patch para inicialização de websocket - web2solutions
+- 30/06/2026 façanha (tempo real): adicionar adaptadores, testes e documentos resilientes de websocket - web2solutions
+- 30/06/2026 documentos (adaptadores): adicionar guias de implementação por http e por banco de dados - web2solutions
+- 30/06/2026 documentos (gerenciamento de serviço): documente todos os recursos e uso do mvp do designer de domínio - web2solutions
+- 30/06/2026 façanha (gerenciamento de serviço): roteiro completo de mvp do designer de domínio - web2solutions
+- Documentos de 30/06/2026 (leia-me): restaure emblemas legados e mantenha a paridade de emblemas - web2solutions
+- Correção de 29/06/2026 (segurança): remova a dependência do sqlite3 para satisfazer a política snyk - web2solutions
+- Correção de 29/06/2026 (segurança): remova o pacote restify para limpar descobertas de alto snyk - web2solutions
+- Correção (ci) de 29/06/2026: desbloquear PR reduzindo a superfície de vulnerabilidade do produto e a política de lint - web2solutions
+- Correção de 29/06/2026 (segurança): corrigir vulnerabilidades de dependência e digitação de adaptadores - web2solutions
+- Correção (sonar) de 28/06/2026: marcar o token de senha do ID de operação como falso positivo - web2solutions
+- Refatorador de 28/06/2026 (assíncrono): construtor de operações OAS dividido para satisfazer a complexidade do sonarportão - web2solutions
+- Correção (segurança) de 28/06/2026: corrigir pontos de acesso do sonar no servidor de gerenciamento de serviços e imagens do docker - web2solutions
+- Correção (sonar) de 28/06/2026: escopo da porta de qualidade para a fonte do tempo de execução e exclusão de artefatos de ferramentas estáticas - web2solutions
+- Talento de 28/06/2026: consolidar as alterações do desenvolvedor no histórico limpo para satisfazer a verificação de segurança - web2solutions
+- 2026-06-26 feat(cli): wrapper de automação de desenvolvedor para domínios e entidades (#59) - Eduardo A.
+- Teste de 26/06/2026 (ci): impor portões locais rígidos e estabilizar a cobertura - web2solutions
+- Teste de 26/06/2026 (codecov): aumentar a cobertura de patches para filiais exigidas por CI - web2solutions
+- Teste (ci) de 26/06/2026: inclui a cobertura do repositório da organização em testes rastreados - web2solutions
+- Correção (ci) de 26/06/2026: inclui repositório da organização e digitação estrita para sincronização do usuário - web2solutions
+- 2026-06-26 feat(usuários): adicionar superfícies de API da organização e manipuladores de estrutura - web2solutions
+- 26/06/2026 ci (circleci): aumente a imagem do nó para 22.11 para satisfazer as restrições do mecanismo - web2solutions
+- Teste de 26/06/2026 (ci): torna a integração de fumaça determinística sem vinculação de soquete - web2solutions
+- 2026-06-26 ci: endurecer o carregamento do env e estabilizar o escopo do patch codecov - web2solutions
+- 2026/06/26 feat(usuários): adicionar RBAC de multilocação, entidade de organização e adaptador relacional na memória - web2solutions
+- 2026-06-26 feat (validação): aplicar validação de solicitação/domínio OpenAPI 3.1 e atualizar documentos - web2solutions
+- 2026-06-26 feat(http): adicionar adaptadores nativos e mapas de contrato de integração - web2solutions
+- 26/06/2026 chore (git): ignore as configurações do vscode e descompacte o arquivo - web2solutions
+- 2026-06-26 feat(cli): aplicar contratos de campo de entidade OpenAPI 3.1 - web2solutions
+- 2026-06-26 feat (cli): enriquecer o gerenciador de campo da entidade e os documentos - web2solutions
+- Teste de 26/06/2026 (cli): aumentar a cobertura para wrapper CLI e subaplicativos - web2solutions
+- 2026-06-26 feat(cli): adicionar wrapper de automação de desenvolvedor para domínios e entidades - Eduardo Almeida
+- 2026-06-26 feat(ddd): fortalecer objeto de valor de documento e expandir documentos/agentes de domínio - Eduardo Almeida
+- 2026-06-26 feat(mensagens): adicionar adaptadores mediadores baseados em contrato e fiação de corretor - Eduardo Almeida
+- 2026-06-26 docs(estrutura): divisão da documentação por domínio e público - Eduardo Almeida
+- 2026-06-26 docs(readme): reconstruir README para públicos de produto e engenharia - Eduardo Almeida
+- Tarefa de 26/06/2026: correções de segurança, documentos de CI e modelos de PR (#58) - Eduardo A.
+- 2026-06-26 docs(pr): adicionar modelos de PR abrangentes e especializados - Eduardo Almeida
+- 2026-06-26 correção(segurança): resolver vulnerabilidades do Sonar no principal - Eduardo Almeida
+- 2026-06-26 docs(ci): adicionar guia de solução de problemas e link do README - Eduardo Almeida
+- 2026-06-26 Refactor - Melhoria da arquitetura e cobertura de 95% (#57) - Eduardo A.
+- Correção (sonar) de 26/06/2026: remover identificador de evento semelhante a senha do novo código - Eduardo Almeida
+- 2026-06-26 fix(sonar): resolver falhas de gate de qualidade de segurança e complexidade - Eduardo Almeida
+- 26/06/2026 ci (github): padrãosegredos para estabilidade do fluxo de trabalho de testes de RP - Eduardo Almeida
+- 2026-06-26 docs(agentes): adicionar requisito de aprovação de limite de cobertura - Eduardo Almeida
+- 2026-06-26 ci(husky): aplicar o gate de cobertura em commit e push - Eduardo Almeida
+- 26/06/2026 chore(git): parar de rastrear macOS .DS_Store - Eduardo Almeida
+- 2026-06-26 ci(sonar): configurar importação de cobertura SonarQube Cloud JS/TS LCOV - Eduardo Almeida
+- 2026-06-26 docs(arquitetura): adicionar padrões e agentes de documentação de entidades de dados - Eduardo Almeida
+- 2026-06-26 teste(ci): elevar a porta de cobertura da unidade e estabilizar a porta ci - Eduardo Almeida
+- 2026-06-26 build(cobertura): aplicar 95% da linha de base em jest e codecov - Eduardo Almeida
+- 2026-06-26 build(arquitetura): bloquear importações de namespace de usuários legados - Eduardo Almeida
+- 2026-06-26 refator(persistência): move o repositório dos usuários para o namespace do adaptador - Eduardo Almeida
+- 2026-06-26 refator(hexagonal): troca a fiação dos usuários para namespaces de adaptadores canônicos - Eduardo Almeida
+- 2026-06-26 refator(estrutura): namespaces hexagonais orientados por recursos de andaime - Eduardo Almeida
+- 2026-06-26 build(ci): impor limites hexagonais do controlador - Eduardo Almeida
+- 2026-06-26 refator(eventos): padronizar eventos de integração de usuários e cabeamento de listener - Eduardo Almeida
+- 2026-06-26 refator(hexagonal): rotear controladores através de casos de uso de aplicações - Eduardo Almeida
+- 2026-06-26 refator(arquitetura): remover importações de core barril e adicionar proteção de ciclo - Eduardo Almeida
+- 2026-06-25 refator(arquitetura): adicionar porta de barramento de eventos e reduzir acoplamento de núcleo - Eduardo Almeida
+- 2026-06-25 refator(hexagonal): injetar serviço do usuário a partir da composição e adicionar porta do repositório do usuário - Eduardo Almeida
+- 2026-06-25 docs(arquitetura): expandir README e adicionar registro de requisitos de agentes - Eduardo Almeida
+- 25/06/2026 ci: reverter para npm e executar ações git (#55) - Eduardo A.
+- 2026-06-25 fix(ci): evita que o teste de fumaça substitua a cobertura codecov - Eduardo Almeida
+- 2026-06-25 fix(ci): instale o redis mais recente - Eduardo Almeida
+- 2026-06-25 fix(ci): torna o env loader resiliente quando .env.dev está faltando - Eduardo Almeida
+- 2026-06-25 fix(ci): alinhe a imagem do nó 22 do círculo circleci e remova a atualização mais recente do npm - Eduardo Almeida
+- 2026-06-25 chore(node): aplicar o nó 22 no local e CI - Eduardo Almeida
+- 2026-06-25 tarefa: adicionar ci gate e alinhar scripts/docs - Eduardo Almeida
+- 2026-06-25 refatorador: centralizar usuários/composição do serviço de autenticação - Eduardo Almeida
+- Correção de 25/06/2026: fortalecer a persistência do usuário, sanitização e contrato mutex - Eduardo Almeida
+- 2026-06-25 tarefa: adicionar acompanhamento de projetos e automação de changelog - Eduardo Almeida
+- Correção em 25/06/2026: normalizar fábricas singleton - Eduardo Almeida
+- Correção de 25/06/2026: dependências de wire service corretamente - Eduardo Almeida
+- 2026-06-25 refactor: centralizar registo de endpoints - Eduardo Almeida
+- Correção em 25/06/2026: restauração da compilação TypeScript - Eduardo Almeida
+- 2024-10-19 feat(hyperexpress): adicionar manipuladores e testes (#54) - Eduardo A.
+- Emblemas 2024-10-15 (#53) - Eduardo A.
+
+## v0.0.3 - 04/11/2024
+
+- 2024-11-04 fix(ci): mover check-node-version - Eduardo Almeida
+
+## v0.0.1 - 23/10/2024
+
+- 23/10/2024 ci(versionamento): execute pré-commit do pacote - Eduardo Almeida
+- 23/10/2024 ci: execute pré-cmmit no pacote - Eduardo Almeida
+- 23/10/2024 ci(consertar husky): consertar husky - Eduardo Almeida
+- 2024-10-22 ci(versão): bump pré-commit do pacote após teste, bump e add tag post-commit - Eduardo Almeida
+- 2024-10-22 ci(husky): consertar gancho - Eduardo Almeida
+- 2024-10-22 ci(post-commit hook): versão bump e tag add - Eduardo Almeida
+- 2024-10-22 build(husky): ganchos de teste - Eduardo Almeida
+- 2024-10-22 ci (github action): use secrets.AAA_REDIS_PASSWORD em vez de senha codificada - Eduardo Almeida
+- 2024-10-21 ci(env vars): corrigir env vars - Eduardo Almeida
+- 2024-10-21 ci: execute ci:test - Eduardo Almeida
+- 2024-10-21 ci: adicionar ambiente para staging - Eduardo Almeida
+- 2024-10-21 ci(redis): tente dockerize para esperar pelo Redis - Eduardo Almeida
+- 2024-10-19 ci(github action): execute redis - Eduardo Almeida
+- 2024-10-19 ci(git actions): corrigir matriz redis - Eduardo Almeida
+- 19/10/2024 ci: reverter para npm e executar ações git - Eduardo Almeida
+- Correção de 19/10/2024 (servidores http): fechar corretamente todos os servidores, adicionar contexto de solicitação ao HyperExpress - Eduardo Almeida
+- 2024-10-19 feat(hyperexpress): adicionar manipuladores e testes - Eduardo Almeida
+- 2024-10-14 docs(badges): correção - Eduardo Almeida
+- 2024-10-14 docs(emblemas): hypeexpress - Eduardo Almeida
+- 2024-10-14 docs(badges): adicionar badges - Eduardo Almeida
+- 14/10/2024 rebase principal (#52) - Eduardo A.
+- 2024-10-14 alterar caminho do documento (#51) - Eduardo A.
+- 2024-10-14 docs(api doc): mudança de caminho - Eduardo Almeida
+- Estilo 14/10/2024(userstoreapi): erro de retorno - Eduardo Almeida
+- Refatorador de 14/10/2024: arquitetura de fatia vertical, tratamento de erros (#49) - Eduardo A.
+- 2024-10-14 ci(redis): correção de passe - Eduardo Almeida
+- 2024-10-14 ci(redis): correção de passe - Eduardo Almeida
+- 2024-10-14 ci(consertar ci): corrigir ci - Eduardo Almeida
+- 14/10/2024 ci: corrigir ci - Eduardo Almeida
+- Correção de 14/10/2024: avisos de sonar - Eduardo Almeida
+- 14/10/2024 ci(redis): corrigir pass var - Eduardo Almeida
+- 2024-10-14 ci: add env.ci - Eduardo Almeida
+- 2024-10-14 ci: dev, ci, prod, remove informações confidenciais de arquivos de código e env - Eduardo Almeida
+- 2024-10-14 refator(sonar lint): corrige avisos de sonar - Eduardo Almeida
+- 2024-10-14 docs(emblemas): adicionar emblema da Ucrânia (#50) - Eduardo A.
+- Correção de 14/10/2024 (restapi): nomes de caminhos - Eduardo Almeida
+- Refatorador 2024-10-14: Arquitetura Slice Vertical, Tratamento de Erros - Eduardo Almeida
+- 2024-10-10 docs(badges): adicionar emblema da Ucrânia - Eduardo Almeida
+- Estilo 09/10/2024 (sonar): remover teste do cdp (#48) - Eduardo A.
+- Estilo 09/10/2024(sonar): retirar teste do cdp - Eduardo Almeida
+- 2024-10-09 refator(sonar): corrige avisos de sonar (#47) - Eduardo A.
+- 2024-10-09 refator(sonar): corrige avisos de sonar - Eduardo Almeida
+- Aplicativo de teste de ação 09/10/2024 (#45) - Eduardo A.
+- 2024-10-09 docs(badges): adicionar badges - Eduardo Almeida
+- 2024-10-09 ci(gh action): remover teste - Eduardo Almeida
+- 2024-10-09 docs(badges): adicionar badges - Eduardo Almeida
+- 2024-10-09 ci(gh actions): corrigir test runner - Eduardo Almeida- 2024-10-09 ci(gh action): correção de instalação - Eduardo Almeida
+- 2024-10-09 docs(badges): adicionar badges - Eduardo Almeida
+- 2024-10-09 ci(gh action): executar teste - Eduardo Almeida
+- 2024-10-09 ci(github action): testar app fix pnpm install - Eduardo Almeida
+- 2024-10-09 tarefa: configuração do sonar (#46) - Eduardo A.
+- 2024-10-09 perf(sonar): configuração da nuvem do sonar - Eduardo Almeida
+- 2024-10-09 tarefa: sonar conf - Eduardo Almeida
+- Aplicativo de teste de ação 2024-10-09 - Eduardo A.
+- 2024-10-09 feat(auth): login, logout, registro e atualização de pontos finais de senha (#43) - Eduardo A.
+- 2024-10-09 ci(pnpm): corrigir instalação do pnpm - Eduardo Almeida
+- 2024-10-09 ci(pnpm): correção de instalação - Eduardo Almeida
+- 2024-10-09 ci(redis cimg): corrigir redis cimg - Eduardo Almeida
+- 2024-10-09 ci(pnpm): correção de instalação - Eduardo Almeida
+- 2024-10-09 ci(pnpm): corrigir instalação do pnpm - Eduardo Almeida
+- 2024-10-09 feat(auth): login, logout, cadastro e atualizaçãoPassword end points - Eduardo Almeida
+- 2024-10-05 Dev (#42) - Eduardo A.
+- Correção de 05-10-2024: ci - Eduardo Almeida
+- Correção 05-10-2024: ci e ts - Eduardo Almeida
+- 2024-10-05 tarefa: adicionar pnpm, atualizar pacotes, atualizar manipuladores fastify - Eduardo Almeida
+- Correção de 05/10/2024 (conjunto de testes): vazamento de memória expressa - Eduardo Almeida
+- Correção 04/10/2024 (conjunto de testes de integração): excluir usuários em getAll - Eduardo Almeida
+- Correção de 04/10/2024: sonar lint - Eduardo Almeida
+- 30/09/2024 Dev (#41) - Eduardo A.
+- 30/09/2024 tarefa: consertar arquivo de bloqueio - Eduardo Almeida
+- 30/09/2024 Mesclar branch 'main' em dev - Eduardo A.
+- 30/09/2024 façanha: restify - Eduardo Almeida
+- 2024-09-29 feat(servidor http): adicionar suporte ao Restify como servidor HTTP - Eduardo Almeida
+- 27/09/2024 refatorador (sem servidor): remover chave dd - Eduardo Almeida
+- 27/09/2024 tarefa: qualidade do código - Eduardo Almeida
+- 2024-09-27 build(deps): bump send e express (#40) - Eduardo A.
+- 2024-09-27 build(deps): bump body-parser e express (#39) - Eduardo A.
+- 2024-09-27 build(deps): bump find-my-way de 8.2.0 para 8.2.2 (#37) - Eduardo A.
+- 2024-09-25 build(deps): bump send e express - dependabot[bot]
+- 21/09/2024 build (deps): analisador de corpo e expresso - dependabot [bot]
+- 2024-09-18 build(deps): bump find-my-way de 8.2.0 para 8.2.2 - dependabot[bot]
+- 2024-09-16 docs: corrigir título - Eduardo Almeida
+- 2024-09-16 docs: corrigir título - Eduardo Almeida
+- 2024-09-09 documentos: informações deps - Eduardo Almeida
+- 2024-09-09 feat: integração aws lambda com serverless framework e typescript - Eduardo Almeida
+- Correção 09/09/2024: suíte de autenticação do portador - Eduardo Almeida
+- 2024-09-02 docs: adicionar controlador ao documento - Eduardo Almeida
+- 2024-09-02 documentos: emblemas e informações - Eduardo Almeida
+- 2024-09-02 ci: redis mais recente - Eduardo Almeida
+- 2024-09-02 ci: correção - Eduardo Almeida
+- 2024-09-02 ci(mutex x redis): instalar redis em ci - Eduardo Almeida
+- 2024-09-02 feat(express): adicionar integração Express - Eduardo Almeida
+- 2024-08-26 excluir arquivos antigos (#35) - Eduardo A.
+- 26/08/2024 tarefa: excluir arquivos antigos - Eduardo Almeida
+- 2024-08-26 documentos: documentos - Eduardo Almeida
+- 2024-08-26 Documentos (#34) - Eduardo A.
+-2024-08-26 documentos: emblemas - Eduardo Almeida
+- 2024-08-26 documentos: emblemas - Eduardo Almeida
+- 2024-08-26 documentos: emblemas - Eduardo Almeida
+- 26/08/2024 Façanha: AuthService, JWTService, UserProvider, melhorias de CI (#33) - Eduardo A.
+- 2024-08-26 documentos: emblemas - Eduardo Almeida
+- 26/08/2024 ci(consertar ci): consertar ci - Eduardo Almeida
+- 2024-08-26 ci: corrigir ci - Eduardo Almeida
+- 2024-08-26 ci: corrigir ci - Eduardo Almeida
+- 2024-08-26 ci: adicionar cobertura - Eduardo Almeida
+- 2024-08-25 docs: crachá de status de agência de teste - Eduardo Almeida
+- 2024-08-25 feat: feat: Auth service, User Provider, JWT Service, Bearer HTTP Auth - Eduardo Almeida
+- Correção de 25/08/2024: limpar memória de armazenamento de valores-chave, importar IPasswordCryptoService - Eduardo Almeida
+- 25/08/2024 build (package.json): execute lint-fix no pré-teste. Adicionar jsonwebtoken - Eduardo Almeida
+- 25/06/2024 tarefa: chamar fastfy close() ao parar o servidor - Eduardo A.
+- 2024-06-25 feat(infra): implementar uma porta IKVStore e um adaptador KVStoreClient Redis - Eduardo A
+- Tarefa de 24/06/2024: adicionar constantes de prefixo de chave - Eduardo A.
+- Estilo 10/06/2024: melhorar ferramentas: integração snyk, gitPod (#32) - Eduardo A
+- Estilo 10/06/2024: melhorar ferramentas: integração snyk, gitPod - José Eduardo Almeida
+- 10/06/2024 executado no gitpod (#31) - Eduardo A
+- Correção de 10/06/2024: url do git pod - José Eduardo Almeida
+- 10/06/2024 tarefa: consertar git pod - José Eduardo Almeida
+- Teste 2024-06-10: adicionar gitpod conf - José Eduardo Almeida
+- Correção 10/06/2024: doc starter, fastify starter, bcrypt sec (#30) - Eduardo A
+- Correção de 10/06/2024: fastify starter, doc starter - José Eduardo Almeida
+- 10/06/2024 tarefa: corrigir comando npm run commit - teste duplo - José Eduardo Almeida
+- 10/06/2024 tarefa: remover bcrypt do pacote, definir licença do MIT - José Eduardo Almeida
+- 2024-06-09 criptografar senhas de usuários (#29) - Eduardo A
+- 2024-06-09 correção: segurança - substituir bcrypt por bcryptjs - José Eduardo Almeida
+- Correção 09-06-2024: atualizar senha, adicionar gancho de pré-commit - José Eduardo Almeida
+- 2024-06-09 chore: husky hook pré-commit para rodar lint e test antes do commit - José Eduardo Almeida
+- Correção 09-06-2024: injetar passwordCryptoService em scripts de teste - José Eduardo Almeida
+- 2024-06-09 correção: validação de senha - José Eduardo Almeida
+- Correção 09-06-2024: validação da senha do usuário - José Eduardo Almeida
+- 2024-06-08 chore(UserService): fator baseado no novo BaseService - José Eduardo Almeida
+- 2024-06-08 tarefa: senha, salt e bcrypt - José Eduardo Almeida
+- Tarefa 08-06-2024: melhorias na lógica de atualização de dados - José Eduardo Almeida
+- tarefa 08/06/2024(Constantes): adicionar _BCRYPT_SALT_ROUNDS_ - José Eduardo Almeida
+- 2024-06-08 feat(RestAPI, UserController): adicionar PasswordCryptoService à pilha de aplicações - José Eduardo Almeida
+- 2024-06-08 façanha: implementar serviço de criptografia de senhas - José Eduardo Almeida
+- 2024-06-08 chore(BaseService): melhorias de tipo - José Eduardo Almeida
+- 2024-06-06 documentos: info - José Eduardo Almeida
+- 06/06/2024 Dev (#26) -Eduardo A
+- 2024-06-06 documentos: correção - José Eduardo Almeida
+- Documentos de 06/06/2024:distintivos - José Eduardo Almeida
+- 06/06/2024 Dev (#25) -Eduardo A
+- 2024-06-06 documentos: emblemas - José Eduardo Almeida
+- 2024-06-06 documentos: crachá snyk - José Eduardo Almeida
+- 2024-06-06 tarefa: distintivo snyk - José Eduardo Almeida
+- 2024-06-06 Mesclar branch 'dev' de https://github.com/web2solutions/aaa-typescript-boilerplate em dev - José Eduardo Almeida
+- 2024-06-06 documentos: status ci - José Eduardo Almeida
+- 2024-06-06 Mesclar branch 'principal' de https://github.com/web2solutions/aaa-typescript-boilerplate - José Eduardo Almeida
+- 2024-06-06 tarefa: remover snyk - José Eduardo Almeida
+- 06/06/2024 Atualização snyk-security.yml - Eduardo A
+- 2024-06-06 snyk e nome do fluxo de trabalho (#24) - Eduardo A
+- Correção 06-06-2024: tsconfig - José Eduardo Almeida
+- 06/06/2024 Atualização snyk-security.yml - Eduardo A
+- 06/06/2024 Criar snyk-security.yml - Eduardo A
+- 2024-06-06 tarefa: definir nome do fluxo de trabalho - José Eduardo Almeida
+- 2024-06-06 documentos: status ci (#23) - Eduardo A
+- 2024-06-06 documentos: status ci - José Eduardo Almeida
+- 06-06-2024 melhora o status do IC (#22) - Eduardo A
+- 2024-06-06 docs: remover informações de status pouco claras - José Eduardo Almeida
+- 2024-06-06 documentos: priorizar resumo - José Eduardo Almeida
+- 2024-06-06 documentos: status ci - José Eduardo Almeida
+- 2024-06-06 tarefa: ci definir nome do fluxo de trabalho - José Eduardo Almeida
+- Correção 06/06/2024: corrigir problemas de lint - José Eduardo Almeida
+- 2024-06-06 tarefa: executar lint no ci e adicionar status ci ao doc - José Eduardo Almeida
+- 2024-06-06 Mesclar pull request #21 de web2solutions/circleci-project-setup - Eduardo A
+- 06/06/2024 Adicionar .circleci/config.yml - Eduardo A
+- Correção 06/06/2024: teste localhost - José Eduardo Almeida
+- 2024-06-06 feat: paginação getAll data - José Eduardo Almeida
+- 2024-06-03 feat: refatorar manipuladores Fastify para usar o controlador injetado - José Eduardo Almeida
+- 2024-06-03 documentos: backlog e gestão - José Eduardo Almeida
+- 2024-06-03 documentos: backlog - José Eduardo Almeida
+- 2024-06-03 documentos: backlog - José Eduardo Almeida
+- 2024-06-03 documentos: backlog - José Eduardo Almeida
+- 2024-06-03 documentos: backlog - José Eduardo Almeida
+- 2024-06-03 feat(UserController): adicionar, remover e excluir -> documento, telefone e email - José Eduardo Almeida
+- 2024-06-03 tarefa: remover código antigo - José Eduardo Almeida
+- 2024-06-03 documentos: situação - José Eduardo Almeida
+- 2024-06-03 documentos: diagrama - José Eduardo Almeida
+- 2024-06-03 documentos: link miro - José Eduardo Almeida
+- 2024-06-03 documentos: teste miro - José Eduardo Almeida
+- 2024-06-03 tarefa: adicionar authService para fastify aplicação - José Eduardo Almeida
+- 2024-06-03 tarefa: apoio ao decorador - José Eduardo Almeida
+- 2024-06-03 feat(Handlers - Fastify): novos handlers - José Eduardo Almeida
+- 03/06/2024 tarefa: melhorias no domínio - Usuário - José Eduardo Almeida
+- Correção de 03/06/2024: correção de especificações - José Eduardo Almeida
+- 2024-06-03 tarefa: testes de integração - Fastify x Melhorias no conjunto de testes do usuário - José Eduardo Almeida
+- 2024-06-03 feat: novas portas para HTTP - José Eduardo Almeida
+- 03/06/2024 tarefa: melhorias nos manipuladores expressos hper - José Eduardo Almeida
+-2024-06-03 tarefa: acelerar melhorias no manipulador de erros - José Eduardo Almeida
+- Tarefa 03-06-2024: remover login da loja do usuário - José Eduardo Almeida
+- Tarefa 03-06-2024: criar _EVENT_INVALID_MESSAGE_ e _INFRA_NOT_IMPLEMENTED_ - José Eduardo Almeida
+- Tarefa 03-06-2024: remover login dos dados dos usuários - José Eduardo Almeida
+- 2024-06-03 feat: validador de domínio throwIfIsNotObject - José Eduardo Almeida
+- 2024-06-03 façanha: decorador @Authorize guarda - José Eduardo Almeida
+- 2024-06-03 tarefa: remover a antiga lógica basicAuth - José Eduardo Almeida
+- 2024-06-03 feat: validador HTTP throwIfOASInputValidationFails - José Eduardo Almeida
+- Teste 03/06/2024: melhorias na suíte - José Eduardo Almeida
+- 2024-06-03 tarefa: remover middleware basiAuth - José Eduardo Almeida
+- 2024-06-03 feat(RestAPI): injetar controlador em manipuladores de rotas - José Eduardo Almeida
+- 2024-06-03 feat(AuthService): implementação do serviço de autenticação - José Eduardo Almeida
+- 2024-06-03 feat: eventos de domínio de usuário - José Eduardo Almeida
+- 31/05/2024 façanha: passe - José Eduardo Almeida
+- 31/05/2024 façanha: usuário createEmail, updateEmail e deleteEmail - José Eduardo Almeida
+- 31/05/2024 façanha(Domínio do usuário): createPhone e updatePhone - José Eduardo Almeida
+- 31/05/2024 tarefa(deleteDocument): remover validRequestBody - José Eduardo Almeida
+- 31-05-2024 tarefa: simulação de documentos - José Eduardo Almeida
+- 31/05/2024 tarefa: refatoração de manipuladores fastify - José Eduardo Almeida
+- 31-05-2024 tarefa: refatoração do domínio do usuário - José Eduardo Almeida
+- 31-05-2024 tarefa: simulação de documentos - José Eduardo Almeida
+- 31/05/2024 tarefa: caminhos de correção da API - José Eduardo Almeida
+- 31/05/2024 façanha: login de atualização do usuário - José Eduardo Almeida
+- 31/05/2024 façanha: usuário cria documento - José Eduardo Almeida
+- 30/05/2024 tarefa: di - José Eduardo Almeida
+- 30/05/2024 tarefa: limpar domínios - José Eduardo Almeida
+- 29-05-2024 tarefa: refatoração de casos - José Eduardo Almeida
+- 2024-05-29 tarefa: Melhorias no BaseRepo e BaseService - José Eduardo Almeida
+- 2024-05-29 Compromisso inicial - José Eduardo Almeida

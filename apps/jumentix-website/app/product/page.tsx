@@ -1,4 +1,4 @@
-import { Button, Card, Container, Group, Image, List, SimpleGrid, Stack, Text, Title, ListItem } from '@mantine/core';
+import { Button, Card, Container, Group, Image, List, ListItem, SimpleGrid, Stack, Text, Title } from '@mantine/core';
 
 export default function ProductPage() {
   return (

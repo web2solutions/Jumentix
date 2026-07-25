@@ -47,6 +47,7 @@ This file consolidates non-functional requirements already requested and stored 
 - `073` Engineering practices (git, commit messages, lint, coding best practices) represented in specs.
 - `074` Security and compliance practices represented in specs.
 - `075` Jumentix composition (libraries, tools, templates, components) represented in specs.
+- `076` Mandatory task traceability for AI/humans + documentation sync + EN/PT documentation and website parity.
 
 ## Rule of Use
 

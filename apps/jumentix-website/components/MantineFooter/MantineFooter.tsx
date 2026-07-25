@@ -18,6 +18,7 @@ export const MantineFooter = () => {
             <Anchor href="/product">Product</Anchor>
             <Anchor href="/use-cases">Use Cases</Anchor>
             <Anchor href="/integrations">Integrations</Anchor>
+            <Anchor href="/changelog">Changelog</Anchor>
             <Anchor href="/security-compliance">Security</Anchor>
             <Anchor href="/contact">Contact</Anchor>
           </Group>

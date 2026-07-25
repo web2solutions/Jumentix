@@ -1,0 +1,20 @@
+# Security and Compliance for Consumers
+
+Jumentix includes security guardrails designed for enterprise delivery.
+
+## Security Baseline
+
+- RBAC and tenant-scope controls
+- Environment-aware error exposure policy
+- Security middleware support in HTTP adapters
+- Authentication hardening paths (token policies, lockout and revoke flows)
+
+## Compliance-Oriented Delivery
+
+- CI quality and security checks integrated into delivery gates
+- Traceable governance model using project tasks and linked PR evidence
+- Contract-first approach that improves API consistency and auditability
+
+## Recommended Consumer Practice
+
+Use Jumentix CI gates and documentation contracts as mandatory release criteria in your own product pipelines.

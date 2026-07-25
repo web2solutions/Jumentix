@@ -27,9 +27,9 @@ Note:
 
 ## Vercel Integration
 
-Target Vercel user/scope:
+Target Vercel account:
 
-- `web2solutions`
+- `web2solutions` (personal account)
 
 Root commands:
 
@@ -51,4 +51,10 @@ pnpm run deploy:vercel:preview
 pnpm run deploy:vercel
 ```
 
-These commands are configured for scope `web2solutions` and do not require immediate publish/deploy.
+These commands are configured to work without forced scope flags and do not require immediate publish/deploy.
+
+## Important Runtime Note
+
+Deployment commands are now scope-agnostic by default (no forced `--scope` flag), because
+Vercel rejects explicit personal-account scopes in some CLI contexts. This keeps deployment
+reliable for both personal and team account setups.
