@@ -1,3 +1,6 @@
+.tmp/
+.openclaude/
+
 # Logs
 logs
 *.log
@@ -6,6 +9,7 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 .pnpm-debug.log*
+.pnpm-store/
 
 .build
 
@@ -52,6 +56,7 @@ web_modules/
 
 # Optional npm cache directory
 .npm
+.npm-cache/
 
 # Optional eslint cache
 .eslintcache
@@ -91,6 +96,8 @@ src/config/.env.dev
 out
 !src/modules/**/adapters/out/
 !src/modules/**/adapters/out/**
+!apps/backend-template/src/modules/**/adapters/out/
+!apps/backend-template/src/modules/**/adapters/out/**
 !test/**/out/
 !test/**/out/**
 

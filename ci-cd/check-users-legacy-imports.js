@@ -12,8 +12,8 @@ const LEGACY_PATHS = [
 ];
 
 const ALLOWLIST = new Set([
-  path.resolve(ROOT, 'src/modules/Users/adapters/in/http/controllers/UserController.ts'),
-  path.resolve(ROOT, 'src/modules/Users/adapters/in/http/controllers/AuthController.ts')
+  path.resolve(ROOT, 'apps/backend-template/src/modules/Users/adapters/in/http/controllers/UserController.ts'),
+  path.resolve(ROOT, 'apps/backend-template/src/modules/Users/adapters/in/http/controllers/AuthController.ts')
 ]);
 
 const walk = (dirPath, files = []) => {
@@ -33,8 +33,8 @@ const walk = (dirPath, files = []) => {
 };
 
 const files = [
-  ...walk(path.resolve(ROOT, 'src')),
-  ...walk(path.resolve(ROOT, 'test'))
+  ...walk(path.resolve(ROOT, 'apps/backend-template/src')),
+  ...walk(path.resolve(ROOT, 'apps/backend-template/test'))
 ];
 
 const violations = [];

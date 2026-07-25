@@ -1,0 +1,142 @@
+version: v1.25.0
+ignore:
+  GHSA-rrr8-f88r-h8q6:
+    - '*':
+        reason: "Restify 11.1.0 depends on find-my-way 7.x and currently has no patched major-compatible release."
+        expires: "2026-10-31T23:59:59.000Z"
+  GHSA-c96f-x56v-gq3h:
+    - '*':
+        reason: "Restify transport remains required for adapter compatibility; awaiting upstream fix to consume patched find-my-way."
+        expires: "2026-10-31T23:59:59.000Z"
+  GHSA-m6fv-jmcg-4jfg:
+    - '*':
+        reason: "send vulnerability inherited through restify path only; tracked until restify publishes patched dependency chain."
+        expires: "2026-10-31T23:59:59.000Z"
+  GHSA-xcpc-8h2w-3j85:
+    - '*':
+        reason: "Inherited via cassandra-driver transitive dependency; awaiting upstream release with adm-zip >=0.6.0."
+        expires: "2026-10-31T23:59:59.000Z"
+  GHSA-395f-4hp3-45gv:
+    - '*':
+        reason: "Inherited through concurrently legacy chain in local tooling path; tracked for next dependency refresh wave."
+        expires: "2026-10-31T23:59:59.000Z"
+  GHSA-f88m-g3jw-g9cj:
+    - '*':
+        reason: "Next.js 16.2.11 still resolves sharp 0.34.x transitively in current Nextra stack; monitored until upstream bump."
+        expires: "2026-10-31T23:59:59.000Z"
+  GHSA-6g55-p6wh-862q:
+    - '*':
+        reason: "PostCSS vulnerability inherited from Next.js transitive postcss@8.4.x; awaiting upstream next/nextra dependency update."
+        expires: "2026-10-31T23:59:59.000Z"
+  GHSA-r28c-9q8g-f849:
+    - '*':
+        reason: "Website stack still includes transitive PostCSS chains until upstream ecosystem updates are available."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-FINDMYWAY-8055229:
+    - '*':
+        reason: "Tracked via GHSA-c96f-x56v-gq3h in restify transitive dependency chain."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-FINDMYWAY-1038269:
+    - '*':
+        reason: "Tracked via GHSA-rrr8-f88r-h8q6 in restify transitive dependency chain."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-ADMZIP-17954277:
+    - '*':
+        reason: "Tracked via GHSA-xcpc-8h2w-3j85 in cassandra-driver transitive dependency chain."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-SHELLQUOTE-16799355:
+    - '*':
+        reason: "Tracked via GHSA-395f-4hp3-45gv in tooling dependency chain."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-POSTCSS-16189065:
+    - '*':
+        reason: "Tracked via GHSA-r28c-9q8g-f849 in next.js transitive dependency chain."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-POSTCSS-5926692:
+    - '*':
+        reason: "Tracked via GHSA-6g55-p6wh-862q in next.js transitive dependency chain."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-SHARP-18184418:
+    - '*':
+        reason: "Tracked via GHSA-f88m-g3jw-g9cj in next.js transitive dependency chain."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-SHARP-18184259:
+    - '*':
+        reason: "libvips transitive advisory in next.js sharp chain; waiting upstream ecosystem update."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-SHARP-18184262:
+    - '*':
+        reason: "libvips transitive advisory in next.js sharp chain; waiting upstream ecosystem update."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-SHARP-18184416:
+    - '*':
+        reason: "libvips transitive advisory in next.js sharp chain; waiting upstream ecosystem update."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-SHARP-5922108:
+    - '*':
+        reason: "sharp advisory tracked while next.js transitive chain is upstream-managed."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-RESTIFY-10380:
+    - '*':
+        reason: "Restify upstream advisory tracked while maintaining framework compatibility requirements."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-PROTOBUFJS-17900550:
+    - '*':
+        reason: "protobufjs advisory is transitive via grpc proto-loader; awaiting upstream dependency bump."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-NEXT-18233133:
+    - '*':
+        reason: "Legacy template dependency chain tracked; active website package already upgraded."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-NEXT-18233136:
+    - '*':
+        reason: "Legacy template dependency chain tracked; active website package already upgraded."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-NEXT-18233752:
+    - '*':
+        reason: "Legacy template dependency chain tracked; active website package already upgraded."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-BRACEEXPANSION-17706650:
+    - '*':
+        reason: "Transitive in documentation website stack; awaiting upstream patch adoption."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-BRACES-6838727:
+    - '*':
+        reason: "Transitive in documentation website stack; awaiting upstream patch adoption."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-CROSSSPAWN-8303230:
+    - '*':
+        reason: "Transitive in documentation website stack; awaiting upstream patch adoption."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-WS-17344547:
+    - '*':
+        reason: "Transitive in analyzer tooling chain; tracked until upstream resolution."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-WS-7266574:
+    - '*':
+        reason: "Transitive in analyzer tooling chain; tracked until upstream resolution."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-BODYPARSER-17906397:
+    - '*':
+        reason: "body-parser advisory is transitive in legacy runtime adapters; scheduled for coordinated dependency refresh."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-INFLIGHT-6095116:
+    - '*':
+        reason: "inflight is a transitive legacy dependency with no upstream patch available."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-SEND-7926862:
+    - '*':
+        reason: "Restify adapter compatibility currently requires this transitive send chain until upstream refresh."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-UUID-16133035:
+    - '*':
+        reason: "uuid advisory is transitive via sequelize/restify and tracked until ecosystem major upgrades are viable."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-DOMPURIFY-18170233:
+    - '*':
+        reason: "Transitive via nextra/mermaid toolchain in website docs stack; awaiting upstream patch rollout."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-SIRV-12558119:
+    - '*':
+        reason: "Transitive via webpack-bundle-analyzer path in docs tooling; pending upstream dependency upgrade."
+        expires: "2026-10-31T23:59:59.000Z"

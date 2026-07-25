@@ -1,9 +1,96 @@
 # Changelog
 
-<!-- This file is generated from Git history. Run `npm run changelog:update` to refresh it. -->
+<!-- This file is generated from Git history. Run `pnpm run changelog:update` to refresh it. -->
 
 ## Unreleased
 
+- 2026-07-25 docs(spec): enforce 100% functional and NFR requirements coverage in specs - web2solutions
+- 2026-07-24 docs(spec): establish canonical Spec Development Driven knowledge system - web2solutions
+- 2026-07-24 chore(git): ignore local temp artifacts blocked by push protection - web2solutions
+- 2026-07-24 test(coverage): cover vercel security helper branches - web2solutions
+- 2026-07-24 chore(security): align snyk policy across workspace projects - web2solutions
+- 2026-07-24 fix(security): harden static docs handlers for snyk code - web2solutions
+- 2026-07-24 chore(security): expand snyk policy for transitive website/template findings - web2solutions
+- 2026-07-24 chore(security): suppress protobufjs transitive snyk finding - web2solutions
+- 2026-07-24 chore(security): track restify snyk advisory in policy - web2solutions
+- 2026-07-24 chore(security): extend snyk ignore map for sharp transitive advisories - web2solutions
+- 2026-07-24 chore(security): map snyk policy ids for transitive advisories - web2solutions
+- 2026-07-24 chore(security): add workspace snyk policy files - web2solutions
+- 2026-07-24 fix(ci): stabilize monorepo checks and security dependency graph - web2solutions
+- 2026-07-24 chore(security): add tracked snyk policy and workspace override governance - web2solutions
+- 2026-07-24 fix(security): bump next and fastify stacks to patch known advisories - web2solutions
+- 2026-07-24 feat(website): stabilize docs routing and branding; chore(monorepo): pnpm docs/scripts alignment - web2solutions
+- 2026-07-03 fix(website): force dynamic rendering to avoid not-found prerender failure - web2solutions
+- 2026-07-03 fix(website): remove banner from root layout to avoid prerender crash - web2solutions
+- 2026-07-03 fix(website): stop generating invalid jumentix index meta entry - web2solutions
+- 2026-07-03 fix(website): remove invalid root index entry from nextra meta - web2solutions
+- 2026-07-03 fix(website): remove test-only type defs from build tsconfig - web2solutions
+- 2026-07-03 fix(website): exclude test files from Next production typecheck - web2solutions
+- 2026-07-03 fix(website): add missing next-themes runtime dependency - web2solutions
+- 2026-07-03 fix(website): exclude storybook config from production typecheck - web2solutions
+- 2026-07-03 fix(website): remove unresolved local image from architecture doc - web2solutions
+- 2026-07-03 fix(docs): make architecture miro link mdx-safe at source - web2solutions
+- 2026-07-03 fix(website): harden mdx-safe miro link rendering - web2solutions
+- 2026-07-03 fix(website): resolve CI build deps and MDX link syntax - web2solutions
+- 2026-07-03 fix(test): use development NODE_ENV in auth service env fixture - web2solutions
+- 2026-07-03 fix(test): make env typing resilient under pnpm next globals - web2solutions
+- 2026-07-03 fix(ci): stabilize affected-scope detection and website lint deps - web2solutions
+- 2026-07-03 fix(ci): avoid changed-files arg overflow in monorepo workflow - web2solutions
+- 2026-07-03 feat(website): add commercial site foundation and npm/vercel integration - web2solutions
+- 2026-07-02 fix(ci): ignore compatibility user repository files in coverage threshold - web2solutions
+- 2026-07-02 chore(test): exclude compatibility repository adapters from coverage gate - web2solutions
+- 2026-07-02 fix(ci): unignore users persistence adapters and stabilize boundary test scope - web2solutions
+- 2026-07-02 chore(governance): define GitHub Project as single source of truth - web2solutions
+- 2026-07-02 test(cache): raise patch coverage to 100 for cached read branches - web2solutions
+- 2026-07-02 feat(monorepo): finalize rehome, governance gates, and backlog closeout - web2solutions
+- 2026-07-02 fix(ci): resolve service-management integration test path in monorepo - web2solutions
+- 2026-07-02 fix(tsconfig): allow @src path fallback to legacy src tree - web2solutions
+- 2026-07-02 fix(build): use dedicated tsconfig for compile-only sources - web2solutions
+- 2026-07-02 fix(ci): support serverless handler path fallbacks during monorepo migration - web2solutions
+- 2026-07-02 fix(serverless): update handlers to monorepo restapi paths - web2solutions
+- 2026-07-02 fix(ci): fallback security smoke to roots containing tests - web2solutions
+- 2026-07-02 fix(ci): avoid duplicate legacy+monorepo test path execution - web2solutions
+- 2026-07-02 fix(ci): make smoke and unit test targets monorepo-path resilient - web2solutions
+- 2026-07-02 fix(ci): stabilize gate and add serverless handler path governance - web2solutions
+- 2026-07-02 fix(ci): unshallow fetch before patch coverage diff in GitHub Actions - web2solutions
+- 2026-07-02 fix(ci): remove pnpm cache lockfile dependency in GitHub Actions and CircleCI - web2solutions
+- 2026-07-02 fix(ci): remediate GitGuardian secret detection in websocket redis test - web2solutions
+- 2026-07-02 fix(ci): restore pnpm setup flow in GitHub Actions and CircleCI - web2solutions
+- 2026-07-02 feat(architecture): enforce use-case imports in HTTP controllers - web2solutions
+- 2026-07-02 docs(governance): close migration risks with implemented mitigations - web2solutions
+- 2026-07-02 docs(jumentix): standardize CLI package naming and install target - web2solutions
+- 2026-07-02 docs(agents): publish release/versioning strategy and governance - web2solutions
+- 2026-07-02 feat(release): enforce locked app versions with policy contract - web2solutions
+- 2026-07-02 docs(jumentix): add factory, deploy and runtime template matrices - web2solutions
+- 2026-07-02 feat(ci): enforce release governance checks in quality gate - web2solutions
+- 2026-07-01 docs(quality): document workspace package quality gate - web2solutions
+- 2026-07-01 feat(ci): enforce workspace package quality contracts in gate - web2solutions
+- 2026-07-01 docs(onboarding): refresh monorepo workspace and ci guidance - web2solutions
+- 2026-07-01 docs(monorepo): record pnpm ci pipeline alignment progress - web2solutions
+- 2026-07-01 feat(ci): align pipelines with pnpm and scope-aware monorepo runner - web2solutions
+- 2026-07-01 docs(agents): require commit and pr traceability on all project tasks - web2solutions
+- 2026-07-01 docs(monorepo): document scope-aware ci runner progress - web2solutions
+- 2026-07-01 feat(ci): add scope-aware monorepo ci runner - web2solutions
+- 2026-07-01 docs(monorepo): document release dry-run progress in wave6 - web2solutions
+- 2026-07-01 feat(release): add monorepo dry-run checks for packages and apps - web2solutions
+- 2026-07-01 docs(monorepo): record wave6 affected-workspace tracking progress - web2solutions
+- 2026-07-01 feat(ci): add affected workspace detector for monorepo gating - web2solutions
+- 2026-07-01 docs(agents): record cli non-interactive scaffold smoke validation - web2solutions
+- 2026-07-01 feat(cli-sdk): harden non-interactive bootstrap and enforce sdk typecheck tests - web2solutions
+- 2026-07-01 refactor(monorepo): move seed ownership to apps/backend-template - web2solutions
+- 2026-07-01 refactor(pm2): move ecosystem ownership into apps/backend-template - web2solutions
+- 2026-07-01 feat(monorepo): expand backend-template workspace ownership scripts - web2solutions
+- 2026-07-01 docs(service-management): fix moved app links after workspace rehome - web2solutions
+- 2026-07-01 refactor(monorepo): rehome service-management app to apps workspace - web2solutions
+- 2026-07-01 docs(changelog): sync automated changelog metadata - web2solutions
+- 2026-07-01 feat(jumentix): advance monorepo package extraction and wave governance - web2solutions
+- 2026-07-01 feat(jumentix): advance monorepo package extraction and wave governance - web2solutions
+- 2026-06-30 test(realtime): close patch coverage gaps for websocket bootstrap - web2solutions
+- 2026-06-30 feat(realtime): add resilient websocket adapters, tests, and docs - web2solutions
+- 2026-06-30 docs(adapters): add per-http and per-database implementation guides - web2solutions
+- 2026-06-30 docs(servicemangement): document all domain designer mvp features and usage - web2solutions
+- 2026-06-30 feat(servicemangement): complete domain designer mvp roadmap - web2solutions
+- 2026-06-30 docs(readme): restore legacy badges and keep badge parity - web2solutions
 - 2026-06-29 fix(security): remove sqlite3 dependency to satisfy snyk policy - web2solutions
 - 2026-06-29 fix(security): remove restify package to clear high snyk findings - web2solutions
 - 2026-06-29 fix(ci): unblock PR by reducing prod vuln surface and lint policy - web2solutions

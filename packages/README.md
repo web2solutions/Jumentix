@@ -1,0 +1,29 @@
+# Jumentix Workspace Packages
+
+This folder contains reusable npm packages shared across Jumentix applications.
+
+## Package Index
+
+- `@jumentix/cli-init` - bootstrap CLI for creating project structures.
+- `@jumentix/message-mediator` - contract-based event/request-response mediator.
+- `@jumentix/key-value-storage` - key-value storage contracts and adapters.
+- `@jumentix/mutex-service` - distributed lock service contract layer.
+- `@jumentix/persistence-contracts` - `IDatabaseClient` and `IStore` abstractions.
+- `@jumentix/external-persistence-core` - base repository contracts/implementations.
+- `@jumentix/external-store-proxy` - translates DB native clients to `IStore`.
+- `@jumentix/external-db-repositories` - DB repository adapters.
+- `@jumentix/database-client-factory` - database client compilation per driver.
+- `@jumentix/runtime-infra` - runtime environment infra helpers.
+- `@jumentix/adapter-runtime-bootstrap` - shared adapter bootstrap composition.
+- `@jumentix/sdk-rest-client` - REST SDK client.
+- `@jumentix/sdk-websocket-client` - WebSocket SDK client.
+- `@jumentix/sdk-grpc-client` - gRPC SDK client.
+
+## Usage Pattern
+
+Each package has its own `README.md`, scripts, and ownership boundaries. Import packages from applications instead of duplicating adapter logic in each app.
+
+## Related Docs
+
+- [Jumentix Workspace Packages (Architecture)](../documentation/md/JUMENTIX-WORKSPACE-PACKAGES.md)
+- [SDK Compatibility Bridge](../documentation/md/SDK-COMPATIBILITY-BRIDGE.md)

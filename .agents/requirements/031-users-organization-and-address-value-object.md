@@ -16,4 +16,4 @@ Active
 
 ## Notes
 - Organization artifacts are implemented in Users domain/application/service/persistence layers.
-- Address value object is available under `src/modules/ddd/valueObjects`.
+- Address value object is available under `apps/backend-template/src/modules/ddd/valueObjects`.

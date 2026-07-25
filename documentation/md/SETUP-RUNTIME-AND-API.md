@@ -16,25 +16,25 @@
 Install dependencies:
 
 ```bash
-npm install
+pnpm install
 ```
 
 Run Redis (if needed):
 
 ```bash
-npm run docker:composeredis
+pnpm run docker:composeredis
 ```
 
 Run messaging services (RabbitMQ + Redis) with Docker:
 
 ```bash
-npm run docker:composemessaging
+pnpm run docker:composemessaging
 ```
 
 Run only RabbitMQ (useful when Redis is already running):
 
 ```bash
-npm run docker:composerabbit
+pnpm run docker:composerabbit
 ```
 
 ## Message Mediator Adapter
@@ -93,9 +93,9 @@ Detailed runtime contract:
 
 Startup entrypoints used by PM2:
 
-- `src/interface/HTTP/adapters/start-rest-api.ts`
-- `src/interface/WebSocket/adapters/start-websocket-api.ts`
-- `src/interface/gRPC/adapters/start-grpc-api.ts`
+- `apps/backend-template/src/interface/HTTP/adapters/start-rest-api.ts`
+- `apps/backend-template/src/interface/WebSocket/adapters/start-websocket-api.ts`
+- `apps/backend-template/src/interface/gRPC/adapters/start-grpc-api.ts`
 
 Behavior summary:
 
@@ -103,37 +103,37 @@ Behavior summary:
 - `start-websocket-api.ts` starts only when `AAA_REALTIME_API=yes` and `AAA_REALTIME_API_PROTOCOL=websocket`.
 - `start-grpc-api.ts` starts only when `AAA_REALTIME_API=yes` and `AAA_REALTIME_API_PROTOCOL=grpc`.
 
-Dev (auto-starts `servicemangement`):
+Dev (auto-starts `service-management`):
 
 ```bash
-npm run pm2:start:dev:restapi
-npm run pm2:start:dev:websocket-rest
-npm run pm2:start:dev:grpc-rest
+pnpm run pm2:start:dev:restapi
+pnpm run pm2:start:dev:websocket-rest
+pnpm run pm2:start:dev:grpc-rest
 ```
 
 Staging:
 
 ```bash
-npm run pm2:start:staging:restapi
-npm run pm2:start:staging:websocket-rest
-npm run pm2:start:staging:grpc-rest
+pnpm run pm2:start:staging:restapi
+pnpm run pm2:start:staging:websocket-rest
+pnpm run pm2:start:staging:grpc-rest
 ```
 
 Production:
 
 ```bash
-npm run pm2:start:prod:restapi
-npm run pm2:start:prod:websocket-rest
-npm run pm2:start:prod:grpc-rest
+pnpm run pm2:start:prod:restapi
+pnpm run pm2:start:prod:websocket-rest
+pnpm run pm2:start:prod:grpc-rest
 ```
 
 PM2 operations:
 
 ```bash
-npm run pm2:list
-npm run pm2:logs
-npm run pm2:stop:all
-npm run pm2:delete:all
+pnpm run pm2:list
+pnpm run pm2:logs
+pnpm run pm2:stop:all
+pnpm run pm2:delete:all
 ```
 
 Service Management can read and persist these runtime env values through:
@@ -172,53 +172,69 @@ Response payload example:
 
 ## Single Adapter Boot Commands (via PM2)
 
-HTTP adapters:
+HTTP adapters (all routed through `start-rest-api` loader with `AAA_HTTP_FRAMEWORK`):
 
 ```bash
-npm run dev:express
-npm run dev:fastify
-npm run dev:restify
-npm run dev:hyper-express
-npm run dev:cloudflare-workers
-npm run dev:vercel-functions
-npm run dev:loopback
-npm run dev:sails-js
-npm run dev:feathers
-npm run dev:derby-js
-npm run dev:adonis-js
-npm run dev:total-js
+pnpm run dev:express
+pnpm run dev:fastify
+pnpm run dev:restify
+pnpm run dev:hyper-express
+pnpm run dev:cloudflare-workers
+pnpm run dev:vercel-functions
+pnpm run dev:loopback
+pnpm run dev:sails-js
+pnpm run dev:feathers
+pnpm run dev:derby-js
+pnpm run dev:adonis-js
+pnpm run dev:total-js
+```
+
+Generic REST loader commands:
+
+```bash
+# uses AAA_HTTP_FRAMEWORK from env file (default express)
+pnpm run dev:http
+pnpm run prod:http
+```
+
+Equivalent direct loader style:
+
+```bash
+AAA_HTTP_FRAMEWORK=fastify pm2 start ./apps/backend-template/src/interface/HTTP/adapters/start-rest-api.ts --name aaa-dev-fastify --interpreter node --node-args='-r ts-node/register -r tsconfig-paths/register --env-file=./apps/backend-template/src/config/.env.dev' --update-env
+AAA_HTTP_FRAMEWORK=cloudflare-workers pm2 start ./apps/backend-template/src/interface/HTTP/adapters/start-rest-api.ts --name aaa-dev-cloudflare-workers --interpreter node --node-args='-r ts-node/register -r tsconfig-paths/register --env-file=./apps/backend-template/src/config/.env.dev' --update-env
 ```
 
 Combined service profiles:
 
 ```bash
-npm run dev:websocket
-npm run dev:grpc
+pnpm run dev:websocket
+pnpm run dev:grpc
+pnpm run test:integration:service-management
 ```
 
 Serverless dev mode:
 
 ```bash
-npm run dev:serverless
+pnpm run dev:serverless
 ```
 
 Developer automation CLI:
 
 ```bash
-npm run dev:cli
+pnpm run dev:cli
 ```
 
 Service Management app (PM2-served):
 
 ```bash
-npm run dev:service-management
+pnpm run dev:service-management
 ```
 
 ![serverless dev mode](../images/sls.png "serverless dev mode")
 
 ## Production Commands
 
-All `prod:*` adapter commands now boot through PM2.
+All `prod:*` adapter commands now boot through PM2 and route through `start-rest-api` loader.
 Use `pm2:start:prod:*` profiles for separated REST/WebSocket/gRPC orchestration.
 
 ## Lambda Handlers Coverage

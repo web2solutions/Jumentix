@@ -2,9 +2,9 @@ module.exports = {
   apps: [
     {
       name: 'aaa-dev-restapi',
-      script: './src/interface/HTTP/adapters/start-rest-api.ts',
+      script: './apps/backend-template/src/interface/HTTP/adapters/start-rest-api.ts',
       interpreter: 'node',
-      node_args: '-r ts-node/register -r tsconfig-paths/register --env-file=./src/config/.env.dev',
+      node_args: '-r ts-node/register -r tsconfig-paths/register --env-file=./apps/backend-template/src/config/.env.dev',
       env: {
         NODE_ENV: 'dev',
         AAA_HTTP_PORT: '3000'
@@ -12,9 +12,9 @@ module.exports = {
     },
     {
       name: 'aaa-dev-websocketapi',
-      script: './src/interface/WebSocket/adapters/start-websocket-api.ts',
+      script: './apps/backend-template/src/interface/WebSocket/adapters/start-websocket-api.ts',
       interpreter: 'node',
-      node_args: '-r ts-node/register -r tsconfig-paths/register --env-file=./src/config/.env.dev',
+      node_args: '-r ts-node/register -r tsconfig-paths/register --env-file=./apps/backend-template/src/config/.env.dev',
       env: {
         NODE_ENV: 'dev',
         AAA_WEBSOCKET_PORT: '3001',
@@ -25,9 +25,9 @@ module.exports = {
     },
     {
       name: 'aaa-dev-grpcapi',
-      script: './src/interface/gRPC/adapters/start-grpc-api.ts',
+      script: './apps/backend-template/src/interface/gRPC/adapters/start-grpc-api.ts',
       interpreter: 'node',
-      node_args: '-r ts-node/register -r tsconfig-paths/register --env-file=./src/config/.env.dev',
+      node_args: '-r ts-node/register -r tsconfig-paths/register --env-file=./apps/backend-template/src/config/.env.dev',
       env: {
         NODE_ENV: 'dev',
         AAA_GRPC_PORT: '3002',
@@ -37,8 +37,8 @@ module.exports = {
       }
     },
     {
-      name: 'aaa-dev-servicemangement',
-      script: './servicemangement/server.js',
+      name: 'aaa-dev-service-management',
+      script: './apps/service-management/server.js',
       interpreter: 'node',
       env: {
         NODE_ENV: 'dev',

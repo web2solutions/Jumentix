@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "exclude": [
+    "node_modules",
+    ".build",
+    "test/**/*",
+    "apps/backend-template/test/**/*",
+    "apps/jumentix-website/**/*"
+  ]
+}

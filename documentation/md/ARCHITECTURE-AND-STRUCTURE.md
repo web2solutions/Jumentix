@@ -3,7 +3,7 @@
 ## Project Structure (Current)
 
 ```txt
-src/
+apps/backend-template/src/
   config/
   infra/                           # cross-cutting infrastructure adapters
   interface/                       # HTTP runtime adapters and transport plumbing
@@ -80,6 +80,4 @@ Current highlights already implemented:
 
 ## Classes Diagram
 
-![Diagram](../OASdoc/miro.png "Diagram")
-
-<https://miro.com/app/board/uXjVNq5nWJY=/?share_link_id=603404471489>
+Architecture diagram: <a href="https://miro.com/app/board/uXjVNq5nWJY%3D/?share_link_id=603404471489">Miro board</a>

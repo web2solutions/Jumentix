@@ -13,11 +13,11 @@ Each data entity must expose its own controller, with explicit responsibility bo
 
 ## Current implementation anchors
 
-- `src/modules/Users/adapters/in/http/controllers/UserController.ts`
-- `src/modules/Users/adapters/in/http/controllers/OrganizationController.ts`
-- `src/interface/HTTP/RestAPI.ts`
-- `src/interface/Async/RealtimeAPIBase.ts`
-- `test/unit/modules/Users/interface/controller/controllers.test.ts`
+- `apps/backend-template/src/modules/Users/adapters/in/http/controllers/UserController.ts`
+- `apps/backend-template/src/modules/Users/adapters/in/http/controllers/OrganizationController.ts`
+- `apps/backend-template/src/interface/HTTP/RestAPI.ts`
+- `apps/backend-template/src/interface/Async/RealtimeAPIBase.ts`
+- `apps/backend-template/test/unit/modules/Users/interface/controller/controllers.test.ts`
 
 ## Definition of done
 

@@ -1,0 +1,38 @@
+version: v1.25.0
+ignore:
+  GHSA-rrr8-f88r-h8q6:
+    - '*':
+        reason: "Restify transitive dependency chain requires upstream release for permanent remediation."
+        expires: "2026-10-31T23:59:59.000Z"
+  GHSA-c96f-x56v-gq3h:
+    - '*':
+        reason: "Restify transitive dependency chain requires upstream release for permanent remediation."
+        expires: "2026-10-31T23:59:59.000Z"
+  GHSA-xcpc-8h2w-3j85:
+    - '*':
+        reason: "Cassandra-driver transitive adm-zip chain tracked while upstream catches up."
+        expires: "2026-10-31T23:59:59.000Z"
+  GHSA-395f-4hp3-45gv:
+    - '*':
+        reason: "Concurrently transitive shell-quote advisory tracked while upstream release is validated."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-FINDMYWAY-8055229:
+    - '*':
+        reason: "Tracked via restify transitive find-my-way advisory."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-FINDMYWAY-1038269:
+    - '*':
+        reason: "Tracked via restify transitive find-my-way advisory."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-ADMZIP-17954277:
+    - '*':
+        reason: "Tracked via cassandra-driver transitive adm-zip advisory."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-SHELLQUOTE-16799355:
+    - '*':
+        reason: "Tracked via tooling transitive shell-quote advisory."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-RESTIFY-10380:
+    - '*':
+        reason: "Tracked via restify framework advisory while preserving framework support matrix."
+        expires: "2026-10-31T23:59:59.000Z"
