@@ -8,6 +8,24 @@ This guide explains how to use this boilerplate to create a new backend service 
 
 The goal is to help software engineers move from idea to working service with the existing architecture and conventions.
 
+## Monorepo workspace map
+
+Current workspace layout:
+
+- `apps/backend-template`: runtime app ownership for backend bootstrap profiles and PM2 ecosystems.
+- `apps/service-management`: service management web app and runtime server.
+- `packages/*`: reusable internal packages (message mediator, SDK clients, infra adapters).
+- root `apps/backend-template/src/`: incremental migration bridge while app/package ownership is finalized.
+
+Core orchestration commands:
+
+```bash
+pnpm run mono:build
+pnpm run mono:test
+pnpm run mono:lint
+pnpm run mono:typecheck
+```
+
 ## 1. Before you start
 
 ### Runtime and tooling requirements
@@ -19,15 +37,15 @@ The goal is to help software engineers move from idea to working service with th
 ### Install dependencies
 
 ```bash
-npm install
+pnpm install
 ```
 
 ### Run baseline checks
 
 ```bash
-npm run lint
-npm run test:unit
-npm run oas:check-routes
+pnpm run lint
+pnpm run test:unit
+pnpm run oas:check-routes
 ```
 
 ## 2. Understand the architecture flow
@@ -132,22 +150,33 @@ Recommended practice:
 ### Development runtime
 
 ```bash
-npm run dev:express
-npm run dev:fastify
-npm run dev:restify
-npm run dev:hyper-express
-npm run dev:serverless
+pnpm run dev:express
+pnpm run dev:fastify
+pnpm run dev:restify
+pnpm run dev:hyper-express
+pnpm run dev:serverless
 ```
+
+### PM2 multi-app (monorepo)
+
+```bash
+pnpm run pm2:start:dev:restapi
+pnpm run pm2:start:dev:websocket-rest
+pnpm run pm2:start:dev:grpc-rest
+```
+
+These profiles start service-management alongside backend adapters using `pm2/*`.
 
 ### Quality and CI parity
 
 ```bash
-npm run lint
-npm run test:unit
-npm run oas:check-routes
-npm run build:dev
-npm run ci:smoke
-npm run ci:gate
+pnpm run lint
+pnpm run test:unit
+pnpm run oas:check-routes
+pnpm run build:dev
+pnpm run ci:smoke
+pnpm run ci:gate
+pnpm run ci:monorepo
 ```
 
 ## 9. Definition of done for new features
@@ -158,7 +187,7 @@ A feature should be considered done when:
 - Business behavior is covered by unit tests.
 - Critical endpoint path has integration coverage.
 - No sensitive fields leak in API responses.
-- `npm run ci:gate` passes locally and in CI.
+- `pnpm run ci:gate` passes locally and in CI.
 
 ## 10. Common pitfalls to avoid
 

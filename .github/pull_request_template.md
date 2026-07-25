@@ -18,6 +18,25 @@ Include links to issue(s), incident(s), backlog items, or Sonar/Codecov check UR
 - Related PR(s):
 - Related check run(s):
 
+## Project Tracking (Required)
+
+- GitHub Project: `Jumentix` (`https://github.com/users/web2solutions/projects/1`)
+- Project item link(s):
+- Issue link(s):
+- Issue ID list (comma separated):
+- Item status at PR creation:
+- Target cycle (`Start date` -> `End date`):
+- Priority group for this PR (`P0` / `P1` / `P2`):
+- [ ] This PR contains tasks from only one priority group.
+
+## Bidirectional Traceability (Required)
+
+- [ ] Every linked issue already contains this PR URL.
+- [ ] Every linked issue already contains commit hash/range evidence.
+- [ ] PR description includes mapping of task -> commit(s).
+- Task -> commit(s) mapping:
+  - `#issue`:
+
 ## Scope of Change
 
 <!--
@@ -123,15 +142,15 @@ Paste exact commands and summarized results.
 Do not mark items as done unless actually executed.
 -->
 
-- [ ] `npm run lint`
-- [ ] `npm run deps:check-cycles`
-- [ ] `npm run arch:check-boundaries`
-- [ ] `npm run arch:check-users-legacy-imports`
-- [ ] `npm run test:unit`
-- [ ] `npm run oas:check-routes`
-- [ ] `npm run build:dev`
-- [ ] `npm run ci:smoke`
-- [ ] `npm run ci:gate`
+- [ ] `pnpm run lint`
+- [ ] `pnpm run deps:check-cycles`
+- [ ] `pnpm run arch:check-boundaries`
+- [ ] `pnpm run arch:check-users-legacy-imports`
+- [ ] `pnpm run test:unit`
+- [ ] `pnpm run oas:check-routes`
+- [ ] `pnpm run build:dev`
+- [ ] `pnpm run ci:smoke`
+- [ ] `pnpm run ci:gate`
 
 ### Coverage
 
@@ -187,7 +206,7 @@ List top risks and how each is mitigated.
 
 - [ ] README updated (if needed)
 - [ ] Additional docs updated (if needed)
-- [ ] Changelog updated/synced (`npm run changelog:update`)
+- [ ] Changelog updated/synced (`pnpm run changelog:update`)
 
 ## Reviewer Checklist
 
@@ -196,4 +215,3 @@ List top risks and how each is mitigated.
 - [ ] Tests are sufficient for risk level.
 - [ ] Security and data impacts are addressed.
 - [ ] CI checks pass fully.
-

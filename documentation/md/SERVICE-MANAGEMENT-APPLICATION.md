@@ -2,14 +2,33 @@
 
 The previous `domaindesigner` static app was consolidated into:
 
-- `servicemangement/`
+- `apps/service-management/`
 
 It is now a tabbed suite for service lifecycle design.
+
+Core implementation files:
+
+- `apps/service-management/index.html`
+- `apps/service-management/script.js`
+- `apps/service-management/styles.css`
+- `apps/service-management/server.js`
 
 ## Tabs
 
 1. **Domain Designer**
-   - Existing ER modeling MVP (domains/entities/relationships, OpenAPI export/import, model checks).
+   - Full ER modeling MVP including:
+     - domain/entity lifecycle and inspector
+     - relationship anchors, bend/path controls, routing style
+     - bounded-context metadata
+     - aggregate + invariants
+     - RBAC per entity/action
+     - message contracts (`event/command/request/response`)
+     - OpenAPI composition (`oneOf/allOf/anyOf`, external refs, discriminator)
+     - schema diff + migration hints
+     - request/response examples
+     - code skeleton preview
+     - export/import flows (JSON, OAS, Markdown, JSON Schema, AsyncAPI, package, boilerplate bundle)
+     - mini-map and large-canvas mode
 2. **Communication Interface Designer**
    - Registers inbound interface adapters and controller mappings:
      - HTTP/REST
@@ -30,27 +49,39 @@ It is now a tabbed suite for service lifecycle design.
      - `AAA_REALTIME_API_PROTOCOL`
      - `AAA_REALTIME_API_DATABASE_DRIVER`
    - Runtime env editor targets the selected environment file:
-     - `dev` -> `src/config/.env.dev`
-     - `staging` -> `src/config/.env.staging`
-     - `ci` -> `src/config/.env.ci`
+    - `dev` -> `apps/backend-template/src/config/.env.dev`
+    - `staging` -> `apps/backend-template/src/config/.env.staging`
+    - `ci` -> `apps/backend-template/src/config/.env.ci`
 4. **Deploy Management**
    - Tracks deploy targets and runtime deployment metadata.
+
+Detailed usage guide:
+
+- [Domain Designer Features and Usage](./DOMAIN-DESIGNER-FEATURES-AND-USAGE.md)
 
 ## Run
 
 PM2-served:
 
-- `npm run dev:service-management`
-- default dev profile (`npm run dev`) also starts `servicemangement` through PM2.
+- `pnpm run dev:service-management`
+- default dev profile (`pnpm run dev`) also starts `service-management` through PM2.
 
 The app state persists with browser `localStorage`.
+
+Recommended dev path:
+
+1. `pnpm run dev:service-management`
+2. Open the local Service Management URL
+3. Model domains/entities
+4. Run exports (OAS/AsyncAPI/JSON Schema/package)
+5. Use generated artifacts as contracts for API implementation
 
 ## Runtime Env API (built-in)
 
 - `GET /api/runtime/env?environment=dev|staging|ci`
 - `POST /api/runtime/env`
 
-The server persists approved runtime keys to files under `src/config/`.
+The server persists approved runtime keys to files under `apps/backend-template/src/config/`.
 
 ## Runtime Edit Flow
 
@@ -69,8 +100,22 @@ The server persists approved runtime keys to files under `src/config/`.
 
 Service-level container templates are provided in:
 
-- `docker/services/`
+- `apps/backend-template/docker/services/`
 
 Orchestrated profiles:
 
-- `docker-compose-service-templates.yml`
+- `apps/backend-template/docker-compose-service-templates.yml`
+
+## Tests
+
+Integration smoke:
+
+```bash
+pnpm run test:integration:service-management
+```
+
+Unit smoke for roadmap feature presence:
+
+```bash
+NODE_ENV=dev pnpm exec jest apps/backend-template/test/unit/service-management/mvp.roadmap.features.test.ts --runInBand
+```

@@ -1,0 +1,56 @@
+[
+  {
+    "slug": "overview",
+    "title": "Jumentix Overview",
+    "description": "Product and monorepo overview.",
+    "source": "../../documentation/md/PROJECT-OVERVIEW.md"
+  },
+  {
+    "slug": "architecture-structure",
+    "title": "Architecture and Structure",
+    "description": "Core architecture principles and project structure.",
+    "source": "../../documentation/md/ARCHITECTURE-AND-STRUCTURE.md"
+  },
+  {
+    "slug": "rest-api-guide",
+    "title": "Creating REST API with Jumentix",
+    "description": "Guide for building REST APIs.",
+    "source": "../../apps/backend-template/documentation/guides/CREATING-REST-API-WITH-JUMENTIX.md"
+  },
+  {
+    "slug": "realtime-api-guide",
+    "title": "Creating Realtime API with Jumentix",
+    "description": "Guide for WebSocket/gRPC realtime APIs.",
+    "source": "../../apps/backend-template/documentation/guides/CREATING-REALTIME-API-WITH-JUMENTIX.md"
+  },
+  {
+    "slug": "spa-pwa-guide",
+    "title": "Creating SPA/PWA with Jumentix",
+    "description": "Guide for frontend SPA/PWA delivery.",
+    "source": "../../apps/service-management/documentation/guides/CREATING-SPA-PWA-WITH-JUMENTIX.md"
+  },
+  {
+    "slug": "saas-monolith-guide",
+    "title": "Creating SaaS Monolith with Jumentix",
+    "description": "Guide for modular monolith SaaS delivery.",
+    "source": "../../documentation/md/guides/CREATING-SAAS-MONOLITH-WITH-JUMENTIX.md"
+  },
+  {
+    "slug": "saas-microservices-guide",
+    "title": "Creating SaaS Microservices with Jumentix",
+    "description": "Guide for microservices SaaS delivery.",
+    "source": "../../documentation/md/guides/CREATING-SAAS-MICROSERVICES-WITH-JUMENTIX.md"
+  },
+  {
+    "slug": "security-pci",
+    "title": "Security and PCI Hardening",
+    "description": "Security compliance and hardening evidence.",
+    "source": "../../documentation/md/PCI-REMEDIATION-PLAN-AND-EVIDENCE.md"
+  },
+  {
+    "slug": "runtime-contracts",
+    "title": "Runtime Environment Contracts",
+    "description": "Environment and runtime behavior contracts.",
+    "source": "../../documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md"
+  }
+]

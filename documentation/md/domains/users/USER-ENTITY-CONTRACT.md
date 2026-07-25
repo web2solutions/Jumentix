@@ -4,7 +4,7 @@
 `IUser` defines the domain entity shape used across repository/service/use-case boundaries for the Users domain.
 
 ## Source of truth
-- `src/modules/Users/domain/Entity/IUser.ts`
+- `apps/backend-template/src/modules/Users/domain/Entity/IUser.ts`
 
 ## Contract fields
 

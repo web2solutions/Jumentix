@@ -3,4 +3,9 @@
 
 echo "[Husky] pre-push: strict quality gate (ci + patch coverage)"
 
-npm run ci:gate:strict
+if [ -s "$HOME/.nvm/nvm.sh" ]; then
+  . "$HOME/.nvm/nvm.sh"
+  nvm use 22 >/dev/null
+fi
+
+CI=true npx pnpm@9.15.3 run ci:gate:strict

@@ -1,0 +1,46 @@
+version: v1.25.0
+ignore:
+  GHSA-f88m-g3jw-g9cj:
+    - '*':
+        reason: "Next.js/Nextra transitive sharp chain still pinned upstream; tracked until ecosystem update."
+        expires: "2026-10-31T23:59:59.000Z"
+  GHSA-6g55-p6wh-862q:
+    - '*':
+        reason: "Next.js transitive postcss@8.4.x currently upstream-managed."
+        expires: "2026-10-31T23:59:59.000Z"
+  GHSA-r28c-9q8g-f849:
+    - '*':
+        reason: "Next.js transitive postcss source-map chain currently upstream-managed."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-POSTCSS-16189065:
+    - '*':
+        reason: "Next.js transitive PostCSS source-map chain currently upstream-managed."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-POSTCSS-5926692:
+    - '*':
+        reason: "Next.js transitive PostCSS advisory currently upstream-managed."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-SHARP-18184418:
+    - '*':
+        reason: "Next.js/Nextra transitive sharp chain currently upstream-managed."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-SHARP-18184259:
+    - '*':
+        reason: "libvips transitive advisory in Next.js sharp chain currently upstream-managed."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-SHARP-18184262:
+    - '*':
+        reason: "libvips transitive advisory in Next.js sharp chain currently upstream-managed."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-SHARP-18184416:
+    - '*':
+        reason: "libvips transitive advisory in Next.js sharp chain currently upstream-managed."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-DOMPURIFY-18170233:
+    - '*':
+        reason: "Transitive via mermaid dependency in Nextra docs rendering; awaiting upstream patch release adoption."
+        expires: "2026-10-31T23:59:59.000Z"
+  SNYK-JS-SIRV-12558119:
+    - '*':
+        reason: "Transitive via bundle-analyzer tooling dependency; tracked until upstream upgrade lands."
+        expires: "2026-10-31T23:59:59.000Z"

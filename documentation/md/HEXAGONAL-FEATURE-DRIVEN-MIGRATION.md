@@ -6,7 +6,7 @@ Move the codebase to a feature-driven, DDD-aligned hexagonal architecture with c
 ## Approved Target Structure
 
 ```txt
-src/
+apps/backend-template/src/
   app/
   shared/
   modules/
@@ -23,14 +23,14 @@ src/
 
 ## Current-to-Target Mapping (Users module)
 
-- Current `src/modules/Users/domain/*` -> target `src/modules/users/domain/*`
-- Current `src/modules/Users/service/*` -> split:
+- Current `apps/backend-template/src/modules/Users/domain/*` -> target `apps/backend-template/src/modules/users/domain/*`
+- Current `apps/backend-template/src/modules/Users/service/*` -> split:
   - application orchestration -> `application/use-cases/*`
   - domain logic -> `domain/*` (where applicable)
-- Current `src/modules/Users/interface/controller/*` -> `adapters/in/http/controllers/*`
-- Current `src/modules/Users/interface/api/frameworks/*` -> `adapters/in/http/handlers/<framework>/*`
-- Current `src/modules/Users/infra/repository/*` -> `adapters/out/persistence/*`
-- Current `src/modules/Users/composition/*` -> `composition/*`
+- Current `apps/backend-template/src/modules/Users/interface/controller/*` -> `adapters/in/http/controllers/*`
+- Current `apps/backend-template/src/modules/Users/interface/restapi/frameworks/*` -> `adapters/in/http/handlers/<framework>/*`
+- Current `apps/backend-template/src/modules/Users/infra/repository/*` -> `adapters/out/persistence/*`
+- Current `apps/backend-template/src/modules/Users/composition/*` -> `composition/*`
 
 ## Migration Principles
 

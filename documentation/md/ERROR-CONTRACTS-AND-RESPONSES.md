@@ -4,7 +4,7 @@ This document defines how errors are represented in code and serialized through 
 
 ## 1) Base Error Contract
 
-All domain/infra errors extend `BaseError` (`src/infra/exceptions/BaseError.ts`) and expose:
+All domain/infra errors extend `BaseError` (`apps/backend-template/src/infra/exceptions/BaseError.ts`) and expose:
 
 ```ts
 {
@@ -19,7 +19,7 @@ All domain/infra errors extend `BaseError` (`src/infra/exceptions/BaseError.ts`)
 
 ## 2) Canonical Error Codes
 
-Defined in `src/infra/exceptions/error.codes.ts`:
+Defined in `apps/backend-template/src/infra/exceptions/error.codes.ts`:
 
 | String Code | HTTP Status |
 |---|---|
@@ -32,7 +32,7 @@ Defined in `src/infra/exceptions/error.codes.ts`:
 | `GENERIC.NOT_IMPLEMENTED` | `501` |
 | `GENERIC.INTERNAL_SERVER_ERROR` | `500` |
 
-Status mapping is resolved by `toHttpStatus(...)` in `src/shared/utils.ts`.
+Status mapping is resolved by `toHttpStatus(...)` in `apps/backend-template/src/shared/utils.ts`.
 
 ## 3) Error Class to Code Mapping
 
@@ -70,7 +70,7 @@ Current adapters serialize to the same payload shape:
 
 Sources:
 - Express/Fastify/Restify/Hyper-Express: `sendErrorResponse(...)`
-- Lambda adapters: `src/interface/HTTP/adapters/aws/lambda/responses/sendErrorResponse.ts`
+- Lambda adapters: `apps/backend-template/src/interface/HTTP/adapters/aws/lambda/responses/sendErrorResponse.ts`
 
 ## 5) MessageMediator Request/Response Error Contract
 
@@ -102,3 +102,33 @@ When creating a new custom error:
 3. Ensure `code` is covered in `EErrorStringCodes`/`EErrorNumberCodes`.
 4. Add `formatErrorMessage` branch if custom human-readable text is required.
 5. Keep HTTP and message-level error envelopes backward-compatible.
+
+## 8) Realtime Error Envelopes
+
+WebSocket (`ApiResponse`):
+
+```json
+{
+  "ok": false,
+  "operationId": "createOrganization",
+  "error": {
+    "name": "validation_error",
+    "message": "Invalid input data"
+  }
+}
+```
+
+gRPC (`AsyncApiResponse`):
+
+```json
+{
+  "ok": false,
+  "operationId": "createOrganization",
+  "errorName": "validation_error",
+  "errorMessage": "Invalid input data"
+}
+```
+
+See transport-specific contract references:
+- `documentation/md/contracts/WEBSOCKET-REALTIME-CONTRACTS.md`
+- `documentation/md/contracts/GRPC-REALTIME-CONTRACTS.md`

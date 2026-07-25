@@ -21,8 +21,8 @@ Detailed per-domain files:
 
 Code references:
 
-- `src/modules/Users/domain/Model/User.ts`
-- `src/modules/Users/domain/Entity/IUser.ts`
+- `apps/backend-template/src/modules/Users/domain/Model/User.ts`
+- `apps/backend-template/src/modules/Users/domain/Entity/IUser.ts`
 - `spec/1.0.0.yml` (`components.schemas.User`)
 
 | Field | Type (TS) | Format / Allowed values | Required | Validation expected |
@@ -48,7 +48,7 @@ Code references:
 
 Code references:
 
-- `src/modules/ddd/valueObjects/EmailValueObject.ts`
+- `apps/backend-template/src/modules/ddd/valueObjects/EmailValueObject.ts`
 - `spec/1.0.0.yml` (`components.schemas.Email`, `RequestCreateEmail`, `RequestUpdateEmail`)
 
 | Field | Type (TS) | Format / Allowed values | Required | Validation expected |
@@ -62,8 +62,8 @@ Code references:
 
 Code references:
 
-- `src/modules/ddd/valueObjects/DocumentValueObject.ts`
-- `src/modules/ddd/valueObjects/EDocumentType.ts`
+- `apps/backend-template/src/modules/ddd/valueObjects/DocumentValueObject.ts`
+- `apps/backend-template/src/modules/ddd/valueObjects/EDocumentType.ts`
 - `spec/1.0.0.yml` (`components.schemas.Document`, `RequestCreateDocument`, `RequestUpdateDocument`)
 
 | Field | Type (TS) | Format / Allowed values | Required | Validation expected |
@@ -77,7 +77,7 @@ Code references:
 
 Code references:
 
-- `src/modules/ddd/valueObjects/PhoneValueObject.ts`
+- `apps/backend-template/src/modules/ddd/valueObjects/PhoneValueObject.ts`
 - `spec/1.0.0.yml` (`components.schemas.Phone`, `RequestCreatePhone`, `RequestUpdatePhone`)
 
 | Field | Type (TS) | Format / Allowed values | Required | Validation expected |
@@ -92,8 +92,8 @@ Code references:
 
 Code references:
 
-- `src/modules/ddd/valueObjects/AddressValueObject.ts`
-- `src/modules/ddd/valueObjects/EAddressType.ts`
+- `apps/backend-template/src/modules/ddd/valueObjects/AddressValueObject.ts`
+- `apps/backend-template/src/modules/ddd/valueObjects/EAddressType.ts`
 - `spec/1.0.0.yml` (`components.schemas.Address`)
 
 | Field | Type (TS) | Format / Allowed values | Required | Validation expected |
@@ -107,8 +107,8 @@ Code references:
 
 Code references:
 
-- `src/modules/Users/domain/Model/Organization.ts`
-- `src/modules/Users/domain/Entity/IOrganization.ts`
+- `apps/backend-template/src/modules/Users/domain/Model/Organization.ts`
+- `apps/backend-template/src/modules/Users/domain/Entity/IOrganization.ts`
 - `spec/1.0.0.yml` (`components.schemas.Organization`)
 
 | Field | Type (TS) | Format / Allowed values | Required | Validation expected |
@@ -127,7 +127,7 @@ Code references:
 
 ## Domain Validation Rules (Cross-entity)
 
-Shared validators in `src/shared/validators/index.ts` enforce rules used across entities/use cases:
+Shared validators in `apps/backend-template/src/shared/validators/index.ts` enforce rules used across entities/use cases:
 
 - `canNotBeEmpty`
 - `throwIfReadOnly`

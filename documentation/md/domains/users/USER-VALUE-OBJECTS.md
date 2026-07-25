@@ -8,13 +8,13 @@ Value objects used by the Users domain:
 - `AddressValueObject` (used by `Organization`)
 
 ## Source of truth
-- `src/modules/ddd/valueObjects/EmailValueObject.ts`
-- `src/modules/ddd/valueObjects/DocumentValueObject.ts`
-- `src/modules/ddd/valueObjects/PhoneValueObject.ts`
-- `src/modules/ddd/valueObjects/AddressValueObject.ts`
-- `src/modules/ddd/valueObjects/EEmailType.ts`
-- `src/modules/ddd/valueObjects/EDocumentType.ts`
-- `src/modules/ddd/valueObjects/EAddressType.ts`
+- `apps/backend-template/src/modules/ddd/valueObjects/EmailValueObject.ts`
+- `apps/backend-template/src/modules/ddd/valueObjects/DocumentValueObject.ts`
+- `apps/backend-template/src/modules/ddd/valueObjects/PhoneValueObject.ts`
+- `apps/backend-template/src/modules/ddd/valueObjects/AddressValueObject.ts`
+- `apps/backend-template/src/modules/ddd/valueObjects/EEmailType.ts`
+- `apps/backend-template/src/modules/ddd/valueObjects/EDocumentType.ts`
+- `apps/backend-template/src/modules/ddd/valueObjects/EAddressType.ts`
 
 ---
 

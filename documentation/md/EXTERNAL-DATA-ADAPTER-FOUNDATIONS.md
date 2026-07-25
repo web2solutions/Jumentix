@@ -4,7 +4,7 @@ To support heterogeneous deployment topologies, the project includes initial ada
 
 ## Location
 
-- `src/infra/persistence/external/`
+- `apps/backend-template/src/infra/persistence/external/`
 
 ## Foundations Included
 
@@ -30,7 +30,7 @@ For end-to-end smoke validation with Docker per database, see:
 
 For asynchronous request-response patterns over queue-like transports:
 
-- `src/infra/messages/repositories/QueueRequestResponseRepository.ts`
+- `apps/backend-template/src/infra/messages/repositories/QueueRequestResponseRepository.ts`
 
 This class is contract-based and works through the message mediator abstraction, which can be backed by:
 

@@ -3,7 +3,165 @@
 This file tracks the project ownership fixes proposed before adding new features.
 Keep every item in either `Done` or `Open`, and move items as they are completed.
 
+Governance note:
+- Canonical task management source is GitHub Project **Jumentix**:
+  - https://github.com/users/web2solutions/projects/1
+- This file is a local reference snapshot only and must not be treated as authoritative task state.
+- Task/PR governance:
+  - Traceability must be bidirectional (`issue -> PR/commit` and `PR -> issue/task mapping`) per requirement 055.
+- NFR governance:
+  - All user-requested non-functional requirements must be captured in `.agents/requirements` and indexed in `.agents/NFR-REGISTRY.md` (requirement 068).
+
+GitHub tracking:
+- Open TODO items are mirrored in GitHub Issues with label `todo-mvp`:
+  - https://github.com/web2solutions/aaa-typescript-boilerplate/issues?q=is%3Aissue+is%3Aopen+label%3Atodo-mvp
+
+## Documentation Round (EPIC #117)
+
+- Epic: https://github.com/web2solutions/aaa-typescript-boilerplate/issues/117
+- Child tasks:
+  - [x] #118 Root README positioning + global index
+  - [x] #119 Backend Template technical docs hub
+  - [x] #120 Service Management technical docs + SPA/PWA guide
+  - [x] #121 REST and Realtime API guides
+  - [x] #122 SaaS monolith + microservices guides
+  - [x] #123 Docs governance + cross-link validation
+
+## Website Round (EPIC #124)
+
+- Epic: https://github.com/web2solutions/aaa-typescript-boilerplate/issues/124
+- Status: Planned and decomposed in GitHub Project Jumentix (awaiting implementation order)
+- Governance fields:
+  - Estimates: defined for epic and all child tasks
+  - Start/End dates: defined for epic and all child tasks
+  - Iteration assignment: tracked by labels `iteration-a` and `iteration-b` (project Iteration field is currently unconfigured with zero cycles)
+
+### Detailed execution plan
+
+1. Planning and conversion strategy
+  - [~] #125 IA, sitemap, and conversion funnel definition (5 pts) - implemented in workspace, awaiting PR/commit linkage for closure
+  - Schedule: 2026-07-06 -> 2026-07-20 (`iteration-a`)
+  - Outcome: approved navigation model, CTA strategy, and markdown-source mapping.
+
+2. Website bootstrap and architecture
+  - [~] #126 Scaffold app in `apps/jumentix-website` using Vercel Mantine + Nextra template (8 pts) - in progress
+  - Schedule: 2026-07-06 -> 2026-07-20 (`iteration-a`)
+  - Outcome: stable static app baseline, theme system, and scalable project structure.
+
+3. Data foundation from markdown
+  - [~] #127 Markdown-to-site static content pipeline (8 pts) - implemented in workspace, awaiting PR/commit linkage for closure
+  - Schedule: 2026-07-06 -> 2026-07-20 (`iteration-a`)
+  - Outcome: deterministic MD ingestion and normalized content metadata for website sections.
+
+4. Conversion-focused commercial experience
+  - [~] #128 Commercial pages and lead-conversion CTA implementation (8 pts) - implemented in workspace, awaiting PR/commit linkage for closure
+  - Schedule: 2026-07-06 -> 2026-07-20 (`iteration-a`)
+  - Outcome: persuasive enterprise messaging and complete buyer journey pages.
+
+5. Launch readiness
+  - [~] #129 SEO and performance baseline (5 pts) - implemented in workspace, awaiting PR/commit linkage for closure
+  - Schedule: 2026-07-21 -> 2026-08-03 (`iteration-b`)
+  - Outcome: metadata, sitemap, and performance baseline for commercial publication.
+
+6. Deployment integration
+  - [~] #130 Vercel deploy scripts and package integration (5 pts) - implemented in workspace, awaiting PR/commit linkage for closure
+  - Schedule: 2026-07-21 -> 2026-08-03 (`iteration-b`)
+  - Outcome: one-command deploy flow from `package.json` and reproducible publishing process.
+
+7. Governance closure
+  - [~] #131 Agents/docs/project tracking synchronization (3 pts) - implemented in workspace, awaiting PR/commit linkage for closure
+  - Schedule: 2026-07-21 -> 2026-08-03 (`iteration-b`)
+  - Outcome: full traceability issue -> implementation -> PR, with updated requirements/docs.
+
 ## Done
+
+- [x] Make Jumentix composition explicit in specs (libraries, tools, templates, components)
+  - Added canonical composition spec:
+    - `documentation/md/SPEC-JUMENTIX-COMPONENT-SYSTEM.md`
+  - Synced spec navigation and maps:
+    - `documentation/md/SPEC-DEVELOPMENT-DRIVEN-INDEX.md`
+    - `documentation/README.md`
+    - `documentation/md/SPEC-CANONICAL-COVERAGE-MATRIX.md`
+    - `documentation/md/SPEC-KNOWLEDGE-SOURCE-MAP.md`
+  - Added governance requirement:
+    - `.agents/requirements/075-jumentix-composition-clarity-in-specs.md`
+    - `.agents/README.md`
+    - `.agents/NFR-REGISTRY.md`
+  - Synced requirements coverage docs:
+    - `documentation/md/SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`
+    - `documentation/md/SPEC-REQUIREMENTS-COVERAGE-STATUS.md`
+
+- [x] Include security and compliance practices as explicit Spec Development Driven contracts
+  - Added dedicated security/compliance spec:
+    - `documentation/md/SPEC-SECURITY-AND-COMPLIANCE-PRACTICES.md`
+  - Synced indexes and source maps:
+    - `documentation/md/SPEC-DEVELOPMENT-DRIVEN-INDEX.md`
+    - `documentation/README.md`
+    - `documentation/md/SPEC-CANONICAL-COVERAGE-MATRIX.md`
+    - `documentation/md/SPEC-KNOWLEDGE-SOURCE-MAP.md`
+  - Added governance requirement:
+    - `.agents/requirements/074-security-compliance-practices-in-specs.md`
+    - `.agents/README.md`
+    - `.agents/NFR-REGISTRY.md`
+  - Synced requirements coverage docs:
+    - `documentation/md/SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`
+    - `documentation/md/SPEC-REQUIREMENTS-COVERAGE-STATUS.md`
+
+- [x] Represent project engineering requirements inside Spec Development Driven docs
+  - Added dedicated spec policy:
+    - `documentation/md/SPEC-ENGINEERING-PRACTICES-AND-GIT-POLICY.md`
+  - Synced spec indexes and maps:
+    - `documentation/md/SPEC-DEVELOPMENT-DRIVEN-INDEX.md`
+    - `documentation/README.md`
+    - `documentation/md/SPEC-CANONICAL-COVERAGE-MATRIX.md`
+    - `documentation/md/SPEC-KNOWLEDGE-SOURCE-MAP.md`
+  - Added governance requirement:
+    - `.agents/requirements/073-engineering-practices-git-lint-coding-governance.md`
+    - `.agents/README.md`
+    - `.agents/NFR-REGISTRY.md`
+
+- [x] Enforce 100% spec coverage for implemented functional and non-functional requirements
+  - Completed requirement coverage attestation:
+    - `documentation/md/SPEC-REQUIREMENTS-COVERAGE-STATUS.md`
+  - Updated ledger to include all requirement IDs:
+    - added missing IDs `021` and `072`
+    - `documentation/md/SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`
+  - Synced Spec-Driven indexes:
+    - `documentation/md/SPEC-DEVELOPMENT-DRIVEN-INDEX.md`
+    - `documentation/README.md`
+  - Strengthened governance requirement:
+    - `.agents/requirements/072-spec-development-driven-canonical-knowledge-coverage.md`
+
+- [x] Expand Spec Development Driven to canonical full-knowledge coverage
+  - Added canonical spec documentation set:
+    - `documentation/md/SPEC-CANONICAL-KNOWLEDGE-BASELINE.md`
+    - `documentation/md/SPEC-FEATURES-WORKFLOWS-CATALOG.md`
+    - `documentation/md/SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`
+    - `documentation/md/SPEC-DELIVERY-GATES-AND-EVIDENCE.md`
+    - `documentation/md/SPEC-OPERATING-MODEL-BY-COMPONENT.md`
+  - Expanded Spec-Driven indexes:
+    - `documentation/md/SPEC-DEVELOPMENT-DRIVEN-INDEX.md`
+    - `documentation/README.md`
+    - `documentation/md/SPEC-CANONICAL-COVERAGE-MATRIX.md`
+  - Synced governance requirements:
+    - `.agents/requirements/072-spec-development-driven-canonical-knowledge-coverage.md`
+    - `.agents/README.md`
+    - `.agents/NFR-REGISTRY.md`
+    - `.agents/spec-development-driven-agent.md`
+
+- [x] Establish Spec Development Driven documentation baseline
+  - Added dedicated Spec-Driven docs set:
+    - `documentation/md/SPEC-DEVELOPMENT-DRIVEN-INDEX.md`
+    - `documentation/md/SPEC-KNOWLEDGE-SOURCE-MAP.md`
+    - `documentation/md/SPEC-LIFECYCLE-AND-WORKFLOW.md`
+    - `documentation/md/SPEC-ARCHITECTURE-CODING-STANDARDS.md`
+    - `documentation/md/SPEC-GOVERNANCE-AND-TRACEABILITY.md`
+    - `documentation/md/SPEC-TEMPLATES-AND-CHECKLISTS.md`
+  - Updated technical docs index: `documentation/README.md`.
+  - Added requirement and agent support:
+    - `.agents/requirements/071-spec-development-driven-governance.md`
+    - `.agents/spec-development-driven-agent.md`
+    - `.agents/README.md` and `.agents/NFR-REGISTRY.md` sync.
 
 - [x] Fix the build
   - `fastify@5.0.0` plus the previous TypeScript setup broke `npm run build:dev`.
@@ -12,6 +170,15 @@ Keep every item in either `Done` or `Open`, and move items as they are completed
 - [x] Fix service dependency wiring
   - `BaseService.ts` assigned `this.services = config.repos ?? {}` instead of `config.services`.
   - Fixed dependency injection wiring so services receive the intended dependencies.
+
+- [x] Implement CacheService and read-endpoint caching baseline
+  - Added `apps/backend-template/src/infra/cache/CacheService.ts` and `ICacheService.ts` on top of `IKeyValueStorageClient`.
+  - Wired cache service through `composeUsersAuthServices`.
+  - Added read-through caching for `getOneById` and `getAll` in `UserService` and `OrganizationService`.
+  - Added invalidation by namespace version bump on create/update/delete and nested object mutation methods.
+  - Added unit coverage:
+    - `apps/backend-template/test/unit/infra/cache/CacheService.test.ts`
+    - cache behavior checks in Users and Organization service tests.
 
 - [x] Normalize singleton factories
   - `compile()` cached singleton instances in services, repos, auth, providers, and controllers.
@@ -54,6 +221,41 @@ Keep every item in either `Done` or `Open`, and move items as they are completed
   - Extended bootstraps for gRPC, WebSocket, and Lambda runtime to inject `compileDatabaseClient()` based on `AAA_DATABASE_DRIVER`.
   - Expanded `ExternalStoreProxy` to provide `IStore` mapping for Mongo, Sequelize-based SQL drivers, DynamoDB, Cassandra, Firebase, and Oracle.
 
+- [x] Add realtime API test matrix (unit, integration, smoke)
+  - Added protocol integration tests:
+    - `apps/backend-template/test/integration/realtime/websocket.basic.integration.test.ts`
+    - `apps/backend-template/test/integration/realtime/grpc.basic.integration.test.ts`
+  - Added Redis multi-instance integration:
+    - `apps/backend-template/test/integration/realtime/socketio.redis-streams.multi-instance.test.ts`
+  - Added realtime smoke test:
+    - `apps/backend-template/test/smoke/realtime/RealtimeApis.smoke.test.ts`
+  - Added package scripts:
+    - `test:integration:realtime*`
+    - `test:smoke:realtime`
+    - `smoke:realtime:redis-streams`
+  - Added documentation and requirement registry sync:
+    - `documentation/md/REALTIME-API-TESTING.md`
+    - `.agents/requirements/047-realtime-api-test-matrix.md`
+
+- [x] Extract generic adapters/contracts into distributable workspace packages (ongoing wave)
+  - Added `@jumentix/message-mediator` package and bridged local mediator ports/adapters to package exports.
+  - Added `@jumentix/key-value-storage` package and bridged local key-value clients/compiler to package exports.
+  - Added `@jumentix/persistence-contracts` package for shared `IStore` + `IDatabaseClient` contracts.
+  - Added `@jumentix/mutex-service` package and bridged local mutex service/port to package exports.
+  - Added `@jumentix/external-persistence-core` package and migrated external repositories to import it directly.
+  - Added `@jumentix/external-store-proxy` package and bridged local `ExternalStoreProxy`/`createExternalStores` exports.
+  - Added `@jumentix/external-db-repositories` package and bridged all concrete external DB repositories (Mongo, Sequelize SQL, DynamoDB, Cassandra, Firebase, Aurora, RDS, Oracle).
+  - Added `@jumentix/database-client-factory` package and migrated local `compileDatabaseClient` to a bridge backed by package compilers.
+  - Added `@jumentix/runtime-infra` package and migrated core adapters (Express/Fastify/Restify/Hyper-Express/gRPC/WebSocket) to shared env-based runtime infra compilation.
+  - Added `@jumentix/adapter-runtime-bootstrap` package and migrated adapter runtime composition (crypto/jwt/mediator/auth wiring) for Express/gRPC/WebSocket.
+  - Expanded `@jumentix/adapter-runtime-bootstrap` adoption across HTTP adapters (Fastify, Restify, Hyper-Express, LoopBack, Sails, Adonis, Feathers, Derby, Total.js, Vercel Functions, Cloudflare Workers).
+  - Consolidated REST adapter loader to support all implemented HTTP frameworks through `AAA_HTTP_FRAMEWORK` and aligned PM2 scripts to start via `start-rest-api` loader.
+  - Normalized REST startup scripts to always set `AAA_HTTP_FRAMEWORK` explicitly (including express) for deterministic adapter selection.
+  - Updated runtime docs (`RUNTIME-ENVIRONMENT-CONTRACTS`, `SETUP-RUNTIME-AND-API`) to reflect loader-based framework matrix startup.
+  - Added generic loader scripts (`dev:http`, `prod:http`) for REST startup with env-driven framework resolution.
+  - Updated README adapter examples to use loader-based startup for framework selection instead of non-existent per-framework start functions.
+  - Updated root TypeScript path mappings for new packages to preserve compatibility while migrating.
+
 ## Open
 
 - [x] PCI Remediation Plan (Sprint-based: P0/P1/P2) with audit evidence criteria
@@ -63,8 +265,8 @@ Keep every item in either `Done` or `Open`, and move items as they are completed
       - Add auth lockout/revocation paths in `AuthService` with key-value storage support.
       - Keep internal error details visible in `dev/staging` and masked in `production`.
     - Audit evidence:
-      - Unit evidence: `test/unit/modules/Users/interface/controller/controllers.test.ts`.
-      - Unit evidence: `test/unit/modules/Users/service/AuthService.branches.test.ts`.
+      - Unit evidence: `apps/backend-template/test/unit/modules/Users/interface/controller/controllers.test.ts`.
+      - Unit evidence: `apps/backend-template/test/unit/modules/Users/service/AuthService.branches.test.ts`.
       - Runtime evidence: adapter-level error payload builders use environment-aware masking.
 
   - [x] P0 - Security baseline for transport and headers
@@ -72,7 +274,7 @@ Keep every item in either `Done` or `Open`, and move items as they are completed
       - Restrict CORS with allowlist strategy via env (`AAA_CORS_ALLOWED_ORIGINS`).
       - Ensure helmet is active in REST adapters where supported.
     - Audit evidence:
-      - Config evidence: `src/config/security.ts`.
+      - Config evidence: `apps/backend-template/src/config/security.ts`.
       - Adapter evidence: `ExpressServer.ts`, `FastifyServer.ts`.
       - Lint + unit gate green.
 
@@ -107,13 +309,13 @@ Keep every item in either `Done` or `Open`, and move items as they are completed
 - [x] Program Increment - Environment-driven adapter startup and runtime env editing
   - Objective: make REST/Realtime adapter startup fully environment-driven and editable from Service Management.
   - Scope:
-    - separated startup adapters for `src/interface/WebSocket/adapters/` and `src/interface/gRPC/adapters/`
+    - separated startup adapters for `apps/backend-template/src/interface/WebSocket/adapters/` and `apps/backend-template/src/interface/gRPC/adapters/`
     - PM2 starts realtime APIs in separated processes
     - env variables govern adapter selection and realtime startup behavior
     - Service Management reads/updates active env file values across Windows/macOS/Linux
 
   - [x] Phase 1 - Runtime env contract
-    - Add and document new env keys in all `src/config/.env*` files:
+    - Add and document new env keys in all `apps/backend-template/src/config/.env*` files:
       - `AAA_HTTP_FRAMEWORK` (default `express`)
       - `AAA_REALTIME_API` (default `no`)
       - `AAA_REALTIME_API_PROTOCOL` (default `websocket`)
@@ -121,8 +323,8 @@ Keep every item in either `Done` or `Open`, and move items as they are completed
 
   - [x] Phase 2 - Startup adapter separation
     - Create dedicated startup adapter files:
-      - `src/interface/WebSocket/adapters/start-websocket-api.ts`
-      - `src/interface/gRPC/adapters/start-grpc-api.ts`
+      - `apps/backend-template/src/interface/WebSocket/adapters/start-websocket-api.ts`
+      - `apps/backend-template/src/interface/gRPC/adapters/start-grpc-api.ts`
     - Keep protocol-specific bootstraps isolated and independently PM2-runnable.
 
   - [x] Phase 3 - Env-driven startup loaders
@@ -272,16 +474,21 @@ Keep every item in either `Done` or `Open`, and move items as they are completed
 - [x] Add a minimal CI gate
   - Required before features: lint, unit tests, selected integration smoke, OpenAPI route resolution check, and build once dependency mismatch is fixed.
 
-- [ ] Reach and sustain minimum 95% coverage
+- [x] Reach and sustain minimum 95% coverage
   - Enforce 95% as standard in Jest global `coverageThreshold`.
   - Enforce 95% targets in Codecov project/patch status.
   - Raise current tests to reach and keep the threshold.
+  - Status:
+    - Root unit coverage remains above 95% (and above 99% for statements/lines/functions with branch >= 90 policy).
+    - CI gate blocks regressions via `test:unit` + strict threshold checks.
 
-- [ ] Enforce architecture NFR consistency across layers
+- [x] Enforce architecture NFR consistency across layers
   - Align implementation to DDD + EDA + Hexagonal Architecture + SOLID.
   - Keep explicit ownership for domains, entities, ports, adapters, repositories, services, use cases, controllers, and handlers.
   - Progress: CI now enforces `arch:check-boundaries` for controller-layer anti-patterns.
   - Progress: README and migration docs now reflect canonical feature-driven hexagonal structure and active guardrails.
+  - Status:
+    - Boundary checks now include controller-layer boundaries, legacy import checks, and workspace dependency boundary checks.
 
 - [x] Normalize layer call order
   - Ensure driving adapters/controllers call application use-cases as the entry point.
@@ -362,56 +569,442 @@ Keep every item in either `Done` or `Open`, and move items as they are completed
   - Clickable check issues that focus affected entity
 - [x] Inspector productivity
   - CRUD endpoint preview (path + operationId) for selected entity
+- [x] Anchor-based drag-and-drop relationship connectors
+  - Added edge anchor controls (`top`, `right`, `bottom`, `left`) on entity cards.
+  - Added drag-preview edge and anchor-to-anchor relationship creation.
+- [x] Domain-level bounded-context metadata editor
+  - Added context metadata fields per domain:
+    - ubiquitous language
+    - owner team
+    - upstream/downstream dependencies
+    - integration channel
+- [x] Relationship label positioning controls
+  - Added relationship label offset editor (`x` / `y`) and reset action in inspector.
+- [x] Aggregate root and invariant editor
+  - Added aggregate-root marker per entity and invariant rules editor in inspector.
+  - Aggregate root entities now show visual `AR` badge in entity header.
+- [x] Schema diff and migration preview
+  - Added local baseline save/clear and schema diff comparison.
+  - Added migration hints for entity/field/relationship create-drop-alter changes.
+- [x] Validation severity levels and quality gates in designer
+  - Added severity levels (`error`, `warn`, `info`) in model check results.
+  - Added configurable export gate to block export when critical issues exist.
+- [x] RBAC policy mapping UI per entity/action
+  - Added action-level role mapping (`list/getById/create/update/delete`) with tenant scope toggle.
+  - Added RBAC policy preview and model-check warnings for missing action permissions.
+- [x] Event/message contract designer connected to entities
+  - Added action panel to create/edit/remove `event`, `command`, `request`, and `response` contracts.
+  - Added contract payload schema editing and OpenAPI export extension (`x-message-contracts`).
+- [x] Code generation preview pane
+  - Added generated skeleton preview for model/repository/use-case/controller/handler.
+  - Supports selected-entity preview or full-canvas concatenated preview.
+- [x] Pluggable exporters baseline
+  - Added Markdown exporter in addition to JSON and OpenAPI exports.
+- [x] Advanced OpenAPI composition controls
+  - Added entity-level `oneOf` / `allOf` / `anyOf` composition editor with schema refs list.
+  - Composition is exported into generated OAS schemas.
+- [x] Collaborative model package support (baseline)
+  - Added domain package export/import flow from Domain Designer export panel.
+  - Supports reusable domain package import into current model canvas.
+- [x] Request/response example generator from entity schema
+  - Added generated request/response example preview for selected entity or whole canvas.
+  - Supports create/update request and response payload examples.
+- [x] Additional pluggable exporter target (JSON Schema)
+  - Added JSON Schema exporter button in Domain Designer export panel.
+- [x] Advanced relationship path controls
+  - Added bend point controls (`bendX`, `bendY`) and anchor behavior mode (`auto`, `center`).
+- [x] Entity templates and scaffolding packs by pattern
+  - Added `crudAggregate`, `eventSourced`, `referenceData`, and `tenantOwned` entity templates.
+- [x] More pluggable exporter targets
+  - Added AsyncAPI exporter and boilerplate bundle exporter.
+- [x] Expanded advanced OpenAPI controls
+  - Added external `$ref` list support and discriminator configuration.
+- [x] Expanded collaborative package support
+  - Added package dependencies and shared value-object metadata for bounded context.
+- [x] Visual mini-map and large-canvas performance mode
+  - Added mini-map navigation and large-canvas mode for simplified rendering.
+- [x] Starter e2e/smoke test coverage for `servicemangement`
+  - Added smoke tests for create/edit/export/import workflow controls.
 
 ### Open (next MVP ideas to prioritize)
 
 Backlog sync status:
 - Synced with `documentation/md/DOMAIN-DESIGNER-MVP-ROADMAP.md` open priorities.
 
-- [ ] Add true drag-and-drop relationship connectors on entity edge anchors
-  - Current pick/form flows are productive, but visual anchor-to-anchor linking is still missing.
+- [x] Expanded collaborative package support further
+  - Added package dependency normalization and shared value-object deduplication in package import/save flow.
 
-- [ ] Add relationship label positioning and advanced path controls
-  - Let users reposition relation labels and configure custom bend points/anchor behavior.
+- [x] Roadmap MVP completed
+  - All planned Domain Designer MVP roadmap items implemented.
 
-- [ ] Add domain-level bounded-context metadata editor
-  - Ubiquitous language, owner team, upstream/downstream dependencies, integration channel.
+## Open - JumentiX Monorepo Reorganization Plan (Execution Pending)
 
-- [ ] Add explicit aggregate root and invariant editor
-  - Mark aggregate roots and attach invariant rules per entity/aggregate.
+Goal:
+- Reorganize `aaa-typescript-boilerplate` into a pnpm monorepo product named `JumentiX`, with clear package boundaries, deterministic migration waves, and low-risk rollback points.
+- This section is planning-only by request. No structural migration should start until explicit execution order is provided.
+- Canonical technical execution reference:
+  - `documentation/md/JUMENTIX-MONOREPO-EXECUTION-PLAN.md`
+  - `documentation/md/JUMENTIX-MIGRATION-INVENTORY-AND-ROLLBACK.md`
 
-- [ ] Add entity templates and scaffolding packs by pattern
-  - CRUD aggregate, event-sourced aggregate, reference data, tenant-owned entity.
+### Phase 0 - Planning Guardrails (mandatory before code moves)
 
-- [ ] Add schema diff and migration preview
-  - Compare current model with previous snapshot and output human-readable migration hints.
+- [x] Freeze migration scope and success criteria
+  - Define what is in-scope for Wave 1 (must-haves) vs Wave 2+ (enhancements).
+  - Lock naming decisions:
+    - product: `JumentiX`
+    - npm init CLI package naming strategy resolved with official scoped package distribution (`@jumentix/cli-init`) and `jumentix-init` command.
+  - Define migration policy:
+    - no partial cutovers without complete functional parity in the same wave
+    - docs and agents update in same wave
+    - quality gates green before each merge.
 
-- [ ] Add event/message contract designer connected to entities
-  - Define domain events, commands, request/response contracts, payload schema, and version.
+- [x] Create migration branch strategy and release checkpoints
+  - Branch naming convention for each wave.
+  - Tagging plan before/after each destructive move.
+  - Rollback procedure documented per wave.
 
-- [ ] Add RBAC policy mapping UI per entity/action
-  - Connect resource operations to role/scope matrix and export policy contract.
+### Phase 1 - Target Monorepo Architecture Design
 
-- [ ] Add advanced OpenAPI controls
-  - OneOf/AllOf/AnyOf builders, external `$ref` management, discriminator support.
+- [x] Define final workspace topology (pnpm workspaces)
+  - Proposed root structure:
+    - `apps/`
+      - `service-management` (web tool, current servicemangement)
+      - `backend-template` (current backend boilerplate app form)
+    - `packages/`
+      - `cli-init` (current CLI evolved to install/bootstrap JumentiX projects)
+      - `message-mediator` (independent npm lib)
+      - `sdk-rest-client`
+      - `sdk-websocket-client`
+      - `sdk-grpc-client`
+      - `config-ts` (shared tsconfig presets)
+      - `config-eslint` (shared lint presets)
+      - `config-jest` (shared test presets)
+      - `shared-contracts` (optional: OpenAPI/AsyncAPI contract helpers/types)
+    - `tooling/`
+      - CI scripts, release scripts, changelog/quality scripts
+    - `docs/` (or keep existing `documentation/` with workspace-aware index)
 
-- [ ] Add request/response example generator from entity schema
-  - Auto-generate examples for API docs and handler test fixtures.
+- [x] Map current files into destination packages/apps
+  - Inventory current directories and map each one to `apps/*` or `packages/*`.
+  - Mark blockers for paths that cannot be moved without import breakage.
+  - Define direct import rewrites for staged migration waves.
 
-- [ ] Add code generation preview pane
-  - Show generated domain model, repository contract, use case, and handler skeletons before export.
+- [x] Define package dependency boundaries
+  - Backend app imports mediator from `packages/message-mediator` (no duplicated local copies).
+  - SDK packages are independent publishable libraries.
+  - Service management app consumes SDK/contracts via workspace dependencies.
+  - Enforcement added:
+    - `ci-cd/check-workspace-boundaries.js`
+    - `npm run arch:check-workspace-boundaries`
+    - `ci:gate` now blocks cross-app/package import boundary violations.
+  - Transition exception explicitly allowlisted:
+    - `packages/external-store-proxy/src/ExternalStoreProxy.ts` temporary `@src/infra/exceptions` bridge.
 
-- [ ] Add pluggable exporter targets
-  - OpenAPI, JSON schema, markdown docs, and boilerplate module skeletons.
+### Phase 2 - pnpm Foundation Setup
 
-- [ ] Add validation severity levels and quality gates in designer
-  - Error/warn/info levels and “block export when critical issues exist”.
+- [x] Add pnpm root management files
+  - `pnpm-workspace.yaml`
+  - root `package.json` with workspace scripts
+  - shared lockfile strategy with `pnpm-lock.yaml`
+  - workspace `.npmrc` policies (strict-peer-dependencies, node-linker strategy if needed).
+  - Status:
+    - `pnpm-workspace.yaml` created.
+    - root `package.json` updated with `packageManager` and `mono:*` scripts.
+    - `pnpm-lock.yaml` pending first successful online `pnpm install`.
 
-- [ ] Add collaborative model package support
-  - Import/export reusable domain packages and shared value object libraries.
+- [x] Add root toolchain baselines
+  - Node 22 enforcement across workspace (`engines`, `.nvmrc`, CI images).
+  - Shared TypeScript project references strategy.
+  - Shared lint/test/format scripts at root + per-package overrides.
+  - Status:
+    - Node 22 enforced at root (`engines`, `.nvmrc`, CircleCI node image and version checks).
+    - Shared config workspaces created (`packages/config-ts`, `packages/config-eslint`, `packages/config-jest`).
+    - Root monorepo orchestration scripts and quality gates centralized in root `package.json`.
 
-- [ ] Add visual mini-map and large-canvas performance mode
-  - Required for very large multi-domain models.
+- [x] Define workspace task orchestration
+  - Standard scripts:
+    - `pnpm -r build`
+    - `pnpm -r test`
+    - `pnpm -r lint`
+    - selective affected execution strategy.
+  - Status:
+    - `mono:build`, `mono:test`, `mono:lint`, and `mono:typecheck` are available at root and use recursive workspace execution.
+    - `.npmrc` now enforces workspace linking and shared lockfile behavior for deterministic package resolution.
 
-- [ ] Add starter e2e test coverage for `servicemangement`
-  - Smoke checks for create/edit/export/import to reduce regression risk.
+### Phase 3 - Incremental Package Extraction Waves
+
+- [x] Wave A - Extract `message-mediator` as independent package
+  - Move mediator ports/contracts/adapters to `packages/message-mediator`.
+  - Preserve existing behavior with direct workspace import replacement in backend app.
+  - Add package-level tests and publish-ready metadata.
+  - Status:
+    - `packages/message-mediator` extracted and consumed by backend-template via workspace dependencies.
+    - Legacy local mediator modules now act as compatibility bridges.
+
+- [x] Wave B - Extract SDK clients into independent packages
+  - Split existing `sdk-clients` into package-per-protocol.
+  - Ensure each package consumes contracts from spec files and/or shared-contract package.
+  - Add usage examples and API contract tests.
+  - Status:
+    - `packages/sdk-rest-client`, `packages/sdk-websocket-client`, and `packages/sdk-grpc-client` are the canonical SDK implementations.
+    - Legacy `sdk-clients/*` remains as documented compatibility bridge.
+
+- [x] Wave C - Convert current CLI into `cli-init` package
+  - Keep current capabilities, then add bootstrap orchestration for:
+    - backend service
+    - frontend SPA/PWA offline
+    - mixed backend/frontend service groups
+  - Validate install/init UX (`npm install ... -g` flow requirement needs exact npm package plan).
+  - Status:
+    - `packages/cli-init` implemented with `jumentix-init` command and non-interactive bootstrap flags.
+    - Root `aaa-bootstrap` delegates to the package implementation.
+
+- [x] Wave D - Move current backend boilerplate to `apps/backend-template`
+  - Keep all current capabilities (HTTP frameworks, realtime, serverless, PM2, tests, docs).
+  - Replace internal references to extracted packages with workspace dependencies.
+  - Status:
+    - Source, tests, API docs, and docker artifacts re-homed under `apps/backend-template`.
+
+- [x] Wave E - Move `servicemangement` to `apps/service-management`
+  - Wire it to workspace packages (sdk/contracts/cli metadata where applicable).
+  - Keep PM2 startup profile support.
+  - Status:
+    - Service Management app ownership moved to `apps/service-management` and wired in PM2/root scripts.
+
+### Phase 4 - Product-Level Feature Planning (post-structure)
+
+- [x] Define service factory capabilities matrix
+  - Monolith modular
+  - Multi-service backend
+  - Hybrid backend + frontend
+  - Frontend-only SPA/PWA offline.
+  - Progress:
+    - Added `documentation/md/JUMENTIX-SERVICE-FACTORY-CAPABILITIES-MATRIX.md` with canonical factory modes, contracts, and NFR guarantees.
+
+- [x] Define deploy target matrix and packaging contracts
+  - VM/SSH, EC2, Lambda, Vercel Functions, Cloudflare Workers.
+  - Backend and frontend deployment metadata contracts for Service Management.
+  - Progress:
+    - Added `documentation/md/JUMENTIX-DEPLOY-TARGET-AND-PACKAGING-MATRIX.md` with deploy targets, packaging contracts, and service-management metadata schema.
+
+- [x] Define bundler/runtime templates by artifact type
+  - backend service
+  - frontend SPA
+  - frontend SSR
+  - npm lib backend
+  - npm lib frontend.
+  - Progress:
+    - Added `documentation/md/JUMENTIX-BUNDLER-RUNTIME-TEMPLATES.md` with artifact template matrix and runtime/build enforcement rules.
+
+### Phase 5 - CI/CD, Quality Gates, and Release Management
+
+- [x] Refactor CI pipelines for pnpm monorepo
+  - Cache pnpm store.
+  - Matrix by changed workspace.
+  - Keep required gates:
+    - lint
+    - unit/integration/smoke
+    - build
+    - coverage thresholds
+    - route/contract checks
+    - security checks.
+
+- [x] Enforce per-package coverage and global policy
+  - Keep current strict commit/push blockers.
+  - Add per-workspace thresholds with fail-fast behavior.
+  - Progress:
+    - Added workspace package quality gate (`workspace:check-quality`) to CI flow, enforcing required package script contracts and blocking placeholder test scripts.
+    - Added workspace coverage governance gate (`workspace:check-coverage-policy`) with:
+      - root Jest global threshold minimum verification,
+      - package test script anti-placeholder policy (with explicit allowlist for config placeholder packages).
+
+- [x] Define publishing/versioning strategy
+  - Changesets or equivalent release orchestration.
+  - Independent vs locked version policy per package.
+  - Changelog generation per package and aggregate product changelog.
+  - Progress:
+    - Added `ci-cd/check-release-governance.js` and `npm run release:governance:check` to enforce release scripts + package version/publish metadata.
+    - Integrated release governance check into `ci:gate`.
+    - Added unit tests for release governance validation rules.
+    - Added `release-policy.json` as canonical strategy contract:
+      - packages use independent versioning
+      - apps use locked versioning against root version.
+    - Added `documentation/md/JUMENTIX-RELEASE-AND-VERSIONING-STRATEGY.md` and README index links.
+
+### Phase 6 - Documentation and Product Positioning Alignment
+
+- [x] Rename and reposition docs to `JumentiX`
+  - Position documentation around JumentiX product architecture and workflows.
+  - Add workspace-first onboarding guide.
+  - Status:
+    - JumentiX monorepo docs are centralized under `documentation/md/*` with dedicated migration, packaging, release, and runtime guides.
+
+- [x] Update architecture and onboarding docs
+  - Monorepo workspace map
+  - package responsibilities
+  - development flows
+  - PM2 multi-app management in monorepo context.
+  - Progress:
+    - Updated `TESTING-CI-AND-QUALITY.md` with pnpm-based CI flow and strict coverage thresholds.
+    - Updated `ENGINEERING-BOOTSTRAP-GUIDE.md` with workspace map, monorepo orchestration commands, and PM2 multi-app runtime guidance.
+    - Added/updated architecture docs for monorepo waves and cutover evidence (`JUMENTIX-*` docs).
+
+- [x] Update agents and requirement registry
+  - Add dedicated requirements for monorepo governance, package boundaries, and release policy.
+  - Enforce task traceability requirement: every project issue must keep commit + PR association.
+  - Status:
+    - Requirement registry expanded through `062-workspace-dependency-boundaries-governance` and ongoing sync updates in `.agents/README.md`.
+
+### Risk Register and Anti-Waste Controls
+
+- [x] Risk: package naming ambiguity (`jumentix@init`) may be invalid as npm install target
+  - Mitigation implemented:
+    - Official install target standardized to scoped package `@jumentix/cli-init`.
+    - CLI execution command remains `jumentix-init` (plus compatibility alias `aaa-bootstrap`).
+    - Documentation updated to avoid relying on npm alias syntax ambiguity.
+
+- [x] Risk: breaking imports during moves
+  - Mitigation implemented:
+    - Wave-based migration with compatibility bridge exports and progressive path rewrites.
+    - CI compile + architecture gates enforce boundary validity after each move.
+    - Legacy namespace checks (`arch:check-users-legacy-imports`) prevent regressions.
+
+- [x] Risk: CI instability due to monorepo migration
+  - Mitigation implemented:
+    - Added monorepo-aware CI orchestrator (`ci:monorepo`) with docs-only and affected-workspace flows.
+    - CircleCI and GitHub Actions aligned to pnpm and `ci:monorepo`.
+    - Strict local blocker kept via `ci:gate`/`ci:gate:strict`.
+
+- [x] Risk: oversized PRs reduce review quality
+  - Mitigation implemented:
+    - Enforced wave/priority-based issue decomposition in GitHub Project.
+    - PR grouping-by-priority requirement maintained in agents registry.
+    - Task-level traceability now requires commit + PR references on each backlog item.
+
+### Acceptance Criteria for Starting Implementation
+
+- [x] Final architecture map approved (apps/packages boundaries and names).
+- [x] Migration wave order approved.
+- [x] npm package naming/install strategy approved for CLI bootstrap.
+- [x] CI migration strategy approved (including quality gates and coverage policy).
+- [x] Rollback and release strategy approved.
+
+### Detailed Wave Execution Backlog (Operational)
+
+- [x] Wave 1 - Workspace Foundation
+  - Deliverables:
+    - `pnpm-workspace.yaml`
+    - root scripts (`build`, `test`, `lint`, `typecheck`) using pnpm recursive execution
+    - Node 22 enforcement and CI alignment
+  - Done criteria:
+    - `pnpm -r lint`, `pnpm -r test`, `pnpm -r build` all green
+    - no broken local developer bootstrap flow
+  - Progress:
+    - workspace scaffold directories and package placeholders created in `apps/` and `packages/`.
+    - recursive scripts implemented at root.
+    - Node 22 enforced via root engines and CI/runtime alignment updates.
+    - full pnpm recursive validation still pending due local network/package-manager instability during install bootstrap.
+
+- [x] Wave 2 - Message Mediator Package Extraction
+  - Deliverables:
+    - `packages/message-mediator` with ports/contracts/adapters
+    - backend-template consuming mediator via workspace dependency
+  - Done criteria:
+    - mediator unit tests green in package scope
+    - backend app tests green after import rewrite
+  - Progress:
+    - contracts + in-memory adapter extracted to `packages/message-mediator`.
+    - RabbitMQ and BullMQ adapters extracted to `packages/message-mediator`.
+    - compile helper extracted (`compileMessageMediator`) with local bridge kept for compatibility.
+    - local core mediator contracts in `apps/backend-template/src/modules/port/*` now re-export from workspace package to avoid drift.
+    - local mediator adapters in `apps/backend-template/src/infra/messages/adapters` now re-export from workspace package.
+
+- [x] Wave 3 - SDK Package Split
+  - Deliverables:
+    - `packages/sdk-rest-client`
+    - `packages/sdk-websocket-client`
+    - `packages/sdk-grpc-client`
+  - Done criteria:
+    - each SDK has build/test/docs and independent package metadata
+    - contract tests green against spec-driven behavior
+  - Progress:
+    - Created independent package source trees for REST/WebSocket/gRPC SDKs under `packages/sdk-*/src`.
+    - Added package-level `build`/`typecheck` scripts and package manifests (`main`, `types`, `files`, dependencies).
+    - Spec loading was localized per package with AsyncAPI/OpenAPI-driven defaults preserved.
+    - Added package-level README guides with usage examples and build commands.
+    - Legacy `sdk-clients/*` now acts as compatibility layer and re-exports SDK implementations from workspace packages.
+    - Added explicit compatibility-bridge documentation and migration/decommission criteria.
+    - SDK package `test` scripts now execute package-level typecheck to avoid placeholder/no-op tests.
+
+- [x] Wave 4 - CLI Productization (`cli-init`)
+  - Deliverables:
+    - package extraction for current CLI
+    - scaffold commands for backend/frontend/hybrid service groups
+  - Done criteria:
+    - install/bootstrap smoke path validated end-to-end
+    - docs + examples published in repository docs
+  - Progress:
+    - `packages/cli-init` now contains a functional bootstrap CLI entrypoint (`bin/jumentix-init.js`) and reusable implementation module (`packages/cli-init/src/bootstrap.js`).
+    - root `bin/aaa-bootstrap.js` now delegates to `packages/cli-init`, reducing duplication and keeping workspace packaging aligned.
+    - Added package-level CLI README and command contracts (`jumentix-init` and `aaa-bootstrap` alias).
+    - Added non-interactive CLI flags and help output (`--service-type`, `--project-name`, `--git-branch`, `--install-deps`, `--repo`) to support automation pipelines.
+    - CLI package test script now performs help smoke execution (`jumentix-init --help`).
+    - Non-interactive scaffold smoke validated end-to-end using local repository source and generated `.aaa/service-profile.json`.
+
+- [x] Wave 5 - Apps Re-homing
+  - Deliverables:
+    - current backend boilerplate moved to `apps/backend-template`
+    - `servicemangement` moved to `apps/service-management`
+  - Done criteria:
+    - both apps build/test/run under pnpm workspace scripts
+    - PM2 startup profiles still functional
+  - Progress:
+    - Added migration-focused app READMEs for `apps/backend-template` and `apps/service-management` with explicit Wave 5 cutover steps.
+    - Added executable cutover playbook with sequence, rollback, and acceptance criteria: `documentation/md/JUMENTIX-WAVE5-APP-REHOMING-CUTOVER.md`.
+    - Replaced placeholder workspace app scripts with executable transitional scripts mapped to root runtime commands for `apps/backend-template` and `apps/service-management`.
+    - Physical runtime re-homing applied:
+      - `apps/backend-template/src/` -> `apps/backend-template/src`
+      - `apps/backend-template/test/` -> `apps/backend-template/test`
+      - `OASdoc/` + `AsyncAPIdoc/` -> `apps/backend-template/`
+      - `docker/` + `docker-compose*.yml` -> `apps/backend-template/`
+    - PM2 ownership moved to root `pm2/*` ecosystems.
+  - Audit evidence:
+    - PR: `https://github.com/web2solutions/aaa-typescript-boilerplate/pull/112`
+    - Required checks green for PR #112 (build/circleci/snyk/sonar/gitguardian).
+    - Related closeout issues:
+      - `https://github.com/web2solutions/aaa-typescript-boilerplate/issues/113`
+      - `https://github.com/web2solutions/aaa-typescript-boilerplate/issues/114`
+      - `https://github.com/web2solutions/aaa-typescript-boilerplate/issues/115`
+  - Residual risks tracked outside Wave 5:
+    - Coverage and policy hardening remains under Wave 6 + issue `#79`.
+    - Architecture and docs governance follow-up remains tracked under issues `#82`, `#83`, and `#116`.
+
+- [x] Wave 6 - CI/CD + Release Strategy Hardening
+  - Deliverables:
+    - workspace-aware CI with selective execution by affected packages/apps
+    - publishing/versioning flow documented and implemented
+  - Done criteria:
+    - PR checks green with monorepo matrix
+    - release dry-run for at least one package and one app artifact
+  - Progress:
+    - Added `ci-cd/check-affected-workspaces.js` and root script `npm run ci:affected` to classify changed files across `root`, `apps/*`, `packages/*`, and docs-only scopes.
+    - Added unit tests for affected workspace detection and docs-only classification logic.
+    - Added `ci-cd/release-dry-run.js` and root `release:dry-run*` commands to validate package publish artifacts (dry-run pack) and app workspace release readiness contracts.
+    - Added `ci-cd/run-monorepo-ci.js` + `npm run ci:monorepo` with scope-based execution (docs-only lightweight checks or strict gate + affected apps/packages workflow).
+    - Updated CI pipelines to execute monorepo-aware flow (`ci:monorepo`) with pnpm dependency setup in GitHub Actions and CircleCI.
+    - Hardened `arch:check-boundaries` to scan real HTTP controllers under `adapters/in/http/controllers` and enforce application use-case imports.
+
+### Documentation Round (EPIC #117)
+
+- [x] Create root Jumentix marketing README with complete component index and required solution sections.
+  - Epic: `https://github.com/web2solutions/aaa-typescript-boilerplate/issues/117`
+  - GitHub Project source of truth: `https://github.com/users/web2solutions/projects/1`
+- [x] Reorganize component/project docs under component folders (`apps/*`, `packages/*`) and add technical hubs.
+- [x] Ensure root README links to all component docs and all required guides:
+  - SPA/PWA
+  - REST API
+  - Realtime API
+  - SaaS Monolith
+  - SaaS Microservices
+- [x] Add technical-rich docs for backend-template and service-management with architecture, integrations, and examples.
+- [x] Validate documentation navigation integrity (root index + component hubs with no dead links).

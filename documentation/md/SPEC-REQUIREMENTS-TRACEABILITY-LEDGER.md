@@ -1,0 +1,130 @@
+# Spec Requirements Traceability Ledger
+
+This ledger maps requirement IDs to spec resources and validation evidence expectations.
+
+It is the canonical bridge between `.agents/requirements` and implementation workflows.
+
+## How to Use
+
+For any change, identify impacted requirement IDs and ensure:
+
+1. Matching spec/doc files are updated.
+2. Matching tests/checks are executed.
+3. PR references the requirement IDs and evidence.
+
+## Requirement Groups
+
+## A. Build, Runtime, and Dependency Integrity
+
+- `001`, `002`, `012`, `013`, `041`, `042`, `043`, `052`
+- Spec resources:
+  - `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md`
+  - `documentation/md/SETUP-RUNTIME-AND-API.md`
+  - `pm2/*`
+  - runtime adapter docs under `documentation/md/adapters/http/*`
+- Evidence:
+  - runtime bootstrap tests
+  - CI startup/build checks
+
+## B. Core Service and Domain Correctness
+
+- `003`, `004`, `005`, `006`, `007`, `022`, `029`, `031`, `032`, `045`, `061`
+- Spec resources:
+  - `spec/1.0.0.yml`
+  - `documentation/md/DOMAIN-DATA-ENTITIES.md`
+  - `documentation/md/domains/users/*`
+  - `documentation/md/ERROR-CONTRACTS-AND-RESPONSES.md`
+- Evidence:
+  - unit tests for services/models/controllers
+  - integration tests for endpoint behavior
+
+## C. Contract and Interface Conformance
+
+- `008`, `010`, `021`, `026`, `027`, `028`, `036`, `047`
+- Spec resources:
+  - `spec/1.0.0.yml`
+  - `spec/asyncapi/1.0.0.websocket.yml`
+  - `spec/asyncapi/1.0.0.grpc.yml`
+  - `documentation/md/EVENTS-AND-MESSAGES-MAP.md`
+  - `documentation/md/contracts/*`
+- Evidence:
+  - route/channel resolution checks
+  - realtime integration/smoke tests
+
+## D. Data Adapter and Persistence Interoperability
+
+- `030`, `039`, `040`, `046`, `050`, `051`
+- Spec resources:
+  - `documentation/md/EXTERNAL-DATA-ADAPTER-FOUNDATIONS.md`
+  - `documentation/md/adapters/databases/*`
+  - `documentation/md/DATABASE-DRIVERS-SMOKE-TESTS.md`
+  - `packages/persistence-contracts/*`
+- Evidence:
+  - database smoke tests by driver
+  - adapter bootstrap tests
+
+## E. Architecture and Design Governance
+
+- `015`, `016`, `017`, `034`, `048`, `049`, `053`, `058`, `059`, `060` (both entries), `062`
+- Spec resources:
+  - `documentation/md/ARCHITECTURE-AND-STRUCTURE.md`
+  - `documentation/md/HEXAGONAL-FEATURE-DRIVEN-MIGRATION.md`
+  - `documentation/md/JUMENTIX-MONOREPO-EXECUTION-PLAN.md`
+  - `documentation/md/JUMENTIX-MIGRATION-INVENTORY-AND-ROLLBACK.md`
+- Evidence:
+  - boundary checks
+  - import cycle checks
+  - workspace checks
+
+## F. Quality, Security, and Compliance Gates
+
+- `011`, `014`, `020`, `044`, `063`, `065`, `074`
+- Spec resources:
+  - `documentation/md/TESTING-CI-AND-QUALITY.md`
+  - `documentation/md/SECURITY-RUNBOOK-PCI.md`
+  - `documentation/md/PCI-REMEDIATION-PLAN-AND-EVIDENCE.md`
+  - coverage/check scripts in `ci-cd/*`
+- Evidence:
+  - CI gate green
+  - coverage threshold proof
+  - security/compliance check results
+
+## G. Documentation and Governance Process
+
+- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `056`, `057`, `064`, `066`, `067`, `068`, `071`, `072`, `073`, `075`
+- Spec resources:
+  - `documentation/README.md`
+  - `documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`
+  - `documentation/md/PROJECT-MANAGEMENT.md`
+  - `.agents/README.md`
+  - `.agents/NFR-REGISTRY.md`
+- Evidence:
+  - docs index links updated
+  - requirements registry synchronized
+  - project/PR traceability present
+
+## H. Productization and Platform Expansion
+
+- `037`, `038`, `054`, `055` (both entries), `069`, `070`
+- Spec resources:
+  - `packages/cli-init/*`
+  - `apps/service-management/documentation/*`
+  - `documentation/md/SDK-COMPATIBILITY-BRIDGE.md`
+  - website docs and deployment flows
+- Evidence:
+  - package/app tests
+  - deployment script validation
+  - docs + governance sync
+
+## Governance Binding
+
+This ledger is mandatory in PR planning for medium/high-impact changes.  
+If impacted requirement IDs are not mapped before implementation, the change is non-compliant with Spec Development Driven.
+
+## Coverage Attestation (Current Baseline)
+
+As of `2026-07-25`, this ledger covers all unique requirement IDs currently registered in `.agents/requirements`:
+
+1. Unique IDs in requirements registry: `75`
+2. Unique IDs mapped in this ledger: `75`
+3. Missing IDs: `none`

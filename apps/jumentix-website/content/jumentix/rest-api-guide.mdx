@@ -1,0 +1,61 @@
+---
+title: "Creating REST API with Jumentix"
+description: "Guide for building REST APIs."
+---
+
+> Source: `../backend-template/documentation/guides/CREATING-REST-API-WITH-JUMENTIX.md`
+
+# Creating REST API with Jumentix
+
+This guide shows how to bootstrap and run a REST service using the backend template.
+
+## 1. Select Runtime Profile
+
+Set environment variables:
+
+- `AAA_HTTP_FRAMEWORK=express` (or any supported adapter)
+- `AAA_REALTIME_API=no`
+
+Then start:
+
+```bash
+pnpm run dev:http
+```
+
+## 2. Model Domain and Contracts
+
+1. Design entities and relationships in Service Management (Domain Designer).
+2. Generate or update OpenAPI definitions in `spec/1.0.0.yml`.
+3. Keep request/response contract objects aligned with controller inputs/outputs.
+
+## 3. Implement Domain Flow
+
+Use the project layering pattern:
+
+1. model/entity/value objects
+2. repository ports/adapters
+3. services/use cases
+4. controllers
+5. framework handlers
+
+## 4. Bind to HTTP Adapter
+
+Choose adapter by env (`AAA_HTTP_FRAMEWORK`) and use the REST startup loader.
+REST endpoints are exposed through framework-native handlers under module interfaces.
+
+## 5. Validate
+
+Run quality gates:
+
+```bash
+pnpm run lint
+pnpm run test:unit
+pnpm run oas:check-routes
+pnpm run test:integration:express
+```
+
+## References
+
+- [HTTP Adapters Index](../../../../documentation/md/adapters/http/README.md)
+- [OpenAPI Spec](../../../../spec/1.0.0.yml)
+- [Setup Runtime and API](../../../../documentation/md/SETUP-RUNTIME-AND-API.md)

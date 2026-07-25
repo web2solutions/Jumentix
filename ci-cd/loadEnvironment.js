@@ -3,10 +3,10 @@ const path = require('path');
 const NODE_ENV = process.env.NODE_ENV || 'dev';
 
 const envFilesByEnv = {
-  dev: ['src/config/.env.dev', 'src/config/.env.dev.example', 'src/config/.env.ci'],
-  ci: ['src/config/.env.ci', 'src/config/.env.dev.example'],
-  prod: ['src/config/.env.prod'],
-  staging: ['src/config/.env.staging'],
+  dev: ['apps/backend-template/src/config/.env.dev', 'apps/backend-template/src/config/.env.dev.example', 'apps/backend-template/src/config/.env.ci'],
+  ci: ['apps/backend-template/src/config/.env.ci', 'apps/backend-template/src/config/.env.dev.example'],
+  prod: ['apps/backend-template/src/config/.env.prod'],
+  staging: ['apps/backend-template/src/config/.env.staging'],
 };
 
 const candidateFiles = envFilesByEnv[NODE_ENV] || envFilesByEnv.dev;
