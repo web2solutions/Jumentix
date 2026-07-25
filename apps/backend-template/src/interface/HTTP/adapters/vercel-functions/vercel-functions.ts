@@ -17,6 +17,11 @@ import { MutexService } from '@src/infra/mutex/adapter/MutexService';
 import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
 import { composeUsersAuthServices } from '@src/modules/Users';
 import { compileAdapterRuntime } from '@jumentix/adapter-runtime-bootstrap';
+import {
+  escapeText,
+  isStaticDocsPath,
+  STATIC_DOCS_UNAVAILABLE_MESSAGE
+} from './vercelFunctionsSecurity';
 
 type RouteMatch = {
   matched: boolean;
@@ -59,19 +64,10 @@ class VercelFunctionsServer extends HTTPBaseServer<Record<string, never>> {
 
   private readonly routes: RegisteredRoute[] = [];
 
-  private static escapeText(value: string): string {
-    return value
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  }
-
   private static tryServeStaticDoc(pathname: string, res: VercelResponse): boolean {
-    if (!pathname.startsWith('/OASdoc') && !pathname.startsWith('/AsyncAPIdoc')) return false;
+    if (!isStaticDocsPath(pathname)) return false;
     res.status(501).json({
-      message: 'Static docs are not served by this serverless adapter. Use the primary REST API docs endpoint.'
+      message: STATIC_DOCS_UNAVAILABLE_MESSAGE
     });
     return true;
   }
@@ -165,7 +161,7 @@ class VercelFunctionsServer extends HTTPBaseServer<Record<string, never>> {
 
     if (result !== undefined && !res.writableEnded) {
       if (typeof result === 'string') {
-        res.status(200).json({ message: VercelFunctionsServer.escapeText(result) });
+        res.status(200).json({ message: escapeText(result) });
         return;
       }
       res.status(200).json(result);
