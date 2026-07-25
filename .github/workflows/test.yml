@@ -40,12 +40,13 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
+        cache: pnpm
     - run: pnpm install --no-frozen-lockfile
     # - run: apt install redis-tools
     # - run: ./wait-for-redis.sh localhost:6379
     - run: wget https://github.com/jwilder/dockerize/releases/download/v0.6.1/dockerize-linux-amd64-v0.6.1.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-v0.6.1.tar.gz && rm dockerize-linux-amd64-v0.6.1.tar.gz
     - run: dockerize -wait tcp://localhost:6379 -timeout 1m
-      - name: Run scope-aware monorepo CI
-        run: |
-          git fetch --unshallow origin main dev || git fetch origin main dev --depth=1000
-          npm run ci:monorepo
+    - name: Run scope-aware monorepo CI
+      run: |
+        git fetch --unshallow origin main dev || git fetch origin main dev --depth=1000
+        pnpm run ci:monorepo
