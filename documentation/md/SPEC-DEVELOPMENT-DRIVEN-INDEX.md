@@ -25,6 +25,7 @@ This documentation set defines how product intent, architecture constraints, con
 10. [Spec Delivery Gates and Evidence](./SPEC-DELIVERY-GATES-AND-EVIDENCE.md)
 11. [Spec Operating Model by Component](./SPEC-OPERATING-MODEL-BY-COMPONENT.md)
 12. [Spec Project Board Contract](./SPEC-PROJECT-BOARD-CONTRACT.md)
+13. [Spec Requirements Coverage Status](./SPEC-REQUIREMENTS-COVERAGE-STATUS.md)
 
 ## Mandatory Principle
 

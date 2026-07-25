@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- 2026-07-24 docs(spec): establish canonical Spec Development Driven knowledge system - web2solutions
 - 2026-07-24 chore(git): ignore local temp artifacts blocked by push protection - web2solutions
 - 2026-07-24 test(coverage): cover vercel security helper branches - web2solutions
 - 2026-07-24 chore(security): align snyk policy across workspace projects - web2solutions
