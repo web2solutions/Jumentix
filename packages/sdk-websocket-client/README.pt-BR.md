@@ -1,0 +1,38 @@
+<!--
+Arquivo gerado automaticamente a partir de: packages/sdk-websocket-client/README.md
+Idioma alvo: Português (Brasil)
+-->
+# @jumentix/sdk-websocket-client
+
+Cliente WebSocket SDK para a API em tempo real Socket.IO, conduzido pela especificação AsyncAPI WebSocket (`/spec/asyncapi/1.0.0.websocket.yml`).
+
+## O que faz
+
+- Carrega metadados do servidor websocket AsyncAPI.
+- Conecta-se através de Socket.IO (caminho `/ws`).
+- Envia envelope de solicitação via `api:request`.
+- Aguarda resposta de retorno de chamada e retorna o resultado digitado.
+
+## Uso rápido
+
+```ts
+import { WebSocketApiClient } from '@jumentix/sdk-websocket-client';
+
+const client = new WebSocketApiClient('ws://localhost:3001');
+client.connect();
+
+const response = await client.request({
+  operationId: 'createUser',
+  input: {
+    username: 'john',
+    password: 'StrongPass#123'
+  }
+});
+```
+
+## Construir
+
+```bash
+pnpm --filter @jumentix/sdk-websocket-client build
+```
+
