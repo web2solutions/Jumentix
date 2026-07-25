@@ -65,6 +65,7 @@ Jumentix eliminates this waste. Your team starts from a production-grade softwar
 - Backend services as functions
 - Modular SaaS monoliths ready for decomposition
 - Microservice ecosystems with shared contracts and governance
+- Commercial product websites with live GitHub-backed changelog visibility
 
 ## Launch Playbooks
 
