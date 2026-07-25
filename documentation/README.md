@@ -8,6 +8,22 @@
 - [Jumentix Project Governance](./md/JUMENTIX-PROJECT-GOVERNANCE.md)
 - [Testing, CI and Quality](./md/TESTING-CI-AND-QUALITY.md)
 
+## Spec Development Driven
+
+- [Spec Development Driven - Index](./md/SPEC-DEVELOPMENT-DRIVEN-INDEX.md)
+- [Spec Knowledge Source Map](./md/SPEC-KNOWLEDGE-SOURCE-MAP.md)
+- [Spec Lifecycle and Workflow](./md/SPEC-LIFECYCLE-AND-WORKFLOW.md)
+- [Spec Architecture and Coding Standards](./md/SPEC-ARCHITECTURE-CODING-STANDARDS.md)
+- [Spec Governance and Traceability](./md/SPEC-GOVERNANCE-AND-TRACEABILITY.md)
+- [Spec Templates and Checklists](./md/SPEC-TEMPLATES-AND-CHECKLISTS.md)
+- [Spec Canonical Coverage Matrix](./md/SPEC-CANONICAL-COVERAGE-MATRIX.md)
+- [Spec Canonical Knowledge Baseline](./md/SPEC-CANONICAL-KNOWLEDGE-BASELINE.md)
+- [Spec Features and Workflows Catalog](./md/SPEC-FEATURES-WORKFLOWS-CATALOG.md)
+- [Spec Requirements Traceability Ledger](./md/SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md)
+- [Spec Delivery Gates and Evidence](./md/SPEC-DELIVERY-GATES-AND-EVIDENCE.md)
+- [Spec Operating Model by Component](./md/SPEC-OPERATING-MODEL-BY-COMPONENT.md)
+- [Spec Project Board Contract](./md/SPEC-PROJECT-BOARD-CONTRACT.md)
+
 ## Component Hubs
 
 - [Backend Template Documentation](../apps/backend-template/documentation/README.md)

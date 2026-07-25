@@ -75,6 +75,37 @@ GitHub tracking:
 
 ## Done
 
+- [x] Expand Spec Development Driven to canonical full-knowledge coverage
+  - Added canonical spec documentation set:
+    - `documentation/md/SPEC-CANONICAL-KNOWLEDGE-BASELINE.md`
+    - `documentation/md/SPEC-FEATURES-WORKFLOWS-CATALOG.md`
+    - `documentation/md/SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`
+    - `documentation/md/SPEC-DELIVERY-GATES-AND-EVIDENCE.md`
+    - `documentation/md/SPEC-OPERATING-MODEL-BY-COMPONENT.md`
+  - Expanded Spec-Driven indexes:
+    - `documentation/md/SPEC-DEVELOPMENT-DRIVEN-INDEX.md`
+    - `documentation/README.md`
+    - `documentation/md/SPEC-CANONICAL-COVERAGE-MATRIX.md`
+  - Synced governance requirements:
+    - `.agents/requirements/072-spec-development-driven-canonical-knowledge-coverage.md`
+    - `.agents/README.md`
+    - `.agents/NFR-REGISTRY.md`
+    - `.agents/spec-development-driven-agent.md`
+
+- [x] Establish Spec Development Driven documentation baseline
+  - Added dedicated Spec-Driven docs set:
+    - `documentation/md/SPEC-DEVELOPMENT-DRIVEN-INDEX.md`
+    - `documentation/md/SPEC-KNOWLEDGE-SOURCE-MAP.md`
+    - `documentation/md/SPEC-LIFECYCLE-AND-WORKFLOW.md`
+    - `documentation/md/SPEC-ARCHITECTURE-CODING-STANDARDS.md`
+    - `documentation/md/SPEC-GOVERNANCE-AND-TRACEABILITY.md`
+    - `documentation/md/SPEC-TEMPLATES-AND-CHECKLISTS.md`
+  - Updated technical docs index: `documentation/README.md`.
+  - Added requirement and agent support:
+    - `.agents/requirements/071-spec-development-driven-governance.md`
+    - `.agents/spec-development-driven-agent.md`
+    - `.agents/README.md` and `.agents/NFR-REGISTRY.md` sync.
+
 - [x] Fix the build
   - `fastify@5.0.0` plus the previous TypeScript setup broke `npm run build:dev`.
   - Resolved by restoring a compatible TypeScript build path.
