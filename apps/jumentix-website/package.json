@@ -12,12 +12,14 @@
     "start": "next start -p 3010",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
+    "test:prepublish": "node ./scripts/prepublish-site-checks.mjs",
     "test": "pnpm run typecheck",
-    "vercel:link": "vercel link --scope web2solutions --project jumentix-website --yes",
-    "vercel:pull:preview": "vercel pull --environment=preview --scope web2solutions --yes",
-    "vercel:pull:prod": "vercel pull --environment=production --scope web2solutions --yes",
-    "deploy:vercel": "vercel --scope web2solutions --prod",
-    "deploy:vercel:preview": "vercel --scope web2solutions"
+    "vercel:link": "vercel link --project jumentix-website --yes",
+    "vercel:pull:preview": "vercel pull --environment=preview --yes",
+    "vercel:pull:prod": "vercel pull --environment=production --yes",
+    "deploy:vercel": "vercel --prod",
+    "deploy:vercel:safe": "pnpm run test:prepublish && pnpm run deploy:vercel",
+    "deploy:vercel:preview": "vercel"
   },
   "dependencies": {
     "@gfazioli/mantine-border-animate": "^2.0.7",

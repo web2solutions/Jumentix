@@ -65,6 +65,7 @@ Jumentix eliminates this waste. Your team starts from a production-grade softwar
 - Backend services as functions
 - Modular SaaS monoliths ready for decomposition
 - Microservice ecosystems with shared contracts and governance
+- Commercial product websites with live GitHub-backed changelog visibility
 
 ## Launch Playbooks
 
@@ -89,7 +90,8 @@ Jumentix is not just a template repository. It is an extensible software factory
 
 Technical development documentation is intentionally separated from this commercial README.
 
-- [Technical Documentation Index](documentation/README.md)
+- [Documentation Hub (EN)](documentation/README.md)
+- [Hub de Documentação (PT-BR)](documentation/README.pt-BR.md)
 
 ## Project Governance
 

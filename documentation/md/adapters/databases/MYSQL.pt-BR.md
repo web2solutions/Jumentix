@@ -1,0 +1,32 @@
+<!--
+Arquivo gerado automaticamente a partir de: documentation/md/adapters/databases/MYSQL.md
+Idioma alvo: Português (Brasil)
+-->
+# Adaptador MySQL
+
+## Tecnologia
+
+Sequelize + perfil mysql2.
+
+## Crie serviços com MySQL
+
+1. Inicie o contêiner:
+
+```bash
+pnpm run docker:up:mysql
+```
+
+2. Definir ambiente:
+
+```bash
+AAA_DATABASE_DRIVER=MySQL
+AAA_DB_HOST=127.0.0.1
+AAA_DB_PORT=3306
+AAA_DB_NAME=aaa
+AAA_DB_USERNAME=root
+AAA_DB_PASSWORD=root
+```
+
+3. Inicie seu adaptador API.
+
+

@@ -1,0 +1,138 @@
+<!--
+Arquivo gerado automaticamente a partir de: documentation/md/ERROR-CONTRACTS-AND-RESPONSES.md
+Idioma alvo: Português (Brasil)
+-->
+# Contratos de erro e respostas de erro HTTP
+
+Este documento define como os erros são representados no código e serializados por meio de adaptadores HTTP.
+
+## 1) Contrato de erro básico
+
+Todos os erros de domínio/infra estendem `BaseError` (`apps/backend-template/src/infra/exceptions/BaseError.ts`) e expõem:
+
+```ts
+{
+  name: string;
+  code: string; // EErrorStringCodes
+  message: string;
+  correlationId: string;
+  cause?: Error;
+  metadata?: unknown;
+}
+```
+
+## 2) Códigos de erro canônicos
+
+Definido em `apps/backend-template/src/infra/exceptions/error.codes.ts`:
+
+| Código de sequência | Status HTTP |
+|---|---|
+| `GENÉRICO.INVALID_INPUT` | `400` |
+| `GENÉRICO.NOT_FOUND` | `404` |
+| `GENÉRICO.NÃO AUTORIZADO` | `401` |
+| `GENÉRICO.PROIBIDO` | `403` |
+| `GENÉRICO.CONFLITO` | `409` |
+| `GENERIC.RESOURCE_LOCKED` | `423` |
+| `GENERIC.NOT_IMPLEMENTED` | `501` |
+| `GENERIC.INTERNAL_SERVER_ERROR` | `500` |
+
+O mapeamento de status é resolvido por `toHttpStatus(...)` em `apps/backend-template/src/shared/utils.ts`.
+
+## 3) Classe de erro para mapeamento de código
+
+| Classe de erro | Nome | Código |
+|---|---|---|
+| `Erro de validação` | `validação_erro` | `GENÉRICO.INVALID_INPUT` |
+| `DomainValidationError` | `domain_validation_error` | `GENÉRICO.INVALID_INPUT` |
+| `ComposeEventError` | `event_invalid_message` | `GENÉRICO.INVALID_INPUT` |
+| `DatabasePagingError` | `database_paging_error` | `GENÉRICO.INVALID_INPUT` |
+| `UnauthorizedError` | `não autorizado` | `GENÉRICO.NÃO AUTORIZADO` |
+| `ForbiddenError` | `proibido` | `GENÉRICO.PROIBIDO` |
+| `NotFoundError` | `não_encontrado` | `GENÉRICO.NOT_FOUND` |
+| `DomainNotFoundError` | `domínio_não_encontrado` | `GENÉRICO.NOT_FOUND` |
+| `DataBaseNotFoundError` | `banco_de_dados_não_encontrado` | `GENÉRICO.NOT_FOUND` |
+| `ConflictError` | `banco_de_dados_duplicado` | `GENÉRICO.CONFLITO` |
+| `ResourceLockedError` | `recurso_bloqueado` | `GENERIC.RESOURCE_LOCKED` |
+| `NãoImplementado` | `infraestrutura_não_implementada` | `GENERIC.NOT_IMPLEMENTED` |
+| `InternalServerError` | `internal_server_error` | `GENERIC.INTERNAL_SERVER_ERROR` |
+
+## 4) Formato de resposta de erro HTTP
+
+Os adaptadores atuais são serializados no mesmo formato de carga útil:
+
+```json
+{
+  "message": "Human readable message",
+  "error": {
+    "name": "error_name",
+    "code": "GENERIC.SOME_CODE",
+    "message": "Original message",
+    "correlationId": "..."
+  }
+}
+```
+
+Fontes:
+- Expresso/Fastify/Restify/Hyper-Express: `sendErrorResponse(...)`
+- Adaptadores Lambda: `apps/backend-template/src/interface/HTTP/adapters/aws/lambda/responses/sendErrorResponse.ts`
+
+## 5) Contrato de erro de solicitação/resposta do MessageMediator
+
+Para chamadas interserviços baseadas em contrato:
+
+```ts
+interface IMessageResponse<TResult = any> {
+  contract: string;
+  result?: TResult;
+  error?: Error | Record<string, any>;
+}
+```
+
+Os erros são transportados no mesmo envelope de resposta (não é necessário lançar no limite de transporte).
+
+## 6) Notas de Consistência Atual
+
+1. O mapeamento de status de erro é centralizado (`toHttpStatus`).
+2. A formatação legível é centralizada (`formatErrorMessage`).
+3. O ID de correlação é capturado em `BaseError` do contexto da solicitação.
+4. Novos adaptadores devem reutilizar a semântica `sendErrorResponse` existente para preservar a consistência do contrato de resposta.
+
+## 7) Regras de extensão
+
+Ao criar um novo erro personalizado:
+
+1. Estenda `BaseError`.
+2. Atribua um `nome` e um `código` estáveis.
+3. Certifique-se de que o `código` esteja coberto em `EErrorStringCodes`/`EErrorNumberCodes`.
+4. Adicione a ramificação `formatErrorMessage` se for necessário um texto legível personalizado.
+5. Mantenha os envelopes de erro HTTP e de mensagem compatíveis com versões anteriores.
+
+## 8) Envelopes de erro em tempo real
+
+WebSocket (`ApiResponse`):
+
+```json
+{
+  "ok": false,
+  "operationId": "createOrganization",
+  "error": {
+    "name": "validation_error",
+    "message": "Invalid input data"
+  }
+}
+```
+
+gRPC (`AsyncApiResponse`):
+
+```json
+{
+  "ok": false,
+  "operationId": "createOrganization",
+  "errorName": "validation_error",
+  "errorMessage": "Invalid input data"
+}
+```
+
+Veja referências contratuais específicas de transporte:
+- `documentation/md/contracts/WEBSOCKET-REALTIME-CONTRACTS.md`
+- `documentação/md/contratos/GRPC-REALTIME-CONTRACTS.md`

@@ -91,6 +91,7 @@ Use these files as living constraints for future maintenance and feature develop
 - [073-engineering-practices-git-lint-coding-governance](requirements/073-engineering-practices-git-lint-coding-governance.md)
 - [074-security-compliance-practices-in-specs](requirements/074-security-compliance-practices-in-specs.md)
 - [075-jumentix-composition-clarity-in-specs](requirements/075-jumentix-composition-clarity-in-specs.md)
+- [076-task-documentation-and-bilingual-governance](requirements/076-task-documentation-and-bilingual-governance.md)
 - [NFR Registry](NFR-REGISTRY.md)
 - [Spec Development Driven Agent](spec-development-driven-agent.md)
 - [Data Entity Documentation Agent](data-entity-documentation-agent.md)
