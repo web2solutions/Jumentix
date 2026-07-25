@@ -23,6 +23,7 @@
 - [Spec Delivery Gates and Evidence](./md/SPEC-DELIVERY-GATES-AND-EVIDENCE.md)
 - [Spec Operating Model by Component](./md/SPEC-OPERATING-MODEL-BY-COMPONENT.md)
 - [Spec Project Board Contract](./md/SPEC-PROJECT-BOARD-CONTRACT.md)
+- [Spec Requirements Coverage Status](./md/SPEC-REQUIREMENTS-COVERAGE-STATUS.md)
 
 ## Component Hubs
 

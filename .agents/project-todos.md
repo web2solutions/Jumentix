@@ -75,6 +75,18 @@ GitHub tracking:
 
 ## Done
 
+- [x] Enforce 100% spec coverage for implemented functional and non-functional requirements
+  - Completed requirement coverage attestation:
+    - `documentation/md/SPEC-REQUIREMENTS-COVERAGE-STATUS.md`
+  - Updated ledger to include all requirement IDs:
+    - added missing IDs `021` and `072`
+    - `documentation/md/SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`
+  - Synced Spec-Driven indexes:
+    - `documentation/md/SPEC-DEVELOPMENT-DRIVEN-INDEX.md`
+    - `documentation/README.md`
+  - Strengthened governance requirement:
+    - `.agents/requirements/072-spec-development-driven-canonical-knowledge-coverage.md`
+
 - [x] Expand Spec Development Driven to canonical full-knowledge coverage
   - Added canonical spec documentation set:
     - `documentation/md/SPEC-CANONICAL-KNOWLEDGE-BASELINE.md`

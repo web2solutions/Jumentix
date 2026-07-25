@@ -40,7 +40,7 @@ For any change, identify impacted requirement IDs and ensure:
 
 ## C. Contract and Interface Conformance
 
-- `008`, `010`, `026`, `027`, `028`, `036`, `047`
+- `008`, `010`, `021`, `026`, `027`, `028`, `036`, `047`
 - Spec resources:
   - `spec/1.0.0.yml`
   - `spec/asyncapi/1.0.0.websocket.yml`
@@ -91,7 +91,7 @@ For any change, identify impacted requirement IDs and ensure:
 
 ## G. Documentation and Governance Process
 
-- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `056`, `057`, `064`, `066`, `067`, `068`, `071`
+- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `056`, `057`, `064`, `066`, `067`, `068`, `071`, `072`
 - Spec resources:
   - `documentation/README.md`
   - `documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`
@@ -120,3 +120,11 @@ For any change, identify impacted requirement IDs and ensure:
 
 This ledger is mandatory in PR planning for medium/high-impact changes.  
 If impacted requirement IDs are not mapped before implementation, the change is non-compliant with Spec Development Driven.
+
+## Coverage Attestation (Current Baseline)
+
+As of `2026-07-25`, this ledger covers all unique requirement IDs currently registered in `.agents/requirements`:
+
+1. Unique IDs in requirements registry: `72`
+2. Unique IDs mapped in this ledger: `72`
+3. Missing IDs: `none`

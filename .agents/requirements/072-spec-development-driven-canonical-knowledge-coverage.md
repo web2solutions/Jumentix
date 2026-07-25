@@ -4,6 +4,11 @@
 
 Jumentix Spec Development Driven must cover all known project information sources as canonical, versioned, and traceable spec content.
 
+Coverage target:
+
+1. 100% of implemented functional requirements
+2. 100% of implemented non-functional requirements
+
 ## Scope
 
 This requirement applies to:
@@ -38,3 +43,5 @@ Maintain and keep synchronized:
 1. Updated spec resources and index links.
 2. Updated `.agents` index and NFR registry.
 3. CI/quality/security evidence proving conformance for changed scope.
+4. Coverage attestation document:
+   - `documentation/md/SPEC-REQUIREMENTS-COVERAGE-STATUS.md`
