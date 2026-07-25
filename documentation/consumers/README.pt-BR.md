@@ -10,6 +10,7 @@ Ela foca em capacidades, caminhos de integração e em como lançar software com
 - [Arquitetura para Consumidores](./ARCHITECTURE.pt-BR.md)
 - [Capacidades de Runtime](./RUNTIME-CAPABILITIES.pt-BR.md)
 - [Segurança e Compliance](./SECURITY-AND-COMPLIANCE.pt-BR.md)
+- [Referência de Scripts do Package](./PACKAGE-SCRIPTS-REFERENCE.pt-BR.md)
 
 ## Guias de Construção
 
