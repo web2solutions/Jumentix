@@ -75,6 +75,12 @@ GitHub tracking:
 
 ## Done
 
+- [x] Register governance requirement for mandatory task traceability + bilingual documentation/site parity
+  - Added requirement: `.agents/requirements/076-task-documentation-and-bilingual-governance.md`
+  - Updated requirement index: `.agents/README.md`
+  - Updated NFR registry: `.agents/NFR-REGISTRY.md`
+  - Updated governance doc: `documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`
+
 - [x] Update project documentation for website changelog feature and deployment workflow
   - Added changelog feature documentation:
     - `apps/jumentix-website/documentation/CHANGELOG-PAGE.md`

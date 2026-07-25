@@ -4,7 +4,7 @@ This project uses GitHub Project **Jumentix** (`https://github.com/users/web2sol
 
 ## Single Source of Truth Rules
 
-1. Every bug, feature, refactor, and technical task must exist as a GitHub Issue.
+1. Every bug, feature, refactor, and technical task executed by humans or AI must exist as a GitHub Issue.
 2. Every tracked issue must be added to the `Jumentix` project.
 3. Project fields are mandatory for active items:
    - `Status`
@@ -15,6 +15,7 @@ This project uses GitHub Project **Jumentix** (`https://github.com/users/web2sol
    - `End date`
 4. No work starts without a linked issue and project item.
 5. Task progress updates must happen in the project item status, not only in local notes.
+6. All executed tasks must keep governance metadata updated (status, priority, estimates, cycle/iteration, start/end dates, labels, assignee, PR/commit links).
 
 ## PR Governance
 
@@ -26,6 +27,13 @@ Each PR must include:
 - Coverage and quality-gate evidence
 
 If a PR is not linked to project work items, it is out of process.
+
+## Documentation Governance
+
+1. Every executed task must update software docs, product docs, and spec docs when affected.
+2. Documentation must be maintained in sync with implementation and governance changes.
+3. Documentation must provide English and Portuguese versions.
+4. Jumentix website content and navigation must provide English and Portuguese versions.
 
 ### Priority-based PR grouping (mandatory)
 
