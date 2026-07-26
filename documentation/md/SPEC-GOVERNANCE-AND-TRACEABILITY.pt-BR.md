@@ -24,14 +24,15 @@ Registros de governança obrigatórios:
 
 Cada item de entrega deve expor:
 
-1. `Épico focado -> tarefa filha`
-2. `Épico focado -> agente delegado`
-3. `Issue -> item do projeto`
-4. `Issue -> arquivos de especificações alterados`
-5. `PR -> issue`
-6. `PR -> evidência (testes/cobertura/verificações)`
-7. `PR -> IDs de requisitos` (quando NFR ou comportamento de governança são afetados)
-8. `Tarefa -> branch dedicada -> PR dedicado`
+1. `Milestone -> épico focado`
+2. `Épico focado -> tarefa filha`
+3. `Épico focado -> agente delegado`
+4. `Issue -> item do projeto`
+5. `Issue -> arquivos de especificações alterados`
+6. `PR -> issue`
+7. `PR -> evidência (testes/cobertura/verificações)`
+8. `PR -> IDs de requisitos` (quando NFR ou comportamento de governança são afetados)
+9. `Tarefa -> branch dedicada -> PR dedicado`
 
 ## Campos obrigatórios do projeto
 
@@ -42,26 +43,31 @@ Cada item de entrega deve expor:
 - `Data de início`
 - `Data de término`
 - `Parent issue`
+- `Milestone`
 - um rótulo de natureza principal
 
 ## Planejamento e delegação orientados por épico
 
-1. Toda tarefa executável possui exatamente um épico pai focado.
-2. Cada tarefa possui uma natureza principal e é agrupada com tarefas da mesma natureza dentro
+1. Todo épico ativo possui exatamente um milestone aberto com alvo e data limite de entrega.
+2. Toda tarefa executável possui exatamente um épico pai focado e herda seu milestone.
+3. As datas finais do épico e das tarefas permanecem dentro da data limite do milestone.
+4. Cada tarefa possui uma natureza principal e é agrupada com tarefas da mesma natureza dentro
    do épico.
-3. Trabalho de suporte com natureza diferente é representado por tarefa filha separada sob o
+5. Trabalho de suporte com natureza diferente é representado por tarefa filha separada sob o
    mesmo épico coeso.
-4. A delegação de agentes é registrada no nível do épico antes da atribuição de tarefas filhas.
-5. Somente agentes delegados a um épico podem executar suas tarefas.
-6. Cada tarefa possui um agente responsável e agentes paralelos atuam em escopos não sobrepostos.
-7. O Agent Registry canônico registra `active_epic` e `assigned_task`.
+6. A validade do milestone é verificada antes da delegação de agentes no nível do épico.
+7. Somente agentes delegados a um épico podem executar suas tarefas.
+8. Cada tarefa possui um agente responsável e agentes paralelos atuam em escopos não sobrepostos.
+9. O Agent Registry canônico registra `active_epic` e `assigned_task`.
+10. Um milestone só fecha depois que seus épicos forem concluídos ou o trabalho restante for
+    formalmente transferido.
 
 ## Requisitos de governança de relações públicas
 
 Cada PR deve conter:
 
 1. Resumo do escopo vinculado à intenção do problema
-2. Vínculo com o épico pai focado e o item do projeto
+2. Vínculo com o milestone, o épico pai focado e o item do projeto
 3. Lista de arquivos de especificações alterada
 4. Critérios de aceitação e evidências
 5. Cobertura e resultados de entrada
@@ -132,12 +138,14 @@ Antes de qualquer execução de tarefa:
 6. As atualizações canônicas do registro devem ser feitas primeiro no repositório externo e depois espelhadas localmente sob o Requisito `089`.
 7. A delegação no nível do épico e a atribuição da tarefa filha devem ser registradas sob o
    Requisito `090`.
+8. O milestone do épico e da tarefa deve ser validado antes do planejamento ou execução sob o
+   Requisito `090`.
 
 ## Expectativas de evidências de auditoria
 
 Conjunto mínimo de evidências:
 
-1. Épico focado + issue filha + item do projeto vinculados
+1. Milestone + épico focado + issue filha + item do projeto vinculados
 2. Delegação do agente no nível do épico e atribuição no nível da tarefa
 3. Arquivos de especificações e documentos alterados
 4. Saída CI verde para gates obrigatórios
