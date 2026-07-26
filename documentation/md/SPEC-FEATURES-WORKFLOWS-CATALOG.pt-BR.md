@@ -169,6 +169,8 @@ Verificações obrigatórias:
 3. Verificação no navegador de layout, navegação, links e estados responsivos
 4. Smoke test do deploy de produção na Vercel
 5. Cobertura Storybook para componentes reutilizáveis do site
+6. Build estático do Storybook e validação smoke do manifesto
+7. Validação de acessibilidade, temas, viewports e redução de movimento do design system
 
 ## Definição de fluxo de trabalho (especificações primeiro)
 

@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- 2026-07-26 [Bug] Restore reliable Jumentix documentation routes and links (#177) - Eduardo A.
+- 2026-07-26 fix(website): restore docs layout and routes - web2solutions
 - 2026-07-26 [Docs] Audit OSS reference UX and define website IA (#175) - Eduardo A.
 - 2026-07-26 docs(website): audit OSS reference UX and IA - web2solutions
 - 2026-07-26 [Governance] Require milestones for focused epics (#166) - Eduardo A.

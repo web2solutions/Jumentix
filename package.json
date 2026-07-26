@@ -52,6 +52,9 @@
     "website:dev": "pnpm --filter @jumentix/website dev",
     "website:build": "pnpm --filter @jumentix/website build",
     "website:start": "pnpm --filter @jumentix/website start",
+    "website:storybook": "pnpm --filter @jumentix/website storybook",
+    "website:storybook:build": "pnpm --filter @jumentix/website storybook:build",
+    "website:storybook:smoke": "pnpm --filter @jumentix/website storybook:smoke",
     "website:test:prepublish": "pnpm --filter @jumentix/website test:prepublish",
     "website:vercel:link": "pnpm dlx vercel link --cwd apps/jumentix-website --project jumentix-website --yes",
     "website:vercel:pull:preview": "pnpm dlx vercel pull --cwd apps/jumentix-website --environment=preview --yes",
@@ -308,6 +311,11 @@
   },
   "resolutions": {
     "serverless": "^4.1.12"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "nextra-theme-docs@4.6.1": "patches/nextra-theme-docs@4.6.1.patch"
+    }
   },
   "config": {
     "commitizen": {

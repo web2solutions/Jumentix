@@ -165,6 +165,8 @@ Mandatory checks:
 3. Browser verification of layout, navigation, links, and responsive states
 4. Vercel production smoke validation
 5. Storybook coverage for reusable website components
+6. Storybook static build and manifest smoke validation
+7. Design-system accessibility, theme, viewport, and reduced-motion validation
 
 ## Workflow Definition (Spec-First)
 
