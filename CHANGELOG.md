@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- 2026-07-26 [Governance] Require milestones for focused epics (#166) - Eduardo A.
+- 2026-07-26 chore(governance): require milestones for focused epics - web2solutions
 - 2026-07-26 [Governance] Require epic-focused task delegation (#164) - Eduardo A.
 - 2026-07-26 chore(governance): require epic-focused task delegation - web2solutions
 - 2026-07-26 [Fix][CI] Resolve remaining agent registry lint style (#160) - Eduardo A.

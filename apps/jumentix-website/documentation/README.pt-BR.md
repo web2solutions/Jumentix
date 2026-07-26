@@ -13,6 +13,7 @@ Contrato de público:
 
 ## Índice
 
+- [Auditoria de UX do AdonisJS e arquitetura de informação do Jumentix](./research/ADONISJS-UX-AUDIT.pt-BR.md)
 - [IA do site e plano de conversão](./WEBSITE-IA-AND-CONVERSION-PLAN.pt-BR.md)
 - [Pipeline de conteúdo markdown](./CONTENT-PIPELINE.pt-BR.md)
 - [Página de changelog](./CHANGELOG-PAGE.pt-BR.md)

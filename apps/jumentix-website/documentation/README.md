@@ -9,6 +9,7 @@ Audience contract:
 
 ## Index
 
+- [AdonisJS UX Reference Audit and Jumentix IA](./research/ADONISJS-UX-AUDIT.md)
 - [Website IA and Conversion Plan](./WEBSITE-IA-AND-CONVERSION-PLAN.md)
 - [Markdown Content Pipeline](./CONTENT-PIPELINE.md)
 - [Changelog Page](./CHANGELOG-PAGE.md)
