@@ -14,6 +14,7 @@ describe('run-monorepo-ci', () => {
 
     expect(plan).toStrictEqual([
       ['npm', ['run', 'lint']],
+      ['git', ['fetch', '--tags', '--force', 'origin']],
       ['npm', ['run', 'changelog:check']]
     ]);
   });

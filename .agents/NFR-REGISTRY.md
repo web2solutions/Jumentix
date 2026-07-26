@@ -55,6 +55,8 @@ This file consolidates non-functional requirements already requested and stored 
 - `081` Agent playbook must teach registration, branch sync checks, governance execution, and closure/audit workflow.
 - `082` PR descriptions must use real breaklines/markdown formatting; literal `\n` tokens are prohibited.
 - `083` Feature and bug branches must be deleted (local + remote) after merge into `dev`, unless explicitly justified.
+- `084` `dev` is the single source of truth for development; new branches must start from `dev` and PRs from implementation branches must target `dev`.
+- `085` PR descriptions are mandatory and must follow the repository PR template, with required sections completed before approval.
 
 ## Rule of Use
 

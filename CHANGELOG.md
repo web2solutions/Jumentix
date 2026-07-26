@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- 2026-07-25 chore(changelog): sync generated changelog for PR #145 - web2solutions
 - 2026-07-25 chore(merge): sync main into branch and resolve governance conflicts - web2solutions
 - 2026-07-25 docs(governance): require cleanup of feature/bug branches after dev merge - web2solutions
 - 2026-07-25 docs(governance): enforce main branch protection and agent machine identity (#142) - Eduardo A.
