@@ -51,6 +51,7 @@ Cada PR deve conter:
 5. Notas de risco/reversão quando necessário
 6. Nome da branch exclusiva da tarefa e título do PR com prefixo de natureza correspondente
 7. Evidência das branches de origem e destino
+8. Formatação markdown limpa com quebra de linhas reais; não usar tokens literais `\n` no corpo do PR.
 
 Política de isolamento e nomenclatura:
 
@@ -109,6 +110,8 @@ Antes de qualquer execução de tarefa:
 1. O agente atuante deve estar registrado em `.agents/AGENT-REGISTRY.md`.
 2. O planejamento deve atribuir tarefas apenas para agentes com status `available`.
 3. O agente deve checar os refs mais recentes de `main` e `dev` e atualizar os campos de verificação no registro.
+4. As entradas do registro devem incluir identidade da máquina (`machine_id`, `machine_name`, `machine_os`) e identidade de runtime (`agent_runtime`, `agent_version`) para permitir múltiplos agentes no mesmo host com rastreabilidade completa.
+5. Os agentes devem seguir o playbook operacional (Requisito `081`) cobrindo registro, sincronização de branches, execução governada e evidências de fechamento.
 
 ## Expectativas de evidências de auditoria
 

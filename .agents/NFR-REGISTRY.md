@@ -50,7 +50,14 @@ This file consolidates non-functional requirements already requested and stored 
 - `076` Mandatory task traceability for AI/humans + documentation sync + EN/PT documentation and website parity.
 - `077` Multi-agent platform support (Codex, Claude Code, Grok) with aligned governance and traceability rules.
 - `078` Agent Registry system with mandatory pre-task registration, planning assignment by availability, and required `main`/`dev` pre-work branch checks.
-- `079` One task per branch and PR, nature-prefixed naming, `dev`-first promotion to `main`, and mandatory false-green-proof full test matrices for commits, pushes, and PRs.
+- `079` Main branch protection and mandatory feature/fix/chore branching flow; local direct changes on `main` are prohibited.
+- `080` Agent Registry must include machine identity and agent runtime version metadata, allowing multiple agents per host machine.
+- `081` Agent playbook must teach registration, branch sync checks, governance execution, and closure/audit workflow.
+- `082` PR descriptions must use real breaklines/markdown formatting; literal `\n` tokens are prohibited.
+- `083` Feature and bug branches must be deleted (local + remote) after merge into `dev`, unless explicitly justified.
+- `084` `dev` is the single source of truth for development; new branches must start from `dev` and PRs from implementation branches must target `dev`.
+- `085` PR descriptions are mandatory and must follow the repository PR template, with required sections completed before approval.
+- `086` One task per branch and PR, nature-prefixed naming, `dev`-first promotion to `main`, and mandatory false-green-proof full test matrices for commits, pushes, and PRs.
 
 ## Rule of Use
 

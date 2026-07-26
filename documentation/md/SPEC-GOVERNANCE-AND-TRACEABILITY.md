@@ -47,6 +47,7 @@ Each PR must contain:
 5. Risk/rollback notes when needed
 6. Task-owned branch name and matching nature-prefixed PR title
 7. Source and target branch evidence
+8. Clean markdown formatting with real breaklines; do not use literal `\n` tokens in PR body text.
 
 Task isolation and naming policy:
 
@@ -105,6 +106,8 @@ Before any task execution:
 1. Acting agent must be registered in `.agents/AGENT-REGISTRY.md`.
 2. Planning must assign tasks to agents marked `available`.
 3. Agent must check latest `main` and `dev` branch refs and update the registry check fields.
+4. Agent registry entries must include machine identity (`machine_id`, `machine_name`, `machine_os`) and runtime identity (`agent_runtime`, `agent_version`) so multiple agents can run on the same host with full traceability.
+5. Agents must follow the registration and operating playbook (Requirement `081`) covering registration, branch-sync, governed execution, and closure evidence.
 
 ## Audit Evidence Expectations
 
