@@ -87,6 +87,12 @@ If a PR is not linked to project work items, it is out of process.
 2. Documentation must be maintained in sync with implementation and governance changes.
 3. Documentation must provide English and Portuguese versions.
 4. Jumentix website content and navigation must provide English and Portuguese versions.
+5. In Linear, an epic is a Project and an executable task is an Issue.
+6. Every epic Project must contain a dedicated documentation Issue whose exclusive accountable
+   outcome is synchronizing all affected documentation.
+7. An epic Project must not be set to `Completed` until its dedicated documentation Issue is
+   completed and links its PR, commits, changed documentation, and validation evidence.
+8. A missing, cancelled, unowned, or incomplete documentation Issue blocks epic completion.
 
 ### Priority-based PR grouping (mandatory)
 
@@ -111,7 +117,8 @@ Mixing `P0`, `P1`, and `P2` work in the same PR is not allowed.
 8. Implement with a dedicated PR targeting `dev` and linked to the milestone, epic, issue, and
    project.
 9. Promote `dev` to `main` only through a release-promotion PR after the complete matrix passes.
-10. Move project status (`Backlog` -> `Ready` -> `In progress` -> `In review` -> `Done`).
+10. Verify the dedicated documentation Issue and its evidence are complete.
+11. Move project status (`Backlog` -> `Ready` -> `In progress` -> `In review` -> `Done`).
 
 ## Cycle and Estimation Policy
 

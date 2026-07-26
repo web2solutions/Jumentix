@@ -16,6 +16,8 @@ Primary Codex runtime instructions for this repository:
     established at epic level before child-task assignment under requirement `090`.
 12. Confirm the epic and its child task share one open milestone whose due date covers the work
     before planning or execution.
+13. Treat an epic as a Linear Project and never set it to `Completed` until its dedicated
+    documentation Issue is completed under requirement `094`.
 
 Canonical governance/spec references:
 

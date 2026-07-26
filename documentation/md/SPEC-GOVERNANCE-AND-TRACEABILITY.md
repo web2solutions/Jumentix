@@ -29,6 +29,16 @@ Every delivery item must expose:
 7. `PR -> Evidence (tests/coverage/checks)`
 8. `PR -> Requirement IDs` (when NFR or governance behavior is touched)
 9. `Task -> dedicated branch -> dedicated PR`
+10. `Linear epic Project -> dedicated documentation Issue -> PR/commit/documentation evidence`
+
+## Epic Documentation Completion Gate
+
+1. In Linear, an epic is a Project and its executable tasks are Issues.
+2. Every epic Project must contain a dedicated documentation Issue.
+3. The Project must not be set to `Completed` before that Issue is completed.
+4. Completion evidence must link the documentation Issue, its task-owned PR and commits, the
+   changed documentation inventory, bilingual parity when applicable, and integrity validation.
+5. Missing, cancelled, unowned, or incomplete documentation work blocks epic completion.
 
 ## Required Project Fields
 
@@ -136,6 +146,8 @@ Before any task execution:
 7. Epic-level delegation and child-task assignment must be recorded under Requirement `090`.
 8. The epic and task milestone must be validated before planning or execution under Requirement
    `090`.
+9. Agents must verify the dedicated documentation Issue before completing a Linear epic Project
+   under Requirement `094`.
 
 ## Audit Evidence Expectations
 
