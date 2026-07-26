@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- 2026-07-26 [Fix][CI] Restore release lint compliance (#158) - Eduardo A.
+- 2026-07-26 fix(ci): restore release lint compliance - web2solutions
 - 2026-07-26 [Feature] Externalize agent registry canonical source (#144) - Eduardo A.
 - 2026-07-25 feat(governance): externalize agent registry canonical source - web2solutions
 - 2026-07-26 [Docs] Show CircleCI badges for dev and main (#152) - Eduardo A.

@@ -42,11 +42,11 @@ describe('check-agent-registry-source', () => {
     const request = { on: jest.fn() };
 
     response.on.mockImplementation((event: string, handler: (value?: string) => void) => {
-      const responseEvents = new Map<string, () => void>([
-        ['data', () => handler('canonical')],
-        ['end', () => handler()]
-      ]);
-      responseEvents.get(event)!();
+      const responseEvents: Record<string, () => void> = {
+        data: () => handler('canonical'),
+        end: () => handler()
+      };
+      responseEvents[event]();
       return response;
     });
     jest.spyOn(https, 'get').mockImplementation((...args: unknown[]) => {
