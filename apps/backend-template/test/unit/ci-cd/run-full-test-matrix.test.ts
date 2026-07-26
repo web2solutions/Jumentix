@@ -113,12 +113,14 @@ describe('run-full-test-matrix', () => {
       .toBe('node ci-cd/run-branch-quality-gate.js');
     expect(fullMatrixRootPackage.scripts['ci:gate:task'])
       .toBe('node ci-cd/run-task-change-tests.js');
-    expect(read('.husky/pre-commit')).toContain('pnpm@9.15.3 run ci:gate:branch');
-    expect(read('.husky/pre-push')).toContain('pnpm@9.15.3 run ci:gate:branch');
-    expect(read('.husky/pre-merge-commit')).toContain('pnpm@9.15.3 run ci:gate:branch');
-    expect(read('.circleci/config.yml')).toContain('pnpm@9.15.3 run ci:gate:branch');
-    expect(read('.circleci/config.yml')).toContain('only:\n                - dev\n                - main');
-    expect(read('.github/workflows/test.yml')).toContain('pnpm run ci:gate:branch');
-    expect(read('.github/workflows/test.yml')).toContain('github.base_ref || github.ref_name');
+    expect([
+      read('.husky/pre-commit').includes('pnpm@9.15.3 run ci:gate:branch'),
+      read('.husky/pre-push').includes('pnpm@9.15.3 run ci:gate:branch'),
+      read('.husky/pre-merge-commit').includes('pnpm@9.15.3 run ci:gate:branch'),
+      read('.circleci/config.yml').includes('pnpm@9.15.3 run ci:gate:branch'),
+      read('.circleci/config.yml').includes('only:\n                - dev\n                - main'),
+      read('.github/workflows/test.yml').includes('pnpm run ci:gate:branch'),
+      read('.github/workflows/test.yml').includes('github.base_ref || github.ref_name')
+    ]).toStrictEqual([true, true, true, true, true, true, true]);
   });
 });
