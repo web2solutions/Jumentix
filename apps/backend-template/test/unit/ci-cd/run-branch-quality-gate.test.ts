@@ -4,6 +4,7 @@ const gatePath = require('path');
 const {
   DEV_QUALITY_GATE,
   MAIN_QUALITY_GATE,
+  TASK_QUALITY_GATE,
   resolveTargetBranch,
   runBranchQualityGate,
   selectQualityGate
@@ -17,10 +18,14 @@ describe('run-branch-quality-gate', () => {
     expect(resolveTargetBranch('dev')).toBe('dev');
   });
 
-  it('selects only unit tests for dev and task branches', () => {
+  it('selects all unit tests for dev', () => {
     expect.hasAssertions();
     expect(selectQualityGate('dev')).toBe(DEV_QUALITY_GATE);
-    expect(selectQualityGate('codex/fix/147-example')).toBe(DEV_QUALITY_GATE);
+  });
+
+  it('selects change-focused tests for task branches', () => {
+    expect.hasAssertions();
+    expect(selectQualityGate('codex/fix/149-example')).toBe(TASK_QUALITY_GATE);
   });
 
   it('selects the full matrix exclusively for main', () => {
