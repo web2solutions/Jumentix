@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- 2026-07-26 [Chore] Apply branch-aware quality gates (#148) - Eduardo A.
 - 2026-07-26 chore(ci): add branch-aware quality gates - web2solutions
 - 2026-07-25 Merge remote-tracking branch 'origin/main' into dev - web2solutions
 - 2026-07-25 docs(governance): require feature/bug branch cleanup after merge into dev (#145) - Eduardo A.

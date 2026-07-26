@@ -50,4 +50,9 @@ jobs:
 workflows:
   test-source:
     jobs:
-      - test-source
+      - test-source:
+          filters:
+            branches:
+              only:
+                - dev
+                - main

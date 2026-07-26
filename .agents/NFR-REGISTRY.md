@@ -18,6 +18,7 @@ This file consolidates non-functional requirements already requested and stored 
 - `063` Workspace coverage policy governance.
 - `065` Commit/push integrity with real CI checks.
 - `087` Branch-aware quality gates: unit tests for `dev`, full matrix for `main`.
+- `088` Task branches run only changed/related unit tests; `dev` PRs run all unit tests and CircleCI is restricted to `dev`/`main`.
 
 ## Security and Compliance NFRs
 

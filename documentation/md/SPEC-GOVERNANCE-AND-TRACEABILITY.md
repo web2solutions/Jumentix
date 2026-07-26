@@ -60,8 +60,10 @@ Task isolation and naming policy:
 - Only a release-promotion PR sourced from `dev` may target `main`.
 - A `dev` to `main` promotion references the task PRs/issues already merged into `dev` and introduces no unreviewed changes.
 - Direct task/topic PRs, pushes, and merges to `main` are prohibited.
-- Commit, push, and merge gates are destination-aware: `dev` runs only the canonical unit
-  suite, while `main` runs the complete repository-declared matrix.
+- Commit and push gates are destination-aware: task branches run only changed or related
+  unit tests, `dev` runs the complete unit suite, and `main` runs the complete matrix.
+- Pull requests targeting `dev` run the complete unit suite; release-promotion PRs to
+  `main` run the complete matrix.
 - Main-matrix evidence must list every required cell and its terminal result.
 - An incomplete `main` matrix is failed evidence; it must never be interpreted as green.
 
