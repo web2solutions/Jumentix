@@ -31,6 +31,7 @@ Essas regras fazem parte da governança orientada para o desenvolvimento de espe
 2. As verificações de arquitetura (limites, ciclos, restrições do espaço de trabalho) devem ser aprovadas.
 3. As verificações de resolução de rota OpenAPI devem passar quando os contratos de API estão no escopo.
 4. Os limites de cobertura são obrigatórios e aplicam a política de fusão/envio.
+5. Os limites de commit, push e pull request devem executar a mesma matriz completa canônica; resultados somente de smoke, somente de documentação, ausentes, vazios, ignorados ou não reportados não são evidência de entrega.
 
 ## 4) Política de práticas recomendadas de codificação
 

@@ -29,6 +29,14 @@ Include links to issue(s), incident(s), backlog items, or Sonar/Codecov check UR
 - Priority group for this PR (`P0` / `P1` / `P2`):
 - [ ] This PR contains tasks from only one priority group.
 
+## Branch Promotion Path (Required)
+
+- Source branch:
+- Target branch:
+- [ ] This task PR targets `dev`.
+- [ ] If this PR targets `main`, it is a release promotion sourced from `dev`, references the task PRs/issues already merged into `dev`, and introduces no unreviewed changes.
+- [ ] This PR is not a direct task/topic branch promotion to `main`.
+
 ## Bidirectional Traceability (Required)
 
 - [ ] Every linked issue already contains this PR URL.

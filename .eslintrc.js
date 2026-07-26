@@ -2,7 +2,8 @@ const path = require('path');
 
 module.exports = {
     ignorePatterns: [
-      'apps/jumentix-website/next-env.d.ts'
+      'apps/jumentix-website/next-env.d.ts',
+      '**/dist/**'
     ],
     parser: '@typescript-eslint/parser',
     'parserOptions': {

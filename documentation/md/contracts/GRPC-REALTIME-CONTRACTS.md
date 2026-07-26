@@ -4,7 +4,7 @@ Canonical contracts for gRPC realtime transport.
 
 ## Source of Truth
 
-- `apps/backend-template/src/interface/gRPC/proto/async-api.proto`
+- `spec/asyncapi/async-api.proto` (canonical repository-owned proto)
 - `spec/asyncapi/1.0.0.grpc.yml`
 - `apps/backend-template/src/interface/gRPC/gRPCAPI.ts`
 

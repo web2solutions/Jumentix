@@ -85,6 +85,12 @@ Portão principal:
 pnpm run ci:gate
 ```
 
+Gate estrito de push e CI remoto:
+
+```bash
+pnpm run ci:gate:strict
+```
+
 Cheques incluídos:
 
 - `lint`
@@ -99,13 +105,37 @@ Cheques incluídos:
 - fumaça de integração
 - limite mínimo de cobertura (99% global via status Jest + Codecov)
 
+O gate estrito é um manifesto explícito e fail-closed com 18 células obrigatórias:
+
+- verificações de lint, arquitetura, contratos, governança de release, segurança e smoke de API
+- testes unitários, builds/testes da raiz e dos workspaces e cobertura do patch
+- a matriz completa de 15 alvos de integração HTTP, Lambda, realtime e Service Management
+- execução agregada que informa todas as células com falha, em vez de parar na primeira falha
+
+Os alvos de integração usam `--coverage=false`; os testes unitários permanecem como
+a etapa oficial que produz cobertura. Células vazias, duplicadas, malformadas, com
+script ausente, interrompidas ou com status diferente de zero falham de forma fechada.
+Execução por escopo, inclusive alterações somente de documentação, não pode omitir
+uma célula em um limite de entrega.
+
+Cada alvo de integração é executado com `CI=true` e tempo limite de processo de 120
+segundos. Um tempo limite é reportado como saída `124`, reprova a célula de integração
+e não impede o relato dos alvos restantes. Saídas `dist` geradas são excluídas do lint
+para que um build concluído não faça a execução seguinte da matriz falhar ao analisar
+declarações geradas.
+
 Aplicação local:
 
-- `.husky/pre-commit` executa `pnpm run changelog:update && git add CHANGELOG.md && pnpm run lint && pnpm run test:unit`
+- `.husky/pre-commit` sincroniza/adiciona `CHANGELOG.md` e depois executa `pnpm run ci:gate:strict`
 - `.husky/pre-push` executa `pnpm run ci:gate:strict`
 - `post-commit` é livre de mutações (sem correção automática, sem sinalizadores de bypass)
 - `.husky/commit-msg` executa commitlint (@commitlint/config-conventional`)
-- `.husky/post-commit` atualiza `CHANGELOG.md` do histórico do Git e corrige automaticamente o commit quando necessário
+
+Aplicação remota:
+
+- CircleCI e GitHub Actions invocam `pnpm run ci:gate:strict` diretamente
+- a CI de pull requests no GitHub envia `artifacts/ci/full-test-matrix.json` mesmo após falha
+- `ci:monorepo` permanece como entrada de compatibilidade, mas não pode selecionar um plano reduzido somente para documentação
 
 Importação de cobertura do SonarQube Cloud:
 
@@ -118,8 +148,8 @@ Importação de cobertura do SonarQube Cloud:
 
 | Integração | Finalidade | Onde está configurado | O que executar/requisitos |
 |------------|---------|----------------------------|-----------------------------|
-| CírculoCI | Pipeline principal para lint + testes + verificações de arquitetura + fumaça + cobertura de upload | `.circleci/config.yml` | Instala com `pnpm`, executa `pnpm run ci:monorepo` |
-| Ações do GitHub (testes) | Validação de CI secundário em push/PR | `.github/workflows/test.yml` | Usa Node `22.x`, instala com `pnpm`, executa `pnpm run ci:monorepo -- <changed-files>` com reconhecimento de escopo |
+| CírculoCI | Pipeline principal para lint + testes + verificações de arquitetura + fumaça + cobertura de upload | `.circleci/config.yml` | Instala com `pnpm`, executa `pnpm run ci:gate:strict` e armazena a evidência da matriz |
+| Ações do GitHub (testes) | Validação de CI secundário em push/PR | `.github/workflows/test.yml` | Usa Node `22.x`, instala com `pnpm`, executa `pnpm run ci:gate:strict` e envia a evidência da matriz |
 | Ações GitHub (SonarQube Cloud) | Análise estática + portão de qualidade + importação de cobertura | `.github/workflows/sonarqube-cloud.yml`, `sonar-project.properties` | Requer `SONAR_TOKEN`; executa `pnpm run test:unit` primeiro |
 | Códigocov | Verificações de status de cobertura para projeto e patch | `codecov.yml` | A meta é `95%` para projeto e patch |
 | Portão de cobertura Jest | Hard gate local para evitar fusões de baixa cobertura | `jest.config.js` | Limiares globais: `linhas/declarações >= 95%`, `ramos/funções >= 80%` |
@@ -138,7 +168,7 @@ Importação de cobertura do SonarQube Cloud:
 
 - Arquivo de pipeline: `.circleci/config.yml`
 - Usa `cimg/node:22.23` mais `redis:latest`
-- Instala `pnpm@9.15.3`, executa `pnpm install --no-frozen-lockfile`, aguarda Redis, executa `pnpm run ci:monorepo`, carrega cobertura com Codecov orb
+- Instala `pnpm@9.15.3`, executa `pnpm install --no-frozen-lockfile`, aguarda Redis, executa `pnpm run ci:gate:strict`, armazena a evidência da matriz completa e envia a cobertura com o orb do Codecov
 - Este é o portão multifuncional principal
 
 #### GitHub Actions - Fluxo de trabalho de teste
@@ -146,9 +176,9 @@ Importação de cobertura do SonarQube Cloud:
 - Arquivo de fluxo de trabalho: `.github/workflows/test.yml`
 - Aciona:
   - `push` para `main` e `dev`
-  - `pull_request` para `principal`
-- Configura Redis (com senha), instala `pnpm`, computa arquivos alterados em `main`, executa `pnpm run ci:monorepo -- <changed-files>`
-- Usa verificações leves somente de documentos ou portão estrito + fluxo de aplicativo/pacote afetado, dependendo do escopo delta
+  - `pull_request` para `dev` e `main`
+- Configura Redis (com senha), instala `pnpm` e executa `pnpm run ci:gate:strict`
+- Envia o resultado JSON da matriz completa com `if: always()`; alterações somente de documentação não ignoram células obrigatórias
 
 #### Ações do GitHub - Fluxo de trabalho da nuvem SonarQube
 
@@ -212,7 +242,7 @@ Bootstrap do ambiente durante os testes:
 Execute o portão completo:
 
 ```bash
-pnpm run ci:gate
+pnpm run ci:gate:strict
 ```
 
 Execute verificações direcionadas:
@@ -228,6 +258,7 @@ pnpm run release:governance:check
 pnpm run oas:check-routes
 pnpm run test:unit
 pnpm run ci:smoke
+pnpm run ci:integration
 ```
 
 ### Solução de problemas (CI / SonarQube / Codecov)

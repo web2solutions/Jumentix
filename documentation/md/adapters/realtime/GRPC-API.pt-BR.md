@@ -10,7 +10,7 @@ Este guia é exclusivo para a interface em tempo real do gRPC.
 
 - Transporte: gRPC
 - Implementação do servidor: `apps/backend-template/src/interface/gRPC/gRPCAPI.ts`
-- Contrato proto: `apps/backend-template/src/interface/gRPC/proto/async-api.proto`
+- Contrato proto canônico: `spec/asyncapi/async-api.proto`
 - Cliente SDK: `sdk-clients/grpc/GrpcApiClient.ts`
 - Fonte AsyncAPI: `spec/asyncapi/1.0.0.grpc.yml`
 
@@ -77,11 +77,11 @@ if (!response.ok) {
 ## Exemplo profundo: fluxo bidirecional gRPC nativo
 
 ```ts
-import path from 'path';
 import grpc from '@grpc/grpc-js';
 import protoLoader from '@grpc/proto-loader';
+import { resolveGrpcProtoPath } from '@jumentix/sdk-grpc-client';
 
-const protoPath = path.resolve(process.cwd(), 'src/interface/gRPC/proto/async-api.proto');
+const protoPath = resolveGrpcProtoPath();
 const packageDefinition = protoLoader.loadSync(protoPath, {
   longs: String,
   enums: String,
