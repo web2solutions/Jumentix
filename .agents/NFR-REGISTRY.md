@@ -50,6 +50,7 @@ This file consolidates non-functional requirements already requested and stored 
 - `076` Mandatory task traceability for AI/humans + documentation sync + EN/PT documentation and website parity.
 - `077` Multi-agent platform support (Codex, Claude Code, Grok) with aligned governance and traceability rules.
 - `078` Agent Registry system with mandatory pre-task registration, planning assignment by availability, and required `main`/`dev` pre-work branch checks.
+- `079` Feature and bug branches must be deleted (local + remote) after merge into `dev`, unless explicitly justified.
 
 ## Rule of Use
 
