@@ -10,11 +10,13 @@ const {
 
 describe('run-task-change-tests', () => {
   it('normalizes unique changed file paths', () => {
+    expect.hasAssertions();
     expect(normalizeFiles(['apps\\backend-template\\src\\a.ts', 'apps/backend-template/src/a.ts', '']))
       .toStrictEqual(['apps/backend-template/src/a.ts']);
   });
 
   it('reads staged and range diffs using explicit git commands', () => {
+    expect.hasAssertions();
     const spawn = jest.fn().mockReturnValue({ status: 0, stdout: 'a.ts\nb.ts\n' });
 
     expect(readChangedFiles({ mode: 'staged', spawn })).toStrictEqual(['a.ts', 'b.ts']);
@@ -24,11 +26,13 @@ describe('run-task-change-tests', () => {
   });
 
   it('fails when git cannot provide changed files', () => {
+    expect.hasAssertions();
     expect(() => readChangedFiles({ spawn: () => ({ status: 1 }) }))
       .toThrow('Unable to read changed files');
   });
 
   it('runs only changed unit tests when they are present', () => {
+    expect.hasAssertions();
     expect(createTaskTestPlan([
       'apps/backend-template/src/example.ts',
       'apps/backend-template/test/unit/example.test.ts'
@@ -39,6 +43,7 @@ describe('run-task-change-tests', () => {
   });
 
   it('finds tests related to changed implementation files', () => {
+    expect.hasAssertions();
     expect(createTaskTestPlan(['ci-cd/run-task-change-tests.js'])).toStrictEqual({
       type: 'related-unit-tests',
       files: ['ci-cd/run-task-change-tests.js']
@@ -46,6 +51,7 @@ describe('run-task-change-tests', () => {
   });
 
   it('does not run unrelated tests for docs-only changes', () => {
+    expect.hasAssertions();
     expect(createTaskTestPlan(['documentation/md/TESTING-CI-AND-QUALITY.md'])).toStrictEqual({
       type: 'not-applicable',
       files: []
@@ -53,6 +59,7 @@ describe('run-task-change-tests', () => {
   });
 
   it('records success, failure, crash, and not-applicable evidence', () => {
+    expect.hasAssertions();
     const logger = { log: jest.fn(), error: jest.fn() };
     const successful = runTaskChangeTests({
       files: ['apps/backend-template/test/unit/example.test.ts'],
@@ -87,6 +94,7 @@ describe('run-task-change-tests', () => {
   });
 
   it('writes JSON evidence for the selected change-focused test plan', () => {
+    expect.hasAssertions();
     const resultFile = taskPath.join(__dirname, '.tmp-task-change-evidence.json');
     const evidence = runTaskChangeTests({
       files: ['apps/backend-template/test/unit/example.test.ts'],
