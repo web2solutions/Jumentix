@@ -19,5 +19,5 @@ export {
   SectionHeading,
   SiteFooter,
   SiteHeader,
-  StatusBadge,
+  StatusBadge
 } from './design-system';

@@ -25,23 +25,36 @@ function readConfig() {
       throw new Error(`Invalid registry source config: "${key}" is required`);
     }
   }
+  if (!parsed.revision || !/^[a-f0-9]{40}$/i.test(parsed.revision)) {
+    throw new Error('Invalid registry source config: "revision" must be a full commit SHA');
+  }
   return parsed;
 }
 
-function buildRawUrl(config) {
+function repositoryCoordinates(config) {
   const [owner, repo] = config.repository.split('/');
   if (!owner || !repo) {
     throw new Error('Invalid repository format in registry source config. Expected "owner/repo".');
   }
-  const remotePath = config.remotePath.replace(/^\/+/, '');
-  return `https://api.github.com/repos/${owner}/${repo}/contents/${remotePath}?ref=${encodeURIComponent(config.branch)}`;
+  return { owner, repo };
 }
 
-function fetchText(url) {
+function buildRawUrl(config, ref = config.revision || config.branch) {
+  const { owner, repo } = repositoryCoordinates(config);
+  const remotePath = config.remotePath.replace(/^\/+/, '');
+  return `https://api.github.com/repos/${owner}/${repo}/contents/${remotePath}?ref=${encodeURIComponent(ref)}`;
+}
+
+function buildBranchRevisionUrl(config) {
+  const { owner, repo } = repositoryCoordinates(config);
+  return `https://api.github.com/repos/${owner}/${repo}/commits/${encodeURIComponent(config.branch)}`;
+}
+
+function fetchBody(url, accept) {
   return new Promise((resolve, reject) => {
     https.get(url, {
       headers: {
-        Accept: 'application/vnd.github.raw+json',
+        Accept: accept,
         'User-Agent': 'jumentix-agent-registry-check'
       }
     }, (res) => {
@@ -59,6 +72,27 @@ function fetchText(url) {
   });
 }
 
+function fetchText(url) {
+  return fetchBody(url, 'application/vnd.github.raw+json');
+}
+
+async function fetchJson(url) {
+  const body = await fetchBody(url, 'application/vnd.github+json');
+  try {
+    return JSON.parse(body);
+  } catch (error) {
+    throw new Error(`Invalid JSON response from registry source: ${url}`, { cause: error });
+  }
+}
+
+async function resolveBranchRevision(config) {
+  const payload = await fetchJson(buildBranchRevisionUrl(config));
+  if (!payload.sha || !/^[a-f0-9]{40}$/i.test(payload.sha)) {
+    throw new Error(`Could not resolve canonical registry revision for branch "${config.branch}".`);
+  }
+  return payload.sha;
+}
+
 function normalize(content) {
   return content.replace(/\r\n/g, '\n').trimEnd();
 }
@@ -67,7 +101,13 @@ async function main() {
   const args = parseArgs();
   const config = readConfig();
   const localPath = path.resolve(config.localMirrorPath);
-  const url = buildRawUrl(config);
+  let revision = config.revision;
+
+  if (args.sync) {
+    revision = await resolveBranchRevision(config);
+  }
+
+  const url = buildRawUrl(config, revision);
 
   if (args.printUrl) {
     console.log(url);
@@ -88,13 +128,14 @@ async function main() {
       console.error(`Run: node ci-cd/check-agent-registry-source.js --sync`);
       process.exit(1);
     }
-    console.log('Agent registry mirror is in sync with canonical repository.');
+    console.log(`Agent registry mirror matches canonical revision ${revision}.`);
     return;
   }
 
   if (args.sync) {
     fs.writeFileSync(localPath, remoteContent);
-    console.log(`Agent registry mirror synchronized from ${url}`);
+    fs.writeFileSync(CONFIG_PATH, `${JSON.stringify({ ...config, revision }, null, 2)}\n`);
+    console.log(`Agent registry mirror synchronized from canonical revision ${revision}.`);
     return;
   }
 }
@@ -107,9 +148,12 @@ if (require.main === module) {
 }
 
 module.exports = {
+  buildBranchRevisionUrl,
   buildRawUrl,
+  fetchJson,
   fetchText,
   normalize,
   parseArgs,
-  readConfig
+  readConfig,
+  resolveBranchRevision
 };

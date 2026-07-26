@@ -3,19 +3,9 @@ const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 
-const DEV_QUALITY_GATE = Object.freeze({
-  id: 'unit',
-  script: 'test:unit'
-});
-
-const MAIN_QUALITY_GATE = Object.freeze({
+const FULL_MATRIX_QUALITY_GATE = Object.freeze({
   id: 'full-matrix',
   script: 'ci:gate:strict'
-});
-
-const TASK_QUALITY_GATE = Object.freeze({
-  id: 'task-change-tests',
-  script: 'ci:gate:task'
 });
 
 function resolveTargetBranch(value = process.env.JUMENTIX_QUALITY_GATE_TARGET) {
@@ -24,10 +14,8 @@ function resolveTargetBranch(value = process.env.JUMENTIX_QUALITY_GATE_TARGET) {
 }
 
 function selectQualityGate(targetBranch) {
-  const branch = resolveTargetBranch(targetBranch);
-  if (branch === 'main') return MAIN_QUALITY_GATE;
-  if (branch === 'dev') return DEV_QUALITY_GATE;
-  return TASK_QUALITY_GATE;
+  resolveTargetBranch(targetBranch);
+  return FULL_MATRIX_QUALITY_GATE;
 }
 
 function executeQualityGate(gate) {
@@ -89,9 +77,7 @@ if (require.main === module) {
 }
 
 module.exports = {
-  DEV_QUALITY_GATE,
-  MAIN_QUALITY_GATE,
-  TASK_QUALITY_GATE,
+  FULL_MATRIX_QUALITY_GATE,
   executeQualityGate,
   resolveTargetBranch,
   runBranchQualityGate,

@@ -40,6 +40,7 @@
     "agent-registry:sync": "node ci-cd/check-agent-registry-source.js --sync",
     "agent-registry:url": "node ci-cd/check-agent-registry-source.js --url",
     "release:governance:check": "node ci-cd/check-release-governance.js",
+    "pr:governance:check": "node ci-cd/check-pr-governance.js",
     "serverless:check-handlers": "node ci-cd/check-serverless-handler-paths.js",
     "ci:smoke": "AAA_JWT_TOKEN_SECRET_KEY=${AAA_JWT_TOKEN_SECRET_KEY:-ci_jwt_secret_key} NODE_ENV=ci node ci-cd/run-api-smoke.js",
     "ci:integration": "AAA_JWT_TOKEN_SECRET_KEY=${AAA_JWT_TOKEN_SECRET_KEY:-ci_jwt_secret_key} node ci-cd/run-integration-tests.js",
