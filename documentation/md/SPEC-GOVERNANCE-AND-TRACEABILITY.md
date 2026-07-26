@@ -14,7 +14,7 @@ Mandatory governance records:
 2. Project item with planning fields
 3. PR with linked issue and evidence
 4. Spec and documentation artifacts
-5. Agent Registry record in `.agents/AGENT-REGISTRY.md`
+5. Agent Registry canonical record in `web2solutions/jumentix-agent-registry` with mirrored copy in `.agents/AGENT-REGISTRY.md`
 
 ## Mandatory Traceability Links
 
@@ -60,9 +60,12 @@ Task isolation and naming policy:
 - Only a release-promotion PR sourced from `dev` may target `main`.
 - A `dev` to `main` promotion references the task PRs/issues already merged into `dev` and introduces no unreviewed changes.
 - Direct task/topic PRs, pushes, and merges to `main` are prohibited.
-- Commit, push, and PR gates must each execute the complete repository-declared test matrix.
-- Matrix evidence must list every required cell and its terminal result.
-- An incomplete matrix is failed evidence; it must never be interpreted as green.
+- Commit and push gates are destination-aware: task branches run only changed or related
+  unit tests, `dev` runs the complete unit suite, and `main` runs the complete matrix.
+- Pull requests targeting `dev` run the complete unit suite; release-promotion PRs to
+  `main` run the complete matrix.
+- Main-matrix evidence must list every required cell and its terminal result.
+- An incomplete `main` matrix is failed evidence; it must never be interpreted as green.
 
 Priority grouping policy:
 
@@ -108,6 +111,7 @@ Before any task execution:
 3. Agent must check latest `main` and `dev` branch refs and update the registry check fields.
 4. Agent registry entries must include machine identity (`machine_id`, `machine_name`, `machine_os`) and runtime identity (`agent_runtime`, `agent_version`) so multiple agents can run on the same host with full traceability.
 5. Agents must follow the registration and operating playbook (Requirement `081`) covering registration, branch-sync, governed execution, and closure evidence.
+6. Canonical registry updates must be written to the external registry repository first, then mirrored locally under Requirement `089`.
 
 ## Audit Evidence Expectations
 
@@ -120,5 +124,6 @@ Minimum evidence set:
 5. Requirement registry updates (if NFR impacted)
 6. Task-owned branch/PR naming and isolation evidence
 7. Task PR to `dev`, or release promotion from `dev` to `main`, provenance
-8. Full-matrix manifest and results for commit, push, and PR
-9. Failure-propagation proof showing a required failing or missing test cannot produce green
+8. Branch-quality-gate evidence for commit, push, merge, and PR
+9. Full-matrix manifest and results for `main` promotion work
+10. Failure-propagation proof showing a required failing or missing test cannot produce green

@@ -18,7 +18,7 @@ Registros de governança obrigatórios:
 2. Item de projeto com campos de planejamento
 3. RP com questão e evidências vinculadas
 4. Artefatos de especificações e documentação
-5. Registro no Agent Registry em `.agents/AGENT-REGISTRY.md`
+5. Registro canônico de agentes em `web2solutions/jumentix-agent-registry` com espelho local em `.agents/AGENT-REGISTRY.md`
 
 ## Links de rastreabilidade obrigatórios
 
@@ -112,6 +112,7 @@ Antes de qualquer execução de tarefa:
 3. O agente deve checar os refs mais recentes de `main` e `dev` e atualizar os campos de verificação no registro.
 4. As entradas do registro devem incluir identidade da máquina (`machine_id`, `machine_name`, `machine_os`) e identidade de runtime (`agent_runtime`, `agent_version`) para permitir múltiplos agentes no mesmo host com rastreabilidade completa.
 5. Os agentes devem seguir o playbook operacional (Requisito `081`) cobrindo registro, sincronização de branches, execução governada e evidências de fechamento.
+6. As atualizações canônicas do registro devem ser feitas primeiro no repositório externo e depois espelhadas localmente sob o Requisito `089`.
 
 ## Expectativas de evidências de auditoria
 

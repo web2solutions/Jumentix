@@ -11,7 +11,8 @@ This registry tracks AI agents collaborating in the Jumentix project.
    - a new agent is introduced
    - agent availability changes
    - branch-sync policy changes
-5. Registry must support multiple agents running on the same machine with unique `agent_id` values.
+5. A consumer repository must update this canonical registry before synchronizing its local mirror.
+6. Multiple agents may share a host, but each must use a unique `agent_id`.
 
 ## Registry Fields
 
@@ -19,8 +20,8 @@ This registry tracks AI agents collaborating in the Jumentix project.
 - `agent_name`: display name
 - `platform`: runtime/platform name
 - `machine_id`: stable host identifier for audit traceability
-- `machine_name`: host machine name
-- `machine_os`: host operating system summary
+- `machine_name`: host name for operator identification
+- `machine_os`: operating system summary
 - `agent_runtime`: runtime/distribution used to execute the agent
 - `agent_version`: agent/runtime version string
 - `status`: `available` | `busy` | `offline`
@@ -42,22 +43,19 @@ This registry tracks AI agents collaborating in the Jumentix project.
 - `machine_os`: `Darwin 21.6.0 x86_64`
 - `agent_runtime`: `OpenAI Codex`
 - `agent_version`: `GPT-5 Codex`
-- `status`: `available`
+- `status`: `busy`
 - `registered_at_utc`: `2026-07-25T00:00:00Z`
-- `last_branch_check_utc`: `2026-07-26T00:39:16Z`
-- `main_ref_checked`: `b9690eeb`
-- `dev_ref_checked`: `28bb68ce`
+- `last_branch_check_utc`: `2026-07-26T04:27:30Z`
+- `main_ref_checked`: `5d66c027`
+- `dev_ref_checked`: `3a0d3020`
 - `capabilities`:
   - repository analysis and implementation
   - test and CI debugging
   - spec/governance synchronization
 
-## Registration and Operating Quick Guide
+## Operating Flow
 
-This guide is the minimal operating flow for every registered agent (see requirement `081`):
-
-1. Register/update identity fields (`agent_id`, machine metadata, runtime metadata, status).
-2. Fetch/check `main` and `dev`, then update `last_branch_check_utc`, `main_ref_checked`, and `dev_ref_checked`.
-3. Execute only task-scoped work tracked in GitHub Project Jumentix.
-4. Keep specs/docs/agents synchronized whenever requirements or behavior change.
-5. Deliver via branch + PR + evidence; never develop directly on local `main`.
+1. Register or update the agent entry here before task execution.
+2. Fetch and record the current `main` and `dev` refs for the consumer project.
+3. Commit and merge the canonical registry update through this repository's branch and PR flow.
+4. Run the consumer repository's registry synchronization command before its quality gate.

@@ -27,7 +27,10 @@ These rules are part of Spec Development Driven governance and apply to all comp
 2. Architecture checks (boundaries, cycles, workspace constraints) must pass.
 3. OpenAPI route resolution checks must pass when API contracts are in scope.
 4. Coverage thresholds are mandatory and enforce merge/push policy.
-5. Commit, push, and pull-request boundaries must execute the same canonical full matrix; smoke-only, docs-only, missing, empty, skipped, or unreported results are not delivery evidence.
+5. Task-branch commits and pushes execute only changed/related unit tests. Pull requests
+   to `dev` execute all unit tests, and `main` executes the full matrix. Smoke-only,
+   missing, empty, skipped, or unreported results are not delivery evidence; docs-only
+   task changes must explicitly record `not-applicable` evidence.
 
 ## 4) Coding Best Practices Policy
 
