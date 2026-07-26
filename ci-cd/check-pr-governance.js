@@ -20,6 +20,7 @@ const REQUIRED_EPIC_FIELDS = Object.freeze([
 
 const TITLE_PREFIX_BY_NATURE = Object.freeze({
   feature: '[Feature]',
+  bug: '[Bug]',
   fix: '[Fix]',
   security: '[Security]',
   governance: '[Governance]',
