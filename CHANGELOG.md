@@ -4,17 +4,22 @@
 
 ## Unreleased
 
+- 2026-07-25 feat(governance): add multi-agent registry and branch-sync requirements (#141) - Eduardo A.
+- 2026-07-25 chore(docs): remove ai draft files - web2solutions
 - 2026-07-25 fix(ci): stabilize changelog check for head commit - web2solutions
 - 2026-07-25 chore(changelog): include latest commit in generated history - web2solutions
 - 2026-07-25 chore(changelog): sync changelog with latest governance commit - web2solutions
 - 2026-07-25 feat(governance): add multi-agent support and agent registry workflow - web2solutions
+- 2026-07-25 fix(ci): stabilize GitHub Actions for pnpm monorepo (#134) - Eduardo A.
 - 2026-07-25 fix(ci): setup pnpm before node cache in sonar workflow - web2solutions
 - 2026-07-25 fix(ci): repair github workflows for pnpm monorepo - web2solutions
 - 2026-07-25 fix(ci): avoid secrets context in workflow if for SonarCloud - web2solutions
+- 2026-07-25 docs(i18n): reorganize documentation by audience and add PT-BR corpus (#132) - Eduardo A.
 - 2026-07-25 docs(consumers): add package scripts reference with usage catalog - web2solutions
 - 2026-07-25 docs(i18n): reorganize docs by audience and add pt-BR corpus - web2solutions
 - 2026-07-25 chore(governance): require task traceability and bilingual docs/site - web2solutions
 - 2026-07-25 feat(website): add reliable pre-publish checks and stabilize production routes - web2solutions
+- 2026-07-25 feat(jumentix): advance monorepo extraction, governance, and wave progress (#112) - Eduardo A.
 - 2026-07-25 docs(spec): codify engineering, security, and product composition governance - web2solutions
 - 2026-07-25 docs(spec): enforce 100% functional and NFR requirements coverage in specs - web2solutions
 - 2026-07-24 docs(spec): establish canonical Spec Development Driven knowledge system - web2solutions
@@ -103,6 +108,7 @@
 - 2026-06-30 docs(servicemangement): document all domain designer mvp features and usage - web2solutions
 - 2026-06-30 feat(servicemangement): complete domain designer mvp roadmap - web2solutions
 - 2026-06-30 docs(readme): restore legacy badges and keep badge parity - web2solutions
+- 2026-06-30 feat(users): split OrganizationController and align PCI/docs/route checks (#60) - Eduardo A.
 - 2026-06-29 fix(security): remove sqlite3 dependency to satisfy snyk policy - web2solutions
 - 2026-06-29 fix(security): remove restify package to clear high snyk findings - web2solutions
 - 2026-06-29 fix(ci): unblock PR by reducing prod vuln surface and lint policy - web2solutions
