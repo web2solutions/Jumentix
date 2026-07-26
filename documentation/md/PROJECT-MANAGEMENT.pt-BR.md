@@ -12,6 +12,10 @@ Idioma alvo: Português (Brasil)
 
 - Requisitos técnicos e agentes especializados:
   - `.agentes/README.md`
+  - `.agents/AGENT-REGISTRY.md`
+  - `AGENTS.md` (Codex)
+  - `CLAUDE.md` (Claude Code)
+  - `GROK.md` (Grok)
 - Todos do projeto e status de entrega:
   - `.agentes/project-todos.md`
 - Acompanhamento de problemas do GitHub para TODOs migrados:

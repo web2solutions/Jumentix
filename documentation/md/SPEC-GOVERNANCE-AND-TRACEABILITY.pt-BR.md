@@ -18,6 +18,7 @@ Registros de governança obrigatórios:
 2. Item de projeto com campos de planejamento
 3. RP com questão e evidências vinculadas
 4. Artefatos de especificações e documentação
+5. Registro no Agent Registry em `.agents/AGENT-REGISTRY.md`
 
 ## Links de rastreabilidade obrigatórios
 
@@ -73,6 +74,24 @@ Quando o comportamento afeta requisitos não funcionais:
 3. Atualize `.agents/NFR-REGISTRY.md`
 4. ID(s) de requisitos de referência no contexto de PR
 
+## Suporte oficial a agentes de IA
+
+O Jumentix oferece suporte oficial aos seguintes agentes de engenharia:
+
+1. Codex (`AGENTS.md`)
+2. Claude Code (`CLAUDE.md`)
+3. Grok (`GROK.md`)
+
+As instruções desses agentes devem permanecer equivalentes para governança, rastreabilidade, sincronização de documentação e gates de CI/cobertura.
+
+## Agent Registry e sincronização de branches
+
+Antes de qualquer execução de tarefa:
+
+1. O agente atuante deve estar registrado em `.agents/AGENT-REGISTRY.md`.
+2. O planejamento deve atribuir tarefas apenas para agentes com status `available`.
+3. O agente deve checar os refs mais recentes de `main` e `dev` e atualizar os campos de verificação no registro.
+
 ## Expectativas de evidências de auditoria
 
 Conjunto mínimo de evidências:
@@ -82,5 +101,3 @@ Conjunto mínimo de evidências:
 3. Saída CI verde para portas necessárias
 4. Limite de cumprimento da evidência de cobertura
 5. Atualizações de registro de requisitos (se o NFR for afetado)
-
-

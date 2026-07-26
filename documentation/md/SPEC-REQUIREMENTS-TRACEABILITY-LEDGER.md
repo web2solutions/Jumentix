@@ -89,18 +89,25 @@ For any change, identify impacted requirement IDs and ensure:
   - coverage threshold proof
   - security/compliance check results
 
-## G. Documentation and Governance Process
+## G. Documentation, Governance Process, and Multi-Agent Operations
 
-- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `056`, `057`, `064`, `066`, `067`, `068`, `071`, `072`, `073`, `075`
+- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `056`, `057`, `064`, `066`, `067`, `068`, `071`, `072`, `073`, `075`, `076`, `077`, `078`
 - Spec resources:
   - `documentation/README.md`
   - `documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`
   - `documentation/md/PROJECT-MANAGEMENT.md`
   - `.agents/README.md`
   - `.agents/NFR-REGISTRY.md`
+  - `.agents/AGENT-REGISTRY.md`
+  - `AGENTS.md`
+  - `CLAUDE.md`
+  - `GROK.md`
 - Evidence:
   - docs index links updated
   - requirements registry synchronized
+  - agent instruction parity (Codex, Claude Code, Grok)
+  - agent registration and availability assignment records
+  - `main` and `dev` branch pre-work check records
   - project/PR traceability present
 
 ## H. Productization and Platform Expansion
@@ -125,6 +132,6 @@ If impacted requirement IDs are not mapped before implementation, the change is 
 
 As of `2026-07-25`, this ledger covers all unique requirement IDs currently registered in `.agents/requirements`:
 
-1. Unique IDs in requirements registry: `75`
-2. Unique IDs mapped in this ledger: `75`
+1. Unique IDs in requirements registry: `78`
+2. Unique IDs mapped in this ledger: `78`
 3. Missing IDs: `none`

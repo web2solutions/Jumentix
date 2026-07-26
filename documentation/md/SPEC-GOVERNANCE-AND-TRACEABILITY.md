@@ -14,6 +14,7 @@ Mandatory governance records:
 2. Project item with planning fields
 3. PR with linked issue and evidence
 4. Spec and documentation artifacts
+5. Agent Registry record in `.agents/AGENT-REGISTRY.md`
 
 ## Mandatory Traceability Links
 
@@ -69,6 +70,24 @@ When behavior affects non-functional requirements:
 3. Update `.agents/NFR-REGISTRY.md`
 4. Reference requirement ID(s) in PR context
 
+## Official AI Agent Support
+
+Jumentix officially supports these engineering agents:
+
+1. Codex (`AGENTS.md`)
+2. Claude Code (`CLAUDE.md`)
+3. Grok (`GROK.md`)
+
+Agent guidance must remain behaviorally equivalent for governance, traceability, documentation sync, and CI/coverage gates.
+
+## Agent Registry and Branch Synchronization
+
+Before any task execution:
+
+1. Acting agent must be registered in `.agents/AGENT-REGISTRY.md`.
+2. Planning must assign tasks to agents marked `available`.
+3. Agent must check latest `main` and `dev` branch refs and update the registry check fields.
+
 ## Audit Evidence Expectations
 
 Minimum evidence set:
@@ -78,4 +97,3 @@ Minimum evidence set:
 3. Green CI output for required gates
 4. Coverage evidence meeting threshold
 5. Requirement registry updates (if NFR impacted)
-
