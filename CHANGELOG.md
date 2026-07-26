@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- 2026-07-26 [Docs] Audit OSS reference UX and define website IA (#175) - Eduardo A.
+- 2026-07-26 docs(website): audit OSS reference UX and IA - web2solutions
 - 2026-07-26 [Governance] Require milestones for focused epics (#166) - Eduardo A.
 - 2026-07-26 chore(governance): require milestones for focused epics - web2solutions
 - 2026-07-26 [Governance] Require epic-focused task delegation (#164) - Eduardo A.

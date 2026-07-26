@@ -7,7 +7,8 @@ import '@gfazioli/mantine-text-animate/styles.css';
 import '@/theme/global.css';
 
 import { Analytics } from '@vercel/analytics/react';
-import { ColorSchemeScript, mantineHtmlProps, MantineProvider } from '@mantine/core';
+import { mantineHtmlProps, MantineProvider } from '@mantine/core';
+import Script from 'next/script';
 // !! End of important imports !!
 
 import config from '@/config';
@@ -20,14 +21,28 @@ export const dynamic = 'force-dynamic';
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const { head } = config;
+  const defaultColorScheme = JSON.stringify(head.mantine.defaultColorScheme);
+  const colorSchemeBootstrap = `try {
+  var storedColorScheme = window.localStorage.getItem("mantine-color-scheme-value");
+  var colorScheme = storedColorScheme === "light" || storedColorScheme === "dark" || storedColorScheme === "auto"
+    ? storedColorScheme
+    : ${defaultColorScheme};
+  var computedColorScheme = colorScheme !== "auto"
+    ? colorScheme
+    : window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  document.documentElement.setAttribute("data-mantine-color-scheme", computedColorScheme);
+} catch (error) {}`;
 
   return (
     <html lang="en" dir="ltr" data-scroll-behavior="smooth" {...mantineHtmlProps}>
       <head>
-        <ColorSchemeScript
+        <Script
+          id="mantine-color-scheme"
           nonce={head.mantine.nonce}
-          defaultColorScheme={head.mantine.defaultColorScheme}
-        />
+          strategy="beforeInteractive"
+        >
+          {colorSchemeBootstrap}
+        </Script>
         <link rel="shortcut icon" href="/favicon.svg" />
         <meta
           name="viewport"

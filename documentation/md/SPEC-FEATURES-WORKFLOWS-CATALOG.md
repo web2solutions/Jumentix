@@ -140,6 +140,32 @@ Mandatory checks:
 3. Security scans/gates
 4. Governance linkage evidence in PR
 
+## Capability Group G - Product Website and Documentation Portal
+
+Includes:
+
+1. Commercial product and use-case pages
+2. Markdown-backed technical documentation
+3. Canonical and backward-compatible documentation routes
+4. Search, sidebar, table of contents, feedback, edit links, and responsive navigation
+5. Vercel build and release automation
+
+Required specs:
+
+1. `.agents/requirements/069-jumentix-website-commercial-static-vercel-governance.md`
+2. `apps/jumentix-website/documentation/CONTENT-PIPELINE.md`
+3. `apps/jumentix-website/documentation/VERCEL-DEPLOYMENT.md`
+4. Website UX audit and information architecture under
+   `apps/jumentix-website/documentation/research`
+
+Mandatory checks:
+
+1. Website typecheck and production build
+2. Prepublish route and invalid-content marker checks
+3. Browser verification of layout, navigation, links, and responsive states
+4. Vercel production smoke validation
+5. Storybook coverage for reusable website components
+
 ## Workflow Definition (Spec-First)
 
 For every capability group:

@@ -1,4 +1,5 @@
 import { generateStaticParamsFor, importPage } from 'nextra/pages';
+import { useMDXComponents as getMDXComponents } from '@/mdx-components';
 
 export const generateStaticParams = generateStaticParamsFor('mdxPath');
 export const revalidate = false;
@@ -7,39 +8,21 @@ type MdxPath = string[] | undefined;
 
 function getCandidates(mdxPath: MdxPath): string[][] {
   const normalized = Array.isArray(mdxPath) ? mdxPath.filter(Boolean) : [];
-  const candidates: string[][] = [];
-  const seen = new Set<string>();
-  const add = (candidate: string[]) => {
-    if (candidate.length === 0) return;
-    const key = candidate.join('/');
-    if (seen.has(key)) return;
-    seen.add(key);
-    candidates.push(candidate);
-  };
 
   if (normalized.length === 0) {
-    add(['jumentix', 'index']);
-    add(['index']);
-    return candidates;
+    return [['jumentix']];
   }
 
-  // If request doesn't include the section prefix, prioritize /jumentix first.
-  // This avoids noisy failed resolutions like `private-next-content-dir/undefined`
-  // for known routes such as /docs/realtime-api-guide.
-  if (normalized[0] !== 'jumentix') {
-    add(['jumentix', ...normalized]);
-    add(normalized);
-  } else {
-    add(normalized);
-  }
-
-  // Section root fallbacks only (avoid invalid combos like overview/index).
   if (normalized.length === 1 && normalized[0] === 'jumentix') {
-    add(['jumentix', 'overview']);
-    add(['jumentix', 'index']);
+    return [['jumentix']];
   }
 
-  return candidates;
+  if (normalized[0] === 'jumentix') {
+    return [normalized];
+  }
+
+  // Preserve the legacy /docs/:slug routes while using one canonical content tree.
+  return [['jumentix', ...normalized]];
 }
 
 async function loadPageWithFallback(mdxPath: MdxPath) {
@@ -64,9 +47,14 @@ export async function generateMetadata(props: any) {
 export default async function Page(props: any) {
   const params = await props.params;
   const result = await loadPageWithFallback(params?.mdxPath);
-  const { default: MDXContent, toc, metadata } = result;
+  const { default: MDXContent, toc, metadata, sourceCode } = result;
 
   const customToc = [...toc, ...((metadata as any)?.toc || [])];
+  const Wrapper = getMDXComponents().wrapper;
 
-  return <MDXContent {...props} params={params} toc={customToc} metadata={metadata} />;
+  return (
+    <Wrapper toc={customToc} metadata={metadata} sourceCode={sourceCode}>
+      <MDXContent {...props} params={params} />
+    </Wrapper>
+  );
 }
