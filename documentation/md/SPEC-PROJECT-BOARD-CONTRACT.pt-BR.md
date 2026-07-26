@@ -32,36 +32,73 @@ Cada item deve manter:
 
 ## Rótulos necessários para a natureza da tarefa
 
-Pelo menos um rótulo de natureza:
+Cada tarefa executável deve ter exatamente um rótulo de natureza principal:
 
-1. `recurso`
+1. `feature`
 2. `bug`
-3. `tarefa`
-4. `doc`
+3. `security`
+4. `governance`
+5. `docs`
+6. `refactor`
+7. `test`
+8. `ci`
+9. `release`
+10. `chore`
 
 Os rótulos de fluxo estratégico são aditivos (por exemplo `todo-mvp`, `epic`, `iteration-a`, `iteration-b`).
+
+## Contrato de épico focado
+
+1. Toda tarefa executável deve pertencer a exatamente um épico focado.
+2. O épico deve descrever um único resultado coeso e não pode ser um backlog genérico.
+3. A relação de parentagem deve usar sub-issues do GitHub ou o campo `Parent issue` do projeto
+   quando disponível.
+4. As tarefas são agrupadas por natureza principal dentro do épico. Trabalho de suporte com
+   natureza diferente é rastreado como tarefa filha separada sob o mesmo resultado coeso.
+5. O planejamento do épico define prioridade, limites de escopo, datas, estimativa, responsável
+   e delegação de agentes.
+6. Tarefas filhas mantêm estimativas independentes de no máximo oito pontos, responsáveis,
+   branches, commits, pull requests e evidências.
+7. Um épico só é concluído quando todas as tarefas filhas obrigatórias e suas evidências estão
+   completas.
+
+## Contrato de delegação de agentes
+
+1. A delegação de agentes é decidida e registrada no nível do épico antes da atribuição de
+   tarefas filhas.
+2. Somente agentes delegados a um épico podem aceitar suas tarefas filhas.
+3. Cada tarefa filha possui um agente responsável; múltiplos agentes devem atuar em limites de
+   tarefas não sobrepostos.
+4. O Agent Registry canônico registra `active_epic` e `assigned_task`.
+5. Trabalho entre épicos exige delegação explícita e tarefas filhas separadas para cada épico.
 
 ## Fluxo de trabalho baseado em especificações através do conselho
 
 1. Ingestão:
-   - criar problemas com objetivos claros e critérios de aceitação.
+   - criar ou selecionar um épico focado e então criar uma issue filha com objetivo e critérios
+     de aceitação claros.
 2. Planejamento:
-   - atribuir prioridade, tamanho, estimativa, datas e rótulos.
+   - atribuir épico pai, natureza principal, prioridade, tamanho, estimativa, datas e rótulos;
+   - delegar agentes ao épico antes de atribuir tarefas filhas.
 3. Elaboração de especificações:
    - liste os recursos de especificações necessários antes da implementação.
 4. Entrega:
    - vincular commits/PRs e capturar evidências.
 5. Encerramento:
-   - defina o status como `Concluído` somente após verificações verdes e sincronização de documentos/agentes.
+   - definir a tarefa filha como `Concluído` somente após verificações verdes e sincronização de
+     documentos/agentes;
+   - encerrar o épico somente após todas as tarefas filhas obrigatórias e evidências estarem
+     completas.
 
 ## Contrato de vinculação de relações públicas
 
 Todo PR deve fazer referência a:
 
 1. questão(ões) relacionada(s)
-2. Escopo do item do projeto
-3. recursos de especificação alterados
-4. resumo de evidências (testes/cobertura/segurança)
+2. épico pai focado
+3. escopo do item do projeto
+4. recursos de especificação alterados
+5. resumo de evidências (testes/cobertura/segurança)
 
 E cada questão deve refletir:
 

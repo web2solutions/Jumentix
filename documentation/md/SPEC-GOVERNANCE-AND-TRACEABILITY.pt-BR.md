@@ -24,12 +24,14 @@ Registros de governança obrigatórios:
 
 Cada item de entrega deve expor:
 
-1. `Problema -> Item do projeto`
-2. `Problema -> Arquivos de especificações alterados`
-3. `PR -> Problema`
-4. `PR -> Evidência (testes/cobertura/verificações)`
-5. `PR -> IDs de requisitos` (quando NFR ou comportamento de governança são afetados)
-6. `Tarefa -> branch dedicada -> PR dedicado`
+1. `Épico focado -> tarefa filha`
+2. `Épico focado -> agente delegado`
+3. `Issue -> item do projeto`
+4. `Issue -> arquivos de especificações alterados`
+5. `PR -> issue`
+6. `PR -> evidência (testes/cobertura/verificações)`
+7. `PR -> IDs de requisitos` (quando NFR ou comportamento de governança são afetados)
+8. `Tarefa -> branch dedicada -> PR dedicado`
 
 ## Campos obrigatórios do projeto
 
@@ -39,19 +41,34 @@ Cada item de entrega deve expor:
 - `Estimativa`
 - `Data de início`
 - `Data de término`
+- `Parent issue`
+- um rótulo de natureza principal
+
+## Planejamento e delegação orientados por épico
+
+1. Toda tarefa executável possui exatamente um épico pai focado.
+2. Cada tarefa possui uma natureza principal e é agrupada com tarefas da mesma natureza dentro
+   do épico.
+3. Trabalho de suporte com natureza diferente é representado por tarefa filha separada sob o
+   mesmo épico coeso.
+4. A delegação de agentes é registrada no nível do épico antes da atribuição de tarefas filhas.
+5. Somente agentes delegados a um épico podem executar suas tarefas.
+6. Cada tarefa possui um agente responsável e agentes paralelos atuam em escopos não sobrepostos.
+7. O Agent Registry canônico registra `active_epic` e `assigned_task`.
 
 ## Requisitos de governança de relações públicas
 
 Cada PR deve conter:
 
 1. Resumo do escopo vinculado à intenção do problema
-2. Lista de arquivos de especificações alterada
-3. Critérios de aceitação e evidências
-4. Cobertura e resultados de entrada
-5. Notas de risco/reversão quando necessário
-6. Nome da branch exclusiva da tarefa e título do PR com prefixo de natureza correspondente
-7. Evidência das branches de origem e destino
-8. Formatação markdown limpa com quebra de linhas reais; não usar tokens literais `\n` no corpo do PR.
+2. Vínculo com o épico pai focado e o item do projeto
+3. Lista de arquivos de especificações alterada
+4. Critérios de aceitação e evidências
+5. Cobertura e resultados de entrada
+6. Notas de risco/reversão quando necessário
+7. Nome da branch exclusiva da tarefa e título do PR com prefixo de natureza correspondente
+8. Evidência das branches de origem e destino
+9. Formatação markdown limpa com quebra de linhas reais; não usar tokens literais `\n` no corpo do PR.
 
 Política de isolamento e nomenclatura:
 
@@ -113,17 +130,22 @@ Antes de qualquer execução de tarefa:
 4. As entradas do registro devem incluir identidade da máquina (`machine_id`, `machine_name`, `machine_os`) e identidade de runtime (`agent_runtime`, `agent_version`) para permitir múltiplos agentes no mesmo host com rastreabilidade completa.
 5. Os agentes devem seguir o playbook operacional (Requisito `081`) cobrindo registro, sincronização de branches, execução governada e evidências de fechamento.
 6. As atualizações canônicas do registro devem ser feitas primeiro no repositório externo e depois espelhadas localmente sob o Requisito `089`.
+7. A delegação no nível do épico e a atribuição da tarefa filha devem ser registradas sob o
+   Requisito `090`.
 
 ## Expectativas de evidências de auditoria
 
 Conjunto mínimo de evidências:
 
-1. Problema vinculado + item do projeto
-2. Arquivos de especificações e documentos alterados
-3. Saída CI verde para portas necessárias
-4. Limite de cumprimento da evidência de cobertura
-5. Atualizações de registro de requisitos (se o NFR for afetado)
-6. Evidência de isolamento e nomenclatura da branch/PR da tarefa
-7. Proveniência do PR da tarefa para `dev`, ou da promoção de release de `dev` para `main`
-8. Manifesto e resultados da matriz completa para commit, push e PR
-9. Prova de propagação mostrando que teste obrigatório ausente ou com falha não pode produzir resultado verde
+1. Épico focado + issue filha + item do projeto vinculados
+2. Delegação do agente no nível do épico e atribuição no nível da tarefa
+3. Arquivos de especificações e documentos alterados
+4. Saída CI verde para gates obrigatórios
+5. Evidência de cobertura atendendo ao limite
+6. Atualizações de registro de requisitos (se o NFR for afetado)
+7. Evidência de isolamento e nomenclatura da branch/PR da tarefa
+8. Proveniência do PR da tarefa para `dev`, ou da promoção de release de `dev` para `main`
+9. Evidência do gate por branch para commit, push, merge e PR
+10. Manifesto e resultados da matriz completa para promoção a `main`
+11. Prova de propagação mostrando que teste obrigatório ausente ou com falha não pode produzir
+    resultado verde
