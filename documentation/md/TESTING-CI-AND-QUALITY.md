@@ -124,15 +124,16 @@ Branch-aware enforcement:
 pnpm run ci:gate:branch
 ```
 
-The selector reads `JUMENTIX_QUALITY_GATE_TARGET`. A `dev` target, including task-owned
-branches that are bound to `dev`, runs only `pnpm run test:unit`. A `main` target runs
-`pnpm run ci:gate:strict`, including all 18 required cells. This keeps daily integration
-fast while preserving release-grade proof for promotion to the protected branch.
+The selector reads `JUMENTIX_QUALITY_GATE_TARGET`. A task branch runs `pnpm run
+ci:gate:task`, which executes only changed unit tests or tests related to changed
+implementation files. A `dev` target runs the complete `pnpm run test:unit` suite. A
+`main` target runs `pnpm run ci:gate:strict`, including all 18 required cells. This
+keeps task feedback focused, integration evidence complete, and release promotion strict.
 
 Local enforcement:
 
-- `.husky/pre-commit` synchronizes/stages `CHANGELOG.md`, then runs the branch-aware gate
-- `.husky/pre-push` derives the pushed destination and runs the branch-aware gate
+- `.husky/pre-commit` synchronizes/stages `CHANGELOG.md`, then runs the task, `dev`, or `main` gate
+- `.husky/pre-push` derives the pushed destination and runs the task, `dev`, or `main` gate
 - `.husky/pre-merge-commit` runs the branch-aware gate on the merge destination
 - `post-commit` is mutation-free (no auto-amend, no bypass flags)
 - `.husky/commit-msg` runs commitlint (`@commitlint/config-conventional`)
@@ -155,7 +156,7 @@ SonarQube Cloud coverage import:
 
 | Integration | Purpose | Where it is configured | What to run / requirements |
 |------------|---------|-------------------------|-----------------------------|
-| CircleCI | Branch-aware pipeline with coverage upload | `.circleci/config.yml` | Installs with `pnpm`, selects unit gate for `dev` and full matrix for `main`, stores selected-gate evidence |
+| CircleCI | Branch-aware pipeline with coverage upload | `.circleci/config.yml` | Runs only for `dev` and `main`; selects unit gate for `dev` and full matrix for `main`, stores selected-gate evidence |
 | GitHub Actions (tests) | Target-aware CI validation on push/PR | `.github/workflows/test.yml` | Uses Node `22.x`, selects by PR base/pushed branch, uploads selected-gate evidence and main matrix evidence |
 | GitHub Actions (SonarQube Cloud) | Static analysis + quality gate + coverage import | `.github/workflows/sonarqube-cloud.yml`, `sonar-project.properties` | Requires `SONAR_TOKEN`; runs `pnpm run test:unit` first |
 | Codecov | Coverage status checks for project and patch | `codecov.yml` | Target is `95%` for project and patch |
