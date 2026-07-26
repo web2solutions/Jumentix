@@ -60,6 +60,7 @@ This file consolidates non-functional requirements already requested and stored 
 - `084` `dev` is the single source of truth for development; new branches must start from `dev` and PRs from implementation branches must target `dev`.
 - `085` PR descriptions are mandatory and must follow the repository PR template, with required sections completed before approval.
 - `086` One task per branch and PR, nature-prefixed naming, `dev`-first promotion to `main`, and mandatory false-green-proof full test matrices for commits, pushes, and PRs.
+- `089` Agent Registry must be maintained in an independent GitHub repository as canonical source, with mirrored sync in consumer repositories.
 
 ## Rule of Use
 

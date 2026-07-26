@@ -1,0 +1,76 @@
+const https = require('https');
+
+const {
+  buildRawUrl,
+  fetchText,
+  normalize
+} = require('../../../../../ci-cd/check-agent-registry-source');
+
+describe('check-agent-registry-source', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('builds the GitHub contents API URL for the configured registry branch', () => {
+    expect(buildRawUrl({
+      repository: 'web2solutions/jumentix-agent-registry',
+      branch: 'main/next',
+      remotePath: '/AGENT-REGISTRY.md'
+    })).toBe('https://api.github.com/repos/web2solutions/jumentix-agent-registry/contents/AGENT-REGISTRY.md?ref=main%2Fnext');
+  });
+
+  it('rejects invalid repository coordinates', () => {
+    expect(() => buildRawUrl({ repository: 'invalid', branch: 'main', remotePath: 'AGENT-REGISTRY.md' }))
+      .toThrow('Invalid repository format');
+  });
+
+  it('normalizes line endings and trailing whitespace before comparing registry mirrors', () => {
+    expect(normalize('registry\r\nentry\r\n\r\n')).toBe('registry\nentry');
+  });
+
+  it('requests raw canonical content from the GitHub contents API', async () => {
+    const response = {
+      statusCode: 200,
+      setEncoding: jest.fn(),
+      on: jest.fn()
+    };
+    const request = { on: jest.fn() };
+
+    response.on.mockImplementation((event: string, handler: (value?: string) => void) => {
+      if (event === 'data') handler('canonical');
+      if (event === 'end') handler();
+      return response;
+    });
+    jest.spyOn(https, 'get').mockImplementation((...args: unknown[]) => {
+      const [, options, callback] = args as [string, object, (value: object) => void];
+      expect(options).toEqual({
+        headers: {
+          Accept: 'application/vnd.github.raw+json',
+          'User-Agent': 'jumentix-agent-registry-check'
+        }
+      });
+      callback(response);
+      return request as never;
+    });
+
+    await expect(fetchText('https://api.github.com/repos/web2solutions/jumentix-agent-registry/contents/AGENT-REGISTRY.md?ref=main'))
+      .resolves.toBe('canonical');
+  });
+
+  it('rejects failed canonical registry responses', async () => {
+    const response = {
+      statusCode: 404,
+      setEncoding: jest.fn(),
+      on: jest.fn()
+    };
+    const request = { on: jest.fn() };
+    jest.spyOn(https, 'get').mockImplementation((...args: unknown[]) => {
+      const [, , callback] = args as [string, object, (value: object) => void];
+      callback(response);
+      return request as never;
+    });
+
+    await expect(fetchText('https://api.github.com/repos/web2solutions/jumentix-agent-registry/contents/missing'))
+      .rejects.toThrow('HTTP 404');
+  });
+});
