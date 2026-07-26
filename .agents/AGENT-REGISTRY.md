@@ -33,9 +33,9 @@ This registry tracks AI agents collaborating in the Jumentix project.
 - `platform`: `OpenAI Codex`
 - `status`: `available`
 - `registered_at_utc`: `2026-07-25T00:00:00Z`
-- `last_branch_check_utc`: `2026-07-25T00:00:00Z`
-- `main_ref_checked`: `4e015522`
-- `dev_ref_checked`: `b99c2026`
+- `last_branch_check_utc`: `2026-07-26T00:39:16Z`
+- `main_ref_checked`: `b9690eeb`
+- `dev_ref_checked`: `28bb68ce`
 - `capabilities`:
   - repository analysis and implementation
   - test and CI debugging
