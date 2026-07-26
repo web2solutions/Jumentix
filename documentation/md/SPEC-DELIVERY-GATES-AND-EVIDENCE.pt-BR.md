@@ -78,8 +78,11 @@ Evidência:
 Critérios de aprovação:
 
 1. O problema, o item do projeto e o PR estão vinculados.
-2. Os campos de prioridade/tamanho/estimativa do ciclo de vida são preenchidos.
-3. Referências de requisitos/NFR são incluídas quando aplicável.
+2. A Issue da tarefa e o Project do épico possuem status, prioridade, datas de início/alvo,
+   rótulos, milestone e responsável explícitos e atuais.
+3. Datas e classificações são consistentes, e alterações materiais de metadados são auditáveis
+   em Project Updates.
+4. Referências de requisitos/NFR são incluídas quando aplicável.
 4. Todo Project do Linear usado como épico possui uma Issue dedicada de documentação.
 5. A Issue de documentação do épico está concluída antes de o Project ser marcado como
    `Completed`.
@@ -89,8 +92,9 @@ Critérios de aprovação:
 
 Evidência:
 
-1. Links cruzados de problemas/projetos/RP do GitHub.
-2. Registro `.agents` atualizado quando a governança ou NFR mudou.
+1. Links cruzados de Issue/Project do Linear e PR.
+2. Capturas dos campos do Linear ou fallback estruturado e histórico de Project Updates.
+3. Registro `.agents` atualizado quando a governança ou NFR mudou.
 3. Link do Project do Linear mais a Issue de documentação concluída, links de PR/commit,
    inventário dos documentos alterados, evidência de paridade bilíngue quando aplicável e
    resultados de integridade da documentação.
@@ -116,3 +120,4 @@ Um PR não está pronto para mesclagem quando algum destes está faltando:
 5. Uma Issue dedicada de documentação ausente ou incompleta para um épico em conclusão.
 6. Uma exceção administrativa que tente dispensar a topologia de entrega ou um gate obrigatório
    com falha, ausente, ignorado, cancelado, expirado ou incompleto.
+7. Metadados completos e consistentes de tarefa/Project do Linear exigidos pelo Requisito `097`.

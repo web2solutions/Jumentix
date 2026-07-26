@@ -10,12 +10,12 @@ O desenvolvimento de especificações orientado no Jumentix é aplicado por meio
 
 Fonte da verdade sobre governança:
 
-- Projeto GitHub Jumentix: `https://github.com/users/web2solutions/projects/1`
+- Issues e Projects do Linear
 
 Registros de governança obrigatórios:
 
-1. Problema do GitHub (item de trabalho)
-2. Item de projeto com campos de planejamento
+1. Issue do Linear (item de trabalho)
+2. Project do Linear (épico focado) com campos de planejamento
 3. RP com questão e evidências vinculadas
 4. Artefatos de especificações e documentação
 5. Registro canônico de agentes em `web2solutions/jumentix-agent-registry` com espelho local em `.agents/AGENT-REGISTRY.md`
@@ -34,6 +34,7 @@ Cada item de entrega deve expor:
 8. `PR -> IDs de requisitos` (quando NFR ou comportamento de governança são afetados)
 9. `Tarefa -> branch dedicada -> PR dedicado`
 10. `Project de épico no Linear -> Issue dedicada de documentação -> evidências de PR/commit/documentação`
+11. `Tarefa/Project -> metadados de planejamento atuais -> histórico de Project Updates`
 
 ## Gate de conclusão da documentação do épico
 
@@ -57,6 +58,28 @@ Cada item de entrega deve expor:
 - `Parent issue`
 - `Milestone`
 - um rótulo de natureza principal
+- agente responsável ou líder do Project
+
+Os campos obrigatórios permanecem atuais durante toda a entrega. Quando o Linear não expõe um
+campo nativo obrigatório para uma entidade, seu fallback estruturado no Linear e o Project Update
+inicial são autoritativos até que um campo nativo ou personalizado esteja disponível.
+
+## Ciclo de vida de metadados de planejamento
+
+1. Agentes validam status, prioridade, datas, rótulos, milestone e responsável da tarefa e do
+   Project antes da aceitação ou delegação.
+2. Datas de início não podem ser posteriores às datas-alvo/fim; datas da tarefa cabem no Project
+   pai e milestone compartilhado, e datas do Project cabem no milestone.
+3. Status reflete o estágio real. Prioridade reflete impacto, urgência, risco, dependências e
+   sequenciamento atuais.
+4. Cada item possui exatamente um rótulo de natureza principal; rótulos suplementares não podem
+   contradizê-lo.
+5. Alterações materiais de metadados entram no próximo Project Update com valores anterior e novo,
+   motivo e impacto na entrega.
+6. Agentes revalidam metadados na criação da branch, prontidão para revisão, handoff, merge e
+   conclusão.
+7. Metadados ausentes, obsoletos, contraditórios, inválidos, provisórios ou não auditáveis
+   reprovam a governança de forma fechada e bloqueiam a progressão.
 
 ## Planejamento e delegação orientados por épico
 
@@ -199,5 +222,7 @@ Conjunto mínimo de evidências:
 11. Prova de propagação mostrando que teste obrigatório ausente ou com falha não pode produzir
     resultado verde
 12. Testes de transporte do Agent Registry cobrindo construção da URL raw imutável, codificação
-    segura do caminho, autenticação opcional da resolução de branch, falhas de transporte e
-    divergência do espelho
+   segura do caminho, autenticação opcional da resolução de branch, falhas de transporte e
+   divergência do espelho
+13. Status, prioridade, datas, rótulos, responsável, alinhamento de milestone e histórico de
+    Project Updates atuais da tarefa/Project

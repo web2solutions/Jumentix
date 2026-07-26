@@ -4,7 +4,7 @@ Primary Codex runtime instructions for this repository:
 
 1. Use `rtk` prefix for shell commands.
 2. Follow `.agents/requirements/*` and `.agents/NFR-REGISTRY.md` as mandatory constraints.
-3. Treat GitHub Project Jumentix as the single source of truth for task tracking.
+3. Treat Linear as the single source of truth for task and Project tracking.
 4. Keep specs/docs/agents in sync when requirements or behavior change.
 5. Do not bypass quality gates; CI and coverage rules are mandatory.
 6. Register in `.agents/AGENT-REGISTRY.md` before task execution.
@@ -21,6 +21,9 @@ Primary Codex runtime instructions for this repository:
 14. Administrators may use a recorded project-owner approval to bypass only the required-review
     count; they must never bypass `dev`-first promotion or failed, missing, or incomplete quality,
     coverage, or security gates.
+15. Maintain valid status, priority, start/target dates, and labels for every assigned Linear
+    Issue and Project; record material changes in Project Updates and fail closed on missing,
+    stale, contradictory, or placeholder metadata under requirement `097`.
 
 Canonical governance/spec references:
 
