@@ -83,8 +83,8 @@ describe('express -> organizations relationship e2e', () => {
         address: [{ email: `hq-${marker}@tenant.dev`, type: 'work', isPrimary: true }],
         email: [{ email: `contact-${marker}@tenant.dev`, type: 'work', isPrimary: true }],
         phone: [{
-          countryCode: 55,
-          localCode: 11,
+          countryCode: '55',
+          localCode: '11',
           number: `9${marker.slice(-8)}`,
           isPrimary: true
         }]

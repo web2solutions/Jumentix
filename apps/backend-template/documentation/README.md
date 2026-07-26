@@ -22,6 +22,7 @@ This is the technical documentation hub for the backend template application use
   - [OpenAPI Spec](../../../spec/1.0.0.yml)
   - [Events and Messages Map](../../../documentation/md/EVENTS-AND-MESSAGES-MAP.md)
   - [Error Contracts and Responses](../../../documentation/md/ERROR-CONTRACTS-AND-RESPONSES.md)
+  - [Tenant and RBAC Authorization Contract](../../../documentation/md/TENANT-RBAC-AUTHORIZATION-CONTRACT.md)
   - [Testing, CI and Quality](../../../documentation/md/TESTING-CI-AND-QUALITY.md)
 
 ## What This Component Delivers

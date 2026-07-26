@@ -75,6 +75,7 @@ This project keeps a technical `id` for document list update/delete operations. 
 | `isPrimary` | `boolean` | No | coercion with `!!isPrimary` | defaults to `false` |
 
 ## OpenAPI alignment notes
-- OpenAPI still models phone codes as `integer`, while domain uses `string`.
-- OpenAPI document type enums may lag domain enum (`passport` support in domain).
+- OpenAPI models `countryCode` and `localCode` as strings, matching the domain value object.
+- OpenAPI accepts the domain document types `CPF`, `RG`, `SSN`, and `passport`.
+- OpenAPI accepts `countryIssue` as a non-empty string; the domain normalizes it to uppercase.
 - `AddressValueObject.email` field name is preserved by project requirement and currently carries address payload string semantics.

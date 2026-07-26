@@ -265,7 +265,8 @@ describe('users controllers', () => {
     await expect(userController.create(makeEvent())).rejects.toThrow('organization scope is required');
     await expect(userController.getAll(makeEvent())).rejects.toThrow('organization scope is required');
     await expect(organizationController.getAll(makeEvent())).rejects.toThrow('organization scope is required');
-    await expect(organizationController.create(makeEvent())).rejects.toThrow('only superadmin can create organizations');
+    await organizationController.create(makeEvent());
+    expect(factory.organizationUseCases.create).toHaveBeenCalled();
   });
 
   it('applies organization/user filters for tenant-scoped getAll operations', async () => {

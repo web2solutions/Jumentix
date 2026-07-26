@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const SUPPORTED_EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs'];
-const IGNORE_DIRS = new Set(['node_modules', '.git', '.build', 'coverage', '.tmp']);
+const IGNORE_DIRS = new Set(['node_modules', '.git', '.build', 'coverage', '.tmp', 'dist']);
 const IMPORT_REGEX = /from\s+['"]([^'"]+)['"]|import\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
 const SRC_ALIAS_BRIDGE_ALLOWLIST = new Set([
   path.join('packages', 'external-store-proxy', 'src', 'ExternalStoreProxy.ts')
@@ -128,6 +128,7 @@ if (require.main === module) {
 
 module.exports = {
   classifyZone,
+  collectSourceFiles,
   readImports,
   validateImport
 };

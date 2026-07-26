@@ -1,6 +1,13 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
+const fs = require('fs');
+const os = require('os');
 const path = require('path');
-const { classifyZone, readImports, validateImport } = require('../../../../../ci-cd/check-workspace-boundaries');
+const {
+  classifyZone,
+  collectSourceFiles,
+  readImports,
+  validateImport
+} = require('../../../../../ci-cd/check-workspace-boundaries');
 
 describe('check-workspace-boundaries', () => {
   const rootDir = '/repo';
@@ -25,6 +32,26 @@ describe('check-workspace-boundaries', () => {
       '@jumentix/message-mediator',
       './local-module'
     ]);
+  });
+
+  it('does not scan generated dist output', () => {
+    expect.hasAssertions();
+    const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'workspace-boundaries-'));
+
+    try {
+      const sourceDir = path.join(temporaryRoot, 'packages', 'example', 'src');
+      const distDir = path.join(temporaryRoot, 'packages', 'example', 'dist');
+      fs.mkdirSync(sourceDir, { recursive: true });
+      fs.mkdirSync(distDir, { recursive: true });
+      fs.writeFileSync(path.join(sourceDir, 'index.ts'), 'export {};\n');
+      fs.writeFileSync(path.join(distDir, 'index.d.ts'), 'import x from \'@src/generated\';\n');
+
+      expect(collectSourceFiles(temporaryRoot, 'packages')).toStrictEqual([
+        path.join(sourceDir, 'index.ts')
+      ]);
+    } finally {
+      fs.rmSync(temporaryRoot, { recursive: true, force: true });
+    }
   });
 
   it('allows backend @src alias usage', () => {

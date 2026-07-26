@@ -37,9 +37,10 @@ pnpm run <command>
 | `release:governance:check` | Run release governance and dry-run routines. | `pnpm run release:governance:check` | `node ci-cd/check-release-governance.js` |
 | `serverless:check-handlers` | Use when you need this specific workspace operation. | `pnpm run serverless:check-handlers` | `node ci-cd/check-serverless-handler-paths.js` |
 | `ci:smoke` | Use in CI validation and delivery gates. | `pnpm run ci:smoke` | `AAA_JWT_TOKEN_SECRET_KEY=${AAA_JWT_TOKEN_SECRET_KEY:-ci_jwt_secret_key} NODE_ENV=ci node ci-cd/run-api-smoke.js` |
+| `ci:integration` | Use in CI validation and delivery gates. | `pnpm run ci:integration` | `AAA_JWT_TOKEN_SECRET_KEY=${AAA_JWT_TOKEN_SECRET_KEY:-ci_jwt_secret_key} node ci-cd/run-integration-tests.js` |
 | `ci:security-smoke` | Use in CI validation and delivery gates. | `pnpm run ci:security-smoke` | `NODE_ENV=ci node ci-cd/run-security-smoke.js` |
 | `ci:gate` | Use in CI validation and delivery gates. | `pnpm run ci:gate` | `pnpm run lint && pnpm run deps:check-cycles && pnpm run arch:check-boundaries && pnpm run arch:check-users-legacy-imports && pnpm run arch:check-workspace-boundaries && pnpm run workspace:check-quality && pnpm run workspace:check-coverage-policy && pnpm run release:governance:check && pnpm run test:unit && pnpm run ci:security-smoke && pnpm run oas:check-routes && pnpm run serverless:check-handlers && pnpm run build:dev && pnpm run ci:smoke` |
-| `ci:gate:strict` | Use in CI validation and delivery gates. | `pnpm run ci:gate:strict` | `pnpm run ci:gate && pnpm run coverage:patch` |
+| `ci:gate:strict` | Use in CI validation and delivery gates. | `pnpm run ci:gate:strict` | `node ci-cd/run-full-test-matrix.js` |
 | `dev` | Default local entrypoint; starts dev PM2 profile. | `pnpm run dev` | `pnpm run pm2:start:dev:restapi` |
 | `website:dev` | Operate the commercial website lifecycle. | `pnpm run website:dev` | `pnpm --filter @jumentix/website dev` |
 | `website:build` | Operate the commercial website lifecycle. | `pnpm run website:build` | `pnpm --filter @jumentix/website build` |
@@ -77,20 +78,20 @@ pnpm run <command>
 | `test` | Run default backend-template test suite. | `pnpm run test` | `NODE_ENV=dev pnpm exec jest ./apps/backend-template/test` |
 | `test:unit` | Run tests for specific scope or profile. | `pnpm run test:unit` | `NODE_ENV=dev node ci-cd/run-unit-tests.js` |
 | `coverage:patch` | Use when you need this specific workspace operation. | `pnpm run coverage:patch` | `node ci-cd/check-patch-coverage.js` |
-| `test:integration` | Run tests for specific scope or profile. | `pnpm run test:integration` | `pnpm run test:integration:express && pnpm run test:integration:fastify && pnpm run test:integration:restify && pnpm run test:integration:hyper-express && pnpm run test:integration:cloudflare-workers && pnpm run test:integration:vercel-functions && pnpm run test:integration:loopback && pnpm run test:integration:sails-js && pnpm run test:integration:feathers && pnpm run test:integration:derby-js && pnpm run test:integration:adonis-js && pnpm run test:integration:total-js && pnpm run test:integration:realtime && pnpm run test:integration:service-management` |
-| `test:integration:express` | Run tests for specific scope or profile. | `pnpm run test:integration:express` | `NODE_ENV=dev jest ./apps/backend-template/test/integration/Express` |
-| `test:integration:fastify` | Run tests for specific scope or profile. | `pnpm run test:integration:fastify` | `NODE_ENV=dev jest ./apps/backend-template/test/integration/Fastify` |
-| `test:integration:restify` | Run tests for specific scope or profile. | `pnpm run test:integration:restify` | `NODE_ENV=dev jest ./apps/backend-template/test/integration/Restify` |
-| `test:integration:lambda` | Run tests for specific scope or profile. | `pnpm run test:integration:lambda` | `NODE_ENV=dev jest ./apps/backend-template/test/integration/Lambda` |
-| `test:integration:hyper-express` | Run tests for specific scope or profile. | `pnpm run test:integration:hyper-express` | `NODE_ENV=dev jest ./apps/backend-template/test/integration/Hyper-Express` |
-| `test:integration:cloudflare-workers` | Run tests for specific scope or profile. | `pnpm run test:integration:cloudflare-workers` | `NODE_ENV=dev jest ./apps/backend-template/test/integration/Cloudflare-Workers` |
-| `test:integration:vercel-functions` | Run tests for specific scope or profile. | `pnpm run test:integration:vercel-functions` | `NODE_ENV=dev jest ./apps/backend-template/test/integration/Vercel-Functions` |
-| `test:integration:loopback` | Run tests for specific scope or profile. | `pnpm run test:integration:loopback` | `NODE_ENV=dev jest ./apps/backend-template/test/integration/LoopBack` |
-| `test:integration:sails-js` | Run tests for specific scope or profile. | `pnpm run test:integration:sails-js` | `NODE_ENV=dev jest ./apps/backend-template/test/integration/Sails-JS` |
-| `test:integration:feathers` | Run tests for specific scope or profile. | `pnpm run test:integration:feathers` | `NODE_ENV=dev jest ./apps/backend-template/test/integration/Feathers` |
-| `test:integration:derby-js` | Run tests for specific scope or profile. | `pnpm run test:integration:derby-js` | `NODE_ENV=dev jest ./apps/backend-template/test/integration/Derby-JS` |
-| `test:integration:adonis-js` | Run tests for specific scope or profile. | `pnpm run test:integration:adonis-js` | `NODE_ENV=dev jest ./apps/backend-template/test/integration/Adonis-JS` |
-| `test:integration:total-js` | Run tests for specific scope or profile. | `pnpm run test:integration:total-js` | `NODE_ENV=dev jest ./apps/backend-template/test/integration/Total-JS` |
+| `test:integration` | Run tests for specific scope or profile. | `pnpm run test:integration` | `node ci-cd/run-integration-tests.js` |
+| `test:integration:express` | Run tests for specific scope or profile. | `pnpm run test:integration:express` | `NODE_ENV=dev jest ./apps/backend-template/test/integration/Express --runInBand --coverage=false` |
+| `test:integration:fastify` | Run tests for specific scope or profile. | `pnpm run test:integration:fastify` | `NODE_ENV=dev jest ./apps/backend-template/test/integration/Fastify --runInBand --coverage=false` |
+| `test:integration:restify` | Run tests for specific scope or profile. | `pnpm run test:integration:restify` | `NODE_ENV=dev jest ./apps/backend-template/test/integration/Restify --runInBand --coverage=false` |
+| `test:integration:lambda` | Run tests for specific scope or profile. | `pnpm run test:integration:lambda` | `AAA_MESSAGE_MEDIATOR_ADAPTER=inmemory NODE_ENV=dev jest ./apps/backend-template/test/integration/Lambda --runInBand --coverage=false` |
+| `test:integration:hyper-express` | Run tests for specific scope or profile. | `pnpm run test:integration:hyper-express` | `NODE_ENV=dev jest ./apps/backend-template/test/integration/Hyper-Express --runInBand --coverage=false` |
+| `test:integration:cloudflare-workers` | Run tests for specific scope or profile. | `pnpm run test:integration:cloudflare-workers` | `NODE_ENV=dev jest ./apps/backend-template/test/integration/Cloudflare-Workers --runInBand --coverage=false` |
+| `test:integration:vercel-functions` | Run tests for specific scope or profile. | `pnpm run test:integration:vercel-functions` | `NODE_ENV=dev jest ./apps/backend-template/test/integration/Vercel-Functions --runInBand --coverage=false` |
+| `test:integration:loopback` | Run tests for specific scope or profile. | `pnpm run test:integration:loopback` | `NODE_ENV=dev jest ./apps/backend-template/test/integration/LoopBack --runInBand --coverage=false` |
+| `test:integration:sails-js` | Run tests for specific scope or profile. | `pnpm run test:integration:sails-js` | `NODE_ENV=dev jest ./apps/backend-template/test/integration/Sails-JS --runInBand --coverage=false` |
+| `test:integration:feathers` | Run tests for specific scope or profile. | `pnpm run test:integration:feathers` | `NODE_ENV=dev jest ./apps/backend-template/test/integration/Feathers --runInBand --coverage=false` |
+| `test:integration:derby-js` | Run tests for specific scope or profile. | `pnpm run test:integration:derby-js` | `NODE_ENV=dev jest ./apps/backend-template/test/integration/Derby-JS --runInBand --coverage=false` |
+| `test:integration:adonis-js` | Run tests for specific scope or profile. | `pnpm run test:integration:adonis-js` | `NODE_ENV=dev jest ./apps/backend-template/test/integration/Adonis-JS --runInBand --coverage=false` |
+| `test:integration:total-js` | Run tests for specific scope or profile. | `pnpm run test:integration:total-js` | `NODE_ENV=dev jest ./apps/backend-template/test/integration/Total-JS --runInBand --coverage=false` |
 | `test:integration:service-management` | Run tests for specific scope or profile. | `pnpm run test:integration:service-management` | `NODE_ENV=dev node ci-cd/run-service-management-integration.js` |
 | `test:integration:service-mangement` | Run tests for specific scope or profile. | `pnpm run test:integration:service-mangement` | `pnpm run test:integration:service-management` |
 | `test:integration:realtime:websocket` | Run tests for specific scope or profile. | `pnpm run test:integration:realtime:websocket` | `NODE_ENV=dev jest ./apps/backend-template/test/integration/realtime/websocket.basic.integration.test.ts --runInBand --coverage=false` |

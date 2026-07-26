@@ -299,7 +299,9 @@ describe('user service', () => {
 
   it('synchronizes organization-user relationship on update and delete', async () => {
     expect.hasAssertions();
-    const { service, organizationDataRepository, dataRepository } = setup();
+    const {
+      service, organizationDataRepository, dataRepository, cacheService
+    } = setup();
     (dataRepository.getOneById as jest.Mock).mockResolvedValueOnce({
       ...baseUser,
       organization: 'org-1'
@@ -346,6 +348,7 @@ describe('user service', () => {
       'org-2',
       expect.objectContaining({ users: [baseUser.id] })
     );
+    expect(cacheService.bumpVersion).toHaveBeenCalledWith('organizations');
 
     (dataRepository.getOneById as jest.Mock).mockResolvedValueOnce({
       ...baseUser,
@@ -365,6 +368,7 @@ describe('user service', () => {
       'org-2',
       expect.objectContaining({ users: [] })
     );
+    expect(cacheService.bumpVersion).toHaveBeenCalledTimes(4);
   });
 
   it('keeps main flow when integration publish fails and handles lookup failure', async () => {
