@@ -11,12 +11,18 @@ This registry tracks AI agents collaborating in the Jumentix project.
    - a new agent is introduced
    - agent availability changes
    - branch-sync policy changes
+5. Registry must support multiple agents running on the same machine with unique `agent_id` values.
 
 ## Registry Fields
 
 - `agent_id`: unique identifier in this repository
 - `agent_name`: display name
 - `platform`: runtime/platform name
+- `machine_id`: stable host identifier for audit traceability
+- `machine_name`: host machine name
+- `machine_os`: host operating system summary
+- `agent_runtime`: runtime/distribution used to execute the agent
+- `agent_version`: agent/runtime version string
 - `status`: `available` | `busy` | `offline`
 - `registered_at_utc`: ISO timestamp
 - `last_branch_check_utc`: ISO timestamp
@@ -31,6 +37,11 @@ This registry tracks AI agents collaborating in the Jumentix project.
 - `agent_id`: `codex-primary-001`
 - `agent_name`: `Codex Primary`
 - `platform`: `OpenAI Codex`
+- `machine_id`: `host-eduardos-mac-pro-local`
+- `machine_name`: `Eduardos-Mac-Pro.local`
+- `machine_os`: `Darwin 21.6.0 x86_64`
+- `agent_runtime`: `OpenAI Codex`
+- `agent_version`: `GPT-5 Codex`
 - `status`: `available`
 - `registered_at_utc`: `2026-07-25T00:00:00Z`
 - `last_branch_check_utc`: `2026-07-26T00:39:16Z`

@@ -94,6 +94,8 @@ Use these files as living constraints for future maintenance and feature develop
 - [076-task-documentation-and-bilingual-governance](requirements/076-task-documentation-and-bilingual-governance.md)
 - [077-multi-agent-platform-support](requirements/077-multi-agent-platform-support.md)
 - [078-agent-registry-and-branch-sync-governance](requirements/078-agent-registry-and-branch-sync-governance.md)
+- [079-main-branch-protection-and-branching-principles](requirements/079-main-branch-protection-and-branching-principles.md)
+- [080-agent-registry-machine-and-version-identity](requirements/080-agent-registry-machine-and-version-identity.md)
 - [Agent Registry](AGENT-REGISTRY.md)
 - [NFR Registry](NFR-REGISTRY.md)
 - [Spec Development Driven Agent](spec-development-driven-agent.md)
