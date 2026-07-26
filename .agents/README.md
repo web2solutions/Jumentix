@@ -106,6 +106,7 @@ Use these files as living constraints for future maintenance and feature develop
 - [087-branch-aware-quality-gate-policy](requirements/087-branch-aware-quality-gate-policy.md)
 - [088-task-branch-change-focused-tests](requirements/088-task-branch-change-focused-tests.md)
 - [089-agent-registry-external-single-source-of-truth](requirements/089-agent-registry-external-single-source-of-truth.md)
+- [090-focused-epic-task-grouping-and-agent-delegation](requirements/090-focused-epic-task-grouping-and-agent-delegation.md)
 - [Agent Registry](AGENT-REGISTRY.md)
 - [NFR Registry](NFR-REGISTRY.md)
 - [Spec Development Driven Agent](spec-development-driven-agent.md)

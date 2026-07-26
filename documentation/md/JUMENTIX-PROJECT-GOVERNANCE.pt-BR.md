@@ -21,11 +21,27 @@ Este projeto usa o Projeto GitHub **Jumentix** (`https://github.com/users/web2so
 5. As atualizações do progresso das tarefas devem ocorrer no status do item do projeto, não apenas nas notas locais.
 6. Todas as tarefas executadas devem manter os metadados de governança atualizados (status, prioridade, estimativas, ciclo/iteração, datas de início/término, rótulos, responsável, links PR/commit).
 
+## Épicos focados e natureza das tarefas
+
+1. Toda tarefa executável pertence a exatamente um épico focado por meio de parentagem
+   estruturada no GitHub.
+2. Cada épico representa um único resultado coeso e não pode funcionar como backlog genérico.
+3. Cada tarefa filha tem exatamente uma natureza principal: `feature`, `bug`, `security`,
+   `governance`, `docs`, `refactor`, `test`, `ci`, `release` ou `chore`.
+4. As tarefas são agrupadas por natureza dentro do épico. Naturezas de suporte diferentes usam
+   tarefas filhas separadas, vinculadas ao mesmo resultado.
+5. Trabalho que cruza resultados não relacionados é dividido entre épicos focados.
+6. A delegação de agentes é estabelecida no nível do épico antes da atribuição de tarefas.
+7. Somente agentes delegados a um épico podem executar suas tarefas filhas, com um agente
+   responsável e escopo não sobreposto por tarefa.
+8. O Agent Registry canônico registra `active_epic` e `assigned_task` de cada agente executor.
+
 ## Governança de RP
 
 Cada PR deve incluir:
 
 - Link(s) de problemas relacionados
+- Link do épico pai focado
 - Contexto do item do projeto relacionado (Projeto: `Jumentix`)
 - Critérios de aceitação e evidências de validação
 - Cobertura e evidências de qualidade
@@ -73,12 +89,17 @@ Não é permitido misturar `P0`, `P1` e `P2` no mesmo PR.
 ## Backlog e fluxo de entrega
 
 1. Criar/triagem de problema.
-2. Adicione o problema ao projeto `Jumentix`.
-3. Defina valores de campo e datas de ciclo.
-4. Crie a branch exclusiva da tarefa com prefixo de natureza.
-5. Implemente com um PR dedicado tendo `dev` como destino e vinculado à issue e ao projeto.
-6. Promova `dev` para `main` somente por meio de um PR de promoção de release após a aprovação da matriz completa.
-7. Mova o status do projeto (`Backlog` -> `Pronto` -> `Em andamento` -> `Em revisão` -> `Concluído`).
+2. Criar ou selecionar seu épico pai focado e estabelecer a parentagem estruturada.
+3. Adicionar a issue ao projeto `Jumentix`.
+4. Definir natureza, valores dos campos e datas do ciclo.
+5. Delegar agentes disponíveis ao épico e então atribuir suas tarefas filhas não sobrepostas.
+6. Criar a branch exclusiva da tarefa com prefixo de natureza.
+7. Implementar com um PR dedicado tendo `dev` como destino e vinculado ao épico, à issue e ao
+   projeto.
+8. Promover `dev` para `main` somente por meio de um PR de promoção de release após a aprovação
+   da matriz completa.
+9. Mover o status do projeto (`Backlog` -> `Pronto` -> `Em andamento` -> `Em revisão` ->
+   `Concluído`).
 
 ## Política de Ciclo e Estimativa
 
