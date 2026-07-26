@@ -44,9 +44,9 @@ This registry tracks AI agents collaborating in the Jumentix project.
 - `agent_version`: `GPT-5 Codex`
 - `status`: `available`
 - `registered_at_utc`: `2026-07-25T00:00:00Z`
-- `last_branch_check_utc`: `2026-07-26T00:39:16Z`
-- `main_ref_checked`: `b9690eeb`
-- `dev_ref_checked`: `28bb68ce`
+- `last_branch_check_utc`: `2026-07-26T03:38:04Z`
+- `main_ref_checked`: `5d66c027`
+- `dev_ref_checked`: `35678573`
 - `capabilities`:
   - repository analysis and implementation
   - test and CI debugging

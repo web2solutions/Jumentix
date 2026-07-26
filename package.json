@@ -42,6 +42,7 @@
     "ci:integration": "AAA_JWT_TOKEN_SECRET_KEY=${AAA_JWT_TOKEN_SECRET_KEY:-ci_jwt_secret_key} node ci-cd/run-integration-tests.js",
     "ci:security-smoke": "NODE_ENV=ci node ci-cd/run-security-smoke.js",
     "ci:gate": "pnpm run lint && pnpm run deps:check-cycles && pnpm run arch:check-boundaries && pnpm run arch:check-users-legacy-imports && pnpm run arch:check-workspace-boundaries && pnpm run workspace:check-quality && pnpm run workspace:check-coverage-policy && pnpm run release:governance:check && pnpm run test:unit && pnpm run ci:security-smoke && pnpm run oas:check-routes && pnpm run serverless:check-handlers && pnpm run build:dev && pnpm run ci:smoke",
+    "ci:gate:branch": "node ci-cd/run-branch-quality-gate.js",
     "ci:gate:strict": "node ci-cd/run-full-test-matrix.js",
     "dev": "pnpm run pm2:start:dev:restapi",
     "website:dev": "pnpm --filter @jumentix/website dev",
