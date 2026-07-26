@@ -9,12 +9,14 @@ import '@/theme/global.css';
 import { Analytics } from '@vercel/analytics/react';
 import { mantineHtmlProps, MantineProvider } from '@mantine/core';
 import Script from 'next/script';
+import { CommercialChrome } from '@/components/commercial/CommercialChrome';
 // !! End of important imports !!
 
 import config from '@/config';
 import { theme } from '../theme';
 
 import './global.css';
+import '@/components/design-system/tokens.css';
 
 export const metadata = config.metadata;
 export const dynamic = 'force-dynamic';
@@ -51,7 +53,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body>
         <MantineProvider theme={theme} defaultColorScheme={head.mantine.defaultColorScheme}>
-          {children}
+          <CommercialChrome>{children}</CommercialChrome>
         </MantineProvider>
         <Analytics />
       </body>

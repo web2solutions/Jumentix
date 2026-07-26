@@ -13,8 +13,10 @@ import {
   IconCode,
   IconExternalLink,
   IconLanguage,
+  IconMenu2,
   IconSearch,
   IconTopologyStar3,
+  IconX,
 } from '@tabler/icons-react';
 import classes from './DesignSystem.module.css';
 
@@ -263,114 +265,205 @@ export function Pagination({
   current,
   total,
   onChange,
+  hrefBase,
 }: {
   current: number;
   total: number;
   onChange?: (page: number) => void;
+  hrefBase?: string;
 }) {
   const pages = Array.from({ length: total }, (_, index) => index + 1);
+  const hrefForPage = (page: number) => `${hrefBase}?page=${page}`;
+  const control = (page: number, label: string, children: ReactNode, disabled = false) => {
+    if (hrefBase && !disabled) {
+      return (
+        <a className={classes.pageButton} href={hrefForPage(page)} aria-label={label}>
+          {children}
+        </a>
+      );
+    }
+    return (
+      <button
+        className={classes.pageButton}
+        type="button"
+        disabled={disabled}
+        aria-label={label}
+        onClick={() => onChange?.(page)}
+      >
+        {children}
+      </button>
+    );
+  };
   return (
     <nav className={classes.pagination} aria-label="Pagination">
-      <button
-        className={classes.pageButton}
-        type="button"
-        disabled={current <= 1}
-        aria-label="Previous page"
-        onClick={() => onChange?.(current - 1)}
-      >
-        <IconArrowLeft size={17} />
-      </button>
+      {control(current - 1, 'Previous page', <IconArrowLeft size={17} />, current <= 1)}
       {pages.map((page) => (
-        <button
-          className={classes.pageButton}
-          type="button"
-          key={page}
-          aria-current={page === current ? 'page' : undefined}
-          aria-label={`Page ${page}`}
-          onClick={() => onChange?.(page)}
-        >
-          {page}
-        </button>
+        hrefBase ? (
+          <a
+            className={classes.pageButton}
+            href={hrefForPage(page)}
+            key={page}
+            aria-current={page === current ? 'page' : undefined}
+            aria-label={`Page ${page}`}
+          >
+            {page}
+          </a>
+        ) : (
+          <button
+            className={classes.pageButton}
+            type="button"
+            key={page}
+            aria-current={page === current ? 'page' : undefined}
+            aria-label={`Page ${page}`}
+            onClick={() => onChange?.(page)}
+          >
+            {page}
+          </button>
+        )
       ))}
-      <button
-        className={classes.pageButton}
-        type="button"
-        disabled={current >= total}
-        aria-label="Next page"
-        onClick={() => onChange?.(current + 1)}
-      >
-        <IconArrowRight size={17} />
-      </button>
+      {control(current + 1, 'Next page', <IconArrowRight size={17} />, current >= total)}
     </nav>
   );
 }
 
-export function LocaleSwitch({ locale = 'EN' }: { locale?: 'EN' | 'PT-BR' }) {
-  return (
-    <button className={classes.locale} type="button" aria-label={`Current language: ${locale}`}>
+export function LocaleSwitch({
+  locale = 'EN',
+  href,
+}: {
+  locale?: 'EN' | 'PT-BR';
+  href?: string;
+}) {
+  const content = (
+    <>
       <IconLanguage size={17} aria-hidden="true" />
       {locale}
+    </>
+  );
+
+  if (href) {
+    return (
+      <a className={classes.locale} href={href} aria-label={`Switch language to ${locale}`}>
+        {content}
+      </a>
+    );
+  }
+
+  return (
+    <button className={classes.locale} type="button" aria-label={`Current language: ${locale}`}>
+      {content}
     </button>
   );
 }
 
 const navItems = [
-  ['Product', '/product'],
-  ['Use cases', '/use-cases'],
-  ['Integrations', '/integrations'],
-  ['Docs', '/docs/jumentix'],
+  { en: 'Product', pt: 'Produto', href: '/product' },
+  { en: 'Use cases', pt: 'Casos de uso', href: '/use-cases' },
+  { en: 'Integrations', pt: 'Integrações', href: '/integrations' },
+  { en: 'Architecture', pt: 'Arquitetura', href: '/architecture' },
+  { en: 'Docs', pt: 'Docs', href: '/docs/jumentix' },
 ];
 
-export function SiteHeader() {
+const localizePath = (path: string, locale: 'en' | 'pt-BR') => {
+  if (path.startsWith('/docs')) return path;
+  return locale === 'pt-BR' ? `/pt-BR${path === '/' ? '' : path}` : path;
+};
+
+export function SiteHeader({
+  locale = 'en',
+  currentPath = '/',
+}: {
+  locale?: 'en' | 'pt-BR';
+  currentPath?: string;
+}) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const isPortuguese = locale === 'pt-BR';
+  const alternatePath = isPortuguese
+    ? currentPath.replace(/^\/pt-BR(?=\/|$)/, '') || '/'
+    : `/pt-BR${currentPath === '/' ? '' : currentPath}`;
+
   return (
     <header className={classes.header}>
       <div className={classes.headerInner}>
-        <BrandMark />
+        <BrandMark href={localizePath('/', locale)} />
         <nav className={classes.nav} aria-label="Main navigation">
-          {navItems.map(([label, href]) => (
-            <a href={href} key={href}>
-              {label}
+          {navItems.map((item) => (
+            <a
+              href={localizePath(item.href, locale)}
+              key={item.href}
+              aria-current={currentPath.endsWith(item.href) ? 'page' : undefined}
+            >
+              {isPortuguese ? item.pt : item.en}
             </a>
           ))}
         </nav>
         <div className={classes.headerActions}>
-          <LocaleSwitch />
+          <LocaleSwitch locale={isPortuguese ? 'EN' : 'PT-BR'} href={alternatePath} />
           <ActionLink href="https://github.com/web2solutions/aaa-typescript-boilerplate" variant="secondary" external>
             GitHub
           </ActionLink>
+          <button
+            className={classes.mobileMenuButton}
+            type="button"
+            aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            aria-expanded={menuOpen}
+            aria-controls="jtx-mobile-navigation"
+            onClick={() => setMenuOpen((value) => !value)}
+          >
+            {menuOpen ? <IconX size={20} /> : <IconMenu2 size={20} />}
+          </button>
         </div>
       </div>
+      <nav
+        className={classes.mobileNav}
+        id="jtx-mobile-navigation"
+        aria-label="Mobile navigation"
+        hidden={!menuOpen}
+      >
+        {navItems.map((item) => (
+          <a href={localizePath(item.href, locale)} key={item.href}>
+            {isPortuguese ? item.pt : item.en}
+          </a>
+        ))}
+        <a href={localizePath('/community', locale)}>
+          {isPortuguese ? 'Comunidade' : 'Community'}
+        </a>
+        <a href={localizePath('/roadmap', locale)}>Roadmap</a>
+      </nav>
     </header>
   );
 }
 
-export function SiteFooter() {
+export function SiteFooter({ locale = 'en' }: { locale?: 'en' | 'pt-BR' }) {
+  const isPortuguese = locale === 'pt-BR';
   return (
     <footer className={classes.footer}>
       <div className={classes.footerInner}>
         <div>
-          <BrandMark />
+          <BrandMark href={localizePath('/', locale)} />
           <p className={classes.footerDescription}>
-            An open-source software factory for contract-first, scalable Node.js products.
+            {isPortuguese
+              ? 'Uma fábrica de software open source para produtos Node.js escaláveis e orientados a contratos.'
+              : 'An open-source software factory for contract-first, scalable Node.js products.'}
           </p>
         </div>
         <div className={classes.footerColumn}>
-          <strong>Build</strong>
-          <a href="/product">Product</a>
-          <a href="/use-cases">Use cases</a>
-          <a href="/integrations">Integrations</a>
+          <strong>{isPortuguese ? 'Construa' : 'Build'}</strong>
+          <a href={localizePath('/product', locale)}>{isPortuguese ? 'Produto' : 'Product'}</a>
+          <a href={localizePath('/use-cases', locale)}>{isPortuguese ? 'Casos de uso' : 'Use cases'}</a>
+          <a href={localizePath('/integrations', locale)}>{isPortuguese ? 'Integrações' : 'Integrations'}</a>
         </div>
         <div className={classes.footerColumn}>
-          <strong>Learn</strong>
+          <strong>{isPortuguese ? 'Aprenda' : 'Learn'}</strong>
           <a href="/docs/jumentix">Documentation</a>
-          <a href="/architecture">Architecture</a>
-          <a href="/changelog">Changelog</a>
+          <a href={localizePath('/architecture', locale)}>{isPortuguese ? 'Arquitetura' : 'Architecture'}</a>
+          <a href={localizePath('/changelog', locale)}>Changelog</a>
         </div>
         <div className={classes.footerColumn}>
-          <strong>Community</strong>
+          <strong>{isPortuguese ? 'Comunidade' : 'Community'}</strong>
           <a href="https://github.com/web2solutions/aaa-typescript-boilerplate">GitHub</a>
-          <a href="/security-compliance">Security</a>
-          <a href="/contact">Contact</a>
+          <a href={localizePath('/roadmap', locale)}>Roadmap</a>
+          <a href={localizePath('/community', locale)}>{isPortuguese ? 'Contribua' : 'Contribute'}</a>
+          <a href={localizePath('/security-compliance', locale)}>{isPortuguese ? 'Segurança' : 'Security'}</a>
         </div>
       </div>
     </footer>

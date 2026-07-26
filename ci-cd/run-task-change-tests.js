@@ -5,6 +5,7 @@ const { spawnSync } = require('child_process');
 
 const UNIT_TEST_PATH = /(^|\/)test\/unit\/.*\.(test|spec)\.[cm]?[jt]sx?$/;
 const IMPLEMENTATION_PATH = /^(ci-cd\/|apps\/[^/]+\/(src|scripts)\/|packages\/[^/]+\/src\/|tooling\/|\.husky\/|\.github\/|\.circleci\/|package\.json$)/;
+const WEBSITE_PATH = /^apps\/jumentix-website\//;
 
 function normalizeFiles(files) {
   return [...new Set((files || [])
@@ -30,6 +31,19 @@ function readChangedFiles(options = {}) {
 function createTaskTestPlan(files) {
   const changedFiles = normalizeFiles(files);
   const unitTests = changedFiles.filter((file) => UNIT_TEST_PATH.test(file));
+  const websiteFiles = changedFiles.filter((file) => WEBSITE_PATH.test(file));
+  const relatedFiles = changedFiles.filter(
+    (file) => IMPLEMENTATION_PATH.test(file) && !WEBSITE_PATH.test(file) && !UNIT_TEST_PATH.test(file)
+  );
+
+  if (websiteFiles.length > 0) {
+    return {
+      type: 'website-quality-gate',
+      files: websiteFiles,
+      unitTests,
+      relatedFiles
+    };
+  }
 
   if (unitTests.length > 0) {
     return { type: 'changed-unit-tests', files: unitTests };
@@ -45,6 +59,39 @@ function createTaskTestPlan(files) {
 
 function executeTaskTestPlan(plan) {
   if (plan.type === 'not-applicable') return 0;
+
+  if (plan.type === 'website-quality-gate') {
+    const websiteCommands = [
+      ['--filter', '@jumentix/website', 'run', 'storybook:build'],
+      ['--filter', '@jumentix/website', 'run', 'storybook:smoke'],
+      ['--filter', '@jumentix/website', 'run', 'test:prepublish']
+    ];
+
+    for (const args of websiteCommands) {
+      const websiteResult = spawnSync('pnpm', args, {
+        stdio: 'inherit',
+        env: { ...process.env }
+      });
+      if (websiteResult.status !== 0) return Number(websiteResult.status ?? 1);
+    }
+
+    if (plan.unitTests.length > 0) {
+      const unitResult = spawnSync(
+        'pnpm',
+        ['exec', 'jest', '--runInBand', '--coverage=false', ...plan.unitTests],
+        { stdio: 'inherit', env: { ...process.env } }
+      );
+      if (unitResult.status !== 0) return Number(unitResult.status ?? 1);
+    }
+
+    if (plan.relatedFiles.length === 0) return 0;
+    const relatedResult = spawnSync(
+      'pnpm',
+      ['exec', 'jest', '--runInBand', '--coverage=false', '--findRelatedTests', ...plan.relatedFiles],
+      { stdio: 'inherit', env: { ...process.env } }
+    );
+    return Number.isInteger(relatedResult.status) ? relatedResult.status : 1;
+  }
 
   const args = plan.type === 'changed-unit-tests'
     ? ['exec', 'jest', '--runInBand', '--coverage=false', ...plan.files]
@@ -106,6 +153,7 @@ if (require.main === module) {
 module.exports = {
   IMPLEMENTATION_PATH,
   UNIT_TEST_PATH,
+  WEBSITE_PATH,
   createTaskTestPlan,
   executeTaskTestPlan,
   normalizeFiles,

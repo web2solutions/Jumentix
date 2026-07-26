@@ -51,8 +51,8 @@ O Storybook está configurado para:
 - builds estáticos determinísticos;
 - smoke test do manifesto, exigindo histórias fundamentais e tamanho mínimo do catálogo.
 
-O catálogo gera atualmente 30 entradas indexadas, incluindo estados mobile explícitos para o
-cabeçalho do site e o fluxo de arquitetura.
+O catálogo gera atualmente 42 entradas indexadas, incluindo estados mobile explícitos para o
+cabeçalho, fluxo de arquitetura, página comercial do produto e composições comerciais completas.
 
 Evidências visuais:
 

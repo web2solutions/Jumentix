@@ -153,9 +153,12 @@ Includes:
 Required specs:
 
 1. `.agents/requirements/069-jumentix-website-commercial-static-vercel-governance.md`
-2. `apps/jumentix-website/documentation/CONTENT-PIPELINE.md`
-3. `apps/jumentix-website/documentation/VERCEL-DEPLOYMENT.md`
-4. Website UX audit and information architecture under
+2. `.agents/requirements/091-jumentix-website-design-system-and-storybook.md`
+3. `.agents/requirements/092-jumentix-oss-commercial-experience.md`
+4. `apps/jumentix-website/documentation/COMMERCIAL-EXPERIENCE.md`
+5. `apps/jumentix-website/documentation/CONTENT-PIPELINE.md`
+6. `apps/jumentix-website/documentation/VERCEL-DEPLOYMENT.md`
+7. Website UX audit and information architecture under
    `apps/jumentix-website/documentation/research`
 
 Mandatory checks:
@@ -167,6 +170,8 @@ Mandatory checks:
 5. Storybook coverage for reusable website components
 6. Storybook static build and manifest smoke validation
 7. Design-system accessibility, theme, viewport, and reduced-motion validation
+8. English/Portuguese commercial route parity and locale-preserving navigation
+9. Canonical metadata, sitemap hostname, GitHub changelog pagination, and internal-link integrity
 
 ## Workflow Definition (Spec-First)
 

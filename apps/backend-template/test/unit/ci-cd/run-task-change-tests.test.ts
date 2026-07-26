@@ -50,6 +50,24 @@ describe('run-task-change-tests', () => {
     });
   });
 
+  it('selects website-native gates and preserves other related test inputs', () => {
+    expect.hasAssertions();
+    expect(createTaskTestPlan([
+      'apps/jumentix-website/app/page.tsx',
+      'apps/jumentix-website/scripts/prepublish-site-checks.mjs',
+      'ci-cd/run-task-change-tests.js',
+      'apps/backend-template/test/unit/ci-cd/run-task-change-tests.test.ts'
+    ])).toStrictEqual({
+      type: 'website-quality-gate',
+      files: [
+        'apps/jumentix-website/app/page.tsx',
+        'apps/jumentix-website/scripts/prepublish-site-checks.mjs'
+      ],
+      unitTests: ['apps/backend-template/test/unit/ci-cd/run-task-change-tests.test.ts'],
+      relatedFiles: ['ci-cd/run-task-change-tests.js']
+    });
+  });
+
   it('does not run unrelated tests for docs-only changes', () => {
     expect.hasAssertions();
     expect(createTaskTestPlan(['documentation/md/TESTING-CI-AND-QUALITY.md'])).toStrictEqual({

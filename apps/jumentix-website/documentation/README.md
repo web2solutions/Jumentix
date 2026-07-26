@@ -11,6 +11,7 @@ Audience contract:
 
 - [AdonisJS UX Reference Audit and Jumentix IA](./research/ADONISJS-UX-AUDIT.md)
 - [Design System and Storybook](./DESIGN-SYSTEM-AND-STORYBOOK.md)
+- [Commercial Website Experience](./COMMERCIAL-EXPERIENCE.md)
 - [Website IA and Conversion Plan](./WEBSITE-IA-AND-CONVERSION-PLAN.md)
 - [Markdown Content Pipeline](./CONTENT-PIPELINE.md)
 - [Changelog Page](./CHANGELOG-PAGE.md)
