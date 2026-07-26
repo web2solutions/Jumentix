@@ -44,6 +44,7 @@ Each PR must contain:
 3. Acceptance criteria and evidence
 4. Coverage and gate outcomes
 5. Risk/rollback notes when needed
+6. Clean markdown formatting with real breaklines; do not use literal `\n` tokens in PR body text.
 
 Priority grouping policy:
 
