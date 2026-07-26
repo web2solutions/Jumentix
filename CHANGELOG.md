@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- 2026-07-26 fix(ci): preserve unit LCOV for Codecov (#183) - web2solutions
 - 2026-07-26 feat(website): rebuild documentation experience (#172) (#181) - Eduardo A.
 - 2026-07-26 [CI] Enforce focused epic metadata without false-green task gates (#176) - Eduardo A.
 - 2026-07-26 feat(website): rebuild OSS commercial experience (#171) - Eduardo A.

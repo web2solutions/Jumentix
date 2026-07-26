@@ -49,6 +49,20 @@ describe('check-pr-governance', () => {
     expect(readField(validBody, 'Epic-delegated agent ID')).toBe('codex-primary-001');
   });
 
+  it('accepts bug tasks with the canonical branch and title prefix', () => {
+    expect.hasAssertions();
+    const bugBody = validBody
+      .replace('Primary task nature: ci', 'Primary task nature: bug')
+      .replace('/issues/163', '/issues/183');
+
+    expect(validatePullRequest({
+      title: '[Bug] Preserve unit LCOV for Codecov (#183)',
+      body: bugBody,
+      headRef: 'codex/bug/183-codecov-artifact',
+      baseRef: 'dev'
+    })).toStrictEqual([]);
+  });
+
   it('fails closed for missing metadata and mismatched task nature', () => {
     expect.hasAssertions();
     const failures = validatePullRequest({
