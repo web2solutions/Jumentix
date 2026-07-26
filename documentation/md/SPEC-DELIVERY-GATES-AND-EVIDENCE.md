@@ -79,11 +79,15 @@ Pass criteria:
 1. Issue, project item, and PR are linked.
 2. Priority/size/estimation lifecycle fields are populated.
 3. Requirement/NFR references are included when applicable.
+4. Every Linear Project used as an epic has a dedicated documentation Issue.
+5. The epic documentation Issue is completed before the Project is set to `Completed`.
 
 Evidence:
 
 1. GitHub issue/project/PR cross-links.
 2. Updated `.agents` registry when governance or NFR changed.
+3. Linear Project link plus the completed documentation Issue, PR/commit links, changed-document
+   inventory, bilingual parity evidence when applicable, and documentation integrity results.
 
 ## Evidence Packaging Standard for PRs
 
@@ -103,3 +107,4 @@ A PR is not merge-ready when any of these is missing:
 2. Required checks or coverage threshold.
 3. Governance traceability links.
 4. Required `.agents` updates for NFR/governance impact.
+5. A missing or incomplete dedicated documentation Issue for an epic being completed.
