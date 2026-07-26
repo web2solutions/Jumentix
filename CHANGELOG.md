@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- 2026-07-25 chore(changelog): include latest commit in generated history - web2solutions
 - 2026-07-25 chore(changelog): sync changelog with latest governance commit - web2solutions
 - 2026-07-25 feat(governance): add multi-agent support and agent registry workflow - web2solutions
 - 2026-07-25 fix(ci): setup pnpm before node cache in sonar workflow - web2solutions

@@ -123,6 +123,29 @@ function generateChangelog() {
   return `${lines.join('\n').trim()}\n`;
 }
 
+function getHeadCommitLine() {
+  const output = runGit([
+    'show',
+    '-s',
+    '--date=short',
+    `--format=%ad${FIELD_SEPARATOR}%an${FIELD_SEPARATOR}%s`,
+    'HEAD'
+  ], { allowFailure: true });
+
+  if (!output) return '';
+
+  const [date, author, subject] = output.split(FIELD_SEPARATOR);
+  if (!date || !author || !subject) return '';
+  return `- ${date} ${subject} - ${author}`;
+}
+
+function removeLineOnce(text, line) {
+  if (!line) return text;
+  const token = `${line}\n`;
+  if (text.includes(token)) return text.replace(token, '');
+  return text.replace(line, '');
+}
+
 function main() {
   const checkOnly = process.argv.includes('--check');
   const root = getRepoRoot();
@@ -133,7 +156,9 @@ function main() {
     : '';
 
   if (checkOnly) {
-    if (current !== generated) {
+    const generatedPreviousHead = removeLineOnce(generated, getHeadCommitLine());
+    const isSynced = current === generated || current === generatedPreviousHead;
+    if (!isSynced) {
       console.error(`${CHANGELOG_FILE} is out of sync with Git history.`);
       console.error(`Run "pnpm run changelog:update" and commit the generated changes.`);
       process.exit(1);
