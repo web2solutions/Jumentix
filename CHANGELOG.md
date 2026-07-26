@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- 2026-07-25 docs(governance): require cleanup of feature/bug branches after dev merge - web2solutions
 - 2026-07-25 docs(governance): fix circleci badge and refresh agent branch sync - web2solutions
 - 2026-07-25 feat(governance): add multi-agent registry and branch-sync requirements (#141) - Eduardo A.
 - 2026-07-25 chore(docs): remove ai draft files - web2solutions

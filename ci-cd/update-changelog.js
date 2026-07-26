@@ -50,14 +50,16 @@ function getTags() {
 }
 
 function getCommitDate(ref) {
-  return runGit(['show', '-s', '--date=short', '--format=%ad', ref], { allowFailure: true });
+  const isoDate = runGit(['show', '-s', '--format=%aI', ref], { allowFailure: true });
+  if (!isoDate) return '';
+  const [date] = isoDate.split('T');
+  return date || '';
 }
 
 function getCommits(range) {
   const output = runGit([
     'log',
-    '--date=short',
-    `--pretty=format:%H${FIELD_SEPARATOR}%h${FIELD_SEPARATOR}%ad${FIELD_SEPARATOR}%an${FIELD_SEPARATOR}%s${RECORD_SEPARATOR}`,
+    `--pretty=format:%H${FIELD_SEPARATOR}%h${FIELD_SEPARATOR}%aI${FIELD_SEPARATOR}%an${FIELD_SEPARATOR}%s${RECORD_SEPARATOR}`,
     range
   ], { allowFailure: true });
 
@@ -67,7 +69,8 @@ function getCommits(range) {
     .split(RECORD_SEPARATOR)
     .filter(Boolean)
     .map((record) => {
-      const [hash, shortHash, date, author, subject] = record.split(FIELD_SEPARATOR);
+      const [hash, shortHash, isoDate, author, subject] = record.split(FIELD_SEPARATOR);
+      const [date] = (isoDate || '').split('T');
       return {
         hash,
         shortHash,
@@ -127,14 +130,14 @@ function getHeadCommitLine() {
   const output = runGit([
     'show',
     '-s',
-    '--date=short',
-    `--format=%ad${FIELD_SEPARATOR}%an${FIELD_SEPARATOR}%s`,
+    `--format=%aI${FIELD_SEPARATOR}%an${FIELD_SEPARATOR}%s`,
     'HEAD'
   ], { allowFailure: true });
 
   if (!output) return '';
 
-  const [date, author, subject] = output.split(FIELD_SEPARATOR);
+  const [isoDate, author, subject] = output.split(FIELD_SEPARATOR);
+  const [date] = (isoDate || '').split('T');
   if (!date || !author || !subject) return '';
   return `- ${date} ${subject} - ${author}`;
 }

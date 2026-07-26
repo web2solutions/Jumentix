@@ -9,6 +9,8 @@ Primary Codex runtime instructions for this repository:
 5. Do not bypass quality gates; CI and coverage rules are mandatory.
 6. Register in `.agents/AGENT-REGISTRY.md` before task execution.
 7. Before starting work, check `main` and `dev` branch refs and update registry check fields.
+8. Do not implement new changes directly on local `main`; use dedicated feature/fix/chore branches per requirement `079`.
+9. Follow the agent operating playbook defined in requirement `081` for registration, execution, and closure flow.
 
 Canonical governance/spec references:
 
