@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 const https = require('https');
 
 const {
@@ -12,6 +13,7 @@ describe('check-agent-registry-source', () => {
   });
 
   it('builds the GitHub contents API URL for the configured registry branch', () => {
+    expect.hasAssertions();
     expect(buildRawUrl({
       repository: 'web2solutions/jumentix-agent-registry',
       branch: 'main/next',
@@ -20,15 +22,18 @@ describe('check-agent-registry-source', () => {
   });
 
   it('rejects invalid repository coordinates', () => {
+    expect.hasAssertions();
     expect(() => buildRawUrl({ repository: 'invalid', branch: 'main', remotePath: 'AGENT-REGISTRY.md' }))
       .toThrow('Invalid repository format');
   });
 
   it('normalizes line endings and trailing whitespace before comparing registry mirrors', () => {
+    expect.hasAssertions();
     expect(normalize('registry\r\nentry\r\n\r\n')).toBe('registry\nentry');
   });
 
   it('requests raw canonical content from the GitHub contents API', async () => {
+    expect.hasAssertions();
     const response = {
       statusCode: 200,
       setEncoding: jest.fn(),
@@ -37,13 +42,16 @@ describe('check-agent-registry-source', () => {
     const request = { on: jest.fn() };
 
     response.on.mockImplementation((event: string, handler: (value?: string) => void) => {
-      if (event === 'data') handler('canonical');
-      if (event === 'end') handler();
+      const responseEvents = new Map<string, () => void>([
+        ['data', () => handler('canonical')],
+        ['end', () => handler()]
+      ]);
+      responseEvents.get(event)!();
       return response;
     });
     jest.spyOn(https, 'get').mockImplementation((...args: unknown[]) => {
       const [, options, callback] = args as [string, object, (value: object) => void];
-      expect(options).toEqual({
+      expect(options).toStrictEqual({
         headers: {
           Accept: 'application/vnd.github.raw+json',
           'User-Agent': 'jumentix-agent-registry-check'
@@ -58,6 +66,7 @@ describe('check-agent-registry-source', () => {
   });
 
   it('rejects failed canonical registry responses', async () => {
+    expect.hasAssertions();
     const response = {
       statusCode: 404,
       setEncoding: jest.fn(),
