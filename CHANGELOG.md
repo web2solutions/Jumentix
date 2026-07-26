@@ -4,6 +4,11 @@
 
 ## Unreleased
 
+- 2026-07-25 feat(governance): externalize agent registry canonical source - web2solutions
+- 2026-07-26 [Docs] Show CircleCI badges for dev and main (#152) - Eduardo A.
+- 2026-07-26 docs(readme): show CircleCI badges for dev and main - web2solutions
+- 2026-07-26 [Chore] Run change-focused tests on task branches (#150) - Eduardo A.
+- 2026-07-26 chore(ci): add change-focused task test gates - web2solutions
 - 2026-07-26 [Chore] Apply branch-aware quality gates (#148) - Eduardo A.
 - 2026-07-26 chore(ci): add branch-aware quality gates - web2solutions
 - 2026-07-25 Merge remote-tracking branch 'origin/main' into dev - web2solutions
