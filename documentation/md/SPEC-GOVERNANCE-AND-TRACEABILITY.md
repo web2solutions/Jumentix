@@ -87,6 +87,7 @@ Before any task execution:
 1. Acting agent must be registered in `.agents/AGENT-REGISTRY.md`.
 2. Planning must assign tasks to agents marked `available`.
 3. Agent must check latest `main` and `dev` branch refs and update the registry check fields.
+4. Agent registry entries must include machine identity (`machine_id`, `machine_name`, `machine_os`) and runtime identity (`agent_runtime`, `agent_version`) so multiple agents can run on the same host with full traceability.
 
 ## Audit Evidence Expectations
 
