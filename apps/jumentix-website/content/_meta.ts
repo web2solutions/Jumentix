@@ -1,23 +1,26 @@
 export default {
+  index: {
+    display: 'hidden'
+  },
   jumentix: {
     title: 'Jumentix Docs'
   },
-  '##': {
-    type: 'separator'
+  api: {
+    display: 'hidden'
   },
-  markdown: '',
-  'inline-svg': 'Inline SVG',
-  mantine: '',
-  api: '',
-
-  '###': {
-    type: 'separator'
-    // title: 'My Items', // Title is optional
+  'inline-svg': {
+    display: 'hidden'
+  },
+  mantine: {
+    display: 'hidden'
+  },
+  markdown: {
+    display: 'hidden'
+  },
+  'release-notes': {
+    display: 'hidden'
   },
   versioning: {
-    theme: {
-      toc: false
-    }
-  },
-  'release-notes': ''
+    display: 'hidden'
+  }
 };

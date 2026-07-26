@@ -3,7 +3,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 
 const sitePort = Number(process.env.JUMENTIX_WEBSITE_PORT ?? '3010');
 const baseUrl = `http://127.0.0.1:${sitePort}`;
-const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+const pnpmCommand = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
 
 const runCommand = (command, args, extraEnv = {}) =>
   new Promise((resolve, reject) => {
@@ -23,7 +23,7 @@ const runCommand = (command, args, extraEnv = {}) =>
   });
 
 const startServer = () =>
-  spawn(npmCommand, ['run', 'start'], {
+  spawn(pnpmCommand, ['run', 'start'], {
     stdio: 'inherit',
     env: { ...process.env, PORT: String(sitePort) }
   });
@@ -85,15 +85,33 @@ const smokeRoutes = async () => {
     'Missing ConfigContext.Provider',
     'Cannot find module',
     'Element type is invalid',
+    'Source file not found:',
     'Internal Server Error'
   ];
 
   await assertRoute({ path: '/', includes: ['Jumentix'], excludes: invalidMarkers });
   await assertRoute({ path: '/product', includes: ['Jumentix Product Capabilities'], excludes: invalidMarkers });
   await assertRoute({ path: '/changelog?page=1', includes: ['Jumentix Changelog'], excludes: invalidMarkers });
-  await assertRoute({ path: '/docs/jumentix', includes: ['Jumentix'], excludes: invalidMarkers });
-  await assertRoute({ path: '/docs/overview', excludes: invalidMarkers });
-  await assertRoute({ path: '/docs/realtime-api-guide', excludes: invalidMarkers });
+  await assertRoute({
+    path: '/docs/jumentix',
+    includes: ['Jumentix Technical Documentation', 'Jumentix Docs'],
+    excludes: invalidMarkers
+  });
+  await assertRoute({
+    path: '/docs/overview',
+    includes: ['Jumentix Overview', 'Jumentix Docs'],
+    excludes: invalidMarkers
+  });
+  await assertRoute({
+    path: '/docs/jumentix/realtime-api-guide',
+    includes: ['Creating Realtime API with Jumentix', 'Jumentix Docs'],
+    excludes: invalidMarkers
+  });
+  await assertRoute({
+    path: '/docs/realtime-api-guide',
+    includes: ['Creating Realtime API with Jumentix', 'Jumentix Docs'],
+    excludes: invalidMarkers
+  });
   await assertRoute({ path: '/api/version', expectedStatus: 200 });
   await assertRoute({
     path: '/api/github-releases',
@@ -103,8 +121,8 @@ const smokeRoutes = async () => {
 };
 
 const run = async () => {
-  await runCommand(npmCommand, ['run', 'typecheck']);
-  await runCommand(npmCommand, ['run', 'build']);
+  await runCommand(pnpmCommand, ['run', 'typecheck']);
+  await runCommand(pnpmCommand, ['run', 'build']);
 
   const serverProcess = startServer();
 
