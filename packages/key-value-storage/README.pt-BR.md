@@ -2,9 +2,9 @@
 Arquivo gerado automaticamente a partir de: packages/key-value-storage/README.md
 Idioma alvo: Português (Brasil)
 -->
-# @jumentix/armazenamento de valor-chave
+# @jumentix/key-value-storage
 
-Adaptadores de armazenamento de valor-chave reutilizáveis ​​para serviços JumentiX.
+Adaptadores reutilizáveis de armazenamento chave-valor para serviços Jumentix.
 
 Incluído:
 

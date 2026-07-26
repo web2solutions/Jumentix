@@ -6,6 +6,18 @@ export const revalidate = false;
 
 type MdxPath = string[] | undefined;
 
+const legacyAliases: Record<string, string[]> = {
+  overview: ['concepts', 'overview'],
+  'architecture-structure': ['concepts', 'architecture'],
+  'rest-api-guide': ['guides', 'rest-api'],
+  'realtime-api-guide': ['guides', 'realtime-api'],
+  'spa-pwa-guide': ['guides', 'spa-pwa'],
+  'saas-monolith-guide': ['guides', 'saas-monolith'],
+  'saas-microservices-guide': ['guides', 'saas-microservices'],
+  'security-pci': ['reference', 'security-compliance'],
+  'runtime-contracts': ['reference', 'runtime-contracts'],
+};
+
 function getCandidates(mdxPath: MdxPath): string[][] {
   const normalized = Array.isArray(mdxPath) ? mdxPath.filter(Boolean) : [];
 
@@ -17,12 +29,21 @@ function getCandidates(mdxPath: MdxPath): string[][] {
     return [['jumentix']];
   }
 
+  if (normalized[0] === 'pt-BR') {
+    if (normalized.length === 1) return [['pt-BR', 'jumentix']];
+    if (normalized[1] === 'jumentix') return [normalized];
+    return [['pt-BR', 'jumentix', ...normalized.slice(1)]];
+  }
+
   if (normalized[0] === 'jumentix') {
+    const alias = normalized.length === 2 ? legacyAliases[normalized[1]] : undefined;
+    if (alias) return [['jumentix', ...alias], normalized];
     return [normalized];
   }
 
   // Preserve the legacy /docs/:slug routes while using one canonical content tree.
-  return [['jumentix', ...normalized]];
+  const alias = normalized.length === 1 ? legacyAliases[normalized[0]] : undefined;
+  return [alias ? ['jumentix', ...alias] : ['jumentix', ...normalized]];
 }
 
 async function loadPageWithFallback(mdxPath: MdxPath) {

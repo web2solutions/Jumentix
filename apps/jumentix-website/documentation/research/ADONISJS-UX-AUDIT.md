@@ -127,6 +127,11 @@ evaluators need different journeys. A single long marketing page cannot serve al
 Production route audited:
 `https://jumentix-website.vercel.app/docs/jumentix`
 
+> Historical baseline: the defects below describe the production implementation observed before
+> epic `#167`. Tasks `#170`, `#171`, and `#172` replace that shell with the shared design system,
+> bilingual commercial experience, hierarchical documentation portal, Storybook inventory, and
+> production route/link gates.
+
 ### Confirmed defects
 
 1. The documentation route renders bare MDX without the global header, sidebar, table of
@@ -382,4 +387,3 @@ Research screenshots remain internal creator documentation and are not website p
 | Documentation cannot scale to the corpus | #172 |
 | Insufficient route, link, layout, and accessibility gates | #173 |
 | Production deployment needs verified evidence | #174 |
-

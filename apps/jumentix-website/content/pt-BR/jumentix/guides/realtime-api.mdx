@@ -1,0 +1,55 @@
+---
+title: "Crie uma API realtime"
+description: "Construa interfaces Socket.IO e gRPC com fallback REST."
+---
+
+> Source: `../backend-template/documentation/guides/CREATING-REALTIME-API-WITH-JUMENTIX.pt-BR.md`
+
+# Criando API em tempo real com Jumentix
+
+Este guia aborda a configuração de serviços em tempo real usando WebSocket ou gRPC com REST substituto.
+
+## 1. Habilitar tempo de execução em tempo real
+
+Definir perfil de ambiente:
+
+- `AAA_REALTIME_API = sim`
+- `AAA_REALTIME_API_PROTOCOL=websocket` ou `grpc`
+- `AAA_HTTP_FRAMEWORK=express` para documentação REST substituta e fallback operacional
+
+Iniciar perfil de tempo de execução:
+
+```bash
+pnpm run dev:websocket
+# or
+pnpm run dev:grpc
+```
+
+## 2. Definir contratos assíncronos
+
+1. Defina canais/mensagens em arquivos AsyncAPI em `spec/`.
+2. Mantenha os contratos de carga alinhados com modelos de domínio e assinaturas de métodos de controlador.
+3. Referência a contratos de resposta/erro em implementações de manipuladores.
+
+## 3. Implementar manipuladores de mensagens
+
+- Os manipuladores WebSocket recebem mensagens, invocam métodos de controlador e respondem à mesma correlação cliente/mensagem.
+- Os manipuladores gRPC recebem solicitações, invocam métodos de controlador e retornam respostas nativas do protocolo.
+
+## 4. Mantenha o substituto REST disponível
+
+Os serviços em tempo real são executados com REST como interface secundária. Use documentos REST e endpoints se o canal em tempo real estiver degradado.
+
+## 5. Valide a estabilidade em tempo real
+
+```bash
+pnpm run test:integration:realtime
+pnpm run test:smoke:realtime
+```
+
+## Referências
+
+- [API WebSocket em tempo real](/docs/jumentix/adapters/realtime/websocket-api)
+- [API gRPC em tempo real](/docs/jumentix/adapters/realtime/grpc-api)
+- [Contratos em tempo real WebSocket](https://github.com/web2solutions/aaa-typescript-boilerplate/blob/dev/documentation/md/contracts/WEBSOCKET-REALTIME-CONTRACTS.md)
+- [Contratos em tempo real gRPC](https://github.com/web2solutions/aaa-typescript-boilerplate/blob/dev/documentation/md/contracts/GRPC-REALTIME-CONTRACTS.md)

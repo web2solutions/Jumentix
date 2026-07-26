@@ -1,5 +1,17 @@
 # Website Experience Agent
 
+## Documentation Experience
+
+- Organize consumer documentation into Concepts, Guides, Adapters, Packages, and Reference.
+- Maintain route-for-route English and Portuguese parity.
+- Keep maintainer planning and migration material out of the public consumer tree.
+- Preserve search, sidebar, table of contents, previous/next, feedback, edit, theme, and locale
+  navigation.
+- Represent reusable documentation shell states in Storybook.
+- Run content synchronization, content parity smoke, Storybook smoke, canonical/legacy route
+  checks, and internal-link validation before publication.
+- Treat requirement `093` as the binding documentation experience contract.
+
 ## Objective
 
 Guide Jumentix commercial website and documentation portal changes as an accessible, bilingual,

@@ -2,18 +2,13 @@
 
 <!-- This file is generated from Git history. Run `pnpm run changelog:update` to refresh it. -->
 
-## All Changes
+## Unreleased
 
-- 2026-07-26 chore(ci): integrate current dev commercial gates - Eduardo A.
+- 2026-07-26 feat(website): rebuild documentation experience (#172) - web2solutions
 - 2026-07-26 feat(website): rebuild OSS commercial experience (#171) - Eduardo A.
-- 2026-07-26 chore(ci): integrate current dev design system - Eduardo A.
 - 2026-07-26 feat(website): establish design system and Storybook (#178) - Eduardo A.
-- 2026-07-26 fix(ci): pin canonical agent registry evidence - Eduardo A.
-- 2026-07-26 chore(ci): integrate current dev documentation fixes - Eduardo A.
 - 2026-07-26 [Bug] Restore reliable Jumentix documentation routes and links (#177) - Eduardo A.
 - 2026-07-26 fix(website): restore docs layout and routes - web2solutions
-- 2026-07-26 chore(ci): integrate latest dev baseline - Eduardo A.
-- 2026-07-26 ci(governance): enforce focused epic metadata - Eduardo A.
 - 2026-07-26 [Docs] Audit OSS reference UX and define website IA (#175) - Eduardo A.
 - 2026-07-26 docs(website): audit OSS reference UX and IA - web2solutions
 - 2026-07-26 [Governance] Require milestones for focused epics (#166) - Eduardo A.
@@ -221,7 +216,15 @@
 - 2026-06-25 fix: wire service dependencies correctly - Eduardo Almeida
 - 2026-06-25 refactor: centralize endpoint registration - Eduardo Almeida
 - 2026-06-25 fix: restore TypeScript build - Eduardo Almeida
+- 2024-10-19 feat(hyperexpress): add handlers and tests (#54) - Eduardo A.
+- 2024-10-15 badges (#53) - Eduardo A.
+
+## v0.0.3 - 2024-11-04
+
 - 2024-11-04 fix(ci): move check-node-version - Eduardo Almeida
+
+## v0.0.1 - 2024-10-23
+
 - 2024-10-23 ci(versioning): run pre-commit from package - Eduardo Almeida
 - 2024-10-23 ci: run pre-cmmit in package - Eduardo Almeida
 - 2024-10-23 ci(fix husky): fix husky - Eduardo Almeida
@@ -237,10 +240,8 @@
 - 2024-10-19 ci(github action): run redis - Eduardo Almeida
 - 2024-10-19 ci(git actions): fix redis matrix - Eduardo Almeida
 - 2024-10-19 ci: revert to npm and run git actions - Eduardo Almeida
-- 2024-10-19 feat(hyperexpress): add handlers and tests (#54) - Eduardo A.
 - 2024-10-19 fix(http servers): proper close all servers, add request context to HyperExpress - Eduardo Almeida
 - 2024-10-19 feat(hyperexpress): add handlers and tests - Eduardo Almeida
-- 2024-10-15 badges (#53) - Eduardo A.
 - 2024-10-14 docs(badges): fix - Eduardo Almeida
 - 2024-10-14 docs(badges): hypeexpress - Eduardo Almeida
 - 2024-10-14 docs(badges): add badges - Eduardo Almeida

@@ -2,9 +2,9 @@
 Arquivo gerado automaticamente a partir de: packages/persistence-contracts/README.md
 Idioma alvo: Português (Brasil)
 -->
-# @jumentix/persistência-contratos
+# @jumentix/persistence-contracts
 
-Contratos de persistência reutilizáveis ​​para serviços e adaptadores JumentiX.
+Contratos de persistência reutilizáveis para serviços e adaptadores Jumentix.
 
 ## Exportações
 

@@ -167,7 +167,7 @@ const smokeRoutes = async () => {
   await assertRoute({ path: '/pt-BR/changelog?page=1', includes: ['Changelog do Jumentix'], excludes: invalidMarkers });
   await assertRoute({
     path: '/docs/jumentix',
-    includes: ['Jumentix Technical Documentation', 'Jumentix Docs'],
+    includes: ['Build with Jumentix', 'Jumentix Docs'],
     excludes: invalidMarkers
   });
   await assertRoute({
@@ -176,7 +176,7 @@ const smokeRoutes = async () => {
     excludes: invalidMarkers
   });
   await assertRoute({
-    path: '/docs/jumentix/realtime-api-guide',
+    path: '/docs/jumentix/guides/realtime-api',
     includes: ['Creating Realtime API with Jumentix', 'Jumentix Docs'],
     excludes: invalidMarkers
   });
@@ -185,6 +185,27 @@ const smokeRoutes = async () => {
     includes: ['Creating Realtime API with Jumentix', 'Jumentix Docs'],
     excludes: invalidMarkers
   });
+  const canonicalDocumentationRoutes = [
+    ['/docs/jumentix/concepts', ['Concepts', 'Jumentix Docs']],
+    ['/docs/jumentix/concepts/architecture', ['Hexagonal Architecture', 'Jumentix Docs']],
+    ['/docs/jumentix/guides', ['Guides', 'Jumentix Docs']],
+    ['/docs/jumentix/guides/rest-api', ['Creating REST API with Jumentix', 'Jumentix Docs']],
+    ['/docs/jumentix/adapters', ['Adapters', 'Jumentix Docs']],
+    ['/docs/jumentix/adapters/http/express', ['Express', 'Jumentix Docs']],
+    ['/docs/jumentix/adapters/databases/mongodb', ['MongoDB', 'Jumentix Docs']],
+    ['/docs/jumentix/packages/message-mediator', ['@jumentix/message-mediator', 'Jumentix Docs']],
+    ['/docs/jumentix/reference/runtime-contracts', ['Runtime', 'Jumentix Docs']],
+    ['/docs/pt-BR/jumentix', ['Construa com o Jumentix', 'Jumentix Docs']],
+    ['/docs/pt-BR/jumentix/concepts', ['Conceitos', 'Jumentix Docs']],
+    ['/docs/pt-BR/jumentix/guides/rest-api', ['Criando API REST com Jumentix', 'Jumentix Docs']],
+    ['/docs/pt-BR/jumentix/adapters', ['Adaptadores', 'Jumentix Docs']],
+    ['/docs/pt-BR/jumentix/adapters/http/express', ['Express', 'Jumentix Docs']],
+    ['/docs/pt-BR/jumentix/packages/message-mediator', ['@jumentix/message-mediator', 'Jumentix Docs']],
+  ];
+
+  for (const [path, includes] of canonicalDocumentationRoutes) {
+    await assertRoute({ path, includes, excludes: invalidMarkers });
+  }
   await assertRoute({ path: '/api/version', expectedStatus: 200 });
   await assertRoute({
     path: '/api/github-releases',
@@ -195,6 +216,9 @@ const smokeRoutes = async () => {
   await assertInternalLinks([
     ...englishRoutes.map(([path]) => path),
     ...portugueseRoutes.map(([path]) => path),
+    '/docs/jumentix',
+    '/docs/pt-BR/jumentix',
+    ...canonicalDocumentationRoutes.map(([path]) => path),
   ]);
 };
 
