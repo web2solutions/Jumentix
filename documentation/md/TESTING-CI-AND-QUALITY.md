@@ -81,7 +81,7 @@ Main gate:
 pnpm run ci:gate
 ```
 
-Strict push and remote-CI gate:
+Full-matrix release gate:
 
 ```bash
 pnpm run ci:gate:strict
@@ -118,17 +118,30 @@ is reported as exit `124`, fails the integration cell, and does not prevent the 
 targets from being reported. Generated `dist` output is excluded from lint so a completed
 build cannot make the next matrix run fail for scanning generated declarations.
 
+Branch-aware enforcement:
+
+```bash
+pnpm run ci:gate:branch
+```
+
+The selector reads `JUMENTIX_QUALITY_GATE_TARGET`. A `dev` target, including task-owned
+branches that are bound to `dev`, runs only `pnpm run test:unit`. A `main` target runs
+`pnpm run ci:gate:strict`, including all 18 required cells. This keeps daily integration
+fast while preserving release-grade proof for promotion to the protected branch.
+
 Local enforcement:
 
-- `.husky/pre-commit` synchronizes/stages `CHANGELOG.md`, then runs `pnpm run ci:gate:strict`
-- `.husky/pre-push` runs `pnpm run ci:gate:strict`
+- `.husky/pre-commit` synchronizes/stages `CHANGELOG.md`, then runs the branch-aware gate
+- `.husky/pre-push` derives the pushed destination and runs the branch-aware gate
+- `.husky/pre-merge-commit` runs the branch-aware gate on the merge destination
 - `post-commit` is mutation-free (no auto-amend, no bypass flags)
 - `.husky/commit-msg` runs commitlint (`@commitlint/config-conventional`)
 
 Remote enforcement:
 
-- CircleCI and GitHub Actions invoke `pnpm run ci:gate:strict` directly
-- GitHub pull-request CI uploads `artifacts/ci/full-test-matrix.json` even after failure
+- CircleCI and GitHub Actions invoke `pnpm run ci:gate:branch`
+- GitHub Actions passes the PR base branch or pushed branch explicitly and uploads branch-gate evidence even after failure
+- GitHub Actions uploads `artifacts/ci/full-test-matrix.json` for `main` work even after failure
 - `ci:monorepo` remains a compatibility entrypoint but cannot select a reduced docs-only plan
 
 SonarQube Cloud coverage import:
@@ -142,8 +155,8 @@ SonarQube Cloud coverage import:
 
 | Integration | Purpose | Where it is configured | What to run / requirements |
 |------------|---------|-------------------------|-----------------------------|
-| CircleCI | Main pipeline for lint + tests + architecture checks + smoke + upload coverage | `.circleci/config.yml` | Installs with `pnpm`, runs `pnpm run ci:gate:strict`, stores matrix evidence |
-| GitHub Actions (tests) | Secondary CI validation on push/PR | `.github/workflows/test.yml` | Uses Node `22.x`, installs with `pnpm`, runs `pnpm run ci:gate:strict`, uploads matrix evidence |
+| CircleCI | Branch-aware pipeline with coverage upload | `.circleci/config.yml` | Installs with `pnpm`, selects unit gate for `dev` and full matrix for `main`, stores selected-gate evidence |
+| GitHub Actions (tests) | Target-aware CI validation on push/PR | `.github/workflows/test.yml` | Uses Node `22.x`, selects by PR base/pushed branch, uploads selected-gate evidence and main matrix evidence |
 | GitHub Actions (SonarQube Cloud) | Static analysis + quality gate + coverage import | `.github/workflows/sonarqube-cloud.yml`, `sonar-project.properties` | Requires `SONAR_TOKEN`; runs `pnpm run test:unit` first |
 | Codecov | Coverage status checks for project and patch | `codecov.yml` | Target is `95%` for project and patch |
 | Jest coverage gate | Local hard gate to prevent low-coverage merges | `jest.config.js` | Global thresholds: `lines/statements >= 95%`, `branches/functions >= 80%` |
@@ -162,8 +175,8 @@ SonarQube Cloud coverage import:
 
 - Pipeline file: `.circleci/config.yml`
 - Uses `cimg/node:22.23` plus `redis:latest`
-- Installs `pnpm@9.15.3`, runs `pnpm install --no-frozen-lockfile`, waits for Redis, executes `pnpm run ci:gate:strict`, stores full-matrix evidence, and uploads coverage with Codecov orb
-- This is the primary all-in-one gate
+- Installs `pnpm@9.15.3`, waits for Redis, selects the branch-aware gate, stores gate evidence, and uploads coverage with Codecov orb
+- GitHub Actions is authoritative for PR-target detection; release promotions to `main` always receive the full-matrix gate there
 
 #### GitHub Actions - Test Workflow
 
@@ -171,8 +184,8 @@ SonarQube Cloud coverage import:
 - Triggers on:
   - `push` to `main` and `dev`
   - `pull_request` to `dev` and `main`
-- Sets up Redis (with password), installs `pnpm`, and runs `pnpm run ci:gate:strict`
-- Uploads the full-matrix JSON result with `if: always()`; docs-only changes do not bypass required cells
+- Sets up Redis (with password), installs `pnpm`, and runs `pnpm run ci:gate:branch` with the PR base or pushed branch
+- Uploads selected-gate evidence with `if: always()` and full-matrix evidence for `main`; docs-only changes do not bypass the selected gate
 
 #### GitHub Actions - SonarQube Cloud Workflow
 
