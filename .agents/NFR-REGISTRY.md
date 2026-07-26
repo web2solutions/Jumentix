@@ -17,6 +17,7 @@ This file consolidates non-functional requirements already requested and stored 
 - `020` Coverage threshold as approval gate.
 - `063` Workspace coverage policy governance.
 - `065` Commit/push integrity with real CI checks.
+- `087` Branch-aware quality gates: unit tests for `dev`, full matrix for `main`.
 
 ## Security and Compliance NFRs
 

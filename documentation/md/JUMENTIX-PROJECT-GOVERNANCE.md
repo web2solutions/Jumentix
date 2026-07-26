@@ -27,7 +27,7 @@ Each PR must include:
 - Coverage and quality-gate evidence
 - Task-owned branch name and nature-prefixed PR title
 - Source and target branches, proving the task PR targets `dev`
-- Full test matrix results for commit, push, and PR boundaries
+- Destination-aware gate results for commit, push, merge, and PR boundaries; full-matrix results for `main` promotion
 - False-green prevention evidence, including real failure propagation
 
 If a PR is not linked to project work items, it is out of process.
@@ -45,7 +45,7 @@ If a PR is not linked to project work items, it is out of process.
 9. Only a release-promotion PR whose source branch is `dev` may target `main`.
 10. A `dev` to `main` promotion PR introduces no unreviewed changes and references the task PRs and issues already merged into `dev`.
 11. Direct pushes, merges, or task/topic PRs to `main` are prohibited.
-12. Every commit, push, and PR must run the complete repository-declared test matrix.
+12. Commits, pushes, and merges to `dev` run only the canonical unit-test gate; work to `main` runs the complete repository-declared test matrix.
 13. Missing, skipped, empty, cancelled, timed-out, aborted, or unreported required matrix cells fail the gate.
 14. Test failures and discovery failures must propagate a non-zero status; false-green fallbacks are prohibited.
 
