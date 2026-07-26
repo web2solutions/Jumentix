@@ -121,6 +121,11 @@ O site deve diferenciar:
 Rota auditada:
 `https://jumentix-website.vercel.app/docs/jumentix`
 
+> Baseline histórico: os defeitos abaixo descrevem a produção observada antes do épico `#167`.
+> As tarefas `#170`, `#171` e `#172` substituem esse shell pelo design system compartilhado,
+> experiência comercial bilíngue, portal hierárquico de documentação, inventário Storybook e gates
+> de rotas e links de produção.
+
 1. A rota exibe MDX puro, sem header, sidebar, sumário, footer ou moldura legível.
 2. `app/docs/[[...mdxPath]]/page.tsx` retorna `MDXContent` sem montar o `Layout` do Nextra.
 3. `app/layout.tsx` fornece Mantine, mas não monta navegação e footer.
@@ -349,4 +354,3 @@ interna de pesquisa e não serão assets do site público.
 | Navegação incapaz de escalar | #172 |
 | Gates insuficientes | #173 |
 | Deploy exige evidência | #174 |
-

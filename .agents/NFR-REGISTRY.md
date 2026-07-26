@@ -64,6 +64,7 @@ This file consolidates non-functional requirements already requested and stored 
 - `090` Every executable task must have one focused epic, one primary nature, and the epic milestone; milestone validation precedes epic-level agent delegation and non-overlapping child-task assignment.
 - `091` Website design-system and Storybook governance, including accessibility, responsive/theme states, component inventory, and reproducible smoke validation.
 - `092` Open-source commercial website experience, bilingual route parity, truthful code proof, responsive navigation, and production route integrity.
+- `093` Consumer documentation information architecture, bilingual route parity, source synchronization, navigation depth, and publication integrity.
 
 ## Rule of Use
 

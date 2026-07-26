@@ -1,0 +1,31 @@
+---
+title: "Runtime Environment Contracts"
+description: "Environment variables and runtime composition behavior."
+---
+
+> Source: `../../documentation/consumers/RUNTIME-CAPABILITIES.md`
+
+# Runtime Capabilities (Consumer View)
+
+Jumentix lets consumer teams choose runtime protocols and frameworks without rewriting core domain logic.
+
+## Service Interfaces
+
+- REST API
+- WebSocket API (+ REST fallback)
+- gRPC API (+ REST fallback)
+
+## Runtime Control
+
+Runtime behavior is configured with environment contracts, allowing deterministic startup and deployment behavior across environments.
+
+## Deployment Modes
+
+- VM-based services managed with PM2
+- Function-oriented services (cloud runtime strategies)
+- Hybrid service landscapes combining API and function deployments
+
+## Reliability and Scale
+
+- Realtime adapters support scaling strategies for multi-instance scenarios
+- Contract-based communication reduces coupling and improves migration flexibility

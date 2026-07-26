@@ -1,0 +1,26 @@
+---
+title: "LoopBack Adapter"
+description: "HTTP Adapters documentation."
+---
+
+> Source: `../../documentation/md/adapters/http/LOOPBACK.md`
+
+# LoopBack Adapter
+
+## Purpose
+
+Run API operations with LoopBack runtime integration.
+
+## Entrypoints
+
+- `apps/backend-template/src/interface/HTTP/adapters/loopback/loopback.ts`
+
+## Build a Service with LoopBack
+
+1. Keep business/use-case contracts in module layer.
+2. Use LoopBack adapter bootstrap to expose routes/handlers.
+3. Run:
+
+```bash
+pnpm run dev:loopback
+```

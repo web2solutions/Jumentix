@@ -14,6 +14,7 @@ export default async function DocsLayout({ children }: { children: React.ReactNo
         content: 'Report a documentation issue',
         labels: 'documentation,website'
       }}
+      navigation={{ next: true, prev: true }}
       footer={<MantineFooter key="jumentix-docs-footer" />}
       sidebar={{
         autoCollapse: true,

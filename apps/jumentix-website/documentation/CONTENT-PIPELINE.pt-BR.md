@@ -1,80 +1,72 @@
-<!--
-Arquivo gerado automaticamente a partir de: apps/jumentix-website/documentation/CONTENT-PIPELINE.md
-Idioma alvo: Português (Brasil)
--->
-# Pipeline de conteúdo de redução
+# Pipeline de Conteúdo Markdown
 
-Rastreamento de problemas:
+Rastreamento:
 
-- Épico: [#124](https://github.com/web2solutions/aaa-typescript-boilerplate/issues/124)
-- Tarefa: [#127](https://github.com/web2solutions/aaa-typescript-boilerplate/issues/127)
+- Épico: [#167](https://github.com/web2solutions/aaa-typescript-boilerplate/issues/167)
+- Tarefa: [#172](https://github.com/web2solutions/aaa-typescript-boilerplate/issues/172)
 
 ## Propósito
 
-Converta documentos markdown selecionados do repositório Jumentix em páginas estáticas de documentação de sites em `apps/jumentix-website/content/jumentix`.
+Transformar documentação canônica dos componentes Jumentix em um portal Nextra bilíngue e
+hierárquico. O pipeline gera atualmente 110 páginas baseadas em fontes, além de páginas iniciais do
+portal e das seções, totalizando 61 rotas em inglês e 61 em português.
 
-## Configuração de origem
+## Configuração das Fontes
 
-Arquivo:
+`config/content-sources.json` suporta dois modelos:
 
-- `apps/jumentix-website/config/content-sources.json`
+- `entries`: conceitos, guias e referências selecionados, com fontes, títulos, descrições, seções e
+  slugs explícitos em inglês e português;
+- `collections`: documentação de pacotes ou adaptadores descoberta recursivamente, na qual cada
+  fonte `.md` em inglês deve possuir uma tradução `.pt-BR.md`.
 
-Cada item define:
+Planejamento, migrações, governança e conteúdo exclusivo de mantenedores não fazem parte da
+configuração pública.
 
-- `slug` (obrigatório)
-- `title` (substituição opcional do slug)
-- `descrição` (substituição opcional do título)
-- `source` (caminho obrigatório relativo à raiz do aplicativo do site)
+## Gerador
 
-## Script Gerador
+`scripts/sync-markdown-content.mjs`:
 
-Arquivo:
+1. valida fontes e pares de tradução;
+2. infere títulos e slugs estáveis das coleções;
+3. cria árvores equivalentes em `content/jumentix` e `content/pt-BR/jumentix`;
+4. gera metadados `_meta.ts` em cada nível;
+5. remove comentários HTML incompatíveis com MDX;
+6. transforma links entre fontes publicadas em rotas canônicas do site;
+7. transforma outros links Markdown resolvíveis em links GitHub `blob/dev`;
+8. adiciona frontmatter e rastreabilidade da fonte;
+9. gera páginas iniciais e jornadas recomendadas em cada idioma.
 
-- `apps/jumentix-website/scripts/sync-markdown-content.mjs`
+## Contrato de Rotas
 
-Comportamento:
+- Inglês: `/docs/jumentix/<seção>/<slug>`
+- Português: `/docs/pt-BR/jumentix/<seção>/<slug>`
+- Seções: `concepts`, `guides`, `adapters`, `packages` e `reference`
+- Famílias de adaptadores: `http`, `databases` e `realtime`
 
-1. Lê `content-sources.json`.
-2. Carrega cada arquivo markdown de origem.
-3. Reescreve links Markdown relativos ao repositório:
-   - links para outra fonte publicada se tornam rotas `/docs/jumentix/<slug>`;
-   - links para documentos fora do conjunto publicado se tornam URLs GitHub `blob/dev` válidas.
-4. Gera uma página `.mdx` por fonte em `content/jumentix`.
-5. Gera `content/jumentix/_meta.ts` para navegação.
-6. Adiciona uma linha de rastreabilidade da origem em cada página gerada.
+O loader mantém slugs antigos suportados e os resolve para rotas canônicas.
 
-## Regras de substituição
+## Validação
 
-- `título` ausente: inferido de `slug`.
-- `descrição` ausente: gerada a partir do título final.
-- Arquivo de origem ausente com página gerada válida: preserva a página gerada. Isso suporta
-  builds isolados da Vercel quando as fontes externas ao aplicativo não estão no contexto de build.
-- Arquivo de origem ausente sem página gerada válida: falha o build.
-- Uma página contendo `Source file not found:` é inválida e nunca é aceita como fallback.
+`scripts/content-smoke.mjs` exige:
 
-## Runtime da documentação
+- ao menos 61 páginas por idioma;
+- árvores relativas EN/PT idênticas;
+- páginas representativas de conceitos, guias, adaptadores, pacotes e referência;
+- frontmatter em todas as páginas;
+- ausência de comentários HTML incompatíveis;
+- ausência de marcadores de links `undefined`.
 
-- As rotas canônicas usam `/docs/jumentix/<slug>`.
-- Links existentes no formato `/docs/<slug>` continuam compatíveis e resolvem pela árvore canônica.
-- O layout Nextra fornece navegação global, busca, sidebar, índice da página, navegação
-  anterior/próxima, feedback, edição no GitHub e footer.
-- Páginas de demonstração do template ficam ocultas da navegação pública.
+`scripts/prepublish-site-checks.mjs` compila e inicia a aplicação de produção, testa rotas canônicas
+e de compatibilidade e percorre links internos das superfícies comercial e técnica.
 
 ## Comandos
 
-Da raiz do repositório:
-
 ```bash
-pnpm --dir apps/jumentix-website content:sync
+pnpm --filter @jumentix/website run content:sync
+pnpm --filter @jumentix/website run content:smoke
+pnpm --filter @jumentix/website run test:prepublish
 ```
 
-Na área de trabalho do site:
-
-```bash
-pnpm run content:sync
-```
-
-`predev` e `prebuild` executam automaticamente `content:sync`.
-
-O gate de pré-publicação valida rotas canônicas e legadas e rejeita marcadores de fonte ausente,
-erros de provider do Nextra, componentes inválidos e erros internos do servidor.
+`predev` e `prebuild` regeneram o conteúdo automaticamente. Os arquivos gerados permanecem
+versionados para preservar uma saída auditável entre fonte e página publicada.

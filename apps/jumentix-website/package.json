@@ -5,6 +5,7 @@
   "packageManager": "pnpm@9.15.3",
   "scripts": {
     "content:sync": "node ./scripts/sync-markdown-content.mjs",
+    "content:smoke": "node ./scripts/content-smoke.mjs",
     "predev": "node ./scripts/sync-markdown-content.mjs",
     "prebuild": "node ./scripts/sync-markdown-content.mjs",
     "dev": "next dev -p 3010",
@@ -15,7 +16,7 @@
     "storybook": "storybook dev -p 6006 --no-open",
     "storybook:build": "storybook build -o storybook-static",
     "storybook:smoke": "node ./scripts/storybook-smoke.mjs",
-    "test:prepublish": "node ./scripts/prepublish-site-checks.mjs",
+    "test:prepublish": "pnpm run content:sync && pnpm run content:smoke && node ./scripts/prepublish-site-checks.mjs",
     "test": "pnpm run typecheck",
     "vercel:link": "vercel link --project jumentix-website --yes",
     "vercel:pull:preview": "vercel pull --environment=preview --yes",

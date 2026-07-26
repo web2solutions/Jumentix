@@ -2,15 +2,16 @@
 Arquivo gerado automaticamente a partir de: packages/message-mediator/README.md
 Idioma alvo: Português (Brasil)
 -->
-# @jumentix/mediador de mensagens
+# @jumentix/message-mediator
 
-Pacote de espaço de trabalho para contratos de mediador de mensagens JumentiX e adaptador de linha de base na memória.
+Pacote de workspace para contratos do Message Mediator Jumentix e seu adaptador in-memory de
+referência.
 
 Escopo extraído atual:
 
 - contratos principais (`IMessage`, `IMessageResponse`, metadados)
 - barramento de eventos e interfaces de mediador
-- adaptador mediador na memória
-- Adaptador mediador RabbitMQ
-- Adaptador mediador BullMQ
-- auxiliar `compileMessageMediator` com reconhecimento de ambiente
+- adaptador in-memory;
+- adaptador RabbitMQ;
+- adaptador BullMQ;
+- helper `compileMessageMediator` orientado pelo ambiente.
