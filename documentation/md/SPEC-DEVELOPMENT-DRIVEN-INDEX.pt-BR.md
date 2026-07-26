@@ -69,5 +69,7 @@ A execução orientada por especificações depende e reutiliza estas fontes exi
 - Documentos de tempo de execução e arquitetura (`documentation/md`)
 - Registro de requisitos de agentes (`.agents/requirements`)
 - Registro NFR (`.agents/NFR-REGISTRY.md`)
+- Instruções oficiais de agentes de IA (`AGENTS.md`, `CLAUDE.md`, `GROK.md`)
+- Registro de colaboração de agentes (`.agents/AGENT-REGISTRY.md`)
 - Regras de governança do projeto (`documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`)
 - Placa GitHub Project Jumentix (`https://github.com/users/web2solutions/projects/1`)

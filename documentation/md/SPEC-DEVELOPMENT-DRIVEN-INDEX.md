@@ -65,5 +65,7 @@ Spec-Driven execution depends on and reuses these existing sources:
 - Runtime and architecture docs (`documentation/md`)
 - Agents requirements registry (`.agents/requirements`)
 - NFR registry (`.agents/NFR-REGISTRY.md`)
+- Official AI agent instructions (`AGENTS.md`, `CLAUDE.md`, `GROK.md`)
+- Agent collaboration registry (`.agents/AGENT-REGISTRY.md`)
 - Project governance rules (`documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`)
 - GitHub Project Jumentix board (`https://github.com/users/web2solutions/projects/1`)
