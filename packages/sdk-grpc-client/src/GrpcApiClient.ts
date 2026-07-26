@@ -1,7 +1,7 @@
-import path from 'path';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 import { loadSpecs } from './spec/loadSpecs';
+import { resolveGrpcProtoPath } from './resolveGrpcProtoPath';
 
 export interface IGrpcApiRequest {
   operationId: string;
@@ -34,7 +34,7 @@ export class GrpcApiClient {
   constructor(host?: string, protoFilePath?: string) {
     const { asyncApiGrpc } = loadSpecs();
     this.host = host || asyncApiGrpc?.servers?.local?.host || 'localhost:3002';
-    this.protoFilePath = protoFilePath || path.resolve(process.cwd(), 'src/interface/gRPC/proto/async-api.proto');
+    this.protoFilePath = resolveGrpcProtoPath(protoFilePath);
 
     const protoLoaderLib: any = (protoLoader as any).default || protoLoader;
     const grpcLib: any = (grpc as any).default || grpc;

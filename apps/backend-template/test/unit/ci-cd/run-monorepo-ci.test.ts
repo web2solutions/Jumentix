@@ -2,7 +2,7 @@
 const { resolveCiPlan, resolveInputFiles } = require('../../../../../ci-cd/run-monorepo-ci');
 
 describe('run-monorepo-ci', () => {
-  it('returns docs-only lightweight plan', () => {
+  it('does not allow docs-only changes to bypass the canonical matrix', () => {
     expect.hasAssertions();
     const plan = resolveCiPlan({
       root: false,
@@ -12,13 +12,10 @@ describe('run-monorepo-ci', () => {
       files: ['README.md']
     });
 
-    expect(plan).toStrictEqual([
-      ['npm', ['run', 'lint']],
-      ['npm', ['run', 'changelog:check']]
-    ]);
+    expect(plan).toStrictEqual([['pnpm', ['run', 'ci:gate:strict']]]);
   });
 
-  it('returns strict gate plus app/package scoped commands', () => {
+  it('uses the same canonical matrix for app and package changes', () => {
     expect.hasAssertions();
     const plan = resolveCiPlan({
       root: false,
@@ -28,13 +25,7 @@ describe('run-monorepo-ci', () => {
       files: ['apps/backend-template/package.json', 'packages/sdk-rest-client/src/index.ts']
     });
 
-    expect(plan).toStrictEqual([
-      ['npm', ['run', 'ci:gate:strict']],
-      ['npm', ['run', 'build', '--prefix', 'apps/backend-template']],
-      ['npm', ['run', 'test', '--prefix', 'apps/backend-template']],
-      ['npm', ['run', 'build', '--prefix', 'packages/sdk-rest-client']],
-      ['npm', ['run', 'test', '--prefix', 'packages/sdk-rest-client']]
-    ]);
+    expect(plan).toStrictEqual([['pnpm', ['run', 'ci:gate:strict']]]);
   });
 
   it('uses explicit argv files when provided', () => {

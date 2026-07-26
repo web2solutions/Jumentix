@@ -77,7 +77,8 @@ class FastifyServer extends HTTPBaseServer<Fastify> {
     });
     this.application.register(fastifyStatic, {
       root: path.resolve(process.cwd(), 'apps/backend-template/AsyncAPIdoc'),
-      prefix: '/AsyncAPIdoc/'
+      prefix: '/AsyncAPIdoc/',
+      decorateReply: false
     });
     this.application.get('/docs/asyncapi', async (_, reply) => {
       return reply.redirect('/AsyncAPIdoc/');

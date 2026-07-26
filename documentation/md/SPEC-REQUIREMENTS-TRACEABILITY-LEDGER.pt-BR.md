@@ -95,7 +95,7 @@ Para qualquer alteração, identifique os IDs dos requisitos afetados e garanta:
 
 ## G. Documentação, processo de governança e operações multiagente
 
-- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `056`, `057`, `064`, `066`, `067`, `068`, `071`, `072`, `073`, `075`, `076`, `077`, `078`
+- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `056`, `057`, `064`, `066`, `067`, `068`, `071`, `072`, `073`, `075`, `076`, `077`, `078`, `079`
 - Recursos de especificações:
   - `documentação/README.md`
   - `documentação/md/JUMENTIX-PROJECT-GOVERNANCE.md`
@@ -113,6 +113,7 @@ Para qualquer alteração, identifique os IDs dos requisitos afetados e garanta:
   - registros de cadastro de agentes e atribuição por disponibilidade
   - registros de checagem prévia de `main` e `dev` antes da execução
   - rastreabilidade do projeto/PR presente
+  - PRs de tarefa têm `dev` como destino, e somente promoções de release originadas em `dev` têm `main` como destino
 
 ## H. Produtização e expansão da plataforma
 
@@ -136,6 +137,6 @@ Se os IDs de requisitos afetados não forem mapeados antes da implementação, a
 
 A partir de `2026-07-25`, este razão cobre todos os IDs de requisitos exclusivos atualmente registrados em `.agents/requirements`:
 
-1. IDs exclusivos no registro de requisitos: `78`
-2. IDs exclusivos mapeados neste razão: `78`
+1. IDs exclusivos no registro de requisitos: `79`
+2. IDs exclusivos mapeados neste razão: `79`
 3. IDs ausentes: `nenhum`

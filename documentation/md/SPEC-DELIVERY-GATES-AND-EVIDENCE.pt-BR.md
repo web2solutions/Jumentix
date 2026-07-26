@@ -49,6 +49,17 @@ Evidência:
 1. Conjuntos de testes verdes em CI.
 2. Adicionados testes para novos comportamentos incluídos no escopo PR.
 
+Política de execução:
+
+1. `ci:gate` permanece como a linha de base rápida definida pelo requisito `011`, incluindo o smoke de integração representativo.
+2. `ci:gate:strict` é o gate canônico da matriz completa para os limites de commit, push e pull request.
+3. Seu manifesto cobre lint, arquitetura, contratos, governança, testes unitários, segurança, smoke, builds, todos os workspaces, a matriz completa de 15 alvos de integração HTTP/Lambda/realtime/Service Management e cobertura do patch.
+4. Cada executor da matriz deve rejeitar manifesto vazio, duplicado, malformado ou com script ausente.
+5. A execução continua após a falha de uma célula individual e retorna um único resultado agregado diferente de zero listando todas as células com falha.
+6. Planos somente de documentação ou outras otimizações por escopo não podem omitir a matriz canônica em um limite de entrega.
+7. Os alvos de integração executam com cobertura desabilitada para não sobrescrever o artefato de cobertura dos testes unitários governado pelo requisito `014`.
+8. A CI remota publica a evidência JSON por célula gerada por `AAA_CI_MATRIX_RESULT_FILE`.
+
 ## Portão 4 – Qualidade e Segurança
 
 Critérios de aprovação:

@@ -1,9 +1,8 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-echo "[Husky] pre-commit: changelog + lint + unit tests"
+echo "[Husky] pre-commit: changelog + canonical full test matrix"
 
 npm run changelog:update &&
 git add CHANGELOG.md &&
-npm run lint &&
-npm run test:unit
+CI=true npx pnpm@9.15.3 run ci:gate:strict

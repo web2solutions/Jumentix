@@ -184,6 +184,100 @@ describe('http validators', () => {
     }, null)).toBe(true);
   });
 
+  it('preserves stable public validation messages and ordering', () => {
+    expect.hasAssertions();
+    const spec = {
+      components: {
+        schemas: {
+          RequestCreateUser: {
+            type: 'object',
+            required: ['firstName', 'password', 'type'],
+            properties: {
+              firstName: { type: 'string' },
+              password: { type: 'string', minLength: 8 },
+              type: { type: 'string', enum: ['work', 'home'] }
+            }
+          }
+        }
+      }
+    } as any;
+    const requestBody = {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            $ref: '#/components/schemas/RequestCreateUser'
+          }
+        }
+      }
+    };
+
+    expect(() => throwIfOASInputValidationFails(spec, {
+      operationId: 'create',
+      requestBody
+    }, { invalidFieldName: true })).toThrow(
+      'The property invalidFieldName from input payload does not exist.'
+    );
+    expect(() => throwIfOASInputValidationFails(spec, {
+      operationId: 'create',
+      requestBody
+    }, { firstName: 'John', password: '', type: 'work' })).toThrow(
+      'password must have at least 8 chars.'
+    );
+    expect(() => throwIfOASInputValidationFails(spec, {
+      operationId: 'updatePassword',
+      requestBody
+    }, { firstName: 'John', password: '', type: 'work' })).toThrow(
+      'password can not be empty'
+    );
+    expect(() => throwIfOASInputValidationFails(spec, {
+      operationId: 'create',
+      requestBody
+    }, { firstName: 'John', password: 'password', type: '' })).toThrow(
+      'type can not be empty'
+    );
+  });
+
+  it('allows server-managed timestamps in update round trips', () => {
+    expect.hasAssertions();
+    const spec = {
+      components: {
+        schemas: {
+          RequestUpdateUser: {
+            type: 'object',
+            required: ['firstName'],
+            properties: {
+              firstName: { type: 'string' }
+            }
+          }
+        }
+      }
+    } as any;
+    const endPointConfig = {
+      operationId: 'update',
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/RequestUpdateUser'
+            }
+          }
+        }
+      }
+    };
+
+    expect(throwIfOASInputValidationFails(spec, endPointConfig, {
+      firstName: 'John',
+      createdAt: '2026-07-25T00:00:00.000Z',
+      updatedAt: '2026-07-25T00:00:00.000Z'
+    })).toBe(true);
+    expect(() => throwIfOASInputValidationFails(spec, endPointConfig, {
+      firstName: 'John',
+      unexpected: true
+    })).toThrow('The property unexpected from input payload does not exist.');
+  });
+
   it('validates request path params', () => {
     expect.hasAssertions();
     const endPointConfig = {

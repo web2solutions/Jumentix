@@ -25,3 +25,10 @@ pnpm run dev:fastify
 pnpm run prod:fastify
 ```
 
+## Static Documentation Lifecycle
+
+The adapter serves OpenAPI UI assets from `/OASdoc/` and AsyncAPI UI assets from
+`/AsyncAPIdoc/`. Both roots share Fastify's single `reply.sendFile` decorator:
+the first static plugin registration owns the decorator and the second only
+registers its prefixed routes. Repeated `FastifyServer.compile()` calls reuse the
+same composed server instance.

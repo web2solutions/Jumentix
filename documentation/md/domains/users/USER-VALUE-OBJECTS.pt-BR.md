@@ -79,6 +79,7 @@ Este projeto mantém um `id` técnico para operações de atualização/exclusã
 | `isPrimário` | `booleano` | Não | coerção com `!!isPrimary` | o padrão é `falso` |
 
 ## Notas de alinhamento OpenAPI
-- OpenAPI ainda modela códigos de telefone como `inteiro`, enquanto o domínio usa `string`.
-- As enumerações do tipo de documento OpenAPI podem atrasar a enumeração do domínio (suporte `passport` no domínio).
+- O OpenAPI modela `countryCode` e `localCode` como strings, de acordo com o objeto de valor do domínio.
+- O OpenAPI aceita os tipos de documento do domínio `CPF`, `RG`, `SSN` e `passport`.
+- O OpenAPI aceita `countryIssue` como string não vazia; o domínio normaliza o valor para maiúsculas.
 - O nome do campo `AddressValueObject.email` é preservado pelos requisitos do projeto e atualmente carrega a semântica da string de carga útil do endereço.

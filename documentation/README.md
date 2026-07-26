@@ -28,4 +28,5 @@ For engineers maintaining and evolving Jumentix:
 - [OpenAPI Spec](../spec/1.0.0.yml)
 - [Events and Messages Map](./md/EVENTS-AND-MESSAGES-MAP.md)
 - [Error Contracts and Responses](./md/ERROR-CONTRACTS-AND-RESPONSES.md)
+- [Tenant and RBAC Authorization Contract](./md/TENANT-RBAC-AUTHORIZATION-CONTRACT.md)
 - [Runtime Environment Contracts](./md/RUNTIME-ENVIRONMENT-CONTRACTS.md)

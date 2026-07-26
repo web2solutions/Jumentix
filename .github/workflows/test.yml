@@ -7,7 +7,7 @@ on:
   push:
     branches: [ "main", "dev" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "dev", "main" ]
 
 jobs:
   build:
@@ -26,6 +26,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
     - uses: shogo82148/actions-setup-redis@81c3559f3be13c0fead88f562d48fa3a62e5fc93 # v1.52.1
       with:
         auto-start: true
@@ -46,7 +48,14 @@ jobs:
     # - run: ./wait-for-redis.sh localhost:6379
     - run: wget https://github.com/jwilder/dockerize/releases/download/v0.6.1/dockerize-linux-amd64-v0.6.1.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-v0.6.1.tar.gz && rm dockerize-linux-amd64-v0.6.1.tar.gz
     - run: dockerize -wait tcp://localhost:6379 -timeout 1m
-    - name: Run scope-aware monorepo CI
-      run: |
-        git fetch --unshallow origin main dev || git fetch origin main dev --depth=1000
-        pnpm run ci:monorepo
+    - name: Run canonical full test matrix
+      run: pnpm run ci:gate:strict
+      env:
+        AAA_CI_MATRIX_RESULT_FILE: artifacts/ci/full-test-matrix.json
+    - name: Upload full-matrix evidence
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: full-test-matrix-${{ matrix.node-version }}-redis-${{ matrix.redis }}
+        path: artifacts/ci/full-test-matrix.json
+        if-no-files-found: error

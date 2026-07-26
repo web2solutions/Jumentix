@@ -5,7 +5,8 @@ gRPC SDK client for the realtime gateway, driven by AsyncAPI gRPC spec (`/spec/a
 ## What it does
 
 - Loads AsyncAPI gRPC server metadata.
-- Loads `async-api.proto`.
+- Loads the canonical `spec/asyncapi/async-api.proto` in the repository and the
+  copied `dist/proto/async-api.proto` in the published package.
 - Creates gRPC client for `realtime.AsyncApiGateway`.
 - Sends standardized request envelope.
 

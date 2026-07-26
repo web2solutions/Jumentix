@@ -40,24 +40,7 @@ const users: Array<IUser> = [{
   username: 'eduardo@xpertminds.dev',
   password: buildSeedCredential('user1'),
   organization: organizations[0].id,
-  roles: [
-    'access_allow',
-    'create_account',
-    'read_account',
-    'update_account',
-    'delete_account',
-    'create_transaction',
-    'delete_transaction',
-    'read_transaction',
-    'create_user',
-    'read_user',
-    'update_user',
-    'delete_user',
-    'create_organization',
-    'read_organization',
-    'update_organization',
-    'delete_organization'
-  ],
+  roles: ['superadmin'],
   documents: [
     {
       data: '000-000-000',
