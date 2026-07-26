@@ -21,6 +21,14 @@
    repository URL.
 10. Website install, build, test, and deployment automation must use pnpm and the workspace
     lockfile.
+11. Shared commercial and documentation UI must use the Jumentix design system and its stable
+    tokens instead of duplicating foundational components in individual pages.
+12. Code examples must use accessible code widgets whenever multiple protocols, tools, or
+    implementations benefit from direct comparison.
+13. Every exported reusable website component must have meaningful Storybook coverage, including
+    relevant responsive, theme, and interaction states.
+14. Storybook must enforce accessibility checks and provide light/dark theme and viewport
+    inspection controls.
 
 ## Acceptance Criteria
 - Commercial pages and CTA flow exist as static routes.
@@ -29,3 +37,5 @@
 - Generated content is deterministic in monorepo and isolated Vercel app-root builds.
 - Vercel deployment commands are available at workspace root.
 - Issue-level traceability evidence exists for website epic tasks.
+- Storybook builds reproducibly and its smoke gate proves that the required component inventory
+  is indexed.
