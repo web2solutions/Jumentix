@@ -14,6 +14,7 @@ function resolveCiPlan(affected) {
 
   if (affected.docsOnly) {
     commands.push(['npm', ['run', 'lint']]);
+    commands.push(['git', ['fetch', '--tags', '--force', 'origin']]);
     commands.push(['npm', ['run', 'changelog:check']]);
     return commands;
   }
