@@ -20,14 +20,15 @@ Mandatory governance records:
 
 Every delivery item must expose:
 
-1. `Focused epic -> child task`
-2. `Focused epic -> delegated agent`
-3. `Issue -> Project item`
-4. `Issue -> Spec files changed`
-5. `PR -> Issue`
-6. `PR -> Evidence (tests/coverage/checks)`
-7. `PR -> Requirement IDs` (when NFR or governance behavior is touched)
-8. `Task -> dedicated branch -> dedicated PR`
+1. `Milestone -> focused epic`
+2. `Focused epic -> child task`
+3. `Focused epic -> delegated agent`
+4. `Issue -> Project item`
+5. `Issue -> Spec files changed`
+6. `PR -> Issue`
+7. `PR -> Evidence (tests/coverage/checks)`
+8. `PR -> Requirement IDs` (when NFR or governance behavior is touched)
+9. `Task -> dedicated branch -> dedicated PR`
 
 ## Required Project Fields
 
@@ -38,25 +39,29 @@ Every delivery item must expose:
 - `Start date`
 - `End date`
 - `Parent issue`
+- `Milestone`
 - one primary nature label
 
 ## Epic-First Planning and Delegation
 
-1. Every executable task has exactly one focused parent epic.
-2. Each task has one primary nature and is grouped with tasks of the same nature inside its epic.
-3. Supporting work with a different nature is represented by a separate child task under the
+1. Every active epic has exactly one open milestone with a delivery target and due date.
+2. Every executable task has exactly one focused parent epic and inherits its milestone.
+3. Epic and task end dates remain within the milestone due date.
+4. Each task has one primary nature and is grouped with tasks of the same nature inside its epic.
+5. Supporting work with a different nature is represented by a separate child task under the
    same cohesive epic.
-4. Agent delegation is recorded at epic level before child-task assignment.
-5. Only agents delegated to an epic may execute its tasks.
-6. One accountable agent owns each task and parallel agents use non-overlapping scopes.
-7. The canonical Agent Registry records `active_epic` and `assigned_task`.
+6. Milestone validity is checked before agent delegation is recorded at epic level.
+7. Only agents delegated to an epic may execute its tasks.
+8. One accountable agent owns each task and parallel agents use non-overlapping scopes.
+9. The canonical Agent Registry records `active_epic` and `assigned_task`.
+10. A milestone closes only after its epics complete or remaining work is formally carried over.
 
 ## PR Governance Requirements
 
 Each PR must contain:
 
 1. Scope summary tied to issue intent
-2. Focused parent epic and project item linkage
+2. Milestone, focused parent epic, and project item linkage
 3. Spec file list changed
 4. Acceptance criteria and evidence
 5. Coverage and gate outcomes
@@ -129,12 +134,14 @@ Before any task execution:
 5. Agents must follow the registration and operating playbook (Requirement `081`) covering registration, branch-sync, governed execution, and closure evidence.
 6. Canonical registry updates must be written to the external registry repository first, then mirrored locally under Requirement `089`.
 7. Epic-level delegation and child-task assignment must be recorded under Requirement `090`.
+8. The epic and task milestone must be validated before planning or execution under Requirement
+   `090`.
 
 ## Audit Evidence Expectations
 
 Minimum evidence set:
 
-1. Linked focused epic + child issue + project item
+1. Linked milestone + focused epic + child issue + project item
 2. Epic-level agent delegation and task-level assignment
 3. Changed spec files and docs
 4. Green CI output for required gates

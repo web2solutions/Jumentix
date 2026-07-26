@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- 2026-07-26 [Governance] Require epic-focused task delegation (#164) - Eduardo A.
+- 2026-07-26 chore(governance): require epic-focused task delegation - web2solutions
 - 2026-07-26 [Fix][CI] Resolve remaining agent registry lint style (#160) - Eduardo A.
 - 2026-07-26 fix(ci): satisfy agent registry test lint - web2solutions
 - 2026-07-26 [Fix][CI] Restore release lint compliance (#158) - Eduardo A.
