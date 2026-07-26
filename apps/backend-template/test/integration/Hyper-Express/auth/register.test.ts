@@ -87,6 +87,7 @@ describe('hyper-express -> register suite', () => {
       delete (user as any).emails;
       delete (user as any).avatar;
       delete (user as any).roles;
+      delete (user as any).organization;
       delete (user as any).documents;
       delete (user as any).phones;
       const response = await request('http://localhost:3000')

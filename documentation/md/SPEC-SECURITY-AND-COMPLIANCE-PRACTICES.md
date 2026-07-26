@@ -12,10 +12,13 @@ It is a binding Spec Development Driven artifact and applies to all apps/package
 
 ## 2) Identity, Access, and Tenancy
 
-1. RBAC and tenant scope rules must be explicit in domain/application contracts.
+1. Domain models and domain security policies are the source of truth for RBAC and
+   tenant scope; OpenAPI, adapters, fixtures, and documentation are derived contracts.
 2. Protected resources require authenticated identity context.
 3. Privileged operations require auditable authorization paths.
 4. Superadmin/admin/user role behavior must stay aligned with domain and API contracts.
+5. Tenant authorization decisions are defined by
+   `TENANT-RBAC-AUTHORIZATION-CONTRACT.md`.
 
 ## 3) Sensitive Data and Secret Handling
 

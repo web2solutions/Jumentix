@@ -29,6 +29,7 @@ Cada item de entrega deve expor:
 3. `PR -> Problema`
 4. `PR -> Evidência (testes/cobertura/verificações)`
 5. `PR -> IDs de requisitos` (quando NFR ou comportamento de governança são afetados)
+6. `Tarefa -> branch dedicada -> PR dedicado`
 
 ## Campos obrigatórios do projeto
 
@@ -48,7 +49,24 @@ Cada PR deve conter:
 3. Critérios de aceitação e evidências
 4. Cobertura e resultados de entrada
 5. Notas de risco/reversão quando necessário
-6. Formatação markdown limpa com quebra de linhas reais; não usar tokens literais `\n` no corpo do PR.
+6. Nome da branch exclusiva da tarefa e título do PR com prefixo de natureza correspondente
+7. Evidência das branches de origem e destino
+8. Formatação markdown limpa com quebra de linhas reais; não usar tokens literais `\n` no corpo do PR.
+
+Política de isolamento e nomenclatura:
+
+- Uma tarefa corresponde exatamente a uma branch de entrega e a um PR.
+- Formato de branch do Codex: `codex/<natureza>/<id-da-issue>-<slug-curto>`.
+- Formato do título do PR: `[<Natureza>] <resultado conciso>`.
+- Naturezas permitidas: `feature`, `fix`, `security`, `governance`, `docs`, `refactor`, `test`, `ci`, `release`, `chore`.
+- Compartilhar uma branch ou PR entre tarefas rastreadas separadamente exige exceção explícita registrada na issue e no PR.
+- Todo PR de tarefa tem `dev` como destino.
+- Somente um PR de promoção de release originado em `dev` pode ter `main` como destino.
+- Uma promoção de `dev` para `main` referencia os PRs/issues de tarefas já integrados em `dev` e não introduz mudanças não revisadas.
+- PRs diretos de tarefa/tópico, pushes e merges para `main` são proibidos.
+- Os gates de commit, push e PR devem executar a matriz completa de testes declarada pelo repositório.
+- A evidência da matriz deve listar cada célula obrigatória e seu resultado terminal.
+- Uma matriz incompleta é evidência com falha; nunca pode ser interpretada como verde.
 
 Política de agrupamento prioritário:
 
@@ -104,3 +122,7 @@ Conjunto mínimo de evidências:
 3. Saída CI verde para portas necessárias
 4. Limite de cumprimento da evidência de cobertura
 5. Atualizações de registro de requisitos (se o NFR for afetado)
+6. Evidência de isolamento e nomenclatura da branch/PR da tarefa
+7. Proveniência do PR da tarefa para `dev`, ou da promoção de release de `dev` para `main`
+8. Manifesto e resultados da matriz completa para commit, push e PR
+9. Prova de propagação mostrando que teste obrigatório ausente ou com falha não pode produzir resultado verde

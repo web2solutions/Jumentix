@@ -9,7 +9,8 @@ Cliente gRPC SDK para o gateway em tempo real, conduzido pela especificação As
 ## O que faz
 
 - Carrega metadados do servidor AsyncAPI gRPC.
-- Carrega `async-api.proto`.
+- Carrega o `spec/asyncapi/async-api.proto` canônico no repositório e o
+  `dist/proto/async-api.proto` copiado no pacote publicado.
 - Cria cliente gRPC para `realtime.AsyncApiGateway`.
 - Envia envelope de solicitação padronizado.
 
@@ -34,4 +35,3 @@ const response = await client.request({
 ```bash
 pnpm --filter @jumentix/sdk-grpc-client build
 ```
-

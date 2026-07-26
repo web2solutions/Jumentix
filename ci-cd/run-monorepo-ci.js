@@ -10,28 +10,10 @@ function runCommand(command, args, cwd = process.cwd()) {
 }
 
 function resolveCiPlan(affected) {
-  const commands = [];
-
-  if (affected.docsOnly) {
-    commands.push(['npm', ['run', 'lint']]);
-    commands.push(['git', ['fetch', '--tags', '--force', 'origin']]);
-    commands.push(['npm', ['run', 'changelog:check']]);
-    return commands;
-  }
-
-  commands.push(['npm', ['run', 'ci:gate:strict']]);
-
-  for (const app of affected.apps) {
-    commands.push(['npm', ['run', 'build', '--prefix', `apps/${app}`]]);
-    commands.push(['npm', ['run', 'test', '--prefix', `apps/${app}`]]);
-  }
-
-  for (const pkg of affected.packages) {
-    commands.push(['npm', ['run', 'build', '--prefix', `packages/${pkg}`]]);
-    commands.push(['npm', ['run', 'test', '--prefix', `packages/${pkg}`]]);
-  }
-
-  return commands;
+  // Scope information remains useful evidence, but delivery boundaries must never
+  // omit required cells. The canonical matrix already covers every workspace.
+  void affected;
+  return [['pnpm', ['run', 'ci:gate:strict']]];
 }
 
 function resolveInputFiles(argvFiles = [], options = {}) {

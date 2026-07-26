@@ -29,8 +29,29 @@ Cada PR deve incluir:
 - Contexto do item do projeto relacionado (Projeto: `Jumentix`)
 - Critérios de aceitação e evidências de validação
 - Cobertura e evidências de qualidade
+- Nome da branch exclusiva da tarefa e título do PR com prefixo de natureza
+- Branches de origem e destino, comprovando que o PR da tarefa tem `dev` como destino
+- Resultados da matriz completa de testes para os limites de commit, push e PR
+- Evidência de prevenção de falso positivo, incluindo propagação real de falhas
 
 Se um PR não estiver vinculado aos itens de trabalho do projeto, ele estará fora de processo.
+
+### Política de branch e PR exclusivos da tarefa (obrigatória)
+
+1. Cada tarefa deve ter sua própria branch e seu próprio PR.
+2. Uma branch ou PR não pode combinar tarefas rastreadas separadamente.
+3. Branches do Codex usam `codex/<natureza>/<id-da-issue>-<slug-curto>`.
+4. Títulos de PR usam `[<Natureza>] <resultado conciso>`.
+5. As naturezas permitidas são `feature`, `fix`, `security`, `governance`, `docs`, `refactor`, `test`, `ci`, `release` e `chore`.
+6. A natureza declarada pela branch e pelo título do PR deve coincidir.
+7. Toda exceção deve ser explicitamente aprovada e registrada na issue e no PR vinculados.
+8. Todo PR de tarefa deve ter `dev` como branch de destino.
+9. Somente um PR de promoção de release cuja branch de origem seja `dev` pode ter `main` como destino.
+10. Um PR de promoção de `dev` para `main` não introduz mudanças não revisadas e referencia os PRs de tarefas e issues já integrados em `dev`.
+11. Pushes diretos, merges ou PRs de tarefa/tópico para `main` são proibidos.
+12. Cada commit, push e PR deve executar a matriz completa de testes declarada pelo repositório.
+13. Células obrigatórias ausentes, ignoradas, vazias, canceladas, expiradas, abortadas ou não reportadas reprovam o gate.
+14. Falhas de teste e de descoberta devem propagar status diferente de zero; fallbacks de falso positivo são proibidos.
 
 ## Governança de Documentação
 
@@ -54,8 +75,10 @@ Não é permitido misturar `P0`, `P1` e `P2` no mesmo PR.
 1. Criar/triagem de problema.
 2. Adicione o problema ao projeto `Jumentix`.
 3. Defina valores de campo e datas de ciclo.
-4. Implementar com PR vinculado ao problema/projeto.
-5. Mova o status do projeto (`Backlog` -> `Pronto` -> `Em andamento` -> `Em revisão` -> `Concluído`).
+4. Crie a branch exclusiva da tarefa com prefixo de natureza.
+5. Implemente com um PR dedicado tendo `dev` como destino e vinculado à issue e ao projeto.
+6. Promova `dev` para `main` somente por meio de um PR de promoção de release após a aprovação da matriz completa.
+7. Mova o status do projeto (`Backlog` -> `Pronto` -> `Em andamento` -> `Em revisão` -> `Concluído`).
 
 ## Política de Ciclo e Estimativa
 

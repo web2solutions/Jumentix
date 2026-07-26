@@ -25,7 +25,12 @@ import { RequestUpdatePassword } from '@src/modules/Users/interface/dto/RequestU
 import { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
 import { RequestUpdateUser } from '@src/modules/Users/interface/dto/RequestUpdateUser';
 import { IUserUseCases } from '@src/modules/Users/application/ports/IUserUseCases';
-import { EUserRole, hasSuperadminRole } from '@src/modules/Users/domain/security/Rbac';
+import {
+  ITenantAuthorizationDecision,
+  decideUserAccess,
+  resolveUserCollectionScope,
+  resolveUserCreationOrganization
+} from '@src/modules/Users/domain/security/TenantAuthorizationPolicy';
 
 export class UserController extends BaseController implements IController {
   private readonly userUseCases: IUserUseCases;
@@ -45,23 +50,20 @@ export class UserController extends BaseController implements IController {
     return ((event as any).authenticatedUser || {}) as Record<string, any>;
   }
 
+  // eslint-disable-next-line class-methods-use-this
+  private throwIfTenantAccessDenied(decision: ITenantAuthorizationDecision): void {
+    if (!decision.allowed) {
+      throw new ForbiddenError(decision.reason);
+    }
+  }
+
   private async enforceUserReadScope(event: BaseDomainEvent, targetUserId: string): Promise<void> {
     const authenticatedUser = this.getAuthenticatedUser(event);
-    const roles = authenticatedUser.roles || [];
-    if (!roles.length) return;
-    if (hasSuperadminRole(roles)) return;
-
-    if (!authenticatedUser.organization) {
-      throw new ForbiddenError('Insufficient permission - organization scope is required');
-    }
     const { result: targetUser, error } = await this.userUseCases.getOneById(targetUserId);
     if (error || !targetUser) {
       throw error || new ForbiddenError('Insufficient permission - target user not available');
     }
-    if (targetUser.id === authenticatedUser.id) return;
-    if (targetUser.organization !== authenticatedUser.organization) {
-      throw new ForbiddenError('Insufficient permission - cross organization access is forbidden');
-    }
+    this.throwIfTenantAccessDenied(decideUserAccess(authenticatedUser, targetUser));
   }
 
   @Authorize()
@@ -75,18 +77,12 @@ export class UserController extends BaseController implements IController {
     );
     const requestCreateUser = event.input as RequestCreateUser;
     const authenticatedUser = this.getAuthenticatedUser(event);
-    const roles = authenticatedUser.roles || [];
-    if (roles.length > 0 && !hasSuperadminRole(roles)) {
-      if (!authenticatedUser.organization) {
-        throw new ForbiddenError('Insufficient permission - organization scope is required');
-      }
-      if (!requestCreateUser.organization) {
-        requestCreateUser.organization = authenticatedUser.organization;
-      }
-      if (requestCreateUser.organization !== authenticatedUser.organization) {
-        throw new ForbiddenError('Insufficient permission - cross organization access is forbidden');
-      }
-    }
+    const tenantBinding = resolveUserCreationOrganization(
+      authenticatedUser,
+      requestCreateUser.organization
+    );
+    this.throwIfTenantAccessDenied(tenantBinding.decision);
+    requestCreateUser.organization = tenantBinding.organization;
     const { result, error } = await this.userUseCases.create(requestCreateUser);
     return { result, error };
   }
@@ -170,19 +166,11 @@ export class UserController extends BaseController implements IController {
     );
     const filters = setFilter(event);
     const authenticatedUser = this.getAuthenticatedUser(event);
-    const roles = authenticatedUser.roles || [];
-    if (roles.length > 0 && !hasSuperadminRole(roles)) {
-      if (!authenticatedUser.organization) {
-        throw new ForbiddenError('Insufficient permission - organization scope is required');
-      }
-      filters.organization = authenticatedUser.organization;
-      if (roles.length === 1 && roles[0] === EUserRole.user) {
-        filters.id = authenticatedUser.id;
-      }
-    }
+    const tenantScope = resolveUserCollectionScope(authenticatedUser);
+    this.throwIfTenantAccessDenied(tenantScope.decision);
     const paging = setPaging(event);
     const result = await this.userUseCases.getAll(
-      { ...filters },
+      { ...filters, ...tenantScope.filters },
       paging
     );
     // console.log(result);

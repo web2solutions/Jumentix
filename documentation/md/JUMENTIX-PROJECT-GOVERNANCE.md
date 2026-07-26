@@ -25,8 +25,29 @@ Each PR must include:
 - Related project item context (Project: `Jumentix`)
 - Acceptance criteria and validation evidence
 - Coverage and quality-gate evidence
+- Task-owned branch name and nature-prefixed PR title
+- Source and target branches, proving the task PR targets `dev`
+- Full test matrix results for commit, push, and PR boundaries
+- False-green prevention evidence, including real failure propagation
 
 If a PR is not linked to project work items, it is out of process.
+
+### Task-owned branch and PR policy (mandatory)
+
+1. Every task must have its own branch and its own PR.
+2. A branch or PR must not combine separately tracked tasks.
+3. Codex branches use `codex/<nature>/<issue-id>-<short-slug>`.
+4. PR titles use `[<Nature>] <concise outcome>`.
+5. Allowed nature values are `feature`, `fix`, `security`, `governance`, `docs`, `refactor`, `test`, `ci`, `release`, and `chore`.
+6. The nature declared by the branch and PR title must match.
+7. Any exception must be explicitly approved and recorded in the linked issue and PR.
+8. Every task PR must target `dev`.
+9. Only a release-promotion PR whose source branch is `dev` may target `main`.
+10. A `dev` to `main` promotion PR introduces no unreviewed changes and references the task PRs and issues already merged into `dev`.
+11. Direct pushes, merges, or task/topic PRs to `main` are prohibited.
+12. Every commit, push, and PR must run the complete repository-declared test matrix.
+13. Missing, skipped, empty, cancelled, timed-out, aborted, or unreported required matrix cells fail the gate.
+14. Test failures and discovery failures must propagate a non-zero status; false-green fallbacks are prohibited.
 
 ## Documentation Governance
 
@@ -50,8 +71,10 @@ Mixing `P0`, `P1`, and `P2` work in the same PR is not allowed.
 1. Create/triage issue.
 2. Add issue to `Jumentix` project.
 3. Set field values and cycle dates.
-4. Implement with PR linked to issue/project.
-5. Move project status (`Backlog` -> `Ready` -> `In progress` -> `In review` -> `Done`).
+4. Create the task-owned, nature-prefixed branch.
+5. Implement with a dedicated PR targeting `dev` and linked to the issue/project.
+6. Promote `dev` to `main` only through a release-promotion PR after the complete matrix passes.
+7. Move project status (`Backlog` -> `Ready` -> `In progress` -> `In review` -> `Done`).
 
 ## Cycle and Estimation Policy
 

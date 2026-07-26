@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import path from 'path';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 
@@ -11,6 +10,7 @@ import {
   IRealtimeAPIFactory,
   RealtimeAPIBase
 } from '@src/interface/Async/RealtimeAPIBase';
+import { resolveGrpcProtoPath } from '@src/interface/gRPC/resolveGrpcProtoPath';
 
 export interface IGrpcAPIFactory extends IRealtimeAPIFactory {
   host?: string;
@@ -59,8 +59,7 @@ export class GrpcAPI extends RealtimeAPIBase {
     });
     this.host = config.host || '0.0.0.0';
     this.port = config.port || Number(process.env.AAA_GRPC_PORT || (_HTTP_PORT_ + 2));
-    this.protoFilePath = config.protoFilePath
-      || path.resolve('./src/interface/gRPC/proto/async-api.proto');
+    this.protoFilePath = resolveGrpcProtoPath(config.protoFilePath);
   }
 
   private static parseJson(raw?: string): Record<string, any> {

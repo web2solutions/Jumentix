@@ -20,6 +20,10 @@ import { ICacheService } from '@src/infra/cache';
 interface IOrganizationServiceConfig extends IServiceConfig {
 }
 
+interface ISerializableOrganization extends IOrganization {
+  serialize(): IOrganization;
+}
+
 export class OrganizationService extends BaseService<
 IOrganization,
 RequestCreateOrganization,
@@ -33,6 +37,13 @@ RequestUpdateOrganization
     super(config);
     this.dataRepository = config.dataRepository as OrganizationDataRepository;
     this.cacheService = config.services?.cacheService as ICacheService | undefined;
+  }
+
+  private static serializeOrganization(organization: IOrganization): IOrganization {
+    const candidate = organization as Partial<ISerializableOrganization>;
+    return typeof candidate.serialize === 'function'
+      ? candidate.serialize()
+      : organization;
   }
 
   private static sortPayload(payload: any): any {
@@ -63,7 +74,9 @@ RequestUpdateOrganization
   public async create(data: RequestCreateOrganization): Promise<IServiceResponse<IOrganization>> {
     const serviceResponse: IServiceResponse<IOrganization> = {};
     try {
-      serviceResponse.result = await this.dataRepository.create(data);
+      serviceResponse.result = OrganizationService.serializeOrganization(
+        await this.dataRepository.create(data)
+      );
       await this.invalidateReadCache();
     } catch (error) {
       serviceResponse.error = error as BaseError;
@@ -77,7 +90,9 @@ RequestUpdateOrganization
   ): Promise<IServiceResponse<IOrganization>> {
     const serviceResponse: IServiceResponse<IOrganization> = {};
     try {
-      serviceResponse.result = await this.dataRepository.update(id, data);
+      serviceResponse.result = OrganizationService.serializeOrganization(
+        await this.dataRepository.update(id, data)
+      );
       await this.invalidateReadCache();
     } catch (error) {
       serviceResponse.error = error as BaseError;
@@ -106,7 +121,9 @@ RequestUpdateOrganization
         serviceResponse.result = cached;
         return serviceResponse;
       }
-      serviceResponse.result = await this.dataRepository.getOneById(id);
+      serviceResponse.result = OrganizationService.serializeOrganization(
+        await this.dataRepository.getOneById(id)
+      );
       if (serviceResponse.result) {
         await this.cacheService?.set(cacheKey, serviceResponse.result);
       }
@@ -131,8 +148,14 @@ RequestUpdateOrganization
         return cached;
       }
       const result = await this.dataRepository.getAll(filters, paging);
-      await this.cacheService?.set(cacheKey, result);
-      return result;
+      const serializedResult = {
+        ...result,
+        result: result.result.map((organization) => (
+          OrganizationService.serializeOrganization(organization)
+        ))
+      };
+      await this.cacheService?.set(cacheKey, serializedResult);
+      return serializedResult;
     } catch (error) {
       serviceResponse.error = error as BaseError;
     }
@@ -145,7 +168,9 @@ RequestUpdateOrganization
   ): Promise<IServiceResponse<IOrganization>> {
     const serviceResponse: IServiceResponse<IOrganization> = {};
     try {
-      serviceResponse.result = await this.dataRepository.createAddress(id, data);
+      serviceResponse.result = OrganizationService.serializeOrganization(
+        await this.dataRepository.createAddress(id, data)
+      );
       await this.invalidateReadCache();
     } catch (error) {
       serviceResponse.error = error as BaseError;
@@ -160,7 +185,9 @@ RequestUpdateOrganization
   ): Promise<IServiceResponse<IOrganization>> {
     const serviceResponse: IServiceResponse<IOrganization> = {};
     try {
-      serviceResponse.result = await this.dataRepository.updateAddress(id, addressId, data);
+      serviceResponse.result = OrganizationService.serializeOrganization(
+        await this.dataRepository.updateAddress(id, addressId, data)
+      );
       await this.invalidateReadCache();
     } catch (error) {
       serviceResponse.error = error as BaseError;
@@ -174,7 +201,9 @@ RequestUpdateOrganization
   ): Promise<IServiceResponse<IOrganization>> {
     const serviceResponse: IServiceResponse<IOrganization> = {};
     try {
-      serviceResponse.result = await this.dataRepository.deleteAddress(id, addressId);
+      serviceResponse.result = OrganizationService.serializeOrganization(
+        await this.dataRepository.deleteAddress(id, addressId)
+      );
       await this.invalidateReadCache();
     } catch (error) {
       serviceResponse.error = error as BaseError;
@@ -188,7 +217,9 @@ RequestUpdateOrganization
   ): Promise<IServiceResponse<IOrganization>> {
     const serviceResponse: IServiceResponse<IOrganization> = {};
     try {
-      serviceResponse.result = await this.dataRepository.createPhone(id, data);
+      serviceResponse.result = OrganizationService.serializeOrganization(
+        await this.dataRepository.createPhone(id, data)
+      );
       await this.invalidateReadCache();
     } catch (error) {
       serviceResponse.error = error as BaseError;
@@ -203,7 +234,9 @@ RequestUpdateOrganization
   ): Promise<IServiceResponse<IOrganization>> {
     const serviceResponse: IServiceResponse<IOrganization> = {};
     try {
-      serviceResponse.result = await this.dataRepository.updatePhone(id, phoneId, data);
+      serviceResponse.result = OrganizationService.serializeOrganization(
+        await this.dataRepository.updatePhone(id, phoneId, data)
+      );
       await this.invalidateReadCache();
     } catch (error) {
       serviceResponse.error = error as BaseError;
@@ -214,7 +247,9 @@ RequestUpdateOrganization
   public async deletePhone(id: string, phoneId: string): Promise<IServiceResponse<IOrganization>> {
     const serviceResponse: IServiceResponse<IOrganization> = {};
     try {
-      serviceResponse.result = await this.dataRepository.deletePhone(id, phoneId);
+      serviceResponse.result = OrganizationService.serializeOrganization(
+        await this.dataRepository.deletePhone(id, phoneId)
+      );
       await this.invalidateReadCache();
     } catch (error) {
       serviceResponse.error = error as BaseError;
@@ -228,7 +263,9 @@ RequestUpdateOrganization
   ): Promise<IServiceResponse<IOrganization>> {
     const serviceResponse: IServiceResponse<IOrganization> = {};
     try {
-      serviceResponse.result = await this.dataRepository.createEmail(id, data);
+      serviceResponse.result = OrganizationService.serializeOrganization(
+        await this.dataRepository.createEmail(id, data)
+      );
       await this.invalidateReadCache();
     } catch (error) {
       serviceResponse.error = error as BaseError;
@@ -243,7 +280,9 @@ RequestUpdateOrganization
   ): Promise<IServiceResponse<IOrganization>> {
     const serviceResponse: IServiceResponse<IOrganization> = {};
     try {
-      serviceResponse.result = await this.dataRepository.updateEmail(id, emailId, data);
+      serviceResponse.result = OrganizationService.serializeOrganization(
+        await this.dataRepository.updateEmail(id, emailId, data)
+      );
       await this.invalidateReadCache();
     } catch (error) {
       serviceResponse.error = error as BaseError;
@@ -254,7 +293,9 @@ RequestUpdateOrganization
   public async deleteEmail(id: string, emailId: string): Promise<IServiceResponse<IOrganization>> {
     const serviceResponse: IServiceResponse<IOrganization> = {};
     try {
-      serviceResponse.result = await this.dataRepository.deleteEmail(id, emailId);
+      serviceResponse.result = OrganizationService.serializeOrganization(
+        await this.dataRepository.deleteEmail(id, emailId)
+      );
       await this.invalidateReadCache();
     } catch (error) {
       serviceResponse.error = error as BaseError;

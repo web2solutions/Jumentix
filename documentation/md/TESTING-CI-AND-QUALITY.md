@@ -81,6 +81,12 @@ Main gate:
 pnpm run ci:gate
 ```
 
+Strict push and remote-CI gate:
+
+```bash
+pnpm run ci:gate:strict
+```
+
 Included checks:
 
 - `lint`
@@ -95,13 +101,35 @@ Included checks:
 - integration smoke
 - minimum coverage threshold (99% global via Jest + Codecov status)
 
+The strict gate is an explicit, fail-closed manifest with 18 required cells:
+
+- lint, architecture, contract, release-governance, security, and API smoke checks
+- unit tests, root and workspace builds/tests, and patch coverage
+- the complete 15-target HTTP, Lambda, realtime, and Service Management integration matrix
+- aggregate execution that reports every failing cell instead of stopping at the first failure
+
+Integration targets use `--coverage=false`; unit tests remain the authoritative
+coverage-producing stage. Empty, duplicate, malformed, missing-script, crashed, or
+non-zero cells fail closed. Scope-aware execution, including docs-only changes, cannot
+omit a cell at a delivery boundary.
+
+Each integration target runs with `CI=true` and a 120-second process timeout. A timeout
+is reported as exit `124`, fails the integration cell, and does not prevent the remaining
+targets from being reported. Generated `dist` output is excluded from lint so a completed
+build cannot make the next matrix run fail for scanning generated declarations.
+
 Local enforcement:
 
-- `.husky/pre-commit` runs `pnpm run changelog:update && git add CHANGELOG.md && pnpm run lint && pnpm run test:unit`
+- `.husky/pre-commit` synchronizes/stages `CHANGELOG.md`, then runs `pnpm run ci:gate:strict`
 - `.husky/pre-push` runs `pnpm run ci:gate:strict`
 - `post-commit` is mutation-free (no auto-amend, no bypass flags)
 - `.husky/commit-msg` runs commitlint (`@commitlint/config-conventional`)
-- `.husky/post-commit` updates `CHANGELOG.md` from Git history and auto-amends the commit when needed
+
+Remote enforcement:
+
+- CircleCI and GitHub Actions invoke `pnpm run ci:gate:strict` directly
+- GitHub pull-request CI uploads `artifacts/ci/full-test-matrix.json` even after failure
+- `ci:monorepo` remains a compatibility entrypoint but cannot select a reduced docs-only plan
 
 SonarQube Cloud coverage import:
 
@@ -114,8 +142,8 @@ SonarQube Cloud coverage import:
 
 | Integration | Purpose | Where it is configured | What to run / requirements |
 |------------|---------|-------------------------|-----------------------------|
-| CircleCI | Main pipeline for lint + tests + architecture checks + smoke + upload coverage | `.circleci/config.yml` | Installs with `pnpm`, runs `pnpm run ci:monorepo` |
-| GitHub Actions (tests) | Secondary CI validation on push/PR | `.github/workflows/test.yml` | Uses Node `22.x`, installs with `pnpm`, runs scope-aware `pnpm run ci:monorepo -- <changed-files>` |
+| CircleCI | Main pipeline for lint + tests + architecture checks + smoke + upload coverage | `.circleci/config.yml` | Installs with `pnpm`, runs `pnpm run ci:gate:strict`, stores matrix evidence |
+| GitHub Actions (tests) | Secondary CI validation on push/PR | `.github/workflows/test.yml` | Uses Node `22.x`, installs with `pnpm`, runs `pnpm run ci:gate:strict`, uploads matrix evidence |
 | GitHub Actions (SonarQube Cloud) | Static analysis + quality gate + coverage import | `.github/workflows/sonarqube-cloud.yml`, `sonar-project.properties` | Requires `SONAR_TOKEN`; runs `pnpm run test:unit` first |
 | Codecov | Coverage status checks for project and patch | `codecov.yml` | Target is `95%` for project and patch |
 | Jest coverage gate | Local hard gate to prevent low-coverage merges | `jest.config.js` | Global thresholds: `lines/statements >= 95%`, `branches/functions >= 80%` |
@@ -134,7 +162,7 @@ SonarQube Cloud coverage import:
 
 - Pipeline file: `.circleci/config.yml`
 - Uses `cimg/node:22.23` plus `redis:latest`
-- Installs `pnpm@9.15.3`, runs `pnpm install --no-frozen-lockfile`, waits for Redis, executes `pnpm run ci:monorepo`, uploads coverage with Codecov orb
+- Installs `pnpm@9.15.3`, runs `pnpm install --no-frozen-lockfile`, waits for Redis, executes `pnpm run ci:gate:strict`, stores full-matrix evidence, and uploads coverage with Codecov orb
 - This is the primary all-in-one gate
 
 #### GitHub Actions - Test Workflow
@@ -142,9 +170,9 @@ SonarQube Cloud coverage import:
 - Workflow file: `.github/workflows/test.yml`
 - Triggers on:
   - `push` to `main` and `dev`
-  - `pull_request` to `main`
-- Sets up Redis (with password), installs `pnpm`, computes changed files against `main`, runs `pnpm run ci:monorepo -- <changed-files>`
-- Uses docs-only lightweight checks or strict gate + affected app/package flow depending on delta scope
+  - `pull_request` to `dev` and `main`
+- Sets up Redis (with password), installs `pnpm`, and runs `pnpm run ci:gate:strict`
+- Uploads the full-matrix JSON result with `if: always()`; docs-only changes do not bypass required cells
 
 #### GitHub Actions - SonarQube Cloud Workflow
 
@@ -208,7 +236,7 @@ Environment bootstrap during tests:
 Run full gate:
 
 ```bash
-pnpm run ci:gate
+pnpm run ci:gate:strict
 ```
 
 Run targeted checks:
@@ -224,6 +252,7 @@ pnpm run release:governance:check
 pnpm run oas:check-routes
 pnpm run test:unit
 pnpm run ci:smoke
+pnpm run ci:integration
 ```
 
 ### Troubleshooting (CI / SonarQube / Codecov)

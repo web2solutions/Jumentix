@@ -93,7 +93,18 @@ Errors are carried in the same response envelope (no throw required at transport
 3. Correlation id is captured in `BaseError` from request context.
 4. New adapters should reuse existing `sendErrorResponse` semantics to preserve response contract consistency.
 
-## 7) Extension Rules
+## 7) HTTP Request Validation Contract
+
+All HTTP adapters use the same OpenAPI request-validation boundary:
+
+1. Unknown properties and required properties are checked first so existing public error messages remain stable.
+2. OpenAPI type, format, enum, range, and length constraints are then enforced.
+3. Schema-library diagnostics are translated when a stable domain-facing message already exists.
+4. `createdAt` and `updatedAt` are tolerated in update round trips as server-managed fields; they are not writable domain attributes.
+
+Changes to request schemas or validation messages must be covered by the shared validator unit tests and the affected adapter integration suites.
+
+## 8) Extension Rules
 
 When creating a new custom error:
 
@@ -103,7 +114,7 @@ When creating a new custom error:
 4. Add `formatErrorMessage` branch if custom human-readable text is required.
 5. Keep HTTP and message-level error envelopes backward-compatible.
 
-## 8) Realtime Error Envelopes
+## 9) Realtime Error Envelopes
 
 WebSocket (`ApiResponse`):
 

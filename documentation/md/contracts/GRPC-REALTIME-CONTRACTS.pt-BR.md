@@ -8,7 +8,7 @@ Contratos canônicos para transporte em tempo real gRPC.
 
 ## Fonte da Verdade
 
-- `apps/backend-template/src/interface/gRPC/proto/async-api.proto`
+- `spec/asyncapi/async-api.proto` (proto canônico pertencente ao repositório)
 - `spec/asyncapi/1.0.0.grpc.yml`
 - `apps/backend-template/src/interface/gRPC/gRPCAPI.ts`
 
