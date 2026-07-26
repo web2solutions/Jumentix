@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- 2026-07-26 [Feature] Externalize agent registry canonical source (#144) - Eduardo A.
 - 2026-07-25 feat(governance): externalize agent registry canonical source - web2solutions
 - 2026-07-26 [Docs] Show CircleCI badges for dev and main (#152) - Eduardo A.
 - 2026-07-26 docs(readme): show CircleCI badges for dev and main - web2solutions

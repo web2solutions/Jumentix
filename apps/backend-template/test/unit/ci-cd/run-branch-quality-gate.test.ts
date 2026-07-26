@@ -37,8 +37,12 @@ describe('run-branch-quality-gate', () => {
     expect.hasAssertions();
     const execute = jest.fn().mockReturnValue(0);
     const logger = { log: jest.fn(), error: jest.fn() };
-    const devEvidence = runBranchQualityGate({ targetBranch: 'dev', execute, logger, resultFile: '' });
-    const mainEvidence = runBranchQualityGate({ targetBranch: 'main', execute, logger, resultFile: '' });
+    const devEvidence = runBranchQualityGate({
+      targetBranch: 'dev', execute, logger, resultFile: ''
+    });
+    const mainEvidence = runBranchQualityGate({
+      targetBranch: 'main', execute, logger, resultFile: ''
+    });
 
     expect(execute.mock.calls).toStrictEqual([[DEV_QUALITY_GATE], [MAIN_QUALITY_GATE]]);
     expect(devEvidence).toStrictEqual({
