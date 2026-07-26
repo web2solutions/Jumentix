@@ -144,6 +144,32 @@ Verificações obrigatórias:
 3. Varreduras/portões de segurança
 4. Evidências de ligação de governança em RP
 
+## Grupo de Capacidade G - Site do produto e portal de documentação
+
+Inclui:
+
+1. Páginas comerciais de produto e casos de uso
+2. Documentação técnica baseada em Markdown
+3. Rotas canônicas e retrocompatíveis de documentação
+4. Busca, sidebar, índice da página, feedback, links de edição e navegação responsiva
+5. Automação de build e publicação na Vercel
+
+Especificações necessárias:
+
+1. `.agents/requirements/069-jumentix-website-commercial-static-vercel-governance.md`
+2. `apps/jumentix-website/documentation/CONTENT-PIPELINE.pt-BR.md`
+3. `apps/jumentix-website/documentation/VERCEL-DEPLOYMENT.pt-BR.md`
+4. Auditoria de UX e arquitetura da informação em
+   `apps/jumentix-website/documentation/research`
+
+Verificações obrigatórias:
+
+1. Typecheck e build de produção do site
+2. Verificações prepublish de rotas e marcadores de conteúdo inválido
+3. Verificação no navegador de layout, navegação, links e estados responsivos
+4. Smoke test do deploy de produção na Vercel
+5. Cobertura Storybook para componentes reutilizáveis do site
+
 ## Definição de fluxo de trabalho (especificações primeiro)
 
 Para cada grupo de capacidade:

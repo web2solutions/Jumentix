@@ -34,14 +34,17 @@ File:
 Configured values:
 
 - `framework`: `nextjs`
-- `installCommand`: `npm install --no-audit --no-fund`
-- `buildCommand`: `npm run build`
-- `devCommand`: `npm run dev`
+- `installCommand`: `pnpm install --frozen-lockfile`
+- `buildCommand`: `pnpm run build`
+- `devCommand`: `pnpm run dev`
 - `outputDirectory`: `.next`
 
 ## Notes
 
 - Website content is static-first and generated from markdown sources using `content:sync`.
 - `prebuild` runs content synchronization automatically before build.
+- Generated documentation remains available when a Vercel app-root build cannot access external
+  monorepo source files.
+- Vercel and local builds use the pnpm workspace lockfile and patched dependency declarations.
 - Root deployment scripts are intentionally scope-agnostic (no forced `--scope`) to support
   personal-account and team-account Vercel contexts.

@@ -1,5 +1,10 @@
 import bundleAnalyzer from '@next/bundle-analyzer';
 import nextra from 'nextra';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const appRoot = path.dirname(fileURLToPath(import.meta.url));
+const monorepoRoot = path.resolve(appRoot, '../..');
 
 const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
@@ -17,10 +22,12 @@ export default withNextra(
   withBundleAnalyzer({
     reactStrictMode: false,
     cleanDistDir: true,
+    outputFileTracingRoot: monorepoRoot,
     experimental: {
       optimizePackageImports: ['@mantine/core', '@mantine/hooks'],
     },
     turbopack: {
+      root: monorepoRoot,
       rules: {
         '*.svg': {
           loaders: ['turbopack-inline-svg-loader'],
