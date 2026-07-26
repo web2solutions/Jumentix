@@ -141,6 +141,7 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     nextOrganizationId: string = ''
   ): Promise<void> {
     if (!this.organizationDataRepository) return;
+    let relationshipChanged = false;
 
     if (previousOrganizationId && previousOrganizationId !== nextOrganizationId) {
       const previous = await this.organizationDataRepository.getOneById(previousOrganizationId);
@@ -153,6 +154,7 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
         email: previous.email,
         users: nextUsers
       });
+      relationshipChanged = true;
     }
 
     if (nextOrganizationId) {
@@ -166,6 +168,11 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
         email: organization.email,
         users: linkedUsers
       });
+      relationshipChanged = true;
+    }
+
+    if (relationshipChanged && this.cacheService) {
+      await this.cacheService.bumpVersion('organizations');
     }
   }
 

@@ -97,7 +97,18 @@ Os erros são transportados no mesmo envelope de resposta (não é necessário l
 3. O ID de correlação é capturado em `BaseError` do contexto da solicitação.
 4. Novos adaptadores devem reutilizar a semântica `sendErrorResponse` existente para preservar a consistência do contrato de resposta.
 
-## 7) Regras de extensão
+## 7) Contrato de validação de requisições HTTP
+
+Todos os adaptadores HTTP usam o mesmo limite de validação de requisições OpenAPI:
+
+1. Propriedades desconhecidas e obrigatórias são verificadas primeiro para manter estáveis as mensagens públicas existentes.
+2. Em seguida, são aplicadas as restrições OpenAPI de tipo, formato, enumeração, intervalo e tamanho.
+3. Diagnósticos da biblioteca de schema são traduzidos quando já existe uma mensagem estável voltada ao domínio.
+4. `createdAt` e `updatedAt` são tolerados em ciclos de leitura e atualização como campos gerenciados pelo servidor; eles não são atributos de domínio graváveis.
+
+Alterações nos schemas de requisição ou nas mensagens de validação devem ser cobertas pelos testes unitários compartilhados do validador e pelas suítes de integração dos adaptadores afetados.
+
+## 8) Regras de extensão
 
 Ao criar um novo erro personalizado:
 
@@ -107,7 +118,7 @@ Ao criar um novo erro personalizado:
 4. Adicione a ramificação `formatErrorMessage` se for necessário um texto legível personalizado.
 5. Mantenha os envelopes de erro HTTP e de mensagem compatíveis com versões anteriores.
 
-## 8) Envelopes de erro em tempo real
+## 9) Envelopes de erro em tempo real
 
 WebSocket (`ApiResponse`):
 

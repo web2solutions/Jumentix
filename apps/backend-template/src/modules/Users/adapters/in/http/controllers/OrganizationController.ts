@@ -19,7 +19,11 @@ import { RequestCreatePhone } from '@src/modules/Users/interface/dto/RequestCrea
 import { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
 import { RequestCreateEmail } from '@src/modules/Users/interface/dto/RequestCreateEmail';
 import { RequestUpdateEmail } from '@src/modules/Users/interface/dto/RequestUpdateEmail';
-import { hasSuperadminRole } from '@src/modules/Users/domain/security/Rbac';
+import {
+  ITenantAuthorizationDecision,
+  decideOrganizationAccess,
+  resolveOrganizationCollectionScope
+} from '@src/modules/Users/domain/security/TenantAuthorizationPolicy';
 
 export class OrganizationController extends BaseController implements IController {
   private readonly organizationUseCases: IOrganizationUseCases;
@@ -39,18 +43,19 @@ export class OrganizationController extends BaseController implements IControlle
     return ((event as any).authenticatedUser || {}) as Record<string, any>;
   }
 
+  // eslint-disable-next-line class-methods-use-this
+  private throwIfTenantAccessDenied(decision: ITenantAuthorizationDecision): void {
+    if (!decision.allowed) {
+      throw new ForbiddenError(decision.reason);
+    }
+  }
+
   private enforceOrganizationScope(event: BaseDomainEvent, organizationId: string): void {
     const authenticatedUser = this.getAuthenticatedUser(event);
-    const roles = authenticatedUser.roles || [];
-    if (!roles.length) return;
-    if (hasSuperadminRole(roles)) return;
-
-    if (!authenticatedUser.organization) {
-      throw new ForbiddenError('Insufficient permission - organization scope is required');
-    }
-    if (organizationId !== authenticatedUser.organization) {
-      throw new ForbiddenError('Insufficient permission - cross organization access is forbidden');
-    }
+    this.throwIfTenantAccessDenied(decideOrganizationAccess(
+      authenticatedUser,
+      organizationId
+    ));
   }
 
   @Authorize()
@@ -59,11 +64,6 @@ export class OrganizationController extends BaseController implements IControlle
   ): Promise<IServiceResponse<IOrganization>> {
     validateRequestAgainstOAS(this.openApiSpecification, event.schemaOAS, event);
     const requestCreateOrganization = event.input as RequestCreateOrganization;
-    const authenticatedUser = this.getAuthenticatedUser(event);
-    const roles = authenticatedUser.roles || [];
-    if (roles.length > 0 && !hasSuperadminRole(roles)) {
-      throw new ForbiddenError('Insufficient permission - only superadmin can create organizations');
-    }
     const { result, error } = await this.organizationUseCases.create(requestCreateOrganization);
     return { result, error };
   }
@@ -112,16 +112,11 @@ export class OrganizationController extends BaseController implements IControlle
     validateRequestAgainstOAS(this.openApiSpecification, event.schemaOAS, event);
     const filters = setFilter(event);
     const authenticatedUser = this.getAuthenticatedUser(event);
-    const roles = authenticatedUser.roles || [];
-    if (roles.length > 0 && !hasSuperadminRole(roles)) {
-      if (!authenticatedUser.organization) {
-        throw new ForbiddenError('Insufficient permission - organization scope is required');
-      }
-      filters.id = authenticatedUser.organization;
-    }
+    const tenantScope = resolveOrganizationCollectionScope(authenticatedUser);
+    this.throwIfTenantAccessDenied(tenantScope.decision);
     const paging = setPaging(event);
     return this.organizationUseCases.getAll(
-      { ...filters },
+      { ...filters, ...tenantScope.filters },
       paging
     );
   }
