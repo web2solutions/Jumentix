@@ -63,6 +63,7 @@ This file consolidates non-functional requirements already requested and stored 
 - `089` Agent Registry must be maintained in an independent GitHub repository as canonical source, with mirrored sync in consumer repositories.
 - `090` Every executable task must have one focused epic, one primary nature, and the epic milestone; milestone validation precedes epic-level agent delegation and non-overlapping child-task assignment.
 - `091` Website design-system and Storybook governance, including accessibility, responsive/theme states, component inventory, and reproducible smoke validation.
+- `092` Open-source commercial website experience, bilingual route parity, truthful code proof, responsive navigation, and production route integrity.
 
 ## Rule of Use
 

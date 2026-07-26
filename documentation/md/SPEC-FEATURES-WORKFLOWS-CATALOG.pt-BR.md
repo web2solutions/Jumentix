@@ -157,9 +157,12 @@ Inclui:
 Especificações necessárias:
 
 1. `.agents/requirements/069-jumentix-website-commercial-static-vercel-governance.md`
-2. `apps/jumentix-website/documentation/CONTENT-PIPELINE.pt-BR.md`
-3. `apps/jumentix-website/documentation/VERCEL-DEPLOYMENT.pt-BR.md`
-4. Auditoria de UX e arquitetura da informação em
+2. `.agents/requirements/091-jumentix-website-design-system-and-storybook.md`
+3. `.agents/requirements/092-jumentix-oss-commercial-experience.md`
+4. `apps/jumentix-website/documentation/COMMERCIAL-EXPERIENCE.pt-BR.md`
+5. `apps/jumentix-website/documentation/CONTENT-PIPELINE.pt-BR.md`
+6. `apps/jumentix-website/documentation/VERCEL-DEPLOYMENT.pt-BR.md`
+7. Auditoria de UX e arquitetura da informação em
    `apps/jumentix-website/documentation/research`
 
 Verificações obrigatórias:
@@ -171,6 +174,8 @@ Verificações obrigatórias:
 5. Cobertura Storybook para componentes reutilizáveis do site
 6. Build estático do Storybook e validação smoke do manifesto
 7. Validação de acessibilidade, temas, viewports e redução de movimento do design system
+8. Paridade das rotas comerciais EN/PT e navegação que preserva o idioma
+9. Metadados canônicos, hostname do sitemap, paginação do changelog e integridade dos links
 
 ## Definição de fluxo de trabalho (especificações primeiro)
 

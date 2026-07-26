@@ -19,6 +19,11 @@ const requiredStories = [
   'design-system-overview--site-header',
   'design-system-overview--site-footer',
   'design-system-overview--architecture-flow',
+  'commercial-pages--home',
+  'commercial-pages--home-portuguese',
+  'commercial-pages--product',
+  'commercial-pages--rest-api-journey',
+  'commercial-pages--mobile-product',
 ];
 
 for (const storyId of requiredStories) {
@@ -27,8 +32,8 @@ for (const storyId of requiredStories) {
   }
 }
 
-if (entries.length < 20) {
-  throw new Error(`Storybook smoke check failed: expected at least 20 entries, found ${entries.length}`);
+if (entries.length < 40) {
+  throw new Error(`Storybook smoke check failed: expected at least 40 entries, found ${entries.length}`);
 }
 
 console.log(`Storybook smoke check passed with ${entries.length} indexed entries.`);

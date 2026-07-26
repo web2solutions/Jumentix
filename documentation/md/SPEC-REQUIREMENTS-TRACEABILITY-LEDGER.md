@@ -115,7 +115,7 @@ For any change, identify impacted requirement IDs and ensure:
 
 ## H. Productization and Platform Expansion
 
-- `037`, `038`, `054`, `055` (both entries), `069`, `070`
+- `037`, `038`, `054`, `055` (both entries), `069`, `070`, `091`, `092`
 - Spec resources:
   - `packages/cli-init/*`
   - `apps/service-management/documentation/*`
@@ -135,6 +135,6 @@ If impacted requirement IDs are not mapped before implementation, the change is 
 
 As of `2026-07-26`, this ledger covers all unique requirement IDs currently registered in `.agents/requirements`:
 
-1. Unique IDs in requirements registry: `90`
-2. Unique IDs mapped in this ledger: `90`
+1. Unique IDs in requirements registry: `91`
+2. Unique IDs mapped in this ledger: `91`
 3. Missing IDs: `none`

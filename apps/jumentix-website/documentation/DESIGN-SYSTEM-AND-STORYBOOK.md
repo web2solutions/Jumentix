@@ -51,8 +51,8 @@ Storybook is configured for:
 - deterministic static builds;
 - a manifest-based smoke check for required stories and minimum catalog size.
 
-The catalog currently generates 30 indexed entries, including explicit mobile states for the site
-header and architecture flow.
+The catalog currently generates 42 indexed entries, including explicit mobile states for the site
+header, architecture flow, commercial product page, and complete commercial page compositions.
 
 Visual evidence:
 
