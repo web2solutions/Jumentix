@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- 2026-07-26 [Fix][CI] Resolve remaining agent registry lint style (#160) - Eduardo A.
+- 2026-07-26 fix(ci): satisfy agent registry test lint - web2solutions
 - 2026-07-26 [Fix][CI] Restore release lint compliance (#158) - Eduardo A.
 - 2026-07-26 fix(ci): restore release lint compliance - web2solutions
 - 2026-07-26 [Feature] Externalize agent registry canonical source (#144) - Eduardo A.

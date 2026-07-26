@@ -12,6 +12,8 @@ Primary Codex runtime instructions for this repository:
 8. Do not implement new changes directly on local `main`; use dedicated feature/fix/chore branches per requirement `079`.
 9. Follow the agent operating playbook defined in requirement `081` for registration, execution, and closure flow.
 10. Treat `web2solutions/jumentix-agent-registry` as canonical source; local `.agents/AGENT-REGISTRY.md` is a mirror.
+11. Work only on tasks with one focused parent epic and one primary nature; agent delegation is
+    established at epic level before child-task assignment under requirement `090`.
 
 Canonical governance/spec references:
 

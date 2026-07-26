@@ -29,6 +29,8 @@ This registry tracks AI agents collaborating in the Jumentix project.
 - `last_branch_check_utc`: ISO timestamp
 - `main_ref_checked`: short SHA from `main` checked by the agent
 - `dev_ref_checked`: short SHA from `dev` checked by the agent
+- `active_epic`: focused epic currently delegated to the agent
+- `assigned_task`: child task currently executed within the delegated epic
 - `capabilities`: key collaboration capabilities
 
 ## Registered Agents
@@ -45,9 +47,11 @@ This registry tracks AI agents collaborating in the Jumentix project.
 - `agent_version`: `GPT-5 Codex`
 - `status`: `busy`
 - `registered_at_utc`: `2026-07-25T00:00:00Z`
-- `last_branch_check_utc`: `2026-07-26T04:27:30Z`
-- `main_ref_checked`: `5d66c027`
-- `dev_ref_checked`: `3a0d3020`
+- `last_branch_check_utc`: `2026-07-26T06:26:45Z`
+- `main_ref_checked`: `dc9a5b4e`
+- `dev_ref_checked`: `6bf34bd5`
+- `active_epic`: `web2solutions/aaa-typescript-boilerplate#161`
+- `assigned_task`: `web2solutions/aaa-typescript-boilerplate#162`
 - `capabilities`:
   - repository analysis and implementation
   - test and CI debugging

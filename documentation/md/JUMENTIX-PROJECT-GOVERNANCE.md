@@ -17,11 +17,26 @@ This project uses GitHub Project **Jumentix** (`https://github.com/users/web2sol
 5. Task progress updates must happen in the project item status, not only in local notes.
 6. All executed tasks must keep governance metadata updated (status, priority, estimates, cycle/iteration, start/end dates, labels, assignee, PR/commit links).
 
+## Focused Epics and Task Nature
+
+1. Every executable task belongs to exactly one focused epic through structured GitHub parentage.
+2. Each epic represents one cohesive outcome and must not serve as a catch-all backlog.
+3. Every child task has exactly one primary nature: `feature`, `bug`, `security`, `governance`,
+   `docs`, `refactor`, `test`, `ci`, `release`, or `chore`.
+4. Tasks are grouped by nature within the epic. Different supporting natures use separate child
+   tasks while remaining tied to the same outcome.
+5. Work that crosses unrelated outcomes is split across focused epics.
+6. Agent delegation is established at epic level before task-level assignment.
+7. Only agents delegated to an epic may execute its child tasks, with one accountable agent and
+   non-overlapping scope per task.
+8. The canonical Agent Registry records each executing agent's `active_epic` and `assigned_task`.
+
 ## PR Governance
 
 Each PR must include:
 
 - Related issue link(s)
+- Focused parent epic link
 - Related project item context (Project: `Jumentix`)
 - Acceptance criteria and validation evidence
 - Coverage and quality-gate evidence
@@ -69,12 +84,14 @@ Mixing `P0`, `P1`, and `P2` work in the same PR is not allowed.
 ## Backlog and Delivery Flow
 
 1. Create/triage issue.
-2. Add issue to `Jumentix` project.
-3. Set field values and cycle dates.
-4. Create the task-owned, nature-prefixed branch.
-5. Implement with a dedicated PR targeting `dev` and linked to the issue/project.
-6. Promote `dev` to `main` only through a release-promotion PR after the complete matrix passes.
-7. Move project status (`Backlog` -> `Ready` -> `In progress` -> `In review` -> `Done`).
+2. Create or select its focused parent epic and establish structured parentage.
+3. Add issue to `Jumentix` project.
+4. Set nature, field values, and cycle dates.
+5. Delegate available agents to the epic, then assign its non-overlapping child tasks.
+6. Create the task-owned, nature-prefixed branch.
+7. Implement with a dedicated PR targeting `dev` and linked to the epic, issue, and project.
+8. Promote `dev` to `main` only through a release-promotion PR after the complete matrix passes.
+9. Move project status (`Backlog` -> `Ready` -> `In progress` -> `In review` -> `Done`).
 
 ## Cycle and Estimation Policy
 
