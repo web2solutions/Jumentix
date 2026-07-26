@@ -111,7 +111,8 @@ Para qualquer alteração, identifique os IDs dos requisitos afetados e garanta:
   - registro de requisitos sincronizado
   - paridade de instruções de agentes (Codex, Claude Code, Grok)
   - registros de cadastro de agentes e atribuição por disponibilidade
-  - registros de parentagem do épico focado, agrupamento por natureza e delegação no nível do épico
+  - registros de associação ao milestone, parentagem do épico focado, agrupamento por natureza e
+    delegação no nível do épico
   - registros de checagem prévia de `main` e `dev` antes da execução
   - rastreabilidade do projeto/PR presente
   - PRs de tarefa têm `dev` como destino, e somente promoções de release originadas em `dev` têm `main` como destino

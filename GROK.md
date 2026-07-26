@@ -14,6 +14,7 @@ This repository supports Grok as an official engineering agent.
 8. Before starting work, check `main` and `dev` refs and update registry fields.
 9. Work only on tasks with one focused parent epic and one primary nature.
 10. Confirm epic-level agent delegation before accepting a child task, following Requirement `090`.
+11. Confirm the focused epic and child task share one open milestone that covers their dates.
 
 ## Required Governance Links
 
