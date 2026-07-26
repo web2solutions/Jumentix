@@ -48,6 +48,7 @@ Cada PR deve conter:
 3. Critérios de aceitação e evidências
 4. Cobertura e resultados de entrada
 5. Notas de risco/reversão quando necessário
+6. Formatação markdown limpa com quebra de linhas reais; não usar tokens literais `\n` no corpo do PR.
 
 Política de agrupamento prioritário:
 

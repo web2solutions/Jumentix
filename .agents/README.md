@@ -97,6 +97,7 @@ Use these files as living constraints for future maintenance and feature develop
 - [079-main-branch-protection-and-branching-principles](requirements/079-main-branch-protection-and-branching-principles.md)
 - [080-agent-registry-machine-and-version-identity](requirements/080-agent-registry-machine-and-version-identity.md)
 - [081-agent-registration-and-operating-playbook](requirements/081-agent-registration-and-operating-playbook.md)
+- [082-pr-body-formatting-no-escaped-newlines](requirements/082-pr-body-formatting-no-escaped-newlines.md)
 - [Agent Registry](AGENT-REGISTRY.md)
 - [NFR Registry](NFR-REGISTRY.md)
 - [Spec Development Driven Agent](spec-development-driven-agent.md)
