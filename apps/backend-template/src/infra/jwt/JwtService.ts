@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as jwt from 'jsonwebtoken';
+import { randomUUID } from 'node:crypto';
 
 import { IJwtService } from '@src/infra/jwt/IJwtService';
 import { _JWT_TOKEN_SECRET_KEY_, _JWT_TOKEN_EXPIRES_IN_ } from '@src/config/jwt';
@@ -51,7 +52,7 @@ export class JwtService implements IJwtService {
     }
     const token = jwt.sign(
       {
-        jti: `${id || username || 'anonymous'}:${Math.floor(Date.now() / 1000)}`,
+        jti: `${id || username || 'anonymous'}:${randomUUID()}`,
         id,
         username,
         firstName,

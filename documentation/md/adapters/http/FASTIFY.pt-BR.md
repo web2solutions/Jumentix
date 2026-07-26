@@ -29,4 +29,12 @@ pnpm run dev:fastify
 pnpm run prod:fastify
 ```
 
+## Ciclo de vida da documentação estática
+
+O adaptador disponibiliza os arquivos da interface OpenAPI em `/OASdoc/` e os
+arquivos da interface AsyncAPI em `/AsyncAPIdoc/`. As duas raízes compartilham o
+único decorador `reply.sendFile` do Fastify: o primeiro registro do plugin
+estático é responsável pelo decorador, enquanto o segundo registra somente suas
+rotas prefixadas. Chamadas repetidas a `FastifyServer.compile()` reutilizam a
+mesma instância de servidor já composta.
 

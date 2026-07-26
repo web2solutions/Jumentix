@@ -16,10 +16,13 @@ Esta especificação define práticas obrigatórias de segurança e conformidade
 
 ## 2) Identidade, acesso e locação
 
-1. As regras de escopo do RBAC e do locatário devem ser explícitas nos contratos de domínio/aplicação.
+1. Modelos de domínio e políticas de segurança do domínio são a fonte da verdade para
+   RBAC e escopo de tenant; OpenAPI, adaptadores, fixtures e documentação são contratos derivados.
 2. Os recursos protegidos requerem contexto de identidade autenticado.
 3. As operações privilegiadas requerem caminhos de autorização auditáveis.
 4. O comportamento da função de superadministrador/administrador/usuário deve permanecer alinhado com os contratos de domínio e API.
+5. As decisões de autorização por tenant são definidas por
+   `TENANT-RBAC-AUTHORIZATION-CONTRACT.pt-BR.md`.
 
 ## 3) Dados confidenciais e tratamento secreto
 

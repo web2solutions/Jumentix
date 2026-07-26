@@ -1,5 +1,13 @@
 /* eslint-disable jest/max-expects */
 import { OrganizationService } from '@src/modules/Users/service/OrganizationService';
+import { Organization } from '@src/modules/Users/domain/Model/Organization';
+
+const domainOrganization = (name = 'Org') => new Organization({
+  id: '4fae5b16-261f-4de7-9cff-1429d5614e44',
+  name,
+  createdAt: '2026-01-01T00:00:00.000Z',
+  updatedAt: '2026-01-02T00:00:00.000Z'
+});
 
 const setup = () => {
   const dataRepository = {
@@ -43,6 +51,57 @@ describe('organization service', () => {
     expect((await service.getAll({}, { page: 1, size: 10 })).result?.[0].id).toBe('o1');
     expect((await service.delete('o1')).result).toBe(true);
     expect(dataRepository.create).toHaveBeenCalledWith({ name: 'Org' });
+  });
+
+  it('serializes domain models before exposing or caching service responses', async () => {
+    expect.hasAssertions();
+    const organization = domainOrganization();
+    const dataRepository = {
+      create: jest.fn().mockResolvedValue(organization),
+      getOneById: jest.fn().mockResolvedValue(organization),
+      getAll: jest.fn().mockResolvedValue({
+        page: 1,
+        size: 10,
+        total: 1,
+        result: [organization]
+      })
+    };
+    const cacheService = {
+      get: jest.fn().mockResolvedValue(undefined),
+      set: jest.fn().mockResolvedValue(undefined),
+      getVersion: jest.fn().mockResolvedValue(1),
+      bumpVersion: jest.fn().mockResolvedValue(2)
+    };
+    const service = OrganizationService.compile({
+      dataRepository,
+      services: { cacheService }
+    } as any);
+
+    const created = (await service.create({ name: 'Org' } as any)).result;
+    expect(created).toMatchObject({
+      id: organization.id,
+      name: 'Org',
+      createdAt: new Date('2026-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2026-01-02T00:00:00.000Z')
+    });
+    expect(created).not.toHaveProperty('_id');
+    expect(created).not.toHaveProperty('_name');
+    expect(created).not.toHaveProperty('_excludeOnSerialize');
+
+    const one = (await service.getOneById(organization.id)).result;
+    expect(one).toStrictEqual(organization.serialize());
+    expect(cacheService.set).toHaveBeenCalledWith(
+      `organizations:v1:getOneById:${organization.id}`,
+      organization.serialize()
+    );
+
+    const all = await service.getAll({}, { page: 1, size: 10 });
+    expect(all.result?.[0]).toStrictEqual(organization.serialize());
+    expect(all.result?.[0]).not.toHaveProperty('_id');
+    expect(cacheService.set).toHaveBeenCalledWith(
+      expect.stringContaining('organizations:v1:getAll:'),
+      expect.objectContaining({ result: [organization.serialize()] })
+    );
   });
 
   it('uses cache for read operations and invalidates after mutations', async () => {

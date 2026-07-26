@@ -25,6 +25,7 @@ Every delivery item must expose:
 3. `PR -> Issue`
 4. `PR -> Evidence (tests/coverage/checks)`
 5. `PR -> Requirement IDs` (when NFR or governance behavior is touched)
+6. `Task -> dedicated branch -> dedicated PR`
 
 ## Required Project Fields
 
@@ -44,7 +45,24 @@ Each PR must contain:
 3. Acceptance criteria and evidence
 4. Coverage and gate outcomes
 5. Risk/rollback notes when needed
-6. Clean markdown formatting with real breaklines; do not use literal `\n` tokens in PR body text.
+6. Task-owned branch name and matching nature-prefixed PR title
+7. Source and target branch evidence
+8. Clean markdown formatting with real breaklines; do not use literal `\n` tokens in PR body text.
+
+Task isolation and naming policy:
+
+- One task maps to exactly one delivery branch and one PR.
+- Codex branch format: `codex/<nature>/<issue-id>-<short-slug>`.
+- PR title format: `[<Nature>] <concise outcome>`.
+- Allowed nature values: `feature`, `fix`, `security`, `governance`, `docs`, `refactor`, `test`, `ci`, `release`, `chore`.
+- Sharing a branch or PR across separately tracked tasks requires an explicit exception recorded in the issue and PR.
+- Every task PR targets `dev`.
+- Only a release-promotion PR sourced from `dev` may target `main`.
+- A `dev` to `main` promotion references the task PRs/issues already merged into `dev` and introduces no unreviewed changes.
+- Direct task/topic PRs, pushes, and merges to `main` are prohibited.
+- Commit, push, and PR gates must each execute the complete repository-declared test matrix.
+- Matrix evidence must list every required cell and its terminal result.
+- An incomplete matrix is failed evidence; it must never be interpreted as green.
 
 Priority grouping policy:
 
@@ -100,3 +118,7 @@ Minimum evidence set:
 3. Green CI output for required gates
 4. Coverage evidence meeting threshold
 5. Requirement registry updates (if NFR impacted)
+6. Task-owned branch/PR naming and isolation evidence
+7. Task PR to `dev`, or release promotion from `dev` to `main`, provenance
+8. Full-matrix manifest and results for commit, push, and PR
+9. Failure-propagation proof showing a required failing or missing test cannot produce green

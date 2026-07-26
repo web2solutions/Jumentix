@@ -1,10 +1,10 @@
 /* global describe, it, expect, beforeAll, afterAll */
 import { io as createSocketClient, Socket } from 'socket.io-client';
-import path from 'path';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 import { WebSocketAPI } from '@src/interface/WebSocket/WebSocketAPI';
 import { GrpcAPI } from '@src/interface/gRPC/gRPCAPI';
+import { resolveGrpcProtoPath } from '@src/interface/gRPC/resolveGrpcProtoPath';
 import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
 import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
 import { JwtService } from '@src/infra/jwt/JwtService';
@@ -93,7 +93,7 @@ describe('realtime api smoke', () => {
       wsClient.on('connect_error', (error) => reject(error));
     });
 
-    const protoFilePath = path.resolve(process.cwd(), 'src/interface/gRPC/proto/async-api.proto');
+    const protoFilePath = resolveGrpcProtoPath();
     const packageDefinition = protoLoader.loadSync(protoFilePath, {
       longs: String,
       enums: String,

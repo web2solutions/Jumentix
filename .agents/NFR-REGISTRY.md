@@ -57,6 +57,7 @@ This file consolidates non-functional requirements already requested and stored 
 - `083` Feature and bug branches must be deleted (local + remote) after merge into `dev`, unless explicitly justified.
 - `084` `dev` is the single source of truth for development; new branches must start from `dev` and PRs from implementation branches must target `dev`.
 - `085` PR descriptions are mandatory and must follow the repository PR template, with required sections completed before approval.
+- `086` One task per branch and PR, nature-prefixed naming, `dev`-first promotion to `main`, and mandatory false-green-proof full test matrices for commits, pushes, and PRs.
 
 ## Rule of Use
 
