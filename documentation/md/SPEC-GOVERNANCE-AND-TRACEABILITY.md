@@ -88,6 +88,7 @@ Before any task execution:
 2. Planning must assign tasks to agents marked `available`.
 3. Agent must check latest `main` and `dev` branch refs and update the registry check fields.
 4. Agent registry entries must include machine identity (`machine_id`, `machine_name`, `machine_os`) and runtime identity (`agent_runtime`, `agent_version`) so multiple agents can run on the same host with full traceability.
+5. Agents must follow the registration and operating playbook (Requirement `081`) covering registration, branch-sync, governed execution, and closure evidence.
 
 ## Audit Evidence Expectations
 
