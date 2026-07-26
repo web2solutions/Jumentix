@@ -28,36 +28,67 @@ Each item must maintain:
 
 ## Required Labels for Task Nature
 
-At least one nature label:
+Every executable task must have exactly one primary nature label:
 
 1. `feature`
 2. `bug`
-3. `chore`
-4. `doc`
+3. `security`
+4. `governance`
+5. `docs`
+6. `refactor`
+7. `test`
+8. `ci`
+9. `release`
+10. `chore`
 
 Strategic stream labels are additive (for example `todo-mvp`, `epic`, `iteration-a`, `iteration-b`).
+
+## Focused Epic Contract
+
+1. Every executable task must belong to exactly one focused epic.
+2. The epic must describe one cohesive outcome and must not be a catch-all backlog.
+3. Parentage must use GitHub sub-issues or the Project `Parent issue` field when available.
+4. Tasks are grouped by primary nature inside the epic. Supporting work with a different nature
+   is tracked as a separate child task under the same cohesive outcome.
+5. Epic planning defines priority, scope boundaries, dates, estimate, owner, and agent delegation.
+6. Child tasks retain independent estimates of no more than eight points, assignees, branches,
+   commits, pull requests, and evidence.
+7. An epic is complete only when its required child tasks and audit evidence are complete.
+
+## Agent Delegation Contract
+
+1. Agent delegation is decided and recorded at epic level before child-task assignment.
+2. Only agents delegated to an epic may accept its child tasks.
+3. One accountable agent owns each child task; multiple agents must use non-overlapping task
+   boundaries.
+4. The canonical Agent Registry records `active_epic` and `assigned_task`.
+5. Cross-epic work requires explicit delegation and separate child tasks for each epic.
 
 ## Spec-Driven Workflow Through the Board
 
 1. Intake:
-   - create issue with clear objective and acceptance criteria.
+   - create or select a focused epic, then create a child issue with clear objective and
+     acceptance criteria.
 2. Planning:
-   - assign priority, size, estimate, dates, and labels.
+   - assign parent epic, primary nature, priority, size, estimate, dates, and labels;
+   - delegate agents to the epic before assigning child tasks.
 3. Spec drafting:
    - list required spec resources before implementation.
 4. Delivery:
    - link commits/PRs and capture evidence.
 5. Closure:
-   - set status to `Done` only after green checks and docs/agents sync.
+   - set a child task to `Done` only after green checks and docs/agents sync;
+   - close the epic only after all required child tasks and evidence are complete.
 
 ## PR Linking Contract
 
 Every PR must reference:
 
 1. related issue(s)
-2. project item scope
-3. changed spec resources
-4. evidence summary (tests/coverage/security)
+2. focused parent epic
+3. project item scope
+4. changed spec resources
+5. evidence summary (tests/coverage/security)
 
 And every issue should reflect:
 
