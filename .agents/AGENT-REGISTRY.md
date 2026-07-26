@@ -47,15 +47,37 @@ This registry tracks AI agents collaborating in the Jumentix project.
 - `agent_version`: `GPT-5 Codex`
 - `status`: `busy`
 - `registered_at_utc`: `2026-07-25T00:00:00Z`
-- `last_branch_check_utc`: `2026-07-26T06:53:06Z`
+- `last_branch_check_utc`: `2026-07-26T07:16:14Z`
 - `main_ref_checked`: `dc9a5b4e`
-- `dev_ref_checked`: `0abed4d7`
+- `dev_ref_checked`: `292fa86f`
 - `active_epic`: `web2solutions/aaa-typescript-boilerplate#161`
-- `assigned_task`: `web2solutions/aaa-typescript-boilerplate#165`
+- `assigned_task`: `web2solutions/aaa-typescript-boilerplate#163`
 - `capabilities`:
   - repository analysis and implementation
   - test and CI debugging
   - spec/governance synchronization
+
+### 2) codex-website-001
+
+- `agent_id`: `codex-website-001`
+- `agent_name`: `Codex Website`
+- `platform`: `OpenAI Codex`
+- `machine_id`: `host-eduardos-mac-pro-local`
+- `machine_name`: `Eduardos-Mac-Pro.local`
+- `machine_os`: `Darwin 21.6.0 x86_64`
+- `agent_runtime`: `OpenAI Codex`
+- `agent_version`: `GPT-5 Codex`
+- `status`: `busy`
+- `registered_at_utc`: `2026-07-26T07:23:33Z`
+- `last_branch_check_utc`: `2026-07-26T07:23:33Z`
+- `main_ref_checked`: `dc9a5b4e`
+- `dev_ref_checked`: `292fa86f`
+- `active_epic`: `web2solutions/aaa-typescript-boilerplate#167`
+- `assigned_task`: `web2solutions/aaa-typescript-boilerplate#168`
+- `capabilities`:
+  - frontend architecture and implementation
+  - browser-driven UX research and verification
+  - Storybook and website quality automation
 
 ## Operating Flow
 
