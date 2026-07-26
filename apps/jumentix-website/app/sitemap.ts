@@ -17,14 +17,14 @@ const commercialRoutes = [
   '/pricing-or-engagement',
   '/contact',
   '/community',
-  '/roadmap',
+  '/roadmap'
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
   const localizedRoutes = commercialRoutes.flatMap((route) => [
     route,
-    `/pt-BR${route}`,
+    `/pt-BR${route}`
   ]);
   const routes = [...localizedRoutes, '/docs', '/docs/jumentix', '/docs/overview'];
 
@@ -32,6 +32,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url: `${baseUrl}${route}`,
     lastModified: now,
     changeFrequency: route.includes('changelog') ? 'daily' : 'weekly',
-    priority: route === '' || route === '/pt-BR' ? 1 : 0.7,
+    priority: route === '' || route === '/pt-BR' ? 1 : 0.7
   }));
 }

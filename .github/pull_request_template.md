@@ -21,6 +21,11 @@ Include links to issue(s), incident(s), backlog items, or Sonar/Codecov check UR
 ## Project Tracking (Required)
 
 - GitHub Project: `Jumentix` (`https://github.com/users/web2solutions/projects/1`)
+- Focused epic link:
+- Epic milestone:
+- Primary task nature:
+- Epic-delegated agent ID:
+- Child task issue link:
 - Project item link(s):
 - Issue link(s):
 - Issue ID list (comma separated):

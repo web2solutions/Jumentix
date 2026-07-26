@@ -67,9 +67,19 @@ If a PR is not linked to project work items, it is out of process.
 9. Only a release-promotion PR whose source branch is `dev` may target `main`.
 10. A `dev` to `main` promotion PR introduces no unreviewed changes and references the task PRs and issues already merged into `dev`.
 11. Direct pushes, merges, or task/topic PRs to `main` are prohibited.
-12. Commits, pushes, and merges to `dev` run only the canonical unit-test gate; work to `main` runs the complete repository-declared test matrix.
+12. Every commit, push, and PR runs the complete repository-declared test matrix.
 13. Missing, skipped, empty, cancelled, timed-out, aborted, or unreported required matrix cells fail the gate.
 14. Test failures and discovery failures must propagate a non-zero status; false-green fallbacks are prohibited.
+
+### Canonical agent registry evidence
+
+1. The independent Agent Registry repository and its `main` branch remain the coordination
+   source of truth.
+2. A consumer mirror records the immutable canonical commit revision used to produce it.
+3. The synchronization command resolves canonical `main`, then updates the mirror and revision
+   together.
+4. Commit, push, and PR gates compare the mirror with its recorded immutable revision so the
+   result remains reproducible when another agent updates canonical `main` concurrently.
 
 ## Documentation Governance
 

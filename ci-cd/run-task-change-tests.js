@@ -5,6 +5,7 @@ const { spawnSync } = require('child_process');
 
 const UNIT_TEST_PATH = /(^|\/)test\/unit\/.*\.(test|spec)\.[cm]?[jt]sx?$/;
 const IMPLEMENTATION_PATH = /^(ci-cd\/|apps\/[^/]+\/(src|scripts)\/|packages\/[^/]+\/src\/|tooling\/|\.husky\/|\.github\/|\.circleci\/|package\.json$)/;
+const DOCUMENTATION_PATH = /(^|\/)(documentation\/|\.agents\/)|(^|\/)(README|CHANGELOG|CLAUDE|GROK|AGENTS)(\.[^/]*)?\.md$|\.md$/i;
 const WEBSITE_PATH = /^apps\/jumentix-website\//;
 
 function normalizeFiles(files) {
@@ -54,11 +55,31 @@ function createTaskTestPlan(files) {
     return { type: 'related-unit-tests', files: implementationFiles };
   }
 
-  return { type: 'not-applicable', files: [] };
+  const documentationFiles = changedFiles.filter((file) => DOCUMENTATION_PATH.test(file));
+  if (documentationFiles.length > 0 && documentationFiles.length === changedFiles.length) {
+    return { type: 'documentation-validation', files: documentationFiles };
+  }
+
+  return { type: 'unsupported-change-set', files: changedFiles };
+}
+
+function validateDocumentationFiles(files, rootDir = process.cwd()) {
+  if (!Array.isArray(files) || files.length === 0) return 1;
+
+  for (const file of files) {
+    const absolutePath = path.resolve(rootDir, file);
+    if (!fs.existsSync(absolutePath)) return 1;
+    const contents = fs.readFileSync(absolutePath, 'utf8');
+    if (!contents.trim() || /^(<<<<<<<|=======|>>>>>>>)/m.test(contents)) return 1;
+  }
+  return 0;
 }
 
 function executeTaskTestPlan(plan) {
-  if (plan.type === 'not-applicable') return 0;
+  if (plan.type === 'documentation-validation') {
+    return validateDocumentationFiles(plan.files);
+  }
+  if (plan.type === 'unsupported-change-set') return 1;
 
   if (plan.type === 'website-quality-gate') {
     const websiteCommands = [
@@ -121,7 +142,7 @@ function runTaskChangeTests(options = {}) {
 
   let status = 1;
   try {
-    status = plan.type === 'not-applicable' ? 0 : execute(plan);
+    status = execute(plan);
     status = Number.isInteger(status) && status >= 0 ? status : 1;
   } catch (error) {
     logger.error(`[ci] task-change test gate crashed: ${plan.type}`);
@@ -152,6 +173,7 @@ if (require.main === module) {
 
 module.exports = {
   IMPLEMENTATION_PATH,
+  DOCUMENTATION_PATH,
   UNIT_TEST_PATH,
   WEBSITE_PATH,
   createTaskTestPlan,
@@ -159,5 +181,6 @@ module.exports = {
   normalizeFiles,
   readChangedFiles,
   runTaskChangeTests,
+  validateDocumentationFiles,
   writeTaskTestEvidence
 };

@@ -11,7 +11,7 @@ export const theme = createTheme({
   headings: {
     fontFamily:
       'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-    fontWeight: '700',
+    fontWeight: '700'
   },
   colors: {
     jumentixBlue: [
@@ -24,7 +24,7 @@ export const theme = createTheme({
       '#166bd5',
       '#1257ae',
       '#134a8d',
-      '#123f73',
+      '#123f73'
     ],
     signalGreen: [
       '#edfcf4',
@@ -36,7 +36,7 @@ export const theme = createTheme({
       '#0b9657',
       '#087847',
       '#09603b',
-      '#084f33',
+      '#084f33'
     ],
     signalCoral: [
       '#fff1ed',
@@ -48,7 +48,7 @@ export const theme = createTheme({
       '#c6381d',
       '#a32e1a',
       '#86291b',
-      '#6f251b',
-    ],
-  },
+      '#6f251b'
+    ]
+  }
 });

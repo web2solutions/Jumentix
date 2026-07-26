@@ -2,9 +2,7 @@
 const gateFs = require('fs');
 const gatePath = require('path');
 const {
-  DEV_QUALITY_GATE,
-  MAIN_QUALITY_GATE,
-  TASK_QUALITY_GATE,
+  FULL_MATRIX_QUALITY_GATE,
   resolveTargetBranch,
   runBranchQualityGate,
   selectQualityGate
@@ -18,22 +16,22 @@ describe('run-branch-quality-gate', () => {
     expect(resolveTargetBranch('dev')).toBe('dev');
   });
 
-  it('selects all unit tests for dev', () => {
+  it('selects the canonical full matrix for dev', () => {
     expect.hasAssertions();
-    expect(selectQualityGate('dev')).toBe(DEV_QUALITY_GATE);
+    expect(selectQualityGate('dev')).toBe(FULL_MATRIX_QUALITY_GATE);
   });
 
-  it('selects change-focused tests for task branches', () => {
+  it('selects the canonical full matrix for task branches', () => {
     expect.hasAssertions();
-    expect(selectQualityGate('codex/fix/149-example')).toBe(TASK_QUALITY_GATE);
+    expect(selectQualityGate('codex/fix/149-example')).toBe(FULL_MATRIX_QUALITY_GATE);
   });
 
-  it('selects the full matrix exclusively for main', () => {
+  it('selects the canonical full matrix for main', () => {
     expect.hasAssertions();
-    expect(selectQualityGate('main')).toBe(MAIN_QUALITY_GATE);
+    expect(selectQualityGate('main')).toBe(FULL_MATRIX_QUALITY_GATE);
   });
 
-  it('records successful unit and main quality-gate evidence', () => {
+  it('records successful full-matrix evidence for dev and main', () => {
     expect.hasAssertions();
     const execute = jest.fn().mockReturnValue(0);
     const logger = { log: jest.fn(), error: jest.fn() };
@@ -44,12 +42,15 @@ describe('run-branch-quality-gate', () => {
       targetBranch: 'main', execute, logger, resultFile: ''
     });
 
-    expect(execute.mock.calls).toStrictEqual([[DEV_QUALITY_GATE], [MAIN_QUALITY_GATE]]);
+    expect(execute.mock.calls).toStrictEqual([
+      [FULL_MATRIX_QUALITY_GATE],
+      [FULL_MATRIX_QUALITY_GATE]
+    ]);
     expect(devEvidence).toStrictEqual({
       schemaVersion: 1,
       targetBranch: 'dev',
-      gate: 'unit',
-      script: 'test:unit',
+      gate: 'full-matrix',
+      script: 'ci:gate:strict',
       outcome: 'passed',
       status: 0
     });

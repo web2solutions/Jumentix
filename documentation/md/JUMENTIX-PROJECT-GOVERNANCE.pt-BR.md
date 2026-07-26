@@ -76,6 +76,16 @@ Se um PR não estiver vinculado aos itens de trabalho do projeto, ele estará fo
 13. Células obrigatórias ausentes, ignoradas, vazias, canceladas, expiradas, abortadas ou não reportadas reprovam o gate.
 14. Falhas de teste e de descoberta devem propagar status diferente de zero; fallbacks de falso positivo são proibidos.
 
+### Evidência do Agent Registry canônico
+
+1. O repositório independente do Agent Registry e sua branch `main` continuam sendo a fonte de
+   verdade para coordenação.
+2. Cada espelho consumidor registra a revisão imutável do commit canônico que o originou.
+3. O comando de sincronização resolve a `main` canônica e atualiza o espelho e a revisão em
+   conjunto.
+4. Os gates de commit, push e PR comparam o espelho com sua revisão imutável registrada, mantendo
+   o resultado reproduzível quando outro agente atualiza a `main` canônica durante a execução.
+
 ## Governança de Documentação
 
 1. Cada tarefa executada deve atualizar documentos de software, documentos de produto e documentos de especificações quando afetada.
