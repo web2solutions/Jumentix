@@ -4,7 +4,8 @@
 
 ## Unreleased
 
-- 2026-07-26 feat(website): rebuild documentation experience (#172) - web2solutions
+- 2026-07-26 feat(website): rebuild documentation experience (#172) (#181) - Eduardo A.
+- 2026-07-26 [CI] Enforce focused epic metadata without false-green task gates (#176) - Eduardo A.
 - 2026-07-26 feat(website): rebuild OSS commercial experience (#171) - Eduardo A.
 - 2026-07-26 feat(website): establish design system and Storybook (#178) - Eduardo A.
 - 2026-07-26 [Bug] Restore reliable Jumentix documentation routes and links (#177) - Eduardo A.
