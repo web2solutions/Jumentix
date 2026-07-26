@@ -100,7 +100,7 @@ describe('run-full-test-matrix', () => {
     expect(crashed.outcome).toBe('failed');
   });
 
-  it('uses the canonical gate at commit, push, CircleCI, and GitHub PR boundaries', () => {
+  it('uses branch-aware gates at commit, push, merge, CircleCI, and GitHub PR boundaries', () => {
     expect.hasAssertions();
     const read = (file: string) => matrixFs.readFileSync(
       matrixPath.join(fullMatrixRootDir, file),
@@ -109,9 +109,18 @@ describe('run-full-test-matrix', () => {
 
     expect(fullMatrixRootPackage.scripts['ci:gate:strict'])
       .toBe('node ci-cd/run-full-test-matrix.js');
-    expect(read('.husky/pre-commit')).toContain('pnpm@9.15.3 run ci:gate:strict');
-    expect(read('.husky/pre-push')).toContain('pnpm@9.15.3 run ci:gate:strict');
-    expect(read('.circleci/config.yml')).toContain('pnpm@9.15.3 run ci:gate:strict');
-    expect(read('.github/workflows/test.yml')).toContain('pnpm run ci:gate:strict');
+    expect(fullMatrixRootPackage.scripts['ci:gate:branch'])
+      .toBe('node ci-cd/run-branch-quality-gate.js');
+    expect(fullMatrixRootPackage.scripts['ci:gate:task'])
+      .toBe('node ci-cd/run-task-change-tests.js');
+    expect([
+      read('.husky/pre-commit').includes('pnpm@9.15.3 run ci:gate:branch'),
+      read('.husky/pre-push').includes('pnpm@9.15.3 run ci:gate:branch'),
+      read('.husky/pre-merge-commit').includes('pnpm@9.15.3 run ci:gate:branch'),
+      read('.circleci/config.yml').includes('pnpm@9.15.3 run ci:gate:branch'),
+      read('.circleci/config.yml').includes('only:\n                - dev\n                - main'),
+      read('.github/workflows/test.yml').includes('pnpm run ci:gate:branch'),
+      read('.github/workflows/test.yml').includes('github.base_ref || github.ref_name')
+    ]).toStrictEqual([true, true, true, true, true, true, true]);
   });
 });
