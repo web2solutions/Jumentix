@@ -105,7 +105,9 @@ Symptoms:
 - PR check fails for project coverage and/or patch coverage
 
 Cause:
-- coverage below target.
+- coverage below target
+- `coverage/lcov.info` is empty because a smoke or integration target replaced the
+  unit-test artifact
 
 Current standard:
 - project target: `95%`
@@ -115,13 +117,20 @@ Fix:
 
 ```bash
 pnpm run test:unit
+wc -l coverage/lcov.info
+pnpm run test:integration:service-management
+wc -l coverage/lcov.info
 ```
 
-Then add or improve tests in changed code paths until thresholds are reached.
+The LCOV line count must remain non-zero and unchanged after the integration target.
+Integration and smoke runners must use `--coverage=false`; unit tests are the
+authoritative coverage-producing stage. If LCOV is valid but coverage is below the
+threshold, add or improve tests in the changed code paths.
 
 Related files:
 - `codecov.yml`
 - `jest.config.js`
+- `ci-cd/run-service-management-integration.js`
 
 ## 6) Husky hooks are not running locally
 
