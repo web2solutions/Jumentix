@@ -92,6 +92,7 @@ Antes de qualquer execução de tarefa:
 2. O planejamento deve atribuir tarefas apenas para agentes com status `available`.
 3. O agente deve checar os refs mais recentes de `main` e `dev` e atualizar os campos de verificação no registro.
 4. As entradas do registro devem incluir identidade da máquina (`machine_id`, `machine_name`, `machine_os`) e identidade de runtime (`agent_runtime`, `agent_version`) para permitir múltiplos agentes no mesmo host com rastreabilidade completa.
+5. Os agentes devem seguir o playbook operacional (Requisito `081`) cobrindo registro, sincronização de branches, execução governada e evidências de fechamento.
 
 ## Expectativas de evidências de auditoria
 

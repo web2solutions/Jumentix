@@ -52,6 +52,7 @@ This file consolidates non-functional requirements already requested and stored 
 - `078` Agent Registry system with mandatory pre-task registration, planning assignment by availability, and required `main`/`dev` pre-work branch checks.
 - `079` Main branch protection and mandatory feature/fix/chore branching flow; local direct changes on `main` are prohibited.
 - `080` Agent Registry must include machine identity and agent runtime version metadata, allowing multiple agents per host machine.
+- `081` Agent playbook must teach registration, branch sync checks, governance execution, and closure/audit workflow.
 
 ## Rule of Use
 

@@ -51,3 +51,13 @@ This registry tracks AI agents collaborating in the Jumentix project.
   - repository analysis and implementation
   - test and CI debugging
   - spec/governance synchronization
+
+## Registration and Operating Quick Guide
+
+This guide is the minimal operating flow for every registered agent (see requirement `081`):
+
+1. Register/update identity fields (`agent_id`, machine metadata, runtime metadata, status).
+2. Fetch/check `main` and `dev`, then update `last_branch_check_utc`, `main_ref_checked`, and `dev_ref_checked`.
+3. Execute only task-scoped work tracked in GitHub Project Jumentix.
+4. Keep specs/docs/agents synchronized whenever requirements or behavior change.
+5. Deliver via branch + PR + evidence; never develop directly on local `main`.
