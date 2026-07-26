@@ -17,24 +17,30 @@ Este projeto usa o Projeto GitHub **Jumentix** (`https://github.com/users/web2so
    - `Estimativa`
    - `Data de início`
    - `Data de término`
+   - `Milestone`
 4. Nenhum trabalho começa sem um problema e item de projeto vinculados.
 5. As atualizações do progresso das tarefas devem ocorrer no status do item do projeto, não apenas nas notas locais.
 6. Todas as tarefas executadas devem manter os metadados de governança atualizados (status, prioridade, estimativas, ciclo/iteração, datas de início/término, rótulos, responsável, links PR/commit).
 
 ## Épicos focados e natureza das tarefas
 
-1. Toda tarefa executável pertence a exatamente um épico focado por meio de parentagem
-   estruturada no GitHub.
-2. Cada épico representa um único resultado coeso e não pode funcionar como backlog genérico.
-3. Cada tarefa filha tem exatamente uma natureza principal: `feature`, `bug`, `security`,
+1. Todo épico ativo pertence a exatamente um milestone aberto no GitHub.
+2. Toda tarefa executável pertence a exatamente um épico focado por meio de parentagem
+   estruturada no GitHub e usa o mesmo milestone desse épico.
+3. Milestones definem um alvo de entrega e uma data limite. As datas do épico e das tarefas
+   permanecem dentro desse prazo.
+4. Cada épico representa um único resultado coeso e não pode funcionar como backlog genérico.
+5. Cada tarefa filha tem exatamente uma natureza principal: `feature`, `bug`, `security`,
    `governance`, `docs`, `refactor`, `test`, `ci`, `release` ou `chore`.
-4. As tarefas são agrupadas por natureza dentro do épico. Naturezas de suporte diferentes usam
+6. As tarefas são agrupadas por natureza dentro do épico. Naturezas de suporte diferentes usam
    tarefas filhas separadas, vinculadas ao mesmo resultado.
-5. Trabalho que cruza resultados não relacionados é dividido entre épicos focados.
-6. A delegação de agentes é estabelecida no nível do épico antes da atribuição de tarefas.
-7. Somente agentes delegados a um épico podem executar suas tarefas filhas, com um agente
+7. Trabalho que cruza resultados não relacionados é dividido entre épicos focados.
+8. O milestone é validado antes que a delegação de agentes seja estabelecida no nível do épico.
+9. Somente agentes delegados a um épico podem executar suas tarefas filhas, com um agente
    responsável e escopo não sobreposto por tarefa.
-8. O Agent Registry canônico registra `active_epic` e `assigned_task` de cada agente executor.
+10. O Agent Registry canônico registra `active_epic` e `assigned_task` de cada agente executor.
+11. Um milestone só é encerrado quando seus épicos estiverem concluídos ou o trabalho restante
+    possuir transferência auditável para outro milestone.
 
 ## Governança de RP
 
@@ -42,6 +48,7 @@ Cada PR deve incluir:
 
 - Link(s) de problemas relacionados
 - Link do épico pai focado
+- Milestone associado
 - Contexto do item do projeto relacionado (Projeto: `Jumentix`)
 - Critérios de aceitação e evidências de validação
 - Cobertura e evidências de qualidade
@@ -89,16 +96,18 @@ Não é permitido misturar `P0`, `P1` e `P2` no mesmo PR.
 ## Backlog e fluxo de entrega
 
 1. Criar/triagem de problema.
-2. Criar ou selecionar seu épico pai focado e estabelecer a parentagem estruturada.
-3. Adicionar a issue ao projeto `Jumentix`.
-4. Definir natureza, valores dos campos e datas do ciclo.
-5. Delegar agentes disponíveis ao épico e então atribuir suas tarefas filhas não sobrepostas.
-6. Criar a branch exclusiva da tarefa com prefixo de natureza.
-7. Implementar com um PR dedicado tendo `dev` como destino e vinculado ao épico, à issue e ao
-   projeto.
-8. Promover `dev` para `main` somente por meio de um PR de promoção de release após a aprovação
+2. Criar ou selecionar um milestone aberto.
+3. Criar ou selecionar o épico pai focado, associá-lo ao milestone e estabelecer a parentagem
+   estruturada.
+4. Adicionar a issue ao projeto `Jumentix` e atribuir o milestone do épico.
+5. Definir natureza, valores dos campos e datas do ciclo dentro da data limite do milestone.
+6. Delegar agentes disponíveis ao épico e então atribuir suas tarefas filhas não sobrepostas.
+7. Criar a branch exclusiva da tarefa com prefixo de natureza.
+8. Implementar com um PR dedicado tendo `dev` como destino e vinculado ao milestone, ao épico,
+   à issue e ao projeto.
+9. Promover `dev` para `main` somente por meio de um PR de promoção de release após a aprovação
    da matriz completa.
-9. Mover o status do projeto (`Backlog` -> `Pronto` -> `Em andamento` -> `Em revisão` ->
+10. Mover o status do projeto (`Backlog` -> `Pronto` -> `Em andamento` -> `Em revisão` ->
    `Concluído`).
 
 ## Política de Ciclo e Estimativa

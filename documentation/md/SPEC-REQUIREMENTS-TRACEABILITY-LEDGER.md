@@ -107,7 +107,8 @@ For any change, identify impacted requirement IDs and ensure:
   - requirements registry synchronized
   - agent instruction parity (Codex, Claude Code, Grok)
   - agent registration and availability assignment records
-  - focused epic parentage, nature grouping, and epic-level delegation records
+  - milestone association, focused epic parentage, nature grouping, and epic-level delegation
+    records
   - `main` and `dev` branch pre-work check records
   - project/PR traceability present
   - task PRs target `dev`, and only release promotions sourced from `dev` target `main`

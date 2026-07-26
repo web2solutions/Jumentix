@@ -14,6 +14,8 @@ Primary Codex runtime instructions for this repository:
 10. Treat `web2solutions/jumentix-agent-registry` as canonical source; local `.agents/AGENT-REGISTRY.md` is a mirror.
 11. Work only on tasks with one focused parent epic and one primary nature; agent delegation is
     established at epic level before child-task assignment under requirement `090`.
+12. Confirm the epic and its child task share one open milestone whose due date covers the work
+    before planning or execution.
 
 Canonical governance/spec references:
 
