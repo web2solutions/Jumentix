@@ -48,7 +48,9 @@ Evidence:
 Execution policy:
 
 1. `ci:gate` remains the fast baseline defined by requirement `011`, including the representative integration smoke.
-2. `ci:gate:strict` is the canonical full-matrix gate for commit, push, and pull-request boundaries.
+2. `ci:gate:branch` is the canonical destination-aware boundary gate: unit tests for
+   `dev`, full matrix for `main`.
+3. `ci:gate:strict` remains the canonical release-promotion full-matrix gate.
 3. Its manifest covers lint, architecture, contracts, governance, unit, security, smoke, builds, every workspace, the complete 15-target HTTP/Lambda/realtime/Service Management integration matrix, and patch coverage.
 4. Every matrix runner must reject an empty, duplicate, malformed, or missing-script manifest.
 5. Execution continues after an individual cell fails and returns one aggregate non-zero result listing every failed cell.

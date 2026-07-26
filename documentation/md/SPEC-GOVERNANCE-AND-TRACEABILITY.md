@@ -60,9 +60,10 @@ Task isolation and naming policy:
 - Only a release-promotion PR sourced from `dev` may target `main`.
 - A `dev` to `main` promotion references the task PRs/issues already merged into `dev` and introduces no unreviewed changes.
 - Direct task/topic PRs, pushes, and merges to `main` are prohibited.
-- Commit, push, and PR gates must each execute the complete repository-declared test matrix.
-- Matrix evidence must list every required cell and its terminal result.
-- An incomplete matrix is failed evidence; it must never be interpreted as green.
+- Commit, push, and merge gates are destination-aware: `dev` runs only the canonical unit
+  suite, while `main` runs the complete repository-declared matrix.
+- Main-matrix evidence must list every required cell and its terminal result.
+- An incomplete `main` matrix is failed evidence; it must never be interpreted as green.
 
 Priority grouping policy:
 
@@ -120,5 +121,6 @@ Minimum evidence set:
 5. Requirement registry updates (if NFR impacted)
 6. Task-owned branch/PR naming and isolation evidence
 7. Task PR to `dev`, or release promotion from `dev` to `main`, provenance
-8. Full-matrix manifest and results for commit, push, and PR
-9. Failure-propagation proof showing a required failing or missing test cannot produce green
+8. Branch-quality-gate evidence for commit, push, merge, and PR
+9. Full-matrix manifest and results for `main` promotion work
+10. Failure-propagation proof showing a required failing or missing test cannot produce green

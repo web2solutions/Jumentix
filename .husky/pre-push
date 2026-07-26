@@ -1,11 +1,20 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-echo "[Husky] pre-push: strict quality gate (ci + patch coverage)"
+echo "[Husky] pre-push: branch-aware quality gate"
 
 if [ -s "$HOME/.nvm/nvm.sh" ]; then
   . "$HOME/.nvm/nvm.sh"
   nvm use 22 >/dev/null
 fi
 
-CI=true npx pnpm@9.15.3 run ci:gate:strict
+target_branch="dev"
+
+while read -r local_ref local_sha remote_ref remote_sha
+do
+  if [ "$remote_ref" = "refs/heads/main" ]; then
+    target_branch="main"
+  fi
+done
+
+CI=true JUMENTIX_QUALITY_GATE_TARGET="$target_branch" npx pnpm@9.15.3 run ci:gate:branch
