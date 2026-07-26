@@ -14,7 +14,7 @@ Mandatory governance records:
 2. Project item with planning fields
 3. PR with linked issue and evidence
 4. Spec and documentation artifacts
-5. Agent Registry record in `.agents/AGENT-REGISTRY.md`
+5. Agent Registry canonical record in `web2solutions/jumentix-agent-registry` with mirrored copy in `.agents/AGENT-REGISTRY.md`
 
 ## Mandatory Traceability Links
 
@@ -111,6 +111,7 @@ Before any task execution:
 3. Agent must check latest `main` and `dev` branch refs and update the registry check fields.
 4. Agent registry entries must include machine identity (`machine_id`, `machine_name`, `machine_os`) and runtime identity (`agent_runtime`, `agent_version`) so multiple agents can run on the same host with full traceability.
 5. Agents must follow the registration and operating playbook (Requirement `081`) covering registration, branch-sync, governed execution, and closure evidence.
+6. Canonical registry updates must be written to the external registry repository first, then mirrored locally under Requirement `089`.
 
 ## Audit Evidence Expectations
 
