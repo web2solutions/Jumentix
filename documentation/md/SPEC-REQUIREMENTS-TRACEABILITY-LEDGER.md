@@ -78,7 +78,7 @@ For any change, identify impacted requirement IDs and ensure:
 
 ## F. Quality, Security, and Compliance Gates
 
-- `011`, `014`, `020`, `044`, `063`, `065`, `074`, `087`
+- `011`, `014`, `020`, `044`, `063`, `065`, `074`, `087`, `088`
 - Spec resources:
   - `documentation/md/TESTING-CI-AND-QUALITY.md`
   - `documentation/md/SECURITY-RUNBOOK-PCI.md`
@@ -133,6 +133,6 @@ If impacted requirement IDs are not mapped before implementation, the change is 
 
 As of `2026-07-25`, this ledger covers all unique requirement IDs currently registered in `.agents/requirements`:
 
-1. Unique IDs in requirements registry: `80`
-2. Unique IDs mapped in this ledger: `80`
+1. Unique IDs in requirements registry: `81`
+2. Unique IDs mapped in this ledger: `81`
 3. Missing IDs: `none`

@@ -13,15 +13,21 @@ const MAIN_QUALITY_GATE = Object.freeze({
   script: 'ci:gate:strict'
 });
 
+const TASK_QUALITY_GATE = Object.freeze({
+  id: 'task-change-tests',
+  script: 'ci:gate:task'
+});
+
 function resolveTargetBranch(value = process.env.JUMENTIX_QUALITY_GATE_TARGET) {
   const branch = String(value || '').trim().toLowerCase();
   return branch || 'dev';
 }
 
 function selectQualityGate(targetBranch) {
-  return resolveTargetBranch(targetBranch) === 'main'
-    ? MAIN_QUALITY_GATE
-    : DEV_QUALITY_GATE;
+  const branch = resolveTargetBranch(targetBranch);
+  if (branch === 'main') return MAIN_QUALITY_GATE;
+  if (branch === 'dev') return DEV_QUALITY_GATE;
+  return TASK_QUALITY_GATE;
 }
 
 function executeQualityGate(gate) {
@@ -85,6 +91,7 @@ if (require.main === module) {
 module.exports = {
   DEV_QUALITY_GATE,
   MAIN_QUALITY_GATE,
+  TASK_QUALITY_GATE,
   executeQualityGate,
   resolveTargetBranch,
   runBranchQualityGate,

@@ -104,6 +104,7 @@ Use these files as living constraints for future maintenance and feature develop
 - [085-pr-description-template-compliance](requirements/085-pr-description-template-compliance.md)
 - [086-task-owned-branch-and-pr-naming-governance](requirements/086-task-owned-branch-and-pr-naming-governance.md)
 - [087-branch-aware-quality-gate-policy](requirements/087-branch-aware-quality-gate-policy.md)
+- [088-task-branch-change-focused-tests](requirements/088-task-branch-change-focused-tests.md)
 - [Agent Registry](AGENT-REGISTRY.md)
 - [NFR Registry](NFR-REGISTRY.md)
 - [Spec Development Driven Agent](spec-development-driven-agent.md)
