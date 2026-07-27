@@ -127,7 +127,8 @@ describe('check-agent-registry-source', () => {
     expect.hasAssertions();
     const request: { on: jest.Mock } = { on: jest.fn() };
     request.on.mockImplementation((event: string, handler: (error: Error) => void) => {
-      if (event === 'error') handler(new Error('socket unavailable'));
+      expect(event).toBe('error');
+      handler(new Error('socket unavailable'));
       return request;
     });
     jest.spyOn(https, 'get').mockReturnValue(request as never);
