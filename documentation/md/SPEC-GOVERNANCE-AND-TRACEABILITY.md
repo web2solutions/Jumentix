@@ -159,6 +159,12 @@ Before any task execution:
    `090`.
 9. Agents must verify the dedicated documentation Issue before completing a Linear epic Project
    under Requirement `094`.
+10. Pinned registry checks must fetch immutable raw content by full commit SHA and an encoded safe
+    path, without consuming anonymous GitHub Contents API quota.
+11. Only explicit registry synchronization may resolve a mutable branch through the GitHub API,
+    optionally authenticated by `GITHUB_TOKEN` or `GH_TOKEN`.
+12. Invalid revisions or paths, HTTP and transport failures, malformed responses, and local mirror
+    drift must fail closed with actionable diagnostics that never expose credentials.
 
 ## Audit Evidence Expectations
 
@@ -175,3 +181,5 @@ Minimum evidence set:
 9. Branch-quality-gate evidence for commit, push, merge, and PR
 10. Full-matrix manifest and results for `main` promotion work
 11. Failure-propagation proof showing a required failing or missing test cannot produce green
+12. Agent Registry transport tests covering immutable raw URL construction, safe path encoding,
+    optional branch-resolution authentication, transport failures, and mirror mismatch
