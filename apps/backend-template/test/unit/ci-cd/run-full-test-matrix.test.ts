@@ -100,7 +100,7 @@ describe('run-full-test-matrix', () => {
     expect(crashed.outcome).toBe('failed');
   });
 
-  it('uses the canonical full matrix at commit, push, merge, CircleCI, and GitHub boundaries', () => {
+  it('uses branch-aware gates and keeps Storybook in the website workflow', () => {
     expect.hasAssertions();
     const read = (file: string) => matrixFs.readFileSync(
       matrixPath.join(fullMatrixRootDir, file),
@@ -118,9 +118,16 @@ describe('run-full-test-matrix', () => {
       read('.husky/pre-push').includes('pnpm@9.15.3 run ci:gate:branch'),
       read('.husky/pre-merge-commit').includes('pnpm@9.15.3 run ci:gate:branch'),
       read('.circleci/config.yml').includes('pnpm@9.15.3 run ci:gate:branch'),
-      !read('.circleci/config.yml').includes('only:\n                - dev\n                - main'),
+      read('.circleci/config.yml').includes('only:\n                - dev\n                - main'),
       read('.github/workflows/test.yml').includes('pnpm run ci:gate:branch'),
       read('.github/workflows/test.yml').includes('branches: [ "**" ]'),
+      read('.github/workflows/test.yml').includes('JUMENTIX_TASK_TEST_MODE: range'),
+      read('.github/workflows/test.yml').includes('JUMENTIX_TASK_TEST_BASE: origin/dev'),
+      read('.github/workflows/test.yml')
+        .includes('if: always() && (github.base_ref == \'main\' || github.ref_name == \'main\')'),
+      read('.github/workflows/website.yml').includes('pnpm run website:storybook:build'),
+      read('.github/workflows/website.yml').includes('pnpm run website:storybook:smoke'),
+      !read('.github/workflows/test.yml').includes('website:storybook'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'pr:governance:check'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'agent-registry:check'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'website:test:prepublish'),
@@ -128,7 +135,8 @@ describe('run-full-test-matrix', () => {
         (cell: FullMatrixTestCell) => cell.script.startsWith('website:storybook')
       )
     ]).toStrictEqual([
-      true, true, true, true, true, true, true, true, true, true, true
+      true, true, true, true, true, true, true, true, true, true, true, true, true, true,
+      true, true, true
     ]);
   });
 });
