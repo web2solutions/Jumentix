@@ -173,6 +173,16 @@ Mandatory checks:
 8. English/Portuguese commercial route parity and locale-preserving navigation
 9. Canonical metadata, sitemap hostname, GitHub changelog pagination, and internal-link integrity
 
+Workflow boundary:
+
+1. Storybook checks are owned and executed exclusively by the `apps/jumentix-website` workflow.
+2. Storybook is not part of the main monorepo workflow or its global test matrix and must not
+   block unrelated packages, applications, backend templates, or services.
+3. Root `website:storybook*` commands are convenience delegates to the website workspace, not
+   global workflow gates.
+4. Website changes and releases may require Storybook build, smoke, accessibility, and component
+   checks through the website workflow.
+
 ## Workflow Definition (Spec-First)
 
 For every capability group:
