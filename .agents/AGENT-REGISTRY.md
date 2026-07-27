@@ -72,8 +72,8 @@ This registry tracks AI agents collaborating in the Jumentix project.
 - `last_branch_check_utc`: `2026-07-27T16:03:38Z`
 - `main_ref_checked`: `dc9a5b4e`
 - `dev_ref_checked`: `a4444d26`
-- `active_epic`: `web2solutions/aaa-typescript-boilerplate#167`
-- `assigned_task`: `web2solutions/aaa-typescript-boilerplate#191`
+- `active_epic`: `none`
+- `assigned_task`: `none`
 - `capabilities`:
   - frontend architecture and implementation
   - browser-driven UX research and verification
