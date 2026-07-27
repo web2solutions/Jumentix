@@ -105,6 +105,11 @@ Política de isolamento e nomenclatura:
   matriz completa.
 - A evidência da matriz de `main` deve listar cada célula obrigatória e seu resultado terminal.
 - Uma matriz de `main` incompleta é evidência com falha; nunca pode ser interpretada como verde.
+- Administradores do repositório podem contornar a quantidade obrigatória de reviews somente com
+  aprovação explícita do responsável pelo projeto registrada na issue ou no PR.
+- A exceção administrativa de review não dispensa isolamento da tarefa, promoção primeiro para
+  `dev`, resolução de conversas nem qualquer requisito de CI, cobertura, segurança ou matriz
+  completa. Todo check obrigatório deve estar reportado e terminalmente verde.
 
 Política de agrupamento prioritário:
 

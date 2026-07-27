@@ -67,17 +67,39 @@ This registry tracks AI agents collaborating in the Jumentix project.
 - `machine_os`: `Darwin 21.6.0 x86_64`
 - `agent_runtime`: `OpenAI Codex`
 - `agent_version`: `GPT-5 Codex`
-- `status`: `busy`
+- `status`: `available`
 - `registered_at_utc`: `2026-07-26T07:23:33Z`
-- `last_branch_check_utc`: `2026-07-27T17:23:26Z`
+- `last_branch_check_utc`: `2026-07-27T20:07:07Z`
 - `main_ref_checked`: `dc9a5b4e`
-- `dev_ref_checked`: `a7616914`
-- `active_epic`: `web2solutions/aaa-typescript-boilerplate#161`
-- `assigned_task`: `web2solutions/aaa-typescript-boilerplate#192`
+- `dev_ref_checked`: `6a08b650`
+- `active_epic`: `none`
+- `assigned_task`: `none`
 - `capabilities`:
   - frontend architecture and implementation
   - browser-driven UX research and verification
   - Storybook and website quality automation
+
+### 3) codex-governance-001
+
+- `agent_id`: `codex-governance-001`
+- `agent_name`: `Codex Governance`
+- `platform`: `OpenAI Codex`
+- `machine_id`: `host-eduardos-mac-pro-local`
+- `machine_name`: `Eduardos-Mac-Pro.local`
+- `machine_os`: `Darwin 21.6.0 x86_64`
+- `agent_runtime`: `OpenAI Codex`
+- `agent_version`: `GPT-5 Codex`
+- `status`: `busy`
+- `registered_at_utc`: `2026-07-27T19:02:28Z`
+- `last_branch_check_utc`: `2026-07-27T20:55:32Z`
+- `main_ref_checked`: `dc9a5b4e`
+- `dev_ref_checked`: `2a262246`
+- `active_epic`: `https://linear.app/jumentix/project/epicgovernance-epic-centered-task-taxonomy-and-agent-delegation-c3cb6bae0771`
+- `assigned_task`: `https://linear.app/jumentix/issue/JUM-508`
+- `capabilities`:
+  - repository governance and branch reconciliation
+  - CI policy and branch protection enforcement
+  - spec and traceability synchronization
 
 ## Operating Flow
 

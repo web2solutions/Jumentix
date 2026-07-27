@@ -97,6 +97,11 @@ Task isolation and naming policy:
   `main` run the complete matrix.
 - Main-matrix evidence must list every required cell and its terminal result.
 - An incomplete `main` matrix is failed evidence; it must never be interpreted as green.
+- Repository administrators may bypass the required-review count only with explicit project-owner
+  approval recorded in the issue or PR.
+- Administrative review bypass does not waive task isolation, `dev`-first promotion, conversation
+  resolution, or any CI, coverage, security, and full-matrix requirement. Every required check
+  must be reported and terminal green.
 
 Priority grouping policy:
 
