@@ -81,6 +81,17 @@ pnpm run storybook:smoke
 O comando smoke espera um build atualizado em `storybook-static`. A saída gerada é ignorada pelo
 Git.
 
+## Responsabilidade do workflow
+
+O Storybook pertence exclusivamente ao workflow de `apps/jumentix-website`. Seu servidor de
+desenvolvimento, build estático, validação smoke, verificações de acessibilidade e testes de
+componentes são gates de qualidade do website.
+
+O Storybook não faz parte do workflow principal do monorepo nem de sua matriz global de testes.
+Ele não deve bloquear pacotes, aplicações, templates de backend ou serviços não relacionados. Os
+comandos raiz `website:storybook*` são atalhos que delegam para este workspace e não transferem a
+responsabilidade do workflow para a raiz do monorepo.
+
 ## Fluxo de contribuição
 
 1. Adicione ou atualize o componente reutilizável em `components/design-system`.

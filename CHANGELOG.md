@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- 2026-07-26 [Chore] Sync completed CI agent assignment (#183) (#187) - Eduardo A.
+- 2026-07-26 chore(agents): sync completed CI assignment (#183) - web2solutions
 - 2026-07-26 [Bug] Preserve unit LCOV for Codecov (#183) (#184) - Eduardo A.
 - 2026-07-26 fix(governance): support bug PR prefixes (#185) - web2solutions
 - 2026-07-26 fix(ci): preserve unit LCOV for Codecov (#183) - web2solutions

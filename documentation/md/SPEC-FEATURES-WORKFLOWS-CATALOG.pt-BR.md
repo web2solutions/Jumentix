@@ -177,6 +177,17 @@ Verificações obrigatórias:
 8. Paridade das rotas comerciais EN/PT e navegação que preserva o idioma
 9. Metadados canônicos, hostname do sitemap, paginação do changelog e integridade dos links
 
+Limite do workflow:
+
+1. As verificações do Storybook pertencem e são executadas exclusivamente pelo workflow de
+   `apps/jumentix-website`.
+2. O Storybook não faz parte do workflow principal do monorepo nem de sua matriz global de testes
+   e não deve bloquear pacotes, aplicações, templates de backend ou serviços não relacionados.
+3. Os comandos raiz `website:storybook*` são atalhos que delegam ao workspace do website, e não
+   gates globais.
+4. Alterações e releases do website podem exigir build, smoke, acessibilidade e testes de
+   componentes do Storybook através do workflow do website.
+
 ## Definição de fluxo de trabalho (especificações primeiro)
 
 Para cada grupo de capacidade:

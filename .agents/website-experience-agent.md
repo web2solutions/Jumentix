@@ -23,6 +23,8 @@ code-first open-source product experience.
 - Shared header, mobile navigation, footer, locale routing, and contextual discovery
 - Product screenshots, truthful code examples, capability matrices, and architecture diagrams
 - Design-system and Storybook coverage
+- Keep Storybook validation owned by the `apps/jumentix-website` workflow; never add it to the
+  main monorepo workflow or unrelated project gates.
 - Documentation portal integration, sitemap, metadata, SEO, route integrity, and Vercel readiness
 
 ## Working Rules
