@@ -60,7 +60,7 @@ This file consolidates non-functional requirements already requested and stored 
 - `084` `dev` is the single source of truth for development; new branches must start from `dev` and PRs from implementation branches must target `dev`.
 - `085` PR descriptions are mandatory and must follow the repository PR template, with required sections completed before approval.
 - `086` One task per branch and PR, nature-prefixed naming, `dev`-first promotion to `main`, and mandatory false-green-proof full test matrices for commits, pushes, and PRs.
-- `089` Agent Registry must be maintained in an independent GitHub repository as canonical source, with mirrored sync in consumer repositories.
+- `089` Agent Registry must be maintained in an independent GitHub repository as canonical source, with mirrored sync in consumer repositories and quota-independent immutable raw-content checks pinned by full commit SHA.
 - `090` Every executable task must have one focused epic, one primary nature, and the epic milestone; milestone validation precedes epic-level agent delegation and non-overlapping child-task assignment.
 - `091` Website design-system and Storybook governance, including accessibility, responsive/theme states, component inventory, reproducible smoke validation, and strict ownership by the `apps/jumentix-website` workflow rather than the main monorepo workflow.
 - `092` Open-source commercial website experience, bilingual route parity, truthful code proof, responsive navigation, and production route integrity.
