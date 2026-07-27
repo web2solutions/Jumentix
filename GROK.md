@@ -17,6 +17,9 @@ This repository supports Grok as an official engineering agent.
 11. Confirm the focused epic and child task share one open milestone that covers their dates.
 12. Treat an epic as a Linear Project and never complete it before its dedicated documentation
     Issue is completed under Requirement `094`.
+13. Administrators may use a recorded project-owner approval to bypass only the required-review
+    count; `dev`-first delivery and terminal-green quality, coverage, and security gates remain
+    mandatory.
 
 ## Required Governance Links
 

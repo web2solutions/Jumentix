@@ -57,6 +57,10 @@ Um PR está pronto para mesclagem somente quando todos são verdadeiros:
 3. Lint/testes/cobertura/portões de segurança são verdes.
 4. As mensagens de confirmação e o agrupamento de alterações seguem as regras de governança.
 5. Os registros de documentos e `.agents` são sincronizados quando necessário.
+6. Um administrador do repositório pode contornar apenas a quantidade obrigatória de reviews
+   quando houver aprovação explícita do responsável pelo projeto registrada. A topologia de
+   entrega exigida e todos os gates selecionados de qualidade, cobertura e segurança continuam
+   sendo bloqueadores que exigem resultado terminalmente verde.
 
 ## 7) Âncoras de Fiscalização
 

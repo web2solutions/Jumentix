@@ -81,6 +81,8 @@ Pass criteria:
 3. Requirement/NFR references are included when applicable.
 4. Every Linear Project used as an epic has a dedicated documentation Issue.
 5. The epic documentation Issue is completed before the Project is set to `Completed`.
+6. Any administrative review-count bypass has explicit project-owner approval recorded in the
+   task or PR and all required checks remain reported and terminal green.
 
 Evidence:
 
@@ -108,3 +110,5 @@ A PR is not merge-ready when any of these is missing:
 3. Governance traceability links.
 4. Required `.agents` updates for NFR/governance impact.
 5. A missing or incomplete dedicated documentation Issue for an epic being completed.
+6. An administrative override that attempts to waive delivery topology or a failed, missing,
+   skipped, cancelled, timed-out, or incomplete required gate.
