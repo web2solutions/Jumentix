@@ -16,7 +16,7 @@ For any change, identify impacted requirement IDs and ensure:
 
 ## A. Build, Runtime, and Dependency Integrity
 
-- `001`, `002`, `012`, `013`, `041`, `042`, `043`, `052`
+- `001`, `002`, `012`, `013`, `041`, `042`, `043`, `052`, `096`
 - Spec resources:
   - `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md`
   - `documentation/md/SETUP-RUNTIME-AND-API.md`
