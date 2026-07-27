@@ -83,6 +83,9 @@ Critérios de aprovação:
 4. Todo Project do Linear usado como épico possui uma Issue dedicada de documentação.
 5. A Issue de documentação do épico está concluída antes de o Project ser marcado como
    `Completed`.
+6. Toda exceção administrativa da quantidade de reviews possui aprovação explícita do
+   responsável pelo projeto registrada na tarefa ou no PR, e todos os checks obrigatórios
+   permanecem reportados e terminalmente verdes.
 
 Evidência:
 
@@ -111,3 +114,5 @@ Um PR não está pronto para mesclagem quando algum destes está faltando:
 3. Links de rastreabilidade da governança.
 4. Atualizações necessárias de `.agents` para impacto de NFR/governança.
 5. Uma Issue dedicada de documentação ausente ou incompleta para um épico em conclusão.
+6. Uma exceção administrativa que tente dispensar a topologia de entrega ou um gate obrigatório
+   com falha, ausente, ignorado, cancelado, expirado ou incompleto.

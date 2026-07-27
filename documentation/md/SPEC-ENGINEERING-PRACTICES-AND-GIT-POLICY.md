@@ -56,6 +56,9 @@ A PR is merge-ready only when all are true:
 3. Lint/tests/coverage/security gates are green.
 4. Commit messages and change grouping follow governance rules.
 5. Docs and `.agents` registries are synchronized when required.
+6. A repository administrator may bypass only the review-count requirement when explicit
+   project-owner approval is recorded. Required delivery topology and every selected quality,
+   coverage, and security gate remain terminal-green blockers.
 
 ## 7) Enforcement Anchors
 
