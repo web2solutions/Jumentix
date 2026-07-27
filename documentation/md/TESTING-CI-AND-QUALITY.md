@@ -144,6 +144,7 @@ Remote enforcement:
 
 - CircleCI and GitHub Actions invoke `pnpm run ci:gate:branch`
 - GitHub Actions passes the PR base branch or pushed branch explicitly and uploads branch-gate evidence even after failure
+- Task-branch push events compare `origin/dev...HEAD`; hosted CI never uses the local staged-diff mode
 - GitHub Actions uploads `artifacts/ci/full-test-matrix.json` for `main` work even after failure
 - `.github/workflows/website.yml` independently runs Storybook build/smoke and website prepublish
   checks only when website-owned paths change

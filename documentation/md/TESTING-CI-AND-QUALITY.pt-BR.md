@@ -148,6 +148,8 @@ Aplicação remota:
 
 - CircleCI e GitHub Actions invocam `pnpm run ci:gate:branch`
 - o GitHub Actions passa a branch base do PR ou a branch enviada e sempre publica a evidência do gate
+- eventos de push em branches de tarefa comparam `origin/dev...HEAD`; a CI hospedada nunca usa o
+  modo local de diff staged
 - o GitHub Actions publica `artifacts/ci/full-test-matrix.json` somente para trabalhos destinados a `main`
 - `.github/workflows/website.yml` executa build/smoke do Storybook e prepublish somente quando
   caminhos pertencentes ao website mudam

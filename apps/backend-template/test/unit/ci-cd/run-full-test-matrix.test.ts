@@ -121,6 +121,8 @@ describe('run-full-test-matrix', () => {
       read('.circleci/config.yml').includes('only:\n                - dev\n                - main'),
       read('.github/workflows/test.yml').includes('pnpm run ci:gate:branch'),
       read('.github/workflows/test.yml').includes('branches: [ "**" ]'),
+      read('.github/workflows/test.yml').includes('JUMENTIX_TASK_TEST_MODE: range'),
+      read('.github/workflows/test.yml').includes('JUMENTIX_TASK_TEST_BASE: origin/dev'),
       read('.github/workflows/test.yml')
         .includes('if: always() && (github.base_ref == \'main\' || github.ref_name == \'main\')'),
       read('.github/workflows/website.yml').includes('pnpm run website:storybook:build'),
@@ -134,7 +136,7 @@ describe('run-full-test-matrix', () => {
       )
     ]).toStrictEqual([
       true, true, true, true, true, true, true, true, true, true, true, true, true, true,
-      true
+      true, true, true
     ]);
   });
 });
