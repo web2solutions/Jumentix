@@ -65,6 +65,9 @@ code-first explanations, and future growth without page-level UI duplication.
 
 - GitHub epic `#167`
 - GitHub task `#170`
+- GitHub CI task `#191`
+- Linear CI task `JUM-504`
 - `apps/jumentix-website/components/design-system`
 - `apps/jumentix-website/.storybook`
+- `.github/workflows/website.yml`
 - `apps/jumentix-website/documentation/DESIGN-SYSTEM-AND-STORYBOOK.md`

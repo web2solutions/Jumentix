@@ -99,9 +99,12 @@ Política de isolamento e nomenclatura:
 - Somente um PR de promoção de release originado em `dev` pode ter `main` como destino.
 - Uma promoção de `dev` para `main` referencia os PRs/issues de tarefas já integrados em `dev` e não introduz mudanças não revisadas.
 - PRs diretos de tarefa/tópico, pushes e merges para `main` são proibidos.
-- Os gates de commit, push e PR devem executar a matriz completa de testes declarada pelo repositório.
-- A evidência da matriz deve listar cada célula obrigatória e seu resultado terminal.
-- Uma matriz incompleta é evidência com falha; nunca pode ser interpretada como verde.
+- Os gates são orientados ao destino: branches de tarefa executam testes alterados ou
+  relacionados, `dev` executa a suíte unitária completa e `main` executa a matriz completa.
+- PRs destinados a `dev` executam a suíte unitária; promoções de `dev` para `main` executam a
+  matriz completa.
+- A evidência da matriz de `main` deve listar cada célula obrigatória e seu resultado terminal.
+- Uma matriz de `main` incompleta é evidência com falha; nunca pode ser interpretada como verde.
 
 Política de agrupamento prioritário:
 
@@ -118,6 +121,18 @@ A conformidade com as especificações é imposta pela política executável:
 - Verificações de fumaça de segurança/conformidade
 
 Se alguma porta falhar, a conformidade com as especificações será considerada não comprovada e a alteração não estará pronta para mesclagem.
+
+Contrato de execução por branch:
+
+1. Branches de tarefa executam `ci:gate:task` sobre o diff pertencente à tarefa.
+2. `dev` e pull requests destinados a `dev` executam `test:unit`.
+3. `main` e pull requests de promoção destinados a `main` executam `ci:gate:strict`.
+4. O CircleCI aceita somente `dev` e `main`.
+5. `.github/workflows/website.yml` é o responsável pelos checks do Storybook e é selecionado
+   somente por caminhos pertencentes ao website; o workflow global e a matriz completa não
+   executam Storybook.
+6. Todo gate selecionado emite evidência auditável e falha de forma fechada quando um comando
+   não retorna status, quebra ou termina com código diferente de zero.
 
 ## NFR e rastreabilidade de requisitos
 

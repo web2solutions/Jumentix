@@ -1,0 +1,41 @@
+name: Jumentix website quality
+
+on:
+  push:
+    paths:
+      - "apps/jumentix-website/**"
+      - ".github/workflows/website.yml"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+  pull_request:
+    branches: [ "dev", "main" ]
+    paths:
+      - "apps/jumentix-website/**"
+      - ".github/workflows/website.yml"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+
+jobs:
+  storybook:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.3
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build Storybook
+        run: pnpm run website:storybook:build
+      - name: Validate Storybook inventory
+        run: pnpm run website:storybook:smoke
+      - name: Validate publishable website content
+        run: pnpm run website:test:prepublish

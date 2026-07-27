@@ -92,6 +92,11 @@ Ele não deve bloquear pacotes, aplicações, templates de backend ou serviços 
 comandos raiz `website:storybook*` são atalhos que delegam para este workspace e não transferem a
 responsabilidade do workflow para a raiz do monorepo.
 
+O workflow com filtro de caminhos `.github/workflows/website.yml` é o responsável pela CI
+hospedada. Ele executa somente quando entradas pertencentes ao website mudam e valida o build
+estático do Storybook, o smoke do inventário e a preparação do website para publicação. O
+workflow global `.github/workflows/test.yml` nunca executa o Storybook.
+
 ## Fluxo de contribuição
 
 1. Adicione ou atualize o componente reutilizável em `components/design-system`.
