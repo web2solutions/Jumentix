@@ -91,6 +91,11 @@ unrelated packages, applications, backend templates, or services. The root
 `website:storybook*` commands are convenience delegates to this workspace and do not transfer
 workflow ownership to the monorepo root.
 
+The path-scoped `.github/workflows/website.yml` workflow is the hosted CI owner. It runs only
+when website-owned inputs change and executes the Storybook static build, inventory smoke check,
+and website prepublish validation. The repository-wide `.github/workflows/test.yml` never invokes
+Storybook.
+
 ## Contribution Workflow
 
 1. Add or update the reusable component in `components/design-system`.

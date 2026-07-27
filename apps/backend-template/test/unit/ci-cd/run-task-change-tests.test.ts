@@ -69,6 +69,18 @@ describe('run-task-change-tests', () => {
     });
   });
 
+  it('maps workflow and hook changes to their governance unit test', () => {
+    expect.hasAssertions();
+    expect(createTaskTestPlan([
+      '.github/workflows/test.yml',
+      '.circleci/config.yml',
+      '.husky/pre-push'
+    ])).toStrictEqual({
+      type: 'mapped-unit-tests',
+      files: ['apps/backend-template/test/unit/ci-cd/run-full-test-matrix.test.ts']
+    });
+  });
+
   it('selects real documentation validation for docs-only changes', () => {
     expect.hasAssertions();
     expect(createTaskTestPlan(['documentation/md/TESTING-CI-AND-QUALITY.md'])).toStrictEqual({
@@ -96,7 +108,7 @@ describe('run-task-change-tests', () => {
     taskFs.rmSync(rootDir, { recursive: true, force: true });
   });
 
-  it('records success, failure, crash, and documentation evidence', () => {
+  it('records success, failure, crash, and documentation not-applicable evidence', () => {
     expect.hasAssertions();
     const logger = { log: jest.fn(), error: jest.fn() };
     const successful = runTaskChangeTests({
@@ -128,9 +140,21 @@ describe('run-task-change-tests', () => {
     expect(failed.outcome).toBe('failed');
     expect(crashed.outcome).toBe('failed');
     expect(documentation).toMatchObject({
-      plan: 'documentation-validation', outcome: 'passed', status: 0
+      plan: 'documentation-validation', outcome: 'not-applicable', status: 0
     });
     expect(logger.error).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps Storybook outside the global task-change executor', () => {
+    expect.hasAssertions();
+    const source = taskFs.readFileSync(
+      taskPath.join(__dirname, '../../../../../ci-cd/run-task-change-tests.js'),
+      'utf8'
+    );
+
+    expect(source).not.toContain('\'storybook:build\'');
+    expect(source).not.toContain('\'storybook:smoke\'');
+    expect(source).toContain('\'test:prepublish\'');
   });
 
   it('writes JSON evidence for the selected change-focused test plan', () => {
