@@ -1,0 +1,33 @@
+---
+title: "@jumentix/mutex-service"
+description: "Packages documentation."
+---
+
+> Source: `../../packages/mutex-service/README.md`
+
+# @jumentix/mutex-service
+
+Private reusable mutex adapter for Jumentix runtimes.
+
+## Contract
+
+`MutexService.compile(keyValueStorageClient, options)` creates a process-wide singleton backed by an
+`IKeyValueStorageClient`. The client must implement asynchronous `get`, `set`, `del`, `connect`, and
+`disconnect` methods returning `IServiceResponse`.
+
+- `lock(resourceName, uuid)` returns `{ previouslyLocked, locked }` in `result`.
+- `isLocked(resourceName, uuid)` returns a boolean in `result`.
+- `unlock(resourceName, uuid)` forwards the storage deletion result.
+- Failures are returned in `error`; they are not thrown to the caller.
+- `reset()` clears the singleton, primarily for isolated tests and composition resets.
+
+The default key prefix is `mutex`; a custom `prefix` can be supplied at compilation.
+
+## Validation
+
+```bash
+pnpm --filter @jumentix/mutex-service build
+pnpm --filter @jumentix/mutex-service typecheck
+pnpm --filter @jumentix/mutex-service lint
+pnpm --filter @jumentix/mutex-service test
+```

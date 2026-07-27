@@ -41,17 +41,26 @@ pnpm run <command>
 | `release:dry-run` | Run release governance and dry-run routines. | `pnpm run release:dry-run` | `node ci-cd/release-dry-run.js all` |
 | `release:dry-run:packages` | Run release governance and dry-run routines. | `pnpm run release:dry-run:packages` | `node ci-cd/release-dry-run.js packages` |
 | `release:dry-run:apps` | Run release governance and dry-run routines. | `pnpm run release:dry-run:apps` | `node ci-cd/release-dry-run.js apps` |
+| `agent-registry:check` | Use when you need this specific workspace operation. | `pnpm run agent-registry:check` | `node ci-cd/check-agent-registry-source.js --check` |
+| `agent-registry:sync` | Use when you need this specific workspace operation. | `pnpm run agent-registry:sync` | `node ci-cd/check-agent-registry-source.js --sync` |
+| `agent-registry:url` | Use when you need this specific workspace operation. | `pnpm run agent-registry:url` | `node ci-cd/check-agent-registry-source.js --url` |
 | `release:governance:check` | Run release governance and dry-run routines. | `pnpm run release:governance:check` | `node ci-cd/check-release-governance.js` |
+| `pr:governance:check` | Use when you need this specific workspace operation. | `pnpm run pr:governance:check` | `node ci-cd/check-pr-governance.js` |
 | `serverless:check-handlers` | Use when you need this specific workspace operation. | `pnpm run serverless:check-handlers` | `node ci-cd/check-serverless-handler-paths.js` |
 | `ci:smoke` | Use in CI validation and delivery gates. | `pnpm run ci:smoke` | `AAA_JWT_TOKEN_SECRET_KEY=${AAA_JWT_TOKEN_SECRET_KEY:-ci_jwt_secret_key} NODE_ENV=ci node ci-cd/run-api-smoke.js` |
 | `ci:integration` | Use in CI validation and delivery gates. | `pnpm run ci:integration` | `AAA_JWT_TOKEN_SECRET_KEY=${AAA_JWT_TOKEN_SECRET_KEY:-ci_jwt_secret_key} node ci-cd/run-integration-tests.js` |
 | `ci:security-smoke` | Use in CI validation and delivery gates. | `pnpm run ci:security-smoke` | `NODE_ENV=ci node ci-cd/run-security-smoke.js` |
-| `ci:gate` | Use in CI validation and delivery gates. | `pnpm run ci:gate` | `pnpm run lint && pnpm run deps:check-cycles && pnpm run arch:check-boundaries && pnpm run arch:check-users-legacy-imports && pnpm run arch:check-workspace-boundaries && pnpm run workspace:check-quality && pnpm run workspace:check-coverage-policy && pnpm run release:governance:check && pnpm run test:unit && pnpm run ci:security-smoke && pnpm run oas:check-routes && pnpm run serverless:check-handlers && pnpm run build:dev && pnpm run ci:smoke` |
+| `ci:gate` | Use in CI validation and delivery gates. | `pnpm run ci:gate` | `pnpm run lint && pnpm run deps:check-cycles && pnpm run arch:check-boundaries && pnpm run arch:check-users-legacy-imports && pnpm run arch:check-workspace-boundaries && pnpm run workspace:check-quality && pnpm run workspace:check-coverage-policy && pnpm run release:governance:check && pnpm run agent-registry:check && pnpm run test:unit && pnpm run ci:security-smoke && pnpm run oas:check-routes && pnpm run serverless:check-handlers && pnpm run build:dev && pnpm run ci:smoke` |
+| `ci:gate:branch` | Use in CI validation and delivery gates. | `pnpm run ci:gate:branch` | `node ci-cd/run-branch-quality-gate.js` |
+| `ci:gate:task` | Use in CI validation and delivery gates. | `pnpm run ci:gate:task` | `node ci-cd/run-task-change-tests.js` |
 | `ci:gate:strict` | Use in CI validation and delivery gates. | `pnpm run ci:gate:strict` | `node ci-cd/run-full-test-matrix.js` |
 | `dev` | Default local entrypoint; starts dev PM2 profile. | `pnpm run dev` | `pnpm run pm2:start:dev:restapi` |
 | `website:dev` | Operate the commercial website lifecycle. | `pnpm run website:dev` | `pnpm --filter @jumentix/website dev` |
 | `website:build` | Operate the commercial website lifecycle. | `pnpm run website:build` | `pnpm --filter @jumentix/website build` |
 | `website:start` | Operate the commercial website lifecycle. | `pnpm run website:start` | `pnpm --filter @jumentix/website start` |
+| `website:storybook` | Operate the commercial website lifecycle. | `pnpm run website:storybook` | `pnpm --filter @jumentix/website storybook` |
+| `website:storybook:build` | Operate the commercial website lifecycle. | `pnpm run website:storybook:build` | `pnpm --filter @jumentix/website storybook:build` |
+| `website:storybook:smoke` | Operate the commercial website lifecycle. | `pnpm run website:storybook:smoke` | `pnpm --filter @jumentix/website storybook:smoke` |
 | `website:test:prepublish` | Operate the commercial website lifecycle. | `pnpm run website:test:prepublish` | `pnpm --filter @jumentix/website test:prepublish` |
 | `website:vercel:link` | Operate the commercial website lifecycle. | `pnpm run website:vercel:link` | `pnpm dlx vercel link --cwd apps/jumentix-website --project jumentix-website --yes` |
 | `website:vercel:pull:preview` | Operate the commercial website lifecycle. | `pnpm run website:vercel:pull:preview` | `pnpm dlx vercel pull --cwd apps/jumentix-website --environment=preview --yes` |
