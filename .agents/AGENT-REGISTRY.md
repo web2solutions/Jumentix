@@ -67,11 +67,11 @@ This registry tracks AI agents collaborating in the Jumentix project.
 - `machine_os`: `Darwin 21.6.0 x86_64`
 - `agent_runtime`: `OpenAI Codex`
 - `agent_version`: `GPT-5 Codex`
-- `status`: `busy`
+- `status`: `available`
 - `registered_at_utc`: `2026-07-26T07:23:33Z`
-- `last_branch_check_utc`: `2026-07-26T16:46:31Z`
+- `last_branch_check_utc`: `2026-07-27T15:05:34Z`
 - `main_ref_checked`: `dc9a5b4e`
-- `dev_ref_checked`: `85520e62`
+- `dev_ref_checked`: `63ecaef1`
 - `active_epic`: `none`
 - `assigned_task`: `none`
 - `capabilities`:

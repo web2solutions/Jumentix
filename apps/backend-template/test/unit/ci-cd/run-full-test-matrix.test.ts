@@ -124,10 +124,11 @@ describe('run-full-test-matrix', () => {
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'pr:governance:check'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'agent-registry:check'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'website:test:prepublish'),
-      FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'website:storybook:build'),
-      FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'website:storybook:smoke')
+      !FULL_TEST_MATRIX.some(
+        (cell: FullMatrixTestCell) => cell.script.startsWith('website:storybook')
+      )
     ]).toStrictEqual([
-      true, true, true, true, true, true, true, true, true, true, true, true
+      true, true, true, true, true, true, true, true, true, true, true
     ]);
   });
 });
