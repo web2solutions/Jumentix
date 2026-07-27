@@ -1,7 +1,7 @@
 {
   "repository": "web2solutions/jumentix-agent-registry",
   "branch": "main",
-  "revision": "dcd9b21d358c5ad54c1bfd2beb17088763078551",
+  "revision": "c2f4710e5ec0afd6d260a1d774b5ed2f2b4941d7",
   "remotePath": "AGENT-REGISTRY.md",
   "localMirrorPath": ".agents/AGENT-REGISTRY.md"
 }

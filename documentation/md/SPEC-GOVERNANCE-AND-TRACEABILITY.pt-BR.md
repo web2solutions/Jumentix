@@ -169,6 +169,13 @@ Antes de qualquer execução de tarefa:
    Requisito `090`.
 9. Os agentes devem verificar a Issue dedicada de documentação antes de concluir um Project de
    épico no Linear sob o Requisito `094`.
+10. As verificações fixadas do registro devem buscar conteúdo raw imutável por SHA completo de
+    commit e caminho seguro codificado, sem consumir a cota anônima da API de conteúdo do GitHub.
+11. Somente a sincronização explícita do registro pode resolver uma branch mutável pela API do
+    GitHub, opcionalmente autenticada por `GITHUB_TOKEN` ou `GH_TOKEN`.
+12. Revisões ou caminhos inválidos, falhas HTTP e de transporte, respostas malformadas e
+    divergência do espelho local devem reprovar de forma fechada com diagnósticos acionáveis que
+    nunca exponham credenciais.
 
 ## Expectativas de evidências de auditoria
 
@@ -186,3 +193,6 @@ Conjunto mínimo de evidências:
 10. Manifesto e resultados da matriz completa para promoção a `main`
 11. Prova de propagação mostrando que teste obrigatório ausente ou com falha não pode produzir
     resultado verde
+12. Testes de transporte do Agent Registry cobrindo construção da URL raw imutável, codificação
+    segura do caminho, autenticação opcional da resolução de branch, falhas de transporte e
+    divergência do espelho
