@@ -18,6 +18,9 @@ Primary Codex runtime instructions for this repository:
     before planning or execution.
 13. Treat an epic as a Linear Project and never set it to `Completed` until its dedicated
     documentation Issue is completed under requirement `094`.
+14. Administrators may use a recorded project-owner approval to bypass only the required-review
+    count; they must never bypass `dev`-first promotion or failed, missing, or incomplete quality,
+    coverage, or security gates.
 
 Canonical governance/spec references:
 
