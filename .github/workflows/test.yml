@@ -52,6 +52,8 @@ jobs:
       run: pnpm run ci:gate:branch
       env:
         JUMENTIX_QUALITY_GATE_TARGET: ${{ github.base_ref || github.ref_name }}
+        JUMENTIX_TASK_TEST_MODE: range
+        JUMENTIX_TASK_TEST_BASE: origin/dev
         AAA_PR_TITLE: ${{ github.event.pull_request.title || '' }}
         AAA_PR_BODY: ${{ github.event.pull_request.body || '' }}
         AAA_PR_HEAD_REF: ${{ github.head_ref || '' }}

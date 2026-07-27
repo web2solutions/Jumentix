@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- 2026-07-27 ci(workflows): enforce branch-aware quality gates - web2solutions
 - 2026-07-27 [Test] Isolate Storybook quality gates to Jumentix website (#190) - Eduardo A.
 - 2026-07-27 chore(agents): sync released website assignment - web2solutions
 - 2026-07-27 test(website): isolate Storybook quality gates - web2solutions
