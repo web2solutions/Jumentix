@@ -37,6 +37,17 @@ code-first explanations, and future growth without page-level UI duplication.
     foundation stories or the expected minimum inventory are missing.
 14. Design-system behavior, commands, inventory, and contribution workflow must be documented in
     English and Portuguese.
+15. Storybook development, build, smoke, accessibility, and component tests belong exclusively to
+    the `apps/jumentix-website` workflow.
+16. Storybook checks must not be included in, coupled to, or block the main monorepo workflow,
+    global test matrix, backend-template workflow, package workflow, or unrelated application
+    workflow.
+17. Root-level `website:storybook*` scripts are convenience entry points that delegate to the
+    website workspace. Their presence must not be interpreted as ownership by the main monorepo
+    workflow.
+18. Website pull requests and website releases may require Storybook checks. Changes outside the
+    website must not run Storybook unless they directly affect a website-consumed contract and the
+    website workflow explicitly selects that validation.
 
 ## Acceptance Criteria
 
@@ -47,6 +58,8 @@ code-first explanations, and future growth without page-level UI duplication.
 4. The catalog can be inspected in desktop/mobile and light/dark states.
 5. The design-system documentation lists every public component and the command workflow.
 6. Generated Storybook output remains ignored by Git.
+7. Main monorepo gates pass without building or testing Storybook.
+8. The website workflow independently runs and reports its required Storybook checks.
 
 ## Evidence
 
