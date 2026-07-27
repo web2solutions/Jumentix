@@ -15,6 +15,8 @@ This repository supports Claude Code as an official engineering agent.
 9. Work only on tasks with one focused parent epic and one primary nature.
 10. Confirm epic-level agent delegation before accepting a child task, following Requirement `090`.
 11. Confirm the focused epic and child task share one open milestone that covers their dates.
+12. Treat an epic as a Linear Project and never complete it before its dedicated documentation
+    Issue is completed under Requirement `094`.
 
 ## Required Governance Links
 

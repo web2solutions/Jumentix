@@ -33,6 +33,18 @@ Cada item de entrega deve expor:
 7. `PR -> evidência (testes/cobertura/verificações)`
 8. `PR -> IDs de requisitos` (quando NFR ou comportamento de governança são afetados)
 9. `Tarefa -> branch dedicada -> PR dedicado`
+10. `Project de épico no Linear -> Issue dedicada de documentação -> evidências de PR/commit/documentação`
+
+## Gate de conclusão da documentação do épico
+
+1. No Linear, um épico é um Project e suas tarefas executáveis são Issues.
+2. Todo Project de épico deve conter uma Issue dedicada de documentação.
+3. O Project não pode ser marcado como `Completed` antes que essa Issue esteja concluída.
+4. A evidência de conclusão deve vincular a Issue de documentação, seu PR e commits exclusivos,
+   o inventário da documentação alterada, a paridade bilíngue quando aplicável e a validação de
+   integridade.
+5. Trabalho de documentação ausente, cancelado, sem responsável ou incompleto bloqueia a
+   conclusão do épico.
 
 ## Campos obrigatórios do projeto
 
@@ -140,6 +152,8 @@ Antes de qualquer execução de tarefa:
    Requisito `090`.
 8. O milestone do épico e da tarefa deve ser validado antes do planejamento ou execução sob o
    Requisito `090`.
+9. Os agentes devem verificar a Issue dedicada de documentação antes de concluir um Project de
+   épico no Linear sob o Requisito `094`.
 
 ## Expectativas de evidências de auditoria
 

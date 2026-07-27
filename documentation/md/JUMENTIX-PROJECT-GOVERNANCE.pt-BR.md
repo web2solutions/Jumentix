@@ -92,6 +92,14 @@ Se um PR não estiver vinculado aos itens de trabalho do projeto, ele estará fo
 2. A documentação deve ser mantida em sincronia com as mudanças de implementação e governança.
 3. A documentação deverá apresentar versões em inglês e português.
 4. O conteúdo e a navegação do site Jumentix deverão disponibilizar versões em inglês e português.
+5. No Linear, um épico é um Project e uma tarefa executável é uma Issue.
+6. Todo Project de épico deve conter uma Issue dedicada de documentação cujo único resultado sob
+   responsabilidade seja sincronizar toda a documentação afetada.
+7. Um Project de épico não pode ser marcado como `Completed` até que sua Issue dedicada de
+   documentação esteja concluída e vincule o PR, os commits, a documentação alterada e as
+   evidências de validação.
+8. Uma Issue de documentação ausente, cancelada, sem responsável ou incompleta bloqueia a
+   conclusão do épico.
 
 ### Agrupamento de relações públicas baseado em prioridade (obrigatório)
 
@@ -117,7 +125,8 @@ Não é permitido misturar `P0`, `P1` e `P2` no mesmo PR.
    à issue e ao projeto.
 9. Promover `dev` para `main` somente por meio de um PR de promoção de release após a aprovação
    da matriz completa.
-10. Mover o status do projeto (`Backlog` -> `Pronto` -> `Em andamento` -> `Em revisão` ->
+10. Verificar que a Issue dedicada de documentação e suas evidências estão concluídas.
+11. Mover o status do projeto (`Backlog` -> `Pronto` -> `Em andamento` -> `Em revisão` ->
    `Concluído`).
 
 ## Política de Ciclo e Estimativa

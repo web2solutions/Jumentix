@@ -80,11 +80,17 @@ Critérios de aprovação:
 1. O problema, o item do projeto e o PR estão vinculados.
 2. Os campos de prioridade/tamanho/estimativa do ciclo de vida são preenchidos.
 3. Referências de requisitos/NFR são incluídas quando aplicável.
+4. Todo Project do Linear usado como épico possui uma Issue dedicada de documentação.
+5. A Issue de documentação do épico está concluída antes de o Project ser marcado como
+   `Completed`.
 
 Evidência:
 
 1. Links cruzados de problemas/projetos/RP do GitHub.
 2. Registro `.agents` atualizado quando a governança ou NFR mudou.
+3. Link do Project do Linear mais a Issue de documentação concluída, links de PR/commit,
+   inventário dos documentos alterados, evidência de paridade bilíngue quando aplicável e
+   resultados de integridade da documentação.
 
 ## Padrão de empacotamento de evidências para PRs
 
@@ -104,3 +110,4 @@ Um PR não está pronto para mesclagem quando algum destes está faltando:
 2. Verificações exigidas ou limite de cobertura.
 3. Links de rastreabilidade da governança.
 4. Atualizações necessárias de `.agents` para impacto de NFR/governança.
+5. Uma Issue dedicada de documentação ausente ou incompleta para um épico em conclusão.

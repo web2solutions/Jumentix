@@ -65,6 +65,7 @@ This file consolidates non-functional requirements already requested and stored 
 - `091` Website design-system and Storybook governance, including accessibility, responsive/theme states, component inventory, and reproducible smoke validation.
 - `092` Open-source commercial website experience, bilingual route parity, truthful code proof, responsive navigation, and production route integrity.
 - `093` Consumer documentation information architecture, bilingual route parity, source synchronization, navigation depth, and publication integrity.
+- `094` Every Linear Project used as an epic must have a dedicated documentation Issue completed before the Project can be completed.
 
 ## Rule of Use
 
