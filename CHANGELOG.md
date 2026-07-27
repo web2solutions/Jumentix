@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-07-27 [Governance] Sync canonical registry and admin review policy (#200) - Eduardo A.
+- 2026-07-27 docs(governance): sync registry and admin review policy - Eduardo A.
 - 2026-07-27 [Governance] Adopt requirement 096: Bun as internal engineering runtime (JUM-22) (#199) - Eduardo A.
 - 2026-07-27 docs(governance): add requirement 096 bun internal tooling runtime - Eduardo A.
 - 2026-07-27 [Research] Establish Bun compatibility and migration baseline (JUM-23) (#196) - Eduardo A.
