@@ -20,7 +20,7 @@ Para qualquer alteração, identifique os IDs dos requisitos afetados e garanta:
 
 ## A. Integridade de construção, tempo de execução e dependência
 
-- `001`, `002`, `012`, `013`, `041`, `042`, `043`, `052`
+- `001`, `002`, `012`, `013`, `041`, `042`, `043`, `052`, `096`
 - Recursos de especificações:
   - `documentação/md/RUNTIME-ENVIRONMENT-CONTRACTS.md`
   - `documentação/md/SETUP-RUNTIME-AND-API.md`

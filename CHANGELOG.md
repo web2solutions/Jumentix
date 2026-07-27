@@ -4,6 +4,9 @@
 
 ## All Changes
 
+- 2026-07-27 docs(governance): add requirement 096 bun internal tooling runtime - Eduardo A.
+- 2026-07-27 [Research] Establish Bun compatibility and migration baseline (JUM-23) (#196) - Eduardo A.
+- 2026-07-27 docs(bun): establish bun compatibility and migration baseline - Eduardo A.
 - 2026-07-27 [CI] Eliminate anonymous agent-registry API quota (#194) - Eduardo A.
 - 2026-07-27 ci(registry): avoid anonymous API quota for pinned checks - web2solutions
 - 2026-07-27 [CI] Enforce branch-aware gates and isolate website Storybook (#193) - Eduardo A.
