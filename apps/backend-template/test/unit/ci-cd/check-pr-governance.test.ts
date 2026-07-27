@@ -11,11 +11,11 @@ const {
 } = require('../../../../../ci-cd/check-pr-governance');
 
 const validBody = [
-  '- Focused epic link: https://github.com/web2solutions/aaa-typescript-boilerplate/issues/161',
+  '- Focused epic link: https://linear.app/jumentix/project/governance-foundation-c3cb6bae0771/overview',
   '- Epic milestone: Governance foundation - 2026-08-08',
   '- Primary task nature: ci',
   '- Epic-delegated agent ID: codex-primary-001',
-  '- Child task issue link: https://github.com/web2solutions/aaa-typescript-boilerplate/issues/163'
+  '- Child task issue link: https://linear.app/jumentix/issue/JUM-163/focused-epic-metadata'
 ].join('\n');
 
 describe('check-pr-governance', () => {
@@ -53,7 +53,7 @@ describe('check-pr-governance', () => {
     expect.hasAssertions();
     const bugBody = validBody
       .replace('Primary task nature: ci', 'Primary task nature: bug')
-      .replace('/issues/163', '/issues/183');
+      .replace('JUM-163/focused-epic-metadata', 'JUM-183/codecov-artifact');
 
     expect(validatePullRequest({
       title: '[Bug] Preserve unit LCOV for Codecov (#183)',
@@ -61,6 +61,29 @@ describe('check-pr-governance', () => {
       headRef: 'codex/bug/183-codecov-artifact',
       baseRef: 'dev'
     })).toStrictEqual([]);
+  });
+
+  it('rejects task metadata links outside governed project trackers', () => {
+    expect.hasAssertions();
+    const invalidBody = validBody
+      .replace(
+        'https://linear.app/jumentix/project/governance-foundation-c3cb6bae0771/overview',
+        'https://example.com/projects/governance'
+      )
+      .replace(
+        'https://linear.app/jumentix/issue/JUM-163/focused-epic-metadata',
+        'https://example.com/issues/163'
+      );
+
+    expect(validatePullRequest({
+      title: '[CI] Enforce focused epic metadata',
+      body: invalidBody,
+      headRef: 'codex/ci/163-focused-epic-metadata',
+      baseRef: 'dev'
+    })).toStrictEqual(expect.arrayContaining([
+      expect.stringContaining('focused epic link'),
+      expect.stringContaining('child task issue link')
+    ]));
   });
 
   it('fails closed for missing metadata and mismatched task nature', () => {
