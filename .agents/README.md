@@ -111,6 +111,7 @@ Use these files as living constraints for future maintenance and feature develop
 - [092-jumentix-oss-commercial-experience](requirements/092-jumentix-oss-commercial-experience.md)
 - [093-jumentix-documentation-experience](requirements/093-jumentix-documentation-experience.md)
 - [094-epic-documentation-completion-gate](requirements/094-epic-documentation-completion-gate.md)
+- [096-bun-internal-tooling-runtime](requirements/096-bun-internal-tooling-runtime.md)
 - [Agent Registry](AGENT-REGISTRY.md)
 - [NFR Registry](NFR-REGISTRY.md)
 - [Spec Development Driven Agent](spec-development-driven-agent.md)

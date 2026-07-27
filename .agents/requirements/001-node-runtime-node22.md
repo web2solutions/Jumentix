@@ -14,3 +14,7 @@ Consistent runtime across local development and CI prevents engine mismatches.
 
 ## Status
 Done
+
+## Supersession notice (phased)
+
+For internal engineering workflows this requirement is superseded by [096-bun-internal-tooling-runtime](096-bun-internal-tooling-runtime.md) once the Bun cutover (Linear JUM-40, project 5c38372a8e45) completes with full evidence. Until then, this requirement remains authoritative.

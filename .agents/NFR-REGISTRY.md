@@ -66,6 +66,7 @@ This file consolidates non-functional requirements already requested and stored 
 - `092` Open-source commercial website experience, bilingual route parity, truthful code proof, responsive navigation, and production route integrity.
 - `093` Consumer documentation information architecture, bilingual route parity, source synchronization, navigation depth, and publication integrity.
 - `094` Every Linear Project used as an epic must have a dedicated documentation Issue completed before the Project can be completed.
+- `096` A pinned Bun toolchain becomes the sole internal engineering runtime, package manager, script runner and test platform, with phased supersession of `001`, `012` and `048` for internal tooling at Bun cutover; Node remains only as declared consumer-facing compatibility.
 
 ## Rule of Use
 
