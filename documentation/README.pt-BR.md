@@ -1,6 +1,28 @@
 # Hub de Documentação Jumentix
 
-Esta documentação está organizada por público.
+Esta documentação está organizada por público e sincronizada com a baseline `dev` do repositório.
+Uma capacidade documentada é atual somente quando sua implementação, manifesto ou contrato
+referenciado existe em `dev`; trabalho futuro deve ser identificado explicitamente como planejado.
+
+## Mapa de Componentes do Repositório
+
+- **Aplicações**
+  - [Backend Template](../apps/backend-template/README.pt-BR.md): composição de runtimes REST,
+    WebSocket, gRPC, CLI, persistência, mensageria, serverless e PM2.
+  - [Service Management](../apps/service-management/README.pt-BR.md): servidor/interface de gestão e
+    fluxos de definição de serviços.
+  - [Website Jumentix](../apps/jumentix-website/README.pt-BR.md): site comercial e documental
+    bilíngue, sincronização de conteúdo, Storybook e entrega na Vercel.
+- **Pacotes reutilizáveis**
+  - [Catálogo completo de pacotes](../packages/README.pt-BR.md), incluindo runtime, persistência,
+    mensageria, SDK, configuração privada e workspaces reservados de contratos.
+- **Compatibilidade e contratos**
+  - [Camada legada de compatibilidade dos SDKs](../sdk-clients/README.pt-BR.md).
+  - [Fontes OpenAPI e AsyncAPI](../spec/).
+- **Automação e entrega**
+  - [Scripts de tooling](../tooling/README.pt-BR.md).
+  - [Documentação para criadores](./creators/README.pt-BR.md) sobre CI, governança, release e
+    manutenção.
 
 ## Documentação de Consumidores (pública)
 
@@ -29,3 +51,19 @@ Para engenheiros que mantêm e evoluem o Jumentix:
 - [Mapa de Eventos e Mensagens](./md/EVENTS-AND-MESSAGES-MAP.pt-BR.md)
 - [Contratos de Erro e Respostas](./md/ERROR-CONTRACTS-AND-RESPONSES.pt-BR.md)
 - [Contratos de Ambiente de Runtime](./md/RUNTIME-ENVIRONMENT-CONTRACTS.pt-BR.md)
+- [AsyncAPI WebSocket](../spec/asyncapi/1.0.0.websocket.yml)
+- [AsyncAPI gRPC](../spec/asyncapi/1.0.0.grpc.yml)
+
+## Integridade da Documentação
+
+Execute estas verificações na raiz após mudanças documentais:
+
+```bash
+pnpm run docs:consumers:package-scripts
+pnpm run website:test:prepublish
+pnpm run ci:gate:task
+```
+
+O gerador de scripts é autoritativo para a referência de comandos do consumidor. O gate de
+pré-publicação do website sincroniza as fontes Markdown e valida rotas/conteúdo. O gate da tarefa
+seleciona as verificações adequadas do repositório para uma branch somente de documentação.
