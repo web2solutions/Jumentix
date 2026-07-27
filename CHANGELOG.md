@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- 2026-07-27 [CI] Enforce branch-aware gates and isolate website Storybook (#193) - Eduardo A.
+- 2026-07-27 chore(registry): sync CI task release - web2solutions
 - 2026-07-27 fix(ci): use range diffs for task branch pushes - web2solutions
 - 2026-07-27 ci(workflows): enforce branch-aware quality gates - web2solutions
 - 2026-07-27 [Test] Isolate Storybook quality gates to Jumentix website (#190) - Eduardo A.
