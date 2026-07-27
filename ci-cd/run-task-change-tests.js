@@ -5,6 +5,9 @@ const { spawnSync } = require('child_process');
 
 const UNIT_TEST_PATH = /(^|\/)test\/unit\/.*\.(test|spec)\.[cm]?[jt]sx?$/;
 const IMPLEMENTATION_PATH = /^(ci-cd\/|apps\/[^/]+\/(src|scripts)\/|packages\/[^/]+\/src\/|tooling\/|\.husky\/|\.github\/|\.circleci\/|package\.json$)/;
+const RELATED_SOURCE_PATH = /^(ci-cd\/.*\.[cm]?js|apps\/[^/]+\/(src|scripts)\/.*\.[cm]?[jt]sx?|packages\/[^/]+\/src\/.*\.[cm]?[jt]sx?|tooling\/.*\.[cm]?[jt]sx?)$/;
+const GOVERNANCE_CONFIG_PATH = /^(\.husky\/|\.github\/|\.circleci\/)|^package\.json$/;
+const GOVERNANCE_TEST_PATH = 'apps/backend-template/test/unit/ci-cd/run-full-test-matrix.test.ts';
 const DOCUMENTATION_PATH = /(^|\/)(documentation\/|\.agents\/)|(^|\/)(README|CHANGELOG|CLAUDE|GROK|AGENTS)(\.[^/]*)?\.md$|\.md$/i;
 const WEBSITE_PATH = /^apps\/jumentix-website\//;
 
@@ -34,14 +37,18 @@ function createTaskTestPlan(files) {
   const unitTests = changedFiles.filter((file) => UNIT_TEST_PATH.test(file));
   const websiteFiles = changedFiles.filter((file) => WEBSITE_PATH.test(file));
   const relatedFiles = changedFiles.filter(
-    (file) => IMPLEMENTATION_PATH.test(file) && !WEBSITE_PATH.test(file) && !UNIT_TEST_PATH.test(file)
+    (file) => RELATED_SOURCE_PATH.test(file) && !WEBSITE_PATH.test(file)
   );
+  const governanceTests = changedFiles.some((file) => GOVERNANCE_CONFIG_PATH.test(file))
+    ? [GOVERNANCE_TEST_PATH]
+    : [];
+  const selectedUnitTests = normalizeFiles([...unitTests, ...governanceTests]);
 
   if (websiteFiles.length > 0) {
     return {
       type: 'website-quality-gate',
       files: websiteFiles,
-      unitTests,
+      unitTests: selectedUnitTests,
       relatedFiles
     };
   }
@@ -50,9 +57,12 @@ function createTaskTestPlan(files) {
     return { type: 'changed-unit-tests', files: unitTests };
   }
 
-  const implementationFiles = changedFiles.filter((file) => IMPLEMENTATION_PATH.test(file));
-  if (implementationFiles.length > 0) {
-    return { type: 'related-unit-tests', files: implementationFiles };
+  if (relatedFiles.length > 0) {
+    return { type: 'related-unit-tests', files: relatedFiles };
+  }
+
+  if (governanceTests.length > 0) {
+    return { type: 'mapped-unit-tests', files: governanceTests };
   }
 
   const documentationFiles = changedFiles.filter((file) => DOCUMENTATION_PATH.test(file));
@@ -83,8 +93,6 @@ function executeTaskTestPlan(plan) {
 
   if (plan.type === 'website-quality-gate') {
     const websiteCommands = [
-      ['--filter', '@jumentix/website', 'run', 'storybook:build'],
-      ['--filter', '@jumentix/website', 'run', 'storybook:smoke'],
       ['--filter', '@jumentix/website', 'run', 'test:prepublish']
     ];
 
@@ -114,7 +122,7 @@ function executeTaskTestPlan(plan) {
     return Number.isInteger(relatedResult.status) ? relatedResult.status : 1;
   }
 
-  const args = plan.type === 'changed-unit-tests'
+  const args = ['changed-unit-tests', 'mapped-unit-tests'].includes(plan.type)
     ? ['exec', 'jest', '--runInBand', '--coverage=false', ...plan.files]
     : ['exec', 'jest', '--runInBand', '--coverage=false', '--findRelatedTests', ...plan.files];
   const result = spawnSync('pnpm', args, { stdio: 'inherit', env: { ...process.env } });
@@ -156,7 +164,9 @@ function runTaskChangeTests(options = {}) {
     plan: plan.type,
     changedFiles,
     selectedFiles: plan.files,
-    outcome: status === 0 ? 'passed' : 'failed',
+    outcome: status === 0
+      ? (plan.type === 'documentation-validation' ? 'not-applicable' : 'passed')
+      : 'failed',
     status
   };
 
@@ -166,13 +176,16 @@ function runTaskChangeTests(options = {}) {
 
 if (require.main === module) {
   const evidence = runTaskChangeTests();
-  if (evidence.outcome !== 'passed') {
+  if (!['passed', 'not-applicable'].includes(evidence.outcome)) {
     process.exitCode = 1;
   }
 }
 
 module.exports = {
+  GOVERNANCE_CONFIG_PATH,
+  GOVERNANCE_TEST_PATH,
   IMPLEMENTATION_PATH,
+  RELATED_SOURCE_PATH,
   DOCUMENTATION_PATH,
   UNIT_TEST_PATH,
   WEBSITE_PATH,

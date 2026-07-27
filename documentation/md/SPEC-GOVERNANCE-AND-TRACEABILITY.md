@@ -114,6 +114,17 @@ Spec conformance is enforced by executable policy:
 
 If any gate fails, spec conformance is considered unproven and the change is not merge-ready.
 
+Branch-aware execution contract:
+
+1. Task branches execute `ci:gate:task` against the task-owned diff.
+2. `dev` and pull requests targeting `dev` execute `test:unit`.
+3. `main` and release-promotion pull requests targeting `main` execute `ci:gate:strict`.
+4. CircleCI accepts only `dev` and `main`.
+5. `.github/workflows/website.yml` owns Storybook checks and is selected only by
+   website-owned paths; the global test workflow and full matrix do not execute Storybook.
+6. Every selected gate emits auditable evidence and fails closed for missing, crashed, or
+   non-zero command outcomes.
+
 ## NFR and Requirement Traceability
 
 When behavior affects non-functional requirements:

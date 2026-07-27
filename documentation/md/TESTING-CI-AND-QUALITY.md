@@ -101,7 +101,7 @@ Included checks:
 - integration smoke
 - minimum coverage threshold (99% global via Jest + Codecov status)
 
-The strict gate is an explicit, fail-closed manifest with 18 required cells:
+The strict gate is an explicit, fail-closed manifest with 21 required cells:
 
 - lint, architecture, contract, release-governance, security, and API smoke checks
 - unit tests, root and workspace builds/tests, and patch coverage
@@ -127,8 +127,10 @@ pnpm run ci:gate:branch
 The selector reads `JUMENTIX_QUALITY_GATE_TARGET`. A task branch runs `pnpm run
 ci:gate:task`, which executes only changed unit tests or tests related to changed
 implementation files. A `dev` target runs the complete `pnpm run test:unit` suite. A
-`main` target runs `pnpm run ci:gate:strict`, including all 18 required cells. This
+`main` target runs `pnpm run ci:gate:strict`, including all 21 required cells. This
 keeps task feedback focused, integration evidence complete, and release promotion strict.
+Documentation-only task changes emit explicit `not-applicable` task evidence after validating
+the changed Markdown files; they do not manufacture a passing test result.
 
 Local enforcement:
 
@@ -143,6 +145,9 @@ Remote enforcement:
 - CircleCI and GitHub Actions invoke `pnpm run ci:gate:branch`
 - GitHub Actions passes the PR base branch or pushed branch explicitly and uploads branch-gate evidence even after failure
 - GitHub Actions uploads `artifacts/ci/full-test-matrix.json` for `main` work even after failure
+- `.github/workflows/website.yml` independently runs Storybook build/smoke and website prepublish
+  checks only when website-owned paths change
+- Storybook is absent from `.github/workflows/test.yml` and the repository full matrix
 - `ci:monorepo` remains a compatibility entrypoint but cannot select a reduced docs-only plan
 
 SonarQube Cloud coverage import:
@@ -158,6 +163,7 @@ SonarQube Cloud coverage import:
 |------------|---------|-------------------------|-----------------------------|
 | CircleCI | Branch-aware pipeline with coverage upload | `.circleci/config.yml` | Runs only for `dev` and `main`; selects unit gate for `dev` and full matrix for `main`, stores selected-gate evidence |
 | GitHub Actions (tests) | Target-aware CI validation on push/PR | `.github/workflows/test.yml` | Uses Node `22.x`, selects by PR base/pushed branch, uploads selected-gate evidence and main matrix evidence |
+| GitHub Actions (website) | Website-owned Storybook and publication readiness | `.github/workflows/website.yml` | Path-scoped to website inputs; runs Storybook build/smoke and prepublish checks independently |
 | GitHub Actions (SonarQube Cloud) | Static analysis + quality gate + coverage import | `.github/workflows/sonarqube-cloud.yml`, `sonar-project.properties` | Requires `SONAR_TOKEN`; runs `pnpm run test:unit` first |
 | Codecov | Coverage status checks for project and patch | `codecov.yml` | Target is `95%` for project and patch |
 | Jest coverage gate | Local hard gate to prevent low-coverage merges | `jest.config.js` | Global thresholds: `lines/statements >= 95%`, `branches/functions >= 80%` |

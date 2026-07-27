@@ -105,7 +105,7 @@ Cheques incluídos:
 - fumaça de integração
 - limite mínimo de cobertura (99% global via status Jest + Codecov)
 
-O gate estrito é um manifesto explícito e fail-closed com 18 células obrigatórias:
+O gate estrito é um manifesto explícito e fail-closed com 21 células obrigatórias:
 
 - verificações de lint, arquitetura, contratos, governança de release, segurança e smoke de API
 - testes unitários, builds/testes da raiz e dos workspaces e cobertura do patch
@@ -124,17 +124,34 @@ e não impede o relato dos alvos restantes. Saídas `dist` geradas são excluíd
 para que um build concluído não faça a execução seguinte da matriz falhar ao analisar
 declarações geradas.
 
+Aplicação por branch:
+
+```bash
+pnpm run ci:gate:branch
+```
+
+O seletor lê `JUMENTIX_QUALITY_GATE_TARGET`. Uma branch de tarefa executa `pnpm run
+ci:gate:task`, limitado aos testes unitários alterados ou relacionados. O destino `dev`
+executa a suíte completa `pnpm run test:unit`. O destino `main` executa `pnpm run
+ci:gate:strict` com toda a matriz. Alterações somente de documentação validam os arquivos
+Markdown e emitem evidência explícita `not-applicable`, sem fabricar um teste aprovado.
+
 Aplicação local:
 
-- `.husky/pre-commit` sincroniza/adiciona `CHANGELOG.md` e depois executa `pnpm run ci:gate:strict`
-- `.husky/pre-push` executa `pnpm run ci:gate:strict`
+- `.husky/pre-commit` sincroniza/adiciona `CHANGELOG.md` e executa o gate da branch
+- `.husky/pre-push` identifica o destino enviado e executa o gate da branch
+- `.husky/pre-merge-commit` executa o gate do destino do merge
 - `post-commit` é livre de mutações (sem correção automática, sem sinalizadores de bypass)
 - `.husky/commit-msg` executa commitlint (@commitlint/config-conventional`)
 
 Aplicação remota:
 
-- CircleCI e GitHub Actions invocam `pnpm run ci:gate:strict` diretamente
-- a CI de pull requests no GitHub envia `artifacts/ci/full-test-matrix.json` mesmo após falha
+- CircleCI e GitHub Actions invocam `pnpm run ci:gate:branch`
+- o GitHub Actions passa a branch base do PR ou a branch enviada e sempre publica a evidência do gate
+- o GitHub Actions publica `artifacts/ci/full-test-matrix.json` somente para trabalhos destinados a `main`
+- `.github/workflows/website.yml` executa build/smoke do Storybook e prepublish somente quando
+  caminhos pertencentes ao website mudam
+- o Storybook não é executado por `.github/workflows/test.yml` nem pela matriz global
 - `ci:monorepo` permanece como entrada de compatibilidade, mas não pode selecionar um plano reduzido somente para documentação
 
 Importação de cobertura do SonarQube Cloud:
@@ -148,8 +165,9 @@ Importação de cobertura do SonarQube Cloud:
 
 | Integração | Finalidade | Onde está configurado | O que executar/requisitos |
 |------------|---------|----------------------------|-----------------------------|
-| CírculoCI | Pipeline principal para lint + testes + verificações de arquitetura + fumaça + cobertura de upload | `.circleci/config.yml` | Instala com `pnpm`, executa `pnpm run ci:gate:strict` e armazena a evidência da matriz |
-| Ações do GitHub (testes) | Validação de CI secundário em push/PR | `.github/workflows/test.yml` | Usa Node `22.x`, instala com `pnpm`, executa `pnpm run ci:gate:strict` e envia a evidência da matriz |
+| CircleCI | Pipeline com seleção por branch e upload de cobertura | `.circleci/config.yml` | Executa somente em `dev` e `main`; seleciona testes unitários em `dev` e matriz completa em `main` |
+| GitHub Actions (testes) | Validação orientada ao destino em push/PR | `.github/workflows/test.yml` | Seleciona pelo destino do PR ou branch enviada e publica evidência do gate |
+| GitHub Actions (website) | Storybook e prontidão de publicação pertencentes ao website | `.github/workflows/website.yml` | Filtrado por caminhos; executa build/smoke do Storybook e prepublish de forma independente |
 | Ações GitHub (SonarQube Cloud) | Análise estática + portão de qualidade + importação de cobertura | `.github/workflows/sonarqube-cloud.yml`, `sonar-project.properties` | Requer `SONAR_TOKEN`; executa `pnpm run test:unit` primeiro |
 | Códigocov | Verificações de status de cobertura para projeto e patch | `codecov.yml` | A meta é `95%` para projeto e patch |
 | Portão de cobertura Jest | Hard gate local para evitar fusões de baixa cobertura | `jest.config.js` | Limiares globais: `linhas/declarações >= 95%`, `ramos/funções >= 80%` |
@@ -168,8 +186,9 @@ Importação de cobertura do SonarQube Cloud:
 
 - Arquivo de pipeline: `.circleci/config.yml`
 - Usa `cimg/node:22.23` mais `redis:latest`
-- Instala `pnpm@9.15.3`, executa `pnpm install --no-frozen-lockfile`, aguarda Redis, executa `pnpm run ci:gate:strict`, armazena a evidência da matriz completa e envia a cobertura com o orb do Codecov
-- Este é o portão multifuncional principal
+- Instala `pnpm@9.15.3`, aguarda Redis, executa `pnpm run ci:gate:branch`, armazena a
+  evidência selecionada e envia cobertura pelo orb do Codecov
+- Os filtros permitem somente `dev` e `main`
 
 #### GitHub Actions - Fluxo de trabalho de teste
 
@@ -177,8 +196,9 @@ Importação de cobertura do SonarQube Cloud:
 - Aciona:
   - `push` para `main` e `dev`
   - `pull_request` para `dev` e `main`
-- Configura Redis (com senha), instala `pnpm` e executa `pnpm run ci:gate:strict`
-- Envia o resultado JSON da matriz completa com `if: always()`; alterações somente de documentação não ignoram células obrigatórias
+- Configura Redis (com senha), instala `pnpm` e executa `pnpm run ci:gate:branch`
+- Publica a evidência do gate com `if: always()` e exige evidência da matriz completa somente
+  quando o destino é `main`
 
 #### Ações do GitHub - Fluxo de trabalho da nuvem SonarQube
 
