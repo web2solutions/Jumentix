@@ -314,6 +314,9 @@
     "serverless": "^4.1.12"
   },
   "pnpm": {
+    "overrides": {
+      "postcss": "^8.5.23"
+    },
     "patchedDependencies": {
       "nextra-theme-docs@4.6.1": "patches/nextra-theme-docs@4.6.1.patch"
     }
