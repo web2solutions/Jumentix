@@ -5,6 +5,11 @@ const { spawnSync } = require('child_process');
 
 const UNIT_TEST_PATH = /(^|\/)test\/unit\/.*\.(test|spec)\.[cm]?[jt]sx?$/;
 const IMPLEMENTATION_PATH = /^(ci-cd\/|apps\/[^/]+\/(src|scripts)\/|packages\/[^/]+\/src\/|tooling\/|\.husky\/|\.github\/|\.circleci\/|package\.json$)/;
+const RELATED_SOURCE_PATH = /^(ci-cd\/.*\.[cm]?js|apps\/[^/]+\/(src|scripts)\/.*\.[cm]?[jt]sx?|packages\/[^/]+\/src\/.*\.[cm]?[jt]sx?|tooling\/.*\.[cm]?[jt]sx?)$/;
+const GOVERNANCE_CONFIG_PATH = /^(\.husky\/|\.github\/|\.circleci\/)|^package\.json$/;
+const GOVERNANCE_TEST_PATH = 'apps/backend-template/test/unit/ci-cd/run-full-test-matrix.test.ts';
+const DOCUMENTATION_PATH = /(^|\/)(documentation\/|\.agents\/)|(^|\/)(README|CHANGELOG|CLAUDE|GROK|AGENTS)(\.[^/]*)?\.md$|\.md$/i;
+const WEBSITE_PATH = /^apps\/jumentix-website\//;
 
 function normalizeFiles(files) {
   return [...new Set((files || [])
@@ -30,23 +35,94 @@ function readChangedFiles(options = {}) {
 function createTaskTestPlan(files) {
   const changedFiles = normalizeFiles(files);
   const unitTests = changedFiles.filter((file) => UNIT_TEST_PATH.test(file));
+  const websiteFiles = changedFiles.filter((file) => WEBSITE_PATH.test(file));
+  const relatedFiles = changedFiles.filter(
+    (file) => RELATED_SOURCE_PATH.test(file) && !WEBSITE_PATH.test(file)
+  );
+  const governanceTests = changedFiles.some((file) => GOVERNANCE_CONFIG_PATH.test(file))
+    ? [GOVERNANCE_TEST_PATH]
+    : [];
+  const selectedUnitTests = normalizeFiles([...unitTests, ...governanceTests]);
+
+  if (websiteFiles.length > 0) {
+    return {
+      type: 'website-quality-gate',
+      files: websiteFiles,
+      unitTests: selectedUnitTests,
+      relatedFiles
+    };
+  }
 
   if (unitTests.length > 0) {
     return { type: 'changed-unit-tests', files: unitTests };
   }
 
-  const implementationFiles = changedFiles.filter((file) => IMPLEMENTATION_PATH.test(file));
-  if (implementationFiles.length > 0) {
-    return { type: 'related-unit-tests', files: implementationFiles };
+  if (relatedFiles.length > 0) {
+    return { type: 'related-unit-tests', files: relatedFiles };
   }
 
-  return { type: 'not-applicable', files: [] };
+  if (governanceTests.length > 0) {
+    return { type: 'mapped-unit-tests', files: governanceTests };
+  }
+
+  const documentationFiles = changedFiles.filter((file) => DOCUMENTATION_PATH.test(file));
+  if (documentationFiles.length > 0 && documentationFiles.length === changedFiles.length) {
+    return { type: 'documentation-validation', files: documentationFiles };
+  }
+
+  return { type: 'unsupported-change-set', files: changedFiles };
+}
+
+function validateDocumentationFiles(files, rootDir = process.cwd()) {
+  if (!Array.isArray(files) || files.length === 0) return 1;
+
+  for (const file of files) {
+    const absolutePath = path.resolve(rootDir, file);
+    if (!fs.existsSync(absolutePath)) return 1;
+    const contents = fs.readFileSync(absolutePath, 'utf8');
+    if (!contents.trim() || /^(<<<<<<<|=======|>>>>>>>)/m.test(contents)) return 1;
+  }
+  return 0;
 }
 
 function executeTaskTestPlan(plan) {
-  if (plan.type === 'not-applicable') return 0;
+  if (plan.type === 'documentation-validation') {
+    return validateDocumentationFiles(plan.files);
+  }
+  if (plan.type === 'unsupported-change-set') return 1;
 
-  const args = plan.type === 'changed-unit-tests'
+  if (plan.type === 'website-quality-gate') {
+    const websiteCommands = [
+      ['--filter', '@jumentix/website', 'run', 'test:prepublish']
+    ];
+
+    for (const args of websiteCommands) {
+      const websiteResult = spawnSync('pnpm', args, {
+        stdio: 'inherit',
+        env: { ...process.env }
+      });
+      if (websiteResult.status !== 0) return Number(websiteResult.status ?? 1);
+    }
+
+    if (plan.unitTests.length > 0) {
+      const unitResult = spawnSync(
+        'pnpm',
+        ['exec', 'jest', '--runInBand', '--coverage=false', ...plan.unitTests],
+        { stdio: 'inherit', env: { ...process.env } }
+      );
+      if (unitResult.status !== 0) return Number(unitResult.status ?? 1);
+    }
+
+    if (plan.relatedFiles.length === 0) return 0;
+    const relatedResult = spawnSync(
+      'pnpm',
+      ['exec', 'jest', '--runInBand', '--coverage=false', '--findRelatedTests', ...plan.relatedFiles],
+      { stdio: 'inherit', env: { ...process.env } }
+    );
+    return Number.isInteger(relatedResult.status) ? relatedResult.status : 1;
+  }
+
+  const args = ['changed-unit-tests', 'mapped-unit-tests'].includes(plan.type)
     ? ['exec', 'jest', '--runInBand', '--coverage=false', ...plan.files]
     : ['exec', 'jest', '--runInBand', '--coverage=false', '--findRelatedTests', ...plan.files];
   const result = spawnSync('pnpm', args, { stdio: 'inherit', env: { ...process.env } });
@@ -74,7 +150,7 @@ function runTaskChangeTests(options = {}) {
 
   let status = 1;
   try {
-    status = plan.type === 'not-applicable' ? 0 : execute(plan);
+    status = execute(plan);
     status = Number.isInteger(status) && status >= 0 ? status : 1;
   } catch (error) {
     logger.error(`[ci] task-change test gate crashed: ${plan.type}`);
@@ -88,7 +164,9 @@ function runTaskChangeTests(options = {}) {
     plan: plan.type,
     changedFiles,
     selectedFiles: plan.files,
-    outcome: status === 0 ? 'passed' : 'failed',
+    outcome: status === 0
+      ? (plan.type === 'documentation-validation' ? 'not-applicable' : 'passed')
+      : 'failed',
     status
   };
 
@@ -98,18 +176,24 @@ function runTaskChangeTests(options = {}) {
 
 if (require.main === module) {
   const evidence = runTaskChangeTests();
-  if (evidence.outcome !== 'passed') {
+  if (!['passed', 'not-applicable'].includes(evidence.outcome)) {
     process.exitCode = 1;
   }
 }
 
 module.exports = {
+  GOVERNANCE_CONFIG_PATH,
+  GOVERNANCE_TEST_PATH,
   IMPLEMENTATION_PATH,
+  RELATED_SOURCE_PATH,
+  DOCUMENTATION_PATH,
   UNIT_TEST_PATH,
+  WEBSITE_PATH,
   createTaskTestPlan,
   executeTaskTestPlan,
   normalizeFiles,
   readChangedFiles,
   runTaskChangeTests,
+  validateDocumentationFiles,
   writeTaskTestEvidence
 };

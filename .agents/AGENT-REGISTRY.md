@@ -29,6 +29,8 @@ This registry tracks AI agents collaborating in the Jumentix project.
 - `last_branch_check_utc`: ISO timestamp
 - `main_ref_checked`: short SHA from `main` checked by the agent
 - `dev_ref_checked`: short SHA from `dev` checked by the agent
+- `active_epic`: focused epic currently delegated to the agent
+- `assigned_task`: child task currently executed within the delegated epic
 - `capabilities`: key collaboration capabilities
 
 ## Registered Agents
@@ -45,13 +47,59 @@ This registry tracks AI agents collaborating in the Jumentix project.
 - `agent_version`: `GPT-5 Codex`
 - `status`: `busy`
 - `registered_at_utc`: `2026-07-25T00:00:00Z`
-- `last_branch_check_utc`: `2026-07-26T04:27:30Z`
-- `main_ref_checked`: `5d66c027`
-- `dev_ref_checked`: `3a0d3020`
+- `last_branch_check_utc`: `2026-07-28T04:11:03Z`
+- `main_ref_checked`: `dc9a5b4e`
+- `dev_ref_checked`: `607214c7`
+- `active_epic`: `https://linear.app/jumentix/project/epicgovernance-epic-centered-task-taxonomy-and-agent-delegation-c3cb6bae0771`
+- `assigned_task`: `https://linear.app/jumentix/issue/JUM-518`
 - `capabilities`:
   - repository analysis and implementation
   - test and CI debugging
   - spec/governance synchronization
+
+### 2) codex-website-001
+
+- `agent_id`: `codex-website-001`
+- `agent_name`: `Codex Website`
+- `platform`: `OpenAI Codex`
+- `machine_id`: `host-eduardos-mac-pro-local`
+- `machine_name`: `Eduardos-Mac-Pro.local`
+- `machine_os`: `Darwin 21.6.0 x86_64`
+- `agent_runtime`: `OpenAI Codex`
+- `agent_version`: `GPT-5 Codex`
+- `status`: `busy`
+- `registered_at_utc`: `2026-07-26T07:23:33Z`
+- `last_branch_check_utc`: `2026-07-28T00:55:00Z`
+- `main_ref_checked`: `dc9a5b4e`
+- `dev_ref_checked`: `36f7d730`
+- `active_epic`: `https://linear.app/jumentix/project/epicgovernance-epic-centered-task-taxonomy-and-agent-delegation-c3cb6bae0771`
+- `assigned_task`: `https://linear.app/jumentix/issue/JUM-517`
+- `capabilities`:
+  - frontend architecture and implementation
+  - browser-driven UX research and verification
+  - Storybook and website quality automation
+
+### 3) codex-governance-001
+
+- `agent_id`: `codex-governance-001`
+- `agent_name`: `Codex Governance`
+- `platform`: `OpenAI Codex`
+- `machine_id`: `host-eduardos-mac-pro-local`
+- `machine_name`: `Eduardos-Mac-Pro.local`
+- `machine_os`: `Darwin 21.6.0 x86_64`
+- `agent_runtime`: `OpenAI Codex`
+- `agent_version`: `GPT-5 Codex`
+- `status`: `busy`
+- `registered_at_utc`: `2026-07-27T19:02:28Z`
+- `last_branch_check_utc`: `2026-07-27T20:55:32Z`
+- `main_ref_checked`: `dc9a5b4e`
+- `dev_ref_checked`: `2a262246`
+- `active_epic`: `https://linear.app/jumentix/project/epicgovernance-epic-centered-task-taxonomy-and-agent-delegation-c3cb6bae0771`
+- `assigned_task`: `https://linear.app/jumentix/issue/JUM-508`
+- `capabilities`:
+  - repository governance and branch reconciliation
+  - CI policy and branch protection enforcement
+  - spec and traceability synchronization
 
 ## Operating Flow
 

@@ -40,6 +40,7 @@
     "agent-registry:sync": "node ci-cd/check-agent-registry-source.js --sync",
     "agent-registry:url": "node ci-cd/check-agent-registry-source.js --url",
     "release:governance:check": "node ci-cd/check-release-governance.js",
+    "pr:governance:check": "node ci-cd/check-pr-governance.js",
     "serverless:check-handlers": "node ci-cd/check-serverless-handler-paths.js",
     "ci:smoke": "AAA_JWT_TOKEN_SECRET_KEY=${AAA_JWT_TOKEN_SECRET_KEY:-ci_jwt_secret_key} NODE_ENV=ci node ci-cd/run-api-smoke.js",
     "ci:integration": "AAA_JWT_TOKEN_SECRET_KEY=${AAA_JWT_TOKEN_SECRET_KEY:-ci_jwt_secret_key} node ci-cd/run-integration-tests.js",
@@ -52,6 +53,9 @@
     "website:dev": "pnpm --filter @jumentix/website dev",
     "website:build": "pnpm --filter @jumentix/website build",
     "website:start": "pnpm --filter @jumentix/website start",
+    "website:storybook": "pnpm --filter @jumentix/website storybook",
+    "website:storybook:build": "pnpm --filter @jumentix/website storybook:build",
+    "website:storybook:smoke": "pnpm --filter @jumentix/website storybook:smoke",
     "website:test:prepublish": "pnpm --filter @jumentix/website test:prepublish",
     "website:vercel:link": "pnpm dlx vercel link --cwd apps/jumentix-website --project jumentix-website --yes",
     "website:vercel:pull:preview": "pnpm dlx vercel pull --cwd apps/jumentix-website --environment=preview --yes",
@@ -309,6 +313,15 @@
   "resolutions": {
     "serverless": "^4.1.12"
   },
+  "pnpm": {
+    "overrides": {
+      "find-my-way": "^9.7.0",
+      "postcss": "^8.5.23"
+    },
+    "patchedDependencies": {
+      "nextra-theme-docs@4.6.1": "patches/nextra-theme-docs@4.6.1.patch"
+    }
+  },
   "config": {
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
@@ -335,14 +348,5 @@
     "postcss": "^8.5.18",
     "shell-quote": "^1.9.0",
     "protobufjs": "^7.6.5"
-  },
-  "pnpm": {
-    "overrides": {
-      "concurrently>shell-quote": "^1.9.0",
-      "restify>find-my-way": "^9.7.0",
-      "cassandra-driver>adm-zip": "^0.6.0",
-      "next>postcss": "^8.5.18",
-      "next>sharp": "^0.35.0"
-    }
   }
 }

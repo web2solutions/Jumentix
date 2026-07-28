@@ -31,3 +31,7 @@ The migration must be executed in deterministic waves, with functional parity re
 
 - Migration is wave-based and must avoid uncertain parallel rewrites.
 - No compatibility-shim strategy is required; prefer direct import rewrites with codemod-assisted changes and hard gates.
+
+## Supersession notice (phased)
+
+For internal engineering workflows this requirement is superseded by [096-bun-internal-tooling-runtime](096-bun-internal-tooling-runtime.md) once the Bun cutover (Linear JUM-40, project 5c38372a8e45) completes with full evidence. Until then, this requirement remains authoritative.

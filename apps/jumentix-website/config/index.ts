@@ -10,7 +10,7 @@ export default {
     },
     description:
       'Jumentix accelerates enterprise software delivery with contract-first architecture, reusable adapters, and production governance.',
-    metadataBase: new URL('https://jumentix.vercel.app/'),
+    metadataBase: new URL('https://jumentix-website.vercel.app/'),
     keywords: [
       'Jumentix',
       'Enterprise SaaS',
@@ -35,7 +35,7 @@ export default {
       type: 'website',
       images: [
         {
-          url: '/mantine+nextjs+nextra-template.png',
+          url: '/product/domain-designer.png',
           width: 1200,
           height: 630,
           alt: 'Jumentix Enterprise Software Factory'
@@ -46,9 +46,9 @@ export default {
       'msapplication-TileColor': '#fff'
     },
     twitter: {
-      site: 'https://jumentix.vercel.app/',
+      site: 'https://jumentix-website.vercel.app/',
       card: 'summary_large_image',
-      images: ['/mantine+nextjs+nextra-template.png']
+      images: ['/product/domain-designer.png']
     },
     alternates: {
       // https://github.com/vercel/next.js/discussions/50189#discussioncomment-10826632

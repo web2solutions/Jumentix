@@ -12,6 +12,8 @@ const FULL_TEST_MATRIX = Object.freeze([
   { id: 'workspace-quality', script: 'workspace:check-quality' },
   { id: 'workspace-coverage-policy', script: 'workspace:check-coverage-policy' },
   { id: 'release-governance', script: 'release:governance:check' },
+  { id: 'pull-request-governance', script: 'pr:governance:check' },
+  { id: 'agent-registry', script: 'agent-registry:check' },
   { id: 'unit', script: 'test:unit' },
   { id: 'security-smoke', script: 'ci:security-smoke' },
   { id: 'openapi-routes', script: 'oas:check-routes' },
@@ -20,6 +22,7 @@ const FULL_TEST_MATRIX = Object.freeze([
   { id: 'api-smoke', script: 'ci:smoke' },
   { id: 'workspace-builds', script: 'mono:build' },
   { id: 'workspace-tests', script: 'mono:test' },
+  { id: 'website-prepublish', script: 'website:test:prepublish' },
   { id: 'integration', script: 'ci:integration' },
   { id: 'patch-coverage', script: 'coverage:patch' }
 ]);

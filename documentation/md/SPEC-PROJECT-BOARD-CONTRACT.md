@@ -25,39 +25,82 @@ Each item must maintain:
 5. `Start date`
 6. `End date`
 7. `Iteration` (when available in cycle planning)
+8. `Milestone`
 
 ## Required Labels for Task Nature
 
-At least one nature label:
+Every executable task must have exactly one primary nature label:
 
 1. `feature`
 2. `bug`
-3. `chore`
-4. `doc`
+3. `security`
+4. `governance`
+5. `docs`
+6. `refactor`
+7. `test`
+8. `ci`
+9. `release`
+10. `chore`
 
 Strategic stream labels are additive (for example `todo-mvp`, `epic`, `iteration-a`, `iteration-b`).
+
+## Focused Epic Contract
+
+1. Every executable task must belong to exactly one focused epic.
+2. Every active epic must be associated with exactly one open GitHub milestone.
+3. The epic and all child tasks use the same milestone unless an explicit exception is recorded.
+4. The milestone defines a delivery target, description, due date, and lifecycle state.
+5. Epic and task end dates must not exceed the milestone due date without formal replanning.
+6. A milestone may contain multiple focused epics only when they serve the same delivery target.
+7. The epic must describe one cohesive outcome and must not be a catch-all backlog.
+8. Parentage must use GitHub sub-issues or the Project `Parent issue` field when available.
+9. Milestone association must use GitHub Issue and Project milestone metadata.
+10. Tasks are grouped by primary nature inside the epic. Supporting work with a different nature
+   is tracked as a separate child task under the same cohesive outcome.
+11. Epic planning defines milestone, priority, scope boundaries, dates, estimate, owner, and
+    agent delegation.
+12. Child tasks retain independent estimates of no more than eight points, assignees, branches,
+   commits, pull requests, and evidence.
+13. An epic is complete only when its required child tasks and audit evidence are complete.
+14. A milestone closes only after its epics complete or incomplete work is formally carried to
+    another open milestone.
+
+## Agent Delegation Contract
+
+1. The epic milestone and delivery dates are validated before agent delegation.
+2. Agent delegation is decided and recorded at epic level before child-task assignment.
+3. Only agents delegated to an epic may accept its child tasks.
+4. One accountable agent owns each child task; multiple agents must use non-overlapping task
+   boundaries.
+5. The canonical Agent Registry records `active_epic` and `assigned_task`.
+6. Cross-epic work requires explicit delegation and separate child tasks for each epic.
 
 ## Spec-Driven Workflow Through the Board
 
 1. Intake:
-   - create issue with clear objective and acceptance criteria.
+   - create or select an open milestone and a focused epic, then create a child issue with clear
+     objective and acceptance criteria.
 2. Planning:
-   - assign priority, size, estimate, dates, and labels.
+   - assign milestone, parent epic, primary nature, priority, size, estimate, dates, and labels;
+   - delegate agents to the epic before assigning child tasks.
 3. Spec drafting:
    - list required spec resources before implementation.
 4. Delivery:
    - link commits/PRs and capture evidence.
 5. Closure:
-   - set status to `Done` only after green checks and docs/agents sync.
+   - set a child task to `Done` only after green checks and docs/agents sync;
+   - close the epic only after all required child tasks and evidence are complete.
 
 ## PR Linking Contract
 
 Every PR must reference:
 
 1. related issue(s)
-2. project item scope
-3. changed spec resources
-4. evidence summary (tests/coverage/security)
+2. focused parent epic
+3. associated milestone
+4. project item scope
+5. changed spec resources
+6. evidence summary (tests/coverage/security)
 
 And every issue should reflect:
 

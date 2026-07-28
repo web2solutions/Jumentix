@@ -2,8 +2,51 @@
 
 <!-- This file is generated from Git history. Run `pnpm run changelog:update` to refresh it. -->
 
-## Unreleased
+## All Changes
 
+- 2026-07-28 [Governance] Require Linear planning metadata lifecycle (#189) - Eduardo A.
+- 2026-07-26 docs(governance): require Linear planning metadata - Eduardo A.
+- 2026-07-28 [Security][Website] Remediate PostCSS vulnerability (#203) - Eduardo A.
+- 2026-07-27 fix(website): remediate PostCSS resolution - Eduardo A.
+- 2026-07-27 [Fix] Remove conditional from registry transport test (#201) - Eduardo A.
+- 2026-07-27 fix(governance): accept Linear project tracking links - Eduardo A.
+- 2026-07-27 fix(ci): remove conditional from registry transport test - Eduardo A.
+- 2026-07-27 [Governance] Sync canonical registry and admin review policy (#200) - Eduardo A.
+- 2026-07-27 docs(governance): sync registry and admin review policy - Eduardo A.
+- 2026-07-27 [Governance] Adopt requirement 096: Bun as internal engineering runtime (JUM-22) (#199) - Eduardo A.
+- 2026-07-27 docs(governance): add requirement 096 bun internal tooling runtime - Eduardo A.
+- 2026-07-27 [Research] Establish Bun compatibility and migration baseline (JUM-23) (#196) - Eduardo A.
+- 2026-07-27 docs(bun): establish bun compatibility and migration baseline - Eduardo A.
+- 2026-07-27 [CI] Eliminate anonymous agent-registry API quota (#194) - Eduardo A.
+- 2026-07-27 ci(registry): avoid anonymous API quota for pinned checks - web2solutions
+- 2026-07-27 [CI] Enforce branch-aware gates and isolate website Storybook (#193) - Eduardo A.
+- 2026-07-27 chore(registry): sync CI task release - web2solutions
+- 2026-07-27 fix(ci): use range diffs for task branch pushes - web2solutions
+- 2026-07-27 ci(workflows): enforce branch-aware quality gates - web2solutions
+- 2026-07-27 [Test] Isolate Storybook quality gates to Jumentix website (#190) - Eduardo A.
+- 2026-07-27 chore(agents): sync released website assignment - web2solutions
+- 2026-07-27 test(website): isolate Storybook quality gates - web2solutions
+- 2026-07-27 [Governance] Require documentation task before epic completion (#186) - Eduardo A.
+- 2026-07-26 docs: require docs task before epic completion - Eduardo A.
+- 2026-07-26 [Chore] Sync completed CI agent assignment (#183) (#187) - Eduardo A.
+- 2026-07-26 chore(agents): sync completed CI assignment (#183) - web2solutions
+- 2026-07-26 [Bug] Preserve unit LCOV for Codecov (#183) (#184) - Eduardo A.
+- 2026-07-26 fix(governance): support bug PR prefixes (#185) - web2solutions
+- 2026-07-26 fix(ci): preserve unit LCOV for Codecov (#183) - web2solutions
+- 2026-07-26 feat(website): rebuild documentation experience (#172) (#181) - Eduardo A.
+- 2026-07-26 [CI] Enforce focused epic metadata without false-green task gates (#176) - Eduardo A.
+- 2026-07-26 feat(website): rebuild OSS commercial experience (#171) - Eduardo A.
+- 2026-07-26 feat(website): establish design system and Storybook (#178) - Eduardo A.
+- 2026-07-26 [Bug] Restore reliable Jumentix documentation routes and links (#177) - Eduardo A.
+- 2026-07-26 fix(website): restore docs layout and routes - web2solutions
+- 2026-07-26 [Docs] Audit OSS reference UX and define website IA (#175) - Eduardo A.
+- 2026-07-26 docs(website): audit OSS reference UX and IA - web2solutions
+- 2026-07-26 [Governance] Require milestones for focused epics (#166) - Eduardo A.
+- 2026-07-26 chore(governance): require milestones for focused epics - web2solutions
+- 2026-07-26 [Governance] Require epic-focused task delegation (#164) - Eduardo A.
+- 2026-07-26 chore(governance): require epic-focused task delegation - web2solutions
+- 2026-07-26 [Fix][CI] Resolve remaining agent registry lint style (#160) - Eduardo A.
+- 2026-07-26 fix(ci): satisfy agent registry test lint - web2solutions
 - 2026-07-26 [Fix][CI] Restore release lint compliance (#158) - Eduardo A.
 - 2026-07-26 fix(ci): restore release lint compliance - web2solutions
 - 2026-07-26 [Feature] Externalize agent registry canonical source (#144) - Eduardo A.
@@ -203,15 +246,7 @@
 - 2026-06-25 fix: wire service dependencies correctly - Eduardo Almeida
 - 2026-06-25 refactor: centralize endpoint registration - Eduardo Almeida
 - 2026-06-25 fix: restore TypeScript build - Eduardo Almeida
-- 2024-10-19 feat(hyperexpress): add handlers and tests (#54) - Eduardo A.
-- 2024-10-15 badges (#53) - Eduardo A.
-
-## v0.0.3 - 2024-11-04
-
 - 2024-11-04 fix(ci): move check-node-version - Eduardo Almeida
-
-## v0.0.1 - 2024-10-23
-
 - 2024-10-23 ci(versioning): run pre-commit from package - Eduardo Almeida
 - 2024-10-23 ci: run pre-cmmit in package - Eduardo Almeida
 - 2024-10-23 ci(fix husky): fix husky - Eduardo Almeida
@@ -227,8 +262,10 @@
 - 2024-10-19 ci(github action): run redis - Eduardo Almeida
 - 2024-10-19 ci(git actions): fix redis matrix - Eduardo Almeida
 - 2024-10-19 ci: revert to npm and run git actions - Eduardo Almeida
+- 2024-10-19 feat(hyperexpress): add handlers and tests (#54) - Eduardo A.
 - 2024-10-19 fix(http servers): proper close all servers, add request context to HyperExpress - Eduardo Almeida
 - 2024-10-19 feat(hyperexpress): add handlers and tests - Eduardo Almeida
+- 2024-10-15 badges (#53) - Eduardo A.
 - 2024-10-14 docs(badges): fix - Eduardo Almeida
 - 2024-10-14 docs(badges): hypeexpress - Eduardo Almeida
 - 2024-10-14 docs(badges): add badges - Eduardo Almeida

@@ -3,6 +3,6 @@
 
 echo "[Husky] pre-commit: changelog + branch-aware quality gate"
 
-npm run changelog:update &&
+npx pnpm@9.15.3 run changelog:update &&
 git add CHANGELOG.md &&
 CI=true JUMENTIX_QUALITY_GATE_TARGET="$(git branch --show-current)" npx pnpm@9.15.3 run ci:gate:branch

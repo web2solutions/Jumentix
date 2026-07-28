@@ -140,6 +140,49 @@ Mandatory checks:
 3. Security scans/gates
 4. Governance linkage evidence in PR
 
+## Capability Group G - Product Website and Documentation Portal
+
+Includes:
+
+1. Commercial product and use-case pages
+2. Markdown-backed technical documentation
+3. Canonical and backward-compatible documentation routes
+4. Search, sidebar, table of contents, feedback, edit links, and responsive navigation
+5. Vercel build and release automation
+
+Required specs:
+
+1. `.agents/requirements/069-jumentix-website-commercial-static-vercel-governance.md`
+2. `.agents/requirements/091-jumentix-website-design-system-and-storybook.md`
+3. `.agents/requirements/092-jumentix-oss-commercial-experience.md`
+4. `apps/jumentix-website/documentation/COMMERCIAL-EXPERIENCE.md`
+5. `apps/jumentix-website/documentation/CONTENT-PIPELINE.md`
+6. `apps/jumentix-website/documentation/VERCEL-DEPLOYMENT.md`
+7. Website UX audit and information architecture under
+   `apps/jumentix-website/documentation/research`
+
+Mandatory checks:
+
+1. Website typecheck and production build
+2. Prepublish route and invalid-content marker checks
+3. Browser verification of layout, navigation, links, and responsive states
+4. Vercel production smoke validation
+5. Storybook coverage for reusable website components
+6. Storybook static build and manifest smoke validation
+7. Design-system accessibility, theme, viewport, and reduced-motion validation
+8. English/Portuguese commercial route parity and locale-preserving navigation
+9. Canonical metadata, sitemap hostname, GitHub changelog pagination, and internal-link integrity
+
+Workflow boundary:
+
+1. Storybook checks are owned and executed exclusively by the `apps/jumentix-website` workflow.
+2. Storybook is not part of the main monorepo workflow or its global test matrix and must not
+   block unrelated packages, applications, backend templates, or services.
+3. Root `website:storybook*` commands are convenience delegates to the website workspace, not
+   global workflow gates.
+4. Website changes and releases may require Storybook build, smoke, accessibility, and component
+   checks through the website workflow.
+
 ## Workflow Definition (Spec-First)
 
 For every capability group:

@@ -4,11 +4,11 @@ This document certifies current coverage of implemented requirements by Spec Dev
 
 ## Baseline Snapshot
 
-Date: `2026-07-25`
+Date: `2026-07-27`
 
-1. Requirement files in `.agents/requirements`: `81`
-2. Unique requirement IDs: `79`
-3. IDs covered in `SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`: `79`
+1. Requirement files in `.agents/requirements`: `98`
+2. Unique requirement IDs: `96`
+3. IDs covered in `SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`: `96`
 4. Coverage status: `100%`
 
 Notes:
@@ -18,9 +18,9 @@ Notes:
 
 ## Non-Functional Requirements Coverage
 
-NFR IDs covered (`36`):
+NFR IDs covered (`53`):
 
-`001`, `011`, `014`, `015`, `016`, `017`, `018`, `020`, `025`, `029`, `036`, `041`, `042`, `043`, `044`, `050`, `053`, `056`, `057`, `063`, `064`, `065`, `066`, `067`, `068`, `069`, `070`, `071`, `072`, `073`, `074`, `075`, `076`, `077`, `078`, `079`
+`001`, `011`, `014`, `015`, `016`, `017`, `018`, `020`, `025`, `029`, `036`, `041`, `042`, `043`, `044`, `050`, `053`, `056`, `057`, `063`, `064`, `065`, `066`, `067`, `068`, `069`, `070`, `071`, `072`, `073`, `074`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `091`, `092`, `093`, `094`, `096`, `097`
 
 NFR mapping sources:
 

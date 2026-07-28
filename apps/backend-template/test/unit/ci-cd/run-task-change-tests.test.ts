@@ -5,7 +5,8 @@ const {
   createTaskTestPlan,
   normalizeFiles,
   readChangedFiles,
-  runTaskChangeTests
+  runTaskChangeTests,
+  validateDocumentationFiles
 } = require('../../../../../ci-cd/run-task-change-tests');
 
 describe('run-task-change-tests', () => {
@@ -50,15 +51,64 @@ describe('run-task-change-tests', () => {
     });
   });
 
-  it('does not run unrelated tests for docs-only changes', () => {
+  it('selects website-native gates and preserves other related test inputs', () => {
+    expect.hasAssertions();
+    expect(createTaskTestPlan([
+      'apps/jumentix-website/app/page.tsx',
+      'apps/jumentix-website/scripts/prepublish-site-checks.mjs',
+      'ci-cd/run-task-change-tests.js',
+      'apps/backend-template/test/unit/ci-cd/run-task-change-tests.test.ts'
+    ])).toStrictEqual({
+      type: 'website-quality-gate',
+      files: [
+        'apps/jumentix-website/app/page.tsx',
+        'apps/jumentix-website/scripts/prepublish-site-checks.mjs'
+      ],
+      unitTests: ['apps/backend-template/test/unit/ci-cd/run-task-change-tests.test.ts'],
+      relatedFiles: ['ci-cd/run-task-change-tests.js']
+    });
+  });
+
+  it('maps workflow and hook changes to their governance unit test', () => {
+    expect.hasAssertions();
+    expect(createTaskTestPlan([
+      '.github/workflows/test.yml',
+      '.circleci/config.yml',
+      '.husky/pre-push'
+    ])).toStrictEqual({
+      type: 'mapped-unit-tests',
+      files: ['apps/backend-template/test/unit/ci-cd/run-full-test-matrix.test.ts']
+    });
+  });
+
+  it('selects real documentation validation for docs-only changes', () => {
     expect.hasAssertions();
     expect(createTaskTestPlan(['documentation/md/TESTING-CI-AND-QUALITY.md'])).toStrictEqual({
-      type: 'not-applicable',
+      type: 'documentation-validation',
+      files: ['documentation/md/TESTING-CI-AND-QUALITY.md']
+    });
+  });
+
+  it('fails closed for an unsupported or empty change set', () => {
+    expect.hasAssertions();
+    expect(createTaskTestPlan([])).toStrictEqual({
+      type: 'unsupported-change-set',
       files: []
     });
   });
 
-  it('records success, failure, crash, and not-applicable evidence', () => {
+  it('validates documentation content and conflict markers', () => {
+    expect.hasAssertions();
+    const rootDir = taskFs.mkdtempSync(taskPath.join(require('os').tmpdir(), 'task-docs-'));
+    taskFs.writeFileSync(taskPath.join(rootDir, 'valid.md'), '# Valid\n');
+    taskFs.writeFileSync(taskPath.join(rootDir, 'conflict.md'), '<<<<<<< HEAD\n');
+    expect(validateDocumentationFiles(['valid.md'], rootDir)).toBe(0);
+    expect(validateDocumentationFiles(['missing.md'], rootDir)).toBe(1);
+    expect(validateDocumentationFiles(['conflict.md'], rootDir)).toBe(1);
+    taskFs.rmSync(rootDir, { recursive: true, force: true });
+  });
+
+  it('records success, failure, crash, and documentation not-applicable evidence', () => {
     expect.hasAssertions();
     const logger = { log: jest.fn(), error: jest.fn() };
     const successful = runTaskChangeTests({
@@ -79,9 +129,9 @@ describe('run-task-change-tests', () => {
       logger,
       resultFile: ''
     });
-    const skipped = runTaskChangeTests({
+    const documentation = runTaskChangeTests({
       files: ['README.md'],
-      execute: () => 99,
+      execute: () => 0,
       logger,
       resultFile: ''
     });
@@ -89,8 +139,22 @@ describe('run-task-change-tests', () => {
     expect(successful.outcome).toBe('passed');
     expect(failed.outcome).toBe('failed');
     expect(crashed.outcome).toBe('failed');
-    expect(skipped).toMatchObject({ plan: 'not-applicable', outcome: 'passed', status: 0 });
+    expect(documentation).toMatchObject({
+      plan: 'documentation-validation', outcome: 'not-applicable', status: 0
+    });
     expect(logger.error).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps Storybook outside the global task-change executor', () => {
+    expect.hasAssertions();
+    const source = taskFs.readFileSync(
+      taskPath.join(__dirname, '../../../../../ci-cd/run-task-change-tests.js'),
+      'utf8'
+    );
+
+    expect(source).not.toContain('\'storybook:build\'');
+    expect(source).not.toContain('\'storybook:smoke\'');
+    expect(source).toContain('\'test:prepublish\'');
   });
 
   it('writes JSON evidence for the selected change-focused test plan', () => {
