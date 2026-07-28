@@ -6,12 +6,12 @@ Spec Development Driven in Jumentix is enforced through project governance and a
 
 Governance source of truth:
 
-- GitHub Project Jumentix: `https://github.com/users/web2solutions/projects/1`
+- Linear Issues and Projects
 
 Mandatory governance records:
 
-1. GitHub Issue (work item)
-2. Project item with planning fields
+1. Linear Issue (work item)
+2. Linear Project (focused epic) with planning fields
 3. PR with linked issue and evidence
 4. Spec and documentation artifacts
 5. Agent Registry canonical record in `web2solutions/jumentix-agent-registry` with mirrored copy in `.agents/AGENT-REGISTRY.md`
@@ -29,7 +29,8 @@ Every delivery item must expose:
 7. `PR -> Evidence (tests/coverage/checks)`
 8. `PR -> Requirement IDs` (when NFR or governance behavior is touched)
 9. `Task -> dedicated branch -> dedicated PR`
-10. `Linear epic Project -> dedicated documentation Issue -> PR/commit/documentation evidence`
+10. `Task/Project -> current planning metadata -> Project Update history`
+11. `Linear epic Project -> dedicated documentation Issue -> PR/commit/documentation evidence`
 
 ## Epic Documentation Completion Gate
 
@@ -51,6 +52,27 @@ Every delivery item must expose:
 - `Parent issue`
 - `Milestone`
 - one primary nature label
+- accountable agent or Project lead
+
+Required fields remain current throughout delivery. If Linear does not expose a native required
+field for an entity, its structured Linear fallback record and initial Project Update are
+authoritative until a native or custom field is available.
+
+## Planning Metadata Lifecycle
+
+1. Agents validate task and Project status, priority, dates, labels, milestone, and ownership
+   before acceptance or delegation.
+2. Start dates cannot follow target/end dates; task dates fit the parent Project and shared
+   milestone, and Project dates fit the milestone.
+3. Status reflects actual lifecycle state. Priority reflects current impact, urgency, risk,
+   dependencies, and sequencing.
+4. Each item has exactly one primary nature label. Supplemental labels cannot contradict it.
+5. Material metadata changes are included in the next Project Update with previous and new
+   values, reason, and delivery impact.
+6. Agents revalidate metadata at branch creation, review readiness, handoff, merge, and
+   completion.
+7. Missing, stale, contradictory, invalid, placeholder, or unauditable metadata fails governance
+   closed and blocks work progression.
 
 ## Epic-First Planning and Delegation
 
@@ -186,5 +208,7 @@ Minimum evidence set:
 9. Branch-quality-gate evidence for commit, push, merge, and PR
 10. Full-matrix manifest and results for `main` promotion work
 11. Failure-propagation proof showing a required failing or missing test cannot produce green
-12. Agent Registry transport tests covering immutable raw URL construction, safe path encoding,
+12. Current task/Project status, priority, dates, labels, ownership, milestone alignment, and
+    Project Update change history
+13. Agent Registry transport tests covering immutable raw URL construction, safe path encoding,
     optional branch-resolution authentication, transport failures, and mirror mismatch

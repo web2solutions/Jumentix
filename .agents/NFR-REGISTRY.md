@@ -67,6 +67,7 @@ This file consolidates non-functional requirements already requested and stored 
 - `093` Consumer documentation information architecture, bilingual route parity, source synchronization, navigation depth, and publication integrity.
 - `094` Every Linear Project used as an epic must have a dedicated documentation Issue completed before the Project can be completed.
 - `096` A pinned Bun toolchain becomes the sole internal engineering runtime, package manager, script runner and test platform, with phased supersession of `001`, `012` and `048` for internal tooling at Bun cutover; Node remains only as declared consumer-facing compatibility.
+- `097` Linear task and Project metadata lifecycle: agents must maintain valid status, priority, dates, labels, ownership, milestone alignment, and auditable Project Updates from acceptance through completion.
 
 ## Rule of Use
 
