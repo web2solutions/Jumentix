@@ -70,6 +70,7 @@ This file consolidates non-functional requirements already requested and stored 
 - `095` Linear as single source of truth with API key security rules.
 - `096` A pinned Bun toolchain becomes the sole internal engineering runtime, package manager, script runner and test platform, with phased supersession of `001`, `012` and `048` for internal tooling at Bun cutover; Node remains only as declared consumer-facing compatibility.
 - `097` Linear task and Project metadata lifecycle: agents must maintain valid status, priority, dates, labels, ownership, milestone alignment, and auditable Project Updates from acceptance through completion.
+- `098` Commit, push, and merge authorization restricted to `web2solucoes@gmail.com` and explicitly authorized others.
 
 ## Rule of Use
 
