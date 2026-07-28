@@ -91,11 +91,11 @@ This registry tracks AI agents collaborating in the Jumentix project.
 - `agent_version`: `GPT-5 Codex`
 - `status`: `busy`
 - `registered_at_utc`: `2026-07-27T19:02:28Z`
-- `last_branch_check_utc`: `2026-07-27T20:55:32Z`
-- `main_ref_checked`: `dc9a5b4e`
-- `dev_ref_checked`: `2a262246`
+- `last_branch_check_utc`: `2026-07-28T16:20:36Z`
+- `main_ref_checked`: `056195e`
+- `dev_ref_checked`: `4936b2f`
 - `active_epic`: `https://linear.app/jumentix/project/epicgovernance-epic-centered-task-taxonomy-and-agent-delegation-c3cb6bae0771`
-- `assigned_task`: `https://linear.app/jumentix/issue/JUM-508`
+- `assigned_task`: `https://linear.app/jumentix/issue/JUM-519`
 - `capabilities`:
   - repository governance and branch reconciliation
   - CI policy and branch protection enforcement

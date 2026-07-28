@@ -101,4 +101,4 @@ A documentação de desenvolvimento técnico é intencionalmente separada deste 
 
 Fonte da verdade sobre gerenciamento de tarefas:
 
-- [Projeto GitHub - Jumentix](https://github.com/users/web2solutions/projects/1)
+- [Linear - Jumentix](https://linear.app/jumentix)

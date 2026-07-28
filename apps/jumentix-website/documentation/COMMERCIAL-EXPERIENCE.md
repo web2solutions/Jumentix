@@ -26,7 +26,7 @@ open-source framework websites while preserving Jumentix language, product asset
 | `/security-compliance` | RBAC, PCI-oriented controls, secret safety, and evidence |
 | `/pricing-or-engagement` | Open-source, pilot, and platform adoption paths |
 | `/community` | Contribution workflow and governance |
-| `/roadmap` | Product direction linked to the live GitHub Project |
+| `/roadmap` | Product direction linked to the live Linear roadmap |
 | `/changelog` | GitHub history with up to 200 changes per page |
 | `/contact` | Discussions, issues, and enterprise contact |
 | `/docs/jumentix` | Technical documentation entry point |

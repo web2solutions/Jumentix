@@ -98,4 +98,4 @@ Technical development documentation is intentionally separated from this commerc
 
 Task management source of truth:
 
-- [GitHub Project - Jumentix](https://github.com/users/web2solutions/projects/1)
+- [Linear - Jumentix](https://linear.app/jumentix)

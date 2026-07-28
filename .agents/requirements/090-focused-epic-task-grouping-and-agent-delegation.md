@@ -8,10 +8,10 @@ and cross-agent coordination ambiguous.
 
 ## Mandatory Rules
 
-1. Every executable task must belong to exactly one focused epic in GitHub Project Jumentix.
+1. Every executable task must belong to exactly one focused epic in Linear (Requirement `095`).
 2. An epic must describe one cohesive product, architecture, security, quality, documentation,
    governance, or operational outcome.
-3. Every active epic must be associated with exactly one open GitHub milestone.
+3. Every active epic must be associated with exactly one open milestone.
 4. The milestone must define a clear delivery target, description, due date, and lifecycle state.
 5. A milestone may coordinate multiple focused epics only when they contribute to the same
    release or delivery target.
@@ -68,7 +68,7 @@ and cross-agent coordination ambiguous.
 
 ## Acceptance Criteria
 
-1. GitHub Project governance requires structured parent-epic linkage for executable tasks.
+1. Linear governance requires structured parent-epic linkage for executable tasks.
 2. Every active epic and its child tasks expose the same structured GitHub milestone.
 3. Project and agent documentation define the canonical nature taxonomy and milestone lifecycle.
 4. Agent playbooks validate the milestone before epic-level delegation and task-level assignment.
@@ -83,7 +83,7 @@ and cross-agent coordination ambiguous.
 - Applies to humans and all supported AI agents.
 - Applies to features, bugs, security, governance, documentation, refactors, tests, CI, releases,
   and chores.
-- Evidence includes GitHub milestone metadata, parent/sub-issue relationships, Project fields,
+- Evidence includes Linear milestone metadata, parent/sub-issue relationships, Project fields,
   nature labels, Agent Registry assignments, task-owned delivery records, and green quality gates.
 - Complements requirements `056`, `057`, `064`, `067`, `076`, `078`, `081`, `084`, `085`,
   `086`, and `089`.

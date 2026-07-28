@@ -6,7 +6,8 @@ Spec Development Driven in Jumentix is enforced through project governance and a
 
 Governance source of truth:
 
-- Linear Issues and Projects
+- Linear Issues and Projects (`https://linear.app/jumentix`)
+- The Linear API key is at `../.relative to project root` — agents read it for authentication; must never be exposed, logged, or committed.
 
 Mandatory governance records:
 
@@ -23,9 +24,9 @@ Every delivery item must expose:
 1. `Milestone -> focused epic`
 2. `Focused epic -> child task`
 3. `Focused epic -> delegated agent`
-4. `Issue -> Project item`
-5. `Issue -> Spec files changed`
-6. `PR -> Issue`
+4. `Linear Issue -> Linear Project`
+5. `Linear Issue -> Spec files changed`
+6. `PR -> Linear Issue`
 7. `PR -> Evidence (tests/coverage/checks)`
 8. `PR -> Requirement IDs` (when NFR or governance behavior is touched)
 9. `Task -> dedicated branch -> dedicated PR`

@@ -2,12 +2,10 @@
 
 ## Backlog and Project Management
 
-<https://github.com/users/web2solutions/projects/1>
+- Linear workspace: <https://linear.app/jumentix>
+- The Linear API key is at `../.linear` (one level above project root) — access-controlled, never committed or shared.
 
-GitHub Project Jumentix remains the repository delivery board and branch/PR traceability source.
-Linear represents focused epics as Projects and executable work as Issues, including the mandatory
-dedicated documentation issue required before an epic can complete. Active work must keep the two
-systems linked; neither a text-only local todo nor an unlinked issue is sufficient.
+Linear is the single source of truth for project management, epics, and task tracking (Requirement `095`).
 
 ## Internal Requirement and MVP Tracking
 
@@ -23,7 +21,7 @@ systems linked; neither a text-only local todo nor an unlinked issue is sufficie
   - <https://github.com/web2solutions/aaa-typescript-boilerplate/issues?q=is%3Aissue+is%3Aopen+label%3Atodo-mvp>
 - Official project management source of truth:
   - `documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`
-  - `https://github.com/users/web2solutions/projects/1`
-  - `https://linear.app/jumentix` for Linear Project/Issue epic execution and documentation gates
+  - Linear workspace: <https://linear.app/jumentix>
+  - Linear API key at `../.linear` (access-controlled, never commit or share)
 - Domain Designer MVP roadmap:
   - `documentation/md/DOMAIN-DESIGNER-MVP-ROADMAP.md`

@@ -6,7 +6,7 @@ These rules are part of Spec Development Driven governance and apply to all comp
 
 ## 1) Git Usage Policy
 
-1. All work must be traceable to GitHub Issue + GitHub Project item before implementation.
+1. All work must be traceable to a Linear Issue before implementation.
 2. Development must happen on tracked branches and produce auditable commits.
 3. `--no-verify` is prohibited for normal delivery flow.
 4. Push is blocked when local quality gates fail.

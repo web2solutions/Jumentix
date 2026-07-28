@@ -1,7 +1,7 @@
 # Requirement 067 - Bidirectional Task/PR Traceability Governance
 
 ## Context
-- Jumentix requires strict project governance with GitHub Project as source of truth.
+- Jumentix requires strict project governance with Linear as source of truth (Requirement `095`).
 - Delivery evidence must be auditable from both directions: task to PR, and PR to task.
 
 ## Mandatory Rules
@@ -10,7 +10,7 @@
    - commit hash or commit range
 2. Every PR must include:
    - related issue IDs/links
-   - related GitHub Project item links
+    - related Linear Project and issue links
    - explicit mapping of task -> commit(s)
 3. Before a task is closed:
    - issue body/comment must contain PR + commit evidence
@@ -19,4 +19,4 @@
 
 ## Acceptance Criteria
 - Traceability is bidirectional (`issue -> PR/commit` and `PR -> issue/task mapping`).
-- Project board items and PR descriptions provide complete linkage for audit and governance.
+- Linear items and PR descriptions provide complete linkage for audit and governance.

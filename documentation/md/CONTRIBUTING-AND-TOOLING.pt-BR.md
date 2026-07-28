@@ -7,10 +7,10 @@ Idioma alvo: Português (Brasil)
 ## Contribuindo
 
 1. Crie uma filial.
-2. Certifique-se de que haja um problema GitHub relacionado e que ele seja adicionado ao projeto **Jumentix**:
+2. Certifique-se de que haja um problema GitHub relacionado e que ele seja adicionado ao Linear Project **Jumentix**:
 
 ```text
-https://github.com/users/web2solutions/projects/1
+https://linear.app/jumentix
 ```
 
 3. Definir/atualizar campos do projeto para o problema (`Status`, `Prioridade`, `Tamanho`, `Estimativa`, `Data de início`, `Data de término`).

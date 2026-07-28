@@ -8,7 +8,7 @@ The `main` branch is the protected integration baseline. Direct local developmen
 
 1. `main` must not be used as a local working branch for new changes.
 2. Every change must start from a dedicated branch that follows project branching principles.
-3. Branches must be tied to planned/tracked work items in GitHub Project Jumentix.
+3. Branches must be tied to planned/tracked work items in Linear (Requirement `095`).
 4. Delivery to `main` must happen through PR flow with mandatory checks.
 5. Repository administrators may bypass the required-review count only after explicit project-owner approval is recorded in the task or PR.
 6. Administrative review bypass never waives the `dev`-first path, required CI/coverage/security checks, conversation resolution, or false-green protections. Every required check must be reported and terminal green.
