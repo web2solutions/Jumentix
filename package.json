@@ -315,6 +315,7 @@
   },
   "pnpm": {
     "overrides": {
+      "find-my-way": "^9.7.0",
       "postcss": "^8.5.23"
     },
     "patchedDependencies": {

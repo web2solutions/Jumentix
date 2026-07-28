@@ -4,6 +4,10 @@
 
 ## All Changes
 
+- 2026-07-28 [Governance] Require Linear planning metadata lifecycle (#189) - Eduardo A.
+- 2026-07-26 docs(governance): require Linear planning metadata - Eduardo A.
+- 2026-07-28 [Security][Website] Remediate PostCSS vulnerability (#203) - Eduardo A.
+- 2026-07-27 fix(website): remediate PostCSS resolution - Eduardo A.
 - 2026-07-27 [Fix] Remove conditional from registry transport test (#201) - Eduardo A.
 - 2026-07-27 fix(governance): accept Linear project tracking links - Eduardo A.
 - 2026-07-27 fix(ci): remove conditional from registry transport test - Eduardo A.
