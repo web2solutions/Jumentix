@@ -26,6 +26,7 @@ Include links to issue(s), incident(s), backlog items, or Sonar/Codecov check UR
 - Primary task nature:
 - Epic-delegated agent ID:
 - Child task issue link:
+- Project Update:
 - Project item link(s):
 - Issue link(s):
 - Issue ID list (comma separated):

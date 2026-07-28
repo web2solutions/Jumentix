@@ -15,7 +15,8 @@ const validBody = [
   '- Epic milestone: Governance foundation - 2026-08-08',
   '- Primary task nature: ci',
   '- Epic-delegated agent ID: codex-primary-001',
-  '- Child task issue link: https://linear.app/jumentix/issue/JUM-163/focused-epic-metadata'
+  '- Child task issue link: https://linear.app/jumentix/issue/JUM-163/focused-epic-metadata',
+  '- Project Update: https://linear.app/jumentix/project/governance-foundation-c3cb6bae0771/activity#project-update-7ef876cc-30c5-41ba-b2ea-fdca9935b0e3'
 ].join('\n');
 
 describe('check-pr-governance', () => {
@@ -97,8 +98,26 @@ describe('check-pr-governance', () => {
 
     expect(failures).toStrictEqual(expect.arrayContaining([
       expect.stringContaining('Focused epic link'),
+      expect.stringContaining('Project Update'),
       expect.stringContaining('primary task nature must match branch nature'),
       expect.stringContaining('PR title prefix must match primary task nature')
+    ]));
+  });
+
+  it('rejects a Project Update field that is not a Linear project update URL', () => {
+    expect.hasAssertions();
+    const failures = validatePullRequest({
+      title: '[CI] Enforce focused epic metadata',
+      body: validBody.replace(
+        'https://linear.app/jumentix/project/governance-foundation-c3cb6bae0771/activity#project-update-7ef876cc-30c5-41ba-b2ea-fdca9935b0e3',
+        'https://linear.app/jumentix/project/governance-foundation-c3cb6bae0771/activity'
+      ),
+      headRef: 'codex/ci/163-focused-epic-metadata',
+      baseRef: 'dev'
+    });
+
+    expect(failures).toStrictEqual(expect.arrayContaining([
+      expect.stringContaining('Project Update')
     ]));
   });
 
