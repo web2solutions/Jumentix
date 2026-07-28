@@ -3,12 +3,12 @@
 ## Context
 
 Jumentix requires strict delivery governance independent of execution agent (human or AI).
-All executed work must be traceable in GitHub Project, documented, and kept synchronized in product/software/spec resources.
+All executed work must be traceable in Linear, documented, and kept synchronized in product/software/spec resources (Requirement `095`).
 Project communication surfaces (documentation and website) must support English and Portuguese.
 
 ## Requirement
 
-1. Every executed task (by AI or humans) must have a corresponding GitHub Issue and GitHub Project item.
+1. Every executed task (by AI or humans) must have a corresponding Linear Issue and Linear Project item.
 2. Every executed task must keep required governance metadata updated (status, priority, estimates, iteration/cycle, start/end dates, labels, assignee, PR/commit links).
 3. Every executed task must include documentation updates whenever behavior, architecture, governance, product positioning, or contracts are impacted.
 4. Software docs, product docs, and spec docs must be kept in sync and versioned together.
@@ -25,6 +25,6 @@ Project communication surfaces (documentation and website) must support English 
 
 ## Evidence and Scope
 
-- Governance source of truth: GitHub Project `Jumentix` + Issues.
+- Governance source of truth: Linear (`https://linear.app/jumentix`).
 - Applies to all components: monorepo root, backend template, service management, packages, website, and specs.
 - Complements and extends requirements `025`, `056`, `064`, `066`, `067`, `071`, and `072`.

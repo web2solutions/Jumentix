@@ -10,7 +10,7 @@
 2. Website narrative is commercial/product-oriented, separate from engineering README concerns.
 3. Static content generation must support repository markdown as source-of-truth inputs.
 4. Website deployment must be runnable from root `package.json` commands targeting Vercel.
-5. Website work items must be tracked in GitHub Project Jumentix with governance fields and issue traceability updates.
+5. Website work items must be tracked in Linear with governance fields and issue traceability updates (Requirement `095`).
 6. Public documentation routes must render inside the complete documentation layout, including
    global navigation, search, sidebar, table of contents, feedback, edit links, and footer.
 7. Canonical documentation routes use `/docs/jumentix/<slug>`; maintained legacy `/docs/<slug>`

@@ -41,7 +41,7 @@ O modelo Spec Development Driven inclui explicitamente as seguintes famílias de
 3. Especificações de API versionadas (`/spec`)
 4. Scripts e verificações de governança (`ci-cd/*`, ganchos, configurações de qualidade)
 5. Registro de requisitos e NFR (`.agents/requirements`, `.agents/NFR-REGISTRY.md`)
-6. Governança do projeto e processos de conselho (`JUMENTIX-PROJECT-GOVERNANCE.md`, GitHub Project Jumentix)
+6. Governança do projeto e processos de conselho (`JUMENTIX-PROJECT-GOVERNANCE.md`, Linear Project Jumentix)
 
 ## Regra de integridade
 

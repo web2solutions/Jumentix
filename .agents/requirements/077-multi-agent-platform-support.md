@@ -11,7 +11,7 @@ Jumentix must explicitly support multiple AI engineering agents used by maintain
    - Claude Code
    - Grok
 2. Agent guidance must be consistent with Jumentix governance, including:
-   - GitHub Project as task source of truth
+   - Linear as task source of truth (Requirement `095`)
    - requirement/spec traceability
    - documentation sync obligations
    - CI/coverage quality gates

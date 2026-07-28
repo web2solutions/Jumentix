@@ -2,7 +2,7 @@
 
 ## Context
 
-To keep GitHub Project tasks auditable and reduce execution ambiguity, every task (issue) and every PR must include explicit, bidirectional traceability metadata.
+To keep Linear tasks auditable and reduce execution ambiguity, every task (issue) and every PR must include explicit, bidirectional traceability metadata (Requirement `095`).
 
 ## Requirement
 
@@ -19,7 +19,7 @@ At minimum, each task update must include:
 For **all PRs**, maintain:
 
 1. Explicit list of related issue links/IDs.
-2. GitHub Project item links/IDs for all related tasks.
+2. Linear issue links/IDs for all related tasks.
 3. Clear mapping of which commits/deliverables close which tasks.
 4. Back-reference update in each linked issue (comment or issue body update) containing:
    - PR URL

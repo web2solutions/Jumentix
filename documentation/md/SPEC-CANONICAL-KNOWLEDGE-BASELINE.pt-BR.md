@@ -58,7 +58,7 @@ Todas as intenções conhecidas devem ser explícitas, versionadas e rastreávei
      - `documentação/md/PROJECT-MANAGEMENT.md`
      - `.agentes/requisitos/*`
      - `.agentes/NFR-REGISTRY.md`
-     - Projeto GitHub: `https://github.com/users/web2solutions/projects/1`
+     - Projeto Linear: `https://linear.app/jumentix`
 
 ## Regra de cobertura de especificações
 

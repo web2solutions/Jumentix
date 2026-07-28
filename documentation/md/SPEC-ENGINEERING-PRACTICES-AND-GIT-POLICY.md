@@ -6,7 +6,7 @@ These rules are part of Spec Development Driven governance and apply to all comp
 
 ## 1) Git Usage Policy
 
-1. All work must be traceable to GitHub Issue + GitHub Project item before implementation.
+1. All work must be traceable to a Linear Issue before implementation.
 2. Development must happen on tracked branches and produce auditable commits.
 3. `--no-verify` is prohibited for normal delivery flow.
 4. Push is blocked when local quality gates fail.
@@ -47,6 +47,15 @@ These rules are part of Spec Development Driven governance and apply to all comp
 2. New dependencies must respect workspace boundaries and package ownership.
 3. Shared generic adapters should be delivered as reusable packages.
 
+## 5) Authorization Policy
+
+1. Only the project owner email `web2solucoes@gmail.com` and explicitly authorized individuals
+   may commit, push, or merge in the Jumentix repository (Requirement `098`).
+2. Authorization grants must be recorded in Linear with grant date, scope, and recipient identity.
+3. GitHub branch protection and repository settings must enforce this policy at the platform level.
+4. AI agents may push to task branches only when their runtime identity is explicitly authorized
+   by the project owner.
+
 ## 6) PR Readiness Policy
 
 A PR is merge-ready only when all are true:
@@ -56,7 +65,8 @@ A PR is merge-ready only when all are true:
 3. Lint/tests/coverage/security gates are green.
 4. Commit messages and change grouping follow governance rules.
 5. Docs and `.agents` registries are synchronized when required.
-6. A repository administrator may bypass only the review-count requirement when explicit
+6. The merge actor is authorized per Requirement `098`.
+7. A repository administrator may bypass only the review-count requirement when explicit
    project-owner approval is recorded. Required delivery topology and every selected quality,
    coverage, and security gate remain terminal-green blockers.
 

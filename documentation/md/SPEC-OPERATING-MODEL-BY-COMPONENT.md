@@ -79,17 +79,17 @@ Spec obligations:
 1. Capture every user-requested NFR/governance rule as requirement artifact.
 2. Keep indexes and registry synchronized.
 
-## GitHub Project and Issues
+## Linear
 
 Responsibilities:
 
-1. Execution planning and status lifecycle.
+1. Execution planning and status lifecycle via Linear Projects.
 2. Priority, estimate, and iteration governance.
 3. Traceability between tasks and PRs.
 
 Spec obligations:
 
-1. Every implementation maps to issue/project context.
+1. Every implementation maps to a Linear Issue.
 2. PR includes task mapping and evidence links.
 
 ## Sync Contract

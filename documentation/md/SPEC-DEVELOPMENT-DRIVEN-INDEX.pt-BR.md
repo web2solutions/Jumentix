@@ -72,4 +72,4 @@ A execução orientada por especificações depende e reutiliza estas fontes exi
 - Instruções oficiais de agentes de IA (`AGENTS.md`, `CLAUDE.md`, `GROK.md`)
 - Registro de colaboração de agentes (`.agents/AGENT-REGISTRY.md`)
 - Regras de governança do projeto (`documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`)
-- Placa GitHub Project Jumentix (`https://github.com/users/web2solutions/projects/1`)
+- Placa Linear Project Jumentix (`https://linear.app/jumentix`)
