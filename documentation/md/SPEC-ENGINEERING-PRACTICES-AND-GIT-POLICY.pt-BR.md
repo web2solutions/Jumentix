@@ -17,6 +17,10 @@ Essas regras fazem parte da governança orientada para o desenvolvimento de espe
 5. A rastreabilidade da tarefa/PR deve ser bidirecional:
    - emitir referências PR(s)/commit(s)
    - Questões de referências de relações públicas, contexto do item do projeto e evidências
+6. Cada tarefa deve usar sua própria branch e seu próprio PR; tarefas não relacionadas ou rastreadas separadamente não podem compartilhar esses limites.
+7. Branches criadas pelo Codex devem seguir `codex/<natureza>/<id-da-issue>-<slug-curto>`. Outros prefixos de ator aprovados podem substituir `codex`, mas natureza, ID da issue e slug continuam obrigatórios.
+8. Títulos de PR devem seguir `[<Natureza>] <resultado conciso>`.
+9. As naturezas permitidas são `feature`, `fix`, `security`, `governance`, `docs`, `refactor`, `test`, `ci`, `release` e `chore`; a natureza da branch e do PR deve coincidir.
 
 ## 2) Política de mensagens de compromisso
 
@@ -31,7 +35,6 @@ Essas regras fazem parte da governança orientada para o desenvolvimento de espe
 2. As verificações de arquitetura (limites, ciclos, restrições do espaço de trabalho) devem ser aprovadas.
 3. As verificações de resolução de rota OpenAPI devem passar quando os contratos de API estão no escopo.
 4. Os limites de cobertura são obrigatórios e aplicam a política de fusão/envio.
-5. Os limites de commit, push e pull request devem executar a mesma matriz completa canônica; resultados somente de smoke, somente de documentação, ausentes, vazios, ignorados ou não reportados não são evidência de entrega.
 
 ## 4) Política de práticas recomendadas de codificação
 
@@ -57,10 +60,7 @@ Um PR está pronto para mesclagem somente quando todos são verdadeiros:
 3. Lint/testes/cobertura/portões de segurança são verdes.
 4. As mensagens de confirmação e o agrupamento de alterações seguem as regras de governança.
 5. Os registros de documentos e `.agents` são sincronizados quando necessário.
-6. Um administrador do repositório pode contornar apenas a quantidade obrigatória de reviews
-   quando houver aprovação explícita do responsável pelo projeto registrada. A topologia de
-   entrega exigida e todos os gates selecionados de qualidade, cobertura e segurança continuam
-   sendo bloqueadores que exigem resultado terminalmente verde.
+6. A branch e o PR pertencem a uma única tarefa e atendem ao contrato de nomenclatura.
 
 ## 7) Âncoras de Fiscalização
 
@@ -72,3 +72,4 @@ Fontes primárias de aplicação:
 4. `documentação/md/JUMENTIX-PROJECT-GOVERNANCE.md`
 5. `.agents/requirements/065-commit-push-integrity-and-real-ci-enforcement.md`
 6. `.agents/requirements/067-bidirecional-task-pr-traceability-governance.md`
+7. `.agents/requirements/079-task-owned-branch-and-pr-naming-governance.md`

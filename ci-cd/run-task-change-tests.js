@@ -5,9 +5,12 @@ const { spawnSync } = require('child_process');
 
 const UNIT_TEST_PATH = /(^|\/)test\/unit\/.*\.(test|spec)\.[cm]?[jt]sx?$/;
 const IMPLEMENTATION_PATH = /^(ci-cd\/|apps\/[^/]+\/(src|scripts)\/|packages\/[^/]+\/src\/|tooling\/|\.husky\/|\.github\/|\.circleci\/|package\.json$)/;
+<<<<<<< HEAD
+=======
 const RELATED_SOURCE_PATH = /^(ci-cd\/.*\.[cm]?js|apps\/[^/]+\/(src|scripts)\/.*\.[cm]?[jt]sx?|packages\/[^/]+\/src\/.*\.[cm]?[jt]sx?|tooling\/.*\.[cm]?[jt]sx?)$/;
 const GOVERNANCE_CONFIG_PATH = /^(\.husky\/|\.github\/|\.circleci\/)|^package\.json$/;
 const GOVERNANCE_TEST_PATH = 'apps/backend-template/test/unit/ci-cd/run-full-test-matrix.test.ts';
+>>>>>>> origin/dev
 const DOCUMENTATION_PATH = /(^|\/)(documentation\/|\.agents\/)|(^|\/)(README|CHANGELOG|CLAUDE|GROK|AGENTS)(\.[^/]*)?\.md$|\.md$/i;
 const WEBSITE_PATH = /^apps\/jumentix-website\//;
 
@@ -61,10 +64,13 @@ function createTaskTestPlan(files) {
     return { type: 'related-unit-tests', files: relatedFiles };
   }
 
+<<<<<<< HEAD
+=======
   if (governanceTests.length > 0) {
     return { type: 'mapped-unit-tests', files: governanceTests };
   }
 
+>>>>>>> origin/dev
   const documentationFiles = changedFiles.filter((file) => DOCUMENTATION_PATH.test(file));
   if (documentationFiles.length > 0 && documentationFiles.length === changedFiles.length) {
     return { type: 'documentation-validation', files: documentationFiles };
@@ -185,7 +191,10 @@ module.exports = {
   GOVERNANCE_CONFIG_PATH,
   GOVERNANCE_TEST_PATH,
   IMPLEMENTATION_PATH,
+<<<<<<< HEAD
+=======
   RELATED_SOURCE_PATH,
+>>>>>>> origin/dev
   DOCUMENTATION_PATH,
   UNIT_TEST_PATH,
   WEBSITE_PATH,

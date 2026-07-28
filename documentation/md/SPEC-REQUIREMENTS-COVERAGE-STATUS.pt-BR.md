@@ -8,11 +8,11 @@ Este documento certifica a cobertura atual dos requisitos implementados pelos re
 
 ## Instantâneo da linha de base
 
-Data: `2026-07-27`
+Data: `2026-07-26`
 
-1. Arquivos de requisitos em `.agents/requirements`: `98`
-2. IDs de requisitos exclusivos: `96`
-3. IDs cobertos em `SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`: `96`
+1. Arquivos de requisitos em `.agents/requirements`: `97`
+2. IDs de requisitos exclusivos: `95`
+3. IDs cobertos em `SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`: `95`
 4. Status de cobertura: `100%`
 
 Notas:
@@ -22,9 +22,9 @@ Notas:
 
 ## Cobertura de requisitos não funcionais
 
-IDs NFR cobertos (`53`):
+IDs NFR cobertos (`52`):
 
-`001`, `011`, `014`, `015`, `016`, `017`, `018`, `020`, `025`, `029`, `036`, `041`, `042`, `043`, `044`, `050`, `053`, `056`, `057`, `063`, `064`, `065`, `066`, `067`, `068`, `069`, `070`, `071`, `072`, `073`, `074`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `091`, `092`, `093`, `094`, `096`, `097`
+`001`, `011`, `014`, `015`, `016`, `017`, `018`, `020`, `025`, `029`, `036`, `041`, `042`, `043`, `044`, `050`, `053`, `056`, `057`, `063`, `064`, `065`, `066`, `067`, `068`, `069`, `070`, `071`, `072`, `073`, `074`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `091`, `092`, `093`, `094`, `095`
 
 Fontes de mapeamento NFR:
 

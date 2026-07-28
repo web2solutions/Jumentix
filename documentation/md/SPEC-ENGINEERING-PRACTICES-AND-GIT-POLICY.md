@@ -6,13 +6,17 @@ These rules are part of Spec Development Driven governance and apply to all comp
 
 ## 1) Git Usage Policy
 
-1. All work must be traceable to a Linear Issue before implementation.
+1. All work must be traceable to GitHub Issue + GitHub Project item before implementation.
 2. Development must happen on tracked branches and produce auditable commits.
 3. `--no-verify` is prohibited for normal delivery flow.
 4. Push is blocked when local quality gates fail.
 5. Task/PR traceability must be bidirectional:
    - issue references PR(s)/commit(s)
    - PR references issue(s), project item context, and evidence
+6. Every task must use its own branch and its own PR; unrelated or separately tracked tasks must not share either boundary.
+7. Codex-created branches must follow `codex/<nature>/<issue-id>-<short-slug>`. Other approved actor prefixes may replace `codex`, but the nature, issue ID, and slug remain mandatory.
+8. PR titles must follow `[<Nature>] <concise outcome>`.
+9. Allowed nature values are `feature`, `fix`, `security`, `governance`, `docs`, `refactor`, `test`, `ci`, `release`, and `chore`; branch and PR nature must agree.
 
 ## 2) Commit Message Policy
 
@@ -27,10 +31,6 @@ These rules are part of Spec Development Driven governance and apply to all comp
 2. Architecture checks (boundaries, cycles, workspace constraints) must pass.
 3. OpenAPI route resolution checks must pass when API contracts are in scope.
 4. Coverage thresholds are mandatory and enforce merge/push policy.
-5. Task-branch commits and pushes execute only changed/related unit tests. Pull requests
-   to `dev` execute all unit tests, and `main` executes the full matrix. Smoke-only,
-   missing, empty, skipped, or unreported results are not delivery evidence; docs-only
-   task changes must explicitly record `not-applicable` evidence.
 
 ## 4) Coding Best Practices Policy
 
@@ -47,15 +47,6 @@ These rules are part of Spec Development Driven governance and apply to all comp
 2. New dependencies must respect workspace boundaries and package ownership.
 3. Shared generic adapters should be delivered as reusable packages.
 
-## 5) Authorization Policy
-
-1. Only the project owner email `web2solucoes@gmail.com` and explicitly authorized individuals
-   may commit, push, or merge in the Jumentix repository (Requirement `098`).
-2. Authorization grants must be recorded in Linear with grant date, scope, and recipient identity.
-3. GitHub branch protection and repository settings must enforce this policy at the platform level.
-4. AI agents may push to task branches only when their runtime identity is explicitly authorized
-   by the project owner.
-
 ## 6) PR Readiness Policy
 
 A PR is merge-ready only when all are true:
@@ -65,10 +56,7 @@ A PR is merge-ready only when all are true:
 3. Lint/tests/coverage/security gates are green.
 4. Commit messages and change grouping follow governance rules.
 5. Docs and `.agents` registries are synchronized when required.
-6. The merge actor is authorized per Requirement `098`.
-7. A repository administrator may bypass only the review-count requirement when explicit
-   project-owner approval is recorded. Required delivery topology and every selected quality,
-   coverage, and security gate remain terminal-green blockers.
+6. The branch and PR are task-owned and satisfy the naming contract.
 
 ## 7) Enforcement Anchors
 
@@ -80,3 +68,4 @@ Primary enforcement sources:
 4. `documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`
 5. `.agents/requirements/065-commit-push-integrity-and-real-ci-enforcement.md`
 6. `.agents/requirements/067-bidirectional-task-pr-traceability-governance.md`
+7. `.agents/requirements/079-task-owned-branch-and-pr-naming-governance.md`

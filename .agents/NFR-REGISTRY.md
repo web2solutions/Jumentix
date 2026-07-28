@@ -38,8 +38,7 @@ This file consolidates non-functional requirements already requested and stored 
 - `018` Project docs and structure sync.
 - `025` Every new feature must be documented.
 - `053` Workspace package docs and ownership.
-- `056`/`064` ~~GitHub project as single source of truth~~ (superseded by `094`).
-- `094` Linear as single source of truth.
+- `056`/`064` GitHub project as single source of truth.
 - `057` PR grouping by priority.
 - `066` Documentation round governance for marketing root + technical component docs.
 - `068` NFR capture and registry governance.
@@ -53,7 +52,7 @@ This file consolidates non-functional requirements already requested and stored 
 - `076` Mandatory task traceability for AI/humans + documentation sync + EN/PT documentation and website parity.
 - `077` Multi-agent platform support (Codex, Claude Code, Grok) with aligned governance and traceability rules.
 - `078` Agent Registry system with mandatory pre-task registration, planning assignment by availability, and required `main`/`dev` pre-work branch checks.
-- `079` Main branch protection and mandatory feature/fix/chore branching flow; local direct changes on `main` are prohibited. Administrators may bypass review count only with recorded owner approval and terminal-green mandatory checks.
+- `079` Main branch protection and mandatory feature/fix/chore branching flow; local direct changes on `main` are prohibited.
 - `080` Agent Registry must include machine identity and agent runtime version metadata, allowing multiple agents per host machine.
 - `081` Agent playbook must teach registration, branch sync checks, governance execution, and closure/audit workflow.
 - `082` PR descriptions must use real breaklines/markdown formatting; literal `\n` tokens are prohibited.
@@ -61,16 +60,13 @@ This file consolidates non-functional requirements already requested and stored 
 - `084` `dev` is the single source of truth for development; new branches must start from `dev` and PRs from implementation branches must target `dev`.
 - `085` PR descriptions are mandatory and must follow the repository PR template, with required sections completed before approval.
 - `086` One task per branch and PR, nature-prefixed naming, `dev`-first promotion to `main`, and mandatory false-green-proof full test matrices for commits, pushes, and PRs.
-- `089` Agent Registry must be maintained in an independent GitHub repository as canonical source, with mirrored sync in consumer repositories and quota-independent immutable raw-content checks pinned by full commit SHA.
+- `089` Agent Registry must be maintained in an independent GitHub repository as canonical source, with mirrored sync in consumer repositories.
 - `090` Every executable task must have one focused epic, one primary nature, and the epic milestone; milestone validation precedes epic-level agent delegation and non-overlapping child-task assignment.
-- `091` Website design-system and Storybook governance, including accessibility, responsive/theme states, component inventory, reproducible smoke validation, and strict ownership by the `apps/jumentix-website` workflow rather than the main monorepo workflow.
+- `091` Website design-system and Storybook governance, including accessibility, responsive/theme states, component inventory, and reproducible smoke validation.
 - `092` Open-source commercial website experience, bilingual route parity, truthful code proof, responsive navigation, and production route integrity.
 - `093` Consumer documentation information architecture, bilingual route parity, source synchronization, navigation depth, and publication integrity.
 - `094` Every Linear Project used as an epic must have a dedicated documentation Issue completed before the Project can be completed.
-- `095` Linear as single source of truth with API key security rules.
-- `096` A pinned Bun toolchain becomes the sole internal engineering runtime, package manager, script runner and test platform, with phased supersession of `001`, `012` and `048` for internal tooling at Bun cutover; Node remains only as declared consumer-facing compatibility.
-- `097` Linear task and Project metadata lifecycle: agents must maintain valid status, priority, dates, labels, ownership, milestone alignment, and auditable Project Updates from acceptance through completion.
-- `098` Commit, push, and merge authorization restricted to `web2solucoes@gmail.com` and explicitly authorized others.
+- `095` Every executing agent publishes truthful task progress in the Linear epic Project's `Project Updates` feed through final handoff.
 
 ## Rule of Use
 
