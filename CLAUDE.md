@@ -26,6 +26,7 @@ This repository supports Claude Code as an official engineering agent.
     documentation inventory, every file in `.agents/requirements/`, `.agents/NFR-REGISTRY.md`,
     and the canonical specification index. All requirements are mandatory; uncertainty or an
     unread applicable source blocks execution until resolved.
+16. Before every task, fetch/read current `main` and `dev`, inspect every requirement for changes, and refresh branch-check evidence; block work until complete (099).
 
 ## Required Governance Links
 
