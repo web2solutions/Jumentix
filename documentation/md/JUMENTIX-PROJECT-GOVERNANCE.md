@@ -1,13 +1,12 @@
 # Jumentix Project Governance
 
-This project uses the **Jumentix Linear workspace** as the single source of truth for project
-management and new work. A Linear Project is an epic and a Linear Issue is an executable task.
+This project uses Linear as the single source of truth for execution tracking. GitHub issues,
+projects, and pull requests provide delivery evidence but do not replace current Linear data.
 
 ## Single Source of Truth Rules
 
-1. Every bug, feature, refactor, and technical task executed by humans or AI must exist as a
-   Linear Issue.
-2. Every tracked Issue must belong to exactly one focused Linear Project.
+1. Every bug, feature, refactor, and technical task executed by humans or AI must exist as a Linear Issue.
+2. Every epic must exist as a Linear Project and every task must be linked to its focused Project.
 3. Project fields are mandatory for active items:
    - `Status`
    - `Priority`
@@ -16,15 +15,32 @@ management and new work. A Linear Project is an epic and a Linear Issue is an ex
    - `Start date`
    - `End date`
    - `Milestone`
-4. No work starts without a linked Linear Issue and Project.
-5. Task progress must be published in the Linear Project's `Project Updates` feed; Issue status,
-   comments, pull-request activity, and local notes alone are insufficient.
+4. No work starts without a linked issue and project item.
+5. Task progress updates must happen in the project item status, not only in local notes.
 6. All executed tasks must keep governance metadata updated (status, priority, estimates, cycle/iteration, start/end dates, labels, assignee, PR/commit links).
+
+## Planning Metadata Lifecycle
+
+1. Every Linear Issue used as a task and every Linear Project used as an epic/project must carry
+   explicit status, priority, start date, target/end date, labels, milestone, and accountable owner.
+2. Native Linear fields are authoritative. When a native field is unavailable, record a structured
+   fallback in Linear and repeat it in the initial Project Update.
+3. Each item has exactly one primary nature label; supplemental labels may not conflict with it.
+4. Start dates must not follow target dates. Task and Project dates must fit their parent Project
+   and shared milestone delivery windows.
+5. Agents revalidate metadata before acceptance/delegation, branch creation, review readiness,
+   handoff, merge, and completion.
+6. Material status, priority, date, or label changes are recorded in Project Updates with old and
+   new values, reason, and delivery impact.
+7. Missing, stale, contradictory, invalid, placeholder, or unauditable metadata blocks execution,
+   review, merge, handoff, and completion.
+8. A Project cannot be completed until every child task has terminal, consistent metadata and its
+   documentation and final Project Update obligations are satisfied.
 
 ## Focused Epics and Task Nature
 
 1. Every active epic belongs to exactly one open GitHub milestone.
-2. Every executable task belongs to exactly one focused epic through structured GitHub parentage
+2. Every executable task belongs to exactly one focused epic through structured Linear parentage
    and uses the same milestone as that epic.
 3. Milestones define a delivery target and due date. Epic and task dates remain within that date.
 4. Each epic represents one cohesive outcome and must not serve as a catch-all backlog.
@@ -40,20 +56,6 @@ management and new work. A Linear Project is an epic and a Linear Issue is an ex
 11. A milestone closes only when its epics are complete or remaining work has an auditable
     carry-over to another milestone.
 
-## Linear Project Updates
-
-1. Every executing agent publishes a Project Update when a task starts, after material progress,
-   when a blocker or material risk changes, when its PR becomes review-ready, and at completion
-   or handoff.
-2. Each task section identifies the Linear Issue, accountable agent, current status, completed
-   outcome, branch/PR/commit, exact gate state, blockers or risks, and next action.
-3. Concurrent work uses separate task-and-agent sections.
-4. Pending, missing, skipped, cancelled, timed-out, or failed required gates are never reported
-   as passing.
-5. Every completed task, including the dedicated documentation Issue, has a final Project Update.
-6. Missing final updates, unresolved blockers, or incomplete required gates block Project
-   completion.
-
 ## PR Governance
 
 Each PR must include:
@@ -61,7 +63,7 @@ Each PR must include:
 - Related issue link(s)
 - Focused parent epic link
 - Associated milestone
-- Related Linear Project and latest task-specific Project Update
+- Related project item context (Project: `Jumentix`)
 - Acceptance criteria and validation evidence
 - Coverage and quality-gate evidence
 - Task-owned branch name and nature-prefixed PR title
@@ -97,6 +99,18 @@ If a PR is not linked to project work items, it is out of process.
    together.
 4. Commit, push, and PR gates compare the mirror with its recorded immutable revision so the
    result remains reproducible when another agent updates canonical `main` concurrently.
+5. Pinned-revision checks fetch immutable canonical content by complete SHA and encoded path.
+   Public registries may use `raw.githubusercontent.com` without Contents API quota; when a token
+   is present, authenticated Contents API access may be used and must fall back to public raw
+   fetch on HTTP 401/403/404 from that token path.
+6. Explicit synchronization resolves canonical `main` through the GitHub API and may use
+   `GITHUB_TOKEN` or `GH_TOKEN` when authenticating to GitHub.
+7. Transport failures, invalid revisions, unsafe paths, missing files, unauthorized access, and
+   mirror mismatches fail closed without falling back to the local mirror. Diagnostics keep
+   token-access guidance when Contents API 401/403 is followed by raw 404, and otherwise
+   distinguish pin/path drift (404) from token-backed private access needs (401/403).
+8. The canonical registry repository is public for read access. Only `web2solutions`
+   (`web2solucoes@gmail.com`) may push or publish changes to it.
 
 ## Documentation Governance
 
@@ -127,17 +141,17 @@ Mixing `P0`, `P1`, and `P2` work in the same PR is not allowed.
 2. Create or select an open milestone.
 3. Create or select the focused parent epic, associate it with the milestone, and establish
    structured parentage.
-4. Add the Issue to its focused Linear Project and assign the epic milestone.
+4. Link the Linear Issue to its focused Project and assign the shared milestone.
 5. Set nature, field values, and cycle dates within the milestone due date.
-6. Delegate available agents to the epic, then assign its non-overlapping child tasks.
-7. Create the task-owned, nature-prefixed branch.
-8. Implement with a dedicated PR targeting `dev` and linked to the milestone, epic, issue, and
+6. Validate task and Project status, priority, dates, labels, and ownership.
+7. Delegate available agents to the epic, then assign its non-overlapping child tasks.
+8. Create the task-owned, nature-prefixed branch.
+9. Implement with a dedicated PR targeting `dev` and linked to the milestone, epic, issue, and
    project.
-9. Promote `dev` to `main` only through a release-promotion PR after the complete matrix passes.
-10. Publish task progress through the required Linear Project Update cadence.
-11. Verify every task has a final Project Update and the dedicated documentation Issue and its
-    evidence are complete.
-12. Move Project status (`Backlog` -> `Ready` -> `In progress` -> `In review` -> `Completed`).
+10. Promote `dev` to `main` only through a release-promotion PR after the complete matrix passes.
+11. Verify the dedicated documentation Issue and its evidence are complete.
+12. Move project status (`Backlog` -> `Ready` -> `In progress` -> `In review` -> `Done`) only
+    when actual lifecycle state and all required metadata agree.
 
 ## Cycle and Estimation Policy
 

@@ -62,6 +62,21 @@ function buildRawUrl(config, ref = config.revision) {
   ].join('/');
 }
 
+function buildContentsApiUrl(config, ref = config.revision) {
+  const { owner, repo } = repositoryCoordinates(config);
+  if (!/^[a-f0-9]{40}$/i.test(String(ref || ''))) {
+    throw new Error('Canonical registry content requires a full immutable commit SHA.');
+  }
+  const remotePath = encodeRawPath(config.remotePath);
+  return [
+    'https://api.github.com/repos',
+    encodeURIComponent(owner),
+    encodeURIComponent(repo),
+    'contents',
+    remotePath
+  ].join('/') + `?ref=${encodeURIComponent(ref)}`;
+}
+
 function buildBranchRevisionUrl(config) {
   const { owner, repo } = repositoryCoordinates(config);
   return `https://api.github.com/repos/${owner}/${repo}/commits/${encodeURIComponent(config.branch)}`;
@@ -103,6 +118,68 @@ function githubApiHeaders(env = process.env) {
   };
 }
 
+function hasGithubToken(env = process.env) {
+  return Boolean(env.GITHUB_TOKEN || env.GH_TOKEN);
+}
+
+async function fetchCanonicalText(config, revision, env = process.env) {
+  let tokenAccessFailure = null;
+
+  if (hasGithubToken(env)) {
+    try {
+      const url = buildContentsApiUrl(config, revision);
+      const content = await fetchBody(
+        url,
+        {
+          ...githubApiHeaders(env),
+          Accept: 'application/vnd.github.raw'
+        },
+        'immutable canonical registry content'
+      );
+      return { content, sourceUrl: url };
+    } catch (error) {
+      const message = error && error.message ? String(error.message) : '';
+      // Stale/mis-scoped tokens must not block public raw fetch for the canonical registry.
+      if (!/HTTP (401|403|404)/.test(message)) {
+        throw error;
+      }
+      if (/HTTP (401|403)/.test(message)) {
+        tokenAccessFailure = error;
+      }
+    }
+  }
+
+  const sourceUrl = buildRawUrl(config, revision);
+  try {
+    const content = await fetchText(sourceUrl);
+    return { content, sourceUrl };
+  } catch (error) {
+    const message = error && error.message ? String(error.message) : '';
+    if (tokenAccessFailure && /HTTP 404/.test(message)) {
+      // Private repos often answer anonymous raw with 404; prefer the token-access signal.
+      throw new Error(
+        `${tokenAccessFailure.message}. Authenticated Contents API failed and public raw fetch returned HTTP 404. ` +
+          'If the canonical registry is private, fix GITHUB_TOKEN or GH_TOKEN with contents:read. ' +
+          'If it is public, verify the pinned revision SHA and remotePath in .agents/registry-source.json.',
+        { cause: error }
+      );
+    }
+    if (/HTTP (401|403)/.test(message)) {
+      throw new Error(
+        `${message}. Private canonical registry access requires GITHUB_TOKEN or GH_TOKEN with contents:read.`,
+        { cause: error }
+      );
+    }
+    if (/HTTP 404/.test(message)) {
+      throw new Error(
+        `${message}. Verify the pinned revision SHA and remotePath in .agents/registry-source.json.`,
+        { cause: error }
+      );
+    }
+    throw error;
+  }
+}
+
 async function fetchJson(url) {
   const body = await fetchBody(
     url,
@@ -142,14 +219,15 @@ async function main() {
     revision = await resolveBranchRevision(config);
   }
 
-  const url = buildRawUrl(config, revision);
-
   if (args.printUrl) {
+    const url = hasGithubToken()
+      ? buildContentsApiUrl(config, revision)
+      : buildRawUrl(config, revision);
     console.log(url);
     return;
   }
 
-  const remoteContent = await fetchText(url);
+  const { content: remoteContent, sourceUrl } = await fetchCanonicalText(config, revision);
   if (!fs.existsSync(localPath)) {
     throw new Error(`Local mirrored registry file not found: ${localPath}`);
   }
@@ -159,7 +237,7 @@ async function main() {
   if (args.check) {
     if (!same) {
       console.error('Local agent registry mirror is out of sync with canonical repository.');
-      console.error(`Source: ${url}`);
+      console.error(`Source: ${sourceUrl}`);
       console.error(`Run: node ci-cd/check-agent-registry-source.js --sync`);
       process.exit(1);
     }
@@ -184,11 +262,14 @@ if (require.main === module) {
 
 module.exports = {
   buildBranchRevisionUrl,
+  buildContentsApiUrl,
   buildRawUrl,
   encodeRawPath,
+  fetchCanonicalText,
   fetchJson,
   fetchText,
   githubApiHeaders,
+  hasGithubToken,
   mirrorsMatch,
   normalize,
   parseArgs,
