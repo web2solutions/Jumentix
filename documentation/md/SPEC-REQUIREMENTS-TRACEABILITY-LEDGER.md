@@ -16,7 +16,7 @@ For any change, identify impacted requirement IDs and ensure:
 
 ## A. Build, Runtime, and Dependency Integrity
 
-- `001`, `002`, `012`, `013`, `041`, `042`, `043`, `052`, `096`
+- `001`, `002`, `012`, `013`, `041`, `042`, `043`, `052`
 - Spec resources:
   - `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md`
   - `documentation/md/SETUP-RUNTIME-AND-API.md`
@@ -78,20 +78,20 @@ For any change, identify impacted requirement IDs and ensure:
 
 ## F. Quality, Security, and Compliance Gates
 
-- `011`, `014`, `020`, `044`, `063`, `065`, `074`, `087`, `088`
+- `011`, `014`, `020`, `044`, `063`, `065`, `074`
 - Spec resources:
   - `documentation/md/TESTING-CI-AND-QUALITY.md`
   - `documentation/md/SECURITY-RUNBOOK-PCI.md`
   - `documentation/md/PCI-REMEDIATION-PLAN-AND-EVIDENCE.md`
   - coverage/check scripts in `ci-cd/*`
 - Evidence:
-  - destination-appropriate CI gate green
+  - CI gate green
   - coverage threshold proof
   - security/compliance check results
 
 ## G. Documentation, Governance Process, and Multi-Agent Operations
 
-- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `056`, `057`, `064`, `066`, `067`, `068`, `071`, `072`, `073`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `095`, `094`, `097`, `098`
+- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `056`, `057`, `064`, `066`, `067`, `068`, `071`, `072`, `073`, `075`, `076`, `077`, `078`, `079`
 - Spec resources:
   - `documentation/README.md`
   - `documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`
@@ -107,18 +107,12 @@ For any change, identify impacted requirement IDs and ensure:
   - requirements registry synchronized
   - agent instruction parity (Codex, Claude Code, Grok)
   - agent registration and availability assignment records
-  - milestone association, focused epic parentage, nature grouping, and epic-level delegation
-    records
   - `main` and `dev` branch pre-work check records
   - project/PR traceability present
-  - task PRs target `dev`, and only release promotions sourced from `dev` target `main`
-  - completed Linear epic Project linked to its completed dedicated documentation Issue and evidence
-  - current Linear task/Project status, priority, dates, labels, milestone, ownership, and Project
-    Update history
 
 ## H. Productization and Platform Expansion
 
-- `037`, `038`, `054`, `055` (both entries), `069`, `070`, `091`, `092`, `093`
+- `037`, `038`, `054`, `055` (both entries), `069`, `070`
 - Spec resources:
   - `packages/cli-init/*`
   - `apps/service-management/documentation/*`
@@ -136,8 +130,8 @@ If impacted requirement IDs are not mapped before implementation, the change is 
 
 ## Coverage Attestation (Current Baseline)
 
-As of `2026-07-28`, this ledger covers all unique requirement IDs currently registered in `.agents/requirements`:
+As of `2026-07-25`, this ledger covers all unique requirement IDs currently registered in `.agents/requirements`:
 
-1. Unique IDs in requirements registry: `96`
-2. Unique IDs mapped in this ledger: `96`
+1. Unique IDs in requirements registry: `79`
+2. Unique IDs mapped in this ledger: `79`
 3. Missing IDs: `none`

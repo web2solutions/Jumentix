@@ -49,17 +49,6 @@ Evidência:
 1. Conjuntos de testes verdes em CI.
 2. Adicionados testes para novos comportamentos incluídos no escopo PR.
 
-Política de execução:
-
-1. `ci:gate` permanece como a linha de base rápida definida pelo requisito `011`, incluindo o smoke de integração representativo.
-2. `ci:gate:strict` é o gate canônico da matriz completa para os limites de commit, push e pull request.
-3. Seu manifesto cobre lint, arquitetura, contratos, governança, testes unitários, segurança, smoke, builds, todos os workspaces, a matriz completa de 15 alvos de integração HTTP/Lambda/realtime/Service Management e cobertura do patch.
-4. Cada executor da matriz deve rejeitar manifesto vazio, duplicado, malformado ou com script ausente.
-5. A execução continua após a falha de uma célula individual e retorna um único resultado agregado diferente de zero listando todas as células com falha.
-6. Planos somente de documentação ou outras otimizações por escopo não podem omitir a matriz canônica em um limite de entrega.
-7. Os alvos de integração executam com cobertura desabilitada para não sobrescrever o artefato de cobertura dos testes unitários governado pelo requisito `014`.
-8. A CI remota publica a evidência JSON por célula gerada por `AAA_CI_MATRIX_RESULT_FILE`.
-
 ## Portão 4 – Qualidade e Segurança
 
 Critérios de aprovação:
@@ -78,26 +67,16 @@ Evidência:
 Critérios de aprovação:
 
 1. O problema, o item do projeto e o PR estão vinculados.
-2. A Issue da tarefa e o Project do épico possuem status, prioridade, datas de início/alvo,
-   rótulos, milestone e responsável explícitos e atuais.
-3. Datas e classificações são consistentes, e alterações materiais de metadados são auditáveis
-   em Project Updates.
-4. Referências de requisitos/NFR são incluídas quando aplicável.
-4. Todo Project do Linear usado como épico possui uma Issue dedicada de documentação.
-5. A Issue de documentação do épico está concluída antes de o Project ser marcado como
-   `Completed`.
-6. Toda exceção administrativa da quantidade de reviews possui aprovação explícita do
-   responsável pelo projeto registrada na tarefa ou no PR, e todos os checks obrigatórios
-   permanecem reportados e terminalmente verdes.
+2. Os campos de prioridade/tamanho/estimativa do ciclo de vida são preenchidos.
+3. Referências de requisitos/NFR são incluídas quando aplicável.
+4. A entrega possui uma branch exclusiva da tarefa e um PR exclusivo da tarefa.
+5. Os prefixos de natureza da branch e do título do PR atendem ao contrato de nomenclatura.
 
 Evidência:
 
-1. Links cruzados de Issue/Project do Linear e PR.
-2. Capturas dos campos do Linear ou fallback estruturado e histórico de Project Updates.
-3. Registro `.agents` atualizado quando a governança ou NFR mudou.
-3. Link do Project do Linear mais a Issue de documentação concluída, links de PR/commit,
-   inventário dos documentos alterados, evidência de paridade bilíngue quando aplicável e
-   resultados de integridade da documentação.
+1. Links cruzados de problemas/projetos/RP do GitHub.
+2. Registro `.agents` atualizado quando a governança ou NFR mudou.
+3. Nome da branch e título do PR registrados no template do PR.
 
 ## Padrão de empacotamento de evidências para PRs
 
@@ -117,7 +96,4 @@ Um PR não está pronto para mesclagem quando algum destes está faltando:
 2. Verificações exigidas ou limite de cobertura.
 3. Links de rastreabilidade da governança.
 4. Atualizações necessárias de `.agents` para impacto de NFR/governança.
-5. Uma Issue dedicada de documentação ausente ou incompleta para um épico em conclusão.
-6. Uma exceção administrativa que tente dispensar a topologia de entrega ou um gate obrigatório
-   com falha, ausente, ignorado, cancelado, expirado ou incompleto.
-7. Metadados completos e consistentes de tarefa/Project do Linear exigidos pelo Requisito `097`.
+5. O isolamento da tarefa ou a nomenclatura de branch/PR não atende ao requisito `079`.

@@ -2,7 +2,7 @@
 
 <!-- This file is generated from Git history. Run `pnpm run changelog:update` to refresh it. -->
 
-## Unreleased
+## All Changes
 
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -266,15 +266,7 @@
 - 2026-06-25 fix: wire service dependencies correctly - Eduardo Almeida
 - 2026-06-25 refactor: centralize endpoint registration - Eduardo Almeida
 - 2026-06-25 fix: restore TypeScript build - Eduardo Almeida
-- 2024-10-19 feat(hyperexpress): add handlers and tests (#54) - Eduardo A.
-- 2024-10-15 badges (#53) - Eduardo A.
-
-## v0.0.3 - 2024-11-04
-
 - 2024-11-04 fix(ci): move check-node-version - Eduardo Almeida
-
-## v0.0.1 - 2024-10-23
-
 - 2024-10-23 ci(versioning): run pre-commit from package - Eduardo Almeida
 - 2024-10-23 ci: run pre-cmmit in package - Eduardo Almeida
 - 2024-10-23 ci(fix husky): fix husky - Eduardo Almeida
@@ -290,8 +282,10 @@
 - 2024-10-19 ci(github action): run redis - Eduardo Almeida
 - 2024-10-19 ci(git actions): fix redis matrix - Eduardo Almeida
 - 2024-10-19 ci: revert to npm and run git actions - Eduardo Almeida
+- 2024-10-19 feat(hyperexpress): add handlers and tests (#54) - Eduardo A.
 - 2024-10-19 fix(http servers): proper close all servers, add request context to HyperExpress - Eduardo Almeida
 - 2024-10-19 feat(hyperexpress): add handlers and tests - Eduardo Almeida
+- 2024-10-15 badges (#53) - Eduardo A.
 - 2024-10-14 docs(badges): fix - Eduardo Almeida
 - 2024-10-14 docs(badges): hypeexpress - Eduardo Almeida
 - 2024-10-14 docs(badges): add badges - Eduardo Almeida
