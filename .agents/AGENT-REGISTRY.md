@@ -47,11 +47,11 @@ This registry tracks AI agents collaborating in the Jumentix project.
 - `agent_version`: `GPT-5 Codex`
 - `status`: `busy`
 - `registered_at_utc`: `2026-07-25T00:00:00Z`
-- `last_branch_check_utc`: `2026-07-28T04:11:03Z`
-- `main_ref_checked`: `dc9a5b4e`
-- `dev_ref_checked`: `607214c7`
+- `last_branch_check_utc`: `2026-07-28T15:55:59Z`
+- `main_ref_checked`: `056195e0`
+- `dev_ref_checked`: `626785b5`
 - `active_epic`: `https://linear.app/jumentix/project/epicgovernance-epic-centered-task-taxonomy-and-agent-delegation-c3cb6bae0771`
-- `assigned_task`: `https://linear.app/jumentix/issue/JUM-518`
+- `assigned_task`: `https://linear.app/jumentix/issue/JUM-501`
 - `capabilities`:
   - repository analysis and implementation
   - test and CI debugging
@@ -92,8 +92,8 @@ This registry tracks AI agents collaborating in the Jumentix project.
 - `status`: `busy`
 - `registered_at_utc`: `2026-07-27T19:02:28Z`
 - `last_branch_check_utc`: `2026-07-28T16:20:36Z`
-- `main_ref_checked`: `056195e`
-- `dev_ref_checked`: `4936b2f`
+- `main_ref_checked`: `056195e0`
+- `dev_ref_checked`: `5086e6e8`
 - `active_epic`: `https://linear.app/jumentix/project/epicgovernance-epic-centered-task-taxonomy-and-agent-delegation-c3cb6bae0771`
 - `assigned_task`: `https://linear.app/jumentix/issue/JUM-519`
 - `capabilities`:

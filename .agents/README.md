@@ -114,6 +114,7 @@ Use these files as living constraints for future maintenance and feature develop
 - [095-linear-single-source-of-truth-and-api-security](requirements/095-linear-single-source-of-truth-and-api-security.md)
 - [096-bun-internal-tooling-runtime](requirements/096-bun-internal-tooling-runtime.md)
 - [097-linear-planning-metadata-lifecycle](requirements/097-linear-planning-metadata-lifecycle.md)
+- [098-commit-push-merge-authorization](requirements/098-commit-push-merge-authorization.md)
 - [Agent Registry](AGENT-REGISTRY.md)
 - [NFR Registry](NFR-REGISTRY.md)
 - [Spec Development Driven Agent](spec-development-driven-agent.md)

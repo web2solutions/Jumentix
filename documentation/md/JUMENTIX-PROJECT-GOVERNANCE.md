@@ -56,6 +56,13 @@ projects, and pull requests provide delivery evidence but do not replace current
 11. A milestone closes only when its epics are complete or remaining work has an auditable
     carry-over to another milestone.
 
+## Authorization Policy
+
+1. Only the project owner email `web2solucoes@gmail.com` and explicitly authorized individuals
+   may commit, push, or merge in the Jumentix repository (Requirement `098`).
+2. Authorization grants must be recorded in Linear with grant date, scope, and recipient identity.
+3. GitHub branch protection rules on `main` and `dev` must enforce this policy.
+
 ## PR Governance
 
 Each PR must include:
