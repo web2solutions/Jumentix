@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-07-27 [Fix] Remove conditional from registry transport test (#201) - Eduardo A.
+- 2026-07-27 fix(governance): accept Linear project tracking links - Eduardo A.
 - 2026-07-27 fix(ci): remove conditional from registry transport test - Eduardo A.
 - 2026-07-27 [Governance] Sync canonical registry and admin review policy (#200) - Eduardo A.
 - 2026-07-27 docs(governance): sync registry and admin review policy - Eduardo A.
