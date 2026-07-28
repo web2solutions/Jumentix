@@ -14,7 +14,12 @@
 
 ## Project Tracking (Required)
 
-- GitHub Project: `Jumentix` (`https://github.com/users/web2solutions/projects/1`)
+- Linear Project: `Jumentix` (`https://linear.app/jumentix`)
+- Focused epic link:
+- Epic milestone:
+- Primary task nature:
+- Epic-delegated agent ID:
+- Child task issue link:
 - Project item link:
 - Issue link:
 - Current status in project:

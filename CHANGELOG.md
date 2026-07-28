@@ -4,10 +4,57 @@
 
 ## All Changes
 
+- 2026-07-28 merge: resolve conflicts with main accepting dev version - Eduardo A.
+- 2026-07-28 docs(governance): require Linear project task updates - Eduardo A.
+- 2026-07-28 docs(governance): enforce task-owned branches and PRs - Eduardo A.
+- 2026-07-28 ci: focused epic metadata enforcement - Eduardo A.
+- 2026-07-28 chore: website registry sync (#172) - Eduardo A.
+- 2026-07-28 fix(ci): Redis config and CircleCI workflow fixes - Eduardo A.
+- 2026-07-28 chore: sync dev with main - Eduardo A.
+- 2026-07-28 chore: update agent registry refs after sync - Eduardo A.
+- 2026-07-28 chore: sync dev with main - Eduardo A.
+- 2026-07-28 [Release] Promote dev to main - Eduardo A.
+- 2026-07-28 fix(governance): resolve merge conflict in req 098 - Eduardo A.
+- 2026-07-28 fix(governance): resolve merge conflict in req 098 - Eduardo A.
+- 2026-07-28 chore(governance): update agent registry and enforcement for req 098 - Eduardo A.
+- 2026-07-28 [Release] Promote dev to main - Eduardo A.
+- 2026-07-28 feat(governance): restrict commit, push, and merge to authorized email only - Eduardo A.
+- 2026-07-28 feat(governance): establish Linear as single source of truth with API security rules - Eduardo A.
+- 2026-07-28 [Docs] Synchronize Jumentix documentation from dev (#198) - Eduardo A.
+- 2026-07-28 chore(changelog): refresh generated history after docs rebase - web2solutions
+- 2026-07-27 docs: synchronize Jumentix documentation from dev - web2solutions
+- 2026-07-28 [Release] Promote governed dev to main (#202) - Eduardo A.
+- 2026-07-28 [Security] Remediate find-my-way vulnerability through Restify (#204) - Eduardo A.
+- 2026-07-28 fix(security): remediate restify find-my-way - Eduardo A.
+- 2026-07-28 [Governance] Require Linear planning metadata lifecycle (#189) - Eduardo A.
+- 2026-07-26 docs(governance): require Linear planning metadata - Eduardo A.
+- 2026-07-28 [Security][Website] Remediate PostCSS vulnerability (#203) - Eduardo A.
+- 2026-07-27 fix(website): remediate PostCSS resolution - Eduardo A.
+- 2026-07-27 [Fix] Remove conditional from registry transport test (#201) - Eduardo A.
+- 2026-07-27 fix(governance): accept Linear project tracking links - Eduardo A.
+- 2026-07-27 fix(ci): remove conditional from registry transport test - Eduardo A.
+- 2026-07-27 [Governance] Sync canonical registry and admin review policy (#200) - Eduardo A.
+- 2026-07-27 docs(governance): sync registry and admin review policy - Eduardo A.
+- 2026-07-27 [Governance] Adopt requirement 096: Bun as internal engineering runtime (JUM-22) (#199) - Eduardo A.
+- 2026-07-27 docs(governance): add requirement 096 bun internal tooling runtime - Eduardo A.
+- 2026-07-27 [Research] Establish Bun compatibility and migration baseline (JUM-23) (#196) - Eduardo A.
+- 2026-07-27 docs(bun): establish bun compatibility and migration baseline - Eduardo A.
+- 2026-07-27 [CI] Eliminate anonymous agent-registry API quota (#194) - Eduardo A.
+- 2026-07-27 ci(registry): avoid anonymous API quota for pinned checks - web2solutions
+- 2026-07-27 [CI] Enforce branch-aware gates and isolate website Storybook (#193) - Eduardo A.
+- 2026-07-27 chore(registry): sync CI task release - web2solutions
+- 2026-07-27 fix(ci): use range diffs for task branch pushes - web2solutions
+- 2026-07-27 ci(workflows): enforce branch-aware quality gates - web2solutions
+- 2026-07-27 [Test] Isolate Storybook quality gates to Jumentix website (#190) - Eduardo A.
+- 2026-07-27 chore(agents): sync released website assignment - web2solutions
+- 2026-07-27 test(website): isolate Storybook quality gates - web2solutions
+- 2026-07-27 [Governance] Require documentation task before epic completion (#186) - Eduardo A.
+- 2026-07-26 docs: require docs task before epic completion - Eduardo A.
+- 2026-07-26 [Chore] Sync completed CI agent assignment (#183) (#187) - Eduardo A.
+- 2026-07-26 chore(agents): sync completed CI assignment (#183) - web2solutions
 - 2026-07-26 [Bug] Preserve unit LCOV for Codecov (#183) (#184) - Eduardo A.
 - 2026-07-26 fix(governance): support bug PR prefixes (#185) - web2solutions
 - 2026-07-26 fix(ci): preserve unit LCOV for Codecov (#183) - web2solutions
-- 2026-07-26 docs: require docs task before epic completion - Eduardo A.
 - 2026-07-26 feat(website): rebuild documentation experience (#172) (#181) - Eduardo A.
 - 2026-07-26 [CI] Enforce focused epic metadata without false-green task gates (#176) - Eduardo A.
 - 2026-07-26 feat(website): rebuild OSS commercial experience (#171) - Eduardo A.
@@ -20,6 +67,7 @@
 - 2026-07-26 chore(governance): require milestones for focused epics - web2solutions
 - 2026-07-26 [Governance] Require epic-focused task delegation (#164) - Eduardo A.
 - 2026-07-26 chore(governance): require epic-focused task delegation - web2solutions
+- 2026-07-26 [Release] Promote dev to main (#156) - Eduardo A.
 - 2026-07-26 [Fix][CI] Resolve remaining agent registry lint style (#160) - Eduardo A.
 - 2026-07-26 fix(ci): satisfy agent registry test lint - web2solutions
 - 2026-07-26 [Fix][CI] Restore release lint compliance (#158) - Eduardo A.
@@ -32,6 +80,7 @@
 - 2026-07-26 chore(ci): add change-focused task test gates - web2solutions
 - 2026-07-26 [Chore] Apply branch-aware quality gates (#148) - Eduardo A.
 - 2026-07-26 chore(ci): add branch-aware quality gates - web2solutions
+- 2026-07-26 [Release] Promote dev critical remediation to main (#146) - Eduardo A.
 - 2026-07-25 Merge remote-tracking branch 'origin/main' into dev - web2solutions
 - 2026-07-25 docs(governance): require feature/bug branch cleanup after merge into dev (#145) - Eduardo A.
 - 2026-07-25 chore(ci-governance): fix docs-only changelog CI and add branch/PR requirements - web2solutions
