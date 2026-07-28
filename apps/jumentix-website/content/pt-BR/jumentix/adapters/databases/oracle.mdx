@@ -1,0 +1,33 @@
+---
+title: "Adaptador Oracle"
+description: "Documentação de Adaptadores de banco de dados."
+---
+
+> Source: `../../documentation/md/adapters/databases/ORACLE.pt-BR.md`
+
+# Adaptador Oracle
+
+## Tecnologia
+
+Sequelize + perfil Oracle.
+
+## Crie serviços com Oracle
+
+1. Inicie o contêiner:
+
+```bash
+pnpm run docker:up:oracle
+```
+
+2. Definir ambiente:
+
+```bash
+AAA_DATABASE_DRIVER=Oracle
+AAA_DB_HOST=127.0.0.1
+AAA_DB_PORT=1521
+AAA_DB_NAME=XE
+AAA_DB_USERNAME=system
+AAA_DB_PASSWORD=oracle
+```
+
+3. Inicie o adaptador de serviço.

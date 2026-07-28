@@ -1,0 +1,40 @@
+---
+title: "@jumentix/sdk-grpc-client"
+description: "Packages documentation."
+---
+
+> Source: `../../packages/sdk-grpc-client/README.md`
+
+# @jumentix/sdk-grpc-client
+
+gRPC SDK client for the realtime gateway, driven by AsyncAPI gRPC spec (`/spec/asyncapi/1.0.0.grpc.yml`).
+
+## What it does
+
+- Loads AsyncAPI gRPC server metadata.
+- Loads the canonical `spec/asyncapi/async-api.proto` in the repository and the
+  copied `dist/proto/async-api.proto` in the published package.
+- Creates gRPC client for `realtime.AsyncApiGateway`.
+- Sends standardized request envelope.
+
+## Quick usage
+
+```ts
+import { GrpcApiClient } from '@jumentix/sdk-grpc-client';
+
+const client = new GrpcApiClient('localhost:3002');
+
+const response = await client.request({
+  operationId: 'createUser',
+  input: {
+    username: 'john',
+    password: 'StrongPass#123'
+  }
+});
+```
+
+## Build
+
+```bash
+pnpm --filter @jumentix/sdk-grpc-client build
+```

@@ -2,9 +2,15 @@
 const https = require('https');
 
 const {
+  buildBranchRevisionUrl,
   buildRawUrl,
+  encodeRawPath,
+  fetchJson,
   fetchText,
-  normalize
+  githubApiHeaders,
+  mirrorsMatch,
+  normalize,
+  resolveBranchRevision
 } = require('../../../../../ci-cd/check-agent-registry-source');
 
 describe('check-agent-registry-source', () => {
@@ -12,13 +18,16 @@ describe('check-agent-registry-source', () => {
     jest.restoreAllMocks();
   });
 
-  it('builds the GitHub contents API URL for the configured registry branch', () => {
+  it('builds an immutable raw-content URL with encoded path segments', () => {
     expect.hasAssertions();
+    const revision = '0123456789abcdef0123456789abcdef01234567';
     expect(buildRawUrl({
       repository: 'web2solutions/jumentix-agent-registry',
-      branch: 'main/next',
-      remotePath: '/AGENT-REGISTRY.md'
-    })).toBe('https://api.github.com/repos/web2solutions/jumentix-agent-registry/contents/AGENT-REGISTRY.md?ref=main%2Fnext');
+      revision,
+      remotePath: '/registry files/AGENT-REGISTRY.md'
+    })).toBe(
+      `https://raw.githubusercontent.com/web2solutions/jumentix-agent-registry/${revision}/registry%20files/AGENT-REGISTRY.md`
+    );
   });
 
   it('rejects invalid repository coordinates', () => {
@@ -27,12 +36,43 @@ describe('check-agent-registry-source', () => {
       .toThrow('Invalid repository format');
   });
 
+  it('uses an immutable configured revision when building the canonical content URL', () => {
+    expect.hasAssertions();
+    const revision = '0123456789abcdef0123456789abcdef01234567';
+    expect(buildRawUrl({
+      repository: 'web2solutions/jumentix-agent-registry',
+      branch: 'main',
+      revision,
+      remotePath: 'AGENT-REGISTRY.md'
+    })).toContain(`/${revision}/AGENT-REGISTRY.md`);
+  });
+
+  it('rejects mutable refs and unsafe registry paths', () => {
+    expect.hasAssertions();
+    expect(() => buildRawUrl({
+      repository: 'web2solutions/jumentix-agent-registry',
+      revision: 'main',
+      remotePath: 'AGENT-REGISTRY.md'
+    })).toThrow('full immutable commit SHA');
+    expect(() => encodeRawPath('../AGENT-REGISTRY.md')).toThrow('Invalid registry remote path');
+  });
+
+  it('builds the branch revision URL used by synchronization', () => {
+    expect.hasAssertions();
+    expect(buildBranchRevisionUrl({
+      repository: 'web2solutions/jumentix-agent-registry',
+      branch: 'main/next'
+    })).toBe('https://api.github.com/repos/web2solutions/jumentix-agent-registry/commits/main%2Fnext');
+  });
+
   it('normalizes line endings and trailing whitespace before comparing registry mirrors', () => {
     expect.hasAssertions();
     expect(normalize('registry\r\nentry\r\n\r\n')).toBe('registry\nentry');
+    expect(mirrorsMatch('registry\r\nentry\n', 'registry\nentry')).toBe(true);
+    expect(mirrorsMatch('registry\nlocal', 'registry\ncanonical')).toBe(false);
   });
 
-  it('requests raw canonical content from the GitHub contents API', async () => {
+  it('requests immutable canonical content without GitHub API authentication', async () => {
     expect.hasAssertions();
     const response = {
       statusCode: 200,
@@ -53,7 +93,7 @@ describe('check-agent-registry-source', () => {
       const [, options, callback] = args as [string, object, (value: object) => void];
       expect(options).toStrictEqual({
         headers: {
-          Accept: 'application/vnd.github.raw+json',
+          Accept: 'text/plain',
           'User-Agent': 'jumentix-agent-registry-check'
         }
       });
@@ -61,7 +101,7 @@ describe('check-agent-registry-source', () => {
       return request as never;
     });
 
-    await expect(fetchText('https://api.github.com/repos/web2solutions/jumentix-agent-registry/contents/AGENT-REGISTRY.md?ref=main'))
+    await expect(fetchText('https://raw.githubusercontent.com/web2solutions/jumentix-agent-registry/revision/AGENT-REGISTRY.md'))
       .resolves.toBe('canonical');
   });
 
@@ -81,5 +121,124 @@ describe('check-agent-registry-source', () => {
 
     await expect(fetchText('https://api.github.com/repos/web2solutions/jumentix-agent-registry/contents/missing'))
       .rejects.toThrow('HTTP 404');
+  });
+
+  it('wraps canonical registry transport failures without leaking credentials', async () => {
+    expect.hasAssertions();
+    const request: { on: jest.Mock } = { on: jest.fn() };
+    request.on.mockImplementation((event: string, handler: (error: Error) => void) => {
+      expect(event).toBe('error');
+      handler(new Error('socket unavailable'));
+      return request;
+    });
+    jest.spyOn(https, 'get').mockReturnValue(request as never);
+
+    await expect(fetchText('https://raw.githubusercontent.com/example/revision/file'))
+      .rejects.toThrow('immutable canonical registry content: socket unavailable');
+  });
+
+  it('adds API authentication only when branch resolution has an available token', () => {
+    expect.hasAssertions();
+    expect(githubApiHeaders({})).toStrictEqual({
+      Accept: 'application/vnd.github+json',
+      'User-Agent': 'jumentix-agent-registry-check'
+    });
+    expect(githubApiHeaders({ GITHUB_TOKEN: 'secret-value' })).toStrictEqual({
+      Accept: 'application/vnd.github+json',
+      'User-Agent': 'jumentix-agent-registry-check',
+      Authorization: 'Bearer secret-value'
+    });
+  });
+
+  it('parses canonical GitHub JSON responses', async () => {
+    expect.hasAssertions();
+    const response = {
+      statusCode: 200,
+      setEncoding: jest.fn(),
+      on: jest.fn()
+    };
+    const request = { on: jest.fn() };
+
+    response.on.mockImplementation((event: string, handler: (value?: string) => void) => {
+      const responseEvents: Record<string, () => void> = {
+        data: () => handler('{"sha":"0123456789abcdef0123456789abcdef01234567"}'),
+        end: () => handler()
+      };
+      responseEvents[event]();
+      return response;
+    });
+    jest.spyOn(https, 'get').mockImplementation((...args: unknown[]) => {
+      const [, options, callback] = args as [string, object, (value: object) => void];
+      expect(options).toStrictEqual({
+        headers: {
+          Accept: 'application/vnd.github+json',
+          'User-Agent': 'jumentix-agent-registry-check'
+        }
+      });
+      callback(response);
+      return request as never;
+    });
+
+    await expect(fetchJson('https://api.github.com/example'))
+      .resolves.toStrictEqual({ sha: '0123456789abcdef0123456789abcdef01234567' });
+  });
+
+  it('resolves the immutable revision for the configured canonical branch', async () => {
+    expect.hasAssertions();
+    const revision = '0123456789abcdef0123456789abcdef01234567';
+    const response = {
+      statusCode: 200,
+      setEncoding: jest.fn(),
+      on: jest.fn()
+    };
+    const request = { on: jest.fn() };
+
+    response.on.mockImplementation((event: string, handler: (value?: string) => void) => {
+      const responseEvents: Record<string, () => void> = {
+        data: () => handler(JSON.stringify({ sha: revision })),
+        end: () => handler()
+      };
+      responseEvents[event]();
+      return response;
+    });
+    jest.spyOn(https, 'get').mockImplementation((...args: unknown[]) => {
+      const [, , callback] = args as [string, object, (value: object) => void];
+      callback(response);
+      return request as never;
+    });
+
+    await expect(resolveBranchRevision({
+      repository: 'web2solutions/jumentix-agent-registry',
+      branch: 'main'
+    })).resolves.toBe(revision);
+  });
+
+  it('fails closed when branch resolution does not return a full commit SHA', async () => {
+    expect.hasAssertions();
+    const response = {
+      statusCode: 200,
+      setEncoding: jest.fn(),
+      on: jest.fn()
+    };
+    const request = { on: jest.fn() };
+
+    response.on.mockImplementation((event: string, handler: (value?: string) => void) => {
+      const responseEvents: Record<string, () => void> = {
+        data: () => handler('{"sha":"main"}'),
+        end: () => handler()
+      };
+      responseEvents[event]();
+      return response;
+    });
+    jest.spyOn(https, 'get').mockImplementation((...args: unknown[]) => {
+      const [, , callback] = args as [string, object, (value: object) => void];
+      callback(response);
+      return request as never;
+    });
+
+    await expect(resolveBranchRevision({
+      repository: 'web2solutions/jumentix-agent-registry',
+      branch: 'main'
+    })).rejects.toThrow('Could not resolve canonical registry revision');
   });
 });

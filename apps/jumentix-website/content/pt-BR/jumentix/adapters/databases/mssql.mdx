@@ -1,0 +1,33 @@
+---
+title: "Adaptador SQL Server"
+description: "Documentação de Adaptadores de banco de dados."
+---
+
+> Source: `../../documentation/md/adapters/databases/MSSQL.pt-BR.md`
+
+# Adaptador SQL Server
+
+## Tecnologia
+
+Sequelize + perfil tedioso.
+
+## Construa serviços com SQL Server
+
+1. Inicie o contêiner:
+
+```bash
+pnpm run docker:up:mssql
+```
+
+2. Definir ambiente:
+
+```bash
+AAA_DATABASE_DRIVER=MSSQL
+AAA_DB_HOST=127.0.0.1
+AAA_DB_PORT=1433
+AAA_DB_NAME=aaa
+AAA_DB_USERNAME=sa
+AAA_DB_PASSWORD=YourStrong!Passw0rd
+```
+
+3. Inicie o adaptador de serviço.

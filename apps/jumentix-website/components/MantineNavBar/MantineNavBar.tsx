@@ -1,72 +1,62 @@
 'use client';
 
 import { Navbar } from 'nextra-theme-docs';
-import { ActionIcon, Group, Image, Text, Tooltip } from '@mantine/core';
-import { IconBooks, IconMessages } from '@tabler/icons-react';
+import { usePathname } from 'next/navigation';
+import { IconBrandGithub, IconLanguage } from '@tabler/icons-react';
+import {
+  BrandMark,
+  StatusBadge,
+} from '../design-system';
 import { ColorSchemeControl } from '../ColorSchemeControl/ColorSchemeControl';
-import { Logo } from '../Logo/Logo';
 import { MantineNextraThemeObserver } from '../MantineNextraThemeObserver/MantineNextraThemeObserver';
+import classes from './MantineNavBar.module.css';
 
-/**
- * You can customize the Nextra NavBar component.
- * Don't forget to use the MantineProvider and MantineNextraThemeObserver components.
- *
- * @since 1.0.0
- *
- */
+const localizedDocsPath = (pathname: string, portuguese: boolean) => {
+  if (portuguese) {
+    return pathname.replace(/^\/docs\/pt-BR(?=\/|$)/, '/docs') || '/docs/jumentix';
+  }
+  return pathname.replace(/^\/docs(?=\/|$)/, '/docs/pt-BR');
+};
+
 export const MantineNavBar = () => {
+  const pathname = usePathname();
+  const portuguese = pathname.startsWith('/docs/pt-BR');
+  const basePath = portuguese ? '/docs/pt-BR/jumentix' : '/docs/jumentix';
+
+  const links = [
+    [portuguese ? 'Conceitos' : 'Concepts', `${basePath}/concepts`],
+    [portuguese ? 'Guias' : 'Guides', `${basePath}/guides`],
+    [portuguese ? 'Adaptadores' : 'Adapters', `${basePath}/adapters`],
+    [portuguese ? 'Pacotes' : 'Packages', `${basePath}/packages`],
+  ];
+
   return (
     <>
       <MantineNextraThemeObserver />
       <Navbar
-        logo={
-          <Group align="center" gap={4}>
-            <Image
-              src="/brand/jumentix-mascot.png"
-              alt="Jumentix mascot"
-              w={26}
-              h={26}
-              radius="xl"
-            />
-            <Logo />
-            <Text size="lg" fw={300} c="blue" visibleFrom="xl">
-              Jumentix
-            </Text>
-          </Group>
-        }
-        chatLink="/contact"
+        logo={<BrandMark href={portuguese ? '/pt-BR' : '/'} />}
+        projectIcon={<IconBrandGithub size={20} />}
         projectLink="https://github.com/web2solutions/aaa-typescript-boilerplate"
       >
-        <Group gap="sm" wrap="nowrap">
+        <nav className={classes.docsNav} aria-label={portuguese ? 'Seções da documentação' : 'Documentation sections'}>
+          {links.map(([label, href]) => (
+            <a href={href} key={href} aria-current={pathname.startsWith(href) ? 'page' : undefined}>
+              {label}
+            </a>
+          ))}
+        </nav>
+        <div className={classes.actions}>
+          <StatusBadge>v0.0.2</StatusBadge>
+          <a
+            className={classes.locale}
+            href={localizedDocsPath(pathname, portuguese)}
+            aria-label={portuguese ? 'Read documentation in English' : 'Leia a documentação em português'}
+          >
+            <IconLanguage size={17} />
+            {portuguese ? 'EN' : 'PT-BR'}
+          </a>
           <ColorSchemeControl />
-          <Tooltip label="Technical docs" withArrow>
-            <ActionIcon
-              component="a"
-              href="/docs/jumentix"
-              size="lg"
-              radius="xl"
-              variant="gradient"
-              gradient={{ from: 'blue', to: 'cyan' }}
-              aria-label="Technical docs"
-            >
-              <IconBooks size={16} />
-            </ActionIcon>
-          </Tooltip>
-          <Tooltip label="Book enterprise demo" withArrow>
-            <ActionIcon
-              component="a"
-              href="/contact"
-              size="lg"
-              radius="xl"
-              variant="filled"
-              color="green"
-              aria-label="Book enterprise demo"
-              styles={{ root: { color: 'var(--mantine-color-white)' } }}
-            >
-              <IconMessages size={16} />
-            </ActionIcon>
-          </Tooltip>
-        </Group>
+        </div>
       </Navbar>
     </>
   );

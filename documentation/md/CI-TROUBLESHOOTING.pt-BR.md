@@ -109,7 +109,9 @@ Sintomas:
 - A verificação de PR falha na cobertura do projeto e/ou cobertura de patch
 
 Causa:
-- cobertura abaixo da meta.
+- cobertura abaixo da meta
+- `coverage/lcov.info` está vazio porque um alvo de smoke ou integração substituiu
+  o artefato dos testes unitários
 
 Padrão atual:
 - meta do projeto: `95%`
@@ -119,13 +121,21 @@ Consertar:
 
 ```bash
 pnpm run test:unit
+wc -l coverage/lcov.info
+pnpm run test:integration:service-management
+wc -l coverage/lcov.info
 ```
 
-Em seguida, adicione ou melhore testes em caminhos de código alterados até que os limites sejam atingidos.
+A contagem de linhas do LCOV deve permanecer diferente de zero e inalterada após o
+alvo de integração. Runners de integração e smoke devem usar `--coverage=false`;
+os testes unitários são a etapa oficial que produz cobertura. Se o LCOV for válido,
+mas a cobertura estiver abaixo do limite, adicione ou melhore testes nos caminhos
+de código alterados.
 
 Arquivos relacionados:
 - `codecov.yml`
 - `jest.config.js`
+- `ci-cd/run-service-management-integration.js`
 
 ## 6) Os ganchos Husky não estão sendo executados localmente
 

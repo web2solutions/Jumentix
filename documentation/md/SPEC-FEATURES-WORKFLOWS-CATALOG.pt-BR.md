@@ -144,6 +144,50 @@ Verificações obrigatórias:
 3. Varreduras/portões de segurança
 4. Evidências de ligação de governança em RP
 
+## Grupo de Capacidade G - Site do produto e portal de documentação
+
+Inclui:
+
+1. Páginas comerciais de produto e casos de uso
+2. Documentação técnica baseada em Markdown
+3. Rotas canônicas e retrocompatíveis de documentação
+4. Busca, sidebar, índice da página, feedback, links de edição e navegação responsiva
+5. Automação de build e publicação na Vercel
+
+Especificações necessárias:
+
+1. `.agents/requirements/069-jumentix-website-commercial-static-vercel-governance.md`
+2. `.agents/requirements/091-jumentix-website-design-system-and-storybook.md`
+3. `.agents/requirements/092-jumentix-oss-commercial-experience.md`
+4. `apps/jumentix-website/documentation/COMMERCIAL-EXPERIENCE.pt-BR.md`
+5. `apps/jumentix-website/documentation/CONTENT-PIPELINE.pt-BR.md`
+6. `apps/jumentix-website/documentation/VERCEL-DEPLOYMENT.pt-BR.md`
+7. Auditoria de UX e arquitetura da informação em
+   `apps/jumentix-website/documentation/research`
+
+Verificações obrigatórias:
+
+1. Typecheck e build de produção do site
+2. Verificações prepublish de rotas e marcadores de conteúdo inválido
+3. Verificação no navegador de layout, navegação, links e estados responsivos
+4. Smoke test do deploy de produção na Vercel
+5. Cobertura Storybook para componentes reutilizáveis do site
+6. Build estático do Storybook e validação smoke do manifesto
+7. Validação de acessibilidade, temas, viewports e redução de movimento do design system
+8. Paridade das rotas comerciais EN/PT e navegação que preserva o idioma
+9. Metadados canônicos, hostname do sitemap, paginação do changelog e integridade dos links
+
+Limite do workflow:
+
+1. As verificações do Storybook pertencem e são executadas exclusivamente pelo workflow de
+   `apps/jumentix-website`.
+2. O Storybook não faz parte do workflow principal do monorepo nem de sua matriz global de testes
+   e não deve bloquear pacotes, aplicações, templates de backend ou serviços não relacionados.
+3. Os comandos raiz `website:storybook*` são atalhos que delegam ao workspace do website, e não
+   gates globais.
+4. Alterações e releases do website podem exigir build, smoke, acessibilidade e testes de
+   componentes do Storybook através do workflow do website.
+
 ## Definição de fluxo de trabalho (especificações primeiro)
 
 Para cada grupo de capacidade:

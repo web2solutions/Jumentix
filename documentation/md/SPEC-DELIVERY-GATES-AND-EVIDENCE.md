@@ -77,13 +77,23 @@ Evidence:
 Pass criteria:
 
 1. Issue, project item, and PR are linked.
-2. Priority/size/estimation lifecycle fields are populated.
-3. Requirement/NFR references are included when applicable.
+2. The task Issue and epic/Project have explicit, current status, priority, start/target dates,
+   labels, milestone, and accountable ownership.
+3. Dates and classifications are mutually consistent, and material metadata changes are auditable
+   in Project Updates.
+4. Requirement/NFR references are included when applicable.
+4. Every Linear Project used as an epic has a dedicated documentation Issue.
+5. The epic documentation Issue is completed before the Project is set to `Completed`.
+6. Any administrative review-count bypass has explicit project-owner approval recorded in the
+   task or PR and all required checks remain reported and terminal green.
 
 Evidence:
 
-1. GitHub issue/project/PR cross-links.
-2. Updated `.agents` registry when governance or NFR changed.
+1. Linear Issue/Project and PR cross-links.
+2. Linear field snapshots or structured fallback records plus Project Update history.
+3. Updated `.agents` registry when governance or NFR changed.
+3. Linear Project link plus the completed documentation Issue, PR/commit links, changed-document
+   inventory, bilingual parity evidence when applicable, and documentation integrity results.
 
 ## Evidence Packaging Standard for PRs
 
@@ -103,3 +113,7 @@ A PR is not merge-ready when any of these is missing:
 2. Required checks or coverage threshold.
 3. Governance traceability links.
 4. Required `.agents` updates for NFR/governance impact.
+5. Complete and consistent Linear task/Project metadata required by Requirement `097`.
+5. A missing or incomplete dedicated documentation Issue for an epic being completed.
+6. An administrative override that attempts to waive delivery topology or a failed, missing,
+   skipped, cancelled, timed-out, or incomplete required gate.

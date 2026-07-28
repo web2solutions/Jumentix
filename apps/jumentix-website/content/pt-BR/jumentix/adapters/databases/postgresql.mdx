@@ -1,0 +1,33 @@
+---
+title: "Adaptador PostgreSQL"
+description: "Documentação de Adaptadores de banco de dados."
+---
+
+> Source: `../../documentation/md/adapters/databases/POSTGRESQL.pt-BR.md`
+
+# Adaptador PostgreSQL
+
+## Tecnologia
+
+Perfil de cliente SQL baseado em sequencial.
+
+## Crie serviços com PostgreSQL
+
+1. Inicie o contêiner:
+
+```bash
+pnpm run docker:up:postgresql
+```
+
+2. Definir ambiente:
+
+```bash
+AAA_DATABASE_DRIVER=PostgreSQL
+AAA_DB_HOST=127.0.0.1
+AAA_DB_PORT=5432
+AAA_DB_NAME=aaa
+AAA_DB_USERNAME=postgres
+AAA_DB_PASSWORD=postgres
+```
+
+3. Inicie o adaptador de serviço (comando `dev:*`).

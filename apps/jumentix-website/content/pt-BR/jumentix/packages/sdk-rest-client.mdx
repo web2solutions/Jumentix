@@ -1,0 +1,39 @@
+---
+title: "@jumentix/sdk-rest-client"
+description: "Documentação de Pacotes."
+---
+
+> Source: `../../packages/sdk-rest-client/README.pt-BR.md`
+
+# @jumentix/sdk-rest-client
+
+Cliente REST SDK conduzido por OperationIds OpenAPI (`/spec/1.0.0.yml`).
+
+## O que faz
+
+- Carrega especificações OpenAPI da pasta `spec` local.
+- Resolve `operaçãoId -> método/caminho`.
+- Constrói URL com parâmetros de caminho/consulta.
+- Executa solicitação através de `fetch` nativo.
+
+## Uso rápido
+
+```ts
+import { RestApiClient } from '@jumentix/sdk-rest-client';
+
+const client = new RestApiClient('http://localhost:3000/api/1.0.0');
+
+const response = await client.request({
+  operationId: 'createUser',
+  body: {
+    username: 'john',
+    password: 'StrongPass#123'
+  }
+});
+```
+
+## Construir
+
+```bash
+pnpm --filter @jumentix/sdk-rest-client build
+```

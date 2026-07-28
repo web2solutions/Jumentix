@@ -5,6 +5,11 @@
 ## Project Tracking (Required)
 
 - GitHub Project: `Jumentix` (`https://github.com/users/web2solutions/projects/1`)
+- Focused epic link:
+- Epic milestone:
+- Primary task nature: `governance`
+- Epic-delegated agent ID:
+- Child task issue link:
 - Project item link:
 - Issue link:
 - Current status in project:

@@ -1,11 +1,11 @@
 # This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
 
-name: Run tests
+name: Run branch-aware tests
 
 on:
   push:
-    branches: [ "main", "dev" ]
+    branches: [ "**" ]
   pull_request:
     branches: [ "dev", "main" ]
 
@@ -48,10 +48,16 @@ jobs:
     # - run: ./wait-for-redis.sh localhost:6379
     - run: wget https://github.com/jwilder/dockerize/releases/download/v0.6.1/dockerize-linux-amd64-v0.6.1.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-v0.6.1.tar.gz && rm dockerize-linux-amd64-v0.6.1.tar.gz
     - run: dockerize -wait tcp://localhost:6379 -timeout 1m
-    - name: Run branch-aware quality gate
+    - name: Run canonical branch quality gate
       run: pnpm run ci:gate:branch
       env:
         JUMENTIX_QUALITY_GATE_TARGET: ${{ github.base_ref || github.ref_name }}
+        JUMENTIX_TASK_TEST_MODE: range
+        JUMENTIX_TASK_TEST_BASE: origin/dev
+        AAA_PR_TITLE: ${{ github.event.pull_request.title || '' }}
+        AAA_PR_BODY: ${{ github.event.pull_request.body || '' }}
+        AAA_PR_HEAD_REF: ${{ github.head_ref || '' }}
+        AAA_PR_BASE_REF: ${{ github.base_ref || '' }}
         AAA_CI_GATE_RESULT_FILE: artifacts/ci/branch-quality-gate.json
         AAA_CI_MATRIX_RESULT_FILE: artifacts/ci/full-test-matrix.json
     - name: Upload branch quality-gate evidence
@@ -61,7 +67,7 @@ jobs:
         name: branch-quality-gate-${{ matrix.node-version }}-redis-${{ matrix.redis }}
         path: artifacts/ci/branch-quality-gate.json
         if-no-files-found: error
-    - name: Upload full-matrix evidence for main
+    - name: Upload full-matrix evidence
       if: always() && (github.base_ref == 'main' || github.ref_name == 'main')
       uses: actions/upload-artifact@v4
       with:

@@ -1,0 +1,32 @@
+diff --git a/dist/layout.js b/dist/layout.js
+index 57a511faacf75820f822be305d66c61494ca998a..34eab5d21cc843abd78974d8a182e329e9ad6032 100644
+--- a/dist/layout.js
++++ b/dist/layout.js
+@@ -27,7 +27,10 @@ const Layout = (t0) => {
+     const {
+       data: t12,
+       error
+-    } = LayoutPropsSchema.safeParse(themeConfig);
++    } = LayoutPropsSchema.safeParse({
++      ...themeConfig,
++      children
++    });
+     data = t12;
+     if (error) {
+       throw z.prettifyError(error);
+@@ -43,6 +46,7 @@ const Layout = (t0) => {
+   let nextThemes;
+   let pageMap;
+   let rest;
++  let validatedChildren;
+   if ($[5] !== data) {
+     ({
+       footer,
+@@ -50,6 +54,7 @@ const Layout = (t0) => {
+       pageMap,
+       nextThemes,
+       banner,
++      children: validatedChildren,
+       ...rest
+     } = data);
+     $[5] = data;

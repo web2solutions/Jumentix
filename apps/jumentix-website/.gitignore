@@ -85,6 +85,7 @@ web_modules/
 
 # Next.js build output
 .next
+storybook-static
 out
 
 public/_pagefind/**

@@ -1,0 +1,33 @@
+---
+title: "Architecture and Structure"
+description: "DDD, Hexagonal, Event-Driven, and monorepo structure."
+---
+
+> Source: `../../documentation/consumers/ARCHITECTURE.md`
+
+# Architecture for Consumers
+
+Jumentix delivers a practical architecture baseline for production software:
+
+- Domain Driven Design (DDD)
+- Hexagonal Architecture
+- Event-Driven communication patterns
+
+## Consumer Impact
+
+- Consistent module boundaries for maintainable services
+- Easier onboarding for engineering teams
+- Safe growth from single service to service ecosystems
+- Lower refactor cost when introducing new interfaces or data technologies
+
+## Interface Options
+
+- HTTP/REST adapters for multiple Node.js frameworks
+- Realtime adapters for WebSocket and gRPC
+- Function-oriented runtime paths for cloud providers
+
+## Data and Integration Options
+
+- In-memory official adapter for fast development/testing
+- SQL and NoSQL integration paths through reusable data adapters
+- Message mediator pattern for decoupled inter-domain/service communication
