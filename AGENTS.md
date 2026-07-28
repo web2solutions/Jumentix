@@ -45,7 +45,7 @@ Primary Codex runtime instructions for this repository:
 23. **Task PRs target `dev` first**. Only release-promotion PRs from `dev` to `main`
     may target `main`. Direct task/feature/fix PRs to `main` are prohibited
     (Requirement `086`).
-24. **Before every task**, fetch/read current `main` and `dev`, inspect every requirement for changes, and refresh registry branch-check evidence; do not execute until Requirement `099` is satisfied.
+24. **Before every task**, fetch/read current `main` and `dev`, inspect every requirement for changes, read `.agents/NFR-REGISTRY.md` and the canonical specification index, and refresh registry branch-check evidence; do not execute until Requirement `099` is satisfied.
 14. Publish every task's start, material progress, blocker changes, review readiness, and final
     handoff in the Linear epic Project's `Project Updates` feed under requirement `095`; Issue
     comments and status changes alone are insufficient.
