@@ -33,6 +33,7 @@ closed when the selected required suite is missing, skipped, empty, aborted, or 
 19. Scope-aware optimization is permitted only for task-branch commit/push validation;
     it must not omit all unit tests for `dev` PRs or required matrix cells for `main`.
 20. Exceptions require explicit approval recorded in the linked issue and pull request; exceptions may not bypass the `dev`-first promotion path or convert a failed or incomplete matrix into success.
+21. PR review is not a merge prerequisite. All required non-review checks remain mandatory and cannot be bypassed for any merge.
 
 ## Examples
 

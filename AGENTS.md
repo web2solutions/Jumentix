@@ -34,8 +34,8 @@ Primary Codex runtime instructions for this repository:
 19. **Wait for all required CI checks to pass** before merging. PRs targeting `dev` require
     `pnpm run test:unit` to pass. PRs targeting `main` require the full matrix
     (`pnpm run ci:gate:strict`) (Requirements `087`, `088`).
-20. **Obtain at least one approving review** before merging any PR (Requirement `098`,
-    branch protection).
+20. **PR review is optional**; every other required CI, quality, coverage, security, and
+    governance check must be terminally successful and cannot be bypassed.
 21. **Branch naming**: `codex/<nature>/<issue-id>-<short-slug>` for Codex agents.
     Allowed natures: `feature`, `fix`, `security`, `governance`, `docs`, `refactor`,
     `test`, `ci`, `release`, `chore` (Requirement `086`).
@@ -45,6 +45,15 @@ Primary Codex runtime instructions for this repository:
 23. **Task PRs target `dev` first**. Only release-promotion PRs from `dev` to `main`
     may target `main`. Direct task/feature/fix PRs to `main` are prohibited
     (Requirement `086`).
+14. Publish every task's start, material progress, blocker changes, review readiness, and final
+    handoff in the Linear epic Project's `Project Updates` feed under requirement `095`; Issue
+    comments and status changes alone are insufficient.
+15. Report exact gate states in Project Updates and never describe pending, missing, cancelled,
+    timed-out, skipped, or failed required checks as passing.
+16. Before planning or executing any task, locate, read, and understand the complete current
+    documentation inventory, every file in `.agents/requirements/`, `.agents/NFR-REGISTRY.md`,
+    and the canonical specification index. All requirements are mandatory; uncertainty or an
+    unread applicable source blocks execution until resolved.
 
 Canonical governance/spec references:
 
