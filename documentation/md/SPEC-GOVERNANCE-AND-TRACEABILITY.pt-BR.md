@@ -178,6 +178,7 @@ O Jumentix oferece suporte oficial aos seguintes agentes de engenharia:
 1. Codex (`AGENTS.md`)
 2. Claude Code (`CLAUDE.md`)
 3. Grok (`GROK.md`)
+4. OpenCode (`OPENCODE.md`)
 
 As instruções desses agentes devem permanecer equivalentes para governança, rastreabilidade, sincronização de documentação e gates de CI/cobertura.
 
