@@ -48,19 +48,12 @@ jobs:
     # - run: ./wait-for-redis.sh localhost:6379
     - run: wget https://github.com/jwilder/dockerize/releases/download/v0.6.1/dockerize-linux-amd64-v0.6.1.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-v0.6.1.tar.gz && rm dockerize-linux-amd64-v0.6.1.tar.gz
     - run: dockerize -wait tcp://localhost:6379 -timeout 1m
-<<<<<<< HEAD
-    - name: Run canonical full matrix
-      run: pnpm run ci:gate:branch
-      env:
-        JUMENTIX_QUALITY_GATE_TARGET: ${{ github.base_ref || github.ref_name }}
-=======
     - name: Run canonical branch quality gate
       run: pnpm run ci:gate:branch
       env:
         JUMENTIX_QUALITY_GATE_TARGET: ${{ github.base_ref || github.ref_name }}
         JUMENTIX_TASK_TEST_MODE: range
         JUMENTIX_TASK_TEST_BASE: origin/dev
->>>>>>> origin/dev
         AAA_PR_TITLE: ${{ github.event.pull_request.title || '' }}
         AAA_PR_BODY: ${{ github.event.pull_request.body || '' }}
         AAA_PR_HEAD_REF: ${{ github.head_ref || '' }}
@@ -75,11 +68,7 @@ jobs:
         path: artifacts/ci/branch-quality-gate.json
         if-no-files-found: error
     - name: Upload full-matrix evidence
-<<<<<<< HEAD
-      if: always()
-=======
       if: always() && (github.base_ref == 'main' || github.ref_name == 'main')
->>>>>>> origin/dev
       uses: actions/upload-artifact@v4
       with:
         name: full-test-matrix-${{ matrix.node-version }}-redis-${{ matrix.redis }}

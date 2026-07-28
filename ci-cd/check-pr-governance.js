@@ -20,10 +20,7 @@ const REQUIRED_EPIC_FIELDS = Object.freeze([
 
 const TITLE_PREFIX_BY_NATURE = Object.freeze({
   feature: '[Feature]',
-<<<<<<< HEAD
-=======
   bug: '[Bug]',
->>>>>>> origin/dev
   fix: '[Fix]',
   security: '[Security]',
   governance: '[Governance]',
@@ -35,13 +32,10 @@ const TITLE_PREFIX_BY_NATURE = Object.freeze({
   chore: '[Chore]'
 });
 
-<<<<<<< HEAD
-=======
 const GITHUB_ISSUE_URL_PATTERN = /^https:\/\/github\.com\/[^/]+\/[^/]+\/issues\/\d+$/;
 const LINEAR_ISSUE_URL_PATTERN = /^https:\/\/linear\.app\/[^/]+\/issue\/[A-Z][A-Z0-9]*-\d+\/[^/?#]+$/;
 const LINEAR_PROJECT_URL_PATTERN = /^https:\/\/linear\.app\/[^/]+\/project\/[^/?#]+(?:\/(?:overview|activity))?$/;
 
->>>>>>> origin/dev
 function readField(body, field) {
   const escaped = field.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const match = String(body || '').match(new RegExp(`^- ${escaped}:\\s*(.+)$`, 'mi'));
@@ -122,13 +116,6 @@ function validatePullRequest(metadata) {
 
   const epicLink = readField(body, 'Focused epic link');
   const taskLink = readField(body, 'Child task issue link');
-<<<<<<< HEAD
-  if (epicLink && !/^https:\/\/github\.com\/[^/]+\/[^/]+\/issues\/\d+$/.test(epicLink)) {
-    failures.push('[pr-governance] focused epic link must be a GitHub issue URL');
-  }
-  if (taskLink && !/^https:\/\/github\.com\/[^/]+\/[^/]+\/issues\/\d+$/.test(taskLink)) {
-    failures.push('[pr-governance] child task issue link must be a GitHub issue URL');
-=======
   if (
     epicLink
     && !GITHUB_ISSUE_URL_PATTERN.test(epicLink)
@@ -142,7 +129,6 @@ function validatePullRequest(metadata) {
     && !LINEAR_ISSUE_URL_PATTERN.test(taskLink)
   ) {
     failures.push('[pr-governance] child task issue link must be a GitHub or Linear issue URL');
->>>>>>> origin/dev
   }
 
   return failures;
