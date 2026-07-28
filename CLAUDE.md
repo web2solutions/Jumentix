@@ -22,6 +22,10 @@ This repository supports Claude Code as an official engineering agent.
     comments and status changes alone are insufficient.
 14. Report exact gate states in Project Updates and never describe pending, missing, cancelled,
     timed-out, skipped, or failed required checks as passing.
+15. Before planning or executing any task, locate, read, and understand the complete current
+    documentation inventory, every file in `.agents/requirements/`, `.agents/NFR-REGISTRY.md`,
+    and the canonical specification index. All requirements are mandatory; uncertainty or an
+    unread applicable source blocks execution until resolved.
 
 ## Required Governance Links
 

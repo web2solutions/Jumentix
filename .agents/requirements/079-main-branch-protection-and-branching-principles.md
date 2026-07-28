@@ -12,6 +12,7 @@ The `main` branch is the protected integration baseline. Direct local developmen
 4. Delivery to `main` must happen through PR flow with mandatory checks.
 5. Repository administrators may bypass the required-review count only after explicit project-owner approval is recorded in the task or PR.
 6. Administrative review bypass never waives the `dev`-first path, required CI/coverage/security checks, conversation resolution, or false-green protections. Every required check must be reported and terminal green.
+7. Pull-request review is optional. Every other required CI, quality, coverage, security, and governance check is mandatory for merge and must not be bypassed, skipped, cancelled, timed out, or treated as green without a terminal successful result.
 
 ## Branching Principles
 
