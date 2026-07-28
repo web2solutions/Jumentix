@@ -20,6 +20,7 @@
 - Primary task nature:
 - Epic-delegated agent ID:
 - Child task issue link:
+- Project Update:
 - Project item link:
 - Issue link:
 - Current status in project:
