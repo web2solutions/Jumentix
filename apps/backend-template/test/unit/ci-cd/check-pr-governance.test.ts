@@ -11,19 +11,11 @@ const {
 } = require('../../../../../ci-cd/check-pr-governance');
 
 const validBody = [
-<<<<<<< HEAD
-  '- Focused epic link: https://github.com/web2solutions/aaa-typescript-boilerplate/issues/161',
-  '- Epic milestone: Governance foundation - 2026-08-08',
-  '- Primary task nature: ci',
-  '- Epic-delegated agent ID: codex-primary-001',
-  '- Child task issue link: https://github.com/web2solutions/aaa-typescript-boilerplate/issues/163'
-=======
   '- Focused epic link: https://linear.app/jumentix/project/governance-foundation-c3cb6bae0771/overview',
   '- Epic milestone: Governance foundation - 2026-08-08',
   '- Primary task nature: ci',
   '- Epic-delegated agent ID: codex-primary-001',
   '- Child task issue link: https://linear.app/jumentix/issue/JUM-163/focused-epic-metadata'
->>>>>>> origin/dev
 ].join('\n');
 
 describe('check-pr-governance', () => {
@@ -57,8 +49,6 @@ describe('check-pr-governance', () => {
     expect(readField(validBody, 'Epic-delegated agent ID')).toBe('codex-primary-001');
   });
 
-<<<<<<< HEAD
-=======
   it('accepts bug tasks with the canonical branch and title prefix', () => {
     expect.hasAssertions();
     const bugBody = validBody
@@ -96,7 +86,6 @@ describe('check-pr-governance', () => {
     ]));
   });
 
->>>>>>> origin/dev
   it('fails closed for missing metadata and mismatched task nature', () => {
     expect.hasAssertions();
     const failures = validatePullRequest({
