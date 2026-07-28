@@ -101,6 +101,28 @@ This registry tracks AI agents collaborating in the Jumentix project.
   - CI policy and branch protection enforcement
   - spec and traceability synchronization
 
+### 4) opencode-governance-001
+
+- `agent_id`: `opencode-governance-001`
+- `agent_name`: `OpenCode Governance`
+- `platform`: `opencode`
+- `machine_id`: `host-eduardos-mac-pro-local`
+- `machine_name`: `Eduardos-Mac-Pro.local`
+- `machine_os`: `Darwin 24.6.0 x86_64`
+- `agent_runtime`: `opencode / deepseek-v4-flash-free`
+- `agent_version`: `opencode-v1`
+- `status`: `busy`
+- `registered_at_utc`: `2026-07-28T16:30:00Z`
+- `last_branch_check_utc`: `2026-07-28T16:35:00Z`
+- `main_ref_checked`: `056195e0`
+- `dev_ref_checked`: `230b35b2`
+- `active_epic`: `https://linear.app/jumentix/project/epicgovernance-epic-centered-task-taxonomy-and-agent-delegation-c3cb6bae0771`
+- `assigned_task`: `https://linear.app/jumentix/issue/JUM-520`
+- `capabilities`:
+  - repository governance and spec synchronization
+  - branch protection and CI enforcement
+  - Linear API interaction and metadata management
+
 ## Operating Flow
 
 1. Register or update the agent entry here before task execution.

@@ -22,10 +22,11 @@ Only the project owner email `web2solucoes@gmail.com` and explicitly authorized 
 8. GitHub branch protection rules and repository settings must enforce this policy at the platform level.
 
 ## Enforcement
-1. GitHub branch protection rules on `main` and `dev` must restrict push and merge access to authorized users.
-2. Repository collaborator settings must list only authorized individuals.
-3. Commit signature verification or author email checks may be used as additional enforcement.
-4. Automated CI/CD workflows must not bypass authorization checks.
+1. GitHub branch protection rules on `main` and `dev` require PR review, linear history, admin enforcement, and block force pushes/deletions.
+2. Repository collaborator settings must list only authorized individuals. Currently only `web2solutions` is a collaborator.
+3. Note: User-owned repositories cannot use GitHub's push restrictions API. For org-owned repos, add user/team push restrictions to the branch protection rules.
+4. Commit signature verification or author email checks may be used as additional enforcement.
+5. Automated CI/CD workflows must not bypass authorization checks.
 
 ## Evidence
 - Requirement registered in `.agents/README.md`.
