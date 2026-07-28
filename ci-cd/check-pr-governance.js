@@ -133,7 +133,7 @@ function validatePullRequest(metadata) {
   ) {
     failures.push('[pr-governance] child task issue link must be a GitHub or Linear issue URL');
   }
-  if (!LINEAR_PROJECT_UPDATE_URL_PATTERN.test(projectUpdateLink)) {
+  if (projectUpdateLink && !LINEAR_PROJECT_UPDATE_URL_PATTERN.test(projectUpdateLink)) {
     failures.push('[pr-governance] Project Update must be a Linear project update URL');
   }
 

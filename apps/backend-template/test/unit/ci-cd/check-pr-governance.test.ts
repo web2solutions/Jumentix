@@ -121,6 +121,23 @@ describe('check-pr-governance', () => {
     ]));
   });
 
+  it('reports only the missing-field error when Project Update is empty', () => {
+    expect.hasAssertions();
+    const failures = validatePullRequest({
+      title: '[CI] Enforce focused epic metadata',
+      body: validBody.replace(/- Project Update:.*$/, ''),
+      headRef: 'codex/ci/163-focused-epic-metadata',
+      baseRef: 'dev'
+    });
+
+    expect(failures).toStrictEqual(expect.arrayContaining([
+      expect.stringContaining('missing structured PR field: Project Update')
+    ]));
+    expect(failures).not.toStrictEqual(expect.arrayContaining([
+      expect.stringContaining('Project Update must be a Linear project update URL')
+    ]));
+  });
+
   it('allows only a release PR from dev to target main', () => {
     expect.hasAssertions();
     expect(validatePullRequest({
