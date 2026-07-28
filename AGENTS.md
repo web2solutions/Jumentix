@@ -4,7 +4,7 @@ Primary Codex runtime instructions for this repository:
 
 1. Use `rtk` prefix for shell commands.
 2. Follow `.agents/requirements/*` and `.agents/NFR-REGISTRY.md` as mandatory constraints.
-3. Treat Linear as the single source of truth for task and Project tracking. The Linear API key is at `../.linear` — read it for API authentication but never expose, log, commit, or share it.
+3. Treat Linear as the single source of truth for project management and new tasks.
 4. Keep specs/docs/agents in sync when requirements or behavior change.
 5. Do not bypass quality gates; CI and coverage rules are mandatory.
 6. Register in `.agents/AGENT-REGISTRY.md` before task execution.
@@ -18,12 +18,11 @@ Primary Codex runtime instructions for this repository:
     before planning or execution.
 13. Treat an epic as a Linear Project and never set it to `Completed` until its dedicated
     documentation Issue is completed under requirement `094`.
-14. Administrators may use a recorded project-owner approval to bypass only the required-review
-    count; they must never bypass `dev`-first promotion or failed, missing, or incomplete quality,
-    coverage, or security gates.
-15. Maintain valid status, priority, start/target dates, and labels for every assigned Linear
-    Issue and Project; record material changes in Project Updates and fail closed on missing,
-    stale, contradictory, or placeholder metadata under requirement `097`.
+14. Publish every task's start, material progress, blocker changes, review readiness, and final
+    handoff in the Linear epic Project's `Project Updates` feed under requirement `095`; Issue
+    comments and status changes alone are insufficient.
+15. Report exact gate states in Project Updates and never describe pending, missing, cancelled,
+    timed-out, skipped, or failed required checks as passing.
 
 Canonical governance/spec references:
 

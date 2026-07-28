@@ -20,7 +20,11 @@ Include links to issue(s), incident(s), backlog items, or Sonar/Codecov check UR
 
 ## Project Tracking (Required)
 
+<<<<<<< HEAD
+- GitHub Project: `Jumentix` (`https://github.com/users/web2solutions/projects/1`)
+=======
 - Linear Project: `Jumentix` (`https://linear.app/jumentix`)
+>>>>>>> origin/dev
 - Focused epic link:
 - Epic milestone:
 - Primary task nature:

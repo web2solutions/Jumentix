@@ -10,7 +10,7 @@ Governance note:
 - This file is a local reference snapshot only and must not be treated as authoritative task state.
 - Task/PR governance:
   - Traceability must be bidirectional (`issue -> PR/commit` and `PR -> issue/task mapping`) per requirement 055.
-  - Every task must use its own nature-prefixed branch and PR targeting `dev`; only `dev` may be promoted to `main` per requirement 079.
+  - Every task must use its own nature-prefixed branch and PR per requirement 079.
 - NFR governance:
   - All user-requested non-functional requirements must be captured in `.agents/requirements` and indexed in `.agents/NFR-REGISTRY.md` (requirement 068).
 
@@ -77,12 +77,11 @@ GitHub tracking:
 
 ## Done
 
-- [x] Define task-owned branch, PR naming, and `dev`-first promotion governance
+- [x] Define task-owned branch and PR naming governance
   - Issue: `https://github.com/web2solutions/aaa-typescript-boilerplate/issues/133`
   - Branch: `codex/governance/133-task-branch-pr-naming`
   - Added requirement: `.agents/requirements/079-task-owned-branch-and-pr-naming-governance.md`
   - Updated PR templates, governance specs, traceability ledger, and EN/PT documentation.
-  - Task PRs target `dev`; only release-promotion PRs sourced from `dev` may target `main`.
 
 - [x] Register governance requirement for mandatory task traceability + bilingual documentation/site parity
   - Added requirement: `.agents/requirements/076-task-documentation-and-bilingual-governance.md`
@@ -284,23 +283,6 @@ GitHub tracking:
   - Updated root TypeScript path mappings for new packages to preserve compatibility while migrating.
 
 ## Open
-
-- [x] Approved atomic critical-remediation delivery exception for issues `#136` through `#140`
-  - Approval recorded: project owner approval on 2026-07-25.
-  - Branch: `codex/fix/136-140-atomic-critical-remediation`.
-  - Required PR target: `dev`.
-  - Scope is limited to the mutually dependent critical fixes for fail-closed CI, HTTP contract
-    consistency, Fastify static registration, canonical gRPC proto resolution, and tenant
-    organization authorization.
-  - Reason: the current `dev` baseline fails the mandatory full matrix on these independent
-    critical defects, so no isolated task branch can pass the required commit/push/PR gate until
-    the complete remediation set is present.
-  - The exception permits atomic delivery only. It does not waive any matrix cell, permit a false
-    green, bypass `dev`, or authorize a task branch to target `main`.
-  - Individual task branches remain preserved for ownership, review history, and rollback
-    traceability.
-  - Validation evidence: canonical full matrix passed all 18 required cells, including all 15
-    integration targets, on the combined change set based on `origin/dev`.
 
 - [x] PCI Remediation Plan (Sprint-based: P0/P1/P2) with audit evidence criteria
   - [x] P0 - Access control and auth hardening
