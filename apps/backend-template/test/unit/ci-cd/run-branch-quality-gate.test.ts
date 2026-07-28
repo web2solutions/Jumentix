@@ -3,11 +3,8 @@ const gateFs = require('fs');
 const gatePath = require('path');
 const {
   FULL_MATRIX_QUALITY_GATE,
-<<<<<<< HEAD
-=======
   TASK_QUALITY_GATE,
   UNIT_QUALITY_GATE,
->>>>>>> origin/dev
   resolveTargetBranch,
   runBranchQualityGate,
   selectQualityGate
@@ -21,23 +18,14 @@ describe('run-branch-quality-gate', () => {
     expect(resolveTargetBranch('dev')).toBe('dev');
   });
 
-<<<<<<< HEAD
-  it('selects the canonical full matrix for dev', () => {
-    expect.hasAssertions();
-    expect(selectQualityGate('dev')).toBe(FULL_MATRIX_QUALITY_GATE);
-  });
-
-  it('selects the canonical full matrix for task branches', () => {
-=======
   it('selects the canonical unit gate for dev', () => {
     expect.hasAssertions();
     expect(selectQualityGate('dev')).toBe(UNIT_QUALITY_GATE);
   });
 
   it('selects the change-focused gate for task branches', () => {
->>>>>>> origin/dev
     expect.hasAssertions();
-    expect(selectQualityGate('codex/fix/149-example')).toBe(FULL_MATRIX_QUALITY_GATE);
+    expect(selectQualityGate('codex/fix/149-example')).toBe(TASK_QUALITY_GATE);
   });
 
   it('selects the canonical full matrix for main', () => {
@@ -45,11 +33,7 @@ describe('run-branch-quality-gate', () => {
     expect(selectQualityGate('main')).toBe(FULL_MATRIX_QUALITY_GATE);
   });
 
-<<<<<<< HEAD
-  it('records successful full-matrix evidence for dev and main', () => {
-=======
   it('records target-aware evidence for task, dev, and main', () => {
->>>>>>> origin/dev
     expect.hasAssertions();
     const execute = jest.fn().mockReturnValue(0);
     const logger = { log: jest.fn(), error: jest.fn() };
@@ -64,11 +48,6 @@ describe('run-branch-quality-gate', () => {
     });
 
     expect(execute.mock.calls).toStrictEqual([
-<<<<<<< HEAD
-      [FULL_MATRIX_QUALITY_GATE],
-      [FULL_MATRIX_QUALITY_GATE]
-    ]);
-=======
       [TASK_QUALITY_GATE],
       [UNIT_QUALITY_GATE],
       [FULL_MATRIX_QUALITY_GATE]
@@ -81,12 +60,11 @@ describe('run-branch-quality-gate', () => {
       outcome: 'passed',
       status: 0
     });
->>>>>>> origin/dev
     expect(devEvidence).toStrictEqual({
       schemaVersion: 1,
       targetBranch: 'dev',
-      gate: 'full-matrix',
-      script: 'ci:gate:strict',
+      gate: 'unit',
+      script: 'test:unit',
       outcome: 'passed',
       status: 0
     });

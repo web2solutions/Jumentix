@@ -39,12 +39,6 @@ function repositoryCoordinates(config) {
   return { owner, repo };
 }
 
-<<<<<<< HEAD
-function buildRawUrl(config, ref = config.revision || config.branch) {
-  const { owner, repo } = repositoryCoordinates(config);
-  const remotePath = config.remotePath.replace(/^\/+/, '');
-  return `https://api.github.com/repos/${owner}/${repo}/contents/${remotePath}?ref=${encodeURIComponent(ref)}`;
-=======
 function encodeRawPath(remotePath) {
   const segments = String(remotePath || '').replace(/^\/+/, '').split('/');
   if (segments.length === 0 || segments.some((segment) => !segment || segment === '.' || segment === '..')) {
@@ -66,7 +60,6 @@ function buildRawUrl(config, ref = config.revision) {
     encodeURIComponent(ref),
     remotePath
   ].join('/');
->>>>>>> origin/dev
 }
 
 function buildBranchRevisionUrl(config) {
@@ -74,25 +67,12 @@ function buildBranchRevisionUrl(config) {
   return `https://api.github.com/repos/${owner}/${repo}/commits/${encodeURIComponent(config.branch)}`;
 }
 
-<<<<<<< HEAD
-function fetchBody(url, accept) {
-  return new Promise((resolve, reject) => {
-    https.get(url, {
-      headers: {
-        Accept: accept,
-        'User-Agent': 'jumentix-agent-registry-check'
-      }
-    }, (res) => {
-      if (res.statusCode && res.statusCode >= 400) {
-        reject(new Error(`Failed to fetch registry source: HTTP ${res.statusCode} (${url})`));
-=======
 function fetchBody(url, headers, sourceName) {
   return new Promise((resolve, reject) => {
     https.get(url, { headers }, (res) => {
       if (!res.statusCode || res.statusCode < 200 || res.statusCode >= 300) {
         if (typeof res.resume === 'function') res.resume();
         reject(new Error(`Failed to fetch ${sourceName}: HTTP ${res.statusCode || 'unknown'} (${url})`));
->>>>>>> origin/dev
         return;
       }
       let body = '';
@@ -108,13 +88,6 @@ function fetchBody(url, headers, sourceName) {
 }
 
 function fetchText(url) {
-<<<<<<< HEAD
-  return fetchBody(url, 'application/vnd.github.raw+json');
-}
-
-async function fetchJson(url) {
-  const body = await fetchBody(url, 'application/vnd.github+json');
-=======
   return fetchBody(url, {
     Accept: 'text/plain',
     'User-Agent': 'jumentix-agent-registry-check'
@@ -136,7 +109,6 @@ async function fetchJson(url) {
     githubApiHeaders(),
     'canonical registry branch revision'
   );
->>>>>>> origin/dev
   try {
     return JSON.parse(body);
   } catch (error) {
@@ -213,10 +185,7 @@ if (require.main === module) {
 module.exports = {
   buildBranchRevisionUrl,
   buildRawUrl,
-<<<<<<< HEAD
-=======
   encodeRawPath,
->>>>>>> origin/dev
   fetchJson,
   fetchText,
   githubApiHeaders,

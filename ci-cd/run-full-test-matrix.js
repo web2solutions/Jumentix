@@ -23,11 +23,6 @@ const FULL_TEST_MATRIX = Object.freeze([
   { id: 'workspace-builds', script: 'mono:build' },
   { id: 'workspace-tests', script: 'mono:test' },
   { id: 'website-prepublish', script: 'website:test:prepublish' },
-<<<<<<< HEAD
-  { id: 'website-storybook-build', script: 'website:storybook:build' },
-  { id: 'website-storybook-smoke', script: 'website:storybook:smoke' },
-=======
->>>>>>> origin/dev
   { id: 'integration', script: 'ci:integration' },
   { id: 'patch-coverage', script: 'coverage:patch' }
 ]);
