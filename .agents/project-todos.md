@@ -4,8 +4,9 @@ This file tracks the project ownership fixes proposed before adding new features
 Keep every item in either `Done` or `Open`, and move items as they are completed.
 
 Governance note:
-- Canonical task management source is GitHub Project **Jumentix**:
-  - https://github.com/users/web2solutions/projects/1
+- Canonical task management source is Linear:
+  - https://linear.app/jumentix
+  - API key at `../.linear` (access-controlled, never committed or shared)
 - This file is a local reference snapshot only and must not be treated as authoritative task state.
 - Task/PR governance:
   - Traceability must be bidirectional (`issue -> PR/commit` and `PR -> issue/task mapping`) per requirement 055.
@@ -1023,7 +1024,7 @@ Goal:
 
 - [x] Create root Jumentix marketing README with complete component index and required solution sections.
   - Epic: `https://github.com/web2solutions/aaa-typescript-boilerplate/issues/117`
-  - GitHub Project source of truth: `https://github.com/users/web2solutions/projects/1`
+   - Linear source of truth: `https://linear.app/jumentix` (Requirement `095`)
 - [x] Reorganize component/project docs under component folders (`apps/*`, `packages/*`) and add technical hubs.
 - [x] Ensure root README links to all component docs and all required guides:
   - SPA/PWA

@@ -10,7 +10,7 @@ Essas regras fazem parte da governança orientada para o desenvolvimento de espe
 
 ## 1) Política de uso do Git
 
-1. Todo o trabalho deve ser rastreável ao item GitHub Issue + GitHub Project antes da implementação.
+1. Todo o trabalho deve ser rastreável ao item GitHub Issue + Linear Project antes da implementação.
 2. O desenvolvimento deve acontecer em filiais rastreadas e produzir commits auditáveis.
 3. `--no-verify` é proibido para fluxo de entrega normal.
 4. O push é bloqueado quando os portões de qualidade locais falham.
