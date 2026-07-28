@@ -4,6 +4,12 @@
 
 ## All Changes
 
+- 2026-07-28 feat(governance): establish Linear as single source of truth with API security rules - Eduardo A.
+- 2026-07-28 [Docs] Synchronize Jumentix documentation from dev (#198) - Eduardo A.
+- 2026-07-28 chore(changelog): refresh generated history after docs rebase - web2solutions
+- 2026-07-27 docs: synchronize Jumentix documentation from dev - web2solutions
+- 2026-07-28 [Security] Remediate find-my-way vulnerability through Restify (#204) - Eduardo A.
+- 2026-07-28 fix(security): remediate restify find-my-way - Eduardo A.
 - 2026-07-28 [Governance] Require Linear planning metadata lifecycle (#189) - Eduardo A.
 - 2026-07-26 docs(governance): require Linear planning metadata - Eduardo A.
 - 2026-07-28 [Security][Website] Remediate PostCSS vulnerability (#203) - Eduardo A.

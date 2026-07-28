@@ -1,18 +1,13 @@
-# Spec Project Board Contract (GitHub Project Jumentix)
+# Spec Project Board Contract (Linear Jumentix)
 
-This document defines how the GitHub Project board is part of Spec Development Driven execution.
+This document defines how Linear is part of Spec Development Driven execution.
 
 ## Canonical Project Board
 
-- Board: [GitHub Project - Jumentix](https://github.com/users/web2solutions/projects/1)
+- Linear Board: [Linear Jumentix](https://linear.app/jumentix)
 - Owner: `web2solutions`
 - Repository scope: `web2solutions/aaa-typescript-boilerplate`
-
-Snapshot baseline (2026-07-24):
-
-1. Project is active (`closed: false`).
-2. Governance fields are available and required (`19` configured fields).
-3. Work items are managed as issue-backed project items (current scale in board history already above initial MVP stage).
+- The Linear API key is stored at `../.linear` (one level above project root) — agents read it for authentication; must never be exposed, logged, or committed.
 
 ## Mandatory Planning Fields
 
@@ -47,14 +42,14 @@ Strategic stream labels are additive (for example `todo-mvp`, `epic`, `iteration
 ## Focused Epic Contract
 
 1. Every executable task must belong to exactly one focused epic.
-2. Every active epic must be associated with exactly one open GitHub milestone.
+2. Every active epic must be associated with exactly one open Linear milestone.
 3. The epic and all child tasks use the same milestone unless an explicit exception is recorded.
 4. The milestone defines a delivery target, description, due date, and lifecycle state.
 5. Epic and task end dates must not exceed the milestone due date without formal replanning.
 6. A milestone may contain multiple focused epics only when they serve the same delivery target.
 7. The epic must describe one cohesive outcome and must not be a catch-all backlog.
-8. Parentage must use GitHub sub-issues or the Project `Parent issue` field when available.
-9. Milestone association must use GitHub Issue and Project milestone metadata.
+8. Parentage must use Linear sub-issues or the Project `Parent issue` field when available.
+9. Milestone association must use Linear Issue and Project milestone metadata.
 10. Tasks are grouped by primary nature inside the epic. Supporting work with a different nature
    is tracked as a separate child task under the same cohesive outcome.
 11. Epic planning defines milestone, priority, scope boundaries, dates, estimate, owner, and

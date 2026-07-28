@@ -54,7 +54,7 @@ All known intent must be explicit, versioned, and traceable.
      - `documentation/md/PROJECT-MANAGEMENT.md`
      - `.agents/requirements/*`
      - `.agents/NFR-REGISTRY.md`
-     - GitHub Project: `https://github.com/users/web2solutions/projects/1`
+      - Linear Project: `https://linear.app/jumentix`
 
 ## Spec Coverage Rule
 
@@ -82,4 +82,4 @@ When knowledge changes, update in the same cycle:
 2. `documentation/md/*` technical resources.
 3. `.agents/requirements/*` when constraints or governance are affected.
 4. `.agents/NFR-REGISTRY.md` when non-functional behavior changes.
-5. GitHub issue/project metadata and PR evidence links.
+5. Linear issue/project metadata and PR evidence links.

@@ -3,10 +3,10 @@
 ## Contributing
 
 1. Create a branch.
-2. Ensure there is a related GitHub Issue and it is added to the **Jumentix** project:
+2. Ensure there is a related Linear Issue and it is added to the **Jumentix** project:
 
 ```text
-https://github.com/users/web2solutions/projects/1
+https://linear.app/jumentix
 ```
 
 3. Set/update project fields for the issue (`Status`, `Priority`, `Size`, `Estimate`, `Start date`, `End date`).

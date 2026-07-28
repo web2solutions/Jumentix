@@ -20,7 +20,7 @@ When conflicts happen, resolution order is:
 - Root positioning: `README.md`
 - Project overview: `documentation/md/PROJECT-OVERVIEW.md`
 - Product composition system: `documentation/md/SPEC-JUMENTIX-COMPONENT-SYSTEM.md`
-- Project board: `https://github.com/users/web2solutions/projects/1`
+- Project board: `https://linear.app/jumentix`
 - Issues backlog: `https://github.com/web2solutions/aaa-typescript-boilerplate/issues`
 
 ## Architecture and Design

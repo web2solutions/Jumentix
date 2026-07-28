@@ -2,13 +2,13 @@
 Arquivo gerado automaticamente a partir de: documentation/md/SPEC-PROJECT-BOARD-CONTRACT.md
 Idioma alvo: Português (Brasil)
 -->
-# Contrato de diretoria do projeto de especificações (Projeto GitHub Jumentix)
+# Contrato de diretoria do projeto de especificações (Projeto Linear Jumentix)
 
-Este documento define como o quadro do projeto GitHub faz parte da execução orientada ao desenvolvimento de especificações.
+Este documento define como o quadro do projeto Linear faz parte da execução orientada ao desenvolvimento de especificações.
 
 ## Quadro de Projeto Canônico
 
-- Diretoria: [Projeto GitHub - Jumentix](https://github.com/users/web2solutions/projects/1)
+- Diretoria: [Projeto Linear - Jumentix](https://linear.app/jumentix)
 - Proprietário: `web2solutions`
 - Escopo do repositório: `web2solutions/aaa-typescript-boilerplate`
 

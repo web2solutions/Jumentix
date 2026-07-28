@@ -17,7 +17,7 @@ Entradas:
 Saídas necessárias:
 
 1. Problema do GitHub criado
-2. Problema adicionado ao GitHub Project Jumentix
+2. Problema adicionado ao Linear Project Jumentix
 3. Campos do projeto preenchidos (`Status`, `Prioridade`, `Tamanho`, `Estimativa`, `Data de início`, `Data de término`)
 4. Critérios iniciais de aceitação
 

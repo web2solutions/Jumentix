@@ -7,7 +7,7 @@ This repository supports Claude Code as an official engineering agent.
 1. Execute repository commands using `rtk`.
 2. Follow all requirements in `.agents/requirements/*`.
 3. Keep `.agents/NFR-REGISTRY.md` synchronized when NFR behavior changes.
-4. Use Linear as the task and Project source of truth.
+4. Use Linear as the task and Project source of truth. The Linear API key is at `../.linear` — read it for API authentication but never expose, log, commit, or share it.
 5. Keep implementation, specs, and docs synchronized.
 6. Respect CI, lint, test, and coverage gates; no bypass behavior is allowed.
 7. Register in `.agents/AGENT-REGISTRY.md` before task execution.
