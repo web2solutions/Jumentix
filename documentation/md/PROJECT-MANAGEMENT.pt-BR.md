@@ -14,6 +14,7 @@ O Linear é a fonte única da verdade para gerenciamento de projetos, épicos e 
   - `AGENTS.md` (Codex)
   - `CLAUDE.md` (Claude Code)
   - `GROK.md` (Grok)
+  - `OPENCODE.md` (OpenCode)
 - Espelho histórico/local de todos (não canônico):
   - `.agents/project-todos.md`
 - Rastreamento de issues do GitHub para TODOs migrados:

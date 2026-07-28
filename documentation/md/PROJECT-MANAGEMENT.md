@@ -15,6 +15,7 @@ Linear is the single source of truth for project management, epics, and task tra
   - `AGENTS.md` (Codex)
   - `CLAUDE.md` (Claude Code)
   - `GROK.md` (Grok)
+  - `OPENCODE.md` (OpenCode)
 - Historical/local todo mirror (non-canonical):
   - `.agents/project-todos.md`
 - GitHub issue tracking for migrated TODOs:
