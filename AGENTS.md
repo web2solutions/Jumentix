@@ -4,7 +4,7 @@ Primary Codex runtime instructions for this repository:
 
 1. Use `rtk` prefix for shell commands.
 2. Follow `.agents/requirements/*` and `.agents/NFR-REGISTRY.md` as mandatory constraints.
-3. Treat Linear as the single source of truth for task and Project tracking.
+3. Treat Linear as the single source of truth for task and Project tracking. The Linear API key is at `../.linear` — read it for API authentication but never expose, log, commit, or share it.
 4. Keep specs/docs/agents in sync when requirements or behavior change.
 5. Do not bypass quality gates; CI and coverage rules are mandatory.
 6. Register in `.agents/AGENT-REGISTRY.md` before task execution.

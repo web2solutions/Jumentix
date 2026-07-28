@@ -38,7 +38,7 @@ Jumentix must define an explicit playbook that teaches agents:
 
 ### 3) Task Governance Execution
 
-1. Use GitHub Project Jumentix as the source of truth.
+1. Use Linear as the source of truth (Requirement `095`). The Linear API key is at `../.linear`.
 2. Confirm that the task has exactly one focused parent epic, one primary nature, and the same
    open milestone as its epic under Requirement `090`.
 3. Confirm the milestone due date covers the epic and task delivery dates.

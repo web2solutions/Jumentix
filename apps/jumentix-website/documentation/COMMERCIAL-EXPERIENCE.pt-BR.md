@@ -26,7 +26,7 @@ open source estabelecidos, preservando a linguagem, os recursos e a identidade d
 | `/security-compliance` | RBAC, controles PCI, segredos e evidências |
 | `/pricing-or-engagement` | Caminhos open source, piloto e adoção como plataforma |
 | `/community` | Fluxo de contribuição e governança |
-| `/roadmap` | Direção do produto conectada ao GitHub Project |
+| `/roadmap` | Direção do produto conectada ao roadmap do Linear |
 | `/changelog` | Histórico do GitHub com até 200 mudanças por página |
 | `/contact` | Discussions, issues e contato enterprise |
 | `/docs/jumentix` | Entrada da documentação técnica |

@@ -3,19 +3,22 @@
 ## Status
 Implemented
 
-## Policy
-- The GitHub Project **Jumentix** is the single source of truth for:
-  - task backlog,
-  - priorities,
-  - status/progress,
-  - estimation metadata,
-  - commit/PR traceability.
+## Policy (Superseded)
+
+**Note**: This requirement is superseded by Requirement `094` (Linear as Single Source of Truth).
+
+- ~~The GitHub Project **Jumentix** is the single source of truth for:~~
+  - ~~task backlog,~~
+  - ~~priorities,~~
+  - ~~status/progress,~~
+  - ~~estimation metadata,~~
+  - ~~commit/PR traceability.~~
 
 ## Operational Rules
-1. Every new task/bug/feature must be created and managed in GitHub Issues + GitHub Project.
-2. Local files (for example `.agents/project-todos.md`) are reference snapshots only, not authoritative planning sources.
-3. PRs must reference related issue/project item links and keep status synchronization in GitHub Project.
+1. ~~Every new task/bug/feature must be created and managed in GitHub Issues + GitHub Project.~~
+2. ~~Local files (for example `.agents/project-todos.md`) are reference snapshots only, not authoritative planning sources.~~
+3. ~~PRs must reference related issue/project item links and keep status synchronization in GitHub Project.~~
 
 ## Evidence
-- Governance requirement registered in `.agents/README.md`.
-- Local task tracker now points to GitHub Project as canonical source.
+- Requirement `094` now governs single-source-of-truth policy.
+- Linear is the canonical planning source; historical GitHub Project references are preserved for audit only.

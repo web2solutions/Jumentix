@@ -5,7 +5,7 @@
   - root documentation is product/marketing oriented
   - component documentation is technical and implementation oriented
 - Navigation must remain centralized through root README index.
-- GitHub Project Jumentix is the canonical source of truth for documentation tasks.
+- Linear is the canonical source of truth for documentation tasks (Requirement `095`).
 
 ## Mandatory Rules
 1. Root `README.md` must keep badges and include product purpose, audience, value proposition, and advantages.
@@ -17,9 +17,9 @@
    - Realtime API
    - SaaS monolith
    - SaaS microservices
-5. Documentation work must be tracked as GitHub issues under the documentation epic and added to GitHub Project Jumentix.
+5. Documentation work must be tracked as Linear issues under the documentation epic (Requirement `095`).
 
 ## Acceptance Criteria
 - Root README index has no broken links to component hubs and mandatory guides.
 - Component technical hubs exist and include actionable technical navigation.
-- Epic and child tasks are present in GitHub Project Jumentix with labels/priorities.
+- Epic and child tasks are present in Linear with labels/priorities.

@@ -2,12 +2,9 @@
 
 ## Backlog e gerenciamento de projetos
 
-<https://github.com/users/web2solutions/projects/1>
+<https://linear.app/jumentix>
 
-O GitHub Project Jumentix permanece como board de entrega do repositório e fonte da rastreabilidade
-de branches/PRs. O Linear representa épicos focados como Projects e trabalho executável como Issues,
-incluindo a Issue documental dedicada obrigatória antes da conclusão de um épico. Trabalho ativo
-deve manter os dois sistemas vinculados; um todo local textual ou uma issue sem vínculo não basta.
+O Linear é a fonte única da verdade para gerenciamento de projetos, épicos e rastreamento de tarefas (Requisito `095`).
 
 ## Requisitos internos e rastreamento de MVP
 
@@ -21,9 +18,9 @@ deve manter os dois sistemas vinculados; um todo local textual ou uma issue sem 
   - `.agents/project-todos.md`
 - Rastreamento de issues do GitHub para TODOs migrados:
   - <https://github.com/web2solutions/aaa-typescript-boilerplate/issues?q=is%3Aissue+is%3Aopen+label%3Atodo-mvp>
-- Fontes oficiais de governança e execução:
-  - `documentation/md/JUMENTIX-PROJECT-GOVERNANCE.pt-BR.md`
-  - `https://github.com/users/web2solutions/projects/1`
-  - `https://linear.app/jumentix` para execução de épicos em Project/Issue e gates documentais
+- Fonte oficial da verdade sobre gerenciamento de projetos:
+  - `documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`
+  - `https://linear.app/jumentix`
+- Chave da API Linear em `../.linear` (acesso controlado, nunca commitar ou compartilhar)
 - Roadmap MVP do Domain Designer:
-  - `documentation/md/DOMAIN-DESIGNER-MVP-ROADMAP.pt-BR.md`
+  - `documentation/md/DOMAIN-DESIGNER-MVP-ROADMAP.md`

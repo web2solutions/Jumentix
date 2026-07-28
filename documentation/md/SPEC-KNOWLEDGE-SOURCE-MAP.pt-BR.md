@@ -24,7 +24,7 @@ Quando ocorrem conflitos, a ordem de resolução é:
 - Posicionamento raiz: `README.md`
 - Visão geral do projeto: `documentation/md/PROJECT-OVERVIEW.md`
 - Sistema de composição de produtos: `documentation/md/SPEC-JUMENTIX-COMPONENT-SYSTEM.md`
-- Quadro do projeto: `https://github.com/users/web2solutions/projects/1`
+- Quadro do projeto: `https://linear.app/jumentix`
 - Lista de pendências de problemas: `https://github.com/web2solutions/aaa-typescript-boilerplate/issues`
 
 ## Arquitetura e Design

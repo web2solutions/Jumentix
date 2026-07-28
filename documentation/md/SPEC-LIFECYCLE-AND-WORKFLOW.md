@@ -12,8 +12,8 @@ Inputs:
 
 Required outputs:
 
-1. GitHub Issue created
-2. Issue added to GitHub Project Jumentix
+1. Linear Issue created
+2. Issue added to Linear
 3. Project fields filled (`Status`, `Priority`, `Size`, `Estimate`, `Start date`, `End date`)
 4. Initial acceptance criteria
 

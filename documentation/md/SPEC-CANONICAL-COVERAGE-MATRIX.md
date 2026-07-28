@@ -16,7 +16,7 @@ This matrix ensures that all known Jumentix knowledge areas are covered by Spec 
 | Requirements and NFRs | `.agents/requirements/*`, `.agents/NFR-REGISTRY.md` | `SPEC-GOVERNANCE-AND-TRACEABILITY.md`, `SPEC-KNOWLEDGE-SOURCE-MAP.md` | NFR registry sync rule |
 | Requirement-level traceability | `.agents/requirements/*`, GitHub issues/project fields | `SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`, `SPEC-GOVERNANCE-AND-TRACEABILITY.md` | requirement IDs referenced in PR |
 | Project governance rules | `JUMENTIX-PROJECT-GOVERNANCE.md` | `SPEC-GOVERNANCE-AND-TRACEABILITY.md` | Mandatory issue/project/PR traceability |
-| Board governance contract | GitHub Project fields, iterations, labels, lifecycle status | `SPEC-PROJECT-BOARD-CONTRACT.md` | missing board metadata blocks closure |
+| Board governance contract | Linear Project fields, iterations, labels, lifecycle status | `SPEC-PROJECT-BOARD-CONTRACT.md` | missing board metadata blocks closure |
 | Coding standards and implementation discipline | existing engineering guidance + lint/test policies | `SPEC-ARCHITECTURE-CODING-STANDARDS.md` | Lint + architecture checks |
 | Git workflow and commit governance | husky hooks, commitlint, project governance policy | `SPEC-ENGINEERING-PRACTICES-AND-GIT-POLICY.md` | commit hooks + CI governance gates |
 | Architecture principles and design | `ARCHITECTURE-AND-STRUCTURE.md`, migration docs, architecture NFRs | `SPEC-ARCHITECTURE-CODING-STANDARDS.md`, `SPEC-KNOWLEDGE-SOURCE-MAP.md` | Boundary checks + cycle checks |
@@ -37,7 +37,7 @@ The Spec Development Driven model explicitly includes the following information 
 3. Versioned API specs (`/spec`)
 4. Governance scripts and checks (`ci-cd/*`, hooks, quality configs)
 5. Requirement and NFR registry (`.agents/requirements`, `.agents/NFR-REGISTRY.md`)
-6. Project governance and board processes (`JUMENTIX-PROJECT-GOVERNANCE.md`, GitHub Project Jumentix)
+6. Project governance and board processes (`JUMENTIX-PROJECT-GOVERNANCE.md`, Linear Project Jumentix)
 
 ## Completeness Rule
 
