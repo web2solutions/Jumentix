@@ -73,6 +73,8 @@ This file consolidates non-functional requirements already requested and stored 
 
 ## Rule of Use
 
+- `099` Every task begins only after current `main`, `dev`, and the full requirement inventory are refreshed and read.
+
 When a new NFR is requested:
 
 1. add/update requirement file in `.agents/requirements/`
