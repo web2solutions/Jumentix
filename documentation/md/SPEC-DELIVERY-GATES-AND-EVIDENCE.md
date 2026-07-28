@@ -45,20 +45,6 @@ Evidence:
 1. Green test suites in CI.
 2. Added tests for new behavior included in PR scope.
 
-Execution policy:
-
-1. `ci:gate` remains the fast baseline defined by requirement `011`, including the representative integration smoke.
-2. `ci:gate:branch` is the canonical boundary selector: task branches run changed/related
-   tests, `dev` runs all unit tests, and `main` runs the full matrix.
-3. `ci:gate:strict` remains the canonical release-promotion full-matrix gate.
-4. Its manifest covers lint, architecture, contracts, governance, unit, security, smoke, builds, every workspace, the complete 15-target HTTP/Lambda/realtime/Service Management integration matrix, and patch coverage.
-5. Every matrix runner must reject an empty, duplicate, malformed, or missing-script manifest.
-6. Execution continues after an individual cell fails and returns one aggregate non-zero result listing every failed cell.
-7. Docs-only task changes may record `not-applicable`; no scope-aware plan may omit all
-   unit tests for `dev` or the canonical matrix for `main`.
-8. Integration targets run with coverage disabled so they cannot overwrite the unit-test coverage artifact governed by requirement `014`.
-9. Remote CI publishes the selected-gate JSON evidence and the main-matrix JSON evidence when applicable.
-
 ## Gate 4 - Quality and Security
 
 Pass criteria:
@@ -77,23 +63,16 @@ Evidence:
 Pass criteria:
 
 1. Issue, project item, and PR are linked.
-2. The task Issue and epic/Project have explicit, current status, priority, start/target dates,
-   labels, milestone, and accountable ownership.
-3. Dates and classifications are mutually consistent, and material metadata changes are auditable
-   in Project Updates.
-4. Requirement/NFR references are included when applicable.
-4. Every Linear Project used as an epic has a dedicated documentation Issue.
-5. The epic documentation Issue is completed before the Project is set to `Completed`.
-6. Any administrative review-count bypass has explicit project-owner approval recorded in the
-   task or PR and all required checks remain reported and terminal green.
+2. Priority/size/estimation lifecycle fields are populated.
+3. Requirement/NFR references are included when applicable.
+4. The delivery has one task-owned branch and one task-owned PR.
+5. Branch and PR title nature prefixes match the naming contract.
 
 Evidence:
 
-1. Linear Issue/Project and PR cross-links.
-2. Linear field snapshots or structured fallback records plus Project Update history.
-3. Updated `.agents` registry when governance or NFR changed.
-3. Linear Project link plus the completed documentation Issue, PR/commit links, changed-document
-   inventory, bilingual parity evidence when applicable, and documentation integrity results.
+1. GitHub issue/project/PR cross-links.
+2. Updated `.agents` registry when governance or NFR changed.
+3. Branch name and PR title recorded in the PR template.
 
 ## Evidence Packaging Standard for PRs
 
@@ -113,7 +92,4 @@ A PR is not merge-ready when any of these is missing:
 2. Required checks or coverage threshold.
 3. Governance traceability links.
 4. Required `.agents` updates for NFR/governance impact.
-5. Complete and consistent Linear task/Project metadata required by Requirement `097`.
-5. A missing or incomplete dedicated documentation Issue for an epic being completed.
-6. An administrative override that attempts to waive delivery topology or a failed, missing,
-   skipped, cancelled, timed-out, or incomplete required gate.
+5. Task isolation or branch/PR naming does not satisfy requirement `079`.

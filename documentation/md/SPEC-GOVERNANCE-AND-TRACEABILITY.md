@@ -6,41 +6,26 @@ Spec Development Driven in Jumentix is enforced through project governance and a
 
 Governance source of truth:
 
-- Linear Issues and Projects (`https://linear.app/jumentix`)
-- The Linear API key is at `../.relative to project root` — agents read it for authentication; must never be exposed, logged, or committed.
+- GitHub Project Jumentix: `https://github.com/users/web2solutions/projects/1`
 
 Mandatory governance records:
 
-1. Linear Issue (work item)
-2. Linear Project (focused epic) with planning fields
+1. GitHub Issue (work item)
+2. Project item with planning fields
 3. PR with linked issue and evidence
 4. Spec and documentation artifacts
-5. Agent Registry canonical record in `web2solutions/jumentix-agent-registry` with mirrored copy in `.agents/AGENT-REGISTRY.md`
+5. Agent Registry record in `.agents/AGENT-REGISTRY.md`
 
 ## Mandatory Traceability Links
 
 Every delivery item must expose:
 
-1. `Milestone -> focused epic`
-2. `Focused epic -> child task`
-3. `Focused epic -> delegated agent`
-4. `Linear Issue -> Linear Project`
-5. `Linear Issue -> Spec files changed`
-6. `PR -> Linear Issue`
-7. `PR -> Evidence (tests/coverage/checks)`
-8. `PR -> Requirement IDs` (when NFR or governance behavior is touched)
-9. `Task -> dedicated branch -> dedicated PR`
-10. `Task/Project -> current planning metadata -> Project Update history`
-11. `Linear epic Project -> dedicated documentation Issue -> PR/commit/documentation evidence`
-
-## Epic Documentation Completion Gate
-
-1. In Linear, an epic is a Project and its executable tasks are Issues.
-2. Every epic Project must contain a dedicated documentation Issue.
-3. The Project must not be set to `Completed` before that Issue is completed.
-4. Completion evidence must link the documentation Issue, its task-owned PR and commits, the
-   changed documentation inventory, bilingual parity when applicable, and integrity validation.
-5. Missing, cancelled, unowned, or incomplete documentation work blocks epic completion.
+1. `Issue -> Project item`
+2. `Issue -> Spec files changed`
+3. `PR -> Issue`
+4. `PR -> Evidence (tests/coverage/checks)`
+5. `PR -> Requirement IDs` (when NFR or governance behavior is touched)
+6. `Task -> dedicated branch -> dedicated PR`
 
 ## Required Project Fields
 
@@ -50,58 +35,17 @@ Every delivery item must expose:
 - `Estimate`
 - `Start date`
 - `End date`
-- `Parent issue`
-- `Milestone`
-- one primary nature label
-- accountable agent or Project lead
-
-Required fields remain current throughout delivery. If Linear does not expose a native required
-field for an entity, its structured Linear fallback record and initial Project Update are
-authoritative until a native or custom field is available.
-
-## Planning Metadata Lifecycle
-
-1. Agents validate task and Project status, priority, dates, labels, milestone, and ownership
-   before acceptance or delegation.
-2. Start dates cannot follow target/end dates; task dates fit the parent Project and shared
-   milestone, and Project dates fit the milestone.
-3. Status reflects actual lifecycle state. Priority reflects current impact, urgency, risk,
-   dependencies, and sequencing.
-4. Each item has exactly one primary nature label. Supplemental labels cannot contradict it.
-5. Material metadata changes are included in the next Project Update with previous and new
-   values, reason, and delivery impact.
-6. Agents revalidate metadata at branch creation, review readiness, handoff, merge, and
-   completion.
-7. Missing, stale, contradictory, invalid, placeholder, or unauditable metadata fails governance
-   closed and blocks work progression.
-
-## Epic-First Planning and Delegation
-
-1. Every active epic has exactly one open milestone with a delivery target and due date.
-2. Every executable task has exactly one focused parent epic and inherits its milestone.
-3. Epic and task end dates remain within the milestone due date.
-4. Each task has one primary nature and is grouped with tasks of the same nature inside its epic.
-5. Supporting work with a different nature is represented by a separate child task under the
-   same cohesive epic.
-6. Milestone validity is checked before agent delegation is recorded at epic level.
-7. Only agents delegated to an epic may execute its tasks.
-8. One accountable agent owns each task and parallel agents use non-overlapping scopes.
-9. The canonical Agent Registry records `active_epic` and `assigned_task`.
-10. A milestone closes only after its epics complete or remaining work is formally carried over.
 
 ## PR Governance Requirements
 
 Each PR must contain:
 
 1. Scope summary tied to issue intent
-2. Milestone, focused parent epic, and project item linkage
-3. Spec file list changed
-4. Acceptance criteria and evidence
-5. Coverage and gate outcomes
-6. Risk/rollback notes when needed
-7. Task-owned branch name and matching nature-prefixed PR title
-8. Source and target branch evidence
-9. Clean markdown formatting with real breaklines; do not use literal `\n` tokens in PR body text.
+2. Spec file list changed
+3. Acceptance criteria and evidence
+4. Coverage and gate outcomes
+5. Risk/rollback notes when needed
+6. Task-owned branch name and matching nature-prefixed PR title
 
 Task isolation and naming policy:
 
@@ -110,21 +54,6 @@ Task isolation and naming policy:
 - PR title format: `[<Nature>] <concise outcome>`.
 - Allowed nature values: `feature`, `fix`, `security`, `governance`, `docs`, `refactor`, `test`, `ci`, `release`, `chore`.
 - Sharing a branch or PR across separately tracked tasks requires an explicit exception recorded in the issue and PR.
-- Every task PR targets `dev`.
-- Only a release-promotion PR sourced from `dev` may target `main`.
-- A `dev` to `main` promotion references the task PRs/issues already merged into `dev` and introduces no unreviewed changes.
-- Direct task/topic PRs, pushes, and merges to `main` are prohibited.
-- Commit and push gates are destination-aware: task branches run only changed or related
-  unit tests, `dev` runs the complete unit suite, and `main` runs the complete matrix.
-- Pull requests targeting `dev` run the complete unit suite; release-promotion PRs to
-  `main` run the complete matrix.
-- Main-matrix evidence must list every required cell and its terminal result.
-- An incomplete `main` matrix is failed evidence; it must never be interpreted as green.
-- Repository administrators may bypass the required-review count only with explicit project-owner
-  approval recorded in the issue or PR.
-- Administrative review bypass does not waive task isolation, `dev`-first promotion, conversation
-  resolution, or any CI, coverage, security, and full-matrix requirement. Every required check
-  must be reported and terminal green.
 
 Priority grouping policy:
 
@@ -141,17 +70,6 @@ Spec conformance is enforced by executable policy:
 - Security/compliance smoke checks
 
 If any gate fails, spec conformance is considered unproven and the change is not merge-ready.
-
-Branch-aware execution contract:
-
-1. Task branches execute `ci:gate:task` against the task-owned diff.
-2. `dev` and pull requests targeting `dev` execute `test:unit`.
-3. `main` and release-promotion pull requests targeting `main` execute `ci:gate:strict`.
-4. CircleCI accepts only `dev` and `main`.
-5. `.github/workflows/website.yml` owns Storybook checks and is selected only by
-   website-owned paths; the global test workflow and full matrix do not execute Storybook.
-6. Every selected gate emits auditable evidence and fails closed for missing, crashed, or
-   non-zero command outcomes.
 
 ## NFR and Requirement Traceability
 
@@ -179,37 +97,14 @@ Before any task execution:
 1. Acting agent must be registered in `.agents/AGENT-REGISTRY.md`.
 2. Planning must assign tasks to agents marked `available`.
 3. Agent must check latest `main` and `dev` branch refs and update the registry check fields.
-4. Agent registry entries must include machine identity (`machine_id`, `machine_name`, `machine_os`) and runtime identity (`agent_runtime`, `agent_version`) so multiple agents can run on the same host with full traceability.
-5. Agents must follow the registration and operating playbook (Requirement `081`) covering registration, branch-sync, governed execution, and closure evidence.
-6. Canonical registry updates must be written to the external registry repository first, then mirrored locally under Requirement `089`.
-7. Epic-level delegation and child-task assignment must be recorded under Requirement `090`.
-8. The epic and task milestone must be validated before planning or execution under Requirement
-   `090`.
-9. Agents must verify the dedicated documentation Issue before completing a Linear epic Project
-   under Requirement `094`.
-10. Pinned registry checks must fetch immutable raw content by full commit SHA and an encoded safe
-    path, without consuming anonymous GitHub Contents API quota.
-11. Only explicit registry synchronization may resolve a mutable branch through the GitHub API,
-    optionally authenticated by `GITHUB_TOKEN` or `GH_TOKEN`.
-12. Invalid revisions or paths, HTTP and transport failures, malformed responses, and local mirror
-    drift must fail closed with actionable diagnostics that never expose credentials.
 
 ## Audit Evidence Expectations
 
 Minimum evidence set:
 
-1. Linked milestone + focused epic + child issue + project item
-2. Epic-level agent delegation and task-level assignment
-3. Changed spec files and docs
-4. Green CI output for required gates
-5. Coverage evidence meeting threshold
-6. Requirement registry updates (if NFR impacted)
-7. Task-owned branch/PR naming and isolation evidence
-8. Task PR to `dev`, or release promotion from `dev` to `main`, provenance
-9. Branch-quality-gate evidence for commit, push, merge, and PR
-10. Full-matrix manifest and results for `main` promotion work
-11. Failure-propagation proof showing a required failing or missing test cannot produce green
-12. Current task/Project status, priority, dates, labels, ownership, milestone alignment, and
-    Project Update change history
-13. Agent Registry transport tests covering immutable raw URL construction, safe path encoding,
-    optional branch-resolution authentication, transport failures, and mirror mismatch
+1. Linked issue + project item
+2. Changed spec files and docs
+3. Green CI output for required gates
+4. Coverage evidence meeting threshold
+5. Requirement registry updates (if NFR impacted)
+6. Task-owned branch/PR naming and isolation evidence

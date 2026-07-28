@@ -4,16 +4,7 @@
 
 ## Project Tracking (Required)
 
-<<<<<<< HEAD
 - GitHub Project: `Jumentix` (`https://github.com/users/web2solutions/projects/1`)
-=======
-- Linear Project: `Jumentix` (`https://linear.app/jumentix`)
->>>>>>> origin/dev
-- Focused epic link:
-- Epic milestone:
-- Primary task nature: `governance`
-- Epic-delegated agent ID:
-- Child task issue link:
 - Project item link:
 - Issue link:
 - Current status in project:
@@ -24,15 +15,11 @@
 ## Task Isolation and Naming (Required)
 
 - Task-owned branch:
-- Source branch:
-- Target branch:
 - Branch nature (`governance`):
 - PR title prefix (`[Governance]`):
 - [ ] This branch and PR contain work for exactly one GitHub Issue.
 - [ ] Branch format follows `<approved-actor>/governance/<issue-id>-<short-slug>`.
 - [ ] PR title follows `[Governance] <concise outcome>`.
-- [ ] This task PR targets `dev`.
-- [ ] If this PR targets `main`, it is a release promotion sourced from `dev` and introduces no unreviewed changes.
 
 ## Requirement and Spec Impact
 
@@ -50,11 +37,6 @@
 
 ## Validation Evidence
 
-- [ ] Full matrix ran for every commit.
-- [ ] Full matrix ran for the push.
-- [ ] PR CI reports every required matrix cell.
-- [ ] No required cell is missing, skipped, empty, cancelled, timed out, aborted, or unreported.
-- [ ] Failure-propagation evidence proves no false green.
 - [ ] `git diff --check`
 - [ ] Requirement/ledger coverage validation
 - [ ] Documentation link/path validation
