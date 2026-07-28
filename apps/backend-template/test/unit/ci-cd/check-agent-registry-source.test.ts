@@ -4,11 +4,16 @@ const https = require('https');
 const {
   buildBranchRevisionUrl,
   buildRawUrl,
+<<<<<<< HEAD
+  fetchJson,
+  fetchText,
+=======
   encodeRawPath,
   fetchJson,
   fetchText,
   githubApiHeaders,
   mirrorsMatch,
+>>>>>>> origin/dev
   normalize,
   resolveBranchRevision
 } = require('../../../../../ci-cd/check-agent-registry-source');
@@ -38,6 +43,14 @@ describe('check-agent-registry-source', () => {
 
   it('uses an immutable configured revision when building the canonical content URL', () => {
     expect.hasAssertions();
+<<<<<<< HEAD
+    expect(buildRawUrl({
+      repository: 'web2solutions/jumentix-agent-registry',
+      branch: 'main',
+      revision: '0123456789abcdef0123456789abcdef01234567',
+      remotePath: 'AGENT-REGISTRY.md'
+    })).toContain('ref=0123456789abcdef0123456789abcdef01234567');
+=======
     const revision = '0123456789abcdef0123456789abcdef01234567';
     expect(buildRawUrl({
       repository: 'web2solutions/jumentix-agent-registry',
@@ -55,6 +68,7 @@ describe('check-agent-registry-source', () => {
       remotePath: 'AGENT-REGISTRY.md'
     })).toThrow('full immutable commit SHA');
     expect(() => encodeRawPath('../AGENT-REGISTRY.md')).toThrow('Invalid registry remote path');
+>>>>>>> origin/dev
   });
 
   it('builds the branch revision URL used by synchronization', () => {
@@ -123,6 +137,8 @@ describe('check-agent-registry-source', () => {
       .rejects.toThrow('HTTP 404');
   });
 
+<<<<<<< HEAD
+=======
   it('wraps canonical registry transport failures without leaking credentials', async () => {
     expect.hasAssertions();
     const request: { on: jest.Mock } = { on: jest.fn() };
@@ -150,6 +166,7 @@ describe('check-agent-registry-source', () => {
     });
   });
 
+>>>>>>> origin/dev
   it('parses canonical GitHub JSON responses', async () => {
     expect.hasAssertions();
     const response = {
@@ -212,6 +229,8 @@ describe('check-agent-registry-source', () => {
       branch: 'main'
     })).resolves.toBe(revision);
   });
+<<<<<<< HEAD
+=======
 
   it('fails closed when branch resolution does not return a full commit SHA', async () => {
     expect.hasAssertions();
@@ -241,4 +260,5 @@ describe('check-agent-registry-source', () => {
       branch: 'main'
     })).rejects.toThrow('Could not resolve canonical registry revision');
   });
+>>>>>>> origin/dev
 });

@@ -14,7 +14,7 @@
 
 ## Project Tracking (Required)
 
-- Linear Project: `Jumentix` (`https://linear.app/jumentix`)
+- GitHub Project: `Jumentix` (`https://github.com/users/web2solutions/projects/1`)
 - Focused epic link:
 - Epic milestone:
 - Primary task nature: `fix`

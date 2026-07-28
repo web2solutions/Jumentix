@@ -40,7 +40,7 @@ jobs:
           name: Wait for Redis
           command: dockerize -wait tcp://localhost:6379 -timeout 1m
       - run:
-          name: Run canonical branch quality gate
+          name: Run canonical full matrix
           command: JUMENTIX_QUALITY_GATE_TARGET=${CIRCLE_BRANCH:-dev} AAA_CI_GATE_RESULT_FILE=artifacts/ci/branch-quality-gate.json AAA_CI_MATRIX_RESULT_FILE=artifacts/ci/full-test-matrix.json npx pnpm@9.15.3 run ci:gate:branch
       - store_artifacts:
           path: artifacts/ci/branch-quality-gate.json
@@ -50,9 +50,4 @@ jobs:
 workflows:
   test-source:
     jobs:
-      - test-source:
-          filters:
-            branches:
-              only:
-                - dev
-                - main
+      - test-source
