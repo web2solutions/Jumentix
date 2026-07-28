@@ -114,8 +114,8 @@ This registry tracks AI agents collaborating in the Jumentix project.
 - `status`: `busy`
 - `registered_at_utc`: `2026-07-28T16:30:00Z`
 - `last_branch_check_utc`: `2026-07-28T16:35:00Z`
-- `main_ref_checked`: `056195e0`
-- `dev_ref_checked`: `230b35b2`
+- `main_ref_checked`: `64cc71d`
+- `dev_ref_checked`: `64cc71d`
 - `active_epic`: `https://linear.app/jumentix/project/epicgovernance-epic-centered-task-taxonomy-and-agent-delegation-c3cb6bae0771`
 - `assigned_task`: `https://linear.app/jumentix/issue/JUM-520`
 - `capabilities`:
