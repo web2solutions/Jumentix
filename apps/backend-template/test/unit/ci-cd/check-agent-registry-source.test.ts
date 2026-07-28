@@ -127,7 +127,11 @@ describe('check-agent-registry-source', () => {
       return response;
     });
     jest.spyOn(https, 'get').mockImplementation((...args: unknown[]) => {
-      const [url, options, callback] = args as [string, { headers: Record<string, string> }, (value: object) => void];
+      const [url, options, callback] = args as [
+        string,
+        { headers: Record<string, string> },
+        (value: object) => void
+      ];
       expect(url).toBe(buildContentsApiUrl({
         repository: 'web2solutions/jumentix-agent-registry',
         revision,
@@ -158,22 +162,21 @@ describe('check-agent-registry-source', () => {
     expect.hasAssertions();
     const revision = '0123456789abcdef0123456789abcdef01234567';
     const request = { on: jest.fn() };
-    let call = 0;
-
-    jest.spyOn(https, 'get').mockImplementation((...args: unknown[]) => {
-      call += 1;
+    const getRequest = jest.spyOn(https, 'get');
+    getRequest.mockImplementationOnce((...args: unknown[]) => {
       const [url, , callback] = args as [string, object, (value: object) => void];
-      if (call === 1) {
-        expect(url).toContain('api.github.com/repos/');
-        callback({
-          statusCode: 403,
-          setEncoding: jest.fn(),
-          on: jest.fn(),
-          resume: jest.fn()
-        });
-        return request as never;
-      }
+      expect(url).toContain('api.github.com/repos/');
+      callback({
+        statusCode: 403,
+        setEncoding: jest.fn(),
+        on: jest.fn(),
+        resume: jest.fn()
+      });
+      return request as never;
+    });
 
+    getRequest.mockImplementationOnce((...args: unknown[]) => {
+      const [url, , callback] = args as [string, object, (value: object) => void];
       expect(url).toBe(buildRawUrl({
         repository: 'web2solutions/jumentix-agent-registry',
         revision,
@@ -208,7 +211,7 @@ describe('check-agent-registry-source', () => {
         remotePath: 'AGENT-REGISTRY.md'
       }, revision)
     });
-    expect(call).toBe(2);
+    expect(getRequest).toHaveBeenCalledTimes(2);
   });
 
   it('guides operators to pin/path drift on unauthenticated raw 404 responses', async () => {
@@ -259,12 +262,21 @@ describe('check-agent-registry-source', () => {
     expect.hasAssertions();
     const revision = '0123456789abcdef0123456789abcdef01234567';
     const request = { on: jest.fn() };
-    let call = 0;
-    jest.spyOn(https, 'get').mockImplementation((...args: unknown[]) => {
-      call += 1;
+    const getRequest = jest.spyOn(https, 'get');
+    getRequest.mockImplementationOnce((...args: unknown[]) => {
       const [, , callback] = args as [string, object, (value: object) => void];
       callback({
-        statusCode: call === 1 ? 403 : 404,
+        statusCode: 403,
+        setEncoding: jest.fn(),
+        on: jest.fn(),
+        resume: jest.fn()
+      });
+      return request as never;
+    });
+    getRequest.mockImplementationOnce((...args: unknown[]) => {
+      const [, , callback] = args as [string, object, (value: object) => void];
+      callback({
+        statusCode: 404,
         setEncoding: jest.fn(),
         on: jest.fn(),
         resume: jest.fn()
@@ -279,7 +291,7 @@ describe('check-agent-registry-source', () => {
     }, revision, { GITHUB_TOKEN: 'bad-token' })).rejects.toThrow(
       /Authenticated Contents API failed and public raw fetch returned HTTP 404/
     );
-    expect(call).toBe(2);
+    expect(getRequest).toHaveBeenCalledTimes(2);
   });
 
   it('rejects failed canonical registry responses', async () => {
