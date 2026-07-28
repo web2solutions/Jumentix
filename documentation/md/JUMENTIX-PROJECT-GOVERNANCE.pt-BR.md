@@ -104,12 +104,15 @@ Se um PR não estiver vinculado aos itens de trabalho do projeto, ele estará fo
    conjunto.
 4. Os gates de commit, push e PR comparam o espelho com sua revisão imutável registrada, mantendo
    o resultado reproduzível quando outro agente atualiza a `main` canônica durante a execução.
+<<<<<<< HEAD
+=======
 5. A leitura da revisão imutável usa o endpoint raw do GitHub fixado por SHA, sem consumir a cota
    anônima da API de conteúdo.
 6. Somente a sincronização explícita resolve uma branch pela API do GitHub; quando disponível, ela
    pode usar `GITHUB_TOKEN` ou `GH_TOKEN`.
 7. SHA inválido, caminho inseguro, erro HTTP, falha de transporte, resposta inválida ou divergência
    entre o conteúdo canônico e o espelho local reprovam o gate sem expor credenciais.
+>>>>>>> origin/dev
 
 ## Governança de Documentação
 

@@ -69,6 +69,8 @@ describe('run-task-change-tests', () => {
     });
   });
 
+<<<<<<< HEAD
+=======
   it('maps workflow and hook changes to their governance unit test', () => {
     expect.hasAssertions();
     expect(createTaskTestPlan([
@@ -81,6 +83,7 @@ describe('run-task-change-tests', () => {
     });
   });
 
+>>>>>>> origin/dev
   it('selects real documentation validation for docs-only changes', () => {
     expect.hasAssertions();
     expect(createTaskTestPlan(['documentation/md/TESTING-CI-AND-QUALITY.md'])).toStrictEqual({
@@ -108,7 +111,11 @@ describe('run-task-change-tests', () => {
     taskFs.rmSync(rootDir, { recursive: true, force: true });
   });
 
+<<<<<<< HEAD
+  it('records success, failure, crash, and documentation evidence', () => {
+=======
   it('records success, failure, crash, and documentation not-applicable evidence', () => {
+>>>>>>> origin/dev
     expect.hasAssertions();
     const logger = { log: jest.fn(), error: jest.fn() };
     const successful = runTaskChangeTests({
@@ -140,7 +147,11 @@ describe('run-task-change-tests', () => {
     expect(failed.outcome).toBe('failed');
     expect(crashed.outcome).toBe('failed');
     expect(documentation).toMatchObject({
+<<<<<<< HEAD
+      plan: 'documentation-validation', outcome: 'passed', status: 0
+=======
       plan: 'documentation-validation', outcome: 'not-applicable', status: 0
+>>>>>>> origin/dev
     });
     expect(logger.error).toHaveBeenCalledTimes(2);
   });

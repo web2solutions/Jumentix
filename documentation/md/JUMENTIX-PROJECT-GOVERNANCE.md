@@ -106,12 +106,15 @@ If a PR is not linked to project work items, it is out of process.
    together.
 4. Commit, push, and PR gates compare the mirror with its recorded immutable revision so the
    result remains reproducible when another agent updates canonical `main` concurrently.
+<<<<<<< HEAD
+=======
 5. Pinned-revision checks fetch the public canonical file from `raw.githubusercontent.com` using
    the complete SHA and encoded path; they do not consume anonymous GitHub Contents API quota.
 6. Explicit synchronization resolves canonical `main` through the GitHub API and uses
    `GITHUB_TOKEN` or `GH_TOKEN` when available.
 7. Transport failures, invalid revisions, unsafe paths, missing files, and mirror mismatches fail
    closed without falling back to the local mirror.
+>>>>>>> origin/dev
 
 ## Documentation Governance
 
