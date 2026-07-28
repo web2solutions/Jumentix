@@ -44,7 +44,7 @@ Capturas completas:
 | Início da documentação | [docs-home.jpg](./adonisjs/pages/docs-home.jpg) |
 | Introdução | [docs-introduction.jpg](./adonisjs/pages/docs-introduction.jpg) |
 | Guia de rotas | [docs-routing-guide.jpg](./adonisjs/pages/docs-routing-guide.jpg) |
-| Docs atuais do Jumentix | [current-production-docs-jumentix.jpg](../current-production-docs-jumentix.jpg) |
+| Docs atuais do Jumentix | [current-production-docs-jumentix.jpg](./current-production-docs-jumentix.jpg) |
 
 ## Mapa da experiência pública
 

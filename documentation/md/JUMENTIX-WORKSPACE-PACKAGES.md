@@ -1,6 +1,6 @@
-# JumentiX Workspace Packages
+# Jumentix Workspace Packages
 
-This document tracks the current package map for monorepo migration waves.
+This document tracks the package and application workspace map implemented in `dev`.
 
 ## Runtime and Architecture Packages
 
@@ -22,10 +22,25 @@ This document tracks the current package map for monorepo migration waves.
 - `@jumentix/sdk-websocket-client`
 - `@jumentix/sdk-grpc-client`
 
+## Private Configuration and Contract Placeholders
+
+- `@jumentix/config-eslint`
+- `@jumentix/config-jest`
+- `@jumentix/config-ts`
+- `@jumentix/shared-contracts`
+
+These four workspaces are private migration placeholders. Their lifecycle scripts intentionally
+report that migration is pending. Canonical executable configuration and API contracts remain in
+the repository root and `spec/` until those migrations are implemented.
+
 ## App Workspaces
 
-- `@jumentix/backend-template` (placeholder during migration)
-- `@jumentix/service-management` (placeholder during migration)
+- `@jumentix/backend-template` - TypeScript backend application/template with REST, realtime, CLI,
+  persistence, messaging, serverless, and PM2 composition.
+- `@jumentix/service-management` - plain-JavaScript management server and UI; integration tests are
+  delegated to the root runner.
+- `@jumentix/website` - Next.js/Nextra/Mantine commercial and documentation website with bilingual
+  content sync, Storybook, static checks, and Vercel commands.
 
 ## Notes
 
@@ -34,3 +49,5 @@ This document tracks the current package map for monorepo migration waves.
 - Compatibility bridge contract is documented in `documentation/md/SDK-COMPATIBILITY-BRIDGE.md`.
 - CLI package now owns canonical bootstrap implementation.
 - Root CLI entrypoint remains as compatibility wrapper.
+- Package status, links, and per-package README files are indexed in `packages/README.md`.
+- Node.js 22 and pnpm 9.15.3 are the repository runtime/package-manager contract.
