@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-07-28 docs(governance): require pre-task requirement refresh - web2solutions
 - 2026-07-28 chore(governance): require Linear Project Update evidence - web2solutions
 - 2026-07-28 test: repair registry lint regression - web2solutions
 - 2026-07-28 docs(governance): require complete agent intake (#230) - Eduardo A.
