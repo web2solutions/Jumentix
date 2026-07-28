@@ -44,7 +44,7 @@ Full-page screenshots:
 | Documentation home | [docs-home.jpg](./adonisjs/pages/docs-home.jpg) |
 | Documentation introduction | [docs-introduction.jpg](./adonisjs/pages/docs-introduction.jpg) |
 | Documentation routing guide | [docs-routing-guide.jpg](./adonisjs/pages/docs-routing-guide.jpg) |
-| Current Jumentix production docs | [current-production-docs-jumentix.jpg](../current-production-docs-jumentix.jpg) |
+| Current Jumentix production docs | [current-production-docs-jumentix.jpg](./current-production-docs-jumentix.jpg) |
 
 ## Public Experience Map
 

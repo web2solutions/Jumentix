@@ -1,0 +1,12 @@
+# @jumentix/config-ts
+
+Private workspace placeholder for the future shared TypeScript configuration.
+
+## Current `dev` status
+
+- Private and not publishable.
+- Carries `tsconfig.base.json` as its intended configuration asset.
+- All lifecycle scripts are migration-pending placeholders.
+
+Applications and packages must continue using their checked-in TypeScript configurations until the
+shared-config migration is implemented.

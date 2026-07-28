@@ -11,24 +11,45 @@ This folder contains reusable npm packages shared across Jumentix applications.
 
 ## Package Index
 
-- `@jumentix/cli-init` - bootstrap CLI for creating project structures.
-- `@jumentix/message-mediator` - contract-based event/request-response mediator.
-- `@jumentix/key-value-storage` - key-value storage contracts and adapters.
-- `@jumentix/mutex-service` - distributed lock service contract layer.
-- `@jumentix/persistence-contracts` - `IDatabaseClient` and `IStore` abstractions.
-- `@jumentix/external-persistence-core` - base repository contracts/implementations.
-- `@jumentix/external-store-proxy` - translates DB native clients to `IStore`.
-- `@jumentix/external-db-repositories` - DB repository adapters.
-- `@jumentix/database-client-factory` - database client compilation per driver.
-- `@jumentix/runtime-infra` - runtime environment infra helpers.
-- `@jumentix/adapter-runtime-bootstrap` - shared adapter bootstrap composition.
-- `@jumentix/sdk-rest-client` - REST SDK client.
-- `@jumentix/sdk-websocket-client` - WebSocket SDK client.
-- `@jumentix/sdk-grpc-client` - gRPC SDK client.
+### Runtime and persistence
+
+- [`@jumentix/adapter-runtime-bootstrap`](/docs/jumentix/packages/adapter-runtime-bootstrap) - shared adapter runtime composition.
+- [`@jumentix/database-client-factory`](/docs/jumentix/packages/database-client-factory) - database client compilation by selected driver.
+- [`@jumentix/external-db-repositories`](/docs/jumentix/packages/external-db-repositories) - reusable external database repositories.
+- [`@jumentix/external-persistence-core`](/docs/jumentix/packages/external-persistence-core) - base external-persistence contracts and implementations.
+- [`@jumentix/external-store-proxy`](/docs/jumentix/packages/external-store-proxy) - native database client to `IStore` bridges.
+- [`@jumentix/key-value-storage`](/docs/jumentix/packages/key-value-storage) - key-value contracts and in-memory/Redis adapters.
+- [`@jumentix/mutex-service`](/docs/jumentix/packages/mutex-service) - reusable mutex compiler and runtime adapter.
+- [`@jumentix/persistence-contracts`](/docs/jumentix/packages/persistence-contracts) - shared `IDatabaseClient` and `IStore` abstractions.
+- [`@jumentix/runtime-infra`](/docs/jumentix/packages/runtime-infra) - runtime environment and infrastructure helpers.
+
+### Messaging, bootstrap, and contracts
+
+- [`@jumentix/cli-init`](/docs/jumentix/packages/cli-init) - bootstrap CLI for project structures.
+- [`@jumentix/message-mediator`](/docs/jumentix/packages/message-mediator) - event and request/response mediator.
+- [`@jumentix/shared-contracts`](/docs/jumentix/packages/shared-contracts) - reserved workspace for shared OpenAPI/AsyncAPI contracts.
+
+### SDK clients
+
+- [`@jumentix/sdk-rest-client`](/docs/jumentix/packages/sdk-rest-client) - REST SDK client.
+- [`@jumentix/sdk-websocket-client`](/docs/jumentix/packages/sdk-websocket-client) - WebSocket SDK client.
+- [`@jumentix/sdk-grpc-client`](/docs/jumentix/packages/sdk-grpc-client) - gRPC SDK client.
+
+### Private workspace configuration
+
+- [`@jumentix/config-eslint`](/docs/jumentix/packages/config-eslint) - reserved shared ESLint configuration.
+- [`@jumentix/config-jest`](/docs/jumentix/packages/config-jest) - reserved shared Jest configuration.
+- [`@jumentix/config-ts`](/docs/jumentix/packages/config-ts) - reserved shared TypeScript configuration.
+
+Packages described as **reserved** are intentionally private placeholders in the current `dev`
+baseline. Their scripts report that the migration wave is pending; they must not be documented as
+published or production-ready.
 
 ## Usage Pattern
 
-Each package has its own `README.md`, scripts, and ownership boundaries. Import packages from applications instead of duplicating adapter logic in each app.
+Each package has its own English and Portuguese README, scripts, and ownership boundaries. Import
+packages from applications instead of duplicating adapter logic in each app. The canonical runtime
+is Node.js 22 with pnpm 9.15.3.
 
 ## Related Docs
 

@@ -1,34 +1,56 @@
 ---
-title: "Pacotes de espaço de trabalho Jumentix"
+title: "Pacotes do workspace Jumentix"
 description: "Documentação de Pacotes."
 ---
 
 > Source: `../../packages/README.pt-BR.md`
 
-# Pacotes de espaço de trabalho Jumentix
+# Pacotes do workspace Jumentix
 
-Esta pasta contém pacotes npm reutilizáveis ​​compartilhados entre aplicativos Jumentix.
+Esta pasta contém os pacotes npm reutilizáveis e os pacotes privados de configuração compartilhados
+pelas aplicações Jumentix.
 
 ## Índice de pacotes
 
-- `@jumentix/cli-init` - bootstrap CLI para criar estruturas de projeto.
-- `@jumentix/message-mediator` - mediador de evento/solicitação-resposta baseado em contrato.
-- `@jumentix/key-value-storage` - contratos e adaptadores de armazenamento de valor-chave.
-- `@jumentix/mutex-service` - camada de contrato de serviço de bloqueio distribuído.
-- `@jumentix/persistence-contracts` - Abstrações `IDatabaseClient` e `IStore`.
-- `@jumentix/external-persistence-core` - contratos/implementações de repositório base.
-- `@jumentix/external-store-proxy` - traduz clientes nativos do banco de dados para `IStore`.
-- `@jumentix/external-db-repositories` - Adaptadores de repositório de banco de dados.
-- `@jumentix/database-client-factory` - compilação do cliente de banco de dados por driver.
-- `@jumentix/runtime-infra` - infra ajudantes do ambiente de tempo de execução.
-- `@jumentix/adapter-runtime-bootstrap` - composição de bootstrap do adaptador compartilhado.
-- `@jumentix/sdk-rest-client` - cliente REST SDK.
-- `@jumentix/sdk-websocket-client` - cliente WebSocket SDK.
-- `@jumentix/sdk-grpc-client` - cliente gRPC SDK.
+### Runtime e persistência
+
+- [`@jumentix/adapter-runtime-bootstrap`](/docs/pt-BR/jumentix/packages/adapter-runtime-bootstrap) - composição compartilhada do runtime de adapters.
+- [`@jumentix/database-client-factory`](/docs/pt-BR/jumentix/packages/database-client-factory) - compilação do cliente de banco por driver selecionado.
+- [`@jumentix/external-db-repositories`](/docs/pt-BR/jumentix/packages/external-db-repositories) - repositórios reutilizáveis para bancos externos.
+- [`@jumentix/external-persistence-core`](/docs/pt-BR/jumentix/packages/external-persistence-core) - contratos e implementações-base de persistência externa.
+- [`@jumentix/external-store-proxy`](/docs/pt-BR/jumentix/packages/external-store-proxy) - pontes entre clientes nativos e `IStore`.
+- [`@jumentix/key-value-storage`](/docs/pt-BR/jumentix/packages/key-value-storage) - contratos e adapters in-memory/Redis.
+- [`@jumentix/mutex-service`](/docs/pt-BR/jumentix/packages/mutex-service) - compiler e adapter reutilizável de mutex.
+- [`@jumentix/persistence-contracts`](/docs/pt-BR/jumentix/packages/persistence-contracts) - abstrações `IDatabaseClient` e `IStore`.
+- [`@jumentix/runtime-infra`](/docs/pt-BR/jumentix/packages/runtime-infra) - utilitários de ambiente e infraestrutura de runtime.
+
+### Mensageria, bootstrap e contratos
+
+- [`@jumentix/cli-init`](/docs/pt-BR/jumentix/packages/cli-init) - CLI de bootstrap de estruturas de projeto.
+- [`@jumentix/message-mediator`](/docs/pt-BR/jumentix/packages/message-mediator) - mediador de eventos e request/response.
+- [`@jumentix/shared-contracts`](/docs/pt-BR/jumentix/packages/shared-contracts) - workspace reservado para contratos OpenAPI/AsyncAPI compartilhados.
+
+### Clientes SDK
+
+- [`@jumentix/sdk-rest-client`](/docs/pt-BR/jumentix/packages/sdk-rest-client) - cliente SDK REST.
+- [`@jumentix/sdk-websocket-client`](/docs/pt-BR/jumentix/packages/sdk-websocket-client) - cliente SDK WebSocket.
+- [`@jumentix/sdk-grpc-client`](/docs/pt-BR/jumentix/packages/sdk-grpc-client) - cliente SDK gRPC.
+
+### Configuração privada do workspace
+
+- [`@jumentix/config-eslint`](/docs/pt-BR/jumentix/packages/config-eslint) - configuração ESLint compartilhada reservada.
+- [`@jumentix/config-jest`](/docs/pt-BR/jumentix/packages/config-jest) - configuração Jest compartilhada reservada.
+- [`@jumentix/config-ts`](/docs/pt-BR/jumentix/packages/config-ts) - configuração TypeScript compartilhada reservada.
+
+Pacotes descritos como **reservados** são placeholders privados intencionais no `dev` atual. Seus
+scripts informam que a onda de migração está pendente; eles não devem ser apresentados como
+publicados ou prontos para produção.
 
 ## Padrão de uso
 
-Cada pacote tem seu próprio `README.md`, scripts e limites de propriedade. Importe pacotes de aplicativos em vez de duplicar a lógica do adaptador em cada aplicativo.
+Cada pacote possui README em inglês e português, scripts e limites de propriedade. Importe os
+pacotes nas aplicações em vez de duplicar lógica de adapter. O runtime canônico é Node.js 22 com
+pnpm 9.15.3.
 
 ## Documentos relacionados
 
