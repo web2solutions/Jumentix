@@ -17,6 +17,8 @@ This file consolidates non-functional requirements already requested and stored 
 - `020` Coverage threshold as approval gate.
 - `063` Workspace coverage policy governance.
 - `065` Commit/push integrity with real CI checks.
+- `087` Branch-aware quality gates: unit tests for `dev`, full matrix for `main`.
+- `088` Task branches run only changed/related unit tests; `dev` PRs run all unit tests and CircleCI is restricted to `dev`/`main`.
 
 ## Security and Compliance NFRs
 
@@ -50,7 +52,21 @@ This file consolidates non-functional requirements already requested and stored 
 - `076` Mandatory task traceability for AI/humans + documentation sync + EN/PT documentation and website parity.
 - `077` Multi-agent platform support (Codex, Claude Code, Grok) with aligned governance and traceability rules.
 - `078` Agent Registry system with mandatory pre-task registration, planning assignment by availability, and required `main`/`dev` pre-work branch checks.
-- `079` One task per branch and PR, with nature-prefixed branch names and PR titles.
+- `079` Main branch protection and mandatory feature/fix/chore branching flow; local direct changes on `main` are prohibited.
+- `080` Agent Registry must include machine identity and agent runtime version metadata, allowing multiple agents per host machine.
+- `081` Agent playbook must teach registration, branch sync checks, governance execution, and closure/audit workflow.
+- `082` PR descriptions must use real breaklines/markdown formatting; literal `\n` tokens are prohibited.
+- `083` Feature and bug branches must be deleted (local + remote) after merge into `dev`, unless explicitly justified.
+- `084` `dev` is the single source of truth for development; new branches must start from `dev` and PRs from implementation branches must target `dev`.
+- `085` PR descriptions are mandatory and must follow the repository PR template, with required sections completed before approval.
+- `086` One task per branch and PR, nature-prefixed naming, `dev`-first promotion to `main`, and mandatory false-green-proof full test matrices for commits, pushes, and PRs.
+- `089` Agent Registry must be maintained in an independent GitHub repository as canonical source, with mirrored sync in consumer repositories.
+- `090` Every executable task must have one focused epic, one primary nature, and the epic milestone; milestone validation precedes epic-level agent delegation and non-overlapping child-task assignment.
+- `091` Website design-system and Storybook governance, including accessibility, responsive/theme states, component inventory, and reproducible smoke validation.
+- `092` Open-source commercial website experience, bilingual route parity, truthful code proof, responsive navigation, and production route integrity.
+- `093` Consumer documentation information architecture, bilingual route parity, source synchronization, navigation depth, and publication integrity.
+- `094` Every Linear Project used as an epic must have a dedicated documentation Issue completed before the Project can be completed.
+- `095` Every executing agent publishes truthful task progress in the Linear epic Project's `Project Updates` feed through final handoff.
 
 ## Rule of Use
 

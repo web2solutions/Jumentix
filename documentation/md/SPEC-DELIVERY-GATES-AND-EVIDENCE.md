@@ -45,6 +45,20 @@ Evidence:
 1. Green test suites in CI.
 2. Added tests for new behavior included in PR scope.
 
+Execution policy:
+
+1. `ci:gate` remains the fast baseline defined by requirement `011`, including the representative integration smoke.
+2. `ci:gate:branch` is the canonical boundary selector: task branches run changed/related
+   tests, `dev` runs all unit tests, and `main` runs the full matrix.
+3. `ci:gate:strict` remains the canonical release-promotion full-matrix gate.
+4. Its manifest covers lint, architecture, contracts, governance, unit, security, smoke, builds, every workspace, the complete 15-target HTTP/Lambda/realtime/Service Management integration matrix, and patch coverage.
+5. Every matrix runner must reject an empty, duplicate, malformed, or missing-script manifest.
+6. Execution continues after an individual cell fails and returns one aggregate non-zero result listing every failed cell.
+7. Docs-only task changes may record `not-applicable`; no scope-aware plan may omit all
+   unit tests for `dev` or the canonical matrix for `main`.
+8. Integration targets run with coverage disabled so they cannot overwrite the unit-test coverage artifact governed by requirement `014`.
+9. Remote CI publishes the selected-gate JSON evidence and the main-matrix JSON evidence when applicable.
+
 ## Gate 4 - Quality and Security
 
 Pass criteria:
@@ -65,14 +79,20 @@ Pass criteria:
 1. Issue, project item, and PR are linked.
 2. Priority/size/estimation lifecycle fields are populated.
 3. Requirement/NFR references are included when applicable.
-4. The delivery has one task-owned branch and one task-owned PR.
-5. Branch and PR title nature prefixes match the naming contract.
+4. Every Linear Project used as an epic has a dedicated documentation Issue.
+5. The epic documentation Issue is completed before the Project is set to `Completed`.
+6. Every executing agent publishes the required task-specific Linear Project Updates.
+7. Every completed task has a final Project Update with no unresolved blocker or incomplete
+   required gate.
 
 Evidence:
 
 1. GitHub issue/project/PR cross-links.
 2. Updated `.agents` registry when governance or NFR changed.
-3. Branch name and PR title recorded in the PR template.
+3. Linear Project link plus the completed documentation Issue, PR/commit links, changed-document
+   inventory, bilingual parity evidence when applicable, and documentation integrity results.
+4. Linear Project Updates feed with task, agent, status, outcome, delivery artifacts, exact gate
+   states, blockers or risks, and next action.
 
 ## Evidence Packaging Standard for PRs
 
@@ -92,4 +112,6 @@ A PR is not merge-ready when any of these is missing:
 2. Required checks or coverage threshold.
 3. Governance traceability links.
 4. Required `.agents` updates for NFR/governance impact.
-5. Task isolation or branch/PR naming does not satisfy requirement `079`.
+5. A missing or incomplete dedicated documentation Issue for an epic being completed.
+6. A missing, stale, misleading, or incomplete required Project Update for an active or completed
+   task.

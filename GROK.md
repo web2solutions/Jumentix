@@ -7,7 +7,7 @@ This repository supports Grok as an official engineering agent.
 1. Execute repository commands using `rtk`.
 2. Follow all requirements in `.agents/requirements/*`.
 3. Keep `.agents/NFR-REGISTRY.md` synchronized when NFR behavior changes.
-4. Use Linear as the task and Project source of truth. The Linear API key is at `../.linear` — read it for API authentication but never expose, log, commit, or share it.
+4. Use Linear as the source of truth for project management and new tasks.
 5. Keep implementation, specs, and docs synchronized.
 6. Respect CI, lint, test, and coverage gates; no bypass behavior is allowed.
 7. Register in `.agents/AGENT-REGISTRY.md` before task execution.
@@ -17,12 +17,11 @@ This repository supports Grok as an official engineering agent.
 11. Confirm the focused epic and child task share one open milestone that covers their dates.
 12. Treat an epic as a Linear Project and never complete it before its dedicated documentation
     Issue is completed under Requirement `094`.
-13. Administrators may use a recorded project-owner approval to bypass only the required-review
-    count; `dev`-first delivery and terminal-green quality, coverage, and security gates remain
-    mandatory.
-14. Maintain valid status, priority, start/target dates, and labels for every assigned Linear
-    Issue and Project; record material changes in Project Updates and fail closed on missing,
-    stale, contradictory, or placeholder metadata under Requirement `097`.
+13. Publish every task's start, material progress, blocker changes, review readiness, and final
+    handoff in the Linear epic Project's `Project Updates` feed under Requirement `095`; Issue
+    comments and status changes alone are insufficient.
+14. Report exact gate states in Project Updates and never describe pending, missing, cancelled,
+    timed-out, skipped, or failed required checks as passing.
 
 ## Required Governance Links
 

@@ -8,28 +8,59 @@ O desenvolvimento de especificações orientado no Jumentix é aplicado por meio
 
 ## Fonte Única da Verdade
 
-Fonte da verdade sobre governança:
+Fonte da verdade para gestão de projetos:
 
-- Projeto GitHub Jumentix: `https://github.com/users/web2solutions/projects/1`
+- Workspace Jumentix no Linear: Project = épico; Issue = tarefa executável
 
 Registros de governança obrigatórios:
 
-1. Problema do GitHub (item de trabalho)
-2. Item de projeto com campos de planejamento
+1. Issue do Linear (item de trabalho)
+2. Project do Linear com campos de planejamento e Project Updates
 3. RP com questão e evidências vinculadas
 4. Artefatos de especificações e documentação
-5. Registro no Agent Registry em `.agents/AGENT-REGISTRY.md`
+5. Registro canônico de agentes em `web2solutions/jumentix-agent-registry` com espelho local em `.agents/AGENT-REGISTRY.md`
 
 ## Links de rastreabilidade obrigatórios
 
 Cada item de entrega deve expor:
 
-1. `Problema -> Item do projeto`
-2. `Problema -> Arquivos de especificações alterados`
-3. `PR -> Problema`
-4. `PR -> Evidência (testes/cobertura/verificações)`
-5. `PR -> IDs de requisitos` (quando NFR ou comportamento de governança são afetados)
-6. `Tarefa -> branch dedicada -> PR dedicado`
+1. `Milestone -> épico focado`
+2. `Épico focado -> tarefa filha`
+3. `Épico focado -> agente delegado`
+4. `Issue -> item do projeto`
+5. `Issue -> arquivos de especificações alterados`
+6. `PR -> issue`
+7. `PR -> evidência (testes/cobertura/verificações)`
+8. `PR -> IDs de requisitos` (quando NFR ou comportamento de governança são afetados)
+9. `Tarefa -> branch dedicada -> PR dedicado`
+10. `Project de épico no Linear -> Issue dedicada de documentação -> evidências de PR/commit/documentação`
+11. `Issue de tarefa no Linear -> Project Updates específicos da tarefa -> evidências de agente/entrega/gates`
+
+## Gate de conclusão da documentação do épico
+
+1. No Linear, um épico é um Project e suas tarefas executáveis são Issues.
+2. Todo Project de épico deve conter uma Issue dedicada de documentação.
+3. O Project não pode ser marcado como `Completed` antes que essa Issue esteja concluída.
+4. A evidência de conclusão deve vincular a Issue de documentação, seu PR e commits exclusivos,
+   o inventário da documentação alterada, a paridade bilíngue quando aplicável e a validação de
+   integridade.
+5. Trabalho de documentação ausente, cancelado, sem responsável ou incompleto bloqueia a
+   conclusão do épico.
+
+## Project Updates obrigatórios no Linear
+
+1. Todo agente executor publica o progresso da tarefa no feed `Project Updates` do Project pai
+   no Linear no início, após progresso material, em mudanças de bloqueio ou risco, quando o PR
+   fica pronto para revisão e na conclusão ou transferência final.
+2. Comentários e mudanças de status da Issue, notas locais e atividade do PR não substituem um
+   Project Update.
+3. Cada seção de tarefa registra ID/link da tarefa, agente, status, resultado concluído,
+   branch/PR/commit, estados exatos dos gates, bloqueios ou riscos e próxima ação.
+4. Gates obrigatórios pendentes, reprovados, expirados, cancelados, ignorados, ausentes ou não
+   reportados nunca são representados como aprovados.
+5. Tarefas e agentes paralelos usam seções claramente separadas.
+6. Um Project não pode ser concluído até que toda tarefa possua um Project Update final sem
+   bloqueio não resolvido ou gate obrigatório incompleto.
 
 ## Campos obrigatórios do projeto
 
@@ -39,17 +70,39 @@ Cada item de entrega deve expor:
 - `Estimativa`
 - `Data de início`
 - `Data de término`
+- `Parent issue`
+- `Milestone`
+- um rótulo de natureza principal
+
+## Planejamento e delegação orientados por épico
+
+1. Todo épico ativo possui exatamente um milestone aberto com alvo e data limite de entrega.
+2. Toda tarefa executável possui exatamente um épico pai focado e herda seu milestone.
+3. As datas finais do épico e das tarefas permanecem dentro da data limite do milestone.
+4. Cada tarefa possui uma natureza principal e é agrupada com tarefas da mesma natureza dentro
+   do épico.
+5. Trabalho de suporte com natureza diferente é representado por tarefa filha separada sob o
+   mesmo épico coeso.
+6. A validade do milestone é verificada antes da delegação de agentes no nível do épico.
+7. Somente agentes delegados a um épico podem executar suas tarefas.
+8. Cada tarefa possui um agente responsável e agentes paralelos atuam em escopos não sobrepostos.
+9. O Agent Registry canônico registra `active_epic` e `assigned_task`.
+10. Um milestone só fecha depois que seus épicos forem concluídos ou o trabalho restante for
+    formalmente transferido.
 
 ## Requisitos de governança de relações públicas
 
 Cada PR deve conter:
 
 1. Resumo do escopo vinculado à intenção do problema
-2. Lista de arquivos de especificações alterada
-3. Critérios de aceitação e evidências
-4. Cobertura e resultados de entrada
-5. Notas de risco/reversão quando necessário
-6. Nome da branch exclusiva da tarefa e título do PR com prefixo de natureza correspondente
+2. Vínculo com o milestone, o épico pai focado e o item do projeto
+3. Lista de arquivos de especificações alterada
+4. Critérios de aceitação e evidências
+5. Cobertura e resultados de entrada
+6. Notas de risco/reversão quando necessário
+7. Nome da branch exclusiva da tarefa e título do PR com prefixo de natureza correspondente
+8. Evidência das branches de origem e destino
+9. Formatação markdown limpa com quebra de linhas reais; não usar tokens literais `\n` no corpo do PR.
 
 Política de isolamento e nomenclatura:
 
@@ -58,6 +111,13 @@ Política de isolamento e nomenclatura:
 - Formato do título do PR: `[<Natureza>] <resultado conciso>`.
 - Naturezas permitidas: `feature`, `fix`, `security`, `governance`, `docs`, `refactor`, `test`, `ci`, `release`, `chore`.
 - Compartilhar uma branch ou PR entre tarefas rastreadas separadamente exige exceção explícita registrada na issue e no PR.
+- Todo PR de tarefa tem `dev` como destino.
+- Somente um PR de promoção de release originado em `dev` pode ter `main` como destino.
+- Uma promoção de `dev` para `main` referencia os PRs/issues de tarefas já integrados em `dev` e não introduz mudanças não revisadas.
+- PRs diretos de tarefa/tópico, pushes e merges para `main` são proibidos.
+- Os gates de commit, push e PR devem executar a matriz completa de testes declarada pelo repositório.
+- A evidência da matriz deve listar cada célula obrigatória e seu resultado terminal.
+- Uma matriz incompleta é evidência com falha; nunca pode ser interpretada como verde.
 
 Política de agrupamento prioritário:
 
@@ -101,14 +161,33 @@ Antes de qualquer execução de tarefa:
 1. O agente atuante deve estar registrado em `.agents/AGENT-REGISTRY.md`.
 2. O planejamento deve atribuir tarefas apenas para agentes com status `available`.
 3. O agente deve checar os refs mais recentes de `main` e `dev` e atualizar os campos de verificação no registro.
+4. As entradas do registro devem incluir identidade da máquina (`machine_id`, `machine_name`, `machine_os`) e identidade de runtime (`agent_runtime`, `agent_version`) para permitir múltiplos agentes no mesmo host com rastreabilidade completa.
+5. Os agentes devem seguir o playbook operacional (Requisito `081`) cobrindo registro, sincronização de branches, execução governada e evidências de fechamento.
+6. As atualizações canônicas do registro devem ser feitas primeiro no repositório externo e depois espelhadas localmente sob o Requisito `089`.
+7. A delegação no nível do épico e a atribuição da tarefa filha devem ser registradas sob o
+   Requisito `090`.
+8. O milestone do épico e da tarefa deve ser validado antes do planejamento ou execução sob o
+   Requisito `090`.
+9. Os agentes devem verificar a Issue dedicada de documentação antes de concluir um Project de
+   épico no Linear sob o Requisito `094`.
+10. Os agentes devem publicar os Project Updates específicos da tarefa exigidos pelo Requisito
+    `095`.
 
 ## Expectativas de evidências de auditoria
 
 Conjunto mínimo de evidências:
 
-1. Problema vinculado + item do projeto
-2. Arquivos de especificações e documentos alterados
-3. Saída CI verde para portas necessárias
-4. Limite de cumprimento da evidência de cobertura
-5. Atualizações de registro de requisitos (se o NFR for afetado)
-6. Evidência de isolamento e nomenclatura da branch/PR da tarefa
+1. Milestone + épico focado + issue filha + item do projeto vinculados
+2. Delegação do agente no nível do épico e atribuição no nível da tarefa
+3. Arquivos de especificações e documentos alterados
+4. Saída CI verde para gates obrigatórios
+5. Evidência de cobertura atendendo ao limite
+6. Atualizações de registro de requisitos (se o NFR for afetado)
+7. Evidência de isolamento e nomenclatura da branch/PR da tarefa
+8. Proveniência do PR da tarefa para `dev`, ou da promoção de release de `dev` para `main`
+9. Evidência do gate por branch para commit, push, merge e PR
+10. Manifesto e resultados da matriz completa para promoção a `main`
+11. Prova de propagação mostrando que teste obrigatório ausente ou com falha não pode produzir
+    resultado verde
+12. Project Updates específicos da tarefa até a transferência final, com estado exato da
+    entrega e dos gates

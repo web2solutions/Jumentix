@@ -49,6 +49,17 @@ Evidência:
 1. Conjuntos de testes verdes em CI.
 2. Adicionados testes para novos comportamentos incluídos no escopo PR.
 
+Política de execução:
+
+1. `ci:gate` permanece como a linha de base rápida definida pelo requisito `011`, incluindo o smoke de integração representativo.
+2. `ci:gate:strict` é o gate canônico da matriz completa para os limites de commit, push e pull request.
+3. Seu manifesto cobre lint, arquitetura, contratos, governança, testes unitários, segurança, smoke, builds, todos os workspaces, a matriz completa de 15 alvos de integração HTTP/Lambda/realtime/Service Management e cobertura do patch.
+4. Cada executor da matriz deve rejeitar manifesto vazio, duplicado, malformado ou com script ausente.
+5. A execução continua após a falha de uma célula individual e retorna um único resultado agregado diferente de zero listando todas as células com falha.
+6. Planos somente de documentação ou outras otimizações por escopo não podem omitir a matriz canônica em um limite de entrega.
+7. Os alvos de integração executam com cobertura desabilitada para não sobrescrever o artefato de cobertura dos testes unitários governado pelo requisito `014`.
+8. A CI remota publica a evidência JSON por célula gerada por `AAA_CI_MATRIX_RESULT_FILE`.
+
 ## Portão 4 – Qualidade e Segurança
 
 Critérios de aprovação:
@@ -69,14 +80,22 @@ Critérios de aprovação:
 1. O problema, o item do projeto e o PR estão vinculados.
 2. Os campos de prioridade/tamanho/estimativa do ciclo de vida são preenchidos.
 3. Referências de requisitos/NFR são incluídas quando aplicável.
-4. A entrega possui uma branch exclusiva da tarefa e um PR exclusivo da tarefa.
-5. Os prefixos de natureza da branch e do título do PR atendem ao contrato de nomenclatura.
+4. Todo Project do Linear usado como épico possui uma Issue dedicada de documentação.
+5. A Issue de documentação do épico está concluída antes de o Project ser marcado como
+   `Completed`.
+6. Todo agente executor publica os Project Updates obrigatórios específicos da tarefa no Linear.
+7. Toda tarefa concluída possui um Project Update final sem bloqueio não resolvido ou gate
+   obrigatório incompleto.
 
 Evidência:
 
 1. Links cruzados de problemas/projetos/RP do GitHub.
 2. Registro `.agents` atualizado quando a governança ou NFR mudou.
-3. Nome da branch e título do PR registrados no template do PR.
+3. Link do Project do Linear mais a Issue de documentação concluída, links de PR/commit,
+   inventário dos documentos alterados, evidência de paridade bilíngue quando aplicável e
+   resultados de integridade da documentação.
+4. Feed de Project Updates do Linear com tarefa, agente, status, resultado, artefatos de entrega,
+   estados exatos dos gates, bloqueios ou riscos e próxima ação.
 
 ## Padrão de empacotamento de evidências para PRs
 
@@ -96,4 +115,6 @@ Um PR não está pronto para mesclagem quando algum destes está faltando:
 2. Verificações exigidas ou limite de cobertura.
 3. Links de rastreabilidade da governança.
 4. Atualizações necessárias de `.agents` para impacto de NFR/governança.
-5. O isolamento da tarefa ou a nomenclatura de branch/PR não atende ao requisito `079`.
+5. Uma Issue dedicada de documentação ausente ou incompleta para um épico em conclusão.
+6. Um Project Update obrigatório ausente, desatualizado, enganoso ou incompleto para uma tarefa
+   ativa ou concluída.
