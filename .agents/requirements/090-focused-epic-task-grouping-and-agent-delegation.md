@@ -31,11 +31,11 @@ and cross-agent coordination ambiguous.
    same epic and retain their own nature.
 12. A task that spans unrelated outcomes or more than one primary nature must be decomposed into
    separate child tasks before execution.
-13. The epic relationship must be represented by GitHub sub-issue parentage or the Project
-   `Parent issue` field. A text-only epic reference is insufficient when structured parentage is
-   available.
-14. The milestone relationship must use the GitHub Issue milestone and Project `Milestone`
-    metadata. A text-only milestone reference is insufficient.
+13. The epic relationship must be represented by the task's Linear Project association and, when
+    available, Linear parent/sub-issue metadata. A text-only epic reference is insufficient when
+    structured linkage is available.
+14. The milestone relationship must use Linear Project and Issue milestone metadata. A text-only
+    milestone reference is insufficient.
 15. Agent planning and delegation happen at epic level after the epic milestone is validated and
     before child tasks are assigned.
 16. An agent may execute a child task only when the agent is assigned or delegated to that task's
@@ -69,7 +69,8 @@ and cross-agent coordination ambiguous.
 ## Acceptance Criteria
 
 1. Linear governance requires structured parent-epic linkage for executable tasks.
-2. Every active epic and its child tasks expose the same structured GitHub milestone.
+2. Every active Linear Project epic and its child Issues expose the same structured Linear
+   milestone.
 3. Project and agent documentation define the canonical nature taxonomy and milestone lifecycle.
 4. Agent playbooks validate the milestone before epic-level delegation and task-level assignment.
 5. Agent Registry entries support `active_epic` and `assigned_task`.
@@ -83,7 +84,8 @@ and cross-agent coordination ambiguous.
 - Applies to humans and all supported AI agents.
 - Applies to features, bugs, security, governance, documentation, refactors, tests, CI, releases,
   and chores.
-- Evidence includes Linear milestone metadata, parent/sub-issue relationships, Project fields,
-  nature labels, Agent Registry assignments, task-owned delivery records, and green quality gates.
+- Evidence includes Linear milestone metadata, Project/Issue relationships, planning fields,
+  nature labels, Agent Registry assignments, task-owned GitHub delivery records, and green
+  quality gates.
 - Complements requirements `056`, `057`, `064`, `067`, `076`, `078`, `081`, `084`, `085`,
   `086`, and `089`.

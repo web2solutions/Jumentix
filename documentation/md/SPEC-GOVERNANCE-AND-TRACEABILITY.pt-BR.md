@@ -11,6 +11,8 @@ O desenvolvimento de especificações orientado no Jumentix é aplicado por meio
 Fonte da verdade sobre governança:
 
 - Issues e Projects do Linear
+- A chave da API do Linear fica em `../.linear`, um nível acima da raiz do projeto. Agentes podem
+  lê-la para autenticação, mas nunca devem expô-la, registrá-la, compartilhá-la ou commitá-la.
 
 Registros de governança obrigatórios:
 
@@ -27,7 +29,7 @@ Cada item de entrega deve expor:
 1. `Milestone -> épico focado`
 2. `Épico focado -> tarefa filha`
 3. `Épico focado -> agente delegado`
-4. `Issue -> item do projeto`
+4. `Issue do Linear -> Project focado no Linear`
 5. `Issue -> arquivos de especificações alterados`
 6. `PR -> issue`
 7. `PR -> evidência (testes/cobertura/verificações)`
@@ -102,12 +104,12 @@ inicial são autoritativos até que um campo nativo ou personalizado esteja disp
 Cada PR deve conter:
 
 1. Resumo do escopo vinculado à intenção do problema
-2. Vínculo com o milestone, o épico pai focado e o item do projeto
+2. Vínculo com o milestone, o Project pai focado, a Issue filha e o Project Update no Linear
 3. Lista de arquivos de especificações alterada
 4. Critérios de aceitação e evidências
 5. Cobertura e resultados de entrada
 6. Notas de risco/reversão quando necessário
-7. Nome da branch exclusiva da tarefa e título do PR com prefixo de natureza correspondente
+7. Nome da branch exclusiva da tarefa e título do PR prefixado pela Issue do Linear e pela natureza
 8. Evidência das branches de origem e destino
 9. Formatação markdown limpa com quebra de linhas reais; não usar tokens literais `\n` no corpo do PR.
 
@@ -115,12 +117,14 @@ Política de isolamento e nomenclatura:
 
 - Uma tarefa corresponde exatamente a uma branch de entrega e a um PR.
 - Formato de branch do Codex: `codex/<natureza>/<id-da-issue>-<slug-curto>`.
-- Formato do título do PR: `[<Natureza>] <resultado conciso>`.
+- Formato do título do PR: `[JUM-XXXX][<Natureza>] <resultado conciso>`; o identificador deve
+  coincidir com a branch e com a única Issue do Linear vinculada.
 - Naturezas permitidas: `feature`, `fix`, `security`, `governance`, `docs`, `refactor`, `test`, `ci`, `release`, `chore`.
 - Compartilhar uma branch ou PR entre tarefas rastreadas separadamente exige exceção explícita registrada na issue e no PR.
 - Todo PR de tarefa tem `dev` como destino.
 - Somente um PR de promoção de release originado em `dev` pode ter `main` como destino.
-- Uma promoção de `dev` para `main` referencia os PRs/issues de tarefas já integrados em `dev` e não introduz mudanças não revisadas.
+- Uma promoção de `dev` para `main` referencia os PRs de tarefa e Issues do Linear já
+  representados em `dev` e não introduz mudanças adicionais de tarefa.
 - PRs diretos de tarefa/tópico, pushes e merges para `main` são proibidos.
 - Os gates são orientados ao destino: branches de tarefa executam testes alterados ou
   relacionados, `dev` executa a suíte unitária completa e `main` executa a matriz completa.
@@ -128,11 +132,11 @@ Política de isolamento e nomenclatura:
   matriz completa.
 - A evidência da matriz de `main` deve listar cada célula obrigatória e seu resultado terminal.
 - Uma matriz de `main` incompleta é evidência com falha; nunca pode ser interpretada como verde.
-- Administradores do repositório podem contornar a quantidade obrigatória de reviews somente com
-  aprovação explícita do responsável pelo projeto registrada na issue ou no PR.
-- A exceção administrativa de review não dispensa isolamento da tarefa, promoção primeiro para
-  `dev`, resolução de conversas nem qualquer requisito de CI, cobertura, segurança ou matriz
-  completa. Todo check obrigatório deve estar reportado e terminalmente verde.
+- Review de PR é opcional. Branch protection e rulesets não devem exigir quantidade de
+  aprovações.
+- Isolamento da tarefa, promoção primeiro para `dev`, resolução de conversas e todos os
+  requisitos de CI, cobertura, segurança, governança e matriz completa apropriados ao destino
+  permanecem obrigatórios e terminalmente verdes.
 
 Política de agrupamento prioritário:
 
@@ -215,7 +219,7 @@ Antes de qualquer execução de tarefa:
 
 Conjunto mínimo de evidências:
 
-1. Milestone + épico focado + issue filha + item do projeto vinculados
+1. Milestone + Project focado + Issue filha + Project Update obrigatório vinculados no Linear
 2. Delegação do agente no nível do épico e atribuição no nível da tarefa
 3. Arquivos de especificações e documentos alterados
 4. Saída CI verde para gates obrigatórios

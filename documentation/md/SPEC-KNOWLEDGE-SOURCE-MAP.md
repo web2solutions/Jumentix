@@ -4,6 +4,10 @@ This map defines where specification truth lives and how sources are prioritized
 
 ## Source Priority
 
+Linear is the sole authority for task, epic, milestone, and planning metadata. The order below
+governs software contracts and versioned specification content; it never overrides current Linear
+planning state.
+
 When conflicts happen, resolution order is:
 
 1. Versioned contract specs (`spec/1.0.0.yml`, `spec/asyncapi/*`)
@@ -20,8 +24,8 @@ When conflicts happen, resolution order is:
 - Root positioning: `README.md`
 - Project overview: `documentation/md/PROJECT-OVERVIEW.md`
 - Product composition system: `documentation/md/SPEC-JUMENTIX-COMPONENT-SYSTEM.md`
-- Project board: `https://linear.app/jumentix`
-- Issues backlog: `https://github.com/web2solutions/aaa-typescript-boilerplate/issues`
+- Planning Projects, Issues, milestones, and Project Updates: `https://linear.app/jumentix`
+- GitHub branches, commits, PRs, and checks: delivery evidence only
 
 ## Architecture and Design
 

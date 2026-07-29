@@ -1,5 +1,7 @@
 # Spec Requirements Traceability Ledger
 
+<!-- requirements-inventory: files=105 unique=101 mapped=101 duplicates=055,060,079,095 -->
+
 This ledger maps requirement IDs to spec resources and validation evidence expectations.
 
 It is the canonical bridge between `.agents/requirements` and implementation workflows.
@@ -16,7 +18,7 @@ For any change, identify impacted requirement IDs and ensure:
 
 ## A. Build, Runtime, and Dependency Integrity
 
-- `001`, `002`, `012`, `013`, `041`, `042`, `043`, `052`
+- `001`, `002`, `012`, `013`, `041`, `042`, `043`, `052`, `096`
 - Spec resources:
   - `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md`
   - `documentation/md/SETUP-RUNTIME-AND-API.md`
@@ -91,7 +93,7 @@ For any change, identify impacted requirement IDs and ensure:
 
 ## G. Documentation, Governance Process, and Multi-Agent Operations
 
-- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `056`, `057`, `064`, `066`, `067`, `068`, `071`, `072`, `073`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `094`, `095`
+- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `056`, `057`, `064`, `066`, `067`, `068`, `071`, `072`, `073`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `094`, `095`, `097`, `098`, `099`, `100`, `101`
 - Spec resources:
   - `documentation/README.md`
   - `documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`
@@ -105,6 +107,7 @@ For any change, identify impacted requirement IDs and ensure:
 - Evidence:
   - docs index links updated
   - requirements registry synchronized
+  - `pnpm run requirements:check` passes
   - agent instruction parity (Codex, Claude Code, Grok)
   - agent registration and availability assignment records
   - milestone association, focused epic parentage, nature grouping, and epic-level delegation
@@ -136,8 +139,10 @@ If impacted requirement IDs are not mapped before implementation, the change is 
 
 ## Coverage Attestation (Current Baseline)
 
-As of `2026-07-26`, this ledger covers all unique requirement IDs currently registered in `.agents/requirements`:
+As of `2026-07-28`, this ledger covers all unique requirement IDs currently registered in `.agents/requirements`:
 
-1. Unique IDs in requirements registry: `95`
-2. Unique IDs mapped in this ledger: `95`
-3. Missing IDs: `none`
+1. Requirement files in the registry: `102`
+2. Unique IDs in requirements registry: `98`
+3. Unique IDs mapped in this ledger: `98`
+4. Duplicate IDs with independently binding files: `055`, `060`, `079`, `095`
+5. Missing IDs: `none`

@@ -20,9 +20,10 @@ Linear is the single source of truth for project management, epics, and task tra
   - `.agents/project-todos.md`
 - GitHub issue tracking for migrated TODOs:
   - <https://github.com/web2solutions/aaa-typescript-boilerplate/issues?q=is%3Aissue+is%3Aopen+label%3Atodo-mvp>
-- Official project management source of truth:
-  - `documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`
+- Official planning authority:
   - Linear workspace: <https://linear.app/jumentix>
   - Linear API key at `../.linear` (access-controlled, never commit or share)
+- Governance reference:
+  - `documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`
 - Domain Designer MVP roadmap:
   - `documentation/md/DOMAIN-DESIGNER-MVP-ROADMAP.md`

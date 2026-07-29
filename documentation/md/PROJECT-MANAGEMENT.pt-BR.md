@@ -19,9 +19,10 @@ O Linear é a fonte única da verdade para gerenciamento de projetos, épicos e 
   - `.agents/project-todos.md`
 - Rastreamento de issues do GitHub para TODOs migrados:
   - <https://github.com/web2solutions/aaa-typescript-boilerplate/issues?q=is%3Aissue+is%3Aopen+label%3Atodo-mvp>
-- Fonte oficial da verdade sobre gerenciamento de projetos:
-  - `documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`
+- Autoridade oficial de planejamento:
   - `https://linear.app/jumentix`
-- Chave da API Linear em `../.linear` (acesso controlado, nunca commitar ou compartilhar)
+  - chave da API do Linear em `../.linear` (acesso controlado, nunca commitar ou compartilhar)
+- Referência de governança:
+  - `documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`
 - Roadmap MVP do Domain Designer:
   - `documentation/md/DOMAIN-DESIGNER-MVP-ROADMAP.md`

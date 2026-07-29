@@ -52,13 +52,23 @@ Evidência:
 Política de execução:
 
 1. `ci:gate` permanece como a linha de base rápida definida pelo requisito `011`, incluindo o smoke de integração representativo.
-2. `ci:gate:strict` é o gate canônico da matriz completa para os limites de commit, push e pull request.
-3. Seu manifesto cobre lint, arquitetura, contratos, governança, testes unitários, segurança, smoke, builds, todos os workspaces, a matriz completa de 15 alvos de integração HTTP/Lambda/realtime/Service Management e cobertura do patch.
-4. Cada executor da matriz deve rejeitar manifesto vazio, duplicado, malformado ou com script ausente.
-5. A execução continua após a falha de uma célula individual e retorna um único resultado agregado diferente de zero listando todas as células com falha.
-6. Planos somente de documentação ou outras otimizações por escopo não podem omitir a matriz canônica em um limite de entrega.
-7. Os alvos de integração executam com cobertura desabilitada para não sobrescrever o artefato de cobertura dos testes unitários governado pelo requisito `014`.
-8. A CI remota publica a evidência JSON por célula gerada por `AAA_CI_MATRIX_RESULT_FILE`.
+2. `ci:gate:branch` é o seletor canônico por destino: branches de tarefa executam testes
+   alterados/relacionados, `dev` executa todos os testes unitários e `main` executa a matriz
+   completa.
+3. `ci:gate:strict` é o gate canônico da matriz completa para promoção de release.
+4. Seu manifesto cobre lint, arquitetura, contratos, governança, testes unitários, segurança,
+   smoke, builds, todos os workspaces, a matriz completa de 15 alvos de integração
+   HTTP/Lambda/realtime/Service Management e cobertura do patch.
+5. Cada executor da matriz deve rejeitar manifesto vazio, duplicado, malformado ou com script
+   ausente.
+6. A execução continua após a falha de uma célula individual e retorna um resultado agregado
+   diferente de zero listando todas as células com falha.
+7. Mudanças de tarefa somente em documentação podem registrar `not-applicable`; nenhum plano por
+   escopo pode omitir todos os testes unitários de `dev` nem a matriz canônica de `main`.
+8. Os alvos de integração executam com cobertura desabilitada para não sobrescrever o artefato de
+   cobertura dos testes unitários governado pelo requisito `014`.
+9. A CI remota publica a evidência JSON do gate selecionado e, quando aplicável, a evidência JSON
+   da matriz de `main`.
 
 ## Portão 4 – Qualidade e Segurança
 
@@ -77,7 +87,7 @@ Evidência:
 
 Critérios de aprovação:
 
-1. O problema, o item do projeto e o PR estão vinculados.
+1. A Issue, o Project, o milestone e o Project Update no Linear estão vinculados ao PR no GitHub.
 2. Os campos de prioridade/tamanho/estimativa do ciclo de vida são preenchidos.
 3. Referências de requisitos/NFR são incluídas quando aplicável.
 4. Todo Project do Linear usado como épico possui uma Issue dedicada de documentação.
@@ -89,7 +99,8 @@ Critérios de aprovação:
 
 Evidência:
 
-1. Links cruzados de problemas/projetos/RP do GitHub.
+1. Links da Issue/Project/milestone/Project Update no Linear e evidências de
+   branch/commit/PR no GitHub.
 2. Registro `.agents` atualizado quando a governança ou NFR mudou.
 3. Link do Project do Linear mais a Issue de documentação concluída, links de PR/commit,
    inventário dos documentos alterados, evidência de paridade bilíngue quando aplicável e

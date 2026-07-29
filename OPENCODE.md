@@ -12,6 +12,8 @@ This repository supports OpenCode as an official engineering agent.
 6. Keep implementation, specs, documentation, and agent guidance synchronized.
 7. Do not bypass CI, lint, test, coverage, security, or governance gates; report exact gate states in Linear Project Updates.
 8. Task PRs target `dev`; only `dev` release promotions target `main`.
+9. Start every PR title with the matching Linear Issue identifier:
+   `[JUM-XXXX][Nature] <concise outcome>`.
 
 ## Required Governance Links
 

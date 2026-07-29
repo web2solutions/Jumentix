@@ -79,20 +79,19 @@ Required outputs:
 
 Before merge:
 
-1. PR links issue and project context
+1. PR links the Linear Issue, focused Project, milestone, and required Project Update
 2. PR includes spec artifacts changed
 3. PR includes acceptance criteria evidence
-4. Project item status moves through workflow to `Done`
+4. Linear Issue remains in the truthful review state until merge, then moves to `Done`
 5. Requirement/NFR docs are updated when behavior is non-functional
 
 ## Definition of Done (Spec-Driven)
 
 A change is done only when all are true:
 
-1. Business intent is represented by a tracked issue/project item.
+1. Business intent is represented by a tracked Linear Issue in its focused Project.
 2. Specs are updated and versioned.
 3. Code matches the updated specs.
 4. Tests and quality gates pass.
 5. Documentation and agent registries are synchronized.
-6. Traceability from issue to PR to spec files is explicit.
-
+6. Traceability from Linear Issue and Project Update to PR and spec files is explicit.

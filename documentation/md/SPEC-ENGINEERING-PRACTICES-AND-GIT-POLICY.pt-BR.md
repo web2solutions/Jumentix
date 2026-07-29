@@ -10,16 +10,18 @@ Essas regras fazem parte da governança orientada para o desenvolvimento de espe
 
 ## 1) Política de uso do Git
 
-1. Todo o trabalho deve ser rastreável ao item GitHub Issue + Linear Project antes da implementação.
+1. Todo trabalho deve ser rastreável a uma Issue do Linear, seu Project focado e milestone antes
+   da implementação. O GitHub registra a branch, os commits, o PR e os checks de entrega.
 2. O desenvolvimento deve acontecer em filiais rastreadas e produzir commits auditáveis.
 3. `--no-verify` é proibido para fluxo de entrega normal.
 4. O push é bloqueado quando os portões de qualidade locais falham.
 5. A rastreabilidade da tarefa/PR deve ser bidirecional:
-   - emitir referências PR(s)/commit(s)
-   - Questões de referências de relações públicas, contexto do item do projeto e evidências
+   - a Issue do Linear referencia PR(s)/commit(s)
+   - o PR referencia a Issue do Linear, o Project focado, o Project Update e as evidências
 6. Cada tarefa deve usar sua própria branch e seu próprio PR; tarefas não relacionadas ou rastreadas separadamente não podem compartilhar esses limites.
 7. Branches criadas pelo Codex devem seguir `codex/<natureza>/<id-da-issue>-<slug-curto>`. Outros prefixos de ator aprovados podem substituir `codex`, mas natureza, ID da issue e slug continuam obrigatórios.
-8. Títulos de PR devem seguir `[<Natureza>] <resultado conciso>`.
+8. Títulos de PR devem seguir `[JUM-XXXX][<Natureza>] <resultado conciso>`, com o identificador
+   coincidindo com a branch e com a Issue do Linear vinculada.
 9. As naturezas permitidas são `feature`, `fix`, `security`, `governance`, `docs`, `refactor`, `test`, `ci`, `release` e `chore`; a natureza da branch e do PR deve coincidir.
 
 ## 2) Política de mensagens de compromisso
@@ -55,7 +57,7 @@ Essas regras fazem parte da governança orientada para o desenvolvimento de espe
 
 Um PR está pronto para mesclagem somente quando todos são verdadeiros:
 
-1. Existe uma questão vinculada + contexto do projeto.
+1. Existe uma Issue do Linear vinculada ao contexto do Project focado.
 2. Atualizações de especificações estão incluídas para políticas/comportamento alterados.
 3. Lint/testes/cobertura/portões de segurança são verdes.
 4. As mensagens de confirmação e o agrupamento de alterações seguem as regras de governança.

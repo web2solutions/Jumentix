@@ -7,21 +7,22 @@ Idioma alvo: Português (Brasil)
 ## Contribuindo
 
 1. Crie uma filial.
-2. Certifique-se de que haja um problema GitHub relacionado e que ele seja adicionado ao Linear Project **Jumentix**:
+2. Certifique-se de que exista uma Issue do Linear vinculada ao Project focado no Linear:
 
 ```text
 https://linear.app/jumentix
 ```
 
-3. Definir/atualizar campos do projeto para o problema (`Status`, `Prioridade`, `Tamanho`, `Estimativa`, `Data de início`, `Data de término`).
-2. Execute o modo TDD:
+3. Defina/atualize os campos da Issue e do Project no Linear (`Status`, `Prioridade`, `Tamanho`,
+   `Estimativa`, `Data de início`, `Data de término`, milestone e natureza principal).
+4. Execute o modo TDD:
 
 ```bash
 pnpm run tdd
 ```
 
-4. Faça suas alterações.
-5. Confirme usando:
+5. Faça suas alterações.
+6. Faça o commit usando:
 
 ```bash
 pnpm run commit
@@ -29,7 +30,8 @@ pnpm run commit
 
 Este comando executa lint/tests e, em seguida, abre o fluxo de confirmação.
 
-Os PRs devem incluir a questão vinculada e o contexto do projeto (item do projeto Jumentix).
+Os PRs devem incluir a Issue do Linear, o Project focado, o milestone, o Project Update
+obrigatório e as evidências de entrega no GitHub.
 
 ## Ferramentas
 
@@ -78,4 +80,3 @@ Porta de fumaça e CI:
 pnpm run ci:smoke
 pnpm run ci:gate
 ```
-

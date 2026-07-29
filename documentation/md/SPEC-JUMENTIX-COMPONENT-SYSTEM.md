@@ -95,7 +95,7 @@ For any change affecting composition:
 1. update composition docs/specs
 2. update requirement/NFR registries if governance impact exists
 3. update indexes and source maps
-4. include traceability evidence in issue/project/PR
+4. include traceability evidence in the Linear Issue/Project/Project Update and GitHub PR
 
 ## 8) Primary References
 
