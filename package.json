@@ -21,6 +21,8 @@
     "check-bun-version": "bun ci-cd/check-bun-version.js",
     "compat:check-node-version": "node ci-cd/check-node-version.js",
     "preinstall": "bun ci-cd/check-bun-version.js",
+    "postinstall": "bun ci-cd/vendor-uwebsockets.js",
+    "deps:check-overrides": "bun ci-cd/check-dependency-override-integrity.js",
     "mono:build": "pnpm -r --workspace-concurrency=1 --if-present build",
     "mono:test": "pnpm -r --workspace-concurrency=1 --if-present test",
     "mono:lint": "pnpm -r --workspace-concurrency=1 --if-present lint",

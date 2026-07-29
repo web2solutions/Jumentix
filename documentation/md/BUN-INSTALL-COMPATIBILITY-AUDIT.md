@@ -92,9 +92,45 @@ lifecycle script would run.
 The hoisted linker is independently unsuitable: it installed **2056 of 4071** packages and reported three
 failures rather than one.
 
+### Root cause, found after the install failure was fixed
+
+Vendoring the package (see `ci-cd/vendor-uwebsockets.js`) and pinning forward to uWS **v20.69.0**, which does
+ship a `_137` binary for Bun's ABI, produced a correctly installed and correctly linked module — and it still
+does not load:
+
+```
+TypeError: symbol 'napi_register_module_v1' not found in native module.
+  Is this a Node API (napi) module?
+```
+
+**uWebSockets.js compiles against the raw V8/Node internal ABI (`NODE_MODULE_VERSION`), not against N-API.**
+Bun implements N-API only. No version, linker, install backend, or vendoring strategy reaches this: it is an
+architectural incompatibility in the module's distribution model, upstream of us.
+
+Verified end state on the same tree, same vendored copy:
+
+| Runtime | ABI | `require('hyper-express')` |
+| --- | --- | --- |
+| Node 22 | 127 | **OK** |
+| Bun 1.3.14 | 137 | FAILED — `napi_register_module_v1` not found |
+
+The three install-layer defects were real and are fixed. They were also masking this one, which is why fixing
+them in isolation looked like progress and changed nothing.
+
+### Resolution
+
+`hyper-express` is a **declared Node-runtime target** under Requirement 096 §4, not a Bun target. This is a
+documented technical impossibility with a one-line proof, not a scope concession.
+
+The vendoring step is still required, and required under Bun, because the Node path depends on it too: Bun's
+installer cannot materialize the GitHub tarball at all, so without `ci-cd/vendor-uwebsockets.js` the module is
+absent for *either* runtime. The script runs as `postinstall`, verifies the pinned tarball by SHA-256, extracts
+only the current platform's binaries, fails closed if this runtime's ABI has no prebuilt, and repairs the
+dangling symlinks the isolated linker leaves in `node_modules/.bun/*/node_modules/`.
+
 ### Impact
 
-This is a **hard blocker for the cutover**, not a cosmetic install warning:
+Before that resolution, this was a **hard blocker for the cutover**, not a cosmetic install warning:
 
 * `hyper-express` is one of the declared supported HTTP frameworks (`AAA_HTTP_FRAMEWORK=hyper-express`).
 * Its integration target owns **21 test files**.
@@ -102,20 +138,24 @@ This is a **hard blocker for the cutover**, not a cosmetic install warning:
   imported cannot pass, and declaring the matrix green with that target skipped would be a false green under
   Requirement 065.
 
-### Options, none yet chosen
+### Supply-chain position of the vendored artifact
 
-1. **Vendor the prebuilt binary** — commit or fetch `uWebSockets.js` outside the package manager and link it
-   with a post-install step. Works, but puts a 46 MB native artifact under our own provenance obligations
-   (Reqs 044, 070) and needs a supply-chain answer.
-2. **Registry mirror** — repoint the dependency at an npm-published mirror via `overrides`. Needs a mirror
-   whose provenance we are willing to accept; the upstream project does not publish to npm.
-3. **Declared exception** — keep Node + pnpm for the `hyper-express` install path only, declared under
-   Requirement 096 §4. Honest, but concedes part of the epic's premise.
-4. **Upstream fix** — report the tarball link failure to Bun and pin a version that resolves it. Correct
-   long-term, unbounded in time.
+Vendoring was chosen (2026-07-29) and implemented as **pinned fetch with checksum verification** rather than
+committing the artifact to git. The tarball is 31 MB compressed and expands to ~127 MB of prebuilt binaries
+across 15 platform/ABI triples, of which any machine needs one.
 
-Recommendation: option 1 or 2, decided deliberately with the security review the artifact's size and nativeness
-warrant. Option 3 should be a conscious scope concession, not a default.
+The integrity property that matters — that we get exactly the reviewed bytes — comes from the pinned tag plus
+the recorded SHA-256, not from the file living in git history:
+
+* tag `v20.69.0`, published 2026-07-11
+* `sha256 691f1f43cb6c4e30c56d7c11968c275130e57b52ac3327bc457c574dedc613d0`
+* license: Apache-2.0 (carried into the vendored tree)
+
+A checksum mismatch fails the install rather than updating the expectation. If the upstream tag is ever moved,
+that mismatch is itself the finding.
+
+Recorded deviation: the decision as taken said "fetch/commit". Committing was rejected for the size reason
+above. If the artifact must be in-tree for an air-gapped build, that is a separate, reviewable change.
 
 ## 3. Nested override selectors — resolved
 
@@ -160,6 +200,7 @@ measurements, so a same-tree comparison was not possible. JUM-38 owns the compar
 | --- | --- |
 | #1 `bun install` mutates the managed tree | **Resolved** — cause identified, ordering corrected, guarded, negative paths tested |
 | #4 Nested override selectors | **Resolved** — converted to flat pins with per-entry justification |
-| #2 `uWebSockets.js` link failure | **Open — blocker.** Reproducible across all four install backends and both linkers. No mitigation chosen |
+| #2 `uWebSockets.js` link failure | **Resolved by vendoring** — pinned, checksum-verified `postinstall` step; module now present and loadable under Node |
+| #2b uWS is not an N-API module (found during #2) | **Closed as upstream-impossible.** `hyper-express` is a declared Node-runtime target under Req 096 §4. No Bun path exists at any version |
 
 No quality gate is claimed green by this document. It records install-layer evidence only.
