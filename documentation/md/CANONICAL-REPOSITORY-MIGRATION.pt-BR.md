@@ -52,6 +52,8 @@ imutável completo do registry.
 
 ## Rastreabilidade
 
-- Requisito: `103`
+- Requisito: `103`, `104`
 - Epic do Linear: `JUM-562`
 - Tarefa de documentação: `JUM-563`
+- Tarefa de integrações da aplicação: `JUM-568`
+- Contrato de integração: `INTEGRATION-MIGRATION-REQUIREMENT.pt-BR.md`
