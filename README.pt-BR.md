@@ -22,8 +22,8 @@ Jumentix é um produto monorepo que funciona como uma fábrica de software para 
 > `web2solutions/aaa-typescript-boilerplate` está obsoleto, é somente leitura e
 > não aceita novas modificações. A coordenação de agentes é canônica no
 > repositório privado `XpertMinds/jumentix-agent-registry`; o antigo registry em
-> `web2solutions` também está obsoleto e é somente leitura. Consulte o Requisito
-> `103`.
+> `web2solutions` também está obsoleto e é somente leitura. Consulte os Requisitos
+> `103` e `104`.
 
 ## Índice
 

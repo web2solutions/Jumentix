@@ -205,6 +205,9 @@ Before any task execution:
 14. Requirement `103` makes `XpertMinds/Jumentix` and
     `XpertMinds/jumentix-agent-registry` canonical. Both former `web2solutions` origins are
     deprecated, read-only, accept no new modifications, and remain archived.
+15. Requirement `104` requires every applicable application integration from the deprecated
+    origin to be inventoried and rebound to `XpertMinds/Jumentix`, with incomplete provider
+    installs recorded as owner-auth blockers and validated by `integration-migration:check`.
 
 ## Audit Evidence Expectations
 
