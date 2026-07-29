@@ -19,7 +19,8 @@ This requirement applies to:
 4. Domain/data entities, models, and value object documentation.
 5. Runtime/deployment/configuration contracts.
 6. Security, quality, and compliance controls.
-7. Governance and project-management rules from GitHub Issues/Project.
+7. Governance and project-management rules from Linear Issues, Projects, milestones, and
+   Project Updates; GitHub supplies delivery evidence through branches, commits, PRs, and checks.
 
 ## Mandatory Artifacts
 

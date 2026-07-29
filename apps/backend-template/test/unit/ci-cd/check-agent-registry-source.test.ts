@@ -3,11 +3,14 @@ const https = require('https');
 
 const {
   buildBranchRevisionUrl,
+  buildContentsApiUrl,
   buildRawUrl,
   encodeRawPath,
+  fetchCanonicalText,
   fetchJson,
   fetchText,
   githubApiHeaders,
+  hasGithubToken,
   mirrorsMatch,
   normalize,
   resolveBranchRevision
@@ -103,6 +106,192 @@ describe('check-agent-registry-source', () => {
 
     await expect(fetchText('https://raw.githubusercontent.com/web2solutions/jumentix-agent-registry/revision/AGENT-REGISTRY.md'))
       .resolves.toBe('canonical');
+  });
+
+  it('fetches private canonical content through the authenticated Contents API when a token is present', async () => {
+    expect.hasAssertions();
+    const revision = '0123456789abcdef0123456789abcdef01234567';
+    const response = {
+      statusCode: 200,
+      setEncoding: jest.fn(),
+      on: jest.fn()
+    };
+    const request = { on: jest.fn() };
+
+    response.on.mockImplementation((event: string, handler: (value?: string) => void) => {
+      const responseEvents: Record<string, () => void> = {
+        data: () => handler('private-canonical'),
+        end: () => handler()
+      };
+      responseEvents[event]();
+      return response;
+    });
+    jest.spyOn(https, 'get').mockImplementation((...args: unknown[]) => {
+      const [url, options, callback] = args as [
+        string,
+        { headers: Record<string, string> },
+        (value: object) => void
+      ];
+      expect(url).toBe(buildContentsApiUrl({
+        repository: 'web2solutions/jumentix-agent-registry',
+        revision,
+        remotePath: 'AGENT-REGISTRY.md'
+      }, revision));
+      expect(options.headers.Authorization).toBe('Bearer private-token');
+      expect(options.headers.Accept).toBe('application/vnd.github.raw');
+      callback(response);
+      return request as never;
+    });
+
+    await expect(fetchCanonicalText({
+      repository: 'web2solutions/jumentix-agent-registry',
+      revision,
+      remotePath: 'AGENT-REGISTRY.md'
+    }, revision, { GITHUB_TOKEN: 'private-token' })).resolves.toStrictEqual({
+      content: 'private-canonical',
+      sourceUrl: buildContentsApiUrl({
+        repository: 'web2solutions/jumentix-agent-registry',
+        revision,
+        remotePath: 'AGENT-REGISTRY.md'
+      }, revision)
+    });
+    expect(hasGithubToken({ GITHUB_TOKEN: 'private-token' })).toBe(true);
+  });
+
+  it('falls back to public raw fetch when a token Contents API request is unauthorized', async () => {
+    expect.hasAssertions();
+    const revision = '0123456789abcdef0123456789abcdef01234567';
+    const request = { on: jest.fn() };
+    const getRequest = jest.spyOn(https, 'get');
+    getRequest.mockImplementationOnce((...args: unknown[]) => {
+      const [url, , callback] = args as [string, object, (value: object) => void];
+      expect(url).toContain('api.github.com/repos/');
+      callback({
+        statusCode: 403,
+        setEncoding: jest.fn(),
+        on: jest.fn(),
+        resume: jest.fn()
+      });
+      return request as never;
+    });
+
+    getRequest.mockImplementationOnce((...args: unknown[]) => {
+      const [url, , callback] = args as [string, object, (value: object) => void];
+      expect(url).toBe(buildRawUrl({
+        repository: 'web2solutions/jumentix-agent-registry',
+        revision,
+        remotePath: 'AGENT-REGISTRY.md'
+      }, revision));
+      const response = {
+        statusCode: 200,
+        setEncoding: jest.fn(),
+        on: jest.fn()
+      };
+      response.on.mockImplementation((event: string, handler: (value?: string) => void) => {
+        const responseEvents: Record<string, () => void> = {
+          data: () => handler('public-canonical'),
+          end: () => handler()
+        };
+        responseEvents[event]();
+        return response;
+      });
+      callback(response);
+      return request as never;
+    });
+
+    await expect(fetchCanonicalText({
+      repository: 'web2solutions/jumentix-agent-registry',
+      revision,
+      remotePath: 'AGENT-REGISTRY.md'
+    }, revision, { GITHUB_TOKEN: 'stale-token' })).resolves.toStrictEqual({
+      content: 'public-canonical',
+      sourceUrl: buildRawUrl({
+        repository: 'web2solutions/jumentix-agent-registry',
+        revision,
+        remotePath: 'AGENT-REGISTRY.md'
+      }, revision)
+    });
+    expect(getRequest).toHaveBeenCalledTimes(2);
+  });
+
+  it('guides operators to pin/path drift on unauthenticated raw 404 responses', async () => {
+    expect.hasAssertions();
+    const revision = '0123456789abcdef0123456789abcdef01234567';
+    const request = { on: jest.fn() };
+    jest.spyOn(https, 'get').mockImplementation((...args: unknown[]) => {
+      const [, , callback] = args as [string, object, (value: object) => void];
+      callback({
+        statusCode: 404,
+        setEncoding: jest.fn(),
+        on: jest.fn(),
+        resume: jest.fn()
+      });
+      return request as never;
+    });
+
+    await expect(fetchCanonicalText({
+      repository: 'web2solutions/jumentix-agent-registry',
+      revision,
+      remotePath: 'AGENT-REGISTRY.md'
+    }, revision, {})).rejects.toThrow('Verify the pinned revision SHA and remotePath');
+  });
+
+  it('still points unauthenticated 401/403 failures at token-backed private access', async () => {
+    expect.hasAssertions();
+    const revision = '0123456789abcdef0123456789abcdef01234567';
+    const request = { on: jest.fn() };
+    jest.spyOn(https, 'get').mockImplementation((...args: unknown[]) => {
+      const [, , callback] = args as [string, object, (value: object) => void];
+      callback({
+        statusCode: 401,
+        setEncoding: jest.fn(),
+        on: jest.fn(),
+        resume: jest.fn()
+      });
+      return request as never;
+    });
+
+    await expect(fetchCanonicalText({
+      repository: 'web2solutions/jumentix-agent-registry',
+      revision,
+      remotePath: 'AGENT-REGISTRY.md'
+    }, revision, {})).rejects.toThrow('Private canonical registry access requires GITHUB_TOKEN or GH_TOKEN');
+  });
+
+  it('keeps token-access guidance when Contents API auth fails and raw returns 404', async () => {
+    expect.hasAssertions();
+    const revision = '0123456789abcdef0123456789abcdef01234567';
+    const request = { on: jest.fn() };
+    const getRequest = jest.spyOn(https, 'get');
+    getRequest.mockImplementationOnce((...args: unknown[]) => {
+      const [, , callback] = args as [string, object, (value: object) => void];
+      callback({
+        statusCode: 403,
+        setEncoding: jest.fn(),
+        on: jest.fn(),
+        resume: jest.fn()
+      });
+      return request as never;
+    });
+    getRequest.mockImplementationOnce((...args: unknown[]) => {
+      const [, , callback] = args as [string, object, (value: object) => void];
+      callback({
+        statusCode: 404,
+        setEncoding: jest.fn(),
+        on: jest.fn(),
+        resume: jest.fn()
+      });
+      return request as never;
+    });
+
+    await expect(fetchCanonicalText({
+      repository: 'web2solutions/jumentix-agent-registry',
+      revision,
+      remotePath: 'AGENT-REGISTRY.md'
+    }, revision, { GITHUB_TOKEN: 'bad-token' })).rejects.toThrow(
+      /Authenticated Contents API failed and public raw fetch returned HTTP 404/
+    );
+    expect(getRequest).toHaveBeenCalledTimes(2);
   });
 
   it('rejects failed canonical registry responses', async () => {

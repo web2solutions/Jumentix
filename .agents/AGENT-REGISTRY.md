@@ -47,11 +47,11 @@ This registry tracks AI agents collaborating in the Jumentix project.
 - `agent_version`: `GPT-5 Codex`
 - `status`: `busy`
 - `registered_at_utc`: `2026-07-25T00:00:00Z`
-- `last_branch_check_utc`: `2026-07-26T07:16:14Z`
-- `main_ref_checked`: `dc9a5b4e`
-- `dev_ref_checked`: `292fa86f`
-- `active_epic`: `web2solutions/aaa-typescript-boilerplate#161`
-- `assigned_task`: `web2solutions/aaa-typescript-boilerplate#163`
+- `last_branch_check_utc`: `2026-07-29T00:27:23Z`
+- `main_ref_checked`: `4ba8216c`
+- `dev_ref_checked`: `3ce129c0`
+- `active_epic`: `https://linear.app/jumentix/project/epicgovernance-epic-centered-task-taxonomy-and-agent-delegation-c3cb6bae0771`
+- `assigned_task`: `https://linear.app/jumentix/issue/JUM-523`
 - `capabilities`:
   - repository analysis and implementation
   - test and CI debugging
@@ -69,15 +69,59 @@ This registry tracks AI agents collaborating in the Jumentix project.
 - `agent_version`: `GPT-5 Codex`
 - `status`: `busy`
 - `registered_at_utc`: `2026-07-26T07:23:33Z`
-- `last_branch_check_utc`: `2026-07-26T09:48:18Z`
+- `last_branch_check_utc`: `2026-07-28T00:55:00Z`
 - `main_ref_checked`: `dc9a5b4e`
-- `dev_ref_checked`: `9d91c4e2`
-- `active_epic`: `web2solutions/aaa-typescript-boilerplate#167`
-- `assigned_task`: `web2solutions/aaa-typescript-boilerplate#172`
+- `dev_ref_checked`: `36f7d730`
+- `active_epic`: `https://linear.app/jumentix/project/epicgovernance-epic-centered-task-taxonomy-and-agent-delegation-c3cb6bae0771`
+- `assigned_task`: `https://linear.app/jumentix/issue/JUM-517`
 - `capabilities`:
   - frontend architecture and implementation
   - browser-driven UX research and verification
   - Storybook and website quality automation
+
+### 3) codex-governance-001
+
+- `agent_id`: `codex-governance-001`
+- `agent_name`: `Codex Governance`
+- `platform`: `OpenAI Codex`
+- `machine_id`: `host-eduardos-mac-pro-local`
+- `machine_name`: `Eduardos-Mac-Pro.local`
+- `machine_os`: `Darwin 21.6.0 x86_64`
+- `agent_runtime`: `OpenAI Codex`
+- `agent_version`: `GPT-5 Codex`
+- `status`: `busy`
+- `registered_at_utc`: `2026-07-27T19:02:28Z`
+- `last_branch_check_utc`: `2026-07-28T16:20:36Z`
+- `main_ref_checked`: `056195e0`
+- `dev_ref_checked`: `5086e6e8`
+- `active_epic`: `https://linear.app/jumentix/project/epicgovernance-epic-centered-task-taxonomy-and-agent-delegation-c3cb6bae0771`
+- `assigned_task`: `https://linear.app/jumentix/issue/JUM-519`
+- `capabilities`:
+  - repository governance and branch reconciliation
+  - CI policy and branch protection enforcement
+  - spec and traceability synchronization
+
+### 4) codex-governance-002
+
+- `agent_id`: `codex-governance-002`
+- `agent_name`: `Codex Governance Metadata`
+- `platform`: `OpenAI Codex`
+- `machine_id`: `host-eduardos-mac-pro-local`
+- `machine_name`: `Eduardos-Mac-Pro.local`
+- `machine_os`: `Darwin 21.6.0 x86_64`
+- `agent_runtime`: `OpenAI Codex`
+- `agent_version`: `GPT-5 Codex`
+- `status`: `busy`
+- `registered_at_utc`: `2026-07-27T20:55:33Z`
+- `last_branch_check_utc`: `2026-07-27T20:55:33Z`
+- `main_ref_checked`: `dc9a5b4e`
+- `dev_ref_checked`: `2a262246`
+- `active_epic`: `Linear Project:f2b88875-7645-47fd-95b6-4493db9bd2ef`
+- `assigned_task`: `Linear:JUM-503`
+- `capabilities`:
+  - governance requirements and traceability
+  - Linear task metadata lifecycle
+  - branch, PR, and quality-gate reconciliation
 
 ## Operating Flow
 

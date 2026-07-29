@@ -17,7 +17,7 @@ Protect Jumentix delivery by ensuring every change is spec-first, traceable, and
    - Event-driven design
    - Hexagonal boundaries
 4. Enforce governance traceability:
-   - Issue -> Project item -> PR -> evidence
+   - Linear Issue -> focused Project -> Project Update -> GitHub PR -> evidence
 5. Enforce docs + agents synchronization when NFR or governance behavior changes.
 6. Enforce canonical knowledge coverage using:
    - `SPEC-CANONICAL-KNOWLEDGE-BASELINE.md`

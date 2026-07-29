@@ -6,7 +6,7 @@ Project execution must be managed from one authoritative tracking system to avoi
 
 ## Requirement (Superseded)
 
-**Note**: This requirement is superseded by Requirement `094` (Linear as Single Source of Truth).
+**Note**: This requirement is superseded by Requirement `095` (Linear as Single Source of Truth).
 
 1. ~~GitHub Project `Jumentix` (`https://github.com/users/web2solutions/projects/1`) is the single source of truth for bugs and new features.~~
 2. ~~Every task must exist as an issue and be added to the project.~~
@@ -22,5 +22,5 @@ Project execution must be managed from one authoritative tracking system to avoi
 
 ## Acceptance criteria
 
-- Linear is now the single source of truth per Requirement `094`.
+- Linear is now the single source of truth per Requirement `095`.
 - Historical GitHub Project references are preserved for audit but no longer authoritative.

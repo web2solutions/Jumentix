@@ -9,15 +9,16 @@
 https://linear.app/jumentix
 ```
 
-3. Set/update project fields for the issue (`Status`, `Priority`, `Size`, `Estimate`, `Start date`, `End date`).
-2. Run TDD mode:
+3. Set/update Linear fields for the Issue and Project (`Status`, `Priority`, `Size`, `Estimate`,
+   `Start date`, `End date`, milestone, and primary nature).
+4. Run TDD mode:
 
 ```bash
 pnpm run tdd
 ```
 
-4. Make your changes.
-5. Commit using:
+5. Make your changes.
+6. Commit using:
 
 ```bash
 pnpm run commit
@@ -25,7 +26,8 @@ pnpm run commit
 
 This command runs lint/tests and then opens commitizen flow.
 
-PRs must include linked issue and project context (Jumentix project item).
+PRs must include the Linear Issue, focused Project, milestone, required Project Update, and
+GitHub delivery evidence.
 
 ## Tooling
 

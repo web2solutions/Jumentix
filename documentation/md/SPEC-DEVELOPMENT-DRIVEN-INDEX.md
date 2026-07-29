@@ -35,7 +35,8 @@ This documentation set defines how product intent, architecture constraints, con
 No feature, bugfix, refactor, adapter, contract, or runtime change is considered complete unless:
 
 1. The change is represented in spec artifacts.
-2. The spec artifacts are linked to governance records (Issue + Project item + PR).
+2. The spec artifacts are linked to governance records (Linear Issue + focused Project +
+   Project Update + GitHub PR).
 3. Quality, coverage, and architecture checks prove spec conformance.
 
 ## Full Knowledge Coverage Policy
