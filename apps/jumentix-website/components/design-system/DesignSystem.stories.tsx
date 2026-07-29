@@ -48,7 +48,7 @@ export const ActionLinks: Story = {
       <ActionLink href="/product" variant="secondary">
         Explore the platform
       </ActionLink>
-      <ActionLink href="https://github.com/web2solutions/aaa-typescript-boilerplate" variant="quiet" external>
+      <ActionLink href="https://github.com/XpertMinds/Jumentix" variant="quiet" external>
         View on GitHub
       </ActionLink>
     </div>

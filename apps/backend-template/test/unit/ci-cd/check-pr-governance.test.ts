@@ -73,11 +73,11 @@ describe('check-pr-governance', () => {
     const invalidBody = validBody
       .replace(
         'https://linear.app/jumentix/project/governance-foundation-c3cb6bae0771/overview',
-        'https://github.com/web2solutions/aaa-typescript-boilerplate/issues/500'
+        'https://github.com/XpertMinds/Jumentix/issues/500'
       )
       .replace(
         'https://linear.app/jumentix/issue/JUM-163/focused-epic-metadata',
-        'https://github.com/web2solutions/aaa-typescript-boilerplate/issues/501'
+        'https://github.com/XpertMinds/Jumentix/issues/501'
       );
 
     expect(validatePullRequest({
