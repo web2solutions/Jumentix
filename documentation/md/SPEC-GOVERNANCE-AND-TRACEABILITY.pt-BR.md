@@ -219,6 +219,9 @@ Antes de qualquer execução de tarefa:
     `XpertMinds/jumentix-agent-registry` canônicos. As duas origens anteriores em
     `web2solutions` estão obsoletas, são somente leitura, não aceitam novas modificações e
     permanecem arquivadas.
+15. O Requisito `104` exige inventário e rebind de toda integração aplicável da origem
+    depreciada para `XpertMinds/Jumentix`, com instalações incompletas registradas como
+    bloqueios owner-auth e validadas por `integration-migration:check`.
 
 ## Expectativas de evidências de auditoria
 
