@@ -6,7 +6,7 @@ This document defines how Linear is part of Spec Development Driven execution.
 
 - Linear Board: [Linear Jumentix](https://linear.app/jumentix)
 - Owner: `web2solutions`
-- Repository scope: `web2solutions/aaa-typescript-boilerplate`
+- Repository scope: `XpertMinds/Jumentix`
 - The Linear API key is stored at `../.linear` (one level above project root) — agents read it for authentication; must never be exposed, logged, or committed.
 
 ## Mandatory Planning Fields

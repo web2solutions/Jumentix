@@ -8,7 +8,7 @@ O site expõe `/changelog` como uma página de histórico de alterações apoiad
 
 ## Fonte de dados
 
-- Repositório GitHub: `web2solutions/aaa-typescript-boilerplate`
+- Repositório GitHub: `XpertMinds/Jumentix`
 - Filial: `dev`
 - Família de endpoints: GitHub confirma API
 

@@ -9,7 +9,7 @@ const monorepoRoot = path.resolve(appRoot, '../..');
 const sourcesPath = path.join(appRoot, 'config', 'content-sources.json');
 const contentRoot = path.join(appRoot, 'content');
 const repositoryBlobBase =
-  'https://github.com/web2solutions/aaa-typescript-boilerplate/blob/dev';
+  'https://github.com/XpertMinds/Jumentix/blob/dev';
 
 const localeConfig = {
   en: {

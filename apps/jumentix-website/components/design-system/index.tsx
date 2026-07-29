@@ -398,7 +398,7 @@ export function SiteHeader({
         </nav>
         <div className={classes.headerActions}>
           <LocaleSwitch locale={isPortuguese ? 'EN' : 'PT-BR'} href={alternatePath} />
-          <ActionLink href="https://github.com/web2solutions/aaa-typescript-boilerplate" variant="secondary" external>
+          <ActionLink href="https://github.com/XpertMinds/Jumentix" variant="secondary" external>
             GitHub
           </ActionLink>
           <button
@@ -460,7 +460,7 @@ export function SiteFooter({ locale = 'en' }: { locale?: 'en' | 'pt-BR' }) {
         </div>
         <div className={classes.footerColumn}>
           <strong>{isPortuguese ? 'Comunidade' : 'Community'}</strong>
-          <a href="https://github.com/web2solutions/aaa-typescript-boilerplate">GitHub</a>
+          <a href="https://github.com/XpertMinds/Jumentix">GitHub</a>
           <a href={localizePath('/roadmap', locale)}>Roadmap</a>
           <a href={localizePath('/community', locale)}>{isPortuguese ? 'Contribua' : 'Contribute'}</a>
           <a href={localizePath('/security-compliance', locale)}>{isPortuguese ? 'Segurança' : 'Security'}</a>
@@ -475,7 +475,7 @@ export function DocsToolbar() {
     <div className={classes.docsToolbar}>
       <SearchField />
       <div className={classes.headerActions}>
-        <ActionLink href="https://github.com/web2solutions/aaa-typescript-boilerplate" variant="quiet" external>
+        <ActionLink href="https://github.com/XpertMinds/Jumentix" variant="quiet" external>
           <IconBrandGithub size={17} aria-hidden="true" />
           Edit on GitHub
         </ActionLink>

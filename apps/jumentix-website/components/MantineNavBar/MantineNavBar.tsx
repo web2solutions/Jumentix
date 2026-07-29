@@ -36,7 +36,7 @@ export const MantineNavBar = () => {
       <Navbar
         logo={<BrandMark href={portuguese ? '/pt-BR' : '/'} />}
         projectIcon={<IconBrandGithub size={20} />}
-        projectLink="https://github.com/web2solutions/aaa-typescript-boilerplate"
+        projectLink="https://github.com/XpertMinds/Jumentix"
       >
         <nav className={classes.docsNav} aria-label={portuguese ? 'Seções da documentação' : 'Documentation sections'}>
           {links.map(([label, href]) => (
