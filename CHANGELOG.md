@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-07-29 fix(ci): stabilize Express integration timeout - web2solutions
 - 2026-07-29 chore(jum-535): reconcile governance consistency - Eduardo A.
 - 2026-07-29 [JUM-529][Release] Reconcile main ancestry into dev (#243) - Eduardo A.
 - 2026-07-29 chore(release): reconcile main into dev for promotion - web2solutions
