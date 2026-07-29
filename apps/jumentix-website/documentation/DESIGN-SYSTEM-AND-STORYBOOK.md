@@ -2,8 +2,8 @@
 
 Issue tracking:
 
-- Epic: [#167](https://github.com/web2solutions/aaa-typescript-boilerplate/issues/167)
-- Task: [#170](https://github.com/web2solutions/aaa-typescript-boilerplate/issues/170)
+- Epic: [#167](https://github.com/XpertMinds/Jumentix/issues/167)
+- Task: [#170](https://github.com/XpertMinds/Jumentix/issues/170)
 
 ## Purpose
 

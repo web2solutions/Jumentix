@@ -21,6 +21,7 @@ import { DocumentValueObject } from '@src/modules/ddd/valueObjects';
 import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
 import { JwtService } from '@src/infra/jwt/JwtService';
 import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal';
+import { listenForSupertest } from '../../../helpers/listenForSupertest';
 
 const webServer = RestifyServer.compile();
 const databaseClient = InMemoryDbClient;
@@ -73,6 +74,7 @@ describe('restify -> User deleteDocument suite', () => {
     });
 
     server = API.server.application;
+    await listenForSupertest(server);
 
     // await server.ready();
     usersAll = await API.seedUsers();

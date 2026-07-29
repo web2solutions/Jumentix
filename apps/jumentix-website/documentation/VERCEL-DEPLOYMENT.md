@@ -2,8 +2,8 @@
 
 Issue tracking:
 
-- Epic: [#124](https://github.com/web2solutions/aaa-typescript-boilerplate/issues/124)
-- Task: [#130](https://github.com/web2solutions/aaa-typescript-boilerplate/issues/130)
+- Epic: [#124](https://github.com/XpertMinds/Jumentix/issues/124)
+- Task: [#130](https://github.com/XpertMinds/Jumentix/issues/130)
 
 ## Deployment Commands
 

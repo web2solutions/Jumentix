@@ -77,6 +77,7 @@ describe('fastify -> User updatePassword suite', () => {
     server = API.server.application;
     await API.seedData();
     await server.ready();
+    await server.listen({ port: 0, host: '127.0.0.1' });
   });
 
   beforeEach(async () => {

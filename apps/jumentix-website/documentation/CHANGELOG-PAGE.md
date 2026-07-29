@@ -4,7 +4,7 @@ The website exposes `/changelog` as a GitHub-backed change history page for Jume
 
 ## Data Source
 
-- GitHub repository: `web2solutions/aaa-typescript-boilerplate`
+- GitHub repository: `XpertMinds/Jumentix`
 - Branch: `dev`
 - Endpoint family: GitHub commits API
 

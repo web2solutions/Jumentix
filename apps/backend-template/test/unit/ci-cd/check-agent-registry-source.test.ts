@@ -25,11 +25,11 @@ describe('check-agent-registry-source', () => {
     expect.hasAssertions();
     const revision = '0123456789abcdef0123456789abcdef01234567';
     expect(buildRawUrl({
-      repository: 'web2solutions/jumentix-agent-registry',
+      repository: 'XpertMinds/jumentix-agent-registry',
       revision,
       remotePath: '/registry files/AGENT-REGISTRY.md'
     })).toBe(
-      `https://raw.githubusercontent.com/web2solutions/jumentix-agent-registry/${revision}/registry%20files/AGENT-REGISTRY.md`
+      `https://raw.githubusercontent.com/XpertMinds/jumentix-agent-registry/${revision}/registry%20files/AGENT-REGISTRY.md`
     );
   });
 
@@ -43,7 +43,7 @@ describe('check-agent-registry-source', () => {
     expect.hasAssertions();
     const revision = '0123456789abcdef0123456789abcdef01234567';
     expect(buildRawUrl({
-      repository: 'web2solutions/jumentix-agent-registry',
+      repository: 'XpertMinds/jumentix-agent-registry',
       branch: 'main',
       revision,
       remotePath: 'AGENT-REGISTRY.md'
@@ -53,7 +53,7 @@ describe('check-agent-registry-source', () => {
   it('rejects mutable refs and unsafe registry paths', () => {
     expect.hasAssertions();
     expect(() => buildRawUrl({
-      repository: 'web2solutions/jumentix-agent-registry',
+      repository: 'XpertMinds/jumentix-agent-registry',
       revision: 'main',
       remotePath: 'AGENT-REGISTRY.md'
     })).toThrow('full immutable commit SHA');
@@ -63,9 +63,9 @@ describe('check-agent-registry-source', () => {
   it('builds the branch revision URL used by synchronization', () => {
     expect.hasAssertions();
     expect(buildBranchRevisionUrl({
-      repository: 'web2solutions/jumentix-agent-registry',
+      repository: 'XpertMinds/jumentix-agent-registry',
       branch: 'main/next'
-    })).toBe('https://api.github.com/repos/web2solutions/jumentix-agent-registry/commits/main%2Fnext');
+    })).toBe('https://api.github.com/repos/XpertMinds/jumentix-agent-registry/commits/main%2Fnext');
   });
 
   it('normalizes line endings and trailing whitespace before comparing registry mirrors', () => {
@@ -104,7 +104,7 @@ describe('check-agent-registry-source', () => {
       return request as never;
     });
 
-    await expect(fetchText('https://raw.githubusercontent.com/web2solutions/jumentix-agent-registry/revision/AGENT-REGISTRY.md'))
+    await expect(fetchText('https://raw.githubusercontent.com/XpertMinds/jumentix-agent-registry/revision/AGENT-REGISTRY.md'))
       .resolves.toBe('canonical');
   });
 
@@ -133,7 +133,7 @@ describe('check-agent-registry-source', () => {
         (value: object) => void
       ];
       expect(url).toBe(buildContentsApiUrl({
-        repository: 'web2solutions/jumentix-agent-registry',
+        repository: 'XpertMinds/jumentix-agent-registry',
         revision,
         remotePath: 'AGENT-REGISTRY.md'
       }, revision));
@@ -144,13 +144,13 @@ describe('check-agent-registry-source', () => {
     });
 
     await expect(fetchCanonicalText({
-      repository: 'web2solutions/jumentix-agent-registry',
+      repository: 'XpertMinds/jumentix-agent-registry',
       revision,
       remotePath: 'AGENT-REGISTRY.md'
     }, revision, { GITHUB_TOKEN: 'private-token' })).resolves.toStrictEqual({
       content: 'private-canonical',
       sourceUrl: buildContentsApiUrl({
-        repository: 'web2solutions/jumentix-agent-registry',
+        repository: 'XpertMinds/jumentix-agent-registry',
         revision,
         remotePath: 'AGENT-REGISTRY.md'
       }, revision)
@@ -178,7 +178,7 @@ describe('check-agent-registry-source', () => {
     getRequest.mockImplementationOnce((...args: unknown[]) => {
       const [url, , callback] = args as [string, object, (value: object) => void];
       expect(url).toBe(buildRawUrl({
-        repository: 'web2solutions/jumentix-agent-registry',
+        repository: 'XpertMinds/jumentix-agent-registry',
         revision,
         remotePath: 'AGENT-REGISTRY.md'
       }, revision));
@@ -200,13 +200,13 @@ describe('check-agent-registry-source', () => {
     });
 
     await expect(fetchCanonicalText({
-      repository: 'web2solutions/jumentix-agent-registry',
+      repository: 'XpertMinds/jumentix-agent-registry',
       revision,
       remotePath: 'AGENT-REGISTRY.md'
     }, revision, { GITHUB_TOKEN: 'stale-token' })).resolves.toStrictEqual({
       content: 'public-canonical',
       sourceUrl: buildRawUrl({
-        repository: 'web2solutions/jumentix-agent-registry',
+        repository: 'XpertMinds/jumentix-agent-registry',
         revision,
         remotePath: 'AGENT-REGISTRY.md'
       }, revision)
@@ -230,7 +230,7 @@ describe('check-agent-registry-source', () => {
     });
 
     await expect(fetchCanonicalText({
-      repository: 'web2solutions/jumentix-agent-registry',
+      repository: 'XpertMinds/jumentix-agent-registry',
       revision,
       remotePath: 'AGENT-REGISTRY.md'
     }, revision, {})).rejects.toThrow('Verify the pinned revision SHA and remotePath');
@@ -252,7 +252,7 @@ describe('check-agent-registry-source', () => {
     });
 
     await expect(fetchCanonicalText({
-      repository: 'web2solutions/jumentix-agent-registry',
+      repository: 'XpertMinds/jumentix-agent-registry',
       revision,
       remotePath: 'AGENT-REGISTRY.md'
     }, revision, {})).rejects.toThrow('Private canonical registry access requires GITHUB_TOKEN or GH_TOKEN');
@@ -285,7 +285,7 @@ describe('check-agent-registry-source', () => {
     });
 
     await expect(fetchCanonicalText({
-      repository: 'web2solutions/jumentix-agent-registry',
+      repository: 'XpertMinds/jumentix-agent-registry',
       revision,
       remotePath: 'AGENT-REGISTRY.md'
     }, revision, { GITHUB_TOKEN: 'bad-token' })).rejects.toThrow(
@@ -308,7 +308,7 @@ describe('check-agent-registry-source', () => {
       return request as never;
     });
 
-    await expect(fetchText('https://api.github.com/repos/web2solutions/jumentix-agent-registry/contents/missing'))
+    await expect(fetchText('https://api.github.com/repos/XpertMinds/jumentix-agent-registry/contents/missing'))
       .rejects.toThrow('HTTP 404');
   });
 
@@ -368,7 +368,7 @@ describe('check-agent-registry-source', () => {
       return request as never;
     });
 
-    await expect(fetchJson('https://api.github.com/example'))
+    await expect(fetchJson('https://api.github.com/example', {}))
       .resolves.toStrictEqual({ sha: '0123456789abcdef0123456789abcdef01234567' });
   });
 
@@ -397,7 +397,7 @@ describe('check-agent-registry-source', () => {
     });
 
     await expect(resolveBranchRevision({
-      repository: 'web2solutions/jumentix-agent-registry',
+      repository: 'XpertMinds/jumentix-agent-registry',
       branch: 'main'
     })).resolves.toBe(revision);
   });
@@ -426,7 +426,7 @@ describe('check-agent-registry-source', () => {
     });
 
     await expect(resolveBranchRevision({
-      repository: 'web2solutions/jumentix-agent-registry',
+      repository: 'XpertMinds/jumentix-agent-registry',
       branch: 'main'
     })).rejects.toThrow('Could not resolve canonical registry revision');
   });

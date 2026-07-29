@@ -6,8 +6,8 @@ Idioma alvo: Português (Brasil)
 
 Rastreamento de problemas:
 
-- Épico: [#124](https://github.com/web2solutions/aaa-typescript-boilerplate/issues/124)
-- Tarefa: [#130](https://github.com/web2solutions/aaa-typescript-boilerplate/issues/130)
+- Épico: [#124](https://github.com/XpertMinds/Jumentix/issues/124)
+- Tarefa: [#130](https://github.com/XpertMinds/Jumentix/issues/130)
 
 ## Comandos de implantação
 

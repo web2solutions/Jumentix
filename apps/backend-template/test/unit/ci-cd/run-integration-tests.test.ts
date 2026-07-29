@@ -89,7 +89,7 @@ describe('run-integration-tests', () => {
     expect(INTEGRATION_TIMEOUT_OVERRIDES_MS).toStrictEqual({
       'test:integration:express': 300_000,
       'test:integration:fastify': 300_000,
-      'test:integration:restify': 300_000,
+      'test:integration:restify': 600_000,
       'test:integration:hyper-express': 300_000
     });
   });
@@ -97,7 +97,6 @@ describe('run-integration-tests', () => {
   it.each([
     'test:integration:express',
     'test:integration:fastify',
-    'test:integration:restify',
     'test:integration:hyper-express'
   ])('gives the complete %s HTTP suite deterministic process headroom', (scriptName) => {
     expect.hasAssertions();
@@ -108,6 +107,19 @@ describe('run-integration-tests', () => {
       stdio: 'inherit',
       env: expect.objectContaining({ CI: 'true' }),
       timeout: 300_000,
+      killSignal: 'SIGTERM'
+    });
+  });
+
+  it('gives only complete Restify extra finite process headroom under extreme load', () => {
+    expect.hasAssertions();
+    const spawn = jest.fn().mockReturnValue({ status: 0 });
+
+    expect(executeIntegrationScript('test:integration:restify', { spawn })).toBe(0);
+    expect(spawn).toHaveBeenCalledWith('pnpm', ['run', 'test:integration:restify'], {
+      stdio: 'inherit',
+      env: expect.objectContaining({ CI: 'true' }),
+      timeout: 600_000,
       killSignal: 'SIGTERM'
     });
   });
