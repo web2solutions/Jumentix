@@ -118,11 +118,14 @@ script ausente, interrompidas ou com status diferente de zero falham de forma fe
 Execução por escopo, inclusive alterações somente de documentação, não pode omitir
 uma célula em um limite de entrega.
 
-Cada alvo de integração é executado com `CI=true` e tempo limite de processo de 120
-segundos. Um tempo limite é reportado como saída `124`, reprova a célula de integração
-e não impede o relato dos alvos restantes. Saídas `dist` geradas são excluídas do lint
-para que um build concluído não faça a execução seguinte da matriz falhar ao analisar
-declarações geradas.
+Cada alvo de integração é executado com `CI=true`. O tempo limite padrão do processo é de
+120 segundos; o alvo Express completo possui uma exceção de 300 segundos porque suas 22
+suítes e 171 testes apresentam duração medida próxima ao limite padrão sob a carga da matriz
+de release. Essa margem específica impede que um `SIGTERM` trunque uma resposta HTTP ativa
+sem enfraquecer o tempo limite dos demais alvos. Qualquer tempo limite é reportado como saída
+`124`, reprova a célula de integração e não impede o relato dos alvos restantes. Saídas
+`dist` geradas são excluídas do lint para que um build concluído não faça a execução seguinte
+da matriz falhar ao analisar declarações geradas.
 
 Aplicação por branch:
 
