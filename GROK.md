@@ -19,7 +19,7 @@ This repository supports Grok as an official engineering agent.
 12. Treat an epic as a Linear Project and never complete it before its dedicated documentation
     Issue is completed under Requirement `094`.
 13. Publish every task's start, material progress, blocker changes, review readiness, and final
-    handoff in the Linear epic Project's `Project Updates` feed under Requirement `095`; Issue
+    handoff in the Linear epic Project's `Project Updates` feed under Requirement `102`; Issue
     comments and status changes alone are insufficient.
 14. Report exact gate states in Project Updates and never describe pending, missing, cancelled,
     timed-out, skipped, or failed required checks as passing.
