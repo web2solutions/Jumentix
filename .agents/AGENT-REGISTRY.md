@@ -47,11 +47,11 @@ This registry tracks AI agents collaborating in the Jumentix project.
 - `agent_version`: `GPT-5 Codex`
 - `status`: `busy`
 - `registered_at_utc`: `2026-07-25T00:00:00Z`
-- `last_branch_check_utc`: `2026-07-29T07:17:54Z`
+- `last_branch_check_utc`: `2026-07-29T09:25:00Z`
 - `main_ref_checked`: `49d9af2e`
-- `dev_ref_checked`: `73b1e4f2`
+- `dev_ref_checked`: `6649d0e4`
 - `active_epic`: `https://linear.app/jumentix/project/epicgovernance-epic-centered-task-taxonomy-and-agent-delegation-c3cb6bae0771`
-- `assigned_task`: `https://linear.app/jumentix/issue/JUM-535`
+- `assigned_task`: `https://linear.app/jumentix/issue/JUM-531`
 - `capabilities`:
   - repository analysis and implementation
   - test and CI debugging
@@ -67,13 +67,13 @@ This registry tracks AI agents collaborating in the Jumentix project.
 - `machine_os`: `Darwin 21.6.0 x86_64`
 - `agent_runtime`: `OpenAI Codex`
 - `agent_version`: `GPT-5 Codex`
-- `status`: `busy`
+- `status`: `available`
 - `registered_at_utc`: `2026-07-26T07:23:33Z`
-- `last_branch_check_utc`: `2026-07-28T00:55:00Z`
-- `main_ref_checked`: `dc9a5b4e`
-- `dev_ref_checked`: `36f7d730`
-- `active_epic`: `https://linear.app/jumentix/project/epicgovernance-epic-centered-task-taxonomy-and-agent-delegation-c3cb6bae0771`
-- `assigned_task`: `https://linear.app/jumentix/issue/JUM-517`
+- `last_branch_check_utc`: `2026-07-29T09:25:00Z`
+- `main_ref_checked`: `49d9af2e`
+- `dev_ref_checked`: `6649d0e4`
+- `active_epic`: `none`
+- `assigned_task`: `none`
 - `capabilities`:
   - frontend architecture and implementation
   - browser-driven UX research and verification
@@ -89,13 +89,13 @@ This registry tracks AI agents collaborating in the Jumentix project.
 - `machine_os`: `Darwin 21.6.0 x86_64`
 - `agent_runtime`: `OpenAI Codex`
 - `agent_version`: `GPT-5 Codex`
-- `status`: `busy`
+- `status`: `available`
 - `registered_at_utc`: `2026-07-27T19:02:28Z`
-- `last_branch_check_utc`: `2026-07-28T16:20:36Z`
-- `main_ref_checked`: `056195e0`
-- `dev_ref_checked`: `5086e6e8`
-- `active_epic`: `https://linear.app/jumentix/project/epicgovernance-epic-centered-task-taxonomy-and-agent-delegation-c3cb6bae0771`
-- `assigned_task`: `https://linear.app/jumentix/issue/JUM-519`
+- `last_branch_check_utc`: `2026-07-29T09:25:00Z`
+- `main_ref_checked`: `49d9af2e`
+- `dev_ref_checked`: `6649d0e4`
+- `active_epic`: `none`
+- `assigned_task`: `none`
 - `capabilities`:
   - repository governance and branch reconciliation
   - CI policy and branch protection enforcement
@@ -111,17 +111,39 @@ This registry tracks AI agents collaborating in the Jumentix project.
 - `machine_os`: `Darwin 21.6.0 x86_64`
 - `agent_runtime`: `OpenAI Codex`
 - `agent_version`: `GPT-5 Codex`
-- `status`: `busy`
+- `status`: `available`
 - `registered_at_utc`: `2026-07-27T20:55:33Z`
-- `last_branch_check_utc`: `2026-07-27T20:55:33Z`
-- `main_ref_checked`: `dc9a5b4e`
-- `dev_ref_checked`: `2a262246`
-- `active_epic`: `Linear Project:f2b88875-7645-47fd-95b6-4493db9bd2ef`
-- `assigned_task`: `Linear:JUM-503`
+- `last_branch_check_utc`: `2026-07-29T09:25:00Z`
+- `main_ref_checked`: `49d9af2e`
+- `dev_ref_checked`: `6649d0e4`
+- `active_epic`: `none`
+- `assigned_task`: `none`
 - `capabilities`:
   - governance requirements and traceability
   - Linear task metadata lifecycle
   - branch, PR, and quality-gate reconciliation
+
+### 5) grok-cursor-001
+
+- `agent_id`: `grok-cursor-001`
+- `agent_name`: `Cursor Grok`
+- `platform`: `Cursor`
+- `machine_id`: `host-eduardos-macbook-air-arm64-local`
+- `machine_name`: `Eduardos-MacBook-Air.local`
+- `machine_os`: `Darwin 25.5.0 arm64`
+- `agent_runtime`: `Cursor Grok 4.5`
+- `agent_version`: `Cursor Grok 4.5`
+- `status`: `busy`
+- `registered_at_utc`: `2026-07-29T07:50:00Z`
+- `last_branch_check_utc`: `2026-07-29T09:25:00Z`
+- `main_ref_checked`: `49d9af2e`
+- `dev_ref_checked`: `6649d0e4`
+- `active_epic`: `https://linear.app/jumentix/project/epicgovernance-epic-centered-task-taxonomy-and-agent-delegation-c3cb6bae0771`
+- `assigned_task`: `https://linear.app/jumentix/issue/JUM-533`
+- `capabilities`:
+  - repository ownership analysis and governance delivery
+  - Linear Project Updates and issue lifecycle
+  - agent-registry hygiene and consumer mirror sync
 
 ## Operating Flow
 
