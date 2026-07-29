@@ -4,7 +4,6 @@
 
 ## All Changes
 
-- 2026-07-29 fix(ci): cover Restify integration headroom (#247) - Eduardo A.
 - 2026-07-29 fix(ci): stabilize Express integration timeout (#245) - Eduardo A.
 - 2026-07-29 chore(governance): sync agent registry mirror for JUM-533 (#246) - Eduardo A.
 - 2026-07-29 chore(jum-535): reconcile governance consistency - Eduardo A.

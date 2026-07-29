@@ -126,3 +126,43 @@ After merge:
 1. Linear Issue moves to `Done`.
 2. Final Project Update links the merge commit and contains no unresolved blocker or incomplete
    required gate.
+
+## Template D - Linear Project Update (per task)
+
+Publish in the focused Linear Project's `Project Updates` feed (Requirement `102`). Issue comments
+and status changes alone are insufficient. Use one clearly separated section per task when an
+update covers multiple tasks or agents.
+
+```md
+### Task: JUM-XXXX — <short title>
+- Task: https://linear.app/jumentix/issue/JUM-XXXX/...
+- Agent: <agent_id or human name>
+- Status: <Backlog | Todo | In Progress | In Review | Done | Blocked>
+- Completed: <concrete outcomes since the previous update>
+- Delivery: worktree `<path or n/a>` · branch `<name or not yet created>` · commit `<sha or n/a>` · PR `<url or not yet created>`
+- Gates: <each required gate with exact terminal or pending state; never call pending/failed/missing checks green>
+- Blockers/Risks: <current blockers/risks, or none>
+- Next: <next concrete action>
+```
+
+### Multi-task update envelope
+
+```md
+## <epic or wave label> — <date or checkpoint>
+
+**Agent(s):** <list>
+
+### Task: JUM-AAAA — ...
+- ...
+
+### Task: JUM-BBBB — ...
+- ...
+```
+
+### Cadence (mandatory)
+
+1. Task accepted / work started
+2. Material progress that changes delivery confidence
+3. Blocker or material risk change
+4. PR ready for review
+5. Final handoff / Done (link merge commit; no unresolved blocker or incomplete required gate)
