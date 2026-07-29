@@ -10,24 +10,24 @@ Este documento certifica a cobertura atual dos requisitos implementados pelos re
 
 ## Instantâneo da linha de base
 
-Data: `2026-07-28`
+Data: `2026-07-29`
 
-1. Arquivos de requisitos em `.agents/requirements`: `102`
-2. IDs de requisitos exclusivos: `98`
-3. IDs cobertos em `SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`: `98`
+1. Arquivos de requisitos em `.agents/requirements`: `105`
+2. IDs de requisitos exclusivos: `102`
+3. IDs cobertos em `SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`: `102`
 4. Status de cobertura: `100%`
 
 Notas:
 
-1. Os IDs `055`, `060`, `079` e `095` possuem, cada um, dois arquivos de requisitos com escopos
+1. Os IDs `055`, `060` e `079` possuem, cada um, dois arquivos de requisitos com escopos
    diferentes.
 2. A cobertura é medida por IDs de requisitos exclusivos e por vinculação obrigatória de artefatos no razão.
 
 ## Cobertura de requisitos não funcionais
 
-IDs NFR cobertos (`55`):
+IDs NFR cobertos (`59`):
 
-`001`, `011`, `014`, `015`, `016`, `017`, `018`, `020`, `025`, `029`, `036`, `041`, `042`, `043`, `044`, `050`, `053`, `056`, `057`, `063`, `064`, `065`, `066`, `067`, `068`, `069`, `070`, `071`, `072`, `073`, `074`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `091`, `092`, `093`, `094`, `095`, `096`, `097`, `098`, `099`, `100`, `101`
+`001`, `011`, `014`, `015`, `016`, `017`, `018`, `020`, `025`, `029`, `036`, `041`, `042`, `043`, `044`, `050`, `053`, `056`, `057`, `063`, `064`, `065`, `066`, `067`, `068`, `069`, `070`, `071`, `072`, `073`, `074`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `091`, `092`, `093`, `094`, `095`, `096`, `097`, `098`, `099`, `100`, `101`, `102`
 
 Fontes de mapeamento NFR:
 

@@ -139,10 +139,10 @@ If impacted requirement IDs are not mapped before implementation, the change is 
 
 ## Coverage Attestation (Current Baseline)
 
-As of `2026-07-28`, this ledger covers all unique requirement IDs currently registered in `.agents/requirements`:
+As of `2026-07-29`, this ledger covers all unique requirement IDs currently registered in `.agents/requirements`:
 
-1. Requirement files in the registry: `102`
-2. Unique IDs in requirements registry: `98`
-3. Unique IDs mapped in this ledger: `98`
-4. Duplicate IDs with independently binding files: `055`, `060`, `079`, `095`
+1. Requirement files in the registry: `105`
+2. Unique IDs in requirements registry: `102`
+3. Unique IDs mapped in this ledger: `102`
+4. Duplicate IDs with independently binding files: `055`, `060`, `079`
 5. Missing IDs: `none`
