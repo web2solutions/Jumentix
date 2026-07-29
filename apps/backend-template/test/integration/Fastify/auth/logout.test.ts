@@ -71,6 +71,7 @@ describe('fastify -> logout suite', () => {
 
     await API.seedData();
     await server.ready();
+    await server.listen({ port: 0, host: '127.0.0.1' });
   });
 
   afterAll(async () => {

@@ -140,6 +140,13 @@ mantêm handles HTTP ativos. Ele não adiciona tentativas, não ignora testes, n
 asserções nem altera o limite finito separado de 600 segundos do processo. Express, Fastify, Hyper-Express e
 todos os demais alvos de integração mantêm seus padrões existentes por teste.
 
+Cada arquivo de integração Fastify e Restify vincula seu servidor HTTP uma única vez a uma
+porta efêmera de loopback, reutiliza esse listener em todas as requisições Supertest do arquivo
+e o fecha explicitamente no `afterAll`. Isso impede que o Supertest abra e feche repetidamente
+o mesmo servidor nativo, comportamento que sob carga sustentada da matriz pode cruzar respostas
+ou deixar handles de parser/listener ativos. O ciclo de vida não usa porta fixa, nova tentativa,
+asserção ignorada nem encerramento forçado do processo.
+
 Saídas
 `dist` geradas são excluídas do lint para que um build concluído não faça a execução seguinte
 da matriz falhar ao analisar declarações geradas.
