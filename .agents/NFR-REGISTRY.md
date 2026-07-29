@@ -83,6 +83,9 @@ This file consolidates non-functional requirements already requested and stored 
   in its own worktree and recheck the waiting task at material boundaries.
 - `102` Every executing task must publish truthful, task-specific Linear Project Updates at
   start, material progress, blocker/risk changes, review readiness, and final handoff.
+- `103` The private `XpertMinds` application and agent-registry repositories are canonical;
+  both former `web2solutions` origins are deprecated, read-only, accept no new modifications,
+  and remain archived after their final migration delivery.
 
 When a new NFR is requested:
 

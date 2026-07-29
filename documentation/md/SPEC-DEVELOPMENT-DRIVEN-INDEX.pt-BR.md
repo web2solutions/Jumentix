@@ -64,6 +64,12 @@ Esta política é aplicada através de:
 
 ## Fontes de ligação
 
+A autoridade dos repositórios segue o Requisito `103`: o repositório privado
+`XpertMinds/Jumentix` é canônico para este conjunto de especificações, e o
+repositório privado `XpertMinds/jumentix-agent-registry` é canônico para a
+coordenação de agentes. As duas origens anteriores em `web2solutions` estão
+obsoletas, são somente leitura e não aceitam novas modificações.
+
 A execução orientada por especificações depende e reutiliza estas fontes existentes:
 
 - Contratos OpenAPI e AsyncAPI (`/spec`)

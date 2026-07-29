@@ -13,6 +13,9 @@ This registry tracks AI agents collaborating in the Jumentix project.
    - branch-sync policy changes
 5. A consumer repository must update this canonical registry before synchronizing its local mirror.
 6. Multiple agents may share a host, but each must use a unique `agent_id`.
+7. The canonical repository is `XpertMinds/jumentix-agent-registry`; the
+   deprecated `web2solutions/jumentix-agent-registry` origin is read-only and
+   accepts no new work.
 
 ## Registry Fields
 
@@ -47,11 +50,11 @@ This registry tracks AI agents collaborating in the Jumentix project.
 - `agent_version`: `GPT-5 Codex`
 - `status`: `busy`
 - `registered_at_utc`: `2026-07-25T00:00:00Z`
-- `last_branch_check_utc`: `2026-07-29T09:25:00Z`
-- `main_ref_checked`: `49d9af2e`
-- `dev_ref_checked`: `6649d0e4`
-- `active_epic`: `https://linear.app/jumentix/project/epicgovernance-epic-centered-task-taxonomy-and-agent-delegation-c3cb6bae0771`
-- `assigned_task`: `https://linear.app/jumentix/issue/JUM-531`
+- `last_branch_check_utc`: `2026-07-29T18:51:13Z`
+- `main_ref_checked`: `2d4b4b47`
+- `dev_ref_checked`: `d6dd5219`
+- `active_epic`: `https://linear.app/jumentix/project/epicgovernance-canonical-xpertminds-migration-and-legacy-freeze-f8bd0962ba8a`
+- `assigned_task`: `https://linear.app/jumentix/issue/JUM-565`
 - `capabilities`:
   - repository analysis and implementation
   - test and CI debugging
@@ -133,17 +136,39 @@ This registry tracks AI agents collaborating in the Jumentix project.
 - `machine_os`: `Darwin 25.5.0 arm64`
 - `agent_runtime`: `Cursor Grok 4.5`
 - `agent_version`: `Cursor Grok 4.5`
-- `status`: `busy`
+- `status`: `available`
 - `registered_at_utc`: `2026-07-29T07:50:00Z`
-- `last_branch_check_utc`: `2026-07-29T09:25:00Z`
+- `last_branch_check_utc`: `2026-07-29T09:35:00Z`
 - `main_ref_checked`: `49d9af2e`
-- `dev_ref_checked`: `6649d0e4`
-- `active_epic`: `https://linear.app/jumentix/project/epicgovernance-epic-centered-task-taxonomy-and-agent-delegation-c3cb6bae0771`
-- `assigned_task`: `https://linear.app/jumentix/issue/JUM-533`
+- `dev_ref_checked`: `0be97a25`
+- `active_epic`: `none`
+- `assigned_task`: `none`
 - `capabilities`:
   - repository ownership analysis and governance delivery
   - Linear Project Updates and issue lifecycle
   - agent-registry hygiene and consumer mirror sync
+
+### 6) claude-governance-001
+
+- `agent_id`: `claude-governance-001`
+- `agent_name`: `Claude (Code CLI)`
+- `platform`: `Claude Code CLI`
+- `machine_id`: `host-eduardos-macbook-air-arm64-local`
+- `machine_name`: `Eduardos-MacBook-Air.local`
+- `machine_os`: `Darwin 25.5.0 arm64`
+- `agent_runtime`: `Claude Code CLI (local checkout, network-attached)`
+- `agent_version`: `claude-sonnet-5`
+- `status`: `busy`
+- `registered_at_utc`: `2026-07-29T12:36:00Z`
+- `last_branch_check_utc`: `2026-07-29T13:01:51Z`
+- `main_ref_checked`: `2d4b4b47`
+- `dev_ref_checked`: `d6dd5219`
+- `active_epic`: `https://linear.app/jumentix/project/epicgovernance-epic-centered-task-taxonomy-and-agent-delegation-c3cb6bae0771`
+- `assigned_task`: `https://linear.app/jumentix/issue/JUM-550`
+- `capabilities`:
+  - requirements registry hygiene and traceability reconciliation
+  - governance documentation delivery with EN/PT-BR parity
+  - CI gate script hardening and regression coverage
 
 ## Operating Flow
 

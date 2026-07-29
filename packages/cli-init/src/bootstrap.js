@@ -4,7 +4,7 @@ const path = require('path');
 const readline = require('readline');
 const { spawnSync } = require('child_process');
 
-const BOILERPLATE_REPOSITORY = 'https://github.com/web2solutions/aaa-typescript-boilerplate.git';
+const BOILERPLATE_REPOSITORY = 'https://github.com/XpertMinds/Jumentix.git';
 const SERVICE_TYPES = [
   {
     id: 'rest',
@@ -226,4 +226,4 @@ async function run() {
   }
 }
 
-module.exports = { run };
+module.exports = { BOILERPLATE_REPOSITORY, run };
