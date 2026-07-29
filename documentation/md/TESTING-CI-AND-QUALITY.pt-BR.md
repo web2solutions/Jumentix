@@ -119,11 +119,12 @@ Execução por escopo, inclusive alterações somente de documentação, não po
 uma célula em um limite de entrega.
 
 Cada alvo de integração é executado com `CI=true`. O tempo limite padrão do processo é de
-120 segundos; o alvo Express completo possui uma exceção de 300 segundos porque suas 22
-suítes e 171 testes apresentam duração medida próxima ao limite padrão sob a carga da matriz
-de release. Essa margem específica impede que um `SIGTERM` trunque uma resposta HTTP ativa
-sem enfraquecer o tempo limite dos demais alvos. Qualquer tempo limite é reportado como saída
-`124`, reprova a célula de integração e não impede o relato dos alvos restantes. Saídas
+120 segundos. Os alvos completos Express e Restify possuem exceções explícitas de 300
+segundos porque suas suítes HTTP completas atingiram o limite do processo sob a carga da
+matriz de release. Essa margem específica impede que um `SIGTERM` trunque uma resposta HTTP
+ativa sem enfraquecer o tempo limite dos alvos menores; um tempo limite informado
+explicitamente ao executor continua sendo prioritário. Qualquer tempo limite é reportado
+como saída `124`, reprova a célula de integração e não impede o relato dos alvos restantes. Saídas
 `dist` geradas são excluídas do lint para que um build concluído não faça a execução seguinte
 da matriz falhar ao analisar declarações geradas.
 
