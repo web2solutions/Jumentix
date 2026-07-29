@@ -119,9 +119,12 @@ Execução por escopo, inclusive alterações somente de documentação, não po
 uma célula em um limite de entrega.
 
 Cada alvo de integração é executado com `CI=true`. O tempo limite padrão do processo é de
-120 segundos. Os alvos completos Express, Fastify, Restify e Hyper-Express possuem exceções
+120 segundos. Os alvos completos Express, Fastify e Hyper-Express possuem exceções
 explícitas de 300 segundos porque suas suítes HTTP completas atingiram ou se aproximaram do
-limite do processo sob a carga da matriz de release. Em uma execução estrita, o Hyper-Express
+limite do processo sob a carga da matriz de release. Somente o Restify completo possui um
+orçamento finito de processo de 600 segundos depois que uma execução sob carga extrema
+atingiu o antigo limite de 300 segundos enquanto a fase unitária anterior levou 327,115
+segundos. Em uma execução estrita, o Hyper-Express
 passou 21 suítes e 170 testes em 117,215 segundos, mas expirou durante a limpeza no limite de
 120 segundos; o Fastify também ultrapassou esse limite após suas asserções. Essa margem
 específica impede que um `SIGTERM` trunque uma resposta HTTP ativa ou sua limpeza sem
@@ -134,7 +137,7 @@ sustentada da matriz estrita, requisições Restify autenticadas apresentaram du
 5,4–5,8 segundos, acima do padrão genérico de 5 segundos do Jest. O orçamento específico do
 alvo permite que essas requisições reais terminem, em vez de cancelar suas asserções enquanto
 mantêm handles HTTP ativos. Ele não adiciona tentativas, não ignora testes, não enfraquece
-asserções nem altera o limite de 300 segundos do processo. Express, Fastify, Hyper-Express e
+asserções nem altera o limite finito separado de 600 segundos do processo. Express, Fastify, Hyper-Express e
 todos os demais alvos de integração mantêm seus padrões existentes por teste.
 
 Saídas
