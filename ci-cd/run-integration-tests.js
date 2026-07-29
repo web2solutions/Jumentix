@@ -5,7 +5,7 @@ const DEFAULT_INTEGRATION_TIMEOUT_MS = 120_000;
 const INTEGRATION_TIMEOUT_OVERRIDES_MS = Object.freeze({
   'test:integration:express': 300_000,
   'test:integration:fastify': 300_000,
-  'test:integration:restify': 300_000,
+  'test:integration:restify': 600_000,
   'test:integration:hyper-express': 300_000
 });
 

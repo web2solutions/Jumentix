@@ -56,9 +56,9 @@ const application = API.server.application;
 describe('/localhost suite', () => {
   beforeAll(async () => {
     await application.ready();
+    await application.listen({ port: 0, host: '127.0.0.1' });
   });
   afterAll(async () => {
-    await API.stop();
     await application.close();
   });
 

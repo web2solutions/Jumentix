@@ -83,6 +83,12 @@ This file consolidates non-functional requirements already requested and stored 
   in its own worktree and recheck the waiting task at material boundaries.
 - `102` Every executing task must publish truthful, task-specific Linear Project Updates at
   start, material progress, blocker/risk changes, review readiness, and final handoff.
+- `103` The private `XpertMinds` application and agent-registry repositories are canonical;
+  both former `web2solutions` origins are deprecated, read-only, accept no new modifications,
+  and remain archived after their final migration delivery.
+- `104` Every applicable application integration from the deprecated origin must be
+  inventoried and rebound to `XpertMinds/Jumentix`, with incomplete provider installs recorded
+  as explicit owner-auth blockers and validated by `integration-migration:check`.
 
 When a new NFR is requested:
 

@@ -72,12 +72,13 @@ describe('fastify -> register suite', () => {
     server = API.server.application;
 
     await server.ready();
+    await server.listen({ port: 0, host: '127.0.0.1' });
   });
 
   afterAll(async () => {
     await databaseClient.disconnect();
     await keyValueStorageClient.disconnect();
-    // await keyValueStorageClient.disconnect();
+    await server.close();
   });
 
   // eslint-disable-next-line jest/require-hook

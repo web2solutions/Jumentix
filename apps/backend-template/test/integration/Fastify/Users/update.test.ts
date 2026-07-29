@@ -76,6 +76,7 @@ describe('fastify -> update User suite', () => {
     server = API.server.application;
     await API.seedUsers();
     await server.ready();
+    await server.listen({ port: 0, host: '127.0.0.1' });
 
     authorizationHeaderUser1 = {
       ...(await authService.authenticate(
@@ -108,7 +109,8 @@ describe('fastify -> update User suite', () => {
   });
 
   afterAll(async () => {
-    await API.stop();
+    await databaseClient.disconnect();
+    await keyValueStorageClient.disconnect();
     await server.close();
   });
 

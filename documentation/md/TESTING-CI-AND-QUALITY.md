@@ -114,9 +114,11 @@ non-zero cells fail closed. Scope-aware execution, including docs-only changes, 
 omit a cell at a delivery boundary.
 
 Each integration target runs with `CI=true`. The default process timeout is 120 seconds.
-The complete Express, Fastify, Restify, and Hyper-Express targets have explicit 300-second
+The complete Express, Fastify, and Hyper-Express targets have explicit 300-second
 overrides because their full HTTP suites have reached or approached the process deadline
-under release-matrix load. In one strict run, Hyper-Express passed 21 suites and 170 tests in
+under release-matrix load. Complete Restify alone has a finite 600-second process budget
+after an extreme-load run reached the former 300-second ceiling while the preceding unit
+phase took 327.115 seconds. In one strict run, Hyper-Express passed 21 suites and 170 tests in
 117.215 seconds but timed out during cleanup at the 120-second boundary; Fastify also crossed
 that boundary after its assertions. This target-specific headroom prevents `SIGTERM` from
 truncating an active HTTP response or cleanup without weakening the timeout for smaller
@@ -128,8 +130,15 @@ Restify additionally runs with a 15-second Jest per-test timeout. Under sustaine
 load, authenticated Restify requests have measured 5.4–5.8 seconds, beyond Jest's generic
 5-second default. The target-specific budget lets those real requests settle instead of
 canceling their assertions while leaving HTTP handles active. It does not add retries, skip
-tests, weaken assertions, or change the 300-second process deadline. Express, Fastify,
+tests, weaken assertions, or change the separate finite 600-second process deadline. Express, Fastify,
 Hyper-Express, and every other integration target retain their existing per-test defaults.
+
+Fastify and Restify integration files bind their HTTP server once to an ephemeral loopback
+port, reuse that listener for every Supertest request in the file, and close it explicitly in
+`afterAll`. This prevents Supertest from repeatedly opening and closing the same native server,
+which can otherwise cross responses or leave parser/listener handles behind under sustained
+matrix load. The listener lifecycle uses no fixed port, retry, skipped assertion, or forced
+process exit.
 
 Generated `dist` output is excluded from lint so a completed build cannot make the next
 matrix run fail for scanning generated declarations.

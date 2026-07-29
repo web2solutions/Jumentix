@@ -71,6 +71,7 @@ describe('fastify -> get Users suite', () => {
     server = API.server.application;
 
     await server.ready();
+    await server.listen({ port: 0, host: '127.0.0.1' });
     await API.deleteUsers();
     await API.seedUsers();
   });

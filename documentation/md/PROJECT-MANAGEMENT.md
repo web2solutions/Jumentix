@@ -19,7 +19,7 @@ Linear is the single source of truth for project management, epics, and task tra
 - Historical/local todo mirror (non-canonical):
   - `.agents/project-todos.md`
 - GitHub issue tracking for migrated TODOs:
-  - <https://github.com/web2solutions/aaa-typescript-boilerplate/issues?q=is%3Aissue+is%3Aopen+label%3Atodo-mvp>
+  - <https://github.com/XpertMinds/Jumentix/issues?q=is%3Aissue+is%3Aopen+label%3Atodo-mvp>
 - Official planning authority:
   - Linear workspace: <https://linear.app/jumentix>
   - Linear API key at `../.linear` (access-controlled, never commit or share)

@@ -20,7 +20,7 @@ Registros de governança obrigatórios:
 2. Project do Linear (épico focado) com campos de planejamento
 3. RP com questão e evidências vinculadas
 4. Artefatos de especificações e documentação
-5. Registro canônico de agentes em `web2solutions/jumentix-agent-registry` com espelho local em `.agents/AGENT-REGISTRY.md`
+5. Registro canônico de agentes em `XpertMinds/jumentix-agent-registry` com espelho local em `.agents/AGENT-REGISTRY.md`
 
 ## Links de rastreabilidade obrigatórios
 
@@ -212,8 +212,16 @@ Antes de qualquer execução de tarefa:
     não autorizado e divergência do espelho local devem reprovar de forma fechada com diagnósticos
     acionáveis que nunca exponham credenciais (raw 404 após Contents 401/403 → orientação de
     token; demais 404 → deriva de pin/caminho; 401/403 isolado → acesso privado com token).
-13. O repositório canônico do Agent Registry é público para leitura. Somente a conta proprietária
-    `web2solutions` (`web2solucoes@gmail.com`) pode fazer push ou publicar nele.
+13. O repositório canônico do Agent Registry é privado na organização `XpertMinds`. Somente a
+    conta proprietária `web2solutions` (`web2solucoes@gmail.com`) e identidades explicitamente
+    autorizadas no Linear podem ler, fazer push ou publicar nele.
+14. O Requisito `103` torna `XpertMinds/Jumentix` e
+    `XpertMinds/jumentix-agent-registry` canônicos. As duas origens anteriores em
+    `web2solutions` estão obsoletas, são somente leitura, não aceitam novas modificações e
+    permanecem arquivadas.
+15. O Requisito `104` exige inventário e rebind de toda integração aplicável da origem
+    depreciada para `XpertMinds/Jumentix`, com instalações incompletas registradas como
+    bloqueios owner-auth e validadas por `integration-migration:check`.
 
 ## Expectativas de evidências de auditoria
 

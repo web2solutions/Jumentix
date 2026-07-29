@@ -51,6 +51,24 @@ describe('run-task-change-tests', () => {
     });
   });
 
+  it('runs changed integration and planner tests with Restify timeout headroom', () => {
+    expect.hasAssertions();
+    expect(createTaskTestPlan([
+      'apps/backend-template/test/helpers/listenForSupertest.ts',
+      'apps/backend-template/test/integration/Fastify/auth/login.test.ts',
+      'apps/backend-template/test/integration/Restify/auth/login.test.ts',
+      'apps/backend-template/test/unit/ci-cd/run-task-change-tests.test.ts'
+    ])).toStrictEqual({
+      type: 'changed-integration-tests',
+      files: [
+        'apps/backend-template/test/unit/ci-cd/run-task-change-tests.test.ts',
+        'apps/backend-template/test/integration/Fastify/auth/login.test.ts',
+        'apps/backend-template/test/integration/Restify/auth/login.test.ts'
+      ],
+      testTimeoutMs: 15000
+    });
+  });
+
   it('selects website-native gates and preserves other related test inputs', () => {
     expect.hasAssertions();
     expect(createTaskTestPlan([
