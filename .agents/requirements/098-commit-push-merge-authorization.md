@@ -25,8 +25,12 @@ Only the project owner email `web2solucoes@gmail.com` and explicitly authorized 
 1. GitHub branch protection and rulesets on `main` and `dev` require the destination-appropriate
    checks and block force pushes/deletions. PR review is optional and no approval count is
    required.
-2. Repository collaborator settings must list only authorized individuals. Currently only `web2solutions` is a collaborator.
-3. Note: User-owned repositories cannot use GitHub's push restrictions API. For org-owned repos, add user/team push restrictions to the branch protection rules.
+2. The canonical repositories are owned by the `XpertMinds` organization and their access
+   lists must contain only identities authorized by the project owner in Linear.
+3. Organization-owned repositories must use user/team restrictions when the active GitHub plan
+   exposes that control. When the plan does not expose branch protection for private
+   repositories, repository workflows, required evidence, and owner-controlled merge authority
+   remain mandatory and the limitation must be reported truthfully.
 4. Commit signature verification or author email checks may be used as additional enforcement.
 5. Automated CI/CD workflows must not bypass authorization checks.
 
