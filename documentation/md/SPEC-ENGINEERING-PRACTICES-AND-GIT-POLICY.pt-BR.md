@@ -22,6 +22,11 @@ Essas regras fazem parte da governança orientada para o desenvolvimento de espe
 7. Branches criadas pelo Codex devem seguir `codex/<natureza>/<id-da-issue>-<slug-curto>`. Outros prefixos de ator aprovados podem substituir `codex`, mas natureza, ID da issue e slug continuam obrigatórios.
 8. Títulos de PR devem seguir `[JUM-XXXX][<Natureza>] <resultado conciso>`, com o identificador
    coincidindo com a branch e com a Issue do Linear vinculada.
+   - emitir referências PR(s)/commit(s)
+   - Questões de referências de relações públicas, contexto do item do projeto e evidências
+6. Cada tarefa deve usar sua própria branch e seu próprio PR; tarefas não relacionadas ou rastreadas separadamente não podem compartilhar esses limites.
+7. Branches criadas pelo Codex devem seguir `codex/<natureza>/<id-da-issue>-<slug-curto>`. Outros prefixos de ator aprovados podem substituir `codex`, mas natureza, ID da issue e slug continuam obrigatórios.
+8. Títulos de PR devem seguir `[<Natureza>] <resultado conciso>`.
 9. As naturezas permitidas são `feature`, `fix`, `security`, `governance`, `docs`, `refactor`, `test`, `ci`, `release` e `chore`; a natureza da branch e do PR deve coincidir.
 
 ## 2) Política de mensagens de compromisso

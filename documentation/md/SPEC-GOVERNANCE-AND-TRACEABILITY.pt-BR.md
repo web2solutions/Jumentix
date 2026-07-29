@@ -8,16 +8,17 @@ O desenvolvimento de especificações orientado no Jumentix é aplicado por meio
 
 ## Fonte Única da Verdade
 
-Fonte da verdade sobre governança:
+Fonte da verdade para gestão de projetos:
 
 - Issues e Projects do Linear
 - A chave da API do Linear fica em `../.linear`, um nível acima da raiz do projeto. Agentes podem
   lê-la para autenticação, mas nunca devem expô-la, registrá-la, compartilhá-la ou commitá-la.
+- Workspace Jumentix no Linear: Project = épico; Issue = tarefa executável
 
 Registros de governança obrigatórios:
 
 1. Issue do Linear (item de trabalho)
-2. Project do Linear (épico focado) com campos de planejamento
+2. Project do Linear com campos de planejamento e Project Updates
 3. RP com questão e evidências vinculadas
 4. Artefatos de especificações e documentação
 5. Registro canônico de agentes em `web2solutions/jumentix-agent-registry` com espelho local em `.agents/AGENT-REGISTRY.md`
@@ -36,7 +37,7 @@ Cada item de entrega deve expor:
 8. `PR -> IDs de requisitos` (quando NFR ou comportamento de governança são afetados)
 9. `Tarefa -> branch dedicada -> PR dedicado`
 10. `Project de épico no Linear -> Issue dedicada de documentação -> evidências de PR/commit/documentação`
-11. `Tarefa/Project -> metadados de planejamento atuais -> histórico de Project Updates`
+11. `Issue de tarefa no Linear -> Project Updates específicos da tarefa -> evidências de agente/entrega/gates`
 
 ## Gate de conclusão da documentação do épico
 
@@ -49,6 +50,21 @@ Cada item de entrega deve expor:
 5. Trabalho de documentação ausente, cancelado, sem responsável ou incompleto bloqueia a
    conclusão do épico.
 
+## Project Updates obrigatórios no Linear
+
+1. Todo agente executor publica o progresso da tarefa no feed `Project Updates` do Project pai
+   no Linear no início, após progresso material, em mudanças de bloqueio ou risco, quando o PR
+   fica pronto para revisão e na conclusão ou transferência final.
+2. Comentários e mudanças de status da Issue, notas locais e atividade do PR não substituem um
+   Project Update.
+3. Cada seção de tarefa registra ID/link da tarefa, agente, status, resultado concluído,
+   branch/PR/commit, estados exatos dos gates, bloqueios ou riscos e próxima ação.
+4. Gates obrigatórios pendentes, reprovados, expirados, cancelados, ignorados, ausentes ou não
+   reportados nunca são representados como aprovados.
+5. Tarefas e agentes paralelos usam seções claramente separadas.
+6. Um Project não pode ser concluído até que toda tarefa possua um Project Update final sem
+   bloqueio não resolvido ou gate obrigatório incompleto.
+
 ## Campos obrigatórios do projeto
 
 - `Estado`
@@ -60,28 +76,6 @@ Cada item de entrega deve expor:
 - `Parent issue`
 - `Milestone`
 - um rótulo de natureza principal
-- agente responsável ou líder do Project
-
-Os campos obrigatórios permanecem atuais durante toda a entrega. Quando o Linear não expõe um
-campo nativo obrigatório para uma entidade, seu fallback estruturado no Linear e o Project Update
-inicial são autoritativos até que um campo nativo ou personalizado esteja disponível.
-
-## Ciclo de vida de metadados de planejamento
-
-1. Agentes validam status, prioridade, datas, rótulos, milestone e responsável da tarefa e do
-   Project antes da aceitação ou delegação.
-2. Datas de início não podem ser posteriores às datas-alvo/fim; datas da tarefa cabem no Project
-   pai e milestone compartilhado, e datas do Project cabem no milestone.
-3. Status reflete o estágio real. Prioridade reflete impacto, urgência, risco, dependências e
-   sequenciamento atuais.
-4. Cada item possui exatamente um rótulo de natureza principal; rótulos suplementares não podem
-   contradizê-lo.
-5. Alterações materiais de metadados entram no próximo Project Update com valores anterior e novo,
-   motivo e impacto na entrega.
-6. Agentes revalidam metadados na criação da branch, prontidão para revisão, handoff, merge e
-   conclusão.
-7. Metadados ausentes, obsoletos, contraditórios, inválidos, provisórios ou não auditáveis
-   reprovam a governança de forma fechada e bloqueiam a progressão.
 
 ## Planejamento e delegação orientados por épico
 
@@ -137,6 +131,9 @@ Política de isolamento e nomenclatura:
 - Isolamento da tarefa, promoção primeiro para `dev`, resolução de conversas e todos os
   requisitos de CI, cobertura, segurança, governança e matriz completa apropriados ao destino
   permanecem obrigatórios e terminalmente verdes.
+- Os gates de commit, push e PR devem executar a matriz completa de testes declarada pelo repositório.
+- A evidência da matriz deve listar cada célula obrigatória e seu resultado terminal.
+- Uma matriz incompleta é evidência com falha; nunca pode ser interpretada como verde.
 
 Política de agrupamento prioritário:
 
@@ -153,18 +150,6 @@ A conformidade com as especificações é imposta pela política executável:
 - Verificações de fumaça de segurança/conformidade
 
 Se alguma porta falhar, a conformidade com as especificações será considerada não comprovada e a alteração não estará pronta para mesclagem.
-
-Contrato de execução por branch:
-
-1. Branches de tarefa executam `ci:gate:task` sobre o diff pertencente à tarefa.
-2. `dev` e pull requests destinados a `dev` executam `test:unit`.
-3. `main` e pull requests de promoção destinados a `main` executam `ci:gate:strict`.
-4. O CircleCI aceita somente `dev` e `main`.
-5. `.github/workflows/website.yml` é o responsável pelos checks do Storybook e é selecionado
-   somente por caminhos pertencentes ao website; o workflow global e a matriz completa não
-   executam Storybook.
-6. Todo gate selecionado emite evidência auditável e falha de forma fechada quando um comando
-   não retorna status, quebra ou termina com código diferente de zero.
 
 ## NFR e rastreabilidade de requisitos
 
@@ -214,6 +199,8 @@ Antes de qualquer execução de tarefa:
     token; demais 404 → deriva de pin/caminho; 401/403 isolado → acesso privado com token).
 13. O repositório canônico do Agent Registry é público para leitura. Somente a conta proprietária
     `web2solutions` (`web2solucoes@gmail.com`) pode fazer push ou publicar nele.
+10. Os agentes devem publicar os Project Updates específicos da tarefa exigidos pelo Requisito
+    `095`.
 
 ## Expectativas de evidências de auditoria
 
@@ -231,8 +218,5 @@ Conjunto mínimo de evidências:
 10. Manifesto e resultados da matriz completa para promoção a `main`
 11. Prova de propagação mostrando que teste obrigatório ausente ou com falha não pode produzir
     resultado verde
-12. Testes de transporte do Agent Registry cobrindo construção da URL raw imutável, codificação
-   segura do caminho, autenticação opcional da resolução de branch, falhas de transporte e
-   divergência do espelho
-13. Status, prioridade, datas, rótulos, responsável, alinhamento de milestone e histórico de
-    Project Updates atuais da tarefa/Project
+12. Project Updates específicos da tarefa até a transferência final, com estado exato da
+    entrega e dos gates

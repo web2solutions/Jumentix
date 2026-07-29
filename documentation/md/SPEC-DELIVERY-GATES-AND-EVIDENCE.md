@@ -77,6 +77,7 @@ Evidence:
 Pass criteria:
 
 1. Linear Issue, focused Project, milestone, Project Update, and GitHub PR are linked.
+1. Issue, project item, and PR are linked.
 2. Priority/size/estimation lifecycle fields are populated.
 3. Requirement/NFR references are included when applicable.
 4. Every Linear Project used as an epic has a dedicated documentation Issue.
@@ -88,6 +89,7 @@ Pass criteria:
 Evidence:
 
 1. Linear Issue/Project/milestone/Project Update links plus GitHub branch/commit/PR evidence.
+1. GitHub issue/project/PR cross-links.
 2. Updated `.agents` registry when governance or NFR changed.
 3. Linear Project link plus the completed documentation Issue, PR/commit links, changed-document
    inventory, bilingual parity evidence when applicable, and documentation integrity results.

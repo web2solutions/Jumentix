@@ -88,6 +88,7 @@ Evidência:
 Critérios de aprovação:
 
 1. A Issue, o Project, o milestone e o Project Update no Linear estão vinculados ao PR no GitHub.
+1. O problema, o item do projeto e o PR estão vinculados.
 2. Os campos de prioridade/tamanho/estimativa do ciclo de vida são preenchidos.
 3. Referências de requisitos/NFR são incluídas quando aplicável.
 4. Todo Project do Linear usado como épico possui uma Issue dedicada de documentação.
@@ -101,6 +102,7 @@ Evidência:
 
 1. Links da Issue/Project/milestone/Project Update no Linear e evidências de
    branch/commit/PR no GitHub.
+1. Links cruzados de problemas/projetos/RP do GitHub.
 2. Registro `.agents` atualizado quando a governança ou NFR mudou.
 3. Link do Project do Linear mais a Issue de documentação concluída, links de PR/commit,
    inventário dos documentos alterados, evidência de paridade bilíngue quando aplicável e

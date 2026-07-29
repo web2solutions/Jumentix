@@ -8,6 +8,7 @@ These rules are part of Spec Development Driven governance and apply to all comp
 
 1. All work must be traceable to a Linear Issue, its focused Linear Project, and milestone before
    implementation. GitHub records the delivery branch, commits, PR, and checks.
+1. All work must be traceable to GitHub Issue + GitHub Project item before implementation.
 2. Development must happen on tracked branches and produce auditable commits.
 3. `--no-verify` is prohibited for normal delivery flow.
 4. Push is blocked when local quality gates fail.
@@ -18,6 +19,11 @@ These rules are part of Spec Development Driven governance and apply to all comp
 7. Codex-created branches must follow `codex/<nature>/<issue-id>-<short-slug>`. Other approved actor prefixes may replace `codex`, but the nature, issue ID, and slug remain mandatory.
 8. PR titles must follow `[JUM-XXXX][<Nature>] <concise outcome>`, with the identifier matching
    the branch and linked Linear Issue.
+   - issue references PR(s)/commit(s)
+   - PR references issue(s), project item context, and evidence
+6. Every task must use its own branch and its own PR; unrelated or separately tracked tasks must not share either boundary.
+7. Codex-created branches must follow `codex/<nature>/<issue-id>-<short-slug>`. Other approved actor prefixes may replace `codex`, but the nature, issue ID, and slug remain mandatory.
+8. PR titles must follow `[<Nature>] <concise outcome>`.
 9. Allowed nature values are `feature`, `fix`, `security`, `governance`, `docs`, `refactor`, `test`, `ci`, `release`, and `chore`; branch and PR nature must agree.
 
 ## 2) Commit Message Policy
