@@ -16,6 +16,7 @@ import { MutexService } from '@src/infra/mutex/adapter/MutexService';
 import { UserDataRepository, UserService } from '@src/modules/Users';
 import { JwtService } from '@src/infra/jwt/JwtService';
 import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal';
+import { listenForSupertest } from '../../helpers/listenForSupertest';
 
 const webServer = RestifyServer.compile();
 const databaseClient = InMemoryDbClient;
@@ -64,12 +65,13 @@ describe('restify -> apiVersions end point', () => {
       mutexService
     });
     server = API.server.application;
+    await listenForSupertest(server);
   });
 
   afterAll(async () => {
     await databaseClient.disconnect();
     await keyValueStorageClient.disconnect();
-    // await keyValueStorageClient.disconnect();
+    await server.close();
   });
 
   it('/version response must contain the version 1.0.0', async () => {

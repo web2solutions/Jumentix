@@ -25,6 +25,7 @@ import { JwtService } from '@src/infra/jwt/JwtService';
 import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal';
 
 import createdUsers from '@seed/users';
+import { listenForSupertest } from '../../../helpers/listenForSupertest';
 
 const [createdUser1] = createdUsers;
 
@@ -76,6 +77,7 @@ describe('restify -> User updatePassword suite', () => {
     });
 
     server = API.server.application;
+    await listenForSupertest(server);
     await API.seedData();
     // await server.ready();
   });

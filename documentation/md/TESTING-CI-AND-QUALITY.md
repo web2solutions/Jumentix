@@ -133,6 +133,13 @@ canceling their assertions while leaving HTTP handles active. It does not add re
 tests, weaken assertions, or change the separate finite 600-second process deadline. Express, Fastify,
 Hyper-Express, and every other integration target retain their existing per-test defaults.
 
+Fastify and Restify integration files bind their HTTP server once to an ephemeral loopback
+port, reuse that listener for every Supertest request in the file, and close it explicitly in
+`afterAll`. This prevents Supertest from repeatedly opening and closing the same native server,
+which can otherwise cross responses or leave parser/listener handles behind under sustained
+matrix load. The listener lifecycle uses no fixed port, retry, skipped assertion, or forced
+process exit.
+
 Generated `dist` output is excluded from lint so a completed build cannot make the next
 matrix run fail for scanning generated declarations.
 

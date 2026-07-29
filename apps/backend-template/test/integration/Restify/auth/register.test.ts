@@ -19,6 +19,7 @@ import {
 } from '@src/modules/Users';
 
 import users from '@seed/users';
+import { listenForSupertest } from '../../../helpers/listenForSupertest';
 
 const [user1] = users;
 
@@ -71,6 +72,7 @@ describe('restify -> register suite', () => {
     });
 
     server = API.server.application;
+    await listenForSupertest(server);
 
     // await API.seedData();
   });
@@ -78,7 +80,7 @@ describe('restify -> register suite', () => {
   afterAll(async () => {
     await databaseClient.disconnect();
     await keyValueStorageClient.disconnect();
-    // await keyValueStorageClient.disconnect();
+    await server.close();
   });
 
   // eslint-disable-next-line jest/require-hook

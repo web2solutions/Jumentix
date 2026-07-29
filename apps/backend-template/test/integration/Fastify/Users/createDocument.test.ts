@@ -80,6 +80,7 @@ describe('fastify -> User createDocument suite', () => {
     server = API.server.application;
 
     await server.ready();
+    await server.listen({ port: 0, host: '127.0.0.1' });
 
     usersAll = await API.seedUsers();
     [user1] = usersAll;

@@ -84,6 +84,7 @@ describe('fastify -> Auth -> Basic suite', () => {
 
     await API.seedData();
     await server.ready();
+    await server.listen({ port: 0, host: '127.0.0.1' });
 
     authorizationHeaderUser1 = {
       ...(await authService.authenticate(
