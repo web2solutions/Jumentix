@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-07-29 ci: align branch-aware gate messages - web2solutions
 - 2026-07-29 [Release] Reconcile main into dev (#240) - Eduardo A.
 - 2026-07-29 test(governance): update requirements inventory duplicates - web2solutions
 - 2026-07-29 fix(governance): refresh requirements inventory markers - web2solutions
