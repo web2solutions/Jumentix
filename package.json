@@ -2,18 +2,25 @@
   "name": "jumentix",
   "version": "0.0.2",
   "description": "Build services from the ground up with AAA (Authentication, Authorization, Accounting) principles in mind. This is a boilerplate complete services network with a service management system, REST API, gRPC API, WebSocket API, and more.",
-  "packageManager": "pnpm@9.15.3",
+  "packageManager": "bun@1.3.14",
   "main": "apps/backend-template/src/interface/HTTP/adapters/fastify.ts",
   "bin": {
     "aaa-bootstrap": "./bin/aaa-bootstrap.js"
   },
   "engines": {
+    "bun": ">=1.3.14",
     "node": ">=22.0.0 <23.0.0"
   },
   "engineStrict": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "tooling/*"
+  ],
   "scripts": {
-    "check-node-version": "node ci-cd/check-node-version.js",
-    "preinstall": "node ci-cd/check-node-version.js",
+    "check-bun-version": "bun ci-cd/check-bun-version.js",
+    "compat:check-node-version": "node ci-cd/check-node-version.js",
+    "preinstall": "bun ci-cd/check-bun-version.js",
     "mono:build": "pnpm -r --workspace-concurrency=1 --if-present build",
     "mono:test": "pnpm -r --workspace-concurrency=1 --if-present test",
     "mono:lint": "pnpm -r --workspace-concurrency=1 --if-present lint",
@@ -315,15 +322,12 @@
   "resolutions": {
     "serverless": "^4.1.12"
   },
-  "pnpm": {
-    "overrides": {
-      "find-my-way": "^9.7.0",
-      "postcss": "^8.5.23"
-    },
-    "patchedDependencies": {
-      "nextra-theme-docs@4.6.1": "patches/nextra-theme-docs@4.6.1.patch"
-    }
+  "patchedDependencies": {
+    "nextra-theme-docs@4.6.1": "patches/nextra-theme-docs@4.6.1.patch"
   },
+  "trustedDependencies": [
+    "uWebSockets.js"
+  ],
   "config": {
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
@@ -347,8 +351,14 @@
     "ws": "^8.18.3",
     "tar": "^7.5.17",
     "find-my-way": "^9.7.0",
-    "postcss": "^8.5.18",
+    "postcss": "^8.5.23",
+    "fast-uri": "^3.1.4",
+    "svgo": "^4.0.2",
+    "fast-xml-parser": "^5.10.1",
     "shell-quote": "^1.9.0",
-    "protobufjs": "^7.6.5"
+    "brace-expansion": "^2.1.2",
+    "sharp": "^0.35.0",
+    "protobufjs": "^7.6.5",
+    "adm-zip": "^0.6.0"
   }
 }

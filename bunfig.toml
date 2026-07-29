@@ -1,0 +1,44 @@
+# Canonical Bun configuration for Jumentix internal engineering workflows.
+#
+# Requirement 096 — Bun is the sole runtime, package manager, script runner and
+# test platform for internal engineering workflows. Node survives only as an
+# explicit, declared, consumer-facing compatibility target (096 §4).
+#
+# The pinned version lives in `.bun-version` and is enforced by
+# `ci-cd/check-bun-version.js`. Keep the two in sync; the guard fails closed.
+
+[run]
+# Route script invocations through Bun instead of falling back to the system
+# Node binary. Without this, a `node ...` script string silently executes on
+# whatever Node happens to be on PATH, which is exactly the undeclared internal
+# Node dependency that Requirement 096 §4 forbids.
+bun = true
+
+[test]
+# `bun test` does not read jest.config.js. The environment bootstrap that jest
+# performs through `setupFiles` must be reproduced here, or every suite that
+# depends on AAA_* variables fails at import time (JUM-23 documented risk).
+preload = ["./ci-cd/loadEnvironment.js"]
+
+# Coverage thresholds.
+#
+# Bun enforces line / function / statement here, but has no branch metric.
+# Jest enforced four metrics including `branches: 90` (Reqs 020/063), so
+# enforcing only what Bun understands would silently drop a threshold — a
+# false green. Branch coverage is therefore enforced separately and
+# runner-independently from the lcov report by
+# `ci-cd/check-coverage-thresholds.js`, which is the authority for all four
+# metrics. The values below are a fail-fast inner guard, not the contract.
+coverageThreshold = { line = 0.99, function = 0.99, statement = 0.99 }
+coverageReporter = ["text", "lcov"]
+coverageDir = "coverage"
+
+[install]
+# Isolated linking mirrors the pnpm layout the repository was built against and
+# keeps phantom-dependency resolution failures visible instead of accidentally
+# working through hoisting.
+linker = "isolated"
+
+# Lifecycle scripts run only for packages listed in `trustedDependencies`
+# (package.json). Bun denies them by default; recorded here so the intent
+# survives a config review rather than looking like an omission.
