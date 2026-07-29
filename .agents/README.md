@@ -112,7 +112,7 @@ Use these files as living constraints for future maintenance and feature develop
 - [093-jumentix-documentation-experience](requirements/093-jumentix-documentation-experience.md)
 - [094-epic-documentation-completion-gate](requirements/094-epic-documentation-completion-gate.md)
 - [095-linear-project-task-progress-updates](requirements/095-linear-project-task-progress-updates.md)
-- [099-pre-task-branch-and-requirement-refresh](requirements/099-pre-task-branch-and-requirement-refresh.md)
+- [100-valid-pr-comment-resolution](requirements/100-valid-pr-comment-resolution.md)
 - [Agent Registry](AGENT-REGISTRY.md)
 - [NFR Registry](NFR-REGISTRY.md)
 - [Spec Development Driven Agent](spec-development-driven-agent.md)
