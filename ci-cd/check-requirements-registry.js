@@ -4,12 +4,16 @@ const path = require('path');
 
 const REQUIREMENTS_DIRECTORY = '.agents/requirements';
 const REQUIREMENTS_INDEX = '.agents/README.md';
+const NFR_REGISTRY_PATH = '.agents/NFR-REGISTRY.md';
 const LEDGER_PATH = 'documentation/md/SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md';
+const COVERAGE_DOCUMENTS = Object.freeze([
+  'documentation/md/SPEC-REQUIREMENTS-COVERAGE-STATUS.md',
+  'documentation/md/SPEC-REQUIREMENTS-COVERAGE-STATUS.pt-BR.md'
+]);
 const INVENTORY_DOCUMENTS = Object.freeze([
   LEDGER_PATH,
   'documentation/md/SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.pt-BR.md',
-  'documentation/md/SPEC-REQUIREMENTS-COVERAGE-STATUS.md',
-  'documentation/md/SPEC-REQUIREMENTS-COVERAGE-STATUS.pt-BR.md'
+  ...COVERAGE_DOCUMENTS
 ]);
 
 function read(rootDir, relativePath) {
@@ -48,6 +52,38 @@ function extractLedgerIds(contents) {
     /## Requirement Groups([\s\S]*?)## Governance Binding/
   )?.[1] || '';
   return [...new Set([...groups.matchAll(/`(\d{3})`/g)].map((match) => match[1]))].sort();
+}
+
+function extractBacktickedIds(contents) {
+  return [...new Set(
+    [...String(contents || '').matchAll(/`(\d{3})`/g)].map((match) => match[1])
+  )].sort();
+}
+
+function extractNfrRegistryIds(contents) {
+  const ids = [];
+  String(contents || '').split('\n').forEach((line) => {
+    const entryPrefix = line.match(/^- ((?:`\d{3}`\/?)+)(?:\s|$)/)?.[1] || '';
+    ids.push(...extractBacktickedIds(entryPrefix));
+  });
+  return [...new Set(ids)].sort();
+}
+
+function extractCoverageClassification(contents) {
+  const source = String(contents || '');
+  const nfrBlock = source.match(
+    /## (?:Non-Functional Requirements Coverage|Cobertura de requisitos não funcionais)([\s\S]*?)## (?:Functional Requirements Coverage|Cobertura de Requisitos Funcionais)/i
+  )?.[1] || '';
+  const functionalBlock = source.match(
+    /## (?:Functional Requirements Coverage|Cobertura de Requisitos Funcionais)([\s\S]*?)## (?:Binding Rule|Regra de vinculação)/i
+  )?.[1] || '';
+
+  return {
+    nfrIds: extractBacktickedIds(nfrBlock),
+    functionalIds: extractBacktickedIds(functionalBlock),
+    declaredNfrCount: Number(nfrBlock.match(/\(`(\d+)`\)/)?.[1] || -1),
+    declaredFunctionalCount: Number(functionalBlock.match(/\(`(\d+)`\)/)?.[1] || -1)
+  };
 }
 
 function inventoryMarker(inventory, mappedCount) {
@@ -92,6 +128,69 @@ function validateRequirementsRegistry(rootDir = process.cwd()) {
     failures.push(`[requirements] ledger contains stale IDs: ${staleLedgerIds.join(', ')}`);
   }
 
+  const nfrRegistryIds = extractNfrRegistryIds(read(rootDir, NFR_REGISTRY_PATH));
+  let canonicalClassification;
+  COVERAGE_DOCUMENTS.forEach((documentPath) => {
+    const classification = extractCoverageClassification(read(rootDir, documentPath));
+    const classifiedIds = [...new Set([
+      ...classification.nfrIds,
+      ...classification.functionalIds
+    ])].sort();
+    const overlappingIds = classification.nfrIds.filter(
+      (id) => classification.functionalIds.includes(id)
+    );
+    const missingClassifications = inventory.ids.filter((id) => !classifiedIds.includes(id));
+    const staleClassifications = classifiedIds.filter((id) => !inventory.ids.includes(id));
+
+    if (classification.declaredNfrCount !== classification.nfrIds.length) {
+      failures.push(
+        `[requirements] NFR count mismatch in ${documentPath}: declared `
+        + `${String(classification.declaredNfrCount)}, found ${String(classification.nfrIds.length)}`
+      );
+    }
+    if (classification.declaredFunctionalCount !== classification.functionalIds.length) {
+      failures.push(
+        `[requirements] functional count mismatch in ${documentPath}: declared `
+        + `${String(classification.declaredFunctionalCount)}, `
+        + `found ${String(classification.functionalIds.length)}`
+      );
+    }
+    if (missingClassifications.length > 0) {
+      failures.push(
+        `[requirements] coverage classification missing IDs in ${documentPath}: `
+        + missingClassifications.join(', ')
+      );
+    }
+    if (staleClassifications.length > 0) {
+      failures.push(
+        `[requirements] coverage classification contains stale IDs in ${documentPath}: `
+        + staleClassifications.join(', ')
+      );
+    }
+    if (overlappingIds.length > 0) {
+      failures.push(
+        `[requirements] coverage classification overlaps in ${documentPath}: `
+        + overlappingIds.join(', ')
+      );
+    }
+
+    if (!canonicalClassification) {
+      canonicalClassification = classification;
+    } else if (
+      canonicalClassification.nfrIds.join(',') !== classification.nfrIds.join(',')
+      || canonicalClassification.functionalIds.join(',')
+        !== classification.functionalIds.join(',')
+    ) {
+      failures.push(`[requirements] bilingual coverage classification drift: ${documentPath}`);
+    }
+  });
+
+  const missingNfrMappings = (canonicalClassification?.nfrIds || [])
+    .filter((id) => !nfrRegistryIds.includes(id));
+  if (missingNfrMappings.length > 0) {
+    failures.push(`[requirements] NFR registry missing IDs: ${missingNfrMappings.join(', ')}`);
+  }
+
   const expectedMarker = inventoryMarker(inventory, ledgerIds.length);
   INVENTORY_DOCUMENTS.forEach((documentPath) => {
     const contents = read(rootDir, documentPath);
@@ -123,13 +222,17 @@ if (require.main === module) {
 }
 
 module.exports = {
+  COVERAGE_DOCUMENTS,
   INVENTORY_DOCUMENTS,
   LEDGER_PATH,
+  NFR_REGISTRY_PATH,
   REQUIREMENTS_DIRECTORY,
   REQUIREMENTS_INDEX,
   collectRequirementInventory,
+  extractCoverageClassification,
   extractIndexedFiles,
   extractLedgerIds,
+  extractNfrRegistryIds,
   inventoryMarker,
   run,
   validateRequirementsRegistry

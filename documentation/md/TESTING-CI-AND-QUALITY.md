@@ -113,10 +113,15 @@ coverage-producing stage. Empty, duplicate, malformed, missing-script, crashed, 
 non-zero cells fail closed. Scope-aware execution, including docs-only changes, cannot
 omit a cell at a delivery boundary.
 
-Each integration target runs with `CI=true` and a 120-second process timeout. A timeout
-is reported as exit `124`, fails the integration cell, and does not prevent the remaining
-targets from being reported. Generated `dist` output is excluded from lint so a completed
-build cannot make the next matrix run fail for scanning generated declarations.
+Each integration target runs with `CI=true`. The default process timeout is 120 seconds.
+The complete Express and Restify targets have explicit 300-second overrides because their
+full HTTP suites have reached the process deadline under release-matrix load. This
+target-specific headroom prevents `SIGTERM` from truncating an active HTTP response without
+weakening the timeout for smaller targets; an explicitly supplied runner timeout remains
+authoritative. Any timeout is reported as exit `124`, fails the integration cell, and does
+not prevent the remaining targets from being reported.
+Generated `dist` output is excluded from lint so a completed build cannot make the next
+matrix run fail for scanning generated declarations.
 
 Branch-aware enforcement:
 

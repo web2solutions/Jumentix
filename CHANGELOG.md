@@ -4,6 +4,11 @@
 
 ## All Changes
 
+- 2026-07-29 fix(ci): stabilize Express integration timeout (#245) - Eduardo A.
+- 2026-07-29 chore(governance): sync agent registry mirror for JUM-533 (#246) - Eduardo A.
+- 2026-07-29 chore(jum-535): reconcile governance consistency - Eduardo A.
+- 2026-07-29 [JUM-529][Release] Reconcile main ancestry into dev (#243) - Eduardo A.
+- 2026-07-29 chore(release): reconcile main into dev for promotion - web2solutions
 - 2026-07-29 ci: align branch-aware gate messages - web2solutions
 - 2026-07-29 [Release] Reconcile main into dev (#240) - Eduardo A.
 - 2026-07-29 test(governance): update requirements inventory duplicates - web2solutions
@@ -22,6 +27,8 @@
 - 2026-07-28 [Chore] Sync public agent-registry pin and authenticated fetch (#226) - Eduardo A.
 - 2026-07-28 [Chore] Sync dev with main and resolve merge conflicts (#229) - Eduardo A.
 - 2026-07-28 chore: clean conflict markers, update PR templates, add AGENTS.md rules 16-23 (#225) - Eduardo A.
+- 2026-07-28 chore: clean conflict markers, update PR templates, add AGENTS.md rules 16-23 (#225) - Eduardo A.
+- 2026-07-28 [Release] Promote dev to main - Eduardo A.
 - 2026-07-28 merge: resolve conflicts with main accepting dev version - Eduardo A.
 - 2026-07-28 docs(governance): require Linear project task updates - Eduardo A.
 - 2026-07-28 docs(governance): enforce task-owned branches and PRs - Eduardo A.

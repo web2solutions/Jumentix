@@ -143,10 +143,10 @@ Se os IDs de requisitos afetados não forem mapeados antes da implementação, a
 
 ## Atestado de cobertura (linha de base atual)
 
-A partir de `2026-07-28`, este livro-razão cobre todos os IDs de requisitos exclusivos atualmente registrados em `.agents/requirements`:
+A partir de `2026-07-29`, este livro-razão cobre todos os IDs de requisitos exclusivos atualmente registrados em `.agents/requirements`:
 
-1. Arquivos de requisitos no registro: `102`
-2. IDs exclusivos no registro de requisitos: `98`
-3. IDs exclusivos mapeados neste livro-razão: `98`
-4. IDs duplicados com arquivos vinculantes independentes: `055`, `060`, `079`, `095`
+1. Arquivos de requisitos no registro: `105`
+2. IDs exclusivos no registro de requisitos: `102`
+3. IDs exclusivos mapeados neste livro-razão: `102`
+4. IDs duplicados com arquivos vinculantes independentes: `055`, `060`, `079`
 5. IDs ausentes: `nenhum`
