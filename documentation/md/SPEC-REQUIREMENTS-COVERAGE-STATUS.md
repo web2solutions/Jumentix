@@ -1,6 +1,6 @@
 # Spec Requirements Coverage Status
 
-<!-- requirements-inventory: files=105 unique=101 mapped=101 duplicates=055,060,079,095 -->
+<!-- requirements-inventory: files=105 unique=102 mapped=102 duplicates=055,060,079 -->
 
 This document certifies current coverage of implemented requirements by Spec Development Driven resources.
 

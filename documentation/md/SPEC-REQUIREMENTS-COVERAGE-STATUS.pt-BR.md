@@ -4,7 +4,7 @@ Idioma alvo: Português (Brasil)
 -->
 # Status de cobertura dos requisitos de especificação
 
-<!-- requirements-inventory: files=105 unique=101 mapped=101 duplicates=055,060,079,095 -->
+<!-- requirements-inventory: files=105 unique=102 mapped=102 duplicates=055,060,079 -->
 
 Este documento certifica a cobertura atual dos requisitos implementados pelos recursos orientados ao desenvolvimento de especificações.
 

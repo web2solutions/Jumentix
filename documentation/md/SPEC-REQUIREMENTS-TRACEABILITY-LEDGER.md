@@ -1,6 +1,6 @@
 # Spec Requirements Traceability Ledger
 
-<!-- requirements-inventory: files=105 unique=101 mapped=101 duplicates=055,060,079,095 -->
+<!-- requirements-inventory: files=105 unique=102 mapped=102 duplicates=055,060,079 -->
 
 This ledger maps requirement IDs to spec resources and validation evidence expectations.
 
@@ -93,7 +93,7 @@ For any change, identify impacted requirement IDs and ensure:
 
 ## G. Documentation, Governance Process, and Multi-Agent Operations
 
-- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `056`, `057`, `064`, `066`, `067`, `068`, `071`, `072`, `073`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `094`, `095`, `097`, `098`, `099`, `100`, `101`
+- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `056`, `057`, `064`, `066`, `067`, `068`, `071`, `072`, `073`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `094`, `095`, `097`, `098`, `099`, `100`, `101`, `102`
 - Spec resources:
   - `documentation/README.md`
   - `documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`

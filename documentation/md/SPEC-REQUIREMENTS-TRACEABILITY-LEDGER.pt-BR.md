@@ -4,7 +4,7 @@ Idioma alvo: Português (Brasil)
 -->
 # Especificações de rastreabilidade de requisitos
 
-<!-- requirements-inventory: files=105 unique=101 mapped=101 duplicates=055,060,079,095 -->
+<!-- requirements-inventory: files=105 unique=102 mapped=102 duplicates=055,060,079 -->
 
 Este livro-razão mapeia IDs de requisitos para especificações de recursos e expectativas de evidências de validação.
 
