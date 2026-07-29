@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-07-29 test(governance): update requirements inventory duplicates - web2solutions
 - 2026-07-29 fix(governance): refresh requirements inventory markers - web2solutions
 - 2026-07-29 fix(governance): separate Project Update requirement - web2solutions
 - 2026-07-28 [JUM-523][Governance] Reconcile Linear authority and mandatory checks (#237) - Eduardo A.
