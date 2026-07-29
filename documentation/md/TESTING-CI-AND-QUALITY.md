@@ -114,12 +114,23 @@ non-zero cells fail closed. Scope-aware execution, including docs-only changes, 
 omit a cell at a delivery boundary.
 
 Each integration target runs with `CI=true`. The default process timeout is 120 seconds.
-The complete Express and Restify targets have explicit 300-second overrides because their
-full HTTP suites have reached the process deadline under release-matrix load. This
-target-specific headroom prevents `SIGTERM` from truncating an active HTTP response without
-weakening the timeout for smaller targets; an explicitly supplied runner timeout remains
-authoritative. Any timeout is reported as exit `124`, fails the integration cell, and does
-not prevent the remaining targets from being reported.
+The complete Express, Fastify, Restify, and Hyper-Express targets have explicit 300-second
+overrides because their full HTTP suites have reached or approached the process deadline
+under release-matrix load. In one strict run, Hyper-Express passed 21 suites and 170 tests in
+117.215 seconds but timed out during cleanup at the 120-second boundary; Fastify also crossed
+that boundary after its assertions. This target-specific headroom prevents `SIGTERM` from
+truncating an active HTTP response or cleanup without weakening the timeout for smaller
+targets; an explicitly supplied runner timeout remains authoritative. Any timeout is reported
+as exit `124`, fails the integration cell, and does not prevent the remaining targets from
+being reported.
+
+Restify additionally runs with a 15-second Jest per-test timeout. Under sustained strict-matrix
+load, authenticated Restify requests have measured 5.4–5.8 seconds, beyond Jest's generic
+5-second default. The target-specific budget lets those real requests settle instead of
+canceling their assertions while leaving HTTP handles active. It does not add retries, skip
+tests, weaken assertions, or change the 300-second process deadline. Express, Fastify,
+Hyper-Express, and every other integration target retain their existing per-test defaults.
+
 Generated `dist` output is excluded from lint so a completed build cannot make the next
 matrix run fail for scanning generated declarations.
 
