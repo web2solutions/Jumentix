@@ -121,6 +121,7 @@ Use these files as living constraints for future maintenance and feature develop
 - [101-active-task-switching-while-checks-run](requirements/101-active-task-switching-while-checks-run.md)
 - [102-linear-project-task-progress-updates](requirements/102-linear-project-task-progress-updates.md)
 - [103-canonical-repository-migration-and-legacy-freeze](requirements/103-canonical-repository-migration-and-legacy-freeze.md)
+- [104-canonical-integration-parity-and-provider-rebinding](requirements/104-canonical-integration-parity-and-provider-rebinding.md)
 - [Agent Registry](AGENT-REGISTRY.md)
 - [NFR Registry](NFR-REGISTRY.md)
 - [Spec Development Driven Agent](spec-development-driven-agent.md)
