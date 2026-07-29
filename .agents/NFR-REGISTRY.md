@@ -77,6 +77,12 @@ This file consolidates non-functional requirements already requested and stored 
 ## Rule of Use
 
 - `099` Every task begins only after current `main`, `dev`, and the full requirement inventory are refreshed and read.
+- `100` Every valid pull-request comment blocks merge until it is corrected with applicable gate
+  evidence; an invalid comment requires a factual explanation in the PR.
+- `101` Agents waiting only on remote checks must progress another active, non-conflicting task
+  in its own worktree and recheck the waiting task at material boundaries.
+- `102` Every executing task must publish truthful, task-specific Linear Project Updates at
+  start, material progress, blocker/risk changes, review readiness, and final handoff.
 
 When a new NFR is requested:
 

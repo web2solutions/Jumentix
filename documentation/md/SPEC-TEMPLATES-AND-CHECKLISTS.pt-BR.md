@@ -131,3 +131,43 @@ Após o merge:
 2. O Project Update final vincula o commit de merge e não contém bloqueio não resolvido nem gate
    obrigatório incompleto.
 
+## Modelo D - Project Update do Linear (por tarefa)
+
+Publique no feed `Project Updates` do Project focado do Linear (Requisito `102`). Comentários na
+Issue e mudanças de status sozinhos não bastam. Use uma seção claramente separada por tarefa
+quando a atualização cobrir várias tarefas ou agentes.
+
+```md
+### Task: JUM-XXXX — <título curto>
+- Task: https://linear.app/jumentix/issue/JUM-XXXX/...
+- Agent: <agent_id ou nome humano>
+- Status: <Backlog | Todo | In Progress | In Review | Done | Blocked>
+- Completed: <resultados concretos desde a atualização anterior>
+- Delivery: worktree `<caminho ou n/a>` · branch `<nome ou ainda não criado>` · commit `<sha ou n/a>` · PR `<url ou ainda não criado>`
+- Gates: <cada gate obrigatório com estado terminal ou pendente exato; nunca chame de verde checks pendentes/falhos/ausentes>
+- Blockers/Risks: <bloqueios/riscos atuais, ou none>
+- Next: <próxima ação concreta>
+```
+
+### Envelope de atualização multi-tarefa
+
+```md
+## <rótulo do épico ou onda> — <data ou marco>
+
+**Agent(s):** <lista>
+
+### Task: JUM-AAAA — ...
+- ...
+
+### Task: JUM-BBBB — ...
+- ...
+```
+
+### Cadência (obrigatória)
+
+1. Tarefa aceita / trabalho iniciado
+2. Progresso material que muda a confiança de entrega
+3. Mudança de bloqueio ou risco material
+4. PR pronto para revisão
+5. Transferência final / Done (vincular commit de merge; sem bloqueio não resolvido nem gate obrigatório incompleto)
+

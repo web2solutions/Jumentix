@@ -54,9 +54,13 @@ Jumentix must define an explicit playbook that teaches agents:
 
 1. Open a PR linked to the Linear Issue and focused Project.
 2. Include requirement IDs and evidence of quality gates.
-3. Set agent status transitions as needed (`available`/`busy`/`offline`) in registry updates.
-4. Preserve traceability: branch -> commits -> PR -> Linear Issue -> Linear Project.
-5. Clear or update the agent's epic/task assignment when delegation ends.
+3. Publish Linear `Project Updates` for the task using the canonical Template D in
+   `documentation/md/SPEC-TEMPLATES-AND-CHECKLISTS.md` (and PT-BR twin) under Requirement `102`:
+   start, material progress, blocker changes, review-ready, and final handoff. Never describe
+   pending, failed, missing, cancelled, timed-out, or skipped required checks as passing.
+4. Set agent status transitions as needed (`available`/`busy`/`offline`) in registry updates.
+5. Preserve traceability: branch -> commits -> PR -> Linear Issue -> Linear Project -> Project Update.
+6. Clear or update the agent's epic/task assignment when delegation ends.
 
 ## Acceptance Criteria
 

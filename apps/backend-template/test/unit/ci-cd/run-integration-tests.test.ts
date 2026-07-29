@@ -2,6 +2,7 @@
 const {
   DEFAULT_INTEGRATION_TIMEOUT_MS,
   INTEGRATION_SCRIPTS,
+  INTEGRATION_TIMEOUT_OVERRIDES_MS,
   executeIntegrationScript,
   runIntegrationTests,
   validateIntegrationManifest
@@ -78,6 +79,45 @@ describe('run-integration-tests', () => {
       killSignal: 'SIGTERM'
     });
     expect(DEFAULT_INTEGRATION_TIMEOUT_MS).toBe(120_000);
+    expect(INTEGRATION_TIMEOUT_OVERRIDES_MS).toStrictEqual({
+      'test:integration:express': 300_000,
+      'test:integration:restify': 300_000
+    });
+  });
+
+  it('gives the complete Express suite deterministic headroom without weakening the default', () => {
+    expect.hasAssertions();
+    const spawn = jest.fn().mockReturnValue({ status: 0 });
+
+    expect(executeIntegrationScript('test:integration:express', { spawn })).toBe(0);
+    expect(spawn).toHaveBeenCalledWith('pnpm', ['run', 'test:integration:express'], {
+      stdio: 'inherit',
+      env: expect.objectContaining({ CI: 'true' }),
+      timeout: 300_000,
+      killSignal: 'SIGTERM'
+    });
+
+    spawn.mockClear();
+    expect(executeIntegrationScript('test:integration:fastify', { spawn })).toBe(0);
+    expect(spawn).toHaveBeenCalledWith('pnpm', ['run', 'test:integration:fastify'], {
+      stdio: 'inherit',
+      env: expect.objectContaining({ CI: 'true' }),
+      timeout: DEFAULT_INTEGRATION_TIMEOUT_MS,
+      killSignal: 'SIGTERM'
+    });
+  });
+
+  it('gives the complete Restify suite the same deterministic headroom', () => {
+    expect.hasAssertions();
+    const spawn = jest.fn().mockReturnValue({ status: 0 });
+
+    expect(executeIntegrationScript('test:integration:restify', { spawn })).toBe(0);
+    expect(spawn).toHaveBeenCalledWith('pnpm', ['run', 'test:integration:restify'], {
+      stdio: 'inherit',
+      env: expect.objectContaining({ CI: 'true' }),
+      timeout: 300_000,
+      killSignal: 'SIGTERM'
+    });
   });
 
   it('fails closed when the required target manifest is empty or duplicated', () => {
