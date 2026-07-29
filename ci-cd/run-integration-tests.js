@@ -6,7 +6,6 @@ const INTEGRATION_TIMEOUT_OVERRIDES_MS = Object.freeze({
   'test:integration:express': 300_000,
   'test:integration:fastify': 300_000,
   'test:integration:restify': 600_000,
-  'test:integration:hyper-express': 300_000
 });
 
 const INTEGRATION_SCRIPTS = Object.freeze([
@@ -14,7 +13,6 @@ const INTEGRATION_SCRIPTS = Object.freeze([
   'test:integration:fastify',
   'test:integration:restify',
   'test:integration:lambda',
-  'test:integration:hyper-express',
   'test:integration:cloudflare-workers',
   'test:integration:vercel-functions',
   'test:integration:loopback',
@@ -32,7 +30,7 @@ function executeIntegrationScript(scriptName, options = {}) {
   const timeoutMs = options.timeoutMs
     ?? INTEGRATION_TIMEOUT_OVERRIDES_MS[scriptName]
     ?? DEFAULT_INTEGRATION_TIMEOUT_MS;
-  const result = spawn('pnpm', ['run', scriptName], {
+  const result = spawn('bun', ['run', scriptName], {
     stdio: 'inherit',
     env: { ...process.env, CI: 'true' },
     timeout: timeoutMs,

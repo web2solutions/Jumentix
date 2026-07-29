@@ -60,7 +60,7 @@ function validateMatrixManifest(cells, availableScripts) {
 }
 
 function executeMatrixCell(cell) {
-  const result = spawnSync('pnpm', ['run', cell.script], {
+  const result = spawnSync('bun', ['run', cell.script], {
     stdio: 'inherit',
     env: { ...process.env }
   });

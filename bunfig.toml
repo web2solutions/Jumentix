@@ -8,11 +8,27 @@
 # `ci-cd/check-bun-version.js`. Keep the two in sync; the guard fails closed.
 
 [run]
-# Route script invocations through Bun instead of falling back to the system
-# Node binary. Without this, a `node ...` script string silently executes on
-# whatever Node happens to be on PATH, which is exactly the undeclared internal
-# Node dependency that Requirement 096 §4 forbids.
-bun = true
+# DELIBERATELY false, and this is the most important line in the file.
+#
+# `bun = true` reroutes *every* Node-shebang binary in node_modules onto Bun,
+# including third-party ones. Jest is not Bun-compatible: jest-runtime assigns
+# to a property Bun treats as readonly, and the failure is total rather than
+# partial.
+#
+# Measured on this tree:
+#   bun = true   ->  97 suites failed, 0 tests ran
+#   bun = false  ->  97 suites passed, 546 tests passed
+#
+# The failure mode is what makes this dangerous rather than merely wrong: every
+# suite dies at load with `TypeError: Attempted to assign to readonly property`,
+# which reads like a repository bug and not like a runtime setting.
+#
+# This flag can be flipped to true once the unit suites move from Jest to
+# `bun:test` — delivered by the Hexagonal Test Pyramid project (JUM-434–436),
+# not by this epic. Until then Jest runs on Node as a *declared* boundary under
+# Requirement 096 §4, recorded in the Bun engineering guide, rather than as an
+# accident of PATH.
+bun = false
 
 [test]
 # `bun test` does not read jest.config.js. The environment bootstrap that jest

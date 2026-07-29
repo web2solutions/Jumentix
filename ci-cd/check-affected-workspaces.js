@@ -3,7 +3,7 @@ const { execSync } = require('child_process');
 
 const ROOT_MARKERS = [
   'package.json',
-  'pnpm-workspace.yaml',
+  'bun.lock',
   '.circleci/config.yml',
   '.github/workflows',
   'ci-cd',

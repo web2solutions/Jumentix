@@ -4,7 +4,7 @@ const path = require('path');
 const YAML = require('yaml');
 
 const HTTP_METHODS = new Set(['get', 'post', 'put', 'delete', 'patch', 'options', 'head', 'trace']);
-const FRAMEWORKS = ['express', 'fastify', 'restify', 'hyper-express'];
+const FRAMEWORKS = ['express', 'fastify', 'restify'];
 
 function fileExists(targetPath) {
   return fs.existsSync(targetPath);

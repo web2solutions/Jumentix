@@ -1,7 +1,6 @@
 const nodeMajor = Number(process.versions.node.split('.')[0]);
 const unsupportedRuntimeIgnorePatterns = nodeMajor > 22
   ? [
-    '<rootDir>/apps/backend-template/test/integration/Hyper-Express/',
     '<rootDir>/apps/backend-template/test/integration/Restify/',
     '<rootDir>/apps/backend-template/test/integration/mutex/redis.restify.test.ts'
   ]
