@@ -4,9 +4,15 @@
 
 ## All Changes
 
+- 2026-07-29 [JUM-549][CI] Stabilize sustained-load integration budgets (#251) - Eduardo A.
+- 2026-07-29 docs(governance): add canonical Project Update template for JUM-502 (#249) - Eduardo A.
+- 2026-07-29 [JUM-531][Release] Reconcile main ancestry into dev for promotion (#248) - Eduardo A.
+- 2026-07-29 chore(release): reconcile main into dev for JUM-531 promotion - web2solutions
+- 2026-07-29 fix(ci): cover Restify integration headroom (#247) - Eduardo A.
 - 2026-07-29 fix(ci): stabilize Express integration timeout (#245) - Eduardo A.
 - 2026-07-29 chore(governance): sync agent registry mirror for JUM-533 (#246) - Eduardo A.
 - 2026-07-29 chore(jum-535): reconcile governance consistency - Eduardo A.
+- 2026-07-29 [JUM-529][Release] Promote dev to main (#238) - Eduardo A.
 - 2026-07-29 [JUM-529][Release] Reconcile main ancestry into dev (#243) - Eduardo A.
 - 2026-07-29 chore(release): reconcile main into dev for promotion - web2solutions
 - 2026-07-29 ci: align branch-aware gate messages - web2solutions

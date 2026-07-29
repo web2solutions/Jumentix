@@ -38,6 +38,13 @@ describe('run-integration-tests', () => {
     expect(rootPackage.scripts['test:integration']).toBe('node ci-cd/run-integration-tests.js');
   });
 
+  it('gives only Restify deterministic per-test headroom under sustained matrix load', () => {
+    expect.hasAssertions();
+    expect(rootPackage.scripts['test:integration:restify']).toContain('--testTimeout=15000');
+    expect(rootPackage.scripts['test:integration:express']).not.toContain('--testTimeout');
+    expect(rootPackage.scripts['test:integration:fastify']).not.toContain('--testTimeout');
+  });
+
   it('runs every target and aggregates failures instead of stopping early', () => {
     expect.hasAssertions();
     const scripts = ['first', 'failing', 'last'];
@@ -81,41 +88,39 @@ describe('run-integration-tests', () => {
     expect(DEFAULT_INTEGRATION_TIMEOUT_MS).toBe(120_000);
     expect(INTEGRATION_TIMEOUT_OVERRIDES_MS).toStrictEqual({
       'test:integration:express': 300_000,
-      'test:integration:restify': 300_000
+      'test:integration:fastify': 300_000,
+      'test:integration:restify': 300_000,
+      'test:integration:hyper-express': 300_000
     });
   });
 
-  it('gives the complete Express suite deterministic headroom without weakening the default', () => {
+  it.each([
+    'test:integration:express',
+    'test:integration:fastify',
+    'test:integration:restify',
+    'test:integration:hyper-express'
+  ])('gives the complete %s HTTP suite deterministic process headroom', (scriptName) => {
     expect.hasAssertions();
     const spawn = jest.fn().mockReturnValue({ status: 0 });
 
-    expect(executeIntegrationScript('test:integration:express', { spawn })).toBe(0);
-    expect(spawn).toHaveBeenCalledWith('pnpm', ['run', 'test:integration:express'], {
+    expect(executeIntegrationScript(scriptName, { spawn })).toBe(0);
+    expect(spawn).toHaveBeenCalledWith('pnpm', ['run', scriptName], {
       stdio: 'inherit',
       env: expect.objectContaining({ CI: 'true' }),
       timeout: 300_000,
       killSignal: 'SIGTERM'
     });
+  });
 
-    spawn.mockClear();
-    expect(executeIntegrationScript('test:integration:fastify', { spawn })).toBe(0);
-    expect(spawn).toHaveBeenCalledWith('pnpm', ['run', 'test:integration:fastify'], {
+  it('keeps the fail-closed default for smaller integration targets', () => {
+    expect.hasAssertions();
+    const spawn = jest.fn().mockReturnValue({ status: 0 });
+
+    expect(executeIntegrationScript('test:integration:lambda', { spawn })).toBe(0);
+    expect(spawn).toHaveBeenCalledWith('pnpm', ['run', 'test:integration:lambda'], {
       stdio: 'inherit',
       env: expect.objectContaining({ CI: 'true' }),
       timeout: DEFAULT_INTEGRATION_TIMEOUT_MS,
-      killSignal: 'SIGTERM'
-    });
-  });
-
-  it('gives the complete Restify suite the same deterministic headroom', () => {
-    expect.hasAssertions();
-    const spawn = jest.fn().mockReturnValue({ status: 0 });
-
-    expect(executeIntegrationScript('test:integration:restify', { spawn })).toBe(0);
-    expect(spawn).toHaveBeenCalledWith('pnpm', ['run', 'test:integration:restify'], {
-      stdio: 'inherit',
-      env: expect.objectContaining({ CI: 'true' }),
-      timeout: 300_000,
       killSignal: 'SIGTERM'
     });
   });
