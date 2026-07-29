@@ -21,6 +21,7 @@ import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal'
 import createdUsers from '@seed/users';
 import { EAuthSchemaType } from '@src/modules/Users/service/ports/EAuthSchemaType';
 import { IAuthorizationHeader } from '@src/modules/Users/service/ports/IAuthorizationHeader';
+import { listenForSupertest } from '../../../helpers/listenForSupertest';
 
 const [createdUser1, createdUser2, createdUser3, createdUser4] = createdUsers;
 
@@ -75,6 +76,7 @@ describe('restify -> update User suite', () => {
     });
 
     server = API.server.application;
+    await listenForSupertest(server);
     await API.seedUsers();
     // await server.ready();
 

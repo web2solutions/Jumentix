@@ -24,6 +24,7 @@ import {
   IUser, RequestCreateEmail, UserDataRepository, UserService
 } from '@src/modules/Users';
 import { EmailValueObject } from '@src/modules/ddd/valueObjects';
+import { listenForSupertest } from '../../../helpers/listenForSupertest';
 
 const webServer = RestifyServer.compile();
 const databaseClient = InMemoryDbClient;
@@ -76,6 +77,7 @@ describe('restify -> User createEmail suite', () => {
     });
 
     server = API.server.application;
+    await listenForSupertest(server);
 
     // await server.ready();
     usersAll = await API.seedUsers();

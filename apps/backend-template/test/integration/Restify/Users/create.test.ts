@@ -26,6 +26,7 @@ import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal'
 import { JwtService } from '@src/infra/jwt/JwtService';
 import { IAuthorizationHeader } from '@src/modules/Users/service/ports/IAuthorizationHeader';
 import { EAuthSchemaType } from '@src/modules/Users/service/ports/EAuthSchemaType';
+import { listenForSupertest } from '../../../helpers/listenForSupertest';
 
 const [createdUser1, createdUser2, createdUser3, createdUser4] = createdUsers;
 
@@ -82,6 +83,7 @@ describe('restify -> Auth -> Basic suite', () => {
     });
 
     server = API.server.application;
+    await listenForSupertest(server);
 
     await API.seedData();
     // await server.ready();

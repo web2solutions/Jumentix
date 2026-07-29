@@ -65,12 +65,13 @@ describe('fastify -> apiVersions end point', () => {
     server = API.server.application;
 
     await server.ready();
+    await server.listen({ port: 0, host: '127.0.0.1' });
   });
 
   afterAll(async () => {
     await databaseClient.disconnect();
     await keyValueStorageClient.disconnect();
-    // await keyValueStorageClient.disconnect();
+    await server.close();
   });
 
   it('/version response must contain the version 1.0.0', async () => {
