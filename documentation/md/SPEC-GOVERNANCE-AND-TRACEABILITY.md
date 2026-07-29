@@ -16,7 +16,7 @@ Mandatory governance records:
 2. Linear Project (focused epic) with planning fields
 3. PR with linked issue and evidence
 4. Spec and documentation artifacts
-5. Agent Registry canonical record in `web2solutions/jumentix-agent-registry` with mirrored copy in `.agents/AGENT-REGISTRY.md`
+5. Agent Registry canonical record in `XpertMinds/jumentix-agent-registry` with mirrored copy in `.agents/AGENT-REGISTRY.md`
 
 ## Mandatory Traceability Links
 
@@ -191,17 +191,20 @@ Before any task execution:
 9. Agents must verify the dedicated documentation Issue before completing a Linear epic Project
    under Requirement `094`.
 10. Pinned registry checks must fetch immutable content by full commit SHA and an encoded safe
-    path. Public registries use raw content without anonymous Contents API quota; when a token is
-    present, authenticated Contents API access may be used and must fall back to public raw fetch
-    on HTTP 401/403/404 from that token path.
+    path. The private canonical registry uses authenticated Contents API access. A diagnostic raw
+    fallback is not private access and must fail closed without exposing credentials.
 11. Only explicit registry synchronization may resolve a mutable branch through the GitHub API,
     optionally authenticated by `GITHUB_TOKEN` or `GH_TOKEN`.
 12. Invalid revisions or paths, HTTP and transport failures, malformed responses, unauthorized
     access, and local mirror drift must fail closed with actionable diagnostics that never expose
     credentials (raw 404 after Contents 401/403 → token-access guidance; other 404 → pin/path
     drift; bare 401/403 → token-backed private access).
-13. The canonical Agent Registry repository is public for read access. Only the owner account
-    `web2solutions` (`web2solucoes@gmail.com`) may push or publish to it.
+13. The canonical Agent Registry repository is private under `XpertMinds`. Only the owner account
+    `web2solutions` (`web2solucoes@gmail.com`) and identities explicitly authorized in Linear may
+    read, push, or publish to it.
+14. Requirement `103` makes `XpertMinds/Jumentix` and
+    `XpertMinds/jumentix-agent-registry` canonical. Both former `web2solutions` origins are
+    deprecated, read-only, accept no new modifications, and remain archived.
 
 ## Audit Evidence Expectations
 

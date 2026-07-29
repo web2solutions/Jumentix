@@ -1,7 +1,7 @@
 {
-  "repository": "web2solutions/jumentix-agent-registry",
+  "repository": "XpertMinds/jumentix-agent-registry",
   "branch": "main",
-  "revision": "6bcd907a5d6774c9011b19db0f54b9ad0ca6c5f1",
+  "revision": "fce6419d0c716f5e68324daa6a83595bd6a7125d",
   "remotePath": "AGENT-REGISTRY.md",
   "localMirrorPath": ".agents/AGENT-REGISTRY.md"
 }

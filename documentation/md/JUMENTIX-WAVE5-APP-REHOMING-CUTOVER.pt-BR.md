@@ -46,10 +46,10 @@ Status:
   - `OASdoc/` + `AsyncAPIdoc/` -> `apps/backend-template/*`
 - A propriedade do ecossistema PM2 agora reside na raiz `pm2/*`.
 - Evidência de encerramento da onda:
-  - PR #112: `https://github.com/web2solutions/aaa-typescript-boilerplate/pull/112`
-  - Problema de normalização: `https://github.com/web2solutions/aaa-typescript-boilerplate/issues/113`
-  - Problema de estabilização de CI: `https://github.com/web2solutions/aaa-typescript-boilerplate/issues/114`
-  - Problema de caminho sem servidor: `https://github.com/web2solutions/aaa-typescript-boilerplate/issues/115`
+  - PR #112: `https://github.com/XpertMinds/Jumentix/pull/112`
+  - Problema de normalização: `https://github.com/XpertMinds/Jumentix/issues/113`
+  - Problema de estabilização de CI: `https://github.com/XpertMinds/Jumentix/issues/114`
+  - Problema de caminho sem servidor: `https://github.com/XpertMinds/Jumentix/issues/115`
 - Tarefas residuais transferidas para acompanhamento dedicado:
   - Fechamento de governança e mapeamento de evidências (`#116`)
   - Subtarefas de proteção de CI/versão Wave 6 (`#94`, `#98`, `#99`)

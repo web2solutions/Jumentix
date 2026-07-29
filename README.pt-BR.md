@@ -4,19 +4,26 @@ Idioma alvo: Português (Brasil)
 -->
 # Jumentix – Fábrica de Software para Equipes de Produto
 
-[![CircleCI](https://dl.circleci.com/status-badge/img/gh/web2solutions/aaa-typescript-boilerplate/tree/dev.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/web2solutions/aaa-typescript-boilerplate/tree/dev)
-[![codecov](https://codecov.io/gh/web2solutions/aaa-typescript-boilerplate/branch/dev/graph/badge.svg)](https://codecov.io/gh/web2solutions/aaa-typescript-boilerplate)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/XpertMinds/Jumentix/tree/dev.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/XpertMinds/Jumentix/tree/dev)
+[![codecov](https://codecov.io/gh/XpertMinds/Jumentix/branch/dev/graph/badge.svg)](https://codecov.io/gh/XpertMinds/Jumentix)
 [![Status do Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=web2solutions_aaa-typescript-boilerplate&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=web2solutions_aaa-typescript-boilerplate)
 [![Classificação de segurança](https://sonarcloud.io/api/project_badges/measure?project=web2solutions_aaa-typescript-boilerplate&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=web2solutions_aaa-typescript-boilerplate)
-[![Vulnerabilidades conhecidas](https://snyk.io/test/github/web2solutions/aaa-typescript-boilerplate/badge.svg)](https://snyk.io/test/github/web2solutions/aaa-typescript-boilerplate)
+[![Vulnerabilidades conhecidas](https://snyk.io/test/github/XpertMinds/Jumentix/badge.svg)](https://snyk.io/test/github/XpertMinds/Jumentix)
 [![Nó](https://img.shields.io/badge/node-22.x-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-6BA539?logo=openapiinitiative&logoColor=white)](./spec/1.0.0.yml)
 [![AsyncAPI](https://img.shields.io/badge/AsyncAPI-3.0-9146FF)](./spec)
-[![Licença](https://img.shields.io/github/license/web2solutions/aaa-typescript-boilerplate)](./LICENSE)
-[![Última confirmação](https://img.shields.io/github/last-commit/web2solutions/aaa-typescript-boilerplate/dev)](https://github.com/web2solutions/aaa-typescript-boilerplate/commits/dev)
+[![Licença](https://img.shields.io/github/license/XpertMinds/Jumentix)](./LICENSE)
+[![Última confirmação](https://img.shields.io/github/last-commit/XpertMinds/Jumentix/dev)](https://github.com/XpertMinds/Jumentix/commits/dev)
 [![#StandWithUkraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://vshymanskyy.github.io/StandWithUkraine)
 
 Jumentix é um produto monorepo que funciona como uma fábrica de software para equipes de engenharia e proprietários de produtos. Ele ajuda você a passar da ideia ao SaaS pronto para produção em dias, não meses, com uma arquitetura que prioriza o contrato, flexibilidade de tempo de execução e governança de nível empresarial.
+
+> **Repositório privado canônico:** `XpertMinds/Jumentix`.
+> `web2solutions/aaa-typescript-boilerplate` está obsoleto, é somente leitura e
+> não aceita novas modificações. A coordenação de agentes é canônica no
+> repositório privado `XpertMinds/jumentix-agent-registry`; o antigo registry em
+> `web2solutions` também está obsoleto e é somente leitura. Consulte o Requisito
+> `103`.
 
 ## Índice
 
