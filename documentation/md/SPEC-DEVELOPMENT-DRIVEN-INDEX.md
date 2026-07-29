@@ -60,6 +60,12 @@ This policy is enforced through:
 
 ## Binding Sources
 
+Repository authority follows Requirement `103`: private
+`XpertMinds/Jumentix` is canonical for this specification set, and private
+`XpertMinds/jumentix-agent-registry` is canonical for agent coordination. Both
+former `web2solutions` origins are deprecated, read-only, and accept no new
+modifications.
+
 Spec-Driven execution depends on and reuses these existing sources:
 
 - OpenAPI and AsyncAPI contracts (`/spec`)

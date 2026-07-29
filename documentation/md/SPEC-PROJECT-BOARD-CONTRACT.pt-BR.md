@@ -10,7 +10,7 @@ Este documento define como o quadro do projeto Linear faz parte da execução or
 
 - Diretoria: [Projeto Linear - Jumentix](https://linear.app/jumentix)
 - Proprietário: `web2solutions`
-- Escopo do repositório: `web2solutions/aaa-typescript-boilerplate`
+- Escopo do repositório: `XpertMinds/Jumentix`
 - A chave da API do Linear fica em `../.linear`, um nível acima da raiz do projeto. Agentes podem
   lê-la para autenticação, mas nunca devem expô-la, registrá-la ou commitá-la.
 

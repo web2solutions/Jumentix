@@ -61,7 +61,7 @@ const localize = (href: string, locale: CommercialLocale) =>
 
 const t = <T,>(locale: CommercialLocale, en: T, pt: T) => (locale === 'pt-BR' ? pt : en);
 
-const repositoryUrl = 'https://github.com/web2solutions/aaa-typescript-boilerplate';
+const repositoryUrl = 'https://github.com/XpertMinds/Jumentix';
 
 const codeSamples = {
   start: [
