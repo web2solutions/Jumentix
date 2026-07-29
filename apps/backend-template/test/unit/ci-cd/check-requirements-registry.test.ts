@@ -16,7 +16,7 @@ describe('check-requirements-registry', () => {
 
     expect(Array.isArray(inventory.files)).toBe(true);
     expect(Array.isArray(inventory.ids)).toBe(true);
-    expect(inventory.duplicates).toStrictEqual(['055', '060', '079', '095']);
+    expect(inventory.duplicates).toStrictEqual(['055', '060', '079']);
     expect(inventory.invalidFiles).toStrictEqual([]);
     expect(validateRequirementsRegistry()).toStrictEqual([]);
   });
