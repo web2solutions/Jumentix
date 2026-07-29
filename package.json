@@ -93,7 +93,7 @@
     "test:integration": "node ci-cd/run-integration-tests.js",
     "test:integration:express": "NODE_ENV=dev jest ./apps/backend-template/test/integration/Express --runInBand --coverage=false",
     "test:integration:fastify": "NODE_ENV=dev jest ./apps/backend-template/test/integration/Fastify --runInBand --coverage=false",
-    "test:integration:restify": "NODE_ENV=dev jest ./apps/backend-template/test/integration/Restify --runInBand --coverage=false",
+    "test:integration:restify": "NODE_ENV=dev jest ./apps/backend-template/test/integration/Restify --runInBand --coverage=false --testTimeout=15000",
     "test:integration:lambda": "AAA_MESSAGE_MEDIATOR_ADAPTER=inmemory NODE_ENV=dev jest ./apps/backend-template/test/integration/Lambda --runInBand --coverage=false",
     "test:integration:hyper-express": "NODE_ENV=dev jest ./apps/backend-template/test/integration/Hyper-Express --runInBand --coverage=false",
     "test:integration:cloudflare-workers": "NODE_ENV=dev jest ./apps/backend-template/test/integration/Cloudflare-Workers --runInBand --coverage=false",

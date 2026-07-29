@@ -119,12 +119,25 @@ Execução por escopo, inclusive alterações somente de documentação, não po
 uma célula em um limite de entrega.
 
 Cada alvo de integração é executado com `CI=true`. O tempo limite padrão do processo é de
-120 segundos. Os alvos completos Express e Restify possuem exceções explícitas de 300
-segundos porque suas suítes HTTP completas atingiram o limite do processo sob a carga da
-matriz de release. Essa margem específica impede que um `SIGTERM` trunque uma resposta HTTP
-ativa sem enfraquecer o tempo limite dos alvos menores; um tempo limite informado
-explicitamente ao executor continua sendo prioritário. Qualquer tempo limite é reportado
-como saída `124`, reprova a célula de integração e não impede o relato dos alvos restantes. Saídas
+120 segundos. Os alvos completos Express, Fastify, Restify e Hyper-Express possuem exceções
+explícitas de 300 segundos porque suas suítes HTTP completas atingiram ou se aproximaram do
+limite do processo sob a carga da matriz de release. Em uma execução estrita, o Hyper-Express
+passou 21 suítes e 170 testes em 117,215 segundos, mas expirou durante a limpeza no limite de
+120 segundos; o Fastify também ultrapassou esse limite após suas asserções. Essa margem
+específica impede que um `SIGTERM` trunque uma resposta HTTP ativa ou sua limpeza sem
+enfraquecer o tempo limite dos alvos menores; um tempo limite informado explicitamente ao
+executor continua sendo prioritário. Qualquer tempo limite é reportado como saída `124`,
+reprova a célula de integração e não impede o relato dos alvos restantes.
+
+O Restify também é executado com tempo limite Jest de 15 segundos por teste. Sob carga
+sustentada da matriz estrita, requisições Restify autenticadas apresentaram duração medida de
+5,4–5,8 segundos, acima do padrão genérico de 5 segundos do Jest. O orçamento específico do
+alvo permite que essas requisições reais terminem, em vez de cancelar suas asserções enquanto
+mantêm handles HTTP ativos. Ele não adiciona tentativas, não ignora testes, não enfraquece
+asserções nem altera o limite de 300 segundos do processo. Express, Fastify, Hyper-Express e
+todos os demais alvos de integração mantêm seus padrões existentes por teste.
+
+Saídas
 `dist` geradas são excluídas do lint para que um build concluído não faça a execução seguinte
 da matriz falhar ao analisar declarações geradas.
 
