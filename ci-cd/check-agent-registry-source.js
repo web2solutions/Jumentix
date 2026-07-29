@@ -180,10 +180,10 @@ async function fetchCanonicalText(config, revision, env = process.env) {
   }
 }
 
-async function fetchJson(url) {
+async function fetchJson(url, env = process.env) {
   const body = await fetchBody(
     url,
-    githubApiHeaders(),
+    githubApiHeaders(env),
     'canonical registry branch revision'
   );
   try {
@@ -193,8 +193,8 @@ async function fetchJson(url) {
   }
 }
 
-async function resolveBranchRevision(config) {
-  const payload = await fetchJson(buildBranchRevisionUrl(config));
+async function resolveBranchRevision(config, env = process.env) {
+  const payload = await fetchJson(buildBranchRevisionUrl(config), env);
   if (!payload.sha || !/^[a-f0-9]{40}$/i.test(payload.sha)) {
     throw new Error(`Could not resolve canonical registry revision for branch "${config.branch}".`);
   }

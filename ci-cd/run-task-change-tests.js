@@ -4,6 +4,7 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 
 const UNIT_TEST_PATH = /(^|\/)test\/unit\/.*\.(test|spec)\.[cm]?[jt]sx?$/;
+const INTEGRATION_TEST_PATH = /(^|\/)test\/integration\/.*\.(test|spec)\.[cm]?[jt]sx?$/;
 const IMPLEMENTATION_PATH = /^(ci-cd\/|apps\/[^/]+\/(src|scripts)\/|packages\/[^/]+\/src\/|tooling\/|\.husky\/|\.github\/|\.circleci\/|package\.json$)/;
 const RELATED_SOURCE_PATH = /^(ci-cd\/.*\.[cm]?js|apps\/[^/]+\/(src|scripts)\/.*\.[cm]?[jt]sx?|packages\/[^/]+\/src\/.*\.[cm]?[jt]sx?|tooling\/.*\.[cm]?[jt]sx?)$/;
 const GOVERNANCE_CONFIG_PATH = /^(\.husky\/|\.github\/|\.circleci\/)|^package\.json$/;
@@ -35,6 +36,7 @@ function readChangedFiles(options = {}) {
 function createTaskTestPlan(files) {
   const changedFiles = normalizeFiles(files);
   const unitTests = changedFiles.filter((file) => UNIT_TEST_PATH.test(file));
+  const integrationTests = changedFiles.filter((file) => INTEGRATION_TEST_PATH.test(file));
   const websiteFiles = changedFiles.filter((file) => WEBSITE_PATH.test(file));
   const relatedFiles = changedFiles.filter(
     (file) => RELATED_SOURCE_PATH.test(file) && !WEBSITE_PATH.test(file)
@@ -50,6 +52,14 @@ function createTaskTestPlan(files) {
       files: websiteFiles,
       unitTests: selectedUnitTests,
       relatedFiles
+    };
+  }
+
+  if (integrationTests.length > 0) {
+    return {
+      type: 'changed-integration-tests',
+      files: normalizeFiles([...unitTests, ...governanceTests, ...integrationTests]),
+      testTimeoutMs: integrationTests.some((file) => file.includes('/Restify/')) ? 15_000 : undefined
     };
   }
 
@@ -122,8 +132,15 @@ function executeTaskTestPlan(plan) {
     return Number.isInteger(relatedResult.status) ? relatedResult.status : 1;
   }
 
-  const args = ['changed-unit-tests', 'mapped-unit-tests'].includes(plan.type)
-    ? ['exec', 'jest', '--runInBand', '--coverage=false', ...plan.files]
+  const args = ['changed-unit-tests', 'mapped-unit-tests', 'changed-integration-tests'].includes(plan.type)
+    ? [
+      'exec',
+      'jest',
+      '--runInBand',
+      '--coverage=false',
+      ...(plan.testTimeoutMs ? [`--testTimeout=${String(plan.testTimeoutMs)}`] : []),
+      ...plan.files
+    ]
     : ['exec', 'jest', '--runInBand', '--coverage=false', '--findRelatedTests', ...plan.files];
   const result = spawnSync('pnpm', args, { stdio: 'inherit', env: { ...process.env } });
 
@@ -185,6 +202,7 @@ module.exports = {
   GOVERNANCE_CONFIG_PATH,
   GOVERNANCE_TEST_PATH,
   IMPLEMENTATION_PATH,
+  INTEGRATION_TEST_PATH,
   RELATED_SOURCE_PATH,
   DOCUMENTATION_PATH,
   UNIT_TEST_PATH,
