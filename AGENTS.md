@@ -10,7 +10,7 @@ Primary Codex runtime instructions for this repository:
 6. Register in `.agents/AGENT-REGISTRY.md` before task execution.
 7. Before starting work, check `main` and `dev` branch refs and update registry check fields.
 8. Do not implement new changes directly on local `main`; use a dedicated task branch with an
-   allowed primary nature per requirements `079` and `086`.
+   allowed primary nature per requirements `086` and `090`.
 9. Follow the agent operating playbook defined in requirement `081` for registration, execution, and closure flow.
 10. Treat `web2solutions/jumentix-agent-registry` as canonical source; local `.agents/AGENT-REGISTRY.md` is a mirror.
 11. Work only on tasks with one focused parent epic and one primary nature; agent delegation is
@@ -53,7 +53,7 @@ Primary Codex runtime instructions for this repository:
     finding blocks merge until corrected, validated, and evidenced. No bypass is allowed
     (Requirement `100`).
 26. Publish every task's start, material progress, blocker changes, review readiness, and final
-    handoff in the Linear epic Project's `Project Updates` feed under requirement `095`; Issue
+    handoff in the Linear epic Project's `Project Updates` feed under requirement `102`; Issue
     comments and status changes alone are insufficient.
 27. Report exact gate states in Project Updates and never describe pending, missing, cancelled,
     timed-out, skipped, or failed required checks as passing.
