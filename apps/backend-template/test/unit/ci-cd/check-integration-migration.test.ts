@@ -10,12 +10,12 @@ describe('check-integration-migration', () => {
   it('requires the complete canonical application integration inventory', () => {
     expect.hasAssertions();
     const valid = INTEGRATION_MARKERS.join('\n');
-    expect(validateIntegrationPolicy(valid)).toEqual([]);
+    expect(validateIntegrationPolicy(valid)).toStrictEqual([]);
     expect(validateIntegrationPolicy('incomplete integration policy').length).toBeGreaterThan(0);
   });
 
   it('requires repository-owned configuration to target XpertMinds', () => {
     expect.hasAssertions();
-    expect(validateCanonicalConfig(process.cwd())).toEqual([]);
+    expect(validateCanonicalConfig(process.cwd())).toStrictEqual([]);
   });
 });

@@ -6,7 +6,6 @@ export default {
   express: 'Express Adapter',
   fastify: 'Fastify Adapter',
   feathers: 'Feathers Adapter',
-  'hyper-express': 'Hyper-Express Adapter',
   loopback: 'LoopBack Adapter',
   index: { title: 'HTTP Interface Adapters Documentation', display: 'hidden' },
   restify: 'Restify Adapter',

@@ -16,13 +16,13 @@
     "storybook": "storybook dev -p 6006 --no-open",
     "storybook:build": "storybook build -o storybook-static",
     "storybook:smoke": "node ./scripts/storybook-smoke.mjs",
-    "test:prepublish": "pnpm run content:sync && pnpm run content:smoke && node ./scripts/prepublish-site-checks.mjs",
-    "test": "pnpm run typecheck",
+    "test:prepublish": "bun run content:sync && bun run content:smoke && node ./scripts/prepublish-site-checks.mjs",
+    "test": "bun run typecheck",
     "vercel:link": "vercel link --project jumentix-website --yes",
     "vercel:pull:preview": "vercel pull --environment=preview --yes",
     "vercel:pull:prod": "vercel pull --environment=production --yes",
     "deploy:vercel": "vercel --prod",
-    "deploy:vercel:safe": "pnpm run test:prepublish && pnpm run deploy:vercel",
+    "deploy:vercel:safe": "bun run test:prepublish && bun run deploy:vercel",
     "deploy:vercel:preview": "vercel"
   },
   "dependencies": {
@@ -47,6 +47,7 @@
   },
   "devDependencies": {
     "@storybook/addon-a11y": "10.5.4",
+    "@theguild/remark-mermaid": "^0.3.0",
     "@storybook/addon-docs": "10.5.4",
     "@storybook/addon-themes": "10.5.4",
     "@storybook/nextjs": "10.5.4",
