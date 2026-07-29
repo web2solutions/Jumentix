@@ -368,7 +368,7 @@ describe('check-agent-registry-source', () => {
       return request as never;
     });
 
-    await expect(fetchJson('https://api.github.com/example'))
+    await expect(fetchJson('https://api.github.com/example', {}))
       .resolves.toStrictEqual({ sha: '0123456789abcdef0123456789abcdef01234567' });
   });
 
