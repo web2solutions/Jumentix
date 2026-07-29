@@ -43,8 +43,8 @@ Jumentix must define an explicit playbook that teaches agents:
    open milestone as its epic under Requirement `090`.
 3. Confirm the milestone due date covers the epic and task delivery dates.
 4. Confirm the agent is delegated to the parent epic before accepting its child task.
-5. Ensure the task is represented by issue + project item with required planning fields and
-   structured parent-epic and milestone linkage.
+5. Ensure the task is represented by a Linear Issue in its focused Linear Project, with required
+   planning fields and structured parent-epic and milestone linkage.
 6. Record `active_epic` and `assigned_task` in the canonical Agent Registry.
 7. Keep scope aligned with the milestone target, epic outcome, task nature, priority, and branch
    purpose.
@@ -52,10 +52,10 @@ Jumentix must define an explicit playbook that teaches agents:
 
 ### 4) Delivery and Closure
 
-1. Open PR linked to issue/project item.
+1. Open a PR linked to the Linear Issue and focused Project.
 2. Include requirement IDs and evidence of quality gates.
 3. Set agent status transitions as needed (`available`/`busy`/`offline`) in registry updates.
-4. Preserve traceability: branch -> commits -> PR -> issue -> project item.
+4. Preserve traceability: branch -> commits -> PR -> Linear Issue -> Linear Project.
 5. Clear or update the agent's epic/task assignment when delegation ends.
 
 ## Acceptance Criteria
@@ -63,5 +63,5 @@ Jumentix must define an explicit playbook that teaches agents:
 1. This playbook exists as a tracked requirement.
 2. Agent registry and governance docs reference this execution model.
 3. Agent instruction surfaces enforce registration + branch check + governed delivery.
-4. Milestone association, epic delegation, and child-task ownership are auditable in GitHub,
-   the Agent Registry, and the Project.
+4. Milestone association, epic delegation, and child-task ownership are auditable in Linear and
+   the Agent Registry; GitHub records delivery branches, commits, PRs, and checks.

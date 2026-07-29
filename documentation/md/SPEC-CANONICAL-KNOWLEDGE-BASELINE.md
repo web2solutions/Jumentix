@@ -62,7 +62,8 @@ For each knowledge family above, Jumentix must maintain:
 
 1. Spec artifact(s) that define behavior or policy.
 2. Enforcement mechanism(s) in CI, tests, checks, or workflow policy.
-3. Traceability links to issue, project item, PR, and changed files.
+3. Traceability links to the Linear Issue, focused Project, Project Update, GitHub PR, and
+   changed files.
 
 ## No-Unknown-State Policy
 

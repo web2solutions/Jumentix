@@ -8,6 +8,10 @@ Este mapa define onde reside a verdade das especificações e como as fontes sã
 
 ## Prioridade de origem
 
+O Linear é a única autoridade para metadados de tarefas, épicos, milestones e planejamento. A
+ordem abaixo governa contratos de software e conteúdo versionado de especificações; ela nunca
+substitui o estado atual do planejamento no Linear.
+
 Quando ocorrem conflitos, a ordem de resolução é:
 
 1. Especificações de contrato versionadas (`spec/1.0.0.yml`, `spec/asyncapi/*`)
@@ -24,8 +28,8 @@ Quando ocorrem conflitos, a ordem de resolução é:
 - Posicionamento raiz: `README.md`
 - Visão geral do projeto: `documentation/md/PROJECT-OVERVIEW.md`
 - Sistema de composição de produtos: `documentation/md/SPEC-JUMENTIX-COMPONENT-SYSTEM.md`
-- Quadro do projeto: `https://linear.app/jumentix`
-- Lista de pendências de problemas: `https://github.com/web2solutions/aaa-typescript-boilerplate/issues`
+- Projects, Issues, milestones e Project Updates de planejamento: `https://linear.app/jumentix`
+- Branches, commits, PRs e checks do GitHub: somente evidências de entrega
 
 ## Arquitetura e Design
 

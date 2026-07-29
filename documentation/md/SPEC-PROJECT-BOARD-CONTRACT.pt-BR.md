@@ -11,12 +11,8 @@ Este documento define como o quadro do projeto Linear faz parte da execução or
 - Diretoria: [Projeto Linear - Jumentix](https://linear.app/jumentix)
 - Proprietário: `web2solutions`
 - Escopo do repositório: `web2solutions/aaa-typescript-boilerplate`
-
-Linha de base do instantâneo (24/07/2026):
-
-1. O projeto está ativo (`closed: false`).
-2. Os campos de governança estão disponíveis e são obrigatórios (`19` campos configurados).
-3. Os itens de trabalho são gerenciados como itens de projeto apoiados por problemas (a escala atual no histórico do conselho já está acima do estágio inicial de MVP).
+- A chave da API do Linear fica em `../.linear`, um nível acima da raiz do projeto. Agentes podem
+  lê-la para autenticação, mas nunca devem expô-la, registrá-la ou commitá-la.
 
 ## Campos obrigatórios de planejamento
 
@@ -51,7 +47,7 @@ Os rótulos de fluxo estratégico são aditivos (por exemplo `todo-mvp`, `epic`,
 ## Contrato de épico focado
 
 1. Toda tarefa executável deve pertencer a exatamente um épico focado.
-2. Todo épico ativo deve estar associado a exatamente um milestone aberto no GitHub.
+2. Todo épico ativo deve estar associado a exatamente um milestone aberto no Linear.
 3. O épico e todas as tarefas filhas usam o mesmo milestone, salvo exceção explícita registrada.
 4. O milestone define alvo de entrega, descrição, data limite e estado do ciclo de vida.
 5. As datas finais do épico e das tarefas não podem ultrapassar a data limite do milestone sem
@@ -59,9 +55,9 @@ Os rótulos de fluxo estratégico são aditivos (por exemplo `todo-mvp`, `epic`,
 6. Um milestone pode conter múltiplos épicos focados somente quando atendem ao mesmo alvo de
    entrega.
 7. O épico deve descrever um único resultado coeso e não pode ser um backlog genérico.
-8. A relação de parentagem deve usar sub-issues do GitHub ou o campo `Parent issue` do projeto
-   quando disponível.
-9. A associação ao milestone deve usar os metadados de milestone da issue e do projeto GitHub.
+8. A parentagem deve usar a associação da tarefa ao Project do Linear e os campos de
+   parent/sub-issue do Linear quando disponíveis.
+9. A associação ao milestone deve usar os metadados de milestone da Issue e do Project no Linear.
 10. As tarefas são agrupadas por natureza principal dentro do épico. Trabalho de suporte com
    natureza diferente é rastreado como tarefa filha separada sob o mesmo resultado coeso.
 11. O planejamento do épico define milestone, prioridade, limites de escopo, datas, estimativa,
@@ -110,9 +106,10 @@ Todo PR deve fazer referência a:
 1. questão(ões) relacionada(s)
 2. épico pai focado
 3. milestone associado
-4. escopo do item do projeto
-5. recursos de especificação alterados
-6. resumo de evidências (testes/cobertura/segurança)
+4. escopo do Project focado no Linear
+5. Project Update obrigatório
+6. recursos de especificação alterados
+7. resumo de evidências (testes/cobertura/segurança)
 
 E cada questão deve refletir:
 

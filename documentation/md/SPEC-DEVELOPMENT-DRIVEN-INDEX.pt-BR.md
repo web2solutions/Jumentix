@@ -39,7 +39,8 @@ Este conjunto de documentação define como a intenção do produto, as restriç
 Nenhum recurso, correção de bug, refatoração, adaptador, contrato ou alteração de tempo de execução é considerado completo, a menos que:
 
 1. A mudança é representada em artefatos de especificações.
-2. Os artefatos de especificação estão vinculados aos registros de governança (Problema + Item do projeto + PR).
+2. Os artefatos de especificação estão vinculados aos registros de governança (Issue do Linear +
+   Project focado + Project Update + PR no GitHub).
 3. Verificações de qualidade, cobertura e arquitetura comprovam a conformidade com as especificações.
 
 ## Política de cobertura total de conhecimento

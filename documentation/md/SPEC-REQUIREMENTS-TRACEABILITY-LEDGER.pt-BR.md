@@ -4,6 +4,8 @@ Idioma alvo: Português (Brasil)
 -->
 # Especificações de rastreabilidade de requisitos
 
+<!-- requirements-inventory: files=105 unique=102 mapped=102 duplicates=055,060,079 -->
+
 Este livro-razão mapeia IDs de requisitos para especificações de recursos e expectativas de evidências de validação.
 
 É a ponte canônica entre `.agents/requirements` e fluxos de trabalho de implementação.
@@ -20,7 +22,7 @@ Para qualquer alteração, identifique os IDs dos requisitos afetados e garanta:
 
 ## A. Integridade de construção, tempo de execução e dependência
 
-- `001`, `002`, `012`, `013`, `041`, `042`, `043`, `052`
+- `001`, `002`, `012`, `013`, `041`, `042`, `043`, `052`, `096`
 - Recursos de especificações:
   - `documentação/md/RUNTIME-ENVIRONMENT-CONTRACTS.md`
   - `documentação/md/SETUP-RUNTIME-AND-API.md`
@@ -82,7 +84,7 @@ Para qualquer alteração, identifique os IDs dos requisitos afetados e garanta:
 
 ## F. Portões de qualidade, segurança e conformidade
 
-- `011`, `014`, `020`, `044`, `063`, `065`, `074`
+- `011`, `014`, `020`, `044`, `063`, `065`, `074`, `087`, `088`
 - Recursos de especificações:
   - `documentação/md/TESTING-CI-AND-QUALITY.md`
   - `documentação/md/SECURITY-RUNBOOK-PCI.md`
@@ -95,7 +97,7 @@ Para qualquer alteração, identifique os IDs dos requisitos afetados e garanta:
 
 ## G. Documentação, processo de governança e operações multiagente
 
-- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `056`, `057`, `064`, `066`, `067`, `068`, `071`, `072`, `073`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `094`, `095`
+- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `056`, `057`, `064`, `066`, `067`, `068`, `071`, `072`, `073`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `094`, `095`, `097`, `098`, `099`, `100`, `101`
 - Recursos de especificações:
   - `documentação/README.md`
   - `documentação/md/JUMENTIX-PROJECT-GOVERNANCE.md`
@@ -109,6 +111,7 @@ Para qualquer alteração, identifique os IDs dos requisitos afetados e garanta:
 - Evidência:
   - links de índice de documentos atualizados
   - registro de requisitos sincronizado
+  - `pnpm run requirements:check` aprovado
   - paridade de instruções de agentes (Codex, Claude Code, Grok)
   - registros de cadastro de agentes e atribuição por disponibilidade
   - registros de associação ao milestone, parentagem do épico focado, agrupamento por natureza e
@@ -122,7 +125,7 @@ Para qualquer alteração, identifique os IDs dos requisitos afetados e garanta:
 
 ## H. Produtização e expansão da plataforma
 
-- `037`, `038`, `054`, `055` (ambas as entradas), `069`, `070`
+- `037`, `038`, `054`, `055` (ambas as entradas), `069`, `070`, `091`, `092`, `093`
 - Recursos de especificações:
   - `pacotes/cli-init/*`
   - `apps/gerenciamento de serviço/documentação/*`
@@ -140,8 +143,10 @@ Se os IDs de requisitos afetados não forem mapeados antes da implementação, a
 
 ## Atestado de cobertura (linha de base atual)
 
-A partir de `2026-07-26`, este livro-razão cobre todos os IDs de requisitos exclusivos atualmente registrados em `.agents/requirements`:
+A partir de `2026-07-28`, este livro-razão cobre todos os IDs de requisitos exclusivos atualmente registrados em `.agents/requirements`:
 
-1. IDs exclusivos no registro de requisitos: `95`
-2. IDs exclusivos mapeados neste livro-razão: `95`
-3. IDs ausentes: `nenhum`
+1. Arquivos de requisitos no registro: `102`
+2. IDs exclusivos no registro de requisitos: `98`
+3. IDs exclusivos mapeados neste livro-razão: `98`
+4. IDs duplicados com arquivos vinculantes independentes: `055`, `060`, `079`, `095`
+5. IDs ausentes: `nenhum`

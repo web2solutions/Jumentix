@@ -35,6 +35,6 @@ For **all PRs**, maintain:
 ## Acceptance Criteria
 
 - All issues under project tracking label (`todo-mvp`) have commit + PR linkage visible.
-- All PRs include explicit issue + project item linkage.
+- All PRs include explicit Linear Issue + focused Project + Project Update linkage.
 - Evidence is bidirectional: issue -> PR and PR -> issue.
 - New task/PR updates follow the same traceability format.

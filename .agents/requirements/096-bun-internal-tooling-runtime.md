@@ -27,4 +27,6 @@
 ## Evidence and references
 
 - Baseline research: `documentation/md/BUN-MIGRATION-BASELINE.md` (JUM-23): jest 518/518 in 157.6s vs bun:test 306/369 in 1.78s (~88x) with a finite failure taxonomy; `bun install` risks documented.
-- Delivery governance: one task = one worktree = one branch = one PR targeting `dev`; full real test matrix on commit, push and PR.
+- Delivery governance: one task = one worktree = one branch = one PR targeting `dev`; task
+  branches run changed/related tests, `dev` runs the full unit gate, and `main` promotion runs the
+  full real matrix.

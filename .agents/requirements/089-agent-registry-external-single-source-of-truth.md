@@ -17,10 +17,24 @@ Agent coordination must be centralized across repositories and runtimes. Keeping
    committed and tested mirror.
 7. The synchronization command must resolve the latest canonical `main` revision first, then
    update the mirror and its recorded revision as one reviewable change.
+8. Quality-gate validation of a pinned revision must fetch immutable content. Public raw
+   fetches avoid anonymous Contents API quota; when `GITHUB_TOKEN`/`GH_TOKEN` is present,
+   validation may use the authenticated Contents API and must fall back to public raw fetch
+   when that token path fails with HTTP 401/403/404. Unauthorized or unreachable canonical
+   content must fail closed: raw 404 after a Contents API 401/403 must keep token-access
+   guidance (private repos often answer anonymous raw with 404), while an unauthenticated or
+   non-auth Contents failure 404 points at pin/path drift.
+9. Branch-to-revision resolution is allowed only for explicit synchronization, must fail closed,
+   and may use `GITHUB_TOKEN` or `GH_TOKEN` when available without exposing credentials.
+10. Raw-content and Contents API URLs must contain the complete immutable SHA and safely encoded
+    path segments.
+11. The canonical registry repository is public for read access, but only the owner account
+    associated with `web2solucoes@gmail.com` (`web2solutions`) may push or publish changes to it.
 
 ## Canonical Registry Repository
 
-- `https://github.com/web2solutions/jumentix-agent-registry`
+- `https://github.com/web2solutions/jumentix-agent-registry` (public read; owner-only write)
+- Owner / sole publisher: GitHub user `web2solutions` (`web2solucoes@gmail.com`)
 - Branch: `main`
 - Canonical file: `AGENT-REGISTRY.md`
 
@@ -46,3 +60,14 @@ Agent coordination must be centralized across repositories and runtimes. Keeping
 3. Governance docs clearly identify the external repo as single source of truth.
 4. CI validation of a committed mirror is reproducible even when another agent updates the
    canonical registry during the job.
+5. Pinned mirror checks do not depend on anonymous GitHub API quota for public raw fetches.
+6. Missing, unreachable, mutable, mismatched, or unauthorized canonical content fails the gate.
+7. The canonical registry remains writable only by the designated owner account
+   (`web2solutions` / `web2solucoes@gmail.com`).
+
+## Evidence
+
+- GitHub issue `#192`
+- Linear issue `JUM-505`
+- `ci-cd/check-agent-registry-source.js`
+- `apps/backend-template/test/unit/ci-cd/check-agent-registry-source.test.ts`

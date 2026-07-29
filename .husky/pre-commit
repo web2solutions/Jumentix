@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-echo "[Husky] pre-commit: changelog + canonical full matrix"
+echo "[Husky] pre-commit: changelog + branch-aware quality gate"
 
 npx pnpm@9.15.3 run changelog:update &&
 git add CHANGELOG.md &&

@@ -50,8 +50,9 @@ Use esses modelos para todas as alterações que priorizam as especificações.
 - Coverage target confirmation:
 
 ## Governance
-- Issue:
-- Project item:
+- Issue do Linear:
+- Project focado no Linear:
+- Project Update:
 - Priority/Estimate:
 - Acceptance criteria:
 ```
@@ -106,8 +107,8 @@ Use esses modelos para todas as alterações que priorizam as especificações.
 
 Antes de relações públicas:
 
-1. O problema existe e está vinculado ao item do projeto.
-2. Os campos do projeto estão preenchidos.
+1. A Issue do Linear existe e está vinculada ao seu Project focado e milestone compartilhado.
+2. Os campos de planejamento da Issue e do Project estão preenchidos.
 3. Arquivos de especificações atualizados para todos os contratos/comportamentos alterados.
 4. Revisão do impacto da arquitetura e dos limites.
 5. Testes implementados por perfil de risco.
@@ -116,11 +117,17 @@ Antes de relações públicas:
 8. Arquivos de requisitos/NFR `.agents` atualizados quando aplicável.
 9. A descrição do PR inclui rastreabilidade e evidências.
 
-Antes de mesclar:
+Antes do merge:
 
 1. Portas CI verdes.
 2. Porta de cobertura de patch verde.
 3. Verificações de segurança/conformidade em verde.
-4. Item do projeto movido para `Concluído` com referências de evidências.
+4. A Issue do Linear está de forma verdadeira em `In Review` (ou estado ativo equivalente), e o
+   Project Update mais recente informa os resultados exatos dos gates.
 
+Após o merge:
+
+1. A Issue do Linear passa para `Done`.
+2. O Project Update final vincula o commit de merge e não contém bloqueio não resolvido nem gate
+   obrigatório incompleto.
 

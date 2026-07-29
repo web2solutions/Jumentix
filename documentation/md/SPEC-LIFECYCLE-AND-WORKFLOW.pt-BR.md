@@ -83,21 +83,22 @@ Saídas necessárias:
 
 Antes de mesclar:
 
-1. Problema de links de relações públicas e contexto do projeto
+1. O PR vincula a Issue do Linear, o Project focado, o milestone e o Project Update obrigatório
 2. PR inclui artefatos de especificações alterados
 3. PR inclui evidências de critérios de aceitação
-4. O status do item do projeto passa pelo fluxo de trabalho para `Concluído`
+4. A Issue do Linear permanece no estado verdadeiro de revisão até o merge e então passa para
+   `Done`
 5. Os documentos de requisitos/NFR são atualizados quando o comportamento não é funcional
 
 ## Definição de Concluído (orientado por especificações)
 
 Uma mudança é feita somente quando todas são verdadeiras:
 
-1. A intenção comercial é representada por um problema/item de projeto rastreado.
+1. A intenção comercial é representada por uma Issue do Linear rastreada em seu Project focado.
 2. As especificações são atualizadas e versionadas.
 3. O código corresponde às especificações atualizadas.
 4. Testes e portões de qualidade são aprovados.
 5. Documentação e registros de agentes são sincronizados.
-6. A rastreabilidade desde o problema até o PR e os arquivos de especificação é explícita.
-
+6. A rastreabilidade da Issue e do Project Update no Linear até o PR e os arquivos de
+   especificação é explícita.
 

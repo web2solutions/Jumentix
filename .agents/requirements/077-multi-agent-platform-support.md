@@ -1,4 +1,4 @@
-# Requirement 077 - Multi-Agent Platform Support (Codex, Claude Code, Grok)
+# Requirement 077 - Multi-Agent Platform Support (Codex, Claude Code, Grok, OpenCode)
 
 ## Context
 
@@ -10,6 +10,7 @@ Jumentix must explicitly support multiple AI engineering agents used by maintain
    - Codex
    - Claude Code
    - Grok
+   - OpenCode
 2. Agent guidance must be consistent with Jumentix governance, including:
    - Linear as task source of truth (Requirement `095`)
    - requirement/spec traceability
@@ -19,6 +20,6 @@ Jumentix must explicitly support multiple AI engineering agents used by maintain
 
 ## Acceptance Criteria
 
-1. Root-level agent instruction files exist for Codex, Claude Code, and Grok.
+1. Root-level agent instruction files exist for Codex, Claude Code, Grok, and OpenCode.
 2. `.agents` requirement registry and NFR registry include this requirement.
 3. Spec traceability documents map this requirement to governance resources and evidence.

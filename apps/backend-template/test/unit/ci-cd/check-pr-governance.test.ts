@@ -4,6 +4,7 @@ const prOs = require('os');
 const prPath = require('path');
 const {
   REQUIRED_EPIC_FIELDS,
+  REQUIRED_TITLE_FORMAT,
   TEMPLATE_PATHS,
   readField,
   validatePullRequest,
@@ -15,7 +16,8 @@ const validBody = [
   '- Epic milestone: Governance foundation - 2026-08-08',
   '- Primary task nature: ci',
   '- Epic-delegated agent ID: codex-primary-001',
-  '- Child task issue link: https://linear.app/jumentix/issue/JUM-163/focused-epic-metadata'
+  '- Child task issue link: https://linear.app/jumentix/issue/JUM-163/focused-epic-metadata',
+  '- Project Update: https://linear.app/jumentix/project/governance-foundation-c3cb6bae0771/activity#project-update-7ef876cc-30c5-41ba-b2ea-fdca9935b0e3'
 ].join('\n');
 
 describe('check-pr-governance', () => {
@@ -30,7 +32,10 @@ describe('check-pr-governance', () => {
     for (const templatePath of TEMPLATE_PATHS) {
       const absolutePath = prPath.join(rootDir, templatePath);
       prFs.mkdirSync(prPath.dirname(absolutePath), { recursive: true });
-      prFs.writeFileSync(absolutePath, '- Focused epic link:\n');
+      prFs.writeFileSync(
+        absolutePath,
+        `- Focused epic link:\n- Required PR title format: ${REQUIRED_TITLE_FORMAT}\n`
+      );
     }
 
     const failures = validateTemplates(rootDir);
@@ -41,9 +46,9 @@ describe('check-pr-governance', () => {
   it('accepts a task PR with matching branch, title, and structured metadata', () => {
     expect.hasAssertions();
     expect(validatePullRequest({
-      title: '[CI] Enforce focused epic metadata',
+      title: '[JUM-163][CI] Enforce focused epic metadata',
       body: validBody,
-      headRef: 'codex/ci/163-focused-epic-metadata',
+      headRef: 'codex/ci/JUM-163-focused-epic-metadata',
       baseRef: 'dev'
     })).toStrictEqual([]);
     expect(readField(validBody, 'Epic-delegated agent ID')).toBe('codex-primary-001');
@@ -56,29 +61,29 @@ describe('check-pr-governance', () => {
       .replace('JUM-163/focused-epic-metadata', 'JUM-183/codecov-artifact');
 
     expect(validatePullRequest({
-      title: '[Bug] Preserve unit LCOV for Codecov (#183)',
+      title: '[JUM-183][Bug] Preserve unit LCOV for Codecov',
       body: bugBody,
-      headRef: 'codex/bug/183-codecov-artifact',
+      headRef: 'codex/bug/JUM-183-codecov-artifact',
       baseRef: 'dev'
     })).toStrictEqual([]);
   });
 
-  it('rejects task metadata links outside governed project trackers', () => {
+  it('rejects task metadata links outside Linear', () => {
     expect.hasAssertions();
     const invalidBody = validBody
       .replace(
         'https://linear.app/jumentix/project/governance-foundation-c3cb6bae0771/overview',
-        'https://example.com/projects/governance'
+        'https://github.com/web2solutions/aaa-typescript-boilerplate/issues/500'
       )
       .replace(
         'https://linear.app/jumentix/issue/JUM-163/focused-epic-metadata',
-        'https://example.com/issues/163'
+        'https://github.com/web2solutions/aaa-typescript-boilerplate/issues/501'
       );
 
     expect(validatePullRequest({
-      title: '[CI] Enforce focused epic metadata',
+      title: '[JUM-163][CI] Enforce focused epic metadata',
       body: invalidBody,
-      headRef: 'codex/ci/163-focused-epic-metadata',
+      headRef: 'codex/ci/JUM-163-focused-epic-metadata',
       baseRef: 'dev'
     })).toStrictEqual(expect.arrayContaining([
       expect.stringContaining('focused epic link'),
@@ -89,30 +94,94 @@ describe('check-pr-governance', () => {
   it('fails closed for missing metadata and mismatched task nature', () => {
     expect.hasAssertions();
     const failures = validatePullRequest({
-      title: '[Feature] Wrong nature',
+      title: '[JUM-163][Feature] Wrong nature',
       body: '- Primary task nature: fix',
-      headRef: 'codex/ci/163-focused-epic-metadata',
+      headRef: 'codex/ci/JUM-163-focused-epic-metadata',
       baseRef: 'dev'
     });
 
     expect(failures).toStrictEqual(expect.arrayContaining([
       expect.stringContaining('Focused epic link'),
+      expect.stringContaining('Project Update'),
       expect.stringContaining('primary task nature must match branch nature'),
-      expect.stringContaining('PR title prefix must match primary task nature')
+      expect.stringContaining('[JUM-XXXX][Nature]')
+    ]));
+  });
+
+  it('rejects a Project Update field that is not a Linear project update URL', () => {
+    expect.hasAssertions();
+    const failures = validatePullRequest({
+      title: '[JUM-163][CI] Enforce focused epic metadata',
+      body: validBody.replace(
+        'https://linear.app/jumentix/project/governance-foundation-c3cb6bae0771/activity#project-update-7ef876cc-30c5-41ba-b2ea-fdca9935b0e3',
+        'https://linear.app/jumentix/project/governance-foundation-c3cb6bae0771/activity'
+      ),
+      headRef: 'codex/ci/JUM-163-focused-epic-metadata',
+      baseRef: 'dev'
+    });
+
+    expect(failures).toStrictEqual(expect.arrayContaining([
+      expect.stringContaining('Project Update')
+    ]));
+  });
+
+  it('reports only the missing-field error when Project Update is empty', () => {
+    expect.hasAssertions();
+    const failures = validatePullRequest({
+      title: '[JUM-163][CI] Enforce focused epic metadata',
+      body: validBody.replace(/- Project Update:.*$/, ''),
+      headRef: 'codex/ci/JUM-163-focused-epic-metadata',
+      baseRef: 'dev'
+    });
+
+    expect(failures).toStrictEqual(expect.arrayContaining([
+      expect.stringContaining('missing structured PR field: Project Update')
+    ]));
+    expect(failures).not.toStrictEqual(expect.arrayContaining([
+      expect.stringContaining('Project Update must be a Linear project update URL')
     ]));
   });
 
   it('allows only a release PR from dev to target main', () => {
     expect.hasAssertions();
     expect(validatePullRequest({
-      title: '[Release] Promote dev to main',
+      title: '[JUM-163][Release] Promote dev to main',
       headRef: 'dev',
       baseRef: 'main'
     })).toStrictEqual([]);
     expect(validatePullRequest({
-      title: '[Fix] Direct task promotion',
-      headRef: 'codex/fix/99-direct-main',
+      title: '[JUM-99][Fix] Direct task promotion',
+      headRef: 'codex/fix/JUM-99-direct-main',
       baseRef: 'main'
     })).toHaveLength(2);
+  });
+
+  it('rejects a title or branch whose task identifier differs from the Linear Issue', () => {
+    expect.hasAssertions();
+    const failures = validatePullRequest({
+      title: '[JUM-999][CI] Enforce focused epic metadata',
+      body: validBody,
+      headRef: 'codex/ci/JUM-999-focused-epic-metadata',
+      baseRef: 'dev'
+    });
+
+    expect(failures).toStrictEqual(expect.arrayContaining([
+      expect.stringContaining('[JUM-163][CI]'),
+      expect.stringContaining('branch task identifier (JUM-999) must match JUM-163')
+    ]));
+  });
+
+  it('rejects a numeric-only legacy branch identifier', () => {
+    expect.hasAssertions();
+    const failures = validatePullRequest({
+      title: '[JUM-163][CI] Enforce focused epic metadata',
+      body: validBody,
+      headRef: 'codex/ci/163-focused-epic-metadata',
+      baseRef: 'dev'
+    });
+
+    expect(failures).toContain(
+      '[pr-governance] invalid task branch format: codex/ci/163-focused-epic-metadata'
+    );
   });
 });

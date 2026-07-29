@@ -8,7 +8,8 @@ Project communication surfaces (documentation and website) must support English 
 
 ## Requirement
 
-1. Every executed task (by AI or humans) must have a corresponding Linear Issue and Linear Project item.
+1. Every executed task (by AI or humans) must have a corresponding Linear Issue linked to its
+   focused Linear Project.
 2. Every executed task must keep required governance metadata updated (status, priority, estimates, iteration/cycle, start/end dates, labels, assignee, PR/commit links).
 3. Every executed task must include documentation updates whenever behavior, architecture, governance, product positioning, or contracts are impacted.
 4. Software docs, product docs, and spec docs must be kept in sync and versioned together.
@@ -18,7 +19,8 @@ Project communication surfaces (documentation and website) must support English 
 
 ## Acceptance Criteria
 
-- No implementation task is considered complete without a linked issue/project item.
+- No implementation task is considered complete without its linked Linear Issue, focused
+  Project, and final Project Update.
 - PRs include explicit task linkage and evidence of documentation synchronization.
 - Documentation hubs expose EN/PT content paths (or clear language selector strategy) for equivalent content.
 - Website routes/content provide EN/PT experience parity for main sections.

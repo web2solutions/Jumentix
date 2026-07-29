@@ -1,26 +1,28 @@
 # Spec Requirements Coverage Status
 
+<!-- requirements-inventory: files=105 unique=102 mapped=102 duplicates=055,060,079 -->
+
 This document certifies current coverage of implemented requirements by Spec Development Driven resources.
 
 ## Baseline Snapshot
 
-Date: `2026-07-26`
+Date: `2026-07-28`
 
-1. Requirement files in `.agents/requirements`: `97`
-2. Unique requirement IDs: `95`
-3. IDs covered in `SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`: `95`
+1. Requirement files in `.agents/requirements`: `102`
+2. Unique requirement IDs: `98`
+3. IDs covered in `SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`: `98`
 4. Coverage status: `100%`
 
 Notes:
 
-1. IDs `055` and `060` each have two requirement files with different scopes.
+1. IDs `055`, `060`, `079`, and `095` each have two requirement files with different scopes.
 2. Coverage is measured by unique requirement IDs and by mandatory artifact linkage in the ledger.
 
 ## Non-Functional Requirements Coverage
 
-NFR IDs covered (`52`):
+NFR IDs covered (`55`):
 
-`001`, `011`, `014`, `015`, `016`, `017`, `018`, `020`, `025`, `029`, `036`, `041`, `042`, `043`, `044`, `050`, `053`, `056`, `057`, `063`, `064`, `065`, `066`, `067`, `068`, `069`, `070`, `071`, `072`, `073`, `074`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `091`, `092`, `093`, `094`, `095`
+`001`, `011`, `014`, `015`, `016`, `017`, `018`, `020`, `025`, `029`, `036`, `041`, `042`, `043`, `044`, `050`, `053`, `056`, `057`, `063`, `064`, `065`, `066`, `067`, `068`, `069`, `070`, `071`, `072`, `073`, `074`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `091`, `092`, `093`, `094`, `095`, `096`, `097`, `098`, `099`, `100`, `101`
 
 NFR mapping sources:
 
@@ -46,6 +48,8 @@ Any new implemented requirement is non-compliant until:
 2. requirement ID is mapped in `SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`
 3. matching spec resources are linked
 4. evidence path (tests/checks/gates) is defined
+5. `pnpm run requirements:check` validates the index, ledger mapping, duplicate IDs, and
+   bilingual inventory markers
 
 ## Audit Pointers
 
