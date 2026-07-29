@@ -16,6 +16,7 @@ jobs:
     env:
       AAA_JWT_TOKEN_SECRET_KEY: ${{ secrets.AAA_JWT_TOKEN_SECRET_KEY || 'ci_jwt_secret_key' }}
       AAA_REDIS_PASSWORD: ${{ secrets.AAA_REDIS_PASSWORD || 'ci_redis_password' }}
+      GH_TOKEN: ${{ secrets.AGENT_REGISTRY_TOKEN }}
 
     strategy:
       matrix:
@@ -43,7 +44,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: pnpm
-    - run: pnpm install --no-frozen-lockfile
+    - run: pnpm install --frozen-lockfile
     # - run: apt install redis-tools
     # - run: ./wait-for-redis.sh localhost:6379
     - run: wget https://github.com/jwilder/dockerize/releases/download/v0.6.1/dockerize-linux-amd64-v0.6.1.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-v0.6.1.tar.gz && rm dockerize-linux-amd64-v0.6.1.tar.gz

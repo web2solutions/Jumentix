@@ -66,6 +66,12 @@ Repository authority follows Requirement `103`: private
 former `web2solutions` origins are deprecated, read-only, and accept no new
 modifications.
 
+Requirement `104` additionally binds complete provider rebinding and terminal
+evidence for CI, coverage, security, deployment, dependency, secret,
+environment, and webhook integrations. The executable bilingual inventory is
+maintained in
+[`CANONICAL-INTEGRATIONS-AND-PROVIDER-REBINDING.md`](./CANONICAL-INTEGRATIONS-AND-PROVIDER-REBINDING.md).
+
 Spec-Driven execution depends on and reuses these existing sources:
 
 - OpenAPI and AsyncAPI contracts (`/spec`)

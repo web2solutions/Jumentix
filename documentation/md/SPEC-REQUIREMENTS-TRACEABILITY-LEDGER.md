@@ -1,6 +1,6 @@
 # Spec Requirements Traceability Ledger
 
-<!-- requirements-inventory: files=106 unique=103 mapped=103 duplicates=055,060,079 -->
+<!-- requirements-inventory: files=107 unique=104 mapped=104 duplicates=055,060,079 -->
 
 This ledger maps requirement IDs to spec resources and validation evidence expectations.
 
@@ -80,16 +80,18 @@ For any change, identify impacted requirement IDs and ensure:
 
 ## F. Quality, Security, and Compliance Gates
 
-- `011`, `014`, `020`, `044`, `063`, `065`, `074`, `087`, `088`
+- `011`, `014`, `020`, `044`, `063`, `065`, `074`, `087`, `088`, `104`
 - Spec resources:
   - `documentation/md/TESTING-CI-AND-QUALITY.md`
   - `documentation/md/SECURITY-RUNBOOK-PCI.md`
   - `documentation/md/PCI-REMEDIATION-PLAN-AND-EVIDENCE.md`
+  - `documentation/md/CANONICAL-INTEGRATIONS-AND-PROVIDER-REBINDING.md`
   - coverage/check scripts in `ci-cd/*`
 - Evidence:
   - destination-appropriate CI gate green
   - coverage threshold proof
   - security/compliance check results
+  - `pnpm run integrations:check` and terminal provider-side evidence
 
 ## G. Documentation, Governance Process, and Multi-Agent Operations
 
@@ -141,8 +143,8 @@ If impacted requirement IDs are not mapped before implementation, the change is 
 
 As of `2026-07-29`, this ledger covers all unique requirement IDs currently registered in `.agents/requirements`:
 
-1. Requirement files in the registry: `106`
-2. Unique IDs in requirements registry: `103`
-3. Unique IDs mapped in this ledger: `103`
+1. Requirement files in the registry: `107`
+2. Unique IDs in requirements registry: `104`
+3. Unique IDs mapped in this ledger: `104`
 4. Duplicate IDs with independently binding files: `055`, `060`, `079`
 5. Missing IDs: `none`

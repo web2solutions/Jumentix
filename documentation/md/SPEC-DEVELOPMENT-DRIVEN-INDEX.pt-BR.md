@@ -70,6 +70,12 @@ repositório privado `XpertMinds/jumentix-agent-registry` é canônico para a
 coordenação de agentes. As duas origens anteriores em `web2solutions` estão
 obsoletas, são somente leitura e não aceitam novas modificações.
 
+O Requisito `104` também vincula a revinculação completa dos provedores e
+evidência terminal para integrações de CI, cobertura, segurança, deploy,
+dependências, segredos, ambientes e webhooks. O inventário executável bilíngue
+fica em
+[`CANONICAL-INTEGRATIONS-AND-PROVIDER-REBINDING.pt-BR.md`](./CANONICAL-INTEGRATIONS-AND-PROVIDER-REBINDING.pt-BR.md).
+
 A execução orientada por especificações depende e reutiliza estas fontes existentes:
 
 - Contratos OpenAPI e AsyncAPI (`/spec`)

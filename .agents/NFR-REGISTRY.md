@@ -86,6 +86,9 @@ This file consolidates non-functional requirements already requested and stored 
 - `103` The private `XpertMinds` application and agent-registry repositories are canonical;
   both former `web2solutions` origins are deprecated, read-only, accept no new modifications,
   and remain archived after their final migration delivery.
+- `104` Every applicable CI, coverage, security, deployment, dependency, secret, environment,
+  and webhook integration must be rebound to `XpertMinds/Jumentix`, with fail-closed provider
+  credentials and terminal canonical evidence.
 
 When a new NFR is requested:
 

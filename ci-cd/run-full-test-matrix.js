@@ -14,6 +14,7 @@ const FULL_TEST_MATRIX = Object.freeze([
   { id: 'release-governance', script: 'release:governance:check' },
   { id: 'pull-request-governance', script: 'pr:governance:check' },
   { id: 'requirements-registry', script: 'requirements:check' },
+  { id: 'canonical-integrations', script: 'integrations:check' },
   { id: 'agent-registry', script: 'agent-registry:check' },
   { id: 'unit', script: 'test:unit' },
   { id: 'security-smoke', script: 'ci:security-smoke' },

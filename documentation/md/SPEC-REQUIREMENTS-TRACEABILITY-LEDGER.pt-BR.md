@@ -4,7 +4,7 @@ Idioma alvo: Português (Brasil)
 -->
 # Especificações de rastreabilidade de requisitos
 
-<!-- requirements-inventory: files=106 unique=103 mapped=103 duplicates=055,060,079 -->
+<!-- requirements-inventory: files=107 unique=104 mapped=104 duplicates=055,060,079 -->
 
 Este livro-razão mapeia IDs de requisitos para especificações de recursos e expectativas de evidências de validação.
 
@@ -84,16 +84,18 @@ Para qualquer alteração, identifique os IDs dos requisitos afetados e garanta:
 
 ## F. Portões de qualidade, segurança e conformidade
 
-- `011`, `014`, `020`, `044`, `063`, `065`, `074`, `087`, `088`
+- `011`, `014`, `020`, `044`, `063`, `065`, `074`, `087`, `088`, `104`
 - Recursos de especificações:
   - `documentação/md/TESTING-CI-AND-QUALITY.md`
   - `documentação/md/SECURITY-RUNBOOK-PCI.md`
   - `documentation/md/PCI-REMEDIATION-PLAN-AND-EVIDENCE.md`
+  - `documentation/md/CANONICAL-INTEGRATIONS-AND-PROVIDER-REBINDING.pt-BR.md`
   - scripts de cobertura/verificação em `ci-cd/*`
 - Evidência:
   - Portão CI verde
   - prova de limite de cobertura
   - resultados da verificação de segurança/conformidade
+  - `pnpm run integrations:check` e evidência terminal dos provedores
 
 ## G. Documentação, processo de governança e operações multiagente
 
@@ -145,8 +147,8 @@ Se os IDs de requisitos afetados não forem mapeados antes da implementação, a
 
 A partir de `2026-07-29`, este livro-razão cobre todos os IDs de requisitos exclusivos atualmente registrados em `.agents/requirements`:
 
-1. Arquivos de requisitos no registro: `106`
-2. IDs exclusivos no registro de requisitos: `103`
-3. IDs exclusivos mapeados neste livro-razão: `103`
+1. Arquivos de requisitos no registro: `107`
+2. IDs exclusivos no registro de requisitos: `104`
+3. IDs exclusivos mapeados neste livro-razão: `104`
 4. IDs duplicados com arquivos vinculantes independentes: `055`, `060`, `079`
 5. IDs ausentes: `nenhum`

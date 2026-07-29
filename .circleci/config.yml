@@ -22,7 +22,7 @@ jobs:
           command: npx pnpm@9.15.3 --version
       - run:
           name: install packages
-          command: npx pnpm@9.15.3 install --no-frozen-lockfile
+          command: npx pnpm@9.15.3 install --frozen-lockfile
       - save_cache:
           key: node-deps-v1-{{ .Branch }}-{{checksum "pnpm-lock.yaml"}}
           paths:
