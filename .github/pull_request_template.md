@@ -27,9 +27,9 @@ Include links to issue(s), incident(s), backlog items, or Sonar/Codecov check UR
 - Epic-delegated agent ID:
 - Child task issue link:
 - Project Update:
-- Project item link(s):
-- Issue link(s):
-- Issue ID list (comma separated):
+- Linear Project link(s):
+- Linear Issue link(s):
+- Linear Issue ID list (comma separated):
 - Item status at PR creation:
 - Target cycle (`Start date` -> `End date`):
 - Priority group for this PR (`P0` / `P1` / `P2`):
@@ -39,6 +39,8 @@ Include links to issue(s), incident(s), backlog items, or Sonar/Codecov check UR
 
 - Source branch:
 - Target branch:
+- Required PR title format: `[JUM-XXXX][Nature] <concise outcome>`
+- [ ] The leading `JUM-XXXX` matches the single Linear Issue declared above.
 - [ ] This task PR targets `dev`.
 - [ ] If this PR targets `main`, it is a release promotion sourced from `dev`, references the task PRs/issues already merged into `dev`, and introduces no unreviewed changes.
 - [ ] This PR is not a direct task/topic branch promotion to `main`.
@@ -49,7 +51,7 @@ Include links to issue(s), incident(s), backlog items, or Sonar/Codecov check UR
 - [ ] Every linked issue already contains commit hash/range evidence.
 - [ ] PR description includes mapping of task -> commit(s).
 - Task -> commit(s) mapping:
-  - `#issue`:
+  - `JUM-000`:
 
 ## Scope of Change
 

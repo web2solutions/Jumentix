@@ -18,6 +18,7 @@ const REQUIRED_EPIC_FIELDS = Object.freeze([
   'Child task issue link',
   'Project Update'
 ]);
+const REQUIRED_TITLE_FORMAT = '[JUM-XXXX][Nature] <concise outcome>';
 
 const TITLE_PREFIX_BY_NATURE = Object.freeze({
   feature: '[Feature]',
@@ -33,7 +34,6 @@ const TITLE_PREFIX_BY_NATURE = Object.freeze({
   chore: '[Chore]'
 });
 
-const GITHUB_ISSUE_URL_PATTERN = /^https:\/\/github\.com\/[^/]+\/[^/]+\/issues\/\d+$/;
 const LINEAR_ISSUE_URL_PATTERN = /^https:\/\/linear\.app\/[^/]+\/issue\/[A-Z][A-Z0-9]*-\d+\/[^/?#]+$/;
 const LINEAR_PROJECT_URL_PATTERN = /^https:\/\/linear\.app\/[^/]+\/project\/[^/?#]+(?:\/(?:overview|activity))?$/;
 const LINEAR_PROJECT_UPDATE_URL_PATTERN = /^https:\/\/linear\.app\/[^/]+\/project\/[^/?#]+\/activity#project-update-[a-f0-9-]+$/i;
@@ -66,6 +66,11 @@ function validateTemplates(rootDir = process.cwd()) {
         failures.push(`[pr-governance] ${templatePath} is missing field: ${field}`);
       }
     }
+    if (!contents.includes(REQUIRED_TITLE_FORMAT)) {
+      failures.push(
+        `[pr-governance] ${templatePath} is missing PR title format: ${REQUIRED_TITLE_FORMAT}`
+      );
+    }
   }
   return failures;
 }
@@ -83,8 +88,10 @@ function validatePullRequest(metadata) {
     if (headRef !== 'dev') {
       failures.push('[pr-governance] only dev may target main');
     }
-    if (!title.startsWith('[Release] ')) {
-      failures.push('[pr-governance] dev-to-main PR title must start with [Release]');
+    if (!/^\[JUM-\d+\]\[Release\] .+/.test(title)) {
+      failures.push(
+        '[pr-governance] dev-to-main PR title must use [JUM-XXXX][Release] <concise outcome>'
+      );
     }
     return failures;
   }
@@ -94,7 +101,9 @@ function validatePullRequest(metadata) {
     return failures;
   }
 
-  const branchMatch = headRef.match(/^(?:codex|claude|grok)\/([a-z-]+)\/(\d+)-[a-z0-9-]+$/);
+  const branchMatch = headRef.match(
+    /^(?:codex|claude|grok|opencode)\/([a-z-]+)\/([A-Z][A-Z0-9]*-\d+)-[a-z0-9-]+$/
+  );
   if (!branchMatch) {
     failures.push(`[pr-governance] invalid task branch format: ${headRef || '<empty>'}`);
   }
@@ -111,29 +120,45 @@ function validatePullRequest(metadata) {
     failures.push(`[pr-governance] primary task nature must match branch nature (${branchMatch[1]})`);
   }
 
+  const taskLink = readField(body, 'Child task issue link');
+  const taskIdentifier = taskLink.match(
+    /^https:\/\/linear\.app\/[^/]+\/issue\/([A-Z][A-Z0-9]*-\d+)\//
+  )?.[1] || '';
   const expectedPrefix = TITLE_PREFIX_BY_NATURE[nature];
-  if (!expectedPrefix || !title.startsWith(`${expectedPrefix} `)) {
-    failures.push(`[pr-governance] PR title prefix must match primary task nature (${nature || '<empty>'})`);
+  const expectedTitlePrefix = taskIdentifier && expectedPrefix
+    ? `[${taskIdentifier}]${expectedPrefix} `
+    : '';
+  if (!expectedTitlePrefix || !title.startsWith(expectedTitlePrefix)) {
+    failures.push(
+      '[pr-governance] PR title must start with the matching '
+      + `[JUM-XXXX][Nature] prefix (${expectedTitlePrefix.trim() || '<invalid metadata>'})`
+    );
+  }
+  if (
+    branchMatch
+    && taskIdentifier
+    && branchMatch[2] !== taskIdentifier
+  ) {
+    failures.push(
+      `[pr-governance] branch task identifier (${branchMatch[2]}) must match ${taskIdentifier}`
+    );
   }
 
   const epicLink = readField(body, 'Focused epic link');
-  const taskLink = readField(body, 'Child task issue link');
   const projectUpdateLink = readField(body, 'Project Update');
   if (
     epicLink
-    && !GITHUB_ISSUE_URL_PATTERN.test(epicLink)
     && !LINEAR_PROJECT_URL_PATTERN.test(epicLink)
   ) {
-    failures.push('[pr-governance] focused epic link must be a GitHub issue or Linear project URL');
+    failures.push('[pr-governance] focused epic link must be a Linear project URL');
   }
   if (
     taskLink
-    && !GITHUB_ISSUE_URL_PATTERN.test(taskLink)
     && !LINEAR_ISSUE_URL_PATTERN.test(taskLink)
   ) {
-    failures.push('[pr-governance] child task issue link must be a GitHub or Linear issue URL');
+    failures.push('[pr-governance] child task issue link must be a Linear issue URL');
   }
-  if (!LINEAR_PROJECT_UPDATE_URL_PATTERN.test(projectUpdateLink)) {
+  if (projectUpdateLink && !LINEAR_PROJECT_UPDATE_URL_PATTERN.test(projectUpdateLink)) {
     failures.push('[pr-governance] Project Update must be a Linear project update URL');
   }
 
@@ -166,6 +191,7 @@ if (require.main === module) {
 
 module.exports = {
   REQUIRED_EPIC_FIELDS,
+  REQUIRED_TITLE_FORMAT,
   TEMPLATE_PATHS,
   TITLE_PREFIX_BY_NATURE,
   isPlaceholder,

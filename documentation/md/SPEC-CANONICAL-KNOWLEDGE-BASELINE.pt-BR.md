@@ -86,4 +86,5 @@ Quando o conhecimento mudar, atualize no mesmo ciclo:
 2. Recursos técnicos `documentation/md/*`.
 3. `.agents/requirements/*` quando restrições ou governança são afetadas.
 4. `.agents/NFR-REGISTRY.md` quando o comportamento não funcional muda.
-5. Metadados de problemas/projetos do GitHub e links de evidências de relações públicas.
+5. Metadados da Issue/Project e Project Updates no Linear, com links de evidências do PR no
+   GitHub.

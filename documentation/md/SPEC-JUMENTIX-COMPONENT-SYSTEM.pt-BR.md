@@ -99,7 +99,8 @@ Para qualquer alteração que afete a composição:
 1. atualizar documentos/especificações de composição
 2. atualizar os registros de requisitos/NFR se existir impacto na governança
 3. atualizar índices e mapas de origem
-4. incluir evidências de rastreabilidade na questão/projeto/PR
+4. incluir evidências de rastreabilidade na Issue/Project/Project Update do Linear e no PR do
+   GitHub
 
 ## 8) Referências Primárias
 

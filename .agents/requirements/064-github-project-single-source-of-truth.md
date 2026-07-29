@@ -5,7 +5,7 @@ Implemented
 
 ## Policy (Superseded)
 
-**Note**: This requirement is superseded by Requirement `094` (Linear as Single Source of Truth).
+**Note**: This requirement is superseded by Requirement `095` (Linear as Single Source of Truth).
 
 - ~~The GitHub Project **Jumentix** is the single source of truth for:~~
   - ~~task backlog,~~

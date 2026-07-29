@@ -15,8 +15,9 @@ projects, and pull requests provide delivery evidence but do not replace current
    - `Start date`
    - `End date`
    - `Milestone`
-4. No work starts without a linked issue and project item.
-5. Task progress updates must happen in the project item status, not only in local notes.
+4. No work starts without a linked Linear Issue and focused Linear Project.
+5. Task progress must be reflected in current Issue metadata and the parent Project's mandatory
+   Project Updates, not only in local notes or GitHub activity.
 6. All executed tasks must keep governance metadata updated (status, priority, estimates, cycle/iteration, start/end dates, labels, assignee, PR/commit links).
 
 ## Planning Metadata Lifecycle
@@ -39,7 +40,7 @@ projects, and pull requests provide delivery evidence but do not replace current
 
 ## Focused Epics and Task Nature
 
-1. Every active epic belongs to exactly one open GitHub milestone.
+1. Every active Linear Project epic belongs to exactly one open Linear milestone.
 2. Every executable task belongs to exactly one focused epic through structured Linear parentage
    and uses the same milestone as that epic.
 3. Milestones define a delivery target and due date. Epic and task dates remain within that date.
@@ -60,13 +61,13 @@ projects, and pull requests provide delivery evidence but do not replace current
 
 Each PR must include:
 
-- Related issue link(s)
-- Focused parent epic link
+- Linear Issue link
+- Focused Linear Project link
 - Associated milestone
-- Related project item context (Project: `Jumentix`)
+- Required Project Update link
 - Acceptance criteria and validation evidence
 - Coverage and quality-gate evidence
-- Task-owned branch name and nature-prefixed PR title
+- Task-owned branch name and PR title prefixed by the matching Linear Issue and nature
 - Source and target branches, proving the task PR targets `dev`
 - Destination-aware gate results for commit, push, merge, and PR boundaries; full-matrix results for `main` promotion
 - False-green prevention evidence, including real failure propagation
@@ -78,17 +79,23 @@ If a PR is not linked to project work items, it is out of process.
 1. Every task must have its own branch and its own PR.
 2. A branch or PR must not combine separately tracked tasks.
 3. Codex branches use `codex/<nature>/<issue-id>-<short-slug>`.
-4. PR titles use `[<Nature>] <concise outcome>`.
+4. PR titles use `[JUM-XXXX][<Nature>] <concise outcome>`.
 5. Allowed nature values are `feature`, `fix`, `security`, `governance`, `docs`, `refactor`, `test`, `ci`, `release`, and `chore`.
-6. The nature declared by the branch and PR title must match.
+6. The Linear identifier declared by the branch, PR title, and linked Issue must match; the
+   nature declared by the branch and PR title must also match.
 7. Any exception must be explicitly approved and recorded in the linked issue and PR.
 8. Every task PR must target `dev`.
 9. Only a release-promotion PR whose source branch is `dev` may target `main`.
-10. A `dev` to `main` promotion PR introduces no unreviewed changes and references the task PRs and issues already merged into `dev`.
+10. A `dev` to `main` promotion PR introduces no changes outside the task PRs already merged
+    into `dev` and references their Linear Issues.
 11. Direct pushes, merges, or task/topic PRs to `main` are prohibited.
-12. Every commit, push, and PR runs the complete repository-declared test matrix.
-13. Missing, skipped, empty, cancelled, timed-out, aborted, or unreported required matrix cells fail the gate.
+12. Task-branch commits and pushes run changed/related tests; `dev` and PRs targeting `dev` run
+    the complete unit gate; `main` and promotions targeting `main` run the complete matrix.
+13. Missing, skipped, empty, cancelled, timed-out, aborted, or unreported required tests or
+    matrix cells fail the selected gate.
 14. Test failures and discovery failures must propagate a non-zero status; false-green fallbacks are prohibited.
+15. PR review is optional. Branch protection and rulesets require no approval count, while every
+    destination-appropriate check remains mandatory and terminally successful.
 
 ### Canonical agent registry evidence
 
@@ -146,8 +153,8 @@ Mixing `P0`, `P1`, and `P2` work in the same PR is not allowed.
 6. Validate task and Project status, priority, dates, labels, and ownership.
 7. Delegate available agents to the epic, then assign its non-overlapping child tasks.
 8. Create the task-owned, nature-prefixed branch.
-9. Implement with a dedicated PR targeting `dev` and linked to the milestone, epic, issue, and
-   project.
+9. Implement with a dedicated PR targeting `dev` and linked to the Linear milestone, Project,
+   Issue, and required Project Update.
 10. Promote `dev` to `main` only through a release-promotion PR after the complete matrix passes.
 11. Verify the dedicated documentation Issue and its evidence are complete.
 12. Move project status (`Backlog` -> `Ready` -> `In progress` -> `In review` -> `Done`) only

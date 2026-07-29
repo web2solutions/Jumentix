@@ -46,8 +46,9 @@ Use these templates for all spec-first changes.
 - Coverage target confirmation:
 
 ## Governance
-- Issue:
-- Project item:
+- Linear Issue:
+- Focused Linear Project:
+- Project Update:
 - Priority/Estimate:
 - Acceptance criteria:
 ```
@@ -102,8 +103,8 @@ Use these templates for all spec-first changes.
 
 Before PR:
 
-1. Issue exists and is linked to project item.
-2. Project fields are complete.
+1. Linear Issue exists and is linked to its focused Project and shared milestone.
+2. Issue and Project planning fields are complete.
 3. Spec files updated for all changed contracts/behaviors.
 4. Architecture and boundary impact reviewed.
 5. Tests implemented per risk profile.
@@ -117,5 +118,11 @@ Before merge:
 1. CI gates green.
 2. Patch coverage gate green.
 3. Security/compliance checks green.
-4. Project item moved to `Done` with evidence references.
+4. Linear Issue is truthfully in `In Review` (or the equivalent active review state), and the
+   latest Project Update reports exact gate results.
 
+After merge:
+
+1. Linear Issue moves to `Done`.
+2. Final Project Update links the merge commit and contains no unresolved blocker or incomplete
+   required gate.

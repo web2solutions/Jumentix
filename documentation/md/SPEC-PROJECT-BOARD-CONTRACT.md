@@ -48,7 +48,8 @@ Strategic stream labels are additive (for example `todo-mvp`, `epic`, `iteration
 5. Epic and task end dates must not exceed the milestone due date without formal replanning.
 6. A milestone may contain multiple focused epics only when they serve the same delivery target.
 7. The epic must describe one cohesive outcome and must not be a catch-all backlog.
-8. Parentage must use Linear sub-issues or the Project `Parent issue` field when available.
+8. Parentage must use the task's Linear Project association and Linear parent/sub-issue fields
+   when available.
 9. Milestone association must use Linear Issue and Project milestone metadata.
 10. Tasks are grouped by primary nature inside the epic. Supporting work with a different nature
    is tracked as a separate child task under the same cohesive outcome.
@@ -93,9 +94,10 @@ Every PR must reference:
 1. related issue(s)
 2. focused parent epic
 3. associated milestone
-4. project item scope
-5. changed spec resources
-6. evidence summary (tests/coverage/security)
+4. focused Linear Project scope
+5. required Project Update
+6. changed spec resources
+7. evidence summary (tests/coverage/security)
 
 And every issue should reflect:
 

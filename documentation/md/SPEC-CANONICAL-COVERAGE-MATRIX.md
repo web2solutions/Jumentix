@@ -14,7 +14,7 @@ This matrix ensures that all known Jumentix knowledge areas are covered by Spec 
 | Functional contract behavior | `spec/1.0.0.yml`, `spec/asyncapi/*`, contract docs | `SPEC-KNOWLEDGE-SOURCE-MAP.md`, `SPEC-TEMPLATES-AND-CHECKLISTS.md` | Contract checks (`oas:check-routes`, realtime validations) |
 | Error and integration contracts | `ERROR-CONTRACTS-AND-RESPONSES.md`, `EVENTS-AND-MESSAGES-MAP.md` | `SPEC-KNOWLEDGE-SOURCE-MAP.md`, `SPEC-ARCHITECTURE-CODING-STANDARDS.md` | Integration and unit tests |
 | Requirements and NFRs | `.agents/requirements/*`, `.agents/NFR-REGISTRY.md` | `SPEC-GOVERNANCE-AND-TRACEABILITY.md`, `SPEC-KNOWLEDGE-SOURCE-MAP.md` | NFR registry sync rule |
-| Requirement-level traceability | `.agents/requirements/*`, GitHub issues/project fields | `SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`, `SPEC-GOVERNANCE-AND-TRACEABILITY.md` | requirement IDs referenced in PR |
+| Requirement-level traceability | `.agents/requirements/*`, Linear Issues/Projects/milestones/Project Updates | `SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`, `SPEC-GOVERNANCE-AND-TRACEABILITY.md` | requirement IDs referenced in PR |
 | Project governance rules | `JUMENTIX-PROJECT-GOVERNANCE.md` | `SPEC-GOVERNANCE-AND-TRACEABILITY.md` | Mandatory issue/project/PR traceability |
 | Board governance contract | Linear Project fields, iterations, labels, lifecycle status | `SPEC-PROJECT-BOARD-CONTRACT.md` | missing board metadata blocks closure |
 | Coding standards and implementation discipline | existing engineering guidance + lint/test policies | `SPEC-ARCHITECTURE-CODING-STANDARDS.md` | Lint + architecture checks |

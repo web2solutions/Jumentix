@@ -7,7 +7,8 @@ Spec Development Driven in Jumentix is enforced through project governance and a
 Governance source of truth:
 
 - Linear Issues and Projects (`https://linear.app/jumentix`)
-- The Linear API key is at `../.relative to project root` — agents read it for authentication; must never be exposed, logged, or committed.
+- The Linear API key is stored at `../.linear`, one level above the project root. Agents may read
+  it for authentication but must never expose, log, share, or commit it.
 
 Mandatory governance records:
 
@@ -94,12 +95,12 @@ authoritative until a native or custom field is available.
 Each PR must contain:
 
 1. Scope summary tied to issue intent
-2. Milestone, focused parent epic, and project item linkage
+2. Linear milestone, focused parent Project, child Issue, and Project Update linkage
 3. Spec file list changed
 4. Acceptance criteria and evidence
 5. Coverage and gate outcomes
 6. Risk/rollback notes when needed
-7. Task-owned branch name and matching nature-prefixed PR title
+7. Task-owned branch name and PR title prefixed by the matching Linear Issue and nature
 8. Source and target branch evidence
 9. Clean markdown formatting with real breaklines; do not use literal `\n` tokens in PR body text.
 
@@ -107,12 +108,14 @@ Task isolation and naming policy:
 
 - One task maps to exactly one delivery branch and one PR.
 - Codex branch format: `codex/<nature>/<issue-id>-<short-slug>`.
-- PR title format: `[<Nature>] <concise outcome>`.
+- PR title format: `[JUM-XXXX][<Nature>] <concise outcome>`; the identifier must match the
+  branch and the single linked Linear Issue.
 - Allowed nature values: `feature`, `fix`, `security`, `governance`, `docs`, `refactor`, `test`, `ci`, `release`, `chore`.
 - Sharing a branch or PR across separately tracked tasks requires an explicit exception recorded in the issue and PR.
 - Every task PR targets `dev`.
 - Only a release-promotion PR sourced from `dev` may target `main`.
-- A `dev` to `main` promotion references the task PRs/issues already merged into `dev` and introduces no unreviewed changes.
+- A `dev` to `main` promotion references the task PRs and Linear Issues already represented in
+  `dev` and introduces no additional task changes.
 - Direct task/topic PRs, pushes, and merges to `main` are prohibited.
 - Commit and push gates are destination-aware: task branches run only changed or related
   unit tests, `dev` runs the complete unit suite, and `main` runs the complete matrix.
@@ -120,11 +123,10 @@ Task isolation and naming policy:
   `main` run the complete matrix.
 - Main-matrix evidence must list every required cell and its terminal result.
 - An incomplete `main` matrix is failed evidence; it must never be interpreted as green.
-- Repository administrators may bypass the required-review count only with explicit project-owner
-  approval recorded in the issue or PR.
-- Administrative review bypass does not waive task isolation, `dev`-first promotion, conversation
-  resolution, or any CI, coverage, security, and full-matrix requirement. Every required check
-  must be reported and terminal green.
+- PR review is optional. Branch protection and rulesets must not require an approval count.
+- Task isolation, `dev`-first promotion, conversation resolution, and every destination-aware CI,
+  coverage, security, governance, and full-matrix requirement remain mandatory and terminal
+  green.
 
 Priority grouping policy:
 
@@ -205,7 +207,7 @@ Before any task execution:
 
 Minimum evidence set:
 
-1. Linked milestone + focused epic + child issue + project item
+1. Linked Linear milestone + focused Project + child Issue + required Project Update
 2. Epic-level agent delegation and task-level assignment
 3. Changed spec files and docs
 4. Green CI output for required gates

@@ -17,8 +17,8 @@
 - Epic-delegated agent ID:
 - Child task issue link:
 - Project Update:
-- Project item link:
-- Issue link:
+- Linear Project link:
+- Linear Issue link:
 - Current status in project:
 - Target cycle (`Start date` -> `End date`):
 - Priority group for this PR (`P0` / `P1` / `P2`):
@@ -28,10 +28,10 @@
 
 - Task-owned branch:
 - Branch nature (`feature`):
-- PR title prefix (`[Feature]`):
-- [ ] This branch and PR contain work for exactly one GitHub Issue.
+- Required PR title format: `[JUM-XXXX][Nature] <concise outcome>`
+- [ ] This branch and PR contain work for exactly one Linear Issue.
 - [ ] Branch format follows `<approved-actor>/feature/<issue-id>-<short-slug>`.
-- [ ] PR title follows `[Feature] <concise outcome>`.
+- [ ] PR title follows `[JUM-XXXX][Feature] <concise outcome>` and the identifier matches the Linear Issue.
 
 ## Scope
 

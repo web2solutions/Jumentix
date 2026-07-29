@@ -9,7 +9,7 @@ To improve review quality and delivery predictability, pull requests must be gro
 1. PRs must be scoped by a single priority group (`P0`, `P1`, or `P2`).
 2. Mixing tasks from different priority groups in one PR is not allowed.
 3. PR templates must require explicit declaration of priority group.
-4. Project item links must confirm the selected priority group.
+4. Linear Issue and Project links must confirm the selected priority group.
 
 ## Acceptance criteria
 
