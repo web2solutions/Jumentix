@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-07-29 test(http): stabilize integration listener lifecycle [JUM-564] - Eduardo Almeida
 - 2026-07-29 test(ci): isolate registry token assertions [JUM-564] - Eduardo Almeida
 - 2026-07-29 test(ci): satisfy canonical bootstrap lint [JUM-564] - Eduardo Almeida
 - 2026-07-29 Merge branch 'dev' into codex/ci/JUM-564-restify-process-budget - Eduardo Almeida
