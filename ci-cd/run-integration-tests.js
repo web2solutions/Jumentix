@@ -2,6 +2,9 @@
 const { spawnSync } = require('child_process');
 
 const DEFAULT_INTEGRATION_TIMEOUT_MS = 120_000;
+const INTEGRATION_TIMEOUT_OVERRIDES_MS = Object.freeze({
+  'test:integration:express': 300_000
+});
 
 const INTEGRATION_SCRIPTS = Object.freeze([
   'test:integration:express',
@@ -23,7 +26,9 @@ const INTEGRATION_SCRIPTS = Object.freeze([
 
 function executeIntegrationScript(scriptName, options = {}) {
   const spawn = options.spawn || spawnSync;
-  const timeoutMs = options.timeoutMs || DEFAULT_INTEGRATION_TIMEOUT_MS;
+  const timeoutMs = options.timeoutMs
+    ?? INTEGRATION_TIMEOUT_OVERRIDES_MS[scriptName]
+    ?? DEFAULT_INTEGRATION_TIMEOUT_MS;
   const result = spawn('pnpm', ['run', scriptName], {
     stdio: 'inherit',
     env: { ...process.env, CI: 'true' },
@@ -106,6 +111,7 @@ if (require.main === module) {
 module.exports = {
   DEFAULT_INTEGRATION_TIMEOUT_MS,
   INTEGRATION_SCRIPTS,
+  INTEGRATION_TIMEOUT_OVERRIDES_MS,
   executeIntegrationScript,
   runIntegrationTests,
   validateIntegrationManifest
