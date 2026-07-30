@@ -218,8 +218,40 @@ without the other reintroduces exactly the three-way disagreement (`postcss` at 
 | 60 `bun test` failures from `bun:test` API gaps | Test Pyramid JUM-434–436 |
 | Branch coverage is not enforced by `bun test` (it has no branch metric) | JUM-437 / this guide §5 |
 | 4 workspace `test` scripts are `echo` placeholders; 15 more alias `typecheck` | Test Pyramid JUM-557 |
+| The built backend artifact is not loadable under Node (below) | JUM-37, unresolved |
+| `bun pm scan` needs a scanner package chosen and vetted | JUM-540, unresolved |
 
-The last row is a live false green: `mono:test` reports success while almost no workspace runs a test.
+The fourth row is a live false green: `mono:test` reports success while almost no workspace runs a test.
+
+### The built artifact is not Node-loadable — and never was
+
+Requirement 096 §4 keeps Node as an *independently validated* consumer-facing target. Measured, that
+validation does not currently hold, and the cause predates this migration:
+
+```
+$ node -e "require('./.build/.../start-rest-api.js')"
+Cannot find module '@src/interface/runtime/RuntimeEnvironment'
+
+$ bun -e "require('./.build/.../start-rest-api.js')"
+OK
+```
+
+`tsc` does not rewrite path aliases, so the compiled output keeps `require("@src/...")`. The pre-migration
+`prod:*` PM2 scripts ran that output with `--interpreter node` and **no** `tsconfig-paths` preload, so they
+could not have resolved it either. Bun happens to load it because it resolves tsconfig `paths` natively.
+
+So the migration incidentally masks a latent production defect rather than causing one. Closing it properly
+needs a decision, not a patch: emit real relative paths (a bundler or `tsc-alias`), or declare Node
+compatibility as applying to the published packages only and not to the built backend entry. That decision
+belongs to JUM-37 and is **not** made here.
+
+### `bun pm scan` is a framework, not a scanner
+
+`bun pm scan` exists and reads the lockfile, but it requires a scanner package configured under
+`[install.security]` in `bunfig.toml`. Choosing one is a supply-chain decision (whose code runs over our
+dependency graph), so it is left open rather than picked unilaterally. Snyk is present as `.snyk` but is not
+wired into any CI job, so the JUM-540 concern about Snyk parsing `bun.lock` does not currently affect CI.
+Codecov and Sonar consume lcov from Jest and are unaffected by the lockfile change.
 
 ## References
 
