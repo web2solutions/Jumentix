@@ -55,7 +55,7 @@
     "ci:smoke": "AAA_JWT_TOKEN_SECRET_KEY=${AAA_JWT_TOKEN_SECRET_KEY:-ci_jwt_secret_key} NODE_ENV=ci bun ci-cd/run-api-smoke.js",
     "ci:integration": "AAA_JWT_TOKEN_SECRET_KEY=${AAA_JWT_TOKEN_SECRET_KEY:-ci_jwt_secret_key} bun ci-cd/run-integration-tests.js",
     "ci:security-smoke": "NODE_ENV=ci bun ci-cd/run-security-smoke.js",
-    "ci:gate": "bun run lint && bun run deps:check-cycles && bun run arch:check-boundaries && bun run arch:check-users-legacy-imports && bun run arch:check-workspace-boundaries && bun run workspace:check-quality && bun run workspace:check-coverage-policy && bun run release:governance:check && bun run requirements:check && bun run integration-migration:check && bun run agent-registry:check && bun run test:unit && bun run ci:security-smoke && bun run oas:check-routes && bun run serverless:check-handlers && bun run build:dev && bun run ci:smoke",
+    "ci:gate": "bun run check-bun-version && bun run deps:check-overrides && bun run lint && bun run deps:check-cycles && bun run arch:check-boundaries && bun run arch:check-users-legacy-imports && bun run arch:check-workspace-boundaries && bun run workspace:check-quality && bun run workspace:check-coverage-policy && bun run release:governance:check && bun run requirements:check && bun run integration-migration:check && bun run agent-registry:check && bun run test:unit && bun run ci:security-smoke && bun run oas:check-routes && bun run serverless:check-handlers && bun run build:dev && bun run ci:smoke",
     "ci:gate:branch": "bun ci-cd/run-branch-quality-gate.js",
     "ci:gate:task": "bun ci-cd/run-task-change-tests.js",
     "ci:gate:strict": "bun ci-cd/run-full-test-matrix.js",
@@ -231,7 +231,8 @@
     "smoke:realtime:redis-streams": "bun run docker:composeredis && bun run test:integration:realtime:redis-streams && docker compose -f \"apps/backend-template/docker-compose-redis.yml\" down",
     "docker:stop:platform-services": "docker compose -f \"apps/backend-template/docker-compose-platform-services.yml\" down",
     "docker:stop:service-template": "docker compose -f \"apps/backend-template/docker-compose-service-templates.yml\" down",
-    "docker:clean": "docker system prune -a"
+    "docker:clean": "docker system prune -a",
+    "ci:fail-closed": "bun ci-cd/check-fail-closed.js"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.940.0",
@@ -312,7 +313,6 @@
     "simple-git": "^3.36.0",
     "supertest": "^6.3.4",
     "ts-jest": "^29.2.5",
-    "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "5.4.5"
   },
