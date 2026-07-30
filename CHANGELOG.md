@@ -4,6 +4,9 @@
 
 ## All Changes
 
+- 2026-07-30 docs(integrations): record terminal provider evidence - Eduardo Almeida
+- 2026-07-30 [JUM-568][CI] Complete provider evidence and fail-closed checks (#10) - Eduardo A.
+- 2026-07-30 ci(JUM-568): make Codecov upload fail closed - Eduardo Almeida
 - 2026-07-30 docs(JUM-568): record GitGuardian plan constraint - Eduardo Almeida
 - 2026-07-30 docs(JUM-568): record terminal PR checks - Eduardo Almeida
 - 2026-07-30 docs(JUM-568): record canonical provider evidence - Eduardo Almeida
