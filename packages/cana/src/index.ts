@@ -39,3 +39,13 @@ export type {
 } from './core/storage';
 
 export { StorageDurability, browserStorageEnvironment, classifyOpen } from './core/storage';
+
+export type { KeyStrategy } from './core/schema';
+export {
+  applySchema, assertSchema, keyStrategyOf, validateSchema
+} from './core/schema';
+
+export type { OpenOptions, OpenResult } from './core/database';
+export { closeDatabase, deleteDatabase, openDatabase } from './core/database';
+
+export { canaError, translateError } from './core/errors';

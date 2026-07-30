@@ -285,6 +285,7 @@
   "devDependencies": {
     "@commitlint/cli": "^17.8.1",
     "@commitlint/config-conventional": "^17.8.1",
+    "@jumentix/security-scanner": "workspace:*",
     "@types/aws-lambda": "^8.10.145",
     "@types/bcrypt": "^5.0.2",
     "@types/bcryptjs": "^2.4.6",
@@ -310,6 +311,7 @@
     "eslint-plugin-jest": "^27.9.0",
     "eslint-plugin-module-resolver": "^1.5.0",
     "eslint-plugin-no-async-foreach": "^0.1.1",
+    "fake-indexeddb": "^6.2.5",
     "husky": "^8.0.3",
     "jest": "^29.7.0",
     "nodemon": "^3.1.7",
@@ -317,8 +319,7 @@
     "supertest": "^6.3.4",
     "ts-jest": "^29.2.5",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "5.4.5",
-    "@jumentix/security-scanner": "workspace:*"
+    "typescript": "5.4.5"
   },
   "resolutions": {
     "serverless": "^4.1.12"
