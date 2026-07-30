@@ -1,4 +1,4 @@
-import { IUserRepository } from '@src/modules/Users/service/ports/IUserRepository';
+import type { IUserRepository } from '@src/modules/Users/service/ports/IUserRepository';
 
 export const deleteUserById = async (
   id: string,

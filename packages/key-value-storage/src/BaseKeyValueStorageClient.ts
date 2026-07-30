@@ -1,4 +1,4 @@
-import { IKeyValueStorageClient, IServiceResponse } from './contracts';
+import type { IKeyValueStorageClient, IServiceResponse } from './contracts';
 import { ServiceResponse } from './ServiceResponse';
 
 const resolvePrefix = (): string => {

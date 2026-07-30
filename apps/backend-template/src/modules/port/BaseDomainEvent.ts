@@ -1,6 +1,6 @@
 import { Context } from '@src/infra/context/Context';
-import { IDomainEventMetadata } from './IDomainEventMetadata';
-import { IEventMessage } from './IEventMessage';
+import type { IDomainEventMetadata } from './IDomainEventMetadata';
+import type { IEventMessage } from './IEventMessage';
 
 export abstract class BaseDomainEvent<TPayload = any> {
   public type: string = this.constructor.name;

@@ -1,5 +1,5 @@
 import { buildDatabaseClientCompilers } from '@jumentix/database-client-factory';
-import { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
+import type { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
 import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
 
 const compilers = buildDatabaseClientCompilers<IDatabaseClient>({

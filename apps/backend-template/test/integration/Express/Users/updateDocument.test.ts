@@ -16,8 +16,15 @@ import {
   BasicAuthorizationHeaderUser4,
   BasicAuthorizationHeaderUserGuest
 } from '@test/mock';
+import type {
+  IUser
+} from '@src/modules/Users';
+import type {
+  RequestUpdateDocument
+} from '@src/modules/Users';
 import {
-  IUser, RequestUpdateDocument, UserDataRepository, UserService
+  UserDataRepository,
+  UserService
 } from '@src/modules/Users';
 import { DocumentValueObject } from '@src/modules/ddd/valueObjects';
 import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';

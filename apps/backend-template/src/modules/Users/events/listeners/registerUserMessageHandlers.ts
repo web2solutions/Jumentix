@@ -1,8 +1,8 @@
-import {
+import type {
   IMessageMediator,
   IMessage
 } from '@src/modules/port';
-import { IAuthService } from '@src/modules/Users/service/ports/IAuthService';
+import type { IAuthService } from '@src/modules/Users/service/ports/IAuthService';
 import { UserMessageContracts } from '@src/modules/Users/events/contracts/UserMessageContracts';
 
 interface IAuthorizePayload {

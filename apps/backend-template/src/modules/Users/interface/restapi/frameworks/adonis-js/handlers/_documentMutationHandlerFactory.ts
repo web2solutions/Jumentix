@@ -2,13 +2,15 @@ import { BaseError, EErrorStringCodes } from '@src/infra/exceptions';
 import { formatErrorMessage, toHttpStatus } from '@src/shared/utils';
 import { BaseDomainEvent } from '@src/modules/port/BaseDomainEvent';
 import { UserController } from '@src/modules/Users';
-import {
+import type {
+  IHandlerFactory
+} from '@src/interface/HTTP/ports';
+import type {
   EndPointFactory,
-  IHandlerFactory,
   IbaseHandler
 } from '@src/interface/HTTP/ports';
 
-import { AdonisJsRequest, AdonisJsResponse } from '@src/interface/HTTP/adapters/adonis-js/AdonisJsServer';
+import type { AdonisJsRequest, AdonisJsResponse } from '@src/interface/HTTP/adapters/adonis-js/AdonisJsServer';
 
 type ControllerMethod =
   | 'createDocument'

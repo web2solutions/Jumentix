@@ -14,7 +14,7 @@ import { InMemoryKeyValueStorageClient } from '@src/infra/persistence/KeyValueSt
 import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
 
 import { EAuthSchemaType } from '@src/modules/Users/service/ports/EAuthSchemaType';
-import { IAuthService } from '@src/modules/Users/service/ports/IAuthService';
+import type { IAuthService } from '@src/modules/Users/service/ports/IAuthService';
 import { JwtService } from '@src/infra/jwt/JwtService';
 
 const databaseClient = InMemoryDbClient;

@@ -1,4 +1,4 @@
-import { IServiceResponse } from './IServiceResponse';
+import type { IServiceResponse } from './IServiceResponse';
 
 export class ServiceResponse {
   public result: any = undefined;

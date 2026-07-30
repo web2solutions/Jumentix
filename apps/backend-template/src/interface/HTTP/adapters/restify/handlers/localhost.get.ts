@@ -1,6 +1,6 @@
 import { Request, Response } from 'restify';
 
-import { EndPointFactory, IbaseHandler } from '@src/interface/HTTP/ports';
+import type { EndPointFactory, IbaseHandler } from '@src/interface/HTTP/ports';
 import { Context } from '@src/infra/context/Context';
 
 const localhostGetHandlerFactory: EndPointFactory = (): IbaseHandler => {

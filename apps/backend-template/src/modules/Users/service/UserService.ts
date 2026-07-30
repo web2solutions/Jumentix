@@ -1,18 +1,20 @@
 // file deepcode ignore WrongNumberOfArguments: <same name but different functions>
 // file deepcode ignore MissingArgument: <same name but different functions>
 
-import {
+import type {
   IPagingRequest,
   IPagingResponse,
-  ServiceResponse,
   IServiceResponse,
   IServiceConfig,
-  BaseService,
   IEventBus
+} from '@src/modules/port';
+import {
+  ServiceResponse,
+  BaseService
 } from '@src/modules/port';
 import { UUID } from '@src/modules/port/UUID';
 
-import { IUser } from '@src/modules/Users/domain/Entity/IUser';
+import type { IUser } from '@src/modules/Users/domain/Entity/IUser';
 import { UserDataRepository } from '@src/modules/Users/adapters/out/persistence/UserDataRepository';
 import { OrganizationDataRepository } from '@src/modules/Users/adapters/out/persistence/OrganizationDataRepository';
 import { createUser } from '@src/modules/Users/features/createUser';
@@ -30,25 +32,25 @@ import { deletePhone } from '@src/modules/Users/features/deletePhone';
 import { createEmail } from '@src/modules/Users/features/createEmail';
 import { updateEmail } from '@src/modules/Users/features/updateEmail';
 import { deleteEmail } from '@src/modules/Users/features/deleteEmail';
-import { RequestCreateUser } from '@src/modules/Users/interface/dto/RequestCreateUser';
-import { RequestUpdateUser } from '@src/modules/Users/interface/dto/RequestUpdateUser';
-import { RequestUpdatePassword } from '@src/modules/Users/interface/dto/RequestUpdatePassword';
-import { RequestCreateDocument } from '@src/modules/Users/interface/dto/RequestCreateDocument';
-import { RequestUpdateDocument } from '@src/modules/Users/interface/dto/RequestUpdateDocument';
-import { RequestCreatePhone } from '@src/modules/Users/interface/dto/RequestCreatePhone';
-import { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
-import { RequestCreateEmail } from '@src/modules/Users/interface/dto/RequestCreateEmail';
-import { RequestUpdateEmail } from '@src/modules/Users/interface/dto/RequestUpdateEmail';
+import type { RequestCreateUser } from '@src/modules/Users/interface/dto/RequestCreateUser';
+import type { RequestUpdateUser } from '@src/modules/Users/interface/dto/RequestUpdateUser';
+import type { RequestUpdatePassword } from '@src/modules/Users/interface/dto/RequestUpdatePassword';
+import type { RequestCreateDocument } from '@src/modules/Users/interface/dto/RequestCreateDocument';
+import type { RequestUpdateDocument } from '@src/modules/Users/interface/dto/RequestUpdateDocument';
+import type { RequestCreatePhone } from '@src/modules/Users/interface/dto/RequestCreatePhone';
+import type { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
+import type { RequestCreateEmail } from '@src/modules/Users/interface/dto/RequestCreateEmail';
+import type { RequestUpdateEmail } from '@src/modules/Users/interface/dto/RequestUpdateEmail';
 import { UserIntegrationEventName } from '@src/modules/Users/events/contracts/UserIntegrationEventName';
 
 import { canNotBeEmpty, mustBePassword } from '@src/shared/validators';
 
-import { IMutexService } from '@src/infra/mutex/port/IMutexService';
-import { IPasswordCryptoService } from '@src/infra/security/IPasswordCryptoService';
+import type { IMutexService } from '@src/infra/mutex/port/IMutexService';
+import type { IPasswordCryptoService } from '@src/infra/security/IPasswordCryptoService';
 
 import { BaseError, ResourceLockedError } from '@src/infra/exceptions';
 import { shouldRequireOrganization } from '@src/modules/Users/domain/security/Rbac';
-import { ICacheService } from '@src/infra/cache';
+import type { ICacheService } from '@src/infra/cache';
 
 interface IUserServiceConfig extends IServiceConfig {
   organizationDataRepository?: OrganizationDataRepository;

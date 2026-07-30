@@ -2,7 +2,8 @@
 // file deepcode ignore NoHardcodedPasswords: <mocked passwords>
 // file deepcode ignore NoHardcodedCredentials/test: <fake credential>
 import request from 'supertest';
-import { FastifyServer, Fastify } from '@src/interface/HTTP/adapters/fastify/FastifyServer';
+import type { Fastify } from '@src/interface/HTTP/adapters/fastify/FastifyServer';
+import { FastifyServer } from '@src/interface/HTTP/adapters/fastify/FastifyServer';
 import { infraHandlers } from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
 import { RestAPI } from '@src/interface/HTTP/RestAPI';
 import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
@@ -17,8 +18,15 @@ import {
   BasicAuthorizationHeaderUser4,
   BasicAuthorizationHeaderUserGuest
 } from '@test/mock';
+import type {
+  IUser
+} from '@src/modules/Users';
+import type {
+  RequestUpdateEmail
+} from '@src/modules/Users';
 import {
-  IUser, RequestUpdateEmail, UserDataRepository, UserService
+  UserDataRepository,
+  UserService
 } from '@src/modules/Users';
 import { EmailValueObject } from '@src/modules/ddd/valueObjects';
 import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';

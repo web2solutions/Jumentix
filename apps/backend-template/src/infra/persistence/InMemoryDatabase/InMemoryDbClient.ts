@@ -1,5 +1,5 @@
 // import { Account } from '@src/domains/Accounts';
-import { IDatabaseClient, IDbStores } from '../port/IDatabaseClient';
+import type { IDatabaseClient, IDbStores } from '../port/IDatabaseClient';
 import { UserStoreAPI } from './Stores/UserStoreAPI';
 import { OrganizationStoreAPI } from './Stores/OrganizationStoreAPI';
 

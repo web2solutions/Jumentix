@@ -6,7 +6,7 @@ import {
   EmailValueObject,
   PhoneValueObject
 } from '@src/modules/ddd/valueObjects';
-import { IOrganization } from '@src/modules/Users/domain/Entity/IOrganization';
+import type { IOrganization } from '@src/modules/Users/domain/Entity/IOrganization';
 
 const now = new Date();
 

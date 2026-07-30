@@ -1,26 +1,31 @@
 /* istanbul ignore file */
-import { IStore } from '@src/infra/ports/persistence/IStore';
+import type { IStore } from '@src/infra/ports/persistence/IStore';
 import {
   throwIfPreUpdateValidationFails,
   throwIfNotFound,
   canNotBeEmpty
 } from '@src/shared/validators';
-import {
+import type {
   IUser
 } from '@src/modules/Users/domain/Entity/IUser';
 import { User } from '@src/modules/Users/domain/Model/User';
-import { RequestCreateUser } from '@src/modules/Users/interface/dto/RequestCreateUser';
-import { RequestUpdateUser } from '@src/modules/Users/interface/dto/RequestUpdateUser';
-import { RequestUpdatePassword } from '@src/modules/Users/interface/dto/RequestUpdatePassword';
-import { RequestCreateDocument } from '@src/modules/Users/interface/dto/RequestCreateDocument';
-import { RequestUpdateDocument } from '@src/modules/Users/interface/dto/RequestUpdateDocument';
-import { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
-import { RequestCreatePhone } from '@src/modules/Users/interface/dto/RequestCreatePhone';
-import { RequestUpdateEmail } from '@src/modules/Users/interface/dto/RequestUpdateEmail';
-import { RequestCreateEmail } from '@src/modules/Users/interface/dto/RequestCreateEmail';
-import { IUserRepository } from '@src/modules/Users/service/ports/IUserRepository';
+import type { RequestCreateUser } from '@src/modules/Users/interface/dto/RequestCreateUser';
+import type { RequestUpdateUser } from '@src/modules/Users/interface/dto/RequestUpdateUser';
+import type { RequestUpdatePassword } from '@src/modules/Users/interface/dto/RequestUpdatePassword';
+import type { RequestCreateDocument } from '@src/modules/Users/interface/dto/RequestCreateDocument';
+import type { RequestUpdateDocument } from '@src/modules/Users/interface/dto/RequestUpdateDocument';
+import type { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
+import type { RequestCreatePhone } from '@src/modules/Users/interface/dto/RequestCreatePhone';
+import type { RequestUpdateEmail } from '@src/modules/Users/interface/dto/RequestUpdateEmail';
+import type { RequestCreateEmail } from '@src/modules/Users/interface/dto/RequestCreateEmail';
+import type { IUserRepository } from '@src/modules/Users/service/ports/IUserRepository';
+import type {
+  IPagingRequest,
+  IPagingResponse,
+  IRepoConfig
+} from '@src/modules/port';
 import {
-  IPagingRequest, IPagingResponse, IRepoConfig, BaseRepo
+  BaseRepo
 } from '@src/modules/port';
 
 import { _DEFAULT_PAGE_SIZE_ } from '@src/config/constants';

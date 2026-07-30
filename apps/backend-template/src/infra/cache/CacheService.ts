@@ -1,6 +1,6 @@
-import { IKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/IKeyValueStorageClient';
+import type { IKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/IKeyValueStorageClient';
 
-import { ICacheService } from './ICacheService';
+import type { ICacheService } from './ICacheService';
 
 interface ICacheEnvelope<T = any> {
   value: T;

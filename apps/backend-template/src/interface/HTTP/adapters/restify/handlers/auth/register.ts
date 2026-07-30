@@ -1,6 +1,8 @@
 import { Request, Response } from 'restify';
-import {
-  IHandlerFactory,
+import type {
+  IHandlerFactory
+} from '@src/interface/HTTP/ports';
+import type {
   IbaseHandler,
   EndPointFactory
 } from '@src/interface/HTTP/ports';
@@ -9,7 +11,7 @@ import {
 } from '@src/interface/HTTP/adapters/restify/responses/sendErrorResponse';
 
 import { RegisterRequestEvent } from '@src/modules/Users/events/RegisterRequestEvent';
-import { IRegisterRequest } from '@src/modules/Users';
+import type { IRegisterRequest } from '@src/modules/Users';
 
 const register: EndPointFactory = (
   {

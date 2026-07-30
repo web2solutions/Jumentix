@@ -1,5 +1,6 @@
 import { Request, Response } from 'restify';
-import { EndPointFactory, IbaseHandler, IHandlerFactory } from '@src/interface/HTTP/ports';
+import type { IHandlerFactory } from '@src/interface/HTTP/ports';
+import type { EndPointFactory, IbaseHandler } from '@src/interface/HTTP/ports';
 import { sendErrorResponse } from '@src/interface/HTTP/adapters/restify/responses/sendErrorResponse';
 
 const apiDocGetHandlerFactory: EndPointFactory = (

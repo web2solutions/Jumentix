@@ -1,6 +1,8 @@
-import {
-  BaseExternalDataRepository,
+import type {
   IRepositoryConnectionOptions
+} from '@jumentix/external-persistence-core';
+import {
+  BaseExternalDataRepository
 } from '@jumentix/external-persistence-core';
 
 export type ESqlDialect = 'postgres' | 'mysql' | 'mssql' | 'oracle' | 'sqlite';

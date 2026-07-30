@@ -1,5 +1,5 @@
 // file deepcode ignore NoHardcodedPasswords: <mocked passwords>
-import { IUser } from '@src/modules/Users';
+import type { IUser } from '@src/modules/Users';
 import { UUID } from '@src/modules/port';
 import {
   DocumentValueObject,

@@ -1,13 +1,16 @@
-import { SailsJsRequest, SailsJsResponse } from '@src/interface/HTTP/adapters/sails-js/SailsJsServer';
+import type { SailsJsRequest, SailsJsResponse } from '@src/interface/HTTP/adapters/sails-js/SailsJsServer';
 import { sendErrorResponse } from '@src/interface/HTTP/adapters/sails-js/responses/sendErrorResponse';
 
-import {
-  IHandlerFactory,
+import type {
+  IHandlerFactory
+} from '@src/interface/HTTP/ports';
+import type {
   IbaseHandler,
   EndPointFactory
 } from '@src/interface/HTTP/ports';
 
-import { ILogoutRequest, LogoutRequestEvent } from '@src/modules/Users';
+import type { ILogoutRequest } from '@src/modules/Users';
+import { LogoutRequestEvent } from '@src/modules/Users';
 
 const logout: EndPointFactory = (
   {

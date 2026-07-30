@@ -1,4 +1,4 @@
-import { IKeyValueStorageClient, IMutexService, IServiceResponse } from './contracts';
+import type { IKeyValueStorageClient, IMutexService, IServiceResponse } from './contracts';
 import { ServiceResponse } from './ServiceResponse';
 
 let mutexService: IMutexService | undefined;

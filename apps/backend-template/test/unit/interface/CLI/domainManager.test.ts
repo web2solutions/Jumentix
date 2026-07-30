@@ -1,5 +1,5 @@
 import { domainManagerSubApplication } from '@src/interface/CLI/subapps/domainManager';
-import { IWorkspaceCatalog } from '@src/interface/CLI/types';
+import type { IWorkspaceCatalog } from '@src/interface/CLI/types';
 
 describe('cli domain manager', () => {
   const createContext = (catalog: IWorkspaceCatalog, chooseQueue: number[], askQueue: string[]) => {

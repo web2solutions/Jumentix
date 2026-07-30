@@ -1,13 +1,16 @@
-import { TotalJsRequest, TotalJsResponse } from '@src/interface/HTTP/adapters/total-js/TotalJsServer';
+import type { TotalJsRequest, TotalJsResponse } from '@src/interface/HTTP/adapters/total-js/TotalJsServer';
 import { sendErrorResponse } from '@src/interface/HTTP/adapters/total-js/responses/sendErrorResponse';
 
-import {
-  IHandlerFactory,
+import type {
+  IHandlerFactory
+} from '@src/interface/HTTP/ports';
+import type {
   IbaseHandler,
   EndPointFactory
 } from '@src/interface/HTTP/ports';
 
-import { RequestUpdatePassword, UserController, UserPasswordUpdateRequestEvent } from '@src/modules/Users';
+import type { RequestUpdatePassword } from '@src/modules/Users';
+import { UserController, UserPasswordUpdateRequestEvent } from '@src/modules/Users';
 
 const updatePassword: EndPointFactory = (
   {

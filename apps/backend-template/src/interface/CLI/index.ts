@@ -4,7 +4,7 @@
 /* eslint-disable jest/require-hook */
 import { Prompt } from '@src/interface/CLI/core/prompt';
 import { getCatalogFilePath, loadCatalog, saveCatalog } from '@src/interface/CLI/core/catalogStorage';
-import { ISubApplication, ISubApplicationContext } from '@src/interface/CLI/types';
+import type { ISubApplication, ISubApplicationContext } from '@src/interface/CLI/types';
 import { domainManagerSubApplication } from '@src/interface/CLI/subapps/domainManager';
 import { entityModelManagerSubApplication } from '@src/interface/CLI/subapps/entityModelManager';
 
