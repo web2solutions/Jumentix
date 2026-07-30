@@ -47,10 +47,22 @@ const INTEGRATION_CONTRACTS = Object.freeze([
       'target: 95%'
     ]
   },
+  // `.snyk` was a required canonical integration until 2026-07-30 (JUM-540).
+  //
+  // Retired because Snyk cannot parse `bun.lock`: with no lockfile it recognises it
+  // does not fail, it silently reads direct dependencies from package.json and
+  // reports green. Measured at 45 dependencies against a resolved tree of 2027,
+  // while every advisory `.snyk` suppressed was transitive — so the file was
+  // documenting exceptions to a scan that was no longer happening.
+  //
+  // Replaced by the first-party OSV scanner: `bun run deps:audit`, wired into
+  // ci:gate alongside `deps:check-scanner`, which fails closed if Snyk is ever
+  // reintroduced without a lockfile it can read.
   {
-    file: '.snyk',
+    file: 'packages/security-scanner/src/index.js',
     markers: [
-      'version: v1.25.0'
+      'api.osv.dev',
+      'ACCEPTED_RISK'
     ]
   },
   {
