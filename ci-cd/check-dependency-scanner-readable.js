@@ -95,7 +95,16 @@ function main() {
     process.exit(1);
   }
 
-  console.log('Dependency-scanner readability guard passed: a scanner-readable lockfile is present.');
+  // Say which branch it took. "Passed" alone would read as "a readable lockfile is
+  // present" even when it passed because Snyk is no longer a configured control —
+  // and a guard that reports the wrong reason is how the next blind spot hides.
+  const snykConfigured = SNYK_CONFIG_FILES.some((file) => exists(file));
+  console.log(
+    snykConfigured
+      ? 'Dependency-scanner readability guard passed: a scanner-readable lockfile is present.'
+      : 'Dependency-scanner readability guard passed: Snyk is not a configured control '
+        + '(no .snyk), so bun.lock parsing is moot. Coverage comes from `bun run deps:audit`.',
+  );
 }
 
 if (require.main === module) {
