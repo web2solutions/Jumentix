@@ -34,6 +34,9 @@ const INTEGRATION_CONTRACTS = Object.freeze([
     markers: [
       'codecov/codecov@4.1.0',
       'install --frozen-lockfile',
+      'commit_args: "--slug XpertMinds/Jumentix"',
+      'report_args: "--slug XpertMinds/Jumentix"',
+      'upload_args: "--slug XpertMinds/Jumentix --fail-on-error"',
       'only:\n                - dev\n                - main'
     ]
   },
