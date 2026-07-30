@@ -84,16 +84,18 @@ Para qualquer alteração, identifique os IDs dos requisitos afetados e garanta:
 
 ## F. Portões de qualidade, segurança e conformidade
 
-- `011`, `014`, `020`, `044`, `063`, `065`, `074`, `087`, `088`
+- `011`, `014`, `020`, `044`, `063`, `065`, `074`, `087`, `088`, `104`
 - Recursos de especificações:
   - `documentação/md/TESTING-CI-AND-QUALITY.md`
   - `documentação/md/SECURITY-RUNBOOK-PCI.md`
   - `documentation/md/PCI-REMEDIATION-PLAN-AND-EVIDENCE.md`
+  - `documentation/md/CANONICAL-INTEGRATIONS-AND-PROVIDER-REBINDING.pt-BR.md`
   - scripts de cobertura/verificação em `ci-cd/*`
 - Evidência:
   - Portão CI verde
   - prova de limite de cobertura
   - resultados da verificação de segurança/conformidade
+  - `pnpm run integrations:check` e evidência terminal dos provedores
 
 ## G. Documentação, processo de governança e operações multiagente
 

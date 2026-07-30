@@ -80,16 +80,18 @@ For any change, identify impacted requirement IDs and ensure:
 
 ## F. Quality, Security, and Compliance Gates
 
-- `011`, `014`, `020`, `044`, `063`, `065`, `074`, `087`, `088`
+- `011`, `014`, `020`, `044`, `063`, `065`, `074`, `087`, `088`, `104`
 - Spec resources:
   - `documentation/md/TESTING-CI-AND-QUALITY.md`
   - `documentation/md/SECURITY-RUNBOOK-PCI.md`
   - `documentation/md/PCI-REMEDIATION-PLAN-AND-EVIDENCE.md`
+  - `documentation/md/CANONICAL-INTEGRATIONS-AND-PROVIDER-REBINDING.md`
   - coverage/check scripts in `ci-cd/*`
 - Evidence:
   - destination-appropriate CI gate green
   - coverage threshold proof
   - security/compliance check results
+  - `pnpm run integrations:check` and terminal provider-side evidence
 
 ## G. Documentation, Governance Process, and Multi-Agent Operations
 
