@@ -58,7 +58,7 @@ const getHint = (name, lang) => {
 const buildTable = (scripts, lang) => {
   const rows = Object.entries(scripts).map(([name, command]) => {
     const hint = getHint(name, lang);
-    const run = `pnpm run ${name}`;
+    const run = `bun run ${name}`;
     return `| \`${name}\` | ${hint} | \`${run}\` | \`${command.replaceAll('|', '\\|')}\` |`;
   });
 
@@ -77,7 +77,7 @@ This page lists all root \`package.json\` scripts and how to use each command.
 Usage pattern:
 
 \`\`\`bash
-pnpm run <command>
+bun run <command>
 \`\`\`
 
 ${buildTable(scripts, 'en')}
@@ -90,7 +90,7 @@ Esta página lista todos os scripts do \`package.json\` raiz e como usar cada co
 Padrão de uso:
 
 \`\`\`bash
-pnpm run <comando>
+bun run <comando>
 \`\`\`
 
 ${buildTable(scripts, 'pt')}
