@@ -1,8 +1,8 @@
-import {
+import type {
   IUser
 } from '@src/modules/Users/domain/Entity/IUser';
-import { IUserRepository } from '@src/modules/Users/service/ports/IUserRepository';
-import { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
+import type { IUserRepository } from '@src/modules/Users/service/ports/IUserRepository';
+import type { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
 
 export const updatePhone = async (
   userId: string,

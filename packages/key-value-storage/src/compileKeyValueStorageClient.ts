@@ -1,4 +1,4 @@
-import { IKeyValueStorageClient } from './contracts';
+import type { IKeyValueStorageClient } from './contracts';
 import { InMemoryKeyValueStorageClient } from './InMemoryKeyValueStorageClient';
 import { RedisKeyValueStorageClient } from './RedisKeyValueStorageClient';
 

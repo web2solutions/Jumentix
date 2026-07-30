@@ -1,5 +1,5 @@
-import { IHTTPRequest } from './IHTTPRequest';
-import { IHTTPResponse } from './IHTTPResponse';
+import type { IHTTPRequest } from './IHTTPRequest';
+import type { IHTTPResponse } from './IHTTPResponse';
 
 export interface IbaseHandlerFactory {
     method: string;

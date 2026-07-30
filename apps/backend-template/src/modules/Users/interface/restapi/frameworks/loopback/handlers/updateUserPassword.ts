@@ -1,13 +1,16 @@
-import { LoopBackRequest, LoopBackResponse } from '@src/interface/HTTP/adapters/loopback/LoopBackServer';
+import type { LoopBackRequest, LoopBackResponse } from '@src/interface/HTTP/adapters/loopback/LoopBackServer';
 import { sendErrorResponse } from '@src/interface/HTTP/adapters/loopback/responses/sendErrorResponse';
 
-import {
-  IHandlerFactory,
+import type {
+  IHandlerFactory
+} from '@src/interface/HTTP/ports';
+import type {
   IbaseHandler,
   EndPointFactory
 } from '@src/interface/HTTP/ports';
 
-import { IUpdatePasswordRequest, UpdatePasswordRequestEvent } from '@src/modules/Users';
+import type { IUpdatePasswordRequest } from '@src/modules/Users';
+import { UpdatePasswordRequestEvent } from '@src/modules/Users';
 
 const updateUserPassword: EndPointFactory = (
   {

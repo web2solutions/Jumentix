@@ -3,7 +3,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 
 const sitePort = Number(process.env.JUMENTIX_WEBSITE_PORT ?? '3010');
 const baseUrl = `http://127.0.0.1:${sitePort}`;
-const pnpmCommand = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
+const bunCommand = process.platform === 'win32' ? 'bun.exe' : 'bun';
 
 const runCommand = (command, args, extraEnv = {}) =>
   new Promise((resolve, reject) => {
@@ -23,7 +23,7 @@ const runCommand = (command, args, extraEnv = {}) =>
   });
 
 const startServer = () =>
-  spawn(pnpmCommand, ['run', 'start'], {
+  spawn(bunCommand, ['run', 'start'], {
     stdio: 'inherit',
     env: { ...process.env, PORT: String(sitePort) }
   });
@@ -223,8 +223,8 @@ const smokeRoutes = async () => {
 };
 
 const run = async () => {
-  await runCommand(pnpmCommand, ['run', 'typecheck']);
-  await runCommand(pnpmCommand, ['run', 'build']);
+  await runCommand(bunCommand, ['run', 'typecheck']);
+  await runCommand(bunCommand, ['run', 'build']);
 
   const serverProcess = startServer();
 

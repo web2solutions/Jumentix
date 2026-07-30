@@ -21,8 +21,15 @@ import {
   documents
 } from '@test/mock';
 
+import type {
+  IUser
+} from '@src/modules/Users';
+import type {
+  RequestCreateDocument
+} from '@src/modules/Users';
 import {
-  IUser, RequestCreateDocument, UserDataRepository, UserService
+  UserDataRepository,
+  UserService
 } from '@src/modules/Users';
 import { DocumentValueObject } from '@src/modules/ddd/valueObjects';
 import { JwtService } from '@src/infra/jwt/JwtService';

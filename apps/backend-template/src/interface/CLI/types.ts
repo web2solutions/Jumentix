@@ -1,4 +1,4 @@
-import { OpenApiDataType } from '@src/shared/openapi/OpenApi31DataEntity';
+import type { OpenApiDataType } from '@src/shared/openapi/OpenApi31DataEntity';
 
 export type Dictionary = Record<string, any>;
 

@@ -1,1 +1,1 @@
-export { IKeyValueStorageClient } from '@jumentix/key-value-storage';
+export type { IKeyValueStorageClient } from '@jumentix/key-value-storage';

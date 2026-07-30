@@ -1,5 +1,5 @@
 import { UserService } from '@src/modules/Users/service/UserService';
-import { IUser } from '@src/modules/Users';
+import type { IUser } from '@src/modules/Users';
 import { UserIntegrationEventName } from '@src/modules/Users/events/contracts/UserIntegrationEventName';
 
 const userWithSecrets = (id: string): IUser & { salt: string } => ({

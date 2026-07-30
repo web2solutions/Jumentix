@@ -1,13 +1,16 @@
-import { LoopBackRequest, LoopBackResponse } from '@src/interface/HTTP/adapters/loopback/LoopBackServer';
+import type { LoopBackRequest, LoopBackResponse } from '@src/interface/HTTP/adapters/loopback/LoopBackServer';
 import { sendErrorResponse } from '@src/interface/HTTP/adapters/loopback/responses/sendErrorResponse';
 
-import {
-  IHandlerFactory,
+import type {
+  IHandlerFactory
+} from '@src/interface/HTTP/ports';
+import type {
   IbaseHandler,
   EndPointFactory
 } from '@src/interface/HTTP/ports';
 
-import { RequestUpdateEmail, UserController, UserEmailUpdateRequestEvent } from '@src/modules/Users';
+import type { RequestUpdateEmail } from '@src/modules/Users';
+import { UserController, UserEmailUpdateRequestEvent } from '@src/modules/Users';
 
 const updateEmail: EndPointFactory = (
   {

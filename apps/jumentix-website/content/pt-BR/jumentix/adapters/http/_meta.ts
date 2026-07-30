@@ -6,7 +6,6 @@ export default {
   express: 'Adaptador Expresso',
   fastify: 'Fastify Adaptador',
   feathers: 'Adaptador de Penas',
-  'hyper-express': 'Adaptador Hyper-Express',
   loopback: 'Adaptador LoopBack',
   index: { title: 'Documentação dos adaptadores de interface HTTP', display: 'hidden' },
   restify: 'Adaptador Restify',

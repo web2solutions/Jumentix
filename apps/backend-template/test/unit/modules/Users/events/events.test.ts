@@ -1,5 +1,5 @@
 import { ComposeEventError } from '@src/infra/exceptions';
-import { IEventMessage } from '@src/modules/port/IEventMessage';
+import type { IEventMessage } from '@src/modules/port/IEventMessage';
 import { LoginRequestEvent } from '@src/modules/Users/events/LoginRequestEvent';
 import { LogoutRequestEvent } from '@src/modules/Users/events/LogoutRequestEvent';
 import { RegisterRequestEvent } from '@src/modules/Users/events/RegisterRequestEvent';

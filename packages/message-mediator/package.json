@@ -14,7 +14,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "pnpm run typecheck",
+    "test": "bun run typecheck",
     "lint": "echo \"message-mediator package lint pending\"",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   }

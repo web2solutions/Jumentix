@@ -1,4 +1,4 @@
-import { IController, IControllerFactory } from '@src/interface/HTTP/ports';
+import type { IController, IControllerFactory } from '@src/interface/HTTP/ports';
 import { BaseController } from '@src/interface/HTTP/ports/BaseController';
 import { Security } from '@src/infra/security';
 import { _INFRA_NOT_IMPLEMENTED_ } from '@src/config/constants';
@@ -6,21 +6,27 @@ import { ForbiddenError } from '@src/infra/exceptions';
 import { validateRequestAgainstOAS } from '@src/interface/HTTP/validators';
 import { Authorize } from '@src/shared/decorators/guard/Authorize';
 import { BaseDomainEvent } from '@src/modules/port/BaseDomainEvent';
-import {
-  IServiceResponse, setFilter, setPaging
+import type {
+  IServiceResponse
 } from '@src/modules/port';
-import { IOrganization } from '@src/modules/Users/domain/Entity/IOrganization';
-import { IOrganizationUseCases } from '@src/modules/Users/application/ports/IOrganizationUseCases';
-import { RequestCreateOrganization } from '@src/modules/Users/interface/dto/RequestCreateOrganization';
-import { RequestUpdateOrganization } from '@src/modules/Users/interface/dto/RequestUpdateOrganization';
-import { RequestCreateAddress } from '@src/modules/Users/interface/dto/RequestCreateAddress';
-import { RequestUpdateAddress } from '@src/modules/Users/interface/dto/RequestUpdateAddress';
-import { RequestCreatePhone } from '@src/modules/Users/interface/dto/RequestCreatePhone';
-import { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
-import { RequestCreateEmail } from '@src/modules/Users/interface/dto/RequestCreateEmail';
-import { RequestUpdateEmail } from '@src/modules/Users/interface/dto/RequestUpdateEmail';
 import {
-  ITenantAuthorizationDecision,
+  setFilter,
+  setPaging
+} from '@src/modules/port';
+import type { IOrganization } from '@src/modules/Users/domain/Entity/IOrganization';
+import type { IOrganizationUseCases } from '@src/modules/Users/application/ports/IOrganizationUseCases';
+import type { RequestCreateOrganization } from '@src/modules/Users/interface/dto/RequestCreateOrganization';
+import type { RequestUpdateOrganization } from '@src/modules/Users/interface/dto/RequestUpdateOrganization';
+import type { RequestCreateAddress } from '@src/modules/Users/interface/dto/RequestCreateAddress';
+import type { RequestUpdateAddress } from '@src/modules/Users/interface/dto/RequestUpdateAddress';
+import type { RequestCreatePhone } from '@src/modules/Users/interface/dto/RequestCreatePhone';
+import type { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
+import type { RequestCreateEmail } from '@src/modules/Users/interface/dto/RequestCreateEmail';
+import type { RequestUpdateEmail } from '@src/modules/Users/interface/dto/RequestUpdateEmail';
+import type {
+  ITenantAuthorizationDecision
+} from '@src/modules/Users/domain/security/TenantAuthorizationPolicy';
+import {
   decideOrganizationAccess,
   resolveOrganizationCollectionScope
 } from '@src/modules/Users/domain/security/TenantAuthorizationPolicy';

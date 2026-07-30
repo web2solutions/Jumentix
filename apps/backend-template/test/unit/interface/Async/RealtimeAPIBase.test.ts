@@ -3,10 +3,12 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import {
+import type {
   IAsyncOperationRequest,
   IRealtimeAPIFactory,
-  IRealtimeOperationEntry,
+  IRealtimeOperationEntry
+} from '@src/interface/Async/RealtimeAPIBase';
+import {
   RealtimeAPIBase
 } from '@src/interface/Async/RealtimeAPIBase';
 import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';

@@ -1,7 +1,7 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-constant-condition */
 import { randomUUID } from 'node:crypto';
-import {
+import type {
   IDomainDefinition,
   ISubApplication,
   ISubApplicationContext,

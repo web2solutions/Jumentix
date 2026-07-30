@@ -1,4 +1,4 @@
-import { IIntegrationEvent } from '@src/modules/port/IIntegrationEvent';
+import type { IIntegrationEvent } from '@src/modules/port/IIntegrationEvent';
 
 export interface IUserEventListeners {
   onUserCreated?(event: IIntegrationEvent): Promise<void> | void;

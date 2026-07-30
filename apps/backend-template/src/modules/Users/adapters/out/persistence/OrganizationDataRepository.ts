@@ -1,25 +1,30 @@
 /* istanbul ignore file */
-import { IStore } from '@src/infra/ports/persistence/IStore';
+import type { IStore } from '@src/infra/ports/persistence/IStore';
 import {
   throwIfPreUpdateValidationFails,
   throwIfNotFound
 } from '@src/shared/validators';
+import type {
+  IPagingRequest,
+  IPagingResponse,
+  IRepoConfig
+} from '@src/modules/port';
 import {
-  IPagingRequest, IPagingResponse, IRepoConfig, BaseRepo
+  BaseRepo
 } from '@src/modules/port';
 
 import { _DEFAULT_PAGE_SIZE_ } from '@src/config/constants';
-import { IOrganization } from '@src/modules/Users/domain/Entity/IOrganization';
+import type { IOrganization } from '@src/modules/Users/domain/Entity/IOrganization';
 import { Organization } from '@src/modules/Users/domain/Model/Organization';
-import { RequestCreateOrganization } from '@src/modules/Users/interface/dto/RequestCreateOrganization';
-import { RequestCreateAddress } from '@src/modules/Users/interface/dto/RequestCreateAddress';
-import { RequestUpdateAddress } from '@src/modules/Users/interface/dto/RequestUpdateAddress';
-import { RequestCreatePhone } from '@src/modules/Users/interface/dto/RequestCreatePhone';
-import { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
-import { RequestCreateEmail } from '@src/modules/Users/interface/dto/RequestCreateEmail';
-import { RequestUpdateEmail } from '@src/modules/Users/interface/dto/RequestUpdateEmail';
-import { RequestUpdateOrganization } from '@src/modules/Users/interface/dto/RequestUpdateOrganization';
-import { IOrganizationRepository } from '@src/modules/Users/service/ports/IOrganizationRepository';
+import type { RequestCreateOrganization } from '@src/modules/Users/interface/dto/RequestCreateOrganization';
+import type { RequestCreateAddress } from '@src/modules/Users/interface/dto/RequestCreateAddress';
+import type { RequestUpdateAddress } from '@src/modules/Users/interface/dto/RequestUpdateAddress';
+import type { RequestCreatePhone } from '@src/modules/Users/interface/dto/RequestCreatePhone';
+import type { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
+import type { RequestCreateEmail } from '@src/modules/Users/interface/dto/RequestCreateEmail';
+import type { RequestUpdateEmail } from '@src/modules/Users/interface/dto/RequestUpdateEmail';
+import type { RequestUpdateOrganization } from '@src/modules/Users/interface/dto/RequestUpdateOrganization';
+import type { IOrganizationRepository } from '@src/modules/Users/service/ports/IOrganizationRepository';
 
 export class OrganizationDataRepository
   extends BaseRepo<Organization, RequestCreateOrganization, RequestUpdateOrganization>

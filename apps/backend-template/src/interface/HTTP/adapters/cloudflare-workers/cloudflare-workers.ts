@@ -5,12 +5,16 @@ import fs from 'fs';
 import path from 'path';
 
 import { RestAPI } from '@src/interface/HTTP/RestAPI';
+import type {
+  IHTTPRequest,
+  IHTTPResponse
+} from '@src/interface/HTTP/ports';
+import type {
+  IbaseHandler
+} from '@src/interface/HTTP/ports';
 import {
   EHTTPFrameworks,
-  HTTPBaseServer,
-  IHTTPRequest,
-  IHTTPResponse,
-  IbaseHandler
+  HTTPBaseServer
 } from '@src/interface/HTTP/ports';
 import { infraHandlers } from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
 import { compileMessageMediator } from '@src/infra/messages/compileMessageMediator';

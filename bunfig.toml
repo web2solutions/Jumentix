@@ -1,0 +1,84 @@
+# Canonical Bun configuration for Jumentix internal engineering workflows.
+#
+# Requirement 096 — Bun is the sole runtime, package manager, script runner and
+# test platform for internal engineering workflows. Node survives only as an
+# explicit, declared, consumer-facing compatibility target (096 §4).
+#
+# The pinned version lives in `.bun-version` and is enforced by
+# `ci-cd/check-bun-version.js`. Keep the two in sync; the guard fails closed.
+
+[run]
+# DELIBERATELY false, and this is the most important line in the file.
+#
+# `bun = true` reroutes *every* Node-shebang binary in node_modules onto Bun,
+# including third-party ones. Jest is not Bun-compatible: jest-runtime assigns
+# to a property Bun treats as readonly, and the failure is total rather than
+# partial.
+#
+# Measured on this tree:
+#   bun = true   ->  97 suites failed, 0 tests ran
+#   bun = false  ->  97 suites passed, 546 tests passed
+#
+# The failure mode is what makes this dangerous rather than merely wrong: every
+# suite dies at load with `TypeError: Attempted to assign to readonly property`,
+# which reads like a repository bug and not like a runtime setting.
+#
+# This flag can be flipped to true once the unit suites move from Jest to
+# `bun:test` — delivered by the Hexagonal Test Pyramid project (JUM-434–436),
+# not by this epic. Until then Jest runs on Node as a *declared* boundary under
+# Requirement 096 §4, recorded in the Bun engineering guide, rather than as an
+# accident of PATH.
+bun = false
+
+[test]
+# `bun test` does not read jest.config.js. The environment bootstrap that jest
+# performs through `setupFiles` must be reproduced here, or every suite that
+# depends on AAA_* variables fails at import time (JUM-23 documented risk).
+preload = ["./ci-cd/loadEnvironment.js"]
+
+# Coverage thresholds.
+#
+# Bun enforces line / function / statement here, but has no branch metric.
+# Jest enforced four metrics including `branches: 90` (Reqs 020/063), so
+# enforcing only what Bun understands would silently drop a threshold — a
+# false green. Branch coverage is therefore enforced separately and
+# runner-independently from the lcov report by
+# `ci-cd/check-coverage-thresholds.js`, which is the authority for all four
+# metrics. The values below are a fail-fast inner guard, not the contract.
+coverageThreshold = { line = 0.99, function = 0.99, statement = 0.99 }
+coverageReporter = ["text", "lcov"]
+coverageDir = "coverage"
+
+[install.security]
+# First-party scanner (JUM-540). Bun hands it the FULLY RESOLVED package set,
+# which is what closes the gap Snyk left: Snyk cannot parse bun.lock and
+# silently degrades to reading direct dependencies from package.json — measured
+# at 45 packages against a resolved tree of 2027.
+#
+# Deliberately a workspace package rather than a published one: configuring a
+# third-party scanner here decides whose code executes over our entire
+# dependency graph on every install. Its only external input is data, from the
+# public OSV.dev API (the corpus behind the GitHub Advisory Database).
+# scanner = "@jumentix/security-scanner"
+#
+# DISABLED, for a measured reason rather than an assumed one: Bun refuses to install
+# when the configured scanner is not already installed
+# (`SecurityScannerNotInDependencies`). For a workspace-local scanner that is
+# circular — `bun install` on a tree with no node_modules exits 1, which is every CI
+# run. Warm-tree behaviour is correct and fast: "Scanning 2139 packages took 3668ms".
+#
+# This line becomes live once @jumentix/security-scanner is published, which is a
+# release decision under Req 070 and not this task's to take. Until then the same
+# scan runs as a gate step, `bun run deps:audit`, wired into ci:gate. The blocking
+# property is preserved where it matters (the gate, hence the PR); it is the install
+# itself that is no longer guarded.
+
+[install]
+# Isolated linking mirrors the pnpm layout the repository was built against and
+# keeps phantom-dependency resolution failures visible instead of accidentally
+# working through hoisting.
+linker = "isolated"
+
+# Lifecycle scripts run only for packages listed in `trustedDependencies`
+# (package.json). Bun denies them by default; recorded here so the intent
+# survives a config review rather than looking like an omission.

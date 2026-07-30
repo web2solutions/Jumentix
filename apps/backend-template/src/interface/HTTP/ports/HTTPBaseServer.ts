@@ -1,5 +1,5 @@
-import { IHTTPServer } from './IHTTPServer';
-import { IbaseHandler } from './IbaseHandler';
+import type { IHTTPServer } from './IHTTPServer';
+import type { IbaseHandler } from './IbaseHandler';
 
 export abstract class HTTPBaseServer<T> implements IHTTPServer<T> {
   // eslint-disable-next-line no-useless-constructor, no-empty-function

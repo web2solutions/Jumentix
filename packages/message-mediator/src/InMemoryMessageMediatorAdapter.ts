@@ -1,10 +1,12 @@
-import {
+import type {
   IIntegrationEvent,
   IMessage,
   IMessageHandlerRegistrationOptions,
   IMessageMediator,
   IMessageRequestOptions,
-  IMessageResponse,
+  IMessageResponse
+} from './contracts';
+import type {
   MessageHandler
 } from './contracts';
 

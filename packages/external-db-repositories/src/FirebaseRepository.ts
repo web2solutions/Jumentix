@@ -1,4 +1,5 @@
-import { BaseExternalDataRepository, IRepositoryConnectionOptions } from '@jumentix/external-persistence-core';
+import type { IRepositoryConnectionOptions } from '@jumentix/external-persistence-core';
+import { BaseExternalDataRepository } from '@jumentix/external-persistence-core';
 
 export class FirebaseRepository extends BaseExternalDataRepository {
   private app: any | null = null;

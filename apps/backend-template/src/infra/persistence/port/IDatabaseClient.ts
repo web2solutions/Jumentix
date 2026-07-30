@@ -1,6 +1,6 @@
-import { IDatabaseClient as IGenericDatabaseClient, IStore } from '@jumentix/persistence-contracts';
-import { IUser } from '@src/modules/Users/domain/Entity/IUser';
-import { IOrganization } from '@src/modules/Users/domain/Entity/IOrganization';
+import type { IDatabaseClient as IGenericDatabaseClient, IStore } from '@jumentix/persistence-contracts';
+import type { IUser } from '@src/modules/Users/domain/Entity/IUser';
+import type { IOrganization } from '@src/modules/Users/domain/Entity/IOrganization';
 
 export interface IDbStores {
     User: IStore<IUser>;

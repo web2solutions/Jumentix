@@ -1,4 +1,7 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-npx commitlint --edit $1
+# `bunx` resolves the local commitlint binary, replacing `npx` — an npm entry
+# point, and therefore internal npm usage that Requirement 096 §1 forbids.
+# "$1" is quoted: the unquoted original broke on paths containing spaces.
+bunx commitlint --edit "$1"

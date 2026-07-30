@@ -1,13 +1,16 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { sendErrorResponse } from '@src/interface/HTTP/adapters/fastify/responses/sendErrorResponse';
 
-import {
-  IHandlerFactory,
+import type {
+  IHandlerFactory
+} from '@src/interface/HTTP/ports';
+import type {
   IbaseHandler,
   EndPointFactory
 } from '@src/interface/HTTP/ports';
 
-import { RequestUpdateEmail, UserEmailUpdateRequestEvent, UserController } from '@src/modules/Users';
+import type { RequestUpdateEmail } from '@src/modules/Users';
+import { UserEmailUpdateRequestEvent, UserController } from '@src/modules/Users';
 
 const updateEmail: EndPointFactory = (
   {

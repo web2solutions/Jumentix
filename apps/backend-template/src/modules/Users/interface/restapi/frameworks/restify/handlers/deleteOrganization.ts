@@ -1,8 +1,10 @@
 import { Request, Response } from 'restify';
 import { sendErrorResponse } from '@src/interface/HTTP/adapters/restify/responses/sendErrorResponse';
 
-import {
-  IHandlerFactory,
+import type {
+  IHandlerFactory
+} from '@src/interface/HTTP/ports';
+import type {
   IbaseHandler,
   EndPointFactory
 } from '@src/interface/HTTP/ports';

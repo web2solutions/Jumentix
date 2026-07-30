@@ -1,15 +1,15 @@
-import { IPagingRequest } from '@src/modules/port/IPagingRequest';
-import { IServiceResponse } from '@src/modules/port/IServiceResponse';
-import { IUser } from '@src/modules/Users/domain/Entity/IUser';
-import { RequestCreateDocument } from '@src/modules/Users/interface/dto/RequestCreateDocument';
-import { RequestCreateEmail } from '@src/modules/Users/interface/dto/RequestCreateEmail';
-import { RequestCreatePhone } from '@src/modules/Users/interface/dto/RequestCreatePhone';
-import { RequestCreateUser } from '@src/modules/Users/interface/dto/RequestCreateUser';
-import { RequestUpdateDocument } from '@src/modules/Users/interface/dto/RequestUpdateDocument';
-import { RequestUpdateEmail } from '@src/modules/Users/interface/dto/RequestUpdateEmail';
-import { RequestUpdatePassword } from '@src/modules/Users/interface/dto/RequestUpdatePassword';
-import { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
-import { RequestUpdateUser } from '@src/modules/Users/interface/dto/RequestUpdateUser';
+import type { IPagingRequest } from '@src/modules/port/IPagingRequest';
+import type { IServiceResponse } from '@src/modules/port/IServiceResponse';
+import type { IUser } from '@src/modules/Users/domain/Entity/IUser';
+import type { RequestCreateDocument } from '@src/modules/Users/interface/dto/RequestCreateDocument';
+import type { RequestCreateEmail } from '@src/modules/Users/interface/dto/RequestCreateEmail';
+import type { RequestCreatePhone } from '@src/modules/Users/interface/dto/RequestCreatePhone';
+import type { RequestCreateUser } from '@src/modules/Users/interface/dto/RequestCreateUser';
+import type { RequestUpdateDocument } from '@src/modules/Users/interface/dto/RequestUpdateDocument';
+import type { RequestUpdateEmail } from '@src/modules/Users/interface/dto/RequestUpdateEmail';
+import type { RequestUpdatePassword } from '@src/modules/Users/interface/dto/RequestUpdatePassword';
+import type { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
+import type { RequestUpdateUser } from '@src/modules/Users/interface/dto/RequestUpdateUser';
 
 export interface IUserUseCases {
   create(data: RequestCreateUser): Promise<IServiceResponse<IUser>>;
