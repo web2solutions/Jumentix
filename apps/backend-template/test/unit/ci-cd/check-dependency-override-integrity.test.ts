@@ -87,8 +87,10 @@ describe('check-dependency-override-integrity', () => {
 
   it('confirms the committed manifest passes and the pnpm surfaces stay retired', () => {
     expect.hasAssertions();
-    expect(detectRetiredSurfaces()).toStrictEqual([]);
-    expect(validateOverrideIntegrity(overrideGuardRootPackage, detectRetiredSurfaces())).toStrictEqual([]);
+    const retired = detectRetiredSurfaces();
+
+    expect(retired).toStrictEqual([]);
+    expect(validateOverrideIntegrity(overrideGuardRootPackage, retired)).toStrictEqual([]);
   });
 });
 
@@ -116,15 +118,16 @@ describe('check-dependency-override-integrity CLI', () => {
       throw new Error('process.exit called');
     }) as never);
 
-    const real = fs.readFileSync;
-    jest.spyOn(fs, 'readFileSync').mockImplementation(((file: string, ...rest: unknown[]) => {
-      if (String(file).endsWith('package.json')) {
-        const pkg = JSON.parse(String(real(file, 'utf8')));
-        delete pkg.overrides['form-data'];
-        return JSON.stringify(pkg);
-      }
-      return real(file, ...(rest as []));
-    }) as never);
+    // Precomputed outside the mock: a conditional inside the test body trips
+    // jest/no-conditional-in-test, and the guard only ever reads package.json.
+    const brokenManifest = JSON.stringify({
+      ...overrideGuardRootPackage,
+      overrides: Object.fromEntries(
+        Object.entries(overrideGuardRootPackage.overrides)
+          .filter(([name]) => name !== 'form-data')
+      )
+    });
+    jest.spyOn(fs, 'readFileSync').mockReturnValue(brokenManifest as never);
 
     expect(() => mod.main()).toThrow('process.exit called');
     expect(exit).toHaveBeenCalledWith(1);
