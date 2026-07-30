@@ -45,7 +45,10 @@ jobs:
       - store_artifacts:
           path: artifacts/ci/branch-quality-gate.json
           destination: branch-quality-gate.json
-      - codecov/upload
+      - codecov/upload:
+          commit_args: "--slug XpertMinds/Jumentix"
+          report_args: "--slug XpertMinds/Jumentix"
+          upload_args: "--slug XpertMinds/Jumentix --fail-on-error"
 
 workflows:
   test-source:

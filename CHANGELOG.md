@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-07-30 docs(JUM-568): record GitGuardian plan constraint - Eduardo Almeida
 - 2026-07-30 docs(JUM-568): record terminal PR checks - Eduardo Almeida
 - 2026-07-30 docs(JUM-568): record canonical provider evidence - Eduardo Almeida
 - 2026-07-30 [JUM-568][CI] Recreate canonical integrations and repository controls (#7) - Eduardo A.
