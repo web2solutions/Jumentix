@@ -114,19 +114,22 @@ Se um PR não estiver vinculado aos itens de trabalho do projeto, ele estará fo
    conjunto.
 4. Os gates de commit, push e PR comparam o espelho com sua revisão imutável registrada, mantendo
    o resultado reproduzível quando outro agente atualiza a `main` canônica durante a execução.
-5. A leitura da revisão imutável usa SHA completo e caminho codificado. Registros públicos podem
-   usar `raw.githubusercontent.com` sem cota anônima da API de conteúdo; quando houver token,
-   o acesso autenticado pela Contents API pode ser usado e deve fazer fallback para raw público
-   em HTTP 401/403/404 nesse caminho com token.
+5. A leitura da revisão imutável usa SHA completo e caminho codificado. O registro canônico
+   privado usa a Contents API autenticada quando `GITHUB_TOKEN` / `GH_TOKEN` está presente
+   (CI: `secrets.AGENT_REGISTRY_TOKEN`; local: env ou `gh auth token`). O
+   `raw.githubusercontent.com` anônimo é apenas diagnóstico e normalmente retorna HTTP 404 para
+   conteúdo privado — não é mecanismo de acesso.
 6. Somente a sincronização explícita resolve a `main` canônica pela API do GitHub e pode usar
    `GITHUB_TOKEN` ou `GH_TOKEN` ao autenticar no GitHub.
 7. SHA inválido, caminho inseguro, erro HTTP, falha de transporte, resposta inválida, acesso não
    autorizado ou divergência entre o conteúdo canônico e o espelho local reprovam o gate sem
-   expor credenciais. Diagnósticos mantêm orientação de token quando Contents API 401/403 é
-   seguida de raw 404, e nos demais casos distinguem deriva de pin/caminho (404) de necessidade
-   de acesso privado com token (401/403).
-8. O repositório canônico do registro é público para leitura. Somente `web2solutions`
-   (`web2solucoes@gmail.com`) pode fazer push ou publicar alterações nele.
+   expor credenciais. Diagnósticos apontam falta de credenciais e raw 404 sem token válido para
+   configuração de acesso privado, mantêm orientação de token quando Contents API 401/403 é
+   seguida de raw 404, e nos demais casos distinguem deriva de pin/caminho após acesso autenticado
+   de necessidade de acesso privado com token.
+8. O repositório canônico do registro é privado sob `XpertMinds`. Somente `web2solutions`
+   (`web2solucoes@gmail.com`) e identidades explicitamente autorizadas no Linear podem ler,
+   fazer push ou publicar alterações nele.
 
 ## Governança de Documentação
 
