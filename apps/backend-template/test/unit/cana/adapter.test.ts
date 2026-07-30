@@ -1,7 +1,7 @@
 import 'fake-indexeddb/auto';
 import { IDBFactory } from 'fake-indexeddb';
 import type { CanaSchema, CanaTable } from '@jumentix/cana';
-import { createCanaDatabaseClient, isBrowserOnlyDriver } from '@jumentix/cana';
+import { createCanaDatabaseClient } from '@jumentix/cana';
 
 interface Design { id: number; name: string }
 
@@ -92,20 +92,5 @@ describe('cana jumentix adapter', () => {
     const database = client();
 
     await expect(database.disconnect()).resolves.toBeUndefined();
-  });
-});
-
-describe('browser-only driver detection', () => {
-  it('recognises the aliases a developer would plausibly type', () => {
-    expect.hasAssertions();
-    expect(isBrowserOnlyDriver('IndexedDB')).toBe(true);
-    expect(isBrowserOnlyDriver('  indexed-db  ')).toBe(true);
-    expect(isBrowserOnlyDriver('cana')).toBe(true);
-  });
-
-  it('does not claim server drivers', () => {
-    expect.hasAssertions();
-    expect(isBrowserOnlyDriver('Mongo')).toBe(false);
-    expect(isBrowserOnlyDriver('InMemory')).toBe(false);
   });
 });

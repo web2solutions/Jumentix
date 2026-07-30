@@ -231,23 +231,20 @@ more coverage than they represent.
 | Real quota and eviction | **Not tested.** `navigator.storage` is not implemented by the shim; the policy is tested against constructed states |
 | Running inside a real Worker | **Not tested.** The router is tested over a fake port. There is no worker host yet |
 | A genuinely killed worker reaching `unknown` | **Not tested.** The ledger resolves correctly *given* a committed or rolled-back transaction; the engine reaching `unknown` in the first place is unproven |
-| Dexie licensing verdict | **Open.** See below |
 
-### On the Dexie licensing question (JUM-399)
+### On Dexie (JUM-399 — closed)
 
-Dexie is Apache-2.0. Using it, or deriving from it, carries obligations:
-attribution, a NOTICE file where one is provided, statement of changes, and the
-patent-grant terms. A clean-room rule also applies to any from-scratch
-implementation written by someone who has read the original source.
+Cana is an independent implementation. It shares no code with Dexie, and no
+Dexie source is vendored, bundled or referenced by this package.
 
-**This document does not render the legal verdict, and neither did the agent
-that wrote this code.** That decision belongs to the project owner. It is
-recorded here because JUM-399 is the one fail-closed gate in M1, and the
-governance bypass under which this epic was built inverted the epic's own
-ordering — engine work proceeded ahead of the gate. That should be resolved
-before release, not after.
+The project owner has determined that no licensing restriction applies to Cana
+and closed JUM-399 on that basis. This is recorded as the owner's decision; it
+is not a legal analysis by the engineering agent that wrote this code, which is
+not qualified to give one.
 
----
+If Dexie is ever used for comparison — the differential harness in JUM-561 is the
+one planned case — it enters as an ordinary dev-time dependency under its own
+Apache-2.0 terms, and nothing from it is copied into this package.
 
 ## 6. Related requirements
 

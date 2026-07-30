@@ -388,6 +388,26 @@ export interface CanaTransactionScope {
 
 export type CanaTransactionMode = 'readonly' | 'readwrite';
 
+/**
+ * What a transaction reports back.
+ *
+ * `correlationId` and `attemptedAt` are present on **every** outcome, including
+ * `unknown`. That is the point: `unknown` is the one result a caller must act
+ * on, and acting on it means calling `resolveWrite(correlationId, attemptedAt)`.
+ * An earlier shape omitted them, so the only outcome that needed reconciling was
+ * the one that could not be reconciled.
+ */
+export interface CanaTransactionResult<TResult> {
+  readonly outcome: CanaWriteOutcome;
+  readonly result?: TResult;
+  /** Empty unless `outcome === 'committed'`. */
+  readonly events: readonly CanaChangeEvent[];
+  /** Identifies this transaction in the operation ledger. */
+  readonly correlationId: string;
+  /** Epoch milliseconds the transaction was started. */
+  readonly attemptedAt: number;
+}
+
 export interface CanaClient {
   readonly name: string;
   readonly version: number;
@@ -401,7 +421,7 @@ export interface CanaClient {
     mode: CanaTransactionMode,
     stores: readonly string[],
     body: (scope: CanaTransactionScope) => Promise<TResult> | TResult,
-  ): Promise<{ outcome: CanaWriteOutcome; result?: TResult; events: readonly CanaChangeEvent[] }>;
+  ): Promise<CanaTransactionResult<TResult>>;
 
   /** Current durability state. See `CanaStorageState`. */
   storageState(): Promise<CanaStorageState>;

@@ -234,23 +234,20 @@ uma cobertura maior do que realmente representam.
 | Cota e despejo reais | **Não testado.** `navigator.storage` não é implementado pelo shim; a política é testada contra estados construídos |
 | Execução dentro de um Worker real | **Não testado.** O roteador é testado sobre uma porta falsa. Ainda não existe host de worker |
 | Um worker realmente morto chegando a `unknown` | **Não testado.** O livro resolve corretamente *dado* que a transação confirmou ou não; que o motor chegue a `unknown` continua sem prova |
-| Veredito de licenciamento do Dexie | **Em aberto.** Veja abaixo |
 
-### Sobre a questão de licenciamento do Dexie (JUM-399)
+### Sobre o Dexie (JUM-399 — encerrado)
 
-O Dexie é Apache-2.0. Usá-lo, ou derivar dele, acarreta obrigações: atribuição,
-arquivo NOTICE quando houver, declaração de mudanças e os termos de concessão de
-patente. Uma regra de sala limpa também se aplica a qualquer implementação
-feita do zero por alguém que tenha lido o código original.
+O Cana é uma implementação independente. Não compartilha código com o Dexie, e
+nenhum fonte do Dexie é embutido, empacotado ou referenciado por este pacote.
 
-**Este documento não emite o veredito jurídico, e o agente que escreveu este
-código também não.** Essa decisão pertence ao dono do projeto. Fica registrado
-aqui porque JUM-399 é o único portão fail-closed do M1, e o bypass de governança
-sob o qual este épico foi construído inverteu a ordenação do próprio épico — o
-trabalho de motor avançou à frente do portão. Isso deve ser resolvido antes do
-release, não depois.
+O dono do projeto determinou que nenhuma restrição de licenciamento se aplica ao
+Cana e encerrou o JUM-399 com base nisso. Isto fica registrado como decisão do
+dono; não é uma análise jurídica do agente de engenharia que escreveu este
+código, que não tem qualificação para emiti-la.
 
----
+Se o Dexie vier a ser usado para comparação — o harness diferencial do JUM-561 é
+o único caso previsto — ele entra como dependência comum de desenvolvimento sob
+os próprios termos Apache-2.0, e nada dele é copiado para dentro deste pacote.
 
 ## 6. Requisitos relacionados
 

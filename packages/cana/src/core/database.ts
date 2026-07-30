@@ -30,7 +30,7 @@ import type { CanaSchema } from '../contracts';
 import { canaError, requestToPromise, translateError } from './errors';
 import { applySchema, assertSchema } from './schema';
 import type { EvictionVerdict } from './storage';
-import { StorageDurability } from './storage';
+import { StorageDurability, browserStorageEnvironment } from './storage';
 
 export interface OpenOptions {
   readonly name: string;
@@ -61,21 +61,25 @@ function resolveFactory(explicit?: IDBFactory): IDBFactory {
   );
 }
 
-/** Read the current version without triggering an upgrade. 0 when absent. */
-async function currentVersion(factory: IDBFactory, name: string): Promise<number> {
-  // `databases()` is the only non-destructive way to ask, and it is not
-  // universally available. Where it is missing the caller still gets a correct
-  // answer from the open itself; this is an optimisation for the pre-check.
-  if (typeof factory.databases === 'function') {
-    try {
-      const listed = await factory.databases();
-      const match = listed.find((entry) => entry.name === name);
-      return match?.version ?? 0;
-    } catch {
-      return 0;
-    }
+/**
+ * Read the current version without triggering an upgrade.
+ *
+ * Returns 0 when the database is genuinely absent, and `undefined` when the
+ * question could not be answered at all. Collapsing the second into the first is
+ * precisely the bug this signature exists to prevent: `databases()` is not
+ * universally available — Safari lacked it for years — and reporting ignorance
+ * as absence makes the eviction classifier declare every healthy, populated
+ * database evicted in those browsers.
+ */
+async function currentVersion(factory: IDBFactory, name: string): Promise<number | undefined> {
+  if (typeof factory.databases !== 'function') return undefined;
+  try {
+    const listed = await factory.databases();
+    const match = listed.find((entry) => entry.name === name);
+    return match?.version ?? 0;
+  } catch {
+    return undefined;
   }
-  return 0;
 }
 
 /** True when every store in the database is empty. */
@@ -104,11 +108,13 @@ export async function openDatabase(options: OpenOptions): Promise<OpenResult> {
   assertSchema(options.schema);
 
   const factory = resolveFactory(options.factory);
-  const durability = options.durability ?? new StorageDurability({});
+  // The real browser environment by default. An empty one writes no tombstone,
+  // which silently disables eviction detection entirely (JUM-560).
+  const durability = options.durability ?? new StorageDurability(browserStorageEnvironment());
   const blockedTimeoutMs = options.blockedTimeoutMs ?? DEFAULT_BLOCKED_TIMEOUT_MS;
 
   const existingVersion = await currentVersion(factory, options.name);
-  if (existingVersion > options.schema.version) {
+  if (existingVersion !== undefined && existingVersion > options.schema.version) {
     throw canaError(
       'UpgradeFailed',
       `Refusing to downgrade "${options.name}" from version ${existingVersion} to `
@@ -179,11 +185,17 @@ export async function openDatabase(options: OpenOptions): Promise<OpenResult> {
     };
   });
 
+  // Where the pre-open probe could not answer, the open itself supplies part of
+  // the answer: if no upgrade ran, the database already existed at this version,
+  // so it is certainly not absent. This recovers the common case in browsers
+  // without `databases()` instead of leaving every open unclassifiable.
+  const observedVersion = existingVersion ?? (upgraded ? undefined : database.version);
+
   // Only now, with a live connection, can eviction be judged: it needs both the
   // tombstone and the observed contents.
   const eviction = durability.evaluateOpen({
     databaseName: options.name,
-    foundVersion: existingVersion,
+    foundVersion: observedVersion,
     isEmpty: await isDatabaseEmpty(database)
   });
 

@@ -13,6 +13,15 @@ import { createExternalStores } from '@jumentix/external-store-proxy';
 
 export type DriverName =
   | 'InMemory'
+  /**
+   * Cana, over IndexedDB, in the browser.
+   *
+   * A first-class driver: Jumentix supports applications that are 100% offline
+   * with no backend at all, and for those IndexedDB is not an exception case —
+   * it is the database. It is supplied by injection rather than constructed
+   * here so this server-side package never imports a browser-only one.
+   */
+  | 'IndexedDB'
   | 'Mongo'
   | 'PostgreSQL'
   | 'MySQL'
@@ -25,7 +34,13 @@ export type DriverName =
   | 'Aurora'
   | 'RDS';
 
-type ExternalDriverName = Exclude<DriverName, 'InMemory'>;
+/**
+ * Drivers backed by an external connector.
+ *
+ * Excludes both locally-hosted drivers: `InMemory` has no connector, and
+ * `IndexedDB` is the browser's own store — neither has a host to connect to.
+ */
+type ExternalDriverName = Exclude<DriverName, 'InMemory' | 'IndexedDB'>;
 
 export interface IDatabaseClientLike {
   connect(): Promise<void>;
@@ -35,6 +50,14 @@ export interface IDatabaseClientLike {
 
 export interface IBuildDatabaseClientCompilersOptions<TDatabaseClient extends IDatabaseClientLike> {
   inMemoryClient: TDatabaseClient;
+  /**
+   * Builds the IndexedDB (Cana) client, in applications that run in a browser.
+   *
+   * A factory rather than an instance, because an offline application opens its
+   * database as part of startup and should not pay for that when a different
+   * driver is selected.
+   */
+  indexedDbClient?: () => TDatabaseClient;
 }
 
 const DEFAULT_DRIVER: DriverName = 'InMemory';
@@ -52,27 +75,10 @@ const SQL_DIALECT_TO_DRIVER: Record<
 
 const sanitize = (value: string): string => value.trim().toLowerCase();
 
-/**
- * Stores that exist only in a browser, and so can never be built here.
- *
- * Listed explicitly because this factory falls back to `InMemory` for anything
- * it does not recognise. Without this, `DB_DRIVER=IndexedDB` on the server
- * yields a working in-memory database and no indication that the configuration
- * was ignored — the process starts, tests pass, and data quietly goes nowhere
- * durable. See `@jumentix/cana` (JUM-414).
- */
-const BROWSER_ONLY_DRIVERS = ['indexeddb', 'indexed-db', 'cana'];
-
 const normalizeDriver = (value?: string): DriverName => {
   if (!value || value.trim() === '') return DEFAULT_DRIVER;
   const normalized = sanitize(value);
-  if (BROWSER_ONLY_DRIVERS.includes(normalized)) {
-    throw new Error(
-      `Database driver "${value}" is browser-only and cannot be built on the server. `
-        + 'IndexedDB has no host, port or credentials, and the global does not exist in this '
-        + 'runtime. Use @jumentix/cana directly in browser code, and pick a server driver here.'
-    );
-  }
+  if (['indexeddb', 'indexed-db', 'cana'].includes(normalized)) return 'IndexedDB';
   if (['inmemory', 'in-memory', 'memory'].includes(normalized)) return 'InMemory';
   if (['mongo', 'mongodb', 'mongoose'].includes(normalized)) return 'Mongo';
   if (['postgres', 'postgresql'].includes(normalized)) return 'PostgreSQL';
@@ -127,8 +133,33 @@ const toExternalClient = <TDatabaseClient extends IDatabaseClientLike>(
 };
 
 export const buildDatabaseClientCompilers = <TDatabaseClient extends IDatabaseClientLike>({
-  inMemoryClient
+  inMemoryClient,
+  indexedDbClient
 }: IBuildDatabaseClientCompilersOptions<TDatabaseClient>) => {
+  const createIndexedDbClient = (): TDatabaseClient => {
+    if (!indexedDbClient) {
+      // Selected but not wired. Falling back to InMemory here would start the
+      // application on a database that disappears when the tab closes, while
+      // reporting nothing — the offline app would look fine and lose everything.
+      throw new Error(
+        'Database driver "IndexedDB" was selected but no indexedDbClient factory was provided. '
+          + 'Pass one to buildDatabaseClientCompilers, built with createCanaDatabaseClient from '
+          + '@jumentix/cana. It is injected rather than imported so this package stays free of '
+          + 'browser-only dependencies.'
+      );
+    }
+    if (typeof indexedDB === 'undefined') {
+      // Reached when an offline-capable build is executed somewhere without the
+      // global — a server-side render, or a test runner in node. Saying so is
+      // more useful than the DOMException the driver would raise later.
+      throw new Error(
+        'Database driver "IndexedDB" was selected but this runtime has no indexedDB global. '
+          + 'Cana runs in the browser; select a server driver for server-side processes.'
+      );
+    }
+    return indexedDbClient();
+  };
+
   const createSqlClient = (
     dialect: 'postgres' | 'mysql' | 'mssql' | 'oracle' | 'sqlite'
   ): TDatabaseClient => {
@@ -239,6 +270,7 @@ export const buildDatabaseClientCompilers = <TDatabaseClient extends IDatabaseCl
 
   const buildByDriver = (driver: DriverName): TDatabaseClient => {
     if (driver === 'InMemory') return inMemoryClient;
+    if (driver === 'IndexedDB') return createIndexedDbClient();
     if (driver === 'Mongo') return createMongoClient();
     if (driver === 'PostgreSQL') return createSqlClient('postgres');
     if (driver === 'MySQL') return createSqlClient('mysql');
@@ -265,6 +297,7 @@ export const buildDatabaseClientCompilers = <TDatabaseClient extends IDatabaseCl
   return {
     compileDatabaseClient,
     compileDatabaseClientByDriver,
+    compileIndexedDbClient: (): TDatabaseClient => buildByDriver('IndexedDB'),
     compileMongoDbClient: (): TDatabaseClient => buildByDriver('Mongo'),
     compilePostgreSqlDbClient: (): TDatabaseClient => buildByDriver('PostgreSQL'),
     compileMySqlDbClient: (): TDatabaseClient => buildByDriver('MySQL'),

@@ -36,8 +36,11 @@ import type {
 } from '../contracts';
 import { canaError, translateError } from './errors';
 
-/** An event as a writer supplies it; cursor and origin are stamped by the buffer. */
-export type PendingChange = Omit<CanaChangeEvent, 'cursor' | 'originId'>;
+/**
+ * An event as a writer supplies it. The buffer stamps the three fields a writer
+ * has no business choosing: the sequence number, the origin, and the clock.
+ */
+export type PendingChange = Omit<CanaChangeEvent, 'cursor' | 'originId' | 'at'>;
 
 /** Collects events during a transaction, releasing them only on commit. */
 export interface ChangeBuffer {
@@ -47,12 +50,22 @@ export interface ChangeBuffer {
   discard(): void;
 }
 
-export function createChangeBuffer(nextCursor: () => number, originId: string): ChangeBuffer {
+export function createChangeBuffer(
+  nextCursor: () => number,
+  originId: string,
+  now: () => number = Date.now
+): ChangeBuffer {
   const pending: CanaChangeEvent[] = [];
 
   return {
     record(event) {
-      pending.push({ ...event, cursor: nextCursor(), originId } as CanaChangeEvent);
+      // Built structurally rather than with a cast. An earlier version asserted
+      // `as CanaChangeEvent` over a spread, which silenced the compiler while
+      // the contract's required `at` was never actually set — the cast defeated
+      // the only check that would have caught it.
+      pending.push({
+        ...event, cursor: nextCursor(), originId, at: now()
+      });
     },
     drain() {
       return pending.splice(0, pending.length);

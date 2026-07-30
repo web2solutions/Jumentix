@@ -70,8 +70,17 @@ export interface StorageEnvironment {
 
 export interface DatabaseObservation {
   readonly databaseName: string;
-  /** Version the engine found on open; 0 when the database did not exist. */
-  readonly foundVersion: number;
+  /**
+   * Version found before opening: 0 when the database did not exist, and
+   * `undefined` when the engine could not determine it.
+   *
+   * The three-way distinction is load-bearing. `IDBFactory.databases()` is not
+   * universally available — Safari lacked it for years — and an implementation
+   * that reports "cannot tell" as 0 turns every open in those browsers into
+   * "the database is gone", which classifies healthy populated databases as
+   * evicted. Absence and ignorance are different facts.
+   */
+  readonly foundVersion: number | undefined;
   /** True when the opened database contains no records in any store. */
   readonly isEmpty: boolean;
 }
@@ -116,6 +125,11 @@ export function classifyOpen(
     // We know it existed, and now it is not there at all.
     return { evicted: true, reason: 'evicted-database-absent' };
   }
+
+  // `undefined` means the pre-open probe could not answer, not that the database
+  // was missing. Falling through to the contents check is the only sound move:
+  // claiming eviction on an unanswered question would report loss every time in
+  // any browser without `databases()`.
 
   if (observation.isEmpty) {
     // The database exists but is empty, and we know it held data before. Some

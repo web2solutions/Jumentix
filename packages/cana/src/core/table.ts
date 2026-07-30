@@ -151,17 +151,48 @@ export function createTable<TRecord, TKey extends CanaKey = CanaKey>(
   const bulk = async <TWritten extends IDBValidKey | undefined>(
     items: readonly unknown[],
     apply: (target: IDBObjectStore, item: unknown) => IDBRequest<TWritten>,
-    type: CanaChangeType
+    type: CanaChangeType,
+    /**
+     * True for `bulkPut`, where each row may be either a create or an update.
+     *
+     * Without this a bulk put labelled every row `updated`, including brand-new
+     * records — so a subscriber driving an incremental UI would never learn a
+     * row had appeared, and `beforeWrite` hooks saw the wrong type. The single
+     * `put` had always probed; the bulk path silently did not.
+     */
+    classifyPerItem = false
   ): Promise<CanaBulkWriteResult> => {
     const target = store();
     const keys: CanaKey[] = [];
     const failedAt: number[] = [];
 
     for (let index = 0; index < items.length; index += 1) {
+      const source = items[index];
+
+      // Probed before the write, since afterwards every row exists.
+      let itemType = type;
+      const probeKey = classifyPerItem && isInbound(target)
+        ? extractKey(target, source)
+        : undefined;
+      if (probeKey !== undefined) {
+        // Sequential for the same reason the write below is: the probe belongs
+        // to this row and must not race ahead of it.
+        // eslint-disable-next-line no-await-in-loop
+        const existing = await requestToPromise(
+          target.count(probeKey as IDBValidKey),
+          { store: name }
+        );
+        itemType = existing > 0 ? 'updated' : 'created';
+      } else if (classifyPerItem) {
+        // Outbound or generated key: nothing to probe with, so the row can only
+        // be treated as new.
+        itemType = 'created';
+      }
+
       // A delete carries no record, so there is nothing for a hook to transform.
-      const item = type === 'deleted'
-        ? items[index]
-        : throughHooks(type, undefined, items[index]);
+      const item = itemType === 'deleted'
+        ? source
+        : throughHooks(itemType, undefined, source);
       // Sequential on purpose. Issuing every request up front and awaiting them
       // together reorders the writes relative to the input, and `failedAt`
       // indices would then point at the wrong rows — which is precisely the
@@ -176,7 +207,7 @@ export function createTable<TRecord, TKey extends CanaKey = CanaKey>(
       // add/put it is what the store assigned, which may be generated.
       const key = (written ?? item) as CanaKey;
       keys.push(key);
-      record(type, key, type === 'deleted' ? undefined : item);
+      record(itemType, key, itemType === 'deleted' ? undefined : item);
     }
 
     return {
@@ -285,7 +316,9 @@ export function createTable<TRecord, TKey extends CanaKey = CanaKey>(
     },
 
     bulkPut(records: readonly TRecord[]): Promise<CanaBulkWriteResult> {
-      return bulk(records, (target, item) => target.put(item), 'updated');
+      // `classifyPerItem` so each row reports created or updated as it actually
+      // is, matching what the single `put` has always done.
+      return bulk(records, (target, item) => target.put(item), 'updated', true);
     },
 
     bulkDelete(keys: readonly TKey[]): Promise<CanaBulkWriteResult> {

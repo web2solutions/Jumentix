@@ -34,27 +34,6 @@ describe('compileDatabaseClient', () => {
     expect(client).toBe(InMemoryDbClient);
   });
 
-  it('refuses a browser-only driver instead of silently using in-memory', () => {
-    expect.hasAssertions();
-    // Unrecognised drivers fall through to InMemory, so before this guard
-    // AAA_DATABASE_DRIVER=IndexedDB produced a working in-memory database and no
-    // sign the configuration had been ignored — the process starts, the tests
-    // pass, and data quietly goes nowhere durable (JUM-414).
-    for (const alias of ['IndexedDB', 'indexed-db', 'cana']) {
-      process.env.AAA_DATABASE_DRIVER = alias;
-      expect(() => compileDatabaseClient()).toThrow(/browser-only/);
-    }
-  });
-
-  it('still falls back to in-memory for a merely unknown driver', () => {
-    expect.hasAssertions();
-    // The guard is narrow on purpose: it names browser-only stores, and does not
-    // turn every typo into a startup failure.
-    process.env.AAA_DATABASE_DRIVER = 'not-a-real-driver';
-
-    expect(compileDatabaseClient()).toBe(InMemoryDbClient);
-  });
-
   it('normalizes aliases to known drivers', () => {
     expect.hasAssertions();
     const nonInMemoryAliases = [

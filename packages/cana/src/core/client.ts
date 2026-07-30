@@ -29,6 +29,7 @@ import type {
   CanaStorageState,
   CanaTable,
   CanaTransactionMode,
+  CanaTransactionResult,
   CanaTransactionScope,
   CanaWriteOutcome
 } from '../contracts';
@@ -46,7 +47,7 @@ import {
   withLedgerStore
 } from './reconciliation';
 import type { ResolvedOutcome } from './reconciliation';
-import { StorageDurability } from './storage';
+import { StorageDurability, browserStorageEnvironment } from './storage';
 import { createTable } from './table';
 import { abortWithReason, createChangeBuffer, runTransaction } from './transaction';
 
@@ -94,7 +95,7 @@ interface TransactionRunner {
     mode: CanaTransactionMode,
     stores: readonly string[],
     body: (scope: CanaTransactionScope) => Promise<TResult> | TResult
-  ): Promise<{ outcome: CanaWriteOutcome; result?: TResult; events: readonly CanaChangeEvent[] }>;
+  ): Promise<CanaTransactionResult<TResult>>;
 }
 
 /**
@@ -164,7 +165,11 @@ export class Client implements CanaClient {
   constructor(private readonly options: ClientOptions) {
     this.name = options.name;
     this.version = options.schema.version;
-    this.durability = options.durability ?? new StorageDurability({});
+    // Defaults to the real browser environment, not an empty one. An empty
+    // environment writes no tombstone, so `recordExistence` always fails and
+    // eviction stays 'undetectable-no-tombstone' forever — JUM-560's detection
+    // was documented but, by default, switched off.
+    this.durability = options.durability ?? new StorageDurability(browserStorageEnvironment());
     this.retainedEvents = options.retainedEvents ?? DEFAULT_RETAINED_EVENTS;
     this.originId = options.originId ?? `cana-${Math.random().toString(36).slice(2, 10)}`;
   }
@@ -194,6 +199,26 @@ export class Client implements CanaClient {
       ...(this.options.factory === undefined ? {} : { factory: this.options.factory })
     });
     this.database = opened.database;
+
+    // Enabling the ledger adds its store to the schema, but IndexedDB only runs
+    // an upgrade when the version increases. Turning `operationLedger` on
+    // against an existing database at the same version therefore creates no
+    // store — and the previous code then quietly disabled the ledger, so writes
+    // recorded nothing and `resolveWrite` answered `unresolvable` forever with
+    // no indication why. That is exactly the silent no-op the ledger exists to
+    // rule out, so it now fails loudly and says what to do.
+    if (this.options.operationLedger
+      && !opened.database.objectStoreNames.contains(OPERATION_LEDGER_STORE)) {
+      opened.database.close();
+      this.database = undefined;
+      throw canaError(
+        'UpgradeFailed',
+        `The operation ledger is enabled for "${this.name}" but its store does not exist. The `
+          + `database is already at version ${this.version}, and IndexedDB applies schema changes `
+          + 'only when the version increases. Raise the schema version so the ledger store can be '
+          + 'created — leaving it as-is would record nothing and make every crash unresolvable.'
+      );
+    }
 
     // Asked for only when the application opted in. A persistence prompt fired
     // by a library at an arbitrary moment is one the user denies, and some
@@ -287,7 +312,7 @@ export class Client implements CanaClient {
     mode: CanaTransactionMode,
     stores: readonly string[],
     body: (scope: CanaTransactionScope) => Promise<TResult> | TResult
-  ): Promise<{ outcome: CanaWriteOutcome; result?: TResult; events: readonly CanaChangeEvent[] }> {
+  ): Promise<CanaTransactionResult<TResult>> {
     const database = this.requireOpen();
     const buffer = createChangeBuffer(this.nextCursor, this.originId);
     this.correlation += 1;
@@ -298,9 +323,9 @@ export class Client implements CanaClient {
     // The ledger store joins the transaction's scope, so the operation id and
     // the data commit or roll back together. Recording it in a second
     // transaction would leave exactly the window this is meant to close.
-    const ledgered = this.options.operationLedger === true
-      && mode === 'readwrite'
-      && database.objectStoreNames.contains(OPERATION_LEDGER_STORE);
+    // `open()` already guaranteed the store exists whenever the ledger is on, so
+    // this no longer silently degrades when it is missing.
+    const ledgered = this.options.operationLedger === true && mode === 'readwrite';
 
     const scope = ledgered && !stores.includes(OPERATION_LEDGER_STORE)
       ? [...stores, OPERATION_LEDGER_STORE]
@@ -316,7 +341,26 @@ export class Client implements CanaClient {
         mode,
         buffer,
         body: async (transaction) => {
-          const produced = await body({
+          // Recorded FIRST, before the body runs.
+          //
+          // An earlier version recorded it last, reasoning that an abort must
+          // never leave an id claiming a commit. That reasoning was redundant —
+          // the shared transaction already guarantees the row rolls back with
+          // the data — and it broke the one case the ledger exists for: if the
+          // body writes, IndexedDB auto-commits, and the body then throws, the
+          // transaction commits with no ledger row. `resolveWrite` would see a
+          // missing id inside the horizon and answer 'rolled-back' for data that
+          // is on disk, which is exactly the unsafe-retry it was built to
+          // prevent. Recording first is safe in both directions.
+          if (ledgered) {
+            await recordOperation(transaction, {
+              id: correlationId,
+              at: attemptedAt,
+              stores: [...stores]
+            });
+          }
+
+          return body({
             table: <TRecord, TKey extends CanaKey = CanaKey>(
               name: string
             ) => createTable<TRecord, TKey>(
@@ -330,19 +374,6 @@ export class Client implements CanaClient {
             ),
             abort: (reason?: string) => abortWithReason(transaction, reason)
           });
-
-          // Recorded last, so a body that aborts never leaves an id claiming a
-          // commit that did not happen. Same transaction, so it cannot be
-          // separated from the data it vouches for.
-          if (ledgered) {
-            await recordOperation(transaction, {
-              id: correlationId,
-              at: attemptedAt,
-              stores: [...stores]
-            });
-          }
-
-          return produced;
         }
       });
     } catch (error: unknown) {
@@ -357,14 +388,17 @@ export class Client implements CanaClient {
       // already auto-committed. This is the case that needs reconciliation, and
       // it is reported as itself rather than folded into a rollback.
       notifyRolledBack(hooks, 'unknown');
-      return outcome;
+      // Carries the id and timestamp, because this is the outcome a caller must
+      // reconcile — and reconciling means calling resolveWrite with exactly
+      // these two values.
+      return { ...outcome, correlationId, attemptedAt };
     }
 
     // Only committed transactions produce events; `runTransaction` discards the
     // buffer on every other path.
     this.publish(outcome.events);
     notifyCommitted(hooks, outcome.events);
-    return outcome;
+    return { ...outcome, correlationId, attemptedAt };
   }
 
   storageState(): Promise<CanaStorageState> {

@@ -5,24 +5,32 @@
  * database clients — `connect()`, `disconnect()`, `stores` — so application code
  * written against that shape does not need a special case for offline storage.
  *
- * ## Why this is not registered in `@jumentix/database-client-factory`
+ * ## How it plugs into `@jumentix/database-client-factory`
  *
- * That factory is server-side. Its drivers are Mongo, PostgreSQL, DynamoDB,
- * Cassandra and friends, and it builds them from environment variables inside a
- * Bun/Node process. Cana is browser-only: it needs `indexedDB`, which does not
- * exist there.
+ * Jumentix supports applications that are 100% offline with no backend at all,
+ * and for those IndexedDB is not an exception case — it is the database. So
+ * `'IndexedDB'` is a first-class `DriverName` there, selectable exactly like
+ * Mongo or PostgreSQL.
  *
- * Adding `'IndexedDB'` to its `DriverName` union would make it *constructible*
- * on the server and then fail at first use, with a message about a missing
- * global rather than about a driver that was never applicable. Worse, the
- * factory's own composition — environment variable to connection string to
- * connector — has no meaning for a store that has no host, no port and no
- * credentials.
+ * It is supplied by *injection* rather than imported, following the same pattern
+ * the factory already uses for its in-memory client:
  *
- * So the boundary runs the other way: Cana conforms to the interface, and the
- * application chooses it directly in browser code. That keeps the hexagonal
- * separation intact (Requirements 015/016) — the port is the shape, not the
- * factory.
+ * ```ts
+ * buildDatabaseClientCompilers({
+ *   inMemoryClient,
+ *   indexedDbClient: () => createCanaDatabaseClient({ name: 'app', schema })
+ * });
+ * ```
+ *
+ * The direction matters. If the factory imported Cana directly, every
+ * server-side process that builds a Mongo client would pull a browser-only
+ * package into its dependency graph. Injection keeps the port as the shape and
+ * lets each host supply what it can actually run (Requirements 015/016).
+ *
+ * Selecting `IndexedDB` without providing the factory, or in a runtime with no
+ * `indexedDB` global, fails with an explanation. It does not fall back to
+ * in-memory: an offline application silently running on a store that vanishes
+ * when the tab closes would look healthy and lose everything.
  */
 
 import type {
@@ -85,24 +93,4 @@ export function createCanaDatabaseClient(options: ClientOptions): CanaDatabaseCl
     disconnect: () => cana.close(),
     subscribe: (listener) => cana.subscribe(listener)
   };
-}
-
-/**
- * Names the shared factory must not accept, and why.
- *
- * Exported so the server-side factory can reject them with an explanation
- * instead of silently falling through to its `InMemory` default — which is what
- * an unrecognised `DB_DRIVER` currently does. A developer who sets
- * `DB_DRIVER=IndexedDB` on the server today gets a working in-memory database
- * and no indication that their configuration was ignored.
- */
-export const BROWSER_ONLY_DRIVER_ALIASES: readonly string[] = [
-  'indexeddb',
-  'indexed-db',
-  'cana'
-];
-
-/** True when a driver name refers to a browser-only store. */
-export function isBrowserOnlyDriver(value: string): boolean {
-  return BROWSER_ONLY_DRIVER_ALIASES.includes(value.trim().toLowerCase());
 }
