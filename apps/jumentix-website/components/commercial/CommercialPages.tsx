@@ -663,7 +663,7 @@ function Security({ locale }: { locale: CommercialLocale }) {
         { title: 'RBAC', description: t(locale, 'Superadmin, admin, and user policies with organization boundaries.', 'Políticas de superadmin, admin e user com limites de organização.'), icon: <IconUsers /> },
         { title: 'PCI-oriented controls', description: t(locale, 'Production hides internal failures while dev and staging preserve diagnostics.', 'Produção oculta falhas internas enquanto dev e staging preservam diagnóstico.'), icon: <IconLock /> },
         { title: t(locale, 'Secret-safe outputs', 'Saídas sem segredos'), description: t(locale, 'Password and salt fields are shaped out at the service boundary.', 'Campos de senha e salt são removidos no limite do serviço.'), icon: <IconShieldCheck /> },
-        { title: t(locale, 'Continuous evidence', 'Evidência contínua'), description: t(locale, 'Snyk, SonarCloud, Codecov, lint, tests, and CI gates protect delivery.', 'Snyk, SonarCloud, Codecov, lint, testes e gates de CI protegem a entrega.'), icon: <IconGitBranch /> },
+        { title: t(locale, 'Continuous evidence', 'Evidência contínua'), description: t(locale, 'OSV dependency scanning, SonarCloud, Codecov, lint, tests, and CI gates protect delivery.', 'Scan de dependências OSV, SonarCloud, Codecov, lint, testes e gates de CI protegem a entrega.'), icon: <IconGitBranch /> },
       ]} /><CodeShowcase samples={codeSamples.deploy.slice(2)} title={t(locale, 'Local quality gate', 'Gate local de qualidade')} /></div></Band>
       <FinalCta locale={locale} />
     </>

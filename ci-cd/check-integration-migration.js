@@ -17,7 +17,7 @@ const INTEGRATION_MARKERS = Object.freeze([
   'CircleCI',
   'Codecov',
   'SonarQube Cloud',
-  'Snyk',
+  'OSV.dev',
   'GitGuardian',
   'Cursor Bugbot',
   'Vercel',
