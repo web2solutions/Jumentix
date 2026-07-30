@@ -21,14 +21,14 @@ neutros ou apenas configurados não são evidência de sucesso.
 | Variáveis do Actions | nenhuma | nenhuma | inventário vazio |
 | Environments | `env vars`, `secrets` (vazios) | `env vars`, `secrets` (vazios) | paridade de nomes |
 | Dependabot Updates | ativo (GitHub) | habilitado via `.github/dependabot.yml` | caminho Dependabot disponível |
-| Repository webhooks | 2 ativos | nenhum ainda | **owner-auth blocker** / bloqueio owner-auth: recriar callbacks Codecov/CircleCI/GitGuardian |
-| Projeto CircleCI | legado | badge aponta para `XpertMinds/Jumentix` | **bloqueio owner-auth**: vincular projeto CircleCI |
-| Codecov | checks no legado | `codecov.yml` presente | **bloqueio owner-auth**: instalar app Codecov |
-| Projeto SonarQube Cloud | `web2solutions_aaa-typescript-boilerplate` | chave legada transitória | **bloqueio owner-auth**: criar projeto SonarCloud para `XpertMinds/Jumentix` |
-| Snyk | badge/checks no legado | badge canônico | **bloqueio owner-auth**: vincular Snyk |
-| GitGuardian | checks no legado | não observado no canônico | **bloqueio owner-auth**: instalar GitGuardian |
-| Cursor Bugbot | checks no legado | não observado no canônico | **bloqueio owner-auth**: habilitar Bugbot no privado |
-| Vercel (website) | vínculo legado | docs já descrevem caminho XpertMinds | **bloqueio owner-auth**: rebind do projeto Vercel |
+| Repository webhooks | 2 ativos | vínculos de GitHub App/webhook pertencentes aos provedores recriados | Apps CircleCI, Codecov, Snyk, GitGuardian, Cursor, Sonar e Vercel autorizados; checks exclusivos de PR pendentes |
+| Projeto CircleCI | legado | projeto `95b034cf-dd83-4407-be64-108d63263ed8` segue `XpertMinds/Jumentix` | pipelines 2, 3 e 4 passaram `test-source` no SHA canônico `19af3a52` |
+| Codecov | checks no legado | GitHub App autorizado, repositório ativo, token rotacionado armazenado no GitHub e CircleCI; slug canônico e fail-on-error fornecidos ao orb | pipeline 4 expôs `Repository not found` oculto; upload fail-closed corrigido em `dev` e checks de projeto/patch pendentes |
+| Projeto SonarQube Cloud | `web2solutions_aaa-typescript-boilerplate` | `xpertminds` / `XpertMinds_Jumentix` | quality gates do baseline e da PR #9 passaram com zero issues ou hotspots novos |
+| Snyk | badge/checks no legado | organização/configurações/políticas XpertMinds, GitHub App para todos os repositórios, projetos canônicos dos pacotes e novo token de 90 dias | `security/snyk` da PR #9 passou com zero issues |
+| GitGuardian | checks no legado | os cinco repositórios XpertMinds monitorados; scan do histórico canônico concluído | **bloqueio de plano pago**: check runs em repositórios forkados exigem GitGuardian Business |
+| Cursor Bugbot | checks no legado | 5/5 repositórios XpertMinds habilitados, incluindo os dois Jumentix | `Cursor Bugbot` da PR #9 passou |
+| Vercel (website) | vínculo legado | GitHub App da Vercel autorizado para todos os repositórios XpertMinds | **owner-auth blocker / bloqueio de plano pago**: Hobby rejeita vínculo a repositório privado de organização; aprovação explícita de Pro necessária |
 | Proteção de branch | legado (Pro) | indisponível no plano privado atual | **bloqueio owner-auth**: GitHub Pro/Team |
 
 A migração de integrações do registry é governada separadamente por JUM-569.
@@ -51,11 +51,13 @@ A migração de integrações do registry é governada separadamente por JUM-569
 
 ## Registro de verificação
 
-- Data da auditoria: `2026-07-29`
+- Data da auditoria: `2026-07-30`
 - Origem depreciada: `web2solutions/aaa-typescript-boilerplate`
 - Destino canônico: `XpertMinds/Jumentix`
 - Visibilidade: private
 - Secrets recriados (somente nomes): `AAA_JWT_TOKEN_SECRET_KEY`, `AAA_REDIS_PASSWORD`
 - Environments recriados (nomes): `env vars`, `secrets`
-- Instalações restantes de provedores exigem autorização do owner e estão
-  registradas acima como bloqueios explícitos
+- A autenticação dos provedores está completa; o vínculo Git da Vercel, a
+  proteção de branches privadas no GitHub e os check runs GitGuardian em forks
+  exigem planos pagos, enquanto checks terminais de PR continuam obrigatórios
+  e registrados acima

@@ -23,24 +23,26 @@ scan, or a legacy project key is not passing evidence.
 | Variables | No repository or environment variables | No variables unless a provider requires a non-secret identifier | Inventory remains explicit |
 | Webhooks | CircleCI and Snyk | New provider-owned hooks for the canonical repository | Hook targets and provider checks are canonical |
 
-## Migration status (2026-07-29)
+## Migration status (2026-07-30)
 
 | Area | Verified state | Remaining action |
 | --- | --- | --- |
 | GitHub repository/branch settings | Actions use read-only default permissions; workflow PR approvals are disabled; merge policy, issues, discussions, labels, topics, environments, and CircleCI hook events match the legacy application repository | Private-fork permission cannot be copied because the XpertMinds organization forbids private repository forking; branch protection/rulesets are unavailable on the current private-repository plan in both source and destination |
-| GitHub security | Vulnerability alerts and automated security fixes are enabled | Observe Dependabot after this configuration reaches `dev` |
-| CircleCI | A new active GitHub webhook targets CircleCI for canonical repository events | An organization owner must sign in to CircleCI, follow `XpertMinds/Jumentix`, and produce the canonical `test-source` check |
+| GitHub security | Vulnerability alerts, automated security fixes, and the tracked Dependabot configuration are enabled | Observe the first canonical Dependabot update |
+| CircleCI | `XpertMinds/Jumentix` is followed, uncertified public orbs are allowed for the copied Codecov contract, and pipelines 2, 3, and 4 passed `test-source` on canonical SHA `19af3a52` | Observe the provider check on the next canonical task PR |
 | Repository secrets | `AAA_JWT_TOKEN_SECRET_KEY`, `AAA_REDIS_PASSWORD`, and the dedicated `AGENT_REGISTRY_TOKEN` exist by name | Validate their consumers without exposing their values; rotate the registry credential under the owner policy |
-| GitHub environments | `env vars` and `secrets` exist | Recreate `SNYK_TOKEN` in `secrets` through a newly authorized Snyk project |
-| SonarQube Cloud | Tracked configuration uses `xpertminds` / `XpertMinds_Jumentix` and fails closed without `SONAR_TOKEN` | An organization owner must authorize the private repository, create/import the canonical project, and securely create `SONAR_TOKEN` |
-| Snyk | Policy is tracked; the legacy provider-specific hook was not copied | An organization owner must authorize/import the canonical private repository, create a new hook, and securely create `SNYK_TOKEN` |
-| Codecov | CircleCI orb and the 95% repository policy are tracked | An organization owner must activate the canonical private repository and produce project/patch checks |
-| GitGuardian | No canonical terminal check observed | An organization owner must grant the GitHub App access to the canonical private repository |
-| Cursor Bugbot | No canonical terminal check observed | An organization owner must grant the GitHub App access to the canonical private repository |
-| Vercel | Project `jumentix-website` exists and its latest production deployment is `READY` | An organization owner must grant the Vercel GitHub App access and bind the project to `XpertMinds/Jumentix` at `apps/jumentix-website` |
+| GitHub environments | `env vars` and `secrets` exist; a newly issued 90-day `SNYK_TOKEN` is stored in `secrets` | Validate the environment consumer on the next canonical task PR |
+| SonarQube Cloud | Organization `xpertminds`, project `XpertMinds_Jumentix`, GitHub App authorization, and `SONAR_TOKEN` are active; the baseline and PR #9 quality gates passed with zero new issues or hotspots | Continue enforcing the fail-closed scan on canonical PRs |
+| Snyk | Organization `XpertMinds` copied legacy settings, integrations, and policies; its GitHub App is authorized for all repositories; the `XpertMinds/Jumentix` import created the package projects; a new 90-day token is stored in the `secrets` environment; and PR #9 `security/snyk` passed with zero issues | Continue enforcing the canonical Snyk PR check |
+| Codecov | The GitHub App is authorized for all XpertMinds repositories, `XpertMinds/Jumentix` is active, and the rotated token is stored in GitHub and CircleCI; pipeline 4 exposed a hidden `Repository not found` response despite a green orb step, so PR #9 now supplies the canonical slug and makes upload errors fail the job | Produce a successful fail-closed upload on `dev`, then observe terminal `codecov/project` and `codecov/patch` checks |
+| GitGuardian | The GitHub App is authorized for all five XpertMinds repositories; `Jumentix` is monitored; and automatic history scanning completed | PR check runs on forked repositories require GitGuardian Business; explicit paid-plan approval is required, and no trial or purchase was started |
+| Cursor Bugbot | XpertMinds shows 5/5 repositories enabled, including both Jumentix repositories, with Bugbot triggered on every push; PR #9 `Cursor Bugbot` passed | Continue enforcing the terminal Cursor Bugbot check |
+| Vercel | The GitHub App is authorized for all XpertMinds repositories; project `jumentix-website` exists and its latest manual production deployment is `READY` | Git binding to the private organization repository is rejected on Hobby; explicit approval for a paid Pro plan is required, and no trial or purchase was started |
 
-Items requiring provider-owner authentication remain incomplete until their
-terminal evidence is attached to Linear JUM-568. This status must not be read as
+PR-only provider checks remain incomplete until terminal evidence is attached
+to Linear JUM-568. Vercel Git binding, GitHub private-repository branch
+protection, and GitGuardian checks on canonical forks additionally remain
+blocked on explicit paid-plan approval. This status must not be read as final
 provider migration approval.
 
 ## Fail-closed rules
