@@ -52,9 +52,27 @@ const SQL_DIALECT_TO_DRIVER: Record<
 
 const sanitize = (value: string): string => value.trim().toLowerCase();
 
+/**
+ * Stores that exist only in a browser, and so can never be built here.
+ *
+ * Listed explicitly because this factory falls back to `InMemory` for anything
+ * it does not recognise. Without this, `DB_DRIVER=IndexedDB` on the server
+ * yields a working in-memory database and no indication that the configuration
+ * was ignored — the process starts, tests pass, and data quietly goes nowhere
+ * durable. See `@jumentix/cana` (JUM-414).
+ */
+const BROWSER_ONLY_DRIVERS = ['indexeddb', 'indexed-db', 'cana'];
+
 const normalizeDriver = (value?: string): DriverName => {
   if (!value || value.trim() === '') return DEFAULT_DRIVER;
   const normalized = sanitize(value);
+  if (BROWSER_ONLY_DRIVERS.includes(normalized)) {
+    throw new Error(
+      `Database driver "${value}" is browser-only and cannot be built on the server. `
+        + 'IndexedDB has no host, port or credentials, and the global does not exist in this '
+        + 'runtime. Use @jumentix/cana directly in browser code, and pick a server driver here.'
+    );
+  }
   if (['inmemory', 'in-memory', 'memory'].includes(normalized)) return 'InMemory';
   if (['mongo', 'mongodb', 'mongoose'].includes(normalized)) return 'Mongo';
   if (['postgres', 'postgresql'].includes(normalized)) return 'PostgreSQL';

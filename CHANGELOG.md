@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-07-30 docs(cana): epic documentation EN and PT-BR [JUM-418][JUM-398] - Eduardo A.
 - 2026-07-30 feat(cana): postmaster protocol and request router [JUM-401][JUM-409][JUM-410] - Eduardo A.
 - 2026-07-30 feat(cana): make the unknown write outcome resolvable [JUM-559][JUM-411] - Eduardo A.
 - 2026-07-30 feat(cana): durability policy that refuses to round up [JUM-415] - Eduardo A.
