@@ -26,7 +26,7 @@ merely configured checks are not successful evidence.
 | Codecov | `codecov/project`, `codecov/patch` on legacy PRs | GitHub App authorized, repository active, rotated token stored in GitHub and CircleCI | authenticated CircleCI pipeline passed; project/patch PR checks pending |
 | SonarQube Cloud project key | `web2solutions_aaa-typescript-boilerplate` | `xpertminds` / `XpertMinds_Jumentix` | baseline and PR #9 quality gates passed with zero new issues or hotspots |
 | Snyk | badge + GH checks on legacy | XpertMinds org/settings/policies, all-repository GitHub App, canonical package projects, and new 90-day token | PR #9 `security/snyk` passed with zero issues |
-| GitGuardian | Security Checks on legacy PRs | all five XpertMinds repositories monitored; history scan completed; blocking checks enabled | terminal PR check still pending |
+| GitGuardian | Security Checks on legacy PRs | all five XpertMinds repositories monitored; canonical history scan completed | **paid-plan blocker**: forked-repository check runs require GitGuardian Business |
 | Cursor Bugbot | checks on legacy PRs | 5/5 XpertMinds repositories enabled, including both Jumentix repositories | PR #9 `Cursor Bugbot` passed |
 | Vercel (website) | legacy project binding | Vercel GitHub App authorized for all XpertMinds repositories | **paid-plan blocker**: Hobby rejects binding a private organization repository; explicit Pro approval required |
 | Branch protection / required checks | enforced on legacy (Pro) | unavailable on current private plan | **owner-auth blocker**: GitHub Pro/Team for private branch protection |
@@ -58,6 +58,6 @@ Registry-only integration migration is governed separately by JUM-569.
 - Destination visibility: private
 - Actions secrets recreated (names only): `AAA_JWT_TOKEN_SECRET_KEY`, `AAA_REDIS_PASSWORD`
 - Environments recreated (names): `env vars`, `secrets`
-- Provider authentication is complete; Vercel Git binding and GitHub private
-  branch protection require paid plans, while terminal PR checks remain
-  mandatory and are recorded above
+- Provider authentication is complete; Vercel Git binding, GitHub private
+  branch protection, and GitGuardian fork check runs require paid plans, while
+  terminal PR checks remain mandatory and are recorded above
