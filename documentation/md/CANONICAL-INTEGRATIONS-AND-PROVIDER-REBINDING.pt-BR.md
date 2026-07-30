@@ -13,15 +13,15 @@ análise ou manter uma chave de projeto legada não é evidência aprovada.
 | CircleCI | pipeline `test-source` e webhook GitHub | Projeto e webhook canônicos; somente `dev` e `main` | `ci/circleci: test-source` passa no SHA canônico |
 | Codecov | orb CircleCI e checks de projeto/patch | Repositório Codecov canônico com metas de 95% | `codecov/project` e `codecov/patch` passam |
 | SonarQube Cloud | projeto legado `web2solutions_aaa-typescript-boilerplate` | `xpertminds` / `XpertMinds_Jumentix`; token obrigatório; sem análise ignorada | `SonarQube Cloud Scan` executa o scanner e passa |
-| Snyk | integração GitHub, webhook e segredo de ambiente `SNYK_TOKEN` legados | Novo projeto e webhook Snyk canônicos; token recriado com segurança | `security/snyk` passa no PR canônico |
+| Scanner de dependências OSV | ausência de cobertura completa do lockfile Bun | Scanner próprio resolve a árvore Bun instalada e consulta OSV.dev | `bun run deps:audit` passa no gate canônico |
 | GitGuardian | check do GitHub App | Instalação GitGuardian autorizada para o repositório privado canônico | `GitGuardian Security Checks` passa |
 | Cursor Bugbot | check do GitHub App | Instalação Cursor autorizada para o repositório privado canônico | `Cursor Bugbot` termina com sucesso |
 | Vercel | projeto `jumentix-website` e deploy de produção | Conexão Git alterada para `XpertMinds/Jumentix`, raiz `apps/jumentix-website` | Deploy Git canônico alcança `READY` |
 | Dependabot | workflow nativo de atualizações | `.github/dependabot.yml` aponta npm e GitHub Actions para `dev` | Configuração é aceita e atualizações podem executar |
 | Segredos GitHub | `AAA_JWT_TOKEN_SECRET_KEY`, `AAA_REDIS_PASSWORD` | Mesmos nomes, valores recriados com segurança | Inventário existe e workflows consomem os segredos |
-| Ambientes | `env vars`, `secrets`; `SNYK_TOKEN` legado em `secrets` | Mesmos ambientes; novas credenciais criadas com segurança | Inventário e checks dos provedores concordam |
+| Ambientes | `env vars`, `secrets` | Mesmos ambientes; credenciais de provedores criadas com segurança | Inventário e checks dos provedores concordam |
 | Variáveis | Nenhuma variável de repositório ou ambiente | Nenhuma variável, salvo identificador não secreto exigido | Inventário permanece explícito |
-| Webhooks | CircleCI e Snyk | Novos hooks pertencentes aos provedores para o repositório canônico | Alvos dos hooks e checks são canônicos |
+| Webhooks | CircleCI e callbacks legados de provedores | Somente hooks necessários pertencentes aos provedores para o repositório canônico | Alvos dos hooks e checks são canônicos |
 
 ## Estado da migração (2026-07-30)
 
@@ -31,9 +31,9 @@ análise ou manter uma chave de projeto legada não é evidência aprovada.
 | Segurança GitHub | Alertas de vulnerabilidade, correções automáticas e a configuração rastreada do Dependabot estão ativos | Observar a primeira atualização canônica do Dependabot |
 | CircleCI | `XpertMinds/Jumentix` está seguido, orbs públicos não certificados estão permitidos para o contrato Codecov copiado e a reexecução fail-closed do pipeline 6 passou `test-source` no SHA canônico `68d785a4` | Continuar aplicando o pipeline canônico em `dev` e `main` |
 | Segredos do repositório | `AAA_JWT_TOKEN_SECRET_KEY`, `AAA_REDIS_PASSWORD` e o dedicado `AGENT_REGISTRY_TOKEN` existem por nome | Validar seus consumidores sem expor valores; rotacionar a credencial do registro conforme a política do owner |
-| Ambientes GitHub | `env vars` e `secrets` existem; um novo `SNYK_TOKEN` com validade de 90 dias está armazenado em `secrets` | Validar o consumidor do ambiente na próxima PR canônica de tarefa |
+| Ambientes GitHub | `env vars` e `secrets` existem; o scan de dependências não exige token de provedor | Validar consumidores dos ambientes em PRs canônicas |
 | SonarQube Cloud | Organização `xpertminds`, projeto `XpertMinds_Jumentix`, autorização do GitHub App e `SONAR_TOKEN` estão ativos; os quality gates do baseline e da PR #10 passaram com zero issues ou hotspots novos | Continuar aplicando o scan fail-closed nas PRs canônicas |
-| Snyk | A organização `XpertMinds` copiou configurações, integrações e políticas legadas; o GitHub App está autorizado para todos os repositórios; o import de `XpertMinds/Jumentix` criou os projetos dos pacotes; um novo token de 90 dias está no ambiente `secrets`; e `security/snyk` da PR #10 passou com zero issues | Continuar aplicando o check Snyk canônico nas PRs |
+| Scanner de dependências OSV | O scanner próprio resolve o grafo de dependências Bun instalado e consulta OSV.dev em modo fail-closed | Continuar aplicando `bun run deps:audit` no gate canônico |
 | Codecov | O GitHub App está autorizado para todos os repositórios XpertMinds; o token do repositório foi regenerado e sincronizado no GitHub e CircleCI; o pipeline 6 passou o upload fail-closed; e o Codecov registrou o commit `68d785a4` como `CI Passed` com 99,24% de cobertura do projeto | `codecov/project` e `codecov/patch` não apareceram na PR #10; análise de cobertura de patch no repositório privado exige aprovação explícita do Codecov Team, e nenhum trial ou compra foi iniciado |
 | GitGuardian | O GitHub App está autorizado para os cinco repositórios XpertMinds; `Jumentix` está monitorado; e o scan automático de histórico foi concluído | Check runs em repositórios forkados exigem GitGuardian Business; é necessária aprovação explícita de plano pago, e nenhum trial ou compra foi iniciado |
 | Cursor Bugbot | XpertMinds mostra 5/5 repositórios habilitados, incluindo os dois repositórios Jumentix, com Bugbot disparado a cada push; `Cursor Bugbot` da PR #10 passou | Continuar aplicando o check terminal do Cursor Bugbot |
@@ -48,7 +48,7 @@ estado não constitui aprovação final da migração dos provedores.
 ## Regras fail-closed
 
 1. Valores secretos nunca são copiados do repositório legado.
-2. `SONAR_TOKEN`, `SNYK_TOKEN`, credenciais Codecov/Vercel e autorizações OAuth
+2. `SONAR_TOKEN`, credenciais Codecov/Vercel e autorizações OAuth
    são recriados por seus provedores.
 3. Token ausente, app sem autorização, check ausente, análise ignorada,
    execução cancelada, timeout ou vínculo legado é trabalho incompleto.
@@ -62,12 +62,12 @@ estado não constitui aprovação final da migração dos provedores.
 Execute:
 
 ```bash
-pnpm run integrations:check
+bun run integrations:check
 ```
 
 O check valida identificadores canônicos do Sonar, execução fail-closed do
 scanner, vínculo autenticado ao Agent Registry privado, contratos
-CircleCI/Codecov, política Snyk, configuração Dependabot e este inventário
+CircleCI/Codecov, scanner OSV.dev, configuração Dependabot e este inventário
 bilíngue. Ele é uma célula obrigatória da matriz strict.
 
 ## Sequência de autorização

@@ -3,12 +3,9 @@
  *
  * Why this exists, and why it is ours rather than a dependency:
  *
- * Snyk cannot parse `bun.lock`. With no lockfile it recognises it does not fail —
- * it silently reads direct dependencies from `package.json` and reports green.
- * Measured on this repository: 45 dependencies scanned against a resolved tree of
- * over 4000. Every advisory in `.snyk` is transitive, so that is exactly the part
- * that went dark. A control that is present, green and blind is worse than one
- * that is absent.
+ * The scanner resolves the complete installed Bun tree instead of relying on a
+ * compatibility lockfile or a direct-dependency fallback. This prevents a
+ * partial graph from being reported as a successful security result.
  *
  * Bun's `[install.security]` hook receives the **fully resolved** package set, so
  * it closes that gap structurally rather than by translating lockfiles.
@@ -56,23 +53,18 @@ const FATAL_SEVERITIES = new Set(['CRITICAL', 'HIGH']);
 const NON_BLOCKING_SEVERITIES = new Set(['LOW', 'NONE', 'UNKNOWN']);
 
 /**
- * Advisory identifiers accepted as known risk, mirrored from `.snyk`.
- *
- * Duplicated deliberately rather than parsed: `.snyk` is Snyk's format and Snyk is
- * being retired here, so reading it would couple this scanner to a tool we are
- * removing. Each entry carries the same expiry the Snyk file recorded; an expired
- * entry stops suppressing, which is what makes these temporary rather than
- * permanent.
+ * Advisory identifiers accepted as known risk. Each entry carries an explicit
+ * expiry; an expired entry stops suppressing, which makes these temporary rather
+ * than permanent.
  */
 const ACCEPTED_RISK = {
   'GHSA-rrr8-f88r-h8q6': { until: '2026-10-31', reason: 'restify 11.1.0 pins find-my-way 7.x; no patched major-compatible release' },
   'GHSA-c96f-x56v-gq3h': { until: '2026-10-31', reason: 'restify transport required for adapter compatibility; awaiting upstream' },
   'GHSA-m6fv-jmcg-4jfg': { until: '2026-10-31', reason: 'send advisory inherited through the restify path only' },
   'GHSA-xcpc-8h2w-3j85': { until: '2026-10-31', reason: 'inherited via cassandra-driver; awaiting release consuming adm-zip >=0.6.0' },
-  // Carried over on 2026-07-30 when `.snyk` was retired. The first pass through
-  // that file only transcribed four entries; it had eight GHSA ids. Recording the
-  // omission because it is the kind of gap that turns a migration into a silent
-  // policy change.
+  // Completed on 2026-07-30 after the initial migration captured only four of
+  // eight GHSA identifiers. Recording the correction prevents a silent policy
+  // change.
   'GHSA-395f-4hp3-45gv': { until: '2026-10-31', reason: 'inherited through the concurrently legacy chain in the local tooling path' },
   'GHSA-f88m-g3jw-g9cj': { until: '2026-10-31', reason: 'Next.js still resolves sharp 0.34.x transitively in the current Nextra stack' },
   'GHSA-6g55-p6wh-862q': { until: '2026-10-31', reason: 'postcss inherited from the Next.js transitive chain; awaiting upstream' },
@@ -80,19 +72,8 @@ const ACCEPTED_RISK = {
 };
 
 /**
- * The 27 `SNYK-JS-*` ignores in the retired `.snyk` are **not** carried here, and
- * that is a deliberate limitation rather than an oversight.
- *
- * They are Snyk's proprietary identifiers with no OSV equivalent, so there is
- * nothing for this scanner to match them against. Most are the same underlying
- * advisories as the eight GHSA entries above, in a different namespace, covering the
- * same packages the override set already pins — but "most" is not "verified", so it
- * is stated rather than assumed.
- *
- * The evidence that none of them currently apply is empirical: `bun run deps:audit`
- * reports zero blocking advisories across 2027 resolved packages. If one resurfaces
- * under its OSV id, it will appear as a new finding and need a fresh decision, which
- * is the correct outcome — not a suppression inherited from a tool we no longer run.
+ * Only OSV/GHSA identifiers are accepted. Findings without a matching accepted
+ * identifier remain new findings and require a fresh decision.
  */
 
 /** @param {string} id @param {Date} now */

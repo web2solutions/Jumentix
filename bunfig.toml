@@ -51,7 +51,7 @@ coverageDir = "coverage"
 
 [install.security]
 # First-party scanner (JUM-540). Bun hands it the FULLY RESOLVED package set,
-# which is what closes the gap Snyk left: Snyk cannot parse bun.lock and
+# which closes the former dependency-scanning coverage gap: the scanner resolves
 # silently degrades to reading direct dependencies from package.json — measured
 # at 45 packages against a resolved tree of 2027.
 #
