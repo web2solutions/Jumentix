@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-07-30 feat(cana): make the unknown write outcome resolvable [JUM-559][JUM-411] - Eduardo A.
 - 2026-07-30 feat(cana): durability policy that refuses to round up [JUM-415] - Eduardo A.
 - 2026-07-30 feat(cana): lifecycle hooks that cannot swallow a failure [JUM-408] - Eduardo A.
 - 2026-07-30 feat(cana): crud, bulk, queries, transactions and change events [JUM-405][JUM-406] - Eduardo A.
