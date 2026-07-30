@@ -29,21 +29,20 @@ scan, or a legacy project key is not passing evidence.
 | --- | --- | --- |
 | GitHub repository/branch settings | Actions use read-only default permissions; workflow PR approvals are disabled; merge policy, issues, discussions, labels, topics, environments, and CircleCI hook events match the legacy application repository | Private-fork permission cannot be copied because the XpertMinds organization forbids private repository forking; branch protection/rulesets are unavailable on the current private-repository plan in both source and destination |
 | GitHub security | Vulnerability alerts, automated security fixes, and the tracked Dependabot configuration are enabled | Observe the first canonical Dependabot update |
-| CircleCI | `XpertMinds/Jumentix` is followed, uncertified public orbs are allowed for the copied Codecov contract, and pipelines 2, 3, and 4 passed `test-source` on canonical SHA `19af3a52` | Observe the provider check on the next canonical task PR |
+| CircleCI | `XpertMinds/Jumentix` is followed, uncertified public orbs are allowed for the copied Codecov contract, and the fail-closed rerun of pipeline 6 passed `test-source` on canonical SHA `68d785a4` | Continue enforcing the canonical pipeline on `dev` and `main` |
 | Repository secrets | `AAA_JWT_TOKEN_SECRET_KEY`, `AAA_REDIS_PASSWORD`, and the dedicated `AGENT_REGISTRY_TOKEN` exist by name | Validate their consumers without exposing their values; rotate the registry credential under the owner policy |
 | GitHub environments | `env vars` and `secrets` exist; a newly issued 90-day `SNYK_TOKEN` is stored in `secrets` | Validate the environment consumer on the next canonical task PR |
-| SonarQube Cloud | Organization `xpertminds`, project `XpertMinds_Jumentix`, GitHub App authorization, and `SONAR_TOKEN` are active; the baseline and PR #9 quality gates passed with zero new issues or hotspots | Continue enforcing the fail-closed scan on canonical PRs |
-| Snyk | Organization `XpertMinds` copied legacy settings, integrations, and policies; its GitHub App is authorized for all repositories; the `XpertMinds/Jumentix` import created the package projects; a new 90-day token is stored in the `secrets` environment; and PR #9 `security/snyk` passed with zero issues | Continue enforcing the canonical Snyk PR check |
-| Codecov | The GitHub App is authorized for all XpertMinds repositories, `XpertMinds/Jumentix` is active, and the rotated token is stored in GitHub and CircleCI; pipeline 4 exposed a hidden `Repository not found` response despite a green orb step, so PR #9 now supplies the canonical slug and makes upload errors fail the job | Produce a successful fail-closed upload on `dev`, then observe terminal `codecov/project` and `codecov/patch` checks |
+| SonarQube Cloud | Organization `xpertminds`, project `XpertMinds_Jumentix`, GitHub App authorization, and `SONAR_TOKEN` are active; the baseline and PR #10 quality gates passed with zero new issues or hotspots | Continue enforcing the fail-closed scan on canonical PRs |
+| Snyk | Organization `XpertMinds` copied legacy settings, integrations, and policies; its GitHub App is authorized for all repositories; the `XpertMinds/Jumentix` import created the package projects; a new 90-day token is stored in the `secrets` environment; and PR #10 `security/snyk` passed with zero issues | Continue enforcing the canonical Snyk PR check |
+| Codecov | The GitHub App is authorized for all XpertMinds repositories; the repository token was regenerated and synchronized in GitHub and CircleCI; pipeline 6 passed the fail-closed upload; and Codecov recorded commit `68d785a4` as `CI Passed` with 99.24% project coverage | `codecov/project` and `codecov/patch` did not appear on PR #10; patch coverage analysis for the private repository requires explicit approval for Codecov Team, and no trial or purchase was started |
 | GitGuardian | The GitHub App is authorized for all five XpertMinds repositories; `Jumentix` is monitored; and automatic history scanning completed | PR check runs on forked repositories require GitGuardian Business; explicit paid-plan approval is required, and no trial or purchase was started |
-| Cursor Bugbot | XpertMinds shows 5/5 repositories enabled, including both Jumentix repositories, with Bugbot triggered on every push; PR #9 `Cursor Bugbot` passed | Continue enforcing the terminal Cursor Bugbot check |
+| Cursor Bugbot | XpertMinds shows 5/5 repositories enabled, including both Jumentix repositories, with Bugbot triggered on every push; PR #10 `Cursor Bugbot` passed | Continue enforcing the terminal Cursor Bugbot check |
 | Vercel | The GitHub App is authorized for all XpertMinds repositories; project `jumentix-website` exists and its latest manual production deployment is `READY` | Git binding to the private organization repository is rejected on Hobby; explicit approval for a paid Pro plan is required, and no trial or purchase was started |
 
-PR-only provider checks remain incomplete until terminal evidence is attached
-to Linear JUM-568. Vercel Git binding, GitHub private-repository branch
-protection, and GitGuardian checks on canonical forks additionally remain
-blocked on explicit paid-plan approval. This status must not be read as final
-provider migration approval.
+Terminal provider evidence is attached to Linear JUM-568. Codecov project/patch
+status checks, Vercel Git binding, GitHub private-repository branch protection,
+and GitGuardian checks on canonical forks remain blocked on explicit paid-plan
+approval. This status must not be read as final provider migration approval.
 
 ## Fail-closed rules
 
