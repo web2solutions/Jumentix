@@ -49,3 +49,8 @@ export type { OpenOptions, OpenResult } from './core/database';
 export { closeDatabase, deleteDatabase, openDatabase } from './core/database';
 
 export { canaError, translateError } from './core/errors';
+
+export * from './core/transaction';
+export * from './core/query';
+export * from './core/table';
+export * from './core/client';
