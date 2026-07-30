@@ -105,7 +105,7 @@ Cheques incluídos:
 - fumaça de integração
 - limite mínimo de cobertura (99% global via status Jest + Codecov)
 
-O gate estrito é um manifesto explícito e fail-closed com 23 células obrigatórias:
+O gate estrito é um manifesto explícito e fail-closed com 24 células obrigatórias:
 
 - verificações de lint, arquitetura, contratos, governança de release, segurança e smoke de API
 - validação do contrato canônico de integrações com provedores

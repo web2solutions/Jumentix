@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-07-29 ci(JUM-568): recreate canonical integrations and repository controls - Eduardo Almeida
 - 2026-07-29 Merge pull request #1 from XpertMinds/codex/ci/JUM-564-restify-process-budget - Eduardo A.
 - 2026-07-29 chore(changelog): record JUM-564 listener stabilization - Eduardo Almeida
 - 2026-07-29 test(http): stabilize integration listener lifecycle [JUM-564] - Eduardo Almeida

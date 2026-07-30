@@ -1,5 +1,4 @@
 version: 2
-
 updates:
   - package-ecosystem: npm
     directory: /
@@ -14,4 +13,3 @@ updates:
       interval: weekly
     target-branch: dev
     open-pull-requests-limit: 5
-
