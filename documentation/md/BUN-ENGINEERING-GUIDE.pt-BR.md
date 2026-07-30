@@ -225,9 +225,42 @@ uma sem a outra reintroduz exatamente a divergência tripla (`postcss` em `^8.5.
 | 60 falhas de `bun test` por lacunas de API do `bun:test` | Test Pyramid JUM-434–436 |
 | Cobertura de branch não é aplicada pelo `bun test` (ele não tem essa métrica) | JUM-437 / §5 deste guia |
 | 4 scripts `test` de workspace são placeholders `echo`; outros 15 apenas chamam `typecheck` | Test Pyramid JUM-557 |
+| O artefato buildado do backend não carrega sob Node (abaixo) | JUM-37, em aberto |
+| O `bun pm scan` exige escolher e avaliar um pacote scanner | JUM-540, em aberto |
 
-A última linha é um falso verde ativo: o `mono:test` reporta sucesso enquanto quase nenhum workspace roda
+A quarta linha é um falso verde ativo: o `mono:test` reporta sucesso enquanto quase nenhum workspace roda
 teste.
+
+### O artefato buildado não carrega sob Node — e nunca carregou
+
+O Requisito 096 §4 mantém o Node como alvo voltado ao consumidor *validado independentemente*. Medido, essa
+validação não se sustenta hoje, e a causa é anterior a esta migração:
+
+```
+$ node -e "require('./.build/.../start-rest-api.js')"
+Cannot find module '@src/interface/runtime/RuntimeEnvironment'
+
+$ bun -e "require('./.build/.../start-rest-api.js')"
+OK
+```
+
+O `tsc` não reescreve aliases de path, então a saída compilada mantém `require("@src/...")`. Os scripts PM2
+`prod:*` anteriores à migração rodavam essa saída com `--interpreter node` e **sem** preload de
+`tsconfig-paths`, então também não conseguiriam resolver. O Bun carrega porque resolve `paths` do tsconfig
+nativamente.
+
+Portanto a migração acaba mascarando um defeito latente de produção, em vez de causar um. Fechar isso
+corretamente exige uma decisão, não um patch: emitir caminhos relativos reais (um bundler ou `tsc-alias`), ou
+declarar que a compatibilidade Node vale só para os pacotes publicados e não para a entrada buildada do
+backend. Essa decisão pertence à JUM-37 e **não** é tomada aqui.
+
+### `bun pm scan` é um framework, não um scanner
+
+O `bun pm scan` existe e lê o lockfile, mas exige um pacote scanner configurado em `[install.security]` no
+`bunfig.toml`. Escolher um é uma decisão de supply chain (de quem é o código que roda sobre nosso grafo de
+dependências), então fica em aberto em vez de escolhido unilateralmente. O Snyk está presente como `.snyk`,
+mas não está ligado a nenhum job de CI, então a preocupação da JUM-540 sobre o Snyk parsear `bun.lock` não
+afeta o CI hoje. Codecov e Sonar consomem lcov do Jest e não são afetados pela troca de lockfile.
 
 ## Referências
 
