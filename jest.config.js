@@ -33,7 +33,7 @@ module.exports = {
   modulePathIgnorePatterns: ['dist', '.build', '.serverless', '.resources'],
   coveragePathIgnorePatterns: [
     '<rootDir>/packages/',
-    '<rootDir>/ci-cd/',
+    '<rootDir>/ci-cd/(?!check-canonical-integrations\\.js$)',
     '<rootDir>/apps/backend-template/src/modules/Users/adapters/out/persistence/UserDataRepository.ts',
     '<rootDir>/apps/backend-template/src/modules/Users/adapters/out/persistence/OrganizationDataRepository.ts'
   ],

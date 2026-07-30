@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const INTEGRATION_CONTRACTS = Object.freeze([
   {
@@ -123,12 +123,23 @@ function run(rootDir = process.cwd()) {
   return 0;
 }
 
-if (require.main === module) {
-  process.exitCode = run();
+function runIfMain(
+  mainModule = require.main,
+  currentFilename = __filename,
+  rootDir = process.cwd()
+) {
+  if (!mainModule || mainModule.filename !== currentFilename) {
+    return;
+  }
+
+  process.exitCode = run(rootDir);
 }
+
+runIfMain();
 
 module.exports = {
   INTEGRATION_CONTRACTS,
   run,
+  runIfMain,
   validateCanonicalIntegrations
 };
