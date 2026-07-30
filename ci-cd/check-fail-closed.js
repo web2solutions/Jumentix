@@ -20,6 +20,32 @@ const path = require('path');
 const repoRoot = path.resolve(__dirname, '..');
 const results = [];
 
+/**
+ * Resolve the interpreter the fixtures must run on.
+ *
+ * `process.execPath` rather than a PATH lookup, so the fixtures execute on the
+ * same pinned Bun that is running this harness — and so the spawn carries no
+ * PATH-resolution ambiguity.
+ *
+ * It fails closed when the harness is not itself running under Bun. Without that
+ * check `process.execPath` would silently be the Node binary, and every gate
+ * would be exercised on the wrong runtime while still reporting eight passes —
+ * a false green inside the very harness that exists to prevent them.
+ *
+ * @param {NodeJS.ProcessVersions} versions
+ * @param {string} execPath
+ */
+function resolveBunBinary(versions = process.versions, execPath = process.execPath) {
+  if (!versions.bun) {
+    throw new Error(
+      'check-fail-closed must run under Bun (Requirement 096 §1). Invoke it with '
+        + '`bun ci-cd/check-fail-closed.js`; under Node the fixtures would silently '
+        + 'exercise the wrong runtime.',
+    );
+  }
+  return execPath;
+}
+
 function run(command, args, options = {}) {
   return spawnSync(command, args, {
     cwd: repoRoot,
@@ -73,13 +99,26 @@ function writeFile(relative, content) {
   fs.writeFileSync(path.join(repoRoot, relative), content);
 }
 
-console.log('Fail-closed verification (JUM-38)\n');
+/**
+ * Reduce recorded outcomes to a verdict. Kept pure and exported so the pass/fail
+ * accounting is unit-testable without spawning eight subprocesses.
+ *
+ * @param {{name: string, passed: boolean, status: number|null}[]} entries
+ */
+function summarize(entries) {
+  const failed = entries.filter((entry) => !entry.passed);
+  return { total: entries.length, failed, ok: failed.length === 0 };
+}
+
+function main() {
+  const BUN_BINARY = resolveBunBinary();
+  console.log('Fail-closed verification (JUM-38)\n');
 
 // 1. Toolchain guard — a version pin that does not match the running Bun.
 assertFailsClosed(
   'toolchain guard rejects a pin mismatch',
   () => writeFile('.bun-version', '0.0.1\n'),
-  () => run('bun', ['ci-cd/check-bun-version.js']),
+  () => run(BUN_BINARY, ['ci-cd/check-bun-version.js']),
   () => writeFile('.bun-version', '1.3.14\n'),
 );
 
@@ -92,7 +131,7 @@ assertFailsClosed(
     delete pkg.overrides['form-data'];
     writeFile('package.json', `${JSON.stringify(pkg, null, 2)}\n`);
   },
-  () => run('bun', ['ci-cd/check-dependency-override-integrity.js']),
+  () => run(BUN_BINARY, ['ci-cd/check-dependency-override-integrity.js']),
   () => writeFile('package.json', packageJsonBackup),
 );
 
@@ -105,7 +144,7 @@ assertFailsClosed(
     pkg.overrides['restify>find-my-way'] = '^9.7.0';
     writeFile('package.json', `${JSON.stringify(pkg, null, 2)}\n`);
   },
-  () => run('bun', ['ci-cd/check-dependency-override-integrity.js']),
+  () => run(BUN_BINARY, ['ci-cd/check-dependency-override-integrity.js']),
   () => writeFile('package.json', packageJsonBackup),
 );
 
@@ -118,7 +157,7 @@ assertFailsClosed(
     pkg.devDependencies['left-pad'] = '^1.3.0';
     writeFile('package.json', `${JSON.stringify(pkg, null, 2)}\n`);
   },
-  () => run('bun', ['install', '--frozen-lockfile']),
+  () => run(BUN_BINARY, ['install', '--frozen-lockfile']),
   () => writeFile('package.json', packageJsonBackup),
 );
 
@@ -128,7 +167,7 @@ const typecheckFixture = 'apps/backend-template/src/__fail_closed_fixture__.ts';
 assertFailsClosed(
   'tsc rejects a type error',
   () => writeFile(typecheckFixture, 'export const broken: number = "not a number";\n'),
-  () => run('bun', ['run', 'build:dev']),
+  () => run(BUN_BINARY, ['run', 'build:dev']),
   () => fs.rmSync(path.join(repoRoot, typecheckFixture), { force: true }),
 );
 
@@ -137,7 +176,7 @@ const lintFixture = 'apps/backend-template/src/__fail_closed_lint__.ts';
 assertFailsClosed(
   'ESLint rejects a violation',
   () => writeFile(lintFixture, 'const unused = 1\nexport default function f(){var x=1;return x}\n'),
-  () => run('bun', ['run', 'lint']),
+  () => run(BUN_BINARY, ['run', 'lint']),
   () => fs.rmSync(path.join(repoRoot, lintFixture), { force: true }),
 );
 
@@ -156,7 +195,7 @@ assertFailsClosed(
       + '  });\n'
       + '});\n',
   ),
-  () => run('bun', ['run', 'test:unit'], { env: { NODE_ENV: 'dev' } }),
+  () => run(BUN_BINARY, ['run', 'test:unit'], { env: { NODE_ENV: 'dev' } }),
   () => fs.rmSync(path.join(repoRoot, unitFixture), { force: true }),
 );
 
@@ -166,19 +205,26 @@ assertFailsClosed(
 assertFailsClosed(
   'filtered workspace run rejects a missing script',
   () => {},
-  () => run('bun', ['run', '--filter', '*', '__fail_closed_missing_script__']),
+  () => run(BUN_BINARY, ['run', '--filter', '*', '__fail_closed_missing_script__']),
   () => {},
 );
 
 console.log('');
-const failed = results.filter((entry) => !entry.passed);
-if (failed.length > 0) {
-  console.error(`Fail-closed verification FAILED: ${failed.length} of ${results.length} gate class(es) did not fail closed:`);
-  for (const entry of failed) {
+const verdict = summarize(results);
+if (!verdict.ok) {
+  console.error(`Fail-closed verification FAILED: ${verdict.failed.length} of ${verdict.total} gate class(es) did not fail closed:`);
+  for (const entry of verdict.failed) {
     console.error(`  - ${entry.name} (exit=${entry.status}${entry.error ? `, ${entry.error}` : ''})`);
   }
   console.error('\nA gate that passes with a deliberate fault injected is a false green (Req 065).');
   process.exit(1);
 }
 
-console.log(`Fail-closed verification passed: ${results.length}/${results.length} gate classes fail closed.`);
+console.log(`Fail-closed verification passed: ${verdict.total}/${verdict.total} gate classes fail closed.`);
+}
+
+if (require.main === module) {
+  main();
+}
+
+module.exports = { main, resolveBunBinary, summarize };
