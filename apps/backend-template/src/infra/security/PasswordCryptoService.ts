@@ -1,6 +1,6 @@
 import * as bcrypt from 'bcryptjs';
 import { _BCRYPT_SALT_ROUNDS_ } from '@src/config/constants';
-import { IPasswordCryptoService, IHash } from './IPasswordCryptoService';
+import type { IPasswordCryptoService, IHash } from './IPasswordCryptoService';
 
 let passwordCryptoService: IPasswordCryptoService;
 

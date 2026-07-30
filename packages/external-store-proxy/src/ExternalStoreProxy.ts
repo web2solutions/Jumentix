@@ -4,7 +4,7 @@ import {
   DataBaseNotFoundError,
   DatabasePagingError
 } from '@src/infra/exceptions';
-import { IPagingRequest, IPagingResponse, IStore } from '@jumentix/persistence-contracts';
+import type { IPagingRequest, IPagingResponse, IStore } from '@jumentix/persistence-contracts';
 import { BaseExternalDataRepository } from '@jumentix/external-persistence-core';
 
 type TDriverName =

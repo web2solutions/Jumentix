@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { IWorkspaceCatalog } from '@src/interface/CLI/types';
+import type { IWorkspaceCatalog } from '@src/interface/CLI/types';
 
 const CATALOG_DIR = path.resolve(process.cwd(), '.aaa-cli');
 const CATALOG_FILE = path.join(CATALOG_DIR, 'workspace-catalog.json');

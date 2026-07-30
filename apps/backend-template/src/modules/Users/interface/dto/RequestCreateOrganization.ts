@@ -1,6 +1,6 @@
-import { RequestCreateAddress } from '@src/modules/Users/interface/dto/RequestCreateAddress';
-import { RequestCreateEmail } from '@src/modules/Users/interface/dto/RequestCreateEmail';
-import { RequestCreatePhone } from '@src/modules/Users/interface/dto/RequestCreatePhone';
+import type { RequestCreateAddress } from '@src/modules/Users/interface/dto/RequestCreateAddress';
+import type { RequestCreateEmail } from '@src/modules/Users/interface/dto/RequestCreateEmail';
+import type { RequestCreatePhone } from '@src/modules/Users/interface/dto/RequestCreatePhone';
 
 export interface RequestCreateOrganization {
   name: string;

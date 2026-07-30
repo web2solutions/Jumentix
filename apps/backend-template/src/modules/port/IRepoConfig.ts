@@ -1,4 +1,4 @@
-import { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
+import type { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
 // import { IStore } from './IStore';
 
 export interface IRepoConfig {

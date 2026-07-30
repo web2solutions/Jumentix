@@ -1,12 +1,14 @@
 /* istanbul ignore file */
 import { randomUUID } from 'node:crypto';
-import {
+import type {
   IIntegrationEvent,
   IMessage,
   IMessageHandlerRegistrationOptions,
   IMessageMediator,
   IMessageRequestOptions,
-  IMessageResponse,
+  IMessageResponse
+} from './contracts';
+import type {
   MessageHandler
 } from './contracts';
 

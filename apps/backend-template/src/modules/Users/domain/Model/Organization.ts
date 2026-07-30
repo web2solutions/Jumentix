@@ -1,13 +1,14 @@
 /* eslint-disable no-underscore-dangle */
-import { BaseModel, hasMany, HasMany } from '@src/modules/port';
+import type { HasMany } from '@src/modules/port';
+import { BaseModel, hasMany } from '@src/modules/port';
 import { canNotBeEmpty, throwIfReadOnly } from '@src/shared/validators';
 import {
   AddressValueObject,
   EmailValueObject,
   PhoneValueObject
 } from '@src/modules/ddd/valueObjects';
-import { IOrganization } from '@src/modules/Users/domain/Entity/IOrganization';
-import { RequestCreateOrganization } from '@src/modules/Users/interface/dto/RequestCreateOrganization';
+import type { IOrganization } from '@src/modules/Users/domain/Entity/IOrganization';
+import type { RequestCreateOrganization } from '@src/modules/Users/interface/dto/RequestCreateOrganization';
 import { User } from '@src/modules/Users/domain/Model/User';
 
 interface OrganizationFactory extends RequestCreateOrganization {

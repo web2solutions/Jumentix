@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { _DOCS_PREFIX_ } from '@src/config/constants';
-import { IbaseHandler, EndPointFactory, IHandlerFactory } from '@src/interface/HTTP/ports';
+import type { IHandlerFactory } from '@src/interface/HTTP/ports';
+import type { IbaseHandler, EndPointFactory } from '@src/interface/HTTP/ports';
 
 const apiVersionsGetHandlerFactory: EndPointFactory = (
   { apiDocs }: IHandlerFactory

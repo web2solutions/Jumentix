@@ -1,13 +1,16 @@
-import { TotalJsRequest, TotalJsResponse } from '@src/interface/HTTP/adapters/total-js/TotalJsServer';
+import type { TotalJsRequest, TotalJsResponse } from '@src/interface/HTTP/adapters/total-js/TotalJsServer';
 import { sendErrorResponse } from '@src/interface/HTTP/adapters/total-js/responses/sendErrorResponse';
 
-import {
-  IHandlerFactory,
+import type {
+  IHandlerFactory
+} from '@src/interface/HTTP/ports';
+import type {
   IbaseHandler,
   EndPointFactory
 } from '@src/interface/HTTP/ports';
 
-import { RequestCreateEmail, UserController, UserEmailCreateRequestEvent } from '@src/modules/Users';
+import type { RequestCreateEmail } from '@src/modules/Users';
+import { UserController, UserEmailCreateRequestEvent } from '@src/modules/Users';
 
 const createEmail: EndPointFactory = (
   {

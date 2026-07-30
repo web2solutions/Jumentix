@@ -1,4 +1,4 @@
-import { IMessageMediator } from './contracts';
+import type { IMessageMediator } from './contracts';
 import { InMemoryMessageMediatorAdapter } from './InMemoryMessageMediatorAdapter';
 import { RabbitMqMessageMediatorAdapter } from './RabbitMqMessageMediatorAdapter';
 import { BullMqMessageMediatorAdapter } from './BullMqMessageMediatorAdapter';

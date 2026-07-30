@@ -1,5 +1,5 @@
-import { IUser } from '@src/modules/Users/domain/Entity/IUser';
-import { IServiceResponse } from '@src/modules/port';
+import type { IUser } from '@src/modules/Users/domain/Entity/IUser';
+import type { IServiceResponse } from '@src/modules/port';
 
 export interface IUserProvider {
   register(data: Record<string, any>): Promise<IServiceResponse<Record<string, any>>>;

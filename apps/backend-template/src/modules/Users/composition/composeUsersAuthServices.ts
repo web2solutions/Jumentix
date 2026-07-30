@@ -1,9 +1,9 @@
-import { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
-import { IPasswordCryptoService } from '@src/infra/security/IPasswordCryptoService';
-import { IMutexService } from '@src/infra/mutex/port/IMutexService';
-import { IJwtService } from '@src/infra/jwt/IJwtService';
-import { IKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/IKeyValueStorageClient';
-import { IEventBus, IMessageMediator } from '@src/modules/port';
+import type { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
+import type { IPasswordCryptoService } from '@src/infra/security/IPasswordCryptoService';
+import type { IMutexService } from '@src/infra/mutex/port/IMutexService';
+import type { IJwtService } from '@src/infra/jwt/IJwtService';
+import type { IKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/IKeyValueStorageClient';
+import type { IEventBus, IMessageMediator } from '@src/modules/port';
 import { InMemorySecurityAuditRepository } from '@src/infra/audit';
 import { CacheService } from '@src/infra/cache';
 
@@ -16,14 +16,14 @@ import { AuthService } from '@src/modules/Users/service/AuthService';
 import { UserUseCases } from '@src/modules/Users/application/use-cases/UserUseCases';
 import { OrganizationUseCases } from '@src/modules/Users/application/use-cases/OrganizationUseCases';
 import { AuthUseCases } from '@src/modules/Users/application/use-cases/AuthUseCases';
-import { IUserUseCases } from '@src/modules/Users/application/ports/IUserUseCases';
-import { IOrganizationUseCases } from '@src/modules/Users/application/ports/IOrganizationUseCases';
-import { IAuthUseCases } from '@src/modules/Users/application/ports/IAuthUseCases';
-import { IUserEventListeners } from '@src/modules/Users/events/contracts/IUserEventListeners';
+import type { IUserUseCases } from '@src/modules/Users/application/ports/IUserUseCases';
+import type { IOrganizationUseCases } from '@src/modules/Users/application/ports/IOrganizationUseCases';
+import type { IAuthUseCases } from '@src/modules/Users/application/ports/IAuthUseCases';
+import type { IUserEventListeners } from '@src/modules/Users/events/contracts/IUserEventListeners';
 import { registerUserEventListeners } from '@src/modules/Users/events/listeners/registerUserEventListeners';
 import { registerUserMessageHandlers } from '@src/modules/Users/events/listeners/registerUserMessageHandlers';
-import { IUserProvider } from '@src/modules/Users/service/ports/IUserProvider';
-import { IAuthService } from '@src/modules/Users/service/ports/IAuthService';
+import type { IUserProvider } from '@src/modules/Users/service/ports/IUserProvider';
+import type { IAuthService } from '@src/modules/Users/service/ports/IAuthService';
 
 interface IUsersAuthCompositionConfig {
   databaseClient: IDatabaseClient;

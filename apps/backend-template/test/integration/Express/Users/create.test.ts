@@ -24,7 +24,7 @@ import createdUsers from '@seed/users';
 import { UserDataRepository, UserService } from '@src/modules/Users';
 import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal';
 import { JwtService } from '@src/infra/jwt/JwtService';
-import { IAuthorizationHeader } from '@src/modules/Users/service/ports/IAuthorizationHeader';
+import type { IAuthorizationHeader } from '@src/modules/Users/service/ports/IAuthorizationHeader';
 import { EAuthSchemaType } from '@src/modules/Users/service/ports/EAuthSchemaType';
 
 const [createdUser1, createdUser2, createdUser3, createdUser4] = createdUsers;

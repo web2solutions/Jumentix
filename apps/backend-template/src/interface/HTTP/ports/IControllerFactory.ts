@@ -1,12 +1,12 @@
-import { IAuthService } from '@src/modules/Users/service/ports/IAuthService';
+import type { IAuthService } from '@src/modules/Users/service/ports/IAuthService';
 import { UserService } from '@src/modules/Users/service/UserService';
-import { IUserUseCases } from '@src/modules/Users/application/ports/IUserUseCases';
-import { IAuthUseCases } from '@src/modules/Users/application/ports/IAuthUseCases';
-import { IOrganizationUseCases } from '@src/modules/Users/application/ports/IOrganizationUseCases';
-import { IMutexService } from '@src/infra/mutex/port/IMutexService';
-import { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
-import { IPasswordCryptoService } from '@src/infra/security/IPasswordCryptoService';
-import { IMessageMediator } from '@src/modules/port';
+import type { IUserUseCases } from '@src/modules/Users/application/ports/IUserUseCases';
+import type { IAuthUseCases } from '@src/modules/Users/application/ports/IAuthUseCases';
+import type { IOrganizationUseCases } from '@src/modules/Users/application/ports/IOrganizationUseCases';
+import type { IMutexService } from '@src/infra/mutex/port/IMutexService';
+import type { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
+import type { IPasswordCryptoService } from '@src/infra/security/IPasswordCryptoService';
+import type { IMessageMediator } from '@src/modules/port';
 // import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
 
 export interface IControllerFactory {

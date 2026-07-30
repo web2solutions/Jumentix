@@ -1,8 +1,8 @@
-import { IPagingRequest } from './IPagingRequest';
-import { IServiceResponse } from './IServiceResponse';
-import { IServiceConfig } from './IServiceConfig';
-import { TRepos } from './TRepos';
-import { TServices } from './TServices';
+import type { IPagingRequest } from './IPagingRequest';
+import type { IServiceResponse } from './IServiceResponse';
+import type { IServiceConfig } from './IServiceConfig';
+import type { TRepos } from './TRepos';
+import type { TServices } from './TServices';
 import { BaseRepo } from './BaseRepo';
 import { BaseModel } from './BaseModel';
 

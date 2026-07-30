@@ -1,10 +1,10 @@
-import { IUser } from '@src/modules/Users/domain/Entity/IUser';
-import { IServiceResponse } from '@src/modules/port';
-import { IJwtService } from '@src/infra/jwt/IJwtService';
+import type { IUser } from '@src/modules/Users/domain/Entity/IUser';
+import type { IServiceResponse } from '@src/modules/port';
+import type { IJwtService } from '@src/infra/jwt/IJwtService';
 
 import { EAuthSchemaType } from './EAuthSchemaType';
-import { IAuthorizationHeader } from './IAuthorizationHeader';
-import { ITokenObject } from './ITokenObject';
+import type { IAuthorizationHeader } from './IAuthorizationHeader';
+import type { ITokenObject } from './ITokenObject';
 
 export interface IAuthService {
   start(): Promise<void>;

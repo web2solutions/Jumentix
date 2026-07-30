@@ -9,8 +9,10 @@ import { AuthService } from '@src/modules/Users/service/AuthService';
 import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
 import { InMemoryKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
 import { MutexService } from '@src/infra/mutex/adapter/MutexService';
+import type {
+  IUser
+} from '@src/modules/Users';
 import {
-  IUser,
   UserDataRepository,
   UserService
 } from '@src/modules/Users';

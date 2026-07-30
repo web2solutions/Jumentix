@@ -1,13 +1,16 @@
 import { Request, Response } from 'restify';
 import { sendErrorResponse } from '@src/interface/HTTP/adapters/restify/responses/sendErrorResponse';
 
-import {
-  IHandlerFactory,
+import type {
+  IHandlerFactory
+} from '@src/interface/HTTP/ports';
+import type {
   IbaseHandler,
   EndPointFactory
 } from '@src/interface/HTTP/ports';
 
-import { RequestUpdateDocument, UserController, UserDocumentUpdateRequestEvent } from '@src/modules/Users';
+import type { RequestUpdateDocument } from '@src/modules/Users';
+import { UserController, UserDocumentUpdateRequestEvent } from '@src/modules/Users';
 
 const updateDocument: EndPointFactory = (
   {

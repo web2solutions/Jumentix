@@ -1,5 +1,5 @@
 import { UserStoreAPI } from '@src/infra/persistence/InMemoryDatabase/Stores/UserStoreAPI';
-import { IUser } from '@src/modules/Users';
+import type { IUser } from '@src/modules/Users';
 
 const createUser = (id: string, username: string, firstName: string): IUser => ({
   id,
