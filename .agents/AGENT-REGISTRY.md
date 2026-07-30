@@ -50,11 +50,11 @@ This registry tracks AI agents collaborating in the Jumentix project.
 - `agent_version`: `GPT-5 Codex`
 - `status`: `busy`
 - `registered_at_utc`: `2026-07-25T00:00:00Z`
-- `last_branch_check_utc`: `2026-07-29T18:51:13Z`
+- `last_branch_check_utc`: `2026-07-29T22:01:52Z`
 - `main_ref_checked`: `2d4b4b47`
-- `dev_ref_checked`: `d6dd5219`
+- `dev_ref_checked`: `88340f49`
 - `active_epic`: `https://linear.app/jumentix/project/epicgovernance-canonical-xpertminds-migration-and-legacy-freeze-f8bd0962ba8a`
-- `assigned_task`: `https://linear.app/jumentix/issue/JUM-565`
+- `assigned_task`: `https://linear.app/jumentix/issue/JUM-568`
 - `capabilities`:
   - repository analysis and implementation
   - test and CI debugging

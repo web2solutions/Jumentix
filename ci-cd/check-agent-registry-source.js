@@ -1,9 +1,14 @@
 /* eslint-disable no-console */
+const { execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
 
 const CONFIG_PATH = path.resolve('.agents/registry-source.json');
+const PRIVATE_REGISTRY_CREDENTIAL_GUIDANCE =
+  'The canonical registry is private (XpertMinds/jumentix-agent-registry). ' +
+  'Set GITHUB_TOKEN or GH_TOKEN with contents:read (CI: secrets.AGENT_REGISTRY_TOKEN), ' +
+  'or authenticate with `gh auth login` so `gh auth token` is available locally.';
 
 function parseArgs() {
   const args = new Set(process.argv.slice(2));
@@ -109,8 +114,34 @@ function fetchText(url) {
   }, 'immutable canonical registry content');
 }
 
+function readGhAuthToken() {
+  try {
+    const token = execFileSync('gh', ['auth', 'token'], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+      timeout: 5000
+    }).trim();
+    return token || '';
+  } catch {
+    return '';
+  }
+}
+
+function resolveGithubToken(env = process.env) {
+  const fromEnv = env.GITHUB_TOKEN || env.GH_TOKEN;
+  if (fromEnv) {
+    return String(fromEnv);
+  }
+  // Injected env objects in unit tests stay deterministic and credential-free.
+  // Only the live process environment may consult the local gh CLI.
+  if (env !== process.env) {
+    return '';
+  }
+  return readGhAuthToken();
+}
+
 function githubApiHeaders(env = process.env) {
-  const token = env.GITHUB_TOKEN || env.GH_TOKEN;
+  const token = resolveGithubToken(env);
   return {
     Accept: 'application/vnd.github+json',
     'User-Agent': 'jumentix-agent-registry-check',
@@ -119,7 +150,7 @@ function githubApiHeaders(env = process.env) {
 }
 
 function hasGithubToken(env = process.env) {
-  return Boolean(env.GITHUB_TOKEN || env.GH_TOKEN);
+  return Boolean(resolveGithubToken(env));
 }
 
 async function fetchCanonicalText(config, revision, env = process.env) {
@@ -158,21 +189,23 @@ async function fetchCanonicalText(config, revision, env = process.env) {
     if (tokenAccessFailure && /HTTP 404/.test(message)) {
       // Private repos often answer anonymous raw with 404; prefer the token-access signal.
       throw new Error(
-        `${tokenAccessFailure.message}. Authenticated Contents API failed and public raw fetch returned HTTP 404. ` +
-          'If the canonical registry is private, fix GITHUB_TOKEN or GH_TOKEN with contents:read. ' +
-          'If it is public, verify the pinned revision SHA and remotePath in .agents/registry-source.json.',
+        `${tokenAccessFailure.message}. Authenticated Contents API failed and diagnostic raw fetch returned HTTP 404. ` +
+          `${PRIVATE_REGISTRY_CREDENTIAL_GUIDANCE} ` +
+          'If credentials already have contents:read, verify the pinned revision SHA and remotePath in .agents/registry-source.json.',
         { cause: error }
       );
     }
     if (/HTTP (401|403)/.test(message)) {
       throw new Error(
-        `${message}. Private canonical registry access requires GITHUB_TOKEN or GH_TOKEN with contents:read.`,
+        `${message}. ${PRIVATE_REGISTRY_CREDENTIAL_GUIDANCE}`,
         { cause: error }
       );
     }
     if (/HTTP 404/.test(message)) {
+      // Private raw.githubusercontent.com answers 404 without credentials — that is not pin drift.
       throw new Error(
-        `${message}. Verify the pinned revision SHA and remotePath in .agents/registry-source.json.`,
+        `${message}. ${PRIVATE_REGISTRY_CREDENTIAL_GUIDANCE} ` +
+          'If credentials are already present, verify the pinned revision SHA and remotePath in .agents/registry-source.json.',
         { cause: error }
       );
     }
@@ -238,7 +271,7 @@ async function main() {
     if (!same) {
       console.error('Local agent registry mirror is out of sync with canonical repository.');
       console.error(`Source: ${sourceUrl}`);
-      console.error(`Run: node ci-cd/check-agent-registry-source.js --sync`);
+      console.error('Run: bun run agent-registry:sync');
       process.exit(1);
     }
     console.log(`Agent registry mirror matches canonical revision ${revision}.`);
@@ -261,6 +294,7 @@ if (require.main === module) {
 }
 
 module.exports = {
+  PRIVATE_REGISTRY_CREDENTIAL_GUIDANCE,
   buildBranchRevisionUrl,
   buildContentsApiUrl,
   buildRawUrl,
@@ -274,5 +308,7 @@ module.exports = {
   normalize,
   parseArgs,
   readConfig,
-  resolveBranchRevision
+  readGhAuthToken,
+  resolveBranchRevision,
+  resolveGithubToken
 };

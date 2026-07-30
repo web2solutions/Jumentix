@@ -46,7 +46,15 @@ jobs:
           command: dockerize -wait tcp://localhost:6379 -timeout 1m
       - run:
           name: Run branch-aware quality gate
-          command: JUMENTIX_QUALITY_GATE_TARGET=${CIRCLE_BRANCH:-dev} AAA_CI_GATE_RESULT_FILE=artifacts/ci/branch-quality-gate.json AAA_CI_MATRIX_RESULT_FILE=artifacts/ci/full-test-matrix.json bun run ci:gate:branch
+          # Private agent-registry (Req 089): project must expose AGENT_REGISTRY_TOKEN
+          # and/or GH_TOKEN / GITHUB_TOKEN with contents:read on
+          # XpertMinds/jumentix-agent-registry. Default github tokens cannot read it.
+          command: |
+            export GH_TOKEN="${GH_TOKEN:-${GITHUB_TOKEN:-${AGENT_REGISTRY_TOKEN:-}}}"
+            JUMENTIX_QUALITY_GATE_TARGET=${CIRCLE_BRANCH:-dev} \
+              AAA_CI_GATE_RESULT_FILE=artifacts/ci/branch-quality-gate.json \
+              AAA_CI_MATRIX_RESULT_FILE=artifacts/ci/full-test-matrix.json \
+              bun run ci:gate:branch
       - store_artifacts:
           path: artifacts/ci/branch-quality-gate.json
           destination: branch-quality-gate.json

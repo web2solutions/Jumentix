@@ -2,6 +2,7 @@
 const https = require('https');
 
 const {
+  PRIVATE_REGISTRY_CREDENTIAL_GUIDANCE,
   buildBranchRevisionUrl,
   buildContentsApiUrl,
   buildRawUrl,
@@ -13,7 +14,8 @@ const {
   hasGithubToken,
   mirrorsMatch,
   normalize,
-  resolveBranchRevision
+  resolveBranchRevision,
+  resolveGithubToken
 } = require('../../../../../ci-cd/check-agent-registry-source');
 
 describe('check-agent-registry-source', () => {
@@ -214,7 +216,7 @@ describe('check-agent-registry-source', () => {
     expect(getRequest).toHaveBeenCalledTimes(2);
   });
 
-  it('guides operators to pin/path drift on unauthenticated raw 404 responses', async () => {
+  it('guides operators to private-registry credentials on unauthenticated raw 404 responses', async () => {
     expect.hasAssertions();
     const revision = '0123456789abcdef0123456789abcdef01234567';
     const request = { on: jest.fn() };
@@ -233,7 +235,7 @@ describe('check-agent-registry-source', () => {
       repository: 'XpertMinds/jumentix-agent-registry',
       revision,
       remotePath: 'AGENT-REGISTRY.md'
-    }, revision, {})).rejects.toThrow('Verify the pinned revision SHA and remotePath');
+    }, revision, {})).rejects.toThrow(PRIVATE_REGISTRY_CREDENTIAL_GUIDANCE);
   });
 
   it('still points unauthenticated 401/403 failures at token-backed private access', async () => {
@@ -255,7 +257,7 @@ describe('check-agent-registry-source', () => {
       repository: 'XpertMinds/jumentix-agent-registry',
       revision,
       remotePath: 'AGENT-REGISTRY.md'
-    }, revision, {})).rejects.toThrow('Private canonical registry access requires GITHUB_TOKEN or GH_TOKEN');
+    }, revision, {})).rejects.toThrow(PRIVATE_REGISTRY_CREDENTIAL_GUIDANCE);
   });
 
   it('keeps token-access guidance when Contents API auth fails and raw returns 404', async () => {
@@ -289,9 +291,17 @@ describe('check-agent-registry-source', () => {
       revision,
       remotePath: 'AGENT-REGISTRY.md'
     }, revision, { GITHUB_TOKEN: 'bad-token' })).rejects.toThrow(
-      /Authenticated Contents API failed and public raw fetch returned HTTP 404/
+      /Authenticated Contents API failed and diagnostic raw fetch returned HTTP 404/
     );
     expect(getRequest).toHaveBeenCalledTimes(2);
+  });
+
+  it('resolves tokens from env without consulting the gh CLI for injected environments', () => {
+    expect.hasAssertions();
+    expect(resolveGithubToken({})).toBe('');
+    expect(resolveGithubToken({ GH_TOKEN: 'from-gh-token' })).toBe('from-gh-token');
+    expect(resolveGithubToken({ GITHUB_TOKEN: 'from-github-token' })).toBe('from-github-token');
+    expect(hasGithubToken({})).toBe(false);
   });
 
   it('rejects failed canonical registry responses', async () => {
