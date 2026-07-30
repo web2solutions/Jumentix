@@ -128,7 +128,7 @@ function runIfMain(
   currentFilename = __filename,
   rootDir = process.cwd()
 ) {
-  if (!mainModule || mainModule.filename !== currentFilename) {
+  if (mainModule?.filename !== currentFilename) {
     return;
   }
 
