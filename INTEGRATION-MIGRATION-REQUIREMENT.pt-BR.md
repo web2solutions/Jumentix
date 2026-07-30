@@ -26,7 +26,7 @@ neutros ou apenas configurados não são evidência de sucesso.
 | Codecov | checks no legado | GitHub App autorizado, repositório ativo e token rotacionado armazenado no GitHub e CircleCI | pipeline CircleCI autenticado passou; checks de projeto/patch na PR pendentes |
 | Projeto SonarQube Cloud | `web2solutions_aaa-typescript-boilerplate` | `xpertminds` / `XpertMinds_Jumentix` | quality gates do baseline e da PR #9 passaram com zero issues ou hotspots novos |
 | Snyk | badge/checks no legado | organização/configurações/políticas XpertMinds, GitHub App para todos os repositórios, projetos canônicos dos pacotes e novo token de 90 dias | `security/snyk` da PR #9 passou com zero issues |
-| GitGuardian | checks no legado | os cinco repositórios XpertMinds monitorados; scan de histórico concluído; checks bloqueantes ativos | check terminal na PR ainda pendente |
+| GitGuardian | checks no legado | os cinco repositórios XpertMinds monitorados; scan do histórico canônico concluído | **bloqueio de plano pago**: check runs em repositórios forkados exigem GitGuardian Business |
 | Cursor Bugbot | checks no legado | 5/5 repositórios XpertMinds habilitados, incluindo os dois Jumentix | `Cursor Bugbot` da PR #9 passou |
 | Vercel (website) | vínculo legado | GitHub App da Vercel autorizado para todos os repositórios XpertMinds | **owner-auth blocker / bloqueio de plano pago**: Hobby rejeita vínculo a repositório privado de organização; aprovação explícita de Pro necessária |
 | Proteção de branch | legado (Pro) | indisponível no plano privado atual | **bloqueio owner-auth**: GitHub Pro/Team |
@@ -57,6 +57,7 @@ A migração de integrações do registry é governada separadamente por JUM-569
 - Visibilidade: private
 - Secrets recriados (somente nomes): `AAA_JWT_TOKEN_SECRET_KEY`, `AAA_REDIS_PASSWORD`
 - Environments recriados (nomes): `env vars`, `secrets`
-- A autenticação dos provedores está completa; o vínculo Git da Vercel e a
-  proteção de branches privadas no GitHub exigem planos pagos, enquanto checks
-  terminais de PR continuam obrigatórios e registrados acima
+- A autenticação dos provedores está completa; o vínculo Git da Vercel, a
+  proteção de branches privadas no GitHub e os check runs GitGuardian em forks
+  exigem planos pagos, enquanto checks terminais de PR continuam obrigatórios
+  e registrados acima

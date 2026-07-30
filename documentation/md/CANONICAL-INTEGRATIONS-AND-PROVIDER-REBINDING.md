@@ -35,14 +35,15 @@ scan, or a legacy project key is not passing evidence.
 | SonarQube Cloud | Organization `xpertminds`, project `XpertMinds_Jumentix`, GitHub App authorization, and `SONAR_TOKEN` are active; the baseline and PR #9 quality gates passed with zero new issues or hotspots | Continue enforcing the fail-closed scan on canonical PRs |
 | Snyk | Organization `XpertMinds` copied legacy settings, integrations, and policies; its GitHub App is authorized for all repositories; the `XpertMinds/Jumentix` import created the package projects; a new 90-day token is stored in the `secrets` environment; and PR #9 `security/snyk` passed with zero issues | Continue enforcing the canonical Snyk PR check |
 | Codecov | The GitHub App is authorized for all XpertMinds repositories, `XpertMinds/Jumentix` is active, and the rotated repository token is stored in GitHub and CircleCI; authenticated CircleCI pipeline 4 passed | Produce terminal `codecov/project` and `codecov/patch` checks on the canonical PR |
-| GitGuardian | The GitHub App is authorized for all five XpertMinds repositories; `Jumentix` is monitored; automatic history scanning completed; and blocking PR checks are enabled | Observe a terminal `GitGuardian Security Checks` result on the canonical PR |
+| GitGuardian | The GitHub App is authorized for all five XpertMinds repositories; `Jumentix` is monitored; and automatic history scanning completed | PR check runs on forked repositories require GitGuardian Business; explicit paid-plan approval is required, and no trial or purchase was started |
 | Cursor Bugbot | XpertMinds shows 5/5 repositories enabled, including both Jumentix repositories, with Bugbot triggered on every push; PR #9 `Cursor Bugbot` passed | Continue enforcing the terminal Cursor Bugbot check |
 | Vercel | The GitHub App is authorized for all XpertMinds repositories; project `jumentix-website` exists and its latest manual production deployment is `READY` | Git binding to the private organization repository is rejected on Hobby; explicit approval for a paid Pro plan is required, and no trial or purchase was started |
 
 PR-only provider checks remain incomplete until terminal evidence is attached
-to Linear JUM-568. Vercel Git binding and GitHub private-repository branch
-protection additionally remain blocked on explicit paid-plan approval. This
-status must not be read as final provider migration approval.
+to Linear JUM-568. Vercel Git binding, GitHub private-repository branch
+protection, and GitGuardian checks on canonical forks additionally remain
+blocked on explicit paid-plan approval. This status must not be read as final
+provider migration approval.
 
 ## Fail-closed rules
 
