@@ -254,13 +254,48 @@ corretamente exige uma decisão, não um patch: emitir caminhos relativos reais 
 declarar que a compatibilidade Node vale só para os pacotes publicados e não para a entrada buildada do
 backend. Essa decisão pertence à JUM-37 e **não** é tomada aqui.
 
-### `bun pm scan` é um framework, não um scanner
+### O scan de dependências está cego hoje — confirmado, não teórico
 
-O `bun pm scan` existe e lê o lockfile, mas exige um pacote scanner configurado em `[install.security]` no
-`bunfig.toml`. Escolher um é uma decisão de supply chain (de quem é o código que roda sobre nosso grafo de
-dependências), então fica em aberto em vez de escolhido unilateralmente. O Snyk está presente como `.snyk`,
-mas não está ligado a nenhum job de CI, então a preocupação da JUM-540 sobre o Snyk parsear `bun.lock` não
-afeta o CI hoje. Codecov e Sonar consomem lcov do Jest e não são afetados pela troca de lockfile.
+**Correção.** Uma revisão anterior deste guia afirmava que o Snyk "não está ligado a nenhum job de CI, então a
+preocupação da JUM-540 sobre o Snyk parsear `bun.lock` não afeta o CI hoje." Estava errado em dois pontos: o
+Snyk roda como **GitHub App** (por isso não aparece nos arquivos de workflow), e a preocupação é real.
+
+Medido com CLI autenticada nesta árvore:
+
+```
+$ snyk test --all-projects
+exit 0 — "no vulnerable paths found"
+Target file: package.json — "Tested 45 dependencies"
+```
+
+A raiz resolve para **mais de 4000** pacotes. O Snyk não consegue parsear `bun.lock` e, sem um lockfile que
+reconheça, ele não falha — lê silenciosamente as dependências diretas do `package.json` e reporta verde vendo
+cerca de um por cento do grafo. Todos os advisories do `.snyk` (`restify>find-my-way`, `send`,
+`cassandra-driver>adm-zip`) são **transitivos**, exatamente a parte que apagou.
+
+Um controle ausente é uma lacuna. Um controle presente, verde e cego é pior.
+
+O `ci-cd/check-dependency-scanner-readable.js` transforma isso numa falha alta. Ele **falha** hoje, o que é o
+estado honesto.
+
+Abordagens medidas e rejeitadas — registradas para ninguém repetir às cegas:
+
+| Abordagem | Resultado |
+| --- | --- |
+| Projeção via `bun install --yarn` | O parser yarn v1 do Snyk rejeita a saída do bun: `Dependency string-width-cjs@npm:string-width@^4.2.0 was not found in yarn.lock` |
+| `snyk --package-manager=bun` | Não existe esse package manager; o help da CLI do Snyk não menciona bun |
+| `npm install --package-lock-only` | Bloqueado pelo próprio guard de preinstall deste repo, e resolveria independentemente do `bun.lock`, descrevendo uma árvore que não instalamos |
+
+Restam três remédios candidatos, cada um exigindo uma decisão que este guia não toma:
+
+1. **Scanner nativo do Bun** — configurar `[install.security]` no `bunfig.toml`. Decide de quem é o código que
+   roda sobre nosso grafo de dependências, portanto é escolha de supply chain.
+2. **Segundo lockfile derivado** — aceitar um, com checagem de CI garantindo sincronia com o `bun.lock`, para
+   que a divergência seja falha de gate e não imprecisão silenciosa.
+3. **Postergar** — manter `pnpm-lock.yaml` e o pnpm como fonte de instalação até o scan de dependências ter
+   resposta em Bun, ou seja, tratar o cutover como ainda não concluível com segurança.
+
+Codecov e Sonar consomem lcov do Jest e realmente não são afetados pela troca de lockfile.
 
 ## Referências
 
