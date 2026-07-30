@@ -142,6 +142,10 @@
       "name": "@jumentix/adapter-runtime-bootstrap",
       "version": "0.1.0",
     },
+    "packages/cana": {
+      "name": "@jumentix/cana",
+      "version": "0.1.0",
+    },
     "packages/cli-init": {
       "name": "@jumentix/cli-init",
       "version": "0.0.0",
@@ -885,6 +889,8 @@
     "@jumentix/adapter-runtime-bootstrap": ["@jumentix/adapter-runtime-bootstrap@workspace:packages/adapter-runtime-bootstrap"],
 
     "@jumentix/backend-template": ["@jumentix/backend-template@workspace:apps/backend-template"],
+
+    "@jumentix/cana": ["@jumentix/cana@workspace:packages/cana"],
 
     "@jumentix/cli-init": ["@jumentix/cli-init@workspace:packages/cli-init"],
 
