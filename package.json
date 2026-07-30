@@ -55,7 +55,7 @@
     "ci:smoke": "AAA_JWT_TOKEN_SECRET_KEY=${AAA_JWT_TOKEN_SECRET_KEY:-ci_jwt_secret_key} NODE_ENV=ci bun ci-cd/run-api-smoke.js",
     "ci:integration": "AAA_JWT_TOKEN_SECRET_KEY=${AAA_JWT_TOKEN_SECRET_KEY:-ci_jwt_secret_key} bun ci-cd/run-integration-tests.js",
     "ci:security-smoke": "NODE_ENV=ci bun ci-cd/run-security-smoke.js",
-    "ci:gate": "bun run check-bun-version && bun run deps:check-overrides && bun run lint && bun run deps:check-cycles && bun run arch:check-boundaries && bun run arch:check-users-legacy-imports && bun run arch:check-workspace-boundaries && bun run workspace:check-quality && bun run workspace:check-coverage-policy && bun run release:governance:check && bun run requirements:check && bun run integrations:check && bun run integration-migration:check && bun run agent-registry:check && bun run test:unit && bun run ci:security-smoke && bun run oas:check-routes && bun run serverless:check-handlers && bun run build:dev && bun run ci:smoke",
+    "ci:gate": "bun run check-bun-version && bun run deps:check-overrides && bun run deps:audit && bun run lint && bun run deps:check-cycles && bun run arch:check-boundaries && bun run arch:check-users-legacy-imports && bun run arch:check-workspace-boundaries && bun run workspace:check-quality && bun run workspace:check-coverage-policy && bun run release:governance:check && bun run requirements:check && bun run integrations:check && bun run integration-migration:check && bun run agent-registry:check && bun run test:unit && bun run ci:security-smoke && bun run oas:check-routes && bun run serverless:check-handlers && bun run build:dev && bun run ci:smoke",
     "ci:gate:branch": "bun ci-cd/run-branch-quality-gate.js",
     "ci:gate:task": "bun ci-cd/run-task-change-tests.js",
     "ci:gate:strict": "bun ci-cd/run-full-test-matrix.js",
@@ -233,7 +233,9 @@
     "docker:stop:service-template": "docker compose -f \"apps/backend-template/docker-compose-service-templates.yml\" down",
     "docker:clean": "docker system prune -a",
     "ci:fail-closed": "bun ci-cd/check-fail-closed.js",
-    "integrations:check": "bun ci-cd/check-canonical-integrations.js"
+    "integrations:check": "bun ci-cd/check-canonical-integrations.js",
+    "deps:audit": "bun packages/security-scanner/audit.js",
+    "deps:check-scanner": "bun ci-cd/check-dependency-scanner-readable.js"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.940.0",
@@ -315,7 +317,8 @@
     "supertest": "^6.3.4",
     "ts-jest": "^29.2.5",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "5.4.5"
+    "typescript": "5.4.5",
+    "@jumentix/security-scanner": "workspace:*"
   },
   "resolutions": {
     "serverless": "^4.1.12"
@@ -351,7 +354,7 @@
     "svgo": "^4.0.2",
     "fast-xml-parser": "^5.10.1",
     "shell-quote": "^1.9.0",
-    "brace-expansion": "^2.1.2",
+    "brace-expansion": "^5.0.8",
     "sharp": "^0.35.0",
     "protobufjs": "^7.6.5",
     "adm-zip": "^0.6.0"

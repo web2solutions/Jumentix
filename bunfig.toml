@@ -49,6 +49,30 @@ coverageThreshold = { line = 0.99, function = 0.99, statement = 0.99 }
 coverageReporter = ["text", "lcov"]
 coverageDir = "coverage"
 
+[install.security]
+# First-party scanner (JUM-540). Bun hands it the FULLY RESOLVED package set,
+# which is what closes the gap Snyk left: Snyk cannot parse bun.lock and
+# silently degrades to reading direct dependencies from package.json — measured
+# at 45 packages against a resolved tree of 2027.
+#
+# Deliberately a workspace package rather than a published one: configuring a
+# third-party scanner here decides whose code executes over our entire
+# dependency graph on every install. Its only external input is data, from the
+# public OSV.dev API (the corpus behind the GitHub Advisory Database).
+# scanner = "@jumentix/security-scanner"
+#
+# DISABLED, for a measured reason rather than an assumed one: Bun refuses to install
+# when the configured scanner is not already installed
+# (`SecurityScannerNotInDependencies`). For a workspace-local scanner that is
+# circular — `bun install` on a tree with no node_modules exits 1, which is every CI
+# run. Warm-tree behaviour is correct and fast: "Scanning 2139 packages took 3668ms".
+#
+# This line becomes live once @jumentix/security-scanner is published, which is a
+# release decision under Req 070 and not this task's to take. Until then the same
+# scan runs as a gate step, `bun run deps:audit`, wired into ci:gate. The blocking
+# property is preserved where it matters (the gate, hence the PR); it is the install
+# itself that is no longer guarded.
+
 [install]
 # Isolated linking mirrors the pnpm layout the repository was built against and
 # keeps phantom-dependency resolution failures visible instead of accidentally

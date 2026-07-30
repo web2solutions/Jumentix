@@ -58,7 +58,10 @@ const REQUIRED_OVERRIDES = {
   svgo: '^4.0.2',
   'fast-xml-parser': '^5.10.1',
   'shell-quote': '^1.9.0',
-  'brace-expansion': '^2.1.2',
+  // Raised from ^2.1.2 on 2026-07-30: GHSA-mh99-v99m-4gvg (HIGH, DoS via
+  // unbounded expansion) affects every version below 5.0.8. Found by the
+  // first-party OSV scanner, which Snyk's shallow scan could not see.
+  'brace-expansion': '^5.0.8',
   sharp: '^0.35.0',
   protobufjs: '^7.6.5',
   // Was `cassandra-driver>adm-zip` under pnpm; the only nested selector with no
