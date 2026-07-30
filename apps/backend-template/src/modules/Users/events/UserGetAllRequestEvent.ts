@@ -1,5 +1,5 @@
 import { BaseDomainEvent } from '@src/modules/port/BaseDomainEvent';
-import { IEventMessage } from '@src/modules/port/IEventMessage';
+import type { IEventMessage } from '@src/modules/port/IEventMessage';
 import { canNotBeEmpty } from '@src/shared/validators';
 import { ComposeEventError } from '@src/infra/exceptions';
 

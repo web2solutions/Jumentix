@@ -48,7 +48,7 @@ describe('check-hexagonal-boundaries', () => {
   it('accepts HTTP controller importing application use-case port', () => {
     expect.hasAssertions();
     const source = `
-      import { IUserUseCases } from "@src/modules/Users/application/ports/IUserUseCases";
+      import type { IUserUseCases } from "@src/modules/Users/application/ports/IUserUseCases";
       export class UserController {
         constructor(private readonly useCases: IUserUseCases) {}
       }

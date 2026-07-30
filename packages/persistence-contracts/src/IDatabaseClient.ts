@@ -1,4 +1,4 @@
-import { IStore } from './IStore';
+import type { IStore } from './IStore';
 
 export interface IDatabaseClient<
   TStores extends Record<string, IStore<unknown>> = Record<string, IStore<unknown>>

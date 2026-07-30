@@ -2,11 +2,15 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable class-methods-use-this */
 import { _HTTP_PORT_ } from '@src/config/constants';
-import {
-  HTTPBaseServer,
-  IbaseHandler,
+import type {
   IHTTPRequest,
   IHTTPResponse
+} from '@src/interface/HTTP/ports';
+import type {
+  IbaseHandler
+} from '@src/interface/HTTP/ports';
+import {
+  HTTPBaseServer
 } from '@src/interface/HTTP/ports';
 
 export type LoopBackRequest = IHTTPRequest;

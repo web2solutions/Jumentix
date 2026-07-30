@@ -1,15 +1,15 @@
-import { IPagingRequest, IPagingResponse } from '@src/modules/port';
+import type { IPagingRequest, IPagingResponse } from '@src/modules/port';
 
 import { User } from '@src/modules/Users/domain/Model/User';
-import { RequestCreateUser } from '@src/modules/Users/interface/dto/RequestCreateUser';
-import { RequestUpdateUser } from '@src/modules/Users/interface/dto/RequestUpdateUser';
-import { RequestUpdatePassword } from '@src/modules/Users/interface/dto/RequestUpdatePassword';
-import { RequestCreateDocument } from '@src/modules/Users/interface/dto/RequestCreateDocument';
-import { RequestUpdateDocument } from '@src/modules/Users/interface/dto/RequestUpdateDocument';
-import { RequestCreatePhone } from '@src/modules/Users/interface/dto/RequestCreatePhone';
-import { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
-import { RequestCreateEmail } from '@src/modules/Users/interface/dto/RequestCreateEmail';
-import { RequestUpdateEmail } from '@src/modules/Users/interface/dto/RequestUpdateEmail';
+import type { RequestCreateUser } from '@src/modules/Users/interface/dto/RequestCreateUser';
+import type { RequestUpdateUser } from '@src/modules/Users/interface/dto/RequestUpdateUser';
+import type { RequestUpdatePassword } from '@src/modules/Users/interface/dto/RequestUpdatePassword';
+import type { RequestCreateDocument } from '@src/modules/Users/interface/dto/RequestCreateDocument';
+import type { RequestUpdateDocument } from '@src/modules/Users/interface/dto/RequestUpdateDocument';
+import type { RequestCreatePhone } from '@src/modules/Users/interface/dto/RequestCreatePhone';
+import type { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
+import type { RequestCreateEmail } from '@src/modules/Users/interface/dto/RequestCreateEmail';
+import type { RequestUpdateEmail } from '@src/modules/Users/interface/dto/RequestUpdateEmail';
 
 export interface IUserRepository {
   create(data: RequestCreateUser): Promise<User>;

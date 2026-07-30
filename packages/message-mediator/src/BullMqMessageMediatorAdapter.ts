@@ -1,12 +1,14 @@
 /* istanbul ignore file */
 import { randomUUID } from 'node:crypto';
-import {
+import type {
   IIntegrationEvent,
   IMessage,
   IMessageHandlerRegistrationOptions,
   IMessageMediator,
   IMessageRequestOptions,
-  IMessageResponse,
+  IMessageResponse
+} from './contracts';
+import type {
   MessageHandler
 } from './contracts';
 
@@ -243,7 +245,7 @@ export class BullMqMessageMediatorAdapter implements IMessageMediator {
       return await import('bullmq');
     } catch (error) {
       const err = new Error(
-        'BullMQ adapter requires package "bullmq". Install with: pnpm install bullmq'
+        'BullMQ adapter requires package "bullmq". Install with: bun add bullmq'
       );
       (err as any).cause = error as Error;
       throw err;

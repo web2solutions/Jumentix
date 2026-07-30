@@ -1,4 +1,4 @@
-import { IController, IControllerFactory } from '@src/interface/HTTP/ports';
+import type { IController, IControllerFactory } from '@src/interface/HTTP/ports';
 import { BaseController } from '@src/interface/HTTP/ports/BaseController';
 import { Security } from '@src/infra/security';
 import { _INFRA_NOT_IMPLEMENTED_ } from '@src/config/constants';
@@ -9,24 +9,30 @@ import {
 import { Authorize } from '@src/shared/decorators/guard/Authorize';
 
 import { BaseDomainEvent } from '@src/modules/port/BaseDomainEvent';
-import {
-  IServiceResponse, setFilter, setPaging
+import type {
+  IServiceResponse
 } from '@src/modules/port';
 import {
+  setFilter,
+  setPaging
+} from '@src/modules/port';
+import type {
   IUser
 } from '@src/modules/Users/domain/Entity/IUser';
-import { RequestCreateDocument } from '@src/modules/Users/interface/dto/RequestCreateDocument';
-import { RequestCreateEmail } from '@src/modules/Users/interface/dto/RequestCreateEmail';
-import { RequestCreatePhone } from '@src/modules/Users/interface/dto/RequestCreatePhone';
-import { RequestCreateUser } from '@src/modules/Users/interface/dto/RequestCreateUser';
-import { RequestUpdateDocument } from '@src/modules/Users/interface/dto/RequestUpdateDocument';
-import { RequestUpdateEmail } from '@src/modules/Users/interface/dto/RequestUpdateEmail';
-import { RequestUpdatePassword } from '@src/modules/Users/interface/dto/RequestUpdatePassword';
-import { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
-import { RequestUpdateUser } from '@src/modules/Users/interface/dto/RequestUpdateUser';
-import { IUserUseCases } from '@src/modules/Users/application/ports/IUserUseCases';
+import type { RequestCreateDocument } from '@src/modules/Users/interface/dto/RequestCreateDocument';
+import type { RequestCreateEmail } from '@src/modules/Users/interface/dto/RequestCreateEmail';
+import type { RequestCreatePhone } from '@src/modules/Users/interface/dto/RequestCreatePhone';
+import type { RequestCreateUser } from '@src/modules/Users/interface/dto/RequestCreateUser';
+import type { RequestUpdateDocument } from '@src/modules/Users/interface/dto/RequestUpdateDocument';
+import type { RequestUpdateEmail } from '@src/modules/Users/interface/dto/RequestUpdateEmail';
+import type { RequestUpdatePassword } from '@src/modules/Users/interface/dto/RequestUpdatePassword';
+import type { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
+import type { RequestUpdateUser } from '@src/modules/Users/interface/dto/RequestUpdateUser';
+import type { IUserUseCases } from '@src/modules/Users/application/ports/IUserUseCases';
+import type {
+  ITenantAuthorizationDecision
+} from '@src/modules/Users/domain/security/TenantAuthorizationPolicy';
 import {
-  ITenantAuthorizationDecision,
   decideUserAccess,
   resolveUserCollectionScope,
   resolveUserCreationOrganization

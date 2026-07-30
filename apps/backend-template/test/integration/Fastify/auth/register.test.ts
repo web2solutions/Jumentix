@@ -3,7 +3,8 @@
 // file deepcode ignore NoHardcodedPasswords: <mocked passwords>
 // file deepcode ignore NoHardcodedCredentials/test: <fake credential>
 import request from 'supertest';
-import { FastifyServer, Fastify } from '@src/interface/HTTP/adapters/fastify/FastifyServer';
+import type { Fastify } from '@src/interface/HTTP/adapters/fastify/FastifyServer';
+import { FastifyServer } from '@src/interface/HTTP/adapters/fastify/FastifyServer';
 import { infraHandlers } from '@src/interface/HTTP/adapters/fastify/handlers/infraHandlers';
 
 import { EHTTPFrameworks } from '@src/interface/HTTP/ports';

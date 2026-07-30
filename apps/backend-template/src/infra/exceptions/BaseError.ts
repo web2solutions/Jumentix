@@ -1,5 +1,5 @@
 import { Context } from '@src/infra/context/Context';
-import { ISerializedError } from '@src/infra/exceptions/ISerializedError';
+import type { ISerializedError } from '@src/infra/exceptions/ISerializedError';
 
 /**
  * Base class for custom errors.

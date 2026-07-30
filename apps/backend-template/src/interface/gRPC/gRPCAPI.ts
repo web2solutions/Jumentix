@@ -4,10 +4,12 @@ import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 
 import { _HTTP_PORT_ } from '@src/config/constants';
-import {
+import type {
   IAsyncOperationRequest,
   IAsyncOperationResponse,
-  IRealtimeAPIFactory,
+  IRealtimeAPIFactory
+} from '@src/interface/Async/RealtimeAPIBase';
+import {
   RealtimeAPIBase
 } from '@src/interface/Async/RealtimeAPIBase';
 import { resolveGrpcProtoPath } from '@src/interface/gRPC/resolveGrpcProtoPath';

@@ -5,10 +5,12 @@ import { Server, Socket } from 'socket.io';
 import { randomUUID } from 'crypto';
 
 import { _HTTP_PORT_ } from '@src/config/constants';
-import {
+import type {
   IAsyncOperationRequest,
   IAsyncOperationResponse,
-  IRealtimeAPIFactory,
+  IRealtimeAPIFactory
+} from '@src/interface/Async/RealtimeAPIBase';
+import {
   RealtimeAPIBase
 } from '@src/interface/Async/RealtimeAPIBase';
 

@@ -1,4 +1,4 @@
-import { IbaseHandler } from './IbaseHandler';
+import type { IbaseHandler } from './IbaseHandler';
 
 export interface IHTTPServer<T> {
   // _application: HTTPServerTypes;

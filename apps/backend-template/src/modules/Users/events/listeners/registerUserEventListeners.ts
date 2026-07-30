@@ -1,5 +1,5 @@
-import { IEventBus } from '@src/modules/port/IEventBus';
-import { IUserEventListeners } from '@src/modules/Users/events/contracts/IUserEventListeners';
+import type { IEventBus } from '@src/modules/port/IEventBus';
+import type { IUserEventListeners } from '@src/modules/Users/events/contracts/IUserEventListeners';
 import { UserIntegrationEventName } from '@src/modules/Users/events/contracts/UserIntegrationEventName';
 
 const noop = async () => undefined;

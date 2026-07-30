@@ -17,7 +17,6 @@ describe('run-integration-tests', () => {
       'test:integration:fastify',
       'test:integration:restify',
       'test:integration:lambda',
-      'test:integration:hyper-express',
       'test:integration:cloudflare-workers',
       'test:integration:vercel-functions',
       'test:integration:loopback',
@@ -33,9 +32,9 @@ describe('run-integration-tests', () => {
 
   it('keeps smoke in the fast gate and delegates strict execution to the canonical matrix', () => {
     expect.hasAssertions();
-    expect(rootPackage.scripts['ci:gate']).toContain('pnpm run ci:smoke');
-    expect(rootPackage.scripts['ci:gate:strict']).toBe('node ci-cd/run-full-test-matrix.js');
-    expect(rootPackage.scripts['test:integration']).toBe('node ci-cd/run-integration-tests.js');
+    expect(rootPackage.scripts['ci:gate']).toContain('bun run ci:smoke');
+    expect(rootPackage.scripts['ci:gate:strict']).toBe('bun ci-cd/run-full-test-matrix.js');
+    expect(rootPackage.scripts['test:integration']).toBe('bun ci-cd/run-integration-tests.js');
   });
 
   it('gives only Restify deterministic per-test headroom under sustained matrix load', () => {
@@ -79,7 +78,7 @@ describe('run-integration-tests', () => {
       spawn,
       timeoutMs: 1_000
     })).toBe(124);
-    expect(spawn).toHaveBeenCalledWith('pnpm', ['run', 'slow-target'], {
+    expect(spawn).toHaveBeenCalledWith('bun', ['run', 'slow-target'], {
       stdio: 'inherit',
       env: expect.objectContaining({ CI: 'true' }),
       timeout: 1_000,
@@ -89,21 +88,19 @@ describe('run-integration-tests', () => {
     expect(INTEGRATION_TIMEOUT_OVERRIDES_MS).toStrictEqual({
       'test:integration:express': 300_000,
       'test:integration:fastify': 300_000,
-      'test:integration:restify': 600_000,
-      'test:integration:hyper-express': 300_000
+      'test:integration:restify': 600_000
     });
   });
 
   it.each([
     'test:integration:express',
-    'test:integration:fastify',
-    'test:integration:hyper-express'
+    'test:integration:fastify'
   ])('gives the complete %s HTTP suite deterministic process headroom', (scriptName) => {
     expect.hasAssertions();
     const spawn = jest.fn().mockReturnValue({ status: 0 });
 
     expect(executeIntegrationScript(scriptName, { spawn })).toBe(0);
-    expect(spawn).toHaveBeenCalledWith('pnpm', ['run', scriptName], {
+    expect(spawn).toHaveBeenCalledWith('bun', ['run', scriptName], {
       stdio: 'inherit',
       env: expect.objectContaining({ CI: 'true' }),
       timeout: 300_000,
@@ -116,7 +113,7 @@ describe('run-integration-tests', () => {
     const spawn = jest.fn().mockReturnValue({ status: 0 });
 
     expect(executeIntegrationScript('test:integration:restify', { spawn })).toBe(0);
-    expect(spawn).toHaveBeenCalledWith('pnpm', ['run', 'test:integration:restify'], {
+    expect(spawn).toHaveBeenCalledWith('bun', ['run', 'test:integration:restify'], {
       stdio: 'inherit',
       env: expect.objectContaining({ CI: 'true' }),
       timeout: 600_000,
@@ -129,7 +126,7 @@ describe('run-integration-tests', () => {
     const spawn = jest.fn().mockReturnValue({ status: 0 });
 
     expect(executeIntegrationScript('test:integration:lambda', { spawn })).toBe(0);
-    expect(spawn).toHaveBeenCalledWith('pnpm', ['run', 'test:integration:lambda'], {
+    expect(spawn).toHaveBeenCalledWith('bun', ['run', 'test:integration:lambda'], {
       stdio: 'inherit',
       env: expect.objectContaining({ CI: 'true' }),
       timeout: DEFAULT_INTEGRATION_TIMEOUT_MS,

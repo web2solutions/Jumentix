@@ -1,4 +1,4 @@
-import {
+import type {
   IMessage,
   IMessageMediator,
   IMessageRequestOptions,

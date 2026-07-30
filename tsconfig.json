@@ -141,9 +141,5 @@
     // "skipDefaultLibCheck": true,                      /* Skip type checking .d.ts files that are included with TypeScript. */
     "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
   },
-  "include": ["./**/*.ts", "apps/backend-template/src", "config"],
-  "ts-node": {
-    // Do not forget to `npm i -D tsconfig-paths`
-    "require": ["tsconfig-paths/register"]
-  }
+  "include": ["./**/*.ts", "apps/backend-template/src", "config"]
 }

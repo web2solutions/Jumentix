@@ -1,21 +1,23 @@
-import {
-  BaseService,
+import type {
   IServiceConfig,
   IServiceResponse,
   IPagingRequest
 } from '@src/modules/port';
+import {
+  BaseService
+} from '@src/modules/port';
 import { BaseError } from '@src/infra/exceptions';
-import { IOrganization } from '@src/modules/Users/domain/Entity/IOrganization';
-import { RequestCreateAddress } from '@src/modules/Users/interface/dto/RequestCreateAddress';
-import { RequestCreateEmail } from '@src/modules/Users/interface/dto/RequestCreateEmail';
-import { RequestCreateOrganization } from '@src/modules/Users/interface/dto/RequestCreateOrganization';
-import { RequestCreatePhone } from '@src/modules/Users/interface/dto/RequestCreatePhone';
-import { RequestUpdateAddress } from '@src/modules/Users/interface/dto/RequestUpdateAddress';
-import { RequestUpdateEmail } from '@src/modules/Users/interface/dto/RequestUpdateEmail';
-import { RequestUpdateOrganization } from '@src/modules/Users/interface/dto/RequestUpdateOrganization';
-import { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
+import type { IOrganization } from '@src/modules/Users/domain/Entity/IOrganization';
+import type { RequestCreateAddress } from '@src/modules/Users/interface/dto/RequestCreateAddress';
+import type { RequestCreateEmail } from '@src/modules/Users/interface/dto/RequestCreateEmail';
+import type { RequestCreateOrganization } from '@src/modules/Users/interface/dto/RequestCreateOrganization';
+import type { RequestCreatePhone } from '@src/modules/Users/interface/dto/RequestCreatePhone';
+import type { RequestUpdateAddress } from '@src/modules/Users/interface/dto/RequestUpdateAddress';
+import type { RequestUpdateEmail } from '@src/modules/Users/interface/dto/RequestUpdateEmail';
+import type { RequestUpdateOrganization } from '@src/modules/Users/interface/dto/RequestUpdateOrganization';
+import type { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
 import { OrganizationDataRepository } from '@src/modules/Users/adapters/out/persistence/OrganizationDataRepository';
-import { ICacheService } from '@src/infra/cache';
+import type { ICacheService } from '@src/infra/cache';
 
 interface IOrganizationServiceConfig extends IServiceConfig {
 }

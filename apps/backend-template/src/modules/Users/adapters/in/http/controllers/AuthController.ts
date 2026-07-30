@@ -1,4 +1,4 @@
-import { IController, IControllerFactory } from '@src/interface/HTTP/ports';
+import type { IController, IControllerFactory } from '@src/interface/HTTP/ports';
 import { BaseController } from '@src/interface/HTTP/ports/BaseController';
 import {
   validateRequestAgainstOAS
@@ -6,19 +6,19 @@ import {
 // import { Security } from '@src/infra/security';
 
 import { BaseDomainEvent } from '@src/modules/port/BaseDomainEvent';
-import { IServiceResponse } from '@src/modules/port';
+import type { IServiceResponse } from '@src/modules/port';
 
 import { Authorize } from '@src/shared/decorators/guard/Authorize';
 
 import {
   EAuthSchemaType
 } from '@src/modules/Users/service/ports/EAuthSchemaType';
-import { IAuthorizationHeader } from '@src/modules/Users/service/ports/IAuthorizationHeader';
-import { ILogoutRequest } from '@src/modules/Users/interface/dto/ILogoutRequest';
-import { ILoginRequest } from '@src/modules/Users/interface/dto/ILoginRequest';
-import { IUpdatePasswordRequest } from '@src/modules/Users/interface/dto/IUpdatePasswordRequest';
-import { IRegisterRequest } from '@src/modules/Users/interface/dto/IRegisterRequest';
-import { IAuthUseCases } from '@src/modules/Users/application/ports/IAuthUseCases';
+import type { IAuthorizationHeader } from '@src/modules/Users/service/ports/IAuthorizationHeader';
+import type { ILogoutRequest } from '@src/modules/Users/interface/dto/ILogoutRequest';
+import type { ILoginRequest } from '@src/modules/Users/interface/dto/ILoginRequest';
+import type { IUpdatePasswordRequest } from '@src/modules/Users/interface/dto/IUpdatePasswordRequest';
+import type { IRegisterRequest } from '@src/modules/Users/interface/dto/IRegisterRequest';
+import type { IAuthUseCases } from '@src/modules/Users/application/ports/IAuthUseCases';
 
 export class AuthController extends BaseController implements IController {
   private readonly authUseCases: IAuthUseCases;

@@ -1,6 +1,6 @@
-import { IStore } from '@src/infra/ports/persistence/IStore';
+import type { IStore } from '@src/infra/ports/persistence/IStore';
 import { ConflictError, DataBaseNotFoundError, DatabasePagingError } from '@src/infra/exceptions';
-import { IPagingRequest, IPagingResponse } from '@src/modules/port';
+import type { IPagingRequest, IPagingResponse } from '@src/modules/port';
 
 type Primitive = string | number | boolean | null | undefined;
 

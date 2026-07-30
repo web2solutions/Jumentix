@@ -1,6 +1,8 @@
 import { Request, Response } from 'restify';
-import {
-  IHandlerFactory,
+import type {
+  IHandlerFactory
+} from '@src/interface/HTTP/ports';
+import type {
   IbaseHandler,
   EndPointFactory
 } from '@src/interface/HTTP/ports';
@@ -9,7 +11,7 @@ import {
 } from '@src/interface/HTTP/adapters/restify/responses/sendErrorResponse';
 
 import { LoginRequestEvent } from '@src/modules/Users/events/LoginRequestEvent';
-import { ILoginRequest } from '@src/modules/Users';
+import type { ILoginRequest } from '@src/modules/Users';
 
 const login: EndPointFactory = (
   {

@@ -1,4 +1,4 @@
-import { IDomainEventMetadata } from './IDomainEventMetadata';
+import type { IDomainEventMetadata } from './IDomainEventMetadata';
 
 export interface IEventMessage<TPayload = any> {
   input?: TPayload;

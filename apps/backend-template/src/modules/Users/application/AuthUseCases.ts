@@ -1,13 +1,13 @@
-import { IAuthUseCases } from '@src/modules/Users/application/ports/IAuthUseCases';
+import type { IAuthUseCases } from '@src/modules/Users/application/ports/IAuthUseCases';
 import { EAuthSchemaType } from '@src/modules/Users/service/ports/EAuthSchemaType';
-import { IAuthService } from '@src/modules/Users/service/ports/IAuthService';
-import { IMutexService } from '@src/infra/mutex/port/IMutexService';
-import { IServiceResponse } from '@src/modules/port/IServiceResponse';
-import { IAuthorizationHeader } from '@src/modules/Users/service/ports/IAuthorizationHeader';
-import { ILoginRequest } from '@src/modules/Users/interface/dto/ILoginRequest';
-import { IRegisterRequest } from '@src/modules/Users/interface/dto/IRegisterRequest';
-import { IUpdatePasswordRequest } from '@src/modules/Users/interface/dto/IUpdatePasswordRequest';
-import { ILogoutRequest } from '@src/modules/Users/interface/dto/ILogoutRequest';
+import type { IAuthService } from '@src/modules/Users/service/ports/IAuthService';
+import type { IMutexService } from '@src/infra/mutex/port/IMutexService';
+import type { IServiceResponse } from '@src/modules/port/IServiceResponse';
+import type { IAuthorizationHeader } from '@src/modules/Users/service/ports/IAuthorizationHeader';
+import type { ILoginRequest } from '@src/modules/Users/interface/dto/ILoginRequest';
+import type { IRegisterRequest } from '@src/modules/Users/interface/dto/IRegisterRequest';
+import type { IUpdatePasswordRequest } from '@src/modules/Users/interface/dto/IUpdatePasswordRequest';
+import type { ILogoutRequest } from '@src/modules/Users/interface/dto/ILogoutRequest';
 import { BaseError, ResourceLockedError, ValidationError } from '@src/infra/exceptions';
 
 export class AuthUseCases implements IAuthUseCases {

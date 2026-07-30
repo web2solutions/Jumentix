@@ -1,13 +1,16 @@
-import { FeathersRequest, FeathersResponse } from '@src/interface/HTTP/adapters/feathers/FeathersServer';
+import type { FeathersRequest, FeathersResponse } from '@src/interface/HTTP/adapters/feathers/FeathersServer';
 import { sendErrorResponse } from '@src/interface/HTTP/adapters/feathers/responses/sendErrorResponse';
 
-import {
-  IHandlerFactory,
+import type {
+  IHandlerFactory
+} from '@src/interface/HTTP/ports';
+import type {
   IbaseHandler,
   EndPointFactory
 } from '@src/interface/HTTP/ports';
 
-import { ILogoutRequest, LogoutRequestEvent } from '@src/modules/Users';
+import type { ILogoutRequest } from '@src/modules/Users';
+import { LogoutRequestEvent } from '@src/modules/Users';
 
 const logout: EndPointFactory = (
   {

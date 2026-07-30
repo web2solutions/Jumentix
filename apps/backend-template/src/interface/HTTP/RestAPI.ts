@@ -7,17 +7,20 @@ import { OpenAPIV3 } from 'openapi-types';
 
 import { _API_PREFIX_, _DOCS_PREFIX_ } from '@src/config/constants';
 import { replaceVars } from '@src/shared/utils';
-import { IAPIFactory, EHTTPFrameworks, HTTPBaseServer } from '@src/interface/HTTP/ports';
+import type { IAPIFactory } from '@src/interface/HTTP/ports';
+import { EHTTPFrameworks, HTTPBaseServer } from '@src/interface/HTTP/ports';
 
-import { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
-import { IMutexService } from '@src/infra/mutex/port/IMutexService';
-import { IPasswordCryptoService } from '@src/infra/security/IPasswordCryptoService';
-import { IKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/IKeyValueStorageClient';
-import { IEventBus, IMessageMediator } from '@src/modules/port';
+import type { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
+import type { IMutexService } from '@src/infra/mutex/port/IMutexService';
+import type { IPasswordCryptoService } from '@src/infra/security/IPasswordCryptoService';
+import type { IKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/IKeyValueStorageClient';
+import type { IEventBus, IMessageMediator } from '@src/modules/port';
 
-import {
+import type {
   IUser,
-  IAuthService,
+  IAuthService
+} from '@src/modules/Users';
+import {
   composeUsersAuthServices
 } from '@src/modules/Users';
 

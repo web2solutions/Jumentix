@@ -3,10 +3,8 @@
 
 echo "[Husky] pre-push: branch-aware quality gate"
 
-if [ -s "$HOME/.nvm/nvm.sh" ]; then
-  . "$HOME/.nvm/nvm.sh"
-  nvm use 22 >/dev/null
-fi
+# Replaces the nvm block that used to force Node 22 — see pre-merge-commit.
+bun ci-cd/check-bun-version.js || exit 1
 
 target_branch="$(git branch --show-current)"
 
@@ -19,4 +17,4 @@ do
   esac
 done
 
-CI=true JUMENTIX_QUALITY_GATE_TARGET="$target_branch" JUMENTIX_TASK_TEST_MODE=range JUMENTIX_TASK_TEST_BASE=origin/dev npx pnpm@9.15.3 run ci:gate:branch
+CI=true JUMENTIX_QUALITY_GATE_TARGET="$target_branch" JUMENTIX_TASK_TEST_MODE=range JUMENTIX_TASK_TEST_BASE=origin/dev bun run ci:gate:branch

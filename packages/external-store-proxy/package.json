@@ -16,6 +16,6 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint ./src --ext .ts",
-    "test": "pnpm run typecheck"
+    "test": "bun run typecheck"
   }
 }

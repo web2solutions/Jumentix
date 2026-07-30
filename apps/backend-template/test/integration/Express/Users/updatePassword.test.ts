@@ -17,8 +17,12 @@ import {
   BasicAuthorizationHeaderUser4,
   BasicAuthorizationHeaderUserGuest
 } from '@test/mock';
+import type {
+  RequestUpdatePassword
+} from '@src/modules/Users';
 import {
-  RequestUpdatePassword, UserDataRepository, UserService
+  UserDataRepository,
+  UserService
 } from '@src/modules/Users';
 import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
 import { JwtService } from '@src/infra/jwt/JwtService';

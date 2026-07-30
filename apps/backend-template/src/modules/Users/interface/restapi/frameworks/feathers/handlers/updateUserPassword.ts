@@ -1,13 +1,16 @@
-import { FeathersRequest, FeathersResponse } from '@src/interface/HTTP/adapters/feathers/FeathersServer';
+import type { FeathersRequest, FeathersResponse } from '@src/interface/HTTP/adapters/feathers/FeathersServer';
 import { sendErrorResponse } from '@src/interface/HTTP/adapters/feathers/responses/sendErrorResponse';
 
-import {
-  IHandlerFactory,
+import type {
+  IHandlerFactory
+} from '@src/interface/HTTP/ports';
+import type {
   IbaseHandler,
   EndPointFactory
 } from '@src/interface/HTTP/ports';
 
-import { IUpdatePasswordRequest, UpdatePasswordRequestEvent } from '@src/modules/Users';
+import type { IUpdatePasswordRequest } from '@src/modules/Users';
+import { UpdatePasswordRequestEvent } from '@src/modules/Users';
 
 const updateUserPassword: EndPointFactory = (
   {

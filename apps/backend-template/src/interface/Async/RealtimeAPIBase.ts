@@ -5,13 +5,14 @@ import fs from 'fs';
 import YAML from 'yaml';
 import { OpenAPIV3 } from 'openapi-types';
 
-import { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
-import { IMutexService } from '@src/infra/mutex/port/IMutexService';
-import { IPasswordCryptoService } from '@src/infra/security/IPasswordCryptoService';
-import { IKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/IKeyValueStorageClient';
+import type { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
+import type { IMutexService } from '@src/infra/mutex/port/IMutexService';
+import type { IPasswordCryptoService } from '@src/infra/security/IPasswordCryptoService';
+import type { IKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/IKeyValueStorageClient';
 import { RealtimeDomainEvent } from '@src/interface/Async/RealtimeDomainEvent';
-import { IAuthService, composeUsersAuthServices } from '@src/modules/Users';
-import { IEventBus, IMessageMediator } from '@src/modules/port';
+import type { IAuthService } from '@src/modules/Users';
+import { composeUsersAuthServices } from '@src/modules/Users';
+import type { IEventBus, IMessageMediator } from '@src/modules/port';
 
 export interface IAsyncOperationRequest {
   version?: string;

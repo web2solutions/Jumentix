@@ -12,7 +12,7 @@ describe('run-monorepo-ci', () => {
       files: ['README.md']
     });
 
-    expect(plan).toStrictEqual([['pnpm', ['run', 'ci:gate:strict']]]);
+    expect(plan).toStrictEqual([['bun', ['run', 'ci:gate:strict']]]);
   });
 
   it('uses the same canonical matrix for app and package changes', () => {
@@ -25,7 +25,7 @@ describe('run-monorepo-ci', () => {
       files: ['apps/backend-template/package.json', 'packages/sdk-rest-client/src/index.ts']
     });
 
-    expect(plan).toStrictEqual([['pnpm', ['run', 'ci:gate:strict']]]);
+    expect(plan).toStrictEqual([['bun', ['run', 'ci:gate:strict']]]);
   });
 
   it('uses explicit argv files when provided', () => {
