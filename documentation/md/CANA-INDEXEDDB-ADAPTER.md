@@ -254,4 +254,6 @@ Apache-2.0 terms, and nothing from it is copied into this package.
 - Requirement `094` — epic documentation completion gate
 - `.agents/NFR-REGISTRY.md` — durability and performance NFRs
 
+Usage guide: [CANA-USAGE-GUIDE.md](./CANA-USAGE-GUIDE.md)
+
 Portuguese: [CANA-INDEXEDDB-ADAPTER.pt-BR.md](./CANA-INDEXEDDB-ADAPTER.pt-BR.md)

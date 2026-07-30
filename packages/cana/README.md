@@ -54,8 +54,17 @@ if (isCanaErrorCode(error, 'QuotaExceeded')) { /* ... */ }
 
 ## Full documentation
 
-- English: [`documentation/md/CANA-INDEXEDDB-ADAPTER.md`](../../documentation/md/CANA-INDEXEDDB-ADAPTER.md)
-- Português: [`documentation/md/CANA-INDEXEDDB-ADAPTER.pt-BR.md`](../../documentation/md/CANA-INDEXEDDB-ADAPTER.pt-BR.md)
+**Usage guide** — API reference, querying, transactions, hooks, crash recovery,
+troubleshooting:
+
+- English: [`CANA-USAGE-GUIDE.md`](../../documentation/md/CANA-USAGE-GUIDE.md)
+- Português: [`CANA-USAGE-GUIDE.pt-BR.md`](../../documentation/md/CANA-USAGE-GUIDE.pt-BR.md)
+
+**Design rationale** — why each behaviour is what it is, and what is not yet
+proven:
+
+- English: [`CANA-INDEXEDDB-ADAPTER.md`](../../documentation/md/CANA-INDEXEDDB-ADAPTER.md)
+- Português: [`CANA-INDEXEDDB-ADAPTER.pt-BR.md`](../../documentation/md/CANA-INDEXEDDB-ADAPTER.pt-BR.md)
 
 The "What is NOT proven" section of that document is required reading before
 relying on this package in production — notably that cross-browser behaviour,

@@ -257,4 +257,6 @@ os próprios termos Apache-2.0, e nada dele é copiado para dentro deste pacote.
 - Requisito `094` — portão de conclusão de documentação do épico
 - `.agents/NFR-REGISTRY.md` — NFRs de durabilidade e desempenho
 
+Guia de uso: [CANA-USAGE-GUIDE.pt-BR.md](./CANA-USAGE-GUIDE.pt-BR.md)
+
 Inglês: [CANA-INDEXEDDB-ADAPTER.md](./CANA-INDEXEDDB-ADAPTER.md)

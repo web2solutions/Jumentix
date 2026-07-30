@@ -1,8 +1,12 @@
 /**
  * Cana — offline-first IndexedDB database client for Jumentix.
  *
- * Public entry point. Only contracts and the durability surface are exported so
- * far; the engine lands behind these types without changing them.
+ * Public entry point.
+ *
+ * Consumers should import from here rather than from `core/*`: the contracts are
+ * the stable surface, and the module layout beneath them is not.
+ *
+ * See documentation/md/CANA-USAGE-GUIDE.md for the task-oriented guide.
  */
 
 export type {
@@ -25,6 +29,7 @@ export type {
   CanaStoreSchema,
   CanaTable,
   CanaTransactionMode,
+  CanaTransactionResult,
   CanaTransactionScope,
   CanaWriteOutcome,
   CanaWriteResult
@@ -48,7 +53,7 @@ export {
 export type { OpenOptions, OpenResult } from './core/database';
 export { closeDatabase, deleteDatabase, openDatabase } from './core/database';
 
-export { canaError, translateError } from './core/errors';
+export { canaError, requestToPromise, translateError } from './core/errors';
 
 export * from './core/transaction';
 export * from './core/query';
