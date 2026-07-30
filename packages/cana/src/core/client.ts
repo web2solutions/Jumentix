@@ -32,7 +32,10 @@ import type {
   CanaTransactionScope,
   CanaWriteOutcome
 } from '../contracts';
+import { isCanaError } from '../contracts';
 import { canaError } from './errors';
+import type { CanaHooks } from './hooks';
+import { notifyCommitted, notifyRolledBack } from './hooks';
 import { openDatabase } from './database';
 import { StorageDurability } from './storage';
 import { createTable } from './table';
@@ -47,6 +50,7 @@ export interface ClientOptions {
   readonly retainedEvents?: number;
   /** Identifies this client in events, so a subscriber can ignore its own writes. */
   readonly originId?: string;
+  readonly hooks?: CanaHooks;
 }
 
 /**
@@ -219,25 +223,49 @@ export class Client implements CanaClient {
     this.correlation += 1;
     const correlationId = `${this.originId}:${this.correlation}`;
 
-    const outcome = await runTransaction<TResult>({
-      database,
-      stores,
-      mode,
-      buffer,
-      body: (transaction) => body({
-        table: <TRecord, TKey extends CanaKey = CanaKey>(
-          name: string
-        ) => createTable<TRecord, TKey>(
-          name,
-          { transaction, buffer, correlationId }
-        ),
-        abort: (reason?: string) => abortWithReason(transaction, reason)
-      })
-    });
+    const { hooks } = this.options;
+
+    let outcome;
+    try {
+      outcome = await runTransaction<TResult>({
+        database,
+        stores,
+        mode,
+        buffer,
+        body: (transaction) => body({
+          table: <TRecord, TKey extends CanaKey = CanaKey>(
+            name: string
+          ) => createTable<TRecord, TKey>(
+            name,
+            {
+              transaction,
+              buffer,
+              correlationId,
+              ...(hooks === undefined ? {} : { hooks })
+            }
+          ),
+          abort: (reason?: string) => abortWithReason(transaction, reason)
+        })
+      });
+    } catch (error: unknown) {
+      // Every throw out of `runTransaction` means nothing was committed, so the
+      // hook is told before the failure propagates. It cannot suppress it.
+      notifyRolledBack(hooks, 'rolled-back', isCanaError(error) ? error.message : undefined);
+      throw error;
+    }
+
+    if (outcome.outcome !== 'committed') {
+      // Reached only for `unknown` — the body failed but the transaction had
+      // already auto-committed. This is the case that needs reconciliation, and
+      // it is reported as itself rather than folded into a rollback.
+      notifyRolledBack(hooks, 'unknown');
+      return outcome;
+    }
 
     // Only committed transactions produce events; `runTransaction` discards the
     // buffer on every other path.
     this.publish(outcome.events);
+    notifyCommitted(hooks, outcome.events);
     return outcome;
   }
 

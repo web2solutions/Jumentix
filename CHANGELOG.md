@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-07-30 feat(cana): crud, bulk, queries, transactions and change events [JUM-405][JUM-406] - Eduardo A.
 - 2026-07-30 feat(cana): database lifecycle, schema application, error taxonomy [JUM-403][JUM-404] - Eduardo A.
 - 2026-07-30 feat(cana): scaffold the package, freeze the contracts, implement durability [JUM-402][JUM-400][JUM-560] - Eduardo A.
 - 2026-07-30 [JUM-540][Security] Retire Snyk in favour of the first-party OSV scanner (#13) - Eduardo A.
