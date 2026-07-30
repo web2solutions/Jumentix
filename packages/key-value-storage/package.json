@@ -13,7 +13,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "pnpm run typecheck",
+    "test": "bun run typecheck",
     "lint": "echo \"key-value-storage package lint pending\"",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   }

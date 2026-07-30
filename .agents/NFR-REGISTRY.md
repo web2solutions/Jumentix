@@ -87,8 +87,10 @@ This file consolidates non-functional requirements already requested and stored 
   both former `web2solutions` origins are deprecated, read-only, accept no new modifications,
   and remain archived after their final migration delivery.
 - `104` Every applicable application integration from the deprecated origin must be
-  inventoried and rebound to `XpertMinds/Jumentix`, with incomplete provider installs recorded
-  as explicit owner-auth blockers and validated by `integration-migration:check`.
+  inventoried and rebound to `XpertMinds/Jumentix`, with fail-closed provider credentials,
+  terminal canonical evidence, and incomplete provider installs recorded as explicit owner-auth
+  blockers; `integration-migration:check` and `integrations:check` validate the repository-owned
+  contract.
 
 When a new NFR is requested:
 

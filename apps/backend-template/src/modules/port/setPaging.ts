@@ -1,4 +1,4 @@
-import { IPagingRequest } from '@src/modules/port/IPagingRequest';
+import type { IPagingRequest } from '@src/modules/port/IPagingRequest';
 import { BaseDomainEvent } from '@src/modules/port/BaseDomainEvent';
 import { _DEFAULT_PAGE_SIZE_ } from '@src/config/constants';
 import { Security } from '@src/infra/security';

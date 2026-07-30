@@ -601,7 +601,7 @@ export function CommercialUseCasePage({ locale, name }: { locale: CommercialLoca
 }
 
 const integrations = [
-  ['HTTP runtimes', 'Express, Fastify, Restify, HyperExpress, Hono, Vercel, LoopBack, Sails, Feathers, Derby, AdonisJS, Total.js', <IconApi key="http" />],
+  ['HTTP runtimes', 'Express, Fastify, Restify, Hono, Vercel, LoopBack, Sails, Feathers, Derby, AdonisJS, Total.js', <IconApi key="http" />],
   ['Realtime', 'Socket.IO, Redis Streams, cluster adapter, gRPC, AsyncAPI', <IconMessages key="realtime" />],
   ['SQL', 'PostgreSQL, MySQL, SQL Server, Oracle, SQLite, Aurora DSQL, RDS through Sequelize and Postgres.js', <IconDatabase key="sql" />],
   ['NoSQL', 'MongoDB, DynamoDB, Cassandra, Firebase and in-memory reference adapter', <IconDatabase key="nosql" />],

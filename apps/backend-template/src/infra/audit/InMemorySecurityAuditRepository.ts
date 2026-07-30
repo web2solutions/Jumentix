@@ -1,4 +1,4 @@
-import { ISecurityAuditEvent, ISecurityAuditRepository } from './ISecurityAuditRepository';
+import type { ISecurityAuditEvent, ISecurityAuditRepository } from './ISecurityAuditRepository';
 
 let securityAuditRepository: ISecurityAuditRepository | undefined;
 

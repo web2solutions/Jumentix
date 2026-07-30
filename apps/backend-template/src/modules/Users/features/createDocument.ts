@@ -1,8 +1,8 @@
-import {
+import type {
   IUser
 } from '@src/modules/Users/domain/Entity/IUser';
-import { IUserRepository } from '@src/modules/Users/service/ports/IUserRepository';
-import { RequestCreateDocument } from '@src/modules/Users/interface/dto/RequestCreateDocument';
+import type { IUserRepository } from '@src/modules/Users/service/ports/IUserRepository';
+import type { RequestCreateDocument } from '@src/modules/Users/interface/dto/RequestCreateDocument';
 
 export const createDocument = async (
   userId: string,

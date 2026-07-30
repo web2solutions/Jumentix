@@ -1,13 +1,16 @@
-import { AdonisJsRequest, AdonisJsResponse } from '@src/interface/HTTP/adapters/adonis-js/AdonisJsServer';
+import type { AdonisJsRequest, AdonisJsResponse } from '@src/interface/HTTP/adapters/adonis-js/AdonisJsServer';
 import { sendErrorResponse } from '@src/interface/HTTP/adapters/adonis-js/responses/sendErrorResponse';
 
-import {
-  IHandlerFactory,
+import type {
+  IHandlerFactory
+} from '@src/interface/HTTP/ports';
+import type {
   IbaseHandler,
   EndPointFactory
 } from '@src/interface/HTTP/ports';
 
-import { IUpdatePasswordRequest, UpdatePasswordRequestEvent } from '@src/modules/Users';
+import type { IUpdatePasswordRequest } from '@src/modules/Users';
+import { UpdatePasswordRequestEvent } from '@src/modules/Users';
 
 const updateUserPassword: EndPointFactory = (
   {

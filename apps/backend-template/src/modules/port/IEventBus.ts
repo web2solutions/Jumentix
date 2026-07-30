@@ -1,1 +1,1 @@
-export { IEventBus } from '@jumentix/message-mediator';
+export type { IEventBus } from '@jumentix/message-mediator';

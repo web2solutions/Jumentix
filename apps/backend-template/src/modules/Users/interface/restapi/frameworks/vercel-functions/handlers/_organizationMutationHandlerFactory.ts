@@ -2,9 +2,11 @@ import { BaseError, EErrorStringCodes } from '@src/infra/exceptions';
 import { formatErrorMessage, toHttpStatus } from '@src/shared/utils';
 import { BaseDomainEvent } from '@src/modules/port/BaseDomainEvent';
 import { OrganizationController } from '@src/modules/Users';
-import {
+import type {
+  IHandlerFactory
+} from '@src/interface/HTTP/ports';
+import type {
   EndPointFactory,
-  IHandlerFactory,
   IbaseHandler
 } from '@src/interface/HTTP/ports';
 

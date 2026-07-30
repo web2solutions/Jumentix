@@ -13,7 +13,7 @@ function resolveCiPlan(affected) {
   // Scope information remains useful evidence, but delivery boundaries must never
   // omit required cells. The canonical matrix already covers every workspace.
   void affected;
-  return [['pnpm', ['run', 'ci:gate:strict']]];
+  return [['bun', ['run', 'ci:gate:strict']]];
 }
 
 function resolveInputFiles(argvFiles = [], options = {}) {

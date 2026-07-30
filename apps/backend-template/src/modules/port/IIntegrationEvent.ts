@@ -1,1 +1,1 @@
-export { IIntegrationEvent } from '@jumentix/message-mediator';
+export type { IIntegrationEvent } from '@jumentix/message-mediator';

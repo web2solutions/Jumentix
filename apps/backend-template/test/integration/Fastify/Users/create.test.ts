@@ -2,7 +2,8 @@
 // file deepcode ignore NoHardcodedPasswords: <mocked passwords>
 // file deepcode ignore NoHardcodedCredentials/test: <fake credential>
 import request from 'supertest';
-import { FastifyServer, Fastify } from '@src/interface/HTTP/adapters/fastify/FastifyServer';
+import type { Fastify } from '@src/interface/HTTP/adapters/fastify/FastifyServer';
+import { FastifyServer } from '@src/interface/HTTP/adapters/fastify/FastifyServer';
 import { infraHandlers } from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
 import { RestAPI } from '@src/interface/HTTP/RestAPI';
 import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
@@ -23,7 +24,7 @@ import createdUsers from '@seed/users';
 import { UserDataRepository, UserService } from '@src/modules/Users';
 import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal';
 import { JwtService } from '@src/infra/jwt/JwtService';
-import { IAuthorizationHeader } from '@src/modules/Users/service/ports/IAuthorizationHeader';
+import type { IAuthorizationHeader } from '@src/modules/Users/service/ports/IAuthorizationHeader';
 import { EAuthSchemaType } from '@src/modules/Users/service/ports/EAuthSchemaType';
 
 const [createdUser1, createdUser2, createdUser3, createdUser4] = createdUsers;

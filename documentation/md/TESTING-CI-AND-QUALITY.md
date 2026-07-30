@@ -101,9 +101,10 @@ Included checks:
 - integration smoke
 - minimum coverage threshold (99% global via Jest + Codecov status)
 
-The strict gate is an explicit, fail-closed manifest with 21 required cells:
+The strict gate is an explicit, fail-closed manifest with 23 required cells:
 
 - lint, architecture, contract, release-governance, security, and API smoke checks
+- canonical provider-integration contract validation
 - unit tests, root and workspace builds/tests, and patch coverage
 - the complete 15-target HTTP, Lambda, realtime, and Service Management integration matrix
 - aggregate execution that reports every failing cell instead of stopping at the first failure
@@ -152,7 +153,7 @@ pnpm run ci:gate:branch
 The selector reads `JUMENTIX_QUALITY_GATE_TARGET`. A task branch runs `pnpm run
 ci:gate:task`, which executes only changed unit tests or tests related to changed
 implementation files. A `dev` target runs the complete `pnpm run test:unit` suite. A
-`main` target runs `pnpm run ci:gate:strict`, including all 21 required cells. This
+`main` target runs `pnpm run ci:gate:strict`, including all 23 required cells. This
 keeps task feedback focused, integration evidence complete, and release promotion strict.
 Documentation-only task changes emit explicit `not-applicable` task evidence after validating
 the changed Markdown files; they do not manufacture a passing test result.

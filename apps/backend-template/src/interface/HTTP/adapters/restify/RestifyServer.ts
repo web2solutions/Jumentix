@@ -1,7 +1,7 @@
 import restify from 'restify';
 import bunyan from 'bunyan';
 import { _HTTP_PORT_ } from '@src/config/constants';
-import { IbaseHandler } from '@src/interface/HTTP/ports/IbaseHandler';
+import type { IbaseHandler } from '@src/interface/HTTP/ports/IbaseHandler';
 import { HTTPBaseServer } from '@src/interface/HTTP/ports/HTTPBaseServer';
 import path from 'path';
 import { Context } from '@src/infra/context/Context';

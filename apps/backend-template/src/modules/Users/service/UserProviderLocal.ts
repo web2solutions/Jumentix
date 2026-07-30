@@ -1,11 +1,11 @@
 /* eslint-disable class-methods-use-this */
-import { IUserProvider } from '@src/modules/Users/service/ports/IUserProvider';
+import type { IUserProvider } from '@src/modules/Users/service/ports/IUserProvider';
 
-import { IUser } from '@src/modules/Users/domain/Entity/IUser';
-import { RequestCreateUser } from '@src/modules/Users/interface/dto/RequestCreateUser';
-import { RequestUpdateUser } from '@src/modules/Users/interface/dto/RequestUpdateUser';
+import type { IUser } from '@src/modules/Users/domain/Entity/IUser';
+import type { RequestCreateUser } from '@src/modules/Users/interface/dto/RequestCreateUser';
+import type { RequestUpdateUser } from '@src/modules/Users/interface/dto/RequestUpdateUser';
 import { UserService } from '@src/modules/Users/service/UserService';
-import { IServiceResponse } from '@src/modules/port';
+import type { IServiceResponse } from '@src/modules/port';
 
 export class UserProviderLocal implements IUserProvider {
   private readonly userService: UserService;

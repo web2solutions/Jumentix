@@ -1,5 +1,5 @@
 import { entityModelManagerSubApplication } from '@src/interface/CLI/subapps/entityModelManager';
-import { IWorkspaceCatalog } from '@src/interface/CLI/types';
+import type { IWorkspaceCatalog } from '@src/interface/CLI/types';
 
 describe('cli entity/model manager', () => {
   const createContext = (catalog: IWorkspaceCatalog, chooseQueue: number[], askQueue: string[]) => {

@@ -1,12 +1,14 @@
 /* istanbul ignore file */
 import { randomUUID } from 'node:crypto';
-import {
+import type {
   IIntegrationEvent,
   IMessage,
   IMessageHandlerRegistrationOptions,
   IMessageMediator,
   IMessageRequestOptions,
-  IMessageResponse,
+  IMessageResponse
+} from './contracts';
+import type {
   MessageHandler
 } from './contracts';
 
@@ -296,7 +298,7 @@ export class RabbitMqMessageMediatorAdapter implements IMessageMediator {
       return await import('amqplib');
     } catch (error) {
       const err = new Error(
-        'RabbitMQ adapter requires package "amqplib". Install with: pnpm install amqplib'
+        'RabbitMQ adapter requires package "amqplib". Install with: bun add amqplib'
       );
       (err as any).cause = error as Error;
       throw err;

@@ -1,6 +1,5 @@
-import { Response } from 'express';
-import { FastifyReply } from 'fastify';
-import restify from 'restify';
-import HyperExpress from 'hyper-express';
+import type { Response } from 'express';
+import type { FastifyReply } from 'fastify';
+import type restify from 'restify';
 
-export type IHTTPResponse = FastifyReply | Response | HyperExpress.Response | restify.Response;
+export type IHTTPResponse = FastifyReply | Response | restify.Response;

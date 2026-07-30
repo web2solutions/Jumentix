@@ -2,7 +2,7 @@
 /* eslint-disable no-constant-condition */
 /* eslint-disable no-continue */
 import { randomUUID } from 'node:crypto';
-import {
+import type {
   IEntityDefinition,
   IFieldDefinition,
   ISubApplication,

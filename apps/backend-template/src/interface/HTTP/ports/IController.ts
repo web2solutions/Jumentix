@@ -1,7 +1,7 @@
 import { BaseDomainEvent } from '@src/modules/port/BaseDomainEvent';
-import { IServiceResponse } from '@src/modules/port';
-import { IAuthService } from '@src/modules/Users/service/ports/IAuthService';
-import { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
+import type { IServiceResponse } from '@src/modules/port';
+import type { IAuthService } from '@src/modules/Users/service/ports/IAuthService';
+import type { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
 
 export interface IController {
   authService: IAuthService;

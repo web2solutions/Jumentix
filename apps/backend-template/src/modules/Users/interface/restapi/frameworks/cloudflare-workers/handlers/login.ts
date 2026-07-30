@@ -1,13 +1,16 @@
 import type { CloudflareWorkersRequest, CloudflareWorkersResponse } from '@src/interface/HTTP/adapters/cloudflare-workers/cloudflare-workers';
 import { sendErrorResponse } from '@src/interface/HTTP/adapters/cloudflare-workers/responses/sendErrorResponse';
 
-import {
-  IHandlerFactory,
+import type {
+  IHandlerFactory
+} from '@src/interface/HTTP/ports';
+import type {
   IbaseHandler,
   EndPointFactory
 } from '@src/interface/HTTP/ports';
 
-import { ILoginRequest, LoginRequestEvent } from '@src/modules/Users';
+import type { ILoginRequest } from '@src/modules/Users';
+import { LoginRequestEvent } from '@src/modules/Users';
 
 const login: EndPointFactory = (
   {

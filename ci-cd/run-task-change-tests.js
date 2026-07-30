@@ -103,11 +103,13 @@ function executeTaskTestPlan(plan) {
 
   if (plan.type === 'website-quality-gate') {
     const websiteCommands = [
-      ['--filter', '@jumentix/website', 'run', 'test:prepublish']
+      ['run', '--filter', '@jumentix/website', 'test:prepublish']
     ];
 
     for (const args of websiteCommands) {
-      const websiteResult = spawnSync('pnpm', args, {
+      // `bun`, not `bunx`: these args are a workspace script invocation
+      // (`run --filter ...`), not a package binary.
+      const websiteResult = spawnSync('bun', args, {
         stdio: 'inherit',
         env: { ...process.env }
       });
@@ -116,8 +118,8 @@ function executeTaskTestPlan(plan) {
 
     if (plan.unitTests.length > 0) {
       const unitResult = spawnSync(
-        'pnpm',
-        ['exec', 'jest', '--runInBand', '--coverage=false', ...plan.unitTests],
+        'bunx',
+        ['jest', '--runInBand', '--coverage=false', ...plan.unitTests],
         { stdio: 'inherit', env: { ...process.env } }
       );
       if (unitResult.status !== 0) return Number(unitResult.status ?? 1);
@@ -125,8 +127,8 @@ function executeTaskTestPlan(plan) {
 
     if (plan.relatedFiles.length === 0) return 0;
     const relatedResult = spawnSync(
-      'pnpm',
-      ['exec', 'jest', '--runInBand', '--coverage=false', '--findRelatedTests', ...plan.relatedFiles],
+      'bunx',
+      ['jest', '--runInBand', '--coverage=false', '--findRelatedTests', ...plan.relatedFiles],
       { stdio: 'inherit', env: { ...process.env } }
     );
     return Number.isInteger(relatedResult.status) ? relatedResult.status : 1;
@@ -134,15 +136,14 @@ function executeTaskTestPlan(plan) {
 
   const args = ['changed-unit-tests', 'mapped-unit-tests', 'changed-integration-tests'].includes(plan.type)
     ? [
-      'exec',
       'jest',
       '--runInBand',
       '--coverage=false',
       ...(plan.testTimeoutMs ? [`--testTimeout=${String(plan.testTimeoutMs)}`] : []),
       ...plan.files
     ]
-    : ['exec', 'jest', '--runInBand', '--coverage=false', '--findRelatedTests', ...plan.files];
-  const result = spawnSync('pnpm', args, { stdio: 'inherit', env: { ...process.env } });
+    : ['jest', '--runInBand', '--coverage=false', '--findRelatedTests', ...plan.files];
+  const result = spawnSync('bunx', args, { stdio: 'inherit', env: { ...process.env } });
 
   return Number.isInteger(result.status) ? result.status : 1;
 }

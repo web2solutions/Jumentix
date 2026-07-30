@@ -14,6 +14,7 @@ const FULL_TEST_MATRIX = Object.freeze([
   { id: 'release-governance', script: 'release:governance:check' },
   { id: 'pull-request-governance', script: 'pr:governance:check' },
   { id: 'requirements-registry', script: 'requirements:check' },
+  { id: 'canonical-integrations', script: 'integrations:check' },
   { id: 'integration-migration', script: 'integration-migration:check' },
   { id: 'agent-registry', script: 'agent-registry:check' },
   { id: 'unit', script: 'test:unit' },
@@ -60,7 +61,7 @@ function validateMatrixManifest(cells, availableScripts) {
 }
 
 function executeMatrixCell(cell) {
-  const result = spawnSync('pnpm', ['run', cell.script], {
+  const result = spawnSync('bun', ['run', cell.script], {
     stdio: 'inherit',
     env: { ...process.env }
   });

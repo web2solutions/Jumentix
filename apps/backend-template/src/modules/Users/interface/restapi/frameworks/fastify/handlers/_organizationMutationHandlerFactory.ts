@@ -2,9 +2,11 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { sendErrorResponse } from '@src/interface/HTTP/adapters/fastify/responses/sendErrorResponse';
 import { BaseDomainEvent } from '@src/modules/port/BaseDomainEvent';
 import { OrganizationController } from '@src/modules/Users';
-import {
+import type {
+  IHandlerFactory
+} from '@src/interface/HTTP/ports';
+import type {
   EndPointFactory,
-  IHandlerFactory,
   IbaseHandler
 } from '@src/interface/HTTP/ports';
 

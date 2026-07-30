@@ -108,28 +108,29 @@ describe('run-full-test-matrix', () => {
     );
 
     expect(fullMatrixRootPackage.scripts['ci:gate:strict'])
-      .toBe('node ci-cd/run-full-test-matrix.js');
+      .toBe('bun ci-cd/run-full-test-matrix.js');
     expect(fullMatrixRootPackage.scripts['ci:gate:branch'])
-      .toBe('node ci-cd/run-branch-quality-gate.js');
+      .toBe('bun ci-cd/run-branch-quality-gate.js');
     expect(fullMatrixRootPackage.scripts['ci:gate:task'])
-      .toBe('node ci-cd/run-task-change-tests.js');
+      .toBe('bun ci-cd/run-task-change-tests.js');
     expect([
-      read('.husky/pre-commit').includes('pnpm@9.15.3 run ci:gate:branch'),
-      read('.husky/pre-push').includes('pnpm@9.15.3 run ci:gate:branch'),
-      read('.husky/pre-merge-commit').includes('pnpm@9.15.3 run ci:gate:branch'),
-      read('.circleci/config.yml').includes('pnpm@9.15.3 run ci:gate:branch'),
+      read('.husky/pre-commit').includes('bun run ci:gate:branch'),
+      read('.husky/pre-push').includes('bun run ci:gate:branch'),
+      read('.husky/pre-merge-commit').includes('bun run ci:gate:branch'),
+      read('.circleci/config.yml').includes('bun run ci:gate:branch'),
       read('.circleci/config.yml').includes('only:\n                - dev\n                - main'),
-      read('.github/workflows/test.yml').includes('pnpm run ci:gate:branch'),
+      read('.github/workflows/test.yml').includes('bun run ci:gate:branch'),
       read('.github/workflows/test.yml').includes('branches: [ "**" ]'),
       read('.github/workflows/test.yml').includes('JUMENTIX_TASK_TEST_MODE: range'),
       read('.github/workflows/test.yml').includes('JUMENTIX_TASK_TEST_BASE: origin/dev'),
       read('.github/workflows/test.yml')
         .includes('if: always() && (github.base_ref == \'main\' || github.ref_name == \'main\')'),
-      read('.github/workflows/website.yml').includes('pnpm run website:storybook:build'),
-      read('.github/workflows/website.yml').includes('pnpm run website:storybook:smoke'),
+      read('.github/workflows/website.yml').includes('bun run website:storybook:build'),
+      read('.github/workflows/website.yml').includes('bun run website:storybook:smoke'),
       !read('.github/workflows/test.yml').includes('website:storybook'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'pr:governance:check'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'requirements:check'),
+      FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'integrations:check'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'integration-migration:check'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'agent-registry:check'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'website:test:prepublish'),
@@ -138,7 +139,7 @@ describe('run-full-test-matrix', () => {
       )
     ]).toStrictEqual([
       true, true, true, true, true, true, true, true, true, true, true, true, true, true,
-      true, true, true, true, true
+      true, true, true, true, true, true
     ]);
   });
 });

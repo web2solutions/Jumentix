@@ -1,5 +1,5 @@
 import { QueueRequestResponseRepository } from '@src/infra/messages/repositories';
-import { IMessageMediator, IMessageResponse } from '@src/modules/port';
+import type { IMessageMediator, IMessageResponse } from '@src/modules/port';
 
 describe('queue request-response repository', () => {
   it('delegates requests to mediator with generated metadata', async () => {

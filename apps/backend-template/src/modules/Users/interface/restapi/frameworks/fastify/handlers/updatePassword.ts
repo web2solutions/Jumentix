@@ -1,13 +1,16 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { sendErrorResponse } from '@src/interface/HTTP/adapters/fastify/responses/sendErrorResponse';
 
-import {
-  IHandlerFactory,
+import type {
+  IHandlerFactory
+} from '@src/interface/HTTP/ports';
+import type {
   IbaseHandler,
   EndPointFactory
 } from '@src/interface/HTTP/ports';
 
-import { UserPasswordUpdateRequestEvent, RequestUpdatePassword, UserController } from '@src/modules/Users';
+import type { RequestUpdatePassword } from '@src/modules/Users';
+import { UserPasswordUpdateRequestEvent, UserController } from '@src/modules/Users';
 
 const updatePassword: EndPointFactory = (
   {

@@ -29,7 +29,7 @@ function selectQualityGate(targetBranch) {
 }
 
 function executeQualityGate(gate) {
-  const result = spawnSync('pnpm', ['run', gate.script], {
+  const result = spawnSync('bun', ['run', gate.script], {
     stdio: 'inherit',
     env: { ...process.env }
   });

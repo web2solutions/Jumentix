@@ -1,4 +1,4 @@
-import { IServiceResponse } from './contracts';
+import type { IServiceResponse } from './contracts';
 
 export class ServiceResponse<T = any> implements IServiceResponse<T> {
   public result?: T;

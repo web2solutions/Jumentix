@@ -1,13 +1,16 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { sendErrorResponse } from '@src/interface/HTTP/adapters/fastify/responses/sendErrorResponse';
 
-import {
-  IHandlerFactory,
+import type {
+  IHandlerFactory
+} from '@src/interface/HTTP/ports';
+import type {
   IbaseHandler,
   EndPointFactory
 } from '@src/interface/HTTP/ports';
 
-import { RequestCreatePhone, UserPhoneCreateRequestEvent, UserController } from '@src/modules/Users';
+import type { RequestCreatePhone } from '@src/modules/Users';
+import { UserPhoneCreateRequestEvent, UserController } from '@src/modules/Users';
 
 const createPhone: EndPointFactory = (
   {

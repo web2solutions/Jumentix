@@ -1,4 +1,4 @@
-import { ISubApplication, IWorkspaceCatalog } from '@src/interface/CLI/types';
+import type { ISubApplication, IWorkspaceCatalog } from '@src/interface/CLI/types';
 
 const loadCatalogMock = jest.fn();
 const saveCatalogMock = jest.fn();

@@ -1,6 +1,5 @@
-import { Request } from 'express';
-import restify from 'restify';
-import { FastifyRequest } from 'fastify';
-import HyperExpress from 'hyper-express';
+import type { Request } from 'express';
+import type restify from 'restify';
+import type { FastifyRequest } from 'fastify';
 
-export type IHTTPRequest = FastifyRequest | Request | HyperExpress.Request | restify.Request;
+export type IHTTPRequest = FastifyRequest | Request | restify.Request;

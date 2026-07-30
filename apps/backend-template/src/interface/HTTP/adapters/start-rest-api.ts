@@ -15,10 +15,6 @@ export async function startRestApiAdapter(env: NodeJS.ProcessEnv = process.env):
     await import('@src/interface/HTTP/adapters/restify/restify');
     return;
   }
-  if (framework === 'hyper-express') {
-    await import('@src/interface/HTTP/adapters/hyper-express/hyper-express');
-    return;
-  }
   if (framework === 'cloudflare-workers') {
     await import('@src/interface/HTTP/adapters/cloudflare-workers/cloudflare-workers');
     return;

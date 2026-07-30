@@ -1,4 +1,4 @@
-import { IServiceResponse } from './contracts';
+import type { IServiceResponse } from './contracts';
 
 export class ServiceResponse {
   public result: unknown = undefined;

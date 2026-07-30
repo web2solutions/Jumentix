@@ -18,13 +18,16 @@ Agent coordination must be centralized across repositories and runtimes. Keeping
 7. The synchronization command must resolve the latest canonical `main` revision first, then
    update the mirror and its recorded revision as one reviewable change.
 8. Quality-gate validation of a pinned revision must fetch immutable content. The private
-   canonical repository uses the authenticated Contents API when `GITHUB_TOKEN`/`GH_TOKEN` is
-   present. The existing raw fallback may be attempted for transport diagnostics, but private
-   raw content is not an access mechanism and normally returns 404. Missing credentials,
-   HTTP 401/403/404, unreachable canonical content, or an invalid pin/path must fail closed
-   with guidance that never exposes credentials.
+   canonical repository uses the authenticated Contents API when a token is available from
+   `GITHUB_TOKEN`/`GH_TOKEN`, or — for local developer machines only — from `gh auth token`
+   when those env vars are unset. CI must inject a contents:read token via
+   `secrets.AGENT_REGISTRY_TOKEN` (mapped to `GH_TOKEN`); the default `github.token` cannot
+   read the sibling private registry. The existing raw fallback may be attempted for transport
+   diagnostics, but private raw content is not an access mechanism and normally returns 404.
+   Missing credentials, HTTP 401/403/404, unreachable canonical content, or an invalid pin/path
+   must fail closed with guidance that never exposes credentials.
 9. Branch-to-revision resolution is allowed only for explicit synchronization, must fail closed,
-   and may use `GITHUB_TOKEN` or `GH_TOKEN` when available without exposing credentials.
+   and may use the same token resolution path without exposing credentials.
 10. Raw-content and Contents API URLs must contain the complete immutable SHA and safely encoded
     path segments.
 11. The canonical registry repository is private under `XpertMinds`; only the owner account

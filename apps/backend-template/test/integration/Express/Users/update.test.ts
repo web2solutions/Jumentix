@@ -20,7 +20,7 @@ import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal'
 
 import createdUsers from '@seed/users';
 import { EAuthSchemaType } from '@src/modules/Users/service/ports/EAuthSchemaType';
-import { IAuthorizationHeader } from '@src/modules/Users/service/ports/IAuthorizationHeader';
+import type { IAuthorizationHeader } from '@src/modules/Users/service/ports/IAuthorizationHeader';
 
 const [createdUser1, createdUser2, createdUser3, createdUser4] = createdUsers;
 
