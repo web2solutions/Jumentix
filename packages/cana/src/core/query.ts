@@ -96,7 +96,6 @@ export function runQuery<TRecord>(
   store: IDBObjectStore,
   query: CanaQuery | undefined
 ): Promise<readonly TRecord[]> {
-  const source = sourceFor(store, query);
   const range = toKeyRange(query);
   const offset = query?.offset ?? 0;
   const limit = query?.limit;
@@ -105,9 +104,13 @@ export function runQuery<TRecord>(
     const records: TRecord[] = [];
     let skipped = false;
 
+    // Resolving the source is inside the executor on purpose. A named index that
+    // does not exist throws, and a function typed to return a Promise that can
+    // also throw synchronously forces every caller to write both a try/catch and
+    // a .catch — so the failure is routed into the promise like every other.
     let request: IDBRequest<IDBCursorWithValue | null>;
     try {
-      request = source.openCursor(range, directionOf(query));
+      request = sourceFor(store, query).openCursor(range, directionOf(query));
     } catch (error) {
       reject(translateError(error, { store: store.name }));
       return;
@@ -161,12 +164,13 @@ export function runCount(
     return runQuery(store, query).then((records) => records.length);
   }
 
-  const source = sourceFor(store, query);
   const range = toKeyRange(query);
 
   return new Promise<number>((resolve, reject) => {
+    // Inside the executor for the same reason as `runQuery`.
     let request: IDBRequest<number>;
     try {
+      const source = sourceFor(store, query);
       request = range === null ? source.count() : source.count(range);
     } catch (error) {
       reject(translateError(error, { store: store.name }));
