@@ -23,7 +23,7 @@ merely configured checks are not successful evidence.
 | Dependabot Updates | active (GitHub-managed) | enabled via `.github/dependabot.yml` | Dependabot PR path available |
 | Repository webhooks | 2 active (provider callbacks) | provider-owned GitHub App/webhook bindings recreated | CircleCI, Codecov, Snyk, GitGuardian, Cursor, Sonar, and Vercel apps authorized; PR-only checks remain pending |
 | CircleCI project | bound to legacy slug | project `95b034cf-dd83-4407-be64-108d63263ed8` follows `XpertMinds/Jumentix` | pipelines 2, 3, and 4 passed `test-source` on canonical SHA `19af3a52` |
-| Codecov | `codecov/project`, `codecov/patch` on legacy PRs | GitHub App authorized, repository active, rotated token stored in GitHub and CircleCI | authenticated CircleCI pipeline passed; project/patch PR checks pending |
+| Codecov | `codecov/project`, `codecov/patch` on legacy PRs | GitHub App authorized, repository active, rotated token stored in GitHub and CircleCI; canonical slug and fail-on-error supplied to the orb | pipeline 4 exposed hidden `Repository not found`; corrected fail-closed `dev` upload and project/patch checks pending |
 | SonarQube Cloud project key | `web2solutions_aaa-typescript-boilerplate` | `xpertminds` / `XpertMinds_Jumentix` | baseline and PR #9 quality gates passed with zero new issues or hotspots |
 | Snyk | badge + GH checks on legacy | XpertMinds org/settings/policies, all-repository GitHub App, canonical package projects, and new 90-day token | PR #9 `security/snyk` passed with zero issues |
 | GitGuardian | Security Checks on legacy PRs | all five XpertMinds repositories monitored; canonical history scan completed | **paid-plan blocker**: forked-repository check runs require GitGuardian Business |
