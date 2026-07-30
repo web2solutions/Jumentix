@@ -60,7 +60,7 @@ const REQUIRED_OVERRIDES = {
   'shell-quote': '^1.9.0',
   // Raised from ^2.1.2 on 2026-07-30: GHSA-mh99-v99m-4gvg (HIGH, DoS via
   // unbounded expansion) affects every version below 5.0.8. Found by the
-  // first-party OSV scanner, which Snyk's shallow scan could not see.
+  // first-party OSV scanner, including the complete transitive dependency tree.
   'brace-expansion': '^5.0.8',
   sharp: '^0.35.0',
   protobufjs: '^7.6.5',
