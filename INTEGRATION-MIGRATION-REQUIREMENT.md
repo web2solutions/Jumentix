@@ -24,10 +24,10 @@ merely configured checks are not successful evidence.
 | Repository webhooks | 2 active (provider callbacks) | provider-owned GitHub App/webhook bindings recreated | CircleCI, Codecov, Snyk, GitGuardian, Cursor, Sonar, and Vercel apps authorized; PR-only checks remain pending |
 | CircleCI project | bound to legacy slug | project `95b034cf-dd83-4407-be64-108d63263ed8` follows `XpertMinds/Jumentix` | pipelines 2, 3, and 4 passed `test-source` on canonical SHA `19af3a52` |
 | Codecov | `codecov/project`, `codecov/patch` on legacy PRs | GitHub App authorized, repository active, rotated token stored in GitHub and CircleCI | authenticated CircleCI pipeline passed; project/patch PR checks pending |
-| SonarQube Cloud project key | `web2solutions_aaa-typescript-boilerplate` | `xpertminds` / `XpertMinds_Jumentix` | canonical quality gate passed with 100% new-code coverage and zero new issues |
-| Snyk | badge + GH checks on legacy | XpertMinds org/settings/policies, all-repository GitHub App, canonical package projects, and new 90-day token | terminal `security/snyk` PR check pending |
-| GitGuardian | Security Checks on legacy PRs | all-repository GitHub App and XpertMinds source linked | automatic history scan and blocking checks enabled; terminal PR check pending |
-| Cursor Bugbot | checks on legacy PRs | 5/5 XpertMinds repositories enabled, including both Jumentix repositories | terminal PR check pending |
+| SonarQube Cloud project key | `web2solutions_aaa-typescript-boilerplate` | `xpertminds` / `XpertMinds_Jumentix` | baseline and PR #9 quality gates passed with zero new issues or hotspots |
+| Snyk | badge + GH checks on legacy | XpertMinds org/settings/policies, all-repository GitHub App, canonical package projects, and new 90-day token | PR #9 `security/snyk` passed with zero issues |
+| GitGuardian | Security Checks on legacy PRs | all five XpertMinds repositories monitored; history scan completed; blocking checks enabled | terminal PR check still pending |
+| Cursor Bugbot | checks on legacy PRs | 5/5 XpertMinds repositories enabled, including both Jumentix repositories | PR #9 `Cursor Bugbot` passed |
 | Vercel (website) | legacy project binding | Vercel GitHub App authorized for all XpertMinds repositories | **paid-plan blocker**: Hobby rejects binding a private organization repository; explicit Pro approval required |
 | Branch protection / required checks | enforced on legacy (Pro) | unavailable on current private plan | **owner-auth blocker**: GitHub Pro/Team for private branch protection |
 

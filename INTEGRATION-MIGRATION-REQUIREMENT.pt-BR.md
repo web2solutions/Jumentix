@@ -24,10 +24,10 @@ neutros ou apenas configurados não são evidência de sucesso.
 | Repository webhooks | 2 ativos | vínculos de GitHub App/webhook pertencentes aos provedores recriados | Apps CircleCI, Codecov, Snyk, GitGuardian, Cursor, Sonar e Vercel autorizados; checks exclusivos de PR pendentes |
 | Projeto CircleCI | legado | projeto `95b034cf-dd83-4407-be64-108d63263ed8` segue `XpertMinds/Jumentix` | pipelines 2, 3 e 4 passaram `test-source` no SHA canônico `19af3a52` |
 | Codecov | checks no legado | GitHub App autorizado, repositório ativo e token rotacionado armazenado no GitHub e CircleCI | pipeline CircleCI autenticado passou; checks de projeto/patch na PR pendentes |
-| Projeto SonarQube Cloud | `web2solutions_aaa-typescript-boilerplate` | `xpertminds` / `XpertMinds_Jumentix` | quality gate canônico passou com 100% de cobertura em código novo e zero issues novas |
-| Snyk | badge/checks no legado | organização/configurações/políticas XpertMinds, GitHub App para todos os repositórios, projetos canônicos dos pacotes e novo token de 90 dias | check terminal `security/snyk` na PR pendente |
-| GitGuardian | checks no legado | GitHub App para todos os repositórios e origem XpertMinds vinculada | scan automático de histórico e checks bloqueantes ativos; check terminal na PR pendente |
-| Cursor Bugbot | checks no legado | 5/5 repositórios XpertMinds habilitados, incluindo os dois Jumentix | check terminal na PR pendente |
+| Projeto SonarQube Cloud | `web2solutions_aaa-typescript-boilerplate` | `xpertminds` / `XpertMinds_Jumentix` | quality gates do baseline e da PR #9 passaram com zero issues ou hotspots novos |
+| Snyk | badge/checks no legado | organização/configurações/políticas XpertMinds, GitHub App para todos os repositórios, projetos canônicos dos pacotes e novo token de 90 dias | `security/snyk` da PR #9 passou com zero issues |
+| GitGuardian | checks no legado | os cinco repositórios XpertMinds monitorados; scan de histórico concluído; checks bloqueantes ativos | check terminal na PR ainda pendente |
+| Cursor Bugbot | checks no legado | 5/5 repositórios XpertMinds habilitados, incluindo os dois Jumentix | `Cursor Bugbot` da PR #9 passou |
 | Vercel (website) | vínculo legado | GitHub App da Vercel autorizado para todos os repositórios XpertMinds | **owner-auth blocker / bloqueio de plano pago**: Hobby rejeita vínculo a repositório privado de organização; aprovação explícita de Pro necessária |
 | Proteção de branch | legado (Pro) | indisponível no plano privado atual | **bloqueio owner-auth**: GitHub Pro/Team |
 
