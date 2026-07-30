@@ -2,7 +2,8 @@
 
 > Repositório privado canônico: `XpertMinds/Jumentix`. Consulte
 > [Migração dos repositórios canônicos](./md/CANONICAL-REPOSITORY-MIGRATION.pt-BR.md) ·
-> [Requisito de migração de integrações](../INTEGRATION-MIGRATION-REQUIREMENT.pt-BR.md).
+> [Requisito de migração de integrações](../INTEGRATION-MIGRATION-REQUIREMENT.pt-BR.md) ·
+> [Integrações canônicas e revinculação de provedores](./md/CANONICAL-INTEGRATIONS-AND-PROVIDER-REBINDING.pt-BR.md).
 
 Esta documentação está organizada por público e sincronizada com a baseline `dev` do repositório.
 Uma capacidade documentada é atual somente quando sua implementação, manifesto ou contrato
