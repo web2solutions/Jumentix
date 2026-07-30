@@ -1,10 +1,9 @@
 # Jumentix Documentation Hub
 
 > Canonical private repository: `XpertMinds/Jumentix`. See
-> [Canonical Repository Migration](./md/CANONICAL-REPOSITORY-MIGRATION.md).
-> See also the
-> [Canonical Integrations and Provider Rebinding](./md/CANONICAL-INTEGRATIONS-AND-PROVIDER-REBINDING.md)
-> inventory.
+> [Canonical Repository Migration](./md/CANONICAL-REPOSITORY-MIGRATION.md) ·
+> [Integration Migration Requirement](../INTEGRATION-MIGRATION-REQUIREMENT.md) ·
+> [Canonical Integrations and Provider Rebinding](./md/CANONICAL-INTEGRATIONS-AND-PROVIDER-REBINDING.md).
 
 This documentation is organized by audience and is synchronized against the repository `dev`
 baseline. A documented capability is current only when its referenced implementation, manifest, or

@@ -48,6 +48,8 @@ into documentation. Mirrors pin the full immutable registry commit.
 
 ## Traceability
 
-- Requirement: `103`
+- Requirement: `103`, `104`
 - Linear epic: `JUM-562`
 - Documentation task: `JUM-563`
+- Application integration task: `JUM-568`
+- Integration contract: `INTEGRATION-MIGRATION-REQUIREMENT.md`
