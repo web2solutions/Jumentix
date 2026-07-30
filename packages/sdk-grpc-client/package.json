@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json && node scripts/copy-proto.cjs",
-    "test": "pnpm run typecheck",
+    "test": "bun run typecheck",
     "lint": "echo \"sdk-grpc-client: lint managed by root workspace\"",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },

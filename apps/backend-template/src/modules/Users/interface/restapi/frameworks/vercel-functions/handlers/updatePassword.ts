@@ -1,13 +1,16 @@
 import type { VercelFunctionsRequest, VercelFunctionsResponse } from '@src/interface/HTTP/adapters/vercel-functions/vercel-functions';
 import { sendErrorResponse } from '@src/interface/HTTP/adapters/vercel-functions/responses/sendErrorResponse';
 
-import {
-  IHandlerFactory,
+import type {
+  IHandlerFactory
+} from '@src/interface/HTTP/ports';
+import type {
   IbaseHandler,
   EndPointFactory
 } from '@src/interface/HTTP/ports';
 
-import { RequestUpdatePassword, UserController, UserPasswordUpdateRequestEvent } from '@src/modules/Users';
+import type { RequestUpdatePassword } from '@src/modules/Users';
+import { UserController, UserPasswordUpdateRequestEvent } from '@src/modules/Users';
 
 const updatePassword: EndPointFactory = (
   {

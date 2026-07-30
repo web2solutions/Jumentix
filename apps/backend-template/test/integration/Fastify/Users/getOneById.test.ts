@@ -1,6 +1,7 @@
 /* global  describe, it, expect */
 import request from 'supertest';
-import { FastifyServer, Fastify } from '@src/interface/HTTP/adapters/fastify/FastifyServer';
+import type { Fastify } from '@src/interface/HTTP/adapters/fastify/FastifyServer';
+import { FastifyServer } from '@src/interface/HTTP/adapters/fastify/FastifyServer';
 import { infraHandlers } from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
 import { RestAPI } from '@src/interface/HTTP/RestAPI';
 import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
@@ -8,8 +9,10 @@ import { AuthService } from '@src/modules/Users/service/AuthService';
 import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
 import { InMemoryKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
 import { MutexService } from '@src/infra/mutex/adapter/MutexService';
+import type {
+  IUser
+} from '@src/modules/Users';
 import {
-  IUser,
   UserDataRepository,
   UserService
 } from '@src/modules/Users';

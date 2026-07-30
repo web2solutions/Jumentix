@@ -1,7 +1,9 @@
 /* eslint-disable no-underscore-dangle */
-import {
+import type {
   IOpenApiDataEntityLike,
-  IOpenApiFieldDefinitionLike,
+  IOpenApiFieldDefinitionLike
+} from '@src/shared/openapi/OpenApi31DataEntity';
+import {
   throwIfDataEntityPayloadIsNotOpenApi31Compliant,
   throwIfDataEntityIsNotOpenApi31Compliant,
   throwIfFieldDefinitionIsNotOpenApi31Compliant

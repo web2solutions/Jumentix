@@ -2,9 +2,9 @@
 import * as jwt from 'jsonwebtoken';
 import { randomUUID } from 'node:crypto';
 
-import { IJwtService } from '@src/infra/jwt/IJwtService';
+import type { IJwtService } from '@src/infra/jwt/IJwtService';
 import { _JWT_TOKEN_SECRET_KEY_, _JWT_TOKEN_EXPIRES_IN_ } from '@src/config/jwt';
-import { ITokenObject } from '@src/modules/Users/service/ports/ITokenObject';
+import type { ITokenObject } from '@src/modules/Users/service/ports/ITokenObject';
 import { NotImplemented } from '@src/infra/exceptions/NotImplemented';
 
 let jwtService: any;

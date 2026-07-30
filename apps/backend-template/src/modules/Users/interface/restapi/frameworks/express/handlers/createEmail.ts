@@ -1,13 +1,16 @@
 import { Request, Response } from 'express';
 import { sendErrorResponse } from '@src/interface/HTTP/adapters/express/responses/sendErrorResponse';
 
-import {
-  IHandlerFactory,
+import type {
+  IHandlerFactory
+} from '@src/interface/HTTP/ports';
+import type {
   IbaseHandler,
   EndPointFactory
 } from '@src/interface/HTTP/ports';
 
-import { RequestCreateEmail, UserController, UserEmailCreateRequestEvent } from '@src/modules/Users';
+import type { RequestCreateEmail } from '@src/modules/Users';
+import { UserController, UserEmailCreateRequestEvent } from '@src/modules/Users';
 
 const createEmail: EndPointFactory = (
   {

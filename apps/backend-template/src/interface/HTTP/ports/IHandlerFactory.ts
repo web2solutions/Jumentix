@@ -1,8 +1,8 @@
 import { OpenAPIV3 } from 'openapi-types';
-import { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
-import { IMutexService } from '@src/infra/mutex/port/IMutexService';
-import { IAuthService } from '@src/modules/Users/service/ports/IAuthService';
-import { IController } from './IController';
+import type { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
+import type { IMutexService } from '@src/infra/mutex/port/IMutexService';
+import type { IAuthService } from '@src/modules/Users/service/ports/IAuthService';
+import type { IController } from './IController';
 
 export interface IHandlerFactory {
     databaseClient: IDatabaseClient;

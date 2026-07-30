@@ -107,17 +107,20 @@ If a PR is not linked to project work items, it is out of process.
 4. Commit, push, and PR gates compare the mirror with its recorded immutable revision so the
    result remains reproducible when another agent updates canonical `main` concurrently.
 5. Pinned-revision checks fetch immutable canonical content by complete SHA and encoded path.
-   Public registries may use `raw.githubusercontent.com` without Contents API quota; when a token
-   is present, authenticated Contents API access may be used and must fall back to public raw
-   fetch on HTTP 401/403/404 from that token path.
+   The private canonical registry uses the authenticated Contents API when `GITHUB_TOKEN` /
+   `GH_TOKEN` is present (CI: `secrets.AGENT_REGISTRY_TOKEN`; local: env or `gh auth token`).
+   Anonymous `raw.githubusercontent.com` is diagnostic only and normally returns HTTP 404 for
+   private content — it is not an access mechanism.
 6. Explicit synchronization resolves canonical `main` through the GitHub API and may use
    `GITHUB_TOKEN` or `GH_TOKEN` when authenticating to GitHub.
 7. Transport failures, invalid revisions, unsafe paths, missing files, unauthorized access, and
-   mirror mismatches fail closed without falling back to the local mirror. Diagnostics keep
+   mirror mismatches fail closed without falling back to the local mirror. Diagnostics point
+   missing credentials and raw 404 without a working token at private-registry token setup, keep
    token-access guidance when Contents API 401/403 is followed by raw 404, and otherwise
-   distinguish pin/path drift (404) from token-backed private access needs (401/403).
-8. The canonical registry repository is public for read access. Only `web2solutions`
-   (`web2solucoes@gmail.com`) may push or publish changes to it.
+   distinguish pin/path drift after authenticated access from token-backed private access needs.
+8. The canonical registry repository is private under `XpertMinds`. Only `web2solutions`
+   (`web2solucoes@gmail.com`) and identities explicitly authorized in Linear may read, push, or
+   publish changes to it.
 
 ## Documentation Governance
 

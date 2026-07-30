@@ -18,8 +18,15 @@ import {
   BasicAuthorizationHeaderUser4,
   BasicAuthorizationHeaderUserGuest
 } from '@test/mock';
+import type {
+  IUser
+} from '@src/modules/Users';
+import type {
+  RequestUpdateEmail
+} from '@src/modules/Users';
 import {
-  IUser, RequestUpdateEmail, UserDataRepository, UserService
+  UserDataRepository,
+  UserService
 } from '@src/modules/Users';
 import { EmailValueObject } from '@src/modules/ddd/valueObjects';
 import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';

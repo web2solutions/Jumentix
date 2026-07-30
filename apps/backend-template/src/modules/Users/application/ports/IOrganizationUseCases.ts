@@ -1,13 +1,13 @@
-import { IServiceResponse, IPagingRequest } from '@src/modules/port';
-import { IOrganization } from '@src/modules/Users/domain/Entity/IOrganization';
-import { RequestCreateAddress } from '@src/modules/Users/interface/dto/RequestCreateAddress';
-import { RequestCreateEmail } from '@src/modules/Users/interface/dto/RequestCreateEmail';
-import { RequestCreateOrganization } from '@src/modules/Users/interface/dto/RequestCreateOrganization';
-import { RequestCreatePhone } from '@src/modules/Users/interface/dto/RequestCreatePhone';
-import { RequestUpdateAddress } from '@src/modules/Users/interface/dto/RequestUpdateAddress';
-import { RequestUpdateEmail } from '@src/modules/Users/interface/dto/RequestUpdateEmail';
-import { RequestUpdateOrganization } from '@src/modules/Users/interface/dto/RequestUpdateOrganization';
-import { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
+import type { IServiceResponse, IPagingRequest } from '@src/modules/port';
+import type { IOrganization } from '@src/modules/Users/domain/Entity/IOrganization';
+import type { RequestCreateAddress } from '@src/modules/Users/interface/dto/RequestCreateAddress';
+import type { RequestCreateEmail } from '@src/modules/Users/interface/dto/RequestCreateEmail';
+import type { RequestCreateOrganization } from '@src/modules/Users/interface/dto/RequestCreateOrganization';
+import type { RequestCreatePhone } from '@src/modules/Users/interface/dto/RequestCreatePhone';
+import type { RequestUpdateAddress } from '@src/modules/Users/interface/dto/RequestUpdateAddress';
+import type { RequestUpdateEmail } from '@src/modules/Users/interface/dto/RequestUpdateEmail';
+import type { RequestUpdateOrganization } from '@src/modules/Users/interface/dto/RequestUpdateOrganization';
+import type { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
 
 export interface IOrganizationUseCases {
   create(data: RequestCreateOrganization): Promise<IServiceResponse<IOrganization>>;

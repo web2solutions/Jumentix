@@ -103,7 +103,7 @@ function generateChangelog() {
   const lines = [
     '# Changelog',
     '',
-    '<!-- This file is generated from Git history. Run `pnpm run changelog:update` to refresh it. -->',
+    '<!-- This file is generated from Git history. Run `bun run changelog:update` to refresh it. -->',
     ''
   ];
 
@@ -163,7 +163,7 @@ function main() {
     const isSynced = current === generated || current === generatedPreviousHead;
     if (!isSynced) {
       console.error(`${CHANGELOG_FILE} is out of sync with Git history.`);
-      console.error(`Run "pnpm run changelog:update" and commit the generated changes.`);
+      console.error(`Run "bun run changelog:update" and commit the generated changes.`);
       process.exit(1);
     }
     console.log(`${CHANGELOG_FILE} is in sync with Git history.`);

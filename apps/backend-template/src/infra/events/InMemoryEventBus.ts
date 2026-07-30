@@ -1,4 +1,4 @@
-import { IEventBus, IIntegrationEvent } from '@src/modules/port';
+import type { IEventBus, IIntegrationEvent } from '@src/modules/port';
 
 export class InMemoryEventBus implements IEventBus {
   private listeners: Record<string, Array<(event: IIntegrationEvent) => Promise<void> | void>> = {};

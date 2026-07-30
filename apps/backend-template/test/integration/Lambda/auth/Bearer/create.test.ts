@@ -8,8 +8,15 @@ import { InMemoryKeyValueStorageClient } from '@src/infra/persistence/KeyValueSt
 import { MutexService } from '@src/infra/mutex/adapter/MutexService';
 import { JwtService } from '@src/infra/jwt/JwtService';
 
+import type {
+  IUser,
+  IAuthorizationHeader
+} from '@src/modules/Users';
 import {
-  IUser, UserDataRepository, UserService, UserProviderLocal, IAuthorizationHeader, EAuthSchemaType
+  UserDataRepository,
+  UserService,
+  UserProviderLocal,
+  EAuthSchemaType
 } from '@src/modules/Users';
 import { handler } from '@src/modules/Users/interface/restapi/frameworks/aws/lambda/handlers/create';
 

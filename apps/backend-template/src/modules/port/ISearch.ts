@@ -1,4 +1,4 @@
-import { IFilter } from './IFilter';
+import type { IFilter } from './IFilter';
 
 export interface ISearch {
   operator?: string;

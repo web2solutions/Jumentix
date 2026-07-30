@@ -29,7 +29,7 @@ function dryRunPackages(packagesDir) {
     const pkg = readPackageJson(packageDir);
     if (!pkg || pkg.private === true) continue;
     console.log(`\n[dry-run][package] ${pkg.name || packageDir}`);
-    runCommand('npm', ['pack', '--dry-run', packageDir]);
+    runCommand('bun', ['pm', 'pack', '--dry-run'], packageDir);
   }
 }
 

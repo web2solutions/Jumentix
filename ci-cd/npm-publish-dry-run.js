@@ -35,7 +35,7 @@ for (const dir of packageDirs) {
   }
 
   try {
-    execSync('npm publish --dry-run --access public', { cwd: dir, stdio: 'inherit' });
+    execSync('bun publish --dry-run --access public', { cwd: dir, stdio: 'inherit' });
   } catch (error) {
     console.error(`[npm-dry-run][error] dry-run failed for ${name}`);
     process.exit(1);

@@ -1,18 +1,18 @@
 /* eslint-disable no-console */
 /* eslint-disable no-shadow */
 /* eslint-disable class-methods-use-this */
-import { IUser } from '@src/modules/Users/domain/Entity/IUser';
+import type { IUser } from '@src/modules/Users/domain/Entity/IUser';
 import { EAuthSchemaType } from '@src/modules/Users/service/ports/EAuthSchemaType';
-import { IAuthorizationHeader } from '@src/modules/Users/service/ports/IAuthorizationHeader';
-import { IAuthService } from '@src/modules/Users/service/ports/IAuthService';
-import { IAuthSchema } from '@src/modules/Users/service/ports/IAuthSchema';
-import { IUserProvider } from '@src/modules/Users/service/ports/IUserProvider';
-import { ITokenObject } from '@src/modules/Users/service/ports/ITokenObject';
+import type { IAuthorizationHeader } from '@src/modules/Users/service/ports/IAuthorizationHeader';
+import type { IAuthService } from '@src/modules/Users/service/ports/IAuthService';
+import type { IAuthSchema } from '@src/modules/Users/service/ports/IAuthSchema';
+import type { IUserProvider } from '@src/modules/Users/service/ports/IUserProvider';
+import type { ITokenObject } from '@src/modules/Users/service/ports/ITokenObject';
 
-import { IJwtService } from '@src/infra/jwt/IJwtService';
-import { IPasswordCryptoService } from '@src/infra/security/IPasswordCryptoService';
-import { IKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/IKeyValueStorageClient';
-import { ISecurityAuditRepository } from '@src/infra/audit';
+import type { IJwtService } from '@src/infra/jwt/IJwtService';
+import type { IPasswordCryptoService } from '@src/infra/security/IPasswordCryptoService';
+import type { IKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/IKeyValueStorageClient';
+import type { ISecurityAuditRepository } from '@src/infra/audit';
 import {
   BaseError, ForbiddenError, ResourceLockedError, UnauthorizedError, ValidationError
 } from '@src/infra/exceptions/';
@@ -25,8 +25,8 @@ import {
   userCanAccessScope
 } from '@src/modules/Users/domain/security/Rbac';
 
-import { IServiceResponse } from '@src/modules/port';
-import { IEventBus } from '@src/modules/port/IEventBus';
+import type { IServiceResponse } from '@src/modules/port';
+import type { IEventBus } from '@src/modules/port/IEventBus';
 import { UUID } from '@src/modules/port/UUID';
 
 const tokenKeys = [

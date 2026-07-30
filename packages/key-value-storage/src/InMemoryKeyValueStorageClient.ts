@@ -1,4 +1,4 @@
-import { IServiceResponse } from './contracts';
+import type { IServiceResponse } from './contracts';
 import { ServiceResponse } from './ServiceResponse';
 import { BaseKeyValueStorageClient } from './BaseKeyValueStorageClient';
 

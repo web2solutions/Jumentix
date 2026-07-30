@@ -1,5 +1,5 @@
 import { UserService } from '@src/modules/Users/service/UserService';
-import { IUserUseCases } from '@src/modules/Users/application/ports/IUserUseCases';
+import type { IUserUseCases } from '@src/modules/Users/application/ports/IUserUseCases';
 
 export class UserUseCases implements IUserUseCases {
   private readonly userService: UserService;

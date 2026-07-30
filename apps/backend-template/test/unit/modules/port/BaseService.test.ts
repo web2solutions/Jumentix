@@ -1,6 +1,8 @@
-import {
-  BaseService,
+import type {
   IServiceResponse
+} from '@src/modules/port';
+import {
+  BaseService
 } from '@src/modules/port';
 
 interface TestRecord {

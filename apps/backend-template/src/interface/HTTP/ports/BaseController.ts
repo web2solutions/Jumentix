@@ -1,10 +1,10 @@
 import { _INFRA_NOT_IMPLEMENTED_ } from '@src/config/constants';
-import { IAuthService } from '@src/modules/Users/service/ports/IAuthService';
-import { IControllerFactory } from '@src/interface/HTTP/ports/IControllerFactory';
-import { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
-import { IMutexService } from '@src/infra/mutex/port/IMutexService';
-import { IPasswordCryptoService } from '@src/infra/security/IPasswordCryptoService';
-import { IMessageMediator } from '@src/modules/port';
+import type { IAuthService } from '@src/modules/Users/service/ports/IAuthService';
+import type { IControllerFactory } from '@src/interface/HTTP/ports/IControllerFactory';
+import type { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
+import type { IMutexService } from '@src/infra/mutex/port/IMutexService';
+import type { IPasswordCryptoService } from '@src/infra/security/IPasswordCryptoService';
+import type { IMessageMediator } from '@src/modules/port';
 
 export abstract class BaseController {
   private _authService: IAuthService = {} as IAuthService;

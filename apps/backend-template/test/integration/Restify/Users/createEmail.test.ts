@@ -20,8 +20,15 @@ import {
   BasicAuthorizationHeaderUserGuest,
   emails
 } from '@test/mock';
+import type {
+  IUser
+} from '@src/modules/Users';
+import type {
+  RequestCreateEmail
+} from '@src/modules/Users';
 import {
-  IUser, RequestCreateEmail, UserDataRepository, UserService
+  UserDataRepository,
+  UserService
 } from '@src/modules/Users';
 import { EmailValueObject } from '@src/modules/ddd/valueObjects';
 import { listenForSupertest } from '../../../helpers/listenForSupertest';

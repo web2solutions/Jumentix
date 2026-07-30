@@ -1,20 +1,27 @@
 import { EHTTPFrameworks } from './EHTTPFrameworks';
-import { EndPointFactory } from './EndPointFactory';
+import type { EndPointFactory } from './EndPointFactory';
 import { HTTPBaseServer } from './HTTPBaseServer';
-import { IAPIFactory } from './IAPIFactory';
-import { IbaseHandler } from './IbaseHandler';
-import { IbaseHandlerFactory } from './IbaseHandlerFactory';
-import { IController } from './IController';
-import { IControllerFactory } from './IControllerFactory';
-import { IHandlerFactory } from './IHandlerFactory';
-import { IHTTPRequest } from './IHTTPRequest';
-import { IHTTPResponse } from './IHTTPResponse';
-import { IHTTPServer } from './IHTTPServer';
+import type { IAPIFactory } from './IAPIFactory';
+import type { IbaseHandler } from './IbaseHandler';
+import type { IbaseHandlerFactory } from './IbaseHandlerFactory';
+import type { IController } from './IController';
+import type { IControllerFactory } from './IControllerFactory';
+import type { IHandlerFactory } from './IHandlerFactory';
+import type { IHTTPRequest } from './IHTTPRequest';
+import type { IHTTPResponse } from './IHTTPResponse';
+import type { IHTTPServer } from './IHTTPServer';
 
-export {
-  EHTTPFrameworks,
+// Split by declaration kind. Everything imported above with `import type` is erased
+// at runtime, so listing it in a value `export { … }` block leaves Bun's ESM loader
+// resolving a binding that does not exist and the whole barrel fails to load.
+//
+// The repo-wide codemod missed this shape: it handled `export { … } from '…'` but not
+// a *local* re-export block fed by separate import statements.
+//
+// `EHTTPFrameworks` is an enum and `HTTPBaseServer` an abstract class — real runtime
+// values, which is why they stay in the value export.
+export type {
   EndPointFactory,
-  HTTPBaseServer,
   IAPIFactory,
   IbaseHandler,
   IbaseHandlerFactory,
@@ -24,4 +31,9 @@ export {
   IHTTPRequest,
   IHTTPResponse,
   IHTTPServer
+};
+
+export {
+  EHTTPFrameworks,
+  HTTPBaseServer
 };

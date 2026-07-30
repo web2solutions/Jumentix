@@ -25,8 +25,8 @@ const INTEGRATION_CONTRACTS = Object.freeze([
     file: '.github/workflows/test.yml',
     markers: [
       'GH_TOKEN: ${{ secrets.AGENT_REGISTRY_TOKEN }}',
-      'pnpm install --frozen-lockfile',
-      'pnpm run ci:gate:branch'
+      'bun install --frozen-lockfile',
+      'bun run ci:gate:branch'
     ]
   },
   {
