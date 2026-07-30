@@ -32,7 +32,11 @@ module.exports = {
   modulePathIgnorePatterns: ['dist', '.build', '.serverless', '.resources'],
   coveragePathIgnorePatterns: [
     '<rootDir>/packages/',
-    '<rootDir>/ci-cd/(?!check-canonical-integrations\\.js$)',
+    // ci-cd is excluded from coverage wholesale, with named opt-ins. Sonar reads
+    // this same lcov, so a new ci-cd file that is not listed here reports as 0%
+    // covered on new code and fails the quality gate even when it has tests.
+    // Keep this list and the suites under test/unit/ci-cd/ in step.
+    '<rootDir>/ci-cd/(?!(check-canonical-integrations|check-bun-version|check-dependency-override-integrity)\\.js$)',
     '<rootDir>/apps/backend-template/src/modules/Users/adapters/out/persistence/UserDataRepository.ts',
     '<rootDir>/apps/backend-template/src/modules/Users/adapters/out/persistence/OrganizationDataRepository.ts'
   ],

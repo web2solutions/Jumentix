@@ -79,101 +79,125 @@ const REQUIRED_PATCHES = {
   'nextra-theme-docs@4.6.1': 'patches/nextra-theme-docs@4.6.1.patch',
 };
 
-const failures = [];
+/**
+ * Pure validation over an already-parsed manifest.
+ *
+ * Structured as pure validation plus a thin CLI, matching the other ci-cd guards,
+ * so the logic is unit-testable without spawning a process.
+ *
+ * @param {object} pkg parsed package.json
+ * @param {string[]} retiredSurfacesPresent labels of pnpm surfaces still on disk
+ * @param {(patchPath: string) => boolean} patchExists resolves a declared patch file
+ * @returns {string[]} human-readable failures; empty means the pin set is intact
+ */
+function validateOverrideIntegrity(pkg, retiredSurfacesPresent = [], patchExists = () => true) {
+  const failures = [];
+  const overrides = pkg.overrides || {};
+  const resolutions = pkg.resolutions || {};
+  const patches = pkg.patchedDependencies || {};
 
-function fail(message) {
-  failures.push(message);
-}
-
-if (!fs.existsSync(packageJsonPath)) {
-  console.error('Dependency override integrity guard failed: package.json is missing.');
-  process.exit(1);
-}
-
-const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-const overrides = pkg.overrides || {};
-const resolutions = pkg.resolutions || {};
-const patches = pkg.patchedDependencies || {};
-
-// 1. Every frozen pin is still declared, at the expected range.
-for (const [name, expected] of Object.entries(REQUIRED_OVERRIDES)) {
-  const actual = overrides[name];
-  if (actual === undefined) {
-    fail(
-      `override "${name}" is missing. It was pinned to ${expected} before the Bun migration; `
-        + 'removing it lets the vulnerable transitive version resolve again.',
-    );
-  } else if (actual !== expected) {
-    fail(
-      `override "${name}" is "${actual}", expected "${expected}". If this change is intentional, `
-        + 'update REQUIRED_OVERRIDES in this guard in the same commit, with the reason.',
-    );
+  for (const [name, expected] of Object.entries(REQUIRED_OVERRIDES)) {
+    const actual = overrides[name];
+    if (actual === undefined) {
+      failures.push(
+        `override "${name}" is missing. It was pinned to ${expected} before the Bun migration; `
+          + 'removing it lets the vulnerable transitive version resolve again.',
+      );
+    } else if (actual !== expected) {
+      failures.push(
+        `override "${name}" is "${actual}", expected "${expected}". If this change is intentional, `
+          + 'update REQUIRED_OVERRIDES in this guard in the same commit, with the reason.',
+      );
+    }
   }
-}
 
-for (const [name, expected] of Object.entries(REQUIRED_RESOLUTIONS)) {
-  if (resolutions[name] !== expected) {
-    fail(
-      `resolution "${name}" is "${resolutions[name]}", expected "${expected}".`,
-    );
+  for (const [name, expected] of Object.entries(REQUIRED_RESOLUTIONS)) {
+    if (resolutions[name] !== expected) {
+      failures.push(`resolution "${name}" is "${resolutions[name]}", expected "${expected}".`);
+    }
   }
-}
 
-for (const [target, patchPath] of Object.entries(REQUIRED_PATCHES)) {
-  if (patches[target] !== patchPath) {
-    fail(
-      `patchedDependencies is missing "${target}" -> "${patchPath}". The JUM-23 baseline recorded `
-        + '`bun install` dropping this field entirely; that is exactly what this check catches.',
-    );
-  } else if (!fs.existsSync(path.join(repoRoot, patchPath))) {
-    fail(`patch file "${patchPath}" is declared but does not exist on disk.`);
+  for (const [target, patchPath] of Object.entries(REQUIRED_PATCHES)) {
+    if (patches[target] !== patchPath) {
+      failures.push(
+        `patchedDependencies is missing "${target}" -> "${patchPath}". The JUM-23 baseline recorded `
+          + '`bun install` dropping this field entirely; that is exactly what this check catches.',
+      );
+    } else if (!patchExists(patchPath)) {
+      failures.push(`patch file "${patchPath}" is declared but does not exist on disk.`);
+    }
   }
-}
 
-// 2. No pnpm-style nested selector keys. npm and Bun both reject `a>b` as a
-//    package name; it resolves to nothing and the pin is silently inert.
-for (const name of Object.keys(overrides)) {
-  if (name.includes('>')) {
-    fail(
-      `override key "${name}" uses pnpm nested-selector syntax, which Bun and npm do not accept `
-        + '(npm reports EINVALIDTAGNAME). Convert it to a flat pin, which is strictly stronger.',
-    );
+  // npm and Bun both reject `a>b` as a package name; it resolves to nothing, so
+  // the pin is silently inert rather than merely unusual.
+  for (const name of Object.keys(overrides)) {
+    if (name.includes('>')) {
+      failures.push(
+        `override key "${name}" uses pnpm nested-selector syntax, which Bun and npm do not accept `
+          + '(npm reports EINVALIDTAGNAME). Convert it to a flat pin, which is strictly stronger.',
+      );
+    }
   }
-}
 
-// 3. The pnpm surfaces must be gone, not merely unused. Leaving them in place
-//    means two sources of truth, and the one CI does not read is the one that
-//    goes stale while still looking authoritative.
-const retiredSurfaces = [
-  ['pnpm-workspace.yaml', path.join(repoRoot, 'pnpm-workspace.yaml')],
-  ['pnpm-lock.yaml', path.join(repoRoot, 'pnpm-lock.yaml')],
-];
-
-for (const [label, filePath] of retiredSurfaces) {
-  if (fs.existsSync(filePath)) {
-    fail(
+  // A second surface that CI does not read is a stale pin waiting to be trusted.
+  for (const label of retiredSurfacesPresent) {
+    failures.push(
       `${label} still exists. Overrides are now declared once, in package.json. A second surface `
         + 'that CI does not read is a stale pin waiting to be trusted.',
     );
   }
-}
 
-if (pkg.pnpm !== undefined) {
-  fail('package.json still declares a "pnpm" section. Its contents must move to the Bun equivalents.');
-}
-
-if (failures.length > 0) {
-  console.error('Dependency override integrity guard failed:\n');
-  for (const failure of failures) {
-    console.error(`  - ${failure}`);
+  if (pkg.pnpm !== undefined) {
+    failures.push('package.json still declares a "pnpm" section. Its contents must move to the Bun equivalents.');
   }
-  console.error('');
-  process.exit(1);
+
+  return failures;
 }
 
-const pinCount = Object.keys(REQUIRED_OVERRIDES).length;
-const patchCount = Object.keys(REQUIRED_PATCHES).length;
-console.log(
-  `Dependency override integrity guard passed: ${pinCount} pins, `
-    + `${Object.keys(REQUIRED_RESOLUTIONS).length} resolutions, ${patchCount} patch(es) intact.`,
-);
+/** pnpm surfaces that must stay retired, reported by label when still on disk. */
+function detectRetiredSurfaces() {
+  return ['pnpm-workspace.yaml', 'pnpm-lock.yaml']
+    .filter((label) => fs.existsSync(path.join(repoRoot, label)));
+}
+
+function main() {
+  if (!fs.existsSync(packageJsonPath)) {
+    console.error('Dependency override integrity guard failed: package.json is missing.');
+    process.exit(1);
+  }
+
+  const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+  const failures = validateOverrideIntegrity(
+    pkg,
+    detectRetiredSurfaces(),
+    (patchPath) => fs.existsSync(path.join(repoRoot, patchPath)),
+  );
+
+  if (failures.length > 0) {
+    console.error('Dependency override integrity guard failed:\n');
+    for (const failure of failures) {
+      console.error(`  - ${failure}`);
+    }
+    console.error('');
+    process.exit(1);
+  }
+
+  console.log(
+    `Dependency override integrity guard passed: ${Object.keys(REQUIRED_OVERRIDES).length} pins, `
+      + `${Object.keys(REQUIRED_RESOLUTIONS).length} resolutions, `
+      + `${Object.keys(REQUIRED_PATCHES).length} patch(es) intact.`,
+  );
+}
+
+if (require.main === module) {
+  main();
+}
+
+module.exports = {
+  REQUIRED_OVERRIDES,
+  REQUIRED_PATCHES,
+  REQUIRED_RESOLUTIONS,
+  detectRetiredSurfaces,
+  main,
+  validateOverrideIntegrity,
+};
