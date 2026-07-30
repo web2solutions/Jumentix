@@ -34,6 +34,8 @@ import type {
 } from '../contracts';
 import { isCanaError } from '../contracts';
 import { canaError } from './errors';
+import type { DurabilityAssessment, DurabilityPolicy } from './durability-policy';
+import { DEFAULT_DURABILITY_POLICY, assessDurability } from './durability-policy';
 import type { CanaHooks } from './hooks';
 import { notifyCommitted, notifyRolledBack } from './hooks';
 import { openDatabase } from './database';
@@ -51,6 +53,7 @@ export interface ClientOptions {
   /** Identifies this client in events, so a subscriber can ignore its own writes. */
   readonly originId?: string;
   readonly hooks?: CanaHooks;
+  readonly durabilityPolicy?: DurabilityPolicy;
 }
 
 /**
@@ -161,6 +164,25 @@ export class Client implements CanaClient {
       ...(this.options.factory === undefined ? {} : { factory: this.options.factory })
     });
     this.database = opened.database;
+
+    // Asked for only when the application opted in. A persistence prompt fired
+    // by a library at an arbitrary moment is one the user denies, and some
+    // browsers make that denial sticky for the origin.
+    if (this.options.durabilityPolicy?.requestPersistenceOnOpen
+      ?? DEFAULT_DURABILITY_POLICY.requestPersistenceOnOpen) {
+      await this.durability.requestPersistence();
+    }
+  }
+
+  /**
+   * What the application is allowed to tell its user about durability.
+   *
+   * Separate from `storageState()`, which reports raw observations: this applies
+   * the policy that refuses to round 'unknown' up to 'durable' (JUM-415).
+   */
+  async durabilityAssessment(): Promise<DurabilityAssessment> {
+    const current = await this.durability.state();
+    return assessDurability(current, this.durability.lastEvictionVerdict);
   }
 
   async close(): Promise<void> {

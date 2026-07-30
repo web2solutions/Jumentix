@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-07-30 feat(cana): lifecycle hooks that cannot swallow a failure [JUM-408] - Eduardo A.
 - 2026-07-30 feat(cana): crud, bulk, queries, transactions and change events [JUM-405][JUM-406] - Eduardo A.
 - 2026-07-30 feat(cana): database lifecycle, schema application, error taxonomy [JUM-403][JUM-404] - Eduardo A.
 - 2026-07-30 feat(cana): scaffold the package, freeze the contracts, implement durability [JUM-402][JUM-400][JUM-560] - Eduardo A.

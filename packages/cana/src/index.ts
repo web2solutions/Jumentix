@@ -55,3 +55,4 @@ export * from './core/query';
 export * from './core/table';
 export * from './core/client';
 export * from './core/hooks';
+export * from './core/durability-policy';
