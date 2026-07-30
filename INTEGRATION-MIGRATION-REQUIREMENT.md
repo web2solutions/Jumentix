@@ -21,14 +21,14 @@ merely configured checks are not successful evidence.
 | Actions repository variables | none | none | empty inventory |
 | Environments | `env vars`, `secrets` (empty) | `env vars`, `secrets` (empty) | name inventory parity |
 | Dependabot Updates | active (GitHub-managed) | enabled via `.github/dependabot.yml` | Dependabot PR path available |
-| Repository webhooks | 2 active (provider callbacks) | none yet | **owner-auth blocker**: recreate Codecov/CircleCI/GitGuardian callbacks |
-| CircleCI project | bound to legacy slug | badge targets `XpertMinds/Jumentix` | **owner-auth blocker**: follow/bind CircleCI project |
-| Codecov | `codecov/project`, `codecov/patch` on legacy PRs | `codecov.yml` present | **owner-auth blocker**: install Codecov GitHub App on org/repo |
-| SonarQube Cloud project key | `web2solutions_aaa-typescript-boilerplate` | transitional legacy key | **owner-auth blocker**: create SonarCloud project for `XpertMinds/Jumentix` and rotate keys/token |
-| Snyk | badge + GH checks on legacy | badge targets canonical | **owner-auth blocker**: install/bind Snyk on `XpertMinds/Jumentix` |
-| GitGuardian | Security Checks on legacy PRs | not observed on canonical PRs | **owner-auth blocker**: install GitGuardian App |
-| Cursor Bugbot | checks on legacy PRs | not observed on canonical PRs | **owner-auth blocker**: enable Bugbot for private `XpertMinds/Jumentix` |
-| Vercel (website) | legacy project binding | docs already describe XpertMinds npm path | **owner-auth blocker**: rebind Vercel project/git integration |
+| Repository webhooks | 2 active (provider callbacks) | provider-owned GitHub App/webhook bindings recreated | CircleCI, Codecov, Snyk, GitGuardian, Cursor, Sonar, and Vercel apps authorized; PR-only checks remain pending |
+| CircleCI project | bound to legacy slug | project `95b034cf-dd83-4407-be64-108d63263ed8` follows `XpertMinds/Jumentix` | pipelines 2, 3, and 4 passed `test-source` on canonical SHA `19af3a52` |
+| Codecov | `codecov/project`, `codecov/patch` on legacy PRs | GitHub App authorized, repository active, rotated token stored in GitHub and CircleCI | authenticated CircleCI pipeline passed; project/patch PR checks pending |
+| SonarQube Cloud project key | `web2solutions_aaa-typescript-boilerplate` | `xpertminds` / `XpertMinds_Jumentix` | canonical quality gate passed with 100% new-code coverage and zero new issues |
+| Snyk | badge + GH checks on legacy | XpertMinds org/settings/policies, all-repository GitHub App, canonical package projects, and new 90-day token | terminal `security/snyk` PR check pending |
+| GitGuardian | Security Checks on legacy PRs | all-repository GitHub App and XpertMinds source linked | automatic history scan and blocking checks enabled; terminal PR check pending |
+| Cursor Bugbot | checks on legacy PRs | 5/5 XpertMinds repositories enabled, including both Jumentix repositories | terminal PR check pending |
+| Vercel (website) | legacy project binding | Vercel GitHub App authorized for all XpertMinds repositories | **paid-plan blocker**: Hobby rejects binding a private organization repository; explicit Pro approval required |
 | Branch protection / required checks | enforced on legacy (Pro) | unavailable on current private plan | **owner-auth blocker**: GitHub Pro/Team for private branch protection |
 
 Registry-only integration migration is governed separately by JUM-569.
@@ -52,11 +52,12 @@ Registry-only integration migration is governed separately by JUM-569.
 
 ## Verification record
 
-- Audit date: `2026-07-29`
+- Audit date: `2026-07-30`
 - Deprecated source: `web2solutions/aaa-typescript-boilerplate`
 - Canonical destination: `XpertMinds/Jumentix`
 - Destination visibility: private
 - Actions secrets recreated (names only): `AAA_JWT_TOKEN_SECRET_KEY`, `AAA_REDIS_PASSWORD`
 - Environments recreated (names): `env vars`, `secrets`
-- Remaining provider installs require owner authorization and are recorded above
-  as explicit blockers
+- Provider authentication is complete; Vercel Git binding and GitHub private
+  branch protection require paid plans, while terminal PR checks remain
+  mandatory and are recorded above

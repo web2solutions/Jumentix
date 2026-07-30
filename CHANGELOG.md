@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-07-30 [JUM-568][CI] Recreate canonical integrations and repository controls (#7) - Eduardo A.
+- 2026-07-30 fix(JUM-568): resolve remaining Sonar finding - Eduardo Almeida
 - 2026-07-30 fix(JUM-568): satisfy Sonar quality gate - Eduardo Almeida
 - 2026-07-29 chore(JUM-568): reconcile canonical integration migration - Eduardo Almeida
 - 2026-07-29 ci(JUM-568): recreate canonical integrations and repository controls - Eduardo Almeida
