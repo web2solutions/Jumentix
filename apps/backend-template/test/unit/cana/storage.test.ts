@@ -50,13 +50,38 @@ describe('cana storage — eviction classification', () => {
 
   it('reports eviction when the store shell survived but the contents did not', () => {
     expect.hasAssertions();
-    // Some browsers recreate the database and drop its records.
+    // Some browsers recreate the database and drop its records. `hadData` is what
+    // separates that from a database the user never wrote to.
+    const verdict = classifyOpen(
+      observation({ foundVersion: 1, isEmpty: true }),
+      JSON.stringify({ version: 1, at: 1, hadData: true })
+    );
+
+    expect(verdict).toStrictEqual({ evicted: true, reason: 'evicted-database-empty' });
+  });
+
+  it('does not report eviction for a database that was never written to', () => {
+    expect.hasAssertions();
+    // The false positive this guard prevents: a user opens the app, writes
+    // nothing, reopens — and is told their data was lost. Without `hadData`,
+    // tombstone-present plus empty was enough to claim eviction.
+    const verdict = classifyOpen(
+      observation({ foundVersion: 1, isEmpty: true }),
+      JSON.stringify({ version: 1, at: 1, hadData: false })
+    );
+
+    expect(verdict).toStrictEqual({ evicted: false, reason: 'existing-data' });
+  });
+
+  it('treats a tombstone written before hadData existed as no evidence of data', () => {
+    expect.hasAssertions();
+    // Forward compatibility: an old marker must not start reporting losses.
     const verdict = classifyOpen(
       observation({ foundVersion: 1, isEmpty: true }),
       JSON.stringify({ version: 1, at: 1 })
     );
 
-    expect(verdict).toStrictEqual({ evicted: true, reason: 'evicted-database-empty' });
+    expect(verdict.evicted).toBe(false);
   });
 
   it('reports normal operation when data is present', () => {

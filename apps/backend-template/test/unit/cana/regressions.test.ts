@@ -7,6 +7,7 @@ import {
   browserStorageEnvironment,
   classifyOpen,
   createClient,
+  deleteDatabase,
   isCanaErrorCode,
   openDatabase
 } from '@jumentix/cana';
@@ -343,5 +344,126 @@ describe('regression: eviction detection was off by default', () => {
 
     expect(assessment.level).toBe('lost');
     await second.close();
+  });
+});
+
+describe('regression: orphaned connection after a blocked timeout', () => {
+  it('closes a connection that arrives after the timeout already rejected', async () => {
+    expect.hasAssertions();
+    // The timeout rejects, then the open succeeds anyway. Nobody holds the
+    // resulting IDBDatabase, so if it is not closed here it keeps blocking
+    // version changes in this tab — turning a recoverable timeout into a
+    // permanent block, which is exactly what the timeout existed to escape.
+    let closed = false;
+    const request = {
+      onsuccess: null as (() => void) | null,
+      onerror: null as (() => void) | null,
+      onupgradeneeded: null as (() => void) | null,
+      onblocked: null as (() => void) | null,
+      result: { close: () => { closed = true; } },
+      error: null,
+      transaction: null
+    };
+    const factory = {
+      open: () => {
+        // Late success, well after the 20ms timeout.
+        setTimeout(() => request.onsuccess?.(), 60);
+        return request;
+      },
+      databases: async () => []
+    } as unknown as IDBFactory;
+
+    await expect(openDatabase({
+      name: 'designer', schema: schema(), factory, blockedTimeoutMs: 20
+    })).rejects.toMatchObject({ code: 'UpgradeBlocked' });
+
+    await new Promise((resolve) => { setTimeout(resolve, 120); });
+
+    expect(closed).toBe(true);
+  });
+});
+
+describe('regression: false eviction for a database never written to', () => {
+  it('does not report loss when the user simply has not saved anything', async () => {
+    expect.hasAssertions();
+    // First open records the tombstone. Second open finds the database present
+    // and empty — which, before the `hadData` flag, was enough to report
+    // `evicted-database-empty`. A user who opened the app and wrote nothing was
+    // told their data was gone.
+    const factory = new IDBFactory();
+    const durability = new StorageDurability(tombstoneEnvironment());
+
+    const first = await openDatabase({
+      name: 'designer', factory, schema: schema(), durability
+    });
+    first.database.close();
+
+    const second = await openDatabase({
+      name: 'designer', factory, schema: schema(), durability
+    });
+
+    expect(second.eviction.evicted).toBe(false);
+    second.database.close();
+  });
+
+  it('still reports loss once data has actually been written', async () => {
+    expect.hasAssertions();
+    // The control: the guard must not have disabled real eviction detection.
+    const factory = new IDBFactory();
+    const durability = new StorageDurability(tombstoneEnvironment());
+
+    const first = await openDatabase({
+      name: 'designer', factory, schema: schema(), durability
+    });
+    await new Promise<void>((resolve, reject) => {
+      const transaction = first.database.transaction('designs', 'readwrite');
+      transaction.objectStore('designs').add({ id: 1, name: 'real data' });
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error);
+    });
+    first.database.close();
+
+    // Reopen so `hadData` is recorded from the observed contents.
+    const seen = await openDatabase({
+      name: 'designer', factory, schema: schema(), durability
+    });
+    seen.database.close();
+
+    await deleteDatabase('designer', { factory });
+    const third = await openDatabase({
+      name: 'designer', factory, schema: schema(), durability
+    });
+
+    expect(third.eviction.evicted).toBe(true);
+    third.database.close();
+  });
+});
+
+describe('regression: subscribe leaked a listener when replay was refused', () => {
+  it('does not retain a subscription it refused to create', async () => {
+    expect.hasAssertions();
+    // The entry was pushed before validation, then marked inactive and left in
+    // the array with no unsubscribe function to remove it. A caller retrying in
+    // a loop grew the list without bound.
+    const client = createClient({
+      name: 'designer', schema: schema(), factory: new IDBFactory(), retainedEvents: 2
+    });
+    await client.open();
+    await client.table<Design>('designs')
+      .bulkAdd([{ id: 1, name: 'a' }, { id: 2, name: 'b' }, { id: 3, name: 'c' }]);
+
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      expect(() => client.subscribe(() => undefined, { sinceCursor: 0 }))
+        .toThrow(expect.objectContaining({ code: 'NotFound' }));
+    }
+
+    // A working subscriber must still receive exactly one event per write, which
+    // it would not if five dead entries were also being iterated.
+    const seen: number[] = [];
+    client.subscribe((event) => seen.push(event.cursor));
+    await client.table<Design>('designs').add({ id: 4, name: 'd' });
+
+    expect(seen).toHaveLength(1);
+    await client.close();
   });
 });

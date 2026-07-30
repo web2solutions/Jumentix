@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-07-30 docs(cana): complete usage guide, EN and PT-BR [JUM-418] - Eduardo A.
 - 2026-07-30 test(cana): complete the suite, and route a synchronous throw into its promise - Eduardo A.
 - 2026-07-30 fix(cana): seven review defects, and IndexedDB as a first-class driver [JUM-414] - Eduardo A.
 - 2026-07-30 feat(cana): jumentix client adapter, and reject browser-only server drivers [JUM-414] - Eduardo A.

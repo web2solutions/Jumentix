@@ -409,16 +409,17 @@ export class Client implements CanaClient {
     listener: (event: CanaChangeEvent) => void,
     options: { sinceCursor?: number } = {}
   ): () => void {
-    const subscription: Subscription = { listener, active: true };
-    this.subscriptions.push(subscription);
-
     const since = options.sinceCursor;
+
+    // Validated BEFORE registering. Registering first and then throwing left an
+    // inactive entry in the array with no unsubscribe function to remove it, so
+    // every refused subscribe leaked one permanently — and a caller retrying in
+    // a loop would grow the list without bound.
     if (since !== undefined) {
       const oldest = this.history[0]?.cursor;
       if (oldest !== undefined && since < oldest - 1) {
         // The gap is real and unrecoverable from memory. Replaying what is left
         // would look like a complete history and quietly omit the middle.
-        subscription.active = false;
         throw canaError(
           'NotFound',
           `Cannot replay from cursor ${since}: the retained window starts at ${oldest}. `
@@ -426,6 +427,12 @@ export class Client implements CanaClient {
             + 'database rather than resuming from an incomplete stream.'
         );
       }
+    }
+
+    const subscription: Subscription = { listener, active: true };
+    this.subscriptions.push(subscription);
+
+    if (since !== undefined) {
       for (const event of this.history.filter((entry) => entry.cursor > since)) {
         try {
           listener(event);

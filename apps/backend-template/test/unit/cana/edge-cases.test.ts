@@ -467,12 +467,14 @@ describe('storage durability edge cases', () => {
     expect(durability.lastEvictionVerdict).not.toBeNull();
   });
 
-  it('reports an empty-but-present database as evicted', () => {
+  it('reports an empty-but-present database as evicted when it once held data', () => {
     expect.hasAssertions();
-    // Some browsers recreate the store shell while dropping the contents.
+    // Some browsers recreate the store shell while dropping the contents. The
+    // tombstone's `hadData` is what makes this distinguishable from a database
+    // the user simply never wrote to.
     const verdict = classifyOpen(
       { databaseName: 'designer', foundVersion: 1, isEmpty: true },
-      JSON.stringify({ version: 1, at: Date.now() })
+      JSON.stringify({ version: 1, at: Date.now(), hadData: true })
     );
 
     expect(verdict).toStrictEqual({ evicted: true, reason: 'evicted-database-empty' });

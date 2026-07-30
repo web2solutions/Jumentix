@@ -141,7 +141,16 @@ export async function openDatabase(options: OpenOptions): Promise<OpenResult> {
     }, blockedTimeoutMs);
 
     const finish = (action: () => void) => {
-      if (settled) return;
+      if (settled) {
+        // The timeout already rejected, and the open then succeeded anyway. The
+        // connection is live and nobody holds a reference to it, so it must be
+        // closed here: an orphaned IDBDatabase goes on blocking version changes
+        // in this tab, which is precisely the state the timeout existed to
+        // escape. Leaving it open turns a recoverable timeout into a permanent
+        // block that no later call can clear.
+        request.result?.close();
+        return;
+      }
       settled = true;
       clearTimeout(blockedTimer);
       action();
@@ -193,13 +202,18 @@ export async function openDatabase(options: OpenOptions): Promise<OpenResult> {
 
   // Only now, with a live connection, can eviction be judged: it needs both the
   // tombstone and the observed contents.
+  const isEmpty = await isDatabaseEmpty(database);
+
   const eviction = durability.evaluateOpen({
     databaseName: options.name,
     foundVersion: observedVersion,
-    isEmpty: await isDatabaseEmpty(database)
+    isEmpty
   });
 
-  durability.recordExistence(options.name, options.schema.version);
+  // `hadData` is what lets a later empty open be told apart from a database that
+  // was simply never written to. Recorded the first time records are actually
+  // observed; the flag is sticky from then on.
+  durability.recordExistence(options.name, options.schema.version, !isEmpty);
 
   return { database, eviction, upgraded };
 }

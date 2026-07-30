@@ -108,6 +108,22 @@ function sentinelKey(databaseName: string): string {
  *
  * Pure, so the decision table is testable exhaustively rather than by luck.
  */
+/**
+ * Whether the tombstone records that this database was ever seen holding data.
+ *
+ * A stored flag rather than an inference, because `isEmpty` at open time cannot
+ * distinguish "wiped" from "never written to". Tombstones written before this
+ * field existed read as false, which errs towards not claiming a loss.
+ */
+function recordedData(tombstoneValue: string | null): boolean {
+  if (tombstoneValue === null) return false;
+  try {
+    return (JSON.parse(tombstoneValue) as { hadData?: unknown }).hadData === true;
+  } catch {
+    return false;
+  }
+}
+
 export function classifyOpen(
   observation: DatabaseObservation,
   tombstoneValue: string | null
@@ -130,6 +146,14 @@ export function classifyOpen(
   // was missing. Falling through to the contents check is the only sound move:
   // claiming eviction on an unanswered question would report loss every time in
   // any browser without `databases()`.
+
+  if (observation.isEmpty && !recordedData(tombstoneValue)) {
+    // Present and empty, and we have no record that it ever held anything. This
+    // is the ordinary case of a user who opened the app and has not written
+    // anything yet — reporting it as eviction would tell them they lost data
+    // they never had, which is exactly as damaging as missing a real loss.
+    return { evicted: false, reason: 'existing-data' };
+  }
 
   if (observation.isEmpty) {
     // The database exists but is empty, and we know it held data before. Some
@@ -190,15 +214,33 @@ export class StorageDurability {
    *   will be undetectable for this origin. The caller is expected to surface
    *   that rather than assume detection works.
    */
-  recordExistence(databaseName: string, version: number): boolean {
+  recordExistence(databaseName: string, version: number, hadData = false): boolean {
     const { tombstone } = this.environment;
     if (!tombstone) return false;
     try {
-      tombstone.set(sentinelKey(databaseName), JSON.stringify({ version, at: Date.now() }));
+      // `hadData` is sticky: once this database has been seen holding records, a
+      // later empty open is a loss rather than a fresh start. Clearing it on an
+      // empty open would erase the only evidence eviction is detectable by.
+      const seenData = hadData || recordedData(this.readTombstone(databaseName));
+      tombstone.set(
+        sentinelKey(databaseName),
+        JSON.stringify({ version, at: Date.now(), hadData: seenData })
+      );
       return true;
     } catch {
       // Private browsing throws on write in some browsers. Undetectable, not fatal.
       return false;
+    }
+  }
+
+  /** Read the raw tombstone, treating any failure to read as absent. */
+  private readTombstone(databaseName: string): string | null {
+    const { tombstone } = this.environment;
+    if (!tombstone) return null;
+    try {
+      return tombstone.get(sentinelKey(databaseName));
+    } catch {
+      return null;
     }
   }
 
@@ -212,14 +254,7 @@ export class StorageDurability {
       return verdict;
     }
 
-    let raw: string | null = null;
-    try {
-      raw = tombstone.get(sentinelKey(observation.databaseName));
-    } catch {
-      raw = null;
-    }
-
-    const verdict = classifyOpen(observation, raw);
+    const verdict = classifyOpen(observation, this.readTombstone(observation.databaseName));
     this.lastVerdict = verdict;
     this.evictedFlag = verdict.evicted;
     return verdict;
