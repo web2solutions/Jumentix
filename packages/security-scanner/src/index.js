@@ -69,7 +69,31 @@ const ACCEPTED_RISK = {
   'GHSA-c96f-x56v-gq3h': { until: '2026-10-31', reason: 'restify transport required for adapter compatibility; awaiting upstream' },
   'GHSA-m6fv-jmcg-4jfg': { until: '2026-10-31', reason: 'send advisory inherited through the restify path only' },
   'GHSA-xcpc-8h2w-3j85': { until: '2026-10-31', reason: 'inherited via cassandra-driver; awaiting release consuming adm-zip >=0.6.0' },
+  // Carried over on 2026-07-30 when `.snyk` was retired. The first pass through
+  // that file only transcribed four entries; it had eight GHSA ids. Recording the
+  // omission because it is the kind of gap that turns a migration into a silent
+  // policy change.
+  'GHSA-395f-4hp3-45gv': { until: '2026-10-31', reason: 'inherited through the concurrently legacy chain in the local tooling path' },
+  'GHSA-f88m-g3jw-g9cj': { until: '2026-10-31', reason: 'Next.js still resolves sharp 0.34.x transitively in the current Nextra stack' },
+  'GHSA-6g55-p6wh-862q': { until: '2026-10-31', reason: 'postcss inherited from the Next.js transitive chain; awaiting upstream' },
+  'GHSA-r28c-9q8g-f849': { until: '2026-10-31', reason: 'website stack retains transitive postcss chains until upstream updates land' },
 };
+
+/**
+ * The 27 `SNYK-JS-*` ignores in the retired `.snyk` are **not** carried here, and
+ * that is a deliberate limitation rather than an oversight.
+ *
+ * They are Snyk's proprietary identifiers with no OSV equivalent, so there is
+ * nothing for this scanner to match them against. Most are the same underlying
+ * advisories as the eight GHSA entries above, in a different namespace, covering the
+ * same packages the override set already pins — but "most" is not "verified", so it
+ * is stated rather than assumed.
+ *
+ * The evidence that none of them currently apply is empirical: `bun run deps:audit`
+ * reports zero blocking advisories across 2027 resolved packages. If one resurfaces
+ * under its OSV id, it will appear as a new finding and need a fresh decision, which
+ * is the correct outcome — not a suppression inherited from a tool we no longer run.
+ */
 
 /** @param {string} id @param {Date} now */
 function isAcceptedRisk(id, now = new Date()) {
