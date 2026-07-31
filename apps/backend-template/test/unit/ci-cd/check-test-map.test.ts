@@ -108,4 +108,31 @@ describe('hexagonal test pyramid libraries', () => {
     const result = validateTestMap(readTestMap(path.join(root, 'test-map.json')), { root });
     expect(result.ok).toBe(true);
   });
+
+  it('resolves local Bun vs CI Node runtimes (Req 106)', () => {
+    expect.hasAssertions();
+    // eslint-disable-next-line global-require
+    const { resolveTestRuntime, effectiveRunner } = require('../../../../../ci-cd/lib/test-runtime');
+    expect(resolveTestRuntime({})).toBe('bun');
+    expect(resolveTestRuntime({ CI: 'true' })).toBe('node');
+    expect(resolveTestRuntime({ JUMENTIX_TEST_RUNTIME: 'node' })).toBe('node');
+    expect(effectiveRunner({ runner: 'bun', ciRunner: 'node' }, {})).toBe('bun');
+    expect(effectiveRunner({ runner: 'bun', ciRunner: 'node' }, { CI: 'true' })).toBe('node');
+  });
+
+  it('rejects local runner:"node" in the manifest (Req 106)', () => {
+    expect.hasAssertions();
+    const bad = {
+      ...manifest,
+      suites: [
+        {
+          ...manifest.suites[0],
+          runner: 'node'
+        }
+      ]
+    };
+    const result = validateTestMap(bad, { root: path.resolve(__dirname, '../../../../../') });
+    expect(result.ok).toBe(false);
+    expect(result.errors.some((error) => error.includes('ciRunner'))).toBe(true);
+  });
 });

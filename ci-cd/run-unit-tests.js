@@ -3,19 +3,22 @@ const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const { readTestMap, isQuarantined } = require('./lib/test-map');
+const { effectiveRunner, isCiNodeRuntime, resolveTestRuntime } = require('./lib/test-runtime');
+const { runSuitePaths } = require('./run-suite');
 
 const UNIT_DIR = 'apps/backend-template/test/unit';
 
-function partitionUnitSuites(manifest) {
+function partitionUnitSuites(manifest, env = process.env) {
   const bunSuites = [];
   const nodeSuites = [];
   for (const suite of manifest.suites || []) {
     if (suite.type !== 'unit') continue;
-    if (isQuarantined(manifest, suite.path)) {
+    if (isQuarantined(manifest, suite.path) && isCiNodeRuntime(env)) {
+      // Quarantined suites still execute report-only under CI node partition.
       nodeSuites.push(suite.path);
       continue;
     }
-    if (suite.runner === 'node') nodeSuites.push(suite.path);
+    if (effectiveRunner(suite, env) === 'node') nodeSuites.push(suite.path);
     else bunSuites.push(suite.path);
   }
   return { bunSuites, nodeSuites };
@@ -34,18 +37,19 @@ function runBunUnit(suites, options = {}) {
 
 function runNodeUnit(suites, options = {}) {
   if (suites.length === 0) return 0;
-  const spawn = options.spawn || spawnSync;
-  console.log(`[ci] unit tests (node/jest partition): ${suites.length} target(s)`);
-  const result = spawn('bunx', ['jest', '--runInBand', '--coverage=false', ...suites], {
-    stdio: 'inherit',
-    env: { ...process.env, NODE_ENV: process.env.NODE_ENV || 'dev' }
+  console.log(`[ci] unit tests (node/jest CI-only partition): ${suites.length} target(s)`);
+  return runSuitePaths(suites, {
+    runtime: 'node',
+    spawn: options.spawn,
+    env: options.env
   });
-  return Number.isInteger(result.status) ? result.status : 1;
 }
 
 function runUnitTests(options = {}) {
   const root = options.root || path.resolve(__dirname, '..');
   process.chdir(root);
+  const env = options.env || process.env;
+  const runtime = resolveTestRuntime(env);
 
   if (!fs.existsSync(path.join(root, UNIT_DIR))) {
     console.error(`[ci] unit tests: missing ${UNIT_DIR}`);
@@ -60,7 +64,15 @@ function runUnitTests(options = {}) {
     return runBunUnit([], options);
   }
 
-  const { bunSuites, nodeSuites } = partitionUnitSuites(manifest);
+  // Req 106: local always Bun for all unit suites.
+  if (runtime === 'bun') {
+    const all = (manifest.suites || [])
+      .filter((suite) => suite.type === 'unit' && !isQuarantined(manifest, suite.path))
+      .map((suite) => suite.path);
+    return runBunUnit(all, options);
+  }
+
+  const { bunSuites, nodeSuites } = partitionUnitSuites(manifest, env);
   const bunStatus = runBunUnit(bunSuites, options);
   if (bunStatus !== 0) return bunStatus;
   return runNodeUnit(nodeSuites, options);

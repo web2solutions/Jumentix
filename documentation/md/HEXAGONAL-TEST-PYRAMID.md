@@ -1,15 +1,18 @@
-# Hexagonal Test Pyramid — Bun unit + Node integration + layer-aware gates
+# Hexagonal Test Pyramid — layer-aware gates (Bun local, Node CI-only)
 
 ## Outcome
 
-Fast, reliable tests that mirror the hexagonal architecture:
+Fast, architecture-aligned tests:
 
-- **Unit** suites run on **Bun** (`bun:test`) for speed.
-- **Integration / smoke / platform** suites run on **Node 22 + Jest** for compatibility.
+- **Locally, all suite types run on Bun** (`bun test` / `bun run test*`) — unit, integration, smoke, contract and workspace verification (Requirement `106`).
+- **Node/Jest is CI-only**, selected with `JUMENTIX_TEST_RUNTIME=node` or `CI=true`, or via explicit `*:ci` scripts.
 - Feature/task branches run only the suites covering changed layers and their outward blast radius.
-- `dev` runs the full unit gate; `main` runs the full matrix.
+- Making remote CI jobs green is **out of scope** for this project; the contract and entry points are delivered here.
 
-Requirement: `.agents/requirements/105-hexagonal-test-pyramid-layer-aware-gates.md`.
+Requirements:
+
+- `.agents/requirements/105-hexagonal-test-pyramid-layer-aware-gates.md`
+- `.agents/requirements/106-local-bun-all-tests-node-ci-only.md`
 
 ## Manifest
 
@@ -19,60 +22,74 @@ Requirement: `.agents/requirements/105-hexagonal-test-pyramid-layer-aware-gates.
 | --- | --- |
 | `layers.*.dependsOn` | Inward hexagonal dependencies |
 | `layers.*.sourceGlobs` | Source ownership predicates |
-| `suites[]` | Every runnable test file, with `layer`, `type`, `runner`, `tier` |
+| `suites[].runner` | **Local** runner — always `bun` (Req 106) |
+| `suites[].ciRunner` | Optional CI runner (`node` when Jest is still required remotely) |
+| `suites[].tier` | `gate` or `nightly` |
 | `quarantine[]` | Explicit exceptions with Linear issue refs |
 | `flags.gateV2Env` | `JUMENTIX_GATE_V2` (default on) |
 
-Validate with:
-
 ```bash
 bun run test-map:check
+bun run test-map:generate
 ```
 
-Regenerate after adding suites:
+## Local DX (Bun)
 
 ```bash
-bun run test-map:generate
-bun run test-map:check
+bun run test                 # all backend-template tests under bun:test
+bun run test:unit            # unit gate via test-map (Bun local)
+bun run test:integration:express
+bun run test:contract
+bun run tdd                  # watch layer inferred from git diff
+bun run tdd:domain           # per-layer watch from manifest paths
+bun run workspace:test       # honest workspace cell (typecheck-only ≠ unit)
+```
+
+Force the CI Node path locally only when debugging CI behaviour:
+
+```bash
+JUMENTIX_TEST_RUNTIME=node bun run test:integration:express
+# or
+bun run test:integration:express:ci
 ```
 
 ## Layer-aware task gate
 
 `bun run ci:gate:task` uses the v2 selector when `JUMENTIX_GATE_V2` is unset/true.
 
-Algorithm:
-
-1. Read changed files (`staged` or `range` via `JUMENTIX_TASK_TEST_MODE`).
+1. Read changed files.
 2. Resolve alias-aware dependents (`@src`, `@test`, `@seed`, `@jumentix/*`).
 3. Map files → layers via `test-map.json`.
 4. Expand outward through reverse `dependsOn`.
-5. Execute Bun unit suites + targeted Node integration scripts.
-6. Emit JSON evidence (`AAA_CI_GATE_RESULT_FILE`) including **not-run** layers.
+5. Execute selected suites through the runtime resolver (Bun local / Node when CI).
+6. Emit JSON evidence including **not-run** layers.
 
-Rollback without reverting code:
+Rollback: `JUMENTIX_GATE_V2=0`. Shadow: `JUMENTIX_GATE_V2_SHADOW=1`.
 
-```bash
-JUMENTIX_GATE_V2=0 bun run ci:gate:task
-```
+## Nightly tier
 
-Shadow (v1 authoritative, v2 report-only):
+Infrastructure-heavy suites (`mutex`, redis-streams, DB smoke) use `tier: "nightly"`.
 
 ```bash
-JUMENTIX_GATE_V2=0 JUMENTIX_GATE_V2_SHADOW=1 bun run ci:gate:task
+bun run test:nightly
 ```
 
-## Runtime partition
-
-`bun run test:unit` reads `test-map.json` and:
-
-1. Runs `runner: "bun"` unit suites with `bun test`.
-2. Runs `runner: "node"` unit suites with Jest (temporary Bun API-gap partition).
-
-Integration remains Node/Jest through `bun run ci:integration` / per-adapter scripts declared in the manifest.
+Scheduling those jobs in GitHub Actions is CI operations scope, not this project.
 
 ## Anti-false-green rules
 
 - Empty planned suites for a non-empty change set → fail.
 - Planned suite missing from executed results → fail.
 - `skipped` / `pending` / unreported suite status → fail.
-- Stale `test-map.json` (missing files, cycles, double ownership) → fail via `test-map:check`.
+- Stale `test-map.json` → fail via `test-map:check`.
+- Workspace packages without unit tests declare `jumentix.testSurface=typecheck-only` and are not counted as unit greens (`workspace:test`).
+
+## Rollout / benchmarks
+
+See:
+
+- `artifacts/ci/baseline-timings.json` (JUM-495)
+- `artifacts/ci/flake-inventory.json` (JUM-495)
+- `documentation/md/BUN-BRANCH-COVERAGE-SPIKE.md` (JUM-541)
+- `documentation/md/TEST-PYRAMID-ROLLOUT-REPORT.md` (JUM-448)
+- `documentation/md/PLATFORM-DEPENDENT-SUITES.md` (JUM-439)
