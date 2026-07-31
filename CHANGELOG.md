@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-07-30 feat(ci): make circleci the sole provider and retire github actions [105] - Eduardo A.
 - 2026-07-30 docs(cana): record the measured performance shape in release readiness - Eduardo A.
 - 2026-07-30 test(cana): performance baseline by complexity shape [JUM-561] - Eduardo A.
 - 2026-07-30 feat(cana): packaging, conformance harness, release readiness [JUM-416][JUM-417][JUM-419] - Eduardo A.

@@ -95,6 +95,10 @@ This file consolidates non-functional requirements already requested and stored 
   may act as a required check. The pipeline must run on every branch, not only `dev` and
   `main`, and a provider that cannot execute blocks a merge exactly as a failing check
   does (Requirement 065). `ci:check-provider` validates the migration is complete.
+- `106` An HTTP adapter named for a web framework must import that framework and use it;
+  a reference assigned to an unused field, or a require swallowed by try/catch, does not
+  satisfy this, and the framework must be a declared dependency. Platform targets with no
+  framework are exempt by explicit listing. `arch:check-http-adapters` validates it.
 
 When a new NFR is requested:
 
