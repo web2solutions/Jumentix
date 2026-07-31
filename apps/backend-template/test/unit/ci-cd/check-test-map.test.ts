@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 
-// Marks this file a module. Without an import or export TypeScript treats it as a
-// global script, and `const fs` / `const path` here then collide with the same
-// declarations in check-workspace-boundaries.test.ts — a TS2451 that only appears
-// when both files are in one program, so it passes file-by-file and fails in CI.
-export {};
-const fs = require('fs');
-const path = require('path');
+// Imported rather than required: an import makes this a module. Without one,
+// TypeScript treats the file as a global script and these two names collide with
+// the same declarations in check-workspace-boundaries.test.ts — a TS2451 that
+// surfaces only when both files are in one program, so it passes file-by-file
+// and fails the CI gate, which compiles the whole set.
+import fs from 'fs';
+import path from 'path';
+
 const {
   assertAcyclic,
   outwardClosure,
