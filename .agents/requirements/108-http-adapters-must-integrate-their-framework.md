@@ -1,4 +1,4 @@
-# 106 - HTTP Adapters Must Integrate the Framework They Are Named For
+# 108 - HTTP Adapters Must Integrate the Framework They Are Named For
 
 - Status: Active
 - Nature: NFR (architecture, governance)

@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * Requirement 105 — CircleCI is the sole CI provider.
+ * Requirement 107 — CircleCI runs every branch alongside GitHub Actions.
  *
  * This check exists because the migration it enforces is exactly the kind that
  * regresses invisibly. A dropped job does not fail anything; it simply stops
@@ -8,10 +8,11 @@
  * trusting that the CircleCI configuration is complete, this enumerates what
  * the retired GitHub Actions workflows did and asserts each is still present.
  *
- * It also enforces the reason the migration happened. GitHub Actions became
- * unable to execute at all — every run terminated at the runner on billing —
- * which under Requirement 065 left every required check permanently pending and
- * blocked every merge. Reintroducing a workflow file would recreate that.
+ * Both providers run. An earlier revision retired GitHub Actions, written while
+ * it could not execute at all; billing was resolved and the owner directed that
+ * the workflows stay. What survives that reversal is the part that mattered:
+ * CircleCI must cover the same checks and must run on every branch, so either
+ * provider going dark degrades coverage instead of eliminating it.
  */
 
 const fs = require('node:fs');
@@ -24,61 +25,60 @@ const circleConfigPath = path.join(root, '.circleci', 'config.yml');
 const failures = [];
 
 /* ------------------------------------------------------------------ *
- * 1. No GitHub Actions workflow may act as a required check
+ * 1. Both providers must be configured
  * ------------------------------------------------------------------ */
 
-if (fs.existsSync(workflowsDir)) {
-  const workflows = fs
-    .readdirSync(workflowsDir)
-    .filter((entry) => entry.endsWith('.yml') || entry.endsWith('.yaml'));
+const workflows = fs.existsSync(workflowsDir)
+  ? fs.readdirSync(workflowsDir).filter((e) => e.endsWith('.yml') || e.endsWith('.yaml'))
+  : [];
 
-  if (workflows.length > 0) {
-    failures.push(
-      `GitHub Actions workflows still present: ${workflows.join(', ')}.\n`
-        + '  Requirement 105 retires GitHub Actions entirely. Remove the files rather than\n'
-        + '  disabling them — a disabled workflow is a file someone re-enables later without\n'
-        + '  knowing why it was off. Move the check into .circleci/config.yml.'
-    );
-  }
+if (workflows.length === 0) {
+  failures.push(
+    'No GitHub Actions workflows under .github/workflows/.\n'
+      + '  Requirement 107 keeps both providers. Removing one leaves the repository with a\n'
+      + '  single point of failure — which is the state the billing outage created, and the\n'
+      + '  reason this requirement was revised to keep both.'
+  );
 }
 
 /* ------------------------------------------------------------------ *
- * 2. The CircleCI configuration must exist and cover every retired check
+ * 2. The CircleCI configuration must exist and mirror every Actions check
  * ------------------------------------------------------------------ */
 
 if (!fs.existsSync(circleConfigPath)) {
   failures.push(
-    'No .circleci/config.yml. CircleCI is the sole provider (Requirement 105), so its\n'
-      + '  absence means the repository has no CI at all.'
+    'No .circleci/config.yml.\n'
+      + '  Requirement 107 keeps both providers, so this leaves GitHub Actions as a single\n'
+      + '  point of failure.'
   );
 } else {
   const config = fs.readFileSync(circleConfigPath, 'utf8');
 
-  // Each entry names a check the retired workflows performed. A migration that
+  // Each entry names a check the GitHub Actions workflows perform. A drift that
   // drops one is silent otherwise: nothing fails, the pipeline just covers less.
   const requiredChecks = [
     {
-      what: 'the branch-aware quality gate (was test.yml)',
+      what: 'the branch-aware quality gate (mirrors test.yml)',
       pattern: /ci:gate:branch/
     },
     {
-      what: 'unit tests with coverage for the Sonar scan (was sonarqube-cloud.yml)',
+      what: 'unit tests with coverage for the Sonar scan (mirrors sonarqube-cloud.yml)',
       pattern: /bun run test:unit/
     },
     {
-      what: 'the SonarQube scan itself (was sonarqube-cloud.yml)',
+      what: 'the SonarQube scan itself (mirrors sonarqube-cloud.yml)',
       pattern: /sonar-scanner/
     },
     {
-      what: 'the Storybook build (was website.yml)',
+      what: 'the Storybook build (mirrors website.yml)',
       pattern: /website:storybook:build/
     },
     {
-      what: 'the Storybook inventory smoke test (was website.yml)',
+      what: 'the Storybook inventory smoke test (mirrors website.yml)',
       pattern: /website:storybook:smoke/
     },
     {
-      what: 'the publishable-content check (was website.yml)',
+      what: 'the publishable-content check (mirrors website.yml)',
       pattern: /website:test:prepublish/
     },
     {
@@ -97,7 +97,7 @@ if (!fs.existsSync(circleConfigPath)) {
     }
   }
 
-  // The gap that made this migration necessary in the first place: the previous
+  // The gap this requirement exists to close: the previous
   // configuration filtered to dev and main, so no feature branch or pull request
   // ever produced a signal.
   const workflowSection = config.slice(config.indexOf('workflows:'));
@@ -110,7 +110,7 @@ if (!fs.existsSync(circleConfigPath)) {
     );
   } else {
     // A filter attached directly to the quality-gate entry restricts it. The
-    // job must run everywhere (Requirement 105 §3).
+    // job must run everywhere (Requirement 107 §3).
     const entry = workflowSection.slice(
       qualityGateEntry,
       qualityGateEntry + '- quality-gate'.length + 200
@@ -121,9 +121,9 @@ if (!fs.existsSync(circleConfigPath)) {
     if (restrictedToLongLived) {
       failures.push(
         'The quality-gate job is branch-filtered.\n'
-          + '  Requirement 105 §3: CircleCI must run on every branch. Filtering to dev and\n'
+          + '  Requirement 107 §3: CircleCI must run on every branch. Filtering to dev and\n'
           + '  main leaves every feature branch and pull request with no signal at the point\n'
-          + '  a defect is cheapest to fix — which is the state this migration corrected.'
+          + '  a defect is cheapest to fix.'
       );
     }
   }
@@ -134,11 +134,14 @@ if (!fs.existsSync(circleConfigPath)) {
  * ------------------------------------------------------------------ */
 
 if (failures.length > 0) {
-  console.error('CI provider check failed (Requirement 105):\n');
+  console.error('CI provider check failed (Requirement 107):\n');
   for (const failure of failures) {
     console.error(`- ${failure}\n`);
   }
   process.exit(1);
 }
 
-console.log('CI provider check passed: CircleCI is the sole provider and covers every retired check.');
+console.log(
+  'CI provider check passed: both providers configured, CircleCI covers every check '
+    + 'and runs on every branch.'
+);

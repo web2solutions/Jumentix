@@ -4,7 +4,7 @@ Idioma alvo: Português (Brasil)
 -->
 # Status de cobertura dos requisitos de especificação
 
-<!-- requirements-inventory: files=110 unique=107 mapped=107 duplicates=055,060,079 -->
+<!-- requirements-inventory: files=112 unique=109 mapped=109 duplicates=055,060,079 -->
 
 Este documento certifica a cobertura atual dos requisitos implementados pelos recursos orientados ao desenvolvimento de especificações.
 
@@ -13,8 +13,8 @@ Este documento certifica a cobertura atual dos requisitos implementados pelos re
 Data: `2026-07-29`
 
 1. Arquivos de requisitos em `.agents/requirements`: `107`
-2. IDs de requisitos exclusivos: `104`, `105`, `106`, `107`
-3. IDs cobertos em `SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`: `104`, `105`, `106`, `107`
+2. IDs de requisitos exclusivos: `104`, `105`, `106`, `107`, `108`, `109`
+3. IDs cobertos em `SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`: `104`, `105`, `106`, `107`, `108`, `109`
 4. Status de cobertura: `100%`
 
 Notas:
@@ -25,9 +25,9 @@ Notas:
 
 ## Cobertura de requisitos não funcionais
 
-IDs NFR cobertos (`64`):
+IDs NFR cobertos (`66`):
 
-`001`, `011`, `014`, `015`, `016`, `017`, `018`, `020`, `025`, `029`, `036`, `041`, `042`, `043`, `044`, `050`, `053`, `056`, `057`, `063`, `064`, `065`, `066`, `067`, `068`, `069`, `070`, `071`, `072`, `073`, `074`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `091`, `092`, `093`, `094`, `095`, `096`, `097`, `098`, `099`, `100`, `101`, `102`, `103`, `104`, `105`, `106`, `107`
+`001`, `011`, `014`, `015`, `016`, `017`, `018`, `020`, `025`, `029`, `036`, `041`, `042`, `043`, `044`, `050`, `053`, `056`, `057`, `063`, `064`, `065`, `066`, `067`, `068`, `069`, `070`, `071`, `072`, `073`, `074`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `091`, `092`, `093`, `094`, `095`, `096`, `097`, `098`, `099`, `100`, `101`, `102`, `103`, `104`, `105`, `106`, `107`, `108`, `109`
 
 Fontes de mapeamento NFR:
 

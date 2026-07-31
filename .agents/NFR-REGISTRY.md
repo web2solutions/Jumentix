@@ -91,15 +91,20 @@ This file consolidates non-functional requirements already requested and stored 
   terminal canonical evidence, and incomplete provider installs recorded as explicit owner-auth
   blockers; `integration-migration:check` and `integrations:check` validate the repository-owned
   contract.
-- `105` CircleCI is the sole CI provider; GitHub Actions is retired and no workflow file
-  may act as a required check. The pipeline must run on every branch, not only `dev` and
-  `main`, and a provider that cannot execute blocks a merge exactly as a failing check
-  does (Requirement 065). `ci:check-provider` validates the migration is complete.
-- `106` An HTTP adapter named for a web framework must import that framework and use it;
+- `105` Hexagonal Test Pyramid: `test-map.json` layer ownership, alias-aware blast-radius
+  selection, `JUMENTIX_GATE_V2` flag-gated flip/rollback, and fail-closed selective-gate evidence.
+- `106` Local Bun for **all** suite types; Node/Jest reserved for CI (`ciRunner` /
+  `JUMENTIX_TEST_RUNTIME=node`). CI job greenness is out of scope for the Test Pyramid delivery.
+- `107` CircleCI runs alongside GitHub Actions and must mirror every check the workflows
+  perform, so either provider going dark degrades coverage instead of eliminating it. It
+  must run on every branch, not only `dev` and `main`. A provider that cannot execute
+  blocks a merge exactly as a failing check does (Requirement 065). `ci:check-provider`
+  validates both configurations are present and equivalent.
+- `108` An HTTP adapter named for a web framework must import that framework and use it;
   a reference assigned to an unused field, or a require swallowed by try/catch, does not
   satisfy this, and the framework must be a declared dependency. Platform targets with no
   framework are exempt by explicit listing. `arch:check-http-adapters` validates it.
-- `107` A test suite must be able to tell a real implementation from a fake one: every
+- `109` A test suite must be able to tell a real implementation from a fake one: every
   adapter carries at least one assertion only the real dependency can satisfy, integration
   coverage of adapter directories is 100%, and a missing dependency fails its suite rather
   than skipping it. Asserting correct behaviour is not enough when a substitute produces

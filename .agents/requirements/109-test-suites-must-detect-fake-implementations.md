@@ -1,8 +1,8 @@
-# 107 - Test Suites Must Detect Fake Implementations
+# 109 - Test Suites Must Detect Fake Implementations
 
 - Status: Active
 - Nature: NFR (testing, governance)
-- Source: Project owner decision, 2026-07-30, following the HTTP adapter audit (Requirement `106`, Linear epic `JUM-570`).
+- Source: Project owner decision, 2026-07-30, following the HTTP adapter audit (Requirement `108`, Linear epic `JUM-570`).
 
 ## Requirement
 

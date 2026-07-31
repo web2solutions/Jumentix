@@ -115,14 +115,40 @@ describe('cana crud', () => {
     // class identity does not survive the round trip, so any `instanceof` check
     // against stored data — or against anything crossing a worker boundary —
     // would silently start returning false.
+    // Asserted through a class rather than by inspecting the prototype
+    // directly. Which prototype a clone lands on is an implementation detail of
+    // the structured-clone algorithm — fake-indexeddb produces a null prototype
+    // and Bun's produces Object.prototype, so an assertion phrased against
+    // `Object.prototype` tests the host, not Cana. What the contract actually
+    // promises is that class identity does not survive, and that is the same
+    // claim in every runtime.
+    class Design_ {
+      readonly id = 1;
+
+      readonly name = 'design-1';
+
+      readonly owner = 'ana';
+
+      readonly size = 10;
+
+      get label(): string {
+        return `${this.name} (${this.owner})`;
+      }
+    }
+
     const client = await openClient();
-    await client.table<Design>('designs').add(design(1));
+    const original = new Design_();
+    await client.table<Design>('designs').add(original as unknown as Design);
 
     const read = await client.table<Design>('designs').get(1);
 
-    // eslint-disable-next-line jest/prefer-strict-equal -- the differing prototype IS the assertion
+    // eslint-disable-next-line jest/prefer-strict-equal -- the lost identity IS the assertion
     expect(read).toEqual(design(1));
-    expect(Object.getPrototypeOf(read)).not.toBe(Object.prototype);
+    expect(original).toBeInstanceOf(Design_);
+    expect(read).not.toBeInstanceOf(Design_);
+    // The accessor is gone too, which is the part that bites in practice: the
+    // data survives and the behaviour does not.
+    expect((read as unknown as Design_).label).toBeUndefined();
     await client.close();
   });
 

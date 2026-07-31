@@ -20,7 +20,7 @@ const INTEGRATION_CONTRACTS = Object.freeze([
       'commit_args: "--slug XpertMinds/Jumentix"',
       'report_args: "--slug XpertMinds/Jumentix"',
       'upload_args: "--slug XpertMinds/Jumentix --fail-on-error"',
-      // Migrated from the retired GitHub Actions workflows (Requirement 105).
+      // Migrated from the retired GitHub Actions workflows (Requirement 107).
       // The provider changed; the canonical bindings did not.
       'AGENT_REGISTRY_TOKEN',
       'bun run ci:gate:branch',
@@ -36,17 +36,8 @@ const INTEGRATION_CONTRACTS = Object.freeze([
       'target: 95%'
     ]
   },
-  // `.snyk` was a required canonical integration until 2026-07-30 (JUM-540).
-  //
-  // Retired because Snyk cannot parse `bun.lock`: with no lockfile it recognises it
-  // does not fail, it silently reads direct dependencies from package.json and
-  // reports green. Measured at 45 dependencies against a resolved tree of 2027,
-  // while every advisory `.snyk` suppressed was transitive — so the file was
-  // documenting exceptions to a scan that was no longer happening.
-  //
-  // Replaced by the first-party OSV scanner: `bun run deps:audit`, wired into
-  // ci:gate alongside `deps:check-scanner`, which fails closed if Snyk is ever
-  // reintroduced without a lockfile it can read.
+  // Dependency scanning is owned by the first-party OSV gate. It resolves the
+  // installed Bun tree and fails closed on incomplete or unavailable results.
   {
     file: 'packages/security-scanner/src/index.js',
     markers: [
@@ -69,7 +60,7 @@ const INTEGRATION_CONTRACTS = Object.freeze([
       'CircleCI',
       'Codecov',
       'SonarQube Cloud',
-      'Snyk',
+      'OSV.dev',
       'GitGuardian',
       'Cursor Bugbot',
       'Vercel',
@@ -83,7 +74,7 @@ const INTEGRATION_CONTRACTS = Object.freeze([
       'CircleCI',
       'Codecov',
       'SonarQube Cloud',
-      'Snyk',
+      'OSV.dev',
       'GitGuardian',
       'Cursor Bugbot',
       'Vercel',

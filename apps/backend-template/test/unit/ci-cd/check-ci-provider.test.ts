@@ -4,10 +4,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 /**
- * Requirement 105 — CircleCI is the sole CI provider.
+ * Requirement 107 — CircleCI runs every branch alongside GitHub Actions.
  *
- * The checker is the thing standing between the migration and a silent
- * regression, so it is tested by making it fail on purpose. A checker that has
+ * The checker is the thing standing between the two pipelines and a silent
+ * drift, so it is tested by making it fail on purpose. A checker that has
  * only ever been observed passing is indistinguishable from one that always
  * passes — which is the false-green shape Requirement 065 exists to prevent, and
  * the reason `ci-cd/check-canonical-integrations` and friends carry the same
@@ -40,10 +40,21 @@ function runAgainst(workingDirectory: string): { code: number; output: string } 
  * built by copying the two files it reads into a temporary tree beside a copy of
  * the script.
  */
-function fixture(build: (dir: string) => void): string {
+function fixture(
+  build: (dir: string) => void,
+  options: { workflows?: boolean } = {}
+): string {
   const dir = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'ci-provider-'));
   fs.mkdirSync(path.join(dir, 'ci-cd'), { recursive: true });
   fs.copyFileSync(checker, path.join(dir, 'ci-cd', 'check-ci-provider.js'));
+
+  // Present unless a test is specifically about their absence, so every other
+  // failure assertion is about the one defect that test introduced.
+  if (options.workflows !== false) {
+    fs.mkdirSync(path.join(dir, '.github', 'workflows'), { recursive: true });
+    fs.writeFileSync(path.join(dir, '.github', 'workflows', 'test.yml'), 'name: test\n');
+  }
+
   build(dir);
   return dir;
 }
@@ -74,25 +85,24 @@ describe('check-ci-provider', () => {
     const result = runAgainst(repoRoot);
 
     expect(result.code).toBe(0);
-    expect(result.output).toContain('sole provider');
+    expect(result.output).toContain('both providers configured');
   });
 
-  it('fails when a GitHub Actions workflow is reintroduced', () => {
+  it('fails when the GitHub Actions workflows are removed', () => {
     expect.hasAssertions();
-    // The exact regression the requirement forbids: someone adds a workflow
-    // back, and the repository silently has two providers again — one of which
-    // cannot execute.
+    // The regression this requirement was revised to prevent. An earlier draft
+    // retired Actions outright, written while it could not execute at all; with
+    // billing resolved, deleting the workflows would leave CircleCI as a single
+    // point of failure — the same shape the outage created, pointed the other way.
     const dir = fixture((root) => {
       fs.mkdirSync(path.join(root, '.circleci'), { recursive: true });
       fs.writeFileSync(path.join(root, '.circleci', 'config.yml'), realConfig);
-      fs.mkdirSync(path.join(root, '.github', 'workflows'), { recursive: true });
-      fs.writeFileSync(path.join(root, '.github', 'workflows', 'sneaky.yml'), 'name: sneaky\n');
-    });
+    }, { workflows: false });
 
     const result = runFixture(dir);
 
     expect(result.code).toBe(1);
-    expect(result.output).toContain('sneaky.yml');
+    expect(result.output).toContain('No GitHub Actions workflows');
   });
 
   it('fails when the CircleCI configuration is missing entirely', () => {
@@ -102,13 +112,14 @@ describe('check-ci-provider', () => {
     const result = runFixture(dir);
 
     expect(result.code).toBe(1);
-    expect(result.output).toContain('no CI at all');
+    expect(result.output).toContain('single\n  point of failure');
   });
 
-  it('fails when a retired check was dropped in the migration', () => {
+  it('fails when a check covered by GitHub Actions is missing from CircleCI', () => {
     expect.hasAssertions();
-    // The silent regression this checker exists for: a dropped job does not
-    // fail anything, the pipeline just covers less and stays green.
+    // The silent drift this checker exists for: a dropped job does not fail
+    // anything, the pipeline just covers less and stays green — and the point of
+    // running two providers is lost the moment they stop covering the same set.
     const dir = fixture((root) => {
       fs.mkdirSync(path.join(root, '.circleci'), { recursive: true });
       fs.writeFileSync(
@@ -125,8 +136,8 @@ describe('check-ci-provider', () => {
 
   it('fails when the quality gate is filtered to the long-lived branches', () => {
     expect.hasAssertions();
-    // The state the migration corrected. Filtering to dev and main is how a
-    // feature branch ends up merged on local evidence alone.
+    // Filtering to dev and main is how a feature branch ends up merged on local
+    // evidence alone whenever the other provider is unavailable.
     const dir = fixture((root) => {
       fs.mkdirSync(path.join(root, '.circleci'), { recursive: true });
       fs.writeFileSync(
@@ -156,10 +167,10 @@ describe('check-ci-provider', () => {
   });
 });
 
-describe('requirement 105 is registered', () => {
+describe('requirement 107 is registered', () => {
   it('exists in the requirements directory', () => {
     expect.hasAssertions();
-    const requirement = path.join(repoRoot, '.agents', 'requirements', '105-circleci-as-sole-ci-provider.md');
+    const requirement = path.join(repoRoot, '.agents', 'requirements', '107-circleci-as-sole-ci-provider.md');
 
     expect(fs.existsSync(requirement)).toBe(true);
   });
@@ -170,7 +181,7 @@ describe('requirement 105 is registered', () => {
     // make it unclear which governs, and 012's subject — npm/Node engine
     // mismatch — no longer applies now that CircleCI runs the Bun image.
     const text = fs.readFileSync(
-      path.join(repoRoot, '.agents', 'requirements', '105-circleci-as-sole-ci-provider.md'),
+      path.join(repoRoot, '.agents', 'requirements', '107-circleci-as-sole-ci-provider.md'),
       'utf8'
     );
 

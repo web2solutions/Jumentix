@@ -221,12 +221,37 @@ export async function runConformance(
   }));
 
   results.push(await record('records read back are structured clones', false, async () => {
+    // Phrased as "class identity does not survive" rather than "the prototype is
+    // not Object.prototype". Which prototype a clone lands on is up to the host:
+    // fake-indexeddb produces a null prototype, while Bun and every real browser
+    // produce Object.prototype. The earlier form therefore reported a failure in
+    // exactly the environments this harness exists to certify — and a check that
+    // fails where the code is correct is worse than no check, because it trains
+    // readers to discount the report.
+    //
+    // What the plain-data contract actually promises is that a stored value
+    // comes back without its behaviour, which is why `CanaError` is data with a
+    // `canaError: true` discriminant instead of an `Error` subclass. That claim
+    // holds in every host.
+    class Probe {
+      readonly id = 1;
+
+      marker(): string {
+        return `present-${this.id}`;
+      }
+    }
+
     const client = await open();
-    await client.table<Row>('conformance').add(rows[0]);
+    await client.table<Row>('conformance').add(new Probe() as unknown as Row);
     const read = await client.table<Row>('conformance').get(1);
+
     assert(
-      Object.getPrototypeOf(read) !== Object.prototype,
-      'record carried the realm prototype; the plain-data contract assumes it does not'
+      !(read instanceof Probe),
+      'record kept its class identity; the plain-data contract assumes it does not'
+    );
+    assert(
+      typeof (read as unknown as Probe | undefined)?.marker !== 'function',
+      'record kept its methods; structured clone should have dropped them'
     );
     await client.close();
   }));

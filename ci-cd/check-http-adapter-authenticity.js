@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * Requirement 106 — an HTTP adapter must integrate the framework it is named for.
+ * Requirement 108 — an HTTP adapter must integrate the framework it is named for.
  *
  * The audit that produced this check found two distinct defects, and the second
  * is the one worth building a tool for.
@@ -173,7 +173,7 @@ for (const adapter of adapters) {
   if (referenced.length === 0) {
     failures.push(
       `Adapter "${adapter}" never references ${expected.join(' or ')}.\n`
-        + '  Requirement 106: an adapter named for a framework must integrate it, not\n'
+        + '  Requirement 108: an adapter named for a framework must integrate it, not\n'
         + '  implement the HTTP port over Node\'s own `http`.'
     );
   } else if (swallowedOnly) {
@@ -181,20 +181,20 @@ for (const adapter of adapters) {
       `Adapter "${adapter}" requires ${expected.join(' or ')} inside a try/catch and does\n`
         + '  not use the result. That is the worst shape available: it satisfies every grep\n'
         + '  and every skim while the adapter actually serves requests on Node\'s `http`.\n'
-        + '  Integrate the framework, or remove the adapter (Requirement 106).'
+        + '  Integrate the framework, or remove the adapter (Requirement 108).'
     );
   } else if (!declared) {
     failures.push(
       `Adapter "${adapter}" integrates ${expected.join(' or ')} but no manifest declares it.\n`
         + '  The code is correct and the adapter cannot run — the import resolves to nothing,\n'
         + '  so `dev:${adapter}` fails with "Cannot find module".\n'
-        + '  Declare the dependency, or remove the adapter (Requirement 106 §2).'
+        + '  Declare the dependency, or remove the adapter (Requirement 108 §2).'
     );
   }
 }
 
 if (failures.length > 0) {
-  console.error('HTTP adapter authenticity check failed (Requirement 106):\n');
+  console.error('HTTP adapter authenticity check failed (Requirement 108):\n');
   for (const failure of failures) console.error(`- ${failure}\n`);
   process.exit(1);
 }

@@ -117,10 +117,10 @@ describe('run-full-test-matrix', () => {
       read('.husky/pre-commit').includes('bun run ci:gate:branch'),
       read('.husky/pre-push').includes('bun run ci:gate:branch'),
       read('.husky/pre-merge-commit').includes('bun run ci:gate:branch'),
-      // Migrated from the three retired GitHub Actions workflows to CircleCI
-      // (Requirement 105). Repointed rather than deleted: the checks still
-      // exist, and deleting the assertions would drop this test's coverage of
-      // them without anything failing.
+      // Mirrored from the three GitHub Actions workflows into CircleCI
+      // (Requirement 107). Both providers run, and each must cover the same
+      // checks — two providers checking different things are two partial
+      // pipelines, not redundancy.
       read('.circleci/config.yml').includes('bun run ci:gate:branch'),
       read('.circleci/config.yml').includes('JUMENTIX_TASK_TEST_MODE=range'),
       read('.circleci/config.yml').includes('JUMENTIX_TASK_TEST_BASE=origin/dev'),
@@ -132,8 +132,10 @@ describe('run-full-test-matrix', () => {
       !/- quality-gate:\s*\n\s*filters:/.test(read('.circleci/config.yml')),
       // Storybook stays in its own job rather than being folded into the gate.
       !read('.circleci/config.yml').includes('ci:gate:branch\n      - run:\n          name: Build Storybook'),
-      // GitHub Actions is retired entirely.
-      !matrixFs.existsSync(matrixPath.join(fullMatrixRootDir, '.github', 'workflows')),
+      // GitHub Actions stays. An earlier revision of 107 retired it, written
+      // while it could not execute at all; billing was resolved and the
+      // workflows were restored, so their absence is now the regression.
+      matrixFs.existsSync(matrixPath.join(fullMatrixRootDir, '.github', 'workflows')),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'pr:governance:check'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'requirements:check'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'integrations:check'),

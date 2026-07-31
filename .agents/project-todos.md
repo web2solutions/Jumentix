@@ -996,7 +996,7 @@ Goal:
     - PM2 ownership moved to root `pm2/*` ecosystems.
   - Audit evidence:
     - PR: `https://github.com/web2solutions/aaa-typescript-boilerplate/pull/112`
-    - Required checks green for PR #112 (build/circleci/snyk/sonar/gitguardian).
+    - Required checks green for PR #112 (build/CircleCI/dependency scan/Sonar/GitGuardian).
     - Related closeout issues:
       - `https://github.com/web2solutions/aaa-typescript-boilerplate/issues/113`
       - `https://github.com/web2solutions/aaa-typescript-boilerplate/issues/114`

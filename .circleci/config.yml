@@ -1,12 +1,15 @@
 version: 2.1
 
-# CircleCI is the sole CI provider for this repository (Requirement 105).
+# CircleCI runs alongside GitHub Actions (Requirement 107).
 #
-# GitHub Actions is retired: it became unable to execute at all, which made every
-# required check permanently pending and, under Requirement 065, blocked every
-# merge. The three retired workflows are reproduced here job for job — a
-# migration that silently drops a check is the same false green those
-# requirements exist to prevent.
+# Both providers stay active, and each of the three GitHub Actions workflows is
+# reproduced here job for job. Two providers checking different things are not
+# redundancy — they are two partial pipelines, and neither can be trusted alone.
+# Covering the same checks is what makes either one going dark degrade coverage
+# instead of eliminating it.
+#
+# Unlike the workflows, nothing here is filtered to dev and main except the
+# billed Sonar scan: a branch with no signal is where defects get expensive.
 
 orbs:
   codecov: codecov/codecov@4.1.0
@@ -53,7 +56,7 @@ commands:
             done
             if [ -n "$missing" ]; then
               echo "Missing required CircleCI environment variable(s):$missing" >&2
-              echo "Set them in Project Settings > Environment Variables (Requirement 105)." >&2
+              echo "Set them in Project Settings > Environment Variables (Requirement 107)." >&2
               exit 1
             fi
 
@@ -168,7 +171,7 @@ workflows:
     jobs:
       # No branch filter. The previous configuration ran only on dev and main,
       # so every feature branch and every pull request had no signal at the point
-      # a defect is cheapest to fix (Requirement 105 §3).
+      # a defect is cheapest to fix (Requirement 107 §3).
       - quality-gate
       - website
       - sonarqube:

@@ -45,7 +45,7 @@ const pinnedBunVersion = fs.readFileSync(path.join(repoRoot, '.bun-version'), 'u
 describe('rEADME badges', () => {
   it('shows CircleCI for both long-lived branches', () => {
     expect.hasAssertions();
-    // CircleCI is the sole provider (Requirement 105), so its status is the
+    // CircleCI is the sole provider (Requirement 107), so its status is the
     // repository's status.
     expect(badges).toContain('dl.circleci.com/status-badge/img/gh/XpertMinds/Jumentix/tree/dev');
     expect(badges).toContain('dl.circleci.com/status-badge/img/gh/XpertMinds/Jumentix/tree/main');
@@ -170,7 +170,7 @@ describe('web framework badges', () => {
   it('declares the frameworks that are installed as real dependencies', () => {
     expect.hasAssertions();
     // Express, Fastify and Restify are declared and installed. Six other adapters
-    // reference their frameworks but are tracked as gaps under Requirement 106 —
+    // reference their frameworks but are tracked as gaps under Requirement 108 —
     // four have undeclared dependencies and cannot start, two swallow the require
     // and serve on Node's `http` instead. See ci-cd/check-http-adapter-authenticity.js
     // and Linear JUM-570. The badges stay because the owner chose to advertise the

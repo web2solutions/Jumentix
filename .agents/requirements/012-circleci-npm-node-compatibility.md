@@ -15,7 +15,7 @@ Done
 
 ## Superseded outright by 105 (2026-07-30)
 
-Superseded by [105-circleci-as-sole-ci-provider](105-circleci-as-sole-ci-provider.md).
+Superseded by [109-circleci-as-sole-ci-provider](107-circleci-as-sole-ci-provider.md).
 
 CircleCI is again the provider, but this requirement's subject — npm/Node engine
 mismatch from upgrading npm on an older Node patch — no longer exists. CircleCI

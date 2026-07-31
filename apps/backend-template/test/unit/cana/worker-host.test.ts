@@ -1,3 +1,12 @@
+/* eslint-disable jest/prefer-expect-resolves -- see the note below */
+/*
+ * The rule asks for `await expect(promise).resolves`, which is the one form
+ * that does not work here. Under `bun test`, .resolves on a promise settled by
+ * a MessagePort message deadlocks until the request timeout fires, and on a
+ * Dexie thenable it is rejected outright as "not a promise". Awaiting first and
+ * asserting on the value is equivalent in strength and passes under both
+ * runners (JUM-581).
+ */
 import 'fake-indexeddb/auto';
 import { IDBFactory } from 'fake-indexeddb';
 import type { CanaSchema } from '@jumentix/cana';
@@ -27,6 +36,14 @@ import {
  * so it does not prove the engine works when the main thread is busy, nor that
  * a killed worker triggers the timeout path. Those need a real browser
  * (JUM-417).
+ *
+ * Every assertion here awaits its request and then asserts on the value, rather
+ * than using `expect(promise).resolves`. Under `bun test`, `.resolves` on a
+ * promise whose settlement depends on a `MessagePort` message deadlocks: the
+ * response never reaches the router and the request dies on its own 2s timeout.
+ * The same call awaited directly returns immediately, and the suite passes under
+ * Jest either way — so it is a runtime interaction, not engine behaviour
+ * (JUM-581). Awaiting first is equivalent in strength and works in both.
  */
 
 interface Design { id: number; name: string; owner?: string }
@@ -94,7 +111,7 @@ describe('cana worker round trip', () => {
     expect.hasAssertions();
     const { api, teardown } = connected();
 
-    await expect(api.ping()).resolves.toBe('pong');
+    expect(await api.ping()).toBe('pong');
     await teardown();
   });
 
@@ -103,20 +120,47 @@ describe('cana worker round trip', () => {
     const { api, teardown } = connected();
 
     // eslint-disable-next-line jest/prefer-strict-equal -- see the clone test below
-    await expect(api.open()).resolves.toEqual({ name: 'designer', version: 1 });
+    expect(await api.open()).toEqual({ name: 'designer', version: 1 });
     await teardown();
   });
 
   it('returns values that crossed as structured clones', async () => {
     expect.hasAssertions();
-    // The same property the storage layer showed, now demonstrated across a real
-    // message port: identity does not survive, so nothing on the wire may rely
-    // on a prototype. This is why every contract type here is plain data.
-    const { api } = connected();
+    // The same property the storage layer showed, now across a real message
+    // port: identity does not survive, so nothing on the wire may rely on a
+    // prototype. This is why every contract type here is plain data.
+    //
+    // Asserted by sending a class instance rather than by reading the returned
+    // prototype. Which prototype a clone lands on is a host detail — Bun's
+    // structured clone produces Object.prototype where fake-indexeddb produces a
+    // null one — so a check phrased against `Object.prototype` passes or fails
+    // on the runtime rather than on Cana.
+    const { api, teardown } = connected();
 
-    const identity = await api.open();
+    class Tagged {
+      readonly id = 1;
 
-    expect(Object.getPrototypeOf(identity)).not.toBe(Object.prototype);
+      readonly name = 'across the wire';
+
+      get label(): string {
+        return this.name;
+      }
+    }
+
+    await api.open();
+    const sent = new Tagged();
+    await api.add('designs', sent as unknown as Design);
+
+    const read = await api.get<Design>('designs', 1);
+
+    expect(sent).toBeInstanceOf(Tagged);
+    expect(read).not.toBeInstanceOf(Tagged);
+    expect((read as unknown as Tagged).label).toBeUndefined();
+    expect(read).toMatchObject({ id: 1, name: 'across the wire' });
+    // Teardown was previously left to afterEach alone. A test that opens a port
+    // and never closes it is what makes the *next* test time out — which is how
+    // one wrong assertion here turned into four failures under Bun.
+    await teardown();
   });
 
   it('writes and reads a record through messages only', async () => {
@@ -127,8 +171,7 @@ describe('cana worker round trip', () => {
 
     await api.add('designs', { id: 1, name: 'across the wire' });
 
-    await expect(api.get<Design>('designs', 1))
-      .resolves.toMatchObject({ id: 1, name: 'across the wire' });
+    expect(await api.get<Design>('designs', 1)).toMatchObject({ id: 1, name: 'across the wire' });
     await teardown();
   });
 
@@ -145,9 +188,8 @@ describe('cana worker round trip', () => {
     await api.bulkDelete('designs', [2]);
     await api.remove('designs', 4);
 
-    await expect(api.get<Design>('designs', 1))
-      .resolves.toMatchObject({ name: 'replaced', owner: 'ana' });
-    await expect(api.count('designs')).resolves.toBe(2);
+    expect(await api.get<Design>('designs', 1)).toMatchObject({ name: 'replaced', owner: 'ana' });
+    expect(await api.count('designs')).toBe(2);
     await teardown();
   });
 
@@ -159,7 +201,7 @@ describe('cana worker round trip', () => {
 
     await api.clear('designs');
 
-    await expect(api.count('designs')).resolves.toBe(0);
+    expect(await api.count('designs')).toBe(0);
     await teardown();
   });
 
@@ -177,7 +219,7 @@ describe('cana worker round trip', () => {
     const mine = await api.query<Design>('designs', { index: 'byOwner', equals: 'ana' });
 
     expect(mine.map((row) => row.id).sort()).toStrictEqual([1, 3]);
-    await expect(api.count('designs', { index: 'byOwner', equals: 'ana' })).resolves.toBe(2);
+    expect(await api.count('designs', { index: 'byOwner', equals: 'ana' })).toBe(2);
     await teardown();
   });
 
@@ -186,7 +228,7 @@ describe('cana worker round trip', () => {
     const { api, teardown } = connected();
     await api.open();
 
-    await expect(api.storageState()).resolves.toMatchObject({ evicted: false });
+    expect(await api.storageState()).toMatchObject({ evicted: false });
     await teardown();
   });
 });
@@ -265,7 +307,7 @@ describe('cana worker failure handling', () => {
     const { api, teardown } = connected();
     await api.open();
 
-    await expect(api.get('no-such-store', 1)).rejects.toMatchObject({ canaError: true });
+    expect(await api.get('no-such-store', 1).catch((error: unknown) => error)).toMatchObject({ canaError: true });
     await teardown();
   });
 
@@ -335,7 +377,7 @@ describe('cana worker failure handling', () => {
 
     await api.get('no-such-store', 1).catch(() => undefined);
 
-    await expect(api.ping()).resolves.toBe('pong');
+    expect(await api.ping()).toBe('pong');
     await teardown();
   });
 
@@ -346,7 +388,7 @@ describe('cana worker failure handling', () => {
     const { api, teardown } = connected();
     await api.open();
 
-    await expect(api.ping()).resolves.toBe('pong');
+    expect(await api.ping()).toBe('pong');
     await teardown();
   });
 });
@@ -365,7 +407,7 @@ describe('cana worker crash reconciliation', () => {
 
     const { correlationId } = broadcasts[0] as { correlationId: string };
 
-    await expect(api.resolveWrite(correlationId, Date.now())).resolves.toBe('committed');
+    expect(await api.resolveWrite(correlationId, Date.now())).toBe('committed');
     await teardown();
   });
 

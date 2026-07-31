@@ -23,6 +23,7 @@ const INTEGRATION_SCRIPTS = Object.freeze([
   'test:integration:total-js',
   'test:integration:realtime',
   'test:integration:service-management'
+  // mutex: reclaimed in test-map.json (tier=nightly, script test:integration:mutex) — JUM-556
 ]);
 
 function executeIntegrationScript(scriptName, options = {}) {

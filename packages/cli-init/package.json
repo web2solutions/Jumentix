@@ -16,5 +16,8 @@
     "test": "node ./bin/jumentix-init.js --help",
     "lint": "echo \"cli-init: lint managed by root workspace\"",
     "typecheck": "echo \"cli-init: plain JS entrypoint\""
+  },
+  "jumentix": {
+    "testSurface": "typecheck-only"
   }
 }

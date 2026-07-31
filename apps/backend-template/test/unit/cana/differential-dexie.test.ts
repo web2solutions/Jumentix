@@ -1,3 +1,12 @@
+/* eslint-disable jest/prefer-expect-resolves -- see the note below */
+/*
+ * The rule asks for `await expect(promise).resolves`, which is the one form
+ * that does not work here. Under `bun test`, .resolves on a promise settled by
+ * a MessagePort message deadlocks until the request timeout fires, and on a
+ * Dexie thenable it is rejected outright as "not a promise". Awaiting first and
+ * asserting on the value is equivalent in strength and passes under both
+ * runners (JUM-581).
+ */
 import 'fake-indexeddb/auto';
 import { IDBFactory } from 'fake-indexeddb';
 import Dexie from 'dexie';
@@ -231,10 +240,8 @@ describe('differential: reads agree with Dexie', () => {
     expect.hasAssertions();
     const { cana, dexie, teardown } = await bothSeeded();
 
-    await expect(cana.table<Design>('designs').count())
-      .resolves.toBe(await dexie.table<Design>('designs').count());
-    await expect(cana.table<Design>('designs').count({ index: 'owner', equals: 'ana' }))
-      .resolves.toBe(await dexie.table<Design>('designs').where('owner').equals('ana').count());
+    expect(await cana.table<Design>('designs').count()).toBe(await dexie.table<Design>('designs').count());
+    expect(await cana.table<Design>('designs').count({ index: 'owner', equals: 'ana' })).toBe(await dexie.table<Design>('designs').where('owner').equals('ana').count());
     await teardown();
   });
 
@@ -259,8 +266,8 @@ describe('differential: reads agree with Dexie', () => {
     const dexieHit = await dexie.table<Design>('designs').get(3);
 
     expect(canaHit?.name).toBe(dexieHit?.name);
-    await expect(cana.table<Design>('designs').get(99)).resolves.toBeUndefined();
-    await expect(dexie.table<Design>('designs').get(99)).resolves.toBeUndefined();
+    expect(await cana.table<Design>('designs').get(99)).toBeUndefined();
+    expect(await dexie.table<Design>('designs').get(99)).toBeUndefined();
     await teardown();
   });
 });
@@ -281,8 +288,7 @@ describe('differential: writes agree with Dexie', () => {
     const dexieRow = await dexie.table<Design>('designs').get(1);
 
     expect(canaRow?.name).toBe(dexieRow?.name);
-    await expect(cana.table<Design>('designs').count())
-      .resolves.toBe(await dexie.table<Design>('designs').count());
+    expect(await cana.table<Design>('designs').count()).toBe(await dexie.table<Design>('designs').count());
     await teardown();
   });
 
@@ -329,8 +335,8 @@ describe('differential: writes agree with Dexie', () => {
     await cana.table<Design>('designs').clear();
     await dexie.table<Design>('designs').clear();
 
-    await expect(cana.table<Design>('designs').count()).resolves.toBe(0);
-    await expect(dexie.table<Design>('designs').count()).resolves.toBe(0);
+    expect(await cana.table<Design>('designs').count()).toBe(0);
+    expect(await dexie.table<Design>('designs').count()).toBe(0);
     await teardown();
   });
 });
@@ -358,9 +364,8 @@ describe('differential: documented divergences', () => {
     expect(canaFailed).toBe(true);
 
     // Both agree on the thing that actually matters: nothing was written.
-    await expect(cana.table<Design>('designs').count())
-      .resolves.toBe(await dexie.table<Design>('designs').count());
-    await expect(cana.table<Design>('designs').get(99)).resolves.toBeUndefined();
+    expect(await cana.table<Design>('designs').count()).toBe(await dexie.table<Design>('designs').count());
+    expect(await cana.table<Design>('designs').get(99)).toBeUndefined();
     await teardown();
   });
 

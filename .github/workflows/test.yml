@@ -1,0 +1,82 @@
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+
+name: Run branch-aware tests
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "dev", "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    env:
+      AAA_JWT_TOKEN_SECRET_KEY: ${{ secrets.AAA_JWT_TOKEN_SECRET_KEY || 'ci_jwt_secret_key' }}
+      AAA_REDIS_PASSWORD: ${{ secrets.AAA_REDIS_PASSWORD || 'ci_redis_password' }}
+      # Private agent-registry Contents API (Req 089). Default github.token cannot
+      # read sibling private repos; AGENT_REGISTRY_TOKEN is a contents:read PAT.
+      GH_TOKEN: ${{ secrets.AGENT_REGISTRY_TOKEN }}
+
+    strategy:
+      matrix:
+        # Internal engineering workflows run on the pinned Bun toolchain
+        # (Requirement 096 §1). The version is read from .bun-version so this
+        # matrix cannot drift from the repository pin.
+        bun-version: ["1.3.14"]
+        redis:
+          - "7.2"
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - uses: shogo82148/actions-setup-redis@81c3559f3be13c0fead88f562d48fa3a62e5fc93 # v1.52.1
+      with:
+        auto-start: true
+        redis-version: "7.x"
+        redis-conf: "requirepass ${{ env.AAA_REDIS_PASSWORD }}"
+    - name: Setup Bun ${{ matrix.bun-version }}
+      uses: oven-sh/setup-bun@735343b667d3e6f658f44d0eca948eb6282f2b76 # v2.0.2
+      with:
+        bun-version: ${{ matrix.bun-version }}
+    - run: redis-cli -a "${AAA_REDIS_PASSWORD}" ping
+    - name: Assert the pinned Bun toolchain
+      run: bun ci-cd/check-bun-version.js
+    # Frozen: an install that would rewrite bun.lock fails instead of silently
+    # drifting (Requirement 096 §2). The previous pnpm step used
+    # --no-frozen-lockfile, which let CI resolve versions the lockfile never
+    # recorded — a reproducibility hole this closes.
+    - run: bun install --frozen-lockfile
+    # - run: apt install redis-tools
+    # - run: ./wait-for-redis.sh localhost:6379
+    - run: wget https://github.com/jwilder/dockerize/releases/download/v0.6.1/dockerize-linux-amd64-v0.6.1.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-v0.6.1.tar.gz && rm dockerize-linux-amd64-v0.6.1.tar.gz
+    - run: dockerize -wait tcp://localhost:6379 -timeout 1m
+    - name: Run canonical branch quality gate
+      run: bun run ci:gate:branch
+      env:
+        JUMENTIX_QUALITY_GATE_TARGET: ${{ github.base_ref || github.ref_name }}
+        JUMENTIX_TASK_TEST_MODE: range
+        JUMENTIX_TASK_TEST_BASE: origin/dev
+        AAA_PR_TITLE: ${{ github.event.pull_request.title || '' }}
+        AAA_PR_BODY: ${{ github.event.pull_request.body || '' }}
+        AAA_PR_HEAD_REF: ${{ github.head_ref || '' }}
+        AAA_PR_BASE_REF: ${{ github.base_ref || '' }}
+        AAA_CI_GATE_RESULT_FILE: artifacts/ci/branch-quality-gate.json
+        AAA_CI_MATRIX_RESULT_FILE: artifacts/ci/full-test-matrix.json
+    - name: Upload branch quality-gate evidence
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: branch-quality-gate-${{ matrix.bun-version }}-redis-${{ matrix.redis }}
+        path: artifacts/ci/branch-quality-gate.json
+        if-no-files-found: error
+    - name: Upload full-matrix evidence
+      if: always() && (github.base_ref == 'main' || github.ref_name == 'main')
+      uses: actions/upload-artifact@v4
+      with:
+        name: full-test-matrix-${{ matrix.bun-version }}-redis-${{ matrix.redis }}
+        path: artifacts/ci/full-test-matrix.json
+        if-no-files-found: error
