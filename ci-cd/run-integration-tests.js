@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 const { spawnSync } = require('child_process');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 const DEFAULT_INTEGRATION_TIMEOUT_MS = 120_000;
 const INTEGRATION_TIMEOUT_OVERRIDES_MS = Object.freeze({
@@ -97,7 +98,7 @@ function runIntegrationTests(options = {}) {
   return failures;
 }
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   try {
     const failures = runIntegrationTests();
     if (failures.length > 0) {

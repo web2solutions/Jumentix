@@ -5,6 +5,7 @@ const { spawnSync } = require('child_process');
 const { readTestMap, isQuarantined } = require('./lib/test-map');
 const { effectiveRunner, isCiNodeRuntime, resolveTestRuntime } = require('./lib/test-runtime');
 const { runSuitePaths } = require('./run-suite');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 const UNIT_DIR = 'apps/backend-template/test/unit';
 
@@ -108,7 +109,7 @@ function runUnitTests(options = {}) {
   return runNodeUnit(nodeSuites, options);
 }
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   process.exitCode = runUnitTests();
 }
 

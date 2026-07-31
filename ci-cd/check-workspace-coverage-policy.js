@@ -20,6 +20,7 @@ const MINIMUM_GLOBAL_THRESHOLDS = {
  */
 // eslint-disable-next-line import/no-dynamic-require, global-require
 const { ACCEPTED_BELOW_THRESHOLD } = require('./check-coverage-thresholds');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 const TEST_PLACEHOLDER_PATTERN = /echo\s+["'][^"']*(no tests yet|placeholder|pending)[^"']*["']/i;
 const PACKAGE_TEST_PLACEHOLDER_ALLOWLIST = new Set([
@@ -114,7 +115,7 @@ function run() {
   console.log('Workspace coverage policy check passed.');
 }
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   run();
 }
 

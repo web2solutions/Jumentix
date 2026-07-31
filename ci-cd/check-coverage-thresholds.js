@@ -31,6 +31,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 const repoRoot = path.resolve(__dirname, '..');
 const reportPath = path.join(repoRoot, 'coverage', 'coverage-final.json');
@@ -76,12 +77,17 @@ const THRESHOLDS = {
  * browser, which is JUM-417.
  */
 const ACCEPTED_BELOW_THRESHOLD = {
-  statements: {
-    floor: 98.99,
-    since: '2026-07-31',
-    issue: 'JUM-588',
-    reason: 'coverage scope widened to include packages/cana/src; closing needs JUM-417'
-  }
+  // Empty, and that is the state to keep it in.
+  //
+  // One entry lived here for a few hours on 2026-07-31: `statements` at a floor
+  // of 98.99% after the coverage scope widened to include `packages/cana/src`
+  // (JUM-588). It was removed the same day because the ratchet demanded it — the
+  // metric reached 99% and the checker then failed *because the exception was
+  // still listed*, which is the behaviour that stops a dated concession becoming
+  // a permanently lowered bar.
+  //
+  // Adding an entry is a governance decision under Requirements 020/063. It needs
+  // a floor, a date, an issue and a reason, and it expires by failing.
 };
 
 /**
@@ -175,7 +181,13 @@ function percentage({ found, hit }) {
  *
  * @returns {{failures: string[], report: object}}
  */
-function validateCoverage(totals, thresholds = THRESHOLDS) {
+/**
+ * @param exceptions The live exception register. Injected so the ratchet's three
+ * behaviours stay testable when the register is empty — which is its normal,
+ * desired state. Without this, emptying it would make the ratchet unreachable
+ * and its tests vacuous: they would pass while asserting nothing.
+ */
+function validateCoverage(totals, thresholds = THRESHOLDS, exceptions = ACCEPTED_BELOW_THRESHOLD) {
   const failures = [];
   const report = {};
 
@@ -202,7 +214,7 @@ function validateCoverage(totals, thresholds = THRESHOLDS) {
       continue;
     }
 
-    const exception = ACCEPTED_BELOW_THRESHOLD[metric];
+    const exception = exceptions[metric];
 
     if (exception && actual + Number.EPSILON >= minimum) {
       // The exception outlived its reason. Leaving it would turn a dated,
@@ -251,7 +263,7 @@ function defaultReadReport() {
   return JSON.parse(fs.readFileSync(reportPath, 'utf8'));
 }
 
-function main(readReport = defaultReadReport) {
+function main(readReport = defaultReadReport, exceptions = ACCEPTED_BELOW_THRESHOLD) {
   const coverage = readReport();
 
   if (coverage === null) {
@@ -265,7 +277,7 @@ function main(readReport = defaultReadReport) {
   }
 
   const totals = summarize(coverage);
-  const { failures, report } = validateCoverage(totals);
+  const { failures, report } = validateCoverage(totals, THRESHOLDS, exceptions);
 
   if (failures.length > 0) {
     console.error('Coverage threshold check failed:\n');
@@ -276,7 +288,7 @@ function main(readReport = defaultReadReport) {
 
   const summary = Object.entries(report)
     .map(([metric, value]) => {
-      const exception = ACCEPTED_BELOW_THRESHOLD[metric];
+      const exception = exceptions[metric];
       const note = exception
         ? ` (under ${exception.issue}, floor ${String(exception.floor)}%)`
         : '';
@@ -287,7 +299,7 @@ function main(readReport = defaultReadReport) {
   console.log(`Coverage threshold check passed: ${summary}.`);
 }
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   main();
 }
 

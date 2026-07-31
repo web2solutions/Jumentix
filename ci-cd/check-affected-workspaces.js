@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 const { execSync } = require('child_process');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 const ROOT_MARKERS = [
   'package.json',
@@ -75,7 +76,7 @@ function run() {
   console.log(JSON.stringify(result, null, 2));
 }
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   run();
 }
 

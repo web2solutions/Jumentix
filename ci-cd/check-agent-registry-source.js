@@ -3,6 +3,7 @@ const { execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 const CONFIG_PATH = path.resolve('.agents/registry-source.json');
 const PRIVATE_REGISTRY_CREDENTIAL_GUIDANCE =
@@ -286,7 +287,7 @@ async function main() {
   }
 }
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   main().catch((error) => {
     console.error(error.message);
     process.exit(1);

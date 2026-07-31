@@ -12,6 +12,7 @@ const path = require('path');
 const { readTestMap, suitesForLayers } = require('./lib/test-map');
 const { createLayerAwarePlan } = require('./lib/layer-resolver');
 const { runBunTestFiles } = require('./lib/suite-runner');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 function listLayers(manifest) {
   return Object.keys(manifest.layers || {});
@@ -83,7 +84,7 @@ function main() {
   process.exit(status);
 }
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   main();
 }
 

@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 const fs = require('fs');
 const path = require('path');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 const REQUIREMENTS_DIRECTORY = '.agents/requirements';
 const REQUIREMENTS_INDEX = '.agents/README.md';
@@ -217,7 +218,7 @@ function run(rootDir = process.cwd()) {
   return 0;
 }
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   process.exitCode = run();
 }
 

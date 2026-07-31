@@ -2,6 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 const FULL_TEST_MATRIX = Object.freeze([
   { id: 'lint', script: 'lint' },
@@ -130,7 +131,7 @@ function runFullTestMatrix(options = {}) {
   return evidence;
 }
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   try {
     const evidence = runFullTestMatrix();
     if (evidence.outcome !== 'passed') {

@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 const { spawnSync } = require('child_process');
 const { computeAffectedWorkspaces, readChangedFiles } = require('./check-affected-workspaces');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 function runCommand(command, args, cwd = process.cwd()) {
   const result = spawnSync(command, args, { cwd, stdio: 'inherit' });
@@ -45,7 +46,7 @@ function run() {
   console.log('\n[ci-monorepo] completed successfully.');
 }
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   run();
 }
 

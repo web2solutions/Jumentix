@@ -27,6 +27,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 const EXACT_VERSION = /^\d+\.\d+\.\d+$/;
 
@@ -55,7 +56,10 @@ function validateToolchain({ runningBunVersion, rawPin, declaredPackageManager }
   }
 
   let pinnedVersion = null;
-  if (rawPin === null || rawPin === undefined) {
+  // `== null` covers null and undefined in one comparison. The previous
+  // `=== undefined` arm could never be true: `readToolchainInput` returns
+  // `string | null`, so it was dead code that read as a second safety check.
+  if (rawPin == null) {
     failures.push('.bun-version is missing. The canonical Bun version must be pinned in the repository.');
   } else {
     const trimmed = String(rawPin).trim();
@@ -132,7 +136,7 @@ function main(input = readToolchainInput()) {
   console.log(`Bun toolchain guard passed: running pinned Bun ${String(input.rawPin).trim()}.`);
 }
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   main();
 }
 

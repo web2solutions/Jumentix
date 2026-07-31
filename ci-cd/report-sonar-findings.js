@@ -23,6 +23,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 const repoRoot = path.resolve(__dirname, '..');
 const taskFile = path.join(repoRoot, '.scannerwork', 'report-task.txt');
@@ -148,7 +149,7 @@ async function main() {
   console.log('');
 }
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   main().catch((error) => {
     // Advisory: never fail the build for a reporting step. The quality gate
     // blocks; this only explains it.

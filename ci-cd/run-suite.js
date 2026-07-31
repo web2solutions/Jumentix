@@ -12,6 +12,7 @@
 const { spawnSync } = require('child_process');
 const { resolveTestRuntime } = require('./lib/test-runtime');
 const { readTestMap } = require('./lib/test-map');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 /**
  * Whether the map pins these paths to Node.
@@ -100,7 +101,7 @@ function runSuitePaths(paths, options = {}) {
   return Number.isInteger(result.status) ? result.status : 1;
 }
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   const parsed = parseArgs(process.argv);
   process.exitCode = runSuitePaths(parsed.paths, {
     label: parsed.label,

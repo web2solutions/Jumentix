@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 const fs = require('fs');
 const path = require('path');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 const INTEGRATION_POLICY_PATH = 'INTEGRATION-MIGRATION-REQUIREMENT.md';
 const INTEGRATION_POLICY_PT_PATH = 'INTEGRATION-MIGRATION-REQUIREMENT.pt-BR.md';
@@ -105,7 +106,7 @@ function main(rootDir = process.cwd()) {
   return [];
 }
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   main();
 }
 

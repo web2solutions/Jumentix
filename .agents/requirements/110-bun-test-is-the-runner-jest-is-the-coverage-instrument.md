@@ -50,13 +50,13 @@
    while the entry remains**, which is what stops a dated concession becoming a
    permanently lowered bar.
 
-   One entry exists today: `statements` at a floor of 98.99% against a 99%
-   threshold, since 2026-07-31, tracked as JUM-588. It was granted because
-   widening the scope above moved the tree from 99.26% over the old scope to
-   98.99% over the new one — the figure fell because the measurement improved.
-   What remains uncovered is defensive code behind validators that
-   `fake-indexeddb` cannot reach; closing it needs the real-browser conformance
-   run (JUM-417).
+   **The register is empty, and that is the state to keep it in.** One entry
+   lived there for a few hours on 2026-07-31 — `statements` at a floor of 98.99%
+   after the coverage scope widened to include `packages/cana/src` (JUM-588) —
+   and the ratchet removed it the same day: the metric reached 99%, at which
+   point the checker failed *because the exception was still listed*.
+   Both directions of the mechanism were exercised in practice before the day
+   was out.
 
 5. **A suite may declare `runner: "node"` only with a `reason`.** The reason must
    name a concrete incompatibility that prevents the suite loading under Bun —

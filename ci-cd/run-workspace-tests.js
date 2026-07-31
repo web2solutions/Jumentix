@@ -10,6 +10,7 @@
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 const PLACEHOLDER_RE = /echo\s+["'][^"']*(no tests yet|placeholder|pending|covered by)[^"']*["']/i;
 
@@ -112,7 +113,7 @@ function runWorkspaceTests(options = {}) {
   return evidence;
 }
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   const evidence = runWorkspaceTests();
   if (evidence.outcome !== 'passed') process.exitCode = 1;
 }

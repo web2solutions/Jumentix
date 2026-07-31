@@ -6,6 +6,7 @@ const { createLayerAwarePlan } = require('./lib/layer-resolver');
 const { buildGateEvidence, validateGateEvidence, writeGateEvidence } = require('./lib/gate-evidence');
 const { runSuitePaths } = require('./run-suite');
 const { resolveTestRuntime } = require('./lib/test-runtime');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 const UNIT_TEST_PATH = /(^|\/)test\/unit\/.*\.(test|spec)\.[cm]?[jt]sx?$/;
 const INTEGRATION_TEST_PATH = /(^|\/)test\/integration\/.*\.(test|spec)\.[cm]?[jt]sx?$/;
@@ -336,7 +337,7 @@ function runTaskChangeTests(options = {}) {
   return evidence;
 }
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   const evidence = runTaskChangeTests();
   if (!['passed', 'not-applicable'].includes(evidence.outcome)) {
     process.exitCode = 1;

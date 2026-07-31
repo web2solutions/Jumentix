@@ -35,6 +35,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 const repoRoot = path.resolve(__dirname, '..');
 const packageJsonPath = path.join(repoRoot, 'package.json');
@@ -288,7 +289,7 @@ function main() {
   );
 }
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   main();
 }
 

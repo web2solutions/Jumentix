@@ -19,7 +19,8 @@ const coverageGuard = require('../../../../../ci-cd/check-coverage-thresholds') 
   percentage: (counter: CoverageCounters) => number | null;
   validateCoverage: (
     totals: Record<string, CoverageCounters>,
-    thresholds?: Record<string, number>
+    thresholds?: Record<string, number>,
+    exceptions?: Record<string, { floor: number; issue: string; since: string }>
   ) => { failures: string[]; report: Record<string, number | null> };
   BASE_THRESHOLDS?: Record<string, number>;
   THRESHOLDS: Record<string, number>;
@@ -211,35 +212,14 @@ describe('check-coverage-thresholds CLI', () => {
 
   it('reports every metric when all pass', () => {
     expect.hasAssertions();
-    // Statements at 98.99% — at the recorded floor, below the 99% threshold,
-    // which is the state the exception exists to describe. Passing 100% here
-    // would trip the "exception outlived its reason" failure, which is the
-    // ratchet working rather than a broken test.
-    //
-    // Several statements share each line, as in real code, so `lines` stays at
-    // 100% while `statements` sits below its threshold. The default fixture puts
-    // one statement per line, which makes the two metrics move together and
-    // would fail `lines` — which holds no exception.
-    const spread = {
-      'x.ts': {
-        statementMap: Object.fromEntries(
-          Array.from({ length: 10000 }, (_, index) => [
-            String(index), { start: { line: (index % 100) + 1 } }
-          ])
-        ),
-        s: counters(10000, 9899),
-        f: counters(10, 10),
-        b: branches(100, 95)
-      }
-    };
-
-    const result = runMain(spread);
+    const result = runMain(reportWith({ brf: 100, brh: 95 }));
 
     expect(result.thrown).toBeNull();
     expect(result.logs).toContain('branches 95.00%');
-    // The exception is named in the summary, so a reader is never shown a
-    // number without being told it sits under a tracked concession.
-    expect(result.logs).toContain('under JUM-588');
+    // No live exception, so no note. When one is recorded the summary names it,
+    // so a reader is never shown a number without being told it sits under a
+    // tracked concession.
+    expect(result.logs).not.toContain('under JUM-');
   });
 });
 
@@ -305,6 +285,18 @@ describe('check-coverage-thresholds report reader', () => {
 describe('check-coverage-thresholds exceptions', () => {
   const thresholds = { statements: 99 };
 
+  /**
+   * A synthetic register, not the live one.
+   *
+   * The live register is empty, and empty is the state to keep it in — so
+   * reading it here would make every assertion below vacuous: the ratchet code
+   * would never execute and the tests would pass having exercised nothing. That
+   * is exactly what happened when the one real exception was removed.
+   */
+  const register = {
+    statements: { floor: 98.99, since: '2026-07-31', issue: 'JUM-588' }
+  };
+
   /** Hoisted so the predicates are not branches inside a test body. */
   const hasIssue = (entry: { issue: string }) => typeof entry.issue === 'string' && entry.issue.length > 0;
   const hasIsoDate = (entry: { since: string }) => /^\d{4}-\d{2}-\d{2}$/.test(entry.since);
@@ -313,7 +305,8 @@ describe('check-coverage-thresholds exceptions', () => {
     expect.hasAssertions();
     const { failures } = coverageGuard.validateCoverage(
       coverageGuard.summarize(reportWith({ sf: 10000, sh: 9899 })),
-      thresholds
+      thresholds,
+      register
     );
 
     expect(failures).toStrictEqual([]);
@@ -325,7 +318,8 @@ describe('check-coverage-thresholds exceptions', () => {
     // could fall to any value and the gate would still pass.
     const { failures } = coverageGuard.validateCoverage(
       coverageGuard.summarize(reportWith({ sf: 10000, sh: 9800 })),
-      thresholds
+      thresholds,
+      register
     );
 
     expect(failures).toHaveLength(1);
@@ -339,7 +333,8 @@ describe('check-coverage-thresholds exceptions', () => {
     // a concession nobody removes is a lowered bar wearing a ticket number.
     const { failures } = coverageGuard.validateCoverage(
       coverageGuard.summarize(reportWith({ sf: 100, sh: 100 })),
-      thresholds
+      thresholds,
+      register
     );
 
     expect(failures).toHaveLength(1);
@@ -347,13 +342,16 @@ describe('check-coverage-thresholds exceptions', () => {
     expect(failures[0]).toContain('Remove it from ACCEPTED_BELOW_THRESHOLD');
   });
 
-  it('records a reason, an issue and a date for every exception', () => {
+  it('requires an issue and a date on any exception that is live', () => {
     expect.hasAssertions();
     // An undated exception with no issue is indistinguishable from a threshold
     // someone quietly lowered.
+    //
+    // The register is empty today and should stay that way, so this asserts the
+    // rule holds over whatever is there rather than that anything is — an
+    // assertion that entries exist would push the next person toward adding one.
     const entries = Object.values(coverageGuard.ACCEPTED_BELOW_THRESHOLD);
 
-    expect(entries.length).toBeGreaterThan(0);
     expect(entries.every(hasIssue)).toBe(true);
     expect(entries.every(hasIsoDate)).toBe(true);
   });

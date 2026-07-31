@@ -33,12 +33,12 @@ describe('check-workspace-coverage-policy', () => {
         }
       }
     });
-    // `statements` names its accepted floor rather than the base minimum, and
-    // says why: it sits under a dated exception the coverage checker owns
-    // (Requirement 110). The other three carry the unmodified figure.
+    // No exception is live, so every metric names its base minimum. When one is
+    // recorded, the affected metric names its floor and the issue instead —
+    // asserted by the test below, which reads the register rather than hardcoding
+    // whichever concession happens to exist.
     expect(failures).toStrictEqual([
-      'Root coverageThreshold.global.statements must be >= 98.99 '
-        + '(99 relaxed to the accepted floor under JUM-588) (current: 95)',
+      'Root coverageThreshold.global.statements must be >= 99 (current: 95)',
       'Root coverageThreshold.global.lines must be >= 99 (current: 95)',
       'Root coverageThreshold.global.functions must be >= 99 (current: 95)',
       'Root coverageThreshold.global.branches must be >= 90 (current: 80)'
