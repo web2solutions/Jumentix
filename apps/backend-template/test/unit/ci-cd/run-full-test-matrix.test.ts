@@ -130,6 +130,7 @@ describe('run-full-test-matrix', () => {
       !read('.github/workflows/test.yml').includes('website:storybook'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'pr:governance:check'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'requirements:check'),
+      FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'test-map:check'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'integrations:check'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'integration-migration:check'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'agent-registry:check'),
@@ -139,7 +140,7 @@ describe('run-full-test-matrix', () => {
       )
     ]).toStrictEqual([
       true, true, true, true, true, true, true, true, true, true, true, true, true, true,
-      true, true, true, true, true, true
+      true, true, true, true, true, true, true
     ]);
   });
 });

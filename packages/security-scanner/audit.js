@@ -20,7 +20,7 @@
  * fails, so the PR fails. It is the install itself that is no longer guarded.
  *
  * Reads the resolved set from the isolated store, which is the tree actually
- * installed — not a lockfile translation, which is the mistake that made Snyk blind.
+ * installed — not a compatibility lockfile translation or partial dependency view.
  */
 
 import { readdirSync, existsSync } from 'node:fs';
