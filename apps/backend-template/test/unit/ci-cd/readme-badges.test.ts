@@ -199,3 +199,59 @@ describe('web framework badges', () => {
     expect(badges).not.toContain('Hyper');
   });
 });
+
+/**
+ * The PT-BR README is a translation, not a separate document.
+ *
+ * Its badge block drifted badly while nothing checked it: 10 badges against the
+ * English 25, both SonarCloud badges still on the pre-migration project key
+ * `web2solutions_aaa-typescript-boilerplate`, no Bun badge, and none of the
+ * twelve framework badges. Every assertion above ran only against README.md, so
+ * the English file was pinned and its translation was not — the stale key this
+ * suite was written to catch survived in the other language the whole time.
+ *
+ * Checking the badge *set* rather than individual badges is deliberate: a rule
+ * per badge would have to be extended every time one is added, which is the same
+ * manual step that let this drift in the first place.
+ */
+describe('README badge parity across languages (Requirement 076)', () => {
+  const ptReadme = fs.readFileSync(path.join(repoRoot, 'README.pt-BR.md'), 'utf8');
+  const ptBadges = ptReadme
+    .split('\n')
+    .filter((line) => line.trimStart().startsWith('[!['))
+    .join('\n');
+
+  /**
+   * Where a badge links, which is language-independent.
+   *
+   * The destination only, not the image URL: a shields.io badge encodes its
+   * visible label in the image path, and that label is translated on purpose
+   * ("Run with" -> "Rode com"). Comparing whole lines would report those
+   * legitimate translations as drift and make the check useless.
+   */
+  const targets = (block: string) => block
+    .split('\n')
+    .map((line) => line.slice(line.lastIndexOf('](') + 2).replace(/\)$/, ''))
+    .sort();
+
+  it('badges the same services in both languages', () => {
+    expect.hasAssertions();
+    expect(targets(ptBadges)).toStrictEqual(targets(badges));
+  });
+
+  it('carries the current SonarCloud project key in the translation too', () => {
+    expect.hasAssertions();
+    // The specific regression: this suite existed and passed while the PT-BR
+    // badges pointed at another project's quality gate.
+    expect(ptBadges).not.toContain('web2solutions_aaa-typescript-boilerplate');
+    expect(ptBadges).toContain('XpertMinds_Jumentix');
+  });
+
+  it('does not translate Node, Bun, or framework names', () => {
+    expect.hasAssertions();
+    // The previous translation rendered Node as "Nó". Product names are proper
+    // nouns; translating them makes the badge describe nothing.
+    expect(ptBadges).not.toContain('Nó');
+    expect(ptBadges).toContain('bun-1.3.14');
+  });
+});
