@@ -1,51 +1,55 @@
 /* istanbul ignore file */
 import { resolveHTTPFramework } from '@src/interface/runtime/RuntimeEnvironment';
 
-export async function startRestApiAdapter(env: NodeJS.ProcessEnv = process.env): Promise<void> {
+/**
+ * Framework name to the module that starts it.
+ *
+ * Importing one of these *is* the side effect — each adapter module boots its
+ * server at evaluation time — so the table holds thunks rather than modules.
+ *
+ * This was eleven near-identical `if` blocks. The mapping is data, and writing
+ * it as data means adding an adapter is one row rather than one more branch a
+ * reader has to compare against the ten above it.
+ */
+export const REST_API_ADAPTERS: Readonly<Record<string, () => Promise<unknown>>> = {
+  express: () => import('@src/interface/HTTP/adapters/express/express'),
+  fastify: () => import('@src/interface/HTTP/adapters/fastify/fastify'),
+  restify: () => import('@src/interface/HTTP/adapters/restify/restify'),
+  'cloudflare-workers': () => import('@src/interface/HTTP/adapters/cloudflare-workers/cloudflare-workers'),
+  'vercel-functions': () => import('@src/interface/HTTP/adapters/vercel-functions/vercel-functions'),
+  loopback: () => import('@src/interface/HTTP/adapters/loopback/loopback'),
+  'sails-js': () => import('@src/interface/HTTP/adapters/sails-js/sails-js'),
+  feathers: () => import('@src/interface/HTTP/adapters/feathers/feathers'),
+  'derby-js': () => import('@src/interface/HTTP/adapters/derby-js/derby-js'),
+  'adonis-js': () => import('@src/interface/HTTP/adapters/adonis-js/adonis-js'),
+  'total-js': () => import('@src/interface/HTTP/adapters/total-js/total-js')
+};
+
+/**
+ * @param env Where `AAA_HTTP_FRAMEWORK` is read from.
+ * @param adapters Injected so a test can observe which adapter was selected
+ * without importing it — importing one starts a real HTTP server. That was
+ * previously arranged by replacing the adapter module with `jest.doMock`, which
+ * does not exist under Bun's runner (JUM-583).
+ */
+export async function startRestApiAdapter(
+  env: NodeJS.ProcessEnv = process.env,
+  adapters: Readonly<Record<string, () => Promise<unknown>>> = REST_API_ADAPTERS
+): Promise<void> {
   const framework = resolveHTTPFramework(env);
-  if (framework === 'express') {
-    await import('@src/interface/HTTP/adapters/express/express');
-    return;
+  const load = adapters[framework];
+
+  // `resolveHTTPFramework` already rejects names it does not know, so reaching
+  // here means the two lists have drifted apart. The previous if-chain returned
+  // silently in that case: no server started, and the caller told it succeeded.
+  if (load === undefined) {
+    throw new Error(
+      `No adapter registered for AAA_HTTP_FRAMEWORK "${framework}". `
+      + 'RuntimeEnvironment accepts it but REST_API_ADAPTERS has no entry.'
+    );
   }
-  if (framework === 'fastify') {
-    await import('@src/interface/HTTP/adapters/fastify/fastify');
-    return;
-  }
-  if (framework === 'restify') {
-    await import('@src/interface/HTTP/adapters/restify/restify');
-    return;
-  }
-  if (framework === 'cloudflare-workers') {
-    await import('@src/interface/HTTP/adapters/cloudflare-workers/cloudflare-workers');
-    return;
-  }
-  if (framework === 'vercel-functions') {
-    await import('@src/interface/HTTP/adapters/vercel-functions/vercel-functions');
-    return;
-  }
-  if (framework === 'loopback') {
-    await import('@src/interface/HTTP/adapters/loopback/loopback');
-    return;
-  }
-  if (framework === 'sails-js') {
-    await import('@src/interface/HTTP/adapters/sails-js/sails-js');
-    return;
-  }
-  if (framework === 'feathers') {
-    await import('@src/interface/HTTP/adapters/feathers/feathers');
-    return;
-  }
-  if (framework === 'derby-js') {
-    await import('@src/interface/HTTP/adapters/derby-js/derby-js');
-    return;
-  }
-  if (framework === 'adonis-js') {
-    await import('@src/interface/HTTP/adapters/adonis-js/adonis-js');
-    return;
-  }
-  if (framework === 'total-js') {
-    await import('@src/interface/HTTP/adapters/total-js/total-js');
-  }
+
+  await load();
 }
 
 // eslint-disable-next-line jest/require-hook

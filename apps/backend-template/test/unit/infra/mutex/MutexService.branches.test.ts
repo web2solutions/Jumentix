@@ -32,8 +32,12 @@ describe('mutex service branches', () => {
 
   it('returns lock/unlock service errors when storage fails', async () => {
     expect.hasAssertions();
-    jest.resetModules();
-    const { MutexService: FreshMutexService } = await import('@src/infra/mutex/adapter/MutexService');
+    // `MutexService.reset()` rather than `jest.resetModules()`. All the test
+    // needs is a fresh singleton, which the class already offers; reloading the
+    // module to get one is both heavier and unavailable under Bun's runner,
+    // where `resetModules` does not exist (JUM-583).
+    MutexService.reset();
+    const FreshMutexService = MutexService;
     const storage = {
       get: jest.fn().mockResolvedValue({ result: undefined }),
       set: jest.fn().mockResolvedValueOnce({ error: new Error('set-failed') }),
@@ -60,11 +64,10 @@ describe('mutex service branches', () => {
     expect(second).toBe(first);
   });
 
-  it('throws when compiling without storage on a fresh module instance', async () => {
+  it('throws when compiling without storage on a fresh singleton', () => {
     expect.hasAssertions();
-    jest.resetModules();
-    const { MutexService: FreshMutexService } = await import('@src/infra/mutex/adapter/MutexService');
-    expect(() => FreshMutexService.compile(undefined as any)).toThrow(
+    MutexService.reset();
+    expect(() => MutexService.compile(undefined as any)).toThrow(
       'MutexService depends on KeyValueStorageClient implementation'
     );
   });

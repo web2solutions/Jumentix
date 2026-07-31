@@ -24,10 +24,26 @@ function partitionUnitSuites(manifest, env = process.env) {
   return { bunSuites, nodeSuites };
 }
 
+/**
+ * `--isolate` gives each file a fresh global object, which is the isolation Jest
+ * provides per file and `bun test` otherwise does not.
+ *
+ * Without it, a module replaced in one file stays replaced for every file that
+ * runs after it. The composition-root suites mock twelve modules each —
+ * PasswordCryptoService, MutexService, compileKeyValueStorageClient and the
+ * rest — so their stubs were still installed when those modules' own suites ran,
+ * and 19 tests failed in the shared run that passed when run alone. Nothing
+ * pointed at the cause: the failures appeared in files that had not changed
+ * (JUM-583).
+ */
+const BUN_ISOLATION = '--isolate';
+
 function runBunUnit(suites, options = {}) {
   const spawn = options.spawn || spawnSync;
-  const args = suites.length > 0 ? ['test', ...suites] : ['test', UNIT_DIR];
-  console.log(`[ci] unit tests (bun:test): ${suites.length || 'directory'} target(s)`);
+  const args = suites.length > 0
+    ? ['test', BUN_ISOLATION, ...suites]
+    : ['test', BUN_ISOLATION, UNIT_DIR];
+  console.log(`[ci] unit tests (bun:test, isolated): ${suites.length || 'directory'} target(s)`);
   const result = spawn('bun', args, {
     stdio: 'inherit',
     env: { ...process.env, NODE_ENV: process.env.NODE_ENV || 'dev' }

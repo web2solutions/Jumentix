@@ -72,6 +72,9 @@ describe('hexagonal test pyramid libraries', () => {
       }
     );
     expect(plan.type).toBe('layer-aware');
+    // arrayContaining is the point: the claim is that these two layers were
+    // selected, not that they were the only ones.
+    // eslint-disable-next-line jest/prefer-strict-equal -- asymmetric matcher, see above
     expect(plan.selectedLayers).toEqual(expect.arrayContaining(['domain', 'application']));
     expect(plan.unitSuites).toContain(
       'apps/backend-template/test/unit/modules/Users/domain/Model/User.test.ts'
@@ -133,6 +136,6 @@ describe('hexagonal test pyramid libraries', () => {
     };
     const result = validateTestMap(bad, { root: path.resolve(__dirname, '../../../../../') });
     expect(result.ok).toBe(false);
-    expect(result.errors.some((error) => error.includes('ciRunner'))).toBe(true);
+    expect(result.errors.some((error: string) => error.includes('ciRunner'))).toBe(true);
   });
 });

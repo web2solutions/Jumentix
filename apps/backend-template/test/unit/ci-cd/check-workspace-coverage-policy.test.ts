@@ -65,14 +65,34 @@ describe('check-workspace-coverage-policy', () => {
     ]);
   });
 
-  it('accepts allowlisted placeholder test scripts for config placeholders', () => {
+  it('rejects a placeholder test script for a config package too', () => {
     expect.hasAssertions();
+    // This test used to assert the opposite, naming `@jumentix/config-eslint` as
+    // allowlisted. Requirement 106 / JUM-557 emptied that allowlist — placeholders
+    // are now forbidden for every package, and the config packages moved to
+    // `test: bun run typecheck`. The assertion was not updated with the policy,
+    // so it kept describing an exemption that no longer exists (JUM-583).
     const failures = validatePackageCoveragePolicy({
       name: '@jumentix/config-eslint',
       scripts: {
         test: 'echo "config-eslint placeholder: migration wave pending"'
       }
     });
+
+    expect(failures).toStrictEqual([
+      '[@jumentix/config-eslint] test script must not be placeholder output'
+    ]);
+  });
+
+  it('accepts a test script that runs a real command', () => {
+    expect.hasAssertions();
+    // The shape the config packages actually use now, so the suite records what
+    // replaced the allowlist rather than only what was removed.
+    const failures = validatePackageCoveragePolicy({
+      name: '@jumentix/config-eslint',
+      scripts: { test: 'bun run typecheck' }
+    });
+
     expect(failures).toStrictEqual([]);
   });
 });

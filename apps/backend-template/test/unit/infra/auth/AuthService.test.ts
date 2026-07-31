@@ -131,39 +131,31 @@ describe('unit test suite for AuthService', () => {
         });
         // eslint-disable-next-line jest/prefer-expect-assertions
         it('must not authorize with a valid Basic token having wrong password - return error invalid password', async () => {
-          // expect.hasAssertions();
+          expect.hasAssertions();
           const [user0] = [...users];
-          expect(async () => {
-            const rawToken = Buffer.from(`${user0.username}:${user0.password}_`, 'utf8').toString('base64');
-            return authService.authorize(`Basic ${rawToken}`);
-          }).rejects.toThrow('invalid password');
+          const rawToken = Buffer.from(`${user0.username}:${user0.password}_`, 'utf8').toString('base64');
+          await expect(authService.authorize(`Basic ${rawToken}`)).rejects.toThrow('invalid password');
         });
         // eslint-disable-next-line jest/prefer-expect-assertions
         it('must not authorize with a valid Basic token having wrong username - return error user not found', async () => {
           expect.hasAssertions();
           const [user0] = [...users];
-          expect(async () => {
-            const rawToken = Buffer.from(`${user0.username}_:${user0.password}`, 'utf8').toString('base64');
-            return authService.authorize(`Basic ${rawToken}`);
-          }).rejects.toThrow('user not found');
+          const rawToken = Buffer.from(`${user0.username}_:${user0.password}`, 'utf8').toString('base64');
+          await expect(authService.authorize(`Basic ${rawToken}`)).rejects.toThrow('user not found');
         });
         // eslint-disable-next-line jest/prefer-expect-assertions
         it('must not authorize with a invalid auth schema - return error invalid schema', async () => {
           expect.hasAssertions();
           const [user0] = [...users];
-          expect(async () => {
-            const rawToken = Buffer.from(`${user0.username}:${user0.password}`, 'utf8').toString('base64');
-            return authService.authorize(`InvalidSchemaName ${rawToken}`);
-          }).rejects.toThrow('invalid schema');
+          const rawToken = Buffer.from(`${user0.username}:${user0.password}`, 'utf8').toString('base64');
+          await expect(authService.authorize(`InvalidSchemaName ${rawToken}`)).rejects.toThrow('invalid schema');
         });
         // eslint-disable-next-line jest/prefer-expect-assertions
         it('must not authorize with a invalid token - return error invalid token', async () => {
           expect.hasAssertions();
           const [user0] = [...users];
-          expect(async () => {
-            const rawToken = Buffer.from(`${user0.username}:${user0.password}`, 'utf8').toString('base64');
-            return authService.authorize(`${rawToken}`);
-          }).rejects.toThrow('invalid token');
+          const rawToken = Buffer.from(`${user0.username}:${user0.password}`, 'utf8').toString('base64');
+          await expect(authService.authorize(`${rawToken}`)).rejects.toThrow('invalid token');
         });
       });
       // ==>>>
@@ -250,22 +242,18 @@ describe('unit test suite for AuthService', () => {
         });
         it('must not authorize with a valid Bearer token generated with a different server secret - return error invalid token', async () => {
           expect.hasAssertions();
-          expect(async () => {
-            const [user0, user1] = [...users];
-            const jwtService2 = new JwtService('fakesecret');
-            const token = await jwtService2.generateToken(user1);
-            return authService.authorize(`Bearer ${token}`);
-          }).rejects.toThrow('invalid token');
+          const [user0, user1] = [...users];
+          const jwtService2 = new JwtService('fakesecret');
+          const token = await jwtService2.generateToken(user1);
+          await expect(authService.authorize(`Bearer ${token}`)).rejects.toThrow('invalid token');
         });
         // jwtService.generateToken(userFound);
         // eslint-disable-next-line jest/prefer-expect-assertions
         it('must not authorize with a valid Bearer token - return error invalid token', async () => {
           expect.hasAssertions();
           const [user0, user1] = [...users];
-          expect(async () => {
-            const rawToken = Buffer.from(`${user1.username}:${user1.password}`, 'utf8').toString('base64');
-            return authService.authorize(`Bearer ${rawToken}`);
-          }).rejects.toThrow('invalid token');
+          const rawToken = Buffer.from(`${user1.username}:${user1.password}`, 'utf8').toString('base64');
+          await expect(authService.authorize(`Bearer ${rawToken}`)).rejects.toThrow('invalid token');
         });
       });
       // ==>>>

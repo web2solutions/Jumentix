@@ -3,6 +3,21 @@ import * as protoLoader from '@grpc/proto-loader';
 import { loadSpecs } from './spec/loadSpecs';
 import { resolveGrpcProtoPath } from './resolveGrpcProtoPath';
 
+/**
+ * Unwrap a CommonJS interop namespace.
+ *
+ * `@grpc/grpc-js` and `@grpc/proto-loader` are CommonJS. Depending on the
+ * consumer's runtime and bundler, `import * as x` yields either the exports
+ * directly or a namespace whose `default` holds them, and both shapes occur
+ * across the runtimes this SDK is published for.
+ *
+ * Exported so the fallback can be asserted directly rather than by assigning
+ * over the live module namespace, which is read-only under Bun (JUM-583).
+ */
+export function interopDefault<T>(moduleNamespace: T): T {
+  return ((moduleNamespace as { default?: T }).default ?? moduleNamespace) as T;
+}
+
 export interface IGrpcApiRequest {
   operationId: string;
   version?: string;
@@ -36,8 +51,8 @@ export class GrpcApiClient {
     this.host = host || asyncApiGrpc?.servers?.local?.host || 'localhost:3002';
     this.protoFilePath = resolveGrpcProtoPath(protoFilePath);
 
-    const protoLoaderLib: any = (protoLoader as any).default || protoLoader;
-    const grpcLib: any = (grpc as any).default || grpc;
+    const protoLoaderLib: any = interopDefault(protoLoader);
+    const grpcLib: any = interopDefault(grpc);
     const packageDefinition = protoLoaderLib.loadSync(this.protoFilePath, {
       longs: String,
       enums: String,

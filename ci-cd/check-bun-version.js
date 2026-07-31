@@ -110,8 +110,14 @@ function readToolchainInput() {
   };
 }
 
-function main() {
-  const input = readToolchainInput();
+/**
+ * @param input The toolchain facts to judge. Defaults to reading the real
+ * environment; injected so the failure path can be exercised without depending
+ * on which runtime the test itself happens to run under. The guard's entire
+ * purpose is to fail when not on Bun, so a test that produced that state by
+ * being executed under Node worked only under Node (JUM-583).
+ */
+function main(input = readToolchainInput()) {
   const failures = validateToolchain(input);
 
   if (failures.length > 0) {
