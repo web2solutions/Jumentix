@@ -220,3 +220,38 @@ describe('override major compatibility', () => {
     )).toStrictEqual([]);
   });
 });
+
+/**
+ * The reader that resolves a dependent's declared range.
+ *
+ * It is what makes the major-compatibility guard read the tree instead of a
+ * hardcoded expectation, and its failure path — a dependent that is not
+ * installed — decides whether the guard reports a stale pairing or crashes
+ * mid-check.
+ */
+describe('installed dependent range reader', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+  const guardModule = require('../../../../../ci-cd/check-dependency-override-integrity') as {
+    readInstalledDependentRange: (dependent: string, overridden: string) => string | null;
+  };
+
+  it('reads the range a dependent declares for one of its dependencies', () => {
+    expect.hasAssertions();
+    // Against the real tree, so the guard is shown to read what is installed
+    // rather than what a fixture claims.
+    expect(guardModule.readInstalledDependentRange('express', 'send')).toMatch(/^\^1\./);
+  });
+
+  it('returns null for a package that is not installed', () => {
+    expect.hasAssertions();
+    // Rather than throwing: `validateOverrideMajors` turns null into a stated
+    // failure about a stale pairing, which is a better message than a resolution
+    // error from inside a guard nobody was reading.
+    expect(guardModule.readInstalledDependentRange('not-a-real-package', 'send')).toBeNull();
+  });
+
+  it('returns null when the dependent does not declare that dependency', () => {
+    expect.hasAssertions();
+    expect(guardModule.readInstalledDependentRange('express', 'not-a-real-dependency')).toBeNull();
+  });
+});

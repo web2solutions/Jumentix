@@ -12,45 +12,64 @@
  * been observed passing is indistinguishable from one that always passes.
  */
 
+interface CoverageCounters { found: number; hit: number }
+
 const coverageGuard = require('../../../../../ci-cd/check-coverage-thresholds') as {
-  summarize: (lcov: string) => Record<string, { found: number; hit: number }>;
-  percentage: (counter: { found: number; hit: number }) => number | null;
+  summarize: (report: unknown) => Record<string, CoverageCounters>;
+  percentage: (counter: CoverageCounters) => number | null;
   validateCoverage: (
-    totals: Record<string, { found: number; hit: number }>,
+    totals: Record<string, CoverageCounters>,
     thresholds?: Record<string, number>
   ) => { failures: string[]; report: Record<string, number | null> };
   THRESHOLDS: Record<string, number>;
-  main: () => void;
+  main: (readReport?: () => unknown) => void;
+  defaultReadReport: () => unknown;
 };
 
-/** An lcov report with the given per-metric found/hit totals. */
-const lcovWith = ({
-  lf = 100, lh = 100, fnf = 10, fnh = 10, brf = 20, brh = 20
-}: Partial<Record<'lf' | 'lh' | 'fnf' | 'fnh' | 'brf' | 'brh', number>>) => [
-  'TN:',
-  'SF:apps/backend-template/src/example.ts',
-  `FNF:${fnf}`, `FNH:${fnh}`,
-  `LF:${lf}`, `LH:${lh}`,
-  `BRF:${brf}`, `BRH:${brh}`,
-  'end_of_record'
-].join('\n');
+/** Counters where the first `hit` of `found` are covered. */
+const counters = (found: number, hit: number) => Object.fromEntries(
+  Array.from({ length: found }, (_, index) => [String(index), index < hit ? 1 : 0])
+);
+
+/** A statement map placing each statement on its own line. */
+const statements = (found: number) => Object.fromEntries(
+  Array.from({ length: found }, (_, index) => [
+    String(index), { start: { line: index + 1 } }
+  ])
+);
+
+/** An Istanbul report with the given per-metric found/hit totals. */
+const reportWith = ({
+  sf = 100, sh = 100, fnf = 10, fnh = 10, brf = 20, brh = 20
+}: Partial<Record<'sf' | 'sh' | 'fnf' | 'fnh' | 'brf' | 'brh', number>>) => ({
+  'apps/backend-template/src/example.ts': {
+    statementMap: statements(sf),
+    s: counters(sf, sh),
+    f: counters(fnf, fnh),
+    // One path per branch point, so the flattened count is the branch count.
+    b: Object.fromEntries(
+      Array.from({ length: brf }, (_, index) => [String(index), [index < brh ? 1 : 0]])
+    )
+  }
+});
 
 describe('check-coverage-thresholds', () => {
   it('sums found and hit counters across records', () => {
     expect.hasAssertions();
     // Two records, so the check is on the total rather than on whichever file
     // happens to be last.
-    const totals = coverageGuard.summarize(
-      `${lcovWith({ lf: 10, lh: 9 })}\n${lcovWith({ lf: 30, lh: 21 })}`
-    );
+    const totals = coverageGuard.summarize({
+      ...reportWith({ sf: 10, sh: 9 }),
+      'apps/backend-template/src/other.ts': reportWith({ sf: 30, sh: 21 })['apps/backend-template/src/example.ts']
+    });
 
-    expect(totals.lines).toStrictEqual({ found: 40, hit: 30 });
+    expect(totals.statements).toStrictEqual({ found: 40, hit: 30 });
   });
 
   it('passes when every metric is at or above its threshold', () => {
     expect.hasAssertions();
     const { failures } = coverageGuard.validateCoverage(
-      coverageGuard.summarize(lcovWith({}))
+      coverageGuard.summarize(reportWith({}))
     );
 
     expect(failures).toStrictEqual([]);
@@ -61,7 +80,7 @@ describe('check-coverage-thresholds', () => {
     // The metric this checker exists for: Bun cannot enforce it, so nothing else
     // would catch it.
     const { failures } = coverageGuard.validateCoverage(
-      coverageGuard.summarize(lcovWith({ brf: 100, brh: 89 }))
+      coverageGuard.summarize(reportWith({ brf: 100, brh: 89 }))
     );
 
     expect(failures).toHaveLength(1);
@@ -69,13 +88,13 @@ describe('check-coverage-thresholds', () => {
   });
 
   it.each([
-    ['statements', { lf: 100, lh: 98 }],
-    ['lines', { lf: 100, lh: 98 }],
+    ['statements', { sf: 100, sh: 98 }],
+    ['lines', { sf: 100, sh: 98 }],
     ['functions', { fnf: 100, fnh: 98 }]
-  ])('fails when %s is below 99 percent', (metric, counters) => {
+  ])('fails when %s is below 99 percent', (metric, over) => {
     expect.hasAssertions();
     const { failures } = coverageGuard.validateCoverage(
-      coverageGuard.summarize(lcovWith(counters))
+      coverageGuard.summarize(reportWith(over))
     );
 
     expect(failures.join('\n')).toContain(`${metric}: 98.00%`);
@@ -87,7 +106,11 @@ describe('check-coverage-thresholds', () => {
     // BRH records, so a checker that treated an absent counter as satisfied
     // would report the branch threshold as met by a report that never measured
     // it — a threshold removed by omission rather than by decision.
-    const withoutBranches = 'TN:\nSF:x.ts\nFNF:1\nFNH:1\nLF:1\nLH:1\nend_of_record';
+    const withoutBranches = {
+      'x.ts': {
+        statementMap: statements(1), s: counters(1, 1), f: counters(1, 1), b: {}
+      }
+    };
 
     const { failures } = coverageGuard.validateCoverage(
       coverageGuard.summarize(withoutBranches)
@@ -122,50 +145,41 @@ describe('check-coverage-thresholds', () => {
  * The CLI, which is what CI actually invokes.
  *
  * `validateCoverage` being correct is not the same as the command exiting
- * non-zero — a threshold checker that computes the right answer and returns 0
- * blocks nothing, and would look identical in every log until the day it
- * mattered.
+ * non-zero — a checker that computes the right answer and returns 0 blocks
+ * nothing, and would look identical in every log until the day it mattered.
+ *
+ * The report is injected rather than stubbed onto `fs`. A global stub leaks into
+ * every other suite sharing the process: the first version of these tests made
+ * ten unrelated tests fail, because every `readFileSync` in the run returned a
+ * coverage report.
  */
 describe('check-coverage-thresholds CLI', () => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
-  const nodeFs = require('fs');
-  const originalRead = nodeFs.readFileSync;
-  const originalExists = nodeFs.existsSync;
-
-  const runMain = (lcov: string | null) => {
-    const errors: unknown[][] = [];
-    const logs: unknown[][] = [];
-    const exit = jest.spyOn(process, 'exit').mockImplementation(((code: number): never => {
+  const runMain = (report: unknown) => {
+    const errors: unknown[] = [];
+    const logs: unknown[] = [];
+    jest.spyOn(process, 'exit').mockImplementation(((code: number): never => {
       throw new Error(`exit:${String(code)}`);
     }) as never);
-    jest.spyOn(console, 'error').mockImplementation((...args) => { errors.push(args); });
-    jest.spyOn(console, 'log').mockImplementation((...args) => { logs.push(args); });
-    nodeFs.existsSync = () => lcov !== null;
-    nodeFs.readFileSync = () => lcov ?? '';
+    jest.spyOn(console, 'error').mockImplementation((...args) => { errors.push(...args); });
+    jest.spyOn(console, 'log').mockImplementation((...args) => { logs.push(...args); });
 
     let thrown: Error | null = null;
     try {
-      coverageGuard.main();
+      coverageGuard.main(() => report);
     } catch (error) {
       thrown = error as Error;
     }
 
-    return {
-      thrown, errors: errors.flat().join('\n'), logs: logs.flat().join('\n'), exit
-    };
+    return { thrown, errors: errors.join('\n'), logs: logs.join('\n') };
   };
 
   afterEach(() => {
-    nodeFs.readFileSync = originalRead;
-    nodeFs.existsSync = originalExists;
     jest.restoreAllMocks();
   });
 
   it('exits non-zero when a threshold is missed', () => {
     expect.hasAssertions();
-    const result = runMain(
-      'TN:\nSF:x.ts\nFNF:100\nFNH:100\nLF:100\nLH:100\nBRF:100\nBRH:50\nend_of_record'
-    );
+    const result = runMain(reportWith({ brf: 100, brh: 50 }));
 
     expect(result.thrown?.message).toBe('exit:1');
     expect(result.errors).toContain('branches: 50.00% is below the required 90%');
@@ -178,16 +192,65 @@ describe('check-coverage-thresholds CLI', () => {
     const result = runMain(null);
 
     expect(result.thrown?.message).toBe('exit:1');
-    expect(result.errors).toContain('coverage/lcov.info does not exist');
+    expect(result.errors).toContain('coverage-final.json does not exist');
   });
 
   it('reports every metric when all pass', () => {
     expect.hasAssertions();
-    const result = runMain(
-      'TN:\nSF:x.ts\nFNF:100\nFNH:100\nLF:100\nLH:100\nBRF:100\nBRH:95\nend_of_record'
-    );
+    const result = runMain(reportWith({ brf: 100, brh: 95 }));
 
     expect(result.thrown).toBeNull();
     expect(result.logs).toContain('branches 95.00%');
+  });
+});
+
+/**
+ * Reading the report from disk.
+ *
+ * `defaultReadReport` is the only part of this guard that touches the
+ * filesystem, and it is what decides whether a missing report becomes a failure
+ * or a crash. Injected everywhere else, so without these two cases it would ship
+ * untested.
+ */
+describe('check-coverage-thresholds report reader', () => {
+  it('returns null when no report has been produced', () => {
+    expect.hasAssertions();
+    // Not an exception: `main` turns null into a stated failure with a
+    // remediation, which is more useful than an ENOENT stack.
+    // `spyOn` on the CommonJS fs module, not `jest.requireActual` — that does not
+    // exist under Bun's runner, which is the whole subject of JUM-583.
+    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+    const nodeFs = require('fs') as { existsSync: (path: string) => boolean };
+    const spy = jest.spyOn(nodeFs, 'existsSync').mockReturnValue(false);
+
+    expect(coverageGuard.defaultReadReport()).toBeNull();
+    spy.mockRestore();
+  });
+
+  it('parses a report from disk', () => {
+    expect.hasAssertions();
+    // Reading the repository's own coverage/coverage-final.json would be
+    // order-dependent: the run that executes this test is the run that writes
+    // that file, so it is absent on a clean run and present on a repeat. A
+    // fixture makes the assertion about the reader rather than about timing.
+    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+    const nodeFs = require('fs') as {
+      existsSync: (path: string) => boolean;
+      readFileSync: (path: string, encoding: string) => string;
+    };
+    const fixture = JSON.stringify({
+      'x.ts': {
+        statementMap: statements(1), s: counters(1, 1), f: {}, b: {}
+      }
+    });
+    const exists = jest.spyOn(nodeFs, 'existsSync').mockReturnValue(true);
+    const read = jest.spyOn(nodeFs, 'readFileSync').mockReturnValue(fixture);
+
+    const report = coverageGuard.defaultReadReport() as Record<string, { s: unknown }>;
+
+    expect(Object.keys(report)).toStrictEqual(['x.ts']);
+    expect(report['x.ts'].s).toStrictEqual({ 0: 1 });
+    exists.mockRestore();
+    read.mockRestore();
   });
 });

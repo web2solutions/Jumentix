@@ -253,3 +253,149 @@ describe('cana database lifecycle', () => {
  * Covering it properly needs either a separate suite without the shim installed or
  * a real browser in private mode, which is JUM-417 territory.
  */
+
+/**
+ * Environment and schema edge cases in the open path.
+ *
+ * These were the last uncovered statements in `core/database.ts`, and they are
+ * what a user meets first when something is wrong: no IndexedDB at all, or a
+ * schema with nothing in it. Both are defensive, and a defensive branch that has
+ * never executed is a guess about what it does.
+ */
+describe('cana database environment handling', () => {
+  /** Swap the ambient IndexedDB for the duration of one test. */
+  const withAmbient = async (
+    ambient: IDBFactory | undefined,
+    body: () => Promise<void>
+  ) => {
+    const globals = globalThis as { indexedDB?: IDBFactory };
+    const previous = globals.indexedDB;
+    if (ambient === undefined) delete globals.indexedDB;
+    else globals.indexedDB = ambient;
+
+    try {
+      await body();
+    } finally {
+      globals.indexedDB = previous;
+    }
+  };
+
+  it('reports Unavailable when there is no IndexedDB to use', async () => {
+    expect.hasAssertions();
+    // Every other test injects a factory, so the ambient-lookup branch never ran.
+    // Cana has no fallback store by design — this is terminal, not degraded — so
+    // the message a user sees here is the whole of the diagnosis.
+    await withAmbient(undefined, async () => {
+      const failure = await openDatabase({ name: 'no-idb', schema: schema() })
+        .catch((error: unknown) => error);
+
+      expect(isCanaErrorCode(failure, 'Unavailable')).toBe(true);
+      expect((failure as { message: string }).message).toContain('no fallback');
+    });
+  });
+
+  it('uses the ambient IndexedDB when no factory is injected', async () => {
+    expect.hasAssertions();
+    // The other half. Without it, the branch above would be satisfied by an
+    // engine that never consults `globalThis` at all.
+    await withAmbient(freshFactory(), async () => {
+      const result = await openDatabase({ name: `ambient-${Date.now()}`, schema: schema() });
+
+      expect(result.database.version).toBe(1);
+      result.database.close();
+    });
+  });
+
+  it('rejects a schema that declares no stores, before opening anything', async () => {
+    expect.hasAssertions();
+    // Validation runs first, so the `names.length === 0` guard deeper in
+    // first-run detection is unreachable from here — it protects
+    // `isDatabaseEmpty` against a pre-existing database whose stores were
+    // removed outside Cana, which no test can construct through this API.
+    //
+    // Asserting the reachable contract instead: an empty schema is refused with
+    // a message that names the problem, rather than opening a database that can
+    // hold nothing.
+    const failure = await openDatabase({
+      name: `storeless-${Date.now()}`,
+      schema: schema({ stores: [] }),
+      factory: freshFactory()
+    }).catch((error: unknown) => error);
+
+    expect(isCanaErrorCode(failure, 'InvalidRequest')).toBe(true);
+    expect((failure as { message: string }).message).toContain('declares no stores');
+  });
+});
+
+/**
+ * A schema that cannot be applied.
+ *
+ * `onupgradeneeded` runs inside a `versionchange` transaction. If applying the
+ * schema throws there and nothing aborts, IndexedDB commits whatever was created
+ * before the failure and the open resolves — a database at the new version with
+ * a partially applied schema, and no error anywhere.
+ *
+ * These tests do not reach that abort path, and it is worth saying so rather
+ * than implying otherwise: `validateSchema` rejects a malformed schema before
+ * any database is opened, so the runtime handler is unreachable through this
+ * API. What is asserted here is the layer that actually fires — rejection with
+ * `InvalidRequest`, and no half-created database left behind.
+ *
+ * The in-transaction abort remains uncovered. It guards against a failure the
+ * validator cannot foresee, such as quota exhaustion partway through an upgrade,
+ * which `fake-indexeddb` cannot produce. Real-browser conformance is JUM-417.
+ */
+describe('cana database upgrade failure', () => {
+  it('rejects a schema it cannot apply, before opening a database', async () => {
+    expect.hasAssertions();
+    // `multiEntry` on a compound keyPath is forbidden by the IndexedDB spec, and
+    // `validateSchema` rejects it before opening anything.
+    const factory = freshFactory();
+    const name = `upgrade-fail-${Date.now()}`;
+
+    const failure = await openDatabase({
+      name,
+      schema: {
+        version: 1,
+        stores: [{
+          name: 'designs',
+          keyPath: 'id',
+          indexes: [{ name: 'bad', keyPath: ['a', 'b'], multiEntry: true }]
+        }]
+      },
+      factory
+    }).catch((error: unknown) => error);
+
+    expect(failure).toBeDefined();
+    expect((failure as { canaError?: boolean }).canaError).toBe(true);
+  });
+
+  it('leaves no database behind when the schema was rejected', async () => {
+    expect.hasAssertions();
+    // The consequence that matters: a rejected open must not have created
+    // anything. If it had, the next open would find a database at version 1 with
+    // nothing to upgrade and report success over a schema that was never applied.
+    const factory = freshFactory();
+    const name = `upgrade-fail-clean-${Date.now()}`;
+
+    await openDatabase({
+      name,
+      schema: {
+        version: 1,
+        stores: [{
+          name: 'designs',
+          keyPath: 'id',
+          indexes: [{ name: 'bad', keyPath: ['a', 'b'], multiEntry: true }]
+        }]
+      },
+      factory
+    }).catch(() => undefined);
+
+    // Reopening with a valid schema must still see a first run to perform.
+    const retry = await openDatabase({ name, schema: schema(), factory });
+
+    expect(retry.upgraded).toBe(true);
+    expect([...retry.database.objectStoreNames]).toStrictEqual(['designs']);
+    retry.database.close();
+  });
+});

@@ -425,3 +425,50 @@ describe('cana worker crash reconciliation', () => {
     await teardown();
   });
 });
+
+/**
+ * Request validation and teardown across the boundary.
+ *
+ * These paths are defensive, which is exactly why they were uncovered: nothing
+ * in the happy path reaches them, and a defensive branch that has never executed
+ * is a guess about what it does.
+ */
+describe('cana worker request validation', () => {
+  afterEach(releaseOpenPorts);
+
+  it('rejects a store operation that carries no store name', async () => {
+    expect.hasAssertions();
+    // The router is bypassed here because the typed client cannot express the
+    // malformed request — which is the point: the host must not assume its peer
+    // is the matching client. A worker port is reachable by anything on the page.
+    const { api, teardown } = connected();
+    await api.open();
+
+    const raw = await (api as unknown as {
+      get: (store: unknown, key: unknown) => Promise<unknown>;
+    }).get(undefined, 1).catch((error: unknown) => error);
+
+    expect(isCanaErrorCode(raw, 'InvalidRequest')).toBe(true);
+    expect((raw as { message: string }).message).toContain('requires a store name');
+    await teardown();
+  });
+
+  it('closes the database through the boundary', async () => {
+    expect.hasAssertions();
+    // `close` had no coverage: every test tore the port down instead of asking
+    // the host to close, so the one operation a page performs on unload was the
+    // one never exercised.
+    const { api, teardown } = connected();
+    await api.open();
+    await api.add('designs', { id: 1, name: 'before close' });
+
+    await api.close();
+
+    // Reopening must work: close releases the connection rather than poisoning
+    // the host, and the data written before it survives.
+    await api.open();
+
+    expect(await api.get<Design>('designs', 1)).toMatchObject({ name: 'before close' });
+    await teardown();
+  });
+});
