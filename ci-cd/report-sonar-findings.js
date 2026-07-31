@@ -43,6 +43,32 @@ function readTaskMetadata(contents) {
   return metadata;
 }
 
+/**
+ * The pull-request key this analysis belongs to, or null for a branch analysis.
+ *
+ * Scoping matters more than it looks. Without it the API returns the *project's*
+ * issues — every open finding on the long-lived branch — which reads exactly
+ * like a PR report and is not one. The first version of this file did that, and
+ * printed a hundred findings whose line numbers did not correspond to the code
+ * under review.
+ *
+ * The scanner does not always record the key in report-task.txt, so the CI
+ * environment is consulted too: GitHub sets `GITHUB_REF` to
+ * `refs/pull/<n>/merge`, CircleCI sets `CIRCLE_PULL_REQUEST` to the PR URL.
+ */
+function resolvePullRequestKey(metadata, env = process.env) {
+  if (env.SONAR_PULL_REQUEST_KEY) return env.SONAR_PULL_REQUEST_KEY;
+  if (metadata.pullRequest) return metadata.pullRequest;
+
+  const githubRef = /^refs\/pull\/(\d+)\//.exec(env.GITHUB_REF || '');
+  if (githubRef) return githubRef[1];
+
+  const circlePr = /\/(\d+)$/.exec(env.CIRCLE_PULL_REQUEST || '');
+  if (circlePr) return circlePr[1];
+
+  return null;
+}
+
 function authHeader(token) {
   // SonarQube Cloud takes the token as the basic-auth username with no password.
   return { Authorization: `Basic ${Buffer.from(`${token}:`).toString('base64')}` };
@@ -114,9 +140,19 @@ async function main() {
 
   const metadata = readTaskMetadata(fs.readFileSync(taskFile, 'utf8'));
   const { ceTaskUrl, serverUrl, projectKey } = metadata;
-  const pullRequest = process.env.SONAR_PULL_REQUEST_KEY || metadata.pullRequest;
+  const pullRequest = resolvePullRequestKey(metadata);
 
   await waitForAnalysis(ceTaskUrl, token);
+
+  // Say which scope was queried. Without this the report is indistinguishable
+  // from a correct one when the scope is wrong: the first version silently fell
+  // back to the project's own issues and printed a hundred findings from the
+  // long-lived branch, with line numbers that had nothing to do with the PR.
+  console.log(
+    pullRequest
+      ? `[sonar] findings for pull request ${pullRequest}:`
+      : '[sonar] findings for the analysed branch (no pull request in scope):'
+  );
 
   const scope = pullRequest ? `&pullRequest=${pullRequest}` : '';
   const [{ issues = [] }, { hotspots = [] }] = await Promise.all([
@@ -159,6 +195,7 @@ if (isEntryPoint(module)) {
 
 module.exports = {
   ANALYSIS_TIMEOUT_MS,
+  resolvePullRequestKey,
   formatIssues,
   main,
   readTaskMetadata,

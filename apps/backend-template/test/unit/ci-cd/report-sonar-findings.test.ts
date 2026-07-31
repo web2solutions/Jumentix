@@ -156,3 +156,53 @@ describe('report-sonar-findings', () => {
     delete process.env.SONAR_TOKEN;
   });
 });
+
+/**
+ * Which scope the report queries.
+ *
+ * This is the part that failed silently the first time. Without a pull-request
+ * key the API returns the *project's* issues — every open finding on the
+ * long-lived branch — which reads exactly like a PR report and is not one. It
+ * printed a hundred findings whose line numbers had nothing to do with the code
+ * under review, and looked entirely plausible doing it.
+ */
+describe('report-sonar-findings pull-request scope', () => {
+  const resolve = (
+    reporter as unknown as {
+      resolvePullRequestKey: (
+        metadata: Record<string, string>,
+        env: Record<string, string>
+      ) => string | null;
+    }
+  ).resolvePullRequestKey;
+
+  it('prefers an explicit key', () => {
+    expect.hasAssertions();
+    expect(resolve({}, { SONAR_PULL_REQUEST_KEY: '15' })).toBe('15');
+  });
+
+  it('reads the key the scanner recorded', () => {
+    expect.hasAssertions();
+    expect(resolve({ pullRequest: '15' }, {})).toBe('15');
+  });
+
+  it('derives the key from a GitHub pull-request ref', () => {
+    expect.hasAssertions();
+    // What Actions actually sets on a PR run, and what was missing.
+    expect(resolve({}, { GITHUB_REF: 'refs/pull/15/merge' })).toBe('15');
+  });
+
+  it('derives the key from a CircleCI pull-request URL', () => {
+    expect.hasAssertions();
+    expect(resolve({}, { CIRCLE_PULL_REQUEST: 'https://github.com/o/r/pull/15' })).toBe('15');
+  });
+
+  it('is null on a branch build rather than guessing', () => {
+    expect.hasAssertions();
+    // A branch analysis has no PR, and reporting the project's issues there is
+    // correct — but only because the log says so. Returning a wrong key would
+    // query an unrelated PR.
+    expect(resolve({}, { GITHUB_REF: 'refs/heads/dev' })).toBeNull();
+    expect(resolve({}, {})).toBeNull();
+  });
+});
