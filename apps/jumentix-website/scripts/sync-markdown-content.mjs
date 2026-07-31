@@ -143,6 +143,22 @@ async function listMarkdownFiles(directory) {
   return files.sort();
 }
 
+/**
+ * License texts, which are published as-is and never translated.
+ *
+ * The bilingual rule (Requirement 076) exists so documentation reaches both
+ * audiences. A license is not documentation: the MIT text is the licence, and a
+ * Portuguese rendering of it would be a second document with no legal standing
+ * that readers could reasonably mistake for the terms. Shipping no translation
+ * is the correct outcome, not a gap.
+ *
+ * `packages/cana/LICENSE.md` is the first of these in the tree, which is why the
+ * collection walk had never encountered the case.
+ */
+function isLicense(sourceFile) {
+  return /^licen[cs]e(\.[^.]+)?\.md$/i.test(path.basename(sourceFile));
+}
+
 function collectionSlug(sourceDir, sourceFile) {
   const relative = path.relative(sourceDir, sourceFile).replaceAll('\\', '/');
   const basename = path.basename(relative).replace(/\.pt-BR\.md$/i, '').replace(/\.md$/i, '');
@@ -173,7 +189,9 @@ async function prepareRecords(config) {
   for (const collection of config.collections) {
     const sourceDir = path.resolve(appRoot, collection.sourceDir);
     const files = await listMarkdownFiles(sourceDir);
-    const englishFiles = files.filter((file) => !/\.pt-BR\.md$/i.test(file));
+    const englishFiles = files.filter(
+      (file) => !/\.pt-BR\.md$/i.test(file) && !isLicense(file),
+    );
 
     for (const englishSource of englishFiles) {
       const portugueseSource = englishSource.replace(/\.md$/i, '.pt-BR.md');

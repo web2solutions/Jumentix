@@ -1,6 +1,7 @@
 export default {
   index: { title: 'Pacotes do workspace Jumentix', display: 'hidden' },
   'adapter-runtime-bootstrap': '@jumentix/adapter-runtime-bootstrap',
+  cana: '@jumentix/cana',
   'cli-init': '@jumentix/cli-init',
   'config-eslint': '@jumentix/config-eslint',
   'config-jest': '@jumentix/config-jest',
