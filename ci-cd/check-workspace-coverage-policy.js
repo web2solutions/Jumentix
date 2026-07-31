@@ -11,10 +11,8 @@ const MINIMUM_GLOBAL_THRESHOLDS = {
 
 const TEST_PLACEHOLDER_PATTERN = /echo\s+["'][^"']*(no tests yet|placeholder|pending)[^"']*["']/i;
 const PACKAGE_TEST_PLACEHOLDER_ALLOWLIST = new Set([
-  '@jumentix/config-eslint',
-  '@jumentix/config-jest',
-  '@jumentix/config-ts',
-  '@jumentix/shared-contracts'
+  // Req 106 / JUM-557: placeholders are forbidden. Packages without unit tests
+  // declare jumentix.testSurface=typecheck-only and run typecheck via `test`.
 ]);
 
 function readRootJestConfig(rootDir) {

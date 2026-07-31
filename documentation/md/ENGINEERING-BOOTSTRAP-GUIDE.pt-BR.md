@@ -202,3 +202,18 @@ Um recurso deve ser considerado concluído quando:
 - Ignorar verificações de resolução de rota da OAS antes dos testes de tempo de execução.
 
 Seguir os padrões existentes neste modelo é o caminho mais rápido para uma entrega consistente e sustentável.
+
+
+<!-- test-pyramid-tdd -->
+## Pirâmide de Testes Hexagonal / TDD (Bun)
+
+Localmente todos os testes rodam no Bun (Requisito 106). Prefira:
+
+```bash
+bun run tdd
+bun run tdd:domain
+bun run test:unit
+bun run test-map:check
+```
+
+Node/Jest é exclusivo do CI. Veja `documentation/md/HEXAGONAL-TEST-PYRAMID.pt-BR.md`.

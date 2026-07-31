@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "issue": "JUM-495",
+  "capturedAt": "2026-07-30",
+  "source": "JUM-23 baseline + local Bun 1.3.14 samples; CI wall-clock out of scope (Req 106 §5)",
+  "jestEra": {
+    "fullUnitMs": 157600,
+    "suites": 94,
+    "tests": 518
+  },
+  "bunLocalSamples": {
+    "usersDomainWatchColdMs": null,
+    "note": "Fill from local bun test runs as developers exercise tdd:*; not gated on CI"
+  },
+  "targets": {
+    "taskGateMs_p50": 60000,
+    "fullUnitMs": 300000,
+    "escalationRateMax": 0.3,
+    "shadowMissRateMax": 0,
+    "flakeRateMax": 0.005
+  }
+}

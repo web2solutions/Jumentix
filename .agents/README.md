@@ -123,6 +123,7 @@ Use these files as living constraints for future maintenance and feature develop
 - [103-canonical-repository-migration-and-legacy-freeze](requirements/103-canonical-repository-migration-and-legacy-freeze.md)
 - [104-canonical-application-integration-migration](requirements/104-canonical-application-integration-migration.md)
 - [105-hexagonal-test-pyramid-layer-aware-gates](requirements/105-hexagonal-test-pyramid-layer-aware-gates.md)
+- [106-local-bun-all-tests-node-ci-only](requirements/106-local-bun-all-tests-node-ci-only.md)
 - [Agent Registry](AGENT-REGISTRY.md)
 - [NFR Registry](NFR-REGISTRY.md)
 - [Spec Development Driven Agent](spec-development-driven-agent.md)
