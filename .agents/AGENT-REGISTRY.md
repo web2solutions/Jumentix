@@ -170,6 +170,28 @@ This registry tracks AI agents collaborating in the Jumentix project.
   - governance documentation delivery with EN/PT-BR parity
   - CI gate script hardening and regression coverage
 
+### 7) opencode-primary-001
+
+- `agent_id`: `opencode-primary-001`
+- `agent_name`: `OpenCode Primary`
+- `platform`: `OpenCode`
+- `machine_id`: `host-eduardos-mac-pro-local`
+- `machine_name`: `Eduardos-Mac-Pro.local`
+- `machine_os`: `Darwin 21.6.0 x86_64`
+- `agent_runtime`: `OpenCode deepseek-v4-flash-free`
+- `agent_version`: `deepseek-v4-flash-free`
+- `status`: `available`
+- `registered_at_utc`: `2026-07-30T05:30:00Z`
+- `last_branch_check_utc`: `2026-07-30T05:30:00Z`
+- `main_ref_checked`: `6f5dba04`
+- `dev_ref_checked`: `4740bbca`
+- `active_epic`: `none`
+- `assigned_task`: `none`
+- `capabilities`:
+  - repository ownership analysis and governance delivery
+  - CI gate repair and agent registry synchronization
+  - multi-agent collision avoidance and worktree management
+
 ## Operating Flow
 
 1. Register or update the agent entry here before task execution.
