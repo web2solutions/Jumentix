@@ -64,4 +64,5 @@ export * from './core/durability-policy';
 export * from './core/reconciliation';
 export * from './core/protocol';
 export * from './core/worker-host';
+export * from './conformance';
 export * from './adapter';
