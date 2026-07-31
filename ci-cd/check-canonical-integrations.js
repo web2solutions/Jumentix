@@ -47,10 +47,13 @@ const INTEGRATION_CONTRACTS = Object.freeze([
       'target: 95%'
     ]
   },
+  // Dependency scanning is owned by the first-party OSV gate. It resolves the
+  // installed Bun tree and fails closed on incomplete or unavailable results.
   {
-    file: '.snyk',
+    file: 'packages/security-scanner/src/index.js',
     markers: [
-      'version: v1.25.0'
+      'api.osv.dev',
+      'ACCEPTED_RISK'
     ]
   },
   {
@@ -68,7 +71,7 @@ const INTEGRATION_CONTRACTS = Object.freeze([
       'CircleCI',
       'Codecov',
       'SonarQube Cloud',
-      'Snyk',
+      'OSV.dev',
       'GitGuardian',
       'Cursor Bugbot',
       'Vercel',
@@ -82,7 +85,7 @@ const INTEGRATION_CONTRACTS = Object.freeze([
       'CircleCI',
       'Codecov',
       'SonarQube Cloud',
-      'Snyk',
+      'OSV.dev',
       'GitGuardian',
       'Cursor Bugbot',
       'Vercel',
