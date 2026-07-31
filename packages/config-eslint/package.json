@@ -8,8 +8,11 @@
   ],
   "scripts": {
     "build": "echo \"config-eslint placeholder: migration wave pending\"",
-    "test": "echo \"config-eslint placeholder: migration wave pending\"",
+    "test": "bun run typecheck",
     "lint": "echo \"config-eslint placeholder: migration wave pending\"",
     "typecheck": "echo \"config-eslint placeholder: migration wave pending\""
+  },
+  "jumentix": {
+    "testSurface": "typecheck-only"
   }
 }

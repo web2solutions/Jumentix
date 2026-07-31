@@ -6,6 +6,7 @@ const DEFAULT_MANIFEST_PATH = path.resolve(__dirname, '../../test-map.json');
 const VALID_TIERS = new Set(['gate', 'nightly']);
 const VALID_RUNNERS = new Set(['bun', 'node']);
 const VALID_TYPES = new Set(['unit', 'integration', 'smoke', 'contract', 'platform']);
+const VALID_CI_RUNNERS = new Set(['bun', 'node']);
 
 function readTestMap(manifestPath = DEFAULT_MANIFEST_PATH) {
   if (!fs.existsSync(manifestPath)) {
@@ -115,6 +116,15 @@ function validateTestMap(manifest, options = {}) {
     }
     if (!VALID_RUNNERS.has(suite.runner)) {
       errors.push(`Suite ${suite.path} has invalid runner ${suite.runner}`);
+    }
+    if (suite.ciRunner && !VALID_CI_RUNNERS.has(suite.ciRunner)) {
+      errors.push(`Suite ${suite.path} has invalid ciRunner ${suite.ciRunner}`);
+    }
+    // Req 106: local default must be bun; Node is CI-only via ciRunner.
+    if (suite.runner === 'node') {
+      errors.push(
+        `Suite ${suite.path} uses runner:"node" — local runner must be "bun"; use ciRunner:"node" for CI (Req 106)`
+      );
     }
     if (!VALID_TYPES.has(suite.type)) {
       errors.push(`Suite ${suite.path} has invalid type ${suite.type}`);

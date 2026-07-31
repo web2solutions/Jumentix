@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "issue": "JUM-448",
+  "capturedAt": "2026-07-30",
+  "baselineRef": "artifacts/ci/baseline-timings.json",
+  "verdict": "foundation + Req106 local-Bun cutover delivered; CI green out of scope",
+  "rollback": "JUMENTIX_GATE_V2=0 ; JUMENTIX_TEST_RUNTIME=node for CI paths"
+}

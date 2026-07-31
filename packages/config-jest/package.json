@@ -8,8 +8,11 @@
   ],
   "scripts": {
     "build": "echo \"config-jest placeholder: migration wave pending\"",
-    "test": "echo \"config-jest placeholder: migration wave pending\"",
+    "test": "bun run typecheck",
     "lint": "echo \"config-jest placeholder: migration wave pending\"",
     "typecheck": "echo \"config-jest placeholder: migration wave pending\""
+  },
+  "jumentix": {
+    "testSurface": "typecheck-only"
   }
 }

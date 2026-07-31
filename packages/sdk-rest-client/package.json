@@ -16,5 +16,8 @@
   },
   "dependencies": {
     "yaml": "^2.5.1"
+  },
+  "jumentix": {
+    "testSurface": "typecheck-only"
   }
 }

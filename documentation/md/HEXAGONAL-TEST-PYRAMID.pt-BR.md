@@ -1,78 +1,68 @@
-# Pirâmide de Testes Hexagonal — unit Bun + integração Node + gates por camada
+# Pirâmide de Testes Hexagonal — gates por camada (Bun local, Node só no CI)
 
 ## Resultado
 
-Testes rápidos e confiáveis que espelham a arquitetura hexagonal:
+Testes rápidos alinhados à arquitetura:
 
-- Suítes **unitárias** rodam no **Bun** (`bun:test`) por velocidade.
-- Suítes de **integração / smoke / plataforma** rodam em **Node 22 + Jest** por compatibilidade.
-- Branches de feature/tarefa executam apenas as suítes das camadas alteradas e do raio de explosão para fora.
-- `dev` executa o gate unitário completo; `main` executa a matriz completa.
+- **Localmente, todos os tipos de suite rodam no Bun** (`bun test` / `bun run test*`) — unit, integration, smoke, contract e verificação de workspaces (Requisito `106`).
+- **Node/Jest é exclusivo do CI**, via `JUMENTIX_TEST_RUNTIME=node`, `CI=true` ou scripts `*:ci`.
+- Branches de tarefa rodam só as suites das camadas afetadas e do blast radius para fora.
+- Deixar jobs remotos de CI verdes **está fora do escopo** deste projeto; o contrato e os entry points são entregues aqui.
 
-Requisito: `.agents/requirements/105-hexagonal-test-pyramid-layer-aware-gates.md`.
+Requisitos:
+
+- `.agents/requirements/105-hexagonal-test-pyramid-layer-aware-gates.md`
+- `.agents/requirements/106-local-bun-all-tests-node-ci-only.md`
 
 ## Manifesto
 
-`test-map.json` é a fonte de verdade legível por máquina:
+`test-map.json` é a fonte de verdade:
 
 | Campo | Significado |
 | --- | --- |
 | `layers.*.dependsOn` | Dependências hexagonais para dentro |
-| `layers.*.sourceGlobs` | Predicados de posse de código-fonte |
-| `suites[]` | Cada arquivo de teste executável, com `layer`, `type`, `runner`, `tier` |
-| `quarantine[]` | Exceções explícitas com referência Linear |
-| `flags.gateV2Env` | `JUMENTIX_GATE_V2` (ligado por padrão) |
-
-Validar com:
+| `suites[].runner` | Runner **local** — sempre `bun` (Req 106) |
+| `suites[].ciRunner` | Runner opcional de CI (`node` quando o Jest ainda é necessário remotamente) |
+| `suites[].tier` | `gate` ou `nightly` |
+| `quarantine[]` | Exceções explícitas com issue Linear |
 
 ```bash
 bun run test-map:check
-```
-
-Regenerar após adicionar suítes:
-
-```bash
 bun run test-map:generate
-bun run test-map:check
 ```
 
-## Gate de tarefa consciente de camada
-
-`bun run ci:gate:task` usa o seletor v2 quando `JUMENTIX_GATE_V2` está ausente/true.
-
-Algoritmo:
-
-1. Ler arquivos alterados (`staged` ou `range` via `JUMENTIX_TASK_TEST_MODE`).
-2. Resolver dependentes com aliases (`@src`, `@test`, `@seed`, `@jumentix/*`).
-3. Mapear arquivos → camadas via `test-map.json`.
-4. Expandir para fora pelas dependências reversas de `dependsOn`.
-5. Executar suítes unitárias Bun + scripts de integração Node alvo.
-6. Emitir evidência JSON (`AAA_CI_GATE_RESULT_FILE`) incluindo camadas **não executadas**.
-
-Rollback sem reverter código:
+## DX local (Bun)
 
 ```bash
-JUMENTIX_GATE_V2=0 bun run ci:gate:task
+bun run test
+bun run test:unit
+bun run test:integration:express
+bun run test:contract
+bun run tdd
+bun run tdd:domain
+bun run workspace:test
 ```
 
-Shadow (v1 autoritativo, v2 só relatório):
+Forçar o caminho Node de CI só para depuração:
 
 ```bash
-JUMENTIX_GATE_V2=0 JUMENTIX_GATE_V2_SHADOW=1 bun run ci:gate:task
+JUMENTIX_TEST_RUNTIME=node bun run test:integration:express
+bun run test:integration:express:ci
 ```
 
-## Partição de runtime
+## Gate de tarefa
 
-`bun run test:unit` lê `test-map.json` e:
+`bun run ci:gate:task` usa o seletor v2 quando `JUMENTIX_GATE_V2` está unset/true.
 
-1. Executa suítes `runner: "bun"` com `bun test`.
-2. Executa suítes `runner: "node"` com Jest (partição temporária por lacunas de API do Bun).
+Rollback: `JUMENTIX_GATE_V2=0`. Shadow: `JUMENTIX_GATE_V2_SHADOW=1`.
 
-Integração permanece em Node/Jest via `bun run ci:integration` / scripts por adaptador declarados no manifesto.
+## Tier nightly
 
-## Regras anti-falso-positivo
+Suites pesadas (`mutex`, redis-streams, DB smoke) usam `tier: "nightly"` (`bun run test:nightly`). O agendamento no GitHub Actions é escopo de operações de CI.
 
-- Plano vazio para um change-set não vazio → falha.
-- Suíte planejada ausente dos resultados executados → falha.
-- Status `skipped` / `pending` / não reportado → falha.
-- `test-map.json` obsoleto (arquivos faltando, ciclos, dupla posse) → falha via `test-map:check`.
+## Anti-false-green
+
+- Plano vazio para change set não vazio → falha.
+- Suite planejada ausente do resultado → falha.
+- `skipped` / `pending` → não é verde.
+- Pacotes sem unit tests declaram `jumentix.testSurface=typecheck-only`.

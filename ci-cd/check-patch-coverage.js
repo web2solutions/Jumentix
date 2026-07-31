@@ -5,8 +5,15 @@ const path = require('path');
 const cp = require('child_process');
 
 const ROOT = process.cwd();
-const LCOV_PATH = path.join(ROOT, 'coverage', 'lcov.info');
+const LCOV_PATH = process.env.JUMENTIX_MERGED_LCOV
+  || path.join(ROOT, 'coverage', 'merged', 'lcov.info');
+const LCOV_FALLBACK = path.join(ROOT, 'coverage', 'lcov.info');
 const threshold = Number(process.env.PATCH_COVERAGE_THRESHOLD || '99');
+// JUM-555: under selective gates, only evaluate files owned by selected layers.
+const selectedLayers = String(process.env.JUMENTIX_SELECTED_LAYERS || '')
+  .split(',')
+  .map((value) => value.trim())
+  .filter(Boolean);
 
 const run = (cmd) => cp.execSync(cmd, {
   cwd: ROOT,
@@ -100,24 +107,56 @@ const parseLcov = (lcovText) => {
   return fileLineHits;
 };
 
+const fileOwnedBySelectedLayers = (file) => {
+  if (selectedLayers.length === 0) return true;
+  try {
+    // Lazy require keeps this script usable without a manifest.
+    // eslint-disable-next-line global-require, import/no-dynamic-require
+    const { readTestMap } = require('./lib/test-map');
+    // eslint-disable-next-line global-require, import/no-dynamic-require
+    const { layersForFile } = require('./lib/layer-resolver');
+    const manifest = readTestMap(path.join(ROOT, 'test-map.json'));
+    const layers = layersForFile(manifest, file);
+    if (layers.length === 0) {
+      // Unknown ownership under selective mode → ignore (not 0%, not false green).
+      return false;
+    }
+    return layers.some((layer) => selectedLayers.includes(layer));
+  } catch {
+    return true;
+  }
+};
+
 const main = () => {
-  if (!fs.existsSync(LCOV_PATH)) {
-    throw new Error(`Coverage file not found at ${LCOV_PATH}. Run unit tests with coverage first.`);
+  const lcovPath = fs.existsSync(LCOV_PATH) ? LCOV_PATH : LCOV_FALLBACK;
+  if (!fs.existsSync(lcovPath)) {
+    throw new Error(`Coverage file not found at ${LCOV_PATH} or ${LCOV_FALLBACK}. Run unit tests with coverage first.`);
   }
 
   const baseRef = resolveBaseRef();
   const diff = run(`git diff --unified=0 --no-color ${baseRef}...HEAD -- '*.ts'`);
   const changedLinesByFile = parseChangedLines(diff);
-  const lcov = fs.readFileSync(LCOV_PATH, 'utf8');
+  const lcov = fs.readFileSync(lcovPath, 'utf8');
   const lcovByFile = parseLcov(lcov);
 
   let covered = 0;
   let total = 0;
+  let ignoredUnselected = 0;
   const missing = [];
 
   for (const [file, lines] of changedLinesByFile.entries()) {
+    if (!fileOwnedBySelectedLayers(file)) {
+      ignoredUnselected += lines.size;
+      continue;
+    }
     const lineHits = lcovByFile.get(file);
-    if (!lineHits) continue;
+    if (!lineHits) {
+      // Selective reconciliation (JUM-555): missing coverage for a selected
+      // file fails closed; missing coverage for unselected layers is ignored above.
+      for (const ln of lines.values()) missing.push(`${file}:${ln}`);
+      total += lines.size;
+      continue;
+    }
     for (const ln of lines.values()) {
       if (!lineHits.has(ln)) continue;
       total += 1;
@@ -128,6 +167,10 @@ const main = () => {
         missing.push(`${file}:${ln}`);
       }
     }
+  }
+
+  if (ignoredUnselected > 0) {
+    console.log(`[patch-coverage] ignored ${ignoredUnselected} changed line(s) outside JUMENTIX_SELECTED_LAYERS=[${selectedLayers.join(',')}]`);
   }
 
   if (total === 0) {
