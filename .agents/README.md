@@ -124,6 +124,7 @@ Use these files as living constraints for future maintenance and feature develop
 - [104-canonical-application-integration-migration](requirements/104-canonical-application-integration-migration.md)
 - [105-circleci-as-sole-ci-provider](requirements/105-circleci-as-sole-ci-provider.md)
 - [106-http-adapters-must-integrate-their-framework](requirements/106-http-adapters-must-integrate-their-framework.md)
+- [107-test-suites-must-detect-fake-implementations](requirements/107-test-suites-must-detect-fake-implementations.md)
 - [Agent Registry](AGENT-REGISTRY.md)
 - [NFR Registry](NFR-REGISTRY.md)
 - [Spec Development Driven Agent](spec-development-driven-agent.md)

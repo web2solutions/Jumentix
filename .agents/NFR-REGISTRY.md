@@ -99,6 +99,11 @@ This file consolidates non-functional requirements already requested and stored 
   a reference assigned to an unused field, or a require swallowed by try/catch, does not
   satisfy this, and the framework must be a declared dependency. Platform targets with no
   framework are exempt by explicit listing. `arch:check-http-adapters` validates it.
+- `107` A test suite must be able to tell a real implementation from a fake one: every
+  adapter carries at least one assertion only the real dependency can satisfy, integration
+  coverage of adapter directories is 100%, and a missing dependency fails its suite rather
+  than skipping it. Asserting correct behaviour is not enough when a substitute produces
+  identical behaviour — the AdonisJS adapter passed every test while integrating nothing.
 
 When a new NFR is requested:
 

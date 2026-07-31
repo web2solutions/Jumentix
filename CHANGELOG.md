@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-07-30 feat(readme,arch): fix stale badges and require adapters to integrate their framework [106] - Eduardo A.
 - 2026-07-30 feat(ci): make circleci the sole provider and retire github actions [105] - Eduardo A.
 - 2026-07-30 docs(cana): record the measured performance shape in release readiness - Eduardo A.
 - 2026-07-30 test(cana): performance baseline by complexity shape [JUM-561] - Eduardo A.
