@@ -20,6 +20,7 @@ const coverageGuard = require('../../../../../ci-cd/check-coverage-thresholds') 
     thresholds?: Record<string, number>
   ) => { failures: string[]; report: Record<string, number | null> };
   THRESHOLDS: Record<string, number>;
+  main: () => void;
 };
 
 /** An lcov report with the given per-metric found/hit totals. */
@@ -114,5 +115,79 @@ describe('check-coverage-thresholds', () => {
       functions: 99,
       lines: 99
     });
+  });
+});
+
+/**
+ * The CLI, which is what CI actually invokes.
+ *
+ * `validateCoverage` being correct is not the same as the command exiting
+ * non-zero — a threshold checker that computes the right answer and returns 0
+ * blocks nothing, and would look identical in every log until the day it
+ * mattered.
+ */
+describe('check-coverage-thresholds CLI', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+  const nodeFs = require('fs');
+  const originalRead = nodeFs.readFileSync;
+  const originalExists = nodeFs.existsSync;
+
+  const runMain = (lcov: string | null) => {
+    const errors: unknown[][] = [];
+    const logs: unknown[][] = [];
+    const exit = jest.spyOn(process, 'exit').mockImplementation(((code: number): never => {
+      throw new Error(`exit:${String(code)}`);
+    }) as never);
+    jest.spyOn(console, 'error').mockImplementation((...args) => { errors.push(args); });
+    jest.spyOn(console, 'log').mockImplementation((...args) => { logs.push(args); });
+    nodeFs.existsSync = () => lcov !== null;
+    nodeFs.readFileSync = () => lcov ?? '';
+
+    let thrown: Error | null = null;
+    try {
+      coverageGuard.main();
+    } catch (error) {
+      thrown = error as Error;
+    }
+
+    return {
+      thrown, errors: errors.flat().join('\n'), logs: logs.flat().join('\n'), exit
+    };
+  };
+
+  afterEach(() => {
+    nodeFs.readFileSync = originalRead;
+    nodeFs.existsSync = originalExists;
+    jest.restoreAllMocks();
+  });
+
+  it('exits non-zero when a threshold is missed', () => {
+    expect.hasAssertions();
+    const result = runMain(
+      'TN:\nSF:x.ts\nFNF:100\nFNH:100\nLF:100\nLH:100\nBRF:100\nBRH:50\nend_of_record'
+    );
+
+    expect(result.thrown?.message).toBe('exit:1');
+    expect(result.errors).toContain('branches: 50.00% is below the required 90%');
+  });
+
+  it('exits non-zero when the report is absent, rather than treating it as a pass', () => {
+    expect.hasAssertions();
+    // The thresholds must not stop applying the moment coverage stops being
+    // produced, which is precisely when they matter most.
+    const result = runMain(null);
+
+    expect(result.thrown?.message).toBe('exit:1');
+    expect(result.errors).toContain('coverage/lcov.info does not exist');
+  });
+
+  it('reports every metric when all pass', () => {
+    expect.hasAssertions();
+    const result = runMain(
+      'TN:\nSF:x.ts\nFNF:100\nFNH:100\nLF:100\nLH:100\nBRF:100\nBRH:95\nend_of_record'
+    );
+
+    expect(result.thrown).toBeNull();
+    expect(result.logs).toContain('branches 95.00%');
   });
 });

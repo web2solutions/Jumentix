@@ -153,6 +153,18 @@ export class AuthService implements IAuthService {
     }
   }
 
+  /**
+   * Record an audit event, swallowing any failure.
+   *
+   * Both sinks are wrapped internally, so this never rejects — a broken audit
+   * trail must not change an authorization decision. Call sites therefore use
+   * a bare call rather than `.catch(() => {})`: those six handlers could not
+   * fire, and being unreachable they were also uncoverable, which is how they
+   * were found (JUM-583).
+   *
+   * Swallowing in one place rather than two also means there is one place to
+   * change if these failures should ever become visible.
+   */
   private async publishAuditEvent(
     name: string,
     payload: Record<string, unknown>,
@@ -422,7 +434,7 @@ export class AuthService implements IAuthService {
       this.publishAuditEvent('users.authz.scope.denied', {
         ...auditPayload,
         reason: 'missing_route_security'
-      }, 'denied').catch(() => {});
+      }, 'denied');
       throw new ValidationError('The route Controller is secured by guard rails but there is no security schema defined in the Open API specification file.invalid schema');
     }
     const authName = Object.keys(endPointConfig.security[0])[0];
@@ -434,21 +446,21 @@ export class AuthService implements IAuthService {
         this.publishAuditEvent('users.authz.scope.denied', {
           ...auditPayload,
           reason: 'missing_user_roles'
-        }, 'denied').catch(() => {});
+        }, 'denied');
         throw new ForbiddenError('Insufficient permission - invalid user - user.roles is missing');
       }
       if (shouldRequireOrganization(user.roles) && !user.organization) {
         this.publishAuditEvent('users.authz.scope.denied', {
           ...auditPayload,
           reason: 'missing_organization_for_role'
-        }, 'denied').catch(() => {});
+        }, 'denied');
         throw new ForbiddenError('Insufficient permission - organization is required for this user role');
       }
       if (hasSuperadminRole(user.roles)) {
         this.publishAuditEvent('users.authz.scope.allowed', {
           ...auditPayload,
           reason: 'superadmin_bypass'
-        }, 'success').catch(() => {});
+        }, 'success');
         return true;
       }
       if (routePermission.length > 0) {
@@ -457,14 +469,14 @@ export class AuthService implements IAuthService {
             this.publishAuditEvent('users.authz.scope.denied', {
               ...auditPayload,
               reason: `missing_scope_${permission}`
-            }, 'denied').catch(() => {});
+            }, 'denied');
             throw new ForbiddenError(`Insufficient permission - user must have the ${permission} role`);
           }
         }
         this.publishAuditEvent('users.authz.scope.allowed', {
           ...auditPayload,
           reason: 'all_scopes_validated'
-        }, 'success').catch(() => {});
+        }, 'success');
       }
     }
     return true;

@@ -93,3 +93,73 @@ describe('cana conformance harness', () => {
     expect(summary).toContain('3 failed');
   });
 });
+
+/**
+ * The browser-only checks, executed rather than skipped.
+ *
+ * Against `fake-indexeddb` they report `skipped`, which is correct and is
+ * asserted above — but it also means their bodies never run, so a check that
+ * threw a TypeError on its first line would look identical to one that works
+ * until the day it is finally pointed at Safari.
+ *
+ * Declaring `realBrowser: true` while still supplying the shim forces them to
+ * execute. Most will fail, because the shim genuinely cannot answer them, and
+ * that is the point: a `failed` result proves the check ran and reported.
+ * `runConformance` returns outcomes as data rather than throwing, precisely so a
+ * report can carry that distinction.
+ */
+describe('cana conformance browser-only checks', () => {
+  /** Hoisted so the predicate is not a branch inside a test body. */
+  const isTerminal = (status: string) => ['passed', 'failed'].includes(status);
+  const isFailureWithoutDetail = (r: { status: string; detail?: string }) => (
+    r.status === 'failed' && !r.detail
+  );
+
+  it('executes them when the environment claims to be a browser', async () => {
+    expect.hasAssertions();
+    const report = await runConformance({
+      label: 'shim-claiming-browser',
+      factory: new IDBFactory(),
+      realBrowser: true
+    });
+
+    const browserChecks = report.results.filter((result) => result.browserOnly);
+
+    expect(browserChecks.length).toBeGreaterThan(0);
+    // None may remain `skipped`: the skip branch is what `realBrowser` turns off.
+    expect(browserChecks.filter((result) => result.status === 'skipped')).toStrictEqual([]);
+  });
+
+  it('reports each executed check as passed or failed, never as unknown', async () => {
+    expect.hasAssertions();
+    // The harness converts an outcome into a result; nothing may escape as a
+    // thrown error, because a browser run wants to display every outcome rather
+    // than stop at the first failure.
+    const report = await runConformance({
+      label: 'shim-claiming-browser',
+      factory: new IDBFactory(),
+      realBrowser: true
+    });
+
+    const statuses = [...new Set(
+      report.results.filter((result) => result.browserOnly).map((result) => result.status)
+    )].sort();
+
+    expect(statuses.every(isTerminal)).toBe(true);
+  });
+
+  it('gives a detail for every failure so a browser report is actionable', async () => {
+    expect.hasAssertions();
+    const report = await runConformance({
+      label: 'shim-claiming-browser',
+      factory: new IDBFactory(),
+      realBrowser: true
+    });
+
+    const failuresWithoutDetail = report.results
+      .filter(isFailureWithoutDetail)
+      .map((result) => result.name);
+
+    expect(failuresWithoutDetail).toStrictEqual([]);
+  });
+});
