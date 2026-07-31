@@ -62,8 +62,16 @@ if (!fs.existsSync(circleConfigPath)) {
       pattern: /ci:gate:branch/
     },
     {
+      // `test:coverage`, not `test:unit`. Under Requirement 110 the runner is
+      // `bun:test`, which emits no branch records, so coverage is produced by a
+      // separate Jest run. Pointing Sonar at `test:unit` gave it no lcov at all
+      // and it reported 0% coverage on new code.
       what: 'unit tests with coverage for the Sonar scan (mirrors sonarqube-cloud.yml)',
-      pattern: /bun run test:unit/
+      pattern: /bun run test:coverage/
+    },
+    {
+      what: 'the four-metric coverage threshold check (Requirement 110)',
+      pattern: /coverage:check|check-coverage-thresholds/
     },
     {
       what: 'the SonarQube scan itself (mirrors sonarqube-cloud.yml)',
