@@ -4,7 +4,7 @@ Idioma alvo: Português (Brasil)
 -->
 # Especificações de rastreabilidade de requisitos
 
-<!-- requirements-inventory: files=107 unique=104 mapped=104 duplicates=055,060,079 -->
+<!-- requirements-inventory: files=108 unique=105 mapped=105 duplicates=055,060,079 -->
 
 Este livro-razão mapeia IDs de requisitos para especificações de recursos e expectativas de evidências de validação.
 
@@ -84,9 +84,10 @@ Para qualquer alteração, identifique os IDs dos requisitos afetados e garanta:
 
 ## F. Portões de qualidade, segurança e conformidade
 
-- `011`, `014`, `020`, `044`, `063`, `065`, `074`, `087`, `088`, `104`
+- `011`, `014`, `020`, `044`, `063`, `065`, `074`, `087`, `088`, `104`, `105`
 - Recursos de especificações:
   - `documentação/md/TESTING-CI-AND-QUALITY.md`
+  - `documentation/md/HEXAGONAL-TEST-PYRAMID.pt-BR.md`
   - `documentação/md/SECURITY-RUNBOOK-PCI.md`
   - `documentation/md/PCI-REMEDIATION-PLAN-AND-EVIDENCE.md`
   - `documentation/md/CANONICAL-INTEGRATIONS-AND-PROVIDER-REBINDING.pt-BR.md`
@@ -150,7 +151,12 @@ Se os IDs de requisitos afetados não forem mapeados antes da implementação, a
 A partir de `2026-07-29`, este livro-razão cobre todos os IDs de requisitos exclusivos atualmente registrados em `.agents/requirements`:
 
 1. Arquivos de requisitos no registro: `107`
-2. IDs exclusivos no registro de requisitos: `104`
-3. IDs exclusivos mapeados neste livro-razão: `104`
+2. IDs exclusivos no registro de requisitos: `105`
+3. IDs exclusivos mapeados neste livro-razão: `105`
 4. IDs duplicados com arquivos vinculantes independentes: `055`, `060`, `079`
 5. IDs ausentes: `nenhum`
+
+### `105` Pirâmide de testes hexagonal / gates por camada
+- Specs: `documentation/md/HEXAGONAL-TEST-PYRAMID.pt-BR.md`, `.agents/requirements/105-hexagonal-test-pyramid-layer-aware-gates.md`
+- Evidence: `test-map.json`, `ci-cd/check-test-map.js`, `ci-cd/lib/layer-resolver.js`, `ci-cd/run-task-change-tests.js`, `ci-cd/run-unit-tests.js`
+

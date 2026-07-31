@@ -2,6 +2,8 @@
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const { createLayerAwarePlan } = require('./lib/layer-resolver');
+const { buildGateEvidence, validateGateEvidence, writeGateEvidence } = require('./lib/gate-evidence');
 
 const UNIT_TEST_PATH = /(^|\/)test\/unit\/.*\.(test|spec)\.[cm]?[jt]sx?$/;
 const INTEGRATION_TEST_PATH = /(^|\/)test\/integration\/.*\.(test|spec)\.[cm]?[jt]sx?$/;
@@ -31,6 +33,17 @@ function readChangedFiles(options = {}) {
   }
 
   return normalizeFiles(String(result.stdout || '').split('\n'));
+}
+
+function gateV2Enabled(env = process.env) {
+  const raw = env.JUMENTIX_GATE_V2;
+  if (raw === undefined || raw === '') return true; // default on after flip (JUM-443)
+  return !['0', 'false', 'off', 'no'].includes(String(raw).toLowerCase());
+}
+
+function shadowEnabled(env = process.env) {
+  const raw = env.JUMENTIX_GATE_V2_SHADOW;
+  return ['1', 'true', 'on', 'yes'].includes(String(raw || '').toLowerCase());
 }
 
 function createTaskTestPlan(files) {
@@ -102,19 +115,11 @@ function executeTaskTestPlan(plan) {
   if (plan.type === 'unsupported-change-set') return 1;
 
   if (plan.type === 'website-quality-gate') {
-    const websiteCommands = [
-      ['run', '--filter', '@jumentix/website', 'test:prepublish']
-    ];
-
-    for (const args of websiteCommands) {
-      // `bun`, not `bunx`: these args are a workspace script invocation
-      // (`run --filter ...`), not a package binary.
-      const websiteResult = spawnSync('bun', args, {
-        stdio: 'inherit',
-        env: { ...process.env }
-      });
-      if (websiteResult.status !== 0) return Number(websiteResult.status ?? 1);
-    }
+    const websiteResult = spawnSync('bun', ['run', '--filter', '@jumentix/website', 'test:prepublish'], {
+      stdio: 'inherit',
+      env: { ...process.env }
+    });
+    if (websiteResult.status !== 0) return Number(websiteResult.status ?? 1);
 
     if (plan.unitTests.length > 0) {
       const unitResult = spawnSync(
@@ -134,6 +139,10 @@ function executeTaskTestPlan(plan) {
     return Number.isInteger(relatedResult.status) ? relatedResult.status : 1;
   }
 
+  if (plan.type === 'layer-aware') {
+    return executeLayerAwarePlan(plan);
+  }
+
   const args = ['changed-unit-tests', 'mapped-unit-tests', 'changed-integration-tests'].includes(plan.type)
     ? [
       'jest',
@@ -144,28 +153,113 @@ function executeTaskTestPlan(plan) {
     ]
     : ['jest', '--runInBand', '--coverage=false', '--findRelatedTests', ...plan.files];
   const result = spawnSync('bunx', args, { stdio: 'inherit', env: { ...process.env } });
-
   return Number.isInteger(result.status) ? result.status : 1;
 }
 
-function writeTaskTestEvidence(evidence, resultFile) {
-  if (!resultFile) return;
+function executeLayerAwarePlan(plan) {
+  const suiteResults = [];
+  const executedSuites = [];
 
-  const absolutePath = path.resolve(resultFile);
-  fs.mkdirSync(path.dirname(absolutePath), { recursive: true });
-  fs.writeFileSync(absolutePath, `${JSON.stringify(evidence, null, 2)}\n`);
+  if (plan.unitSuites.length > 0) {
+    const bunSuites = plan.suites.filter((suite) => suite.type === 'unit' && suite.runner !== 'node').map((s) => s.path);
+    const nodeSuites = plan.suites.filter((suite) => suite.type === 'unit' && suite.runner === 'node').map((s) => s.path);
+
+    if (bunSuites.length > 0) {
+      const bunResult = spawnSync('bun', ['test', ...bunSuites], {
+        stdio: 'inherit',
+        env: { ...process.env, NODE_ENV: process.env.NODE_ENV || 'dev' }
+      });
+      const status = Number.isInteger(bunResult.status) ? bunResult.status : 1;
+      for (const suite of bunSuites) {
+        executedSuites.push(suite);
+        suiteResults.push({ suite, status: status === 0 ? 'passed' : 'failed', runner: 'bun' });
+      }
+      if (status !== 0) {
+        plan._execution = { executedSuites, suiteResults, status };
+        return status;
+      }
+    }
+
+    if (nodeSuites.length > 0) {
+      const jestResult = spawnSync('bunx', ['jest', '--runInBand', '--coverage=false', ...nodeSuites], {
+        stdio: 'inherit',
+        env: { ...process.env }
+      });
+      const status = Number.isInteger(jestResult.status) ? jestResult.status : 1;
+      for (const suite of nodeSuites) {
+        executedSuites.push(suite);
+        suiteResults.push({ suite, status: status === 0 ? 'passed' : 'failed', runner: 'node' });
+      }
+      if (status !== 0) {
+        plan._execution = { executedSuites, suiteResults, status };
+        return status;
+      }
+    }
+  }
+
+  for (const script of plan.integrationScripts || []) {
+    const result = spawnSync('bun', ['run', script], {
+      stdio: 'inherit',
+      env: { ...process.env, CI: 'true' }
+    });
+    const status = Number.isInteger(result.status) ? result.status : 1;
+    executedSuites.push(script);
+    suiteResults.push({ suite: script, status: status === 0 ? 'passed' : 'failed', runner: 'node' });
+    if (status !== 0) {
+      plan._execution = { executedSuites, suiteResults, status };
+      return status;
+    }
+  }
+
+  if ((plan.unitSuites.length + (plan.integrationScripts || []).length) === 0
+    && plan.type === 'layer-aware'
+    && (plan.files || []).length > 0) {
+    plan._execution = { executedSuites, suiteResults, status: 1 };
+    return 1;
+  }
+
+  plan._execution = { executedSuites, suiteResults, status: 0 };
+  return 0;
+}
+
+function writeTaskTestEvidence(evidence, resultFile) {
+  writeGateEvidence(evidence, resultFile);
 }
 
 function runTaskChangeTests(options = {}) {
   const logger = options.logger || console;
+  const env = options.env || process.env;
   const changedFiles = normalizeFiles(options.files || readChangedFiles(options));
-  const plan = options.plan || createTaskTestPlan(changedFiles);
-  const execute = options.execute || executeTaskTestPlan;
-  const resultFile = options.resultFile ?? process.env.AAA_CI_GATE_RESULT_FILE;
+  const useV2 = options.forceV2 !== undefined ? options.forceV2 : gateV2Enabled(env);
+  const useShadow = options.forceShadow !== undefined ? options.forceShadow : shadowEnabled(env);
+  const resultFile = options.resultFile ?? env.AAA_CI_GATE_RESULT_FILE;
+
+  const v1Plan = createTaskTestPlan(changedFiles);
+  let plan = v1Plan;
+  let shadow = null;
+
+  if (useV2 || useShadow) {
+    const v2Plan = createLayerAwarePlan(changedFiles, options);
+    if (useShadow && !useV2) {
+      shadow = {
+        mode: 'report-only',
+        v1Plan: v1Plan.type,
+        v2Plan: v2Plan.type,
+        v2SelectedLayers: v2Plan.selectedLayers || [],
+        v2PlannedSuites: (v2Plan.suites || []).map((suite) => suite.path || suite)
+      };
+      plan = v1Plan;
+      logger.log('[ci] GATE_V2 shadow mode active — v1 authoritative, v2 report-only');
+    } else {
+      plan = v2Plan;
+      logger.log('[ci] GATE_V2 enabled — layer-aware selector authoritative');
+    }
+  }
 
   logger.log(`[ci] task-change test plan: ${plan.type}`);
   logger.log(`[ci] changed files considered: ${String(changedFiles.length)}`);
 
+  const execute = options.execute || executeTaskTestPlan;
   let status = 1;
   try {
     status = execute(plan);
@@ -176,17 +270,48 @@ function runTaskChangeTests(options = {}) {
     status = 1;
   }
 
-  const evidence = {
-    schemaVersion: 1,
-    gate: 'task-change-tests',
-    plan: plan.type,
-    changedFiles,
-    selectedFiles: plan.files,
-    outcome: status === 0
-      ? (plan.type === 'documentation-validation' ? 'not-applicable' : 'passed')
-      : 'failed',
-    status
-  };
+  let evidence;
+  if (plan.type === 'layer-aware') {
+    const execution = plan._execution || {
+      executedSuites: plan.unitSuites || [],
+      suiteResults: [],
+      status
+    };
+    evidence = buildGateEvidence(plan, {
+      gateVersion: 'v2',
+      executedSuites: execution.executedSuites,
+      suiteResults: execution.suiteResults,
+      status,
+      outcome: status === 0 ? 'passed' : 'failed',
+      shadow
+    });
+    const validation = validateGateEvidence({
+      ...evidence,
+      outcome: plan.type === 'documentation-validation' ? 'not-applicable' : evidence.outcome
+    });
+    if (!validation.ok && status === 0) {
+      logger.error('[ci] layer-aware evidence failed closed validation:');
+      for (const error of validation.errors) logger.error(` - ${error}`);
+      status = 1;
+      evidence.status = 1;
+      evidence.outcome = 'failed';
+      evidence.validationErrors = validation.errors;
+    }
+  } else {
+    evidence = {
+      schemaVersion: 1,
+      gate: 'task-change-tests',
+      gateVersion: useV2 ? 'v2-fallback' : 'v1',
+      plan: plan.type,
+      changedFiles,
+      selectedFiles: plan.files,
+      outcome: status === 0
+        ? (plan.type === 'documentation-validation' ? 'not-applicable' : 'passed')
+        : 'failed',
+      status,
+      shadow
+    };
+  }
 
   writeTaskTestEvidence(evidence, resultFile);
   return evidence;
@@ -210,9 +335,12 @@ module.exports = {
   WEBSITE_PATH,
   createTaskTestPlan,
   executeTaskTestPlan,
+  executeLayerAwarePlan,
+  gateV2Enabled,
   normalizeFiles,
   readChangedFiles,
   runTaskChangeTests,
+  shadowEnabled,
   validateDocumentationFiles,
   writeTaskTestEvidence
 };

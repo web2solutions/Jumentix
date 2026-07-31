@@ -1,6 +1,6 @@
 # Spec Requirements Traceability Ledger
 
-<!-- requirements-inventory: files=107 unique=104 mapped=104 duplicates=055,060,079 -->
+<!-- requirements-inventory: files=108 unique=105 mapped=105 duplicates=055,060,079 -->
 
 This ledger maps requirement IDs to spec resources and validation evidence expectations.
 
@@ -80,9 +80,10 @@ For any change, identify impacted requirement IDs and ensure:
 
 ## F. Quality, Security, and Compliance Gates
 
-- `011`, `014`, `020`, `044`, `063`, `065`, `074`, `087`, `088`, `104`
+- `011`, `014`, `020`, `044`, `063`, `065`, `074`, `087`, `088`, `104`, `105`
 - Spec resources:
   - `documentation/md/TESTING-CI-AND-QUALITY.md`
+  - `documentation/md/HEXAGONAL-TEST-PYRAMID.md`
   - `documentation/md/SECURITY-RUNBOOK-PCI.md`
   - `documentation/md/PCI-REMEDIATION-PLAN-AND-EVIDENCE.md`
   - `documentation/md/CANONICAL-INTEGRATIONS-AND-PROVIDER-REBINDING.md`
@@ -145,8 +146,13 @@ If impacted requirement IDs are not mapped before implementation, the change is 
 
 As of `2026-07-29`, this ledger covers all unique requirement IDs currently registered in `.agents/requirements`:
 
-1. Requirement files in the registry: `107`
-2. Unique IDs in requirements registry: `104`
-3. Unique IDs mapped in this ledger: `104`
+1. Requirement files in the registry: `108`
+2. Unique IDs in requirements registry: `105`
+3. Unique IDs mapped in this ledger: `105`
 4. Duplicate IDs with independently binding files: `055`, `060`, `079`
 5. Missing IDs: `none`
+
+### `105` Hexagonal Test Pyramid / layer-aware gates
+- Specs: `documentation/md/HEXAGONAL-TEST-PYRAMID.md`, `.agents/requirements/105-hexagonal-test-pyramid-layer-aware-gates.md`
+- Evidence: `test-map.json`, `ci-cd/check-test-map.js`, `ci-cd/lib/layer-resolver.js`, `ci-cd/run-task-change-tests.js`, `ci-cd/run-unit-tests.js`
+
