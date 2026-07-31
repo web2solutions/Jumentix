@@ -13,6 +13,34 @@ const INTEGRATION_CONTRACTS = Object.freeze([
     ]
   },
   {
+    file: '.sonarcloud.properties',
+    markers: [
+      'sonar.organization=xpertminds',
+      'sonar.projectKey=XpertMinds_Jumentix',
+      'sonar.projectName=Jumentix'
+    ]
+  },
+  {
+    file: 'README.md',
+    markers: [
+      'https://github.com/XpertMinds/Jumentix',
+      'project=XpertMinds_Jumentix',
+      'id=XpertMinds_Jumentix',
+      'Canonical public repository',
+      'XpertMinds/Jumentix'
+    ]
+  },
+  {
+    file: 'README.pt-BR.md',
+    markers: [
+      'https://github.com/XpertMinds/Jumentix',
+      'project=XpertMinds_Jumentix',
+      'id=XpertMinds_Jumentix',
+      'Repositório público canônico',
+      'XpertMinds/Jumentix'
+    ]
+  },
+  {
     file: '.github/workflows/sonarqube-cloud.yml',
     markers: [
       'pull_request:\n    branches: ["main", "dev"]',

@@ -716,7 +716,7 @@ function Roadmap({ locale }: { locale: CommercialLocale }) {
   return (
     <>
       <PageHero locale={locale} eyebrow="Roadmap" title={t(locale, 'A public path from boilerplate to software factory', 'Um caminho público de boilerplate a fábrica de software')} description={t(locale, 'The GitHub project remains the source of truth. This view explains the product direction without hiding the implementation backlog.', 'O projeto no GitHub permanece como fonte da verdade. Esta visão explica a direção do produto sem ocultar o backlog de implementação.')} />
-      <Band><ol className={classes.timeline}>{phases.map(([phase, title, description]) => <li key={phase}><strong>{phase}</strong><div><h3>{title}</h3><p>{description}</p></div></li>)}</ol><div className={classes.sectionActions}><ActionLink href="https://github.com/users/web2solutions/projects/1" external>{t(locale, 'Open live roadmap', 'Abra o roadmap ao vivo')}</ActionLink></div></Band>
+      <Band><ol className={classes.timeline}>{phases.map(([phase, title, description]) => <li key={phase}><strong>{phase}</strong><div><h3>{title}</h3><p>{description}</p></div></li>)}</ol><div className={classes.sectionActions}><ActionLink href="https://github.com/XpertMinds/Jumentix" external>{t(locale, 'Open live roadmap', 'Abra o roadmap ao vivo')}</ActionLink></div></Band>
       <FinalCta locale={locale} />
     </>
   );

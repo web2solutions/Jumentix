@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-07-31 docs(ci): mark branch protection configured on dest main/dev - Eduardo Almeida
+- 2026-07-30 [JUM-568][CI] Complete public-repo integration evidence and retire private blockers - Eduardo Almeida
 - 2026-07-30 feat(testing): finish Hexagonal Test Pyramid with Req 106 Bun-local runtime (#18) - Eduardo A.
 - 2026-07-30 feat(testing): deliver Hexagonal Test Pyramid layer-aware gates [JUM-428][JUM-429][JUM-441][JUM-442][JUM-443] (#16) - Eduardo A.
 - 2026-07-30 chore(governance): register opencode-primary-001 in agent registry - Eduardo A.
