@@ -122,6 +122,7 @@ Use these files as living constraints for future maintenance and feature develop
 - [102-linear-project-task-progress-updates](requirements/102-linear-project-task-progress-updates.md)
 - [103-canonical-repository-migration-and-legacy-freeze](requirements/103-canonical-repository-migration-and-legacy-freeze.md)
 - [104-canonical-application-integration-migration](requirements/104-canonical-application-integration-migration.md)
+- [105-circleci-as-sole-ci-provider](requirements/105-circleci-as-sole-ci-provider.md)
 - [Agent Registry](AGENT-REGISTRY.md)
 - [NFR Registry](NFR-REGISTRY.md)
 - [Spec Development Driven Agent](spec-development-driven-agent.md)

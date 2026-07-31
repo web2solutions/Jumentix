@@ -100,7 +100,7 @@ describe('run-full-test-matrix', () => {
     expect(crashed.outcome).toBe('failed');
   });
 
-  it('uses branch-aware gates and keeps Storybook in the website workflow', () => {
+  it('uses branch-aware gates and keeps Storybook in its own CircleCI job', () => {
     expect.hasAssertions();
     const read = (file: string) => matrixFs.readFileSync(
       matrixPath.join(fullMatrixRootDir, file),
@@ -117,17 +117,23 @@ describe('run-full-test-matrix', () => {
       read('.husky/pre-commit').includes('bun run ci:gate:branch'),
       read('.husky/pre-push').includes('bun run ci:gate:branch'),
       read('.husky/pre-merge-commit').includes('bun run ci:gate:branch'),
+      // Migrated from the three retired GitHub Actions workflows to CircleCI
+      // (Requirement 105). Repointed rather than deleted: the checks still
+      // exist, and deleting the assertions would drop this test's coverage of
+      // them without anything failing.
       read('.circleci/config.yml').includes('bun run ci:gate:branch'),
-      read('.circleci/config.yml').includes('only:\n                - dev\n                - main'),
-      read('.github/workflows/test.yml').includes('bun run ci:gate:branch'),
-      read('.github/workflows/test.yml').includes('branches: [ "**" ]'),
-      read('.github/workflows/test.yml').includes('JUMENTIX_TASK_TEST_MODE: range'),
-      read('.github/workflows/test.yml').includes('JUMENTIX_TASK_TEST_BASE: origin/dev'),
-      read('.github/workflows/test.yml')
-        .includes('if: always() && (github.base_ref == \'main\' || github.ref_name == \'main\')'),
-      read('.github/workflows/website.yml').includes('bun run website:storybook:build'),
-      read('.github/workflows/website.yml').includes('bun run website:storybook:smoke'),
-      !read('.github/workflows/test.yml').includes('website:storybook'),
+      read('.circleci/config.yml').includes('JUMENTIX_TASK_TEST_MODE=range'),
+      read('.circleci/config.yml').includes('JUMENTIX_TASK_TEST_BASE=origin/dev'),
+      read('.circleci/config.yml').includes('full-test-matrix.json'),
+      read('.circleci/config.yml').includes('bun run website:storybook:build'),
+      read('.circleci/config.yml').includes('bun run website:storybook:smoke'),
+      // The quality gate runs on every branch now. The previous configuration
+      // filtered to dev and main, which left feature branches with no signal.
+      !/- quality-gate:\s*\n\s*filters:/.test(read('.circleci/config.yml')),
+      // Storybook stays in its own job rather than being folded into the gate.
+      !read('.circleci/config.yml').includes('ci:gate:branch\n      - run:\n          name: Build Storybook'),
+      // GitHub Actions is retired entirely.
+      !matrixFs.existsSync(matrixPath.join(fullMatrixRootDir, '.github', 'workflows')),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'pr:governance:check'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'requirements:check'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'integrations:check'),
@@ -139,7 +145,7 @@ describe('run-full-test-matrix', () => {
       )
     ]).toStrictEqual([
       true, true, true, true, true, true, true, true, true, true, true, true, true, true,
-      true, true, true, true, true, true
+      true, true, true, true, true
     ]);
   });
 });

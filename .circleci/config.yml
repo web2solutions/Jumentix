@@ -1,72 +1,179 @@
 version: 2.1
 
+# CircleCI is the sole CI provider for this repository (Requirement 105).
+#
+# GitHub Actions is retired: it became unable to execute at all, which made every
+# required check permanently pending and, under Requirement 065, blocked every
+# merge. The three retired workflows are reproduced here job for job — a
+# migration that silently drops a check is the same false green those
+# requirements exist to prevent.
+
 orbs:
   codecov: codecov/codecov@4.1.0
 
-jobs:
-  test-source:
-    docker:
-      # Official Bun image at the pinned version. The previous `cimg/node:22.23`
-      # plus `npx pnpm@9.15.3` bootstrap depended on npm *and* pnpm to install
-      # anything — two package managers to get to a third. Requirement 096 §1.
-      - image: oven/bun:1.3.14
-      - image: redis:latest
-        environment:
-          REDIS_ARGS: "--sysctl vm.overcommit_memory=1"
-        command: redis-server --save 20 1 --loglevel warning
+commands:
+  bootstrap:
+    description: Assert the pinned toolchain, then install from the frozen lockfile.
     steps:
       - checkout
       - restore_cache:
           keys:
-            - bun-deps-v1-{{ .Branch }}-{{checksum "bun.lock"}}
-            - bun-cache-v1-{{ .Branch }}
+            - bun-deps-v2-{{ .Branch }}-{{ checksum "bun.lock" }}
+            - bun-deps-v2-{{ .Branch }}-
+            - bun-deps-v2-
       - run:
           name: Assert the pinned Bun toolchain
           command: bun ci-cd/check-bun-version.js
       - run:
-          name: install packages
-          # Frozen, unlike the previous --no-frozen-lockfile: CI must not resolve
-          # versions the lockfile never recorded (Requirement 096 §2).
+          name: Install dependencies
+          # Frozen. The pre-Bun pipeline used --no-frozen-lockfile, which let CI
+          # resolve versions the lockfile never recorded (Requirement 096 §2).
           command: bun install --frozen-lockfile
       - save_cache:
-          key: bun-deps-v1-{{ .Branch }}-{{checksum "bun.lock"}}
+          key: bun-deps-v2-{{ .Branch }}-{{ checksum "bun.lock" }}
           paths:
             - node_modules
-      - save_cache:
-          key: bun-cache-v1-{{ .Branch }}
-          paths:
             - ~/.bun/install/cache
+
+  require_env:
+    description: >
+      Fail closed when a required variable is absent. A step that skips itself
+      and reports success is the false green Requirement 065 forbids.
+    parameters:
+      names:
+        type: string
+    steps:
       - run:
-          name: Install dockerize
-          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-          environment:
-            DOCKERIZE_VERSION: v0.6.1
+          name: Verify required environment
+          command: |
+            missing=""
+            for name in << parameters.names >>; do
+              eval "value=\${$name:-}"
+              if [ -z "$value" ]; then missing="$missing $name"; fi
+            done
+            if [ -n "$missing" ]; then
+              echo "Missing required CircleCI environment variable(s):$missing" >&2
+              echo "Set them in Project Settings > Environment Variables (Requirement 105)." >&2
+              exit 1
+            fi
+
+jobs:
+  # Replaces .github/workflows/test.yml
+  quality-gate:
+    docker:
+      # Official Bun image at the pinned version. The pre-Bun setup used
+      # `cimg/node:22.23` plus `npx pnpm@9.15.3` — two package managers to reach
+      # a third (Requirement 096 §1).
+      - image: oven/bun:1.3.14
+      - image: redis:7.2
+        command: redis-server --save 20 1 --loglevel warning --requirepass ci_redis_password
+    environment:
+      AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
+      AAA_REDIS_PASSWORD: ci_redis_password
+    steps:
+      - bootstrap
       - run:
           name: Wait for Redis
-          command: dockerize -wait tcp://localhost:6379 -timeout 1m
+          # Bun rather than dockerize. The previous step downloaded a tarball
+          # from a GitHub release on every run, which let an unrelated
+          # third-party outage fail this pipeline.
+          command: |
+            for attempt in $(seq 1 60); do
+              if bun -e "
+                const socket = await Bun.connect({
+                  hostname: '127.0.0.1', port: 6379,
+                  socket: { data() {}, error() {} }
+                }).catch(() => null);
+                if (!socket) process.exit(1);
+                socket.end();
+              " 2>/dev/null; then
+                echo 'Redis is accepting connections.'
+                exit 0
+              fi
+              sleep 1
+            done
+            echo 'Redis did not accept connections within 60s.' >&2
+            exit 1
       - run:
-          name: Run branch-aware quality gate
-          # Private agent-registry (Req 089): project must expose AGENT_REGISTRY_TOKEN
-          # and/or GH_TOKEN / GITHUB_TOKEN with contents:read on
-          # XpertMinds/jumentix-agent-registry. Default github tokens cannot read it.
+          name: Run the branch-aware quality gate
+          # Private agent-registry (Requirement 089): the project must expose
+          # AGENT_REGISTRY_TOKEN, GH_TOKEN or GITHUB_TOKEN with contents:read on
+          # XpertMinds/jumentix-agent-registry. Default tokens cannot read it.
           command: |
             export GH_TOKEN="${GH_TOKEN:-${GITHUB_TOKEN:-${AGENT_REGISTRY_TOKEN:-}}}"
-            JUMENTIX_QUALITY_GATE_TARGET=${CIRCLE_BRANCH:-dev} \
-              AAA_CI_GATE_RESULT_FILE=artifacts/ci/branch-quality-gate.json \
-              AAA_CI_MATRIX_RESULT_FILE=artifacts/ci/full-test-matrix.json \
+            mkdir -p artifacts/ci
+            JUMENTIX_QUALITY_GATE_TARGET="${CIRCLE_BRANCH:-dev}" \
+            JUMENTIX_TASK_TEST_MODE=range \
+            JUMENTIX_TASK_TEST_BASE=origin/dev \
+            AAA_PR_HEAD_REF="${CIRCLE_BRANCH:-}" \
+            AAA_CI_GATE_RESULT_FILE=artifacts/ci/branch-quality-gate.json \
+            AAA_CI_MATRIX_RESULT_FILE=artifacts/ci/full-test-matrix.json \
               bun run ci:gate:branch
       - store_artifacts:
           path: artifacts/ci/branch-quality-gate.json
           destination: branch-quality-gate.json
+      - store_artifacts:
+          path: artifacts/ci/full-test-matrix.json
+          destination: full-test-matrix.json
       - codecov/upload:
           commit_args: "--slug XpertMinds/Jumentix"
           report_args: "--slug XpertMinds/Jumentix"
           upload_args: "--slug XpertMinds/Jumentix --fail-on-error"
 
+  # Replaces .github/workflows/sonarqube-cloud.yml
+  sonarqube:
+    docker:
+      - image: oven/bun:1.3.14
+    environment:
+      AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
+    steps:
+      - bootstrap
+      - require_env:
+          names: SONAR_TOKEN
+      - run:
+          name: Unit tests with coverage
+          command: bun run test:unit
+      - run:
+          name: SonarQube Cloud scan
+          # The scanner is a Java CLI. Fetched here rather than through an orb so
+          # the version is visible in this file instead of behind an orb tag.
+          command: |
+            apt-get update
+            apt-get install -y --no-install-recommends unzip curl default-jre-headless
+            SCANNER_VERSION=6.2.1.4610
+            curl -sSLo /tmp/scanner.zip \
+              "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SCANNER_VERSION}-linux-x64.zip"
+            unzip -q /tmp/scanner.zip -d /opt
+            export PATH="/opt/sonar-scanner-${SCANNER_VERSION}-linux-x64/bin:$PATH"
+            sonar-scanner -Dsonar.token="${SONAR_TOKEN}"
+
+  # Replaces .github/workflows/website.yml
+  website:
+    docker:
+      - image: oven/bun:1.3.14
+    steps:
+      - bootstrap
+      - run:
+          name: Build Storybook
+          command: bun run website:storybook:build
+      - run:
+          name: Validate Storybook inventory
+          command: bun run website:storybook:smoke
+      - run:
+          name: Validate publishable website content
+          command: bun run website:test:prepublish
+
 workflows:
-  test-source:
+  continuous-integration:
     jobs:
-      - test-source:
+      # No branch filter. The previous configuration ran only on dev and main,
+      # so every feature branch and every pull request had no signal at the point
+      # a defect is cheapest to fix (Requirement 105 §3).
+      - quality-gate
+      - website
+      - sonarqube:
+          # Analysis is only actionable against the long-lived branches and the
+          # scan is billed per run, so this one stays filtered.
           filters:
             branches:
               only:

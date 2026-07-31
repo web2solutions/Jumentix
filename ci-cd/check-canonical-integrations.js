@@ -13,23 +13,6 @@ const INTEGRATION_CONTRACTS = Object.freeze([
     ]
   },
   {
-    file: '.github/workflows/sonarqube-cloud.yml',
-    markers: [
-      'pull_request:\n    branches: ["main", "dev"]',
-      'Verify Sonar token',
-      'test -n "$SONAR_TOKEN"',
-      'SonarSource/sonarqube-scan-action@'
-    ]
-  },
-  {
-    file: '.github/workflows/test.yml',
-    markers: [
-      'GH_TOKEN: ${{ secrets.AGENT_REGISTRY_TOKEN }}',
-      'bun install --frozen-lockfile',
-      'bun run ci:gate:branch'
-    ]
-  },
-  {
     file: '.circleci/config.yml',
     markers: [
       'codecov/codecov@4.1.0',
@@ -37,7 +20,13 @@ const INTEGRATION_CONTRACTS = Object.freeze([
       'commit_args: "--slug XpertMinds/Jumentix"',
       'report_args: "--slug XpertMinds/Jumentix"',
       'upload_args: "--slug XpertMinds/Jumentix --fail-on-error"',
-      'only:\n                - dev\n                - main'
+      // Migrated from the retired GitHub Actions workflows (Requirement 105).
+      // The provider changed; the canonical bindings did not.
+      'AGENT_REGISTRY_TOKEN',
+      'bun run ci:gate:branch',
+      'sonar-scanner',
+      'SONAR_TOKEN',
+      'website:storybook:build'
     ]
   },
   {

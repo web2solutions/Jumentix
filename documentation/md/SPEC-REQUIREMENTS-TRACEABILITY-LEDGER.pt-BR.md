@@ -4,7 +4,7 @@ Idioma alvo: Português (Brasil)
 -->
 # Especificações de rastreabilidade de requisitos
 
-<!-- requirements-inventory: files=107 unique=104 mapped=104 duplicates=055,060,079 -->
+<!-- requirements-inventory: files=108 unique=105 mapped=105 duplicates=055,060,079 -->
 
 Este livro-razão mapeia IDs de requisitos para especificações de recursos e expectativas de evidências de validação.
 
@@ -84,7 +84,7 @@ Para qualquer alteração, identifique os IDs dos requisitos afetados e garanta:
 
 ## F. Portões de qualidade, segurança e conformidade
 
-- `011`, `014`, `020`, `044`, `063`, `065`, `074`, `087`, `088`, `104`
+- `011`, `014`, `020`, `044`, `063`, `065`, `074`, `087`, `088`, `104`, `105`
 - Recursos de especificações:
   - `documentação/md/TESTING-CI-AND-QUALITY.md`
   - `documentação/md/SECURITY-RUNBOOK-PCI.md`
@@ -99,7 +99,7 @@ Para qualquer alteração, identifique os IDs dos requisitos afetados e garanta:
 
 ## G. Documentação, processo de governança e operações multiagente
 
-- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `056`, `057`, `064`, `066`, `067`, `068`, `071`, `072`, `073`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `094`, `095`, `097`, `098`, `099`, `100`, `101`, `102`, `103`, `104`
+- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `056`, `057`, `064`, `066`, `067`, `068`, `071`, `072`, `073`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `094`, `095`, `097`, `098`, `099`, `100`, `101`, `102`, `103`, `104`, `105`
 - Recursos de especificações:
   - `documentação/README.md`
   - `documentação/md/JUMENTIX-PROJECT-GOVERNANCE.md`
@@ -150,7 +150,7 @@ Se os IDs de requisitos afetados não forem mapeados antes da implementação, a
 A partir de `2026-07-29`, este livro-razão cobre todos os IDs de requisitos exclusivos atualmente registrados em `.agents/requirements`:
 
 1. Arquivos de requisitos no registro: `107`
-2. IDs exclusivos no registro de requisitos: `104`
-3. IDs exclusivos mapeados neste livro-razão: `104`
+2. IDs exclusivos no registro de requisitos: `104`, `105`
+3. IDs exclusivos mapeados neste livro-razão: `104`, `105`
 4. IDs duplicados com arquivos vinculantes independentes: `055`, `060`, `079`
 5. IDs ausentes: `nenhum`

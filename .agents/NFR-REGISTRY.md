@@ -91,6 +91,10 @@ This file consolidates non-functional requirements already requested and stored 
   terminal canonical evidence, and incomplete provider installs recorded as explicit owner-auth
   blockers; `integration-migration:check` and `integrations:check` validate the repository-owned
   contract.
+- `105` CircleCI is the sole CI provider; GitHub Actions is retired and no workflow file
+  may act as a required check. The pipeline must run on every branch, not only `dev` and
+  `main`, and a provider that cannot execute blocks a merge exactly as a failing check
+  does (Requirement 065). `ci:check-provider` validates the migration is complete.
 
 When a new NFR is requested:
 
