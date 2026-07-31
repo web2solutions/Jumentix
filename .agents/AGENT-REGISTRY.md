@@ -192,6 +192,29 @@ This registry tracks AI agents collaborating in the Jumentix project.
   - CI gate repair and agent registry synchronization
   - multi-agent collision avoidance and worktree management
 
+### 8) composer-cursor-xpertminds-001
+
+- `agent_id`: `composer-cursor-xpertminds-001`
+- `agent_name`: `Cursor Composer XpertMinds`
+- `platform`: `Cursor`
+- `machine_id`: `host-eduardos-mac-pro-local`
+- `machine_name`: `Eduardos-Mac-Pro.local`
+- `machine_os`: `Darwin 21.6.0 x86_64`
+- `agent_runtime`: `Cursor Composer / Auto`
+- `agent_version`: `Cursor Composer / Auto`
+- `status`: `busy`
+- `registered_at_utc`: `2026-07-30T07:29:09Z`
+- `last_branch_check_utc`: `2026-07-31T02:11:46Z`
+- `main_ref_checked`: `5a4ddda8`
+- `dev_ref_checked`: `f6e8826d`
+- `active_epic`: `https://linear.app/jumentix/issue/JUM-562`
+- `assigned_task`: `https://linear.app/jumentix/issue/JUM-568`
+- `capabilities`:
+  - repository analysis
+  - CI/governance
+  - Linear coordination
+
+
 ## Operating Flow
 
 1. Register or update the agent entry here before task execution.

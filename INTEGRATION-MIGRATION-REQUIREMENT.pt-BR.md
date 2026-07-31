@@ -26,10 +26,11 @@ neutros ou apenas configurados não são evidência de sucesso.
 | Codecov | checks no legado | GitHub App autorizado, repositório ativo, token rotacionado armazenado no GitHub e CircleCI; slug canônico e fail-on-error fornecidos ao orb | pipeline 4 expôs `Repository not found` oculto; upload fail-closed corrigido em `dev` e checks de projeto/patch pendentes |
 | Projeto SonarQube Cloud | `web2solutions_aaa-typescript-boilerplate` | `xpertminds` / `XpertMinds_Jumentix` | quality gates do baseline e da PR #9 passaram com zero issues ou hotspots novos |
 | Scanner de dependências OSV | cobertura legada incompleta das dependências | scanner próprio da árvore instalada apoiado por OSV.dev | `bun run deps:audit` integra o gate fail-closed |
-| GitGuardian | checks no legado | os cinco repositórios XpertMinds monitorados; scan do histórico canônico concluído | **bloqueio de plano pago**: check runs em repositórios forkados exigem GitGuardian Business |
+| GitGuardian | checks no legado | os cinco repositórios XpertMinds monitorados; scan do histórico canônico concluído; checks de PR no mesmo repositório disponíveis no destino público | **paid-plan blocker / bloqueio de plano pago**: GitGuardian Business permanece necessário apenas para check runs em repositórios forkados |
 | Cursor Bugbot | checks no legado | 5/5 repositórios XpertMinds habilitados, incluindo os dois Jumentix | `Cursor Bugbot` da PR #9 passou |
-| Vercel (website) | vínculo legado | GitHub App da Vercel autorizado para todos os repositórios XpertMinds | **owner-auth blocker / bloqueio de plano pago**: Hobby rejeita vínculo a repositório privado de organização; aprovação explícita de Pro necessária |
-| Proteção de branch | legado (Pro) | indisponível no plano privado atual | **bloqueio owner-auth**: GitHub Pro/Team |
+| Vercel (website) | vínculo legado | GitHub App da Vercel autorizado para todos os repositórios XpertMinds | **owner-auth blocker**: vínculo Git pendente de reautenticação no repositório público; em seguida o deploy Git deve alcançar `READY` (Hobby pode funcionar agora que o destino é público) |
+| Proteção de branch | legado (Pro) | plano Team + repositório público; proteção/rulesets disponíveis e devem ser configurados | **owner-auth blocker**: configurar proteção de branch/checks obrigatórios em `dev` e `main` (ainda não observados no destino) |
+| Faturamento GitHub Actions | minutos faturados no legado | caminho Actions de repositório público | **owner-auth blocker**: o faturamento/plano do Actions deve permitir os minutos dos workflows obrigatórios; billing ausente ou esgotado falha fechado |
 
 A migração de integrações do registry é governada separadamente por JUM-569.
 
@@ -54,10 +55,14 @@ A migração de integrações do registry é governada separadamente por JUM-569
 - Data da auditoria: `2026-07-30`
 - Origem depreciada: `web2solutions/aaa-typescript-boilerplate`
 - Destino canônico: `XpertMinds/Jumentix`
-- Visibilidade: private
+- Visibilidade: public
 - Secrets recriados (somente nomes): `AAA_JWT_TOKEN_SECRET_KEY`, `AAA_REDIS_PASSWORD`
 - Environments recriados (nomes): `env vars`, `secrets`
-- A autenticação dos provedores está completa; o vínculo Git da Vercel, a
-  proteção de branches privadas no GitHub e os check runs GitGuardian em forks
-  exigem planos pagos, enquanto checks terminais de PR continuam obrigatórios
-  e registrados acima
+- A autenticação dos provedores está em grande parte completa no destino
+  público. Bloqueios verdadeiros restantes (fail-closed até haver evidência
+  terminal): autoridade de faturamento/minutos do GitHub Actions, reautenticação
+  Git da Vercel mais deploy Git `READY`, configuração de proteção de
+  branch/checks obrigatórios em Team+público, status de projeto/patch do Codecov
+  onde ainda não pago, e GitGuardian Business somente para check runs em forks.
+  Checks ausentes, ignorados, neutros ou apenas configurados não são sucesso.
+- Destination visibility: public

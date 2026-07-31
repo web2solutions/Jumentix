@@ -25,6 +25,8 @@ const INTEGRATION_MARKERS = Object.freeze([
   'AAA_JWT_TOKEN_SECRET_KEY',
   'AAA_REDIS_PASSWORD',
   'owner-auth blocker',
+  'Destination visibility: public',
+  'Visibilidade: public',
   'JUM-568',
   'JUM-569'
 ]);

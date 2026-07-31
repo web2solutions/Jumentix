@@ -4,6 +4,9 @@
 
 ## All Changes
 
+- 2026-07-30 feat(testing): finish Hexagonal Test Pyramid with Req 106 Bun-local runtime (#18) - Eduardo A.
+- 2026-07-30 feat(testing): deliver Hexagonal Test Pyramid layer-aware gates [JUM-428][JUM-429][JUM-441][JUM-442][JUM-443] (#16) - Eduardo A.
+- 2026-07-30 chore(governance): register opencode-primary-001 in agent registry - Eduardo A.
 - 2026-07-30 [JUM-540][Security] Remove Snyk completely from Jumentix (#14) - Eduardo A.
 - 2026-07-30 [JUM-540][Security] Retire Snyk in favour of the first-party OSV scanner (#13) - Eduardo A.
 - 2026-07-30 fix(security): retire Snyk in favour of the first-party OSV scanner [JUM-540] - Eduardo A.

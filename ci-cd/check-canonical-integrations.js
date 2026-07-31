@@ -68,6 +68,7 @@ const INTEGRATION_CONTRACTS = Object.freeze([
     file: 'documentation/md/CANONICAL-INTEGRATIONS-AND-PROVIDER-REBINDING.md',
     markers: [
       'XpertMinds/Jumentix',
+      'public canonical application repository',
       'CircleCI',
       'Codecov',
       'SonarQube Cloud',
@@ -82,6 +83,7 @@ const INTEGRATION_CONTRACTS = Object.freeze([
     file: 'documentation/md/CANONICAL-INTEGRATIONS-AND-PROVIDER-REBINDING.pt-BR.md',
     markers: [
       'XpertMinds/Jumentix',
+      'repositório público canônico da aplicação',
       'CircleCI',
       'Codecov',
       'SonarQube Cloud',

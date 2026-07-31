@@ -26,10 +26,11 @@ merely configured checks are not successful evidence.
 | Codecov | `codecov/project`, `codecov/patch` on legacy PRs | GitHub App authorized, repository active, rotated token stored in GitHub and CircleCI; canonical slug and fail-on-error supplied to the orb | pipeline 4 exposed hidden `Repository not found`; corrected fail-closed `dev` upload and project/patch checks pending |
 | SonarQube Cloud project key | `web2solutions_aaa-typescript-boilerplate` | `xpertminds` / `XpertMinds_Jumentix` | baseline and PR #9 quality gates passed with zero new issues or hotspots |
 | OSV dependency scanner | incomplete legacy dependency coverage | first-party installed-tree scanner backed by OSV.dev | `bun run deps:audit` is part of the fail-closed gate |
-| GitGuardian | Security Checks on legacy PRs | all five XpertMinds repositories monitored; canonical history scan completed | **paid-plan blocker**: forked-repository check runs require GitGuardian Business |
+| GitGuardian | Security Checks on legacy PRs | all five XpertMinds repositories monitored; canonical history scan completed; same-repo PR checks available on the public destination | **paid-plan blocker**: GitGuardian Business remains required for forked-repository check runs only |
 | Cursor Bugbot | checks on legacy PRs | 5/5 XpertMinds repositories enabled, including both Jumentix repositories | PR #9 `Cursor Bugbot` passed |
-| Vercel (website) | legacy project binding | Vercel GitHub App authorized for all XpertMinds repositories | **paid-plan blocker**: Hobby rejects binding a private organization repository; explicit Pro approval required |
-| Branch protection / required checks | enforced on legacy (Pro) | unavailable on current private plan | **owner-auth blocker**: GitHub Pro/Team for private branch protection |
+| Vercel (website) | legacy project binding | Vercel GitHub App authorized for all XpertMinds repositories | **owner-auth blocker**: Git binding pending re-auth on the public repository, then a Git-connected deploy must reach `READY` (Hobby may work now that the destination is public) |
+| Branch protection / required checks | enforced on legacy (Pro) | Team plan + public repository; protection/rulesets are available and must be configured | **owner-auth blocker**: configure branch protection/required checks on `dev` and `main` (not yet observed on destination) |
+| GitHub Actions billing | billed minutes on legacy | public repository Actions path | **owner-auth blocker**: Actions billing/plan must allow required workflow minutes; unpaid or exhausted billing fails closed |
 
 Registry-only integration migration is governed separately by JUM-569.
 
@@ -55,9 +56,13 @@ Registry-only integration migration is governed separately by JUM-569.
 - Audit date: `2026-07-30`
 - Deprecated source: `web2solutions/aaa-typescript-boilerplate`
 - Canonical destination: `XpertMinds/Jumentix`
-- Destination visibility: private
+- Destination visibility: public
 - Actions secrets recreated (names only): `AAA_JWT_TOKEN_SECRET_KEY`, `AAA_REDIS_PASSWORD`
 - Environments recreated (names): `env vars`, `secrets`
-- Provider authentication is complete; Vercel Git binding, GitHub private
-  branch protection, and GitGuardian fork check runs require paid plans, while
-  terminal PR checks remain mandatory and are recorded above
+- Provider authentication is largely complete on the public destination. Remaining
+  true blockers (fail closed until terminal evidence exists): GitHub Actions
+  billing/minutes authority, Vercel Git re-auth plus `READY` Git deploy, branch
+  protection/required-check configuration on Team+public, Codecov project/patch
+  PR status where still unpaid, and GitGuardian Business only for fork check
+  runs. Missing, skipped, neutral, or merely configured checks are not success.
+- Visibilidade: public
