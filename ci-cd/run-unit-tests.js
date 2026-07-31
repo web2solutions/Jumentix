@@ -39,27 +39,25 @@ function partitionUnitSuites(manifest, env = process.env) {
 const BUN_ISOLATION = '--isolate';
 
 /**
- * Coverage was configured but never collected.
+ * Coverage is deliberately NOT collected here.
  *
- * `bunfig.toml` sets `coverageReporter`, `coverageDir` and `coverageThreshold`,
- * but none of that does anything without `--coverage` — and this runner never
- * passed it. So the Bun path produced no lcov at all, and the report Sonar and
- * Codecov consumed came entirely from the CI Jest run. Deprecating Jest without
- * this flag would have taken coverage reporting to zero while every gate stayed
- * green, because a missing report is not a failing one.
+ * Bun's lcov contains no branch records at all — no `BRF`, no `BRH`, no `BRDA`.
+ * Bun simply has no branch metric, and there is no flag that adds one. So a
+ * Bun-produced report cannot satisfy Requirements 020/063, which mandate 90%
+ * branch coverage, and writing one into `coverage/` would overwrite the report
+ * that can.
  *
- * `ci-cd/check-coverage-thresholds.js` reads the resulting lcov and is the
- * authority on all four metrics, including branches — which Bun's own
- * `coverageThreshold` cannot express.
+ * Coverage therefore comes from `bun run test:coverage`, which runs Jest for
+ * that single purpose. Jest is no longer a test runner in this repository — it
+ * is the coverage instrument, and `ci-cd/check-coverage-thresholds.js` reads its
+ * lcov as the authority on all four metrics.
  */
-const BUN_COVERAGE = '--coverage';
-
 function runBunUnit(suites, options = {}) {
   const spawn = options.spawn || spawnSync;
   const args = suites.length > 0
-    ? ['test', BUN_ISOLATION, BUN_COVERAGE, ...suites]
-    : ['test', BUN_ISOLATION, BUN_COVERAGE, UNIT_DIR];
-  console.log(`[ci] unit tests (bun:test, isolated, coverage): ${suites.length || 'directory'} target(s)`);
+    ? ['test', BUN_ISOLATION, ...suites]
+    : ['test', BUN_ISOLATION, UNIT_DIR];
+  console.log(`[ci] unit tests (bun:test, isolated): ${suites.length || 'directory'} target(s)`);
   const result = spawn('bun', args, {
     stdio: 'inherit',
     env: { ...process.env, NODE_ENV: process.env.NODE_ENV || 'dev' }

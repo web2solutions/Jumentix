@@ -65,3 +65,26 @@ describe('base controller', () => {
     );
   });
 });
+
+/**
+ * The ports barrel, exercised through the barrel.
+ *
+ * `ports/index.ts` carries a comment about a bug it already hit: the repo-wide
+ * `import type` codemod left type-only names in a value `export { … }` block, so
+ * Bun's ESM loader resolved a binding that does not exist and the entire barrel
+ * failed to load. Nothing tested the barrel, so the split between `export type`
+ * and `export` was upheld only by that comment.
+ */
+describe('http ports barrel', () => {
+  it('exports the two runtime values and nothing type-only', async () => {
+    expect.hasAssertions();
+    const barrel = await import('@src/interface/HTTP/ports') as Record<string, unknown>;
+
+    // Enums and abstract classes survive to runtime; interfaces and type
+    // aliases do not. A type name appearing here means it was moved out of
+    // `export type` and the barrel is one loader away from failing.
+    expect(typeof barrel.EHTTPFrameworks).toBe('object');
+    expect(typeof barrel.HTTPBaseServer).toBe('function');
+    expect(Object.keys(barrel).sort()).toStrictEqual(['EHTTPFrameworks', 'HTTPBaseServer']);
+  });
+});

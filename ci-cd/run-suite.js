@@ -11,6 +11,38 @@
  */
 const { spawnSync } = require('child_process');
 const { resolveTestRuntime } = require('./lib/test-runtime');
+const { readTestMap } = require('./lib/test-map');
+
+/**
+ * Whether the map pins these paths to Node.
+ *
+ * The map is where a suite's runner is declared, so it has to be able to force
+ * one. Without this the declaration was advisory: `test:integration:restify`
+ * resolved its runtime from the environment alone and would run under Bun
+ * locally, where restify cannot even load — it pulls spdy -> handle-thing ->
+ * `process.binding('stream_wrap')`, which Bun does not implement
+ * (oven-sh/bun#4957).
+ *
+ * Only `runner: "node"` with a `reason` counts, which is the same declared
+ * exception `check-test-map` enforces (Requirement 110). A single pinned suite
+ * in the set is enough: the alternative is running the rest under Bun and that
+ * one nowhere.
+ */
+function mapPinsToNode(paths) {
+  let manifest;
+  try {
+    manifest = readTestMap();
+  } catch {
+    // No map, no pin. The caller's own runtime resolution stands.
+    return false;
+  }
+
+  return (manifest.suites || []).some(
+    (suite) => suite.runner === 'node'
+      && Boolean(suite.reason)
+      && paths.some((given) => suite.path === given || suite.path.startsWith(`${given}/`))
+  );
+}
 
 function parseArgs(argv) {
   const paths = [];
@@ -26,7 +58,6 @@ function parseArgs(argv) {
 }
 
 function runSuitePaths(paths, options = {}) {
-  const runtime = options.runtime || resolveTestRuntime(options.env || process.env);
   const spawn = options.spawn || spawnSync;
   const label = options.label ? ` (${options.label})` : '';
 
@@ -34,6 +65,12 @@ function runSuitePaths(paths, options = {}) {
     console.error('[suite] no paths provided');
     return 1;
   }
+
+  // A map pin wins over environment resolution: it exists because the suite
+  // cannot run under Bun at all, so "prefer bun locally" is not a choice here.
+  const pinned = (options.mapPinsToNode || mapPinsToNode)(paths);
+  const runtime = options.runtime
+    || (pinned ? 'node' : resolveTestRuntime(options.env || process.env));
 
   if (runtime === 'node') {
     console.log(`[suite] runtime=node/jest${label}: ${paths.length} path(s)`);
@@ -71,4 +108,8 @@ if (require.main === module) {
   });
 }
 
-module.exports = { parseArgs, runSuitePaths };
+module.exports = {
+  mapPinsToNode,
+  parseArgs,
+  runSuitePaths
+};

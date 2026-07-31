@@ -127,6 +127,7 @@ Use these files as living constraints for future maintenance and feature develop
 - [107-circleci-as-sole-ci-provider](requirements/107-circleci-as-sole-ci-provider.md)
 - [108-http-adapters-must-integrate-their-framework](requirements/108-http-adapters-must-integrate-their-framework.md)
 - [109-test-suites-must-detect-fake-implementations](requirements/109-test-suites-must-detect-fake-implementations.md)
+- [110-bun-test-is-the-runner-jest-is-the-coverage-instrument](requirements/110-bun-test-is-the-runner-jest-is-the-coverage-instrument.md)
 - [Agent Registry](AGENT-REGISTRY.md)
 - [NFR Registry](NFR-REGISTRY.md)
 - [Spec Development Driven Agent](spec-development-driven-agent.md)

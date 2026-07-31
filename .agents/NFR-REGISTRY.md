@@ -115,3 +115,9 @@ When a new NFR is requested:
 1. add/update requirement file in `.agents/requirements/`
 2. update `.agents/README.md` index
 3. update this registry mapping
+- `110` `bun:test` is the test runner; Jest is retained solely as the coverage
+  instrument, because Bun emits no branch records in lcov and Requirements 020/063 mandate
+  90% branch coverage. `ci-cd/check-coverage-thresholds.js` reads the lcov and is the
+  authority on all four metrics, failing closed on any it cannot measure. A suite may
+  declare `runner: "node"` only with a `reason` naming a concrete Bun incompatibility;
+  the map pin overrides environment resolution. Amends 106.

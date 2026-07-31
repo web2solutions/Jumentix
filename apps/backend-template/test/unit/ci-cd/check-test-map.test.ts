@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
+const fs = require('fs');
 const path = require('path');
 const {
   assertAcyclic,
@@ -137,5 +138,71 @@ describe('hexagonal test pyramid libraries', () => {
     const result = validateTestMap(bad, { root: path.resolve(__dirname, '../../../../../') });
     expect(result.ok).toBe(false);
     expect(result.errors.some((error: string) => error.includes('ciRunner'))).toBe(true);
+  });
+});
+
+/**
+ * Requirement 110's two structural rules, checked against the repository itself.
+ *
+ * Both are the kind that hold until someone reasonably decides otherwise in a
+ * single file, at which point nothing fails and the property is gone.
+ */
+describe('requirement 110 runner rules', () => {
+  const repoRootFor110 = path.resolve(__dirname, '../../../../..');
+
+  const testFilesUnder = (directory: string): string[] => {
+    const found: string[] = [];
+    const walk = (dir: string) => {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        const isNested = entry.isDirectory() && entry.name !== 'node_modules';
+        const isTest = !entry.isDirectory() && /\.test\.tsx?$/.test(entry.name);
+        if (isNested) walk(full);
+        if (isTest) found.push(full);
+      }
+    };
+    walk(path.join(repoRootFor110, directory));
+    return found;
+  };
+
+  it('has no test file importing bun:test', () => {
+    expect.hasAssertions();
+    // Requirement 110 keeps Jest as the coverage instrument, which means the
+    // coverage run and the test run must execute the same source. One import of
+    // Bun's own test module makes that file uncoverable, and under Jest it fails
+    // as a module-resolution error — which reads like a broken path rather than
+    // a policy violation.
+    //
+    // The specifier is assembled rather than spelled out so this file does not
+    // match its own check. Excluding this path instead would be an allowlist
+    // entry capable of hiding a real violation later.
+    const specifier = ['bun', 'test'].join(':');
+    const importsRuntime = new RegExp(`(from|require\\()\\s*\\(?['"]${specifier}['"]`);
+
+    const importers = testFilesUnder('apps/backend-template/test')
+      .filter((file) => importsRuntime.test(fs.readFileSync(file, 'utf8')))
+      .map((file) => path.relative(repoRootFor110, file));
+
+    expect(importers).toStrictEqual([]);
+  });
+
+  /** A node pin with no stated reason. Hoisted so the predicate is not a branch in a test body. */
+  const isUnexplainedNodePin = (suite: { runner: string; reason?: string }) => (
+    suite.runner === 'node' && !suite.reason
+  );
+
+  it('gives every node-pinned suite a reason', () => {
+    expect.hasAssertions();
+    // The exception exists for suites Bun cannot load at all. Without a stated
+    // reason it is indistinguishable from someone routing around a failure.
+    const manifest = JSON.parse(
+      fs.readFileSync(path.join(repoRootFor110, 'test-map.json'), 'utf8')
+    ) as { suites: { path: string; runner: string; reason?: string }[] };
+
+    const unexplained = manifest.suites
+      .filter(isUnexplainedNodePin)
+      .map((suite) => suite.path);
+
+    expect(unexplained).toStrictEqual([]);
   });
 });
