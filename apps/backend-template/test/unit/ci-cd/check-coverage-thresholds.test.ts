@@ -21,7 +21,10 @@ const coverageGuard = require('../../../../../ci-cd/check-coverage-thresholds') 
     totals: Record<string, CoverageCounters>,
     thresholds?: Record<string, number>
   ) => { failures: string[]; report: Record<string, number | null> };
+  BASE_THRESHOLDS?: Record<string, number>;
   THRESHOLDS: Record<string, number>;
+  ACCEPTED_BELOW_THRESHOLD: Record<string, { floor: number; issue: string; since: string }>;
+  formatPercentage: (value: number) => string;
   main: (readReport?: () => unknown) => void;
   defaultReadReport: () => unknown;
 };
@@ -29,6 +32,11 @@ const coverageGuard = require('../../../../../ci-cd/check-coverage-thresholds') 
 /** Counters where the first `hit` of `found` are covered. */
 const counters = (found: number, hit: number) => Object.fromEntries(
   Array.from({ length: found }, (_, index) => [String(index), index < hit ? 1 : 0])
+);
+
+/** Branch points with one path each, the first `hit` of them covered. */
+const branches = (found: number, hit: number) => Object.fromEntries(
+  Array.from({ length: found }, (_, index) => [String(index), [index < hit ? 1 : 0]])
 );
 
 /** A statement map placing each statement on its own line. */
@@ -47,9 +55,7 @@ const reportWith = ({
     s: counters(sf, sh),
     f: counters(fnf, fnh),
     // One path per branch point, so the flattened count is the branch count.
-    b: Object.fromEntries(
-      Array.from({ length: brf }, (_, index) => [String(index), [index < brh ? 1 : 0]])
-    )
+    b: branches(brf, brh)
   }
 });
 
@@ -68,8 +74,11 @@ describe('check-coverage-thresholds', () => {
 
   it('passes when every metric is at or above its threshold', () => {
     expect.hasAssertions();
+    // Thresholds passed explicitly, excluding whichever metric currently holds
+    // an exception: this asserts the rule, not today's concession.
     const { failures } = coverageGuard.validateCoverage(
-      coverageGuard.summarize(reportWith({}))
+      coverageGuard.summarize(reportWith({})),
+      { branches: 90, functions: 99, lines: 99 }
     );
 
     expect(failures).toStrictEqual([]);
@@ -80,7 +89,8 @@ describe('check-coverage-thresholds', () => {
     // The metric this checker exists for: Bun cannot enforce it, so nothing else
     // would catch it.
     const { failures } = coverageGuard.validateCoverage(
-      coverageGuard.summarize(reportWith({ brf: 100, brh: 89 }))
+      coverageGuard.summarize(reportWith({ brf: 100, brh: 89 })),
+      { branches: 90, functions: 99, lines: 99 }
     );
 
     expect(failures).toHaveLength(1);
@@ -94,7 +104,10 @@ describe('check-coverage-thresholds', () => {
   ])('fails when %s is below 99 percent', (metric, over) => {
     expect.hasAssertions();
     const { failures } = coverageGuard.validateCoverage(
-      coverageGuard.summarize(reportWith(over))
+      coverageGuard.summarize(reportWith(over)),
+      {
+        statements: 99, branches: 90, functions: 99, lines: 99
+      }
     );
 
     expect(failures.join('\n')).toContain(`${metric}: 98.00%`);
@@ -113,7 +126,8 @@ describe('check-coverage-thresholds', () => {
     };
 
     const { failures } = coverageGuard.validateCoverage(
-      coverageGuard.summarize(withoutBranches)
+      coverageGuard.summarize(withoutBranches),
+      { branches: 90, functions: 99, lines: 99 }
     );
 
     expect(failures).toHaveLength(1);
@@ -197,10 +211,35 @@ describe('check-coverage-thresholds CLI', () => {
 
   it('reports every metric when all pass', () => {
     expect.hasAssertions();
-    const result = runMain(reportWith({ brf: 100, brh: 95 }));
+    // Statements at 98.99% — at the recorded floor, below the 99% threshold,
+    // which is the state the exception exists to describe. Passing 100% here
+    // would trip the "exception outlived its reason" failure, which is the
+    // ratchet working rather than a broken test.
+    //
+    // Several statements share each line, as in real code, so `lines` stays at
+    // 100% while `statements` sits below its threshold. The default fixture puts
+    // one statement per line, which makes the two metrics move together and
+    // would fail `lines` — which holds no exception.
+    const spread = {
+      'x.ts': {
+        statementMap: Object.fromEntries(
+          Array.from({ length: 10000 }, (_, index) => [
+            String(index), { start: { line: (index % 100) + 1 } }
+          ])
+        ),
+        s: counters(10000, 9899),
+        f: counters(10, 10),
+        b: branches(100, 95)
+      }
+    };
+
+    const result = runMain(spread);
 
     expect(result.thrown).toBeNull();
     expect(result.logs).toContain('branches 95.00%');
+    // The exception is named in the summary, so a reader is never shown a
+    // number without being told it sits under a tracked concession.
+    expect(result.logs).toContain('under JUM-588');
   });
 });
 
@@ -252,5 +291,79 @@ describe('check-coverage-thresholds report reader', () => {
     expect(report['x.ts'].s).toStrictEqual({ 0: 1 });
     exists.mockRestore();
     read.mockRestore();
+  });
+});
+
+/**
+ * The exception mechanism, which is the part most able to rot.
+ *
+ * A waiver that silently becomes permanent is worse than a lowered threshold,
+ * because it still reads as if the original bar applies. The ratchet is what
+ * stops that: a metric under exception may hold or improve, never regress, and
+ * once it clears the real threshold the entry must go.
+ */
+describe('check-coverage-thresholds exceptions', () => {
+  const thresholds = { statements: 99 };
+
+  /** Hoisted so the predicates are not branches inside a test body. */
+  const hasIssue = (entry: { issue: string }) => typeof entry.issue === 'string' && entry.issue.length > 0;
+  const hasIsoDate = (entry: { since: string }) => /^\d{4}-\d{2}-\d{2}$/.test(entry.since);
+
+  it('accepts a metric at its recorded floor', () => {
+    expect.hasAssertions();
+    const { failures } = coverageGuard.validateCoverage(
+      coverageGuard.summarize(reportWith({ sf: 10000, sh: 9899 })),
+      thresholds
+    );
+
+    expect(failures).toStrictEqual([]);
+  });
+
+  it('fails when a metric under exception regresses below its floor', () => {
+    expect.hasAssertions();
+    // The whole point. Without this the exception is a blank cheque: coverage
+    // could fall to any value and the gate would still pass.
+    const { failures } = coverageGuard.validateCoverage(
+      coverageGuard.summarize(reportWith({ sf: 10000, sh: 9800 })),
+      thresholds
+    );
+
+    expect(failures).toHaveLength(1);
+    expect(failures[0]).toContain('below the accepted floor');
+    expect(failures[0]).toContain('JUM-588');
+  });
+
+  it('fails when a metric clears its threshold but the exception is still listed', () => {
+    expect.hasAssertions();
+    // The other direction, and the one that decides whether this stays honest:
+    // a concession nobody removes is a lowered bar wearing a ticket number.
+    const { failures } = coverageGuard.validateCoverage(
+      coverageGuard.summarize(reportWith({ sf: 100, sh: 100 })),
+      thresholds
+    );
+
+    expect(failures).toHaveLength(1);
+    expect(failures[0]).toContain('now meets the 99% threshold');
+    expect(failures[0]).toContain('Remove it from ACCEPTED_BELOW_THRESHOLD');
+  });
+
+  it('records a reason, an issue and a date for every exception', () => {
+    expect.hasAssertions();
+    // An undated exception with no issue is indistinguishable from a threshold
+    // someone quietly lowered.
+    const entries = Object.values(coverageGuard.ACCEPTED_BELOW_THRESHOLD);
+
+    expect(entries.length).toBeGreaterThan(0);
+    expect(entries.every(hasIssue)).toBe(true);
+    expect(entries.every(hasIsoDate)).toBe(true);
+  });
+
+  it('never prints a percentage higher than the one measured', () => {
+    expect.hasAssertions();
+    // 98.995 rounds to "99.00" with toFixed, which reads as meeting a 99%
+    // threshold it does not meet. Truncating keeps the printed figure a lower
+    // bound — the only direction a coverage report may err in.
+    expect(coverageGuard.formatPercentage(98.995)).toBe('98.99');
+    expect(coverageGuard.formatPercentage(99)).toBe('99.00');
   });
 });
