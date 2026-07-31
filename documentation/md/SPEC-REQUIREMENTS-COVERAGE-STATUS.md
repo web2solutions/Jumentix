@@ -1,6 +1,6 @@
 # Spec Requirements Coverage Status
 
-<!-- requirements-inventory: files=113 unique=110 mapped=110 duplicates=055,060,079 -->
+<!-- requirements-inventory: files=114 unique=111 mapped=111 duplicates=055,060,079 -->
 
 This document certifies current coverage of implemented requirements by Spec Development Driven resources.
 
@@ -9,8 +9,8 @@ This document certifies current coverage of implemented requirements by Spec Dev
 Date: `2026-07-29`
 
 1. Requirement files in `.agents/requirements`: `107`
-2. Unique requirement IDs: `104`, `105`, `106`, `107`, `108`, `109`, `110`
-3. IDs covered in `SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`: `104`, `105`, `106`, `107`, `108`, `109`, `110`
+2. Unique requirement IDs: `104`, `105`, `106`, `107`, `108`, `109`, `110`, `111`
+3. IDs covered in `SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`: `104`, `105`, `106`, `107`, `108`, `109`, `110`, `111`
 4. Coverage status: `100%`
 
 Notes:
@@ -20,9 +20,9 @@ Notes:
 
 ## Non-Functional Requirements Coverage
 
-NFR IDs covered (`67`):
+NFR IDs covered (`68`):
 
-`001`, `011`, `014`, `015`, `016`, `017`, `018`, `020`, `025`, `029`, `036`, `041`, `042`, `043`, `044`, `050`, `053`, `056`, `057`, `063`, `064`, `065`, `066`, `067`, `068`, `069`, `070`, `071`, `072`, `073`, `074`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `091`, `092`, `093`, `094`, `095`, `096`, `097`, `098`, `099`, `100`, `101`, `102`, `103`, `104`, `105`, `106`, `107`, `108`, `109`, `110`
+`001`, `011`, `014`, `015`, `016`, `017`, `018`, `020`, `025`, `029`, `036`, `041`, `042`, `043`, `044`, `050`, `053`, `056`, `057`, `063`, `064`, `065`, `066`, `067`, `068`, `069`, `070`, `071`, `072`, `073`, `074`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `091`, `092`, `093`, `094`, `095`, `096`, `097`, `098`, `099`, `100`, `101`, `102`, `103`, `104`, `105`, `106`, `107`, `108`, `109`, `110`, `111`
 
 NFR mapping sources:
 

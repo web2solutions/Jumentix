@@ -109,12 +109,6 @@ This file consolidates non-functional requirements already requested and stored 
   coverage of adapter directories is 100%, and a missing dependency fails its suite rather
   than skipping it. Asserting correct behaviour is not enough when a substitute produces
   identical behaviour — the AdonisJS adapter passed every test while integrating nothing.
-
-When a new NFR is requested:
-
-1. add/update requirement file in `.agents/requirements/`
-2. update `.agents/README.md` index
-3. update this registry mapping
 - `110` `bun:test` is the test runner; Jest is retained solely as the coverage
   instrument, because Bun emits no branch records at all and Requirements 020/063 mandate
   90% branch coverage. `ci-cd/check-coverage-thresholds.js` is the
@@ -126,3 +120,21 @@ When a new NFR is requested:
   narrowing the scope is not a permitted way to meet one. A suite may
   declare `runner: "node"` only with a `reason` naming a concrete Bun incompatibility;
   the map pin overrides environment resolution. Amends 106.
+- `111` Only identities declared in `.agents/AUTHORIZED-COMMITTERS.json` may author or
+  commit. The declaration is an allowlist and must not be inverted into a denylist: the audit
+  behind this requirement started from one known corporate address and uncovered a second
+  corporate domain nobody was looking for, which a denylist would have passed. Author and
+  committer are both checked, since they diverge on rebases, amends and web merges.
+  `governance:check-authorship` verifies existing commits from a declared history cutoff —
+  anchored to a fixed commit, because a base-relative range is empty, and therefore vacuously
+  green, on the branch the work merged into. `--identity` verifies the identity a commit is
+  about to receive, in `pre-commit`, because the range check cannot see a commit that does
+  not exist yet and commit metadata cannot be retracted once pushed. No identity is set
+  globally on a contributor machine. Fails closed on a missing, empty or unparseable
+  declaration (Requirement 065).
+
+When a new NFR is requested:
+
+1. add/update requirement file in `.agents/requirements/`
+2. update `.agents/README.md` index
+3. update this registry mapping

@@ -7,6 +7,11 @@ echo "[Husky] pre-commit: changelog + branch-aware quality gate"
 # error here instead of as an unrelated gate failure three steps later.
 bun ci-cd/check-bun-version.js || exit 1
 
+# Requirement 111: refuse to stamp this commit with an undeclared identity.
+# Before the gate, because the gate's range check cannot see a commit that does
+# not exist yet — and commit metadata cannot be retracted once pushed.
+bun ci-cd/check-commit-authorship.js --identity || exit 1
+
 bun run changelog:update &&
 git add CHANGELOG.md &&
 CI=true JUMENTIX_QUALITY_GATE_TARGET="$(git branch --show-current)" bun run ci:gate:branch

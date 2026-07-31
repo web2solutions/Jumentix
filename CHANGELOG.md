@@ -4,27 +4,55 @@
 
 ## All Changes
 
-- 2026-07-30 docs(requirements): test suites must detect fake implementations [107] - Eduardo A.
-- 2026-07-30 feat(readme,arch): fix stale badges and require adapters to integrate their framework [106] - Eduardo A.
-- 2026-07-30 feat(ci): make circleci the sole provider and retire github actions [105] - Eduardo A.
-- 2026-07-30 docs(cana): record the measured performance shape in release readiness - Eduardo A.
-- 2026-07-30 test(cana): performance baseline by complexity shape [JUM-561] - Eduardo A.
-- 2026-07-30 feat(cana): packaging, conformance harness, release readiness [JUM-416][JUM-417][JUM-419] - Eduardo A.
-- 2026-07-30 test(cana): differential harness against Dexie [JUM-561] - Eduardo A.
-- 2026-07-30 feat(cana): worker host, and a real message-boundary round trip [JUM-409][JUM-410] - Eduardo A.
-- 2026-07-30 fix(cana): three further review defects [JUM-560][JUM-403][JUM-413] - Eduardo A.
-- 2026-07-30 docs(cana): complete usage guide, EN and PT-BR [JUM-418] - Eduardo A.
-- 2026-07-30 test(cana): complete the suite, and route a synchronous throw into its promise - Eduardo A.
-- 2026-07-30 fix(cana): seven review defects, and IndexedDB as a first-class driver [JUM-414] - Eduardo A.
-- 2026-07-30 feat(cana): jumentix client adapter, and reject browser-only server drivers [JUM-414] - Eduardo A.
-- 2026-07-30 docs(cana): epic documentation EN and PT-BR [JUM-418][JUM-398] - Eduardo A.
-- 2026-07-30 feat(cana): postmaster protocol and request router [JUM-401][JUM-409][JUM-410] - Eduardo A.
-- 2026-07-30 feat(cana): make the unknown write outcome resolvable [JUM-559][JUM-411] - Eduardo A.
-- 2026-07-30 feat(cana): durability policy that refuses to round up [JUM-415] - Eduardo A.
-- 2026-07-30 feat(cana): lifecycle hooks that cannot swallow a failure [JUM-408] - Eduardo A.
-- 2026-07-30 feat(cana): crud, bulk, queries, transactions and change events [JUM-405][JUM-406] - Eduardo A.
-- 2026-07-30 feat(cana): database lifecycle, schema application, error taxonomy [JUM-403][JUM-404] - Eduardo A.
-- 2026-07-30 feat(cana): scaffold the package, freeze the contracts, implement durability [JUM-402][JUM-400][JUM-560] - Eduardo A.
+- 2026-07-31 [JUM-398][Security] Remove the CI Redis password and fix the ggshield config - Eduardo Almeida
+- 2026-07-31 chore(ci): state shell:false on the suite spawns - Eduardo Almeida
+- 2026-07-31 [JUM-398][Security] Hand the spawn canonical paths and count before logging - Eduardo Almeida
+- 2026-07-31 [JUM-398][Security] Fix the findings the PR-scoped Sonar report surfaced - Eduardo Almeida
+- 2026-07-31 fix(ci): scope the Sonar report to the pull request - Eduardo Almeida
+- 2026-07-31 [JUM-398][CI] Fix what Sonar found, and give the entry-point idiom one home - Eduardo Almeida
+- 2026-07-31 [JUM-398][CI] Print Sonar's findings into the CI log - Eduardo Almeida
+- 2026-07-31 [JUM-398][Testing] Move the Cana suites into the package they test - Eduardo Almeida
+- 2026-07-31 [JUM-588][Coverage] Accept 98.99% statements as a ratchet, not a lowered threshold - Eduardo Almeida
+- 2026-07-31 fix(coverage): measure statements from Istanbul, not lines relabelled as statements - Eduardo Almeida
+- 2026-07-31 fix(coverage): measure packages/cana and the new ci-cd guards, drop unreachable catches - Eduardo Almeida
+- 2026-07-31 fix(ci): point Sonar at test:coverage and enforce thresholds in both providers - Eduardo Almeida
+- 2026-07-31 fix(ci): record integration suite files in gate evidence, not only script names - Eduardo Almeida
+- 2026-07-31 fix(test): import fs and path in check-test-map.test.ts instead of requiring them - Eduardo Almeida
+- 2026-07-31 fix(test): mark check-test-map.test.ts as a module - Eduardo Almeida
+- 2026-07-31 [JUM-583][Testing] Requirement 110: bun:test runs, Jest measures coverage - Eduardo Almeida
+- 2026-07-31 [JUM-583][CI] Collect Bun coverage and enforce all four thresholds from lcov - Eduardo Almeida
+- 2026-07-31 [JUM-587][Bug] Upgrade to Express 5 and guard overrides against crossing a major - Eduardo Almeida
+- 2026-07-31 [JUM-583][Testing] Make every unit suite run under Bun - Eduardo Almeida
+- 2026-07-30 fix(website): add the Cana README translation and stop demanding one for licenses - Eduardo Almeida
+- 2026-07-30 test(readme): correct rationales the CI-provider reversal invalidated - Eduardo Almeida
+- 2026-07-30 fix(docs): restore PT-BR README badge parity and correct the 012 supersession link - Eduardo Almeida
+- 2026-07-30 docs(cana): point the Bun runner note at JUM-584 - Eduardo Almeida
+- 2026-07-30 Merge origin/dev into the Cana branch - Eduardo Almeida
+- 2026-07-30 docs(requirements): test suites must detect fake implementations [107] - Eduardo Almeida
+- 2026-07-30 feat(readme,arch): fix stale badges and require adapters to integrate their framework [106] - Eduardo Almeida
+- 2026-07-30 feat(ci): make circleci the sole provider and retire github actions [105] - Eduardo Almeida
+- 2026-07-30 feat(testing): finish Hexagonal Test Pyramid with Req 106 Bun-local runtime (#18) - Eduardo A.
+- 2026-07-30 docs(cana): record the measured performance shape in release readiness - Eduardo Almeida
+- 2026-07-30 test(cana): performance baseline by complexity shape [JUM-561] - Eduardo Almeida
+- 2026-07-30 feat(testing): deliver Hexagonal Test Pyramid layer-aware gates [JUM-428][JUM-429][JUM-441][JUM-442][JUM-443] (#16) - Eduardo A.
+- 2026-07-30 feat(cana): packaging, conformance harness, release readiness [JUM-416][JUM-417][JUM-419] - Eduardo Almeida
+- 2026-07-30 chore(governance): register opencode-primary-001 in agent registry - Eduardo A.
+- 2026-07-30 test(cana): differential harness against Dexie [JUM-561] - Eduardo Almeida
+- 2026-07-30 feat(cana): worker host, and a real message-boundary round trip [JUM-409][JUM-410] - Eduardo Almeida
+- 2026-07-30 fix(cana): three further review defects [JUM-560][JUM-403][JUM-413] - Eduardo Almeida
+- 2026-07-30 docs(cana): complete usage guide, EN and PT-BR [JUM-418] - Eduardo Almeida
+- 2026-07-30 test(cana): complete the suite, and route a synchronous throw into its promise - Eduardo Almeida
+- 2026-07-30 fix(cana): seven review defects, and IndexedDB as a first-class driver [JUM-414] - Eduardo Almeida
+- 2026-07-30 feat(cana): jumentix client adapter, and reject browser-only server drivers [JUM-414] - Eduardo Almeida
+- 2026-07-30 docs(cana): epic documentation EN and PT-BR [JUM-418][JUM-398] - Eduardo Almeida
+- 2026-07-30 feat(cana): postmaster protocol and request router [JUM-401][JUM-409][JUM-410] - Eduardo Almeida
+- 2026-07-30 feat(cana): make the unknown write outcome resolvable [JUM-559][JUM-411] - Eduardo Almeida
+- 2026-07-30 feat(cana): durability policy that refuses to round up [JUM-415] - Eduardo Almeida
+- 2026-07-30 feat(cana): lifecycle hooks that cannot swallow a failure [JUM-408] - Eduardo Almeida
+- 2026-07-30 feat(cana): crud, bulk, queries, transactions and change events [JUM-405][JUM-406] - Eduardo Almeida
+- 2026-07-30 feat(cana): database lifecycle, schema application, error taxonomy [JUM-403][JUM-404] - Eduardo Almeida
+- 2026-07-30 [JUM-540][Security] Remove Snyk completely from Jumentix (#14) - Eduardo A.
+- 2026-07-30 feat(cana): scaffold the package, freeze the contracts, implement durability [JUM-402][JUM-400][JUM-560] - Eduardo Almeida
 - 2026-07-30 [JUM-540][Security] Retire Snyk in favour of the first-party OSV scanner (#13) - Eduardo A.
 - 2026-07-30 fix(security): retire Snyk in favour of the first-party OSV scanner [JUM-540] - Eduardo A.
 - 2026-07-30 [JUM-22][Tooling] Replace internal Node and pnpm workflows with Bun (#8) - Eduardo A.

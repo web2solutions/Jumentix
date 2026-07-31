@@ -1,0 +1,64 @@
+{
+  "requirement": "111",
+  "comment": [
+    "Every identity permitted to author or commit in this repository.",
+    "",
+    "This is an allowlist, deliberately, and not a list of banned addresses. The",
+    "incident that produced it involved one corporate address the owner knew about;",
+    "auditing the history for it turned up a second corporate domain from a former",
+    "employer that nobody had thought to look for. A denylist only ever blocks the",
+    "leak someone already noticed. An allowlist blocks the one nobody has.",
+    "",
+    "Both `author` and `committer` are checked. They differ on rebases, amends, and",
+    "web merges, so validating one leaves the other free to carry anything."
+  ],
+
+  "historyCutoff": {
+    "commit": "5a4ddda8cdb3934d7809252c6fd9de29ca39a781",
+    "date": "2026-07-30",
+    "comment": [
+      "Commits reachable from this one are out of scope. Twenty-one of them carry a",
+      "non-approved corporate identity across two domains, and they are already on",
+      "`main` — rewriting the default branch would invalidate every clone and open",
+      "pull request while leaving the old objects reachable by SHA on the forge",
+      "anyway, so the rewrite would not actually remove the data.",
+      "",
+      "Recorded here rather than left implicit. A check whose scope silently begins",
+      "partway through history reads as proof the whole history is clean, and this",
+      "history is not. Anything after this commit is enforced with no exceptions."
+    ]
+  },
+
+  "identities": [
+    {
+      "email": "web2solucoes@gmail.com",
+      "kind": "human",
+      "role": "owner",
+      "note": "Primary identity. The default for all work in this repository."
+    },
+    {
+      "email": "eduardo@xpertminds.dev",
+      "kind": "human",
+      "role": "owner",
+      "note": "Approved alternate identity for the same person."
+    },
+    {
+      "email": "684249+web2solutions@users.noreply.github.com",
+      "kind": "human",
+      "role": "owner",
+      "note": "Forge-provided no-reply address for the same account. Authors commits created through the GitHub web interface."
+    },
+    {
+      "email": "noreply@github.com",
+      "kind": "machine",
+      "role": "forge",
+      "note": "Committer on merges performed through the GitHub web interface. Never an author."
+    },
+    {
+      "email": "49699333+dependabot[bot]@users.noreply.github.com",
+      "kind": "machine",
+      "role": "bot",
+      "note": "Dependency update pull requests."
+    }
+  ]
+}
