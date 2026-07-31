@@ -3,11 +3,18 @@ import type { DatabaseObservation, StorageEnvironment } from '@jumentix/cana';
 import { StorageDurability, classifyOpen } from '@jumentix/cana';
 
 /**
- * Placed under `apps/backend-template/test/unit` rather than `packages/cana/test`
- * deliberately: `test:unit` only targets this path, and the package's own `test`
- * script is a typecheck. Putting the suite in the package would have produced the
- * exact false green Test Pyramid JUM-557 documents — a `test` script that passes
- * while no test runs.
+ * These suites live with the package they test.
+ *
+ * They sat under `apps/backend-template/test/unit` for a reason that has since
+ * been removed: the runner targeted only that path, and Cana's own `test` script
+ * was an echo, so putting them here would have produced the false green JUM-557
+ * documents — a `test` script that passes while nothing runs.
+ *
+ * Both halves are closed now. `test-map.json` names their real location and
+ * `run-unit-tests.js` runs the map rather than a directory, so the gate executes
+ * them here; and `packages/cana`'s `test` script runs `bun test --isolate` over
+ * this directory, which `packaging.test.ts` asserts — rejecting an echo, a
+ * typecheck, or a script that defers elsewhere.
  */
 
 const observation = (over: Partial<DatabaseObservation> = {}): DatabaseObservation => ({

@@ -33,12 +33,47 @@ describe('check-workspace-coverage-policy', () => {
         }
       }
     });
+    // `statements` names its accepted floor rather than the base minimum, and
+    // says why: it sits under a dated exception the coverage checker owns
+    // (Requirement 110). The other three carry the unmodified figure.
     expect(failures).toStrictEqual([
-      'Root coverageThreshold.global.statements must be >= 99 (current: 95)',
+      'Root coverageThreshold.global.statements must be >= 98.99 '
+        + '(99 relaxed to the accepted floor under JUM-588) (current: 95)',
       'Root coverageThreshold.global.lines must be >= 99 (current: 95)',
       'Root coverageThreshold.global.functions must be >= 99 (current: 95)',
       'Root coverageThreshold.global.branches must be >= 90 (current: 80)'
     ]);
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+  const exceptionRegister = require('../../../../../ci-cd/check-coverage-thresholds')
+    .ACCEPTED_BELOW_THRESHOLD as Record<string, { floor: number } | undefined>;
+
+  /** A metric's floor: its recorded exception if one exists, else the base minimum. */
+  const atFloor = (metric: string, base: number) => {
+    const exception = exceptionRegister[metric];
+    return exception === undefined ? base : exception.floor;
+  };
+
+  it('reads its exceptions from the coverage checker rather than its own copy', () => {
+    expect.hasAssertions();
+    // Two guards enforcing the same numbers is fine; two holding separate ideas
+    // of which concessions are live is not — one would keep passing a metric the
+    // other had released, or keep failing one already accepted.
+    // Every metric set to its floor — the base minimum where there is no
+    // exception, the recorded floor where there is one.
+    const failures = validateGlobalCoverageThreshold({
+      coverageThreshold: {
+        global: {
+          statements: atFloor('statements', 99),
+          lines: atFloor('lines', 99),
+          functions: atFloor('functions', 99),
+          branches: atFloor('branches', 90)
+        }
+      }
+    });
+
+    expect(failures).toStrictEqual([]);
   });
 
   it('accepts package test policy for non-placeholder scripts', () => {

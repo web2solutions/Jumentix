@@ -2266,8 +2266,8 @@
       "timeoutMs": 120000
     },
     {
-      "id": "apps/backend-template/test/unit/cana/adapter.test.ts",
-      "path": "apps/backend-template/test/unit/cana/adapter.test.ts",
+      "id": "packages/cana/test/adapter.test.ts",
+      "path": "packages/cana/test/adapter.test.ts",
       "layer": "adapters/out+infra",
       "kind": "hexagonal",
       "type": "unit",
@@ -2276,8 +2276,8 @@
       "timeoutMs": 60000
     },
     {
-      "id": "apps/backend-template/test/unit/cana/client.test.ts",
-      "path": "apps/backend-template/test/unit/cana/client.test.ts",
+      "id": "packages/cana/test/client.test.ts",
+      "path": "packages/cana/test/client.test.ts",
       "layer": "adapters/out+infra",
       "kind": "hexagonal",
       "type": "unit",
@@ -2286,8 +2286,8 @@
       "timeoutMs": 60000
     },
     {
-      "id": "apps/backend-template/test/unit/cana/conformance.test.ts",
-      "path": "apps/backend-template/test/unit/cana/conformance.test.ts",
+      "id": "packages/cana/test/conformance.test.ts",
+      "path": "packages/cana/test/conformance.test.ts",
       "layer": "adapters/out+infra",
       "kind": "hexagonal",
       "type": "unit",
@@ -2296,8 +2296,8 @@
       "timeoutMs": 120000
     },
     {
-      "id": "apps/backend-template/test/unit/cana/database.test.ts",
-      "path": "apps/backend-template/test/unit/cana/database.test.ts",
+      "id": "packages/cana/test/database.test.ts",
+      "path": "packages/cana/test/database.test.ts",
       "layer": "adapters/out+infra",
       "kind": "hexagonal",
       "type": "unit",
@@ -2306,8 +2306,8 @@
       "timeoutMs": 60000
     },
     {
-      "id": "apps/backend-template/test/unit/cana/differential-dexie.test.ts",
-      "path": "apps/backend-template/test/unit/cana/differential-dexie.test.ts",
+      "id": "packages/cana/test/differential-dexie.test.ts",
+      "path": "packages/cana/test/differential-dexie.test.ts",
       "layer": "adapters/out+infra",
       "kind": "hexagonal",
       "type": "unit",
@@ -2316,8 +2316,8 @@
       "timeoutMs": 120000
     },
     {
-      "id": "apps/backend-template/test/unit/cana/driver-selection.test.ts",
-      "path": "apps/backend-template/test/unit/cana/driver-selection.test.ts",
+      "id": "packages/cana/test/driver-selection.test.ts",
+      "path": "packages/cana/test/driver-selection.test.ts",
       "layer": "adapters/out+infra",
       "kind": "hexagonal",
       "type": "unit",
@@ -2326,8 +2326,8 @@
       "timeoutMs": 60000
     },
     {
-      "id": "apps/backend-template/test/unit/cana/durability-policy.test.ts",
-      "path": "apps/backend-template/test/unit/cana/durability-policy.test.ts",
+      "id": "packages/cana/test/durability-policy.test.ts",
+      "path": "packages/cana/test/durability-policy.test.ts",
       "layer": "adapters/out+infra",
       "kind": "hexagonal",
       "type": "unit",
@@ -2336,8 +2336,8 @@
       "timeoutMs": 60000
     },
     {
-      "id": "apps/backend-template/test/unit/cana/edge-cases.test.ts",
-      "path": "apps/backend-template/test/unit/cana/edge-cases.test.ts",
+      "id": "packages/cana/test/edge-cases.test.ts",
+      "path": "packages/cana/test/edge-cases.test.ts",
       "layer": "adapters/out+infra",
       "kind": "hexagonal",
       "type": "unit",
@@ -2346,8 +2346,8 @@
       "timeoutMs": 60000
     },
     {
-      "id": "apps/backend-template/test/unit/cana/failure-paths.test.ts",
-      "path": "apps/backend-template/test/unit/cana/failure-paths.test.ts",
+      "id": "packages/cana/test/failure-paths.test.ts",
+      "path": "packages/cana/test/failure-paths.test.ts",
       "layer": "adapters/out+infra",
       "kind": "hexagonal",
       "type": "unit",
@@ -2356,8 +2356,8 @@
       "timeoutMs": 60000
     },
     {
-      "id": "apps/backend-template/test/unit/cana/hooks.test.ts",
-      "path": "apps/backend-template/test/unit/cana/hooks.test.ts",
+      "id": "packages/cana/test/hooks.test.ts",
+      "path": "packages/cana/test/hooks.test.ts",
       "layer": "adapters/out+infra",
       "kind": "hexagonal",
       "type": "unit",
@@ -2366,8 +2366,8 @@
       "timeoutMs": 60000
     },
     {
-      "id": "apps/backend-template/test/unit/cana/packaging.test.ts",
-      "path": "apps/backend-template/test/unit/cana/packaging.test.ts",
+      "id": "packages/cana/test/packaging.test.ts",
+      "path": "packages/cana/test/packaging.test.ts",
       "layer": "adapters/out+infra",
       "kind": "hexagonal",
       "type": "unit",
@@ -2376,8 +2376,8 @@
       "timeoutMs": 60000
     },
     {
-      "id": "apps/backend-template/test/unit/cana/performance.test.ts",
-      "path": "apps/backend-template/test/unit/cana/performance.test.ts",
+      "id": "packages/cana/test/performance.test.ts",
+      "path": "packages/cana/test/performance.test.ts",
       "layer": "adapters/out+infra",
       "kind": "hexagonal",
       "type": "unit",
@@ -2386,8 +2386,8 @@
       "timeoutMs": 120000
     },
     {
-      "id": "apps/backend-template/test/unit/cana/protocol.test.ts",
-      "path": "apps/backend-template/test/unit/cana/protocol.test.ts",
+      "id": "packages/cana/test/protocol.test.ts",
+      "path": "packages/cana/test/protocol.test.ts",
       "layer": "adapters/out+infra",
       "kind": "hexagonal",
       "type": "unit",
@@ -2396,8 +2396,8 @@
       "timeoutMs": 60000
     },
     {
-      "id": "apps/backend-template/test/unit/cana/reconciliation.test.ts",
-      "path": "apps/backend-template/test/unit/cana/reconciliation.test.ts",
+      "id": "packages/cana/test/reconciliation.test.ts",
+      "path": "packages/cana/test/reconciliation.test.ts",
       "layer": "adapters/out+infra",
       "kind": "hexagonal",
       "type": "unit",
@@ -2406,8 +2406,8 @@
       "timeoutMs": 60000
     },
     {
-      "id": "apps/backend-template/test/unit/cana/regressions.test.ts",
-      "path": "apps/backend-template/test/unit/cana/regressions.test.ts",
+      "id": "packages/cana/test/regressions.test.ts",
+      "path": "packages/cana/test/regressions.test.ts",
       "layer": "adapters/out+infra",
       "kind": "hexagonal",
       "type": "unit",
@@ -2416,8 +2416,8 @@
       "timeoutMs": 60000
     },
     {
-      "id": "apps/backend-template/test/unit/cana/storage.test.ts",
-      "path": "apps/backend-template/test/unit/cana/storage.test.ts",
+      "id": "packages/cana/test/storage.test.ts",
+      "path": "packages/cana/test/storage.test.ts",
       "layer": "adapters/out+infra",
       "kind": "hexagonal",
       "type": "unit",
@@ -2426,8 +2426,8 @@
       "timeoutMs": 60000
     },
     {
-      "id": "apps/backend-template/test/unit/cana/unknown-outcome.test.ts",
-      "path": "apps/backend-template/test/unit/cana/unknown-outcome.test.ts",
+      "id": "packages/cana/test/unknown-outcome.test.ts",
+      "path": "packages/cana/test/unknown-outcome.test.ts",
       "layer": "adapters/out+infra",
       "kind": "hexagonal",
       "type": "unit",
@@ -2436,8 +2436,8 @@
       "timeoutMs": 60000
     },
     {
-      "id": "apps/backend-template/test/unit/cana/worker-host.test.ts",
-      "path": "apps/backend-template/test/unit/cana/worker-host.test.ts",
+      "id": "packages/cana/test/worker-host.test.ts",
+      "path": "packages/cana/test/worker-host.test.ts",
       "layer": "adapters/out+infra",
       "kind": "hexagonal",
       "type": "unit",
@@ -2484,7 +2484,8 @@
     "apps/jumentix-website",
     "packages",
     "ci-cd",
-    "tooling"
+    "tooling",
+    "packages/cana/test"
   ],
   "pathAliases": {
     "@src": "apps/backend-template/src",

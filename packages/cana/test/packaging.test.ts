@@ -18,7 +18,11 @@ import path from 'node:path';
  * build script produced.
  */
 
-const packageRoot = path.resolve(__dirname, '../../../../../packages/cana');
+// One level up, now that the suite sits inside the package it describes. It
+// previously climbed five directories and then named the package from outside —
+// the kind of path that breaks silently the moment anything moves, as this one
+// did.
+const packageRoot = path.resolve(__dirname, '..');
 const manifest = JSON.parse(
   fs.readFileSync(path.join(packageRoot, 'package.json'), 'utf8')
 ) as {
@@ -139,14 +143,20 @@ describe('cana packaging manifest', () => {
     expect(manifest.scripts.build).toContain('tsc');
   });
 
-  it('does not claim its test script runs the tests', () => {
+  it('runs its own suites from its own test script', () => {
     expect.hasAssertions();
-    // It cannot: the suites live under apps/backend-template so `test:unit`
-    // actually executes them. A `test` script that quietly typechecks instead
-    // is the JUM-557 false green, so this one says where the tests are rather
-    // than pretending to be them.
-    expect(manifest.scripts.test).toContain('apps/backend-template/test/unit/cana');
+    // The suites live in this package now, so `bun test` here executes them —
+    // the script no longer points somewhere else, and no longer needs to.
+    //
+    // A `test` script that quietly typechecks, echoes, or defers to another
+    // package is the JUM-557 false green: it passes while nothing runs. Both
+    // shapes are rejected here, and `--isolate` is required because Bun shares
+    // one process across files otherwise, which is what let mocked modules leak
+    // between suites (JUM-583).
+    expect(manifest.scripts.test).toContain('bun test');
+    expect(manifest.scripts.test).toContain('--isolate');
     expect(manifest.scripts.test).not.toContain('typecheck');
+    expect(manifest.scripts.test).not.toContain('echo');
   });
 
   it('is publishable and public', () => {

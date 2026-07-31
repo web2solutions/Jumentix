@@ -117,7 +117,7 @@ exatamente o caso para o qual o classificador de despejo foi corrigido neste
 
 ## 4. Empacotamento
 
-Verificado por `apps/backend-template/test/unit/cana/packaging.test.ts`, que
+Verificado por `packages/cana/test/packaging.test.ts`, que
 constrói o pacote e carrega o artefato em vez do alias do workspace.
 
 | Item | Estado |
@@ -227,4 +227,4 @@ essa diferença é o assunto deste documento.
   fundamentação de projeto e a lista completa do que **não** está comprovado
 - [CANA-USAGE-GUIDE.pt-BR.md](./CANA-USAGE-GUIDE.pt-BR.md) — referência de API e guia
 - `packages/cana/conformance/index.html` — o executor de conformidade no navegador
-- `apps/backend-template/test/unit/cana/` — as suítes por trás de cada número acima
+- `packages/cana/test/` — as suítes por trás de cada número acima

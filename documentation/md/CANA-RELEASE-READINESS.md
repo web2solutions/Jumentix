@@ -114,7 +114,7 @@ epic.
 
 ## 4. Packaging
 
-Verified by `apps/backend-template/test/unit/cana/packaging.test.ts`, which
+Verified by `packages/cana/test/packaging.test.ts`, which
 builds the package and loads the artefact rather than the workspace alias.
 
 | Item | State |
@@ -221,4 +221,4 @@ subject of this document.
   the full "what is NOT proven" list
 - [CANA-USAGE-GUIDE.md](./CANA-USAGE-GUIDE.md) — API reference and guide
 - `packages/cana/conformance/index.html` — the browser conformance runner
-- `apps/backend-template/test/unit/cana/` — the suites behind every number above
+- `packages/cana/test/` — the suites behind every number above

@@ -209,4 +209,19 @@ describe('auth service security audit integration', () => {
       );
     });
   });
+  it('does not fail authentication when the audit sink rejects', async () => {
+    expect.hasAssertions();
+    // The asynchronous half of the same policy. `authenticate` awaits its audit
+    // write, so a rejecting sink would propagate into the login response if the
+    // swallow were missing — a broken audit trail locking users out.
+    const { service, securityAuditRepository } = setup();
+    securityAuditRepository.record.mockRejectedValue(new Error('audit sink unavailable'));
+
+    const result = await service.authenticate('john', 'secret', EAuthSchemaType.Basic);
+
+    expect(result.result).toBeDefined();
+    expect(securityAuditRepository.record).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'users.auth.login.success', outcome: 'success' })
+    );
+  });
 });
