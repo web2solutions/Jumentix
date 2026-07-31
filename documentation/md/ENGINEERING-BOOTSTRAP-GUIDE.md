@@ -198,3 +198,18 @@ A feature should be considered done when:
 - Skipping OAS route resolution checks before runtime tests.
 
 Following the existing patterns in this boilerplate is the fastest path to consistent, maintainable delivery.
+
+
+<!-- test-pyramid-tdd -->
+## Hexagonal Test Pyramid / TDD (Bun)
+
+Local tests run on Bun for every suite type (Requirement 106). Prefer:
+
+```bash
+bun run tdd
+bun run tdd:domain
+bun run test:unit
+bun run test-map:check
+```
+
+Node/Jest is CI-only (`JUMENTIX_TEST_RUNTIME=node` or `*:ci` scripts). See `documentation/md/HEXAGONAL-TEST-PYRAMID.md`.

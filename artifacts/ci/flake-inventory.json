@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "issue": "JUM-495",
+  "capturedAt": "2026-07-30",
+  "method": "five-run inventory placeholder — populate from local bun test repeats; quarantine via bun run quarantine:flake",
+  "flakes": [],
+  "policy": "JUM-499 report-only quarantine with Linear issue refs"
+}

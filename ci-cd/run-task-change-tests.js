@@ -4,6 +4,8 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 const { createLayerAwarePlan } = require('./lib/layer-resolver');
 const { buildGateEvidence, validateGateEvidence, writeGateEvidence } = require('./lib/gate-evidence');
+const { runSuitePaths } = require('./run-suite');
+const { resolveTestRuntime } = require('./lib/test-runtime');
 
 const UNIT_TEST_PATH = /(^|\/)test\/unit\/.*\.(test|spec)\.[cm]?[jt]sx?$/;
 const INTEGRATION_TEST_PATH = /(^|\/)test\/integration\/.*\.(test|spec)\.[cm]?[jt]sx?$/;
@@ -122,38 +124,44 @@ function executeTaskTestPlan(plan) {
     if (websiteResult.status !== 0) return Number(websiteResult.status ?? 1);
 
     if (plan.unitTests.length > 0) {
-      const unitResult = spawnSync(
-        'bunx',
-        ['jest', '--runInBand', '--coverage=false', ...plan.unitTests],
-        { stdio: 'inherit', env: { ...process.env } }
-      );
-      if (unitResult.status !== 0) return Number(unitResult.status ?? 1);
+      const status = runSuitePaths(plan.unitTests, { label: 'website-unit' });
+      if (status !== 0) return status;
     }
 
     if (plan.relatedFiles.length === 0) return 0;
-    const relatedResult = spawnSync(
-      'bunx',
-      ['jest', '--runInBand', '--coverage=false', '--findRelatedTests', ...plan.relatedFiles],
-      { stdio: 'inherit', env: { ...process.env } }
-    );
-    return Number.isInteger(relatedResult.status) ? relatedResult.status : 1;
+    // Related-file discovery stays Jest-shaped under CI node runtime only.
+    if (resolveTestRuntime() === 'node') {
+      const relatedResult = spawnSync(
+        'bunx',
+        ['jest', '--runInBand', '--coverage=false', '--findRelatedTests', ...plan.relatedFiles],
+        { stdio: 'inherit', env: { ...process.env } }
+      );
+      return Number.isInteger(relatedResult.status) ? relatedResult.status : 1;
+    }
+    return runSuitePaths(plan.relatedFiles, { label: 'website-related' });
   }
 
   if (plan.type === 'layer-aware') {
     return executeLayerAwarePlan(plan);
   }
 
-  const args = ['changed-unit-tests', 'mapped-unit-tests', 'changed-integration-tests'].includes(plan.type)
-    ? [
-      'jest',
-      '--runInBand',
-      '--coverage=false',
-      ...(plan.testTimeoutMs ? [`--testTimeout=${String(plan.testTimeoutMs)}`] : []),
-      ...plan.files
-    ]
-    : ['jest', '--runInBand', '--coverage=false', '--findRelatedTests', ...plan.files];
-  const result = spawnSync('bunx', args, { stdio: 'inherit', env: { ...process.env } });
-  return Number.isInteger(result.status) ? result.status : 1;
+  if (['changed-unit-tests', 'mapped-unit-tests', 'changed-integration-tests'].includes(plan.type)) {
+    return runSuitePaths(plan.files, {
+      label: plan.type,
+      timeoutMs: plan.testTimeoutMs
+    });
+  }
+
+  // related-unit-tests: under Bun local, execute the related paths directly.
+  if (resolveTestRuntime() === 'node') {
+    const result = spawnSync(
+      'bunx',
+      ['jest', '--runInBand', '--coverage=false', '--findRelatedTests', ...plan.files],
+      { stdio: 'inherit', env: { ...process.env } }
+    );
+    return Number.isInteger(result.status) ? result.status : 1;
+  }
+  return runSuitePaths(plan.files, { label: plan.type });
 }
 
 function executeLayerAwarePlan(plan) {
@@ -161,39 +169,20 @@ function executeLayerAwarePlan(plan) {
   const executedSuites = [];
 
   if (plan.unitSuites.length > 0) {
-    const bunSuites = plan.suites.filter((suite) => suite.type === 'unit' && suite.runner !== 'node').map((s) => s.path);
-    const nodeSuites = plan.suites.filter((suite) => suite.type === 'unit' && suite.runner === 'node').map((s) => s.path);
-
-    if (bunSuites.length > 0) {
-      const bunResult = spawnSync('bun', ['test', ...bunSuites], {
-        stdio: 'inherit',
-        env: { ...process.env, NODE_ENV: process.env.NODE_ENV || 'dev' }
+    const runtime = resolveTestRuntime();
+    const unitPaths = plan.suites.filter((suite) => suite.type === 'unit').map((s) => s.path);
+    const status = runSuitePaths(unitPaths, { label: 'layer-aware-unit', runtime });
+    for (const suite of unitPaths) {
+      executedSuites.push(suite);
+      suiteResults.push({
+        suite,
+        status: status === 0 ? 'passed' : 'failed',
+        runner: runtime
       });
-      const status = Number.isInteger(bunResult.status) ? bunResult.status : 1;
-      for (const suite of bunSuites) {
-        executedSuites.push(suite);
-        suiteResults.push({ suite, status: status === 0 ? 'passed' : 'failed', runner: 'bun' });
-      }
-      if (status !== 0) {
-        plan._execution = { executedSuites, suiteResults, status };
-        return status;
-      }
     }
-
-    if (nodeSuites.length > 0) {
-      const jestResult = spawnSync('bunx', ['jest', '--runInBand', '--coverage=false', ...nodeSuites], {
-        stdio: 'inherit',
-        env: { ...process.env }
-      });
-      const status = Number.isInteger(jestResult.status) ? jestResult.status : 1;
-      for (const suite of nodeSuites) {
-        executedSuites.push(suite);
-        suiteResults.push({ suite, status: status === 0 ? 'passed' : 'failed', runner: 'node' });
-      }
-      if (status !== 0) {
-        plan._execution = { executedSuites, suiteResults, status };
-        return status;
-      }
+    if (status !== 0) {
+      plan._execution = { executedSuites, suiteResults, status };
+      return status;
     }
   }
 

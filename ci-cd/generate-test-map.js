@@ -25,13 +25,18 @@ function classifyUnit(file) {
     || rel.startsWith('modules/Users/composition/')
     || rel.startsWith('modules/Users/service/')
     || rel.startsWith('modules/Users/events/')
+    || rel === 'modules/Users/factories.test.ts'
+    || rel === 'modules/Users/index.exports.test.ts'
   ) {
     return { layer: 'application', kind: 'hexagonal' };
   }
-  if (rel.startsWith('modules/Users/interface/') || rel.startsWith('interface/')) {
+  if (rel.startsWith('modules/Users/adapters/in/') || rel.startsWith('modules/Users/interface/')) {
+    return { layer: 'adapters/in', kind: 'hexagonal' };
+  }
+  if (rel.startsWith('interface/')) {
     return { layer: 'interface/runtime', kind: 'hexagonal' };
   }
-  if (rel.startsWith('infra/') || rel.startsWith('modules/Users/adapters/')) {
+  if (rel.startsWith('infra/') || rel.startsWith('modules/Users/adapters/out/')) {
     return { layer: 'adapters/out+infra', kind: 'hexagonal' };
   }
   if (
@@ -80,7 +85,12 @@ function classifyIntegration(file) {
       adapter: 'service-management',
       script: 'test:integration:service-management'
     },
-    mutex: { layer: 'adapters/out+infra', adapter: 'mutex', script: null }
+    mutex: {
+      layer: 'adapters/out+infra',
+      adapter: 'mutex',
+      script: 'test:integration:mutex',
+      ciRunner: 'node'
+    }
   };
   return map[bucket] || {
     layer: 'adapters/in',
@@ -99,6 +109,7 @@ function loadPreviousRunnerOverrides(root) {
       if (suite.path && suite.runner) {
         overrides.set(suite.path, {
           runner: suite.runner,
+          ciRunner: suite.ciRunner,
           bunCompat: suite.bunCompat
         });
       }
@@ -193,13 +204,16 @@ function buildManifest(root = process.cwd()) {
   for (const file of unitTests) {
     const { layer, kind } = classifyUnit(file);
     const previous = previousOverrides.get(file) || {};
+    // Req 106: local runner is always bun; optional ciRunner retained for CI-only Node.
+    const ciRunner = previous.ciRunner || (previous.runner === 'node' ? 'node' : undefined);
     suites.push({
       id: file,
       path: file,
       layer,
       kind,
       type: 'unit',
-      runner: previous.runner || 'bun',
+      runner: 'bun',
+      ...(ciRunner ? { ciRunner } : {}),
       ...(previous.bunCompat ? { bunCompat: previous.bunCompat } : {}),
       tier: 'gate',
       timeoutMs: 60_000
@@ -207,6 +221,8 @@ function buildManifest(root = process.cwd()) {
   }
   for (const file of integrationTests) {
     const meta = classifyIntegration(file);
+    const isNightly = meta.adapter === 'mutex'
+      || file.includes('redis-streams.multi-instance');
     suites.push({
       id: file,
       path: file,
@@ -215,8 +231,9 @@ function buildManifest(root = process.cwd()) {
       type: 'integration',
       adapter: meta.adapter,
       script: meta.script,
-      runner: 'node',
-      tier: meta.adapter === 'mutex' ? 'nightly' : 'gate',
+      runner: 'bun',
+      ciRunner: meta.ciRunner || 'node',
+      tier: isNightly ? 'nightly' : 'gate',
       timeoutMs: ['express', 'fastify'].includes(meta.adapter)
         ? 300_000
         : meta.adapter === 'restify'
@@ -231,9 +248,36 @@ function buildManifest(root = process.cwd()) {
       layer: 'adapters/out+infra',
       kind: 'hexagonal',
       type: 'smoke',
-      runner: 'node',
+      runner: 'bun',
+      ciRunner: 'node',
       tier: 'nightly',
       timeoutMs: 180_000
+    });
+  }
+
+  // Contract layer (JUM-440) — governance checks promoted to first-class suites.
+  for (const contract of [
+    {
+      id: 'contract:oas-routes',
+      path: 'ci-cd/check-oas-route-resolution.js',
+      script: 'oas:check-routes'
+    },
+    {
+      id: 'contract:serverless-handlers',
+      path: 'ci-cd/check-serverless-handler-paths.js',
+      script: 'serverless:check-handlers'
+    }
+  ]) {
+    suites.push({
+      id: contract.id,
+      path: contract.path,
+      layer: 'contracts',
+      kind: 'governance',
+      type: 'contract',
+      script: contract.script,
+      runner: 'bun',
+      tier: 'gate',
+      timeoutMs: 120_000
     });
   }
 
@@ -243,14 +287,7 @@ function buildManifest(root = process.cwd()) {
     layers,
     blastRadius: 'outward',
     suites,
-    quarantine: [
-      {
-        path: 'apps/backend-template/test/integration/mutex/',
-        reason: 'Orphaned mutex integration suite — no INTEGRATION_SCRIPTS target (JUM-556)',
-        issue: 'JUM-556',
-        runnerOverride: 'node'
-      }
-    ],
+    quarantine: [],
     sourceRoots: [
       'apps/backend-template/src',
       'apps/backend-template/test',

@@ -16,5 +16,8 @@
     "test": "bun run typecheck",
     "lint": "echo \"key-value-storage package lint pending\"",
     "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "jumentix": {
+    "testSurface": "typecheck-only"
   }
 }

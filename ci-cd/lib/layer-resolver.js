@@ -137,8 +137,17 @@ function layersForFile(manifest, filePath) {
     matched.add('tooling');
   }
   if (filePath.startsWith('apps/backend-template/test/unit/modules/Users/domain/')) matched.add('domain');
-  if (filePath.startsWith('apps/backend-template/test/unit/modules/Users/application/')) matched.add('application');
-  if (filePath.startsWith('apps/backend-template/test/unit/infra/')) matched.add('adapters/out+infra');
+  if (filePath.startsWith('apps/backend-template/test/unit/modules/Users/application/')
+    || filePath.startsWith('apps/backend-template/test/unit/modules/Users/composition/')
+    || filePath === 'apps/backend-template/test/unit/modules/Users/factories.test.ts'
+    || filePath === 'apps/backend-template/test/unit/modules/Users/index.exports.test.ts') {
+    matched.add('application');
+  }
+  if (filePath.startsWith('apps/backend-template/test/unit/modules/Users/adapters/in/')) matched.add('adapters/in');
+  if (filePath.startsWith('apps/backend-template/test/unit/infra/')
+    || filePath.startsWith('apps/backend-template/test/unit/modules/Users/adapters/out/')) {
+    matched.add('adapters/out+infra');
+  }
   if (filePath.startsWith('apps/backend-template/test/unit/interface/')) matched.add('interface/runtime');
   if (filePath.startsWith('apps/backend-template/test/integration/')) {
     const suite = (manifest.suites || []).find((item) => item.path === filePath);
