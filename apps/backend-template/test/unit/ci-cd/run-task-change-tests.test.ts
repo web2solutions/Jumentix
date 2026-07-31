@@ -189,3 +189,79 @@ describe('run-task-change-tests', () => {
     taskFs.unlinkSync(resultFile);
   });
 });
+
+/**
+ * Evidence bookkeeping for integration suites.
+ *
+ * The plan lists integration suites by path; execution runs them through one npm
+ * script per framework. Recording only the script name left `validateGateEvidence`
+ * comparing paths against script names, so every planned integration suite
+ * reported as "missing from executed set".
+ *
+ * That is a fail-closed gate failing on its own accounting rather than on a test,
+ * and it stayed invisible for as long as no change selected an integration layer.
+ * The Express 5 upgrade selected them and forty-odd suites were reported unrun
+ * immediately after passing.
+ */
+describe('layer-aware evidence for integration scripts', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+  const taskRunner = require('../../../../../ci-cd/run-task-change-tests');
+  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+  const { buildGateEvidence, validateGateEvidence } = require('../../../../../ci-cd/lib/gate-evidence');
+
+  const planWith = (script: string) => ({
+    type: 'layer-aware',
+    files: ['apps/backend-template/src/interface/HTTP/adapters/express/ExpressServer.ts'],
+    selectedLayers: ['adapters/in'],
+    notRunLayers: [],
+    reasons: {},
+    unitSuites: [],
+    integrationScripts: [script],
+    suites: [
+      {
+        path: 'apps/backend-template/test/integration/Express/Users/create.test.ts',
+        type: 'integration',
+        script
+      },
+      {
+        path: 'apps/backend-template/test/integration/Express/auth/login.test.ts',
+        type: 'integration',
+        script
+      }
+    ]
+  });
+
+  it('records the suite files a script covers, not just the script name', () => {
+    expect.hasAssertions();
+    const plan = planWith('test:integration:express') as never;
+
+    taskRunner.executeLayerAwarePlan(plan, {
+      spawn: () => ({ status: 0 })
+    });
+
+    expect((plan as { _execution: { executedSuites: string[] } })._execution.executedSuites)
+      .toStrictEqual([
+        'test:integration:express',
+        'apps/backend-template/test/integration/Express/Users/create.test.ts',
+        'apps/backend-template/test/integration/Express/auth/login.test.ts'
+      ]);
+  });
+
+  it('produces evidence that validates, rather than reporting its own suites unrun', () => {
+    expect.hasAssertions();
+    // The assertion that actually matters: the gate must accept its own output.
+    const plan = planWith('test:integration:express') as never;
+
+    taskRunner.executeLayerAwarePlan(plan, { spawn: () => ({ status: 0 }) });
+    const execution = (plan as { _execution: unknown })._execution;
+    const evidence = buildGateEvidence(
+      { ...(plan as object), outcome: 'passed' },
+      { ...(execution as object), outcome: 'passed' }
+    );
+
+    const validation = validateGateEvidence(evidence) as { ok: boolean; errors: string[] };
+
+    expect(validation.errors).toStrictEqual([]);
+    expect(validation.ok).toBe(true);
+  });
+});
