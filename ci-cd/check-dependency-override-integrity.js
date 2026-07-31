@@ -157,6 +157,98 @@ function validateOverrideIntegrity(pkg, retiredSurfacesPresent = [], patchExists
   return failures;
 }
 
+/**
+ * Dependents whose declared major an override must not cross.
+ *
+ * An override is a blunt instrument: it replaces a transitive dependency for
+ * *every* dependent, including ones that were never consulted. When the
+ * replacement crosses a major boundary the dependent still loads — it just
+ * loads a package with a different API.
+ *
+ * That is not hypothetical. `send: ^1.2.0` was pinned while Express 4 declared
+ * `send: ~0.19.0`. `send@0.19` was what put `mime@1` in the tree, and Express 4's
+ * `response.js` calls the v1 API `mime.charsets.lookup(...)`. With `send@1` in
+ * force there was no `mime@1` to find, so every `res.json()` and `res.send()`
+ * threw `TypeError: undefined is not an object` — in production, on the normal
+ * response path. Nothing failed at install; nothing failed at boot. Only the
+ * integration suites saw it, and they were not in the branch gate (JUM-587).
+ *
+ * Fixed by upgrading to Express 5, which declares `send: ^1.1.0` and no longer
+ * uses the `mime@1` API. This guard exists so the next such override is caught
+ * where it is introduced rather than months later.
+ */
+const OVERRIDE_MAJOR_COMPATIBILITY = [
+  { dependent: 'express', overridden: 'send', requiredMajor: 1 }
+];
+
+/** The leading major of a semver range such as `^1.2.0`, `~0.19.0`, `1.x`. */
+function rangeMajor(range) {
+  const match = String(range).match(/(\d+)/);
+  return match === null ? null : Number(match[1]);
+}
+
+/**
+ * Reject an override that would hand a dependent a different major than it
+ * declares.
+ *
+ * Reads the dependent's own manifest rather than a hardcoded expectation, so
+ * upgrading the dependent updates the constraint instead of leaving a stale
+ * number here to be discovered later.
+ */
+function validateOverrideMajors(pkg, readDependentRange) {
+  const failures = [];
+  const overrides = pkg.overrides || {};
+
+  for (const { dependent, overridden, requiredMajor } of OVERRIDE_MAJOR_COMPATIBILITY) {
+    const overrideRange = overrides[overridden];
+    if (overrideRange === undefined) continue;
+
+    const declaredRange = readDependentRange(dependent, overridden);
+    if (declaredRange === null) {
+      failures.push(
+        `"${dependent}" no longer depends on "${overridden}", but this guard still pairs them. `
+          + 'Remove the entry from OVERRIDE_MAJOR_COMPATIBILITY, or remove the override if it has '
+          + 'no remaining purpose.',
+      );
+      continue;
+    }
+
+    const declaredMajor = rangeMajor(declaredRange);
+    const overrideMajor = rangeMajor(overrideRange);
+
+    if (declaredMajor !== overrideMajor) {
+      failures.push(
+        `override "${overridden}": "${dependent}" declares ${declaredRange} but the override `
+          + `forces ${overrideRange}. Crossing a major means ${dependent} loads a package with a `
+          + 'different API — it will not fail to install and it will not fail to boot. See '
+          + 'JUM-587: this exact shape broke every Express response.',
+      );
+      continue;
+    }
+
+    if (declaredMajor !== requiredMajor) {
+      failures.push(
+        `"${dependent}" now declares ${overridden} ${declaredRange}, but this guard expects major `
+          + `${requiredMajor}. Update OVERRIDE_MAJOR_COMPATIBILITY deliberately, after confirming `
+          + 'the override is still correct for the new major.',
+      );
+    }
+  }
+
+  return failures;
+}
+
+/** Read a dependent's declared range for one of its dependencies, from the installed tree. */
+function readInstalledDependentRange(dependent, overridden) {
+  try {
+    const manifestPath = require.resolve(`${dependent}/package.json`, { paths: [repoRoot] });
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    return (manifest.dependencies || {})[overridden] ?? null;
+  } catch {
+    return null;
+  }
+}
+
 /** pnpm surfaces that must stay retired, reported by label when still on disk. */
 function detectRetiredSurfaces() {
   return ['pnpm-workspace.yaml', 'pnpm-lock.yaml']
@@ -170,11 +262,14 @@ function main() {
   }
 
   const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-  const failures = validateOverrideIntegrity(
-    pkg,
-    detectRetiredSurfaces(),
-    (patchPath) => fs.existsSync(path.join(repoRoot, patchPath)),
-  );
+  const failures = [
+    ...validateOverrideIntegrity(
+      pkg,
+      detectRetiredSurfaces(),
+      (patchPath) => fs.existsSync(path.join(repoRoot, patchPath)),
+    ),
+    ...validateOverrideMajors(pkg, readInstalledDependentRange),
+  ];
 
   if (failures.length > 0) {
     console.error('Dependency override integrity guard failed:\n');
@@ -188,7 +283,8 @@ function main() {
   console.log(
     `Dependency override integrity guard passed: ${Object.keys(REQUIRED_OVERRIDES).length} pins, `
       + `${Object.keys(REQUIRED_RESOLUTIONS).length} resolutions, `
-      + `${Object.keys(REQUIRED_PATCHES).length} patch(es) intact.`,
+      + `${Object.keys(REQUIRED_PATCHES).length} patch(es) intact, `
+      + `${OVERRIDE_MAJOR_COMPATIBILITY.length} major-compatibility pair(s) verified.`,
   );
 }
 
@@ -197,6 +293,10 @@ if (require.main === module) {
 }
 
 module.exports = {
+  OVERRIDE_MAJOR_COMPATIBILITY,
+  rangeMajor,
+  readInstalledDependentRange,
+  validateOverrideMajors,
   REQUIRED_OVERRIDES,
   REQUIRED_PATCHES,
   REQUIRED_RESOLUTIONS,

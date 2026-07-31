@@ -134,3 +134,89 @@ describe('check-dependency-override-integrity CLI', () => {
     expect(error.mock.calls.flat().join('\n')).toContain('override "form-data" is missing');
   });
 });
+
+/**
+ * The failure this guard was added for (JUM-587).
+ *
+ * An override that crosses a major hands the dependent a package with a
+ * different API. Nothing fails at install and nothing fails at boot — the
+ * dependent loads, and then throws on a code path nobody exercises until a
+ * user does. `send: ^1.2.0` against Express 4's `send: ~0.19.0` removed `mime@1`
+ * from the tree, and Express 4's `res.json()` calls `mime.charsets.lookup(...)`.
+ *
+ * Driven through the injected reader rather than the installed tree, so the
+ * broken state stays reproducible after the Express 5 upgrade fixed it.
+ */
+describe('override major compatibility', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const guard = require('../../../../../ci-cd/check-dependency-override-integrity') as {
+    validateOverrideMajors: (
+      pkg: { overrides?: Record<string, string> },
+      read: (dependent: string, overridden: string) => string | null
+    ) => string[];
+    rangeMajor: (range: string) => number | null;
+    readInstalledDependentRange: (dependent: string, overridden: string) => string | null;
+  };
+  const { validateOverrideMajors, rangeMajor } = guard;
+
+  it('rejects an override that crosses the major its dependent declares', () => {
+    expect.hasAssertions();
+    const failures = validateOverrideMajors(
+      { overrides: { send: '^1.2.0' } },
+      () => '~0.19.0'
+    );
+
+    expect(failures).toHaveLength(1);
+    expect(failures[0]).toContain('declares ~0.19.0 but the override forces ^1.2.0');
+  });
+
+  it('accepts an override inside the declared major', () => {
+    expect.hasAssertions();
+    // Express 5, which is what fixed it: `send: ^1.1.0` and no `mime@1` call site.
+    const failures = validateOverrideMajors(
+      { overrides: { send: '^1.2.0' } },
+      () => '^1.1.0'
+    );
+
+    expect(failures).toStrictEqual([]);
+  });
+
+  it('says nothing when the override is absent', () => {
+    expect.hasAssertions();
+    // No override means no forcing, so there is nothing to compare against.
+    expect(validateOverrideMajors({ overrides: {} }, () => '^1.1.0')).toStrictEqual([]);
+  });
+
+  it('fails when the dependent no longer declares the overridden package', () => {
+    expect.hasAssertions();
+    // Otherwise the pair rots into an assertion about nothing, which is the
+    // state that lets the next one through.
+    const failures = validateOverrideMajors(
+      { overrides: { send: '^1.2.0' } },
+      () => null
+    );
+
+    expect(failures).toHaveLength(1);
+    expect(failures[0]).toContain('no longer depends on');
+  });
+
+  it.each([
+    ['^1.2.0', 1],
+    ['~0.19.0', 0],
+    ['1.x', 1],
+    ['>=2.0.0 <3', 2],
+    ['not-a-range', null]
+  ])('reads the major of %p as %p', (range, expected) => {
+    expect.hasAssertions();
+    expect(rangeMajor(range)).toBe(expected);
+  });
+
+  it('passes against the real installed tree', () => {
+    expect.hasAssertions();
+    // The control. Without it the suite only ever proves the checker can fail.
+    expect(validateOverrideMajors(
+      overrideGuardRootPackage,
+      guard.readInstalledDependentRange
+    )).toStrictEqual([]);
+  });
+});
