@@ -4,9 +4,7 @@
 
 ## All Changes
 
-- 2026-07-30 Merge remote-tracking branch 'origin/codex/security/JUM-540-remove-snyk-completely' into codex/security/JUM-540-remove-snyk-completely - Eduardo Almeida
-- 2026-07-30 security(JUM-540): remove Snyk from Jumentix - Eduardo Almeida
-- 2026-07-30 security(JUM-540): remove Snyk from Jumentix - Eduardo Almeida
+- 2026-07-30 [JUM-540][Security] Remove Snyk completely from Jumentix (#14) - Eduardo A.
 - 2026-07-30 [JUM-540][Security] Retire Snyk in favour of the first-party OSV scanner (#13) - Eduardo A.
 - 2026-07-30 fix(security): retire Snyk in favour of the first-party OSV scanner [JUM-540] - Eduardo A.
 - 2026-07-30 [JUM-22][Tooling] Replace internal Node and pnpm workflows with Bun (#8) - Eduardo A.
