@@ -91,6 +91,9 @@ This file consolidates non-functional requirements already requested and stored 
   terminal canonical evidence, and incomplete provider installs recorded as explicit owner-auth
   blockers; `integration-migration:check` and `integrations:check` validate the repository-owned
   contract.
+- `105` Hexagonal Test Pyramid: Bun unit + Node integration, `test-map.json` layer ownership,
+  alias-aware blast-radius selection, `JUMENTIX_GATE_V2` flag-gated flip/rollback, and
+  fail-closed selective-gate evidence.
 
 When a new NFR is requested:
 
