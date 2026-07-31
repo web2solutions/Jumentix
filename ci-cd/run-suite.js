@@ -130,6 +130,9 @@ function runSuitePaths(paths, options = {}) {
       ...safePaths
     ];
     const result = spawn('bunx', args, {
+      // No shell, stated rather than relied on: an argument array is only safe
+      // from interpolation while nobody adds `shell: true` to "make quoting work".
+      shell: false,
       stdio: 'inherit',
       env: { ...process.env, ...(options.env || {}), NODE_ENV: process.env.NODE_ENV || 'dev' }
     });
@@ -138,6 +141,7 @@ function runSuitePaths(paths, options = {}) {
 
   console.log(`[suite] runtime=bun${label}: ${paths.length} path(s)`);
   const result = spawn(process.execPath, ['test', ...safePaths], {
+    shell: false,
     stdio: 'inherit',
     env: {
       ...process.env,
