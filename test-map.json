@@ -1,0 +1,2172 @@
+{
+  "schemaVersion": 1,
+  "description": "Hexagonal Test Pyramid manifest \u2014 Bun unit + Node integration + layer-aware gates",
+  "layers": {
+    "contracts": {
+      "dependsOn": [],
+      "sourceGlobs": [
+        "packages/*/src/contracts/**",
+        "packages/persistence-contracts/src/**"
+      ],
+      "runner": "bun",
+      "tier": "gate"
+    },
+    "domain": {
+      "dependsOn": [
+        "contracts"
+      ],
+      "sourceGlobs": [
+        "apps/backend-template/src/modules/*/domain/**",
+        "apps/backend-template/src/domains/**"
+      ],
+      "runner": "bun",
+      "tier": "gate"
+    },
+    "application": {
+      "dependsOn": [
+        "domain"
+      ],
+      "sourceGlobs": [
+        "apps/backend-template/src/modules/*/application/**",
+        "apps/backend-template/src/modules/*/service/**",
+        "apps/backend-template/src/modules/*/composition/**",
+        "apps/backend-template/src/modules/*/events/**",
+        "apps/backend-template/src/modules/*/features/**"
+      ],
+      "runner": "bun",
+      "tier": "gate"
+    },
+    "adapters/out+infra": {
+      "dependsOn": [
+        "application"
+      ],
+      "sourceGlobs": [
+        "apps/backend-template/src/infra/**",
+        "apps/backend-template/src/modules/*/adapters/out/**",
+        "packages/*/src/**"
+      ],
+      "runner": "bun",
+      "tier": "gate"
+    },
+    "adapters/in": {
+      "dependsOn": [
+        "application"
+      ],
+      "sourceGlobs": [
+        "apps/backend-template/src/modules/*/adapters/in/**",
+        "apps/backend-template/src/interface/HTTP/adapters/**"
+      ],
+      "runner": "node",
+      "tier": "gate"
+    },
+    "interface/runtime": {
+      "dependsOn": [
+        "adapters/in",
+        "adapters/out+infra"
+      ],
+      "sourceGlobs": [
+        "apps/backend-template/src/interface/**",
+        "apps/service-management/**"
+      ],
+      "runner": "node",
+      "tier": "gate"
+    },
+    "tooling": {
+      "dependsOn": [],
+      "sourceGlobs": [
+        "ci-cd/**",
+        "tooling/**",
+        "apps/jumentix-website/**"
+      ],
+      "runner": "bun",
+      "tier": "gate",
+      "kind": "non-hexagonal"
+    }
+  },
+  "blastRadius": "outward",
+  "suites": [
+    {
+      "id": "apps/backend-template/test/unit/interface/WebSocket/redisStreamsAdapter.test.ts",
+      "path": "apps/backend-template/test/unit/interface/WebSocket/redisStreamsAdapter.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/WebSocket/adapters/clusterAdapter.lifecycle.test.ts",
+      "path": "apps/backend-template/test/unit/interface/WebSocket/adapters/clusterAdapter.lifecycle.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/WebSocket/adapters/start-websocket-api.test.ts",
+      "path": "apps/backend-template/test/unit/interface/WebSocket/adapters/start-websocket-api.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/WebSocket/adapters/socket-io.bootstrap.test.ts",
+      "path": "apps/backend-template/test/unit/interface/WebSocket/adapters/socket-io.bootstrap.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "bunCompat": "pending-resetModules-or-native-gap"
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/WebSocket/adapters/redisStreamsAdapter.lifecycle.test.ts",
+      "path": "apps/backend-template/test/unit/interface/WebSocket/adapters/redisStreamsAdapter.lifecycle.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "bunCompat": "pending-resetModules-or-native-gap"
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/WebSocket/WebSocketAPI.test.ts",
+      "path": "apps/backend-template/test/unit/interface/WebSocket/WebSocketAPI.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/WebSocket/clusterAdapter.test.ts",
+      "path": "apps/backend-template/test/unit/interface/WebSocket/clusterAdapter.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/gRPC/gRPCAPI.test.ts",
+      "path": "apps/backend-template/test/unit/interface/gRPC/gRPCAPI.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "bunCompat": "pending-resetModules-or-native-gap"
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/gRPC/resolveGrpcProtoPath.test.ts",
+      "path": "apps/backend-template/test/unit/interface/gRPC/resolveGrpcProtoPath.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/gRPC/adapters/start-grpc-api.test.ts",
+      "path": "apps/backend-template/test/unit/interface/gRPC/adapters/start-grpc-api.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/gRPC/adapters/grpc.bootstrap.test.ts",
+      "path": "apps/backend-template/test/unit/interface/gRPC/adapters/grpc.bootstrap.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "bunCompat": "pending-resetModules-or-native-gap"
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/Async/RealtimeAPIBase.test.ts",
+      "path": "apps/backend-template/test/unit/interface/Async/RealtimeAPIBase.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/runtime/RuntimeEnvironment.test.ts",
+      "path": "apps/backend-template/test/unit/interface/runtime/RuntimeEnvironment.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/CLI/index.test.ts",
+      "path": "apps/backend-template/test/unit/interface/CLI/index.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/CLI/prompt.test.ts",
+      "path": "apps/backend-template/test/unit/interface/CLI/prompt.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/CLI/entityModelManager.test.ts",
+      "path": "apps/backend-template/test/unit/interface/CLI/entityModelManager.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/CLI/domainManager.test.ts",
+      "path": "apps/backend-template/test/unit/interface/CLI/domainManager.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/CLI/catalogStorage.test.ts",
+      "path": "apps/backend-template/test/unit/interface/CLI/catalogStorage.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "bunCompat": "pending-resetModules-or-native-gap"
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/HTTP/adapters/start-rest-api.test.ts",
+      "path": "apps/backend-template/test/unit/interface/HTTP/adapters/start-rest-api.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "bunCompat": "pending-resetModules-or-native-gap"
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/HTTP/adapters/vercel-functions/vercelFunctionsSecurity.test.ts",
+      "path": "apps/backend-template/test/unit/interface/HTTP/adapters/vercel-functions/vercelFunctionsSecurity.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/HTTP/adapters/fastify/FastifyServer.test.ts",
+      "path": "apps/backend-template/test/unit/interface/HTTP/adapters/fastify/FastifyServer.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/HTTP/validators/index.test.ts",
+      "path": "apps/backend-template/test/unit/interface/HTTP/validators/index.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/HTTP/ports/BaseController.test.ts",
+      "path": "apps/backend-template/test/unit/interface/HTTP/ports/BaseController.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/infra/jwt/JwtService.test.ts",
+      "path": "apps/backend-template/test/unit/infra/jwt/JwtService.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/infra/messages/InMemoryMessageMediator.test.ts",
+      "path": "apps/backend-template/test/unit/infra/messages/InMemoryMessageMediator.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/infra/messages/MessageMediator.taskCreateFlow.test.ts",
+      "path": "apps/backend-template/test/unit/infra/messages/MessageMediator.taskCreateFlow.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/infra/messages/compileMessageMediator.test.ts",
+      "path": "apps/backend-template/test/unit/infra/messages/compileMessageMediator.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/infra/messages/QueueRequestResponseRepository.test.ts",
+      "path": "apps/backend-template/test/unit/infra/messages/QueueRequestResponseRepository.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/infra/cache/CacheService.test.ts",
+      "path": "apps/backend-template/test/unit/infra/cache/CacheService.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/infra/security/PasswordCryptoService.test.ts",
+      "path": "apps/backend-template/test/unit/infra/security/PasswordCryptoService.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "bunCompat": "pending-resetModules-or-native-gap"
+    },
+    {
+      "id": "apps/backend-template/test/unit/infra/auth/AuthService.test.ts",
+      "path": "apps/backend-template/test/unit/infra/auth/AuthService.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "bunCompat": "pending-resetModules-or-native-gap"
+    },
+    {
+      "id": "apps/backend-template/test/unit/infra/exceptions/index.test.ts",
+      "path": "apps/backend-template/test/unit/infra/exceptions/index.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/infra/audit/InMemorySecurityAuditRepository.test.ts",
+      "path": "apps/backend-template/test/unit/infra/audit/InMemorySecurityAuditRepository.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient.test.ts",
+      "path": "apps/backend-template/test/unit/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/infra/persistence/KeyValueStorage/BaseKeyValueStorageClient.test.ts",
+      "path": "apps/backend-template/test/unit/infra/persistence/KeyValueStorage/BaseKeyValueStorageClient.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/infra/persistence/KeyValueStorage/compileKeyValueStorageClient.test.ts",
+      "path": "apps/backend-template/test/unit/infra/persistence/KeyValueStorage/compileKeyValueStorageClient.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "bunCompat": "pending-resetModules-or-native-gap"
+    },
+    {
+      "id": "apps/backend-template/test/unit/infra/persistence/external/ExternalStoreProxy.test.ts",
+      "path": "apps/backend-template/test/unit/infra/persistence/external/ExternalStoreProxy.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/infra/persistence/external/ExternalRepositories.test.ts",
+      "path": "apps/backend-template/test/unit/infra/persistence/external/ExternalRepositories.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/infra/persistence/compileDatabaseClient.test.ts",
+      "path": "apps/backend-template/test/unit/infra/persistence/compileDatabaseClient.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/infra/persistence/InMemoryDatabase/InMemoryRelationalStore.test.ts",
+      "path": "apps/backend-template/test/unit/infra/persistence/InMemoryDatabase/InMemoryRelationalStore.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/infra/persistence/InMemoryDatabase/InMemoryDbClient.test.ts",
+      "path": "apps/backend-template/test/unit/infra/persistence/InMemoryDatabase/InMemoryDbClient.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/infra/persistence/InMemoryDatabase/UserStoreAPI.test.ts",
+      "path": "apps/backend-template/test/unit/infra/persistence/InMemoryDatabase/UserStoreAPI.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/infra/mutex/MutexService.branches.test.ts",
+      "path": "apps/backend-template/test/unit/infra/mutex/MutexService.branches.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "bunCompat": "pending-resetModules-or-native-gap"
+    },
+    {
+      "id": "apps/backend-template/test/unit/infra/mutex/MutexService.test.ts",
+      "path": "apps/backend-template/test/unit/infra/mutex/MutexService.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/infra/events/InMemoryEventBus.test.ts",
+      "path": "apps/backend-template/test/unit/infra/events/InMemoryEventBus.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/domains/validators/index.test.ts",
+      "path": "apps/backend-template/test/unit/domains/validators/index.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/config/security.test.ts",
+      "path": "apps/backend-template/test/unit/config/security.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/shared/decorators/Authorize.test.ts",
+      "path": "apps/backend-template/test/unit/shared/decorators/Authorize.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/shared/openapi/OpenApi31DataEntity.test.ts",
+      "path": "apps/backend-template/test/unit/shared/openapi/OpenApi31DataEntity.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/shared/utils.errorExposure.test.ts",
+      "path": "apps/backend-template/test/unit/shared/utils.errorExposure.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/packages/cli-init/bootstrap.test.ts",
+      "path": "apps/backend-template/test/unit/packages/cli-init/bootstrap.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/service-management/mvp.roadmap.features.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/mvp.roadmap.features.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/ci-cd/run-branch-quality-gate.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/run-branch-quality-gate.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/ci-cd/check-dependency-override-integrity.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/check-dependency-override-integrity.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/ci-cd/check-hexagonal-boundaries.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/check-hexagonal-boundaries.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/ci-cd/run-full-test-matrix.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/run-full-test-matrix.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/ci-cd/check-canonical-integrations.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/check-canonical-integrations.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/ci-cd/check-integration-migration.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/check-integration-migration.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/ci-cd/check-requirements-registry.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/check-requirements-registry.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/ci-cd/run-monorepo-ci.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/run-monorepo-ci.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/ci-cd/check-affected-workspaces.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/check-affected-workspaces.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/ci-cd/run-integration-tests.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/run-integration-tests.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/ci-cd/check-workspace-coverage-policy.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/check-workspace-coverage-policy.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/ci-cd/check-agent-registry-source.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/check-agent-registry-source.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/ci-cd/check-workspace-quality.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/check-workspace-quality.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/ci-cd/check-pr-governance.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/check-pr-governance.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/ci-cd/check-workspace-boundaries.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/check-workspace-boundaries.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/ci-cd/check-fail-closed.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/check-fail-closed.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/ci-cd/check-bun-version.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/check-bun-version.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "bunCompat": "pending-resetModules-or-native-gap"
+    },
+    {
+      "id": "apps/backend-template/test/unit/ci-cd/run-task-change-tests.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/run-task-change-tests.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/ci-cd/check-release-governance.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/check-release-governance.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/ci-cd/run-service-management-integration.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/run-service-management-integration.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/ddd/valueObjects/DocumentValueObject.test.ts",
+      "path": "apps/backend-template/test/unit/modules/ddd/valueObjects/DocumentValueObject.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/ddd/valueObjects/AddressValueObject.test.ts",
+      "path": "apps/backend-template/test/unit/modules/ddd/valueObjects/AddressValueObject.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Users/interface/websocketapi/frameworks/socket-io/handlers/createWebSocketOperationHandler.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Users/interface/websocketapi/frameworks/socket-io/handlers/createWebSocketOperationHandler.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Users/interface/controller/controllers.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Users/interface/controller/controllers.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "bunCompat": "pending-resetModules-or-native-gap"
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Users/factories.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Users/factories.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Users/features/index.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Users/features/index.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Users/composition/composeUsersAuthServices.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Users/composition/composeUsersAuthServices.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "bunCompat": "pending-resetModules-or-native-gap"
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Users/index.exports.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Users/index.exports.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Users/application/useCases.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Users/application/useCases.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Users/application/OrganizationUseCases.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Users/application/OrganizationUseCases.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "bunCompat": "pending-resetModules-or-native-gap"
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Users/service/UserService.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Users/service/UserService.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "bunCompat": "pending-resetModules-or-native-gap"
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Users/service/UserProviderLocal.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Users/service/UserProviderLocal.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "bunCompat": "pending-resetModules-or-native-gap"
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Users/service/OrganizationService.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Users/service/OrganizationService.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "bunCompat": "pending-resetModules-or-native-gap"
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Users/service/UserService.sanitization.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Users/service/UserService.sanitization.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Users/service/AuthService.rbac.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Users/service/AuthService.rbac.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Users/service/AuthService.branches.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Users/service/AuthService.branches.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Users/service/AuthService.audit.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Users/service/AuthService.audit.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "bunCompat": "pending-resetModules-or-native-gap"
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Users/events/registerUserMessageHandlers.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Users/events/registerUserMessageHandlers.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "bunCompat": "pending-resetModules-or-native-gap"
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Users/events/events.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Users/events/events.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Users/events/registerUserEventListeners.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Users/events/registerUserEventListeners.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "bunCompat": "pending-resetModules-or-native-gap"
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Users/domain/security/TenantAuthorizationPolicy.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Users/domain/security/TenantAuthorizationPolicy.test.ts",
+      "layer": "domain",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Users/domain/security/Rbac.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Users/domain/security/Rbac.test.ts",
+      "layer": "domain",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Users/domain/Model/User.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Users/domain/Model/User.test.ts",
+      "layer": "domain",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Users/domain/Model/Organization.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Users/domain/Model/Organization.test.ts",
+      "layer": "domain",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/port/core.test.ts",
+      "path": "apps/backend-template/test/unit/modules/port/core.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/port/BaseService.test.ts",
+      "path": "apps/backend-template/test/unit/modules/port/BaseService.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/port/relations.test.ts",
+      "path": "apps/backend-template/test/unit/modules/port/relations.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/port/index.exports.test.ts",
+      "path": "apps/backend-template/test/unit/modules/port/index.exports.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/sdk-clients/grpc/GrpcApiClient.test.ts",
+      "path": "apps/backend-template/test/unit/sdk-clients/grpc/GrpcApiClient.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "bunCompat": "pending-resetModules-or-native-gap"
+    },
+    {
+      "id": "apps/backend-template/test/integration/ServiceManagement/domainDesigner.smoke.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/domainDesigner.smoke.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Sails-JS/get.localhost.test.ts",
+      "path": "apps/backend-template/test/integration/Sails-JS/get.localhost.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "sails-js",
+      "script": "test:integration:sails-js",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Express/get.localhost.test.ts",
+      "path": "apps/backend-template/test/integration/Express/get.localhost.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "express",
+      "script": "test:integration:express",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Express/Organizations/organization.relationship.e2e.test.ts",
+      "path": "apps/backend-template/test/integration/Express/Organizations/organization.relationship.e2e.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "express",
+      "script": "test:integration:express",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Express/auth/register.test.ts",
+      "path": "apps/backend-template/test/integration/Express/auth/register.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "express",
+      "script": "test:integration:express",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Express/auth/login.test.ts",
+      "path": "apps/backend-template/test/integration/Express/auth/login.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "express",
+      "script": "test:integration:express",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Express/auth/logout.test.ts",
+      "path": "apps/backend-template/test/integration/Express/auth/logout.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "express",
+      "script": "test:integration:express",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Express/auth/updatePassword.test.ts",
+      "path": "apps/backend-template/test/integration/Express/auth/updatePassword.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "express",
+      "script": "test:integration:express",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Express/get.apiVersions.test.ts",
+      "path": "apps/backend-template/test/integration/Express/get.apiVersions.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "express",
+      "script": "test:integration:express",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Express/Users/createEmail.test.ts",
+      "path": "apps/backend-template/test/integration/Express/Users/createEmail.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "express",
+      "script": "test:integration:express",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Express/Users/updateEmail.test.ts",
+      "path": "apps/backend-template/test/integration/Express/Users/updateEmail.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "express",
+      "script": "test:integration:express",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Express/Users/getAll.test.ts",
+      "path": "apps/backend-template/test/integration/Express/Users/getAll.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "express",
+      "script": "test:integration:express",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Express/Users/createDocument.test.ts",
+      "path": "apps/backend-template/test/integration/Express/Users/createDocument.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "express",
+      "script": "test:integration:express",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Express/Users/deleteDocument.test.ts",
+      "path": "apps/backend-template/test/integration/Express/Users/deleteDocument.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "express",
+      "script": "test:integration:express",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Express/Users/updateDocument.test.ts",
+      "path": "apps/backend-template/test/integration/Express/Users/updateDocument.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "express",
+      "script": "test:integration:express",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Express/Users/create.test.ts",
+      "path": "apps/backend-template/test/integration/Express/Users/create.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "express",
+      "script": "test:integration:express",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Express/Users/deletePhone.test.ts",
+      "path": "apps/backend-template/test/integration/Express/Users/deletePhone.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "express",
+      "script": "test:integration:express",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Express/Users/getOneById.test.ts",
+      "path": "apps/backend-template/test/integration/Express/Users/getOneById.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "express",
+      "script": "test:integration:express",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Express/Users/update.test.ts",
+      "path": "apps/backend-template/test/integration/Express/Users/update.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "express",
+      "script": "test:integration:express",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Express/Users/deleteEmail.test.ts",
+      "path": "apps/backend-template/test/integration/Express/Users/deleteEmail.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "express",
+      "script": "test:integration:express",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Express/Users/updatePassword.test.ts",
+      "path": "apps/backend-template/test/integration/Express/Users/updatePassword.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "express",
+      "script": "test:integration:express",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Express/Users/updatePhone.test.ts",
+      "path": "apps/backend-template/test/integration/Express/Users/updatePhone.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "express",
+      "script": "test:integration:express",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Express/Users/deleteOne.test.ts",
+      "path": "apps/backend-template/test/integration/Express/Users/deleteOne.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "express",
+      "script": "test:integration:express",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Express/Users/createPhone.test.ts",
+      "path": "apps/backend-template/test/integration/Express/Users/createPhone.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "express",
+      "script": "test:integration:express",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Feathers/get.localhost.test.ts",
+      "path": "apps/backend-template/test/integration/Feathers/get.localhost.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "feathers",
+      "script": "test:integration:feathers",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/realtime/socketio.redis-streams.multi-instance.test.ts",
+      "path": "apps/backend-template/test/integration/realtime/socketio.redis-streams.multi-instance.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "realtime",
+      "script": "test:integration:realtime",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/realtime/websocket.basic.integration.test.ts",
+      "path": "apps/backend-template/test/integration/realtime/websocket.basic.integration.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "realtime",
+      "script": "test:integration:realtime",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/realtime/grpc.basic.integration.test.ts",
+      "path": "apps/backend-template/test/integration/realtime/grpc.basic.integration.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "realtime",
+      "script": "test:integration:realtime",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Total-JS/get.localhost.test.ts",
+      "path": "apps/backend-template/test/integration/Total-JS/get.localhost.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "total-js",
+      "script": "test:integration:total-js",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/LoopBack/get.localhost.test.ts",
+      "path": "apps/backend-template/test/integration/LoopBack/get.localhost.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "loopback",
+      "script": "test:integration:loopback",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Lambda/get.localhost.test.ts",
+      "path": "apps/backend-template/test/integration/Lambda/get.localhost.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "lambda",
+      "script": "test:integration:lambda",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Lambda/auth/Basic/create.test.ts",
+      "path": "apps/backend-template/test/integration/Lambda/auth/Basic/create.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "lambda",
+      "script": "test:integration:lambda",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Lambda/auth/Bearer/create.test.ts",
+      "path": "apps/backend-template/test/integration/Lambda/auth/Bearer/create.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "lambda",
+      "script": "test:integration:lambda",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Cloudflare-Workers/get.localhost.test.ts",
+      "path": "apps/backend-template/test/integration/Cloudflare-Workers/get.localhost.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "cloudflare-workers",
+      "script": "test:integration:cloudflare-workers",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Adonis-JS/get.localhost.test.ts",
+      "path": "apps/backend-template/test/integration/Adonis-JS/get.localhost.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "adonis-js",
+      "script": "test:integration:adonis-js",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/mutex/redis.fastify.test.ts",
+      "path": "apps/backend-template/test/integration/mutex/redis.fastify.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "mutex",
+      "script": null,
+      "runner": "node",
+      "tier": "nightly",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/mutex/redis.restify.test.ts",
+      "path": "apps/backend-template/test/integration/mutex/redis.restify.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "mutex",
+      "script": null,
+      "runner": "node",
+      "tier": "nightly",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/mutex/redis.express.test.ts",
+      "path": "apps/backend-template/test/integration/mutex/redis.express.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "mutex",
+      "script": null,
+      "runner": "node",
+      "tier": "nightly",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Derby-JS/get.localhost.test.ts",
+      "path": "apps/backend-template/test/integration/Derby-JS/get.localhost.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "derby-js",
+      "script": "test:integration:derby-js",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Restify/get.localhost.test.ts",
+      "path": "apps/backend-template/test/integration/Restify/get.localhost.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "restify",
+      "script": "test:integration:restify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 600000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Restify/auth/register.test.ts",
+      "path": "apps/backend-template/test/integration/Restify/auth/register.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "restify",
+      "script": "test:integration:restify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 600000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Restify/auth/login.test.ts",
+      "path": "apps/backend-template/test/integration/Restify/auth/login.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "restify",
+      "script": "test:integration:restify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 600000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Restify/auth/logout.test.ts",
+      "path": "apps/backend-template/test/integration/Restify/auth/logout.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "restify",
+      "script": "test:integration:restify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 600000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Restify/auth/updatePassword.test.ts",
+      "path": "apps/backend-template/test/integration/Restify/auth/updatePassword.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "restify",
+      "script": "test:integration:restify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 600000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Restify/get.apiVersions.test.ts",
+      "path": "apps/backend-template/test/integration/Restify/get.apiVersions.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "restify",
+      "script": "test:integration:restify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 600000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Restify/Users/createEmail.test.ts",
+      "path": "apps/backend-template/test/integration/Restify/Users/createEmail.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "restify",
+      "script": "test:integration:restify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 600000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Restify/Users/updateEmail.test.ts",
+      "path": "apps/backend-template/test/integration/Restify/Users/updateEmail.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "restify",
+      "script": "test:integration:restify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 600000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Restify/Users/getAll.test.ts",
+      "path": "apps/backend-template/test/integration/Restify/Users/getAll.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "restify",
+      "script": "test:integration:restify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 600000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Restify/Users/createDocument.test.ts",
+      "path": "apps/backend-template/test/integration/Restify/Users/createDocument.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "restify",
+      "script": "test:integration:restify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 600000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Restify/Users/deleteDocument.test.ts",
+      "path": "apps/backend-template/test/integration/Restify/Users/deleteDocument.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "restify",
+      "script": "test:integration:restify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 600000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Restify/Users/updateDocument.test.ts",
+      "path": "apps/backend-template/test/integration/Restify/Users/updateDocument.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "restify",
+      "script": "test:integration:restify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 600000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Restify/Users/create.test.ts",
+      "path": "apps/backend-template/test/integration/Restify/Users/create.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "restify",
+      "script": "test:integration:restify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 600000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Restify/Users/deletePhone.test.ts",
+      "path": "apps/backend-template/test/integration/Restify/Users/deletePhone.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "restify",
+      "script": "test:integration:restify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 600000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Restify/Users/getOneById.test.ts",
+      "path": "apps/backend-template/test/integration/Restify/Users/getOneById.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "restify",
+      "script": "test:integration:restify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 600000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Restify/Users/update.test.ts",
+      "path": "apps/backend-template/test/integration/Restify/Users/update.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "restify",
+      "script": "test:integration:restify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 600000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Restify/Users/deleteEmail.test.ts",
+      "path": "apps/backend-template/test/integration/Restify/Users/deleteEmail.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "restify",
+      "script": "test:integration:restify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 600000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Restify/Users/updatePassword.test.ts",
+      "path": "apps/backend-template/test/integration/Restify/Users/updatePassword.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "restify",
+      "script": "test:integration:restify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 600000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Restify/Users/updatePhone.test.ts",
+      "path": "apps/backend-template/test/integration/Restify/Users/updatePhone.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "restify",
+      "script": "test:integration:restify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 600000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Restify/Users/deleteOne.test.ts",
+      "path": "apps/backend-template/test/integration/Restify/Users/deleteOne.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "restify",
+      "script": "test:integration:restify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 600000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Restify/Users/createPhone.test.ts",
+      "path": "apps/backend-template/test/integration/Restify/Users/createPhone.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "restify",
+      "script": "test:integration:restify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 600000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Vercel-Functions/get.localhost.test.ts",
+      "path": "apps/backend-template/test/integration/Vercel-Functions/get.localhost.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "vercel-functions",
+      "script": "test:integration:vercel-functions",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Fastify/get.localhost.test.ts",
+      "path": "apps/backend-template/test/integration/Fastify/get.localhost.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "fastify",
+      "script": "test:integration:fastify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Fastify/auth/register.test.ts",
+      "path": "apps/backend-template/test/integration/Fastify/auth/register.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "fastify",
+      "script": "test:integration:fastify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Fastify/auth/login.test.ts",
+      "path": "apps/backend-template/test/integration/Fastify/auth/login.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "fastify",
+      "script": "test:integration:fastify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Fastify/auth/logout.test.ts",
+      "path": "apps/backend-template/test/integration/Fastify/auth/logout.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "fastify",
+      "script": "test:integration:fastify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Fastify/auth/updatePassword.test.ts",
+      "path": "apps/backend-template/test/integration/Fastify/auth/updatePassword.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "fastify",
+      "script": "test:integration:fastify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Fastify/get.apiVersions.test.ts",
+      "path": "apps/backend-template/test/integration/Fastify/get.apiVersions.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "fastify",
+      "script": "test:integration:fastify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Fastify/Users/createEmail.test.ts",
+      "path": "apps/backend-template/test/integration/Fastify/Users/createEmail.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "fastify",
+      "script": "test:integration:fastify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Fastify/Users/updateEmail.test.ts",
+      "path": "apps/backend-template/test/integration/Fastify/Users/updateEmail.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "fastify",
+      "script": "test:integration:fastify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Fastify/Users/getAll.test.ts",
+      "path": "apps/backend-template/test/integration/Fastify/Users/getAll.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "fastify",
+      "script": "test:integration:fastify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Fastify/Users/createDocument.test.ts",
+      "path": "apps/backend-template/test/integration/Fastify/Users/createDocument.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "fastify",
+      "script": "test:integration:fastify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Fastify/Users/deleteDocument.test.ts",
+      "path": "apps/backend-template/test/integration/Fastify/Users/deleteDocument.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "fastify",
+      "script": "test:integration:fastify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Fastify/Users/updateDocument.test.ts",
+      "path": "apps/backend-template/test/integration/Fastify/Users/updateDocument.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "fastify",
+      "script": "test:integration:fastify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Fastify/Users/create.test.ts",
+      "path": "apps/backend-template/test/integration/Fastify/Users/create.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "fastify",
+      "script": "test:integration:fastify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Fastify/Users/deletePhone.test.ts",
+      "path": "apps/backend-template/test/integration/Fastify/Users/deletePhone.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "fastify",
+      "script": "test:integration:fastify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Fastify/Users/getOneById.test.ts",
+      "path": "apps/backend-template/test/integration/Fastify/Users/getOneById.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "fastify",
+      "script": "test:integration:fastify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Fastify/Users/update.test.ts",
+      "path": "apps/backend-template/test/integration/Fastify/Users/update.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "fastify",
+      "script": "test:integration:fastify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Fastify/Users/deleteEmail.test.ts",
+      "path": "apps/backend-template/test/integration/Fastify/Users/deleteEmail.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "fastify",
+      "script": "test:integration:fastify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Fastify/Users/updatePassword.test.ts",
+      "path": "apps/backend-template/test/integration/Fastify/Users/updatePassword.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "fastify",
+      "script": "test:integration:fastify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Fastify/Users/updatePhone.test.ts",
+      "path": "apps/backend-template/test/integration/Fastify/Users/updatePhone.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "fastify",
+      "script": "test:integration:fastify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Fastify/Users/deleteOne.test.ts",
+      "path": "apps/backend-template/test/integration/Fastify/Users/deleteOne.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "fastify",
+      "script": "test:integration:fastify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Fastify/Users/createPhone.test.ts",
+      "path": "apps/backend-template/test/integration/Fastify/Users/createPhone.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "fastify",
+      "script": "test:integration:fastify",
+      "runner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/smoke/database/DatabaseDrivers.smoke.test.ts",
+      "path": "apps/backend-template/test/smoke/database/DatabaseDrivers.smoke.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "smoke",
+      "runner": "node",
+      "tier": "nightly",
+      "timeoutMs": 180000
+    },
+    {
+      "id": "apps/backend-template/test/smoke/realtime/RealtimeApis.smoke.test.ts",
+      "path": "apps/backend-template/test/smoke/realtime/RealtimeApis.smoke.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "smoke",
+      "runner": "node",
+      "tier": "nightly",
+      "timeoutMs": 180000
+    }
+  ],
+  "quarantine": [
+    {
+      "path": "apps/backend-template/test/integration/mutex/",
+      "reason": "Orphaned mutex integration suite \u2014 no INTEGRATION_SCRIPTS target (JUM-556)",
+      "issue": "JUM-556",
+      "runnerOverride": "node"
+    }
+  ],
+  "sourceRoots": [
+    "apps/backend-template/src",
+    "apps/backend-template/test",
+    "apps/service-management",
+    "apps/jumentix-website",
+    "packages",
+    "ci-cd",
+    "tooling"
+  ],
+  "pathAliases": {
+    "@src": "apps/backend-template/src",
+    "@test": "apps/backend-template/test",
+    "@seed": "apps/backend-template/seed",
+    "@jumentix": "packages"
+  },
+  "gateTable": {
+    "task": {
+      "script": "ci:gate:task",
+      "mode": "layer-aware"
+    },
+    "dev": {
+      "script": "test:unit",
+      "mode": "full-unit+contract"
+    },
+    "main": {
+      "script": "ci:gate:strict",
+      "mode": "full-matrix"
+    }
+  },
+  "flags": {
+    "gateV2Env": "JUMENTIX_GATE_V2",
+    "gateV2Default": true,
+    "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
+  },
+  "stats": {
+    "unit": 101,
+    "integration": 82,
+    "smoke": 2,
+    "suites": 185
+  }
+}
