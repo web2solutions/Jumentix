@@ -29,7 +29,7 @@ merely configured checks are not successful evidence.
 | GitGuardian | Security Checks on legacy PRs | all five XpertMinds repositories monitored; canonical history scan completed; same-repo PR checks available on the public destination | **paid-plan blocker**: GitGuardian Business remains required for forked-repository check runs only |
 | Cursor Bugbot | checks on legacy PRs | 5/5 XpertMinds repositories enabled, including both Jumentix repositories | PR #9 `Cursor Bugbot` passed |
 | Vercel (website) | legacy project binding | Vercel GitHub App authorized for all XpertMinds repositories | **owner-auth blocker**: Git binding pending re-auth on the public repository, then a Git-connected deploy must reach `READY` (Hobby may work now that the destination is public) |
-| Branch protection / required checks | enforced on legacy (Pro) | Team plan + public repository; protection/rulesets are available and must be configured | **owner-auth blocker**: configure branch protection/required checks on `dev` and `main` (not yet observed on destination) |
+| Branch protection / required checks | enforced on legacy (Pro) | Team plan + public repository; protection configured on `dev` and `main` requiring `build (1.3.14, 7.2)`, `SonarQube Cloud Scan`, and `storybook` with `enforce_admins` | done — required checks observed on destination; not a remaining owner-auth blocker |
 | GitHub Actions billing | billed minutes on legacy | public repository Actions path | **owner-auth blocker**: Actions billing/plan must allow required workflow minutes; unpaid or exhausted billing fails closed |
 
 Registry-only integration migration is governed separately by JUM-569.
@@ -59,10 +59,11 @@ Registry-only integration migration is governed separately by JUM-569.
 - Destination visibility: public
 - Actions secrets recreated (names only): `AAA_JWT_TOKEN_SECRET_KEY`, `AAA_REDIS_PASSWORD`
 - Environments recreated (names): `env vars`, `secrets`
-- Provider authentication is largely complete on the public destination. Remaining
-  true blockers (fail closed until terminal evidence exists): GitHub Actions
-  billing/minutes authority, Vercel Git re-auth plus `READY` Git deploy, branch
-  protection/required-check configuration on Team+public, Codecov project/patch
-  PR status where still unpaid, and GitGuardian Business only for fork check
-  runs. Missing, skipped, neutral, or merely configured checks are not success.
+- Provider authentication is largely complete on the public destination. Branch
+  protection/required checks are configured on `dev` and `main`. Remaining true
+  blockers (fail closed until terminal evidence exists): GitHub Actions
+  billing/minutes authority, Vercel Git re-auth plus `READY` Git deploy, Codecov
+  project/patch PR status where still unpaid, and GitGuardian Business only for
+  fork check runs. Missing, skipped, neutral, or merely configured checks are
+  not success.
 - Visibilidade: public

@@ -27,7 +27,7 @@ análise ou manter uma chave de projeto legada não é evidência aprovada.
 
 | Área | Estado verificado | Ação restante |
 | --- | --- | --- |
-| Configurações do repositório/branches GitHub | Actions usa permissão padrão somente leitura; aprovação de PR por workflow está desativada; política de merge, issues, discussions, labels, tópicos, ambientes e eventos do hook CircleCI correspondem ao repositório legado; a visibilidade do destino é pública no Team | Proteção de branch/rulesets deve ser configurada em `dev` e `main` (ainda não observada); faturamento/minutos do Actions permanece bloqueio owner-auth se não pago ou esgotado |
+| Configurações do repositório/branches GitHub | Actions usa permissão padrão somente leitura; aprovação de PR por workflow está desativada; política de merge, issues, discussions, labels, tópicos, ambientes e eventos do hook CircleCI correspondem ao repositório legado; a visibilidade do destino é pública no Team; proteção de branch em `dev` e `main` exige `build (1.3.14, 7.2)`, `SonarQube Cloud Scan` e `storybook` com `enforce_admins` | Faturamento/minutos do Actions permanece bloqueio owner-auth se não pago ou esgotado |
 | Segurança GitHub | Alertas de vulnerabilidade, correções automáticas e a configuração rastreada do Dependabot estão ativos | Observar a primeira atualização canônica do Dependabot |
 | CircleCI | `XpertMinds/Jumentix` está seguido, orbs públicos não certificados estão permitidos para o contrato Codecov copiado e a reexecução fail-closed do pipeline 6 passou `test-source` no SHA canônico `68d785a4` | Continuar aplicando o pipeline canônico em `dev` e `main` |
 | Segredos do repositório | `AAA_JWT_TOKEN_SECRET_KEY`, `AAA_REDIS_PASSWORD` e o dedicado `AGENT_REGISTRY_TOKEN` existem por nome | Validar seus consumidores sem expor valores; rotacionar a credencial do registro conforme a política do owner |
@@ -40,13 +40,13 @@ análise ou manter uma chave de projeto legada não é evidência aprovada.
 | Vercel | O GitHub App está autorizado para todos os repositórios XpertMinds; o projeto `jumentix-website` existe e seu último deploy manual de produção está `READY` | Vínculo Git pendente de reautenticação no repositório público; Hobby pode funcionar agora—conclua a reautenticação e registre um deploy Git que alcance `READY` |
 | Faturamento GitHub Actions | Workflows Actions do repositório público estão registrados | O owner deve manter faturamento/minutos do Actions financiados; billing ausente ou esgotado falha fechado e não é evidência de sucesso |
 
-A evidência terminal dos provedores está anexada à JUM-568 no Linear. Os
+A evidência terminal dos provedores está anexada à JUM-568 no Linear. A
+proteção de branch/checks obrigatórios está configurada em `dev` e `main`. Os
 bloqueios verdadeiros restantes no destino público falham fechado até haver
 evidência terminal: autoridade de faturamento/minutos do GitHub Actions,
-reautenticação Git da Vercel mais deploy Git `READY`, configuração de proteção
-de branch/checks obrigatórios, status de projeto/patch do Codecov onde ainda
-incompleto, e GitGuardian Business somente para check runs em forks. Este estado
-não constitui aprovação final da migração dos provedores.
+reautenticação Git da Vercel mais deploy Git `READY`, status de projeto/patch do
+Codecov onde ainda incompleto, e GitGuardian Business somente para check runs em
+forks. Este estado não constitui aprovação final da migração dos provedores.
 
 ## Regras fail-closed
 

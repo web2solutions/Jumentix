@@ -27,7 +27,7 @@ scan, or a legacy project key is not passing evidence.
 
 | Area | Verified state | Remaining action |
 | --- | --- | --- |
-| GitHub repository/branch settings | Actions use read-only default permissions; workflow PR approvals are disabled; merge policy, issues, discussions, labels, topics, environments, and CircleCI hook events match the legacy application repository; destination visibility is public on Team | Branch protection/rulesets must be configured on `dev` and `main` (not yet observed); Actions billing/minutes authority remains an owner-auth blocker if unpaid or exhausted |
+| GitHub repository/branch settings | Actions use read-only default permissions; workflow PR approvals are disabled; merge policy, issues, discussions, labels, topics, environments, and CircleCI hook events match the legacy application repository; destination visibility is public on Team; branch protection on `dev` and `main` requires `build (1.3.14, 7.2)`, `SonarQube Cloud Scan`, and `storybook` with `enforce_admins` | Actions billing/minutes authority remains an owner-auth blocker if unpaid or exhausted |
 | GitHub security | Vulnerability alerts, automated security fixes, and the tracked Dependabot configuration are enabled | Observe the first canonical Dependabot update |
 | CircleCI | `XpertMinds/Jumentix` is followed, uncertified public orbs are allowed for the copied Codecov contract, and the fail-closed rerun of pipeline 6 passed `test-source` on canonical SHA `68d785a4` | Continue enforcing the canonical pipeline on `dev` and `main` |
 | Repository secrets | `AAA_JWT_TOKEN_SECRET_KEY`, `AAA_REDIS_PASSWORD`, and the dedicated `AGENT_REGISTRY_TOKEN` exist by name | Validate their consumers without exposing their values; rotate the registry credential under the owner policy |
@@ -40,13 +40,13 @@ scan, or a legacy project key is not passing evidence.
 | Vercel | The GitHub App is authorized for all XpertMinds repositories; project `jumentix-website` exists and its latest manual production deployment is `READY` | Git binding pending re-auth on the public repository; Hobby may work now—complete re-auth and record a Git-connected deploy that reaches `READY` |
 | GitHub Actions billing | Public repository Actions workflows are registered | Owner must keep Actions billing/minutes funded; unpaid or exhausted billing fails closed and is not successful evidence |
 
-Terminal provider evidence is attached to Linear JUM-568. Remaining true
+Terminal provider evidence is attached to Linear JUM-568. Branch
+protection/required checks are configured on `dev` and `main`. Remaining true
 blockers on the public destination fail closed until terminal evidence exists:
 GitHub Actions billing/minutes authority, Vercel Git re-auth plus `READY`
-Git-connected deploy, branch protection/required-check configuration,
-Codecov project/patch PR status where still incomplete, and GitGuardian
-Business only for fork check runs. This status must not be read as final
-provider migration approval.
+Git-connected deploy, Codecov project/patch PR status where still incomplete,
+and GitGuardian Business only for fork check runs. This status must not be read
+as final provider migration approval.
 
 ## Fail-closed rules
 
