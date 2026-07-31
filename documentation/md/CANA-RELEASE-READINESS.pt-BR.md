@@ -141,17 +141,36 @@ dependência de runtime, e um teste garante que nunca se torne uma.
 
 ---
 
-## 5. Não medido: desempenho
+## 5. Desempenho: forma medida, latência não
 
-`explain()` prova que uma consulta indexada abriu seu índice e que o offset foi
-aplicado no cursor. Ele **não** prova que algo seja rápido.
+`explain()` prova que uma consulta indexada abriu seu índice. Não prova nada
+sobre velocidade, então agora existe uma linha de base que mede a parte que pode
+ser honestamente medida aqui.
 
-Não existe benchmark com volume realista — 100 mil registros ou mais é onde as
-constantes de uma implementação por cursor começam a pesar, e onde a diferença
-entre o plano e a realidade apareceria. Essa é a metade restante do JUM-561.
+Seis verificações comparam 1.000 linhas contra 10.000 e limitam a **razão**, em
+vez de afirmar um limiar em milissegundos. Um limite de relógio em runner
+compartilhado é um teste instável que some em um mês — e sumir leva a cobertura
+junto.
 
-Nenhuma aplicação deve ser informada de que o Cana é rápido com base no que há
-neste repositório hoje.
+O que isso pega: uma varredura completa ficar 10x mais lenta com 10x os dados é
+correto; uma consulta *indexada* fazer isso é o bug — o índice foi anunciado e
+nunca usado, algo que nenhum teste de correção detecta, porque as linhas
+retornadas são idênticas nos dois casos.
+
+Medido e passando: consultas limitadas não escalam com o tamanho da tabela,
+buscas indexadas não degradam além do conjunto de resultados que cresce,
+`count()` é mais barato que ler as linhas, gets por chave independem do
+tamanho, uma escrita em lote de 10.000 linhas completa, e um offset profundo
+custa aproximadamente o mesmo que um raso.
+
+**Nenhum número absoluto é afirmado, deliberadamente.** O `fake-indexeddb` é em
+memória; o IndexedDB de um navegador é em disco, com perfil de custo
+completamente diferente — uma medida de latência daqui seria inútil em produção.
+O que transfere é a forma.
+
+Uma linha de base de latência real ainda depende da execução em navegador (§3).
+**Ninguém deve ser informado de que o Cana é rápido com base no que há neste
+repositório hoje** — apenas que nada escala em uma forma que o tornaria lento.
 
 ---
 
@@ -186,8 +205,8 @@ A publicação deveria aguardar todos estes itens:
    release. Dono: quem tiver os dispositivos. Este é o item bloqueante.
 2. **CI verde**, o que exige antes a resolução da cobrança.
 3. **`agent-registry:check`** resolvido pelo seu dono.
-4. **Uma linha de base de desempenho** com volume realista, ou uma decisão
-   explícita de publicar sem ela — dita no README.
+4. **Uma linha de base de latência em navegador real.** A forma de complexidade
+   está medida; os números absolutos não, e não podem vir de um shim em memória.
 
 Os itens 1 e 4 são os que mudam o que uma aplicação pode honestamente afirmar aos
 seus usuários. Os itens 2 e 3 são portões de processo que ainda assim precisam

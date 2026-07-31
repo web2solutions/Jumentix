@@ -138,17 +138,34 @@ runtime dependency and a test asserts that it never becomes one.
 
 ---
 
-## 5. Not measured: performance
+## 5. Performance: shape measured, latency not
 
-`explain()` proves an indexed query opened its index and that offset was applied
-in the cursor. It does **not** prove anything is fast.
+`explain()` proves an indexed query opened its index. It proves nothing about
+speed, so a baseline now measures the part that can honestly be measured here.
 
-No benchmark exists at realistic volume — 100k+ records is where a cursor
-implementation's constant factors start to matter, and where the difference
-between the plan and the reality would show. This is JUM-561's remaining half.
+Six checks compare 1,000 rows against 10,000 and bound the **ratio** rather than
+asserting a millisecond threshold. A wall-clock limit on a shared runner is a
+flaky test that gets deleted within a month, and deleting it takes the coverage
+with it.
 
-An application should not be told Cana is fast on the basis of what is in this
-repo today.
+What that catches: a full scan getting 10x slower with 10x the data is correct;
+an *indexed* query doing so is the bug — the index was announced and never used,
+which no correctness test can detect because the rows returned are identical
+either way.
+
+Measured and passing: limited queries do not scale with table size, indexed
+lookups do not degrade beyond their growing result set, `count()` is cheaper
+than reading rows, keyed gets are independent of table size, a 10,000-row bulk
+write completes, and a deep offset costs roughly an early one.
+
+**No absolute number is asserted, deliberately.** `fake-indexeddb` is
+in-memory; a browser's IndexedDB is disk-backed with a completely different cost
+profile, so a latency figure from here would be meaningless in production. What
+transfers is the shape.
+
+A real latency baseline still needs the browser run (§3). **Nobody should be
+told Cana is fast on the basis of what is in this repository today** — only that
+nothing scales in a shape that would make it slow.
 
 ---
 
@@ -182,8 +199,8 @@ Publishing should wait on all of these:
    Owner: whoever has the devices. This is the blocking item.
 2. **CI green**, which requires billing resolved first.
 3. **`agent-registry:check`** resolved by its owner.
-4. **A performance baseline** at realistic volume, or an explicit decision to
-   ship without one and say so in the README.
+4. **A latency baseline in a real browser.** The complexity shape is measured;
+   absolute numbers are not, and cannot be from an in-memory shim.
 
 Items 1 and 4 are the ones that change what an application may honestly claim to
 its users. Items 2 and 3 are process gates that must nonetheless be green before
