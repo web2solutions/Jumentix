@@ -5,7 +5,7 @@
  * a MessagePort message deadlocks until the request timeout fires, and on a
  * Dexie thenable it is rejected outright as "not a promise". Awaiting first and
  * asserting on the value is equivalent in strength and passes under both
- * runners (JUM-581).
+ * runners (JUM-584).
  */
 import 'fake-indexeddb/auto';
 import { IDBFactory } from 'fake-indexeddb';

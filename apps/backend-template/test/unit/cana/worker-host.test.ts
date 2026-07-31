@@ -5,7 +5,7 @@
  * a MessagePort message deadlocks until the request timeout fires, and on a
  * Dexie thenable it is rejected outright as "not a promise". Awaiting first and
  * asserting on the value is equivalent in strength and passes under both
- * runners (JUM-581).
+ * runners (JUM-584).
  */
 import 'fake-indexeddb/auto';
 import { IDBFactory } from 'fake-indexeddb';
@@ -43,7 +43,7 @@ import {
  * response never reaches the router and the request dies on its own 2s timeout.
  * The same call awaited directly returns immediately, and the suite passes under
  * Jest either way — so it is a runtime interaction, not engine behaviour
- * (JUM-581). Awaiting first is equivalent in strength and works in both.
+ * (JUM-584). Awaiting first is equivalent in strength and works in both.
  */
 
 interface Design { id: number; name: string; owner?: string }
