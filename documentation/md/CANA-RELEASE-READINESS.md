@@ -28,7 +28,7 @@ is missing is proof it behaves in the browsers it targets.
 | Documentation (design, usage, EN + PT-BR) | Complete |
 | Differential agreement with Dexie | Complete, 18/18 agree |
 | **Cross-browser conformance** | **Not run — blocking** |
-| Performance under real data volume | Not measured |
+| Performance under real data volume | Complexity shape measured; absolute latency not |
 | CI verification of any of the above | **Never executed — billing** |
 
 ---

@@ -29,7 +29,7 @@ pretende atender.
 | Documentação (projeto, uso, EN + PT-BR) | Completa |
 | Concordância diferencial com o Dexie | Completa, 18/18 concordam |
 | **Conformidade entre navegadores** | **Não executada — bloqueante** |
-| Desempenho com volume real de dados | Não medido |
+| Desempenho com volume real de dados | Forma de complexidade medida; latência absoluta não |
 | Verificação em CI de qualquer item acima | **Nunca executada — cobrança** |
 
 ---
