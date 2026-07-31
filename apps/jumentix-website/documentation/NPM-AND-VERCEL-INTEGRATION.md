@@ -27,9 +27,16 @@ Note:
 
 ## Vercel Integration
 
-Target Vercel account:
+Git binding (required):
 
-- `web2solutions` (personal account)
+- Git repository: `XpertMinds/Jumentix` at https://github.com/XpertMinds/Jumentix
+- Root directory: `apps/jumentix-website`
+- Vercel project: `jumentix-website`
+
+Hosting account:
+
+- The Vercel hosting account/team may still be the existing `web2solutions` / `web2solutions-projects` team until an XpertMinds Vercel team is created.
+- Git must **not** point at the archived `web2solutions/aaa-typescript-boilerplate` repository.
 
 Root commands:
 

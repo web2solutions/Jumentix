@@ -13,8 +13,8 @@ Organização alvo para publicação de pacotes:
 Configurado na raiz `.npmrc`:
 
 - `@xpertminds:registry=https://registry.npmjs.org/`
-- `sempre-auth=true`
-- `proveniência=verdade`
+- `always-auth=true`
+- `provenance=true`
 
 Comandos de validação:
 
@@ -31,9 +31,16 @@ Observação:
 
 ## Integração Vercel
 
-Conta Vercel alvo:
+Vinculação Git (obrigatória):
 
-- `web2solutions` (conta pessoal)
+- Repositório Git: `XpertMinds/Jumentix` em https://github.com/XpertMinds/Jumentix
+- Diretório raiz: `apps/jumentix-website`
+- Projeto Vercel: `jumentix-website`
+
+Conta de hospedagem:
+
+- A conta/equipe Vercel de hospedagem ainda pode ser a existente `web2solutions` / `web2solutions-projects` até que uma equipe Vercel XpertMinds seja criada.
+- O Git **não** deve apontar para o repositório arquivado `web2solutions/aaa-typescript-boilerplate`.
 
 Comandos raiz:
 
