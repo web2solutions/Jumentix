@@ -171,7 +171,13 @@ export class Client implements CanaClient {
     // was documented but, by default, switched off.
     this.durability = options.durability ?? new StorageDurability(browserStorageEnvironment());
     this.retainedEvents = options.retainedEvents ?? DEFAULT_RETAINED_EVENTS;
-    this.originId = options.originId ?? `cana-${Math.random().toString(36).slice(2, 10)}`;
+    // `crypto.randomUUID()`, not `Math.random()`. The origin id is what tells a
+    // subscriber which tab produced a change, so a collision makes one tab's
+    // writes look like its own echo and the event is dropped. `Math.random` gives
+    // no collision guarantee, and eight base-36 characters make one plausible
+    // across enough tabs and reloads. `crypto` is available in every browser
+    // Cana targets and in Bun.
+    this.originId = options.originId ?? `cana-${crypto.randomUUID()}`;
   }
 
   /**

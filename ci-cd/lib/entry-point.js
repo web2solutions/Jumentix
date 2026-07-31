@@ -30,7 +30,11 @@
  * @returns {boolean} true when `caller` is the process entry point.
  */
 function isEntryPoint(caller, entry = require.main) {
-  return entry !== undefined && entry !== null && entry === caller;
+  // `!= null` covers undefined and null in one comparison. Writing them as two
+  // strict checks made the second always true — `require.main` is
+  // `Module | undefined` and never null — which is dead code wearing the look of
+  // a second safety check.
+  return entry != null && entry === caller;
 }
 
 module.exports = { isEntryPoint };

@@ -108,6 +108,19 @@ async function waitForAnalysis(ceTaskUrl, token, now = () => Date.now()) {
   throw new Error(`analysis did not finish within ${ANALYSIS_TIMEOUT_MS / 1000}s`);
 }
 
+/**
+ * Flatten text that came from the API before printing it.
+ *
+ * Issue messages are server-supplied, and a message containing a newline could
+ * forge a line in the CI log — a fake "0 open issues" among real output reads
+ * as authoritative. Control characters go the same way: an ANSI sequence can
+ * hide text entirely.
+ */
+function forLog(text) {
+  // eslint-disable-next-line no-control-regex
+  return String(text).replace(/[\u0000-\u001f\u007f]+/g, ' ').trim();
+}
+
 /** One line per issue, ordered so the worst reads first. */
 function formatIssues(issues) {
   const severityOrder = ['BLOCKER', 'CRITICAL', 'MAJOR', 'MINOR', 'INFO'];
@@ -121,9 +134,9 @@ function formatIssues(issues) {
     .map((issue) => {
       const file = String(issue.component).split(':').pop();
       const line = issue.line === undefined ? '' : `:${String(issue.line)}`;
-      return `  ${issue.type} ${issue.severity} ${file}${line}\n`
-        + `    ${issue.message}\n`
-        + `    rule: ${issue.rule}`;
+      return `  ${forLog(issue.type)} ${forLog(issue.severity)} ${forLog(file)}${line}\n`
+        + `    ${forLog(issue.message)}\n`
+        + `    rule: ${forLog(issue.rule)}`;
     });
 }
 
@@ -178,8 +191,8 @@ async function main() {
     console.log(`\n[sonar] ${hotspots.length} security hotspot(s) to review:\n`);
     for (const hotspot of hotspots) {
       const file = String(hotspot.component).split(':').pop();
-      console.log(`  ${hotspot.vulnerabilityProbability} ${file}:${hotspot.line ?? '?'}`);
-      console.log(`    ${hotspot.message}`);
+      console.log(`  ${forLog(hotspot.vulnerabilityProbability)} ${forLog(file)}:${hotspot.line ?? '?'}`);
+      console.log(`    ${forLog(hotspot.message)}`);
     }
   }
   console.log('');
@@ -195,6 +208,7 @@ if (isEntryPoint(module)) {
 
 module.exports = {
   ANALYSIS_TIMEOUT_MS,
+  forLog,
   resolvePullRequestKey,
   formatIssues,
   main,

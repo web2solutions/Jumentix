@@ -129,7 +129,9 @@ const adapters = fs
   .readdirSync(adaptersDir, { withFileTypes: true })
   .filter((entry) => entry.isDirectory())
   .map((entry) => entry.name)
-  .sort();
+  // Explicit comparator: the default sort coerces to string and orders by UTF-16
+  // code unit, which is not the alphabetical order the failure messages imply.
+  .sort((left, right) => left.localeCompare(right));
 
 for (const adapter of adapters) {
   if (PLATFORM_TARGETS.has(adapter)) continue;

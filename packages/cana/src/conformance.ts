@@ -132,7 +132,10 @@ export async function runConformance(
 
   const open = async (version = 1) => {
     const client = createClient({
-      name: `cana-conformance-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      // A fresh database per check, so one check's data cannot satisfy another.
+      // `crypto.randomUUID()` rather than `Math.random()`: a collision here would
+      // make a check pass against a database a previous one had already filled.
+      name: `cana-conformance-${Date.now()}-${crypto.randomUUID()}`,
       schema: schema(version),
       ...(factory === undefined ? {} : { factory })
     });

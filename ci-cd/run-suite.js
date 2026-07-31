@@ -9,6 +9,7 @@
  *   bun ci-cd/run-suite.js <path> [<path>...]
  *   bun ci-cd/run-suite.js --script-label express apps/backend-template/test/integration/Express
  */
+const path = require('path');
 const { spawnSync } = require('child_process');
 const { resolveTestRuntime } = require('./lib/test-runtime');
 const { readTestMap } = require('./lib/test-map');
@@ -58,12 +59,40 @@ function parseArgs(argv) {
   return { paths, label, timeoutMs };
 }
 
+/**
+ * Reject a suite path that is not one.
+ *
+ * These arrive from `process.argv` and are handed to a spawned process. The
+ * spawn uses an argument array rather than a shell, so there is nothing to
+ * escape from today — but "no shell" is a property of this file, not of its
+ * callers, and a path that leaves the repository is wrong long before it is
+ * dangerous: it would run someone else's tests and report them as this suite's.
+ *
+ * Relative, inside the repository, no shell metacharacters.
+ */
+function invalidSuitePaths(paths, root = process.cwd()) {
+  const base = `${path.resolve(root)}${path.sep}`;
+
+  return paths.filter((given) => {
+    if (typeof given !== 'string' || given.length === 0) return true;
+    if (/[;&|`$()<>\n]/.test(given)) return true;
+    if (path.isAbsolute(given)) return true;
+    return !path.resolve(root, given).startsWith(base);
+  });
+}
+
 function runSuitePaths(paths, options = {}) {
   const spawn = options.spawn || spawnSync;
   const label = options.label ? ` (${options.label})` : '';
 
   if (!paths || paths.length === 0) {
     console.error('[suite] no paths provided');
+    return 1;
+  }
+
+  const rejected = invalidSuitePaths(paths);
+  if (rejected.length > 0) {
+    console.error(`[suite] refusing paths outside the repository: ${rejected.join(', ')}`);
     return 1;
   }
 
@@ -90,7 +119,7 @@ function runSuitePaths(paths, options = {}) {
   }
 
   console.log(`[suite] runtime=bun${label}: ${paths.length} path(s)`);
-  const result = spawn('bun', ['test', ...paths], {
+  const result = spawn(process.execPath, ['test', ...paths], {
     stdio: 'inherit',
     env: {
       ...process.env,
@@ -110,6 +139,7 @@ if (isEntryPoint(module)) {
 }
 
 module.exports = {
+  invalidSuitePaths,
   mapPinsToNode,
   parseArgs,
   runSuitePaths

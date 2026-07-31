@@ -118,7 +118,7 @@ function executeTaskTestPlan(plan) {
   if (plan.type === 'unsupported-change-set') return 1;
 
   if (plan.type === 'website-quality-gate') {
-    const websiteResult = spawnSync('bun', ['run', '--filter', '@jumentix/website', 'test:prepublish'], {
+    const websiteResult = spawnSync(process.execPath, ['run', '--filter', '@jumentix/website', 'test:prepublish'], {
       stdio: 'inherit',
       env: { ...process.env }
     });

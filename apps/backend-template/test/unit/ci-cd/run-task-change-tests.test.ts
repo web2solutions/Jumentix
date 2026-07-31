@@ -265,3 +265,54 @@ describe('layer-aware evidence for integration scripts', () => {
     expect(validation.ok).toBe(true);
   });
 });
+
+/**
+ * Suite paths arrive from `process.argv` and are handed to a spawned process.
+ *
+ * The spawn uses an argument array rather than a shell, so there is nothing to
+ * escape from today — but "no shell" is a property of one file, not of its
+ * callers, and a path that leaves the repository is wrong long before it is
+ * dangerous: it would run someone else's tests and report them as this suite's.
+ */
+describe('suite path validation', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+  const { invalidSuitePaths } = require('../../../../../ci-cd/run-suite') as {
+    invalidSuitePaths: (paths: unknown[], root?: string) => unknown[];
+  };
+
+  const root = '/repo';
+
+  it('accepts a relative path inside the repository', () => {
+    expect.hasAssertions();
+    expect(invalidSuitePaths(['apps/backend-template/test/unit/x.test.ts'], root))
+      .toStrictEqual([]);
+  });
+
+  it.each([
+    ['an absolute path', '/etc/passwd'],
+    ['a traversal', '../../etc/passwd'],
+    ['a command separator', 'a.test.ts; rm -rf /'],
+    ['a substitution', 'a.test.ts$(whoami)'],
+    ['a backtick', 'a.test.ts`id`'],
+    ['a newline', 'a.test.ts\nrm -rf /'],
+    ['an empty string', '']
+  ])('rejects %s', (_case, given) => {
+    expect.hasAssertions();
+    expect(invalidSuitePaths([given], root)).toStrictEqual([given]);
+  });
+
+  it('rejects a non-string rather than coercing it', () => {
+    expect.hasAssertions();
+    // `String(undefined)` would become the path "undefined", which resolves
+    // inside the repo and would be handed to the runner.
+    expect(invalidSuitePaths([undefined, 42], root)).toStrictEqual([undefined, 42]);
+  });
+
+  it('names every rejected path, not just the first', () => {
+    expect.hasAssertions();
+    // The message is the whole diagnosis; reporting one of three would send
+    // someone round the loop twice.
+    expect(invalidSuitePaths(['ok/a.test.ts', '/etc/passwd', '../b.test.ts'], root))
+      .toStrictEqual(['/etc/passwd', '../b.test.ts']);
+  });
+});
