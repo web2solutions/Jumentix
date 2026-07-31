@@ -69,18 +69,25 @@ jobs:
       # a third (Requirement 096 §1).
       - image: oven/bun:1.3.14
       - image: redis:7.2
-        # Throwaway credential for a container that exists for the length of one
-        # job, reachable only from it. It is a literal because a service
-        # container's command is not interpolated — the same reason the workflow
-        # passes a literal fallback. Secret scanners flag this shape on sight;
-        # it is a fixture, and nothing it protects outlives the job.
-        command: redis-server --save 20 1 --loglevel warning --requirepass ci_redis_password
+        # No `--requirepass`, and no password anywhere in this file.
+        #
+        # The container lives for the length of one job and is reachable only
+        # from it, so the password protected nothing — while being a real
+        # credential-shaped string in a tracked file. GitGuardian flagged it as a
+        # "Redis Server Password" incident, which is the correct call for a
+        # scanner: it cannot know the value is inert, and a repository that
+        # trains people to wave those away is worse off than one with no scanner.
+        #
+        # Both committed environments already run without it —
+        # `.env.dev` sets `AAA_REDIS_PASSWORD=` empty and `.env.ci` leaves it
+        # commented out — and `RedisKeyValueStorageClient` passes `undefined`
+        # when it is unset. So this matches how the suites actually connect
+        # rather than adding an auth step nothing else performs.
+        command: redis-server --save 20 1 --loglevel warning
     environment:
-      # Overridable from the project environment, matching the workflow's
-      # `secrets.X || 'fixture'` shape, so a real value can be supplied without
-      # editing this file.
+      # A fixture with no security role: the JWT signing key for a throwaway
+      # in-memory user store, overridable from the project environment.
       AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
-      AAA_REDIS_PASSWORD: ci_redis_password
     steps:
       - bootstrap
       - run:
