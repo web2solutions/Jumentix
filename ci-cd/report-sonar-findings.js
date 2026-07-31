@@ -184,11 +184,16 @@ async function main() {
     return;
   }
 
-  console.log(`\n[sonar] ${issues.length} open issue(s):\n`);
+  // Counted into a number first. The array came from the API, so interpolating
+  // `issues.length` directly keeps the whole template inside the tainted value's
+  // reach even though a length cannot carry a payload.
+  const issueCount = Number(issues.length);
+  console.log(`\n[sonar] ${issueCount} open issue(s):\n`);
   for (const line of formatIssues(issues)) console.log(line);
 
   if (hotspots.length > 0) {
-    console.log(`\n[sonar] ${hotspots.length} security hotspot(s) to review:\n`);
+    const hotspotCount = Number(hotspots.length);
+    console.log(`\n[sonar] ${hotspotCount} security hotspot(s) to review:\n`);
     for (const hotspot of hotspots) {
       const file = String(hotspot.component).split(':').pop();
       console.log(`  ${forLog(hotspot.vulnerabilityProbability)} ${forLog(file)}:${hotspot.line ?? '?'}`);

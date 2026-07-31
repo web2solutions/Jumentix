@@ -316,3 +316,40 @@ describe('suite path validation', () => {
       .toStrictEqual(['/etc/passwd', '../b.test.ts']);
   });
 });
+
+/**
+ * What is actually handed to the spawn.
+ *
+ * `invalidSuitePaths` decides *whether* a path is acceptable; this decides what
+ * runs. Passing the argv strings straight through works, but then the value that
+ * was validated and the value that is executed are the same object — so a later
+ * edit that moves the check, or adds a path after it, silently stops being
+ * covered.
+ */
+describe('suite path canonicalisation', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+  const { canonicalSuitePaths } = require('../../../../../ci-cd/run-suite') as {
+    canonicalSuitePaths: (paths: string[], root?: string) => string[];
+  };
+
+  const root = '/repo';
+
+  it('leaves an already-canonical path alone', () => {
+    expect.hasAssertions();
+    expect(canonicalSuitePaths(['apps/x/test/a.test.ts'], root))
+      .toStrictEqual(['apps/x/test/a.test.ts']);
+  });
+
+  it('collapses a path that walks back through itself', () => {
+    expect.hasAssertions();
+    expect(canonicalSuitePaths(['apps/./x/../x/test/a.test.ts'], root))
+      .toStrictEqual(['apps/x/test/a.test.ts']);
+  });
+
+  it('returns paths relative to the repository root', () => {
+    expect.hasAssertions();
+    // The runner is invoked from the root, so a relative path is what it expects.
+    expect(canonicalSuitePaths(['/repo/apps/x/a.test.ts'], root))
+      .toStrictEqual(['apps/x/a.test.ts']);
+  });
+});

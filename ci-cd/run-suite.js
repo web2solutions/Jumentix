@@ -81,6 +81,22 @@ function invalidSuitePaths(paths, root = process.cwd()) {
   });
 }
 
+/**
+ * Rebuild each accepted path as a repository-relative one.
+ *
+ * The filter above decides *whether* a path is acceptable; this decides what is
+ * actually handed to the spawn. Passing the argv strings straight through works,
+ * but it means the value that was validated and the value that is executed are
+ * the same object — so any later edit that moves the check, or adds a path after
+ * it, silently stops being covered.
+ *
+ * Deriving new strings makes the executed value depend on the validated one by
+ * construction, and canonicalises `./a/../b` shapes on the way through.
+ */
+function canonicalSuitePaths(paths, root = process.cwd()) {
+  return paths.map((given) => path.relative(root, path.resolve(root, given)));
+}
+
 function runSuitePaths(paths, options = {}) {
   const spawn = options.spawn || spawnSync;
   const label = options.label ? ` (${options.label})` : '';
@@ -96,6 +112,8 @@ function runSuitePaths(paths, options = {}) {
     return 1;
   }
 
+  const safePaths = canonicalSuitePaths(paths);
+
   // A map pin wins over environment resolution: it exists because the suite
   // cannot run under Bun at all, so "prefer bun locally" is not a choice here.
   const pinned = (options.mapPinsToNode || mapPinsToNode)(paths);
@@ -109,7 +127,7 @@ function runSuitePaths(paths, options = {}) {
       '--runInBand',
       '--coverage=false',
       ...(options.timeoutMs ? [`--testTimeout=${String(options.timeoutMs)}`] : []),
-      ...paths
+      ...safePaths
     ];
     const result = spawn('bunx', args, {
       stdio: 'inherit',
@@ -119,7 +137,7 @@ function runSuitePaths(paths, options = {}) {
   }
 
   console.log(`[suite] runtime=bun${label}: ${paths.length} path(s)`);
-  const result = spawn(process.execPath, ['test', ...paths], {
+  const result = spawn(process.execPath, ['test', ...safePaths], {
     stdio: 'inherit',
     env: {
       ...process.env,
@@ -139,6 +157,7 @@ if (isEntryPoint(module)) {
 }
 
 module.exports = {
+  canonicalSuitePaths,
   invalidSuitePaths,
   mapPinsToNode,
   parseArgs,
