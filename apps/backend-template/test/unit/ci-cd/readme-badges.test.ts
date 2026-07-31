@@ -45,16 +45,18 @@ const pinnedBunVersion = fs.readFileSync(path.join(repoRoot, '.bun-version'), 'u
 describe('rEADME badges', () => {
   it('shows CircleCI for both long-lived branches', () => {
     expect.hasAssertions();
-    // CircleCI is the sole provider (Requirement 107), so its status is the
-    // repository's status.
+    // CircleCI is the provider that runs on every branch (Requirement 107), so
+    // its status is the one worth surfacing at the top of the README.
     expect(badges).toContain('dl.circleci.com/status-badge/img/gh/XpertMinds/Jumentix/tree/dev');
     expect(badges).toContain('dl.circleci.com/status-badge/img/gh/XpertMinds/Jumentix/tree/main');
   });
 
   it('shows no GitHub Actions badge', () => {
     expect.hasAssertions();
-    // GitHub Actions is retired. A workflow badge would render permanently red
-    // for a provider that no longer runs, which reads as a broken build.
+    // GitHub Actions runs again (Requirement 107 keeps both providers), but it
+    // is not badged. A workflow badge tracks one workflow on one branch, and the
+    // repository has three; picking one to display would make the header say
+    // less than it appears to. CircleCI's badge covers the whole pipeline.
     expect(badges).not.toContain('github.com/XpertMinds/Jumentix/actions');
     expect(badges).not.toMatch(/workflows\/[^)]*\.svg/);
   });
@@ -121,7 +123,12 @@ const ADAPTERS: readonly { dir: string; badge: string }[] = [
   { dir: 'vercel-functions', badge: 'Vercel%20Functions' }
 ];
 
-/** The dev script each adapter is started by.  is served by . */
+/**
+ * The dev script each adapter is started by.
+ *
+ * Mostly `dev:<dir>`, with three exceptions: `aws` is served by `dev:serverless`,
+ * and the two platform targets keep their own names.
+ */
 const DEV_SCRIPT: Readonly<Record<string, string>> = {
   express: 'dev:express',
   fastify: 'dev:fastify',
@@ -214,7 +221,7 @@ describe('web framework badges', () => {
  * per badge would have to be extended every time one is added, which is the same
  * manual step that let this drift in the first place.
  */
-describe('README badge parity across languages (Requirement 076)', () => {
+describe('readme badge parity across languages (Requirement 076)', () => {
   const ptReadme = fs.readFileSync(path.join(repoRoot, 'README.pt-BR.md'), 'utf8');
   const ptBadges = ptReadme
     .split('\n')
