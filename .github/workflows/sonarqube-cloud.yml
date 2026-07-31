@@ -40,3 +40,12 @@ jobs:
 
       - name: SonarQube Cloud Scan
         uses: SonarSource/sonarqube-scan-action@c7ee0f9df90b7aa20e8dcf9695dcfe2e7da5b4f2 # v7
+
+      # A failed quality gate otherwise reports two letters and a link that needs a
+      # SonarCloud session. Printing the findings keeps the failure diagnosable from
+      # the log that reported it. Advisory: the gate blocks, this explains.
+      - name: Report Sonar findings
+        if: always()
+        run: bun ci-cd/report-sonar-findings.js
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
