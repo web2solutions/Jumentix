@@ -43,22 +43,12 @@ const sonarProperties = fs.readFileSync(
 const pinnedBunVersion = fs.readFileSync(path.join(repoRoot, '.bun-version'), 'utf8').trim();
 
 describe('rEADME badges', () => {
-  it('shows CircleCI for both long-lived branches', () => {
+  it('shows repository-owned workflows for both long-lived branches', () => {
     expect.hasAssertions();
-    // CircleCI is the provider that runs on every branch (Requirement 107), so
-    // its status is the one worth surfacing at the top of the README.
-    expect(badges).toContain('dl.circleci.com/status-badge/img/gh/XpertMinds/Jumentix/tree/dev');
-    expect(badges).toContain('dl.circleci.com/status-badge/img/gh/XpertMinds/Jumentix/tree/main');
-  });
-
-  it('shows no GitHub Actions badge', () => {
-    expect.hasAssertions();
-    // GitHub Actions runs again (Requirement 107 keeps both providers), but it
-    // is not badged. A workflow badge tracks one workflow on one branch, and the
-    // repository has three; picking one to display would make the header say
-    // less than it appears to. CircleCI's badge covers the whole pipeline.
-    expect(badges).not.toContain('github.com/XpertMinds/Jumentix/actions');
-    expect(badges).not.toMatch(/workflows\/[^)]*\.svg/);
+    for (const workflow of ['test.yml', 'coverage.yml', 'third-party-review.yml']) {
+      expect(readme).toContain(`actions/workflows/${workflow}/badge.svg?branch=dev`);
+      expect(readme).toContain(`actions/workflows/${workflow}/badge.svg?branch=main`);
+    }
   });
 
   it('points SonarCloud at the project key the scanner actually reports to', () => {
@@ -74,8 +64,16 @@ describe('rEADME badges', () => {
 
   it('carries no badge for a retired service', () => {
     expect.hasAssertions();
-    // Snyk was retired in JUM-540 in favour of the first-party OSV scanner.
+    // Paid/unreliable providers were retired in favour of repository-owned gates.
     expect(badges).not.toContain('snyk.io');
+    expect(badges).not.toContain('circleci.com');
+    expect(badges).not.toContain('codecov.io');
+  });
+
+  it('restores the coverage map with every enforced threshold', () => {
+    expect(readme).toContain('## Coverage and CI Map');
+    expect(readme).toContain('| ≥ 99% | ≥ 99% | ≥ 99% | ≥ 90% | ≥ 99% |');
+    expect(readme).toContain('Istanbul JSON and LCOV evidence');
   });
 
   it('names Bun as the runtime at the pinned version', () => {
