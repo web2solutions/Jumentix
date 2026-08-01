@@ -43,7 +43,6 @@ const WITHOUT_SUITE_YET = Object.freeze({
   'external-store-proxy': { since: '2026-08-01', issue: 'JUM-585', reason: 'Proxy layer; needs a store double.' },
   'key-value-storage': { since: '2026-08-01', issue: 'JUM-585', reason: 'Seven source files; Redis client needs a fake or a container.' },
   'message-mediator': { since: '2026-08-01', issue: 'JUM-585', reason: 'Six source files; broker adapters need doubles.' },
-  'mutex-service': { since: '2026-08-01', issue: 'JUM-585', reason: 'Distributed lock; the interesting paths need concurrency.' },
   'persistence-contracts': { since: '2026-08-01', issue: 'JUM-585', reason: 'Largely types; needs the runtime parts separated first.' },
   'sdk-grpc-client': { since: '2026-08-01', issue: 'JUM-585', reason: 'Client SDK; needs a gRPC double.' },
   'sdk-rest-client': { since: '2026-08-01', issue: 'JUM-585', reason: 'Client SDK; needs an HTTP double.' },

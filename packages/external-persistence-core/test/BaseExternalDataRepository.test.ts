@@ -17,6 +17,23 @@ import type { IRepositoryConnectionOptions } from '../src/BaseExternalDataReposi
 
 /** Exposes the protected surface, and nothing else. */
 class TestRepository extends BaseExternalDataRepository {
+  /*
+   * Not a useless constructor, despite what `no-useless-constructor` sees.
+   *
+   * The base constructor is `protected`, and a subclass inherits that
+   * visibility — so without re-declaring it as `public`, `new TestRepository()`
+   * is a compile error and this suite cannot build the thing it tests. The rule
+   * looks at the body, which is indeed only `super(options)`, and cannot see
+   * that the signature is the whole point.
+   *
+   * Removing it passed under bun, which does not typecheck, and failed under
+   * Jest, which does.
+   */
+  // eslint-disable-next-line no-useless-constructor
+  public constructor(options: IRepositoryConnectionOptions) {
+    super(options);
+  }
+
   public markConnected(value: boolean): void {
     this.connected = value;
   }
