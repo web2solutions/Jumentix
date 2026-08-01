@@ -30,17 +30,26 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const { isEntryPoint } = require('./lib/entry-point.js');
+const { gitBinary } = require('./lib/git-binary.js');
 
 const DECLARATION_PATH = '.agents/AUTHORIZED-COMMITTERS.json';
+
+/** `historyCutoff.commit` value meaning "verify every commit, back to the root". */
+const FULL_HISTORY = 'ROOT';
 
 /**
  * Read git history through an argument array, never a shell.
  *
  * The range endpoints reach this from the environment, and a ref name is
  * attacker-influenced in a fork-based workflow.
+ *
+ * git is resolved to an absolute path rather than searched for on PATH. This
+ * check decides whether a commit's identity is authorized, so a `git` shadowed
+ * by a writable directory earlier in PATH could simply answer that everything
+ * is fine.
  */
 function defaultRunGit(args, root = process.cwd()) {
-  return execFileSync('git', args, {
+  return execFileSync(gitBinary(), args, {
     cwd: root,
     encoding: 'utf8',
     shell: false,
@@ -78,12 +87,21 @@ function parseDeclaration(contents) {
     emails.add(email.trim().toLowerCase());
   }
 
+  // Either the whole history, or an explicit commit to start after. Nothing
+  // else: an absent or free-form value would leave the scope undefined, and an
+  // undefined scope reads as a clean bill of health for history never examined.
+  //
+  // `ROOT` is not the same as "no cutoff". It is a positive claim that the
+  // entire history is expected to pass, and it fails as loudly as any other
+  // value if that stops being true.
   const cutoff = parsed?.historyCutoff?.commit;
-  if (typeof cutoff !== 'string' || !/^[0-9a-f]{40}$/.test(cutoff)) {
+  const covered = cutoff === FULL_HISTORY || /^[0-9a-f]{40}$/.test(String(cutoff));
+
+  if (!covered) {
     throw new Error(
-      `${DECLARATION_PATH} has no valid historyCutoff.commit (40-character SHA).\n`
-        + '  The cutoff is what stops this check from silently starting partway through\n'
-        + '  history. Without it the scope is undefined.'
+      `${DECLARATION_PATH} has no valid historyCutoff.commit.\n`
+        + `  Expected "${FULL_HISTORY}" to verify the entire history, or a 40-character SHA\n`
+        + '  to start after. Without one the scope is undefined.'
     );
   }
 
@@ -107,8 +125,9 @@ function commitsToVerify(cutoff, runGit, root) {
   // may contain any printable character, so a crafted name could forge an extra
   // field and shift the email column.
   const separator = '\x1f';
+  const range = cutoff === FULL_HISTORY ? 'HEAD' : `${cutoff}..HEAD`;
   const output = runGit(
-    ['log', `${cutoff}..HEAD`, `--format=%H${separator}%an${separator}%ae${separator}%cn${separator}%ce`],
+    ['log', range, `--format=%H${separator}%an${separator}%ae${separator}%cn${separator}%ce`],
     root
   );
 
@@ -279,11 +298,15 @@ function run(options = {}) {
     };
   }
 
+  const scope = declaration.cutoff === FULL_HISTORY
+    ? 'in the entire history'
+    : 'since the declared cutoff';
+
   return {
     ok: true,
     message:
-      `Commit authorship check passed: ${commits.length} commit(s) since the declared `
-      + 'cutoff, all by declared identities.'
+      `Commit authorship check passed: ${commits.length} commit(s) ${scope}, `
+      + 'all by declared identities.'
   };
 }
 
@@ -339,6 +362,7 @@ runAsEntryPoint();
 
 module.exports = {
   DECLARATION_PATH,
+  FULL_HISTORY,
   checkConfiguredIdentity,
   commitsToVerify,
   main,

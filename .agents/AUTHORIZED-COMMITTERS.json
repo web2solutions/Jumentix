@@ -14,18 +14,26 @@
   ],
 
   "historyCutoff": {
-    "commit": "5a4ddda8cdb3934d7809252c6fd9de29ca39a781",
-    "date": "2026-07-30",
+    "commit": "ROOT",
+    "date": "2026-07-31",
     "comment": [
-      "Commits reachable from this one are out of scope. Twenty-one of them carry a",
-      "non-approved corporate identity across two domains, and they are already on",
-      "`main` — rewriting the default branch would invalidate every clone and open",
-      "pull request while leaving the old objects reachable by SHA on the forge",
-      "anyway, so the rewrite would not actually remove the data.",
+      "Every commit, back to the root. There is no exemption.",
       "",
-      "Recorded here rather than left implicit. A check whose scope silently begins",
-      "partway through history reads as proof the whole history is clean, and this",
-      "history is not. Anything after this commit is enforced with no exceptions."
+      "This field previously named a cutoff commit, because twenty-one commits",
+      "across two non-approved corporate domains sat in history that was already on",
+      "`main`. The owner chose to rewrite instead, while the repository was private:",
+      "`dev`, `main` and all nine other branches were rewritten in place, mapping",
+      "both domains onto the owner's declared identity. Trees were unchanged, so no",
+      "file moved; only authorship metadata did.",
+      "",
+      "That is why this is `ROOT` and not a SHA. The old cutoff pointed at a commit",
+      "the rewrite made unreachable — it still resolved on the machine that did the",
+      "rewrite, where the object lingered, and would have failed on any fresh clone.",
+      "A stale cutoff is worse than none: it fails closed in CI while passing",
+      "locally, which is the hardest kind of disagreement to diagnose.",
+      "",
+      "`ROOT` is a positive claim, not the absence of one. If any commit anywhere in",
+      "history stops matching this list, the check fails."
     ]
   },
 

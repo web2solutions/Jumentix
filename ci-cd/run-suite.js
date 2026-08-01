@@ -9,6 +9,7 @@
  *   bun ci-cd/run-suite.js <path> [<path>...]
  *   bun ci-cd/run-suite.js --script-label express apps/backend-template/test/integration/Express
  */
+const fs = require('node:fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const { resolveTestRuntime } = require('./lib/test-runtime');
@@ -97,6 +98,71 @@ function canonicalSuitePaths(paths, root = process.cwd()) {
   return paths.map((given) => path.relative(root, path.resolve(root, given)));
 }
 
+/**
+ * Turn the requested paths into suite paths read from the test map.
+ *
+ * The arguments arrive from `process.argv` and end up as arguments to a spawned
+ * process. Validating them is not the same as untainting them: the string that
+ * was checked is still the string that executes, so every future edit has to
+ * keep the check and the use in step. Here the executed values are the manifest's
+ * own entries — the request only *selects* among them — so an argument cannot
+ * name something the map does not already list. Sonar reports the previous shape
+ * as `jssecurity:S8705`; this removes the flow rather than annotating it.
+ *
+ * It also makes a mistyped path fail loudly. Before, `.../integration/Expres`
+ * matched nothing and the runner reported success over zero suites.
+ *
+ * Every test file under a requested directory must be mapped. Expanding only
+ * what the map happens to list would let an unmapped suite sit in a directory
+ * that reports as fully run — the false green Requirement 065 exists to prevent.
+ */
+function resolveMappedSuitePaths(paths, options = {}) {
+  const root = options.root || process.cwd();
+  const readMap = options.readTestMap || readTestMap;
+  const listFiles = options.listTestFiles || defaultListTestFiles;
+
+  const manifest = readMap();
+  const mapped = (manifest.suites || []).map((suite) => suite.path);
+  const mappedSet = new Set(mapped);
+
+  const resolved = [];
+  const unmatched = [];
+  const unmapped = [];
+
+  for (const request of canonicalSuitePaths(paths, root)) {
+    // Elements of `mapped`, never the request itself.
+    const matches = mapped.filter(
+      (suite) => suite === request || suite.startsWith(`${request}/`)
+    );
+
+    if (matches.length === 0) {
+      unmatched.push(request);
+      continue;
+    }
+
+    for (const onDisk of listFiles(path.resolve(root, request), root)) {
+      if (!mappedSet.has(onDisk)) unmapped.push(onDisk);
+    }
+
+    resolved.push(...matches);
+  }
+
+  return { resolved: [...new Set(resolved)], unmatched, unmapped };
+}
+
+/** Every `*.test.ts` at or below `target`, as repository-relative paths. */
+function defaultListTestFiles(target, root) {
+  if (!fs.existsSync(target)) return [];
+
+  const stats = fs.statSync(target);
+  if (stats.isFile()) {
+    return target.endsWith('.test.ts') ? [path.relative(root, target)] : [];
+  }
+
+  return fs.readdirSync(target, { withFileTypes: true })
+    .flatMap((entry) => defaultListTestFiles(path.join(target, entry.name), root));
+}
+
 function runSuitePaths(paths, options = {}) {
   const spawn = options.spawn || spawnSync;
   const label = options.label ? ` (${options.label})` : '';
@@ -112,7 +178,31 @@ function runSuitePaths(paths, options = {}) {
     return 1;
   }
 
-  const safePaths = canonicalSuitePaths(paths);
+  // The paths that actually execute come from the test map, not from argv.
+  const { resolved, unmatched, unmapped } = (options.resolveMappedSuitePaths
+    || resolveMappedSuitePaths)(paths, options);
+
+  if (unmatched.length > 0) {
+    console.error(
+      `[suite] no mapped suite matches: ${unmatched.join(', ')}\n`
+        + '  Suite paths are resolved through test-map.json. A path that matches nothing\n'
+        + '  would otherwise run zero tests and report success. Check the spelling, or\n'
+        + '  register the suite with `bun run test-map:generate`.'
+    );
+    return 1;
+  }
+
+  if (unmapped.length > 0) {
+    console.error(
+      `[suite] test files present on disk but absent from test-map.json:\n`
+        + unmapped.map((file) => `    ${file}`).join('\n')
+        + '\n  Running the requested path would skip them while reporting the whole\n'
+        + '  directory as covered. Register them with `bun run test-map:generate`.'
+    );
+    return 1;
+  }
+
+  const safePaths = resolved;
 
   // A map pin wins over environment resolution: it exists because the suite
   // cannot run under Bun at all, so "prefer bun locally" is not a choice here.
@@ -162,8 +252,10 @@ if (isEntryPoint(module)) {
 
 module.exports = {
   canonicalSuitePaths,
+  defaultListTestFiles,
   invalidSuitePaths,
   mapPinsToNode,
   parseArgs,
+  resolveMappedSuitePaths,
   runSuitePaths
 };

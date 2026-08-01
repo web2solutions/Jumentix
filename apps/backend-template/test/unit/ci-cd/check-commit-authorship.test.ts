@@ -20,6 +20,7 @@ const repoRoot = path.resolve(__dirname, '../../../../..');
 const checkerPath = path.join(repoRoot, 'ci-cd', 'check-commit-authorship.js');
 const {
   DECLARATION_PATH,
+  FULL_HISTORY,
   checkConfiguredIdentity,
   main,
   parseDeclaration,
@@ -253,7 +254,8 @@ describe('check-commit-authorship', () => {
     it.each([
       ['absent', {}],
       ['a ref name', { commit: 'HEAD~5' }],
-      ['a short SHA', { commit: 'abc123' }]
+      ['a short SHA', { commit: 'abc123' }],
+      ['lowercase root', { commit: 'root' }]
     ])('fails when the history cutoff is %s', (_label, historyCutoff) => {
       expect.hasAssertions();
 
@@ -266,6 +268,48 @@ describe('check-commit-authorship', () => {
 
       expect(result.ok).toBe(false);
       expect(result.message).toContain('historyCutoff');
+    });
+
+    /**
+     * `ROOT` is the state the repository is in after the identity rewrite: no
+     * exemption at all. It is a distinct accepted value rather than an absent
+     * field, so "verify everything" is something the declaration states rather
+     * than something the check assumes when a field is missing.
+     */
+    it('accepts ROOT and asks git for the whole history', () => {
+      expect.hasAssertions();
+
+      const ranges: string[] = [];
+      const result = run({
+        readFile: () => JSON.stringify({
+          historyCutoff: { commit: FULL_HISTORY },
+          identities: [{ email: 'ok@example.com' }]
+        }),
+        runGit: (args: string[]) => {
+          ranges.push(args[1]);
+          return '';
+        }
+      });
+
+      expect(result.ok).toBe(true);
+      // `HEAD`, not `<sha>..HEAD` — the root commit is included.
+      expect(ranges).toStrictEqual(['HEAD']);
+      expect(result.message).toContain('entire history');
+    });
+
+    it('asks git only for the range after a declared cutoff', () => {
+      expect.hasAssertions();
+
+      const ranges: string[] = [];
+      run({
+        readFile: () => declaration(['ok@example.com']),
+        runGit: (args: string[]) => {
+          ranges.push(args[1]);
+          return '';
+        }
+      });
+
+      expect(ranges).toStrictEqual([`${CUTOFF}..HEAD`]);
     });
 
     it('fails when git cannot be read rather than reporting no violations', () => {

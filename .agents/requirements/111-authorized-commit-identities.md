@@ -44,30 +44,35 @@
    leaving the file in place and emptying `identities` parses cleanly, iterates
    over nothing, and finds no violations.
 
-5. **The check's scope is anchored to a fixed commit, not to a base branch.**
+5. **The check's scope is anchored to history itself, not to a base branch.**
    A base-relative range (`origin/dev..HEAD`) is *empty* whenever the check runs
    on the branch the work was merged into — and an empty range passes while
-   verifying nothing. Anchoring to `historyCutoff.commit` means the verified set
-   only grows and the same rule holds on a feature branch, on `dev`, and on
-   `main`.
+   verifying nothing. `historyCutoff.commit` takes either `ROOT`, meaning every
+   commit back to the first, or a 40-character SHA to start after. Nothing else
+   parses: an absent or free-form value would leave the scope undefined, and an
+   undefined scope reads as a clean bill of health for history never examined.
 
-6. **The history before the cutoff is out of scope, and that fact is recorded
-   rather than left implicit.** Twenty-one commits reachable from
-   `5a4ddda8cdb3934d7809252c6fd9de29ca39a781` carry non-approved corporate
-   identities across two domains. They are already on `main`.
+6. **The declared scope is `ROOT`: the entire history, with no exemption.**
 
-   They are not being rewritten, and the honest reason is that rewriting them
-   would not accomplish what it appears to. Force-pushing the default branch
-   invalidates every clone and every open pull request, and the forge still keeps
-   the pre-rewrite objects reachable by SHA afterwards — so the addresses would
-   remain retrievable by anyone who has one, while the cost lands on everyone.
-   Removing them for real requires the forge operator to garbage-collect the
-   unreachable objects, which is a support request, not a git operation.
+   This clause previously recorded the opposite. Twenty-one commits carried
+   non-approved corporate identities across two domains, they were already on
+   `main`, and the judgement here was that rewriting the default branch would
+   cost every clone and open pull request while leaving the old objects reachable
+   by SHA on the forge regardless.
 
-   Recording the boundary matters as much as choosing it. A check whose scope
-   silently begins partway through history reads, to anyone who runs it and sees
-   it pass, as proof the whole history is clean. This history is not clean, and
-   the declaration says so.
+   The owner overrode that judgement while the repository was private, which
+   changes the arithmetic: with no outside clones to invalidate, the cost of the
+   rewrite falls to nearly nothing. `dev`, `main` and all nine other branches
+   were rewritten in place, mapping both domains onto the owner's declared
+   identity. Trees were unchanged — no file moved, only authorship metadata.
+
+   One consequence is worth keeping in view, because it is the trap this clause
+   walked into: **the old cutoff SHA did not survive its own rewrite.** It still
+   resolved on the machine that performed the rewrite, where the object lingered
+   unreferenced, so the check kept passing locally — and would have failed closed
+   on the first fresh clone in CI, where that object does not exist. A cutoff is
+   a reference into the very history it describes, and rewriting that history
+   invalidates it silently. `ROOT` has no such dependency.
 
 7. **No identity is configured globally on a contributor machine.** `user.email`
    is set per repository. A global identity is inherited by every repository on

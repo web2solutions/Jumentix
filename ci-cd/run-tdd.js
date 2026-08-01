@@ -13,6 +13,7 @@ const { readTestMap, suitesForLayers } = require('./lib/test-map');
 const { createLayerAwarePlan } = require('./lib/layer-resolver');
 const { runBunTestFiles } = require('./lib/suite-runner');
 const { isEntryPoint } = require('./lib/entry-point.js');
+const { gitBinary } = require('./lib/git-binary.js');
 
 function listLayers(manifest) {
   return Object.keys(manifest.layers || {});
@@ -37,7 +38,9 @@ function normalizeLayerArg(arg, manifest) {
 }
 
 function readDiffFiles() {
-  const result = spawnSync('git', ['diff', '--name-only', '--diff-filter=ACMR', 'HEAD'], {
+  // Absolute path, not a PATH lookup: this diff selects which suites run, so a
+  // shadowed `git` returning nothing would silently watch no tests at all.
+  const result = spawnSync(gitBinary(), ['diff', '--name-only', '--diff-filter=ACMR', 'HEAD'], {
     encoding: 'utf8'
   });
   if (result.status !== 0) return [];
