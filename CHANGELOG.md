@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-01 test(sdk-grpc-client): exercise the client against a real gRPC server - Eduardo Almeida
 - 2026-08-01 test(persistence-contracts): pin the store contract at compile time - Eduardo Almeida
 - 2026-08-01 test(cli-init): give the bootstrap CLI a suite, and stop it inheriting GIT_DIR - Eduardo Almeida
 - 2026-08-01 test(sdk): give both SDK clients their own suites - Eduardo Almeida

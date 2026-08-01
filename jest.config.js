@@ -35,6 +35,18 @@ const redisIntegrationIgnorePatterns = process.env.RUN_REDIS_INTEGRATION
 
 module.exports = {
   preset: 'ts-jest',
+  /**
+   * JavaScript sources are transformed too, not only TypeScript — see
+   * `ci-cd/jest/javascript-transformer.js` for why it needs to be a transformer
+   * of our own rather than ts-jest directly.
+   *
+   * `transformIgnorePatterns` still keeps node_modules out, so this applies to
+   * first-party JavaScript only.
+   */
+  transform: {
+    '^.+\\.tsx?$': ['ts-jest', {}],
+    '^.+\\.m?js$': '<rootDir>/ci-cd/jest/javascript-transformer.js'
+  },
   verbose: true,
   detectOpenHandles: true,
   collectCoverage: true,
