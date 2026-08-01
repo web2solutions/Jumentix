@@ -22,6 +22,21 @@ const SKIP = Object.freeze(['node_modules', 'dist', '.build', 'coverage', '.git'
 const TEST_FILE = /\.test\.ts$/;
 
 /**
+ * Order two repository paths, deterministically.
+ *
+ * Explicitly, because a bare `.sort()` is type-dependent and Sonar is right to
+ * flag it (`javascript:S2871`) — but *not* the `localeCompare` the rule
+ * suggests. Locale-aware collation is the opposite of what these lists need: it
+ * orders differently under different ICU locales, so the same tree would produce
+ * a different unmapped-suite report on two machines and the diff would read as a
+ * change nobody made. Code-unit order is the same everywhere.
+ */
+function byPath(left, right) {
+  if (left === right) return 0;
+  return left < right ? -1 : 1;
+}
+
+/**
  * Every `*.test.ts` at or below `target`, as repository-relative paths.
  *
  * Accepts a file as readily as a directory: `run-suite.js` is handed both, and a
@@ -37,7 +52,7 @@ function listTestFiles(target, root) {
   return fs.readdirSync(target, { withFileTypes: true })
     .filter((entry) => !SKIP.includes(entry.name))
     .flatMap((entry) => listTestFiles(path.join(target, entry.name), root))
-    .sort();
+    .sort(byPath);
 }
 
 function relative(target, root) {
@@ -60,7 +75,7 @@ function suiteRoots(root) {
   const packageRoots = fs.readdirSync(packagesDir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => path.join('packages', entry.name, 'test'))
-    .sort();
+    .sort(byPath);
 
   return ['apps', ...packageRoots];
 }
@@ -69,7 +84,7 @@ function suiteRoots(root) {
 function allTestFilesOnDisk(root, roots = suiteRoots(root)) {
   return [...new Set(
     roots.flatMap((suiteRoot) => listTestFiles(path.join(root, suiteRoot), root))
-  )].sort();
+  )].sort(byPath);
 }
 
 /**
@@ -85,6 +100,7 @@ function unmappedTestFiles(manifest, root, roots) {
 
 module.exports = {
   SKIP,
+  byPath,
   allTestFilesOnDisk,
   listTestFiles,
   suiteRoots,

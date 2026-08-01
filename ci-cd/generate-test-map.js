@@ -2,6 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 const { isEntryPoint } = require('./lib/entry-point.js');
+const { byPath } = require('./lib/mapped-suites.js');
 
 const PACKAGES_DIR = 'packages';
 
@@ -114,7 +115,7 @@ function packageSuitePaths(root) {
       (file) => /\.test\.ts$/.test(file)
     ))
     .map((file) => path.relative(root, file).replace(/\\/g, '/'))
-    .sort();
+    .sort(byPath);
 }
 
 function readPreviousManifest(root) {
