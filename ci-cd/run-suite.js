@@ -9,11 +9,11 @@
  *   bun ci-cd/run-suite.js <path> [<path>...]
  *   bun ci-cd/run-suite.js --script-label express apps/backend-template/test/integration/Express
  */
-const fs = require('node:fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const { resolveTestRuntime } = require('./lib/test-runtime');
 const { readTestMap } = require('./lib/test-map');
+const { listTestFiles } = require('./lib/mapped-suites.js');
 const { runWhenEntryPoint } = require('./lib/entry-point.js');
 
 /**
@@ -150,18 +150,15 @@ function resolveMappedSuitePaths(paths, options = {}) {
   return { resolved: [...new Set(resolved)], unmatched, unmapped };
 }
 
-/** Every `*.test.ts` at or below `target`, as repository-relative paths. */
-function defaultListTestFiles(target, root) {
-  if (!fs.existsSync(target)) return [];
-
-  const stats = fs.statSync(target);
-  if (stats.isFile()) {
-    return target.endsWith('.test.ts') ? [path.relative(root, target)] : [];
-  }
-
-  return fs.readdirSync(target, { withFileTypes: true })
-    .flatMap((entry) => defaultListTestFiles(path.join(target, entry.name), root));
-}
+/**
+ * Every `*.test.ts` at or below `target`, as repository-relative paths.
+ *
+ * Re-exported from `lib/mapped-suites.js`, where `check-test-map` asks the same
+ * question over the whole tree. It was defined here first, and leaving a second
+ * copy behind would give the two checks slightly different ideas of what a suite
+ * is — the one that drifted being the one that kept reporting success.
+ */
+const defaultListTestFiles = listTestFiles;
 
 function runSuitePaths(paths, options = {}) {
   const spawn = options.spawn || spawnSync;

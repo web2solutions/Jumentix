@@ -9,20 +9,37 @@ const { isEntryPoint } = require('./lib/entry-point.js');
 
 const UNIT_DIR = 'apps/backend-template/test/unit';
 
+/**
+ * Split the unit suites into what gates and what only reports.
+ *
+ * A quarantined suite still runs under the CI Node partition, because a suite
+ * nobody can see is a suite nobody fixes — but it comes back in its own list,
+ * since "report-only" has to be something the code does and not only something
+ * a comment claims.
+ *
+ * It claimed it and did not do it. Quarantined paths went into `nodeSuites`,
+ * whose status is the return value, so a quarantined suite failed the build
+ * exactly as a gating one would: visibility bought, no relief granted, which is
+ * the reverse of the trade a quarantine exists to make. It surfaced as cana's
+ * wall-clock performance suite failing a pull request it had been deliberately
+ * removed from the gate for.
+ */
 function partitionUnitSuites(manifest, env = process.env) {
   const bunSuites = [];
   const nodeSuites = [];
+  const reportOnlySuites = [];
+
   for (const suite of manifest.suites || []) {
     if (suite.type !== 'unit') continue;
-    if (isQuarantined(manifest, suite.path) && isCiNodeRuntime(env)) {
-      // Quarantined suites still execute report-only under CI node partition.
-      nodeSuites.push(suite.path);
+    if (isQuarantined(manifest, suite.path)) {
+      if (isCiNodeRuntime(env)) reportOnlySuites.push(suite.path);
       continue;
     }
     if (effectiveRunner(suite, env) === 'node') nodeSuites.push(suite.path);
     else bunSuites.push(suite.path);
   }
-  return { bunSuites, nodeSuites };
+
+  return { bunSuites, nodeSuites, reportOnlySuites };
 }
 
 /**
@@ -76,6 +93,36 @@ function runNodeUnit(suites, options = {}) {
   });
 }
 
+/**
+ * Run the quarantined suites and report, without gating.
+ *
+ * Separate invocation on purpose. Folding them into the gating run means the
+ * one exit status carries both verdicts, and there is then no way to say "this
+ * failed and it does not block" — which is the entire content of a quarantine.
+ *
+ * The outcome is announced either way. A quarantined suite that has started
+ * passing is the signal that the entry can go, and it is worth as much as the
+ * failure that put it there.
+ */
+function runReportOnlyUnit(suites, options = {}) {
+  if (suites.length === 0) return 0;
+
+  console.log(`[ci] quarantined suites (report-only, not gating): ${suites.length} target(s)`);
+  const status = runSuitePaths(suites, {
+    runtime: 'node',
+    spawn: options.spawn,
+    env: options.env
+  });
+
+  console.log(
+    status === 0
+      ? '[ci] quarantined suites passed — check whether the quarantine entry can be removed.'
+      : `[ci] quarantined suites failed (exit ${String(status)}); not gating, see test-map.json.`
+  );
+
+  return status;
+}
+
 function runUnitTests(options = {}) {
   const root = options.root || path.resolve(__dirname, '..');
   process.chdir(root);
@@ -103,10 +150,24 @@ function runUnitTests(options = {}) {
     return runBunUnit(all, options);
   }
 
-  const { bunSuites, nodeSuites } = partitionUnitSuites(manifest, env);
-  const bunStatus = runBunUnit(bunSuites, options);
+  // The three runners are injectable because the composition is the thing that
+  // regressed: each behaved correctly on its own, and the quarantine leaked into
+  // the gate through how they were wired together.
+  const runBun = options.runBunUnit || runBunUnit;
+  const runNode = options.runNodeUnit || runNodeUnit;
+  const runReportOnly = options.runReportOnlyUnit || runReportOnlyUnit;
+
+  const { bunSuites, nodeSuites, reportOnlySuites } = partitionUnitSuites(manifest, env);
+  const bunStatus = runBun(bunSuites, options);
   if (bunStatus !== 0) return bunStatus;
-  return runNodeUnit(nodeSuites, options);
+
+  const nodeStatus = runNode(nodeSuites, options);
+
+  // Deliberately after the status that gates, and deliberately discarded: this
+  // is the line that makes the quarantine mean something.
+  runReportOnly(reportOnlySuites, options);
+
+  return nodeStatus;
 }
 
 if (isEntryPoint(module)) {
@@ -117,5 +178,6 @@ module.exports = {
   partitionUnitSuites,
   runBunUnit,
   runNodeUnit,
+  runReportOnlyUnit,
   runUnitTests
 };

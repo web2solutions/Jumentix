@@ -2,6 +2,9 @@
 const fs = require('fs');
 const path = require('path');
 const { isEntryPoint } = require('./lib/entry-point.js');
+const { byPath } = require('./lib/mapped-suites.js');
+
+const PACKAGES_DIR = 'packages';
 
 function walk(dir, pred, out = []) {
   if (!fs.existsSync(dir)) return out;
@@ -100,25 +103,83 @@ function classifyIntegration(file) {
   };
 }
 
-function loadPreviousRunnerOverrides(root) {
+/** Every `*.test.ts` under `packages/<name>/test/`, repository-relative. */
+function packageSuitePaths(root) {
+  const packagesRoot = path.join(root, PACKAGES_DIR);
+  if (!fs.existsSync(packagesRoot)) return [];
+
+  return fs.readdirSync(packagesRoot, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .flatMap((entry) => walk(
+      path.join(packagesRoot, entry.name, 'test'),
+      (file) => /\.test\.ts$/.test(file)
+    ))
+    .map((file) => path.relative(root, file).replace(/\\/g, '/'))
+    .sort(byPath);
+}
+
+function readPreviousManifest(root) {
   const previousPath = path.join(root, 'test-map.json');
-  if (!fs.existsSync(previousPath)) return new Map();
+  if (!fs.existsSync(previousPath)) return null;
   try {
-    const previous = JSON.parse(fs.readFileSync(previousPath, 'utf8'));
-    const overrides = new Map();
-    for (const suite of previous.suites || []) {
-      if (suite.path && suite.runner) {
-        overrides.set(suite.path, {
-          runner: suite.runner,
-          ciRunner: suite.ciRunner,
-          bunCompat: suite.bunCompat
-        });
-      }
-    }
-    return overrides;
+    return JSON.parse(fs.readFileSync(previousPath, 'utf8'));
   } catch {
-    return new Map();
+    return null;
   }
+}
+
+/**
+ * Runner pins carried across from the committed manifest.
+ *
+ * `reason` is part of the pin, not commentary. Requirement 110 honours
+ * `runner: "node"` only when a reason is stated — `mapPinsToNode` tests
+ * `Boolean(suite.reason)` — so dropping the text silently downgrades the pin to
+ * a preference and the suite goes back to the default runner.
+ *
+ * That was not hypothetical: this map carries twenty-two suites pinned to Node
+ * because Bun cannot load restify at all (it pulls spdy -> handle-thing ->
+ * `process.binding('stream_wrap')`, oven-sh/bun#4957). Regenerating reset every
+ * one of them to `runner: "bun"` and deleted the reason — so the next run would
+ * have tried to start restify under Bun, where it cannot even be imported.
+ */
+function loadPreviousRunnerOverrides(root, previous = readPreviousManifest(root)) {
+  const overrides = new Map();
+  for (const suite of previous?.suites || []) {
+    if (suite.path && suite.runner) {
+      overrides.set(suite.path, {
+        runner: suite.runner,
+        ciRunner: suite.ciRunner,
+        bunCompat: suite.bunCompat,
+        reason: suite.reason
+      });
+    }
+  }
+  return overrides;
+}
+
+/**
+ * Prior classification for a workspace package's suites, keyed by path.
+ *
+ * Suites under `apps/backend-template/test/` are classified from their path:
+ * the directory layout encodes the hexagonal layer. Nothing under
+ * `packages/<name>/test/` does — `packages/cana/test/storage.test.ts` says which
+ * package it belongs to and nothing about which layer, and two packages can sit
+ * in different layers with identical layouts.
+ *
+ * So a package suite's `layer`, `kind` and `timeoutMs` are carried across from
+ * the committed manifest rather than inferred. Three of cana's eighteen carry a
+ * hand-raised 120s timeout; a generator that re-derived them would quietly reset
+ * those to the default and the affected suites would start timing out in CI for
+ * no reason anyone could trace to this file.
+ */
+function loadPackageSuiteClassification(root, previous = readPreviousManifest(root)) {
+  const classification = new Map();
+  for (const suite of previous?.suites || []) {
+    if (suite.path?.startsWith(`${PACKAGES_DIR}/`)) {
+      classification.set(suite.path, suite);
+    }
+  }
+  return classification;
 }
 
 function buildManifest(root = process.cwd()) {
@@ -134,7 +195,19 @@ function buildManifest(root = process.cwd()) {
     path.join(root, 'apps/backend-template/test/smoke'),
     (p) => /\.test\.ts$/.test(p)
   ).map((p) => path.relative(root, p).replace(/\\/g, '/'));
-  const previousOverrides = loadPreviousRunnerOverrides(root);
+
+  // Requirement 112 gives every package its own suite, so the generator has to
+  // see them. It did not: it walked three fixed directories under
+  // `apps/backend-template/test/` and nothing else, which meant regenerating the
+  // map deleted all eighteen of cana's entries — 214 suites in, 195 out, with no
+  // error. The map is what `run-unit-tests.js` builds its target list from, so
+  // the deletion would not have surfaced as a failure either; those suites would
+  // simply have stopped running.
+  const packageTests = packageSuitePaths(root);
+
+  const previousManifest = readPreviousManifest(root);
+  const previousOverrides = loadPreviousRunnerOverrides(root, previousManifest);
+  const packageClassification = loadPackageSuiteClassification(root, previousManifest);
 
   const layers = {
     contracts: {
@@ -194,7 +267,23 @@ function buildManifest(root = process.cwd()) {
     },
     tooling: {
       dependsOn: [],
-      sourceGlobs: ['ci-cd/**', 'tooling/**', 'apps/jumentix-website/**'],
+      // Pipeline definitions and root tooling configuration belong to this layer.
+      // Without them a change touching only `.github/workflows/*.yml` or
+      // `test-map.json` maps to no layer and no suite, and the task gate refuses
+      // it as an `unsupported-change-set` — correct for a file nobody can
+      // classify, wrong for the configuration that drives the gates themselves.
+      sourceGlobs: [
+        'ci-cd/**',
+        'tooling/**',
+        'apps/jumentix-website/**',
+        '.github/**',
+        '.circleci/**',
+        'test-map.json',
+        'jest.config.js',
+        'sonar-project.properties',
+        'package.json',
+        'bunfig.toml'
+      ],
       runner: 'bun',
       tier: 'gate',
       kind: 'non-hexagonal'
@@ -224,6 +313,11 @@ function buildManifest(root = process.cwd()) {
     const meta = classifyIntegration(file);
     const isNightly = meta.adapter === 'mutex'
       || file.includes('redis-streams.multi-instance');
+    // The pin is preserved here too. It used to be read only for unit suites,
+    // while every Node-pinned suite in this map is an integration one — so the
+    // preservation covered the case that never needed it and missed the case
+    // that did.
+    const previous = previousOverrides.get(file) || {};
     suites.push({
       id: file,
       path: file,
@@ -232,8 +326,9 @@ function buildManifest(root = process.cwd()) {
       type: 'integration',
       adapter: meta.adapter,
       script: meta.script,
-      runner: 'bun',
-      ciRunner: meta.ciRunner || 'node',
+      runner: previous.runner === 'node' ? 'node' : 'bun',
+      ciRunner: previous.ciRunner || meta.ciRunner || 'node',
+      ...(previous.reason ? { reason: previous.reason } : {}),
       tier: isNightly ? 'nightly' : 'gate',
       timeoutMs: ['express', 'fastify'].includes(meta.adapter)
         ? 300_000
@@ -254,6 +349,32 @@ function buildManifest(root = process.cwd()) {
       tier: 'nightly',
       timeoutMs: 180_000
     });
+  }
+
+  // Package suites keep the classification the manifest already records. A new
+  // one has none, and there is no path convention to derive it from, so it is
+  // reported rather than guessed: a wrong layer puts the suite in the wrong
+  // selection set, where it runs for changes that cannot affect it and stays
+  // silent for the ones that can.
+  const unclassified = [];
+  for (const file of packageTests) {
+    const previous = packageClassification.get(file);
+    if (!previous) {
+      unclassified.push(file);
+      continue;
+    }
+    suites.push({ ...previous, id: file, path: file });
+  }
+
+  if (unclassified.length > 0) {
+    throw new Error(
+      'Package suites with no recorded classification:\n'
+        + unclassified.map((file) => `  - ${file}`).join('\n')
+        + '\n\n  Suites under apps/backend-template/test/ are classified from their path;'
+        + '\n  nothing under packages/*/test/ encodes a layer. Add the entry to'
+        + '\n  test-map.json by hand — layer, kind, type, runner, tier, timeoutMs — and'
+        + '\n  this generator will carry it forward from then on.'
+    );
   }
 
   // Contract layer (JUM-440) — governance checks promoted to first-class suites.
@@ -288,7 +409,12 @@ function buildManifest(root = process.cwd()) {
     layers,
     blastRadius: 'outward',
     suites,
-    quarantine: [],
+    // Carried across, not reset. A quarantine entry records a suite that is
+    // knowingly not gating, with an issue and a reason; regenerating the map
+    // would have silently un-quarantined it and put a known-flaky suite back in
+    // front of every commit — the same class of loss as dropping the package
+    // suites, in the opposite direction.
+    quarantine: previousManifest?.quarantine || [],
     sourceRoots: [
       'apps/backend-template/src',
       'apps/backend-template/test',
@@ -315,7 +441,10 @@ function buildManifest(root = process.cwd()) {
       shadowEnv: 'JUMENTIX_GATE_V2_SHADOW'
     },
     stats: {
-      unit: unitTests.length,
+      // Package suites are unit suites and count as such: the committed manifest
+      // records them with `type: "unit"`, and a total that omitted them would
+      // disagree with the entries it summarises.
+      unit: unitTests.length + packageTests.length,
       integration: integrationTests.length,
       smoke: smokeTests.length,
       suites: suites.length
@@ -340,5 +469,9 @@ module.exports = {
   buildManifest,
   classifyIntegration,
   classifyUnit,
+  loadPackageSuiteClassification,
+  loadPreviousRunnerOverrides,
+  packageSuitePaths,
+  readPreviousManifest,
   walk
 };
