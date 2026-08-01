@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const cp = require('child_process');
+const { emitsNoJavaScript } = require('./lib/emits-javascript.js');
 
 const ROOT = process.cwd();
 const LCOV_PATH = process.env.JUMENTIX_MERGED_LCOV
@@ -47,44 +48,6 @@ const coverageIgnorePatterns = (() => {
     return [];
   }
 })();
-
-/**
- * Whether a TypeScript file emits any JavaScript at all.
- *
- * A file of nothing but `interface` and `type` declarations compiles to an empty
- * module, so it can never appear in a coverage report and can never be covered —
- * yet the rule below counted every one of its lines as a miss. On this branch
- * `IPasswordCryptoService.ts`, which is two interfaces and a port declaration,
- * contributed twenty uncovered lines that no test could ever reach.
- *
- * Answered by asking the compiler rather than by pattern-matching the source: a
- * name like `IFoo.ts` is a convention, not a guarantee, and a file that mixes a
- * constant in with its types must stay a coverage subject. Falls back to
- * treating the file as a subject when TypeScript is unavailable — the direction
- * that fails loudly rather than the one that hides a gap.
- */
-const emitsNoJavaScript = (absolute) => {
-  try {
-    // eslint-disable-next-line global-require
-    const ts = require('typescript');
-    const source = fs.readFileSync(absolute, 'utf8');
-    const emitted = ts.transpileModule(source, {
-      compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 }
-    }).outputText;
-
-    // What is left for a type-only module: the "use strict" prologue, the
-    // exports marker, blank lines. Nothing executable.
-    const meaningful = emitted
-      .replace(/^\s*['"]use strict['"];?\s*$/gm, '')
-      .replace(/^\s*Object\.defineProperty\(exports, ["']__esModule["'].*$/gm, '')
-      .replace(/^\s*exports\.\w+ = void 0;\s*$/gm, '')
-      .trim();
-
-    return meaningful.length === 0;
-  } catch {
-    return false;
-  }
-};
 
 /**
  * Istanbul's own file-level opt-out, honoured here for the same reason the Jest

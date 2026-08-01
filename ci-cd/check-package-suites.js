@@ -24,6 +24,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { runWhenEntryPoint } = require('./lib/entry-point.js');
 const { byPath } = require('./lib/mapped-suites.js');
+const { emitsNoJavaScript } = require('./lib/emits-javascript.js');
 
 const PACKAGES_DIR = 'packages';
 const SONAR_CONFIG = 'sonar-project.properties';
@@ -42,7 +43,6 @@ const WITHOUT_SUITE_YET = Object.freeze({
   'external-store-proxy': { since: '2026-08-01', issue: 'JUM-585', reason: 'Proxy layer; needs a store double.' },
   'key-value-storage': { since: '2026-08-01', issue: 'JUM-585', reason: 'Seven source files; Redis client needs a fake or a container.' },
   'message-mediator': { since: '2026-08-01', issue: 'JUM-585', reason: 'Six source files; broker adapters need doubles.' },
-  'persistence-contracts': { since: '2026-08-01', issue: 'JUM-585', reason: 'Largely types; needs the runtime parts separated first.' },
   'sdk-grpc-client': { since: '2026-08-01', issue: 'JUM-585', reason: 'Client SDK; needs a gRPC double.' },
 });
 
@@ -55,15 +55,26 @@ const WITHOUT_SUITE_YET = Object.freeze({
  * three workspaces away — the exact arrangement Requirement 112 exists to end,
  * hidden by the check meant to find it.
  *
- * `.d.ts` stays excluded: declarations emit no JavaScript, so a package of
- * nothing but types has nothing a suite could execute.
+ * Source means source that runs. A file of nothing but `interface` and `type`
+ * declarations compiles to an empty module: no test can execute a line of it,
+ * and it can never appear in a coverage report. Demanding a suite for a package
+ * made only of those asks for something that cannot exist, and the only way to
+ * satisfy the demand would be a test asserting nothing — which is worse than no
+ * test, because it reports green. `persistence-contracts` is exactly that
+ * package: three files, every one of them types.
+ *
+ * The compiler is asked rather than the filename, so a package that mixes one
+ * constant in with its types still owes a suite, and a package that later grows
+ * a runtime file starts owing one the moment it does.
  */
 function hasSource(packageDir) {
   const src = path.join(packageDir, 'src');
   if (!fs.existsSync(src)) return false;
-  return listFiles(src).some(
-    (file) => (file.endsWith('.ts') || file.endsWith('.js')) && !file.endsWith('.d.ts')
-  );
+  return listFiles(src).some((file) => {
+    if (!file.endsWith('.ts') && !file.endsWith('.js')) return false;
+    if (file.endsWith('.d.ts')) return false;
+    return !emitsNoJavaScript(file);
+  });
 }
 
 function hasSuite(packageDir) {
