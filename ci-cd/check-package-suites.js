@@ -36,6 +36,8 @@ const SONAR_CONFIG = 'sonar-project.properties';
  * "no time" is a reason; the absence of one is not.
  */
 const WITHOUT_SUITE_YET = Object.freeze({
+  'cli-init': { since: '2026-08-01', issue: 'JUM-585', reason: 'JavaScript source, and its only suite lives in the backend app (test/unit/packages/cli-init/) — that suite moves here.' },
+  'security-scanner': { since: '2026-08-01', issue: 'JUM-585', reason: 'JavaScript source with no suite anywhere.' },
   'adapter-runtime-bootstrap': { since: '2026-08-01', issue: 'JUM-585', reason: 'Runtime wiring; needs a harness that can boot an adapter without a server.' },
   'database-client-factory': { since: '2026-08-01', issue: 'JUM-585', reason: 'Factory over external drivers; needs driver fakes.' },
   'external-db-repositories': { since: '2026-08-01', issue: 'JUM-585', reason: 'Nine source files over real database clients.' },
@@ -45,17 +47,29 @@ const WITHOUT_SUITE_YET = Object.freeze({
   'message-mediator': { since: '2026-08-01', issue: 'JUM-585', reason: 'Six source files; broker adapters need doubles.' },
   'mutex-service': { since: '2026-08-01', issue: 'JUM-585', reason: 'Distributed lock; the interesting paths need concurrency.' },
   'persistence-contracts': { since: '2026-08-01', issue: 'JUM-585', reason: 'Largely types; needs the runtime parts separated first.' },
-  'runtime-infra': { since: '2026-08-01', issue: 'JUM-585', reason: 'Environment resolution.' },
   'sdk-grpc-client': { since: '2026-08-01', issue: 'JUM-585', reason: 'Client SDK; needs a gRPC double.' },
   'sdk-rest-client': { since: '2026-08-01', issue: 'JUM-585', reason: 'Client SDK; needs an HTTP double.' },
   'sdk-websocket-client': { since: '2026-08-01', issue: 'JUM-585', reason: 'Client SDK; needs a socket double.' }
 });
 
-/** A package with no `src/*.ts` of its own has nothing to test. */
+/**
+ * A package with no source of its own has nothing to test.
+ *
+ * `.js` counts, not only `.ts`. Checking TypeScript alone let a JavaScript
+ * package escape this requirement entirely: `cli-init` ships `src/bootstrap.js`,
+ * read here as sourceless, and its only coverage came from an application suite
+ * three workspaces away — the exact arrangement Requirement 112 exists to end,
+ * hidden by the check meant to find it.
+ *
+ * `.d.ts` stays excluded: declarations emit no JavaScript, so a package of
+ * nothing but types has nothing a suite could execute.
+ */
 function hasSource(packageDir) {
   const src = path.join(packageDir, 'src');
   if (!fs.existsSync(src)) return false;
-  return listFiles(src).some((file) => file.endsWith('.ts') && !file.endsWith('.d.ts'));
+  return listFiles(src).some(
+    (file) => (file.endsWith('.ts') || file.endsWith('.js')) && !file.endsWith('.d.ts')
+  );
 }
 
 function hasSuite(packageDir) {

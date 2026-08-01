@@ -273,7 +273,7 @@
     "coverage:merge": "bun ci-cd/merge-coverage-reports.js",
     "workspace:test": "bun ci-cd/run-workspace-tests.js",
     "quarantine:flake": "bun ci-cd/quarantine-flake.js",
-    "test:coverage": "NODE_ENV=dev bunx jest apps/backend-template/test/unit packages/cana/test --coverage",
+    "test:coverage": "NODE_ENV=dev bunx jest apps/backend-template/test/unit 'packages/[^/]+/test' --coverage",
     "coverage:check": "bun ci-cd/check-coverage-thresholds.js"
   },
   "dependencies": {
