@@ -38,10 +38,8 @@ const SONAR_CONFIG = 'sonar-project.properties';
 const WITHOUT_SUITE_YET = Object.freeze({
   'cli-init': { since: '2026-08-01', issue: 'JUM-585', reason: 'JavaScript source, and its only suite lives in the backend app (test/unit/packages/cli-init/) — that suite moves here.' },
   'security-scanner': { since: '2026-08-01', issue: 'JUM-585', reason: 'JavaScript source with no suite anywhere.' },
-  'adapter-runtime-bootstrap': { since: '2026-08-01', issue: 'JUM-585', reason: 'Runtime wiring; needs a harness that can boot an adapter without a server.' },
   'database-client-factory': { since: '2026-08-01', issue: 'JUM-585', reason: 'Factory over external drivers; needs driver fakes.' },
   'external-db-repositories': { since: '2026-08-01', issue: 'JUM-585', reason: 'Nine source files over real database clients.' },
-  'external-persistence-core': { since: '2026-08-01', issue: 'JUM-585', reason: 'Shared persistence primitives.' },
   'external-store-proxy': { since: '2026-08-01', issue: 'JUM-585', reason: 'Proxy layer; needs a store double.' },
   'key-value-storage': { since: '2026-08-01', issue: 'JUM-585', reason: 'Seven source files; Redis client needs a fake or a container.' },
   'message-mediator': { since: '2026-08-01', issue: 'JUM-585', reason: 'Six source files; broker adapters need doubles.' },

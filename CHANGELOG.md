@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-01 feat(testing): first package suite, and derive the exclusions from one register - Eduardo Almeida
 - 2026-08-01 fix(ci): make the test map complete in both directions [JUM-587] (#27) - Eduardo A.
 - 2026-08-01 [JUM-585][Release] Reconcile main ancestry into dev (#26) - Eduardo A.
 - 2026-08-01 chore(release): reconcile main ancestry into dev - Eduardo Almeida
