@@ -4,9 +4,10 @@ Idioma alvo: Português (Brasil)
 -->
 # Jumentix – Fábrica de Software para Equipes de Produto
 
-[![CircleCI dev](https://dl.circleci.com/status-badge/img/gh/XpertMinds/Jumentix/tree/dev.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/XpertMinds/Jumentix/tree/dev)
-[![CircleCI main](https://dl.circleci.com/status-badge/img/gh/XpertMinds/Jumentix/tree/main.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/XpertMinds/Jumentix/tree/main)
-[![codecov](https://codecov.io/gh/XpertMinds/Jumentix/branch/dev/graph/badge.svg)](https://codecov.io/gh/XpertMinds/Jumentix)
+[![Gate de branch](https://github.com/XpertMinds/Jumentix/actions/workflows/test.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/test.yml?query=branch%3Adev)
+[![Cobertura própria](https://github.com/XpertMinds/Jumentix/actions/workflows/coverage.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/coverage.yml?query=branch%3Adev)
+[![Review third-party](https://github.com/XpertMinds/Jumentix/actions/workflows/third-party-review.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/third-party-review.yml?query=branch%3Adev)
+[![Qualidade do website](https://github.com/XpertMinds/Jumentix/actions/workflows/website.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/website.yml?query=branch%3Adev)
 [![Status do Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=XpertMinds_Jumentix&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=XpertMinds_Jumentix)
 [![Classificação de Segurança](https://sonarcloud.io/api/project_badges/measure?project=XpertMinds_Jumentix&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=XpertMinds_Jumentix)
 [![Cobertura](https://sonarcloud.io/api/project_badges/measure?project=XpertMinds_Jumentix&metric=coverage)](https://sonarcloud.io/summary/new_code?id=XpertMinds_Jumentix)
@@ -14,8 +15,8 @@ Idioma alvo: Português (Brasil)
 [![Compatibilidade Node](https://img.shields.io/badge/node%20compat-22.x-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-6BA539?logo=openapiinitiative&logoColor=white)](./spec/1.0.0.yml)
 [![AsyncAPI](https://img.shields.io/badge/AsyncAPI-3.0-9146FF)](./spec)
-[![Licença](https://img.shields.io/github/license/XpertMinds/Jumentix)](./LICENSE)
-[![Último commit](https://img.shields.io/github/last-commit/XpertMinds/Jumentix/dev)](https://github.com/XpertMinds/Jumentix/commits/dev)
+[![Repositório](https://img.shields.io/badge/repository-private-24292f?logo=github)](https://github.com/XpertMinds/Jumentix)
+[![Licença](https://img.shields.io/badge/license-see%20LICENSE-blue)](./LICENSE)
 [![Rode com Express](https://img.shields.io/badge/Rode%20com-Express-gold?style=flat-square&logo=express&logoColor=000)](https://expressjs.com/)
 [![Rode com Fastify](https://img.shields.io/badge/Rode%20com-Fastify-gold?style=flat-square&logo=fastify&logoColor=000)](https://fastify.dev/)
 [![Rode com Restify](https://img.shields.io/badge/Rode%20com-Restify-gold?style=flat-square&logo=node.js&logoColor=000)](http://restify.com/)
@@ -30,6 +31,23 @@ Idioma alvo: Português (Brasil)
 [![Rode na Vercel Functions](https://img.shields.io/badge/Rode%20na-Vercel%20Functions-gold?style=flat-square&logo=vercel&logoColor=000)](https://vercel.com/docs/functions)
 [![#StandWithUkraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://vshymanskyy.github.io/StandWithUkraine)
 
+## Mapa de cobertura e CI
+
+| Gate obrigatório | `main` | `dev` |
+| --- | :---: | :---: |
+| Testes por branch | [![testes main](https://github.com/XpertMinds/Jumentix/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/XpertMinds/Jumentix/actions/workflows/test.yml?query=branch%3Amain) | [![testes dev](https://github.com/XpertMinds/Jumentix/actions/workflows/test.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/test.yml?query=branch%3Adev) |
+| Cobertura de projeto + patch | [![cobertura main](https://github.com/XpertMinds/Jumentix/actions/workflows/coverage.yml/badge.svg?branch=main)](https://github.com/XpertMinds/Jumentix/actions/workflows/coverage.yml?query=branch%3Amain) | [![cobertura dev](https://github.com/XpertMinds/Jumentix/actions/workflows/coverage.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/coverage.yml?query=branch%3Adev) |
+| Review de segurança third-party | [![review main](https://github.com/XpertMinds/Jumentix/actions/workflows/third-party-review.yml/badge.svg?branch=main)](https://github.com/XpertMinds/Jumentix/actions/workflows/third-party-review.yml?query=branch%3Amain) | [![review dev](https://github.com/XpertMinds/Jumentix/actions/workflows/third-party-review.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/third-party-review.yml?query=branch%3Adev) |
+
+A cobertura é produzida e aplicada dentro do repositório, sem conta ou token do
+Codecov. Cada execução retém evidências Istanbul JSON e LCOV. Os mínimos são:
+
+| Statements | Linhas | Funções | Branches | Linhas alteradas |
+| :---: | :---: | :---: | :---: | :---: |
+| ≥ 99% | ≥ 99% | ≥ 99% | ≥ 90% | ≥ 99% |
+
+[Abrir execuções de cobertura e evidências para download](https://github.com/XpertMinds/Jumentix/actions/workflows/coverage.yml)
+
 Jumentix é um produto monorepo que funciona como uma fábrica de software para equipes de engenharia e proprietários de produtos. Ele ajuda você a passar da ideia ao SaaS pronto para produção em dias, não meses, com uma arquitetura que prioriza o contrato, flexibilidade de tempo de execução e governança de nível empresarial.
 
 > **Repositório privado canônico:** `XpertMinds/Jumentix`.
@@ -42,6 +60,7 @@ Jumentix é um produto monorepo que funciona como uma fábrica de software para 
 ## Índice
 
 - [A lacuna de entrega empresarial](#the-enterprise-delivery-gap)
+- [Mapa de cobertura e CI](#mapa-de-cobertura-e-ci)
 - [Por que Jumentix vence](#why-jumentix-wins)
 - [ROI do negócio](#roi do negócio)
 - [Quem se beneficia](#quem-beneficia)
