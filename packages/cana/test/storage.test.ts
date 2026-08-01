@@ -191,6 +191,30 @@ describe('cana storage — durability surface', () => {
     await expect(new StorageDurability(hostile).state())
       .resolves.toMatchObject({ persistent: 'unknown', nearQuota: false });
   });
+
+  /**
+   * An environment that can be asked whether storage is durable but cannot be
+   * asked to make it durable — the shape Safari presents.
+   *
+   * The answer has to be `unknown`, not `false`. `false` reads as "the browser
+   * declined", a state a caller might retry or warn about; this is "the browser
+   * will not say", and the data may well survive. Returning the wrong one would
+   * have the application warn about a condition it cannot observe.
+   */
+  it('reports unknown when durability can be queried but not requested', async () => {
+    expect.hasAssertions();
+    // Safari's shape: `persisted()` exists, `persist()` does not. The page can
+    // ask whether storage is durable and cannot ask for it to become durable.
+    const queryOnly: StorageEnvironment = {
+      persisted: async () => false
+    };
+
+    // `unknown`, not `false`. `false` reads as "the browser declined" — a state
+    // a caller might retry or warn about. This is "there is no way to ask", and
+    // the data may well survive; warning about it would be noise.
+    await expect(new StorageDurability(queryOnly).requestPersistence())
+      .resolves.toBe('unknown');
+  });
 });
 
 /**

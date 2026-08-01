@@ -97,4 +97,34 @@ describe('password crypto service', () => {
       salt: 'the-salt'
     });
   });
+
+  /**
+   * bcrypt's callback signature permits `(null, undefined)` — no error and no
+   * value. The earlier code cast the result to `IHash`, so that combination
+   * resolved with `undefined`: a stored "password hash" of undefined, reported
+   * as a successful registration. These two guards turn it into a rejection at
+   * the point it happens, and they are the only paths that tell the two
+   * implementations apart, so they are asserted rather than assumed.
+   */
+  it('rejects when the hasher reports neither a salt nor an error', async () => {
+    expect.hasAssertions();
+
+    const service = new PasswordCryptoService(hasherWith({
+      genSalt: (_rounds, callback) => callback(null, undefined as unknown as string)
+    }));
+
+    await expect(service.hash('12345678'))
+      .rejects.toThrow('password hasher returned no salt and no error');
+  });
+
+  it('rejects when the hasher reports neither a hash nor an error', async () => {
+    expect.hasAssertions();
+
+    const service = new PasswordCryptoService(hasherWith({
+      hash: (_password, _salt, callback) => callback(null, undefined as unknown as string)
+    }));
+
+    await expect(service.hash('12345678'))
+      .rejects.toThrow('password hasher returned no hash and no error');
+  });
 });

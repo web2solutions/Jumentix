@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-07-31 fix(security): resolve the four Sonar vulnerabilities blocking the gate (JUM-398) - Eduardo Almeida
 - 2026-07-31 feat(governance): restrict commits to declared identities (JUM-398) - Eduardo Almeida
 - 2026-07-31 [JUM-398][Security] Remove the CI Redis password and fix the ggshield config - Eduardo Almeida
 - 2026-07-31 chore(ci): state shell:false on the suite spawns - Eduardo Almeida

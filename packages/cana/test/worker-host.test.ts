@@ -471,4 +471,53 @@ describe('cana worker request validation', () => {
     expect(await api.get<Design>('designs', 1)).toMatchObject({ name: 'before close' });
     await teardown();
   });
+
+  /**
+   * A port can be shared. Another library, a devtools bridge, or the page itself
+   * may post on the same channel, and the host has to leave those alone.
+   *
+   * Silence is the only safe answer: replying with an error to a message never
+   * addressed to us would look, to whoever did send it, like their own protocol
+   * failing. So the assertion is that nothing comes back — and that a real
+   * request still works afterwards, because silence only counts as correct if
+   * the host is still listening.
+   */
+  it('ignores messages that are not request envelopes', async () => {
+    expect.hasAssertions();
+
+    const channel = new MessageChannel();
+    channel.port1.start();
+    channel.port2.start();
+
+    const host = createWorkerHost({
+      name: 'bystander',
+      schema,
+      factory: new IDBFactory(),
+      port: channel.port2 as unknown as Parameters<typeof createWorkerHost>[0]['port']
+    });
+
+    const replies: unknown[] = [];
+    channel.port1.addEventListener('message', (event) => {
+      replies.push((event as MessageEvent).data);
+    });
+
+    // Each fails a different clause of the guard: not an object at all, an
+    // object with no requestId, and a requestId of the wrong type.
+    channel.port1.postMessage('a bare string');
+    channel.port1.postMessage({ hello: 'not ours' });
+    channel.port1.postMessage({ requestId: 42 });
+    await settle();
+
+    expect(replies).toStrictEqual([]);
+
+    // Still listening: a well-formed request is answered.
+    channel.port1.postMessage({ requestId: 'ping-1', op: 'ping' });
+    await settle();
+
+    expect(replies).toHaveLength(1);
+
+    await host.dispose();
+    channel.port1.close();
+    channel.port2.close();
+  });
 });
