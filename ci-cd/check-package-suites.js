@@ -37,7 +37,6 @@ const SONAR_CONFIG = 'sonar-project.properties';
  * "no time" is a reason; the absence of one is not.
  */
 const WITHOUT_SUITE_YET = Object.freeze({
-  'external-store-proxy': { since: '2026-08-01', issue: 'JUM-585', reason: 'Proxy layer; needs a store double.' },
 });
 
 /**
