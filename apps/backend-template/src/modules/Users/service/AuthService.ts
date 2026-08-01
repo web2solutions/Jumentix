@@ -153,6 +153,58 @@ export class AuthService implements IAuthService {
     }
   }
 
+  /**
+   * Record an audit event, swallowing any failure.
+   *
+   * Both sinks are wrapped internally, so this never rejects — a broken audit
+   * trail must not change an authorization decision. Call sites therefore use
+   * a bare call rather than `.catch(() => {})`: those six handlers could not
+   * fire, and being unreachable they were also uncoverable, which is how they
+   * were found (JUM-583).
+   *
+   * Swallowing in one place rather than two also means there is one place to
+   * change if these failures should ever become visible.
+   */
+  /**
+   * The audit policy, in one place: **a failing audit sink never changes an
+   * authorization or authentication outcome.**
+   *
+   * It lives in these two wrappers rather than inside `publishAuditEvent`
+   * because a swallow that cannot be reached is a swallow that cannot be
+   * tested. When `publishAuditEvent` caught its own failures, the handlers at
+   * every call site were unreachable — six of them, and they were the entire
+   * function-coverage gap on this file. Now the sink's rejection propagates to
+   * exactly one handler per calling shape, and both are exercised.
+   *
+   * Two shapes are genuinely needed. `throwIfUserHasNoAccessToResource` returns
+   * a boolean and throws, so it cannot await; the authentication paths can, and
+   * awaiting there means a login failure is recorded before the response goes
+   * out rather than racing it.
+   */
+  private async recordAuditEventAsync(
+    name: string,
+    payload: Record<string, unknown>,
+    outcome: 'success' | 'failed' | 'denied' = 'success'
+  ): Promise<void> {
+    try {
+      await this.publishAuditEvent(name, payload, outcome);
+    } catch {
+      // Deliberate: see above.
+    }
+  }
+
+  /** The synchronous shape. Returns void, so no promise is left floating. */
+  private recordAuditEvent(
+    name: string,
+    payload: Record<string, unknown>,
+    outcome: 'success' | 'failed' | 'denied' = 'success'
+  ): void {
+    // Attached to `publishAuditEvent`, which can reject, rather than to the
+    // async wrapper, which cannot — a handler over something that never fails is
+    // one no test can reach.
+    this.publishAuditEvent(name, payload, outcome).catch(() => undefined);
+  }
+
   private async publishAuditEvent(
     name: string,
     payload: Record<string, unknown>,
@@ -160,28 +212,16 @@ export class AuthService implements IAuthService {
   ): Promise<void> {
     const occurredAt = new Date().toISOString();
     if (this.eventBus?.publish) {
-      try {
-        await this.eventBus.publish({
-          name,
-          payload,
-          occurredAt
-        });
-      } catch (error) {
-        //
-      }
+      await this.eventBus.publish({ name, payload, occurredAt });
     }
     if (this.securityAuditRepository?.record) {
-      try {
-        await this.securityAuditRepository.record({
-          id: UUID.create().toString(),
-          name,
-          outcome,
-          payload,
-          occurredAt
-        });
-      } catch (error) {
-        //
-      }
+      await this.securityAuditRepository.record({
+        id: UUID.create().toString(),
+        name,
+        outcome,
+        payload,
+        occurredAt
+      });
     }
   }
 
@@ -259,7 +299,7 @@ export class AuthService implements IAuthService {
         throw new UnauthorizedError('password does not matches');
       }
       await this.clearFailedLogin(username);
-      await this.publishAuditEvent('users.auth.login.success', { username }, 'success');
+      await this.recordAuditEventAsync('users.auth.login.success', { username }, 'success');
       let token: string;
       const AuthorizationHeader = {
         Authorization: ''
@@ -273,11 +313,11 @@ export class AuthService implements IAuthService {
       serviceResponse.result = AuthorizationHeader;
     } catch (error) {
       if (error instanceof ResourceLockedError) {
-        await this.publishAuditEvent('users.auth.login.blocked', { username }, 'denied');
+        await this.recordAuditEventAsync('users.auth.login.blocked', { username }, 'denied');
         serviceResponse.error = error;
       } else {
         await this.markFailedLogin(username);
-        await this.publishAuditEvent('users.auth.login.failed', { username }, 'failed');
+        await this.recordAuditEventAsync('users.auth.login.failed', { username }, 'failed');
         if (String(process.env.NODE_ENV || '').toLowerCase() === 'prod'
           || String(process.env.NODE_ENV || '').toLowerCase() === 'production') {
           serviceResponse.error = new UnauthorizedError('invalid credentials');
@@ -363,12 +403,12 @@ export class AuthService implements IAuthService {
           remainingSeconds
         );
       }
-      await this.publishAuditEvent('users.auth.logout.success', {
+      await this.recordAuditEventAsync('users.auth.logout.success', {
         userId: decodedToken.id,
         username: decodedToken.username
       }, 'success');
     } catch (error) {
-      await this.publishAuditEvent('users.auth.logout.failed', {}, 'failed');
+      await this.recordAuditEventAsync('users.auth.logout.failed', {}, 'failed');
       serviceResponse.error = error as BaseError;
       serviceResponse.result = false;
     }
@@ -419,10 +459,10 @@ export class AuthService implements IAuthService {
       permissions: routePermission || []
     };
     if (!endPointConfig.security) {
-      this.publishAuditEvent('users.authz.scope.denied', {
+      this.recordAuditEvent('users.authz.scope.denied', {
         ...auditPayload,
         reason: 'missing_route_security'
-      }, 'denied').catch(() => {});
+      }, 'denied');
       throw new ValidationError('The route Controller is secured by guard rails but there is no security schema defined in the Open API specification file.invalid schema');
     }
     const authName = Object.keys(endPointConfig.security[0])[0];
@@ -431,40 +471,40 @@ export class AuthService implements IAuthService {
       const routePermission: string[] = endPointConfig.security[0][authName];
       // if route has any required permission
       if (!user.roles) {
-        this.publishAuditEvent('users.authz.scope.denied', {
+        this.recordAuditEvent('users.authz.scope.denied', {
           ...auditPayload,
           reason: 'missing_user_roles'
-        }, 'denied').catch(() => {});
+        }, 'denied');
         throw new ForbiddenError('Insufficient permission - invalid user - user.roles is missing');
       }
       if (shouldRequireOrganization(user.roles) && !user.organization) {
-        this.publishAuditEvent('users.authz.scope.denied', {
+        this.recordAuditEvent('users.authz.scope.denied', {
           ...auditPayload,
           reason: 'missing_organization_for_role'
-        }, 'denied').catch(() => {});
+        }, 'denied');
         throw new ForbiddenError('Insufficient permission - organization is required for this user role');
       }
       if (hasSuperadminRole(user.roles)) {
-        this.publishAuditEvent('users.authz.scope.allowed', {
+        this.recordAuditEvent('users.authz.scope.allowed', {
           ...auditPayload,
           reason: 'superadmin_bypass'
-        }, 'success').catch(() => {});
+        }, 'success');
         return true;
       }
       if (routePermission.length > 0) {
         for (const permission of routePermission) {
           if (!userCanAccessScope(user.roles, permission)) {
-            this.publishAuditEvent('users.authz.scope.denied', {
+            this.recordAuditEvent('users.authz.scope.denied', {
               ...auditPayload,
               reason: `missing_scope_${permission}`
-            }, 'denied').catch(() => {});
+            }, 'denied');
             throw new ForbiddenError(`Insufficient permission - user must have the ${permission} role`);
           }
         }
-        this.publishAuditEvent('users.authz.scope.allowed', {
+        this.recordAuditEvent('users.authz.scope.allowed', {
           ...auditPayload,
           reason: 'all_scopes_validated'
-        }, 'success').catch(() => {});
+        }, 'success');
       }
     }
     return true;

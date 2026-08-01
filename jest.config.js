@@ -31,15 +31,22 @@ module.exports = {
   ],
   modulePathIgnorePatterns: ['dist', '.build', '.serverless', '.resources'],
   coveragePathIgnorePatterns: [
-    '<rootDir>/packages/',
+    // packages/ is excluded except cana/src, which this epic added with 293 tests.
+    // Sonar reads this lcov, so an excluded path reports as 0% covered on new code
+    // — a package with a full suite looked untested. dist/ stays out: measuring a
+    // build artifact says nothing about the source it came from (JUM-578).
+    '<rootDir>/packages/(?!cana/src/)',
+    '<rootDir>/packages/cana/dist/',
     // ci-cd is excluded from coverage wholesale, with named opt-ins. Sonar reads
     // this same lcov, so a new ci-cd file that is not listed here reports as 0%
     // covered on new code and fails the quality gate even when it has tests.
     // Keep this list and the suites under test/unit/ci-cd/ in step.
-    '<rootDir>/ci-cd/(?!(check-canonical-integrations|check-bun-version|check-dependency-override-integrity)\\.js$)',
+    '<rootDir>/ci-cd/(?!(check-canonical-integrations|check-bun-version|check-commit-authorship|check-coverage-thresholds|check-dependency-override-integrity)\\.js$)',
     '<rootDir>/apps/backend-template/src/modules/Users/adapters/out/persistence/UserDataRepository.ts',
     '<rootDir>/apps/backend-template/src/modules/Users/adapters/out/persistence/OrganizationDataRepository.ts'
   ],
+  // `ci-cd/check-coverage-thresholds.js` is the authority (Requirement 110); this
+  // block is a fail-fast inner guard so a coverage run stops before the scan.
   coverageThreshold: {
     global: {
       branches: 90,

@@ -1,3 +1,4 @@
+import * as catalogStorage from '@src/interface/CLI/core/catalogStorage';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
@@ -9,7 +10,9 @@ describe('cli catalog storage', () => {
 
     try {
       process.chdir(tmpDir);
-      jest.resetModules();
+      // No module reload: catalogStorage resolves its path per call, so the
+      // chdir above is enough. It used to need `jest.resetModules()` because the
+      // path was computed at import time (JUM-583).
       await callback();
     } finally {
       process.chdir(previousCwd);
@@ -20,7 +23,7 @@ describe('cli catalog storage', () => {
   it('loads default catalog when file does not exist', async () => {
     expect.hasAssertions();
     await runInTempWorkspace(async () => {
-      const module = await import('@src/interface/CLI/core/catalogStorage');
+      const module = catalogStorage;
       const catalog = await module.loadCatalog();
 
       expect(catalog).toStrictEqual({
@@ -34,7 +37,7 @@ describe('cli catalog storage', () => {
   it('saves and reloads catalog contents', async () => {
     expect.hasAssertions();
     await runInTempWorkspace(async () => {
-      const module = await import('@src/interface/CLI/core/catalogStorage');
+      const module = catalogStorage;
 
       const payload = {
         version: 1,
@@ -76,7 +79,7 @@ describe('cli catalog storage', () => {
   it('normalizes loaded catalog when optional fields are missing', async () => {
     expect.hasAssertions();
     await runInTempWorkspace(async () => {
-      const module = await import('@src/interface/CLI/core/catalogStorage');
+      const module = catalogStorage;
       const catalogPath = module.getCatalogFilePath();
       await fs.promises.mkdir(path.dirname(catalogPath), { recursive: true });
       await fs.promises.writeFile(catalogPath, JSON.stringify({ version: 0 }), 'utf8');

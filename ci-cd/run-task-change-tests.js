@@ -6,6 +6,7 @@ const { createLayerAwarePlan } = require('./lib/layer-resolver');
 const { buildGateEvidence, validateGateEvidence, writeGateEvidence } = require('./lib/gate-evidence');
 const { runSuitePaths } = require('./run-suite');
 const { resolveTestRuntime } = require('./lib/test-runtime');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 const UNIT_TEST_PATH = /(^|\/)test\/unit\/.*\.(test|spec)\.[cm]?[jt]sx?$/;
 const INTEGRATION_TEST_PATH = /(^|\/)test\/integration\/.*\.(test|spec)\.[cm]?[jt]sx?$/;
@@ -117,7 +118,7 @@ function executeTaskTestPlan(plan) {
   if (plan.type === 'unsupported-change-set') return 1;
 
   if (plan.type === 'website-quality-gate') {
-    const websiteResult = spawnSync('bun', ['run', '--filter', '@jumentix/website', 'test:prepublish'], {
+    const websiteResult = spawnSync(process.execPath, ['run', '--filter', '@jumentix/website', 'test:prepublish'], {
       stdio: 'inherit',
       env: { ...process.env }
     });
@@ -164,14 +165,22 @@ function executeTaskTestPlan(plan) {
   return runSuitePaths(plan.files, { label: plan.type });
 }
 
-function executeLayerAwarePlan(plan) {
+/**
+ * @param options.spawn Injected so the evidence bookkeeping can be tested without
+ * spawning the real integration suites — which a test asserting *what was
+ * recorded* has no reason to run, and which would take minutes.
+ * @param options.runSuites Same, for the unit leg.
+ */
+function executeLayerAwarePlan(plan, options = {}) {
+  const spawn = options.spawn || spawnSync;
+  const runSuites = options.runSuites || runSuitePaths;
   const suiteResults = [];
   const executedSuites = [];
 
   if (plan.unitSuites.length > 0) {
     const runtime = resolveTestRuntime();
     const unitPaths = plan.suites.filter((suite) => suite.type === 'unit').map((s) => s.path);
-    const status = runSuitePaths(unitPaths, { label: 'layer-aware-unit', runtime });
+    const status = runSuites(unitPaths, { label: 'layer-aware-unit', runtime });
     for (const suite of unitPaths) {
       executedSuites.push(suite);
       suiteResults.push({
@@ -187,13 +196,35 @@ function executeLayerAwarePlan(plan) {
   }
 
   for (const script of plan.integrationScripts || []) {
-    const result = spawnSync('bun', ['run', script], {
+    const result = spawn('bun', ['run', script], {
       stdio: 'inherit',
       env: { ...process.env, CI: 'true' }
     });
     const status = Number.isInteger(result.status) ? result.status : 1;
+    const outcome = status === 0 ? 'passed' : 'failed';
     executedSuites.push(script);
-    suiteResults.push({ suite: script, status: status === 0 ? 'passed' : 'failed', runner: 'node' });
+
+    // Record the suite files the script covers, not only the script name.
+    //
+    // The plan lists integration suites by path; execution runs them through one
+    // npm script per framework. Recording only the script name left
+    // `validateGateEvidence` comparing paths against script names, so every
+    // planned integration suite reported as "missing from executed set" — a
+    // fail-closed gate failing on its own bookkeeping rather than on a test.
+    //
+    // It stayed hidden while no change selected an integration layer. The
+    // Express 5 upgrade selected them, and forty-odd suites were reported unrun
+    // immediately after passing.
+    const covered = (plan.suites || [])
+      .filter((suite) => suite.type === 'integration' && suite.script === script)
+      .map((suite) => suite.path);
+
+    for (const suite of covered) {
+      executedSuites.push(suite);
+      suiteResults.push({ suite, status: outcome, runner: 'node' });
+    }
+
+    suiteResults.push({ suite: script, status: outcome, runner: 'node' });
     if (status !== 0) {
       plan._execution = { executedSuites, suiteResults, status };
       return status;
@@ -306,7 +337,7 @@ function runTaskChangeTests(options = {}) {
   return evidence;
 }
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   const evidence = runTaskChangeTests();
   if (!['passed', 'not-applicable'].includes(evidence.outcome)) {
     process.exitCode = 1;

@@ -1,3 +1,28 @@
 version: 2
-paths-ignore:
-  - test/unit/interface/WebSocket/redisStreamsAdapter.test.ts
+
+# No exemptions, deliberately.
+#
+# This file previously held one:
+#
+#   paths-ignore:
+#     - test/unit/interface/WebSocket/redisStreamsAdapter.test.ts
+#
+# which did nothing, twice over. `paths-ignore` is not a key ggshield reads in a
+# v2 config — the correct form is `secret.ignored_paths`, and ggshield printed
+# "Unrecognized key in config" on every run — and the path was written against
+# the pre-monorepo layout, so it would not have matched even under the right key
+# (the file now lives under `apps/backend-template/`).
+#
+# Scanning that file today finds nothing, so the exemption was unnecessary as
+# well as inert. It is removed rather than repaired: an ignore that ignores
+# nothing is a stale exemption sitting ready to hide a real finding the day that
+# file changes.
+#
+# To add one:
+#
+#   secret:
+#     ignored_paths:
+#       - <path from the repository root>
+#
+# and say here what is exempted and why. A scanner people learn to wave away is
+# worse than no scanner.

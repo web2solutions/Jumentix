@@ -33,12 +33,47 @@ describe('check-workspace-coverage-policy', () => {
         }
       }
     });
+    // No exception is live, so every metric names its base minimum. When one is
+    // recorded, the affected metric names its floor and the issue instead —
+    // asserted by the test below, which reads the register rather than hardcoding
+    // whichever concession happens to exist.
     expect(failures).toStrictEqual([
       'Root coverageThreshold.global.statements must be >= 99 (current: 95)',
       'Root coverageThreshold.global.lines must be >= 99 (current: 95)',
       'Root coverageThreshold.global.functions must be >= 99 (current: 95)',
       'Root coverageThreshold.global.branches must be >= 90 (current: 80)'
     ]);
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+  const exceptionRegister = require('../../../../../ci-cd/check-coverage-thresholds')
+    .ACCEPTED_BELOW_THRESHOLD as Record<string, { floor: number } | undefined>;
+
+  /** A metric's floor: its recorded exception if one exists, else the base minimum. */
+  const atFloor = (metric: string, base: number) => {
+    const exception = exceptionRegister[metric];
+    return exception === undefined ? base : exception.floor;
+  };
+
+  it('reads its exceptions from the coverage checker rather than its own copy', () => {
+    expect.hasAssertions();
+    // Two guards enforcing the same numbers is fine; two holding separate ideas
+    // of which concessions are live is not — one would keep passing a metric the
+    // other had released, or keep failing one already accepted.
+    // Every metric set to its floor — the base minimum where there is no
+    // exception, the recorded floor where there is one.
+    const failures = validateGlobalCoverageThreshold({
+      coverageThreshold: {
+        global: {
+          statements: atFloor('statements', 99),
+          lines: atFloor('lines', 99),
+          functions: atFloor('functions', 99),
+          branches: atFloor('branches', 90)
+        }
+      }
+    });
+
+    expect(failures).toStrictEqual([]);
   });
 
   it('accepts package test policy for non-placeholder scripts', () => {
@@ -65,14 +100,34 @@ describe('check-workspace-coverage-policy', () => {
     ]);
   });
 
-  it('accepts allowlisted placeholder test scripts for config placeholders', () => {
+  it('rejects a placeholder test script for a config package too', () => {
     expect.hasAssertions();
+    // This test used to assert the opposite, naming `@jumentix/config-eslint` as
+    // allowlisted. Requirement 106 / JUM-557 emptied that allowlist — placeholders
+    // are now forbidden for every package, and the config packages moved to
+    // `test: bun run typecheck`. The assertion was not updated with the policy,
+    // so it kept describing an exemption that no longer exists (JUM-583).
     const failures = validatePackageCoveragePolicy({
       name: '@jumentix/config-eslint',
       scripts: {
         test: 'echo "config-eslint placeholder: migration wave pending"'
       }
     });
+
+    expect(failures).toStrictEqual([
+      '[@jumentix/config-eslint] test script must not be placeholder output'
+    ]);
+  });
+
+  it('accepts a test script that runs a real command', () => {
+    expect.hasAssertions();
+    // The shape the config packages actually use now, so the suite records what
+    // replaced the allowlist rather than only what was removed.
+    const failures = validatePackageCoveragePolicy({
+      name: '@jumentix/config-eslint',
+      scripts: { test: 'bun run typecheck' }
+    });
+
     expect(failures).toStrictEqual([]);
   });
 });

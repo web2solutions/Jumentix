@@ -5,6 +5,7 @@ const { spawnSync } = require('child_process');
 const { readTestMap, isQuarantined } = require('./lib/test-map');
 const { effectiveRunner, isCiNodeRuntime, resolveTestRuntime } = require('./lib/test-runtime');
 const { runSuitePaths } = require('./run-suite');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 const UNIT_DIR = 'apps/backend-template/test/unit';
 
@@ -24,10 +25,40 @@ function partitionUnitSuites(manifest, env = process.env) {
   return { bunSuites, nodeSuites };
 }
 
+/**
+ * `--isolate` gives each file a fresh global object, which is the isolation Jest
+ * provides per file and `bun test` otherwise does not.
+ *
+ * Without it, a module replaced in one file stays replaced for every file that
+ * runs after it. The composition-root suites mock twelve modules each —
+ * PasswordCryptoService, MutexService, compileKeyValueStorageClient and the
+ * rest — so their stubs were still installed when those modules' own suites ran,
+ * and 19 tests failed in the shared run that passed when run alone. Nothing
+ * pointed at the cause: the failures appeared in files that had not changed
+ * (JUM-583).
+ */
+const BUN_ISOLATION = '--isolate';
+
+/**
+ * Coverage is deliberately NOT collected here.
+ *
+ * Bun's lcov contains no branch records at all — no `BRF`, no `BRH`, no `BRDA`.
+ * Bun simply has no branch metric, and there is no flag that adds one. So a
+ * Bun-produced report cannot satisfy Requirements 020/063, which mandate 90%
+ * branch coverage, and writing one into `coverage/` would overwrite the report
+ * that can.
+ *
+ * Coverage therefore comes from `bun run test:coverage`, which runs Jest for
+ * that single purpose. Jest is no longer a test runner in this repository — it
+ * is the coverage instrument, and `ci-cd/check-coverage-thresholds.js` reads its
+ * lcov as the authority on all four metrics.
+ */
 function runBunUnit(suites, options = {}) {
   const spawn = options.spawn || spawnSync;
-  const args = suites.length > 0 ? ['test', ...suites] : ['test', UNIT_DIR];
-  console.log(`[ci] unit tests (bun:test): ${suites.length || 'directory'} target(s)`);
+  const args = suites.length > 0
+    ? ['test', BUN_ISOLATION, ...suites]
+    : ['test', BUN_ISOLATION, UNIT_DIR];
+  console.log(`[ci] unit tests (bun:test, isolated): ${suites.length || 'directory'} target(s)`);
   const result = spawn('bun', args, {
     stdio: 'inherit',
     env: { ...process.env, NODE_ENV: process.env.NODE_ENV || 'dev' }
@@ -78,7 +109,7 @@ function runUnitTests(options = {}) {
   return runNodeUnit(nodeSuites, options);
 }
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   process.exitCode = runUnitTests();
 }
 

@@ -2,6 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 const CANDIDATE_TEST_DIRS = [
   'apps/backend-template/test/integration/ServiceManagement',
@@ -31,7 +32,7 @@ function runServiceManagementIntegration(options = {}) {
   return result.status === 0 ? 0 : (result.status || 1);
 }
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   process.exitCode = runServiceManagementIntegration();
 }
 

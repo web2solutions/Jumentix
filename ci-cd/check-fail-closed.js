@@ -16,6 +16,7 @@
 const { spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 const repoRoot = path.resolve(__dirname, '..');
 const results = [];
@@ -223,7 +224,7 @@ if (!verdict.ok) {
 console.log(`Fail-closed verification passed: ${verdict.total}/${verdict.total} gate classes fail closed.`);
 }
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   main();
 }
 

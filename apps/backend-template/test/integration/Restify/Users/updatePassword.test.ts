@@ -18,9 +18,7 @@ import {
   BasicAuthorizationHeaderUserGuest
 } from '@test/mock';
 import type {
-  IUser
-} from '@src/modules/Users';
-import type {
+  IUser,
   RequestUpdatePassword
 } from '@src/modules/Users';
 import {

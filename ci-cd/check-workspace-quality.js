@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 const fs = require('fs');
 const path = require('path');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 function readPackageJson(targetDir) {
   const packageJsonPath = path.join(targetDir, 'package.json');
@@ -57,7 +58,7 @@ function run() {
   console.log('Workspace package quality check passed.');
 }
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   run();
 }
 

@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 const fs = require('fs');
 const path = require('path');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 function walk(dir, pred, out = []) {
   if (!fs.existsSync(dir)) return out;
@@ -331,7 +332,7 @@ function main() {
   console.log(`[ci] suites=${manifest.stats.suites} unit=${manifest.stats.unit} integration=${manifest.stats.integration} smoke=${manifest.stats.smoke}`);
 }
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   main();
 }
 

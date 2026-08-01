@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 const fs = require('fs');
 const path = require('path');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 const SEMVER_RE = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
 
@@ -138,7 +139,7 @@ function run() {
   console.log('Release governance check passed.');
 }
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   run();
 }
 

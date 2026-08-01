@@ -4,40 +4,90 @@
 
 ## All Changes
 
+- 2026-07-31 fix(security): resolve the four Sonar vulnerabilities blocking the gate (JUM-398) - Eduardo Almeida
+- 2026-07-31 feat(governance): restrict commits to declared identities (JUM-398) - Eduardo Almeida
+- 2026-07-31 [JUM-398][Security] Remove the CI Redis password and fix the ggshield config - Eduardo Almeida
+- 2026-07-31 chore(ci): state shell:false on the suite spawns - Eduardo Almeida
+- 2026-07-31 [JUM-398][Security] Hand the spawn canonical paths and count before logging - Eduardo Almeida
+- 2026-07-31 [JUM-398][Security] Fix the findings the PR-scoped Sonar report surfaced - Eduardo Almeida
+- 2026-07-31 fix(ci): scope the Sonar report to the pull request - Eduardo Almeida
+- 2026-07-31 [JUM-398][CI] Fix what Sonar found, and give the entry-point idiom one home - Eduardo Almeida
+- 2026-07-31 [JUM-398][CI] Print Sonar's findings into the CI log - Eduardo Almeida
+- 2026-07-31 [JUM-398][Testing] Move the Cana suites into the package they test - Eduardo Almeida
+- 2026-07-31 [JUM-588][Coverage] Accept 98.99% statements as a ratchet, not a lowered threshold - Eduardo Almeida
+- 2026-07-31 fix(coverage): measure statements from Istanbul, not lines relabelled as statements - Eduardo Almeida
+- 2026-07-31 fix(coverage): measure packages/cana and the new ci-cd guards, drop unreachable catches - Eduardo Almeida
+- 2026-07-31 fix(ci): point Sonar at test:coverage and enforce thresholds in both providers - Eduardo Almeida
+- 2026-07-31 fix(ci): record integration suite files in gate evidence, not only script names - Eduardo Almeida
+- 2026-07-31 fix(test): import fs and path in check-test-map.test.ts instead of requiring them - Eduardo Almeida
+- 2026-07-31 fix(test): mark check-test-map.test.ts as a module - Eduardo Almeida
+- 2026-07-31 [JUM-583][Testing] Requirement 110: bun:test runs, Jest measures coverage - Eduardo Almeida
+- 2026-07-31 [JUM-583][CI] Collect Bun coverage and enforce all four thresholds from lcov - Eduardo Almeida
+- 2026-07-31 [JUM-587][Bug] Upgrade to Express 5 and guard overrides against crossing a major - Eduardo Almeida
+- 2026-07-31 [JUM-583][Testing] Make every unit suite run under Bun - Eduardo Almeida
+- 2026-07-30 fix(website): add the Cana README translation and stop demanding one for licenses - Eduardo Almeida
+- 2026-07-30 test(readme): correct rationales the CI-provider reversal invalidated - Eduardo Almeida
+- 2026-07-30 fix(docs): restore PT-BR README badge parity and correct the 012 supersession link - Eduardo Almeida
+- 2026-07-30 docs(cana): point the Bun runner note at JUM-584 - Eduardo Almeida
+- 2026-07-30 Merge origin/dev into the Cana branch - Eduardo Almeida
+- 2026-07-30 docs(requirements): test suites must detect fake implementations [107] - Eduardo Almeida
+- 2026-07-30 feat(readme,arch): fix stale badges and require adapters to integrate their framework [106] - Eduardo Almeida
+- 2026-07-30 feat(ci): make circleci the sole provider and retire github actions [105] - Eduardo Almeida
+- 2026-07-30 feat(testing): finish Hexagonal Test Pyramid with Req 106 Bun-local runtime (#18) - Eduardo A.
+- 2026-07-30 docs(cana): record the measured performance shape in release readiness - Eduardo Almeida
+- 2026-07-30 test(cana): performance baseline by complexity shape [JUM-561] - Eduardo Almeida
+- 2026-07-30 feat(testing): deliver Hexagonal Test Pyramid layer-aware gates [JUM-428][JUM-429][JUM-441][JUM-442][JUM-443] (#16) - Eduardo A.
+- 2026-07-30 feat(cana): packaging, conformance harness, release readiness [JUM-416][JUM-417][JUM-419] - Eduardo Almeida
+- 2026-07-30 chore(governance): register opencode-primary-001 in agent registry - Eduardo Almeida
+- 2026-07-30 test(cana): differential harness against Dexie [JUM-561] - Eduardo Almeida
+- 2026-07-30 feat(cana): worker host, and a real message-boundary round trip [JUM-409][JUM-410] - Eduardo Almeida
+- 2026-07-30 fix(cana): three further review defects [JUM-560][JUM-403][JUM-413] - Eduardo Almeida
+- 2026-07-30 docs(cana): complete usage guide, EN and PT-BR [JUM-418] - Eduardo Almeida
+- 2026-07-30 test(cana): complete the suite, and route a synchronous throw into its promise - Eduardo Almeida
+- 2026-07-30 fix(cana): seven review defects, and IndexedDB as a first-class driver [JUM-414] - Eduardo Almeida
+- 2026-07-30 feat(cana): jumentix client adapter, and reject browser-only server drivers [JUM-414] - Eduardo Almeida
+- 2026-07-30 docs(cana): epic documentation EN and PT-BR [JUM-418][JUM-398] - Eduardo Almeida
+- 2026-07-30 feat(cana): postmaster protocol and request router [JUM-401][JUM-409][JUM-410] - Eduardo Almeida
+- 2026-07-30 feat(cana): make the unknown write outcome resolvable [JUM-559][JUM-411] - Eduardo Almeida
+- 2026-07-30 feat(cana): durability policy that refuses to round up [JUM-415] - Eduardo Almeida
+- 2026-07-30 feat(cana): lifecycle hooks that cannot swallow a failure [JUM-408] - Eduardo Almeida
+- 2026-07-30 feat(cana): crud, bulk, queries, transactions and change events [JUM-405][JUM-406] - Eduardo Almeida
+- 2026-07-30 feat(cana): database lifecycle, schema application, error taxonomy [JUM-403][JUM-404] - Eduardo Almeida
 - 2026-07-30 [JUM-540][Security] Remove Snyk completely from Jumentix (#14) - Eduardo A.
+- 2026-07-30 feat(cana): scaffold the package, freeze the contracts, implement durability [JUM-402][JUM-400][JUM-560] - Eduardo Almeida
 - 2026-07-30 [JUM-540][Security] Retire Snyk in favour of the first-party OSV scanner (#13) - Eduardo A.
-- 2026-07-30 fix(security): retire Snyk in favour of the first-party OSV scanner [JUM-540] - Eduardo A.
+- 2026-07-30 fix(security): retire Snyk in favour of the first-party OSV scanner [JUM-540] - Eduardo Almeida
 - 2026-07-30 [JUM-22][Tooling] Replace internal Node and pnpm workflows with Bun (#8) - Eduardo A.
 - 2026-07-30 [JUM-568][Docs] Record terminal provider evidence (#11) - Eduardo A.
-- 2026-07-30 fix(tooling): resolve both Bugbot findings — misplaced --prefix and a type-erased barrel - Eduardo A.
+- 2026-07-30 fix(tooling): resolve both Bugbot findings — misplaced --prefix and a type-erased barrel - Eduardo Almeida
 - 2026-07-30 docs(changelog): record provider evidence update - Eduardo Almeida
 - 2026-07-30 docs(integrations): record terminal provider evidence - Eduardo Almeida
-- 2026-07-30 feat(security): first-party OSV dependency scanner, closing the bun.lock blind spot [JUM-540] - Eduardo A.
+- 2026-07-30 feat(security): first-party OSV dependency scanner, closing the bun.lock blind spot [JUM-540] - Eduardo Almeida
 - 2026-07-30 [JUM-568][CI] Complete provider evidence and fail-closed checks (#10) - Eduardo A.
 - 2026-07-30 ci(JUM-568): make Codecov upload fail closed - Eduardo Almeida
 - 2026-07-30 docs(JUM-568): record GitGuardian plan constraint - Eduardo Almeida
-- 2026-07-30 fix(security): expose the dependency-scanning blind spot created by bun.lock [JUM-540] - Eduardo A.
+- 2026-07-30 fix(security): expose the dependency-scanning blind spot created by bun.lock [JUM-540] - Eduardo Almeida
 - 2026-07-30 docs(JUM-568): record terminal PR checks - Eduardo Almeida
 - 2026-07-30 docs(JUM-568): record canonical provider evidence - Eduardo Almeida
-- 2026-07-30 fix(tooling): correct two lint errors, and correct the previous commit message - Eduardo A.
-- 2026-07-30 test(tooling): unit-cover the new Bun guards and harden the fail-closed harness - Eduardo A.
-- 2026-07-30 Merge origin/dev (JUM-568) into the Bun cutover branch - Eduardo A.
+- 2026-07-30 fix(tooling): correct two lint errors, and correct the previous commit message - Eduardo Almeida
+- 2026-07-30 test(tooling): unit-cover the new Bun guards and harden the fail-closed harness - Eduardo Almeida
+- 2026-07-30 Merge origin/dev (JUM-568) into the Bun cutover branch - Eduardo Almeida
 - 2026-07-30 [JUM-568][CI] Recreate canonical integrations and repository controls (#7) - Eduardo A.
 - 2026-07-30 fix(JUM-568): resolve remaining Sonar finding - Eduardo Almeida
 - 2026-07-30 fix(JUM-568): satisfy Sonar quality gate - Eduardo Almeida
-- 2026-07-30 feat(tooling): migrate release tooling to bun and record two open decisions [JUM-36][JUM-37][JUM-540] - Eduardo A.
-- 2026-07-30 feat(tooling): fail-closed evidence, Bun engineering guide, cutover cleanup [JUM-38][JUM-39][JUM-40] - Eduardo A.
-- 2026-07-29 refactor(tooling): repo-wide import type / export type codemod [JUM-536] - Eduardo A.
-- 2026-07-29 feat(tooling): PM2 on Bun interpreter and private-registry token wiring [JUM-33][JUM-539] - Eduardo A.
+- 2026-07-30 feat(tooling): migrate release tooling to bun and record two open decisions [JUM-36][JUM-37][JUM-540] - Eduardo Almeida
+- 2026-07-30 feat(tooling): fail-closed evidence, Bun engineering guide, cutover cleanup [JUM-38][JUM-39][JUM-40] - Eduardo Almeida
+- 2026-07-29 refactor(tooling): repo-wide import type / export type codemod [JUM-536] - Eduardo Almeida
+- 2026-07-29 feat(tooling): PM2 on Bun interpreter and private-registry token wiring [JUM-33][JUM-539] - Eduardo Almeida
 - 2026-07-29 chore(JUM-568): reconcile canonical integration migration - Eduardo Almeida
-- 2026-07-29 feat(tooling): migrate scripts, hooks and CI to Bun; drop hyper-express [JUM-27][JUM-28][JUM-32][JUM-34][JUM-35][JUM-551] - Eduardo A.
+- 2026-07-29 feat(tooling): migrate scripts, hooks and CI to Bun; drop hyper-express [JUM-27][JUM-28][JUM-32][JUM-34][JUM-35][JUM-551] - Eduardo Almeida
 - 2026-07-29 ci(JUM-568): recreate canonical integrations and repository controls - Eduardo Almeida
-- 2026-07-29 fix(tooling): vendor uWebSockets.js and close the hyper-express blocker [JUM-538][JUM-26] - Eduardo A.
-- 2026-07-29 feat(tooling): pin Bun toolchain and consolidate dependency pins [JUM-24][JUM-537][JUM-538][JUM-26] - Eduardo A.
+- 2026-07-29 fix(tooling): vendor uWebSockets.js and close the hyper-express blocker [JUM-538][JUM-26] - Eduardo Almeida
+- 2026-07-29 feat(tooling): pin Bun toolchain and consolidate dependency pins [JUM-24][JUM-537][JUM-538][JUM-26] - Eduardo Almeida
 - 2026-07-29 Merge pull request #5 from XpertMinds/chore/release/reconcile-main-into-dev - Eduardo A.
 - 2026-07-29 chore(release): reconcile main into dev for XpertMinds promotion - Eduardo Almeida
 - 2026-07-29 Merge pull request #3 from XpertMinds/cursor/ci/JUM-568-recreate-jumentix-integrations - Eduardo A.
-- 2026-07-29 ci(governance): enforce XpertMinds application integration parity [JUM-568] - Eduardo A.
+- 2026-07-29 ci(governance): enforce XpertMinds application integration parity [JUM-568] - Eduardo Almeida
 - 2026-07-29 Merge pull request #1 from XpertMinds/codex/ci/JUM-564-restify-process-budget - Eduardo A.
 - 2026-07-29 chore(changelog): record JUM-564 listener stabilization - Eduardo Almeida
 - 2026-07-29 test(http): stabilize integration listener lifecycle [JUM-564] - Eduardo Almeida

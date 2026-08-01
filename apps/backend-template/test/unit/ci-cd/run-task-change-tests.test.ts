@@ -189,3 +189,167 @@ describe('run-task-change-tests', () => {
     taskFs.unlinkSync(resultFile);
   });
 });
+
+/**
+ * Evidence bookkeeping for integration suites.
+ *
+ * The plan lists integration suites by path; execution runs them through one npm
+ * script per framework. Recording only the script name left `validateGateEvidence`
+ * comparing paths against script names, so every planned integration suite
+ * reported as "missing from executed set".
+ *
+ * That is a fail-closed gate failing on its own accounting rather than on a test,
+ * and it stayed invisible for as long as no change selected an integration layer.
+ * The Express 5 upgrade selected them and forty-odd suites were reported unrun
+ * immediately after passing.
+ */
+describe('layer-aware evidence for integration scripts', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+  const taskRunner = require('../../../../../ci-cd/run-task-change-tests');
+  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+  const { buildGateEvidence, validateGateEvidence } = require('../../../../../ci-cd/lib/gate-evidence');
+
+  const planWith = (script: string) => ({
+    type: 'layer-aware',
+    files: ['apps/backend-template/src/interface/HTTP/adapters/express/ExpressServer.ts'],
+    selectedLayers: ['adapters/in'],
+    notRunLayers: [],
+    reasons: {},
+    unitSuites: [],
+    integrationScripts: [script],
+    suites: [
+      {
+        path: 'apps/backend-template/test/integration/Express/Users/create.test.ts',
+        type: 'integration',
+        script
+      },
+      {
+        path: 'apps/backend-template/test/integration/Express/auth/login.test.ts',
+        type: 'integration',
+        script
+      }
+    ]
+  });
+
+  it('records the suite files a script covers, not just the script name', () => {
+    expect.hasAssertions();
+    const plan = planWith('test:integration:express') as never;
+
+    taskRunner.executeLayerAwarePlan(plan, {
+      spawn: () => ({ status: 0 })
+    });
+
+    expect((plan as { _execution: { executedSuites: string[] } })._execution.executedSuites)
+      .toStrictEqual([
+        'test:integration:express',
+        'apps/backend-template/test/integration/Express/Users/create.test.ts',
+        'apps/backend-template/test/integration/Express/auth/login.test.ts'
+      ]);
+  });
+
+  it('produces evidence that validates, rather than reporting its own suites unrun', () => {
+    expect.hasAssertions();
+    // The assertion that actually matters: the gate must accept its own output.
+    const plan = planWith('test:integration:express') as never;
+
+    taskRunner.executeLayerAwarePlan(plan, { spawn: () => ({ status: 0 }) });
+    const execution = (plan as { _execution: unknown })._execution;
+    const evidence = buildGateEvidence(
+      { ...(plan as object), outcome: 'passed' },
+      { ...(execution as object), outcome: 'passed' }
+    );
+
+    const validation = validateGateEvidence(evidence) as { ok: boolean; errors: string[] };
+
+    expect(validation.errors).toStrictEqual([]);
+    expect(validation.ok).toBe(true);
+  });
+});
+
+/**
+ * Suite paths arrive from `process.argv` and are handed to a spawned process.
+ *
+ * The spawn uses an argument array rather than a shell, so there is nothing to
+ * escape from today — but "no shell" is a property of one file, not of its
+ * callers, and a path that leaves the repository is wrong long before it is
+ * dangerous: it would run someone else's tests and report them as this suite's.
+ */
+describe('suite path validation', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+  const { invalidSuitePaths } = require('../../../../../ci-cd/run-suite') as {
+    invalidSuitePaths: (paths: unknown[], root?: string) => unknown[];
+  };
+
+  const root = '/repo';
+
+  it('accepts a relative path inside the repository', () => {
+    expect.hasAssertions();
+    expect(invalidSuitePaths(['apps/backend-template/test/unit/x.test.ts'], root))
+      .toStrictEqual([]);
+  });
+
+  it.each([
+    ['an absolute path', '/etc/passwd'],
+    ['a traversal', '../../etc/passwd'],
+    ['a command separator', 'a.test.ts; rm -rf /'],
+    ['a substitution', 'a.test.ts$(whoami)'],
+    ['a backtick', 'a.test.ts`id`'],
+    ['a newline', 'a.test.ts\nrm -rf /'],
+    ['an empty string', '']
+  ])('rejects %s', (_case, given) => {
+    expect.hasAssertions();
+    expect(invalidSuitePaths([given], root)).toStrictEqual([given]);
+  });
+
+  it('rejects a non-string rather than coercing it', () => {
+    expect.hasAssertions();
+    // `String(undefined)` would become the path "undefined", which resolves
+    // inside the repo and would be handed to the runner.
+    expect(invalidSuitePaths([undefined, 42], root)).toStrictEqual([undefined, 42]);
+  });
+
+  it('names every rejected path, not just the first', () => {
+    expect.hasAssertions();
+    // The message is the whole diagnosis; reporting one of three would send
+    // someone round the loop twice.
+    expect(invalidSuitePaths(['ok/a.test.ts', '/etc/passwd', '../b.test.ts'], root))
+      .toStrictEqual(['/etc/passwd', '../b.test.ts']);
+  });
+});
+
+/**
+ * What is actually handed to the spawn.
+ *
+ * `invalidSuitePaths` decides *whether* a path is acceptable; this decides what
+ * runs. Passing the argv strings straight through works, but then the value that
+ * was validated and the value that is executed are the same object — so a later
+ * edit that moves the check, or adds a path after it, silently stops being
+ * covered.
+ */
+describe('suite path canonicalisation', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+  const { canonicalSuitePaths } = require('../../../../../ci-cd/run-suite') as {
+    canonicalSuitePaths: (paths: string[], root?: string) => string[];
+  };
+
+  const root = '/repo';
+
+  it('leaves an already-canonical path alone', () => {
+    expect.hasAssertions();
+    expect(canonicalSuitePaths(['apps/x/test/a.test.ts'], root))
+      .toStrictEqual(['apps/x/test/a.test.ts']);
+  });
+
+  it('collapses a path that walks back through itself', () => {
+    expect.hasAssertions();
+    expect(canonicalSuitePaths(['apps/./x/../x/test/a.test.ts'], root))
+      .toStrictEqual(['apps/x/test/a.test.ts']);
+  });
+
+  it('returns paths relative to the repository root', () => {
+    expect.hasAssertions();
+    // The runner is invoked from the root, so a relative path is what it expects.
+    expect(canonicalSuitePaths(['/repo/apps/x/a.test.ts'], root))
+      .toStrictEqual(['apps/x/a.test.ts']);
+  });
+});

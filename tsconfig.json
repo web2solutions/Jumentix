@@ -38,6 +38,8 @@
       "@seed": ["./apps/backend-template/seed"],
       "@seed/*": ["./apps/backend-template/seed/*"],
       "@test/*": ["./apps/backend-template/test/*"],
+      "@jumentix/cana": ["./packages/cana/src/index.ts"],
+      "@jumentix/cana/*": ["./packages/cana/src/*"],
       "@jumentix/message-mediator": ["./packages/message-mediator/src/index.ts"],
       "@jumentix/message-mediator/*": ["./packages/message-mediator/src/*"],
       "@jumentix/key-value-storage": ["./packages/key-value-storage/src/index.ts"],

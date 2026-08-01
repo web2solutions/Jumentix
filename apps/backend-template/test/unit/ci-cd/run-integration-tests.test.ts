@@ -39,9 +39,16 @@ describe('run-integration-tests', () => {
 
   it('gives only Restify deterministic per-test headroom under sustained matrix load', () => {
     expect.hasAssertions();
-    expect(rootPackage.scripts['test:integration:restify']).toContain('--testTimeout=15000');
-    expect(rootPackage.scripts['test:integration:express']).not.toContain('--testTimeout');
-    expect(rootPackage.scripts['test:integration:fastify']).not.toContain('--testTimeout');
+    // The flag moved from Jest's `--testTimeout=15000` to the Bun runner's
+    // `--timeout 15000` when these scripts migrated. The assertion did not, so
+    // it went on checking for a flag no script could contain — a failure that
+    // says nothing about the property it names (JUM-583).
+    //
+    // Both spellings are rejected for the other two, so migrating back would not
+    // quietly reintroduce headroom where the point is that there is none.
+    expect(rootPackage.scripts['test:integration:restify']).toContain('--timeout 15000');
+    expect(rootPackage.scripts['test:integration:express']).not.toMatch(/--(testTimeout|timeout)\b/);
+    expect(rootPackage.scripts['test:integration:fastify']).not.toMatch(/--(testTimeout|timeout)\b/);
   });
 
   it('runs every target and aggregates failures instead of stopping early', () => {

@@ -34,6 +34,28 @@ if (selectedFile) {
   }
 }
 
+/*
+ * Message mediator: in-memory unless a suite explicitly asks for a broker.
+ *
+ * This file is loaded only by test runners — `bunfig.toml` `[test] preload` and
+ * Jest `setupFiles` — so the override applies to tests and never to a running
+ * application.
+ *
+ * `.env.dev` declares `AAA_MESSAGE_MEDIATOR_ADAPTER=rabbitmq`, which is the
+ * right default for a developer running the app. It is the wrong default for a
+ * test suite: the Lambda integration suites inherited it and failed with
+ * `ECONNREFUSED 127.0.0.1:5672` on any machine without a broker, while passing
+ * in CI, where `.env.ci` selects `inmemory`. A suite whose outcome depends on
+ * what happens to be listening on a developer's laptop is not a test — and the
+ * failure names a port rather than the reason.
+ *
+ * `AAA_TEST_MESSAGE_BROKER=1` opts back in, matching the existing
+ * `RUN_REDIS_INTEGRATION=1` convention for suites that need the real service.
+ */
+if (!process.env.AAA_TEST_MESSAGE_BROKER) {
+  process.env.AAA_MESSAGE_MEDIATOR_ADAPTER = 'inmemory';
+}
+
 if (NODE_ENV === 'ci' && !process.env.AAA_JWT_TOKEN_SECRET_KEY) {
   process.env.AAA_JWT_TOKEN_SECRET_KEY = 'ci_jwt_secret_key';
 }

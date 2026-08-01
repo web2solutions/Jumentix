@@ -2,6 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 function runCommand(command, args, cwd = process.cwd()) {
   const result = spawnSync(command, args, { cwd, stdio: 'inherit' });
@@ -69,7 +70,7 @@ function run() {
   console.log('\n[dry-run] release dry-run completed successfully.');
 }
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   run();
 }
 

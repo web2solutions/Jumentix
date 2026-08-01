@@ -2,6 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 const FULL_MATRIX_QUALITY_GATE = Object.freeze({
   id: 'full-matrix',
@@ -79,7 +80,7 @@ function runBranchQualityGate(options = {}) {
   return evidence;
 }
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   const evidence = runBranchQualityGate();
   if (evidence.outcome !== 'passed') {
     process.exitCode = 1;
