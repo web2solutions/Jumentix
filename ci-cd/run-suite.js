@@ -230,7 +230,18 @@ function runSuitePaths(paths, options = {}) {
   }
 
   console.log(`[suite] runtime=bun${label}: ${paths.length} path(s)`);
-  const result = spawn(process.execPath, ['test', ...safePaths], {
+  // `--isolate`, matching `run-unit-tests.js`. Bun shares one process across
+  // files unless told otherwise, so module state — an in-memory store, a
+  // registered singleton — survives from one suite into the next. Jest gives
+  // each file a fresh module registry, so without this the two runners disagree
+  // about what the same suites do.
+  //
+  // The failure mode is not a visible error. Running the three Lambda suites
+  // together reported "13 pass, 1 fail" across 14 tests; with isolation the same
+  // directory reports 25 pass across 25. Eleven tests never ran at all — a
+  // seeded user collided with one left behind by the previous file, the failure
+  // aborted the rest of that suite, and the run still looked almost healthy.
+  const result = spawn(process.execPath, ['test', '--isolate', ...safePaths], {
     shell: false,
     stdio: 'inherit',
     env: {

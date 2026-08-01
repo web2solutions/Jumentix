@@ -29,6 +29,16 @@ const FULL_TEST_MATRIX = Object.freeze([
   { id: 'workspace-tests', script: 'mono:test' },
   { id: 'website-prepublish', script: 'website:test:prepublish' },
   { id: 'integration', script: 'ci:integration' },
+  // Requirement 110: `test:unit` runs under bun:test, which emits no branch
+  // records and no Jest lcov, so coverage is produced by a separate Jest run.
+  // Both cells were missing here, and their absence was invisible in opposite
+  // directions: `coverage:check` — the authority on all four thresholds — never
+  // ran in the strict gate at all, so the gate guarding promotion to main was
+  // not checking coverage; and `patch-coverage` ran against a report nothing had
+  // produced, so it could only ever fail with "Coverage file not found".
+  // Ordered before patch-coverage, which reads what this writes.
+  { id: 'coverage', script: 'test:coverage' },
+  { id: 'coverage-thresholds', script: 'coverage:check' },
   { id: 'patch-coverage', script: 'coverage:patch' }
 ]);
 

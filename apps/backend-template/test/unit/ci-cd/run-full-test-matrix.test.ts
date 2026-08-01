@@ -26,6 +26,32 @@ describe('run-full-test-matrix', () => {
     }
   });
 
+  /**
+   * The strict matrix guards promotion to `main`, so the coverage contract has
+   * to be part of it — and the parts have to run in the right order.
+   *
+   * Both were wrong at once, and each hid in a different direction. Requirement
+   * 110 moved coverage production out of `test:unit` (bun:test, no lcov) into
+   * `test:coverage` (Jest), and neither the producer nor `coverage:check` was
+   * ever added here. So the gate that decides what reaches `main` was not
+   * checking the four thresholds at all, while `patch-coverage` read a report
+   * nothing had written and failed with "Coverage file not found" — a red cell
+   * that looked like a coverage shortfall and was actually a missing dependency.
+   */
+  it('produces coverage before the cells that consume it', () => {
+    expect.hasAssertions();
+
+    const ids = (FULL_TEST_MATRIX as FullMatrixTestCell[]).map((cell) => cell.id);
+
+    expect(ids).toContain('coverage');
+    expect(ids).toContain('coverage-thresholds');
+    expect(ids).toContain('patch-coverage');
+
+    // Cells run in declaration order, so position is the dependency.
+    expect(ids.indexOf('coverage')).toBeLessThan(ids.indexOf('coverage-thresholds'));
+    expect(ids.indexOf('coverage')).toBeLessThan(ids.indexOf('patch-coverage'));
+  });
+
   it('fails closed for an empty, duplicate, or missing-script manifest', () => {
     expect.hasAssertions();
     expect(() => validateMatrixManifest([], fullMatrixRootPackage.scripts))
