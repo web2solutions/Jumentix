@@ -13,11 +13,8 @@
   ],
   "scripts": {
     "build": "echo \"cli-init is plain node script: no build step required\"",
-    "test": "node ./bin/jumentix-init.js --help",
+    "test": "bun test --isolate test",
     "lint": "echo \"cli-init: lint managed by root workspace\"",
     "typecheck": "echo \"cli-init: plain JS entrypoint\""
-  },
-  "jumentix": {
-    "testSurface": "typecheck-only"
   }
 }

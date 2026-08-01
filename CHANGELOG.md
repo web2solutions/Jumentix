@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-01 test(sdk): give both SDK clients their own suites - Eduardo Almeida
 - 2026-08-01 style(testing): keep the REST client assertions strict and conditional-free - Eduardo Almeida
 - 2026-08-01 feat(testing): suite for sdk-rest-client (JUM-585) - Eduardo Almeida
 - 2026-08-01 feat(testing): suite for mutex-service (JUM-585) - Eduardo Almeida

@@ -33,8 +33,8 @@ const SERVICE_TYPES = [
   }
 ];
 
-function printHelp() {
-  console.log(`
+function printHelp(log = console.log) {
+  log(`
 JumentiX Bootstrap CLI
 
 Usage:
@@ -102,11 +102,13 @@ function parseCliArgs(argv) {
   return args;
 }
 
-function createPrompt() {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-  });
+/**
+ * The streams are parameters so a suite can drive a real `readline` interface
+ * over a pair of pipes instead of standing in for one. Production passes
+ * nothing and gets stdin/stdout, exactly as before.
+ */
+function createPrompt({ input = process.stdin, output = process.stdout } = {}) {
+  const rl = readline.createInterface({ input, output });
 
   const ask = (question) => new Promise((resolve) => {
     rl.question(question, (answer) => resolve(String(answer || '').trim()));
@@ -118,19 +120,49 @@ function createPrompt() {
   };
 }
 
+/**
+ * The variables that tell git which repository it is already operating on.
+ *
+ * This CLI clones into a new, empty folder, so it must not inherit them. Run
+ * `jumentix-init` from inside a git hook — or from any shell with GIT_DIR
+ * exported — and an inherited location makes the clone fail, or succeed
+ * against the wrong repository: git reinitialises whatever GIT_DIR points at.
+ *
+ * Credentials and transport settings (GIT_SSH_COMMAND, GIT_ASKPASS,
+ * GIT_TERMINAL_PROMPT and the rest) are deliberately left in place. Those are
+ * how a user reaches a private template, and dropping them would break the
+ * clone rather than protect it.
+ */
+const GIT_LOCATION_VARIABLES = [
+  'GIT_DIR',
+  'GIT_WORK_TREE',
+  'GIT_INDEX_FILE',
+  'GIT_OBJECT_DIRECTORY',
+  'GIT_ALTERNATE_OBJECT_DIRECTORIES',
+  'GIT_COMMON_DIR',
+  'GIT_NAMESPACE'
+];
+
+function environmentWithoutRepositoryLocation(env = process.env) {
+  const copy = { ...env };
+  for (const name of GIT_LOCATION_VARIABLES) delete copy[name];
+  return copy;
+}
+
 function runCommand(command, args, cwd) {
   const result = spawnSync(command, args, {
     cwd,
-    stdio: 'inherit'
+    stdio: 'inherit',
+    env: environmentWithoutRepositoryLocation()
   });
   if (result.status !== 0) {
     throw new Error(`${command} ${args.join(' ')} failed with exit code ${String(result.status)}`);
   }
 }
 
-function toAbsolute(targetPath) {
+function toAbsolute(targetPath, base = process.cwd()) {
   if (path.isAbsolute(targetPath)) return targetPath;
-  return path.resolve(process.cwd(), targetPath);
+  return path.resolve(base, targetPath);
 }
 
 function ensureTargetFolderIsEmpty(targetPath) {
@@ -141,10 +173,10 @@ function ensureTargetFolderIsEmpty(targetPath) {
   }
 }
 
-async function chooseServiceType(ask) {
-  console.log('\nSelect service type:');
+async function chooseServiceType(ask, log = console.log) {
+  log('\nSelect service type:');
   SERVICE_TYPES.forEach((type, index) => {
-    console.log(` ${index + 1}. ${type.label}`);
+    log(` ${index + 1}. ${type.label}`);
   });
   const selected = await ask('Type number: ');
   const index = Number(selected) - 1;
@@ -169,10 +201,25 @@ function writeBootstrapProfile(targetPath, payload) {
   fs.writeFileSync(outputPath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
 }
 
-async function run() {
-  const cliArgs = parseCliArgs(process.argv.slice(2));
+/**
+ * Every outside edge this function touches — the argument vector, the console,
+ * the prompt, the subprocess runner and the working directory — is a parameter
+ * with its production value as the default. The `bin` entry still calls `run()`
+ * and behaves exactly as it did; a suite can call it against a scratch
+ * directory and a repository on disk without touching either.
+ */
+async function run(options = {}) {
+  const {
+    argv = process.argv.slice(2),
+    log = console.log,
+    createPrompt: makePrompt = createPrompt,
+    execute = runCommand,
+    workingDirectory = process.cwd()
+  } = options;
+
+  const cliArgs = parseCliArgs(argv);
   if (cliArgs.help) {
-    printHelp();
+    printHelp(log);
     return;
   }
 
@@ -182,17 +229,17 @@ async function run() {
 
   const prompt = cliArgs.nonInteractive
     ? { ask: async () => '', close: () => {} }
-    : createPrompt();
+    : makePrompt();
 
   try {
-    console.log('\nJumentiX Bootstrap CLI');
+    log('\nJumentiX Bootstrap CLI');
     const serviceType = cliArgs.serviceTypeId
       ? resolveServiceTypeById(cliArgs.serviceTypeId)
-      : await chooseServiceType(prompt.ask);
+      : await chooseServiceType(prompt.ask, log);
 
     const projectName = cliArgs.projectName || await prompt.ask('Project folder name (e.g. my-service): ');
     if (!projectName) throw new Error('Project folder name is required.');
-    const targetPath = toAbsolute(projectName);
+    const targetPath = toAbsolute(projectName, workingDirectory);
     ensureTargetFolderIsEmpty(targetPath);
 
     const gitBranch = cliArgs.gitBranch || (await prompt.ask('Git branch to clone (default: main): ')) || 'main';
@@ -201,8 +248,8 @@ async function run() {
       : (((await prompt.ask('Run bun install after scaffold? (Y/n): ')) || 'y').toLowerCase() !== 'n');
     const repository = cliArgs.repository || BOILERPLATE_REPOSITORY;
 
-    console.log('\nCloning boilerplate repository...');
-    runCommand('git', ['clone', '--branch', gitBranch, repository, targetPath], process.cwd());
+    log('\nCloning boilerplate repository...');
+    execute('git', ['clone', '--branch', gitBranch, repository, targetPath], workingDirectory);
 
     writeBootstrapProfile(targetPath, {
       generatedAt: new Date().toISOString(),
@@ -214,16 +261,31 @@ async function run() {
     });
 
     if (installDeps) {
-      console.log('\nInstalling dependencies...');
-      runCommand('npm', ['install'], targetPath);
+      log('\nInstalling dependencies...');
+      execute('npm', ['install'], targetPath);
     }
 
-    console.log('\nScaffold completed successfully.');
-    console.log(`Project path: ${targetPath}`);
-    console.log(`Profile: ${path.join(targetPath, '.aaa', 'service-profile.json')}`);
+    log('\nScaffold completed successfully.');
+    log(`Project path: ${targetPath}`);
+    log(`Profile: ${path.join(targetPath, '.aaa', 'service-profile.json')}`);
   } finally {
     prompt.close();
   }
 }
 
-module.exports = { BOILERPLATE_REPOSITORY, run };
+module.exports = {
+  BOILERPLATE_REPOSITORY,
+  GIT_LOCATION_VARIABLES,
+  SERVICE_TYPES,
+  chooseServiceType,
+  environmentWithoutRepositoryLocation,
+  createPrompt,
+  ensureTargetFolderIsEmpty,
+  parseCliArgs,
+  printHelp,
+  resolveServiceTypeById,
+  run,
+  runCommand,
+  toAbsolute,
+  writeBootstrapProfile
+};

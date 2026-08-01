@@ -36,7 +36,6 @@ const SONAR_CONFIG = 'sonar-project.properties';
  * "no time" is a reason; the absence of one is not.
  */
 const WITHOUT_SUITE_YET = Object.freeze({
-  'cli-init': { since: '2026-08-01', issue: 'JUM-585', reason: 'JavaScript source, and its only suite lives in the backend app (test/unit/packages/cli-init/) — that suite moves here.' },
   'security-scanner': { since: '2026-08-01', issue: 'JUM-585', reason: 'JavaScript source with no suite anywhere.' },
   'database-client-factory': { since: '2026-08-01', issue: 'JUM-585', reason: 'Factory over external drivers; needs driver fakes.' },
   'external-db-repositories': { since: '2026-08-01', issue: 'JUM-585', reason: 'Nine source files over real database clients.' },
