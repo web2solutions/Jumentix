@@ -133,6 +133,19 @@ This file consolidates non-functional requirements already requested and stored 
   globally on a contributor machine. Fails closed on a missing, empty or unparseable
   declaration (Requirement 065).
 
+- `112` Every workspace package and app owns a test suite covering its own source, at
+  the project's 99% standard. Coverage borrowed from a consumer measures the consumer: a
+  library exercised only by an application's tests is not tested, and the break surfaces
+  three layers up where the reader starts at the wrong end. Packages do not depend on one
+  another's suites in the development workflow — a commit runs the affected suites, and the
+  full matrix is the release gate for `main`, not a per-commit tax. A package that runs in a
+  browser is verified in a real browser, headless, through Cypress, with no shims and no fake
+  libraries; `packages/cana` currently runs on `fake-indexeddb` and owes that replacement.
+  Debt is declared in `WITHOUT_SUITE_YET` with a date, an issue and a reason, and the register
+  ratchets: a declared package that has since grown a suite fails too, so the list cannot
+  become a permanent exemption. The same list is the Sonar coverage exclusion set, and the two
+  disagreeing in either direction fails. `packages:check-suites` validates it.
+
 When a new NFR is requested:
 
 1. add/update requirement file in `.agents/requirements/`
