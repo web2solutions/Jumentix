@@ -2,7 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
-const { isEntryPoint } = require('./lib/entry-point.js');
+const { runWhenEntryPoint } = require('./lib/entry-point.js');
 
 const FULL_TEST_MATRIX = Object.freeze([
   { id: 'lint', script: 'lint' },
@@ -151,26 +151,23 @@ function runFullTestMatrix(options = {}) {
  * whether a failing matrix actually fails the build.
  */
 function runAsEntryPoint(options = {}) {
-  const {
-    caller = module,
-    entry = require.main,
-    exit = (code) => { process.exitCode = code; },
-    run = runFullTestMatrix,
-    logger = console
-  } = options;
+  const { run = runFullTestMatrix, logger = console, ...rest } = options;
 
-  if (!isEntryPoint(caller, entry)) return false;
-
-  try {
-    const evidence = run();
-    if (evidence.outcome !== 'passed') exit(1);
-  } catch (error) {
-    logger.error('[ci] full test matrix configuration is invalid.');
-    logger.error(error);
-    exit(1);
-  }
-
-  return true;
+  return runWhenEntryPoint({
+    caller: module,
+    // A manifest that will not validate throws before any cell runs. That has
+    // to fail the build too: it is the one case where nothing was verified.
+    execute: () => {
+      try {
+        return run().outcome === 'passed' ? 0 : 1;
+      } catch (error) {
+        logger.error('[ci] full test matrix configuration is invalid.');
+        logger.error(error);
+        return 1;
+      }
+    },
+    ...rest
+  });
 }
 
 runAsEntryPoint();

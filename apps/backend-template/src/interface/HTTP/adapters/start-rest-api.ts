@@ -1,4 +1,3 @@
-/* istanbul ignore file */
 import { resolveHTTPFramework } from '@src/interface/runtime/RuntimeEnvironment';
 
 /**
@@ -10,7 +9,15 @@ import { resolveHTTPFramework } from '@src/interface/runtime/RuntimeEnvironment'
  * This was eleven near-identical `if` blocks. The mapping is data, and writing
  * it as data means adding an adapter is one row rather than one more branch a
  * reader has to compare against the ten above it.
+ *
+ * The thunks are the only unreachable part of this file: a unit test can assert
+ * *which* one was selected — that is what the injected table is for — but never
+ * call it. Hence `ignore next` here, rather than the `ignore file` this carried
+ * before: the file-wide form also hid the loader beneath, so the selection
+ * logic, the unknown-framework error and the default were invisible to coverage
+ * for as long as the pragma covered everything.
  */
+/* istanbul ignore next -- invoking a thunk boots a real server; see above */
 export const REST_API_ADAPTERS: Readonly<Record<string, () => Promise<unknown>>> = {
   express: () => import('@src/interface/HTTP/adapters/express/express'),
   fastify: () => import('@src/interface/HTTP/adapters/fastify/fastify'),

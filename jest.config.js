@@ -41,7 +41,7 @@ module.exports = {
     // this same lcov, so a new ci-cd file that is not listed here reports as 0%
     // covered on new code and fails the quality gate even when it has tests.
     // Keep this list and the suites under test/unit/ci-cd/ in step.
-    '<rootDir>/ci-cd/(?!(check-canonical-integrations|check-bun-version|check-commit-authorship|check-coverage-thresholds|check-dependency-override-integrity|run-full-test-matrix|run-suite)\\.js$)',
+    '<rootDir>/ci-cd/(?!(check-canonical-integrations|check-bun-version|check-commit-authorship|check-coverage-thresholds|check-dependency-override-integrity|check-package-suites|run-full-test-matrix|run-suite)\\.js$)',
     '<rootDir>/apps/backend-template/src/modules/Users/adapters/out/persistence/UserDataRepository.ts',
     '<rootDir>/apps/backend-template/src/modules/Users/adapters/out/persistence/OrganizationDataRepository.ts'
   ],
