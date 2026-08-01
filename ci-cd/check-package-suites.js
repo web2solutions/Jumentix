@@ -23,6 +23,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { runWhenEntryPoint } = require('./lib/entry-point.js');
+const { byPath } = require('./lib/mapped-suites.js');
 
 const PACKAGES_DIR = 'packages';
 const SONAR_CONFIG = 'sonar-project.properties';
@@ -99,7 +100,7 @@ function run(options = {}) {
     return { ok: false, message: `Cannot read ${SONAR_CONFIG}: ${error.message}` };
   }
 
-  for (const name of listPackages().sort()) {
+  for (const name of listPackages().sort(byPath)) {
     const dir = path.join(root, PACKAGES_DIR, name);
     if (!options.listPackages && !fs.statSync(dir).isDirectory()) continue;
     if (!hasSource(dir)) continue;

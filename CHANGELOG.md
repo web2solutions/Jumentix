@@ -4,8 +4,13 @@
 
 ## All Changes
 
-- 2026-08-01 test(cana): quarantine the wall-clock performance suite, and classify root tooling config (JUM-586) - Eduardo Almeida
-- 2026-08-01 feat(testing): every package owns its suite, and the debt register ratchets (JUM-585) - Eduardo Almeida
+- 2026-08-01 fix(ci): make the quarantine actually relieve the gate (JUM-586) - Eduardo Almeida
+- 2026-08-01 fix(ci): make the test map complete in both directions (JUM-587) - Eduardo Almeida
+- 2026-08-01 [JUM-585][Release] Reconcile main ancestry into dev (#26) - Eduardo A.
+- 2026-08-01 chore(release): reconcile main ancestry into dev - Eduardo Almeida
+- 2026-08-01 feat(testing): every package owns its suite, with a ratcheting debt register [JUM-585] (#24) (#25) - Eduardo A.
+- 2026-08-01 feat(testing): every package owns its suite, with a ratcheting debt register [JUM-585] (#24) - Eduardo A.
+- 2026-08-01 [JUM-398][Release] Promote Cana adapter, Requirement 111 and gate repairs to main (#22) - Eduardo A.
 - 2026-08-01 fix(ci): isolate integration suites and restore the strict matrix coverage cells [JUM-398] (#23) - Eduardo A.
 - 2026-07-31 feat(database): Cana — IndexedDB offline database adapter [JUM-398] (#15) - Eduardo A.
 - 2026-07-30 feat(testing): finish Hexagonal Test Pyramid with Req 106 Bun-local runtime (#18) - Eduardo A.
