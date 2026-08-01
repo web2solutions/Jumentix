@@ -14,11 +14,8 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "bun run typecheck",
+    "test": "bun test --isolate test",
     "lint": "echo \"message-mediator package lint pending\"",
     "typecheck": "tsc -p tsconfig.json --noEmit"
-  },
-  "jumentix": {
-    "testSurface": "typecheck-only"
   }
 }

@@ -38,7 +38,6 @@ const SONAR_CONFIG = 'sonar-project.properties';
  */
 const WITHOUT_SUITE_YET = Object.freeze({
   'external-store-proxy': { since: '2026-08-01', issue: 'JUM-585', reason: 'Proxy layer; needs a store double.' },
-  'message-mediator': { since: '2026-08-01', issue: 'JUM-585', reason: 'Six source files; broker adapters need doubles.' },
 });
 
 /**
