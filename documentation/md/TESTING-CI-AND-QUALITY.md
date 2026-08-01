@@ -190,10 +190,11 @@ SonarQube Cloud coverage import:
 |------------|---------|-------------------------|-----------------------------|
 | GitHub Actions (tests) | Target-aware CI validation on push/PR | `.github/workflows/test.yml` | Uses pinned Bun, selects by PR base/pushed branch, uploads selected-gate evidence and main matrix evidence |
 | GitHub Actions (coverage) | Repository-owned project and patch coverage | `.github/workflows/coverage.yml` | Enforces `coverage:check` and `coverage:patch`, then retains JSON/LCOV evidence |
+| GitHub Actions (third-party review) | Fail-closed secret and static-analysis review | `.github/workflows/third-party-review.yml` | Runs pinned Gitleaks/Semgrep and publishes findings through pinned Reviewdog |
 | GitHub Actions (website) | Website-owned Storybook and publication readiness | `.github/workflows/website.yml` | Path-scoped to website inputs; runs Storybook build/smoke and prepublish checks independently |
-| GitHub Actions (SonarQube Cloud) | Static analysis + quality gate + coverage import | `.github/workflows/sonarqube-cloud.yml`, `sonar-project.properties` | Requires `SONAR_TOKEN`; runs `pnpm run test:unit` first |
-| Jest coverage gate | Local hard gate to prevent low-coverage merges | `jest.config.js` | Global thresholds: `lines/statements >= 95%`, `branches/functions >= 80%` |
-| Husky | Local Git hooks for quality checks | `.husky/*` | Installed by `pnpm run prepare` |
+| GitHub Actions (SonarQube Cloud) | Static analysis + quality gate + coverage import | `.github/workflows/sonarqube-cloud.yml`, `sonar-project.properties` | Requires `SONAR_TOKEN`; produces LCOV before scanning |
+| Repository coverage gate | Local hard gate to prevent low-coverage merges | `jest.config.js`, `ci-cd/check-coverage-thresholds.js` | Statements/lines/functions 99%, branches 90%, changed lines 99% |
+| Husky | Local Git hooks for quality checks | `.husky/*` | Installed by `bun run prepare` |
 | Commitlint + Commitizen | Conventional commits and guided commit flow | `commitlint.config.js`, `package.json` | `pnpm run commit` |
 | Changelog sync automation | Keeps `CHANGELOG.md` aligned with Git history | `ci-cd/update-changelog.js`, `.husky/post-commit` | `pnpm run changelog:update`, `pnpm run changelog:check` |
 | Release governance check | Enforces release script contracts and package publish metadata | `ci-cd/check-release-governance.js` | `pnpm run release:governance:check` |
@@ -215,7 +216,7 @@ features are replaced by tracked GitHub Actions and repository-owned coverage sc
 - Triggers on:
   - `push` to `main` and `dev`
   - `pull_request` to `dev` and `main`
-- Sets up Redis (with password), installs `pnpm`, and runs `pnpm run ci:gate:branch` with the PR base or pushed branch
+- Sets up Redis (with password), installs pinned Bun, and runs `bun run ci:gate:branch` with the PR base or pushed branch
 - Uploads selected-gate evidence with `if: always()` and full-matrix evidence for `main`; docs-only changes do not bypass the selected gate
 
 #### GitHub Actions - SonarQube Cloud Workflow
@@ -297,9 +298,9 @@ pnpm run ci:smoke
 pnpm run ci:integration
 ```
 
-### Troubleshooting (CI / SonarQube / Codecov)
+### Troubleshooting (CI / SonarQube / repository coverage)
 
 For CI incidents and failing checks, see:
 
-- [CI / SonarQube / Codecov Troubleshooting](./CI-TROUBLESHOOTING.md)
+- [CI / SonarQube / repository coverage troubleshooting](./CI-TROUBLESHOOTING.md)
 - [Realtime API Testing Guide](./REALTIME-API-TESTING.md)
