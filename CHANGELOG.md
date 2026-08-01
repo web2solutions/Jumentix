@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-01 fix(ci): isolate integration suites and give the strict matrix its coverage cells - Eduardo Almeida
 - 2026-07-31 feat(database): Cana — IndexedDB offline database adapter [JUM-398] (#15) - Eduardo A.
 - 2026-07-30 feat(testing): finish Hexagonal Test Pyramid with Req 106 Bun-local runtime (#18) - Eduardo A.
 - 2026-07-30 feat(testing): deliver Hexagonal Test Pyramid layer-aware gates [JUM-428][JUM-429][JUM-441][JUM-442][JUM-443] (#16) - Eduardo A.

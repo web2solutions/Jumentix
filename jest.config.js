@@ -41,6 +41,15 @@ module.exports = {
     // this same lcov, so a new ci-cd file that is not listed here reports as 0%
     // covered on new code and fails the quality gate even when it has tests.
     // Keep this list and the suites under test/unit/ci-cd/ in step.
+    // `run-suite` and `run-full-test-matrix` are deliberately NOT opted in yet,
+    // even though both gained suites in this change. Measured, they sit at 90.6%
+    // and 77.3% of statements, which drags the whole project under the 99/90
+    // contract — and Requirement 110 §3 forbids meeting a threshold by moving
+    // scope, in either direction. Opting them in belongs with the work that
+    // brings them to threshold, not with a promotion. The cost is visible and
+    // accepted: Sonar reports new lines in either file as 0% covered on new
+    // code, so a pull request touching only them fails the advisory SonarCloud
+    // analysis while the three required checks pass.
     '<rootDir>/ci-cd/(?!(check-canonical-integrations|check-bun-version|check-commit-authorship|check-coverage-thresholds|check-dependency-override-integrity)\\.js$)',
     '<rootDir>/apps/backend-template/src/modules/Users/adapters/out/persistence/UserDataRepository.ts',
     '<rootDir>/apps/backend-template/src/modules/Users/adapters/out/persistence/OrganizationDataRepository.ts'

@@ -31,10 +31,10 @@ const { isEntryPoint } = require('./lib/entry-point.js');
  * in the set is enough: the alternative is running the rest under Bun and that
  * one nowhere.
  */
-function mapPinsToNode(paths) {
+function mapPinsToNode(paths, readMap = readTestMap) {
   let manifest;
   try {
-    manifest = readTestMap();
+    manifest = readMap();
   } catch {
     // No map, no pin. The caller's own runtime resolution stands.
     return false;
