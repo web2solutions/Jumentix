@@ -29,7 +29,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
-const { isEntryPoint } = require('./lib/entry-point.js');
+const { runWhenEntryPoint } = require('./lib/entry-point.js');
 const { gitBinary } = require('./lib/git-binary.js');
 
 const DECLARATION_PATH = '.agents/AUTHORIZED-COMMITTERS.json';
@@ -345,18 +345,13 @@ function main(argv = process.argv, io = console, options = {}) {
  * suite can execute. The module-scope call below runs on import, so both halves
  * are covered.
  */
-function runAsEntryPoint(options = {}) {
-  const {
-    caller = module,
-    entry = require.main,
-    exit = (code) => { process.exitCode = code; },
-    runMain = main
-  } = options;
-
-  if (!isEntryPoint(caller, entry)) return false;
-  exit(runMain());
-  return true;
-}
+// `runMain` rather than the helper's `execute`: the option name is this
+// module's published contract and its suite injects through it.
+const runAsEntryPoint = ({ runMain = main, ...rest } = {}) => runWhenEntryPoint({
+  caller: module,
+  execute: runMain,
+  ...rest
+});
 
 runAsEntryPoint();
 

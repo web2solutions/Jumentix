@@ -111,7 +111,13 @@ describe('run-full-test-matrix', () => {
       expect(exits).toStrictEqual([]);
     });
 
-    it('leaves the exit code alone when the matrix passes', () => {
+    /**
+     * Reports 0 rather than leaving the exit code untouched. `process.exitCode`
+     * defaults to 0, so the two are equivalent to the shell — but every guard
+     * here now reports through the same shared helper, and a guard that stays
+     * silent on success is the one whose wiring nobody notices is missing.
+     */
+    it('reports success as exit code 0', () => {
       expect.hasAssertions();
 
       const entry = { id: 'the-entry-point' };
@@ -124,7 +130,7 @@ describe('run-full-test-matrix', () => {
       });
 
       expect(ran).toBe(true);
-      expect(exits).toStrictEqual([]);
+      expect(exits).toStrictEqual([0]);
     });
 
     it('exits non-zero when the matrix does not pass', () => {

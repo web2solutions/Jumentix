@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-01 test(cana): quarantine the wall-clock performance suite, and classify root tooling config (JUM-586) - Eduardo Almeida
 - 2026-08-01 feat(testing): every package owns its suite, and the debt register ratchets (JUM-585) - Eduardo Almeida
 - 2026-08-01 fix(ci): isolate integration suites and restore the strict matrix coverage cells [JUM-398] (#23) - Eduardo A.
 - 2026-07-31 feat(database): Cana — IndexedDB offline database adapter [JUM-398] (#15) - Eduardo A.

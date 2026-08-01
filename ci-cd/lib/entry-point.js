@@ -37,4 +37,40 @@ function isEntryPoint(caller, entry = require.main) {
   return entry != null && entry === caller;
 }
 
-module.exports = { isEntryPoint };
+/**
+ * Run `execute` only when `caller` is the process entry point, and report its
+ * result as the exit code.
+ *
+ * The guard has to be a function, not a bare `if (isEntryPoint(module))` block:
+ * inline, it is unreachable from any suite — a test runner always *imports* the
+ * file — so the one line deciding whether a gate binds at all goes unverified.
+ * Each guard here writes its own `main()` and calls this; the module-scope call
+ * executes on import, so both halves are covered.
+ *
+ * It lives beside `isEntryPoint` because it had been written four separate times
+ * in a single afternoon — once per new guard, each a copy of the last. Sonar
+ * called it: `new_duplicated_lines_density` at 4.7% against a 3% budget, on a
+ * change that added no duplication anyone had noticed writing.
+ *
+ * @param {object} options
+ * @param {NodeModule} options.caller The calling file's own `module`.
+ * @param {NodeModule|undefined} [options.entry] The process entry module,
+ * injected only for tests — see `isEntryPoint`.
+ * @param {() => number} options.execute Runs the guard, returns an exit code.
+ * @param {(code: number) => void} [options.exit] Where the code goes.
+ * @returns {boolean} true when it ran, false when the module was only imported.
+ */
+function runWhenEntryPoint(options) {
+  const {
+    caller,
+    entry = require.main,
+    execute,
+    exit = (code) => { process.exitCode = code; }
+  } = options;
+
+  if (!isEntryPoint(caller, entry)) return false;
+  exit(execute());
+  return true;
+}
+
+module.exports = { isEntryPoint, runWhenEntryPoint };

@@ -22,7 +22,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
-const { isEntryPoint } = require('./lib/entry-point.js');
+const { runWhenEntryPoint } = require('./lib/entry-point.js');
 
 const PACKAGES_DIR = 'packages';
 const SONAR_CONFIG = 'sonar-project.properties';
@@ -190,18 +190,13 @@ function main(io = console, execute = run) {
   return 1;
 }
 
-function runAsEntryPoint(options = {}) {
-  const {
-    caller = module,
-    entry = require.main,
-    exit = (code) => { process.exitCode = code; },
-    runMain = main
-  } = options;
-
-  if (!isEntryPoint(caller, entry)) return false;
-  exit(runMain());
-  return true;
-}
+// `runMain` rather than the helper's `execute`: the option name is this
+// module's published contract and its suite injects through it.
+const runAsEntryPoint = ({ runMain = main, ...rest } = {}) => runWhenEntryPoint({
+  caller: module,
+  execute: runMain,
+  ...rest
+});
 
 runAsEntryPoint();
 
