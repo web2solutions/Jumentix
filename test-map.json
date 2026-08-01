@@ -2351,6 +2351,16 @@
       "timeoutMs": 180000
     },
     {
+      "id": "packages/database-client-factory/test/compileDatabaseClient.test.ts",
+      "path": "packages/database-client-factory/test/compileDatabaseClient.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "packages/key-value-storage/test/key-value-storage.test.ts",
       "path": "packages/key-value-storage/test/key-value-storage.test.ts",
       "layer": "adapters/out+infra",
@@ -2715,9 +2725,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 142,
+    "unit": 143,
     "integration": 82,
     "smoke": 2,
-    "suites": 228
+    "suites": 229
   }
 }
