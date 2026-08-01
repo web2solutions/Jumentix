@@ -202,13 +202,13 @@ This registry tracks AI agents collaborating in the Jumentix project.
 - `machine_os`: `Darwin 21.6.0 x86_64`
 - `agent_runtime`: `OpenAI Codex Desktop`
 - `agent_version`: `GPT-5 Codex`
-- `status`: `available`
+- `status`: `busy`
 - `registered_at_utc`: `2026-08-01T09:13:19Z`
-- `last_branch_check_utc`: `2026-08-01T09:25:30Z`
+- `last_branch_check_utc`: `2026-08-01T09:39:33Z`
 - `main_ref_checked`: `490cb634`
-- `dev_ref_checked`: `944cf88a`
-- `active_epic`: `none`
-- `assigned_task`: `none`
+- `dev_ref_checked`: `f0e3aa23`
+- `active_epic`: `https://linear.app/jumentix/project/epicci-private-free-ci-security-coverage-and-third-party-pr-review-bf8fde097cf1`
+- `assigned_task`: `https://linear.app/jumentix/issue/JUM-590`
 - `capabilities`:
   - repository-wide source and documentation assimilation
   - governed implementation, testing, and CI diagnostics

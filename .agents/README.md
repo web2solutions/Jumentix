@@ -130,6 +130,7 @@ Use these files as living constraints for future maintenance and feature develop
 - [110-bun-test-is-the-runner-jest-is-the-coverage-instrument](requirements/110-bun-test-is-the-runner-jest-is-the-coverage-instrument.md)
 - [111-authorized-commit-identities](requirements/111-authorized-commit-identities.md)
 - [112-every-package-owns-its-suite](requirements/112-every-package-owns-its-suite.md)
+- [113-private-free-repository-owned-ci](requirements/113-private-free-repository-owned-ci.md)
 - [Agent Registry](AGENT-REGISTRY.md)
 - [NFR Registry](NFR-REGISTRY.md)
 - [Spec Development Driven Agent](spec-development-driven-agent.md)
