@@ -145,6 +145,10 @@ This file consolidates non-functional requirements already requested and stored 
   ratchets: a declared package that has since grown a suite fails too, so the list cannot
   become a permanent exemption. The same list is the Sonar coverage exclusion set, and the two
   disagreeing in either direction fails. `packages:check-suites` validates it.
+- `113` Private-repository CI must have a zero-cost repository-owned path. GitHub
+  Actions is the hosted executor, local/self-hosted execution is the fallback,
+  CircleCI and Codecov are retired as authorities, and coverage remains fail-closed
+  through the repository's four-metric and patch checks. Sonar is defense-in-depth.
 
 When a new NFR is requested:
 

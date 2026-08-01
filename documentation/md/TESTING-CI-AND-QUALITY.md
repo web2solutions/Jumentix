@@ -99,7 +99,7 @@ Included checks:
 - OpenAPI route resolution check
 - build
 - integration smoke
-- minimum coverage threshold (99% global via Jest + Codecov status)
+- minimum project and patch coverage thresholds owned by repository scripts
 
 The strict gate is an explicit, fail-closed manifest with 23 required cells:
 
@@ -168,7 +168,7 @@ Local enforcement:
 
 Remote enforcement:
 
-- CircleCI and GitHub Actions invoke `pnpm run ci:gate:branch`
+- GitHub Actions invokes `bun run ci:gate:branch`; CircleCI is retired by Requirement 113
 - GitHub Actions passes the PR base branch or pushed branch explicitly and uploads branch-gate evidence even after failure
 - Task-branch push events compare `origin/dev...HEAD`; hosted CI never uses the local staged-diff mode
 - GitHub Actions uploads `artifacts/ci/full-test-matrix.json` for `main` work even after failure
@@ -188,11 +188,10 @@ SonarQube Cloud coverage import:
 
 | Integration | Purpose | Where it is configured | What to run / requirements |
 |------------|---------|-------------------------|-----------------------------|
-| CircleCI | Branch-aware pipeline with coverage upload | `.circleci/config.yml` | Runs only for `dev` and `main`; selects unit gate for `dev` and full matrix for `main`, stores selected-gate evidence |
-| GitHub Actions (tests) | Target-aware CI validation on push/PR | `.github/workflows/test.yml` | Uses Node `22.x`, selects by PR base/pushed branch, uploads selected-gate evidence and main matrix evidence |
+| GitHub Actions (tests) | Target-aware CI validation on push/PR | `.github/workflows/test.yml` | Uses pinned Bun, selects by PR base/pushed branch, uploads selected-gate evidence and main matrix evidence |
+| GitHub Actions (coverage) | Repository-owned project and patch coverage | `.github/workflows/coverage.yml` | Enforces `coverage:check` and `coverage:patch`, then retains JSON/LCOV evidence |
 | GitHub Actions (website) | Website-owned Storybook and publication readiness | `.github/workflows/website.yml` | Path-scoped to website inputs; runs Storybook build/smoke and prepublish checks independently |
 | GitHub Actions (SonarQube Cloud) | Static analysis + quality gate + coverage import | `.github/workflows/sonarqube-cloud.yml`, `sonar-project.properties` | Requires `SONAR_TOKEN`; runs `pnpm run test:unit` first |
-| Codecov | Coverage status checks for project and patch | `codecov.yml` | Target is `95%` for project and patch |
 | Jest coverage gate | Local hard gate to prevent low-coverage merges | `jest.config.js` | Global thresholds: `lines/statements >= 95%`, `branches/functions >= 80%` |
 | Husky | Local Git hooks for quality checks | `.husky/*` | Installed by `pnpm run prepare` |
 | Commitlint + Commitizen | Conventional commits and guided commit flow | `commitlint.config.js`, `package.json` | `pnpm run commit` |
@@ -205,12 +204,10 @@ SonarQube Cloud coverage import:
 
 ### CI Platforms and Responsibilities
 
-#### CircleCI
+#### Retired hosted providers
 
-- Pipeline file: `.circleci/config.yml`
-- Uses `cimg/node:22.23` plus `redis:latest`
-- Installs `pnpm@9.15.3`, waits for Redis, selects the branch-aware gate, stores gate evidence, and uploads coverage with Codecov orb
-- GitHub Actions is authoritative for PR-target detection; release promotions to `main` always receive the full-matrix gate there
+CircleCI and Codecov are retired by Requirement 113. Their paid private-repository
+features are replaced by tracked GitHub Actions and repository-owned coverage scripts.
 
 #### GitHub Actions - Test Workflow
 
@@ -232,10 +229,8 @@ SonarQube Cloud coverage import:
 
 ### Coverage Policy (Strict Standard)
 
-- Codecov enforces:
-  - project coverage target: `95%`
-  - patch coverage target: `95%`
-- Jest enforces local gate before merge:
+- The repository-owned coverage workflow enforces project and patch coverage.
+- Jest enforces the local gate before merge:
   - `lines >= 99%`
   - `statements >= 99%`
   - `branches >= 90%`

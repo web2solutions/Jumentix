@@ -1,87 +1,63 @@
-# Integrações canônicas e revinculação de provedores
+# Integrações canônicas e CI privada gratuita
 
-`XpertMinds/Jumentix` é o repositório privado canônico da aplicação. Migrar um
-provedor significa criar um novo vínculo no provedor para este repositório e
-observar um check ou deploy terminal. Copiar um webhook legado, ignorar uma
-análise ou manter uma chave de projeto legada não é evidência aprovada.
+`XpertMinds/Jumentix` permanece como repositório privado canônico. O Requisito
+113 substitui serviços pagos indisponíveis por contratos rastreados e
+reproduzíveis. Check obrigatório ausente, ignorado, cancelado, expirado ou com
+falha nunca é verde.
 
-## Inventário da origem para o canônico
+## Contrato canônico
 
-| Integração | Evidência legada | Contrato canônico | Evidência de conclusão |
-| --- | --- | --- | --- |
-| GitHub Actions | workflows de testes, website e Sonar | Mesmos workflows rastreados em `XpertMinds/Jumentix` | Execuções obrigatórias terminam com sucesso |
-| CircleCI | pipeline `test-source` e webhook GitHub | Projeto e webhook canônicos; somente `dev` e `main` | `ci/circleci: test-source` passa no SHA canônico |
-| Codecov | orb CircleCI e checks de projeto/patch | Repositório Codecov canônico com metas de 95% | `codecov/project` e `codecov/patch` passam |
-| SonarQube Cloud | projeto legado `web2solutions_aaa-typescript-boilerplate` | `xpertminds` / `XpertMinds_Jumentix`; token obrigatório; sem análise ignorada | `SonarQube Cloud Scan` executa o scanner e passa |
-| Scanner de dependências OSV | ausência de cobertura completa do lockfile Bun | Scanner próprio resolve a árvore Bun instalada e consulta OSV.dev | `bun run deps:audit` passa no gate canônico |
-| GitGuardian | check do GitHub App | Instalação GitGuardian autorizada para o repositório privado canônico | `GitGuardian Security Checks` passa |
-| Cursor Bugbot | check do GitHub App | Instalação Cursor autorizada para o repositório privado canônico | `Cursor Bugbot` termina com sucesso |
-| Vercel | projeto `jumentix-website` e deploy de produção | Conexão Git alterada para `XpertMinds/Jumentix`, raiz `apps/jumentix-website` | Deploy Git canônico alcança `READY` |
-| Dependabot | workflow nativo de atualizações | `.github/dependabot.yml` aponta npm e GitHub Actions para `dev` | Configuração é aceita e atualizações podem executar |
-| Segredos GitHub | `AAA_JWT_TOKEN_SECRET_KEY`, `AAA_REDIS_PASSWORD` | Mesmos nomes, valores recriados com segurança | Inventário existe e workflows consomem os segredos |
-| Ambientes | `env vars`, `secrets` | Mesmos ambientes; credenciais de provedores criadas com segurança | Inventário e checks dos provedores concordam |
-| Variáveis | Nenhuma variável de repositório ou ambiente | Nenhuma variável, salvo identificador não secreto exigido | Inventário permanece explícito |
-| Webhooks | CircleCI e callbacks legados de provedores | Somente hooks necessários pertencentes aos provedores para o repositório canônico | Alvos dos hooks e checks são canônicos |
-
-## Estado da migração (2026-07-30)
-
-| Área | Estado verificado | Ação restante |
+| Área | Contrato gratuito obrigatório | Papel |
 | --- | --- | --- |
-| Configurações do repositório/branches GitHub | Actions usa permissão padrão somente leitura; aprovação de PR por workflow está desativada; política de merge, issues, discussions, labels, tópicos, ambientes e eventos do hook CircleCI correspondem ao repositório legado da aplicação | A permissão de fork privado não pode ser copiada porque a organização XpertMinds proíbe forks privados; proteção de branch/rulesets não está disponível no plano atual de repositório privado tanto na origem quanto no destino |
-| Segurança GitHub | Alertas de vulnerabilidade, correções automáticas e a configuração rastreada do Dependabot estão ativos | Observar a primeira atualização canônica do Dependabot |
-| CircleCI | `XpertMinds/Jumentix` está seguido, orbs públicos não certificados estão permitidos para o contrato Codecov copiado e a reexecução fail-closed do pipeline 6 passou `test-source` no SHA canônico `68d785a4` | Continuar aplicando o pipeline canônico em `dev` e `main` |
-| Segredos do repositório | `AAA_JWT_TOKEN_SECRET_KEY`, `AAA_REDIS_PASSWORD` e o dedicado `AGENT_REGISTRY_TOKEN` existem por nome | Validar seus consumidores sem expor valores; rotacionar a credencial do registro conforme a política do owner |
-| Ambientes GitHub | `env vars` e `secrets` existem; o scan de dependências não exige token de provedor | Validar consumidores dos ambientes em PRs canônicas |
-| SonarQube Cloud | Organização `xpertminds`, projeto `XpertMinds_Jumentix`, autorização do GitHub App e `SONAR_TOKEN` estão ativos; os quality gates do baseline e da PR #10 passaram com zero issues ou hotspots novos | Continuar aplicando o scan fail-closed nas PRs canônicas |
-| Scanner de dependências OSV | O scanner próprio resolve o grafo de dependências Bun instalado e consulta OSV.dev em modo fail-closed | Continuar aplicando `bun run deps:audit` no gate canônico |
-| Codecov | O GitHub App está autorizado para todos os repositórios XpertMinds; o token do repositório foi regenerado e sincronizado no GitHub e CircleCI; o pipeline 6 passou o upload fail-closed; e o Codecov registrou o commit `68d785a4` como `CI Passed` com 99,24% de cobertura do projeto | `codecov/project` e `codecov/patch` não apareceram na PR #10; análise de cobertura de patch no repositório privado exige aprovação explícita do Codecov Team, e nenhum trial ou compra foi iniciado |
-| GitGuardian | O GitHub App está autorizado para os cinco repositórios XpertMinds; `Jumentix` está monitorado; e o scan automático de histórico foi concluído | Check runs em repositórios forkados exigem GitGuardian Business; é necessária aprovação explícita de plano pago, e nenhum trial ou compra foi iniciado |
-| Cursor Bugbot | XpertMinds mostra 5/5 repositórios habilitados, incluindo os dois repositórios Jumentix, com Bugbot disparado a cada push; `Cursor Bugbot` da PR #10 passou | Continuar aplicando o check terminal do Cursor Bugbot |
-| Vercel | O GitHub App está autorizado para todos os repositórios XpertMinds; o projeto `jumentix-website` existe e seu último deploy manual de produção está `READY` | O vínculo Git ao repositório privado da organização é rejeitado no Hobby; é necessária aprovação explícita de plano Pro pago, e nenhum trial ou compra foi iniciado |
+| CI | Workflows GitHub Actions deste repositório | Executor canônico das PRs para `dev`, promoções para `main` e branches protegidas |
+| Cobertura | repository-owned coverage, artefatos JSON/LCOV e limites de projeto e patch | Autoridade canônica sem conta ou token externo |
+| Qualidade | Gate Bun por branch e build/smoke/prepublish do Storybook | Validação obrigatória de produto e governança |
+| SAST/qualidade | SonarQube Cloud | Defesa em profundidade enquanto houver gratuidade para projeto privado |
+| Dependências | Scanner próprio via OSV.dev e Dependabot | Vulnerabilidades fail-closed e propostas de atualização |
+| Segredos | Scanner OSS fixado executado pelo GitHub Actions | Substituto próprio para checks pagos em PR |
+| Achados de PR | Reviewdog recebe scanners OSS fixados | Review third-party inline sem entregar o source a um SaaS hospedado |
+| Deploy | Build reproduzível e deploy manual documentado | Fallback gratuito sem Git binding privado da organização |
 
-A evidência terminal dos provedores está anexada à JUM-568 no Linear. Os checks
-de status de projeto/patch do Codecov, o vínculo Git da Vercel, a proteção de
-branches de repositório privado no GitHub e os checks GitGuardian nos forks
-canônicos permanecem bloqueados por aprovação explícita de planos pagos. Este
-estado não constitui aprovação final da migração dos provedores.
+## Serviços aposentados ou opcionais (2026-08-01)
+
+- **CircleCI retired / aposentado:** o pipeline duplicado e o webhook deixaram
+  de ser autoridade. GitHub Actions e os mesmos comandos Bun locais fazem os gates.
+- **Codecov retired / aposentado:** checks privados exigem plano pago. O próprio
+  repositório calcula e publica cobertura de projeto e patch.
+- **GitGuardian aposentado:** checks de PR privada de organização exigem plano
+  pago. Um scanner OSS fixado assume o gate.
+- Cursor Bugbot é opcional porque a cota pode impedir resultado terminal;
+  scanners via Reviewdog fornecem achados determinísticos.
+- O Git binding da Vercel é opcional no Hobby. O build continua obrigatório e
+  existe fallback manual auditável.
+- SonarQube Cloud é defesa em profundidade, não dono único da cobertura ou
+  segurança. Mudanças no plano não removem os gates próprios.
 
 ## Regras fail-closed
 
-1. Valores secretos nunca são copiados do repositório legado.
-2. `SONAR_TOKEN`, credenciais Codecov/Vercel e autorizações OAuth
-   são recriados por seus provedores.
-3. Token ausente, app sem autorização, check ausente, análise ignorada,
-   execução cancelada, timeout ou vínculo legado é trabalho incompleto.
-4. Review é opcional. Todos os demais gates de CI, cobertura, segurança,
-   governança e resolução de conversas continuam obrigatórios.
-5. Bloqueios externos são registrados no Linear JUM-568 e nos Project Updates
-   com a ação exata exigida do proprietário.
+1. Actions usam permissão mínima e SHAs imutáveis.
+2. Segredos nunca são impressos, copiados de cofres legados ou commitados.
+3. Gates canônicos de branch, cobertura, website, segurança, governança e
+   resolução de conversas precisam terminar com sucesso.
+4. `--no-verify`, merge admin/forçado, status falso ou relaxamento temporário
+   não constituem evidência.
+5. A proteção de branch exige somente checks determinísticos dos workflows.
 
 ## Validação pertencente ao repositório
 
-Execute:
-
 ```bash
+bun run ci:gate:branch
 bun run integrations:check
+bun run test:coverage
+bun run coverage:check
+bun run coverage:patch
 ```
 
-O check valida identificadores canônicos do Sonar, execução fail-closed do
-scanner, vínculo autenticado ao Agent Registry privado, contratos
-CircleCI/Codecov, scanner OSV.dev, configuração Dependabot e este inventário
-bilíngue. Ele é uma célula obrigatória da matriz strict.
+Os mesmos comandos executam localmente e no GitHub Actions. O workflow retém
+artefatos de cobertura para auditoria independente do Codecov.
 
-## Sequência de autorização
+## Rollback e mudanças de provedor
 
-1. Autorize o GitHub App/OAuth de cada provedor para o repositório privado
-   `XpertMinds/Jumentix`.
-2. Crie ou importe o projeto canônico; nunca reutilize uma chave que aponta para
-   `web2solutions/aaa-typescript-boilerplate`.
-3. Recrie credenciais nos cofres do GitHub/provedor sem imprimi-las.
-4. Dispare um PR ou validação do provedor.
-5. Registre a URL terminal no Linear JUM-568.
-
-## Rollback
-
-Vínculos podem ser removidos individualmente enquanto a configuração rastreada
-é revertida por PR governado para `dev`. O repositório legado permanece
-arquivado e não é destino de rollback.
+Vínculos podem ser removidos de forma independente. Um substituto só se torna
+obrigatório por requisito governado e PR aprovada para `dev`; badges externos
+verdes nunca sobrepõem a evidência do repositório.
