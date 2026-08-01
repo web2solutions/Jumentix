@@ -1,0 +1,88 @@
+name: Third-party PR review
+
+on:
+  pull_request:
+    branches: ["dev", "main"]
+  workflow_dispatch:
+
+concurrency:
+  group: third-party-review-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    name: third-party-review
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout complete history
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Install pinned review tools
+        run: ci-cd/install-pinned-review-tools.sh "$RUNNER_TEMP/review-tools"
+
+      - name: Scan Git history for secrets
+        id: gitleaks
+        continue-on-error: true
+        env:
+          BASE_REF: ${{ github.base_ref || 'dev' }}
+        run: |
+          "$RUNNER_TEMP/review-tools/gitleaks" git . \
+            --log-opts="origin/${BASE_REF}..HEAD" \
+            --redact --report-format sarif --report-path gitleaks.sarif
+
+      - name: Run repository-owned Semgrep policy
+        id: semgrep
+        continue-on-error: true
+        env:
+          BASE_REF: ${{ github.base_ref || 'dev' }}
+        run: |
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE:/src" -w /src \
+            semgrep/semgrep@sha256:65dcd4408adda7c183a6b4550cb1e9b19f7f627a6fbb7e0559bd466bedc44d7b \
+            semgrep scan --config .semgrep.yml --baseline-commit "origin/${BASE_REF}" \
+              --sarif --output semgrep.sarif
+
+      - name: Publish Gitleaks findings as PR review
+        if: always() && github.event_name == 'pull_request' && hashFiles('gitleaks.sarif') != ''
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ github.token }}
+        run: |
+          "$RUNNER_TEMP/review-tools/reviewdog" \
+            -f=sarif -name=gitleaks -reporter=github-pr-review \
+            -filter-mode=nofilter -fail-on-error=false < gitleaks.sarif
+
+      - name: Publish Semgrep findings as PR review
+        if: always() && github.event_name == 'pull_request' && hashFiles('semgrep.sarif') != ''
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ github.token }}
+        run: |
+          "$RUNNER_TEMP/review-tools/reviewdog" \
+            -f=sarif -name=semgrep -reporter=github-pr-review \
+            -filter-mode=diff_context -fail-on-error=false < semgrep.sarif
+
+      - name: Retain third-party review evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: third-party-review-sarif
+          path: |
+            gitleaks.sarif
+            semgrep.sarif
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Enforce scanner outcomes
+        if: always()
+        env:
+          GITLEAKS_OUTCOME: ${{ steps.gitleaks.outcome }}
+          SEMGREP_OUTCOME: ${{ steps.semgrep.outcome }}
+        run: |
+          test "$GITLEAKS_OUTCOME" = success
+          test "$SEMGREP_OUTCOME" = success

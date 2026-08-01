@@ -34,6 +34,15 @@ A missing, skipped, cancelled, timed-out, or failed required check is never gree
 - SonarQube Cloud remains defense in depth, not the sole owner of coverage or
   security. If its private entitlement changes, repository-owned gates remain.
 
+## Third-party PR review implementation
+
+The required `third-party-review` check runs Gitleaks `8.30.1`, Semgrep
+`1.172.0`, and Reviewdog `0.21.0`. Release archives are checksum-verified,
+the Semgrep image is pinned by OCI digest, and the policy lives in
+`.semgrep.yml`. Reviewdog publishes SARIF findings as GitHub PR reviews; scanner
+exit states are enforced separately so publishing a comment cannot mask a
+failed scan. Source code stays inside the GitHub runner.
+
 ## Fail-closed rules
 
 1. Actions use least-privilege permissions and immutable commit SHAs.
