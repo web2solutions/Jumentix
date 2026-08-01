@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-01 fix(ci): make the test map complete in both directions (JUM-587) - Eduardo Almeida
 - 2026-08-01 [JUM-585][Release] Reconcile main ancestry into dev (#26) - Eduardo A.
 - 2026-08-01 chore(release): reconcile main ancestry into dev - Eduardo Almeida
 - 2026-08-01 feat(testing): every package owns its suite, with a ratcheting debt register [JUM-585] (#24) (#25) - Eduardo A.
