@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 const fs = require('fs');
 const path = require('path');
+const { unmappedTestFiles } = require('./mapped-suites.js');
 
 const DEFAULT_MANIFEST_PATH = path.resolve(__dirname, '../../test-map.json');
 const VALID_TIERS = new Set(['gate', 'nightly']);
@@ -155,6 +156,24 @@ function validateTestMap(manifest, options = {}) {
     if (!/^JUM-\d+$/.test(entry.issue)) {
       errors.push(`Quarantine entry must reference a Linear issue: ${entry.path}`);
     }
+  }
+
+  // The manifest already had to prove every entry points at a real file. The
+  // converse was never checked, and it is the direction that hides work: this
+  // map is what `run-unit-tests.js` builds its target list from, so a suite on
+  // disk with no entry simply does not run, and nothing reports it.
+  //
+  // Observed on 2026-08-01 — a new file under test/unit/ci-cd/ left this check
+  // reporting OK while `test:unit` ran 127 targets instead of 128. The suite
+  // passed by never executing.
+  const unmapped = (options.unmappedTestFiles || unmappedTestFiles)(manifest, root);
+  if (unmapped.length > 0) {
+    errors.push(
+      `Test files on disk with no entry in the manifest:\n${
+        unmapped.map((file) => `     ${file}`).join('\n')
+      }\n   These do not run — the map is the target list, not a description of it.`
+      + '\n   Register them with `bun run test-map:generate`.'
+    );
   }
 
   return {
