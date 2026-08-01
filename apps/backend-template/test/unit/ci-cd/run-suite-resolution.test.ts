@@ -18,10 +18,12 @@ import path from 'node:path';
 
 const repoRoot = path.resolve(__dirname, '../../../../..');
 const {
+  defaultListTestFiles,
   invalidSuitePaths,
   mapPinsToNode,
   parseArgs,
   resolveMappedSuitePaths,
+  runAsEntryPoint,
   runSuitePaths
 } = require(path.join(repoRoot, 'ci-cd', 'run-suite.js'));
 const { resolveGitBinary } = require(path.join(repoRoot, 'ci-cd', 'lib', 'git-binary.js'));
@@ -330,6 +332,90 @@ describe('runSuitePaths', () => {
 
     expect(runSuitePaths(paths, withMap({ spawn, runtime: 'bun', ...overrides }))).toBe(1);
     expect(calls).toStrictEqual([]);
+  });
+});
+
+describe('defaultListTestFiles', () => {
+  const root = repoRoot;
+
+  it('lists every test file beneath a directory', () => {
+    expect.hasAssertions();
+
+    const listed = defaultListTestFiles(
+      path.join(root, 'apps/backend-template/test/integration/Lambda'),
+      root
+    );
+
+    expect(listed.length).toBeGreaterThan(1);
+    expect(listed.every((file: string) => file.endsWith('.test.ts'))).toBe(true);
+  });
+
+  it('returns a single entry for a file given directly', () => {
+    expect.hasAssertions();
+
+    const single = 'apps/backend-template/test/integration/Lambda/get.localhost.test.ts';
+
+    expect(defaultListTestFiles(path.join(root, single), root)).toStrictEqual([single]);
+  });
+
+  it('ignores a file that is not a test', () => {
+    expect.hasAssertions();
+
+    expect(defaultListTestFiles(path.join(root, 'package.json'), root)).toStrictEqual([]);
+  });
+
+  it('returns nothing for a path that does not exist', () => {
+    expect.hasAssertions();
+
+    expect(defaultListTestFiles(path.join(root, 'no/such/place'), root)).toStrictEqual([]);
+  });
+});
+
+/**
+ * The wiring between the parsed flags and the runner. Inline in an
+ * `if (isEntryPoint(module))` block it cannot be reached from a suite, so a flag
+ * connected to the wrong option would go unnoticed.
+ */
+describe('runAsEntryPoint', () => {
+  it('does nothing when the module is merely imported', () => {
+    expect.hasAssertions();
+
+    const runs: unknown[] = [];
+    const ran = runAsEntryPoint({
+      caller: { id: 'imported' },
+      entry: { id: 'something-else' },
+      run: (...args: unknown[]) => { runs.push(args); return 0; }
+    });
+
+    expect(ran).toBe(false);
+    expect(runs).toStrictEqual([]);
+  });
+
+  it('passes the parsed paths, label and timeout through to the runner', () => {
+    expect.hasAssertions();
+
+    const entry = { id: 'the-entry-point' };
+    const exits: number[] = [];
+    let received: unknown;
+
+    const ran = runAsEntryPoint({
+      caller: entry,
+      entry,
+      argv: ['bun', 'run-suite.js', '--script-label', 'restify', '--timeout', '15000', 'a/b'],
+      exit: (code: number) => exits.push(code),
+      run: (paths: string[], options: Record<string, unknown>) => {
+        received = { paths, options };
+        return 7;
+      }
+    });
+
+    expect(ran).toBe(true);
+    expect(received).toStrictEqual({
+      paths: ['a/b'],
+      options: { label: 'restify', timeoutMs: 15000 }
+    });
+    // The runner's status becomes the process exit code, unchanged.
+    expect(exits).toStrictEqual([7]);
   });
 });
 

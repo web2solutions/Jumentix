@@ -253,13 +253,30 @@ function runSuitePaths(paths, options = {}) {
   return Number.isInteger(result.status) ? result.status : 1;
 }
 
-if (isEntryPoint(module)) {
-  const parsed = parseArgs(process.argv);
-  process.exitCode = runSuitePaths(parsed.paths, {
-    label: parsed.label,
-    timeoutMs: parsed.timeoutMs
-  });
+/**
+ * Parse argv and run, when this file is the process entry point.
+ *
+ * A function rather than a bare `if` block so the wiring between the parsed
+ * flags and the runner is reachable from a test — inline it cannot be, since a
+ * test runner always imports this file rather than starting it.
+ */
+function runAsEntryPoint(options = {}) {
+  const {
+    caller = module,
+    entry = require.main,
+    argv = process.argv,
+    exit = (code) => { process.exitCode = code; },
+    run = runSuitePaths
+  } = options;
+
+  if (!isEntryPoint(caller, entry)) return false;
+
+  const parsed = parseArgs(argv);
+  exit(run(parsed.paths, { label: parsed.label, timeoutMs: parsed.timeoutMs }));
+  return true;
 }
+
+runAsEntryPoint();
 
 module.exports = {
   canonicalSuitePaths,
@@ -268,5 +285,6 @@ module.exports = {
   mapPinsToNode,
   parseArgs,
   resolveMappedSuitePaths,
+  runAsEntryPoint,
   runSuitePaths
 };
