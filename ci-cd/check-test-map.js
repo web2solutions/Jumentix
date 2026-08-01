@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 const path = require('path');
 const { readTestMap, validateTestMap } = require('./lib/test-map');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 function main() {
   const root = path.resolve(__dirname, '..');
@@ -21,7 +22,7 @@ function main() {
   );
 }
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   main();
 }
 

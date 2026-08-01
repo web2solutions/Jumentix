@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cana conformance — JUM-417</title>
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    font: 15px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+    max-width: 62rem; margin: 2rem auto; padding: 0 1rem;
+  }
+  h1 { font-size: 1.25rem; margin-bottom: .25rem; }
+  .sub { opacity: .7; margin-top: 0; }
+  button { font: inherit; padding: .5rem 1rem; cursor: pointer; }
+  #summary { margin: 1rem 0; padding: .75rem; border-left: 4px solid currentColor; }
+  #summary.ok { border-color: #1a7f37; }
+  #summary.bad { border-color: #cf222e; }
+  #summary.partial { border-color: #bf8700; }
+  table { border-collapse: collapse; width: 100%; margin-top: 1rem; }
+  th, td { text-align: left; padding: .4rem .6rem; border-bottom: 1px solid #8884; vertical-align: top; }
+  .passed { color: #1a7f37; }
+  .failed { color: #cf222e; font-weight: 600; }
+  .skipped { color: #bf8700; }
+  .detail { opacity: .75; font-size: .9em; }
+  #env { margin-top: 1.5rem; opacity: .7; font-size: .9em; }
+</style>
+</head>
+<body>
+
+<h1>Cana conformance suite</h1>
+<p class="sub">JUM-417 — cross-browser evidence. Open this page in each browser on the matrix.</p>
+
+<p>
+  The unit suite runs against <code>fake-indexeddb</code>, which has no real quota,
+  no eviction, no <code>navigator.storage</code> and no separate thread. This page runs
+  the same checks against the browser you are using now, which is the only place
+  those answers exist.
+</p>
+
+<button id="run">Run conformance</button>
+
+<div id="summary" hidden></div>
+<table id="results" hidden>
+  <thead><tr><th>Check</th><th>Result</th><th>Detail</th></tr></thead>
+  <tbody></tbody>
+</table>
+
+<div id="env"></div>
+
+<script type="module">
+// Built output, so this page exercises exactly what a consumer receives.
+// Run `bun run build` in packages/cana first, then serve this directory.
+import { runConformance, describeCoverage } from '../dist/index.mjs';
+
+const button = document.getElementById('run');
+const summary = document.getElementById('summary');
+const table = document.getElementById('results');
+const tbody = table.querySelector('tbody');
+
+document.getElementById('env').textContent = navigator.userAgent;
+
+button.addEventListener('click', async () => {
+  button.disabled = true;
+  button.textContent = 'Running…';
+  tbody.replaceChildren();
+
+  let report;
+  try {
+    report = await runConformance({ label: navigator.userAgent, realBrowser: true });
+  } catch (error) {
+    // A harness that throws is itself a finding worth showing, rather than a
+    // blank page that looks like nothing happened.
+    summary.hidden = false;
+    summary.className = 'bad';
+    summary.textContent = `The harness itself threw: ${error?.message ?? error}`;
+    button.disabled = false;
+    button.textContent = 'Run conformance';
+    return;
+  }
+
+  for (const result of report.results) {
+    const row = document.createElement('tr');
+
+    const name = document.createElement('td');
+    name.textContent = result.name;
+
+    const status = document.createElement('td');
+    status.className = result.status;
+    status.textContent = result.status;
+
+    const detail = document.createElement('td');
+    detail.className = 'detail';
+    detail.textContent = result.detail ?? '';
+
+    row.append(name, status, detail);
+    tbody.append(row);
+  }
+
+  summary.hidden = false;
+  summary.className = report.failed > 0 ? 'bad' : (report.skipped > 0 ? 'partial' : 'ok');
+  summary.textContent = describeCoverage(report);
+
+  table.hidden = false;
+  button.disabled = false;
+  button.textContent = 'Run again';
+
+  // Also on the console, so a CI driver can scrape it without touching the DOM.
+  console.log('[cana-conformance]', JSON.stringify(report));
+});
+</script>
+
+</body>
+</html>

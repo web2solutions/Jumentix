@@ -14,6 +14,24 @@ import {
 } from '@src/interface/Async/RealtimeAPIBase';
 import { resolveGrpcProtoPath } from '@src/interface/gRPC/resolveGrpcProtoPath';
 
+/**
+ * Unwrap a CommonJS interop namespace.
+ *
+ * `@grpc/grpc-js` and `@grpc/proto-loader` are CommonJS. Depending on how the
+ * consumer's bundler or runtime performs interop, `import * as x` yields either
+ * the module's exports directly or a namespace whose `default` holds them. Both
+ * shapes appear in practice across the runtimes this template supports, so the
+ * call sites have to cope with either.
+ *
+ * Exported so the fallback can be asserted directly. It was previously reached
+ * by assigning `undefined` over the live module namespace, which Bun rejects —
+ * an ES module namespace is read-only there — so that test ran only under Jest
+ * (JUM-583).
+ */
+export function interopDefault<T>(moduleNamespace: T): T {
+  return ((moduleNamespace as { default?: T }).default ?? moduleNamespace) as T;
+}
+
 export interface IGrpcAPIFactory extends IRealtimeAPIFactory {
   host?: string;
   port?: number;
@@ -107,8 +125,8 @@ export class GrpcAPI extends RealtimeAPIBase {
   }
 
   private loadProtoService(): any {
-    const protoLoaderLib: any = (protoLoader as any).default || protoLoader;
-    const grpcLib: any = (grpc as any).default || grpc;
+    const protoLoaderLib: any = interopDefault(protoLoader);
+    const grpcLib: any = interopDefault(grpc);
     const packageDefinition = protoLoaderLib.loadSync(this.protoFilePath, {
       longs: String,
       enums: String,
@@ -127,7 +145,7 @@ export class GrpcAPI extends RealtimeAPIBase {
     await this.databaseClient.connect();
 
     const realtimePackage = this.loadProtoService();
-    const grpcLib: any = (grpc as any).default || grpc;
+    const grpcLib: any = interopDefault(grpc);
     this.server = new grpcLib.Server();
     this.server!.addService(realtimePackage.AsyncApiGateway.service, {
       request: async (

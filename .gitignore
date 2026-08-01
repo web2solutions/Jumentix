@@ -147,3 +147,6 @@ dist
 # macOS metadata
 .DS_Store
 **/.DS_Store
+
+# Added by ggshield
+.cache_ggshield

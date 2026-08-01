@@ -5,6 +5,7 @@
  */
 const fs = require('fs');
 const path = require('path');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 function splitRecords(lcovText) {
   const records = [];
@@ -71,7 +72,7 @@ function main() {
   fs.writeFileSync(verdictPath, `${JSON.stringify({ ...stats, output }, null, 2)}\n`);
 }
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   try {
     main();
   } catch (error) {

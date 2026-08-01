@@ -4,12 +4,11 @@ import { AuthController } from '@src/modules/Users/adapters/in/http/controllers/
 import { OrganizationController } from '@src/modules/Users/adapters/in/http/controllers/OrganizationController';
 import { UserController } from '@src/modules/Users/adapters/in/http/controllers/UserController';
 
-jest.mock<typeof import('@src/interface/HTTP/validators')>('@src/interface/HTTP/validators', () => ({
-  ...jest.requireActual('@src/interface/HTTP/validators'),
-  throwIfOASInputValidationFails: jest.fn(),
-  validateRequestParams: jest.fn()
-}));
-
+// The validators module used to be replaced here so that
+// `throwIfOASInputValidationFails` and `validateRequestParams` were inert.
+// Neither is reachable from any controller — nothing in src/ calls them — so the
+// mock stubbed functions this suite never exercises, while requiring
+// `jest.requireActual`, which does not exist under Bun's runner (JUM-583).
 class TestEvent extends BaseDomainEvent {}
 
 const makeFactory = (overrides: Record<string, any> = {}) => {

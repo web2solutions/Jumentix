@@ -361,3 +361,56 @@ describe('http validators', () => {
     })).toThrow(ValidationError);
   });
 });
+
+/**
+ * The barrel, exercised through the barrel.
+ *
+ * Every test above imports the validators by their individual paths, so the
+ * re-exports in `validators/index.ts` were never loaded — a barrel that dropped
+ * or misnamed an export would not have failed anything here.
+ *
+ * That is not a theoretical shape in this repository: `HTTP/ports/index.ts`
+ * carries a comment about exactly this class of bug, where `import type` erasure
+ * left a value re-export resolving to a binding that does not exist and the
+ * whole barrel failed to load.
+ *
+ * Function coverage on this file was previously supplied by an unrelated suite:
+ * `controllers.test.ts` spread `jest.requireActual('@src/interface/HTTP/validators')`
+ * into a mock, and spreading touches every re-export getter. Removing that dead
+ * mock (JUM-583) revealed the barrel had no coverage of its own.
+ */
+describe('http validators barrel', () => {
+  it.each([
+    'throwIfOASInputValidationFails',
+    'isPropertiesMatching',
+    'getSchema',
+    'checkRequiredProperties',
+    'validateRequestParams',
+    'validateRequestAgainstOAS'
+  ])('re-exports %s as a callable', async (name) => {
+    expect.hasAssertions();
+    const barrel = await import('@src/interface/HTTP/validators') as Record<string, unknown>;
+
+    expect(typeof barrel[name]).toBe('function');
+  });
+
+  it('re-exports the same function objects the modules define', async () => {
+    expect.hasAssertions();
+    // Identity, not just presence: a barrel that wrapped or shadowed an export
+    // would still pass a `typeof` check while changing behaviour.
+    const barrel = await import('@src/interface/HTTP/validators');
+
+    expect(barrel.checkRequiredProperties).toBe(checkRequiredProperties);
+    expect(barrel.getSchema).toBe(getSchema);
+    expect(barrel.isPropertiesMatching).toBe(isPropertiesMatching);
+  });
+
+  it('re-exports the same validation functions the modules define', async () => {
+    expect.hasAssertions();
+    const barrel = await import('@src/interface/HTTP/validators');
+
+    expect(barrel.throwIfOASInputValidationFails).toBe(throwIfOASInputValidationFails);
+    expect(barrel.validateRequestParams).toBe(validateRequestParams);
+    expect(barrel.validateRequestAgainstOAS).toBe(validateRequestAgainstOAS);
+  });
+});

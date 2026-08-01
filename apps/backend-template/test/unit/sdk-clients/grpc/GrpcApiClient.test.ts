@@ -96,30 +96,26 @@ describe('grpc api client sdk', () => {
     await expect(client.request({ operationId: 'create' })).rejects.toThrow('transport down');
   });
 
-  it('supports module fallback when grpc/proto-loader default export is undefined', async () => {
+  it.each([
+    ['a namespace whose default holds the exports', { default: { loadSync: 'real' } }, { loadSync: 'real' }],
+    ['a namespace that is the exports', { loadSync: 'real' }, { loadSync: 'real' }],
+    ['a namespace with an undefined default', { default: undefined, loadSync: 'real' }, { default: undefined, loadSync: 'real' }]
+  ])('unwraps %s', async (_case, namespace, expected) => {
     expect.hasAssertions();
-    const grpcModule: any = await import('@grpc/grpc-js');
-    const protoLoaderModule: any = await import('@grpc/proto-loader');
-    const previousGrpcDefault = grpcModule.default;
-    const previousProtoDefault = protoLoaderModule.default;
-    grpcModule.default = undefined;
-    protoLoaderModule.default = undefined;
+    // The CommonJS interop fallback, asserted against the helper instead of by
+    // assigning `undefined` over the live module namespace — read-only under
+    // Bun, so that form ran only under Jest (JUM-583).
+    const { interopDefault } = await import('../../../../../../packages/sdk-grpc-client/src/GrpcApiClient');
 
-    requestMock.mockImplementation(
-      (_payload: any, callback: (...args: any[]) => void) => callback(null, {
-        ok: true,
-        operationId: 'getAll',
-        resultJson: '{}'
-      })
-    );
-    const { GrpcApiClient } = await import('../../../../../../packages/sdk-grpc-client/src/GrpcApiClient');
-    const client = new GrpcApiClient('localhost:5000');
-    const response = await client.request({ operationId: 'getAll' });
+    expect(interopDefault(namespace)).toStrictEqual(expected);
+  });
 
-    expect(response.ok).toBe(true);
-    expect(loadSyncMock).toHaveBeenCalledWith(expect.any(String), expect.any(Object));
+  it('does not unwrap a falsy-but-present default', async () => {
+    expect.hasAssertions();
+    // Why `??` and not `||`: a default export that is legitimately 0, '' or
+    // false would otherwise fall through to the namespace.
+    const { interopDefault } = await import('../../../../../../packages/sdk-grpc-client/src/GrpcApiClient');
 
-    grpcModule.default = previousGrpcDefault;
-    protoLoaderModule.default = previousProtoDefault;
+    expect(interopDefault({ default: 0 } as never)).toBe(0);
   });
 });

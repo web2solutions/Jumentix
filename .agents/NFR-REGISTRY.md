@@ -95,6 +95,43 @@ This file consolidates non-functional requirements already requested and stored 
   selection, `JUMENTIX_GATE_V2` flag-gated flip/rollback, and fail-closed selective-gate evidence.
 - `106` Local Bun for **all** suite types; Node/Jest reserved for CI (`ciRunner` /
   `JUMENTIX_TEST_RUNTIME=node`). CI job greenness is out of scope for the Test Pyramid delivery.
+- `107` CircleCI runs alongside GitHub Actions and must mirror every check the workflows
+  perform, so either provider going dark degrades coverage instead of eliminating it. It
+  must run on every branch, not only `dev` and `main`. A provider that cannot execute
+  blocks a merge exactly as a failing check does (Requirement 065). `ci:check-provider`
+  validates both configurations are present and equivalent.
+- `108` An HTTP adapter named for a web framework must import that framework and use it;
+  a reference assigned to an unused field, or a require swallowed by try/catch, does not
+  satisfy this, and the framework must be a declared dependency. Platform targets with no
+  framework are exempt by explicit listing. `arch:check-http-adapters` validates it.
+- `109` A test suite must be able to tell a real implementation from a fake one: every
+  adapter carries at least one assertion only the real dependency can satisfy, integration
+  coverage of adapter directories is 100%, and a missing dependency fails its suite rather
+  than skipping it. Asserting correct behaviour is not enough when a substitute produces
+  identical behaviour — the AdonisJS adapter passed every test while integrating nothing.
+- `110` `bun:test` is the test runner; Jest is retained solely as the coverage
+  instrument, because Bun emits no branch records at all and Requirements 020/063 mandate
+  90% branch coverage. `ci-cd/check-coverage-thresholds.js` is the
+  authority on all four metrics, reading Istanbul's report rather than lcov (which has no
+  statement counter) and failing closed on any it cannot measure. A metric may sit below its
+  threshold only under a dated, issue-tracked exception that ratchets: below its floor fails,
+  and reaching the threshold while the entry remains also fails, so a concession expires
+  instead of becoming a lowered bar. The thresholds apply over the measured scope, and
+  narrowing the scope is not a permitted way to meet one. A suite may
+  declare `runner: "node"` only with a `reason` naming a concrete Bun incompatibility;
+  the map pin overrides environment resolution. Amends 106.
+- `111` Only identities declared in `.agents/AUTHORIZED-COMMITTERS.json` may author or
+  commit. The declaration is an allowlist and must not be inverted into a denylist: the audit
+  behind this requirement started from one known corporate address and uncovered a second
+  corporate domain nobody was looking for, which a denylist would have passed. Author and
+  committer are both checked, since they diverge on rebases, amends and web merges.
+  `governance:check-authorship` verifies existing commits from a declared history cutoff —
+  anchored to a fixed commit, because a base-relative range is empty, and therefore vacuously
+  green, on the branch the work merged into. `--identity` verifies the identity a commit is
+  about to receive, in `pre-commit`, because the range check cannot see a commit that does
+  not exist yet and commit metadata cannot be retracted once pushed. No identity is set
+  globally on a contributor machine. Fails closed on a missing, empty or unparseable
+  declaration (Requirement 065).
 
 When a new NFR is requested:
 

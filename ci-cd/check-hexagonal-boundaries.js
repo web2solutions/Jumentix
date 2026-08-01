@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 const fs = require('fs');
 const path = require('path');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 const ROOT = process.cwd();
 const CONTROLLERS_ROOT = path.resolve(ROOT, 'apps/backend-template/src/modules');
@@ -104,7 +105,7 @@ function run() {
   console.log('Hexagonal boundary check passed.');
 }
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   run();
 }
 

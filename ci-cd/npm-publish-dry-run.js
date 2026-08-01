@@ -2,7 +2,7 @@
 /* eslint-disable no-console */
 const fs = require('node:fs');
 const path = require('node:path');
-const { execSync } = require('node:child_process');
+const { execFileSync } = require('node:child_process');
 
 const root = process.cwd();
 const packagesDir = path.join(root, 'packages');
@@ -35,7 +35,15 @@ for (const dir of packageDirs) {
   }
 
   try {
-    execSync('bun publish --dry-run --access public', { cwd: dir, stdio: 'inherit' });
+    // `process.execPath` rather than the string 'bun'. A bare command name is
+    // resolved through PATH, so this could shell out to a different Bun than the
+    // pinned one that is running — which defeats Requirement 096 quietly, since
+    // the dry run would still report success. It also drops the shell entirely.
+    execFileSync(
+      process.execPath,
+      ['publish', '--dry-run', '--access', 'public'],
+      { cwd: dir, stdio: 'inherit' }
+    );
   } catch (error) {
     console.error(`[npm-dry-run][error] dry-run failed for ${name}`);
     process.exit(1);

@@ -9,6 +9,19 @@ const MINIMUM_GLOBAL_THRESHOLDS = {
   branches: 90
 };
 
+/**
+ * Exceptions come from the coverage checker, not from a second copy here.
+ *
+ * Two guards enforcing the same numbers is fine; two guards holding their own
+ * idea of which concessions are live is not — one would keep passing a metric
+ * the other had already released, or keep failing one the owner had accepted.
+ * `ci-cd/check-coverage-thresholds.js` owns the exception register
+ * (Requirement 110); this reads it.
+ */
+// eslint-disable-next-line import/no-dynamic-require, global-require
+const { ACCEPTED_BELOW_THRESHOLD } = require('./check-coverage-thresholds');
+const { isEntryPoint } = require('./lib/entry-point.js');
+
 const TEST_PLACEHOLDER_PATTERN = /echo\s+["'][^"']*(no tests yet|placeholder|pending)[^"']*["']/i;
 const PACKAGE_TEST_PLACEHOLDER_ALLOWLIST = new Set([
   // Req 106 / JUM-557: placeholders are forbidden. Packages without unit tests
@@ -43,11 +56,16 @@ function validateGlobalCoverageThreshold(jestConfig) {
   const globalThreshold = jestConfig?.coverageThreshold?.global || {};
   for (const [metric, minimum] of Object.entries(MINIMUM_GLOBAL_THRESHOLDS)) {
     const current = Number(globalThreshold?.[metric]);
-    if (!Number.isFinite(current) || current < minimum) {
+    const exception = ACCEPTED_BELOW_THRESHOLD[metric];
+    // A metric under a dated, tracked exception may sit at its floor. The
+    // coverage checker is what stops it going lower or lingering once resolved.
+    const floor = exception ? exception.floor : minimum;
+
+    if (!Number.isFinite(current) || current < floor) {
       failures.push(
-        `Root coverageThreshold.global.${metric} must be >= ${minimum} (current: ${
-          Number.isFinite(current) ? current : 'missing'
-        })`
+        `Root coverageThreshold.global.${metric} must be >= ${floor}${
+          exception ? ` (${minimum} relaxed to the accepted floor under ${exception.issue})` : ''
+        } (current: ${Number.isFinite(current) ? current : 'missing'})`
       );
     }
   }
@@ -97,7 +115,7 @@ function run() {
   console.log('Workspace coverage policy check passed.');
 }
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   run();
 }
 

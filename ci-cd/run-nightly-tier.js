@@ -9,6 +9,7 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 const { readTestMap } = require('./lib/test-map');
 const { runViaPackageScript } = require('./lib/suite-runner');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 const DEFAULT_NIGHTLY_SCRIPTS = Object.freeze([
   'test:integration:mutex',
@@ -66,7 +67,7 @@ function runNightlyTier(options = {}) {
   return evidence;
 }
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   const evidence = runNightlyTier();
   if (evidence.outcome !== 'passed') process.exitCode = 1;
 }

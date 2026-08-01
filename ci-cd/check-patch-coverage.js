@@ -15,6 +15,96 @@ const selectedLayers = String(process.env.JUMENTIX_SELECTED_LAYERS || '')
   .map((value) => value.trim())
   .filter(Boolean);
 
+/**
+ * Files that are not subjects of coverage, and why each exclusion is safe.
+ *
+ * The rule below — a changed file with no lcov entry has every changed line
+ * counted as uncovered — is the right default for source: a new module nobody
+ * tested has no lcov entry, and silently ignoring it is exactly the false green
+ * Requirement 065 forbids.
+ *
+ * It is wrong for two categories, and being wrong here is not cosmetic. A test
+ * file never appears in lcov, because it is the instrument, not the subject; so
+ * every test added counted against patch coverage, and writing more tests made
+ * the number worse. On a branch carrying 51 changed test files that produced
+ * 8467 "uncovered" lines and a gate nobody could pass by testing harder.
+ *
+ * The second category is files `jest.config.js` deliberately excludes from
+ * measurement. Those are read from the Jest configuration rather than restated
+ * here: a second list would drift, and the moment it drifts one of the two is
+ * silently wrong.
+ */
+const TEST_FILE = /(^|\/)test\/|\.test\.ts$|\.spec\.ts$/;
+
+const coverageIgnorePatterns = (() => {
+  try {
+    // eslint-disable-next-line global-require, import/no-dynamic-require
+    const jestConfig = require(path.join(ROOT, 'jest.config.js'));
+    return (jestConfig.coveragePathIgnorePatterns || [])
+      .map((pattern) => new RegExp(pattern.replace('<rootDir>', ROOT)));
+  } catch {
+    // No config to read: measure everything rather than assume an exclusion.
+    return [];
+  }
+})();
+
+/**
+ * Whether a TypeScript file emits any JavaScript at all.
+ *
+ * A file of nothing but `interface` and `type` declarations compiles to an empty
+ * module, so it can never appear in a coverage report and can never be covered —
+ * yet the rule below counted every one of its lines as a miss. On this branch
+ * `IPasswordCryptoService.ts`, which is two interfaces and a port declaration,
+ * contributed twenty uncovered lines that no test could ever reach.
+ *
+ * Answered by asking the compiler rather than by pattern-matching the source: a
+ * name like `IFoo.ts` is a convention, not a guarantee, and a file that mixes a
+ * constant in with its types must stay a coverage subject. Falls back to
+ * treating the file as a subject when TypeScript is unavailable — the direction
+ * that fails loudly rather than the one that hides a gap.
+ */
+const emitsNoJavaScript = (absolute) => {
+  try {
+    // eslint-disable-next-line global-require
+    const ts = require('typescript');
+    const source = fs.readFileSync(absolute, 'utf8');
+    const emitted = ts.transpileModule(source, {
+      compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 }
+    }).outputText;
+
+    // What is left for a type-only module: the "use strict" prologue, the
+    // exports marker, blank lines. Nothing executable.
+    const meaningful = emitted
+      .replace(/^\s*['"]use strict['"];?\s*$/gm, '')
+      .replace(/^\s*Object\.defineProperty\(exports, ["']__esModule["'].*$/gm, '')
+      .replace(/^\s*exports\.\w+ = void 0;\s*$/gm, '')
+      .trim();
+
+    return meaningful.length === 0;
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * Istanbul's own file-level opt-out, honoured here for the same reason the Jest
+ * ignore patterns are: it is a declared, reviewable exclusion, and a file the
+ * instrumenter was told to skip can never appear in the report. Counting its
+ * lines as uncovered turns a deliberate decision into an unpayable debt —
+ * `start-rest-api.ts` carries the pragma because importing its adapter table
+ * boots real HTTP servers, and it contributed 48 unreachable misses.
+ */
+const ISTANBUL_IGNORE_FILE = /\/\*\s*istanbul\s+ignore\s+file\s*\*\//;
+
+const isCoverageSubject = (file) => {
+  if (TEST_FILE.test(file)) return false;
+  const absolute = path.join(ROOT, file);
+  if (coverageIgnorePatterns.some((pattern) => pattern.test(absolute))) return false;
+  if (!fs.existsSync(absolute)) return false;
+  if (ISTANBUL_IGNORE_FILE.test(fs.readFileSync(absolute, 'utf8'))) return false;
+  return !emitsNoJavaScript(absolute);
+};
+
 const run = (cmd) => cp.execSync(cmd, {
   cwd: ROOT,
   encoding: 'utf8',
@@ -142,9 +232,14 @@ const main = () => {
   let covered = 0;
   let total = 0;
   let ignoredUnselected = 0;
+  let ignoredNotSubject = 0;
   const missing = [];
 
   for (const [file, lines] of changedLinesByFile.entries()) {
+    if (!isCoverageSubject(file)) {
+      ignoredNotSubject += lines.size;
+      continue;
+    }
     if (!fileOwnedBySelectedLayers(file)) {
       ignoredUnselected += lines.size;
       continue;
@@ -167,6 +262,13 @@ const main = () => {
         missing.push(`${file}:${ln}`);
       }
     }
+  }
+
+  if (ignoredNotSubject > 0) {
+    console.log(
+      `[patch-coverage] ignored ${ignoredNotSubject} changed line(s) in test files and in `
+        + 'paths jest.config.js excludes from coverage'
+    );
   }
 
   if (ignoredUnselected > 0) {

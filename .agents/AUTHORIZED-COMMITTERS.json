@@ -1,0 +1,72 @@
+{
+  "requirement": "111",
+  "comment": [
+    "Every identity permitted to author or commit in this repository.",
+    "",
+    "This is an allowlist, deliberately, and not a list of banned addresses. The",
+    "incident that produced it involved one corporate address the owner knew about;",
+    "auditing the history for it turned up a second corporate domain from a former",
+    "employer that nobody had thought to look for. A denylist only ever blocks the",
+    "leak someone already noticed. An allowlist blocks the one nobody has.",
+    "",
+    "Both `author` and `committer` are checked. They differ on rebases, amends, and",
+    "web merges, so validating one leaves the other free to carry anything."
+  ],
+
+  "historyCutoff": {
+    "commit": "ROOT",
+    "date": "2026-07-31",
+    "comment": [
+      "Every commit, back to the root. There is no exemption.",
+      "",
+      "This field previously named a cutoff commit, because twenty-one commits",
+      "across two non-approved corporate domains sat in history that was already on",
+      "`main`. The owner chose to rewrite instead, while the repository was private:",
+      "`dev`, `main` and all nine other branches were rewritten in place, mapping",
+      "both domains onto the owner's declared identity. Trees were unchanged, so no",
+      "file moved; only authorship metadata did.",
+      "",
+      "That is why this is `ROOT` and not a SHA. The old cutoff pointed at a commit",
+      "the rewrite made unreachable — it still resolved on the machine that did the",
+      "rewrite, where the object lingered, and would have failed on any fresh clone.",
+      "A stale cutoff is worse than none: it fails closed in CI while passing",
+      "locally, which is the hardest kind of disagreement to diagnose.",
+      "",
+      "`ROOT` is a positive claim, not the absence of one. If any commit anywhere in",
+      "history stops matching this list, the check fails."
+    ]
+  },
+
+  "identities": [
+    {
+      "email": "web2solucoes@gmail.com",
+      "kind": "human",
+      "role": "owner",
+      "note": "Primary identity. The default for all work in this repository."
+    },
+    {
+      "email": "eduardo@xpertminds.dev",
+      "kind": "human",
+      "role": "owner",
+      "note": "Approved alternate identity for the same person."
+    },
+    {
+      "email": "684249+web2solutions@users.noreply.github.com",
+      "kind": "human",
+      "role": "owner",
+      "note": "Forge-provided no-reply address for the same account. Authors commits created through the GitHub web interface."
+    },
+    {
+      "email": "noreply@github.com",
+      "kind": "machine",
+      "role": "forge",
+      "note": "Committer on merges performed through the GitHub web interface. Never an author."
+    },
+    {
+      "email": "49699333+dependabot[bot]@users.noreply.github.com",
+      "kind": "machine",
+      "role": "bot",
+      "note": "Dependency update pull requests."
+    }
+  ]
+}

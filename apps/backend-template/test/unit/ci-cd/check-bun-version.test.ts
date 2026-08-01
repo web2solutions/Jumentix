@@ -103,8 +103,15 @@ describe('check-bun-version CLI', () => {
       throw new Error('process.exit called');
     }) as never);
 
-    // Under Node the guard must fail: that is the fail-closed behaviour itself.
-    expect(() => main()).toThrow('process.exit called');
+    // The failing state is passed in rather than produced by the ambient
+    // runtime. Previously this test relied on being executed under Node so that
+    // `process.versions.bun` was absent — which meant it asserted nothing when
+    // run under Bun, where the guard correctly passes (JUM-583).
+    expect(() => main({
+      runningBunVersion: null,
+      rawPin: '1.3.14',
+      declaredPackageManager: 'bun@1.3.14'
+    })).toThrow('process.exit called');
     expect(exit).toHaveBeenCalledWith(1);
     expect(error.mock.calls.flat().join('\n')).toContain('Not running under Bun');
   });

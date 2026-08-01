@@ -7,6 +7,7 @@
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 const CONTRACT_CHECKS = Object.freeze([
   { id: 'oas-routes', script: 'oas:check-routes' },
@@ -49,7 +50,7 @@ function runContractTests(options = {}) {
   return evidence;
 }
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   const evidence = runContractTests();
   if (evidence.outcome !== 'passed') process.exitCode = 1;
 }

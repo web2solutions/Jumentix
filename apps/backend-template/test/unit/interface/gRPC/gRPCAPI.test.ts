@@ -4,7 +4,7 @@
 /* eslint-disable jest/max-expects */
 /* eslint-disable jest/prefer-spy-on */
 
-import { GrpcAPI } from '@src/interface/gRPC/gRPCAPI';
+import { GrpcAPI, interopDefault } from '@src/interface/gRPC/gRPCAPI';
 
 const grpcMockState: Record<string, any> = {};
 const protoMockState: Record<string, any> = {};
@@ -217,30 +217,25 @@ describe('grpc api', () => {
     await expect(api.start()).rejects.toThrow('bind failed');
   });
 
-  it('supports module fallback when grpc/proto-loader default export is undefined', async () => {
+  it.each([
+    ['a namespace whose default holds the exports', { default: { loadSync: 'real' } }, { loadSync: 'real' }],
+    ['a namespace that is the exports', { loadSync: 'real' }, { loadSync: 'real' }],
+    ['a namespace with an undefined default', { default: undefined, loadSync: 'real' }, { default: undefined, loadSync: 'real' }]
+  ])('unwraps %s', (_case, namespace, expected) => {
     expect.hasAssertions();
-    const grpcModule: any = await import('@grpc/grpc-js');
-    const protoLoaderModule: any = await import('@grpc/proto-loader');
-    const previousGrpcDefault = grpcModule.default;
-    const previousProtoDefault = protoLoaderModule.default;
-    grpcModule.default = undefined;
-    protoLoaderModule.default = undefined;
+    // `@grpc/grpc-js` and `@grpc/proto-loader` are CommonJS, and interop hands
+    // back either shape depending on the runtime. Asserted against the helper
+    // rather than by assigning over the live module namespace: an ES module
+    // namespace is read-only under Bun, so that form ran only under Jest
+    // (JUM-583).
+    expect(interopDefault(namespace)).toStrictEqual(expected);
+  });
 
-    const api = new GrpcAPI({
-      databaseClient,
-      specDir: './spec/asyncapi'
-    });
-
-    await api.start();
-    await api.stop();
-
-    expect(protoMockState.loadSync).toHaveBeenCalledWith(
-      expect.any(String),
-      expect.any(Object)
-    );
-    expect(grpcMockState.start).toHaveBeenCalledWith();
-
-    grpcModule.default = previousGrpcDefault;
-    protoLoaderModule.default = previousProtoDefault;
+  it('does not unwrap a falsy-but-present default', () => {
+    expect.hasAssertions();
+    // The reason this uses `??` and not `||`: a module whose default export is
+    // legitimately 0, '' or false would previously have fallen through to the
+    // namespace and silently used the wrong object.
+    expect(interopDefault({ default: 0 } as never)).toBe(0);
   });
 });

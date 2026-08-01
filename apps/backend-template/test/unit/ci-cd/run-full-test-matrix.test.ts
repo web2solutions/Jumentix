@@ -3,8 +3,11 @@ const matrixFs = require('fs');
 const matrixPath = require('path');
 const {
   FULL_TEST_MATRIX,
+  executeMatrixCell,
+  runAsEntryPoint,
   runFullTestMatrix,
-  validateMatrixManifest
+  validateMatrixManifest,
+  writeMatrixEvidence
 } = require('../../../../../ci-cd/run-full-test-matrix');
 const fullMatrixRootPackage = require('../../../../../package.json');
 
@@ -24,6 +27,144 @@ describe('run-full-test-matrix', () => {
       expect(fullMatrixRootPackage.scripts[cell.script]).toStrictEqual(expect.any(String));
       expect(fullMatrixRootPackage.scripts[cell.script].trim()).not.toBe('');
     }
+  });
+
+  /**
+   * The strict matrix guards promotion to `main`, so the coverage contract has
+   * to be part of it — and the parts have to run in the right order.
+   *
+   * Both were wrong at once, and each hid in a different direction. Requirement
+   * 110 moved coverage production out of `test:unit` (bun:test, no lcov) into
+   * `test:coverage` (Jest), and neither the producer nor `coverage:check` was
+   * ever added here. So the gate that decides what reaches `main` was not
+   * checking the four thresholds at all, while `patch-coverage` read a report
+   * nothing had written and failed with "Coverage file not found" — a red cell
+   * that looked like a coverage shortfall and was actually a missing dependency.
+   */
+  it('produces coverage before the cells that consume it', () => {
+    expect.hasAssertions();
+
+    const ids = (FULL_TEST_MATRIX as FullMatrixTestCell[]).map((cell) => cell.id);
+
+    expect(ids).toContain('coverage');
+    expect(ids).toContain('coverage-thresholds');
+    expect(ids).toContain('patch-coverage');
+
+    // Cells run in declaration order, so position is the dependency.
+    expect(ids.indexOf('coverage')).toBeLessThan(ids.indexOf('coverage-thresholds'));
+    expect(ids.indexOf('coverage')).toBeLessThan(ids.indexOf('patch-coverage'));
+  });
+
+  describe('writeMatrixEvidence', () => {
+    it('writes the evidence file and creates its directory', () => {
+      expect.hasAssertions();
+
+      const dir = matrixFs.mkdtempSync(
+        matrixPath.join(require('node:os').tmpdir(), 'matrix-evidence-')
+      );
+      const target = matrixPath.join(dir, 'nested', 'matrix.json');
+
+      writeMatrixEvidence({ outcome: 'passed' }, target);
+
+      expect(JSON.parse(matrixFs.readFileSync(target, 'utf8'))).toStrictEqual({
+        outcome: 'passed'
+      });
+
+      matrixFs.rmSync(dir, { recursive: true, force: true });
+    });
+
+    /** No destination means no evidence, not a crash on `path.resolve(undefined)`. */
+    it('does nothing when no destination is configured', () => {
+      expect.hasAssertions();
+
+      expect(() => writeMatrixEvidence({ outcome: 'passed' }, undefined)).not.toThrow();
+    });
+  });
+
+  describe('executeMatrixCell', () => {
+    it('returns the exit status of the spawned script', () => {
+      expect.hasAssertions();
+      // A script that exists in package.json and does nothing expensive, so this
+      // exercises the real spawn rather than an injected stand-in.
+      expect(executeMatrixCell({ id: 'version', script: 'check-bun-version' })).toBe(0);
+    });
+  });
+
+  /**
+   * The guard that turns a failing matrix into a failing build. Inline as
+   * `if (isEntryPoint(module))` it is unreachable from any suite, so the one
+   * decision that makes the gate binding would go unverified.
+   */
+  describe('runAsEntryPoint', () => {
+    it('does nothing when the module is merely imported', () => {
+      expect.hasAssertions();
+
+      const exits: number[] = [];
+      const ran = runAsEntryPoint({
+        caller: { id: 'imported' },
+        entry: { id: 'something-else' },
+        exit: (code: number) => exits.push(code),
+        run: () => ({ outcome: 'passed' })
+      });
+
+      expect(ran).toBe(false);
+      expect(exits).toStrictEqual([]);
+    });
+
+    it('leaves the exit code alone when the matrix passes', () => {
+      expect.hasAssertions();
+
+      const entry = { id: 'the-entry-point' };
+      const exits: number[] = [];
+      const ran = runAsEntryPoint({
+        caller: entry,
+        entry,
+        exit: (code: number) => exits.push(code),
+        run: () => ({ outcome: 'passed' })
+      });
+
+      expect(ran).toBe(true);
+      expect(exits).toStrictEqual([]);
+    });
+
+    it('exits non-zero when the matrix does not pass', () => {
+      expect.hasAssertions();
+
+      const entry = { id: 'the-entry-point' };
+      const exits: number[] = [];
+      runAsEntryPoint({
+        caller: entry,
+        entry,
+        exit: (code: number) => exits.push(code),
+        run: () => ({ outcome: 'failed' })
+      });
+
+      expect(exits).toStrictEqual([1]);
+    });
+
+    /**
+     * A manifest that will not validate throws before any cell runs. That has to
+     * fail the build too — a configuration error is the one case where nothing
+     * was verified at all.
+     */
+    it('exits non-zero and reports when the manifest is invalid', () => {
+      expect.hasAssertions();
+
+      const entry = { id: 'the-entry-point' };
+      const exits: number[] = [];
+      const logged: unknown[] = [];
+
+      runAsEntryPoint({
+        caller: entry,
+        entry,
+        exit: (code: number) => exits.push(code),
+        logger: { error: (message: unknown) => logged.push(message) },
+        run: () => { throw new Error('manifest is broken'); }
+      });
+
+      expect(exits).toStrictEqual([1]);
+      expect(logged[0]).toContain('configuration is invalid');
+    });
   });
 
   it('fails closed for an empty, duplicate, or missing-script manifest', () => {
@@ -100,7 +241,7 @@ describe('run-full-test-matrix', () => {
     expect(crashed.outcome).toBe('failed');
   });
 
-  it('uses branch-aware gates and keeps Storybook in the website workflow', () => {
+  it('uses branch-aware gates and keeps Storybook in its own CircleCI job', () => {
     expect.hasAssertions();
     const read = (file: string) => matrixFs.readFileSync(
       matrixPath.join(fullMatrixRootDir, file),
@@ -117,20 +258,27 @@ describe('run-full-test-matrix', () => {
       read('.husky/pre-commit').includes('bun run ci:gate:branch'),
       read('.husky/pre-push').includes('bun run ci:gate:branch'),
       read('.husky/pre-merge-commit').includes('bun run ci:gate:branch'),
+      // Mirrored from the three GitHub Actions workflows into CircleCI
+      // (Requirement 107). Both providers run, and each must cover the same
+      // checks — two providers checking different things are two partial
+      // pipelines, not redundancy.
       read('.circleci/config.yml').includes('bun run ci:gate:branch'),
-      read('.circleci/config.yml').includes('only:\n                - dev\n                - main'),
-      read('.github/workflows/test.yml').includes('bun run ci:gate:branch'),
-      read('.github/workflows/test.yml').includes('branches: [ "**" ]'),
-      read('.github/workflows/test.yml').includes('JUMENTIX_TASK_TEST_MODE: range'),
-      read('.github/workflows/test.yml').includes('JUMENTIX_TASK_TEST_BASE: origin/dev'),
-      read('.github/workflows/test.yml')
-        .includes('if: always() && (github.base_ref == \'main\' || github.ref_name == \'main\')'),
-      read('.github/workflows/website.yml').includes('bun run website:storybook:build'),
-      read('.github/workflows/website.yml').includes('bun run website:storybook:smoke'),
-      !read('.github/workflows/test.yml').includes('website:storybook'),
+      read('.circleci/config.yml').includes('JUMENTIX_TASK_TEST_MODE=range'),
+      read('.circleci/config.yml').includes('JUMENTIX_TASK_TEST_BASE=origin/dev'),
+      read('.circleci/config.yml').includes('full-test-matrix.json'),
+      read('.circleci/config.yml').includes('bun run website:storybook:build'),
+      read('.circleci/config.yml').includes('bun run website:storybook:smoke'),
+      // The quality gate runs on every branch now. The previous configuration
+      // filtered to dev and main, which left feature branches with no signal.
+      !/- quality-gate:\s*\n\s*filters:/.test(read('.circleci/config.yml')),
+      // Storybook stays in its own job rather than being folded into the gate.
+      !read('.circleci/config.yml').includes('ci:gate:branch\n      - run:\n          name: Build Storybook'),
+      // GitHub Actions stays. An earlier revision of 107 retired it, written
+      // while it could not execute at all; billing was resolved and the
+      // workflows were restored, so their absence is now the regression.
+      matrixFs.existsSync(matrixPath.join(fullMatrixRootDir, '.github', 'workflows')),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'pr:governance:check'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'requirements:check'),
-      FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'test-map:check'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'integrations:check'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'integration-migration:check'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'agent-registry:check'),
@@ -140,7 +288,7 @@ describe('run-full-test-matrix', () => {
       )
     ]).toStrictEqual([
       true, true, true, true, true, true, true, true, true, true, true, true, true, true,
-      true, true, true, true, true, true, true
+      true, true, true, true, true
     ]);
   });
 });

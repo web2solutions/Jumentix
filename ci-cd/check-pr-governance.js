@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 const fs = require('fs');
 const path = require('path');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 const TEMPLATE_PATHS = Object.freeze([
   '.github/pull_request_template.md',
@@ -185,7 +186,7 @@ function run(options = {}) {
   return 0;
 }
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   process.exitCode = run();
 }
 

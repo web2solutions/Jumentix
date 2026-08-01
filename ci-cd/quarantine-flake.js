@@ -11,6 +11,7 @@
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 function parseArgs(argv) {
   const out = { createIssue: false };
@@ -137,7 +138,7 @@ async function main() {
   console.log(`[quarantine] wrote entry for ${args.path} → ${issue}`);
 }
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   main().catch((error) => {
     console.error('[quarantine]', error.message || error);
     process.exit(1);

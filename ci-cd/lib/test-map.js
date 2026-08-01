@@ -121,9 +121,17 @@ function validateTestMap(manifest, options = {}) {
       errors.push(`Suite ${suite.path} has invalid ciRunner ${suite.ciRunner}`);
     }
     // Req 106: local default must be bun; Node is CI-only via ciRunner.
-    if (suite.runner === 'node') {
+    //
+    // One exception, and it has to be declared rather than assumed: a suite whose
+    // framework Bun cannot load at all has no bun runner to fall back to, and
+    // insisting on one means it runs nowhere. `runner: "node"` is accepted only
+    // alongside a `reason` naming the incompatibility, so the exception is
+    // visible in the map instead of reading as an oversight (Requirement 110).
+    if (suite.runner === 'node' && !suite.reason) {
       errors.push(
-        `Suite ${suite.path} uses runner:"node" — local runner must be "bun"; use ciRunner:"node" for CI (Req 106)`
+        `Suite ${suite.path} uses runner:"node" without a "reason". The local runner must be "bun" `
+          + '(Req 106); use ciRunner:"node" for a suite that merely prefers Node in CI. A suite that '
+          + 'genuinely cannot load under Bun must say why, in a "reason" field (Req 110).'
       );
     }
     if (!VALID_TYPES.has(suite.type)) {

@@ -13,6 +13,16 @@ Upgrading npm to `latest` on older Node patch versions can break CI unexpectedly
 ## Status
 Done
 
-## Supersession notice (phased)
+## Superseded outright by 107 (2026-07-30)
+
+Superseded by [107-circleci-as-sole-ci-provider](107-circleci-as-sole-ci-provider.md)
+(the file keeps its original slug; its title is now "CircleCI Runs Every Branch
+Alongside GitHub Actions").
+
+CircleCI still runs, but this requirement's subject — npm/Node engine mismatch
+from upgrading npm on an older Node patch — no longer exists. CircleCI now runs
+the `oven/bun` image directly, with no npm and no Node bootstrap.
+
+## Supersession notice (phased, historical)
 
 For internal engineering workflows this requirement is superseded by [096-bun-internal-tooling-runtime](096-bun-internal-tooling-runtime.md) once the Bun cutover (Linear JUM-40, project 5c38372a8e45) completes with full evidence. Until then, this requirement remains authoritative.
