@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-01 docs: restore truthful badges and coverage map [JUM-592] (#33) - Eduardo A.
 - 2026-08-01 [JUM-591][CI] Enforce pinned third-party PR review (#32) - Eduardo A.
 - 2026-08-01 [JUM-590][CI] Replace paid private CI providers (#31) - Eduardo A.
 - 2026-08-01 [JUM-589][Governance] Sync terminal Codex onboarding state (#30) - Eduardo A.

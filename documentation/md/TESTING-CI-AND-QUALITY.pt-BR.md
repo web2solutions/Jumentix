@@ -197,10 +197,11 @@ Importação de cobertura do SonarQube Cloud:
 |------------|---------|----------------------------|-----------------------------|
 | GitHub Actions (testes) | Validação orientada ao destino em push/PR | `.github/workflows/test.yml` | Seleciona pelo destino do PR ou branch enviada e publica evidência do gate |
 | GitHub Actions (cobertura) | Cobertura de projeto e patch pertencente ao repositório | `.github/workflows/coverage.yml` | Aplica `coverage:check` e `coverage:patch` e retém evidência JSON/LCOV |
+| GitHub Actions (revisão third-party) | Revisão fail-closed de segredos e análise estática | `.github/workflows/third-party-review.yml` | Executa Gitleaks/Semgrep fixados e publica via Reviewdog fixado |
 | GitHub Actions (website) | Storybook e prontidão de publicação pertencentes ao website | `.github/workflows/website.yml` | Filtrado por caminhos; executa build/smoke do Storybook e prepublish de forma independente |
-| Ações GitHub (SonarQube Cloud) | Análise estática + portão de qualidade + importação de cobertura | `.github/workflows/sonarqube-cloud.yml`, `sonar-project.properties` | Requer `SONAR_TOKEN`; executa `pnpm run test:unit` primeiro |
-| Portão de cobertura Jest | Hard gate local para evitar fusões de baixa cobertura | `jest.config.js` | Limiares globais: `linhas/declarações >= 95%`, `ramos/funções >= 80%` |
-| Husky | Ganchos Git locais para verificações de qualidade | `.husky/*` | Instalado por `pnpm run prepare` |
+| Ações GitHub (SonarQube Cloud) | Análise estática + quality gate + importação de cobertura | `.github/workflows/sonarqube-cloud.yml`, `sonar-project.properties` | Requer `SONAR_TOKEN`; produz LCOV antes do scan |
+| Gate de cobertura do repositório | Hard gate local contra baixa cobertura | `jest.config.js`, `ci-cd/check-coverage-thresholds.js` | Statements/linhas/funções 99%, branches 90%, linhas alteradas 99% |
+| Husky | Ganchos Git locais para verificações de qualidade | `.husky/*` | Instalado por `bun run prepare` |
 | Comprometer-se + Comprometer-se | Commits convencionais e fluxo de commits guiados | `commitlint.config.js`, `package.json` | `pnpm executar commit` |
 | Automação de sincronização do changelog | Mantém `CHANGELOG.md` alinhado com a história do Git | `ci-cd/update-changelog.js`, `.husky/post-commit` | `pnpm execute changelog:update`, `pnpm execute changelog:check` |
 | Liberar verificação de governança | Aplica contratos de script de lançamento e metadados de publicação de pacotes | `ci-cd/check-release-governance.js` | `pnpm run release:governance:check` |
@@ -222,7 +223,7 @@ repositório privado foram substituídos por GitHub Actions rastreado e scripts 
 - Aciona:
   - `push` para `main` e `dev`
   - `pull_request` para `dev` e `main`
-- Configura Redis (com senha), instala `pnpm` e executa `pnpm run ci:gate:branch`
+- Configura Redis (com senha), instala Bun fixado e executa `bun run ci:gate:branch`
 - Publica a evidência do gate com `if: always()` e exige evidência da matriz completa somente
   quando o destino é `main`
 
@@ -305,9 +306,9 @@ pnpm run ci:smoke
 pnpm run ci:integration
 ```
 
-### Solução de problemas (CI / SonarQube / Codecov)
+### Solução de problemas (CI / SonarQube / cobertura do repositório)
 
 Para incidentes de CI e verificações com falha, consulte:
 
-- [Solução de problemas de CI / SonarQube / Codecov](./CI-TROUBLESHOOTING.md)
+- [Solução de problemas de CI / SonarQube / cobertura do repositório](./CI-TROUBLESHOOTING.md)
 - [Guia de teste de API em tempo real](./REALTIME-API-TESTING.md)

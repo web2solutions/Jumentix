@@ -204,11 +204,11 @@ This registry tracks AI agents collaborating in the Jumentix project.
 - `agent_version`: `GPT-5 Codex`
 - `status`: `busy`
 - `registered_at_utc`: `2026-08-01T09:13:19Z`
-- `last_branch_check_utc`: `2026-08-01T10:37:44Z`
-- `main_ref_checked`: `720372bc`
-- `dev_ref_checked`: `720372bc`
+- `last_branch_check_utc`: `2026-08-01T11:13:37Z`
+- `main_ref_checked`: `490cb634`
+- `dev_ref_checked`: `358021f8`
 - `active_epic`: `https://linear.app/jumentix/project/epicci-private-free-ci-security-coverage-and-third-party-pr-review-bf8fde097cf1`
-- `assigned_task`: `https://linear.app/jumentix/issue/JUM-592`
+- `assigned_task`: `https://linear.app/jumentix/issue/JUM-593`
 - `capabilities`:
   - repository-wide source and documentation assimilation
   - governed implementation, testing, and CI diagnostics

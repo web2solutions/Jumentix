@@ -29,6 +29,7 @@ This documentation set defines how product intent, architecture constraints, con
 14. [Spec Engineering Practices and Git Policy](./SPEC-ENGINEERING-PRACTICES-AND-GIT-POLICY.md)
 15. [Spec Security and Compliance Practices](./SPEC-SECURITY-AND-COMPLIANCE-PRACTICES.md)
 16. [Spec Jumentix Component System](./SPEC-JUMENTIX-COMPONENT-SYSTEM.md)
+17. [Private Repository Free CI Strategy](./PRIVATE-FREE-CI-STRATEGY.md)
 
 ## Mandatory Principle
 
