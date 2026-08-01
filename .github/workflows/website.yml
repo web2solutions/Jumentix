@@ -1,19 +1,21 @@
 name: Jumentix website quality
 
+# No path filter, deliberately.
+#
+# `storybook` is a required status check on `dev` and `main`. A required check
+# that runs for only some pull requests is not a weaker gate — it is a stuck one.
+# GitHub waits for a context that will never report, so a pull request touching
+# no website file sits blocked forever with nothing red to fix and nothing to
+# re-run. That is exactly what happened to the change that removed this filter:
+# every other check passed and the merge was refused with "the base branch policy
+# prohibits the merge".
+#
+# The build takes about two minutes. Paying that on every pull request is cheaper
+# than a required check whose absence is indistinguishable from "still running".
 on:
   push:
-    paths:
-      - "apps/jumentix-website/**"
-      - ".github/workflows/website.yml"
-      - "package.json"
-      - "bun.lock"
   pull_request:
     branches: [ "dev", "main" ]
-    paths:
-      - "apps/jumentix-website/**"
-      - ".github/workflows/website.yml"
-      - "package.json"
-      - "bun.lock"
 
 jobs:
   storybook:

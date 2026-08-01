@@ -3,8 +3,11 @@ const matrixFs = require('fs');
 const matrixPath = require('path');
 const {
   FULL_TEST_MATRIX,
+  executeMatrixCell,
+  runAsEntryPoint,
   runFullTestMatrix,
-  validateMatrixManifest
+  validateMatrixManifest,
+  writeMatrixEvidence
 } = require('../../../../../ci-cd/run-full-test-matrix');
 const fullMatrixRootPackage = require('../../../../../package.json');
 
@@ -24,6 +27,144 @@ describe('run-full-test-matrix', () => {
       expect(fullMatrixRootPackage.scripts[cell.script]).toStrictEqual(expect.any(String));
       expect(fullMatrixRootPackage.scripts[cell.script].trim()).not.toBe('');
     }
+  });
+
+  /**
+   * The strict matrix guards promotion to `main`, so the coverage contract has
+   * to be part of it — and the parts have to run in the right order.
+   *
+   * Both were wrong at once, and each hid in a different direction. Requirement
+   * 110 moved coverage production out of `test:unit` (bun:test, no lcov) into
+   * `test:coverage` (Jest), and neither the producer nor `coverage:check` was
+   * ever added here. So the gate that decides what reaches `main` was not
+   * checking the four thresholds at all, while `patch-coverage` read a report
+   * nothing had written and failed with "Coverage file not found" — a red cell
+   * that looked like a coverage shortfall and was actually a missing dependency.
+   */
+  it('produces coverage before the cells that consume it', () => {
+    expect.hasAssertions();
+
+    const ids = (FULL_TEST_MATRIX as FullMatrixTestCell[]).map((cell) => cell.id);
+
+    expect(ids).toContain('coverage');
+    expect(ids).toContain('coverage-thresholds');
+    expect(ids).toContain('patch-coverage');
+
+    // Cells run in declaration order, so position is the dependency.
+    expect(ids.indexOf('coverage')).toBeLessThan(ids.indexOf('coverage-thresholds'));
+    expect(ids.indexOf('coverage')).toBeLessThan(ids.indexOf('patch-coverage'));
+  });
+
+  describe('writeMatrixEvidence', () => {
+    it('writes the evidence file and creates its directory', () => {
+      expect.hasAssertions();
+
+      const dir = matrixFs.mkdtempSync(
+        matrixPath.join(require('node:os').tmpdir(), 'matrix-evidence-')
+      );
+      const target = matrixPath.join(dir, 'nested', 'matrix.json');
+
+      writeMatrixEvidence({ outcome: 'passed' }, target);
+
+      expect(JSON.parse(matrixFs.readFileSync(target, 'utf8'))).toStrictEqual({
+        outcome: 'passed'
+      });
+
+      matrixFs.rmSync(dir, { recursive: true, force: true });
+    });
+
+    /** No destination means no evidence, not a crash on `path.resolve(undefined)`. */
+    it('does nothing when no destination is configured', () => {
+      expect.hasAssertions();
+
+      expect(() => writeMatrixEvidence({ outcome: 'passed' }, undefined)).not.toThrow();
+    });
+  });
+
+  describe('executeMatrixCell', () => {
+    it('returns the exit status of the spawned script', () => {
+      expect.hasAssertions();
+      // A script that exists in package.json and does nothing expensive, so this
+      // exercises the real spawn rather than an injected stand-in.
+      expect(executeMatrixCell({ id: 'version', script: 'check-bun-version' })).toBe(0);
+    });
+  });
+
+  /**
+   * The guard that turns a failing matrix into a failing build. Inline as
+   * `if (isEntryPoint(module))` it is unreachable from any suite, so the one
+   * decision that makes the gate binding would go unverified.
+   */
+  describe('runAsEntryPoint', () => {
+    it('does nothing when the module is merely imported', () => {
+      expect.hasAssertions();
+
+      const exits: number[] = [];
+      const ran = runAsEntryPoint({
+        caller: { id: 'imported' },
+        entry: { id: 'something-else' },
+        exit: (code: number) => exits.push(code),
+        run: () => ({ outcome: 'passed' })
+      });
+
+      expect(ran).toBe(false);
+      expect(exits).toStrictEqual([]);
+    });
+
+    it('leaves the exit code alone when the matrix passes', () => {
+      expect.hasAssertions();
+
+      const entry = { id: 'the-entry-point' };
+      const exits: number[] = [];
+      const ran = runAsEntryPoint({
+        caller: entry,
+        entry,
+        exit: (code: number) => exits.push(code),
+        run: () => ({ outcome: 'passed' })
+      });
+
+      expect(ran).toBe(true);
+      expect(exits).toStrictEqual([]);
+    });
+
+    it('exits non-zero when the matrix does not pass', () => {
+      expect.hasAssertions();
+
+      const entry = { id: 'the-entry-point' };
+      const exits: number[] = [];
+      runAsEntryPoint({
+        caller: entry,
+        entry,
+        exit: (code: number) => exits.push(code),
+        run: () => ({ outcome: 'failed' })
+      });
+
+      expect(exits).toStrictEqual([1]);
+    });
+
+    /**
+     * A manifest that will not validate throws before any cell runs. That has to
+     * fail the build too — a configuration error is the one case where nothing
+     * was verified at all.
+     */
+    it('exits non-zero and reports when the manifest is invalid', () => {
+      expect.hasAssertions();
+
+      const entry = { id: 'the-entry-point' };
+      const exits: number[] = [];
+      const logged: unknown[] = [];
+
+      runAsEntryPoint({
+        caller: entry,
+        entry,
+        exit: (code: number) => exits.push(code),
+        logger: { error: (message: unknown) => logged.push(message) },
+        run: () => { throw new Error('manifest is broken'); }
+      });
+
+      expect(exits).toStrictEqual([1]);
+      expect(logged[0]).toContain('configuration is invalid');
+    });
   });
 
   it('fails closed for an empty, duplicate, or missing-script manifest', () => {

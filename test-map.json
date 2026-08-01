@@ -76,7 +76,9 @@
       "sourceGlobs": [
         "ci-cd/**",
         "tooling/**",
-        "apps/jumentix-website/**"
+        "apps/jumentix-website/**",
+        ".github/**",
+        ".circleci/**"
       ],
       "runner": "bun",
       "tier": "gate",

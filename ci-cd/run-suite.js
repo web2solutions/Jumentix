@@ -31,10 +31,10 @@ const { isEntryPoint } = require('./lib/entry-point.js');
  * in the set is enough: the alternative is running the rest under Bun and that
  * one nowhere.
  */
-function mapPinsToNode(paths) {
+function mapPinsToNode(paths, readMap = readTestMap) {
   let manifest;
   try {
-    manifest = readTestMap();
+    manifest = readMap();
   } catch {
     // No map, no pin. The caller's own runtime resolution stands.
     return false;
@@ -230,7 +230,18 @@ function runSuitePaths(paths, options = {}) {
   }
 
   console.log(`[suite] runtime=bun${label}: ${paths.length} path(s)`);
-  const result = spawn(process.execPath, ['test', ...safePaths], {
+  // `--isolate`, matching `run-unit-tests.js`. Bun shares one process across
+  // files unless told otherwise, so module state — an in-memory store, a
+  // registered singleton — survives from one suite into the next. Jest gives
+  // each file a fresh module registry, so without this the two runners disagree
+  // about what the same suites do.
+  //
+  // The failure mode is not a visible error. Running the three Lambda suites
+  // together reported "13 pass, 1 fail" across 14 tests; with isolation the same
+  // directory reports 25 pass across 25. Eleven tests never ran at all — a
+  // seeded user collided with one left behind by the previous file, the failure
+  // aborted the rest of that suite, and the run still looked almost healthy.
+  const result = spawn(process.execPath, ['test', '--isolate', ...safePaths], {
     shell: false,
     stdio: 'inherit',
     env: {
@@ -242,13 +253,30 @@ function runSuitePaths(paths, options = {}) {
   return Number.isInteger(result.status) ? result.status : 1;
 }
 
-if (isEntryPoint(module)) {
-  const parsed = parseArgs(process.argv);
-  process.exitCode = runSuitePaths(parsed.paths, {
-    label: parsed.label,
-    timeoutMs: parsed.timeoutMs
-  });
+/**
+ * Parse argv and run, when this file is the process entry point.
+ *
+ * A function rather than a bare `if` block so the wiring between the parsed
+ * flags and the runner is reachable from a test — inline it cannot be, since a
+ * test runner always imports this file rather than starting it.
+ */
+function runAsEntryPoint(options = {}) {
+  const {
+    caller = module,
+    entry = require.main,
+    argv = process.argv,
+    exit = (code) => { process.exitCode = code; },
+    run = runSuitePaths
+  } = options;
+
+  if (!isEntryPoint(caller, entry)) return false;
+
+  const parsed = parseArgs(argv);
+  exit(run(parsed.paths, { label: parsed.label, timeoutMs: parsed.timeoutMs }));
+  return true;
 }
+
+runAsEntryPoint();
 
 module.exports = {
   canonicalSuitePaths,
@@ -257,5 +285,6 @@ module.exports = {
   mapPinsToNode,
   parseArgs,
   resolveMappedSuitePaths,
+  runAsEntryPoint,
   runSuitePaths
 };

@@ -29,6 +29,16 @@ const FULL_TEST_MATRIX = Object.freeze([
   { id: 'workspace-tests', script: 'mono:test' },
   { id: 'website-prepublish', script: 'website:test:prepublish' },
   { id: 'integration', script: 'ci:integration' },
+  // Requirement 110: `test:unit` runs under bun:test, which emits no branch
+  // records and no Jest lcov, so coverage is produced by a separate Jest run.
+  // Both cells were missing here, and their absence was invisible in opposite
+  // directions: `coverage:check` — the authority on all four thresholds — never
+  // ran in the strict gate at all, so the gate guarding promotion to main was
+  // not checking coverage; and `patch-coverage` ran against a report nothing had
+  // produced, so it could only ever fail with "Coverage file not found".
+  // Ordered before patch-coverage, which reads what this writes.
+  { id: 'coverage', script: 'test:coverage' },
+  { id: 'coverage-thresholds', script: 'coverage:check' },
   { id: 'patch-coverage', script: 'coverage:patch' }
 ]);
 
@@ -131,22 +141,44 @@ function runFullTestMatrix(options = {}) {
   return evidence;
 }
 
-if (isEntryPoint(module)) {
+/**
+ * Run the matrix when this file is the process entry point, and turn its outcome
+ * into an exit code.
+ *
+ * A function rather than a bare `if` block so the dispatch is reachable from a
+ * test: under a test runner this file is always imported, never the entry point,
+ * so inline it is unreachable by construction — and it is the code that decides
+ * whether a failing matrix actually fails the build.
+ */
+function runAsEntryPoint(options = {}) {
+  const {
+    caller = module,
+    entry = require.main,
+    exit = (code) => { process.exitCode = code; },
+    run = runFullTestMatrix,
+    logger = console
+  } = options;
+
+  if (!isEntryPoint(caller, entry)) return false;
+
   try {
-    const evidence = runFullTestMatrix();
-    if (evidence.outcome !== 'passed') {
-      process.exitCode = 1;
-    }
+    const evidence = run();
+    if (evidence.outcome !== 'passed') exit(1);
   } catch (error) {
-    console.error('[ci] full test matrix configuration is invalid.');
-    console.error(error);
-    process.exitCode = 1;
+    logger.error('[ci] full test matrix configuration is invalid.');
+    logger.error(error);
+    exit(1);
   }
+
+  return true;
 }
+
+runAsEntryPoint();
 
 module.exports = {
   FULL_TEST_MATRIX,
   executeMatrixCell,
+  runAsEntryPoint,
   runFullTestMatrix,
   validateMatrixManifest,
   writeMatrixEvidence
