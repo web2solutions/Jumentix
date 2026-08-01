@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-01 test(database-client-factory): assert all thirteen driver routes - Eduardo Almeida
 - 2026-08-01 test(key-value-storage): give the key-value clients their own suite - Eduardo Almeida
 - 2026-08-01 test(security-scanner): test the thing that decides whether installs proceed - Eduardo Almeida
 - 2026-08-01 test(sdk-grpc-client): exercise the client against a real gRPC server - Eduardo Almeida
