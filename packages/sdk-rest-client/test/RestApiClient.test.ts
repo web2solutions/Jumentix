@@ -40,6 +40,13 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
 });
 
 /** An operation the repository's own spec is known to declare. */
+/** The server the client falls back to when given no base URL. */
+const specServerUrl = ((): string => {
+  const { openApi } = loadSpecs();
+  return openApi?.servers?.[0]?.url || 'http://localhost:3000/api/1.0.0';
+})();
+
+/** An operation the repository's own spec is known to declare. */
 const anOperationId = (): string => {
   const { openApi } = loadSpecs();
   for (const methods of Object.values(openApi.paths || {})) {
@@ -80,14 +87,12 @@ describe('operation routing', () => {
   it('falls back to the server declared in the spec', async () => {
     expect.hasAssertions();
 
-    const { openApi } = loadSpecs();
-    const expected = openApi?.servers?.[0]?.url || 'http://localhost:3000/api/1.0.0';
     const stub = withFetch(json({ ok: true }));
 
     try {
       await new RestApiClient().request({ operationId: anOperationId() });
 
-      expect(stub.calls[0].url.startsWith(expected)).toBe(true);
+      expect(stub.calls[0].url.startsWith(specServerUrl)).toBe(true);
     } finally {
       stub.restore();
     }
@@ -167,12 +172,14 @@ describe('responses', () => {
     const stub = withFetch(json({ id: 1 }));
 
     try {
-      await expect(
-        new RestApiClient('http://api.test').request({ operationId: anOperationId() })
-      // `toEqual`, not `toStrictEqual`: the object comes back from
-      // `Response.json()` and its prototype belongs to another realm under Jest,
-      // which a strict comparison rejects while the content matches exactly.
-      ).resolves.toEqual({ id: 1 });
+      const parsed = await new RestApiClient('http://api.test')
+        .request({ operationId: anOperationId() });
+
+      // Spread into a local object before comparing. `Response.json()` returns
+      // one whose prototype belongs to another realm under Jest, which
+      // `toStrictEqual` rejects even when the content matches exactly — so this
+      // stays a strict comparison of the content rather than a loose one.
+      expect({ ...(parsed as Record<string, unknown>) }).toStrictEqual({ id: 1 });
     } finally {
       stub.restore();
     }
