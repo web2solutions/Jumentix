@@ -33,6 +33,15 @@ falha nunca é verde.
 - SonarQube Cloud é defesa em profundidade, não dono único da cobertura ou
   segurança. Mudanças no plano não removem os gates próprios.
 
+## Implementação do review third-party em PR
+
+O check obrigatório `third-party-review` executa Gitleaks `8.30.1`, Semgrep
+`1.172.0` e Reviewdog `0.21.0`. Arquivos de release são validados por checksum,
+a imagem Semgrep é fixada por digest OCI e a política vive em `.semgrep.yml`.
+Reviewdog publica os achados SARIF como reviews no GitHub; os status dos scanners
+são aplicados separadamente para que publicar comentário não esconda falha. O
+source permanece dentro do runner do GitHub.
+
 ## Regras fail-closed
 
 1. Actions usam permissão mínima e SHAs imutáveis.
