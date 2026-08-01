@@ -202,13 +202,13 @@ This registry tracks AI agents collaborating in the Jumentix project.
 - `machine_os`: `Darwin 21.6.0 x86_64`
 - `agent_runtime`: `OpenAI Codex Desktop`
 - `agent_version`: `GPT-5 Codex`
-- `status`: `busy`
+- `status`: `available`
 - `registered_at_utc`: `2026-08-01T09:13:19Z`
-- `last_branch_check_utc`: `2026-08-01T09:13:19Z`
+- `last_branch_check_utc`: `2026-08-01T09:25:30Z`
 - `main_ref_checked`: `490cb634`
-- `dev_ref_checked`: `a0667100`
-- `active_epic`: `https://linear.app/jumentix/project/epicgovernance-canonical-xpertminds-migration-and-legacy-freeze-f8bd0962ba8a`
-- `assigned_task`: `https://linear.app/jumentix/issue/JUM-589`
+- `dev_ref_checked`: `944cf88a`
+- `active_epic`: `none`
+- `assigned_task`: `none`
 - `capabilities`:
   - repository-wide source and documentation assimilation
   - governed implementation, testing, and CI diagnostics
