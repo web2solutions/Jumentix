@@ -35,7 +35,10 @@ function harness(over: Partial<Options> = {}) {
     auth: { id: 'auth' }
   };
 
-  const seen: { driver?: string; composed?: Record<string, Named> } = {};
+  const seen: {
+    driver?: string;
+    composed?: Record<string, Named>;
+  } = {};
   const order: string[] = [];
 
   const options: Options = {
@@ -73,7 +76,9 @@ function harness(over: Partial<Options> = {}) {
     ...over
   };
 
-  return { options, made, seen, order };
+  return {
+    options, made, seen, order
+  };
 }
 
 describe('compileAdapterRuntime', () => {

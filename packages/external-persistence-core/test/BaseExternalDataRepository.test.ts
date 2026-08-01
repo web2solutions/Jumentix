@@ -17,10 +17,6 @@ import type { IRepositoryConnectionOptions } from '../src/BaseExternalDataReposi
 
 /** Exposes the protected surface, and nothing else. */
 class TestRepository extends BaseExternalDataRepository {
-  public constructor(options: IRepositoryConnectionOptions) {
-    super(options);
-  }
-
   public markConnected(value: boolean): void {
     this.connected = value;
   }
@@ -50,6 +46,11 @@ class TestRepository extends BaseExternalDataRepository {
   }
 }
 
+/*
+ * `BaseExternalDataRepository`'s constructor is protected, so a subclass is
+ * the only way to build one — which is the same reason its helpers had no
+ * suite until now.
+ */
 const repository = (options: IRepositoryConnectionOptions = {}) => new TestRepository(options);
 
 describe('connection state', () => {
@@ -162,7 +163,7 @@ describe('loadModule', () => {
 
     // A module guaranteed present, so this asserts the success path rather than
     // the environment.
-    expect(await repository().load('node:path')).toBeDefined();
+    await expect(repository().load('node:path')).resolves.toBeDefined();
   });
 
   /**
@@ -182,13 +183,13 @@ describe('loadOptionalModule', () => {
   it('returns the module when it resolves', async () => {
     expect.hasAssertions();
 
-    expect(await repository().loadOptional('node:path')).toBeDefined();
+    await expect(repository().loadOptional('node:path')).resolves.toBeDefined();
   });
 
   /** Null rather than a throw: the caller asked whether it is there. */
   it('returns null when the module is absent', async () => {
     expect.hasAssertions();
 
-    expect(await repository().loadOptional('no-such-driver-xyz')).toBeNull();
+    await expect(repository().loadOptional('no-such-driver-xyz')).resolves.toBeNull();
   });
 });
