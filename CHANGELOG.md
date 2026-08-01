@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-01 feat(testing): suite for mutex-service (JUM-585) - Eduardo Almeida
 - 2026-08-01 style(testing): satisfy the repo lint rules in the two new package suites - Eduardo Almeida
 - 2026-08-01 feat(testing): suites for external-persistence-core and adapter-runtime-bootstrap - Eduardo Almeida
 - 2026-08-01 feat(testing): first package suite, and derive the exclusions from one register - Eduardo Almeida
