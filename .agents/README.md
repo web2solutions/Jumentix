@@ -129,6 +129,7 @@ Use these files as living constraints for future maintenance and feature develop
 - [109-test-suites-must-detect-fake-implementations](requirements/109-test-suites-must-detect-fake-implementations.md)
 - [110-bun-test-is-the-runner-jest-is-the-coverage-instrument](requirements/110-bun-test-is-the-runner-jest-is-the-coverage-instrument.md)
 - [111-authorized-commit-identities](requirements/111-authorized-commit-identities.md)
+- [112-every-package-owns-its-suite](requirements/112-every-package-owns-its-suite.md)
 - [Agent Registry](AGENT-REGISTRY.md)
 - [NFR Registry](NFR-REGISTRY.md)
 - [Spec Development Driven Agent](spec-development-driven-agent.md)

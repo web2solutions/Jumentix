@@ -78,7 +78,12 @@
         "tooling/**",
         "apps/jumentix-website/**",
         ".github/**",
-        ".circleci/**"
+        ".circleci/**",
+        "test-map.json",
+        "jest.config.js",
+        "sonar-project.properties",
+        "package.json",
+        "bunfig.toml"
       ],
       "runner": "bun",
       "tier": "gate",
@@ -2468,6 +2473,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/ci-cd/check-package-suites.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/check-package-suites.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/ci-cd/run-suite-resolution.test.ts",
       "path": "apps/backend-template/test/unit/ci-cd/run-suite-resolution.test.ts",
       "layer": "tooling",
@@ -2518,7 +2533,13 @@
       "timeoutMs": 60000
     }
   ],
-  "quarantine": [],
+  "quarantine": [
+    {
+      "path": "packages/cana/test/performance.test.ts",
+      "issue": "JUM-586",
+      "reason": "Wall-clock ratios measured against fake-indexeddb on shared CI hardware. It fails intermittently (largeTime < max(smallTime*25, 20) on a loaded runner) and, when it passes, it certifies the fake rather than IndexedDB. Requirement 112 §4 moves cana to headless Cypress with no shims; these shape assertions belong there, against a real engine, and are rewritten as part of that work."
+    }
+  ],
   "sourceRoots": [
     "apps/backend-template/src",
     "apps/backend-template/test",
@@ -2555,9 +2576,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 127,
+    "unit": 128,
     "integration": 82,
     "smoke": 2,
-    "suites": 213
+    "suites": 214
   }
 }

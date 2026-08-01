@@ -14,7 +14,7 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 const { resolveTestRuntime } = require('./lib/test-runtime');
 const { readTestMap } = require('./lib/test-map');
-const { isEntryPoint } = require('./lib/entry-point.js');
+const { runWhenEntryPoint } = require('./lib/entry-point.js');
 
 /**
  * Whether the map pins these paths to Node.
@@ -261,19 +261,16 @@ function runSuitePaths(paths, options = {}) {
  * test runner always imports this file rather than starting it.
  */
 function runAsEntryPoint(options = {}) {
-  const {
-    caller = module,
-    entry = require.main,
-    argv = process.argv,
-    exit = (code) => { process.exitCode = code; },
-    run = runSuitePaths
-  } = options;
+  const { argv = process.argv, run = runSuitePaths, ...rest } = options;
 
-  if (!isEntryPoint(caller, entry)) return false;
-
-  const parsed = parseArgs(argv);
-  exit(run(parsed.paths, { label: parsed.label, timeoutMs: parsed.timeoutMs }));
-  return true;
+  return runWhenEntryPoint({
+    caller: module,
+    execute: () => {
+      const parsed = parseArgs(argv);
+      return run(parsed.paths, { label: parsed.label, timeoutMs: parsed.timeoutMs });
+    },
+    ...rest
+  });
 }
 
 runAsEntryPoint();
