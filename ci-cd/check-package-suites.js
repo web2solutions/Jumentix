@@ -45,7 +45,6 @@ const WITHOUT_SUITE_YET = Object.freeze({
   'message-mediator': { since: '2026-08-01', issue: 'JUM-585', reason: 'Six source files; broker adapters need doubles.' },
   'persistence-contracts': { since: '2026-08-01', issue: 'JUM-585', reason: 'Largely types; needs the runtime parts separated first.' },
   'sdk-grpc-client': { since: '2026-08-01', issue: 'JUM-585', reason: 'Client SDK; needs a gRPC double.' },
-  'sdk-websocket-client': { since: '2026-08-01', issue: 'JUM-585', reason: 'Client SDK; needs a socket double.' }
 });
 
 /**

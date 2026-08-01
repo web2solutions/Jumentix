@@ -25,8 +25,15 @@ export class RestApiClient {
 
   private readonly operationToRoute: Map<string, { method: HttpMethod; path: string }> = new Map();
 
-  constructor(baseUrl?: string) {
-    const { openApi } = loadSpecs();
+  /**
+   * @param baseUrl Overrides the server declared in the spec.
+   * @param specs Injected so the fallbacks below are reachable from a test. The
+   * loader reads a file from disk, so without this the only spec any test can
+   * see is the repository's own — and a document with no `servers` or no
+   * `paths` is exactly the shape the fallbacks exist for.
+   */
+  constructor(baseUrl?: string, specs: typeof loadSpecs = loadSpecs) {
+    const { openApi } = specs();
     const serverUrl = openApi?.servers?.[0]?.url || 'http://localhost:3000/api/1.0.0';
     this.baseUrl = baseUrl || serverUrl;
 

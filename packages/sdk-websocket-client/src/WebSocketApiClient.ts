@@ -22,23 +22,48 @@ export interface IWebSocketApiResponse {
   };
 }
 
+/**
+ * How a socket is obtained. Injected so this client can be tested.
+ *
+ * `io` is a module import, and replacing a module import is the one substitution
+ * that does not work the same way under both of this repository's runners:
+ * `jest.doMock` does not exist under `bun test`, and `spyOn` against an ESM
+ * namespace works under bun while Jest rejects it as a write to a read-only
+ * property (Requirement 110, JUM-583). A parameter works identically in both,
+ * and it costs the production caller nothing — the default is `io`.
+ */
+export type SocketFactory = (url: string, options: { path: string; transports: string[] })
+=> Socket;
+
+export interface IWebSocketApiClientOptions {
+  socketFactory?: SocketFactory;
+  /**
+   * Injected for the same reason as the factory: the loader reads a file, so
+   * the host fallback is otherwise reachable only by editing that file.
+   */
+  loadSpecs?: typeof loadSpecs;
+}
+
 export class WebSocketApiClient {
   private readonly url: string;
 
   private readonly path: string;
 
+  private readonly createSocket: SocketFactory;
+
   private socket?: Socket;
 
-  constructor(url?: string) {
-    const { asyncApiWebSocket } = loadSpecs();
+  constructor(url?: string, options: IWebSocketApiClientOptions = {}) {
+    const { asyncApiWebSocket } = (options.loadSpecs || loadSpecs)();
     const host = asyncApiWebSocket?.servers?.local?.host || 'localhost:3001';
     this.url = url || `ws://${host}`;
     this.path = '/ws';
+    this.createSocket = options.socketFactory || ((target, settings) => io(target, settings));
   }
 
   public connect(): void {
     if (this.socket?.connected) return;
-    this.socket = io(this.url, {
+    this.socket = this.createSocket(this.url, {
       path: this.path,
       transports: ['websocket']
     });

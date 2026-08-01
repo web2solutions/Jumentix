@@ -1,5 +1,7 @@
-import { RestApiClient } from '../src/RestApiClient';
-import { loadSpecs } from '../src/spec/loadSpecs';
+// Imported through the package entry point rather than the individual modules:
+// that is the surface consumers actually get, and a barrel that forgot to
+// re-export something would otherwise pass every test in this file.
+import { RestApiClient, loadSpecs } from '../src';
 
 /**
  * Requirement 112 — this package owns its suite.
@@ -39,7 +41,6 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
   headers: { 'content-type': 'application/json' }
 });
 
-/** An operation the repository's own spec is known to declare. */
 /** The server the client falls back to when given no base URL. */
 const specServerUrl = ((): string => {
   const { openApi } = loadSpecs();
@@ -97,6 +98,37 @@ describe('operation routing', () => {
       stub.restore();
     }
   });
+
+  /**
+   * A spec with no `servers` block. The client falls back to a hardcoded
+   * localhost, which is what a developer running the SDK against a local API
+   * depends on — and the only way to reach it is a document that omits the
+   * block entirely.
+   */
+  it('falls back to localhost when the spec declares no server', async () => {
+    expect.hasAssertions();
+
+    const stub = withFetch(json({ ok: true }));
+    const bare = () => ({ openApi: { paths: { '/x': { get: { operationId: 'x' } } } } });
+
+    try {
+      await new RestApiClient(undefined, bare as never).request({ operationId: 'x' });
+
+      expect(stub.calls[0].url.startsWith('http://localhost:3000/api/1.0.0')).toBe(true);
+    } finally {
+      stub.restore();
+    }
+  });
+
+  it('copes with a spec that declares no paths at all', async () => {
+    expect.hasAssertions();
+
+    const empty = () => ({ openApi: { servers: [{ url: 'http://api.test' }] } });
+
+    // No routes means every operation is unknown — reported, not crashed on.
+    await expect(new RestApiClient(undefined, empty as never).request({ operationId: 'x' }))
+      .rejects.toThrow('not found in OpenAPI spec');
+  });
 });
 
 describe('request shape', () => {
@@ -136,6 +168,44 @@ describe('request shape', () => {
       await new RestApiClient('http://api.test').request({ operationId: anOperationId() });
 
       expect(stub.calls[0].init.body).toBeUndefined();
+    } finally {
+      stub.restore();
+    }
+  });
+
+  /**
+   * Path templating is the only transformation the client performs on the route
+   * it read from the spec. Untested, it would send `/users/{id}` literally and
+   * the server would answer 404 for a resource that exists.
+   */
+  it('substitutes path parameters into the route template', async () => {
+    expect.hasAssertions();
+
+    const stub = withFetch(json({ ok: true }));
+
+    try {
+      await new RestApiClient('http://api.test').request({
+        operationId: 'deleteOne',
+        pathParams: { id: 42 }
+      });
+
+      expect(new URL(stub.calls[0].url).pathname).toBe('/users/42');
+    } finally {
+      stub.restore();
+    }
+  });
+
+  it('leaves the template alone when no path parameters are given', async () => {
+    expect.hasAssertions();
+
+    const stub = withFetch(json({ ok: true }));
+
+    try {
+      await new RestApiClient('http://api.test').request({ operationId: 'deleteOne' });
+
+      // The placeholder survives, percent-encoded by `URL`. That is the caller's
+      // mistake to see rather than something for the client to guess at.
+      expect(new URL(stub.calls[0].url).pathname).toBe('/users/%7Bid%7D');
     } finally {
       stub.restore();
     }
