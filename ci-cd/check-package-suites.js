@@ -40,7 +40,6 @@ const WITHOUT_SUITE_YET = Object.freeze({
   'database-client-factory': { since: '2026-08-01', issue: 'JUM-585', reason: 'Factory over external drivers; needs driver fakes.' },
   'external-db-repositories': { since: '2026-08-01', issue: 'JUM-585', reason: 'Nine source files over real database clients.' },
   'external-store-proxy': { since: '2026-08-01', issue: 'JUM-585', reason: 'Proxy layer; needs a store double.' },
-  'key-value-storage': { since: '2026-08-01', issue: 'JUM-585', reason: 'Seven source files; Redis client needs a fake or a container.' },
   'message-mediator': { since: '2026-08-01', issue: 'JUM-585', reason: 'Six source files; broker adapters need doubles.' },
 });
 
