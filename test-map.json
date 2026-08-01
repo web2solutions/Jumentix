@@ -693,6 +693,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/ci-cd/check-third-party-review.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/check-third-party-review.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/ci-cd/run-full-test-matrix.test.ts",
       "path": "apps/backend-template/test/unit/ci-cd/run-full-test-matrix.test.ts",
       "layer": "tooling",
@@ -2605,9 +2615,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 131,
+    "unit": 132,
     "integration": 82,
     "smoke": 2,
-    "suites": 217
+    "suites": 218
   }
 }
