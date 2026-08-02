@@ -32,6 +32,39 @@ const { instrumentBundle, writeBrowserCoverage } = require('./lib/browser-covera
 const ROOT = process.cwd();
 const SPEC_ROOT = path.join(ROOT, 'packages');
 const BUILD_DIR = path.join(ROOT, '.browser-tests');
+const EVIDENCE_PATH = path.join(ROOT, 'artifacts', 'ci', 'browser-matrix.json');
+
+/**
+ * The browser engines Cana supports, and the only values `--browser` accepts.
+ *
+ * The matrix is engines, not brand names (JUM-417): `chrome` (the Chromium
+ * engine, also Edge and Brave), `firefox` (the independent Gecko IndexedDB
+ * implementation) and `webkit` (Playwright's build of Safari's engine — the
+ * one whose quota/eviction behaviour this issue was filed about). Cypress
+ * drives all three headless; WebKit additionally needs
+ * `experimentalWebKitSupport` in `cypress.config.js` and the
+ * `playwright-webkit` dev dependency.
+ *
+ * The names are Cypress's own detection vocabulary, and one of them is a
+ * trap: `chromium` is accepted as a name only when a browser whose binary
+ * reports that name is installed (Chrome for Testing, Chromium itself). On a
+ * machine — and on every GitHub runner — where the Chromium engine is Google
+ * Chrome, `--browser chromium` fails with "invalid browser name" and lists
+ * chromium as supported anyway. `chrome` detects everywhere the engine ships.
+ *
+ * `electron` is deliberately absent. It was the stand-in before the matrix
+ * existed and it is the same engine as Chrome one version behind, so it adds
+ * runtime without adding evidence.
+ */
+const SUPPORTED_BROWSERS = Object.freeze(['chrome', 'firefox', 'webkit']);
+
+/** Which engine this process is running, `--browser` first, then env. */
+function requestedBrowser(options = {}) {
+  return options.browser
+    || process.env.JUMENTIX_BROWSER
+    || process.argv.find((arg, index) => process.argv[index - 1] === '--browser')
+    || 'chrome';
+}
 
 /** Every `*.cy.ts` under any package's `cypress/` directory. */
 function findSpecs(root = SPEC_ROOT, list = fs.existsSync(root) ? fs.readdirSync(root) : []) {
@@ -94,9 +127,17 @@ function buildAll(specs, spawn = spawnSync) {
 function run(options = {}) {
   const spawn = options.spawn || spawnSync;
   const specs = options.specs || findSpecs();
+  const browser = requestedBrowser(options);
 
   if (specs.length === 0) {
     return { ok: false, message: 'No browser specs found under packages/*/cypress/**.cy.ts.' };
+  }
+
+  if (!SUPPORTED_BROWSERS.includes(browser)) {
+    return {
+      ok: false,
+      message: `Unsupported browser "${browser}". The matrix is engines: ${SUPPORTED_BROWSERS.join(', ')}.`
+    };
   }
 
   fs.rmSync(BUILD_DIR, { recursive: true, force: true });
@@ -106,12 +147,21 @@ function run(options = {}) {
     return { ok: false, message: failures.join('\n\n') };
   }
 
-  console.log(`[browser] bundled ${specs.length} spec(s) with Bun; handing them to Cypress.`);
+  console.log(`[browser] bundled ${specs.length} spec(s) with Bun; handing them to Cypress on ${browser}.`);
+
+  // Bun exports ELECTRON_RUN_AS_NODE=1 into its children. Cypress's binary is
+  // Electron, and under that flag it starts as plain Node: every Electron CLI
+  // option is an unknown argument, the smoke test reports `bad option:
+  // --no-sandbox`, and the run dies before a spec executes. CI never sees it
+  // because nothing there runs under Bun's environment. Deleting the flag for
+  // the Cypress child restores the binary it actually is.
+  const env = { ...process.env };
+  delete env.ELECTRON_RUN_AS_NODE;
 
   const cypress = spawn(
     'bunx',
-    ['cypress', 'run', '--e2e', '--browser', options.browser || 'electron'],
-    { stdio: 'inherit' }
+    ['cypress', 'run', '--e2e', '--browser', browser],
+    { stdio: 'inherit', env }
   );
 
   if (cypress.status !== 0) {
@@ -121,9 +171,21 @@ function run(options = {}) {
   const coverage = writeBrowserCoverage();
   if (!coverage.ok) return coverage;
 
+  // Per-engine evidence. The LCOV is identical per engine — the counters come
+  // from the same instrumented bundles — so coverage stays canonical in
+  // coverage/browser/ and this file records that the matrix ran and passed.
+  const evidence = {
+    browser,
+    specs: specs.length,
+    ranAtUtc: new Date().toISOString(),
+    coverage: 'coverage/browser'
+  };
+  fs.mkdirSync(path.dirname(EVIDENCE_PATH), { recursive: true });
+  fs.writeFileSync(EVIDENCE_PATH, `${JSON.stringify(evidence, null, 2)}\n`);
+
   return {
     ok: true,
-    message: `Browser suite passed: ${specs.length} spec(s) in a real browser. ${coverage.message}`
+    message: `Browser suite passed: ${specs.length} spec(s) on ${browser}. ${coverage.message}`
   };
 }
 
@@ -147,10 +209,13 @@ runAsEntryPoint();
 
 module.exports = {
   BUILD_DIR,
+  EVIDENCE_PATH,
+  SUPPORTED_BROWSERS,
   bundlePath,
   buildAll,
   findSpecs,
   main,
+  requestedBrowser,
   run,
   runAsEntryPoint
 };

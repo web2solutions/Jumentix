@@ -16,13 +16,21 @@ permissions:
 
 jobs:
   coverage:
-    name: coverage
+    name: coverage (${{ matrix.browser }})
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        # The matrix is engines, not brands (JUM-417): chrome is the Chromium
+        # engine (Chrome/Edge/Brave), firefox is the independent Gecko
+        # IndexedDB, webkit is Playwright's build of Safari's engine.
+        browser: [chrome, firefox, webkit]
     services:
       # Real Redis for key-value + BullMQ adapters (Req 118). No requirepass so
       # AAA_REDIS_PASSWORD stays unset and the client connects without a secret
-      # embedded in the workflow.
+      # embedded in the workflow. Only the chrome leg runs the Jest suite, but
+      # declaring the services per-leg keeps the matrix a single shape.
       redis:
         image: redis:7.2-alpine
         ports:
@@ -59,6 +67,7 @@ jobs:
       - name: Assert the Node.js 22 compatibility contract
         run: bun run compat:check-node-version
       - name: Produce Jest coverage (unit + real Redis/broker integration)
+        if: matrix.browser == 'chrome'
         run: bun run test:coverage
         env:
           AAA_JWT_TOKEN_SECRET_KEY: ${{ secrets.AAA_JWT_TOKEN_SECRET_KEY || 'ci_jwt_secret_key' }}
@@ -71,17 +80,30 @@ jobs:
           AAA_BULLMQ_REDIS_HOST: 127.0.0.1
           AAA_BULLMQ_REDIS_PORT: "6379"
           AAA_RABBITMQ_URL: amqp://127.0.0.1:5672
-      - name: Produce browser coverage for packages/cana (Req 112 §4)
-        run: bun run test:browser
+      - name: Install WebKit system dependencies
+        if: matrix.browser == 'webkit'
+        run: bunx playwright install-deps webkit
+      - name: Produce browser coverage for packages/cana (Req 112 §4, engine ${{ matrix.browser }})
+        run: bun ci-cd/run-browser-tests.js --browser ${{ matrix.browser }}
       - name: Write browser LCOV for Sonar (no Sonar coverage exclusion for cana)
         run: bun ci-cd/write-browser-lcov.js
+      - name: Upload per-engine browser evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: browser-coverage-${{ matrix.browser }}-${{ github.sha }}
+          path: |
+            coverage/browser/
+            artifacts/ci/browser-matrix.json
+          if-no-files-found: error
+          retention-days: 7
       - name: Enforce all coverage metrics at 99/90/99/99
+        if: matrix.browser == 'chrome'
         run: bun run coverage:check
       - name: Enforce patch coverage
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && matrix.browser == 'chrome'
         run: bun run coverage:patch
       - name: Upload immutable coverage evidence
-        if: always()
+        if: always() && matrix.browser == 'chrome'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: coverage-${{ github.sha }}

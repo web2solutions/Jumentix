@@ -28,7 +28,48 @@ after(() => {
   // coverage report was empty.
   const collected = window.__coverage__;
   if (!collected) return undefined;
-  return cy.task('browser:coverage', collected, { log: false });
+
+  // Under WebKit the privileged-command verifier refuses `cy.task` from any
+  // hook — "must only be invoked from the spec file or support file", from
+  // this very file (JUM-417). What a hook may always do is speak HTTP, and
+  // `setupNodeEvents` started a loopback server for exactly this: no
+  // privileged command, works from a hook, on every engine. The URL arrives
+  // as an env rather than being guessed.
+  const url = Cypress.env('CANA_COVERAGE_URL');
+  if (!url) {
+    // Fallback for a runner that never started the coverage server: the task,
+    // which is the documented route on the engines that honour it.
+    return cy.task('browser:coverage', collected, { log: false });
+  }
+
+  // The spec frame's CSP (`setSpecContentSecurityPolicy` in the runner) does
+  // not declare `connect-src`, so a `fetch`/`sendBeacon` to the coverage
+  // server is blocked before it leaves the browser on engines that enforce it
+  // from a hook — WebKit's "Load failed" is exactly that. A form POST is not
+  // script-controlled and is not subject to connect-src: the body rides as a
+  // plain field, targeted at a throwaway iframe so the frame itself navigates
+  // nowhere. No privileged command, no CSP-covered API, every engine.
+  const form = window.document.createElement('form');
+  form.method = 'POST';
+  form.action = url;
+  form.target = 'cana-coverage-frame';
+  form.style.display = 'none';
+
+  const field = window.document.createElement('input');
+  field.type = 'hidden';
+  field.name = 'coverage';
+  field.value = JSON.stringify(collected);
+  form.appendChild(field);
+
+  const frame = window.document.createElement('iframe');
+  frame.name = 'cana-coverage-frame';
+  frame.style.display = 'none';
+
+  window.document.body.appendChild(frame);
+  window.document.body.appendChild(form);
+  form.submit();
+  window.setTimeout(() => { form.remove(); }, 1000);
+  return undefined;
 });
 
 afterEach(() => cy.window({ log: false }).then((browserWindow) => {
