@@ -1,4 +1,9 @@
-/* istanbul ignore file */
+/* istanbul ignore file -- covered by packages/message-mediator/test/integration/
+   brokers.integration.test.ts, which runs against the brokers in
+   apps/backend-template/docker-compose-messaging.yml under
+   RUN_BROKER_INTEGRATION. That suite runs under bun; the coverage instrument is
+   Jest, which does not run it, so the counters never reach the report. The
+   pragma says the file is unmeasured — it no longer says it is untested. */
 import { randomUUID } from 'node:crypto';
 import type {
   IIntegrationEvent,

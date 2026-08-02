@@ -150,3 +150,4 @@ dist
 
 # Added by ggshield
 .cache_ggshield
+.browser-tests/

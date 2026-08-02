@@ -4,7 +4,11 @@
 
 ## All Changes
 
+- 2026-08-01 chore(merge): bring the package-suite branch in, keeping both sides of package.json - Eduardo Almeida
+- 2026-08-01 fix(ci): a documented type-only file is not executable source - Eduardo Almeida
 - 2026-08-01 Merge dev into JUM-585, and fix the lint errors dev had accumulated - Eduardo Almeida
+- 2026-08-01 test(integration): repair the docker smoke matrix and test the brokers for real - Eduardo Almeida
+- 2026-08-01 test(cana): run the whole package in a real browser, and delete the fake - Eduardo Almeida
 - 2026-08-01 test(external-store-proxy): close the last package under Requirement 112 - Eduardo Almeida
 - 2026-08-01 test(message-mediator): cover the mediator everything else runs on - Eduardo Almeida
 - 2026-08-01 test(external-db-repositories): give the eight database adapters a suite - Eduardo Almeida
