@@ -4,28 +4,14 @@
 
 ## All Changes
 
-- 2026-08-01 Merge dev into JUM-585, and fix the lint errors dev had accumulated - Eduardo Almeida
-- 2026-08-01 test(external-store-proxy): close the last package under Requirement 112 - Eduardo Almeida
-- 2026-08-01 test(message-mediator): cover the mediator everything else runs on - Eduardo Almeida
-- 2026-08-01 test(external-db-repositories): give the eight database adapters a suite - Eduardo Almeida
-- 2026-08-01 test(database-client-factory): assert all thirteen driver routes - Eduardo Almeida
-- 2026-08-01 test(key-value-storage): give the key-value clients their own suite - Eduardo Almeida
-- 2026-08-01 test(security-scanner): test the thing that decides whether installs proceed - Eduardo Almeida
-- 2026-08-01 test(sdk-grpc-client): exercise the client against a real gRPC server - Eduardo Almeida
-- 2026-08-01 test(persistence-contracts): pin the store contract at compile time - Eduardo Almeida
-- 2026-08-01 test(cli-init): give the bootstrap CLI a suite, and stop it inheriting GIT_DIR - Eduardo Almeida
-- 2026-08-01 test(sdk): give both SDK clients their own suites - Eduardo Almeida
+- 2026-08-01 chore(governance): record workspace_path and pin registry for JUM-597 - Eduardo A.
+- 2026-08-01 [JUM-586][Testing] Every package owns a real test suite, and every package is measured (#37) - Eduardo A.
+- 2026-08-01 [JUM-595][Docs] Agent operating requirements 114–119 (worktree, tests, Docker, API-first) (#39) - Eduardo A.
 - 2026-08-01 chore: sync release registry [JUM-594] (#35) - Eduardo A.
 - 2026-08-01 docs: define private free CI strategy [JUM-593] (#34) - Eduardo A.
 - 2026-08-01 docs: restore truthful badges and coverage map [JUM-592] (#33) - Eduardo A.
 - 2026-08-01 [JUM-591][CI] Enforce pinned third-party PR review (#32) - Eduardo A.
 - 2026-08-01 [JUM-590][CI] Replace paid private CI providers (#31) - Eduardo A.
-- 2026-08-01 style(testing): keep the REST client assertions strict and conditional-free - Eduardo Almeida
-- 2026-08-01 feat(testing): suite for sdk-rest-client (JUM-585) - Eduardo Almeida
-- 2026-08-01 feat(testing): suite for mutex-service (JUM-585) - Eduardo Almeida
-- 2026-08-01 style(testing): satisfy the repo lint rules in the two new package suites - Eduardo Almeida
-- 2026-08-01 feat(testing): suites for external-persistence-core and adapter-runtime-bootstrap - Eduardo Almeida
-- 2026-08-01 feat(testing): first package suite, and derive the exclusions from one register - Eduardo Almeida
 - 2026-08-01 [JUM-589][Governance] Sync terminal Codex onboarding state (#30) - Eduardo A.
 - 2026-08-01 [JUM-589][Governance] Sync terminal Codex onboarding state - Eduardo Almeida
 - 2026-08-01 [JUM-589][Governance] Sync Codex registry onboarding (#29) - Eduardo A.
