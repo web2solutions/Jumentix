@@ -1,17 +1,20 @@
-import fs from 'fs';
-import path from 'path';
-import YAML from 'yaml';
+import { loadCanonicalSpec } from '@jumentix/shared-contracts';
 
 export interface ILoadedSpecs {
   asyncApiWebSocket: Record<string, any>;
 }
 
-export const loadSpecs = (
-  basePath = path.resolve(process.cwd(), 'spec')
-): ILoadedSpecs => {
-  const asyncApiWebSocketPath = path.join(basePath, 'asyncapi', '1.0.0.websocket.yml');
+const SPEC_FILE_NAME = '1.0.0.websocket.yml';
+const CANONICAL_SPEC_SEGMENTS = ['asyncapi', SPEC_FILE_NAME];
 
-  return {
-    asyncApiWebSocket: YAML.parse(fs.readFileSync(asyncApiWebSocketPath, 'utf8'))
-  };
-};
+export const loadSpecs = (
+  basePath?: string,
+  moduleDirectory = __dirname
+): ILoadedSpecs => ({
+  asyncApiWebSocket: loadCanonicalSpec({
+    basePath,
+    moduleDirectory,
+    specSegments: CANONICAL_SPEC_SEGMENTS,
+    artifactLabel: 'AsyncAPI WebSocket spec'
+  })
+});

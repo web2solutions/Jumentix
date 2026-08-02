@@ -1,17 +1,20 @@
-import fs from 'fs';
-import path from 'path';
-import YAML from 'yaml';
+import { loadCanonicalSpec } from '@jumentix/shared-contracts';
 
 export interface ILoadedSpecs {
   openApi: Record<string, any>;
 }
 
-export const loadSpecs = (
-  basePath = path.resolve(process.cwd(), 'spec')
-): ILoadedSpecs => {
-  const openApiPath = path.join(basePath, '1.0.0.yml');
+const SPEC_FILE_NAME = '1.0.0.yml';
+const CANONICAL_SPEC_SEGMENTS = [SPEC_FILE_NAME];
 
-  return {
-    openApi: YAML.parse(fs.readFileSync(openApiPath, 'utf8'))
-  };
-};
+export const loadSpecs = (
+  basePath?: string,
+  moduleDirectory = __dirname
+): ILoadedSpecs => ({
+  openApi: loadCanonicalSpec({
+    basePath,
+    moduleDirectory,
+    specSegments: CANONICAL_SPEC_SEGMENTS,
+    artifactLabel: 'OpenAPI spec'
+  })
+});

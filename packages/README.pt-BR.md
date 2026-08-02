@@ -25,7 +25,7 @@ pelas aplicações Jumentix.
 
 - [`@jumentix/cli-init`](./cli-init/README.pt-BR.md) - CLI de bootstrap de estruturas de projeto.
 - [`@jumentix/message-mediator`](./message-mediator/README.pt-BR.md) - mediador de eventos e request/response.
-- [`@jumentix/shared-contracts`](./shared-contracts/README.pt-BR.md) - workspace reservado para contratos OpenAPI/AsyncAPI compartilhados.
+- [`@jumentix/shared-contracts`](./shared-contracts/README.pt-BR.md) - auxiliares compartilhados de resolução de specs canônicas OpenAPI/AsyncAPI.
 
 ### Clientes SDK
 
