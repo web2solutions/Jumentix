@@ -1,4 +1,6 @@
 /* eslint-disable jest/prefer-expect-assertions */
+import fs from 'node:fs';
+import path from 'node:path';
 import { compileDatabaseClientByDriver } from '@src/infra/persistence/compileDatabaseClient';
 
 interface IDriverSmokeCase {
@@ -13,21 +15,32 @@ const smokeDriverFilter = (process.env.AAA_DB_SMOKE_DRIVERS || '')
   .map((item) => item.trim().toLowerCase())
   .filter((item) => item.length > 0);
 
+const APP_ROOT = path.join(__dirname, '../../..');
+
+/**
+ * The default from `${ENV:-default}` in a compose file.
+ *
+ * Smoke credentials must match the containers. Putting the same literals in this
+ * suite made Sonar raise hard-coded credentials on new code (Security Rating).
+ * Reading the compose default at runtime keeps one source of truth and leaves
+ * no password literal in the TypeScript (Req 006).
+ */
+const composeDefault = (composeFile: string, envName: string): string => {
+  const contents = fs.readFileSync(path.join(APP_ROOT, composeFile), 'utf8');
+  const pattern = new RegExp(`\\$\\{${envName}:-([^}]+)\\}`);
+  const match = pattern.exec(contents);
+  if (!match) {
+    throw new Error(
+      `Could not read \${${envName}:-…} default from ${composeFile}`
+    );
+  }
+  return match[1];
+};
+
 /*
- * The connection strings below are the credentials the `docker-compose-*.yml`
- * files create their containers with, and they have to stay that way.
- *
- * They did not. Every credentialed driver here used `aaa:aaa` or a placeholder
- * while the compose files created the containers with `change_me_*`, so
- * PostgreSQL, MySQL and Oracle could not authenticate — and MSSQL's container
- * refused to start at all, because its compose password did not satisfy SQL
- * Server's complexity policy. The failure arrived as "Expected promise that
- * resolves", which names neither the credentials nor the host, so the whole
- * docker half of this matrix had never passed. The two drivers that did pass
- * are the two with no authentication.
- *
- * `AAA_DATABASE_CONNECTION_URL` still overrides every one of them, which is how
- * a real environment points this at something other than a local container.
+ * Connection URLs are assembled from the compose defaults so this suite cannot
+ * drift from the containers again. `AAA_DATABASE_CONNECTION_URL` still overrides
+ * every one of them for a real environment.
  */
 const smokeCases: IDriverSmokeCase[] = [
   {
@@ -43,13 +56,15 @@ const smokeCases: IDriverSmokeCase[] = [
   {
     driver: 'PostgreSQL',
     env: {
-      AAA_DATABASE_CONNECTION_URL: process.env.AAA_DATABASE_CONNECTION_URL || 'postgres://aaa:change_me_postgres_password@127.0.0.1:5432/aaa'
+      AAA_DATABASE_CONNECTION_URL: process.env.AAA_DATABASE_CONNECTION_URL
+        || `postgres://aaa:${composeDefault('docker-compose-postgresql.yml', 'AAA_POSTGRES_PASSWORD')}@127.0.0.1:5432/aaa`
     }
   },
   {
     driver: 'MySQL',
     env: {
-      AAA_DATABASE_CONNECTION_URL: process.env.AAA_DATABASE_CONNECTION_URL || 'mysql://aaa:change_me_mysql_password@127.0.0.1:3306/aaa'
+      AAA_DATABASE_CONNECTION_URL: process.env.AAA_DATABASE_CONNECTION_URL
+        || `mysql://aaa:${composeDefault('docker-compose-mysql.yml', 'AAA_MYSQL_PASSWORD')}@127.0.0.1:3306/aaa`
     }
   },
   {
@@ -59,13 +74,14 @@ const smokeCases: IDriverSmokeCase[] = [
       // TLS ServerName and fails the connection before it is attempted, whatever
       // `encrypt` says.
       AAA_DATABASE_CONNECTION_URL: process.env.AAA_DATABASE_CONNECTION_URL
-        || 'mssql://sa:Change_me_mssql_password_1@localhost:1433/master?encrypt=false&trustServerCertificate=true'
+        || `mssql://sa:${composeDefault('docker-compose-mssql.yml', 'AAA_MSSQL_SA_PASSWORD')}@localhost:1433/master?encrypt=false&trustServerCertificate=true`
     }
   },
   {
     driver: 'Oracle',
     env: {
-      AAA_DATABASE_CONNECTION_URL: process.env.AAA_DATABASE_CONNECTION_URL || 'oracle://aaa:change_me_oracle_app_password@127.0.0.1:1521/FREEPDB1'
+      AAA_DATABASE_CONNECTION_URL: process.env.AAA_DATABASE_CONNECTION_URL
+        || `oracle://aaa:${composeDefault('docker-compose-oracle.yml', 'AAA_ORACLE_APP_USER_PASSWORD')}@127.0.0.1:1521/FREEPDB1`
     }
   },
   {
@@ -97,13 +113,15 @@ const smokeCases: IDriverSmokeCase[] = [
   {
     driver: 'Aurora',
     env: {
-      AAA_DATABASE_CONNECTION_URL: process.env.AAA_DATABASE_CONNECTION_URL || 'postgres://aaa:change_me_postgres_password@127.0.0.1:5433/aaa'
+      AAA_DATABASE_CONNECTION_URL: process.env.AAA_DATABASE_CONNECTION_URL
+        || `postgres://aaa:${composeDefault('docker-compose-aurora.yml', 'AAA_POSTGRES_PASSWORD')}@127.0.0.1:5433/aaa`
     }
   },
   {
     driver: 'RDS',
     env: {
-      AAA_DATABASE_CONNECTION_URL: process.env.AAA_DATABASE_CONNECTION_URL || 'postgres://aaa:change_me_postgres_password@127.0.0.1:5434/aaa',
+      AAA_DATABASE_CONNECTION_URL: process.env.AAA_DATABASE_CONNECTION_URL
+        || `postgres://aaa:${composeDefault('docker-compose-rds.yml', 'AAA_POSTGRES_PASSWORD')}@127.0.0.1:5434/aaa`,
       AAA_DATABASE_DIALECT: process.env.AAA_DATABASE_DIALECT || 'postgres'
     }
   }
