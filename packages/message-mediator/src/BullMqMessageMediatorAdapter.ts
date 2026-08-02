@@ -1,9 +1,3 @@
-/* istanbul ignore file -- covered by packages/message-mediator/test/integration/
-   brokers.integration.test.ts, which runs against the brokers in
-   apps/backend-template/docker-compose-messaging.yml under
-   RUN_BROKER_INTEGRATION. That suite runs under bun; the coverage instrument is
-   Jest, which does not run it, so the counters never reach the report. The
-   pragma says the file is unmeasured — it no longer says it is untested. */
 import { randomUUID } from 'node:crypto';
 import type {
   IIntegrationEvent,
@@ -210,7 +204,9 @@ export class BullMqMessageMediatorAdapter implements IMessageMediator {
         contract: message.contract,
         version: message.version,
         metadata: message.metadata,
-        error: new Error(`No handler registered for contract ${message.contract}`)
+        error: BullMqMessageMediatorAdapter.toWireError(
+          new Error(`No handler registered for contract ${message.contract}`)
+        )
       };
     }
 
@@ -227,9 +223,21 @@ export class BullMqMessageMediatorAdapter implements IMessageMediator {
         contract: message.contract,
         version: message.version,
         metadata: message.metadata,
-        error: error as Error
+        error: BullMqMessageMediatorAdapter.toWireError(error)
       };
     }
+  }
+
+  /**
+   * BullMQ persists the worker return value as JSON. A native `Error` becomes
+   * `{}` on the wire, so the caller would learn only that "something" failed.
+   * A plain `{ name, message }` survives Redis and still reads as an error.
+   */
+  private static toWireError(error: unknown): Error {
+    if (error instanceof Error) {
+      return { name: error.name, message: error.message } as Error;
+    }
+    return { name: 'Error', message: String(error) } as Error;
   }
 
   private resolveHandler(
@@ -245,9 +253,17 @@ export class BullMqMessageMediatorAdapter implements IMessageMediator {
     return this.handlersByContract[contract];
   }
 
+  /**
+   * Import seam for the BullMQ package.
+   *
+   * Overridable in suites so the missing-package catch is measurable without
+   * uninstalling a dependency from the workspace (JUM-583: no module mock).
+   */
+  public static importBullMq: () => Promise<any> = async () => import('bullmq');
+
   private static async loadBullMq(): Promise<any> {
     try {
-      return await import('bullmq');
+      return await BullMqMessageMediatorAdapter.importBullMq();
     } catch (error) {
       const err = new Error(
         'BullMQ adapter requires package "bullmq". Install with: bun add bullmq'

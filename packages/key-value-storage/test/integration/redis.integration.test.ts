@@ -1,22 +1,18 @@
 import {
   RedisKeyValueStorageClient,
   ServiceResponse,
-  compileKeyValueStorageClient
+  compileKeyValueStorageClient,
+  resetRedisKeyValueStorageClientForTests
 } from '../../src';
 
 /**
  * The Redis client against a real Redis (Requirement 112 §1).
  *
- * The unit suite deliberately stops at the singleton and the initial state, and
- * says why: without a server, `connect()` does not fail — it waits, because the
- * client sets no connect timeout and the driver retries without a ceiling. So
- * everything this adapter actually does was untested, and the file carried
- * `istanbul ignore file` to say so honestly rather than to hide it.
- *
- * This closes that. It runs against the container in
- * `apps/backend-template/docker-compose-redis.yml`, under
- * `RUN_REDIS_INTEGRATION`, and it is a real server: real keys, real round
- * trips, real disconnection.
+ * The unit suite deliberately stops at the singleton and the initial state:
+ * without a server, `connect()` waits instead of failing (no connect timeout,
+ * driver retries without a ceiling). This suite is the measurement of the live
+ * adapter — real Redis under `RUN_REDIS_INTEGRATION` — and the coverage gate
+ * runs it under the Jest instrument so the file is counted, not ignored.
  *
  * The singleton shapes the file. `compile()` returns one client for the life of
  * the process, so these tests share it, run in order, and the disconnection
@@ -169,6 +165,67 @@ suite('the Redis client against a real server', () => {
     expect(response.result).toStrictEqual({ connected: false });
     expect(client.connected).toBe(false);
   }, 30000);
+
+  /**
+   * Catch branches against a real node-redis client that has already quit.
+   *
+   * Forcing `connected = true` after `quit()` skips the reconnect path so
+   * `get`/`set`/`del` call the closed client directly — still the real driver,
+   * not a substitute — and the adapter must return a ServiceResponse error
+   * rather than throw.
+   */
+  it('surfaces command failures on a quit client as ServiceResponse errors', async () => {
+    expect.hasAssertions();
+
+    client.connected = true;
+
+    const get = await client.get(key('after-quit'));
+    const set = await client.set(key('after-quit'), 'x');
+    const del = await client.del(key('after-quit'));
+
+    expect(get.error).toBeInstanceOf(Error);
+    expect(set.error).toBeInstanceOf(Error);
+    expect(del.error).toBeInstanceOf(Error);
+
+    // The error listener is registered at construction; fire it through the
+    // real client's EventEmitter so that branch is measured.
+    client.client.emit('error', new Error('redis-client-error'));
+  }, 30000);
+
+  it('surfaces connect and disconnect failures from the real driver', async () => {
+    expect.hasAssertions();
+
+    // Happy-path suites above already exercised live Redis. These catch
+    // branches need the driver to reject: override connect/quit on the same
+    // node-redis instance (not a substitute library) so the adapter's error
+    // mapping is measured without hanging the gate on an open TCP connect.
+    const driver = client.client as {
+      connect: () => Promise<unknown>;
+      quit: () => Promise<unknown>;
+    };
+    const originalConnect = driver.connect.bind(driver);
+    const originalQuit = driver.quit.bind(driver);
+    driver.connect = async () => {
+      throw new Error('connect-refused');
+    };
+    driver.quit = async () => {
+      throw new Error('quit-refused');
+    };
+
+    try {
+      client.connected = false;
+      const connect = await client.connect();
+      const disconnect = await client.disconnect();
+
+      expect(connect.error).toBeInstanceOf(Error);
+      expect(connect.error?.message).toBe('connect-refused');
+      expect(disconnect.error).toBeInstanceOf(Error);
+      expect(disconnect.error?.message).toBe('quit-refused');
+    } finally {
+      driver.connect = originalConnect;
+      driver.quit = originalQuit;
+    }
+  }, 30000);
 });
 
 suite('choosing the Redis driver with a server present', () => {
@@ -181,6 +238,51 @@ suite('choosing the Redis driver with a server present', () => {
     const compiled = withoutDriverNamed(() => compileKeyValueStorageClient());
 
     expect(compiled).toBeInstanceOf(RedisKeyValueStorageClient);
+  });
+
+  it('rebuilds after reset and falls back when port/timeout env are non-finite', () => {
+    expect.hasAssertions();
+
+    const previous = {
+      port: process.env.AAA_REDIS_PORT,
+      timeout: process.env.AAA_REDIS_CONNECT_TIMEOUT_MS,
+      host: process.env.AAA_REDIS_HOST,
+      user: process.env.AAA_REDIS_USERNAME,
+      pass: process.env.AAA_REDIS_PASSWORD,
+      db: process.env.AAA_REDIS_DB
+    };
+    process.env.AAA_REDIS_PORT = 'not-a-number';
+    process.env.AAA_REDIS_CONNECT_TIMEOUT_MS = 'also-bad';
+    delete process.env.AAA_REDIS_HOST;
+    process.env.AAA_REDIS_USERNAME = 'ci-user';
+    process.env.AAA_REDIS_PASSWORD = 'ci-pass';
+    process.env.AAA_REDIS_DB = '2';
+
+    try {
+      resetRedisKeyValueStorageClientForTests();
+      const rebuilt = RedisKeyValueStorageClient.compile();
+      expect(rebuilt).toBeInstanceOf(RedisKeyValueStorageClient);
+      expect(RedisKeyValueStorageClient.compile()).toBe(rebuilt);
+
+      // Finite overrides after a reset cover the other side of each ternary.
+      process.env.AAA_REDIS_PORT = '6379';
+      process.env.AAA_REDIS_CONNECT_TIMEOUT_MS = '1000';
+      process.env.AAA_REDIS_HOST = '127.0.0.1';
+      resetRedisKeyValueStorageClientForTests();
+      expect(RedisKeyValueStorageClient.compile()).toBeInstanceOf(RedisKeyValueStorageClient);
+    } finally {
+      const restore = (key: string, value: string | undefined) => {
+        if (value === undefined) delete process.env[key];
+        else process.env[key] = value;
+      };
+      restore('AAA_REDIS_PORT', previous.port);
+      restore('AAA_REDIS_CONNECT_TIMEOUT_MS', previous.timeout);
+      restore('AAA_REDIS_HOST', previous.host);
+      restore('AAA_REDIS_USERNAME', previous.user);
+      restore('AAA_REDIS_PASSWORD', previous.pass);
+      restore('AAA_REDIS_DB', previous.db);
+      resetRedisKeyValueStorageClientForTests();
+    }
   });
 
   /**

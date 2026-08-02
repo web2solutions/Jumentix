@@ -361,21 +361,13 @@ describe('choosing a driver', () => {
  * The Redis client, as far as it can be taken without a Redis.
  *
  * Only the two facts that hold with no server: the singleton, and the initial
- * state. Its operations are deliberately not exercised here, and the reason is
- * worth writing down, because it was found by trying.
- *
- * `redis` reconnects with backoff and no ceiling, and this client sets no
- * connect timeout. Against a port with nothing on it, `connect()` does not
- * report a failure — it waits, indefinitely. Assertions written the obvious way
- * ("reports a failure rather than throwing") did not fail; they hung, for
- * thirty seconds each, and took the file from a fraction of a second to two and
- * a half minutes.
- *
- * That is a property of the client worth knowing about, so it is recorded
- * rather than papered over: a caller of `get` against an unreachable Redis
- * waits rather than being told. Its live behaviour is covered by the
- * integration suite that runs under `RUN_REDIS_INTEGRATION` against a real
- * server, which is also why the file carries `istanbul ignore file`.
+ * state. Its operations are not exercised here on purpose: `redis` reconnects
+ * with backoff and no ceiling, and this client sets no connect timeout, so
+ * `connect()` against an empty port waits instead of failing. Live behaviour
+ * is measured by `test/integration/redis.integration.test.ts` under
+ * `RUN_REDIS_INTEGRATION` against a real Redis, and that suite is part of the
+ * Jest coverage instrument when the coverage gate brings Redis up (Req 110 /
+ * 118) — not excluded by an istanbul ignore.
  */
 describe('the Redis client', () => {
   it('hands every caller the same instance', () => {

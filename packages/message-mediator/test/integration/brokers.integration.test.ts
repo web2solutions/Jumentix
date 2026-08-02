@@ -7,11 +7,11 @@ import type { IMessage, IMessageResponse } from '../../src';
 /**
  * The broker adapters against real brokers (Requirement 112 §1).
  *
- * Both files carry `istanbul ignore file`, and the unit suite says why: what
- * they do is talk to a broker, and there is no honest way to test that without
- * one. This is the other half of that sentence — the brokers from
- * `apps/backend-template/docker-compose-messaging.yml`, a real RabbitMQ and a
- * real Redis, under `RUN_BROKER_INTEGRATION`.
+ * What these adapters do is talk to a broker; the unit suite covers compiler
+ * configuration, and this suite is the live measurement against the brokers in
+ * `apps/backend-template/docker-compose-messaging.yml` under
+ * `RUN_BROKER_INTEGRATION`. The coverage gate runs it under the Jest instrument
+ * so the adapter sources are counted, not ignored.
  *
  * What is worth testing here is exactly what the in-memory mediator cannot
  * show: that a request survives being serialised, put on a queue, taken off it
@@ -182,6 +182,159 @@ suite('RabbitMQ mediator against a real broker', () => {
 
     expect(response.error).toBeDefined();
   }, 60000);
+
+  it('is a no-op to connect or disconnect twice', async () => {
+    expect.hasAssertions();
+
+    await mediator.connect();
+    await mediator.disconnect();
+    await mediator.disconnect();
+    await mediator.connect();
+    expect(mediator).toBeInstanceOf(RabbitMqMessageMediatorAdapter);
+  }, 60000);
+
+  it('registers handlers by route key and queue name', async () => {
+    expect.hasAssertions();
+
+    const name = contract('routed');
+    const queueName = `integration-routed-${Date.now().toString(36)}`;
+    mediator.registerHandler(
+      name,
+      async () => ({ contract: name, result: 'routed' }),
+      { routeKey: `${name}.key`, queueName }
+    );
+
+    const response = await mediator.request(message(name), {
+      timeoutMs: 20000,
+      routeKey: `${name}.key`,
+      queueName
+    });
+
+    expect(response.result).toBe('routed');
+  }, 60000);
+
+  it('reports a handler that throws', async () => {
+    expect.hasAssertions();
+
+    const name = contract('rabbit-throw');
+    mediator.registerHandler(name, async () => {
+      throw new Error('rabbit handler failed');
+    });
+
+    const response = await mediator.request(message(name), { timeoutMs: 20000 });
+    expect(response.error).toBeDefined();
+    expect((response.error as { message?: string }).message).toMatch(/rabbit handler failed/);
+
+    const nonErrorName = contract('rabbit-throw-non-error');
+    mediator.registerHandler(nonErrorName, async () => {
+      throw 'rabbit string failure';
+    });
+    const nonError = await mediator.request(message(nonErrorName), { timeoutMs: 20000 });
+    expect((nonError.error as { message?: string }).message).toMatch(/rabbit string failure/);
+  }, 60000);
+
+  it('survives broker cancel frames on reply and request consumers', async () => {
+    expect.hasAssertions();
+
+    const channel = (mediator as unknown as {
+      channel: { consumers: Map<string, (msg: null) => unknown> };
+    }).channel;
+
+    for (const consumer of channel.consumers.values()) {
+      await consumer(null);
+    }
+
+    expect(channel.consumers.size).toBeGreaterThan(0);
+  });
+
+  it('reconnects through ensureConnected after a disconnect', async () => {
+    expect.hasAssertions();
+
+    await mediator.disconnect();
+    const name = contract('rabbit-ensure-connected');
+    mediator.registerHandler(name, async () => ({
+      contract: name,
+      result: 'rabbit-reconnected'
+    }));
+
+    const response = await mediator.request(message(name), { timeoutMs: 20000 });
+    expect(response.result).toBe('rabbit-reconnected');
+  }, 60000);
+
+  it('publishes when nobody subscribed locally and fills omitted response fields', async () => {
+    expect.hasAssertions();
+
+    await mediator.publish({
+      name: contract('rabbit-unsubscribed-event'),
+      payload: { id: 11 },
+      occurredAt: new Date().toISOString()
+    });
+
+    const name = contract('rabbit-sparse-response');
+    mediator.registerHandler(name, async () => ({ result: 'sparse' } as IMessageResponse));
+    const response = await mediator.request(message(name), { timeoutMs: 20000 });
+    expect(response.contract).toBe(name);
+    expect(response.result).toBe('sparse');
+  }, 60000);
+
+  it('parses invalid JSON from the broker as the fallback payload', async () => {
+    expect.hasAssertions();
+
+    // Private helper, exercised through the real adapter class so the catch
+    // branch that keeps a corrupt frame from crashing the consumer is measured.
+    const parsed = (RabbitMqMessageMediatorAdapter as unknown as {
+      parseMessage: (content: Buffer, fallback: unknown) => unknown;
+    }).parseMessage(Buffer.from('not-json{'), { contract: 'fallback' });
+
+    expect(parsed).toStrictEqual({ contract: 'fallback' });
+  });
+
+  it('acks reply-queue frames that cannot be correlated', async () => {
+    expect.hasAssertions();
+
+    const replyQueue = (mediator as unknown as { replyQueue: string }).replyQueue;
+    const channel = (mediator as unknown as {
+      channel: {
+        sendToQueue: (
+          queue: string,
+          content: Buffer,
+          options?: Record<string, unknown>
+        ) => boolean;
+      };
+    }).channel;
+
+    channel.sendToQueue(replyQueue, Buffer.from('{}'), {});
+    channel.sendToQueue(replyQueue, Buffer.from('{}'), { correlationId: 'missing-pending' });
+    channel.sendToQueue(
+      (mediator as unknown as { defaultRequestQueue: string }).defaultRequestQueue,
+      Buffer.from('not-json{'),
+      { replyTo: replyQueue, correlationId: 'orphan' }
+    );
+
+    await new Promise((resolve) => { setTimeout(resolve, 500); });
+    expect(replyQueue.length).toBeGreaterThan(0);
+  }, 60000);
+
+  it('resolves a handler registered only by queue name after reconnect', async () => {
+    expect.hasAssertions();
+
+    await mediator.disconnect();
+    await mediator.connect();
+
+    const name = contract('rabbit-queue-only');
+    const queueName = `integration-rabbit-queue-only-${Date.now().toString(36)}`;
+    mediator.registerHandler(
+      name,
+      async () => ({ contract: name, result: 'rabbit-queue-only' }),
+      { queueName }
+    );
+
+    const response = await mediator.request(message(name), {
+      timeoutMs: 20000,
+      queueName
+    });
+    expect(response.result).toBe('rabbit-queue-only');
+  }, 60000);
 });
 
 suite('BullMQ mediator against a real Redis', () => {
@@ -243,6 +396,14 @@ suite('BullMQ mediator against a real Redis', () => {
     const response = await mediator.request(message(name), { timeoutMs: 20000 });
 
     expect(response.error).toBeDefined();
+    expect((response.error as { message?: string }).message).toMatch(/handler failed/);
+
+    const nonErrorName = contract('bull-throw-non-error');
+    mediator.registerHandler(nonErrorName, async () => {
+      throw 'bull string failure';
+    });
+    const nonError = await mediator.request(message(nonErrorName), { timeoutMs: 20000 });
+    expect((nonError.error as { message?: string }).message).toMatch(/bull string failure/);
   }, 60000);
 
   it('reports a timeout when no worker is listening', async () => {
@@ -254,4 +415,172 @@ suite('BullMQ mediator against a real Redis', () => {
 
     expect(response.error).toBeDefined();
   }, 60000);
+
+  it('reports a timeout when the handler never finishes', async () => {
+    expect.hasAssertions();
+
+    // waitUntilFinished throws on timeout only when a worker has accepted the
+    // job but not completed it — an unclaimed contract finishes immediately
+    // with a "no handler" payload and never enters the catch.
+    const name = contract('bull-slow');
+    mediator.registerHandler(name, async () => {
+      await new Promise((resolve) => { setTimeout(resolve, 60000); });
+      return { contract: name, result: 'late' };
+    });
+
+    const response = await mediator.request(message(name), { timeoutMs: 500 });
+    expect(response.error).toBeDefined();
+    expect(String((response.error as Error).message || '')).toMatch(/timed out/);
+  }, 60000);
+
+  it('is a no-op to connect twice and still disconnects cleanly', async () => {
+    expect.hasAssertions();
+
+    await mediator.connect();
+    await mediator.disconnect();
+    await mediator.connect();
+    expect(mediator).toBeInstanceOf(BullMqMessageMediatorAdapter);
+  }, 60000);
+
+  it('delivers a published event to a local subscriber and the event queue', async () => {
+    expect.hasAssertions();
+
+    const name = contract('bull-event');
+    const delivered: unknown[] = [];
+    mediator.subscribe(name, (event) => { delivered.push(event.payload); });
+    mediator.subscribe(name, () => undefined);
+
+    await mediator.publish({
+      name,
+      payload: { id: 3 },
+      occurredAt: new Date().toISOString()
+    });
+
+    expect(delivered).toStrictEqual([{ id: 3 }]);
+  }, 60000);
+
+  it('registers handlers by route key and queue name', async () => {
+    expect.hasAssertions();
+
+    const name = contract('bull-routed');
+    const queueName = `integration-bull-routed-${Date.now().toString(36)}`;
+    mediator.registerHandler(
+      name,
+      async () => ({ contract: name, result: 'bull-routed' }),
+      { routeKey: `${name}.key`, queueName }
+    );
+
+    const byRoute = await mediator.request(message(name), {
+      timeoutMs: 20000,
+      routeKey: `${name}.key`,
+      queueName
+    });
+    expect(byRoute.result).toBe('bull-routed');
+
+    // Queue-name resolution without a route key (resolveHandler line for queueName).
+    const byQueueOnly = contract('bull-queue-only');
+    const queueOnly = `integration-bull-queue-only-${Date.now().toString(36)}`;
+    mediator.registerHandler(
+      byQueueOnly,
+      async () => ({ contract: byQueueOnly, result: 'queue-only' }),
+      { queueName: queueOnly }
+    );
+    const queued = await mediator.request(message(byQueueOnly), {
+      timeoutMs: 20000,
+      queueName: queueOnly
+    });
+    expect(queued.result).toBe('queue-only');
+  }, 60000);
+
+  it('reports when no handler is registered for a delivered job', async () => {
+    expect.hasAssertions();
+
+    const name = contract('bull-missing-handler');
+    mediator.registerHandler(name, async () => ({ contract: name, result: 'x' }));
+    (mediator as unknown as {
+      handlersByContract: Record<string, unknown>;
+      handlersByRouteKey: Record<string, unknown>;
+      handlersByQueueName: Record<string, unknown>;
+    }).handlersByContract = {};
+    (mediator as unknown as { handlersByRouteKey: Record<string, unknown> }).handlersByRouteKey = {};
+    (mediator as unknown as { handlersByQueueName: Record<string, unknown> }).handlersByQueueName = {};
+
+    const response = await mediator.request(message(name), { timeoutMs: 20000 });
+    // Wire form is `{ name, message }` so the reason survives Redis JSON.
+    expect(response.error).toBeDefined();
+    expect(JSON.stringify(response.error)).toMatch(/No handler/);
+  }, 60000);
+
+  it('publishes without local subscribers and honours caller correlation id', async () => {
+    expect.hasAssertions();
+
+    await mediator.publish({
+      name: contract('bull-unsubscribed-event'),
+      payload: { id: 4 },
+      occurredAt: new Date().toISOString()
+    });
+
+    const name = contract('bull-correlation');
+    mediator.registerHandler(name, async (incoming) => ({
+      result: incoming.metadata?.correlationId
+    } as IMessageResponse));
+
+    const correlationId = `corr-${Date.now().toString(36)}`;
+    const response = await mediator.request(
+      {
+        ...message(name),
+        metadata: { requestId: `r-${sequence}`, correlationId }
+      },
+      { timeoutMs: 20000 }
+    );
+
+    expect(response.contract).toBe(name);
+    expect(response.result).toBe(correlationId);
+  }, 60000);
+
+  it('reconnects through ensureConnected after a disconnect', async () => {
+    expect.hasAssertions();
+
+    await mediator.disconnect();
+    const name = contract('bull-reconnect');
+    mediator.registerHandler(name, async () => ({ contract: name, result: 'reconnected' }));
+    const response = await mediator.request(message(name), { timeoutMs: 20000 });
+    expect(response.result).toBe('reconnected');
+  }, 60000);
+});
+
+suite('broker adapter loader failures', () => {
+  it('explains a missing bullmq package instead of swallowing the import error', async () => {
+    expect.hasAssertions();
+
+    const adapter = new BullMqMessageMediatorAdapter({
+      connection: { host: REDIS_HOST, port: REDIS_PORT }
+    });
+    const original = BullMqMessageMediatorAdapter.importBullMq;
+    BullMqMessageMediatorAdapter.importBullMq = async () => {
+      throw new Error('bullmq-not-installed');
+    };
+
+    try {
+      await expect(adapter.connect()).rejects.toThrow(/BullMQ adapter requires package/);
+    } finally {
+      BullMqMessageMediatorAdapter.importBullMq = original;
+    }
+  });
+
+  it('explains a missing amqplib package instead of swallowing the import error', async () => {
+    expect.hasAssertions();
+
+    const adapter = new RabbitMqMessageMediatorAdapter({ url: RABBIT_URL });
+    const original = RabbitMqMessageMediatorAdapter.importAmqpLib;
+    RabbitMqMessageMediatorAdapter.importAmqpLib = async () => {
+      throw new Error('amqplib-not-installed');
+    };
+
+    try {
+      await expect(adapter.connect()).rejects.toThrow(/RabbitMQ adapter requires package/);
+    } finally {
+      RabbitMqMessageMediatorAdapter.importAmqpLib = original;
+    }
+  });
 });

@@ -13,12 +13,10 @@ import type { IIntegrationEvent, IMessage, IMessageResponse } from '../src';
  * what every test of anything else runs on, so a fault in it is a fault
  * everywhere at once, wearing someone else's name. It is covered in full.
  *
- * The RabbitMQ and BullMQ adapters are not, and were not before this suite:
- * both files carry `istanbul ignore file`, because what they do is talk to a
- * broker and there is no honest way to test that without one. What *is* covered
- * for them is the part that runs with no broker in sight — the configuration
- * the compiler assembles, which is where a wrong port or a dropped credential
- * actually comes from.
+ * The RabbitMQ and BullMQ adapters talk to brokers: unit tests cover the
+ * configuration the compiler assembles (wrong port / dropped credential), and
+ * `test/integration/brokers.integration.test.ts` measures the live path under
+ * `RUN_BROKER_INTEGRATION` against real RabbitMQ/Redis in the coverage gate.
  */
 
 const message = (over: Partial<IMessage> = {}): IMessage => ({
@@ -527,12 +525,12 @@ describe('compiling a mediator', () => {
 /**
  * The configuration the compiler assembles for the brokers.
  *
- * Read back off the adapter, because this is the half of those adapters that
- * runs without a broker — and the half where a wrong port or a dropped password
- * actually comes from. What the adapters then do with a live broker is not
- * covered here or anywhere else in unit tests; both files carry
- * `istanbul ignore file`, which is a statement about what a unit test can
- * honestly reach rather than a coverage convenience.
+ * Read back off the adapter: this is the half that runs without a broker, and
+ * the half where a wrong port or a dropped password actually comes from. Live
+ * broker behaviour is measured by `test/integration/brokers.integration.test.ts`
+ * under `RUN_BROKER_INTEGRATION` against real RabbitMQ/Redis, and that suite is
+ * part of the Jest coverage instrument when the coverage gate brings those
+ * services up (Req 110 / 118) — not excluded by an istanbul ignore.
  */
 describe('broker configuration', () => {
   const optionsOf = (mediator: unknown) => (mediator as unknown as {

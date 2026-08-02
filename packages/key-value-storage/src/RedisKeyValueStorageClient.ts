@@ -1,10 +1,4 @@
 /* eslint-disable no-console */
-/* istanbul ignore file -- covered by packages/key-value-storage/test/integration/
-   redis.integration.test.ts, which runs against the container in
-   apps/backend-template/docker-compose-redis.yml under RUN_REDIS_INTEGRATION.
-   That suite runs under bun; the coverage instrument is Jest, which does not
-   run it, so the counters never reach the report. The pragma says the file is
-   unmeasured — it no longer says the file is untested. */
 import {
   createClient
 } from 'redis';
@@ -15,12 +9,25 @@ import { BaseKeyValueStorageClient } from './BaseKeyValueStorageClient';
 
 let redisKeyValueStorageClient: BaseKeyValueStorageClient | undefined;
 
+/**
+ * Clears the singleton so a suite can rebuild against another Redis endpoint.
+ * Production callers must not use this — a second client would orphan locks and
+ * subscriptions held on the first.
+ */
+export function resetRedisKeyValueStorageClientForTests(): void {
+  redisKeyValueStorageClient = undefined;
+}
+
 const resolveRedisConfig = (): Record<string, any> => {
   const socketPort = Number(process.env.AAA_REDIS_PORT || 6379);
+  const connectTimeout = Number(process.env.AAA_REDIS_CONNECT_TIMEOUT_MS || 10000);
   return {
     socket: {
       host: process.env.AAA_REDIS_HOST || '127.0.0.1',
-      port: Number.isFinite(socketPort) ? socketPort : 6379
+      port: Number.isFinite(socketPort) ? socketPort : 6379,
+      // Bound connect so an unreachable host fails into the adapter catch
+      // rather than hanging the coverage gate (found under Req 112).
+      connectTimeout: Number.isFinite(connectTimeout) ? connectTimeout : 10000
     },
     username: process.env.AAA_REDIS_USERNAME || undefined,
     password: process.env.AAA_REDIS_PASSWORD || undefined,

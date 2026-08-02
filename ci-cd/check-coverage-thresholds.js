@@ -276,16 +276,19 @@ const browserReportPath = path.join(repoRoot, 'coverage', 'browser', 'coverage-f
  * runs covered above 96% — which is worse than useless, because it looks like a
  * measurement.
  *
- * A missing browser report is not silently tolerated: this returns what it has
- * and the caller says which halves it read, so a number computed from one of
- * them cannot pass for the whole.
+ * A missing browser report fails closed (Requirement 112 §4 / 065). Returning
+ * the Jest half alone would let the gate pass without measuring `packages/cana`,
+ * which is exactly the false green §4 exists to prevent.
  */
 function defaultReadReport() {
   if (!fs.existsSync(reportPath)) return null;
+  if (!fs.existsSync(browserReportPath)) {
+    return {
+      missingBrowserReport: true
+    };
+  }
+
   const jest = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
-
-  if (!fs.existsSync(browserReportPath)) return jest;
-
   const browser = JSON.parse(fs.readFileSync(browserReportPath, 'utf8'));
   const combined = { ...jest };
 
@@ -307,6 +310,16 @@ function main(readReport = defaultReadReport, exceptions = ACCEPTED_BELOW_THRESH
         + '  Run `bun run test:coverage` first. Treating a missing report as a pass would mean\n'
         + '  the thresholds stop applying the moment coverage stops being produced, which is\n'
         + '  precisely when they matter most.'
+    );
+    process.exit(1);
+  }
+
+  if (coverage && coverage.missingBrowserReport) {
+    console.error(
+      'Coverage threshold check failed: coverage/browser/coverage-final.json does not exist.\n\n'
+        + '  Requirement 112 §4 measures `packages/cana` in a real browser. Run\n'
+        + '  `bun run test:browser` after `bun run test:coverage` before this check.\n'
+        + '  Passing on the Jest half alone would leave cana unmeasured.'
     );
     process.exit(1);
   }
