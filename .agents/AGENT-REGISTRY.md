@@ -178,15 +178,16 @@ This registry tracks AI agents collaborating in the Jumentix project.
 - `machine_id`: `host-eduardos-mac-pro-local`
 - `machine_name`: `Eduardos-Mac-Pro.local`
 - `machine_os`: `Darwin 21.6.0 x86_64`
+- `workspace_path`: `/Users/eduardoalmeida/apps/XpertMinds/opencode-primary-001`
 - `agent_runtime`: `OpenCode deepseek-v4-flash-free`
 - `agent_version`: `deepseek-v4-flash-free`
-- `status`: `available`
+- `status`: `busy`
 - `registered_at_utc`: `2026-07-30T05:30:00Z`
-- `last_branch_check_utc`: `2026-07-30T05:30:00Z`
-- `main_ref_checked`: `6f5dba04`
-- `dev_ref_checked`: `4740bbca`
-- `active_epic`: `none`
-- `assigned_task`: `none`
+- `last_branch_check_utc`: `2026-08-01T12:00:00Z`
+- `main_ref_checked`: `490cb634`
+- `dev_ref_checked`: `761fb0ee`
+- `active_epic`: `none` (owner override for JUM-597, documented in issue and PR)
+- `assigned_task`: `https://linear.app/jumentix/issue/JUM-597`
 - `capabilities`:
   - repository ownership analysis and governance delivery
   - CI gate repair and agent registry synchronization
