@@ -15,6 +15,17 @@ const fullMatrixRootDir = matrixPath.resolve(__dirname, '../../../../..');
 type FullMatrixTestCell = { id: string; script: string };
 
 describe('run-full-test-matrix', () => {
+  it('keeps the canonical ci gate free of missing script references', () => {
+    expect.hasAssertions();
+
+    const ciGate = fullMatrixRootPackage.scripts['ci:gate'];
+    const referenced = [...ciGate.matchAll(/\bbun run ([^\s&|]+)/g)]
+      .map((match: RegExpMatchArray) => match[1]);
+    const missing = referenced.filter((script: string) => !fullMatrixRootPackage.scripts[script]);
+
+    expect(missing).toStrictEqual([]);
+  });
+
   it('declares unique required cells backed by real package scripts', () => {
     expect.hasAssertions();
     expect(FULL_TEST_MATRIX.length).toBeGreaterThan(0);
@@ -46,13 +57,22 @@ describe('run-full-test-matrix', () => {
 
     const ids = (FULL_TEST_MATRIX as FullMatrixTestCell[]).map((cell) => cell.id);
 
-    expect(ids).toContain('coverage');
-    expect(ids).toContain('coverage-thresholds');
-    expect(ids).toContain('patch-coverage');
+    expect(ids).toStrictEqual(expect.arrayContaining([
+      'coverage',
+      'coverage-thresholds',
+      'patch-coverage'
+    ]));
 
     // Cells run in declaration order, so position is the dependency.
     expect(ids.indexOf('coverage')).toBeLessThan(ids.indexOf('coverage-thresholds'));
     expect(ids.indexOf('coverage')).toBeLessThan(ids.indexOf('patch-coverage'));
+  });
+
+  it('lets the canonical coverage checker enforce thresholds after both reports exist', () => {
+    expect.hasAssertions();
+
+    expect(fullMatrixRootPackage.scripts['test:coverage'])
+      .toContain('--coverageThreshold=\'{}\'');
   });
 
   describe('writeMatrixEvidence', () => {
