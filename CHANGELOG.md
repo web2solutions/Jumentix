@@ -4,8 +4,11 @@
 
 ## All Changes
 
+- 2026-08-02 Merge remote-tracking branch 'origin/dev' into codex/docs/JUM-009-documentation-drift - Eduardo A.
+- 2026-08-02 [JUM-540][CI] Complete Bun tooling gate cleanup (#49) - Eduardo A.
 - 2026-08-02 docs: refresh changelog after dev merge - Eduardo A.
 - 2026-08-02 Merge remote-tracking branch 'origin/dev' into codex/docs/JUM-009-documentation-drift - Eduardo A.
+- 2026-08-02 ci: complete Bun tooling gate cleanup - Eduardo A.
 - 2026-08-02 ci: complete Bun tooling gate cleanup - Eduardo A.
 - 2026-08-02 ci: enforce authorized emails before push - Eduardo A.
 - 2026-08-02 ci: update GitHub Actions runtime pins - Eduardo A.
