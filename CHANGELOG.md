@@ -4,6 +4,9 @@
 
 ## All Changes
 
+- 2026-08-02 fix: resolve BullMQ infrastructure readiness review - Eduardo A.
+- 2026-08-02 [JUM-009][Docs] Complete documentation drift follow-up (#50) - Eduardo A.
+- 2026-08-02 docs: refresh changelog after latest dev merge - Eduardo A.
 - 2026-08-02 Merge remote-tracking branch 'origin/dev' into codex/docs/JUM-009-documentation-drift - Eduardo A.
 - 2026-08-02 [JUM-540][CI] Complete Bun tooling gate cleanup (#49) - Eduardo A.
 - 2026-08-02 docs: refresh changelog after dev merge - Eduardo A.

@@ -88,6 +88,12 @@
    none set, git refuses to commit until an identity is chosen deliberately, so
    the failure mode is a stopped commit rather than a silent disclosure.
 
+9. **Every commit must carry a GitHub-verified signature.** Authorized email
+   metadata is necessary but no longer sufficient: protected branches must reject
+   unsigned commits and commits signed by keys that GitHub cannot verify for the
+   committing identity. AI agents and automation must use a verified signing key
+   for the authorized account before they create or push commits.
+
 ## Rationale
 
 A commit's identity is not verified by anything. `user.email` is a string the
@@ -103,6 +109,10 @@ Rewriting history does not remove it from the forge.
 So the control has to sit before the commit spreads, and it has to be
 enumerative. This requirement is the enumeration.
 
+Signature verification adds possession evidence to that enumeration: the commit
+must come from an authorized identity and from a signing key the forge can
+validate for that identity.
+
 ## Verification
 
 - `bun run governance:check-authorship` — runs the check directly.
@@ -114,6 +124,8 @@ enumerative. This requirement is the enumeration.
   creation.
 - `.husky/pre-push` blocks publishing any reachable commit with undeclared
   author/committer identity.
+- GitHub branch protection rejects unsigned commits and commits whose signatures
+  are not verified by GitHub.
 - `apps/backend-template/test/unit/ci-cd/check-commit-authorship.test.ts` proves
   the checker fails when it should: on an undeclared author, on an undeclared
   committer whose author is declared, on each fail-closed condition in §4, and —
