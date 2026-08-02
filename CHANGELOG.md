@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-02 fix: resolve REST and WebSocket SDK spec paths independent of cwd - Eduardo A.
 - 2026-08-02 test: cover the missing-spec failure branch of loadSpecs - Eduardo A.
 - 2026-08-02 fix: resolve AsyncAPI gRPC spec independent of the current working directory - Eduardo A.
 - 2026-08-01 chore(registry): resync opencode-primary-001 status to available [JUM-597] (#41) - Eduardo A.

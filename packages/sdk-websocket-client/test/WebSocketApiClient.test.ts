@@ -76,6 +76,22 @@ const ok = (over: Partial<IWebSocketApiResponse> = {}): IWebSocketApiResponse =>
 });
 
 describe('loadSpecs', () => {
+  it('parses the AsyncAPI WebSocket document from the directory it is given', () => {
+    expect.hasAssertions();
+
+    const base = fs.mkdtempSync(path.join(os.tmpdir(), 'ws-sdk-openapi-'));
+    fs.mkdirSync(path.join(base, 'asyncapi'));
+    fs.writeFileSync(
+      path.join(base, 'asyncapi', '1.0.0.websocket.yml'),
+      'servers:\n  local:\n    host: example.test:9999\n',
+      'utf8'
+    );
+
+    expect(loadSpecs(base).asyncApiWebSocket).toStrictEqual({
+      servers: { local: { host: 'example.test:9999' } }
+    });
+  });
+
   it('fails when no canonical spec exists above the module directory', () => {
     expect.hasAssertions();
 
