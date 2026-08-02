@@ -1,6 +1,9 @@
 // Imported through the package entry point rather than the individual modules:
 // that is the surface consumers actually get, and a barrel that forgot to
 // re-export something would otherwise pass every test in this file.
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import { RestApiClient, loadSpecs } from '../src';
 
 /**
@@ -57,6 +60,32 @@ const anOperationId = (): string => {
   }
   throw new Error('the OpenAPI document declares no operationId');
 };
+
+describe('loadSpecs', () => {
+  it('parses the OpenAPI document from the directory it is given', () => {
+    expect.hasAssertions();
+
+    const base = fs.mkdtempSync(path.join(os.tmpdir(), 'rest-sdk-openapi-'));
+    fs.writeFileSync(
+      path.join(base, '1.0.0.yml'),
+      'openapi: 3.0.0\nservers:\n  - url: https://example.test\n',
+      'utf8'
+    );
+
+    expect(loadSpecs(base).openApi.servers).toStrictEqual([
+      { url: 'https://example.test' }
+    ]);
+  });
+
+  it('fails when no canonical spec exists above the module directory', () => {
+    expect.hasAssertions();
+
+    // An isolated directory under the OS temp root has no `spec/1.0.0.yml`
+    // anywhere above it, so the default walk-up finds nothing.
+    const isolated = fs.mkdtempSync(path.join(os.tmpdir(), 'rest-sdk-spec-'));
+    expect(() => loadSpecs(undefined, isolated)).toThrow(/1\.0\.0\.yml/);
+  });
+});
 
 describe('operation routing', () => {
   it('rejects an operation the spec does not declare', async () => {

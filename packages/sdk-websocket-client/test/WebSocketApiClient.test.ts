@@ -1,8 +1,11 @@
 import type { Socket } from 'socket.io-client';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 // Through the package entry point, not the module: that is the surface
 // consumers get, and a barrel that forgot a re-export would otherwise pass
 // every test in this file.
-import { WebSocketApiClient } from '../src';
+import { WebSocketApiClient, loadSpecs } from '../src';
 import type { IWebSocketApiResponse } from '../src';
 
 /**
@@ -70,6 +73,18 @@ const ok = (over: Partial<IWebSocketApiResponse> = {}): IWebSocketApiResponse =>
   operationId: 'listUsers',
   result: { items: [] },
   ...over
+});
+
+describe('loadSpecs', () => {
+  it('fails when no canonical spec exists above the module directory', () => {
+    expect.hasAssertions();
+
+    // An isolated directory under the OS temp root has no `spec/asyncapi`
+    // anywhere above it, so the default walk-up finds nothing.
+    const isolated = fs.mkdtempSync(path.join(os.tmpdir(), 'ws-sdk-spec-'));
+    expect(() => loadSpecs(undefined, isolated))
+      .toThrow(/1\.0\.0\.websocket\.yml/);
+  });
 });
 
 describe('connect', () => {
