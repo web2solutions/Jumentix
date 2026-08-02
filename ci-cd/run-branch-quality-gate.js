@@ -51,7 +51,7 @@ function runBranchQualityGate(options = {}) {
   const gate = selectQualityGate(targetBranch);
   const execute = options.execute || executeQualityGate;
   const logger = options.logger || console;
-  const resultFile = options.resultFile ?? process.env.AAA_CI_GATE_RESULT_FILE;
+  const resultFile = options.resultFile ?? process.env.JUMENTIX_CI_GATE_RESULT_FILE;
 
   logger.log(`[ci] target branch: ${targetBranch}`);
   logger.log(`[ci] selected quality gate: ${gate.id} (${gate.script})`);

@@ -1,6 +1,6 @@
 # @jumentix/external-db-repositories
 
-Reusable external database connection adapters for JumentiX runtimes.
+Reusable external database connection adapters for Jumentix runtimes.
 
 ## Exports
 

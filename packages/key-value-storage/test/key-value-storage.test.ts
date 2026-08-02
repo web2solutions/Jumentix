@@ -127,19 +127,19 @@ describe('the key prefix', () => {
     expect.hasAssertions();
 
     const client = await withEnvironment(
-      'AAA_KV_KEY_PREFIX',
+      'JUMENTIX_KV_KEY_PREFIX',
       undefined,
       () => new TestKeyValueStorageClient()
     );
 
-    expect(client.prefix).toBe('aaa__');
+    expect(client.prefix).toBe('jumentix__');
   });
 
   it('uses the configured prefix, with the separator appended', async () => {
     expect.hasAssertions();
 
     const client = await withEnvironment(
-      'AAA_KV_KEY_PREFIX',
+      'JUMENTIX_KV_KEY_PREFIX',
       'orders',
       () => new TestKeyValueStorageClient()
     );
@@ -151,13 +151,13 @@ describe('the key prefix', () => {
     expect.hasAssertions();
 
     const client = await withEnvironment(
-      'AAA_KV_KEY_PREFIX',
+      'JUMENTIX_KV_KEY_PREFIX',
       blank,
       () => new TestKeyValueStorageClient()
     );
 
     // Whitespace is not a namespace.
-    expect(client.prefix).toBe('aaa__');
+    expect(client.prefix).toBe('jumentix__');
   });
 });
 
@@ -354,7 +354,7 @@ describe('choosing a driver', () => {
     expect.hasAssertions();
 
     const client = await withEnvironment(
-      'AAA_KEYVALUESTORAGE_DRIVER',
+      'JUMENTIX_KEYVALUESTORAGE_DRIVER',
       'memory',
       () => compileKeyValueStorageClient()
     );
@@ -366,7 +366,7 @@ describe('choosing a driver', () => {
     expect.hasAssertions();
 
     const client = await withEnvironment(
-      'AAA_KEYVALUESTORAGE_DRIVER',
+      'JUMENTIX_KEYVALUESTORAGE_DRIVER',
       undefined,
       () => compileKeyValueStorageClient()
     );
@@ -403,10 +403,10 @@ describe('choosing a driver', () => {
  * lines are measured, not excluded by istanbul ignore.
  */
 const UNREACHABLE_REDIS_ENV = {
-  AAA_REDIS_HOST: '127.0.0.1',
-  AAA_REDIS_PORT: '5999',
-  AAA_REDIS_CONNECT_TIMEOUT_MS: '100',
-  AAA_REDIS_MAX_RECONNECT_ATTEMPTS: '1'
+  JUMENTIX_REDIS_HOST: '127.0.0.1',
+  JUMENTIX_REDIS_PORT: '5999',
+  JUMENTIX_REDIS_CONNECT_TIMEOUT_MS: '100',
+  JUMENTIX_REDIS_MAX_RECONNECT_ATTEMPTS: '1'
 };
 
 describe('the Redis client', () => {
@@ -439,11 +439,11 @@ describe('the Redis client', () => {
     expect.hasAssertions();
 
     const client = await withEnvironmentVars({
-      AAA_REDIS_HOST: 'localhost',
-      AAA_REDIS_PORT: '6380',
-      AAA_REDIS_DB: '2',
-      AAA_REDIS_CONNECT_TIMEOUT_MS: '750',
-      AAA_REDIS_MAX_RECONNECT_ATTEMPTS: '5'
+      JUMENTIX_REDIS_HOST: 'localhost',
+      JUMENTIX_REDIS_PORT: '6380',
+      JUMENTIX_REDIS_DB: '2',
+      JUMENTIX_REDIS_CONNECT_TIMEOUT_MS: '750',
+      JUMENTIX_REDIS_MAX_RECONNECT_ATTEMPTS: '5'
     }, () => RedisKeyValueStorageClient.create());
     const socket = client.client.options.socket as any;
 
@@ -457,8 +457,8 @@ describe('the Redis client', () => {
     expect.hasAssertions();
 
     const client = await withEnvironmentVars({
-      AAA_REDIS_CONNECT_TIMEOUT_MS: 'not-a-number',
-      AAA_REDIS_MAX_RECONNECT_ATTEMPTS: '0'
+      JUMENTIX_REDIS_CONNECT_TIMEOUT_MS: 'not-a-number',
+      JUMENTIX_REDIS_MAX_RECONNECT_ATTEMPTS: '0'
     }, () => RedisKeyValueStorageClient.create());
 
     expect((client.client.options.socket as any).connectTimeout).toBe(5000);

@@ -23,8 +23,8 @@ const INTEGRATION_MARKERS = Object.freeze([
   'Cursor Bugbot',
   'Vercel',
   'Dependabot',
-  'AAA_JWT_TOKEN_SECRET_KEY',
-  'AAA_REDIS_PASSWORD',
+  'JUMENTIX_JWT_TOKEN_SECRET_KEY',
+  'JUMENTIX_REDIS_PASSWORD',
   'owner-auth blocker',
   'JUM-568',
   'JUM-569'

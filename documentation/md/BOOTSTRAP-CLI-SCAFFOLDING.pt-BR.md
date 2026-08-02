@@ -6,15 +6,15 @@ Idioma alvo: Português (Brasil)
 
 Este modelo agora expõe comandos CLI de bootstrap instaláveis pelo registry:
 
-- `aaa-bootstrap`
+- `jumentix-bootstrap`
 - `jumentix-init`
 
-O comando clona `aaa-typescript-boilerplate` em uma pasta de destino e grava metadados iniciais do perfil de serviço.
+O comando clona `XpertMinds/Jumentix` em uma pasta de destino e grava metadados iniciais do perfil de serviço.
 
 Propriedade do espaço de trabalho:
 
 - `packages/cli-init` contém a implementação canônica do bootstrap.
-- root `bin/aaa-bootstrap.js` delega para `packages/cli-init` para manter o comportamento consistente durante a migração monorepo.
+- root `bin/jumentix-bootstrap.js` delega para `packages/cli-init` para manter o comportamento consistente durante a migração monorepo.
 
 ## Uso
 
@@ -23,7 +23,7 @@ Instale globalmente (ou execute com `bunx` pelo registry do pacote):
 ```bash
 bun add --global @jumentix/cli-init
 jumentix-init
-aaa-bootstrap
+jumentix-bootstrap
 ```
 
 Uso do repositório local:
@@ -64,7 +64,7 @@ Sinalizadores suportados:
 
 Após o scaffolding, a CLI escreve:
 
-- `.aaa/service-profile.json`
+- `.jumentix/service-profile.json`
 
 Campos de exemplo:
 

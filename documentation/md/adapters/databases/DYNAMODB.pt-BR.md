@@ -19,9 +19,9 @@ bun run docker:up:dynamodb
 2. Definir ambiente:
 
 ```bash
-AAA_DATABASE_DRIVER=DynamoDB
-AAA_DYNAMODB_ENDPOINT=http://127.0.0.1:8000
-AAA_AWS_REGION=us-east-1
+JUMENTIX_DATABASE_DRIVER=DynamoDB
+JUMENTIX_DYNAMODB_ENDPOINT=http://127.0.0.1:8000
+JUMENTIX_AWS_REGION=us-east-1
 ```
 
 3. Inicie o adaptador de serviço.

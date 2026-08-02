@@ -2,7 +2,7 @@
   "name": "@jumentix/sdk-grpc-client",
   "version": "0.0.0",
   "private": true,
-  "description": "JumentiX gRPC SDK client",
+  "description": "Jumentix gRPC SDK client",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [

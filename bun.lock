@@ -160,7 +160,7 @@
       "version": "0.0.0",
       "bin": {
         "jumentix-init": "./bin/jumentix-init.js",
-        "aaa-bootstrap": "./bin/jumentix-init.js",
+        "jumentix-bootstrap": "./bin/jumentix-init.js",
       },
     },
     "packages/config-eslint": {

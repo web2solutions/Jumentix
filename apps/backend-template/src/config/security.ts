@@ -4,7 +4,7 @@ function isProductionEnv(): boolean {
 }
 
 const parseAllowedCorsOrigins = (): string[] => {
-  const raw = String(process.env.AAA_CORS_ALLOWED_ORIGINS || '').trim();
+  const raw = String(process.env.JUMENTIX_CORS_ALLOWED_ORIGINS || '').trim();
   if (!raw) return [];
   return raw
     .split(',')

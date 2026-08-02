@@ -165,14 +165,14 @@ export const buildDatabaseClientCompilers = <TDatabaseClient extends IDatabaseCl
   ): TDatabaseClient => {
     const connector = new SqlSequelizeRepository({
       dialect,
-      connectionUrl: process.env.AAA_DATABASE_CONNECTION_URL,
-      database: process.env.AAA_DATABASE_NAME,
+      connectionUrl: process.env.JUMENTIX_DATABASE_CONNECTION_URL,
+      database: process.env.JUMENTIX_DATABASE_NAME,
       extra: {
-        poolMax: parseNumber(process.env.AAA_DATABASE_POOL_MAX, 15),
-        poolMin: parseNumber(process.env.AAA_DATABASE_POOL_MIN, 0),
-        poolAcquireMs: parseNumber(process.env.AAA_DATABASE_POOL_ACQUIRE_MS, 30000),
-        poolIdleMs: parseNumber(process.env.AAA_DATABASE_POOL_IDLE_MS, 10000),
-        poolEvictMs: parseNumber(process.env.AAA_DATABASE_POOL_EVICT_MS, 1000)
+        poolMax: parseNumber(process.env.JUMENTIX_DATABASE_POOL_MAX, 15),
+        poolMin: parseNumber(process.env.JUMENTIX_DATABASE_POOL_MIN, 0),
+        poolAcquireMs: parseNumber(process.env.JUMENTIX_DATABASE_POOL_ACQUIRE_MS, 30000),
+        poolIdleMs: parseNumber(process.env.JUMENTIX_DATABASE_POOL_IDLE_MS, 10000),
+        poolEvictMs: parseNumber(process.env.JUMENTIX_DATABASE_POOL_EVICT_MS, 1000)
       }
     });
     return toExternalClient<TDatabaseClient>(SQL_DIALECT_TO_DRIVER[dialect], connector);
@@ -180,13 +180,13 @@ export const buildDatabaseClientCompilers = <TDatabaseClient extends IDatabaseCl
 
   const createMongoClient = (): TDatabaseClient => {
     const connector = new MongoMongooseRepository({
-      connectionUrl: process.env.AAA_DATABASE_CONNECTION_URL,
-      database: process.env.AAA_DATABASE_NAME,
+      connectionUrl: process.env.JUMENTIX_DATABASE_CONNECTION_URL,
+      database: process.env.JUMENTIX_DATABASE_NAME,
       extra: {
-        maxPoolSize: parseNumber(process.env.AAA_DATABASE_POOL_MAX, 20),
-        minPoolSize: parseNumber(process.env.AAA_DATABASE_POOL_MIN, 0),
-        serverSelectionTimeoutMS: parseNumber(process.env.AAA_DATABASE_SERVER_SELECTION_MS, 5000),
-        socketTimeoutMS: parseNumber(process.env.AAA_DATABASE_SOCKET_TIMEOUT_MS, 45000)
+        maxPoolSize: parseNumber(process.env.JUMENTIX_DATABASE_POOL_MAX, 20),
+        minPoolSize: parseNumber(process.env.JUMENTIX_DATABASE_POOL_MIN, 0),
+        serverSelectionTimeoutMS: parseNumber(process.env.JUMENTIX_DATABASE_SERVER_SELECTION_MS, 5000),
+        socketTimeoutMS: parseNumber(process.env.JUMENTIX_DATABASE_SOCKET_TIMEOUT_MS, 45000)
       }
     });
     return toExternalClient<TDatabaseClient>('Mongo', connector);
@@ -194,19 +194,19 @@ export const buildDatabaseClientCompilers = <TDatabaseClient extends IDatabaseCl
 
   const createDynamoClient = (): TDatabaseClient => {
     const connector = new DynamoDbRepository({
-      region: process.env.AAA_DATABASE_REGION || 'us-east-1',
-      endpoint: process.env.AAA_DATABASE_ENDPOINT
+      region: process.env.JUMENTIX_DATABASE_REGION || 'us-east-1',
+      endpoint: process.env.JUMENTIX_DATABASE_ENDPOINT
     });
     return toExternalClient<TDatabaseClient>('DynamoDB', connector);
   };
 
   const createCassandraClient = (): TDatabaseClient => {
     const connector = new CassandraRepository({
-      database: process.env.AAA_DATABASE_NAME,
+      database: process.env.JUMENTIX_DATABASE_NAME,
       extra: {
-        contactPoints: parseContactPoints(process.env.AAA_DATABASE_CASSANDRA_CONTACT_POINTS),
-        localDataCenter: process.env.AAA_DATABASE_CASSANDRA_DATACENTER || 'datacenter1',
-        keyspace: process.env.AAA_DATABASE_NAME
+        contactPoints: parseContactPoints(process.env.JUMENTIX_DATABASE_CASSANDRA_CONTACT_POINTS),
+        localDataCenter: process.env.JUMENTIX_DATABASE_CASSANDRA_DATACENTER || 'datacenter1',
+        keyspace: process.env.JUMENTIX_DATABASE_NAME
       }
     });
     return toExternalClient<TDatabaseClient>('Cassandra', connector);
@@ -215,8 +215,8 @@ export const buildDatabaseClientCompilers = <TDatabaseClient extends IDatabaseCl
   const createFirebaseClient = (): TDatabaseClient => {
     const connector = new FirebaseRepository({
       extra: {
-        projectId: process.env.AAA_DATABASE_PROJECT_ID,
-        serviceAccount: parseJson(process.env.AAA_FIREBASE_SERVICE_ACCOUNT_JSON)
+        projectId: process.env.JUMENTIX_DATABASE_PROJECT_ID,
+        serviceAccount: parseJson(process.env.JUMENTIX_FIREBASE_SERVICE_ACCOUNT_JSON)
       }
     });
     return toExternalClient<TDatabaseClient>('Firebase', connector);
@@ -224,12 +224,12 @@ export const buildDatabaseClientCompilers = <TDatabaseClient extends IDatabaseCl
 
   const createAuroraClient = (): TDatabaseClient => {
     const connector = new AuroraRepository({
-      connectionUrl: process.env.AAA_DATABASE_CONNECTION_URL,
-      database: process.env.AAA_DATABASE_NAME,
-      region: process.env.AAA_DATABASE_REGION || 'us-east-1',
-      endpoint: process.env.AAA_DATABASE_ENDPOINT,
+      connectionUrl: process.env.JUMENTIX_DATABASE_CONNECTION_URL,
+      database: process.env.JUMENTIX_DATABASE_NAME,
+      region: process.env.JUMENTIX_DATABASE_REGION || 'us-east-1',
+      endpoint: process.env.JUMENTIX_DATABASE_ENDPOINT,
       extra: {
-        poolMax: parseNumber(process.env.AAA_DATABASE_POOL_MAX, 20)
+        poolMax: parseNumber(process.env.JUMENTIX_DATABASE_POOL_MAX, 20)
       }
     });
     return toExternalClient<TDatabaseClient>('Aurora', connector);
@@ -237,32 +237,32 @@ export const buildDatabaseClientCompilers = <TDatabaseClient extends IDatabaseCl
 
   const createOracleClient = (): TDatabaseClient => {
     const connector = new OracleRepository({
-      connectionUrl: process.env.AAA_DATABASE_CONNECTION_URL,
-      database: process.env.AAA_DATABASE_NAME,
+      connectionUrl: process.env.JUMENTIX_DATABASE_CONNECTION_URL,
+      database: process.env.JUMENTIX_DATABASE_NAME,
       extra: {
-        user: process.env.AAA_DATABASE_USER || 'aaa',
-        password: process.env.AAA_DATABASE_PASSWORD || 'aaa',
-        connectString: process.env.AAA_DATABASE_CONNECT_STRING
+        user: process.env.JUMENTIX_DATABASE_USER || 'jumentix',
+        password: process.env.JUMENTIX_DATABASE_PASSWORD || 'jumentix',
+        connectString: process.env.JUMENTIX_DATABASE_CONNECT_STRING
       }
     });
     return toExternalClient<TDatabaseClient>('Oracle', connector);
   };
 
   const createRdsClient = (): TDatabaseClient => {
-    const dialectRaw = sanitize(process.env.AAA_DATABASE_DIALECT || 'postgres');
+    const dialectRaw = sanitize(process.env.JUMENTIX_DATABASE_DIALECT || 'postgres');
     const dialect = (['postgres', 'mysql', 'mssql', 'oracle', 'sqlite'].includes(dialectRaw)
       ? dialectRaw
       : 'postgres') as 'postgres' | 'mysql' | 'mssql' | 'oracle' | 'sqlite';
     const connector = new RdsRepository({
-      connectionUrl: process.env.AAA_DATABASE_CONNECTION_URL,
-      database: process.env.AAA_DATABASE_NAME,
+      connectionUrl: process.env.JUMENTIX_DATABASE_CONNECTION_URL,
+      database: process.env.JUMENTIX_DATABASE_NAME,
       extra: {
         dialect,
-        poolMax: parseNumber(process.env.AAA_DATABASE_POOL_MAX, 20),
-        poolMin: parseNumber(process.env.AAA_DATABASE_POOL_MIN, 0),
-        poolAcquireMs: parseNumber(process.env.AAA_DATABASE_POOL_ACQUIRE_MS, 30000),
-        poolIdleMs: parseNumber(process.env.AAA_DATABASE_POOL_IDLE_MS, 10000),
-        poolEvictMs: parseNumber(process.env.AAA_DATABASE_POOL_EVICT_MS, 1000)
+        poolMax: parseNumber(process.env.JUMENTIX_DATABASE_POOL_MAX, 20),
+        poolMin: parseNumber(process.env.JUMENTIX_DATABASE_POOL_MIN, 0),
+        poolAcquireMs: parseNumber(process.env.JUMENTIX_DATABASE_POOL_ACQUIRE_MS, 30000),
+        poolIdleMs: parseNumber(process.env.JUMENTIX_DATABASE_POOL_IDLE_MS, 10000),
+        poolEvictMs: parseNumber(process.env.JUMENTIX_DATABASE_POOL_EVICT_MS, 1000)
       }
     });
     return toExternalClient<TDatabaseClient>('RDS', connector);
@@ -291,7 +291,7 @@ export const buildDatabaseClientCompilers = <TDatabaseClient extends IDatabaseCl
   };
 
   const compileDatabaseClient = (): TDatabaseClient => {
-    const driver = normalizeDriver(process.env.AAA_DATABASE_DRIVER);
+    const driver = normalizeDriver(process.env.JUMENTIX_DATABASE_DRIVER);
     return buildByDriver(driver);
   };
 

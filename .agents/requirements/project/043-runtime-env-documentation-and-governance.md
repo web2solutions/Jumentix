@@ -16,10 +16,10 @@ Whenever runtime keys, startup adapters, or PM2 process orchestration change, th
 
 ## Runtime Keys in Scope
 
-- `AAA_HTTP_FRAMEWORK`
-- `AAA_REALTIME_API`
-- `AAA_REALTIME_API_PROTOCOL`
-- `AAA_REALTIME_API_DATABASE_DRIVER`
+- `JUMENTIX_HTTP_FRAMEWORK`
+- `JUMENTIX_REALTIME_API`
+- `JUMENTIX_REALTIME_API_PROTOCOL`
+- `JUMENTIX_REALTIME_API_DATABASE_DRIVER`
 
 ## Governance Guardrails
 

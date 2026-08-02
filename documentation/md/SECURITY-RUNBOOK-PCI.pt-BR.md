@@ -9,7 +9,7 @@ Este runbook define procedimentos operacionais para ambientes que lidam com aute
 ## 1) Rotação de chave
 
 Escopo:
-- Segredo de assinatura JWT (`AAA_JWT_TOKEN_SECRET_KEY`)
+- Segredo de assinatura JWT (`JUMENTIX_JWT_TOKEN_SECRET_KEY`)
 - Quaisquer credenciais de API usadas por adaptadores de saída
 
 Etapas operacionais:

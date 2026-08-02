@@ -16,25 +16,25 @@
 Install dependencies:
 
 ```bash
-bun install
+pnpm install
 ```
 
 Run Redis (if needed):
 
 ```bash
-bun run docker:composeredis
+pnpm run docker:composeredis
 ```
 
 Run messaging services (RabbitMQ + Redis) with Docker:
 
 ```bash
-bun run docker:composemessaging
+pnpm run docker:composemessaging
 ```
 
 Run only RabbitMQ (useful when Redis is already running):
 
 ```bash
-bun run docker:composerabbit
+pnpm run docker:composerabbit
 ```
 
 ## Message Mediator Adapter
@@ -42,27 +42,27 @@ bun run docker:composerabbit
 The mediator can be selected via environment variable:
 
 ```bash
-AAA_MESSAGE_MEDIATOR_ADAPTER=inmemory # default
-AAA_MESSAGE_MEDIATOR_ADAPTER=rabbitmq
-AAA_MESSAGE_MEDIATOR_ADAPTER=bullmq
+JUMENTIX_MESSAGE_MEDIATOR_ADAPTER=inmemory # default
+JUMENTIX_MESSAGE_MEDIATOR_ADAPTER=rabbitmq
+JUMENTIX_MESSAGE_MEDIATOR_ADAPTER=bullmq
 ```
 
 RabbitMQ required variables:
 
 ```bash
-AAA_RABBITMQ_URL=amqp://guest:guest@127.0.0.1:5672
-AAA_RABBITMQ_EXCHANGE=app.events
-AAA_RABBITMQ_REQUEST_QUEUE=app.requests
-AAA_RABBITMQ_PREFETCH=10
+JUMENTIX_RABBITMQ_URL=amqp://guest:guest@127.0.0.1:5672
+JUMENTIX_RABBITMQ_EXCHANGE=app.events
+JUMENTIX_RABBITMQ_REQUEST_QUEUE=app.requests
+JUMENTIX_RABBITMQ_PREFETCH=10
 ```
 
 BullMQ required variables:
 
 ```bash
-AAA_BULLMQ_REDIS_HOST=127.0.0.1
-AAA_BULLMQ_REDIS_PORT=6379
-AAA_BULLMQ_REDIS_DB=1
-AAA_BULLMQ_REQUEST_QUEUE=app.requests
+JUMENTIX_BULLMQ_REDIS_HOST=127.0.0.1
+JUMENTIX_BULLMQ_REDIS_PORT=6379
+JUMENTIX_BULLMQ_REDIS_DB=1
+JUMENTIX_BULLMQ_REQUEST_QUEUE=app.requests
 ```
 
 ## API Documentation
@@ -81,10 +81,10 @@ Start the selected PM2 profile before opening documentation URLs.
 Runtime adapter selection is environment-driven through:
 
 ```bash
-AAA_HTTP_FRAMEWORK=express
-AAA_REALTIME_API=no
-AAA_REALTIME_API_PROTOCOL=websocket
-AAA_REALTIME_API_DATABASE_DRIVER=Mongo
+JUMENTIX_HTTP_FRAMEWORK=express
+JUMENTIX_REALTIME_API=no
+JUMENTIX_REALTIME_API_PROTOCOL=websocket
+JUMENTIX_REALTIME_API_DATABASE_DRIVER=Mongo
 ```
 
 Detailed runtime contract:
@@ -99,41 +99,41 @@ Startup entrypoints used by PM2:
 
 Behavior summary:
 
-- `start-rest-api.ts` resolves `AAA_HTTP_FRAMEWORK` and starts the configured HTTP adapter.
-- `start-websocket-api.ts` starts only when `AAA_REALTIME_API=yes` and `AAA_REALTIME_API_PROTOCOL=websocket`.
-- `start-grpc-api.ts` starts only when `AAA_REALTIME_API=yes` and `AAA_REALTIME_API_PROTOCOL=grpc`.
+- `start-rest-api.ts` resolves `JUMENTIX_HTTP_FRAMEWORK` and starts the configured HTTP adapter.
+- `start-websocket-api.ts` starts only when `JUMENTIX_REALTIME_API=yes` and `JUMENTIX_REALTIME_API_PROTOCOL=websocket`.
+- `start-grpc-api.ts` starts only when `JUMENTIX_REALTIME_API=yes` and `JUMENTIX_REALTIME_API_PROTOCOL=grpc`.
 
 Dev (auto-starts `service-management`):
 
 ```bash
-bun run pm2:start:dev:restapi
-bun run pm2:start:dev:websocket-rest
-bun run pm2:start:dev:grpc-rest
+pnpm run pm2:start:dev:restapi
+pnpm run pm2:start:dev:websocket-rest
+pnpm run pm2:start:dev:grpc-rest
 ```
 
 Staging:
 
 ```bash
-bun run pm2:start:staging:restapi
-bun run pm2:start:staging:websocket-rest
-bun run pm2:start:staging:grpc-rest
+pnpm run pm2:start:staging:restapi
+pnpm run pm2:start:staging:websocket-rest
+pnpm run pm2:start:staging:grpc-rest
 ```
 
 Production:
 
 ```bash
-bun run pm2:start:prod:restapi
-bun run pm2:start:prod:websocket-rest
-bun run pm2:start:prod:grpc-rest
+pnpm run pm2:start:prod:restapi
+pnpm run pm2:start:prod:websocket-rest
+pnpm run pm2:start:prod:grpc-rest
 ```
 
 PM2 operations:
 
 ```bash
-bun run pm2:list
-bun run pm2:logs
-bun run pm2:stop:all
-bun run pm2:delete:all
+pnpm run pm2:list
+pnpm run pm2:logs
+pnpm run pm2:stop:all
+pnpm run pm2:delete:all
 ```
 
 Service Management can read and persist these runtime env values through:
@@ -147,10 +147,10 @@ Service Management can read and persist these runtime env values through:
 {
   "environment": "dev",
   "values": {
-    "AAA_HTTP_FRAMEWORK": "express",
-    "AAA_REALTIME_API": "yes",
-    "AAA_REALTIME_API_PROTOCOL": "websocket",
-    "AAA_REALTIME_API_DATABASE_DRIVER": "Mongo"
+    "JUMENTIX_HTTP_FRAMEWORK": "express",
+    "JUMENTIX_REALTIME_API": "yes",
+    "JUMENTIX_REALTIME_API_PROTOCOL": "websocket",
+    "JUMENTIX_REALTIME_API_DATABASE_DRIVER": "Mongo"
   }
 }
 ```
@@ -162,71 +162,72 @@ Response payload example:
   "environment": "dev",
   "fileName": ".env.dev",
   "values": {
-    "AAA_HTTP_FRAMEWORK": "express",
-    "AAA_REALTIME_API": "yes",
-    "AAA_REALTIME_API_PROTOCOL": "websocket",
-    "AAA_REALTIME_API_DATABASE_DRIVER": "Mongo"
+    "JUMENTIX_HTTP_FRAMEWORK": "express",
+    "JUMENTIX_REALTIME_API": "yes",
+    "JUMENTIX_REALTIME_API_PROTOCOL": "websocket",
+    "JUMENTIX_REALTIME_API_DATABASE_DRIVER": "Mongo"
   }
 }
 ```
 
 ## Single Adapter Boot Commands (via PM2)
 
-HTTP adapters (all routed through `start-rest-api` loader with `AAA_HTTP_FRAMEWORK`):
+HTTP adapters (all routed through `start-rest-api` loader with `JUMENTIX_HTTP_FRAMEWORK`):
 
 ```bash
-bun run dev:express
-bun run dev:fastify
-bun run dev:restify
-bun run dev:cloudflare-workers
-bun run dev:vercel-functions
-bun run dev:loopback
-bun run dev:sails-js
-bun run dev:feathers
-bun run dev:derby-js
-bun run dev:adonis-js
-bun run dev:total-js
+pnpm run dev:express
+pnpm run dev:fastify
+pnpm run dev:restify
+pnpm run dev:hyper-express
+pnpm run dev:cloudflare-workers
+pnpm run dev:vercel-functions
+pnpm run dev:loopback
+pnpm run dev:sails-js
+pnpm run dev:feathers
+pnpm run dev:derby-js
+pnpm run dev:adonis-js
+pnpm run dev:total-js
 ```
 
 Generic REST loader commands:
 
 ```bash
-# uses AAA_HTTP_FRAMEWORK from env file (default express)
-bun run dev:http
-bun run prod:http
+# uses JUMENTIX_HTTP_FRAMEWORK from env file (default express)
+pnpm run dev:http
+pnpm run prod:http
 ```
 
 Equivalent direct loader style:
 
 ```bash
-AAA_HTTP_FRAMEWORK=fastify pm2 start ./apps/backend-template/src/interface/HTTP/adapters/start-rest-api.ts --name aaa-dev-fastify --interpreter bun -- --env-file=./apps/backend-template/src/config/.env.dev
-AAA_HTTP_FRAMEWORK=cloudflare-workers pm2 start ./apps/backend-template/src/interface/HTTP/adapters/start-rest-api.ts --name aaa-dev-cloudflare-workers --interpreter bun -- --env-file=./apps/backend-template/src/config/.env.dev
+JUMENTIX_HTTP_FRAMEWORK=fastify pm2 start ./apps/backend-template/src/interface/HTTP/adapters/start-rest-api.ts --name jumentix-dev-fastify --interpreter node --node-args='-r ts-node/register -r tsconfig-paths/register --env-file=./apps/backend-template/src/config/.env.dev' --update-env
+JUMENTIX_HTTP_FRAMEWORK=cloudflare-workers pm2 start ./apps/backend-template/src/interface/HTTP/adapters/start-rest-api.ts --name jumentix-dev-cloudflare-workers --interpreter node --node-args='-r ts-node/register -r tsconfig-paths/register --env-file=./apps/backend-template/src/config/.env.dev' --update-env
 ```
 
 Combined service profiles:
 
 ```bash
-bun run dev:websocket
-bun run dev:grpc
-bun run test:integration:service-management
+pnpm run dev:websocket
+pnpm run dev:grpc
+pnpm run test:integration:service-management
 ```
 
 Serverless dev mode:
 
 ```bash
-bun run dev:serverless
+pnpm run dev:serverless
 ```
 
 Developer automation CLI:
 
 ```bash
-bun run dev:cli
+pnpm run dev:cli
 ```
 
 Service Management app (PM2-served):
 
 ```bash
-bun run dev:service-management
+pnpm run dev:service-management
 ```
 
 ![serverless dev mode](../images/sls.png "serverless dev mode")

@@ -2,11 +2,11 @@
 Arquivo gerado automaticamente a partir de: documentation/md/JUMENTIX-RELEASE-AND-VERSIONING-STRATEGY.md
 Idioma alvo: Português (Brasil)
 -->
-# Estratégia de lançamento e versionamento do JumentiX
+# Estratégia de lançamento e versionamento do Jumentix
 
 ## Política
 
-JumentiX usa uma estratégia híbrida:
+Jumentix usa uma estratégia híbrida:
 
 - `packages/*`: **versionamento independente**
 - `apps/*`: **versionamento bloqueado** vinculado à versão raiz do projeto

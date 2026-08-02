@@ -107,14 +107,14 @@ describe('websocket socket-io adapter bootstrap', () => {
   it('resolves fallback strategy from env', async () => {
     expect.assertions(3);
     const { shouldStartFallbackRestApi } = await import('@src/interface/WebSocket/adapters/socket-io/socket-io');
-    expect(shouldStartFallbackRestApi({ AAA_DISABLE_FALLBACK_REST: 'true' } as any)).toBe(false);
-    expect(shouldStartFallbackRestApi({ AAA_DISABLE_FALLBACK_REST: 'false' } as any)).toBe(true);
+    expect(shouldStartFallbackRestApi({ JUMENTIX_DISABLE_FALLBACK_REST: 'true' } as any)).toBe(false);
+    expect(shouldStartFallbackRestApi({ JUMENTIX_DISABLE_FALLBACK_REST: 'false' } as any)).toBe(true);
     expect(shouldStartFallbackRestApi({} as any)).toBe(true);
   });
 
   it('starts only websocket api when fallback rest is disabled', async () => {
     expect.assertions(2);
-    process.env.AAA_DISABLE_FALLBACK_REST = 'true';
+    process.env.JUMENTIX_DISABLE_FALLBACK_REST = 'true';
     const { startWebSocketAdapter } = await import('@src/interface/WebSocket/adapters/socket-io/socket-io');
     await startWebSocketAdapter();
     expect(websocketAdapterStart).toHaveBeenCalledTimes(1);
@@ -123,7 +123,7 @@ describe('websocket socket-io adapter bootstrap', () => {
 
   it('starts websocket and fallback rest when fallback is enabled', async () => {
     expect.assertions(2);
-    delete process.env.AAA_DISABLE_FALLBACK_REST;
+    delete process.env.JUMENTIX_DISABLE_FALLBACK_REST;
     const { startWebSocketAdapter } = await import('@src/interface/WebSocket/adapters/socket-io/socket-io');
     await startWebSocketAdapter();
     expect(websocketFallbackRestStart).toHaveBeenCalledTimes(1);

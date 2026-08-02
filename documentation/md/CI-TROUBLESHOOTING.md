@@ -173,8 +173,8 @@ bun run ci:smoke
 ```
 
 If needed, verify env keys used by tests:
-- `AAA_REDIS_PASSWORD`
-- `AAA_JWT_TOKEN_SECRET_KEY`
+- `JUMENTIX_REDIS_PASSWORD`
+- `JUMENTIX_JWT_TOKEN_SECRET_KEY`
 
 ## 8) Fast local diagnosis flow
 

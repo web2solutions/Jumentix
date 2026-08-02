@@ -60,21 +60,21 @@ export class AuthService implements IAuthService {
   }
 
   private get basicAuthEnabled(): boolean {
-    const rawValue = String(process.env.AAA_ENABLE_BASIC_AUTH || '').trim().toLowerCase();
+    const rawValue = String(process.env.JUMENTIX_ENABLE_BASIC_AUTH || '').trim().toLowerCase();
     if (!rawValue) return true;
     return rawValue === 'yes';
   }
 
   private get maxLoginAttempts(): number {
-    return Number(process.env.AAA_AUTH_MAX_LOGIN_ATTEMPTS || 5);
+    return Number(process.env.JUMENTIX_AUTH_MAX_LOGIN_ATTEMPTS || 5);
   }
 
   private get loginWindowSeconds(): number {
-    return Number(process.env.AAA_AUTH_LOGIN_WINDOW_SECONDS || 300);
+    return Number(process.env.JUMENTIX_AUTH_LOGIN_WINDOW_SECONDS || 300);
   }
 
   private get lockoutSeconds(): number {
-    return Number(process.env.AAA_AUTH_LOCKOUT_SECONDS || 900);
+    return Number(process.env.JUMENTIX_AUTH_LOCKOUT_SECONDS || 900);
   }
 
   private get revocationPrefix(): string {

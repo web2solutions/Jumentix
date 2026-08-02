@@ -6,8 +6,8 @@ This guide shows how to bootstrap and run a REST service using the backend templ
 
 Set environment variables:
 
-- `AAA_HTTP_FRAMEWORK=express` (or any supported adapter)
-- `AAA_REALTIME_API=no`
+- `JUMENTIX_HTTP_FRAMEWORK=express` (or any supported adapter)
+- `JUMENTIX_REALTIME_API=no`
 
 Then start:
 
@@ -33,7 +33,7 @@ Use the project layering pattern:
 
 ## 4. Bind to HTTP Adapter
 
-Choose adapter by env (`AAA_HTTP_FRAMEWORK`) and use the REST startup loader.
+Choose adapter by env (`JUMENTIX_HTTP_FRAMEWORK`) and use the REST startup loader.
 REST endpoints are exposed through framework-native handlers under module interfaces.
 
 ## 5. Validate

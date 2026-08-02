@@ -4,7 +4,7 @@ services:
     container_name: aaa-postgres
     environment:
       POSTGRES_USER: aaa
-      POSTGRES_PASSWORD: '${AAA_POSTGRES_PASSWORD:-change_me_postgres_password}'
+      POSTGRES_PASSWORD: '${JUMENTIX_POSTGRES_PASSWORD:-change_me_postgres_password}'
       POSTGRES_DB: aaa
     ports:
       - '5432:5432'
@@ -15,10 +15,10 @@ services:
     image: mysql:8.4
     container_name: aaa-mysql
     environment:
-      MYSQL_ROOT_PASSWORD: '${AAA_MYSQL_ROOT_PASSWORD:-change_me_mysql_root_password}'
+      MYSQL_ROOT_PASSWORD: '${JUMENTIX_MYSQL_ROOT_PASSWORD:-change_me_mysql_root_password}'
       MYSQL_DATABASE: aaa
       MYSQL_USER: aaa
-      MYSQL_PASSWORD: '${AAA_MYSQL_PASSWORD:-change_me_mysql_password}'
+      MYSQL_PASSWORD: '${JUMENTIX_MYSQL_PASSWORD:-change_me_mysql_password}'
     ports:
       - '3306:3306'
     volumes:
@@ -29,7 +29,7 @@ services:
     container_name: aaa-mssql
     environment:
       ACCEPT_EULA: 'Y'
-      MSSQL_SA_PASSWORD: '${AAA_MSSQL_SA_PASSWORD:-change_me_mssql_password}'
+      MSSQL_SA_PASSWORD: '${JUMENTIX_MSSQL_SA_PASSWORD:-change_me_mssql_password}'
     ports:
       - '1433:1433'
 
@@ -37,9 +37,9 @@ services:
     image: gvenzl/oracle-free:23-slim
     container_name: aaa-oracle
     environment:
-      ORACLE_PASSWORD: '${AAA_ORACLE_PASSWORD:-change_me_oracle_password}'
+      ORACLE_PASSWORD: '${JUMENTIX_ORACLE_PASSWORD:-change_me_oracle_password}'
       APP_USER: aaa
-      APP_USER_PASSWORD: '${AAA_ORACLE_APP_USER_PASSWORD:-change_me_oracle_app_password}'
+      APP_USER_PASSWORD: '${JUMENTIX_ORACLE_APP_USER_PASSWORD:-change_me_oracle_app_password}'
     ports:
       - '1521:1521'
 

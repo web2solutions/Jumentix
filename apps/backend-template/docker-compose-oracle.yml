@@ -3,9 +3,9 @@ services:
     image: gvenzl/oracle-free:23-slim
     container_name: aaa-oracle
     environment:
-      ORACLE_PASSWORD: '${AAA_ORACLE_PASSWORD:-change_me_oracle_password}'
+      ORACLE_PASSWORD: '${JUMENTIX_ORACLE_PASSWORD:-change_me_oracle_password}'
       APP_USER: aaa
-      APP_USER_PASSWORD: '${AAA_ORACLE_APP_USER_PASSWORD:-change_me_oracle_app_password}'
+      APP_USER_PASSWORD: '${JUMENTIX_ORACLE_APP_USER_PASSWORD:-change_me_oracle_app_password}'
     ports:
       - '1521:1521'
     volumes:

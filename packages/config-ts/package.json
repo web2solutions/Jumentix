@@ -2,7 +2,7 @@
   "name": "@jumentix/config-ts",
   "version": "0.0.0",
   "private": true,
-  "description": "JumentiX shared TypeScript configuration placeholder",
+  "description": "Jumentix shared TypeScript configuration placeholder",
   "files": [
     "tsconfig.base.json"
   ],

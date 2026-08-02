@@ -44,10 +44,10 @@ Core implementation files:
      - runtime ports (`REST`, `WebSocket`, `gRPC`)
    - Shows PM2-oriented profile preview for VM runtime orchestration.
    - Includes runtime env controls to read/update:
-     - `AAA_HTTP_FRAMEWORK`
-     - `AAA_REALTIME_API`
-     - `AAA_REALTIME_API_PROTOCOL`
-     - `AAA_REALTIME_API_DATABASE_DRIVER`
+     - `JUMENTIX_HTTP_FRAMEWORK`
+     - `JUMENTIX_REALTIME_API`
+     - `JUMENTIX_REALTIME_API_PROTOCOL`
+     - `JUMENTIX_REALTIME_API_DATABASE_DRIVER`
    - Runtime env editor targets the selected environment file:
     - `dev` -> `apps/backend-template/src/config/.env.dev`
     - `staging` -> `apps/backend-template/src/config/.env.staging`

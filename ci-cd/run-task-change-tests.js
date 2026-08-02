@@ -252,7 +252,7 @@ function runTaskChangeTests(options = {}) {
   const changedFiles = normalizeFiles(options.files || readChangedFiles(options));
   const useV2 = options.forceV2 !== undefined ? options.forceV2 : gateV2Enabled(env);
   const useShadow = options.forceShadow !== undefined ? options.forceShadow : shadowEnabled(env);
-  const resultFile = options.resultFile ?? env.AAA_CI_GATE_RESULT_FILE;
+  const resultFile = options.resultFile ?? env.JUMENTIX_CI_GATE_RESULT_FILE;
 
   const v1Plan = createTaskTestPlan(changedFiles);
   let plan = v1Plan;

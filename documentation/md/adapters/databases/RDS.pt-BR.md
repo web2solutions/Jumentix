@@ -13,8 +13,8 @@ Caminho de integração do Amazon RDS (perfil SQL na camada do adaptador externo
 1. Definir ambiente:
 
 ```bash
-AAA_DATABASE_DRIVER=RDS
-AAA_DATABASE_CONNECTION_URL=postgres://user:pass@rds-host:5432/aaa
+JUMENTIX_DATABASE_DRIVER=RDS
+JUMENTIX_DATABASE_CONNECTION_URL=postgres://user:pass@rds-host:5432/jumentix
 ```
 
 2. Inicie o adaptador de serviço.

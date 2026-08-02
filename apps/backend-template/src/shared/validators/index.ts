@@ -41,7 +41,7 @@ export function mustBePassword(field: string, value: string) {
     throw new DomainValidationError(`${field} must have at least 8 chars.`);
   }
 
-  const strictPasswordPolicy = String(process.env.AAA_STRICT_PASSWORD_POLICY || '').toLowerCase() === 'yes';
+  const strictPasswordPolicy = String(process.env.JUMENTIX_STRICT_PASSWORD_POLICY || '').toLowerCase() === 'yes';
   if (!strictPasswordPolicy) return;
 
   if (!/[A-Z]/.test(value)) throw new DomainValidationError(`${field} must include at least one uppercase letter.`);

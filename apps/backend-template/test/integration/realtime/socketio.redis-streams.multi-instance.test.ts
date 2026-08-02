@@ -6,10 +6,10 @@ import { Server as SocketIOServer } from 'socket.io';
 import { io as createSocketClient, Socket } from 'socket.io-client';
 import { createAdapter } from '@socket.io/redis-streams-adapter';
 
-const REDIS_PASSWORD = process.env.AAA_REDIS_PASSWORD || 'eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81';
-const REDIS_HOST = process.env.AAA_REDIS_HOST || '127.0.0.1';
-const REDIS_PORT = process.env.AAA_REDIS_PORT || '6379';
-const REDIS_DB = process.env.AAA_REDIS_DATABASE || '1';
+const REDIS_PASSWORD = process.env.JUMENTIX_REDIS_PASSWORD || 'eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81';
+const REDIS_HOST = process.env.JUMENTIX_REDIS_HOST || '127.0.0.1';
+const REDIS_PORT = process.env.JUMENTIX_REDIS_PORT || '6379';
+const REDIS_DB = process.env.JUMENTIX_REDIS_DATABASE || '1';
 
 const redisUrl = `redis://:${encodeURIComponent(REDIS_PASSWORD)}@${REDIS_HOST}:${REDIS_PORT}/${REDIS_DB}`;
 

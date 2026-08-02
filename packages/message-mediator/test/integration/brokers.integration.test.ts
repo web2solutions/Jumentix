@@ -29,9 +29,9 @@ const RUNNING = process.env.RUN_BROKER_INTEGRATION === '1';
  */
 const suite = RUNNING ? describe : describe.skip;
 
-const RABBIT_URL = process.env.AAA_RABBITMQ_URL || 'amqp://127.0.0.1:5672';
-const REDIS_HOST = process.env.AAA_BULLMQ_REDIS_HOST || '127.0.0.1';
-const REDIS_PORT = Number(process.env.AAA_BULLMQ_REDIS_PORT || 6379);
+const RABBIT_URL = process.env.JUMENTIX_RABBITMQ_URL || 'amqp://127.0.0.1:5672';
+const REDIS_HOST = process.env.JUMENTIX_BULLMQ_REDIS_HOST || '127.0.0.1';
+const REDIS_PORT = Number(process.env.JUMENTIX_BULLMQ_REDIS_PORT || 6379);
 
 let sequence = 0;
 /** A contract no other run of this suite will use. */

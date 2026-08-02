@@ -2,10 +2,10 @@
   "name": "@jumentix/cli-init",
   "version": "0.0.0",
   "private": true,
-  "description": "JumentiX bootstrap CLI package",
+  "description": "Jumentix bootstrap CLI package",
   "bin": {
     "jumentix-init": "./bin/jumentix-init.js",
-    "aaa-bootstrap": "./bin/jumentix-init.js"
+    "jumentix-bootstrap": "./bin/jumentix-init.js"
   },
   "files": [
     "bin",

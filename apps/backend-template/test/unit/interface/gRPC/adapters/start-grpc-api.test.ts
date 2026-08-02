@@ -15,8 +15,8 @@ describe('start-grpc-api loader', () => {
     expect.assertions(2);
     const { startGrpcApiAdapter } = await import('@src/interface/gRPC/adapters/start-grpc-api');
     const started = await startGrpcApiAdapter({
-      AAA_REALTIME_API: 'yes',
-      AAA_REALTIME_API_PROTOCOL: 'grpc'
+      JUMENTIX_REALTIME_API: 'yes',
+      JUMENTIX_REALTIME_API_PROTOCOL: 'grpc'
     } as unknown as NodeJS.ProcessEnv);
     expect(started).toBe(true);
     expect(grpcLoaderAdapterStart).toHaveBeenCalledTimes(1);
@@ -26,8 +26,8 @@ describe('start-grpc-api loader', () => {
     expect.assertions(2);
     const { startGrpcApiAdapter } = await import('@src/interface/gRPC/adapters/start-grpc-api');
     const started = await startGrpcApiAdapter({
-      AAA_REALTIME_API: 'yes',
-      AAA_REALTIME_API_PROTOCOL: 'websocket'
+      JUMENTIX_REALTIME_API: 'yes',
+      JUMENTIX_REALTIME_API_PROTOCOL: 'websocket'
     } as unknown as NodeJS.ProcessEnv);
     expect(started).toBe(false);
     expect(grpcLoaderAdapterStart).toHaveBeenCalledTimes(0);
@@ -35,8 +35,8 @@ describe('start-grpc-api loader', () => {
 
   it('uses process env when env argument is omitted', async () => {
     expect.assertions(2);
-    process.env.AAA_REALTIME_API = 'yes';
-    process.env.AAA_REALTIME_API_PROTOCOL = 'grpc';
+    process.env.JUMENTIX_REALTIME_API = 'yes';
+    process.env.JUMENTIX_REALTIME_API_PROTOCOL = 'grpc';
     const { startGrpcApiAdapter } = await import('@src/interface/gRPC/adapters/start-grpc-api');
     const started = await startGrpcApiAdapter();
     expect(started).toBe(true);

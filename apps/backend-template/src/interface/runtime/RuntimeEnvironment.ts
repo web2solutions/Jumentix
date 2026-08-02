@@ -21,8 +21,20 @@ function normalize(value: string | undefined): string {
   return String(value || '').trim().toLowerCase();
 }
 
+/** Prefer JUMENTIX_*; fall back to legacy AAA_* during env migration. */
+export function readProductEnv(
+  env: NodeJS.ProcessEnv,
+  key: `JUMENTIX_${string}`
+): string | undefined {
+  const value = env[key];
+  // Whitespace-only counts as unset so legacy AAA_* can still apply.
+  if (value !== undefined && value.trim() !== '') return value;
+  return env[key.replace(/^JUMENTIX_/, 'AAA_')];
+}
+
 export function resolveHTTPFramework(env: NodeJS.ProcessEnv = process.env): HTTPFramework {
-  const framework = normalize(env.AAA_HTTP_FRAMEWORK) || DEFAULT_HTTP_FRAMEWORK;
+  const raw = readProductEnv(env, 'JUMENTIX_HTTP_FRAMEWORK');
+  const framework = normalize(raw) || DEFAULT_HTTP_FRAMEWORK;
   if (
     framework === 'express'
     || framework === 'fastify'
@@ -37,21 +49,22 @@ export function resolveHTTPFramework(env: NodeJS.ProcessEnv = process.env): HTTP
     || framework === 'total-js'
   ) return framework;
   throw new Error(
-    `Unsupported AAA_HTTP_FRAMEWORK "${env.AAA_HTTP_FRAMEWORK}".`
+    `Unsupported JUMENTIX_HTTP_FRAMEWORK "${raw}".`
   );
 }
 
 export function isRealtimeApiEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
-  return normalize(env.AAA_REALTIME_API || 'no') === 'yes';
+  return normalize(readProductEnv(env, 'JUMENTIX_REALTIME_API') || 'no') === 'yes';
 }
 
 export function resolveRealtimeApiProtocol(
   env: NodeJS.ProcessEnv = process.env
 ): RealtimeApiProtocol {
-  const protocol = normalize(env.AAA_REALTIME_API_PROTOCOL) || DEFAULT_REALTIME_PROTOCOL;
+  const raw = readProductEnv(env, 'JUMENTIX_REALTIME_API_PROTOCOL');
+  const protocol = normalize(raw) || DEFAULT_REALTIME_PROTOCOL;
   if (protocol === 'websocket' || protocol === 'grpc') return protocol;
   throw new Error(
-    `Unsupported AAA_REALTIME_API_PROTOCOL "${env.AAA_REALTIME_API_PROTOCOL}". Supported: websocket, grpc.`
+    `Unsupported JUMENTIX_REALTIME_API_PROTOCOL "${raw}". Supported: websocket, grpc.`
   );
 }
 

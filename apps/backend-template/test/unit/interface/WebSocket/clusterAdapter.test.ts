@@ -8,21 +8,21 @@ describe('clusterAdapter', () => {
   it('should enable cluster adapter when configured', () => {
     expect.hasAssertions();
     expect(isClusterSocketIoEnabled({
-      AAA_WEBSOCKET_SOCKETIO_ADAPTER: 'cluster'
+      JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER: 'cluster'
     } as unknown as NodeJS.ProcessEnv)).toBe(true);
   });
 
   it('should disable cluster adapter for other values', () => {
     expect.hasAssertions();
     expect(isClusterSocketIoEnabled({
-      AAA_WEBSOCKET_SOCKETIO_ADAPTER: 'redis-streams'
+      JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER: 'redis-streams'
     } as unknown as NodeJS.ProcessEnv)).toBe(false);
   });
 
   it('should resolve worker count from env', () => {
     expect.hasAssertions();
     expect(resolveWebSocketClusterWorkers({
-      AAA_WEBSOCKET_CLUSTER_WORKERS: '8'
+      JUMENTIX_WEBSOCKET_CLUSTER_WORKERS: '8'
     } as unknown as NodeJS.ProcessEnv)).toBe(8);
   });
 
@@ -31,7 +31,7 @@ describe('clusterAdapter', () => {
     const fallback = Math.max(1, os.cpus().length);
     expect(resolveWebSocketClusterWorkers({} as unknown as NodeJS.ProcessEnv)).toBe(fallback);
     expect(resolveWebSocketClusterWorkers({
-      AAA_WEBSOCKET_CLUSTER_WORKERS: '0'
+      JUMENTIX_WEBSOCKET_CLUSTER_WORKERS: '0'
     } as unknown as NodeJS.ProcessEnv)).toBe(fallback);
   });
 });

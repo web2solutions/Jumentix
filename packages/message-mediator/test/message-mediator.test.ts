@@ -660,7 +660,7 @@ describe('compiling a mediator', () => {
     expect.hasAssertions();
 
     const mediator = await withEnvironment(
-      { AAA_MESSAGE_MEDIATOR_ADAPTER: undefined },
+      { JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: undefined },
       () => compileMessageMediator()
     );
 
@@ -673,7 +673,7 @@ describe('compiling a mediator', () => {
       expect.hasAssertions();
 
       const mediator = await withEnvironment(
-        { AAA_MESSAGE_MEDIATOR_ADAPTER: adapter },
+        { JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: adapter },
         () => compileMessageMediator()
       );
 
@@ -685,11 +685,11 @@ describe('compiling a mediator', () => {
     expect.hasAssertions();
 
     const first = await withEnvironment(
-      { AAA_MESSAGE_MEDIATOR_ADAPTER: 'inmemory' },
+      { JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: 'inmemory' },
       () => compileMessageMediator()
     );
     const second = await withEnvironment(
-      { AAA_MESSAGE_MEDIATOR_ADAPTER: 'inmemory' },
+      { JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: 'inmemory' },
       () => compileMessageMediator()
     );
 
@@ -704,7 +704,7 @@ describe('compiling a mediator', () => {
     expect.hasAssertions();
 
     const mediator = await withEnvironment(
-      { AAA_MESSAGE_MEDIATOR_ADAPTER: adapter, AAA_RABBITMQ_URL: 'amqp://127.0.0.1:5672' },
+      { JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: adapter, JUMENTIX_RABBITMQ_URL: 'amqp://127.0.0.1:5672' },
       () => compileMessageMediator()
     );
 
@@ -720,9 +720,9 @@ describe('compiling a mediator', () => {
     expect.hasAssertions();
 
     await expect(withEnvironment(
-      { AAA_MESSAGE_MEDIATOR_ADAPTER: 'rabbitmq', AAA_RABBITMQ_URL: undefined },
+      { JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: 'rabbitmq', JUMENTIX_RABBITMQ_URL: undefined },
       () => compileMessageMediator()
-    )).rejects.toThrow('AAA_RABBITMQ_URL is required when AAA_MESSAGE_MEDIATOR_ADAPTER=rabbitmq');
+    )).rejects.toThrow('JUMENTIX_RABBITMQ_URL is required when JUMENTIX_MESSAGE_MEDIATOR_ADAPTER=rabbitmq');
   });
 
   it.each(['bullmq', 'bull', 'BullMQ'])('builds the BullMQ adapter for %p', async (
@@ -731,7 +731,7 @@ describe('compiling a mediator', () => {
     expect.hasAssertions();
 
     const mediator = await withEnvironment(
-      { AAA_MESSAGE_MEDIATOR_ADAPTER: adapter },
+      { JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: adapter },
       () => compileMessageMediator()
     );
 
@@ -763,12 +763,12 @@ describe('broker configuration', () => {
   }).options;
 
   const rabbit = (env: Record<string, string | undefined>) => withEnvironment(
-    { AAA_MESSAGE_MEDIATOR_ADAPTER: 'rabbitmq', AAA_RABBITMQ_URL: 'amqp://127.0.0.1:5672', ...env },
+    { JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: 'rabbitmq', JUMENTIX_RABBITMQ_URL: 'amqp://127.0.0.1:5672', ...env },
     () => compileMessageMediator()
   );
 
   const bull = (env: Record<string, string | undefined>) => withEnvironment(
-    { AAA_MESSAGE_MEDIATOR_ADAPTER: 'bullmq', ...env },
+    { JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: 'bullmq', ...env },
     () => compileMessageMediator()
   );
 
@@ -776,9 +776,9 @@ describe('broker configuration', () => {
     expect.hasAssertions();
 
     const mediator = await rabbit({
-      AAA_RABBITMQ_URL: 'amqp://user:pass@broker.internal:5672/vhost',
-      AAA_RABBITMQ_EXCHANGE: 'orders',
-      AAA_RABBITMQ_REQUEST_QUEUE: 'orders.requests'
+      JUMENTIX_RABBITMQ_URL: 'amqp://user:pass@broker.internal:5672/vhost',
+      JUMENTIX_RABBITMQ_EXCHANGE: 'orders',
+      JUMENTIX_RABBITMQ_REQUEST_QUEUE: 'orders.requests'
     });
 
     expect(optionsOf(mediator)).toMatchObject({
@@ -791,7 +791,7 @@ describe('broker configuration', () => {
   it('reads the RabbitMQ prefetch', async () => {
     expect.hasAssertions();
 
-    expect(optionsOf(await rabbit({ AAA_RABBITMQ_PREFETCH: '50' })).prefetch).toBe(50);
+    expect(optionsOf(await rabbit({ JUMENTIX_RABBITMQ_PREFETCH: '50' })).prefetch).toBe(50);
   });
 
   /**
@@ -805,7 +805,7 @@ describe('broker configuration', () => {
     async (value) => {
       expect.hasAssertions();
 
-      expect(optionsOf(await rabbit({ AAA_RABBITMQ_PREFETCH: value })).prefetch).toBe(10);
+      expect(optionsOf(await rabbit({ JUMENTIX_RABBITMQ_PREFETCH: value })).prefetch).toBe(10);
     }
   );
 
@@ -813,12 +813,12 @@ describe('broker configuration', () => {
     expect.hasAssertions();
 
     const mediator = await bull({
-      AAA_BULLMQ_REDIS_HOST: 'redis.internal',
-      AAA_BULLMQ_REDIS_PORT: '6380',
-      AAA_BULLMQ_REDIS_USERNAME: 'worker',
-      AAA_BULLMQ_REDIS_PASSWORD: 'secret',
-      AAA_BULLMQ_REDIS_DB: '3',
-      AAA_BULLMQ_REQUEST_QUEUE: 'jobs'
+      JUMENTIX_BULLMQ_REDIS_HOST: 'redis.internal',
+      JUMENTIX_BULLMQ_REDIS_PORT: '6380',
+      JUMENTIX_BULLMQ_REDIS_USERNAME: 'worker',
+      JUMENTIX_BULLMQ_REDIS_PASSWORD: 'secret',
+      JUMENTIX_BULLMQ_REDIS_DB: '3',
+      JUMENTIX_BULLMQ_REQUEST_QUEUE: 'jobs'
     });
 
     expect(optionsOf(mediator)).toMatchObject({
@@ -838,12 +838,12 @@ describe('broker configuration', () => {
     expect.hasAssertions();
 
     const mediator = await bull({
-      AAA_BULLMQ_REDIS_HOST: undefined,
-      AAA_BULLMQ_REDIS_PORT: undefined,
-      AAA_BULLMQ_REDIS_PASSWORD: undefined,
-      AAA_REDIS_HOST: 'shared.internal',
-      AAA_REDIS_PORT: '6381',
-      AAA_REDIS_PASSWORD: 'shared-secret'
+      JUMENTIX_BULLMQ_REDIS_HOST: undefined,
+      JUMENTIX_BULLMQ_REDIS_PORT: undefined,
+      JUMENTIX_BULLMQ_REDIS_PASSWORD: undefined,
+      JUMENTIX_REDIS_HOST: 'shared.internal',
+      JUMENTIX_REDIS_PORT: '6381',
+      JUMENTIX_REDIS_PASSWORD: 'shared-secret'
     });
 
     expect(optionsOf(mediator).connection).toMatchObject({
@@ -855,10 +855,10 @@ describe('broker configuration', () => {
     expect.hasAssertions();
 
     const mediator = await bull({
-      AAA_BULLMQ_REDIS_HOST: 'bull.internal',
-      AAA_BULLMQ_REDIS_PORT: '6390',
-      AAA_REDIS_HOST: 'shared.internal',
-      AAA_REDIS_PORT: '6381'
+      JUMENTIX_BULLMQ_REDIS_HOST: 'bull.internal',
+      JUMENTIX_BULLMQ_REDIS_PORT: '6390',
+      JUMENTIX_REDIS_HOST: 'shared.internal',
+      JUMENTIX_REDIS_PORT: '6381'
     });
 
     expect(optionsOf(mediator).connection).toMatchObject({
@@ -870,10 +870,10 @@ describe('broker configuration', () => {
     expect.hasAssertions();
 
     const mediator = await bull({
-      AAA_BULLMQ_REDIS_HOST: undefined,
-      AAA_BULLMQ_REDIS_PORT: undefined,
-      AAA_REDIS_HOST: undefined,
-      AAA_REDIS_PORT: undefined
+      JUMENTIX_BULLMQ_REDIS_HOST: undefined,
+      JUMENTIX_BULLMQ_REDIS_PORT: undefined,
+      JUMENTIX_REDIS_HOST: undefined,
+      JUMENTIX_REDIS_PORT: undefined
     });
 
     expect(optionsOf(mediator).connection).toMatchObject({ host: '127.0.0.1', port: 6379 });
@@ -882,7 +882,7 @@ describe('broker configuration', () => {
   it('leaves the database unset when none is configured', async () => {
     expect.hasAssertions();
 
-    const mediator = await bull({ AAA_BULLMQ_REDIS_DB: undefined });
+    const mediator = await bull({ JUMENTIX_BULLMQ_REDIS_DB: undefined });
 
     // Undefined, not 0: the driver's own default is not necessarily database 0,
     // and choosing one here would be a decision made by accident.

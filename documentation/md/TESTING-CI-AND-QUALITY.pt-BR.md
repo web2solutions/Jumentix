@@ -266,8 +266,8 @@ bun run compat:check-node-version
 
 Variáveis ​​comuns usadas por testes e fluxos de trabalho:
 
-- `AAA_JWT_TOKEN_SECRET_KEY`
-- `AAA_REDIS_PASSWORD`
+- `JUMENTIX_JWT_TOKEN_SECRET_KEY`
+- `JUMENTIX_REDIS_PASSWORD`
 - `SONAR_TOKEN` (obrigatório apenas para a etapa de varredura do SonarQube)
 
 Bootstrap do ambiente durante os testes:
@@ -278,7 +278,7 @@ Bootstrap do ambiente durante os testes:
   - `ci`: `.env.ci`, `.env.dev.example`
   - `prod`: `.env.prod`
   - `staging`: `.env.staging`
-- Para segurança do CI, ele define `AAA_JWT_TOKEN_SECRET_KEY=ci_jwt_secret_key` se estiver ausente.
+- Para segurança do CI, ele define `JUMENTIX_JWT_TOKEN_SECRET_KEY=ci_jwt_secret_key` se estiver ausente.
 
 ### Comandos Quality Gate (equivalente local de CI)
 

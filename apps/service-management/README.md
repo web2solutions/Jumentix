@@ -1,13 +1,15 @@
 # Service Management Application
 
-[![Branch Quality Gate](https://github.com/XpertMinds/Jumentix/actions/workflows/test.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/test.yml)
-[![Repository-owned Coverage](https://github.com/XpertMinds/Jumentix/actions/workflows/coverage.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/coverage.yml)
-[![SonarQube Cloud](https://sonarcloud.io/api/project_badges/measure?project=XpertMinds_Jumentix&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=XpertMinds_Jumentix)
-[![Bun](https://img.shields.io/badge/bun-1.3.14-000000?logo=bun&logoColor=white)](https://bun.sh/)
-[![Node Compatibility](https://img.shields.io/badge/node%20compat-22.x-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/XpertMinds/Jumentix/tree/dev.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/XpertMinds/Jumentix/tree/dev)
+[![codecov](https://codecov.io/gh/XpertMinds/Jumentix/branch/dev/graph/badge.svg)](https://codecov.io/gh/XpertMinds/Jumentix)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Jumentix)
+[![Node](https://img.shields.io/badge/node-22.x-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-6BA539?logo=openapiinitiative&logoColor=white)](../../spec/1.0.0.yml)
 [![AsyncAPI](https://img.shields.io/badge/AsyncAPI-3.0-9146FF)](../../spec)
 [![License](https://img.shields.io/github/license/XpertMinds/Jumentix)](../../LICENSE)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=Jumentix)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=bugs)](https://sonarcloud.io/summary/new_code?id=Jumentix)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=Jumentix)
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 ![Made in Brazil with Love](https://img.shields.io/badge/made%20in-%F0%9F%87%A7%F0%9F%87%B7%20Brazil%20with%E2%9D%A4%EF%B8%8F-blue)
 [![#StandWithUkraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://vshymanskyy.github.io/StandWithUkraine)
@@ -48,10 +50,10 @@ Detailed feature usage:
    execution model, cloud provider, static assets profile, and runtime ports.
    - Includes PM2 runtime profile preview for VM deployments.
    - Includes runtime env editor for:
-     - `AAA_HTTP_FRAMEWORK`
-     - `AAA_REALTIME_API`
-     - `AAA_REALTIME_API_PROTOCOL`
-     - `AAA_REALTIME_API_DATABASE_DRIVER`
+     - `JUMENTIX_HTTP_FRAMEWORK`
+     - `JUMENTIX_REALTIME_API`
+     - `JUMENTIX_REALTIME_API_PROTOCOL`
+     - `JUMENTIX_REALTIME_API_DATABASE_DRIVER`
 4. **Deploy Management**
    - Register deployment targets for VMs, dedicated servers, EC2, and function providers.
 
@@ -63,8 +65,8 @@ This application is served via PM2:
 
 Commands:
 
-- `bun run dev:service-management`
-- `bun run dev` (auto-starts service management + REST profile)
+- `pnpm run dev:service-management`
+- `pnpm run dev` (auto-starts service management + REST profile)
 
 ## Runtime Env API
 
@@ -73,10 +75,10 @@ Commands:
 
 ### Editable Keys
 
-- `AAA_HTTP_FRAMEWORK`
-- `AAA_REALTIME_API`
-- `AAA_REALTIME_API_PROTOCOL`
-- `AAA_REALTIME_API_DATABASE_DRIVER`
+- `JUMENTIX_HTTP_FRAMEWORK`
+- `JUMENTIX_REALTIME_API`
+- `JUMENTIX_REALTIME_API_PROTOCOL`
+- `JUMENTIX_REALTIME_API_DATABASE_DRIVER`
 
 ### Environment Mapping
 

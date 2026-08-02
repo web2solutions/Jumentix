@@ -807,7 +807,7 @@ const compilers = buildDatabaseClientCompilers<IDatabaseClient>({
 });
 ```
 
-Then select it like any other driver — `AAA_DATABASE_DRIVER=IndexedDB`, or
+Then select it like any other driver — `JUMENTIX_DATABASE_DRIVER=IndexedDB`, or
 `compileDatabaseClientByDriver('IndexedDB')`. The aliases `indexeddb`,
 `indexed-db` and `cana` all resolve.
 

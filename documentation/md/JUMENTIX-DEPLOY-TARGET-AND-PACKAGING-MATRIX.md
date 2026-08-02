@@ -1,8 +1,8 @@
-# JumentiX Deploy Target and Packaging Matrix
+# Jumentix Deploy Target and Packaging Matrix
 
 ## Objective
 
-Define deploy targets and artifact packaging contracts for backend and frontend services managed by JumentiX.
+Define deploy targets and artifact packaging contracts for backend and frontend services managed by Jumentix.
 
 ## Deploy Target Matrix
 
@@ -31,8 +31,8 @@ Service Management should track, per service:
 - `serviceType`: `restapi`, `websocket+restapi`, `grpc+restapi`, `functions`
 - `deployTarget`: `dedicated-server`, `vm`, `ec2`, `lambda`, `vercel-functions`, `cloudflare-workers`
 - `runtimeProtocol`: `http`, `websocket`, `grpc`
-- `databaseDriver`: selected `AAA_DATABASE_DRIVER`
-- `keyValueDriver`: selected `AAA_KEYVALUESTORAGE_DRIVER`
+- `databaseDriver`: selected `JUMENTIX_DATABASE_DRIVER`
+- `keyValueDriver`: selected `JUMENTIX_KEYVALUESTORAGE_DRIVER`
 - `pm2Profile`: `dev`, `staging`, `production` (for VM-based deployments)
 
 ## Acceptance Criteria

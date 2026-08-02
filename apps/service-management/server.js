@@ -5,19 +5,19 @@ const http = require('http');
 const rootDirectory = __dirname;
 const projectRoot = path.resolve(__dirname, '..');
 const configDirectory = path.join(projectRoot, 'src', 'config');
-const host = process.env.AAA_SERVICE_MANAGEMENT_HOST || '0.0.0.0';
-const port = Number(process.env.AAA_SERVICE_MANAGEMENT_PORT || 3200);
+const host = process.env.JUMENTIX_SERVICE_MANAGEMENT_HOST || '0.0.0.0';
+const port = Number(process.env.JUMENTIX_SERVICE_MANAGEMENT_PORT || 3200);
 const editableRuntimeKeys = [
-  'AAA_HTTP_FRAMEWORK',
-  'AAA_REALTIME_API',
-  'AAA_REALTIME_API_PROTOCOL',
-  'AAA_REALTIME_API_DATABASE_DRIVER'
+  'JUMENTIX_HTTP_FRAMEWORK',
+  'JUMENTIX_REALTIME_API',
+  'JUMENTIX_REALTIME_API_PROTOCOL',
+  'JUMENTIX_REALTIME_API_DATABASE_DRIVER'
 ];
 const defaultsByRuntimeKey = {
-  AAA_HTTP_FRAMEWORK: 'express',
-  AAA_REALTIME_API: 'no',
-  AAA_REALTIME_API_PROTOCOL: 'websocket',
-  AAA_REALTIME_API_DATABASE_DRIVER: 'Mongo'
+  JUMENTIX_HTTP_FRAMEWORK: 'express',
+  JUMENTIX_REALTIME_API: 'no',
+  JUMENTIX_REALTIME_API_PROTOCOL: 'websocket',
+  JUMENTIX_REALTIME_API_DATABASE_DRIVER: 'Mongo'
 };
 const envFileByRuntime = {
   dev: '.env.dev',

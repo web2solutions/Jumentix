@@ -44,7 +44,7 @@ export class WebSocketAPI extends RealtimeAPIBase {
       frameworkName: 'socket-io'
     });
     this.host = config.host || '0.0.0.0';
-    this.port = config.port || Number(process.env.AAA_WEBSOCKET_PORT || (_HTTP_PORT_ + 1));
+    this.port = config.port || Number(process.env.JUMENTIX_WEBSOCKET_PORT || (_HTTP_PORT_ + 1));
     this.path = config.path || '/ws';
     this.configureSocketIo = config.configureSocketIo;
     this.cleanupSocketIo = config.cleanupSocketIo;

@@ -276,13 +276,13 @@ describe('the target folder', () => {
 });
 
 describe('the profile file', () => {
-  it('writes readable JSON under .aaa, creating the folder', () => {
+  it('writes readable JSON under .jumentix, creating the folder', () => {
     expect.hasAssertions();
 
     const dir = scratch('profile');
     writeBootstrapProfile(dir, { serviceType: 'rest' });
 
-    const written = fs.readFileSync(path.join(dir, '.aaa', 'service-profile.json'), 'utf8');
+    const written = fs.readFileSync(path.join(dir, '.jumentix', 'service-profile.json'), 'utf8');
 
     expect(JSON.parse(written)).toStrictEqual({ serviceType: 'rest' });
     // Trailing newline: the file is read by humans and by `cat`.
@@ -445,7 +445,7 @@ describe('the console default', () => {
 
     const { out } = capturingConsole(() => printHelp());
 
-    expect(out.join('\n')).toContain('JumentiX Bootstrap CLI');
+    expect(out.join('\n')).toContain('Jumentix Bootstrap CLI');
   });
 
   it('lists the service types on the console when given no logger', async () => {
@@ -476,7 +476,7 @@ describe('run', () => {
     await run({ argv: ['--help'], log, execute: commands.execute });
 
     expect(commands.calls).toStrictEqual([]);
-    expect(out.join('\n')).toContain('JumentiX Bootstrap CLI');
+    expect(out.join('\n')).toContain('Jumentix Bootstrap CLI');
   });
 
   it('refuses non-interactive mode without a service type', async () => {
@@ -523,11 +523,11 @@ describe('run', () => {
     expect(fs.readFileSync(path.join(target, 'README.md'), 'utf8')).toBe('template\n');
 
     const profile = JSON.parse(
-      fs.readFileSync(path.join(target, '.aaa', 'service-profile.json'), 'utf8')
+      fs.readFileSync(path.join(target, '.jumentix', 'service-profile.json'), 'utf8')
     );
 
     expect(profile).toMatchObject({
-      template: 'aaa-typescript-boilerplate',
+      template: 'jumentix',
       repository: origin,
       branch: 'main',
       serviceType: 'graphql',
@@ -556,7 +556,7 @@ describe('run', () => {
     });
 
     expect(JSON.parse(
-      fs.readFileSync(path.join(workspace, 'svc', '.aaa', 'service-profile.json'), 'utf8')
+      fs.readFileSync(path.join(workspace, 'svc', '.jumentix', 'service-profile.json'), 'utf8')
     ).branch).toBe('release-9');
   });
 
@@ -622,7 +622,7 @@ describe('run', () => {
       path.join(workspace, 'from-prompts')
     ]);
     expect(JSON.parse(
-      fs.readFileSync(path.join(workspace, 'from-prompts', '.aaa', 'service-profile.json'), 'utf8')
+      fs.readFileSync(path.join(workspace, 'from-prompts', '.jumentix', 'service-profile.json'), 'utf8')
     ).serviceType).toBe(SERVICE_TYPES[1].id);
   });
 
@@ -707,7 +707,7 @@ describe('run', () => {
       workingDirectory: workspace
     })).rejects.toThrow(/failed with exit code/);
 
-    expect(fs.existsSync(path.join(workspace, 'svc', '.aaa'))).toBe(false);
+    expect(fs.existsSync(path.join(workspace, 'svc', '.jumentix'))).toBe(false);
   });
 });
 

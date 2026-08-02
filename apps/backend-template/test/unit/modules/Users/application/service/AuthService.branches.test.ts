@@ -51,7 +51,7 @@ describe('auth service extra branches', () => {
     process.env = {
       ...originalEnv,
       NODE_ENV: 'development',
-      AAA_ENABLE_BASIC_AUTH: 'yes'
+      JUMENTIX_ENABLE_BASIC_AUTH: 'yes'
     };
   });
 
@@ -202,7 +202,7 @@ describe('auth service extra branches', () => {
   it('covers production credential masking and basic schema disablement', async () => {
     expect.hasAssertions();
     (process.env as any).NODE_ENV = 'production';
-    process.env.AAA_ENABLE_BASIC_AUTH = 'no';
+    process.env.JUMENTIX_ENABLE_BASIC_AUTH = 'no';
 
     const { service, passwordCryptoService } = setup();
     passwordCryptoService.compare.mockResolvedValueOnce(false);
@@ -246,8 +246,8 @@ describe('auth service extra branches', () => {
 
   it('covers expiration cleanup, lock threshold and clear-failed-login flows', async () => {
     expect.hasAssertions();
-    process.env.AAA_AUTH_MAX_LOGIN_ATTEMPTS = '1';
-    process.env.AAA_AUTH_LOCKOUT_SECONDS = '1';
+    process.env.JUMENTIX_AUTH_MAX_LOGIN_ATTEMPTS = '1';
+    process.env.JUMENTIX_AUTH_LOCKOUT_SECONDS = '1';
     const store = new Map<string, any>();
     const keyValueStorageClient = {
       get: jest.fn().mockImplementation(async (key: string) => ({ result: store.get(key) })),
@@ -283,7 +283,7 @@ describe('auth service extra branches', () => {
 
   it('covers basic-disabled decode path, basic auth branch and update/logout error branches', async () => {
     expect.hasAssertions();
-    process.env.AAA_ENABLE_BASIC_AUTH = 'no';
+    process.env.JUMENTIX_ENABLE_BASIC_AUTH = 'no';
     const { service, userProvider, jwtService } = setup();
 
     const basicToken = Buffer.from('john:secret', 'utf8').toString('base64');
@@ -305,10 +305,10 @@ describe('auth service extra branches', () => {
 
   it('covers fallback env branches and authorization header guards', async () => {
     expect.hasAssertions();
-    process.env.AAA_ENABLE_BASIC_AUTH = '';
-    process.env.AAA_AUTH_MAX_LOGIN_ATTEMPTS = '';
-    process.env.AAA_AUTH_LOGIN_WINDOW_SECONDS = '';
-    process.env.AAA_AUTH_LOCKOUT_SECONDS = '';
+    process.env.JUMENTIX_ENABLE_BASIC_AUTH = '';
+    process.env.JUMENTIX_AUTH_MAX_LOGIN_ATTEMPTS = '';
+    process.env.JUMENTIX_AUTH_LOGIN_WINDOW_SECONDS = '';
+    process.env.JUMENTIX_AUTH_LOCKOUT_SECONDS = '';
     (process.env as any).NODE_ENV = 'prod';
     const { service, passwordCryptoService } = setup();
     passwordCryptoService.compare.mockResolvedValueOnce(false);

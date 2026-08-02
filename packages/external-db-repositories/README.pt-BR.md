@@ -4,7 +4,7 @@ Idioma alvo: Português (Brasil)
 -->
 # @jumentix/external-db-repositories
 
-Adaptadores de conexão de banco de dados externos reutilizáveis ​​para tempos de execução JumentiX.
+Adaptadores de conexão de banco de dados externos reutilizáveis ​​para tempos de execução Jumentix.
 
 ## Exportações
 

@@ -26,11 +26,11 @@ export class JwtService implements IJwtService {
     let valid = null;
     try {
       const verifyOptions: jwt.VerifyOptions = {};
-      if (process.env.AAA_JWT_ISSUER) {
-        verifyOptions.issuer = process.env.AAA_JWT_ISSUER;
+      if (process.env.JUMENTIX_JWT_ISSUER) {
+        verifyOptions.issuer = process.env.JUMENTIX_JWT_ISSUER;
       }
-      if (process.env.AAA_JWT_AUDIENCE) {
-        verifyOptions.audience = process.env.AAA_JWT_AUDIENCE;
+      if (process.env.JUMENTIX_JWT_AUDIENCE) {
+        verifyOptions.audience = process.env.JUMENTIX_JWT_AUDIENCE;
       }
       valid = jwt.verify(token, this.secret, verifyOptions) as ITokenObject;
     } catch (error) {
@@ -44,11 +44,11 @@ export class JwtService implements IJwtService {
       id, username, firstName, avatar, organization, roles
     } = data;
     const signOptions: jwt.SignOptions = { expiresIn: this.expiresIn };
-    if (process.env.AAA_JWT_ISSUER) {
-      signOptions.issuer = process.env.AAA_JWT_ISSUER;
+    if (process.env.JUMENTIX_JWT_ISSUER) {
+      signOptions.issuer = process.env.JUMENTIX_JWT_ISSUER;
     }
-    if (process.env.AAA_JWT_AUDIENCE) {
-      signOptions.audience = process.env.AAA_JWT_AUDIENCE;
+    if (process.env.JUMENTIX_JWT_AUDIENCE) {
+      signOptions.audience = process.env.JUMENTIX_JWT_AUDIENCE;
     }
     const token = jwt.sign(
       {

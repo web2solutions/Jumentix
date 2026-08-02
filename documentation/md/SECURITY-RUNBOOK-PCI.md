@@ -5,7 +5,7 @@ This runbook defines operational procedures for environments handling authentica
 ## 1) Key Rotation
 
 Scope:
-- JWT signing secret (`AAA_JWT_TOKEN_SECRET_KEY`)
+- JWT signing secret (`JUMENTIX_JWT_TOKEN_SECRET_KEY`)
 - Any API credentials used by outbound adapters
 
 Operational steps:

@@ -2,7 +2,7 @@
   "name": "@jumentix/sdk-rest-client",
   "version": "0.0.0",
   "private": true,
-  "description": "JumentiX REST SDK client",
+  "description": "Jumentix REST SDK client",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [

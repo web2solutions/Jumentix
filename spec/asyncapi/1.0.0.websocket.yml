@@ -1,6 +1,6 @@
 asyncapi: 3.0.0
 info:
-  title: ANYWhere, ANYHow, ANYTime WebSocket API
+  title: Jumentix WebSocket API
   version: 1.0.0
   description: AsyncAPI contract for bidirectional WebSocket communication built from OpenAPI 1.0.0 operations.
 defaultContentType: application/json

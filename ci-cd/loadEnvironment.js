@@ -35,13 +35,26 @@ if (selectedFile) {
 }
 
 /*
+ * Temporary dual-read: promote legacy AAA_* values to JUMENTIX_* when the new
+ * key is unset. Remove once external deployments no longer ship AAA_* files.
+ */
+for (const [key, value] of Object.entries(process.env)) {
+  if (!key.startsWith('AAA_') || value === undefined) continue;
+  const nextKey = `JUMENTIX_${key.slice('AAA_'.length)}`;
+  const current = process.env[nextKey];
+  if (current === undefined || current.trim() === '') {
+    process.env[nextKey] = value;
+  }
+}
+
+/*
  * Message mediator: in-memory unless a suite explicitly asks for a broker.
  *
  * This file is loaded only by test runners — `bunfig.toml` `[test] preload` and
  * Jest `setupFiles` — so the override applies to tests and never to a running
  * application.
  *
- * `.env.dev` declares `AAA_MESSAGE_MEDIATOR_ADAPTER=rabbitmq`, which is the
+ * `.env.dev` declares `JUMENTIX_MESSAGE_MEDIATOR_ADAPTER=rabbitmq`, which is the
  * right default for a developer running the app. It is the wrong default for a
  * test suite: the Lambda integration suites inherited it and failed with
  * `ECONNREFUSED 127.0.0.1:5672` on any machine without a broker, while passing
@@ -49,17 +62,17 @@ if (selectedFile) {
  * what happens to be listening on a developer's laptop is not a test — and the
  * failure names a port rather than the reason.
  *
- * `AAA_TEST_MESSAGE_BROKER=1` opts back in, matching the existing
+ * `JUMENTIX_TEST_MESSAGE_BROKER=1` opts back in, matching the existing
  * `RUN_REDIS_INTEGRATION=1` convention for suites that need the real service.
  */
-if (!process.env.AAA_TEST_MESSAGE_BROKER) {
-  process.env.AAA_MESSAGE_MEDIATOR_ADAPTER = 'inmemory';
+if (!process.env.JUMENTIX_TEST_MESSAGE_BROKER) {
+  process.env.JUMENTIX_MESSAGE_MEDIATOR_ADAPTER = 'inmemory';
 }
 
-if (NODE_ENV === 'ci' && !process.env.AAA_JWT_TOKEN_SECRET_KEY) {
-  process.env.AAA_JWT_TOKEN_SECRET_KEY = 'ci_jwt_secret_key';
+if (NODE_ENV === 'ci' && !process.env.JUMENTIX_JWT_TOKEN_SECRET_KEY) {
+  process.env.JUMENTIX_JWT_TOKEN_SECRET_KEY = 'ci_jwt_secret_key';
 }
 
-if (!process.env.AAA_JWT_TOKEN_SECRET_KEY) {
-  process.env.AAA_JWT_TOKEN_SECRET_KEY = 'dev_jwt_secret_key';
+if (!process.env.JUMENTIX_JWT_TOKEN_SECRET_KEY) {
+  process.env.JUMENTIX_JWT_TOKEN_SECRET_KEY = 'dev_jwt_secret_key';
 }

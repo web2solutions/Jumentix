@@ -132,7 +132,7 @@ dangling symlinks the isolated linker leaves in `node_modules/.bun/*/node_module
 
 Before that resolution, this was a **hard blocker for the cutover**, not a cosmetic install warning:
 
-* `hyper-express` is one of the declared supported HTTP frameworks (`AAA_HTTP_FRAMEWORK=hyper-express`).
+* `hyper-express` is one of the declared supported HTTP frameworks (`JUMENTIX_HTTP_FRAMEWORK=hyper-express`).
 * Its integration target owns **21 test files**.
 * JUM-40's acceptance requires every destination-appropriate gate to pass. A framework adapter that cannot be
   imported cannot pass, and declaring the matrix green with that target skipped would be a false green under

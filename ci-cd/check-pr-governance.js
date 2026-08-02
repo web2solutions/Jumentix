@@ -170,10 +170,10 @@ function run(options = {}) {
   const failures = [
     ...validateTemplates(options.rootDir),
     ...validatePullRequest({
-      title: options.title ?? process.env.AAA_PR_TITLE,
-      body: options.body ?? process.env.AAA_PR_BODY,
-      headRef: options.headRef ?? process.env.AAA_PR_HEAD_REF,
-      baseRef: options.baseRef ?? process.env.AAA_PR_BASE_REF
+      title: options.title ?? process.env.JUMENTIX_PR_TITLE,
+      body: options.body ?? process.env.JUMENTIX_PR_BODY,
+      headRef: options.headRef ?? process.env.JUMENTIX_PR_HEAD_REF,
+      baseRef: options.baseRef ?? process.env.JUMENTIX_PR_BASE_REF
     })
   ];
 

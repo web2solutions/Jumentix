@@ -2,11 +2,11 @@
 Arquivo gerado automaticamente a partir de: documentation/md/JUMENTIX-SERVICE-FACTORY-CAPABILITIES-MATRIX.md
 Idioma alvo: Português (Brasil)
 -->
-# Matriz de capacidades da fábrica de serviços JumentiX
+# Matriz de capacidades da fábrica de serviços Jumentix
 
 ## Objetivo
 
-Defina os modos de fábrica de software suportados para JumentiX para que a engenharia e o produto possam escolher um formato de entrega com arquitetura e operações previsíveis.
+Defina os modos de fábrica de software suportados para Jumentix para que a engenharia e o produto possam escolher um formato de entrega com arquitetura e operações previsíveis.
 
 ## Matriz de Capacidade
 

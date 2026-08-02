@@ -178,8 +178,8 @@ bun run ci:smoke
 ```
 
 Se necessário, verifique as chaves ambientais usadas pelos testes:
-- `AAA_REDIS_PASSWORD`
-- `AAA_JWT_TOKEN_SECRET_KEY`
+- `JUMENTIX_REDIS_PASSWORD`
+- `JUMENTIX_JWT_TOKEN_SECRET_KEY`
 
 ## 8) Fluxo rápido de diagnóstico local
 

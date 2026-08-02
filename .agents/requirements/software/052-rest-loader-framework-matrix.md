@@ -6,7 +6,7 @@ REST startup was previously split across many direct framework entrypoints, incr
 
 ## Requirement
 
-1. `start-rest-api` must support selecting all implemented HTTP frameworks via `AAA_HTTP_FRAMEWORK`.
+1. `start-rest-api` must support selecting all implemented HTTP frameworks via `JUMENTIX_HTTP_FRAMEWORK`.
 2. Environment and PM2 startup scripts should prefer loader entrypoints over direct framework file execution.
 3. Default behavior must remain backward compatible (`express` when no env is provided).
 
