@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-02 fix: resolve AsyncAPI gRPC spec independent of the current working directory - Eduardo A.
 - 2026-08-01 chore(registry): resync opencode-primary-001 status to available [JUM-597] (#41) - Eduardo A.
 - 2026-08-01 [JUM-597][Fix] Redis key-value client reports connection failures instead of hanging (#40) - Eduardo A.
 - 2026-08-01 [JUM-586][Testing] Every package owns a real test suite, and every package is measured (#37) - Eduardo A.

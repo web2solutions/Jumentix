@@ -24,7 +24,8 @@ const candidateSpecPaths = (moduleDirectory: string): string[] => {
 };
 
 export const loadSpecs = (
-  basePath?: string
+  basePath?: string,
+  moduleDirectory = __dirname
 ): ILoadedSpecs => {
   if (basePath) {
     const asyncApiGrpcPath = path.join(basePath, ...CANONICAL_SPEC_SEGMENTS);
@@ -33,13 +34,13 @@ export const loadSpecs = (
     };
   }
 
-  const specPath = candidateSpecPaths(__dirname)
+  const specPath = candidateSpecPaths(moduleDirectory)
     .find((candidate) => fs.existsSync(candidate));
 
   if (!specPath) {
     const artifact = CANONICAL_SPEC_SEGMENTS.join('/');
     throw new Error(
-      `Canonical AsyncAPI gRPC spec artifact "${artifact}" was not found from module directory: ${path.resolve(__dirname)}`
+      `Canonical AsyncAPI gRPC spec artifact "${artifact}" was not found from module directory: ${path.resolve(moduleDirectory)}`
     );
   }
 
