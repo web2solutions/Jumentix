@@ -7,15 +7,28 @@ description: "Documentação de Pacotes."
 
 # @jumentix/shared-contracts
 
-Placeholder privado para um futuro workspace distribuível de contratos OpenAPI e AsyncAPI.
+Auxiliares compartilhados de resolução de contratos OpenAPI/AsyncAPI para os pacotes SDK do
+JumentiX.
 
-## Estado atual em `dev`
+## Propósito
 
-O pacote ainda não possui build executável de contratos e todos os scripts informam uma onda de
-migração pendente. Os contratos canônicos versionados continuam sendo:
+Os três pacotes SDK (`sdk-rest-client`, `sdk-websocket-client`, `sdk-grpc-client`) carregam cada um
+um documento de API canônico da árvore `spec/` do repositório. O walk-up que encontra esse documento
+estava copiado em cada pacote, e as cópias divergiam exatamente da forma como código duplicado
+diverge. Este pacote possui a implementação única:
+
+- `loadCanonicalSpec` — faz o parse de um spec canônico a partir de um caminho base explícito ou
+  subindo a partir de um diretório de módulo, falhando com erro descritivo quando nenhum existe.
+- `candidateSpecPaths` — o walk-up que monta as localizações candidatas sob `spec/`.
+
+Os pacotes SDK consomem esses auxiliares e permanecem como wrappers tipados finos sobre o próprio
+artefato (`1.0.0.yml`, `1.0.0.websocket.yml`, `1.0.0.grpc.yml`).
+
+Os contratos canônicos versionados permanecem na raiz do repositório:
 
 - [`spec/1.0.0.yml`](https://github.com/XpertMinds/Jumentix/blob/dev/spec/1.0.0.yml) para OpenAPI.
 - [`spec/asyncapi/1.0.0.websocket.yml`](https://github.com/XpertMinds/Jumentix/blob/dev/spec/asyncapi/1.0.0.websocket.yml) para WebSocket.
 - [`spec/asyncapi/1.0.0.grpc.yml`](https://github.com/XpertMinds/Jumentix/blob/dev/spec/asyncapi/1.0.0.grpc.yml) para gRPC.
 
-Não publique nem importe este placeholder como se ele já fosse proprietário desses contratos.
+Este pacote possui um módulo de origem real e sua própria suíte de testes (Requisito 112) e é medido
+para cobertura.

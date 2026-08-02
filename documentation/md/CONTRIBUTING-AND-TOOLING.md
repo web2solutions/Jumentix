@@ -14,14 +14,14 @@ https://linear.app/jumentix
 4. Run TDD mode:
 
 ```bash
-pnpm run tdd
+bun run tdd
 ```
 
 5. Make your changes.
 6. Commit using:
 
 ```bash
-pnpm run commit
+bun run commit
 ```
 
 This command runs lint/tests and then opens commitizen flow.
@@ -34,45 +34,45 @@ GitHub delivery evidence.
 Lint:
 
 ```bash
-pnpm run lint
+bun run lint
 ```
 
 Lint + fix:
 
 ```bash
-pnpm run lint:fix
+bun run lint:fix
 ```
 
 Update changelog from git history:
 
 ```bash
-pnpm run changelog:update
+bun run changelog:update
 ```
 
 Validate changelog is synced:
 
 ```bash
-pnpm run changelog:check
+bun run changelog:check
 ```
 
 Architecture and contracts:
 
 ```bash
-pnpm run deps:check-cycles
-pnpm run arch:check-boundaries
-pnpm run arch:check-users-legacy-imports
-pnpm run oas:check-routes
+bun run deps:check-cycles
+bun run arch:check-boundaries
+bun run arch:check-users-legacy-imports
+bun run oas:check-routes
 ```
 
 Node runtime check:
 
 ```bash
-pnpm run check-node-version
+bun run check-node-version
 ```
 
 Smoke and CI gate:
 
 ```bash
-pnpm run ci:smoke
-pnpm run ci:gate
+bun run ci:smoke
+bun run ci:gate
 ```

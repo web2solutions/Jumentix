@@ -20,13 +20,13 @@ Use Restify como adaptador REST onde o comportamento de middleware/tempo de exec
 3. Execute:
 
 ```bash
-pnpm run dev:restify
+bun run dev:restify
 ```
 
 ## Produção
 
 ```bash
-pnpm run prod:restify
+bun run prod:restify
 ```
 
 

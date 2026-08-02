@@ -19,7 +19,7 @@ Expor operações de API por meio de manipuladores de funções no estilo Vercel
 3. Execute:
 
 ```bash
-pnpm run dev:vercel-functions
+bun run dev:vercel-functions
 ```
 
 

@@ -181,14 +181,12 @@ partir do lockfile, que lê o manifesto original. Tentar remover uma dependênci
 
 | Sistema | Setup |
 | --- | --- |
-| GitHub Actions | `oven-sh/setup-bun` pinado por SHA de commit; eixo de matriz `bun-version` |
-| CircleCI | `oven/bun:1.3.14`; caches chaveados em `bun.lock` |
+| GitHub Actions | `oven-sh/setup-bun` pinado por SHA de commit; eixo de matriz `bun-version`; caches chaveados em `bun.lock` |
 
-Ambos instalam com `--frozen-lockfile` e validam o guard de toolchain antes de qualquer outra coisa.
+O workflow instala com `--frozen-lockfile` e valida o guard de toolchain antes de qualquer outra coisa.
 
 O registry privado de agentes (`XpertMinds/jumentix-agent-registry`) exige um token com `contents:read`. O
-GitHub Actions injeta `GH_TOKEN: secrets.AGENT_REGISTRY_TOKEN`; o CircleCI exporta o mesmo com uma cadeia de
-precedência `GH_TOKEN` / `GITHUB_TOKEN` / `AGENT_REGISTRY_TOKEN`. Localmente, `gh auth login` basta — a
+GitHub Actions injeta `GH_TOKEN: secrets.AGENT_REGISTRY_TOKEN`. Localmente, `gh auth login` basta; a
 checagem recorre ao `gh auth token`.
 
 ## 9. Runtime de desenvolvimento (PM2)
@@ -266,7 +264,8 @@ token de provedor, lockfile de compatibilidade gerado, webhook ou GitHub App.
 `packages/security-scanner/src/index.js` contém a consulta e a política de risco,
 enquanto `packages/security-scanner/audit.js` é o ponto de entrada do gate.
 
-Codecov e Sonar consomem lcov do Jest e realmente não são afetados pela troca de lockfile.
+Os checks de cobertura pertencentes ao repositório e o Sonar consomem as evidências LCOV/JSON geradas e
+não são afetados pela troca de lockfile.
 
 ## Referências
 

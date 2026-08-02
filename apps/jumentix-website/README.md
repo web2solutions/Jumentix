@@ -23,13 +23,13 @@ This app uses the architecture baseline from the Vercel template:
 ## Run
 
 ```bash
-pnpm --filter @jumentix/website dev
+bun run --filter @jumentix/website dev
 ```
 
 ## Build
 
 ```bash
-pnpm --filter @jumentix/website build
+bun run --filter @jumentix/website build
 ```
 
 ## Planning Artifacts

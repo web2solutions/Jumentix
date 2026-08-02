@@ -4,14 +4,28 @@
 
 ## All Changes
 
+- 2026-08-02 docs: reconcile documentation drift - Eduardo A.
+- 2026-08-02 [JUM-581][Testing] Cana runs in a real browser; the IndexedDB fake is deleted (#38) - Eduardo A.
+- 2026-08-02 [JUM-581][Testing] Merge origin/dev into cana browser coverage PR - Eduardo Almeida
+- 2026-08-02 [JUM-594][Fix] Resolve REST and WebSocket SDK spec paths independent of cwd (#45) - Eduardo A.
+- 2026-08-02 refactor: share canonical spec resolution via shared-contracts - Eduardo A.
+- 2026-08-02 [JUM-581][Testing] Classify Cypress helpers as tests; cover cana public barrel - Eduardo Almeida
 - 2026-08-02 test: cover the explicit-path branch of the WebSocket spec loader - Eduardo A.
+- 2026-08-02 [JUM-581][CI] Decorate PR #38 from Sonar workflow_dispatch with pullrequest key - Eduardo Almeida
+- 2026-08-02 [JUM-581][CI] Retrigger pull_request checks for browser LCOV path fix - Eduardo Almeida
 - 2026-08-02 fix: resolve REST and WebSocket SDK spec paths independent of cwd - Eduardo A.
+- 2026-08-02 [JUM-581][Testing] Emit browser LCOV with repository-relative paths for Sonar - Eduardo Almeida
+- 2026-08-02 [JUM-594][Release] Fix loadSpecs cwd resolution to unblock the dev-to-main promotion (#43) - Eduardo A.
+- 2026-08-02 [JUM-581][Security] Emit browser LCOV without missing deps; drop hard-coded smoke passwords - Eduardo Almeida
+- 2026-08-02 [JUM-581][Security] Resolve Sonar PATH vulnerability and unhang coverage with forceExit - Eduardo Almeida
 - 2026-08-02 test: cover the missing-spec failure branch of loadSpecs - Eduardo A.
 - 2026-08-02 fix: resolve AsyncAPI gRPC spec independent of the current working directory - Eduardo A.
-- 2026-08-01 [JUM-581][Testing] Measure Redis and broker adapters at 99% without istanbul ignore - Eduardo Almeida
-- 2026-08-01 [JUM-581][Testing] Run cana in a real browser; delete fake-indexeddb - Eduardo Almeida
+- 2026-08-02 [JUM-581][CI] Run Sonar coverage against the same real Redis/brokers/browser as the gate - Eduardo Almeida
+- 2026-08-02 [JUM-581][Testing] Merge origin/dev; keep Redis reconnect fix without istanbul ignore - Eduardo Almeida
+- 2026-08-02 [JUM-581][Testing] Measure Redis and broker adapters at 99% without istanbul ignore - Eduardo Almeida
 - 2026-08-01 chore(registry): resync opencode-primary-001 status to available [JUM-597] (#41) - Eduardo A.
 - 2026-08-01 [JUM-597][Fix] Redis key-value client reports connection failures instead of hanging (#40) - Eduardo A.
+- 2026-08-01 [JUM-581][Testing] Run cana in a real browser; delete fake-indexeddb - Eduardo Almeida
 - 2026-08-01 [JUM-586][Testing] Every package owns a real test suite, and every package is measured (#37) - Eduardo A.
 - 2026-08-01 [JUM-595][Docs] Agent operating requirements 114–119 (worktree, tests, Docker, API-first) (#39) - Eduardo A.
 - 2026-08-01 chore: sync release registry [JUM-594] (#35) - Eduardo A.

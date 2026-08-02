@@ -16,7 +16,7 @@ Etapas operacionais:
 1. Gere um novo segredo no gerenciador de segredos de destino.
 2. Atualize as variáveis ​​de ambiente em `staging`.
 3. Reinicie o tempo de execução via PM2 (`staging`) e execute verificações de fumaça:
-   - `pnpm execute ci:security-smoke`
+   - `bun run ci:security-smoke`
    - verificações de integridade de autenticação de endpoint.
 4. Promova para `produção` durante a janela de manutenção.
 5. Invalidar sessões comprometidas por estratégia de revogação e onda de logout controlada.

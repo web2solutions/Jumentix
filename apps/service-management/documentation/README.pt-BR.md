@@ -34,24 +34,24 @@ Idioma alvo: Português (Brasil)
 Execute o Service Management como uma ferramenta autônoma:
 
 ```bash
-pnpm run dev:service-management
+bun run dev:service-management
 ```
 
 Execute o perfil local completo (Gerenciamento de Serviços + perfil REST via PM2):
 
 ```bash
-pnpm run dev
+bun run dev
 ```
 
 ## Correr
 
 ```bash
-pnpm run dev:service-management
+bun run dev:service-management
 ```
 
 ou perfil de desenvolvimento completo:
 
 ```bash
-pnpm run dev
+bun run dev
 ```
 

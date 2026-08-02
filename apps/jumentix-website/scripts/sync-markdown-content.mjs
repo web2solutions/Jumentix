@@ -286,9 +286,9 @@ ${portuguese
     : 'Use this portal to learn the concepts, build applications, choose adapters, and operate Jumentix packages.'}
 
 \`\`\`bash
-pnpm install
-pnpm run cli
-pnpm run dev:express
+bun install
+bun run cli
+bun run dev:express
 \`\`\`
 
 ## ${portuguese ? 'Explore a documentação' : 'Explore the documentation'}

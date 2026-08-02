@@ -1,6 +1,6 @@
-# Agent Operating Requirements 114–119
+# Agent Operating Requirements 114–121
 
-Canonical constraints added 2026-08-01 under Linear [JUM-595](https://linear.app/jumentix/issue/JUM-595).
+Canonical constraints added 2026-08-01 under Linear [JUM-595](https://linear.app/jumentix/issue/JUM-595), with `120` and `121` added by project-owner decision on 2026-08-02.
 
 | ID | Title | One-line rule |
 | --- | --- | --- |
@@ -10,6 +10,8 @@ Canonical constraints added 2026-08-01 under Linear [JUM-595](https://linear.app
 | `117` | Feature documentation | Every new feature updates software docs and adds feature documentation (EN/PT) in the same delivery. |
 | `118` | Docker smoke/integration | Smoke and integration suites start real services with Docker and exercise their declared surface; silent skips are not green. |
 | `119` | API-first orchestration | Prefer APIs (or official CLIs) over browser/app automation for Linear, GitHub, and other services; GitHub must always use `gh`. |
+| `120` | Linear agent assignment visibility | Linear Issues and Projects/Epics must identify the active agent assignment and stay synchronized with the canonical Agent Registry. |
+| `121` | Coordinated agent delivery awareness | Registered agents must refresh sibling-agent progress, blockers, branches, PRs, and Project Updates before starting or resuming work. |
 
 ## Requirement files
 
@@ -19,10 +21,12 @@ Canonical constraints added 2026-08-01 under Linear [JUM-595](https://linear.app
 - `.agents/requirements/117-feature-documentation-on-new-features.md`
 - `.agents/requirements/118-smoke-integration-docker-real-services.md`
 - `.agents/requirements/119-api-first-service-orchestration-github-gh.md`
+- `.agents/requirements/120-linear-agent-assignment-visibility.md`
+- `.agents/requirements/121-registered-agent-coordinated-delivery-awareness.md`
 
 ## Related existing requirements
 
-- `099` (strengthened by `116`), `025`/`076` (strengthened by `117`), `046`/`047` (strengthened by `118`), `109`/`112` (aligned with `115`), `078`/`081`/`089` (aligned with `114`), `081`/`095` (strengthened by `119`).
+- `099` (strengthened by `116`), `025`/`076` (strengthened by `117`), `046`/`047` (strengthened by `118`), `109`/`112` (aligned with `115`), `078`/`081`/`089` (aligned with `114`), `081`/`095` (strengthened by `119`), `078`/`089`/`090`/`095`/`097`/`102` (strengthened by `120`), and `077`/`078`/`089`/`090`/`101`/`102`/`116` (strengthened by `121`).
 
 ## Operator note for Requirement 114
 
@@ -40,3 +44,11 @@ Other hosts still require a fresh in-band confirmation.
 ## Operator note for Requirement 119
 
 Do not drive Linear or GitHub through the browser when the Linear GraphQL API or `gh` can complete the operation. Fall back to UI only when the API path is unavailable or the operator explicitly requires a human UI step, and record that blocker in the Linear Project Update.
+
+## Operator note for Requirement 120
+
+Before implementation starts, the Linear Issue and its Project/Epic must show which registered agent owns the task. The agent assignment in Linear, the canonical Agent Registry, and the local mirror must agree. Assignment changes are material progress and must be recorded through the API-first path.
+
+## Operator note for Requirement 121
+
+Agents are not isolated workers. Before starting or resuming work, read sibling-agent activity in the registry, Linear Project Updates, related Issues, active branches, and open PRs. If another registered agent owns overlapping scope, coordinate the handoff, dependency, or scope split before editing files.

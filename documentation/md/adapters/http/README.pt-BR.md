@@ -11,7 +11,6 @@ Use este índice para escolher o adaptador HTTP/tempo de execução que deseja u
 - [Adaptador Expresso](./EXPRESS.md)
 - [Adaptador Fastify](./FASTIFY.md)
 - [Adaptador Restify](./RESTIFY.md)
-- [Adaptador Hyper-Express](./HYPER-EXPRESS.md)
 - [Adaptador AWS Lambda](./AWS-LAMBDA.md)
 - [Adaptador Cloudflare Workers](./CLOUDFLARE-WORKERS.md)
 - [Adaptador de funções Vercel](./VERCEL-FUNCTIONS.md)
@@ -21,5 +20,4 @@ Use este índice para escolher o adaptador HTTP/tempo de execução que deseja u
 - [Adaptador Derby.js](./DERBY-JS.md)
 - [Adaptador Adonis.js](./ADONIS-JS.md)
 - [Adaptador Total.js](./TOTAL-JS.md)
-
 

@@ -19,7 +19,7 @@ Exponha as operações da API por meio do adaptador de tempo de execução Feath
 3. Execute:
 
 ```bash
-pnpm run dev:feathers
+bun run dev:feathers
 ```
 
 
