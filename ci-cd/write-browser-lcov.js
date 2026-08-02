@@ -36,14 +36,32 @@ function lineHitsFromFile(fileCoverage) {
   return hits;
 }
 
+/**
+ * LCOV `SF:` path relative to the repository root.
+ *
+ * Jest's lcov.info uses repository-relative paths. Absolute CI paths
+ * (`/home/runner/work/...`) do not match Sonar's source keys, so cana looked
+ * uncovered on new code and the quality gate reported ~58% Coverage on New
+ * Code despite a 98%+ browser report.
+ */
+function toSonarSourcePath(filePath, root = ROOT) {
+  const absolute = path.resolve(filePath);
+  const relative = path.relative(root, absolute);
+  if (relative.startsWith('..') || path.isAbsolute(relative)) {
+    return absolute.split(path.sep).join('/');
+  }
+  return relative.split(path.sep).join('/');
+}
+
 /** One LCOV record for a single instrumented file. */
 function toLcovRecord(fileCoverage) {
-  const lines = [];
-  lines.push('TN:');
-  lines.push(`SF:${fileCoverage.path}`);
-
   const { fnMap, f, branchMap, b } = fileCoverage;
   const functionIds = Object.keys(fnMap || {});
+  const lines = [
+    'TN:',
+    `SF:${toSonarSourcePath(fileCoverage.path)}`
+  ];
+
   for (const id of functionIds) {
     const fn = fnMap[id];
     const name = fn.name || `(anonymous_${id})`;
@@ -54,31 +72,33 @@ function toLcovRecord(fileCoverage) {
     const name = fnMap[id].name || `(anonymous_${id})`;
     lines.push(`FNDA:${f[id] || 0},${name}`);
   }
-  lines.push(`FNF:${functionIds.length}`);
-  lines.push(`FNH:${functionIds.filter((id) => (f[id] || 0) > 0).length}`);
+  lines.push(
+    `FNF:${functionIds.length}`,
+    `FNH:${functionIds.filter((id) => (f[id] || 0) > 0).length}`
+  );
 
   let branchFound = 0;
   let branchHit = 0;
+  const branchLines = [];
   for (const [id, locations] of Object.entries(b || {})) {
     const meta = branchMap[id];
     const line = meta?.loc?.start?.line || 0;
     locations.forEach((count, index) => {
       branchFound += 1;
       if (count > 0) branchHit += 1;
-      lines.push(`BRDA:${line},${id},${index},${count}`);
+      branchLines.push(`BRDA:${line},${id},${index},${count}`);
     });
   }
-  lines.push(`BRF:${branchFound}`);
-  lines.push(`BRH:${branchHit}`);
+  lines.push(...branchLines, `BRF:${branchFound}`, `BRH:${branchHit}`);
 
   const lineHits = lineHitsFromFile(fileCoverage);
   const sortedLines = [...lineHits.keys()].sort((left, right) => left - right);
-  for (const line of sortedLines) {
-    lines.push(`DA:${line},${lineHits.get(line)}`);
-  }
-  lines.push(`LF:${sortedLines.length}`);
-  lines.push(`LH:${sortedLines.filter((line) => (lineHits.get(line) || 0) > 0).length}`);
-  lines.push('end_of_record');
+  lines.push(
+    ...sortedLines.map((line) => `DA:${line},${lineHits.get(line)}`),
+    `LF:${sortedLines.length}`,
+    `LH:${sortedLines.filter((line) => (lineHits.get(line) || 0) > 0).length}`,
+    'end_of_record'
+  );
   return lines.join('\n');
 }
 
@@ -110,4 +130,4 @@ if (isEntryPoint(module)) {
   process.exit(run());
 }
 
-module.exports = { run, toLcovRecord, lineHitsFromFile };
+module.exports = { run, toLcovRecord, lineHitsFromFile, toSonarSourcePath };
