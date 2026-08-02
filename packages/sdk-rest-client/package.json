@@ -10,14 +10,11 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "bun run typecheck",
+    "test": "bun test --isolate test",
     "lint": "echo \"sdk-rest-client: lint managed by root workspace\"",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "yaml": "^2.5.1"
-  },
-  "jumentix": {
-    "testSurface": "typecheck-only"
   }
 }

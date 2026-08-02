@@ -27,9 +27,13 @@ function fixture(change?: (root: string) => void): string {
 
 function run(root: string): { code: number; output: string } {
   try {
-    return { code: 0, output: execFileSync('bun', ['ci-cd/check-third-party-review.js'], {
-      cwd: root, encoding: 'utf8', stdio: 'pipe'
-    }) };
+    const output = execFileSync('bun', ['ci-cd/check-third-party-review.js'], {
+      cwd: root,
+      encoding: 'utf8',
+      stdio: 'pipe'
+    });
+
+    return { code: 0, output };
   } catch (error) {
     const failure = error as { status?: number; stdout?: string; stderr?: string };
     return { code: failure.status ?? 1, output: `${failure.stdout ?? ''}${failure.stderr ?? ''}` };
@@ -38,12 +42,16 @@ function run(root: string): { code: number; output: string } {
 
 describe('third-party review contract', () => {
   it('passes for pinned, least-privilege, fail-closed scanners', () => {
+    expect.hasAssertions();
+
     const result = run(repoRoot);
     expect(result.code).toBe(0);
     expect(result.output).toContain('Gitleaks, Semgrep, and Reviewdog');
   });
 
   it('fails when PR review permission is removed', () => {
+    expect.hasAssertions();
+
     const root = fixture((directory) => {
       const file = path.join(directory, contracts[0]);
       fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('pull-requests: write', 'pull-requests: read'));
@@ -52,6 +60,8 @@ describe('third-party review contract', () => {
   });
 
   it('fails when an action uses a mutable version tag', () => {
+    expect.hasAssertions();
+
     const root = fixture((directory) => {
       const file = path.join(directory, contracts[0]);
       fs.appendFileSync(file, '\n# uses: actions/checkout@v4\n');
@@ -60,6 +70,8 @@ describe('third-party review contract', () => {
   });
 
   it('fails when checksum verification is removed', () => {
+    expect.hasAssertions();
+
     const root = fixture((directory) => {
       const file = path.join(directory, contracts[1]);
       fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('sha256sum --check --status', 'true'));
@@ -68,6 +80,8 @@ describe('third-party review contract', () => {
   });
 
   it('fails when terminal scanner enforcement is removed', () => {
+    expect.hasAssertions();
+
     const root = fixture((directory) => {
       const file = path.join(directory, contracts[0]);
       fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('Enforce scanner outcomes', 'Ignore scanner outcomes'));

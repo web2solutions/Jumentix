@@ -45,6 +45,8 @@ const pinnedBunVersion = fs.readFileSync(path.join(repoRoot, '.bun-version'), 'u
 describe('rEADME badges', () => {
   it('shows repository-owned workflows for both long-lived branches', () => {
     expect.hasAssertions();
+
+    expect.hasAssertions();
     for (const workflow of ['test.yml', 'coverage.yml', 'third-party-review.yml']) {
       expect(readme).toContain(`actions/workflows/${workflow}/badge.svg?branch=dev`);
       expect(readme).toContain(`actions/workflows/${workflow}/badge.svg?branch=main`);
@@ -52,6 +54,8 @@ describe('rEADME badges', () => {
   });
 
   it('points SonarCloud at the project key the scanner actually reports to', () => {
+    expect.hasAssertions();
+
     expect.hasAssertions();
     // The failure this catches: a badge that renders green for a project nobody
     // is scanning.
@@ -64,6 +68,8 @@ describe('rEADME badges', () => {
 
   it('carries no badge for a retired service', () => {
     expect.hasAssertions();
+
+    expect.hasAssertions();
     // Paid/unreliable providers were retired in favour of repository-owned gates.
     expect(badges).not.toContain('snyk.io');
     expect(badges).not.toContain('circleci.com');
@@ -71,12 +77,16 @@ describe('rEADME badges', () => {
   });
 
   it('restores the coverage map with every enforced threshold', () => {
+    expect.hasAssertions();
+
     expect(readme).toContain('## Coverage and CI Map');
     expect(readme).toContain('| ≥ 99% | ≥ 99% | ≥ 99% | ≥ 90% | ≥ 99% |');
     expect(readme).toContain('Istanbul JSON and LCOV evidence');
   });
 
   it('names Bun as the runtime at the pinned version', () => {
+    expect.hasAssertions();
+
     expect.hasAssertions();
     // Requirement 096: Bun is the sole internal runtime. A badge claiming Node
     // misstates what the repository runs on.
@@ -85,6 +95,8 @@ describe('rEADME badges', () => {
 
   it('presents Node as a compatibility target, not as the runtime', () => {
     expect.hasAssertions();
+
+    expect.hasAssertions();
     // Node survives as a declared consumer-facing compatibility target
     // (Requirement 096 §4), which is a materially different claim.
     expect(badges).toContain('node%20compat');
@@ -92,6 +104,8 @@ describe('rEADME badges', () => {
   });
 
   it('keeps the badge list free of dead links to the deprecated origin', () => {
+    expect.hasAssertions();
+
     expect.hasAssertions();
     // Requirement 103: `web2solutions` is deprecated and read-only.
     expect(badges).not.toContain('web2solutions');
@@ -162,6 +176,8 @@ describe('web framework badges', () => {
 
   it('badges every adapter directory that exists', () => {
     expect.hasAssertions();
+
+    expect.hasAssertions();
     // Catches the omission a hand-written list invites: a new adapter lands and
     // nobody remembers the README.
     const onDisk = fs.readdirSync(adaptersDir, { withFileTypes: true })
@@ -173,6 +189,8 @@ describe('web framework badges', () => {
   });
 
   it('declares the frameworks that are installed as real dependencies', () => {
+    expect.hasAssertions();
+
     expect.hasAssertions();
     // Express, Fastify and Restify are declared and installed. Six other adapters
     // reference their frameworks but are tracked as gaps under Requirement 108 —
@@ -187,6 +205,8 @@ describe('web framework badges', () => {
 
   it('has a dev script for every badged adapter', () => {
     expect.hasAssertions();
+
+    expect.hasAssertions();
     // What makes "supported" checkable: each badge corresponds to something a
     // developer can actually run.
     const runnable = ADAPTERS
@@ -197,6 +217,8 @@ describe('web framework badges', () => {
   });
 
   it('carries no badge for hyper-express, which was dropped', () => {
+    expect.hasAssertions();
+
     expect.hasAssertions();
     // Removed during the Bun migration: uWebSockets.js is not an N-API module,
     // so hyper-express cannot run on Bun at all.
@@ -241,10 +263,14 @@ describe('readme badge parity across languages (Requirement 076)', () => {
 
   it('badges the same services in both languages', () => {
     expect.hasAssertions();
+
+    expect.hasAssertions();
     expect(targets(ptBadges)).toStrictEqual(targets(badges));
   });
 
   it('carries the current SonarCloud project key in the translation too', () => {
+    expect.hasAssertions();
+
     expect.hasAssertions();
     // The specific regression: this suite existed and passed while the PT-BR
     // badges pointed at another project's quality gate.
@@ -253,6 +279,8 @@ describe('readme badge parity across languages (Requirement 076)', () => {
   });
 
   it('does not translate Node, Bun, or framework names', () => {
+    expect.hasAssertions();
+
     expect.hasAssertions();
     // The previous translation rendered Node as "Nó". Product names are proper
     // nouns; translating them makes the badge describe nothing.

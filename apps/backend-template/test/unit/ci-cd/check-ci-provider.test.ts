@@ -40,17 +40,23 @@ function fixture(change?: (directory: string) => void): string {
 
 describe('check-ci-provider', () => {
   it('passes against the real repository', () => {
+    expect.hasAssertions();
+
     const result = run(repoRoot);
     expect(result.code).toBe(0);
     expect(result.output).toContain('repository-owned GitHub workflows');
   });
 
   it('fails when the repository-owned coverage workflow is absent', () => {
+    expect.hasAssertions();
+
     const directory = fixture((root) => fs.unlinkSync(path.join(root, '.github/workflows/coverage.yml')));
     expect(run(directory).output).toContain('Missing required GitHub Actions workflow');
   });
 
   it('fails when patch coverage enforcement is removed', () => {
+    expect.hasAssertions();
+
     const directory = fixture((root) => {
       const file = path.join(root, '.github/workflows/coverage.yml');
       fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('coverage:patch', 'coverage:removed'));
@@ -59,6 +65,8 @@ describe('check-ci-provider', () => {
   });
 
   it('fails when an action is not pinned to an immutable commit', () => {
+    expect.hasAssertions();
+
     const directory = fixture((root) => {
       const file = path.join(root, '.github/workflows/coverage.yml');
       fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace(/upload-artifact@[0-9a-f]{40}/, 'upload-artifact@v4'));
@@ -67,14 +75,18 @@ describe('check-ci-provider', () => {
   });
 
   it('fails when least-privilege permissions are removed', () => {
+    expect.hasAssertions();
+
     const directory = fixture((root) => {
       const file = path.join(root, '.github/workflows/test.yml');
-      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace(/permissions:\n  contents: read\n/, ''));
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace(/permissions:\n {2}contents: read\n/, ''));
     });
     expect(run(directory).output).toContain('read-only contents permission');
   });
 
   it.each(['.circleci/config.yml', 'codecov.yml'])('fails when retired contract %s returns', (retired) => {
+    expect.hasAssertions();
+
     const directory = fixture((root) => {
       const file = path.join(root, retired);
       fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -86,14 +98,20 @@ describe('check-ci-provider', () => {
 
 describe('requirement 113 is registered and enforced', () => {
   it('exists and supersedes the provider-specific requirements', () => {
-    const text = fs.readFileSync(
-      path.join(repoRoot, '.agents/requirements/113-private-free-repository-owned-ci.md'), 'utf8'
+    expect.hasAssertions();
+
+    const requirement = path.join(
+      repoRoot,
+      '.agents/requirements/113-private-free-repository-owned-ci.md'
     );
+    const text = fs.readFileSync(requirement, 'utf8');
     expect(text).toContain('014');
     expect(text).toContain('107');
   });
 
   it('is enforced by the canonical gate', () => {
+    expect.hasAssertions();
+
     const manifest = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf8')) as {
       scripts: Record<string, string>;
     };

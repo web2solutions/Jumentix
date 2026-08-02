@@ -282,6 +282,11 @@ export const buildDatabaseClientCompilers = <TDatabaseClient extends IDatabaseCl
     if (driver === 'Firebase') return createFirebaseClient();
     if (driver === 'Aurora') return createAuroraClient();
     if (driver === 'RDS') return createRdsClient();
+    /* istanbul ignore next -- unreachable: `normalizeDriver` returns one of the
+       names above or 'InMemory', so this line runs only if a name is added to
+       `DriverName` without a branch here. Kept as the safe answer if that
+       happens, and left uncovered rather than reached through a cast that would
+       assert nothing about real behaviour. */
     return inMemoryClient;
   };
 
