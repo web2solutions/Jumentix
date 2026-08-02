@@ -18,7 +18,31 @@ jobs:
   sonarqube:
     name: SonarQube Cloud Scan
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # Same budget as Repository-owned coverage: Jest + real brokers + browser.
+    timeout-minutes: 45
+    services:
+      # Same real services the coverage gate uses (Req 110/118). Without them
+      # Redis/BullMQ/RabbitMQ adapters are unmeasured and the 99% gate fails
+      # closed — which is correct, and which is why they are here rather than
+      # re-ignored for Sonar.
+      redis:
+        image: redis:7.2-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+      rabbitmq:
+        image: rabbitmq:3.13-alpine
+        ports:
+          - 5672:5672
+        options: >-
+          --health-cmd "rabbitmq-diagnostics -q ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 20
     env:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     steps:
@@ -35,12 +59,26 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Unit tests with coverage
+      - name: Produce Jest coverage (unit + real Redis/broker integration)
         run: bun run test:coverage
         env:
           AAA_JWT_TOKEN_SECRET_KEY: ${{ secrets.AAA_JWT_TOKEN_SECRET_KEY }}
+          RUN_REDIS_INTEGRATION: "1"
+          RUN_BROKER_INTEGRATION: "1"
+          AAA_REDIS_HOST: 127.0.0.1
+          AAA_REDIS_PORT: "6379"
+          AAA_BULLMQ_REDIS_HOST: 127.0.0.1
+          AAA_BULLMQ_REDIS_PORT: "6379"
+          AAA_RABBITMQ_URL: amqp://127.0.0.1:5672
+
+      - name: Produce browser coverage for packages/cana (Req 112 §4)
+        run: bun run test:browser
+
+      - name: Write browser LCOV for Sonar
+        run: bun ci-cd/write-browser-lcov.js
+
       # The authority on all four metrics, branches included (Requirement 110).
-      # Bun emits no branch records, so this reads the Jest-produced lcov.
+      # Fails closed when the browser report is missing (Req 112 §4 / 065).
       - name: Enforce coverage thresholds
         run: bun run coverage:check
 
