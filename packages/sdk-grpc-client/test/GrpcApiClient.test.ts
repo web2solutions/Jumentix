@@ -252,7 +252,8 @@ describe('loadSpecs', () => {
   it('reads the repository spec when given no directory', () => {
     expect.hasAssertions();
 
-    // The default argument: `process.cwd()/spec`.
+    // The default argument: the canonical spec resolved from the module
+    // directory, independent of the current working directory.
     expect(loadSpecs().asyncApiGrpc).toBeDefined();
   });
 
@@ -260,6 +261,15 @@ describe('loadSpecs', () => {
     expect.hasAssertions();
 
     expect(() => loadSpecs(scratch('empty'))).toThrow(/ENOENT/);
+  });
+
+  it('fails when no canonical spec exists above the module directory', () => {
+    expect.hasAssertions();
+
+    // An isolated directory under the OS temp root has no `spec/asyncapi`
+    // anywhere above it, so the default walk-up finds nothing.
+    expect(() => loadSpecs(undefined, scratch('nothing')))
+      .toThrow(/1\.0\.0\.grpc\.yml/);
   });
 });
 
