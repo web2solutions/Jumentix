@@ -1,6 +1,4 @@
-import fs from 'fs';
-import path from 'path';
-import YAML from 'yaml';
+import { loadCanonicalSpec } from '@jumentix/shared-contracts';
 
 export interface ILoadedSpecs {
   asyncApiGrpc: Record<string, any>;
@@ -9,42 +7,14 @@ export interface ILoadedSpecs {
 const SPEC_FILE_NAME = '1.0.0.grpc.yml';
 const CANONICAL_SPEC_SEGMENTS = ['asyncapi', SPEC_FILE_NAME];
 
-const candidateSpecPaths = (moduleDirectory: string): string[] => {
-  const candidates: string[] = [];
-  let directory = path.resolve(moduleDirectory);
-  let previousDirectory: string | undefined;
-
-  while (directory !== previousDirectory) {
-    candidates.push(path.join(directory, 'spec', ...CANONICAL_SPEC_SEGMENTS));
-    previousDirectory = directory;
-    directory = path.dirname(directory);
-  }
-
-  return candidates;
-};
-
 export const loadSpecs = (
   basePath?: string,
   moduleDirectory = __dirname
-): ILoadedSpecs => {
-  if (basePath) {
-    const asyncApiGrpcPath = path.join(basePath, ...CANONICAL_SPEC_SEGMENTS);
-    return {
-      asyncApiGrpc: YAML.parse(fs.readFileSync(asyncApiGrpcPath, 'utf8'))
-    };
-  }
-
-  const specPath = candidateSpecPaths(moduleDirectory)
-    .find((candidate) => fs.existsSync(candidate));
-
-  if (!specPath) {
-    const artifact = CANONICAL_SPEC_SEGMENTS.join('/');
-    throw new Error(
-      `Canonical AsyncAPI gRPC spec artifact "${artifact}" was not found from module directory: ${path.resolve(moduleDirectory)}`
-    );
-  }
-
-  return {
-    asyncApiGrpc: YAML.parse(fs.readFileSync(specPath, 'utf8'))
-  };
-};
+): ILoadedSpecs => ({
+  asyncApiGrpc: loadCanonicalSpec({
+    basePath,
+    moduleDirectory,
+    specSegments: CANONICAL_SPEC_SEGMENTS,
+    artifactLabel: 'AsyncAPI gRPC spec'
+  })
+});

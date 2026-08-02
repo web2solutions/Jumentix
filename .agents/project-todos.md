@@ -705,7 +705,7 @@ Goal:
       - `config-ts` (shared tsconfig presets)
       - `config-eslint` (shared lint presets)
       - `config-jest` (shared test presets)
-      - `shared-contracts` (optional: OpenAPI/AsyncAPI contract helpers/types)
+      - `shared-contracts` (OpenAPI/AsyncAPI contract helpers/types; active — canonical-spec resolution helpers)
     - `tooling/`
       - CI scripts, release scripts, changelog/quality scripts
     - `docs/` (or keep existing `documentation/` with workspace-aware index)
