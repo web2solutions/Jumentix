@@ -39,6 +39,8 @@ For teams and product owners using Jumentix to build software:
 For engineers maintaining and evolving Jumentix:
 
 - [Creator Documentation Index](./creators/README.md)
+- [Agent Operating Requirements 114–118](./md/AGENT-OPERATING-REQUIREMENTS-114-118.md)
+  ([pt-BR](./md/AGENT-OPERATING-REQUIREMENTS-114-118.pt-BR.md))
 
 ## Component Technical Hubs
 

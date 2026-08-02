@@ -29,9 +29,11 @@ This repository supports Grok as an official engineering agent.
     documentation inventory, every file in `.agents/requirements/`, `.agents/NFR-REGISTRY.md`,
     and the canonical specification index. All requirements are mandatory; uncertainty or an
     unread applicable source blocks execution until resolved.
-17. Before every task, fetch/read current `main` and `dev`, inspect every requirement for changes,
-    read `.agents/NFR-REGISTRY.md` and the canonical specification index, and update the per-task
-    branch-check evidence in `.agents/AGENT-REGISTRY.md`; block work until complete (099).
+17. Before every task, fetch/read current `main` and `dev`, re-read the full requirements set and
+    NFR registry on both tips, avoid rework, and update registry branch-check evidence
+    (Requirements `099`, `116`). Use the operator-confirmed worktree layout in Requirement `114`.
+    Tests must be functional and Jumentix-valued (`115`); new features ship docs (`117`);
+    smoke/integration use Docker real services (`118`).
 18. Start every PR title with the matching Linear Issue identifier:
     `[JUM-XXXX][Nature] <concise outcome>` (086).
 

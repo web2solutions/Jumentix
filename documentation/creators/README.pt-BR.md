@@ -10,6 +10,8 @@ Ela inclui planejamento, migração, governança e referências internas de impl
 - [Plano de Migração e Execução](../md/JUMENTIX-MONOREPO-EXECUTION-PLAN.pt-BR.md)
 - [Corpus Spec Development Driven](../md/SPEC-DEVELOPMENT-DRIVEN-INDEX.pt-BR.md)
 - [Testes, CI e Qualidade](../md/TESTING-CI-AND-QUALITY.pt-BR.md)
+- [Requisitos Operacionais de Agente 114–118](../md/AGENT-OPERATING-REQUIREMENTS-114-118.pt-BR.md)
+  ([EN](../md/AGENT-OPERATING-REQUIREMENTS-114-118.md))
 
 ## Referências internas e operacionais
 

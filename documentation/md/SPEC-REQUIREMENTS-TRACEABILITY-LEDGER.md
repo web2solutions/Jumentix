@@ -1,6 +1,6 @@
 # Spec Requirements Traceability Ledger
 
-<!-- requirements-inventory: files=116 unique=113 mapped=113 duplicates=055,060,079 -->
+<!-- requirements-inventory: files=121 unique=118 mapped=118 duplicates=055,060,079 -->
 
 This ledger maps requirement IDs to spec resources and validation evidence expectations.
 
@@ -80,7 +80,7 @@ For any change, identify impacted requirement IDs and ensure:
 
 ## F. Quality, Security, and Compliance Gates
 
-- `011`, `014`, `020`, `044`, `063`, `065`, `074`, `087`, `088`, `104`, `105`, `106`, `107`, `108`, `109`, `110`, `111`, `112`, `113`
+- `011`, `014`, `020`, `044`, `063`, `065`, `074`, `087`, `088`, `104`, `105`, `106`, `107`, `108`, `109`, `110`, `111`, `112`, `113`, `115`, `118`
 - Spec resources:
   - `documentation/md/TESTING-CI-AND-QUALITY.md`
   - `documentation/md/HEXAGONAL-TEST-PYRAMID.md`
@@ -96,7 +96,7 @@ For any change, identify impacted requirement IDs and ensure:
 
 ## G. Documentation, Governance Process, and Multi-Agent Operations
 
-- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `056`, `057`, `064`, `066`, `067`, `068`, `071`, `072`, `073`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `094`, `095`, `097`, `098`, `099`, `100`, `101`, `102`, `103`, `104`, `105`, `106`, `107`, `108`, `109`, `110`, `111`, `112`, `113`
+- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `056`, `057`, `064`, `066`, `067`, `068`, `071`, `072`, `073`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `094`, `095`, `097`, `098`, `099`, `100`, `101`, `102`, `103`, `104`, `105`, `106`, `107`, `108`, `109`, `110`, `111`, `112`, `113`, `114`, `116`, `117`
 - Spec resources:
   - `documentation/README.md`
   - `documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`
@@ -146,12 +146,17 @@ If impacted requirement IDs are not mapped before implementation, the change is 
 
 As of `2026-08-01`, this ledger covers all unique requirement IDs currently registered in `.agents/requirements`:
 
-1. Requirement files in the registry: `116`
-2. Unique requirement IDs in the registry: `113`
-3. Unique IDs mapped in this ledger: `113`
+1. Requirement files in the registry: `121`
+2. Unique requirement IDs in the registry: `118`
+3. Unique IDs mapped in this ledger: `118`
 4. Duplicate IDs with independently binding files: `055`, `060`, `079`
 5. Missing IDs: `none`
 
 ### `105` Hexagonal Test Pyramid / layer-aware gates
 - Specs: `documentation/md/HEXAGONAL-TEST-PYRAMID.md`, `.agents/requirements/105-hexagonal-test-pyramid-layer-aware-gates.md`
 - Evidence: `test-map.json`, `ci-cd/check-test-map.js`, `ci-cd/lib/layer-resolver.js`, `ci-cd/run-task-change-tests.js`, `ci-cd/run-unit-tests.js`
+
+### `114`–`118` Agent operating pack (JUM-595)
+- Specs: `documentation/md/AGENT-OPERATING-REQUIREMENTS-114-118.md` (+ pt-BR)
+- Requirements: `.agents/requirements/114-*.md` … `118-*.md`
+- Evidence: `bun run requirements:check`; agent instruction parity in `AGENTS.md` / `CLAUDE.md` / `GROK.md`; Docker-backed smoke/integration scripts for `118`

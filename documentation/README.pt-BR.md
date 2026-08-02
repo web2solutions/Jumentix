@@ -40,6 +40,8 @@ Para times e product owners que usam o Jumentix para construir software:
 Para engenheiros que mantêm e evoluem o Jumentix:
 
 - [Índice de Documentação de Criadores](./creators/README.pt-BR.md)
+- [Requisitos Operacionais de Agente 114–118](./md/AGENT-OPERATING-REQUIREMENTS-114-118.pt-BR.md)
+  ([EN](./md/AGENT-OPERATING-REQUIREMENTS-114-118.md))
 
 ## Hubs Técnicos de Componentes
 
