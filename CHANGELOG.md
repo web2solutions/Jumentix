@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-02 ci: complete Bun tooling gate cleanup - Eduardo A.
 - 2026-08-02 ci: enforce authorized emails before push - Eduardo A.
 - 2026-08-02 ci: update GitHub Actions runtime pins - Eduardo A.
 - 2026-08-02 docs: reconcile documentation drift - Eduardo A.
