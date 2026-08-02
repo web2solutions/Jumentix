@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-02 docs: refresh changelog after dev merge - Eduardo A.
 - 2026-08-02 Merge remote-tracking branch 'origin/dev' into codex/docs/JUM-009-documentation-drift - Eduardo A.
 - 2026-08-02 ci: complete Bun tooling gate cleanup - Eduardo A.
 - 2026-08-02 ci: enforce authorized emails before push - Eduardo A.
