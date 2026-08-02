@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: ["main", "dev"]
   workflow_dispatch:
+    inputs:
+      pull_request_number:
+        description: "PR number to analyse/decorate when this is not a pull_request event"
+        required: false
+        type: string
 
 concurrency:
   group: sonar-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -45,6 +50,8 @@ jobs:
           --health-retries 20
     env:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      # So report-sonar-findings scopes to the PR on workflow_dispatch too.
+      SONAR_PULL_REQUEST_KEY: ${{ github.event.pull_request.number || inputs.pull_request_number }}
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
@@ -87,6 +94,11 @@ jobs:
 
       - name: SonarQube Cloud Scan
         uses: SonarSource/sonarqube-scan-action@c7ee0f9df90b7aa20e8dcf9695dcfe2e7da5b4f2 # v7
+        with:
+          # pull_request events are auto-detected; workflow_dispatch needs the key
+          # so Coverage on New Code / Security Rating decorate the open PR.
+          args: >-
+            ${{ (github.event.pull_request.number || inputs.pull_request_number) && format('-Dsonar.pullrequest.key={0} -Dsonar.pullrequest.branch={1} -Dsonar.pullrequest.base=dev', github.event.pull_request.number || inputs.pull_request_number, github.head_ref || github.ref_name) || '' }}
 
       # A failed quality gate otherwise reports two letters and a link that needs a
       # SonarCloud session. Printing the findings keeps the failure diagnosable from
@@ -96,3 +108,4 @@ jobs:
         run: bun ci-cd/report-sonar-findings.js
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_PULL_REQUEST_KEY: ${{ github.event.pull_request.number || inputs.pull_request_number }}
