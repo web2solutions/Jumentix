@@ -69,7 +69,7 @@ Current adapters serialize to the same payload shape:
 ```
 
 Sources:
-- Express/Fastify/Restify/Hyper-Express: `sendErrorResponse(...)`
+- Express/Fastify/Restify: `sendErrorResponse(...)`
 - Lambda adapters: `apps/backend-template/src/interface/HTTP/adapters/aws/lambda/responses/sendErrorResponse.ts`
 
 ## 5) MessageMediator Request/Response Error Contract

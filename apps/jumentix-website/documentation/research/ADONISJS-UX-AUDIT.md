@@ -146,7 +146,7 @@ Production route audited:
    website directory cannot reliably access those monorepo paths during `prebuild`.
 7. The prepublish script checks status and marker strings but does not crawl internal links,
    validate layout landmarks, detect hydration errors, or exercise mobile navigation.
-8. The prepublish script invokes `npm`, conflicting with the pnpm monorepo standard.
+8. The prepublish script invokes `npm`, conflicting with the Bun workspace standard.
 9. Storybook exists, but only a small fraction of website components have stories.
 10. The homepage behaves like a basic enterprise landing page, not a complete open-source
     framework destination.

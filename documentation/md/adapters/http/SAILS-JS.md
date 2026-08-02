@@ -15,6 +15,6 @@ Use Sails.js runtime as HTTP inbound interface.
 3. Run:
 
 ```bash
-pnpm run dev:sails-js
+bun run dev:sails-js
 ```
 

@@ -15,6 +15,6 @@ Use Total.js runtime bridge as HTTP inbound adapter.
 3. Run:
 
 ```bash
-pnpm run dev:total-js
+bun run dev:total-js
 ```
 

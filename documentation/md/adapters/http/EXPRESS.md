@@ -16,12 +16,12 @@ Use Express as your REST inbound adapter.
 3. Start with:
 
 ```bash
-pnpm run dev:express
+bun run dev:express
 ```
 
 ## Production
 
 ```bash
-pnpm run prod:express
+bun run prod:express
 ```
 

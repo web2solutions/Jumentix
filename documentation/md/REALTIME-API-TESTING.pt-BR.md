@@ -41,7 +41,7 @@ Núcleo compartilhado em tempo real:
 Correr:
 
 ```bash
-pnpm run test:unit
+bun run test:unit
 ```
 
 ## 2) Testes de integração
@@ -58,13 +58,13 @@ Integração de várias instâncias do Redis:
 Execute integrações básicas em tempo real:
 
 ```bash
-pnpm run test:integration:realtime
+bun run test:integration:realtime
 ```
 
 Execute a integração de várias instâncias do Redis (requer Redis):
 
 ```bash
-pnpm run test:integration:realtime:redis-streams
+bun run test:integration:realtime:redis-streams
 ```
 
 ## 3) Testes de fumaça
@@ -76,13 +76,13 @@ Fumaça local em tempo real:
 Correr:
 
 ```bash
-pnpm run test:smoke:realtime
+bun run test:smoke:realtime
 ```
 
 Fumaça Redis ponta a ponta (Docker + multi-instância + limpeza):
 
 ```bash
-pnpm run smoke:realtime:redis-streams
+bun run smoke:realtime:redis-streams
 ```
 
 ## Comportamento do IC

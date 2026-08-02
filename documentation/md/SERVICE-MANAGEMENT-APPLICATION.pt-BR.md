@@ -67,14 +67,14 @@ Guia de uso detalhado:
 
 Servido por PM2:
 
-- `pnpm run dev:service-management`
-- o perfil dev padrão (`pnpm run dev`) também inicia o `service-management` através do PM2.
+- `bun run dev:service-management`
+- o perfil dev padrão (`bun run dev`) também inicia o `service-management` através do PM2.
 
 O estado do aplicativo persiste com o navegador `localStorage`.
 
 Caminho de desenvolvimento recomendado:
 
-1. `pnpm run dev:service-management`
+1. `bun run dev:service-management`
 2. Abra o URL de gerenciamento de serviço local
 3. Modelo de domínios/entidades
 4. Execute exportações (esquema OAS/AsyncAPI/JSON/pacote)
@@ -115,12 +115,12 @@ Perfis orquestrados:
 Fumaça de integração:
 
 ```bash
-pnpm run test:integration:service-management
+bun run test:integration:service-management
 ```
 
 Fumaça da unidade para presença de recurso de roteiro:
 
 ```bash
-NODE_ENV=dev pnpm exec jest apps/backend-template/test/unit/service-management/mvp.roadmap.features.test.ts --runInBand
+NODE_ENV=dev bunx jest apps/backend-template/test/unit/service-management/mvp.roadmap.features.test.ts --runInBand
 ```
 

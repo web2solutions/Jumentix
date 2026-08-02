@@ -21,8 +21,8 @@ Current values:
 
 The CI gate enforces release policy through:
 
-- `pnpm run release:governance:check`
-- included in `pnpm run ci:gate`
+- `bun run release:governance:check`
+- included in `bun run ci:gate`
 
 Validation includes:
 
@@ -37,8 +37,8 @@ Validation includes:
 2. Update `release-policy.json` `appLockedVersion` to same value.
 3. Keep app workspace versions synchronized with locked value.
 4. Run:
-   - `pnpm run release:governance:check`
-   - `pnpm run release:dry-run`
+   - `bun run release:governance:check`
+   - `bun run release:dry-run`
 5. Open PR with traceability to related Jumentix project issue(s).
 
 ## Future Evolution

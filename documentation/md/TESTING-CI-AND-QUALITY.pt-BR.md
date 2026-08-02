@@ -9,44 +9,44 @@ Idioma alvo: Português (Brasil)
 Execute o conjunto de testes completo:
 
 ```bash
-pnpm test
+bun run test
 ```
 
 Execute testes de unidade:
 
 ```bash
-pnpm run test:unit
+bun run test:unit
 ```
 
 Execute testes de integração:
 
 ```bash
-pnpm run test:integration
+bun run test:integration
 ```
 
 Execute testes de integração em tempo real:
 
 ```bash
-pnpm run test:integration:realtime
+bun run test:integration:realtime
 ```
 
 Execute a integração em tempo real de várias instâncias apoiada pelo Redis:
 
 ```bash
-pnpm run test:integration:realtime:redis-streams
+bun run test:integration:realtime:redis-streams
 ```
 
 Execute testes de fumaça do driver de banco de dados:
 
 ```bash
-pnpm run test:smoke:db:all
+bun run test:smoke:db:all
 ```
 
 Execute testes de fumaça em tempo real:
 
 ```bash
-pnpm run test:smoke:realtime
-pnpm run smoke:realtime:redis-streams
+bun run test:smoke:realtime
+bun run smoke:realtime:redis-streams
 ```
 
 `test:smoke:db:all` orquestra cada comando smoke específico do driver, incluindo
@@ -55,26 +55,25 @@ pnpm run smoke:realtime:redis-streams
 Atalhos de fumaça apoiados em contêineres:
 
 ```bash
-pnpm run smoke:db:postgresql
-pnpm run smoke:db:mysql
-pnpm run smoke:db:mssql
-pnpm run smoke:db:oracle
-pnpm run smoke:db:mongodb
-pnpm run smoke:db:cassandra
-pnpm run smoke:db:dynamodb
-pnpm run smoke:db:firebase
-pnpm run smoke:db:aurora
-pnpm run smoke:db:rds
+bun run smoke:db:postgresql
+bun run smoke:db:mysql
+bun run smoke:db:mssql
+bun run smoke:db:oracle
+bun run smoke:db:mongodb
+bun run smoke:db:cassandra
+bun run smoke:db:dynamodb
+bun run smoke:db:firebase
+bun run smoke:db:aurora
+bun run smoke:db:rds
 ```
 
 Por tempo de execução:
 
 ```bash
-pnpm run test:integration:express
-pnpm run test:integration:fastify
-pnpm run test:integration:restify
-pnpm run test:integration:lambda
-pnpm run test:integration:hyper-express
+bun run test:integration:express
+bun run test:integration:fastify
+bun run test:integration:restify
+bun run test:integration:lambda
 ```
 
 ## CI e portas de qualidade
@@ -82,13 +81,13 @@ pnpm run test:integration:hyper-express
 Portão principal:
 
 ```bash
-pnpm run ci:gate
+bun run ci:gate
 ```
 
 Gate estrito de push e CI remoto:
 
 ```bash
-pnpm run ci:gate:strict
+bun run ci:gate:strict
 ```
 
 Cheques incluídos:
@@ -120,14 +119,13 @@ Execução por escopo, inclusive alterações somente de documentação, não po
 uma célula em um limite de entrega.
 
 Cada alvo de integração é executado com `CI=true`. O tempo limite padrão do processo é de
-120 segundos. Os alvos completos Express, Fastify e Hyper-Express possuem exceções
+120 segundos. Os alvos completos Express e Fastify possuem exceções
 explícitas de 300 segundos porque suas suítes HTTP completas atingiram ou se aproximaram do
 limite do processo sob a carga da matriz de release. Somente o Restify completo possui um
 orçamento finito de processo de 600 segundos depois que uma execução sob carga extrema
 atingiu o antigo limite de 300 segundos enquanto a fase unitária anterior levou 327,115
-segundos. Em uma execução estrita, o Hyper-Express
-passou 21 suítes e 170 testes em 117,215 segundos, mas expirou durante a limpeza no limite de
-120 segundos; o Fastify também ultrapassou esse limite após suas asserções. Essa margem
+segundos. Em uma execução estrita, o Fastify também ultrapassou o limite de
+120 segundos após suas asserções. Essa margem
 específica impede que um `SIGTERM` trunque uma resposta HTTP ativa ou sua limpeza sem
 enfraquecer o tempo limite dos alvos menores; um tempo limite informado explicitamente ao
 executor continua sendo prioritário. Qualquer tempo limite é reportado como saída `124`,
@@ -138,7 +136,7 @@ sustentada da matriz estrita, requisições Restify autenticadas apresentaram du
 5,4–5,8 segundos, acima do padrão genérico de 5 segundos do Jest. O orçamento específico do
 alvo permite que essas requisições reais terminem, em vez de cancelar suas asserções enquanto
 mantêm handles HTTP ativos. Ele não adiciona tentativas, não ignora testes, não enfraquece
-asserções nem altera o limite finito separado de 600 segundos do processo. Express, Fastify, Hyper-Express e
+asserções nem altera o limite finito separado de 600 segundos do processo. Express, Fastify e
 todos os demais alvos de integração mantêm seus padrões existentes por teste.
 
 Cada arquivo de integração Fastify e Restify vincula seu servidor HTTP uma única vez a uma
@@ -155,13 +153,11 @@ da matriz falhar ao analisar declarações geradas.
 Aplicação por branch:
 
 ```bash
-pnpm run ci:gate:branch
+bun run ci:gate:branch
 ```
 
-O seletor lê `JUMENTIX_QUALITY_GATE_TARGET`. Uma branch de tarefa executa `pnpm run
-ci:gate:task`, limitado aos testes unitários alterados ou relacionados. O destino `dev`
-executa a suíte completa `pnpm run test:unit`. O destino `main` executa `pnpm run
-ci:gate:strict` com toda a matriz. Alterações somente de documentação validam os arquivos
+O seletor lê `JUMENTIX_QUALITY_GATE_TARGET`. Uma branch de tarefa executa `bun run ci:gate:task`, limitado aos testes unitários alterados ou relacionados. O destino `dev`
+executa a suíte completa `bun run test:unit`. O destino `main` executa `bun run ci:gate:strict` com toda a matriz. Alterações somente de documentação validam os arquivos
 Markdown e emitem evidência explícita `not-applicable`, sem fabricar um teste aprovado.
 
 Aplicação local:
@@ -202,13 +198,13 @@ Importação de cobertura do SonarQube Cloud:
 | Ações GitHub (SonarQube Cloud) | Análise estática + quality gate + importação de cobertura | `.github/workflows/sonarqube-cloud.yml`, `sonar-project.properties` | Requer `SONAR_TOKEN`; produz LCOV antes do scan |
 | Gate de cobertura do repositório | Hard gate local contra baixa cobertura | `jest.config.js`, `ci-cd/check-coverage-thresholds.js` | Statements/linhas/funções 99%, branches 90%, linhas alteradas 99% |
 | Husky | Ganchos Git locais para verificações de qualidade | `.husky/*` | Instalado por `bun run prepare` |
-| Comprometer-se + Comprometer-se | Commits convencionais e fluxo de commits guiados | `commitlint.config.js`, `package.json` | `pnpm executar commit` |
-| Automação de sincronização do changelog | Mantém `CHANGELOG.md` alinhado com a história do Git | `ci-cd/update-changelog.js`, `.husky/post-commit` | `pnpm execute changelog:update`, `pnpm execute changelog:check` |
-| Liberar verificação de governança | Aplica contratos de script de lançamento e metadados de publicação de pacotes | `ci-cd/check-release-governance.js` | `pnpm run release:governance:check` |
-| Verificação de resolução de rota OpenAPI | Garante que cada OperationId seja mapeado para manipuladores e métodos de controlador | `ci-cd/check-oas-route-resolution.js` | `pnpm run oas:check-routes` |
-| Verificação de limite hexagonal | Bloqueia violações da camada controladora | `ci-cd/check-hexagonal-boundaries.js` | `pnpm execute arch:check-boundaries` |
-| Verificação do ciclo de importação principal | Impede dependências cíclicas em namespaces principais | `ci-cd/check-core-import-cycles.js` | `pnpm run deps:check-cycles` |
-| Verificação de namespace herdado | Bloqueia novas importações de namespaces de usuários antigos | `ci-cd/check-users-legacy-imports.js` | `pnpm execute arch:check-users-legacy-imports` |
+| Commitlint + Commitizen | Commits convencionais e fluxo de commits guiados | `commitlint.config.js`, `package.json` | `bun run commit` |
+| Automação de sincronização do changelog | Mantém `CHANGELOG.md` alinhado com a história do Git | `ci-cd/update-changelog.js`, `.husky/post-commit` | `bun run changelog:update`, `bun run changelog:check` |
+| Liberar verificação de governança | Aplica contratos de script de lançamento e metadados de publicação de pacotes | `ci-cd/check-release-governance.js` | `bun run release:governance:check` |
+| Verificação de resolução de rota OpenAPI | Garante que cada OperationId seja mapeado para manipuladores e métodos de controlador | `ci-cd/check-oas-route-resolution.js` | `bun run oas:check-routes` |
+| Verificação de limite hexagonal | Bloqueia violações da camada controladora | `ci-cd/check-hexagonal-boundaries.js` | `bun run arch:check-boundaries` |
+| Verificação do ciclo de importação principal | Impede dependências cíclicas em namespaces principais | `ci-cd/check-core-import-cycles.js` | `bun run deps:check-cycles` |
+| Verificação de namespace herdado | Bloqueia novas importações de namespaces de usuários antigos | `ci-cd/check-users-legacy-imports.js` | `bun run arch:check-users-legacy-imports` |
 
 ### Plataformas e responsabilidades de CI
 
@@ -246,22 +242,24 @@ repositório privado foram substituídos por GitHub Actions rastreado e scripts 
   - `funções >= 99%`
 - Espera-se que os commits e PRs respeitem esses limites antes da aprovação.
 
-### Aplicação de tempo de execução do nó 22
+### Runtime Bun e compatibilidade Node
 
-O projeto está bloqueado no Nó 22:
+O projeto usa Bun nos fluxos internos de engenharia e mantém Node 22 como alvo
+de compatibilidade voltado a consumidores:
 
-- `package.json` -> `"motores": { "nó": ">=22.0.0 <23.0.0" }`
-- `.npmrc` -> `engine-strict=true`
-- script `preinstall` -> `pnpm run check-node-version`
-- `ci-cd/check-node-version.js` valida `process.version` em relação a `engines.node`
-- `.nvmrc` e `.node-version` estão ambos fixados em `22.0.0`
+- `package.json` -> `"packageManager": "bun@1.3.14"`
+- `package.json` -> `"engines": { "bun": ">=1.3.14", "node": ">=22.0.0 <23.0.0" }`
+- `bunfig.toml` mantém Bun como fronteira do runner de scripts.
+- `ci-cd/check-bun-version.js` valida a toolchain Bun ativa.
+- `ci-cd/check-node-version.js` é exposto por `compat:check-node-version` para checks de compatibilidade Node.
+- `.nvmrc` e `.node-version` permanecem fixados em `22.0.0`
 
 Configuração local recomendada:
 
 ```bash
-nvm use
-node -v
-pnpm -v
+bun --version
+bun run check-bun-version
+bun run compat:check-node-version
 ```
 
 ### Ambiente e segredos em CI
@@ -287,23 +285,23 @@ Bootstrap do ambiente durante os testes:
 Execute o portão completo:
 
 ```bash
-pnpm run ci:gate:strict
+bun run ci:gate:strict
 ```
 
 Execute verificações direcionadas:
 
 ```bash
-pnpm run deps:check-cycles
-pnpm run arch:check-boundaries
-pnpm run arch:check-users-legacy-imports
-pnpm run arch:check-workspace-boundaries
-pnpm run workspace:check-quality
-pnpm run workspace:check-coverage-policy
-pnpm run release:governance:check
-pnpm run oas:check-routes
-pnpm run test:unit
-pnpm run ci:smoke
-pnpm run ci:integration
+bun run deps:check-cycles
+bun run arch:check-boundaries
+bun run arch:check-users-legacy-imports
+bun run arch:check-workspace-boundaries
+bun run workspace:check-quality
+bun run workspace:check-coverage-policy
+bun run release:governance:check
+bun run oas:check-routes
+bun run test:unit
+bun run ci:smoke
+bun run ci:integration
 ```
 
 ### Solução de problemas (CI / SonarQube / cobertura do repositório)

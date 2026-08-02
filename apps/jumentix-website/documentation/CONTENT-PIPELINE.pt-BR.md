@@ -63,9 +63,9 @@ e de compatibilidade e percorre links internos das superfícies comercial e téc
 ## Comandos
 
 ```bash
-pnpm --filter @jumentix/website run content:sync
-pnpm --filter @jumentix/website run content:smoke
-pnpm --filter @jumentix/website run test:prepublish
+bun run --filter @jumentix/website content:sync
+bun run --filter @jumentix/website content:smoke
+bun run --filter @jumentix/website test:prepublish
 ```
 
 `predev` e `prebuild` regeneram o conteúdo automaticamente. Os arquivos gerados permanecem

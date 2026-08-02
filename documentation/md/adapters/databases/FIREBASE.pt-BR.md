@@ -13,7 +13,7 @@ Perfil de administrador do Firebase.
 1. Inicie o contêiner do emulador local (se configurado):
 
 ```bash
-pnpm run docker:up:firebase
+bun run docker:up:firebase
 ```
 
 2. Definir ambiente:

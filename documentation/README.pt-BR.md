@@ -40,8 +40,8 @@ Para times e product owners que usam o Jumentix para construir software:
 Para engenheiros que mantêm e evoluem o Jumentix:
 
 - [Índice de Documentação de Criadores](./creators/README.pt-BR.md)
-- [Requisitos Operacionais de Agente 114–119](./md/AGENT-OPERATING-REQUIREMENTS-114-119.pt-BR.md)
-  ([EN](./md/AGENT-OPERATING-REQUIREMENTS-114-119.md))
+- [Requisitos Operacionais de Agente 114–121](./md/AGENT-OPERATING-REQUIREMENTS-114-121.pt-BR.md)
+  ([EN](./md/AGENT-OPERATING-REQUIREMENTS-114-121.md))
 
 ## Hubs Técnicos de Componentes
 
@@ -66,9 +66,9 @@ Para engenheiros que mantêm e evoluem o Jumentix:
 Execute estas verificações na raiz após mudanças documentais:
 
 ```bash
-pnpm run docs:consumers:package-scripts
-pnpm run website:test:prepublish
-pnpm run ci:gate:task
+bun run docs:consumers:package-scripts
+bun run website:test:prepublish
+bun run ci:gate:task
 ```
 
 O gerador de scripts é autoritativo para a referência de comandos do consumidor. O gate de

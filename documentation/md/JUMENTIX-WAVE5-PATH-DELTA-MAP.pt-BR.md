@@ -64,7 +64,7 @@ Este mapa rastreia reescritas de caminho de tempo de execução para o modelo de
 
 ## Lista de verificação de validação
 
-- `pnpm run oas:check-routes` verde com resolução `apps/backend-template/src`.
-- `pnpm run test:unit` verde usando `apps/backend-template/test/unit`.
+- `bun run oas:check-routes` verde com resolução `apps/backend-template/src`.
+- `bun run test:unit` verde usando `apps/backend-template/test/unit`.
 - Os scripts de inicialização PM2 dev/staging/prod fazem referência aos ecossistemas `pm2/*`.
 - O aplicativo Service Management ainda inicia em `apps/service-management/server.js`.

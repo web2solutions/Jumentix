@@ -16,6 +16,6 @@ Run HTTP APIs in Cloudflare Workers style (`fetch` contract), without Express ru
 4. Run:
 
 ```bash
-pnpm run dev:cloudflare-workers
+bun run dev:cloudflare-workers
 ```
 

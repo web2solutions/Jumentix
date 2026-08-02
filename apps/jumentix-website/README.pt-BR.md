@@ -27,13 +27,13 @@ Este aplicativo usa a linha de base da arquitetura do modelo Vercel:
 ## Correr
 
 ```bash
-pnpm --filter @jumentix/website dev
+bun run --filter @jumentix/website dev
 ```
 
 ## Construir
 
 ```bash
-pnpm --filter @jumentix/website build
+bun run --filter @jumentix/website build
 ```
 
 ## Planejando artefatos

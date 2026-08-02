@@ -65,17 +65,17 @@ Evidências visuais:
 Na raiz do monorepo:
 
 ```bash
-pnpm run website:storybook
-pnpm run website:storybook:build
-pnpm run website:storybook:smoke
+bun run website:storybook
+bun run website:storybook:build
+bun run website:storybook:smoke
 ```
 
 Em `apps/jumentix-website`:
 
 ```bash
-pnpm run storybook
-pnpm run storybook:build
-pnpm run storybook:smoke
+bun run storybook
+bun run storybook:build
+bun run storybook:smoke
 ```
 
 O comando smoke espera um build atualizado em `storybook-static`. A saída gerada é ignorada pelo

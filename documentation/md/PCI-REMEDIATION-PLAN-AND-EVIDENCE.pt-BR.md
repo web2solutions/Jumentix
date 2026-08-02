@@ -59,7 +59,7 @@ Este documento define o plano de remediação na ordem do sprint e mapeia as evi
 3. Prova de qualidade
    - O portão local da CI verifica fiapos, verificações de limites, testes, resolução de rotas da OEA, construção e fumaça.
    - Comando de evidência:
-     - `pnpm executar ci:gate`
+     - `bun run ci:gate`
 
 ### P2 - Controles de maturidade operacional (concluído)
 
@@ -79,7 +79,7 @@ Este documento define o plano de remediação na ordem do sprint e mapeia as evi
      - `documentação/md/SECURITY-RUNBOOK-PCI.md`
 3. Verificações de fumaça de segurança em CI
    - Trabalho explícito que afirma mascaramento de erros de produção e comportamento de negação de CORS.
-   - Status: implementado via `pnpm run ci:security-smoke` e incluído em `pnpm run ci:gate`.
+   - Status: implementado via `bun run ci:security-smoke` e incluído em `bun run ci:gate`.
 
 ## Lista de verificação de evidências de auditoria
 

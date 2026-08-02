@@ -46,8 +46,9 @@ publicados ou prontos para produção.
 ## Padrão de uso
 
 Cada pacote possui README em inglês e português, scripts e limites de propriedade. Importe os
-pacotes nas aplicações em vez de duplicar lógica de adapter. O runtime canônico é Node.js 22 com
-pnpm 9.15.3.
+pacotes nas aplicações em vez de duplicar lógica de adapter. O runtime canônico dos fluxos internos
+de engenharia é Bun 1.3.14, com Node.js 22 mantido como alvo explícito de compatibilidade para
+artefatos de runtime expostos a consumidores.
 
 ## Documentos relacionados
 

@@ -137,6 +137,8 @@ Use these files as living constraints for future maintenance and feature develop
 - [117-feature-documentation-on-new-features](requirements/117-feature-documentation-on-new-features.md)
 - [118-smoke-integration-docker-real-services](requirements/118-smoke-integration-docker-real-services.md)
 - [119-api-first-service-orchestration-github-gh](requirements/119-api-first-service-orchestration-github-gh.md)
+- [120-linear-agent-assignment-visibility](requirements/120-linear-agent-assignment-visibility.md)
+- [121-registered-agent-coordinated-delivery-awareness](requirements/121-registered-agent-coordinated-delivery-awareness.md)
 - [Agent Registry](AGENT-REGISTRY.md)
 - [NFR Registry](NFR-REGISTRY.md)
 - [Spec Development Driven Agent](spec-development-driven-agent.md)

@@ -20,7 +20,7 @@ Este instantâneo registra evidências de governança para tarefas de encerramen
 Validado localmente:
 
 ```bash
-pnpm run ci:gate
+bun run ci:gate
 ```
 
 Resultado: **aprovado** (lint + verificações de arquitetura + unidade + resolução de rota OAS + construção + fumaça).
@@ -30,7 +30,7 @@ Resultado: **aprovado** (lint + verificações de arquitetura + unidade + resolu
 Adicionado comando de validação explícito:
 
 ```bash
-pnpm run serverless:check-handlers
+bun run serverless:check-handlers
 ```
 
 Resultado: **pass** (`34` manipuladores resolvidos para arquivos existentes).

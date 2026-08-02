@@ -33,5 +33,5 @@ const response = await client.request({
 ## Construir
 
 ```bash
-pnpm --filter @jumentix/sdk-grpc-client build
+bun run --filter @jumentix/sdk-grpc-client build
 ```

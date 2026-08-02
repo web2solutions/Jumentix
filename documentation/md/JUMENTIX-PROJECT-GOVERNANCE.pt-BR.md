@@ -59,8 +59,13 @@ atuais do Linear.
 8. O milestone é validado antes que a delegação de agentes seja estabelecida no nível do épico.
 9. Somente agentes delegados a um épico podem executar suas tarefas filhas, com um agente
    responsável e escopo não sobreposto por tarefa.
-10. O Agent Registry canônico registra `active_epic` e `assigned_task` de cada agente executor.
-11. Um milestone só é encerrado quando seus épicos estiverem concluídos ou o trabalho restante
+10. Issues e Projects/Epics no Linear identificam o `agent_identifier` ativo para cada escopo
+    executável, e esse assignment permanece sincronizado com o Agent Registry canônico.
+11. O Agent Registry canônico registra `active_epic`, `assigned_task` e qualquer contexto de
+    coordenação com agentes irmãos necessário para evitar entrega sobreposta.
+12. Agentes refrescam progresso, bloqueios, branches, PRs e Project Updates de agentes irmãos
+    antes de iniciar ou retomar trabalho no mesmo épico, milestone ou componente.
+13. Um milestone só é encerrado quando seus épicos estiverem concluídos ou o trabalho restante
     possuir transferência auditável para outro milestone.
 
 ## Governança de RP

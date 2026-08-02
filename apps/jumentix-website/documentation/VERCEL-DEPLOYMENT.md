@@ -10,19 +10,19 @@ Issue tracking:
 From repository root:
 
 ```bash
-pnpm run website:deploy:vercel
+bun run website:deploy:vercel
 ```
 
 Preview deployment:
 
 ```bash
-pnpm run website:deploy:vercel:preview
+bun run website:deploy:vercel:preview
 ```
 
 From app workspace directly:
 
 ```bash
-pnpm --filter @jumentix/website deploy:vercel
+bun run --filter @jumentix/website deploy:vercel
 ```
 
 ## Configuration
@@ -34,9 +34,9 @@ File:
 Configured values:
 
 - `framework`: `nextjs`
-- `installCommand`: `pnpm install --frozen-lockfile`
-- `buildCommand`: `pnpm run build`
-- `devCommand`: `pnpm run dev`
+- `installCommand`: `bun install --frozen-lockfile`
+- `buildCommand`: `bun run build`
+- `devCommand`: `bun run dev`
 - `outputDirectory`: `.next`
 
 ## Notes
@@ -45,6 +45,6 @@ Configured values:
 - `prebuild` runs content synchronization automatically before build.
 - Generated documentation remains available when a Vercel app-root build cannot access external
   monorepo source files.
-- Vercel and local builds use the pnpm workspace lockfile and patched dependency declarations.
+- Vercel and local builds use the Bun workspace lockfile and patched dependency declarations.
 - Root deployment scripts are intentionally scope-agnostic (no forced `--scope`) to support
   personal-account and team-account Vercel contexts.

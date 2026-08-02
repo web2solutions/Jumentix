@@ -34,23 +34,18 @@ Idioma alvo: Português (Brasil)
 - restificar
 - bunyan
 
-## Infra - Servidor Hyper-Express
-
-- hiper-expresso
-- diretório ao vivo
-
 ## Infra - Adaptadores HTTP/tempo de execução adicionais
 
 - Cloudflare Workers (adaptador `fetch` sem servidor)
 - Funções Vercel (adaptador sem servidor `req/res`, tipos `@vercel/node`)
-- Adaptador de tempo de execução LoopBack (dependência de tempo de execução opcional `@loopback/rest`)
-- Adaptador de tempo de execução Sails.js (dependência de tempo de execução opcional `sails`)
-- Adaptador de tempo de execução Feathers (`@feathersjs/feathers` e `@feathersjs/koa` dependências de tempo de execução opcionais)
-- Adaptador de tempo de execução Derby.js (dependência de tempo de execução opcional `derby`)
-- Ponte de tempo de execução Adonis.js (dependência de tempo de execução opcional `@adonisjs/http-server`)
-- Ponte de tempo de execução Total.js (dependência de tempo de execução opcional `total4`)
+- Adaptador de tempo de execução LoopBack (`@loopback/rest` exigido quando esse adapter for ativado)
+- Adaptador de tempo de execução Sails.js (`sails` exigido quando esse adapter for ativado)
+- Adaptador de tempo de execução Feathers (`@feathersjs/feathers` e `@feathersjs/koa` exigidos quando esse adapter for ativado)
+- Adaptador de tempo de execução Derby.js (`derby` exigido quando esse adapter for ativado)
+- Ponte de tempo de execução Adonis.js (`@adonisjs/http-server` exigido quando esse adapter for ativado)
+- Ponte de tempo de execução Total.js (`total4` exigido quando esse adapter for ativado)
 
-Esses adaptadores são projetados como pontos de integração selecionáveis ​​em tempo de execução e não requerem herança do servidor Express.
+Esses adaptadores são projetados como pontos de integração selecionáveis em tempo de execução e não requerem herança do servidor Express. Adapters nomeados por framework devem declarar e importar sua dependência real antes de serem tratados como implementados. Hyper-Express não é alvo suportado no baseline atual de `dev`.
 
 ## Infra - AWS Lambda / sem servidor
 

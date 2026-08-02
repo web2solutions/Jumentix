@@ -29,5 +29,5 @@ const response = await client.request({
 ## Build
 
 ```bash
-pnpm --filter @jumentix/sdk-websocket-client build
+bun run --filter @jumentix/sdk-websocket-client build
 ```

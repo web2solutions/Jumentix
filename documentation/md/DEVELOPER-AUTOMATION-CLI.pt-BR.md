@@ -22,9 +22,9 @@ Isto suporta iteração mais rápida ao criar novos contextos, agregações, ent
 Use qualquer um dos seguintes comandos:
 
 ```bash
-pnpm run cli
-pnpm run dev:cli
-pnpm run start:cli
+bun run cli
+bun run dev:cli
+bun run start:cli
 ```
 
 Todos os comandos iniciam o mesmo ponto de entrada da CLI:
@@ -34,7 +34,7 @@ Todos os comandos iniciam o mesmo ponto de entrada da CLI:
 Comando Bootstrap/scaffold:
 
 ```bash
-pnpm run cli:bootstrap
+bun run cli:bootstrap
 ```
 
 O fluxo de bootstrap também é exposto como comando bin instalável:
