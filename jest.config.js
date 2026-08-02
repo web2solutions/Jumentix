@@ -75,6 +75,12 @@ module.exports = {
     // dist/ stays out regardless: measuring a build artifact says nothing about
     // the source it came from (JUM-578).
     '<rootDir>/packages/[^/]+/dist/',
+    // cana is measured by the browser run, not here (Requirement 112 §4). Four
+    // Node suites still cover parts of it — packaging, protocol, storage and the
+    // durability policy — and their partial view of a package whose tests live
+    // in a browser would report as a gap rather than as the slice it is.
+    // `ci-cd/check-coverage-thresholds.js` reads `coverage/browser` for it.
+    '<rootDir>/packages/cana/src/',
     '<rootDir>/packages/[^/]+/test/',
     // ci-cd is excluded from coverage wholesale, with named opt-ins. Sonar reads
     // this same lcov, so a new ci-cd file that is not listed here reports as 0%

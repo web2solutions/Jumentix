@@ -13,6 +13,15 @@ const DEFAULT_REDIS_CONNECT_TIMEOUT_MS = 5000;
 const DEFAULT_REDIS_MAX_RECONNECT_ATTEMPTS = 3;
 
 /**
+ * Clears the singleton so a suite can rebuild against another Redis endpoint.
+ * Production callers must not use this — a second client would orphan locks and
+ * subscriptions held on the first.
+ */
+export function resetRedisKeyValueStorageClientForTests(): void {
+  redisKeyValueStorageClient = undefined;
+}
+
+/**
  * A positive integer from the environment, or the fallback when the value is
  * missing, non-numeric, zero or negative. A bounded client that silently
  * ignores a malformed timeout is better than one that refuses to boot.
@@ -67,11 +76,9 @@ export class RedisKeyValueStorageClient extends BaseKeyValueStorageClient {
     this.client = createClient(config as any);
     this.client.on('error', (err) => console.log('Redis Client Error', err));
     this.client.on('connect', () => {
-      /* istanbul ignore next -- requires a reachable Redis server */
       this.connected = true;
     });
     this.client.on('end', () => {
-      /* istanbul ignore next -- requires a reachable Redis server */
       this.connected = false;
     });
     this.connected = false;
@@ -93,7 +100,6 @@ export class RedisKeyValueStorageClient extends BaseKeyValueStorageClient {
     if (connection.error) {
       return connection;
     }
-    /* istanbul ignore next -- requires a reachable Redis server */
     try {
       const result = await this.client.get(`${this.prefix}:${keyName}`);
       return new ServiceResponse({ result });
@@ -107,7 +113,6 @@ export class RedisKeyValueStorageClient extends BaseKeyValueStorageClient {
     if (connection.error) {
       return connection;
     }
-    /* istanbul ignore next -- requires a reachable Redis server */
     try {
       const result = await this.client.del(`${this.prefix}:${keyName}`);
       return new ServiceResponse({ result });
@@ -121,7 +126,6 @@ export class RedisKeyValueStorageClient extends BaseKeyValueStorageClient {
     if (connection.error) {
       return connection;
     }
-    /* istanbul ignore next -- requires a reachable Redis server */
     try {
       const result = await this.client.set(`${this.prefix}:${keyName}`, value);
       return new ServiceResponse({ result });
@@ -133,9 +137,7 @@ export class RedisKeyValueStorageClient extends BaseKeyValueStorageClient {
   public async disconnect(): Promise<IServiceResponse> {
     try {
       await this.client.quit();
-      /* istanbul ignore next -- requires a reachable Redis server */
       this.connected = false;
-      /* istanbul ignore next -- requires a reachable Redis server */
       return new ServiceResponse({
         result: {
           connected: this.connected
@@ -150,10 +152,8 @@ export class RedisKeyValueStorageClient extends BaseKeyValueStorageClient {
     try {
       if (!this.connected) {
         await this.client.connect();
-        /* istanbul ignore next -- requires a reachable Redis server */
         this.connected = true;
       }
-      /* istanbul ignore next -- requires a reachable Redis server */
       return new ServiceResponse({
         result: {
           connected: this.connected

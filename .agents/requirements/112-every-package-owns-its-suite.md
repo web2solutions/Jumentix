@@ -46,6 +46,24 @@
    `fake-indexeddb` dependency come out when the Cypress suite lands, and the
    coverage contract in §1 is met by the browser run, not by the two together.
 
+   **Satisfied for `packages/cana` (JUM-586).** 283 tests run headless against
+   the browser's own IndexedDB; `fake-indexeddb` is gone from the repository,
+   including the lockfile. `jest.config.js` no longer measures `packages/cana/src`
+   and `ci-cd/check-coverage-thresholds.js` reads `coverage/browser` for it — the
+   two reports cover disjoint files and their totals add. They are deliberately
+   not merged counter-by-counter: Istanbul can only merge reports whose statement
+   maps agree, and one of these comes from ts-jest over TypeScript while the other
+   comes from instrumenting a bundle and remapping through its source map.
+
+   The migration found three things the fake had been hiding. An `IDBFactory`
+   method called on an object that merely has the factory in its prototype chain
+   throws `Illegal invocation` in a real browser, so two suites had been testing a
+   shape no browser permits. `browserStorageEnvironment` was asserted to build no
+   tombstone, which was true of the test runner and false of every browser it
+   ships to. And the performance suite's caveat that its numbers came from an
+   in-memory implementation no longer applies: they now come from a disk-backed
+   one.
+
 5. **Debt is declared, dated and tracked, and the declaration ratchets.**
    `ci-cd/check-package-suites.js` fails on a package with source and no suite
    that is not declared in `WITHOUT_SUITE_YET`, and **equally on a declared

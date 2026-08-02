@@ -246,6 +246,20 @@ describe('check-coverage-thresholds report reader', () => {
     spy.mockRestore();
   });
 
+  it('fails closed when the Jest report exists but the browser report does not', () => {
+    expect.hasAssertions();
+    // Requirement 112 §4: cana is measured in the browser. Returning the Jest
+    // half alone would pass the gate with cana unmeasured.
+    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+    const nodeFs = require('fs') as { existsSync: (path: string) => boolean };
+    const spy = jest.spyOn(nodeFs, 'existsSync').mockImplementation((filePath) => (
+      String(filePath).endsWith('coverage/coverage-final.json')
+    ));
+
+    expect(coverageGuard.defaultReadReport()).toStrictEqual({ missingBrowserReport: true });
+    spy.mockRestore();
+  });
+
   it('parses a report from disk', () => {
     expect.hasAssertions();
     // Reading the repository's own coverage/coverage-final.json would be

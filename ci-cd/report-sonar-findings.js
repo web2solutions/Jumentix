@@ -168,6 +168,19 @@ async function main() {
   );
 
   const scope = pullRequest ? `&pullRequest=${pullRequest}` : '';
+  try {
+    const measurePath = pullRequest
+      ? `${serverUrl}/api/measures/component?component=${projectKey}&pullRequest=${pullRequest}&metricKeys=new_coverage,new_security_rating,new_vulnerabilities,new_lines_to_cover,new_uncovered_lines`
+      : `${serverUrl}/api/measures/component?component=${projectKey}&metricKeys=coverage,security_rating`;
+    const { component } = await fetchJson(measurePath, token);
+    const measures = Object.fromEntries(
+      (component.measures || []).map((entry) => [entry.metric, entry.value ?? entry.period?.value])
+    );
+    console.log(`[sonar] measures: ${JSON.stringify(measures)}`);
+  } catch (error) {
+    console.log(`[sonar] could not read measures: ${error.message}`);
+  }
+
   const [{ issues = [] }, { hotspots = [] }] = await Promise.all([
     fetchJson(
       `${serverUrl}/api/issues/search?componentKeys=${projectKey}${scope}&resolved=false&ps=100`,

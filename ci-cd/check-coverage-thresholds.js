@@ -258,9 +258,47 @@ function validateCoverage(totals, thresholds = THRESHOLDS, exceptions = ACCEPTED
  * `fs` — a global stub leaks into every other suite sharing the process, which
  * is how ten unrelated tests failed the first time this was covered.
  */
+const browserReportPath = path.join(repoRoot, 'coverage', 'browser', 'coverage-final.json');
+
+/**
+ * The two runs, combined — as disjoint halves, not as a merge.
+ *
+ * Requirement 112 §4 moved `packages/cana` to a browser suite, so the Jest run
+ * no longer executes it and `jest.config.js` no longer measures it. The browser
+ * run writes an Istanbul report over the same TypeScript files, and the two
+ * cover different files, so the totals simply add.
+ *
+ * They are deliberately *not* merged counter-by-counter. Istanbul can only
+ * merge two reports for the same file when their statement maps agree, and
+ * these do not: one comes from ts-jest instrumenting the TypeScript, the other
+ * from instrumenting a bundle and remapping through its source map. Merging
+ * them anyway produced a number lower than either half — 60% for a package both
+ * runs covered above 96% — which is worse than useless, because it looks like a
+ * measurement.
+ *
+ * A missing browser report fails closed (Requirement 112 §4 / 065). Returning
+ * the Jest half alone would let the gate pass without measuring `packages/cana`,
+ * which is exactly the false green §4 exists to prevent.
+ */
 function defaultReadReport() {
   if (!fs.existsSync(reportPath)) return null;
-  return JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+  if (!fs.existsSync(browserReportPath)) {
+    return {
+      missingBrowserReport: true
+    };
+  }
+
+  const jest = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+  const browser = JSON.parse(fs.readFileSync(browserReportPath, 'utf8'));
+  const combined = { ...jest };
+
+  for (const [file, coverage] of Object.entries(browser)) {
+    // The browser is the authority for the files it ran. If a Node suite still
+    // touches one, its partial view is discarded rather than mixed in.
+    combined[file] = coverage;
+  }
+
+  return combined;
 }
 
 function main(readReport = defaultReadReport, exceptions = ACCEPTED_BELOW_THRESHOLD) {
@@ -272,6 +310,16 @@ function main(readReport = defaultReadReport, exceptions = ACCEPTED_BELOW_THRESH
         + '  Run `bun run test:coverage` first. Treating a missing report as a pass would mean\n'
         + '  the thresholds stop applying the moment coverage stops being produced, which is\n'
         + '  precisely when they matter most.'
+    );
+    process.exit(1);
+  }
+
+  if (coverage && coverage.missingBrowserReport) {
+    console.error(
+      'Coverage threshold check failed: coverage/browser/coverage-final.json does not exist.\n\n'
+        + '  Requirement 112 §4 measures `packages/cana` in a real browser. Run\n'
+        + '  `bun run test:browser` after `bun run test:coverage` before this check.\n'
+        + '  Passing on the Jest half alone would leave cana unmeasured.'
     );
     process.exit(1);
   }
