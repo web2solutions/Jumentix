@@ -78,8 +78,9 @@ This file consolidates non-functional requirements already requested and stored 
 ## Rule of Use
 
 - `099` Every task begins only after current `main`, `dev`, and the full requirement inventory are refreshed and read.
-- `100` Every valid pull-request comment blocks merge until it is corrected with applicable gate
-  evidence; an invalid comment requires a factual explanation in the PR.
+- `100` Every valid pull-request comment and every unresolved GitHub review/discussion
+  thread blocks merge until it is corrected, resolved, or answered as invalid with
+  factual PR evidence and applicable gate evidence.
 - `101` Agents waiting only on remote checks must progress another active, non-conflicting task
   in its own worktree and recheck the waiting task at material boundaries.
 - `102` Every executing task must publish truthful, task-specific Linear Project Updates at
@@ -130,7 +131,8 @@ This file consolidates non-functional requirements already requested and stored 
   about to receive, in `pre-commit`, because the range check cannot see a commit that does
   not exist yet and commit metadata cannot be retracted once pushed. `pre-push` runs the
   same history check before publication, so undeclared local commits cannot reach the forge.
-  No identity is set globally on a contributor machine. Fails closed on a missing, empty or
+  Every commit must also carry a GitHub-verified signature before it can merge into a
+  protected branch. No identity is set globally on a contributor machine. Fails closed on a missing, empty or
   unparseable declaration (Requirement 065).
 
 - `112` Every workspace package and app owns a test suite covering its own source, at
