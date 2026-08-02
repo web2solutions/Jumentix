@@ -4,7 +4,9 @@
 
 ## All Changes
 
+- 2026-08-01 [JUM-581][Testing] Measure Redis and broker adapters at 99% without istanbul ignore - Eduardo Almeida
 - 2026-08-01 [JUM-581][Testing] Run cana in a real browser; delete fake-indexeddb - Eduardo Almeida
+- 2026-08-01 [JUM-597][Fix] Redis key-value client reports connection failures instead of hanging (#40) - Eduardo A.
 - 2026-08-01 [JUM-586][Testing] Every package owns a real test suite, and every package is measured (#37) - Eduardo A.
 - 2026-08-01 [JUM-595][Docs] Agent operating requirements 114–119 (worktree, tests, Docker, API-first) (#39) - Eduardo A.
 - 2026-08-01 chore: sync release registry [JUM-594] (#35) - Eduardo A.

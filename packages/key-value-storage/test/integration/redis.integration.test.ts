@@ -8,11 +8,11 @@ import {
 /**
  * The Redis client against a real Redis (Requirement 112 §1).
  *
- * The unit suite deliberately stops at the singleton and the initial state:
- * without a server, `connect()` waits instead of failing (no connect timeout,
- * driver retries without a ceiling). This suite is the measurement of the live
- * adapter — real Redis under `RUN_REDIS_INTEGRATION` — and the coverage gate
- * runs it under the Jest instrument so the file is counted, not ignored.
+ * The unit suite covers the singleton, the initial state, and the bounded
+ * failure path against an unreachable port (JUM-597). This suite is the
+ * measurement of the live success paths — real Redis under
+ * `RUN_REDIS_INTEGRATION` — and the coverage gate runs it under the Jest
+ * instrument so those lines are counted, not ignored.
  *
  * The singleton shapes the file. `compile()` returns one client for the life of
  * the process, so these tests share it, run in order, and the disconnection
@@ -149,7 +149,8 @@ suite('the Redis client against a real server', () => {
 
     const response = await client.connect();
 
-    expect(response).toStrictEqual({ result: { connected: true } });
+    expect(response.error).toBeUndefined();
+    expect(response.result).toStrictEqual({ connected: true });
   }, 30000);
 
   /**
@@ -286,30 +287,18 @@ suite('choosing the Redis driver with a server present', () => {
   });
 
   /**
-   * Records an inconsistency rather than a guarantee.
-   *
-   * A successful read returns a plain `{ result }` with no `error` key at all,
-   * while a failure returns a `ServiceResponse`, which has both. So the shape a
-   * caller receives depends on the outcome, and `'error' in response` answers
-   * differently for the same operation depending on whether it worked.
-   *
-   * Every caller in this repository checks `response.error` for truthiness, so
-   * nothing is broken today. It is pinned because making the two agree is a
-   * one-line change that would otherwise happen silently, and because a reader
-   * comparing this adapter to the in-memory one will notice the difference and
-   * deserve to find it written down.
+   * Success and failure share the `ServiceResponse` shape: both `result` and
+   * `error` keys are present; callers distinguish them by truthiness of
+   * `response.error`. A successful read is not a bare `{ result }` object.
    */
-  it('returns a bare result on success and a ServiceResponse on failure', async () => {
+  it('returns a ServiceResponse on success with no error set', async () => {
     expect.hasAssertions();
 
-    const client = RedisKeyValueStorageClient.compile();
-    const success = await client.get(key('shape'));
+    const redisClient = RedisKeyValueStorageClient.compile();
+    const success = await redisClient.get(key('shape'));
 
-    expect(Object.keys(success)).toStrictEqual(['result']);
+    expect(success).toBeInstanceOf(ServiceResponse);
+    expect(Object.keys(success).sort()).toStrictEqual(['error', 'result']);
     expect(success.error).toBeUndefined();
-
-    // The failure shape, for comparison: both fields present.
-    expect(Object.keys(new ServiceResponse({ error: new Error('x') })).sort())
-      .toStrictEqual(['error', 'result']);
   }, 30000);
 });
