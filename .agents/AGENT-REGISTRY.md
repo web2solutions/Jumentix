@@ -192,6 +192,28 @@ This registry tracks AI agents collaborating in the Jumentix project.
   - CI gate repair and agent registry synchronization
   - multi-agent collision avoidance and worktree management
 
+### 8) codex-primary-002
+
+- `agent_id`: `codex-primary-002`
+- `agent_name`: `Codex Primary 002`
+- `platform`: `OpenAI Codex Desktop`
+- `machine_id`: `host-eduardos-mac-pro-local`
+- `machine_name`: `Eduardos-Mac-Pro.local`
+- `machine_os`: `Darwin 21.6.0 x86_64`
+- `agent_runtime`: `OpenAI Codex Desktop`
+- `agent_version`: `GPT-5 Codex`
+- `status`: `busy`
+- `registered_at_utc`: `2026-08-01T09:13:19Z`
+- `last_branch_check_utc`: `2026-08-01T11:32:28Z`
+- `main_ref_checked`: `490cb634`
+- `dev_ref_checked`: `22c1726d`
+- `active_epic`: `https://linear.app/jumentix/project/epicci-private-free-ci-security-coverage-and-third-party-pr-review-bf8fde097cf1`
+- `assigned_task`: `https://linear.app/jumentix/issue/JUM-594`
+- `capabilities`:
+  - repository-wide source and documentation assimilation
+  - governed implementation, testing, and CI diagnostics
+  - specification, Linear, and agent-registry traceability
+
 ## Operating Flow
 
 1. Register or update the agent entry here before task execution.

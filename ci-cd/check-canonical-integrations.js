@@ -13,27 +13,13 @@ const INTEGRATION_CONTRACTS = Object.freeze([
     ]
   },
   {
-    file: '.circleci/config.yml',
+    file: '.github/workflows/coverage.yml',
     markers: [
-      'codecov/codecov@4.1.0',
-      'install --frozen-lockfile',
-      'commit_args: "--slug XpertMinds/Jumentix"',
-      'report_args: "--slug XpertMinds/Jumentix"',
-      'upload_args: "--slug XpertMinds/Jumentix --fail-on-error"',
-      // Migrated from the retired GitHub Actions workflows (Requirement 107).
-      // The provider changed; the canonical bindings did not.
-      'AGENT_REGISTRY_TOKEN',
-      'bun run ci:gate:branch',
-      'sonar-scanner',
-      'SONAR_TOKEN',
-      'website:storybook:build'
-    ]
-  },
-  {
-    file: 'codecov.yml',
-    markers: [
-      'require_ci_to_pass: true',
-      'target: 95%'
+      'name: Repository-owned coverage',
+      'bun run test:coverage',
+      'bun run coverage:check',
+      'bun run coverage:patch',
+      'coverage/coverage-final.json'
     ]
   },
   // Dependency scanning is owned by the first-party OSV gate. It resolves the
@@ -57,8 +43,9 @@ const INTEGRATION_CONTRACTS = Object.freeze([
     file: 'documentation/md/CANONICAL-INTEGRATIONS-AND-PROVIDER-REBINDING.md',
     markers: [
       'XpertMinds/Jumentix',
-      'CircleCI',
-      'Codecov',
+      'repository-owned coverage',
+      'CircleCI retired',
+      'Codecov retired',
       'SonarQube Cloud',
       'OSV.dev',
       'GitGuardian',
@@ -85,6 +72,12 @@ const INTEGRATION_CONTRACTS = Object.freeze([
 
 function validateCanonicalIntegrations(rootDir = process.cwd()) {
   const failures = [];
+
+  ['.circleci/config.yml', 'codecov.yml'].forEach((file) => {
+    if (fs.existsSync(path.join(rootDir, file))) {
+      failures.push(`[integrations] retired provider contract is still present: ${file}`);
+    }
+  });
 
   INTEGRATION_CONTRACTS.forEach(({ file, markers }) => {
     const absolutePath = path.join(rootDir, file);

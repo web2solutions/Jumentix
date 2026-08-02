@@ -1,87 +1,74 @@
-# Canonical Integrations and Provider Rebinding
+# Canonical integrations and free private CI
 
-`XpertMinds/Jumentix` is the private canonical application repository. Provider
-migration means creating a new provider-side binding to this repository and
-observing a terminal check or deployment. A copied legacy webhook, a skipped
-scan, or a legacy project key is not passing evidence.
+`XpertMinds/Jumentix` remains the private canonical repository. Requirement 113
+replaces unavailable paid check ownership with tracked, reproducible contracts.
+A missing, skipped, cancelled, timed-out, or failed required check is never green.
 
-## Source-to-canonical inventory
+## Canonical contract
 
-| Integration | Legacy evidence | Canonical contract | Completion evidence |
-| --- | --- | --- | --- |
-| GitHub Actions | test, website, and Sonar workflows | Same tracked workflows on `XpertMinds/Jumentix` | Required workflow runs terminate successfully |
-| CircleCI | `test-source` pipeline and GitHub webhook | Canonical project plus webhook; only `dev` and `main` | `ci/circleci: test-source` succeeds on canonical SHA |
-| Codecov | CircleCI orb and project/patch checks | Canonical Codecov repository with 95% project/patch targets | `codecov/project` and `codecov/patch` succeed |
-| SonarQube Cloud | legacy `web2solutions_aaa-typescript-boilerplate` project | `xpertminds` / `XpertMinds_Jumentix`; required token; no skipped scan | `SonarQube Cloud Scan` runs the scanner and succeeds |
-| OSV dependency scanner | no complete Bun lockfile coverage | First-party scanner resolves the installed Bun dependency tree and queries OSV.dev | `bun run deps:audit` succeeds in the canonical gate |
-| GitGuardian | GitHub App check | GitGuardian installation authorized for the canonical private repository | `GitGuardian Security Checks` succeeds |
-| Cursor Bugbot | GitHub App check | Cursor installation authorized for the canonical private repository | `Cursor Bugbot` terminates successfully |
-| Vercel | `jumentix-website` project and production deployment | Git connection changed to `XpertMinds/Jumentix`, root `apps/jumentix-website` | Canonical Git deployment reaches `READY` |
-| Dependabot | GitHub-native update workflow | `.github/dependabot.yml` targets `dev` for npm and GitHub Actions | Dependabot configuration is accepted and updates can run |
-| GitHub secrets | `AAA_JWT_TOKEN_SECRET_KEY`, `AAA_REDIS_PASSWORD` | Same names, values recreated securely | Secret-name inventory exists; workflows consume them |
-| Environments | `env vars`, `secrets` | Same environments; provider credentials created securely | Environment inventory and provider checks agree |
-| Variables | No repository or environment variables | No variables unless a provider requires a non-secret identifier | Inventory remains explicit |
-| Webhooks | CircleCI and legacy provider callbacks | Only required provider-owned hooks for the canonical repository | Hook targets and provider checks are canonical |
-
-## Migration status (2026-07-30)
-
-| Area | Verified state | Remaining action |
+| Concern | Required free contract | Role |
 | --- | --- | --- |
-| GitHub repository/branch settings | Actions use read-only default permissions; workflow PR approvals are disabled; merge policy, issues, discussions, labels, topics, environments, and CircleCI hook events match the legacy application repository | Private-fork permission cannot be copied because the XpertMinds organization forbids private repository forking; branch protection/rulesets are unavailable on the current private-repository plan in both source and destination |
-| GitHub security | Vulnerability alerts, automated security fixes, and the tracked Dependabot configuration are enabled | Observe the first canonical Dependabot update |
-| CircleCI | `XpertMinds/Jumentix` is followed, uncertified public orbs are allowed for the copied Codecov contract, and the fail-closed rerun of pipeline 6 passed `test-source` on canonical SHA `68d785a4` | Continue enforcing the canonical pipeline on `dev` and `main` |
-| Repository secrets | `AAA_JWT_TOKEN_SECRET_KEY`, `AAA_REDIS_PASSWORD`, and the dedicated `AGENT_REGISTRY_TOKEN` exist by name | Validate their consumers without exposing their values; rotate the registry credential under the owner policy |
-| GitHub environments | `env vars` and `secrets` exist; dependency scanning requires no provider token | Validate environment consumers on canonical task PRs |
-| SonarQube Cloud | Organization `xpertminds`, project `XpertMinds_Jumentix`, GitHub App authorization, and `SONAR_TOKEN` are active; the baseline and PR #10 quality gates passed with zero new issues or hotspots | Continue enforcing the fail-closed scan on canonical PRs |
-| OSV dependency scanner | The first-party scanner resolves the installed Bun dependency graph and queries OSV.dev in fail-closed mode | Continue enforcing `bun run deps:audit` in the canonical gate |
-| Codecov | The GitHub App is authorized for all XpertMinds repositories; the repository token was regenerated and synchronized in GitHub and CircleCI; pipeline 6 passed the fail-closed upload; and Codecov recorded commit `68d785a4` as `CI Passed` with 99.24% project coverage | `codecov/project` and `codecov/patch` did not appear on PR #10; patch coverage analysis for the private repository requires explicit approval for Codecov Team, and no trial or purchase was started |
-| GitGuardian | The GitHub App is authorized for all five XpertMinds repositories; `Jumentix` is monitored; and automatic history scanning completed | PR check runs on forked repositories require GitGuardian Business; explicit paid-plan approval is required, and no trial or purchase was started |
-| Cursor Bugbot | XpertMinds shows 5/5 repositories enabled, including both Jumentix repositories, with Bugbot triggered on every push; PR #10 `Cursor Bugbot` passed | Continue enforcing the terminal Cursor Bugbot check |
-| Vercel | The GitHub App is authorized for all XpertMinds repositories; project `jumentix-website` exists and its latest manual production deployment is `READY` | Git binding to the private organization repository is rejected on Hobby; explicit approval for a paid Pro plan is required, and no trial or purchase was started |
+| CI | GitHub Actions workflows tracked in this repository | Canonical hosted executor for PRs to `dev`, promotions to `main`, and both protected branches |
+| Coverage | repository-owned coverage workflow, JSON/LCOV artifacts, project and patch thresholds | Canonical coverage authority; no provider account or token |
+| Quality | Branch-aware Bun quality gate and Storybook build/smoke/prepublish | Required product and governance validation |
+| SAST/quality | SonarQube Cloud | Defense in depth while its free private-project entitlement remains available |
+| Dependencies | Repository-owned OSV.dev scanner plus Dependabot | Fail-closed vulnerability detection and update proposals |
+| Secrets | Pinned OSS scanner executed by GitHub Actions | Repository-owned replacement for paid PR secret checks |
+| PR findings | Reviewdog reporters fed by pinned OSS scanners | Third-party inline review without granting a hosted vendor the source |
+| Deployment | Reproducible website build and documented manual deployment | Free fallback when private organization Git binding is unavailable |
 
-Terminal provider evidence is attached to Linear JUM-568. Codecov project/patch
-status checks, Vercel Git binding, GitHub private-repository branch protection,
-and GitGuardian checks on canonical forks remain blocked on explicit paid-plan
-approval. This status must not be read as final provider migration approval.
+## Retired or optional services (2026-08-01)
+
+- **CircleCI retired:** its duplicate pipeline and webhook are no longer an
+  authority. GitHub Actions and the same local Bun commands own the gates.
+- **Codecov retired:** private project/patch checks require a paid plan. The
+  repository now calculates and publishes both metrics itself.
+- **GitGuardian retired:** organization-private PR checks require a paid plan.
+  A pinned OSS secret scanner owns this gate.
+- Cursor Bugbot is optional because quota exhaustion makes it non-terminal; it
+  cannot be a required check. Reviewdog-backed scanners provide deterministic
+  third-party PR findings.
+- Vercel Git binding is optional because Hobby does not bind the private
+  organization repository. Build validation remains required and deployment
+  has a manual, auditable fallback.
+- SonarQube Cloud remains defense in depth, not the sole owner of coverage or
+  security. If its private entitlement changes, repository-owned gates remain.
+
+## Third-party PR review implementation
+
+The required `third-party-review` check runs Gitleaks `8.30.1`, Semgrep
+`1.172.0`, and Reviewdog `0.21.0`. Release archives are checksum-verified,
+the Semgrep image is pinned by OCI digest, and the policy lives in
+`.semgrep.yml`. Reviewdog publishes SARIF findings as GitHub PR reviews; scanner
+exit states are enforced separately so publishing a comment cannot mask a
+failed scan. Source code stays inside the GitHub runner.
 
 ## Fail-closed rules
 
-1. Secret values are never copied out of the legacy repository.
-2. `SONAR_TOKEN`, Codecov credentials, Vercel credentials, and
-   provider OAuth grants are recreated through their provider.
-3. A missing token, missing app authorization, absent check, skipped scan,
-   cancelled run, timeout, or provider-side legacy binding is incomplete.
-4. Review approval is optional. Every non-review CI, coverage, security,
-   governance, and conversation-resolution gate remains mandatory.
-5. External-provider blockers are recorded in Linear JUM-568 and its Project
-   Updates with the exact owner action required.
+1. Actions use least-privilege permissions and immutable commit SHAs.
+2. Secrets are never printed, copied from legacy stores, or committed.
+3. The canonical branch gate, coverage, website, security, governance, and
+   conversation-resolution checks must terminate successfully.
+4. No `--no-verify`, admin merge, force merge, fake status, or temporary
+   relaxation is valid evidence.
+5. Branch protection lists only deterministic checks emitted by tracked
+   workflows. Optional providers never block a PR by being absent.
 
 ## Repository-owned validation
 
-Run:
-
 ```bash
+bun run ci:gate:branch
 bun run integrations:check
+bun run test:coverage
+bun run coverage:check
+bun run coverage:patch
 ```
 
-The check validates canonical Sonar identifiers, fail-closed scanner execution,
-the authenticated private agent-registry binding, CircleCI/Codecov contracts,
-OSV.dev scanner presence, Dependabot configuration, and this bilingual inventory.
-It is a required strict-matrix cell.
+The same commands run locally and in GitHub Actions. Coverage artifacts are
+retained by the workflow so every result is auditable without Codecov.
 
-## Provider authorization sequence
+## Rollback and provider changes
 
-1. Authorize each provider's GitHub App/OAuth integration for the private
-   `XpertMinds/Jumentix` repository.
-2. Create or import the canonical provider project; never reuse a legacy project
-   key that points to `web2solutions/aaa-typescript-boilerplate`.
-3. Recreate credentials into GitHub/provider secret stores without printing
-   them.
-4. Trigger a PR or provider validation.
-5. Record the terminal check/deployment URL in Linear JUM-568.
-
-## Rollback
-
-Provider links can be removed independently while the tracked configuration is
-reverted through a governed PR to `dev`. The deprecated repository remains
-archived and is not a rollback delivery target.
+Provider links can be removed independently. A replacement becomes required
+only through a governed requirement and a successful PR to `dev`; external
+green badges or dashboards never override repository evidence.

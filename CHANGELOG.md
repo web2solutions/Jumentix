@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-01 test(external-store-proxy): close the last package under Requirement 112 - Eduardo Almeida
 - 2026-08-01 test(message-mediator): cover the mediator everything else runs on - Eduardo Almeida
 - 2026-08-01 test(external-db-repositories): give the eight database adapters a suite - Eduardo Almeida
 - 2026-08-01 test(database-client-factory): assert all thirteen driver routes - Eduardo Almeida
