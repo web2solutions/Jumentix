@@ -9,9 +9,9 @@
  * into AAA_REDIS_PASSWORD only when the env var is unset, so package.json never
  * embeds a secret and CI can still override via secrets.
  */
-const fs = require('fs');
-const path = require('path');
-const { spawnSync } = require('child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+const { spawnSync } = require('node:child_process');
 const { isEntryPoint } = require('./lib/entry-point.js');
 
 const ROOT = process.cwd();
@@ -19,10 +19,11 @@ const COMPOSE = path.join(
   ROOT,
   'apps/backend-template/docker-compose-redis.yml'
 );
+const REQUIREPASS = /--requirepass\s+(\S+)/;
 
 function passwordFromCompose(composePath = COMPOSE) {
   const contents = fs.readFileSync(composePath, 'utf8');
-  const match = contents.match(/--requirepass\s+(\S+)/);
+  const match = REQUIREPASS.exec(contents);
   if (!match) {
     throw new Error(
       `[redis-integration] could not read --requirepass from ${composePath}`

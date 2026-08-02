@@ -26,6 +26,6 @@ collect(rawDir).then((result) => {
   fs.writeFileSync(output, JSON.stringify(result.coverage.toJSON()));
   console.log(`Browser coverage written for ${result.coverage.files().length} source file(s).`);
 }).catch((error) => {
-  console.error(String(error && error.stack ? error.stack : error));
+  console.error(String(error?.stack ?? error));
   process.exit(1);
 });

@@ -142,7 +142,7 @@ async function collect(rawDir = RAW_DIR) {
     if (!isSubject(repositoryPath)) continue;
     if (!fs.existsSync(repositoryPath)) continue;
 
-    const data = JSON.parse(JSON.stringify(remapped.fileCoverageFor(file).toJSON()));
+    const data = structuredClone(remapped.fileCoverageFor(file).toJSON());
     data.path = repositoryPath;
     subjects.addFileCoverage(data);
   }
@@ -157,9 +157,13 @@ function writeBrowserCoverage(options = {}) {
   // Synchronous by necessity: the runner's `run()` is synchronous, and the
   // remap is the only asynchronous step. `deasync` is not a dependency worth
   // having, so the remap runs in a child of this process.
+  //
+  // `process.execPath` rather than the string `bun`: a bare command is resolved
+  // through PATH (Sonar typescript:S4036 / Security Rating). Using the same
+  // Bun binary that is already running also keeps Requirement 096 pinned.
   const { spawnSync } = require('node:child_process');
   const result = spawnSync(
-    'bun',
+    process.execPath,
     [path.join(__dirname, 'browser-coverage-write.js'), rawDir, output],
     { stdio: 'pipe', encoding: 'utf8' }
   );
