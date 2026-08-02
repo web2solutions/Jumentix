@@ -4,8 +4,12 @@
 
 ## All Changes
 
+- 2026-08-02 Merge remote-tracking branch 'origin/dev' into codex/docs/JUM-009-documentation-drift - Eduardo A.
 - 2026-08-02 ci: complete Bun tooling gate cleanup - Eduardo A.
 - 2026-08-02 ci: enforce authorized emails before push - Eduardo A.
+- 2026-08-02 ci: update GitHub Actions runtime pins - Eduardo A.
+- 2026-08-02 docs: reconcile documentation drift - Eduardo A.
+- 2026-08-02 docs: reconcile documentation drift (#47) - Eduardo A.
 - 2026-08-02 ci: update GitHub Actions runtime pins - Eduardo A.
 - 2026-08-02 docs: reconcile documentation drift - Eduardo A.
 - 2026-08-02 [JUM-581][Testing] Cana runs in a real browser; the IndexedDB fake is deleted (#38) - Eduardo A.
