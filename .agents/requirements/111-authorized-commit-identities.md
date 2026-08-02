@@ -1,4 +1,4 @@
-# 111 - Only Declared Identities May Commit
+# 111 - Only Declared Identities May Commit and Push
 
 - Status: Active
 - Nature: NFR (security, governance, CI/CD)
@@ -7,7 +7,7 @@
 
 ## Requirement
 
-1. **Every identity permitted to author or commit in this repository is declared
+1. **Every identity permitted to author, commit, or push in this repository is declared
    in `.agents/AUTHORIZED-COMMITTERS.json`.** The declaration is the complete
    list. An address absent from it is not permitted, whether or not anyone has
    objected to it before.
@@ -29,7 +29,8 @@
    one nobody has found yet, and the second domain is the proof, not a
    hypothetical.
 
-3. **Both the author and the committer are checked, on every commit.** They are
+3. **Both the author and the committer are checked, on every commit and before
+   every push.** They are
    separate fields and they diverge on precisely the operations that rewrite
    identity — rebase, amend, cherry-pick, and merges performed through the forge
    UI. Validating one leaves the other free to carry anything.
@@ -74,7 +75,14 @@
    a reference into the very history it describes, and rewriting that history
    invalidates it silently. `ROOT` has no such dependency.
 
-7. **No identity is configured globally on a contributor machine.** `user.email`
+7. **Commit creation and push publication have separate checks.** `pre-commit`
+   runs `ci-cd/check-commit-authorship.js --identity` before a commit exists,
+   so an undeclared email is blocked before Git writes irreversible metadata.
+   `pre-push` runs `ci-cd/check-commit-authorship.js` before publication, so any
+   existing local commit with an undeclared author or committer is blocked from
+   reaching the forge. CI runs the same history check through `ci:gate`.
+
+8. **No identity is configured globally on a contributor machine.** `user.email`
    is set per repository. A global identity is inherited by every repository on
    the machine, which is how an address from unrelated work reaches this one; with
    none set, git refuses to commit until an identity is chosen deliberately, so
@@ -98,8 +106,14 @@ enumerative. This requirement is the enumeration.
 ## Verification
 
 - `bun run governance:check-authorship` — runs the check directly.
+- `bun run governance:check-identity` — validates the identity Git would stamp
+  on the next commit.
 - The check runs inside `ci:gate`, so it gates every branch through both CI
   providers (Requirement `107`).
+- `.husky/pre-commit` blocks undeclared author/committer identity before commit
+  creation.
+- `.husky/pre-push` blocks publishing any reachable commit with undeclared
+  author/committer identity.
 - `apps/backend-template/test/unit/ci-cd/check-commit-authorship.test.ts` proves
   the checker fails when it should: on an undeclared author, on an undeclared
   committer whose author is declared, on each fail-closed condition in §4, and —

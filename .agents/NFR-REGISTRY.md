@@ -119,8 +119,8 @@ This file consolidates non-functional requirements already requested and stored 
   narrowing the scope is not a permitted way to meet one. A suite may
   declare `runner: "node"` only with a `reason` naming a concrete Bun incompatibility;
   the map pin overrides environment resolution. Amends 106.
-- `111` Only identities declared in `.agents/AUTHORIZED-COMMITTERS.json` may author or
-  commit. The declaration is an allowlist and must not be inverted into a denylist: the audit
+- `111` Only identities declared in `.agents/AUTHORIZED-COMMITTERS.json` may author,
+  commit, or push. The declaration is an allowlist and must not be inverted into a denylist: the audit
   behind this requirement started from one known corporate address and uncovered a second
   corporate domain nobody was looking for, which a denylist would have passed. Author and
   committer are both checked, since they diverge on rebases, amends and web merges.
@@ -128,9 +128,10 @@ This file consolidates non-functional requirements already requested and stored 
   anchored to a fixed commit, because a base-relative range is empty, and therefore vacuously
   green, on the branch the work merged into. `--identity` verifies the identity a commit is
   about to receive, in `pre-commit`, because the range check cannot see a commit that does
-  not exist yet and commit metadata cannot be retracted once pushed. No identity is set
-  globally on a contributor machine. Fails closed on a missing, empty or unparseable
-  declaration (Requirement 065).
+  not exist yet and commit metadata cannot be retracted once pushed. `pre-push` runs the
+  same history check before publication, so undeclared local commits cannot reach the forge.
+  No identity is set globally on a contributor machine. Fails closed on a missing, empty or
+  unparseable declaration (Requirement 065).
 
 - `112` Every workspace package and app owns a test suite covering its own source, at
   the project's 99% standard. Coverage borrowed from a consumer measures the consumer: a
