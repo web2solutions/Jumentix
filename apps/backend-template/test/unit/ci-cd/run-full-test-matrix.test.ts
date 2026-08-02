@@ -284,6 +284,8 @@ describe('run-full-test-matrix', () => {
       read('.husky/pre-commit').includes('bun run ci:gate:branch'),
       read('.husky/pre-push').includes('bun run ci:gate:branch'),
       read('.husky/pre-merge-commit').includes('bun run ci:gate:branch'),
+      read('.husky/pre-commit').includes('check-commit-authorship.js --identity'),
+      read('.husky/pre-push').includes('check-commit-authorship.js'),
       read('.github/workflows/test.yml').includes('bun run ci:gate:branch'),
       read('.github/workflows/test.yml').includes('JUMENTIX_TASK_TEST_MODE: range'),
       read('.github/workflows/test.yml').includes('JUMENTIX_TASK_TEST_BASE: origin/dev'),
@@ -304,7 +306,7 @@ describe('run-full-test-matrix', () => {
       )
     ]).toStrictEqual([
       true, true, true, true, true, true, true, true, true, true, true, true, true, true,
-      true, true, true, true, true
+      true, true, true, true, true, true, true
     ]);
   });
 });

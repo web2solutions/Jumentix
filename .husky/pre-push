@@ -6,6 +6,11 @@ echo "[Husky] pre-push: branch-aware quality gate"
 # Replaces the nvm block that used to force Node 22 — see pre-merge-commit.
 bun ci-cd/check-bun-version.js || exit 1
 
+# Requirement 111: refuse to push history containing undeclared commit
+# identities. This runs explicitly before the branch gate so push authorization
+# has a single, named failure point even when a reduced task gate is selected.
+bun ci-cd/check-commit-authorship.js || exit 1
+
 target_branch="$(git branch --show-current)"
 
 while read -r local_ref local_sha remote_ref remote_sha
