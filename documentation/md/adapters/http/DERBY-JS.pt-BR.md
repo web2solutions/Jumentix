@@ -19,7 +19,7 @@ Execute a interface HTTP por meio do adaptador Derby.js.
 3. Execute:
 
 ```bash
-pnpm run dev:derby-js
+bun run dev:derby-js
 ```
 
 

@@ -20,7 +20,7 @@ Execute APIs HTTP no estilo Cloudflare Workers (contrato `fetch`), sem tempo de 
 4. Execute:
 
 ```bash
-pnpm run dev:cloudflare-workers
+bun run dev:cloudflare-workers
 ```
 
 

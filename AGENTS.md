@@ -32,8 +32,8 @@ Primary Codex runtime instructions for this repository:
 18. **PR descriptions must use the full PR template** (`.github/pull_request_template.md`)
     with all required sections filled — no placeholders or empty sections (Requirement `085`).
 19. **Wait for all required CI checks to pass** before merging. PRs targeting `dev` require
-    `pnpm run test:unit` to pass. PRs targeting `main` require the full matrix
-    (`pnpm run ci:gate:strict`) (Requirements `087`, `088`).
+    `bun run test:unit` to pass. PRs targeting `main` require the full matrix
+    (`bun run ci:gate:strict`) (Requirements `087`, `088`).
 20. **PR review is optional**; every other required CI, quality, coverage, security, and
     governance check must be terminally successful and cannot be bypassed.
 21. **Branch naming**: `codex/<nature>/<issue-id>-<short-slug>` for Codex agents.
@@ -61,6 +61,12 @@ Primary Codex runtime instructions for this repository:
     the declared surface; silent skips are not green.
 24e. **Service orchestration (Requirement `119`):** prefer APIs over browser/app automation
     for Linear, GitHub, and other services; GitHub must always use `gh`.
+24f. **Linear agent visibility (Requirement `120`):** every executable Linear Issue and
+    Project/Epic must identify the active `agent_identifier`, synchronized with the canonical
+    Agent Registry and local mirror before implementation begins.
+24g. **Coordinated agent delivery (Requirement `121`):** registered agents must refresh
+    sibling-agent progress, blockers, branches, PRs, and Linear Project Updates before starting
+    or resuming work, and coordinate any overlapping scope before editing files.
 25. **Resolve valid PR comments before merge**: every valid human, security, or automated
     finding blocks merge until corrected, validated, and evidenced. No bypass is allowed
     (Requirement `100`).

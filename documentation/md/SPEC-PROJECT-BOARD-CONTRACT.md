@@ -68,8 +68,11 @@ Strategic stream labels are additive (for example `todo-mvp`, `epic`, `iteration
 3. Only agents delegated to an epic may accept its child tasks.
 4. One accountable agent owns each child task; multiple agents must use non-overlapping task
    boundaries.
-5. The canonical Agent Registry records `active_epic` and `assigned_task`.
-6. Cross-epic work requires explicit delegation and separate child tasks for each epic.
+5. Linear Issues and Projects/Epics identify the active `agent_identifier` for each executable
+   scope, synchronized with the canonical Agent Registry.
+6. The canonical Agent Registry records `active_epic`, `assigned_task`, and coordination context
+   when sibling-agent work can overlap.
+7. Cross-epic work requires explicit delegation and separate child tasks for each epic.
 
 ## Spec-Driven Workflow Through the Board
 

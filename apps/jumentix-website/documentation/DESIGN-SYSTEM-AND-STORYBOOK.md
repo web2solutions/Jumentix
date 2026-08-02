@@ -65,17 +65,17 @@ Visual evidence:
 From the monorepo root:
 
 ```bash
-pnpm run website:storybook
-pnpm run website:storybook:build
-pnpm run website:storybook:smoke
+bun run website:storybook
+bun run website:storybook:build
+bun run website:storybook:smoke
 ```
 
 From `apps/jumentix-website`:
 
 ```bash
-pnpm run storybook
-pnpm run storybook:build
-pnpm run storybook:smoke
+bun run storybook
+bun run storybook:build
+bun run storybook:smoke
 ```
 
 The smoke command expects a fresh `storybook-static` build. Generated output is ignored by Git.

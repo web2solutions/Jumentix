@@ -21,7 +21,7 @@ AAA_DATABASE_CONNECTION_URL=postgres://user:pass@aurora-host:5432/aaa
 3. Valide com comando smoke:
 
 ```bash
-pnpm run smoke:db:aurora
+bun run smoke:db:aurora
 ```
 
 

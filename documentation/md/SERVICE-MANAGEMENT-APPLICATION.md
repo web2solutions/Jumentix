@@ -63,14 +63,14 @@ Detailed usage guide:
 
 PM2-served:
 
-- `pnpm run dev:service-management`
-- default dev profile (`pnpm run dev`) also starts `service-management` through PM2.
+- `bun run dev:service-management`
+- default dev profile (`bun run dev`) also starts `service-management` through PM2.
 
 The app state persists with browser `localStorage`.
 
 Recommended dev path:
 
-1. `pnpm run dev:service-management`
+1. `bun run dev:service-management`
 2. Open the local Service Management URL
 3. Model domains/entities
 4. Run exports (OAS/AsyncAPI/JSON Schema/package)
@@ -111,11 +111,11 @@ Orchestrated profiles:
 Integration smoke:
 
 ```bash
-pnpm run test:integration:service-management
+bun run test:integration:service-management
 ```
 
 Unit smoke for roadmap feature presence:
 
 ```bash
-NODE_ENV=dev pnpm exec jest apps/backend-template/test/unit/service-management/mvp.roadmap.features.test.ts --runInBand
+NODE_ENV=dev bunx jest apps/backend-template/test/unit/service-management/mvp.roadmap.features.test.ts --runInBand
 ```

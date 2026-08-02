@@ -29,7 +29,7 @@ be retained only when they are clearly historical delivery evidence.
 git clone git@github.com:XpertMinds/Jumentix.git
 cd Jumentix
 git switch dev
-pnpm install --frozen-lockfile
+bun install --frozen-lockfile
 ```
 
 Agent-registry consumers set `GITHUB_TOKEN` or `GH_TOKEN` with private read

@@ -56,7 +56,7 @@ Keep shared root assets in root:
 - `documentation/`
 - `packages/`
 - `tooling/`
-- workspace-level config files (`pnpm-workspace.yaml`, root `package.json`, root lockfile).
+- workspace-level config files (`package.json#workspaces`, `bun.lock`, `bunfig.toml`).
 
 ### Step 2 - Service Management move
 

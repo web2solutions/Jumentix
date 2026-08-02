@@ -60,7 +60,7 @@ Mantenha os ativos raiz compartilhados na raiz:
 - `documentação/`
 - `pacotes/`
 - `ferramentas/`
-- arquivos de configuração no nível do espaço de trabalho (`pnpm-workspace.yaml`, root `package.json`, root lockfile).
+- arquivos de configuração no nível do workspace (`package.json#workspaces`, `bun.lock`, `bunfig.toml`).
 
 ### Etapa 2 - Mudança no gerenciamento de serviços
 

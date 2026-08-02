@@ -15,6 +15,6 @@ Run API operations with LoopBack runtime integration.
 3. Run:
 
 ```bash
-pnpm run dev:loopback
+bun run dev:loopback
 ```
 

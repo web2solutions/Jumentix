@@ -134,7 +134,7 @@ Rota auditada:
 5. A página de overview em produção mostra `Source file not found`.
 6. O sync consome arquivos externos ao app, indisponíveis quando a raiz Vercel é o website.
 7. O teste prepublish não percorre links, valida landmarks, hidratação ou menu mobile.
-8. O teste prepublish invoca `npm`, contrariando o padrão pnpm.
+8. O teste prepublish invoca `npm`, contrariando o padrão Bun do workspace.
 9. Poucos componentes possuem stories.
 10. A home atual não funciona como destino completo de framework open source.
 

@@ -5,7 +5,9 @@
 - Linear workspace: <https://linear.app/jumentix>
 - The Linear API key is at `../.linear` (one level above project root) — access-controlled, never committed or shared.
 
-Linear is the single source of truth for project management, epics, and task tracking (Requirement `095`).
+Linear is the single source of truth for project management, epics, and task tracking (Requirement `095`). It must also identify the active `agent_identifier` for every executable Issue and Project/Epic, synchronized with the canonical Agent Registry (Requirement `120`).
+
+Agents must refresh sibling-agent progress, blockers, branches, PRs, and Project Updates before starting or resuming work in the same epic, milestone, or component (Requirement `121`).
 
 ## Internal Requirement and MVP Tracking
 

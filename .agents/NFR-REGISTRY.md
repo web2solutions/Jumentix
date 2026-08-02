@@ -18,7 +18,8 @@ This file consolidates non-functional requirements already requested and stored 
 - `063` Workspace coverage policy governance.
 - `065` Commit/push integrity with real CI checks.
 - `087` Branch-aware quality gates: unit tests for `dev`, full matrix for `main`.
-- `088` Task branches run only changed/related unit tests; `dev` PRs run all unit tests and CircleCI is restricted to `dev`/`main`.
+- `088` Task branches run changed/related tests with branch-aware gates; `dev` PRs and
+  release promotion run their destination-appropriate required checks.
 
 ## Security and Compliance NFRs
 
@@ -95,11 +96,9 @@ This file consolidates non-functional requirements already requested and stored 
   selection, `JUMENTIX_GATE_V2` flag-gated flip/rollback, and fail-closed selective-gate evidence.
 - `106` Local Bun for **all** suite types; Node/Jest reserved for CI (`ciRunner` /
   `JUMENTIX_TEST_RUNTIME=node`). CI job greenness is out of scope for the Test Pyramid delivery.
-- `107` CircleCI runs alongside GitHub Actions and must mirror every check the workflows
-  perform, so either provider going dark degrades coverage instead of eliminating it. It
-  must run on every branch, not only `dev` and `main`. A provider that cannot execute
-  blocks a merge exactly as a failing check does (Requirement 065). `ci:check-provider`
-  validates both configurations are present and equivalent.
+- `107` CircleCI is historical and superseded by `113` for the private XpertMinds
+  repository. Provider checks now fail closed against the repository-owned GitHub
+  Actions path rather than requiring a duplicate CircleCI pipeline.
 - `108` An HTTP adapter named for a web framework must import that framework and use it;
   a reference assigned to an unused field, or a require swallowed by try/catch, does not
   satisfy this, and the framework must be a declared dependency. Platform targets with no
@@ -164,6 +163,12 @@ This file consolidates non-functional requirements already requested and stored 
 - `119` Orchestration with Linear, GitHub, and other external services must prefer
   APIs (or official CLIs that wrap those APIs) over browser/app UI automation;
   GitHub must always use `gh` (strengthens `081` / `095`).
+- `120` Linear must identify the active `agent_identifier` for every executable
+  task and expose delegated agent ownership for each Project/Epic, synchronized
+  with the canonical Agent Registry.
+- `121` Registered agents must work as a coordinated delivery system by refreshing
+  sibling-agent progress, blockers, branches, PRs, and Linear Project Updates before
+  starting or resuming work, avoiding silent overlap or duplicate delivery.
 
 When a new NFR is requested:
 

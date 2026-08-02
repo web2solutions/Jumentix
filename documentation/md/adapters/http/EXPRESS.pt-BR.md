@@ -20,13 +20,13 @@ Use Express como seu adaptador de entrada REST.
 3. Comece com:
 
 ```bash
-pnpm run dev:express
+bun run dev:express
 ```
 
 ## Produção
 
 ```bash
-pnpm run prod:express
+bun run prod:express
 ```
 
 

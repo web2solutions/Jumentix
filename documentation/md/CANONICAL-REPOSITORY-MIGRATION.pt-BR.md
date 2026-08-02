@@ -31,7 +31,7 @@ como evidência histórica de entrega.
 git clone git@github.com:XpertMinds/Jumentix.git
 cd Jumentix
 git switch dev
-pnpm install --frozen-lockfile
+bun install --frozen-lockfile
 ```
 
 Consumidores do Agent Registry configuram `GITHUB_TOKEN` ou `GH_TOKEN` com

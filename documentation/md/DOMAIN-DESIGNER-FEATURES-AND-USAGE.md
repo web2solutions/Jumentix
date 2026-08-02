@@ -239,6 +239,6 @@ Service Management smoke tests:
 Run:
 
 ```bash
-pnpm run test:integration:service-management
-NODE_ENV=dev pnpm exec jest apps/backend-template/test/unit/service-management/mvp.roadmap.features.test.ts --runInBand
+bun run test:integration:service-management
+NODE_ENV=dev bunx jest apps/backend-template/test/unit/service-management/mvp.roadmap.features.test.ts --runInBand
 ```

@@ -95,8 +95,13 @@ inicial são autoritativos até que um campo nativo ou personalizado esteja disp
 6. A validade do milestone é verificada antes da delegação de agentes no nível do épico.
 7. Somente agentes delegados a um épico podem executar suas tarefas.
 8. Cada tarefa possui um agente responsável e agentes paralelos atuam em escopos não sobrepostos.
-9. O Agent Registry canônico registra `active_epic` e `assigned_task`.
-10. Um milestone só fecha depois que seus épicos forem concluídos ou o trabalho restante for
+9. Issues e Projects/Epics no Linear identificam o `agent_identifier` ativo, sincronizado com o
+   Agent Registry canônico.
+10. O Agent Registry canônico registra `active_epic`, `assigned_task` e contexto de coordenação
+    quando trabalho de agentes irmãos puder se sobrepor.
+11. Agentes refrescam progresso, bloqueios, branches, PRs e Project Updates de agentes irmãos
+    antes de iniciar ou retomar trabalho.
+12. Um milestone só fecha depois que seus épicos forem concluídos ou o trabalho restante for
     formalmente transferido.
 
 ## Requisitos de governança de relações públicas
@@ -159,7 +164,8 @@ Contrato de execução por branch:
 1. Branches de tarefa executam `ci:gate:task` sobre o diff pertencente à tarefa.
 2. `dev` e pull requests destinados a `dev` executam `test:unit`.
 3. `main` e pull requests de promoção destinados a `main` executam `ci:gate:strict`.
-4. O CircleCI aceita somente `dev` e `main`.
+4. GitHub Actions é o executor hospedado pertencente ao repositório; CircleCI foi aposentado como
+   autoridade pelo Requisito `113`.
 5. `.github/workflows/website.yml` é o responsável pelos checks do Storybook e é selecionado
    somente por caminhos pertencentes ao website; o workflow global e a matriz completa não
    executam Storybook.

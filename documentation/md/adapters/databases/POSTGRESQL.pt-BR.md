@@ -13,7 +13,7 @@ Perfil de cliente SQL baseado em sequencial.
 1. Inicie o contêiner:
 
 ```bash
-pnpm run docker:up:postgresql
+bun run docker:up:postgresql
 ```
 
 2. Definir ambiente:

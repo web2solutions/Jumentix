@@ -32,6 +32,6 @@ const response = await client.request({
 ## Construir
 
 ```bash
-pnpm --filter @jumentix/sdk-rest-client build
+bun run --filter @jumentix/sdk-rest-client build
 ```
 

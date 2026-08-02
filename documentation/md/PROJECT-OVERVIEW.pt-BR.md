@@ -27,7 +27,7 @@ Seu objetivo é permanecer independente da estrutura e pode ser usado para:
 1. Consistência arquitetônica:
    as equipes começam com limites claros (manipuladores, controladores, casos de uso de aplicativos, serviços, repositórios, adaptadores) em vez de inventar uma estrutura por projeto.
 2. Flexibilidade de tempo de execução:
-   o mesmo domínio pode ser executado com Express/Fastify/Restify/Hyper-Express ou Lambda.
+   o mesmo domínio pode ser executado com Express/Fastify/Restify, alvos HTTP serverless ou Lambda.
 3. Evolução mais fácil:
    os projetos podem começar como um monólito modular e ser divididos posteriormente com menor custo de refatoração.
 4. Linha de base de qualidade:

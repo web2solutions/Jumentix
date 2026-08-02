@@ -21,7 +21,7 @@ AAA_DATABASE_CONNECTION_URL=postgres://user:pass@rds-host:5432/aaa
 3. Valide com comando smoke:
 
 ```bash
-pnpm run smoke:db:rds
+bun run smoke:db:rds
 ```
 
 
