@@ -21,11 +21,24 @@
 const fs = require('node:fs');
 
 function emitsNoJavaScript(absolutePath, readFile = (file) => fs.readFileSync(file, 'utf8')) {
+  // A declaration file emits nothing, by definition. Answered without asking
+  // the compiler, because it is the one case that needs no evidence.
+  if (absolutePath.endsWith('.d.ts')) return true;
+
   try {
     // eslint-disable-next-line global-require
     const ts = require('typescript');
     const emitted = ts.transpileModule(readFile(absolutePath), {
-      compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 }
+      compilerOptions: {
+        module: ts.ModuleKind.CommonJS,
+        target: ts.ScriptTarget.ES2022,
+        // Without this the emitted text keeps every comment, so a well
+        // documented type-only file reads as executable. Not hypothetical:
+        // `security-scanner/src/index.d.ts` is types and prose, and the
+        // patch-coverage gate counted sixty-three of its lines as uncovered
+        // because its docstrings survived into the output.
+        removeComments: true
+      }
     }).outputText;
 
     // What is left for a type-only module: the "use strict" prologue, the
