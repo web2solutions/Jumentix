@@ -176,6 +176,7 @@ export class BullMqMessageMediatorAdapter implements IMessageMediator {
       this.queueEventsByName[queueName] = new QueueEvents(queueName, {
         connection: this.options.connection
       });
+      await this.queueEventsByName[queueName].waitUntilReady();
     }
 
     if (!this.workersByName[queueName]) {
@@ -191,6 +192,7 @@ export class BullMqMessageMediatorAdapter implements IMessageMediator {
           connection: this.options.connection
         }
       );
+      await this.workersByName[queueName].waitUntilReady();
     }
   }
 

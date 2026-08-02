@@ -4,6 +4,8 @@
     "node_modules",
     ".build",
     "test/**/*",
+    "packages/*/cypress/**/*",
+    "**/*.cy.ts",
     "apps/backend-template/test/**/*",
     "apps/jumentix-website/**/*"
   ]
