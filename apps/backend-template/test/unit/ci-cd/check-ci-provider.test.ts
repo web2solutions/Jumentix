@@ -69,7 +69,11 @@ describe('check-ci-provider', () => {
 
     const directory = fixture((root) => {
       const file = path.join(root, '.github/workflows/coverage.yml');
-      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace(/upload-artifact@[0-9a-f]{40}/, 'upload-artifact@v4'));
+      // Replace every use, not the first: the workflow legitimately uploads
+      // artifacts in more than one step (per-engine browser evidence, the
+      // merged coverage bundle), and a lone `/.../ ` replace() would leave a
+      // pinned use standing and never exercise the checker's pin detection.
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace(/upload-artifact@[0-9a-f]{40}/g, 'upload-artifact@v4'));
     });
     expect(run(directory).output).toContain('upload-artifact');
   });
