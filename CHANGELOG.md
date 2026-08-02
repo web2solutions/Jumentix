@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-02 docs: reconcile documentation drift - Eduardo A.
 - 2026-08-02 [JUM-581][Testing] Cana runs in a real browser; the IndexedDB fake is deleted (#38) - Eduardo A.
 - 2026-08-02 [JUM-581][Testing] Merge origin/dev into cana browser coverage PR - Eduardo Almeida
 - 2026-08-02 [JUM-594][Fix] Resolve REST and WebSocket SDK spec paths independent of cwd (#45) - Eduardo A.
