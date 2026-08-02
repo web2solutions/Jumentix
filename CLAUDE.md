@@ -31,9 +31,11 @@ This repository supports Claude Code as an official engineering agent.
     unread applicable source blocks execution until resolved.
 17. Before every task, fetch/read current `main` and `dev`, re-read the full requirements set and
     NFR registry on both tips, avoid rework, and update registry branch-check evidence
-    (Requirements `099`, `116`). Use the operator-confirmed worktree layout in Requirement `114`.
+    (Requirements `099`, `116`). Use the operator-confirmed worktree layout in Requirement `114`
+    (this host root: `/Users/eduardoalmeida/apps/XpertMinds`).
     Tests must be functional and Jumentix-valued (`115`); new features ship docs (`117`);
-    smoke/integration use Docker real services (`118`).
+    smoke/integration use Docker real services (`118`); orchestrate Linear/GitHub/others via
+    APIs and always use `gh` for GitHub (`119`).
 18. Start every PR title with the matching Linear Issue identifier:
     `[JUM-XXXX][Nature] <concise outcome>` (086).
 

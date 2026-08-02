@@ -136,6 +136,7 @@ Use these files as living constraints for future maintenance and feature develop
 - [116-dual-branch-requirements-reread-before-task](requirements/116-dual-branch-requirements-reread-before-task.md)
 - [117-feature-documentation-on-new-features](requirements/117-feature-documentation-on-new-features.md)
 - [118-smoke-integration-docker-real-services](requirements/118-smoke-integration-docker-real-services.md)
+- [119-api-first-service-orchestration-github-gh](requirements/119-api-first-service-orchestration-github-gh.md)
 - [Agent Registry](AGENT-REGISTRY.md)
 - [NFR Registry](NFR-REGISTRY.md)
 - [Spec Development Driven Agent](spec-development-driven-agent.md)

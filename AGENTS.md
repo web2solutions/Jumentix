@@ -51,14 +51,16 @@ Primary Codex runtime instructions for this repository:
     avoid rework, refresh registry branch-check evidence, and do not execute until
     Requirements `099` and `116` are satisfied.
 24a. **Onboard worktree layout (Requirement `114`):** confirm the filesystem root with the
-    human operator, then work only under
-    `<root>/XpertMinds/<agent-identifier>/Jumentix` (clone of the canonical repo).
+    human operator (this host: `/Users/eduardoalmeida/apps/XpertMinds`), then work only under
+    `<root>/<agent-identifier>/Jumentix` (clone of the canonical repo).
 24b. **Tests (Requirement `115`):** mandatory, functional, Jumentix-valued — no fake/vacuous
     suites and no suites that primarily test third-party implementation APIs.
 24c. **New features (Requirement `117`):** update software docs and add feature documentation
     (EN/PT) in the same delivery.
 24d. **Smoke/integration (Requirement `118`):** use Docker to start real services and exercise
     the declared surface; silent skips are not green.
+24e. **Service orchestration (Requirement `119`):** prefer APIs over browser/app automation
+    for Linear, GitHub, and other services; GitHub must always use `gh`.
 25. **Resolve valid PR comments before merge**: every valid human, security, or automated
     finding blocks merge until corrected, validated, and evidenced. No bypass is allowed
     (Requirement `100`).
