@@ -42,28 +42,19 @@ function localInputs(root) {
 }
 
 /**
- * LCOV inputs from a download-artifact directory (CI). The artifact action
- * with `merge-multiple: true` unpacks every artifact's files into one tree, so
- * an engine's `coverage/browser/` content lands under
- * `<dir>/browser-coverage-<engine>-<sha>/coverage/browser/` when not merged, or
- * flat `<dir>/coverage/browser/` collisions when merged. Both shapes are
- * searched; first match per engine wins.
+ * LCOV inputs from a coverage directory holding per-engine subdirectories.
+ * Each engine's report was copied to `browser-<engine>/` before the next
+ * engine rebuilt the canonical `browser/`, so every engine's file is still on
+ * disk under `<dir>/browser-<engine>/lcov.info`. Chrome additionally accepts
+ * the canonical `<dir>/browser/lcov.info` for the single-engine local shape.
  */
 function artifactInputs(dir) {
   const inputs = [];
   for (const engine of ENGINES) {
-    const candidates = fs.existsSync(dir)
-      ? fs.readdirSync(dir).flatMap((entry) => {
-          const base = path.join(dir, entry);
-          if (!fs.statSync(base).isDirectory()) return [];
-          const named = entry.match(/^browser-coverage-([a-z]+)-/);
-          if (named && named[1] !== engine) return [];
-          return [
-            path.join(base, 'coverage', 'browser', 'lcov.info'),
-            path.join(base, 'browser', 'lcov.info')
-          ];
-        })
-      : [];
+    const candidates = [
+      path.join(dir, `browser-${engine}`, 'lcov.info'),
+      ...(engine === 'chrome' ? [path.join(dir, 'browser', 'lcov.info')] : [])
+    ];
     const found = candidates.find((candidate) => fs.existsSync(candidate));
     if (found) inputs.push({ engine, lcov: found });
   }

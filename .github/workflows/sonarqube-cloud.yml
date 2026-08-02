@@ -86,22 +86,36 @@ jobs:
           AAA_BULLMQ_REDIS_PORT: "6379"
           AAA_RABBITMQ_URL: amqp://127.0.0.1:5672
 
+      # The matrix runs inline here rather than riding in as artifacts: this
+      # workflow is parallel to `coverage`, so sibling artifacts do not yet
+      # exist when the scan needs them, and the union has to be built in this
+      # workspace. Each engine leaves its LCOV under coverage/browser-<engine>/
+      # (chrome keeps the canonical coverage/browser/); the chrome LCOV is the
+      # one already on disk from the run above, so only the other two engines
+      # run here and the merge unions all three.
       - name: Produce browser coverage for packages/cana (Req 112 §4, engine chrome)
         run: bun ci-cd/run-browser-tests.js --browser chrome
 
-      - name: Write browser LCOV for Sonar
+      - name: Write browser LCOV for Sonar (chrome)
         run: bun ci-cd/write-browser-lcov.js
 
-      # The other engines ran in the coverage workflow; their LCOV rides in as
-      # artifacts so Sonar sees the matrix union rather than one engine's view.
-      - name: Fetch sibling engine coverage (firefox, webkit)
-        uses: actions/download-artifact@018ca2d054dd1b3989d5ba1236e21043a7de8511 # v8.0.1
-        with:
-          pattern: browser-coverage-*-${{ github.sha }}
-          path: /tmp/browser-engines
+      - name: Preserve chrome's browser report before the other engines rebuild it
+        run: cp -r coverage/browser coverage/browser-chrome
+
+      - name: Install WebKit system dependencies
+        run: bunx playwright install-deps webkit
+
+      - name: Produce browser coverage for the remaining engines (firefox, webkit)
+        run: |
+          bun ci-cd/run-browser-tests.js --browser firefox
+          bun ci-cd/write-browser-lcov.js
+          cp -r coverage/browser coverage/browser-firefox
+          bun ci-cd/run-browser-tests.js --browser webkit
+          bun ci-cd/write-browser-lcov.js
+          cp -r coverage/browser coverage/browser-webkit
 
       - name: Merge every engine's browser LCOV into the canonical report
-        run: bun ci-cd/merge-browser-coverage.js --from-dir /tmp/browser-engines
+        run: bun ci-cd/merge-browser-coverage.js --from-dir coverage
 
       # The authority on all four metrics, branches included (Requirement 110).
       # Fails closed when the browser report is missing (Req 112 §4 / 065).
