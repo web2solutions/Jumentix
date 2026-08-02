@@ -11,11 +11,8 @@
   "license": "MIT",
   "scripts": {
     "typecheck": "echo \"security-scanner: plain ESM, no build step\"",
-    "test": "bun run typecheck",
+    "test": "bun test --isolate test",
     "build": "echo \"security-scanner: plain ESM, nothing to compile\"",
     "lint": "echo \"security-scanner: covered by the root eslint run\""
-  },
-  "jumentix": {
-    "testSurface": "typecheck-only"
   }
 }

@@ -32,9 +32,9 @@ that integration stage. Applying a reduced gate to `main` would weaken release s
 - `.husky/pre-commit`, `.husky/pre-push`, and `.husky/pre-merge-commit` invoke the
   selector.
 - GitHub Actions passes the PR base branch or pushed branch explicitly.
-- CircleCI runs only on `dev` and `main` and passes the current branch; the GitHub
-  release-promotion PR gate remains the authoritative target-aware enforcement for
-  `dev` to `main` promotion.
+- GitHub Actions runs the tracked target-aware workflow for PRs to `dev`, promotions
+  to `main`, and pushes to both long-lived branches. Requirement `113` supersedes the
+  former CircleCI execution contract without changing branch selection.
 
 ## Acceptance Criteria
 
@@ -54,5 +54,5 @@ Active.
 - GitHub issue `#191`
 - Linear issue `JUM-504`
 - `.github/workflows/test.yml`
-- `.circleci/config.yml`
+- `.github/workflows/test.yml`
 - `ci-cd/run-branch-quality-gate.js`

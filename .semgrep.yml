@@ -1,0 +1,33 @@
+rules:
+  - id: jumentix.javascript.no-eval
+    message: Dynamic eval executes attacker-controlled code; use an explicit parser or dispatch table.
+    severity: ERROR
+    languages: [javascript, typescript]
+    pattern: eval(...)
+    metadata:
+      category: security
+      cwe: CWE-95
+
+  - id: jumentix.javascript.no-function-constructor
+    message: The Function constructor performs dynamic code execution and is prohibited.
+    severity: ERROR
+    languages: [javascript, typescript]
+    pattern: new Function(...)
+    metadata:
+      category: security
+      cwe: CWE-95
+
+  - id: jumentix.javascript.no-shell-exec
+    message: Shell-based child process execution is injection-prone; use execFile/spawn with an argument array.
+    severity: ERROR
+    languages: [javascript, typescript]
+    patterns:
+      - pattern-either:
+          - pattern: $CP.exec(...)
+          - pattern: $CP.execSync(...)
+      - metavariable-regex:
+          metavariable: $CP
+          regex: ^(child_process|childProcess)$
+    metadata:
+      category: security
+      cwe: CWE-78

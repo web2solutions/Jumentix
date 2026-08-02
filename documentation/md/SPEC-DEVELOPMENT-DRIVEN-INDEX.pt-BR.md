@@ -33,6 +33,7 @@ Este conjunto de documentação define como a intenção do produto, as restriç
 14. [Práticas de engenharia de especificações e política Git](./SPEC-ENGINEERING-PRACTICES-AND-GIT-POLICY.md)
 15. [Práticas de segurança e conformidade de especificações](./SPEC-SECURITY-AND-COMPLIANCE-PRACTICES.md)
 16. [Sistema de componentes Spec Jumentix](./SPEC-JUMENTIX-COMPONENT-SYSTEM.md)
+17. [Estratégia gratuita de CI para repositório privado](./PRIVATE-FREE-CI-STRATEGY.pt-BR.md)
 
 ## Princípio Obrigatório
 

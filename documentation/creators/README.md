@@ -10,6 +10,8 @@ It includes planning, migration, governance, and internal implementation referen
 - [Migration and Execution Plan](../md/JUMENTIX-MONOREPO-EXECUTION-PLAN.md)
 - [Spec Development Driven Corpus](../md/SPEC-DEVELOPMENT-DRIVEN-INDEX.md)
 - [Testing, CI and Quality](../md/TESTING-CI-AND-QUALITY.md)
+- [Agent Operating Requirements 114–119](../md/AGENT-OPERATING-REQUIREMENTS-114-119.md)
+  ([pt-BR](../md/AGENT-OPERATING-REQUIREMENTS-114-119.pt-BR.md))
 
 ## Internal and Operational References
 

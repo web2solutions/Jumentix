@@ -145,6 +145,25 @@ This file consolidates non-functional requirements already requested and stored 
   ratchets: a declared package that has since grown a suite fails too, so the list cannot
   become a permanent exemption. The same list is the Sonar coverage exclusion set, and the two
   disagreeing in either direction fails. `packages:check-suites` validates it.
+- `113` Private-repository CI must have a zero-cost repository-owned path. GitHub
+  Actions is the hosted executor, local/self-hosted execution is the fallback,
+  CircleCI and Codecov are retired as authorities, and coverage remains fail-closed
+  through the repository's four-metric and patch checks. Sonar is defense-in-depth.
+- `114` Agent onboard uses an operator-confirmed filesystem root (this host:
+  `/Users/eduardoalmeida/apps/XpertMinds`) and the layout
+  `<root>/<agent-identifier>/Jumentix` as the only SoT checkout for that agent.
+- `115` Tests are mandatory, functional, and Jumentix-valued: no vacuous/fake suites
+  and no suites whose primary subject is a third-party implementation API.
+- `116` Before every task, re-read the full `.agents/requirements/` set and NFR
+  registry on both `origin/dev` and `origin/main`, record drift, and avoid rework
+  (strengthens `099`).
+- `117` Every new feature updates software documentation and adds dedicated feature
+  docs (EN/PT) in the same delivery (strengthens `025` / `076`).
+- `118` Smoke and integration suites use Docker to start real dependent services and
+  exercise their declared surface; silent skips are not green (strengthens `046` / `047`).
+- `119` Orchestration with Linear, GitHub, and other external services must prefer
+  APIs (or official CLIs that wrap those APIs) over browser/app UI automation;
+  GitHub must always use `gh` (strengthens `081` / `095`).
 
 When a new NFR is requested:
 

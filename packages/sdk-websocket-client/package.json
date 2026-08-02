@@ -10,15 +10,12 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "bun run typecheck",
+    "test": "bun test --isolate test",
     "lint": "echo \"sdk-websocket-client: lint managed by root workspace\"",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "socket.io-client": "^4.8.1",
     "yaml": "^2.5.1"
-  },
-  "jumentix": {
-    "testSurface": "typecheck-only"
   }
 }

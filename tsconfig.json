@@ -46,6 +46,8 @@
       "@jumentix/key-value-storage/*": ["./packages/key-value-storage/src/*"],
       "@jumentix/persistence-contracts": ["./packages/persistence-contracts/src/index.ts"],
       "@jumentix/persistence-contracts/*": ["./packages/persistence-contracts/src/*"],
+      "@jumentix/shared-contracts": ["./packages/shared-contracts/src/index.ts"],
+      "@jumentix/shared-contracts/*": ["./packages/shared-contracts/src/*"],
       "@jumentix/mutex-service": ["./packages/mutex-service/src/index.ts"],
       "@jumentix/mutex-service/*": ["./packages/mutex-service/src/*"],
       "@jumentix/external-persistence-core": ["./packages/external-persistence-core/src/index.ts"],

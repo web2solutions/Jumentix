@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json && node scripts/copy-proto.cjs",
-    "test": "bun run typecheck",
+    "test": "bun test --isolate test",
     "lint": "echo \"sdk-grpc-client: lint managed by root workspace\"",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
@@ -18,8 +18,5 @@
     "@grpc/grpc-js": "^1.14.1",
     "@grpc/proto-loader": "^0.8.0",
     "yaml": "^2.5.1"
-  },
-  "jumentix": {
-    "testSurface": "typecheck-only"
   }
 }

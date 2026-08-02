@@ -49,6 +49,7 @@
     "agent-registry:url": "bun ci-cd/check-agent-registry-source.js --url",
     "arch:check-http-adapters": "bun ci-cd/check-http-adapter-authenticity.js",
     "ci:check-provider": "bun ci-cd/check-ci-provider.js",
+    "ci:check-third-party-review": "bun ci-cd/check-third-party-review.js",
     "requirements:check": "bun ci-cd/check-requirements-registry.js",
     "test-map:generate": "bun ci-cd/generate-test-map.js",
     "test-map:check": "bun ci-cd/check-test-map.js",
@@ -62,7 +63,7 @@
     "ci:smoke": "AAA_JWT_TOKEN_SECRET_KEY=${AAA_JWT_TOKEN_SECRET_KEY:-ci_jwt_secret_key} NODE_ENV=ci bun ci-cd/run-api-smoke.js",
     "ci:integration": "AAA_JWT_TOKEN_SECRET_KEY=${AAA_JWT_TOKEN_SECRET_KEY:-ci_jwt_secret_key} bun ci-cd/run-integration-tests.js",
     "ci:security-smoke": "NODE_ENV=ci bun ci-cd/run-security-smoke.js",
-    "ci:gate": "bun run check-bun-version && bun run deps:check-overrides && bun run deps:check-scanner && bun run deps:audit && bun run lint && bun run deps:check-cycles && bun run arch:check-boundaries && bun run arch:check-users-legacy-imports && bun run arch:check-workspace-boundaries && bun run arch:check-http-adapters && bun run workspace:check-quality && bun run workspace:check-coverage-policy && bun run release:governance:check && bun run governance:check-authorship && bun run requirements:check && bun run packages:check-suites && bun run test-map:check && bun run ci:check-provider && bun run integrations:check && bun run integration-migration:check && bun run agent-registry:check && bun run test:unit && bun run test:coverage && bun run coverage:check && bun run ci:security-smoke && bun run oas:check-routes && bun run serverless:check-handlers && bun run build:dev && bun run ci:smoke",
+    "ci:gate": "bun run check-bun-version && bun run deps:check-overrides && bun run deps:check-scanner && bun run deps:audit && bun run lint && bun run deps:check-cycles && bun run arch:check-boundaries && bun run arch:check-users-legacy-imports && bun run arch:check-workspace-boundaries && bun run arch:check-http-adapters && bun run workspace:check-quality && bun run workspace:check-coverage-policy && bun run release:governance:check && bun run governance:check-authorship && bun run requirements:check && bun run packages:check-suites && bun run test-map:check && bun run ci:check-provider && bun run ci:check-third-party-review && bun run integrations:check && bun run integration-migration:check && bun run agent-registry:check && bun run test:unit && bun run test:coverage && bun run coverage:check && bun run ci:security-smoke && bun run oas:check-routes && bun run serverless:check-handlers && bun run build:dev && bun run ci:smoke",
     "ci:gate:branch": "bun ci-cd/run-branch-quality-gate.js",
     "ci:gate:task": "bun ci-cd/run-task-change-tests.js",
     "ci:gate:strict": "bun ci-cd/run-full-test-matrix.js",
@@ -273,7 +274,7 @@
     "coverage:merge": "bun ci-cd/merge-coverage-reports.js",
     "workspace:test": "bun ci-cd/run-workspace-tests.js",
     "quarantine:flake": "bun ci-cd/quarantine-flake.js",
-    "test:coverage": "NODE_ENV=dev bunx jest apps/backend-template/test/unit packages/cana/test --coverage",
+    "test:coverage": "NODE_ENV=dev bunx jest apps/backend-template/test/unit 'packages/[^/]+/test' --coverage",
     "coverage:check": "bun ci-cd/check-coverage-thresholds.js"
   },
   "dependencies": {

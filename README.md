@@ -1,8 +1,9 @@
 # Jumentix - Software Factory for Product Teams
 
-[![CircleCI dev](https://dl.circleci.com/status-badge/img/gh/XpertMinds/Jumentix/tree/dev.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/XpertMinds/Jumentix/tree/dev)
-[![CircleCI main](https://dl.circleci.com/status-badge/img/gh/XpertMinds/Jumentix/tree/main.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/XpertMinds/Jumentix/tree/main)
-[![codecov](https://codecov.io/gh/XpertMinds/Jumentix/branch/dev/graph/badge.svg)](https://codecov.io/gh/XpertMinds/Jumentix)
+[![Branch gate](https://github.com/XpertMinds/Jumentix/actions/workflows/test.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/test.yml?query=branch%3Adev)
+[![Repository coverage](https://github.com/XpertMinds/Jumentix/actions/workflows/coverage.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/coverage.yml?query=branch%3Adev)
+[![Third-party review](https://github.com/XpertMinds/Jumentix/actions/workflows/third-party-review.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/third-party-review.yml?query=branch%3Adev)
+[![Website quality](https://github.com/XpertMinds/Jumentix/actions/workflows/website.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/website.yml?query=branch%3Adev)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=XpertMinds_Jumentix&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=XpertMinds_Jumentix)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=XpertMinds_Jumentix&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=XpertMinds_Jumentix)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=XpertMinds_Jumentix&metric=coverage)](https://sonarcloud.io/summary/new_code?id=XpertMinds_Jumentix)
@@ -10,8 +11,8 @@
 [![Node compat](https://img.shields.io/badge/node%20compat-22.x-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-6BA539?logo=openapiinitiative&logoColor=white)](./spec/1.0.0.yml)
 [![AsyncAPI](https://img.shields.io/badge/AsyncAPI-3.0-9146FF)](./spec)
-[![License](https://img.shields.io/github/license/XpertMinds/Jumentix)](./LICENSE)
-[![Last Commit](https://img.shields.io/github/last-commit/XpertMinds/Jumentix/dev)](https://github.com/XpertMinds/Jumentix/commits/dev)
+[![Repository](https://img.shields.io/badge/repository-private-24292f?logo=github)](https://github.com/XpertMinds/Jumentix)
+[![License](https://img.shields.io/badge/license-see%20LICENSE-blue)](./LICENSE)
 [![Run with Express](https://img.shields.io/badge/Run%20with-Express-gold?style=flat-square&logo=express&logoColor=000)](https://expressjs.com/)
 [![Run with Fastify](https://img.shields.io/badge/Run%20with-Fastify-gold?style=flat-square&logo=fastify&logoColor=000)](https://fastify.dev/)
 [![Run with Restify](https://img.shields.io/badge/Run%20with-Restify-gold?style=flat-square&logo=node.js&logoColor=000)](http://restify.com/)
@@ -26,6 +27,24 @@
 [![Run on Vercel Functions](https://img.shields.io/badge/Run%20on-Vercel%20Functions-gold?style=flat-square&logo=vercel&logoColor=000)](https://vercel.com/docs/functions)
 [![#StandWithUkraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://vshymanskyy.github.io/StandWithUkraine)
 
+## Coverage and CI Map
+
+| Required gate | `main` | `dev` |
+| --- | :---: | :---: |
+| Branch-aware tests | [![main tests](https://github.com/XpertMinds/Jumentix/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/XpertMinds/Jumentix/actions/workflows/test.yml?query=branch%3Amain) | [![dev tests](https://github.com/XpertMinds/Jumentix/actions/workflows/test.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/test.yml?query=branch%3Adev) |
+| Project + patch coverage | [![main coverage](https://github.com/XpertMinds/Jumentix/actions/workflows/coverage.yml/badge.svg?branch=main)](https://github.com/XpertMinds/Jumentix/actions/workflows/coverage.yml?query=branch%3Amain) | [![dev coverage](https://github.com/XpertMinds/Jumentix/actions/workflows/coverage.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/coverage.yml?query=branch%3Adev) |
+| Third-party security review | [![main review](https://github.com/XpertMinds/Jumentix/actions/workflows/third-party-review.yml/badge.svg?branch=main)](https://github.com/XpertMinds/Jumentix/actions/workflows/third-party-review.yml?query=branch%3Amain) | [![dev review](https://github.com/XpertMinds/Jumentix/actions/workflows/third-party-review.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/third-party-review.yml?query=branch%3Adev) |
+
+Coverage is produced and enforced inside the repository—no Codecov account or
+token is required. Every run retains Istanbul JSON and LCOV evidence. The hard
+minimums are:
+
+| Statements | Lines | Functions | Branches | Changed lines |
+| :---: | :---: | :---: | :---: | :---: |
+| ≥ 99% | ≥ 99% | ≥ 99% | ≥ 90% | ≥ 99% |
+
+[Open coverage runs and downloadable evidence](https://github.com/XpertMinds/Jumentix/actions/workflows/coverage.yml)
+
 Jumentix is a monorepo product that works as a software factory for engineering teams and product owners. It helps you go from idea to production-ready SaaS in days, not months, with a contract-first architecture, runtime flexibility, and enterprise-grade governance.
 
 > **Canonical private repository:** `XpertMinds/Jumentix`.
@@ -37,6 +56,7 @@ Jumentix is a monorepo product that works as a software factory for engineering 
 ## Index
 
 - [The Enterprise Delivery Gap](#the-enterprise-delivery-gap)
+- [Coverage and CI Map](#coverage-and-ci-map)
 - [Why Jumentix Wins](#why-jumentix-wins)
 - [Business ROI](#business-roi)
 - [Who Benefits](#who-benefits)

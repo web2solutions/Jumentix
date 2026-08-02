@@ -15,4 +15,6 @@ A late smoke test with coverage enabled can overwrite richer unit coverage artif
 - Jest global `coverageThreshold` is set to `95%` for all metrics.
 
 ## Status
-Active (enforced, currently below target)
+Superseded in provider ownership by Requirement `113` on 2026-08-01. The coverage
+integrity principle remains active, but repository-owned threshold and patch
+checks replace Codecov as the authority for the private repository.

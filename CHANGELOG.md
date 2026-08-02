@@ -4,8 +4,24 @@
 
 ## All Changes
 
-- 2026-08-01 fix(ci): make the quarantine actually relieve the gate (JUM-586) - Eduardo Almeida
-- 2026-08-01 fix(ci): make the test map complete in both directions (JUM-587) - Eduardo Almeida
+- 2026-08-02 test: cover the explicit-path branch of the WebSocket spec loader - Eduardo A.
+- 2026-08-02 fix: resolve REST and WebSocket SDK spec paths independent of cwd - Eduardo A.
+- 2026-08-02 test: cover the missing-spec failure branch of loadSpecs - Eduardo A.
+- 2026-08-02 fix: resolve AsyncAPI gRPC spec independent of the current working directory - Eduardo A.
+- 2026-08-01 chore(registry): resync opencode-primary-001 status to available [JUM-597] (#41) - Eduardo A.
+- 2026-08-01 [JUM-597][Fix] Redis key-value client reports connection failures instead of hanging (#40) - Eduardo A.
+- 2026-08-01 [JUM-586][Testing] Every package owns a real test suite, and every package is measured (#37) - Eduardo A.
+- 2026-08-01 [JUM-595][Docs] Agent operating requirements 114–119 (worktree, tests, Docker, API-first) (#39) - Eduardo A.
+- 2026-08-01 chore: sync release registry [JUM-594] (#35) - Eduardo A.
+- 2026-08-01 docs: define private free CI strategy [JUM-593] (#34) - Eduardo A.
+- 2026-08-01 docs: restore truthful badges and coverage map [JUM-592] (#33) - Eduardo A.
+- 2026-08-01 [JUM-591][CI] Enforce pinned third-party PR review (#32) - Eduardo A.
+- 2026-08-01 [JUM-590][CI] Replace paid private CI providers (#31) - Eduardo A.
+- 2026-08-01 [JUM-589][Governance] Sync terminal Codex onboarding state (#30) - Eduardo A.
+- 2026-08-01 [JUM-589][Governance] Sync terminal Codex onboarding state - Eduardo Almeida
+- 2026-08-01 [JUM-589][Governance] Sync Codex registry onboarding (#29) - Eduardo A.
+- 2026-08-01 [JUM-589][Governance] Sync Codex registry onboarding - Eduardo Almeida
+- 2026-08-01 fix(ci): make the test map complete in both directions [JUM-587] (#27) - Eduardo A.
 - 2026-08-01 [JUM-585][Release] Reconcile main ancestry into dev (#26) - Eduardo A.
 - 2026-08-01 chore(release): reconcile main ancestry into dev - Eduardo Almeida
 - 2026-08-01 feat(testing): every package owns its suite, with a ratcheting debt register [JUM-585] (#24) (#25) - Eduardo A.

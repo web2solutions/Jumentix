@@ -1,15 +1,20 @@
 {
   "name": "@jumentix/shared-contracts",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
-  "description": "JumentiX shared OpenAPI/AsyncAPI contracts placeholder",
+  "description": "Shared OpenAPI/AsyncAPI contract resolution helpers for the JumentiX SDKs.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "build": "echo \"shared-contracts placeholder: migration wave pending\"",
-    "test": "bun run typecheck",
-    "lint": "echo \"shared-contracts placeholder: migration wave pending\"",
-    "typecheck": "echo \"shared-contracts placeholder: migration wave pending\""
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint ./src --ext .ts",
+    "test": "bun test --isolate test"
   },
-  "jumentix": {
-    "testSurface": "typecheck-only"
+  "dependencies": {
+    "yaml": "^2.5.1"
   }
 }

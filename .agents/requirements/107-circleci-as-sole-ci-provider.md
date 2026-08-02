@@ -1,6 +1,6 @@
 # 107 - CircleCI Runs Every Branch Alongside GitHub Actions
 
-- Status: Active
+- Status: Superseded by Requirement `113` on 2026-08-01
 - Nature: NFR (CI/CD, governance)
 - Source: Project owner decision, 2026-07-30, revised the same day.
 
@@ -18,6 +18,13 @@ rather than being a replacement.
 
 The file keeps its original slug so existing links do not break; the title above
 is authoritative.
+
+## Supersession
+
+CircleCI ceased producing canonical checks for the private XpertMinds repository.
+Requirement `113` retires the inactive provider and replaces its redundancy claim
+with repository-owned commands that run on GitHub-hosted or self-hosted runners.
+Historical clauses below remain for audit only.
 
 ## Requirement
 

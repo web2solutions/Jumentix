@@ -103,7 +103,7 @@ Cheques incluídos:
 - Verificação de resolução de rota OpenAPI
 - construir
 - fumaça de integração
-- limite mínimo de cobertura (99% global via status Jest + Codecov)
+- limites mínimos de cobertura de projeto e patch pertencentes ao repositório
 
 O gate estrito é um manifesto explícito e fail-closed com 24 células obrigatórias:
 
@@ -174,7 +174,7 @@ Aplicação local:
 
 Aplicação remota:
 
-- CircleCI e GitHub Actions invocam `pnpm run ci:gate:branch`
+- GitHub Actions invoca `bun run ci:gate:branch`; CircleCI foi aposentado pelo Requisito 113
 - o GitHub Actions passa a branch base do PR ou a branch enviada e sempre publica a evidência do gate
 - eventos de push em branches de tarefa comparam `origin/dev...HEAD`; a CI hospedada nunca usa o
   modo local de diff staged
@@ -195,13 +195,13 @@ Importação de cobertura do SonarQube Cloud:
 
 | Integração | Finalidade | Onde está configurado | O que executar/requisitos |
 |------------|---------|----------------------------|-----------------------------|
-| CircleCI | Pipeline com seleção por branch e upload de cobertura | `.circleci/config.yml` | Executa somente em `dev` e `main`; seleciona testes unitários em `dev` e matriz completa em `main` |
 | GitHub Actions (testes) | Validação orientada ao destino em push/PR | `.github/workflows/test.yml` | Seleciona pelo destino do PR ou branch enviada e publica evidência do gate |
+| GitHub Actions (cobertura) | Cobertura de projeto e patch pertencente ao repositório | `.github/workflows/coverage.yml` | Aplica `coverage:check` e `coverage:patch` e retém evidência JSON/LCOV |
+| GitHub Actions (revisão third-party) | Revisão fail-closed de segredos e análise estática | `.github/workflows/third-party-review.yml` | Executa Gitleaks/Semgrep fixados e publica via Reviewdog fixado |
 | GitHub Actions (website) | Storybook e prontidão de publicação pertencentes ao website | `.github/workflows/website.yml` | Filtrado por caminhos; executa build/smoke do Storybook e prepublish de forma independente |
-| Ações GitHub (SonarQube Cloud) | Análise estática + portão de qualidade + importação de cobertura | `.github/workflows/sonarqube-cloud.yml`, `sonar-project.properties` | Requer `SONAR_TOKEN`; executa `pnpm run test:unit` primeiro |
-| Códigocov | Verificações de status de cobertura para projeto e patch | `codecov.yml` | A meta é `95%` para projeto e patch |
-| Portão de cobertura Jest | Hard gate local para evitar fusões de baixa cobertura | `jest.config.js` | Limiares globais: `linhas/declarações >= 95%`, `ramos/funções >= 80%` |
-| Husky | Ganchos Git locais para verificações de qualidade | `.husky/*` | Instalado por `pnpm run prepare` |
+| Ações GitHub (SonarQube Cloud) | Análise estática + quality gate + importação de cobertura | `.github/workflows/sonarqube-cloud.yml`, `sonar-project.properties` | Requer `SONAR_TOKEN`; produz LCOV antes do scan |
+| Gate de cobertura do repositório | Hard gate local contra baixa cobertura | `jest.config.js`, `ci-cd/check-coverage-thresholds.js` | Statements/linhas/funções 99%, branches 90%, linhas alteradas 99% |
+| Husky | Ganchos Git locais para verificações de qualidade | `.husky/*` | Instalado por `bun run prepare` |
 | Comprometer-se + Comprometer-se | Commits convencionais e fluxo de commits guiados | `commitlint.config.js`, `package.json` | `pnpm executar commit` |
 | Automação de sincronização do changelog | Mantém `CHANGELOG.md` alinhado com a história do Git | `ci-cd/update-changelog.js`, `.husky/post-commit` | `pnpm execute changelog:update`, `pnpm execute changelog:check` |
 | Liberar verificação de governança | Aplica contratos de script de lançamento e metadados de publicação de pacotes | `ci-cd/check-release-governance.js` | `pnpm run release:governance:check` |
@@ -212,13 +212,10 @@ Importação de cobertura do SonarQube Cloud:
 
 ### Plataformas e responsabilidades de CI
 
-#### Círculo CI
+#### Provedores hospedados aposentados
 
-- Arquivo de pipeline: `.circleci/config.yml`
-- Usa `cimg/node:22.23` mais `redis:latest`
-- Instala `pnpm@9.15.3`, aguarda Redis, executa `pnpm run ci:gate:branch`, armazena a
-  evidência selecionada e envia cobertura pelo orb do Codecov
-- Os filtros permitem somente `dev` e `main`
+CircleCI e Codecov foram aposentados pelo Requisito 113. Seus recursos pagos para
+repositório privado foram substituídos por GitHub Actions rastreado e scripts próprios.
 
 #### GitHub Actions - Fluxo de trabalho de teste
 
@@ -226,7 +223,7 @@ Importação de cobertura do SonarQube Cloud:
 - Aciona:
   - `push` para `main` e `dev`
   - `pull_request` para `dev` e `main`
-- Configura Redis (com senha), instala `pnpm` e executa `pnpm run ci:gate:branch`
+- Configura Redis (com senha), instala Bun fixado e executa `bun run ci:gate:branch`
 - Publica a evidência do gate com `if: always()` e exige evidência da matriz completa somente
   quando o destino é `main`
 
@@ -241,9 +238,7 @@ Importação de cobertura do SonarQube Cloud:
 
 ### Política de Cobertura (Padrão Estrito)
 
-- Codecov impõe:
-  - meta de cobertura do projeto: `95%`
-  - meta de cobertura de patch: `95%`
+- O workflow próprio impõe cobertura de projeto e patch.
 - Jest impõe portão local antes da fusão:
   - `linhas >= 99%`
   - `declarações >= 99%`
@@ -311,9 +306,9 @@ pnpm run ci:smoke
 pnpm run ci:integration
 ```
 
-### Solução de problemas (CI / SonarQube / Codecov)
+### Solução de problemas (CI / SonarQube / cobertura do repositório)
 
 Para incidentes de CI e verificações com falha, consulte:
 
-- [Solução de problemas de CI / SonarQube / Codecov](./CI-TROUBLESHOOTING.md)
+- [Solução de problemas de CI / SonarQube / cobertura do repositório](./CI-TROUBLESHOOTING.md)
 - [Guia de teste de API em tempo real](./REALTIME-API-TESTING.md)
