@@ -22,16 +22,19 @@ This document tracks the package and application workspace map implemented in `d
 - `@jumentix/sdk-websocket-client`
 - `@jumentix/sdk-grpc-client`
 
-## Private Configuration and Contract Placeholders
+## Shared Contract and Configuration Packages
 
+- `@jumentix/shared-contracts` - shared OpenAPI/AsyncAPI canonical-spec resolution helpers used by
+  the SDK packages (`loadCanonicalSpec`, `candidateSpecPaths`).
 - `@jumentix/config-eslint`
 - `@jumentix/config-jest`
 - `@jumentix/config-ts`
-- `@jumentix/shared-contracts`
 
-These four workspaces are private migration placeholders. Their lifecycle scripts intentionally
+The `config-*` workspaces are private migration placeholders. Their lifecycle scripts intentionally
 report that migration is pending. Canonical executable configuration and API contracts remain in
-the repository root and `spec/` until those migrations are implemented.
+the repository root and `spec/` until those migrations are implemented. `shared-contracts` owns a
+real source module and its own test suite (Requirement 112) and is measured for coverage; it is no
+longer a placeholder.
 
 ## App Workspaces
 

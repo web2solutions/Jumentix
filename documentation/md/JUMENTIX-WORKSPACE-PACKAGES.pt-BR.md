@@ -22,16 +22,19 @@ Este documento rastreia o mapa de pacotes e aplicações implementado em `dev`.
 - `@jumentix/sdk-websocket-client`
 - `@jumentix/sdk-grpc-client`
 
-## Placeholders Privados de Configuração e Contratos
+## Pacotes Compartilhados de Contratos e Configuração
 
+- `@jumentix/shared-contracts` - auxiliares compartilhados de resolução de specs canônicas
+  OpenAPI/AsyncAPI usados pelos pacotes SDK (`loadCanonicalSpec`, `candidateSpecPaths`).
 - `@jumentix/config-eslint`
 - `@jumentix/config-jest`
 - `@jumentix/config-ts`
-- `@jumentix/shared-contracts`
 
-Esses quatro workspaces são placeholders privados de migração. Seus scripts de ciclo de vida
+Os workspaces `config-*` são placeholders privados de migração. Seus scripts de ciclo de vida
 informam intencionalmente que a migração está pendente. A configuração executável e os contratos de
 API canônicos permanecem na raiz e em `spec/` até que essas migrações sejam implementadas.
+`shared-contracts` possui um módulo de origem real e sua própria suíte de testes (Requisito 112) e é
+medido para cobertura; não é mais um placeholder.
 
 ## Workspaces de Aplicações
 
