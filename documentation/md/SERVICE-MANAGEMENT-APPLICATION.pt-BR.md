@@ -82,10 +82,25 @@ Caminho de desenvolvimento recomendado:
 
 ## API Runtime Env (integrada)
 
-- `GET /api/runtime/env?environment=dev|staging|ci`
+- `GET /api/runtime/env?environment=dev|development|staging|ci|test`
 - `POST /api/runtime/env`
 
 O servidor persiste chaves de tempo de execução aprovadas para arquivos em `apps/backend-template/src/config/`.
+
+### Postura de segurança
+
+- Bind padrão é `127.0.0.1` (apenas loopback).
+- Vincular a todas as interfaces requer opt-in explícito via `JUMENTIX_SERVICE_MANAGEMENT_HOST=0.0.0.0`.
+- Token bearer opcional para requisições de mutação via `JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN`.
+- Cada mutação é registrada com timestamp, ambiente e chaves alteradas (não valores).
+
+### Contrato de erro
+
+- Ambiente desconhecido: `400` com lista de aceitos, nenhum arquivo escrito.
+- Diretório de configuração ausente na inicialização: servidor encerra com erro claro.
+- Arquivo de ambiente ausente: `400` com path resolvido.
+- Payload JSON inválido: `400` distinguindo parse de falha de filesystem.
+- Mutação não autorizada: `401` quando token de auth está configurado.
 
 ## Fluxo de edição em tempo de execução
 

@@ -4,9 +4,12 @@ const http = require('http');
 
 const rootDirectory = __dirname;
 const projectRoot = path.resolve(__dirname, '..');
-const configDirectory = path.join(projectRoot, 'src', 'config');
-const host = process.env.JUMENTIX_SERVICE_MANAGEMENT_HOST || '0.0.0.0';
+const configDirectory = process.env.JUMENTIX_SERVICE_MANAGEMENT_CONFIG_DIR
+  ? path.resolve(process.env.JUMENTIX_SERVICE_MANAGEMENT_CONFIG_DIR)
+  : path.join(projectRoot, 'backend-template', 'src', 'config');
+const host = process.env.JUMENTIX_SERVICE_MANAGEMENT_HOST || '127.0.0.1';
 const port = Number(process.env.JUMENTIX_SERVICE_MANAGEMENT_PORT || 3200);
+const authToken = process.env.JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN || '';
 const editableRuntimeKeys = [
   'JUMENTIX_HTTP_FRAMEWORK',
   'JUMENTIX_REALTIME_API',
@@ -26,6 +29,12 @@ const envFileByRuntime = {
   ci: '.env.ci',
   test: '.env.ci'
 };
+
+if (!fs.existsSync(configDirectory)) {
+  // eslint-disable-next-line no-console
+  console.error(`Service Management config directory not found: ${configDirectory}`);
+  process.exit(1);
+}
 
 const contentTypeByExtension = {
   '.html': 'text/html; charset=utf-8',
@@ -71,7 +80,11 @@ function resolveRequestPath(urlPath) {
 function normalizeEnvironment(runtime) {
   const fallback = process.env.NODE_ENV || 'dev';
   const selected = String(runtime || fallback).trim().toLowerCase();
-  return envFileByRuntime[selected] ? selected : 'dev';
+  if (!envFileByRuntime[selected]) {
+    const accepted = Object.keys(envFileByRuntime).join(', ');
+    throw new Error(`Unsupported environment "${selected}". Accepted values: ${accepted}`);
+  }
+  return selected;
 }
 
 function resolveEnvFilePath(runtime) {
@@ -114,9 +127,12 @@ function toEnvFileValue(rawValue) {
 
 function readRuntimeEnv(runtime) {
   const resolved = resolveEnvFilePath(runtime);
-  const fileContent = fs.existsSync(resolved.filePath)
-    ? fs.readFileSync(resolved.filePath, 'utf8')
-    : '';
+  if (!fs.existsSync(resolved.filePath)) {
+    const error = new Error(`Environment file not found: ${resolved.filePath}`);
+    error.code = 'ENV_FILE_NOT_FOUND';
+    throw error;
+  }
+  const fileContent = fs.readFileSync(resolved.filePath, 'utf8');
   const parsed = parseEnvContent(fileContent);
   const runtimeValues = {};
   editableRuntimeKeys.forEach((key) => {
@@ -131,9 +147,12 @@ function readRuntimeEnv(runtime) {
 
 function updateRuntimeEnv(runtime, values) {
   const resolved = resolveEnvFilePath(runtime);
-  const currentContent = fs.existsSync(resolved.filePath)
-    ? fs.readFileSync(resolved.filePath, 'utf8')
-    : '';
+  if (!fs.existsSync(resolved.filePath)) {
+    const error = new Error(`Environment file not found: ${resolved.filePath}`);
+    error.code = 'ENV_FILE_NOT_FOUND';
+    throw error;
+  }
+  const currentContent = fs.readFileSync(resolved.filePath, 'utf8');
   const lines = String(currentContent).split(/\r?\n/);
   const updates = {};
   editableRuntimeKeys.forEach((key) => {
@@ -154,7 +173,13 @@ function updateRuntimeEnv(runtime, values) {
   });
 
   const finalContent = lines.join('\n').replace(/\n{3,}/g, '\n\n');
-  fs.writeFileSync(resolved.filePath, finalContent.endsWith('\n') ? finalContent : `${finalContent}\n`, 'utf8');
+  const contentToWrite = finalContent.endsWith('\n') ? finalContent : `${finalContent}\n`;
+  const tempPath = `${resolved.filePath}.tmp-${process.pid}-${Date.now()}`;
+  fs.writeFileSync(tempPath, contentToWrite, 'utf8');
+  const fd = fs.openSync(tempPath, 'r+');
+  fs.fsyncSync(fd);
+  fs.closeSync(fd);
+  fs.renameSync(tempPath, resolved.filePath);
 
   return readRuntimeEnv(resolved.environment);
 }
@@ -183,19 +208,45 @@ function readBody(request, callback) {
   });
 }
 
+function isAuthorized(request) {
+  if (!authToken) return true;
+  const authHeader = request.headers.authorization || '';
+  return authHeader === `Bearer ${authToken}`;
+}
+
+function logMutation(environment, changedKeys) {
+  const timestamp = new Date().toISOString();
+  // eslint-disable-next-line no-console
+  console.log(`[${timestamp}] /api/runtime/env mutation: environment=${environment} keys=${changedKeys.join(',')}`);
+}
+
 const server = http.createServer((request, response) => {
   const requestUrl = new URL(request.url || '/', `http://${host}:${port}`);
   if (request.method === 'GET' && requestUrl.pathname === '/api/runtime/env') {
-    const payload = readRuntimeEnv(process.env.NODE_ENV || 'dev');
-    writeJson(response, 200, payload);
+    try {
+      const environment = requestUrl.searchParams.get('environment') || process.env.NODE_ENV || 'dev';
+      const payload = readRuntimeEnv(environment);
+      writeJson(response, 200, payload);
+    } catch (error) {
+      writeJson(response, 400, {
+        error: 'Invalid environment request.',
+        details: error instanceof Error ? error.message : String(error)
+      });
+    }
     return;
   }
 
   if (request.method === 'POST' && requestUrl.pathname === '/api/runtime/env') {
+    if (!isAuthorized(request)) {
+      writeJson(response, 401, { error: 'Unauthorized.' });
+      return;
+    }
     readBody(request, (rawBody) => {
       try {
         const parsed = rawBody ? JSON.parse(rawBody) : {};
-        const payload = updateRuntimeEnv(process.env.NODE_ENV || 'dev', parsed.values || {});
+        const environment = parsed.environment || process.env.NODE_ENV || 'dev';
+        const payload = updateRuntimeEnv(environment, parsed.values || {});
+        logMutation(environment, Object.keys(parsed.values || {}));
         writeJson(response, 200, payload);
       } catch (error) {
         writeJson(response, 400, {

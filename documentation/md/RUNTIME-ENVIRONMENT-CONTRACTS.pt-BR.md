@@ -114,10 +114,33 @@ Perfis de tempo de execução:
 
 O Service Management expõe pontos de extremidade de leitura/gravação do ambiente de tempo de execução:
 
-- `GET /api/runtime/env?environment=dev|staging|ci`
+- `GET /api/runtime/env?environment=dev|development|staging|ci|test`
 - `POST /api/runtime/env`
 
 O editor env altera apenas as chaves aprovadas deste contrato, preservando as proteções.
+
+### Ambientes aceitos
+
+- `dev` → `.env.dev`
+- `development` → `.env.dev`
+- `staging` → `.env.staging`
+- `ci` → `.env.ci`
+- `test` → `.env.ci`
+
+Ambientes desconhecidos retornam `400` com a lista de aceitos; nenhum arquivo é escrito.
+
+### Postura de segurança
+
+- Bind padrão é `127.0.0.1` (apenas loopback).
+- Token bearer opcional para mutações via `JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN`.
+- Log de auditoria de mutações registra timestamp, ambiente e chaves alteradas (não valores).
+
+### Contrato de erro
+
+- Ambiente desconhecido: `400` com lista de aceitos.
+- Arquivo de ambiente ausente: `400` com path resolvido.
+- Payload JSON inválido: `400` distinguindo parse de falha de filesystem.
+- Mutação não autorizada: `401` quando token de auth está configurado.
 
 ## Guarda-corpos
 
