@@ -36,15 +36,15 @@ Este guia é exclusivo para a interface em tempo real do Socket.IO.
 Para executar vários servidores Socket.IO com entrega consistente entre nós, habilite o adaptador Redis Streams:
 
 ```bash
-AAA_WEBSOCKET_SOCKETIO_ADAPTER=redis-streams
-AAA_WEBSOCKET_REDIS_URL=redis://127.0.0.1:6379/1
+JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER=redis-streams
+JUMENTIX_WEBSOCKET_REDIS_URL=redis://127.0.0.1:6379/1
 ```
 
 Ordem de resolução substituta para conexão Redis:
 
-1. `AAA_WEBSOCKET_REDIS_URL`
-2. `AAA_REDIS_URL`
-3. `AAA_REDIS_HOST` + `AAA_REDIS_PORT` + `AAA_REDIS_DATABASE` (+ `AAA_REDIS_PASSWORD`)
+1. `JUMENTIX_WEBSOCKET_REDIS_URL`
+2. `JUMENTIX_REDIS_URL`
+3. `JUMENTIX_REDIS_HOST` + `JUMENTIX_REDIS_PORT` + `JUMENTIX_REDIS_DATABASE` (+ `JUMENTIX_REDIS_PASSWORD`)
 
 Arquivos de implementação:
 
@@ -56,8 +56,8 @@ Arquivos de implementação:
 Para escalar entre trabalhadores da CPU (vários threads/processos do Node.js no mesmo host), habilite:
 
 ```bash
-AAA_WEBSOCKET_SOCKETIO_ADAPTER=cluster
-AAA_WEBSOCKET_CLUSTER_WORKERS=4
+JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER=cluster
+JUMENTIX_WEBSOCKET_CLUSTER_WORKERS=4
 ```
 
 Arquivos de implementação:

@@ -85,7 +85,7 @@ Includes:
 Required specs:
 
 1. Persistence contracts in `packages/persistence-contracts`
-2. Runtime driver selection contracts (`AAA_DATABASE_DRIVER`)
+2. Runtime driver selection contracts (`JUMENTIX_DATABASE_DRIVER`)
 3. Database adapter docs in `documentation/md/adapters/databases/*`
 4. Smoke validation matrix docs in `documentation/md/DATABASE-DRIVERS-SMOKE-TESTS.md`
 

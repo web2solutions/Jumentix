@@ -10,14 +10,14 @@ Runtime startup must be driven by environment variables and editable through Ser
   - `apps/backend-template/src/interface/gRPC/adapters/start-grpc-api.ts`
 - PM2 must start REST, WebSocket, and gRPC as separate processes.
 - Runtime selection keys must exist in all `apps/backend-template/src/config/.env*` files:
-  - `AAA_HTTP_FRAMEWORK` (default `express`)
-  - `AAA_REALTIME_API` (default `no`)
-  - `AAA_REALTIME_API_PROTOCOL` (default `websocket`)
-  - `AAA_REALTIME_API_DATABASE_DRIVER` (Mongo, PostgreSQL, MySQL, MS SQL, RDS, Aurora, Cassandra)
+  - `JUMENTIX_HTTP_FRAMEWORK` (default `express`)
+  - `JUMENTIX_REALTIME_API` (default `no`)
+  - `JUMENTIX_REALTIME_API_PROTOCOL` (default `websocket`)
+  - `JUMENTIX_REALTIME_API_DATABASE_DRIVER` (Mongo, PostgreSQL, MySQL, MS SQL, RDS, Aurora, Cassandra)
 - `servicemangement` must read and update these environment values in the active env file with cross-platform behavior.
 
 ## Guardrails
 
-- REST bootstrap must fail fast on unsupported `AAA_HTTP_FRAMEWORK`.
-- Realtime startup must respect `AAA_REALTIME_API` and `AAA_REALTIME_API_PROTOCOL`.
+- REST bootstrap must fail fast on unsupported `JUMENTIX_HTTP_FRAMEWORK`.
+- Realtime startup must respect `JUMENTIX_REALTIME_API` and `JUMENTIX_REALTIME_API_PROTOCOL`.
 - Runtime env editor must only mutate approved keys.

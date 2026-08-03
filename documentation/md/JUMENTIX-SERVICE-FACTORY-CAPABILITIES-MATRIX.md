@@ -1,8 +1,8 @@
-# JumentiX Service Factory Capabilities Matrix
+# Jumentix Service Factory Capabilities Matrix
 
 ## Objective
 
-Define the supported software factory modes for JumentiX so engineering and product can choose a delivery shape with predictable architecture and operations.
+Define the supported software factory modes for Jumentix so engineering and product can choose a delivery shape with predictable architecture and operations.
 
 ## Capability Matrix
 

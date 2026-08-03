@@ -2,7 +2,7 @@
   "name": "@jumentix/config-eslint",
   "version": "0.0.0",
   "private": true,
-  "description": "JumentiX shared ESLint configuration placeholder",
+  "description": "Jumentix shared ESLint configuration placeholder",
   "files": [
     "index.cjs"
   ],

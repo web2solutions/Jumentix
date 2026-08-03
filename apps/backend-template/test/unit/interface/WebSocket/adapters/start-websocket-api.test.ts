@@ -42,8 +42,8 @@ describe('start-websocket-api loader', () => {
     expect.assertions(2);
     const { startWebSocketApiAdapter } = await import('@src/interface/WebSocket/adapters/start-websocket-api');
     const started = await startWebSocketApiAdapter({
-      AAA_REALTIME_API: 'yes',
-      AAA_REALTIME_API_PROTOCOL: 'websocket'
+      JUMENTIX_REALTIME_API: 'yes',
+      JUMENTIX_REALTIME_API_PROTOCOL: 'websocket'
     } as unknown as NodeJS.ProcessEnv);
     expect(started).toBe(true);
     expect(websocketLoaderAdapterStart).toHaveBeenCalledTimes(1);
@@ -53,8 +53,8 @@ describe('start-websocket-api loader', () => {
     expect.assertions(2);
     const { startWebSocketApiAdapter } = await import('@src/interface/WebSocket/adapters/start-websocket-api');
     const started = await startWebSocketApiAdapter({
-      AAA_REALTIME_API: 'yes',
-      AAA_REALTIME_API_PROTOCOL: 'grpc'
+      JUMENTIX_REALTIME_API: 'yes',
+      JUMENTIX_REALTIME_API_PROTOCOL: 'grpc'
     } as unknown as NodeJS.ProcessEnv);
     expect(started).toBe(false);
     expect(websocketLoaderAdapterStart).toHaveBeenCalledTimes(0);
@@ -62,8 +62,8 @@ describe('start-websocket-api loader', () => {
 
   it('uses process env when env argument is omitted', async () => {
     expect.assertions(2);
-    process.env.AAA_REALTIME_API = 'yes';
-    process.env.AAA_REALTIME_API_PROTOCOL = 'websocket';
+    process.env.JUMENTIX_REALTIME_API = 'yes';
+    process.env.JUMENTIX_REALTIME_API_PROTOCOL = 'websocket';
     const { startWebSocketApiAdapter } = await import('@src/interface/WebSocket/adapters/start-websocket-api');
     const started = await startWebSocketApiAdapter();
     expect(started).toBe(true);
@@ -79,9 +79,9 @@ describe('start-websocket-api loader', () => {
 
     const { startWebSocketApiAdapter } = await import('@src/interface/WebSocket/adapters/start-websocket-api');
     await startWebSocketApiAdapter({
-      AAA_REALTIME_API: 'yes',
-      AAA_REALTIME_API_PROTOCOL: 'websocket',
-      AAA_WEBSOCKET_SOCKETIO_ADAPTER: 'cluster'
+      JUMENTIX_REALTIME_API: 'yes',
+      JUMENTIX_REALTIME_API_PROTOCOL: 'websocket',
+      JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER: 'cluster'
     } as unknown as NodeJS.ProcessEnv);
 
     expect(setupSocketIoClusterPrimaryMock).toHaveBeenCalledTimes(1);
@@ -101,9 +101,9 @@ describe('start-websocket-api loader', () => {
 
     const { startWebSocketApiAdapter } = await import('@src/interface/WebSocket/adapters/start-websocket-api');
     const started = await startWebSocketApiAdapter({
-      AAA_REALTIME_API: 'yes',
-      AAA_REALTIME_API_PROTOCOL: 'websocket',
-      AAA_WEBSOCKET_SOCKETIO_ADAPTER: 'cluster'
+      JUMENTIX_REALTIME_API: 'yes',
+      JUMENTIX_REALTIME_API_PROTOCOL: 'websocket',
+      JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER: 'cluster'
     } as unknown as NodeJS.ProcessEnv);
 
     expect(started).toBe(true);

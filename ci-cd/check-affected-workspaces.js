@@ -69,7 +69,7 @@ function readChangedFiles(baseRef = 'origin/dev') {
 }
 
 function run() {
-  const baseRef = process.env.AAA_CI_BASE_REF || 'origin/dev';
+  const baseRef = process.env.JUMENTIX_CI_BASE_REF || 'origin/dev';
   const files = process.argv.slice(2);
   const changedFiles = files.length > 0 ? files : readChangedFiles(baseRef);
   const result = computeAffectedWorkspaces(changedFiles);

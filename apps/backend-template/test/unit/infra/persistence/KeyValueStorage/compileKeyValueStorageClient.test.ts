@@ -51,21 +51,21 @@ describe('compileKeyValueStorageClient', () => {
     // Save and restore in hooks rather than a try/finally in the test: the
     // restore then runs even if the assertion throws, and the test body stays a
     // single claim.
-    const previous = process.env.AAA_KEYVALUESTORAGE_DRIVER;
+    const previous = process.env.JUMENTIX_KEYVALUESTORAGE_DRIVER;
 
     beforeEach(() => {
-      process.env.AAA_KEYVALUESTORAGE_DRIVER = 'in-memory';
+      process.env.JUMENTIX_KEYVALUESTORAGE_DRIVER = 'in-memory';
     });
 
     afterEach(() => {
-      delete process.env.AAA_KEYVALUESTORAGE_DRIVER;
+      delete process.env.JUMENTIX_KEYVALUESTORAGE_DRIVER;
       Object.assign(
         process.env,
-        previous === undefined ? {} : { AAA_KEYVALUESTORAGE_DRIVER: previous }
+        previous === undefined ? {} : { JUMENTIX_KEYVALUESTORAGE_DRIVER: previous }
       );
     });
 
-    it('reads AAA_KEYVALUESTORAGE_DRIVER when no driver is passed', () => {
+    it('reads JUMENTIX_KEYVALUESTORAGE_DRIVER when no driver is passed', () => {
       expect.hasAssertions();
 
       expect(compileKeyValueStorageClient()).toBeInstanceOf(InMemoryKeyValueStorageClient);

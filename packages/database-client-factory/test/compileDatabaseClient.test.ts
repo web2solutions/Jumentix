@@ -145,11 +145,11 @@ describe('driver aliases', () => {
 });
 
 describe('reading the driver from the environment', () => {
-  it('uses AAA_DATABASE_DRIVER', async () => {
+  it('uses JUMENTIX_DATABASE_DRIVER', async () => {
     expect.hasAssertions();
 
     const client = await withEnvironment(
-      { AAA_DATABASE_DRIVER: 'cassandra' },
+      { JUMENTIX_DATABASE_DRIVER: 'cassandra' },
       () => compilers().compileDatabaseClient()
     );
 
@@ -160,7 +160,7 @@ describe('reading the driver from the environment', () => {
     expect.hasAssertions();
 
     const client = await withEnvironment(
-      { AAA_DATABASE_DRIVER: undefined },
+      { JUMENTIX_DATABASE_DRIVER: undefined },
       () => compilers().compileDatabaseClient()
     );
 
@@ -348,11 +348,11 @@ describe('connector configuration', () => {
     expect.hasAssertions();
 
     const client = await withEnvironment({
-      AAA_DATABASE_POOL_MAX: '42',
-      AAA_DATABASE_POOL_MIN: '7',
-      AAA_DATABASE_POOL_ACQUIRE_MS: '1000',
-      AAA_DATABASE_POOL_IDLE_MS: '2000',
-      AAA_DATABASE_POOL_EVICT_MS: '3000'
+      JUMENTIX_DATABASE_POOL_MAX: '42',
+      JUMENTIX_DATABASE_POOL_MIN: '7',
+      JUMENTIX_DATABASE_POOL_ACQUIRE_MS: '1000',
+      JUMENTIX_DATABASE_POOL_IDLE_MS: '2000',
+      JUMENTIX_DATABASE_POOL_EVICT_MS: '3000'
     }, () => compilers().compilePostgreSqlDbClient());
 
     expect(chosen(client).options.extra).toMatchObject({
@@ -371,7 +371,7 @@ describe('connector configuration', () => {
       expect.hasAssertions();
 
       const client = await withEnvironment(
-        { AAA_DATABASE_POOL_MAX: value },
+        { JUMENTIX_DATABASE_POOL_MAX: value },
         () => compilers().compilePostgreSqlDbClient()
       );
 
@@ -383,7 +383,7 @@ describe('connector configuration', () => {
     expect.hasAssertions();
 
     const client = await withEnvironment(
-      { AAA_DATABASE_REGION: undefined },
+      { JUMENTIX_DATABASE_REGION: undefined },
       () => compilers().compileDynamoDbClient()
     );
 
@@ -394,7 +394,7 @@ describe('connector configuration', () => {
     expect.hasAssertions();
 
     const client = await withEnvironment(
-      { AAA_DATABASE_REGION: 'sa-east-1' },
+      { JUMENTIX_DATABASE_REGION: 'sa-east-1' },
       () => compilers().compileDynamoDbClient()
     );
 
@@ -405,7 +405,7 @@ describe('connector configuration', () => {
     expect.hasAssertions();
 
     const client = await withEnvironment(
-      { AAA_DATABASE_CASSANDRA_CONTACT_POINTS: ' 10.0.0.1 , 10.0.0.2 ,, ' },
+      { JUMENTIX_DATABASE_CASSANDRA_CONTACT_POINTS: ' 10.0.0.1 , 10.0.0.2 ,, ' },
       () => compilers().compileCassandraDbClient()
     );
 
@@ -418,7 +418,7 @@ describe('connector configuration', () => {
     expect.hasAssertions();
 
     const client = await withEnvironment(
-      { AAA_DATABASE_CASSANDRA_CONTACT_POINTS: value },
+      { JUMENTIX_DATABASE_CASSANDRA_CONTACT_POINTS: value },
       () => compilers().compileCassandraDbClient()
     );
 
@@ -429,7 +429,7 @@ describe('connector configuration', () => {
     expect.hasAssertions();
 
     const client = await withEnvironment(
-      { AAA_DATABASE_CASSANDRA_DATACENTER: undefined },
+      { JUMENTIX_DATABASE_CASSANDRA_DATACENTER: undefined },
       () => compilers().compileCassandraDbClient()
     );
 
@@ -440,7 +440,7 @@ describe('connector configuration', () => {
     expect.hasAssertions();
 
     const client = await withEnvironment(
-      { AAA_FIREBASE_SERVICE_ACCOUNT_JSON: '{"project_id":"p","private_key":"k"}' },
+      { JUMENTIX_FIREBASE_SERVICE_ACCOUNT_JSON: '{"project_id":"p","private_key":"k"}' },
       () => compilers().compileFirebaseDbClient()
     );
 
@@ -461,7 +461,7 @@ describe('connector configuration', () => {
       expect.hasAssertions();
 
       const client = await withEnvironment(
-        { AAA_FIREBASE_SERVICE_ACCOUNT_JSON: value },
+        { JUMENTIX_FIREBASE_SERVICE_ACCOUNT_JSON: value },
         () => compilers().compileFirebaseDbClient()
       );
 
@@ -485,7 +485,7 @@ describe('connector configuration', () => {
     expect.hasAssertions();
 
     const client = await withEnvironment(
-      { AAA_FIREBASE_SERVICE_ACCOUNT_JSON: '[1,2]' },
+      { JUMENTIX_FIREBASE_SERVICE_ACCOUNT_JSON: '[1,2]' },
       () => compilers().compileFirebaseDbClient()
     );
 
@@ -497,11 +497,11 @@ describe('connector configuration', () => {
     expect.hasAssertions();
 
     const client = await withEnvironment(
-      { AAA_DATABASE_USER: undefined, AAA_DATABASE_PASSWORD: undefined },
+      { JUMENTIX_DATABASE_USER: undefined, JUMENTIX_DATABASE_PASSWORD: undefined },
       () => compilers().compileOracleDbClient()
     );
 
-    expect(chosen(client).options.extra).toMatchObject({ user: 'aaa', password: 'aaa' });
+    expect(chosen(client).options.extra).toMatchObject({ user: 'jumentix', password: 'jumentix' });
   });
 
   it.each([
@@ -515,7 +515,7 @@ describe('connector configuration', () => {
     expect.hasAssertions();
 
     const client = await withEnvironment(
-      { AAA_DATABASE_DIALECT: configured },
+      { JUMENTIX_DATABASE_DIALECT: configured },
       () => compilers().compileRdsDbClient()
     );
 
@@ -528,7 +528,7 @@ describe('connector configuration', () => {
       expect.hasAssertions();
 
       const client = await withEnvironment(
-        { AAA_DATABASE_DIALECT: value },
+        { JUMENTIX_DATABASE_DIALECT: value },
         () => compilers().compileRdsDbClient()
       );
 

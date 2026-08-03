@@ -2,7 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/JUMENTIX-BUNDLER-RUNTIME-TEMPLATES.md
 Idioma alvo: Português (Brasil)
 -->
-# JumentiX Bundler e modelos de tempo de execução
+# Jumentix Bundler e modelos de tempo de execução
 
 ## Objetivo
 
@@ -22,11 +22,11 @@ Defina modelos de linha de base por tipo de artefato para que a CLI de inicializ
 
 - O tempo de execução do nó foi corrigido para a versão principal `22`.
 - A inicialização de back-end é selecionada por contratos de ambiente:
-  - `AAA_HTTP_FRAMEWORK`
-  - `AAA_REALTIME_API`
-  - `AAA_REALTIME_API_PROTOCOL`
-  - `AAA_DATABASE_DRIVER`
-  - `AAA_KEYVALUESTORAGE_DRIVER`
+  - `JUMENTIX_HTTP_FRAMEWORK`
+  - `JUMENTIX_REALTIME_API`
+  - `JUMENTIX_REALTIME_API_PROTOCOL`
+  - `JUMENTIX_DATABASE_DRIVER`
+  - `JUMENTIX_KEYVALUESTORAGE_DRIVER`
 - O substituto REST permanece ativo para perfis de serviço em tempo real.
 
 ## Regras de construção/liberação

@@ -55,7 +55,7 @@ interface IMessageResponse<TResult = any> {
 - `rabbitmq`: solicitação/resposta baseada em fila + publicação de troca de tópicos.
 - `bullmq`: solicitação/resposta baseada em fila Redis + filas de eventos.
 
-A seleção é feita por `AAA_MESSAGE_MEDIATOR_ADAPTER` em `apps/backend-template/src/infra/messages/compileMessageMediator.ts`.
+A seleção é feita por `JUMENTIX_MESSAGE_MEDIATOR_ADAPTER` em `apps/backend-template/src/infra/messages/compileMessageMediator.ts`.
 
 ## 4) Mapa de eventos de domínio atual (usuários)
 

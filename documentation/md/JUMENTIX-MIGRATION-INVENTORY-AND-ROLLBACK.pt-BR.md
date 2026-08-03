@@ -2,32 +2,32 @@
 Arquivo gerado automaticamente a partir de: documentation/md/JUMENTIX-MIGRATION-INVENTORY-AND-ROLLBACK.md
 Idioma alvo: Português (Brasil)
 -->
-# Inventário e reversão de migração JumentiX
+# Inventário e reversão de migração Jumentix
 
-Este documento define proteções de migração concretas para a transformação JumentiX monorepo.
+Este documento define proteções de migração concretas para a transformação Jumentix monorepo.
 
 ## Escopo e critérios de onda
 
 ### Onda 1 (obrigatório)
 
 - Mantenha estável o comportamento atual do tempo de execução e os contratos de API públicos.
-- Estabeleça Bun workspaces e limites de pacotes já estruturados em `apps/` e `packages/`.
+- Estabeleça espaços de trabalho pnpm e limites de pacotes já estruturados em `apps/` e `packages/`.
 - Mantenha os scripts de compatibilidade raiz operacionais enquanto a propriedade do aplicativo/pacote é movida progressivamente.
 - Atualizar documentos e requisitos `.agents` no mesmo PR conforme alterações de código.
 
 ### Onda 2+ (melhorias)
 
 - Transferência total do tempo de execução para caminhos de propriedade do aplicativo (`apps/backend-template`, `apps/service-management`).
-- Matriz CI nativa do workspace (`bun run --filter '*' ...` e `ci:monorepo`) como padrão.
+- Matriz CI nativa do espaço de trabalho (`pnpm -r`) como padrão.
 - Automação independente de lançamento de pacotes para adaptadores e SDKs reutilizáveis.
 
 ## Decisões de nomenclatura
 
-- Nome do produto: `JumentiX`.
+- Nome do produto: `Jumentix`.
 - Nome do pacote CLI: `@jumentix/cli-init`.
 - Comando de inicialização:
-  - comando de compatibilidade atual: `aaa-bootstrap`
-  - destino oficial de instalação global: `bun add --global @jumentix/cli-init`
+  - comando de compatibilidade atual: `jumentix-bootstrap`
+  - destino oficial de instalação global: `pnpm add -g @jumentix/cli-init`
   - comando de tempo de execução: `jumentix-init`
 
 ## Estratégia de ramificação, tag e reversão
@@ -55,8 +55,8 @@ Este documento define proteções de migração concretas para a transformação
 1. Identifique o ramo da onda com falha e a etiqueta pré-onda estável mais recente.
 2. Reverter onda PR(s) de `dev` na ordem inversa se parcialmente mesclada.
 3. Execute novamente os portões obrigatórios:
-   - `bun run ci:gate`
-   - `bun run coverage:patch`
+   - `pnpm executar ci:gate`
+   - `cobertura de execução pnpm:patch`
 4. Se a reversão for necessária em ramificações de produção, avance apenas a partir da tag pré-onda e aplique novamente os commits seguros.
 
 ## Mapeamento de inventário (atual -> destino)
@@ -68,7 +68,7 @@ Este documento define proteções de migração concretas para a transformação
 
 ## Pacotes
 
-- `bin/aaa-bootstrap.js` + lógica de bootstrap -> `packages/cli-init/`.
+- `bin/jumentix-bootstrap.js` + lógica de bootstrap -> `packages/cli-init/`.
 - `apps/backend-template/src/infra/messages/*` + `apps/backend-template/src/modules/port/IMessage*` -> `packages/message-mediator/`.
 - `apps/backend-template/src/infra/persistence/KeyValueStorage/*` -> `packages/key-value-storage/`.
 - `apps/backend-template/src/infra/mutex/*` -> `pacotes/mutex-service/`.
@@ -84,5 +84,5 @@ Este documento define proteções de migração concretas para a transformação
 ## Bloqueadores e restrições preparadas
 
 - As suposições do caminho raiz nas configurações do PM2 e nos scripts de pacote ainda exigem uma camada de compatibilidade durante a transição.
-- CI executa gates Bun de workspace como baseline; checks Node-root existem apenas para validação de compatibilidade.
+- CI ainda executa fluxos npm-root como linha de base; A porta recursiva pnpm se tornará primária após a estabilização completa do arquivo de bloqueio.
 - Os aliases de importação em `tsconfig.json` devem permanecer com mapeamento duplo até que a realocação completa da fonte seja concluída.

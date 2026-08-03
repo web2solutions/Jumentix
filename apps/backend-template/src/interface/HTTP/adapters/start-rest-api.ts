@@ -33,7 +33,7 @@ export const REST_API_ADAPTERS: Readonly<Record<string, () => Promise<unknown>>>
 };
 
 /**
- * @param env Where `AAA_HTTP_FRAMEWORK` is read from.
+ * @param env Where `JUMENTIX_HTTP_FRAMEWORK` is read from.
  * @param adapters Injected so a test can observe which adapter was selected
  * without importing it — importing one starts a real HTTP server. That was
  * previously arranged by replacing the adapter module with `jest.doMock`, which
@@ -51,7 +51,7 @@ export async function startRestApiAdapter(
   // silently in that case: no server started, and the caller told it succeeded.
   if (load === undefined) {
     throw new Error(
-      `No adapter registered for AAA_HTTP_FRAMEWORK "${framework}". `
+      `No adapter registered for JUMENTIX_HTTP_FRAMEWORK "${framework}". `
       + 'RuntimeEnvironment accepts it but REST_API_ADAPTERS has no entry.'
     );
   }

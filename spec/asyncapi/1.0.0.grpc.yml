@@ -1,6 +1,6 @@
 asyncapi: 3.0.0
 info:
-  title: ANYWhere, ANYHow, ANYTime gRPC API
+  title: Jumentix gRPC API
   version: 1.0.0
   description: AsyncAPI contract for bidirectional gRPC communication built from OpenAPI 1.0.0 operations.
 defaultContentType: application/json

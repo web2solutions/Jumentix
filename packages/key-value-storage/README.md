@@ -1,6 +1,6 @@
 # @jumentix/key-value-storage
 
-Reusable key-value storage adapters for JumentiX services.
+Reusable key-value storage adapters for Jumentix services.
 
 Included:
 

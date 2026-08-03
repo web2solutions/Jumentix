@@ -1,4 +1,4 @@
-# JumentiX Wave 5 App Re-homing Cutover
+# Jumentix Wave 5 App Re-homing Cutover
 
 This document is the executable cutover guide for moving runtime apps into workspace app boundaries.
 

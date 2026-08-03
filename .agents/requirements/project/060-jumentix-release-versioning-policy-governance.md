@@ -1,8 +1,8 @@
-# Requirement 060 - JumentiX Release and Versioning Policy Governance
+# Requirement 060 - Jumentix Release and Versioning Policy Governance
 
 ## Context
 
-JumentiX monorepo needs a deterministic release/version policy to avoid drift across apps/packages and keep CI release checks reliable.
+Jumentix monorepo needs a deterministic release/version policy to avoid drift across apps/packages and keep CI release checks reliable.
 
 ## Requirement
 

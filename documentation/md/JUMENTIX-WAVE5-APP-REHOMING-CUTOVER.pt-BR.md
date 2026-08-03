@@ -2,7 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/JUMENTIX-WAVE5-APP-REHOMING-CUTOVER.md
 Idioma alvo: Português (Brasil)
 -->
-# JumentiX Wave 5 App Re-homing Cutover
+# Jumentix Wave 5 App Re-homing Cutover
 
 Este documento é o guia de transição executável para mover aplicativos de tempo de execução para limites de aplicativos de espaço de trabalho.
 

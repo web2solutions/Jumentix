@@ -23,7 +23,7 @@ function resolveInputFiles(argvFiles = [], options = {}) {
     return files;
   }
 
-  const baseRef = String(options.baseRef || process.env.AAA_CI_BASE_REF || 'origin/main');
+  const baseRef = String(options.baseRef || process.env.JUMENTIX_CI_BASE_REF || 'origin/main');
   const readChanged = typeof options.readChangedFiles === 'function'
     ? options.readChangedFiles
     : readChangedFiles;

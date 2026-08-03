@@ -1,8 +1,8 @@
-# Requirement 048 - JumentiX pnpm Monorepo Productization
+# Requirement 048 - Jumentix pnpm Monorepo Productization
 
 ## Requirement
 
-`aaa-typescript-boilerplate` must evolve into the `JumentiX` product as a pnpm-managed monorepo.
+`Jumentix` must evolve into the `Jumentix` product as a pnpm-managed monorepo.
 
 The monorepo must support:
 
@@ -21,7 +21,7 @@ The migration must be executed in deterministic waves, with functional parity re
   - Node 22 enforced across workspace and CI
 - `message-mediator` is consumed as workspace package (not duplicated in backend app code).
 - SDK clients are split into independent publishable workspace packages.
-- CLI package is publish-ready and supports bootstrap orchestration for JumentiX project structures.
+- CLI package is publish-ready and supports bootstrap orchestration for Jumentix project structures.
 - Existing backend capabilities remain available after move to `apps/backend-template`.
 - Service management remains functional under `apps/service-management`.
 - CI runs workspace-aware pipelines and preserves strict quality/coverage/security gates.

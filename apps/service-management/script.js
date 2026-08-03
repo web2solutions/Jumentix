@@ -27,10 +27,10 @@ const state = {
     environment: 'dev',
     fileName: '.env.dev',
     values: {
-      AAA_HTTP_FRAMEWORK: 'express',
-      AAA_REALTIME_API: 'no',
-      AAA_REALTIME_API_PROTOCOL: 'websocket',
-      AAA_REALTIME_API_DATABASE_DRIVER: 'Mongo'
+      JUMENTIX_HTTP_FRAMEWORK: 'express',
+      JUMENTIX_REALTIME_API: 'no',
+      JUMENTIX_REALTIME_API_PROTOCOL: 'websocket',
+      JUMENTIX_REALTIME_API_DATABASE_DRIVER: 'Mongo'
     }
   },
   deployments: [],
@@ -558,16 +558,16 @@ function renderRuntimeEnvironment() {
   const fileName = String(runtimeEnvironment.fileName || '.env.dev');
   dom.runtimeEnvSelect.value = environment;
   if (dom.runtimeHttpFrameworkSelect) {
-    dom.runtimeHttpFrameworkSelect.value = String(runtimeValues.AAA_HTTP_FRAMEWORK || 'express');
+    dom.runtimeHttpFrameworkSelect.value = String(runtimeValues.JUMENTIX_HTTP_FRAMEWORK || 'express');
   }
   if (dom.runtimeRealtimeApiSelect) {
-    dom.runtimeRealtimeApiSelect.value = String(runtimeValues.AAA_REALTIME_API || 'no');
+    dom.runtimeRealtimeApiSelect.value = String(runtimeValues.JUMENTIX_REALTIME_API || 'no');
   }
   if (dom.runtimeRealtimeProtocolSelect) {
-    dom.runtimeRealtimeProtocolSelect.value = String(runtimeValues.AAA_REALTIME_API_PROTOCOL || 'websocket');
+    dom.runtimeRealtimeProtocolSelect.value = String(runtimeValues.JUMENTIX_REALTIME_API_PROTOCOL || 'websocket');
   }
   if (dom.runtimeRealtimeDbDriverSelect) {
-    dom.runtimeRealtimeDbDriverSelect.value = String(runtimeValues.AAA_REALTIME_API_DATABASE_DRIVER || 'Mongo');
+    dom.runtimeRealtimeDbDriverSelect.value = String(runtimeValues.JUMENTIX_REALTIME_API_DATABASE_DRIVER || 'Mongo');
   }
   if (dom.runtimeEnvPreview) {
     dom.runtimeEnvPreview.textContent = JSON.stringify({
@@ -590,10 +590,10 @@ async function loadRuntimeEnvironment(environment) {
     environment: String(payload.environment || selectedEnvironment),
     fileName: String(payload.fileName || ''),
     values: {
-      AAA_HTTP_FRAMEWORK: String(payload?.values?.AAA_HTTP_FRAMEWORK || 'express'),
-      AAA_REALTIME_API: String(payload?.values?.AAA_REALTIME_API || 'no'),
-      AAA_REALTIME_API_PROTOCOL: String(payload?.values?.AAA_REALTIME_API_PROTOCOL || 'websocket'),
-      AAA_REALTIME_API_DATABASE_DRIVER: String(payload?.values?.AAA_REALTIME_API_DATABASE_DRIVER || 'Mongo')
+      JUMENTIX_HTTP_FRAMEWORK: String(payload?.values?.JUMENTIX_HTTP_FRAMEWORK || 'express'),
+      JUMENTIX_REALTIME_API: String(payload?.values?.JUMENTIX_REALTIME_API || 'no'),
+      JUMENTIX_REALTIME_API_PROTOCOL: String(payload?.values?.JUMENTIX_REALTIME_API_PROTOCOL || 'websocket'),
+      JUMENTIX_REALTIME_API_DATABASE_DRIVER: String(payload?.values?.JUMENTIX_REALTIME_API_DATABASE_DRIVER || 'Mongo')
     }
   };
   renderRuntimeEnvironment();
@@ -603,10 +603,10 @@ async function saveRuntimeEnvironment() {
   const payload = {
     environment: dom.runtimeEnvSelect?.value || 'dev',
     values: {
-      AAA_HTTP_FRAMEWORK: dom.runtimeHttpFrameworkSelect?.value || 'express',
-      AAA_REALTIME_API: dom.runtimeRealtimeApiSelect?.value || 'no',
-      AAA_REALTIME_API_PROTOCOL: dom.runtimeRealtimeProtocolSelect?.value || 'websocket',
-      AAA_REALTIME_API_DATABASE_DRIVER: dom.runtimeRealtimeDbDriverSelect?.value || 'Mongo'
+      JUMENTIX_HTTP_FRAMEWORK: dom.runtimeHttpFrameworkSelect?.value || 'express',
+      JUMENTIX_REALTIME_API: dom.runtimeRealtimeApiSelect?.value || 'no',
+      JUMENTIX_REALTIME_API_PROTOCOL: dom.runtimeRealtimeProtocolSelect?.value || 'websocket',
+      JUMENTIX_REALTIME_API_DATABASE_DRIVER: dom.runtimeRealtimeDbDriverSelect?.value || 'Mongo'
     }
   };
   const response = await fetch('/api/runtime/env', {
@@ -624,11 +624,11 @@ async function saveRuntimeEnvironment() {
     environment: String(saved.environment || payload.environment),
     fileName: String(saved.fileName || ''),
     values: {
-      AAA_HTTP_FRAMEWORK: String(saved?.values?.AAA_HTTP_FRAMEWORK || payload.values.AAA_HTTP_FRAMEWORK),
-      AAA_REALTIME_API: String(saved?.values?.AAA_REALTIME_API || payload.values.AAA_REALTIME_API),
-      AAA_REALTIME_API_PROTOCOL: String(saved?.values?.AAA_REALTIME_API_PROTOCOL || payload.values.AAA_REALTIME_API_PROTOCOL),
-      AAA_REALTIME_API_DATABASE_DRIVER:
-        String(saved?.values?.AAA_REALTIME_API_DATABASE_DRIVER || payload.values.AAA_REALTIME_API_DATABASE_DRIVER)
+      JUMENTIX_HTTP_FRAMEWORK: String(saved?.values?.JUMENTIX_HTTP_FRAMEWORK || payload.values.JUMENTIX_HTTP_FRAMEWORK),
+      JUMENTIX_REALTIME_API: String(saved?.values?.JUMENTIX_REALTIME_API || payload.values.JUMENTIX_REALTIME_API),
+      JUMENTIX_REALTIME_API_PROTOCOL: String(saved?.values?.JUMENTIX_REALTIME_API_PROTOCOL || payload.values.JUMENTIX_REALTIME_API_PROTOCOL),
+      JUMENTIX_REALTIME_API_DATABASE_DRIVER:
+        String(saved?.values?.JUMENTIX_REALTIME_API_DATABASE_DRIVER || payload.values.JUMENTIX_REALTIME_API_DATABASE_DRIVER)
     }
   };
   saveState();

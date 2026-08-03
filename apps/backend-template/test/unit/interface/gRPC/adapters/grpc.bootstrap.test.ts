@@ -77,14 +77,14 @@ describe('grpc adapter bootstrap', () => {
   it('resolves fallback strategy from env', async () => {
     expect.assertions(3);
     const { shouldStartFallbackRestApi } = await import('@src/interface/gRPC/adapters/grpc/grpc');
-    expect(shouldStartFallbackRestApi({ AAA_DISABLE_FALLBACK_REST: 'true' } as any)).toBe(false);
-    expect(shouldStartFallbackRestApi({ AAA_DISABLE_FALLBACK_REST: 'false' } as any)).toBe(true);
+    expect(shouldStartFallbackRestApi({ JUMENTIX_DISABLE_FALLBACK_REST: 'true' } as any)).toBe(false);
+    expect(shouldStartFallbackRestApi({ JUMENTIX_DISABLE_FALLBACK_REST: 'false' } as any)).toBe(true);
     expect(shouldStartFallbackRestApi({} as any)).toBe(true);
   });
 
   it('starts only grpc api when fallback rest is disabled', async () => {
     expect.assertions(2);
-    process.env.AAA_DISABLE_FALLBACK_REST = 'true';
+    process.env.JUMENTIX_DISABLE_FALLBACK_REST = 'true';
     const { startGrpcAdapter } = await import('@src/interface/gRPC/adapters/grpc/grpc');
     await startGrpcAdapter();
     expect(grpcAdapterStart).toHaveBeenCalledTimes(1);
@@ -93,7 +93,7 @@ describe('grpc adapter bootstrap', () => {
 
   it('starts grpc and fallback rest when fallback is enabled', async () => {
     expect.assertions(2);
-    delete process.env.AAA_DISABLE_FALLBACK_REST;
+    delete process.env.JUMENTIX_DISABLE_FALLBACK_REST;
     const { startGrpcAdapter } = await import('@src/interface/gRPC/adapters/grpc/grpc');
     await startGrpcAdapter();
     expect(grpcFallbackRestStart).toHaveBeenCalledTimes(1);

@@ -7,7 +7,7 @@ const INTEGRATION_CONTRACTS = Object.freeze([
     file: 'sonar-project.properties',
     markers: [
       'sonar.organization=xpertminds',
-      'sonar.projectKey=XpertMinds_Jumentix',
+      'sonar.projectKey=Jumentix',
       'sonar.projectName=Jumentix',
       'sonar.javascript.lcov.reportPaths=./coverage/lcov.info'
     ]

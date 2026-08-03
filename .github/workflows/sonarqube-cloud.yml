@@ -77,14 +77,14 @@ jobs:
       - name: Produce Jest coverage (unit + real Redis/broker integration)
         run: bun run test:coverage
         env:
-          AAA_JWT_TOKEN_SECRET_KEY: ${{ secrets.AAA_JWT_TOKEN_SECRET_KEY }}
+          JUMENTIX_JWT_TOKEN_SECRET_KEY: ${{ secrets.JUMENTIX_JWT_TOKEN_SECRET_KEY || secrets.AAA_JWT_TOKEN_SECRET_KEY }}
           RUN_REDIS_INTEGRATION: "1"
           RUN_BROKER_INTEGRATION: "1"
-          AAA_REDIS_HOST: 127.0.0.1
-          AAA_REDIS_PORT: "6379"
-          AAA_BULLMQ_REDIS_HOST: 127.0.0.1
-          AAA_BULLMQ_REDIS_PORT: "6379"
-          AAA_RABBITMQ_URL: amqp://127.0.0.1:5672
+          JUMENTIX_REDIS_HOST: 127.0.0.1
+          JUMENTIX_REDIS_PORT: "6379"
+          JUMENTIX_BULLMQ_REDIS_HOST: 127.0.0.1
+          JUMENTIX_BULLMQ_REDIS_PORT: "6379"
+          JUMENTIX_RABBITMQ_URL: amqp://127.0.0.1:5672
 
       # The matrix runs inline here rather than riding in as artifacts: this
       # workflow is parallel to `coverage`, so sibling artifacts do not yet

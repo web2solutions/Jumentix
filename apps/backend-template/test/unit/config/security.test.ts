@@ -5,7 +5,7 @@ describe('security config', () => {
 
   beforeEach(() => {
     process.env = { ...originalEnv };
-    delete process.env.AAA_CORS_ALLOWED_ORIGINS;
+    delete process.env.JUMENTIX_CORS_ALLOWED_ORIGINS;
   });
 
   afterAll(() => {
@@ -27,14 +27,14 @@ describe('security config', () => {
   it('allows configured origin in production', () => {
     expect.assertions(1);
     (process.env as any).NODE_ENV = 'production';
-    process.env.AAA_CORS_ALLOWED_ORIGINS = 'https://allowed.example';
+    process.env.JUMENTIX_CORS_ALLOWED_ORIGINS = 'https://allowed.example';
     expect(isCorsOriginAllowed('https://allowed.example')).toBe(true);
   });
 
   it('allows any origin when wildcard is configured and allows undefined origin', () => {
     expect.hasAssertions();
     (process.env as any).NODE_ENV = 'production';
-    process.env.AAA_CORS_ALLOWED_ORIGINS = ' * ';
+    process.env.JUMENTIX_CORS_ALLOWED_ORIGINS = ' * ';
     expect(isCorsOriginAllowed('https://any.example')).toBe(true);
     expect(isCorsOriginAllowed(undefined)).toBe(true);
   });
@@ -42,7 +42,7 @@ describe('security config', () => {
   it('treats NODE_ENV=prod as production alias', () => {
     expect.hasAssertions();
     (process.env as any).NODE_ENV = 'prod';
-    delete process.env.AAA_CORS_ALLOWED_ORIGINS;
+    delete process.env.JUMENTIX_CORS_ALLOWED_ORIGINS;
     expect(isCorsOriginAllowed('https://random.example')).toBe(false);
   });
 });

@@ -1,4 +1,4 @@
-# JumentiX Bundler and Runtime Templates
+# Jumentix Bundler and Runtime Templates
 
 ## Objective
 
@@ -18,11 +18,11 @@ Define baseline templates by artifact type so the bootstrap CLI and workspace pa
 
 - Node runtime is fixed to major version `22`.
 - Backend startup is selected by environment contracts:
-  - `AAA_HTTP_FRAMEWORK`
-  - `AAA_REALTIME_API`
-  - `AAA_REALTIME_API_PROTOCOL`
-  - `AAA_DATABASE_DRIVER`
-  - `AAA_KEYVALUESTORAGE_DRIVER`
+  - `JUMENTIX_HTTP_FRAMEWORK`
+  - `JUMENTIX_REALTIME_API`
+  - `JUMENTIX_REALTIME_API_PROTOCOL`
+  - `JUMENTIX_DATABASE_DRIVER`
+  - `JUMENTIX_KEYVALUESTORAGE_DRIVER`
 - REST fallback remains active for realtime service profiles.
 
 ## Build/Release Rules

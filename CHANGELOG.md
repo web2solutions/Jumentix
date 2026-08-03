@@ -4,6 +4,20 @@
 
 ## All Changes
 
+- 2026-08-02 fix(compose): dual-read AAA_ password env fallbacks [JUM-605] - Eduardo Almeida
+- 2026-08-02 refactor: eliminate legacy Jumentix product naming [JUM-605] - Eduardo Almeida
+- 2026-08-02 [JUM-417][Testing] Enforce the Cana browser and worker matrix across engines (#52) - Eduardo A.
+- 2026-08-02 [JUM-540][Docs] Clarify nested requirement globs for release governance (#59) - Eduardo A.
+- 2026-08-02 docs: clarify nested requirement globs for release governance - Eduardo A.
+- 2026-08-02 Merge remote-tracking branch 'origin/dev' into kimi/testing/JUM-417-cana-browser-matrix - Eduardo A.
+- 2026-08-02 [JUM-417][CI] Grade the coverage gate on the engine union, not one leg - Eduardo A.
+- 2026-08-02 [JUM-417][Testing] Resolve the PR 52 review threads on the browser matrix - Eduardo A.
+- 2026-08-02 Merge branch 'dev' into kimi/testing/JUM-417-cana-browser-matrix - Eduardo A.
+- 2026-08-02 [JUM-417][Testing] Cover the conformance failure path and defensive guards in a real browser - Eduardo A.
+- 2026-08-02 [JUM-417][Testing] Run the engine matrix inline in the Sonar workflow and union it there - Eduardo A.
+- 2026-08-02 [JUM-417][Testing] Replace every unpinned upload-artifact use in the provider test - Eduardo A.
+- 2026-08-02 [JUM-417][Testing] Enforce the Cana browser and worker matrix across engines - Eduardo A.
+- 2026-08-02 [JUM-540][CI] Align strict Redis auth with coverage gate (#57) - Eduardo A.
 - 2026-08-02 Merge remote-tracking branch 'origin/dev' into codex/release/fix-main-promotion-redis-auth - Eduardo A.
 - 2026-08-02 [JUM-609][Governance] Separate project and software requirements into distinct namespaces (#54) - Eduardo A.
 - 2026-08-02 ci: align strict coverage Redis gate - Eduardo A.

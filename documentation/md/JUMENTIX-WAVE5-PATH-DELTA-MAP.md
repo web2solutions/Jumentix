@@ -1,4 +1,4 @@
-# JumentiX Wave 5 Path Delta Map
+# Jumentix Wave 5 Path Delta Map
 
 This map tracks runtime path rewrites for the backend-template and service-management re-homing wave.
 

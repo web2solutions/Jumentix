@@ -2,15 +2,15 @@
 
 This boilerplate now exposes registry-installable bootstrap CLI commands:
 
-- `aaa-bootstrap`
+- `jumentix-bootstrap`
 - `jumentix-init`
 
-The command clones `aaa-typescript-boilerplate` into a target folder and writes initial service profile metadata.
+The command clones `XpertMinds/Jumentix` into a target folder and writes initial service profile metadata.
 
 Workspace ownership:
 
 - `packages/cli-init` contains the canonical bootstrap implementation.
-- root `bin/aaa-bootstrap.js` delegates to `packages/cli-init` to keep behavior consistent during monorepo migration.
+- root `bin/jumentix-bootstrap.js` delegates to `packages/cli-init` to keep behavior consistent during monorepo migration.
 
 ## Usage
 
@@ -19,7 +19,7 @@ Install globally (or run with `bunx` from the package registry):
 ```bash
 bun add --global @jumentix/cli-init
 jumentix-init
-aaa-bootstrap
+jumentix-bootstrap
 ```
 
 Local repository usage:
@@ -60,7 +60,7 @@ Supported flags:
 
 After scaffolding, the CLI writes:
 
-- `.aaa/service-profile.json`
+- `.jumentix/service-profile.json`
 
 Example fields:
 

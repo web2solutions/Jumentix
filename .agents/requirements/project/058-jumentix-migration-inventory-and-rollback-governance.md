@@ -1,4 +1,4 @@
-# Requirement 058 - JumentiX Migration Inventory and Rollback Governance
+# Requirement 058 - Jumentix Migration Inventory and Rollback Governance
 
 ## Context
 

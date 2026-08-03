@@ -2,11 +2,11 @@
 Arquivo gerado automaticamente a partir de: documentation/md/JUMENTIX-DEPLOY-TARGET-AND-PACKAGING-MATRIX.md
 Idioma alvo: Português (Brasil)
 -->
-# JumentiX Deploy Target e Matriz de Embalagem
+# Jumentix Deploy Target e Matriz de Embalagem
 
 ## Objetivo
 
-Defina alvos de implantação e contratos de empacotamento de artefatos para serviços de back-end e front-end gerenciados pelo JumentiX.
+Defina alvos de implantação e contratos de empacotamento de artefatos para serviços de back-end e front-end gerenciados pelo Jumentix.
 
 ## Implantar matriz de destino
 
@@ -35,8 +35,8 @@ O Gerenciamento de Serviços deve rastrear, por serviço:
 - `serviceType`: `restapi`, `websocket+restapi`, `grpc+restapi`, `funções`
 - `deployTarget`: `servidor dedicado`, `vm`, `ec2`, `lambda`, `vercel-functions`, `cloudflare-workers`
 - `runtimeProtocol`: `http`, `websocket`, `grpc`
-- `databaseDriver`: selecionado `AAA_DATABASE_DRIVER`
-- `keyValueDriver`: selecionado `AAA_KEYVALUESTORAGE_DRIVER`
+- `databaseDriver`: selecionado `JUMENTIX_DATABASE_DRIVER`
+- `keyValueDriver`: selecionado `JUMENTIX_KEYVALUESTORAGE_DRIVER`
 - `pm2Profile`: `dev`, `staging`, `production` (para implantações baseadas em VM)
 
 ## Critérios de aceitação

@@ -33,7 +33,7 @@ jobs:
           --health-timeout 5s
           --health-retries 20
     env:
-      AAA_JWT_TOKEN_SECRET_KEY: ${{ secrets.AAA_JWT_TOKEN_SECRET_KEY || 'ci_jwt_secret_key' }}
+      JUMENTIX_JWT_TOKEN_SECRET_KEY: ${{ secrets.JUMENTIX_JWT_TOKEN_SECRET_KEY || secrets.AAA_JWT_TOKEN_SECRET_KEY || 'ci_jwt_secret_key' }}
       # Private agent-registry Contents API (Req 089). Default github.token cannot
       # read sibling private repos; AGENT_REGISTRY_TOKEN is a contents:read PAT.
       GH_TOKEN: ${{ secrets.AGENT_REGISTRY_TOKEN }}
@@ -84,12 +84,12 @@ jobs:
         JUMENTIX_QUALITY_GATE_TARGET: ${{ github.base_ref || github.ref_name }}
         JUMENTIX_TASK_TEST_MODE: range
         JUMENTIX_TASK_TEST_BASE: origin/dev
-        AAA_PR_TITLE: ${{ github.event.pull_request.title || '' }}
-        AAA_PR_BODY: ${{ github.event.pull_request.body || '' }}
-        AAA_PR_HEAD_REF: ${{ github.head_ref || '' }}
-        AAA_PR_BASE_REF: ${{ github.base_ref || '' }}
-        AAA_CI_GATE_RESULT_FILE: artifacts/ci/branch-quality-gate.json
-        AAA_CI_MATRIX_RESULT_FILE: artifacts/ci/full-test-matrix.json
+        JUMENTIX_PR_TITLE: ${{ github.event.pull_request.title || '' }}
+        JUMENTIX_PR_BODY: ${{ github.event.pull_request.body || '' }}
+        JUMENTIX_PR_HEAD_REF: ${{ github.head_ref || '' }}
+        JUMENTIX_PR_BASE_REF: ${{ github.base_ref || '' }}
+        JUMENTIX_CI_GATE_RESULT_FILE: artifacts/ci/branch-quality-gate.json
+        JUMENTIX_CI_MATRIX_RESULT_FILE: artifacts/ci/full-test-matrix.json
     - name: Upload branch quality-gate evidence
       if: always()
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

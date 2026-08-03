@@ -2,7 +2,7 @@
   "name": "@jumentix/sdk-websocket-client",
   "version": "0.0.0",
   "private": true,
-  "description": "JumentiX WebSocket SDK client",
+  "description": "Jumentix WebSocket SDK client",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [

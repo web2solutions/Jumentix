@@ -2,11 +2,11 @@ import type { IKeyValueStorageClient, IServiceResponse } from './contracts';
 import { ServiceResponse } from './ServiceResponse';
 
 const resolvePrefix = (): string => {
-  const envPrefix = String(process.env.AAA_KV_KEY_PREFIX || '').trim();
+  const envPrefix = String(process.env.JUMENTIX_KV_KEY_PREFIX || '').trim();
   if (envPrefix) {
     return `${envPrefix}__`;
   }
-  return 'aaa__';
+  return 'jumentix__';
 };
 
 export abstract class BaseKeyValueStorageClient implements IKeyValueStorageClient {

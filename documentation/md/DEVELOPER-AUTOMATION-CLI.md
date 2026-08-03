@@ -36,7 +36,7 @@ bun run cli:bootstrap
 The bootstrap flow is also exposed as installable bin command:
 
 ```bash
-aaa-bootstrap
+jumentix-bootstrap
 ```
 
 ## Current Sub Applications

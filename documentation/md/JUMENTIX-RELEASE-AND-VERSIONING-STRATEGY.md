@@ -1,8 +1,8 @@
-# JumentiX Release and Versioning Strategy
+# Jumentix Release and Versioning Strategy
 
 ## Policy
 
-JumentiX uses a hybrid strategy:
+Jumentix uses a hybrid strategy:
 
 - `packages/*`: **independent versioning**
 - `apps/*`: **locked versioning** tied to root project version

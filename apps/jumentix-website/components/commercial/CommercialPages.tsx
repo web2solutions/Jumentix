@@ -89,10 +89,10 @@ const task = await mediator.request(
     {
       label: 'Environment',
       language: 'dotenv',
-      code: `AAA_HTTP_FRAMEWORK=express
-AAA_DATABASE_DRIVER=postgresql
-AAA_REALTIME_API=yes
-AAA_REALTIME_API_PROTOCOL=websocket`,
+      code: `JUMENTIX_HTTP_FRAMEWORK=express
+JUMENTIX_DATABASE_DRIVER=postgresql
+JUMENTIX_REALTIME_API=yes
+JUMENTIX_REALTIME_API_PROTOCOL=websocket`,
     },
   ],
   rest: [
@@ -183,7 +183,7 @@ client.createTask(
       label: 'Driver selection',
       language: 'typescript',
       code: `const database = await compileDatabaseClient({
-  driver: process.env.AAA_DATABASE_DRIVER,
+  driver: process.env.JUMENTIX_DATABASE_DRIVER,
 });
 
 const taskStore = database.stores.Tasks;
@@ -205,7 +205,7 @@ await taskStore.create(task);`,
       label: 'Docker',
       language: 'shell',
       code: `pnpm run db:postgresql:up
-AAA_DATABASE_DRIVER=postgresql pnpm run test:smoke:database
+JUMENTIX_DATABASE_DRIVER=postgresql pnpm run test:smoke:database
 pnpm run db:postgresql:down`,
     },
   ],

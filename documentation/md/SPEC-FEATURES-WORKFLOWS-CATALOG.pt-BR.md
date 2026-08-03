@@ -89,7 +89,7 @@ Inclui:
 Especificações necessárias:
 
 1. Contratos de persistência em `pacotes/contratos de persistência`
-2. Contratos de seleção de driver de tempo de execução (`AAA_DATABASE_DRIVER`)
+2. Contratos de seleção de driver de tempo de execução (`JUMENTIX_DATABASE_DRIVER`)
 3. Documentos do adaptador de banco de dados em `documentation/md/adapters/databases/*`
 4. Documentos da matriz de validação de fumaça em `documentation/md/DATABASE-DRIVERS-SMOKE-TESTS.md`
 

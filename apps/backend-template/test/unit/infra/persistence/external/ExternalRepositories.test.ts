@@ -134,7 +134,7 @@ describe('external data repository foundations', () => {
       new DynamoDbRepository({ provider: 'aws-dynamodb' }),
       new CassandraRepository({ provider: 'cassandra' }),
       new FirebaseRepository({ provider: 'firebase' }),
-      new OracleRepository({ provider: 'oracle', connectionUrl: 'oracle://aaa:aaa@127.0.0.1:1521/FREEPDB1' }),
+      new OracleRepository({ provider: 'oracle', connectionUrl: 'oracle://jumentix:jumentix@127.0.0.1:1521/FREEPDB1' }),
       new AuroraRepository({ provider: 'amazon-aurora', connectionUrl: 'postgres://localhost:5432/app' }),
       new RdsRepository({ provider: 'amazon-rds', extra: { dialect: 'postgres', sequelizeAuthenticateOnConnect: false } })
     ];
@@ -181,7 +181,7 @@ describe('external data repository foundations', () => {
   it('configures mongoose connection pooling options', async () => {
     expect.hasAssertions();
     const repository = new MongoMongooseRepository({
-      database: 'aaa',
+      database: 'jumentix',
       extra: {
         maxPoolSize: 30,
         minPoolSize: 2
@@ -189,11 +189,11 @@ describe('external data repository foundations', () => {
     });
     await repository.connect();
     expect(moduleMocks.mongoose.connect).toHaveBeenCalledWith(
-      'mongodb://127.0.0.1:27017/aaa',
+      'mongodb://127.0.0.1:27017/jumentix',
       expect.objectContaining({
         maxPoolSize: 30,
         minPoolSize: 2,
-        dbName: 'aaa'
+        dbName: 'jumentix'
       })
     );
   });
@@ -346,11 +346,11 @@ describe('external data repository foundations', () => {
 
     const repository = new CassandraRepository({
       provider: 'cassandra',
-      database: 'aaa'
+      database: 'jumentix'
     });
     await repository.connect();
     expect(adminConnect).toHaveBeenCalledWith();
-    expect(adminExecute).toHaveBeenCalledWith(expect.stringContaining('CREATE KEYSPACE IF NOT EXISTS aaa'));
+    expect(adminExecute).toHaveBeenCalledWith(expect.stringContaining('CREATE KEYSPACE IF NOT EXISTS jumentix'));
     expect(adminShutdown).toHaveBeenCalledWith();
   });
 
@@ -508,13 +508,13 @@ describe('external data repository foundations', () => {
     expect.hasAssertions();
     const oracleRepository = new OracleRepository({
       provider: 'oracle',
-      connectionUrl: 'oracle://aaa:aaa@127.0.0.1:1521/FREEPDB1'
+      connectionUrl: 'oracle://jumentix:jumentix@127.0.0.1:1521/FREEPDB1'
     });
     await oracleRepository.connect();
     expect(moduleMocks.oracledb.getConnection).toHaveBeenCalledWith(
       expect.objectContaining({
-        user: 'aaa',
-        password: 'aaa'
+        user: 'jumentix',
+        password: 'jumentix'
       })
     );
     expect(oracleRepository.getClient()).toBeTruthy();

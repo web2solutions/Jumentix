@@ -2,7 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/JUMENTIX-WAVE5-PATH-DELTA-MAP.md
 Idioma alvo: Português (Brasil)
 -->
-# Mapa Delta do Caminho JumentiX Wave 5
+# Mapa Delta do Caminho Jumentix Wave 5
 
 Este mapa rastreia reescritas de caminho de tempo de execução para o modelo de back-end e onda de realocação de gerenciamento de serviço.
 

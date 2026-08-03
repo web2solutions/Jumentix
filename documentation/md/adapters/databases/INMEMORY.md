@@ -14,7 +14,7 @@ Default official adapter for local development and deterministic tests.
 1. Set env:
 
 ```bash
-AAA_DATABASE_DRIVER=InMemory
+JUMENTIX_DATABASE_DRIVER=InMemory
 ```
 
 2. Start API adapter.

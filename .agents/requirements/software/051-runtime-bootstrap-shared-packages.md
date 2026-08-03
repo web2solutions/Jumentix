@@ -2,7 +2,7 @@
 
 ## Context
 
-As part of JumentiX monorepo productization, adapter bootstrapping must avoid repeated wiring logic across HTTP, WebSocket, and gRPC startup files.
+As part of Jumentix monorepo productization, adapter bootstrapping must avoid repeated wiring logic across HTTP, WebSocket, and gRPC startup files.
 
 ## Requirement
 

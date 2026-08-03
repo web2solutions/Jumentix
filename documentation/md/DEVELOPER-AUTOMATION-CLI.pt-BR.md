@@ -40,7 +40,7 @@ bun run cli:bootstrap
 O fluxo de bootstrap também é exposto como comando bin instalável:
 
 ```bash
-aaa-bootstrap
+jumentix-bootstrap
 ```
 
 ## Subaplicativos atuais

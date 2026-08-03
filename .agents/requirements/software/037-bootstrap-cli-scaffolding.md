@@ -4,7 +4,7 @@
 Engineers should be able to install one CLI tool and scaffold a new project from this boilerplate.
 
 ## Rules
-1. Bootstrap CLI must clone `aaa-typescript-boilerplate` from GitHub into the target workspace.
+1. Bootstrap CLI must clone `XpertMinds/Jumentix` from GitHub into the target workspace.
 2. Bootstrap CLI must ask the engineer which service type to scaffold:
    - HTTP/REST server
    - WebSocket server
@@ -15,5 +15,5 @@ Engineers should be able to install one CLI tool and scaffold a new project from
 4. Bootstrap flow must remain framework-agnostic and extensible.
 
 ## Implementation Notes
-- CLI command: `aaa-bootstrap` (via package `bin` mapping).
-- Bootstrap metadata file: `.aaa/service-profile.json`.
+- CLI command: `jumentix-init` (with `jumentix-bootstrap` alias). (via package `bin` mapping).
+- Bootstrap metadata file: `.jumentix/service-profile.json`.

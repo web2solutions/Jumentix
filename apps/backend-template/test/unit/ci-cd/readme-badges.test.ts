@@ -61,7 +61,7 @@ describe('rEADME badges', () => {
     // is scanning.
     const key = sonarProperties.match(/sonar\.projectKey=(\S+)/)?.[1];
 
-    expect(key).toBe('XpertMinds_Jumentix');
+    expect(key).toBe('Jumentix');
     expect(badges).toContain(`project=${key}`);
     expect(badges).not.toContain('web2solutions_aaa-typescript-boilerplate');
   });
@@ -275,7 +275,7 @@ describe('readme badge parity across languages (Requirement 076)', () => {
     // The specific regression: this suite existed and passed while the PT-BR
     // badges pointed at another project's quality gate.
     expect(ptBadges).not.toContain('web2solutions_aaa-typescript-boilerplate');
-    expect(ptBadges).toContain('XpertMinds_Jumentix');
+    expect(ptBadges).toContain('Jumentix');
   });
 
   it('does not translate Node, Bun, or framework names', () => {

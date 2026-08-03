@@ -6,6 +6,7 @@ import type { IJwtService } from '@src/infra/jwt/IJwtService';
 import { _JWT_TOKEN_SECRET_KEY_, _JWT_TOKEN_EXPIRES_IN_ } from '@src/config/jwt';
 import type { ITokenObject } from '@src/modules/Users/service/ports/ITokenObject';
 import { NotImplemented } from '@src/infra/exceptions/NotImplemented';
+import { readProductEnv } from '@src/interface/runtime/RuntimeEnvironment';
 
 let jwtService: any;
 
@@ -26,11 +27,13 @@ export class JwtService implements IJwtService {
     let valid = null;
     try {
       const verifyOptions: jwt.VerifyOptions = {};
-      if (process.env.AAA_JWT_ISSUER) {
-        verifyOptions.issuer = process.env.AAA_JWT_ISSUER;
+      const jwtIssuer = readProductEnv(process.env, 'JUMENTIX_JWT_ISSUER');
+      if (jwtIssuer) {
+        verifyOptions.issuer = jwtIssuer;
       }
-      if (process.env.AAA_JWT_AUDIENCE) {
-        verifyOptions.audience = process.env.AAA_JWT_AUDIENCE;
+      const jwtAudience = readProductEnv(process.env, 'JUMENTIX_JWT_AUDIENCE');
+      if (jwtAudience) {
+        verifyOptions.audience = jwtAudience;
       }
       valid = jwt.verify(token, this.secret, verifyOptions) as ITokenObject;
     } catch (error) {
@@ -44,11 +47,13 @@ export class JwtService implements IJwtService {
       id, username, firstName, avatar, organization, roles
     } = data;
     const signOptions: jwt.SignOptions = { expiresIn: this.expiresIn };
-    if (process.env.AAA_JWT_ISSUER) {
-      signOptions.issuer = process.env.AAA_JWT_ISSUER;
+    const jwtIssuer = readProductEnv(process.env, 'JUMENTIX_JWT_ISSUER');
+    if (jwtIssuer) {
+      signOptions.issuer = jwtIssuer;
     }
-    if (process.env.AAA_JWT_AUDIENCE) {
-      signOptions.audience = process.env.AAA_JWT_AUDIENCE;
+    const jwtAudience = readProductEnv(process.env, 'JUMENTIX_JWT_AUDIENCE');
+    if (jwtAudience) {
+      signOptions.audience = jwtAudience;
     }
     const token = jwt.sign(
       {

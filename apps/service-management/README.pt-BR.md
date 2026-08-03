@@ -4,14 +4,16 @@ Idioma alvo: Português (Brasil)
 -->
 # Aplicativo de gerenciamento de serviços
 
-[![Gate de qualidade da branch](https://github.com/XpertMinds/Jumentix/actions/workflows/test.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/test.yml)
-[![Cobertura do repositório](https://github.com/XpertMinds/Jumentix/actions/workflows/coverage.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/coverage.yml)
-[![SonarQube Cloud](https://sonarcloud.io/api/project_badges/measure?project=XpertMinds_Jumentix&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=XpertMinds_Jumentix)
-[![Bun](https://img.shields.io/badge/bun-1.3.14-000000?logo=bun&logoColor=white)](https://bun.sh/)
-[![Compatibilidade Node](https://img.shields.io/badge/node%20compat-22.x-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/XpertMinds/Jumentix/tree/dev.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/XpertMinds/Jumentix/tree/dev)
+[![codecov](https://codecov.io/gh/XpertMinds/Jumentix/branch/dev/graph/badge.svg)](https://codecov.io/gh/XpertMinds/Jumentix)
+[![Status do Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Jumentix)
+[![Nó](https://img.shields.io/badge/node-22.x-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-6BA539?logo=openapiinitiative&logoColor=white)](../../spec/1.0.0.yml)
 [![AsyncAPI](https://img.shields.io/badge/AsyncAPI-3.0-9146FF)](../../spec)
 [![Licença](https://img.shields.io/github/license/XpertMinds/Jumentix)](../../LICENSE)
+[![Cheiros de código](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=Jumentix)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=bugs)](https://sonarcloud.io/summary/new_code?id=Jumentix)
+[![Vulnerabilidades](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=Jumentix)
 [![Commitizen amigável](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 ![Feito no Brasil com Amor](https://img.shields.io/badge/made%20in-%F0%9F%87%A7%F0%9F%87%B7%20Brasil%20with%E2%9D%A4%EF%B8%8F-blue)
 [![#StandWithUkraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://vshymanskyy.github.io/StandWithUkraine)
@@ -52,10 +54,10 @@ Uso detalhado de recursos:
    modelo de execução, provedor de nuvem, perfil de ativos estáticos e portas de tempo de execução.
    - Inclui visualização do perfil de tempo de execução PM2 para implantações de VM.
    - Inclui editor de ambiente de tempo de execução para:
-     - `AAA_HTTP_FRAMEWORK`
-     - `AAA_REALTIME_API`
-     - `AAA_REALTIME_API_PROTOCOL`
-     - `AAA_REALTIME_API_DATABASE_DRIVER`
+     - `JUMENTIX_HTTP_FRAMEWORK`
+     - `JUMENTIX_REALTIME_API`
+     - `JUMENTIX_REALTIME_API_PROTOCOL`
+     - `JUMENTIX_REALTIME_API_DATABASE_DRIVER`
 4. **Gerenciamento de implantação**
    - Registre alvos de implantação para VMs, servidores dedicados, EC2 e provedores de funções.
 
@@ -67,8 +69,8 @@ Este aplicativo é atendido via PM2:
 
 Comandos:
 
-- `bun run dev:service-management`
-- `bun run dev` (inicia automaticamente o gerenciamento de serviço + perfil REST)
+- `pnpm run dev:service-management`
+- `pnpm run dev` (inicia automaticamente o gerenciamento de serviço + perfil REST)
 
 ## API de ambiente de tempo de execução
 
@@ -77,10 +79,10 @@ Comandos:
 
 ### Chaves Editáveis
 
-- `AAA_HTTP_FRAMEWORK`
-- `AAA_REALTIME_API`
-- `AAA_REALTIME_API_PROTOCOL`
-- `AAA_REALTIME_API_DATABASE_DRIVER`
+- `JUMENTIX_HTTP_FRAMEWORK`
+- `JUMENTIX_REALTIME_API`
+- `JUMENTIX_REALTIME_API_PROTOCOL`
+- `JUMENTIX_REALTIME_API_DATABASE_DRIVER`
 
 ### Mapeamento de ambiente
 

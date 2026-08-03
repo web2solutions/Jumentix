@@ -205,7 +205,7 @@ export class ExternalStoreProxy<T extends Record<string, any>> implements IStore
   }
 
   private getDynamoTableName(): string {
-    return `aaa_${this.config.tableName}`;
+    return `jumentix_${this.config.tableName}`;
   }
 
   private static parsePayload<TRecord extends Record<string, any>>(
