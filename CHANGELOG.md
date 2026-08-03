@@ -4,11 +4,14 @@
 
 ## All Changes
 
+- 2026-08-03 Merge remote-tracking branch 'origin/dev' into codex/ci/restore-circleci-main - Eduardo A.
+- 2026-08-03 [JUM-611][Governance] Replace GitHub-mirrored agent registry with Firestore Database - Eduardo A.
 - 2026-08-03 ci: run branch gate on Cypress browser image - Eduardo A.
 - 2026-08-03 ci: extend CircleCI branch gate timeout - Eduardo A.
 - 2026-08-03 ci: fix CircleCI browser and PR gates - Eduardo A.
 - 2026-08-03 ci: run third-party review without remote docker - Eduardo A.
 - 2026-08-03 ci: fix circleci pr gate metadata - Eduardo A.
+- 2026-08-03 [JUM-417][CI] Sync agent-registry mirror (kimi-k3-cursor-001) (#64) - Eduardo A.
 - 2026-08-03 ci: restore circleci for dev and main - Eduardo A.
 - 2026-08-03 [JUM-419][CI] Sync the agent-registry mirror to canonical 271da346 - Eduardo A.
 - 2026-08-03 [JUM-417][Release] Merge main history into dev for the promotion - Eduardo A.

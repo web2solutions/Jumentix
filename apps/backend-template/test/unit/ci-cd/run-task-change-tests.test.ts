@@ -99,6 +99,17 @@ describe('run-task-change-tests', () => {
     });
   });
 
+  it('maps Bun lockfile changes to focused toolchain tests even with generated changelog drift', () => {
+    expect.hasAssertions();
+    expect(createTaskTestPlan(['bun.lock', 'CHANGELOG.md'])).toStrictEqual({
+      type: 'mapped-unit-tests',
+      files: [
+        'apps/backend-template/test/unit/ci-cd/check-bun-version.test.ts',
+        'apps/backend-template/test/unit/ci-cd/check-dependency-override-integrity.test.ts'
+      ]
+    });
+  });
+
   it('selects real documentation validation for docs-only changes', () => {
     expect.hasAssertions();
     expect(createTaskTestPlan(['documentation/md/TESTING-CI-AND-QUALITY.md'])).toStrictEqual({

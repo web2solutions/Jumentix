@@ -14,6 +14,11 @@ const IMPLEMENTATION_PATH = /^(ci-cd\/|apps\/[^/]+\/(src|scripts)\/|packages\/[^
 const RELATED_SOURCE_PATH = /^(ci-cd\/.*\.[cm]?js|apps\/[^/]+\/(src|scripts)\/.*\.[cm]?[jt]sx?|packages\/[^/]+\/src\/.*\.[cm]?[jt]sx?|tooling\/.*\.[cm]?[jt]sx?)$/;
 const GOVERNANCE_CONFIG_PATH = /^(\.husky\/|\.github\/|\.circleci\/)|^package\.json$/;
 const GOVERNANCE_TEST_PATH = 'apps/backend-template/test/unit/ci-cd/run-full-test-matrix.test.ts';
+const TOOLCHAIN_CONFIG_PATH = /^(bun\.lock|\.bun-version|package\.json)$/;
+const TOOLCHAIN_TEST_PATHS = [
+  'apps/backend-template/test/unit/ci-cd/check-bun-version.test.ts',
+  'apps/backend-template/test/unit/ci-cd/check-dependency-override-integrity.test.ts'
+];
 const DOCUMENTATION_PATH = /(^|\/)(documentation\/|\.agents\/)|(^|\/)(README|CHANGELOG|CLAUDE|GROK|AGENTS)(\.[^/]*)?\.md$|\.md$/i;
 const WEBSITE_PATH = /^apps\/jumentix-website\//;
 
@@ -60,7 +65,10 @@ function createTaskTestPlan(files) {
   const governanceTests = changedFiles.some((file) => GOVERNANCE_CONFIG_PATH.test(file))
     ? [GOVERNANCE_TEST_PATH]
     : [];
-  const selectedUnitTests = normalizeFiles([...unitTests, ...governanceTests]);
+  const toolchainTests = changedFiles.some((file) => TOOLCHAIN_CONFIG_PATH.test(file))
+    ? TOOLCHAIN_TEST_PATHS
+    : [];
+  const selectedUnitTests = normalizeFiles([...unitTests, ...governanceTests, ...toolchainTests]);
 
   if (websiteFiles.length > 0) {
     return {
@@ -89,6 +97,10 @@ function createTaskTestPlan(files) {
 
   if (governanceTests.length > 0) {
     return { type: 'mapped-unit-tests', files: governanceTests };
+  }
+
+  if (toolchainTests.length > 0) {
+    return { type: 'mapped-unit-tests', files: toolchainTests };
   }
 
   const documentationFiles = changedFiles.filter((file) => DOCUMENTATION_PATH.test(file));
