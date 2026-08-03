@@ -4,11 +4,11 @@ Idioma alvo: Português (Brasil)
 -->
 # Especificações de rastreabilidade de requisitos
 
-<!-- requirements-inventory: files=124 unique=121 mapped=121 duplicates=055,060,079 -->
+<!-- requirements-inventory: files=124 unique=124 mapped=124 duplicates= -->
 
 Este livro-razão mapeia IDs de requisitos para especificações de recursos e expectativas de evidências de validação.
 
-É a ponte canônica entre `.agents/requirements` e fluxos de trabalho de implementação.
+É a ponte canônica entre `.agents/requirements/project/`, `.agents/requirements/software/` e fluxos de trabalho de implementação.
 
 ## Como usar
 
@@ -71,7 +71,7 @@ Para qualquer alteração, identifique os IDs dos requisitos afetados e garanta:
 
 ## E. Governança de Arquitetura e Design
 
-- `015`, `016`, `017`, `034`, `048`, `049`, `053`, `058`, `059`, `060` (ambas as entradas), `062`
+- `015`, `016`, `017`, `034`, `048`, `049`, `053`, `058`, `059`, `060`, `062`, `121`
 - Recursos de especificações:
   - `documentação/md/ARQUITETURA-E-ESTRUTURA.md`
   - `documentation/md/HEXAGONAL-FEATURE-DRIVEN-MIGRATION.md`
@@ -100,7 +100,7 @@ Para qualquer alteração, identifique os IDs dos requisitos afetados e garanta:
 
 ## G. Documentação, processo de governança e operações multiagente
 
-- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `056`, `057`, `064`, `066`, `067`, `068`, `071`, `072`, `073`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `094`, `095`, `097`, `098`, `099`, `100`, `101`, `102`, `103`, `104`, `105`, `106`, `107`, `108`, `109`, `110`, `111`, `112`, `113`, `114`, `116`, `117`, `119`, `120`, `121`
+- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `056`, `057`, `064`, `066`, `067`, `068`, `071`, `072`, `073`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `094`, `095`, `097`, `098`, `099`, `100`, `101`, `102`, `103`, `104`, `105`, `106`, `107`, `108`, `109`, `110`, `111`, `112`, `113`, `114`, `116`, `117`, `119`, `120`, `121`, `122`, `124`
 - Recursos de especificações:
   - `documentação/README.md`
   - `documentação/md/JUMENTIX-PROJECT-GOVERNANCE.md`
@@ -130,7 +130,7 @@ Para qualquer alteração, identifique os IDs dos requisitos afetados e garanta:
 
 ## H. Produtização e expansão da plataforma
 
-- `037`, `038`, `054`, `055` (ambas as entradas), `069`, `070`, `091`, `092`, `093`
+- `037`, `038`, `054`, `055`, `069`, `070`, `091`, `092`, `093`, `123`
 - Recursos de especificações:
   - `pacotes/cli-init/*`
   - `apps/gerenciamento de serviço/documentação/*`
@@ -148,19 +148,19 @@ Se os IDs de requisitos afetados não forem mapeados antes da implementação, a
 
 ## Atestado de cobertura (linha de base atual)
 
-A partir de `2026-08-01`, este livro-razão cobre todos os IDs de requisitos exclusivos atualmente registrados em `.agents/requirements`:
+A partir de `2026-08-02`, este livro-razão cobre todos os IDs de requisitos exclusivos atualmente registrados em `.agents/requirements/project/` e `.agents/requirements/software/`:
 
 1. Arquivos de requisitos no registro: `124`
-2. IDs exclusivos no registro de requisitos: `121`
-3. IDs exclusivos mapeados neste livro-razão: `121`
-4. IDs duplicados com arquivos vinculantes independentes: `055`, `060`, `079`
+2. IDs exclusivos no registro de requisitos: `124`
+3. IDs exclusivos mapeados neste livro-razão: `124`
+4. IDs duplicados com arquivos vinculantes independentes: `nenhum`
 5. IDs ausentes: `nenhum`
 
 ### `105` Pirâmide de testes hexagonal / gates por camada
-- Specs: `documentation/md/HEXAGONAL-TEST-PYRAMID.pt-BR.md`, `.agents/requirements/105-hexagonal-test-pyramid-layer-aware-gates.md`
+- Specs: `documentation/md/HEXAGONAL-TEST-PYRAMID.pt-BR.md`, `.agents/requirements/software/105-hexagonal-test-pyramid-layer-aware-gates.md`
 - Evidence: `test-map.json`, `ci-cd/check-test-map.js`, `ci-cd/lib/layer-resolver.js`, `ci-cd/run-task-change-tests.js`, `ci-cd/run-unit-tests.js`
 
 ### `114`–`121` Pacote operacional de agentes (JUM-595 + adições do owner em 2026-08-02)
 - Specs: `documentation/md/AGENT-OPERATING-REQUIREMENTS-114-121.pt-BR.md` (+ EN)
-- Requisitos: `.agents/requirements/114-*.md` … `121-*.md`
+- Requisitos: `.agents/requirements/project/114-*.md` … `121-*.md`
 - Evidência: `bun run requirements:check`; paridade em `AGENTS.md` / `CLAUDE.md` / `GROK.md`; scripts Docker de smoke/integration para `118`; orquestração API-first / `gh` para `119`; visibilidade de assignment de agente no Linear para `120`; evidência de coordenação entre agentes para `121`

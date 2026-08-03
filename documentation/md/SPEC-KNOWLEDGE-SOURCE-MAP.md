@@ -31,9 +31,9 @@ When conflicts happen, resolution order is:
 
 - `documentation/md/ARCHITECTURE-AND-STRUCTURE.md`
 - `documentation/md/HEXAGONAL-FEATURE-DRIVEN-MIGRATION.md`
-- `.agents/requirements/015-architecture-nfr-ddd-eda-hexagonal.md`
-- `.agents/requirements/016-layer-call-order-and-boundaries.md`
-- `.agents/requirements/017-event-first-integration-and-circular-safety.md`
+- `.agents/requirements/software/015-architecture-nfr-ddd-eda-hexagonal.md`
+- `.agents/requirements/software/016-layer-call-order-and-boundaries.md`
+- `.agents/requirements/software/017-event-first-integration-and-circular-safety.md`
 
 ## Contracts and Interfaces
 
@@ -41,14 +41,14 @@ When conflicts happen, resolution order is:
 - Realtime/AsyncAPI: `spec/asyncapi/1.0.0.websocket.yml`, `spec/asyncapi/1.0.0.grpc.yml`
 - Event/message map: `documentation/md/EVENTS-AND-MESSAGES-MAP.md`
 - Error contracts: `documentation/md/ERROR-CONTRACTS-AND-RESPONSES.md`
-- Port object requirement: `.agents/requirements/036-openapi-port-objects-contracts.md`
+- Port object requirement: `.agents/requirements/software/036-openapi-port-objects-contracts.md`
 
 ## Runtime and Deployment
 
 - Runtime env contracts: `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md`
 - Setup and API runtime: `documentation/md/SETUP-RUNTIME-AND-API.md`
-- PM2 orchestration requirement: `.agents/requirements/041-pm2-vm-runtime-orchestration.md`
-- Env-driven adapter selection: `.agents/requirements/042-env-driven-runtime-adapter-selection.md`
+- PM2 orchestration requirement: `.agents/requirements/software/041-pm2-vm-runtime-orchestration.md`
+- Env-driven adapter selection: `.agents/requirements/software/042-env-driven-runtime-adapter-selection.md`
 
 ## Data, Domain, and Persistence
 
@@ -64,7 +64,7 @@ When conflicts happen, resolution order is:
 - PCI runbook: `documentation/md/SECURITY-RUNBOOK-PCI.md`
 - PCI remediation plan: `documentation/md/PCI-REMEDIATION-PLAN-AND-EVIDENCE.md`
 - Security/compliance spec contract: `documentation/md/SPEC-SECURITY-AND-COMPLIANCE-PRACTICES.md`
-- Security hardening requirement: `.agents/requirements/044-pci-security-compliance-hardening.md`
+- Security hardening requirement: `.agents/requirements/software/044-pci-security-compliance-hardening.md`
 
 ## Governance and Process
 
@@ -72,8 +72,8 @@ When conflicts happen, resolution order is:
 - Project management bridge: `documentation/md/PROJECT-MANAGEMENT.md`
 - Project board contract: `documentation/md/SPEC-PROJECT-BOARD-CONTRACT.md`
 - Engineering practices + git policy: `documentation/md/SPEC-ENGINEERING-PRACTICES-AND-GIT-POLICY.md`
-- NFR capture policy: `.agents/requirements/068-nfr-capture-and-registry-governance.md`
-- Commit/push integrity: `.agents/requirements/065-commit-push-integrity-and-real-ci-enforcement.md`
+- NFR capture policy: `.agents/requirements/project/068-nfr-capture-and-registry-governance.md`
+- Commit/push integrity: `.agents/requirements/project/065-commit-push-integrity-and-real-ci-enforcement.md`
 
 ## Source Update Triggers
 

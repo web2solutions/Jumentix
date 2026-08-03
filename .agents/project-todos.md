@@ -80,11 +80,11 @@ GitHub tracking:
 - [x] Define task-owned branch and PR naming governance
   - Issue: `https://github.com/web2solutions/aaa-typescript-boilerplate/issues/133`
   - Branch: `codex/governance/133-task-branch-pr-naming`
-  - Added requirement: `.agents/requirements/079-task-owned-branch-and-pr-naming-governance.md`
+  - Added requirement: `.agents/requirements/project/122-task-owned-branch-and-pr-naming-governance.md`
   - Updated PR templates, governance specs, traceability ledger, and EN/PT documentation.
 
 - [x] Register governance requirement for mandatory task traceability + bilingual documentation/site parity
-  - Added requirement: `.agents/requirements/076-task-documentation-and-bilingual-governance.md`
+  - Added requirement: `.agents/requirements/project/076-task-documentation-and-bilingual-governance.md`
   - Updated requirement index: `.agents/README.md`
   - Updated NFR registry: `.agents/NFR-REGISTRY.md`
   - Updated governance doc: `documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`
@@ -110,7 +110,7 @@ GitHub tracking:
     - `documentation/md/SPEC-CANONICAL-COVERAGE-MATRIX.md`
     - `documentation/md/SPEC-KNOWLEDGE-SOURCE-MAP.md`
   - Added governance requirement:
-    - `.agents/requirements/075-jumentix-composition-clarity-in-specs.md`
+    - `.agents/requirements/project/075-jumentix-composition-clarity-in-specs.md`
     - `.agents/README.md`
     - `.agents/NFR-REGISTRY.md`
   - Synced requirements coverage docs:
@@ -126,7 +126,7 @@ GitHub tracking:
     - `documentation/md/SPEC-CANONICAL-COVERAGE-MATRIX.md`
     - `documentation/md/SPEC-KNOWLEDGE-SOURCE-MAP.md`
   - Added governance requirement:
-    - `.agents/requirements/074-security-compliance-practices-in-specs.md`
+    - `.agents/requirements/project/074-security-compliance-practices-in-specs.md`
     - `.agents/README.md`
     - `.agents/NFR-REGISTRY.md`
   - Synced requirements coverage docs:
@@ -142,7 +142,7 @@ GitHub tracking:
     - `documentation/md/SPEC-CANONICAL-COVERAGE-MATRIX.md`
     - `documentation/md/SPEC-KNOWLEDGE-SOURCE-MAP.md`
   - Added governance requirement:
-    - `.agents/requirements/073-engineering-practices-git-lint-coding-governance.md`
+    - `.agents/requirements/project/073-engineering-practices-git-lint-coding-governance.md`
     - `.agents/README.md`
     - `.agents/NFR-REGISTRY.md`
 
@@ -156,7 +156,7 @@ GitHub tracking:
     - `documentation/md/SPEC-DEVELOPMENT-DRIVEN-INDEX.md`
     - `documentation/README.md`
   - Strengthened governance requirement:
-    - `.agents/requirements/072-spec-development-driven-canonical-knowledge-coverage.md`
+    - `.agents/requirements/project/072-spec-development-driven-canonical-knowledge-coverage.md`
 
 - [x] Expand Spec Development Driven to canonical full-knowledge coverage
   - Added canonical spec documentation set:
@@ -170,7 +170,7 @@ GitHub tracking:
     - `documentation/README.md`
     - `documentation/md/SPEC-CANONICAL-COVERAGE-MATRIX.md`
   - Synced governance requirements:
-    - `.agents/requirements/072-spec-development-driven-canonical-knowledge-coverage.md`
+    - `.agents/requirements/project/072-spec-development-driven-canonical-knowledge-coverage.md`
     - `.agents/README.md`
     - `.agents/NFR-REGISTRY.md`
     - `.agents/spec-development-driven-agent.md`
@@ -185,7 +185,7 @@ GitHub tracking:
     - `documentation/md/SPEC-TEMPLATES-AND-CHECKLISTS.md`
   - Updated technical docs index: `documentation/README.md`.
   - Added requirement and agent support:
-    - `.agents/requirements/071-spec-development-driven-governance.md`
+    - `.agents/requirements/project/071-spec-development-driven-governance.md`
     - `.agents/spec-development-driven-agent.md`
     - `.agents/README.md` and `.agents/NFR-REGISTRY.md` sync.
 
@@ -261,7 +261,7 @@ GitHub tracking:
     - `smoke:realtime:redis-streams`
   - Added documentation and requirement registry sync:
     - `documentation/md/REALTIME-API-TESTING.md`
-    - `.agents/requirements/047-realtime-api-test-matrix.md`
+    - `.agents/requirements/software/047-realtime-api-test-matrix.md`
 
 - [x] Extract generic adapters/contracts into distributable workspace packages (ongoing wave)
   - Added `@jumentix/message-mediator` package and bridged local mediator ports/adapters to package exports.

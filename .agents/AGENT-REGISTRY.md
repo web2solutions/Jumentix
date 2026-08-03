@@ -215,6 +215,29 @@ This registry tracks AI agents collaborating in the Jumentix project.
   - governed implementation, testing, and CI diagnostics
   - specification, Linear, and agent-registry traceability
 
+### 9) kimi-code-primary-001
+
+- `agent_id`: `kimi-code-primary-001`
+- `agent_name`: `Kimi Code Primary`
+- `platform`: `Kimi Code CLI`
+- `machine_id`: `host-eduardos-macbook-air-arm64-local`
+- `machine_name`: `Eduardos-MacBook-Air.local`
+- `machine_os`: `Darwin 25.5.0 arm64`
+- `workspace_path`: `/Users/eduardoalmeida/apps/XpertMinds/kimi-code-primary-001`
+- `agent_runtime`: `Kimi Code CLI (local checkout, network-attached)`
+- `agent_version`: `kimi-code-cli-latest`
+- `status`: `available`
+- `registered_at_utc`: `2026-08-02T18:42:21Z`
+- `last_branch_check_utc`: `2026-08-02T23:47:10Z`
+- `main_ref_checked`: `490cb63`
+- `dev_ref_checked`: `b2498ba`
+- `active_epic`: `none`
+- `assigned_task`: `none`
+- `capabilities`:
+  - repository-wide source and documentation assimilation
+  - governed implementation, testing, and CI diagnostics
+  - spec, Linear, and agent-registry traceability
+
 ## Operating Flow
 
 1. Register or update the agent entry here before task execution.

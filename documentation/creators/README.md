@@ -12,6 +12,8 @@ It includes planning, migration, governance, and internal implementation referen
 - [Testing, CI and Quality](../md/TESTING-CI-AND-QUALITY.md)
 - [Agent Operating Requirements 114–121](../md/AGENT-OPERATING-REQUIREMENTS-114-121.md)
   ([pt-BR](../md/AGENT-OPERATING-REQUIREMENTS-114-121.pt-BR.md))
+- [Project vs Software Requirements](../md/PROJECT-VS-SOFTWARE-REQUIREMENTS.md)
+  ([pt-BR](../md/PROJECT-VS-SOFTWARE-REQUIREMENTS.pt-BR.md))
 
 ## Internal and Operational References
 
