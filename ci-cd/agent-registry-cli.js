@@ -1,11 +1,9 @@
 #!/usr/bin/env bun
 /* eslint-disable no-console */
 
-const { createRequire } = require('module');
 const path = require('path');
 
 // Resolve the workspace package
-const require = createRequire(import.meta.url || __filename);
 const packageRoot = path.resolve(__dirname, '../packages/agent-registry');
 
 async function loadRegistry() {
@@ -106,6 +104,11 @@ async function main() {
   }
 
   if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+    if (command === 'check') {
+      // Optional check: skip when Firestore credentials are not configured yet.
+      console.log('[agent-registry-cli] skipping check: FIREBASE_SERVICE_ACCOUNT_KEY is not set.');
+      process.exit(0);
+    }
     console.error('Missing required environment variable: FIREBASE_SERVICE_ACCOUNT_KEY');
     process.exit(1);
   }

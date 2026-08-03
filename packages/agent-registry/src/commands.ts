@@ -72,7 +72,10 @@ export async function registerAgent(
   return agent;
 }
 
-export async function heartbeat(firestore: FirestoreLike, input: HeartbeatInput): Promise<AgentRecord> {
+export async function heartbeat(
+  firestore: FirestoreLike,
+  input: HeartbeatInput
+): Promise<AgentRecord> {
   const agent_id = requireNonEmpty(input.agent_id, 'agent_id');
   const existing = await getAgent(firestore, agent_id);
   if (!existing) {

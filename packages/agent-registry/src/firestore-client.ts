@@ -50,7 +50,10 @@ export function createFirestoreClient(): FirestoreLike {
   return getFirestore() as unknown as FirestoreLike;
 }
 
-export async function getAgent(firestore: FirestoreLike, agentId: string): Promise<AgentRecord | null> {
+export async function getAgent(
+  firestore: FirestoreLike,
+  agentId: string
+): Promise<AgentRecord | null> {
   const doc = await firestore.collection(COLLECTION).doc(agentId).get();
   if (!doc.exists) return null;
   return doc.data() as AgentRecord;
