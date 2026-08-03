@@ -22,7 +22,6 @@ The following keys are mandatory across env files in `apps/backend-template/src/
     - `express`
     - `fastify`
     - `restify`
-    - `hyper-express`
     - `cloudflare-workers`
     - `vercel-functions`
     - `loopback`

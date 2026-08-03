@@ -19,7 +19,7 @@ Execute operações de API com integração de tempo de execução LoopBack.
 3. Execute:
 
 ```bash
-pnpm run dev:loopback
+bun run dev:loopback
 ```
 
 

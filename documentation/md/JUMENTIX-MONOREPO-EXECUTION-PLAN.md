@@ -2,7 +2,7 @@
 
 ## Objective
 
-Convert the current repository into a pnpm monorepo product named `JumentiX`, minimizing uncertain implementation paths and preserving delivery predictability.
+Convert the current repository into a Bun workspace monorepo product named `JumentiX`, minimizing uncertain implementation paths and preserving delivery predictability.
 
 ## Guiding Principles
 
@@ -33,9 +33,9 @@ Planning guardrails and migration inventory reference:
 
 Implemented in repository:
 
-- `pnpm-workspace.yaml` added.
-- root `package.json` includes `packageManager` and `mono:*` recursive scripts.
-- root `.npmrc` includes workspace linking and shared lockfile settings for monorepo consistency.
+- root `package.json` declares Bun 1.3.14, workspace globs, and `mono:*` recursive scripts.
+- `bun.lock` is the committed workspace lockfile.
+- `bunfig.toml` owns Bun runner/install policy for internal engineering workflows.
 - initial workspace scaffolding created:
   - `apps/backend-template`
   - `apps/service-management`
@@ -51,10 +51,10 @@ Implemented in repository:
   - `packages/cli-init` now exposes executable bin entrypoints and owns the bootstrap implementation used by root CLI wrapper.
   - CLI package now includes package-level README with command contract.
 - Wave 6 startup in progress:
-  - added affected-workspace detector (`pnpm run ci:affected`) to classify file deltas by `root`, `apps/*`, `packages/*`, and docs-only scope as a base primitive for selective monorepo CI execution.
-  - added release dry-run scripts (`pnpm run release:dry-run`, `release:dry-run:packages`, `release:dry-run:apps`) to verify package artifact readiness and app workspace build/test script contracts.
-  - added monorepo CI runner (`pnpm run ci:monorepo`) that executes lightweight docs-only validation or strict gate + affected app/package commands depending on changed scope.
-  - CI pipelines aligned to monorepo flow: GitHub Actions now installs with pnpm and runs scope-aware `ci:monorepo`; CircleCI now installs pnpm and executes `ci:monorepo`.
+  - added affected-workspace detector (`bun run ci:affected`) to classify file deltas by `root`, `apps/*`, `packages/*`, and docs-only scope as a base primitive for selective monorepo CI execution.
+  - added release dry-run scripts (`bun run release:dry-run`, `release:dry-run:packages`, `release:dry-run:apps`) to verify package artifact readiness and app workspace build/test script contracts.
+  - added monorepo CI runner (`bun run ci:monorepo`) that executes lightweight docs-only validation or strict gate + affected app/package commands depending on changed scope.
+  - CI pipelines aligned to monorepo flow: GitHub Actions installs Bun dependencies with a frozen `bun.lock` and runs scope-aware `ci:monorepo`.
 - reusable package extraction in progress:
   - `packages/message-mediator` (with local bridge exports in backend code)
   - `packages/key-value-storage` (with local bridge exports in backend code)
@@ -71,8 +71,8 @@ Implemented in repository:
 
 Pending validation note:
 
-- Full pnpm recursive execution is currently blocked in this environment due registry network resolution (`ENOTFOUND`) during `pnpm install` bootstrap.
-- Local npm validation in this environment currently shows package-manager instability (`npm ci` exit-handler crash and cache permission drift), so final recursive verification must run in CI/clean machine with Node `22.23.1`.
+- Full recursive workspace validation runs through Bun (`bun run --filter '*' ...`) and `ci:monorepo`.
+- Node validation is retained only for declared compatibility checks, not as the internal package-manager workflow.
 
 ## Migration Milestones
 
@@ -80,14 +80,16 @@ Pending validation note:
 
 Deliverables:
 
-- `pnpm-workspace.yaml`
+- `package.json#workspaces`
+- `bun.lock`
+- `bunfig.toml`
 - root `package.json` workspace scripts
-- Node 22 enforced at workspace root and CI
+- Bun 1.3.14 enforced at workspace root and CI; Node 22 retained as compatibility target
 - base shared configs (ts/eslint/jest) published internally in workspace
 
 Exit Criteria:
 
-- `pnpm -r lint`, `pnpm -r test`, and `pnpm -r build` pass.
+- `bun run mono:lint`, `bun run mono:test`, and `bun run mono:build` pass.
 - CI runs workspace commands successfully.
 
 ### Milestone 2 - Message Mediator Extraction

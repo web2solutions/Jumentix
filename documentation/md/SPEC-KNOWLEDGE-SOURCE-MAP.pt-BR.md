@@ -15,7 +15,7 @@ substitui o estado atual do planejamento no Linear.
 Quando ocorrem conflitos, a ordem de resolução é:
 
 1. Especificações de contrato versionadas (`spec/1.0.0.yml`, `spec/asyncapi/*`)
-2. Requisitos de governança (`.agents/requirements/*`, `.agents/NFR-REGISTRY.md`)
+2. Requisitos de governança (`.agents/requirements/project/*.md`, `.agents/requirements/software/*.md`, `.agents/NFR-REGISTRY.md`)
 3. Governança do projeto (`documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`)
 4. Portas executáveis CI/CD (`ci-cd/*`, husky hooks, política de cobertura)
 5. Documentos técnicos de arquitetura (`documentation/md/*`)
@@ -35,9 +35,9 @@ Quando ocorrem conflitos, a ordem de resolução é:
 
 - `documentação/md/ARQUITETURA-E-ESTRUTURA.md`
 - `documentation/md/HEXAGONAL-FEATURE-DRIVEN-MIGRATION.md`
-- `.agents/requirements/015-architecture-nfr-ddd-eda-hexagonal.md`
-- `.agents/requirements/016-layer-call-order-and-boundaries.md`
-- `.agents/requirements/017-event-first-integration-and-circular-safety.md`
+- `.agents/requirements/software/015-architecture-nfr-ddd-eda-hexagonal.md`
+- `.agents/requirements/software/016-layer-call-order-and-boundaries.md`
+- `.agents/requirements/software/017-event-first-integration-and-circular-safety.md`
 
 ## Contratos e Interfaces
 
@@ -45,14 +45,14 @@ Quando ocorrem conflitos, a ordem de resolução é:
 - Tempo real/AsyncAPI: `spec/asyncapi/1.0.0.websocket.yml`, `spec/asyncapi/1.0.0.grpc.yml`
 - Mapa de eventos/mensagens: `documentation/md/EVENTS-AND-MESSAGES-MAP.md`
 - Contratos de erro: `documentation/md/ERROR-CONTRACTS-AND-RESPONSES.md`
-- Requisito de objeto de porta: `.agents/requirements/036-openapi-port-objects-contracts.md`
+- Requisito de objeto de porta: `.agents/requirements/software/036-openapi-port-objects-contracts.md`
 
 ## Tempo de execução e implantação
 
 - Contratos de ambiente de tempo de execução: `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md`
 - Configuração e tempo de execução da API: `documentation/md/SETUP-RUNTIME-AND-API.md`
-- Requisito de orquestração PM2: `.agents/requirements/041-pm2-vm-runtime-orchestration.md`
-- Seleção de adaptador orientado a ambiente: `.agents/requirements/042-env-driven-runtime-adapter-selection.md`
+- Requisito de orquestração PM2: `.agents/requirements/software/041-pm2-vm-runtime-orchestration.md`
+- Seleção de adaptador orientado a ambiente: `.agents/requirements/software/042-env-driven-runtime-adapter-selection.md`
 
 ## Dados, domínio e persistência
 
@@ -68,7 +68,7 @@ Quando ocorrem conflitos, a ordem de resolução é:
 - Runbook PCI: `documentation/md/SECURITY-RUNBOOK-PCI.md`
 - Plano de remediação de PCI: `documentation/md/PCI-REMEDIATION-PLAN-AND-EVIDENCE.md`
 - Contrato de especificação de segurança/conformidade: `documentation/md/SPEC-SECURITY-AND-COMPLIANCE-PRACTICES.md`
-- Requisito de reforço de segurança: `.agents/requirements/044-pci-security-compliance-hardening.md`
+- Requisito de reforço de segurança: `.agents/requirements/software/044-pci-security-compliance-hardening.md`
 
 ## Governança e Processo
 
@@ -76,8 +76,8 @@ Quando ocorrem conflitos, a ordem de resolução é:
 - Ponte de gerenciamento de projetos: `documentation/md/PROJECT-MANAGEMENT.md`
 - Contrato da diretoria do projeto: `documentation/md/SPEC-PROJECT-BOARD-CONTRACT.md`
 - Práticas de engenharia + política git: `documentation/md/SPEC-ENGINEERING-PRACTICES-AND-GIT-POLICY.md`
-- Política de captura de NFR: `.agents/requirements/068-nfr-capture-and-registry-governance.md`
-- Integridade de confirmação/push: `.agents/requirements/065-commit-push-integrity-and-real-ci-enforcement.md`
+- Política de captura de NFR: `.agents/requirements/project/068-nfr-capture-and-registry-governance.md`
+- Integridade de confirmação/push: `.agents/requirements/project/065-commit-push-integrity-and-real-ci-enforcement.md`
 
 ## Gatilhos de atualização de origem
 

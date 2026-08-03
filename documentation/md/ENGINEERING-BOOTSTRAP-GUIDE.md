@@ -20,10 +20,10 @@ Current workspace layout:
 Core orchestration commands:
 
 ```bash
-pnpm run mono:build
-pnpm run mono:test
-pnpm run mono:lint
-pnpm run mono:typecheck
+bun run mono:build
+bun run mono:test
+bun run mono:lint
+bun run mono:typecheck
 ```
 
 ## 1. Before you start
@@ -37,15 +37,15 @@ pnpm run mono:typecheck
 ### Install dependencies
 
 ```bash
-pnpm install
+bun install
 ```
 
 ### Run baseline checks
 
 ```bash
-pnpm run lint
-pnpm run test:unit
-pnpm run oas:check-routes
+bun run lint
+bun run test:unit
+bun run oas:check-routes
 ```
 
 ## 2. Understand the architecture flow
@@ -150,19 +150,18 @@ Recommended practice:
 ### Development runtime
 
 ```bash
-pnpm run dev:express
-pnpm run dev:fastify
-pnpm run dev:restify
-pnpm run dev:hyper-express
-pnpm run dev:serverless
+bun run dev:express
+bun run dev:fastify
+bun run dev:restify
+bun run dev:serverless
 ```
 
 ### PM2 multi-app (monorepo)
 
 ```bash
-pnpm run pm2:start:dev:restapi
-pnpm run pm2:start:dev:websocket-rest
-pnpm run pm2:start:dev:grpc-rest
+bun run pm2:start:dev:restapi
+bun run pm2:start:dev:websocket-rest
+bun run pm2:start:dev:grpc-rest
 ```
 
 These profiles start service-management alongside backend adapters using `pm2/*`.
@@ -170,13 +169,13 @@ These profiles start service-management alongside backend adapters using `pm2/*`
 ### Quality and CI parity
 
 ```bash
-pnpm run lint
-pnpm run test:unit
-pnpm run oas:check-routes
-pnpm run build:dev
-pnpm run ci:smoke
-pnpm run ci:gate
-pnpm run ci:monorepo
+bun run lint
+bun run test:unit
+bun run oas:check-routes
+bun run build:dev
+bun run ci:smoke
+bun run ci:gate
+bun run ci:monorepo
 ```
 
 ## 9. Definition of done for new features
@@ -187,7 +186,7 @@ A feature should be considered done when:
 - Business behavior is covered by unit tests.
 - Critical endpoint path has integration coverage.
 - No sensitive fields leak in API responses.
-- `pnpm run ci:gate` passes locally and in CI.
+- `bun run ci:gate` passes locally and in CI.
 
 ## 10. Common pitfalls to avoid
 

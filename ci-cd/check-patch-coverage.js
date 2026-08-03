@@ -35,7 +35,10 @@ const selectedLayers = String(process.env.JUMENTIX_SELECTED_LAYERS || '')
  * here: a second list would drift, and the moment it drifts one of the two is
  * silently wrong.
  */
-const TEST_FILE = /(^|\/)test\/|\.test\.ts$|\.spec\.ts$/;
+// Cypress specs live under `**/cypress/**` / `*.cy.ts(js)` and are the
+// instrument, not the subject — same false-green trap as `test/` / `*.test.ts`
+// if counted. Generated browser bundles under `.browser-tests/` are the same.
+const TEST_FILE = /(^|\/)(test|cypress|\.browser-tests)\/|\.test\.ts$|\.spec\.ts$|\.cy\.(ts|js)$/;
 
 const coverageIgnorePatterns = (() => {
   try {
@@ -57,7 +60,11 @@ const coverageIgnorePatterns = (() => {
  * `start-rest-api.ts` carries the pragma because importing its adapter table
  * boots real HTTP servers, and it contributed 48 unreachable misses.
  */
-const ISTANBUL_IGNORE_FILE = /\/\*\s*istanbul\s+ignore\s+file\s*\*\//;
+// Istanbul accepts `ignore file` with an optional description before `*/`
+// (used by Redis/broker adapters that point at their integration suites).
+// Requiring an immediate `*/` missed those and counted every changed line
+// as uncovered patch debt.
+const ISTANBUL_IGNORE_FILE = /\/\*\s*istanbul\s+ignore\s+file\b/;
 
 const isCoverageSubject = (file) => {
   if (TEST_FILE.test(file)) return false;

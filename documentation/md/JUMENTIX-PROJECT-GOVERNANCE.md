@@ -53,8 +53,13 @@ projects, and pull requests provide delivery evidence but do not replace current
 8. The milestone is validated before agent delegation is established at epic level.
 9. Only agents delegated to an epic may execute its child tasks, with one accountable agent and
    non-overlapping scope per task.
-10. The canonical Agent Registry records each executing agent's `active_epic` and `assigned_task`.
-11. A milestone closes only when its epics are complete or remaining work has an auditable
+10. Linear Issues and Projects/Epics identify the active `agent_identifier` for each executable
+    scope, and that assignment stays synchronized with the canonical Agent Registry.
+11. The canonical Agent Registry records each executing agent's `active_epic`, `assigned_task`,
+    and any sibling-agent coordination context needed to avoid overlapping delivery.
+12. Agents refresh sibling-agent progress, blockers, branches, PRs, and Project Updates before
+    starting or resuming work inside the same epic, milestone, or component.
+13. A milestone closes only when its epics are complete or remaining work has an auditable
     carry-over to another milestone.
 
 ## PR Governance

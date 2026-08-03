@@ -18,14 +18,14 @@ https://linear.app/jumentix
 4. Execute o modo TDD:
 
 ```bash
-pnpm run tdd
+bun run tdd
 ```
 
 5. Faça suas alterações.
 6. Faça o commit usando:
 
 ```bash
-pnpm run commit
+bun run commit
 ```
 
 Este comando executa lint/tests e, em seguida, abre o fluxo de confirmação.
@@ -38,45 +38,45 @@ obrigatório e as evidências de entrega no GitHub.
 Fiapos:
 
 ```bash
-pnpm run lint
+bun run lint
 ```
 
 Lint + correção:
 
 ```bash
-pnpm run lint:fix
+bun run lint:fix
 ```
 
 Atualize o changelog do histórico do git:
 
 ```bash
-pnpm run changelog:update
+bun run changelog:update
 ```
 
 Valide que o changelog está sincronizado:
 
 ```bash
-pnpm run changelog:check
+bun run changelog:check
 ```
 
 Arquitetura e contratos:
 
 ```bash
-pnpm run deps:check-cycles
-pnpm run arch:check-boundaries
-pnpm run arch:check-users-legacy-imports
-pnpm run oas:check-routes
+bun run deps:check-cycles
+bun run arch:check-boundaries
+bun run arch:check-users-legacy-imports
+bun run oas:check-routes
 ```
 
 Verificação de tempo de execução do nó:
 
 ```bash
-pnpm run check-node-version
+bun run check-node-version
 ```
 
 Porta de fumaça e CI:
 
 ```bash
-pnpm run ci:smoke
-pnpm run ci:gate
+bun run ci:smoke
+bun run ci:gate
 ```

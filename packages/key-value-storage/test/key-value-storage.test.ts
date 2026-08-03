@@ -396,10 +396,11 @@ describe('choosing a driver', () => {
  * Every test here uses the real `redis` client. It needs no server, only a
  * port with nothing listening, and a bounded configuration so the failure
  * lands in milliseconds rather than the five-second default. The success paths
- * — a real connect, real reads and writes — still belong to the integration
- * suite that runs under `RUN_REDIS_INTEGRATION` against a real server, which
- * is why those lines carry the narrow `istanbul ignore next` pragmas rather
- * than the file-wide `istanbul ignore file` this block used to justify.
+ * — a real connect, real reads and writes — belong to
+ * `test/integration/redis.integration.test.ts` under `RUN_REDIS_INTEGRATION`
+ * against a real server, and that suite is part of the Jest coverage
+ * instrument when the coverage gate brings Redis up (Req 110 / 118). Those
+ * lines are measured, not excluded by istanbul ignore.
  */
 const UNREACHABLE_REDIS_ENV = {
   AAA_REDIS_HOST: '127.0.0.1',

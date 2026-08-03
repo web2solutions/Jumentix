@@ -6,7 +6,7 @@ Idioma alvo: Português (Brasil)
 
 ## Objetivo
 
-Converta o repositório atual em um produto pnpm monorepo chamado `JumentiX`, minimizando caminhos de implementação incertos e preservando a previsibilidade de entrega.
+Converta o repositório atual em um produto monorepo com Bun workspaces chamado `JumentiX`, minimizando caminhos de implementação incertos e preservando a previsibilidade de entrega.
 
 ## Princípios Orientadores
 
@@ -37,9 +37,9 @@ Planejando proteções e referência de inventário de migração:
 
 Implementado no repositório:
 
-- `pnpm-workspace.yaml` adicionado.
-- root `package.json` inclui scripts recursivos `packageManager` e `mono:*`.
-- root `.npmrc` inclui vinculação de espaço de trabalho e configurações de lockfile compartilhado para consistência monorepo.
+- `package.json` raiz declara Bun 1.3.14, globs de workspace e scripts recursivos `mono:*`.
+- `bun.lock` é o lockfile versionado do workspace.
+- `bunfig.toml` define a política de runner/install Bun para fluxos internos de engenharia.
 - estrutura inicial do espaço de trabalho criada:
   - `apps/backend-template`
   - `aplicativos/gerenciamento de serviços`
@@ -55,10 +55,10 @@ Implementado no repositório:
   - `packages/cli-init` agora expõe pontos de entrada bin executáveis e possui a implementação de bootstrap usada pelo wrapper CLI raiz.
   - O pacote CLI agora inclui README em nível de pacote com contrato de comando.
 - Inicialização da onda 6 em andamento:
-  - adicionado detector de espaço de trabalho afetado (`pnpm run ci:affected`) para classificar deltas de arquivos por `root`, `apps/*`, `packages/*` e escopo somente de documentos como uma base primitiva para execução seletiva de CI monorepo.
-  - adicionados scripts de simulação de lançamento (`pnpm run release:dry-run`, `release:dry-run:packages`, `release:dry-run:apps`) para verificar a prontidão do artefato do pacote e contratos de script de construção/teste do espaço de trabalho do aplicativo.
-  - adicionado executor de CI monorepo (`pnpm run ci:monorepo`) que executa validação leve somente de documentos ou portão estrito + comandos de aplicativo/pacote afetados, dependendo do escopo alterado.
-  - Pipelines de CI alinhados ao fluxo monorepo: GitHub Actions agora é instalado com pnpm e executa `ci:monorepo` com reconhecimento de escopo; O CircleCI agora instala o pnpm e executa `ci:monorepo`.
+  - adicionado detector de espaço de trabalho afetado (`bun run ci:affected`) para classificar deltas de arquivos por `root`, `apps/*`, `packages/*` e escopo somente de documentos como uma base primitiva para execução seletiva de CI monorepo.
+  - adicionados scripts de simulação de lançamento (`bun run release:dry-run`, `release:dry-run:packages`, `release:dry-run:apps`) para verificar a prontidão do artefato do pacote e contratos de script de construção/teste do espaço de trabalho do aplicativo.
+  - adicionado executor de CI monorepo (`bun run ci:monorepo`) que executa validação leve somente de documentos ou portão estrito + comandos de aplicativo/pacote afetados, dependendo do escopo alterado.
+  - Pipelines de CI alinhados ao fluxo monorepo: GitHub Actions instala dependências Bun com `bun.lock` congelado e executa `ci:monorepo` com reconhecimento de escopo.
 - extração de pacote reutilizável em andamento:
   - `packages/message-mediator` (com exportações de ponte local no código backend)
   - `packages/key-value-storage` (com exportações de ponte local no código backend)
@@ -75,8 +75,8 @@ Implementado no repositório:
 
 Nota de validação pendente:
 
-- A execução recursiva completa do pnpm está atualmente bloqueada neste ambiente devido à resolução da rede do registro (`ENOTFOUND`) durante a inicialização do `pnpm install`.
-- A validação local do npm neste ambiente atualmente mostra instabilidade do gerenciador de pacotes (travamento do manipulador de saída `npm ci` e desvio de permissão de cache), portanto, a verificação recursiva final deve ser executada na máquina CI/limpa com o nó `22.23.1`.
+- A validação recursiva completa do workspace roda via Bun (`bun run --filter '*' ...`) e `ci:monorepo`.
+- A validação Node permanece apenas para checks declarados de compatibilidade, não como workflow interno de gerenciador de pacotes.
 
 ## Marcos de migração
 
@@ -84,14 +84,16 @@ Nota de validação pendente:
 
 Entregáveis:
 
-- `pnpm-workspace.yaml`
+- `package.json#workspaces`
+- `bun.lock`
+- `bunfig.toml`
 - scripts de espaço de trabalho root `package.json`
-- Nó 22 aplicado na raiz do espaço de trabalho e CI
+- Bun 1.3.14 aplicado na raiz do workspace e no CI; Node 22 mantido como alvo de compatibilidade
 - configurações básicas compartilhadas (ts/eslint/jest) publicadas internamente no espaço de trabalho
 
 Critérios de saída:
 
-- `pnpm -r lint`, `pnpm -r test` e `pnpm -r build` são aprovados.
+- `bun run mono:lint`, `bun run mono:test` e `bun run mono:build` são aprovados.
 - CI executa comandos do espaço de trabalho com êxito.
 
 ### Marco 2 - Extração do Mediador de Mensagens

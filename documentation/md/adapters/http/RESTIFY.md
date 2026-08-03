@@ -16,12 +16,12 @@ Use Restify as REST adapter where Restify middleware/runtime behavior is require
 3. Run:
 
 ```bash
-pnpm run dev:restify
+bun run dev:restify
 ```
 
 ## Production
 
 ```bash
-pnpm run prod:restify
+bun run prod:restify
 ```
 

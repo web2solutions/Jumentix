@@ -30,23 +30,23 @@
 Run Service Management as standalone tool:
 
 ```bash
-pnpm run dev:service-management
+bun run dev:service-management
 ```
 
 Run full local profile (Service Management + REST profile via PM2):
 
 ```bash
-pnpm run dev
+bun run dev
 ```
 
 ## Run
 
 ```bash
-pnpm run dev:service-management
+bun run dev:service-management
 ```
 
 or full development profile:
 
 ```bash
-pnpm run dev
+bun run dev
 ```

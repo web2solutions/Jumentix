@@ -14,19 +14,19 @@ Rastreamento de problemas:
 Da raiz do repositório:
 
 ```bash
-pnpm run website:deploy:vercel
+bun run website:deploy:vercel
 ```
 
 Pré-visualização da implantação:
 
 ```bash
-pnpm run website:deploy:vercel:preview
+bun run website:deploy:vercel:preview
 ```
 
 Diretamente do espaço de trabalho do aplicativo:
 
 ```bash
-pnpm --filter @jumentix/website deploy:vercel
+bun run --filter @jumentix/website deploy:vercel
 ```
 
 ## Configuração
@@ -38,9 +38,9 @@ Arquivo:
 Valores configurados:
 
 - `estrutura`: `nextjs`
-- `installCommand`: `pnpm install --frozen-lockfile`
-- `buildCommand`: `pnpm run build`
-- `devCommand`: `pnpm run dev`
+- `installCommand`: `bun install --frozen-lockfile`
+- `buildCommand`: `bun run build`
+- `devCommand`: `bun run dev`
 - `outputDirectory`: `.next`
 
 ## Notas
@@ -49,6 +49,6 @@ Valores configurados:
 - `prebuild` executa a sincronização de conteúdo automaticamente antes da construção.
 - A documentação gerada permanece disponível quando um build isolado da Vercel não consegue
   acessar arquivos-fonte externos ao aplicativo no monorepo.
-- Builds locais e da Vercel usam o lockfile do workspace pnpm e seus patches de dependência.
+- Builds locais e da Vercel usam o lockfile Bun do workspace e seus patches de dependência.
 - Os scripts de implantação raiz são intencionalmente independentes de escopo (sem `--scope` forçado) para suportar
   contextos Vercel de conta pessoal e conta de equipe.

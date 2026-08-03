@@ -150,3 +150,9 @@ dist
 
 # Added by ggshield
 .cache_ggshield
+.browser-tests/
+
+# Runtime CI evidence, written by ci-cd/run-browser-tests.js on every matrix
+# run and uploaded as a workflow artifact. Committing it would bake one local
+# run's timestamp and engine into the repo as if it were the matrix's state.
+artifacts/ci/browser-matrix.json

@@ -19,16 +19,16 @@ All known intent must be explicit, versioned, and traceable.
    - Sources:
      - `documentation/md/ARCHITECTURE-AND-STRUCTURE.md`
      - `documentation/md/HEXAGONAL-FEATURE-DRIVEN-MIGRATION.md`
-     - `.agents/requirements/015-architecture-nfr-ddd-eda-hexagonal.md`
-     - `.agents/requirements/016-layer-call-order-and-boundaries.md`
-     - `.agents/requirements/017-event-first-integration-and-circular-safety.md`
+     - `.agents/requirements/software/015-architecture-nfr-ddd-eda-hexagonal.md`
+     - `.agents/requirements/software/016-layer-call-order-and-boundaries.md`
+     - `.agents/requirements/software/017-event-first-integration-and-circular-safety.md`
 3. Domain and data model contracts
    - Sources:
      - `documentation/md/DOMAIN-DATA-ENTITIES.md`
      - `documentation/md/domains/users/*`
-     - `.agents/requirements/019-domain-data-entity-documentation-standard.md`
-     - `.agents/requirements/026-openapi31-data-entity-model-compliance.md`
-     - `.agents/requirements/032-entity-timestamps-domain-object-methods-and-oas-sync.md`
+     - `.agents/requirements/project/019-domain-data-entity-documentation-standard.md`
+     - `.agents/requirements/software/026-openapi31-data-entity-model-compliance.md`
+     - `.agents/requirements/software/032-entity-timestamps-domain-object-methods-and-oas-sync.md`
 4. Interface and communication contracts
    - Sources:
      - `spec/1.0.0.yml`
@@ -52,7 +52,8 @@ All known intent must be explicit, versioned, and traceable.
    - Sources:
      - `documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`
      - `documentation/md/PROJECT-MANAGEMENT.md`
-     - `.agents/requirements/*`
+     - `.agents/requirements/project/*.md`
+     - `.agents/requirements/software/*.md`
      - `.agents/NFR-REGISTRY.md`
       - Linear Project: `https://linear.app/jumentix`
 
@@ -81,6 +82,7 @@ When knowledge changes, update in the same cycle:
 
 1. `spec/*` contract resources (when interfaces/messages change).
 2. `documentation/md/*` technical resources.
-3. `.agents/requirements/*` when constraints or governance are affected.
+3. `.agents/requirements/project/*.md` and `.agents/requirements/software/*.md`
+   when constraints or governance are affected.
 4. `.agents/NFR-REGISTRY.md` when non-functional behavior changes.
 5. Linear issue/project metadata and PR evidence links.

@@ -45,7 +45,7 @@ These rules are part of Spec Development Driven governance and apply to all comp
 
 ## 5) Package and Tooling Policy
 
-1. `pnpm` is the package manager standard for the monorepo.
+1. Bun 1.3.14 is the package manager and script runner standard for the monorepo.
 2. New dependencies must respect workspace boundaries and package ownership.
 3. Shared generic adapters should be delivered as reusable packages.
 
@@ -68,6 +68,6 @@ Primary enforcement sources:
 2. `ci-cd/*` quality and governance scripts
 3. `documentation/md/TESTING-CI-AND-QUALITY.md`
 4. `documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`
-5. `.agents/requirements/065-commit-push-integrity-and-real-ci-enforcement.md`
-6. `.agents/requirements/067-bidirectional-task-pr-traceability-governance.md`
-7. `.agents/requirements/079-task-owned-branch-and-pr-naming-governance.md`
+5. `.agents/requirements/project/065-commit-push-integrity-and-real-ci-enforcement.md`
+6. `.agents/requirements/project/067-bidirectional-task-pr-traceability-governance.md`
+7. `.agents/requirements/project/122-task-owned-branch-and-pr-naming-governance.md`

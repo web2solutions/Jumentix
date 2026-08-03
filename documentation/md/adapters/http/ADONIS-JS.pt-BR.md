@@ -19,7 +19,7 @@ Exponha as operações da API por meio da ponte de tempo de execução Adonis.js
 3. Execute:
 
 ```bash
-pnpm run dev:adonis-js
+bun run dev:adonis-js
 ```
 
 

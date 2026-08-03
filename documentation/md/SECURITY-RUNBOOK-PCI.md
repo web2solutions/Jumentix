@@ -12,7 +12,7 @@ Operational steps:
 1. Generate a new secret in the target secret manager.
 2. Update environment variables in `staging`.
 3. Restart runtime via PM2 (`staging`) and run smoke checks:
-   - `pnpm run ci:security-smoke`
+   - `bun run ci:security-smoke`
    - endpoint auth sanity checks.
 4. Promote to `production` during maintenance window.
 5. Invalidate compromised sessions by revocation strategy and controlled logout wave.

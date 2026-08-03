@@ -128,10 +128,11 @@ Includes:
 
 Required specs:
 
-1. `.agents/requirements/*`
-2. `.agents/NFR-REGISTRY.md`
-3. `documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`
-4. `documentation/md/JUMENTIX-RELEASE-AND-VERSIONING-STRATEGY.md`
+1. `.agents/requirements/project/*.md`
+2. `.agents/requirements/software/*.md`
+3. `.agents/NFR-REGISTRY.md`
+4. `documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`
+5. `documentation/md/JUMENTIX-RELEASE-AND-VERSIONING-STRATEGY.md`
 
 Mandatory checks:
 
@@ -152,9 +153,9 @@ Includes:
 
 Required specs:
 
-1. `.agents/requirements/069-jumentix-website-commercial-static-vercel-governance.md`
-2. `.agents/requirements/091-jumentix-website-design-system-and-storybook.md`
-3. `.agents/requirements/092-jumentix-oss-commercial-experience.md`
+1. `.agents/requirements/project/069-jumentix-website-commercial-static-vercel-governance.md`
+2. `.agents/requirements/software/091-jumentix-website-design-system-and-storybook.md`
+3. `.agents/requirements/software/092-jumentix-oss-commercial-experience.md`
 4. `apps/jumentix-website/documentation/COMMERCIAL-EXPERIENCE.md`
 5. `apps/jumentix-website/documentation/CONTENT-PIPELINE.md`
 6. `apps/jumentix-website/documentation/VERCEL-DEPLOYMENT.md`

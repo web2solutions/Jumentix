@@ -2,6 +2,7 @@
 const matrixFs = require('fs');
 const matrixPath = require('path');
 const {
+  COVERAGE_INTEGRATION_ENV,
   FULL_TEST_MATRIX,
   executeMatrixCell,
   runAsEntryPoint,
@@ -15,6 +16,17 @@ const fullMatrixRootDir = matrixPath.resolve(__dirname, '../../../../..');
 type FullMatrixTestCell = { id: string; script: string };
 
 describe('run-full-test-matrix', () => {
+  it('keeps the canonical ci gate free of missing script references', () => {
+    expect.hasAssertions();
+
+    const ciGate = fullMatrixRootPackage.scripts['ci:gate'];
+    const referenced = [...ciGate.matchAll(/\bbun run ([^\s&|]+)/g)]
+      .map((match: RegExpMatchArray) => match[1]);
+    const missing = referenced.filter((script: string) => !fullMatrixRootPackage.scripts[script]);
+
+    expect(missing).toStrictEqual([]);
+  });
+
   it('declares unique required cells backed by real package scripts', () => {
     expect.hasAssertions();
     expect(FULL_TEST_MATRIX.length).toBeGreaterThan(0);
@@ -46,13 +58,32 @@ describe('run-full-test-matrix', () => {
 
     const ids = (FULL_TEST_MATRIX as FullMatrixTestCell[]).map((cell) => cell.id);
 
-    expect(ids).toContain('coverage');
-    expect(ids).toContain('coverage-thresholds');
-    expect(ids).toContain('patch-coverage');
+    expect(ids).toStrictEqual(expect.arrayContaining([
+      'coverage',
+      'browser-coverage',
+      'browser-lcov',
+      'coverage-thresholds',
+      'patch-coverage'
+    ]));
 
     // Cells run in declaration order, so position is the dependency.
-    expect(ids.indexOf('coverage')).toBeLessThan(ids.indexOf('coverage-thresholds'));
-    expect(ids.indexOf('coverage')).toBeLessThan(ids.indexOf('patch-coverage'));
+    expect([
+      ids.indexOf('coverage') < ids.indexOf('browser-coverage'),
+      ids.indexOf('browser-coverage') < ids.indexOf('browser-lcov'),
+      ids.indexOf('browser-lcov') < ids.indexOf('coverage-thresholds'),
+      ids.indexOf('browser-lcov') < ids.indexOf('patch-coverage')
+    ]).toStrictEqual([true, true, true, true]);
+  });
+
+  it('lets the canonical coverage checker enforce thresholds after both reports exist', () => {
+    expect.hasAssertions();
+
+    expect(fullMatrixRootPackage.scripts['test:coverage'])
+      .toContain('--coverageThreshold=\'{}\'');
+    expect(fullMatrixRootPackage.scripts['coverage:browser-lcov'])
+      .toBe('bun ci-cd/write-browser-lcov.js');
+    expect((FULL_TEST_MATRIX as FullMatrixTestCell[]).find((cell) => cell.id === 'coverage'))
+      .toMatchObject({ env: COVERAGE_INTEGRATION_ENV });
   });
 
   describe('writeMatrixEvidence', () => {
@@ -264,10 +295,14 @@ describe('run-full-test-matrix', () => {
       read('.husky/pre-commit').includes('bun run ci:gate:branch'),
       read('.husky/pre-push').includes('bun run ci:gate:branch'),
       read('.husky/pre-merge-commit').includes('bun run ci:gate:branch'),
+      read('.husky/pre-commit').includes('check-commit-authorship.js --identity'),
+      read('.husky/pre-push').includes('check-commit-authorship.js'),
       read('.github/workflows/test.yml').includes('bun run ci:gate:branch'),
       read('.github/workflows/test.yml').includes('JUMENTIX_TASK_TEST_MODE: range'),
       read('.github/workflows/test.yml').includes('JUMENTIX_TASK_TEST_BASE: origin/dev'),
       read('.github/workflows/test.yml').includes('full-test-matrix.json'),
+      !read('.github/workflows/test.yml').includes('requirepass'),
+      !read('.github/workflows/test.yml').includes('AAA_REDIS_PASSWORD'),
       read('.github/workflows/website.yml').includes('bun run website:storybook:build'),
       read('.github/workflows/website.yml').includes('bun run website:storybook:smoke'),
       read('.github/workflows/coverage.yml').includes('bun run coverage:patch'),
@@ -284,7 +319,7 @@ describe('run-full-test-matrix', () => {
       )
     ]).toStrictEqual([
       true, true, true, true, true, true, true, true, true, true, true, true, true, true,
-      true, true, true, true, true
+      true, true, true, true, true, true, true, true, true
     ]);
   });
 });

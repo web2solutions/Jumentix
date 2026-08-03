@@ -77,8 +77,11 @@ Os rótulos de fluxo estratégico são aditivos (por exemplo `todo-mvp`, `epic`,
 3. Somente agentes delegados a um épico podem aceitar suas tarefas filhas.
 4. Cada tarefa filha possui um agente responsável; múltiplos agentes devem atuar em limites de
    tarefas não sobrepostos.
-5. O Agent Registry canônico registra `active_epic` e `assigned_task`.
-6. Trabalho entre épicos exige delegação explícita e tarefas filhas separadas para cada épico.
+5. Issues e Projects/Epics no Linear identificam o `agent_identifier` ativo para cada escopo
+   executável, sincronizado com o Agent Registry canônico.
+6. O Agent Registry canônico registra `active_epic`, `assigned_task` e contexto de coordenação
+   quando trabalho de agentes irmãos puder se sobrepor.
+7. Trabalho entre épicos exige delegação explícita e tarefas filhas separadas para cada épico.
 
 ## Fluxo de trabalho baseado em especificações através do conselho
 

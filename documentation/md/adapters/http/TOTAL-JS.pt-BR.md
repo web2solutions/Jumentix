@@ -19,7 +19,7 @@ Use a ponte de tempo de execução Total.js como adaptador de entrada HTTP.
 3. Execute:
 
 ```bash
-pnpm run dev:total-js
+bun run dev:total-js
 ```
 
 

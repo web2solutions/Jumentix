@@ -9,7 +9,7 @@ Mongoose profile.
 1. Start container:
 
 ```bash
-pnpm run docker:up:mongodb
+bun run docker:up:mongodb
 ```
 
 2. Set env:

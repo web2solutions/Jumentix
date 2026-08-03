@@ -4,7 +4,7 @@ Idioma alvo: Português (Brasil)
 -->
 # Estrutura CLI Bootstrap
 
-Este modelo agora expõe comandos CLI de bootstrap instaláveis ​​por npm:
+Este modelo agora expõe comandos CLI de bootstrap instaláveis pelo registry:
 
 - `aaa-bootstrap`
 - `jumentix-init`
@@ -18,10 +18,10 @@ Propriedade do espaço de trabalho:
 
 ## Uso
 
-Instale globalmente (ou execute com `pnpm dlx` do registro do pacote):
+Instale globalmente (ou execute com `bunx` pelo registry do pacote):
 
 ```bash
-pnpm add -g @jumentix/cli-init
+bun add --global @jumentix/cli-init
 jumentix-init
 aaa-bootstrap
 ```
@@ -29,7 +29,7 @@ aaa-bootstrap
 Uso do repositório local:
 
 ```bash
-pnpm run cli:bootstrap
+bun run cli:bootstrap
 ```
 
 Uso não interativo:

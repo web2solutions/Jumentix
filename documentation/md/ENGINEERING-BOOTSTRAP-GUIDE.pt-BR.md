@@ -24,10 +24,10 @@ Layout atual do espaço de trabalho:
 Comandos principais de orquestração:
 
 ```bash
-pnpm run mono:build
-pnpm run mono:test
-pnpm run mono:lint
-pnpm run mono:typecheck
+bun run mono:build
+bun run mono:test
+bun run mono:lint
+bun run mono:typecheck
 ```
 
 ## 1. Antes de começar
@@ -41,15 +41,15 @@ pnpm run mono:typecheck
 ### Instalar dependências
 
 ```bash
-pnpm install
+bun install
 ```
 
 ### Execute verificações de linha de base
 
 ```bash
-pnpm run lint
-pnpm run test:unit
-pnpm run oas:check-routes
+bun run lint
+bun run test:unit
+bun run oas:check-routes
 ```
 
 ## 2. Entenda o fluxo da arquitetura
@@ -154,19 +154,18 @@ Prática recomendada:
 ### Tempo de execução de desenvolvimento
 
 ```bash
-pnpm run dev:express
-pnpm run dev:fastify
-pnpm run dev:restify
-pnpm run dev:hyper-express
-pnpm run dev:serverless
+bun run dev:express
+bun run dev:fastify
+bun run dev:restify
+bun run dev:serverless
 ```
 
 ### PM2 multi-aplicativo (monorepo)
 
 ```bash
-pnpm run pm2:start:dev:restapi
-pnpm run pm2:start:dev:websocket-rest
-pnpm run pm2:start:dev:grpc-rest
+bun run pm2:start:dev:restapi
+bun run pm2:start:dev:websocket-rest
+bun run pm2:start:dev:grpc-rest
 ```
 
 Esses perfis iniciam o gerenciamento de serviços junto com adaptadores de back-end usando `pm2/*`.
@@ -174,13 +173,13 @@ Esses perfis iniciam o gerenciamento de serviços junto com adaptadores de back-
 ### Qualidade e paridade de CI
 
 ```bash
-pnpm run lint
-pnpm run test:unit
-pnpm run oas:check-routes
-pnpm run build:dev
-pnpm run ci:smoke
-pnpm run ci:gate
-pnpm run ci:monorepo
+bun run lint
+bun run test:unit
+bun run oas:check-routes
+bun run build:dev
+bun run ci:smoke
+bun run ci:gate
+bun run ci:monorepo
 ```
 
 ## 9. Definição de pronto para novos recursos
@@ -191,7 +190,7 @@ Um recurso deve ser considerado concluído quando:
 - O comportamento empresarial é coberto por testes unitários.
 - O caminho crítico do endpoint tem cobertura de integração.
 - Nenhum campo confidencial vaza nas respostas da API.
-- `pnpm run ci:gate` passa localmente e em CI.
+- `bun run ci:gate` passa localmente e em CI.
 
 ## 10. Armadilhas comuns a serem evitadas
 

@@ -49,7 +49,7 @@ Essas regras fazem parte da governança orientada para o desenvolvimento de espe
 
 ## 5) Política de Pacotes e Ferramentas
 
-1. `pnpm` é o padrão do gerenciador de pacotes para o monorepo.
+1. Bun 1.3.14 é o padrão de gerenciador de pacotes e runner de scripts para o monorepo.
 2. Novas dependências devem respeitar os limites do espaço de trabalho e a propriedade do pacote.
 3. Os adaptadores genéricos compartilhados devem ser entregues como pacotes reutilizáveis.
 
@@ -72,6 +72,6 @@ Fontes primárias de aplicação:
 2. Scripts de qualidade e governança `ci-cd/*`
 3. `documentação/md/TESTING-CI-AND-QUALITY.md`
 4. `documentação/md/JUMENTIX-PROJECT-GOVERNANCE.md`
-5. `.agents/requirements/065-commit-push-integrity-and-real-ci-enforcement.md`
-6. `.agents/requirements/067-bidirecional-task-pr-traceability-governance.md`
-7. `.agents/requirements/079-task-owned-branch-and-pr-naming-governance.md`
+5. `.agents/requirements/project/065-commit-push-integrity-and-real-ci-enforcement.md`
+6. `.agents/requirements/project/067-bidirecional-task-pr-traceability-governance.md`
+7. `.agents/requirements/project/122-task-owned-branch-and-pr-naming-governance.md`

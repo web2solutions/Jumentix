@@ -23,7 +23,7 @@ It aims to stay framework-agnostic at the core and can be used for:
 1. Architectural consistency:
    teams start with clear boundaries (handlers, controllers, application use cases, services, repositories, adapters) instead of inventing structure per project.
 2. Runtime flexibility:
-   the same domain can run with Express/Fastify/Restify/Hyper-Express or Lambda.
+   the same domain can run with Express/Fastify/Restify, serverless HTTP targets, or Lambda.
 3. Easier evolution:
    projects can start as modular monolith and split later with lower refactor cost.
 4. Quality baseline:

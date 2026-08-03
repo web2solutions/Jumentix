@@ -633,6 +633,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/ci-cd/merge-browser-coverage.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/merge-browser-coverage.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/ci-cd/check-ci-provider.test.ts",
       "path": "apps/backend-template/test/unit/ci-cd/check-ci-provider.test.ts",
       "layer": "tooling",
@@ -2371,178 +2381,8 @@
       "timeoutMs": 60000
     },
     {
-      "id": "packages/cana/test/adapter.test.ts",
-      "path": "packages/cana/test/adapter.test.ts",
-      "layer": "adapters/out+infra",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "packages/cana/test/client.test.ts",
-      "path": "packages/cana/test/client.test.ts",
-      "layer": "adapters/out+infra",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "packages/cana/test/conformance.test.ts",
-      "path": "packages/cana/test/conformance.test.ts",
-      "layer": "adapters/out+infra",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 120000
-    },
-    {
-      "id": "packages/cana/test/database.test.ts",
-      "path": "packages/cana/test/database.test.ts",
-      "layer": "adapters/out+infra",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "packages/cana/test/differential-dexie.test.ts",
-      "path": "packages/cana/test/differential-dexie.test.ts",
-      "layer": "adapters/out+infra",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 120000
-    },
-    {
-      "id": "packages/cana/test/driver-selection.test.ts",
-      "path": "packages/cana/test/driver-selection.test.ts",
-      "layer": "adapters/out+infra",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "packages/cana/test/durability-policy.test.ts",
-      "path": "packages/cana/test/durability-policy.test.ts",
-      "layer": "adapters/out+infra",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "packages/cana/test/edge-cases.test.ts",
-      "path": "packages/cana/test/edge-cases.test.ts",
-      "layer": "adapters/out+infra",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "packages/cana/test/failure-paths.test.ts",
-      "path": "packages/cana/test/failure-paths.test.ts",
-      "layer": "adapters/out+infra",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "packages/cana/test/hooks.test.ts",
-      "path": "packages/cana/test/hooks.test.ts",
-      "layer": "adapters/out+infra",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
       "id": "packages/cana/test/packaging.test.ts",
       "path": "packages/cana/test/packaging.test.ts",
-      "layer": "adapters/out+infra",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "packages/cana/test/performance.test.ts",
-      "path": "packages/cana/test/performance.test.ts",
-      "layer": "adapters/out+infra",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 120000
-    },
-    {
-      "id": "packages/cana/test/protocol.test.ts",
-      "path": "packages/cana/test/protocol.test.ts",
-      "layer": "adapters/out+infra",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "packages/cana/test/reconciliation.test.ts",
-      "path": "packages/cana/test/reconciliation.test.ts",
-      "layer": "adapters/out+infra",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "packages/cana/test/regressions.test.ts",
-      "path": "packages/cana/test/regressions.test.ts",
-      "layer": "adapters/out+infra",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "packages/cana/test/storage.test.ts",
-      "path": "packages/cana/test/storage.test.ts",
-      "layer": "adapters/out+infra",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "packages/cana/test/unknown-outcome.test.ts",
-      "path": "packages/cana/test/unknown-outcome.test.ts",
-      "layer": "adapters/out+infra",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "packages/cana/test/worker-host.test.ts",
-      "path": "packages/cana/test/worker-host.test.ts",
       "layer": "adapters/out+infra",
       "kind": "hexagonal",
       "type": "unit",
@@ -2601,6 +2441,19 @@
       "timeoutMs": 60000
     },
     {
+      "id": "packages/key-value-storage/test/integration/redis.integration.test.ts",
+      "path": "packages/key-value-storage/test/integration/redis.integration.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "redis",
+      "script": "test:integration:key-value",
+      "runner": "bun",
+      "tier": "nightly",
+      "timeoutMs": 120000,
+      "reason": "Needs the Redis container from docker-compose-redis.yml; skips itself without RUN_REDIS_INTEGRATION rather than passing."
+    },
+    {
       "id": "packages/key-value-storage/test/key-value-storage.test.ts",
       "path": "packages/key-value-storage/test/key-value-storage.test.ts",
       "layer": "adapters/out+infra",
@@ -2609,6 +2462,19 @@
       "runner": "bun",
       "tier": "gate",
       "timeoutMs": 60000
+    },
+    {
+      "id": "packages/message-mediator/test/integration/brokers.integration.test.ts",
+      "path": "packages/message-mediator/test/integration/brokers.integration.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "messaging",
+      "script": "test:integration:message-mediator",
+      "runner": "bun",
+      "tier": "nightly",
+      "timeoutMs": 300000,
+      "reason": "Needs RabbitMQ and Redis from docker-compose-messaging.yml; skips itself without RUN_BROKER_INTEGRATION rather than passing."
     },
     {
       "id": "packages/message-mediator/test/message-mediator.test.ts",
@@ -2775,9 +2641,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 148,
+    "unit": 134,
     "integration": 82,
     "smoke": 2,
-    "suites": 234
+    "suites": 220
   }
 }

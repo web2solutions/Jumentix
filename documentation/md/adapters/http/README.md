@@ -7,7 +7,6 @@ Use this index to choose the HTTP/runtime adapter you want to use as the inbound
 - [Express Adapter](./EXPRESS.md)
 - [Fastify Adapter](./FASTIFY.md)
 - [Restify Adapter](./RESTIFY.md)
-- [Hyper-Express Adapter](./HYPER-EXPRESS.md)
 - [AWS Lambda Adapter](./AWS-LAMBDA.md)
 - [Cloudflare Workers Adapter](./CLOUDFLARE-WORKERS.md)
 - [Vercel Functions Adapter](./VERCEL-FUNCTIONS.md)
@@ -17,4 +16,3 @@ Use this index to choose the HTTP/runtime adapter you want to use as the inbound
 - [Derby.js Adapter](./DERBY-JS.md)
 - [Adonis.js Adapter](./ADONIS-JS.md)
 - [Total.js Adapter](./TOTAL-JS.md)
-
