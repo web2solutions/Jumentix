@@ -301,6 +301,8 @@ describe('run-full-test-matrix', () => {
       read('.github/workflows/test.yml').includes('JUMENTIX_TASK_TEST_MODE: range'),
       read('.github/workflows/test.yml').includes('JUMENTIX_TASK_TEST_BASE: origin/dev'),
       read('.github/workflows/test.yml').includes('full-test-matrix.json'),
+      !read('.github/workflows/test.yml').includes('requirepass'),
+      !read('.github/workflows/test.yml').includes('AAA_REDIS_PASSWORD'),
       read('.github/workflows/website.yml').includes('bun run website:storybook:build'),
       read('.github/workflows/website.yml').includes('bun run website:storybook:smoke'),
       read('.github/workflows/coverage.yml').includes('bun run coverage:patch'),
@@ -317,7 +319,7 @@ describe('run-full-test-matrix', () => {
       )
     ]).toStrictEqual([
       true, true, true, true, true, true, true, true, true, true, true, true, true, true,
-      true, true, true, true, true, true, true
+      true, true, true, true, true, true, true, true, true
     ]);
   });
 });
