@@ -275,7 +275,10 @@ describe('check-coverage-thresholds report reader', () => {
     };
     const fixture = JSON.stringify({
       'x.ts': {
-        statementMap: statements(1), s: counters(1, 1), f: {}, b: {}
+        b: {},
+        f: {},
+        s: counters(1, 1),
+        statementMap: statements(1)
       }
     });
     const exists = jest.spyOn(nodeFs, 'existsSync').mockReturnValue(true);
@@ -297,12 +300,27 @@ describe('check-coverage-thresholds report reader', () => {
       readFileSync: (path: string, encoding: string) => string;
     };
     const exists = jest.spyOn(nodeFs, 'existsSync').mockReturnValue(true);
-    const read = jest.spyOn(nodeFs, 'readFileSync').mockImplementation((filePath) => {
-      if (String(filePath).endsWith('coverage/jest/coverage-final.json')) {
-        return JSON.stringify({ 'jest.ts': { statementMap: statements(1), s: counters(1, 1), f: {}, b: {} } });
-      }
-      return JSON.stringify({ 'browser.ts': { statementMap: statements(1), s: counters(1, 1), f: {}, b: {} } });
-    });
+    const reports = {
+      browser: JSON.stringify({
+        'browser.ts': {
+          b: {},
+          f: {},
+          s: counters(1, 1),
+          statementMap: statements(1)
+        }
+      }),
+      jest: JSON.stringify({
+        'jest.ts': {
+          b: {},
+          f: {},
+          s: counters(1, 1),
+          statementMap: statements(1)
+        }
+      })
+    };
+    const read = jest.spyOn(nodeFs, 'readFileSync')
+      .mockReturnValueOnce(reports.jest)
+      .mockReturnValueOnce(reports.browser);
 
     const report = coverageGuard.defaultReadReport() as Record<string, { s: unknown }>;
 

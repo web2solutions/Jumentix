@@ -248,6 +248,7 @@ describe('run-full-test-matrix', () => {
       execute,
       logger,
       availableScripts: fullMatrixRootPackage.scripts,
+      env: {},
       resultFile: ''
     });
 
@@ -275,6 +276,7 @@ describe('run-full-test-matrix', () => {
       execute: () => null,
       logger,
       availableScripts: fullMatrixRootPackage.scripts,
+      env: {},
       resultFile: ''
     });
     const crashed = runFullTestMatrix({
@@ -284,6 +286,7 @@ describe('run-full-test-matrix', () => {
       },
       logger,
       availableScripts: fullMatrixRootPackage.scripts,
+      env: {},
       resultFile: ''
     });
 
