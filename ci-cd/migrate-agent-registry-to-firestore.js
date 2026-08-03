@@ -3,9 +3,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { createRequire } = require('module');
 
-const require = createRequire(import.meta.url || __filename);
 const packageRoot = path.resolve(__dirname, '../packages/agent-registry');
 
 function parseMarkdownRegistry(content) {

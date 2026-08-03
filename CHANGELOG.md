@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-03 test: satisfy lint for agent registry CLI suite - Eduardo A.
 - 2026-08-03 test: isolate agent registry CLI suite - Eduardo A.
 - 2026-08-03 ci: resolve agent registry entrypoint explicitly - Eduardo A.
 - 2026-08-03 ci: tolerate missing Firestore registry database - Eduardo A.

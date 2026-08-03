@@ -36,9 +36,12 @@ bun run <command>
 | `release:dry-run` | Run release governance and dry-run routines. | `bun run release:dry-run` | `bun ci-cd/release-dry-run.js all` |
 | `release:dry-run:packages` | Run release governance and dry-run routines. | `bun run release:dry-run:packages` | `bun ci-cd/release-dry-run.js packages` |
 | `release:dry-run:apps` | Run release governance and dry-run routines. | `bun run release:dry-run:apps` | `bun ci-cd/release-dry-run.js apps` |
-| `agent-registry:check` | Use when you need this specific workspace operation. | `bun run agent-registry:check` | `bun ci-cd/check-agent-registry-source.js --check` |
-| `agent-registry:sync` | Use when you need this specific workspace operation. | `bun run agent-registry:sync` | `bun ci-cd/check-agent-registry-source.js --sync` |
-| `agent-registry:url` | Use when you need this specific workspace operation. | `bun run agent-registry:url` | `bun ci-cd/check-agent-registry-source.js --url` |
+| `agent-registry:register` | Use when you need this specific workspace operation. | `bun run agent-registry:register` | `bun ci-cd/agent-registry-cli.js register` |
+| `agent-registry:heartbeat` | Use when you need this specific workspace operation. | `bun run agent-registry:heartbeat` | `bun ci-cd/agent-registry-cli.js heartbeat` |
+| `agent-registry:assign` | Use when you need this specific workspace operation. | `bun run agent-registry:assign` | `bun ci-cd/agent-registry-cli.js assign` |
+| `agent-registry:complete` | Use when you need this specific workspace operation. | `bun run agent-registry:complete` | `bun ci-cd/agent-registry-cli.js complete` |
+| `agent-registry:sync` | Use when you need this specific workspace operation. | `bun run agent-registry:sync` | `bun ci-cd/agent-registry-cli.js sync` |
+| `agent-registry:check` | Use when you need this specific workspace operation. | `bun run agent-registry:check` | `bun ci-cd/agent-registry-cli.js check` |
 | `arch:check-http-adapters` | Validate architecture boundaries and constraints. | `bun run arch:check-http-adapters` | `bun ci-cd/check-http-adapter-authenticity.js` |
 | `ci:check-provider` | Use in CI validation and delivery gates. | `bun run ci:check-provider` | `bun ci-cd/check-ci-provider.js` |
 | `ci:check-third-party-review` | Use in CI validation and delivery gates. | `bun run ci:check-third-party-review` | `bun ci-cd/check-third-party-review.js` |
@@ -67,6 +70,8 @@ bun run <command>
 | `website:storybook:build` | Operate the commercial website lifecycle. | `bun run website:storybook:build` | `bun run --filter @jumentix/website storybook:build` |
 | `website:storybook:smoke` | Operate the commercial website lifecycle. | `bun run website:storybook:smoke` | `bun run --filter @jumentix/website storybook:smoke` |
 | `website:test:prepublish` | Operate the commercial website lifecycle. | `bun run website:test:prepublish` | `bun run --filter @jumentix/website test:prepublish` |
+| `website:test:cypress` | Operate the commercial website lifecycle. | `bun run website:test:cypress` | `bun run --filter @jumentix/website test:cypress` |
+| `website:test:quality` | Operate the commercial website lifecycle. | `bun run website:test:quality` | `bun run --filter @jumentix/website test:quality` |
 | `website:vercel:link` | Operate the commercial website lifecycle. | `bun run website:vercel:link` | `bun x vercel link --cwd apps/jumentix-website --project jumentix-website --yes` |
 | `website:vercel:pull:preview` | Operate the commercial website lifecycle. | `bun run website:vercel:pull:preview` | `bun x vercel pull --cwd apps/jumentix-website --environment=preview --yes` |
 | `website:vercel:pull:prod` | Operate the commercial website lifecycle. | `bun run website:vercel:pull:prod` | `bun x vercel pull --cwd apps/jumentix-website --environment=production --yes` |

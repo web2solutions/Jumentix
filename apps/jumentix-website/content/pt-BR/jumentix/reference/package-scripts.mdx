@@ -43,9 +43,12 @@ bun run <comando>
 | `release:dry-run` | Executa governança de release e rotinas de dry-run. | `bun run release:dry-run` | `bun ci-cd/release-dry-run.js all` |
 | `release:dry-run:packages` | Executa governança de release e rotinas de dry-run. | `bun run release:dry-run:packages` | `bun ci-cd/release-dry-run.js packages` |
 | `release:dry-run:apps` | Executa governança de release e rotinas de dry-run. | `bun run release:dry-run:apps` | `bun ci-cd/release-dry-run.js apps` |
-| `agent-registry:check` | Use quando precisar desta operação específica do workspace. | `bun run agent-registry:check` | `bun ci-cd/check-agent-registry-source.js --check` |
-| `agent-registry:sync` | Use quando precisar desta operação específica do workspace. | `bun run agent-registry:sync` | `bun ci-cd/check-agent-registry-source.js --sync` |
-| `agent-registry:url` | Use quando precisar desta operação específica do workspace. | `bun run agent-registry:url` | `bun ci-cd/check-agent-registry-source.js --url` |
+| `agent-registry:register` | Use quando precisar desta operação específica do workspace. | `bun run agent-registry:register` | `bun ci-cd/agent-registry-cli.js register` |
+| `agent-registry:heartbeat` | Use quando precisar desta operação específica do workspace. | `bun run agent-registry:heartbeat` | `bun ci-cd/agent-registry-cli.js heartbeat` |
+| `agent-registry:assign` | Use quando precisar desta operação específica do workspace. | `bun run agent-registry:assign` | `bun ci-cd/agent-registry-cli.js assign` |
+| `agent-registry:complete` | Use quando precisar desta operação específica do workspace. | `bun run agent-registry:complete` | `bun ci-cd/agent-registry-cli.js complete` |
+| `agent-registry:sync` | Use quando precisar desta operação específica do workspace. | `bun run agent-registry:sync` | `bun ci-cd/agent-registry-cli.js sync` |
+| `agent-registry:check` | Use quando precisar desta operação específica do workspace. | `bun run agent-registry:check` | `bun ci-cd/agent-registry-cli.js check` |
 | `arch:check-http-adapters` | Valida limites e restrições de arquitetura. | `bun run arch:check-http-adapters` | `bun ci-cd/check-http-adapter-authenticity.js` |
 | `ci:check-provider` | Use em validações de CI e gates de entrega. | `bun run ci:check-provider` | `bun ci-cd/check-ci-provider.js` |
 | `ci:check-third-party-review` | Use em validações de CI e gates de entrega. | `bun run ci:check-third-party-review` | `bun ci-cd/check-third-party-review.js` |

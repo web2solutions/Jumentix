@@ -4,7 +4,7 @@ Idioma alvo: Português (Brasil)
 -->
 # Mapa de eventos e mensagens
 
-Este documento mapeia os contratos de integração atuais usados ​​pelo padrão, incluindo publicação/assinatura de eventos e contratos de mensagens de solicitação/resposta através do `MessageMediator`.
+Este documento mapeia os contratos de integração atuais usados pelo Jumentix, incluindo publicação/assinatura de eventos e contratos de mensagens de solicitação/resposta através do `MessageMediator`.
 
 ## 1) Envelope de Evento de Integração
 

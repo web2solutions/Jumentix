@@ -144,9 +144,9 @@ const codeSamples = [
   {
     label: 'CLI',
     language: 'shell',
-    code: `pnpm install
-pnpm run cli
-pnpm run dev:express`,
+    code: `bun install
+bun run cli
+bun run dev:express`,
   },
   {
     label: 'Controller',

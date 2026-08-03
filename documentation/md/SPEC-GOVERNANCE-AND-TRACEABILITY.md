@@ -16,7 +16,7 @@ Mandatory governance records:
 2. Linear Project (focused epic) with planning fields
 3. PR with linked issue and evidence
 4. Spec and documentation artifacts
-5. Agent Registry canonical record in `XpertMinds/jumentix-agent-registry` with mirrored copy in `.agents/AGENT-REGISTRY.md`
+5. Agent Registry canonical record in Firestore Database (collection `agents`, requirement `089`) with regenerable local snapshot `.agents/registry-snapshot.json`
 
 ## Mandatory Traceability Links
 
@@ -187,32 +187,35 @@ Agent guidance must remain behaviorally equivalent for governance, traceability,
 
 Before any task execution:
 
-1. Acting agent must be registered in `.agents/AGENT-REGISTRY.md`.
+1. Acting agent must be registered in Firestore via `bun run agent-registry:register` (Requirement `089`).
 2. Planning must assign tasks to agents marked `available`.
-3. Agent must check latest `main` and `dev` branch refs and update the registry check fields.
+3. Agent must check latest `main` and `dev` branch refs and update them via `bun run agent-registry:heartbeat --main-ref --dev-ref`.
 4. Agent registry entries must include machine identity (`machine_id`, `machine_name`, `machine_os`) and runtime identity (`agent_runtime`, `agent_version`) so multiple agents can run on the same host with full traceability.
 5. Agents must follow the registration and operating playbook (Requirement `081`) covering registration, branch-sync, governed execution, and closure evidence.
-6. Canonical registry updates must be written to the external registry repository first, then mirrored locally under Requirement `089`.
+6. Canonical registry updates must be written directly to Firestore Database through the `agent-registry` CLI under Requirement `089`; `.agents/registry-snapshot.json` is a regenerable local snapshot.
 7. Epic-level delegation and child-task assignment must be recorded under Requirement `090`.
 8. The epic and task milestone must be validated before planning or execution under Requirement
    `090`.
 9. Agents must verify the dedicated documentation Issue before completing a Linear epic Project
    under Requirement `094`.
-10. Pinned registry checks must fetch immutable content by full commit SHA and an encoded safe
+10. Legacy mirror checks (deprecated by Requirement `089`) must fetch immutable content by full commit SHA and an encoded safe
     path. The private canonical registry uses authenticated Contents API access. A diagnostic raw
     fallback is not private access and must fail closed without exposing credentials.
-11. Only explicit registry synchronization may resolve a mutable branch through the GitHub API,
+11. Only explicit legacy registry synchronization may resolve a mutable branch through the GitHub API,
     optionally authenticated by `GITHUB_TOKEN` or `GH_TOKEN`.
-12. Invalid revisions or paths, HTTP and transport failures, malformed responses, unauthorized
+12. For the legacy mirror, invalid revisions or paths, HTTP and transport failures, malformed responses, unauthorized
     access, and local mirror drift must fail closed with actionable diagnostics that never expose
     credentials (raw 404 after Contents 401/403 → token-access guidance; other 404 → pin/path
     drift; bare 401/403 → token-backed private access).
-13. The canonical Agent Registry repository is private under `XpertMinds`. Only the owner account
+13. The Agent Registry single source of truth is Firestore Database (project
+    `jumentix-service-registry`, collection `agents`, Requirement `089`). Only the owner account
     `web2solutions` (`web2solucoes@gmail.com`) and identities explicitly authorized in Linear may
-    read, push, or publish to it.
-14. Requirement `103` makes `XpertMinds/Jumentix` and
-    `XpertMinds/jumentix-agent-registry` canonical. Both former `web2solutions` origins are
-    deprecated, read-only, accept no new modifications, and remain archived.
+    write agent records. The legacy GitHub registry repository remains private under `XpertMinds`
+    as a frozen audit mirror.
+14. Requirement `103` makes `XpertMinds/Jumentix` canonical; agent-coordination canonicity moved to
+    Firestore Database under Requirement `089`. Both former `web2solutions` origins — and the
+    legacy GitHub registry mirror — are deprecated, read-only, accept no new modifications, and
+    remain archived.
 15. Requirement `104` requires every applicable application integration from the deprecated
     origin to be inventoried and rebound to `XpertMinds/Jumentix`, with incomplete provider
     installs recorded as owner-auth blockers and validated by `integration-migration:check`.
