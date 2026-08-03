@@ -34,9 +34,8 @@ jobs:
           --health-retries 20
     env:
       JUMENTIX_JWT_TOKEN_SECRET_KEY: ${{ secrets.JUMENTIX_JWT_TOKEN_SECRET_KEY || secrets.AAA_JWT_TOKEN_SECRET_KEY || 'ci_jwt_secret_key' }}
-      # Private agent-registry Contents API (Req 089). Default github.token cannot
-      # read sibling private repos; AGENT_REGISTRY_TOKEN is a contents:read PAT.
-      GH_TOKEN: ${{ secrets.AGENT_REGISTRY_TOKEN }}
+      # Firestore service account for agent registry (Req 089 replacement).
+      FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
 
     strategy:
       matrix:

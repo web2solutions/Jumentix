@@ -156,3 +156,6 @@ dist
 # run and uploaded as a workflow artifact. Committing it would bake one local
 # run's timestamp and engine into the repo as if it were the matrix's state.
 artifacts/ci/browser-matrix.json
+
+# Agent registry Firestore snapshot; regenerable via `bun run agent-registry:sync`
+.agents/registry-snapshot.json

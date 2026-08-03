@@ -1,0 +1,20 @@
+{
+  "name": "@jumentix/agent-registry",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Firestore-backed agent registry for Jumentix multi-agent coordination",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "firebase-admin": "^14.1.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "bun test --isolate test",
+    "lint": "echo \"agent-registry package lint pending\"",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
+}

@@ -12,7 +12,7 @@ const requiredWorkflows = Object.freeze({
   'test.yml': [
     /ci:gate:branch/,
     /bun install --frozen-lockfile/,
-    /AGENT_REGISTRY_TOKEN/
+    /FIREBASE_SERVICE_ACCOUNT_KEY/
   ],
   'coverage.yml': [
     /test:coverage/,

@@ -126,11 +126,9 @@ jobs:
       - wait_for_services
       - run:
           name: Run the branch-aware quality gate
-          # Private agent-registry (Requirement 089): the project must expose
-          # AGENT_REGISTRY_TOKEN, GH_TOKEN or GITHUB_TOKEN with contents:read on
-          # XpertMinds/jumentix-agent-registry. Default tokens cannot read it.
+          # Firestore service account for agent registry (Req 089 replacement).
           command: |
-            export GH_TOKEN="${GH_TOKEN:-${GITHUB_TOKEN:-${AGENT_REGISTRY_TOKEN:-}}}"
+            export FIREBASE_SERVICE_ACCOUNT_KEY="${FIREBASE_SERVICE_ACCOUNT_KEY:-}"
             mkdir -p artifacts/ci
             JUMENTIX_QUALITY_GATE_TARGET="${CIRCLE_BRANCH:-dev}" \
             JUMENTIX_TASK_TEST_MODE=range \
