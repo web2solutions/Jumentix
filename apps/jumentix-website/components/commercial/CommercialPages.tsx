@@ -68,9 +68,9 @@ const codeSamples = {
     {
       label: 'Install',
       language: 'shell',
-      code: `pnpm install
-pnpm run cli
-pnpm run dev:express`,
+      code: `bun install
+bun run cli
+bun run dev:express`,
     },
     {
       label: 'Service contract',
@@ -204,18 +204,18 @@ await taskStore.create(task);`,
     {
       label: 'Docker',
       language: 'shell',
-      code: `pnpm run db:postgresql:up
-JUMENTIX_DATABASE_DRIVER=postgresql pnpm run test:smoke:database
-pnpm run db:postgresql:down`,
+      code: `bun run docker:up:postgresql
+JUMENTIX_DATABASE_DRIVER=PostgreSQL bun run test:smoke:db:postgresql
+bun run docker:down:postgresql`,
     },
   ],
   deploy: [
     {
       label: 'PM2',
       language: 'shell',
-      code: `pnpm run pm2:dev
-pnpm run pm2:staging
-pnpm run pm2:production`,
+      code: `bun run pm2:start:dev:restapi
+bun run pm2:start:staging:restapi
+bun run pm2:start:prod:restapi`,
     },
     {
       label: 'Functions',
@@ -231,10 +231,10 @@ pnpm run pm2:production`,
     {
       label: 'Quality gate',
       language: 'shell',
-      code: `pnpm run lint
-pnpm run test:unit
-pnpm run test:integration
-pnpm run ci:gate`,
+      code: `bun run lint
+bun run test:unit
+bun run test:integration
+bun run ci:gate`,
     },
   ],
 };
@@ -392,7 +392,7 @@ function Home({ locale }: { locale: CommercialLocale }) {
           <ul className={classes.heroProof}>
             <li><IconShieldCheck size={17} /> 99% quality threshold</li>
             <li><IconGitBranch size={17} /> DDD + Hexagonal</li>
-            <li><IconPackage size={17} /> pnpm monorepo</li>
+            <li><IconPackage size={17} /> Bun monorepo</li>
             <li><IconBrandGithub size={17} /> Open source</li>
           </ul>
         </div>
@@ -715,8 +715,8 @@ function Roadmap({ locale }: { locale: CommercialLocale }) {
   ];
   return (
     <>
-      <PageHero locale={locale} eyebrow="Roadmap" title={t(locale, 'A public path from boilerplate to software factory', 'Um caminho público de boilerplate a fábrica de software')} description={t(locale, 'The GitHub project remains the source of truth. This view explains the product direction without hiding the implementation backlog.', 'O projeto no GitHub permanece como fonte da verdade. Esta visão explica a direção do produto sem ocultar o backlog de implementação.')} />
-      <Band><ol className={classes.timeline}>{phases.map(([phase, title, description]) => <li key={phase}><strong>{phase}</strong><div><h3>{title}</h3><p>{description}</p></div></li>)}</ol><div className={classes.sectionActions}><ActionLink href="https://github.com/users/web2solutions/projects/1" external>{t(locale, 'Open live roadmap', 'Abra o roadmap ao vivo')}</ActionLink></div></Band>
+      <PageHero locale={locale} eyebrow="Roadmap" title={t(locale, 'A public path from platform foundation to software factory', 'Um caminho público da fundação da plataforma à fábrica de software')} description={t(locale, 'The canonical repository remains the source of truth. This view explains the product direction without hiding the implementation backlog.', 'O repositório canônico permanece como fonte da verdade. Esta visão explica a direção do produto sem ocultar o backlog de implementação.')} />
+      <Band><ol className={classes.timeline}>{phases.map(([phase, title, description]) => <li key={phase}><strong>{phase}</strong><div><h3>{title}</h3><p>{description}</p></div></li>)}</ol><div className={classes.sectionActions}><ActionLink href={`${repositoryUrl}/milestones`} external>{t(locale, 'Open live roadmap', 'Abra o roadmap ao vivo')}</ActionLink></div></Band>
       <FinalCta locale={locale} />
     </>
   );

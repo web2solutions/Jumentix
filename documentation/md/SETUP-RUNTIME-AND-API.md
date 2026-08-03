@@ -16,25 +16,25 @@
 Install dependencies:
 
 ```bash
-pnpm install
+bun install
 ```
 
 Run Redis (if needed):
 
 ```bash
-pnpm run docker:composeredis
+bun run docker:composeredis
 ```
 
 Run messaging services (RabbitMQ + Redis) with Docker:
 
 ```bash
-pnpm run docker:composemessaging
+bun run docker:composemessaging
 ```
 
 Run only RabbitMQ (useful when Redis is already running):
 
 ```bash
-pnpm run docker:composerabbit
+bun run docker:composerabbit
 ```
 
 ## Message Mediator Adapter
@@ -106,34 +106,34 @@ Behavior summary:
 Dev (auto-starts `service-management`):
 
 ```bash
-pnpm run pm2:start:dev:restapi
-pnpm run pm2:start:dev:websocket-rest
-pnpm run pm2:start:dev:grpc-rest
+bun run pm2:start:dev:restapi
+bun run pm2:start:dev:websocket-rest
+bun run pm2:start:dev:grpc-rest
 ```
 
 Staging:
 
 ```bash
-pnpm run pm2:start:staging:restapi
-pnpm run pm2:start:staging:websocket-rest
-pnpm run pm2:start:staging:grpc-rest
+bun run pm2:start:staging:restapi
+bun run pm2:start:staging:websocket-rest
+bun run pm2:start:staging:grpc-rest
 ```
 
 Production:
 
 ```bash
-pnpm run pm2:start:prod:restapi
-pnpm run pm2:start:prod:websocket-rest
-pnpm run pm2:start:prod:grpc-rest
+bun run pm2:start:prod:restapi
+bun run pm2:start:prod:websocket-rest
+bun run pm2:start:prod:grpc-rest
 ```
 
 PM2 operations:
 
 ```bash
-pnpm run pm2:list
-pnpm run pm2:logs
-pnpm run pm2:stop:all
-pnpm run pm2:delete:all
+bun run pm2:list
+bun run pm2:logs
+bun run pm2:stop:all
+bun run pm2:delete:all
 ```
 
 Service Management can read and persist these runtime env values through:
@@ -175,26 +175,25 @@ Response payload example:
 HTTP adapters (all routed through `start-rest-api` loader with `JUMENTIX_HTTP_FRAMEWORK`):
 
 ```bash
-pnpm run dev:express
-pnpm run dev:fastify
-pnpm run dev:restify
-pnpm run dev:hyper-express
-pnpm run dev:cloudflare-workers
-pnpm run dev:vercel-functions
-pnpm run dev:loopback
-pnpm run dev:sails-js
-pnpm run dev:feathers
-pnpm run dev:derby-js
-pnpm run dev:adonis-js
-pnpm run dev:total-js
+bun run dev:express
+bun run dev:fastify
+bun run dev:restify
+bun run dev:cloudflare-workers
+bun run dev:vercel-functions
+bun run dev:loopback
+bun run dev:sails-js
+bun run dev:feathers
+bun run dev:derby-js
+bun run dev:adonis-js
+bun run dev:total-js
 ```
 
 Generic REST loader commands:
 
 ```bash
 # uses JUMENTIX_HTTP_FRAMEWORK from env file (default express)
-pnpm run dev:http
-pnpm run prod:http
+bun run dev:http
+bun run prod:http
 ```
 
 Equivalent direct loader style:
@@ -207,27 +206,27 @@ JUMENTIX_HTTP_FRAMEWORK=cloudflare-workers pm2 start ./apps/backend-template/src
 Combined service profiles:
 
 ```bash
-pnpm run dev:websocket
-pnpm run dev:grpc
-pnpm run test:integration:service-management
+bun run dev:websocket
+bun run dev:grpc
+bun run test:integration:service-management
 ```
 
 Serverless dev mode:
 
 ```bash
-pnpm run dev:serverless
+bun run dev:serverless
 ```
 
 Developer automation CLI:
 
 ```bash
-pnpm run dev:cli
+bun run dev:cli
 ```
 
 Service Management app (PM2-served):
 
 ```bash
-pnpm run dev:service-management
+bun run dev:service-management
 ```
 
 ![serverless dev mode](../images/sls.png "serverless dev mode")

@@ -20,25 +20,25 @@ Idioma alvo: Português (Brasil)
 Instale dependências:
 
 ```bash
-pnpm install
+bun install
 ```
 
 Execute o Redis (se necessário):
 
 ```bash
-pnpm run docker:composeredis
+bun run docker:composeredis
 ```
 
 Execute serviços de mensagens (RabbitMQ + Redis) com Docker:
 
 ```bash
-pnpm run docker:composemessaging
+bun run docker:composemessaging
 ```
 
 Execute apenas RabbitMQ (útil quando o Redis já está em execução):
 
 ```bash
-pnpm run docker:composerabbit
+bun run docker:composerabbit
 ```
 
 ## Adaptador Mediador de Mensagens
@@ -110,34 +110,34 @@ Resumo do comportamento:
 Dev (inicia automaticamente `service-management`):
 
 ```bash
-pnpm run pm2:start:dev:restapi
-pnpm run pm2:start:dev:websocket-rest
-pnpm run pm2:start:dev:grpc-rest
+bun run pm2:start:dev:restapi
+bun run pm2:start:dev:websocket-rest
+bun run pm2:start:dev:grpc-rest
 ```
 
 Encenação:
 
 ```bash
-pnpm run pm2:start:staging:restapi
-pnpm run pm2:start:staging:websocket-rest
-pnpm run pm2:start:staging:grpc-rest
+bun run pm2:start:staging:restapi
+bun run pm2:start:staging:websocket-rest
+bun run pm2:start:staging:grpc-rest
 ```
 
 Produção:
 
 ```bash
-pnpm run pm2:start:prod:restapi
-pnpm run pm2:start:prod:websocket-rest
-pnpm run pm2:start:prod:grpc-rest
+bun run pm2:start:prod:restapi
+bun run pm2:start:prod:websocket-rest
+bun run pm2:start:prod:grpc-rest
 ```
 
 Operações PM2:
 
 ```bash
-pnpm run pm2:list
-pnpm run pm2:logs
-pnpm run pm2:stop:all
-pnpm run pm2:delete:all
+bun run pm2:list
+bun run pm2:logs
+bun run pm2:stop:all
+bun run pm2:delete:all
 ```
 
 O Service Management pode ler e persistir esses valores de ambiente de tempo de execução por meio de:
@@ -179,26 +179,25 @@ Exemplo de carga útil de resposta:
 Adaptadores HTTP (todos roteados através do carregador `start-rest-api` com `JUMENTIX_HTTP_FRAMEWORK`):
 
 ```bash
-pnpm run dev:express
-pnpm run dev:fastify
-pnpm run dev:restify
-pnpm run dev:hyper-express
-pnpm run dev:cloudflare-workers
-pnpm run dev:vercel-functions
-pnpm run dev:loopback
-pnpm run dev:sails-js
-pnpm run dev:feathers
-pnpm run dev:derby-js
-pnpm run dev:adonis-js
-pnpm run dev:total-js
+bun run dev:express
+bun run dev:fastify
+bun run dev:restify
+bun run dev:cloudflare-workers
+bun run dev:vercel-functions
+bun run dev:loopback
+bun run dev:sails-js
+bun run dev:feathers
+bun run dev:derby-js
+bun run dev:adonis-js
+bun run dev:total-js
 ```
 
 Comandos genéricos do carregador REST:
 
 ```bash
 # uses JUMENTIX_HTTP_FRAMEWORK from env file (default express)
-pnpm run dev:http
-pnpm run prod:http
+bun run dev:http
+bun run prod:http
 ```
 
 Estilo de carregador direto equivalente:
@@ -211,27 +210,27 @@ JUMENTIX_HTTP_FRAMEWORK=cloudflare-workers pm2 start ./apps/backend-template/src
 Perfis de serviço combinados:
 
 ```bash
-pnpm run dev:websocket
-pnpm run dev:grpc
-pnpm run test:integration:service-management
+bun run dev:websocket
+bun run dev:grpc
+bun run test:integration:service-management
 ```
 
 Modo de desenvolvimento sem servidor:
 
 ```bash
-pnpm run dev:serverless
+bun run dev:serverless
 ```
 
 CLI de automação do desenvolvedor:
 
 ```bash
-pnpm run dev:cli
+bun run dev:cli
 ```
 
 Aplicativo de gerenciamento de serviços (servido por PM2):
 
 ```bash
-pnpm run dev:service-management
+bun run dev:service-management
 ```
 
 ![modo de desenvolvimento sem servidor](../images/sls.png "modo de desenvolvimento sem servidor")
