@@ -276,6 +276,17 @@ jobs:
       - run:
           name: Validate publishable website content
           command: bun run website:test:prepublish
+      - run:
+          name: Install Cypress binary
+          command: bunx cypress install
+      - run:
+          name: Cypress website quality gates (JUM-396)
+          command: bun run website:test:cypress
+          environment:
+            JUMENTIX_WEBSITE_CYPRESS_SKIP_BUILD: "1"
+            # cimg browsers often expose Electron to Cypress more reliably than
+            # the "chrome" binary name; GHA keeps chrome.
+            JUMENTIX_WEBSITE_CYPRESS_BROWSER: electron
 
   third-party-review:
     docker:

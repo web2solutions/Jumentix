@@ -45,6 +45,8 @@ if (!fs.existsSync(circleciPath)) {
     /website:storybook:build/,
     /website:storybook:smoke/,
     /website:test:prepublish/,
+    // JUM-396 — Cypress route/a11y gates are part of the website job contract.
+    /website:test:cypress/,
     /gitleaks\.sarif/,
     /semgrep\.sarif/,
     /Enforce scanner outcomes/,

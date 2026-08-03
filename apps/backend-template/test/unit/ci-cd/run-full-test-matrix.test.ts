@@ -330,6 +330,7 @@ describe('run-full-test-matrix', () => {
       !read('.circleci/config.yml').includes('AAA_REDIS_PASSWORD'),
       read('.circleci/config.yml').includes('bun run website:storybook:build'),
       read('.circleci/config.yml').includes('bun run website:storybook:smoke'),
+      read('.circleci/config.yml').includes('bun run website:test:cypress'),
       read('.circleci/config.yml').includes('bun run coverage:patch'),
       read('.circleci/config.yml').includes('codecov --verbose upload-process'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'pr:governance:check'),
@@ -342,10 +343,6 @@ describe('run-full-test-matrix', () => {
       !FULL_TEST_MATRIX.some(
         (cell: FullMatrixTestCell) => cell.script.startsWith('website:storybook')
       )
-    ]).toStrictEqual([
-      true, true, true, true, true, true, true, true, true, true, true, true, true, true,
-      true, true, true, true, true, true, true, true, true, true, true, true, true, true,
-      true, true, true, true
-    ]);
+    ]).toStrictEqual(Array(33).fill(true));
   });
 });

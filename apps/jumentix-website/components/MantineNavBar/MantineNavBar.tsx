@@ -35,7 +35,12 @@ export const MantineNavBar = () => {
       <MantineNextraThemeObserver />
       <Navbar
         logo={<BrandMark href={portuguese ? '/pt-BR' : '/'} />}
-        projectIcon={<IconBrandGithub size={20} />}
+        projectIcon={
+          <>
+            <span className="sr-only">GitHub repository</span>
+            <IconBrandGithub size={20} aria-hidden="true" focusable="false" />
+          </>
+        }
         projectLink="https://github.com/XpertMinds/Jumentix"
       >
         <nav className={classes.docsNav} aria-label={portuguese ? 'Seções da documentação' : 'Documentation sections'}>
