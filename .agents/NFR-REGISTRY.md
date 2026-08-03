@@ -97,9 +97,9 @@ This file consolidates non-functional requirements already requested and stored 
   selection, `JUMENTIX_GATE_V2` flag-gated flip/rollback, and fail-closed selective-gate evidence.
 - `106` Local Bun for **all** suite types; Node/Jest reserved for CI (`ciRunner` /
   `JUMENTIX_TEST_RUNTIME=node`). CI job greenness is out of scope for the Test Pyramid delivery.
-- `107` CircleCI is historical and superseded by `113` for the private XpertMinds
-  repository. Provider checks now fail closed against the repository-owned GitHub
-  Actions path rather than requiring a duplicate CircleCI pipeline.
+- `107` CircleCI is active again through `113` while GitHub Actions billing blocks
+  hosted execution. CircleCI must cover `dev` and `main` branch gates, coverage,
+  website, third-party review, Codecov publishing, and Sonar defense-in-depth.
 - `108` An HTTP adapter named for a web framework must import that framework and use it;
   a reference assigned to an unused field, or a require swallowed by try/catch, does not
   satisfy this, and the framework must be a declared dependency. Platform targets with no
@@ -147,10 +147,11 @@ This file consolidates non-functional requirements already requested and stored 
   ratchets: a declared package that has since grown a suite fails too, so the list cannot
   become a permanent exemption. The same list is the Sonar coverage exclusion set, and the two
   disagreeing in either direction fails. `packages:check-suites` validates it.
-- `113` Private-repository CI must have a zero-cost repository-owned path. GitHub
-  Actions is the hosted executor, local/self-hosted execution is the fallback,
-  CircleCI and Codecov are retired as authorities, and coverage remains fail-closed
-  through the repository's four-metric and patch checks. Sonar is defense-in-depth.
+- `113` Private-repository CI must have a zero-cost repository-owned path.
+  CircleCI is the hosted executor while GitHub Actions billing blocks execution;
+  local/self-hosted execution remains diagnostic fallback. Coverage remains
+  fail-closed in CircleCI through the repository's four-metric and patch checks,
+  then publishes to Codecov for visibility. Sonar is defense-in-depth.
 - `114` Agent onboard uses an operator-confirmed filesystem root (this host:
   `/Users/eduardoalmeida/apps/XpertMinds`) and the layout
   `<root>/<agent-identifier>/Jumentix` as the only SoT checkout for that agent.

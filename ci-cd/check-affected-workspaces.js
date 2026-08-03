@@ -6,7 +6,7 @@ const ROOT_MARKERS = [
   'package.json',
   'bun.lock',
   '.circleci/config.yml',
-  '.github/workflows',
+  '.github',
   'ci-cd',
   'tsconfig',
   'jest.config',

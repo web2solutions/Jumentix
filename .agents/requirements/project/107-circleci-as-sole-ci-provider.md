@@ -1,54 +1,42 @@
-# 107 - CircleCI Runs Every Branch Alongside GitHub Actions
+# 107 - CircleCI Hosted CI While GitHub Actions Billing Is Blocked
 
-- Status: Superseded by Requirement `113` on 2026-08-01
+- Status: Active again through Requirement `113` amendment on 2026-08-03
 - Nature: NFR (CI/CD, governance)
 - Source: Project owner decision, 2026-07-30, revised the same day.
 
 ## Revision note
 
-An earlier draft retired GitHub Actions entirely and made CircleCI the sole
-provider. That was written while GitHub Actions could not execute at all — every
-run terminated at the runner on a billing failure, which left every required
-check permanently pending and, under Requirement `065`, blocked every merge.
-
-**Billing has since been resolved and GitHub Actions runs again.** The project
-owner has directed that the workflows stay. This requirement is revised
-accordingly: both providers run, and CircleCI is kept correct and complete
-rather than being a replacement.
+GitHub Actions billing is again preventing hosted execution for the private
+repository. The project owner directed CircleCI to replace the disabled GitHub
+Actions setup and keep `main` and `dev` green from repository-owned commands.
 
 The file keeps its original slug so existing links do not break; the title above
 is authoritative.
 
-## Supersession
-
-CircleCI ceased producing canonical checks for the private XpertMinds repository.
-Requirement `113` retires the inactive provider and replaces its redundancy claim
-with repository-owned commands that run on GitHub-hosted or self-hosted runners.
-Historical clauses below remain for audit only.
-
 ## Requirement
 
-1. **Both providers are active.** The workflows under `.github/workflows/`
-   remain, and CircleCI runs in parallel via `.circleci/config.yml`.
+1. **CircleCI is the active hosted provider.** The `.circleci/config.yml`
+   workflow owns the remote branch gate, coverage, website, third-party review,
+   Codecov publishing, and Sonar defense-in-depth checks while GitHub Actions
+   billing is blocked.
 
 2. **CircleCI must run on every branch**, not only `dev` and `main`. This was the
    real gap and it survives the revision: the previous CircleCI configuration
    filtered to `only: [dev, main]`, so when GitHub Actions went dark, feature
    branches had coverage from neither provider.
 
-3. **CircleCI must cover every check GitHub Actions covers.** Two providers
-   checking different things are not redundancy — they are two partial
-   pipelines, and neither can be trusted alone. The point of running both is
-   that either going dark degrades coverage instead of eliminating it.
+3. **CircleCI must cover every retired GitHub Actions check.** The replacement
+   is only valid when it carries the same branch gate, coverage, website,
+   third-party review, Codecov publishing, and Sonar responsibilities.
 
 4. **Requirement `065` applies unchanged.** A check that did not start is
    *pending* — not passing, not failing. It may not be described as green, and it
    may not be waved through as unrelated. A provider that cannot execute blocks a
    merge exactly as a failing check does.
 
-5. The pinned Bun toolchain (Requirement `096`) is the runtime on both. CircleCI
-   uses the official `oven/bun` image at the pinned version; it does not
-   bootstrap Bun through Node or npm.
+5. The pinned Bun toolchain (Requirement `096`) remains the internal runtime.
+   CircleCI may use a Node 22 browser image for browser compatibility, but the
+   repository commands still install and assert Bun `1.3.14`.
 
 ## Why both, rather than one
 
@@ -62,10 +50,12 @@ merge without evidence. Both readings are worse than an honest "CI did not run".
 
 `ci-cd/check-ci-provider.js`, wired into `ci:gate`:
 
-- Both configurations must be present.
-- The CircleCI configuration must express every check the GitHub Actions
-  workflows perform, enumerated explicitly — a dropped job is otherwise silent:
-  nothing fails, the pipeline simply covers less.
+- The CircleCI configuration must be present.
+- GitHub Actions workflow YAML must not be present while billing blocks
+  execution.
+- The CircleCI configuration must express every retired workflow responsibility,
+  enumerated explicitly — a dropped job is otherwise silent: nothing fails, the
+  pipeline simply covers less.
 - The CircleCI quality gate must not be branch-filtered.
 
 ## Required project configuration
@@ -78,8 +68,7 @@ skipping:
   `XpertMinds/jumentix-agent-registry`, per Requirement `089`. Default tokens
   cannot read a sibling private repository.
 - `SONAR_TOKEN` — SonarQube Cloud
-- `CODECOV_TOKEN` — coverage upload
-
+- `CODECOV_TOKEN` — Codecov upload from CircleCI
 A missing variable must produce a failing job naming the variable. It must never
 produce a skipped step that reports success.
 

@@ -131,10 +131,12 @@ Política de isolamento e nomenclatura:
 - Uma promoção de `dev` para `main` referencia os PRs de tarefa e Issues do Linear já
   representados em `dev` e não introduz mudanças adicionais de tarefa.
 - PRs diretos de tarefa/tópico, pushes e merges para `main` são proibidos.
-- Os gates são orientados ao destino: branches de tarefa executam testes alterados ou
-  relacionados, `dev` executa a suíte unitária completa e `main` executa a matriz completa.
-- PRs destinados a `dev` executam a suíte unitária; promoções de `dev` para `main` executam a
-  matriz completa.
+- Os gates são orientados ao destino: branches de feature, docs, fix e outras tarefas
+  executam somente testes especializados alterados/relacionados, `dev` executa a suíte
+  unitária completa e `main` executa a matriz local completa sem cobertura pesada.
+- PRs destinados a `dev` executam a matriz local completa sem cobertura pesada no CircleCI.
+  Promoções de `dev` para `main` executam a mesma matriz, além do job obrigatório de
+  cobertura CircleCI nas duas branches longas.
 - A evidência da matriz de `main` deve listar cada célula obrigatória e seu resultado terminal.
 - Uma matriz de `main` incompleta é evidência com falha; nunca pode ser interpretada como verde.
 - Review de PR é opcional. Branch protection e rulesets não devem exigir quantidade de
@@ -162,13 +164,12 @@ Se alguma porta falhar, a conformidade com as especificações será considerada
 Contrato de execução por branch:
 
 1. Branches de tarefa executam `ci:gate:task` sobre o diff pertencente à tarefa.
-2. `dev` e pull requests destinados a `dev` executam `test:unit`.
+2. Pushes em `dev` executam `test:unit`; pull requests destinados a `dev` executam `ci:gate:strict`.
 3. `main` e pull requests de promoção destinados a `main` executam `ci:gate:strict`.
-4. GitHub Actions é o executor hospedado pertencente ao repositório; CircleCI foi aposentado como
-   autoridade pelo Requisito `113`.
-5. `.github/workflows/website.yml` é o responsável pelos checks do Storybook e é selecionado
-   somente por caminhos pertencentes ao website; o workflow global e a matriz completa não
-   executam Storybook.
+4. CircleCI é o executor hospedado pertencente ao repositório enquanto GitHub Actions billing
+   está bloqueado pelo Requisito `113`.
+5. `.circleci/config.yml` é responsável por Storybook e cobertura completa em `dev` e `main`;
+   a matriz completa local não executa Storybook nem produção de cobertura.
 6. Todo gate selecionado emite evidência auditável e falha de forma fechada quando um comando
    não retorna status, quebra ou termina com código diferente de zero.
 

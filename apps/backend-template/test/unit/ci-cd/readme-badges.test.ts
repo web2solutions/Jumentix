@@ -43,14 +43,15 @@ const sonarProperties = fs.readFileSync(
 const pinnedBunVersion = fs.readFileSync(path.join(repoRoot, '.bun-version'), 'utf8').trim();
 
 describe('rEADME badges', () => {
-  it('shows repository-owned workflows for both long-lived branches', () => {
+  it('shows CircleCI for both long-lived branches', () => {
     expect.hasAssertions();
 
     expect.hasAssertions();
-    for (const workflow of ['test.yml', 'coverage.yml', 'third-party-review.yml']) {
-      expect(readme).toContain(`actions/workflows/${workflow}/badge.svg?branch=dev`);
-      expect(readme).toContain(`actions/workflows/${workflow}/badge.svg?branch=main`);
+    for (const branch of ['dev', 'main']) {
+      expect(readme).toContain(`dl.circleci.com/status-badge/img/gh/XpertMinds/Jumentix/tree/${branch}.svg?style=svg`);
+      expect(readme).toContain(`dl.circleci.com/status-badge/redirect/gh/XpertMinds/Jumentix/tree/${branch}`);
     }
+    expect(badges).not.toContain('actions/workflows');
   });
 
   it('points SonarCloud at the project key the scanner actually reports to', () => {
@@ -72,8 +73,9 @@ describe('rEADME badges', () => {
     expect.hasAssertions();
     // Paid/unreliable providers were retired in favour of repository-owned gates.
     expect(badges).not.toContain('snyk.io');
-    expect(badges).not.toContain('circleci.com');
-    expect(badges).not.toContain('codecov.io');
+    expect(badges).not.toContain('codecov.io/gh/XpertMinds/Jumentix/branch');
+    expect(badges).not.toContain('token=');
+    expect(badges).toContain('badge/codecov-via%20CircleCI');
   });
 
   it('restores the coverage map with every enforced threshold', () => {

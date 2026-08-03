@@ -122,10 +122,12 @@ Task isolation and naming policy:
 - A `dev` to `main` promotion references the task PRs and Linear Issues already represented in
   `dev` and introduces no additional task changes.
 - Direct task/topic PRs, pushes, and merges to `main` are prohibited.
-- Commit and push gates are destination-aware: task branches run only changed or related
-  unit tests, `dev` runs the complete unit suite, and `main` runs the complete matrix.
-- Pull requests targeting `dev` run the complete unit suite; release-promotion PRs to
-  `main` run the complete matrix.
+- Commit and push gates are destination-aware: feature, docs, fix, and other task
+  branches run only specialized changed/related tests, `dev` runs the complete
+  unit suite, and `main` runs the complete local non-coverage matrix.
+- Pull requests targeting `dev` run the complete local non-coverage matrix in
+  CircleCI. Release-promotion PRs to `main` run the same matrix, plus the required
+  CircleCI coverage job on both long-lived branches.
 - Main-matrix evidence must list every required cell and its terminal result.
 - An incomplete `main` matrix is failed evidence; it must never be interpreted as green.
 - PR review is optional. Branch protection and rulesets must not require an approval count.
@@ -152,12 +154,12 @@ If any gate fails, spec conformance is considered unproven and the change is not
 Branch-aware execution contract:
 
 1. Task branches execute `ci:gate:task` against the task-owned diff.
-2. `dev` and pull requests targeting `dev` execute `test:unit`.
+2. `dev` pushes execute `test:unit`; pull requests targeting `dev` execute `ci:gate:strict`.
 3. `main` and release-promotion pull requests targeting `main` execute `ci:gate:strict`.
-4. GitHub Actions is the repository-owned hosted executor; CircleCI is retired as an authority by
+4. CircleCI is the repository-owned hosted executor while GitHub Actions billing is blocked by
    Requirement `113`.
-5. `.github/workflows/website.yml` owns Storybook checks and is selected only by
-   website-owned paths; the global test workflow and full matrix do not execute Storybook.
+5. `.circleci/config.yml` owns Storybook checks and full coverage for `dev` and `main`;
+   the local full matrix does not execute Storybook or coverage production.
 6. Every selected gate emits auditable evidence and fails closed for missing, crashed, or
    non-zero command outcomes.
 

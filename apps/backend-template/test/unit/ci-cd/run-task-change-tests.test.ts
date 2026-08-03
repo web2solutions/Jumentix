@@ -87,10 +87,10 @@ describe('run-task-change-tests', () => {
     });
   });
 
-  it('maps workflow and hook changes to their governance unit test', () => {
+  it('maps CI config and hook changes to their governance unit test', () => {
     expect.hasAssertions();
     expect(createTaskTestPlan([
-      '.github/workflows/test.yml',
+      '.github/dependabot.yml',
       '.circleci/config.yml',
       '.husky/pre-push'
     ])).toStrictEqual({
