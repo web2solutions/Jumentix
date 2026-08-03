@@ -11,8 +11,8 @@ This repository supports Claude Code as an official engineering agent.
    only for API authentication; never expose, log, commit, or share its contents.
 5. Keep implementation, specs, and docs synchronized.
 6. Respect CI, lint, test, and coverage gates; no bypass behavior is allowed.
-7. Register in `.agents/AGENT-REGISTRY.md` before task execution.
-8. Before starting work, check `main` and `dev` refs and update registry fields.
+7. Register via `bun run agent-registry:register` (Firestore, Requirement `089`) before task execution.
+8. Before starting work, check `main` and `dev` refs and update them via `bun run agent-registry:heartbeat --main-ref --dev-ref`.
 9. Work only on tasks with one focused parent epic and one primary nature.
 10. Confirm epic-level agent delegation before accepting a child task, following Requirement `090`.
 11. Confirm the focused epic and child task share one open milestone that covers their dates.

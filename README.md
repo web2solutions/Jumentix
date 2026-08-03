@@ -49,9 +49,10 @@ Jumentix is a monorepo product that works as a software factory for engineering 
 
 > **Canonical private repository:** `XpertMinds/Jumentix`.
 > `web2solutions/aaa-typescript-boilerplate` is deprecated, read-only, and
-> accepts no new modifications. Agent coordination is canonical in the private
-> `XpertMinds/jumentix-agent-registry`; the former `web2solutions` registry is
-> also deprecated and read-only. See Requirements `103` and `104`.
+> accepts no new modifications. Agent coordination is canonical in Firestore
+> Database (Requirement `089`); the former `XpertMinds/jumentix-agent-registry`
+> and `web2solutions` registries are deprecated and read-only. See Requirements
+> `089`, `103` and `104`.
 
 ## Index
 

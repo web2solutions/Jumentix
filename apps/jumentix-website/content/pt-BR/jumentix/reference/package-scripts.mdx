@@ -43,9 +43,12 @@ bun run <comando>
 | `release:dry-run` | Executa governança de release e rotinas de dry-run. | `bun run release:dry-run` | `bun ci-cd/release-dry-run.js all` |
 | `release:dry-run:packages` | Executa governança de release e rotinas de dry-run. | `bun run release:dry-run:packages` | `bun ci-cd/release-dry-run.js packages` |
 | `release:dry-run:apps` | Executa governança de release e rotinas de dry-run. | `bun run release:dry-run:apps` | `bun ci-cd/release-dry-run.js apps` |
-| `agent-registry:check` | Use quando precisar desta operação específica do workspace. | `bun run agent-registry:check` | `bun ci-cd/check-agent-registry-source.js --check` |
-| `agent-registry:sync` | Use quando precisar desta operação específica do workspace. | `bun run agent-registry:sync` | `bun ci-cd/check-agent-registry-source.js --sync` |
-| `agent-registry:url` | Use quando precisar desta operação específica do workspace. | `bun run agent-registry:url` | `bun ci-cd/check-agent-registry-source.js --url` |
+| `agent-registry:register` | Registra ou atualiza o agente atual no registry do Firestore. | `bun run agent-registry:register` | `bun ci-cd/agent-registry-cli.js register` |
+| `agent-registry:heartbeat` | Atualiza heartbeat e refs de branch do agente no Firestore. | `bun run agent-registry:heartbeat` | `bun ci-cd/agent-registry-cli.js heartbeat` |
+| `agent-registry:assign` | Atribui o agente a uma tarefa e épico do Linear no Firestore. | `bun run agent-registry:assign` | `bun ci-cd/agent-registry-cli.js assign` |
+| `agent-registry:complete` | Marca a tarefa atual como concluída no Firestore. | `bun run agent-registry:complete` | `bun ci-cd/agent-registry-cli.js complete` |
+| `agent-registry:sync` | Grava o snapshot local do Firestore em `.agents/registry-snapshot.json`. | `bun run agent-registry:sync` | `bun ci-cd/agent-registry-cli.js sync` |
+| `agent-registry:check` | Valida o snapshot local contra o Firestore. | `bun run agent-registry:check` | `bun ci-cd/agent-registry-cli.js check` |
 | `requirements:check` | Use quando precisar desta operação específica do workspace. | `bun run requirements:check` | `bun ci-cd/check-requirements-registry.js` |
 | `integration-migration:check` | Use quando precisar desta operação específica do workspace. | `bun run integration-migration:check` | `bun ci-cd/check-integration-migration.js` |
 | `release:governance:check` | Executa governança de release e rotinas de dry-run. | `bun run release:governance:check` | `bun ci-cd/check-release-governance.js` |

@@ -53,9 +53,9 @@ Jumentix é um produto monorepo que funciona como uma fábrica de software para 
 > **Repositório privado canônico:** `XpertMinds/Jumentix`.
 > `web2solutions/aaa-typescript-boilerplate` está obsoleto, é somente leitura e
 > não aceita novas modificações. A coordenação de agentes é canônica no
-> repositório privado `XpertMinds/jumentix-agent-registry`; o antigo registry em
-> `web2solutions` também está obsoleto e é somente leitura. Consulte os Requisitos
-> `103` e `104`.
+> Firestore Database (Requisito `089`); os antigos registries em
+> `XpertMinds/jumentix-agent-registry` e `web2solutions` estão obsoletos e são
+> somente leitura. Consulte os Requisitos `089`, `103` e `104`.
 
 ## Índice
 

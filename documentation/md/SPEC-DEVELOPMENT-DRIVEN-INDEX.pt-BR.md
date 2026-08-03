@@ -66,10 +66,11 @@ Esta política é aplicada através de:
 ## Fontes de ligação
 
 A autoridade dos repositórios segue o Requisito `103`: o repositório privado
-`XpertMinds/Jumentix` é canônico para este conjunto de especificações, e o
-repositório privado `XpertMinds/jumentix-agent-registry` é canônico para a
-coordenação de agentes. As duas origens anteriores em `web2solutions` estão
-obsoletas, são somente leitura e não aceitam novas modificações.
+`XpertMinds/Jumentix` é canônico para este conjunto de especificações. A
+coordenação de agentes é canônica no Firestore Database, conforme o Requisito
+`089`. Todas as origens anteriores em `web2solutions` — e o antigo espelho
+GitHub `XpertMinds/jumentix-agent-registry` — estão obsoletas, são somente
+leitura e não aceitam novas modificações.
 
 O Requisito `104` também vincula a revinculação completa dos provedores e
 evidência terminal para integrações de CI, cobertura, segurança, deploy,

@@ -1,5 +1,11 @@
 # Jumentix Agent Registry
 
+> **DEPRECATED MIRROR — frozen 2026-08-03.** The canonical agent registry is
+> Firestore Database (project `jumentix-service-registry`, collection
+> `agents`) per Requirement `089`. Register, heartbeat, assign, and complete
+> through `bun run agent-registry:*`. This file is kept as historical audit
+> evidence only; do not edit it to change agent state.
+
 This registry tracks AI agents collaborating in the Jumentix project.
 
 ## Operating Rules
