@@ -2,7 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/adapters/realtime/GRPC-API.md
 Idioma alvo: Português (Brasil)
 -->
-#API gRPC em tempo real
+# API gRPC em tempo real
 
 Este guia é exclusivo para a interface em tempo real do gRPC.
 
