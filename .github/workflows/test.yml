@@ -22,6 +22,16 @@ jobs:
 
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    services:
+      rabbitmq:
+        image: rabbitmq:3.13-alpine
+        ports:
+          - 5672:5672
+        options: >-
+          --health-cmd "rabbitmq-diagnostics -q ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 20
     env:
       AAA_JWT_TOKEN_SECRET_KEY: ${{ secrets.AAA_JWT_TOKEN_SECRET_KEY || 'ci_jwt_secret_key' }}
       AAA_REDIS_PASSWORD: ${{ secrets.AAA_REDIS_PASSWORD || 'ci_redis_password' }}
@@ -69,6 +79,7 @@ jobs:
     # - run: ./wait-for-redis.sh localhost:6379
     - run: wget https://github.com/jwilder/dockerize/releases/download/v0.6.1/dockerize-linux-amd64-v0.6.1.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-v0.6.1.tar.gz && rm dockerize-linux-amd64-v0.6.1.tar.gz
     - run: dockerize -wait tcp://localhost:6379 -timeout 1m
+    - run: dockerize -wait tcp://localhost:5672 -timeout 1m
     - name: Run canonical branch quality gate
       run: bun run ci:gate:branch
       env:

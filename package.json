@@ -107,6 +107,7 @@
     "test": "NODE_ENV=dev bun test ./apps/backend-template/test",
     "test:unit": "NODE_ENV=dev bun ci-cd/run-unit-tests.js",
     "coverage:patch": "bun ci-cd/check-patch-coverage.js",
+    "coverage:browser-lcov": "bun ci-cd/write-browser-lcov.js",
     "test:integration": "bun ci-cd/run-integration-tests.js",
     "test:integration:express": "NODE_ENV=dev bun ci-cd/run-suite.js --script-label express apps/backend-template/test/integration/Express",
     "test:integration:fastify": "NODE_ENV=dev bun ci-cd/run-suite.js --script-label fastify apps/backend-template/test/integration/Fastify",

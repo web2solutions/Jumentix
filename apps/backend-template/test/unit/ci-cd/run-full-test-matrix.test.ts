@@ -2,6 +2,7 @@
 const matrixFs = require('fs');
 const matrixPath = require('path');
 const {
+  COVERAGE_INTEGRATION_ENV,
   FULL_TEST_MATRIX,
   executeMatrixCell,
   runAsEntryPoint,
@@ -59,13 +60,19 @@ describe('run-full-test-matrix', () => {
 
     expect(ids).toStrictEqual(expect.arrayContaining([
       'coverage',
+      'browser-coverage',
+      'browser-lcov',
       'coverage-thresholds',
       'patch-coverage'
     ]));
 
     // Cells run in declaration order, so position is the dependency.
-    expect(ids.indexOf('coverage')).toBeLessThan(ids.indexOf('coverage-thresholds'));
-    expect(ids.indexOf('coverage')).toBeLessThan(ids.indexOf('patch-coverage'));
+    expect([
+      ids.indexOf('coverage') < ids.indexOf('browser-coverage'),
+      ids.indexOf('browser-coverage') < ids.indexOf('browser-lcov'),
+      ids.indexOf('browser-lcov') < ids.indexOf('coverage-thresholds'),
+      ids.indexOf('browser-lcov') < ids.indexOf('patch-coverage')
+    ]).toStrictEqual([true, true, true, true]);
   });
 
   it('lets the canonical coverage checker enforce thresholds after both reports exist', () => {
@@ -73,6 +80,10 @@ describe('run-full-test-matrix', () => {
 
     expect(fullMatrixRootPackage.scripts['test:coverage'])
       .toContain('--coverageThreshold=\'{}\'');
+    expect(fullMatrixRootPackage.scripts['coverage:browser-lcov'])
+      .toBe('bun ci-cd/write-browser-lcov.js');
+    expect((FULL_TEST_MATRIX as FullMatrixTestCell[]).find((cell) => cell.id === 'coverage'))
+      .toMatchObject({ env: COVERAGE_INTEGRATION_ENV });
   });
 
   describe('writeMatrixEvidence', () => {
