@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-03 test(website): add Cypress route, a11y, and responsive gates - Eduardo A.
 - 2026-08-03 [JUM-611][Governance] Replace GitHub-mirrored agent registry with Firestore Database - Eduardo A.
 - 2026-08-03 [JUM-417][CI] Sync agent-registry mirror (kimi-k3-cursor-001) (#64) - Eduardo A.
 - 2026-08-03 [JUM-419][CI] Sync the agent-registry mirror to canonical 271da346 - Eduardo A.

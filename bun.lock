@@ -152,6 +152,13 @@
       "name": "@jumentix/adapter-runtime-bootstrap",
       "version": "0.1.0",
     },
+    "packages/agent-registry": {
+      "name": "@jumentix/agent-registry",
+      "version": "0.0.0",
+      "dependencies": {
+        "firebase-admin": "^14.1.0",
+      },
+    },
     "packages/cana": {
       "name": "@jumentix/cana",
       "version": "0.1.0",
@@ -910,6 +917,8 @@
     "@js-sdsl/ordered-map": ["@js-sdsl/ordered-map@4.4.2", "", {}, "sha512-iUKgm52T8HOE/makSxjqoWhe95ZJA1/G1sYsGev2JDKUSS14KAgg1LHb+Ba+IPow0xflbnSkOsZcO08C7w1gYw=="],
 
     "@jumentix/adapter-runtime-bootstrap": ["@jumentix/adapter-runtime-bootstrap@workspace:packages/adapter-runtime-bootstrap"],
+
+    "@jumentix/agent-registry": ["@jumentix/agent-registry@workspace:packages/agent-registry"],
 
     "@jumentix/backend-template": ["@jumentix/backend-template@workspace:apps/backend-template"],
 
