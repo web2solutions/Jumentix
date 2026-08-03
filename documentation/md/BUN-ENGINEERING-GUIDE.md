@@ -66,7 +66,7 @@ is strictly stronger: a flat override applies to every dependent rather than one
 | Purpose | Command |
 | --- | --- |
 | Repository script | `bun run <script>` |
-| Package binary | `bunx <binary>` |
+| Package binary | `bun x <binary>` |
 | All workspaces | `bun run --filter '*' <script>` |
 | One workspace | `bun run --filter @jumentix/website <script>` |
 

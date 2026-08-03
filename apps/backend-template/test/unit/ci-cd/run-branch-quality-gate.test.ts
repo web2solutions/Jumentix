@@ -11,6 +11,14 @@ const {
   selectQualityGate
 } = require('../../../../../ci-cd/run-branch-quality-gate');
 
+function restorePullRequestEnvFlag(previous: string | undefined) {
+  if (previous === undefined) {
+    delete process.env.AAA_CI_IS_PULL_REQUEST;
+    return;
+  }
+  process.env.AAA_CI_IS_PULL_REQUEST = previous;
+}
+
 describe('run-branch-quality-gate', () => {
   it('defaults empty targets to dev and normalizes branch names', () => {
     expect.hasAssertions();
@@ -36,11 +44,7 @@ describe('run-branch-quality-gate', () => {
     try {
       expect(selectQualityGate('dev')).toBe(FULL_MATRIX_QUALITY_GATE);
     } finally {
-      if (previous === undefined) {
-        delete process.env.AAA_CI_IS_PULL_REQUEST;
-      } else {
-        process.env.AAA_CI_IS_PULL_REQUEST = previous;
-      }
+      restorePullRequestEnvFlag(previous);
     }
   });
 

@@ -66,12 +66,12 @@ bun run <comando>
 | `website:storybook:build` | Opera o ciclo de vida do site comercial. | `bun run website:storybook:build` | `bun run --filter @jumentix/website storybook:build` |
 | `website:storybook:smoke` | Opera o ciclo de vida do site comercial. | `bun run website:storybook:smoke` | `bun run --filter @jumentix/website storybook:smoke` |
 | `website:test:prepublish` | Opera o ciclo de vida do site comercial. | `bun run website:test:prepublish` | `bun run --filter @jumentix/website test:prepublish` |
-| `website:vercel:link` | Opera o ciclo de vida do site comercial. | `bun run website:vercel:link` | `bunx vercel link --cwd apps/jumentix-website --project jumentix-website --yes` |
-| `website:vercel:pull:preview` | Opera o ciclo de vida do site comercial. | `bun run website:vercel:pull:preview` | `bunx vercel pull --cwd apps/jumentix-website --environment=preview --yes` |
-| `website:vercel:pull:prod` | Opera o ciclo de vida do site comercial. | `bun run website:vercel:pull:prod` | `bunx vercel pull --cwd apps/jumentix-website --environment=production --yes` |
-| `website:deploy:vercel` | Opera o ciclo de vida do site comercial. | `bun run website:deploy:vercel` | `bunx vercel --cwd apps/jumentix-website --prod` |
+| `website:vercel:link` | Opera o ciclo de vida do site comercial. | `bun run website:vercel:link` | `bun x vercel link --cwd apps/jumentix-website --project jumentix-website --yes` |
+| `website:vercel:pull:preview` | Opera o ciclo de vida do site comercial. | `bun run website:vercel:pull:preview` | `bun x vercel pull --cwd apps/jumentix-website --environment=preview --yes` |
+| `website:vercel:pull:prod` | Opera o ciclo de vida do site comercial. | `bun run website:vercel:pull:prod` | `bun x vercel pull --cwd apps/jumentix-website --environment=production --yes` |
+| `website:deploy:vercel` | Opera o ciclo de vida do site comercial. | `bun run website:deploy:vercel` | `bun x vercel --cwd apps/jumentix-website --prod` |
 | `website:publish` | Opera o ciclo de vida do site comercial. | `bun run website:publish` | `bun run website:test:prepublish && bun run website:deploy:vercel` |
-| `website:deploy:vercel:preview` | Opera o ciclo de vida do site comercial. | `bun run website:deploy:vercel:preview` | `bunx vercel --cwd apps/jumentix-website` |
+| `website:deploy:vercel:preview` | Opera o ciclo de vida do site comercial. | `bun run website:deploy:vercel:preview` | `bun x vercel --cwd apps/jumentix-website` |
 | `npm:whoami` | Executa comandos auxiliares de organização e publicação npm. | `bun run npm:whoami` | `bun pm whoami` |
 | `npm:org:check:xpertminds` | Executa comandos auxiliares de organização e publicação npm. | `bun run npm:org:check:xpertminds` | `bun ci-cd/check-npm-org-integration.js` |
 | `npm:publish:dry-run:packages` | Executa comandos auxiliares de organização e publicação npm. | `bun run npm:publish:dry-run:packages` | `bun ci-cd/npm-publish-dry-run.js` |
@@ -93,9 +93,9 @@ bun run <comando>
 | `lint:fix` | Use quando precisar desta operação específica do workspace. | `bun run lint:fix` | `eslint . --ext .ts --fix` |
 | `build:dev` | Use quando precisar desta operação específica do workspace. | `bun run build:dev` | `NODE_ENV=dev tsc -p tsconfig.build.json` |
 | `build:prod` | Use quando precisar desta operação específica do workspace. | `bun run build:prod` | `NODE_ENV=prod tsc -p tsconfig.build.json` |
-| `tdd` | Use quando precisar desta operação específica do workspace. | `bun run tdd` | `NODE_ENV=dev bunx jest --watchAll` |
-| `npm` | Use quando precisar desta operação específica do workspace. | `bun run npm` | `NODE_ENV=ci bunx jest ./apps/backend-template/test` |
-| `test` | Executa a suíte padrão de testes do backend-template. | `bun run test` | `NODE_ENV=dev bunx jest ./apps/backend-template/test` |
+| `tdd` | Use quando precisar desta operação específica do workspace. | `bun run tdd` | `NODE_ENV=dev bun x jest --watchAll` |
+| `npm` | Use quando precisar desta operação específica do workspace. | `bun run npm` | `NODE_ENV=ci bun x jest ./apps/backend-template/test` |
+| `test` | Executa a suíte padrão de testes do backend-template. | `bun run test` | `NODE_ENV=dev bun x jest ./apps/backend-template/test` |
 | `test:unit` | Roda testes para escopo ou perfil específico. | `bun run test:unit` | `NODE_ENV=dev bun ci-cd/run-unit-tests.js` |
 | `coverage:patch` | Use quando precisar desta operação específica do workspace. | `bun run coverage:patch` | `bun ci-cd/check-patch-coverage.js` |
 | `test:integration` | Roda testes para escopo ou perfil específico. | `bun run test:integration` | `bun ci-cd/run-integration-tests.js` |

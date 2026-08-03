@@ -39,7 +39,7 @@ function runNodeJestFiles(files, options = {}) {
     ...(options.findRelated ? ['--findRelatedTests'] : []),
     ...files
   ];
-  const result = spawn('bunx', args, {
+  const result = spawn('bun', ['x', ...args], {
     stdio: options.stdio || 'inherit',
     env: { ...process.env, ...(options.env || {}) }
   });

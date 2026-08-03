@@ -23,6 +23,7 @@ if (!fs.existsSync(circleciPath)) {
     /sonarqube:/,
     /codecov:/,
     /cimg\/node:22\./,
+    /cypress\/browsers:node-22\..*-chrome-.*-ff-.*/,
     /redis:7\.2/,
     /rabbitmq:3\.13/,
     /bun install --frozen-lockfile/,

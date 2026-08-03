@@ -69,7 +69,7 @@ todos os dependentes, não a um.
 | Objetivo | Comando |
 | --- | --- |
 | Script do repositório | `bun run <script>` |
-| Binário de pacote | `bunx <binário>` |
+| Binário de pacote | `bun x <binário>` |
 | Todos os workspaces | `bun run --filter '*' <script>` |
 | Um workspace | `bun run --filter @jumentix/website <script>` |
 

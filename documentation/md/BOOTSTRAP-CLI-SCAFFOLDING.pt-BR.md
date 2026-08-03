@@ -18,7 +18,7 @@ Propriedade do espaço de trabalho:
 
 ## Uso
 
-Instale globalmente (ou execute com `bunx` pelo registry do pacote):
+Instale globalmente (ou execute com `bun x` pelo registry do pacote):
 
 ```bash
 bun add --global @jumentix/cli-init

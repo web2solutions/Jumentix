@@ -133,8 +133,8 @@ function executeTaskTestPlan(plan) {
     // Related-file discovery stays Jest-shaped under CI node runtime only.
     if (resolveTestRuntime() === 'node') {
       const relatedResult = spawnSync(
-        'bunx',
-        ['jest', '--runInBand', '--coverage=false', '--findRelatedTests', ...plan.relatedFiles],
+        'bun',
+        ['x', 'jest', '--runInBand', '--coverage=false', '--findRelatedTests', ...plan.relatedFiles],
         { stdio: 'inherit', env: { ...process.env } }
       );
       return Number.isInteger(relatedResult.status) ? relatedResult.status : 1;
@@ -156,8 +156,8 @@ function executeTaskTestPlan(plan) {
   // related-unit-tests: under Bun local, execute the related paths directly.
   if (resolveTestRuntime() === 'node') {
     const result = spawnSync(
-      'bunx',
-      ['jest', '--runInBand', '--coverage=false', '--findRelatedTests', ...plan.files],
+      'bun',
+      ['x', 'jest', '--runInBand', '--coverage=false', '--findRelatedTests', ...plan.files],
       { stdio: 'inherit', env: { ...process.env } }
     );
     return Number.isInteger(result.status) ? result.status : 1;

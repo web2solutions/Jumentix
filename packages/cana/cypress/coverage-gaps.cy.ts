@@ -279,7 +279,7 @@ describe('eviction tombstone guard', () => {
       readTombstone: (databaseName: string) => string | null;
     };
 
-    expect(internal.readTombstone('anything')).to.be.null;
+    expect(internal.readTombstone('anything')).to.equal(null);
   });
 });
 
