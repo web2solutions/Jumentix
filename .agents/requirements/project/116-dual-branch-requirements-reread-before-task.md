@@ -12,14 +12,16 @@
    - `origin/dev` — development SoT (Requirement `084`)
    - `origin/main` — released SoT
 
-   “Complete set” means every file under `.agents/requirements/` plus
-   `.agents/NFR-REGISTRY.md` on each tip. A cached summary from a prior session
-   is not sufficient.
+   “Complete set” means every requirement file matched by
+   `.agents/requirements/project/*.md` and `.agents/requirements/software/*.md`
+   plus `.agents/NFR-REGISTRY.md` on each tip. A cached summary from a prior
+   session is not sufficient.
 
 2. **Procedure (mandatory before planning or coding):**
    1. `git fetch origin dev main`
-   2. Enumerate and read `.agents/requirements/*` and `.agents/NFR-REGISTRY.md`
-      at `origin/dev`.
+   2. Enumerate and read `.agents/requirements/project/*.md`,
+      `.agents/requirements/software/*.md`, and `.agents/NFR-REGISTRY.md` at
+      `origin/dev`.
    3. Enumerate and read the same paths at `origin/main`.
    4. Diff the two tips for requirement/NFR drift and record material deltas in
       the task’s Linear Issue comment or Project Update.

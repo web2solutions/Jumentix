@@ -11,7 +11,7 @@ planning state.
 When conflicts happen, resolution order is:
 
 1. Versioned contract specs (`spec/1.0.0.yml`, `spec/asyncapi/*`)
-2. Governance requirements (`.agents/requirements/*`, `.agents/NFR-REGISTRY.md`)
+2. Governance requirements (`.agents/requirements/project/*.md`, `.agents/requirements/software/*.md`, `.agents/NFR-REGISTRY.md`)
 3. Project governance (`documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`)
 4. CI/CD executable gates (`ci-cd/*`, husky hooks, coverage policy)
 5. Technical architecture docs (`documentation/md/*`)

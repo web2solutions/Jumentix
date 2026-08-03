@@ -52,7 +52,8 @@ All known intent must be explicit, versioned, and traceable.
    - Sources:
      - `documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`
      - `documentation/md/PROJECT-MANAGEMENT.md`
-     - `.agents/requirements/*`
+     - `.agents/requirements/project/*.md`
+     - `.agents/requirements/software/*.md`
      - `.agents/NFR-REGISTRY.md`
       - Linear Project: `https://linear.app/jumentix`
 
@@ -81,6 +82,7 @@ When knowledge changes, update in the same cycle:
 
 1. `spec/*` contract resources (when interfaces/messages change).
 2. `documentation/md/*` technical resources.
-3. `.agents/requirements/*` when constraints or governance are affected.
+3. `.agents/requirements/project/*.md` and `.agents/requirements/software/*.md`
+   when constraints or governance are affected.
 4. `.agents/NFR-REGISTRY.md` when non-functional behavior changes.
 5. Linear issue/project metadata and PR evidence links.
