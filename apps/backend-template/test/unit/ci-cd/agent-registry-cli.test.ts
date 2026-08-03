@@ -2,11 +2,16 @@
 
 const {
   isFirestoreUnavailable,
+  resolveRegistryEntrypoint,
   shouldSkipCiRegistryCheck
 } = require('../../../../../ci-cd/agent-registry-cli') as {
   isFirestoreUnavailable: (error: unknown) => boolean;
+  resolveRegistryEntrypoint: (root?: string) => string;
   shouldSkipCiRegistryCheck: (command: string, error: unknown) => boolean;
 };
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
 
 describe('agent-registry-cli', () => {
   const originalCi = process.env.CI;
@@ -38,5 +43,16 @@ describe('agent-registry-cli', () => {
     process.env.CI = 'true';
     expect(shouldSkipCiRegistryCheck('check', error)).toBe(true);
     expect(shouldSkipCiRegistryCheck('register', error)).toBe(false);
+  });
+
+  it('resolves the package main file explicitly for Bun CI directory loading', () => {
+    expect.hasAssertions();
+
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'agent-registry-cli-'));
+    fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({ main: 'dist/index.js' }));
+
+    expect(resolveRegistryEntrypoint(dir)).toBe(path.join(dir, 'dist/index.js'));
+
+    fs.rmSync(dir, { recursive: true, force: true });
   });
 });

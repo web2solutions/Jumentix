@@ -7,9 +7,15 @@ const { isEntryPoint } = require('./lib/entry-point');
 // Resolve the workspace package
 const packageRoot = path.resolve(__dirname, '../packages/agent-registry');
 
+function resolveRegistryEntrypoint(root = packageRoot) {
+  const manifestPath = path.join(root, 'package.json');
+  const manifest = require(manifestPath);
+  return path.join(root, manifest.main || 'dist/index.js');
+}
+
 async function loadRegistry() {
   try {
-    return require(packageRoot);
+    return require(resolveRegistryEntrypoint());
   } catch (error) {
     // Package not built yet — try to build on the fly for local dev
     const { execFileSync } = require('child_process');
@@ -18,7 +24,7 @@ async function loadRegistry() {
       cwd: path.resolve(__dirname, '..'),
       stdio: 'inherit'
     });
-    return require(packageRoot);
+    return require(resolveRegistryEntrypoint());
   }
 }
 
@@ -237,5 +243,6 @@ if (isEntryPoint(module)) {
 
 module.exports = {
   isFirestoreUnavailable,
+  resolveRegistryEntrypoint,
   shouldSkipCiRegistryCheck
 };
