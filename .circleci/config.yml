@@ -144,6 +144,7 @@ jobs:
             JUMENTIX_TASK_TEST_BASE: origin/dev
             AAA_CI_GATE_RESULT_FILE: artifacts/ci/branch-quality-gate.json
             AAA_CI_MATRIX_RESULT_FILE: artifacts/ci/full-test-matrix.json
+            JUMENTIX_FULL_MATRIX_SKIP_CELLS: website-prepublish
       - store_artifacts:
           path: artifacts/ci
           destination: branch-gate
@@ -162,7 +163,10 @@ jobs:
           port: 5672
       - run:
           name: Produce Jest coverage
-          command: bun run test:coverage
+          command: |
+            bun run test:coverage
+            mkdir -p coverage/jest
+            cp coverage/coverage-final.json coverage/jest/coverage-final.json
           environment:
             AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
             RUN_REDIS_INTEGRATION: "1"

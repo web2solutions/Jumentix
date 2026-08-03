@@ -286,6 +286,28 @@ describe('check-coverage-thresholds report reader', () => {
     exists.mockRestore();
     read.mockRestore();
   });
+
+  it('prefers the preserved Jest report when browser coverage rewrites the canonical file', () => {
+    expect.hasAssertions();
+    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+    const nodeFs = require('fs') as {
+      existsSync: (path: string) => boolean;
+      readFileSync: (path: string, encoding: string) => string;
+    };
+    const exists = jest.spyOn(nodeFs, 'existsSync').mockReturnValue(true);
+    const read = jest.spyOn(nodeFs, 'readFileSync').mockImplementation((filePath) => {
+      if (String(filePath).endsWith('coverage/jest/coverage-final.json')) {
+        return JSON.stringify({ 'jest.ts': { statementMap: statements(1), s: counters(1, 1), f: {}, b: {} } });
+      }
+      return JSON.stringify({ 'browser.ts': { statementMap: statements(1), s: counters(1, 1), f: {}, b: {} } });
+    });
+
+    const report = coverageGuard.defaultReadReport() as Record<string, { s: unknown }>;
+
+    expect(Object.keys(report)).toStrictEqual(['jest.ts', 'browser.ts']);
+    exists.mockRestore();
+    read.mockRestore();
+  });
 });
 
 /**

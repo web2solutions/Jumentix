@@ -62,6 +62,20 @@ function validateMatrixManifest(cells, availableScripts) {
   }
 }
 
+function resolveMatrixCells(cells, env = process.env) {
+  const rawSkipped = String(env.JUMENTIX_FULL_MATRIX_SKIP_CELLS || '').trim();
+  if (!rawSkipped) return cells;
+
+  const skipped = new Set(rawSkipped.split(',').map((id) => id.trim()).filter(Boolean));
+  const knownIds = new Set(cells.map((cell) => cell.id));
+  const unknown = [...skipped].filter((id) => !knownIds.has(id));
+  if (unknown.length > 0) {
+    throw new Error(`Full test matrix skip list names unknown cell(s): ${unknown.join(', ')}`);
+  }
+
+  return cells.filter((cell) => !skipped.has(cell.id));
+}
+
 function executeMatrixCell(cell) {
   const result = spawnSync('bun', ['run', cell.script], {
     stdio: 'inherit',
@@ -80,7 +94,7 @@ function writeMatrixEvidence(result, resultFile) {
 }
 
 function runFullTestMatrix(options = {}) {
-  const cells = options.cells || FULL_TEST_MATRIX;
+  const cells = resolveMatrixCells(options.cells || FULL_TEST_MATRIX, options.env || process.env);
   const execute = options.execute || executeMatrixCell;
   const logger = options.logger || console;
   const availableScripts = options.availableScripts || require('../package.json').scripts;
@@ -165,6 +179,7 @@ runAsEntryPoint();
 module.exports = {
   FULL_TEST_MATRIX,
   executeMatrixCell,
+  resolveMatrixCells,
   runAsEntryPoint,
   runFullTestMatrix,
   validateMatrixManifest,

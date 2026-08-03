@@ -35,6 +35,7 @@ const { isEntryPoint } = require('./lib/entry-point.js');
 
 const repoRoot = path.resolve(__dirname, '..');
 const reportPath = path.join(repoRoot, 'coverage', 'coverage-final.json');
+const jestReportPath = path.join(repoRoot, 'coverage', 'jest', 'coverage-final.json');
 
 /**
  * The contract, as percentages.
@@ -281,14 +282,15 @@ const browserReportPath = path.join(repoRoot, 'coverage', 'browser', 'coverage-f
  * which is exactly the false green §4 exists to prevent.
  */
 function defaultReadReport() {
-  if (!fs.existsSync(reportPath)) return null;
+  const nodeReportPath = fs.existsSync(jestReportPath) ? jestReportPath : reportPath;
+  if (!fs.existsSync(nodeReportPath)) return null;
   if (!fs.existsSync(browserReportPath)) {
     return {
       missingBrowserReport: true
     };
   }
 
-  const jest = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+  const jest = JSON.parse(fs.readFileSync(nodeReportPath, 'utf8'));
   const browser = JSON.parse(fs.readFileSync(browserReportPath, 'utf8'));
   const combined = { ...jest };
 
