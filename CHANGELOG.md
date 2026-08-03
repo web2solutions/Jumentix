@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-03 ci: split integration and coverage scopes - Eduardo A.
 - 2026-08-03 ci: split delegated CircleCI gates - Eduardo A.
 - 2026-08-03 ci: handle Bun lockfile task gate - Eduardo A.
 - 2026-08-03 Merge remote-tracking branch 'origin/dev' into codex/ci/restore-circleci-main - Eduardo A.

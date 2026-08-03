@@ -144,10 +144,24 @@ jobs:
             JUMENTIX_TASK_TEST_BASE: origin/dev
             AAA_CI_GATE_RESULT_FILE: artifacts/ci/branch-quality-gate.json
             AAA_CI_MATRIX_RESULT_FILE: artifacts/ci/full-test-matrix.json
-            JUMENTIX_FULL_MATRIX_SKIP_CELLS: website-prepublish,integration
+            JUMENTIX_FULL_MATRIX_SKIP_CELLS: workspace-tests,website-prepublish,integration
       - store_artifacts:
           path: artifacts/ci
           destination: branch-gate
+
+  workspace-tests:
+    docker:
+      - image: cypress/browsers:node-22.21.0-chrome-141.0.7390.107-1-ff-144.0-edge-141.0.3537.92-1
+    resource_class: large
+    steps:
+      - bootstrap
+      - run:
+          name: Run workspace package tests
+          no_output_timeout: 30m
+          command: bun run mono:test
+      - store_artifacts:
+          path: artifacts/ci
+          destination: workspace-tests
 
   integration:
     docker:
@@ -365,6 +379,7 @@ workflows:
   continuous-integration:
     jobs:
       - branch-gate
+      - workspace-tests
       - integration
       - coverage
       - website
