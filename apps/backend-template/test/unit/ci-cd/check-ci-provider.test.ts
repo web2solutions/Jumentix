@@ -88,15 +88,39 @@ describe('check-ci-provider', () => {
     expect(run(directory).output).toContain('read-only contents permission');
   });
 
-  it.each(['.circleci/config.yml', 'codecov.yml'])('fails when retired contract %s returns', (retired) => {
+  it('fails when retired contract codecov.yml returns', () => {
     expect.hasAssertions();
 
     const directory = fixture((root) => {
-      const file = path.join(root, retired);
-      fs.mkdirSync(path.dirname(file), { recursive: true });
+      const file = path.join(root, 'codecov.yml');
       fs.writeFileSync(file, 'retired: true\n');
     });
     expect(run(directory).output).toContain('retired by Requirement 113');
+  });
+
+  it('fails when CircleCI returns without declaring the temporary bridge', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.circleci', 'config.yml');
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, 'version: 2.1\n');
+    });
+    expect(run(directory).output).toContain('retired by Requirement 113');
+  });
+
+  it('passes when CircleCI declares the temporary bridge marker', () => {
+    expect.hasAssertions();
+
+    // Requirement 113's bridge amendment: while the GitHub Actions allowance
+    // is quota-blocked, CircleCI may run the repository-owned gates — but only
+    // under the marker, so a silent permanent return still fails above.
+    const directory = fixture((root) => {
+      const file = path.join(root, '.circleci', 'config.yml');
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, 'version: 2.1\n# x-jumentix-temporary-bridge: github-actions-billing-2026-08\n');
+    });
+    expect(run(directory).code).toBe(0);
   });
 });
 

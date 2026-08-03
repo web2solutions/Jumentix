@@ -15,6 +15,15 @@ const fullMatrixRootPackage = require('../../../../../package.json');
 const fullMatrixRootDir = matrixPath.resolve(__dirname, '../../../../..');
 type FullMatrixTestCell = { id: string; script: string };
 
+// CircleCI stays retired unless it declares the Requirement 113
+// temporary-bridge marker: absent is fine, marked is the bridge, and an
+// unmarked return fails the provider checks instead of passing here.
+// Module scope keeps jest/no-conditional-in-test out of the test body.
+const circleRetiredOrBridged = (configPath: string) => {
+  if (!matrixFs.existsSync(configPath)) return true;
+  return matrixFs.readFileSync(configPath, 'utf8').includes('x-jumentix-temporary-bridge:');
+};
+
 describe('run-full-test-matrix', () => {
   it('keeps the canonical ci gate free of missing script references', () => {
     expect.hasAssertions();
@@ -306,7 +315,7 @@ describe('run-full-test-matrix', () => {
       read('.github/workflows/website.yml').includes('bun run website:storybook:build'),
       read('.github/workflows/website.yml').includes('bun run website:storybook:smoke'),
       read('.github/workflows/coverage.yml').includes('bun run coverage:patch'),
-      !matrixFs.existsSync(matrixPath.join(fullMatrixRootDir, '.circleci', 'config.yml')),
+      circleRetiredOrBridged(matrixPath.join(fullMatrixRootDir, '.circleci', 'config.yml')),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'pr:governance:check'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'requirements:check'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'integrations:check'),

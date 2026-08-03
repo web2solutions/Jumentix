@@ -25,6 +25,15 @@
 - Promotions to `main`: strict full matrix plus all `dev` gates.
 - Scheduled/manual: full history secret scan, dependency audit, workflow lint, and complete strict matrix.
 
+## Temporary bridge: CircleCI (owner decision, 2026-08-03)
+
+The §3 condition is currently false: the account's GitHub Actions allowance rejects new job starts with "recent account payments have failed or your spending limit needs to be increased", so the canonical hosted executor cannot run. Until the allowance is restored, the project owner has authorized a bridge:
+
+1. CircleCI is temporarily unretired as the bridge executor. Its configuration must carry the `x-jumentix-temporary-bridge:` marker; an unmarked CircleCI configuration remains a §6 violation and `ci:check-provider` fails on it.
+2. The repository-owned GitHub workflows stay in the tree and stay authoritative for what the gate is. CircleCI mirrors them job for job; no threshold, coverage, review, or security gate is waived, weakened, or substituted.
+3. Owner-authorized admin merges may bypass the quota-blocked GitHub checks for the promotion to `main` that restores green delivery. This is a narrow §10 exception for the quota condition in §9: quota-blocked checks remain non-passing, they are explicitly bypassed by owner decision — not silently treated as green. Every check that CAN run must run and pass.
+4. When the GitHub Actions allowance is restored, the CircleCI configuration, the bridge marker, and this section are removed, and §6 is reinstated in full.
+
 ## Verification
 
 - `bun run ci:check-provider`

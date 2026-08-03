@@ -73,11 +73,21 @@ const INTEGRATION_CONTRACTS = Object.freeze([
 function validateCanonicalIntegrations(rootDir = process.cwd()) {
   const failures = [];
 
-  ['.circleci/config.yml', 'codecov.yml'].forEach((file) => {
+  ['codecov.yml'].forEach((file) => {
     if (fs.existsSync(path.join(rootDir, file))) {
       failures.push(`[integrations] retired provider contract is still present: ${file}`);
     }
   });
+
+  // CircleCI is retired by Requirement 113 — except as a declared temporary
+  // bridge while the GitHub Actions allowance is quota-blocked (the §3
+  // condition). The marker is what keeps a silent permanent return failing
+  // here; the bridge section and this allowance are removed together.
+  const circleCiConfig = path.join(rootDir, '.circleci', 'config.yml');
+  if (fs.existsSync(circleCiConfig)
+    && !/x-jumentix-temporary-bridge:/.test(fs.readFileSync(circleCiConfig, 'utf8'))) {
+    failures.push('[integrations] retired provider contract is still present: .circleci/config.yml');
+  }
 
   INTEGRATION_CONTRACTS.forEach(({ file, markers }) => {
     const absolutePath = path.join(rootDir, file);

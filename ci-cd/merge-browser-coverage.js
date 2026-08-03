@@ -151,11 +151,16 @@ function serializeRecords(records) {
     // FN/FNDA/FNF/FNH and any other non-counter lines pass through from the
     // first engine that produced the file: names and declarations are a
     // property of the instrumented bundle, identical across engines.
-    lines.push(...record.other.filter((line) => !/^(LF|LH|BRF|BRH):/.test(line)));
-    for (const entry of record.brda) lines.push(`BRDA:${entry}`);
-    lines.push(`BRF:${record.brda.length}`, `BRH:${record.brda.filter(isHit).length}`);
-    for (const entry of record.da) lines.push(`DA:${entry}`);
-    lines.push(`LF:${record.da.length}`, `LH:${record.da.filter(isHit).length}`, 'end_of_record');
+    lines.push(
+      ...record.other.filter((line) => !/^(LF|LH|BRF|BRH):/.test(line)),
+      ...record.brda.map((entry) => `BRDA:${entry}`),
+      `BRF:${record.brda.length}`,
+      `BRH:${record.brda.filter(isHit).length}`,
+      ...record.da.map((entry) => `DA:${entry}`),
+      `LF:${record.da.length}`,
+      `LH:${record.da.filter(isHit).length}`,
+      'end_of_record'
+    );
   }
   return `${lines.join('\n')}\n`;
 }
@@ -186,7 +191,7 @@ function mergeJsonReports(root, inputs) {
   return { enginesWithJson, files: map.files().length, output };
 }
 
-function mergeEngineReports(root = ROOT, inputs) {
+function mergeEngineReports(root, inputs) {
   const resolved = inputs || localInputs(root);
 
   if (resolved.length === 0) {
@@ -274,10 +279,11 @@ function main(io = console, argv = process.argv.slice(2)) {
   const jsonNote = result.json
     ? `; json unioned across ${result.json.enginesWithJson} engine(s) -> ${result.json.output}`
     : '';
+  const actionNote = result.merged
+    ? ` merged -> ${result.output}`
+    : ' single engine; canonical report promoted';
   io.log(
-    `[browser-coverage-merge] engines=${result.engines.join('+')} files=${result.files}` +
-    `${result.merged ? ` merged -> ${result.output}` : ' single engine; canonical report promoted'}` +
-    jsonNote
+    `[browser-coverage-merge] engines=${result.engines.join('+')} files=${result.files}${actionNote}${jsonNote}`
   );
   return 0;
 }
