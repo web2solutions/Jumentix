@@ -229,6 +229,21 @@ describe('web framework badges', () => {
   });
 });
 
+describe('website realtime navigation metadata', () => {
+  it('indexes the pt-BR realtime adapter pages shipped by the website', async () => {
+    expect.hasAssertions();
+
+    const { default: ptBrRealtimeMeta } = await import(
+      path.join(repoRoot, 'apps/jumentix-website/content/pt-BR/jumentix/adapters/realtime/_meta')
+    ) as { default: Record<string, string> };
+
+    expect(ptBrRealtimeMeta).toStrictEqual({
+      'grpc-api': 'API gRPC em tempo real',
+      'websocket-api': 'API WebSocket em tempo real'
+    });
+  });
+});
+
 /**
  * The PT-BR README is a translation, not a separate document.
  *

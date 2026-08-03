@@ -4,10 +4,15 @@
 
 ## All Changes
 
+- 2026-08-03 Merge remote-tracking branch 'origin/dev' into codex/ci/restore-circleci-main - Eduardo A.
 - 2026-08-03 test: satisfy lint for agent registry CLI suite - Eduardo A.
 - 2026-08-03 test: isolate agent registry CLI suite - Eduardo A.
+- 2026-08-03 chore(JUM-611): merge remote dev into Firestore registry cutover - Eduardo A.
+- 2026-08-03 docs(JUM-611): deprecate GitHub-mirrored agent registry after Firestore cutover - Eduardo A.
 - 2026-08-03 ci: resolve agent registry entrypoint explicitly - Eduardo A.
+- 2026-08-03 docs(website): reconcile consumer docs drift for JUM-510 (#68) - Eduardo A.
 - 2026-08-03 ci: tolerate missing Firestore registry database - Eduardo A.
+- 2026-08-03 ci(JUM-611): fix migration script require for Bun compatibility - Eduardo A.
 - 2026-08-03 ci: fix CircleCI website gate command - Eduardo A.
 - 2026-08-03 ci: merge dev website gates into CircleCI - Eduardo A.
 - 2026-08-03 ci: stabilize CircleCI branch and coverage gates - Eduardo A.
