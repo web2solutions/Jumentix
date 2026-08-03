@@ -73,18 +73,18 @@ describe('run-full-test-matrix', () => {
       .toBe('bun ci-cd/check-patch-coverage.js');
   });
 
-  it('allows CircleCI to delegate website prepublish to the dedicated website job', () => {
+  it('allows CircleCI to delegate expensive cells to dedicated jobs', () => {
     expect.hasAssertions();
 
     const cells = resolveMatrixCells(FULL_TEST_MATRIX, {
-      JUMENTIX_FULL_MATRIX_SKIP_CELLS: 'website-prepublish'
+      JUMENTIX_FULL_MATRIX_SKIP_CELLS: 'website-prepublish,integration'
     });
 
     expect(cells).toStrictEqual(expect.not.arrayContaining([
-      expect.objectContaining({ id: 'website-prepublish' })
+      expect.objectContaining({ id: 'website-prepublish' }),
+      expect.objectContaining({ id: 'integration' })
     ]));
     expect(cells).toStrictEqual(expect.arrayContaining([
-      expect.objectContaining({ id: 'integration' }),
       expect.objectContaining({ id: 'workspace-tests' })
     ]));
   });
@@ -312,7 +312,9 @@ describe('run-full-test-matrix', () => {
       read('.circleci/config.yml').includes('JUMENTIX_TASK_TEST_MODE: range'),
       read('.circleci/config.yml').includes('JUMENTIX_TASK_TEST_BASE: origin/dev'),
       read('.circleci/config.yml').includes('full-test-matrix.json'),
-      read('.circleci/config.yml').includes('JUMENTIX_FULL_MATRIX_SKIP_CELLS: website-prepublish'),
+      read('.circleci/config.yml').includes('JUMENTIX_FULL_MATRIX_SKIP_CELLS: website-prepublish,integration'),
+      read('.circleci/config.yml').includes('name: Run integration matrix'),
+      read('.circleci/config.yml').includes('bun run ci:integration'),
       !read('.circleci/config.yml').includes('requirepass'),
       !read('.circleci/config.yml').includes('AAA_REDIS_PASSWORD'),
       read('.circleci/config.yml').includes('bun run website:storybook:build'),
@@ -331,7 +333,7 @@ describe('run-full-test-matrix', () => {
       )
     ]).toStrictEqual([
       true, true, true, true, true, true, true, true, true, true, true, true, true, true,
-      true, true, true, true, true, true, true, true, true, true
+      true, true, true, true, true, true, true, true, true, true, true, true
     ]);
   });
 });

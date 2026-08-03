@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-03 ci: split delegated CircleCI gates - Eduardo A.
 - 2026-08-03 ci: handle Bun lockfile task gate - Eduardo A.
 - 2026-08-03 Merge remote-tracking branch 'origin/dev' into codex/ci/restore-circleci-main - Eduardo A.
 - 2026-08-03 [JUM-611][Governance] Replace GitHub-mirrored agent registry with Firestore Database - Eduardo A.

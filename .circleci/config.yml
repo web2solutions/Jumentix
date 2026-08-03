@@ -144,10 +144,29 @@ jobs:
             JUMENTIX_TASK_TEST_BASE: origin/dev
             AAA_CI_GATE_RESULT_FILE: artifacts/ci/branch-quality-gate.json
             AAA_CI_MATRIX_RESULT_FILE: artifacts/ci/full-test-matrix.json
-            JUMENTIX_FULL_MATRIX_SKIP_CELLS: website-prepublish
+            JUMENTIX_FULL_MATRIX_SKIP_CELLS: website-prepublish,integration
       - store_artifacts:
           path: artifacts/ci
           destination: branch-gate
+
+  integration:
+    docker:
+      - image: cypress/browsers:node-22.21.0-chrome-141.0.7390.107-1-ff-144.0-edge-141.0.3537.92-1
+      - image: redis:7.2-alpine
+      - image: rabbitmq:3.13-alpine
+    resource_class: large
+    steps:
+      - bootstrap
+      - wait_tcp:
+          port: 6379
+      - wait_tcp:
+          port: 5672
+      - run:
+          name: Run integration matrix
+          no_output_timeout: 30m
+          command: bun run ci:integration
+          environment:
+            AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
 
   coverage:
     docker:
@@ -346,6 +365,7 @@ workflows:
   continuous-integration:
     jobs:
       - branch-gate
+      - integration
       - coverage
       - website
       - third-party-review

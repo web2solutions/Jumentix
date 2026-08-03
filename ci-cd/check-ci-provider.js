@@ -17,6 +17,7 @@ if (!fs.existsSync(circleciPath)) {
   const requiredMarkers = [
     /version:\s*2\.1/,
     /branch-gate:/,
+    /integration:/,
     /coverage:/,
     /website:/,
     /third-party-review:/,
@@ -28,7 +29,8 @@ if (!fs.existsSync(circleciPath)) {
     /rabbitmq:3\.13/,
     /bun install --frozen-lockfile/,
     /ci:gate:branch/,
-    /JUMENTIX_FULL_MATRIX_SKIP_CELLS:\s*website-prepublish/,
+    /JUMENTIX_FULL_MATRIX_SKIP_CELLS:\s*website-prepublish,integration/,
+    /bun run ci:integration/,
     /FIREBASE_SERVICE_ACCOUNT_KEY/,
     /test:coverage/,
     /coverage\/jest\/coverage-final\.json/,

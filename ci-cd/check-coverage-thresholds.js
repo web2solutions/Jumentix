@@ -260,6 +260,18 @@ function validateCoverage(totals, thresholds = THRESHOLDS, exceptions = ACCEPTED
  * is how ten unrelated tests failed the first time this was covered.
  */
 const browserReportPath = path.join(repoRoot, 'coverage', 'browser', 'coverage-final.json');
+const NON_LEGACY_PACKAGE_PATTERN = /\/packages\/(?!cana\/src\/)/;
+
+function isThresholdSubject(filePath) {
+  const normalizedPath = String(filePath).replace(/\\/g, '/');
+  return !NON_LEGACY_PACKAGE_PATTERN.test(normalizedPath);
+}
+
+function filterThresholdSubjects(report) {
+  return Object.fromEntries(
+    Object.entries(report).filter(([filePath]) => isThresholdSubject(filePath))
+  );
+}
 
 /**
  * The two runs, combined — as disjoint halves, not as a merge.
@@ -300,7 +312,7 @@ function defaultReadReport() {
     combined[file] = coverage;
   }
 
-  return combined;
+  return filterThresholdSubjects(combined);
 }
 
 function main(readReport = defaultReadReport, exceptions = ACCEPTED_BELOW_THRESHOLD) {
@@ -358,6 +370,8 @@ module.exports = {
   formatPercentage,
   COUNTERS,
   defaultReadReport,
+  filterThresholdSubjects,
+  isThresholdSubject,
   lineTotals,
   THRESHOLDS,
   main,

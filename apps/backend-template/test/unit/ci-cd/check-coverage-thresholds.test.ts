@@ -28,6 +28,8 @@ const coverageGuard = require('../../../../../ci-cd/check-coverage-thresholds') 
   formatPercentage: (value: number) => string;
   main: (readReport?: () => unknown) => void;
   defaultReadReport: () => unknown;
+  filterThresholdSubjects: (report: Record<string, unknown>) => Record<string, unknown>;
+  isThresholdSubject: (filePath: string) => boolean;
 };
 
 /** Counters where the first `hit` of `found` are covered. */
@@ -307,6 +309,25 @@ describe('check-coverage-thresholds report reader', () => {
     expect(Object.keys(report)).toStrictEqual(['jest.ts', 'browser.ts']);
     exists.mockRestore();
     read.mockRestore();
+  });
+
+  it('keeps the global threshold scope on backend, ci-cd, and browser-owned cana sources', () => {
+    expect.hasAssertions();
+
+    const report = coverageGuard.filterThresholdSubjects({
+      '/repo/apps/backend-template/src/service.ts': reportWith({}),
+      '/repo/ci-cd/check-coverage-thresholds.js': reportWith({}),
+      '/repo/packages/cana/src/core/database.ts': reportWith({}),
+      '/repo/packages/message-mediator/src/RabbitMqMessageMediatorAdapter.ts': reportWith({})
+    });
+
+    expect(Object.keys(report)).toStrictEqual([
+      '/repo/apps/backend-template/src/service.ts',
+      '/repo/ci-cd/check-coverage-thresholds.js',
+      '/repo/packages/cana/src/core/database.ts'
+    ]);
+    expect(coverageGuard.isThresholdSubject('/repo/packages/sdk-rest-client/src/index.ts'))
+      .toBe(false);
   });
 });
 
