@@ -75,6 +75,6 @@ export async function generateSnapshot(firestore: FirestoreLike): Promise<AgentR
 }
 
 export async function closeFirestore(): Promise<void> {
-  const apps = getApps();
-  await Promise.all(apps.map((app) => deleteApp(app)));
+  const apps = getApps() as unknown[];
+  await Promise.all(apps.map((app) => deleteApp(app as Parameters<typeof deleteApp>[0])));
 }
