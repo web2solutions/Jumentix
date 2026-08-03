@@ -2517,6 +2517,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "packages/agent-registry/test/firestore-client.test.ts",
+      "path": "packages/agent-registry/test/firestore-client.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "packages/mutex-service/test/MutexService.test.ts",
       "path": "packages/mutex-service/test/MutexService.test.ts",
       "layer": "adapters/out+infra",

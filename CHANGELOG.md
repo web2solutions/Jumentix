@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-03 ci: tolerate unavailable registry backend - Eduardo A.
 - 2026-08-03 test: isolate full matrix env in CI - Eduardo A.
 - 2026-08-03 ci: delegate workspace builds from branch gate - Eduardo A.
 - 2026-08-03 ci: delegate workspace tests from branch gate - Eduardo A.

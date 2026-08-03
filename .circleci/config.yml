@@ -114,15 +114,17 @@ jobs:
             const fs = require("fs");
             const pullRequest = JSON.parse(fs.readFileSync(process.env.PR_JSON_FILE, "utf8"));
             const shellQuote = (value) => `"${String(value ?? "").replace(/(["\\$`])/g, "\\$1")}"`;
+            const headRef = pullRequest.head?.ref || process.env.CIRCLE_BRANCH;
+            const baseRef = pullRequest.base?.ref || process.env.CIRCLE_PR_BASE_BRANCH || "dev";
             const values = {
               JUMENTIX_PR_TITLE: pullRequest.title,
               JUMENTIX_PR_BODY: pullRequest.body,
-              JUMENTIX_PR_HEAD_REF: process.env.CIRCLE_BRANCH,
-              JUMENTIX_PR_BASE_REF: process.env.CIRCLE_PR_BASE_BRANCH,
+              JUMENTIX_PR_HEAD_REF: headRef,
+              JUMENTIX_PR_BASE_REF: baseRef,
               AAA_PR_TITLE: pullRequest.title,
               AAA_PR_BODY: pullRequest.body,
-              AAA_PR_HEAD_REF: process.env.CIRCLE_BRANCH,
-              AAA_PR_BASE_REF: process.env.CIRCLE_PR_BASE_BRANCH
+              AAA_PR_HEAD_REF: headRef,
+              AAA_PR_BASE_REF: baseRef
             };
             for (const [key, value] of Object.entries(values)) {
               console.log(`export ${key}=${shellQuote(value)}`);

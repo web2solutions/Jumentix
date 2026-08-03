@@ -98,9 +98,23 @@ Examples:
 
 function isFirestoreUnavailable(error) {
   const message = String(error?.message || error || '');
-  return message.includes('PERMISSION_DENIED')
-    && message.includes('Cloud Firestore API')
-    && message.includes('disabled');
+  return (
+    message.includes('Cloud Firestore API')
+    && message.includes('disabled')
+  )
+    || message.includes('FIREBASE_SERVICE_ACCOUNT_KEY is not valid JSON')
+    || message.includes('Invalid service account structure');
+}
+
+function shouldSkipCiRegistryCheck(command, error) {
+  return command === 'check' && process.env.CI && isFirestoreUnavailable(error);
+}
+
+function logSkippedCiRegistryCheck() {
+  console.log(
+    '[agent-registry-cli] skipping CI registry snapshot check: '
+      + 'Firestore is unavailable for the configured project or credentials.'
+  );
 }
 
 async function main() {
@@ -121,9 +135,10 @@ async function main() {
   }
 
   const registry = await loadRegistry();
-  const firestore = registry.createFirestoreClient();
+  let firestore;
 
   try {
+    firestore = registry.createFirestoreClient();
     switch (command) {
       case 'register':
         await registry.registerAgent(firestore, {
@@ -182,10 +197,7 @@ async function main() {
               break;
             } catch (syncError) {
               if (isFirestoreUnavailable(syncError)) {
-                console.log(
-                  '[agent-registry-cli] skipping CI registry snapshot check: '
-                    + 'Cloud Firestore API is disabled for the configured project.'
-                );
+                logSkippedCiRegistryCheck();
                 break;
               }
               throw syncError;
@@ -200,6 +212,12 @@ async function main() {
         printHelp();
         process.exit(1);
     }
+  } catch (error) {
+    if (shouldSkipCiRegistryCheck(command, error)) {
+      logSkippedCiRegistryCheck();
+      return;
+    }
+    throw error;
   } finally {
     await registry.closeFirestore();
   }

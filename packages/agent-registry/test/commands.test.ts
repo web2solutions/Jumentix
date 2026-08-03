@@ -188,6 +188,16 @@ describe('agent-registry commands', () => {
     expect(result.active_epic).toBe('https://linear.app/epic/456');
   });
 
+  it('rejects assignment for an unregistered agent', async () => {
+    expect.hasAssertions();
+
+    await expect(assignTask(mockFirestore, {
+      agent_id: 'missing-assign-agent',
+      assigned_task: 'https://linear.app/task/123',
+      active_epic: 'https://linear.app/epic/456'
+    })).rejects.toThrow('not registered');
+  });
+
   it('completes task and clears assignment', async () => {
     expect.hasAssertions();
     seedAgent(buildAgent({
@@ -207,6 +217,15 @@ describe('agent-registry commands', () => {
     expect(result.active_epic).toBe('none');
   });
 
+  it('rejects completion for an unregistered agent', async () => {
+    expect.hasAssertions();
+
+    await expect(completeTask(mockFirestore, {
+      agent_id: 'missing-complete-agent',
+      status: 'available'
+    })).rejects.toThrow('not registered');
+  });
+
   it('syncs snapshot to local file', async () => {
     expect.hasAssertions();
     seedAgent(buildAgent({ agent_id: 'sync-agent-1' }));
@@ -219,6 +238,20 @@ describe('agent-registry commands', () => {
     expect(fs.existsSync(snapshotPath())).toBe(true);
     const written = JSON.parse(fs.readFileSync(snapshotPath(), 'utf8'));
     expect(written.agents).toHaveLength(2);
+  });
+
+  it('creates the snapshot directory when it does not exist yet', async () => {
+    expect.hasAssertions();
+    process.env.JUMENTIX_AGENT_REGISTRY_SNAPSHOT_PATH = path.join(
+      snapshotDir,
+      'nested',
+      'registry-snapshot.json'
+    );
+    seedAgent(buildAgent({ agent_id: 'sync-agent-nested' }));
+
+    await syncSnapshot(mockFirestore);
+
+    expect(fs.existsSync(snapshotPath())).toBe(true);
   });
 
   it('passes check when snapshot matches Firestore', async () => {
