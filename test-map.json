@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "description": "Hexagonal Test Pyramid manifest \u2014 Bun unit + Node integration + layer-aware gates",
+  "description": "Hexagonal Test Pyramid manifest — Bun unit + Node integration + layer-aware gates",
   "layers": {
     "contracts": {
       "dependsOn": [],
@@ -279,6 +279,16 @@
       "runner": "bun",
       "ciRunner": "node",
       "bunCompat": "pending-resetModules-or-native-gap",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/HTTP/adapters/express/ExpressServer.start.test.ts",
+      "path": "apps/backend-template/test/unit/interface/HTTP/adapters/express/ExpressServer.start.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
       "tier": "gate",
       "timeoutMs": 60000
     },
@@ -573,8 +583,8 @@
       "timeoutMs": 60000
     },
     {
-      "id": "apps/backend-template/test/unit/config/aws-service-name.test.ts",
-      "path": "apps/backend-template/test/unit/config/aws-service-name.test.ts",
+      "id": "apps/backend-template/test/unit/config/security.test.ts",
+      "path": "apps/backend-template/test/unit/config/security.test.ts",
       "layer": "tooling",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -593,8 +603,8 @@
       "timeoutMs": 60000
     },
     {
-      "id": "apps/backend-template/test/unit/config/security.test.ts",
-      "path": "apps/backend-template/test/unit/config/security.test.ts",
+      "id": "apps/backend-template/test/unit/config/aws-service-name.test.ts",
+      "path": "apps/backend-template/test/unit/config/aws-service-name.test.ts",
       "layer": "tooling",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -665,6 +675,16 @@
     {
       "id": "apps/backend-template/test/unit/ci-cd/check-ci-provider.test.ts",
       "path": "apps/backend-template/test/unit/ci-cd/check-ci-provider.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/ci-cd/agent-registry-cli.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/agent-registry-cli.test.ts",
       "layer": "tooling",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -1758,7 +1778,7 @@
       "script": "test:integration:mutex",
       "runner": "node",
       "ciRunner": "node",
-      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 \u00a74.",
+      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 §4.",
       "tier": "nightly",
       "timeoutMs": 120000
     },
@@ -1798,7 +1818,7 @@
       "script": "test:integration:restify",
       "runner": "node",
       "ciRunner": "node",
-      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 \u00a74.",
+      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 §4.",
       "tier": "gate",
       "timeoutMs": 600000
     },
@@ -1812,7 +1832,7 @@
       "script": "test:integration:restify",
       "runner": "node",
       "ciRunner": "node",
-      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 \u00a74.",
+      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 §4.",
       "tier": "gate",
       "timeoutMs": 600000
     },
@@ -1826,7 +1846,7 @@
       "script": "test:integration:restify",
       "runner": "node",
       "ciRunner": "node",
-      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 \u00a74.",
+      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 §4.",
       "tier": "gate",
       "timeoutMs": 600000
     },
@@ -1840,7 +1860,7 @@
       "script": "test:integration:restify",
       "runner": "node",
       "ciRunner": "node",
-      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 \u00a74.",
+      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 §4.",
       "tier": "gate",
       "timeoutMs": 600000
     },
@@ -1854,7 +1874,7 @@
       "script": "test:integration:restify",
       "runner": "node",
       "ciRunner": "node",
-      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 \u00a74.",
+      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 §4.",
       "tier": "gate",
       "timeoutMs": 600000
     },
@@ -1868,7 +1888,7 @@
       "script": "test:integration:restify",
       "runner": "node",
       "ciRunner": "node",
-      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 \u00a74.",
+      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 §4.",
       "tier": "gate",
       "timeoutMs": 600000
     },
@@ -1882,7 +1902,7 @@
       "script": "test:integration:restify",
       "runner": "node",
       "ciRunner": "node",
-      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 \u00a74.",
+      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 §4.",
       "tier": "gate",
       "timeoutMs": 600000
     },
@@ -1896,7 +1916,7 @@
       "script": "test:integration:restify",
       "runner": "node",
       "ciRunner": "node",
-      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 \u00a74.",
+      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 §4.",
       "tier": "gate",
       "timeoutMs": 600000
     },
@@ -1910,7 +1930,7 @@
       "script": "test:integration:restify",
       "runner": "node",
       "ciRunner": "node",
-      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 \u00a74.",
+      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 §4.",
       "tier": "gate",
       "timeoutMs": 600000
     },
@@ -1924,7 +1944,7 @@
       "script": "test:integration:restify",
       "runner": "node",
       "ciRunner": "node",
-      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 \u00a74.",
+      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 §4.",
       "tier": "gate",
       "timeoutMs": 600000
     },
@@ -1938,7 +1958,7 @@
       "script": "test:integration:restify",
       "runner": "node",
       "ciRunner": "node",
-      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 \u00a74.",
+      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 §4.",
       "tier": "gate",
       "timeoutMs": 600000
     },
@@ -1952,7 +1972,7 @@
       "script": "test:integration:restify",
       "runner": "node",
       "ciRunner": "node",
-      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 \u00a74.",
+      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 §4.",
       "tier": "gate",
       "timeoutMs": 600000
     },
@@ -1966,7 +1986,7 @@
       "script": "test:integration:restify",
       "runner": "node",
       "ciRunner": "node",
-      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 \u00a74.",
+      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 §4.",
       "tier": "gate",
       "timeoutMs": 600000
     },
@@ -1980,7 +2000,7 @@
       "script": "test:integration:restify",
       "runner": "node",
       "ciRunner": "node",
-      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 \u00a74.",
+      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 §4.",
       "tier": "gate",
       "timeoutMs": 600000
     },
@@ -1994,7 +2014,7 @@
       "script": "test:integration:restify",
       "runner": "node",
       "ciRunner": "node",
-      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 \u00a74.",
+      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 §4.",
       "tier": "gate",
       "timeoutMs": 600000
     },
@@ -2008,7 +2028,7 @@
       "script": "test:integration:restify",
       "runner": "node",
       "ciRunner": "node",
-      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 \u00a74.",
+      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 §4.",
       "tier": "gate",
       "timeoutMs": 600000
     },
@@ -2022,7 +2042,7 @@
       "script": "test:integration:restify",
       "runner": "node",
       "ciRunner": "node",
-      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 \u00a74.",
+      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 §4.",
       "tier": "gate",
       "timeoutMs": 600000
     },
@@ -2036,7 +2056,7 @@
       "script": "test:integration:restify",
       "runner": "node",
       "ciRunner": "node",
-      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 \u00a74.",
+      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 §4.",
       "tier": "gate",
       "timeoutMs": 600000
     },
@@ -2050,7 +2070,7 @@
       "script": "test:integration:restify",
       "runner": "node",
       "ciRunner": "node",
-      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 \u00a74.",
+      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 §4.",
       "tier": "gate",
       "timeoutMs": 600000
     },
@@ -2064,7 +2084,7 @@
       "script": "test:integration:restify",
       "runner": "node",
       "ciRunner": "node",
-      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 \u00a74.",
+      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 §4.",
       "tier": "gate",
       "timeoutMs": 600000
     },
@@ -2078,7 +2098,7 @@
       "script": "test:integration:restify",
       "runner": "node",
       "ciRunner": "node",
-      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 \u00a74.",
+      "reason": "Bun cannot load restify: it pulls spdy -> handle-thing -> process.binding(\"stream_wrap\"), unimplemented in Bun (oven-sh/bun#4957). Node/Jest is the declared boundary under Requirement 096 §4.",
       "tier": "gate",
       "timeoutMs": 600000
     },
@@ -2401,6 +2421,26 @@
       "timeoutMs": 60000
     },
     {
+      "id": "packages/agent-registry/test/commands.test.ts",
+      "path": "packages/agent-registry/test/commands.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "packages/agent-registry/test/firestore-client.test.ts",
+      "path": "packages/agent-registry/test/firestore-client.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "packages/cana/test/packaging.test.ts",
       "path": "packages/cana/test/packaging.test.ts",
       "layer": "adapters/out+infra",
@@ -2499,26 +2539,6 @@
     {
       "id": "packages/message-mediator/test/message-mediator.test.ts",
       "path": "packages/message-mediator/test/message-mediator.test.ts",
-      "layer": "adapters/out+infra",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "packages/agent-registry/test/commands.test.ts",
-      "path": "packages/agent-registry/test/commands.test.ts",
-      "layer": "adapters/out+infra",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "packages/agent-registry/test/firestore-client.test.ts",
-      "path": "packages/agent-registry/test/firestore-client.test.ts",
       "layer": "adapters/out+infra",
       "kind": "hexagonal",
       "type": "unit",
@@ -2637,23 +2657,13 @@
       "runner": "bun",
       "tier": "gate",
       "timeoutMs": 120000
-    },
-    {
-      "id": "apps/backend-template/test/unit/interface/HTTP/adapters/express/ExpressServer.start.test.ts",
-      "path": "apps/backend-template/test/unit/interface/HTTP/adapters/express/ExpressServer.start.test.ts",
-      "layer": "interface/runtime",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
     }
   ],
   "quarantine": [
     {
       "path": "packages/cana/test/performance.test.ts",
       "issue": "JUM-586",
-      "reason": "Wall-clock ratios measured against fake-indexeddb on shared CI hardware. It fails intermittently (largeTime < max(smallTime*25, 20) on a loaded runner) and, when it passes, it certifies the fake rather than IndexedDB. Requirement 112 \u00a74 moves cana to headless Cypress with no shims; these shape assertions belong there, against a real engine, and are rewritten as part of that work."
+      "reason": "Wall-clock ratios measured against fake-indexeddb on shared CI hardware. It fails intermittently (largeTime < max(smallTime*25, 20) on a loaded runner) and, when it passes, it certifies the fake rather than IndexedDB. Requirement 112 §4 moves cana to headless Cypress with no shims; these shape assertions belong there, against a real engine, and are rewritten as part of that work."
     }
   ],
   "sourceRoots": [
@@ -2691,9 +2701,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 135,
+    "unit": 140,
     "integration": 82,
     "smoke": 2,
-    "suites": 221
+    "suites": 226
   }
 }

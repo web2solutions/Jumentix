@@ -2,6 +2,7 @@
 /* eslint-disable no-console */
 
 const path = require('path');
+const { isEntryPoint } = require('./lib/entry-point');
 
 // Resolve the workspace package
 const packageRoot = path.resolve(__dirname, '../packages/agent-registry');
@@ -102,6 +103,10 @@ function isFirestoreUnavailable(error) {
     message.includes('Cloud Firestore API')
     && message.includes('disabled')
   )
+    || (
+      message.includes('The database (default) does not exist')
+      && message.includes('Firestore database')
+    )
     || message.includes('FIREBASE_SERVICE_ACCOUNT_KEY is not valid JSON')
     || message.includes('Invalid service account structure');
 }
@@ -223,7 +228,14 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  console.error(error.message);
-  process.exit(1);
-});
+if (isEntryPoint(module)) {
+  main().catch((error) => {
+    console.error(error.message);
+    process.exit(1);
+  });
+}
+
+module.exports = {
+  isFirestoreUnavailable,
+  shouldSkipCiRegistryCheck
+};

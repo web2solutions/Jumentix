@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-03 ci: fix CircleCI website gate command - Eduardo A.
 - 2026-08-03 ci: merge dev website gates into CircleCI - Eduardo A.
 - 2026-08-03 ci: stabilize CircleCI branch and coverage gates - Eduardo A.
 - 2026-08-03 test(website): add Cypress route, a11y, and responsive gates (JUM-396) - Eduardo A.
