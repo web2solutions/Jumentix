@@ -6,20 +6,19 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const contracts = [
   {
-    file: '.github/workflows/third-party-review.yml',
+    file: '.circleci/config.yml',
     markers: [
-      'name: third-party-review',
-      'pull-requests: write',
+      'third-party-review:',
       'gitleaks.sarif',
       'semgrep.sarif',
-      'github-pr-review',
       'Enforce scanner outcomes',
-      'sha256:65dcd4408adda7c183a6b4550cb1e9b19f7f627a6fbb7e0559bd466bedc44d7b'
+      'store_artifacts',
+      '$HOME/review-tools/semgrep'
     ]
   },
   {
     file: 'ci-cd/install-pinned-review-tools.sh',
-    markers: ['v8.30.1', 'v0.21.0', 'sha256sum --check --status']
+    markers: ['v8.30.1', 'semgrep==1.172.0', 'checksum mismatch']
   },
   {
     file: '.semgrep.yml',
@@ -40,13 +39,13 @@ for (const contract of contracts) {
   }
 }
 
-const workflow = fs.existsSync(path.join(root, contracts[0].file))
+const circleci = fs.existsSync(path.join(root, contracts[0].file))
   ? fs.readFileSync(path.join(root, contracts[0].file), 'utf8') : '';
-if (/uses:\s*[^\s]+@(v\d+|main|master)\b/.test(workflow)) {
-  failures.push('third-party workflow contains a mutable action reference');
+if (/uses:\s*[^\s]+@(v\d+|main|master)\b/.test(circleci)) {
+  failures.push('third-party CircleCI job contains a mutable action reference');
 }
-if (!/permissions:\s*\n\s*contents: read\s*\n\s*pull-requests: write/.test(workflow)) {
-  failures.push('third-party workflow permissions are broader or incomplete');
+if (/setup_remote_docker/.test(circleci) || /docker run/.test(circleci)) {
+  failures.push('third-party CircleCI job must run native pinned scanners without remote Docker workspace mounts');
 }
 
 if (failures.length) {
@@ -54,4 +53,4 @@ if (failures.length) {
   failures.forEach((failure) => console.error(`- ${failure}`));
   process.exit(1);
 }
-console.log('Third-party review contract passed: pinned Gitleaks, Semgrep, and Reviewdog are fail-closed.');
+console.log('Third-party review contract passed: pinned Gitleaks and native Semgrep are fail-closed in CircleCI.');

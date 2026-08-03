@@ -22,8 +22,18 @@ function resolveTargetBranch(value = process.env.JUMENTIX_QUALITY_GATE_TARGET) {
   return branch || 'dev';
 }
 
-function selectQualityGate(targetBranch) {
+function resolvePullRequestFlag(value = process.env.AAA_CI_IS_PULL_REQUEST) {
+  if (typeof value === 'boolean') return value;
+  const normalized = String(value || '').trim().toLowerCase();
+  if (['1', 'true', 'yes'].includes(normalized)) return true;
+  if (['0', 'false', 'no'].includes(normalized)) return false;
+  return Boolean(process.env.CIRCLE_PULL_REQUEST);
+}
+
+function selectQualityGate(targetBranch, options = {}) {
   const branch = resolveTargetBranch(targetBranch);
+  const isPullRequest = resolvePullRequestFlag(options.isPullRequest);
+  if (branch === 'dev' && isPullRequest) return FULL_MATRIX_QUALITY_GATE;
   if (branch === 'main') return FULL_MATRIX_QUALITY_GATE;
   if (branch === 'dev') return UNIT_QUALITY_GATE;
   return TASK_QUALITY_GATE;
@@ -48,7 +58,8 @@ function writeGateEvidence(evidence, resultFile) {
 
 function runBranchQualityGate(options = {}) {
   const targetBranch = resolveTargetBranch(options.targetBranch);
-  const gate = selectQualityGate(targetBranch);
+  const isPullRequest = resolvePullRequestFlag(options.isPullRequest);
+  const gate = selectQualityGate(targetBranch, { isPullRequest });
   const execute = options.execute || executeQualityGate;
   const logger = options.logger || console;
   const resultFile = options.resultFile ?? process.env.JUMENTIX_CI_GATE_RESULT_FILE;
@@ -70,6 +81,7 @@ function runBranchQualityGate(options = {}) {
   const evidence = {
     schemaVersion: 1,
     targetBranch,
+    isPullRequest,
     gate: gate.id,
     script: gate.script,
     outcome: status === 0 ? 'passed' : 'failed',
@@ -92,6 +104,7 @@ module.exports = {
   TASK_QUALITY_GATE,
   UNIT_QUALITY_GATE,
   executeQualityGate,
+  resolvePullRequestFlag,
   resolveTargetBranch,
   runBranchQualityGate,
   selectQualityGate,

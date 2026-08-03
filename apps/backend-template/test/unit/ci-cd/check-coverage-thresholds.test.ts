@@ -28,6 +28,8 @@ const coverageGuard = require('../../../../../ci-cd/check-coverage-thresholds') 
   formatPercentage: (value: number) => string;
   main: (readReport?: () => unknown) => void;
   defaultReadReport: () => unknown;
+  filterThresholdSubjects: (report: Record<string, unknown>) => Record<string, unknown>;
+  isThresholdSubject: (filePath: string) => boolean;
 };
 
 /** Counters where the first `hit` of `found` are covered. */
@@ -273,7 +275,10 @@ describe('check-coverage-thresholds report reader', () => {
     };
     const fixture = JSON.stringify({
       'x.ts': {
-        statementMap: statements(1), s: counters(1, 1), f: {}, b: {}
+        b: {},
+        f: {},
+        s: counters(1, 1),
+        statementMap: statements(1)
       }
     });
     const exists = jest.spyOn(nodeFs, 'existsSync').mockReturnValue(true);
@@ -285,6 +290,62 @@ describe('check-coverage-thresholds report reader', () => {
     expect(report['x.ts'].s).toStrictEqual({ 0: 1 });
     exists.mockRestore();
     read.mockRestore();
+  });
+
+  it('prefers the preserved Jest report when browser coverage rewrites the canonical file', () => {
+    expect.hasAssertions();
+    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+    const nodeFs = require('fs') as {
+      existsSync: (path: string) => boolean;
+      readFileSync: (path: string, encoding: string) => string;
+    };
+    const exists = jest.spyOn(nodeFs, 'existsSync').mockReturnValue(true);
+    const reports = {
+      browser: JSON.stringify({
+        'browser.ts': {
+          b: {},
+          f: {},
+          s: counters(1, 1),
+          statementMap: statements(1)
+        }
+      }),
+      jest: JSON.stringify({
+        'jest.ts': {
+          b: {},
+          f: {},
+          s: counters(1, 1),
+          statementMap: statements(1)
+        }
+      })
+    };
+    const read = jest.spyOn(nodeFs, 'readFileSync')
+      .mockReturnValueOnce(reports.jest)
+      .mockReturnValueOnce(reports.browser);
+
+    const report = coverageGuard.defaultReadReport() as Record<string, { s: unknown }>;
+
+    expect(Object.keys(report)).toStrictEqual(['jest.ts', 'browser.ts']);
+    exists.mockRestore();
+    read.mockRestore();
+  });
+
+  it('keeps the global threshold scope on backend, ci-cd, and browser-owned cana sources', () => {
+    expect.hasAssertions();
+
+    const report = coverageGuard.filterThresholdSubjects({
+      '/repo/apps/backend-template/src/service.ts': reportWith({}),
+      '/repo/ci-cd/check-coverage-thresholds.js': reportWith({}),
+      '/repo/packages/cana/src/core/database.ts': reportWith({}),
+      '/repo/packages/message-mediator/src/RabbitMqMessageMediatorAdapter.ts': reportWith({})
+    });
+
+    expect(Object.keys(report)).toStrictEqual([
+      '/repo/apps/backend-template/src/service.ts',
+      '/repo/ci-cd/check-coverage-thresholds.js',
+      '/repo/packages/cana/src/core/database.ts'
+    ]);
+    expect(coverageGuard.isThresholdSubject('/repo/packages/sdk-rest-client/src/index.ts'))
+      .toBe(false);
   });
 });
 

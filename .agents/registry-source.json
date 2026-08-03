@@ -3,5 +3,8 @@
   "branch": "main",
   "revision": "271da34661974805ce855b2457fe4280b076d841",
   "remotePath": "AGENT-REGISTRY.md",
-  "localMirrorPath": ".agents/AGENT-REGISTRY.md"
+  "localMirrorPath": ".agents/AGENT-REGISTRY.md",
+  "status": "deprecated",
+  "canonicalSource": "firestore://jumentix-service-registry/agents",
+  "deprecatedBy": ".agents/requirements/project/089-agent-registry-external-single-source-of-truth.md"
 }

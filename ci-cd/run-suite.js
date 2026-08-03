@@ -216,7 +216,7 @@ function runSuitePaths(paths, options = {}) {
       ...(options.timeoutMs ? [`--testTimeout=${String(options.timeoutMs)}`] : []),
       ...safePaths
     ];
-    const result = spawn('bunx', args, {
+    const result = spawn('bun', ['x', ...args], {
       // No shell, stated rather than relied on: an argument array is only safe
       // from interpolation while nobody adds `shell: true` to "make quoting work".
       shell: false,

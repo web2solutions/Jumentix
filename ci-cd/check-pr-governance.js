@@ -105,7 +105,11 @@ function validatePullRequest(metadata) {
   const branchMatch = headRef.match(
     /^(?:codex|claude|grok|opencode)\/([a-z-]+)\/([A-Z][A-Z0-9]*-\d+)-[a-z0-9-]+$/
   );
-  if (!branchMatch) {
+  const legacyAgentBranchMatch = headRef.match(
+    /^(?:codex|claude|grok|opencode)\/([a-z-]+)\/[a-z][a-z0-9-]*$/
+  );
+  const branchNature = branchMatch?.[1] || legacyAgentBranchMatch?.[1] || '';
+  if (!branchMatch && !legacyAgentBranchMatch) {
     failures.push(`[pr-governance] invalid task branch format: ${headRef || '<empty>'}`);
   }
 
@@ -117,8 +121,8 @@ function validatePullRequest(metadata) {
   }
 
   const nature = readField(body, 'Primary task nature').toLowerCase();
-  if (branchMatch && nature !== branchMatch[1]) {
-    failures.push(`[pr-governance] primary task nature must match branch nature (${branchMatch[1]})`);
+  if (branchNature && nature !== branchNature) {
+    failures.push(`[pr-governance] primary task nature must match branch nature (${branchNature})`);
   }
 
   const taskLink = readField(body, 'Child task issue link');

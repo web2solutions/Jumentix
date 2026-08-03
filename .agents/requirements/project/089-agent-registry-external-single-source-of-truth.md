@@ -50,3 +50,7 @@ Agent coordination must be centralized across repositories and runtimes. Keeping
 - `packages/agent-registry/`
 - `ci-cd/agent-registry-cli.js`
 - `ci-cd/migrate-agent-registry-to-firestore.js`
+- Firestore project: `jumentix-service-registry` (collection `agents`).
+- Migration executed 2026-08-03: 10 agents upserted from the legacy markdown
+  mirror; `bun run agent-registry:sync` + `bun run agent-registry:check` green
+  (11 agents after re-registration of `kimi-code-primary-001`).

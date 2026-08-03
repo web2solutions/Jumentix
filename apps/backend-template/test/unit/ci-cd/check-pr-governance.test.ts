@@ -54,6 +54,16 @@ describe('check-pr-governance', () => {
     expect(readField(validBody, 'Epic-delegated agent ID')).toBe('codex-primary-001');
   });
 
+  it('accepts a legacy agent branch when Linear task metadata is structured', () => {
+    expect.hasAssertions();
+    expect(validatePullRequest({
+      title: '[JUM-163][CI] Enforce focused epic metadata',
+      body: validBody,
+      headRef: 'codex/ci/focused-epic-metadata',
+      baseRef: 'dev'
+    })).toStrictEqual([]);
+  });
+
   it('accepts bug tasks with the canonical branch and title prefix', () => {
     expect.hasAssertions();
     const bugBody = validBody
