@@ -51,22 +51,22 @@ commands:
       - run:
           name: Wait for TCP port << parameters.port >>
           command: |
-            node - <<'NODE'
-            const net = require('node:net');
+            node -e '
+            const net = require("node:net");
             const port = Number(process.env.WAIT_PORT);
             const deadline = Date.now() + 90_000;
             function attempt() {
-              const socket = net.connect({ host: '127.0.0.1', port }, () => {
+              const socket = net.connect({ host: "127.0.0.1", port }, () => {
                 socket.end();
                 process.exit(0);
               });
-              socket.on('error', () => {
+              socket.on("error", () => {
                 if (Date.now() > deadline) process.exit(1);
                 setTimeout(attempt, 1_000);
               });
             }
             attempt();
-            NODE
+            '
           environment:
             WAIT_PORT: << parameters.port >>
 
@@ -86,16 +86,50 @@ jobs:
       - run:
           name: Run canonical branch quality gate
           command: |
+            export GH_TOKEN="${GH_TOKEN:-${GITHUB_TOKEN:-${AGENT_REGISTRY_TOKEN:-}}}"
             if [ -n "${CIRCLE_PULL_REQUEST:-}" ]; then
               export JUMENTIX_QUALITY_GATE_TARGET="${CIRCLE_PR_BASE_BRANCH:-dev}"
               export AAA_CI_IS_PULL_REQUEST=1
+              if [ -z "${GH_TOKEN:-}" ]; then
+                echo "GH_TOKEN, GITHUB_TOKEN, or AGENT_REGISTRY_TOKEN is required to load private PR metadata for branch-gate."
+                exit 1
+              fi
+              PR_NUMBER="${CIRCLE_PULL_REQUEST##*/}"
+              PR_API_URL="https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME:-XpertMinds}/${CIRCLE_PROJECT_REPONAME:-Jumentix}/pulls/${PR_NUMBER}"
+              PR_JSON_FILE="$(mktemp)"
+              curl -fsSL \
+                -H "Accept: application/vnd.github+json" \
+                -H "Authorization: Bearer ${GH_TOKEN}" \
+                -H "X-GitHub-Api-Version: 2022-11-28" \
+                -o "$PR_JSON_FILE" \
+                "$PR_API_URL"
+              PR_JSON_FILE="$PR_JSON_FILE" node -e '
+            const fs = require("fs");
+            const pullRequest = JSON.parse(fs.readFileSync(process.env.PR_JSON_FILE, "utf8"));
+            const shellQuote = (value) => `"${String(value ?? "").replace(/(["\\$`])/g, "\\$1")}"`;
+            const values = {
+              JUMENTIX_PR_TITLE: pullRequest.title,
+              JUMENTIX_PR_BODY: pullRequest.body,
+              JUMENTIX_PR_HEAD_REF: process.env.CIRCLE_BRANCH,
+              JUMENTIX_PR_BASE_REF: process.env.CIRCLE_PR_BASE_BRANCH,
+              AAA_PR_TITLE: pullRequest.title,
+              AAA_PR_BODY: pullRequest.body,
+              AAA_PR_HEAD_REF: process.env.CIRCLE_BRANCH,
+              AAA_PR_BASE_REF: process.env.CIRCLE_PR_BASE_BRANCH
+            };
+            for (const [key, value] of Object.entries(values)) {
+              console.log(`export ${key}=${shellQuote(value)}`);
+            }
+            ' > /tmp/jumentix-pr-env.sh
+              . /tmp/jumentix-pr-env.sh
             else
               export JUMENTIX_QUALITY_GATE_TARGET="${CIRCLE_BRANCH:-dev}"
               export AAA_CI_IS_PULL_REQUEST=0
             fi
-            export AAA_PR_HEAD_REF="${CIRCLE_BRANCH:-}"
-            export AAA_PR_BASE_REF="${CIRCLE_PR_BASE_BRANCH:-}"
-            export GH_TOKEN="${GH_TOKEN:-${GITHUB_TOKEN:-${AGENT_REGISTRY_TOKEN:-}}}"
+            export JUMENTIX_PR_HEAD_REF="${JUMENTIX_PR_HEAD_REF:-${CIRCLE_BRANCH:-}}"
+            export JUMENTIX_PR_BASE_REF="${JUMENTIX_PR_BASE_REF:-${CIRCLE_PR_BASE_BRANCH:-}}"
+            export AAA_PR_HEAD_REF="${AAA_PR_HEAD_REF:-${JUMENTIX_PR_HEAD_REF:-}}"
+            export AAA_PR_BASE_REF="${AAA_PR_BASE_REF:-${JUMENTIX_PR_BASE_REF:-}}"
             bun run ci:gate:branch
           environment:
             AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
@@ -189,6 +223,12 @@ jobs:
     resource_class: large
     steps:
       - checkout
+      - run:
+          name: Fetch branch references
+          command: |
+            git fetch --no-tags origin \
+              "+refs/heads/main:refs/remotes/origin/main" \
+              "+refs/heads/dev:refs/remotes/origin/dev"
       - setup_remote_docker
       - run:
           name: Install pinned review tools
@@ -235,7 +275,13 @@ jobs:
           at: .
       - run:
           name: Verify Sonar token
-          command: test -n "${SONAR_TOKEN:-}"
+          command: |
+            SONAR_TARGET_BRANCH="${CIRCLE_PR_BASE_BRANCH:-${CIRCLE_BRANCH:-}}"
+            if [ "$SONAR_TARGET_BRANCH" != "main" ] && [ "$SONAR_TARGET_BRANCH" != "dev" ]; then
+              echo "Skipping Sonar for ${SONAR_TARGET_BRANCH:-unknown}; Sonar runs for PRs or pushes targeting dev/main."
+              circleci-agent step halt
+            fi
+            test -n "${SONAR_TOKEN:-}"
       - run:
           name: Install Sonar scanner
           command: |
@@ -295,4 +341,3 @@ workflows:
       - sonarqube:
           requires:
             - coverage
-          filters: pipeline.git.branch == "main" or pipeline.git.branch == "dev"

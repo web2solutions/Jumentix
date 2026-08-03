@@ -258,7 +258,7 @@ bun run <comando>
 | `coverage:merge` | Use quando precisar desta operação específica do workspace. | `bun run coverage:merge` | `bun ci-cd/merge-coverage-reports.js` |
 | `workspace:test` | Valida políticas em nível de workspace. | `bun run workspace:test` | `bun ci-cd/run-workspace-tests.js` |
 | `quarantine:flake` | Use quando precisar desta operação específica do workspace. | `bun run quarantine:flake` | `bun ci-cd/quarantine-flake.js` |
-| `test:coverage` | Roda testes para escopo ou perfil específico. | `bun run test:coverage` | `NODE_ENV=dev bunx jest apps/backend-template/test/unit 'packages/[^/]+/test' --coverage --coverageThreshold='{}' --forceExit` |
+| `test:coverage` | Roda testes para escopo ou perfil específico. | `bun run test:coverage` | `NODE_ENV=dev bun x jest apps/backend-template/test/unit 'packages/[^/]+/test' --coverage --coverageThreshold='{}' --forceExit` |
 | `coverage:check` | Use quando precisar desta operação específica do workspace. | `bun run coverage:check` | `bun ci-cd/check-coverage-thresholds.js` |
 | `test:browser` | Roda testes para escopo ou perfil específico. | `bun run test:browser` | `bun ci-cd/run-browser-tests.js` |
 | `test:integration:key-value` | Roda testes para escopo ou perfil específico. | `bun run test:integration:key-value` | `bun ci-cd/run-redis-key-value-integration.js` |

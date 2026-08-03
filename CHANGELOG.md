@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-03 ci: fix circleci pr gate metadata - Eduardo A.
 - 2026-08-03 ci: restore circleci for dev and main - Eduardo A.
 - 2026-08-03 [JUM-419][CI] Sync the agent-registry mirror to canonical 271da346 - Eduardo A.
 - 2026-08-03 [JUM-417][Release] Merge main history into dev for the promotion - Eduardo A.

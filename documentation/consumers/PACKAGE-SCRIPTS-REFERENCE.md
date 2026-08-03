@@ -258,7 +258,7 @@ bun run <command>
 | `coverage:merge` | Use when you need this specific workspace operation. | `bun run coverage:merge` | `bun ci-cd/merge-coverage-reports.js` |
 | `workspace:test` | Validate workspace-level policies. | `bun run workspace:test` | `bun ci-cd/run-workspace-tests.js` |
 | `quarantine:flake` | Use when you need this specific workspace operation. | `bun run quarantine:flake` | `bun ci-cd/quarantine-flake.js` |
-| `test:coverage` | Run tests for specific scope or profile. | `bun run test:coverage` | `NODE_ENV=dev bunx jest apps/backend-template/test/unit 'packages/[^/]+/test' --coverage --coverageThreshold='{}' --forceExit` |
+| `test:coverage` | Run tests for specific scope or profile. | `bun run test:coverage` | `NODE_ENV=dev bun x jest apps/backend-template/test/unit 'packages/[^/]+/test' --coverage --coverageThreshold='{}' --forceExit` |
 | `coverage:check` | Use when you need this specific workspace operation. | `bun run coverage:check` | `bun ci-cd/check-coverage-thresholds.js` |
 | `test:browser` | Run tests for specific scope or profile. | `bun run test:browser` | `bun ci-cd/run-browser-tests.js` |
 | `test:integration:key-value` | Run tests for specific scope or profile. | `bun run test:integration:key-value` | `bun ci-cd/run-redis-key-value-integration.js` |

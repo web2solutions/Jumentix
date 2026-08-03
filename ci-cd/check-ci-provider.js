@@ -37,11 +37,16 @@ if (!fs.existsSync(circleciPath)) {
     /semgrep\.sarif/,
     /Enforce scanner outcomes/,
     /sonar-scanner/,
+    /SONAR_TARGET_BRANCH="\$\{CIRCLE_PR_BASE_BRANCH:-\$\{CIRCLE_BRANCH:-\}\}"/,
+    /Sonar runs for PRs or pushes targeting dev\/main/,
     /codecov --verbose upload-process --disable-search --fail-on-error/,
     /CODECOV_TOKEN/,
     /store_artifacts/,
     /persist_to_workspace/,
-    /pipeline\.git\.branch == "main" or pipeline\.git\.branch == "dev"/
+    /JUMENTIX_PR_TITLE/,
+    /JUMENTIX_PR_BODY/,
+    /AAA_PR_TITLE/,
+    /AAA_PR_BODY/
   ];
   for (const marker of requiredMarkers) {
     if (!marker.test(contents)) failures.push(`.circleci/config.yml is missing ${String(marker)}`);
