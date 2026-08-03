@@ -633,6 +633,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/ci-cd/merge-browser-coverage.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/merge-browser-coverage.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/ci-cd/check-ci-provider.test.ts",
       "path": "apps/backend-template/test/unit/ci-cd/check-ci-provider.test.ts",
       "layer": "tooling",
@@ -2631,9 +2641,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 148,
+    "unit": 134,
     "integration": 82,
     "smoke": 2,
-    "suites": 234
+    "suites": 220
   }
 }
