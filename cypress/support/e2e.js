@@ -67,9 +67,30 @@ after(() => {
 
   window.document.body.appendChild(frame);
   window.document.body.appendChild(form);
-  form.submit();
-  window.setTimeout(() => { form.remove(); }, 1000);
-  return undefined;
+
+  // The POST must be awaited, not fired and forgotten: `after:run` closes the
+  // loopback server, and a hook that returns immediately lets the run end while
+  // the body is still on the wire — coverage then silently never reaches disk.
+  // The iframe's `load` fires only when the server's response arrives, and the
+  // server responds only after the file is written, so awaiting it is awaiting
+  // the write itself. A returned promise is awaited by the hook (no cy.*
+  // commands are enqueued in this branch, so Mocha semantics apply). The
+  // timeout exists so a dead server fails the run loudly instead of hanging it
+  // — a coverage transport that never answers is a broken run, not a pass.
+  return new Promise((resolve, reject) => {
+    const giveUp = window.setTimeout(() => {
+      reject(new Error(`Coverage POST to ${url} did not complete within 10s.`));
+    }, 10000);
+
+    frame.addEventListener('load', () => {
+      window.clearTimeout(giveUp);
+      form.remove();
+      frame.remove();
+      resolve();
+    });
+
+    form.submit();
+  });
 });
 
 afterEach(() => cy.window({ log: false }).then((browserWindow) => {

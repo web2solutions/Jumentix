@@ -48,6 +48,49 @@ function lcovFor(lines: DaLine[]): string {
   ].join('\n');
 }
 
+/**
+ * A minimal but valid Istanbul file-coverage object. `createCoverageMap` is
+ * strict about the shape it merges, so the fixture carries real statement and
+ * branch maps rather than the counters alone.
+ */
+function istanbulJsonFor(file: string, lines: DaLine[]): Record<string, unknown> {
+  const statementMap: Record<string, unknown> = {};
+  const s: Record<string, number> = {};
+  lines.forEach((entry, index) => {
+    statementMap[String(index)] = {
+      start: { line: entry.line, column: 0 },
+      end: { line: entry.line, column: 10 }
+    };
+    s[String(index)] = entry.hits;
+  });
+
+  return {
+    [file]: {
+      path: file,
+      statementMap,
+      fnMap: {},
+      branchMap: {},
+      s,
+      f: {},
+      b: {}
+    }
+  };
+}
+
+/** A two-engine coverage tree under a temporary root. */
+function writeEngine(
+  root: string,
+  engine: string,
+  lcov: string,
+  json?: Record<string, unknown>
+): void {
+  const engineDir = engine === 'chrome' ? 'browser' : `browser-${engine}`;
+  const dir = path.join(root, 'coverage', engineDir);
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, 'lcov.info'), lcov);
+  if (json) fs.writeFileSync(path.join(dir, 'coverage-final.json'), JSON.stringify(json));
+}
+
 describe('merge-browser-coverage', () => {
   it('unions DA counters across engines so a line hit anywhere is covered', () => {
     expect.hasAssertions();
@@ -83,6 +126,97 @@ describe('merge-browser-coverage', () => {
 
     expect(result).toMatchObject({ ok: true, merged: false, engines: ['chrome'] });
     expect(fs.readFileSync(result.output, 'utf8')).toBe(lcov);
+  });
+
+  it('promotes a lone non-chrome engine onto the canonical paths', () => {
+    expect.hasAssertions();
+    // The failure mode from review: `--from-dir` finds only WebKit, and the
+    // merge returned WebKit's own path — leaving Sonar and the gate to grade
+    // whatever a previous run left on `coverage/browser/`. One engine is the
+    // whole matrix, so its report must land where consumers read it.
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'cana-merge-promote-'));
+    const lcov = lcovFor([{ line: 3, hits: 5 }]);
+    const json = istanbulJsonFor('/repo/packages/cana/src/core/storage.ts', [{ line: 3, hits: 5 }]);
+    writeEngine(root, 'webkit', lcov, json);
+
+    const result = mergeEngineReports(root, [
+      {
+        engine: 'webkit',
+        lcov: path.join(root, 'coverage', 'browser-webkit', 'lcov.info'),
+        json: path.join(root, 'coverage', 'browser-webkit', 'coverage-final.json')
+      }
+    ]);
+
+    expect(result).toMatchObject({ ok: true, merged: false, engines: ['webkit'] });
+    expect(result.output).toBe(path.join(root, 'coverage', 'browser', 'lcov.info'));
+    expect(fs.readFileSync(result.output, 'utf8')).toBe(lcov);
+    expect(
+      JSON.parse(fs.readFileSync(path.join(root, 'coverage', 'browser', 'coverage-final.json'), 'utf8'))
+    ).toStrictEqual(json);
+  });
+
+  it('never copies a report onto itself when --from-dir is relative', () => {
+    expect.hasAssertions();
+    // CI invokes `merge-browser-coverage.js --from-dir coverage` with a
+    // relative directory. A relative input path compared against the absolute
+    // canonical output always looks "different", and copyFileSync of a file
+    // onto itself is not a no-op on macOS — it unlinks the report. The inputs
+    // are resolved to absolute at the boundary so the equality check is real.
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'cana-merge-relative-'));
+    const lcov = lcovFor([{ line: 1, hits: 1 }]);
+    const json = istanbulJsonFor('/repo/packages/cana/src/core/storage.ts', [{ line: 1, hits: 1 }]);
+    writeEngine(root, 'chrome', lcov, json);
+
+    const previousCwd = process.cwd();
+    process.chdir(root);
+    let result;
+    try {
+      const { artifactInputs } = require(path.join(repoRoot, 'ci-cd', 'merge-browser-coverage.js'));
+      result = mergeEngineReports(root, artifactInputs('coverage'));
+    } finally {
+      process.chdir(previousCwd);
+    }
+
+    expect(result).toMatchObject({ ok: true, merged: false, engines: ['chrome'] });
+    expect(fs.readFileSync(path.join(root, 'coverage', 'browser', 'lcov.info'), 'utf8')).toBe(lcov);
+    expect(
+      JSON.parse(fs.readFileSync(path.join(root, 'coverage', 'browser', 'coverage-final.json'), 'utf8'))
+    ).toStrictEqual(json);
+  });
+
+  it('unions the per-engine Istanbul JSON so the gate grades the matrix', () => {
+    expect.hasAssertions();
+    // The LCOV union feeds Sonar; the threshold gate reads coverage-final.json,
+    // which every engine overwrites with its own view. Without this union the
+    // gate grades whichever engine ran last instead of the matrix (JUM-417).
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'cana-merge-json-'));
+    const file = '/repo/packages/cana/src/core/storage.ts';
+    const chromeJson = istanbulJsonFor(file, [{ line: 5, hits: 4 }, { line: 6, hits: 0 }]);
+    const webkitJson = istanbulJsonFor(file, [{ line: 5, hits: 0 }, { line: 6, hits: 2 }]);
+    writeEngine(root, 'chrome', lcovFor([{ line: 5, hits: 4 }]), chromeJson);
+    writeEngine(root, 'webkit', lcovFor([{ line: 6, hits: 2 }]), webkitJson);
+
+    const result = mergeEngineReports(root);
+
+    expect(result).toMatchObject({ ok: true, merged: true });
+    expect(result.json).toMatchObject({ enginesWithJson: 2, files: 1 });
+
+    const merged = JSON.parse(fs.readFileSync(result.json.output, 'utf8'));
+    // A union, not a sum: line 5 was hit only by chrome, line 6 only by
+    // webkit, and both must read as covered rather than one engine's zeros.
+    expect(merged[file].s).toStrictEqual({ 0: 4, 1: 2 });
+  });
+
+  it('skips the JSON union when no engine left a JSON report', () => {
+    expect.hasAssertions();
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'cana-merge-nojson-'));
+    writeEngine(root, 'chrome', lcovFor([{ line: 1, hits: 1 }]));
+    writeEngine(root, 'webkit', lcovFor([{ line: 1, hits: 2 }]));
+
+    const result = mergeEngineReports(root);
+
+    expect(result).toMatchObject({ ok: true, merged: true });
+    expect(result.json).toBeNull();
   });
 
   it('fails closed when no engine produced a report', () => {
