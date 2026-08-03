@@ -11,8 +11,8 @@ Testes rápidos alinhados à arquitetura:
 
 Requisitos:
 
-- `.agents/requirements/105-hexagonal-test-pyramid-layer-aware-gates.md`
-- `.agents/requirements/106-local-bun-all-tests-node-ci-only.md`
+- `.agents/requirements/software/105-hexagonal-test-pyramid-layer-aware-gates.md`
+- `.agents/requirements/software/106-local-bun-all-tests-node-ci-only.md`
 
 ## Manifesto
 

@@ -62,5 +62,5 @@ It is a binding Spec Development Driven artifact and applies to all apps/package
 1. `documentation/md/SECURITY-RUNBOOK-PCI.md`
 2. `documentation/md/PCI-REMEDIATION-PLAN-AND-EVIDENCE.md`
 3. `documentation/md/TESTING-CI-AND-QUALITY.md`
-4. `.agents/requirements/044-pci-security-compliance-hardening.md`
-5. `.agents/requirements/065-commit-push-integrity-and-real-ci-enforcement.md`
+4. `.agents/requirements/software/044-pci-security-compliance-hardening.md`
+5. `.agents/requirements/project/065-commit-push-integrity-and-real-ci-enforcement.md`

@@ -23,16 +23,16 @@ Todas as intenções conhecidas devem ser explícitas, versionadas e rastreávei
    - Fontes:
      - `documentação/md/ARQUITETURA-E-ESTRUTURA.md`
      - `documentation/md/HEXAGONAL-FEATURE-DRIVEN-MIGRATION.md`
-     - `.agents/requirements/015-architecture-nfr-ddd-eda-hexagonal.md`
-     - `.agents/requirements/016-layer-call-order-and-boundaries.md`
-     - `.agents/requirements/017-event-first-integration-and-circular-safety.md`
+     - `.agents/requirements/software/015-architecture-nfr-ddd-eda-hexagonal.md`
+     - `.agents/requirements/software/016-layer-call-order-and-boundaries.md`
+     - `.agents/requirements/software/017-event-first-integration-and-circular-safety.md`
 3. Contratos de domínio e modelo de dados
    - Fontes:
      - `documentação/md/DOMAIN-DATA-ENTITIES.md`
      - `documentação/md/domínios/usuários/*`
-     - `.agents/requirements/019-domain-data-entity-documentation-standard.md`
-     - `.agents/requirements/026-openapi31-data-entity-model-compliance.md`
-     - `.agents/requirements/032-entity-timestamps-domain-object-methods-and-oas-sync.md`
+     - `.agents/requirements/project/019-domain-data-entity-documentation-standard.md`
+     - `.agents/requirements/software/026-openapi31-data-entity-model-compliance.md`
+     - `.agents/requirements/software/032-entity-timestamps-domain-object-methods-and-oas-sync.md`
 4. Contratos de interface e comunicação
    - Fontes:
      - `spec/1.0.0.yml`
