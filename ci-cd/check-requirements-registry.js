@@ -23,14 +23,29 @@ function read(rootDir, relativePath) {
 
 function collectRequirementInventory(rootDir = process.cwd()) {
   const directory = path.join(rootDir, REQUIREMENTS_DIRECTORY);
-  const files = fs.readdirSync(directory)
-    .filter((file) => file.endsWith('.md'))
-    .sort();
-  const invalidFiles = files.filter((file) => !/^\d{3}-[a-z0-9-]+\.md$/.test(file));
+
+  function walk(dir) {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    const files = [];
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        files.push(...walk(fullPath));
+      } else if (entry.isFile() && entry.name.endsWith('.md')) {
+        files.push(path.relative(directory, fullPath));
+      }
+    }
+    return files;
+  }
+
+  const files = walk(directory).sort();
+  const invalidFiles = files
+    .filter((file) => !/^\d{3}-[a-z0-9-]+\.md$/.test(path.basename(file)))
+    .map((file) => path.join(REQUIREMENTS_DIRECTORY, file));
   const counts = new Map();
 
   for (const file of files) {
-    const id = file.match(/^(\d{3})-/)?.[1];
+    const id = path.basename(file).match(/^(\d{3})-/)?.[1];
     if (id) counts.set(id, (counts.get(id) || 0) + 1);
   }
 
@@ -44,8 +59,8 @@ function collectRequirementInventory(rootDir = process.cwd()) {
 }
 
 function extractIndexedFiles(contents) {
-  return [...String(contents || '').matchAll(/\(requirements\/([^)]+\.md)\)/g)]
-    .map((match) => match[1]);
+  return [...String(contents || '').matchAll(/\(requirements\/(project|software)\/([^)]+\.md)\)/g)]
+    .map((match) => `${match[1]}/${match[2]}`);
 }
 
 function extractLedgerIds(contents) {

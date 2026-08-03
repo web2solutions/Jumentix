@@ -19,7 +19,7 @@
 
 ## Evidence
 
-- `.agents/requirements/106-local-bun-all-tests-node-ci-only.md`
+- `.agents/requirements/software/106-local-bun-all-tests-node-ci-only.md`
 - `ci-cd/lib/test-runtime.js`
 - `ci-cd/run-unit-tests.js`
 - `ci-cd/run-integration-tests.js`

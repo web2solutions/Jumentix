@@ -68,6 +68,6 @@ Primary enforcement sources:
 2. `ci-cd/*` quality and governance scripts
 3. `documentation/md/TESTING-CI-AND-QUALITY.md`
 4. `documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`
-5. `.agents/requirements/065-commit-push-integrity-and-real-ci-enforcement.md`
-6. `.agents/requirements/067-bidirectional-task-pr-traceability-governance.md`
-7. `.agents/requirements/079-task-owned-branch-and-pr-naming-governance.md`
+5. `.agents/requirements/project/065-commit-push-integrity-and-real-ci-enforcement.md`
+6. `.agents/requirements/project/067-bidirectional-task-pr-traceability-governance.md`
+7. `.agents/requirements/project/122-task-owned-branch-and-pr-naming-governance.md`

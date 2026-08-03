@@ -15,14 +15,14 @@ Canonical constraints added 2026-08-01 under Linear [JUM-595](https://linear.app
 
 ## Requirement files
 
-- `.agents/requirements/114-agent-worktree-layout-and-onboard-clone.md`
-- `.agents/requirements/115-functional-value-tests-no-fakes-no-third-party-api.md`
-- `.agents/requirements/116-dual-branch-requirements-reread-before-task.md`
-- `.agents/requirements/117-feature-documentation-on-new-features.md`
-- `.agents/requirements/118-smoke-integration-docker-real-services.md`
-- `.agents/requirements/119-api-first-service-orchestration-github-gh.md`
-- `.agents/requirements/120-linear-agent-assignment-visibility.md`
-- `.agents/requirements/121-registered-agent-coordinated-delivery-awareness.md`
+- `.agents/requirements/project/114-agent-worktree-layout-and-onboard-clone.md`
+- `.agents/requirements/software/115-functional-value-tests-no-fakes-no-third-party-api.md`
+- `.agents/requirements/project/116-dual-branch-requirements-reread-before-task.md`
+- `.agents/requirements/project/117-feature-documentation-on-new-features.md`
+- `.agents/requirements/software/118-smoke-integration-docker-real-services.md`
+- `.agents/requirements/project/119-api-first-service-orchestration-github-gh.md`
+- `.agents/requirements/project/120-linear-agent-assignment-visibility.md`
+- `.agents/requirements/project/121-registered-agent-coordinated-delivery-awareness.md`
 
 ## Related existing requirements
 

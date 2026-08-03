@@ -19,16 +19,16 @@ All known intent must be explicit, versioned, and traceable.
    - Sources:
      - `documentation/md/ARCHITECTURE-AND-STRUCTURE.md`
      - `documentation/md/HEXAGONAL-FEATURE-DRIVEN-MIGRATION.md`
-     - `.agents/requirements/015-architecture-nfr-ddd-eda-hexagonal.md`
-     - `.agents/requirements/016-layer-call-order-and-boundaries.md`
-     - `.agents/requirements/017-event-first-integration-and-circular-safety.md`
+     - `.agents/requirements/software/015-architecture-nfr-ddd-eda-hexagonal.md`
+     - `.agents/requirements/software/016-layer-call-order-and-boundaries.md`
+     - `.agents/requirements/software/017-event-first-integration-and-circular-safety.md`
 3. Domain and data model contracts
    - Sources:
      - `documentation/md/DOMAIN-DATA-ENTITIES.md`
      - `documentation/md/domains/users/*`
-     - `.agents/requirements/019-domain-data-entity-documentation-standard.md`
-     - `.agents/requirements/026-openapi31-data-entity-model-compliance.md`
-     - `.agents/requirements/032-entity-timestamps-domain-object-methods-and-oas-sync.md`
+     - `.agents/requirements/project/019-domain-data-entity-documentation-standard.md`
+     - `.agents/requirements/software/026-openapi31-data-entity-model-compliance.md`
+     - `.agents/requirements/software/032-entity-timestamps-domain-object-methods-and-oas-sync.md`
 4. Interface and communication contracts
    - Sources:
      - `spec/1.0.0.yml`

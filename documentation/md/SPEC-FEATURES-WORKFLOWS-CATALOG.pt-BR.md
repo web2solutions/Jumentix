@@ -156,9 +156,9 @@ Inclui:
 
 Especificações necessárias:
 
-1. `.agents/requirements/069-jumentix-website-commercial-static-vercel-governance.md`
-2. `.agents/requirements/091-jumentix-website-design-system-and-storybook.md`
-3. `.agents/requirements/092-jumentix-oss-commercial-experience.md`
+1. `.agents/requirements/project/069-jumentix-website-commercial-static-vercel-governance.md`
+2. `.agents/requirements/software/091-jumentix-website-design-system-and-storybook.md`
+3. `.agents/requirements/software/092-jumentix-oss-commercial-experience.md`
 4. `apps/jumentix-website/documentation/COMMERCIAL-EXPERIENCE.pt-BR.md`
 5. `apps/jumentix-website/documentation/CONTENT-PIPELINE.pt-BR.md`
 6. `apps/jumentix-website/documentation/VERCEL-DEPLOYMENT.pt-BR.md`

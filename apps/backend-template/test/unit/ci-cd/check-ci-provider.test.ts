@@ -102,7 +102,7 @@ describe('requirement 113 is registered and enforced', () => {
 
     const requirement = path.join(
       repoRoot,
-      '.agents/requirements/113-private-free-repository-owned-ci.md'
+      '.agents/requirements/project/113-private-free-repository-owned-ci.md'
     );
     const text = fs.readFileSync(requirement, 'utf8');
     expect(text).toContain('014');

@@ -1,10 +1,10 @@
 # Spec Requirements Traceability Ledger
 
-<!-- requirements-inventory: files=124 unique=121 mapped=121 duplicates=055,060,079 -->
+<!-- requirements-inventory: files=124 unique=124 mapped=124 duplicates= -->
 
 This ledger maps requirement IDs to spec resources and validation evidence expectations.
 
-It is the canonical bridge between `.agents/requirements` and implementation workflows.
+It is the canonical bridge between `.agents/requirements/project/`, `.agents/requirements/software/`, and implementation workflows.
 
 ## How to Use
 
@@ -67,7 +67,7 @@ For any change, identify impacted requirement IDs and ensure:
 
 ## E. Architecture and Design Governance
 
-- `015`, `016`, `017`, `034`, `048`, `049`, `053`, `058`, `059`, `060` (both entries), `062`
+- `015`, `016`, `017`, `034`, `048`, `049`, `053`, `058`, `059`, `060`, `062`, `121`
 - Spec resources:
   - `documentation/md/ARCHITECTURE-AND-STRUCTURE.md`
   - `documentation/md/HEXAGONAL-FEATURE-DRIVEN-MIGRATION.md`
@@ -96,7 +96,7 @@ For any change, identify impacted requirement IDs and ensure:
 
 ## G. Documentation, Governance Process, and Multi-Agent Operations
 
-- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `056`, `057`, `064`, `066`, `067`, `068`, `071`, `072`, `073`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `094`, `095`, `097`, `098`, `099`, `100`, `101`, `102`, `103`, `104`, `105`, `106`, `107`, `108`, `109`, `110`, `111`, `112`, `113`, `114`, `116`, `117`, `119`, `120`, `121`
+- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `056`, `057`, `064`, `066`, `067`, `068`, `071`, `072`, `073`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `094`, `095`, `097`, `098`, `099`, `100`, `101`, `102`, `103`, `104`, `105`, `106`, `107`, `108`, `109`, `110`, `111`, `112`, `113`, `114`, `116`, `117`, `119`, `120`, `121`, `122`, `124`
 - Spec resources:
   - `documentation/README.md`
   - `documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`
@@ -126,7 +126,7 @@ For any change, identify impacted requirement IDs and ensure:
 
 ## H. Productization and Platform Expansion
 
-- `037`, `038`, `054`, `055` (both entries), `069`, `070`, `091`, `092`, `093`
+- `037`, `038`, `054`, `055`, `069`, `070`, `091`, `092`, `093`, `123`
 - Spec resources:
   - `packages/cli-init/*`
   - `apps/service-management/documentation/*`
@@ -144,19 +144,19 @@ If impacted requirement IDs are not mapped before implementation, the change is 
 
 ## Coverage Attestation (Current Baseline)
 
-As of `2026-08-01`, this ledger covers all unique requirement IDs currently registered in `.agents/requirements`:
+As of `2026-08-02`, this ledger covers all unique requirement IDs currently registered in `.agents/requirements/project/` and `.agents/requirements/software/`:
 
 1. Requirement files in the registry: `124`
-2. Unique requirement IDs in the registry: `121`
-3. Unique IDs mapped in this ledger: `121`
-4. Duplicate IDs with independently binding files: `055`, `060`, `079`
+2. Unique requirement IDs in the registry: `124`
+3. Unique IDs mapped in this ledger: `124`
+4. Duplicate IDs with independently binding files: `none`
 5. Missing IDs: `none`
 
 ### `105` Hexagonal Test Pyramid / layer-aware gates
-- Specs: `documentation/md/HEXAGONAL-TEST-PYRAMID.md`, `.agents/requirements/105-hexagonal-test-pyramid-layer-aware-gates.md`
+- Specs: `documentation/md/HEXAGONAL-TEST-PYRAMID.md`, `.agents/requirements/software/105-hexagonal-test-pyramid-layer-aware-gates.md`
 - Evidence: `test-map.json`, `ci-cd/check-test-map.js`, `ci-cd/lib/layer-resolver.js`, `ci-cd/run-task-change-tests.js`, `ci-cd/run-unit-tests.js`
 
 ### `114`–`121` Agent operating pack (JUM-595 + 2026-08-02 owner additions)
 - Specs: `documentation/md/AGENT-OPERATING-REQUIREMENTS-114-121.md` (+ pt-BR)
-- Requirements: `.agents/requirements/114-*.md` … `121-*.md`
+- Requirements: `.agents/requirements/project/114-*.md` … `121-*.md`
 - Evidence: `bun run requirements:check`; agent instruction parity in `AGENTS.md` / `CLAUDE.md` / `GROK.md`; Docker-backed smoke/integration scripts for `118`; API-first / `gh` orchestration for `119`; Linear agent-assignment visibility for `120`; cross-agent coordination evidence for `121`

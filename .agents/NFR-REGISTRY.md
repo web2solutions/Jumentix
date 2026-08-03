@@ -156,9 +156,9 @@ This file consolidates non-functional requirements already requested and stored 
   `<root>/<agent-identifier>/Jumentix` as the only SoT checkout for that agent.
 - `115` Tests are mandatory, functional, and Jumentix-valued: no vacuous/fake suites
   and no suites whose primary subject is a third-party implementation API.
-- `116` Before every task, re-read the full `.agents/requirements/` set and NFR
-  registry on both `origin/dev` and `origin/main`, record drift, and avoid rework
-  (strengthens `099`).
+- `116` Before every task, re-read the full `.agents/requirements/project/` and
+  `.agents/requirements/software/` set and NFR registry on both `origin/dev` and
+  `origin/main`, record drift, and avoid rework (strengthens `099`).
 - `117` Every new feature updates software documentation and adds dedicated feature
   docs (EN/PT) in the same delivery (strengthens `025` / `076`).
 - `118` Smoke and integration suites use Docker to start real dependent services and
@@ -172,9 +172,12 @@ This file consolidates non-functional requirements already requested and stored 
 - `121` Registered agents must work as a coordinated delivery system by refreshing
   sibling-agent progress, blockers, branches, PRs, and Linear Project Updates before
   starting or resuming work, avoiding silent overlap or duplicate delivery.
+- `122` Task-owned branch and PR naming governance (migrated from duplicate `079`).
+- `123` Wave 5 app re-homing cutover governance (migrated from duplicate `055`).
+- `124` Monorepo root layout governance (migrated from duplicate `060`).
 
 When a new NFR is requested:
 
-1. add/update requirement file in `.agents/requirements/`
+1. add/update requirement file in `.agents/requirements/project/` or `.agents/requirements/software/`
 2. update `.agents/README.md` index
 3. update this registry mapping
