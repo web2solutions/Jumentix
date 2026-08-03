@@ -4,7 +4,10 @@
 
 ## All Changes
 
+- 2026-08-02 Merge remote-tracking branch 'origin/dev' into codex/release/fix-main-promotion-redis-auth - Eduardo A.
+- 2026-08-02 [JUM-609][Governance] Separate project and software requirements into distinct namespaces (#54) - Eduardo A.
 - 2026-08-02 ci: align strict coverage Redis gate - Eduardo A.
+- 2026-08-02 docs: separate project and software requirements into distinct namespaces [JUM-609] - Eduardo A.
 - 2026-08-02 [JUM-540][CI] Align strict coverage gate with release coverage (#56) - Eduardo A.
 - 2026-08-02 ci: align strict coverage gate with release coverage - Eduardo A.
 - 2026-08-02 [JUM-540][Release] Reconcile main ancestry into dev (#53) - Eduardo A.

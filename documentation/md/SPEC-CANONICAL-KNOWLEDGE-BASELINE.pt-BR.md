@@ -84,7 +84,8 @@ Quando o conhecimento mudar, atualize no mesmo ciclo:
 
 1. Recursos de contrato `spec/*` (quando as interfaces/mensagens mudam).
 2. Recursos técnicos `documentation/md/*`.
-3. `.agents/requirements/*` quando restrições ou governança são afetadas.
+3. `.agents/requirements/project/*.md` e `.agents/requirements/software/*.md`
+   quando restrições ou governança são afetadas.
 4. `.agents/NFR-REGISTRY.md` quando o comportamento não funcional muda.
 5. Metadados da Issue/Project e Project Updates no Linear, com links de evidências do PR no
    GitHub.

@@ -6,7 +6,7 @@ Restrições canônicas adicionadas em 2026-08-01 sob o Linear [JUM-595](https:/
 | --- | --- | --- |
 | `114` | Layout de worktree do agente | Confirmar a raiz do filesystem com o operador humano e trabalhar só em `<raiz>/<agent-identifier>/Jumentix`. |
 | `115` | Testes funcionais com valor | Testes são obrigatórios; sem suites fake/vacuosas; não testar API de implementação de terceiros; afirmar comportamento Jumentix. |
-| `116` | Releitura dual-branch | Antes de cada tarefa, reler todos os `.agents/requirements/*` e o NFR registry em `origin/dev` e `origin/main`; evitar retrabalho. |
+| `116` | Releitura dual-branch | Antes de cada tarefa, reler todos os `.agents/requirements/project/*.md`, `.agents/requirements/software/*.md` e o NFR registry em `origin/dev` e `origin/main`; evitar retrabalho. |
 | `117` | Documentação de feature | Toda nova feature atualiza a documentação do software e adiciona docs da feature (EN/PT) na mesma entrega. |
 | `118` | Smoke/integration com Docker | Suites de smoke e integration sobem serviços reais com Docker e exercitam a superfície declarada; skip silencioso não é verde. |
 | `119` | Orquestração via API | Preferir APIs (ou CLIs oficiais) a automação de browser/app para Linear, GitHub e outros; GitHub deve sempre usar `gh`. |

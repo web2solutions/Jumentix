@@ -6,7 +6,7 @@ Canonical constraints added 2026-08-01 under Linear [JUM-595](https://linear.app
 | --- | --- | --- |
 | `114` | Agent worktree layout | Confirm filesystem root with the human operator, then work only in `<root>/<agent-identifier>/Jumentix`. |
 | `115` | Functional value tests | Tests are mandatory; no fake/vacuous suites; do not test third-party implementation APIs; assert Jumentix behavior. |
-| `116` | Dual-branch requirements reread | Before every task, re-read all `.agents/requirements/*` and the NFR registry on both `origin/dev` and `origin/main`; avoid rework. |
+| `116` | Dual-branch requirements reread | Before every task, re-read all `.agents/requirements/project/*.md`, `.agents/requirements/software/*.md`, and the NFR registry on both `origin/dev` and `origin/main`; avoid rework. |
 | `117` | Feature documentation | Every new feature updates software docs and adds feature documentation (EN/PT) in the same delivery. |
 | `118` | Docker smoke/integration | Smoke and integration suites start real services with Docker and exercise their declared surface; silent skips are not green. |
 | `119` | API-first orchestration | Prefer APIs (or official CLIs) over browser/app automation for Linear, GitHub, and other services; GitHub must always use `gh`. |

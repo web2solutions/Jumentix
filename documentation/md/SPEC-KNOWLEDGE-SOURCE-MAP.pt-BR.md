@@ -15,7 +15,7 @@ substitui o estado atual do planejamento no Linear.
 Quando ocorrem conflitos, a ordem de resolução é:
 
 1. Especificações de contrato versionadas (`spec/1.0.0.yml`, `spec/asyncapi/*`)
-2. Requisitos de governança (`.agents/requirements/*`, `.agents/NFR-REGISTRY.md`)
+2. Requisitos de governança (`.agents/requirements/project/*.md`, `.agents/requirements/software/*.md`, `.agents/NFR-REGISTRY.md`)
 3. Governança do projeto (`documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`)
 4. Portas executáveis CI/CD (`ci-cd/*`, husky hooks, política de cobertura)
 5. Documentos técnicos de arquitetura (`documentation/md/*`)

@@ -128,10 +128,11 @@ Includes:
 
 Required specs:
 
-1. `.agents/requirements/*`
-2. `.agents/NFR-REGISTRY.md`
-3. `documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`
-4. `documentation/md/JUMENTIX-RELEASE-AND-VERSIONING-STRATEGY.md`
+1. `.agents/requirements/project/*.md`
+2. `.agents/requirements/software/*.md`
+3. `.agents/NFR-REGISTRY.md`
+4. `documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`
+5. `documentation/md/JUMENTIX-RELEASE-AND-VERSIONING-STRATEGY.md`
 
 Mandatory checks:
 
