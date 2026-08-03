@@ -4,35 +4,11 @@
 
 ## All Changes
 
-- 2026-08-03 Merge remote-tracking branch 'origin/dev' into codex/ci/restore-circleci-main - Eduardo A.
-- 2026-08-03 test: satisfy lint for agent registry CLI suite - Eduardo A.
-- 2026-08-03 test: isolate agent registry CLI suite - Eduardo A.
-- 2026-08-03 chore(JUM-611): merge remote dev into Firestore registry cutover - Eduardo A.
-- 2026-08-03 docs(JUM-611): deprecate GitHub-mirrored agent registry after Firestore cutover - Eduardo A.
-- 2026-08-03 ci: resolve agent registry entrypoint explicitly - Eduardo A.
+- 2026-08-03 docs(website): document Vercel deploy auth and GITHUB_TOKEN for JUM-397 - Eduardo A.
 - 2026-08-03 docs(website): reconcile consumer docs drift for JUM-510 (#68) - Eduardo A.
-- 2026-08-03 ci: tolerate missing Firestore registry database - Eduardo A.
-- 2026-08-03 ci(JUM-611): fix migration script require for Bun compatibility - Eduardo A.
-- 2026-08-03 ci: fix CircleCI website gate command - Eduardo A.
-- 2026-08-03 ci: merge dev website gates into CircleCI - Eduardo A.
-- 2026-08-03 ci: stabilize CircleCI branch and coverage gates - Eduardo A.
 - 2026-08-03 test(website): add Cypress route, a11y, and responsive gates (JUM-396) - Eduardo A.
-- 2026-08-03 ci: tolerate unavailable registry backend - Eduardo A.
-- 2026-08-03 test: isolate full matrix env in CI - Eduardo A.
-- 2026-08-03 ci: delegate workspace builds from branch gate - Eduardo A.
-- 2026-08-03 ci: delegate workspace tests from branch gate - Eduardo A.
-- 2026-08-03 ci: split integration and coverage scopes - Eduardo A.
-- 2026-08-03 ci: split delegated CircleCI gates - Eduardo A.
-- 2026-08-03 ci: handle Bun lockfile task gate - Eduardo A.
-- 2026-08-03 Merge remote-tracking branch 'origin/dev' into codex/ci/restore-circleci-main - Eduardo A.
 - 2026-08-03 [JUM-611][Governance] Replace GitHub-mirrored agent registry with Firestore Database - Eduardo A.
-- 2026-08-03 ci: run branch gate on Cypress browser image - Eduardo A.
-- 2026-08-03 ci: extend CircleCI branch gate timeout - Eduardo A.
-- 2026-08-03 ci: fix CircleCI browser and PR gates - Eduardo A.
-- 2026-08-03 ci: run third-party review without remote docker - Eduardo A.
-- 2026-08-03 ci: fix circleci pr gate metadata - Eduardo A.
 - 2026-08-03 [JUM-417][CI] Sync agent-registry mirror (kimi-k3-cursor-001) (#64) - Eduardo A.
-- 2026-08-03 ci: restore circleci for dev and main - Eduardo A.
 - 2026-08-03 [JUM-419][CI] Sync the agent-registry mirror to canonical 271da346 - Eduardo A.
 - 2026-08-03 [JUM-417][Release] Merge main history into dev for the promotion - Eduardo A.
 - 2026-08-03 [JUM-417][CI] Sonar new-code fixes + temporary CircleCI bridge (PR #52 leftovers) (#61) - Eduardo A.

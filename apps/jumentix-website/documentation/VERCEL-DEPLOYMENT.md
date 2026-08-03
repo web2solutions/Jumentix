@@ -2,8 +2,10 @@
 
 Issue tracking:
 
-- Epic: [#124](https://github.com/XpertMinds/Jumentix/issues/124)
-- Task: [#130](https://github.com/XpertMinds/Jumentix/issues/130)
+- Epic: [JUM-390](https://linear.app/jumentix/issue/JUM-390/epicwebsite-rebuild-the-jumentix-open-source-product-and-documentation)
+- Release: [JUM-397](https://linear.app/jumentix/issue/JUM-397/release-deploy-and-verify-the-rebuilt-jumentix-website-on-vercel)
+
+Production URL: `https://jumentix-website.vercel.app/`
 
 ## Deployment Commands
 
@@ -25,6 +27,19 @@ From app workspace directly:
 bun run --filter @jumentix/website deploy:vercel
 ```
 
+Safe path (prepublish gate before production):
+
+```bash
+bun run --filter @jumentix/website deploy:vercel:safe
+```
+
+Auth:
+
+```bash
+bunx vercel login
+bun run website:vercel:link
+```
+
 ## Configuration
 
 File:
@@ -38,6 +53,33 @@ Configured values:
 - `buildCommand`: `bun run build`
 - `devCommand`: `bun run dev`
 - `outputDirectory`: `.next`
+
+## Required Vercel environment
+
+Because `XpertMinds/Jumentix` is private, unauthenticated GitHub API calls return 404.
+Set these on the Vercel project (Production + Preview):
+
+| Name | Purpose |
+| --- | --- |
+| `GITHUB_TOKEN` | Changelog commits + GitHub releases API (`ChangelogPage`, `/api/github-releases`) |
+
+Optional:
+
+| Name | Purpose |
+| --- | --- |
+| `NEXT_PUBLIC_VERCEL_ENV` | Enables Vercel Analytics only when set by the platform |
+
+## Post-deploy verification
+
+Smoke at minimum:
+
+- `/`, `/product`, `/use-cases`, `/roadmap`, `/community`, `/changelog`
+- `/pt-BR`, `/pt-BR/product`
+- `/docs/jumentix`, `/docs/jumentix/packages/cana`, `/docs/jumentix/concepts`
+- `/docs/pt-BR/jumentix`
+- `/sitemap.xml`, `/robots.txt`
+
+Rollback: use the previous Production deployment in the Vercel project dashboard (Promote / Instant Rollback).
 
 ## Notes
 
