@@ -56,3 +56,5 @@ describe('agent-registry-cli', () => {
     fs.rmSync(dir, { recursive: true, force: true });
   });
 });
+
+export {};

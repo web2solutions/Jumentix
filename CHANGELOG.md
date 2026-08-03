@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-03 ci: resolve agent registry entrypoint explicitly - Eduardo A.
 - 2026-08-03 ci: tolerate missing Firestore registry database - Eduardo A.
 - 2026-08-03 ci: fix CircleCI website gate command - Eduardo A.
 - 2026-08-03 ci: merge dev website gates into CircleCI - Eduardo A.
