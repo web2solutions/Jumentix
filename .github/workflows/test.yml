@@ -34,7 +34,6 @@ jobs:
           --health-retries 20
     env:
       AAA_JWT_TOKEN_SECRET_KEY: ${{ secrets.AAA_JWT_TOKEN_SECRET_KEY || 'ci_jwt_secret_key' }}
-      AAA_REDIS_PASSWORD: ${{ secrets.AAA_REDIS_PASSWORD || 'ci_redis_password' }}
       # Private agent-registry Contents API (Req 089). Default github.token cannot
       # read sibling private repos; AGENT_REGISTRY_TOKEN is a contents:read PAT.
       GH_TOKEN: ${{ secrets.AGENT_REGISTRY_TOKEN }}
@@ -60,12 +59,11 @@ jobs:
       with:
         auto-start: true
         redis-version: "7.x"
-        redis-conf: "requirepass ${{ env.AAA_REDIS_PASSWORD }}"
     - name: Setup Bun ${{ matrix.bun-version }}
-      uses: oven-sh/setup-bun@735343b667d3e6f658f44d0eca948eb6282f2b76 # v2.0.2
+      uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2 (node24)
       with:
         bun-version: ${{ matrix.bun-version }}
-    - run: redis-cli -a "${AAA_REDIS_PASSWORD}" ping
+    - run: redis-cli ping
     - name: Assert the pinned Bun toolchain
       run: bun ci-cd/check-bun-version.js
     # Frozen: an install that would rewrite bun.lock fails instead of silently
