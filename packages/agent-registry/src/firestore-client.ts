@@ -3,8 +3,7 @@ import {
   initializeApp,
   cert,
   getApps,
-  deleteApp,
-  type App
+  deleteApp
 } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import type { AgentRecord, AgentRegistrySnapshot, FirestoreLike } from './types';
@@ -77,5 +76,5 @@ export async function generateSnapshot(firestore: FirestoreLike): Promise<AgentR
 
 export async function closeFirestore(): Promise<void> {
   const apps = getApps();
-  await Promise.all(apps.map((app: App) => deleteApp(app)));
+  await Promise.all(apps.map((app) => deleteApp(app)));
 }
