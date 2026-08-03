@@ -1,4 +1,4 @@
-# Requirement 060 - Monorepo Root Layout Governance
+# Requirement 104 - Monorepo Root Layout Governance
 
 ## Status
 In progress

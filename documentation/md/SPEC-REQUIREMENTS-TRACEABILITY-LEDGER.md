@@ -1,6 +1,6 @@
 # Spec Requirements Traceability Ledger
 
-<!-- requirements-inventory: files=105 unique=102 mapped=102 duplicates=055,060,079 -->
+<!-- requirements-inventory: files=104 unique=104 mapped=104 duplicates= -->
 
 This ledger maps requirement IDs to spec resources and validation evidence expectations.
 
@@ -67,7 +67,7 @@ For any change, identify impacted requirement IDs and ensure:
 
 ## E. Architecture and Design Governance
 
-- `015`, `016`, `017`, `034`, `048`, `049`, `053`, `058`, `059`, `060` (both entries), `062`
+- `015`, `016`, `017`, `034`, `048`, `049`, `053`, `058`, `059`, `060`, `062`, `104`
 - Spec resources:
   - `documentation/md/ARCHITECTURE-AND-STRUCTURE.md`
   - `documentation/md/HEXAGONAL-FEATURE-DRIVEN-MIGRATION.md`
@@ -121,7 +121,7 @@ For any change, identify impacted requirement IDs and ensure:
 
 ## H. Productization and Platform Expansion
 
-- `037`, `038`, `054`, `055` (both entries), `069`, `070`, `091`, `092`, `093`
+- `037`, `038`, `054`, `055`, `069`, `070`, `091`, `092`, `093`, `103`
 - Spec resources:
   - `packages/cli-init/*`
   - `apps/service-management/documentation/*`
@@ -141,8 +141,8 @@ If impacted requirement IDs are not mapped before implementation, the change is 
 
 As of `2026-07-29`, this ledger covers all unique requirement IDs currently registered in `.agents/requirements`:
 
-1. Requirement files in the registry: `105`
-2. Unique IDs in requirements registry: `102`
-3. Unique IDs mapped in this ledger: `102`
-4. Duplicate IDs with independently binding files: `055`, `060`, `079`
+1. Requirement files in the registry: `104`
+2. Unique IDs in requirements registry: `104`
+3. Unique IDs mapped in this ledger: `104`
+4. Duplicate IDs with independently binding files: `none`
 5. Missing IDs: `none`

@@ -108,6 +108,12 @@ function validateRequirementsRegistry(rootDir = process.cwd()) {
   inventory.invalidFiles.forEach((file) => {
     failures.push(`[requirements] invalid requirement filename: ${file}`);
   });
+  inventory.duplicates.forEach((id) => {
+    const conflicting = inventory.files.filter((file) => file.startsWith(`${id}-`));
+    failures.push(
+      `[requirements] duplicate requirement ID ${id}: ${conflicting.join(', ')}`
+    );
+  });
   inventory.files.forEach((file) => {
     const count = indexCounts.get(file) || 0;
     if (count !== 1) {
@@ -212,7 +218,8 @@ function run(rootDir = process.cwd()) {
   const inventory = collectRequirementInventory(rootDir);
   console.log(
     `Requirements registry is consistent: ${String(inventory.files.length)} files, `
-    + `${String(inventory.ids.length)} unique IDs, duplicates ${inventory.duplicates.join(', ')}.`
+    + `${String(inventory.ids.length)} unique IDs, duplicates `
+    + `${inventory.duplicates.join(', ') || 'none'}.`
   );
   return 0;
 }

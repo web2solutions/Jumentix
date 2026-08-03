@@ -10,7 +10,7 @@ Governance note:
 - This file is a local reference snapshot only and must not be treated as authoritative task state.
 - Task/PR governance:
   - Traceability must be bidirectional (`issue -> PR/commit` and `PR -> issue/task mapping`) per requirement 055.
-  - Every task must use its own nature-prefixed branch and PR per requirement 079.
+  - Every task must use its own nature-prefixed branch and PR per requirement 086.
 - NFR governance:
   - All user-requested non-functional requirements must be captured in `.agents/requirements` and indexed in `.agents/NFR-REGISTRY.md` (requirement 068).
 
@@ -80,7 +80,9 @@ GitHub tracking:
 - [x] Define task-owned branch and PR naming governance
   - Issue: `https://github.com/web2solutions/aaa-typescript-boilerplate/issues/133`
   - Branch: `codex/governance/133-task-branch-pr-naming`
-  - Added requirement: `.agents/requirements/079-task-owned-branch-and-pr-naming-governance.md`
+  - Added requirement: `.agents/requirements/086-task-owned-branch-and-pr-naming-governance.md`
+  - Note (JUM-550): this requirement was first filed under a duplicated `079` ID and was
+    consolidated into `086`, which is a strict superset of its rules.
   - Updated PR templates, governance specs, traceability ledger, and EN/PT documentation.
 
 - [x] Register governance requirement for mandatory task traceability + bilingual documentation/site parity

@@ -4,7 +4,7 @@ Idioma alvo: Português (Brasil)
 -->
 # Status de cobertura dos requisitos de especificação
 
-<!-- requirements-inventory: files=105 unique=102 mapped=102 duplicates=055,060,079 -->
+<!-- requirements-inventory: files=104 unique=104 mapped=104 duplicates= -->
 
 Este documento certifica a cobertura atual dos requisitos implementados pelos recursos orientados ao desenvolvimento de especificações.
 
@@ -12,15 +12,15 @@ Este documento certifica a cobertura atual dos requisitos implementados pelos re
 
 Data: `2026-07-29`
 
-1. Arquivos de requisitos em `.agents/requirements`: `105`
-2. IDs de requisitos exclusivos: `102`
-3. IDs cobertos em `SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`: `102`
+1. Arquivos de requisitos em `.agents/requirements`: `104`
+2. IDs de requisitos exclusivos: `104`
+3. IDs cobertos em `SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`: `104`
 4. Status de cobertura: `100%`
 
 Notas:
 
-1. Os IDs `055`, `060` e `079` possuem, cada um, dois arquivos de requisitos com escopos
-   diferentes.
+1. Todo ID de requisito resolve para exatamente um arquivo de requisito; `requirements:check`
+   falha diante de qualquer ID duplicado.
 2. A cobertura é medida por IDs de requisitos exclusivos e por vinculação obrigatória de artefatos no razão.
 
 ## Cobertura de requisitos não funcionais
@@ -36,9 +36,9 @@ Fontes de mapeamento NFR:
 
 ## Cobertura de Requisitos Funcionais
 
-IDs funcionais cobertos (`43`):
+IDs funcionais cobertos (`45`):
 
-`002`, `003`, `004`, `005`, `006`, `007`, `008`, `009`, `010`, `012`, `013`, `019`, `021`, `022`, `023`, `024`, `026`, `027`, `028`, `030`, `031`, `032`, `033`, `034`, `035`, `037`, `038`, `039`, `040`, `045`, `046`, `047`, `048`, `049`, `051`, `052`, `054`, `055`, `058`, `059`, `060`, `061`, `062`
+`002`, `003`, `004`, `005`, `006`, `007`, `008`, `009`, `010`, `012`, `013`, `019`, `021`, `022`, `023`, `024`, `026`, `027`, `028`, `030`, `031`, `032`, `033`, `034`, `035`, `037`, `038`, `039`, `040`, `045`, `046`, `047`, `048`, `049`, `051`, `052`, `054`, `055`, `058`, `059`, `060`, `061`, `062`, `103`, `104`
 
 Fontes de mapeamento funcional:
 

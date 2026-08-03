@@ -1,6 +1,6 @@
 # Spec Requirements Coverage Status
 
-<!-- requirements-inventory: files=105 unique=102 mapped=102 duplicates=055,060,079 -->
+<!-- requirements-inventory: files=104 unique=104 mapped=104 duplicates= -->
 
 This document certifies current coverage of implemented requirements by Spec Development Driven resources.
 
@@ -8,14 +8,14 @@ This document certifies current coverage of implemented requirements by Spec Dev
 
 Date: `2026-07-29`
 
-1. Requirement files in `.agents/requirements`: `105`
-2. Unique requirement IDs: `102`
-3. IDs covered in `SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`: `102`
+1. Requirement files in `.agents/requirements`: `104`
+2. Unique requirement IDs: `104`
+3. IDs covered in `SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`: `104`
 4. Coverage status: `100%`
 
 Notes:
 
-1. IDs `055`, `060`, and `079` each have two requirement files with different scopes.
+1. Every requirement ID resolves to exactly one requirement file; `requirements:check` fails on any duplicate ID.
 2. Coverage is measured by unique requirement IDs and by mandatory artifact linkage in the ledger.
 
 ## Non-Functional Requirements Coverage
@@ -31,9 +31,9 @@ NFR mapping sources:
 
 ## Functional Requirements Coverage
 
-Functional IDs covered (`43`):
+Functional IDs covered (`45`):
 
-`002`, `003`, `004`, `005`, `006`, `007`, `008`, `009`, `010`, `012`, `013`, `019`, `021`, `022`, `023`, `024`, `026`, `027`, `028`, `030`, `031`, `032`, `033`, `034`, `035`, `037`, `038`, `039`, `040`, `045`, `046`, `047`, `048`, `049`, `051`, `052`, `054`, `055`, `058`, `059`, `060`, `061`, `062`
+`002`, `003`, `004`, `005`, `006`, `007`, `008`, `009`, `010`, `012`, `013`, `019`, `021`, `022`, `023`, `024`, `026`, `027`, `028`, `030`, `031`, `032`, `033`, `034`, `035`, `037`, `038`, `039`, `040`, `045`, `046`, `047`, `048`, `049`, `051`, `052`, `054`, `055`, `058`, `059`, `060`, `061`, `062`, `103`, `104`
 
 Functional mapping sources:
 

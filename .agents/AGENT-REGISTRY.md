@@ -145,6 +145,34 @@ This registry tracks AI agents collaborating in the Jumentix project.
   - Linear Project Updates and issue lifecycle
   - agent-registry hygiene and consumer mirror sync
 
+### 6) claude-governance-001
+
+- `agent_id`: `claude-governance-001`
+- `agent_name`: `Claude (Cowork)`
+- `platform`: `Claude Cowork`
+- `machine_id`: `host-eduardos-macbook-air-arm64-local`
+- `machine_name`: `Eduardos-MacBook-Air.local`
+- `machine_os`: `Darwin 25.5.0 arm64`
+- `agent_runtime`: `Claude Cowork (cloud sandbox with device bridge)`
+- `agent_version`: `claude-opus-5`
+- `status`: `busy`
+- `registered_at_utc`: `2026-07-29T12:36:00Z`
+- `last_branch_check_utc`: `2026-07-29T12:36:00Z`
+- `main_ref_checked`: `2d4b4b4a`
+- `dev_ref_checked`: `d6dd5210`
+- `active_epic`: `https://linear.app/jumentix/project/epicgovernance-epic-centered-task-taxonomy-and-agent-delegation-c3cb6bae0771`
+- `assigned_task`: `https://linear.app/jumentix/issue/JUM-550`
+- `capabilities`:
+  - requirements registry hygiene and traceability reconciliation
+  - governance documentation delivery with EN/PT-BR parity
+  - CI gate script hardening and regression coverage
+- `constraints`:
+  - runs in a network-isolated sandbox; `git fetch` is unavailable, so branch refs are read
+    from the local repository clone rather than re-fetched (Requirement `099` evidence is
+    partial and must be reconfirmed by an agent with network access)
+  - does not commit, push, or merge; delivery stops at a review-ready working tree
+    (Requirement `098`)
+
 ## Operating Flow
 
 1. Register or update the agent entry here before task execution.

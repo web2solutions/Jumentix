@@ -74,4 +74,4 @@ Fontes primárias de aplicação:
 4. `documentação/md/JUMENTIX-PROJECT-GOVERNANCE.md`
 5. `.agents/requirements/065-commit-push-integrity-and-real-ci-enforcement.md`
 6. `.agents/requirements/067-bidirecional-task-pr-traceability-governance.md`
-7. `.agents/requirements/079-task-owned-branch-and-pr-naming-governance.md`
+7. `.agents/requirements/086-task-owned-branch-and-pr-naming-governance.md`

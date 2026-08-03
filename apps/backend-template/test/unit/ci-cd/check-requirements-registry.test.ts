@@ -51,8 +51,9 @@ describe('check-requirements-registry', () => {
 
     expect(Array.isArray(inventory.files)).toBe(true);
     expect(Array.isArray(inventory.ids)).toBe(true);
-    expect(inventory.duplicates).toStrictEqual(['055', '060', '079']);
+    expect(inventory.duplicates).toStrictEqual([]);
     expect(inventory.invalidFiles).toStrictEqual([]);
+    expect(inventory.files).toHaveLength(inventory.ids.length);
     expect(validateRequirementsRegistry()).toStrictEqual([]);
   });
 
@@ -90,6 +91,7 @@ describe('check-requirements-registry', () => {
 
     const failures = validateRequirementsRegistry(rootDir);
     expect(failures).toStrictEqual(expect.arrayContaining([
+      expect.stringContaining('duplicate requirement ID 002: 002-second.md, 002-third.md'),
       expect.stringContaining('002-second.md exactly once'),
       expect.stringContaining('002-third.md exactly once'),
       expect.stringContaining('ledger missing IDs: 002'),

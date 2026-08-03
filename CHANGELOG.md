@@ -4,7 +4,9 @@
 
 ## All Changes
 
+- 2026-07-29 chore(release): reconcile main into dev for JUM-531 second promotion - web2solutions
 - 2026-07-29 [JUM-549][CI] Stabilize sustained-load integration budgets (#251) - Eduardo A.
+- 2026-07-29 [JUM-531][Release] Promote current origin/dev to main (#250) - Eduardo A.
 - 2026-07-29 docs(governance): add canonical Project Update template for JUM-502 (#249) - Eduardo A.
 - 2026-07-29 [JUM-531][Release] Reconcile main ancestry into dev for promotion (#248) - Eduardo A.
 - 2026-07-29 chore(release): reconcile main into dev for JUM-531 promotion - web2solutions
