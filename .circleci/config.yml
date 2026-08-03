@@ -345,6 +345,17 @@ jobs:
       - attach_workspace:
           at: .
       - run:
+          name: Backfill git objects for Sonar SCM blame
+          # CircleCI checkout is a blobless partial clone; JGit blame reads the
+          # local object store directly and dies on missing blobs. Drop the
+          # partial-clone filter and refetch so every blob exists locally.
+          command: |
+            set -euo pipefail
+            git config --unset remote.origin.promisor || true
+            git config --unset remote.origin.partialclonefilter || true
+            git config --unset extensions.partialclone || true
+            git fetch --refetch --prune origin "+refs/heads/*:refs/remotes/origin/*"
+      - run:
           name: Verify Sonar token
           command: |
             SONAR_TARGET_BRANCH="${CIRCLE_PR_BASE_BRANCH:-${CIRCLE_BRANCH:-}}"
