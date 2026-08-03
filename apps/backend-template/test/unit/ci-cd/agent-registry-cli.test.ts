@@ -9,9 +9,9 @@ const {
   resolveRegistryEntrypoint: (root?: string) => string;
   shouldSkipCiRegistryCheck: (command: string, error: unknown) => boolean;
 };
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
+const agentRegistryCliFs = require('fs');
+const agentRegistryCliOs = require('os');
+const agentRegistryCliPath = require('path');
 
 describe('agent-registry-cli', () => {
   const originalCi = process.env.CI;
@@ -48,13 +48,16 @@ describe('agent-registry-cli', () => {
   it('resolves the package main file explicitly for Bun CI directory loading', () => {
     expect.hasAssertions();
 
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'agent-registry-cli-'));
-    fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({ main: 'dist/index.js' }));
+    const dir = agentRegistryCliFs.mkdtempSync(
+      agentRegistryCliPath.join(agentRegistryCliOs.tmpdir(), 'agent-registry-cli-')
+    );
+    agentRegistryCliFs.writeFileSync(
+      agentRegistryCliPath.join(dir, 'package.json'),
+      JSON.stringify({ main: 'dist/index.js' })
+    );
 
-    expect(resolveRegistryEntrypoint(dir)).toBe(path.join(dir, 'dist/index.js'));
+    expect(resolveRegistryEntrypoint(dir)).toBe(agentRegistryCliPath.join(dir, 'dist/index.js'));
 
-    fs.rmSync(dir, { recursive: true, force: true });
+    agentRegistryCliFs.rmSync(dir, { recursive: true, force: true });
   });
 });
-
-export {};
