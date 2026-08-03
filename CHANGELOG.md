@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-02 fix(compose): dual-read AAA_ password env fallbacks [JUM-605] - Eduardo Almeida
 - 2026-08-02 refactor: eliminate legacy Jumentix product naming [JUM-605] - Eduardo Almeida
 - 2026-08-02 [JUM-417][Testing] Enforce the Cana browser and worker matrix across engines (#52) - Eduardo A.
 - 2026-08-02 [JUM-540][Docs] Clarify nested requirement globs for release governance (#59) - Eduardo A.

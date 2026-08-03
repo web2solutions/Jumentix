@@ -3,10 +3,10 @@ services:
     image: mysql:8.4
     container_name: aaa-mysql
     environment:
-      MYSQL_ROOT_PASSWORD: '${JUMENTIX_MYSQL_ROOT_PASSWORD:-change_me_mysql_root_password}'
+      MYSQL_ROOT_PASSWORD: '${JUMENTIX_MYSQL_ROOT_PASSWORD:-${AAA_MYSQL_ROOT_PASSWORD:-change_me_mysql_root_password}}'
       MYSQL_DATABASE: aaa
       MYSQL_USER: aaa
-      MYSQL_PASSWORD: '${JUMENTIX_MYSQL_PASSWORD:-change_me_mysql_password}'
+      MYSQL_PASSWORD: '${JUMENTIX_MYSQL_PASSWORD:-${AAA_MYSQL_PASSWORD:-change_me_mysql_password}}'
     ports:
       - '3306:3306'
     volumes:

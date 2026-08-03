@@ -8,7 +8,7 @@ services:
       # container then exits, so this default carries an uppercase letter, a
       # digit and a symbol. With the old one the container never started, and
       # the MSSQL smoke test had therefore never run at all.
-      MSSQL_SA_PASSWORD: '${JUMENTIX_MSSQL_SA_PASSWORD:-Change_me_mssql_password_1}' 
+      MSSQL_SA_PASSWORD: '${JUMENTIX_MSSQL_SA_PASSWORD:-${AAA_MSSQL_SA_PASSWORD:-Change_me_mssql_password_1}}' 
     ports:
       - '1433:1433'
     volumes:

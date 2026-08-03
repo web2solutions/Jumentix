@@ -27,7 +27,10 @@ const APP_ROOT = path.join(__dirname, '../../..');
  */
 const composeDefault = (composeFile: string, envName: string): string => {
   const contents = fs.readFileSync(path.join(APP_ROOT, composeFile), 'utf8');
-  const pattern = new RegExp(`\\$\\{${envName}:-([^}]+)\\}`);
+  // Prefer JUMENTIX_*; optional nested AAA_* fallback; capture terminal literal default.
+  const pattern = new RegExp(
+    `\\$\\{${envName}:-(?:\\$\\{[A-Z0-9_]+:-)?([^}]+)\\}+`
+  );
   const match = pattern.exec(contents);
   if (!match) {
     throw new Error(
