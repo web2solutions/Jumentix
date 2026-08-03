@@ -1,10 +1,12 @@
+import { readProductEnv } from '@src/interface/runtime/RuntimeEnvironment';
+
 function isProductionEnv(): boolean {
   const nodeEnv = String(process.env.NODE_ENV || '').trim().toLowerCase();
   return nodeEnv === 'prod' || nodeEnv === 'production';
 }
 
 const parseAllowedCorsOrigins = (): string[] => {
-  const raw = String(process.env.JUMENTIX_CORS_ALLOWED_ORIGINS || '').trim();
+  const raw = String(readProductEnv(process.env, 'JUMENTIX_CORS_ALLOWED_ORIGINS') || '').trim();
   if (!raw) return [];
   return raw
     .split(',')

@@ -29,7 +29,9 @@ export const compileMessageMediator = (): IMessageMediator => {
       url,
       exchangeName: process.env.JUMENTIX_RABBITMQ_EXCHANGE,
       defaultRequestQueue: process.env.JUMENTIX_RABBITMQ_REQUEST_QUEUE,
-      prefetch: parseOptionalNumber(process.env.JUMENTIX_RABBITMQ_PREFETCH) ?? DEFAULT_RABBITMQ_PREFETCH
+      prefetch: parseOptionalNumber(
+        process.env.JUMENTIX_RABBITMQ_PREFETCH
+      ) ?? DEFAULT_RABBITMQ_PREFETCH
     });
   }
 

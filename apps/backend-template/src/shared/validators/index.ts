@@ -2,6 +2,7 @@ import {
   _PASSWORD_MIN_LENGTH_
 } from '@src/config/constants';
 import { DomainNotFoundError, DomainValidationError } from '@src/infra/exceptions';
+import { readProductEnv } from '@src/interface/runtime/RuntimeEnvironment';
 
 export function throwIfNotFound(found: boolean) {
   if (!found) {
@@ -41,7 +42,7 @@ export function mustBePassword(field: string, value: string) {
     throw new DomainValidationError(`${field} must have at least 8 chars.`);
   }
 
-  const strictPasswordPolicy = String(process.env.JUMENTIX_STRICT_PASSWORD_POLICY || '').toLowerCase() === 'yes';
+  const strictPasswordPolicy = String(readProductEnv(process.env, 'JUMENTIX_STRICT_PASSWORD_POLICY') || '').toLowerCase() === 'yes';
   if (!strictPasswordPolicy) return;
 
   if (!/[A-Z]/.test(value)) throw new DomainValidationError(`${field} must include at least one uppercase letter.`);

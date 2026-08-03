@@ -179,13 +179,14 @@ export const buildDatabaseClientCompilers = <TDatabaseClient extends IDatabaseCl
   };
 
   const createMongoClient = (): TDatabaseClient => {
+    const serverSelectionMs = process.env.JUMENTIX_DATABASE_SERVER_SELECTION_MS;
     const connector = new MongoMongooseRepository({
       connectionUrl: process.env.JUMENTIX_DATABASE_CONNECTION_URL,
       database: process.env.JUMENTIX_DATABASE_NAME,
       extra: {
         maxPoolSize: parseNumber(process.env.JUMENTIX_DATABASE_POOL_MAX, 20),
         minPoolSize: parseNumber(process.env.JUMENTIX_DATABASE_POOL_MIN, 0),
-        serverSelectionTimeoutMS: parseNumber(process.env.JUMENTIX_DATABASE_SERVER_SELECTION_MS, 5000),
+        serverSelectionTimeoutMS: parseNumber(serverSelectionMs, 5000),
         socketTimeoutMS: parseNumber(process.env.JUMENTIX_DATABASE_SOCKET_TIMEOUT_MS, 45000)
       }
     });
