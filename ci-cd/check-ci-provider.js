@@ -28,6 +28,7 @@ if (!fs.existsSync(circleciPath)) {
     /rabbitmq:3\.13/,
     /bun install --frozen-lockfile/,
     /ci:gate:branch/,
+    /FIREBASE_SERVICE_ACCOUNT_KEY/,
     /test:coverage/,
     /coverage:check/,
     /coverage:patch/,

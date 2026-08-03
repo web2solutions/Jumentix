@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-03 ci: run branch gate on Cypress browser image - Eduardo A.
 - 2026-08-03 ci: extend CircleCI branch gate timeout - Eduardo A.
 - 2026-08-03 ci: fix CircleCI browser and PR gates - Eduardo A.
 - 2026-08-03 ci: run third-party review without remote docker - Eduardo A.

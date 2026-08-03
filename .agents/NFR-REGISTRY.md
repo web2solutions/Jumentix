@@ -52,7 +52,7 @@ This file consolidates non-functional requirements already requested and stored 
 - `075` Jumentix composition (libraries, tools, templates, components) represented in specs.
 - `076` Mandatory task traceability for AI/humans + documentation sync + EN/PT documentation and website parity.
 - `077` Multi-agent platform support (Codex, Claude Code, Grok, OpenCode) with aligned governance and traceability rules.
-- `078` Agent Registry system with mandatory pre-task registration, planning assignment by availability, and required `main`/`dev` pre-work branch checks.
+- `078` Agent Registry system (Firestore-backed) with mandatory pre-task registration, planning assignment by availability, and required `main`/`dev` pre-work branch checks.
 - `079` Main branch protection and mandatory feature/fix/chore branching flow; local direct
   changes on `main` are prohibited, review is optional, and all required checks remain mandatory.
 - `080` Agent Registry must include machine identity and agent runtime version metadata, allowing multiple agents per host machine.
@@ -63,7 +63,7 @@ This file consolidates non-functional requirements already requested and stored 
 - `085` PR descriptions are mandatory and must follow the repository PR template, with required sections completed before approval.
 - `086` One task per branch and PR, matching `[JUM-XXXX][Nature]` PR-title naming, `dev`-first promotion to `main`, and
   false-green-proof destination-aware gates for task branches, `dev`, and `main`.
-- `089` Agent Registry must be maintained in an independent public GitHub repository as canonical source, with mirrored sync in consumer repositories, immutable revision pins by full commit SHA, and owner-only write access for `web2solutions` (`web2solucoes@gmail.com`).
+- `089` Agent Registry must be maintained in Firestore Database as canonical source, with optional local snapshot for offline consultation, service-account-only write access, and stale-snapshot validation in CI gates.
 - `090` Every executable task must have one focused epic, one primary nature, and the epic milestone; milestone validation precedes epic-level agent delegation and non-overlapping child-task assignment.
 - `091` Website design-system and Storybook governance, including accessibility, responsive/theme states, component inventory, reproducible smoke validation, and strict ownership by the `apps/jumentix-website` workflow rather than the main monorepo workflow.
 - `092` Open-source commercial website experience, bilingual route parity, truthful code proof, responsive navigation, and production route integrity.

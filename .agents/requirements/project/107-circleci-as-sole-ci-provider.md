@@ -64,9 +64,8 @@ CircleCI must expose these, or the corresponding jobs fail closed rather than
 skipping:
 
 - `JUMENTIX_JWT_TOKEN_SECRET_KEY`, `JUMENTIX_REDIS_PASSWORD` — test fixtures
-- `AGENT_REGISTRY_TOKEN` (or `GH_TOKEN` / `GITHUB_TOKEN`) — contents:read on
-  `XpertMinds/jumentix-agent-registry`, per Requirement `089`. Default tokens
-  cannot read a sibling private repository.
+- `FIREBASE_SERVICE_ACCOUNT_KEY` — Firestore service account JSON for the
+  agent registry, per Requirement `089`.
 - `SONAR_TOKEN` — SonarQube Cloud
 - `CODECOV_TOKEN` — Codecov upload from CircleCI
 A missing variable must produce a failing job naming the variable. It must never
