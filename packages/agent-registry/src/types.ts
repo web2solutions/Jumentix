@@ -63,3 +63,30 @@ export interface CompleteTaskInput {
   agent_id: string;
   status?: AgentStatus;
 }
+
+export interface DocumentSnapshot<T> {
+  exists: boolean;
+  data(): T | undefined;
+}
+
+export interface DocumentReference<T> {
+  get(): Promise<DocumentSnapshot<T>>;
+  set(data: T, options?: { merge?: boolean }): Promise<unknown>;
+}
+
+export interface QueryDocumentSnapshot<T> {
+  data(): T;
+}
+
+export interface QuerySnapshot<T> {
+  docs: Array<QueryDocumentSnapshot<T>>;
+}
+
+export interface CollectionReference<T> {
+  doc(id: string): DocumentReference<T>;
+  get(): Promise<QuerySnapshot<T>>;
+}
+
+export interface FirestoreLike {
+  collection(name: string): CollectionReference<AgentRecord>;
+}

@@ -5,9 +5,8 @@ import {
   getApps,
   deleteApp
 } from 'firebase-admin/app';
-import type { Firestore } from 'firebase-admin/firestore';
 import { getFirestore } from 'firebase-admin/firestore';
-import type { AgentRecord, AgentRegistrySnapshot } from './types';
+import type { AgentRecord, AgentRegistrySnapshot, FirestoreLike } from './types';
 
 const COLLECTION = 'agents';
 
@@ -35,9 +34,9 @@ function parseServiceAccount(): Record<string, unknown> {
   }
 }
 
-export function createFirestoreClient(): Firestore {
+export function createFirestoreClient(): FirestoreLike {
   if (getApps().length > 0) {
-    return getFirestore();
+    return getFirestore() as unknown as FirestoreLike;
   }
 
   const serviceAccount = parseServiceAccount();
@@ -48,25 +47,25 @@ export function createFirestoreClient(): Firestore {
       clientEmail: String(serviceAccount.client_email)
     })
   });
-  return getFirestore();
+  return getFirestore() as unknown as FirestoreLike;
 }
 
-export async function getAgent(firestore: Firestore, agentId: string): Promise<AgentRecord | null> {
+export async function getAgent(firestore: FirestoreLike, agentId: string): Promise<AgentRecord | null> {
   const doc = await firestore.collection(COLLECTION).doc(agentId).get();
   if (!doc.exists) return null;
   return doc.data() as AgentRecord;
 }
 
-export async function upsertAgent(firestore: Firestore, agent: AgentRecord): Promise<void> {
+export async function upsertAgent(firestore: FirestoreLike, agent: AgentRecord): Promise<void> {
   await firestore.collection(COLLECTION).doc(agent.agent_id).set(agent, { merge: true });
 }
 
-export async function getAllAgents(firestore: Firestore): Promise<AgentRecord[]> {
+export async function getAllAgents(firestore: FirestoreLike): Promise<AgentRecord[]> {
   const snapshot = await firestore.collection(COLLECTION).get();
   return snapshot.docs.map((doc) => doc.data() as AgentRecord);
 }
 
-export async function generateSnapshot(firestore: Firestore): Promise<AgentRegistrySnapshot> {
+export async function generateSnapshot(firestore: FirestoreLike): Promise<AgentRegistrySnapshot> {
   const agents = await getAllAgents(firestore);
   return {
     agents,

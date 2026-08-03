@@ -1,13 +1,13 @@
 /* eslint-disable no-console, camelcase */
 import fs from 'node:fs';
 import path from 'node:path';
-import type { Firestore } from 'firebase-admin/firestore';
 import type {
   AgentRecord,
   AgentRegistrySnapshot,
   AgentStatus,
   AssignTaskInput,
   CompleteTaskInput,
+  FirestoreLike,
   HeartbeatInput,
   RegisterAgentInput
 } from './types';
@@ -39,7 +39,7 @@ function buildDefaultCapabilities(): string[] {
 }
 
 export async function registerAgent(
-  firestore: Firestore,
+  firestore: FirestoreLike,
   input: RegisterAgentInput
 ): Promise<AgentRecord> {
   const agent_id = requireNonEmpty(input.agent_id, 'agent_id');
@@ -72,7 +72,7 @@ export async function registerAgent(
   return agent;
 }
 
-export async function heartbeat(firestore: Firestore, input: HeartbeatInput): Promise<AgentRecord> {
+export async function heartbeat(firestore: FirestoreLike, input: HeartbeatInput): Promise<AgentRecord> {
   const agent_id = requireNonEmpty(input.agent_id, 'agent_id');
   const existing = await getAgent(firestore, agent_id);
   if (!existing) {
@@ -95,7 +95,7 @@ export async function heartbeat(firestore: Firestore, input: HeartbeatInput): Pr
 }
 
 export async function assignTask(
-  firestore: Firestore,
+  firestore: FirestoreLike,
   input: AssignTaskInput
 ): Promise<AgentRecord> {
   const agent_id = requireNonEmpty(input.agent_id, 'agent_id');
@@ -118,7 +118,7 @@ export async function assignTask(
 }
 
 export async function completeTask(
-  firestore: Firestore,
+  firestore: FirestoreLike,
   input: CompleteTaskInput
 ): Promise<AgentRecord> {
   const agent_id = requireNonEmpty(input.agent_id, 'agent_id');
@@ -141,7 +141,7 @@ export async function completeTask(
   return agent;
 }
 
-export async function syncSnapshot(firestore: Firestore): Promise<AgentRegistrySnapshot> {
+export async function syncSnapshot(firestore: FirestoreLike): Promise<AgentRegistrySnapshot> {
   const snapshot = await generateSnapshot(firestore);
   const dir = path.dirname(snapshotPath());
   if (!fs.existsSync(dir)) {
@@ -152,7 +152,7 @@ export async function syncSnapshot(firestore: Firestore): Promise<AgentRegistryS
   return snapshot;
 }
 
-export async function checkSnapshot(firestore: Firestore): Promise<void> {
+export async function checkSnapshot(firestore: FirestoreLike): Promise<void> {
   if (!fs.existsSync(snapshotPath())) {
     throw new Error(
       `Local agent registry snapshot not found: ${snapshotPath()}\n`

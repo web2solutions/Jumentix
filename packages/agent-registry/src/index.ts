@@ -4,6 +4,7 @@ export type {
   AgentStatus,
   AssignTaskInput,
   CompleteTaskInput,
+  FirestoreLike,
   HeartbeatInput,
   RegisterAgentInput
 } from './types';
