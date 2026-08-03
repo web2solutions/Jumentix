@@ -236,7 +236,9 @@ jobs:
           command: bun run website:test:cypress
           environment:
             JUMENTIX_WEBSITE_CYPRESS_SKIP_BUILD: "1"
-            JUMENTIX_WEBSITE_CYPRESS_BROWSER: chrome
+            # cimg browsers often expose Electron to Cypress more reliably than
+            # the "chrome" binary name; GHA keeps chrome.
+            JUMENTIX_WEBSITE_CYPRESS_BROWSER: electron
 
   # Mirrors .github/workflows/sonarqube-cloud.yml: same Jest + browser union,
   # then the scanner. Sonar stays defense-in-depth (Requirement 113 §7).
