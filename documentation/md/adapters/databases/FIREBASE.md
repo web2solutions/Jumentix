@@ -9,7 +9,7 @@ Firebase Admin profile.
 1. Start local emulator container (if configured):
 
 ```bash
-pnpm run docker:up:firebase
+bun run docker:up:firebase
 ```
 
 2. Set env:

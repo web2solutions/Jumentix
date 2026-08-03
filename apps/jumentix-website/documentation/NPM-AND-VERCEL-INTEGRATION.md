@@ -15,9 +15,9 @@ Configured in root `.npmrc`:
 Validation commands:
 
 ```bash
-pnpm run npm:whoami
-pnpm run npm:org:check:xpertminds
-pnpm run npm:publish:dry-run:packages
+bun run npm:whoami
+bun run npm:org:check:xpertminds
+bun run npm:publish:dry-run:packages
 ```
 
 Note:
@@ -34,21 +34,21 @@ Target Vercel account:
 Root commands:
 
 ```bash
-pnpm run website:vercel:link
-pnpm run website:vercel:pull:preview
-pnpm run website:vercel:pull:prod
-pnpm run website:deploy:vercel:preview
-pnpm run website:deploy:vercel
+bun run website:vercel:link
+bun run website:vercel:pull:preview
+bun run website:vercel:pull:prod
+bun run website:deploy:vercel:preview
+bun run website:deploy:vercel
 ```
 
 App commands (`apps/jumentix-website`):
 
 ```bash
-pnpm run vercel:link
-pnpm run vercel:pull:preview
-pnpm run vercel:pull:prod
-pnpm run deploy:vercel:preview
-pnpm run deploy:vercel
+bun run vercel:link
+bun run vercel:pull:preview
+bun run vercel:pull:prod
+bun run deploy:vercel:preview
+bun run deploy:vercel
 ```
 
 These commands are configured to work without forced scope flags and do not require immediate publish/deploy.

@@ -12,7 +12,9 @@ This repository supports OpenCode as an official engineering agent.
 6. Keep implementation, specs, documentation, and agent guidance synchronized.
 7. Do not bypass CI, lint, test, coverage, security, or governance gates; report exact gate states in Linear Project Updates.
 8. Task PRs target `dev`; only `dev` release promotions target `main`.
-9. Start every PR title with the matching Linear Issue identifier:
+9. Ensure Linear identifies the active `agent_identifier` for each executable Issue and Project/Epic, synchronized with the canonical Agent Registry.
+10. Refresh sibling-agent progress, blockers, branches, PRs, and Linear Project Updates before starting or resuming work; coordinate overlap before editing files.
+11. Start every PR title with the matching Linear Issue identifier:
    `[JUM-XXXX][Nature] <concise outcome>`.
 
 ## Required Governance Links

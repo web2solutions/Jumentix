@@ -39,7 +39,7 @@ Defina modelos de linha de base por tipo de artefato para que a CLI de inicializ
   - `liberação: simulação`
   - `release:dry-run:packages`
   - `lançamento: simulação: aplicativos`
-- CI gate inclui validação de governança de lançamento por meio de `pnpm run release:governance:check`.
+- CI gate inclui validação de governança de lançamento por meio de `bun run release:governance:check`.
 
 ## Mapeamento de andaime CLI
 

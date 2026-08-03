@@ -25,8 +25,8 @@ Valores atuais:
 
 O portão CI impõe a política de lançamento por meio de:
 
-- `pnpm run release:governance:check`
-- incluído em `pnpm run ci:gate`
+- `bun run release:governance:check`
+- incluído em `bun run ci:gate`
 
 A validação inclui:
 
@@ -41,8 +41,8 @@ A validação inclui:
 2. Atualize `release-policy.json` `appLockedVersion` para o mesmo valor.
 3. Mantenha as versões do espaço de trabalho do aplicativo sincronizadas com o valor bloqueado.
 4. Execute:
-   - `pnpm run release:governance:check`
-   - `liberação de execução pnpm: simulação`
+   - `bun run release:governance:check`
+   - `bun run release:dry-run`
 5. PR aberto com rastreabilidade para questões relacionadas ao projeto Jumentix.
 
 ## Evolução Futura

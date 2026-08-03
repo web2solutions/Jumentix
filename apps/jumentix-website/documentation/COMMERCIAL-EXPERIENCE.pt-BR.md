@@ -43,7 +43,7 @@ Comunidade e Roadmap. O rodapé agrupa construção, aprendizado e comunidade.
 
 `CodeShowcase` apresenta exemplos reais em abas acessíveis com ação de cópia nomeada:
 
-- instalação pnpm e inicialização local;
+- instalação Bun e inicialização local;
 - contratos TypeScript e Message Mediator;
 - definições OpenAPI 3.1 e AsyncAPI;
 - clientes Fetch, Socket.IO e gRPC;
@@ -80,10 +80,10 @@ As histórias cobrem os dois idiomas, páginas principais, jornadas REST/realtim
 Com o design system, o catálogo possui 42 entradas.
 
 ```bash
-pnpm run website:storybook
-pnpm run website:storybook:build
-pnpm run website:storybook:smoke
-pnpm --filter @jumentix/website run test:prepublish
+bun run website:storybook
+bun run website:storybook:build
+bun run website:storybook:smoke
+bun run --filter @jumentix/website test:prepublish
 ```
 
 O gate gera o build de produção, inicia localmente, valida rotas comerciais EN/PT, paginação do

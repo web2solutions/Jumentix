@@ -19,7 +19,7 @@ Use o tempo de execução Sails.js como interface de entrada HTTP.
 3. Execute:
 
 ```bash
-pnpm run dev:sails-js
+bun run dev:sails-js
 ```
 
 

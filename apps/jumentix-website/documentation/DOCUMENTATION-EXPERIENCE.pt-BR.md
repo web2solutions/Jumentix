@@ -66,11 +66,11 @@ content/
 ## Gates de Publicação
 
 ```bash
-pnpm --filter @jumentix/website run content:sync
-pnpm --filter @jumentix/website run content:smoke
-pnpm --filter @jumentix/website run storybook:build
-pnpm --filter @jumentix/website run storybook:smoke
-pnpm --filter @jumentix/website run test:prepublish
+bun run --filter @jumentix/website content:sync
+bun run --filter @jumentix/website content:smoke
+bun run --filter @jumentix/website storybook:build
+bun run --filter @jumentix/website storybook:smoke
+bun run --filter @jumentix/website test:prepublish
 ```
 
 `content:smoke` valida paridade de idiomas, rotas obrigatórias, frontmatter, MDX e links gerados.

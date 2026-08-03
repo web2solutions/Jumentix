@@ -12,7 +12,7 @@ Set environment variables:
 Then start:
 
 ```bash
-pnpm run dev:http
+bun run dev:http
 ```
 
 ## 2. Model Domain and Contracts
@@ -41,10 +41,10 @@ REST endpoints are exposed through framework-native handlers under module interf
 Run quality gates:
 
 ```bash
-pnpm run lint
-pnpm run test:unit
-pnpm run oas:check-routes
-pnpm run test:integration:express
+bun run lint
+bun run test:unit
+bun run oas:check-routes
+bun run test:integration:express
 ```
 
 ## References

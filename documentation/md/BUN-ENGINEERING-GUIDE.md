@@ -174,14 +174,12 @@ parent's `package.json` has no effect on resolution — verified.
 
 | System | Setup |
 | --- | --- |
-| GitHub Actions | `oven-sh/setup-bun` pinned by commit SHA; matrix axis `bun-version` |
-| CircleCI | `oven/bun:1.3.14`; caches keyed on `bun.lock` |
+| GitHub Actions | `oven-sh/setup-bun` pinned by commit SHA; matrix axis `bun-version`; caches keyed on `bun.lock` |
 
-Both install with `--frozen-lockfile` and assert the toolchain guard before anything else.
+The workflow installs with `--frozen-lockfile` and asserts the toolchain guard before anything else.
 
 The private agent registry (`XpertMinds/jumentix-agent-registry`) needs a `contents:read` token.
-GitHub Actions inject `GH_TOKEN: secrets.AGENT_REGISTRY_TOKEN`; CircleCI exports the same with a
-`GH_TOKEN` / `GITHUB_TOKEN` / `AGENT_REGISTRY_TOKEN` precedence chain. Locally, `gh auth login` is enough —
+GitHub Actions inject `GH_TOKEN: secrets.AGENT_REGISTRY_TOKEN`. Locally, `gh auth login` is enough;
 the check falls back to `gh auth token`.
 
 ## 9. Development runtime (PM2)
@@ -256,7 +254,8 @@ provider token, generated compatibility lockfile, webhook, or GitHub App.
 `packages/security-scanner/src/index.js` contains the query and risk policy,
 while `packages/security-scanner/audit.js` is the gate entry point.
 
-Codecov and Sonar consume lcov from Jest and are genuinely unaffected by the lockfile change.
+Repository-owned coverage checks and Sonar consume the generated LCOV/JSON evidence and are
+unaffected by the lockfile change.
 
 ## References
 

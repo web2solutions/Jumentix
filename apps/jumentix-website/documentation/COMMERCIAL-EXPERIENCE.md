@@ -44,7 +44,7 @@ and community resources.
 
 `CodeShowcase` presents repository-aligned examples as accessible tabs with a named copy action:
 
-- pnpm installation and local startup;
+- Bun installation and local startup;
 - TypeScript service and Message Mediator contracts;
 - OpenAPI 3.1 and AsyncAPI definitions;
 - Fetch, Socket.IO, and gRPC clients;
@@ -81,10 +81,10 @@ Commercial stories cover both languages, primary pages, REST/realtime journeys, 
 product state. Together with the design system, the catalog has 42 entries.
 
 ```bash
-pnpm run website:storybook
-pnpm run website:storybook:build
-pnpm run website:storybook:smoke
-pnpm --filter @jumentix/website run test:prepublish
+bun run website:storybook
+bun run website:storybook:build
+bun run website:storybook:smoke
+bun run --filter @jumentix/website test:prepublish
 ```
 
 The prepublish gate builds production output, starts it locally, validates commercial routes in

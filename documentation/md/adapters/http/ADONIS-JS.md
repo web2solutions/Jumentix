@@ -15,6 +15,6 @@ Expose API operations through Adonis.js runtime bridge.
 3. Run:
 
 ```bash
-pnpm run dev:adonis-js
+bun run dev:adonis-js
 ```
 

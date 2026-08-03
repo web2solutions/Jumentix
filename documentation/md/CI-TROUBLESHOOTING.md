@@ -1,8 +1,8 @@
-# CI / SonarQube / Codecov Troubleshooting
+# CI / SonarQube / Repository-Owned Coverage Troubleshooting
 
 This guide helps diagnose and fix the most common failures in local gates and CI pipelines.
 
-## 1) `pnpm install` fails with `EBADENGINE`
+## 1) `bun install` fails with `EBADENGINE`
 
 Symptoms:
 - install fails with `Unsupported engine`
@@ -15,9 +15,9 @@ Fix:
 
 ```bash
 nvm use
-node -v
-pnpm -v
-pnpm run check-node-version
+bun --version
+bun run check-bun-version
+bun run compat:check-node-version
 ```
 
 Expected:
@@ -41,7 +41,7 @@ Cause:
 Fix:
 
 ```bash
-NODE_ENV=ci pnpm run test:unit
+NODE_ENV=ci bun run test:unit
 ```
 
 Ensure at least one valid file exists for CI fallback:
@@ -61,7 +61,7 @@ Symptoms:
 Fix:
 
 ```bash
-pnpm run oas:check-routes
+bun run oas:check-routes
 ```
 
 Checklist:
@@ -86,7 +86,7 @@ Common causes:
 Fix:
 
 ```bash
-pnpm run test:unit
+bun run test:unit
 ls coverage/lcov.info
 ```
 
@@ -99,7 +99,7 @@ Related files:
 - `.github/workflows/sonarqube-cloud.yml`
 - `sonar-project.properties`
 
-## 5) Codecov status fails (project or patch)
+## 5) Repository-owned coverage status fails (project or patch)
 
 Symptoms:
 - PR check fails for project coverage and/or patch coverage
@@ -110,15 +110,18 @@ Cause:
   unit-test artifact
 
 Current standard:
-- project target: `95%`
-- patch target: `95%`
+- statements: `99%`
+- lines: `99%`
+- functions: `99%`
+- branches: `90%`
+- changed lines: `99%`
 
 Fix:
 
 ```bash
-pnpm run test:unit
+bun run test:unit
 wc -l coverage/lcov.info
-pnpm run test:integration:service-management
+bun run test:integration:service-management
 wc -l coverage/lcov.info
 ```
 
@@ -128,8 +131,9 @@ authoritative coverage-producing stage. If LCOV is valid but coverage is below t
 threshold, add or improve tests in the changed code paths.
 
 Related files:
-- `codecov.yml`
 - `jest.config.js`
+- `ci-cd/check-coverage-thresholds.js`
+- `ci-cd/check-patch-coverage.js`
 - `ci-cd/run-service-management-integration.js`
 
 ## 6) Husky hooks are not running locally
@@ -143,7 +147,7 @@ Cause:
 Fix:
 
 ```bash
-pnpm run prepare
+bun run prepare
 ls .husky
 ```
 
@@ -164,8 +168,8 @@ Cause:
 Fix:
 
 ```bash
-pnpm run docker:composeredis
-pnpm run ci:smoke
+bun run docker:composeredis
+bun run ci:smoke
 ```
 
 If needed, verify env keys used by tests:
@@ -177,14 +181,14 @@ If needed, verify env keys used by tests:
 Run this sequence to isolate failing gate stages quickly:
 
 ```bash
-pnpm run lint
-pnpm run deps:check-cycles
-pnpm run arch:check-boundaries
-pnpm run arch:check-users-legacy-imports
-pnpm run test:unit
-pnpm run oas:check-routes
-pnpm run build:dev
-pnpm run ci:smoke
+bun run lint
+bun run deps:check-cycles
+bun run arch:check-boundaries
+bun run arch:check-users-legacy-imports
+bun run test:unit
+bun run oas:check-routes
+bun run build:dev
+bun run ci:smoke
 ```
 
-This is the same order used by `pnpm run ci:gate`.
+This is the same order used by `bun run ci:gate`.

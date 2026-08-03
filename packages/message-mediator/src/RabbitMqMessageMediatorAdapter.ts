@@ -1,4 +1,3 @@
-/* istanbul ignore file */
 import { randomUUID } from 'node:crypto';
 import type {
   IIntegrationEvent,
@@ -252,7 +251,9 @@ export class RabbitMqMessageMediatorAdapter implements IMessageMediator {
         contract: message.contract,
         version: message.version,
         metadata: message.metadata,
-        error: new Error(`No handler registered for contract ${message.contract}`)
+        error: RabbitMqMessageMediatorAdapter.toWireError(
+          new Error(`No handler registered for contract ${message.contract}`)
+        )
       };
     }
 
@@ -269,9 +270,20 @@ export class RabbitMqMessageMediatorAdapter implements IMessageMediator {
         contract: message.contract,
         version: message.version,
         metadata: message.metadata,
-        error: error as Error
+        error: RabbitMqMessageMediatorAdapter.toWireError(error)
       };
     }
+  }
+
+  /**
+   * Reply frames are JSON. A native `Error` stringifies to `{}`, which would
+   * tell the caller nothing about why the handler failed. Persist name/message.
+   */
+  private static toWireError(error: unknown): Error {
+    if (error instanceof Error) {
+      return { name: error.name, message: error.message } as Error;
+    }
+    return { name: 'Error', message: String(error) } as Error;
   }
 
   private resolveHandler(
@@ -293,9 +305,14 @@ export class RabbitMqMessageMediatorAdapter implements IMessageMediator {
     }
   }
 
+  /**
+   * Import seam for amqplib — same reason as BullMQ's `importBullMq`.
+   */
+  public static importAmqpLib: () => Promise<any> = async () => import('amqplib');
+
   private static async loadAmqpLib(): Promise<any> {
     try {
-      return await import('amqplib');
+      return await RabbitMqMessageMediatorAdapter.importAmqpLib();
     } catch (error) {
       const err = new Error(
         'RabbitMQ adapter requires package "amqplib". Install with: bun add amqplib'

@@ -1,6 +1,6 @@
 # Bootstrap CLI Scaffolding
 
-This boilerplate now exposes npm-installable bootstrap CLI commands:
+This boilerplate now exposes registry-installable bootstrap CLI commands:
 
 - `aaa-bootstrap`
 - `jumentix-init`
@@ -14,10 +14,10 @@ Workspace ownership:
 
 ## Usage
 
-Install globally (or run with `pnpm dlx` from package registry):
+Install globally (or run with `bunx` from the package registry):
 
 ```bash
-pnpm add -g @jumentix/cli-init
+bun add --global @jumentix/cli-init
 jumentix-init
 aaa-bootstrap
 ```
@@ -25,7 +25,7 @@ aaa-bootstrap
 Local repository usage:
 
 ```bash
-pnpm run cli:bootstrap
+bun run cli:bootstrap
 ```
 
 Non-interactive usage:

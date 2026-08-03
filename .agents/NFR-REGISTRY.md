@@ -18,7 +18,8 @@ This file consolidates non-functional requirements already requested and stored 
 - `063` Workspace coverage policy governance.
 - `065` Commit/push integrity with real CI checks.
 - `087` Branch-aware quality gates: unit tests for `dev`, full matrix for `main`.
-- `088` Task branches run only changed/related unit tests; `dev` PRs run all unit tests and CircleCI is restricted to `dev`/`main`.
+- `088` Task branches run changed/related tests with branch-aware gates; `dev` PRs and
+  release promotion run their destination-appropriate required checks.
 
 ## Security and Compliance NFRs
 
@@ -77,8 +78,9 @@ This file consolidates non-functional requirements already requested and stored 
 ## Rule of Use
 
 - `099` Every task begins only after current `main`, `dev`, and the full requirement inventory are refreshed and read.
-- `100` Every valid pull-request comment blocks merge until it is corrected with applicable gate
-  evidence; an invalid comment requires a factual explanation in the PR.
+- `100` Every valid pull-request comment and every unresolved GitHub review/discussion
+  thread blocks merge until it is corrected, resolved, or answered as invalid with
+  factual PR evidence and applicable gate evidence.
 - `101` Agents waiting only on remote checks must progress another active, non-conflicting task
   in its own worktree and recheck the waiting task at material boundaries.
 - `102` Every executing task must publish truthful, task-specific Linear Project Updates at
@@ -95,11 +97,9 @@ This file consolidates non-functional requirements already requested and stored 
   selection, `JUMENTIX_GATE_V2` flag-gated flip/rollback, and fail-closed selective-gate evidence.
 - `106` Local Bun for **all** suite types; Node/Jest reserved for CI (`ciRunner` /
   `JUMENTIX_TEST_RUNTIME=node`). CI job greenness is out of scope for the Test Pyramid delivery.
-- `107` CircleCI runs alongside GitHub Actions and must mirror every check the workflows
-  perform, so either provider going dark degrades coverage instead of eliminating it. It
-  must run on every branch, not only `dev` and `main`. A provider that cannot execute
-  blocks a merge exactly as a failing check does (Requirement 065). `ci:check-provider`
-  validates both configurations are present and equivalent.
+- `107` CircleCI is historical and superseded by `113` for the private XpertMinds
+  repository. Provider checks now fail closed against the repository-owned GitHub
+  Actions path rather than requiring a duplicate CircleCI pipeline.
 - `108` An HTTP adapter named for a web framework must import that framework and use it;
   a reference assigned to an unused field, or a require swallowed by try/catch, does not
   satisfy this, and the framework must be a declared dependency. Platform targets with no
@@ -120,8 +120,8 @@ This file consolidates non-functional requirements already requested and stored 
   narrowing the scope is not a permitted way to meet one. A suite may
   declare `runner: "node"` only with a `reason` naming a concrete Bun incompatibility;
   the map pin overrides environment resolution. Amends 106.
-- `111` Only identities declared in `.agents/AUTHORIZED-COMMITTERS.json` may author or
-  commit. The declaration is an allowlist and must not be inverted into a denylist: the audit
+- `111` Only identities declared in `.agents/AUTHORIZED-COMMITTERS.json` may author,
+  commit, or push. The declaration is an allowlist and must not be inverted into a denylist: the audit
   behind this requirement started from one known corporate address and uncovered a second
   corporate domain nobody was looking for, which a denylist would have passed. Author and
   committer are both checked, since they diverge on rebases, amends and web merges.
@@ -129,9 +129,11 @@ This file consolidates non-functional requirements already requested and stored 
   anchored to a fixed commit, because a base-relative range is empty, and therefore vacuously
   green, on the branch the work merged into. `--identity` verifies the identity a commit is
   about to receive, in `pre-commit`, because the range check cannot see a commit that does
-  not exist yet and commit metadata cannot be retracted once pushed. No identity is set
-  globally on a contributor machine. Fails closed on a missing, empty or unparseable
-  declaration (Requirement 065).
+  not exist yet and commit metadata cannot be retracted once pushed. `pre-push` runs the
+  same history check before publication, so undeclared local commits cannot reach the forge.
+  Every commit must also carry a GitHub-verified signature before it can merge into a
+  protected branch. No identity is set globally on a contributor machine. Fails closed on a missing, empty or
+  unparseable declaration (Requirement 065).
 
 - `112` Every workspace package and app owns a test suite covering its own source, at
   the project's 99% standard. Coverage borrowed from a consumer measures the consumer: a
@@ -154,9 +156,9 @@ This file consolidates non-functional requirements already requested and stored 
   `<root>/<agent-identifier>/Jumentix` as the only SoT checkout for that agent.
 - `115` Tests are mandatory, functional, and Jumentix-valued: no vacuous/fake suites
   and no suites whose primary subject is a third-party implementation API.
-- `116` Before every task, re-read the full `.agents/requirements/` set and NFR
-  registry on both `origin/dev` and `origin/main`, record drift, and avoid rework
-  (strengthens `099`).
+- `116` Before every task, re-read the full `.agents/requirements/project/` and
+  `.agents/requirements/software/` set and NFR registry on both `origin/dev` and
+  `origin/main`, record drift, and avoid rework (strengthens `099`).
 - `117` Every new feature updates software documentation and adds dedicated feature
   docs (EN/PT) in the same delivery (strengthens `025` / `076`).
 - `118` Smoke and integration suites use Docker to start real dependent services and
@@ -164,9 +166,18 @@ This file consolidates non-functional requirements already requested and stored 
 - `119` Orchestration with Linear, GitHub, and other external services must prefer
   APIs (or official CLIs that wrap those APIs) over browser/app UI automation;
   GitHub must always use `gh` (strengthens `081` / `095`).
+- `120` Linear must identify the active `agent_identifier` for every executable
+  task and expose delegated agent ownership for each Project/Epic, synchronized
+  with the canonical Agent Registry.
+- `121` Registered agents must work as a coordinated delivery system by refreshing
+  sibling-agent progress, blockers, branches, PRs, and Linear Project Updates before
+  starting or resuming work, avoiding silent overlap or duplicate delivery.
+- `122` Task-owned branch and PR naming governance (migrated from duplicate `079`).
+- `123` Wave 5 app re-homing cutover governance (migrated from duplicate `055`).
+- `124` Monorepo root layout governance (migrated from duplicate `060`).
 
 When a new NFR is requested:
 
-1. add/update requirement file in `.agents/requirements/`
+1. add/update requirement file in `.agents/requirements/project/` or `.agents/requirements/software/`
 2. update `.agents/README.md` index
 3. update this registry mapping

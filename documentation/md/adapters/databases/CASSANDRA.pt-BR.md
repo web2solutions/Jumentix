@@ -13,7 +13,7 @@ Perfil do motorista Cassandra.
 1. Inicie o contêiner:
 
 ```bash
-pnpm run docker:up:cassandra
+bun run docker:up:cassandra
 ```
 
 2. Definir ambiente:

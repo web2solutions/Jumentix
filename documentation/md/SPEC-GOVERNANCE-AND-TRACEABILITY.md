@@ -87,8 +87,13 @@ authoritative until a native or custom field is available.
 6. Milestone validity is checked before agent delegation is recorded at epic level.
 7. Only agents delegated to an epic may execute its tasks.
 8. One accountable agent owns each task and parallel agents use non-overlapping scopes.
-9. The canonical Agent Registry records `active_epic` and `assigned_task`.
-10. A milestone closes only after its epics complete or remaining work is formally carried over.
+9. Linear Issues and Projects/Epics identify the active `agent_identifier`, synchronized with the
+   canonical Agent Registry.
+10. The canonical Agent Registry records `active_epic`, `assigned_task`, and coordination context
+    when sibling-agent work can overlap.
+11. Agents refresh sibling-agent progress, blockers, branches, PRs, and Project Updates before
+    starting or resuming work.
+12. A milestone closes only after its epics complete or remaining work is formally carried over.
 
 ## PR Governance Requirements
 
@@ -149,7 +154,8 @@ Branch-aware execution contract:
 1. Task branches execute `ci:gate:task` against the task-owned diff.
 2. `dev` and pull requests targeting `dev` execute `test:unit`.
 3. `main` and release-promotion pull requests targeting `main` execute `ci:gate:strict`.
-4. CircleCI accepts only `dev` and `main`.
+4. GitHub Actions is the repository-owned hosted executor; CircleCI is retired as an authority by
+   Requirement `113`.
 5. `.github/workflows/website.yml` owns Storybook checks and is selected only by
    website-owned paths; the global test workflow and full matrix do not execute Storybook.
 6. Every selected gate emits auditable evidence and fails closed for missing, crashed, or

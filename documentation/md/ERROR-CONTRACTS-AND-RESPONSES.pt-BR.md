@@ -73,7 +73,7 @@ Os adaptadores atuais são serializados no mesmo formato de carga útil:
 ```
 
 Fontes:
-- Expresso/Fastify/Restify/Hyper-Express: `sendErrorResponse(...)`
+- Express/Fastify/Restify: `sendErrorResponse(...)`
 - Adaptadores Lambda: `apps/backend-template/src/interface/HTTP/adapters/aws/lambda/responses/sendErrorResponse.ts`
 
 ## 5) Contrato de erro de solicitação/resposta do MessageMediator

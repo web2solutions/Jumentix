@@ -2,11 +2,11 @@
 Arquivo gerado automaticamente a partir de: documentation/md/CI-TROUBLESHOOTING.md
 Idioma alvo: Português (Brasil)
 -->
-# Solução de problemas de CI / SonarQube / Codecov
+# Solução de problemas de CI / SonarQube / cobertura pertencente ao repositório
 
 Este guia ajuda a diagnosticar e corrigir as falhas mais comuns em portas locais e pipelines de CI.
 
-## 1) `pnpm install` falha com `EBADENGINE`
+## 1) `bun install` falha com `EBADENGINE`
 
 Sintomas:
 - a instalação falha com `Mecanismo não suportado`
@@ -19,9 +19,9 @@ Consertar:
 
 ```bash
 nvm use
-node -v
-pnpm -v
-pnpm run check-node-version
+bun --version
+bun run check-bun-version
+bun run compat:check-node-version
 ```
 
 Esperado:
@@ -45,7 +45,7 @@ Causa:
 Consertar:
 
 ```bash
-NODE_ENV=ci pnpm run test:unit
+NODE_ENV=ci bun run test:unit
 ```
 
 Certifique-se de que exista pelo menos um arquivo válido para substituto de CI:
@@ -65,7 +65,7 @@ Sintomas:
 Consertar:
 
 ```bash
-pnpm run oas:check-routes
+bun run oas:check-routes
 ```
 
 Lista de verificação:
@@ -90,7 +90,7 @@ Causas comuns:
 Consertar:
 
 ```bash
-pnpm run test:unit
+bun run test:unit
 ls coverage/lcov.info
 ```
 
@@ -103,7 +103,7 @@ Arquivos relacionados:
 - `.github/workflows/sonarqube-cloud.yml`
 - `sonar-project.properties`
 
-## 5) O status do Codecov falha (projeto ou patch)
+## 5) O status de cobertura do repositório falha (projeto ou patch)
 
 Sintomas:
 - A verificação de PR falha na cobertura do projeto e/ou cobertura de patch
@@ -114,15 +114,18 @@ Causa:
   o artefato dos testes unitários
 
 Padrão atual:
-- meta do projeto: `95%`
-- alvo do patch: `95%`
+- statements: `99%`
+- linhas: `99%`
+- funções: `99%`
+- branches: `90%`
+- linhas alteradas: `99%`
 
 Consertar:
 
 ```bash
-pnpm run test:unit
+bun run test:unit
 wc -l coverage/lcov.info
-pnpm run test:integration:service-management
+bun run test:integration:service-management
 wc -l coverage/lcov.info
 ```
 
@@ -133,8 +136,9 @@ mas a cobertura estiver abaixo do limite, adicione ou melhore testes nos caminho
 de código alterados.
 
 Arquivos relacionados:
-- `codecov.yml`
 - `jest.config.js`
+- `ci-cd/check-coverage-thresholds.js`
+- `ci-cd/check-patch-coverage.js`
 - `ci-cd/run-service-management-integration.js`
 
 ## 6) Os ganchos Husky não estão sendo executados localmente
@@ -148,7 +152,7 @@ Causa:
 Consertar:
 
 ```bash
-pnpm run prepare
+bun run prepare
 ls .husky
 ```
 
@@ -169,8 +173,8 @@ Causa:
 Consertar:
 
 ```bash
-pnpm run docker:composeredis
-pnpm run ci:smoke
+bun run docker:composeredis
+bun run ci:smoke
 ```
 
 Se necessário, verifique as chaves ambientais usadas pelos testes:
@@ -182,14 +186,14 @@ Se necessário, verifique as chaves ambientais usadas pelos testes:
 Execute esta sequência para isolar rapidamente os estágios do portão com falha:
 
 ```bash
-pnpm run lint
-pnpm run deps:check-cycles
-pnpm run arch:check-boundaries
-pnpm run arch:check-users-legacy-imports
-pnpm run test:unit
-pnpm run oas:check-routes
-pnpm run build:dev
-pnpm run ci:smoke
+bun run lint
+bun run deps:check-cycles
+bun run arch:check-boundaries
+bun run arch:check-users-legacy-imports
+bun run test:unit
+bun run oas:check-routes
+bun run build:dev
+bun run ci:smoke
 ```
 
-Esta é a mesma ordem usada por `pnpm run ci:gate`.
+Esta é a mesma ordem usada por `bun run ci:gate`.

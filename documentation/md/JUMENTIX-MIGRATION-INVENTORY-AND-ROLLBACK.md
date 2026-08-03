@@ -7,14 +7,14 @@ This document defines concrete migration guardrails for the JumentiX monorepo tr
 ### Wave 1 (must-have)
 
 - Keep current runtime behavior and public API contracts stable.
-- Establish pnpm workspaces and package boundaries already scaffolded under `apps/` and `packages/`.
+- Establish Bun workspaces and package boundaries already scaffolded under `apps/` and `packages/`.
 - Keep root compatibility scripts operational while app/package ownership is progressively moved.
 - Update docs and `.agents` requirements in the same PR as code changes.
 
 ### Wave 2+ (enhancements)
 
 - Full runtime cutover to app-owned paths (`apps/backend-template`, `apps/service-management`).
-- Workspace-native CI matrix (`pnpm -r`) as default.
+- Workspace-native CI matrix (`bun run --filter '*' ...` and `ci:monorepo`) as default.
 - Independent package release automation for reusable adapters and SDKs.
 
 ## Naming Decisions
@@ -23,7 +23,7 @@ This document defines concrete migration guardrails for the JumentiX monorepo tr
 - CLI package name: `@jumentix/cli-init`.
 - Bootstrap command:
   - current compatibility command: `aaa-bootstrap`
-  - official global install target: `pnpm add -g @jumentix/cli-init`
+  - official global install target: `bun add --global @jumentix/cli-init`
   - runtime command: `jumentix-init`
 
 ## Branch, Tag, and Rollback Strategy
@@ -51,8 +51,8 @@ This document defines concrete migration guardrails for the JumentiX monorepo tr
 1. Identify failing wave branch and latest stable pre-wave tag.
 2. Revert wave PR(s) from `dev` in reverse order if partially merged.
 3. Re-run mandatory gates:
-   - `pnpm run ci:gate`
-   - `pnpm run coverage:patch`
+   - `bun run ci:gate`
+   - `bun run coverage:patch`
 4. If rollback is required in production-like branches, fast-forward only from pre-wave tag and re-apply safe commits.
 
 ## Inventory Mapping (Current -> Target)
@@ -80,5 +80,5 @@ This document defines concrete migration guardrails for the JumentiX monorepo tr
 ## Blockers and staged constraints
 
 - Root path assumptions in PM2 configs and package scripts still require compatibility layer during cutover.
-- CI still executes npm-root flows as baseline; pnpm recursive gate will become primary after full lockfile stabilization.
+- CI executes Bun workspace gates as baseline; Node-root checks are compatibility validation only.
 - Import aliases in `tsconfig.json` must remain dual-mapped until full source relocation is complete.

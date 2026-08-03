@@ -4,12 +4,52 @@
 
 ## All Changes
 
+- 2026-08-02 Merge remote-tracking branch 'origin/dev' into codex/release/fix-main-promotion-redis-auth - Eduardo A.
+- 2026-08-02 [JUM-609][Governance] Separate project and software requirements into distinct namespaces (#54) - Eduardo A.
+- 2026-08-02 ci: align strict coverage Redis gate - Eduardo A.
+- 2026-08-02 docs: separate project and software requirements into distinct namespaces [JUM-609] - Eduardo A.
+- 2026-08-02 [JUM-540][CI] Align strict coverage gate with release coverage (#56) - Eduardo A.
+- 2026-08-02 ci: align strict coverage gate with release coverage - Eduardo A.
+- 2026-08-02 [JUM-540][Release] Reconcile main ancestry into dev (#53) - Eduardo A.
+- 2026-08-02 chore(release): reconcile main into dev before promotion - Eduardo A.
+- 2026-08-02 [JUM-540][Fix] Resolve BullMQ readiness review (#51) - Eduardo A.
+- 2026-08-02 fix: resolve BullMQ infrastructure readiness review - Eduardo A.
+- 2026-08-02 [JUM-009][Docs] Complete documentation drift follow-up (#50) - Eduardo A.
+- 2026-08-02 docs: refresh changelog after latest dev merge - Eduardo A.
+- 2026-08-02 Merge remote-tracking branch 'origin/dev' into codex/docs/JUM-009-documentation-drift - Eduardo A.
+- 2026-08-02 [JUM-540][CI] Complete Bun tooling gate cleanup (#49) - Eduardo A.
+- 2026-08-02 docs: refresh changelog after dev merge - Eduardo A.
+- 2026-08-02 Merge remote-tracking branch 'origin/dev' into codex/docs/JUM-009-documentation-drift - Eduardo A.
+- 2026-08-02 ci: complete Bun tooling gate cleanup - Eduardo A.
+- 2026-08-02 ci: complete Bun tooling gate cleanup - Eduardo A.
+- 2026-08-02 ci: enforce authorized emails before push - Eduardo A.
+- 2026-08-02 ci: update GitHub Actions runtime pins - Eduardo A.
+- 2026-08-02 docs: reconcile documentation drift - Eduardo A.
+- 2026-08-02 docs: reconcile documentation drift (#47) - Eduardo A.
+- 2026-08-02 ci: update GitHub Actions runtime pins - Eduardo A.
+- 2026-08-02 docs: reconcile documentation drift - Eduardo A.
+- 2026-08-02 [JUM-581][Testing] Cana runs in a real browser; the IndexedDB fake is deleted (#38) - Eduardo A.
+- 2026-08-02 [JUM-594][Release] Promote private free CI strategy (#46) - Eduardo A.
+- 2026-08-02 [JUM-581][Testing] Merge origin/dev into cana browser coverage PR - Eduardo Almeida
+- 2026-08-02 [JUM-594][Fix] Resolve REST and WebSocket SDK spec paths independent of cwd (#45) - Eduardo A.
+- 2026-08-02 refactor: share canonical spec resolution via shared-contracts - Eduardo A.
+- 2026-08-02 [JUM-581][Testing] Classify Cypress helpers as tests; cover cana public barrel - Eduardo Almeida
 - 2026-08-02 test: cover the explicit-path branch of the WebSocket spec loader - Eduardo A.
+- 2026-08-02 [JUM-581][CI] Decorate PR #38 from Sonar workflow_dispatch with pullrequest key - Eduardo Almeida
+- 2026-08-02 [JUM-581][CI] Retrigger pull_request checks for browser LCOV path fix - Eduardo Almeida
 - 2026-08-02 fix: resolve REST and WebSocket SDK spec paths independent of cwd - Eduardo A.
+- 2026-08-02 [JUM-581][Testing] Emit browser LCOV with repository-relative paths for Sonar - Eduardo Almeida
+- 2026-08-02 [JUM-594][Release] Fix loadSpecs cwd resolution to unblock the dev-to-main promotion (#43) - Eduardo A.
+- 2026-08-02 [JUM-581][Security] Emit browser LCOV without missing deps; drop hard-coded smoke passwords - Eduardo Almeida
+- 2026-08-02 [JUM-581][Security] Resolve Sonar PATH vulnerability and unhang coverage with forceExit - Eduardo Almeida
 - 2026-08-02 test: cover the missing-spec failure branch of loadSpecs - Eduardo A.
 - 2026-08-02 fix: resolve AsyncAPI gRPC spec independent of the current working directory - Eduardo A.
+- 2026-08-02 [JUM-581][CI] Run Sonar coverage against the same real Redis/brokers/browser as the gate - Eduardo Almeida
+- 2026-08-02 [JUM-581][Testing] Merge origin/dev; keep Redis reconnect fix without istanbul ignore - Eduardo Almeida
+- 2026-08-02 [JUM-581][Testing] Measure Redis and broker adapters at 99% without istanbul ignore - Eduardo Almeida
 - 2026-08-01 chore(registry): resync opencode-primary-001 status to available [JUM-597] (#41) - Eduardo A.
 - 2026-08-01 [JUM-597][Fix] Redis key-value client reports connection failures instead of hanging (#40) - Eduardo A.
+- 2026-08-01 [JUM-581][Testing] Run cana in a real browser; delete fake-indexeddb - Eduardo Almeida
 - 2026-08-01 [JUM-586][Testing] Every package owns a real test suite, and every package is measured (#37) - Eduardo A.
 - 2026-08-01 [JUM-595][Docs] Agent operating requirements 114–119 (worktree, tests, Docker, API-first) (#39) - Eduardo A.
 - 2026-08-01 chore: sync release registry [JUM-594] (#35) - Eduardo A.
@@ -21,6 +61,7 @@
 - 2026-08-01 [JUM-589][Governance] Sync terminal Codex onboarding state - Eduardo Almeida
 - 2026-08-01 [JUM-589][Governance] Sync Codex registry onboarding (#29) - Eduardo A.
 - 2026-08-01 [JUM-589][Governance] Sync Codex registry onboarding - Eduardo Almeida
+- 2026-08-01 [JUM-587][Release] Promote the test map completeness fixes to main (#28) - Eduardo A.
 - 2026-08-01 fix(ci): make the test map complete in both directions [JUM-587] (#27) - Eduardo A.
 - 2026-08-01 [JUM-585][Release] Reconcile main ancestry into dev (#26) - Eduardo A.
 - 2026-08-01 chore(release): reconcile main ancestry into dev - Eduardo Almeida

@@ -13,12 +13,10 @@ import type { IIntegrationEvent, IMessage, IMessageResponse } from '../src';
  * what every test of anything else runs on, so a fault in it is a fault
  * everywhere at once, wearing someone else's name. It is covered in full.
  *
- * The RabbitMQ and BullMQ adapters are not, and were not before this suite:
- * both files carry `istanbul ignore file`, because what they do is talk to a
- * broker and there is no honest way to test that without one. What *is* covered
- * for them is the part that runs with no broker in sight — the configuration
- * the compiler assembles, which is where a wrong port or a dropped credential
- * actually comes from.
+ * The RabbitMQ and BullMQ adapters talk to brokers: unit tests cover the
+ * configuration the compiler assembles (wrong port / dropped credential), and
+ * `test/integration/brokers.integration.test.ts` measures the live path under
+ * `RUN_BROKER_INTEGRATION` against real RabbitMQ/Redis in the coverage gate.
  */
 
 const message = (over: Partial<IMessage> = {}): IMessage => ({
@@ -159,6 +157,223 @@ describe('publishing events', () => {
     await expect(mediator.publish({
       name: 'order.created', payload: {}, occurredAt: '2026-01-01T00:00:00.000Z'
     })).rejects.toThrow('listener failed');
+  });
+});
+
+describe('bullMQ queue infrastructure readiness', () => {
+  const deferred = () => {
+    let resolve!: () => void;
+    let reject!: (error: Error) => void;
+    const promise = new Promise<void>((done, fail) => {
+      resolve = done;
+      reject = fail;
+    });
+    return { promise, reject, resolve };
+  };
+
+  const createBullMqHarness = (
+    readinessByName: Record<string, { events: Promise<void>; worker: Promise<void> }>
+  ) => {
+    const added: string[] = [];
+    const closed: string[] = [];
+    const mutableReadinessByName = { ...readinessByName };
+    const waitsByName: Record<string, { events: number; worker: number }> = {};
+    const ensureQueue = (name: string) => {
+      if (!waitsByName[name]) waitsByName[name] = { events: 0, worker: 0 };
+      if (!mutableReadinessByName[name]) {
+        mutableReadinessByName[name] = { events: Promise.resolve(), worker: Promise.resolve() };
+      }
+    };
+
+    function Queue(
+      this: { name: string; add: () => Promise<unknown>; close: () => Promise<void> },
+      name: string
+    ) {
+      this.name = name;
+      ensureQueue(name);
+      this.add = async () => {
+        added.push(this.name);
+        return {
+          waitUntilFinished: async () => ({ contract: 'orders.create', result: 'ok' })
+        };
+      };
+      this.close = async () => { closed.push(`queue:${this.name}`); };
+    }
+
+    function QueueEvents(this: {
+      name: string;
+      waitUntilReady: () => Promise<void>;
+      close: () => Promise<void>;
+    }, name: string) {
+      this.name = name;
+      ensureQueue(name);
+      this.waitUntilReady = async () => {
+        waitsByName[this.name].events += 1;
+        await mutableReadinessByName[this.name].events;
+      };
+      this.close = async () => { closed.push(`events:${this.name}`); };
+    }
+
+    function Worker(this: {
+      name: string;
+      processor: (job: unknown) => Promise<unknown>;
+      waitUntilReady: () => Promise<void>;
+      close: () => Promise<void>;
+    }, name: string, processor: (job: unknown) => Promise<unknown>) {
+      this.name = name;
+      this.processor = processor;
+      ensureQueue(name);
+      this.waitUntilReady = async () => {
+        waitsByName[this.name].worker += 1;
+        await mutableReadinessByName[this.name].worker;
+      };
+      this.close = async () => { closed.push(`worker:${this.name}`); };
+    }
+
+    return {
+      added,
+      closed,
+      module: { Queue, QueueEvents, Worker },
+      readinessByName: mutableReadinessByName,
+      waitsByName
+    };
+  };
+
+  it('makes concurrent callers wait for the same queue setup before enqueueing', async () => {
+    expect.assertions(4);
+
+    const queueName = 'slow.queue';
+    const eventsReady = deferred();
+    const workerReady = deferred();
+    const harness = createBullMqHarness({
+      [queueName]: { events: eventsReady.promise, worker: workerReady.promise }
+    });
+
+    const original = BullMqMessageMediatorAdapter.importBullMq;
+    BullMqMessageMediatorAdapter.importBullMq = async () => harness.module;
+
+    try {
+      const mediator = new BullMqMessageMediatorAdapter({
+        connection: { host: '127.0.0.1', port: 6379 }
+      });
+      await mediator.connect();
+
+      const first = mediator.request(message(), { queueName, timeoutMs: 20000 });
+      const second = mediator.request(message(), { queueName, timeoutMs: 20000 });
+
+      await Promise.resolve();
+
+      expect({ added: harness.added, waits: harness.waitsByName[queueName] }).toStrictEqual({
+        added: [],
+        waits: { events: 1, worker: 0 }
+      });
+
+      eventsReady.resolve();
+      await new Promise((resolve) => { setTimeout(resolve, 0); });
+
+      expect({ added: harness.added, waits: harness.waitsByName[queueName] }).toStrictEqual({
+        added: [],
+        waits: { events: 1, worker: 1 }
+      });
+
+      workerReady.resolve();
+
+      await expect(Promise.all([first, second])).resolves.toStrictEqual([
+        { contract: 'orders.create', result: 'ok' },
+        { contract: 'orders.create', result: 'ok' }
+      ]);
+      expect({ added: harness.added, waits: harness.waitsByName[queueName] }).toStrictEqual({
+        added: [queueName, queueName],
+        waits: { events: 1, worker: 1 }
+      });
+
+      await mediator.disconnect();
+    } finally {
+      BullMqMessageMediatorAdapter.importBullMq = original;
+    }
+  });
+
+  it('closes clients built by a failed queue setup before a retry', async () => {
+    expect.assertions(3);
+
+    const queueName = 'failing.queue';
+    const eventsReady = deferred();
+    const readinessByName = {
+      [queueName]: { events: eventsReady.promise, worker: Promise.resolve() }
+    };
+    const harness = createBullMqHarness(readinessByName);
+    const original = BullMqMessageMediatorAdapter.importBullMq;
+    BullMqMessageMediatorAdapter.importBullMq = async () => harness.module;
+
+    try {
+      const mediator = new BullMqMessageMediatorAdapter({
+        connection: { host: '127.0.0.1', port: 6379 }
+      });
+      await mediator.connect();
+
+      const first = mediator.request(message(), { queueName, timeoutMs: 20000 });
+      eventsReady.reject(new Error('queue-events-not-ready'));
+
+      await expect(first).rejects.toThrow('queue-events-not-ready');
+      expect(harness.closed).toStrictEqual([
+        `queue:${queueName}`,
+        `events:${queueName}`
+      ]);
+
+      harness.closed.length = 0;
+      harness.waitsByName[queueName] = { events: 0, worker: 0 };
+      harness.readinessByName[queueName] = {
+        events: Promise.resolve(),
+        worker: Promise.resolve()
+      };
+
+      await expect(mediator.request(message(), { queueName, timeoutMs: 20000 }))
+        .resolves.toMatchObject({ result: 'ok' });
+
+      await mediator.disconnect();
+    } finally {
+      BullMqMessageMediatorAdapter.importBullMq = original;
+    }
+  });
+
+  it('lets disconnect close clients from setup that was already in flight', async () => {
+    expect.assertions(3);
+
+    const queueName = 'disconnect.queue';
+    const eventsReady = deferred();
+    const workerReady = deferred();
+    const harness = createBullMqHarness({
+      [queueName]: { events: eventsReady.promise, worker: workerReady.promise }
+    });
+    const original = BullMqMessageMediatorAdapter.importBullMq;
+    BullMqMessageMediatorAdapter.importBullMq = async () => harness.module;
+
+    try {
+      const mediator = new BullMqMessageMediatorAdapter({
+        connection: { host: '127.0.0.1', port: 6379 }
+      });
+      await mediator.connect();
+
+      const request = mediator.request(message(), { queueName, timeoutMs: 20000 });
+      await Promise.resolve();
+
+      const disconnect = mediator.disconnect();
+      await Promise.resolve();
+
+      expect(harness.closed).toStrictEqual([]);
+
+      eventsReady.resolve();
+      workerReady.resolve();
+
+      await expect(Promise.all([request, disconnect])).resolves.toBeDefined();
+      expect(harness.closed).toStrictEqual(expect.arrayContaining([
+        `queue:${queueName}`,
+        `events:${queueName}`,
+        `worker:${queueName}`
+      ]));
+    } finally {
+      BullMqMessageMediatorAdapter.importBullMq = original;
+    }
   });
 });
 
@@ -527,12 +742,12 @@ describe('compiling a mediator', () => {
 /**
  * The configuration the compiler assembles for the brokers.
  *
- * Read back off the adapter, because this is the half of those adapters that
- * runs without a broker — and the half where a wrong port or a dropped password
- * actually comes from. What the adapters then do with a live broker is not
- * covered here or anywhere else in unit tests; both files carry
- * `istanbul ignore file`, which is a statement about what a unit test can
- * honestly reach rather than a coverage convenience.
+ * Read back off the adapter: this is the half that runs without a broker, and
+ * the half where a wrong port or a dropped password actually comes from. Live
+ * broker behaviour is measured by `test/integration/brokers.integration.test.ts`
+ * under `RUN_BROKER_INTEGRATION` against real RabbitMQ/Redis, and that suite is
+ * part of the Jest coverage instrument when the coverage gate brings those
+ * services up (Req 110 / 118) — not excluded by an istanbul ignore.
  */
 describe('broker configuration', () => {
   const optionsOf = (mediator: unknown) => (mediator as unknown as {

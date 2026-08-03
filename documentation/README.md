@@ -39,8 +39,10 @@ For teams and product owners using Jumentix to build software:
 For engineers maintaining and evolving Jumentix:
 
 - [Creator Documentation Index](./creators/README.md)
-- [Agent Operating Requirements 114–119](./md/AGENT-OPERATING-REQUIREMENTS-114-119.md)
-  ([pt-BR](./md/AGENT-OPERATING-REQUIREMENTS-114-119.pt-BR.md))
+- [Agent Operating Requirements 114–121](./md/AGENT-OPERATING-REQUIREMENTS-114-121.md)
+  ([pt-BR](./md/AGENT-OPERATING-REQUIREMENTS-114-121.pt-BR.md))
+- [Project vs Software Requirements](./md/PROJECT-VS-SOFTWARE-REQUIREMENTS.md)
+  ([pt-BR](./md/PROJECT-VS-SOFTWARE-REQUIREMENTS.pt-BR.md))
 
 ## Component Technical Hubs
 
@@ -66,9 +68,9 @@ For engineers maintaining and evolving Jumentix:
 Run these checks from the repository root after documentation changes:
 
 ```bash
-pnpm run docs:consumers:package-scripts
-pnpm run website:test:prepublish
-pnpm run ci:gate:task
+bun run docs:consumers:package-scripts
+bun run website:test:prepublish
+bun run ci:gate:task
 ```
 
 The package-script generator is authoritative for the consumer command reference. The website

@@ -17,9 +17,9 @@ Definir perfil de ambiente:
 Iniciar perfil de tempo de execução:
 
 ```bash
-pnpm run dev:websocket
+bun run dev:websocket
 # or
-pnpm run dev:grpc
+bun run dev:grpc
 ```
 
 ## 2. Definir contratos assíncronos
@@ -40,8 +40,8 @@ Os serviços em tempo real são executados com REST como interface secundária. 
 ## 5. Valide a estabilidade em tempo real
 
 ```bash
-pnpm run test:integration:realtime
-pnpm run test:smoke:realtime
+bun run test:integration:realtime
+bun run test:smoke:realtime
 ```
 
 ## Referências

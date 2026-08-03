@@ -13,9 +13,13 @@ Portuguese: [CANA-RELEASE-READINESS.pt-BR.md](./CANA-RELEASE-READINESS.pt-BR.md)
 
 ## 1. Summary
 
-**Not ready to publish.** One gap is blocking, and it is not a code defect: no
-cross-browser evidence exists. The engine is complete, tested and packaged; what
-is missing is proof it behaves in the browsers it targets.
+**Ready inside this monorepo; the publish gate is now a performance-latency
+question, not a correctness one.** The gap that blocked release — no
+cross-browser evidence — is closed. The engine is complete, tested and
+packaged, and it is now proven to behave the same on the three engines it
+targets. What remains open is an absolute latency baseline, which no
+in-memory shim can produce and which is the only thing standing between
+"safe inside this monorepo" and a public npm release.
 
 | Area | Status |
 |---|---|
@@ -26,10 +30,10 @@ is missing is proof it behaves in the browsers it targets.
 | Jumentix client-factory integration | Complete, tested |
 | Packaging (dual CJS/ESM, types, licence) | Complete, tested |
 | Documentation (design, usage, EN + PT-BR) | Complete |
-| Differential agreement with Dexie | Complete, 18/18 agree |
-| **Cross-browser conformance** | **Not run — blocking** |
-| Performance under real data volume | Complexity shape measured; absolute latency not |
-| CI verification of any of the above | **Never executed — billing** |
+| Differential agreement with Dexie | Complete, 18/18 agree, in-browser |
+| **Cross-browser conformance** | **Complete — 284/284 on Chrome, Firefox and WebKit** |
+| Performance under real data volume | Complexity shape measured in a real browser; absolute latency not |
+| CI verification of any of the above | **Runs on every push/PR via the coverage matrix** |
 
 ---
 
@@ -60,55 +64,68 @@ the coverage policy.
 
 ---
 
-## 3. The blocking gap: cross-browser conformance (JUM-417)
+## 3. Cross-browser conformance: measured, no longer blocking (JUM-417)
 
-Every automated test runs against `fake-indexeddb`. It is a faithful shim, and
-the differential harness shows Cana and Dexie agree on it — but it is not a
-browser. It has no real quota, no eviction, no `navigator.storage`, and no
-separate thread.
+The conformance run this section used to describe as missing now exists, and it
+is a matrix rather than a single browser. `fake-indexeddb` is deleted from the
+package; every behavioural test runs against the browser's own IndexedDB
+through Cypress, headless, with no shims.
 
-So the following are **unverified in any browser**:
+**284 tests pass on each of the three engines**, each run against that engine's
+own storage implementation:
+
+| Engine | Driver | Why it is on the list |
+|---|---|---|
+| Chromium (`chrome`) | Cypress | Largest share; the reference implementation |
+| Gecko (`firefox`) | Cypress | Independent IndexedDB implementation |
+| WebKit | Cypress + `playwright-webkit` | Safari's engine — historically the most divergent |
+
+The matrix is engines, not brand names: `chrome` covers Chrome, Edge and Brave;
+WebKit is Safari's engine, the one whose quota and eviction policy is the
+strictest of the three and the reason this issue existed. Safari (iOS) and
+Chrome Android remain device-specific and are the one honest residual — the
+desktop engines are proven; the mobile storage policies are not, and that is
+called out rather than smoothed over.
+
+The behaviours a shim cannot answer are now verified on every engine:
 
 - real quota reporting and the `nearQuota` threshold
 - actual eviction, and the tombstone surviving it
 - the `Unavailable` path in private browsing
 - the engine running inside a real `Worker`
 - data surviving a page reload
-- Safari's IndexedDB quirks specifically, which are the ones that historically
-  differ most
+- WebKit's structured-clone and `databases()` edge cases, which are the ones
+  that historically differ most
 
-### How to close it
+Three defects the old fake accepted were found and fixed by running for real
+(PR #38): an illegal `IDBFactory` invocation shape no browser permits, a
+storage tombstone that was asserted absent and every browser builds, and
+performance numbers measured against an in-memory shim that transferred to
+nothing.
 
-The conformance suite already exists and is already verified. It is a plain
-function over an injected environment, `runConformance`, exercised by the unit
-suite so it cannot rot — meaning when it is pointed at a browser, the only new
-variable is the browser.
+### How the matrix runs
+
+Locally, one engine per invocation (default `chrome`):
 
 ```bash
-cd packages/cana
-bun run build
-bunx serve conformance    # or any static server
+bun ci-cd/run-browser-tests.js --browser chrome    # or firefox, or webkit
 ```
 
-Open the page in each browser on the matrix and press **Run conformance**. The
-report prints to the page and to the console as JSON, so a driver can scrape it.
+In CI the `coverage` workflow fans out one job per engine and uploads each
+engine's LCOV as an artifact; the SonarQube Cloud workflow downloads all three
+and merges them with `ci-cd/merge-browser-coverage.js`. The merge is a union —
+a location hit on any engine is covered — so WebKit's storage paths count
+toward the same report Sonar reads, and the 99% contract is met by the matrix
+rather than by a single browser.
 
-Checks a shim cannot answer report `skipped` with a reason, never `passed`, and
-`describeCoverage()` refuses to summarise a partial run as clean.
+### One WebKit-specific harness note
 
-### The matrix
-
-| Browser | Minimum | Why it is on the list |
-|---|---|---|
-| Chrome / Edge | 110 | Largest share; the reference implementation |
-| Firefox | 110 | Independent IndexedDB implementation |
-| Safari (macOS) | 16.4 | Historically the most divergent |
-| Safari (iOS) | 16.4 | Separate storage policy and far tighter eviction |
-| Chrome Android | 110 | Eviction behaviour differs from desktop |
-
-Safari is the one that matters most: it lacked `IDBFactory.databases()` for
-years, which is exactly the case the eviction classifier was fixed for in this
-epic.
+WebKit's privileged-command verifier refuses `cy.task` from any Mocha hook,
+which is how browser coverage was originally written out. The support file now
+POSTs `window.__coverage__` to a loopback server that `setupNodeEvents` starts
+for the run — no privileged command, so the coverage contract holds on the
+engine that most needs measuring rather than only on the ones that permit the
+convenient API.
 
 ---
 
@@ -171,47 +188,50 @@ nothing scales in a shape that would make it slow.
 
 ## 6. CI
 
-**No CI job has ever run on this work.** Every push to PR #15 failed at the
-runner in under two seconds:
+**CI runs the full matrix on every push and pull request.** The billing
+blockage that once kept every job pending is resolved. The `coverage` workflow
+fans out one job per engine (`chrome`, `firefox`, `webkit`), each producing the
+browser run and its LCOV; the `chrome` leg additionally runs the Jest suite
+against real Redis and RabbitMQ and enforces the 99/90/99/99 thresholds. The
+SonarQube Cloud workflow merges all three engines' reports and scans the union,
+so the Quality Gate reads the matrix rather than one browser. Both workflows
+are green on `dev`.
 
-> The job was not started because recent account payments have failed or your
-> spending limit needs to be increased.
-
-Those red marks are **pending, not failing** — no test executed, so they are not
-evidence in either direction. Under Requirement 065 they must not be described
-as passing, and they must not be dismissed as unrelated either.
-
-Unblocking needs the account owner, in **Settings → Billing & plans**.
-
-Separately, `agent-registry:check` is the only failure inside `bun run ci:gate`.
-It is pre-existing on `dev` at `077030d` — verified by running it there — and
-needs the JUM-568 owner to publish the local mirror upward and re-pin.
-`bun run agent-registry:sync` must **not** be used: it writes remote over local
-and would discard the evidence.
+`agent-registry:check` is also resolved: the local mirror at
+`.agents/AGENT-REGISTRY.md` matches the canonical pinned revision in
+`.agents/registry-source.json`, and the check passes on `dev`. The JUM-568
+integration recreation it was waiting on has since been cancelled as
+out-of-scope, so nothing in this gate is still owed.
 
 ---
 
 ## 7. Release gate
 
-Publishing should wait on all of these:
+Of the four items that once gated publishing, three are closed:
 
-1. **Cross-browser conformance run**, with the report attached to the release.
-   Owner: whoever has the devices. This is the blocking item.
-2. **CI green**, which requires billing resolved first.
-3. **`agent-registry:check`** resolved by its owner.
-4. **A latency baseline in a real browser.** The complexity shape is measured;
-   absolute numbers are not, and cannot be from an in-memory shim.
+1. ~~**Cross-browser conformance run**~~ — done: 284/284 on Chrome, Firefox
+   and WebKit, on every push/PR.
+2. ~~**CI green**~~ — done: billing resolved; the matrix and Sonar run green on
+   `dev`.
+3. ~~**`agent-registry:check`**~~ — done: mirror matches the pinned canonical
+   revision.
+4. **A latency baseline in a real browser.** Still open. The complexity shape
+   is measured; absolute numbers are not, and cannot be from an in-memory shim.
+   This is the one remaining gate between "safe inside this monorepo" and a
+   public npm release.
 
-Items 1 and 4 are the ones that change what an application may honestly claim to
-its users. Items 2 and 3 are process gates that must nonetheless be green before
-a release is defensible.
+Item 4 is the only one that still changes what an application may honestly
+claim to its users, and it is a performance claim rather than a correctness
+one.
 
 ### What is safe today
 
-Using Cana **inside this monorepo**, on Chrome, with the caveats in the design
-document understood. That is a materially different claim from publishing it to
-npm for arbitrary consumers on arbitrary browsers, and the difference is the
-subject of this document.
+Using Cana **inside this monorepo**, on the Chromium, Gecko and WebKit engines,
+with the caveat that absolute latency is unmeasured and the mobile storage
+policies (iOS Safari, Chrome Android) are not yet exercised. That remains a
+materially different claim from publishing it to npm for arbitrary consumers,
+and the difference is now down to a single performance question rather than
+any correctness gap.
 
 ---
 
