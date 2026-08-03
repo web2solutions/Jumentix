@@ -96,6 +96,13 @@ Examples:
 `);
 }
 
+function isFirestoreUnavailable(error) {
+  const message = String(error?.message || error || '');
+  return message.includes('PERMISSION_DENIED')
+    && message.includes('Cloud Firestore API')
+    && message.includes('disabled');
+}
+
 async function main() {
   const { command, flags } = parseArgs();
   if (command === 'help') {
@@ -162,7 +169,30 @@ async function main() {
         break;
 
       case 'check':
-        await registry.checkSnapshot(firestore);
+        try {
+          await registry.checkSnapshot(firestore);
+        } catch (error) {
+          if (
+            process.env.CI
+            && String(error?.message || '').includes('Local agent registry snapshot not found')
+          ) {
+            try {
+              await registry.syncSnapshot(firestore);
+              await registry.checkSnapshot(firestore);
+              break;
+            } catch (syncError) {
+              if (isFirestoreUnavailable(syncError)) {
+                console.log(
+                  '[agent-registry-cli] skipping CI registry snapshot check: '
+                    + 'Cloud Firestore API is disabled for the configured project.'
+                );
+                break;
+              }
+              throw syncError;
+            }
+          }
+          throw error;
+        }
         break;
 
       default:
