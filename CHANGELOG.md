@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-03 docs(JUM-611): deprecate GitHub-mirrored agent registry after Firestore cutover - Eduardo A.
 - 2026-08-03 ci(JUM-611): fix migration script require for Bun compatibility - Eduardo A.
 - 2026-08-03 [JUM-611][Governance] Replace GitHub-mirrored agent registry with Firestore Database - Eduardo A.
 - 2026-08-03 [JUM-417][CI] Sync agent-registry mirror (kimi-k3-cursor-001) (#64) - Eduardo A.

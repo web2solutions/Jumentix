@@ -2,7 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/adapters/realtime/WEBSOCKET-API.md
 Idioma alvo: Português (Brasil)
 -->
-#API WebSocket em tempo real
+# API WebSocket em tempo real
 
 Este guia é exclusivo para a interface em tempo real do Socket.IO.
 

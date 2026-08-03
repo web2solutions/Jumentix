@@ -314,6 +314,7 @@ describe('run-full-test-matrix', () => {
       !read('.github/workflows/test.yml').includes('AAA_REDIS_PASSWORD'),
       read('.github/workflows/website.yml').includes('bun run website:storybook:build'),
       read('.github/workflows/website.yml').includes('bun run website:storybook:smoke'),
+      read('.github/workflows/website.yml').includes('bun run website:test:cypress'),
       read('.github/workflows/coverage.yml').includes('bun run coverage:patch'),
       circleRetiredOrBridged(matrixPath.join(fullMatrixRootDir, '.circleci', 'config.yml')),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'pr:governance:check'),
@@ -328,7 +329,7 @@ describe('run-full-test-matrix', () => {
       )
     ]).toStrictEqual([
       true, true, true, true, true, true, true, true, true, true, true, true, true, true,
-      true, true, true, true, true, true, true, true, true
+      true, true, true, true, true, true, true, true, true, true
     ]);
   });
 });

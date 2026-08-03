@@ -50,3 +50,11 @@ jobs:
         run: bun run website:storybook:smoke
       - name: Validate publishable website content
         run: bun run website:test:prepublish
+      - name: Install Cypress binary
+        run: bunx cypress install
+      - name: Cypress website quality gates (JUM-396)
+        run: bun run website:test:cypress
+        env:
+          # Build already happened inside test:prepublish; reuse dist.
+          JUMENTIX_WEBSITE_CYPRESS_SKIP_BUILD: "1"
+          JUMENTIX_WEBSITE_CYPRESS_BROWSER: chrome
