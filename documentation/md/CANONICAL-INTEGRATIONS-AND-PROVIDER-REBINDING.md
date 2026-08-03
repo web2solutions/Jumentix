@@ -39,8 +39,8 @@ A missing, skipped, cancelled, timed-out, or failed required check is never gree
 ## Third-party PR review implementation
 
 The required `third-party-review` check runs Gitleaks `8.30.1` and Semgrep
-`1.172.0`. Release archives are checksum-verified, the Semgrep image is pinned
-by OCI digest, and the policy lives in `.semgrep.yml`. CircleCI retains SARIF
+`1.172.0`. Release archives are checksum-verified, Semgrep is installed into a
+pinned job-local virtualenv, and the policy lives in `.semgrep.yml`. CircleCI retains SARIF
 artifacts; scanner exit states are enforced so publishing evidence cannot mask a
 failed scan.
 

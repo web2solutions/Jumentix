@@ -15,8 +15,8 @@ pulado, neutro, ausente, expirado ou pendente nunca é verde.
 | GitHub Actions billing | workflow CircleCI por branch | `branch-gate` e artefato JSON |
 | Checks privados Codecov | LCOV Jest/Bun, threshold do projeto e linhas alteradas, depois upload Codecov CLI no CircleCI | `coverage`, JSON, LCOV, patch e upload `codecov` |
 | GitGuardian | Gitleaks CLI fixado no CircleCI | artefatos SARIF e `third-party-review` terminal |
-| Snyk privado | `bun audit`, integridade de overrides e Semgrep fixado | células de dependência/segurança |
-| Revisor hospedado de PR | Semgrep e Gitleaks fixados via Reviewdog | check obrigatório `third-party-review` |
+| Snyk privado | `bun audit`, integridade de overrides e Semgrep fixado | células de dependência/segurança e artefatos SARIF |
+| Revisor hospedado de PR | scanners Semgrep e Gitleaks controlados pelo repositório | check obrigatório `third-party-review` |
 
 SonarQube Cloud continua como defesa em profundidade enquanto houver cota para o
 projeto privado. Ele não é o único proprietário da cobertura ou segurança. Se a
@@ -64,7 +64,7 @@ responsabilidade humana ou resolução de comentários válidos.
 
 1. Manter os checks exatos em `dev` e `main`; aprovação pode ser opcional, mas
    evidência de qualidade e segurança continua obrigatória.
-2. Fixar versões e digests. Revisar releases mensalmente e atualizar por PR
+2. Fixar versões e checksums. Revisar releases mensalmente e atualizar por PR
    governada com checksum e testes de contrato.
 3. Reter gate, cobertura, SARIF e scanners pelo prazo do workflow; nunca incluir
    segredos em logs ou artefatos.

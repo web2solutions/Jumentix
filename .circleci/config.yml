@@ -229,10 +229,13 @@ jobs:
             git fetch --no-tags origin \
               "+refs/heads/main:refs/remotes/origin/main" \
               "+refs/heads/dev:refs/remotes/origin/dev"
-      - setup_remote_docker
       - run:
           name: Install pinned review tools
-          command: ci-cd/install-pinned-review-tools.sh "$HOME/review-tools"
+          command: |
+            python_version="$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')"
+            sudo apt-get update
+            sudo apt-get install -y "python${python_version}-venv"
+            ci-cd/install-pinned-review-tools.sh "$HOME/review-tools"
       - run:
           name: Scan Git history for secrets
           command: |
@@ -247,11 +250,8 @@ jobs:
           command: |
             set +e
             BASE_REF="${CIRCLE_PR_BASE_BRANCH:-dev}"
-            docker run --rm \
-              -v "$PWD:/src" -w /src \
-              semgrep/semgrep@sha256:65dcd4408adda7c183a6b4550cb1e9b19f7f627a6fbb7e0559bd466bedc44d7b \
-              semgrep scan --config .semgrep.yml --baseline-commit "origin/${BASE_REF}" \
-                --sarif --output semgrep.sarif
+            "$HOME/review-tools/semgrep" scan --config .semgrep.yml --baseline-commit "origin/${BASE_REF}" \
+              --sarif --output semgrep.sarif
             echo "$?" > semgrep.exit
       - store_artifacts:
           path: gitleaks.sarif

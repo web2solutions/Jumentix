@@ -13,12 +13,12 @@ const contracts = [
       'semgrep.sarif',
       'Enforce scanner outcomes',
       'store_artifacts',
-      'sha256:65dcd4408adda7c183a6b4550cb1e9b19f7f627a6fbb7e0559bd466bedc44d7b'
+      '$HOME/review-tools/semgrep'
     ]
   },
   {
     file: 'ci-cd/install-pinned-review-tools.sh',
-    markers: ['v8.30.1', 'v0.21.0', 'sha256sum --check --status']
+    markers: ['v8.30.1', 'semgrep==1.172.0', 'checksum mismatch']
   },
   {
     file: '.semgrep.yml',
@@ -44,8 +44,8 @@ const circleci = fs.existsSync(path.join(root, contracts[0].file))
 if (/uses:\s*[^\s]+@(v\d+|main|master)\b/.test(circleci)) {
   failures.push('third-party CircleCI job contains a mutable action reference');
 }
-if (!/setup_remote_docker/.test(circleci)) {
-  failures.push('third-party CircleCI job must enable Docker for the pinned Semgrep image');
+if (/setup_remote_docker/.test(circleci) || /docker run/.test(circleci)) {
+  failures.push('third-party CircleCI job must run native pinned scanners without remote Docker workspace mounts');
 }
 
 if (failures.length) {
@@ -53,4 +53,4 @@ if (failures.length) {
   failures.forEach((failure) => console.error(`- ${failure}`));
   process.exit(1);
 }
-console.log('Third-party review contract passed: pinned Gitleaks and Semgrep are fail-closed in CircleCI.');
+console.log('Third-party review contract passed: pinned Gitleaks and native Semgrep are fail-closed in CircleCI.');

@@ -21,12 +21,27 @@ describe('run-branch-quality-gate', () => {
 
   it('selects the canonical unit gate for dev', () => {
     expect.hasAssertions();
-    expect(selectQualityGate('dev')).toBe(UNIT_QUALITY_GATE);
+    expect(selectQualityGate('dev', { isPullRequest: false })).toBe(UNIT_QUALITY_GATE);
   });
 
   it('selects the canonical full matrix for pull requests to dev', () => {
     expect.hasAssertions();
     expect(selectQualityGate('dev', { isPullRequest: true })).toBe(FULL_MATRIX_QUALITY_GATE);
+  });
+
+  it('selects the canonical full matrix for environment-marked pull requests to dev', () => {
+    expect.hasAssertions();
+    const previous = process.env.AAA_CI_IS_PULL_REQUEST;
+    process.env.AAA_CI_IS_PULL_REQUEST = '1';
+    try {
+      expect(selectQualityGate('dev')).toBe(FULL_MATRIX_QUALITY_GATE);
+    } finally {
+      if (previous === undefined) {
+        delete process.env.AAA_CI_IS_PULL_REQUEST;
+      } else {
+        process.env.AAA_CI_IS_PULL_REQUEST = previous;
+      }
+    }
   });
 
   it('selects the change-focused gate for task branches', () => {

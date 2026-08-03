@@ -15,8 +15,8 @@ neutral, missing, timed-out, or pending result is green.
 | GitHub Actions billing | CircleCI branch-aware workflow | `branch-gate` plus JSON gate artifact |
 | Codecov private checks | Jest/Bun LCOV, project threshold and changed-lines checkers, then Codecov CLI upload from CircleCI | `coverage`, JSON, LCOV, patch evidence, and `codecov` upload |
 | GitGuardian | pinned Gitleaks CLI in CircleCI | SARIF artifacts and terminal `third-party-review` result |
-| Snyk private enforcement | `bun audit`, override integrity and pinned Semgrep | dependency/security cells and Reviewdog annotations |
-| Hosted PR reviewer dependency | pinned Semgrep and Gitleaks through Reviewdog | required `third-party-review` check |
+| Snyk private enforcement | `bun audit`, override integrity and pinned Semgrep | dependency/security cells and SARIF artifacts |
+| Hosted PR reviewer dependency | repository-owned Semgrep and Gitleaks scanners | required `third-party-review` check |
 
 SonarQube Cloud stays as defense in depth while its private-project allowance is
 available. It is not the sole owner of coverage or security evidence. If that
@@ -65,7 +65,7 @@ tests, coverage, human accountability, or resolution of valid PR comments.
 
 1. Keep the exact required checks on protected `dev` and `main`; approval count
    stays optional, but quality/security evidence remains mandatory.
-2. Pin tool versions and OCI digests. Review upstream releases monthly and apply
+2. Pin tool versions and checksums. Review upstream releases monthly and apply
    upgrades through governed PRs with checksum and contract tests.
 3. Retain gate, coverage, SARIF and scanner artifacts for the workflow retention
    window; never put secrets in logs or artifacts.

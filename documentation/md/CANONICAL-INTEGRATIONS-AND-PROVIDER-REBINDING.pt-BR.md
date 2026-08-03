@@ -38,8 +38,8 @@ falha nunca é verde.
 ## Implementação do review third-party em PR
 
 O check obrigatório `third-party-review` executa Gitleaks `8.30.1` e Semgrep
-`1.172.0`. Arquivos de release são validados por checksum, a imagem Semgrep é
-fixada por digest OCI e a política vive em `.semgrep.yml`. O CircleCI retém
+`1.172.0`. Arquivos de release são validados por checksum, o Semgrep é
+instalado em um virtualenv local do job com versão fixada e a política vive em `.semgrep.yml`. O CircleCI retém
 artefatos SARIF; os status dos scanners são aplicados para que publicar
 evidência não esconda falha.
 
