@@ -451,22 +451,39 @@
   color: var(--jtx-blue-700);
 }
 
-.mobileMenuButton {
+.mobileMenu {
   display: none;
+  position: relative;
+}
+
+.mobileMenuButton {
+  display: grid;
   width: 40px;
   height: 40px;
+  list-style: none;
   place-items: center;
   border: 1px solid var(--jtx-line);
   border-radius: var(--jtx-radius-sm);
   color: var(--jtx-ink);
   background: var(--jtx-surface);
+  cursor: pointer;
+}
+
+.mobileMenuButton::-webkit-details-marker {
+  display: none;
 }
 
 .mobileNav {
-  display: none;
-  width: min(calc(100% - 32px), var(--jtx-content-width));
-  margin: 0 auto;
-  padding: 0 0 var(--jtx-space-4);
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  width: min(calc(100vw - 32px), 320px);
+  padding: var(--jtx-space-3) var(--jtx-space-4);
+  border: 1px solid var(--jtx-line);
+  border-radius: var(--jtx-radius-md);
+  background: var(--jtx-surface);
+  box-shadow: var(--jtx-shadow-md);
 }
 
 .mobileNav a {
@@ -564,12 +581,7 @@
     display: none;
   }
 
-  .mobileMenuButton,
-  .mobileNav:not([hidden]) {
-    display: grid;
-  }
-
-  .mobileNav:not([hidden]) {
+  .mobileMenu {
     display: block;
   }
 

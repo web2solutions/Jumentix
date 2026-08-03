@@ -16,7 +16,6 @@ import {
   IconMenu2,
   IconSearch,
   IconTopologyStar3,
-  IconX,
 } from '@tabler/icons-react';
 import classes from './DesignSystem.module.css';
 
@@ -375,7 +374,6 @@ export function SiteHeader({
   locale?: 'en' | 'pt-BR';
   currentPath?: string;
 }) {
-  const [menuOpen, setMenuOpen] = useState(false);
   const isPortuguese = locale === 'pt-BR';
   const alternatePath = isPortuguese
     ? currentPath.replace(/^\/pt-BR(?=\/|$)/, '') || '/'
@@ -401,34 +399,36 @@ export function SiteHeader({
           <ActionLink href="https://github.com/XpertMinds/Jumentix" variant="secondary" external>
             GitHub
           </ActionLink>
-          <button
-            className={classes.mobileMenuButton}
-            type="button"
-            aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
-            aria-expanded={menuOpen}
-            aria-controls="jtx-mobile-navigation"
-            onClick={() => setMenuOpen((value) => !value)}
-          >
-            {menuOpen ? <IconX size={20} /> : <IconMenu2 size={20} />}
-          </button>
+          {/*
+            Native <details> keeps the mobile menu free of useState so the
+            SSR tree and the hydrated client tree stay identical (React #418).
+          */}
+          <details className={classes.mobileMenu}>
+            <summary
+              className={classes.mobileMenuButton}
+              aria-label="Open navigation menu"
+              aria-controls="jtx-mobile-navigation"
+            >
+              <IconMenu2 size={20} />
+            </summary>
+            <nav
+              className={classes.mobileNav}
+              id="jtx-mobile-navigation"
+              aria-label="Mobile navigation"
+            >
+              {navItems.map((item) => (
+                <a href={localizePath(item.href, locale)} key={item.href}>
+                  {isPortuguese ? item.pt : item.en}
+                </a>
+              ))}
+              <a href={localizePath('/community', locale)}>
+                {isPortuguese ? 'Comunidade' : 'Community'}
+              </a>
+              <a href={localizePath('/roadmap', locale)}>Roadmap</a>
+            </nav>
+          </details>
         </div>
       </div>
-      <nav
-        className={classes.mobileNav}
-        id="jtx-mobile-navigation"
-        aria-label="Mobile navigation"
-        hidden={!menuOpen}
-      >
-        {navItems.map((item) => (
-          <a href={localizePath(item.href, locale)} key={item.href}>
-            {isPortuguese ? item.pt : item.en}
-          </a>
-        ))}
-        <a href={localizePath('/community', locale)}>
-          {isPortuguese ? 'Comunidade' : 'Community'}
-        </a>
-        <a href={localizePath('/roadmap', locale)}>Roadmap</a>
-      </nav>
     </header>
   );
 }
