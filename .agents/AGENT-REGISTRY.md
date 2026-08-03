@@ -238,6 +238,29 @@ This registry tracks AI agents collaborating in the Jumentix project.
   - governed implementation, testing, and CI diagnostics
   - spec, Linear, and agent-registry traceability
 
+### 10) kimi-k3-cursor-001
+
+- `agent_id`: `kimi-k3-cursor-001`
+- `agent_name`: `Kimi K3 Cursor`
+- `platform`: `Cursor`
+- `machine_id`: `host-eduardos-macbook-air-arm64-local`
+- `machine_name`: `Eduardos-MacBook-Air.local`
+- `machine_os`: `Darwin 25.5.0 arm64`
+- `agent_runtime`: `Cursor agent (kimi-k3)`
+- `agent_version`: `kimi-k3`
+- `status`: `available`
+- `registered_at_utc`: `2026-08-03T03:35:00Z`
+- `last_branch_check_utc`: `2026-08-03T03:46:00Z`
+- `main_ref_checked`: `cf6098b`
+- `dev_ref_checked`: `beb1171`
+- `active_epic`: `none` (Cana epic closed: JUM-581 #38, JUM-417 #52/#61, promoted via #62 as `cf6098b`; JUM-419 readiness closed)
+- `assigned_task`: `none`
+- `capabilities`:
+  - browser-matrix coverage engineering (Cypress chrome/firefox/webkit, Istanbul unions)
+  - SonarCloud quality-gate and new-code issue remediation
+  - CI provider bridging under quota constraints (GitHub Actions, CircleCI)
+  - Linear Project Updates and issue lifecycle
+
 ## Operating Flow
 
 1. Register or update the agent entry here before task execution.
