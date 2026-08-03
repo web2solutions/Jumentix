@@ -117,5 +117,5 @@ bun run test:integration:service-management
 Unit smoke for roadmap feature presence:
 
 ```bash
-NODE_ENV=dev bunx jest apps/backend-template/test/unit/service-management/mvp.roadmap.features.test.ts --runInBand
+NODE_ENV=dev bun x jest apps/backend-template/test/unit/service-management/mvp.roadmap.features.test.ts --runInBand
 ```

@@ -14,7 +14,7 @@ Workspace ownership:
 
 ## Usage
 
-Install globally (or run with `bunx` from the package registry):
+Install globally (or run with `bun x` from the package registry):
 
 ```bash
 bun add --global @jumentix/cli-init

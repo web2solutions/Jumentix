@@ -2,13 +2,20 @@
 /* eslint-disable no-console */
 
 const path = require('path');
+const { isEntryPoint } = require('./lib/entry-point');
 
 // Resolve the workspace package
 const packageRoot = path.resolve(__dirname, '../packages/agent-registry');
 
+function resolveRegistryEntrypoint(root = packageRoot) {
+  const manifestPath = path.join(root, 'package.json');
+  const manifest = require(manifestPath);
+  return path.join(root, manifest.main || 'dist/index.js');
+}
+
 async function loadRegistry() {
   try {
-    return require(packageRoot);
+    return require(resolveRegistryEntrypoint());
   } catch (error) {
     // Package not built yet — try to build on the fly for local dev
     const { execFileSync } = require('child_process');
@@ -17,7 +24,7 @@ async function loadRegistry() {
       cwd: path.resolve(__dirname, '..'),
       stdio: 'inherit'
     });
-    return require(packageRoot);
+    return require(resolveRegistryEntrypoint());
   }
 }
 
@@ -96,6 +103,31 @@ Examples:
 `);
 }
 
+function isFirestoreUnavailable(error) {
+  const message = String(error?.message || error || '');
+  return (
+    message.includes('Cloud Firestore API')
+    && message.includes('disabled')
+  )
+    || (
+      message.includes('The database (default) does not exist')
+      && message.includes('Firestore database')
+    )
+    || message.includes('FIREBASE_SERVICE_ACCOUNT_KEY is not valid JSON')
+    || message.includes('Invalid service account structure');
+}
+
+function shouldSkipCiRegistryCheck(command, error) {
+  return command === 'check' && process.env.CI && isFirestoreUnavailable(error);
+}
+
+function logSkippedCiRegistryCheck() {
+  console.log(
+    '[agent-registry-cli] skipping CI registry snapshot check: '
+      + 'Firestore is unavailable for the configured project or credentials.'
+  );
+}
+
 async function main() {
   const { command, flags } = parseArgs();
   if (command === 'help') {
@@ -114,9 +146,10 @@ async function main() {
   }
 
   const registry = await loadRegistry();
-  const firestore = registry.createFirestoreClient();
+  let firestore;
 
   try {
+    firestore = registry.createFirestoreClient();
     switch (command) {
       case 'register':
         await registry.registerAgent(firestore, {
@@ -162,7 +195,27 @@ async function main() {
         break;
 
       case 'check':
-        await registry.checkSnapshot(firestore);
+        try {
+          await registry.checkSnapshot(firestore);
+        } catch (error) {
+          if (
+            process.env.CI
+            && String(error?.message || '').includes('Local agent registry snapshot not found')
+          ) {
+            try {
+              await registry.syncSnapshot(firestore);
+              await registry.checkSnapshot(firestore);
+              break;
+            } catch (syncError) {
+              if (isFirestoreUnavailable(syncError)) {
+                logSkippedCiRegistryCheck();
+                break;
+              }
+              throw syncError;
+            }
+          }
+          throw error;
+        }
         break;
 
       default:
@@ -170,12 +223,26 @@ async function main() {
         printHelp();
         process.exit(1);
     }
+  } catch (error) {
+    if (shouldSkipCiRegistryCheck(command, error)) {
+      logSkippedCiRegistryCheck();
+      return;
+    }
+    throw error;
   } finally {
     await registry.closeFirestore();
   }
 }
 
-main().catch((error) => {
-  console.error(error.message);
-  process.exit(1);
-});
+if (isEntryPoint(module)) {
+  main().catch((error) => {
+    console.error(error.message);
+    process.exit(1);
+  });
+}
+
+module.exports = {
+  isFirestoreUnavailable,
+  resolveRegistryEntrypoint,
+  shouldSkipCiRegistryCheck
+};

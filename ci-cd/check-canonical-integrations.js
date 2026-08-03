@@ -13,13 +13,15 @@ const INTEGRATION_CONTRACTS = Object.freeze([
     ]
   },
   {
-    file: '.github/workflows/coverage.yml',
+    file: '.circleci/config.yml',
     markers: [
-      'name: Repository-owned coverage',
+      'branch-gate',
       'bun run test:coverage',
       'bun run coverage:check',
       'bun run coverage:patch',
-      'coverage/coverage-final.json'
+      'codecov --verbose upload-process --disable-search --fail-on-error',
+      'third-party-review',
+      'sonar-scanner'
     ]
   },
   // Dependency scanning is owned by the first-party OSV gate. It resolves the
@@ -35,7 +37,6 @@ const INTEGRATION_CONTRACTS = Object.freeze([
     file: '.github/dependabot.yml',
     markers: [
       'package-ecosystem: npm',
-      'package-ecosystem: github-actions',
       'target-branch: dev'
     ]
   },
@@ -44,8 +45,9 @@ const INTEGRATION_CONTRACTS = Object.freeze([
     markers: [
       'XpertMinds/Jumentix',
       'repository-owned coverage',
-      'CircleCI retired',
-      'Codecov retired',
+      'CircleCI canonical',
+      'GitHub Actions billing',
+      'Codecov publishing',
       'SonarQube Cloud',
       'OSV.dev',
       'GitGuardian',
@@ -59,6 +61,7 @@ const INTEGRATION_CONTRACTS = Object.freeze([
     markers: [
       'XpertMinds/Jumentix',
       'CircleCI',
+      'GitHub Actions billing',
       'Codecov',
       'SonarQube Cloud',
       'OSV.dev',
@@ -78,16 +81,6 @@ function validateCanonicalIntegrations(rootDir = process.cwd()) {
       failures.push(`[integrations] retired provider contract is still present: ${file}`);
     }
   });
-
-  // CircleCI is retired by Requirement 113 — except as a declared temporary
-  // bridge while the GitHub Actions allowance is quota-blocked (the §3
-  // condition). The marker is what keeps a silent permanent return failing
-  // here; the bridge section and this allowance are removed together.
-  const circleCiConfig = path.join(rootDir, '.circleci', 'config.yml');
-  if (fs.existsSync(circleCiConfig)
-    && !/x-jumentix-temporary-bridge:/.test(fs.readFileSync(circleCiConfig, 'utf8'))) {
-    failures.push('[integrations] retired provider contract is still present: .circleci/config.yml');
-  }
 
   INTEGRATION_CONTRACTS.forEach(({ file, markers }) => {
     const absolutePath = path.join(rootDir, file);

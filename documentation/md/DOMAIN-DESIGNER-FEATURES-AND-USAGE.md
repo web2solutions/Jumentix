@@ -240,5 +240,5 @@ Run:
 
 ```bash
 bun run test:integration:service-management
-NODE_ENV=dev bunx jest apps/backend-template/test/unit/service-management/mvp.roadmap.features.test.ts --runInBand
+NODE_ENV=dev bun x jest apps/backend-template/test/unit/service-management/mvp.roadmap.features.test.ts --runInBand
 ```
