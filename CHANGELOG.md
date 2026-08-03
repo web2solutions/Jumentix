@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-03 ci: extend CircleCI branch gate timeout - Eduardo A.
 - 2026-08-03 ci: fix CircleCI browser and PR gates - Eduardo A.
 - 2026-08-03 ci: run third-party review without remote docker - Eduardo A.
 - 2026-08-03 ci: fix circleci pr gate metadata - Eduardo A.

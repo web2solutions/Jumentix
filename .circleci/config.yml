@@ -78,7 +78,7 @@ commands:
 jobs:
   branch-gate:
     docker:
-      - image: cimg/node:22.23-browsers
+      - image: cypress/browsers:node-22.21.0-chrome-141.0.7390.107-1-ff-144.0-edge-141.0.3537.92-1
       - image: redis:7.2-alpine
       - image: rabbitmq:3.13-alpine
     resource_class: large
