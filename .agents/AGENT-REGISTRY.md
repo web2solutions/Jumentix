@@ -148,6 +148,28 @@ This registry tracks AI agents collaborating in the Jumentix project.
   - Linear Project Updates and issue lifecycle
   - agent-registry hygiene and consumer mirror sync
 
+### 5b) grok-cursor-002
+
+- `agent_id`: `grok-cursor-002`
+- `agent_name`: `Cursor Grok Mac Pro`
+- `platform`: `Cursor`
+- `machine_id`: `host-eduardos-mac-pro-local`
+- `machine_name`: `Eduardos-Mac-Pro.local`
+- `machine_os`: `Darwin 21.6.0 x86_64`
+- `agent_runtime`: `Cursor Grok 4.5`
+- `agent_version`: `Cursor Grok 4.5`
+- `status`: `busy`
+- `registered_at_utc`: `2026-08-02T18:03:26Z`
+- `last_branch_check_utc`: `2026-08-02T18:03:26Z`
+- `main_ref_checked`: `490cb63`
+- `dev_ref_checked`: `b2498ba`
+- `active_epic`: `https://linear.app/jumentix/project/epicrefactor-eliminate-legacy-jumentix-product-naming-confusion-6bcc25675f04`
+- `assigned_task`: `https://linear.app/jumentix/issue/JUM-605`
+- `capabilities`:
+  - repository naming cleanup and integration rebinding
+  - Linear Project Updates and issue lifecycle
+  - SonarCloud / CI contract repair
+
 ### 6) claude-governance-001
 
 - `agent_id`: `claude-governance-001`

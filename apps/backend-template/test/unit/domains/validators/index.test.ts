@@ -83,8 +83,8 @@ describe('domain validators', () => {
   });
   it('mustBePassword strict policy branches', async () => {
     const field = 'password field';
-    const previous = process.env.AAA_STRICT_PASSWORD_POLICY;
-    process.env.AAA_STRICT_PASSWORD_POLICY = 'yes';
+    const previous = process.env.JUMENTIX_STRICT_PASSWORD_POLICY;
+    process.env.JUMENTIX_STRICT_PASSWORD_POLICY = 'yes';
     try {
       expect(() => mustBePassword(field, 'lower123!')).toThrow(`${field} must include at least one uppercase letter.`);
       expect(() => mustBePassword(field, 'UPPER123!')).toThrow(`${field} must include at least one lowercase letter.`);
@@ -92,7 +92,7 @@ describe('domain validators', () => {
       expect(() => mustBePassword(field, 'Upper1234')).toThrow(`${field} must include at least one symbol.`);
       expect(() => mustBePassword(field, 'Upper123!')).not.toThrow();
     } finally {
-      process.env.AAA_STRICT_PASSWORD_POLICY = previous;
+      process.env.JUMENTIX_STRICT_PASSWORD_POLICY = previous;
     }
   });
   it('mustBeArray', async () => {

@@ -52,18 +52,18 @@ Este é o centro de documentação técnica para o aplicativo de modelo de back-
 Perfil REST com seleção explícita de estrutura:
 
 ```bash
-AAA_HTTP_FRAMEWORK=fastify bun run dev:http
+JUMENTIX_HTTP_FRAMEWORK=fastify pnpm run dev:http
 ```
 
 Perfil substituto WebSocket + REST:
 
 ```bash
-AAA_REALTIME_API=yes AAA_REALTIME_API_PROTOCOL=websocket bun run dev:websocket
+JUMENTIX_REALTIME_API=yes JUMENTIX_REALTIME_API_PROTOCOL=websocket pnpm run dev:websocket
 ```
 
 Perfil substituto gRPC + REST:
 
 ```bash
-AAA_REALTIME_API=yes AAA_REALTIME_API_PROTOCOL=grpc bun run dev:grpc
+JUMENTIX_REALTIME_API=yes JUMENTIX_REALTIME_API_PROTOCOL=grpc pnpm run dev:grpc
 ```
 

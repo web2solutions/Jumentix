@@ -13,7 +13,7 @@ import { RestAPI } from '@src/interface/HTTP/RestAPI';
 import { compileAdapterRuntime } from '@jumentix/adapter-runtime-bootstrap';
 
 export function shouldStartFallbackRestApi(env: NodeJS.ProcessEnv = process.env): boolean {
-  return env.AAA_DISABLE_FALLBACK_REST !== 'true';
+  return env.JUMENTIX_DISABLE_FALLBACK_REST !== 'true';
 }
 
 export async function startGrpcAdapter(): Promise<void> {
@@ -46,7 +46,7 @@ export async function startGrpcAdapter(): Promise<void> {
 
   let fallbackRestAPI: RestAPI<any> | undefined;
   if (shouldStartFallbackRestApi()) {
-    process.env.AAA_HTTP_PORT = process.env.AAA_HTTP_FALLBACK_PORT || '3000';
+    process.env.JUMENTIX_HTTP_PORT = process.env.JUMENTIX_HTTP_FALLBACK_PORT || '3000';
     fallbackRestAPI = new RestAPI({
       databaseClient,
       webServer: ExpressServer.compile(),

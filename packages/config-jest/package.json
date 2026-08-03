@@ -2,7 +2,7 @@
   "name": "@jumentix/config-jest",
   "version": "0.0.0",
   "private": true,
-  "description": "JumentiX shared Jest configuration placeholder",
+  "description": "Jumentix shared Jest configuration placeholder",
   "files": [
     "index.cjs"
   ],

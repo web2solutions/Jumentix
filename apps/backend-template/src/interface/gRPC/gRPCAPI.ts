@@ -78,7 +78,7 @@ export class GrpcAPI extends RealtimeAPIBase {
       frameworkName: 'grpc'
     });
     this.host = config.host || '0.0.0.0';
-    this.port = config.port || Number(process.env.AAA_GRPC_PORT || (_HTTP_PORT_ + 2));
+    this.port = config.port || Number(process.env.JUMENTIX_GRPC_PORT || (_HTTP_PORT_ + 2));
     this.protoFilePath = resolveGrpcProtoPath(config.protoFilePath);
   }
 

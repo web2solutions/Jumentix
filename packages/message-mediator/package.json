@@ -2,7 +2,7 @@
   "name": "@jumentix/message-mediator",
   "version": "0.0.0",
   "private": true,
-  "description": "JumentiX message mediator workspace package placeholder",
+  "description": "Jumentix message mediator workspace package placeholder",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [

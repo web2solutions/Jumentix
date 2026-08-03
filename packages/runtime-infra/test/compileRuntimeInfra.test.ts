@@ -80,7 +80,7 @@ describe('compileRuntimeInfra', () => {
     expect.hasAssertions();
 
     const { compilers, seen } = recordingCompilers();
-    compileRuntimeInfra(compilers, env({ AAA_KEYVALUESTORAGE_DRIVER: 'redis' }));
+    compileRuntimeInfra(compilers, env({ JUMENTIX_KEYVALUESTORAGE_DRIVER: 'redis' }));
 
     expect(seen.driver).toBe('redis');
   });
@@ -108,7 +108,7 @@ describe('compileRuntimeInfra', () => {
     expect.hasAssertions();
 
     const previous = { ...process.env };
-    process.env.AAA_KEYVALUESTORAGE_DRIVER = 'from-process-env';
+    process.env.JUMENTIX_KEYVALUESTORAGE_DRIVER = 'from-process-env';
 
     try {
       const { compilers, seen } = recordingCompilers();

@@ -20,7 +20,7 @@ Todos os pontos de entrada de inicialização do tempo de execução devem segui
 
 As seguintes chaves são obrigatórias em arquivos env em `apps/backend-template/src/config/`:
 
-- `AAA_HTTP_FRAMEWORK`
+- `JUMENTIX_HTTP_FRAMEWORK`
   - padrão: `expresso`
   - valores atuais suportados:
     - `expressar`
@@ -37,21 +37,21 @@ As seguintes chaves são obrigatórias em arquivos env em `apps/backend-template
     - `total-js`
   - usado por: `apps/backend-template/src/interface/HTTP/adapters/start-rest-api.ts`
 
-- `AAA_REALTIME_API`
+- `JUMENTIX_REALTIME_API`
   - padrão: `não`
   - valores suportados: `sim`, `não`
   - usado por:
     - `apps/backend-template/src/interface/WebSocket/adapters/start-websocket-api.ts`
     - `apps/backend-template/src/interface/gRPC/adapters/start-grpc-api.ts`
 
-- `AAA_REALTIME_API_PROTOCOL`
+- `JUMENTIX_REALTIME_API_PROTOCOL`
   - padrão: `websocket`
   - valores suportados: `websocket`, `grpc`
   - usado por:
     - `apps/backend-template/src/interface/WebSocket/adapters/start-websocket-api.ts`
     - `apps/backend-template/src/interface/gRPC/adapters/start-grpc-api.ts`
 
-- `AAA_REALTIME_API_DATABASE_DRIVER`
+- `JUMENTIX_REALTIME_API_DATABASE_DRIVER`
   - padrão: `Mongo`
   - valores suportados:
     - `Mongo`
@@ -63,24 +63,24 @@ As seguintes chaves são obrigatórias em arquivos env em `apps/backend-template
     - `Cassandra`
   - usado por: metadados de perfil de tempo de execução e fluxos de trabalho de configuração de gerenciamento de serviços.
 
-- `AAA_WEBSOCKET_SOCKETIO_ADAPTER`
+- `JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER`
   - padrão: vazio (adaptador Socket.IO na memória)
   - valores suportados: `cluster`, `redis-streams`
   - usado por: `apps/backend-template/src/interface/WebSocket/adapters/socket-io/socket-io.ts`
 
-- `AAA_WEBSOCKET_CLUSTER_WORKERS`
+- `JUMENTIX_WEBSOCKET_CLUSTER_WORKERS`
   - contagem de trabalhadores opcional para modo de cluster Socket.IO.
   - padrão: contagem de núcleos da CPU.
   - usado por: `apps/backend-template/src/interface/WebSocket/adapters/start-websocket-api.ts`
 
-- `AAA_WEBSOCKET_REDIS_URL`
+- `JUMENTIX_WEBSOCKET_REDIS_URL`
   - URL de conexão Redis dedicada opcional para adaptador de escalonamento Socket.IO.
   - exemplo: `redis://127.0.0.1:6379/1`
   - usado por: `apps/backend-template/src/interface/WebSocket/adapters/socket-io/redisStreamsAdapter.ts`
 
-- `AAA_REDIS_URL`
+- `JUMENTIX_REDIS_URL`
   - substituto de URL Redis global opcional usado pelo adaptador de escalabilidade WebSocket quando
-    `AAA_WEBSOCKET_REDIS_URL` não está definido.
+    `JUMENTIX_WEBSOCKET_REDIS_URL` não está definido.
   - usado por: `apps/backend-template/src/interface/WebSocket/adapters/socket-io/redisStreamsAdapter.ts`
 
 ## Pontos de entrada de inicialização
@@ -121,11 +121,11 @@ O editor env altera apenas as chaves aprovadas deste contrato, preservando as pr
 
 ## Guarda-corpos
 
-- `AAA_HTTP_FRAMEWORK` não suportado deve falhar rapidamente.
+- `JUMENTIX_HTTP_FRAMEWORK` não suportado deve falhar rapidamente.
 - O bootstrap REST deve sempre resolver o framework através do carregador `start-rest-api`.
 - A inicialização em tempo real não deve iniciar quando:
-  - `AAA_REALTIME_API` não é `sim`, ou
-  - `AAA_REALTIME_API_PROTOCOL` não corresponde ao ponto de entrada do adaptador.
+  - `JUMENTIX_REALTIME_API` não é `sim`, ou
+  - `JUMENTIX_REALTIME_API_PROTOCOL` não corresponde ao ponto de entrada do adaptador.
 - A persistência do ambiente de tempo de execução deve ser explícita e direcionada ao ambiente (`dev`, `staging`, `ci`).
 
 ## Exemplos Operacionais
@@ -133,35 +133,35 @@ O editor env altera apenas as chaves aprovadas deste contrato, preservando as pr
 RESTO apenas:
 
 ```bash
-AAA_HTTP_FRAMEWORK=express
-AAA_REALTIME_API=no
+JUMENTIX_HTTP_FRAMEWORK=express
+JUMENTIX_REALTIME_API=no
 ```
 
 WebSocket + REST:
 
 ```bash
-AAA_HTTP_FRAMEWORK=express
-AAA_REALTIME_API=yes
-AAA_REALTIME_API_PROTOCOL=websocket
-AAA_WEBSOCKET_SOCKETIO_ADAPTER=cluster
-AAA_WEBSOCKET_CLUSTER_WORKERS=4
+JUMENTIX_HTTP_FRAMEWORK=express
+JUMENTIX_REALTIME_API=yes
+JUMENTIX_REALTIME_API_PROTOCOL=websocket
+JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER=cluster
+JUMENTIX_WEBSOCKET_CLUSTER_WORKERS=4
 ```
 
 WebSocket + REST (multihost via Redis Streams):
 
 ```bash
-AAA_HTTP_FRAMEWORK=express
-AAA_REALTIME_API=yes
-AAA_REALTIME_API_PROTOCOL=websocket
-AAA_WEBSOCKET_SOCKETIO_ADAPTER=redis-streams
-AAA_WEBSOCKET_REDIS_URL=redis://127.0.0.1:6379/1
+JUMENTIX_HTTP_FRAMEWORK=express
+JUMENTIX_REALTIME_API=yes
+JUMENTIX_REALTIME_API_PROTOCOL=websocket
+JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER=redis-streams
+JUMENTIX_WEBSOCKET_REDIS_URL=redis://127.0.0.1:6379/1
 ```
 
 gRPC + REST:
 
 ```bash
-AAA_HTTP_FRAMEWORK=express
-AAA_REALTIME_API=yes
-AAA_REALTIME_API_PROTOCOL=grpc
+JUMENTIX_HTTP_FRAMEWORK=express
+JUMENTIX_REALTIME_API=yes
+JUMENTIX_REALTIME_API_PROTOCOL=grpc
 ```
 

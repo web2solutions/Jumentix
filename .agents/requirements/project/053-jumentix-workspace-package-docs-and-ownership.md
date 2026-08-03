@@ -1,4 +1,4 @@
-# Requirement 053 - JumentiX Workspace Package Docs and Ownership
+# Requirement 053 - Jumentix Workspace Package Docs and Ownership
 
 ## Context
 

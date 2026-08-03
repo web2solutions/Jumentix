@@ -27,7 +27,7 @@ export function compileRuntimeInfra<
   env: NodeJS.ProcessEnv = process.env
 ): IRuntimeInfraDependencies<TDatabaseClient, TKeyValueStorageClient, TMutexService> {
   const keyValueStorageClient = compilers.compileKeyValueStorageClient(
-    env.AAA_KEYVALUESTORAGE_DRIVER
+    env.JUMENTIX_KEYVALUESTORAGE_DRIVER
   );
   const mutexService = compilers.compileMutexService(keyValueStorageClient);
   const databaseClient = compilers.compileDatabaseClient();

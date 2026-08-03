@@ -32,18 +32,18 @@ const resolvePositiveInteger = (value: string | undefined, fallback: number): nu
 };
 
 const resolveRedisConfig = (): Record<string, any> => {
-  const socketPort = Number(process.env.AAA_REDIS_PORT || 6379);
+  const socketPort = Number(process.env.JUMENTIX_REDIS_PORT || 6379);
   const connectTimeoutMs = resolvePositiveInteger(
-    process.env.AAA_REDIS_CONNECT_TIMEOUT_MS,
+    process.env.JUMENTIX_REDIS_CONNECT_TIMEOUT_MS,
     DEFAULT_REDIS_CONNECT_TIMEOUT_MS
   );
   const maxReconnectAttempts = resolvePositiveInteger(
-    process.env.AAA_REDIS_MAX_RECONNECT_ATTEMPTS,
+    process.env.JUMENTIX_REDIS_MAX_RECONNECT_ATTEMPTS,
     DEFAULT_REDIS_MAX_RECONNECT_ATTEMPTS
   );
   return {
     socket: {
-      host: process.env.AAA_REDIS_HOST || '127.0.0.1',
+      host: process.env.JUMENTIX_REDIS_HOST || '127.0.0.1',
       port: Number.isFinite(socketPort) ? socketPort : 6379,
       connectTimeout: connectTimeoutMs,
       /**
@@ -60,9 +60,9 @@ const resolveRedisConfig = (): Record<string, any> => {
         return Math.min(2 ** retries * 100, 1000);
       }
     },
-    username: process.env.AAA_REDIS_USERNAME || undefined,
-    password: process.env.AAA_REDIS_PASSWORD || undefined,
-    database: Number(process.env.AAA_REDIS_DB || 0)
+    username: process.env.JUMENTIX_REDIS_USERNAME || undefined,
+    password: process.env.JUMENTIX_REDIS_PASSWORD || undefined,
+    database: Number(process.env.JUMENTIX_REDIS_DB || 0)
   };
 };
 

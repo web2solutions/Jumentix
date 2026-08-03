@@ -73,7 +73,7 @@ merge without evidence. Both readings are worse than an honest "CI did not run".
 CircleCI must expose these, or the corresponding jobs fail closed rather than
 skipping:
 
-- `AAA_JWT_TOKEN_SECRET_KEY`, `AAA_REDIS_PASSWORD` — test fixtures
+- `JUMENTIX_JWT_TOKEN_SECRET_KEY`, `JUMENTIX_REDIS_PASSWORD` — test fixtures
 - `AGENT_REGISTRY_TOKEN` (or `GH_TOKEN` / `GITHUB_TOKEN`) — contents:read on
   `XpertMinds/jumentix-agent-registry`, per Requirement `089`. Default tokens
   cannot read a sibling private repository.

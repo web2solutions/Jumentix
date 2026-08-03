@@ -1,6 +1,6 @@
 # Database Drivers Smoke Tests
 
-This boilerplate now supports runtime selection of multiple database drivers through `AAA_DATABASE_DRIVER`, and includes smoke tests and per-database Docker compose files to validate adapter boot lifecycle (`connect` / `disconnect`) in local/dev/staging/prod-like environments.
+This boilerplate now supports runtime selection of multiple database drivers through `JUMENTIX_DATABASE_DRIVER`, and includes smoke tests and per-database Docker compose files to validate adapter boot lifecycle (`connect` / `disconnect`) in local/dev/staging/prod-like environments.
 
 ## Supported Drivers
 
@@ -22,7 +22,7 @@ This boilerplate now supports runtime selection of multiple database drivers thr
 - Source: `apps/backend-template/src/infra/persistence/compileDatabaseClient.ts`
 - External stores now use fail-fast proxies (`apps/backend-template/src/infra/persistence/external/ExternalStoreProxy.ts`) instead of silently reusing in-memory stores.
 - Oracle has dedicated connector support (`apps/backend-template/src/infra/persistence/external/OracleRepository.ts`).
-- Bootstrap adapters that inject `IDatabaseClient` from `AAA_DATABASE_DRIVER`:
+- Bootstrap adapters that inject `IDatabaseClient` from `JUMENTIX_DATABASE_DRIVER`:
   - `apps/backend-template/src/interface/HTTP/adapters/*`
   - `apps/backend-template/src/interface/WebSocket/adapters/socket-io/socket-io.ts`
   - `apps/backend-template/src/interface/gRPC/adapters/grpc/grpc.ts`
@@ -34,34 +34,34 @@ This boilerplate now supports runtime selection of multiple database drivers thr
 - Run all configured smoke drivers:
 
 ```bash
-bun run test:smoke:db:all
+pnpm run test:smoke:db:all
 ```
 
 - Run one driver only:
 
 ```bash
-bun run test:smoke:db:postgresql
-bun run test:smoke:db:mysql
-bun run test:smoke:db:mssql
-bun run test:smoke:db:oracle
-bun run test:smoke:db:mongo
-bun run test:smoke:db:cassandra
-bun run test:smoke:db:dynamodb
-bun run test:smoke:db:firebase
-bun run test:smoke:db:aurora
-bun run test:smoke:db:rds
-bun run test:smoke:db:sqlite
-bun run test:smoke:db:inmemory
+pnpm run test:smoke:db:postgresql
+pnpm run test:smoke:db:mysql
+pnpm run test:smoke:db:mssql
+pnpm run test:smoke:db:oracle
+pnpm run test:smoke:db:mongo
+pnpm run test:smoke:db:cassandra
+pnpm run test:smoke:db:dynamodb
+pnpm run test:smoke:db:firebase
+pnpm run test:smoke:db:aurora
+pnpm run test:smoke:db:rds
+pnpm run test:smoke:db:sqlite
+pnpm run test:smoke:db:inmemory
 ```
 
 ### Driver Filter
 
-`AAA_DB_SMOKE_DRIVERS` accepts a comma-separated list and controls which smoke cases run.
+`JUMENTIX_DB_SMOKE_DRIVERS` accepts a comma-separated list and controls which smoke cases run.
 
 Example:
 
 ```bash
-AAA_DB_SMOKE_DRIVERS=PostgreSQL,MySQL bun run test:smoke:db
+JUMENTIX_DB_SMOKE_DRIVERS=PostgreSQL,MySQL pnpm run test:smoke:db
 ```
 
 ## Docker Compose Files Per Database
@@ -82,39 +82,39 @@ AAA_DB_SMOKE_DRIVERS=PostgreSQL,MySQL bun run test:smoke:db
 Each workflow starts container -> runs smoke test -> stops container:
 
 ```bash
-bun run smoke:db:postgresql
-bun run smoke:db:mysql
-bun run smoke:db:mssql
-bun run smoke:db:oracle
-bun run smoke:db:mongodb
-bun run smoke:db:cassandra
-bun run smoke:db:dynamodb
-bun run smoke:db:firebase
-bun run smoke:db:aurora
-bun run smoke:db:rds
+pnpm run smoke:db:postgresql
+pnpm run smoke:db:mysql
+pnpm run smoke:db:mssql
+pnpm run smoke:db:oracle
+pnpm run smoke:db:mongodb
+pnpm run smoke:db:cassandra
+pnpm run smoke:db:dynamodb
+pnpm run smoke:db:firebase
+pnpm run smoke:db:aurora
+pnpm run smoke:db:rds
 ```
 
 ## Environment Variables
 
 Add/update these keys in `apps/backend-template/src/config/.env.*` for driver-specific runtime:
 
-- `AAA_DATABASE_DRIVER`
-- `AAA_DATABASE_CONNECTION_URL`
-- `AAA_DATABASE_NAME`
-- `AAA_DATABASE_DIALECT`
-- `AAA_DATABASE_REGION`
-- `AAA_DATABASE_ENDPOINT`
-- `AAA_DATABASE_PROJECT_ID`
-- `AAA_DATABASE_CASSANDRA_CONTACT_POINTS`
-- `AAA_DATABASE_CASSANDRA_DATACENTER`
-- `AAA_DATABASE_POOL_MAX`
-- `AAA_DATABASE_POOL_MIN`
-- `AAA_DATABASE_POOL_ACQUIRE_MS`
-- `AAA_DATABASE_POOL_IDLE_MS`
-- `AAA_DATABASE_POOL_EVICT_MS`
-- `AAA_DATABASE_USER`
-- `AAA_DATABASE_PASSWORD`
-- `AAA_DATABASE_CONNECT_STRING`
+- `JUMENTIX_DATABASE_DRIVER`
+- `JUMENTIX_DATABASE_CONNECTION_URL`
+- `JUMENTIX_DATABASE_NAME`
+- `JUMENTIX_DATABASE_DIALECT`
+- `JUMENTIX_DATABASE_REGION`
+- `JUMENTIX_DATABASE_ENDPOINT`
+- `JUMENTIX_DATABASE_PROJECT_ID`
+- `JUMENTIX_DATABASE_CASSANDRA_CONTACT_POINTS`
+- `JUMENTIX_DATABASE_CASSANDRA_DATACENTER`
+- `JUMENTIX_DATABASE_POOL_MAX`
+- `JUMENTIX_DATABASE_POOL_MIN`
+- `JUMENTIX_DATABASE_POOL_ACQUIRE_MS`
+- `JUMENTIX_DATABASE_POOL_IDLE_MS`
+- `JUMENTIX_DATABASE_POOL_EVICT_MS`
+- `JUMENTIX_DATABASE_USER`
+- `JUMENTIX_DATABASE_PASSWORD`
+- `JUMENTIX_DATABASE_CONNECT_STRING`
 
 ## Operational Note
 

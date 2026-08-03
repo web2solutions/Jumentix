@@ -2,7 +2,7 @@
   "name": "@jumentix/key-value-storage",
   "version": "0.0.0",
   "private": true,
-  "description": "JumentiX reusable key-value storage adapters",
+  "description": "Jumentix reusable key-value storage adapters",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [

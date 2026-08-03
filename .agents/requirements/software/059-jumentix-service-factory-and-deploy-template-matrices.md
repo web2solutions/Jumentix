@@ -1,8 +1,8 @@
-# Requirement 059 - JumentiX Service Factory and Deploy Template Matrices
+# Requirement 059 - Jumentix Service Factory and Deploy Template Matrices
 
 ## Context
 
-JumentiX productization requires explicit planning contracts for:
+Jumentix productization requires explicit planning contracts for:
 
 - service factory capability modes
 - deploy target and packaging contracts

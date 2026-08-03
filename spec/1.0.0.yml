@@ -1,8 +1,7 @@
 openapi: 3.1.0
 info:
-  title: ANYWhere, ANYHow, ANYTime API
-  description: "`REST API` built with `AnyWhere, AnyHow, AnyTime Typescript
-    Boilerplate` and `Domain Designer`"
+  title: Jumentix API
+  description: "`REST API` built with `Jumentix` and `Domain Designer`"
   termsOfService: https://www.xpertminds.dev/terms/
   contact:
     email: apiteam@xpertminds.dev

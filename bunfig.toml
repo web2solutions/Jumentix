@@ -33,7 +33,7 @@ bun = false
 [test]
 # `bun test` does not read jest.config.js. The environment bootstrap that jest
 # performs through `setupFiles` must be reproduced here, or every suite that
-# depends on AAA_* variables fails at import time (JUM-23 documented risk).
+# depends on JUMENTIX_* variables fails at import time (JUM-23 documented risk).
 preload = ["./ci-cd/loadEnvironment.js"]
 
 # Coverage thresholds.

@@ -1,6 +1,6 @@
 # @jumentix/persistence-contracts
 
-Reusable persistence contracts for JumentiX services and adapters.
+Reusable persistence contracts for Jumentix services and adapters.
 
 ## Exports
 

@@ -9,18 +9,18 @@ export interface IRedisStreamsSocketIoAdapter {
 
 export const isRedisStreamsSocketIoEnabled = (
   env: NodeJS.ProcessEnv = process.env
-): boolean => env.AAA_WEBSOCKET_SOCKETIO_ADAPTER === 'redis-streams';
+): boolean => env.JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER === 'redis-streams';
 
 export const buildRedisConnectionUrl = (
   env: NodeJS.ProcessEnv = process.env
 ): string => {
-  if (env.AAA_WEBSOCKET_REDIS_URL) return env.AAA_WEBSOCKET_REDIS_URL;
-  if (env.AAA_REDIS_URL) return env.AAA_REDIS_URL;
+  if (env.JUMENTIX_WEBSOCKET_REDIS_URL) return env.JUMENTIX_WEBSOCKET_REDIS_URL;
+  if (env.JUMENTIX_REDIS_URL) return env.JUMENTIX_REDIS_URL;
 
-  const host = env.AAA_REDIS_HOST || '127.0.0.1';
-  const port = env.AAA_REDIS_PORT || '6379';
-  const db = env.AAA_REDIS_DATABASE || '0';
-  const password = env.AAA_REDIS_PASSWORD;
+  const host = env.JUMENTIX_REDIS_HOST || '127.0.0.1';
+  const port = env.JUMENTIX_REDIS_PORT || '6379';
+  const db = env.JUMENTIX_REDIS_DATABASE || '0';
+  const password = env.JUMENTIX_REDIS_PASSWORD;
   const authPrefix = password ? `:${encodeURIComponent(password)}@` : '';
 
   return `redis://${authPrefix}${host}:${port}/${db}`;

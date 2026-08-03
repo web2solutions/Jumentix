@@ -15,8 +15,8 @@ bun run docker:up:mongodb
 2. Set env:
 
 ```bash
-AAA_DATABASE_DRIVER=Mongo
-AAA_DATABASE_CONNECTION_URL=mongodb://127.0.0.1:27027/aaa
+JUMENTIX_DATABASE_DRIVER=Mongo
+JUMENTIX_DATABASE_CONNECTION_URL=mongodb://127.0.0.1:27027/jumentix
 ```
 
 3. Start service adapter.

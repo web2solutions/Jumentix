@@ -34,11 +34,11 @@ function recordingAdapters(): {
 }
 
 describe('start-rest-api adapter loader', () => {
-  const previousFramework = process.env.AAA_HTTP_FRAMEWORK;
+  const previousFramework = process.env.JUMENTIX_HTTP_FRAMEWORK;
 
   afterEach(() => {
-    if (previousFramework === undefined) delete process.env.AAA_HTTP_FRAMEWORK;
-    else process.env.AAA_HTTP_FRAMEWORK = previousFramework;
+    if (previousFramework === undefined) delete process.env.JUMENTIX_HTTP_FRAMEWORK;
+    else process.env.JUMENTIX_HTTP_FRAMEWORK = previousFramework;
   });
 
   it.each(Object.keys(REST_API_ADAPTERS))('loads the %s adapter and no other', async (framework) => {
@@ -46,7 +46,7 @@ describe('start-rest-api adapter loader', () => {
     const { adapters, loaded } = recordingAdapters();
 
     await startRestApiAdapter(
-      { AAA_HTTP_FRAMEWORK: framework } as unknown as NodeJS.ProcessEnv,
+      { JUMENTIX_HTTP_FRAMEWORK: framework } as unknown as NodeJS.ProcessEnv,
       adapters
     );
 
@@ -60,14 +60,14 @@ describe('start-rest-api adapter loader', () => {
     const { adapters } = recordingAdapters();
 
     await expect(startRestApiAdapter(
-      { AAA_HTTP_FRAMEWORK: 'unknown-http' } as unknown as NodeJS.ProcessEnv,
+      { JUMENTIX_HTTP_FRAMEWORK: 'unknown-http' } as unknown as NodeJS.ProcessEnv,
       adapters
-    )).rejects.toThrow('Unsupported AAA_HTTP_FRAMEWORK');
+    )).rejects.toThrow('Unsupported JUMENTIX_HTTP_FRAMEWORK');
   });
 
   it('uses process env when the env argument is omitted', async () => {
     expect.hasAssertions();
-    process.env.AAA_HTTP_FRAMEWORK = 'express';
+    process.env.JUMENTIX_HTTP_FRAMEWORK = 'express';
     const { adapters, loaded } = recordingAdapters();
 
     await startRestApiAdapter(undefined, adapters);
@@ -81,7 +81,7 @@ describe('start-rest-api adapter loader', () => {
     // lists that must agree; where they did not, the old if-chain fell off the
     // end and resolved successfully with no server running.
     await expect(startRestApiAdapter(
-      { AAA_HTTP_FRAMEWORK: 'express' } as unknown as NodeJS.ProcessEnv,
+      { JUMENTIX_HTTP_FRAMEWORK: 'express' } as unknown as NodeJS.ProcessEnv,
       {}
     )).rejects.toThrow('No adapter registered');
   });
@@ -92,7 +92,7 @@ describe('start-rest-api adapter loader', () => {
     // of it: every name the environment resolver admits must have a row.
     const unregistered = Object.keys(REST_API_ADAPTERS).filter((framework) => {
       const resolved = resolveHTTPFramework(
-        { AAA_HTTP_FRAMEWORK: framework } as unknown as NodeJS.ProcessEnv
+        { JUMENTIX_HTTP_FRAMEWORK: framework } as unknown as NodeJS.ProcessEnv
       );
       return REST_API_ADAPTERS[resolved] === undefined;
     });

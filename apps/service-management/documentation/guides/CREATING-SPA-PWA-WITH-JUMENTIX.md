@@ -29,7 +29,7 @@ In Service Configuration:
 
 - choose service type (`RESTAPI`, `websocketAPI + RESTAPI`, `grpcAPI + RESTAPI`)
 - configure runtime and deployment target
-- edit env keys like `AAA_HTTP_FRAMEWORK`, `AAA_REALTIME_API`, `AAA_REALTIME_API_PROTOCOL`
+- edit env keys like `JUMENTIX_HTTP_FRAMEWORK`, `JUMENTIX_REALTIME_API`, `JUMENTIX_REALTIME_API_PROTOCOL`
 
 ## 4. Build Offline-Capable PWA
 

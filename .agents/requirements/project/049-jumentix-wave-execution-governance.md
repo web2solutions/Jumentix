@@ -1,8 +1,8 @@
-# Requirement 049 - JumentiX Wave Execution Governance
+# Requirement 049 - Jumentix Wave Execution Governance
 
 ## Requirement
 
-JumentiX monorepo migration must be performed with deterministic, wave-based governance to reduce uncertain implementation and wasted effort.
+Jumentix monorepo migration must be performed with deterministic, wave-based governance to reduce uncertain implementation and wasted effort.
 
 Each wave must define:
 

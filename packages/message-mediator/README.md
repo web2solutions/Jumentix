@@ -1,6 +1,6 @@
 # @jumentix/message-mediator
 
-Workspace package for JumentiX message-mediator contracts and baseline in-memory adapter.
+Workspace package for Jumentix message-mediator contracts and baseline in-memory adapter.
 
 Current extracted scope:
 

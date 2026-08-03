@@ -33,7 +33,7 @@ Na configuração do serviço:
 
 - escolha o tipo de serviço (`RESTAPI`, `websocketAPI + RESTAPI`, `grpcAPI + RESTAPI`)
 - configurar o tempo de execução e o destino de implantação
-- edite chaves de ambiente como `AAA_HTTP_FRAMEWORK`, `AAA_REALTIME_API`, `AAA_REALTIME_API_PROTOCOL`
+- edite chaves de ambiente como `JUMENTIX_HTTP_FRAMEWORK`, `JUMENTIX_REALTIME_API`, `JUMENTIX_REALTIME_API_PROTOCOL`
 
 ## 4. Crie um PWA com capacidade offline
 

@@ -13,8 +13,8 @@ Caminho de integração do Aurora (perfil compatível com SQL na camada do adapt
 1. Definir ambiente:
 
 ```bash
-AAA_DATABASE_DRIVER=Aurora
-AAA_DATABASE_CONNECTION_URL=postgres://user:pass@aurora-host:5432/aaa
+JUMENTIX_DATABASE_DRIVER=Aurora
+JUMENTIX_DATABASE_CONNECTION_URL=postgres://user:pass@aurora-host:5432/jumentix
 ```
 
 2. Inicie o adaptador de serviço.

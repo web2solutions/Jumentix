@@ -122,7 +122,7 @@ describe('compileAdapterRuntime', () => {
   it('passes the environment through to the infrastructure compiler', () => {
     expect.hasAssertions();
 
-    const { options, seen } = harness({ env: env({ AAA_KEYVALUESTORAGE_DRIVER: 'redis' }) });
+    const { options, seen } = harness({ env: env({ JUMENTIX_KEYVALUESTORAGE_DRIVER: 'redis' }) });
     compileAdapterRuntime(options);
 
     expect(seen.driver).toBe('redis');
@@ -132,7 +132,7 @@ describe('compileAdapterRuntime', () => {
     expect.hasAssertions();
 
     const previous = { ...process.env };
-    process.env.AAA_KEYVALUESTORAGE_DRIVER = 'from-process-env';
+    process.env.JUMENTIX_KEYVALUESTORAGE_DRIVER = 'from-process-env';
 
     try {
       const { options, seen } = harness({ env: undefined });

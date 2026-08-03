@@ -60,7 +60,7 @@ class ExpressServer extends HTTPBaseServer<Express> {
   public start(): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
-        const port = Number(process.env.AAA_HTTP_PORT || _HTTP_PORT_);
+        const port = Number(process.env.JUMENTIX_HTTP_PORT || _HTTP_PORT_);
         this.server = this.application.listen(port, () => {
           // eslint-disable-next-line no-console
           console.log(`Express App Listening on Port ${port}`);

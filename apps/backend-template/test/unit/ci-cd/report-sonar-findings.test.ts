@@ -29,12 +29,12 @@ describe('report-sonar-findings', () => {
     expect.hasAssertions();
     // Written by the scanner; the only place the analysis task URL exists.
     const metadata = reporter.readTaskMetadata(
-      'projectKey=XpertMinds_Jumentix\n'
+      'projectKey=Jumentix\n'
       + 'serverUrl=https://sonarcloud.io\n'
       + 'ceTaskUrl=https://sonarcloud.io/api/ce/task?id=abc\n'
     );
 
-    expect(metadata.projectKey).toBe('XpertMinds_Jumentix');
+    expect(metadata.projectKey).toBe('Jumentix');
     expect(metadata.ceTaskUrl).toBe('https://sonarcloud.io/api/ce/task?id=abc');
   });
 

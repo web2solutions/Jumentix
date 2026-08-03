@@ -48,10 +48,10 @@ Arquivos principais de implementação:
      - portas de tempo de execução (`REST`, `WebSocket`, `gRPC`)
    - Mostra visualização de perfil orientado a PM2 para orquestração de tempo de execução de VM.
    - Inclui controles de ambiente de tempo de execução para leitura/atualização:
-     - `AAA_HTTP_FRAMEWORK`
-     - `AAA_REALTIME_API`
-     - `AAA_REALTIME_API_PROTOCOL`
-     - `AAA_REALTIME_API_DATABASE_DRIVER`
+     - `JUMENTIX_HTTP_FRAMEWORK`
+     - `JUMENTIX_REALTIME_API`
+     - `JUMENTIX_REALTIME_API_PROTOCOL`
+     - `JUMENTIX_REALTIME_API_DATABASE_DRIVER`
    - O editor de ambiente de tempo de execução tem como alvo o arquivo de ambiente selecionado:
     - `dev` -> `apps/backend-template/src/config/.env.dev`
     - `staging` -> `apps/backend-template/src/config/.env.staging`

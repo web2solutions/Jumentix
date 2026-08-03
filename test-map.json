@@ -573,6 +573,26 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/config/aws-service-name.test.ts",
+      "path": "apps/backend-template/test/unit/config/aws-service-name.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/config/redis.test.ts",
+      "path": "apps/backend-template/test/unit/config/redis.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/config/security.test.ts",
       "path": "apps/backend-template/test/unit/config/security.test.ts",
       "layer": "tooling",
@@ -2597,6 +2617,16 @@
       "runner": "bun",
       "tier": "gate",
       "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/HTTP/adapters/express/ExpressServer.start.test.ts",
+      "path": "apps/backend-template/test/unit/interface/HTTP/adapters/express/ExpressServer.start.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
     }
   ],
   "quarantine": [

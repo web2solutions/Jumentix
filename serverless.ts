@@ -4,7 +4,7 @@ import type { Serverless } from 'serverless/aws';
 const serverlessConfiguration: Serverless = {
   frameworkVersion: '4',
   org: 'web2solucoes',
-  service: 'aaa-typescript-boilerplate',
+  service: 'jumentix',
   provider: {
     name: 'aws',
     runtime: 'nodejs22.x',

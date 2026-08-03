@@ -35,7 +35,7 @@ const SERVICE_TYPES = [
 
 function printHelp(log = console.log) {
   log(`
-JumentiX Bootstrap CLI
+Jumentix Bootstrap CLI
 
 Usage:
   jumentix-init [options]
@@ -195,7 +195,7 @@ function resolveServiceTypeById(serviceTypeId) {
 }
 
 function writeBootstrapProfile(targetPath, payload) {
-  const configDir = path.join(targetPath, '.aaa');
+  const configDir = path.join(targetPath, '.jumentix');
   fs.mkdirSync(configDir, { recursive: true });
   const outputPath = path.join(configDir, 'service-profile.json');
   fs.writeFileSync(outputPath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
@@ -232,7 +232,7 @@ async function run(options = {}) {
     : makePrompt();
 
   try {
-    log('\nJumentiX Bootstrap CLI');
+    log('\nJumentix Bootstrap CLI');
     const serviceType = cliArgs.serviceTypeId
       ? resolveServiceTypeById(cliArgs.serviceTypeId)
       : await chooseServiceType(prompt.ask, log);
@@ -253,7 +253,7 @@ async function run(options = {}) {
 
     writeBootstrapProfile(targetPath, {
       generatedAt: new Date().toISOString(),
-      template: 'aaa-typescript-boilerplate',
+      template: 'jumentix',
       repository,
       branch: gitBranch,
       serviceType: serviceType.id,
@@ -267,7 +267,7 @@ async function run(options = {}) {
 
     log('\nScaffold completed successfully.');
     log(`Project path: ${targetPath}`);
-    log(`Profile: ${path.join(targetPath, '.aaa', 'service-profile.json')}`);
+    log(`Profile: ${path.join(targetPath, '.jumentix', 'service-profile.json')}`);
   } finally {
     prompt.close();
   }

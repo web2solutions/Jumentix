@@ -103,7 +103,7 @@ function runFullTestMatrix(options = {}) {
   const execute = options.execute || executeMatrixCell;
   const logger = options.logger || console;
   const availableScripts = options.availableScripts || require('../package.json').scripts;
-  const resultFile = options.resultFile ?? process.env.AAA_CI_MATRIX_RESULT_FILE;
+  const resultFile = options.resultFile ?? process.env.JUMENTIX_CI_MATRIX_RESULT_FILE;
 
   validateMatrixManifest(cells, availableScripts);
 
