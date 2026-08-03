@@ -24,7 +24,9 @@ const requiredWorkflows = Object.freeze({
   'website.yml': [
     /website:storybook:build/,
     /website:storybook:smoke/,
-    /website:test:prepublish/
+    /website:test:prepublish/,
+    // JUM-396 — Cypress route/a11y gates are part of the website workflow contract.
+    /website:test:cypress/
   ],
   'sonarqube-cloud.yml': [
     /test:coverage/,

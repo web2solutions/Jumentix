@@ -36,7 +36,17 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 } catch (error) {}`;
 
   return (
-    <html lang="en" dir="ltr" data-scroll-behavior="smooth" {...mantineHtmlProps}>
+    <html
+      lang="en"
+      dir="ltr"
+      data-scroll-behavior="smooth"
+      {...mantineHtmlProps}
+      // Override after mantineHtmlProps so SSR HTML matches the default
+      // scheme the beforeInteractive bootstrap and MantineProvider expect
+      // (avoids React #418 on <html>). Storage still wins via the script.
+      data-mantine-color-scheme={head.mantine.defaultColorScheme}
+      suppressHydrationWarning
+    >
       <head>
         <Script
           id="mantine-color-scheme"
@@ -51,11 +61,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           content="minimum-scale=1, initial-scale=1, width=device-width, user-scalable=no"
         />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <MantineProvider theme={theme} defaultColorScheme={head.mantine.defaultColorScheme}>
           <CommercialChrome>{children}</CommercialChrome>
         </MantineProvider>
-        <Analytics />
+        {process.env.NEXT_PUBLIC_VERCEL_ENV ? <Analytics /> : null}
       </body>
     </html>
   );

@@ -4,8 +4,16 @@
 
 ## All Changes
 
-- 2026-08-02 fix(compose): dual-read AAA_ password env fallbacks [JUM-605] - Eduardo Almeida
-- 2026-08-02 refactor: eliminate legacy Jumentix product naming [JUM-605] - Eduardo Almeida
+- 2026-08-03 fix(ci): restore frozen bun.lock for agent-registry workspace - Eduardo A.
+- 2026-08-03 test(website): add Cypress route, a11y, and responsive gates - Eduardo A.
+- 2026-08-03 [JUM-611][Governance] Replace GitHub-mirrored agent registry with Firestore Database - Eduardo A.
+- 2026-08-03 [JUM-417][CI] Sync agent-registry mirror (kimi-k3-cursor-001) (#64) - Eduardo A.
+- 2026-08-03 [JUM-419][CI] Sync the agent-registry mirror to canonical 271da346 - Eduardo A.
+- 2026-08-03 [JUM-417][Release] Merge main history into dev for the promotion - Eduardo A.
+- 2026-08-03 [JUM-417][CI] Sonar new-code fixes + temporary CircleCI bridge (PR #52 leftovers) (#61) - Eduardo A.
+- 2026-08-03 [JUM-605][Refactor] Eliminate legacy Jumentix product naming confusion - Eduardo A.
+- 2026-08-02 [JUM-540][Release] Promote dev snapshot to main (#60) - Eduardo A.
+- 2026-08-02 chore(release): promote dev snapshot to main - Eduardo A.
 - 2026-08-02 [JUM-417][Testing] Enforce the Cana browser and worker matrix across engines (#52) - Eduardo A.
 - 2026-08-02 [JUM-540][Docs] Clarify nested requirement globs for release governance (#59) - Eduardo A.
 - 2026-08-02 docs: clarify nested requirement globs for release governance - Eduardo A.
