@@ -45,6 +45,11 @@ function withoutDriverNamed<T>(body: () => T): T {
   }
 }
 
+function restoreEnvVar(envKey: string, value: string | undefined) {
+  if (value === undefined) delete process.env[envKey];
+  else process.env[envKey] = value;
+}
+
 const key = (name: string) => `integration-${name}-${Date.now()}`;
 
 suite('the Redis client against a real server', () => {
@@ -272,16 +277,12 @@ suite('choosing the Redis driver with a server present', () => {
       resetRedisKeyValueStorageClientForTests();
       expect(RedisKeyValueStorageClient.compile()).toBeInstanceOf(RedisKeyValueStorageClient);
     } finally {
-      const restore = (key: string, value: string | undefined) => {
-        if (value === undefined) delete process.env[key];
-        else process.env[key] = value;
-      };
-      restore('AAA_REDIS_PORT', previous.port);
-      restore('AAA_REDIS_CONNECT_TIMEOUT_MS', previous.timeout);
-      restore('AAA_REDIS_HOST', previous.host);
-      restore('AAA_REDIS_USERNAME', previous.user);
-      restore('AAA_REDIS_PASSWORD', previous.pass);
-      restore('AAA_REDIS_DB', previous.db);
+      restoreEnvVar('AAA_REDIS_PORT', previous.port);
+      restoreEnvVar('AAA_REDIS_CONNECT_TIMEOUT_MS', previous.timeout);
+      restoreEnvVar('AAA_REDIS_HOST', previous.host);
+      restoreEnvVar('AAA_REDIS_USERNAME', previous.user);
+      restoreEnvVar('AAA_REDIS_PASSWORD', previous.pass);
+      restoreEnvVar('AAA_REDIS_DB', previous.db);
       resetRedisKeyValueStorageClientForTests();
     }
   });

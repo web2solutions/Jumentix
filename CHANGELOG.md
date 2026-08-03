@@ -4,8 +4,29 @@
 
 ## All Changes
 
+- 2026-08-02 docs: separate project and software requirements into distinct namespaces [JUM-609] - Eduardo A.
+- 2026-08-02 [JUM-540][CI] Align strict coverage gate with release coverage (#56) - Eduardo A.
+- 2026-08-02 ci: align strict coverage gate with release coverage - Eduardo A.
+- 2026-08-02 [JUM-540][Release] Reconcile main ancestry into dev (#53) - Eduardo A.
+- 2026-08-02 chore(release): reconcile main into dev before promotion - Eduardo A.
+- 2026-08-02 [JUM-540][Fix] Resolve BullMQ readiness review (#51) - Eduardo A.
+- 2026-08-02 fix: resolve BullMQ infrastructure readiness review - Eduardo A.
+- 2026-08-02 [JUM-009][Docs] Complete documentation drift follow-up (#50) - Eduardo A.
+- 2026-08-02 docs: refresh changelog after latest dev merge - Eduardo A.
+- 2026-08-02 Merge remote-tracking branch 'origin/dev' into codex/docs/JUM-009-documentation-drift - Eduardo A.
+- 2026-08-02 [JUM-540][CI] Complete Bun tooling gate cleanup (#49) - Eduardo A.
+- 2026-08-02 docs: refresh changelog after dev merge - Eduardo A.
+- 2026-08-02 Merge remote-tracking branch 'origin/dev' into codex/docs/JUM-009-documentation-drift - Eduardo A.
+- 2026-08-02 ci: complete Bun tooling gate cleanup - Eduardo A.
+- 2026-08-02 ci: complete Bun tooling gate cleanup - Eduardo A.
+- 2026-08-02 ci: enforce authorized emails before push - Eduardo A.
+- 2026-08-02 ci: update GitHub Actions runtime pins - Eduardo A.
+- 2026-08-02 docs: reconcile documentation drift - Eduardo A.
+- 2026-08-02 docs: reconcile documentation drift (#47) - Eduardo A.
+- 2026-08-02 ci: update GitHub Actions runtime pins - Eduardo A.
 - 2026-08-02 docs: reconcile documentation drift - Eduardo A.
 - 2026-08-02 [JUM-581][Testing] Cana runs in a real browser; the IndexedDB fake is deleted (#38) - Eduardo A.
+- 2026-08-02 [JUM-594][Release] Promote private free CI strategy (#46) - Eduardo A.
 - 2026-08-02 [JUM-581][Testing] Merge origin/dev into cana browser coverage PR - Eduardo Almeida
 - 2026-08-02 [JUM-594][Fix] Resolve REST and WebSocket SDK spec paths independent of cwd (#45) - Eduardo A.
 - 2026-08-02 refactor: share canonical spec resolution via shared-contracts - Eduardo A.
@@ -37,6 +58,7 @@
 - 2026-08-01 [JUM-589][Governance] Sync terminal Codex onboarding state - Eduardo Almeida
 - 2026-08-01 [JUM-589][Governance] Sync Codex registry onboarding (#29) - Eduardo A.
 - 2026-08-01 [JUM-589][Governance] Sync Codex registry onboarding - Eduardo Almeida
+- 2026-08-01 [JUM-587][Release] Promote the test map completeness fixes to main (#28) - Eduardo A.
 - 2026-08-01 fix(ci): make the test map complete in both directions [JUM-587] (#27) - Eduardo A.
 - 2026-08-01 [JUM-585][Release] Reconcile main ancestry into dev (#26) - Eduardo A.
 - 2026-08-01 chore(release): reconcile main ancestry into dev - Eduardo Almeida

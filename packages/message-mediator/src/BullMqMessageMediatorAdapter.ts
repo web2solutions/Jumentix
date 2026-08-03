@@ -45,6 +45,8 @@ export class BullMqMessageMediatorAdapter implements IMessageMediator {
 
   private workersByName: Record<string, any> = {};
 
+  private infrastructureReadyByName: Record<string, Promise<void>> = {};
+
   public constructor(private readonly options: IBullMqMediatorOptions) {
     this.defaultRequestQueue = options.defaultRequestQueue ?? 'app.requests';
   }
@@ -59,6 +61,9 @@ export class BullMqMessageMediatorAdapter implements IMessageMediator {
   }
 
   public async disconnect(): Promise<void> {
+    const infrastructureReady = Object.values(this.infrastructureReadyByName);
+    await Promise.allSettled(infrastructureReady);
+
     const workers = Object.values(this.workersByName);
     const queues = Object.values(this.queuesByName);
     const queueEvents = Object.values(this.queueEventsByName);
@@ -70,6 +75,7 @@ export class BullMqMessageMediatorAdapter implements IMessageMediator {
     this.workersByName = {};
     this.queuesByName = {};
     this.queueEventsByName = {};
+    this.infrastructureReadyByName = {};
     this.initialized = false;
   }
 
@@ -164,33 +170,68 @@ export class BullMqMessageMediatorAdapter implements IMessageMediator {
   }
 
   private async ensureQueueInfrastructure(queueName: string): Promise<void> {
-    if (!this.queuesByName[queueName]) {
-      const { Queue } = this.bullmq;
-      this.queuesByName[queueName] = new Queue(queueName, {
-        connection: this.options.connection
-      });
+    if (!this.infrastructureReadyByName[queueName]) {
+      this.infrastructureReadyByName[queueName] = this.createQueueInfrastructure(queueName)
+        .catch((error) => {
+          delete this.infrastructureReadyByName[queueName];
+          throw error;
+        });
     }
 
-    if (!this.queueEventsByName[queueName]) {
-      const { QueueEvents } = this.bullmq;
-      this.queueEventsByName[queueName] = new QueueEvents(queueName, {
-        connection: this.options.connection
-      });
-    }
+    await this.infrastructureReadyByName[queueName];
+  }
 
-    if (!this.workersByName[queueName]) {
-      const { Worker } = this.bullmq;
-      this.workersByName[queueName] = new Worker(
-        queueName,
-        async (job: any) => {
-          const inputMessage = job.data.message as IMessage<any>;
-          const inputOptions = job.data.options as IMessageRequestOptions;
-          return this.resolveRequest(inputMessage, inputOptions);
-        },
-        {
+  private async createQueueInfrastructure(queueName: string): Promise<void> {
+    let queue = this.queuesByName[queueName];
+    let queueEvents = this.queueEventsByName[queueName];
+    let worker = this.workersByName[queueName];
+    const created: Array<{ close: () => Promise<void> }> = [];
+
+    try {
+      if (!queue) {
+        const { Queue } = this.bullmq;
+        queue = new Queue(queueName, {
           connection: this.options.connection
-        }
-      );
+        });
+        this.queuesByName[queueName] = queue;
+        created.push(queue);
+      }
+
+      if (!queueEvents) {
+        const { QueueEvents } = this.bullmq;
+        queueEvents = new QueueEvents(queueName, {
+          connection: this.options.connection
+        });
+        this.queueEventsByName[queueName] = queueEvents;
+        created.push(queueEvents);
+        await queueEvents.waitUntilReady();
+      }
+
+      if (!worker) {
+        const { Worker } = this.bullmq;
+        worker = new Worker(
+          queueName,
+          async (job: any) => {
+            const inputMessage = job.data.message as IMessage<any>;
+            const inputOptions = job.data.options as IMessageRequestOptions;
+            return this.resolveRequest(inputMessage, inputOptions);
+          },
+          {
+            connection: this.options.connection
+          }
+        );
+        this.workersByName[queueName] = worker;
+        created.push(worker);
+        await worker.waitUntilReady();
+      }
+    } catch (error) {
+      await Promise.allSettled(created.map(async (client) => client.close()));
+      if (this.queuesByName[queueName] === queue) delete this.queuesByName[queueName];
+      if (this.queueEventsByName[queueName] === queueEvents) {
+        delete this.queueEventsByName[queueName];
+      }
+      if (this.workersByName[queueName] === worker) delete this.workersByName[queueName];
+      throw error;
     }
   }
 

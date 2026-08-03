@@ -78,8 +78,9 @@ This file consolidates non-functional requirements already requested and stored 
 ## Rule of Use
 
 - `099` Every task begins only after current `main`, `dev`, and the full requirement inventory are refreshed and read.
-- `100` Every valid pull-request comment blocks merge until it is corrected with applicable gate
-  evidence; an invalid comment requires a factual explanation in the PR.
+- `100` Every valid pull-request comment and every unresolved GitHub review/discussion
+  thread blocks merge until it is corrected, resolved, or answered as invalid with
+  factual PR evidence and applicable gate evidence.
 - `101` Agents waiting only on remote checks must progress another active, non-conflicting task
   in its own worktree and recheck the waiting task at material boundaries.
 - `102` Every executing task must publish truthful, task-specific Linear Project Updates at
@@ -119,8 +120,8 @@ This file consolidates non-functional requirements already requested and stored 
   narrowing the scope is not a permitted way to meet one. A suite may
   declare `runner: "node"` only with a `reason` naming a concrete Bun incompatibility;
   the map pin overrides environment resolution. Amends 106.
-- `111` Only identities declared in `.agents/AUTHORIZED-COMMITTERS.json` may author or
-  commit. The declaration is an allowlist and must not be inverted into a denylist: the audit
+- `111` Only identities declared in `.agents/AUTHORIZED-COMMITTERS.json` may author,
+  commit, or push. The declaration is an allowlist and must not be inverted into a denylist: the audit
   behind this requirement started from one known corporate address and uncovered a second
   corporate domain nobody was looking for, which a denylist would have passed. Author and
   committer are both checked, since they diverge on rebases, amends and web merges.
@@ -128,9 +129,11 @@ This file consolidates non-functional requirements already requested and stored 
   anchored to a fixed commit, because a base-relative range is empty, and therefore vacuously
   green, on the branch the work merged into. `--identity` verifies the identity a commit is
   about to receive, in `pre-commit`, because the range check cannot see a commit that does
-  not exist yet and commit metadata cannot be retracted once pushed. No identity is set
-  globally on a contributor machine. Fails closed on a missing, empty or unparseable
-  declaration (Requirement 065).
+  not exist yet and commit metadata cannot be retracted once pushed. `pre-push` runs the
+  same history check before publication, so undeclared local commits cannot reach the forge.
+  Every commit must also carry a GitHub-verified signature before it can merge into a
+  protected branch. No identity is set globally on a contributor machine. Fails closed on a missing, empty or
+  unparseable declaration (Requirement 065).
 
 - `112` Every workspace package and app owns a test suite covering its own source, at
   the project's 99% standard. Coverage borrowed from a consumer measures the consumer: a
@@ -153,9 +156,9 @@ This file consolidates non-functional requirements already requested and stored 
   `<root>/<agent-identifier>/Jumentix` as the only SoT checkout for that agent.
 - `115` Tests are mandatory, functional, and Jumentix-valued: no vacuous/fake suites
   and no suites whose primary subject is a third-party implementation API.
-- `116` Before every task, re-read the full `.agents/requirements/` set and NFR
-  registry on both `origin/dev` and `origin/main`, record drift, and avoid rework
-  (strengthens `099`).
+- `116` Before every task, re-read the full `.agents/requirements/project/` and
+  `.agents/requirements/software/` set and NFR registry on both `origin/dev` and
+  `origin/main`, record drift, and avoid rework (strengthens `099`).
 - `117` Every new feature updates software documentation and adds dedicated feature
   docs (EN/PT) in the same delivery (strengthens `025` / `076`).
 - `118` Smoke and integration suites use Docker to start real dependent services and
@@ -169,9 +172,12 @@ This file consolidates non-functional requirements already requested and stored 
 - `121` Registered agents must work as a coordinated delivery system by refreshing
   sibling-agent progress, blockers, branches, PRs, and Linear Project Updates before
   starting or resuming work, avoiding silent overlap or duplicate delivery.
+- `122` Task-owned branch and PR naming governance (migrated from duplicate `079`).
+- `123` Wave 5 app re-homing cutover governance (migrated from duplicate `055`).
+- `124` Monorepo root layout governance (migrated from duplicate `060`).
 
 When a new NFR is requested:
 
-1. add/update requirement file in `.agents/requirements/`
+1. add/update requirement file in `.agents/requirements/project/` or `.agents/requirements/software/`
 2. update `.agents/README.md` index
 3. update this registry mapping

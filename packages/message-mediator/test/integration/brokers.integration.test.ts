@@ -227,7 +227,9 @@ suite('RabbitMQ mediator against a real broker', () => {
 
     const nonErrorName = contract('rabbit-throw-non-error');
     mediator.registerHandler(nonErrorName, async () => {
-      throw 'rabbit string failure';
+      // Intentional: covers the adapter branch for non-Error rejections.
+      // eslint-disable-next-line prefer-promise-reject-errors
+      return Promise.reject('rabbit string failure');
     });
     const nonError = await mediator.request(message(nonErrorName), { timeoutMs: 20000 });
     expect((nonError.error as { message?: string }).message).toMatch(/rabbit string failure/);
@@ -236,13 +238,11 @@ suite('RabbitMQ mediator against a real broker', () => {
   it('survives broker cancel frames on reply and request consumers', async () => {
     expect.hasAssertions();
 
-    const channel = (mediator as unknown as {
+    const { channel } = mediator as unknown as {
       channel: { consumers: Map<string, (msg: null) => unknown> };
-    }).channel;
+    };
 
-    for (const consumer of channel.consumers.values()) {
-      await consumer(null);
-    }
+    await Promise.all([...channel.consumers.values()].map((consumer) => consumer(null)));
 
     expect(channel.consumers.size).toBeGreaterThan(0);
   });
@@ -292,8 +292,8 @@ suite('RabbitMQ mediator against a real broker', () => {
   it('acks reply-queue frames that cannot be correlated', async () => {
     expect.hasAssertions();
 
-    const replyQueue = (mediator as unknown as { replyQueue: string }).replyQueue;
-    const channel = (mediator as unknown as {
+    const { replyQueue } = mediator as unknown as { replyQueue: string };
+    const { channel } = mediator as unknown as {
       channel: {
         sendToQueue: (
           queue: string,
@@ -301,7 +301,7 @@ suite('RabbitMQ mediator against a real broker', () => {
           options?: Record<string, unknown>
         ) => boolean;
       };
-    }).channel;
+    };
 
     channel.sendToQueue(replyQueue, Buffer.from('{}'), {});
     channel.sendToQueue(replyQueue, Buffer.from('{}'), { correlationId: 'missing-pending' });
@@ -400,7 +400,9 @@ suite('BullMQ mediator against a real Redis', () => {
 
     const nonErrorName = contract('bull-throw-non-error');
     mediator.registerHandler(nonErrorName, async () => {
-      throw 'bull string failure';
+      // Intentional: covers the adapter branch for non-Error rejections.
+      // eslint-disable-next-line prefer-promise-reject-errors
+      return Promise.reject('bull string failure');
     });
     const nonError = await mediator.request(message(nonErrorName), { timeoutMs: 20000 });
     expect((nonError.error as { message?: string }).message).toMatch(/bull string failure/);
@@ -430,7 +432,8 @@ suite('BullMQ mediator against a real Redis', () => {
 
     const response = await mediator.request(message(name), { timeoutMs: 500 });
     expect(response.error).toBeDefined();
-    expect(String((response.error as Error).message || '')).toMatch(/timed out/);
+    const errorMessage = String((response.error as Error).message);
+    expect(errorMessage).toMatch(/timed out/);
   }, 60000);
 
   it('is a no-op to connect twice and still disconnects cleanly', async () => {
@@ -502,8 +505,12 @@ suite('BullMQ mediator against a real Redis', () => {
       handlersByRouteKey: Record<string, unknown>;
       handlersByQueueName: Record<string, unknown>;
     }).handlersByContract = {};
-    (mediator as unknown as { handlersByRouteKey: Record<string, unknown> }).handlersByRouteKey = {};
-    (mediator as unknown as { handlersByQueueName: Record<string, unknown> }).handlersByQueueName = {};
+    (mediator as unknown as {
+      handlersByRouteKey: Record<string, unknown>;
+    }).handlersByRouteKey = {};
+    (mediator as unknown as {
+      handlersByQueueName: Record<string, unknown>;
+    }).handlersByQueueName = {};
 
     const response = await mediator.request(message(name), { timeoutMs: 20000 });
     // Wire form is `{ name, message }` so the reason survives Redis JSON.
