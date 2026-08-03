@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any, import/first */
 const mockInitializeApp = jest.fn();
 const mockCert = jest.fn((value) => ({ credential: value }));
 const mockGetApps = jest.fn();
@@ -6,14 +6,14 @@ const mockDeleteApp = jest.fn(async () => undefined);
 const mockFirestore = { collection: jest.fn() };
 const mockGetFirestore = jest.fn(() => mockFirestore);
 
-jest.mock('firebase-admin/app', () => ({
+jest.mock<typeof import('firebase-admin/app')>('firebase-admin/app', () => ({
   initializeApp: mockInitializeApp,
   cert: mockCert,
   getApps: mockGetApps,
   deleteApp: mockDeleteApp
 }));
 
-jest.mock('firebase-admin/firestore', () => ({
+jest.mock<typeof import('firebase-admin/firestore')>('firebase-admin/firestore', () => ({
   getFirestore: mockGetFirestore
 }));
 

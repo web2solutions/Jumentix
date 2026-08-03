@@ -278,7 +278,7 @@ jobs:
           command: bun run website:test:prepublish
       - run:
           name: Install Cypress binary
-          command: bunx cypress install
+          command: bun x cypress install
       - run:
           name: Cypress website quality gates (JUM-396)
           command: bun run website:test:cypress
