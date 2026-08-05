@@ -1,0 +1,217 @@
+# Requirement 126 - Service Management Ownership and Public Contracts
+
+- Status: Active
+- Nature: NFR (governance, component contract specification, drift detection)
+- Source: Linear `JUM-465`, epic "Service Management ownership, modernization and Cana
+  adoption", milestone H1 (Correctness & runtime alignment), 2026-08-05.
+- Strengthens: `038`, `043`. Relates to: `044`, `052`, `123` and Linear `JUM-458`,
+  `JUM-558`, `JUM-459`, `JUM-460`, `JUM-461`, `JUM-462`, `JUM-543`, `JUM-466`,
+  `JUM-468`, `JUM-484`.
+
+## Context
+
+The Wave 5 re-homing moved `apps/backend-template` and silently broke the
+`apps/service-management/server.js` env-file path: nothing pinned where the env files
+live, no owner watched the component, and no smoke asserted the path resolves. The
+defect served default values as though they were real configuration. This requirement
+registers a formal owner for the component and pins its three public contracts —
+the `/api/runtime/env` API, the `service-management.v1` localStorage schema, and the
+export formats — precisely enough that a violation is detectable by a test rather
+than by reading. The H1 child issues implement the behavior; this requirement is the
+contract they converge on, and the smoke expansion in `JUM-466` asserts it.
+
+## Requirement
+
+1. **Ownership registration.**
+   - `apps/service-management` MUST have a registered owner in the component ownership
+     registry `.agents/COMPONENT-OWNERSHIP.md` (established by this requirement).
+     The registered owner is agent `kimi-code-primary-001`.
+   - Any change to a public contract pinned here MUST update this requirement (and the
+     registry sync set listed in Evidence) in the same PR.
+
+2. **Env-file location (pinned path).**
+   - The runtime env files live in `apps/backend-template/src/config/`:
+     `.env.dev`, `.env.staging`, `.env.ci`.
+   - `server.js` MUST resolve the config directory as
+     `JUMENTIX_SERVICE_MANAGEMENT_CONFIG_DIR` (absolute-resolved) when set, otherwise
+     `<repo-root>/apps/backend-template/src/config`, and MUST fail closed at boot
+     (stderr message naming the missing directory, exit code `1`) when the directory
+     does not exist. Silently serving defaults for a missing directory is a contract
+     violation.
+
+3. **Contract 1 — `GET`/`POST /api/runtime/env`.**
+   - **Environments and file mapping.** Accepted `environment` values and their file
+     mapping: `dev` → `.env.dev`, `development` → `.env.dev`, `staging` →
+     `.env.staging`, `ci` → `.env.ci`, `test` → `.env.ci`. Comparison is
+     case-insensitive after trimming. An unknown environment MUST be explicitly
+     rejected — never silently coerced to `dev`. When omitted, the environment
+     defaults to `NODE_ENV` or `dev`.
+   - **Read vs write allowlist and classification rule (per `JUM-460`).** The read
+     allowlist and the write allowlist are separate sets. Every env key belongs to
+     exactly one of three tiers, each with a stated reason:
+     - *Editable* — runtime topology selectors (frameworks, drivers, adapters,
+       protocol toggles); readable and writable.
+     - *Read-only* — connection endpoints and non-secret configuration; visible in
+       GET so the designer reflects reality, never writable through POST.
+     - *Never exposed* — secrets and credential-bearing values (e.g.
+       `JUMENTIX_JWT_TOKEN_SECRET_KEY`, `JUMENTIX_REDIS_PASSWORD`,
+       `JUMENTIX_RABBITMQ_URL`); MUST NOT appear in the GET response and MUST NOT be
+       writable, since the response crosses the same boundary as the write.
+     The current editable set is the four topology selectors
+     (`JUMENTIX_HTTP_FRAMEWORK`, `JUMENTIX_REALTIME_API`,
+     `JUMENTIX_REALTIME_API_PROTOCOL`, `JUMENTIX_REALTIME_API_DATABASE_DRIVER`), and
+     the read surface is bounded to the same four. `JUM-460` lands the full
+     23-key classification of `.env.dev` into this requirement; every addition to the
+     editable set is a security decision and MUST carry a written reason here.
+   - **Enum sets per key.** Values outside the accepted enum MUST be rejected with
+     the accepted list (added by `JUM-460`; today any string is accepted):
+     - `JUMENTIX_HTTP_FRAMEWORK`: `express`, `fastify`, `restify`,
+       `cloudflare-workers`, `vercel-functions`, `loopback`, `sails-js`, `feathers`,
+       `derby-js`, `adonis-js`, `total-js` (the set accepted by
+       `apps/backend-template/src/interface/runtime/RuntimeEnvironment.ts` and
+       `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md`).
+     - `JUMENTIX_REALTIME_API`: `yes`, `no`.
+     - `JUMENTIX_REALTIME_API_PROTOCOL`: `websocket`, `grpc`.
+     - `JUMENTIX_REALTIME_API_DATABASE_DRIVER`: `Mongo`, `PostgreSQL`, `MySQL`,
+       `MS SQL`, `RDS`, `Aurora`, `Cassandra`.
+   - **Alias decision (per `JUM-461`).** `derby`/`derby-js` and `sails`/`sails-js`
+     are the same framework under two accepted spellings. The selector offers the
+     canonical spelling of each pair and the server's enum validation agrees with the
+     selector exactly — a value the UI offers MUST be a value the server accepts, and
+     vice versa. The canonical-spelling decision is recorded in
+     `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md` by `JUM-461`; until then the
+     11-value set above (which already uses the `-js` spellings) is binding.
+     Separately, `JUMENTIX_DATABASE_DRIVER` and
+     `JUMENTIX_REALTIME_API_DATABASE_DRIVER` are distinct keys and MUST be separately
+     labelled and separately editable in the UI.
+   - **Authentication and bind posture (per `JUM-462`).** The server binds
+     `127.0.0.1` by default (`JUMENTIX_SERVICE_MANAGEMENT_HOST`, port
+     `JUMENTIX_SERVICE_MANAGEMENT_PORT`, default `3200`). Binding a non-loopback
+     interface MUST be an explicit opt-in and MUST log a warning naming the exposure.
+     When `JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN` is set, `POST /api/runtime/env`
+     MUST require `Authorization: Bearer <token>` and reject anything else with
+     `401 { "error": "Unauthorized." }`; when unset, loopback-only operation is
+     allowed without a token. Every mutation MUST be logged with timestamp,
+     environment, and changed keys. This posture derives from Requirement `044`
+     (PCI hardening): the endpoint writes real backend configuration.
+   - **Error contract (per `JUM-543`).** Parse, validation, and filesystem failures
+     are distinguishable:
+     - malformed JSON body → `400 { "error": "Invalid payload.", "details": … }`;
+     - unsupported/invalid environment →
+       `400 { "error": "Invalid environment request.", "details": … }` whose details
+       name the unsupported value and the accepted list;
+     - missing or wrong bearer token → `401 { "error": "Unauthorized." }`;
+     - filesystem failures (missing env file — internally error code
+       `ENV_FILE_NOT_FOUND` — permission errors, full disk) MUST NOT be reported as
+       `400 Invalid payload`; they surface as a distinct, identifiable failure so the
+       user can tell a broken installation from a malformed request.
+     The UI surfaces these failures through non-blocking status surfaces, not
+     `window.alert` (`JUM-543`).
+   - **Write semantics.** POST accepts `{ "environment"?, "values" { … } }`; only
+     write-allowlisted keys present in `values` are updated — all other keys are
+     ignored. Writes are atomic (temp file, `fsync`, rename), preserve unrelated
+     lines, quote values containing whitespace or `#` (escaping embedded quotes), and
+     end the file with a single trailing newline. A successful POST returns the same
+     shape as GET: `{ environment, fileName, values }` with the post-write state.
+   - **Response hygiene.** JSON responses escape `<`, `>`, `&`, `U+2028`, `U+2029`
+     and carry `Content-Type: application/json; charset=utf-8` plus
+     `X-Content-Type-Options: nosniff`.
+
+4. **Contract 2 — `service-management.v1` localStorage storage schema.**
+   - The entire suite state (all four tabs) persists as ONE JSON payload under the
+     single localStorage key `service-management.v1`, with exactly these top-level
+     sections: `domains`, `relationships`, `selectedDomainId`, `selectedEntityId`,
+     `selectedRelationshipId`, `idCounter`, `activeTab`, `interfaces`,
+     `serviceConfiguration`, `runtimeEnvironment`, `deployments`, `view`.
+   - `activeTab` ∈ { `domain-designer`, `interface-designer`, `service-config`,
+     `deploy-management` } — one per tab.
+   - `serviceConfiguration`: `{ serviceKind, runMode, cloudProvider,
+     staticAssetsPath, ports: { rest, websocket, grpc } }` with
+     `serviceKind` ∈ { `rest-api`, `websocket-rest-api`, `grpc-rest-api` },
+     `runMode` ∈ { `dedicated-server`, `virtual-machine`, `container`, `functions` },
+     and `cloudProvider` ∈ { `aws`, `google`, `azure`, `vercel`, `cloudflare`,
+     `docker` }.
+   - `runtimeEnvironment`: `{ environment, fileName, values }` mirroring Contract 1
+     (environment enum and the four editable runtime keys).
+   - `view`: `{ zoom (clamped 0.5–2), compactEntities, snapToGrid,
+     edgeStyle ∈ { curved, orthogonal },
+     modelCheckMinSeverity ∈ { info, warn, error }, exportBlockCritical (default
+     true), largeCanvasMode }`.
+   - Entity field types ∈ { `string`, `integer`, `number`, `boolean`, `array`,
+     `object`, `date`, `datetime`, `uuid` }.
+   - The schema-diff baseline lives under the separate key
+     `service-management.schema-baseline.v1` and holds
+     `{ domains: [{ id, name, color, context, entities: [{ id, name, meta, contracts,
+     fields: [{ name, type, required, pk, fk, unique, nullable, format, itemsType,
+     enumValues }] }] }], relationships: [{ id, fromEntityId, toEntityId,
+     fromCardinality, toCardinality }] }`.
+   - This schema is the migration source for the `IDesignerStore` port (`JUM-468`)
+     and the Cana migration (`JUM-484`). Any structural change MUST bump the
+     versioned key and update this requirement in the same PR.
+
+5. **Contract 3 — Export formats and the export quality gate.**
+   Seven exporters exist; each guarantees:
+   - **JSON** (`domain-designer.json`): `{ domains, relationships, view }` — the
+     full model, re-importable shape.
+   - **Markdown** (`domain-designer-model.md`): human-readable model document —
+     per-domain bounded-context metadata, per-entity field table
+     (name/type/required/PK/FK/unique/nullable), RBAC per action, message contracts,
+     and a relationships section.
+   - **JSON Schema** (`domain-designer-json-schema.json`): draft 2020-12
+     (`$schema: https://json-schema.org/draft/2020-12/schema`), one entry per entity
+     under `definitions` with `type: object`, `required` derived from required
+     fields, and `additionalProperties: false`.
+   - **AsyncAPI** (`domain-designer-asyncapi.json`): `asyncapi: 3.0.0`; channels
+     derived from entity message contracts (explicit `channel` or
+     `<domain>/<entity>/<type>` fallback); `response` contracts map to `subscribe`,
+     all other types to `publish`.
+   - **Boilerplate bundle** (`domain-designer-boilerplate-bundle.json`):
+     `{ kind: "boilerplate-bundle", version: "1.0.0", generatedAt, modules }` with
+     hexagonal file paths per entity (model, repository port, use case, controller,
+     express handler).
+   - **Domain package** (`<domain>-package.json`): `{ kind: "domain-package",
+     version: "1.0.0", exportedAt, domain }` for the selected domain; the package
+     import flow accepts exactly this shape.
+   - **OpenAPI 3.1** (`domain-designer-oas-3.1.json`): `openapi: 3.1.0`; CRUD paths
+     per entity (`list/create/getById/update/delete` operationIds), component schemas
+     carrying `x-domain`, `x-entity`, `x-message-contracts`, optional
+     `oneOf`/`allOf`/`anyOf` composition with `discriminator` and `x-external-refs`,
+     plus top-level `x-message-contracts` and `x-relations`.
+   - **Export quality gate.** When `view.exportBlockCritical` is true (the default),
+     every exporter MUST refuse to run while model validation reports any
+     `error`-severity issue, surfacing the blocking issues instead of producing a
+     file. When the flag is false, export proceeds ungated.
+
+## Acceptance Criteria
+
+- Requirement filed under `.agents/requirements/software/` with unique ID `126`,
+  indexed exactly once in `.agents/README.md`, passing `bun run requirements:check`.
+- All three public contracts specified precisely enough that a violation is
+  detectable by a test (the `JUM-466` smoke asserts them) rather than by reading.
+- The env-file location is pinned (item 2), so a future re-homing that breaks it
+  fails a check instead of silently serving defaults.
+- Ownership registered in `.agents/COMPONENT-OWNERSHIP.md`; NFR registry
+  synchronized in the same PR.
+
+## Evidence
+
+- This requirement file.
+- `.agents/COMPONENT-OWNERSHIP.md` — component ownership registry established here;
+  first entry names `kimi-code-primary-001` as owner of `apps/service-management`.
+- Contract sources of truth: `apps/service-management/server.js`,
+  `apps/service-management/script.js`, `apps/service-management/index.html`,
+  `apps/backend-template/src/interface/runtime/RuntimeEnvironment.ts`,
+  `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md`,
+  `documentation/md/SERVICE-MANAGEMENT-APPLICATION.md`.
+- Behavior pinned as of the `JUM-458`/`JUM-558`/`JUM-459`/`JUM-462` fix branch
+  (`kimi/fix/JUM-458-service-management-env-path`), including its integration suite
+  `apps/backend-template/test/integration/ServiceManagement/runtimeEnv.integration.test.ts`;
+  enum validation and the full key classification land via `JUM-460`, the UI
+  label/selector alignment via `JUM-461`, the error-surface split via `JUM-543`.
+- Registry sync: `.agents/NFR-REGISTRY.md`,
+  `documentation/md/SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md` (+ `.pt-BR.md`),
+  `documentation/md/SPEC-REQUIREMENTS-COVERAGE-STATUS.md` (+ `.pt-BR.md`),
+  `.agents/README.md`; validated by `bun run requirements:check` and
+  `bun run test-map:check`.
+- The canonical agent registry lives in Firestore (Requirement `089`); the frozen
+  `.agents/AGENT-REGISTRY.md` mirror is intentionally not edited.

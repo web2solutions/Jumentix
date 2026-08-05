@@ -4,7 +4,10 @@
 
 ## All Changes
 
-- 2026-08-05 docs(JUM-467): audit bilingual docs and repair links for service-management - Eduardo A.
+- 2026-08-05 docs(JUM-465): resolve EN ledger conflict keeping both 125 and 126 sections - Eduardo A.
+- 2026-08-05 chore(JUM-465): merge dev and renumber requirement to 126 (125 taken by JUM-604) - Eduardo A.
+- 2026-08-05 [JUM-604][Governance] Support the Kimi agent with declarative agent support (#78) - Eduardo A.
+- 2026-08-05 docs(JUM-465): register service-management ownership and pin component public contracts - Eduardo A.
 - 2026-08-05 test: isolate PR governance helpers - Eduardo A.
 - 2026-08-05 test: satisfy PR governance lint - Eduardo A.
 - 2026-08-05 chore(release): reconcile main ancestry after branch-gate fix - Eduardo A.
