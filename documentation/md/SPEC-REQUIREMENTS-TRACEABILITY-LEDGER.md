@@ -163,13 +163,11 @@ As of `2026-08-05`, this ledger covers all unique requirement IDs currently regi
 - Requirements: `.agents/requirements/project/114-*.md` … `121-*.md`
 - Evidence: `bun run requirements:check`; agent instruction parity in `AGENTS.md` / `CLAUDE.md` / `GROK.md`; Docker-backed smoke/integration scripts for `118`; API-first / `gh` orchestration for `119`; Linear agent-assignment visibility for `120`; cross-agent coordination evidence for `121`
 
-<<<<<<< HEAD
 ### `126` Service Management ownership and public contracts (JUM-465)
 - Specs: `.agents/requirements/software/126-service-management-ownership-and-public-contracts.md`, `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md`, `documentation/md/SERVICE-MANAGEMENT-APPLICATION.md`, `.agents/COMPONENT-OWNERSHIP.md`
 - Evidence: `bun run requirements:check`; `bun run test-map:check`; integration smoke asserting the pinned contracts (`JUM-466`)
-=======
+
 ### `125` Agent support declaration (JUM-604)
 - Specs: `documentation/md/AGENT-SUPPORT-DECLARATION.md` (+ pt-BR)
 - Requirements: `.agents/requirements/project/125-agent-support-declaration.md`
 - Evidence: `.agents/supported-agents.json`; `ci-cd/check-pr-governance.js` deriving task-branch prefixes from the declaration and verifying each declared instructions file; `KIMI.md`; `bun run pr:governance:check`; `bun run requirements:check`
->>>>>>> origin/dev
