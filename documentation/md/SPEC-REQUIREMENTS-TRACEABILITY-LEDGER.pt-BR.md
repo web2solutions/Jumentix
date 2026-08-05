@@ -4,7 +4,7 @@ Idioma alvo: Português (Brasil)
 -->
 # Especificações de rastreabilidade de requisitos
 
-<!-- requirements-inventory: files=124 unique=124 mapped=124 duplicates= -->
+<!-- requirements-inventory: files=125 unique=125 mapped=125 duplicates= -->
 
 Este livro-razão mapeia IDs de requisitos para especificações de recursos e expectativas de evidências de validação.
 
@@ -130,7 +130,7 @@ Para qualquer alteração, identifique os IDs dos requisitos afetados e garanta:
 
 ## H. Produtização e expansão da plataforma
 
-- `037`, `038`, `054`, `055`, `069`, `070`, `091`, `092`, `093`, `123`
+- `037`, `038`, `054`, `055`, `069`, `070`, `091`, `092`, `093`, `123`, `125`
 - Recursos de especificações:
   - `pacotes/cli-init/*`
   - `apps/gerenciamento de serviço/documentação/*`
@@ -148,11 +148,11 @@ Se os IDs de requisitos afetados não forem mapeados antes da implementação, a
 
 ## Atestado de cobertura (linha de base atual)
 
-A partir de `2026-08-02`, este livro-razão cobre todos os IDs de requisitos exclusivos atualmente registrados em `.agents/requirements/project/` e `.agents/requirements/software/`:
+A partir de `2026-08-05`, este livro-razão cobre todos os IDs de requisitos exclusivos atualmente registrados em `.agents/requirements/project/` e `.agents/requirements/software/`:
 
-1. Arquivos de requisitos no registro: `124`
-2. IDs exclusivos no registro de requisitos: `124`
-3. IDs exclusivos mapeados neste livro-razão: `124`
+1. Arquivos de requisitos no registro: `125`
+2. IDs exclusivos no registro de requisitos: `125`
+3. IDs exclusivos mapeados neste livro-razão: `125`
 4. IDs duplicados com arquivos vinculantes independentes: `nenhum`
 5. IDs ausentes: `nenhum`
 
@@ -164,3 +164,7 @@ A partir de `2026-08-02`, este livro-razão cobre todos os IDs de requisitos exc
 - Specs: `documentation/md/AGENT-OPERATING-REQUIREMENTS-114-121.pt-BR.md` (+ EN)
 - Requisitos: `.agents/requirements/project/114-*.md` … `121-*.md`
 - Evidência: `bun run requirements:check`; paridade em `AGENTS.md` / `CLAUDE.md` / `GROK.md`; scripts Docker de smoke/integration para `118`; orquestração API-first / `gh` para `119`; visibilidade de assignment de agente no Linear para `120`; evidência de coordenação entre agentes para `121`
+
+### `125` Ownership e contratos públicos do Service Management (JUM-465)
+- Specs: `.agents/requirements/software/125-service-management-ownership-and-public-contracts.md`, `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.pt-BR.md`, `documentation/md/SERVICE-MANAGEMENT-APPLICATION.pt-BR.md`, `.agents/COMPONENT-OWNERSHIP.md`
+- Evidência: `bun run requirements:check`; `bun run test-map:check`; smoke de integração que assegura os contratos fixados (`JUM-466`)

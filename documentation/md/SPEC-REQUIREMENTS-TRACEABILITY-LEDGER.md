@@ -1,6 +1,6 @@
 # Spec Requirements Traceability Ledger
 
-<!-- requirements-inventory: files=124 unique=124 mapped=124 duplicates= -->
+<!-- requirements-inventory: files=125 unique=125 mapped=125 duplicates= -->
 
 This ledger maps requirement IDs to spec resources and validation evidence expectations.
 
@@ -126,7 +126,7 @@ For any change, identify impacted requirement IDs and ensure:
 
 ## H. Productization and Platform Expansion
 
-- `037`, `038`, `054`, `055`, `069`, `070`, `091`, `092`, `093`, `123`
+- `037`, `038`, `054`, `055`, `069`, `070`, `091`, `092`, `093`, `123`, `125`
 - Spec resources:
   - `packages/cli-init/*`
   - `apps/service-management/documentation/*`
@@ -144,11 +144,11 @@ If impacted requirement IDs are not mapped before implementation, the change is 
 
 ## Coverage Attestation (Current Baseline)
 
-As of `2026-08-02`, this ledger covers all unique requirement IDs currently registered in `.agents/requirements/project/` and `.agents/requirements/software/`:
+As of `2026-08-05`, this ledger covers all unique requirement IDs currently registered in `.agents/requirements/project/` and `.agents/requirements/software/`:
 
-1. Requirement files in the registry: `124`
-2. Unique requirement IDs in the registry: `124`
-3. Unique IDs mapped in this ledger: `124`
+1. Requirement files in the registry: `125`
+2. Unique requirement IDs in the registry: `125`
+3. Unique IDs mapped in this ledger: `125`
 4. Duplicate IDs with independently binding files: `none`
 5. Missing IDs: `none`
 
@@ -160,3 +160,7 @@ As of `2026-08-02`, this ledger covers all unique requirement IDs currently regi
 - Specs: `documentation/md/AGENT-OPERATING-REQUIREMENTS-114-121.md` (+ pt-BR)
 - Requirements: `.agents/requirements/project/114-*.md` … `121-*.md`
 - Evidence: `bun run requirements:check`; agent instruction parity in `AGENTS.md` / `CLAUDE.md` / `GROK.md`; Docker-backed smoke/integration scripts for `118`; API-first / `gh` orchestration for `119`; Linear agent-assignment visibility for `120`; cross-agent coordination evidence for `121`
+
+### `125` Service Management ownership and public contracts (JUM-465)
+- Specs: `.agents/requirements/software/125-service-management-ownership-and-public-contracts.md`, `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md`, `documentation/md/SERVICE-MANAGEMENT-APPLICATION.md`, `.agents/COMPONENT-OWNERSHIP.md`
+- Evidence: `bun run requirements:check`; `bun run test-map:check`; integration smoke asserting the pinned contracts (`JUM-466`)

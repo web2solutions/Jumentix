@@ -33,6 +33,10 @@ This file consolidates non-functional requirements already requested and stored 
 - `041` PM2 VM orchestration.
 - `042` Env-driven runtime adapter selection.
 - `043` Runtime env docs + governance.
+- `125` Service Management ownership registration and pinned public contracts
+  (`/api/runtime/env`, `service-management.v1` storage schema, export formats),
+  so component drift and re-homing breaks fail checks instead of serving silent
+  defaults.
 
 ## Documentation and Governance NFRs
 

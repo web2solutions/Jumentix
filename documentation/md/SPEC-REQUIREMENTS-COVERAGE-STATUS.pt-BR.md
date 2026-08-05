@@ -4,17 +4,17 @@ Idioma alvo: Português (Brasil)
 -->
 # Status de cobertura dos requisitos de especificação
 
-<!-- requirements-inventory: files=124 unique=124 mapped=124 duplicates= -->
+<!-- requirements-inventory: files=125 unique=125 mapped=125 duplicates= -->
 
 Este documento certifica a cobertura atual dos requisitos implementados pelos recursos orientados ao desenvolvimento de especificações.
 
 ## Instantâneo da linha de base
 
-Data: `2026-08-02`
+Data: `2026-08-05`
 
-1. Arquivos de requisitos em `.agents/requirements/project/` e `.agents/requirements/software/`: `124`
-2. IDs de requisitos exclusivos: `124`
-3. IDs cobertos em `SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`: `124`
+1. Arquivos de requisitos em `.agents/requirements/project/` e `.agents/requirements/software/`: `125`
+2. IDs de requisitos exclusivos: `125`
+3. IDs cobertos em `SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`: `125`
 4. Status de cobertura: `100%`
 
 Notas:
@@ -25,9 +25,9 @@ Notas:
 
 ## Cobertura de requisitos não funcionais
 
-IDs NFR cobertos (`80`):
+IDs NFR cobertos (`81`):
 
-`001`, `011`, `014`, `015`, `016`, `017`, `018`, `020`, `025`, `029`, `036`, `041`, `042`, `043`, `044`, `050`, `053`, `056`, `057`, `063`, `064`, `065`, `066`, `067`, `068`, `069`, `070`, `071`, `072`, `073`, `074`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `091`, `092`, `093`, `094`, `095`, `096`, `097`, `098`, `099`, `100`, `101`, `102`, `103`, `104`, `105`, `106`, `107`, `108`, `109`, `110`, `111`, `112`, `113`, `114`, `115`, `116`, `117`, `118`, `119`, `120`, `121`, `122`, `124`
+`001`, `011`, `014`, `015`, `016`, `017`, `018`, `020`, `025`, `029`, `036`, `041`, `042`, `043`, `044`, `050`, `053`, `056`, `057`, `063`, `064`, `065`, `066`, `067`, `068`, `069`, `070`, `071`, `072`, `073`, `074`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `091`, `092`, `093`, `094`, `095`, `096`, `097`, `098`, `099`, `100`, `101`, `102`, `103`, `104`, `105`, `106`, `107`, `108`, `109`, `110`, `111`, `112`, `113`, `114`, `115`, `116`, `117`, `118`, `119`, `120`, `121`, `122`, `124`, `125`
 
 Fontes de mapeamento NFR:
 
