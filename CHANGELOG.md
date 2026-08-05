@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-05 test: satisfy PR governance lint - Eduardo A.
 - 2026-08-05 chore(release): reconcile main ancestry after branch-gate fix - Eduardo A.
 - 2026-08-05 ci: skip PR metadata checks on branch builds - Eduardo A.
 - 2026-08-05 [JUM-504][Release] Promote CircleCI-backed dev snapshot to main - Eduardo A.
