@@ -44,6 +44,14 @@ bunx vercel login
 bun run website:vercel:link
 ```
 
+## Pin do Bun na Vercel
+
+A imagem Bun padrão da Vercel pode ficar atrás do pin do repositório (`.bun-version` / `packageManager`).
+`apps/jumentix-website/vercel.json` força:
+
+- `installCommand`: `bunx bun@1.3.14 install --frozen-lockfile`
+- `buildCommand`: `bunx bun@1.3.14 run build`
+
 ## Configuração
 
 Arquivo:
