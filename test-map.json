@@ -1327,6 +1327,45 @@
       "timeoutMs": 120000
     },
     {
+      "id": "apps/backend-template/test/integration/ServiceManagement/runtimeEnvContract.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/runtimeEnvContract.integration.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/ServiceManagement/staticServing.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/staticServing.integration.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/ServiceManagement/spaBoot.browser.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/spaBoot.browser.integration.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
       "id": "apps/backend-template/test/integration/Sails-JS/get.localhost.test.ts",
       "path": "apps/backend-template/test/integration/Sails-JS/get.localhost.test.ts",
       "layer": "adapters/in",
@@ -2715,8 +2754,8 @@
   },
   "stats": {
     "unit": 140,
-    "integration": 83,
+    "integration": 86,
     "smoke": 2,
-    "suites": 227
+    "suites": 230
   }
 }
