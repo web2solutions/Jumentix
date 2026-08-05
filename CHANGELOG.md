@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-05 docs(JUM-467): audit bilingual docs and repair links for service-management - Eduardo A.
 - 2026-08-05 test: isolate PR governance helpers - Eduardo A.
 - 2026-08-05 test: satisfy PR governance lint - Eduardo A.
 - 2026-08-05 chore(release): reconcile main ancestry after branch-gate fix - Eduardo A.

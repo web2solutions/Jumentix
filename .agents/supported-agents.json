@@ -1,0 +1,32 @@
+[
+  {
+    "platformId": "codex",
+    "branchPrefix": "codex",
+    "displayName": "Codex",
+    "instructionsFile": "AGENTS.md"
+  },
+  {
+    "platformId": "claude",
+    "branchPrefix": "claude",
+    "displayName": "Claude Code",
+    "instructionsFile": "CLAUDE.md"
+  },
+  {
+    "platformId": "grok",
+    "branchPrefix": "grok",
+    "displayName": "Grok",
+    "instructionsFile": "GROK.md"
+  },
+  {
+    "platformId": "opencode",
+    "branchPrefix": "opencode",
+    "displayName": "OpenCode",
+    "instructionsFile": "OPENCODE.md"
+  },
+  {
+    "platformId": "kimi",
+    "branchPrefix": "kimi",
+    "displayName": "Kimi Code CLI",
+    "instructionsFile": "KIMI.md"
+  }
+]
