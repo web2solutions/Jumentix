@@ -14,6 +14,9 @@ Arquivos principais de implementação:
 
 - `apps/service-management/index.html`
 - `apps/service-management/script.js`
+- `apps/service-management/src/state/designerState.js`
+- `apps/service-management/src/store/IDesignerStore.js`
+- `apps/service-management/src/store/LocalStorageDesignerStore.js`
 - `apps/service-management/styles.css`
 - `apps/service-management/server.js`
 
