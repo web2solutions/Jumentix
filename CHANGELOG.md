@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-05 test(JUM-466): expand service-management integration smoke - Eduardo A.
 - 2026-08-05 fix(service-management): repair env path, honor environment parameter, and protect runtime-env API [JUM-458][JUM-558][JUM-459][JUM-462] (#65) - Eduardo A.
 - 2026-08-05 [JUM-465][Governance] Ownership registration and component requirement spec (#80) - Eduardo A.
 - 2026-08-05 docs(JUM-467): audit bilingual docs and repair links for service-management (#79) - Eduardo A.

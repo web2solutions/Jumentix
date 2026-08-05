@@ -57,12 +57,18 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
        `JUMENTIX_JWT_TOKEN_SECRET_KEY`, `JUMENTIX_REDIS_PASSWORD`,
        `JUMENTIX_RABBITMQ_URL`); MUST NOT appear in the GET response and MUST NOT be
        writable, since the response crosses the same boundary as the write.
-     The current editable set is the four topology selectors
+     The current editable set is the five topology selectors
      (`JUMENTIX_HTTP_FRAMEWORK`, `JUMENTIX_REALTIME_API`,
-     `JUMENTIX_REALTIME_API_PROTOCOL`, `JUMENTIX_REALTIME_API_DATABASE_DRIVER`), and
-     the read surface is bounded to the same four. `JUM-460` lands the full
-     23-key classification of `.env.dev` into this requirement; every addition to the
-     editable set is a security decision and MUST carry a written reason here.
+     `JUMENTIX_REALTIME_API_PROTOCOL`, `JUMENTIX_DATABASE_DRIVER`,
+     `JUMENTIX_REALTIME_API_DATABASE_DRIVER`), and the read surface is bounded to the
+     same five. `JUM-461` added `JUMENTIX_DATABASE_DRIVER` to the editable set:
+     the UI previously labelled the realtime-API driver as if it were the main
+     database driver, so the user edited a key other than the one the label named;
+     the fix requires both driver keys to be separately editable, and the key selects
+     runtime topology (a driver, not a secret), which is the editable tier's own
+     rule. `JUM-460` lands the full 23-key classification of `.env.dev` into this
+     requirement; every further addition to the editable set is a security decision
+     and MUST carry a written reason here.
    - **Enum sets per key.** Values outside the accepted enum MUST be rejected with
      the accepted list (added by `JUM-460`; today any string is accepted):
      - `JUMENTIX_HTTP_FRAMEWORK`: `express`, `fastify`, `restify`,
@@ -72,18 +78,30 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
        `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md`).
      - `JUMENTIX_REALTIME_API`: `yes`, `no`.
      - `JUMENTIX_REALTIME_API_PROTOCOL`: `websocket`, `grpc`.
+     - `JUMENTIX_DATABASE_DRIVER`: `InMemory`, `IndexedDB`, `Mongo`, `PostgreSQL`,
+       `MySQL`, `MSSQL`, `Oracle`, `SQLite`, `DynamoDB`, `Cassandra`, `Firebase`,
+       `Aurora`, `RDS` (the `DriverName` union in
+       `packages/database-client-factory/src/compileDatabaseClient.ts`; added by
+       `JUM-461` together with the key's editability).
      - `JUMENTIX_REALTIME_API_DATABASE_DRIVER`: `Mongo`, `PostgreSQL`, `MySQL`,
        `MS SQL`, `RDS`, `Aurora`, `Cassandra`.
-   - **Alias decision (per `JUM-461`).** `derby`/`derby-js` and `sails`/`sails-js`
-     are the same framework under two accepted spellings. The selector offers the
-     canonical spelling of each pair and the server's enum validation agrees with the
-     selector exactly — a value the UI offers MUST be a value the server accepts, and
-     vice versa. The canonical-spelling decision is recorded in
-     `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md` by `JUM-461`; until then the
-     11-value set above (which already uses the `-js` spellings) is binding.
+   - **Alias decision (per `JUM-461`, decided).** `derby`/`derby-js` and
+     `sails`/`sails-js` are the same framework under two spellings. The canonical
+     spellings are `derby-js` and `sails-js` — the adapter directories
+     (`apps/backend-template/src/interface/HTTP/adapters/derby-js`,
+     `.../sails-js`), the `EHTTPFrameworks` enum, and the `start-rest-api` loader
+     all key on the `-js` forms, and `hyper-express` was dropped from the runtime
+     (JUM-27), so the 11-value enum above is the complete accepted set. The
+     selector offers exactly those 11 canonical values; the aliases `derby` and
+     `sails` are NOT accepted and fail fast in
+     `apps/backend-template/src/interface/runtime/RuntimeEnvironment.ts`. The
+     server's enum validation (`JUM-460`) MUST agree with the selector exactly — a
+     value the UI offers MUST be a value the server accepts, and vice versa. This
+     decision is also recorded in
+     `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md`.
      Separately, `JUMENTIX_DATABASE_DRIVER` and
      `JUMENTIX_REALTIME_API_DATABASE_DRIVER` are distinct keys and MUST be separately
-     labelled and separately editable in the UI.
+     labelled and separately editable in the UI (done by `JUM-461`).
    - **Authentication and bind posture (per `JUM-462`).** The server binds
      `127.0.0.1` by default (`JUMENTIX_SERVICE_MANAGEMENT_HOST`, port
      `JUMENTIX_SERVICE_MANAGEMENT_PORT`, default `3200`). Binding a non-loopback
@@ -132,7 +150,7 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
      and `cloudProvider` ∈ { `aws`, `google`, `azure`, `vercel`, `cloudflare`,
      `docker` }.
    - `runtimeEnvironment`: `{ environment, fileName, values }` mirroring Contract 1
-     (environment enum and the four editable runtime keys).
+     (environment enum and the five editable runtime keys).
    - `view`: `{ zoom (clamped 0.5–2), compactEntities, snapToGrid,
      edgeStyle ∈ { curved, orthogonal },
      modelCheckMinSeverity ∈ { info, warn, error }, exportBlockCritical (default
