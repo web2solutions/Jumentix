@@ -10,7 +10,7 @@ Idioma alvo: Português (Brasil)
 [![Nó](https://img.shields.io/badge/node-22.x-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-6BA539?logo=openapiinitiative&logoColor=white)](../../spec/1.0.0.yml)
 [![AsyncAPI](https://img.shields.io/badge/AsyncAPI-3.0-9146FF)](../../spec)
-[![Licença](https://img.shields.io/github/license/XpertMinds/Jumentix)](../../LICENSE)
+[![Licença](https://img.shields.io/github/license/XpertMinds/Jumentix)](../../LICENSE.md)
 [![Cheiros de código](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=Jumentix)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=bugs)](https://sonarcloud.io/summary/new_code?id=Jumentix)
 [![Vulnerabilidades](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=Jumentix)
@@ -23,8 +23,8 @@ Idioma alvo: Português (Brasil)
 
 Uso detalhado de recursos:
 
-- [Recursos e uso do designer de domínio](../../documentation/md/DOMAIN-DESIGNER-FEATURES-AND-USAGE.md)
-- [Documentação técnica de gerenciamento de serviços](./documentation/README.md)
+- [Recursos e uso do designer de domínio](../../documentation/md/DOMAIN-DESIGNER-FEATURES-AND-USAGE.pt-BR.md)
+- [Documentação técnica de gerenciamento de serviços](./documentation/README.pt-BR.md)
 
 ## Guias
 
@@ -72,10 +72,42 @@ Comandos:
 - `pnpm run dev:service-management`
 - `pnpm run dev` (inicia automaticamente o gerenciamento de serviço + perfil REST)
 
+## Serviço Estático
+
+`server.js` serve este SPA vanilla sem etapa de build a partir de um manifesto
+de inicialização: uma lista de permissões dos arquivos que existiam quando o
+processo foi iniciado. O manifesto é um mecanismo de segurança contra travessia
+de caminhos — ele limita a superfície servível mesmo se a normalização de
+caminhos tiver uma falha — portanto **a produção serve apenas o manifesto de
+inicialização** e arquivos adicionados depois exigem uma reinicialização.
+
+Em desenvolvimento isso seria um defeito (um arquivo editado manualmente e
+adicionado após a inicialização retornaria 404 até a reinicialização), então o
+modo de desenvolvimento revarre o manifesto **apenas em caso de ausência** —
+nunca por requisição, o que transformaria cada 404 em uma varredura de
+diretório — e a nova tentativa passa pela mesma validação de normalização e
+contenção de um acesso do manifesto de inicialização.
+
+A seleção de modo é configuração explícita, não inferida apenas de `NODE_ENV`:
+
+- `JUMENTIX_SERVICE_MANAGEMENT_STATIC_MANIFEST_REFRESH=on-miss` — revarredura
+  em caso de ausência (comportamento de desenvolvimento), independentemente de
+  `NODE_ENV`.
+- `JUMENTIX_SERVICE_MANAGEMENT_STATIC_MANIFEST_REFRESH=boot-only` — manifesto
+  de inicialização congelado (comportamento de produção), independentemente de
+  `NODE_ENV`.
+- Não definido — o padrão deriva de `NODE_ENV`: `dev`/`development` =>
+  `on-miss`, qualquer outro valor => `boot-only`.
+
 ## API de ambiente de tempo de execução
 
-- `GET /api/runtime/env?environment=dev|staging|ci`
+Integrada em `apps/service-management/server.js`:
+
+- `GET /api/runtime/env?environment=dev|development|staging|ci|test`
 - `POST /api/runtime/env`
+
+O contrato completo (conjuntos de enum, semântica de escrita, higiene de resposta) está em
+[Contratos de ambiente de tempo de execução](../../documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.pt-BR.md).
 
 ### Chaves Editáveis
 
@@ -84,8 +116,45 @@ Comandos:
 - `JUMENTIX_REALTIME_API_PROTOCOL`
 - `JUMENTIX_REALTIME_API_DATABASE_DRIVER`
 
+Cada chave de ambiente pertence a exatamente um de três níveis: *editável* (legível e
+gravável), *somente leitura* (visível no GET, nunca gravável) e *nunca exposta*
+(segredos — ausente do GET e não gravável). A classificação autoritativa por chave
+é mantida no
+[Requisito 126](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md).
+
 ### Mapeamento de ambiente
 
-- `dev` -> `src/config/.env.dev`
-- `staging` -> `src/config/.env.staging`
-- `ci` -> `src/config/.env.ci`
+Os arquivos env ficam em `apps/backend-template/src/config/`:
+
+- `dev` -> `apps/backend-template/src/config/.env.dev`
+- `development` -> `apps/backend-template/src/config/.env.dev` (alias)
+- `staging` -> `apps/backend-template/src/config/.env.staging`
+- `ci` -> `apps/backend-template/src/config/.env.ci`
+- `test` -> `apps/backend-template/src/config/.env.ci` (alias)
+
+`environment` é um parâmetro real: a comparação é insensível a maiúsculas após
+remoção de espaços, valores desconhecidos são rejeitados com `400` e a lista de
+aceitos (nunca silenciosamente convertidos para `dev`) e, quando omitido, o padrão
+é `NODE_ENV` ou `dev`. O diretório de configuração pode ser substituído com
+`JUMENTIX_SERVICE_MANAGEMENT_CONFIG_DIR`; o servidor encerra na inicialização com
+um erro se o diretório não existir.
+
+### Postura de segurança
+
+- Bind padrão é `127.0.0.1` (apenas loopback); substitua com
+  `JUMENTIX_SERVICE_MANAGEMENT_HOST`, porta com
+  `JUMENTIX_SERVICE_MANAGEMENT_PORT` (padrão `3200`).
+- Quando `JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN` está definido, `POST
+  /api/runtime/env` requer `Authorization: Bearer <token>` e retorna `401`
+  caso contrário; quando não definido, a operação apenas em loopback é permitida
+  sem token.
+- Cada mutação é registrada com timestamp, ambiente e chaves alteradas (não
+  valores).
+
+### Contrato de erro
+
+- Ambiente desconhecido: `400` nomeando o valor e a lista de aceitos; nenhum
+  arquivo escrito.
+- Corpo JSON malformado: `400` com a falha de parse em `details`.
+- Arquivo env ausente: `400` com o path resolvido em `details`.
+- Token bearer ausente/incorreto: `401` (`{ "error": "Unauthorized." }`).

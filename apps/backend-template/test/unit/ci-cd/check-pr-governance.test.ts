@@ -5,9 +5,13 @@ const prPath = require('path');
 const {
   REQUIRED_EPIC_FIELDS,
   REQUIRED_TITLE_FORMAT,
+  SUPPORTED_AGENTS_PATH,
   TEMPLATE_PATHS,
   readField,
+  resolvePullRequestFlag: resolvePrGovernancePullRequestFlag,
+  run: runPrGovernanceCheck,
   validatePullRequest,
+  validateSupportedAgents,
   validateTemplates
 } = require('../../../../../ci-cd/check-pr-governance');
 
@@ -24,6 +28,11 @@ describe('check-pr-governance', () => {
   it('keeps every PR template aligned with focused epic metadata', () => {
     expect.hasAssertions();
     expect(validateTemplates()).toStrictEqual([]);
+  });
+
+  it('keeps every declared agent instructions file present', () => {
+    expect.hasAssertions();
+    expect(validateSupportedAgents()).toStrictEqual([]);
   });
 
   it('rejects a template with missing focused epic fields', () => {
@@ -166,6 +175,32 @@ describe('check-pr-governance', () => {
     })).toHaveLength(2);
   });
 
+  it('validates templates but skips PR metadata on long-lived branch builds', () => {
+    expect.hasAssertions();
+
+    expect(runPrGovernanceCheck({
+      isPullRequest: false,
+      title: '',
+      body: '',
+      headRef: 'main',
+      baseRef: ''
+    })).toBe(0);
+  });
+
+  it('still validates PR metadata when CircleCI marks the job as a pull request', () => {
+    expect.hasAssertions();
+
+    expect(runPrGovernanceCheck({
+      isPullRequest: true,
+      title: '',
+      body: '',
+      headRef: 'main',
+      baseRef: ''
+    })).toBe(1);
+    expect(resolvePrGovernancePullRequestFlag('1')).toBe(true);
+    expect(resolvePrGovernancePullRequestFlag('0')).toBe(false);
+  });
+
   it('rejects a title or branch whose task identifier differs from the Linear Issue', () => {
     expect.hasAssertions();
     const failures = validatePullRequest({
@@ -193,5 +228,108 @@ describe('check-pr-governance', () => {
     expect(failures).toContain(
       '[pr-governance] invalid task branch format: codex/ci/163-focused-epic-metadata'
     );
+  });
+
+  it('accepts a kimi task branch declared in the supported agents file', () => {
+    expect.hasAssertions();
+    const kimiBody = validBody
+      .replace('Primary task nature: ci', 'Primary task nature: governance')
+      .replace('JUM-163/focused-epic-metadata', 'JUM-604/declarative-agent-support');
+
+    expect(validatePullRequest({
+      title: '[JUM-604][Governance] Declare supported agents as data',
+      body: kimiBody,
+      headRef: 'kimi/governance/JUM-604-declarative-agent-support',
+      baseRef: 'dev'
+    })).toStrictEqual([]);
+  });
+
+  it('rejects a branch prefix absent from the supported agents declaration', () => {
+    expect.hasAssertions();
+    const failures = validatePullRequest({
+      title: '[JUM-163][CI] Enforce focused epic metadata',
+      body: validBody,
+      headRef: 'cursor/ci/JUM-163-focused-epic-metadata',
+      baseRef: 'dev'
+    });
+
+    expect(failures).toContain(
+      '[pr-governance] invalid task branch format: cursor/ci/JUM-163-focused-epic-metadata'
+    );
+  });
+
+  it('derives branch prefixes from the supported agents declaration', () => {
+    expect.hasAssertions();
+    const rootDir = prFs.mkdtempSync(prPath.join(prOs.tmpdir(), 'pr-governance-'));
+    prFs.mkdirSync(prPath.join(rootDir, '.agents'), { recursive: true });
+    prFs.writeFileSync(
+      prPath.join(rootDir, SUPPORTED_AGENTS_PATH),
+      JSON.stringify([{
+        platformId: 'kimi',
+        branchPrefix: 'kimi',
+        displayName: 'Kimi Code CLI',
+        instructionsFile: 'KIMI.md'
+      }])
+    );
+
+    expect(validatePullRequest({
+      title: '[JUM-163][CI] Enforce focused epic metadata',
+      body: validBody,
+      headRef: 'codex/ci/JUM-163-focused-epic-metadata',
+      baseRef: 'dev'
+    }, rootDir)).toStrictEqual([
+      '[pr-governance] invalid task branch format: codex/ci/JUM-163-focused-epic-metadata'
+    ]);
+    expect(validatePullRequest({
+      title: '[JUM-163][CI] Enforce focused epic metadata',
+      body: validBody,
+      headRef: 'kimi/ci/JUM-163-focused-epic-metadata',
+      baseRef: 'dev'
+    }, rootDir)).toStrictEqual([]);
+    prFs.rmSync(rootDir, { recursive: true, force: true });
+  });
+
+  it('fails the gate when a declared agent instructions file is missing', () => {
+    expect.hasAssertions();
+    const rootDir = prFs.mkdtempSync(prPath.join(prOs.tmpdir(), 'pr-governance-'));
+    prFs.mkdirSync(prPath.join(rootDir, '.agents'), { recursive: true });
+    prFs.writeFileSync(
+      prPath.join(rootDir, SUPPORTED_AGENTS_PATH),
+      JSON.stringify([{
+        platformId: 'kimi',
+        branchPrefix: 'kimi',
+        displayName: 'Kimi Code CLI',
+        instructionsFile: 'KIMI.md'
+      }])
+    );
+
+    expect(validateSupportedAgents(rootDir)).toStrictEqual([
+      '[pr-governance] declared agent "kimi" is missing instructions file: KIMI.md'
+    ]);
+    prFs.rmSync(rootDir, { recursive: true, force: true });
+  });
+
+  it('fails closed when the supported agents declaration is missing or malformed', () => {
+    expect.hasAssertions();
+    const rootDir = prFs.mkdtempSync(prPath.join(prOs.tmpdir(), 'pr-governance-'));
+
+    expect(validateSupportedAgents(rootDir)).toStrictEqual([
+      `[pr-governance] missing supported agents declaration: ${SUPPORTED_AGENTS_PATH}`
+    ]);
+    expect(validatePullRequest({
+      title: '[JUM-163][CI] Enforce focused epic metadata',
+      body: validBody,
+      headRef: 'kimi/ci/JUM-163-focused-epic-metadata',
+      baseRef: 'dev'
+    }, rootDir)).toStrictEqual([
+      `[pr-governance] missing supported agents declaration: ${SUPPORTED_AGENTS_PATH}`
+    ]);
+
+    prFs.mkdirSync(prPath.join(rootDir, '.agents'), { recursive: true });
+    prFs.writeFileSync(prPath.join(rootDir, SUPPORTED_AGENTS_PATH), '{not json');
+    expect(validateSupportedAgents(rootDir)[0]).toContain(
+      'malformed supported agents declaration'
+    );
+    prFs.rmSync(rootDir, { recursive: true, force: true });
   });
 });

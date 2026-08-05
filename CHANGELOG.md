@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-05 fix(website): pin Bun 1.3.14 on Vercel install and build - Eduardo A.
 - 2026-08-04 docs(website): document Vercel deploy auth and GITHUB_TOKEN for JUM-397 - Eduardo A.
 - 2026-08-03 docs(website): document Vercel deploy auth and GITHUB_TOKEN for JUM-397 - Eduardo A.
 - 2026-08-03 docs(website): document Vercel deploy auth and GITHUB_TOKEN for JUM-397 - Eduardo A.

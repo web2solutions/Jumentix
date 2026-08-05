@@ -43,15 +43,31 @@ Core implementation files:
      - static assets behavior
      - runtime ports (`REST`, `WebSocket`, `gRPC`)
    - Shows PM2-oriented profile preview for VM runtime orchestration.
-   - Includes runtime env controls to read/update:
-     - `JUMENTIX_HTTP_FRAMEWORK`
-     - `JUMENTIX_REALTIME_API`
-     - `JUMENTIX_REALTIME_API_PROTOCOL`
-     - `JUMENTIX_REALTIME_API_DATABASE_DRIVER`
+   - Includes runtime env controls with a three-tier key model:
+     - **Editable** (read/write runtime topology selectors):
+       `JUMENTIX_HTTP_FRAMEWORK`, `JUMENTIX_REALTIME_API`,
+       `JUMENTIX_REALTIME_API_PROTOCOL`, `JUMENTIX_REALTIME_API_DATABASE_DRIVER`,
+       `JUMENTIX_DATABASE_DRIVER`, `JUMENTIX_KEYVALUESTORAGE_DRIVER`,
+       `JUMENTIX_MESSAGE_MEDIATOR_ADAPTER`, `JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER`,
+       `JUMENTIX_WEBSOCKET_REDIS_URL`.
+     - **Read-only** (connection endpoints and non-secret config, displayed but not
+       writable): Redis host/port/database, RabbitMQ exchange/queue/prefetch,
+       database name, JWT issuer/audience, CORS origins, and auth policy keys.
+     - **Never exposed** (neither shown nor writable): secrets such as
+       `JUMENTIX_JWT_TOKEN_SECRET_KEY`, `JUMENTIX_REDIS_PASSWORD`, and
+       `JUMENTIX_RABBITMQ_URL`.
+   - Editable values are validated against the enum sets of
+     `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md`; out-of-enum values are
+     rejected with the accepted list and nothing is written.
    - Runtime env editor targets the selected environment file:
     - `dev` -> `apps/backend-template/src/config/.env.dev`
     - `staging` -> `apps/backend-template/src/config/.env.staging`
     - `ci` -> `apps/backend-template/src/config/.env.ci`
+   - Runtime env editor targets the selected environment file under
+     `apps/backend-template/src/config/`:
+    - `dev` -> `.env.dev` (`development` is an alias)
+    - `staging` -> `.env.staging`
+    - `ci` -> `.env.ci` (`test` is an alias)
 4. **Deploy Management**
    - Tracks deploy targets and runtime deployment metadata.
 
@@ -78,10 +94,51 @@ Recommended dev path:
 
 ## Runtime Env API (built-in)
 
-- `GET /api/runtime/env?environment=dev|staging|ci`
+- `GET /api/runtime/env?environment=dev|development|staging|ci|test`
 - `POST /api/runtime/env`
 
 The server persists approved runtime keys to files under `apps/backend-template/src/config/`.
+The authoritative contract — accepted environments, key classification, enum
+sets, write semantics — is
+[Runtime Environment Contracts](./RUNTIME-ENVIRONMENT-CONTRACTS.md).
+
+### What H1 makes trustworthy
+
+- **Fixed env-file location.** The env files live in
+  `apps/backend-template/src/config/` (overridable via
+  `JUMENTIX_SERVICE_MANAGEMENT_CONFIG_DIR`); the server fails closed at boot
+  when the directory is missing instead of silently serving defaults.
+- **Real `environment` parameter.** Only `dev`, `development`, `staging`,
+  `ci`, and `test` are accepted (case-insensitive after trimming); unknown
+  values are explicitly rejected with the accepted list, never coerced to
+  `dev`.
+- **Classified key surface.** Every env key is exactly one of *editable*,
+  *read-only*, or *never exposed* (secrets); the per-key classification
+  decisions live in
+  [Requirement 126](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md).
+- **Protected endpoint.** Loopback bind by default, optional bearer token for
+  mutations, and an audit log of every mutation.
+- **Distinguishable errors.** Parse, validation, and filesystem failures are
+  told apart in the error response (see below).
+
+### Security posture
+
+- Default bind is `127.0.0.1` (loopback only).
+- Binding to all interfaces requires explicit opt-in via `JUMENTIX_SERVICE_MANAGEMENT_HOST=0.0.0.0`.
+- Optional bearer token for mutating requests via `JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN`.
+- Every mutation is logged with timestamp, environment, and changed keys (not values).
+
+### Error contract
+
+- Unknown environment: `400` whose `details` name the value and the accepted
+  list, no file written.
+- Missing config directory at boot: server exits with clear error.
+- Missing environment file: `400` whose `details` carry the resolved path
+  (internally error code `ENV_FILE_NOT_FOUND`).
+- Malformed JSON payload: `400 { "error": "Invalid payload.", "details": … }`
+  with the parse failure in `details` — told apart from filesystem failures,
+  which carry the resolved path instead.
+- Unauthorized mutation: `401 { "error": "Unauthorized." }` when auth token is configured.
 
 ## Runtime Edit Flow
 

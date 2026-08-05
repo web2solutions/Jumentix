@@ -189,6 +189,12 @@ jobs:
       - wait_tcp:
           port: 5672
       - run:
+          # The service-management smoke boots the SPA in real WebKit (JUM-466).
+          name: Install WebKit for browser-based integration tests
+          command: |
+            bun x playwright install webkit
+            bun x playwright install-deps webkit
+      - run:
           name: Run integration matrix
           no_output_timeout: 30m
           command: bun run ci:integration
@@ -344,6 +350,17 @@ jobs:
       - bootstrap
       - attach_workspace:
           at: .
+      - run:
+          name: Backfill git objects for Sonar SCM blame
+          # CircleCI checkout is a blobless partial clone; JGit blame reads the
+          # local object store directly and dies on missing blobs. Drop the
+          # partial-clone filter and refetch so every blob exists locally.
+          command: |
+            set -euo pipefail
+            git config --unset remote.origin.promisor || true
+            git config --unset remote.origin.partialclonefilter || true
+            git config --unset extensions.partialclone || true
+            git fetch --refetch --prune origin "+refs/heads/*:refs/remotes/origin/*"
       - run:
           name: Verify Sonar token
           command: |

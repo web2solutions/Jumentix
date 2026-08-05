@@ -47,15 +47,31 @@ Arquivos principais de implementação:
      - comportamento de ativos estáticos
      - portas de tempo de execução (`REST`, `WebSocket`, `gRPC`)
    - Mostra visualização de perfil orientado a PM2 para orquestração de tempo de execução de VM.
-   - Inclui controles de ambiente de tempo de execução para leitura/atualização:
-     - `JUMENTIX_HTTP_FRAMEWORK`
-     - `JUMENTIX_REALTIME_API`
-     - `JUMENTIX_REALTIME_API_PROTOCOL`
-     - `JUMENTIX_REALTIME_API_DATABASE_DRIVER`
+   - Inclui controles de ambiente de tempo de execução com um modelo de três níveis:
+     - **Editável** (seletores de topologia de leitura/gravação):
+       `JUMENTIX_HTTP_FRAMEWORK`, `JUMENTIX_REALTIME_API`,
+       `JUMENTIX_REALTIME_API_PROTOCOL`, `JUMENTIX_REALTIME_API_DATABASE_DRIVER`,
+       `JUMENTIX_DATABASE_DRIVER`, `JUMENTIX_KEYVALUESTORAGE_DRIVER`,
+       `JUMENTIX_MESSAGE_MEDIATOR_ADAPTER`, `JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER`,
+       `JUMENTIX_WEBSOCKET_REDIS_URL`.
+     - **Somente leitura** (endpoints de conexão e configuração não secreta,
+       exibidos mas não graváveis): host/porta/database do Redis,
+       exchange/fila/prefetch do RabbitMQ, nome do banco de dados, issuer/audience
+       do JWT, origens CORS e chaves de política de autenticação.
+     - **Nunca exposta** (nem exibida nem gravável): segredos como
+       `JUMENTIX_JWT_TOKEN_SECRET_KEY`, `JUMENTIX_REDIS_PASSWORD` e
+       `JUMENTIX_RABBITMQ_URL`.
+   - Valores editáveis são validados contra os conjuntos enum de
+     `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md`; valores fora do enum são
+     rejeitados com a lista de aceitos e nada é escrito.
    - O editor de ambiente de tempo de execução tem como alvo o arquivo de ambiente selecionado:
     - `dev` -> `apps/backend-template/src/config/.env.dev`
     - `staging` -> `apps/backend-template/src/config/.env.staging`
     - `ci` -> `apps/backend-template/src/config/.env.ci`
+     `apps/backend-template/src/config/`:
+    - `dev` -> `.env.dev` (`development` é um alias)
+    - `staging` -> `.env.staging`
+    - `ci` -> `.env.ci` (`test` é um alias)
 4. **Gerenciamento de implantação**
    - Rastreia alvos de implantação e metadados de implantação em tempo de execução.
 
@@ -82,10 +98,52 @@ Caminho de desenvolvimento recomendado:
 
 ## API Runtime Env (integrada)
 
-- `GET /api/runtime/env?environment=dev|staging|ci`
+- `GET /api/runtime/env?environment=dev|development|staging|ci|test`
 - `POST /api/runtime/env`
 
 O servidor persiste chaves de tempo de execução aprovadas para arquivos em `apps/backend-template/src/config/`.
+O contrato autoritativo — ambientes aceitos, classificação de chaves, conjuntos
+de enum, semântica de escrita — é
+[Contratos de ambiente de tempo de execução](./RUNTIME-ENVIRONMENT-CONTRACTS.pt-BR.md).
+
+### O que H1 torna confiável
+
+- **Localização fixa dos arquivos env.** Os arquivos env ficam em
+  `apps/backend-template/src/config/` (substituível via
+  `JUMENTIX_SERVICE_MANAGEMENT_CONFIG_DIR`); o servidor falha fechado na
+  inicialização quando o diretório está ausente em vez de silenciosamente servir
+  padrões.
+- **Parâmetro `environment` real.** Apenas `dev`, `development`, `staging`,
+  `ci` e `test` são aceitos (insensível a maiúsculas após remoção de espaços);
+  valores desconhecidos são explicitamente rejeitados com a lista de aceitos,
+  nunca convertidos para `dev`.
+- **Superfície de chaves classificada.** Cada chave de ambiente é exatamente uma
+  de *editável*, *somente leitura* ou *nunca exposta* (segredos); as decisões de
+  classificação por chave estão no
+  [Requisito 126](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md).
+- **Endpoint protegido.** Bind loopback por padrão, token bearer opcional para
+  mutações e um log de auditoria de cada mutação.
+- **Erros distinguíveis.** Falhas de parse, validação e filesystem são
+  diferenciadas na resposta de erro (veja abaixo).
+
+### Postura de segurança
+
+- Bind padrão é `127.0.0.1` (apenas loopback).
+- Vincular a todas as interfaces requer opt-in explícito via `JUMENTIX_SERVICE_MANAGEMENT_HOST=0.0.0.0`.
+- Token bearer opcional para requisições de mutação via `JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN`.
+- Cada mutação é registrada com timestamp, ambiente e chaves alteradas (não valores).
+
+### Contrato de erro
+
+- Ambiente desconhecido: `400` cujo `details` nomeia o valor e a lista de
+  aceitos, nenhum arquivo escrito.
+- Diretório de configuração ausente na inicialização: servidor encerra com erro claro.
+- Arquivo de ambiente ausente: `400` cujo `details` carrega o path resolvido
+  (internamente código de erro `ENV_FILE_NOT_FOUND`).
+- Payload JSON malformado: `400 { "error": "Invalid payload.", "details": … }`
+  com a falha de parse em `details` — diferenciado de falhas de filesystem,
+  que carregam o path resolvido em vez disso.
+- Mutação não autorizada: `401 { "error": "Unauthorized." }` quando token de auth está configurado.
 
 ## Fluxo de edição em tempo de execução
 

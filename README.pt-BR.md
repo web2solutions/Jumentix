@@ -4,12 +4,13 @@ Idioma alvo: Português (Brasil)
 -->
 # Jumentix – Fábrica de Software para Equipes de Produto
 
-[![CircleCI dev](https://dl.circleci.com/status-badge/img/gh/XpertMinds/Jumentix/tree/dev.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/XpertMinds/Jumentix/tree/dev)
-[![CircleCI main](https://dl.circleci.com/status-badge/img/gh/XpertMinds/Jumentix/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/XpertMinds/Jumentix/tree/main)
-[![Codecov via CircleCI](https://img.shields.io/badge/codecov-via%20CircleCI-F01F7A?logo=codecov&logoColor=white)](https://app.codecov.io/gh/XpertMinds/Jumentix)
+[![Pipeline CircleCI dev](https://img.shields.io/badge/CircleCI-dev%20pipeline-343434?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/XpertMinds/Jumentix?branch=dev)
+[![Pipeline CircleCI main](https://img.shields.io/badge/CircleCI-main%20pipeline-343434?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/XpertMinds/Jumentix?branch=main)
+[![Codecov dev](https://codecov.io/gh/XpertMinds/Jumentix/branch/dev/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev)
+[![Codecov main](https://codecov.io/gh/XpertMinds/Jumentix/branch/main/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/main)
 [![Status do Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Jumentix)
 [![Classificação de Segurança](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=Jumentix)
-[![Cobertura](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Jumentix)
+[![Cobertura Sonar](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Jumentix)
 [![Bun](https://img.shields.io/badge/bun-1.3.14-000000?logo=bun&logoColor=white)](https://bun.sh/)
 [![Compatibilidade Node](https://img.shields.io/badge/node%20compat-22.x-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-6BA539?logo=openapiinitiative&logoColor=white)](./spec/1.0.0.yml)
@@ -34,16 +35,22 @@ Idioma alvo: Português (Brasil)
 
 | Gate obrigatório | `main` | `dev` |
 | --- | :---: | :---: |
-| Workflow CircleCI | [![CircleCI main](https://dl.circleci.com/status-badge/img/gh/XpertMinds/Jumentix/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/XpertMinds/Jumentix/tree/main) | [![CircleCI dev](https://dl.circleci.com/status-badge/img/gh/XpertMinds/Jumentix/tree/dev.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/XpertMinds/Jumentix/tree/dev) |
+| Workflow CircleCI | [![Pipeline CircleCI main](https://img.shields.io/badge/CircleCI-main%20pipeline-343434?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/XpertMinds/Jumentix?branch=main) | [![Pipeline CircleCI dev](https://img.shields.io/badge/CircleCI-dev%20pipeline-343434?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/XpertMinds/Jumentix?branch=dev) |
+| Cobertura de projeto no Codecov | [![Codecov main](https://codecov.io/gh/XpertMinds/Jumentix/branch/main/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/main) | [![Codecov dev](https://codecov.io/gh/XpertMinds/Jumentix/branch/dev/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev) |
 | Testes por branch | `branch-gate` | `branch-gate` |
 | Cobertura de projeto + patch | `coverage` | `coverage` |
 | Review de segurança third-party | `third-party-review` | `third-party-review` |
 
 A cobertura é produzida e aplicada pelo job CircleCI `coverage` para `dev` e
-`main`. O CircleCI também envia LCOV ao Codecov para visibilidade quando
-`CODECOV_TOKEN` está configurado, mas o gate rígido continua sendo a cobertura
-pertencente ao repositório. Cada execução retém evidências Istanbul JSON e LCOV.
-Os mínimos são:
+`main`. O CircleCI também envia LCOV ao Codecov com a flag `project` quando
+`CODECOV_TOKEN` está configurado. O Codecov fornece o mapa de cobertura arquivo
+a arquivo para cada branch longa:
+
+- [Mapa de arquivos Codecov para `dev`](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev)
+- [Mapa de arquivos Codecov para `main`](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/main)
+
+O gate rígido continua sendo a cobertura pertencente ao repositório. Cada
+execução retém evidências Istanbul JSON e LCOV. Os mínimos são:
 
 | Statements | Linhas | Funções | Branches | Linhas alteradas |
 | :---: | :---: | :---: | :---: | :---: |

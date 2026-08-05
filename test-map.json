@@ -653,6 +653,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/service-management/runtimeEnvUi.contract.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/runtimeEnvUi.contract.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/ci-cd/run-branch-quality-gate.test.ts",
       "path": "apps/backend-template/test/unit/ci-cd/run-branch-quality-gate.test.ts",
       "layer": "tooling",
@@ -1303,6 +1313,71 @@
     {
       "id": "apps/backend-template/test/integration/ServiceManagement/domainDesigner.smoke.test.ts",
       "path": "apps/backend-template/test/integration/ServiceManagement/domainDesigner.smoke.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/ServiceManagement/runtimeEnv.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/runtimeEnv.integration.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/ServiceManagement/runtimeEnvContract.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/runtimeEnvContract.integration.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/ServiceManagement/staticServing.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/staticServing.integration.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/ServiceManagement/spaBoot.browser.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/spaBoot.browser.integration.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/ServiceManagement/staticManifest.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/staticManifest.integration.test.ts",
       "layer": "interface/runtime",
       "kind": "hexagonal",
       "type": "integration",
@@ -2701,9 +2776,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 140,
-    "integration": 82,
+    "unit": 141,
+    "integration": 87,
     "smoke": 2,
-    "suites": 226
+    "suites": 232
   }
 }

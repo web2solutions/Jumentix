@@ -3,6 +3,39 @@ const DIFF_BASELINE_KEY = 'service-management.schema-baseline.v1';
 const DOMAIN_COLORS = ['#60a5fa', '#34d399', '#f59e0b', '#f472b6', '#22d3ee', '#a78bfa', '#fb7185', '#84cc16'];
 const FIELD_TYPES = ['string', 'integer', 'number', 'boolean', 'array', 'object', 'date', 'datetime', 'uuid'];
 
+// Runtime env editor metadata — mirrors the allowlists and enum sets enforced by
+// server.js (write allowlist = editable tier; read-only keys render disabled).
+const RUNTIME_ENV_EDITABLE_DEFAULTS = {
+  JUMENTIX_HTTP_FRAMEWORK: 'express',
+  JUMENTIX_REALTIME_API: 'no',
+  JUMENTIX_REALTIME_API_PROTOCOL: 'websocket',
+  JUMENTIX_REALTIME_API_DATABASE_DRIVER: 'Mongo',
+  JUMENTIX_DATABASE_DRIVER: 'InMemory',
+  JUMENTIX_KEYVALUESTORAGE_DRIVER: 'redis',
+  JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: 'inmemory',
+  JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER: '',
+  JUMENTIX_WEBSOCKET_REDIS_URL: ''
+};
+const RUNTIME_ENV_ENUM_OPTIONS = {
+  JUMENTIX_HTTP_FRAMEWORK: ['express', 'fastify', 'restify', 'cloudflare-workers', 'vercel-functions', 'loopback', 'sails-js', 'feathers', 'derby-js', 'adonis-js', 'total-js'],
+  JUMENTIX_REALTIME_API: ['no', 'yes'],
+  JUMENTIX_REALTIME_API_PROTOCOL: ['websocket', 'grpc'],
+  JUMENTIX_REALTIME_API_DATABASE_DRIVER: ['Mongo', 'PostgreSQL', 'MySQL', 'MS SQL', 'RDS', 'Aurora', 'Cassandra'],
+  JUMENTIX_DATABASE_DRIVER: ['InMemory', 'IndexedDB', 'Mongo', 'PostgreSQL', 'MySQL', 'MSSQL', 'Oracle', 'SQLite', 'DynamoDB', 'Cassandra', 'Firebase', 'Aurora', 'RDS'],
+  JUMENTIX_KEYVALUESTORAGE_DRIVER: ['redis', 'inmemory'],
+  JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: ['inmemory', 'rabbitmq', 'bullmq'],
+  JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER: ['', 'cluster', 'redis-streams']
+};
+// Per-key context hints (JUM-461): enough context for the two driver keys and
+// the canonical-spelling rule to be legible without prior knowledge.
+const RUNTIME_ENV_FIELD_HINTS = {
+  JUMENTIX_HTTP_FRAMEWORK: 'Canonical spellings only: derby-js and sails-js (the backend rejects the derby/sails aliases).',
+  JUMENTIX_DATABASE_DRIVER: 'Main application database (REST API persistence).',
+  JUMENTIX_REALTIME_API_DATABASE_DRIVER: 'Realtime API (WebSocket/gRPC) database only - does not change the main application database.'
+};
+
+let runtimeEnvEditableKeys = Object.keys(RUNTIME_ENV_EDITABLE_DEFAULTS);
+
 const state = {
   domains: [],
   relationships: [],
@@ -26,12 +59,7 @@ const state = {
   runtimeEnvironment: {
     environment: 'dev',
     fileName: '.env.dev',
-    values: {
-      JUMENTIX_HTTP_FRAMEWORK: 'express',
-      JUMENTIX_REALTIME_API: 'no',
-      JUMENTIX_REALTIME_API_PROTOCOL: 'websocket',
-      JUMENTIX_REALTIME_API_DATABASE_DRIVER: 'Mongo'
-    }
+    values: { ...RUNTIME_ENV_EDITABLE_DEFAULTS }
   },
   deployments: [],
   view: {
@@ -221,10 +249,7 @@ const dom = {
   serviceRuntimeProfilePreview: document.getElementById('service-runtime-profile-preview'),
   serviceConfigPreview: document.getElementById('service-config-preview'),
   runtimeEnvSelect: document.getElementById('runtime-env-select'),
-  runtimeHttpFrameworkSelect: document.getElementById('runtime-http-framework-select'),
-  runtimeRealtimeApiSelect: document.getElementById('runtime-realtime-api-select'),
-  runtimeRealtimeProtocolSelect: document.getElementById('runtime-realtime-protocol-select'),
-  runtimeRealtimeDbDriverSelect: document.getElementById('runtime-realtime-db-driver-select'),
+  runtimeEnvFields: document.getElementById('runtime-env-fields'),
   runtimeEnvRefreshBtn: document.getElementById('runtime-env-refresh-btn'),
   runtimeEnvSaveBtn: document.getElementById('runtime-env-save-btn'),
   runtimeEnvPreview: document.getElementById('runtime-env-preview'),
@@ -550,6 +575,51 @@ function renderServiceConfiguration() {
   renderRuntimeEnvironment();
 }
 
+function renderRuntimeEnvFields(runtimeValues) {
+  const container = dom.runtimeEnvFields;
+  if (!container) return;
+  container.innerHTML = '';
+  const editableSet = new Set(runtimeEnvEditableKeys);
+  Object.keys(runtimeValues).forEach((key) => {
+    const isEditable = editableSet.has(key);
+    const wrapper = document.createElement('div');
+    const label = document.createElement('label');
+    const fieldId = `runtime-env-field-${key.toLowerCase().replace(/_/g, '-')}`;
+    label.setAttribute('for', fieldId);
+    label.textContent = isEditable ? key : `${key} (read-only)`;
+    wrapper.appendChild(label);
+
+    let field;
+    const enumOptions = RUNTIME_ENV_ENUM_OPTIONS[key];
+    if (isEditable && enumOptions) {
+      field = document.createElement('select');
+      enumOptions.forEach((optionValue) => {
+        const option = document.createElement('option');
+        option.value = optionValue;
+        option.textContent = optionValue === '' ? '(backend default)' : optionValue;
+        field.appendChild(option);
+      });
+      field.value = String(runtimeValues[key] ?? '');
+    } else {
+      field = document.createElement('input');
+      field.type = 'text';
+      field.value = String(runtimeValues[key] ?? '');
+      field.readOnly = !isEditable;
+    }
+    field.id = fieldId;
+    field.dataset.runtimeKey = key;
+    wrapper.appendChild(field);
+    const hint = RUNTIME_ENV_FIELD_HINTS[key];
+    if (hint) {
+      const hintEl = document.createElement('p');
+      hintEl.className = 'hint';
+      hintEl.textContent = hint;
+      wrapper.appendChild(hintEl);
+    }
+    container.appendChild(wrapper);
+  });
+}
+
 function renderRuntimeEnvironment() {
   if (!dom.runtimeEnvSelect) return;
   const runtimeEnvironment = state.runtimeEnvironment || {};
@@ -557,18 +627,7 @@ function renderRuntimeEnvironment() {
   const environment = String(runtimeEnvironment.environment || 'dev');
   const fileName = String(runtimeEnvironment.fileName || '.env.dev');
   dom.runtimeEnvSelect.value = environment;
-  if (dom.runtimeHttpFrameworkSelect) {
-    dom.runtimeHttpFrameworkSelect.value = String(runtimeValues.JUMENTIX_HTTP_FRAMEWORK || 'express');
-  }
-  if (dom.runtimeRealtimeApiSelect) {
-    dom.runtimeRealtimeApiSelect.value = String(runtimeValues.JUMENTIX_REALTIME_API || 'no');
-  }
-  if (dom.runtimeRealtimeProtocolSelect) {
-    dom.runtimeRealtimeProtocolSelect.value = String(runtimeValues.JUMENTIX_REALTIME_API_PROTOCOL || 'websocket');
-  }
-  if (dom.runtimeRealtimeDbDriverSelect) {
-    dom.runtimeRealtimeDbDriverSelect.value = String(runtimeValues.JUMENTIX_REALTIME_API_DATABASE_DRIVER || 'Mongo');
-  }
+  renderRuntimeEnvFields(runtimeValues);
   if (dom.runtimeEnvPreview) {
     dom.runtimeEnvPreview.textContent = JSON.stringify({
       environment,
@@ -586,28 +645,31 @@ async function loadRuntimeEnvironment(environment) {
     throw new Error(`Could not load environment ${selectedEnvironment}.`);
   }
   const payload = await response.json();
+  if (Array.isArray(payload?.editableKeys) && payload.editableKeys.length > 0) {
+    runtimeEnvEditableKeys = payload.editableKeys.map((key) => String(key));
+  }
   state.runtimeEnvironment = {
     environment: String(payload.environment || selectedEnvironment),
     fileName: String(payload.fileName || ''),
-    values: {
-      JUMENTIX_HTTP_FRAMEWORK: String(payload?.values?.JUMENTIX_HTTP_FRAMEWORK || 'express'),
-      JUMENTIX_REALTIME_API: String(payload?.values?.JUMENTIX_REALTIME_API || 'no'),
-      JUMENTIX_REALTIME_API_PROTOCOL: String(payload?.values?.JUMENTIX_REALTIME_API_PROTOCOL || 'websocket'),
-      JUMENTIX_REALTIME_API_DATABASE_DRIVER: String(payload?.values?.JUMENTIX_REALTIME_API_DATABASE_DRIVER || 'Mongo')
-    }
+    values: { ...(payload?.values || {}) }
   };
   renderRuntimeEnvironment();
 }
 
 async function saveRuntimeEnvironment() {
+  const editableSet = new Set(runtimeEnvEditableKeys);
+  const values = {};
+  if (dom.runtimeEnvFields) {
+    dom.runtimeEnvFields.querySelectorAll('[data-runtime-key]').forEach((field) => {
+      const key = field.dataset.runtimeKey;
+      if (editableSet.has(key)) {
+        values[key] = field.value;
+      }
+    });
+  }
   const payload = {
     environment: dom.runtimeEnvSelect?.value || 'dev',
-    values: {
-      JUMENTIX_HTTP_FRAMEWORK: dom.runtimeHttpFrameworkSelect?.value || 'express',
-      JUMENTIX_REALTIME_API: dom.runtimeRealtimeApiSelect?.value || 'no',
-      JUMENTIX_REALTIME_API_PROTOCOL: dom.runtimeRealtimeProtocolSelect?.value || 'websocket',
-      JUMENTIX_REALTIME_API_DATABASE_DRIVER: dom.runtimeRealtimeDbDriverSelect?.value || 'Mongo'
-    }
+    values
   };
   const response = await fetch('/api/runtime/env', {
     method: 'POST',
@@ -620,16 +682,13 @@ async function saveRuntimeEnvironment() {
     throw new Error('Could not save runtime environment.');
   }
   const saved = await response.json();
+  if (Array.isArray(saved?.editableKeys) && saved.editableKeys.length > 0) {
+    runtimeEnvEditableKeys = saved.editableKeys.map((key) => String(key));
+  }
   state.runtimeEnvironment = {
     environment: String(saved.environment || payload.environment),
     fileName: String(saved.fileName || ''),
-    values: {
-      JUMENTIX_HTTP_FRAMEWORK: String(saved?.values?.JUMENTIX_HTTP_FRAMEWORK || payload.values.JUMENTIX_HTTP_FRAMEWORK),
-      JUMENTIX_REALTIME_API: String(saved?.values?.JUMENTIX_REALTIME_API || payload.values.JUMENTIX_REALTIME_API),
-      JUMENTIX_REALTIME_API_PROTOCOL: String(saved?.values?.JUMENTIX_REALTIME_API_PROTOCOL || payload.values.JUMENTIX_REALTIME_API_PROTOCOL),
-      JUMENTIX_REALTIME_API_DATABASE_DRIVER:
-        String(saved?.values?.JUMENTIX_REALTIME_API_DATABASE_DRIVER || payload.values.JUMENTIX_REALTIME_API_DATABASE_DRIVER)
-    }
+    values: { ...(saved?.values || payload.values) }
   };
   saveState();
   renderRuntimeEnvironment();
