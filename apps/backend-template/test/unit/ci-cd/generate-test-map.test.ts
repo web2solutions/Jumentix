@@ -25,6 +25,8 @@ import path from 'node:path';
 const repoRoot = path.resolve(__dirname, '../../../../..');
 const {
   buildManifest,
+  classifyIntegration,
+  classifyUnit,
   loadPackageSuiteClassification,
   loadPreviousRunnerOverrides,
   packageSuitePaths,
@@ -224,6 +226,93 @@ describe('buildManifest', () => {
       'test-map.json',
       'jest.config.js'
     ]));
+  });
+});
+
+/**
+ * Service Management's declared non-hexagonal kind (JUM-552), split into its two
+ * real parts (JUM-472): the server and the designer SPA it serves.
+ *
+ * The registration this replaced filed every SM suite under `interface/runtime`
+ * or `tooling`, so an SM change ran the whole backend interface layer — and
+ * never ran the SM unit suites, which sat in `tooling` waiting for a ci-cd
+ * change to select them.
+ */
+describe('service-management classification (JUM-472)', () => {
+  it('files SM unit suites under the designer sub-layer, not tooling', () => {
+    expect.hasAssertions();
+
+    expect(classifyUnit('apps/backend-template/test/unit/service-management/designerStore.test.ts'))
+      .toStrictEqual({ layer: 'service-management/designer', kind: 'non-hexagonal' });
+  });
+
+  it.each([
+    ['runtimeEnv.integration.test.ts', 'service-management/server'],
+    ['runtimeEnvContract.integration.test.ts', 'service-management/server'],
+    ['staticManifest.integration.test.ts', 'service-management/server'],
+    ['staticServing.integration.test.ts', 'service-management/server'],
+    ['domainDesigner.smoke.test.ts', 'service-management/designer'],
+    ['spaBoot.browser.integration.test.ts', 'service-management/designer']
+  ])('files the SM integration suite %s under %s', (name, layer) => {
+    expect.hasAssertions();
+
+    expect(classifyIntegration(`apps/backend-template/test/integration/ServiceManagement/${name}`))
+      .toMatchObject({
+        layer,
+        kind: 'non-hexagonal',
+        adapter: 'service-management',
+        script: 'test:integration:service-management'
+      });
+  });
+
+  /**
+   * Enumerated, not wildcard (JUM-552): a new SM integration suite has no area
+   * until someone names it. Guessing a default would silently misfile it — the
+   * suite would run for changes that cannot affect it and stay silent for the
+   * ones that can.
+   */
+  it('refuses an SM integration suite with no recorded area', () => {
+    expect.hasAssertions();
+
+    expect(() => classifyIntegration(
+      'apps/backend-template/test/integration/ServiceManagement/brand-new.integration.test.ts'
+    )).toThrow('brand-new.integration.test.ts');
+  });
+
+  it('declares the two sub-layers with enumerated globs and the component dependency direction', () => {
+    expect.hasAssertions();
+
+    const { layers } = buildManifest(workspace({}));
+
+    expect(layers['service-management/server']).toMatchObject({
+      dependsOn: ['contracts'],
+      kind: 'non-hexagonal',
+      sourceGlobs: ['apps/service-management/server.js', 'apps/service-management/package.json']
+    });
+    expect(layers['service-management/designer']).toMatchObject({
+      dependsOn: ['service-management/server'],
+      kind: 'non-hexagonal',
+      sourceGlobs: [
+        'apps/service-management/script.js',
+        'apps/service-management/src/**',
+        'apps/service-management/index.html',
+        'apps/service-management/styles.css'
+      ]
+    });
+  });
+
+  it('no longer files the component under interface/runtime, and maps spec/ to contracts', () => {
+    expect.hasAssertions();
+
+    const { layers } = buildManifest(workspace({}));
+
+    // Without the first, an SM change selected the whole backend interface
+    // layer; without the second, a canonical contract-shape change selected
+    // nothing at all and the gate failed closed.
+    expect(layers['interface/runtime'].sourceGlobs).toStrictEqual([
+      'apps/backend-template/src/interface/**'
+    ]);
+    expect(layers.contracts.sourceGlobs).toContain('spec/**');
   });
 });
 

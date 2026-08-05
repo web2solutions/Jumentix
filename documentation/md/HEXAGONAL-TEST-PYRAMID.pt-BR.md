@@ -31,6 +31,16 @@ bun run test-map:check
 bun run test-map:generate
 ```
 
+### Kinds não-hexagonais (JUM-552)
+
+Nem tudo no repositório tem camadas hexagonais. Código fora de módulos é registrado como camada declarada `kind: "non-hexagonal"` em vez de ser forçado no modelo de seis camadas:
+
+- `tooling` — `ci-cd/`, `tooling/`, o website, configuração de pipeline.
+- `service-management/server` — `apps/service-management/server.js` + `package.json`; depende de `contracts`.
+- `service-management/designer` — o SPA designer (`script.js`, `src/**`, assets estáticos); depende de `service-management/server`, que o serve e responde à sua runtime API.
+
+Consequências para o seletor (JUM-472): uma mudança em `apps/service-management/**` seleciona exatamente as suites SM (unit + o smoke `test:integration:service-management`), uma mudança só no designer pula as suites do server, e uma mudança nos artefatos de contrato canônicos em `spec/` (registrados em `contracts`) alcança as suites de paridade de contrato do SM por dependências reversas. Os globs das camadas são enumerados, não coringa: um arquivo novo na raiz do app não mapeia para camada alguma e deixa o gate vermelho até ser classificado em `ci-cd/generate-test-map.js`. Novas suites de integração SM são registradas nomeando sua área em `SERVICE_MANAGEMENT_INTEGRATION_AREA` e regenerando o mapa.
+
 ## DX local (Bun)
 
 ```bash
