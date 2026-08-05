@@ -48,9 +48,10 @@ describe('rEADME badges', () => {
 
     expect.hasAssertions();
     for (const branch of ['dev', 'main']) {
-      expect(readme).toContain(`dl.circleci.com/status-badge/img/gh/XpertMinds/Jumentix/tree/${branch}.svg?style=svg`);
-      expect(readme).toContain(`dl.circleci.com/status-badge/redirect/gh/XpertMinds/Jumentix/tree/${branch}`);
+      expect(readme).toContain(`img.shields.io/badge/CircleCI-${branch}%20pipeline`);
+      expect(readme).toContain(`https://app.circleci.com/pipelines/github/XpertMinds/Jumentix?branch=${branch}`);
     }
+    expect(badges).not.toContain('dl.circleci.com/status-badge');
     expect(badges).not.toContain('actions/workflows');
   });
 

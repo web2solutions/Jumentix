@@ -4,8 +4,8 @@ Idioma alvo: Português (Brasil)
 -->
 # Jumentix – Fábrica de Software para Equipes de Produto
 
-[![CircleCI dev](https://dl.circleci.com/status-badge/img/gh/XpertMinds/Jumentix/tree/dev.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/XpertMinds/Jumentix/tree/dev)
-[![CircleCI main](https://dl.circleci.com/status-badge/img/gh/XpertMinds/Jumentix/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/XpertMinds/Jumentix/tree/main)
+[![Pipeline CircleCI dev](https://img.shields.io/badge/CircleCI-dev%20pipeline-343434?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/XpertMinds/Jumentix?branch=dev)
+[![Pipeline CircleCI main](https://img.shields.io/badge/CircleCI-main%20pipeline-343434?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/XpertMinds/Jumentix?branch=main)
 [![Codecov dev](https://codecov.io/gh/XpertMinds/Jumentix/branch/dev/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev)
 [![Codecov main](https://codecov.io/gh/XpertMinds/Jumentix/branch/main/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/main)
 [![Status do Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Jumentix)
@@ -35,7 +35,7 @@ Idioma alvo: Português (Brasil)
 
 | Gate obrigatório | `main` | `dev` |
 | --- | :---: | :---: |
-| Workflow CircleCI | [![CircleCI main](https://dl.circleci.com/status-badge/img/gh/XpertMinds/Jumentix/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/XpertMinds/Jumentix/tree/main) | [![CircleCI dev](https://dl.circleci.com/status-badge/img/gh/XpertMinds/Jumentix/tree/dev.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/XpertMinds/Jumentix/tree/dev) |
+| Workflow CircleCI | [![Pipeline CircleCI main](https://img.shields.io/badge/CircleCI-main%20pipeline-343434?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/XpertMinds/Jumentix?branch=main) | [![Pipeline CircleCI dev](https://img.shields.io/badge/CircleCI-dev%20pipeline-343434?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/XpertMinds/Jumentix?branch=dev) |
 | Cobertura de projeto no Codecov | [![Codecov main](https://codecov.io/gh/XpertMinds/Jumentix/branch/main/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/main) | [![Codecov dev](https://codecov.io/gh/XpertMinds/Jumentix/branch/dev/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev) |
 | Testes por branch | `branch-gate` | `branch-gate` |
 | Cobertura de projeto + patch | `coverage` | `coverage` |

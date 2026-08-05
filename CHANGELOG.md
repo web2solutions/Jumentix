@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-05 docs: restore CircleCI and Codecov badges - Eduardo A.
 - 2026-08-04 chore(release): reconcile main ancestry into dev - Eduardo A.
 - 2026-08-03 ci(JUM-504): backfill git blobs for SonarQube SCM blame - Eduardo A.
 - 2026-08-03 docs(website): document Vercel deploy auth and GITHUB_TOKEN for JUM-397 (#69) - Eduardo A.
