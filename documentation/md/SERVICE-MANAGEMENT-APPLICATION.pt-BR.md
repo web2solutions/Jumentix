@@ -47,12 +47,27 @@ Arquivos principais de implementação:
      - comportamento de ativos estáticos
      - portas de tempo de execução (`REST`, `WebSocket`, `gRPC`)
    - Mostra visualização de perfil orientado a PM2 para orquestração de tempo de execução de VM.
-   - Inclui controles de ambiente de tempo de execução para leitura/atualização:
-     - `JUMENTIX_HTTP_FRAMEWORK`
-     - `JUMENTIX_REALTIME_API`
-     - `JUMENTIX_REALTIME_API_PROTOCOL`
-     - `JUMENTIX_REALTIME_API_DATABASE_DRIVER`
-   - O editor de ambiente de tempo de execução tem como alvo o arquivo de ambiente selecionado em
+   - Inclui controles de ambiente de tempo de execução com um modelo de três níveis:
+     - **Editável** (seletores de topologia de leitura/gravação):
+       `JUMENTIX_HTTP_FRAMEWORK`, `JUMENTIX_REALTIME_API`,
+       `JUMENTIX_REALTIME_API_PROTOCOL`, `JUMENTIX_REALTIME_API_DATABASE_DRIVER`,
+       `JUMENTIX_DATABASE_DRIVER`, `JUMENTIX_KEYVALUESTORAGE_DRIVER`,
+       `JUMENTIX_MESSAGE_MEDIATOR_ADAPTER`, `JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER`,
+       `JUMENTIX_WEBSOCKET_REDIS_URL`.
+     - **Somente leitura** (endpoints de conexão e configuração não secreta,
+       exibidos mas não graváveis): host/porta/database do Redis,
+       exchange/fila/prefetch do RabbitMQ, nome do banco de dados, issuer/audience
+       do JWT, origens CORS e chaves de política de autenticação.
+     - **Nunca exposta** (nem exibida nem gravável): segredos como
+       `JUMENTIX_JWT_TOKEN_SECRET_KEY`, `JUMENTIX_REDIS_PASSWORD` e
+       `JUMENTIX_RABBITMQ_URL`.
+   - Valores editáveis são validados contra os conjuntos enum de
+     `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md`; valores fora do enum são
+     rejeitados com a lista de aceitos e nada é escrito.
+   - O editor de ambiente de tempo de execução tem como alvo o arquivo de ambiente selecionado:
+    - `dev` -> `apps/backend-template/src/config/.env.dev`
+    - `staging` -> `apps/backend-template/src/config/.env.staging`
+    - `ci` -> `apps/backend-template/src/config/.env.ci`
      `apps/backend-template/src/config/`:
     - `dev` -> `.env.dev` (`development` é um alias)
     - `staging` -> `.env.staging`

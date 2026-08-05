@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-05 test(JUM-466): tighten late-file assertion now that JUM-463 landed - Eduardo A.
 - 2026-08-05 chore(JUM-466): merge dev after H1 wave landings - Eduardo A.
 - 2026-08-05 fix(JUM-461): truthful key labels and canonical framework selector in service-management (#83) - Eduardo A.
 - 2026-08-05 test(JUM-466): expand service-management integration smoke - Eduardo A.

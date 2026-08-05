@@ -43,11 +43,26 @@ Core implementation files:
      - static assets behavior
      - runtime ports (`REST`, `WebSocket`, `gRPC`)
    - Shows PM2-oriented profile preview for VM runtime orchestration.
-   - Includes runtime env controls to read/update:
-     - `JUMENTIX_HTTP_FRAMEWORK`
-     - `JUMENTIX_REALTIME_API`
-     - `JUMENTIX_REALTIME_API_PROTOCOL`
-     - `JUMENTIX_REALTIME_API_DATABASE_DRIVER`
+   - Includes runtime env controls with a three-tier key model:
+     - **Editable** (read/write runtime topology selectors):
+       `JUMENTIX_HTTP_FRAMEWORK`, `JUMENTIX_REALTIME_API`,
+       `JUMENTIX_REALTIME_API_PROTOCOL`, `JUMENTIX_REALTIME_API_DATABASE_DRIVER`,
+       `JUMENTIX_DATABASE_DRIVER`, `JUMENTIX_KEYVALUESTORAGE_DRIVER`,
+       `JUMENTIX_MESSAGE_MEDIATOR_ADAPTER`, `JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER`,
+       `JUMENTIX_WEBSOCKET_REDIS_URL`.
+     - **Read-only** (connection endpoints and non-secret config, displayed but not
+       writable): Redis host/port/database, RabbitMQ exchange/queue/prefetch,
+       database name, JWT issuer/audience, CORS origins, and auth policy keys.
+     - **Never exposed** (neither shown nor writable): secrets such as
+       `JUMENTIX_JWT_TOKEN_SECRET_KEY`, `JUMENTIX_REDIS_PASSWORD`, and
+       `JUMENTIX_RABBITMQ_URL`.
+   - Editable values are validated against the enum sets of
+     `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md`; out-of-enum values are
+     rejected with the accepted list and nothing is written.
+   - Runtime env editor targets the selected environment file:
+    - `dev` -> `apps/backend-template/src/config/.env.dev`
+    - `staging` -> `apps/backend-template/src/config/.env.staging`
+    - `ci` -> `apps/backend-template/src/config/.env.ci`
    - Runtime env editor targets the selected environment file under
      `apps/backend-template/src/config/`:
     - `dev` -> `.env.dev` (`development` is an alias)

@@ -1,4 +1,4 @@
-/* eslint-disable jest/prefer-expect-assertions, jest/no-conditional-in-test */
+/* eslint-disable jest/prefer-expect-assertions, jest/no-conditional-in-test, jest/max-expects */
 import { spawn } from 'node:child_process';
 import path from 'node:path';
 import http from 'node:http';
@@ -10,16 +10,38 @@ const serverPath = path.resolve(process.cwd(), 'apps/service-management/server.j
 type RuntimeEnvPayload = {
   environment: string;
   fileName: string;
+  editableKeys: string[];
   values: Record<string, string>;
 };
 
 function createTempConfigDir() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jumentix-service-management-'));
   const envContent = [
+    'JUMENTIX_REDIS_HOST=127.0.0.1',
+    'JUMENTIX_REDIS_PORT=6379',
+    'JUMENTIX_REDIS_DATABASE=1',
+    'JUMENTIX_REDIS_PASSWORD=dev-redis-password',
+    'JUMENTIX_JWT_TOKEN_SECRET_KEY=dev-jwt-secret',
+    'JUMENTIX_JWT_ISSUER=jumentix',
+    'JUMENTIX_JWT_AUDIENCE=jumentix-clients',
+    'JUMENTIX_MESSAGE_MEDIATOR_ADAPTER=rabbitmq',
     'JUMENTIX_HTTP_FRAMEWORK=express',
     'JUMENTIX_REALTIME_API=no',
     'JUMENTIX_REALTIME_API_PROTOCOL=websocket',
+    '#JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER=redis-streams',
+    '#JUMENTIX_WEBSOCKET_REDIS_URL=redis://127.0.0.1:6379/1',
     'JUMENTIX_REALTIME_API_DATABASE_DRIVER=Mongo',
+    'JUMENTIX_DATABASE_DRIVER=InMemory',
+    'JUMENTIX_DATABASE_NAME=jumentix',
+    'JUMENTIX_ENABLE_BASIC_AUTH=yes',
+    'JUMENTIX_AUTH_MAX_LOGIN_ATTEMPTS=5',
+    'JUMENTIX_AUTH_LOGIN_WINDOW_SECONDS=300',
+    'JUMENTIX_AUTH_LOCKOUT_SECONDS=900',
+    'JUMENTIX_CORS_ALLOWED_ORIGINS=http://localhost:3000',
+    'JUMENTIX_RABBITMQ_URL=amqp://guest:guest@127.0.0.1:5672',
+    'JUMENTIX_RABBITMQ_EXCHANGE=app.events',
+    'JUMENTIX_RABBITMQ_REQUEST_QUEUE=app.requests',
+    'JUMENTIX_RABBITMQ_PREFETCH=10',
     ''
   ].join('\n');
   ['.env.dev', '.env.staging', '.env.ci', '.env.dev.example'].forEach((fileName) => {
@@ -241,5 +263,115 @@ describe('serviceManagement runtime env server', () => {
         resolve();
       });
     });
+  });
+
+  it('exposes editable and read-only tiers on GET but never secrets', async () => {
+    expect.hasAssertions();
+    server = startServer(tempDir);
+    await waitForServer(server.port);
+    const res = await requestJson<RuntimeEnvPayload>(server.port, 'GET', '/api/runtime/env?environment=dev');
+    expect(res.status).toBe(200);
+    expect(res.body.values.JUMENTIX_DATABASE_DRIVER).toBe('InMemory');
+    expect(res.body.values.JUMENTIX_MESSAGE_MEDIATOR_ADAPTER).toBe('rabbitmq');
+    expect(res.body.values.JUMENTIX_REDIS_HOST).toBe('127.0.0.1');
+    expect(res.body.values.JUMENTIX_CORS_ALLOWED_ORIGINS).toBe('http://localhost:3000');
+    expect(res.body.values).not.toHaveProperty('JUMENTIX_JWT_TOKEN_SECRET_KEY');
+    expect(res.body.values).not.toHaveProperty('JUMENTIX_REDIS_PASSWORD');
+    expect(res.body.values).not.toHaveProperty('JUMENTIX_RABBITMQ_URL');
+    expect(res.body.editableKeys).toStrictEqual(
+      expect.arrayContaining([
+        'JUMENTIX_HTTP_FRAMEWORK',
+        'JUMENTIX_REALTIME_API',
+        'JUMENTIX_REALTIME_API_PROTOCOL',
+        'JUMENTIX_REALTIME_API_DATABASE_DRIVER',
+        'JUMENTIX_DATABASE_DRIVER',
+        'JUMENTIX_KEYVALUESTORAGE_DRIVER',
+        'JUMENTIX_MESSAGE_MEDIATOR_ADAPTER',
+        'JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER',
+        'JUMENTIX_WEBSOCKET_REDIS_URL'
+      ])
+    );
+    expect(res.body.editableKeys).not.toContain('JUMENTIX_REDIS_HOST');
+    expect(res.body.editableKeys).not.toContain('JUMENTIX_REDIS_PASSWORD');
+  });
+
+  it('ignores read-only and never-exposed keys on POST', async () => {
+    expect.hasAssertions();
+    server = startServer(tempDir);
+    await waitForServer(server.port);
+    const res = await requestJson<RuntimeEnvPayload>(server.port, 'POST', '/api/runtime/env', {
+      values: {
+        JUMENTIX_HTTP_FRAMEWORK: 'fastify',
+        JUMENTIX_REDIS_HOST: '10.0.0.9',
+        JUMENTIX_REDIS_PASSWORD: 'rewritten-secret',
+        JUMENTIX_RABBITMQ_URL: 'amqp://attacker:attacker@evil:5672'
+      }
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.values.JUMENTIX_HTTP_FRAMEWORK).toBe('fastify');
+    const fileContent = fs.readFileSync(path.join(tempDir, '.env.dev'), 'utf8');
+    expect(fileContent).toContain('JUMENTIX_HTTP_FRAMEWORK=fastify');
+    expect(fileContent).toContain('JUMENTIX_REDIS_HOST=127.0.0.1');
+    expect(fileContent).not.toContain('10.0.0.9');
+    expect(fileContent).not.toContain('rewritten-secret');
+    expect(fileContent).not.toContain('attacker');
+  });
+
+  it('rejects out-of-enum values with the accepted list and writes nothing', async () => {
+    expect.hasAssertions();
+    server = startServer(tempDir);
+    await waitForServer(server.port);
+    const before = fs.readFileSync(path.join(tempDir, '.env.dev'), 'utf8');
+    const res = await requestJson<{ error: string; details: string }>(
+      server.port,
+      'POST',
+      '/api/runtime/env',
+      { values: { JUMENTIX_HTTP_FRAMEWORK: 'garbage' } }
+    );
+    expect(res.status).toBe(400);
+    expect(res.body.details).toContain('JUMENTIX_HTTP_FRAMEWORK');
+    expect(res.body.details).toContain('Accepted values:');
+    expect(res.body.details).toContain('express');
+    expect(fs.readFileSync(path.join(tempDir, '.env.dev'), 'utf8')).toBe(before);
+  });
+
+  it('rejects credential-bearing JUMENTIX_WEBSOCKET_REDIS_URL values', async () => {
+    expect.hasAssertions();
+    server = startServer(tempDir);
+    await waitForServer(server.port);
+    const before = fs.readFileSync(path.join(tempDir, '.env.dev'), 'utf8');
+    const res = await requestJson<{ error: string; details: string }>(
+      server.port,
+      'POST',
+      '/api/runtime/env',
+      { values: { JUMENTIX_WEBSOCKET_REDIS_URL: 'redis://:secret@127.0.0.1:6379/1' } }
+    );
+    expect(res.status).toBe(400);
+    expect(res.body.details).toContain('JUMENTIX_WEBSOCKET_REDIS_URL');
+    expect(res.body.details).toContain('credentials');
+    expect(fs.readFileSync(path.join(tempDir, '.env.dev'), 'utf8')).toBe(before);
+  });
+
+  it('writes the widened editable set, uncommenting or appending keys as needed', async () => {
+    expect.hasAssertions();
+    server = startServer(tempDir);
+    await waitForServer(server.port);
+    const res = await requestJson<RuntimeEnvPayload>(server.port, 'POST', '/api/runtime/env', {
+      values: {
+        JUMENTIX_DATABASE_DRIVER: 'PostgreSQL',
+        JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: 'bullmq',
+        JUMENTIX_KEYVALUESTORAGE_DRIVER: 'inmemory',
+        JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER: 'cluster',
+        JUMENTIX_WEBSOCKET_REDIS_URL: 'redis://127.0.0.1:6379/2'
+      }
+    });
+    expect(res.status).toBe(200);
+    const fileContent = fs.readFileSync(path.join(tempDir, '.env.dev'), 'utf8');
+    expect(fileContent).toContain('JUMENTIX_DATABASE_DRIVER=PostgreSQL');
+    expect(fileContent).toContain('JUMENTIX_MESSAGE_MEDIATOR_ADAPTER=bullmq');
+    expect(fileContent).toContain('JUMENTIX_KEYVALUESTORAGE_DRIVER=inmemory');
+    expect(fileContent).toContain('JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER=cluster');
+    expect(fileContent).not.toContain('#JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER');
+    expect(fileContent).toContain('JUMENTIX_WEBSOCKET_REDIS_URL=redis://127.0.0.1:6379/2');
   });
 });
