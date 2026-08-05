@@ -72,6 +72,33 @@ Comandos:
 - `pnpm run dev:service-management`
 - `pnpm run dev` (inicia automaticamente o gerenciamento de serviço + perfil REST)
 
+## Serviço Estático
+
+`server.js` serve este SPA vanilla sem etapa de build a partir de um manifesto
+de inicialização: uma lista de permissões dos arquivos que existiam quando o
+processo foi iniciado. O manifesto é um mecanismo de segurança contra travessia
+de caminhos — ele limita a superfície servível mesmo se a normalização de
+caminhos tiver uma falha — portanto **a produção serve apenas o manifesto de
+inicialização** e arquivos adicionados depois exigem uma reinicialização.
+
+Em desenvolvimento isso seria um defeito (um arquivo editado manualmente e
+adicionado após a inicialização retornaria 404 até a reinicialização), então o
+modo de desenvolvimento revarre o manifesto **apenas em caso de ausência** —
+nunca por requisição, o que transformaria cada 404 em uma varredura de
+diretório — e a nova tentativa passa pela mesma validação de normalização e
+contenção de um acesso do manifesto de inicialização.
+
+A seleção de modo é configuração explícita, não inferida apenas de `NODE_ENV`:
+
+- `JUMENTIX_SERVICE_MANAGEMENT_STATIC_MANIFEST_REFRESH=on-miss` — revarredura
+  em caso de ausência (comportamento de desenvolvimento), independentemente de
+  `NODE_ENV`.
+- `JUMENTIX_SERVICE_MANAGEMENT_STATIC_MANIFEST_REFRESH=boot-only` — manifesto
+  de inicialização congelado (comportamento de produção), independentemente de
+  `NODE_ENV`.
+- Não definido — o padrão deriva de `NODE_ENV`: `dev`/`development` =>
+  `on-miss`, qualquer outro valor => `boot-only`.
+
 ## API de ambiente de tempo de execução
 
 - `GET /api/runtime/env?environment=dev|staging|ci`
