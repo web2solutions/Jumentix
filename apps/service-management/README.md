@@ -68,6 +68,29 @@ Commands:
 - `pnpm run dev:service-management`
 - `pnpm run dev` (auto-starts service management + REST profile)
 
+## Static Serving
+
+`server.js` serves this zero-build vanilla SPA from a boot-time manifest: an
+allowlist of the files that existed when the process started. The manifest is a
+traversal-safety mechanism — it bounds the servable surface even if path
+normalisation has a flaw — so **production serves only the boot manifest** and
+files added later require a restart.
+
+In development this would be a defect (a hand-edited file added after boot
+would 404 until restart), so dev mode re-scans the manifest **on miss only** —
+never per request, which would turn every 404 into a directory walk — and the
+retry passes the same normalisation and containment validation as a boot-time
+hit.
+
+Mode selection is explicit configuration, not inferred from `NODE_ENV` alone:
+
+- `JUMENTIX_SERVICE_MANAGEMENT_STATIC_MANIFEST_REFRESH=on-miss` — re-scan on
+  miss (dev behaviour), regardless of `NODE_ENV`.
+- `JUMENTIX_SERVICE_MANAGEMENT_STATIC_MANIFEST_REFRESH=boot-only` — frozen boot
+  manifest (production behaviour), regardless of `NODE_ENV`.
+- Unset — default derives from `NODE_ENV`: `dev`/`development` => `on-miss`,
+  anything else => `boot-only`.
+
 ## Runtime Env API
 
 Built into `apps/service-management/server.js`:
