@@ -77,6 +77,8 @@ bun run <command>
 | `website:storybook:build` | Operate the commercial website lifecycle. | `bun run website:storybook:build` | `bun run --filter @jumentix/website storybook:build` |
 | `website:storybook:smoke` | Operate the commercial website lifecycle. | `bun run website:storybook:smoke` | `bun run --filter @jumentix/website storybook:smoke` |
 | `website:test:prepublish` | Operate the commercial website lifecycle. | `bun run website:test:prepublish` | `bun run --filter @jumentix/website test:prepublish` |
+| `website:test:cypress` | Operate the commercial website lifecycle. | `bun run website:test:cypress` | `bun run --filter @jumentix/website test:cypress` |
+| `website:test:quality` | Operate the commercial website lifecycle. | `bun run website:test:quality` | `bun run --filter @jumentix/website test:quality` |
 | `website:vercel:link` | Operate the commercial website lifecycle. | `bun run website:vercel:link` | `bun x vercel link --cwd apps/jumentix-website --project jumentix-website --yes` |
 | `website:vercel:pull:preview` | Operate the commercial website lifecycle. | `bun run website:vercel:pull:preview` | `bun x vercel pull --cwd apps/jumentix-website --environment=preview --yes` |
 | `website:vercel:pull:prod` | Operate the commercial website lifecycle. | `bun run website:vercel:pull:prod` | `bun x vercel pull --cwd apps/jumentix-website --environment=production --yes` |
@@ -124,7 +126,6 @@ bun run <command>
 | `test:integration:adonis-js` | Run tests for specific scope or profile. | `bun run test:integration:adonis-js` | `NODE_ENV=dev bun ci-cd/run-suite.js --script-label adonis-js apps/backend-template/test/integration/Adonis-JS` |
 | `test:integration:total-js` | Run tests for specific scope or profile. | `bun run test:integration:total-js` | `NODE_ENV=dev bun ci-cd/run-suite.js --script-label total-js apps/backend-template/test/integration/Total-JS` |
 | `test:integration:service-management` | Run tests for specific scope or profile. | `bun run test:integration:service-management` | `NODE_ENV=dev bun ci-cd/run-service-management-integration.js` |
-| `test:integration:service-mangement` | Run tests for specific scope or profile. | `bun run test:integration:service-mangement` | `bun run test:integration:service-management` |
 | `test:integration:realtime:websocket` | Run tests for specific scope or profile. | `bun run test:integration:realtime:websocket` | `NODE_ENV=dev bun ci-cd/run-suite.js --script-label realtime-ws apps/backend-template/test/integration/realtime/websocket.basic.integration.test.ts` |
 | `test:integration:realtime:grpc` | Run tests for specific scope or profile. | `bun run test:integration:realtime:grpc` | `NODE_ENV=dev bun ci-cd/run-suite.js --script-label realtime-grpc apps/backend-template/test/integration/realtime/grpc.basic.integration.test.ts` |
 | `test:integration:realtime` | Run tests for specific scope or profile. | `bun run test:integration:realtime` | `bun run test:integration:realtime:websocket && bun run test:integration:realtime:grpc` |
