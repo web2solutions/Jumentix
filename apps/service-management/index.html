@@ -466,6 +466,7 @@
         </section>
         <section class="panel">
           <h3>Runtime Environment Variables</h3>
+          <p class="hint">Editable keys can be saved through this tool. Read-only keys reflect the current env file and cannot be changed here. Secrets are never shown.</p>
           <div class="responsive-grid">
             <div>
               <label for="runtime-env-select">Environment</label>
@@ -475,72 +476,8 @@
                 <option value="ci">ci</option>
               </select>
             </div>
-            <div>
-              <label for="runtime-http-framework-select">JUMENTIX_HTTP_FRAMEWORK</label>
-              <select id="runtime-http-framework-select">
-                <option value="express">express</option>
-                <option value="fastify">fastify</option>
-                <option value="restify">restify</option>
-                <option value="cloudflare-workers">cloudflare-workers</option>
-                <option value="vercel-functions">vercel-functions</option>
-                <option value="loopback">loopback</option>
-                <option value="sails-js">sails-js</option>
-                <option value="feathers">feathers</option>
-                <option value="derby-js">derby-js</option>
-                <option value="adonis-js">adonis-js</option>
-                <option value="total-js">total-js</option>
-              </select>
-              <p class="hint">Canonical spellings only: derby-js and sails-js (the backend rejects the derby/sails aliases).</p>
-            </div>
-            <div>
-              <label for="runtime-realtime-api-select">JUMENTIX_REALTIME_API</label>
-              <select id="runtime-realtime-api-select">
-                <option value="no">no</option>
-                <option value="yes">yes</option>
-              </select>
-            </div>
           </div>
-          <div class="responsive-grid">
-            <div>
-              <label for="runtime-realtime-protocol-select">JUMENTIX_REALTIME_API_PROTOCOL</label>
-              <select id="runtime-realtime-protocol-select">
-                <option value="websocket">websocket</option>
-                <option value="grpc">grpc</option>
-              </select>
-            </div>
-            <div>
-              <label for="runtime-db-driver-select">JUMENTIX_DATABASE_DRIVER</label>
-              <select id="runtime-db-driver-select">
-                <option value="InMemory">InMemory</option>
-                <option value="IndexedDB">IndexedDB</option>
-                <option value="Mongo">Mongo</option>
-                <option value="PostgreSQL">PostgreSQL</option>
-                <option value="MySQL">MySQL</option>
-                <option value="MSSQL">MSSQL</option>
-                <option value="Oracle">Oracle</option>
-                <option value="SQLite">SQLite</option>
-                <option value="DynamoDB">DynamoDB</option>
-                <option value="Cassandra">Cassandra</option>
-                <option value="Firebase">Firebase</option>
-                <option value="Aurora">Aurora</option>
-                <option value="RDS">RDS</option>
-              </select>
-              <p class="hint">Main application database (REST API persistence).</p>
-            </div>
-            <div>
-              <label for="runtime-realtime-db-driver-select">JUMENTIX_REALTIME_API_DATABASE_DRIVER</label>
-              <select id="runtime-realtime-db-driver-select">
-                <option value="Mongo">Mongo</option>
-                <option value="PostgreSQL">PostgreSQL</option>
-                <option value="MySQL">MySQL</option>
-                <option value="MS SQL">MS SQL</option>
-                <option value="RDS">RDS</option>
-                <option value="Aurora">Aurora</option>
-                <option value="Cassandra">Cassandra</option>
-              </select>
-              <p class="hint">Realtime API (WebSocket/gRPC) database only — does not change the main application database.</p>
-            </div>
-          </div>
+          <div id="runtime-env-fields" class="responsive-grid"></div>
           <div class="row">
             <button id="runtime-env-refresh-btn" type="button">Load Environment</button>
             <button id="runtime-env-save-btn" type="button">Save Environment</button>
