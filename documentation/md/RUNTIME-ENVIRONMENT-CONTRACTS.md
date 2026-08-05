@@ -109,10 +109,33 @@ Runtime profiles:
 
 Service Management exposes runtime env read/write endpoints:
 
-- `GET /api/runtime/env?environment=dev|staging|ci`
+- `GET /api/runtime/env?environment=dev|development|staging|ci|test`
 - `POST /api/runtime/env`
 
 The env editor mutates only approved keys from this contract, preserving guardrails.
+
+### Accepted environments
+
+- `dev` → `.env.dev`
+- `development` → `.env.dev`
+- `staging` → `.env.staging`
+- `ci` → `.env.ci`
+- `test` → `.env.ci`
+
+Unknown environments return `400` with the accepted list; no file is written.
+
+### Security posture
+
+- Default bind is `127.0.0.1` (loopback only).
+- Optional bearer token for mutations via `JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN`.
+- Mutation audit log records timestamp, environment, and changed keys (not values).
+
+### Error contract
+
+- Unknown environment: `400` with accepted list.
+- Missing environment file: `400` with resolved path.
+- Invalid JSON payload: `400` distinguishing parse from filesystem failure.
+- Unauthorized mutation: `401` when auth token is configured.
 
 ## Guardrails
 

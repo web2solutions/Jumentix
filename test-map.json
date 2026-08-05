@@ -1314,6 +1314,19 @@
       "timeoutMs": 120000
     },
     {
+      "id": "apps/backend-template/test/integration/ServiceManagement/runtimeEnv.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/runtimeEnv.integration.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
       "id": "apps/backend-template/test/integration/Sails-JS/get.localhost.test.ts",
       "path": "apps/backend-template/test/integration/Sails-JS/get.localhost.test.ts",
       "layer": "adapters/in",
@@ -2702,8 +2715,8 @@
   },
   "stats": {
     "unit": 140,
-    "integration": 82,
+    "integration": 83,
     "smoke": 2,
-    "suites": 226
+    "suites": 227
   }
 }

@@ -237,8 +237,8 @@ This registry tracks AI agents collaborating in the Jumentix project.
 - `last_branch_check_utc`: `2026-08-02T21:01:40Z`
 - `main_ref_checked`: `490cb634`
 - `dev_ref_checked`: `b2498bac`
-- `active_epic`: `https://linear.app/jumentix/project/epicgovernance-canonical-xpertminds-migration-and-legacy-freeze-f8bd0962ba8a`
-- `assigned_task`: `https://linear.app/jumentix/issue/JUM-609`
+- `active_epic`: `https://linear.app/jumentix/project/service-management-ownership-modernization-and-cana-adoption-a83d2f72d483/overview`
+- `assigned_task`: `https://linear.app/jumentix/issue/JUM-458`
 - `capabilities`:
   - repository-wide source and documentation assimilation
   - governed implementation, testing, and CI diagnostics

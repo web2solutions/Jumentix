@@ -78,10 +78,25 @@ Recommended dev path:
 
 ## Runtime Env API (built-in)
 
-- `GET /api/runtime/env?environment=dev|staging|ci`
+- `GET /api/runtime/env?environment=dev|development|staging|ci|test`
 - `POST /api/runtime/env`
 
 The server persists approved runtime keys to files under `apps/backend-template/src/config/`.
+
+### Security posture
+
+- Default bind is `127.0.0.1` (loopback only).
+- Binding to all interfaces requires explicit opt-in via `JUMENTIX_SERVICE_MANAGEMENT_HOST=0.0.0.0`.
+- Optional bearer token for mutating requests via `JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN`.
+- Every mutation is logged with timestamp, environment, and changed keys (not values).
+
+### Error contract
+
+- Unknown environment: `400` with accepted list, no file written.
+- Missing config directory at boot: server exits with clear error.
+- Missing environment file: `400` with resolved path.
+- Invalid JSON payload: `400` distinguishing parse from filesystem failure.
+- Unauthorized mutation: `401` when auth token is configured.
 
 ## Runtime Edit Flow
 

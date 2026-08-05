@@ -4,10 +4,10 @@
 
 ## All Changes
 
-- 2026-08-05 docs(JUM-465): resolve EN ledger conflict keeping both 125 and 126 sections - Eduardo A.
-- 2026-08-05 chore(JUM-465): merge dev and renumber requirement to 126 (125 taken by JUM-604) - Eduardo A.
+- 2026-08-05 chore(JUM-458): merge dev after PR 79 landing - Eduardo A.
+- 2026-08-05 docs(JUM-467): audit bilingual docs and repair links for service-management (#79) - Eduardo A.
+- 2026-08-05 test(JUM-458): regenerate test-map after dev sync - Eduardo A.
 - 2026-08-05 [JUM-604][Governance] Support the Kimi agent with declarative agent support (#78) - Eduardo A.
-- 2026-08-05 docs(JUM-465): register service-management ownership and pin component public contracts - Eduardo A.
 - 2026-08-05 test: isolate PR governance helpers - Eduardo A.
 - 2026-08-05 test: satisfy PR governance lint - Eduardo A.
 - 2026-08-05 chore(release): reconcile main ancestry after branch-gate fix - Eduardo A.
@@ -25,6 +25,7 @@
 - 2026-08-03 ci(JUM-611): fix migration script require for Bun compatibility - Eduardo A.
 - 2026-08-03 test(website): add Cypress route, a11y, and responsive gates (JUM-396) - Eduardo A.
 - 2026-08-03 [JUM-611][Governance] Replace GitHub-mirrored agent registry with Firestore Database - Eduardo A.
+- 2026-08-03 fix(service-management): repair env path, honor environment parameter, and protect runtime-env API [JUM-458][JUM-558][JUM-459][JUM-462] - Eduardo A.
 - 2026-08-03 [JUM-417][CI] Sync agent-registry mirror (kimi-k3-cursor-001) (#64) - Eduardo A.
 - 2026-08-03 [JUM-419][CI] Sync the agent-registry mirror to canonical 271da346 - Eduardo A.
 - 2026-08-03 [JUM-417][Release] Promote dev to main: Cana engine matrix, Sonar fixes, temporary CircleCI bridge (#62) - Eduardo A.
