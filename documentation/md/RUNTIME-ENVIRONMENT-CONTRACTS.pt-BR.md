@@ -21,20 +21,25 @@ Todos os pontos de entrada de inicialização do tempo de execução devem segui
 As seguintes chaves são obrigatórias em arquivos env em `apps/backend-template/src/config/`:
 
 - `JUMENTIX_HTTP_FRAMEWORK`
-  - padrão: `expresso`
+  - padrão: `express`
   - valores atuais suportados:
-    - `expressar`
-    - `fastificar`
-    - `restificar`
-    - `hiper-expresso`
-    - `trabalhadores da cloudflare`
-    - `funções vercel`
+    - `express`
+    - `fastify`
+    - `restify`
+    - `cloudflare-workers`
+    - `vercel-functions`
     - `loopback`
-    - `velas-js`
-    - `penas`
+    - `sails-js`
+    - `feathers`
     - `derby-js`
     - `adonis-js`
     - `total-js`
+  - decisão sobre aliases (JUM-461): `derby-js` e `sails-js` são as grafias
+    canônicas. Os aliases `derby` e `sails` NÃO são aceitos — o
+    `RuntimeEnvironment.ts` falha imediatamente com eles. `hyper-express` foi
+    removido do runtime (JUM-27) e também é rejeitado. O seletor do Service
+    Management oferece exatamente os 11 valores canônicos acima; as opções da UI
+    e a validação de enum do servidor devem sempre concordar.
   - usado por: `apps/backend-template/src/interface/HTTP/adapters/start-rest-api.ts`
 
 - `JUMENTIX_REALTIME_API`
@@ -51,16 +56,42 @@ As seguintes chaves são obrigatórias em arquivos env em `apps/backend-template
     - `apps/backend-template/src/interface/WebSocket/adapters/start-websocket-api.ts`
     - `apps/backend-template/src/interface/gRPC/adapters/start-grpc-api.ts`
 
+- `JUMENTIX_DATABASE_DRIVER`
+  - padrão: `InMemory`
+  - valores suportados (a união `DriverName` em
+    `packages/database-client-factory/src/compileDatabaseClient.ts`):
+    - `InMemory`
+    - `IndexedDB`
+    - `Mongo`
+    - `PostgreSQL`
+    - `MySQL`
+    - `MSSQL`
+    - `Oracle`
+    - `SQLite`
+    - `DynamoDB`
+    - `Cassandra`
+    - `Firebase`
+    - `Aurora`
+    - `RDS`
+  - o driver do banco de dados PRINCIPAL da aplicação (persistência da REST API).
+    Distinto de `JUMENTIX_REALTIME_API_DATABASE_DRIVER`: alterar um nunca afeta o
+    outro. `IndexedDB` é o driver de navegador (Cana) e lança erro se selecionado
+    para um processo server-side sem uma fábrica `indexedDbClient` conectada.
+  - usado por: `packages/database-client-factory` (`compileDatabaseClient`), conectado em
+    `apps/backend-template/src/infra/persistence/compileDatabaseClient.ts`
+
 - `JUMENTIX_REALTIME_API_DATABASE_DRIVER`
   - padrão: `Mongo`
   - valores suportados:
     - `Mongo`
     - `PostgreSQL`
     - `MySQL`
-    - `MSSQL`
+    - `MS SQL`
     - `RDS`
     - `Aurora`
     - `Cassandra`
+  - apenas o driver de banco de dados da API em TEMPO REAL (WebSocket/gRPC) — não
+    altera o banco de dados principal da aplicação (`JUMENTIX_DATABASE_DRIVER`).
   - usado por: metadados de perfil de tempo de execução e fluxos de trabalho de configuração de gerenciamento de serviços.
 
 - `JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER`

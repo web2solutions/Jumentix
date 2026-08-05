@@ -30,6 +30,7 @@ const state = {
       JUMENTIX_HTTP_FRAMEWORK: 'express',
       JUMENTIX_REALTIME_API: 'no',
       JUMENTIX_REALTIME_API_PROTOCOL: 'websocket',
+      JUMENTIX_DATABASE_DRIVER: 'InMemory',
       JUMENTIX_REALTIME_API_DATABASE_DRIVER: 'Mongo'
     }
   },
@@ -224,6 +225,7 @@ const dom = {
   runtimeHttpFrameworkSelect: document.getElementById('runtime-http-framework-select'),
   runtimeRealtimeApiSelect: document.getElementById('runtime-realtime-api-select'),
   runtimeRealtimeProtocolSelect: document.getElementById('runtime-realtime-protocol-select'),
+  runtimeDbDriverSelect: document.getElementById('runtime-db-driver-select'),
   runtimeRealtimeDbDriverSelect: document.getElementById('runtime-realtime-db-driver-select'),
   runtimeEnvRefreshBtn: document.getElementById('runtime-env-refresh-btn'),
   runtimeEnvSaveBtn: document.getElementById('runtime-env-save-btn'),
@@ -566,6 +568,9 @@ function renderRuntimeEnvironment() {
   if (dom.runtimeRealtimeProtocolSelect) {
     dom.runtimeRealtimeProtocolSelect.value = String(runtimeValues.JUMENTIX_REALTIME_API_PROTOCOL || 'websocket');
   }
+  if (dom.runtimeDbDriverSelect) {
+    dom.runtimeDbDriverSelect.value = String(runtimeValues.JUMENTIX_DATABASE_DRIVER || 'InMemory');
+  }
   if (dom.runtimeRealtimeDbDriverSelect) {
     dom.runtimeRealtimeDbDriverSelect.value = String(runtimeValues.JUMENTIX_REALTIME_API_DATABASE_DRIVER || 'Mongo');
   }
@@ -593,6 +598,7 @@ async function loadRuntimeEnvironment(environment) {
       JUMENTIX_HTTP_FRAMEWORK: String(payload?.values?.JUMENTIX_HTTP_FRAMEWORK || 'express'),
       JUMENTIX_REALTIME_API: String(payload?.values?.JUMENTIX_REALTIME_API || 'no'),
       JUMENTIX_REALTIME_API_PROTOCOL: String(payload?.values?.JUMENTIX_REALTIME_API_PROTOCOL || 'websocket'),
+      JUMENTIX_DATABASE_DRIVER: String(payload?.values?.JUMENTIX_DATABASE_DRIVER || 'InMemory'),
       JUMENTIX_REALTIME_API_DATABASE_DRIVER: String(payload?.values?.JUMENTIX_REALTIME_API_DATABASE_DRIVER || 'Mongo')
     }
   };
@@ -606,6 +612,7 @@ async function saveRuntimeEnvironment() {
       JUMENTIX_HTTP_FRAMEWORK: dom.runtimeHttpFrameworkSelect?.value || 'express',
       JUMENTIX_REALTIME_API: dom.runtimeRealtimeApiSelect?.value || 'no',
       JUMENTIX_REALTIME_API_PROTOCOL: dom.runtimeRealtimeProtocolSelect?.value || 'websocket',
+      JUMENTIX_DATABASE_DRIVER: dom.runtimeDbDriverSelect?.value || 'InMemory',
       JUMENTIX_REALTIME_API_DATABASE_DRIVER: dom.runtimeRealtimeDbDriverSelect?.value || 'Mongo'
     }
   };
@@ -627,6 +634,7 @@ async function saveRuntimeEnvironment() {
       JUMENTIX_HTTP_FRAMEWORK: String(saved?.values?.JUMENTIX_HTTP_FRAMEWORK || payload.values.JUMENTIX_HTTP_FRAMEWORK),
       JUMENTIX_REALTIME_API: String(saved?.values?.JUMENTIX_REALTIME_API || payload.values.JUMENTIX_REALTIME_API),
       JUMENTIX_REALTIME_API_PROTOCOL: String(saved?.values?.JUMENTIX_REALTIME_API_PROTOCOL || payload.values.JUMENTIX_REALTIME_API_PROTOCOL),
+      JUMENTIX_DATABASE_DRIVER: String(saved?.values?.JUMENTIX_DATABASE_DRIVER || payload.values.JUMENTIX_DATABASE_DRIVER),
       JUMENTIX_REALTIME_API_DATABASE_DRIVER:
         String(saved?.values?.JUMENTIX_REALTIME_API_DATABASE_DRIVER || payload.values.JUMENTIX_REALTIME_API_DATABASE_DRIVER)
     }

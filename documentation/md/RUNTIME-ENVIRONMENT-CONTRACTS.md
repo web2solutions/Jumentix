@@ -30,6 +30,12 @@ The following keys are mandatory across env files in `apps/backend-template/src/
     - `derby-js`
     - `adonis-js`
     - `total-js`
+  - alias decision (JUM-461): `derby-js` and `sails-js` are the canonical spellings.
+    The aliases `derby` and `sails` are NOT accepted — `RuntimeEnvironment.ts`
+    fails fast on them. `hyper-express` was dropped from the runtime (JUM-27) and
+    is likewise rejected. The Service Management selector offers exactly the
+    11 canonical values above; UI options and server-side enum validation must
+    always agree.
   - used by: `apps/backend-template/src/interface/HTTP/adapters/start-rest-api.ts`
 
 - `JUMENTIX_REALTIME_API`
@@ -46,6 +52,30 @@ The following keys are mandatory across env files in `apps/backend-template/src/
     - `apps/backend-template/src/interface/WebSocket/adapters/start-websocket-api.ts`
     - `apps/backend-template/src/interface/gRPC/adapters/start-grpc-api.ts`
 
+- `JUMENTIX_DATABASE_DRIVER`
+  - default: `InMemory`
+  - supported values (the `DriverName` union in
+    `packages/database-client-factory/src/compileDatabaseClient.ts`):
+    - `InMemory`
+    - `IndexedDB`
+    - `Mongo`
+    - `PostgreSQL`
+    - `MySQL`
+    - `MSSQL`
+    - `Oracle`
+    - `SQLite`
+    - `DynamoDB`
+    - `Cassandra`
+    - `Firebase`
+    - `Aurora`
+    - `RDS`
+  - the MAIN application database driver (REST API persistence). Distinct from
+    `JUMENTIX_REALTIME_API_DATABASE_DRIVER`: changing one never affects the other.
+    `IndexedDB` is the browser (Cana) driver and throws if selected for a
+    server-side process without a wired `indexedDbClient` factory.
+  - used by: `packages/database-client-factory` (`compileDatabaseClient`), wired in
+    `apps/backend-template/src/infra/persistence/compileDatabaseClient.ts`
+
 - `JUMENTIX_REALTIME_API_DATABASE_DRIVER`
   - default: `Mongo`
   - supported values:
@@ -56,6 +86,8 @@ The following keys are mandatory across env files in `apps/backend-template/src/
     - `RDS`
     - `Aurora`
     - `Cassandra`
+  - the REALTIME API (WebSocket/gRPC) database driver only — it does not change the
+    main application database (`JUMENTIX_DATABASE_DRIVER`).
   - used by: runtime profile metadata and Service Management configuration workflows.
 
 - `JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER`

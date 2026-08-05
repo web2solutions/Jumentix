@@ -479,7 +479,18 @@
               <label for="runtime-http-framework-select">JUMENTIX_HTTP_FRAMEWORK</label>
               <select id="runtime-http-framework-select">
                 <option value="express">express</option>
+                <option value="fastify">fastify</option>
+                <option value="restify">restify</option>
+                <option value="cloudflare-workers">cloudflare-workers</option>
+                <option value="vercel-functions">vercel-functions</option>
+                <option value="loopback">loopback</option>
+                <option value="sails-js">sails-js</option>
+                <option value="feathers">feathers</option>
+                <option value="derby-js">derby-js</option>
+                <option value="adonis-js">adonis-js</option>
+                <option value="total-js">total-js</option>
               </select>
+              <p class="hint">Canonical spellings only: derby-js and sails-js (the backend rejects the derby/sails aliases).</p>
             </div>
             <div>
               <label for="runtime-realtime-api-select">JUMENTIX_REALTIME_API</label>
@@ -498,7 +509,26 @@
               </select>
             </div>
             <div>
-              <label for="runtime-realtime-db-driver-select">JUMENTIX_DATABASE_DRIVER</label>
+              <label for="runtime-db-driver-select">JUMENTIX_DATABASE_DRIVER</label>
+              <select id="runtime-db-driver-select">
+                <option value="InMemory">InMemory</option>
+                <option value="IndexedDB">IndexedDB</option>
+                <option value="Mongo">Mongo</option>
+                <option value="PostgreSQL">PostgreSQL</option>
+                <option value="MySQL">MySQL</option>
+                <option value="MSSQL">MSSQL</option>
+                <option value="Oracle">Oracle</option>
+                <option value="SQLite">SQLite</option>
+                <option value="DynamoDB">DynamoDB</option>
+                <option value="Cassandra">Cassandra</option>
+                <option value="Firebase">Firebase</option>
+                <option value="Aurora">Aurora</option>
+                <option value="RDS">RDS</option>
+              </select>
+              <p class="hint">Main application database (REST API persistence).</p>
+            </div>
+            <div>
+              <label for="runtime-realtime-db-driver-select">JUMENTIX_REALTIME_API_DATABASE_DRIVER</label>
               <select id="runtime-realtime-db-driver-select">
                 <option value="Mongo">Mongo</option>
                 <option value="PostgreSQL">PostgreSQL</option>
@@ -508,6 +538,7 @@
                 <option value="Aurora">Aurora</option>
                 <option value="Cassandra">Cassandra</option>
               </select>
+              <p class="hint">Realtime API (WebSocket/gRPC) database only — does not change the main application database.</p>
             </div>
           </div>
           <div class="row">
