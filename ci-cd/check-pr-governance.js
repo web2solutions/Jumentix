@@ -170,15 +170,31 @@ function validatePullRequest(metadata) {
   return failures;
 }
 
+function resolvePullRequestFlag(value = process.env.AAA_CI_IS_PULL_REQUEST) {
+  if (typeof value === 'boolean') return value;
+  const normalized = String(value || '').trim().toLowerCase();
+  if (['1', 'true', 'yes'].includes(normalized)) return true;
+  if (['0', 'false', 'no'].includes(normalized)) return false;
+  return Boolean(process.env.CIRCLE_PULL_REQUEST);
+}
+
 function run(options = {}) {
+  const metadata = {
+    title: options.title ?? process.env.JUMENTIX_PR_TITLE,
+    body: options.body ?? process.env.JUMENTIX_PR_BODY,
+    headRef: options.headRef ?? process.env.JUMENTIX_PR_HEAD_REF,
+    baseRef: options.baseRef ?? process.env.JUMENTIX_PR_BASE_REF
+  };
+  const hasExplicitPullRequestMetadata = Boolean(
+    String(metadata.title || '').trim()
+    || String(metadata.body || '').trim()
+    || String(metadata.baseRef || '').trim()
+  );
+  const shouldValidatePullRequest = resolvePullRequestFlag(options.isPullRequest)
+    || hasExplicitPullRequestMetadata;
   const failures = [
     ...validateTemplates(options.rootDir),
-    ...validatePullRequest({
-      title: options.title ?? process.env.JUMENTIX_PR_TITLE,
-      body: options.body ?? process.env.JUMENTIX_PR_BODY,
-      headRef: options.headRef ?? process.env.JUMENTIX_PR_HEAD_REF,
-      baseRef: options.baseRef ?? process.env.JUMENTIX_PR_BASE_REF
-    })
+    ...(shouldValidatePullRequest ? validatePullRequest(metadata) : [])
   ];
 
   if (failures.length > 0) {
@@ -201,6 +217,7 @@ module.exports = {
   TITLE_PREFIX_BY_NATURE,
   isPlaceholder,
   readField,
+  resolvePullRequestFlag,
   run,
   validatePullRequest,
   validateTemplates

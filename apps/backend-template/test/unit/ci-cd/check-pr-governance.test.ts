@@ -7,6 +7,8 @@ const {
   REQUIRED_TITLE_FORMAT,
   TEMPLATE_PATHS,
   readField,
+  resolvePullRequestFlag: resolvePrGovernancePullRequestFlag,
+  run: runPrGovernanceCheck,
   validatePullRequest,
   validateTemplates
 } = require('../../../../../ci-cd/check-pr-governance');
@@ -164,6 +166,32 @@ describe('check-pr-governance', () => {
       headRef: 'codex/fix/JUM-99-direct-main',
       baseRef: 'main'
     })).toHaveLength(2);
+  });
+
+  it('validates templates but skips PR metadata on long-lived branch builds', () => {
+    expect.hasAssertions();
+
+    expect(runPrGovernanceCheck({
+      isPullRequest: false,
+      title: '',
+      body: '',
+      headRef: 'main',
+      baseRef: ''
+    })).toBe(0);
+  });
+
+  it('still validates PR metadata when CircleCI marks the job as a pull request', () => {
+    expect.hasAssertions();
+
+    expect(runPrGovernanceCheck({
+      isPullRequest: true,
+      title: '',
+      body: '',
+      headRef: 'main',
+      baseRef: ''
+    })).toBe(1);
+    expect(resolvePrGovernancePullRequestFlag('1')).toBe(true);
+    expect(resolvePrGovernancePullRequestFlag('0')).toBe(false);
   });
 
   it('rejects a title or branch whose task identifier differs from the Linear Issue', () => {
