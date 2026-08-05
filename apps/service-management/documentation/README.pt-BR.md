@@ -9,12 +9,12 @@ Idioma alvo: Português (Brasil)
 ## Índice
 
 - Guias
-  - [Criando SPA/PWA com Jumentix](./guides/CREATING-SPA-PWA-WITH-JUMENTIX.md)
+  - [Criando SPA/PWA com Jumentix](./guides/CREATING-SPA-PWA-WITH-JUMENTIX.pt-BR.md)
 - Referências principais
-  - [Aplicativo de gerenciamento de serviços](../../../documentation/md/SERVICE-MANAGEMENT-APPLICATION.md)
-  - [Recursos e uso do designer de domínio](../../../documentation/md/DOMAIN-DESIGNER-FEATURES-AND-USAGE.md)
-  - [Entidades de dados de domínio](../../../documentation/md/DOMAIN-DATA-ENTITIES.md)
-  - [Contratos de ambiente de tempo de execução](../../../documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md)
+  - [Aplicativo de gerenciamento de serviços](../../../documentation/md/SERVICE-MANAGEMENT-APPLICATION.pt-BR.md)
+  - [Recursos e uso do designer de domínio](../../../documentation/md/DOMAIN-DESIGNER-FEATURES-AND-USAGE.pt-BR.md)
+  - [Entidades de dados de domínio](../../../documentation/md/DOMAIN-DATA-ENTITIES.pt-BR.md)
+  - [Contratos de ambiente de tempo de execução](../../../documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.pt-BR.md)
 
 ## O que este componente oferece
 
