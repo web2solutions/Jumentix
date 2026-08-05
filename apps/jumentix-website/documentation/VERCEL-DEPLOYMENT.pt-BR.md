@@ -2,12 +2,14 @@
 Arquivo gerado automaticamente a partir de: apps/jumentix-website/documentation/VERCEL-DEPLOYMENT.md
 Idioma alvo: Português (Brasil)
 -->
-#Implantação Vercel
+# Implantação Vercel
 
 Rastreamento de problemas:
 
-- Épico: [#124](https://github.com/XpertMinds/Jumentix/issues/124)
-- Tarefa: [#130](https://github.com/XpertMinds/Jumentix/issues/130)
+- Épico: [JUM-390](https://linear.app/jumentix/issue/JUM-390/epicwebsite-rebuild-the-jumentix-open-source-product-and-documentation)
+- Release: [JUM-397](https://linear.app/jumentix/issue/JUM-397/release-deploy-and-verify-the-rebuilt-jumentix-website-on-vercel)
+
+URL de produção: `https://jumentix-website.vercel.app/`
 
 ## Comandos de implantação
 
@@ -29,6 +31,19 @@ Diretamente do espaço de trabalho do aplicativo:
 bun run --filter @jumentix/website deploy:vercel
 ```
 
+Caminho seguro (gate de pré-publicação antes da produção):
+
+```bash
+bun run --filter @jumentix/website deploy:vercel:safe
+```
+
+Autenticação:
+
+```bash
+bunx vercel login
+bun run website:vercel:link
+```
+
 ## Configuração
 
 Arquivo:
@@ -37,11 +52,38 @@ Arquivo:
 
 Valores configurados:
 
-- `estrutura`: `nextjs`
+- `framework`: `nextjs`
 - `installCommand`: `bun install --frozen-lockfile`
 - `buildCommand`: `bun run build`
 - `devCommand`: `bun run dev`
 - `outputDirectory`: `.next`
+
+## Ambiente obrigatório na Vercel
+
+Como `XpertMinds/Jumentix` é privado, chamadas não autenticadas à API do GitHub retornam 404.
+Defina no projeto Vercel (Production + Preview):
+
+| Nome | Propósito |
+| --- | --- |
+| `GITHUB_TOKEN` | Commits do changelog + API de releases (`ChangelogPage`, `/api/github-releases`) |
+
+Opcional:
+
+| Nome | Propósito |
+| --- | --- |
+| `NEXT_PUBLIC_VERCEL_ENV` | Habilita Vercel Analytics apenas quando definido pela plataforma |
+
+## Verificação pós-deploy
+
+Smoke mínimo:
+
+- `/`, `/product`, `/use-cases`, `/roadmap`, `/community`, `/changelog`
+- `/pt-BR`, `/pt-BR/product`
+- `/docs/jumentix`, `/docs/jumentix/packages/cana`, `/docs/jumentix/concepts`
+- `/docs/pt-BR/jumentix`
+- `/sitemap.xml`, `/robots.txt`
+
+Rollback: use a implantação de Production anterior no painel do projeto Vercel (Promote / Instant Rollback).
 
 ## Notas
 

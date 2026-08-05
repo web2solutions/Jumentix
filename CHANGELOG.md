@@ -5,6 +5,7 @@
 ## All Changes
 
 - 2026-08-03 docs(website): document Vercel deploy auth and GITHUB_TOKEN for JUM-397 - Eduardo A.
+- 2026-08-03 docs(website): document Vercel deploy auth and GITHUB_TOKEN for JUM-397 - Eduardo A.
 - 2026-08-03 chore(JUM-397): merge dev into Vercel deploy docs branch - Eduardo A.
 - 2026-08-03 docs(website): document Vercel deploy auth and GITHUB_TOKEN for JUM-397 - Eduardo A.
 - 2026-08-03 [JUM-504][CI] Restore CircleCI gates for dev and main (#63) - Eduardo A.
