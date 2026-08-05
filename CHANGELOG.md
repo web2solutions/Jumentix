@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-08-04 chore(release): reconcile main ancestry into dev - Eduardo A.
+- 2026-08-03 ci(JUM-504): backfill git blobs for SonarQube SCM blame - Eduardo A.
 - 2026-08-03 docs(website): document Vercel deploy auth and GITHUB_TOKEN for JUM-397 (#69) - Eduardo A.
 - 2026-08-03 [JUM-504][CI] Restore CircleCI gates for dev and main (#63) - Eduardo A.
 - 2026-08-03 chore(JUM-611): merge remote dev into Firestore registry cutover - Eduardo A.
@@ -14,6 +16,7 @@
 - 2026-08-03 [JUM-611][Governance] Replace GitHub-mirrored agent registry with Firestore Database - Eduardo A.
 - 2026-08-03 [JUM-417][CI] Sync agent-registry mirror (kimi-k3-cursor-001) (#64) - Eduardo A.
 - 2026-08-03 [JUM-419][CI] Sync the agent-registry mirror to canonical 271da346 - Eduardo A.
+- 2026-08-03 [JUM-417][Release] Promote dev to main: Cana engine matrix, Sonar fixes, temporary CircleCI bridge (#62) - Eduardo A.
 - 2026-08-03 [JUM-417][Release] Merge main history into dev for the promotion - Eduardo A.
 - 2026-08-03 [JUM-417][CI] Sonar new-code fixes + temporary CircleCI bridge (PR #52 leftovers) (#61) - Eduardo A.
 - 2026-08-03 [JUM-605][Refactor] Eliminate legacy Jumentix product naming confusion - Eduardo A.
