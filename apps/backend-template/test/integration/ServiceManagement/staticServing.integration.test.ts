@@ -103,17 +103,8 @@ describe('serviceManagement static serving (JUM-466/JUM-463)', () => {
     fs.writeFileSync(lateFilePath, 'late-added-content', 'utf8');
     try {
       const res = await requestRaw(server.port, 'GET', `/${lateFileName}`);
-      if (res.status === 404) {
-        // JUM-463 still pending against this branch: the manifest is built at
-        // boot, so late files are unreachable. Loud, not silent.
-        // eslint-disable-next-line no-console
-        console.warn(
-          '[JUM-466] JUM-463 pending: static manifest is built at boot; '
-          + 'a file added after boot is not yet reachable in dev.'
-        );
-        expect(res.status).toBe(404);
-        return;
-      }
+      // JUM-463 landed (PR #82): dev re-scans on miss, so the late file must
+      // be served with its exact content.
       expect(res.status).toBe(200);
       expect(res.rawBody).toBe('late-added-content');
     } finally {
