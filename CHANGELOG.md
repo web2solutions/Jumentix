@@ -5,11 +5,27 @@
 ## All Changes
 
 - 2026-08-05 fix(website): pin Bun 1.3.14 on Vercel install and build - Eduardo A.
-- 2026-08-04 docs(website): document Vercel deploy auth and GITHUB_TOKEN for JUM-397 - Eduardo A.
-- 2026-08-03 docs(website): document Vercel deploy auth and GITHUB_TOKEN for JUM-397 - Eduardo A.
-- 2026-08-03 docs(website): document Vercel deploy auth and GITHUB_TOKEN for JUM-397 - Eduardo A.
-- 2026-08-03 chore(JUM-397): merge dev into Vercel deploy docs branch - Eduardo A.
-- 2026-08-03 docs(website): document Vercel deploy auth and GITHUB_TOKEN for JUM-397 - Eduardo A.
+- 2026-08-05 chore(JUM-468): merge dev after H1 completion - Eduardo A.
+- 2026-08-05 [JUM-466][Test] Expand service-management integration smoke (#85) - Eduardo A.
+- 2026-08-05 refactor(JUM-468): extract state/persistence core behind IDesignerStore port - Eduardo A.
+- 2026-08-05 feat(JUM-460): expand env key allowlist to the full runtime matrix (#84) - Eduardo A.
+- 2026-08-05 fix(JUM-461): truthful key labels and canonical framework selector in service-management (#83) - Eduardo A.
+- 2026-08-05 fix(JUM-463): refresh static manifest on miss in dev, keep boot manifest in production (#82) - Eduardo A.
+- 2026-08-05 docs(JUM-464): document runtime-env contract and fixed env paths (EN/PT-BR) (#81) - Eduardo A.
+- 2026-08-05 fix(service-management): repair env path, honor environment parameter, and protect runtime-env API [JUM-458][JUM-558][JUM-459][JUM-462] (#65) - Eduardo A.
+- 2026-08-05 [JUM-465][Governance] Ownership registration and component requirement spec (#80) - Eduardo A.
+- 2026-08-05 docs(JUM-467): audit bilingual docs and repair links for service-management (#79) - Eduardo A.
+- 2026-08-05 [JUM-604][Governance] Support the Kimi agent with declarative agent support (#78) - Eduardo A.
+- 2026-08-05 test: isolate PR governance helpers - Eduardo A.
+- 2026-08-05 test: satisfy PR governance lint - Eduardo A.
+- 2026-08-05 chore(release): reconcile main ancestry after branch-gate fix - Eduardo A.
+- 2026-08-05 ci: skip PR metadata checks on branch builds - Eduardo A.
+- 2026-08-05 [JUM-504][Release] Promote CircleCI-backed dev snapshot to main - Eduardo A.
+- 2026-08-05 docs: fix CircleCI badge endpoints - Eduardo A.
+- 2026-08-05 docs: restore CircleCI and Codecov badges - Eduardo A.
+- 2026-08-04 chore(release): reconcile main ancestry into dev - Eduardo A.
+- 2026-08-03 ci(JUM-504): backfill git blobs for SonarQube SCM blame - Eduardo A.
+- 2026-08-03 docs(website): document Vercel deploy auth and GITHUB_TOKEN for JUM-397 (#69) - Eduardo A.
 - 2026-08-03 [JUM-504][CI] Restore CircleCI gates for dev and main (#63) - Eduardo A.
 - 2026-08-03 chore(JUM-611): merge remote dev into Firestore registry cutover - Eduardo A.
 - 2026-08-03 docs(JUM-611): deprecate GitHub-mirrored agent registry after Firestore cutover - Eduardo A.

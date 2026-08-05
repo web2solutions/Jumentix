@@ -643,6 +643,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/service-management/designerState.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/designerState.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/service-management/mvp.roadmap.features.test.ts",
       "path": "apps/backend-template/test/unit/service-management/mvp.roadmap.features.test.ts",
       "layer": "tooling",
@@ -655,6 +665,16 @@
     {
       "id": "apps/backend-template/test/unit/service-management/runtimeEnvUi.contract.test.ts",
       "path": "apps/backend-template/test/unit/service-management/runtimeEnvUi.contract.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/service-management/designerStore.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/designerStore.test.ts",
       "layer": "tooling",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -2776,9 +2796,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 141,
+    "unit": 143,
     "integration": 87,
     "smoke": 2,
-    "suites": 232
+    "suites": 234
   }
 }
