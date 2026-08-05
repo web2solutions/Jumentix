@@ -1,12 +1,12 @@
 # Jumentix - Software Factory for Product Teams
 
-[![Branch gate](https://github.com/XpertMinds/Jumentix/actions/workflows/test.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/test.yml?query=branch%3Adev)
-[![Repository coverage](https://github.com/XpertMinds/Jumentix/actions/workflows/coverage.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/coverage.yml?query=branch%3Adev)
-[![Third-party review](https://github.com/XpertMinds/Jumentix/actions/workflows/third-party-review.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/third-party-review.yml?query=branch%3Adev)
-[![Website quality](https://github.com/XpertMinds/Jumentix/actions/workflows/website.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/website.yml?query=branch%3Adev)
+[![CircleCI dev pipeline](https://img.shields.io/badge/CircleCI-dev%20pipeline-343434?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/XpertMinds/Jumentix?branch=dev)
+[![CircleCI main pipeline](https://img.shields.io/badge/CircleCI-main%20pipeline-343434?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/XpertMinds/Jumentix?branch=main)
+[![Codecov dev](https://codecov.io/gh/XpertMinds/Jumentix/branch/dev/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev)
+[![Codecov main](https://codecov.io/gh/XpertMinds/Jumentix/branch/main/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/main)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Jumentix)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=Jumentix)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Jumentix)
+[![Sonar Coverage](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Jumentix)
 [![Bun](https://img.shields.io/badge/bun-1.3.14-000000?logo=bun&logoColor=white)](https://bun.sh/)
 [![Node compat](https://img.shields.io/badge/node%20compat-22.x-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-6BA539?logo=openapiinitiative&logoColor=white)](./spec/1.0.0.yml)
@@ -31,27 +31,37 @@
 
 | Required gate | `main` | `dev` |
 | --- | :---: | :---: |
-| Branch-aware tests | [![main tests](https://github.com/XpertMinds/Jumentix/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/XpertMinds/Jumentix/actions/workflows/test.yml?query=branch%3Amain) | [![dev tests](https://github.com/XpertMinds/Jumentix/actions/workflows/test.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/test.yml?query=branch%3Adev) |
-| Project + patch coverage | [![main coverage](https://github.com/XpertMinds/Jumentix/actions/workflows/coverage.yml/badge.svg?branch=main)](https://github.com/XpertMinds/Jumentix/actions/workflows/coverage.yml?query=branch%3Amain) | [![dev coverage](https://github.com/XpertMinds/Jumentix/actions/workflows/coverage.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/coverage.yml?query=branch%3Adev) |
-| Third-party security review | [![main review](https://github.com/XpertMinds/Jumentix/actions/workflows/third-party-review.yml/badge.svg?branch=main)](https://github.com/XpertMinds/Jumentix/actions/workflows/third-party-review.yml?query=branch%3Amain) | [![dev review](https://github.com/XpertMinds/Jumentix/actions/workflows/third-party-review.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/third-party-review.yml?query=branch%3Adev) |
+| CircleCI workflow | [![main CircleCI pipeline](https://img.shields.io/badge/CircleCI-main%20pipeline-343434?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/XpertMinds/Jumentix?branch=main) | [![dev CircleCI pipeline](https://img.shields.io/badge/CircleCI-dev%20pipeline-343434?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/XpertMinds/Jumentix?branch=dev) |
+| Codecov project coverage | [![main Codecov](https://codecov.io/gh/XpertMinds/Jumentix/branch/main/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/main) | [![dev Codecov](https://codecov.io/gh/XpertMinds/Jumentix/branch/dev/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev) |
+| Branch-aware tests | `branch-gate` | `branch-gate` |
+| Project + patch coverage | `coverage` | `coverage` |
+| Third-party security review | `third-party-review` | `third-party-review` |
 
-Coverage is produced and enforced inside the repository—no Codecov account or
-token is required. Every run retains Istanbul JSON and LCOV evidence. The hard
-minimums are:
+Coverage is produced and enforced by the CircleCI `coverage` job for both
+`dev` and `main`. CircleCI also uploads LCOV to Codecov under the `project`
+flag when `CODECOV_TOKEN` is configured. Codecov provides the file-by-file
+coverage map for each long-lived branch:
+
+- [Codecov file map for `dev`](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev)
+- [Codecov file map for `main`](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/main)
+
+The hard gate remains the repository-owned coverage check. Every run retains
+Istanbul JSON and LCOV evidence. The hard minimums are:
 
 | Statements | Lines | Functions | Branches | Changed lines |
 | :---: | :---: | :---: | :---: | :---: |
 | ≥ 99% | ≥ 99% | ≥ 99% | ≥ 90% | ≥ 99% |
 
-[Open coverage runs and downloadable evidence](https://github.com/XpertMinds/Jumentix/actions/workflows/coverage.yml)
+[Open CircleCI pipelines and downloadable evidence](https://app.circleci.com/pipelines/github/XpertMinds/Jumentix)
 
 Jumentix is a monorepo product that works as a software factory for engineering teams and product owners. It helps you go from idea to production-ready SaaS in days, not months, with a contract-first architecture, runtime flexibility, and enterprise-grade governance.
 
 > **Canonical private repository:** `XpertMinds/Jumentix`.
 > `web2solutions/aaa-typescript-boilerplate` is deprecated, read-only, and
-> accepts no new modifications. Agent coordination is canonical in the private
-> `XpertMinds/jumentix-agent-registry`; the former `web2solutions` registry is
-> also deprecated and read-only. See Requirements `103` and `104`.
+> accepts no new modifications. Agent coordination is canonical in Firestore
+> Database (Requirement `089`); the former `XpertMinds/jumentix-agent-registry`
+> and `web2solutions` registries are deprecated and read-only. See Requirements
+> `089`, `103` and `104`.
 
 ## Index
 

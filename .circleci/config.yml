@@ -1,221 +1,270 @@
 version: 2.1
 
-# x-jumentix-temporary-bridge: github-actions-billing-2026-08
-#
-# Temporary bridge, per Requirement 113's bridge amendment (owner decision,
-# 2026-08-03). The GitHub Actions included allowance for this private
-# repository is exhausted — new job starts are rejected with "recent account
-# payments have failed or your spending limit needs to be increased" — and
-# Requirement 113 §3 makes GitHub Actions canonical only *while that allowance
-# is available*. It is not, so CircleCI runs the repository-owned gates until
-# it is restored. This file must be deleted, together with the bridge section
-# in Requirement 113, when the allowance returns.
-#
-# The repository-owned workflows under .github/workflows/ remain authoritative
-# for WHAT the gate is; this file mirrors them job for job and changes no
-# threshold, check, or review requirement. The previous permanent CircleCI
-# pipeline was retired in ac9c4a9 and its structure is reused where the gate
-# has not changed since.
-
 commands:
+  install_bun:
+    steps:
+      - run:
+          name: Install Bun 1.3.14
+          command: |
+            set -euo pipefail
+            if ! command -v curl >/dev/null 2>&1; then
+              apt-get update
+              apt-get install -y --no-install-recommends curl ca-certificates
+            fi
+            curl -fsSL https://bun.sh/install | BUN_VERSION=1.3.14 bash
+            {
+              echo 'export BUN_INSTALL="$HOME/.bun"'
+              echo 'export PATH="$BUN_INSTALL/bin:$PATH"'
+            } >> "$BASH_ENV"
+            source "$BASH_ENV"
+            bun --version
+
   bootstrap:
-    description: Assert the pinned toolchain, then install from the frozen lockfile.
     steps:
       - checkout
+      - run:
+          name: Fetch branch references
+          command: git fetch --prune origin "+refs/heads/*:refs/remotes/origin/*"
       - restore_cache:
           keys:
-            - bun-deps-v3-{{ .Branch }}-{{ checksum "bun.lock" }}
-            - bun-deps-v3-{{ .Branch }}-
-            - bun-deps-v3-
+            - bun-deps-v5-{{ .Branch }}-{{ checksum "bun.lock" }}
+            - bun-deps-v5-{{ .Branch }}-
+            - bun-deps-v5-
+      - install_bun
       - run:
           name: Assert the pinned Bun toolchain
           command: bun ci-cd/check-bun-version.js
       - run:
-          name: Install dependencies
-          # Frozen. The pre-Bun pipeline used --no-frozen-lockfile, which let CI
-          # resolve versions the lockfile never recorded (Requirement 096 §2).
+          name: Install frozen dependencies
           command: bun install --frozen-lockfile
+      - run:
+          name: Assert the Node.js 22 compatibility contract
+          command: bun run compat:check-node-version
       - save_cache:
-          key: bun-deps-v3-{{ .Branch }}-{{ checksum "bun.lock" }}
+          key: bun-deps-v5-{{ .Branch }}-{{ checksum "bun.lock" }}
           paths:
-            - node_modules
             - ~/.bun/install/cache
+            - ~/.cache/Cypress
+            - ~/.cache/ms-playwright
+            - node_modules
 
-  install_bun:
-    description: >
-      Install the pinned Bun toolchain into a non-Bun image (the browsers
-      image ships Node, not Bun). Exact version, from the same .bun-version
-      the toolchain guard then asserts.
-    steps:
-      - run:
-          name: Install Bun 1.3.14
-          command: npm install --global bun@1.3.14
-
-  require_env:
-    description: >
-      Fail closed when a required variable is absent. A step that skips itself
-      and reports success is the false green Requirement 065 forbids.
+  wait_tcp:
     parameters:
-      names:
-        type: string
+      port:
+        type: integer
     steps:
       - run:
-          name: Verify required environment
+          name: Wait for TCP port << parameters.port >>
           command: |
-            missing=""
-            for name in << parameters.names >>; do
-              eval "value=\${$name:-}"
-              if [ -z "$value" ]; then missing="$missing $name"; fi
-            done
-            if [ -n "$missing" ]; then
-              echo "Missing required CircleCI environment variable(s):$missing" >&2
-              echo "Set them in Project Settings > Environment Variables." >&2
-              exit 1
-            fi
-
-  wait_for_services:
-    description: >
-      Fail closed unless Redis and RabbitMQ accept connections. Bun rather
-      than dockerize: downloading a tarball from a GitHub release on every run
-      lets an unrelated third-party outage fail this pipeline.
-    steps:
-      - run:
-          name: Wait for Redis and RabbitMQ
-          command: |
-            for attempt in $(seq 1 90); do
-              if bun -e "
-                const probe = async (port) => {
-                  const socket = await Bun.connect({
-                    hostname: '127.0.0.1', port,
-                    socket: { data() {}, error() {} }
-                  }).catch(() => null);
-                  if (!socket) return false;
-                  socket.end();
-                  return true;
-                };
-                if (!(await probe(6379)) || !(await probe(5672))) process.exit(1);
-              " 2>/dev/null; then
-                echo 'Redis and RabbitMQ are accepting connections.'
-                exit 0
-              fi
-              sleep 1
-            done
-            echo 'Services did not accept connections within 90s.' >&2
-            exit 1
+            node -e '
+            const net = require("node:net");
+            const port = Number(process.env.WAIT_PORT);
+            const deadline = Date.now() + 90_000;
+            function attempt() {
+              const socket = net.connect({ host: "127.0.0.1", port }, () => {
+                socket.end();
+                process.exit(0);
+              });
+              socket.on("error", () => {
+                if (Date.now() > deadline) process.exit(1);
+                setTimeout(attempt, 1_000);
+              });
+            }
+            attempt();
+            '
+          environment:
+            WAIT_PORT: << parameters.port >>
 
 jobs:
-  # Mirrors .github/workflows/test.yml (the `build` check).
-  quality-gate:
+  branch-gate:
     docker:
-      # Official Bun image at the pinned version (Requirement 096 §1).
-      - image: oven/bun:1.3.14
+      - image: cypress/browsers:node-22.21.0-chrome-141.0.7390.107-1-ff-144.0-edge-141.0.3537.92-1
       - image: redis:7.2-alpine
-        # No `--requirepass`, and no password anywhere in this file. The
-        # container lives for one job and is reachable only from it, so the
-        # password protected nothing — while being a real credential-shaped
-        # string in a tracked file. `.env.dev` sets `AAA_REDIS_PASSWORD=`
-        # empty, and `RedisKeyValueStorageClient` passes `undefined` when it
-        # is unset: this matches how the suites actually connect.
       - image: rabbitmq:3.13-alpine
-    environment:
-      # A fixture with no security role: the JWT signing key for a throwaway
-      # in-memory user store, overridable from the project environment.
-      AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
+    resource_class: large
     steps:
       - bootstrap
-      - wait_for_services
+      - wait_tcp:
+          port: 6379
+      - wait_tcp:
+          port: 5672
       - run:
-          name: Run the branch-aware quality gate
-          # Private agent-registry (Requirement 089): the project must expose
-          # AGENT_REGISTRY_TOKEN, GH_TOKEN or GITHUB_TOKEN with contents:read on
-          # XpertMinds/jumentix-agent-registry. Default tokens cannot read it.
+          name: Run canonical branch quality gate
+          no_output_timeout: 30m
           command: |
+            export FIREBASE_SERVICE_ACCOUNT_KEY="${FIREBASE_SERVICE_ACCOUNT_KEY:-}"
             export GH_TOKEN="${GH_TOKEN:-${GITHUB_TOKEN:-${AGENT_REGISTRY_TOKEN:-}}}"
-            mkdir -p artifacts/ci
-            JUMENTIX_QUALITY_GATE_TARGET="${CIRCLE_BRANCH:-dev}" \
-            JUMENTIX_TASK_TEST_MODE=range \
-            JUMENTIX_TASK_TEST_BASE=origin/dev \
-            AAA_PR_HEAD_REF="${CIRCLE_BRANCH:-}" \
-            AAA_CI_GATE_RESULT_FILE=artifacts/ci/branch-quality-gate.json \
-            AAA_CI_MATRIX_RESULT_FILE=artifacts/ci/full-test-matrix.json \
-              bun run ci:gate:branch
+            if [ -n "${CIRCLE_PULL_REQUEST:-}" ]; then
+              export JUMENTIX_QUALITY_GATE_TARGET="${CIRCLE_PR_BASE_BRANCH:-dev}"
+              export AAA_CI_IS_PULL_REQUEST=1
+              if [ -z "${GH_TOKEN:-}" ]; then
+                echo "GH_TOKEN, GITHUB_TOKEN, or AGENT_REGISTRY_TOKEN is required to load private PR metadata for branch-gate."
+                exit 1
+              fi
+              PR_NUMBER="${CIRCLE_PULL_REQUEST##*/}"
+              PR_API_URL="https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME:-XpertMinds}/${CIRCLE_PROJECT_REPONAME:-Jumentix}/pulls/${PR_NUMBER}"
+              PR_JSON_FILE="$(mktemp)"
+              curl -fsSL \
+                -H "Accept: application/vnd.github+json" \
+                -H "Authorization: Bearer ${GH_TOKEN}" \
+                -H "X-GitHub-Api-Version: 2022-11-28" \
+                -o "$PR_JSON_FILE" \
+                "$PR_API_URL"
+              PR_JSON_FILE="$PR_JSON_FILE" node -e '
+            const fs = require("fs");
+            const pullRequest = JSON.parse(fs.readFileSync(process.env.PR_JSON_FILE, "utf8"));
+            const shellQuote = (value) => `"${String(value ?? "").replace(/(["\\$`])/g, "\\$1")}"`;
+            const headRef = pullRequest.head?.ref || process.env.CIRCLE_BRANCH;
+            const baseRef = pullRequest.base?.ref || process.env.CIRCLE_PR_BASE_BRANCH || "dev";
+            const values = {
+              JUMENTIX_PR_TITLE: pullRequest.title,
+              JUMENTIX_PR_BODY: pullRequest.body,
+              JUMENTIX_PR_HEAD_REF: headRef,
+              JUMENTIX_PR_BASE_REF: baseRef,
+              AAA_PR_TITLE: pullRequest.title,
+              AAA_PR_BODY: pullRequest.body,
+              AAA_PR_HEAD_REF: headRef,
+              AAA_PR_BASE_REF: baseRef
+            };
+            for (const [key, value] of Object.entries(values)) {
+              console.log(`export ${key}=${shellQuote(value)}`);
+            }
+            ' > /tmp/jumentix-pr-env.sh
+              . /tmp/jumentix-pr-env.sh
+            else
+              export JUMENTIX_QUALITY_GATE_TARGET="${CIRCLE_BRANCH:-dev}"
+              export AAA_CI_IS_PULL_REQUEST=0
+            fi
+            export JUMENTIX_PR_HEAD_REF="${JUMENTIX_PR_HEAD_REF:-${CIRCLE_BRANCH:-}}"
+            export JUMENTIX_PR_BASE_REF="${JUMENTIX_PR_BASE_REF:-${CIRCLE_PR_BASE_BRANCH:-}}"
+            export AAA_PR_HEAD_REF="${AAA_PR_HEAD_REF:-${JUMENTIX_PR_HEAD_REF:-}}"
+            export AAA_PR_BASE_REF="${AAA_PR_BASE_REF:-${JUMENTIX_PR_BASE_REF:-}}"
+            bun run ci:gate:branch
+          environment:
+            AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
+            JUMENTIX_TASK_TEST_MODE: range
+            JUMENTIX_TASK_TEST_BASE: origin/dev
+            JUMENTIX_CI_GATE_RESULT_FILE: artifacts/ci/branch-quality-gate.json
+            JUMENTIX_CI_MATRIX_RESULT_FILE: artifacts/ci/full-test-matrix.json
+            JUMENTIX_FULL_MATRIX_SKIP_CELLS: workspace-builds,workspace-tests,website-prepublish,integration
       - store_artifacts:
-          path: artifacts/ci/branch-quality-gate.json
-          destination: branch-quality-gate.json
-      - store_artifacts:
-          path: artifacts/ci/full-test-matrix.json
-          destination: full-test-matrix.json
+          path: artifacts/ci
+          destination: branch-gate
 
-  # Mirrors .github/workflows/coverage.yml, including the engine-union gate.
-  # CircleCI bills per job, not per parallel container, so the matrix runs
-  # sequentially in one job: Jest against real services, then the Cana browser
-  # suite on all three engines, unioned before any threshold is read.
+  workspace-builds:
+    docker:
+      - image: cimg/node:22.23-browsers
+    resource_class: large
+    steps:
+      - bootstrap
+      - run:
+          name: Run workspace package builds
+          no_output_timeout: 30m
+          command: bun run mono:build
+
+  workspace-tests:
+    docker:
+      - image: cypress/browsers:node-22.21.0-chrome-141.0.7390.107-1-ff-144.0-edge-141.0.3537.92-1
+    resource_class: large
+    steps:
+      - bootstrap
+      - run:
+          name: Run workspace package tests
+          no_output_timeout: 30m
+          command: bun run mono:test
+      - store_artifacts:
+          path: artifacts/ci
+          destination: workspace-tests
+
+  integration:
+    docker:
+      - image: cypress/browsers:node-22.21.0-chrome-141.0.7390.107-1-ff-144.0-edge-141.0.3537.92-1
+      - image: redis:7.2-alpine
+      - image: rabbitmq:3.13-alpine
+    resource_class: large
+    steps:
+      - bootstrap
+      - wait_tcp:
+          port: 6379
+      - wait_tcp:
+          port: 5672
+      - run:
+          name: Run integration matrix
+          no_output_timeout: 30m
+          command: bun run ci:integration
+          environment:
+            AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
+
   coverage:
     docker:
-      # The browsers image carries Chrome and Firefox; WebKit arrives with the
-      # playwright-webkit dev dependency and its system packages below.
-      - image: cimg/node:22.21.0-browsers
+      - image: cypress/browsers:node-22.21.0-chrome-141.0.7390.107-1-ff-144.0-edge-141.0.3537.92-1
       - image: redis:7.2-alpine
       - image: rabbitmq:3.13-alpine
-    environment:
-      AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
-      RUN_REDIS_INTEGRATION: "1"
-      RUN_BROKER_INTEGRATION: "1"
-      AAA_REDIS_HOST: 127.0.0.1
-      AAA_REDIS_PORT: "6379"
-      AAA_BULLMQ_REDIS_HOST: 127.0.0.1
-      AAA_BULLMQ_REDIS_PORT: "6379"
-      AAA_RABBITMQ_URL: amqp://127.0.0.1:5672
+    resource_class: large
     steps:
-      - checkout
-      - install_bun
       - bootstrap
-      - wait_for_services
+      - wait_tcp:
+          port: 6379
+      - wait_tcp:
+          port: 5672
       - run:
-          name: Produce Jest coverage (unit + real Redis/broker integration)
-          command: bun run test:coverage
-      - run:
-          name: Produce browser coverage (chrome), preserve it
+          name: Produce Jest coverage
           command: |
-            bun ci-cd/run-browser-tests.js --browser chrome
-            bun ci-cd/write-browser-lcov.js
-            cp -r coverage/browser coverage/browser-chrome
+            bun run test:coverage
+            mkdir -p coverage/jest
+            cp coverage/coverage-final.json coverage/jest/coverage-final.json
+          environment:
+            AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
+            RUN_REDIS_INTEGRATION: "1"
+            RUN_BROKER_INTEGRATION: "1"
+            AAA_REDIS_HOST: 127.0.0.1
+            AAA_REDIS_PORT: "6379"
+            AAA_BULLMQ_REDIS_HOST: 127.0.0.1
+            AAA_BULLMQ_REDIS_PORT: "6379"
+            AAA_RABBITMQ_URL: amqp://127.0.0.1:5672
       - run:
-          name: Install WebKit system dependencies
-          command: sudo env "PATH=$PATH" bunx playwright install-deps webkit
-      - run:
-          name: Produce browser coverage (firefox, webkit), preserve each
+          name: Produce browser coverage for every supported engine
           command: |
-            bun ci-cd/run-browser-tests.js --browser firefox
-            bun ci-cd/write-browser-lcov.js
-            cp -r coverage/browser coverage/browser-firefox
-            bun ci-cd/run-browser-tests.js --browser webkit
-            bun ci-cd/write-browser-lcov.js
-            cp -r coverage/browser coverage/browser-webkit
+            set -euo pipefail
+            bun x cypress install
+            bun x cypress verify
+            for engine in chrome firefox webkit; do
+              if [ "$engine" = webkit ]; then
+                bun x playwright install webkit
+                bun x playwright install-deps webkit
+              fi
+              bun ci-cd/run-browser-tests.js --browser "$engine"
+              bun ci-cd/write-browser-lcov.js
+              mkdir -p "coverage/browser-$engine"
+              cp coverage/browser/coverage-final.json "coverage/browser-$engine/coverage-final.json"
+              cp coverage/browser/lcov.info "coverage/browser-$engine/lcov.info"
+            done
       - run:
-          name: Union every engine's browser report
-          command: bun ci-cd/merge-browser-coverage.js --from-dir coverage
-      - run:
-          # The authority on all four metrics, branches included
-          # (Requirement 110), grading the same union Sonar does.
-          name: Enforce all coverage metrics at 99/90/99/99
-          command: bun run coverage:check
+          name: Union browser engines and enforce thresholds
+          command: |
+            bun ci-cd/merge-browser-coverage.js --from-dir coverage
+            bun run coverage:check
       - run:
           name: Enforce patch coverage
           command: |
-            bun run coverage:merge
-            bun run coverage:patch
+            if [ -n "${CIRCLE_PULL_REQUEST:-}" ]; then
+              bun run coverage:merge
+              bun run coverage:patch
+            else
+              echo "Patch coverage is PR-only; project coverage already passed."
+            fi
+      - persist_to_workspace:
+          root: .
+          paths:
+            - coverage
       - store_artifacts:
           path: coverage
           destination: coverage
-      - store_artifacts:
-          path: artifacts/ci/browser-matrix.json
-          destination: browser-matrix.json
 
-  # Mirrors .github/workflows/website.yml.
   website:
     docker:
-      - image: oven/bun:1.3.14
+      - image: cimg/node:22.23-browsers
+    resource_class: large
     steps:
       - bootstrap
       - run:
@@ -227,91 +276,153 @@ jobs:
       - run:
           name: Validate publishable website content
           command: bun run website:test:prepublish
+      - run:
+          name: Install Cypress binary
+          command: bun x cypress install
+      - run:
+          name: Cypress website quality gates (JUM-396)
+          command: bun run website:test:cypress
+          environment:
+            JUMENTIX_WEBSITE_CYPRESS_SKIP_BUILD: "1"
+            # cimg browsers often expose Electron to Cypress more reliably than
+            # the "chrome" binary name; GHA keeps chrome.
+            JUMENTIX_WEBSITE_CYPRESS_BROWSER: electron
 
-  # Mirrors .github/workflows/sonarqube-cloud.yml: same Jest + browser union,
-  # then the scanner. Sonar stays defense-in-depth (Requirement 113 §7).
-  sonarqube:
+  third-party-review:
     docker:
-      - image: cimg/node:22.21.0-browsers
-      - image: redis:7.2-alpine
-      - image: rabbitmq:3.13-alpine
-    environment:
-      AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
-      RUN_REDIS_INTEGRATION: "1"
-      RUN_BROKER_INTEGRATION: "1"
-      AAA_REDIS_HOST: 127.0.0.1
-      AAA_REDIS_PORT: "6379"
-      AAA_BULLMQ_REDIS_HOST: 127.0.0.1
-      AAA_BULLMQ_REDIS_PORT: "6379"
-      AAA_RABBITMQ_URL: amqp://127.0.0.1:5672
+      - image: cimg/node:22.23-browsers
+    resource_class: large
     steps:
       - checkout
-      - install_bun
-      - bootstrap
-      - wait_for_services
-      - require_env:
-          names: SONAR_TOKEN
       - run:
-          name: Produce Jest coverage (unit + real Redis/broker integration)
-          command: bun run test:coverage
-      - run:
-          name: Produce browser coverage (chrome), preserve it
+          name: Fetch branch references
           command: |
-            bun ci-cd/run-browser-tests.js --browser chrome
-            bun ci-cd/write-browser-lcov.js
-            cp -r coverage/browser coverage/browser-chrome
+            git fetch --no-tags origin \
+              "+refs/heads/main:refs/remotes/origin/main" \
+              "+refs/heads/dev:refs/remotes/origin/dev"
       - run:
-          name: Install WebKit system dependencies
-          command: sudo env "PATH=$PATH" bunx playwright install-deps webkit
-      - run:
-          name: Produce browser coverage (firefox, webkit), preserve each
+          name: Install pinned review tools
           command: |
-            bun ci-cd/run-browser-tests.js --browser firefox
-            bun ci-cd/write-browser-lcov.js
-            cp -r coverage/browser coverage/browser-firefox
-            bun ci-cd/run-browser-tests.js --browser webkit
-            bun ci-cd/write-browser-lcov.js
-            cp -r coverage/browser coverage/browser-webkit
-      - run:
-          name: Union every engine's browser report
-          command: bun ci-cd/merge-browser-coverage.js --from-dir coverage
-      - run:
-          name: Enforce coverage thresholds
-          command: bun run coverage:check
-      - run:
-          name: SonarQube Cloud scan
-          # The scanner is a Java CLI. Fetched here rather than through an orb
-          # so the version is visible in this file instead of behind an orb tag.
-          command: |
+            python_version="$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')"
             sudo apt-get update
-            sudo apt-get install -y --no-install-recommends unzip curl default-jre-headless
-            SCANNER_VERSION=6.2.1.4610
-            curl -sSLo /tmp/scanner.zip \
-              "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SCANNER_VERSION}-linux-x64.zip"
-            sudo unzip -q /tmp/scanner.zip -d /opt
-            export PATH="/opt/sonar-scanner-${SCANNER_VERSION}-linux-x64/bin:$PATH"
-            sonar-scanner -Dsonar.token="${SONAR_TOKEN}"
+            sudo apt-get install -y "python${python_version}-venv"
+            ci-cd/install-pinned-review-tools.sh "$HOME/review-tools"
       - run:
-          # A failed quality gate otherwise reports two letters and a link
-          # that needs a SonarCloud session. Advisory: the gate blocks, this
-          # explains.
+          name: Scan Git history for secrets
+          command: |
+            set +e
+            BASE_REF="${CIRCLE_PR_BASE_BRANCH:-dev}"
+            "$HOME/review-tools/gitleaks" git . \
+              --log-opts="origin/${BASE_REF}..HEAD" \
+              --redact --report-format sarif --report-path gitleaks.sarif
+            echo "$?" > gitleaks.exit
+      - run:
+          name: Run repository-owned Semgrep policy
+          command: |
+            set +e
+            BASE_REF="${CIRCLE_PR_BASE_BRANCH:-dev}"
+            "$HOME/review-tools/semgrep" scan --config .semgrep.yml --baseline-commit "origin/${BASE_REF}" \
+              --sarif --output semgrep.sarif
+            echo "$?" > semgrep.exit
+      - store_artifacts:
+          path: gitleaks.sarif
+          destination: third-party-review/gitleaks.sarif
+      - store_artifacts:
+          path: semgrep.sarif
+          destination: third-party-review/semgrep.sarif
+      - run:
+          name: Enforce scanner outcomes
+          command: |
+            test "$(cat gitleaks.exit)" = "0"
+            test "$(cat semgrep.exit)" = "0"
+
+  sonarqube:
+    docker:
+      - image: cimg/node:22.23-browsers
+    resource_class: large
+    steps:
+      - bootstrap
+      - attach_workspace:
+          at: .
+      - run:
+          name: Backfill git objects for Sonar SCM blame
+          # CircleCI checkout is a blobless partial clone; JGit blame reads the
+          # local object store directly and dies on missing blobs. Drop the
+          # partial-clone filter and refetch so every blob exists locally.
+          command: |
+            set -euo pipefail
+            git config --unset remote.origin.promisor || true
+            git config --unset remote.origin.partialclonefilter || true
+            git config --unset extensions.partialclone || true
+            git fetch --refetch --prune origin "+refs/heads/*:refs/remotes/origin/*"
+      - run:
+          name: Verify Sonar token
+          command: |
+            SONAR_TARGET_BRANCH="${CIRCLE_PR_BASE_BRANCH:-${CIRCLE_BRANCH:-}}"
+            if [ "$SONAR_TARGET_BRANCH" != "main" ] && [ "$SONAR_TARGET_BRANCH" != "dev" ]; then
+              echo "Skipping Sonar for ${SONAR_TARGET_BRANCH:-unknown}; Sonar runs for PRs or pushes targeting dev/main."
+              circleci-agent step halt
+            fi
+            test -n "${SONAR_TOKEN:-}"
+      - run:
+          name: Install Sonar scanner
+          command: |
+            set -euo pipefail
+            curl -fsSL -o /tmp/sonar-scanner.zip \
+              https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-7.1.0.4889-linux-x64.zip
+            unzip -q /tmp/sonar-scanner.zip -d /tmp
+            echo 'export PATH="/tmp/sonar-scanner-7.1.0.4889-linux-x64/bin:$PATH"' >> "$BASH_ENV"
+      - run:
+          name: SonarQube Cloud Scan
+          command: |
+            source "$BASH_ENV"
+            sonar-scanner
+      - run:
           name: Report Sonar findings
-          when: always
           command: bun ci-cd/report-sonar-findings.js
+
+  codecov:
+    docker:
+      - image: cimg/node:22.23-browsers
+    resource_class: medium
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Verify Codecov token
+          command: test -n "${CODECOV_TOKEN:-}"
+      - run:
+          name: Install verified Codecov CLI
+          command: |
+            set -euo pipefail
+            curl -Os https://cli.codecov.io/latest/linux/codecov
+            curl -Os https://cli.codecov.io/latest/linux/codecov.SHA256SUM
+            shasum -a 256 -c codecov.SHA256SUM
+            chmod +x codecov
+      - run:
+          name: Upload coverage to Codecov
+          command: |
+            ./codecov --verbose upload-process --disable-search --fail-on-error \
+              -t "$CODECOV_TOKEN" \
+              -n "jumentix-${CIRCLE_WORKFLOW_ID}" \
+              -F project \
+              -f coverage/lcov.info \
+              -f coverage/browser/lcov.info
 
 workflows:
   continuous-integration:
     jobs:
-      # No branch filter: a branch with no signal is where defects get
-      # expensive (the retired configuration ran only on dev and main).
-      - quality-gate
+      - branch-gate
+      - workspace-builds
+      - workspace-tests
+      - integration
       - coverage
       - website
+      - third-party-review
+      - codecov:
+          requires:
+            - coverage
       - sonarqube:
-          # Analysis is only actionable against the long-lived branches and
-          # the scan is billed per run, so this one stays filtered.
-          filters:
-            branches:
-              only:
-                - dev
-                - main
+          requires:
+            - coverage

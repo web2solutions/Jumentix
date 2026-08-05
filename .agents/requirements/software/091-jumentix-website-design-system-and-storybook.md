@@ -69,5 +69,5 @@ code-first explanations, and future growth without page-level UI duplication.
 - Linear CI task `JUM-504`
 - `apps/jumentix-website/components/design-system`
 - `apps/jumentix-website/.storybook`
-- `.github/workflows/website.yml`
+- `.circleci/config.yml`
 - `apps/jumentix-website/documentation/DESIGN-SYSTEM-AND-STORYBOOK.md`

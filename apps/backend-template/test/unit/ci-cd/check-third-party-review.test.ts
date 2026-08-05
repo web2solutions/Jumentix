@@ -7,7 +7,7 @@ import path from 'node:path';
 const repoRoot = path.resolve(__dirname, '../../../../..');
 const checker = path.join(repoRoot, 'ci-cd/check-third-party-review.js');
 const contracts = [
-  '.github/workflows/third-party-review.yml',
+  '.circleci/config.yml',
   'ci-cd/install-pinned-review-tools.sh',
   '.semgrep.yml'
 ];
@@ -46,17 +46,17 @@ describe('third-party review contract', () => {
 
     const result = run(repoRoot);
     expect(result.code).toBe(0);
-    expect(result.output).toContain('Gitleaks, Semgrep, and Reviewdog');
+    expect(result.output).toContain('Gitleaks and native Semgrep');
   });
 
-  it('fails when PR review permission is removed', () => {
+  it('fails when remote Docker workspace mounts are introduced', () => {
     expect.hasAssertions();
 
     const root = fixture((directory) => {
       const file = path.join(directory, contracts[0]);
-      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('pull-requests: write', 'pull-requests: read'));
+      fs.appendFileSync(file, '\n# setup_remote_docker\n# docker run -v "$PWD:/src"\n');
     });
-    expect(run(root).output).toContain('pull-requests: write');
+    expect(run(root).output).toContain('without remote Docker workspace mounts');
   });
 
   it('fails when an action uses a mutable version tag', () => {
@@ -74,9 +74,9 @@ describe('third-party review contract', () => {
 
     const root = fixture((directory) => {
       const file = path.join(directory, contracts[1]);
-      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('sha256sum --check --status', 'true'));
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('checksum mismatch', 'checksum skipped'));
     });
-    expect(run(root).output).toContain('sha256sum --check --status');
+    expect(run(root).output).toContain('checksum mismatch');
   });
 
   it('fails when terminal scanner enforcement is removed', () => {

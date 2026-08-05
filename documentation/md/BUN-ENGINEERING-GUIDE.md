@@ -66,7 +66,7 @@ is strictly stronger: a flat override applies to every dependent rather than one
 | Purpose | Command |
 | --- | --- |
 | Repository script | `bun run <script>` |
-| Package binary | `bunx <binary>` |
+| Package binary | `bun x <binary>` |
 | All workspaces | `bun run --filter '*' <script>` |
 | One workspace | `bun run --filter @jumentix/website <script>` |
 
@@ -178,9 +178,9 @@ parent's `package.json` has no effect on resolution — verified.
 
 The workflow installs with `--frozen-lockfile` and asserts the toolchain guard before anything else.
 
-The private agent registry (`XpertMinds/jumentix-agent-registry`) needs a `contents:read` token.
-GitHub Actions inject `GH_TOKEN: secrets.AGENT_REGISTRY_TOKEN`. Locally, `gh auth login` is enough;
-the check falls back to `gh auth token`.
+The agent registry runs on Firestore. GitHub Actions inject `FIREBASE_SERVICE_ACCOUNT_KEY`
+with the service account JSON. Locally, export `FIREBASE_SERVICE_ACCOUNT_KEY` with the same
+JSON before running registry commands.
 
 ## 9. Development runtime (PM2)
 

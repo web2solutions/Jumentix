@@ -8,21 +8,23 @@ A missing, skipped, cancelled, timed-out, or failed required check is never gree
 
 | Concern | Required free contract | Role |
 | --- | --- | --- |
-| CI | GitHub Actions workflows tracked in this repository | Canonical hosted executor for PRs to `dev`, promotions to `main`, and both protected branches |
-| Coverage | repository-owned coverage workflow, JSON/LCOV artifacts, project and patch thresholds | Canonical coverage authority; no provider account or token |
+| CI | CircleCI canonical workflow tracked in this repository | Canonical hosted executor for PRs to `dev`, promotions to `main`, and both protected branches while GitHub Actions billing blocks hosted execution |
+| Coverage | repository-owned CircleCI coverage job, JSON/LCOV artifacts, project and patch thresholds | Canonical coverage authority; Codecov publishing is visibility only |
+| Codecov publishing | Codecov CLI upload from CircleCI with `CODECOV_TOKEN` | Coverage dashboard mirror after repository-owned thresholds pass |
 | Quality | Branch-aware Bun quality gate and Storybook build/smoke/prepublish | Required product and governance validation |
 | SAST/quality | SonarQube Cloud | Defense in depth while its free private-project entitlement remains available |
 | Dependencies | Repository-owned OSV.dev scanner plus Dependabot | Fail-closed vulnerability detection and update proposals |
-| Secrets | Pinned OSS scanner executed by GitHub Actions | Repository-owned replacement for paid PR secret checks |
-| PR findings | Reviewdog reporters fed by pinned OSS scanners | Third-party inline review without granting a hosted vendor the source |
+| Secrets | Pinned OSS scanner executed by CircleCI | Repository-owned replacement for paid PR secret checks |
+| PR findings | SARIF artifacts from pinned OSS scanners | Third-party review evidence without granting a hosted reviewer authority |
 | Deployment | Reproducible website build and documented manual deployment | Free fallback when private organization Git binding is unavailable |
 
-## Retired or optional services (2026-08-01)
+## Retired or optional services (2026-08-03)
 
-- **CircleCI retired:** its duplicate pipeline and webhook are no longer an
-  authority. GitHub Actions and the same local Bun commands own the gates.
-- **Codecov retired:** private project/patch checks require a paid plan. The
-  repository now calculates and publishes both metrics itself.
+- **GitHub Actions billing blocked:** hosted Actions workflows are disabled in
+  this repository until billing allows execution again. CircleCI and the same
+  local Bun commands own the gates.
+- **Codecov publishing restored:** CircleCI uploads LCOV through Codecov CLI
+  after repository-owned coverage passes. Codecov is not the threshold authority.
 - **GitGuardian retired:** organization-private PR checks require a paid plan.
   A pinned OSS secret scanner owns this gate.
 - Cursor Bugbot is optional because quota exhaustion makes it non-terminal; it
@@ -36,36 +38,33 @@ A missing, skipped, cancelled, timed-out, or failed required check is never gree
 
 ## Third-party PR review implementation
 
-The required `third-party-review` check runs Gitleaks `8.30.1`, Semgrep
-`1.172.0`, and Reviewdog `0.21.0`. Release archives are checksum-verified,
-the Semgrep image is pinned by OCI digest, and the policy lives in
-`.semgrep.yml`. Reviewdog publishes SARIF findings as GitHub PR reviews; scanner
-exit states are enforced separately so publishing a comment cannot mask a
-failed scan. Source code stays inside the GitHub runner.
+The required `third-party-review` check runs Gitleaks `8.30.1` and Semgrep
+`1.172.0`. Release archives are checksum-verified, Semgrep is installed into a
+pinned job-local virtualenv, and the policy lives in `.semgrep.yml`. CircleCI retains SARIF
+artifacts; scanner exit states are enforced so publishing evidence cannot mask a
+failed scan.
 
 ## Fail-closed rules
 
-1. Actions use least-privilege permissions and immutable commit SHAs.
+1. CircleCI jobs use pinned tools, frozen dependencies, and fail-closed evidence.
 2. Secrets are never printed, copied from legacy stores, or committed.
 3. The canonical branch gate, coverage, website, security, governance, and
    conversation-resolution checks must terminate successfully.
 4. No `--no-verify`, admin merge, force merge, fake status, or temporary
    relaxation is valid evidence.
-5. Branch protection lists only deterministic checks emitted by tracked
-   workflows. Optional providers never block a PR by being absent.
+5. Branch protection lists only deterministic checks emitted by tracked CircleCI
+   jobs. Optional providers never block a PR by being absent.
 
 ## Repository-owned validation
 
 ```bash
 bun run ci:gate:branch
 bun run integrations:check
-bun run test:coverage
-bun run coverage:check
-bun run coverage:patch
 ```
 
-The same commands run locally and in GitHub Actions. Coverage artifacts are
-retained by the workflow so every result is auditable without Codecov.
+The same non-coverage commands run locally and in CircleCI. The heavy coverage
+producer and threshold gate run in the CircleCI `coverage` job for both `dev`
+and `main`, then upload LCOV to Codecov for visibility.
 
 ## Rollback and provider changes
 

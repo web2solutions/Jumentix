@@ -4,8 +4,25 @@
 
 ## All Changes
 
-- 2026-08-02 fix(compose): dual-read AAA_ password env fallbacks [JUM-605] - Eduardo Almeida
-- 2026-08-02 refactor: eliminate legacy Jumentix product naming [JUM-605] - Eduardo Almeida
+- 2026-08-05 docs: restore CircleCI and Codecov badges - Eduardo A.
+- 2026-08-04 chore(release): reconcile main ancestry into dev - Eduardo A.
+- 2026-08-03 ci(JUM-504): backfill git blobs for SonarQube SCM blame - Eduardo A.
+- 2026-08-03 docs(website): document Vercel deploy auth and GITHUB_TOKEN for JUM-397 (#69) - Eduardo A.
+- 2026-08-03 [JUM-504][CI] Restore CircleCI gates for dev and main (#63) - Eduardo A.
+- 2026-08-03 chore(JUM-611): merge remote dev into Firestore registry cutover - Eduardo A.
+- 2026-08-03 docs(JUM-611): deprecate GitHub-mirrored agent registry after Firestore cutover - Eduardo A.
+- 2026-08-03 docs(website): reconcile consumer docs drift for JUM-510 (#68) - Eduardo A.
+- 2026-08-03 ci(JUM-611): fix migration script require for Bun compatibility - Eduardo A.
+- 2026-08-03 test(website): add Cypress route, a11y, and responsive gates (JUM-396) - Eduardo A.
+- 2026-08-03 [JUM-611][Governance] Replace GitHub-mirrored agent registry with Firestore Database - Eduardo A.
+- 2026-08-03 [JUM-417][CI] Sync agent-registry mirror (kimi-k3-cursor-001) (#64) - Eduardo A.
+- 2026-08-03 [JUM-419][CI] Sync the agent-registry mirror to canonical 271da346 - Eduardo A.
+- 2026-08-03 [JUM-417][Release] Promote dev to main: Cana engine matrix, Sonar fixes, temporary CircleCI bridge (#62) - Eduardo A.
+- 2026-08-03 [JUM-417][Release] Merge main history into dev for the promotion - Eduardo A.
+- 2026-08-03 [JUM-417][CI] Sonar new-code fixes + temporary CircleCI bridge (PR #52 leftovers) (#61) - Eduardo A.
+- 2026-08-03 [JUM-605][Refactor] Eliminate legacy Jumentix product naming confusion - Eduardo A.
+- 2026-08-02 [JUM-540][Release] Promote dev snapshot to main (#60) - Eduardo A.
+- 2026-08-02 chore(release): promote dev snapshot to main - Eduardo A.
 - 2026-08-02 [JUM-417][Testing] Enforce the Cana browser and worker matrix across engines (#52) - Eduardo A.
 - 2026-08-02 [JUM-540][Docs] Clarify nested requirement globs for release governance (#59) - Eduardo A.
 - 2026-08-02 docs: clarify nested requirement globs for release governance - Eduardo A.

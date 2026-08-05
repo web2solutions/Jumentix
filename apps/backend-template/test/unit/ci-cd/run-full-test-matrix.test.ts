@@ -2,9 +2,9 @@
 const matrixFs = require('fs');
 const matrixPath = require('path');
 const {
-  COVERAGE_INTEGRATION_ENV,
   FULL_TEST_MATRIX,
   executeMatrixCell,
+  resolveMatrixCells,
   runAsEntryPoint,
   runFullTestMatrix,
   validateMatrixManifest,
@@ -14,15 +14,6 @@ const fullMatrixRootPackage = require('../../../../../package.json');
 
 const fullMatrixRootDir = matrixPath.resolve(__dirname, '../../../../..');
 type FullMatrixTestCell = { id: string; script: string };
-
-// CircleCI stays retired unless it declares the Requirement 113
-// temporary-bridge marker: absent is fine, marked is the bridge, and an
-// unmarked return fails the provider checks instead of passing here.
-// Module scope keeps jest/no-conditional-in-test out of the test body.
-const circleRetiredOrBridged = (configPath: string) => {
-  if (!matrixFs.existsSync(configPath)) return true;
-  return matrixFs.readFileSync(configPath, 'utf8').includes('x-jumentix-temporary-bridge:');
-};
 
 describe('run-full-test-matrix', () => {
   it('keeps the canonical ci gate free of missing script references', () => {
@@ -50,49 +41,62 @@ describe('run-full-test-matrix', () => {
     }
   });
 
-  /**
-   * The strict matrix guards promotion to `main`, so the coverage contract has
-   * to be part of it — and the parts have to run in the right order.
-   *
-   * Both were wrong at once, and each hid in a different direction. Requirement
-   * 110 moved coverage production out of `test:unit` (bun:test, no lcov) into
-   * `test:coverage` (Jest), and neither the producer nor `coverage:check` was
-   * ever added here. So the gate that decides what reaches `main` was not
-   * checking the four thresholds at all, while `patch-coverage` read a report
-   * nothing had written and failed with "Coverage file not found" — a red cell
-   * that looked like a coverage shortfall and was actually a missing dependency.
-   */
-  it('produces coverage before the cells that consume it', () => {
+  it('keeps heavy coverage production in CircleCI instead of the local strict matrix', () => {
     expect.hasAssertions();
 
     const ids = (FULL_TEST_MATRIX as FullMatrixTestCell[]).map((cell) => cell.id);
+    const circleci = matrixFs.readFileSync(
+      matrixPath.join(fullMatrixRootDir, '.circleci/config.yml'),
+      'utf8'
+    );
 
-    expect(ids).toStrictEqual(expect.arrayContaining([
+    expect(ids).toStrictEqual(expect.not.arrayContaining([
       'coverage',
       'browser-coverage',
       'browser-lcov',
       'coverage-thresholds',
       'patch-coverage'
     ]));
-
-    // Cells run in declaration order, so position is the dependency.
-    expect([
-      ids.indexOf('coverage') < ids.indexOf('browser-coverage'),
-      ids.indexOf('browser-coverage') < ids.indexOf('browser-lcov'),
-      ids.indexOf('browser-lcov') < ids.indexOf('coverage-thresholds'),
-      ids.indexOf('browser-lcov') < ids.indexOf('patch-coverage')
-    ]).toStrictEqual([true, true, true, true]);
+    expect(circleci).toContain('bun run test:coverage');
+    expect(circleci).toContain('bun run coverage:check');
+    expect(circleci).toContain('bun run coverage:patch');
   });
 
-  it('lets the canonical coverage checker enforce thresholds after both reports exist', () => {
+  it('leaves the coverage scripts available for the CircleCI coverage gate', () => {
     expect.hasAssertions();
 
     expect(fullMatrixRootPackage.scripts['test:coverage'])
       .toContain('--coverageThreshold=\'{}\'');
     expect(fullMatrixRootPackage.scripts['coverage:browser-lcov'])
       .toBe('bun ci-cd/write-browser-lcov.js');
-    expect((FULL_TEST_MATRIX as FullMatrixTestCell[]).find((cell) => cell.id === 'coverage'))
-      .toMatchObject({ env: COVERAGE_INTEGRATION_ENV });
+    expect(fullMatrixRootPackage.scripts['coverage:patch'])
+      .toBe('bun ci-cd/check-patch-coverage.js');
+  });
+
+  it('allows CircleCI to delegate expensive cells to dedicated jobs', () => {
+    expect.hasAssertions();
+
+    const cells = resolveMatrixCells(FULL_TEST_MATRIX, {
+      JUMENTIX_FULL_MATRIX_SKIP_CELLS: 'workspace-builds,workspace-tests,website-prepublish,integration'
+    });
+
+    expect(cells).toStrictEqual(expect.not.arrayContaining([
+      expect.objectContaining({ id: 'workspace-builds' }),
+      expect.objectContaining({ id: 'workspace-tests' }),
+      expect.objectContaining({ id: 'website-prepublish' }),
+      expect.objectContaining({ id: 'integration' })
+    ]));
+    expect(cells).toStrictEqual(expect.arrayContaining([
+      expect.objectContaining({ id: 'backend-build' })
+    ]));
+  });
+
+  it('fails closed when the delegated matrix skip list names an unknown cell', () => {
+    expect.hasAssertions();
+
+    expect(() => resolveMatrixCells(FULL_TEST_MATRIX, {
+      JUMENTIX_FULL_MATRIX_SKIP_CELLS: 'not-a-cell'
+    })).toThrow('unknown cell');
   });
 
   describe('writeMatrixEvidence', () => {
@@ -244,6 +248,7 @@ describe('run-full-test-matrix', () => {
       execute,
       logger,
       availableScripts: fullMatrixRootPackage.scripts,
+      env: {},
       resultFile: ''
     });
 
@@ -271,6 +276,7 @@ describe('run-full-test-matrix', () => {
       execute: () => null,
       logger,
       availableScripts: fullMatrixRootPackage.scripts,
+      env: {},
       resultFile: ''
     });
     const crashed = runFullTestMatrix({
@@ -280,6 +286,7 @@ describe('run-full-test-matrix', () => {
       },
       logger,
       availableScripts: fullMatrixRootPackage.scripts,
+      env: {},
       resultFile: ''
     });
 
@@ -306,16 +313,26 @@ describe('run-full-test-matrix', () => {
       read('.husky/pre-merge-commit').includes('bun run ci:gate:branch'),
       read('.husky/pre-commit').includes('check-commit-authorship.js --identity'),
       read('.husky/pre-push').includes('check-commit-authorship.js'),
-      read('.github/workflows/test.yml').includes('bun run ci:gate:branch'),
-      read('.github/workflows/test.yml').includes('JUMENTIX_TASK_TEST_MODE: range'),
-      read('.github/workflows/test.yml').includes('JUMENTIX_TASK_TEST_BASE: origin/dev'),
-      read('.github/workflows/test.yml').includes('full-test-matrix.json'),
-      !read('.github/workflows/test.yml').includes('requirepass'),
-      !read('.github/workflows/test.yml').includes('AAA_REDIS_PASSWORD'),
-      read('.github/workflows/website.yml').includes('bun run website:storybook:build'),
-      read('.github/workflows/website.yml').includes('bun run website:storybook:smoke'),
-      read('.github/workflows/coverage.yml').includes('bun run coverage:patch'),
-      circleRetiredOrBridged(matrixPath.join(fullMatrixRootDir, '.circleci', 'config.yml')),
+      read('.circleci/config.yml').includes('bun run ci:gate:branch'),
+      read('.circleci/config.yml').includes('JUMENTIX_TASK_TEST_MODE: range'),
+      read('.circleci/config.yml').includes('JUMENTIX_TASK_TEST_BASE: origin/dev'),
+      read('.circleci/config.yml').includes('full-test-matrix.json'),
+      read('.circleci/config.yml').includes('JUMENTIX_CI_GATE_RESULT_FILE: artifacts/ci/branch-quality-gate.json'),
+      read('.circleci/config.yml').includes('JUMENTIX_CI_MATRIX_RESULT_FILE: artifacts/ci/full-test-matrix.json'),
+      read('.circleci/config.yml').includes('JUMENTIX_FULL_MATRIX_SKIP_CELLS: workspace-builds,workspace-tests,website-prepublish,integration'),
+      read('.circleci/config.yml').includes('name: Run workspace package builds'),
+      read('.circleci/config.yml').includes('bun run mono:build'),
+      read('.circleci/config.yml').includes('name: Run workspace package tests'),
+      read('.circleci/config.yml').includes('bun run mono:test'),
+      read('.circleci/config.yml').includes('name: Run integration matrix'),
+      read('.circleci/config.yml').includes('bun run ci:integration'),
+      !read('.circleci/config.yml').includes('requirepass'),
+      !read('.circleci/config.yml').includes('AAA_REDIS_PASSWORD'),
+      read('.circleci/config.yml').includes('bun run website:storybook:build'),
+      read('.circleci/config.yml').includes('bun run website:storybook:smoke'),
+      read('.circleci/config.yml').includes('bun run website:test:cypress'),
+      read('.circleci/config.yml').includes('bun run coverage:patch'),
+      read('.circleci/config.yml').includes('codecov --verbose upload-process'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'pr:governance:check'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'requirements:check'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'integrations:check'),
@@ -326,9 +343,6 @@ describe('run-full-test-matrix', () => {
       !FULL_TEST_MATRIX.some(
         (cell: FullMatrixTestCell) => cell.script.startsWith('website:storybook')
       )
-    ]).toStrictEqual([
-      true, true, true, true, true, true, true, true, true, true, true, true, true, true,
-      true, true, true, true, true, true, true, true, true
-    ]);
+    ]).toStrictEqual(Array(33).fill(true));
   });
 });

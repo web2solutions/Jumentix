@@ -1,4 +1,4 @@
 export default {
-  'grpc-api': 'Adaptadores realtime',
-  'websocket-api': 'Adaptadores realtime'
+  'grpc-api': 'API gRPC em tempo real',
+  'websocket-api': 'API WebSocket em tempo real'
 };

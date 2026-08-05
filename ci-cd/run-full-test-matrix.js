@@ -4,17 +4,6 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 const { runWhenEntryPoint } = require('./lib/entry-point.js');
 
-const COVERAGE_INTEGRATION_ENV = Object.freeze({
-  RUN_REDIS_INTEGRATION: '1',
-  RUN_BROKER_INTEGRATION: '1',
-  AAA_REDIS_HOST: '127.0.0.1',
-  AAA_REDIS_PORT: '6379',
-  AAA_REDIS_PASSWORD: '',
-  AAA_BULLMQ_REDIS_HOST: '127.0.0.1',
-  AAA_BULLMQ_REDIS_PORT: '6379',
-  AAA_RABBITMQ_URL: 'amqp://127.0.0.1:5672'
-});
-
 const FULL_TEST_MATRIX = Object.freeze([
   { id: 'lint', script: 'lint' },
   { id: 'architecture-cycles', script: 'deps:check-cycles' },
@@ -40,15 +29,7 @@ const FULL_TEST_MATRIX = Object.freeze([
   { id: 'workspace-builds', script: 'mono:build' },
   { id: 'workspace-tests', script: 'mono:test' },
   { id: 'website-prepublish', script: 'website:test:prepublish' },
-  { id: 'integration', script: 'ci:integration' },
-  // Requirement 110/118: strict promotion uses the same coverage contract as
-  // .github/workflows/coverage.yml: Jest coverage against real Redis/broker
-  // services, then browser coverage, then the consumers that enforce it.
-  { id: 'coverage', script: 'test:coverage', env: COVERAGE_INTEGRATION_ENV },
-  { id: 'browser-coverage', script: 'test:browser' },
-  { id: 'browser-lcov', script: 'coverage:browser-lcov' },
-  { id: 'coverage-thresholds', script: 'coverage:check' },
-  { id: 'patch-coverage', script: 'coverage:patch' }
+  { id: 'integration', script: 'ci:integration' }
 ]);
 
 function validateMatrixManifest(cells, availableScripts) {
@@ -81,6 +62,20 @@ function validateMatrixManifest(cells, availableScripts) {
   }
 }
 
+function resolveMatrixCells(cells, env = process.env) {
+  const rawSkipped = String(env.JUMENTIX_FULL_MATRIX_SKIP_CELLS || '').trim();
+  if (!rawSkipped) return cells;
+
+  const skipped = new Set(rawSkipped.split(',').map((id) => id.trim()).filter(Boolean));
+  const knownIds = new Set(cells.map((cell) => cell.id));
+  const unknown = [...skipped].filter((id) => !knownIds.has(id));
+  if (unknown.length > 0) {
+    throw new Error(`Full test matrix skip list names unknown cell(s): ${unknown.join(', ')}`);
+  }
+
+  return cells.filter((cell) => !skipped.has(cell.id));
+}
+
 function executeMatrixCell(cell) {
   const result = spawnSync('bun', ['run', cell.script], {
     stdio: 'inherit',
@@ -99,7 +94,7 @@ function writeMatrixEvidence(result, resultFile) {
 }
 
 function runFullTestMatrix(options = {}) {
-  const cells = options.cells || FULL_TEST_MATRIX;
+  const cells = resolveMatrixCells(options.cells || FULL_TEST_MATRIX, options.env || process.env);
   const execute = options.execute || executeMatrixCell;
   const logger = options.logger || console;
   const availableScripts = options.availableScripts || require('../package.json').scripts;
@@ -182,9 +177,9 @@ function runAsEntryPoint(options = {}) {
 runAsEntryPoint();
 
 module.exports = {
-  COVERAGE_INTEGRATION_ENV,
   FULL_TEST_MATRIX,
   executeMatrixCell,
+  resolveMatrixCells,
   runAsEntryPoint,
   runFullTestMatrix,
   validateMatrixManifest,

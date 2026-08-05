@@ -9,7 +9,15 @@ download_and_verify() {
   checksum="$2"
   archive="$3"
   curl --fail --silent --show-error --location "$url" --output "$archive"
-  printf '%s  %s\n' "$checksum" "$archive" | sha256sum --check --status
+  if command -v sha256sum >/dev/null 2>&1; then
+    actual_checksum="$(sha256sum "$archive" | awk '{print $1}')"
+  else
+    actual_checksum="$(shasum -a 256 "$archive" | awk '{print $1}')"
+  fi
+  if [ "$actual_checksum" != "$checksum" ]; then
+    echo "checksum mismatch for $archive" >&2
+    exit 1
+  fi
 }
 
 gitleaks_archive="$destination/gitleaks.tar.gz"
@@ -19,12 +27,14 @@ download_and_verify \
   "$gitleaks_archive"
 tar -xzf "$gitleaks_archive" -C "$destination" gitleaks
 
-reviewdog_archive="$destination/reviewdog.tar.gz"
-download_and_verify \
-  'https://github.com/reviewdog/reviewdog/releases/download/v0.21.0/reviewdog_0.21.0_Linux_x86_64.tar.gz' \
-  'ad5ce7d5ffa52aaa7ec8710a8fa764181b6cecaab843cc791e1cce1680381569' \
-  "$reviewdog_archive"
-tar -xzf "$reviewdog_archive" -C "$destination" reviewdog
+python3 -m venv "$destination/semgrep-venv"
+"$destination/semgrep-venv/bin/python" -m pip install --no-cache-dir --upgrade pip
+"$destination/semgrep-venv/bin/python" -m pip install --no-cache-dir semgrep==1.172.0
+ln -sf "$destination/semgrep-venv/bin/semgrep" "$destination/semgrep"
 
-"$destination/gitleaks" version
-"$destination/reviewdog" -version
+if [ "$(uname -s)" = "Linux" ]; then
+  "$destination/gitleaks" version
+else
+  echo "Skipping Linux Gitleaks binary smoke on $(uname -s)."
+fi
+"$destination/semgrep" --version

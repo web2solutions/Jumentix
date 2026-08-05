@@ -159,11 +159,14 @@ function run(options = {}) {
   delete env.ELECTRON_RUN_AS_NODE;
 
   const cypress = spawn(
-    'bunx',
-    ['cypress', 'run', '--e2e', '--browser', browser],
+    'bun',
+    ['x', 'cypress', 'run', '--e2e', '--browser', browser],
     { stdio: 'inherit', env }
   );
 
+  if (cypress.error) {
+    return { ok: false, message: `Cypress failed to start: ${cypress.error.message}` };
+  }
   if (cypress.status !== 0) {
     return { ok: false, message: `Cypress exited with status ${String(cypress.status)}.` };
   }

@@ -20,7 +20,7 @@ Registros de governança obrigatórios:
 2. Project do Linear (épico focado) com campos de planejamento
 3. RP com questão e evidências vinculadas
 4. Artefatos de especificações e documentação
-5. Registro canônico de agentes em `XpertMinds/jumentix-agent-registry` com espelho local em `.agents/AGENT-REGISTRY.md`
+5. Registro canônico de agentes no Firestore Database (coleção `agents`, requisito `089`) com snapshot local regenerável `.agents/registry-snapshot.json`
 
 ## Links de rastreabilidade obrigatórios
 
@@ -131,10 +131,12 @@ Política de isolamento e nomenclatura:
 - Uma promoção de `dev` para `main` referencia os PRs de tarefa e Issues do Linear já
   representados em `dev` e não introduz mudanças adicionais de tarefa.
 - PRs diretos de tarefa/tópico, pushes e merges para `main` são proibidos.
-- Os gates são orientados ao destino: branches de tarefa executam testes alterados ou
-  relacionados, `dev` executa a suíte unitária completa e `main` executa a matriz completa.
-- PRs destinados a `dev` executam a suíte unitária; promoções de `dev` para `main` executam a
-  matriz completa.
+- Os gates são orientados ao destino: branches de feature, docs, fix e outras tarefas
+  executam somente testes especializados alterados/relacionados, `dev` executa a suíte
+  unitária completa e `main` executa a matriz local completa sem cobertura pesada.
+- PRs destinados a `dev` executam a matriz local completa sem cobertura pesada no CircleCI.
+  Promoções de `dev` para `main` executam a mesma matriz, além do job obrigatório de
+  cobertura CircleCI nas duas branches longas.
 - A evidência da matriz de `main` deve listar cada célula obrigatória e seu resultado terminal.
 - Uma matriz de `main` incompleta é evidência com falha; nunca pode ser interpretada como verde.
 - Review de PR é opcional. Branch protection e rulesets não devem exigir quantidade de
@@ -162,13 +164,12 @@ Se alguma porta falhar, a conformidade com as especificações será considerada
 Contrato de execução por branch:
 
 1. Branches de tarefa executam `ci:gate:task` sobre o diff pertencente à tarefa.
-2. `dev` e pull requests destinados a `dev` executam `test:unit`.
+2. Pushes em `dev` executam `test:unit`; pull requests destinados a `dev` executam `ci:gate:strict`.
 3. `main` e pull requests de promoção destinados a `main` executam `ci:gate:strict`.
-4. GitHub Actions é o executor hospedado pertencente ao repositório; CircleCI foi aposentado como
-   autoridade pelo Requisito `113`.
-5. `.github/workflows/website.yml` é o responsável pelos checks do Storybook e é selecionado
-   somente por caminhos pertencentes ao website; o workflow global e a matriz completa não
-   executam Storybook.
+4. CircleCI é o executor hospedado pertencente ao repositório enquanto GitHub Actions billing
+   está bloqueado pelo Requisito `113`.
+5. `.circleci/config.yml` é responsável por Storybook e cobertura completa em `dev` e `main`;
+   a matriz completa local não executa Storybook nem produção de cobertura.
 6. Todo gate selecionado emite evidência auditável e falha de forma fechada quando um comando
    não retorna status, quebra ou termina com código diferente de zero.
 
@@ -196,35 +197,38 @@ As instruções desses agentes devem permanecer equivalentes para governança, r
 
 Antes de qualquer execução de tarefa:
 
-1. O agente atuante deve estar registrado em `.agents/AGENT-REGISTRY.md`.
+1. O agente atuante deve estar registrado no Firestore via `bun run agent-registry:register` (Requisito `089`).
 2. O planejamento deve atribuir tarefas apenas para agentes com status `available`.
-3. O agente deve checar os refs mais recentes de `main` e `dev` e atualizar os campos de verificação no registro.
+3. O agente deve checar os refs mais recentes de `main` e `dev` e atualizá-los via `bun run agent-registry:heartbeat --main-ref --dev-ref`.
 4. As entradas do registro devem incluir identidade da máquina (`machine_id`, `machine_name`, `machine_os`) e identidade de runtime (`agent_runtime`, `agent_version`) para permitir múltiplos agentes no mesmo host com rastreabilidade completa.
 5. Os agentes devem seguir o playbook operacional (Requisito `081`) cobrindo registro, sincronização de branches, execução governada e evidências de fechamento.
-6. As atualizações canônicas do registro devem ser feitas primeiro no repositório externo e depois espelhadas localmente sob o Requisito `089`.
+6. As atualizações canônicas do registro devem ser escritas diretamente no Firestore Database pela CLI `agent-registry` sob o Requisito `089`; `.agents/registry-snapshot.json` é um snapshot local regenerável.
 7. A delegação no nível do épico e a atribuição da tarefa filha devem ser registradas sob o
    Requisito `090`.
 8. O milestone do épico e da tarefa deve ser validado antes do planejamento ou execução sob o
    Requisito `090`.
 9. Os agentes devem verificar a Issue dedicada de documentação antes de concluir um Project de
    épico no Linear sob o Requisito `094`.
-10. As verificações fixadas do registro devem buscar conteúdo imutável por SHA completo de
+10. As verificações legadas do espelho (depreciadas pelo Requisito `089`) devem buscar conteúdo
+    imutável por SHA completo de
     commit e caminho seguro codificado. Registros públicos usam conteúdo raw sem cota anônima da
     API de conteúdo; quando houver token, o acesso autenticado pela Contents API pode ser usado
     e deve fazer fallback para raw público em HTTP 401/403/404 nesse caminho com token.
-11. Somente a sincronização explícita do registro pode resolver uma branch mutável pela API do
+11. Somente a sincronização explícita do registro legado pode resolver uma branch mutável pela API do
     GitHub, opcionalmente autenticada por `GITHUB_TOKEN` ou `GH_TOKEN`.
-12. Revisões ou caminhos inválidos, falhas HTTP e de transporte, respostas malformadas, acesso
+12. No espelho legado, revisões ou caminhos inválidos, falhas HTTP e de transporte, respostas malformadas, acesso
     não autorizado e divergência do espelho local devem reprovar de forma fechada com diagnósticos
     acionáveis que nunca exponham credenciais (raw 404 após Contents 401/403 → orientação de
     token; demais 404 → deriva de pin/caminho; 401/403 isolado → acesso privado com token).
-13. O repositório canônico do Agent Registry é privado na organização `XpertMinds`. Somente a
+13. A fonte única de verdade do Agent Registry é o Firestore Database (projeto
+    `jumentix-service-registry`, coleção `agents`, Requisito `089`). Somente a
     conta proprietária `web2solutions` (`web2solucoes@gmail.com`) e identidades explicitamente
-    autorizadas no Linear podem ler, fazer push ou publicar nele.
-14. O Requisito `103` torna `XpertMinds/Jumentix` e
-    `XpertMinds/jumentix-agent-registry` canônicos. As duas origens anteriores em
-    `web2solutions` estão obsoletas, são somente leitura, não aceitam novas modificações e
-    permanecem arquivadas.
+    autorizadas no Linear podem escrever registros de agentes. O antigo repositório GitHub do
+    registry permanece privado na organização `XpertMinds` como espelho congelado de auditoria.
+14. O Requisito `103` torna `XpertMinds/Jumentix` canônico; a canonicidade da coordenação de agentes
+    migrou para o Firestore Database pelo Requisito `089`. As duas origens anteriores em
+    `web2solutions` — e o antigo espelho GitHub do registry — estão obsoletas, são somente leitura,
+    não aceitam novas modificações e permanecem arquivadas.
 15. O Requisito `104` exige inventário e rebind de toda integração aplicável da origem
     depreciada para `XpertMinds/Jumentix`, com instalações incompletas registradas como
     bloqueios owner-auth e validadas por `integration-migration:check`.

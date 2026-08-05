@@ -35,5 +35,5 @@ Utilize este caminho quando a escala de domínio, a autonomia da equipa e os per
 ## Documentos relacionados
 
 - [Contratos de mensagens e eventos](../EVENTS-AND-MESSAGES-MAP.md)
-- [Pacotes de espaço de trabalho Jumentix](../JUMENTIX-WORKSPACE-PACKAGES.md)
-- [Plano de Execução Jumentix Monorepo](../JUMENTIX-MONOREPO-EXECUTION-PLAN.md)
+- [Pacotes do workspace Jumentix](../JUMENTIX-WORKSPACE-PACKAGES.md)
+- [Arquitetura e estrutura](../ARCHITECTURE-AND-STRUCTURE.md)
