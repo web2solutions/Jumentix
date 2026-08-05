@@ -10,7 +10,7 @@ Idioma alvo: Português (Brasil)
 [![Nó](https://img.shields.io/badge/node-22.x-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-6BA539?logo=openapiinitiative&logoColor=white)](../../spec/1.0.0.yml)
 [![AsyncAPI](https://img.shields.io/badge/AsyncAPI-3.0-9146FF)](../../spec)
-[![Licença](https://img.shields.io/github/license/XpertMinds/Jumentix)](../../LICENSE)
+[![Licença](https://img.shields.io/github/license/XpertMinds/Jumentix)](../../LICENSE.md)
 [![Cheiros de código](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=Jumentix)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=bugs)](https://sonarcloud.io/summary/new_code?id=Jumentix)
 [![Vulnerabilidades](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=Jumentix)
@@ -23,8 +23,8 @@ Idioma alvo: Português (Brasil)
 
 Uso detalhado de recursos:
 
-- [Recursos e uso do designer de domínio](../../documentation/md/DOMAIN-DESIGNER-FEATURES-AND-USAGE.md)
-- [Documentação técnica de gerenciamento de serviços](./documentation/README.md)
+- [Recursos e uso do designer de domínio](../../documentation/md/DOMAIN-DESIGNER-FEATURES-AND-USAGE.pt-BR.md)
+- [Documentação técnica de gerenciamento de serviços](./documentation/README.pt-BR.md)
 
 ## Guias
 
