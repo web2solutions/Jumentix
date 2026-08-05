@@ -45,6 +45,8 @@ For engineers maintaining and evolving Jumentix:
   ([pt-BR](./md/AGENT-SUPPORT-DECLARATION.pt-BR.md))
 - [Project vs Software Requirements](./md/PROJECT-VS-SOFTWARE-REQUIREMENTS.md)
   ([pt-BR](./md/PROJECT-VS-SOFTWARE-REQUIREMENTS.pt-BR.md))
+- [Service Management Module Architecture and IDesignerStore Port Contract](./md/SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.md)
+  ([pt-BR](./md/SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.pt-BR.md))
 
 ## Component Technical Hubs
 
