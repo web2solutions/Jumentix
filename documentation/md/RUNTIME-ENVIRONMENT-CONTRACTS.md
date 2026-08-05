@@ -58,6 +58,35 @@ The following keys are mandatory across env files in `apps/backend-template/src/
     - `Cassandra`
   - used by: runtime profile metadata and Service Management configuration workflows.
 
+- `JUMENTIX_DATABASE_DRIVER`
+  - default: `InMemory`
+  - supported values (canonical `DriverName` set; the backend also accepts common
+    aliases case-insensitively, but the canonical spellings are the contract):
+    - `InMemory`
+    - `IndexedDB`
+    - `Mongo`
+    - `PostgreSQL`
+    - `MySQL`
+    - `MSSQL`
+    - `Oracle`
+    - `SQLite`
+    - `DynamoDB`
+    - `Cassandra`
+    - `Firebase`
+    - `Aurora`
+    - `RDS`
+  - used by: `packages/database-client-factory/src/compileDatabaseClient.ts`
+
+- `JUMENTIX_KEYVALUESTORAGE_DRIVER`
+  - default: `redis` (any value other than the in-memory spellings selects Redis)
+  - supported values: `inmemory`, `redis`
+  - used by: `packages/key-value-storage/src/compileKeyValueStorageClient.ts`
+
+- `JUMENTIX_MESSAGE_MEDIATOR_ADAPTER`
+  - default: `inmemory`
+  - supported values: `inmemory`, `rabbitmq`, `bullmq`
+  - used by: `packages/message-mediator/src/compileMessageMediator.ts`
+
 - `JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER`
   - default: empty (in-memory Socket.IO adapter)
   - supported values: `cluster`, `redis-streams`
@@ -114,6 +143,42 @@ Service Management exposes runtime env read/write endpoints:
 
 The env editor mutates only approved keys from this contract, preserving guardrails.
 
+### Key tiers and allowlists
+
+Read and write allowlists are separate sets; every key belongs to exactly one tier.
+The authoritative per-key classification (with reasons) lives in
+`.agents/requirements/software/126-service-management-ownership-and-public-contracts.md`.
+
+- **Editable** (read + write) — runtime topology selectors:
+  `JUMENTIX_HTTP_FRAMEWORK`, `JUMENTIX_REALTIME_API`,
+  `JUMENTIX_REALTIME_API_PROTOCOL`, `JUMENTIX_REALTIME_API_DATABASE_DRIVER`,
+  `JUMENTIX_DATABASE_DRIVER`, `JUMENTIX_KEYVALUESTORAGE_DRIVER`,
+  `JUMENTIX_MESSAGE_MEDIATOR_ADAPTER`, `JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER`,
+  `JUMENTIX_WEBSOCKET_REDIS_URL`.
+- **Read-only** (read only) — connection endpoints and non-secret configuration:
+  `JUMENTIX_DATABASE_NAME`, `JUMENTIX_ENABLE_BASIC_AUTH`, `JUMENTIX_JWT_ISSUER`,
+  `JUMENTIX_JWT_AUDIENCE`, `JUMENTIX_REDIS_HOST`, `JUMENTIX_REDIS_PORT`,
+  `JUMENTIX_REDIS_DATABASE`, `JUMENTIX_RABBITMQ_EXCHANGE`,
+  `JUMENTIX_RABBITMQ_REQUEST_QUEUE`, `JUMENTIX_RABBITMQ_PREFETCH`,
+  `JUMENTIX_CORS_ALLOWED_ORIGINS`, `JUMENTIX_AUTH_MAX_LOGIN_ATTEMPTS`,
+  `JUMENTIX_AUTH_LOGIN_WINDOW_SECONDS`, `JUMENTIX_AUTH_LOCKOUT_SECONDS`.
+- **Never exposed** (neither read nor write) — secrets and credential-bearing
+  values: `JUMENTIX_JWT_TOKEN_SECRET_KEY`, `JUMENTIX_REDIS_PASSWORD`,
+  `JUMENTIX_RABBITMQ_URL`.
+
+GET returns `{ environment, fileName, editableKeys, values }` where `values`
+covers the editable and read-only tiers and `editableKeys` names the write
+allowlist. POST ignores any key outside `editableKeys`.
+
+### Enum validation
+
+Editable keys with an enum set only accept the canonical values listed in
+[Runtime Keys](#runtime-keys); out-of-enum values are rejected with the accepted
+list and nothing is written. `JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER` additionally
+accepts empty (backend default). `JUMENTIX_WEBSOCKET_REDIS_URL` accepts empty or
+a valid `redis://`/`rediss://` URL without embedded credentials — values carrying
+userinfo are rejected so no secret can be stored through the endpoint.
+
 ### Accepted environments
 
 - `dev` → `.env.dev`
@@ -135,6 +200,8 @@ Unknown environments return `400` with the accepted list; no file is written.
 - Unknown environment: `400` with accepted list.
 - Missing environment file: `400` with resolved path.
 - Invalid JSON payload: `400` distinguishing parse from filesystem failure.
+- Out-of-enum or credential-bearing value for an editable key: `400` naming the
+  key, the rejected value, and the accepted list; no file is written.
 - Unauthorized mutation: `401` when auth token is configured.
 
 ## Guardrails

@@ -46,25 +46,67 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
      case-insensitive after trimming. An unknown environment MUST be explicitly
      rejected — never silently coerced to `dev`. When omitted, the environment
      defaults to `NODE_ENV` or `dev`.
-   - **Read vs write allowlist and classification rule (per `JUM-460`).** The read
-     allowlist and the write allowlist are separate sets. Every env key belongs to
-     exactly one of three tiers, each with a stated reason:
+   - **Read vs write allowlist and classification rule (landed by `JUM-460`).** The
+     read allowlist and the write allowlist are separate sets. Every env key belongs
+     to exactly one of three tiers, each with a stated reason:
      - *Editable* — runtime topology selectors (frameworks, drivers, adapters,
        protocol toggles); readable and writable.
      - *Read-only* — connection endpoints and non-secret configuration; visible in
        GET so the designer reflects reality, never writable through POST.
-     - *Never exposed* — secrets and credential-bearing values (e.g.
-       `JUMENTIX_JWT_TOKEN_SECRET_KEY`, `JUMENTIX_REDIS_PASSWORD`,
+     - *Never exposed* — secrets and credential-bearing values
+       (`JUMENTIX_JWT_TOKEN_SECRET_KEY`, `JUMENTIX_REDIS_PASSWORD`,
        `JUMENTIX_RABBITMQ_URL`); MUST NOT appear in the GET response and MUST NOT be
-       writable, since the response crosses the same boundary as the write.
-     The current editable set is the four topology selectors
-     (`JUMENTIX_HTTP_FRAMEWORK`, `JUMENTIX_REALTIME_API`,
-     `JUMENTIX_REALTIME_API_PROTOCOL`, `JUMENTIX_REALTIME_API_DATABASE_DRIVER`), and
-     the read surface is bounded to the same four. `JUM-460` lands the full
-     23-key classification of `.env.dev` into this requirement; every addition to the
-     editable set is a security decision and MUST carry a written reason here.
-   - **Enum sets per key.** Values outside the accepted enum MUST be rejected with
-     the accepted list (added by `JUM-460`; today any string is accepted):
+       writable, since the response crosses the same boundary as the write. The tier
+       is enforced by omission from both allowlists and proven by test.
+     The full 23-key classification of `.env.dev` (each addition to the editable set
+     is a security decision with a written reason):
+     - *Editable (write allowlist, 9 keys):*
+       - `JUMENTIX_HTTP_FRAMEWORK` — REST framework selector; the designer's primary
+         topology control.
+       - `JUMENTIX_REALTIME_API` — realtime on/off toggle; selects whether a
+         realtime interface boots at all.
+       - `JUMENTIX_REALTIME_API_PROTOCOL` — realtime protocol selector
+         (`websocket`/`grpc`).
+       - `JUMENTIX_REALTIME_API_DATABASE_DRIVER` — persistence driver selector for
+         the realtime profile.
+       - `JUMENTIX_DATABASE_DRIVER` — primary persistence driver selector
+         (`packages/database-client-factory/src/compileDatabaseClient.ts`); topology,
+         named by `JUM-460`.
+       - `JUMENTIX_KEYVALUESTORAGE_DRIVER` — key-value storage driver selector
+         (`packages/key-value-storage/src/compileKeyValueStorageClient.ts`); named by
+         `JUM-460`. Absent from `.env.dev` — writing it appends the key to the file.
+       - `JUMENTIX_MESSAGE_MEDIATOR_ADAPTER` — message mediator adapter selector
+         (`packages/message-mediator/src/compileMessageMediator.ts`); named by
+         `JUM-460`.
+       - `JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER` — Socket.IO scaling adapter selector;
+         named by `JUM-460`. Commented out in `.env.dev` — writing it uncomments the
+         line in place.
+       - `JUMENTIX_WEBSOCKET_REDIS_URL` — dedicated Redis endpoint for the
+         `redis-streams` adapter; named editable by `JUM-460`. Carries no credentials
+         in the template env files, and the endpoint rejects values with embedded
+         credentials (userinfo) or non-`redis://`/`rediss://` protocols, so the tool
+         cannot be used to store secrets through this key.
+     - *Read-only (read allowlist only, 14 keys):*
+       - `JUMENTIX_DATABASE_NAME` — logical database name; non-secret config, not a
+         topology selector.
+       - `JUMENTIX_ENABLE_BASIC_AUTH` — authentication posture toggle;
+         security-relevant (Requirement `044`), must not be flipped from a design
+         tool.
+       - `JUMENTIX_JWT_ISSUER`, `JUMENTIX_JWT_AUDIENCE` — token metadata; non-secret
+         config.
+       - `JUMENTIX_REDIS_HOST`, `JUMENTIX_REDIS_PORT`, `JUMENTIX_REDIS_DATABASE` —
+         connection endpoint parameters; visible so the designer reflects reality.
+       - `JUMENTIX_RABBITMQ_EXCHANGE`, `JUMENTIX_RABBITMQ_REQUEST_QUEUE`,
+         `JUMENTIX_RABBITMQ_PREFETCH` — broker topology config; non-secret.
+       - `JUMENTIX_CORS_ALLOWED_ORIGINS` — security-relevant browser policy config.
+       - `JUMENTIX_AUTH_MAX_LOGIN_ATTEMPTS`, `JUMENTIX_AUTH_LOGIN_WINDOW_SECONDS`,
+         `JUMENTIX_AUTH_LOCKOUT_SECONDS` — brute-force protection policy
+         (Requirement `044`); security-relevant.
+     - *Never exposed (3 keys):* `JUMENTIX_JWT_TOKEN_SECRET_KEY` (signing key),
+       `JUMENTIX_REDIS_PASSWORD` (credential), `JUMENTIX_RABBITMQ_URL`
+       (credential-bearing URL embedding `user:password`).
+   - **Enum sets per key (landed by `JUM-460`).** Values outside the accepted enum
+     MUST be rejected with the accepted list, and nothing is written:
      - `JUMENTIX_HTTP_FRAMEWORK`: `express`, `fastify`, `restify`,
        `cloudflare-workers`, `vercel-functions`, `loopback`, `sails-js`, `feathers`,
        `derby-js`, `adonis-js`, `total-js` (the set accepted by
@@ -74,6 +116,20 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
      - `JUMENTIX_REALTIME_API_PROTOCOL`: `websocket`, `grpc`.
      - `JUMENTIX_REALTIME_API_DATABASE_DRIVER`: `Mongo`, `PostgreSQL`, `MySQL`,
        `MS SQL`, `RDS`, `Aurora`, `Cassandra`.
+     - `JUMENTIX_DATABASE_DRIVER`: `InMemory`, `IndexedDB`, `Mongo`, `PostgreSQL`,
+       `MySQL`, `MSSQL`, `Oracle`, `SQLite`, `DynamoDB`, `Cassandra`, `Firebase`,
+       `Aurora`, `RDS` (the canonical `DriverName` set of
+       `packages/database-client-factory/src/compileDatabaseClient.ts`).
+     - `JUMENTIX_KEYVALUESTORAGE_DRIVER`: `inmemory`, `redis` (the two outcomes of
+       `packages/key-value-storage/src/compileKeyValueStorageClient.ts`).
+     - `JUMENTIX_MESSAGE_MEDIATOR_ADAPTER`: `inmemory`, `rabbitmq`, `bullmq` (the
+       canonical spellings of
+       `packages/message-mediator/src/compileMessageMediator.ts`).
+     - `JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER`: `cluster`, `redis-streams`, or empty
+       (empty keeps the backend default, the in-memory Socket.IO adapter).
+     - `JUMENTIX_WEBSOCKET_REDIS_URL`: a valid `redis://` or `rediss://` URL without
+       embedded credentials, or empty (empty falls back to `JUMENTIX_REDIS_URL` and
+       then to the discrete `JUMENTIX_REDIS_*` settings in the backend).
    - **Alias decision (per `JUM-461`).** `derby`/`derby-js` and `sails`/`sails-js`
      are the same framework under two accepted spellings. The selector offers the
      canonical spelling of each pair and the server's enum validation agrees with the
@@ -111,8 +167,12 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
      write-allowlisted keys present in `values` are updated — all other keys are
      ignored. Writes are atomic (temp file, `fsync`, rename), preserve unrelated
      lines, quote values containing whitespace or `#` (escaping embedded quotes), and
-     end the file with a single trailing newline. A successful POST returns the same
-     shape as GET: `{ environment, fileName, values }` with the post-write state.
+     end the file with a single trailing newline. Writing an editable key absent
+     from the file appends it at the end; writing one present only as a comment
+     uncomments the line in place. A successful POST returns the same shape as GET:
+     `{ environment, fileName, editableKeys, values }` with the post-write state,
+     where `editableKeys` is the write allowlist (the editable tier) so the UI can
+     render editable and read-only keys differently without hardcoding the tiers.
    - **Response hygiene.** JSON responses escape `<`, `>`, `&`, `U+2028`, `U+2029`
      and carry `Content-Type: application/json; charset=utf-8` plus
      `X-Content-Type-Options: nosniff`.
@@ -132,7 +192,8 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
      and `cloudProvider` ∈ { `aws`, `google`, `azure`, `vercel`, `cloudflare`,
      `docker` }.
    - `runtimeEnvironment`: `{ environment, fileName, values }` mirroring Contract 1
-     (environment enum and the four editable runtime keys).
+     (environment enum and the visible runtime keys — the editable and read-only
+     tiers; never-exposed keys never enter this state).
    - `view`: `{ zoom (clamped 0.5–2), compactEntities, snapToGrid,
      edgeStyle ∈ { curved, orthogonal },
      modelCheckMinSeverity ∈ { info, warn, error }, exportBlockCritical (default
@@ -206,8 +267,10 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
 - Behavior pinned as of the `JUM-458`/`JUM-558`/`JUM-459`/`JUM-462` fix branch
   (`kimi/fix/JUM-458-service-management-env-path`), including its integration suite
   `apps/backend-template/test/integration/ServiceManagement/runtimeEnv.integration.test.ts`;
-  enum validation and the full key classification land via `JUM-460`, the UI
-  label/selector alignment via `JUM-461`, the error-surface split via `JUM-543`.
+  enum validation and the full 23-key key classification landed via `JUM-460`
+  (branch `kimi/feature/JUM-460-env-allowlist-runtime-matrix`, same integration
+  suite extended), the UI label/selector alignment via `JUM-461`, the
+  error-surface split via `JUM-543`.
 - Registry sync: `.agents/NFR-REGISTRY.md`,
   `documentation/md/SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md` (+ `.pt-BR.md`),
   `documentation/md/SPEC-REQUIREMENTS-COVERAGE-STATUS.md` (+ `.pt-BR.md`),

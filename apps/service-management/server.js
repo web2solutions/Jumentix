@@ -10,17 +10,95 @@ const configDirectory = process.env.JUMENTIX_SERVICE_MANAGEMENT_CONFIG_DIR
 const host = process.env.JUMENTIX_SERVICE_MANAGEMENT_HOST || '127.0.0.1';
 const port = Number(process.env.JUMENTIX_SERVICE_MANAGEMENT_PORT || 3200);
 const authToken = process.env.JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN || '';
+// Write allowlist (editable tier): runtime topology selectors only — frameworks,
+// drivers, adapters, protocol toggles. Adding a key here is a security decision;
+// the per-key reasons live in requirement
+// .agents/requirements/software/126-service-management-ownership-and-public-contracts.md
 const editableRuntimeKeys = [
   'JUMENTIX_HTTP_FRAMEWORK',
   'JUMENTIX_REALTIME_API',
   'JUMENTIX_REALTIME_API_PROTOCOL',
-  'JUMENTIX_REALTIME_API_DATABASE_DRIVER'
+  'JUMENTIX_REALTIME_API_DATABASE_DRIVER',
+  'JUMENTIX_DATABASE_DRIVER',
+  'JUMENTIX_KEYVALUESTORAGE_DRIVER',
+  'JUMENTIX_MESSAGE_MEDIATOR_ADAPTER',
+  'JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER',
+  'JUMENTIX_WEBSOCKET_REDIS_URL'
 ];
+// Read-only tier: connection endpoints and non-secret configuration. Visible in
+// GET so the designer reflects reality; never writable through POST.
+const readOnlyRuntimeKeys = [
+  'JUMENTIX_DATABASE_NAME',
+  'JUMENTIX_ENABLE_BASIC_AUTH',
+  'JUMENTIX_JWT_ISSUER',
+  'JUMENTIX_JWT_AUDIENCE',
+  'JUMENTIX_REDIS_HOST',
+  'JUMENTIX_REDIS_PORT',
+  'JUMENTIX_REDIS_DATABASE',
+  'JUMENTIX_RABBITMQ_EXCHANGE',
+  'JUMENTIX_RABBITMQ_REQUEST_QUEUE',
+  'JUMENTIX_RABBITMQ_PREFETCH',
+  'JUMENTIX_CORS_ALLOWED_ORIGINS',
+  'JUMENTIX_AUTH_MAX_LOGIN_ATTEMPTS',
+  'JUMENTIX_AUTH_LOGIN_WINDOW_SECONDS',
+  'JUMENTIX_AUTH_LOCKOUT_SECONDS'
+];
+// Never-exposed tier (JUMENTIX_JWT_TOKEN_SECRET_KEY, JUMENTIX_REDIS_PASSWORD,
+// JUMENTIX_RABBITMQ_URL and any other credential-bearing key) is enforced by
+// omission: keys outside the two allowlists above are neither read nor written.
 const defaultsByRuntimeKey = {
   JUMENTIX_HTTP_FRAMEWORK: 'express',
   JUMENTIX_REALTIME_API: 'no',
   JUMENTIX_REALTIME_API_PROTOCOL: 'websocket',
-  JUMENTIX_REALTIME_API_DATABASE_DRIVER: 'Mongo'
+  JUMENTIX_REALTIME_API_DATABASE_DRIVER: 'Mongo',
+  JUMENTIX_DATABASE_DRIVER: 'InMemory',
+  JUMENTIX_KEYVALUESTORAGE_DRIVER: 'redis',
+  JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: 'inmemory',
+  JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER: '',
+  JUMENTIX_WEBSOCKET_REDIS_URL: ''
+};
+// Canonical enum sets per editable key, mirrored from
+// documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md and the backend sources
+// (RuntimeEnvironment.ts, compileDatabaseClient.ts, compileKeyValueStorageClient.ts,
+// compileMessageMediator.ts, socket-io adapters).
+const runtimeKeyEnums = {
+  JUMENTIX_HTTP_FRAMEWORK: [
+    'express',
+    'fastify',
+    'restify',
+    'cloudflare-workers',
+    'vercel-functions',
+    'loopback',
+    'sails-js',
+    'feathers',
+    'derby-js',
+    'adonis-js',
+    'total-js'
+  ],
+  JUMENTIX_REALTIME_API: ['yes', 'no'],
+  JUMENTIX_REALTIME_API_PROTOCOL: ['websocket', 'grpc'],
+  JUMENTIX_REALTIME_API_DATABASE_DRIVER: ['Mongo', 'PostgreSQL', 'MySQL', 'MS SQL', 'RDS', 'Aurora', 'Cassandra'],
+  JUMENTIX_DATABASE_DRIVER: [
+    'InMemory',
+    'IndexedDB',
+    'Mongo',
+    'PostgreSQL',
+    'MySQL',
+    'MSSQL',
+    'Oracle',
+    'SQLite',
+    'DynamoDB',
+    'Cassandra',
+    'Firebase',
+    'Aurora',
+    'RDS'
+  ],
+  JUMENTIX_KEYVALUESTORAGE_DRIVER: ['inmemory', 'redis'],
+  JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: ['inmemory', 'rabbitmq', 'bullmq']
+};
+// Editable keys whose enum admits the empty string as "unset, use backend default".
+const optionalRuntimeKeyEnums = {
+  JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER: ['cluster', 'redis-streams']
 };
 const envFileByRuntime = {
   dev: '.env.dev',
@@ -125,6 +203,41 @@ function toEnvFileValue(rawValue) {
   return value;
 }
 
+function validateWebsocketRedisUrl(value) {
+  if (value === '') return null;
+  let parsed;
+  try {
+    parsed = new URL(value);
+  } catch (_error) {
+    return 'must be a valid redis:// URL';
+  }
+  if (parsed.protocol !== 'redis:' && parsed.protocol !== 'rediss:') {
+    return 'must use the redis:// or rediss:// protocol';
+  }
+  if (parsed.username || parsed.password) {
+    return 'must not embed credentials; credential-bearing values are never writable through this endpoint';
+  }
+  return null;
+}
+
+// Returns an error message when the value is out of contract, null otherwise.
+function validateRuntimeValue(key, rawValue) {
+  const value = String(rawValue ?? '').trim();
+  if (key === 'JUMENTIX_WEBSOCKET_REDIS_URL') {
+    const urlError = validateWebsocketRedisUrl(value);
+    return urlError ? `Invalid value for ${key}: ${urlError}.` : null;
+  }
+  const requiredEnum = runtimeKeyEnums[key];
+  if (requiredEnum && !requiredEnum.includes(value)) {
+    return `Unsupported value "${value}" for ${key}. Accepted values: ${requiredEnum.join(', ')}`;
+  }
+  const optionalEnum = optionalRuntimeKeyEnums[key];
+  if (optionalEnum && value !== '' && !optionalEnum.includes(value)) {
+    return `Unsupported value "${value}" for ${key}. Accepted values: ${optionalEnum.join(', ')} (empty keeps the backend default)`;
+  }
+  return null;
+}
+
 function readRuntimeEnv(runtime) {
   const resolved = resolveEnvFilePath(runtime);
   if (!fs.existsSync(resolved.filePath)) {
@@ -138,9 +251,13 @@ function readRuntimeEnv(runtime) {
   editableRuntimeKeys.forEach((key) => {
     runtimeValues[key] = parsed[key] || defaultsByRuntimeKey[key] || '';
   });
+  readOnlyRuntimeKeys.forEach((key) => {
+    runtimeValues[key] = parsed[key] || '';
+  });
   return {
     environment: resolved.environment,
     fileName: resolved.fileName,
+    editableKeys: [...editableRuntimeKeys],
     values: runtimeValues
   };
 }
@@ -155,11 +272,20 @@ function updateRuntimeEnv(runtime, values) {
   const currentContent = fs.readFileSync(resolved.filePath, 'utf8');
   const lines = String(currentContent).split(/\r?\n/);
   const updates = {};
+  const validationErrors = [];
   editableRuntimeKeys.forEach((key) => {
     if (Object.prototype.hasOwnProperty.call(values, key)) {
+      const validationError = validateRuntimeValue(key, values[key]);
+      if (validationError) {
+        validationErrors.push(validationError);
+        return;
+      }
       updates[key] = toEnvFileValue(values[key]);
     }
   });
+  if (validationErrors.length > 0) {
+    throw new Error(validationErrors.join(' '));
+  }
 
   Object.entries(updates).forEach(([key, value]) => {
     const keyExpression = new RegExp(`^\\s*#?\\s*${key}=`);

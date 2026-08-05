@@ -466,6 +466,7 @@
         </section>
         <section class="panel">
           <h3>Runtime Environment Variables</h3>
+          <p class="hint">Editable keys can be saved through this tool. Read-only keys reflect the current env file and cannot be changed here. Secrets are never shown.</p>
           <div class="responsive-grid">
             <div>
               <label for="runtime-env-select">Environment</label>
@@ -475,41 +476,8 @@
                 <option value="ci">ci</option>
               </select>
             </div>
-            <div>
-              <label for="runtime-http-framework-select">JUMENTIX_HTTP_FRAMEWORK</label>
-              <select id="runtime-http-framework-select">
-                <option value="express">express</option>
-              </select>
-            </div>
-            <div>
-              <label for="runtime-realtime-api-select">JUMENTIX_REALTIME_API</label>
-              <select id="runtime-realtime-api-select">
-                <option value="no">no</option>
-                <option value="yes">yes</option>
-              </select>
-            </div>
           </div>
-          <div class="responsive-grid">
-            <div>
-              <label for="runtime-realtime-protocol-select">JUMENTIX_REALTIME_API_PROTOCOL</label>
-              <select id="runtime-realtime-protocol-select">
-                <option value="websocket">websocket</option>
-                <option value="grpc">grpc</option>
-              </select>
-            </div>
-            <div>
-              <label for="runtime-realtime-db-driver-select">JUMENTIX_DATABASE_DRIVER</label>
-              <select id="runtime-realtime-db-driver-select">
-                <option value="Mongo">Mongo</option>
-                <option value="PostgreSQL">PostgreSQL</option>
-                <option value="MySQL">MySQL</option>
-                <option value="MS SQL">MS SQL</option>
-                <option value="RDS">RDS</option>
-                <option value="Aurora">Aurora</option>
-                <option value="Cassandra">Cassandra</option>
-              </select>
-            </div>
-          </div>
+          <div id="runtime-env-fields" class="responsive-grid"></div>
           <div class="row">
             <button id="runtime-env-refresh-btn" type="button">Load Environment</button>
             <button id="runtime-env-save-btn" type="button">Save Environment</button>
