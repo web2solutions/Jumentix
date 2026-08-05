@@ -16,6 +16,10 @@ Core implementation files:
 - `apps/service-management/styles.css`
 - `apps/service-management/server.js`
 
+Module layering, the injection pattern and the `IDesignerStore` storage port
+contract are documented in
+[Service Management Module Architecture](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.md).
+
 ## Tabs
 
 1. **Domain Designer**

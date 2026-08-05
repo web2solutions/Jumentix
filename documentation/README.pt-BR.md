@@ -42,6 +42,8 @@ Para engenheiros que mantêm e evoluem o Jumentix:
 - [Índice de Documentação de Criadores](./creators/README.pt-BR.md)
 - [Requisitos Operacionais de Agente 114–121](./md/AGENT-OPERATING-REQUIREMENTS-114-121.pt-BR.md)
   ([EN](./md/AGENT-OPERATING-REQUIREMENTS-114-121.md))
+- [Arquitetura de módulos do Service Management e contrato da porta IDesignerStore](./md/SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.pt-BR.md)
+  ([EN](./md/SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.md))
 
 ## Hubs Técnicos de Componentes
 
