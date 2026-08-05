@@ -74,8 +74,13 @@ Comandos:
 
 ## API de ambiente de tempo de execução
 
-- `GET /api/runtime/env?environment=dev|staging|ci`
+Integrada em `apps/service-management/server.js`:
+
+- `GET /api/runtime/env?environment=dev|development|staging|ci|test`
 - `POST /api/runtime/env`
+
+O contrato completo (conjuntos de enum, semântica de escrita, higiene de resposta) está em
+[Contratos de ambiente de tempo de execução](../../documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.pt-BR.md).
 
 ### Chaves Editáveis
 
@@ -84,8 +89,45 @@ Comandos:
 - `JUMENTIX_REALTIME_API_PROTOCOL`
 - `JUMENTIX_REALTIME_API_DATABASE_DRIVER`
 
+Cada chave de ambiente pertence a exatamente um de três níveis: *editável* (legível e
+gravável), *somente leitura* (visível no GET, nunca gravável) e *nunca exposta*
+(segredos — ausente do GET e não gravável). A classificação autoritativa por chave
+é mantida no
+[Requisito 126](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md).
+
 ### Mapeamento de ambiente
 
-- `dev` -> `src/config/.env.dev`
-- `staging` -> `src/config/.env.staging`
-- `ci` -> `src/config/.env.ci`
+Os arquivos env ficam em `apps/backend-template/src/config/`:
+
+- `dev` -> `apps/backend-template/src/config/.env.dev`
+- `development` -> `apps/backend-template/src/config/.env.dev` (alias)
+- `staging` -> `apps/backend-template/src/config/.env.staging`
+- `ci` -> `apps/backend-template/src/config/.env.ci`
+- `test` -> `apps/backend-template/src/config/.env.ci` (alias)
+
+`environment` é um parâmetro real: a comparação é insensível a maiúsculas após
+remoção de espaços, valores desconhecidos são rejeitados com `400` e a lista de
+aceitos (nunca silenciosamente convertidos para `dev`) e, quando omitido, o padrão
+é `NODE_ENV` ou `dev`. O diretório de configuração pode ser substituído com
+`JUMENTIX_SERVICE_MANAGEMENT_CONFIG_DIR`; o servidor encerra na inicialização com
+um erro se o diretório não existir.
+
+### Postura de segurança
+
+- Bind padrão é `127.0.0.1` (apenas loopback); substitua com
+  `JUMENTIX_SERVICE_MANAGEMENT_HOST`, porta com
+  `JUMENTIX_SERVICE_MANAGEMENT_PORT` (padrão `3200`).
+- Quando `JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN` está definido, `POST
+  /api/runtime/env` requer `Authorization: Bearer <token>` e retorna `401`
+  caso contrário; quando não definido, a operação apenas em loopback é permitida
+  sem token.
+- Cada mutação é registrada com timestamp, ambiente e chaves alteradas (não
+  valores).
+
+### Contrato de erro
+
+- Ambiente desconhecido: `400` nomeando o valor e a lista de aceitos; nenhum
+  arquivo escrito.
+- Corpo JSON malformado: `400` com a falha de parse em `details`.
+- Arquivo env ausente: `400` com o path resolvido em `details`.
+- Token bearer ausente/incorreto: `401` (`{ "error": "Unauthorized." }`).
