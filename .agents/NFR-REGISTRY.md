@@ -176,6 +176,9 @@ This file consolidates non-functional requirements already requested and stored 
 - `122` Task-owned branch and PR naming governance (migrated from duplicate `079`).
 - `123` Wave 5 app re-homing cutover governance (migrated from duplicate `055`).
 - `124` Monorepo root layout governance (migrated from duplicate `060`).
+- `125` Supported agents are declared as data in `.agents/supported-agents.json`; the PR
+  governance gate derives task-branch prefixes from the declaration, verifies each declared
+  agent's instructions file exists, and fails closed on a missing or malformed declaration.
 
 When a new NFR is requested:
 
