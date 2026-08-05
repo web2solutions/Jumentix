@@ -149,10 +149,12 @@ See also:
 - [112-every-package-owns-its-suite](requirements/software/112-every-package-owns-its-suite.md)
 - [115-functional-value-tests-no-fakes-no-third-party-api](requirements/software/115-functional-value-tests-no-fakes-no-third-party-api.md)
 - [118-smoke-integration-docker-real-services](requirements/software/118-smoke-integration-docker-real-services.md)
+- [126-service-management-ownership-and-public-contracts](requirements/software/126-service-management-ownership-and-public-contracts.md)
 
 ## Other Registry Files
 
 - [Agent Registry](AGENT-REGISTRY.md)
+- [Component Ownership Registry](COMPONENT-OWNERSHIP.md)
 - [NFR Registry](NFR-REGISTRY.md)
 - [Spec Development Driven Agent](spec-development-driven-agent.md)
 - [Data Entity Documentation Agent](data-entity-documentation-agent.md)

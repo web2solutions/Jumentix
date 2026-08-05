@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-08-05 chore(JUM-458): merge dev after PR 79 landing - Eduardo A.
+- 2026-08-05 docs(JUM-467): audit bilingual docs and repair links for service-management (#79) - Eduardo A.
 - 2026-08-05 test(JUM-458): regenerate test-map after dev sync - Eduardo A.
 - 2026-08-05 [JUM-604][Governance] Support the Kimi agent with declarative agent support (#78) - Eduardo A.
 - 2026-08-05 test: isolate PR governance helpers - Eduardo A.
