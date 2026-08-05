@@ -43,6 +43,25 @@ function createFakeStorage(initial: Record<string, string> = {}): FakeStorage {
   };
 }
 
+/**
+ * Replace the ambient `localStorage` global with a throwing getter (some
+ * browsing contexts throw on mere access) and return a restore function.
+ */
+function swapInThrowingLocalStorage(): () => void {
+  const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  Object.defineProperty(globalThis, 'localStorage', {
+    configurable: true,
+    get() { throw new Error('blocked'); }
+  });
+  return () => {
+    if (descriptor) {
+      Object.defineProperty(globalThis, 'localStorage', descriptor);
+    } else {
+      delete (globalThis as { localStorage?: unknown }).localStorage;
+    }
+  };
+}
+
 describe('designer store port contract (JUM-468)', () => {
   it('fails loudly when an adapter does not override a method', async () => {
     const port = new IDesignerStore();
@@ -201,6 +220,53 @@ describe('local storage designer store (transitional, JUM-468)', () => {
       expect((await store.loadBaseline()).status).toBe('empty');
       // The state document survives a baseline clear.
       expect((await store.load()).status).toBe('ok');
+    });
+  });
+
+  describe('ambient storage resolution and failure shapes', () => {
+    it('resolves the ambient localStorage when none is injected', async () => {
+      const store = new LocalStorageDesignerStore();
+      const ambient = (globalThis as { localStorage?: unknown }).localStorage;
+      expect(store.storage).toBe(ambient);
+      const probe = await store.probe();
+      expect(['available', 'unavailable']).toContain(probe.status);
+    });
+
+    it('treats a throwing localStorage global as unavailable', async () => {
+      const restore = swapInThrowingLocalStorage();
+      try {
+        const store = new LocalStorageDesignerStore();
+        expect(store.storage).toBeUndefined();
+        expect((await store.probe()).status).toBe('unavailable');
+        expect((await store.load()).status).toBe('unavailable');
+      } finally {
+        restore();
+      }
+    });
+
+    it('reports non-Error probe failures verbatim', async () => {
+      const storage = createFakeStorage();
+      const quotaError = 'quota-string' as unknown as Error;
+      storage.setItem = () => { throw quotaError; };
+      const store = new LocalStorageDesignerStore({ storage });
+      const probe = await store.probe();
+      expect(probe.status).toBe('unavailable');
+      expect(probe.reason).toBe('quota-string');
+    });
+
+    it('treats an undefined read as empty, not as an error', async () => {
+      const storage = createFakeStorage();
+      storage.getItem = () => undefined as unknown as string | null;
+      const store = new LocalStorageDesignerStore({ storage });
+      expect((await store.load()).status).toBe('empty');
+    });
+
+    it('propagates setItem quota errors synchronously, as before the extraction', () => {
+      const storage = createFakeStorage();
+      storage.setItem = () => { throw new Error('QuotaExceededError'); };
+      const store = new LocalStorageDesignerStore({ storage });
+      expect(() => store.save({})).toThrow('QuotaExceededError');
+      expect(() => store.saveBaseline({})).toThrow('QuotaExceededError');
     });
   });
 });
