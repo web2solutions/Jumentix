@@ -70,8 +70,13 @@ Commands:
 
 ## Runtime Env API
 
-- `GET /api/runtime/env?environment=dev|staging|ci`
+Built into `apps/service-management/server.js`:
+
+- `GET /api/runtime/env?environment=dev|development|staging|ci|test`
 - `POST /api/runtime/env`
+
+The full contract (enum sets, write semantics, response hygiene) lives in
+[Runtime Environment Contracts](../../documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md).
 
 ### Editable Keys
 
@@ -80,8 +85,44 @@ Commands:
 - `JUMENTIX_REALTIME_API_PROTOCOL`
 - `JUMENTIX_REALTIME_API_DATABASE_DRIVER`
 
+Every env key belongs to exactly one of three tiers: *editable* (readable and
+writable), *read-only* (visible in GET, never writable), and *never exposed*
+(secrets — absent from GET and not writable). The authoritative per-key
+classification is maintained in
+[Requirement 126](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md).
+
 ### Environment Mapping
 
-- `dev` -> `src/config/.env.dev`
-- `staging` -> `src/config/.env.staging`
-- `ci` -> `src/config/.env.ci`
+Env files live in `apps/backend-template/src/config/`:
+
+- `dev` -> `apps/backend-template/src/config/.env.dev`
+- `development` -> `apps/backend-template/src/config/.env.dev` (alias)
+- `staging` -> `apps/backend-template/src/config/.env.staging`
+- `ci` -> `apps/backend-template/src/config/.env.ci`
+- `test` -> `apps/backend-template/src/config/.env.ci` (alias)
+
+`environment` is a real parameter: comparison is case-insensitive after
+trimming, unknown values are rejected with `400` and the accepted list (never
+silently coerced to `dev`), and when omitted it defaults to `NODE_ENV` or
+`dev`. The config directory can be overridden with
+`JUMENTIX_SERVICE_MANAGEMENT_CONFIG_DIR`; the server exits at boot with an
+error if the directory does not exist.
+
+### Security Posture
+
+- Default bind is `127.0.0.1` (loopback only); override with
+  `JUMENTIX_SERVICE_MANAGEMENT_HOST`, port with
+  `JUMENTIX_SERVICE_MANAGEMENT_PORT` (default `3200`).
+- When `JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN` is set, `POST
+  /api/runtime/env` requires `Authorization: Bearer <token>` and returns `401`
+  otherwise; when unset, loopback-only operation is allowed without a token.
+- Every mutation is logged with timestamp, environment, and changed keys (not
+  values).
+
+### Error Contract
+
+- Unknown environment: `400` naming the value and the accepted list; no file
+  written.
+- Malformed JSON body: `400` with the parse failure in `details`.
+- Missing env file: `400` with the resolved path in `details`.
+- Missing/wrong bearer token: `401` (`{ "error": "Unauthorized." }`).

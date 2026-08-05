@@ -114,28 +114,95 @@ Service Management exposes runtime env read/write endpoints:
 
 The env editor mutates only approved keys from this contract, preserving guardrails.
 
+### Env file location
+
+Runtime env files live in `apps/backend-template/src/config/` (`.env.dev`,
+`.env.staging`, `.env.ci`). The server resolves the config directory as
+`JUMENTIX_SERVICE_MANAGEMENT_CONFIG_DIR` (absolute-resolved) when set,
+otherwise `<repo-root>/apps/backend-template/src/config`, and fails closed at
+boot — stderr message naming the missing directory, exit code `1` — when the
+directory does not exist.
+
 ### Accepted environments
 
 - `dev` → `.env.dev`
-- `development` → `.env.dev`
+- `development` → `.env.dev` (alias)
 - `staging` → `.env.staging`
 - `ci` → `.env.ci`
-- `test` → `.env.ci`
+- `test` → `.env.ci` (alias)
 
-Unknown environments return `400` with the accepted list; no file is written.
+Comparison is case-insensitive after trimming. Unknown environments are
+explicitly rejected — `400` with the accepted list, no file written, never
+silently coerced to `dev`. When omitted, the environment defaults to
+`NODE_ENV` or `dev`.
+
+### Key classification
+
+Every env key belongs to exactly one of three tiers, each with a stated reason:
+
+- **Editable** — runtime topology selectors (frameworks, drivers, adapters,
+  protocol toggles); readable via GET and writable via POST.
+- **Read-only** — connection endpoints and non-secret configuration; visible
+  in GET so the designer reflects reality, never writable through POST.
+- **Never exposed** — secrets and credential-bearing values; must not appear
+  in the GET response and must not be writable, since the response crosses the
+  same trust boundary as the write.
+
+The current editable set is the four topology selectors listed under
+[Runtime Keys](#runtime-keys) (`JUMENTIX_HTTP_FRAMEWORK`,
+`JUMENTIX_REALTIME_API`, `JUMENTIX_REALTIME_API_PROTOCOL`,
+`JUMENTIX_REALTIME_API_DATABASE_DRIVER`), and the read surface is bounded to
+the same four. The full per-key classification of the env files into these
+tiers lands via JUM-460; the authoritative classification decisions — one per
+key, each with a written reason — live in
+[Requirement 126](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md).
+Every addition to the editable set is a security decision.
+
+### Enum sets and alias decision
+
+Values outside the accepted enum for each key (listed under
+[Runtime Keys](#runtime-keys)) are rejected with the accepted list.
+
+Alias decision (JUM-461): `derby`/`derby-js` and `sails`/`sails-js` are the
+same framework under two spellings. The canonical spellings are `derby-js` and
+`sails-js` — the forms accepted by
+`apps/backend-template/src/interface/runtime/RuntimeEnvironment.ts` — and the
+UI selector offers exactly the values the server accepts: a value the UI
+offers must be a value the server accepts, and vice versa. Separately,
+`JUMENTIX_DATABASE_DRIVER` and `JUMENTIX_REALTIME_API_DATABASE_DRIVER` are
+distinct keys and must be separately labelled and separately editable in the
+UI.
 
 ### Security posture
 
-- Default bind is `127.0.0.1` (loopback only).
-- Optional bearer token for mutations via `JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN`.
+- Default bind is `127.0.0.1` (loopback only); binding a non-loopback
+  interface is an explicit opt-in via `JUMENTIX_SERVICE_MANAGEMENT_HOST`.
+- Port defaults to `3200`, overridable via `JUMENTIX_SERVICE_MANAGEMENT_PORT`.
+- When `JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN` is set, `POST
+  /api/runtime/env` requires `Authorization: Bearer <token>` and rejects
+  anything else with `401 { "error": "Unauthorized." }`; when unset,
+  loopback-only operation is allowed without a token.
 - Mutation audit log records timestamp, environment, and changed keys (not values).
 
 ### Error contract
 
-- Unknown environment: `400` with accepted list.
-- Missing environment file: `400` with resolved path.
-- Invalid JSON payload: `400` distinguishing parse from filesystem failure.
-- Unauthorized mutation: `401` when auth token is configured.
+Responses distinguish parse, validation, and filesystem failures through the
+`details` field of the error envelope:
+
+- Malformed JSON body (POST): `400 { "error": "Invalid payload.", "details": … }`.
+- Unsupported environment: `400` whose `details` name the unsupported value
+  and the accepted list — `{ "error": "Invalid environment request.", … }` on
+  GET, `{ "error": "Invalid payload.", … }` on POST; no file is written.
+- Missing env file: `400` whose `details` carry the resolved path (internally
+  error code `ENV_FILE_NOT_FOUND`), so a broken installation is identifiable
+  from the message rather than mistaken for a malformed request.
+- Missing or wrong bearer token: `401 { "error": "Unauthorized." }` when the
+  auth token is configured.
+
+Requirement 126 (JUM-543) specifies the target split in which filesystem
+failures surface as a distinct, identifiable failure class rather than sharing
+the payload-validation envelope; the UI surfaces these failures through
+non-blocking status surfaces, not `window.alert`.
 
 ## Guardrails
 
