@@ -8,8 +8,8 @@ const {
   SUPPORTED_AGENTS_PATH,
   TEMPLATE_PATHS,
   readField,
-  resolvePullRequestFlag,
-  run,
+  resolvePullRequestFlag: resolvePrGovernancePullRequestFlag,
+  run: runPrGovernanceCheck,
   validatePullRequest,
   validateSupportedAgents,
   validateTemplates
@@ -178,7 +178,7 @@ describe('check-pr-governance', () => {
   it('validates templates but skips PR metadata on long-lived branch builds', () => {
     expect.hasAssertions();
 
-    expect(run({
+    expect(runPrGovernanceCheck({
       isPullRequest: false,
       title: '',
       body: '',
@@ -190,15 +190,15 @@ describe('check-pr-governance', () => {
   it('still validates PR metadata when CircleCI marks the job as a pull request', () => {
     expect.hasAssertions();
 
-    expect(run({
+    expect(runPrGovernanceCheck({
       isPullRequest: true,
       title: '',
       body: '',
       headRef: 'main',
       baseRef: ''
     })).toBe(1);
-    expect(resolvePullRequestFlag('1')).toBe(true);
-    expect(resolvePullRequestFlag('0')).toBe(false);
+    expect(resolvePrGovernancePullRequestFlag('1')).toBe(true);
+    expect(resolvePrGovernancePullRequestFlag('0')).toBe(false);
   });
 
   it('rejects a title or branch whose task identifier differs from the Linear Issue', () => {
