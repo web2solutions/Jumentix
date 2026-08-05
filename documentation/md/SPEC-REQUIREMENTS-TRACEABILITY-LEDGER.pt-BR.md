@@ -4,7 +4,7 @@ Idioma alvo: Português (Brasil)
 -->
 # Especificações de rastreabilidade de requisitos
 
-<!-- requirements-inventory: files=125 unique=125 mapped=125 duplicates= -->
+<!-- requirements-inventory: files=126 unique=126 mapped=126 duplicates= -->
 
 Este livro-razão mapeia IDs de requisitos para especificações de recursos e expectativas de evidências de validação.
 
@@ -100,7 +100,7 @@ Para qualquer alteração, identifique os IDs dos requisitos afetados e garanta:
 
 ## G. Documentação, processo de governança e operações multiagente
 
-- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `056`, `057`, `064`, `066`, `067`, `068`, `071`, `072`, `073`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `094`, `095`, `097`, `098`, `099`, `100`, `101`, `102`, `103`, `104`, `105`, `106`, `107`, `108`, `109`, `110`, `111`, `112`, `113`, `114`, `116`, `117`, `119`, `120`, `121`, `122`, `124`
+- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `056`, `057`, `064`, `066`, `067`, `068`, `071`, `072`, `073`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `094`, `095`, `097`, `098`, `099`, `100`, `101`, `102`, `103`, `104`, `105`, `106`, `107`, `108`, `109`, `110`, `111`, `112`, `113`, `114`, `116`, `117`, `119`, `120`, `121`, `122`, `124`, `125`, `126`
 - Recursos de especificações:
   - `documentação/README.md`
   - `documentação/md/JUMENTIX-PROJECT-GOVERNANCE.md`
@@ -110,14 +110,16 @@ Para qualquer alteração, identifique os IDs dos requisitos afetados e garanta:
   - `.agentes/README.md`
   - `.agentes/NFR-REGISTRY.md`
   - `.agents/AGENT-REGISTRY.md`
+  - `.agents/supported-agents.json`
   - `AGENTS.md`
   - `CLAUDE.md`
   - `GROK.md`
+  - `KIMI.md`
 - Evidência:
   - links de índice de documentos atualizados
   - registro de requisitos sincronizado
   - `bun run requirements:check` aprovado
-  - paridade de instruções de agentes (Codex, Claude Code, Grok)
+  - paridade de instruções de agentes (Codex, Claude Code, Grok, OpenCode, Kimi Code CLI)
   - registros de cadastro de agentes e atribuição por disponibilidade
   - registros de associação ao milestone, parentagem do épico focado, agrupamento por natureza e
     delegação no nível do épico
@@ -130,7 +132,7 @@ Para qualquer alteração, identifique os IDs dos requisitos afetados e garanta:
 
 ## H. Produtização e expansão da plataforma
 
-- `037`, `038`, `054`, `055`, `069`, `070`, `091`, `092`, `093`, `123`, `125`
+- `037`, `038`, `054`, `055`, `069`, `070`, `091`, `092`, `093`, `123`, `125`, `126`
 - Recursos de especificações:
   - `pacotes/cli-init/*`
   - `apps/gerenciamento de serviço/documentação/*`
@@ -150,9 +152,9 @@ Se os IDs de requisitos afetados não forem mapeados antes da implementação, a
 
 A partir de `2026-08-05`, este livro-razão cobre todos os IDs de requisitos exclusivos atualmente registrados em `.agents/requirements/project/` e `.agents/requirements/software/`:
 
-1. Arquivos de requisitos no registro: `125`
-2. IDs exclusivos no registro de requisitos: `125`
-3. IDs exclusivos mapeados neste livro-razão: `125`
+1. Arquivos de requisitos no registro: `126`
+2. IDs exclusivos no registro de requisitos: `126`
+3. IDs exclusivos mapeados neste livro-razão: `126`
 4. IDs duplicados com arquivos vinculantes independentes: `nenhum`
 5. IDs ausentes: `nenhum`
 
@@ -165,6 +167,11 @@ A partir de `2026-08-05`, este livro-razão cobre todos os IDs de requisitos exc
 - Requisitos: `.agents/requirements/project/114-*.md` … `121-*.md`
 - Evidência: `bun run requirements:check`; paridade em `AGENTS.md` / `CLAUDE.md` / `GROK.md`; scripts Docker de smoke/integration para `118`; orquestração API-first / `gh` para `119`; visibilidade de assignment de agente no Linear para `120`; evidência de coordenação entre agentes para `121`
 
-### `125` Ownership e contratos públicos do Service Management (JUM-465)
-- Specs: `.agents/requirements/software/125-service-management-ownership-and-public-contracts.md`, `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.pt-BR.md`, `documentation/md/SERVICE-MANAGEMENT-APPLICATION.pt-BR.md`, `.agents/COMPONENT-OWNERSHIP.md`
+### `126` Ownership e contratos públicos do Service Management (JUM-465)
+- Specs: `.agents/requirements/software/126-service-management-ownership-and-public-contracts.md`, `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.pt-BR.md`, `documentation/md/SERVICE-MANAGEMENT-APPLICATION.pt-BR.md`, `.agents/COMPONENT-OWNERSHIP.md`
 - Evidência: `bun run requirements:check`; `bun run test-map:check`; smoke de integração que assegura os contratos fixados (`JUM-466`)
+
+### `125` Declaração de agentes suportados (JUM-604)
+- Specs: `documentation/md/AGENT-SUPPORT-DECLARATION.pt-BR.md` (+ EN)
+- Requisitos: `.agents/requirements/project/125-agent-support-declaration.md`
+- Evidência: `.agents/supported-agents.json`; `ci-cd/check-pr-governance.js` derivando os prefixos de branch de tarefa da declaração e verificando cada arquivo de instruções declarado; `KIMI.md`; `bun run pr:governance:check`; `bun run requirements:check`

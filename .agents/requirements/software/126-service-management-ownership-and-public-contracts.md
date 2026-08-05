@@ -1,4 +1,4 @@
-# Requirement 125 - Service Management Ownership and Public Contracts
+# Requirement 126 - Service Management Ownership and Public Contracts
 
 - Status: Active
 - Nature: NFR (governance, component contract specification, drift detection)
@@ -184,7 +184,7 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
 
 ## Acceptance Criteria
 
-- Requirement filed under `.agents/requirements/software/` with unique ID `125`,
+- Requirement filed under `.agents/requirements/software/` with unique ID `126`,
   indexed exactly once in `.agents/README.md`, passing `bun run requirements:check`.
 - All three public contracts specified precisely enough that a violation is
   detectable by a test (the `JUM-466` smoke asserts them) rather than by reading.
