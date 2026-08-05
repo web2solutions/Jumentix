@@ -1357,6 +1357,45 @@
       "timeoutMs": 120000
     },
     {
+      "id": "apps/backend-template/test/integration/ServiceManagement/runtimeEnvContract.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/runtimeEnvContract.integration.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/ServiceManagement/staticServing.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/staticServing.integration.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/ServiceManagement/spaBoot.browser.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/spaBoot.browser.integration.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
       "id": "apps/backend-template/test/integration/ServiceManagement/staticManifest.integration.test.ts",
       "path": "apps/backend-template/test/integration/ServiceManagement/staticManifest.integration.test.ts",
       "layer": "interface/runtime",
@@ -2758,8 +2797,8 @@
   },
   "stats": {
     "unit": 143,
-    "integration": 84,
+    "integration": 87,
     "smoke": 2,
-    "suites": 231
+    "suites": 234
   }
 }

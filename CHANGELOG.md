@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-05 refactor(JUM-468): extract state/persistence core behind IDesignerStore port - Eduardo A.
 - 2026-08-05 feat(JUM-460): expand env key allowlist to the full runtime matrix (#84) - Eduardo A.
 - 2026-08-05 fix(JUM-461): truthful key labels and canonical framework selector in service-management (#83) - Eduardo A.
 - 2026-08-05 fix(JUM-463): refresh static manifest on miss in dev, keep boot manifest in production (#82) - Eduardo A.
