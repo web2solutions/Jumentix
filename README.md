@@ -2,10 +2,11 @@
 
 [![CircleCI dev](https://dl.circleci.com/status-badge/img/gh/XpertMinds/Jumentix/tree/dev.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/XpertMinds/Jumentix/tree/dev)
 [![CircleCI main](https://dl.circleci.com/status-badge/img/gh/XpertMinds/Jumentix/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/XpertMinds/Jumentix/tree/main)
-[![Codecov via CircleCI](https://img.shields.io/badge/codecov-via%20CircleCI-F01F7A?logo=codecov&logoColor=white)](https://app.codecov.io/gh/XpertMinds/Jumentix)
+[![Codecov dev](https://codecov.io/gh/XpertMinds/Jumentix/branch/dev/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev)
+[![Codecov main](https://codecov.io/gh/XpertMinds/Jumentix/branch/main/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/main)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Jumentix)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=Jumentix)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Jumentix)
+[![Sonar Coverage](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Jumentix)
 [![Bun](https://img.shields.io/badge/bun-1.3.14-000000?logo=bun&logoColor=white)](https://bun.sh/)
 [![Node compat](https://img.shields.io/badge/node%20compat-22.x-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-6BA539?logo=openapiinitiative&logoColor=white)](./spec/1.0.0.yml)
@@ -31,15 +32,21 @@
 | Required gate | `main` | `dev` |
 | --- | :---: | :---: |
 | CircleCI workflow | [![main CircleCI](https://dl.circleci.com/status-badge/img/gh/XpertMinds/Jumentix/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/XpertMinds/Jumentix/tree/main) | [![dev CircleCI](https://dl.circleci.com/status-badge/img/gh/XpertMinds/Jumentix/tree/dev.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/XpertMinds/Jumentix/tree/dev) |
+| Codecov project coverage | [![main Codecov](https://codecov.io/gh/XpertMinds/Jumentix/branch/main/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/main) | [![dev Codecov](https://codecov.io/gh/XpertMinds/Jumentix/branch/dev/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev) |
 | Branch-aware tests | `branch-gate` | `branch-gate` |
 | Project + patch coverage | `coverage` | `coverage` |
 | Third-party security review | `third-party-review` | `third-party-review` |
 
 Coverage is produced and enforced by the CircleCI `coverage` job for both
-`dev` and `main`. CircleCI also uploads LCOV to Codecov for visibility when
-`CODECOV_TOKEN` is configured, but the hard gate remains the repository-owned
-coverage check. Every run retains Istanbul JSON and LCOV evidence. The hard
-minimums are:
+`dev` and `main`. CircleCI also uploads LCOV to Codecov under the `project`
+flag when `CODECOV_TOKEN` is configured. Codecov provides the file-by-file
+coverage map for each long-lived branch:
+
+- [Codecov file map for `dev`](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev)
+- [Codecov file map for `main`](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/main)
+
+The hard gate remains the repository-owned coverage check. Every run retains
+Istanbul JSON and LCOV evidence. The hard minimums are:
 
 | Statements | Lines | Functions | Branches | Changed lines |
 | :---: | :---: | :---: | :---: | :---: |

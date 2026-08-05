@@ -73,15 +73,28 @@ describe('rEADME badges', () => {
     expect.hasAssertions();
     // Paid/unreliable providers were retired in favour of repository-owned gates.
     expect(badges).not.toContain('snyk.io');
-    expect(badges).not.toContain('codecov.io/gh/XpertMinds/Jumentix/branch');
     expect(badges).not.toContain('token=');
-    expect(badges).toContain('badge/codecov-via%20CircleCI');
+    expect(badges).not.toContain('badge/codecov-via%20CircleCI');
+  });
+
+  it('badges real Codecov branch coverage and links to the file maps', () => {
+    expect.hasAssertions();
+
+    for (const branch of ['dev', 'main']) {
+      expect(readme).toContain(
+        `https://codecov.io/gh/XpertMinds/Jumentix/branch/${branch}/graph/badge.svg?flag=project`
+      );
+      expect(readme).toContain(`https://app.codecov.io/gh/XpertMinds/Jumentix/tree/${branch}`);
+    }
+    expect(readme).toContain('Codecov file map for `dev`');
+    expect(readme).toContain('Codecov file map for `main`');
   });
 
   it('restores the coverage map with every enforced threshold', () => {
     expect.hasAssertions();
 
     expect(readme).toContain('## Coverage and CI Map');
+    expect(readme).toContain('| Codecov project coverage |');
     expect(readme).toContain('| ≥ 99% | ≥ 99% | ≥ 99% | ≥ 90% | ≥ 99% |');
     expect(readme).toContain('Istanbul JSON and LCOV evidence');
   });
