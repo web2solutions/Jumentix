@@ -7,6 +7,8 @@ import {
 } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import type { AgentRecord, AgentRegistrySnapshot, FirestoreLike } from './types';
+import { assertValidAgentRecord, findIntegrityProblems } from './validation';
+import type { IntegrityProblem } from './validation';
 
 const COLLECTION = 'agents';
 
@@ -59,13 +61,48 @@ export async function getAgent(
   return doc.data() as AgentRecord;
 }
 
+/**
+ * The write boundary (JUM-613).
+ *
+ * Validated before the write, not after: the point is that nothing invalid
+ * reaches storage. The migration that corrupted ten documents would have
+ * failed here on its first record.
+ */
 export async function upsertAgent(firestore: FirestoreLike, agent: AgentRecord): Promise<void> {
+  assertValidAgentRecord(agent);
   await firestore.collection(COLLECTION).doc(agent.agent_id).set(agent, { merge: true });
 }
 
-export async function getAllAgents(firestore: FirestoreLike): Promise<AgentRecord[]> {
+export async function deleteAgent(firestore: FirestoreLike, agentId: string): Promise<void> {
+  await firestore.collection(COLLECTION).doc(agentId).delete();
+}
+
+/** A stored document together with the id it is actually filed under. */
+export interface StoredAgent {
+  /** The Firestore document id, which may disagree with `record.agent_id`. */
+  documentId: string;
+  record: AgentRecord;
+  problems: IntegrityProblem[];
+}
+
+/**
+ * Every document in the collection, with its integrity assessed.
+ *
+ * Reading deliberately does not throw. The collection holds records that fail
+ * the rules today, and refusing to read it would make the repair that fixes
+ * them impossible to run — a gate that blocks its own remedy.
+ */
+export async function getStoredAgents(firestore: FirestoreLike): Promise<StoredAgent[]> {
   const snapshot = await firestore.collection(COLLECTION).get();
-  return snapshot.docs.map((doc) => doc.data() as AgentRecord);
+  return snapshot.docs.map((doc) => {
+    const record = doc.data() as AgentRecord;
+    return { documentId: doc.id, record, problems: findIntegrityProblems(record) };
+  });
+}
+
+export async function getAllAgents(firestore: FirestoreLike): Promise<AgentRecord[]> {
+  const stored = await getStoredAgents(firestore);
+  return stored.map((entry) => entry.record);
 }
 
 export async function generateSnapshot(firestore: FirestoreLike): Promise<AgentRegistrySnapshot> {

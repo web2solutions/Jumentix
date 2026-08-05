@@ -72,9 +72,17 @@ export interface DocumentSnapshot<T> {
 export interface DocumentReference<T> {
   get(): Promise<DocumentSnapshot<T>>;
   set(data: T, options?: { merge?: boolean }): Promise<unknown>;
+  delete(): Promise<unknown>;
 }
 
 export interface QueryDocumentSnapshot<T> {
+  /**
+   * The document id, which is not the same thing as `data().agent_id`.
+   *
+   * They disagreed for every record the JUM-611 migration wrote, and reading
+   * only the field made the corrupt ids invisible to the snapshot (JUM-613).
+   */
+  id: string;
   data(): T;
 }
 

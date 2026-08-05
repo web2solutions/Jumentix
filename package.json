@@ -49,6 +49,7 @@
     "agent-registry:heartbeat": "bun ci-cd/agent-registry-cli.js heartbeat",
     "agent-registry:assign": "bun ci-cd/agent-registry-cli.js assign",
     "agent-registry:complete": "bun ci-cd/agent-registry-cli.js complete",
+    "agent-registry:repair": "bun ci-cd/agent-registry-cli.js repair",
     "agent-registry:sync": "bun ci-cd/agent-registry-cli.js sync",
     "agent-registry:check": "bun ci-cd/agent-registry-cli.js check",
     "arch:check-http-adapters": "bun ci-cd/check-http-adapter-authenticity.js",

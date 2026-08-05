@@ -3,8 +3,22 @@
 
 const fs = require('fs');
 const path = require('path');
+const { isEntryPoint } = require('./lib/entry-point');
 
 const packageRoot = path.resolve(__dirname, '../packages/agent-registry');
+
+/**
+ * Strips the markdown that formats a value from the value itself (JUM-613).
+ *
+ * The original parser stripped the backticks around the *key* and kept the
+ * ones around the *value*, so every record it wrote carried them into
+ * Firestore — including the field used as the document id. Ten of twelve
+ * documents were corrupt, and a `status` typed as a four-value union held
+ * `` `busy` ``.
+ */
+function unformat(value) {
+  return String(value).trim().replace(/^`+|`+$/g, '').trim();
+}
 
 function parseMarkdownRegistry(content) {
   const agents = [];
@@ -15,7 +29,7 @@ function parseMarkdownRegistry(content) {
     const agentHeader = line.match(/^### \d+\) (.+)$/);
     if (agentHeader) {
       if (currentAgent) agents.push(currentAgent);
-      currentAgent = { agent_id: agentHeader[1].trim(), capabilities: [] };
+      currentAgent = { agent_id: unformat(agentHeader[1]), capabilities: [] };
       continue;
     }
 
@@ -24,7 +38,7 @@ function parseMarkdownRegistry(content) {
     const fieldMatch = line.match(/^- `([^`]+)`:\s*(.+)$/);
     if (fieldMatch) {
       const [, key, value] = fieldMatch;
-      const trimmedValue = value.trim();
+      const trimmedValue = unformat(value);
       switch (key) {
         case 'agent_id':
         case 'agent_name':
@@ -58,7 +72,7 @@ function parseMarkdownRegistry(content) {
 
     const capMatch = line.match(/^\s{2}- (.+)$/);
     if (capMatch && currentAgent.capabilities) {
-      currentAgent.capabilities.push(capMatch[1].trim());
+      currentAgent.capabilities.push(unformat(capMatch[1]));
     }
   }
 
@@ -134,7 +148,14 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  console.error(error.message);
-  process.exit(1);
-});
+// Guarded (JUM-613). Without this the module runs its migration the moment
+// anything requires it, which is why the parser that corrupted ten documents
+// had no test: it could not be imported without also being executed.
+if (isEntryPoint(module)) {
+  main().catch((error) => {
+    console.error(error.message);
+    process.exit(1);
+  });
+}
+
+module.exports = { parseMarkdownRegistry, unformat };
