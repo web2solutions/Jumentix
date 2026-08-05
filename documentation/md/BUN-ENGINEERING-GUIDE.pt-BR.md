@@ -69,7 +69,7 @@ todos os dependentes, não a um.
 | Objetivo | Comando |
 | --- | --- |
 | Script do repositório | `bun run <script>` |
-| Binário de pacote | `bunx <binário>` |
+| Binário de pacote | `bun x <binário>` |
 | Todos os workspaces | `bun run --filter '*' <script>` |
 | Um workspace | `bun run --filter @jumentix/website <script>` |
 
@@ -185,9 +185,9 @@ partir do lockfile, que lê o manifesto original. Tentar remover uma dependênci
 
 O workflow instala com `--frozen-lockfile` e valida o guard de toolchain antes de qualquer outra coisa.
 
-O registry privado de agentes (`XpertMinds/jumentix-agent-registry`) exige um token com `contents:read`. O
-GitHub Actions injeta `GH_TOKEN: secrets.AGENT_REGISTRY_TOKEN`. Localmente, `gh auth login` basta; a
-checagem recorre ao `gh auth token`.
+O registry de agentes roda no Firestore. GitHub Actions injeta `FIREBASE_SERVICE_ACCOUNT_KEY`
+com o JSON da conta de serviço. Localmente, exporte `FIREBASE_SERVICE_ACCOUNT_KEY` com o mesmo
+JSON antes de rodar comandos do registry.
 
 ## 9. Runtime de desenvolvimento (PM2)
 

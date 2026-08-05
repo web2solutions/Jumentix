@@ -4,12 +4,12 @@
   "results": [
     {
       "name": "@jumentix/runtime-infra",
-      "kind": "typecheck-only",
+      "kind": "unit",
       "status": 0
     },
     {
       "name": "@jumentix/external-db-repositories",
-      "kind": "typecheck-only",
+      "kind": "unit",
       "status": 0
     },
     {
@@ -19,27 +19,27 @@
     },
     {
       "name": "@jumentix/persistence-contracts",
-      "kind": "typecheck-only",
+      "kind": "unit",
       "status": 0
     },
     {
       "name": "@jumentix/database-client-factory",
-      "kind": "typecheck-only",
+      "kind": "unit",
       "status": 0
     },
     {
       "name": "@jumentix/external-store-proxy",
-      "kind": "typecheck-only",
+      "kind": "unit",
       "status": 0
     },
     {
       "name": "@jumentix/sdk-websocket-client",
-      "kind": "typecheck-only",
+      "kind": "unit",
       "status": 0
     },
     {
       "name": "@jumentix/shared-contracts",
-      "kind": "typecheck-only",
+      "kind": "unit",
       "status": 0
     },
     {
@@ -48,13 +48,18 @@
       "status": 0
     },
     {
+      "name": "@jumentix/agent-registry",
+      "kind": "unit",
+      "status": 0
+    },
+    {
       "name": "@jumentix/external-persistence-core",
-      "kind": "typecheck-only",
+      "kind": "unit",
       "status": 0
     },
     {
       "name": "@jumentix/sdk-rest-client",
-      "kind": "typecheck-only",
+      "kind": "unit",
       "status": 0
     },
     {
@@ -64,37 +69,37 @@
     },
     {
       "name": "@jumentix/mutex-service",
-      "kind": "typecheck-only",
+      "kind": "unit",
       "status": 0
     },
     {
       "name": "@jumentix/key-value-storage",
-      "kind": "typecheck-only",
+      "kind": "unit",
       "status": 0
     },
     {
       "name": "@jumentix/adapter-runtime-bootstrap",
-      "kind": "typecheck-only",
+      "kind": "unit",
       "status": 0
     },
     {
       "name": "@jumentix/security-scanner",
-      "kind": "typecheck-only",
+      "kind": "unit",
       "status": 0
     },
     {
       "name": "@jumentix/cli-init",
-      "kind": "typecheck-only",
+      "kind": "unit",
       "status": 0
     },
     {
       "name": "@jumentix/message-mediator",
-      "kind": "typecheck-only",
+      "kind": "unit",
       "status": 0
     },
     {
       "name": "@jumentix/sdk-grpc-client",
-      "kind": "typecheck-only",
+      "kind": "unit",
       "status": 0
     },
     {
@@ -104,12 +109,12 @@
     }
   ],
   "summary": {
-    "unit": 1,
-    "typecheckOnly": 19,
+    "unit": 18,
+    "typecheckOnly": 3,
     "invalid": 0,
     "failed": 0
   },
   "outcome": "passed",
-  "generatedAt": "2026-08-01T00:21:01.679Z",
+  "generatedAt": "2026-08-03T15:08:32.226Z",
   "note": "typecheck-only packages are verified by typecheck, not counted as unit-test coverage (JUM-557)"
 }

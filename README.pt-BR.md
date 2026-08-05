@@ -4,13 +4,13 @@ Idioma alvo: Português (Brasil)
 -->
 # Jumentix – Fábrica de Software para Equipes de Produto
 
-[![Gate de branch](https://github.com/XpertMinds/Jumentix/actions/workflows/test.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/test.yml?query=branch%3Adev)
-[![Cobertura própria](https://github.com/XpertMinds/Jumentix/actions/workflows/coverage.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/coverage.yml?query=branch%3Adev)
-[![Review third-party](https://github.com/XpertMinds/Jumentix/actions/workflows/third-party-review.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/third-party-review.yml?query=branch%3Adev)
-[![Qualidade do website](https://github.com/XpertMinds/Jumentix/actions/workflows/website.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/website.yml?query=branch%3Adev)
+[![Pipeline CircleCI dev](https://img.shields.io/badge/CircleCI-dev%20pipeline-343434?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/XpertMinds/Jumentix?branch=dev)
+[![Pipeline CircleCI main](https://img.shields.io/badge/CircleCI-main%20pipeline-343434?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/XpertMinds/Jumentix?branch=main)
+[![Codecov dev](https://codecov.io/gh/XpertMinds/Jumentix/branch/dev/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev)
+[![Codecov main](https://codecov.io/gh/XpertMinds/Jumentix/branch/main/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/main)
 [![Status do Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Jumentix)
 [![Classificação de Segurança](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=Jumentix)
-[![Cobertura](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Jumentix)
+[![Cobertura Sonar](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Jumentix)
 [![Bun](https://img.shields.io/badge/bun-1.3.14-000000?logo=bun&logoColor=white)](https://bun.sh/)
 [![Compatibilidade Node](https://img.shields.io/badge/node%20compat-22.x-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-6BA539?logo=openapiinitiative&logoColor=white)](./spec/1.0.0.yml)
@@ -35,27 +35,37 @@ Idioma alvo: Português (Brasil)
 
 | Gate obrigatório | `main` | `dev` |
 | --- | :---: | :---: |
-| Testes por branch | [![testes main](https://github.com/XpertMinds/Jumentix/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/XpertMinds/Jumentix/actions/workflows/test.yml?query=branch%3Amain) | [![testes dev](https://github.com/XpertMinds/Jumentix/actions/workflows/test.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/test.yml?query=branch%3Adev) |
-| Cobertura de projeto + patch | [![cobertura main](https://github.com/XpertMinds/Jumentix/actions/workflows/coverage.yml/badge.svg?branch=main)](https://github.com/XpertMinds/Jumentix/actions/workflows/coverage.yml?query=branch%3Amain) | [![cobertura dev](https://github.com/XpertMinds/Jumentix/actions/workflows/coverage.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/coverage.yml?query=branch%3Adev) |
-| Review de segurança third-party | [![review main](https://github.com/XpertMinds/Jumentix/actions/workflows/third-party-review.yml/badge.svg?branch=main)](https://github.com/XpertMinds/Jumentix/actions/workflows/third-party-review.yml?query=branch%3Amain) | [![review dev](https://github.com/XpertMinds/Jumentix/actions/workflows/third-party-review.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/third-party-review.yml?query=branch%3Adev) |
+| Workflow CircleCI | [![Pipeline CircleCI main](https://img.shields.io/badge/CircleCI-main%20pipeline-343434?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/XpertMinds/Jumentix?branch=main) | [![Pipeline CircleCI dev](https://img.shields.io/badge/CircleCI-dev%20pipeline-343434?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/XpertMinds/Jumentix?branch=dev) |
+| Cobertura de projeto no Codecov | [![Codecov main](https://codecov.io/gh/XpertMinds/Jumentix/branch/main/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/main) | [![Codecov dev](https://codecov.io/gh/XpertMinds/Jumentix/branch/dev/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev) |
+| Testes por branch | `branch-gate` | `branch-gate` |
+| Cobertura de projeto + patch | `coverage` | `coverage` |
+| Review de segurança third-party | `third-party-review` | `third-party-review` |
 
-A cobertura é produzida e aplicada dentro do repositório, sem conta ou token do
-Codecov. Cada execução retém evidências Istanbul JSON e LCOV. Os mínimos são:
+A cobertura é produzida e aplicada pelo job CircleCI `coverage` para `dev` e
+`main`. O CircleCI também envia LCOV ao Codecov com a flag `project` quando
+`CODECOV_TOKEN` está configurado. O Codecov fornece o mapa de cobertura arquivo
+a arquivo para cada branch longa:
+
+- [Mapa de arquivos Codecov para `dev`](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev)
+- [Mapa de arquivos Codecov para `main`](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/main)
+
+O gate rígido continua sendo a cobertura pertencente ao repositório. Cada
+execução retém evidências Istanbul JSON e LCOV. Os mínimos são:
 
 | Statements | Linhas | Funções | Branches | Linhas alteradas |
 | :---: | :---: | :---: | :---: | :---: |
 | ≥ 99% | ≥ 99% | ≥ 99% | ≥ 90% | ≥ 99% |
 
-[Abrir execuções de cobertura e evidências para download](https://github.com/XpertMinds/Jumentix/actions/workflows/coverage.yml)
+[Abrir pipelines CircleCI e evidências para download](https://app.circleci.com/pipelines/github/XpertMinds/Jumentix)
 
 Jumentix é um produto monorepo que funciona como uma fábrica de software para equipes de engenharia e proprietários de produtos. Ele ajuda você a passar da ideia ao SaaS pronto para produção em dias, não meses, com uma arquitetura que prioriza o contrato, flexibilidade de tempo de execução e governança de nível empresarial.
 
 > **Repositório privado canônico:** `XpertMinds/Jumentix`.
 > `web2solutions/aaa-typescript-boilerplate` está obsoleto, é somente leitura e
 > não aceita novas modificações. A coordenação de agentes é canônica no
-> repositório privado `XpertMinds/jumentix-agent-registry`; o antigo registry em
-> `web2solutions` também está obsoleto e é somente leitura. Consulte os Requisitos
-> `103` e `104`.
+> Firestore Database (Requisito `089`); os antigos registries em
+> `XpertMinds/jumentix-agent-registry` e `web2solutions` estão obsoletos e são
+> somente leitura. Consulte os Requisitos `089`, `103` e `104`.
 
 ## Índice
 

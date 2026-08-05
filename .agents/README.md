@@ -94,6 +94,7 @@ See also:
 - [122-task-owned-branch-and-pr-naming-governance](requirements/project/122-task-owned-branch-and-pr-naming-governance.md)
 - [123-wave5-app-rehoming-cutover-governance](requirements/project/123-wave5-app-rehoming-cutover-governance.md)
 - [124-monorepo-root-layout-governance](requirements/project/124-monorepo-root-layout-governance.md)
+- [125-agent-support-declaration](requirements/project/125-agent-support-declaration.md)
 
 ## Software and Product Requirements
 

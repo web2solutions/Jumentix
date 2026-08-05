@@ -283,6 +283,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/interface/HTTP/adapters/express/ExpressServer.start.test.ts",
+      "path": "apps/backend-template/test/unit/interface/HTTP/adapters/express/ExpressServer.start.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/interface/HTTP/adapters/start-rest-api.test.ts",
       "path": "apps/backend-template/test/unit/interface/HTTP/adapters/start-rest-api.test.ts",
       "layer": "interface/runtime",
@@ -573,8 +583,8 @@
       "timeoutMs": 60000
     },
     {
-      "id": "apps/backend-template/test/unit/config/aws-service-name.test.ts",
-      "path": "apps/backend-template/test/unit/config/aws-service-name.test.ts",
+      "id": "apps/backend-template/test/unit/config/security.test.ts",
+      "path": "apps/backend-template/test/unit/config/security.test.ts",
       "layer": "tooling",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -593,8 +603,8 @@
       "timeoutMs": 60000
     },
     {
-      "id": "apps/backend-template/test/unit/config/security.test.ts",
-      "path": "apps/backend-template/test/unit/config/security.test.ts",
+      "id": "apps/backend-template/test/unit/config/aws-service-name.test.ts",
+      "path": "apps/backend-template/test/unit/config/aws-service-name.test.ts",
       "layer": "tooling",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -665,6 +675,16 @@
     {
       "id": "apps/backend-template/test/unit/ci-cd/check-ci-provider.test.ts",
       "path": "apps/backend-template/test/unit/ci-cd/check-ci-provider.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/ci-cd/agent-registry-cli.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/agent-registry-cli.test.ts",
       "layer": "tooling",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -1283,6 +1303,19 @@
     {
       "id": "apps/backend-template/test/integration/ServiceManagement/domainDesigner.smoke.test.ts",
       "path": "apps/backend-template/test/integration/ServiceManagement/domainDesigner.smoke.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/ServiceManagement/runtimeEnv.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/runtimeEnv.integration.test.ts",
       "layer": "interface/runtime",
       "kind": "hexagonal",
       "type": "integration",
@@ -2401,6 +2434,26 @@
       "timeoutMs": 60000
     },
     {
+      "id": "packages/agent-registry/test/commands.test.ts",
+      "path": "packages/agent-registry/test/commands.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "packages/agent-registry/test/firestore-client.test.ts",
+      "path": "packages/agent-registry/test/firestore-client.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "packages/cana/test/packaging.test.ts",
       "path": "packages/cana/test/packaging.test.ts",
       "layer": "adapters/out+infra",
@@ -2617,16 +2670,6 @@
       "runner": "bun",
       "tier": "gate",
       "timeoutMs": 120000
-    },
-    {
-      "id": "apps/backend-template/test/unit/interface/HTTP/adapters/express/ExpressServer.start.test.ts",
-      "path": "apps/backend-template/test/unit/interface/HTTP/adapters/express/ExpressServer.start.test.ts",
-      "layer": "interface/runtime",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
     }
   ],
   "quarantine": [
@@ -2671,9 +2714,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 134,
-    "integration": 82,
+    "unit": 140,
+    "integration": 83,
     "smoke": 2,
-    "suites": 220
+    "suites": 227
   }
 }

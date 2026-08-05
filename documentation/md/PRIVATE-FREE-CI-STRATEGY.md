@@ -2,20 +2,21 @@
 
 ## Decision
 
-Jumentix remains private under `XpertMinds`. GitHub Actions is the canonical CI
-orchestrator; evidence is generated and retained by the repository wherever a
-hosted service charges for private-repository enforcement. Required checks fail
-closed and no skipped, neutral, missing, timed-out, or pending result is green.
+Jumentix remains private under `XpertMinds`. CircleCI is the canonical CI
+orchestrator while GitHub Actions billing blocks hosted execution; evidence is
+generated and retained by the repository wherever a hosted service charges for
+private-repository enforcement. Required checks fail closed and no skipped,
+neutral, missing, timed-out, or pending result is green.
 
 ## Free replacement map
 
 | Retired or unreliable service | Repository-owned replacement | Required evidence |
 | --- | --- | --- |
-| CircleCI | GitHub Actions branch-aware test workflow | `build (1.3.14, 7.2)` plus JSON gate artifact |
-| Codecov | Jest/Bun LCOV, project threshold and changed-lines checkers | `coverage`, JSON, LCOV and patch evidence |
-| GitGuardian | pinned Gitleaks CLI in GitHub Actions | Reviewdog annotations and terminal `third-party-review` result |
-| Snyk private enforcement | `bun audit`, override integrity and pinned Semgrep | dependency/security cells and Reviewdog annotations |
-| Hosted PR reviewer dependency | pinned Semgrep and Gitleaks through Reviewdog | required `third-party-review` check |
+| GitHub Actions billing | CircleCI branch-aware workflow | `branch-gate` plus JSON gate artifact |
+| Codecov private checks | Jest/Bun LCOV, project threshold and changed-lines checkers, then Codecov CLI upload from CircleCI | `coverage`, JSON, LCOV, patch evidence, and `codecov` upload |
+| GitGuardian | pinned Gitleaks CLI in CircleCI | SARIF artifacts and terminal `third-party-review` result |
+| Snyk private enforcement | `bun audit`, override integrity and pinned Semgrep | dependency/security cells and SARIF artifacts |
+| Hosted PR reviewer dependency | repository-owned Semgrep and Gitleaks scanners | required `third-party-review` check |
 
 SonarQube Cloud stays as defense in depth while its private-project allowance is
 available. It is not the sole owner of coverage or security evidence. If that
@@ -46,16 +47,16 @@ bypassed.
 - Statements, lines and functions: 99%.
 - Branches: 90%.
 - Changed lines: 99%.
-- GitHub Actions retains JSON and LCOV for independent audit without Codecov.
+- CircleCI retains JSON and LCOV for independent audit and uploads LCOV to Codecov for visibility.
+- Local production/development gates stay fast: full coverage production and patch coverage are required in CircleCI for `dev` and `main`, not inside local `ci:gate`.
 - README branch badges and the coverage map point only to canonical workflows.
 
 ## Third-party review contract
 
-`third-party-review.yml` runs pinned Gitleaks and Semgrep binaries and publishes
-findings with pinned Reviewdog. Downloads are checksum-verified, permissions are
-least-privilege, findings annotate the PR, and scanner errors or findings return
-a non-zero terminal result. Mutable tags and silent `continue-on-error` paths are
-rejected by `ci:check-third-party-review`.
+The CircleCI `third-party-review` job runs pinned Gitleaks and Semgrep binaries.
+Downloads are checksum-verified, SARIF is retained, and scanner errors or
+findings return a non-zero terminal result. Mutable tags and silent
+`continue-on-error` paths are rejected by `ci:check-third-party-review`.
 
 Automated review supplements the mandatory quality matrix; it does not replace
 tests, coverage, human accountability, or resolution of valid PR comments.
@@ -64,13 +65,13 @@ tests, coverage, human accountability, or resolution of valid PR comments.
 
 1. Keep the exact required checks on protected `dev` and `main`; approval count
    stays optional, but quality/security evidence remains mandatory.
-2. Pin tool versions and OCI digests. Review upstream releases monthly and apply
+2. Pin tool versions and checksums. Review upstream releases monthly and apply
    upgrades through governed PRs with checksum and contract tests.
 3. Retain gate, coverage, SARIF and scanner artifacts for the workflow retention
    window; never put secrets in logs or artifacts.
-4. If GitHub-hosted capacity is unavailable, use an ephemeral XpertMinds
-   self-hosted runner with the same workflow and no persistent credentials.
-   Local execution is diagnostic only; protected GitHub checks must still finish.
+4. If CircleCI capacity is unavailable, use an ephemeral XpertMinds self-hosted
+   runner with the same Bun commands and no persistent credentials. Local
+   execution is diagnostic only; protected remote checks must still finish.
 5. If a provider stops working, fail closed, record the outage in the Linear
    Project Update, replace it with a pinned repository-owned tool, and change
    protection only after the replacement is green.
@@ -79,11 +80,12 @@ tests, coverage, human accountability, or resolution of valid PR comments.
 
 ## Required-check names
 
-- `build (1.3.14, 7.2)`
+- `branch-gate`
 - `coverage`
 - `third-party-review`
-- `SonarQube Cloud Scan`
-- `storybook`
+- `codecov`
+- `sonarqube`
+- `website`
 
 Cursor Bugbot is neutral/skipped and is not evidence. A future hosted reviewer
 may be defense in depth only; it cannot replace the pinned fail-closed workflow.

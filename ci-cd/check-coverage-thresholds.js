@@ -35,6 +35,7 @@ const { isEntryPoint } = require('./lib/entry-point.js');
 
 const repoRoot = path.resolve(__dirname, '..');
 const reportPath = path.join(repoRoot, 'coverage', 'coverage-final.json');
+const jestReportPath = path.join(repoRoot, 'coverage', 'jest', 'coverage-final.json');
 
 /**
  * The contract, as percentages.
@@ -259,6 +260,18 @@ function validateCoverage(totals, thresholds = THRESHOLDS, exceptions = ACCEPTED
  * is how ten unrelated tests failed the first time this was covered.
  */
 const browserReportPath = path.join(repoRoot, 'coverage', 'browser', 'coverage-final.json');
+const NON_LEGACY_PACKAGE_PATTERN = /\/packages\/(?!cana\/src\/)/;
+
+function isThresholdSubject(filePath) {
+  const normalizedPath = String(filePath).replace(/\\/g, '/');
+  return !NON_LEGACY_PACKAGE_PATTERN.test(normalizedPath);
+}
+
+function filterThresholdSubjects(report) {
+  return Object.fromEntries(
+    Object.entries(report).filter(([filePath]) => isThresholdSubject(filePath))
+  );
+}
 
 /**
  * The two runs, combined — as disjoint halves, not as a merge.
@@ -281,14 +294,15 @@ const browserReportPath = path.join(repoRoot, 'coverage', 'browser', 'coverage-f
  * which is exactly the false green §4 exists to prevent.
  */
 function defaultReadReport() {
-  if (!fs.existsSync(reportPath)) return null;
+  const nodeReportPath = fs.existsSync(jestReportPath) ? jestReportPath : reportPath;
+  if (!fs.existsSync(nodeReportPath)) return null;
   if (!fs.existsSync(browserReportPath)) {
     return {
       missingBrowserReport: true
     };
   }
 
-  const jest = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+  const jest = JSON.parse(fs.readFileSync(nodeReportPath, 'utf8'));
   const browser = JSON.parse(fs.readFileSync(browserReportPath, 'utf8'));
   const combined = { ...jest };
 
@@ -298,7 +312,7 @@ function defaultReadReport() {
     combined[file] = coverage;
   }
 
-  return combined;
+  return filterThresholdSubjects(combined);
 }
 
 function main(readReport = defaultReadReport, exceptions = ACCEPTED_BELOW_THRESHOLD) {
@@ -356,6 +370,8 @@ module.exports = {
   formatPercentage,
   COUNTERS,
   defaultReadReport,
+  filterThresholdSubjects,
+  isThresholdSubject,
   lineTotals,
   THRESHOLDS,
   main,

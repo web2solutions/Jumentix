@@ -11,6 +11,9 @@ Active and mandatory.
    branches, pull requests, checks, releases, and automation.
 2. `XpertMinds/jumentix-agent-registry` is the private canonical repository for
    agent registration, assignment, branch-check, and coordination state.
+   (Superseded by requirement `089`: Firestore Database is now the single
+   source of truth for agent coordination; the GitHub registry repository is a
+   frozen legacy mirror retained as audit evidence.)
 3. `web2solutions/aaa-typescript-boilerplate` and
    `web2solutions/jumentix-agent-registry` are deprecated, read-only legacy
    origins.

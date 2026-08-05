@@ -43,14 +43,16 @@ const sonarProperties = fs.readFileSync(
 const pinnedBunVersion = fs.readFileSync(path.join(repoRoot, '.bun-version'), 'utf8').trim();
 
 describe('rEADME badges', () => {
-  it('shows repository-owned workflows for both long-lived branches', () => {
+  it('shows CircleCI for both long-lived branches', () => {
     expect.hasAssertions();
 
     expect.hasAssertions();
-    for (const workflow of ['test.yml', 'coverage.yml', 'third-party-review.yml']) {
-      expect(readme).toContain(`actions/workflows/${workflow}/badge.svg?branch=dev`);
-      expect(readme).toContain(`actions/workflows/${workflow}/badge.svg?branch=main`);
+    for (const branch of ['dev', 'main']) {
+      expect(readme).toContain(`img.shields.io/badge/CircleCI-${branch}%20pipeline`);
+      expect(readme).toContain(`https://app.circleci.com/pipelines/github/XpertMinds/Jumentix?branch=${branch}`);
     }
+    expect(badges).not.toContain('dl.circleci.com/status-badge');
+    expect(badges).not.toContain('actions/workflows');
   });
 
   it('points SonarCloud at the project key the scanner actually reports to', () => {
@@ -72,14 +74,28 @@ describe('rEADME badges', () => {
     expect.hasAssertions();
     // Paid/unreliable providers were retired in favour of repository-owned gates.
     expect(badges).not.toContain('snyk.io');
-    expect(badges).not.toContain('circleci.com');
-    expect(badges).not.toContain('codecov.io');
+    expect(badges).not.toContain('token=');
+    expect(badges).not.toContain('badge/codecov-via%20CircleCI');
+  });
+
+  it('badges real Codecov branch coverage and links to the file maps', () => {
+    expect.hasAssertions();
+
+    for (const branch of ['dev', 'main']) {
+      expect(readme).toContain(
+        `https://codecov.io/gh/XpertMinds/Jumentix/branch/${branch}/graph/badge.svg?flag=project`
+      );
+      expect(readme).toContain(`https://app.codecov.io/gh/XpertMinds/Jumentix/tree/${branch}`);
+    }
+    expect(readme).toContain('Codecov file map for `dev`');
+    expect(readme).toContain('Codecov file map for `main`');
   });
 
   it('restores the coverage map with every enforced threshold', () => {
     expect.hasAssertions();
 
     expect(readme).toContain('## Coverage and CI Map');
+    expect(readme).toContain('| Codecov project coverage |');
     expect(readme).toContain('| ≥ 99% | ≥ 99% | ≥ 99% | ≥ 90% | ≥ 99% |');
     expect(readme).toContain('Istanbul JSON and LCOV evidence');
   });
@@ -224,6 +240,21 @@ describe('web framework badges', () => {
     // so hyper-express cannot run on Bun at all.
     expect(badges).not.toContain('hyper-express');
     expect(badges).not.toContain('Hyper');
+  });
+});
+
+describe('website realtime navigation metadata', () => {
+  it('indexes the pt-BR realtime adapter pages shipped by the website', async () => {
+    expect.hasAssertions();
+
+    const { default: ptBrRealtimeMeta } = await import(
+      path.join(repoRoot, 'apps/jumentix-website/content/pt-BR/jumentix/adapters/realtime/_meta')
+    ) as { default: Record<string, string> };
+
+    expect(ptBrRealtimeMeta).toStrictEqual({
+      'grpc-api': 'API gRPC em tempo real',
+      'websocket-api': 'API WebSocket em tempo real'
+    });
   });
 });
 

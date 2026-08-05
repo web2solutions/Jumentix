@@ -278,9 +278,9 @@ describe('runSuitePaths', () => {
     const { spawn, calls } = recordingSpawn();
     runSuitePaths(suites, withMap({ spawn, runtime: 'node', timeoutMs: 15000 }));
 
-    expect(calls[0].command).toBe('bunx');
+    expect(calls[0].command).toBe('bun');
     expect(calls[0].args).toStrictEqual(
-      expect.arrayContaining(['jest', '--runInBand', '--coverage=false', '--testTimeout=15000'])
+      expect.arrayContaining(['x', 'jest', '--runInBand', '--coverage=false', '--testTimeout=15000'])
     );
   });
 
@@ -294,7 +294,8 @@ describe('runSuitePaths', () => {
     const { spawn, calls } = recordingSpawn();
     runSuitePaths(suites, withMap({ spawn, mapPinsToNode: () => true }));
 
-    expect(calls[0].command).toBe('bunx');
+    expect(calls[0].command).toBe('bun');
+    expect(calls[0].args.slice(0, 2)).toStrictEqual(['x', 'jest']);
   });
 
   it('returns the spawned status', () => {

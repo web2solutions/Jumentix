@@ -2,20 +2,21 @@
 
 ## Decisão
 
-O Jumentix permanece privado sob `XpertMinds`. GitHub Actions é o orquestrador
-canônico; quando um serviço cobra pela validação de repositório privado, a
-evidência é gerada e retida pelo próprio repositório. Checks obrigatórios falham
-fechado: resultado pulado, neutro, ausente, expirado ou pendente nunca é verde.
+O Jumentix permanece privado sob `XpertMinds`. CircleCI é o orquestrador
+canônico enquanto GitHub Actions billing bloqueia execução hospedada; quando um
+serviço cobra pela validação de repositório privado, a evidência é gerada e
+retida pelo próprio repositório. Checks obrigatórios falham fechado: resultado
+pulado, neutro, ausente, expirado ou pendente nunca é verde.
 
 ## Mapa de substituição gratuita
 
 | Serviço aposentado ou instável | Substituição do repositório | Evidência obrigatória |
 | --- | --- | --- |
-| CircleCI | testes por branch no GitHub Actions | `build (1.3.14, 7.2)` e artefato JSON |
-| Codecov | LCOV Jest/Bun, threshold do projeto e linhas alteradas | `coverage`, JSON, LCOV e patch |
-| GitGuardian | Gitleaks CLI fixado no GitHub Actions | anotações Reviewdog e `third-party-review` terminal |
-| Snyk privado | `bun audit`, integridade de overrides e Semgrep fixado | células de dependência/segurança |
-| Revisor hospedado de PR | Semgrep e Gitleaks fixados via Reviewdog | check obrigatório `third-party-review` |
+| GitHub Actions billing | workflow CircleCI por branch | `branch-gate` e artefato JSON |
+| Checks privados Codecov | LCOV Jest/Bun, threshold do projeto e linhas alteradas, depois upload Codecov CLI no CircleCI | `coverage`, JSON, LCOV, patch e upload `codecov` |
+| GitGuardian | Gitleaks CLI fixado no CircleCI | artefatos SARIF e `third-party-review` terminal |
+| Snyk privado | `bun audit`, integridade de overrides e Semgrep fixado | células de dependência/segurança e artefatos SARIF |
+| Revisor hospedado de PR | scanners Semgrep e Gitleaks controlados pelo repositório | check obrigatório `third-party-review` |
 
 SonarQube Cloud continua como defesa em profundidade enquanto houver cota para o
 projeto privado. Ele não é o único proprietário da cobertura ou segurança. Se a
@@ -45,15 +46,16 @@ célula produz evidência terminal; falhas são corrigidas, nunca contornadas.
 - Statements, linhas e funções: 99%.
 - Branches: 90%.
 - Linhas alteradas: 99%.
-- GitHub Actions retém JSON e LCOV para auditoria independente do Codecov.
+- CircleCI retém JSON e LCOV para auditoria independente e envia LCOV ao Codecov para visibilidade.
+- Gates locais de produção/desenvolvimento ficam rápidos: cobertura completa e patch coverage são obrigatórios no CircleCI para `dev` e `main`, não dentro do `ci:gate` local.
 - Badges e mapa de cobertura apontam apenas para workflows canônicos.
 
 ## Contrato de revisão third-party
 
-`third-party-review.yml` executa Gitleaks e Semgrep fixados e publica achados com
-Reviewdog fixado. Downloads têm checksum, permissões são mínimas, achados anotam
-a PR e erro ou finding retorna saída terminal diferente de zero. Tags mutáveis e
-`continue-on-error` silencioso são recusados por `ci:check-third-party-review`.
+O job CircleCI `third-party-review` executa Gitleaks e Semgrep fixados.
+Downloads têm checksum, SARIF é retido e erro ou finding retorna saída terminal
+diferente de zero. Tags mutáveis e `continue-on-error` silencioso são recusados
+por `ci:check-third-party-review`.
 
 A revisão automática complementa a matriz; não substitui testes, cobertura,
 responsabilidade humana ou resolução de comentários válidos.
@@ -62,13 +64,13 @@ responsabilidade humana ou resolução de comentários válidos.
 
 1. Manter os checks exatos em `dev` e `main`; aprovação pode ser opcional, mas
    evidência de qualidade e segurança continua obrigatória.
-2. Fixar versões e digests. Revisar releases mensalmente e atualizar por PR
+2. Fixar versões e checksums. Revisar releases mensalmente e atualizar por PR
    governada com checksum e testes de contrato.
 3. Reter gate, cobertura, SARIF e scanners pelo prazo do workflow; nunca incluir
    segredos em logs ou artefatos.
-4. Se runners hospedados falharem, usar runner efêmero da XpertMinds com o mesmo
-   workflow e sem credenciais persistentes. Execução local é só diagnóstico;
-   checks protegidos do GitHub ainda precisam terminar.
+4. Se a capacidade do CircleCI falhar, usar runner efêmero da XpertMinds com os
+   mesmos comandos Bun e sem credenciais persistentes. Execução local é só
+   diagnóstico; checks remotos protegidos ainda precisam terminar.
 5. Se um provedor parar, falhar fechado, registrar no Project Update do Linear,
    substituí-lo por ferramenta fixada e só alterar proteção após ficar verde.
 6. Semanalmente: conferir checks/agendamentos. Mensalmente: tokens, pins e
@@ -76,11 +78,12 @@ responsabilidade humana ou resolução de comentários válidos.
 
 ## Nomes dos checks obrigatórios
 
-- `build (1.3.14, 7.2)`
+- `branch-gate`
 - `coverage`
 - `third-party-review`
-- `SonarQube Cloud Scan`
-- `storybook`
+- `codecov`
+- `sonarqube`
+- `website`
 
 Cursor Bugbot é neutro/pulado e não é evidência. Outro revisor hospedado só pode
 ser defesa adicional; não substitui o workflow fixado e fail-closed.

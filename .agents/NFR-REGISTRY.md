@@ -52,7 +52,7 @@ This file consolidates non-functional requirements already requested and stored 
 - `075` Jumentix composition (libraries, tools, templates, components) represented in specs.
 - `076` Mandatory task traceability for AI/humans + documentation sync + EN/PT documentation and website parity.
 - `077` Multi-agent platform support (Codex, Claude Code, Grok, OpenCode) with aligned governance and traceability rules.
-- `078` Agent Registry system with mandatory pre-task registration, planning assignment by availability, and required `main`/`dev` pre-work branch checks.
+- `078` Agent Registry system (Firestore-backed) with mandatory pre-task registration, planning assignment by availability, and required `main`/`dev` pre-work branch checks.
 - `079` Main branch protection and mandatory feature/fix/chore branching flow; local direct
   changes on `main` are prohibited, review is optional, and all required checks remain mandatory.
 - `080` Agent Registry must include machine identity and agent runtime version metadata, allowing multiple agents per host machine.
@@ -63,7 +63,7 @@ This file consolidates non-functional requirements already requested and stored 
 - `085` PR descriptions are mandatory and must follow the repository PR template, with required sections completed before approval.
 - `086` One task per branch and PR, matching `[JUM-XXXX][Nature]` PR-title naming, `dev`-first promotion to `main`, and
   false-green-proof destination-aware gates for task branches, `dev`, and `main`.
-- `089` Agent Registry must be maintained in an independent public GitHub repository as canonical source, with mirrored sync in consumer repositories, immutable revision pins by full commit SHA, and owner-only write access for `web2solutions` (`web2solucoes@gmail.com`).
+- `089` Agent Registry must be maintained in Firestore Database as canonical source, with optional local snapshot for offline consultation, service-account-only write access, and stale-snapshot validation in CI gates.
 - `090` Every executable task must have one focused epic, one primary nature, and the epic milestone; milestone validation precedes epic-level agent delegation and non-overlapping child-task assignment.
 - `091` Website design-system and Storybook governance, including accessibility, responsive/theme states, component inventory, reproducible smoke validation, and strict ownership by the `apps/jumentix-website` workflow rather than the main monorepo workflow.
 - `092` Open-source commercial website experience, bilingual route parity, truthful code proof, responsive navigation, and production route integrity.
@@ -97,9 +97,9 @@ This file consolidates non-functional requirements already requested and stored 
   selection, `JUMENTIX_GATE_V2` flag-gated flip/rollback, and fail-closed selective-gate evidence.
 - `106` Local Bun for **all** suite types; Node/Jest reserved for CI (`ciRunner` /
   `JUMENTIX_TEST_RUNTIME=node`). CI job greenness is out of scope for the Test Pyramid delivery.
-- `107` CircleCI is historical and superseded by `113` for the private XpertMinds
-  repository. Provider checks now fail closed against the repository-owned GitHub
-  Actions path rather than requiring a duplicate CircleCI pipeline.
+- `107` CircleCI is active again through `113` while GitHub Actions billing blocks
+  hosted execution. CircleCI must cover `dev` and `main` branch gates, coverage,
+  website, third-party review, Codecov publishing, and Sonar defense-in-depth.
 - `108` An HTTP adapter named for a web framework must import that framework and use it;
   a reference assigned to an unused field, or a require swallowed by try/catch, does not
   satisfy this, and the framework must be a declared dependency. Platform targets with no
@@ -147,10 +147,11 @@ This file consolidates non-functional requirements already requested and stored 
   ratchets: a declared package that has since grown a suite fails too, so the list cannot
   become a permanent exemption. The same list is the Sonar coverage exclusion set, and the two
   disagreeing in either direction fails. `packages:check-suites` validates it.
-- `113` Private-repository CI must have a zero-cost repository-owned path. GitHub
-  Actions is the hosted executor, local/self-hosted execution is the fallback,
-  CircleCI and Codecov are retired as authorities, and coverage remains fail-closed
-  through the repository's four-metric and patch checks. Sonar is defense-in-depth.
+- `113` Private-repository CI must have a zero-cost repository-owned path.
+  CircleCI is the hosted executor while GitHub Actions billing blocks execution;
+  local/self-hosted execution remains diagnostic fallback. Coverage remains
+  fail-closed in CircleCI through the repository's four-metric and patch checks,
+  then publishes to Codecov for visibility. Sonar is defense-in-depth.
 - `114` Agent onboard uses an operator-confirmed filesystem root (this host:
   `/Users/eduardoalmeida/apps/XpertMinds`) and the layout
   `<root>/<agent-identifier>/Jumentix` as the only SoT checkout for that agent.
@@ -175,6 +176,9 @@ This file consolidates non-functional requirements already requested and stored 
 - `122` Task-owned branch and PR naming governance (migrated from duplicate `079`).
 - `123` Wave 5 app re-homing cutover governance (migrated from duplicate `055`).
 - `124` Monorepo root layout governance (migrated from duplicate `060`).
+- `125` Supported agents are declared as data in `.agents/supported-agents.json`; the PR
+  governance gate derives task-branch prefixes from the declaration, verifies each declared
+  agent's instructions file exists, and fails closed on a missing or malformed declaration.
 
 When a new NFR is requested:
 

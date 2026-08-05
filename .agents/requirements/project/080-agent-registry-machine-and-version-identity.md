@@ -20,6 +20,6 @@ The same host machine may run multiple agents concurrently. Auditability require
 
 ## Acceptance Criteria
 
-1. `.agents/AGENT-REGISTRY.md` field definitions include machine and agent version fields.
+1. Firestore agent documents include machine and agent version fields.
 2. Existing registered agents include populated machine and version metadata.
 3. Governance docs reference the expanded registry identity contract.

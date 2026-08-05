@@ -115,26 +115,20 @@ Se um PR não estiver vinculado aos itens de trabalho do projeto, ele estará fo
 1. O repositório independente do Agent Registry e sua branch `main` continuam sendo a fonte de
    verdade para coordenação.
 2. Cada espelho consumidor registra a revisão imutável do commit canônico que o originou.
-3. O comando de sincronização resolve a `main` canônica e atualiza o espelho e a revisão em
-   conjunto.
-4. Os gates de commit, push e PR comparam o espelho com sua revisão imutável registrada, mantendo
-   o resultado reproduzível quando outro agente atualiza a `main` canônica durante a execução.
-5. A leitura da revisão imutável usa SHA completo e caminho codificado. O registro canônico
-   privado usa a Contents API autenticada quando `GITHUB_TOKEN` / `GH_TOKEN` está presente
-   (CI: `secrets.AGENT_REGISTRY_TOKEN`; local: env ou `gh auth token`). O
-   `raw.githubusercontent.com` anônimo é apenas diagnóstico e normalmente retorna HTTP 404 para
-   conteúdo privado — não é mecanismo de acesso.
-6. Somente a sincronização explícita resolve a `main` canônica pela API do GitHub e pode usar
-   `GITHUB_TOKEN` ou `GH_TOKEN` ao autenticar no GitHub.
-7. SHA inválido, caminho inseguro, erro HTTP, falha de transporte, resposta inválida, acesso não
-   autorizado ou divergência entre o conteúdo canônico e o espelho local reprovam o gate sem
-   expor credenciais. Diagnósticos apontam falta de credenciais e raw 404 sem token válido para
-   configuração de acesso privado, mantêm orientação de token quando Contents API 401/403 é
-   seguida de raw 404, e nos demais casos distinguem deriva de pin/caminho após acesso autenticado
-   de necessidade de acesso privado com token.
-8. O repositório canônico do registro é privado sob `XpertMinds`. Somente `web2solutions`
-   (`web2solucoes@gmail.com`) e identidades explicitamente autorizadas no Linear podem ler,
-   fazer push ou publicar alterações nele.
+3. Registro de agente, heartbeat, atribuição e conclusão são escritos diretamente no Firestore
+   através dos comandos CLI `agent-registry`.
+4. Um snapshot local `.agents/registry-snapshot.json` pode ser gerado com
+   `bun run agent-registry:sync` para consulta offline; ele é regenerável e ignorado pelo Git.
+5. Os gates de commit, push e PR validam o snapshot local contra o Firestore quando o snapshot
+   existe. Um snapshot ausente não reprova o gate; um snapshot desatualizado reprova com orientação
+   para rodar `bun run agent-registry:sync`.
+6. O acesso ao Firestore exige o JSON da conta de serviço em `FIREBASE_SERVICE_ACCOUNT_KEY`
+   (CI: `secrets.FIREBASE_SERVICE_ACCOUNT_KEY`). Credenciais nunca devem ser commitadas.
+7. Falhas de transporte, indisponibilidade do Firestore ou divergência de snapshot reprovam o
+   gate sem cair em arquivos locais. Diagnósticos distinguem credenciais ausentes de estado
+   desatualizado.
+8. O projeto Firestore é privado sob XpertMinds. Somente identidades explicitamente autorizadas
+   no Linear podem escrever registros de agentes.
 
 ## Governança de Documentação
 

@@ -1,6 +1,6 @@
 # Events and Messages Map
 
-This document maps the current integration contracts used by the boilerplate, including event publishing/subscription and request/response message contracts through `MessageMediator`.
+This document maps the current integration contracts used by Jumentix, including event publishing/subscription and request/response message contracts through `MessageMediator`.
 
 ## 1) Integration Event Envelope
 

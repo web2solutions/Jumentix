@@ -35,6 +35,14 @@ const TITLE_PREFIX_BY_NATURE = Object.freeze({
   chore: '[Chore]'
 });
 
+const SUPPORTED_AGENTS_PATH = '.agents/supported-agents.json';
+const SUPPORTED_AGENT_FIELDS = Object.freeze([
+  'platformId',
+  'branchPrefix',
+  'displayName',
+  'instructionsFile'
+]);
+
 const LINEAR_ISSUE_URL_PATTERN = /^https:\/\/linear\.app\/[^/]+\/issue\/[A-Z][A-Z0-9]*-\d+\/[^/?#]+$/;
 const LINEAR_PROJECT_URL_PATTERN = /^https:\/\/linear\.app\/[^/]+\/project\/[^/?#]+(?:\/(?:overview|activity))?$/;
 const LINEAR_PROJECT_UPDATE_URL_PATTERN = /^https:\/\/linear\.app\/[^/]+\/project\/[^/?#]+\/activity#project-update-[a-f0-9-]+$/i;
@@ -50,6 +58,73 @@ function isPlaceholder(value) {
   return !normalized
     || /^<.*>$/.test(normalized)
     || /^(n\/a|none|todo|tbd|-+)$/i.test(normalized);
+}
+
+function loadSupportedAgents(rootDir = process.cwd()) {
+  const declarationPath = path.join(rootDir, SUPPORTED_AGENTS_PATH);
+  if (!fs.existsSync(declarationPath)) {
+    throw new Error(
+      `[pr-governance] missing supported agents declaration: ${SUPPORTED_AGENTS_PATH}`
+    );
+  }
+
+  let agents;
+  try {
+    agents = JSON.parse(fs.readFileSync(declarationPath, 'utf8'));
+  } catch (error) {
+    throw new Error(
+      `[pr-governance] malformed supported agents declaration: ${SUPPORTED_AGENTS_PATH} (${error.message})`
+    );
+  }
+  if (!Array.isArray(agents) || agents.length === 0) {
+    throw new Error(
+      `[pr-governance] supported agents declaration must be a non-empty array: ${SUPPORTED_AGENTS_PATH}`
+    );
+  }
+  for (const agent of agents) {
+    const hasRequiredFields = agent !== null && typeof agent === 'object'
+      && SUPPORTED_AGENT_FIELDS.every(
+        (field) => typeof agent[field] === 'string' && agent[field].trim() !== ''
+      );
+    if (!hasRequiredFields) {
+      throw new Error(
+        '[pr-governance] supported agents declaration entries must define '
+        + `${SUPPORTED_AGENT_FIELDS.join(', ')}: ${SUPPORTED_AGENTS_PATH}`
+      );
+    }
+    if (!/^[a-z0-9][a-z0-9-]*$/.test(agent.branchPrefix)) {
+      throw new Error(
+        `[pr-governance] invalid branch prefix "${agent.branchPrefix}" in ${SUPPORTED_AGENTS_PATH}`
+      );
+    }
+  }
+  return agents;
+}
+
+function agentBranchPatterns(rootDir = process.cwd()) {
+  const alternation = loadSupportedAgents(rootDir)
+    .map((agent) => agent.branchPrefix)
+    .join('|');
+  return {
+    strict: new RegExp(`^(?:${alternation})\\/([a-z-]+)\\/([A-Z][A-Z0-9]*-\\d+)-[a-z0-9-]+$`),
+    legacy: new RegExp(`^(?:${alternation})\\/([a-z-]+)\\/[a-z][a-z0-9-]*$`)
+  };
+}
+
+function validateSupportedAgents(rootDir = process.cwd()) {
+  let agents;
+  try {
+    agents = loadSupportedAgents(rootDir);
+  } catch (error) {
+    return [error.message];
+  }
+
+  return agents
+    .filter((agent) => !fs.existsSync(path.join(rootDir, agent.instructionsFile)))
+    .map(
+      (agent) => `[pr-governance] declared agent "${agent.platformId}" is missing `
+        + `instructions file: ${agent.instructionsFile}`
+    );
 }
 
 function validateTemplates(rootDir = process.cwd()) {
@@ -76,7 +151,7 @@ function validateTemplates(rootDir = process.cwd()) {
   return failures;
 }
 
-function validatePullRequest(metadata) {
+function validatePullRequest(metadata, rootDir = process.cwd()) {
   const title = String(metadata.title || '').trim();
   const body = String(metadata.body || '');
   const headRef = String(metadata.headRef || '').trim();
@@ -102,10 +177,18 @@ function validatePullRequest(metadata) {
     return failures;
   }
 
-  const branchMatch = headRef.match(
-    /^(?:codex|claude|grok|opencode)\/([a-z-]+)\/([A-Z][A-Z0-9]*-\d+)-[a-z0-9-]+$/
-  );
-  if (!branchMatch) {
+  let branchPatterns;
+  try {
+    branchPatterns = agentBranchPatterns(rootDir);
+  } catch (error) {
+    failures.push(error.message);
+    return failures;
+  }
+
+  const branchMatch = headRef.match(branchPatterns.strict);
+  const legacyAgentBranchMatch = headRef.match(branchPatterns.legacy);
+  const branchNature = branchMatch?.[1] || legacyAgentBranchMatch?.[1] || '';
+  if (!branchMatch && !legacyAgentBranchMatch) {
     failures.push(`[pr-governance] invalid task branch format: ${headRef || '<empty>'}`);
   }
 
@@ -117,8 +200,8 @@ function validatePullRequest(metadata) {
   }
 
   const nature = readField(body, 'Primary task nature').toLowerCase();
-  if (branchMatch && nature !== branchMatch[1]) {
-    failures.push(`[pr-governance] primary task nature must match branch nature (${branchMatch[1]})`);
+  if (branchNature && nature !== branchNature) {
+    failures.push(`[pr-governance] primary task nature must match branch nature (${branchNature})`);
   }
 
   const taskLink = readField(body, 'Child task issue link');
@@ -166,15 +249,32 @@ function validatePullRequest(metadata) {
   return failures;
 }
 
+function resolvePullRequestFlag(value = process.env.AAA_CI_IS_PULL_REQUEST) {
+  if (typeof value === 'boolean') return value;
+  const normalized = String(value || '').trim().toLowerCase();
+  if (['1', 'true', 'yes'].includes(normalized)) return true;
+  if (['0', 'false', 'no'].includes(normalized)) return false;
+  return Boolean(process.env.CIRCLE_PULL_REQUEST);
+}
+
 function run(options = {}) {
+  const metadata = {
+    title: options.title ?? process.env.JUMENTIX_PR_TITLE,
+    body: options.body ?? process.env.JUMENTIX_PR_BODY,
+    headRef: options.headRef ?? process.env.JUMENTIX_PR_HEAD_REF,
+    baseRef: options.baseRef ?? process.env.JUMENTIX_PR_BASE_REF
+  };
+  const hasExplicitPullRequestMetadata = Boolean(
+    String(metadata.title || '').trim()
+    || String(metadata.body || '').trim()
+    || String(metadata.baseRef || '').trim()
+  );
+  const shouldValidatePullRequest = resolvePullRequestFlag(options.isPullRequest)
+    || hasExplicitPullRequestMetadata;
   const failures = [
+    ...validateSupportedAgents(options.rootDir),
     ...validateTemplates(options.rootDir),
-    ...validatePullRequest({
-      title: options.title ?? process.env.JUMENTIX_PR_TITLE,
-      body: options.body ?? process.env.JUMENTIX_PR_BODY,
-      headRef: options.headRef ?? process.env.JUMENTIX_PR_HEAD_REF,
-      baseRef: options.baseRef ?? process.env.JUMENTIX_PR_BASE_REF
-    })
+    ...(shouldValidatePullRequest ? validatePullRequest(metadata, options.rootDir) : [])
   ];
 
   if (failures.length > 0) {
@@ -193,11 +293,17 @@ if (isEntryPoint(module)) {
 module.exports = {
   REQUIRED_EPIC_FIELDS,
   REQUIRED_TITLE_FORMAT,
+  SUPPORTED_AGENTS_PATH,
+  SUPPORTED_AGENT_FIELDS,
   TEMPLATE_PATHS,
   TITLE_PREFIX_BY_NATURE,
+  agentBranchPatterns,
   isPlaceholder,
+  loadSupportedAgents,
   readField,
+  resolvePullRequestFlag,
   run,
   validatePullRequest,
+  validateSupportedAgents,
   validateTemplates
 };

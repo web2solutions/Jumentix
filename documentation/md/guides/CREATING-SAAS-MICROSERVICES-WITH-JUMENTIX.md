@@ -32,4 +32,4 @@ Use this path when domain scale, team autonomy, and traffic profiles demand serv
 
 - [Message and Event Contracts](../EVENTS-AND-MESSAGES-MAP.md)
 - [Jumentix Workspace Packages](../JUMENTIX-WORKSPACE-PACKAGES.md)
-- [Jumentix Monorepo Execution Plan](../JUMENTIX-MONOREPO-EXECUTION-PLAN.md)
+- [Architecture and Structure](../ARCHITECTURE-AND-STRUCTURE.md)

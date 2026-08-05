@@ -156,9 +156,14 @@ Aplicação por branch:
 bun run ci:gate:branch
 ```
 
-O seletor lê `JUMENTIX_QUALITY_GATE_TARGET`. Uma branch de tarefa executa `bun run ci:gate:task`, limitado aos testes unitários alterados ou relacionados. O destino `dev`
-executa a suíte completa `bun run test:unit`. O destino `main` executa `bun run ci:gate:strict` com toda a matriz. Alterações somente de documentação validam os arquivos
-Markdown e emitem evidência explícita `not-applicable`, sem fabricar um teste aprovado.
+O seletor lê `JUMENTIX_QUALITY_GATE_TARGET` e o sinal de PR
+(`CIRCLE_PULL_REQUEST` ou `AAA_CI_IS_PULL_REQUEST`). Uma branch de tarefa executa
+`bun run ci:gate:task`, limitado aos testes unitários alterados ou relacionados.
+Um push direto para `dev` executa a suíte completa `bun run test:unit`. Um PR
+destinado a `dev` ou qualquer caminho para `main` executa `bun run ci:gate:strict`,
+a matriz local completa sem cobertura pesada. Alterações somente de documentação
+validam os arquivos Markdown e emitem evidência explícita `not-applicable`, sem
+fabricar um teste aprovado.
 
 Aplicação local:
 
@@ -170,32 +175,33 @@ Aplicação local:
 
 Aplicação remota:
 
-- GitHub Actions invoca `bun run ci:gate:branch`; CircleCI foi aposentado pelo Requisito 113
-- o GitHub Actions passa a branch base do PR ou a branch enviada e sempre publica a evidência do gate
+- CircleCI invoca `bun run ci:gate:branch` enquanto GitHub Actions billing bloqueia execução hospedada
+- o CircleCI passa a branch base do PR ou a branch enviada, marca eventos de PR e sempre retém a evidência do gate
+- CircleCI assume a produção completa de cobertura e patch coverage em `dev` e `main`; gates locais ficam rápidos e diagnósticos
 - eventos de push em branches de tarefa comparam `origin/dev...HEAD`; a CI hospedada nunca usa o
   modo local de diff staged
-- o GitHub Actions publica `artifacts/ci/full-test-matrix.json` somente para trabalhos destinados a `main`
-- `.github/workflows/website.yml` executa build/smoke do Storybook e prepublish somente quando
-  caminhos pertencentes ao website mudam
-- o Storybook não é executado por `.github/workflows/test.yml` nem pela matriz global
+- o CircleCI publica `artifacts/ci/full-test-matrix.json` quando o gate seleciona a matriz completa
+- `.circleci/config.yml` executa build/smoke do Storybook e prepublish para `dev` e `main`
+- o Storybook não é executado pela matriz global
 - `ci:monorepo` permanece como entrada de compatibilidade, mas não pode selecionar um plano reduzido somente para documentação
 
 Importação de cobertura do SonarQube Cloud:
 
-- Fluxo de trabalho: `.github/workflows/sonarqube-cloud.yml`
+- Fluxo de trabalho: `.circleci/config.yml`
 - Fonte de cobertura: `./coverage/lcov.info` (Jest LCOV)
 - Configuração do scanner: `sonar.javascript.lcov.reportPaths=./coverage/lcov.info`
-- Segredo do repositório necessário: `SONAR_TOKEN`
+- Segredo CircleCI necessário: `SONAR_TOKEN`
 
 ### Visão geral de ferramentas integradas
 
 | Integração | Finalidade | Onde está configurado | O que executar/requisitos |
 |------------|---------|----------------------------|-----------------------------|
-| GitHub Actions (testes) | Validação orientada ao destino em push/PR | `.github/workflows/test.yml` | Seleciona pelo destino do PR ou branch enviada e publica evidência do gate |
-| GitHub Actions (cobertura) | Cobertura de projeto e patch pertencente ao repositório | `.github/workflows/coverage.yml` | Aplica `coverage:check` e `coverage:patch` e retém evidência JSON/LCOV |
-| GitHub Actions (revisão third-party) | Revisão fail-closed de segredos e análise estática | `.github/workflows/third-party-review.yml` | Executa Gitleaks/Semgrep fixados e publica via Reviewdog fixado |
-| GitHub Actions (website) | Storybook e prontidão de publicação pertencentes ao website | `.github/workflows/website.yml` | Filtrado por caminhos; executa build/smoke do Storybook e prepublish de forma independente |
-| Ações GitHub (SonarQube Cloud) | Análise estática + quality gate + importação de cobertura | `.github/workflows/sonarqube-cloud.yml`, `sonar-project.properties` | Requer `SONAR_TOKEN`; produz LCOV antes do scan |
+| CircleCI (branch gate) | Validação orientada ao destino em push/PR | `.circleci/config.yml` | Seleciona pelo destino do PR ou branch enviada e retém evidência do gate |
+| CircleCI (cobertura) | Cobertura de projeto e patch pertencente ao repositório | `.circleci/config.yml` | Aplica `coverage:check` e `coverage:patch` e retém evidência JSON/LCOV |
+| CircleCI (Codecov) | Publicação de dashboard de cobertura | `.circleci/config.yml` | Requer `CODECOV_TOKEN`; envia LCOV pelo Codecov CLI após thresholds locais |
+| CircleCI (revisão third-party) | Revisão fail-closed de segredos e análise estática | `.circleci/config.yml` | Executa Gitleaks/Semgrep fixados e retém evidência SARIF |
+| CircleCI (website) | Storybook e prontidão de publicação pertencentes ao website | `.circleci/config.yml` | Executa build/smoke do Storybook e prepublish de forma independente |
+| CircleCI (SonarQube Cloud) | Análise estática + quality gate + importação de cobertura | `.circleci/config.yml`, `sonar-project.properties` | Requer `SONAR_TOKEN`; importa LCOV retido após cobertura |
 | Gate de cobertura do repositório | Hard gate local contra baixa cobertura | `jest.config.js`, `ci-cd/check-coverage-thresholds.js` | Statements/linhas/funções 99%, branches 90%, linhas alteradas 99% |
 | Husky | Ganchos Git locais para verificações de qualidade | `.husky/*` | Instalado por `bun run prepare` |
 | Commitlint + Commitizen | Commits convencionais e fluxo de commits guiados | `commitlint.config.js`, `package.json` | `bun run commit` |
@@ -208,29 +214,12 @@ Importação de cobertura do SonarQube Cloud:
 
 ### Plataformas e responsabilidades de CI
 
-#### Provedores hospedados aposentados
+#### Provedor hospedado ativo
 
-CircleCI e Codecov foram aposentados pelo Requisito 113. Seus recursos pagos para
-repositório privado foram substituídos por GitHub Actions rastreado e scripts próprios.
-
-#### GitHub Actions - Fluxo de trabalho de teste
-
-- Arquivo de fluxo de trabalho: `.github/workflows/test.yml`
-- Aciona:
-  - `push` para `main` e `dev`
-  - `pull_request` para `dev` e `main`
-- Configura Redis (com senha), instala Bun fixado e executa `bun run ci:gate:branch`
-- Publica a evidência do gate com `if: always()` e exige evidência da matriz completa somente
-  quando o destino é `main`
-
-#### Ações do GitHub - Fluxo de trabalho da nuvem SonarQube
-
-- Arquivo de fluxo de trabalho: `.github/workflows/sonarqube-cloud.yml`
-- Aciona:
-  - `push` para `main` e `dev`
-  - `pull_request` para `principal`
-- Instala dependências, executa testes de unidade com cobertura e, em seguida, executa a ação de varredura do SonarQube
-- O scanner lê `./coverage/lcov.info` conforme configurado em `sonar-project.properties`
+CircleCI está ativo pelo Requisito 113 enquanto GitHub Actions billing bloqueia
+execução hospedada. O workflow roda em `dev`, `main` e pull requests, com Sonar
+filtrado para as duas branches longas. A publicação Codecov roda depois do gate
+de cobertura do repositório e nunca substitui esse gate como autoridade de merge.
 
 ### Política de Cobertura (Padrão Estrito)
 

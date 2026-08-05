@@ -5,49 +5,72 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
-const workflowsDir = path.join(root, '.github', 'workflows');
 const failures = [];
 
-const requiredWorkflows = Object.freeze({
-  'test.yml': [
-    /ci:gate:branch/,
+const circleciPath = path.join(root, '.circleci', 'config.yml');
+const actionsDir = path.join(root, '.github', 'workflows');
+
+if (!fs.existsSync(circleciPath)) {
+  failures.push('Missing required CircleCI config: .circleci/config.yml');
+} else {
+  const contents = fs.readFileSync(circleciPath, 'utf8');
+  const requiredMarkers = [
+    /version:\s*2\.1/,
+    /branch-gate:/,
+    /workspace-builds:/,
+    /workspace-tests:/,
+    /integration:/,
+    /coverage:/,
+    /website:/,
+    /third-party-review:/,
+    /sonarqube:/,
+    /codecov:/,
+    /cimg\/node:22\./,
+    /cypress\/browsers:node-22\..*-chrome-.*-ff-.*/,
+    /redis:7\.2/,
+    /rabbitmq:3\.13/,
     /bun install --frozen-lockfile/,
-    /AGENT_REGISTRY_TOKEN/
-  ],
-  'coverage.yml': [
+    /ci:gate:branch/,
+    /JUMENTIX_CI_GATE_RESULT_FILE:\s*artifacts\/ci\/branch-quality-gate\.json/,
+    /JUMENTIX_CI_MATRIX_RESULT_FILE:\s*artifacts\/ci\/full-test-matrix\.json/,
+    /JUMENTIX_FULL_MATRIX_SKIP_CELLS:\s*workspace-builds,workspace-tests,website-prepublish,integration/,
+    /bun run mono:build/,
+    /bun run mono:test/,
+    /bun run ci:integration/,
+    /FIREBASE_SERVICE_ACCOUNT_KEY/,
     /test:coverage/,
+    /coverage\/jest\/coverage-final\.json/,
     /coverage:check/,
     /coverage:patch/,
-    /upload-artifact@[0-9a-f]{40}/,
-    /timeout-minutes:/
-  ],
-  'website.yml': [
     /website:storybook:build/,
     /website:storybook:smoke/,
-    /website:test:prepublish/
-  ],
-  'sonarqube-cloud.yml': [
-    /test:coverage/,
-    /coverage:check/,
-    /sonarqube-scan-action@[0-9a-f]{40}/
-  ]
-});
+    /website:test:prepublish/,
+    // JUM-396 — Cypress route/a11y gates are part of the website job contract.
+    /website:test:cypress/,
+    /gitleaks\.sarif/,
+    /semgrep\.sarif/,
+    /Enforce scanner outcomes/,
+    /sonar-scanner/,
+    /SONAR_TARGET_BRANCH="\$\{CIRCLE_PR_BASE_BRANCH:-\$\{CIRCLE_BRANCH:-\}\}"/,
+    /Sonar runs for PRs or pushes targeting dev\/main/,
+    /codecov --verbose upload-process --disable-search --fail-on-error/,
+    /CODECOV_TOKEN/,
+    /store_artifacts/,
+    /persist_to_workspace/,
+    /JUMENTIX_PR_TITLE/,
+    /JUMENTIX_PR_BODY/,
+    /AAA_PR_TITLE/,
+    /AAA_PR_BODY/
+  ];
+  for (const marker of requiredMarkers) {
+    if (!marker.test(contents)) failures.push(`.circleci/config.yml is missing ${String(marker)}`);
+  }
+}
 
-for (const [file, markers] of Object.entries(requiredWorkflows)) {
-  const absolute = path.join(workflowsDir, file);
-  if (!fs.existsSync(absolute)) {
-    failures.push(`Missing required GitHub Actions workflow: .github/workflows/${file}`);
-    continue;
-  }
-  const contents = fs.readFileSync(absolute, 'utf8');
-  for (const marker of markers) {
-    if (!marker.test(contents)) failures.push(`${file} is missing ${String(marker)}`);
-  }
-  if (!/permissions:\s*\n\s*contents:\s*read/.test(contents)) {
-    failures.push(`${file} must declare read-only contents permission.`);
-  }
-  if (!/pull_request:/.test(contents)) {
-    failures.push(`${file} must run for pull requests.`);
+if (fs.existsSync(actionsDir)) {
+  const workflows = fs.readdirSync(actionsDir).filter((file) => /\.ya?ml$/u.test(file));
+  for (const workflow of workflows) {
+    failures.push(`GitHub Actions workflow is disabled while billing is blocked: .github/workflows/${workflow}`);
   }
 }
 
@@ -57,32 +80,13 @@ for (const retired of ['codecov.yml']) {
   }
 }
 
-// Requirement 113 retires CircleCI — but its bridge amendment (owner decision,
-// 2026-08-03) temporarily unretires it while the GitHub Actions allowance is
-// quota-blocked, under one enforceable condition: the config must declare the
-// bridge marker, so a silent permanent reintroduction still fails here. When
-// the allowance is restored the config and the marker are removed together.
-const circleCiConfig = path.join(root, '.circleci', 'config.yml');
-if (fs.existsSync(circleCiConfig)) {
-  const contents = fs.readFileSync(circleCiConfig, 'utf8');
-  if (!/x-jumentix-temporary-bridge:/.test(contents)) {
-    failures.push(
-      '.circleci/config.yml is retired by Requirement 113 and may exist only as a '
-      + 'declared temporary bridge (missing the `x-jumentix-temporary-bridge:` marker).'
-    );
-  }
-}
-
 if (failures.length > 0) {
   console.error('CI provider check failed (Requirement 113):\n');
   failures.forEach((failure) => console.error(`- ${failure}`));
   process.exit(1);
 }
 
-const bridgeNote = fs.existsSync(circleCiConfig)
-  ? ' CircleCI is present as a declared temporary bridge (Requirement 113).'
-  : '';
 console.log(
-  'CI provider check passed: repository-owned GitHub workflows cover branch gates, '
-    + `coverage, website validation, and Sonar defense-in-depth without retired providers.${bridgeNote}`
+  'CI provider check passed: CircleCI covers branch gates, coverage, website validation, '
+    + 'third-party review, Codecov publishing, and Sonar defense-in-depth without GitHub Actions billing.'
 );
