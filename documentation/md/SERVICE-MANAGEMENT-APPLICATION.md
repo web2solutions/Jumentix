@@ -63,6 +63,11 @@ Core implementation files:
     - `dev` -> `apps/backend-template/src/config/.env.dev`
     - `staging` -> `apps/backend-template/src/config/.env.staging`
     - `ci` -> `apps/backend-template/src/config/.env.ci`
+   - Runtime env editor targets the selected environment file under
+     `apps/backend-template/src/config/`:
+    - `dev` -> `.env.dev` (`development` is an alias)
+    - `staging` -> `.env.staging`
+    - `ci` -> `.env.ci` (`test` is an alias)
 4. **Deploy Management**
    - Tracks deploy targets and runtime deployment metadata.
 
@@ -93,6 +98,28 @@ Recommended dev path:
 - `POST /api/runtime/env`
 
 The server persists approved runtime keys to files under `apps/backend-template/src/config/`.
+The authoritative contract — accepted environments, key classification, enum
+sets, write semantics — is
+[Runtime Environment Contracts](./RUNTIME-ENVIRONMENT-CONTRACTS.md).
+
+### What H1 makes trustworthy
+
+- **Fixed env-file location.** The env files live in
+  `apps/backend-template/src/config/` (overridable via
+  `JUMENTIX_SERVICE_MANAGEMENT_CONFIG_DIR`); the server fails closed at boot
+  when the directory is missing instead of silently serving defaults.
+- **Real `environment` parameter.** Only `dev`, `development`, `staging`,
+  `ci`, and `test` are accepted (case-insensitive after trimming); unknown
+  values are explicitly rejected with the accepted list, never coerced to
+  `dev`.
+- **Classified key surface.** Every env key is exactly one of *editable*,
+  *read-only*, or *never exposed* (secrets); the per-key classification
+  decisions live in
+  [Requirement 126](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md).
+- **Protected endpoint.** Loopback bind by default, optional bearer token for
+  mutations, and an audit log of every mutation.
+- **Distinguishable errors.** Parse, validation, and filesystem failures are
+  told apart in the error response (see below).
 
 ### Security posture
 
@@ -103,11 +130,15 @@ The server persists approved runtime keys to files under `apps/backend-template/
 
 ### Error contract
 
-- Unknown environment: `400` with accepted list, no file written.
+- Unknown environment: `400` whose `details` name the value and the accepted
+  list, no file written.
 - Missing config directory at boot: server exits with clear error.
-- Missing environment file: `400` with resolved path.
-- Invalid JSON payload: `400` distinguishing parse from filesystem failure.
-- Unauthorized mutation: `401` when auth token is configured.
+- Missing environment file: `400` whose `details` carry the resolved path
+  (internally error code `ENV_FILE_NOT_FOUND`).
+- Malformed JSON payload: `400 { "error": "Invalid payload.", "details": … }`
+  with the parse failure in `details` — told apart from filesystem failures,
+  which carry the resolved path instead.
+- Unauthorized mutation: `401 { "error": "Unauthorized." }` when auth token is configured.
 
 ## Runtime Edit Flow
 

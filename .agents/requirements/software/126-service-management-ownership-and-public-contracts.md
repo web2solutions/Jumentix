@@ -71,7 +71,10 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
          the realtime profile.
        - `JUMENTIX_DATABASE_DRIVER` — primary persistence driver selector
          (`packages/database-client-factory/src/compileDatabaseClient.ts`); topology,
-         named by `JUM-460`.
+         named by `JUM-460`. `JUM-461` made it separately editable after the UI
+         labelled the realtime-API driver as if it were the main database driver —
+         both driver keys must be separately editable, and the key selects runtime
+         topology (a driver, not a secret), which is the editable tier's own rule.
        - `JUMENTIX_KEYVALUESTORAGE_DRIVER` — key-value storage driver selector
          (`packages/key-value-storage/src/compileKeyValueStorageClient.ts`); named by
          `JUM-460`. Absent from `.env.dev` — writing it appends the key to the file.
@@ -114,8 +117,28 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
        `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md`).
      - `JUMENTIX_REALTIME_API`: `yes`, `no`.
      - `JUMENTIX_REALTIME_API_PROTOCOL`: `websocket`, `grpc`.
+     - `JUMENTIX_DATABASE_DRIVER`: `InMemory`, `IndexedDB`, `Mongo`, `PostgreSQL`,
+       `MySQL`, `MSSQL`, `Oracle`, `SQLite`, `DynamoDB`, `Cassandra`, `Firebase`,
+       `Aurora`, `RDS` (the `DriverName` union in
+       `packages/database-client-factory/src/compileDatabaseClient.ts`; added by
+       `JUM-461` together with the key's editability).
      - `JUMENTIX_REALTIME_API_DATABASE_DRIVER`: `Mongo`, `PostgreSQL`, `MySQL`,
        `MS SQL`, `RDS`, `Aurora`, `Cassandra`.
+   - **Alias decision (per `JUM-461`, decided).** `derby`/`derby-js` and
+     `sails`/`sails-js` are the same framework under two spellings. The canonical
+     spellings are `derby-js` and `sails-js` — the adapter directories
+     (`apps/backend-template/src/interface/HTTP/adapters/derby-js`,
+     `.../sails-js`), the `EHTTPFrameworks` enum, and the `start-rest-api` loader
+     all key on the `-js` forms, and `hyper-express` was dropped from the runtime
+     (JUM-27), so the 11-value enum above is the complete accepted set. The
+     selector offers exactly those 11 canonical values; the aliases `derby` and
+     `sails` are NOT accepted and fail fast in
+     `apps/backend-template/src/interface/runtime/RuntimeEnvironment.ts`. The
+     server's enum validation (`JUM-460`) MUST agree with the selector exactly — a
+     value the UI offers MUST be a value the server accepts, and vice versa. This
+     decision is also recorded in
+     `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md`.
+
      - `JUMENTIX_DATABASE_DRIVER`: `InMemory`, `IndexedDB`, `Mongo`, `PostgreSQL`,
        `MySQL`, `MSSQL`, `Oracle`, `SQLite`, `DynamoDB`, `Cassandra`, `Firebase`,
        `Aurora`, `RDS` (the canonical `DriverName` set of
@@ -139,7 +162,7 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
      11-value set above (which already uses the `-js` spellings) is binding.
      Separately, `JUMENTIX_DATABASE_DRIVER` and
      `JUMENTIX_REALTIME_API_DATABASE_DRIVER` are distinct keys and MUST be separately
-     labelled and separately editable in the UI.
+     labelled and separately editable in the UI (done by `JUM-461`).
    - **Authentication and bind posture (per `JUM-462`).** The server binds
      `127.0.0.1` by default (`JUMENTIX_SERVICE_MANAGEMENT_HOST`, port
      `JUMENTIX_SERVICE_MANAGEMENT_PORT`, default `3200`). Binding a non-loopback

@@ -21,20 +21,25 @@ Todos os pontos de entrada de inicialização do tempo de execução devem segui
 As seguintes chaves são obrigatórias em arquivos env em `apps/backend-template/src/config/`:
 
 - `JUMENTIX_HTTP_FRAMEWORK`
-  - padrão: `expresso`
+  - padrão: `express`
   - valores atuais suportados:
-    - `expressar`
-    - `fastificar`
-    - `restificar`
-    - `hiper-expresso`
-    - `trabalhadores da cloudflare`
-    - `funções vercel`
+    - `express`
+    - `fastify`
+    - `restify`
+    - `cloudflare-workers`
+    - `vercel-functions`
     - `loopback`
-    - `velas-js`
-    - `penas`
+    - `sails-js`
+    - `feathers`
     - `derby-js`
     - `adonis-js`
     - `total-js`
+  - decisão sobre aliases (JUM-461): `derby-js` e `sails-js` são as grafias
+    canônicas. Os aliases `derby` e `sails` NÃO são aceitos — o
+    `RuntimeEnvironment.ts` falha imediatamente com eles. `hyper-express` foi
+    removido do runtime (JUM-27) e também é rejeitado. O seletor do Service
+    Management oferece exatamente os 11 valores canônicos acima; as opções da UI
+    e a validação de enum do servidor devem sempre concordar.
   - usado por: `apps/backend-template/src/interface/HTTP/adapters/start-rest-api.ts`
 
 - `JUMENTIX_REALTIME_API`
@@ -51,16 +56,42 @@ As seguintes chaves são obrigatórias em arquivos env em `apps/backend-template
     - `apps/backend-template/src/interface/WebSocket/adapters/start-websocket-api.ts`
     - `apps/backend-template/src/interface/gRPC/adapters/start-grpc-api.ts`
 
+- `JUMENTIX_DATABASE_DRIVER`
+  - padrão: `InMemory`
+  - valores suportados (a união `DriverName` em
+    `packages/database-client-factory/src/compileDatabaseClient.ts`):
+    - `InMemory`
+    - `IndexedDB`
+    - `Mongo`
+    - `PostgreSQL`
+    - `MySQL`
+    - `MSSQL`
+    - `Oracle`
+    - `SQLite`
+    - `DynamoDB`
+    - `Cassandra`
+    - `Firebase`
+    - `Aurora`
+    - `RDS`
+  - o driver do banco de dados PRINCIPAL da aplicação (persistência da REST API).
+    Distinto de `JUMENTIX_REALTIME_API_DATABASE_DRIVER`: alterar um nunca afeta o
+    outro. `IndexedDB` é o driver de navegador (Cana) e lança erro se selecionado
+    para um processo server-side sem uma fábrica `indexedDbClient` conectada.
+  - usado por: `packages/database-client-factory` (`compileDatabaseClient`), conectado em
+    `apps/backend-template/src/infra/persistence/compileDatabaseClient.ts`
+
 - `JUMENTIX_REALTIME_API_DATABASE_DRIVER`
   - padrão: `Mongo`
   - valores suportados:
     - `Mongo`
     - `PostgreSQL`
     - `MySQL`
-    - `MSSQL`
+    - `MS SQL`
     - `RDS`
     - `Aurora`
     - `Cassandra`
+  - apenas o driver de banco de dados da API em TEMPO REAL (WebSocket/gRPC) — não
+    altera o banco de dados principal da aplicação (`JUMENTIX_DATABASE_DRIVER`).
   - usado por: metadados de perfil de tempo de execução e fluxos de trabalho de configuração de gerenciamento de serviços.
 
 - `JUMENTIX_DATABASE_DRIVER`
@@ -149,6 +180,15 @@ O Service Management expõe pontos de extremidade de leitura/gravação do ambie
 
 O editor env altera apenas as chaves aprovadas deste contrato, preservando as proteções.
 
+### Localização dos arquivos env
+
+Os arquivos env de tempo de execução ficam em `apps/backend-template/src/config/` (`.env.dev`,
+`.env.staging`, `.env.ci`). O servidor resolve o diretório de configuração como
+`JUMENTIX_SERVICE_MANAGEMENT_CONFIG_DIR` (resolvido como absoluto) quando definido,
+caso contrário `<repo-root>/apps/backend-template/src/config`, e falha fechado na
+inicialização — mensagem no stderr nomeando o diretório ausente, código de saída `1` —
+quando o diretório não existe.
+
 ### Níveis de chaves e listas de permissão
 
 As listas de leitura e gravação são conjuntos separados; cada chave pertence a exatamente um nível.
@@ -189,27 +229,86 @@ nenhum segredo possa ser armazenado através do endpoint.
 ### Ambientes aceitos
 
 - `dev` → `.env.dev`
-- `development` → `.env.dev`
+- `development` → `.env.dev` (alias)
 - `staging` → `.env.staging`
 - `ci` → `.env.ci`
-- `test` → `.env.ci`
+- `test` → `.env.ci` (alias)
 
-Ambientes desconhecidos retornam `400` com a lista de aceitos; nenhum arquivo é escrito.
+A comparação é insensível a maiúsculas após remoção de espaços. Ambientes
+desconhecidos são explicitamente rejeitados — `400` com a lista de aceitos, nenhum
+arquivo escrito, nunca silenciosamente convertidos para `dev`. Quando omitido, o
+ambiente padrão é `NODE_ENV` ou `dev`.
+
+### Classificação de chaves
+
+Cada chave de ambiente pertence a exatamente um de três níveis, cada um com uma
+razão declarada:
+
+- **Editável** — seletores de topologia de tempo de execução (frameworks, drivers,
+  adaptadores, alternâncias de protocolo); legível via GET e gravável via POST.
+- **Somente leitura** — endpoints de conexão e configuração não secreta; visível
+  no GET para que o designer reflita a realidade, nunca gravável via POST.
+- **Nunca exposta** — segredos e valores portadores de credenciais; não devem
+  aparecer na resposta do GET e não devem ser graváveis, pois a resposta cruza o
+  mesmo limite de confiança que a escrita.
+
+O conjunto editável atual são os quatro seletores de topologia listados em
+[Chaves de tempo de execução](#chaves-de-tempo-de-execução) (`JUMENTIX_HTTP_FRAMEWORK`,
+`JUMENTIX_REALTIME_API`, `JUMENTIX_REALTIME_API_PROTOCOL`,
+`JUMENTIX_REALTIME_API_DATABASE_DRIVER`), e a superfície de leitura é limitada às
+mesmas quatro. A classificação completa por chave dos arquivos env nesses níveis
+chega via JUM-460; as decisões de classificação autoritativas — uma por chave, cada
+uma com uma razão escrita — estão no
+[Requisito 126](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md).
+Toda adição ao conjunto editável é uma decisão de segurança.
+
+### Conjuntos de enum e decisão de alias
+
+Valores fora do enum aceito para cada chave (listados em
+[Chaves de tempo de execução](#chaves-de-tempo-de-execução)) são rejeitados com a
+lista de aceitos.
+
+Decisão de alias (JUM-461): `derby`/`derby-js` e `sails`/`sails-js` são o mesmo
+framework sob duas grafias. As grafias canônicas são `derby-js` e `sails-js` — as
+formas aceitas por
+`apps/backend-template/src/interface/runtime/RuntimeEnvironment.ts` — e o seletor
+da UI oferece exatamente os valores que o servidor aceita: um valor que a UI oferece
+deve ser um valor que o servidor aceita, e vice-versa. Separadamente,
+`JUMENTIX_DATABASE_DRIVER` e `JUMENTIX_REALTIME_API_DATABASE_DRIVER` são chaves
+distintas e devem ser rotuladas e editáveis separadamente na UI.
 
 ### Postura de segurança
 
-- Bind padrão é `127.0.0.1` (apenas loopback).
-- Token bearer opcional para mutações via `JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN`.
+- Bind padrão é `127.0.0.1` (apenas loopback); vincular a uma interface não
+  loopback é um opt-in explícito via `JUMENTIX_SERVICE_MANAGEMENT_HOST`.
+- A porta padrão é `3200`, substituível via `JUMENTIX_SERVICE_MANAGEMENT_PORT`.
+- Quando `JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN` está definido, `POST
+  /api/runtime/env` requer `Authorization: Bearer <token>` e rejeita qualquer
+  outra coisa com `401 { "error": "Unauthorized." }`; quando não definido, a
+  operação apenas em loopback é permitida sem token.
 - Log de auditoria de mutações registra timestamp, ambiente e chaves alteradas (não valores).
 
 ### Contrato de erro
 
-- Ambiente desconhecido: `400` com lista de aceitos.
-- Arquivo de ambiente ausente: `400` com path resolvido.
-- Payload JSON inválido: `400` distinguindo parse de falha de filesystem.
+As respostas distinguem falhas de parse, validação e filesystem através do campo
+`details` do envelope de erro:
+
+- Corpo JSON malformado (POST): `400 { "error": "Invalid payload.", "details": … }`.
+- Ambiente não suportado: `400` cujo `details` nomeia o valor não suportado e a
+  lista de aceitos — `{ "error": "Invalid environment request.", … }` no GET,
+  `{ "error": "Invalid payload.", … }` no POST; nenhum arquivo é escrito.
+- Arquivo env ausente: `400` cujo `details` carrega o path resolvido (internamente
+  código de erro `ENV_FILE_NOT_FOUND`), de modo que uma instalação quebrada é
+  identificável pela mensagem em vez de ser confundida com uma requisição malformada.
+- Token bearer ausente ou incorreto: `401 { "error": "Unauthorized." }` quando o
+  token de auth está configurado.
+
+O Requisito 126 (JUM-543) especifica a divisão alvo na qual falhas de filesystem
+surgem como uma classe de falha distinta e identificável em vez de compartilhar o
+envelope de validação de payload; a UI apresenta essas falhas através de superfícies
+de status não bloqueantes, não `window.alert`.
 - Valor fora do enum ou com credenciais para uma chave editável: `400` nomeando a
   chave, o valor rejeitado e a lista de aceitos; nenhum arquivo é escrito.
-- Mutação não autorizada: `401` quando token de auth está configurado.
 
 ## Guarda-corpos
 

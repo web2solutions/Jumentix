@@ -218,6 +218,30 @@ describe('serviceManagement runtime env server', () => {
     expect(res.body.values.JUMENTIX_HTTP_FRAMEWORK).toBe('restify');
   });
 
+  it('writes the main and realtime database drivers as distinct keys', async () => {
+    expect.hasAssertions();
+    server = startServer(tempDir, { JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN: 'secret' });
+    await waitForServer(server.port);
+    const res = await requestJson<RuntimeEnvPayload>(
+      server.port,
+      'POST',
+      '/api/runtime/env',
+      {
+        values: {
+          JUMENTIX_DATABASE_DRIVER: 'PostgreSQL',
+          JUMENTIX_REALTIME_API_DATABASE_DRIVER: 'Cassandra'
+        }
+      },
+      { Authorization: 'Bearer secret' }
+    );
+    expect(res.status).toBe(200);
+    expect(res.body.values.JUMENTIX_DATABASE_DRIVER).toBe('PostgreSQL');
+    expect(res.body.values.JUMENTIX_REALTIME_API_DATABASE_DRIVER).toBe('Cassandra');
+    const written = fs.readFileSync(path.join(tempDir, '.env.dev'), 'utf8');
+    expect(written).toContain('JUMENTIX_DATABASE_DRIVER=PostgreSQL');
+    expect(written).toContain('JUMENTIX_REALTIME_API_DATABASE_DRIVER=Cassandra');
+  });
+
   it('fails at boot when config directory is missing', async () => {
     expect.hasAssertions();
     const missingDir = path.resolve(process.cwd(), 'apps/nonexistent-config');

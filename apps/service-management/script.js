@@ -26,6 +26,14 @@ const RUNTIME_ENV_ENUM_OPTIONS = {
   JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: ['inmemory', 'rabbitmq', 'bullmq'],
   JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER: ['', 'cluster', 'redis-streams']
 };
+// Per-key context hints (JUM-461): enough context for the two driver keys and
+// the canonical-spelling rule to be legible without prior knowledge.
+const RUNTIME_ENV_FIELD_HINTS = {
+  JUMENTIX_HTTP_FRAMEWORK: 'Canonical spellings only: derby-js and sails-js (the backend rejects the derby/sails aliases).',
+  JUMENTIX_DATABASE_DRIVER: 'Main application database (REST API persistence).',
+  JUMENTIX_REALTIME_API_DATABASE_DRIVER: 'Realtime API (WebSocket/gRPC) database only - does not change the main application database.'
+};
+
 let runtimeEnvEditableKeys = Object.keys(RUNTIME_ENV_EDITABLE_DEFAULTS);
 
 const state = {
@@ -601,6 +609,13 @@ function renderRuntimeEnvFields(runtimeValues) {
     field.id = fieldId;
     field.dataset.runtimeKey = key;
     wrapper.appendChild(field);
+    const hint = RUNTIME_ENV_FIELD_HINTS[key];
+    if (hint) {
+      const hintEl = document.createElement('p');
+      hintEl.className = 'hint';
+      hintEl.textContent = hint;
+      wrapper.appendChild(hintEl);
+    }
     container.appendChild(wrapper);
   });
 }
