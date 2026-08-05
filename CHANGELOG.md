@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-05 fix(website): pin Bun 1.3.14 on Vercel install and build - Eduardo A.
 - 2026-08-05 chore(JUM-468): merge dev after H1 completion - Eduardo A.
 - 2026-08-05 [JUM-466][Test] Expand service-management integration smoke (#85) - Eduardo A.
 - 2026-08-05 refactor(JUM-468): extract state/persistence core behind IDesignerStore port - Eduardo A.
@@ -34,7 +35,6 @@
 - 2026-08-03 [JUM-611][Governance] Replace GitHub-mirrored agent registry with Firestore Database - Eduardo A.
 - 2026-08-03 [JUM-417][CI] Sync agent-registry mirror (kimi-k3-cursor-001) (#64) - Eduardo A.
 - 2026-08-03 [JUM-419][CI] Sync the agent-registry mirror to canonical 271da346 - Eduardo A.
-- 2026-08-03 [JUM-417][Release] Promote dev to main: Cana engine matrix, Sonar fixes, temporary CircleCI bridge (#62) - Eduardo A.
 - 2026-08-03 [JUM-417][Release] Merge main history into dev for the promotion - Eduardo A.
 - 2026-08-03 [JUM-417][CI] Sonar new-code fixes + temporary CircleCI bridge (PR #52 leftovers) (#61) - Eduardo A.
 - 2026-08-03 [JUM-605][Refactor] Eliminate legacy Jumentix product naming confusion - Eduardo A.
