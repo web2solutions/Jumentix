@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-05 test(JUM-604): alias pr-governance imports to avoid global script collision - Eduardo A.
 - 2026-08-05 chore(JUM-604): merge dev PR-build gate skip into declarative agent support - Eduardo A.
 - 2026-08-05 test: satisfy PR governance lint - Eduardo A.
 - 2026-08-05 feat(JUM-604): support Kimi agent via declarative supported-agents data - Eduardo A.
