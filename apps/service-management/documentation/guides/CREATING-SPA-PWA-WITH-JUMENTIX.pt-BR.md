@@ -51,6 +51,6 @@ Para arquitetura PWA/offline-first:
 
 ## Referências
 
-- [README do aplicativo de gerenciamento de serviços](../../README.md)
-- [Pacotes do SDK do Workspace](../../../../packages/README.md)
-- [Matriz de capacidades da fábrica de serviços Jumentix](../../../../documentation/md/JUMENTIX-SERVICE-FACTORY-CAPABILITIES-MATRIX.md)
+- [README do aplicativo de gerenciamento de serviços](../../README.pt-BR.md)
+- [Pacotes do SDK do Workspace](../../../../packages/README.pt-BR.md)
+- [Matriz de capacidades da fábrica de serviços Jumentix](../../../../documentation/md/JUMENTIX-SERVICE-FACTORY-CAPABILITIES-MATRIX.pt-BR.md)

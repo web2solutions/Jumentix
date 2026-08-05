@@ -4,9 +4,29 @@
 
 ## All Changes
 
+- 2026-08-05 test(JUM-458): regenerate test-map after dev sync - Eduardo A.
+- 2026-08-05 [JUM-604][Governance] Support the Kimi agent with declarative agent support (#78) - Eduardo A.
+- 2026-08-05 test: isolate PR governance helpers - Eduardo A.
+- 2026-08-05 test: satisfy PR governance lint - Eduardo A.
+- 2026-08-05 chore(release): reconcile main ancestry after branch-gate fix - Eduardo A.
+- 2026-08-05 ci: skip PR metadata checks on branch builds - Eduardo A.
+- 2026-08-05 [JUM-504][Release] Promote CircleCI-backed dev snapshot to main - Eduardo A.
+- 2026-08-05 docs: fix CircleCI badge endpoints - Eduardo A.
+- 2026-08-05 docs: restore CircleCI and Codecov badges - Eduardo A.
+- 2026-08-04 chore(release): reconcile main ancestry into dev - Eduardo A.
+- 2026-08-03 ci(JUM-504): backfill git blobs for SonarQube SCM blame - Eduardo A.
+- 2026-08-03 docs(website): document Vercel deploy auth and GITHUB_TOKEN for JUM-397 (#69) - Eduardo A.
+- 2026-08-03 [JUM-504][CI] Restore CircleCI gates for dev and main (#63) - Eduardo A.
+- 2026-08-03 chore(JUM-611): merge remote dev into Firestore registry cutover - Eduardo A.
+- 2026-08-03 docs(JUM-611): deprecate GitHub-mirrored agent registry after Firestore cutover - Eduardo A.
+- 2026-08-03 docs(website): reconcile consumer docs drift for JUM-510 (#68) - Eduardo A.
+- 2026-08-03 ci(JUM-611): fix migration script require for Bun compatibility - Eduardo A.
+- 2026-08-03 test(website): add Cypress route, a11y, and responsive gates (JUM-396) - Eduardo A.
+- 2026-08-03 [JUM-611][Governance] Replace GitHub-mirrored agent registry with Firestore Database - Eduardo A.
 - 2026-08-03 fix(service-management): repair env path, honor environment parameter, and protect runtime-env API [JUM-458][JUM-558][JUM-459][JUM-462] - Eduardo A.
 - 2026-08-03 [JUM-417][CI] Sync agent-registry mirror (kimi-k3-cursor-001) (#64) - Eduardo A.
 - 2026-08-03 [JUM-419][CI] Sync the agent-registry mirror to canonical 271da346 - Eduardo A.
+- 2026-08-03 [JUM-417][Release] Promote dev to main: Cana engine matrix, Sonar fixes, temporary CircleCI bridge (#62) - Eduardo A.
 - 2026-08-03 [JUM-417][Release] Merge main history into dev for the promotion - Eduardo A.
 - 2026-08-03 [JUM-417][CI] Sonar new-code fixes + temporary CircleCI bridge (PR #52 leftovers) (#61) - Eduardo A.
 - 2026-08-03 [JUM-605][Refactor] Eliminate legacy Jumentix product naming confusion - Eduardo A.
