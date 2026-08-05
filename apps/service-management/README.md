@@ -68,10 +68,38 @@ Commands:
 - `pnpm run dev:service-management`
 - `pnpm run dev` (auto-starts service management + REST profile)
 
+## Static Serving
+
+`server.js` serves this zero-build vanilla SPA from a boot-time manifest: an
+allowlist of the files that existed when the process started. The manifest is a
+traversal-safety mechanism — it bounds the servable surface even if path
+normalisation has a flaw — so **production serves only the boot manifest** and
+files added later require a restart.
+
+In development this would be a defect (a hand-edited file added after boot
+would 404 until restart), so dev mode re-scans the manifest **on miss only** —
+never per request, which would turn every 404 into a directory walk — and the
+retry passes the same normalisation and containment validation as a boot-time
+hit.
+
+Mode selection is explicit configuration, not inferred from `NODE_ENV` alone:
+
+- `JUMENTIX_SERVICE_MANAGEMENT_STATIC_MANIFEST_REFRESH=on-miss` — re-scan on
+  miss (dev behaviour), regardless of `NODE_ENV`.
+- `JUMENTIX_SERVICE_MANAGEMENT_STATIC_MANIFEST_REFRESH=boot-only` — frozen boot
+  manifest (production behaviour), regardless of `NODE_ENV`.
+- Unset — default derives from `NODE_ENV`: `dev`/`development` => `on-miss`,
+  anything else => `boot-only`.
+
 ## Runtime Env API
 
-- `GET /api/runtime/env?environment=dev|staging|ci`
+Built into `apps/service-management/server.js`:
+
+- `GET /api/runtime/env?environment=dev|development|staging|ci|test`
 - `POST /api/runtime/env`
+
+The full contract (enum sets, write semantics, response hygiene) lives in
+[Runtime Environment Contracts](../../documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md).
 
 ### Editable Keys
 
@@ -80,8 +108,44 @@ Commands:
 - `JUMENTIX_REALTIME_API_PROTOCOL`
 - `JUMENTIX_REALTIME_API_DATABASE_DRIVER`
 
+Every env key belongs to exactly one of three tiers: *editable* (readable and
+writable), *read-only* (visible in GET, never writable), and *never exposed*
+(secrets — absent from GET and not writable). The authoritative per-key
+classification is maintained in
+[Requirement 126](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md).
+
 ### Environment Mapping
 
-- `dev` -> `src/config/.env.dev`
-- `staging` -> `src/config/.env.staging`
-- `ci` -> `src/config/.env.ci`
+Env files live in `apps/backend-template/src/config/`:
+
+- `dev` -> `apps/backend-template/src/config/.env.dev`
+- `development` -> `apps/backend-template/src/config/.env.dev` (alias)
+- `staging` -> `apps/backend-template/src/config/.env.staging`
+- `ci` -> `apps/backend-template/src/config/.env.ci`
+- `test` -> `apps/backend-template/src/config/.env.ci` (alias)
+
+`environment` is a real parameter: comparison is case-insensitive after
+trimming, unknown values are rejected with `400` and the accepted list (never
+silently coerced to `dev`), and when omitted it defaults to `NODE_ENV` or
+`dev`. The config directory can be overridden with
+`JUMENTIX_SERVICE_MANAGEMENT_CONFIG_DIR`; the server exits at boot with an
+error if the directory does not exist.
+
+### Security Posture
+
+- Default bind is `127.0.0.1` (loopback only); override with
+  `JUMENTIX_SERVICE_MANAGEMENT_HOST`, port with
+  `JUMENTIX_SERVICE_MANAGEMENT_PORT` (default `3200`).
+- When `JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN` is set, `POST
+  /api/runtime/env` requires `Authorization: Bearer <token>` and returns `401`
+  otherwise; when unset, loopback-only operation is allowed without a token.
+- Every mutation is logged with timestamp, environment, and changed keys (not
+  values).
+
+### Error Contract
+
+- Unknown environment: `400` naming the value and the accepted list; no file
+  written.
+- Malformed JSON body: `400` with the parse failure in `details`.
+- Missing env file: `400` with the resolved path in `details`.
+- Missing/wrong bearer token: `401` (`{ "error": "Unauthorized." }`).

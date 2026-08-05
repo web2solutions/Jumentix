@@ -71,6 +71,53 @@ function buildStaticManifest() {
 
 const staticManifest = buildStaticManifest();
 
+// Static manifest refresh strategy (JUM-463).
+//
+// The boot-time manifest is a traversal-SAFETY mechanism, not merely a cache:
+// serving from a pre-built allowlist bounds the servable surface to files that
+// existed at boot, even if path normalisation has a flaw. Production therefore
+// serves ONLY the boot manifest. Do NOT make the re-scan below unconditional —
+// that would silently drop the safety property.
+//
+// Development relaxes this because the component is a zero-build vanilla SPA
+// edited by hand: a file added after boot would otherwise 404 until restart.
+// The dev path re-scans ON MANIFEST MISS ONLY — never per request, or every
+// 404 becomes a directory walk (a trivial DoS while the server may bind beyond
+// localhost, see JUM-462) — and the retry goes through the same
+// containment-validated lookup as a boot-time hit, so the re-scan is not a
+// bypass around the check the manifest provides.
+//
+// Mode selection is explicit configuration, not inferred from NODE_ENV alone:
+// JUMENTIX_SERVICE_MANAGEMENT_STATIC_MANIFEST_REFRESH=on-miss|boot-only wins
+// when set; otherwise the default derives from NODE_ENV (dev/development =>
+// on-miss, anything else => boot-only).
+const staticManifestRefreshSetting = String(
+  process.env.JUMENTIX_SERVICE_MANAGEMENT_STATIC_MANIFEST_REFRESH || ''
+).trim().toLowerCase();
+const nodeEnvironment = String(process.env.NODE_ENV || 'dev').trim().toLowerCase();
+const staticManifestRefreshEnabled = staticManifestRefreshSetting
+  ? staticManifestRefreshSetting === 'on-miss'
+  : nodeEnvironment === 'dev' || nodeEnvironment === 'development';
+
+function refreshStaticManifest() {
+  const rebuilt = buildStaticManifest();
+  staticManifest.clear();
+  rebuilt.forEach((absoluteEntryPath, relativeEntryPath) => {
+    staticManifest.set(relativeEntryPath, absoluteEntryPath);
+  });
+}
+
+function findStaticFile(relativePath) {
+  const filePath = staticManifest.get(relativePath);
+  if (!filePath) return null;
+  // Containment validation applied to every hit — boot-time or freshly
+  // re-scanned — so a manifest entry can never resolve outside the static
+  // root, whichever scan produced it.
+  const resolvedPath = path.resolve(filePath);
+  if (!resolvedPath.startsWith(`${rootDirectory}${path.sep}`)) return null;
+  return resolvedPath;
+}
+
 function resolveRequestPath(urlPath) {
   const cleanPath = String(urlPath || '/').split('?')[0];
   const normalized = cleanPath === '/' ? 'index.html' : cleanPath.replace(/^\/+/, '');
@@ -266,7 +313,14 @@ const server = http.createServer((request, response) => {
     response.end('Forbidden');
     return;
   }
-  const filePath = staticManifest.get(relativePath);
+  let filePath = findStaticFile(relativePath);
+  if (!filePath && staticManifestRefreshEnabled) {
+    // Dev-only, miss-only re-scan (see the strategy note above): refresh once,
+    // then retry through the same containment-validated lookup. A genuinely
+    // absent path still 404s.
+    refreshStaticManifest();
+    filePath = findStaticFile(relativePath);
+  }
   if (!filePath) {
     response.statusCode = 404;
     response.end('Not Found');
