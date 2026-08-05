@@ -1,7 +1,20 @@
-const STORAGE_KEY = 'service-management.v1';
-const DIFF_BASELINE_KEY = 'service-management.schema-baseline.v1';
-const DOMAIN_COLORS = ['#60a5fa', '#34d399', '#f59e0b', '#f472b6', '#22d3ee', '#a78bfa', '#fb7185', '#84cc16'];
-const FIELD_TYPES = ['string', 'integer', 'number', 'boolean', 'array', 'object', 'date', 'datetime', 'uuid'];
+import {
+  DOMAIN_COLORS,
+  FIELD_TYPES,
+  clampZoom,
+  createDesignerState,
+  defaultFields,
+  fallbackId,
+  getDefaultRbacPolicy,
+  normalizeContractInput,
+  normalizeDomainInput,
+  normalizeField,
+  normalizeOptionalNumber,
+  normalizeStatePayload,
+  parseCommaSeparated,
+  parseEnumValues
+} from './src/state/designerState.js';
+import { LocalStorageDesignerStore } from './src/store/LocalStorageDesignerStore.js';
 
 // Runtime env editor metadata — mirrors the allowlists and enum sets enforced by
 // server.js (write allowlist = editable tier; read-only keys render disabled).
@@ -36,47 +49,30 @@ const RUNTIME_ENV_FIELD_HINTS = {
 
 let runtimeEnvEditableKeys = Object.keys(RUNTIME_ENV_EDITABLE_DEFAULTS);
 
-const state = {
-  domains: [],
-  relationships: [],
-  selectedDomainId: null,
-  selectedEntityId: null,
-  selectedRelationshipId: null,
-  idCounter: 1,
-  activeTab: 'domain-designer',
-  interfaces: [],
-  serviceConfiguration: {
-    serviceKind: 'rest-api',
-    runMode: 'dedicated-server',
-    cloudProvider: 'aws',
-    staticAssetsPath: '',
-    ports: {
-      rest: 3000,
-      websocket: 3001,
-      grpc: 3002
-    }
-  },
-  runtimeEnvironment: {
-    environment: 'dev',
-    fileName: '.env.dev',
-    values: { ...RUNTIME_ENV_EDITABLE_DEFAULTS }
-  },
-  deployments: [],
-  view: {
-    zoom: 1,
-    compactEntities: false,
-    snapToGrid: true,
-    edgeStyle: 'curved',
-    modelCheckMinSeverity: 'info',
-    exportBlockCritical: true,
-    largeCanvasMode: false
-  }
-};
-
-const history = {
-  past: [],
-  future: []
-};
+// State, persistence, history and normalisation live in the DOM-free core
+// (src/state/designerState.js) behind the IDesignerStore port
+// (src/store/IDesignerStore.js). LocalStorageDesignerStore is TRANSITIONAL —
+// JUM-484's migration retires it; Cana has no fallback to localStorage.
+// `seed` and `render` are function declarations below, hoisted before this
+// module body runs.
+const store = new LocalStorageDesignerStore();
+const designerState = createDesignerState({
+  store,
+  seed,
+  render,
+  runtimeEnvDefaults: RUNTIME_ENV_EDITABLE_DEFAULTS
+});
+const {
+  state,
+  history,
+  saveState,
+  withPersist,
+  undo,
+  redo,
+  recomputeIdCounter,
+  loadState,
+  buildModelSnapshot
+} = designerState;
 
 const interaction = {
   spacePressed: false,
@@ -282,169 +278,8 @@ function isFieldNameTaken(entity, name, ignoredFieldName = null) {
   );
 }
 
-function parseEnumValues(raw) {
-  if (!raw) return [];
-  if (Array.isArray(raw)) return raw.map((item) => String(item).trim()).filter(Boolean);
-  return String(raw)
-    .split(',')
-    .map((item) => item.trim())
-    .filter(Boolean);
-}
-
-function parseCommaSeparated(raw) {
-  if (Array.isArray(raw)) return raw.map((item) => String(item).trim()).filter(Boolean);
-  return String(raw || '')
-    .split(',')
-    .map((item) => item.trim())
-    .filter(Boolean);
-}
-
 function uniqueStrings(values) {
   return Array.from(new Set((values || []).map((item) => String(item).trim()).filter(Boolean)));
-}
-
-function normalizeOptionalNumber(value) {
-  if (value === null || value === undefined || value === '') return null;
-  const numeric = Number(value);
-  return Number.isFinite(numeric) ? numeric : null;
-}
-
-function normalizeField(field, fieldIndex) {
-  const name = String(field?.name || '').trim() || `field_${fieldIndex + 1}`;
-  const type = FIELD_TYPES.includes(field?.type) ? field.type : 'string';
-  const enumValues = parseEnumValues(field?.enumValues ?? field?.enum);
-  const format = String(field?.format || '').trim();
-  const description = String(field?.description || '').trim();
-  const pattern = String(field?.pattern || '').trim();
-  const itemsTypeRaw = String(field?.itemsType || '').trim();
-  const itemsType = FIELD_TYPES.includes(itemsTypeRaw) ? itemsTypeRaw : '';
-  const minLength = normalizeOptionalNumber(field?.minLength);
-  const maxLength = normalizeOptionalNumber(field?.maxLength);
-  const minimum = normalizeOptionalNumber(field?.minimum);
-  const maximum = normalizeOptionalNumber(field?.maximum);
-  return {
-    name,
-    type,
-    required: Boolean(field?.required),
-    pk: Boolean(field?.pk),
-    fk: Boolean(field?.fk),
-    unique: Boolean(field?.unique),
-    nullable: Boolean(field?.nullable),
-    format,
-    description,
-    enumValues,
-    pattern,
-    minLength,
-    maxLength,
-    minimum,
-    maximum,
-    itemsType: type === 'array' ? (itemsType || 'string') : ''
-  };
-}
-
-function normalizeContractInput(contract, contractIndex = 0) {
-  const id = String(contract?.id || '').trim() || fallbackId('contract', contractIndex);
-  return {
-    id,
-    name: String(contract?.name || '').trim() || `Contract_${contractIndex + 1}`,
-    type: ['event', 'command', 'request', 'response'].includes(contract?.type) ? contract.type : 'event',
-    channel: String(contract?.channel || '').trim(),
-    version: String(contract?.version || '').trim() || '1.0.0',
-    payloadSchema: contract?.payloadSchema && typeof contract.payloadSchema === 'object'
-      ? contract.payloadSchema
-      : {}
-  };
-}
-
-function saveState() {
-  const payload = {
-    domains: state.domains,
-    relationships: state.relationships,
-    selectedDomainId: state.selectedDomainId,
-    selectedEntityId: state.selectedEntityId,
-    selectedRelationshipId: state.selectedRelationshipId,
-    idCounter: state.idCounter,
-    activeTab: state.activeTab,
-    interfaces: state.interfaces,
-    serviceConfiguration: state.serviceConfiguration,
-    runtimeEnvironment: state.runtimeEnvironment,
-    deployments: state.deployments,
-    view: state.view
-  };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-}
-
-function snapshotState() {
-  return JSON.parse(JSON.stringify({
-    domains: state.domains,
-    relationships: state.relationships,
-    selectedDomainId: state.selectedDomainId,
-    selectedEntityId: state.selectedEntityId,
-    selectedRelationshipId: state.selectedRelationshipId,
-    idCounter: state.idCounter,
-    activeTab: state.activeTab,
-    interfaces: state.interfaces,
-    serviceConfiguration: state.serviceConfiguration,
-    runtimeEnvironment: state.runtimeEnvironment,
-    deployments: state.deployments,
-    view: state.view
-  }));
-}
-
-function applySnapshot(snapshot) {
-  state.domains = snapshot.domains || [];
-  state.relationships = (snapshot.relationships || []).map(normalizeRelationship);
-  state.selectedDomainId = snapshot.selectedDomainId || state.domains[0]?.id || null;
-  state.selectedEntityId = snapshot.selectedEntityId || null;
-  state.selectedRelationshipId = snapshot.selectedRelationshipId || null;
-  state.idCounter = snapshot.idCounter || 1;
-  state.activeTab = snapshot.activeTab || 'domain-designer';
-  state.interfaces = Array.isArray(snapshot.interfaces) ? snapshot.interfaces : [];
-  state.serviceConfiguration = {
-    ...state.serviceConfiguration,
-    ...(snapshot.serviceConfiguration || {})
-  };
-  state.runtimeEnvironment = {
-    ...state.runtimeEnvironment,
-    ...(snapshot.runtimeEnvironment || {})
-  };
-  state.deployments = Array.isArray(snapshot.deployments) ? snapshot.deployments : [];
-  state.view = snapshot.view || { zoom: 1 };
-  recomputeIdCounter();
-}
-
-function recordHistory() {
-  history.past.push(snapshotState());
-  if (history.past.length > 100) history.past.shift();
-  history.future = [];
-}
-
-function withPersist(action, options = {}) {
-  if (options.recordHistory !== false) recordHistory();
-  action();
-  saveState();
-}
-
-function undo() {
-  if (!history.past.length) return;
-  history.future.push(snapshotState());
-  const previous = history.past.pop();
-  applySnapshot(previous);
-  saveState();
-  render();
-}
-
-function redo() {
-  if (!history.future.length) return;
-  history.past.push(snapshotState());
-  const next = history.future.pop();
-  applySnapshot(next);
-  saveState();
-  render();
-}
-
-function clampZoom(value) {
-  return Math.max(0.5, Math.min(2, value));
 }
 
 function renderView() {
@@ -848,14 +683,6 @@ function focusEntity(entityId) {
     top: Math.max(0, targetTop),
     behavior: 'smooth'
   });
-}
-
-function defaultFields() {
-  return [
-    normalizeField({ name: 'id', type: 'uuid', required: true, pk: true, fk: false, unique: true }, 0),
-    normalizeField({ name: 'createdAt', type: 'date', required: true, pk: false, fk: false, unique: false }, 1),
-    normalizeField({ name: 'updatedAt', type: 'date', required: true, pk: false, fk: false, unique: false }, 2)
-  ];
 }
 
 function snapCoordinate(value) {
@@ -1526,16 +1353,6 @@ function saveSelectedEntityRules() {
     found.entity.meta.invariants = invariants;
     render();
   });
-}
-
-function getDefaultRbacPolicy() {
-  return {
-    list: { roles: ['superadmin', 'admin'], tenantScoped: true },
-    getById: { roles: ['superadmin', 'admin', 'user'], tenantScoped: true },
-    create: { roles: ['superadmin', 'admin'], tenantScoped: true },
-    update: { roles: ['superadmin', 'admin'], tenantScoped: true },
-    delete: { roles: ['superadmin', 'admin'], tenantScoped: true }
-  };
 }
 
 function getEntityRbacPolicy(entity) {
@@ -2443,57 +2260,16 @@ function renderEntityInspector() {
   });
 }
 
-function buildModelSnapshot() {
-  const domains = state.domains.map((domain) => ({
-    id: domain.id,
-    name: domain.name,
-    color: domain.color,
-    context: domain.context || {},
-    entities: domain.entities.map((entity) => ({
-      id: entity.id,
-      name: entity.name,
-      meta: entity.meta || { aggregateRoot: false, invariants: [] },
-      contracts: Array.isArray(entity?.meta?.contracts)
-        ? entity.meta.contracts.map((contract, index) => normalizeContractInput(contract, index))
-        : [],
-      fields: entity.fields.map((field) => ({
-        name: field.name,
-        type: field.type,
-        required: Boolean(field.required),
-        pk: Boolean(field.pk),
-        fk: Boolean(field.fk),
-        unique: Boolean(field.unique),
-        nullable: Boolean(field.nullable),
-        format: field.format || '',
-        itemsType: field.itemsType || '',
-        enumValues: Array.isArray(field.enumValues) ? [...field.enumValues] : []
-      }))
-    }))
-  }));
-  const relationships = state.relationships.map((relationship) => ({
-    id: relationship.id,
-    fromEntityId: relationship.fromEntityId,
-    toEntityId: relationship.toEntityId,
-    fromCardinality: relationship.fromCardinality,
-    toCardinality: relationship.toCardinality
-  }));
-  return { domains, relationships };
-}
-
 function saveSchemaBaseline() {
   const snapshot = buildModelSnapshot();
-  localStorage.setItem(DIFF_BASELINE_KEY, JSON.stringify(snapshot));
+  store.saveBaseline(snapshot);
   renderSchemaDiffResults([{ severity: 'info', message: 'Baseline saved.' }]);
 }
 
-function loadSchemaBaseline() {
-  const raw = localStorage.getItem(DIFF_BASELINE_KEY);
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw);
-  } catch (_) {
-    return null;
-  }
+async function loadSchemaBaseline() {
+  const result = await store.loadBaseline();
+  if (result.status !== 'ok') return null;
+  return result.payload;
 }
 
 function renderSchemaDiffResults(items) {
@@ -2511,17 +2287,17 @@ function renderSchemaDiffResults(items) {
   });
 }
 
-function renderSchemaDiffStatus() {
+async function renderSchemaDiffStatus() {
   if (dom.schemaDiffList.children.length > 0) return;
-  const hasBaseline = Boolean(loadSchemaBaseline());
+  const hasBaseline = Boolean(await loadSchemaBaseline());
   renderSchemaDiffResults([{
     severity: hasBaseline ? 'info' : 'warn',
     message: hasBaseline ? 'Baseline loaded. Run diff to preview migration hints.' : 'No baseline saved yet.'
   }]);
 }
 
-function runSchemaDiff() {
-  const baseline = loadSchemaBaseline();
+async function runSchemaDiff() {
+  const baseline = await loadSchemaBaseline();
   if (!baseline) {
     renderSchemaDiffResults([{ severity: 'warn', message: 'No baseline found. Save baseline first.' }]);
     return;
@@ -3290,179 +3066,6 @@ function seed() {
   });
 }
 
-function normalizeRelationship(relationship) {
-  return {
-    ...relationship,
-    name: relationship.name || `${relationship.fromEntityId} -> ${relationship.toEntityId}`,
-    fromCardinality: relationship.fromCardinality || 'N',
-    toCardinality: relationship.toCardinality || '1',
-    fromAnchorSide: ['top', 'right', 'bottom', 'left'].includes(relationship.fromAnchorSide) ? relationship.fromAnchorSide : null,
-    toAnchorSide: ['top', 'right', 'bottom', 'left'].includes(relationship.toAnchorSide) ? relationship.toAnchorSide : null,
-    anchorBehavior: relationship.anchorBehavior === 'center' ? 'center' : 'auto',
-    bendX: normalizeOptionalNumber(relationship.bendX),
-    bendY: normalizeOptionalNumber(relationship.bendY),
-    labelOffsetX: normalizeOptionalNumber(relationship.labelOffsetX) ?? 0,
-    labelOffsetY: normalizeOptionalNumber(relationship.labelOffsetY) ?? 0
-  };
-}
-
-function fallbackId(prefix, seed) {
-  return `${prefix}-import-${seed}-${Math.random().toString(36).slice(2, 8)}`;
-}
-
-function normalizeEntityInput(entity, entityIndex) {
-  const fieldsInput = Array.isArray(entity?.fields) ? entity.fields : defaultFields();
-  const fields = fieldsInput.map((field, fieldIndex) => normalizeField(field, fieldIndex));
-  const entityName = String(entity?.name || '').trim() || `Entity_${entityIndex + 1}`;
-  const invariants = Array.isArray(entity?.meta?.invariants)
-    ? entity.meta.invariants.map((item) => String(item).trim()).filter(Boolean)
-    : parseCommaSeparated(String(entity?.meta?.invariants || '').replace(/\n/g, ','));
-  const rbac = getDefaultRbacPolicy();
-  const sourceRbac = entity?.meta?.rbac || {};
-  ['list', 'getById', 'create', 'update', 'delete'].forEach((action) => {
-    const rule = sourceRbac[action] || rbac[action] || {};
-    rbac[action] = {
-      roles: Array.isArray(rule.roles)
-        ? rule.roles.map((role) => String(role).trim()).filter(Boolean)
-        : Array.isArray(rbac[action]?.roles)
-          ? rbac[action].roles
-          : [],
-      tenantScoped: typeof rule.tenantScoped === 'boolean' ? rule.tenantScoped : Boolean(rbac[action]?.tenantScoped)
-    };
-  });
-  const contracts = Array.isArray(entity?.meta?.contracts)
-    ? entity.meta.contracts.map((contract, index) => normalizeContractInput(contract, index))
-    : [];
-  const oasComposition = {
-    mode: ['oneOf', 'allOf', 'anyOf'].includes(entity?.meta?.oasComposition?.mode)
-      ? entity.meta.oasComposition.mode
-      : '',
-    refs: parseCommaSeparated(entity?.meta?.oasComposition?.refs || []),
-    externalRefs: parseCommaSeparated(entity?.meta?.oasComposition?.externalRefs || []),
-    discriminator: String(entity?.meta?.oasComposition?.discriminator || '').trim()
-  };
-  return {
-    id: entity?.id || fallbackId('entity', entityIndex),
-    name: entityName,
-    x: Number.isFinite(entity?.x) ? entity.x : 14 + (entityIndex % 2) * 206,
-    y: Number.isFinite(entity?.y) ? entity.y : 14 + Math.floor(entityIndex / 2) * 120,
-    fields,
-    meta: {
-      aggregateRoot: Boolean(entity?.meta?.aggregateRoot),
-      invariants,
-      rbac,
-      contracts,
-      oasComposition
-    }
-  };
-}
-
-function normalizeDomainInput(domain, domainIndex) {
-  const entitiesInput = Array.isArray(domain?.entities) ? domain.entities : [];
-  const entities = entitiesInput.map((entity, entityIndex) => normalizeEntityInput(entity, entityIndex));
-  return {
-    id: domain?.id || fallbackId('domain', domainIndex),
-    name: String(domain?.name || '').trim() || `Domain_${domainIndex + 1}`,
-    color: /^#[0-9a-f]{6}$/i.test(domain?.color || '') ? domain.color : DOMAIN_COLORS[domainIndex % DOMAIN_COLORS.length],
-    x: Number.isFinite(domain?.x) ? domain.x : 120 + domainIndex * 40,
-    y: Number.isFinite(domain?.y) ? domain.y : 90 + domainIndex * 30,
-    context: {
-      ubiquitousLanguage: String(domain?.context?.ubiquitousLanguage || '').trim(),
-      ownerTeam: String(domain?.context?.ownerTeam || '').trim(),
-      upstreamDependencies: parseCommaSeparated(domain?.context?.upstreamDependencies || []),
-      downstreamDependencies: parseCommaSeparated(domain?.context?.downstreamDependencies || []),
-      integrationChannel: String(domain?.context?.integrationChannel || '').trim(),
-      packageDependencies: parseCommaSeparated(domain?.context?.packageDependencies || []),
-      sharedValueObjects: parseCommaSeparated(domain?.context?.sharedValueObjects || [])
-    },
-    entities
-  };
-}
-
-function normalizeStatePayload(parsed) {
-  const domainsInput = Array.isArray(parsed?.domains) ? parsed.domains : [];
-  const domains = domainsInput.map((domain, domainIndex) => normalizeDomainInput(domain, domainIndex));
-  const entityIds = new Set(domains.flatMap((domain) => domain.entities.map((entity) => entity.id)));
-  const relationshipsInput = Array.isArray(parsed?.relationships) ? parsed.relationships : [];
-  const relationships = relationshipsInput
-    .map(normalizeRelationship)
-    .filter((relationship) => entityIds.has(relationship.fromEntityId) && entityIds.has(relationship.toEntityId));
-  const view = {
-    zoom: clampZoom(parsed?.view?.zoom || 1),
-    compactEntities: Boolean(parsed?.view?.compactEntities),
-    snapToGrid: parsed?.view?.snapToGrid !== false,
-    edgeStyle: ['curved', 'orthogonal'].includes(parsed?.view?.edgeStyle) ? parsed.view.edgeStyle : 'curved',
-    modelCheckMinSeverity: ['info', 'warn', 'error'].includes(parsed?.view?.modelCheckMinSeverity)
-      ? parsed.view.modelCheckMinSeverity
-      : 'info',
-    exportBlockCritical: parsed?.view?.exportBlockCritical !== false,
-    largeCanvasMode: Boolean(parsed?.view?.largeCanvasMode)
-  };
-  return {
-    domains,
-    relationships,
-    selectedDomainId: parsed?.selectedDomainId || domains[0]?.id || null,
-    selectedEntityId: parsed?.selectedEntityId || null,
-    selectedRelationshipId: parsed?.selectedRelationshipId || null,
-    idCounter: parsed?.idCounter || 1,
-    view
-  };
-}
-
-function recomputeIdCounter() {
-  const allIds = [];
-  state.domains.forEach((domain) => {
-    allIds.push(domain.id);
-    domain.entities.forEach((entity) => allIds.push(entity.id));
-  });
-  state.relationships.forEach((relationship) => allIds.push(relationship.id));
-  let max = 0;
-  allIds.forEach((id) => {
-    const parts = String(id).split('-');
-    const numeric = Number(parts[parts.length - 1]);
-    if (!Number.isNaN(numeric)) max = Math.max(max, numeric);
-  });
-  state.idCounter = Math.max(max + 1, 1);
-}
-
-function loadState() {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) {
-    seed();
-    saveState();
-    history.past = [];
-    history.future = [];
-    return;
-  }
-  try {
-    const parsed = normalizeStatePayload(JSON.parse(raw));
-    state.domains = parsed.domains;
-    state.relationships = parsed.relationships;
-    state.selectedDomainId = parsed.selectedDomainId;
-    state.selectedEntityId = parsed.selectedEntityId;
-    state.selectedRelationshipId = parsed.selectedRelationshipId;
-    state.idCounter = parsed.idCounter;
-    state.view = parsed.view;
-    recomputeIdCounter();
-    history.past = [];
-    history.future = [];
-  } catch (error) {
-    seed();
-    saveState();
-    state.view = {
-      zoom: 1,
-      compactEntities: false,
-      snapToGrid: true,
-      edgeStyle: 'curved',
-      modelCheckMinSeverity: 'info',
-      exportBlockCritical: true,
-      largeCanvasMode: false
-    };
-    history.past = [];
-    history.future = [];
-  }
-}
-
 function importStateFromFile(file) {
   const reader = new FileReader();
   reader.onload = () => {
@@ -3932,7 +3535,7 @@ function wireEvents() {
   dom.saveBaselineBtn.onclick = saveSchemaBaseline;
   dom.runSchemaDiffBtn.onclick = runSchemaDiff;
   dom.clearBaselineBtn.onclick = () => {
-    localStorage.removeItem(DIFF_BASELINE_KEY);
+    store.clearBaseline();
     renderSchemaDiffResults([{ severity: 'info', message: 'Baseline cleared.' }]);
   };
   dom.autoLayoutBtn.onclick = autoLayout;
@@ -3986,7 +3589,7 @@ function wireEvents() {
   };
 
   dom.clearStorageBtn.onclick = () => {
-    localStorage.removeItem(STORAGE_KEY);
+    store.clear();
     window.alert('Saved designer state cleared.');
   };
 
@@ -4133,10 +3736,17 @@ function wireEvents() {
   });
 }
 
-loadState();
-wireEvents();
-render();
-loadRuntimeEnvironment(state.runtimeEnvironment?.environment || 'dev')
-  .catch(() => {
-    renderRuntimeEnvironment();
-  });
+// Boot is async because the IDesignerStore port is async (Cana crosses a
+// worker boundary); the transitional localStorage adapter resolves
+// immediately, so the load → wire → render order is unchanged.
+async function boot() {
+  await loadState();
+  wireEvents();
+  render();
+  loadRuntimeEnvironment(state.runtimeEnvironment?.environment || 'dev')
+    .catch(() => {
+      renderRuntimeEnvironment();
+    });
+}
+
+boot();
