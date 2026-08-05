@@ -1,13 +1,37 @@
+/**
+ * script.js — the orchestrator of the Service Management designer.
+ *
+ * After JUM-468 (state/persistence core) and JUM-469 (this refactor) the
+ * monolith is split into modules with explicit interfaces; this file keeps
+ * only what is genuinely orchestration: element lookup, event wiring,
+ * rendering glue and boot.
+ *
+ * Module map (acyclic — imports only ever point downwards):
+ *
+ *   src/state/designerState.js        state, persistence, history, normalisers (DOM-free)
+ *   src/store/*.js                    IDesignerStore port + transitional localStorage adapter (DOM-free)
+ *   src/model/modelQueries.js         pure helpers over the model (DOM-free)
+ *   src/validation/modelValidation.js collectModelIssues engine (DOM-free)
+ *   src/exporters/designerExporters.js the 7 export document builders (DOM-free)
+ *   src/importers/designerImporters.js the import document→model mappers (DOM-free)
+ *   src/ui/tabs.js                    tab switching (DOM)
+ *   src/ui/canvas.js                  canvas: pan/zoom/snap, domains/entities, edges, mini-map (DOM)
+ *   src/ui/inspectors.js              side panels, lists, diff/model-check renderers (DOM)
+ *   script.js                         this file: wiring + glue
+ *
+ * `render()` below calls the per-area renderers in exactly the pre-refactor
+ * order — the monolith's implicit sequencing (options before the inspector
+ * that reads them, domains before edges) is preserved as an explicit
+ * sequence.
+ */
+
 import {
   DOMAIN_COLORS,
   FIELD_TYPES,
-  clampZoom,
   createDesignerState,
   defaultFields,
-  fallbackId,
   getDefaultRbacPolicy,
   normalizeContractInput,
-  normalizeDomainInput,
   normalizeField,
   normalizeOptionalNumber,
   normalizeStatePayload,
@@ -15,6 +39,24 @@ import {
   parseEnumValues
 } from './src/state/designerState.js';
 import { LocalStorageDesignerStore } from './src/store/LocalStorageDesignerStore.js';
+import * as model from './src/model/modelQueries.js';
+import { collectModelIssues } from './src/validation/modelValidation.js';
+import {
+  buildAsyncApiDocument,
+  buildBoilerplateBundleDocument,
+  buildDomainPackageDocument,
+  buildJsonExportDocument,
+  buildJsonSchemaDocument,
+  buildMarkdownExport,
+  buildOasDocument
+} from './src/exporters/designerExporters.js';
+import {
+  buildDomainFromPackage,
+  buildDomainsFromOas
+} from './src/importers/designerImporters.js';
+import { createTabs } from './src/ui/tabs.js';
+import { createCanvas } from './src/ui/canvas.js';
+import { createInspectors } from './src/ui/inspectors.js';
 
 // Runtime env editor metadata — mirrors the allowlists and enum sets enforced by
 // server.js (write allowlist = editable tier; read-only keys render disabled).
@@ -257,157 +299,88 @@ const dom = {
   deployTargetList: document.getElementById('deploy-target-list')
 };
 
+// The UI modules. Their factories receive the shared state/interaction
+// objects plus callbacks into this file — the explicit interface the
+// monolith's closure used to provide. Everything they return is called
+// below exactly where the monolith called its own functions.
+const tabs = createTabs({ dom, state, saveState });
+const canvas = createCanvas({
+  dom,
+  state,
+  interaction,
+  actions: {
+    withPersist,
+    render,
+    saveState,
+    setSelectedDomain,
+    setSelectedEntity,
+    handleEntityRelationshipPick,
+    addRelationshipFromAnchor
+  }
+});
+const inspectors = createInspectors({
+  dom,
+  state,
+  interaction,
+  actions: {
+    withPersist,
+    render,
+    focusEntity,
+    deleteRelationship,
+    setSelectedDomain,
+    editFieldMetadata,
+    updateField,
+    removeField,
+    renderRuntimeEnvironment,
+    loadSchemaBaseline
+  }
+});
+
+// Thin delegations to the pure helpers in src/model/modelQueries.js, keeping
+// the monolith's call signatures (state closed over here, as before) so the
+// retained orchestration below reads exactly as it did pre-refactor.
 function normalizedName(value) {
-  return String(value || '').trim().toLowerCase();
+  return model.normalizedName(value);
 }
 
 function isDomainNameTaken(name, ignoredDomainId = null) {
-  const value = normalizedName(name);
-  return state.domains.some((domain) => domain.id !== ignoredDomainId && normalizedName(domain.name) === value);
+  return model.isDomainNameTaken(state.domains, name, ignoredDomainId);
 }
 
 function isEntityNameTaken(domain, name, ignoredEntityId = null) {
-  const value = normalizedName(name);
-  return domain.entities.some((entity) => entity.id !== ignoredEntityId && normalizedName(entity.name) === value);
+  return model.isEntityNameTaken(domain, name, ignoredEntityId);
 }
 
 function isFieldNameTaken(entity, name, ignoredFieldName = null) {
-  const value = normalizedName(name);
-  return entity.fields.some(
-    (field) => normalizedName(field.name) !== normalizedName(ignoredFieldName) && normalizedName(field.name) === value
-  );
+  return model.isFieldNameTaken(entity, name, ignoredFieldName);
 }
 
 function uniqueStrings(values) {
-  return Array.from(new Set((values || []).map((item) => String(item).trim()).filter(Boolean)));
+  return model.uniqueStrings(values);
 }
 
-function renderView() {
-  const zoom = clampZoom(state.view.zoom || 1);
-  state.view.zoom = zoom;
-  if (typeof state.view.snapToGrid !== 'boolean') state.view.snapToGrid = true;
-  if (!['curved', 'orthogonal'].includes(state.view.edgeStyle)) state.view.edgeStyle = 'curved';
-  if (!['info', 'warn', 'error'].includes(state.view.modelCheckMinSeverity)) state.view.modelCheckMinSeverity = 'info';
-  if (typeof state.view.exportBlockCritical !== 'boolean') state.view.exportBlockCritical = true;
-  if (typeof state.view.largeCanvasMode !== 'boolean') state.view.largeCanvasMode = false;
-  dom.canvasInner.style.transform = `scale(${zoom})`;
-  dom.canvas.classList.toggle('large-canvas-mode', Boolean(state.view.largeCanvasMode));
-  dom.zoomIndicator.textContent = `${Math.round(zoom * 100)}%`;
-  dom.toggleCompactViewBtn.textContent = state.view.compactEntities ? 'Full View' : 'Compact View';
-  dom.toggleSnapBtn.textContent = state.view.snapToGrid ? 'Snap: On' : 'Snap: Off';
-  dom.toggleLargeCanvasBtn.textContent = state.view.largeCanvasMode ? 'Large Canvas: On' : 'Large Canvas: Off';
-  dom.edgeStyleSelect.value = state.view.edgeStyle;
-  dom.modelCheckMinSeveritySelect.value = state.view.modelCheckMinSeverity;
-  dom.exportBlockCriticalCheck.checked = state.view.exportBlockCritical;
+function findEntity(entityId) {
+  return model.findEntity(state.domains, entityId);
 }
 
-function renderTabs() {
-  const activeTab = state.activeTab || 'domain-designer';
-  const tabMap = [
-    {
-      key: 'domain-designer',
-      button: dom.tabDomainDesignerBtn,
-      section: dom.tabDomainDesigner
-    },
-    {
-      key: 'interface-designer',
-      button: dom.tabInterfaceDesignerBtn,
-      section: dom.tabInterfaceDesigner
-    },
-    {
-      key: 'service-config',
-      button: dom.tabServiceConfigBtn,
-      section: dom.tabServiceConfig
-    },
-    {
-      key: 'deploy-management',
-      button: dom.tabDeployManagementBtn,
-      section: dom.tabDeployManagement
-    }
-  ];
-
-  tabMap.forEach((tab) => {
-    if (tab.button) tab.button.classList.toggle('active', tab.key === activeTab);
-    if (tab.section) tab.section.classList.toggle('active', tab.key === activeTab);
-  });
+function findEntityByName(name) {
+  return model.findEntityByName(state.domains, name);
 }
 
-function setActiveTab(tab) {
-  state.activeTab = tab;
-  renderTabs();
-  saveState();
+function buildRelationshipName(fromEntityId, toEntityId, fromCardinality, toCardinality) {
+  return model.buildRelationshipName(state.domains, fromEntityId, toEntityId, fromCardinality, toCardinality);
 }
 
-function renderInterfaceAdapters() {
-  if (!dom.interfaceAdapterList) return;
-  dom.interfaceAdapterList.innerHTML = '';
-  state.interfaces.forEach((adapter, index) => {
-    const item = document.createElement('li');
-    item.className = 'relationship-item';
-    const summary = document.createElement('div');
-    summary.className = 'relationship-name';
-    summary.textContent = `${adapter.type} | ${adapter.framework} | ${adapter.entrypoint} -> ${adapter.controller}`;
-    item.appendChild(summary);
-
-    const removeBtn = document.createElement('button');
-    removeBtn.type = 'button';
-    removeBtn.textContent = 'Delete';
-    removeBtn.onclick = () => {
-      withPersist(() => {
-        state.interfaces.splice(index, 1);
-        renderInterfaceAdapters();
-      });
-    };
-    item.appendChild(removeBtn);
-    dom.interfaceAdapterList.appendChild(item);
-  });
+function getEntityRbacPolicy(entity) {
+  return model.getEntityRbacPolicy(entity);
 }
 
-function renderServiceConfiguration() {
-  if (!dom.serviceKindSelect) return;
-  dom.serviceKindSelect.value = state.serviceConfiguration.serviceKind || 'rest-api';
-  dom.runModeSelect.value = state.serviceConfiguration.runMode || 'dedicated-server';
-  dom.cloudProviderSelect.value = state.serviceConfiguration.cloudProvider || 'aws';
-  dom.serviceStaticAssetsInput.value = state.serviceConfiguration.staticAssetsPath || '';
-  const currentPorts = state.serviceConfiguration.ports || { rest: 3000, websocket: 3001, grpc: 3002 };
-  if (dom.serviceHttpPortInput) dom.serviceHttpPortInput.value = String(currentPorts.rest || 3000);
-  if (dom.serviceWebsocketPortInput) dom.serviceWebsocketPortInput.value = String(currentPorts.websocket || 3001);
-  if (dom.serviceGrpcPortInput) dom.serviceGrpcPortInput.value = String(currentPorts.grpc || 3002);
+function toPathToken(value) {
+  return model.toPathToken(value);
+}
 
-  const runtimeProfiles = {
-    'rest-api': {
-      kind: 'REST API',
-      processCount: 1,
-      pm2Command: 'bun run pm2:start:dev:restapi',
-      processes: ['REST API']
-    },
-    'websocket-rest-api': {
-      kind: 'WebSocket API + REST API',
-      processCount: 2,
-      pm2Command: 'bun run pm2:start:dev:websocket-rest',
-      processes: ['REST API', 'WebSocket API']
-    },
-    'grpc-rest-api': {
-      kind: 'gRPC API + REST API',
-      processCount: 2,
-      pm2Command: 'bun run pm2:start:dev:grpc-rest',
-      processes: ['REST API', 'gRPC API']
-    }
-  };
-  const selectedProfile = runtimeProfiles[state.serviceConfiguration.serviceKind] || runtimeProfiles['rest-api'];
-  if (dom.serviceRuntimeProfilePreview) {
-    dom.serviceRuntimeProfilePreview.textContent = JSON.stringify({
-      selectedRuntimeProfile: selectedProfile.kind,
-      vmRequirement: 'Use PM2 with separated processes and ports',
-      processCount: selectedProfile.processCount,
-      processes: selectedProfile.processes,
-      ports: currentPorts,
-      suggestedPm2Command: selectedProfile.pm2Command
-    }, null, 2);
-  }
-  if (!dom.serviceConfigPreview) return;
-  dom.serviceConfigPreview.textContent = JSON.stringify(state.serviceConfiguration, null, 2);
-  renderRuntimeEnvironment();
+function snapCoordinate(value) {
+  return model.snapCoordinate(state.view.snapToGrid, value);
 }
 
 function renderRuntimeEnvFields(runtimeValues) {
@@ -529,118 +502,6 @@ async function saveRuntimeEnvironment() {
   renderRuntimeEnvironment();
 }
 
-function renderDeployments() {
-  if (!dom.deployTargetList) return;
-  dom.deployTargetList.innerHTML = '';
-  state.deployments.forEach((deployment, index) => {
-    const item = document.createElement('li');
-    item.className = 'relationship-item';
-    const summary = document.createElement('div');
-    summary.className = 'relationship-name';
-    summary.textContent = `${deployment.name} | ${deployment.type} | ${deployment.region} | ${deployment.runtime}`;
-    item.appendChild(summary);
-
-    const removeBtn = document.createElement('button');
-    removeBtn.type = 'button';
-    removeBtn.textContent = 'Delete';
-    removeBtn.onclick = () => {
-      withPersist(() => {
-        state.deployments.splice(index, 1);
-        renderDeployments();
-      });
-    };
-    item.appendChild(removeBtn);
-    dom.deployTargetList.appendChild(item);
-  });
-}
-
-function setZoom(zoomValue) {
-  state.view.zoom = clampZoom(zoomValue);
-  renderView();
-  saveState();
-}
-
-function zoomBy(delta) {
-  setZoom((state.view.zoom || 1) + delta);
-}
-
-function fitView() {
-  if (!state.domains.length) {
-    setZoom(1);
-    dom.canvas.scrollTo({ left: 0, top: 0, behavior: 'smooth' });
-    return;
-  }
-
-  const bounds = {
-    minX: Infinity,
-    minY: Infinity,
-    maxX: 0,
-    maxY: 0
-  };
-
-  state.domains.forEach((domain) => {
-    bounds.minX = Math.min(bounds.minX, domain.x);
-    bounds.minY = Math.min(bounds.minY, domain.y);
-    bounds.maxX = Math.max(bounds.maxX, domain.x + 520);
-    bounds.maxY = Math.max(bounds.maxY, domain.y + 280);
-  });
-
-  const padding = 80;
-  const contentWidth = Math.max(300, bounds.maxX - bounds.minX + padding * 2);
-  const contentHeight = Math.max(220, bounds.maxY - bounds.minY + padding * 2);
-  const zoomX = dom.canvas.clientWidth / contentWidth;
-  const zoomY = dom.canvas.clientHeight / contentHeight;
-  const nextZoom = clampZoom(Math.min(zoomX, zoomY));
-  state.view.zoom = nextZoom;
-  renderView();
-
-  const left = Math.max(0, (bounds.minX - padding) * nextZoom);
-  const top = Math.max(0, (bounds.minY - padding) * nextZoom);
-  dom.canvas.scrollTo({ left, top, behavior: 'smooth' });
-  saveState();
-}
-
-function resetView() {
-  state.view.zoom = 1;
-  renderView();
-  dom.canvas.scrollTo({ left: 0, top: 0, behavior: 'smooth' });
-  saveState();
-}
-
-function toggleCompactView() {
-  state.view.compactEntities = !state.view.compactEntities;
-  render();
-  saveState();
-}
-
-function autoLayout() {
-  withPersist(() => {
-    const domainWidth = 520;
-    const domainHeight = 300;
-    const gapX = 70;
-    const gapY = 70;
-    const columns = Math.max(1, Math.floor((3200 - 120) / (domainWidth + gapX)));
-
-    state.domains.forEach((domain, index) => {
-      const column = index % columns;
-      const row = Math.floor(index / columns);
-      domain.x = 40 + column * (domainWidth + gapX);
-      domain.y = 40 + row * (domainHeight + gapY);
-
-      domain.entities.forEach((entity, entityIndex) => {
-        const entityColumn = entityIndex % 2;
-        const entityRow = Math.floor(entityIndex / 2);
-        entity.x = 14 + entityColumn * 206;
-        entity.y = 14 + entityRow * 118;
-      });
-    });
-
-    render();
-  });
-
-  fitView();
-}
-
 function nextId(prefix) {
   const value = `${prefix}-${state.idCounter}`;
   state.idCounter += 1;
@@ -649,24 +510,6 @@ function nextId(prefix) {
 
 function getSelectedDomain() {
   return state.domains.find((domain) => domain.id === state.selectedDomainId) || null;
-}
-
-function findEntity(entityId) {
-  for (const domain of state.domains) {
-    const entity = domain.entities.find((candidate) => candidate.id === entityId);
-    if (entity) return { domain, entity };
-  }
-  return null;
-}
-
-function findEntityByName(name) {
-  const normalized = normalizedName(name);
-  if (!normalized) return null;
-  for (const domain of state.domains) {
-    const entity = domain.entities.find((candidate) => normalizedName(candidate.name).includes(normalized));
-    if (entity) return { domain, entity };
-  }
-  return null;
 }
 
 function focusEntity(entityId) {
@@ -683,12 +526,6 @@ function focusEntity(entityId) {
     top: Math.max(0, targetTop),
     behavior: 'smooth'
   });
-}
-
-function snapCoordinate(value) {
-  if (!state.view.snapToGrid) return value;
-  const GRID = 8;
-  return Math.round(value / GRID) * GRID;
 }
 
 function addDomain(name, options = {}) {
@@ -1024,6 +861,18 @@ function addRelationship(fromEntityId, toEntityId, fromCardinality, toCardinalit
   });
 }
 
+// Canvas anchor drags end on this callback: the cardinality selects live in
+// this file's `dom` map, so the canvas module delegates relationship
+// creation back here with the anchor sides it tracked.
+function addRelationshipFromAnchor(fromEntityId, toEntityId, toSide) {
+  const fromCardinality = dom.fromCardSelect.value || 'N';
+  const toCardinality = dom.toCardSelect.value || '1';
+  addRelationship(fromEntityId, toEntityId, fromCardinality, toCardinality, {
+    fromAnchorSide: interaction.relationshipAnchorFromSide,
+    toAnchorSide: toSide
+  });
+}
+
 function ensureForeignKeyField(entity, referencedEntityName) {
   const fkName = `${String(referencedEntityName || '').trim().toLowerCase()}Id`;
   if (!fkName || fkName === 'id') return;
@@ -1045,49 +894,6 @@ function deleteRelationship(relationshipId) {
     if (state.selectedRelationshipId === relationshipId) state.selectedRelationshipId = null;
     render();
   });
-}
-
-function syncRelationshipInspector() {
-  const relationship = state.relationships.find((candidate) => candidate.id === state.selectedRelationshipId);
-  const disabled = !relationship;
-  dom.relationshipNameInput.disabled = disabled;
-  dom.relationshipFromEntitySelect.disabled = disabled;
-  dom.relationshipToEntitySelect.disabled = disabled;
-  dom.relationshipFromCardSelect.disabled = disabled;
-  dom.relationshipToCardSelect.disabled = disabled;
-  dom.relationshipLabelOffsetXInput.disabled = disabled;
-  dom.relationshipLabelOffsetYInput.disabled = disabled;
-  dom.relationshipBendXInput.disabled = disabled;
-  dom.relationshipBendYInput.disabled = disabled;
-  dom.relationshipAnchorBehaviorSelect.disabled = disabled;
-  dom.resetRelationshipLabelOffsetBtn.disabled = disabled;
-  dom.saveRelationshipBtn.disabled = disabled;
-  dom.reverseRelationshipBtn.disabled = disabled;
-  if (!relationship) {
-    dom.relationshipNameInput.value = '';
-    dom.relationshipFromEntitySelect.value = '';
-    dom.relationshipToEntitySelect.value = '';
-    dom.relationshipFromCardSelect.value = '1';
-    dom.relationshipToCardSelect.value = '1';
-    dom.relationshipLabelOffsetXInput.value = '';
-    dom.relationshipLabelOffsetYInput.value = '';
-    dom.relationshipBendXInput.value = '';
-    dom.relationshipBendYInput.value = '';
-    dom.relationshipAnchorBehaviorSelect.value = 'auto';
-    dom.relationshipNameInput.placeholder = 'Select a relationship';
-    return;
-  }
-  dom.relationshipNameInput.placeholder = 'Relationship name';
-  dom.relationshipNameInput.value = relationship.name || '';
-  dom.relationshipFromEntitySelect.value = relationship.fromEntityId;
-  dom.relationshipToEntitySelect.value = relationship.toEntityId;
-  dom.relationshipFromCardSelect.value = relationship.fromCardinality || '1';
-  dom.relationshipToCardSelect.value = relationship.toCardinality || '1';
-  dom.relationshipLabelOffsetXInput.value = Number.isFinite(relationship.labelOffsetX) ? String(relationship.labelOffsetX) : '0';
-  dom.relationshipLabelOffsetYInput.value = Number.isFinite(relationship.labelOffsetY) ? String(relationship.labelOffsetY) : '0';
-  dom.relationshipBendXInput.value = Number.isFinite(relationship.bendX) ? String(relationship.bendX) : '';
-  dom.relationshipBendYInput.value = Number.isFinite(relationship.bendY) ? String(relationship.bendY) : '';
-  dom.relationshipAnchorBehaviorSelect.value = relationship.anchorBehavior === 'center' ? 'center' : 'auto';
 }
 
 function saveSelectedRelationship() {
@@ -1160,25 +966,10 @@ function reverseSelectedRelationship() {
   });
 }
 
-function renderPickStatus() {
-  if (!interaction.relationshipPickActive) {
-    dom.relationshipPickStatus.textContent = 'Pick mode off';
-    dom.pickRelationshipBtn.textContent = 'Pick On Canvas';
-    return;
-  }
-  if (!interaction.relationshipPickFromEntityId) {
-    dom.relationshipPickStatus.textContent = 'Pick mode: select first entity';
-    dom.pickRelationshipBtn.textContent = 'Cancel Pick';
-    return;
-  }
-  dom.relationshipPickStatus.textContent = `Pick mode: select target for ${entityLabel(interaction.relationshipPickFromEntityId)}`;
-  dom.pickRelationshipBtn.textContent = 'Cancel Pick';
-}
-
 function setRelationshipPickMode(active) {
   interaction.relationshipPickActive = active;
   if (!active) interaction.relationshipPickFromEntityId = null;
-  renderPickStatus();
+  inspectors.renderPickStatus();
 }
 
 function startRelationshipPickFromSelectedEntity() {
@@ -1188,14 +979,14 @@ function startRelationshipPickFromSelectedEntity() {
   }
   interaction.relationshipPickActive = true;
   interaction.relationshipPickFromEntityId = state.selectedEntityId;
-  renderPickStatus();
+  inspectors.renderPickStatus();
 }
 
 function handleEntityRelationshipPick(entityId) {
   if (!interaction.relationshipPickActive) return;
   if (!interaction.relationshipPickFromEntityId) {
     interaction.relationshipPickFromEntityId = entityId;
-    renderPickStatus();
+    inspectors.renderPickStatus();
     return;
   }
   const fromId = interaction.relationshipPickFromEntityId;
@@ -1207,76 +998,6 @@ function handleEntityRelationshipPick(entityId) {
     dom.toCardSelect.value
   );
   setRelationshipPickMode(false);
-}
-
-function attachDrag(el, onMove) {
-  let pointerId = null;
-  let startX = 0;
-  let startY = 0;
-
-  el.addEventListener('pointerdown', (event) => {
-    pointerId = event.pointerId;
-    startX = event.clientX;
-    startY = event.clientY;
-    el.setPointerCapture(pointerId);
-  });
-
-  el.addEventListener('pointermove', (event) => {
-    if (pointerId !== event.pointerId) return;
-    const zoom = state.view.zoom || 1;
-    const dx = (event.clientX - startX) / zoom;
-    const dy = (event.clientY - startY) / zoom;
-    startX = event.clientX;
-    startY = event.clientY;
-    onMove(dx, dy);
-  });
-
-  const end = (event) => {
-    if (pointerId !== event.pointerId) return;
-    el.releasePointerCapture(pointerId);
-    pointerId = null;
-  };
-
-  el.addEventListener('pointerup', end);
-  el.addEventListener('pointercancel', end);
-}
-
-function renderDomainList() {
-  dom.domainList.innerHTML = '';
-  state.domains.forEach((domain) => {
-    const li = document.createElement('li');
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = state.selectedDomainId === domain.id ? 'active' : '';
-    btn.textContent = domain.name;
-    btn.onclick = () => setSelectedDomain(domain.id);
-    li.appendChild(btn);
-    dom.domainList.appendChild(li);
-  });
-}
-
-function renderStatus() {
-  const selected = getSelectedDomain();
-  dom.status.textContent = selected ? `Selected domain: ${selected.name}` : 'No domain selected';
-  dom.domainColorInput.value = selected?.color || '#60a5fa';
-  const context = selected?.context || {};
-  dom.domainUbiquitousLanguageInput.value = context.ubiquitousLanguage || '';
-  dom.domainOwnerTeamInput.value = context.ownerTeam || '';
-  dom.domainUpstreamInput.value = Array.isArray(context.upstreamDependencies) ? context.upstreamDependencies.join(', ') : '';
-  dom.domainDownstreamInput.value = Array.isArray(context.downstreamDependencies) ? context.downstreamDependencies.join(', ') : '';
-  dom.domainIntegrationChannelInput.value = context.integrationChannel || '';
-  dom.domainPackageDependenciesInput.value = Array.isArray(context.packageDependencies) ? context.packageDependencies.join(', ') : '';
-  dom.domainSharedValueObjectsInput.value = Array.isArray(context.sharedValueObjects) ? context.sharedValueObjects.join(', ') : '';
-  const disabled = !selected;
-  dom.domainUbiquitousLanguageInput.disabled = disabled;
-  dom.domainOwnerTeamInput.disabled = disabled;
-  dom.domainUpstreamInput.disabled = disabled;
-  dom.domainDownstreamInput.disabled = disabled;
-  dom.domainIntegrationChannelInput.disabled = disabled;
-  dom.domainPackageDependenciesInput.disabled = disabled;
-  dom.domainSharedValueObjectsInput.disabled = disabled;
-  dom.saveDomainContextBtn.disabled = disabled;
-  dom.clearDomainContextBtn.disabled = disabled;
 }
 
 function setSelectedDomainColor(color) {
@@ -1312,7 +1033,7 @@ function saveSelectedDomainContext() {
       packageDependencies: uniqueStrings(parseCommaSeparated(dom.domainPackageDependenciesInput.value)),
       sharedValueObjects: uniqueStrings(parseCommaSeparated(dom.domainSharedValueObjectsInput.value))
     };
-    renderStatus();
+    inspectors.renderStatus();
   });
 }
 
@@ -1355,31 +1076,6 @@ function saveSelectedEntityRules() {
   });
 }
 
-function getEntityRbacPolicy(entity) {
-  if (!entity.meta) entity.meta = {};
-  if (!entity.meta.rbac) entity.meta.rbac = getDefaultRbacPolicy();
-  return entity.meta.rbac;
-}
-
-function renderEntityRbacInspector(entity) {
-  const policy = getEntityRbacPolicy(entity);
-  const action = dom.entityRbacActionSelect.value || 'list';
-  const rule = policy[action] || { roles: [], tenantScoped: true };
-  const roles = Array.isArray(rule.roles) ? rule.roles : [];
-  dom.entityRbacSuperadminCheck.checked = roles.includes('superadmin');
-  dom.entityRbacAdminCheck.checked = roles.includes('admin');
-  dom.entityRbacUserCheck.checked = roles.includes('user');
-  dom.entityRbacTenantCheck.checked = Boolean(rule.tenantScoped);
-  dom.entityRbacList.innerHTML = '';
-  ['list', 'getById', 'create', 'update', 'delete'].forEach((key) => {
-    const item = document.createElement('li');
-    const actionRule = policy[key] || { roles: [], tenantScoped: true };
-    const label = `${key}: [${(actionRule.roles || []).join(', ')}] | tenantScoped=${Boolean(actionRule.tenantScoped)}`;
-    item.textContent = label;
-    dom.entityRbacList.appendChild(item);
-  });
-}
-
 function saveSelectedEntityRbacRule() {
   const found = findEntity(state.selectedEntityId);
   if (!found) {
@@ -1397,52 +1093,7 @@ function saveSelectedEntityRbacRule() {
       roles,
       tenantScoped: Boolean(dom.entityRbacTenantCheck.checked)
     };
-    renderEntityRbacInspector(found.entity);
-  });
-}
-
-function renderEntityContractsInspector(entity) {
-  if (!entity.meta) entity.meta = {};
-  if (!Array.isArray(entity.meta.contracts)) entity.meta.contracts = [];
-  dom.entityContractList.innerHTML = '';
-  entity.meta.contracts.forEach((contract) => {
-    const item = document.createElement('li');
-    item.className = 'relationship-item';
-    const summary = document.createElement('div');
-    summary.className = 'relationship-name';
-    summary.textContent = `${contract.type}:${contract.name} | ${contract.channel || '-'} | v${contract.version}`;
-    item.appendChild(summary);
-    const payloadBtn = document.createElement('button');
-    payloadBtn.type = 'button';
-    payloadBtn.textContent = 'payload';
-    payloadBtn.onclick = () => {
-      const raw = window.prompt(
-        `Payload schema JSON for ${contract.type}:${contract.name}`,
-        JSON.stringify(contract.payloadSchema || {}, null, 2)
-      );
-      if (raw === null) return;
-      try {
-        const parsed = raw.trim() ? JSON.parse(raw) : {};
-        withPersist(() => {
-          contract.payloadSchema = parsed;
-          renderEntityContractsInspector(entity);
-        });
-      } catch (_) {
-        window.alert('Invalid JSON payload schema.');
-      }
-    };
-    const removeBtn = document.createElement('button');
-    removeBtn.type = 'button';
-    removeBtn.textContent = 'x';
-    removeBtn.onclick = () => {
-      withPersist(() => {
-        entity.meta.contracts = entity.meta.contracts.filter((candidate) => candidate.id !== contract.id);
-        renderEntityContractsInspector(entity);
-      });
-    };
-    item.appendChild(payloadBtn);
-    item.appendChild(removeBtn);
-    dom.entityContractList.appendChild(item);
+    inspectors.renderEntityRbacInspector(found.entity);
   });
 }
 
@@ -1474,7 +1125,7 @@ function addSelectedEntityContract() {
     dom.entityContractNameInput.value = '';
     dom.entityContractChannelInput.value = '';
     dom.entityContractVersionInput.value = '1.0.0';
-    renderEntityContractsInspector(found.entity);
+    inspectors.renderEntityContractsInspector(found.entity);
   });
 }
 
@@ -1496,7 +1147,7 @@ function saveSelectedEntityOasComposition() {
       externalRefs,
       discriminator
     };
-    renderEntityInspector();
+    inspectors.renderEntityInspector();
   });
 }
 
@@ -1549,81 +1200,6 @@ function moveSelectedEntityToDomain(targetDomainId) {
   });
 }
 
-function renderEntityOptions() {
-  const entries = [];
-  state.domains.forEach((domain) => {
-    domain.entities.forEach((entity) => entries.push({ id: entity.id, label: `${domain.name} / ${entity.name}` }));
-  });
-  const selectedMoveDomain = dom.entityMoveDomainSelect.value;
-  dom.entityMoveDomainSelect.innerHTML = '';
-  state.domains.forEach((domain) => {
-    const option = document.createElement('option');
-    option.value = domain.id;
-    option.textContent = domain.name;
-    dom.entityMoveDomainSelect.appendChild(option);
-  });
-  if (state.domains.some((domain) => domain.id === selectedMoveDomain)) {
-    dom.entityMoveDomainSelect.value = selectedMoveDomain;
-  }
-
-  const fill = (selectEl) => {
-    const selected = selectEl.value;
-    selectEl.innerHTML = '';
-    entries.forEach((entry) => {
-      const option = document.createElement('option');
-      option.value = entry.id;
-      option.textContent = entry.label;
-      selectEl.appendChild(option);
-    });
-    if (entries.some((entry) => entry.id === selected)) selectEl.value = selected;
-  };
-  fill(dom.fromEntitySelect);
-  fill(dom.toEntitySelect);
-  fill(dom.relationshipFromEntitySelect);
-  fill(dom.relationshipToEntitySelect);
-}
-
-function entityLabel(entityId) {
-  const found = findEntity(entityId);
-  return found ? `${found.domain.name}/${found.entity.name}` : entityId;
-}
-
-function renderRelationshipList() {
-  dom.relationshipList.innerHTML = '';
-  state.relationships.forEach((relationship) => {
-    const li = document.createElement('li');
-    li.className = 'relationship-item';
-    const name = document.createElement('div');
-    name.className = 'relationship-name';
-    name.textContent = `${relationship.name || 'relation'} | ${entityLabel(relationship.fromEntityId)} (${relationship.fromCardinality}) -> (${relationship.toCardinality}) ${entityLabel(relationship.toEntityId)}`;
-    if (state.selectedRelationshipId === relationship.id) {
-      name.style.borderColor = '#2563eb';
-      name.style.background = '#eff6ff';
-    }
-    name.onclick = () => {
-      state.selectedRelationshipId = relationship.id;
-      render();
-    };
-    const del = document.createElement('button');
-    del.type = 'button';
-    del.textContent = 'x';
-    del.onclick = () => deleteRelationship(relationship.id);
-    li.appendChild(name);
-    li.appendChild(del);
-    dom.relationshipList.appendChild(li);
-  });
-}
-
-function fieldLabel(field) {
-  const flags = [];
-  if (field.pk) flags.push('PK');
-  if (field.fk) flags.push('FK');
-  if (field.unique) flags.push('UQ');
-  if (field.required) flags.push('REQ');
-  if (field.nullable) flags.push('NULL');
-  return `${field.name}: ${field.type}${field.format ? `(${field.format})` : ''}${flags.length ? ` [${flags.join(', ')}]` : ''}`;
-}
-
 function editFieldMetadata(entityId, fieldName) {
   const found = findEntity(entityId);
   if (!found) return;
@@ -1665,605 +1241,10 @@ function editFieldMetadata(entityId, fieldName) {
   }
 }
 
-function buildRelationshipName(fromEntityId, toEntityId, fromCardinality, toCardinality) {
-  const from = entityLabel(fromEntityId);
-  const to = entityLabel(toEntityId);
-  if (fromCardinality === 'N' && toCardinality === '1') return `${from} belongs to ${to}`;
-  if (fromCardinality === '1' && toCardinality === 'N') return `${from} has many ${to}`;
-  if (fromCardinality === '1' && toCardinality === '1') return `${from} is linked to ${to}`;
-  return `${from} relates to ${to}`;
-}
-
-function severityRank(severity) {
-  if (severity === 'error') return 3;
-  if (severity === 'warn') return 2;
-  return 1;
-}
-
-function collectModelIssues() {
-  const issues = [];
-  const pushIssue = (message, entityId = null, severity = 'error') => issues.push({ message, entityId, severity });
-  const seenDomainNames = new Set();
-
-  state.domains.forEach((domain) => {
-    const domainNameKey = normalizedName(domain.name);
-    if (!domain.name || !domainNameKey) {
-      pushIssue('Domain with empty name found.', null, 'error');
-    }
-    if (seenDomainNames.has(domainNameKey)) {
-      pushIssue(`Duplicate domain name: ${domain.name}`, null, 'error');
-    }
-    seenDomainNames.add(domainNameKey);
-
-    const seenEntityNames = new Set();
-    domain.entities.forEach((entity) => {
-      const entityKey = normalizedName(entity.name);
-      if (!entity.name || !entityKey) {
-        pushIssue(`Entity with empty name in domain ${domain.name}`, entity.id, 'error');
-      }
-      if (seenEntityNames.has(entityKey)) {
-        pushIssue(`Duplicate entity name in domain ${domain.name}: ${entity.name}`, entity.id, 'error');
-      }
-      seenEntityNames.add(entityKey);
-
-      const seenFields = new Set();
-      let hasPrimaryKey = false;
-      entity.fields.forEach((field) => {
-        const fieldKey = normalizedName(field.name);
-        if (!field.name || !fieldKey) {
-          pushIssue(`Entity ${domain.name}/${entity.name} has an empty field name.`, entity.id, 'error');
-        }
-        if (seenFields.has(fieldKey)) {
-          pushIssue(`Entity ${domain.name}/${entity.name} has duplicated field: ${field.name}`, entity.id, 'error');
-        }
-        seenFields.add(fieldKey);
-        if (field.type === 'array' && !field.itemsType) {
-          pushIssue(`Field ${domain.name}/${entity.name}.${field.name} is array but has no itemsType.`, entity.id, 'error');
-        }
-        if (field.minLength !== null && field.maxLength !== null && field.minLength > field.maxLength) {
-          pushIssue(`Field ${domain.name}/${entity.name}.${field.name} has minLength > maxLength.`, entity.id, 'error');
-        }
-        if (field.minimum !== null && field.maximum !== null && field.minimum > field.maximum) {
-          pushIssue(`Field ${domain.name}/${entity.name}.${field.name} has minimum > maximum.`, entity.id, 'error');
-        }
-        if (field.pk) hasPrimaryKey = true;
-        if (field.required && field.nullable) {
-          pushIssue(`Field ${domain.name}/${entity.name}.${field.name} is required and nullable simultaneously.`, entity.id, 'warn');
-        }
-      });
-      if (!hasPrimaryKey) {
-        pushIssue(`Entity ${domain.name}/${entity.name} has no primary key field.`, entity.id, 'error');
-      }
-      if (!entity?.meta?.aggregateRoot && Array.isArray(entity?.meta?.invariants) && entity.meta.invariants.length > 0) {
-        pushIssue(`Entity ${domain.name}/${entity.name} has invariants but is not marked as aggregate root.`, entity.id, 'warn');
-      }
-      const policy = getEntityRbacPolicy(entity);
-      ['list', 'getById', 'create', 'update', 'delete'].forEach((action) => {
-        const roles = Array.isArray(policy?.[action]?.roles) ? policy[action].roles : [];
-        if (!roles.length) {
-          pushIssue(`Entity ${domain.name}/${entity.name} has no RBAC roles for action "${action}".`, entity.id, 'warn');
-        }
-      });
-      const contracts = Array.isArray(entity?.meta?.contracts) ? entity.meta.contracts : [];
-      contracts.forEach((contract) => {
-        if (!contract?.name) {
-          pushIssue(`Entity ${domain.name}/${entity.name} has a contract without name.`, entity.id, 'error');
-        }
-        if (!contract?.channel) {
-          pushIssue(`Contract ${domain.name}/${entity.name}.${contract?.name || 'unknown'} has empty channel/topic.`, entity.id, 'warn');
-        }
-      });
-      const composition = entity?.meta?.oasComposition || {};
-      const mode = ['oneOf', 'allOf', 'anyOf'].includes(composition.mode) ? composition.mode : '';
-      const refs = parseCommaSeparated(composition.refs || []);
-      if (mode && refs.length < 2) {
-        pushIssue(`Entity ${domain.name}/${entity.name} composition "${mode}" should reference at least 2 schemas.`, entity.id, 'warn');
-      }
-      if (composition.discriminator && !mode) {
-        pushIssue(`Entity ${domain.name}/${entity.name} has discriminator without composition mode.`, entity.id, 'warn');
-      }
-    });
-  });
-
-  state.relationships.forEach((relationship) => {
-    const from = findEntity(relationship.fromEntityId);
-    const to = findEntity(relationship.toEntityId);
-    if (!from || !to) {
-      pushIssue(`Relationship "${relationship.name || relationship.id}" references missing entities.`, null, 'error');
-    }
-    if (!['1', 'N'].includes(relationship.fromCardinality) || !['1', 'N'].includes(relationship.toCardinality)) {
-      pushIssue(`Relationship "${relationship.name || relationship.id}" has invalid cardinality.`, null, 'error');
-    }
-    const bendX = normalizeOptionalNumber(relationship.bendX);
-    const bendY = normalizeOptionalNumber(relationship.bendY);
-    if ((bendX === null) !== (bendY === null)) {
-      pushIssue(`Relationship "${relationship.name || relationship.id}" should define both bendX and bendY or none.`, null, 'warn');
-    }
-  });
-
-  return issues;
-}
-
-function runModelChecks() {
-  const issues = collectModelIssues();
-  renderModelCheckResults(issues);
-  return issues;
-}
-
-function renderModelCheckResults(issues) {
-  dom.modelCheckList.innerHTML = '';
-  const threshold = state.view.modelCheckMinSeverity || 'info';
-  const filtered = issues.filter((issue) => severityRank(issue.severity || 'error') >= severityRank(threshold));
-  if (!filtered.length) {
-    const li = document.createElement('li');
-    li.textContent = 'No issues found.';
-    dom.modelCheckList.appendChild(li);
-    return;
-  }
-  filtered.forEach((issue) => {
-    const li = document.createElement('li');
-    const prefix = `[${String(issue.severity || 'error').toUpperCase()}] `;
-    if (issue.entityId) {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.textContent = `${prefix}${issue.message}`;
-      btn.onclick = () => focusEntity(issue.entityId);
-      li.appendChild(btn);
-    } else {
-      li.textContent = `${prefix}${issue.message}`;
-    }
-    dom.modelCheckList.appendChild(li);
-  });
-}
-
-function renderDomains() {
-  dom.canvasInner.querySelectorAll('.domain').forEach((node) => node.remove());
-
-  state.domains.forEach((domain) => {
-    const domainEl = document.createElement('section');
-    domainEl.className = `domain${state.selectedDomainId === domain.id ? ' selected' : ''}`;
-    domainEl.style.left = `${domain.x}px`;
-    domainEl.style.top = `${domain.y}px`;
-    domainEl.style.setProperty('--domain-color', domain.color);
-    domainEl.onmousedown = () => setSelectedDomain(domain.id);
-
-    const headerEl = document.createElement('header');
-    headerEl.className = 'domain-header';
-    headerEl.innerHTML = `<div class="domain-title">${domain.name}</div><div class="entity-count">${domain.entities.length} entities</div>`;
-    domainEl.appendChild(headerEl);
-
-    const bodyEl = document.createElement('div');
-    bodyEl.className = 'domain-body';
-
-    attachDrag(headerEl, (dx, dy) => {
-      withPersist(() => {
-        domain.x = Math.max(0, snapCoordinate(domain.x + dx));
-        domain.y = Math.max(0, snapCoordinate(domain.y + dy));
-        domainEl.style.left = `${domain.x}px`;
-        domainEl.style.top = `${domain.y}px`;
-        renderEdges();
-      });
-    });
-
-    domain.entities.forEach((entity) => {
-      const entityEl = document.createElement('article');
-      const selectedClass = state.selectedEntityId === entity.id ? ' selected' : '';
-      entityEl.className = `entity${selectedClass}`;
-      entityEl.style.left = `${entity.x}px`;
-      entityEl.style.top = `${entity.y}px`;
-      entityEl.onclick = (event) => {
-        event.stopPropagation();
-        setSelectedEntity(entity.id);
-        handleEntityRelationshipPick(entity.id);
-      };
-
-      const entityHeader = document.createElement('header');
-      entityHeader.className = 'entity-header';
-      entityHeader.textContent = entity.name;
-      if (entity?.meta?.aggregateRoot) {
-        const aggregateTag = document.createElement('span');
-        aggregateTag.className = 'entity-aggregate-tag';
-        aggregateTag.textContent = 'AR';
-        entityHeader.appendChild(aggregateTag);
-      }
-      attachDrag(entityHeader, (dx, dy) => {
-        moveEntityInsideDomain(entity, entityEl, dx, dy);
-      });
-
-      const fieldsEl = document.createElement('ul');
-      fieldsEl.className = 'entity-fields';
-      if (!state.view.compactEntities) {
-        entity.fields.forEach((field) => {
-          const li = document.createElement('li');
-          li.textContent = fieldLabel(field);
-          fieldsEl.appendChild(li);
-        });
-      }
-
-      const anchorSides = ['top', 'right', 'bottom', 'left'];
-      anchorSides.forEach((side) => {
-        const anchorBtn = document.createElement('button');
-        anchorBtn.type = 'button';
-        anchorBtn.className = `entity-anchor entity-anchor-${side}`;
-        anchorBtn.title = `Drag from ${entity.name} (${side}) to create relationship`;
-        anchorBtn.addEventListener('pointerdown', (event) => {
-          event.stopPropagation();
-          startAnchorDrag(entity.id, side, event);
-        });
-        anchorBtn.addEventListener('pointerup', (event) => {
-          if (!interaction.relationshipAnchorDragActive) return;
-          event.stopPropagation();
-          const fromEntityId = interaction.relationshipAnchorFromEntityId;
-          if (!fromEntityId || fromEntityId === entity.id) {
-            stopAnchorDrag();
-            return;
-          }
-          const fromCardinality = dom.fromCardSelect.value || 'N';
-          const toCardinality = dom.toCardSelect.value || '1';
-          addRelationship(fromEntityId, entity.id, fromCardinality, toCardinality, {
-            fromAnchorSide: interaction.relationshipAnchorFromSide,
-            toAnchorSide: side
-          });
-          stopAnchorDrag();
-        });
-        entityEl.appendChild(anchorBtn);
-      });
-
-      entityEl.appendChild(entityHeader);
-      entityEl.appendChild(fieldsEl);
-      bodyEl.appendChild(entityEl);
-    });
-
-    domainEl.appendChild(bodyEl);
-    dom.canvasInner.appendChild(domainEl);
-  });
-}
-
-function moveEntityInsideDomain(entity, entityEl, dx, dy) {
-  withPersist(() => {
-    const maxX = 520 - 200;
-    const maxY = 180;
-    entity.x = Math.min(maxX, Math.max(8, snapCoordinate(entity.x + dx)));
-    entity.y = Math.min(maxY, Math.max(8, snapCoordinate(entity.y + dy)));
-    entityEl.style.left = `${entity.x}px`;
-    entityEl.style.top = `${entity.y}px`;
-    renderEdges();
-  });
-}
-
-function entityCenterOnCanvas(entityId) {
-  const found = findEntity(entityId);
-  if (!found) return null;
-  return {
-    x: found.domain.x + found.entity.x + 95,
-    y: found.domain.y + found.entity.y + 32
-  };
-}
-
-function entityAnchorOnCanvas(entityId, side) {
-  const found = findEntity(entityId);
-  if (!found) return null;
-  const originX = found.domain.x + found.entity.x;
-  const originY = found.domain.y + found.entity.y;
-  const width = 190;
-  const headerHeight = 32;
-  const bodyHeight = state.view.compactEntities ? 24 : 58;
-  const height = headerHeight + bodyHeight;
-  if (side === 'left') return { x: originX, y: originY + height / 2 };
-  if (side === 'right') return { x: originX + width, y: originY + height / 2 };
-  if (side === 'top') return { x: originX + width / 2, y: originY };
-  if (side === 'bottom') return { x: originX + width / 2, y: originY + height };
-  return entityCenterOnCanvas(entityId);
-}
-
-function pointerToCanvasPoint(clientX, clientY) {
-  const zoom = state.view.zoom || 1;
-  const rect = dom.canvas.getBoundingClientRect();
-  return {
-    x: (dom.canvas.scrollLeft + clientX - rect.left) / zoom,
-    y: (dom.canvas.scrollTop + clientY - rect.top) / zoom
-  };
-}
-
-function clearAnchorPreviewEdge() {
-  const preview = dom.edges.querySelector('.edge-preview');
-  if (preview) preview.remove();
-}
-
-function renderAnchorPreviewEdge(fromPoint, toPoint) {
-  clearAnchorPreviewEdge();
-  if (!fromPoint || !toPoint) return;
-  const controlX = (fromPoint.x + toPoint.x) / 2;
-  const isOrthogonal = state.view.edgeStyle === 'orthogonal';
-  const pathD = isOrthogonal
-    ? `M ${fromPoint.x} ${fromPoint.y} L ${controlX} ${fromPoint.y} L ${controlX} ${toPoint.y} L ${toPoint.x} ${toPoint.y}`
-    : `M ${fromPoint.x} ${fromPoint.y} C ${controlX} ${fromPoint.y}, ${controlX} ${toPoint.y}, ${toPoint.x} ${toPoint.y}`;
-  const previewPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  previewPath.setAttribute('class', 'edge-preview');
-  previewPath.setAttribute('d', pathD);
-  dom.edges.appendChild(previewPath);
-}
-
-function stopAnchorDrag() {
-  interaction.relationshipAnchorDragActive = false;
-  interaction.relationshipAnchorFromEntityId = null;
-  interaction.relationshipAnchorFromSide = null;
-  clearAnchorPreviewEdge();
-}
-
-function startAnchorDrag(entityId, side, event) {
-  const fromPoint = entityAnchorOnCanvas(entityId, side);
-  if (!fromPoint) return;
-  interaction.relationshipAnchorDragActive = true;
-  interaction.relationshipAnchorFromEntityId = entityId;
-  interaction.relationshipAnchorFromSide = side;
-  const pointer = pointerToCanvasPoint(event.clientX, event.clientY);
-  renderAnchorPreviewEdge(fromPoint, pointer);
-}
-
-function renderEdges() {
-  dom.edges.innerHTML = '';
-  state.relationships.forEach((relationship) => {
-    const useCenter = relationship.anchorBehavior === 'center';
-    const from = (!useCenter && relationship.fromAnchorSide)
-      ? entityAnchorOnCanvas(relationship.fromEntityId, relationship.fromAnchorSide)
-      : entityCenterOnCanvas(relationship.fromEntityId);
-    const to = (!useCenter && relationship.toAnchorSide)
-      ? entityAnchorOnCanvas(relationship.toEntityId, relationship.toAnchorSide)
-      : entityCenterOnCanvas(relationship.toEntityId);
-    if (!from || !to) return;
-
-    const controlX = Number.isFinite(relationship.bendX) ? relationship.bendX : (from.x + to.x) / 2;
-    const controlY = Number.isFinite(relationship.bendY) ? relationship.bendY : (from.y + to.y) / 2;
-    const isOrthogonal = state.view.edgeStyle === 'orthogonal';
-    const edgePathD = isOrthogonal
-      ? `M ${from.x} ${from.y} L ${controlX} ${from.y} L ${controlX} ${controlY} L ${controlX} ${to.y} L ${to.x} ${to.y}`
-      : `M ${from.x} ${from.y} C ${controlX} ${from.y}, ${controlX} ${to.y}, ${to.x} ${to.y}`;
-    const labelX = isOrthogonal ? controlX : controlX;
-    const labelY = isOrthogonal ? controlY : ((from.y + to.y) / 2);
-    const labelOffsetX = Number.isFinite(relationship.labelOffsetX) ? relationship.labelOffsetX : 0;
-    const labelOffsetY = Number.isFinite(relationship.labelOffsetY) ? relationship.labelOffsetY : 0;
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    const activeClass = state.selectedRelationshipId === relationship.id ? ' active' : '';
-    path.setAttribute('class', `edge-line${activeClass}`);
-    path.setAttribute('d', edgePathD);
-    dom.edges.appendChild(path);
-
-    const hit = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    hit.setAttribute('class', 'edge-hit');
-    hit.setAttribute('d', edgePathD);
-    hit.addEventListener('click', (event) => {
-      event.stopPropagation();
-      state.selectedRelationshipId = relationship.id;
-      render();
-    });
-    dom.edges.appendChild(hit);
-
-    if (!state.view.largeCanvasMode) {
-      const fromLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      fromLabel.setAttribute('class', 'edge-label');
-      fromLabel.setAttribute('x', String(from.x + 6));
-      fromLabel.setAttribute('y', String(from.y - 6));
-      fromLabel.textContent = relationship.fromCardinality;
-      dom.edges.appendChild(fromLabel);
-
-      const toLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      toLabel.setAttribute('class', 'edge-label');
-      toLabel.setAttribute('x', String(to.x + 6));
-      toLabel.setAttribute('y', String(to.y - 6));
-      toLabel.textContent = relationship.toCardinality;
-      dom.edges.appendChild(toLabel);
-
-      const nameLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      nameLabel.setAttribute('class', 'edge-label');
-      nameLabel.setAttribute('x', String(labelX + 6 + labelOffsetX));
-      nameLabel.setAttribute('y', String(labelY - 6 + labelOffsetY));
-      nameLabel.textContent = relationship.name || '';
-      dom.edges.appendChild(nameLabel);
-    }
-  });
-}
-
-function renderMiniMap() {
-  if (!dom.miniMap) return;
-  dom.miniMap.innerHTML = '';
-  const scale = 0.055;
-  state.domains.forEach((domain) => {
-    const box = document.createElement('div');
-    box.className = 'mini-map-domain';
-    box.style.left = `${domain.x * scale}px`;
-    box.style.top = `${domain.y * scale}px`;
-    box.style.width = `${520 * scale}px`;
-    box.style.height = `${280 * scale}px`;
-    box.style.borderColor = domain.color || '#64748b';
-    if (state.selectedDomainId === domain.id) box.classList.add('active');
-    box.title = domain.name;
-    box.onclick = () => setSelectedDomain(domain.id);
-    dom.miniMap.appendChild(box);
-  });
-}
-
-function renderEntityInspector() {
-  const found = findEntity(state.selectedEntityId);
-  dom.entityFieldList.innerHTML = '';
-  dom.entityApiPreviewList.innerHTML = '';
-  if (!found) {
-    dom.entityInspectorTitle.textContent = 'No entity selected';
-    dom.entityRenameInput.value = '';
-    dom.entityRenameInput.disabled = true;
-    dom.saveEntityRenameBtn.disabled = true;
-    dom.duplicateEntityBtn.disabled = true;
-    dom.entityMoveDomainSelect.disabled = true;
-    dom.moveEntityBtn.disabled = true;
-    dom.entityAggregateRootCheck.checked = false;
-    dom.entityAggregateRootCheck.disabled = true;
-    dom.entityInvariantsInput.value = '';
-    dom.entityInvariantsInput.disabled = true;
-    dom.saveEntityRulesBtn.disabled = true;
-    dom.entityRbacActionSelect.disabled = true;
-    dom.entityRbacSuperadminCheck.checked = false;
-    dom.entityRbacAdminCheck.checked = false;
-    dom.entityRbacUserCheck.checked = false;
-    dom.entityRbacTenantCheck.checked = false;
-    dom.entityRbacSuperadminCheck.disabled = true;
-    dom.entityRbacAdminCheck.disabled = true;
-    dom.entityRbacUserCheck.disabled = true;
-    dom.entityRbacTenantCheck.disabled = true;
-    dom.saveEntityRbacBtn.disabled = true;
-    dom.entityRbacList.innerHTML = '';
-    dom.entityContractNameInput.value = '';
-    dom.entityContractNameInput.disabled = true;
-    dom.entityContractTypeSelect.disabled = true;
-    dom.entityContractChannelInput.value = '';
-    dom.entityContractChannelInput.disabled = true;
-    dom.entityContractVersionInput.value = '1.0.0';
-    dom.entityContractVersionInput.disabled = true;
-    dom.addEntityContractBtn.disabled = true;
-    dom.entityContractList.innerHTML = '';
-    dom.entityOasCompositionModeSelect.value = '';
-    dom.entityOasCompositionModeSelect.disabled = true;
-    dom.entityOasCompositionRefsInput.value = '';
-    dom.entityOasCompositionRefsInput.disabled = true;
-    dom.entityOasExternalRefsInput.value = '';
-    dom.entityOasExternalRefsInput.disabled = true;
-    dom.entityOasDiscriminatorInput.value = '';
-    dom.entityOasDiscriminatorInput.disabled = true;
-    dom.saveEntityOasCompositionBtn.disabled = true;
-    dom.fieldTemplateSelect.disabled = true;
-    dom.applyFieldTemplateBtn.disabled = true;
-    return;
-  }
-  dom.entityInspectorTitle.textContent = `${found.domain.name} / ${found.entity.name}`;
-  dom.entityRenameInput.value = found.entity.name;
-  dom.entityRenameInput.disabled = false;
-  dom.saveEntityRenameBtn.disabled = false;
-  dom.duplicateEntityBtn.disabled = false;
-  dom.entityMoveDomainSelect.disabled = false;
-  dom.moveEntityBtn.disabled = false;
-  dom.entityAggregateRootCheck.disabled = false;
-  dom.entityAggregateRootCheck.checked = Boolean(found.entity?.meta?.aggregateRoot);
-  dom.entityInvariantsInput.disabled = false;
-  dom.entityInvariantsInput.value = Array.isArray(found.entity?.meta?.invariants)
-    ? found.entity.meta.invariants.join('\n')
-    : '';
-  dom.saveEntityRulesBtn.disabled = false;
-  dom.entityRbacActionSelect.disabled = false;
-  dom.entityRbacSuperadminCheck.disabled = false;
-  dom.entityRbacAdminCheck.disabled = false;
-  dom.entityRbacUserCheck.disabled = false;
-  dom.entityRbacTenantCheck.disabled = false;
-  dom.saveEntityRbacBtn.disabled = false;
-  renderEntityRbacInspector(found.entity);
-  dom.entityContractNameInput.disabled = false;
-  dom.entityContractTypeSelect.disabled = false;
-  dom.entityContractChannelInput.disabled = false;
-  dom.entityContractVersionInput.disabled = false;
-  dom.addEntityContractBtn.disabled = false;
-  if (!dom.entityContractVersionInput.value) dom.entityContractVersionInput.value = '1.0.0';
-  renderEntityContractsInspector(found.entity);
-  dom.entityOasCompositionModeSelect.disabled = false;
-  dom.entityOasCompositionRefsInput.disabled = false;
-  dom.entityOasExternalRefsInput.disabled = false;
-  dom.entityOasDiscriminatorInput.disabled = false;
-  dom.saveEntityOasCompositionBtn.disabled = false;
-  const composition = found.entity?.meta?.oasComposition || { mode: '', refs: [], externalRefs: [], discriminator: '' };
-  dom.entityOasCompositionModeSelect.value = composition.mode || '';
-  dom.entityOasCompositionRefsInput.value = Array.isArray(composition.refs) ? composition.refs.join(', ') : '';
-  dom.entityOasExternalRefsInput.value = Array.isArray(composition.externalRefs) ? composition.externalRefs.join(', ') : '';
-  dom.entityOasDiscriminatorInput.value = composition.discriminator || '';
-  dom.fieldTemplateSelect.disabled = false;
-  dom.applyFieldTemplateBtn.disabled = false;
-  dom.entityMoveDomainSelect.value = found.domain.id;
-  found.entity.fields.forEach((field) => {
-    const li = document.createElement('li');
-    const row = document.createElement('div');
-    row.className = 'field-row';
-    const nameInput = document.createElement('input');
-    nameInput.type = 'text';
-    nameInput.value = field.name;
-    const typeSelect = document.createElement('select');
-    FIELD_TYPES.forEach((optionValue) => {
-      const option = document.createElement('option');
-      option.value = optionValue;
-      option.textContent = optionValue;
-      typeSelect.appendChild(option);
-    });
-    typeSelect.value = field.type;
-    const requiredCheck = document.createElement('input');
-    requiredCheck.type = 'checkbox';
-    requiredCheck.checked = field.required;
-    requiredCheck.title = 'required';
-    const pkCheck = document.createElement('input');
-    pkCheck.type = 'checkbox';
-    pkCheck.checked = field.pk;
-    pkCheck.title = 'PK';
-    const fkCheck = document.createElement('input');
-    fkCheck.type = 'checkbox';
-    fkCheck.checked = field.fk;
-    fkCheck.title = 'FK';
-    const uniqueCheck = document.createElement('input');
-    uniqueCheck.type = 'checkbox';
-    uniqueCheck.checked = field.unique;
-    uniqueCheck.title = 'unique';
-    const nullableCheck = document.createElement('input');
-    nullableCheck.type = 'checkbox';
-    nullableCheck.checked = field.nullable;
-    nullableCheck.title = 'nullable';
-    const meta = document.createElement('button');
-    meta.type = 'button';
-    meta.textContent = 'meta';
-    meta.onclick = () => editFieldMetadata(found.entity.id, field.name);
-    const save = document.createElement('button');
-    save.type = 'button';
-    save.textContent = 'save';
-    save.onclick = () => updateField(found.entity.id, field.name, {
-      name: nameInput.value,
-      type: typeSelect.value,
-      required: requiredCheck.checked,
-      pk: pkCheck.checked,
-      fk: fkCheck.checked,
-      unique: uniqueCheck.checked,
-      nullable: nullableCheck.checked
-    });
-    const del = document.createElement('button');
-    del.type = 'button';
-    del.textContent = 'x';
-    del.onclick = () => removeField(found.entity.id, field.name);
-    row.appendChild(nameInput);
-    row.appendChild(typeSelect);
-    row.appendChild(requiredCheck);
-    row.appendChild(pkCheck);
-    row.appendChild(fkCheck);
-    row.appendChild(uniqueCheck);
-    row.appendChild(nullableCheck);
-    row.appendChild(meta);
-    row.appendChild(save);
-    row.appendChild(del);
-    li.appendChild(row);
-    dom.entityFieldList.appendChild(li);
-  });
-
-  const domainPath = toPathToken(found.domain.name) || 'domain';
-  const entityPath = toPathToken(found.entity.name) || 'entity';
-  const schemaName = toSchemaName(found.domain.name, found.entity.name);
-  const operations = [
-    `GET /${domainPath}/${entityPath} -> list${schemaName}`,
-    `POST /${domainPath}/${entityPath} -> create${schemaName}`,
-    `GET /${domainPath}/${entityPath}/{id} -> get${schemaName}ById`,
-    `PATCH /${domainPath}/${entityPath}/{id} -> update${schemaName}`,
-    `DELETE /${domainPath}/${entityPath}/{id} -> delete${schemaName}`
-  ];
-  operations.forEach((operation) => {
-    const li = document.createElement('li');
-    li.textContent = operation;
-    dom.entityApiPreviewList.appendChild(li);
-  });
-}
-
 function saveSchemaBaseline() {
   const snapshot = buildModelSnapshot();
   store.saveBaseline(snapshot);
-  renderSchemaDiffResults([{ severity: 'info', message: 'Baseline saved.' }]);
+  inspectors.renderSchemaDiffResults([{ severity: 'info', message: 'Baseline saved.' }]);
 }
 
 async function loadSchemaBaseline() {
@@ -2272,34 +1253,10 @@ async function loadSchemaBaseline() {
   return result.payload;
 }
 
-function renderSchemaDiffResults(items) {
-  dom.schemaDiffList.innerHTML = '';
-  if (!Array.isArray(items) || !items.length) {
-    const li = document.createElement('li');
-    li.textContent = 'No schema diff available.';
-    dom.schemaDiffList.appendChild(li);
-    return;
-  }
-  items.forEach((item) => {
-    const li = document.createElement('li');
-    li.textContent = `[${String(item.severity || 'info').toUpperCase()}] ${item.message}`;
-    dom.schemaDiffList.appendChild(li);
-  });
-}
-
-async function renderSchemaDiffStatus() {
-  if (dom.schemaDiffList.children.length > 0) return;
-  const hasBaseline = Boolean(await loadSchemaBaseline());
-  renderSchemaDiffResults([{
-    severity: hasBaseline ? 'info' : 'warn',
-    message: hasBaseline ? 'Baseline loaded. Run diff to preview migration hints.' : 'No baseline saved yet.'
-  }]);
-}
-
 async function runSchemaDiff() {
   const baseline = await loadSchemaBaseline();
   if (!baseline) {
-    renderSchemaDiffResults([{ severity: 'warn', message: 'No baseline found. Save baseline first.' }]);
+    inspectors.renderSchemaDiffResults([{ severity: 'warn', message: 'No baseline found. Save baseline first.' }]);
     return;
   }
   const current = buildModelSnapshot();
@@ -2389,255 +1346,65 @@ async function runSchemaDiff() {
   if (!changes.length) {
     changes.push({ severity: 'info', message: 'No schema changes detected versus baseline.' });
   }
-  renderSchemaDiffResults(changes);
+  inspectors.renderSchemaDiffResults(changes);
 }
 
+function runModelChecks() {
+  const issues = collectModelIssues(state);
+  inspectors.renderModelCheckResults(issues);
+  return issues;
+}
+
+// The export quality gate (Requirement 126 §5). The issue list comes from
+// the DOM-free engine in src/validation/modelValidation.js; what remains
+// here is the gate's DOM half: render the blocking issues and alert.
 function canExportModel() {
   if (!state.view.exportBlockCritical) return true;
-  const issues = collectModelIssues();
+  const issues = collectModelIssues(state);
   const criticalCount = issues.filter((issue) => issue.severity === 'error').length;
   if (criticalCount === 0) return true;
-  renderModelCheckResults(issues);
+  inspectors.renderModelCheckResults(issues);
   window.alert(`Export blocked: ${criticalCount} critical model issue(s). Run "Validate Model" and fix errors before exporting.`);
   return false;
 }
 
-function exportAsJson() {
-  if (!canExportModel()) return;
-  const payload = { domains: state.domains, relationships: state.relationships, view: state.view };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+// Download glue shared by the seven export wrappers. The documents
+// themselves are built by the DOM-free src/exporters/designerExporters.js;
+// for the same state their JSON.stringify output is byte-identical to the
+// pre-refactor exporters.
+function downloadTextFile(fileName, content, mimeType) {
+  const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'domain-designer.json';
+  a.download = fileName;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+function exportAsJson() {
+  if (!canExportModel()) return;
+  downloadTextFile('domain-designer.json', JSON.stringify(buildJsonExportDocument(state), null, 2), 'application/json');
 }
 
 function exportAsMarkdown() {
   if (!canExportModel()) return;
-  const lines = [];
-  lines.push('# Domain Designer Model');
-  lines.push('');
-  state.domains.forEach((domain) => {
-    lines.push(`## Domain: ${domain.name}`);
-    lines.push('');
-    if (domain?.context) {
-      lines.push(`- Ubiquitous Language: ${domain.context.ubiquitousLanguage || '-'}`);
-      lines.push(`- Owner Team: ${domain.context.ownerTeam || '-'}`);
-      lines.push(`- Upstream: ${(domain.context.upstreamDependencies || []).join(', ') || '-'}`);
-      lines.push(`- Downstream: ${(domain.context.downstreamDependencies || []).join(', ') || '-'}`);
-      lines.push(`- Integration Channel: ${domain.context.integrationChannel || '-'}`);
-      lines.push(`- Package Dependencies: ${(domain.context.packageDependencies || []).join(', ') || '-'}`);
-      lines.push(`- Shared Value Objects: ${(domain.context.sharedValueObjects || []).join(', ') || '-'}`);
-      lines.push('');
-    }
-    domain.entities.forEach((entity) => {
-      lines.push(`### Entity: ${entity.name}`);
-      lines.push('');
-      lines.push(`- Aggregate Root: ${Boolean(entity?.meta?.aggregateRoot)}`);
-      lines.push(`- Invariants: ${(entity?.meta?.invariants || []).join('; ') || '-'}`);
-      lines.push('');
-      lines.push('| Field | Type | Required | PK | FK | Unique | Nullable |');
-      lines.push('|---|---|---:|---:|---:|---:|---:|');
-      entity.fields.forEach((field) => {
-        lines.push(`| ${field.name} | ${field.type}${field.format ? `(${field.format})` : ''} | ${Boolean(field.required)} | ${Boolean(field.pk)} | ${Boolean(field.fk)} | ${Boolean(field.unique)} | ${Boolean(field.nullable)} |`);
-      });
-      lines.push('');
-      lines.push('RBAC:');
-      const policy = getEntityRbacPolicy(entity);
-      ['list', 'getById', 'create', 'update', 'delete'].forEach((action) => {
-        const rule = policy[action] || { roles: [], tenantScoped: true };
-        lines.push(`- ${action}: [${(rule.roles || []).join(', ')}], tenantScoped=${Boolean(rule.tenantScoped)}`);
-      });
-      lines.push('');
-      lines.push('Message Contracts:');
-      const contracts = Array.isArray(entity?.meta?.contracts) ? entity.meta.contracts : [];
-      if (!contracts.length) {
-        lines.push('- none');
-      } else {
-        contracts.forEach((contract) => {
-          lines.push(`- ${contract.type}:${contract.name} | channel=${contract.channel || '-'} | version=${contract.version}`);
-        });
-      }
-      lines.push('');
-    });
-  });
-  if (state.relationships.length) {
-    lines.push('## Relationships');
-    lines.push('');
-    state.relationships.forEach((relationship) => {
-      lines.push(`- ${relationship.name || relationship.id}: ${entityLabel(relationship.fromEntityId)} (${relationship.fromCardinality}) -> (${relationship.toCardinality}) ${entityLabel(relationship.toEntityId)}`);
-    });
-  }
-  const blob = new Blob([lines.join('\n')], { type: 'text/markdown' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'domain-designer-model.md';
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function buildExampleValueForField(field) {
-  if (field.enumValues?.length) return field.enumValues[0];
-  if (field.type === 'uuid') return '00000000-0000-4000-8000-000000000001';
-  if (field.type === 'datetime') return '2026-01-01T00:00:00.000Z';
-  if (field.type === 'date') return '2026-01-01';
-  if (field.type === 'integer') return 1;
-  if (field.type === 'number') return 10.5;
-  if (field.type === 'boolean') return true;
-  if (field.type === 'array') return [];
-  if (field.type === 'object') return {};
-  if (field.format === 'email') return 'user@example.com';
-  if (field.format === 'uri') return 'https://example.com/resource';
-  return `${field.name || 'value'}_example`;
-}
-
-function buildEntityRequestExample(entity, mode = 'create') {
-  const payload = {};
-  (entity.fields || []).forEach((field) => {
-    if (mode === 'create' && field.pk) return;
-    if (mode === 'update' && field.pk) return;
-    if (mode === 'update' && !field.required && !field.fk && !field.unique) return;
-    payload[field.name] = buildExampleValueForField(field);
-  });
-  return payload;
-}
-
-function buildEntityResponseExample(entity) {
-  const payload = {};
-  (entity.fields || []).forEach((field) => {
-    payload[field.name] = buildExampleValueForField(field);
-  });
-  return payload;
-}
-
-function generateExamplesPreview() {
-  const selected = findEntity(state.selectedEntityId);
-  const targets = selected
-    ? [{ domain: selected.domain, entity: selected.entity }]
-    : state.domains.flatMap((domain) => domain.entities.map((entity) => ({ domain, entity })));
-  if (!targets.length) {
-    dom.examplesPreviewOutput.textContent = '// No entities found for example generation.';
-    return;
-  }
-  const chunks = targets.map(({ domain, entity }) => {
-    const schemaName = toSchemaName(domain.name, entity.name);
-    const requestCreate = buildEntityRequestExample(entity, 'create');
-    const requestUpdate = buildEntityRequestExample(entity, 'update');
-    const response = buildEntityResponseExample(entity);
-    return [
-      `// ${domain.name}/${entity.name}`,
-      `// create${schemaName} request`,
-      JSON.stringify(requestCreate, null, 2),
-      `// update${schemaName} request`,
-      JSON.stringify(requestUpdate, null, 2),
-      `// ${schemaName} response`,
-      JSON.stringify(response, null, 2)
-    ].join('\n');
-  });
-  dom.examplesPreviewOutput.textContent = chunks.join('\n\n/* ---------------------------------------- */\n\n');
+  downloadTextFile('domain-designer-model.md', buildMarkdownExport(state), 'text/markdown');
 }
 
 function exportAsJsonSchema() {
   if (!canExportModel()) return;
-  const definitions = {};
-  state.domains.forEach((domain) => {
-    domain.entities.forEach((entity) => {
-      const schemaName = toSchemaName(domain.name, entity.name);
-      const properties = {};
-      const required = [];
-      (entity.fields || []).forEach((field) => {
-        properties[field.name] = toOasFieldSchema(field);
-        if (field.required) required.push(field.name);
-      });
-      definitions[schemaName] = {
-        $id: schemaName,
-        type: 'object',
-        properties,
-        required,
-        additionalProperties: false
-      };
-    });
-  });
-  const payload = {
-    $schema: 'https://json-schema.org/draft/2020-12/schema',
-    title: 'Domain Designer JSON Schemas',
-    type: 'object',
-    definitions
-  };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'domain-designer-json-schema.json';
-  a.click();
-  URL.revokeObjectURL(url);
+  downloadTextFile('domain-designer-json-schema.json', JSON.stringify(buildJsonSchemaDocument(state), null, 2), 'application/json');
 }
 
 function exportAsAsyncApi() {
   if (!canExportModel()) return;
-  const channels = {};
-  state.domains.forEach((domain) => {
-    domain.entities.forEach((entity) => {
-      const contracts = Array.isArray(entity?.meta?.contracts) ? entity.meta.contracts : [];
-      contracts.forEach((contract) => {
-        const channelName = contract.channel || `${toPathToken(domain.name)}/${toPathToken(entity.name)}/${contract.type}`;
-        if (!channels[channelName]) channels[channelName] = {};
-        const operationKey = contract.type === 'response' ? 'subscribe' : 'publish';
-        channels[channelName][operationKey] = {
-          operationId: `${contract.type}_${toSchemaName(domain.name, entity.name)}_${contract.name}`,
-          message: {
-            name: contract.name,
-            payload: contract.payloadSchema || {}
-          }
-        };
-      });
-    });
-  });
-  const payload = {
-    asyncapi: '3.0.0',
-    info: {
-      title: 'Domain Designer AsyncAPI Export',
-      version: '1.0.0'
-    },
-    channels
-  };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'domain-designer-asyncapi.json';
-  a.click();
-  URL.revokeObjectURL(url);
+  downloadTextFile('domain-designer-asyncapi.json', JSON.stringify(buildAsyncApiDocument(state), null, 2), 'application/json');
 }
 
 function exportBoilerplateBundle() {
   if (!canExportModel()) return;
-  const modules = state.domains.flatMap((domain) => domain.entities.map((entity) => ({
-    module: `${domain.name}/${entity.name}`,
-    files: {
-      model: `src/modules/${domain.name}/domain/Model/${entity.name}.ts`,
-      repository: `src/modules/${domain.name}/application/ports/${entity.name}Repository.ts`,
-      useCase: `src/modules/${domain.name}/application/useCases/Create${entity.name}.ts`,
-      controller: `src/modules/${domain.name}/interface/controller/${entity.name}Controller.ts`,
-      handler: `src/modules/${domain.name}/interface/restapi/frameworks/express/handlers/create${entity.name}.ts`
-    }
-  })));
-  const payload = {
-    kind: 'boilerplate-bundle',
-    version: '1.0.0',
-    generatedAt: new Date().toISOString(),
-    modules
-  };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'domain-designer-boilerplate-bundle.json';
-  a.click();
-  URL.revokeObjectURL(url);
+  downloadTextFile('domain-designer-boilerplate-bundle.json', JSON.stringify(buildBoilerplateBundleDocument(state), null, 2), 'application/json');
 }
 
 function exportAsPackage() {
@@ -2647,53 +1414,34 @@ function exportAsPackage() {
     window.alert('Select a domain to export package.');
     return;
   }
-  const payload = {
-    kind: 'domain-package',
-    version: '1.0.0',
-    exportedAt: new Date().toISOString(),
-    domain: selected
-  };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `${toPathToken(selected.name) || 'domain'}-package.json`;
-  a.click();
-  URL.revokeObjectURL(url);
+  downloadTextFile(
+    `${toPathToken(selected.name) || 'domain'}-package.json`,
+    JSON.stringify(buildDomainPackageDocument(selected), null, 2),
+    'application/json'
+  );
 }
 
+function exportAsOas() {
+  if (!canExportModel()) return;
+  downloadTextFile('domain-designer-oas-3.1.json', JSON.stringify(buildOasDocument(state), null, 2), 'application/json');
+}
+
+// Import glue: FileReader + persist/selection/history around the pure
+// document→model mappers in src/importers/designerImporters.js (and
+// normalizeStatePayload from the JUM-468 core). One mapper failure reason
+// maps to exactly one pre-refactor alert.
 function importDomainPackage(file) {
   const reader = new FileReader();
   reader.onload = () => {
     try {
       const parsed = JSON.parse(String(reader.result || '{}'));
-      const sourceDomain = parsed?.domain;
-      if (!sourceDomain || !Array.isArray(sourceDomain.entities)) {
+      const result = buildDomainFromPackage(parsed, state.domains);
+      if (!result.ok) {
         window.alert('Invalid package format.');
         return;
       }
       withPersist(() => {
-        const nextDomain = normalizeDomainInput(sourceDomain, state.domains.length);
-        nextDomain.context = nextDomain.context || {};
-        nextDomain.context.packageDependencies = uniqueStrings(nextDomain.context.packageDependencies || []);
-        nextDomain.context.sharedValueObjects = uniqueStrings(nextDomain.context.sharedValueObjects || []);
-        const existingDeps = new Set(
-          state.domains.flatMap((domain) => domain?.context?.packageDependencies || [])
-        );
-        const incomingNewDeps = nextDomain.context.packageDependencies.filter((dep) => !existingDeps.has(dep));
-        if (incomingNewDeps.length) {
-          nextDomain.context.packageDependencies = uniqueStrings([
-            ...nextDomain.context.packageDependencies,
-            ...incomingNewDeps
-          ]);
-        }
-        let domainName = nextDomain.name;
-        let suffix = 2;
-        while (isDomainNameTaken(domainName)) {
-          domainName = `${nextDomain.name}_${suffix}`;
-          suffix += 1;
-        }
-        nextDomain.name = domainName;
+        const nextDomain = result.domain;
         state.domains.push(nextDomain);
         state.selectedDomainId = nextDomain.id;
         state.selectedEntityId = nextDomain.entities[0]?.id || null;
@@ -2707,118 +1455,84 @@ function importDomainPackage(file) {
   reader.readAsText(file);
 }
 
-function toOasType(fieldType) {
-  if (fieldType === 'integer') return { type: 'integer' };
-  if (fieldType === 'number') return { type: 'number' };
-  if (fieldType === 'boolean') return { type: 'boolean' };
-  if (fieldType === 'array') return { type: 'array' };
-  if (fieldType === 'object') return { type: 'object' };
-  if (fieldType === 'date') return { type: 'string', format: 'date' };
-  if (fieldType === 'datetime') return { type: 'string', format: 'date-time' };
-  if (fieldType === 'uuid') return { type: 'string', format: 'uuid' };
-  return { type: 'string' };
-}
-
-function toOasFieldSchema(field) {
-  const schema = {
-    ...toOasType(field.type)
+function importStateFromFile(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(String(reader.result));
+      const normalized = normalizeStatePayload(parsed);
+      withPersist(() => {
+        state.domains = normalized.domains;
+        state.relationships = normalized.relationships;
+        state.selectedDomainId = normalized.selectedDomainId;
+        state.selectedEntityId = normalized.selectedEntityId;
+        state.selectedRelationshipId = normalized.selectedRelationshipId;
+        state.view = normalized.view;
+        state.idCounter = normalized.idCounter;
+        recomputeIdCounter();
+        render();
+      }, { recordHistory: false });
+      history.past = [];
+      history.future = [];
+      saveState();
+    } catch (error) {
+      window.alert('Could not parse JSON file.');
+    }
   };
-  if (field.type === 'array') {
-    schema.items = toOasType(field.itemsType || 'string');
-  }
-  if (field.format) schema.format = field.format;
-  if (field.description) schema.description = field.description;
-  if (field.nullable) schema.nullable = true;
-  if (field.enumValues?.length) schema.enum = [...field.enumValues];
-  if (typeof field.minLength === 'number') schema.minLength = field.minLength;
-  if (typeof field.maxLength === 'number') schema.maxLength = field.maxLength;
-  if (typeof field.minimum === 'number') schema.minimum = field.minimum;
-  if (typeof field.maximum === 'number') schema.maximum = field.maximum;
-  if (field.pattern) schema.pattern = field.pattern;
-  return schema;
+  reader.readAsText(file);
 }
 
-function fromOasType(schema = {}) {
-  const type = schema.type;
-  const format = schema.format;
-  if (type === 'array') return 'array';
-  if (type === 'object') return 'object';
-  if (type === 'integer') return 'integer';
-  if (type === 'number') return 'number';
-  if (type === 'boolean') return 'boolean';
-  if (type === 'string' && format === 'date') return 'date';
-  if (type === 'string' && format === 'date-time') return 'datetime';
-  if (type === 'string' && format === 'uuid') return 'uuid';
-  return 'string';
-}
-
-function toSchemaName(domainName, entityName) {
-  const normalize = (value) => String(value || '')
-    .trim()
-    .replace(/[^a-zA-Z0-9]+/g, '_')
-    .replace(/^_+|_+$/g, '');
-  const domainToken = normalize(domainName) || 'Domain';
-  const entityToken = normalize(entityName) || 'Entity';
-  return `${domainToken}_${entityToken}`;
-}
-
-function toPathToken(value) {
-  return String(value || '')
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
-
-function buildCodePreviewForEntity(domain, entity) {
-  const className = toSchemaName('', entity.name).replace(/^_+/, '');
-  const repositoryName = `${className}RepositoryPort`;
-  const useCaseName = `Create${className}UseCase`;
-  const controllerName = `${className}Controller`;
-  const handlerName = `create${className}Handler`;
-  const fields = (entity.fields || []).map((field) => `  ${field.name}: ${field.type};`).join('\n');
-  return [
-    `// ${domain.name} / ${entity.name}`,
-    `export interface ${className}Model {`,
-    fields || '  id: uuid;',
-    '}',
-    '',
-    `export interface ${repositoryName} {`,
-    `  create(input: ${className}Model): Promise<${className}Model>;`,
-    `  getById(id: string): Promise<${className}Model | null>;`,
-    '}',
-    '',
-    `export class ${useCaseName} {`,
-    `  constructor(private readonly repo: ${repositoryName}) {}`,
-    `  async execute(input: ${className}Model): Promise<${className}Model> {`,
-    '    return this.repo.create(input);',
-    '  }',
-    '}',
-    '',
-    `export class ${controllerName} {`,
-    `  constructor(private readonly createUseCase: ${useCaseName}) {}`,
-    `  async create(input: ${className}Model) {`,
-    '    return this.createUseCase.execute(input);',
-    '  }',
-    '}',
-    '',
-    `export async function ${handlerName}(requestBody: unknown) {`,
-    `  // validate requestBody against OAS schema for ${className}`,
-    `  // map to controller.${'create'} and return framework-specific response`,
-    '}'
-  ].join('\n');
+function importStateFromOasFile(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(String(reader.result));
+      const result = buildDomainsFromOas(parsed);
+      if (!result.ok) {
+        window.alert(result.reason === 'invalid-oas'
+          ? 'Invalid OAS file: components.schemas not found.'
+          : 'No schemas found to import.');
+        return;
+      }
+      const nextDomains = result.domains;
+      withPersist(() => {
+        state.domains = nextDomains;
+        state.relationships = [];
+        state.selectedDomainId = nextDomains[0]?.id || null;
+        state.selectedEntityId = null;
+        state.selectedRelationshipId = null;
+        state.view = {
+          zoom: 1,
+          compactEntities: false,
+          snapToGrid: true,
+          edgeStyle: 'curved',
+          modelCheckMinSeverity: 'info',
+          exportBlockCritical: true,
+          largeCanvasMode: false
+        };
+        recomputeIdCounter();
+        render();
+      }, { recordHistory: false });
+      history.past = [];
+      history.future = [];
+      saveState();
+    } catch (error) {
+      window.alert('Could not parse OAS JSON file.');
+    }
+  };
+  reader.readAsText(file);
 }
 
 function generateCodePreview() {
   const found = findEntity(state.selectedEntityId);
   if (found) {
-    dom.codePreviewOutput.textContent = buildCodePreviewForEntity(found.domain, found.entity);
+    dom.codePreviewOutput.textContent = model.buildCodePreviewForEntity(found.domain, found.entity);
     return;
   }
   const chunks = [];
   state.domains.forEach((domain) => {
     domain.entities.forEach((entity) => {
-      chunks.push(buildCodePreviewForEntity(domain, entity));
+      chunks.push(model.buildCodePreviewForEntity(domain, entity));
     });
   });
   dom.codePreviewOutput.textContent = chunks.length
@@ -2826,187 +1540,31 @@ function generateCodePreview() {
     : '// Select an entity or create domains/entities to preview generated skeletons.';
 }
 
-function exportAsOas() {
-  if (!canExportModel()) return;
-  const schemas = {};
-  const paths = {};
-  const entitySchemaIndex = {};
-  state.domains.forEach((domain) => {
-    domain.entities.forEach((entity) => {
-      const properties = {};
-      const required = [];
-      entity.fields.forEach((field) => {
-        properties[field.name] = toOasFieldSchema(field);
-        if (field.required) required.push(field.name);
-      });
-      const schemaName = toSchemaName(domain.name, entity.name);
-      entitySchemaIndex[entity.id] = schemaName;
-      schemas[schemaName] = {
-        type: 'object',
-        properties,
-        required,
-        'x-domain': domain.name,
-        'x-entity': entity.name,
-        'x-message-contracts': Array.isArray(entity?.meta?.contracts)
-          ? entity.meta.contracts.map((contract, index) => normalizeContractInput(contract, index))
-          : []
-      };
-      const composition = entity?.meta?.oasComposition || {};
-      const mode = ['oneOf', 'allOf', 'anyOf'].includes(composition.mode) ? composition.mode : '';
-      const refs = parseCommaSeparated(composition.refs || []);
-      if (mode && refs.length) {
-        schemas[schemaName][mode] = refs.map((ref) => ({ $ref: `#/components/schemas/${ref}` }));
-      }
-      const externalRefs = parseCommaSeparated(composition.externalRefs || []);
-      if (externalRefs.length) {
-        schemas[schemaName]['x-external-refs'] = externalRefs;
-      }
-      const discriminator = String(composition.discriminator || '').trim();
-      if (discriminator) {
-        const mapping = {};
-        refs.forEach((refName) => {
-          mapping[refName] = `#/components/schemas/${refName}`;
-        });
-        schemas[schemaName].discriminator = {
-          propertyName: discriminator,
-          mapping
-        };
-      }
-
-      const domainPath = toPathToken(domain.name);
-      const entityPath = toPathToken(entity.name);
-      const collectionPath = `/${domainPath}/${entityPath}`;
-      const itemPath = `${collectionPath}/{id}`;
-      const idParam = [{
-        name: 'id',
-        in: 'path',
-        required: true,
-        schema: { type: 'string' }
-      }];
-
-      paths[collectionPath] = {
-        get: {
-          operationId: `list${schemaName}`,
-          responses: {
-            200: {
-              description: 'Success',
-              content: {
-                'application/json': {
-                  schema: {
-                    type: 'array',
-                    items: { $ref: `#/components/schemas/${schemaName}` }
-                  }
-                }
-              }
-            }
-          }
-        },
-        post: {
-          operationId: `create${schemaName}`,
-          requestBody: {
-            required: true,
-            content: {
-              'application/json': {
-                schema: { $ref: `#/components/schemas/${schemaName}` }
-              }
-            }
-          },
-          responses: {
-            201: {
-              description: 'Created',
-              content: {
-                'application/json': {
-                  schema: { $ref: `#/components/schemas/${schemaName}` }
-                }
-              }
-            }
-          }
-        }
-      };
-
-      paths[itemPath] = {
-        get: {
-          operationId: `get${schemaName}ById`,
-          parameters: idParam,
-          responses: {
-            200: {
-              description: 'Success',
-              content: {
-                'application/json': {
-                  schema: { $ref: `#/components/schemas/${schemaName}` }
-                }
-              }
-            },
-            404: { description: 'Not found' }
-          }
-        },
-        patch: {
-          operationId: `update${schemaName}`,
-          parameters: idParam,
-          requestBody: {
-            required: true,
-            content: {
-              'application/json': {
-                schema: { $ref: `#/components/schemas/${schemaName}` }
-              }
-            }
-          },
-          responses: {
-            200: {
-              description: 'Updated',
-              content: {
-                'application/json': {
-                  schema: { $ref: `#/components/schemas/${schemaName}` }
-                }
-              }
-            },
-            404: { description: 'Not found' }
-          }
-        },
-        delete: {
-          operationId: `delete${schemaName}`,
-          parameters: idParam,
-          responses: {
-            204: { description: 'Deleted' },
-            404: { description: 'Not found' }
-          }
-        }
-      };
-    });
+function generateExamplesPreview() {
+  const selected = findEntity(state.selectedEntityId);
+  const targets = selected
+    ? [{ domain: selected.domain, entity: selected.entity }]
+    : state.domains.flatMap((domain) => domain.entities.map((entity) => ({ domain, entity })));
+  if (!targets.length) {
+    dom.examplesPreviewOutput.textContent = '// No entities found for example generation.';
+    return;
+  }
+  const chunks = targets.map(({ domain, entity }) => {
+    const schemaName = model.toSchemaName(domain.name, entity.name);
+    const requestCreate = model.buildEntityRequestExample(entity, 'create');
+    const requestUpdate = model.buildEntityRequestExample(entity, 'update');
+    const response = model.buildEntityResponseExample(entity);
+    return [
+      `// ${domain.name}/${entity.name}`,
+      `// create${schemaName} request`,
+      JSON.stringify(requestCreate, null, 2),
+      `// update${schemaName} request`,
+      JSON.stringify(requestUpdate, null, 2),
+      `// ${schemaName} response`,
+      JSON.stringify(response, null, 2)
+    ].join('\n');
   });
-
-  const oas = {
-    openapi: '3.1.0',
-    info: { title: 'Domain Designer Export', version: '1.0.0' },
-    paths,
-    components: { schemas },
-    'x-message-contracts': state.domains.flatMap((domain) => (
-      domain.entities.flatMap((entity) => (
-        (Array.isArray(entity?.meta?.contracts) ? entity.meta.contracts : []).map((contract, index) => ({
-          ...normalizeContractInput(contract, index),
-          domain: domain.name,
-          entity: entity.name
-        }))
-      ))
-    )),
-    'x-relations': state.relationships.map((relationship) => ({
-      name: relationship.name,
-      fromEntityId: relationship.fromEntityId,
-      toEntityId: relationship.toEntityId,
-      fromSchema: entitySchemaIndex[relationship.fromEntityId] || null,
-      toSchema: entitySchemaIndex[relationship.toEntityId] || null,
-      fromCardinality: relationship.fromCardinality,
-      toCardinality: relationship.toCardinality
-    }))
-  };
-
-  const blob = new Blob([JSON.stringify(oas, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'domain-designer-oas-3.1.json';
-  a.click();
-  URL.revokeObjectURL(url);
+  dom.examplesPreviewOutput.textContent = chunks.join('\n\n/* ---------------------------------------- */\n\n');
 }
 
 function seed() {
@@ -3066,155 +1624,28 @@ function seed() {
   });
 }
 
-function importStateFromFile(file) {
-  const reader = new FileReader();
-  reader.onload = () => {
-    try {
-      const parsed = JSON.parse(String(reader.result));
-      const normalized = normalizeStatePayload(parsed);
-      withPersist(() => {
-        state.domains = normalized.domains;
-        state.relationships = normalized.relationships;
-        state.selectedDomainId = normalized.selectedDomainId;
-        state.selectedEntityId = normalized.selectedEntityId;
-        state.selectedRelationshipId = normalized.selectedRelationshipId;
-        state.view = normalized.view;
-        state.idCounter = normalized.idCounter;
-        recomputeIdCounter();
-        render();
-      }, { recordHistory: false });
-      history.past = [];
-      history.future = [];
-      saveState();
-    } catch (error) {
-      window.alert('Could not parse JSON file.');
-    }
-  };
-  reader.readAsText(file);
-}
-
-function importStateFromOasFile(file) {
-  const reader = new FileReader();
-  reader.onload = () => {
-    try {
-      const parsed = JSON.parse(String(reader.result));
-      const schemas = parsed?.components?.schemas;
-      if (!schemas || typeof schemas !== 'object') {
-        window.alert('Invalid OAS file: components.schemas not found.');
-        return;
-      }
-
-      const nextDomains = [];
-      const byDomain = new Map();
-      let domainIndex = 0;
-      let entityIndex = 0;
-
-      Object.entries(schemas).forEach(([schemaKey, schemaValue]) => {
-        if (!schemaValue || typeof schemaValue !== 'object') return;
-        const domainName = String(schemaValue['x-domain'] || 'Imported').trim() || 'Imported';
-        const entityName = String(schemaValue['x-entity'] || schemaKey).trim() || schemaKey;
-        const required = Array.isArray(schemaValue.required) ? schemaValue.required : [];
-        const properties = schemaValue.properties && typeof schemaValue.properties === 'object'
-          ? schemaValue.properties
-          : {};
-
-        let domain = byDomain.get(domainName);
-        if (!domain) {
-          domain = {
-            id: fallbackId('domain', domainIndex),
-            name: domainName,
-            color: DOMAIN_COLORS[domainIndex % DOMAIN_COLORS.length],
-            x: 120 + domainIndex * 40,
-            y: 90 + domainIndex * 30,
-            entities: []
-          };
-          domainIndex += 1;
-          byDomain.set(domainName, domain);
-          nextDomains.push(domain);
-        }
-
-        const fields = Object.entries(properties).map(([fieldName, fieldSchema]) => {
-          const field = fieldSchema || {};
-          return normalizeField({
-            name: fieldName,
-            type: fromOasType(field),
-            format: String(field.format || '').trim(),
-            description: String(field.description || '').trim(),
-            nullable: Boolean(field.nullable),
-            enumValues: parseEnumValues(field.enum),
-            pattern: String(field.pattern || '').trim(),
-            minLength: normalizeOptionalNumber(field.minLength),
-            maxLength: normalizeOptionalNumber(field.maxLength),
-            minimum: normalizeOptionalNumber(field.minimum),
-            maximum: normalizeOptionalNumber(field.maximum),
-            itemsType: fromOasType(field.items || {}),
-            required: required.includes(fieldName),
-            pk: fieldName === 'id',
-            fk: /id$/i.test(fieldName) && fieldName !== 'id',
-            unique: fieldName === 'id'
-          }, 0);
-        });
-
-        domain.entities.push({
-          id: fallbackId('entity', entityIndex),
-          name: entityName,
-          x: 14 + (domain.entities.length % 2) * 206,
-          y: 14 + Math.floor(domain.entities.length / 2) * 120,
-          fields: fields.length ? fields : defaultFields()
-        });
-        entityIndex += 1;
-      });
-
-      if (!nextDomains.length) {
-        window.alert('No schemas found to import.');
-        return;
-      }
-
-      withPersist(() => {
-        state.domains = nextDomains;
-        state.relationships = [];
-        state.selectedDomainId = nextDomains[0]?.id || null;
-        state.selectedEntityId = null;
-        state.selectedRelationshipId = null;
-        state.view = {
-          zoom: 1,
-          compactEntities: false,
-          snapToGrid: true,
-          edgeStyle: 'curved',
-          modelCheckMinSeverity: 'info',
-          exportBlockCritical: true,
-          largeCanvasMode: false
-        };
-        recomputeIdCounter();
-        render();
-      }, { recordHistory: false });
-      history.past = [];
-      history.future = [];
-      saveState();
-    } catch (error) {
-      window.alert('Could not parse OAS JSON file.');
-    }
-  };
-  reader.readAsText(file);
-}
-
+// The single render pass, in the monolith's exact order. The pre-refactor
+// implicit sequencing — interface adapters/service config/deployments before
+// the domain panel, domain list before the canvas, entity options before the
+// inspectors that read them, edges and mini-map after the canvas — is
+// preserved here as an explicit call sequence.
 function render() {
-  renderTabs();
-  renderInterfaceAdapters();
-  renderServiceConfiguration();
-  renderDeployments();
-  renderDomainList();
-  renderStatus();
-  renderView();
-  renderDomains();
-  renderEntityOptions();
-  renderRelationshipList();
-  syncRelationshipInspector();
-  renderPickStatus();
-  renderEntityInspector();
-  renderEdges();
-  renderMiniMap();
-  renderSchemaDiffStatus();
+  tabs.renderTabs();
+  inspectors.renderInterfaceAdapters();
+  inspectors.renderServiceConfiguration();
+  inspectors.renderDeployments();
+  inspectors.renderDomainList();
+  inspectors.renderStatus();
+  canvas.renderView();
+  canvas.renderDomains();
+  inspectors.renderEntityOptions();
+  inspectors.renderRelationshipList();
+  inspectors.syncRelationshipInspector();
+  inspectors.renderPickStatus();
+  inspectors.renderEntityInspector();
+  canvas.renderEdges();
+  canvas.renderMiniMap();
+  inspectors.renderSchemaDiffStatus();
   generateCodePreview();
   generateExamplesPreview();
   dom.undoBtn.disabled = history.past.length === 0;
@@ -3222,10 +1653,10 @@ function render() {
 }
 
 function wireEvents() {
-  if (dom.tabDomainDesignerBtn) dom.tabDomainDesignerBtn.onclick = () => setActiveTab('domain-designer');
-  if (dom.tabInterfaceDesignerBtn) dom.tabInterfaceDesignerBtn.onclick = () => setActiveTab('interface-designer');
-  if (dom.tabServiceConfigBtn) dom.tabServiceConfigBtn.onclick = () => setActiveTab('service-config');
-  if (dom.tabDeployManagementBtn) dom.tabDeployManagementBtn.onclick = () => setActiveTab('deploy-management');
+  if (dom.tabDomainDesignerBtn) dom.tabDomainDesignerBtn.onclick = () => tabs.setActiveTab('domain-designer');
+  if (dom.tabInterfaceDesignerBtn) dom.tabInterfaceDesignerBtn.onclick = () => tabs.setActiveTab('interface-designer');
+  if (dom.tabServiceConfigBtn) dom.tabServiceConfigBtn.onclick = () => tabs.setActiveTab('service-config');
+  if (dom.tabDeployManagementBtn) dom.tabDeployManagementBtn.onclick = () => tabs.setActiveTab('deploy-management');
 
   if (dom.addInterfaceAdapterBtn) {
     dom.addInterfaceAdapterBtn.onclick = () => {
@@ -3242,7 +1673,7 @@ function wireEvents() {
         dom.interfaceFrameworkInput.value = '';
         dom.interfaceEntrypointInput.value = '';
         dom.interfaceControllerInput.value = '';
-        renderInterfaceAdapters();
+        inspectors.renderInterfaceAdapters();
       });
     };
   }
@@ -3266,7 +1697,7 @@ function wireEvents() {
             grpc: parsePort(dom.serviceGrpcPortInput?.value, 3002)
           }
         };
-        renderServiceConfiguration();
+        inspectors.renderServiceConfiguration();
       }, { recordHistory: false });
     };
   }
@@ -3315,7 +1746,7 @@ function wireEvents() {
         dom.deployNameInput.value = '';
         dom.deployRegionInput.value = '';
         dom.deployRuntimeInput.value = '';
-        renderDeployments();
+        inspectors.renderDeployments();
       }, { recordHistory: false });
     };
   }
@@ -3460,7 +1891,7 @@ function wireEvents() {
   dom.entityRbacActionSelect.onchange = () => {
     const found = findEntity(state.selectedEntityId);
     if (!found) return;
-    renderEntityRbacInspector(found.entity);
+    inspectors.renderEntityRbacInspector(found.entity);
   };
   dom.addEntityContractBtn.onclick = addSelectedEntityContract;
   dom.saveEntityOasCompositionBtn.onclick = saveSelectedEntityOasComposition;
@@ -3495,8 +1926,8 @@ function wireEvents() {
   };
   dom.undoBtn.onclick = undo;
   dom.redoBtn.onclick = redo;
-  dom.zoomInBtn.onclick = () => zoomBy(0.1);
-  dom.zoomOutBtn.onclick = () => zoomBy(-0.1);
+  dom.zoomInBtn.onclick = () => canvas.zoomBy(0.1);
+  dom.zoomOutBtn.onclick = () => canvas.zoomBy(-0.1);
   dom.edgeStyleSelect.onchange = () => {
     const value = dom.edgeStyleSelect.value;
     if (!['curved', 'orthogonal'].includes(value)) return;
@@ -3505,11 +1936,11 @@ function wireEvents() {
       render();
     }, { recordHistory: false });
   };
-  dom.toggleCompactViewBtn.onclick = toggleCompactView;
+  dom.toggleCompactViewBtn.onclick = canvas.toggleCompactView;
   dom.toggleSnapBtn.onclick = () => {
     withPersist(() => {
       state.view.snapToGrid = !state.view.snapToGrid;
-      renderView();
+      canvas.renderView();
     }, { recordHistory: false });
   };
   dom.toggleLargeCanvasBtn.onclick = () => {
@@ -3523,24 +1954,24 @@ function wireEvents() {
   dom.modelCheckMinSeveritySelect.onchange = () => {
     withPersist(() => {
       state.view.modelCheckMinSeverity = dom.modelCheckMinSeveritySelect.value;
-      renderModelCheckResults(collectModelIssues());
+      inspectors.renderModelCheckResults(collectModelIssues(state));
     }, { recordHistory: false });
   };
   dom.exportBlockCriticalCheck.onchange = () => {
     withPersist(() => {
       state.view.exportBlockCritical = Boolean(dom.exportBlockCriticalCheck.checked);
-      renderView();
+      canvas.renderView();
     }, { recordHistory: false });
   };
   dom.saveBaselineBtn.onclick = saveSchemaBaseline;
   dom.runSchemaDiffBtn.onclick = runSchemaDiff;
   dom.clearBaselineBtn.onclick = () => {
     store.clearBaseline();
-    renderSchemaDiffResults([{ severity: 'info', message: 'Baseline cleared.' }]);
+    inspectors.renderSchemaDiffResults([{ severity: 'info', message: 'Baseline cleared.' }]);
   };
-  dom.autoLayoutBtn.onclick = autoLayout;
-  dom.fitViewBtn.onclick = fitView;
-  dom.resetViewBtn.onclick = resetView;
+  dom.autoLayoutBtn.onclick = canvas.autoLayout;
+  dom.fitViewBtn.onclick = canvas.fitView;
+  dom.resetViewBtn.onclick = canvas.resetView;
 
   dom.addFieldBtn.onclick = addFieldToSelectedEntity;
   dom.applyFieldTemplateBtn.onclick = applyFieldTemplateToSelectedEntity;
@@ -3593,64 +2024,9 @@ function wireEvents() {
     window.alert('Saved designer state cleared.');
   };
 
-  dom.canvas.addEventListener('click', (event) => {
-    if (event.target !== dom.canvas && event.target !== dom.edges && event.target !== dom.canvasInner) return;
-    state.selectedRelationshipId = null;
-    render();
-  });
-
-  dom.canvas.addEventListener('wheel', (event) => {
-    if (!(event.ctrlKey || event.metaKey)) return;
-    event.preventDefault();
-    const direction = event.deltaY > 0 ? -0.1 : 0.1;
-    zoomBy(direction);
-  }, { passive: false });
-
-  dom.canvas.addEventListener('pointerdown', (event) => {
-    if (event.button !== 1 && !interaction.spacePressed) return;
-    interaction.panning = true;
-    interaction.panStartX = event.clientX;
-    interaction.panStartY = event.clientY;
-    interaction.scrollStartLeft = dom.canvas.scrollLeft;
-    interaction.scrollStartTop = dom.canvas.scrollTop;
-    dom.canvas.classList.add('panning');
-    event.preventDefault();
-  });
-
-  dom.canvas.addEventListener('pointermove', (event) => {
-    if (!interaction.panning) return;
-    const dx = event.clientX - interaction.panStartX;
-    const dy = event.clientY - interaction.panStartY;
-    dom.canvas.scrollLeft = interaction.scrollStartLeft - dx;
-    dom.canvas.scrollTop = interaction.scrollStartTop - dy;
-  });
-
-  const stopPan = () => {
-    interaction.panning = false;
-    dom.canvas.classList.remove('panning');
-  };
-  dom.canvas.addEventListener('pointerup', stopPan);
-  dom.canvas.addEventListener('pointercancel', stopPan);
-  dom.canvas.addEventListener('pointerleave', stopPan);
-
-  window.addEventListener('pointermove', (event) => {
-    if (!interaction.relationshipAnchorDragActive) return;
-    const fromPoint = entityAnchorOnCanvas(
-      interaction.relationshipAnchorFromEntityId,
-      interaction.relationshipAnchorFromSide
-    );
-    if (!fromPoint) {
-      stopAnchorDrag();
-      return;
-    }
-    const pointer = pointerToCanvasPoint(event.clientX, event.clientY);
-    renderAnchorPreviewEdge(fromPoint, pointer);
-  });
-
-  window.addEventListener('pointerup', () => {
-    if (!interaction.relationshipAnchorDragActive) return;
-    stopAnchorDrag();
-  });
+  // Canvas-level listeners (background click, wheel zoom, pan, anchor-drag
+  // preview) are wired by the canvas module.
+  canvas.wireCanvasEvents();
 
   window.addEventListener('keydown', (event) => {
     const key = event.key.toLowerCase();
@@ -3665,7 +2041,7 @@ function wireEvents() {
     }
     if (key === 'escape') {
       setRelationshipPickMode(false);
-      stopAnchorDrag();
+      canvas.stopAnchorDrag();
       state.selectedRelationshipId = null;
       render();
       return;
@@ -3682,7 +2058,7 @@ function wireEvents() {
     }
     if (event.altKey && key === 'l') {
       event.preventDefault();
-      autoLayout();
+      canvas.autoLayout();
       return;
     }
     if (event.altKey && key === 'r') {
@@ -3692,7 +2068,7 @@ function wireEvents() {
     }
     if (event.altKey && key === 'v') {
       event.preventDefault();
-      toggleCompactView();
+      canvas.toggleCompactView();
       return;
     }
     if (!editingInput && ['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key) && state.selectedEntityId) {
