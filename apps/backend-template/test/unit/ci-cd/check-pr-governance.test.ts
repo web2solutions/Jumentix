@@ -171,22 +171,13 @@ describe('check-pr-governance', () => {
   it('validates templates but skips PR metadata on long-lived branch builds', () => {
     expect.hasAssertions();
 
-    const previous = process.env.AAA_CI_IS_PULL_REQUEST;
-    process.env.AAA_CI_IS_PULL_REQUEST = '0';
-    try {
-      expect(run({
-        title: '',
-        body: '',
-        headRef: 'main',
-        baseRef: ''
-      })).toBe(0);
-    } finally {
-      if (previous === undefined) {
-        delete process.env.AAA_CI_IS_PULL_REQUEST;
-      } else {
-        process.env.AAA_CI_IS_PULL_REQUEST = previous;
-      }
-    }
+    expect(run({
+      isPullRequest: false,
+      title: '',
+      body: '',
+      headRef: 'main',
+      baseRef: ''
+    })).toBe(0);
   });
 
   it('still validates PR metadata when CircleCI marks the job as a pull request', () => {
