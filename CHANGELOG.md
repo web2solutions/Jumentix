@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-05 docs(JUM-473): document E3 module architecture and IDesignerStore port contract - Eduardo A.
 - 2026-08-05 [JUM-468][Refactor] Extract state/persistence core behind IDesignerStore port (#86) - Eduardo A.
 - 2026-08-05 [JUM-466][Test] Expand service-management integration smoke (#85) - Eduardo A.
 - 2026-08-05 feat(JUM-460): expand env key allowlist to the full runtime matrix (#84) - Eduardo A.
