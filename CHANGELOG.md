@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-05 feat(JUM-604): support Kimi agent via declarative supported-agents data - Eduardo A.
 - 2026-08-05 docs: fix CircleCI badge endpoints - Eduardo A.
 - 2026-08-05 docs: restore CircleCI and Codecov badges - Eduardo A.
 - 2026-08-04 chore(release): reconcile main ancestry into dev - Eduardo A.

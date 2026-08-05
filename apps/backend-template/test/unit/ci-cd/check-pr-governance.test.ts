@@ -8,6 +8,8 @@ const {
   SUPPORTED_AGENTS_PATH,
   TEMPLATE_PATHS,
   readField,
+  resolvePullRequestFlag,
+  run,
   validatePullRequest,
   validateSupportedAgents,
   validateTemplates
@@ -171,6 +173,32 @@ describe('check-pr-governance', () => {
       headRef: 'codex/fix/JUM-99-direct-main',
       baseRef: 'main'
     })).toHaveLength(2);
+  });
+
+  it('validates templates but skips PR metadata on long-lived branch builds', () => {
+    expect.hasAssertions();
+
+    expect(run({
+      isPullRequest: false,
+      title: '',
+      body: '',
+      headRef: 'main',
+      baseRef: ''
+    })).toBe(0);
+  });
+
+  it('still validates PR metadata when CircleCI marks the job as a pull request', () => {
+    expect.hasAssertions();
+
+    expect(run({
+      isPullRequest: true,
+      title: '',
+      body: '',
+      headRef: 'main',
+      baseRef: ''
+    })).toBe(1);
+    expect(resolvePullRequestFlag('1')).toBe(true);
+    expect(resolvePullRequestFlag('0')).toBe(false);
   });
 
   it('rejects a title or branch whose task identifier differs from the Linear Issue', () => {
