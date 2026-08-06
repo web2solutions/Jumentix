@@ -34,7 +34,10 @@ contract are documented in
      - schema diff + migration hints
      - request/response examples
      - code skeleton preview
-     - export/import flows (JSON, OAS, Markdown, JSON Schema, AsyncAPI, package, boilerplate bundle)
+     - export/import flows (JSON, OAS, Markdown, JSON Schema, AsyncAPI per-transport
+       (`<version>.websocket.yml` / `<version>.grpc.yml` targeting the canonical
+       `spec/asyncapi/` conventions), gRPC proto (`async-api.proto`), package,
+       boilerplate bundle)
      - mini-map and large-canvas mode
 2. **Communication Interface Designer**
    - Registers inbound interface adapters and controller mappings:
@@ -96,7 +99,7 @@ Recommended dev path:
 1. `bun run dev:service-management`
 2. Open the local Service Management URL
 3. Model domains/entities
-4. Run exports (OAS/AsyncAPI/JSON Schema/package)
+4. Run exports (OAS/AsyncAPI per-transport/gRPC proto/JSON Schema/package)
 5. Use generated artifacts as contracts for API implementation
 
 ## Runtime Env API (built-in)

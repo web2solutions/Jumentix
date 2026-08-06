@@ -39,7 +39,9 @@ Detailed feature usage:
    - Entity templates: `crudAggregate`, `eventSourced`, `referenceData`, `tenantOwned`.
    - Code generation preview for domain model/repository/use-case/controller/handler skeletons.
    - Request/response example generator from entity schema.
-   - Exporters: JSON, OpenAPI 3.1, Markdown, JSON Schema, AsyncAPI and boilerplate bundle.
+   - Exporters: JSON, OpenAPI 3.1, Markdown, JSON Schema, AsyncAPI 3.0 per transport
+     (`<version>.websocket.yml` / `<version>.grpc.yml`, canonical `spec/asyncapi/`
+     conventions), gRPC proto (`async-api.proto`) and boilerplate bundle.
    - OpenAPI composition controls (`oneOf`, `allOf`, `anyOf`, external `$ref`, discriminator) per entity.
    - Domain package export/import for reusable model sharing.
    - Mini-map navigation and large-canvas performance mode.
