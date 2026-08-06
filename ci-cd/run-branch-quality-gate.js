@@ -4,17 +4,36 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 const { isEntryPoint } = require('./lib/entry-point.js');
 
+/**
+ * Lint runs before every gate that does not already contain it (JUM-596).
+ *
+ * Only `ci:gate:strict` declares a lint cell, and it is selected for `main` and
+ * for pull requests into `dev`. The other two paths — a task branch, and a
+ * direct push to `dev` — ran no lint at all. That is how twenty lint errors
+ * reached `dev`: nothing on the way in looked.
+ *
+ * It is a preflight rather than another matrix cell because it must fail before
+ * the suites run. A branch whose lint is broken has nothing to learn from
+ * twenty minutes of tests.
+ */
+const LINT_PREFLIGHT = Object.freeze({ id: 'lint', script: 'lint' });
+
 const FULL_MATRIX_QUALITY_GATE = Object.freeze({
   id: 'full-matrix',
-  script: 'ci:gate:strict'
+  script: 'ci:gate:strict',
+  // No preflight: the strict matrix declares `lint` as its first cell, and
+  // running it twice would cost minutes to learn the same thing.
+  preflight: Object.freeze([])
 });
 const UNIT_QUALITY_GATE = Object.freeze({
   id: 'unit',
-  script: 'test:unit'
+  script: 'test:unit',
+  preflight: Object.freeze([LINT_PREFLIGHT])
 });
 const TASK_QUALITY_GATE = Object.freeze({
   id: 'task-changes',
-  script: 'ci:gate:task'
+  script: 'ci:gate:task',
+  preflight: Object.freeze([LINT_PREFLIGHT])
 });
 
 function resolveTargetBranch(value = process.env.JUMENTIX_QUALITY_GATE_TARGET) {
@@ -67,23 +86,43 @@ function runBranchQualityGate(options = {}) {
   logger.log(`[ci] target branch: ${targetBranch}`);
   logger.log(`[ci] selected quality gate: ${gate.id} (${gate.script})`);
 
-  let status = 1;
-  try {
-    const executionStatus = execute(gate);
-    status = Number.isInteger(executionStatus) && executionStatus >= 0
-      ? executionStatus
-      : 1;
-  } catch (error) {
-    logger.error(`[ci] branch quality gate crashed: ${gate.id}`);
-    logger.error(error);
+  const runStep = (step, label) => {
+    try {
+      const executionStatus = execute(step);
+      return Number.isInteger(executionStatus) && executionStatus >= 0 ? executionStatus : 1;
+    } catch (error) {
+      logger.error(`[ci] ${label} crashed: ${step.id}`);
+      logger.error(error);
+      return 1;
+    }
+  };
+
+  // Preflight first, and stop on the first failure. Recorded either way, so a
+  // gate that skipped its lint cannot be read as one that passed it.
+  const preflight = [];
+  let status = 0;
+  for (const step of gate.preflight || []) {
+    logger.log(`[ci] preflight: ${step.id} (${step.script})`);
+    const stepStatus = runStep(step, 'preflight');
+    preflight.push({ id: step.id, script: step.script, status: stepStatus });
+    if (stepStatus !== 0) {
+      status = stepStatus;
+      logger.error(`[ci] preflight failed: ${step.id} — not running ${gate.id}`);
+      break;
+    }
+  }
+
+  if (status === 0) {
+    status = runStep(gate, 'branch quality gate');
   }
 
   const evidence = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     targetBranch,
     isPullRequest,
     gate: gate.id,
     script: gate.script,
+    preflight,
     outcome: status === 0 ? 'passed' : 'failed',
     status
   };
