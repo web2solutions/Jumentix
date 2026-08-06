@@ -3,7 +3,7 @@
 import path from 'node:path';
 
 /**
- * Unit suite for the seven export builders extracted from
+ * Unit suite for the export builders extracted from
  * `apps/service-management/script.js` by JUM-469
  * (`apps/service-management/src/exporters/designerExporters.js`).
  *
@@ -11,11 +11,13 @@ import path from 'node:path';
  * builders must produce output byte-identical to the pre-refactor
  * exporters — the strongest guarantee that the split changed nothing, and
  * the baseline the contract-parity lane (JUM-474/475/476/478) rewrites from.
+ * The AsyncAPI builder moved to `asyncApiExporters.js` under JUM-475
+ * (canonical `spec/asyncapi/` targeting) and is pinned by
+ * `designerAsyncApiExport.test.ts`.
  */
 
 const repoRoot = path.resolve(__dirname, '../../../../..');
 const {
-  buildAsyncApiDocument,
   buildBoilerplateBundleDocument,
   buildDomainPackageDocument,
   buildJsonExportDocument,
@@ -184,52 +186,6 @@ describe('designer exporters (JUM-469)', () => {
         }
       }
     });
-  });
-
-  it('builds the AsyncAPI document with publish/subscribe channels', () => {
-    const state = createState();
-    const document = buildAsyncApiDocument(state);
-    expect(document).toStrictEqual({
-      asyncapi: '3.0.0',
-      info: { title: 'Domain Designer AsyncAPI Export', version: '1.0.0' },
-      channels: {
-        'billing.issued': {
-          publish: {
-            operationId: 'event_Billing_Invoice_issued',
-            message: { name: 'issued', payload: { type: 'object' } }
-          }
-        }
-      }
-    });
-  });
-
-  it('derives channel names and subscribe operations for channel-less response contracts', () => {
-    const state = normalizeStatePayload({
-      domains: [{
-        id: 'domain-1',
-        name: 'Billing',
-        entities: [{
-          id: 'entity-1',
-          name: 'Invoice',
-          fields: [],
-          meta: {
-            contracts: [
-              {
-                id: 'c1', name: 'fetch', type: 'request', channel: '', version: '2.0.0', payloadSchema: {}
-              },
-              {
-                id: 'c2', name: 'fetched', type: 'response', channel: '', version: '2.0.0'
-              }
-            ]
-          }
-        }]
-      }],
-      relationships: []
-    });
-    const document = buildAsyncApiDocument(state);
-    expect(document.channels['billing/invoice/request'].publish.operationId).toBe('request_Billing_Invoice_fetch');
-    expect(document.channels['billing/invoice/response'].subscribe.operationId).toBe('response_Billing_Invoice_fetched');
-    expect(document.channels['billing/invoice/response'].subscribe.message.payload).toStrictEqual({});
   });
 
   it('builds the boilerplate bundle with the hexagonal file layout', () => {
@@ -505,32 +461,6 @@ describe('designer exporters (JUM-469)', () => {
     expect(markdown).toContain('- rel-7: Sparse/Shell (1) -> (N) Sparse/Shell');
   });
 
-  it('reuses AsyncAPI channel buckets and tolerates missing payload schemas', () => {
-    const document = buildAsyncApiDocument({
-      domains: [{
-        id: 'domain-1',
-        name: 'Billing',
-        entities: [{
-          id: 'entity-1',
-          name: 'Invoice',
-          meta: {
-            contracts: [
-              {
-                type: 'event', name: 'a', channel: 'shared', version: '1.0.0', payloadSchema: null
-              },
-              {
-                type: 'response', name: 'b', channel: 'shared', version: '1.0.0', payloadSchema: { type: 'object' }
-              }
-            ]
-          }
-        }]
-      }]
-    });
-    expect(Object.keys(document.channels)).toStrictEqual(['shared']);
-    expect(document.channels.shared.publish.message.payload).toStrictEqual({});
-    expect(document.channels.shared.subscribe.message.payload).toStrictEqual({ type: 'object' });
-  });
-
   it('ignores unknown composition modes and parses string refs in OAS export', () => {
     const document = buildOasDocument({
       domains: [{
@@ -568,7 +498,7 @@ describe('designer exporters (JUM-469)', () => {
     expect(receipt.discriminator).toBeUndefined();
   });
 
-  it('tolerates entities without meta in the jsonschema, asyncapi and OAS builders', () => {
+  it('tolerates entities without meta in the jsonschema and OAS builders', () => {
     const state = {
       domains: [{
         id: 'domain-1',
@@ -578,7 +508,6 @@ describe('designer exporters (JUM-469)', () => {
       relationships: []
     };
     expect(buildJsonSchemaDocument(state).definitions.Sparse_Bare.properties).toStrictEqual({});
-    expect(buildAsyncApiDocument(state).channels).toStrictEqual({});
     const oas = buildOasDocument(state);
     expect(oas.components.schemas.Sparse_Bare['x-message-contracts']).toStrictEqual([]);
     expect(oas.components.schemas.Sparse_Bare.discriminator).toBeUndefined();

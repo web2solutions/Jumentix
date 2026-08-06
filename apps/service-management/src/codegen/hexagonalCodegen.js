@@ -158,30 +158,40 @@ function findEntityRoutes(oasDocument, schemaName) {
  * buckets by operationId, so channel names and publish/subscribe direction
  * come from the JUM-475 contract rather than from re-walking the model.
  */
+function toPascalCaseToken(value) {
+  const words = String(value || '').split(/[^a-zA-Z0-9]+/).filter(Boolean);
+  const name = words
+    .map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`)
+    .join('');
+  return name || 'Contract';
+}
+
 function findDomainEventChannels(oasDocument, asyncApiDocument, domainName) {
   const contracts = ((oasDocument && oasDocument['x-message-contracts']) || [])
     .filter((contract) => contract.domain === domainName);
+  // AsyncAPI 3.0 (JUM-475): operations live top-level with send/receive
+  // actions and a channel $ref; channels carry the address. The operationId
+  // format is `<type>_<Domain>_<Entity>_<PascalCaseName>`.
+  const operations = (asyncApiDocument && asyncApiDocument.operations) || {};
   const channels = (asyncApiDocument && asyncApiDocument.channels) || {};
   const events = [];
   contracts.forEach((contract) => {
-    Object.keys(channels).forEach((channelName) => {
-      ['publish', 'subscribe'].forEach((operation) => {
-        const bucket = channels[channelName][operation];
-        if (bucket && bucket.operationId === `${contract.type}_${toSchemaName(contract.domain, contract.entity)}_${contract.name}`) {
-          events.push({
-            name: contract.name,
-            type: contract.type,
-            channel: channelName,
-            operation,
-            operationId: bucket.operationId
-          });
-        }
+    const wantedId = `${contract.type}_${toSchemaName(contract.domain, contract.entity)}_${toPascalCaseToken(contract.name)}`;
+    Object.entries(operations).forEach(([operationId, operation]) => {
+      if (operationId !== wantedId) return;
+      const channelKey = String((operation.channel && operation.channel.$ref) || '').replace('#/channels/', '');
+      const channel = (channels[channelKey] && channels[channelKey].address) || channelKey;
+      events.push({
+        name: contract.name,
+        type: contract.type,
+        channel,
+        operation: operation.action === 'receive' ? 'subscribe' : 'publish',
+        operationId
       });
     });
   });
   return events;
 }
-
 function entityFiles(domain, entity, oasDocument) {
   const domainToken = toTypeToken(domain.name, 'Domain');
   const entityToken = toTypeToken(entity.name, 'Entity');

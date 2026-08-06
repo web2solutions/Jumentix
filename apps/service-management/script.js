@@ -30,19 +30,22 @@ import {
   FIELD_TYPES,
   createDesignerState,
   defaultFields,
-  getDefaultRbacPolicy,
   normalizeContractInput,
   normalizeField,
   normalizeOptionalNumber,
+  normalizeRbacPolicyInput,
   normalizeStatePayload,
   parseCommaSeparated,
   parseEnumValues
 } from './src/state/designerState.js';
+import {
+  deriveTenantScoped,
+  validateRbacRule
+} from './src/model/rbacContract.js';
 import { LocalStorageDesignerStore } from './src/store/LocalStorageDesignerStore.js';
 import * as model from './src/model/modelQueries.js';
 import { collectModelIssues } from './src/validation/modelValidation.js';
 import {
-  buildAsyncApiDocument,
   buildBoilerplateBundleDocument,
   buildDomainPackageDocument,
   buildJsonExportDocument,
@@ -50,6 +53,10 @@ import {
   buildMarkdownExport,
   buildOasDocument
 } from './src/exporters/designerExporters.js';
+import {
+  buildAsyncApiFileSet,
+  buildGrpcProto
+} from './src/exporters/asyncApiExporters.js';
 import {
   buildDomainFromPackage,
   buildDomainsFromOas
@@ -250,6 +257,7 @@ const dom = {
   exportMdBtn: document.getElementById('export-md-btn'),
   exportJsonschemaBtn: document.getElementById('export-jsonschema-btn'),
   exportAsyncapiBtn: document.getElementById('export-asyncapi-btn'),
+  exportProtoBtn: document.getElementById('export-proto-btn'),
   exportBoilerplateBundleBtn: document.getElementById('export-boilerplate-bundle-btn'),
   exportPackageBtn: document.getElementById('export-package-btn'),
   importJsonBtn: document.getElementById('import-json-btn'),
@@ -578,7 +586,7 @@ function addEntity(domainId, name, options = {}) {
       invariants: Array.isArray(options?.meta?.invariants)
         ? options.meta.invariants.map((item) => String(item).trim()).filter(Boolean)
         : [],
-      rbac: options?.meta?.rbac || getDefaultRbacPolicy(),
+      rbac: normalizeRbacPolicyInput(options?.meta?.rbac),
       contracts: Array.isArray(options?.meta?.contracts)
         ? options.meta.contracts.map((contract, index) => normalizeContractInput(contract, index))
         : [],
@@ -1091,12 +1099,19 @@ function saveSelectedEntityRbacRule() {
   if (dom.entityRbacSuperadminCheck.checked) roles.push('superadmin');
   if (dom.entityRbacAdminCheck.checked) roles.push('admin');
   if (dom.entityRbacUserCheck.checked) roles.push('user');
+  // Edit-time gate (JUM-477): a rule the tenant RBAC contract cannot express
+  // is rejected with the reason, never persisted and dropped at export.
+  // Tenant scoping is derived from the roles — the runtime has no independent
+  // tenant-scope knob to honour.
+  const rule = { roles, tenantScoped: deriveTenantScoped(roles) };
+  const verdict = validateRbacRule(rule);
+  if (!verdict.ok) {
+    window.alert(verdict.reason);
+    return;
+  }
   withPersist(() => {
     const policy = getEntityRbacPolicy(found.entity);
-    policy[action] = {
-      roles,
-      tenantScoped: Boolean(dom.entityRbacTenantCheck.checked)
-    };
+    policy[action] = rule;
     inspectors.renderEntityRbacInspector(found.entity);
   });
 }
@@ -1372,10 +1387,11 @@ function canExportModel() {
   return false;
 }
 
-// Download glue shared by the seven export wrappers. The documents
-// themselves are built by the DOM-free src/exporters/designerExporters.js;
-// for the same state their JSON.stringify output is byte-identical to the
-// pre-refactor exporters.
+// Download glue shared by the export wrappers. The documents
+// themselves are built by the DOM-free src/exporters/designerExporters.js
+// (JSON/Markdown/JSON Schema/bundle/package/OAS) and
+// src/exporters/asyncApiExporters.js (AsyncAPI 3.0 per-transport files and
+// the gRPC proto, targeting the canonical spec/asyncapi/ conventions).
 function downloadTextFile(fileName, content, mimeType) {
   const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
@@ -1403,7 +1419,14 @@ function exportAsJsonSchema() {
 
 function exportAsAsyncApi() {
   if (!canExportModel()) return;
-  downloadTextFile('domain-designer-asyncapi.json', JSON.stringify(buildAsyncApiDocument(state), null, 2), 'application/json');
+  buildAsyncApiFileSet(state).files.forEach((file) => {
+    downloadTextFile(file.fileName, file.content, file.mimeType);
+  });
+}
+
+function exportAsProto() {
+  if (!canExportModel()) return;
+  downloadTextFile('async-api.proto', buildGrpcProto(state), 'text/plain');
 }
 
 function exportBoilerplateBundle() {
@@ -1894,6 +1917,17 @@ function wireEvents() {
     if (!found) return;
     inspectors.renderEntityRbacInspector(found.entity);
   };
+  // The tenant-scope checkbox is read-only and previews the value derived
+  // from the currently checked roles (JUM-477).
+  [dom.entityRbacSuperadminCheck, dom.entityRbacAdminCheck, dom.entityRbacUserCheck].forEach((check) => {
+    check.onchange = () => {
+      const roles = [];
+      if (dom.entityRbacSuperadminCheck.checked) roles.push('superadmin');
+      if (dom.entityRbacAdminCheck.checked) roles.push('admin');
+      if (dom.entityRbacUserCheck.checked) roles.push('user');
+      dom.entityRbacTenantCheck.checked = deriveTenantScoped(roles);
+    };
+  });
   dom.addEntityContractBtn.onclick = addSelectedEntityContract;
   dom.saveEntityOasCompositionBtn.onclick = saveSelectedEntityOasComposition;
   dom.entityRenameInput.onkeydown = (event) => {
@@ -1986,6 +2020,7 @@ function wireEvents() {
   dom.exportMdBtn.onclick = exportAsMarkdown;
   dom.exportJsonschemaBtn.onclick = exportAsJsonSchema;
   dom.exportAsyncapiBtn.onclick = exportAsAsyncApi;
+  dom.exportProtoBtn.onclick = exportAsProto;
   dom.exportBoilerplateBundleBtn.onclick = exportBoilerplateBundle;
   dom.exportPackageBtn.onclick = exportAsPackage;
   dom.generateCodePreviewBtn.onclick = generateCodePreview;

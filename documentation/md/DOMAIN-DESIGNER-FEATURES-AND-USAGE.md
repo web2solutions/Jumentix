@@ -99,7 +99,8 @@ How to use:
 
 ## 5) RBAC Policy Mapping
 
-Per-entity action policy:
+Per-entity action policy, aligned with the tenant RBAC authorization contract
+(`TENANT-RBAC-AUTHORIZATION-CONTRACT.md`, JUM-477):
 
 - Actions:
   - `list`
@@ -107,16 +108,27 @@ Per-entity action policy:
   - `create`
   - `update`
   - `delete`
-- Role toggles:
+- Role toggles (the contract's normalized roles):
   - `superadmin`
   - `admin`
   - `user`
-- Tenant scope flag
+- Tenant scope: **derived from the selected roles**, not a free flag. The
+  runtime (`Rbac.ts` / `TenantAuthorizationPolicy.ts`) constrains `admin` and
+  `user` principals to their own organization and gives `superadmin` a global
+  boundary — there is no independent tenant-scope knob to honour, so the
+  editor displays the derived value as a read-only checkbox. Stored policies
+  are repaired to the derived value on load.
+- Legacy direct scopes (`read_user`, `create_organization`, ...) remain
+  runtime-supported and survive import/export, but are not editable in the
+  inspector; validation accepts them as contract-expressible.
+- A role outside the contract vocabulary is rejected at save time with an
+  actionable message, and model validation reports any such stored role as an
+  `error` so the export quality gate blocks it instead of dropping it.
 
 How to use:
 
 1. Select entity and action.
-2. Mark allowed roles and tenant scope.
+2. Mark allowed roles; the tenant-scope indicator follows the roles.
 3. Click `Save RBAC Rule`.
 4. Review generated matrix in the RBAC list.
 

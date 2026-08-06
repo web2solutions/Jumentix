@@ -40,10 +40,12 @@ const {
   tsTypeFromOasSchema
 } = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'codegen', 'hexagonalCodegen.js'));
 const {
-  buildAsyncApiDocument,
   buildBoilerplateBundleDocument,
   buildOasDocument
 } = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'exporters', 'designerExporters.js'));
+const { buildAsyncApiTransportDocument } = require(
+  path.join(repoRoot, 'apps', 'service-management', 'src', 'exporters', 'asyncApiExporters.js')
+);
 const { normalizeStatePayload } = require(
   path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'designerState.js')
 );
@@ -131,7 +133,7 @@ function createState() {
 function buildBundle(state: ReturnType<typeof createState>) {
   return buildHexagonalBundle(state, {
     oasDocument: buildOasDocument(state),
-    asyncApiDocument: buildAsyncApiDocument(state)
+    asyncApiDocument: buildAsyncApiTransportDocument(state, 'websocket')
   });
 }
 
@@ -274,10 +276,10 @@ describe('hexagonal codegen (JUM-476)', () => {
       // resolves to the AsyncAPI fallback bucket as a subscribe operation.
       expect(events).toContain('"billing.issued"');
       expect(events).toContain('operation: \'publish\'');
-      expect(events).toContain('operationId: \'event_Billing_Invoice_issued\'');
+      expect(events).toContain('operationId: \'event_Billing_Invoice_Issued\'');
       expect(events).toContain('"billing/invoice/response"');
       expect(events).toContain('operation: \'subscribe\'');
-      expect(events).toContain('operationId: \'response_Billing_Invoice_settled\'');
+      expect(events).toContain('operationId: \'response_Billing_Invoice_Settled\'');
     });
 
     it('carries the entity RBAC policy into domain/security', () => {
@@ -285,7 +287,7 @@ describe('hexagonal codegen (JUM-476)', () => {
       const [billing] = bundle.modules;
       const receipt = billing.entities.find((entity: GeneratedEntity) => entity.entity === 'Receipt');
       const security = receipt.files.security.content;
-      expect(security).toContain('list: { roles: ["admin"], tenantScoped: false }');
+      expect(security).toContain('list: { roles: ["admin"], tenantScoped: true }');
       // Actions without an explicit rule keep the normalized default policy.
       expect(security).toContain('getById: { roles: ["superadmin", "admin", "user"], tenantScoped: true }');
     });

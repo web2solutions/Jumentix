@@ -1,6 +1,11 @@
 /**
- * designerExporters — the seven export builders of the Service Management
+ * designerExporters — the export builders of the Service Management
  * designer, extracted from `script.js` by JUM-469.
+ *
+ * Six builders live here (JSON, Markdown, JSON Schema, boilerplate bundle,
+ * domain package, OAS 3.1); the AsyncAPI 3.0 per-transport and gRPC proto
+ * builders live in `asyncApiExporters.js` (JUM-475), which targets the
+ * canonical `spec/asyncapi/` conventions.
  *
  * Every builder is a pure function over the state object: state in, document
  * (or markdown text) out. No `document`, no `window`, no `Blob` — the
@@ -31,6 +36,7 @@ import {
   toSchemaName
 } from '../model/modelQueries.js';
 import { buildHexagonalBundle } from '../codegen/hexagonalCodegen.js';
+import { buildAsyncApiTransportDocument } from './asyncApiExporters.js';
 
 /** `exportAsJson` payload: `{ domains, relationships, view }`. */
 export function buildJsonExportDocument(state) {
@@ -125,36 +131,6 @@ export function buildJsonSchemaDocument(state) {
   };
 }
 
-/** `exportAsAsyncApi` payload (AsyncAPI 3.0.0 channels). */
-export function buildAsyncApiDocument(state) {
-  const channels = {};
-  state.domains.forEach((domain) => {
-    domain.entities.forEach((entity) => {
-      const contracts = Array.isArray(entity?.meta?.contracts) ? entity.meta.contracts : [];
-      contracts.forEach((contract) => {
-        const channelName = contract.channel || `${toPathToken(domain.name)}/${toPathToken(entity.name)}/${contract.type}`;
-        if (!channels[channelName]) channels[channelName] = {};
-        const operationKey = contract.type === 'response' ? 'subscribe' : 'publish';
-        channels[channelName][operationKey] = {
-          operationId: `${contract.type}_${toSchemaName(domain.name, entity.name)}_${contract.name}`,
-          message: {
-            name: contract.name,
-            payload: contract.payloadSchema || {}
-          }
-        };
-      });
-    });
-  });
-  return {
-    asyncapi: '3.0.0',
-    info: {
-      title: 'Domain Designer AsyncAPI Export',
-      version: '1.0.0'
-    },
-    channels
-  };
-}
-
 /** `exportBoilerplateBundle` payload (hexagonal file layout per module). */
 export function buildBoilerplateBundleDocument(state, generatedAt = new Date().toISOString()) {
   // Contract shapes come from the JUM-474/475 documents, never re-derived
@@ -162,7 +138,9 @@ export function buildBoilerplateBundleDocument(state, generatedAt = new Date().t
   // Preview pane renders, so preview and bundle cannot drift apart.
   const bundle = buildHexagonalBundle(state, {
     oasDocument: buildOasDocument(state),
-    asyncApiDocument: buildAsyncApiDocument(state)
+    // Both transports carry the same channel set (JUM-475); the websocket
+    // document is the canonical event-channel source for the codegen.
+    asyncApiDocument: buildAsyncApiTransportDocument(state, 'websocket')
   });
   return {
     kind: 'boilerplate-bundle',

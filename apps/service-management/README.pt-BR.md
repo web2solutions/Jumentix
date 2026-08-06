@@ -38,12 +38,14 @@ Uso detalhado de recursos:
    - Editor agregado de raiz + invariantes com marcador AR visual em cartões de entidade.
    - Pré-visualização de comparação/migração de esquema com suporte a snapshot de linha de base.
    - Filtro de severidade de validação e portão de qualidade de exportação (bloqueio em questões críticas).
-   - Editor de mapeamento RBAC por entidade/ação com sinalizadores de escopo de locatário.
+   - Editor de mapeamento RBAC por entidade/ação, alinhado ao contrato de autorização de tenant e RBAC (funções normalizadas; escopo de locatário derivado das funções).
    - Designer de contrato de evento/mensagem (`event`, `command`, `request`, `response`) com metadados de esquema de carga útil.
    - Modelos de entidade: `crudAggregate`, `eventSourced`, `referenceData`, `tenantOwned`.
    - Visualização da geração de código para esqueletos de modelo de domínio/repositório/caso de uso/controlador/manipulador.
    - Gerador de exemplo de solicitação/resposta do esquema da entidade.
-   - Exportadores: JSON, OpenAPI 3.1, Markdown, JSON Schema, AsyncAPI e pacote padrão.
+   - Exportadores: JSON, OpenAPI 3.1, Markdown, JSON Schema, AsyncAPI 3.0 por transporte
+     (`<version>.websocket.yml` / `<version>.grpc.yml`, convenções canônicas de
+     `spec/asyncapi/`), proto gRPC (`async-api.proto`) e pacote padrão.
    - Controles de composição OpenAPI (`oneOf`, `allOf`, `anyOf`, externo `$ref`, discriminador) por entidade.
    - Exportação/importação de pacotes de domínio para compartilhamento de modelos reutilizáveis.
    - Navegação em minimapa e modo de desempenho em tela grande.

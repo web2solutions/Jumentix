@@ -12,6 +12,7 @@ describe('serviceManagement domain designer smoke', () => {
     expect(html).toContain('id="add-entity-btn"');
     expect(html).toContain('id="save-relationship-btn"');
     expect(html).toContain('id="export-oas-btn"');
+    expect(html).toContain('id="export-proto-btn"');
     expect(html).toContain('id="import-json-btn"');
     expect(html).toContain('id="import-package-btn"');
     expect(html).toContain('id="relationship-bend-x-input"');
@@ -23,6 +24,7 @@ describe('serviceManagement domain designer smoke', () => {
     const script = fs.readFileSync(scriptPath, 'utf-8');
     expect(script).toContain('exportAsOas');
     expect(script).toContain('exportAsAsyncApi');
+    expect(script).toContain('exportAsProto');
     expect(script).toContain('exportBoilerplateBundle');
     expect(script).toContain('exportAsPackage');
     expect(script).toContain('importDomainPackage');

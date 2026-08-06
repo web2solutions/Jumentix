@@ -178,7 +178,8 @@
               <label class="check"><input id="entity-rbac-superadmin-check" type="checkbox" /> superadmin</label>
               <label class="check"><input id="entity-rbac-admin-check" type="checkbox" /> admin</label>
               <label class="check"><input id="entity-rbac-user-check" type="checkbox" /> user</label>
-              <label class="check"><input id="entity-rbac-tenant-check" type="checkbox" /> tenant scoped</label>
+              <label class="check"><input id="entity-rbac-tenant-check" type="checkbox" disabled /> tenant scoped (derived from roles)</label>
+              <p class="hint">Roles are the normalized roles of the tenant RBAC contract. Tenant scoping is derived from the selected roles (admin/user scope to their organization; superadmin is global), matching what the runtime enforces. Legacy direct scopes remain runtime-supported but are not editable here.</p>
               <button id="save-entity-rbac-btn" type="button">Save RBAC Rule</button>
               <ul id="entity-rbac-list" class="list"></ul>
             </div>
@@ -267,6 +268,7 @@
               <button id="export-md-btn" type="button">Export Markdown</button>
               <button id="export-jsonschema-btn" type="button">Export JSON Schema</button>
               <button id="export-asyncapi-btn" type="button">Export AsyncAPI</button>
+              <button id="export-proto-btn" type="button">Export gRPC Proto</button>
               <button id="export-boilerplate-bundle-btn" type="button">Export Boilerplate Bundle</button>
               <button id="export-package-btn" type="button">Export Package</button>
             </div>

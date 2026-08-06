@@ -38,7 +38,10 @@ armazenamento `IDesignerStore` estão documentados em
      - diferença de esquema + dicas de migração
      - exemplos de solicitação/resposta
      - visualização de código hexagonal (renderiza exatamente o que o pacote padrão emite)
-     - fluxos de exportação/importação (JSON, OAS, Markdown, JSON Schema, AsyncAPI, pacote, pacote padrão — o pacote emite o layout hexagonal de módulos com conteúdo de arquivos, correspondendo a `apps/backend-template/src/modules/Users/`)
+     - visualização do esqueleto do código
+     - fluxos de exportação/importação (JSON, OAS, Markdown, JSON Schema, AsyncAPI por
+       transporte (`<version>.websocket.yml` / `<version>.grpc.yml` seguindo as convenções
+       canônicas de `spec/asyncapi/`), proto gRPC (`async-api.proto`), pacote, pacote padrão)
      - modo minimapa e tela grande
 2. **Designer de interface de comunicação**
    - Registra adaptadores de interface de entrada e mapeamentos de controladores:
@@ -100,7 +103,7 @@ Caminho de desenvolvimento recomendado:
 1. `bun run dev:service-management`
 2. Abra o URL de gerenciamento de serviço local
 3. Modelo de domínios/entidades
-4. Execute exportações (esquema OAS/AsyncAPI/JSON/pacote)
+4. Execute exportações (OAS/AsyncAPI por transporte/proto gRPC/esquema JSON/pacote)
 5. Use artefatos gerados como contratos para implementação de API
 
 ## API Runtime Env (integrada)

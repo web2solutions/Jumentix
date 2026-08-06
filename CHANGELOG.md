@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-06 feat(JUM-476): emit hexagonal layout from codegen preview and boilerplate bundle - Eduardo A.
 - 2026-08-06 test(JUM-471): add exporters/importers round-trip suite (#94) - Eduardo A.
 - 2026-08-06 test(JUM-470): pin validation severities, export-gate boundary and normalizer round-trips (#93) - Eduardo A.
 - 2026-08-06 [JUM-600][CI] Run the docker smoke matrix on dev and main, and fix its readiness race (#92) - Eduardo A.
