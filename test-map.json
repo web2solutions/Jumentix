@@ -819,6 +819,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/ci-cd/migrate-agent-registry-to-firestore.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/migrate-agent-registry-to-firestore.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/ci-cd/run-suite-resolution.test.ts",
       "path": "apps/backend-template/test/unit/ci-cd/run-suite-resolution.test.ts",
       "layer": "tooling",
@@ -2562,6 +2572,26 @@
       "timeoutMs": 60000
     },
     {
+      "id": "packages/agent-registry/test/repair.test.ts",
+      "path": "packages/agent-registry/test/repair.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "packages/agent-registry/test/validation.test.ts",
+      "path": "packages/agent-registry/test/validation.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "packages/cana/test/packaging.test.ts",
       "path": "packages/cana/test/packaging.test.ts",
       "layer": "adapters/out+infra",
@@ -2822,9 +2852,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 143,
+    "unit": 146,
     "integration": 87,
     "smoke": 2,
-    "suites": 234
+    "suites": 237
   }
 }
