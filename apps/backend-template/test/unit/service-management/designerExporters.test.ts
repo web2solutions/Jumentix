@@ -3,7 +3,7 @@
 import path from 'node:path';
 
 /**
- * Unit suite for the seven export builders extracted from
+ * Unit suite for the export builders extracted from
  * `apps/service-management/script.js` by JUM-469
  * (`apps/service-management/src/exporters/designerExporters.js`).
  *
@@ -11,11 +11,13 @@ import path from 'node:path';
  * builders must produce output byte-identical to the pre-refactor
  * exporters — the strongest guarantee that the split changed nothing, and
  * the baseline the contract-parity lane (JUM-474/475/476/478) rewrites from.
+ * The AsyncAPI builder moved to `asyncApiExporters.js` under JUM-475
+ * (canonical `spec/asyncapi/` targeting) and is pinned by
+ * `designerAsyncApiExport.test.ts`.
  */
 
 const repoRoot = path.resolve(__dirname, '../../../../..');
 const {
-  buildAsyncApiDocument,
   buildBoilerplateBundleDocument,
   buildDomainPackageDocument,
   buildJsonExportDocument,
@@ -186,70 +188,58 @@ describe('designer exporters (JUM-469)', () => {
     });
   });
 
-  it('builds the AsyncAPI document with publish/subscribe channels', () => {
-    const state = createState();
-    const document = buildAsyncApiDocument(state);
-    expect(document).toStrictEqual({
-      asyncapi: '3.0.0',
-      info: { title: 'Domain Designer AsyncAPI Export', version: '1.0.0' },
-      channels: {
-        'billing.issued': {
-          publish: {
-            operationId: 'event_Billing_Invoice_issued',
-            message: { name: 'issued', payload: { type: 'object' } }
-          }
-        }
-      }
-    });
-  });
-
-  it('derives channel names and subscribe operations for channel-less response contracts', () => {
-    const state = normalizeStatePayload({
-      domains: [{
-        id: 'domain-1',
-        name: 'Billing',
-        entities: [{
-          id: 'entity-1',
-          name: 'Invoice',
-          fields: [],
-          meta: {
-            contracts: [
-              {
-                id: 'c1', name: 'fetch', type: 'request', channel: '', version: '2.0.0', payloadSchema: {}
-              },
-              {
-                id: 'c2', name: 'fetched', type: 'response', channel: '', version: '2.0.0'
-              }
-            ]
-          }
-        }]
-      }],
-      relationships: []
-    });
-    const document = buildAsyncApiDocument(state);
-    expect(document.channels['billing/invoice/request'].publish.operationId).toBe('request_Billing_Invoice_fetch');
-    expect(document.channels['billing/invoice/response'].subscribe.operationId).toBe('response_Billing_Invoice_fetched');
-    expect(document.channels['billing/invoice/response'].subscribe.message.payload).toStrictEqual({});
-  });
-
   it('builds the boilerplate bundle with the hexagonal file layout', () => {
     const document = buildBoilerplateBundleDocument(createState(), '2026-08-05T00:00:00.000Z');
-    expect(document).toStrictEqual({
-      kind: 'boilerplate-bundle',
-      version: '1.0.0',
-      generatedAt: '2026-08-05T00:00:00.000Z',
-      modules: [{
-        module: 'Billing/Invoice',
-        files: {
-          model: 'src/modules/Billing/domain/Model/Invoice.ts',
-          repository: 'src/modules/Billing/application/ports/InvoiceRepository.ts',
-          useCase: 'src/modules/Billing/application/useCases/CreateInvoice.ts',
-          controller: 'src/modules/Billing/interface/controller/InvoiceController.ts',
-          handler: 'src/modules/Billing/interface/restapi/frameworks/express/handlers/createInvoice.ts'
-        }
-      }]
-    });
     expect(Object.keys(document)).toStrictEqual(['kind', 'version', 'generatedAt', 'modules']);
+    expect(document.kind).toBe('boilerplate-bundle');
+    expect(document.version).toBe('2.0.0');
+    expect(document.generatedAt).toBe('2026-08-05T00:00:00.000Z');
+    // One module per domain, files carry path + content (JUM-476).
+    expect(document.modules).toHaveLength(1);
+    const [module] = document.modules;
+    expect(module.module).toBe('Billing');
+    expect(module.path).toBe('src/modules/Billing');
+    expect(Object.keys(module.files)).toStrictEqual(['composition', 'eventChannels']);
+    expect(module.files.composition.path)
+      .toBe('src/modules/Billing/composition/composeBillingServices.ts');
+    expect(module.files.eventChannels.path)
+      .toBe('src/modules/Billing/events/contracts/BillingEventChannels.ts');
+    expect(module.entities).toHaveLength(1);
+    const [entity] = module.entities;
+    expect(entity.entity).toBe('Invoice');
+    expect(Object.keys(entity.files)).toStrictEqual([
+      'entityInterface',
+      'model',
+      'security',
+      'repositoryPort',
+      'useCasesPort',
+      'useCases',
+      'persistenceAdapter',
+      'controller'
+    ]);
+    expect(entity.files.entityInterface.path).toBe('src/modules/Billing/domain/Entity/IInvoice.ts');
+    expect(entity.files.model.path).toBe('src/modules/Billing/domain/Model/Invoice.ts');
+    expect(entity.files.security.path).toBe('src/modules/Billing/domain/security/InvoiceRbac.ts');
+    expect(entity.files.repositoryPort.path)
+      .toBe('src/modules/Billing/application/ports/IInvoiceRepository.ts');
+    expect(entity.files.useCasesPort.path)
+      .toBe('src/modules/Billing/application/ports/IInvoiceUseCases.ts');
+    expect(entity.files.useCases.path)
+      .toBe('src/modules/Billing/application/use-cases/InvoiceUseCases.ts');
+    expect(entity.files.persistenceAdapter.path)
+      .toBe('src/modules/Billing/adapters/out/persistence/InvoiceDataRepository.ts');
+    expect(entity.files.controller.path)
+      .toBe('src/modules/Billing/adapters/in/http/controllers/InvoiceController.ts');
+    const moduleFiles = module.files as Record<string, { path: string; content: string }>;
+    const entityFiles = entity.files as Record<string, { path: string; content: string }>;
+    Object.values(moduleFiles).forEach((file) => {
+      expect(typeof file.content).toBe('string');
+      expect(file.content.length).toBeGreaterThan(0);
+    });
+    Object.values(entityFiles).forEach((file) => {
+      expect(typeof file.content).toBe('string');
+      expect(file.content.length).toBeGreaterThan(0);
+    });
   });
 
   it('defaults the bundle timestamp to the current ISO time', () => {
@@ -544,32 +534,6 @@ describe('designer exporters (JUM-469)', () => {
     expect(markdown).toContain('- rel-7: Sparse/Shell (1) -> (N) Sparse/Shell');
   });
 
-  it('reuses AsyncAPI channel buckets and tolerates missing payload schemas', () => {
-    const document = buildAsyncApiDocument({
-      domains: [{
-        id: 'domain-1',
-        name: 'Billing',
-        entities: [{
-          id: 'entity-1',
-          name: 'Invoice',
-          meta: {
-            contracts: [
-              {
-                type: 'event', name: 'a', channel: 'shared', version: '1.0.0', payloadSchema: null
-              },
-              {
-                type: 'response', name: 'b', channel: 'shared', version: '1.0.0', payloadSchema: { type: 'object' }
-              }
-            ]
-          }
-        }]
-      }]
-    });
-    expect(Object.keys(document.channels)).toStrictEqual(['shared']);
-    expect(document.channels.shared.publish.message.payload).toStrictEqual({});
-    expect(document.channels.shared.subscribe.message.payload).toStrictEqual({ type: 'object' });
-  });
-
   it('ignores unknown composition modes and parses string refs in OAS export', () => {
     const document = buildOasDocument({
       domains: [{
@@ -607,7 +571,7 @@ describe('designer exporters (JUM-469)', () => {
     expect(receipt.discriminator).toBeUndefined();
   });
 
-  it('tolerates entities without meta in the jsonschema, asyncapi and OAS builders', () => {
+  it('tolerates entities without meta in the jsonschema and OAS builders', () => {
     const state = {
       domains: [{
         id: 'domain-1',
@@ -617,7 +581,6 @@ describe('designer exporters (JUM-469)', () => {
       relationships: []
     };
     expect(buildJsonSchemaDocument(state).definitions.Sparse_Bare.properties).toStrictEqual({});
-    expect(buildAsyncApiDocument(state).channels).toStrictEqual({});
     const oas = buildOasDocument(state);
     expect(oas.components.schemas.Sparse_Bare['x-message-contracts']).toStrictEqual([]);
     expect(oas.components.schemas.Sparse_Bare.discriminator).toBeUndefined();

@@ -46,7 +46,6 @@ import { LocalStorageDesignerStore } from './src/store/LocalStorageDesignerStore
 import * as model from './src/model/modelQueries.js';
 import { collectModelIssues } from './src/validation/modelValidation.js';
 import {
-  buildAsyncApiDocument,
   buildBoilerplateBundleDocument,
   buildDomainPackageDocument,
   buildJsonExportDocument,
@@ -55,9 +54,17 @@ import {
   buildOasDocument
 } from './src/exporters/designerExporters.js';
 import {
+  buildAsyncApiFileSet,
+  buildGrpcProto
+} from './src/exporters/asyncApiExporters.js';
+import {
   buildDomainFromPackage,
   buildDomainsFromOas
 } from './src/importers/designerImporters.js';
+import {
+  flattenBundleFiles,
+  renderBundlePreview
+} from './src/codegen/hexagonalCodegen.js';
 import { createTabs } from './src/ui/tabs.js';
 import { createCanvas } from './src/ui/canvas.js';
 import { createInspectors } from './src/ui/inspectors.js';
@@ -250,6 +257,7 @@ const dom = {
   exportMdBtn: document.getElementById('export-md-btn'),
   exportJsonschemaBtn: document.getElementById('export-jsonschema-btn'),
   exportAsyncapiBtn: document.getElementById('export-asyncapi-btn'),
+  exportProtoBtn: document.getElementById('export-proto-btn'),
   exportBoilerplateBundleBtn: document.getElementById('export-boilerplate-bundle-btn'),
   exportPackageBtn: document.getElementById('export-package-btn'),
   importJsonBtn: document.getElementById('import-json-btn'),
@@ -1379,10 +1387,11 @@ function canExportModel() {
   return false;
 }
 
-// Download glue shared by the seven export wrappers. The documents
-// themselves are built by the DOM-free src/exporters/designerExporters.js;
-// for the same state their JSON.stringify output is byte-identical to the
-// pre-refactor exporters.
+// Download glue shared by the export wrappers. The documents
+// themselves are built by the DOM-free src/exporters/designerExporters.js
+// (JSON/Markdown/JSON Schema/bundle/package/OAS) and
+// src/exporters/asyncApiExporters.js (AsyncAPI 3.0 per-transport files and
+// the gRPC proto, targeting the canonical spec/asyncapi/ conventions).
 function downloadTextFile(fileName, content, mimeType) {
   const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
@@ -1410,7 +1419,14 @@ function exportAsJsonSchema() {
 
 function exportAsAsyncApi() {
   if (!canExportModel()) return;
-  downloadTextFile('domain-designer-asyncapi.json', JSON.stringify(buildAsyncApiDocument(state), null, 2), 'application/json');
+  buildAsyncApiFileSet(state).files.forEach((file) => {
+    downloadTextFile(file.fileName, file.content, file.mimeType);
+  });
+}
+
+function exportAsProto() {
+  if (!canExportModel()) return;
+  downloadTextFile('async-api.proto', buildGrpcProto(state), 'text/plain');
 }
 
 function exportBoilerplateBundle() {
@@ -1536,18 +1552,15 @@ function importStateFromOasFile(file) {
 
 function generateCodePreview() {
   const found = findEntity(state.selectedEntityId);
-  if (found) {
-    dom.codePreviewOutput.textContent = model.buildCodePreviewForEntity(found.domain, found.entity);
-    return;
-  }
-  const chunks = [];
-  state.domains.forEach((domain) => {
-    domain.entities.forEach((entity) => {
-      chunks.push(model.buildCodePreviewForEntity(domain, entity));
-    });
-  });
-  dom.codePreviewOutput.textContent = chunks.length
-    ? chunks.join('\n\n/* ---------------------------------------- */\n\n')
+  // The preview renders the exact bundle the export emits (same builder,
+  // same structure — JUM-476), scoped to the selected entity when there is
+  // one so its composition root stays internally consistent.
+  const previewState = found
+    ? { domains: [{ ...found.domain, entities: [found.entity] }], relationships: [] }
+    : state;
+  const bundle = buildBoilerplateBundleDocument(previewState);
+  dom.codePreviewOutput.textContent = flattenBundleFiles(bundle).length
+    ? renderBundlePreview(bundle)
     : '// Select an entity or create domains/entities to preview generated skeletons.';
 }
 
@@ -2007,6 +2020,7 @@ function wireEvents() {
   dom.exportMdBtn.onclick = exportAsMarkdown;
   dom.exportJsonschemaBtn.onclick = exportAsJsonSchema;
   dom.exportAsyncapiBtn.onclick = exportAsAsyncApi;
+  dom.exportProtoBtn.onclick = exportAsProto;
   dom.exportBoilerplateBundleBtn.onclick = exportBoilerplateBundle;
   dom.exportPackageBtn.onclick = exportAsPackage;
   dom.generateCodePreviewBtn.onclick = generateCodePreview;

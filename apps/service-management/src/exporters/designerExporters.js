@@ -1,6 +1,11 @@
 /**
- * designerExporters — the seven export builders of the Service Management
+ * designerExporters — the export builders of the Service Management
  * designer, extracted from `script.js` by JUM-469.
+ *
+ * Six builders live here (JSON, Markdown, JSON Schema, boilerplate bundle,
+ * domain package, OAS 3.1); the AsyncAPI 3.0 per-transport and gRPC proto
+ * builders live in `asyncApiExporters.js` (JUM-475), which targets the
+ * canonical `spec/asyncapi/` conventions.
  *
  * Every builder is a pure function over the state object: state in, document
  * (or markdown text) out. No `document`, no `window`, no `Blob` — the
@@ -10,8 +15,11 @@
  * suite and the contract-parity lane (JUM-474/475/476/478) build on.
  *
  * Document construction is verbatim from the monolith: same key order, same
- * shapes, same text. For the same input the JSON.stringify output is
- * byte-identical to the pre-refactor exporters. The two timestamped documents
+ * shapes, same text — except the boilerplate bundle, which JUM-476 rewrote to
+ * emit the hexagonal module layout (with file contents) via
+ * `src/codegen/hexagonalCodegen.js`. For the same input the JSON.stringify
+ * output of the other builders is byte-identical to the pre-refactor
+ * exporters. The two timestamped documents
  * take an injectable `generatedAt`/`exportedAt` so parity is testable; the
  * defaults keep the pre-refactor `new Date().toISOString()` behaviour.
  */
@@ -27,6 +35,8 @@ import {
   toPathToken,
   toSchemaName
 } from '../model/modelQueries.js';
+import { buildHexagonalBundle } from '../codegen/hexagonalCodegen.js';
+import { buildAsyncApiTransportDocument } from './asyncApiExporters.js';
 
 /** `exportAsJson` payload: `{ domains, relationships, view }`. */
 export function buildJsonExportDocument(state) {
@@ -121,53 +131,22 @@ export function buildJsonSchemaDocument(state) {
   };
 }
 
-/** `exportAsAsyncApi` payload (AsyncAPI 3.0.0 channels). */
-export function buildAsyncApiDocument(state) {
-  const channels = {};
-  state.domains.forEach((domain) => {
-    domain.entities.forEach((entity) => {
-      const contracts = Array.isArray(entity?.meta?.contracts) ? entity.meta.contracts : [];
-      contracts.forEach((contract) => {
-        const channelName = contract.channel || `${toPathToken(domain.name)}/${toPathToken(entity.name)}/${contract.type}`;
-        if (!channels[channelName]) channels[channelName] = {};
-        const operationKey = contract.type === 'response' ? 'subscribe' : 'publish';
-        channels[channelName][operationKey] = {
-          operationId: `${contract.type}_${toSchemaName(domain.name, entity.name)}_${contract.name}`,
-          message: {
-            name: contract.name,
-            payload: contract.payloadSchema || {}
-          }
-        };
-      });
-    });
-  });
-  return {
-    asyncapi: '3.0.0',
-    info: {
-      title: 'Domain Designer AsyncAPI Export',
-      version: '1.0.0'
-    },
-    channels
-  };
-}
-
 /** `exportBoilerplateBundle` payload (hexagonal file layout per module). */
 export function buildBoilerplateBundleDocument(state, generatedAt = new Date().toISOString()) {
-  const modules = state.domains.flatMap((domain) => domain.entities.map((entity) => ({
-    module: `${domain.name}/${entity.name}`,
-    files: {
-      model: `src/modules/${domain.name}/domain/Model/${entity.name}.ts`,
-      repository: `src/modules/${domain.name}/application/ports/${entity.name}Repository.ts`,
-      useCase: `src/modules/${domain.name}/application/useCases/Create${entity.name}.ts`,
-      controller: `src/modules/${domain.name}/interface/controller/${entity.name}Controller.ts`,
-      handler: `src/modules/${domain.name}/interface/restapi/frameworks/express/handlers/create${entity.name}.ts`
-    }
-  })));
+  // Contract shapes come from the JUM-474/475 documents, never re-derived
+  // from the model (JUM-476). The codegen module is also what the Code
+  // Preview pane renders, so preview and bundle cannot drift apart.
+  const bundle = buildHexagonalBundle(state, {
+    oasDocument: buildOasDocument(state),
+    // Both transports carry the same channel set (JUM-475); the websocket
+    // document is the canonical event-channel source for the codegen.
+    asyncApiDocument: buildAsyncApiTransportDocument(state, 'websocket')
+  });
   return {
     kind: 'boilerplate-bundle',
-    version: '1.0.0',
+    version: '2.0.0',
     generatedAt,
-    modules
+    modules: bundle.modules
   };
 }
 

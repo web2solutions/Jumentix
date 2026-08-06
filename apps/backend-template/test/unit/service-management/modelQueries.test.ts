@@ -305,29 +305,6 @@ describe('model queries (JUM-469)', () => {
     });
   });
 
-  describe('code preview', () => {
-    it('renders the hexagonal skeleton for an entity', () => {
-      const preview = model.buildCodePreviewForEntity(
-        { name: 'Billing' },
-        { name: 'Invoice', fields: [{ name: 'id', type: 'uuid' }, { name: 'total', type: 'number' }] }
-      );
-      // The class name comes from toSchemaName('', name), whose empty-domain
-      // fallback is 'Domain' — pre-refactor behaviour, pinned as-is.
-      expect(preview).toContain('// Billing / Invoice');
-      expect(preview).toContain('export interface Domain_InvoiceModel {');
-      expect(preview).toContain('  id: uuid;\n  total: number;');
-      expect(preview).toContain('export interface Domain_InvoiceRepositoryPort {');
-      expect(preview).toContain('export class CreateDomain_InvoiceUseCase {');
-      expect(preview).toContain('export class Domain_InvoiceController {');
-      expect(preview).toContain('export async function createDomain_InvoiceHandler(requestBody: unknown) {');
-    });
-
-    it('falls back to an id field when the entity has no fields', () => {
-      const preview = model.buildCodePreviewForEntity({ name: 'Billing' }, { name: 'Invoice', fields: [] });
-      expect(preview).toContain('  id: uuid;');
-    });
-  });
-
   describe('canvas geometry', () => {
     it('snaps coordinates to the 8px grid only when enabled', () => {
       expect(model.snapCoordinate(true, 13)).toBe(16);

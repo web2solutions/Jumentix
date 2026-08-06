@@ -6,7 +6,7 @@
   adoption", milestone H1 (Correctness & runtime alignment), 2026-08-05.
 - Strengthens: `038`, `043`. Relates to: `044`, `052`, `123` and Linear `JUM-458`,
   `JUM-558`, `JUM-459`, `JUM-460`, `JUM-461`, `JUM-462`, `JUM-543`, `JUM-466`,
-  `JUM-468`, `JUM-484`.
+  `JUM-468`, `JUM-475`, `JUM-484`.
 
 ## Context
 
@@ -234,7 +234,7 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
      versioned key and update this requirement in the same PR.
 
 5. **Contract 3 — Export formats and the export quality gate.**
-   Seven exporters exist; each guarantees:
+   Eight exporters exist; each guarantees:
    - **JSON** (`domain-designer.json`): `{ domains, relationships, view }` — the
      full model, re-importable shape.
    - **Markdown** (`domain-designer-model.md`): human-readable model document —
@@ -245,14 +245,53 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
      (`$schema: https://json-schema.org/draft/2020-12/schema`), one entry per entity
      under `definitions` with `type: object`, `required` derived from required
      fields, and `additionalProperties: false`.
-   - **AsyncAPI** (`domain-designer-asyncapi.json`): `asyncapi: 3.0.0`; channels
-     derived from entity message contracts (explicit `channel` or
-     `<domain>/<entity>/<type>` fallback); `response` contracts map to `subscribe`,
-     all other types to `publish`.
+   - **AsyncAPI** (`<version>.websocket.yml` and `<version>.grpc.yml`, one file per
+     transport, following the canonical `spec/asyncapi/` naming; landed by
+     `JUM-475`): each file declares `asyncapi: 3.0.0` with `info`,
+     `defaultContentType: application/json` and a `local` server whose port comes
+     from `serviceConfiguration.ports` (canonical defaults 3001/3002); channels
+     carry `address` (explicit `channel` or the `<domain>/<entity>/<type>`
+     fallback) plus message `$ref`s; the top-level `operations` map carries
+     `action: receive` for `response` contracts and `action: send` for all other
+     types, with channel/message `$ref`s; message payloads are shared
+     `components.schemas` entries referenced via `$ref` (structurally identical
+     payloads share one entry), never inlined. Every exported document MUST pass
+     the AsyncAPI 3.0 structural validation of
+     `apps/service-management/src/validation/asyncApi30Validation.js` — the same
+     rules the canonical `spec/asyncapi/*.yml` files pass.
+   - **gRPC proto** (`async-api.proto`; landed by `JUM-475`): aligned with the
+     canonical `spec/asyncapi/async-api.proto` — proto3 syntax, package
+     `realtime`, service `AsyncApiGateway`. `request` contracts become unary rpcs
+     whose return message is the `response` contract on the same channel (or the
+     canonical `AsyncApiResponse` envelope when unpaired); unpaired `response`
+     contracts take the canonical `AsyncApiRequest` envelope; `event`/`command`
+     contracts become bidirectional streaming rpcs (the canonical `Exchange`
+     convention). One message per contract derives its fields from the payload
+     schema (objects travel as JSON-encoded strings, the canonical `*Json`
+     convention). A contract-less model exports exactly the canonical
+     `async-api.proto`.
    - **Boilerplate bundle** (`domain-designer-boilerplate-bundle.json`):
-     `{ kind: "boilerplate-bundle", version: "1.0.0", generatedAt, modules }` with
-     hexagonal file paths per entity (model, repository port, use case, controller,
-     express handler).
+     `{ kind: "boilerplate-bundle", version: "2.0.0", generatedAt, modules }` with
+     one module per domain. Each module carries `{ module, path, files, entities }`:
+     `files.composition` is the domain composition root
+     (`composition/compose<Domain>Services.ts`), `files.eventChannels`
+     (`events/contracts/<Domain>EventChannels.ts`) is present only when the domain
+     declares message contracts, and every entity carries the hexagonal file set —
+     `entityInterface` (`domain/Entity/I<Entity>.ts`), `model`
+     (`domain/Model/<Entity>.ts`), `security` (`domain/security/<Entity>Rbac.ts`),
+     `repositoryPort` (`application/ports/I<Entity>Repository.ts`), `useCasesPort`
+     (`application/ports/I<Entity>UseCases.ts`), `useCases`
+     (`application/use-cases/<Entity>UseCases.ts`), `persistenceAdapter`
+     (`adapters/out/persistence/<Entity>DataRepository.ts`) and `controller`
+     (`adapters/in/http/controllers/<Entity>Controller.ts`) — under
+     `src/modules/<Domain>/`, matching the migrated Users layout. Every file is
+     `{ path, content }`; the content is self-contained TypeScript whose field
+     shapes, routes and event channels are consumed from the OAS 3.1/AsyncAPI
+     exports (not re-derived from the model), whose imports respect the
+     hexagonal dependency direction, and which compiles under `tsc --strict`.
+     The Code Preview pane renders this same builder, so preview and bundle
+     cannot diverge. (Shape pinned by JUM-476; `version` 1.0.0 emitted the
+     pre-hexagonal path-only layout.)
    - **Domain package** (`<domain>-package.json`): `{ kind: "domain-package",
      version: "1.0.0", exportedAt, domain }` for the selected domain; the package
      import flow accepts exactly this shape.
@@ -303,6 +342,14 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
   (branch `kimi/feature/JUM-460-env-allowlist-runtime-matrix`, same integration
   suite extended), the UI label/selector alignment via `JUM-461`, the
   error-surface split via `JUM-543`.
+- Contract 3 amended by `JUM-475` (branch
+  `kimi/feature/JUM-475-asyncapi-proto-exports`): the AsyncAPI exporter now emits
+  one AsyncAPI 3.0 `<version>.<transport>.yml` file per transport targeting the
+  canonical `spec/asyncapi/` conventions (replacing the single
+  `domain-designer-asyncapi.json` 2.x-shaped document), and the gRPC proto export
+  (`async-api.proto`) was added, taking the exporter count from seven to eight.
+  Pinned by
+  `apps/backend-template/test/unit/service-management/designerAsyncApiExport.test.ts`.
 - Registry sync: `.agents/NFR-REGISTRY.md`,
   `documentation/md/SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md` (+ `.pt-BR.md`),
   `documentation/md/SPEC-REQUIREMENTS-COVERAGE-STATUS.md` (+ `.pt-BR.md`),
