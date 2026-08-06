@@ -33,8 +33,8 @@ contract are documented in
      - OpenAPI composition (`oneOf/allOf/anyOf`, external refs, discriminator)
      - schema diff + migration hints
      - request/response examples
-     - code skeleton preview
-     - export/import flows (JSON, OAS, Markdown, JSON Schema, AsyncAPI, package, boilerplate bundle)
+     - hexagonal code preview (renders exactly what the boilerplate bundle emits)
+     - export/import flows (JSON, OAS, Markdown, JSON Schema, AsyncAPI, package, boilerplate bundle — the bundle emits the hexagonal module layout with file contents, matching `apps/backend-template/src/modules/Users/`)
      - mini-map and large-canvas mode
 2. **Communication Interface Designer**
    - Registers inbound interface adapters and controller mappings:

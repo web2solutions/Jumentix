@@ -10,8 +10,11 @@
  * suite and the contract-parity lane (JUM-474/475/476/478) build on.
  *
  * Document construction is verbatim from the monolith: same key order, same
- * shapes, same text. For the same input the JSON.stringify output is
- * byte-identical to the pre-refactor exporters. The two timestamped documents
+ * shapes, same text — except the boilerplate bundle, which JUM-476 rewrote to
+ * emit the hexagonal module layout (with file contents) via
+ * `src/codegen/hexagonalCodegen.js`. For the same input the JSON.stringify
+ * output of the other builders is byte-identical to the pre-refactor
+ * exporters. The two timestamped documents
  * take an injectable `generatedAt`/`exportedAt` so parity is testable; the
  * defaults keep the pre-refactor `new Date().toISOString()` behaviour.
  */
@@ -27,6 +30,7 @@ import {
   toPathToken,
   toSchemaName
 } from '../model/modelQueries.js';
+import { buildHexagonalBundle } from '../codegen/hexagonalCodegen.js';
 
 /** `exportAsJson` payload: `{ domains, relationships, view }`. */
 export function buildJsonExportDocument(state) {
@@ -153,21 +157,18 @@ export function buildAsyncApiDocument(state) {
 
 /** `exportBoilerplateBundle` payload (hexagonal file layout per module). */
 export function buildBoilerplateBundleDocument(state, generatedAt = new Date().toISOString()) {
-  const modules = state.domains.flatMap((domain) => domain.entities.map((entity) => ({
-    module: `${domain.name}/${entity.name}`,
-    files: {
-      model: `src/modules/${domain.name}/domain/Model/${entity.name}.ts`,
-      repository: `src/modules/${domain.name}/application/ports/${entity.name}Repository.ts`,
-      useCase: `src/modules/${domain.name}/application/useCases/Create${entity.name}.ts`,
-      controller: `src/modules/${domain.name}/interface/controller/${entity.name}Controller.ts`,
-      handler: `src/modules/${domain.name}/interface/restapi/frameworks/express/handlers/create${entity.name}.ts`
-    }
-  })));
+  // Contract shapes come from the JUM-474/475 documents, never re-derived
+  // from the model (JUM-476). The codegen module is also what the Code
+  // Preview pane renders, so preview and bundle cannot drift apart.
+  const bundle = buildHexagonalBundle(state, {
+    oasDocument: buildOasDocument(state),
+    asyncApiDocument: buildAsyncApiDocument(state)
+  });
   return {
     kind: 'boilerplate-bundle',
-    version: '1.0.0',
+    version: '2.0.0',
     generatedAt,
-    modules
+    modules: bundle.modules
   };
 }
 

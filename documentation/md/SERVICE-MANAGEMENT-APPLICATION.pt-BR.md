@@ -37,8 +37,8 @@ armazenamento `IDesignerStore` estão documentados em
      - Composição OpenAPI (`oneOf/allOf/anyOf`, referências externas, discriminador)
      - diferença de esquema + dicas de migração
      - exemplos de solicitação/resposta
-     - visualização do esqueleto do código
-     - fluxos de exportação/importação (JSON, OAS, Markdown, JSON Schema, AsyncAPI, pacote, pacote padrão)
+     - visualização de código hexagonal (renderiza exatamente o que o pacote padrão emite)
+     - fluxos de exportação/importação (JSON, OAS, Markdown, JSON Schema, AsyncAPI, pacote, pacote padrão — o pacote emite o layout hexagonal de módulos com conteúdo de arquivos, correspondendo a `apps/backend-template/src/modules/Users/`)
      - modo minimapa e tela grande
 2. **Designer de interface de comunicação**
    - Registra adaptadores de interface de entrada e mapeamentos de controladores:

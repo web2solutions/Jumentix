@@ -4,6 +4,9 @@
 
 ## All Changes
 
+- 2026-08-06 test(JUM-471): add exporters/importers round-trip suite (#94) - Eduardo A.
+- 2026-08-06 test(JUM-470): pin validation severities, export-gate boundary and normalizer round-trips (#93) - Eduardo A.
+- 2026-08-06 [JUM-600][CI] Run the docker smoke matrix on dev and main, and fix its readiness race (#92) - Eduardo A.
 - 2026-08-06 [JUM-469][Refactor] Modularize designer exporters, importers, validation, canvas and tabs (#87) - Eduardo A.
 - 2026-08-06 [JUM-596][CI] Run lint before the branch gates that do not contain it (#91) - Eduardo A.
 - 2026-08-05 [JUM-613][Fix] Repair the Firestore agent-registry integration and its corrupted records (#88) - Eduardo A.

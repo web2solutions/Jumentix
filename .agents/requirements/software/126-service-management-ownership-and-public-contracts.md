@@ -250,9 +250,27 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
      `<domain>/<entity>/<type>` fallback); `response` contracts map to `subscribe`,
      all other types to `publish`.
    - **Boilerplate bundle** (`domain-designer-boilerplate-bundle.json`):
-     `{ kind: "boilerplate-bundle", version: "1.0.0", generatedAt, modules }` with
-     hexagonal file paths per entity (model, repository port, use case, controller,
-     express handler).
+     `{ kind: "boilerplate-bundle", version: "2.0.0", generatedAt, modules }` with
+     one module per domain. Each module carries `{ module, path, files, entities }`:
+     `files.composition` is the domain composition root
+     (`composition/compose<Domain>Services.ts`), `files.eventChannels`
+     (`events/contracts/<Domain>EventChannels.ts`) is present only when the domain
+     declares message contracts, and every entity carries the hexagonal file set —
+     `entityInterface` (`domain/Entity/I<Entity>.ts`), `model`
+     (`domain/Model/<Entity>.ts`), `security` (`domain/security/<Entity>Rbac.ts`),
+     `repositoryPort` (`application/ports/I<Entity>Repository.ts`), `useCasesPort`
+     (`application/ports/I<Entity>UseCases.ts`), `useCases`
+     (`application/use-cases/<Entity>UseCases.ts`), `persistenceAdapter`
+     (`adapters/out/persistence/<Entity>DataRepository.ts`) and `controller`
+     (`adapters/in/http/controllers/<Entity>Controller.ts`) — under
+     `src/modules/<Domain>/`, matching the migrated Users layout. Every file is
+     `{ path, content }`; the content is self-contained TypeScript whose field
+     shapes, routes and event channels are consumed from the OAS 3.1/AsyncAPI
+     exports (not re-derived from the model), whose imports respect the
+     hexagonal dependency direction, and which compiles under `tsc --strict`.
+     The Code Preview pane renders this same builder, so preview and bundle
+     cannot diverge. (Shape pinned by JUM-476; `version` 1.0.0 emitted the
+     pre-hexagonal path-only layout.)
    - **Domain package** (`<domain>-package.json`): `{ kind: "domain-package",
      version: "1.0.0", exportedAt, domain }` for the selected domain; the package
      import flow accepts exactly this shape.
