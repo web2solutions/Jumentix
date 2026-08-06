@@ -11,13 +11,19 @@
  * `src/model/modelQueries.js`.
  *
  * Rules, messages and severities are verbatim from the monolith: for the
- * same state the issue list is identical, in the same order.
+ * same state the issue list is identical, in the same order — plus the
+ * JUM-477 contract-parity rule, which reports (as an `error`, so the export
+ * gate blocks it) any RBAC role outside the tenant authorization contract's
+ * enforceable vocabulary.
  */
 
 import {
   normalizeOptionalNumber,
   parseCommaSeparated
 } from '../state/designerState.js';
+import {
+  isContractRole
+} from '../model/rbacContract.js';
 import {
   findEntity,
   getEntityRbacPolicy,
@@ -102,6 +108,11 @@ export function collectModelIssues(state) {
         if (!roles.length) {
           pushIssue(`Entity ${domain.name}/${entity.name} has no RBAC roles for action "${action}".`, entity.id, 'warn');
         }
+        roles.forEach((role) => {
+          if (!isContractRole(role)) {
+            pushIssue(`Entity ${domain.name}/${entity.name} RBAC action "${action}" references role "${role}", which the tenant authorization contract cannot enforce.`, entity.id, 'error');
+          }
+        });
       });
       const contracts = Array.isArray(entity?.meta?.contracts) ? entity.meta.contracts : [];
       contracts.forEach((contract) => {

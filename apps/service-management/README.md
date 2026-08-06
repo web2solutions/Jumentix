@@ -34,7 +34,7 @@ Detailed feature usage:
    - Aggregate root + invariants editor with visual AR marker on entity cards.
    - Schema diff/migration preview with baseline snapshot support.
    - Validation severity filter and export quality gate (block on critical issues).
-   - RBAC mapping editor by entity/action with tenant-scope flags.
+   - RBAC mapping editor by entity/action, aligned to the tenant RBAC authorization contract (normalized roles; tenant scope derived from roles).
    - Event/message contract designer (`event`, `command`, `request`, `response`) with payload schema metadata.
    - Entity templates: `crudAggregate`, `eventSourced`, `referenceData`, `tenantOwned`.
    - Code generation preview for domain model/repository/use-case/controller/handler skeletons.
