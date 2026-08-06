@@ -6,7 +6,8 @@
       "dependsOn": [],
       "sourceGlobs": [
         "packages/*/src/contracts/**",
-        "packages/persistence-contracts/src/**"
+        "packages/persistence-contracts/src/**",
+        "spec/**"
       ],
       "runner": "bun",
       "tier": "gate"
@@ -65,11 +66,36 @@
         "adapters/out+infra"
       ],
       "sourceGlobs": [
-        "apps/backend-template/src/interface/**",
-        "apps/service-management/**"
+        "apps/backend-template/src/interface/**"
       ],
       "runner": "node",
       "tier": "gate"
+    },
+    "service-management/server": {
+      "dependsOn": [
+        "contracts"
+      ],
+      "sourceGlobs": [
+        "apps/service-management/server.js",
+        "apps/service-management/package.json"
+      ],
+      "runner": "bun",
+      "tier": "gate",
+      "kind": "non-hexagonal"
+    },
+    "service-management/designer": {
+      "dependsOn": [
+        "service-management/server"
+      ],
+      "sourceGlobs": [
+        "apps/service-management/script.js",
+        "apps/service-management/src/**",
+        "apps/service-management/index.html",
+        "apps/service-management/styles.css"
+      ],
+      "runner": "bun",
+      "tier": "gate",
+      "kind": "non-hexagonal"
     },
     "tooling": {
       "dependsOn": [],
@@ -645,7 +671,7 @@
     {
       "id": "apps/backend-template/test/unit/service-management/designerState.test.ts",
       "path": "apps/backend-template/test/unit/service-management/designerState.test.ts",
-      "layer": "tooling",
+      "layer": "service-management/designer",
       "kind": "non-hexagonal",
       "type": "unit",
       "runner": "bun",
@@ -655,7 +681,7 @@
     {
       "id": "apps/backend-template/test/unit/service-management/mvp.roadmap.features.test.ts",
       "path": "apps/backend-template/test/unit/service-management/mvp.roadmap.features.test.ts",
-      "layer": "tooling",
+      "layer": "service-management/designer",
       "kind": "non-hexagonal",
       "type": "unit",
       "runner": "bun",
@@ -665,7 +691,7 @@
     {
       "id": "apps/backend-template/test/unit/service-management/runtimeEnvUi.contract.test.ts",
       "path": "apps/backend-template/test/unit/service-management/runtimeEnvUi.contract.test.ts",
-      "layer": "tooling",
+      "layer": "service-management/designer",
       "kind": "non-hexagonal",
       "type": "unit",
       "runner": "bun",
@@ -675,7 +701,7 @@
     {
       "id": "apps/backend-template/test/unit/service-management/designerStore.test.ts",
       "path": "apps/backend-template/test/unit/service-management/designerStore.test.ts",
-      "layer": "tooling",
+      "layer": "service-management/designer",
       "kind": "non-hexagonal",
       "type": "unit",
       "runner": "bun",
@@ -1333,8 +1359,8 @@
     {
       "id": "apps/backend-template/test/integration/ServiceManagement/domainDesigner.smoke.test.ts",
       "path": "apps/backend-template/test/integration/ServiceManagement/domainDesigner.smoke.test.ts",
-      "layer": "interface/runtime",
-      "kind": "hexagonal",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
       "type": "integration",
       "adapter": "service-management",
       "script": "test:integration:service-management",
@@ -1346,8 +1372,8 @@
     {
       "id": "apps/backend-template/test/integration/ServiceManagement/runtimeEnv.integration.test.ts",
       "path": "apps/backend-template/test/integration/ServiceManagement/runtimeEnv.integration.test.ts",
-      "layer": "interface/runtime",
-      "kind": "hexagonal",
+      "layer": "service-management/server",
+      "kind": "non-hexagonal",
       "type": "integration",
       "adapter": "service-management",
       "script": "test:integration:service-management",
@@ -1359,8 +1385,8 @@
     {
       "id": "apps/backend-template/test/integration/ServiceManagement/runtimeEnvContract.integration.test.ts",
       "path": "apps/backend-template/test/integration/ServiceManagement/runtimeEnvContract.integration.test.ts",
-      "layer": "interface/runtime",
-      "kind": "hexagonal",
+      "layer": "service-management/server",
+      "kind": "non-hexagonal",
       "type": "integration",
       "adapter": "service-management",
       "script": "test:integration:service-management",
@@ -1372,8 +1398,8 @@
     {
       "id": "apps/backend-template/test/integration/ServiceManagement/staticServing.integration.test.ts",
       "path": "apps/backend-template/test/integration/ServiceManagement/staticServing.integration.test.ts",
-      "layer": "interface/runtime",
-      "kind": "hexagonal",
+      "layer": "service-management/server",
+      "kind": "non-hexagonal",
       "type": "integration",
       "adapter": "service-management",
       "script": "test:integration:service-management",
@@ -1385,8 +1411,8 @@
     {
       "id": "apps/backend-template/test/integration/ServiceManagement/spaBoot.browser.integration.test.ts",
       "path": "apps/backend-template/test/integration/ServiceManagement/spaBoot.browser.integration.test.ts",
-      "layer": "interface/runtime",
-      "kind": "hexagonal",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
       "type": "integration",
       "adapter": "service-management",
       "script": "test:integration:service-management",
@@ -1398,8 +1424,8 @@
     {
       "id": "apps/backend-template/test/integration/ServiceManagement/staticManifest.integration.test.ts",
       "path": "apps/backend-template/test/integration/ServiceManagement/staticManifest.integration.test.ts",
-      "layer": "interface/runtime",
-      "kind": "hexagonal",
+      "layer": "service-management/server",
+      "kind": "non-hexagonal",
       "type": "integration",
       "adapter": "service-management",
       "script": "test:integration:service-management",

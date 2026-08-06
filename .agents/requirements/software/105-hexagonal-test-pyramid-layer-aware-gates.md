@@ -8,7 +8,7 @@
 ## Requirement
 
 1. **Runtime partition is governed by Requirement `106`.** Locally, every suite type runs on Bun. Node/Jest is reserved for CI via `ciRunner: "node"` / `JUMENTIX_TEST_RUNTIME=node`. This requirement no longer mandates Node for integration locally.
-2. Suites are owned by hexagonal layers declared in `test-map.json`: `contracts`, `domain`, `application`, `adapters/in`, `adapters/out+infra`, `interface/runtime`, plus non-hexagonal `tooling`.
+2. Suites are owned by hexagonal layers declared in `test-map.json`: `contracts`, `domain`, `application`, `adapters/in`, `adapters/out+infra`, `interface/runtime`, plus declared non-hexagonal kinds: `tooling` and `service-management/server` + `service-management/designer` (JUM-552 taxonomy; JUM-472 registration — a zero-build SPA plus static server has no hexagonal layers, so it is filed as its own kind with its real internal split, and the canonical contract artifacts under `spec/` belong to `contracts` so a contract-shape change reaches the component through reverse dependencies).
 3. `dependsOn` points inward. Execution blast radius propagates outward through reverse dependencies.
 4. Task branches run only suites in the selected blast radius. `dev` runs full unit (+ contract when present). `main` runs the full matrix. **CI job greenness is out of scope for the Test Pyramid project delivery** (see Req `106` §5).
 5. Every selective run emits auditable JSON evidence listing selected layers, deliberately not-run layers, planned suites and terminal suite results. Empty plans for non-empty change sets fail closed.

@@ -63,7 +63,15 @@ function runServiceManagementIntegration(options = {}) {
 
   const result = spawn('jest', [testDir, '--runInBand', '--coverage=false'], {
     stdio: 'inherit',
-    env: { ...process.env, NODE_ENV: process.env.NODE_ENV || 'dev' }
+    env: {
+      ...process.env,
+      NODE_ENV: process.env.NODE_ENV || 'dev',
+      // Invoked outside a package script the workspace `node_modules/.bin` is
+      // not on PATH, and the bare `jest` lookup fails before a single test
+      // runs — which reads as a broken suite rather than a broken PATH. Pin the
+      // resolution instead of depending on the caller's environment.
+      PATH: `${path.join(root, 'node_modules', '.bin')}${path.delimiter}${process.env.PATH || ''}`
+    }
   });
 
   return result.status === 0 ? 0 : (result.status || 1);
