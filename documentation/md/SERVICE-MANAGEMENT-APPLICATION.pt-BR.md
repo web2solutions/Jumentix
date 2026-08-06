@@ -37,6 +37,7 @@ armazenamento `IDesignerStore` estão documentados em
      - Composição OpenAPI (`oneOf/allOf/anyOf`, referências externas, discriminador)
      - diferença de esquema + dicas de migração
      - exemplos de solicitação/resposta
+     - visualização de código hexagonal (renderiza exatamente o que o pacote padrão emite)
      - visualização do esqueleto do código
      - fluxos de exportação/importação (JSON, OAS, Markdown, JSON Schema, AsyncAPI por
        transporte (`<version>.websocket.yml` / `<version>.grpc.yml` seguindo as convenções

@@ -17,6 +17,7 @@
  *   state/designerState.js  <-  model/modelQueries.js  <-  validation/*
  *                                                       <-  exporters/*
  *                                                       <-  importers/*
+ *                                                       <-  codegen/*
  *                                                       <-  ui/*
  */
 
@@ -199,45 +200,6 @@ export function buildEntityResponseExample(entity) {
     payload[field.name] = buildExampleValueForField(field);
   });
   return payload;
-}
-
-export function buildCodePreviewForEntity(domain, entity) {
-  const className = toSchemaName('', entity.name).replace(/^_+/, '');
-  const repositoryName = `${className}RepositoryPort`;
-  const useCaseName = `Create${className}UseCase`;
-  const controllerName = `${className}Controller`;
-  const handlerName = `create${className}Handler`;
-  const fields = (entity.fields || []).map((field) => `  ${field.name}: ${field.type};`).join('\n');
-  return [
-    `// ${domain.name} / ${entity.name}`,
-    `export interface ${className}Model {`,
-    fields || '  id: uuid;',
-    '}',
-    '',
-    `export interface ${repositoryName} {`,
-    `  create(input: ${className}Model): Promise<${className}Model>;`,
-    `  getById(id: string): Promise<${className}Model | null>;`,
-    '}',
-    '',
-    `export class ${useCaseName} {`,
-    `  constructor(private readonly repo: ${repositoryName}) {}`,
-    `  async execute(input: ${className}Model): Promise<${className}Model> {`,
-    '    return this.repo.create(input);',
-    '  }',
-    '}',
-    '',
-    `export class ${controllerName} {`,
-    `  constructor(private readonly createUseCase: ${useCaseName}) {}`,
-    `  async create(input: ${className}Model) {`,
-    '    return this.createUseCase.execute(input);',
-    '  }',
-    '}',
-    '',
-    `export async function ${handlerName}(requestBody: unknown) {`,
-    `  // validate requestBody against OAS schema for ${className}`,
-    `  // map to controller.${'create'} and return framework-specific response`,
-    '}'
-  ].join('\n');
 }
 
 /**

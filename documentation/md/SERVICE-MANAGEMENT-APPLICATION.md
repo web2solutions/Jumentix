@@ -33,6 +33,7 @@ contract are documented in
      - OpenAPI composition (`oneOf/allOf/anyOf`, external refs, discriminator)
      - schema diff + migration hints
      - request/response examples
+     - hexagonal code preview (renders exactly what the boilerplate bundle emits)
      - code skeleton preview
      - export/import flows (JSON, OAS, Markdown, JSON Schema, AsyncAPI per-transport
        (`<version>.websocket.yml` / `<version>.grpc.yml` targeting the canonical

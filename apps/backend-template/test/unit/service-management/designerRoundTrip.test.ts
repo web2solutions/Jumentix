@@ -740,25 +740,44 @@ describe('designer export/import round-trip (JUM-471)', () => {
       });
     });
 
-    it('boilerplate bundle emits code, not a model: pins one module per entity with the hexagonal file set', () => {
+    it('boilerplate bundle emits code, not a model: pins one module per domain with the hexagonal file set', () => {
       const state = createModelState();
       const document = buildBoilerplateBundleDocument(state, '2026-08-05T00:00:00.000Z');
       expect(document.kind).toBe('boilerplate-bundle');
-      expect(document.version).toBe('1.0.0');
-      const expectedModules = state.domains.flatMap(
-        (domain: ModelDomain) => (
-          domain.entities.map((entity) => `${domain.name}/${entity.name}`)
-        )
-      );
+      expect(document.version).toBe('2.0.0');
       expect(document.modules.map((module: { module: string }) => module.module))
-        .toStrictEqual(expectedModules);
-      document.modules.forEach((module: { module: string; files: Record<string, string> }) => {
-        const [domainName, entityName] = module.module.split('/');
-        expect(Object.keys(module.files).sort())
-          .toStrictEqual(['controller', 'handler', 'model', 'repository', 'useCase']);
-        Object.values(module.files).forEach((filePath) => {
-          expect(filePath).toContain(`src/modules/${domainName}/`);
-          expect(filePath).toContain(entityName);
+        .toStrictEqual(state.domains.map((domain: ModelDomain) => domain.name));
+      const entityRoles = [
+        'controller',
+        'entityInterface',
+        'model',
+        'persistenceAdapter',
+        'repositoryPort',
+        'security',
+        'useCases',
+        'useCasesPort'
+      ];
+      document.modules.forEach((module: {
+        module: string;
+        path: string;
+        files: Record<string, { path: string; content: string }>;
+        entities: { entity: string; files: Record<string, { path: string; content: string }> }[];
+      }) => {
+        expect(module.path).toBe(`src/modules/${module.module}`);
+        expect(module.files.composition.path)
+          .toBe(`${module.path}/composition/compose${module.module}Services.ts`);
+        const domain = state.domains.find(
+          (candidate: ModelDomain) => candidate.name === module.module
+        );
+        expect(module.entities.map((entity) => entity.entity))
+          .toStrictEqual(domain.entities.map((entity: ModelEntity) => entity.name));
+        module.entities.forEach((entity) => {
+          expect(Object.keys(entity.files).sort()).toStrictEqual(entityRoles);
+          Object.values(entity.files).forEach((file) => {
+            expect(file.path.startsWith(`${module.path}/`)).toBe(true);
+            expect(file.path).toContain(entity.entity);
+            expect(file.content.length).toBeGreaterThan(0);
+          });
         });
       });
     });
