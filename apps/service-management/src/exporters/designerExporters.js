@@ -181,13 +181,39 @@ export function buildDomainPackageDocument(domain, exportedAt = new Date().toISO
   };
 }
 
-/** `exportAsOas` payload (OpenAPI 3.1.0 with x- extensions). */
+/**
+ * `exportAsOas` payload (OpenAPI 3.1.0 with x- extensions).
+ *
+ * JUM-474 made the document compliant with Requirement 036 and the
+ * route-resolution check (`ci-cd/check-oas-route-resolution.js`), following
+ * the conventions `spec/1.0.0.yml` already uses:
+ *
+ * - Every operation carries an `operationId` on the canonical verb scheme
+ *   (`getAll*` / `create*` / `get*ById` / `update*` / `delete*`), qualified by
+ *   the schema name so ids stay unique across domains.
+ * - Request bodies reference `RequestCreate<Schema>` / `RequestUpdate<Schema>`
+ *   port input objects via `$ref`; 2xx responses reference the entity schema,
+ *   its `<Schema>ArrayOf` wrapper, or `ResourceDeleteResponse` — never an
+ *   inline schema. Every referenced schema carries a non-empty description.
+ * - Port input/output wrappers are marked `'x-port-object': true` so the OAS
+ *   importer skips them (they are derived from the entity schemas, not model
+ *   content — re-importing them would fabricate phantom entities).
+ * - Error responses use the canonical `ERROR-CONTRACTS-AND-RESPONSES` status
+ *   codes and descriptions (400/401/403/404/409).
+ * - Composition (`oneOf`/`allOf`/`anyOf`/`discriminator`) serialises as
+ *   native OAS 3.1 constructs.
+ */
 export function buildOasDocument(state) {
   const schemas = {};
   const paths = {};
   const entitySchemaIndex = {};
+  let hasEntities = false;
+
+  const jsonContent = (schema) => ({ 'application/json': { schema } });
+
   state.domains.forEach((domain) => {
     domain.entities.forEach((entity) => {
+      hasEntities = true;
       const properties = {};
       const required = [];
       entity.fields.forEach((field) => {
@@ -196,8 +222,10 @@ export function buildOasDocument(state) {
       });
       const schemaName = toSchemaName(domain.name, entity.name);
       entitySchemaIndex[entity.id] = schemaName;
-      schemas[schemaName] = {
+      const entityRef = { $ref: `#/components/schemas/${schemaName}` };
+      const entitySchema = {
         type: 'object',
+        description: `Port output object for ${entity.name} resource.`,
         properties,
         required,
         'x-domain': domain.name,
@@ -210,11 +238,11 @@ export function buildOasDocument(state) {
       const mode = ['oneOf', 'allOf', 'anyOf'].includes(composition.mode) ? composition.mode : '';
       const refs = parseCommaSeparated(composition.refs || []);
       if (mode && refs.length) {
-        schemas[schemaName][mode] = refs.map((ref) => ({ $ref: `#/components/schemas/${ref}` }));
+        entitySchema[mode] = refs.map((ref) => ({ $ref: `#/components/schemas/${ref}` }));
       }
       const externalRefs = parseCommaSeparated(composition.externalRefs || []);
       if (externalRefs.length) {
-        schemas[schemaName]['x-external-refs'] = externalRefs;
+        entitySchema['x-external-refs'] = externalRefs;
       }
       const discriminator = String(composition.discriminator || '').trim();
       if (discriminator) {
@@ -222,11 +250,37 @@ export function buildOasDocument(state) {
         refs.forEach((refName) => {
           mapping[refName] = `#/components/schemas/${refName}`;
         });
-        schemas[schemaName].discriminator = {
+        entitySchema.discriminator = {
           propertyName: discriminator,
           mapping
         };
       }
+      schemas[schemaName] = entitySchema;
+
+      // Port input objects (canonical `RequestCreate*` / `RequestUpdate*`
+      // naming): creation requires every model-required field except the
+      // server-managed primary key; update requires the primary key only.
+      const pkFieldNames = entity.fields.filter((field) => field.pk).map((field) => field.name);
+      schemas[`RequestCreate${schemaName}`] = {
+        type: 'object',
+        description: `Port input object for ${entity.name} creation endpoint.`,
+        properties,
+        required: required.filter((fieldName) => !pkFieldNames.includes(fieldName)),
+        'x-port-object': true
+      };
+      schemas[`RequestUpdate${schemaName}`] = {
+        type: 'object',
+        description: `Port input object for ${entity.name} update endpoint.`,
+        properties,
+        required: pkFieldNames,
+        'x-port-object': true
+      };
+      schemas[`${schemaName}ArrayOf`] = {
+        type: 'array',
+        description: `Port output array of ${entity.name} records.`,
+        items: entityRef,
+        'x-port-object': true
+      };
 
       const domainPath = toPathToken(domain.name);
       const entityPath = toPathToken(entity.name);
@@ -235,46 +289,40 @@ export function buildOasDocument(state) {
       const idParam = [{
         name: 'id',
         in: 'path',
+        description: `ID of ${entity.name}`,
         required: true,
         schema: { type: 'string' }
       }];
 
       paths[collectionPath] = {
         get: {
-          operationId: `list${schemaName}`,
+          operationId: `getAll${schemaName}`,
           responses: {
             200: {
-              description: 'Success',
-              content: {
-                'application/json': {
-                  schema: {
-                    type: 'array',
-                    items: { $ref: `#/components/schemas/${schemaName}` }
-                  }
-                }
-              }
-            }
+              description: 'successful operation',
+              content: jsonContent({ $ref: `#/components/schemas/${schemaName}ArrayOf` })
+            },
+            400: { description: 'Invalid request' },
+            401: { description: 'Unauthorized' },
+            403: { description: 'Forbidden' }
           }
         },
         post: {
           operationId: `create${schemaName}`,
           requestBody: {
-            required: true,
-            content: {
-              'application/json': {
-                schema: { $ref: `#/components/schemas/${schemaName}` }
-              }
-            }
+            description: `Create a new ${entity.name}`,
+            content: jsonContent({ $ref: `#/components/schemas/RequestCreate${schemaName}` }),
+            required: true
           },
           responses: {
             201: {
-              description: 'Created',
-              content: {
-                'application/json': {
-                  schema: { $ref: `#/components/schemas/${schemaName}` }
-                }
-              }
-            }
+              description: `${entity.name} created successfully`,
+              content: jsonContent(entityRef)
+            },
+            400: { description: 'Invalid request' },
+            401: { description: 'Unauthorized' },
+            403: { description: 'Forbidden' },
+            409: { description: 'Conflict' }
           }
         }
       };
@@ -285,56 +333,85 @@ export function buildOasDocument(state) {
           parameters: idParam,
           responses: {
             200: {
-              description: 'Success',
-              content: {
-                'application/json': {
-                  schema: { $ref: `#/components/schemas/${schemaName}` }
-                }
-              }
+              description: 'successful operation',
+              content: jsonContent(entityRef)
             },
-            404: { description: 'Not found' }
+            400: { description: 'Invalid ID supplied' },
+            401: { description: 'Unauthorized' },
+            403: { description: 'Forbidden' },
+            404: { description: `${entity.name} not found` }
           }
         },
-        patch: {
+        put: {
           operationId: `update${schemaName}`,
           parameters: idParam,
           requestBody: {
-            required: true,
-            content: {
-              'application/json': {
-                schema: { $ref: `#/components/schemas/${schemaName}` }
-              }
-            }
+            description: `Update an existing ${entity.name}`,
+            content: jsonContent({ $ref: `#/components/schemas/RequestUpdate${schemaName}` }),
+            required: true
           },
           responses: {
             200: {
-              description: 'Updated',
-              content: {
-                'application/json': {
-                  schema: { $ref: `#/components/schemas/${schemaName}` }
-                }
-              }
+              description: 'successful operation',
+              content: jsonContent(entityRef)
             },
-            404: { description: 'Not found' }
+            400: { description: 'Invalid ID supplied' },
+            401: { description: 'Unauthorized' },
+            403: { description: 'Forbidden' },
+            404: { description: `${entity.name} not found` },
+            409: { description: 'Conflict' }
           }
         },
         delete: {
           operationId: `delete${schemaName}`,
           parameters: idParam,
           responses: {
-            204: { description: 'Deleted' },
-            404: { description: 'Not found' }
+            200: {
+              description: 'successful operation',
+              content: jsonContent({ $ref: '#/components/schemas/ResourceDeleteResponse' })
+            },
+            400: { description: 'Invalid ID supplied' },
+            401: { description: 'Unauthorized' },
+            403: { description: 'Forbidden' },
+            404: { description: `${entity.name} not found` }
           }
         }
       };
     });
   });
 
+  if (hasEntities) {
+    // The canonical shared delete port output object (`spec/1.0.0.yml`).
+    schemas.ResourceDeleteResponse = {
+      description: 'Port output object for delete operations.',
+      required: ['data'],
+      type: 'object',
+      properties: {
+        data: {
+          type: 'boolean',
+          default: false,
+          description: 'Result of request to delete resource'
+        }
+      },
+      'x-port-object': true
+    };
+  }
+
   return {
     openapi: '3.1.0',
-    info: { title: 'Domain Designer Export', version: '1.0.0' },
+    info: {
+      title: 'Domain Designer Export',
+      description: 'REST API designed with the Jumentix Domain Designer',
+      version: '1.0.0'
+    },
+    servers: [{ url: 'http://localhost:3000/api/1.0.0' }],
     paths,
-    components: { schemas },
+    components: {
+      schemas,
+      securitySchemes: {
+        bearerAuth: { type: 'http', scheme: 'bearer' }
+      }
+    },
     'x-message-contracts': state.domains.flatMap((domain) => (
       domain.entities.flatMap((entity) => (
         (Array.isArray(entity?.meta?.contracts) ? entity.meta.contracts : []).map((contract, index) => ({

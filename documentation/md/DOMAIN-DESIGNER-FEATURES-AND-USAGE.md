@@ -241,6 +241,26 @@ How to use:
 2. Use import buttons for JSON/OAS/package.
 3. For package export, selected domain is used as source package.
 
+### 10.1) OAS 3.1 export contract (Requirement 036, JUM-474)
+
+The OpenAPI 3.1 export produces a document compliant with Requirement 036 and
+the route-resolution check (`ci-cd/check-oas-route-resolution.js`):
+
+- Every operation carries a unique `operationId` on the canonical
+  `spec/1.0.0.yml` verb scheme (`getAll*`, `create*`, `get*ById`, `update*`,
+  `delete*`), qualified by the schema name (`getAllBilling_Invoice`).
+- Request bodies reference `RequestCreate<Schema>` / `RequestUpdate<Schema>`
+  port input objects via `$ref`; 2xx responses reference the entity schema,
+  its `<Schema>ArrayOf` wrapper or `ResourceDeleteResponse`. No inline
+  request/response schemas, and every referenced schema has a description.
+- Port input/output wrappers are marked `'x-port-object': true` and skipped
+  on OAS import, so a round-trip creates no phantom entities.
+- Error responses use the canonical `ERROR-CONTRACTS-AND-RESPONSES` codes
+  (400/401/403/404/409).
+- Entities whose names collapse to the same OAS schema name or route path
+  (for example `Foo Bar` vs `Foo-Bar`) fail the export quality gate instead
+  of silently overwriting each other in the document.
+
 ## 11) Smoke Coverage
 
 Service Management smoke tests:

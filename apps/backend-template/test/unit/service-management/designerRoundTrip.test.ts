@@ -481,7 +481,10 @@ describe('designer export/import round-trip (JUM-471)', () => {
       // import glue, and a fieldless entity comes back with the importer's
       // default fields. A field silently joining (or leaving) this list is
       // the regression this assertion catches — update it only together with
-      // JUM-478's lossless-round-trip work.
+      // JUM-478's lossless-round-trip work. (JUM-474 added nine entries that
+      // are the Receipt default-fields loss propagated into the derived
+      // Request* wrappers the Req 036 export emits — the model-level loss
+      // list itself is unchanged.)
       const EXPECTED_FIRST_CROSSING_DIFF = [
         // OAS composition extensions are exported but never imported.
         '.components.schemas.Billing_Invoice.discriminator (removed)',
@@ -498,7 +501,19 @@ describe('designer export/import round-trip (JUM-471)', () => {
         '.components.schemas.Billing_Receipt.properties.updatedAt (added)',
         '.components.schemas.Billing_Receipt.required.0 (added)',
         '.components.schemas.Billing_Receipt.required.1 (added)',
-        '.components.schemas.Billing_Receipt.required.2 (added)'
+        '.components.schemas.Billing_Receipt.required.2 (added)',
+        // JUM-474: the same Receipt default-fields loss, propagated to the
+        // derived port input wrappers — not a new loss, the same one made
+        // visible in the Request*/ArrayOf schemas the Req 036 export adds.
+        '.components.schemas.RequestCreateBilling_Receipt.properties.createdAt (added)',
+        '.components.schemas.RequestCreateBilling_Receipt.properties.id (added)',
+        '.components.schemas.RequestCreateBilling_Receipt.properties.updatedAt (added)',
+        '.components.schemas.RequestCreateBilling_Receipt.required.0 (added)',
+        '.components.schemas.RequestCreateBilling_Receipt.required.1 (added)',
+        '.components.schemas.RequestUpdateBilling_Receipt.properties.createdAt (added)',
+        '.components.schemas.RequestUpdateBilling_Receipt.properties.id (added)',
+        '.components.schemas.RequestUpdateBilling_Receipt.properties.updatedAt (added)',
+        '.components.schemas.RequestUpdateBilling_Receipt.required.0 (added)'
       ].sort();
       const first = buildOasDocument(createModelState());
       const firstImport = buildDomainsFromOas(JSON.parse(JSON.stringify(first)));

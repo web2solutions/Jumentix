@@ -77,8 +77,10 @@ export function buildDomainFromPackage(parsed, existingDomains) {
 /**
  * Map a parsed OpenAPI document to the designer's domain list: one entity
  * per `components.schemas` entry, grouped by `x-domain`, fields mapped back
- * through `fromOasType`. Relationship and view state are NOT part of this
- * mapping — the caller resets them, exactly as the monolith did.
+ * through `fromOasType` — except schemas marked `'x-port-object': true`
+ * (JUM-474 request/response wrappers), which are derived artifacts and
+ * skipped. Relationship and view state are NOT part of this mapping — the
+ * caller resets them, exactly as the monolith did.
  *
  * @param {Object} parsed - decoded JSON of the uploaded OAS file.
  * @returns {{ ok: true, domains: Array } | { ok: false, reason: 'invalid-oas' | 'no-schemas' }}
@@ -96,6 +98,11 @@ export function buildDomainsFromOas(parsed) {
 
   Object.entries(schemas).forEach(([schemaKey, schemaValue]) => {
     if (!schemaValue || typeof schemaValue !== 'object') return;
+    // JUM-474: port input/output wrappers (`RequestCreate*`/`RequestUpdate*`/
+    // `*ArrayOf`/`ResourceDeleteResponse`) are derived from entity schemas at
+    // export time, not model content — importing them would fabricate phantom
+    // entities, so they carry a marker and are skipped here.
+    if (schemaValue['x-port-object'] === true) return;
     const domainName = String(schemaValue['x-domain'] || 'Imported').trim() || 'Imported';
     const entityName = String(schemaValue['x-entity'] || schemaKey).trim() || schemaKey;
     const required = Array.isArray(schemaValue.required) ? schemaValue.required : [];

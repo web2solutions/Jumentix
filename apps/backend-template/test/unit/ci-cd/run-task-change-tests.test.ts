@@ -275,6 +275,49 @@ describe('layer-aware evidence for integration scripts', () => {
     expect(validation.errors).toStrictEqual([]);
     expect(validation.ok).toBe(true);
   });
+
+  it('runs and records contract suites selected through the contracts layer (JUM-474)', () => {
+    expect.hasAssertions();
+    // Editing `ci-cd/check-oas-route-resolution.js` selects the contracts
+    // layer; the planned contract suites must be executed via their scripts
+    // and recorded by path, or the evidence validation fails closed on its
+    // own bookkeeping — exactly the integration-suite gap above.
+    const spawned: string[] = [];
+    const plan = {
+      type: 'layer-aware',
+      files: ['ci-cd/check-oas-route-resolution.js'],
+      selectedLayers: ['contracts', 'tooling'],
+      notRunLayers: [],
+      reasons: {},
+      unitSuites: [],
+      integrationScripts: ['oas:check-routes'],
+      suites: [
+        {
+          path: 'ci-cd/check-oas-route-resolution.js',
+          type: 'contract',
+          script: 'oas:check-routes'
+        }
+      ]
+    } as never;
+
+    taskRunner.executeLayerAwarePlan(plan, {
+      spawn: (_cmd: string, args: string[]) => {
+        spawned.push(args[1]);
+        return { status: 0 };
+      }
+    });
+
+    expect(spawned).toStrictEqual(['oas:check-routes']);
+    expect((plan as { _execution: { executedSuites: string[] } })._execution.executedSuites)
+      .toStrictEqual(['oas:check-routes', 'ci-cd/check-oas-route-resolution.js']);
+
+    const execution = (plan as { _execution: unknown })._execution;
+    const evidence = buildGateEvidence(
+      { ...(plan as object), outcome: 'passed' },
+      { ...(execution as object), outcome: 'passed' }
+    );
+    expect(validateGateEvidence(evidence)).toStrictEqual({ ok: true, errors: [] });
+  });
 });
 
 /**

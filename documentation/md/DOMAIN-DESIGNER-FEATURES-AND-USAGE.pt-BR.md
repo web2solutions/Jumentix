@@ -248,6 +248,29 @@ Como usar:
 2. Use botões de importação para JSON/OAS/pacote.
 3. Para exportação de pacotes, o domínio selecionado é usado como pacote de origem.
 
+### 10.1) Contrato de exportação OAS 3.1 (Requisito 036, JUM-474)
+
+A exportação OpenAPI 3.1 produz um documento em conformidade com o Requisito
+036 e com a verificação de resolução de rotas
+(`ci-cd/check-oas-route-resolution.js`):
+
+- Toda operação carrega um `operationId` único no esquema de verbos canônico
+  do `spec/1.0.0.yml` (`getAll*`, `create*`, `get*ById`, `update*`,
+  `delete*`), qualificado pelo nome do schema (`getAllBilling_Invoice`).
+- Corpos de requisição referenciam os objetos de porta de entrada
+  `RequestCreate<Schema>` / `RequestUpdate<Schema>` via `$ref`; respostas 2xx
+  referenciam o schema da entidade, seu wrapper `<Schema>ArrayOf` ou
+  `ResourceDeleteResponse`. Sem schemas inline de requisição/resposta, e todo
+  schema referenciado tem descrição.
+- Os wrappers de porta de entrada/saída são marcados com
+  `'x-port-object': true` e ignorados na importação OAS, de modo que uma
+  ida e volta não cria entidades fantasmas.
+- Respostas de erro usam os códigos canônicos de
+  `ERROR-CONTRACTS-AND-RESPONSES` (400/401/403/404/409).
+- Entidades cujos nomes colapsam para o mesmo nome de schema OAS ou rota
+  (por exemplo `Foo Bar` vs `Foo-Bar`) falham no portão de qualidade de
+  exportação em vez de sobrescrever silenciosamente uma à outra no documento.
+
 ## 11) Cobertura de fumaça
 
 Testes de fumaça de gerenciamento de serviços:

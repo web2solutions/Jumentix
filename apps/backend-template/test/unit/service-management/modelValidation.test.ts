@@ -97,7 +97,9 @@ describe('model validation engine (JUM-469)', () => {
     }));
     expect(messages(issues)).toStrictEqual([
       'Entity with empty name in domain Billing',
-      'Duplicate entity name in domain Billing: INVOICE'
+      'Duplicate entity name in domain Billing: INVOICE',
+      // JUM-474: case-distinct duplicates also collapse onto one OAS route.
+      'Entities Billing/Invoice and Billing/INVOICE resolve to the same OAS route path: /billing/invoice'
     ]);
     expect(issues[0].entityId).toBe('entity-1');
     expect(issues[1].entityId).toBe('entity-3');
@@ -552,5 +554,72 @@ describe('validation boundary inputs (JUM-470)', () => {
       }]
     });
     expect(collectModelIssues(state)).toStrictEqual([]);
+  });
+});
+
+describe('oas export gate collisions (JUM-474)', () => {
+  it('reports an error when distinct entity names collapse to the same OAS schema name and route path', () => {
+    const issues = collectModelIssues({
+      domains: [
+        {
+          id: 'domain-1',
+          name: 'Foo Bar',
+          entities: [createEntity({ id: 'entity-1', name: 'Baz' })]
+        },
+        {
+          id: 'domain-2',
+          name: 'Foo-Bar',
+          entities: [createEntity({ id: 'entity-2', name: 'Baz' })]
+        }
+      ],
+      relationships: []
+    });
+    expect(messages(issues)).toStrictEqual([
+      'Entities Foo Bar/Baz and Foo-Bar/Baz resolve to the same OAS schema name: Foo_Bar_Baz',
+      'Entities Foo Bar/Baz and Foo-Bar/Baz resolve to the same OAS route path: /foo-bar/baz'
+    ]);
+    expect(issues.every((issue: { severity: string }) => issue.severity === 'error')).toBe(true);
+  });
+
+  it('reports an error when two domains share an entity route but not a schema name', () => {
+    // Same route path, different schema names: the exported document would
+    // silently keep only one path item.
+    const issues = collectModelIssues({
+      domains: [
+        {
+          id: 'domain-1',
+          name: 'Billing',
+          entities: [createEntity({ id: 'entity-1', name: 'Invoice' })]
+        },
+        {
+          id: 'domain-2',
+          name: 'billing',
+          entities: [createEntity({ id: 'entity-2', name: 'Invoice' })]
+        }
+      ],
+      relationships: []
+    });
+    expect(messages(issues)).toStrictEqual([
+      'Duplicate domain name: billing',
+      'Entities Billing/Invoice and billing/Invoice resolve to the same OAS route path: /billing/invoice'
+    ]);
+  });
+
+  it('does not flag entities whose names survive the OAS tokenisation intact', () => {
+    expect(collectModelIssues({
+      domains: [
+        {
+          id: 'domain-1',
+          name: 'Billing',
+          entities: [createEntity({ id: 'entity-1', name: 'Invoice' })]
+        },
+        {
+          id: 'domain-2',
+          name: 'Catalog',
+          entities: [createEntity({ id: 'entity-2', name: 'Invoice' })]
+        }
+      ],
+      relationships: []
+    })).toStrictEqual([]);
   });
 });
