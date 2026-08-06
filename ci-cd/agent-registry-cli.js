@@ -59,9 +59,13 @@ Commands:
   heartbeat  Update agent heartbeat and status
   assign     Assign agent to a Linear task and epic
   complete   Mark current task as complete
+  repair     Repair records corrupted by the markdown migration (JUM-613)
   sync       Write local snapshot to .agents/registry-snapshot.json
   check      Validate local snapshot against Firestore
   help       Show this message
+
+Flags for repair:
+  --apply           Write the changes. Without it, repair only reports.
 
 Flags for register:
   --agent-id        Agent identifier (required)
@@ -189,6 +193,14 @@ async function main() {
           status: flags.status
         });
         break;
+
+      case 'repair': {
+        // Dry run unless --apply is passed: this deletes documents belonging
+        // to other agents (JUM-613).
+        const result = await registry.repairRegistry(firestore, { apply: flags.apply === true });
+        if (result.applied) await registry.syncSnapshot(firestore);
+        break;
+      }
 
       case 'sync':
         await registry.syncSnapshot(firestore);

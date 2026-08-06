@@ -149,6 +149,131 @@ describe('hexagonal test pyramid libraries', () => {
 });
 
 /**
+ * The gate-side half of the JUM-472 registration: what the layer-aware selector
+ * plans for Service Management changes now that the component is its own
+ * non-hexagonal kind.
+ *
+ * Before the split, an SM source change selected `interface/runtime` — every
+ * backend interface suite and no SM unit suite — and an SM unit-suite change
+ * selected `tooling`, running fifty-odd governance suites instead.
+ */
+describe('service-management selection (JUM-472)', () => {
+  const smSuite = (suitePath: string, layer: string, type: string, extra: object = {}) => ({
+    id: suitePath,
+    path: suitePath,
+    layer,
+    kind: 'non-hexagonal',
+    type,
+    runner: 'bun',
+    tier: 'gate',
+    ...extra
+  });
+
+  const smManifest = {
+    schemaVersion: 1,
+    layers: {
+      contracts: { dependsOn: [], sourceGlobs: ['spec/**'] },
+      'service-management/server': {
+        dependsOn: ['contracts'],
+        sourceGlobs: ['apps/service-management/server.js', 'apps/service-management/package.json'],
+        kind: 'non-hexagonal'
+      },
+      'service-management/designer': {
+        dependsOn: ['service-management/server'],
+        sourceGlobs: ['apps/service-management/script.js', 'apps/service-management/src/**'],
+        kind: 'non-hexagonal'
+      },
+      tooling: { dependsOn: [], sourceGlobs: ['ci-cd/**'], kind: 'non-hexagonal' }
+    },
+    suites: [
+      smSuite(
+        'apps/backend-template/test/unit/service-management/designerStore.test.ts',
+        'service-management/designer',
+        'unit'
+      ),
+      smSuite(
+        'apps/backend-template/test/integration/ServiceManagement/runtimeEnv.integration.test.ts',
+        'service-management/server',
+        'integration',
+        { script: 'test:integration:service-management' }
+      ),
+      smSuite(
+        'apps/backend-template/test/integration/ServiceManagement/spaBoot.browser.integration.test.ts',
+        'service-management/designer',
+        'integration',
+        { script: 'test:integration:service-management' }
+      ),
+      smSuite('apps/backend-template/test/unit/ci-cd/check-test-map.test.ts', 'tooling', 'unit')
+    ],
+    quarantine: [],
+    pathAliases: {},
+    sourceRoots: []
+  };
+
+  const planFor = (files: string[]) => createLayerAwarePlan(files, {
+    manifest: smManifest,
+    root: path.resolve(__dirname, '../../../../../'),
+    graph: new Map()
+  });
+
+  it('selects exactly the designer suites for a designer SPA change', () => {
+    expect.hasAssertions();
+
+    const plan = planFor(['apps/service-management/src/store/LocalStorageDesignerStore.js']);
+
+    expect(plan.selectedLayers).toStrictEqual(['service-management/designer']);
+    expect(plan.unitSuites).toStrictEqual([
+      'apps/backend-template/test/unit/service-management/designerStore.test.ts'
+    ]);
+    expect(plan.integrationScripts).toStrictEqual(['test:integration:service-management']);
+  });
+
+  it('runs the whole component — and nothing else — for a server change', () => {
+    expect.hasAssertions();
+
+    // The designer is served by and calls the server, so a server change
+    // propagates outward to the designer suites; the blast radius stops there.
+    const plan = planFor(['apps/service-management/server.js']);
+
+    expect(plan.selectedLayers.sort()).toStrictEqual([
+      'service-management/designer',
+      'service-management/server'
+    ]);
+    expect(plan.unitSuites).toStrictEqual([
+      'apps/backend-template/test/unit/service-management/designerStore.test.ts'
+    ]);
+  });
+
+  it('selects the SM suites for a changed SM suite file, not the tooling layer', () => {
+    expect.hasAssertions();
+
+    const plan = planFor(['apps/backend-template/test/unit/service-management/designerStore.test.ts']);
+
+    expect(plan.selectedLayers).toStrictEqual(['service-management/designer']);
+    expect(plan.unitSuites).not.toContain('apps/backend-template/test/unit/ci-cd/check-test-map.test.ts');
+  });
+
+  it('reaches the SM contract suites from a contract-shape change through reverse dependencies', () => {
+    expect.hasAssertions();
+
+    // No SM file changed and no import edge can exist against a YAML spec — the
+    // selection has to come from the layer graph, or the contract-parity suites
+    // silently stop covering the artifact they assert against.
+    const plan = planFor(['spec/1.0.0.yml']);
+
+    // arrayContaining is the point: a contract-shape change selects the whole
+    // dependent pyramid; the claim here is that the SM layers are inside it.
+    // eslint-disable-next-line jest/prefer-strict-equal -- asymmetric matcher, see above
+    expect(plan.selectedLayers).toEqual(expect.arrayContaining([
+      'contracts',
+      'service-management/server',
+      'service-management/designer'
+    ]));
+    expect(plan.integrationScripts).toContain('test:integration:service-management');
+  });
+});
+
+/**
  * Requirement 110's two structural rules, checked against the repository itself.
  *
  * Both are the kind that hold until someone reasonably decides otherwise in a

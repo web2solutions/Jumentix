@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-06 ci(JUM-469): install WebKit in branch-gate for browser smoke - Eduardo A.
 - 2026-08-05 refactor(JUM-469): modularize designer exporters, importers, validation, canvas and tabs - Eduardo A.
 - 2026-08-05 [JUM-468][Refactor] Extract state/persistence core behind IDesignerStore port (#86) - Eduardo A.
 - 2026-08-05 [JUM-466][Test] Expand service-management integration smoke (#85) - Eduardo A.

@@ -33,6 +33,16 @@ bun run test-map:check
 bun run test-map:generate
 ```
 
+### Non-hexagonal kinds (JUM-552)
+
+Not everything in the repository has hexagonal layers. Non-module code is registered as a declared `kind: "non-hexagonal"` layer instead of being forced into the six-layer model:
+
+- `tooling` — `ci-cd/`, `tooling/`, the website, pipeline configuration.
+- `service-management/server` — `apps/service-management/server.js` + `package.json`; depends on `contracts`.
+- `service-management/designer` — the designer SPA (`script.js`, `src/**`, static assets); depends on `service-management/server`, which serves it and answers its runtime API.
+
+Consequences for the selector (JUM-472): a change under `apps/service-management/**` selects exactly the SM suites (unit + the `test:integration:service-management` smoke), a designer-only change skips the server suites, and a change to the canonical contract artifacts under `spec/` (registered under `contracts`) reaches the SM contract-parity suites through reverse dependencies. Layer globs are enumerated, not wildcarded: a new file at the app root maps to no layer and turns the gate red until it is classified in `ci-cd/generate-test-map.js`. New SM integration suites are registered by naming their area in `SERVICE_MANAGEMENT_INTEGRATION_AREA` and regenerating the map.
+
 ## Local DX (Bun)
 
 ```bash

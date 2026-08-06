@@ -20,6 +20,10 @@ Arquivos principais de implementação:
 - `apps/service-management/styles.css`
 - `apps/service-management/server.js`
 
+As camadas de módulos, o padrão de injeção e o contrato da porta de
+armazenamento `IDesignerStore` estão documentados em
+[Arquitetura de módulos do Service Management](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.pt-BR.md).
+
 ## Guias
 
 1. **Designer de Domínio**
