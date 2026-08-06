@@ -43,7 +43,9 @@ Uso detalhado de recursos:
    - Modelos de entidade: `crudAggregate`, `eventSourced`, `referenceData`, `tenantOwned`.
    - Visualização da geração de código para esqueletos de modelo de domínio/repositório/caso de uso/controlador/manipulador.
    - Gerador de exemplo de solicitação/resposta do esquema da entidade.
-   - Exportadores: JSON, OpenAPI 3.1, Markdown, JSON Schema, AsyncAPI e pacote padrão.
+   - Exportadores: JSON, OpenAPI 3.1, Markdown, JSON Schema, AsyncAPI 3.0 por transporte
+     (`<version>.websocket.yml` / `<version>.grpc.yml`, convenções canônicas de
+     `spec/asyncapi/`), proto gRPC (`async-api.proto`) e pacote padrão.
    - Controles de composição OpenAPI (`oneOf`, `allOf`, `anyOf`, externo `$ref`, discriminador) por entidade.
    - Exportação/importação de pacotes de domínio para compartilhamento de modelos reutilizáveis.
    - Navegação em minimapa e modo de desempenho em tela grande.

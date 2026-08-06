@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-08-06 feat(JUM-475): asyncapi 3.0 per-transport and grpc proto exports targeting canonical spec/asyncapi/ - Eduardo A.
+- 2026-08-06 test(JUM-471): add exporters/importers round-trip suite (#94) - Eduardo A.
 - 2026-08-06 test(JUM-470): pin validation severities, export-gate boundary and normalizer round-trips (#93) - Eduardo A.
 - 2026-08-06 [JUM-600][CI] Run the docker smoke matrix on dev and main, and fix its readiness race (#92) - Eduardo A.
 - 2026-08-06 [JUM-469][Refactor] Modularize designer exporters, importers, validation, canvas and tabs (#87) - Eduardo A.

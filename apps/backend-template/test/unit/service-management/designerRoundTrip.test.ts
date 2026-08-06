@@ -38,7 +38,10 @@ import path from 'node:path';
 
 const repoRoot = path.resolve(__dirname, '../../../../..');
 const {
-  buildAsyncApiDocument,
+  buildAsyncApiFileSet,
+  buildAsyncApiTransportDocument
+} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'exporters', 'asyncApiExporters.js'));
+const {
   buildBoilerplateBundleDocument,
   buildDomainPackageDocument,
   buildJsonExportDocument,
@@ -343,22 +346,29 @@ function stripImportIds(domains: Array<{ entities: Array<{ id: string }> }>) {
   }));
 }
 
-type AsyncApiOperation = { operationId: string; message: { name: string; payload: unknown } };
-type AsyncApiChannel = { publish?: AsyncApiOperation; subscribe?: AsyncApiOperation };
-
-/** The channel derivation of `buildAsyncApiDocument`, kept conditional-free for the test body. */
+/** The channel derivation of the AsyncAPI export, kept conditional-free for the test body. */
 function contractChannelName(domainName: string, entityName: string, contract: ModelContract) {
   return contract.channel || `${domainName.toLowerCase()}/${entityName.toLowerCase()}/${contract.type}`;
 }
 
-/** Responses are subscribe operations; every other contract type publishes. */
-function contractOperation(channel: AsyncApiChannel, contract: ModelContract) {
-  return (contract.type === 'response' ? channel.subscribe : channel.publish) as AsyncApiOperation;
+/** The exporter's action mapping: responses are received, every other type is sent. */
+function contractAction(contract: ModelContract) {
+  return contract.type === 'response' ? 'receive' : 'send';
 }
 
 /** The exporter's payload fallback for schema-less contracts. */
-function contractPayload(contract: ModelContract) {
+function contractPayloadSchema(contract: ModelContract) {
   return contract.payloadSchema || {};
+}
+
+/** The exporter's message component name for a contract. */
+function contractMessageName(domainName: string, entityName: string, contract: ModelContract) {
+  const pascal = (value: string) => value
+    .split(/[^a-zA-Z0-9]+/)
+    .filter(Boolean)
+    .map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`)
+    .join('');
+  return `${domainName}_${entityName}_${pascal(contract.name)}`;
 }
 
 function createCore() {
@@ -699,20 +709,32 @@ describe('designer export/import round-trip (JUM-471)', () => {
       });
     });
 
-    it('asyncapi has no importer: pins one channel bucket per contract with the contract payload', () => {
+    it('asyncapi has no importer: pins one 3.0 operation per contract per transport with shared payload refs', () => {
       const state = createModelState();
-      const document = buildAsyncApiDocument(state);
-      state.domains.forEach((domain: ModelDomain) => {
-        domain.entities.forEach((entity) => {
-          entity.meta.contracts.forEach((contract) => {
-            const channelName = contractChannelName(domain.name, entity.name, contract);
-            const bucket = document.channels[channelName];
-            expect(bucket).toBeDefined();
-            const operation = contractOperation(bucket, contract);
-            const expectedOperationId = `${contract.type}_${domain.name}_${entity.name}_${contract.name}`;
-            expect(operation.operationId).toBe(expectedOperationId);
-            expect(operation.message.name).toBe(contract.name);
-            expect(operation.message.payload).toStrictEqual(contractPayload(contract));
+      const fileSet = buildAsyncApiFileSet(state);
+      // The canonical naming: one <version>.<transport>.yml file per transport.
+      expect(fileSet.files.map((file: { fileName: string }) => file.fileName))
+        .toStrictEqual(['1.0.0.websocket.yml', '1.0.0.grpc.yml']);
+      ['websocket', 'grpc'].forEach((transport) => {
+        const document = buildAsyncApiTransportDocument(state, transport);
+        expect(document.asyncapi).toBe('3.0.0');
+        state.domains.forEach((domain: ModelDomain) => {
+          domain.entities.forEach((entity) => {
+            entity.meta.contracts.forEach((contract) => {
+              const messageName = contractMessageName(domain.name, entity.name, contract);
+              const operation = document.operations[`${contract.type}_${messageName}`];
+              expect(operation).toBeDefined();
+              // Responses are received; every other contract type is sent.
+              expect(operation.action).toBe(contractAction(contract));
+              expect(operation.channel.$ref)
+                .toBe(`#/channels/${contractChannelName(domain.name, entity.name, contract)}`);
+              // Payloads are shared component refs, never inline duplicates.
+              const payloadRef = document.components.messages[messageName].payload.$ref;
+              expect(payloadRef.startsWith('#/components/schemas/')).toBe(true);
+              const schemaName = payloadRef.slice('#/components/schemas/'.length);
+              expect(document.components.schemas[schemaName])
+                .toStrictEqual(contractPayloadSchema(contract));
+            });
           });
         });
       });
