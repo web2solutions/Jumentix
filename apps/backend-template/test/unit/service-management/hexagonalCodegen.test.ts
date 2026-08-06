@@ -252,10 +252,10 @@ describe('hexagonal codegen (JUM-476)', () => {
       const [billing] = bundle.modules;
       const invoice = billing.entities.find((entity: GeneratedEntity) => entity.entity === 'Invoice');
       const controller = invoice.files.controller.content;
-      expect(controller).toContain('\'GET\', path: \'/billing/invoice\', operationId: \'listBilling_Invoice\'');
+      expect(controller).toContain('\'GET\', path: \'/billing/invoice\', operationId: \'getAllBilling_Invoice\'');
       expect(controller).toContain('\'POST\', path: \'/billing/invoice\', operationId: \'createBilling_Invoice\'');
       expect(controller).toContain('\'GET\', path: \'/billing/invoice/{id}\', operationId: \'getBilling_InvoiceById\'');
-      expect(controller).toContain('\'PATCH\', path: \'/billing/invoice/{id}\', operationId: \'updateBilling_Invoice\'');
+      expect(controller).toContain('\'PUT\', path: \'/billing/invoice/{id}\', operationId: \'updateBilling_Invoice\'');
       expect(controller).toContain('\'DELETE\', path: \'/billing/invoice/{id}\', operationId: \'deleteBilling_Invoice\'');
       // Every route row names an operationId the OAS export actually carries.
       const pathItems = oas.paths as Record<string, Record<string, { operationId: string }>>;

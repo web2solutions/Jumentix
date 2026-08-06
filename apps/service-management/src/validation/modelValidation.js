@@ -27,7 +27,9 @@ import {
 import {
   findEntity,
   getEntityRbacPolicy,
-  normalizedName
+  normalizedName,
+  toPathToken,
+  toSchemaName
 } from '../model/modelQueries.js';
 
 /**
@@ -49,6 +51,13 @@ export function collectModelIssues(state) {
   const issues = [];
   const pushIssue = (message, entityId = null, severity = 'error') => issues.push({ message, entityId, severity });
   const seenDomainNames = new Set();
+  // JUM-474: the OAS export derives schema names and route paths from the
+  // domain/entity names through a lossy tokenisation — distinct names can
+  // collapse onto the same token (`Foo Bar` and `Foo-Bar` both become
+  // `foo-bar`). A collision silently overwrites a path/schema in the exported
+  // document, so it is an export-gate-blocking error, not a warning.
+  const seenOasSchemaNames = new Map();
+  const seenOasRoutePaths = new Map();
 
   state.domains.forEach((domain) => {
     const domainNameKey = normalizedName(domain.name);
@@ -131,6 +140,28 @@ export function collectModelIssues(state) {
       }
       if (composition.discriminator && !mode) {
         pushIssue(`Entity ${domain.name}/${entity.name} has discriminator without composition mode.`, entity.id, 'warn');
+      }
+
+      const entityLabelText = `${domain.name}/${entity.name}`;
+      const oasSchemaName = toSchemaName(domain.name, entity.name);
+      if (seenOasSchemaNames.has(oasSchemaName)) {
+        pushIssue(
+          `Entities ${seenOasSchemaNames.get(oasSchemaName)} and ${entityLabelText} resolve to the same OAS schema name: ${oasSchemaName}`,
+          entity.id,
+          'error'
+        );
+      } else {
+        seenOasSchemaNames.set(oasSchemaName, entityLabelText);
+      }
+      const oasRoutePath = `/${toPathToken(domain.name)}/${toPathToken(entity.name)}`;
+      if (seenOasRoutePaths.has(oasRoutePath)) {
+        pushIssue(
+          `Entities ${seenOasRoutePaths.get(oasRoutePath)} and ${entityLabelText} resolve to the same OAS route path: ${oasRoutePath}`,
+          entity.id,
+          'error'
+        );
+      } else {
+        seenOasRoutePaths.set(oasRoutePath, entityLabelText);
       }
     });
   });

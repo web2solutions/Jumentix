@@ -4,7 +4,8 @@
 
 ## All Changes
 
-- 2026-08-06 feat(JUM-476): emit hexagonal layout from codegen preview and boilerplate bundle - Eduardo A.
+- 2026-08-06 feat(JUM-474): make OAS 3.1 export compliant with Req 036 and route-resolution - Eduardo A.
+- 2026-08-06 feat(JUM-477): align RBAC editor with tenant authorization contract (#95) - Eduardo A.
 - 2026-08-06 test(JUM-471): add exporters/importers round-trip suite (#94) - Eduardo A.
 - 2026-08-06 test(JUM-470): pin validation severities, export-gate boundary and normalizer round-trips (#93) - Eduardo A.
 - 2026-08-06 [JUM-600][CI] Run the docker smoke matrix on dev and main, and fix its readiness race (#92) - Eduardo A.

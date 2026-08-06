@@ -296,10 +296,19 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
      version: "1.0.0", exportedAt, domain }` for the selected domain; the package
      import flow accepts exactly this shape.
    - **OpenAPI 3.1** (`domain-designer-oas-3.1.json`): `openapi: 3.1.0`; CRUD paths
-     per entity (`list/create/getById/update/delete` operationIds), component schemas
-     carrying `x-domain`, `x-entity`, `x-message-contracts`, optional
-     `oneOf`/`allOf`/`anyOf` composition with `discriminator` and `x-external-refs`,
-     plus top-level `x-message-contracts` and `x-relations`.
+     per entity with unique operationIds on the canonical `spec/1.0.0.yml` verb
+     scheme (`getAll<Schema>`/`create<Schema>`/`get<Schema>ById`/`update<Schema>`/
+     `delete<Schema>`); request bodies reference `RequestCreate<Schema>`/
+     `RequestUpdate<Schema>` port input objects and 2xx responses reference the
+     entity schema, its `<Schema>ArrayOf` wrapper or `ResourceDeleteResponse` via
+     `$ref`, every referenced schema carrying a non-empty `description`
+     (Requirement 036, enforced by `ci-cd/check-oas-route-resolution.js`); error
+     responses use the canonical `ERROR-CONTRACTS-AND-RESPONSES` codes
+     (400/401/403/404/409); entity component schemas carrying `x-domain`,
+     `x-entity`, `x-message-contracts`, optional `oneOf`/`allOf`/`anyOf`
+     composition with `discriminator` and `x-external-refs`, plus top-level
+     `x-message-contracts` and `x-relations`. Port input/output wrappers are
+     marked `'x-port-object': true` and skipped by the OAS importer (JUM-474).
    - **Export quality gate.** When `view.exportBlockCritical` is true (the default),
      every exporter MUST refuse to run while model validation reports any
      `error`-severity issue, surfacing the blocking issues instead of producing a

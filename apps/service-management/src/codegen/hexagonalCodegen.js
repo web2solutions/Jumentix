@@ -134,7 +134,7 @@ function flattenOasOperations(oasDocument) {
 function findEntityRoutes(oasDocument, schemaName) {
   const operations = flattenOasOperations(oasDocument);
   const expected = {
-    list: `list${schemaName}`,
+    list: `getAll${schemaName}`,
     create: `create${schemaName}`,
     getById: `get${schemaName}ById`,
     update: `update${schemaName}`,

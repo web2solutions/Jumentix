@@ -2,6 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 const YAML = require('yaml');
+const { runWhenEntryPoint } = require('./lib/entry-point.js');
 
 const HTTP_METHODS = new Set(['get', 'post', 'put', 'delete', 'patch', 'options', 'head', 'trace']);
 const FRAMEWORKS = ['express', 'fastify', 'restify'];
@@ -145,8 +146,7 @@ function validatePortObjectContracts(fileName, document, routePath, method, oper
   });
 }
 
-function validateRouteResolution() {
-  const root = process.cwd();
+function collectRouteResolutionErrors(root) {
   const specDir = path.join(root, 'spec');
   const specs = readSpecFiles(specDir);
   const errors = [];
@@ -242,13 +242,30 @@ function validateRouteResolution() {
     });
   });
 
+  return errors;
+}
+
+function main() {
+  const errors = collectRouteResolutionErrors(process.cwd());
+
   if (errors.length > 0) {
     console.error('OpenAPI route resolution failed:');
     errors.forEach((error) => console.error(`- ${error}`));
-    process.exit(1);
+    return 1;
   }
 
   console.log('OpenAPI route resolution check passed.');
+  return 0;
 }
 
-validateRouteResolution();
+runWhenEntryPoint({ caller: module, execute: main });
+
+module.exports = {
+  collectRouteResolutionErrors,
+  getModuleNames,
+  getOperationRequestSchemaRef,
+  getOperationResponseSchemaRefs,
+  main,
+  resolveSchemaByRef,
+  validatePortObjectContracts
+};

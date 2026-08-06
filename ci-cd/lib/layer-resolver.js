@@ -224,9 +224,14 @@ function createLayerAwarePlan(changedFiles, options = {}) {
     .filter((suite) => !isQuarantined(manifest, suite.path));
 
   const unitSuites = suites.filter((suite) => suite.type === 'unit');
+  // Contract suites (JUM-440: `oas:check-routes`, `serverless:check-handlers`)
+  // are script-run gates exactly like the per-framework integration scripts —
+  // planned but not executed here, they made the evidence validation report
+  // its own planned suites as unrun whenever a change selected the contracts
+  // layer (first hit by JUM-474 editing `ci-cd/check-oas-route-resolution.js`).
   const integrationScripts = [...new Set(
     suites
-      .filter((suite) => suite.type === 'integration' && suite.script)
+      .filter((suite) => (suite.type === 'integration' || suite.type === 'contract') && suite.script)
       .map((suite) => suite.script)
   )];
 

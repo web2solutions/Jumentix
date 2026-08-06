@@ -262,10 +262,16 @@ describe('designer exporters (JUM-469)', () => {
   it('builds the OAS 3.1 document with schemas, paths and x- extensions', () => {
     const document = buildOasDocument(createState());
     expect(document.openapi).toBe('3.1.0');
-    expect(document.info).toStrictEqual({ title: 'Domain Designer Export', version: '1.0.0' });
+    expect(document.info).toStrictEqual({
+      title: 'Domain Designer Export',
+      description: 'REST API designed with the Jumentix Domain Designer',
+      version: '1.0.0'
+    });
+    expect(document.servers).toStrictEqual([{ url: 'http://localhost:3000/api/1.0.0' }]);
 
     expect(document.components.schemas.Billing_Invoice).toStrictEqual({
       type: 'object',
+      description: 'Port output object for Invoice resource.',
       properties: EXPECTED_INVOICE_PROPERTIES,
       required: ['id', 'total'],
       'x-domain': 'Billing',
@@ -292,25 +298,75 @@ describe('designer exporters (JUM-469)', () => {
       }
     });
 
-    const schemaRef = { $ref: '#/components/schemas/Billing_Invoice' };
+    // Port input/output wrappers (Req 036): request bodies and 2xx responses
+    // reference described component schemas, never inline schemas.
+    expect(document.components.schemas.RequestCreateBilling_Invoice).toStrictEqual({
+      type: 'object',
+      description: 'Port input object for Invoice creation endpoint.',
+      properties: EXPECTED_INVOICE_PROPERTIES,
+      required: ['total'],
+      'x-port-object': true
+    });
+    expect(document.components.schemas.RequestUpdateBilling_Invoice).toStrictEqual({
+      type: 'object',
+      description: 'Port input object for Invoice update endpoint.',
+      properties: EXPECTED_INVOICE_PROPERTIES,
+      required: ['id'],
+      'x-port-object': true
+    });
+    expect(document.components.schemas.Billing_InvoiceArrayOf).toStrictEqual({
+      type: 'array',
+      description: 'Port output array of Invoice records.',
+      items: { $ref: '#/components/schemas/Billing_Invoice' },
+      'x-port-object': true
+    });
+    expect(document.components.schemas.ResourceDeleteResponse).toStrictEqual({
+      description: 'Port output object for delete operations.',
+      required: ['data'],
+      type: 'object',
+      properties: {
+        data: {
+          type: 'boolean',
+          default: false,
+          description: 'Result of request to delete resource'
+        }
+      },
+      'x-port-object': true
+    });
+    expect(document.components.securitySchemes).toStrictEqual({
+      bearerAuth: { type: 'http', scheme: 'bearer' }
+    });
+
+    const entityRef = { $ref: '#/components/schemas/Billing_Invoice' };
     const idParam = [{
-      name: 'id', in: 'path', required: true, schema: { type: 'string' }
+      name: 'id', in: 'path', description: 'ID of Invoice', required: true, schema: { type: 'string' }
     }];
     expect(document.paths['/billing/invoice']).toStrictEqual({
       get: {
-        operationId: 'listBilling_Invoice',
+        operationId: 'getAllBilling_Invoice',
         responses: {
           200: {
-            description: 'Success',
-            content: { 'application/json': { schema: { type: 'array', items: schemaRef } } }
-          }
+            description: 'successful operation',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Billing_InvoiceArrayOf' } } }
+          },
+          400: { description: 'Invalid request' },
+          401: { description: 'Unauthorized' },
+          403: { description: 'Forbidden' }
         }
       },
       post: {
         operationId: 'createBilling_Invoice',
-        requestBody: { required: true, content: { 'application/json': { schema: schemaRef } } },
+        requestBody: {
+          description: 'Create a new Invoice',
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/RequestCreateBilling_Invoice' } } },
+          required: true
+        },
         responses: {
-          201: { description: 'Created', content: { 'application/json': { schema: schemaRef } } }
+          201: { description: 'Invoice created successfully', content: { 'application/json': { schema: entityRef } } },
+          400: { description: 'Invalid request' },
+          401: { description: 'Unauthorized' },
+          403: { description: 'Forbidden' },
+          409: { description: 'Conflict' }
         }
       }
     });
@@ -319,25 +375,42 @@ describe('designer exporters (JUM-469)', () => {
         operationId: 'getBilling_InvoiceById',
         parameters: idParam,
         responses: {
-          200: { description: 'Success', content: { 'application/json': { schema: schemaRef } } },
-          404: { description: 'Not found' }
+          200: { description: 'successful operation', content: { 'application/json': { schema: entityRef } } },
+          400: { description: 'Invalid ID supplied' },
+          401: { description: 'Unauthorized' },
+          403: { description: 'Forbidden' },
+          404: { description: 'Invoice not found' }
         }
       },
-      patch: {
+      put: {
         operationId: 'updateBilling_Invoice',
         parameters: idParam,
-        requestBody: { required: true, content: { 'application/json': { schema: schemaRef } } },
+        requestBody: {
+          description: 'Update an existing Invoice',
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/RequestUpdateBilling_Invoice' } } },
+          required: true
+        },
         responses: {
-          200: { description: 'Updated', content: { 'application/json': { schema: schemaRef } } },
-          404: { description: 'Not found' }
+          200: { description: 'successful operation', content: { 'application/json': { schema: entityRef } } },
+          400: { description: 'Invalid ID supplied' },
+          401: { description: 'Unauthorized' },
+          403: { description: 'Forbidden' },
+          404: { description: 'Invoice not found' },
+          409: { description: 'Conflict' }
         }
       },
       delete: {
         operationId: 'deleteBilling_Invoice',
         parameters: idParam,
         responses: {
-          204: { description: 'Deleted' },
-          404: { description: 'Not found' }
+          200: {
+            description: 'successful operation',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/ResourceDeleteResponse' } } }
+          },
+          400: { description: 'Invalid ID supplied' },
+          401: { description: 'Unauthorized' },
+          403: { description: 'Forbidden' },
+          404: { description: 'Invoice not found' }
         }
       }
     });
