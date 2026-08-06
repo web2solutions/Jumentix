@@ -10,8 +10,17 @@
  *
  * Behaviour is byte-identical to the pre-extraction `script.js`: same default
  * state, same normalisation on load, same history semantics, same payload
- * sections written through the store.
+ * sections written through the store — with one deliberate JUM-477 exception:
+ * `meta.rbac` rules are normalised against the tenant RBAC contract
+ * (`src/model/rbacContract.js`), which re-derives `tenantScoped` from the
+ * rule's roles because the runtime has no independent tenant-scope knob.
  */
+
+import {
+  RBAC_ACTIONS,
+  deriveTenantScoped,
+  normalizeRbacRule
+} from '../model/rbacContract.js';
 
 export const DOMAIN_COLORS = ['#60a5fa', '#34d399', '#f59e0b', '#f472b6', '#22d3ee', '#a78bfa', '#fb7185', '#84cc16'];
 export const FIELD_TYPES = ['string', 'integer', 'number', 'boolean', 'array', 'object', 'date', 'datetime', 'uuid'];
@@ -113,14 +122,47 @@ export function normalizeRelationship(relationship) {
   };
 }
 
+/**
+ * The designer's default per-entity RBAC policy. The role sets mirror the
+ * runtime's normalized-role semantics (`ROLE_SCOPE_MATRIX` in `Rbac.ts`):
+ * `admin`/`superadmin` for collection and mutating actions, `user` added for
+ * single-record reads. `tenantScoped` is not a free choice — it is derived
+ * from the roles exactly as the runtime derives it (see `rbacContract.js`),
+ * so an entity created without explicit RBAC behaves in the designer as it
+ * will behave in the boilerplate (JUM-477).
+ */
 export function getDefaultRbacPolicy() {
-  return {
-    list: { roles: ['superadmin', 'admin'], tenantScoped: true },
-    getById: { roles: ['superadmin', 'admin', 'user'], tenantScoped: true },
-    create: { roles: ['superadmin', 'admin'], tenantScoped: true },
-    update: { roles: ['superadmin', 'admin'], tenantScoped: true },
-    delete: { roles: ['superadmin', 'admin'], tenantScoped: true }
+  const defaultRoles = {
+    list: ['superadmin', 'admin'],
+    getById: ['superadmin', 'admin', 'user'],
+    create: ['superadmin', 'admin'],
+    update: ['superadmin', 'admin'],
+    delete: ['superadmin', 'admin']
   };
+  const policy = {};
+  RBAC_ACTIONS.forEach((action) => {
+    policy[action] = {
+      roles: [...defaultRoles[action]],
+      tenantScoped: deriveTenantScoped(defaultRoles[action])
+    };
+  });
+  return policy;
+}
+
+/**
+ * Normalize a stored `meta.rbac` policy against the tenant RBAC contract:
+ * every action rule is rebuilt by `normalizeRbacRule` over the default
+ * policy, so `tenantScoped` is re-derived from the roles (a stored flag the
+ * runtime could not honour is repaired on load) and unknown roles are kept
+ * for validation to reject rather than silently dropped (JUM-477).
+ */
+export function normalizeRbacPolicyInput(sourceRbac) {
+  const rbac = getDefaultRbacPolicy();
+  const source = sourceRbac || {};
+  RBAC_ACTIONS.forEach((action) => {
+    rbac[action] = normalizeRbacRule(source[action], rbac[action]);
+  });
+  return rbac;
 }
 
 export function defaultFields() {
@@ -138,19 +180,7 @@ export function normalizeEntityInput(entity, entityIndex) {
   const invariants = Array.isArray(entity?.meta?.invariants)
     ? entity.meta.invariants.map((item) => String(item).trim()).filter(Boolean)
     : parseCommaSeparated(String(entity?.meta?.invariants || '').replace(/\n/g, ','));
-  const rbac = getDefaultRbacPolicy();
-  const sourceRbac = entity?.meta?.rbac || {};
-  ['list', 'getById', 'create', 'update', 'delete'].forEach((action) => {
-    const rule = sourceRbac[action] || rbac[action] || {};
-    rbac[action] = {
-      roles: Array.isArray(rule.roles)
-        ? rule.roles.map((role) => String(role).trim()).filter(Boolean)
-        : Array.isArray(rbac[action]?.roles)
-          ? rbac[action].roles
-          : [],
-      tenantScoped: typeof rule.tenantScoped === 'boolean' ? rule.tenantScoped : Boolean(rbac[action]?.tenantScoped)
-    };
-  });
+  const rbac = normalizeRbacPolicyInput(entity?.meta?.rbac);
   const contracts = Array.isArray(entity?.meta?.contracts)
     ? entity.meta.contracts.map((contract, index) => normalizeContractInput(contract, index))
     : [];

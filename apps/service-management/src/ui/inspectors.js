@@ -11,12 +11,18 @@
  * rely on lives in the DOM-free `src/model/modelQueries.js`.
  *
  * Behaviour is verbatim from the monolith: same elements, classes, disabled
- * flags and text. `render()` in `script.js` calls these in exactly the
+ * flags and text — with one deliberate JUM-477 exception in the RBAC
+ * inspector: the tenant-scope checkbox is read-only and displays the value
+ * derived from the rule's roles by the tenant RBAC contract
+ * (`src/model/rbacContract.js`), because the runtime has no independent
+ * tenant-scope knob to honour.
+ * `render()` in `script.js` calls these in exactly the
  * pre-refactor order — the implicit sequencing (e.g. options before the
  * inspector that reads them) is now an explicit call sequence.
  */
 
 import { FIELD_TYPES } from '../state/designerState.js';
+import { deriveTenantScoped } from '../model/rbacContract.js';
 import {
   entityLabel,
   findEntity,
@@ -215,17 +221,20 @@ export function createInspectors({ dom, state, interaction, actions }) {
   function renderEntityRbacInspector(entity) {
     const policy = getEntityRbacPolicy(entity);
     const action = dom.entityRbacActionSelect.value || 'list';
-    const rule = policy[action] || { roles: [], tenantScoped: true };
+    const rule = policy[action] || { roles: [], tenantScoped: false };
     const roles = Array.isArray(rule.roles) ? rule.roles : [];
     dom.entityRbacSuperadminCheck.checked = roles.includes('superadmin');
     dom.entityRbacAdminCheck.checked = roles.includes('admin');
     dom.entityRbacUserCheck.checked = roles.includes('user');
-    dom.entityRbacTenantCheck.checked = Boolean(rule.tenantScoped);
+    // Tenant scoping is derived from the roles by the contract (JUM-477);
+    // the checkbox is read-only and always reflects the derived value.
+    dom.entityRbacTenantCheck.checked = deriveTenantScoped(roles);
     dom.entityRbacList.innerHTML = '';
     ['list', 'getById', 'create', 'update', 'delete'].forEach((key) => {
       const item = document.createElement('li');
-      const actionRule = policy[key] || { roles: [], tenantScoped: true };
-      const label = `${key}: [${(actionRule.roles || []).join(', ')}] | tenantScoped=${Boolean(actionRule.tenantScoped)}`;
+      const actionRule = policy[key] || { roles: [], tenantScoped: false };
+      const actionRoles = Array.isArray(actionRule.roles) ? actionRule.roles : [];
+      const label = `${key}: [${actionRoles.join(', ')}] | tenantScoped=${deriveTenantScoped(actionRoles)}`;
       item.textContent = label;
       dom.entityRbacList.appendChild(item);
     });
@@ -344,7 +353,8 @@ export function createInspectors({ dom, state, interaction, actions }) {
     dom.entityRbacSuperadminCheck.disabled = false;
     dom.entityRbacAdminCheck.disabled = false;
     dom.entityRbacUserCheck.disabled = false;
-    dom.entityRbacTenantCheck.disabled = false;
+    // Read-only: tenant scoping derives from the roles per the contract.
+    dom.entityRbacTenantCheck.disabled = true;
     dom.saveEntityRbacBtn.disabled = false;
     renderEntityRbacInspector(found.entity);
     dom.entityContractNameInput.disabled = false;

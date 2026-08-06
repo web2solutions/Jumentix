@@ -103,7 +103,8 @@ Como usar:
 
 ## 5) Mapeamento de políticas RBAC
 
-Política de ação por entidade:
+Política de ação por entidade, alinhada ao contrato de autorização de tenant e
+RBAC (`TENANT-RBAC-AUTHORIZATION-CONTRACT.pt-BR.md`, JUM-477):
 
 - Ações:
   - `lista`
@@ -111,16 +112,30 @@ Política de ação por entidade:
   - `criar`
   - `atualizar`
   - `excluir`
-- Alternância de função:
+- Alternância de função (as funções normalizadas do contrato):
   - `superadministrador`
   - `administrador`
   - `usuário`
-- Sinalizador de escopo do locatário
+- Escopo do locatário: **derivado das funções selecionadas**, não um
+  sinalizador livre. O runtime (`Rbac.ts` / `TenantAuthorizationPolicy.ts`)
+  restringe os principais `admin` e `user` à própria organização e concede ao
+  `superadmin` um limite global — não existe um botão independente de escopo de
+  locatário a ser honrado, portanto o editor exibe o valor derivado como uma
+  caixa de seleção somente leitura. Políticas armazenadas são reparadas para o
+  valor derivado no carregamento.
+- Escopos diretos legados (`read_user`, `create_organization`, ...) continuam
+  suportados pelo runtime e sobrevivem à importação/exportação, mas não são
+  editáveis no inspetor; a validação os aceita como expressíveis pelo contrato.
+- Uma função fora do vocabulário do contrato é rejeitada no momento da
+  gravação com uma mensagem acionável, e a validação do modelo relata qualquer
+  função armazenada desse tipo como `error`, de modo que o portão de qualidade
+  de exportação a bloqueia em vez de descartá-la.
 
 Como usar:
 
 1. Selecione entidade e ação.
-2. Marque as funções permitidas e o escopo do locatário.
+2. Marque as funções permitidas; o indicador de escopo do locatário acompanha
+   as funções.
 3. Clique em `Salvar regra RBAC`.
 4. Revise a matriz gerada na lista RBAC.
 
