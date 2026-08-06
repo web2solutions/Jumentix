@@ -89,6 +89,13 @@ jobs:
       - wait_tcp:
           port: 5672
       - run:
+          # The service-management smoke boots the SPA in real WebKit (JUM-466);
+          # the JUM-472 layer mapping selects SM integration suites here.
+          name: Install WebKit for browser-based integration tests
+          command: |
+            bun x playwright install webkit
+            bun x playwright install-deps webkit
+      - run:
           name: Run canonical branch quality gate
           no_output_timeout: 30m
           command: |

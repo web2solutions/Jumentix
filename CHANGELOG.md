@@ -4,10 +4,13 @@
 
 ## All Changes
 
+- 2026-08-06 chore(JUM-469): merge dev after PRs 88/89/90 landing - Eduardo A.
+- 2026-08-06 ci(JUM-469): install WebKit in branch-gate for browser smoke - Eduardo A.
 - 2026-08-05 [JUM-613][Fix] Repair the Firestore agent-registry integration and its corrupted records (#88) - Eduardo A.
 - 2026-08-05 ci(JUM-472): register service-management in the path-to-layer manifest (#90) - Eduardo A.
 - 2026-08-05 docs(JUM-473): document E3 module architecture and IDesignerStore port contract (#89) - Eduardo A.
 - 2026-08-05 docs(website): document Vercel deploy auth and GITHUB_TOKEN (JUM-397) (#70) - Eduardo A.
+- 2026-08-05 refactor(JUM-469): modularize designer exporters, importers, validation, canvas and tabs - Eduardo A.
 - 2026-08-05 [JUM-468][Refactor] Extract state/persistence core behind IDesignerStore port (#86) - Eduardo A.
 - 2026-08-05 [JUM-466][Test] Expand service-management integration smoke (#85) - Eduardo A.
 - 2026-08-05 feat(JUM-460): expand env key allowlist to the full runtime matrix (#84) - Eduardo A.
