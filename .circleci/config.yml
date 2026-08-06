@@ -423,6 +423,54 @@ jobs:
               -f coverage/lcov.info \
               -f coverage/browser/lcov.info
 
+  # The docker-backed smoke suites (JUM-600).
+  #
+  # A `machine` executor, rather than a docker executor with a remote daemon:
+  # the repository's own `docker:up:*` scripts run `docker compose`, and the
+  # smoke tests connect to `127.0.0.1`. Against a remote daemon the containers
+  # live on a different host and those ports are not reachable, so the suites
+  # would skip themselves and report success — the exact false green this job
+  # exists to prevent.
+  #
+  # The remote-daemon setup step is deliberately not named here: the
+  # third-party review contract greps this file as text, so writing the literal
+  # step name in a comment fails the check that forbids using it (JUM-616).
+  #
+  # Runs on `dev` and `main` only, not on every pull request. Ten database
+  # containers take minutes and pull images; per-PR is too expensive, and
+  # release-only would let a regression sit in `dev` until a release trips over
+  # it. Post-merge on `dev` catches it the same day.
+  database-matrix:
+    machine:
+      image: ubuntu-2404:current
+    resource_class: large
+    steps:
+      - checkout
+      - install_bun
+      - run:
+          name: Install frozen dependencies
+          command: bun install --frozen-lockfile
+      - run:
+          name: Database driver smoke matrix against real containers
+          no_output_timeout: 45m
+          # Each `smoke:db:*` script brings its own compose file up, runs the
+          # driver, and takes it down again. Sequential by design: ten database
+          # servers at once exhausts the box, and a container that fails to
+          # start is then indistinguishable from a driver that cannot connect.
+          command: bun run test:smoke:db:all
+      - run:
+          name: Redis key-value integration against a real server
+          no_output_timeout: 15m
+          command: bun run smoke:key-value:redis
+      - run:
+          name: Broker integration against real RabbitMQ and Redis
+          no_output_timeout: 15m
+          command: bun run smoke:message-mediator
+      - run:
+          name: Container logs for a failed run
+          when: on_fail
+          command: docker ps -a && docker compose ls || true
+
 workflows:
   continuous-integration:
     jobs:
@@ -439,3 +487,9 @@ workflows:
       - sonarqube:
           requires:
             - coverage
+      - database-matrix:
+          filters:
+            branches:
+              only:
+                - dev
+                - main
