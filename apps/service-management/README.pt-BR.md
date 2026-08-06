@@ -38,7 +38,7 @@ Uso detalhado de recursos:
    - Editor agregado de raiz + invariantes com marcador AR visual em cartões de entidade.
    - Pré-visualização de comparação/migração de esquema com suporte a snapshot de linha de base.
    - Filtro de severidade de validação e portão de qualidade de exportação (bloqueio em questões críticas).
-   - Editor de mapeamento RBAC por entidade/ação com sinalizadores de escopo de locatário.
+   - Editor de mapeamento RBAC por entidade/ação, alinhado ao contrato de autorização de tenant e RBAC (funções normalizadas; escopo de locatário derivado das funções).
    - Designer de contrato de evento/mensagem (`event`, `command`, `request`, `response`) com metadados de esquema de carga útil.
    - Modelos de entidade: `crudAggregate`, `eventSourced`, `referenceData`, `tenantOwned`.
    - Visualização da geração de código para esqueletos de modelo de domínio/repositório/caso de uso/controlador/manipulador.

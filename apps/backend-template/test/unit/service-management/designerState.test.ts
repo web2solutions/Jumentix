@@ -87,7 +87,7 @@ function createCore(storage = createFakeStorage()) {
 
 describe('designer state core (JUM-468)', () => {
   it('is DOM-free: no document/window references in the extracted modules', () => {
-    ['src/state/designerState.js', 'src/store/IDesignerStore.js', 'src/store/LocalStorageDesignerStore.js']
+    ['src/state/designerState.js', 'src/store/IDesignerStore.js', 'src/store/LocalStorageDesignerStore.js', 'src/model/rbacContract.js']
       .forEach((modulePath) => {
         const source = fs.readFileSync(
           path.join(repoRoot, 'apps', 'service-management', ...modulePath.split('/')),
@@ -525,9 +525,12 @@ describe('designer state core (JUM-468)', () => {
       expect(entity.fields).toHaveLength(1);
       expect(entity.meta.aggregateRoot).toBe(true);
       expect(entity.meta.invariants).toStrictEqual(['a', 'b']);
-      expect(entity.meta.rbac.list).toStrictEqual({ roles: ['admin'], tenantScoped: false });
-      // A non-array roles value falls back to the default rule's roles; a
-      // non-boolean tenantScoped falls back to the default rule's flag.
+      // JUM-477: tenantScoped is re-derived from the roles on load (the
+      // stored `false` was a flag the runtime could not honour for a
+      // normalized admin role), so the persisted shape is repaired.
+      expect(entity.meta.rbac.list).toStrictEqual({ roles: ['admin'], tenantScoped: true });
+      // A non-array roles value falls back to the default rule's roles; the
+      // derived tenantScoped for that default rule is true.
       expect(entity.meta.rbac.delete.roles).toStrictEqual(['superadmin', 'admin']);
       expect(entity.meta.rbac.delete.tenantScoped).toBe(true);
       expect(entity.meta.contracts).toHaveLength(1);
