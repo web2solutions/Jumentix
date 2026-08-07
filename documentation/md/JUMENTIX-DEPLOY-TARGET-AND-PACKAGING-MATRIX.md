@@ -14,6 +14,16 @@ Define deploy targets and artifact packaging contracts for backend and frontend 
 | Vercel Functions | Function APIs | Vercel runtime | Vercel function entrypoints + config | Vercel deploy workflow |
 | Cloudflare Workers | Function/event APIs | Worker runtime | Worker module bundle + worker config | Wrangler/Worker deployment |
 
+## Machine-readable Reader
+
+The run-mode × cloud-provider support derived from this matrix is maintained
+as data in `apps/service-management/src/model/deployCapabilityMatrix.js`
+(extracted by JUM-544 so the Service Configuration tab and JUM-481's deploy
+targets validate against one shared source instead of two transcriptions).
+The designer's Service Configuration tab enforces it at save time (JUM-544):
+combinations with no deploy target in this matrix are rejected. Any change to
+this matrix must update that module — and vice versa — in the same PR.
+
 ## Packaging Contracts
 
 | Artifact Type | Mandatory Files | Validation Gate |
