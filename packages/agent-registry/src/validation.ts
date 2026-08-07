@@ -66,6 +66,75 @@ const MAY_BE_EMPTY: ReadonlyArray<keyof AgentRecord> = [
   'dev_ref_checked'
 ];
 
+/**
+ * Values that occupy `workspace_path` without declaring anything (JUM-614).
+ *
+ * `unknown` is what the JUM-611 migration wrote for every agent whose markdown
+ * entry had no path. It is a non-empty string, so it satisfied the only rule
+ * there was, and seven of ten agents still carry it. Requirement 114 §6 says an
+ * agent must fail closed if it is not working under the declared layout — and
+ * that cannot be checked at all while the field is allowed to say nothing.
+ */
+const PLACEHOLDER_WORKSPACE_PATHS: readonly string[] = [
+  'unknown',
+  'n/a',
+  'none',
+  'tbd',
+  '-'
+];
+
+export interface WorkspaceExemption {
+  /** ISO date the exemption was granted. */
+  since: string;
+  /** The issue that closes it. */
+  issue: string;
+  reason: string;
+}
+
+/**
+ * Agents allowed, for now, to hold a placeholder workspace path.
+ *
+ * A ratchet, not a waiver, in the shape this repository already uses for
+ * coverage: an entry needs a date, an issue and a reason, and **it expires by
+ * failing** — once an agent declares a real path the check fails while the
+ * entry is still listed, so the concession cannot quietly become permanent.
+ *
+ * These seven exist because the JUM-611 migration invented `unknown` for them,
+ * not because anyone chose it. Only each agent's own operator can supply the
+ * real path, and inventing one here would put a wrong value in the field
+ * Requirement 114 names as its evidence. Failing the gate today would instead
+ * turn `dev` red for seven agents who cannot see the failure.
+ *
+ * The write boundary does **not** honour this list: registering with a
+ * placeholder fails for everyone, exemption or not. The list only covers
+ * records already stored.
+ */
+export const AGENTS_WITHOUT_DECLARED_WORKSPACE: Readonly<Record<string, WorkspaceExemption>> = {
+  'codex-governance-001': { since: '2026-08-06', issue: 'JUM-614', reason: 'migrated with no path' },
+  'codex-governance-002': { since: '2026-08-06', issue: 'JUM-614', reason: 'migrated with no path' },
+  'codex-primary-001': { since: '2026-08-06', issue: 'JUM-614', reason: 'migrated with no path' },
+  'codex-primary-002': { since: '2026-08-06', issue: 'JUM-614', reason: 'migrated with no path' },
+  'codex-website-001': { since: '2026-08-06', issue: 'JUM-614', reason: 'migrated with no path' },
+  'grok-cursor-001': { since: '2026-08-06', issue: 'JUM-614', reason: 'migrated with no path' },
+  'kimi-k3-cursor-001': { since: '2026-08-06', issue: 'JUM-614', reason: 'migrated with no path' }
+};
+
+/** Whether a stored value declares a workspace at all. */
+export function workspacePathProblem(workspacePath: unknown): string | undefined {
+  if (typeof workspacePath !== 'string' || workspacePath.trim() === '') {
+    return 'is required and cannot be empty';
+  }
+  const value = workspacePath.trim();
+  if (PLACEHOLDER_WORKSPACE_PATHS.includes(value.toLowerCase())) {
+    return `must be the path the agent works in, not the placeholder "${value}" `
+      + '(Requirement 114)';
+  }
+  if (!value.startsWith('/')) {
+    return `must be an absolute path, found "${value}" (Requirement 114)`;
+  }
+  return undefined;
+}
+
 export interface IntegrityProblem {
   /** The document id as stored, so a corrupt id can still be reported. */
   agent_id: string;
@@ -155,7 +224,17 @@ export function isAgentStatus(value: unknown): value is AgentStatus {
  * migration is wrong in sixteen places at once, and fixing them one error
  * message at a time is sixteen round trips against a live collection.
  */
-export function findIntegrityProblems(record: unknown): IntegrityProblem[] {
+export function findIntegrityProblems(
+  record: unknown,
+  /**
+   * Whether the stored-record exemptions apply (JUM-614).
+   *
+   * Off by default, so the write boundary refuses a placeholder from everyone.
+   * The read boundary turns it on, because the seven exempt records already
+   * exist and only their own operators can replace them.
+   */
+  { honourExemptions = false }: { honourExemptions?: boolean } = {}
+): IntegrityProblem[] {
   const problems: IntegrityProblem[] = [];
 
   if (!record || typeof record !== 'object' || Array.isArray(record)) {
@@ -175,6 +254,25 @@ export function findIntegrityProblems(record: unknown): IntegrityProblem[] {
     const problem = stringFieldProblem(agent[field], { allowEmpty: false });
     if (problem) add(field, problem);
   }
+
+  // The workspace must name a real directory, not a placeholder (JUM-614).
+  // Checked after the generic string rules so a missing field is reported once.
+  const canonicalId = canonicalAgentId(reportedId);
+  const exemption = AGENTS_WITHOUT_DECLARED_WORKSPACE[canonicalId];
+  const workspaceProblem = workspacePathProblem(agent.workspace_path);
+
+  if (workspaceProblem && typeof agent.workspace_path === 'string'
+      && agent.workspace_path.trim() !== '') {
+    if (!honourExemptions || !exemption) {
+      add('workspace_path', workspaceProblem);
+    }
+  }
+  // The ratchet's other direction — an exemption whose agent has since declared
+  // a path — is deliberately not checked here. That is a fact about the
+  // register being stale, not about this record being malformed, and the two do
+  // not belong in the same function: putting it here made `repairRegistry`
+  // refuse to write a perfectly valid record. It lives in `checkSnapshot`,
+  // beside the other fleet-level checks.
 
   for (const field of MAY_BE_EMPTY) {
     const problem = stringFieldProblem(agent[field], { allowEmpty: true });
@@ -231,8 +329,11 @@ export function describeProblems(problems: IntegrityProblem[]): string {
  *
  * This is what was missing when the migration ran.
  */
-export function assertValidAgentRecord(record: unknown): asserts record is AgentRecord {
-  const problems = findIntegrityProblems(record);
+export function assertValidAgentRecord(
+  record: unknown,
+  options: { honourExemptions?: boolean } = {}
+): asserts record is AgentRecord {
+  const problems = findIntegrityProblems(record, options);
   if (problems.length > 0) {
     throw new Error(
       `Refusing to write an invalid agent registry record:\n${describeProblems(problems)}`

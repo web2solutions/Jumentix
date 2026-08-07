@@ -1,4 +1,13 @@
 import * as contracts from '../src';
+import {
+  ConflictError,
+  DataBaseNotFoundError,
+  DatabasePagingError,
+  PERSISTENCE_ERROR_CODES,
+  PERSISTENCE_ERROR_NAMES,
+  currentCorrelationId,
+  setCorrelationIdResolver
+} from '../src';
 import type {
   IDatabaseClient,
   IStore,
@@ -38,13 +47,31 @@ interface User {
 }
 
 describe('the package entry point', () => {
-  it('exports types only, and no values at runtime', () => {
+  /**
+   * The runtime surface, pinned exactly.
+   *
+   * This used to assert the package exported *nothing* at runtime, guarding a
+   * package the rest of the repository treats as free to import anywhere,
+   * including a browser bundle. JUM-601 added the three store errors, which are
+   * values — so the guard is now the precise list rather than an empty one. It
+   * still fails the moment a fourth thing appears.
+   *
+   * The cost was measured rather than assumed: the compiled module is 1.1 kB
+   * and tree-shakeable, and no browser package imports this one today.
+   */
+  it('exports exactly the store errors at runtime, and nothing else', () => {
     expect.hasAssertions();
 
-    // If this ever stops being empty, a value has been added to a package the
-    // rest of the repository treats as free to import from anywhere, including
-    // the browser bundle.
-    expect(Object.keys(contracts)).toStrictEqual([]);
+    expect(Object.keys(contracts).sort()).toStrictEqual([
+      'ConflictError',
+      'DataBaseNotFoundError',
+      'DatabasePagingError',
+      'PERSISTENCE_ERROR_CODES',
+      'PERSISTENCE_ERROR_NAMES',
+      'PersistenceError',
+      'currentCorrelationId',
+      'setCorrelationIdResolver'
+    ]);
   });
 });
 
@@ -239,5 +266,149 @@ describe('the database client contract', () => {
     const client: IDatabaseClient = { connect: async () => {}, stores: {} };
 
     expect(client).toBeDefined();
+  });
+});
+
+/**
+ * The store errors (JUM-601).
+ *
+ * They moved here from `apps/backend-template/src/infra/exceptions` because
+ * `external-store-proxy` throws them and a library must not import from an
+ * application. The contract that survived the move is entirely in the strings:
+ * the application recognises these by `error.name` and maps `code` to an HTTP
+ * status, so a drift in either would route an error to the wrong response with
+ * nothing failing.
+ */
+describe('the store errors', () => {
+  it.each([
+    [ConflictError, 'database_duplicated', 'GENERIC.CONFLICT'],
+    [DataBaseNotFoundError, 'database_not_found', 'GENERIC.NOT_FOUND'],
+    [DatabasePagingError, 'database_paging_error', 'GENERIC.INVALID_INPUT']
+  ])('%p carries the name and code the application matches on', (
+    ErrorClass: new (message: string) => Error & { code: string },
+    name: string,
+    code: string
+  ) => {
+    expect.hasAssertions();
+
+    const error = new ErrorClass('something went wrong');
+
+    expect(error.name).toBe(name);
+    expect(error.code).toBe(code);
+  });
+
+  it('is a real Error, so it can be thrown and caught as one', () => {
+    expect.hasAssertions();
+
+    expect(() => {
+      throw new ConflictError('email already in use');
+    }).toThrow('email already in use');
+    expect(new ConflictError('x')).toBeInstanceOf(Error);
+  });
+
+  /**
+   * The stack must start where the throw was, not inside the constructor.
+   * `captureStackTrace` is the only reason that holds, and it is optional on
+   * some runtimes — hence the guarded call in the source.
+   */
+  it('starts its stack at the line that threw', () => {
+    expect.hasAssertions();
+
+    const error = new DataBaseNotFoundError('Record not found');
+
+    expect(error.stack).toBeDefined();
+    expect(error.stack).not.toMatch(/at new (DataBaseNotFoundError|PersistenceError)/);
+  });
+
+  it('carries a cause and metadata through when given them', () => {
+    expect.hasAssertions();
+
+    const cause = new Error('unique constraint violated');
+    const error = new ConflictError('email already in use', cause, { field: 'email' });
+
+    expect(error.cause).toBe(cause);
+    expect(error.metadata).toStrictEqual({ field: 'email' });
+  });
+
+  it('exposes the name and code tables it is built from', () => {
+    expect.hasAssertions();
+
+    expect(PERSISTENCE_ERROR_NAMES.conflict).toBe('database_duplicated');
+    expect(PERSISTENCE_ERROR_CODES.invalidInput).toBe('GENERIC.INVALID_INPUT');
+  });
+});
+
+/**
+ * The correlation-id seam (JUM-601).
+ *
+ * The application stamps an id per request and `shared/utils.ts` puts it in
+ * every error response. These errors are thrown inside a library, so without a
+ * way back to that id every database error would have lost it — which is why
+ * the move needed an inversion rather than a relocation.
+ */
+describe('the correlation id resolver', () => {
+  it('is empty until an application registers one', () => {
+    expect.hasAssertions();
+
+    expect(new ConflictError('x').correlationId).toBe('');
+  });
+
+  it('uses the registered resolver, and hands back the previous one', () => {
+    expect.hasAssertions();
+
+    const previous = setCorrelationIdResolver(() => 'req-42');
+
+    try {
+      expect(new DataBaseNotFoundError('x').correlationId).toBe('req-42');
+      expect(new ConflictError('x').toJSON().correlationId).toBe('req-42');
+    } finally {
+      // Returned so a test can restore it rather than leaking a stub into the
+      // suites that follow.
+      setCorrelationIdResolver(previous);
+    }
+
+    expect(new ConflictError('x').correlationId).toBe('');
+  });
+
+  /**
+   * An error being constructed must not be derailed by the thing annotating
+   * it. A throwing resolver would otherwise replace the real failure with its
+   * own, which is the worst possible substitution.
+   */
+  it('falls back to empty when the resolver throws', () => {
+    expect.hasAssertions();
+
+    const previous = setCorrelationIdResolver(() => {
+      throw new Error('no context');
+    });
+
+    try {
+      expect(new ConflictError('x').correlationId).toBe('');
+    } finally {
+      setCorrelationIdResolver(previous);
+    }
+  });
+
+  it('ignores a resolver that is not a function', () => {
+    expect.hasAssertions();
+
+    const previous = setCorrelationIdResolver(undefined as never);
+
+    try {
+      expect(currentCorrelationId()).toBe('');
+    } finally {
+      setCorrelationIdResolver(previous);
+    }
+  });
+
+  it('serializes the cause as a string, so it survives JSON', () => {
+    expect.hasAssertions();
+
+    const error = new ConflictError('dup', new Error('unique violated'), { field: 'email' });
+    const serialized = error.toJSON();
+
+    expect(serialized.cause).toBe(JSON.stringify(new Error('unique violated')));
+    expect(serialized.metadata).toStrictEqual({ field: 'email' });
+    expect(serialized.stack).toBeDefined();
   });
 });

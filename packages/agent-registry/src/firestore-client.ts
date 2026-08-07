@@ -69,7 +69,12 @@ export async function getAgent(
  * failed here on its first record.
  */
 export async function upsertAgent(firestore: FirestoreLike, agent: AgentRecord): Promise<void> {
-  assertValidAgentRecord(agent);
+  // Exemptions honoured here (JUM-614). This is the storage primitive: repair,
+  // heartbeat, assign and complete all round-trip an existing record through
+  // it, and an exempt agent's stored placeholder must survive that round trip.
+  // The rule that an agent must *declare* where it works is enforced at the
+  // front door, in `registerAgent`, where a fresh declaration is actually made.
+  assertValidAgentRecord(agent, { honourExemptions: true });
   await firestore.collection(COLLECTION).doc(agent.agent_id).set(agent, { merge: true });
 }
 
@@ -96,7 +101,13 @@ export async function getStoredAgents(firestore: FirestoreLike): Promise<StoredA
   const snapshot = await firestore.collection(COLLECTION).get();
   return snapshot.docs.map((doc) => {
     const record = doc.data() as AgentRecord;
-    return { documentId: doc.id, record, problems: findIntegrityProblems(record) };
+    // Exemptions honoured on read: the records they cover already exist, and
+    // only each agent's own operator can replace them (JUM-614).
+    return {
+      documentId: doc.id,
+      record,
+      problems: findIntegrityProblems(record, { honourExemptions: true })
+    };
   });
 }
 
