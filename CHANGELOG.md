@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-07 fix(JUM-544): validate service configuration ports and run-mode x provider consistency (#99) - Eduardo A.
 - 2026-08-06 feat(JUM-474): make OAS 3.1 export compliant with Req 036 and route-resolution (#98) - Eduardo A.
 - 2026-08-06 feat(JUM-476): emit hexagonal layout from codegen preview and boilerplate bundle (#97) - Eduardo A.
 - 2026-08-06 feat(JUM-475): asyncapi 3.0 per-transport and grpc proto exports targeting canonical spec/asyncapi/ (#96) - Eduardo A.

@@ -23,6 +23,9 @@ Arquivos principais de implementação:
 As camadas de módulos, o padrão de injeção e o contrato da porta de
 armazenamento `IDesignerStore` estão documentados em
 [Arquitetura de módulos do Service Management](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.pt-BR.md).
+O que as exportações de contrato garantem — e as verificações que o comprovam —
+está documentado em
+[Garantias de paridade de contratos do Service Management](./SERVICE-MANAGEMENT-CONTRACT-PARITY.pt-BR.md).
 
 ## Guias
 
