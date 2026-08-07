@@ -34,13 +34,17 @@ export {
   checkSnapshot
 } from './commands';
 
+export type { WorkspaceExemption } from './validation';
+
 export {
   AGENT_STATUSES,
+  AGENTS_WITHOUT_DECLARED_WORKSPACE,
   assertValidAgentRecord,
   canonicalAgentId,
   describeProblems,
   documentIdProblem,
   duplicateCanonicalIds,
   findIntegrityProblems,
-  isAgentStatus
+  isAgentStatus,
+  workspacePathProblem
 } from './validation';

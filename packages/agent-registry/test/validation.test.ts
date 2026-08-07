@@ -1,12 +1,14 @@
 import {
   AGENT_STATUSES,
+  AGENTS_WITHOUT_DECLARED_WORKSPACE,
   assertValidAgentRecord,
   canonicalAgentId,
   describeProblems,
   documentIdProblem,
   duplicateCanonicalIds,
   findIntegrityProblems,
-  isAgentStatus
+  isAgentStatus,
+  workspacePathProblem
 } from '../src';
 import type { AgentRecord } from '../src';
 
@@ -393,5 +395,127 @@ describe('describeProblems', () => {
     expect.hasAssertions();
 
     expect(describeProblems([])).toBe('');
+  });
+});
+
+/**
+ * Requiring an agent to say where it works (JUM-614).
+ *
+ * `workspace_path` was required non-empty and nothing more, so the literal
+ * `unknown` the JUM-611 migration invented satisfied it. Seven of ten agents
+ * still carry it, which means Requirement 114 §6 — an agent must fail closed if
+ * it is not working under the declared layout — cannot be checked at all.
+ */
+describe('workspacePathProblem', () => {
+  it('accepts a declared absolute path', () => {
+    expect.hasAssertions();
+
+    expect(workspacePathProblem('/Users/e/apps/XpertMinds/claude-governance-001/Jumentix'))
+      .toBeUndefined();
+  });
+
+  it.each(['unknown', 'UNKNOWN', '  Unknown  ', 'n/a', 'none', 'tbd', '-'])(
+    'rejects %p as a placeholder rather than a declaration',
+    (value: string) => {
+      expect.hasAssertions();
+
+      expect(workspacePathProblem(value)).toMatch(/placeholder/);
+    }
+  );
+
+  /**
+   * A relative path is not a declaration either: it means something different
+   * depending on where the agent happens to be standing.
+   */
+  it('rejects a relative path', () => {
+    expect.hasAssertions();
+
+    expect(workspacePathProblem('apps/Jumentix')).toMatch(/absolute path/);
+  });
+
+  it.each([['', 'empty'], ['   ', 'blank']])('rejects %p (%s)', (value: string) => {
+    expect.hasAssertions();
+
+    expect(workspacePathProblem(value)).toMatch(/cannot be empty/);
+  });
+
+  it('rejects a value that is not a string', () => {
+    expect.hasAssertions();
+
+    expect(workspacePathProblem(undefined)).toMatch(/cannot be empty/);
+  });
+});
+
+describe('requiring a declared workspace', () => {
+  const exempt = Object.keys(AGENTS_WITHOUT_DECLARED_WORKSPACE)[0];
+
+  /**
+   * The write boundary does not honour the exemptions. Registering with a
+   * placeholder fails for everyone, including the seven — otherwise the list
+   * would let them keep re-registering without ever declaring.
+   */
+  it('refuses to write a placeholder, exemption or not', () => {
+    expect.hasAssertions();
+
+    expect(() => assertValidAgentRecord(buildAgent({ workspace_path: 'unknown' })))
+      .toThrow(/placeholder/);
+    expect(() => assertValidAgentRecord(
+      buildAgent({ agent_id: exempt, workspace_path: 'unknown' })
+    )).toThrow(/placeholder/);
+  });
+
+  it('reports a placeholder on read for an agent that is not exempt', () => {
+    expect.hasAssertions();
+
+    const problems = findIntegrityProblems(
+      buildAgent({ agent_id: 'someone-new-001', workspace_path: 'unknown' }),
+      { honourExemptions: true }
+    );
+
+    expect(problems).toHaveLength(1);
+    expect(problems[0].field).toBe('workspace_path');
+  });
+
+  /**
+   * The seven migrated records. Failing on them today would turn `dev` red for
+   * agents whose operators cannot see the failure, and only those operators can
+   * supply the real path.
+   */
+  it('tolerates the placeholder on read for an exempt agent', () => {
+    expect.hasAssertions();
+
+    expect(findIntegrityProblems(
+      buildAgent({ agent_id: exempt, workspace_path: 'unknown' }),
+      { honourExemptions: true }
+    )).toStrictEqual([]);
+  });
+
+  /**
+   * The ratchet's other direction lives in `checkSnapshot`, not here, and its
+   * test lives beside it in `repair.test.ts`.
+   *
+   * Whether the register is stale is a fact about the register, not about this
+   * record. Checking it here made `repairRegistry` refuse to write records that
+   * were perfectly valid — so a declared path on an exempt agent must be no
+   * problem at all at this level.
+   */
+  it('treats a declared path on an exempt agent as sound at the record level', () => {
+    expect.hasAssertions();
+
+    expect(findIntegrityProblems(
+      buildAgent({ agent_id: exempt, workspace_path: '/Users/e/apps/XpertMinds/x/Jumentix' }),
+      { honourExemptions: true }
+    )).toStrictEqual([]);
+  });
+
+  it('every exemption carries a date, an issue and a reason', () => {
+    expect.hasAssertions();
+
+    for (const [agentId, exemption] of Object.entries(AGENTS_WITHOUT_DECLARED_WORKSPACE)) {
+      expect(exemption.since).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(exemption.issue).toMatch(/^JUM-\d+$/);
+      expect(exemption.reason.length).toBeGreaterThan(0);
+      expect(agentId.trim()).toBe(agentId);
+    }
   });
 });
