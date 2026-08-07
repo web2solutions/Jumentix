@@ -4,6 +4,9 @@
 
 ## All Changes
 
+- 2026-08-07 test(cana-browser): give the teardown its own budget, and stop it lying about blocks - Eduardo Almeida
+- 2026-08-07 [JUM-623][CI] Cover the cypress support file and config, not just the specs (#114) - Eduardo A.
+- 2026-08-07 ci(test-map): cover the cypress support file and config, not just the specs - Eduardo Almeida
 - 2026-08-07 [JUM-622][CI] Register cana's browser specs so the gate can select them (#113) - Eduardo A.
 - 2026-08-07 ci(test-map): register cana's cypress specs so the gate can select them - Eduardo Almeida
 - 2026-08-07 [JUM-620][CI] Declare readiness on every compose service (#111) - Eduardo A.
