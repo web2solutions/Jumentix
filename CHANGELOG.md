@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-07 refactor(persistence-contracts): own the store errors so a library stops importing an application - Eduardo Almeida
 - 2026-08-07 [JUM-614][Governance] Require an agent to declare where it works (#103) - Eduardo A.
 - 2026-08-07 fix(JUM-543): replace blocking alerts with non-blocking status surfaces and honest env-API errors (#100) - Eduardo A.
 - 2026-08-07 feat(JUM-478): lossless OAS round-trip with full entity meta normalization (#102) - Eduardo A.
