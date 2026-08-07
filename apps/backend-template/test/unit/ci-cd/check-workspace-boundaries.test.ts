@@ -65,7 +65,16 @@ describe('check-workspace-boundaries', () => {
     expect(violations).toStrictEqual([]);
   });
 
-  it('allows explicitly bridged package @src alias usage during migration', () => {
+  /**
+   * The bridge is gone (JUM-601).
+   *
+   * This test used to assert the opposite: `external-store-proxy` was named in
+   * a one-entry allowlist, with no date, no issue and no reason, so nothing
+   * made it expire. The three database errors it needed now live in
+   * `@jumentix/persistence-contracts`, and the file it exempted is subject to
+   * the rule like every other.
+   */
+  it('no longer exempts external-store-proxy from the @src rule', () => {
     expect.hasAssertions();
     const violations = validateImport({
       rootDir,
@@ -73,7 +82,10 @@ describe('check-workspace-boundaries', () => {
       relativeFilePath: path.join('packages', 'external-store-proxy', 'src', 'ExternalStoreProxy.ts'),
       importPath: '@src/infra/exceptions'
     });
-    expect(violations).toStrictEqual([]);
+    expect(violations).toStrictEqual([
+      'packages/external-store-proxy/src/ExternalStoreProxy.ts: '
+      + '@src alias is only allowed inside apps/backend-template'
+    ]);
   });
 
   it('blocks @src outside backend and app-cross imports from packages', () => {

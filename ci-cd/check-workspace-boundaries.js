@@ -6,9 +6,22 @@ const { isEntryPoint } = require('./lib/entry-point.js');
 const SUPPORTED_EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs'];
 const IGNORE_DIRS = new Set(['node_modules', '.git', '.build', 'coverage', '.tmp', 'dist']);
 const IMPORT_REGEX = /from\s+['"]([^'"]+)['"]|import\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
-const SRC_ALIAS_BRIDGE_ALLOWLIST = new Set([
-  path.join('packages', 'external-store-proxy', 'src', 'ExternalStoreProxy.ts')
-]);
+/**
+ * Files allowed to reach into the application through the `@src` alias.
+ *
+ * Empty, and that is the state to keep it in.
+ *
+ * It held one entry — `external-store-proxy/src/ExternalStoreProxy.ts` — with
+ * no date, no issue and no reason recorded, so nothing made it expire. The
+ * three database errors it needed now live in `@jumentix/persistence-contracts`
+ * (JUM-601), and the package can be built and published on its own for the
+ * first time.
+ *
+ * Adding an entry here means declaring that a library depends on an
+ * application, which is the boundary this check exists to hold. It needs a
+ * date, an issue and a reason at minimum, and a plan to remove it.
+ */
+const SRC_ALIAS_BRIDGE_ALLOWLIST = new Set([]);
 
 function collectSourceFiles(rootDir, sourceDir, files = []) {
   const dirPath = path.join(rootDir, sourceDir);

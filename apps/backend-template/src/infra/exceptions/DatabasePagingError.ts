@@ -1,9 +1,10 @@
-import { BaseError } from '@src/infra/exceptions/BaseError';
-import { EErrorStringCodes } from '@src/infra/exceptions/error.codes';
-import { _DATABASE_PAGING_ERROR_ } from '@src/config/constants';
-
-export class DatabasePagingError extends BaseError {
-  readonly code = EErrorStringCodes.INVALID_INPUT;
-
-  readonly name = _DATABASE_PAGING_ERROR_;
-}
+/**
+ * Re-exported from `@jumentix/persistence-contracts` (JUM-601).
+ *
+ * It used to be defined here and imported by `external-store-proxy` through
+ * the `@src` alias — a workspace library reaching into this application's
+ * source. The definition moved to the contracts package the library can
+ * legitimately depend on; this file keeps the application's own import paths
+ * working, so nothing else in `apps/backend-template` changed.
+ */
+export { DatabasePagingError } from '@jumentix/persistence-contracts';
