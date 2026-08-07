@@ -222,8 +222,8 @@
     "docker:up:mysql": "docker compose -f \"apps/backend-template/docker-compose-mysql.yml\" up -d --build",
     "docker:up:mssql": "docker compose -f \"apps/backend-template/docker-compose-mssql.yml\" up -d --build",
     "docker:up:oracle": "docker compose -f \"apps/backend-template/docker-compose-oracle.yml\" up -d --build",
-    "docker:up:mongodb": "docker compose -f \"apps/backend-template/docker-compose-mongodb.yml\" up -d --build",
-    "docker:up:cassandra": "docker compose -f \"apps/backend-template/docker-compose-cassandra.yml\" up -d --build",
+    "docker:up:mongodb": "docker compose -f \"apps/backend-template/docker-compose-mongodb.yml\" up -d --build --wait",
+    "docker:up:cassandra": "docker compose -f \"apps/backend-template/docker-compose-cassandra.yml\" up -d --build --wait",
     "docker:up:dynamodb": "docker compose -f \"apps/backend-template/docker-compose-dynamodb.yml\" up -d --build",
     "docker:up:firebase": "docker compose -f \"apps/backend-template/docker-compose-firebase.yml\" up -d --build",
     "docker:up:aurora": "docker compose -f \"apps/backend-template/docker-compose-aurora.yml\" up -d --build",
@@ -287,7 +287,9 @@
     "test:integration:key-value": "bun ci-cd/run-redis-key-value-integration.js",
     "smoke:key-value:redis": "bun run docker:composeredis && bun run test:integration:key-value && docker compose -f \"apps/backend-template/docker-compose-redis.yml\" down",
     "test:integration:message-mediator": "NODE_ENV=dev RUN_BROKER_INTEGRATION=1 bun ci-cd/run-suite.js --script-label message-mediator --timeout 60000 packages/message-mediator/test/integration",
-    "smoke:message-mediator": "bun run docker:composemessaging && bun run test:integration:message-mediator && docker compose -f \"apps/backend-template/docker-compose-messaging.yml\" down"
+    "test:integration:db-repositories": "NODE_ENV=dev RUN_DB_REPOSITORIES_INTEGRATION=1 bun ci-cd/run-suite.js --script-label db-repositories --timeout 120000 packages/external-db-repositories/test/integration",
+    "smoke:message-mediator": "bun run docker:composemessaging && bun run test:integration:message-mediator && docker compose -f \"apps/backend-template/docker-compose-messaging.yml\" down",
+    "smoke:db-repositories": "bun run docker:up:cassandra && bun run docker:up:mongodb && bun run test:integration:db-repositories; status=$?; bun run docker:down:cassandra; bun run docker:down:mongodb; exit $status"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.940.0",

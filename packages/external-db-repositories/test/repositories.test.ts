@@ -706,11 +706,22 @@ describe('the repositories that need a server', () => {
     expect(repository.getClient()).toBeNull();
   }, 30000);
 
+  /**
+   * Points at a port nothing listens on, rather than at Cassandra's default.
+   *
+   * It used to use 9042 with no port given, so it passed only while no
+   * Cassandra was running on the machine — and failed the moment the docker
+   * matrix brought one up beside it (JUM-602). A unit test whose result depends
+   * on what else happens to be listening is not measuring the code.
+   */
   it('reports a Cassandra cluster that is not there', async () => {
     expect.hasAssertions();
 
     const repository = new CassandraRepository({
-      extra: { contactPoints: ['127.0.0.1'], localDataCenter: 'datacenter1' }
+      extra: {
+        contactPoints: ['127.0.0.1:59942'],
+        localDataCenter: 'datacenter1'
+      }
     });
 
     await expect(repository.connect()).rejects.toThrow(/All host\(s\) tried for query failed/);
@@ -732,4 +743,251 @@ describe('the repositories that need a server', () => {
     await expect(repository.connect()).rejects.toThrow(/NJS-|ORA-/);
     expect(repository.isConnected()).toBe(false);
   }, 30000);
+});
+
+/**
+ * The guards and branches the issue expected to be unreachable (JUM-602).
+ *
+ * JUM-602 listed the "unable to resolve" guards, and Aurora's DSQL branch, as
+ * needing module substitution — which JUM-583 established does not behave the
+ * same under bun and Jest — and therefore as candidates for an `istanbul
+ * ignore` with a note.
+ *
+ * They are reachable. `loadModule` is `protected` on
+ * `BaseExternalDataRepository`, so a subclass can hand back whatever module
+ * shape a test wants. That is an injection seam, it works identically under
+ * both runners, and no pragma is needed: nothing here is excused from
+ * measurement.
+ *
+ * What these guards protect against is a driver that installs but exports
+ * something other than what the adapter reaches for — a major-version rename,
+ * or an ESM/CJS interop difference. Without them the adapter calls `undefined`
+ * as a constructor and reports a TypeError about `new`, which says nothing
+ * about which dependency is at fault.
+ */
+
+/** The shape every repository constructor shares, for the seam below. */
+type RepositoryConstructor = new (options: Record<string, unknown>) => object;
+
+type ModuleResolver = (moduleName: string) => unknown;
+
+interface SeamRepository {
+  connect(): Promise<void>;
+  disconnect(): Promise<void>;
+}
+
+/**
+ * A repository whose module loader answers from `resolve`.
+ *
+ * One class, defined once, rather than an inline subclass per test: five copies
+ * of the same override is five places for them to drift apart, and the
+ * repository lints `max-classes-per-file` at 1 for that reason. The branching
+ * each test needs lives in a module-scope resolver instead, which also keeps
+ * conditionals out of test bodies.
+ */
+function withModuleResolver(
+  RepositoryClass: unknown,
+  resolve: ModuleResolver,
+  options: Record<string, unknown> = {}
+): SeamRepository {
+  // Through `unknown`: the eight repositories have different option types, and
+  // this helper deliberately does not care which one it is handed — what it
+  // overrides is a method they all inherit.
+  class Injected extends (RepositoryClass as RepositoryConstructor) {
+    // The override replaces instance behaviour with a closure, so `this` is
+    // genuinely unused — which is the whole point of the seam.
+    // eslint-disable-next-line class-methods-use-this
+    protected async loadModule(moduleName: string): Promise<unknown> {
+      return resolve(moduleName);
+    }
+  }
+
+  return new Injected(options) as unknown as SeamRepository;
+}
+
+/**
+ * A module that resolved but carries nothing the adapter can use.
+ *
+ * `{}` rather than `{ default: {} }`: several adapters fall back to
+ * `module.default` itself, and an empty object is truthy — that fixture would
+ * resolve `{}` as the constructor and sail past the guard.
+ */
+const emptyModule: ModuleResolver = () => ({});
+
+/** Answers `postgres` with a working client and everything else by throwing. */
+const dsqlOnly = (created: Array<Record<string, unknown>>): ModuleResolver => (moduleName) => {
+  if (moduleName.startsWith('@aws/aurora-dsql')) {
+    return {
+      createClient: async (config: Record<string, unknown>) => {
+        created.push(config);
+        return { end: async () => undefined };
+      }
+    };
+  }
+  // Aurora loads `postgres` before it looks for a DSQL connector, so this has
+  // to answer even though the test never reaches the fallback that uses it.
+  if (moduleName === 'postgres') {
+    return { default: () => ({ end: async () => undefined }) };
+  }
+  throw new Error(`not installed: ${moduleName}`);
+};
+
+/** A postgres client exposing `close` rather than `end`, and a count of calls. */
+function postgresWithCloseOnly(): { resolve: ModuleResolver; closes(): number } {
+  let closes = 0;
+  return {
+    resolve: (moduleName) => {
+      if (moduleName === 'postgres') {
+        return { default: () => ({ close: async () => { closes += 1; } }) };
+      }
+      throw new Error(`not installed: ${moduleName}`);
+    },
+    closes: () => closes
+  };
+}
+
+/** Firebase's app module resolves; its firestore module does not carry getFirestore. */
+const firebaseAppOnly: ModuleResolver = (moduleName) => {
+  if (moduleName === 'firebase-admin/app') {
+    return { initializeApp: () => ({ name: 'test-app' }), getApps: () => [], cert: (v: unknown) => v };
+  }
+  return {};
+};
+
+/** An oracledb whose `getConnection` records what it was given. */
+function oracleDriver(): {
+  resolve: ModuleResolver;
+  received(): Array<Record<string, unknown>>;
+  closes(): number;
+  } {
+  const received: Array<Record<string, unknown>> = [];
+  let closes = 0;
+  return {
+    resolve: () => ({
+      getConnection: async (config: Record<string, unknown>) => {
+        received.push(config);
+        return { close: async () => { closes += 1; } };
+      }
+    }),
+    received: () => received,
+    closes: () => closes
+  };
+}
+
+describe('the guards against a driver that resolves but exports the wrong thing', () => {
+  it.each([
+    ['cassandra', CassandraRepository, /cassandra-driver Client/],
+    ['dynamodb', DynamoDbRepository, /DynamoDBClient/],
+    ['oracle', OracleRepository, /getConnection/],
+    ['rds', RdsRepository, /Sequelize constructor/],
+    ['sequelize', SqlSequelizeRepository, /Sequelize constructor/]
+  ])('%s reports which export it could not resolve', async (
+    _name: string,
+    RepositoryClass: unknown,
+    expected: RegExp
+  ) => {
+    expect.hasAssertions();
+
+    const repository = withModuleResolver(RepositoryClass, emptyModule, {
+      connectionUrl: 'postgres://127.0.0.1:59999/x',
+      database: 'x'
+    });
+
+    await expect(repository.connect()).rejects.toThrow(expected);
+  });
+
+  it('firebase reports a missing initializeApp', async () => {
+    expect.hasAssertions();
+
+    const repository = withModuleResolver(FirebaseRepository, emptyModule);
+
+    await expect(repository.connect()).rejects.toThrow(/initializeApp/);
+  });
+
+  /**
+   * Firebase resolves two modules, so it has two guards. The second only runs
+   * once the first has succeeded, which a single empty module cannot reach.
+   */
+  it('firebase reports a missing getFirestore once the app resolved', async () => {
+    expect.hasAssertions();
+
+    const repository = withModuleResolver(FirebaseRepository, firebaseAppOnly, {
+      extra: { serviceAccount: { project_id: 'p', private_key: 'k', client_email: 'e' } }
+    });
+
+    await expect(repository.connect()).rejects.toThrow(/getFirestore/);
+  });
+});
+
+describe('the branches a particular driver shape reaches', () => {
+  /**
+   * Aurora's DSQL branch, which the issue listed as needing
+   * `@aws/aurora-dsql-*` — a package that is not installed and is not going to
+   * be. The seam reaches it without installing anything.
+   */
+  it('aurora uses the DSQL connector when one resolves', async () => {
+    expect.hasAssertions();
+
+    const created: Array<Record<string, unknown>> = [];
+    const repository = withModuleResolver(AuroraRepository, dsqlOnly(created), {
+      region: 'eu-west-1',
+      endpoint: 'dsql.example.test',
+      database: 'jumentix'
+    });
+
+    await repository.connect();
+
+    // The configuration reached the connector, which is the only thing this
+    // branch does and the only way to know it did it correctly.
+    expect(created).toHaveLength(1);
+    expect(created[0]).toMatchObject({
+      region: 'eu-west-1',
+      endpoint: 'dsql.example.test',
+      database: 'jumentix'
+    });
+
+    await repository.disconnect();
+  });
+
+  /**
+   * Both adapters branch on which method the client exposes, and both branches
+   * matter: an adapter that closed nothing would leak a connection pool per
+   * restart, silently, until the server refused new connections.
+   */
+  it('aurora falls back to close() when the client has no end()', async () => {
+    expect.hasAssertions();
+
+    const driver = postgresWithCloseOnly();
+    const repository = withModuleResolver(
+      AuroraRepository,
+      driver.resolve,
+      { connectionUrl: 'postgres://127.0.0.1:59999/x' }
+    );
+
+    await repository.connect();
+    await repository.disconnect();
+
+    expect(driver.closes()).toBe(1);
+  });
+
+  it('oracle opens a connection with the credentials it was given, and closes it', async () => {
+    expect.hasAssertions();
+
+    const driver = oracleDriver();
+    const repository = withModuleResolver(
+      OracleRepository,
+      driver.resolve,
+      { extra: { user: 'scott', password: 'tiger', connectString: 'localhost/XEPDB1' } }
+    );
+
+    await repository.connect();
+
+    expect(driver.received()[0]).toMatchObject({
+      user: 'scott', connectString: 'localhost/XEPDB1'
+    });
+
+    await repository.disconnect();
+
+    expect(driver.closes()).toBe(1);
+  });
 });
