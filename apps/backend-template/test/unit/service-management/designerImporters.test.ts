@@ -94,6 +94,40 @@ describe('designer importers (JUM-469)', () => {
       expect(result.domain.context.packageDependencies).toStrictEqual(['shared', 'new-dep']);
     });
 
+    it('recomputes domain/entity ids that collide with the existing model, keeps free ids verbatim (JUM-617)', () => {
+      const existing = [
+        {
+          id: 'domain-1',
+          name: 'Catalog',
+          entities: [{ id: 'entity-1', name: 'Product' }]
+        }
+      ];
+      const result = buildDomainFromPackage({
+        domain: {
+          id: 'domain-1',
+          name: 'Catalog',
+          entities: [
+            { id: 'entity-1', name: 'Product', fields: [] },
+            { id: 'entity-9', name: 'Price', fields: [] },
+            { id: 'entity-9', name: 'PriceCopy', fields: [] }
+          ]
+        }
+      }, existing);
+      expect(result.ok).toBe(true);
+      // Colliding ids are recomputed...
+      expect(result.domain.id).not.toBe('domain-1');
+      expect(result.domain.entities[0].id).not.toBe('entity-1');
+      // ...ids that are free cross verbatim...
+      expect(result.domain.entities[1].id).toBe('entity-9');
+      // ...and an id repeated within the package itself is recomputed too.
+      expect(result.domain.entities[2].id).not.toBe('entity-9');
+      const ids = [
+        result.domain.id,
+        ...result.domain.entities.map((entity: { id: string }) => entity.id)
+      ];
+      expect(new Set(ids).size).toBe(ids.length);
+    });
+
     it('handles a missing context on the incoming domain', () => {
       const result = buildDomainFromPackage({ domain: { name: 'Bare', entities: [] } }, []);
       expect(result.ok).toBe(true);
