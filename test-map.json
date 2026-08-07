@@ -102,7 +102,8 @@
       "sourceGlobs": [
         "packages/cana/cypress/**",
         "packages/cana/src/**",
-        "packages/cana/cypress.config.ts"
+        "cypress/**",
+        "cypress.config.js"
       ],
       "runner": "bun",
       "tier": "gate",

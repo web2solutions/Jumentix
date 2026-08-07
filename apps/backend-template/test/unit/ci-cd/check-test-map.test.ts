@@ -273,15 +273,19 @@ describe('service-management selection (JUM-472)', () => {
 });
 
 /**
- * JUM-622 — the browser harness is reachable by the selector that decides what runs.
+ * JUM-622 and JUM-623 — the browser harness is reachable by the selector.
  *
  * Asserted against the committed manifest, not a fixture. A fixture would prove
- * the resolver can select a layer that exists; what failed here is that the
- * layer did not exist, so `packages/cana/cypress/**` matched nothing and the
- * task gate refused the change set outright. Cana's only real coverage is these
- * eighteen specs, and none of them were in the map.
+ * the resolver can select a layer that exists; what failed is that the layer did
+ * not exist, so nothing under the harness matched and the task gate refused the
+ * change set outright. Cana's only real coverage is these eighteen specs.
+ *
+ * JUM-623 then found the layer covered the spec directory and not the support
+ * file and config at the repository root — which every spec loads. The paths
+ * below are checked for existence for that reason: a glob matches a path that
+ * was never there just as happily as one that is.
  */
-describe('browser-harness selection (JUM-622)', () => {
+describe('browser-harness selection (JUM-622, JUM-623)', () => {
   const repoRoot = path.resolve(__dirname, '../../../../..');
   const realManifest = readTestMap(path.join(repoRoot, 'test-map.json'));
   const planFor = (files: string[]) => createLayerAwarePlan(files, {
@@ -305,15 +309,44 @@ describe('browser-harness selection (JUM-622)', () => {
     expect(registered).toStrictEqual(onDisk);
   });
 
+  // JUM-623. Every path asserted below has to exist, because glob matching does
+  // not care whether it does. The JUM-622 version of the case underneath this
+  // one asserted against `packages/cana/cypress/support/e2e.js` — a path that
+  // has never existed — and passed, while the real support file at
+  // `cypress/support/e2e.js` still mapped to no layer at all.
+  const harnessFile = (relativePath: string) => {
+    expect(fs.existsSync(path.join(repoRoot, relativePath))).toBe(true);
+    return relativePath;
+  };
+
   it('plans the browser suite for a change confined to the harness', () => {
     expect.hasAssertions();
 
     // The exact change set the gate rejected as `unsupported-change-set`.
-    const plan = planFor(['CHANGELOG.md', 'packages/cana/cypress/support/e2e.js']);
+    const plan = planFor(['CHANGELOG.md', harnessFile('cypress/support/e2e.js')]);
 
     expect(plan.type).toBe('layer-aware');
     expect(plan.selectedLayers).toStrictEqual(['browser-harness']);
     expect(plan.integrationScripts).toStrictEqual(['test:browser']);
+  });
+
+  it('plans the browser suite for a change to the cypress config', () => {
+    expect.hasAssertions();
+
+    // `cypress.config.js` carries specPattern, supportFile and the timeouts —
+    // a change here can break every spec at once.
+    const plan = planFor([harnessFile('cypress.config.js')]);
+
+    expect(plan.selectedLayers).toStrictEqual(['browser-harness']);
+    expect(plan.integrationScripts).toStrictEqual(['test:browser']);
+  });
+
+  it('plans the browser suite for a change to the shared spec helpers', () => {
+    expect.hasAssertions();
+
+    const plan = planFor([harnessFile('packages/cana/cypress/harness.ts')]);
+
+    expect(plan.selectedLayers).toStrictEqual(['browser-harness']);
   });
 
   it('plans the browser suite for a change to cana source', () => {
