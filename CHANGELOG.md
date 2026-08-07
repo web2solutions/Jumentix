@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-07 [JUM-622][CI] Register cana's browser specs so the gate can select them (#113) - Eduardo A.
 - 2026-08-07 ci(test-map): register cana's cypress specs so the gate can select them - Eduardo Almeida
 - 2026-08-07 [JUM-620][CI] Declare readiness on every compose service (#111) - Eduardo A.
 - 2026-08-07 ci(docker): declare readiness on every compose service - Eduardo Almeida

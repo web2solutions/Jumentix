@@ -365,10 +365,19 @@ function buildManifest(root = process.cwd()) {
     // and nothing else; the only changes that can affect them are cana's own.
     'browser-harness': {
       dependsOn: [],
+      //
+      // JUM-623: the harness is not all in one directory. Specs are authored
+      // under `packages/cana/cypress/`, compiled to `.browser-tests/`, and run
+      // against a support file and a config that live at the repository root.
+      // Registering only the spec directory left `cypress/support/e2e.js` and
+      // `cypress.config.js` — the two files every spec depends on — mapping to
+      // no layer, so the change set JUM-622 set out to unblock was still
+      // refused.
       sourceGlobs: [
         'packages/cana/cypress/**',
         'packages/cana/src/**',
-        'packages/cana/cypress.config.ts'
+        'cypress/**',
+        'cypress.config.js'
       ],
       runner: 'bun',
       tier: 'gate',
