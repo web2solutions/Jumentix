@@ -163,14 +163,14 @@ This registry tracks AI agents collaborating in the Jumentix project.
 - `machine_name`: `Eduardos-MacBook-Air.local`
 - `machine_os`: `Darwin 25.5.0 arm64`
 - `agent_runtime`: `Claude Code CLI (local checkout, network-attached)`
-- `agent_version`: `claude-sonnet-5`
+- `agent_version`: `claude-opus-5`
 - `status`: `busy`
 - `registered_at_utc`: `2026-07-29T12:36:00Z`
-- `last_branch_check_utc`: `2026-07-29T13:01:51Z`
-- `main_ref_checked`: `2d4b4b47`
-- `dev_ref_checked`: `d6dd5219`
-- `active_epic`: `https://linear.app/jumentix/project/epicgovernance-epic-centered-task-taxonomy-and-agent-delegation-c3cb6bae0771`
-- `assigned_task`: `https://linear.app/jumentix/issue/JUM-550`
+- `last_branch_check_utc`: `2026-08-07T20:51:42Z`
+- `main_ref_checked`: `f8be033f`
+- `dev_ref_checked`: `409067fc`
+- `active_epic`: `https://linear.app/jumentix/project/epicgovernance-canonical-xpertminds-migration-and-legacy-freeze-f8bd0962ba8a`
+- `assigned_task`: `https://linear.app/jumentix/issue/JUM-622`
 - `capabilities`:
   - requirements registry hygiene and traceability reconciliation
   - governance documentation delivery with EN/PT-BR parity
