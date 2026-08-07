@@ -4,10 +4,12 @@
 
 ## All Changes
 
-- 2026-08-07 chore(JUM-617): merge dev after PRs 100/102 landing - Eduardo A.
+- 2026-08-07 fix(JUM-617): recompute domain/entity ids on domain-package re-import (#104) - Eduardo A.
+- 2026-08-07 [JUM-602][Test] Make external-db-repositories coverage its own (#108) - Eduardo A.
+- 2026-08-07 [JUM-601][Refactor] Move the store errors into persistence-contracts so a library stops importing an application (#107) - Eduardo A.
+- 2026-08-07 [JUM-614][Governance] Require an agent to declare where it works (#103) - Eduardo A.
 - 2026-08-07 fix(JUM-543): replace blocking alerts with non-blocking status surfaces and honest env-API errors (#100) - Eduardo A.
 - 2026-08-07 feat(JUM-478): lossless OAS round-trip with full entity meta normalization (#102) - Eduardo A.
-- 2026-08-07 fix(JUM-617): recompute domain/entity ids on domain-package re-import - Eduardo A.
 - 2026-08-07 [JUM-599][Fix] Enforce the declared filter operators (#101) - Eduardo A.
 - 2026-08-07 fix(JUM-544): validate service configuration ports and run-mode x provider consistency (#99) - Eduardo A.
 - 2026-08-06 feat(JUM-474): make OAS 3.1 export compliant with Req 036 and route-resolution (#98) - Eduardo A.

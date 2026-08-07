@@ -50,7 +50,6 @@ const API: RestAPI<Fastify> = new RestAPI<Fastify>({
   messageMediator
 });
 
-// eslint-disable-next-line jest/require-hook
 (async () => {
   await API.start();
   await API.seedData();
