@@ -51,6 +51,11 @@ Detailed feature usage:
 3. **Service Configuration**
    - Configure service kind (`REST API`, `WebSocket API + REST API`, `gRPC API + REST API`),
    execution model, cloud provider, static assets profile, and runtime ports.
+   - Saves are validated (JUM-544): ports must be integers in 1–65535 and unique across the
+   protocols the selected service kind actually binds, and the run-mode × cloud-provider
+   combination must exist in the Requirement 059 deploy matrix (read from the shared
+   machine-readable source `src/model/deployCapabilityMatrix.js`). Invalid profiles are
+   reported on the tab's status surface and are not saved.
    - Includes PM2 runtime profile preview for VM deployments.
    - Includes runtime env editor for:
      - `JUMENTIX_HTTP_FRAMEWORK`

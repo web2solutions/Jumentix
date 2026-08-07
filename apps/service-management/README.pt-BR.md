@@ -55,6 +55,11 @@ Uso detalhado de recursos:
 3. **Configuração do serviço**
    - Configurar tipo de serviço (`REST API`, `WebSocket API + REST API`, `gRPC API + REST API`),
    modelo de execução, provedor de nuvem, perfil de ativos estáticos e portas de tempo de execução.
+   - As gravações são validadas (JUM-544): as portas devem ser inteiros entre 1–65535 e únicas
+   entre os protocolos que o tipo de serviço selecionado realmente vincula, e a combinação
+   modo de execução × provedor de nuvem deve existir na matriz de implantação do Requisito 059
+   (lida da fonte legível por máquina compartilhada `src/model/deployCapabilityMatrix.js`).
+   Perfis inválidos são relatados na superfície de status da guia e não são salvos.
    - Inclui visualização do perfil de tempo de execução PM2 para implantações de VM.
    - Inclui editor de ambiente de tempo de execução para:
      - `JUMENTIX_HTTP_FRAMEWORK`

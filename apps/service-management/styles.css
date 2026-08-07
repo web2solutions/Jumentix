@@ -223,6 +223,10 @@ button:focus {
   color: var(--muted);
 }
 
+.hint.status-error {
+  color: #b91c1c;
+}
+
 .list {
   margin: 8px 0 0;
   padding: 0;

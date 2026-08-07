@@ -45,6 +45,7 @@ import {
 import { LocalStorageDesignerStore } from './src/store/LocalStorageDesignerStore.js';
 import * as model from './src/model/modelQueries.js';
 import { collectModelIssues } from './src/validation/modelValidation.js';
+import { collectServiceConfigurationIssues } from './src/validation/serviceConfigurationValidation.js';
 import {
   buildBoilerplateBundleDocument,
   buildDomainPackageDocument,
@@ -297,6 +298,7 @@ const dom = {
   serviceWebsocketPortInput: document.getElementById('service-websocket-port-input'),
   serviceGrpcPortInput: document.getElementById('service-grpc-port-input'),
   saveServiceConfigBtn: document.getElementById('save-service-config-btn'),
+  serviceConfigStatus: document.getElementById('service-config-status'),
   serviceRuntimeProfilePreview: document.getElementById('service-runtime-profile-preview'),
   serviceConfigPreview: document.getElementById('service-config-preview'),
   runtimeEnvSelect: document.getElementById('runtime-env-select'),
@@ -1758,23 +1760,35 @@ function wireEvents() {
 
   if (dom.saveServiceConfigBtn) {
     dom.saveServiceConfigBtn.onclick = () => {
+      // JUM-544: the candidate is validated BEFORE it touches state. Invalid
+      // ports (out of range, or colliding across the protocols the selected
+      // service kind actually binds) and run-mode × provider combinations
+      // the Requirement 059 matrix has no deploy target for are reported on
+      // the tab's status surface and the save is refused — the previous
+      // behaviour silently coerced bad ports back to the defaults.
+      const parsePort = (value) => {
+        const raw = String(value ?? '').trim();
+        if (!raw) return null;
+        return Number(raw);
+      };
+      const candidate = {
+        serviceKind: dom.serviceKindSelect.value,
+        runMode: dom.runModeSelect.value,
+        cloudProvider: dom.cloudProviderSelect.value,
+        staticAssetsPath: String(dom.serviceStaticAssetsInput.value || '').trim(),
+        ports: {
+          rest: parsePort(dom.serviceHttpPortInput?.value),
+          websocket: parsePort(dom.serviceWebsocketPortInput?.value),
+          grpc: parsePort(dom.serviceGrpcPortInput?.value)
+        }
+      };
+      const issues = collectServiceConfigurationIssues(candidate);
+      if (issues.length > 0) {
+        inspectors.renderServiceConfigStatus(issues);
+        return;
+      }
       withPersist(() => {
-        const parsePort = (value, fallback) => {
-          const port = Number(value);
-          if (!Number.isInteger(port) || port < 1 || port > 65535) return fallback;
-          return port;
-        };
-        state.serviceConfiguration = {
-          serviceKind: dom.serviceKindSelect.value,
-          runMode: dom.runModeSelect.value,
-          cloudProvider: dom.cloudProviderSelect.value,
-          staticAssetsPath: String(dom.serviceStaticAssetsInput.value || '').trim(),
-          ports: {
-            rest: parsePort(dom.serviceHttpPortInput?.value, 3000),
-            websocket: parsePort(dom.serviceWebsocketPortInput?.value, 3001),
-            grpc: parsePort(dom.serviceGrpcPortInput?.value, 3002)
-          }
-        };
+        state.serviceConfiguration = candidate;
         inspectors.renderServiceConfiguration();
       }, { recordHistory: false });
     };

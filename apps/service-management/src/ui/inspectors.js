@@ -23,6 +23,7 @@
 
 import { FIELD_TYPES } from '../state/designerState.js';
 import { deriveTenantScoped } from '../model/rbacContract.js';
+import { collectServiceConfigurationIssues } from '../validation/serviceConfigurationValidation.js';
 import {
   entityLabel,
   findEntity,
@@ -584,7 +585,30 @@ export function createInspectors({ dom, state, interaction, actions }) {
     }
     if (!dom.serviceConfigPreview) return;
     dom.serviceConfigPreview.textContent = JSON.stringify(state.serviceConfiguration, null, 2);
+    renderServiceConfigStatus();
     renderRuntimeEnvironment();
+  }
+
+  /**
+   * The Service Configuration tab's non-blocking status surface (JUM-544;
+   * the existing `hint`-paragraph pattern — JUM-543 owns the cross-suite
+   * alert replacement and will fold this element into whatever shared
+   * surface it standardises on).
+   *
+   * @param {?Array} issues - issues of a rejected candidate when called from
+   *   the save gate; null re-validates the persisted profile, so a loaded
+   *   invalid state is flagged too.
+   */
+  function renderServiceConfigStatus(issues = null) {
+    if (!dom.serviceConfigStatus) return;
+    const current = issues || collectServiceConfigurationIssues(state.serviceConfiguration);
+    if (!current.length) {
+      dom.serviceConfigStatus.textContent = 'Profile valid.';
+      dom.serviceConfigStatus.classList.remove('status-error');
+      return;
+    }
+    dom.serviceConfigStatus.textContent = current.map((issue) => issue.message).join(' ');
+    dom.serviceConfigStatus.classList.add('status-error');
   }
 
   function renderDeployments() {
@@ -627,6 +651,7 @@ export function createInspectors({ dom, state, interaction, actions }) {
     renderSchemaDiffStatus,
     renderInterfaceAdapters,
     renderServiceConfiguration,
+    renderServiceConfigStatus,
     renderDeployments
   };
 }
