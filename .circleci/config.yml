@@ -275,6 +275,57 @@ jobs:
             else
               echo "Patch coverage is PR-only; project coverage already passed."
             fi
+      - run:
+          name: Install verified Codecov CLI
+          command: |
+            set -euo pipefail
+            curl -Os https://cli.codecov.io/latest/linux/codecov
+            curl -Os https://cli.codecov.io/latest/linux/codecov.SHA256SUM
+            shasum -a 256 -c codecov.SHA256SUM
+            chmod +x codecov
+      - run:
+          name: Upload coverage to Codecov
+          command: |
+            test -n "${CODECOV_TOKEN:-}"
+            ./codecov --verbose upload-process --disable-search --fail-on-error \
+              -t "$CODECOV_TOKEN" \
+              -n "jumentix-${CIRCLE_WORKFLOW_ID}" \
+              -F project \
+              -f coverage/lcov.info \
+              -f coverage/browser/lcov.info
+      - run:
+          name: Backfill git objects for Sonar SCM blame
+          # CircleCI checkout is a blobless partial clone; JGit blame reads the
+          # local object store directly and dies on missing blobs. Drop the
+          # partial-clone filter and refetch so every blob exists locally.
+          command: |
+            set -euo pipefail
+            git config --unset remote.origin.promisor || true
+            git config --unset remote.origin.partialclonefilter || true
+            git config --unset extensions.partialclone || true
+            git fetch --refetch --prune origin "+refs/heads/*:refs/remotes/origin/*"
+      - run:
+          name: Install Sonar scanner
+          command: |
+            set -euo pipefail
+            curl -fsSL -o /tmp/sonar-scanner.zip \
+              https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-7.1.0.4889-linux-x64.zip
+            unzip -q /tmp/sonar-scanner.zip -d /tmp
+            echo 'export PATH="/tmp/sonar-scanner-7.1.0.4889-linux-x64/bin:$PATH"' >> "$BASH_ENV"
+      - run:
+          name: SonarQube Cloud Scan
+          command: |
+            SONAR_TARGET_BRANCH="${CIRCLE_PR_BASE_BRANCH:-${CIRCLE_BRANCH:-}}"
+            if [ "$SONAR_TARGET_BRANCH" != "main" ] && [ "$SONAR_TARGET_BRANCH" != "dev" ]; then
+              echo "Skipping Sonar for ${SONAR_TARGET_BRANCH:-unknown}; Sonar runs for PRs or pushes targeting dev/main."
+              exit 0
+            fi
+            test -n "${SONAR_TOKEN:-}"
+            source "$BASH_ENV"
+            sonar-scanner
+      - run:
+          name: Report Sonar findings
+          command: bun ci-cd/report-sonar-findings.js
       - persist_to_workspace:
           root: .
           paths:
@@ -358,80 +409,6 @@ jobs:
             test "$(cat gitleaks.exit)" = "0"
             test "$(cat semgrep.exit)" = "0"
 
-  sonarqube:
-    docker:
-      - image: cimg/node:22.23-browsers
-    resource_class: large
-    steps:
-      - bootstrap
-      - attach_workspace:
-          at: .
-      - run:
-          name: Backfill git objects for Sonar SCM blame
-          # CircleCI checkout is a blobless partial clone; JGit blame reads the
-          # local object store directly and dies on missing blobs. Drop the
-          # partial-clone filter and refetch so every blob exists locally.
-          command: |
-            set -euo pipefail
-            git config --unset remote.origin.promisor || true
-            git config --unset remote.origin.partialclonefilter || true
-            git config --unset extensions.partialclone || true
-            git fetch --refetch --prune origin "+refs/heads/*:refs/remotes/origin/*"
-      - run:
-          name: Verify Sonar token
-          command: |
-            SONAR_TARGET_BRANCH="${CIRCLE_PR_BASE_BRANCH:-${CIRCLE_BRANCH:-}}"
-            if [ "$SONAR_TARGET_BRANCH" != "main" ] && [ "$SONAR_TARGET_BRANCH" != "dev" ]; then
-              echo "Skipping Sonar for ${SONAR_TARGET_BRANCH:-unknown}; Sonar runs for PRs or pushes targeting dev/main."
-              circleci-agent step halt
-            fi
-            test -n "${SONAR_TOKEN:-}"
-      - run:
-          name: Install Sonar scanner
-          command: |
-            set -euo pipefail
-            curl -fsSL -o /tmp/sonar-scanner.zip \
-              https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-7.1.0.4889-linux-x64.zip
-            unzip -q /tmp/sonar-scanner.zip -d /tmp
-            echo 'export PATH="/tmp/sonar-scanner-7.1.0.4889-linux-x64/bin:$PATH"' >> "$BASH_ENV"
-      - run:
-          name: SonarQube Cloud Scan
-          command: |
-            source "$BASH_ENV"
-            sonar-scanner
-      - run:
-          name: Report Sonar findings
-          command: bun ci-cd/report-sonar-findings.js
-
-  codecov:
-    docker:
-      - image: cimg/node:22.23-browsers
-    resource_class: medium
-    steps:
-      - checkout
-      - attach_workspace:
-          at: .
-      - run:
-          name: Verify Codecov token
-          command: test -n "${CODECOV_TOKEN:-}"
-      - run:
-          name: Install verified Codecov CLI
-          command: |
-            set -euo pipefail
-            curl -Os https://cli.codecov.io/latest/linux/codecov
-            curl -Os https://cli.codecov.io/latest/linux/codecov.SHA256SUM
-            shasum -a 256 -c codecov.SHA256SUM
-            chmod +x codecov
-      - run:
-          name: Upload coverage to Codecov
-          command: |
-            ./codecov --verbose upload-process --disable-search --fail-on-error \
-              -t "$CODECOV_TOKEN" \
-              -n "jumentix-${CIRCLE_WORKFLOW_ID}" \
-              -F project \
-              -f coverage/lcov.info \
-              -f coverage/browser/lcov.info
-
   # The docker-backed smoke suites (JUM-600).
   #
   # A `machine` executor rather than `docker` + `setup_remote_docker`: the
@@ -490,12 +467,6 @@ workflows:
       - coverage
       - website
       - third-party-review
-      - codecov:
-          requires:
-            - coverage
-      - sonarqube:
-          requires:
-            - coverage
       - database-matrix:
           filters:
             branches:

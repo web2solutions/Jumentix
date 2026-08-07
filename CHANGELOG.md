@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-07 [JUM-618][Test] Stop the Cypress teardown reporting blocked deletes as clean (#112) - Eduardo A.
 - 2026-08-07 test(cana-browser): give the teardown its own budget, and stop it lying about blocks - Eduardo Almeida
 - 2026-08-07 [JUM-623][CI] Cover the cypress support file and config, not just the specs (#114) - Eduardo A.
 - 2026-08-07 ci(test-map): cover the cypress support file and config, not just the specs - Eduardo Almeida
