@@ -68,6 +68,19 @@ describe('check-ci-provider', () => {
     expect(run(directory).output).toContain('third-party-review');
   });
 
+  it('fails when Codecov or Sonar return as separate CircleCI jobs', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.circleci/config.yml');
+      fs.writeFileSync(
+        file,
+        `${fs.readFileSync(file, 'utf8')}\nworkflows:\n  extra:\n    jobs:\n      - codecov:\n      - sonarqube:\n`
+      );
+    });
+    expect(run(directory).output).toContain('must run inside the coverage job');
+  });
+
   it('fails when a GitHub Actions workflow returns while billing is blocked', () => {
     expect.hasAssertions();
 

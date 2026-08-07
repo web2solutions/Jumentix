@@ -1,4 +1,3 @@
-/* eslint-disable jest/require-hook */
 import fs from 'fs';
 import path from 'path';
 import { OpenAPIV3 } from 'openapi-types';

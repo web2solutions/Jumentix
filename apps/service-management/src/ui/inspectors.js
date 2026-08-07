@@ -19,6 +19,12 @@
  * `render()` in `script.js` calls these in exactly the
  * pre-refactor order — the implicit sequencing (e.g. options before the
  * inspector that reads them) is now an explicit call sequence.
+ *
+ * JUM-480: the runtime profile pane's PM2 preview no longer carries a
+ * hardcoded profile/command map. `renderPm2EcosystemPreview()` renders the
+ * snapshot the orchestrator fetched from `GET /api/runtime/pm2-ecosystem`
+ * (exposed through the `getPm2EcosystemPreview()` action), so the pane always
+ * reflects the real `pm2/ecosystem.*.cjs` files.
  */
 
 import { FIELD_TYPES } from '../state/designerState.js';
@@ -45,7 +51,9 @@ import {
  * `editFieldMetadata(entityId, fieldName)`, `updateField(entityId, fieldName, partial)`,
  * `removeField(entityId, fieldName)`, `renderRuntimeEnvironment()`,
  * `loadSchemaBaseline()`, `showStatus(message, severity)` (JUM-543
- * non-blocking status surface — replaces the monolith's window.alert).
+ * non-blocking status surface — replaces the monolith's window.alert),
+ * `getPm2EcosystemPreview()` (JUM-480 — the latest `/api/runtime/pm2-ecosystem`
+ * snapshot, or null before the first load).
  */
 export function createInspectors({ dom, state, interaction, actions }) {
   const {
@@ -59,7 +67,8 @@ export function createInspectors({ dom, state, interaction, actions }) {
     removeField,
     renderRuntimeEnvironment,
     loadSchemaBaseline,
-    showStatus
+    showStatus,
+    getPm2EcosystemPreview
   } = actions;
 
   function getSelectedDomain() {
@@ -553,41 +562,74 @@ export function createInspectors({ dom, state, interaction, actions }) {
     if (dom.serviceWebsocketPortInput) dom.serviceWebsocketPortInput.value = String(currentPorts.websocket || 3001);
     if (dom.serviceGrpcPortInput) dom.serviceGrpcPortInput.value = String(currentPorts.grpc || 3002);
 
-    const runtimeProfiles = {
-      'rest-api': {
-        kind: 'REST API',
-        processCount: 1,
-        pm2Command: 'bun run pm2:start:dev:restapi',
-        processes: ['REST API']
-      },
-      'websocket-rest-api': {
-        kind: 'WebSocket API + REST API',
-        processCount: 2,
-        pm2Command: 'bun run pm2:start:dev:websocket-rest',
-        processes: ['REST API', 'WebSocket API']
-      },
-      'grpc-rest-api': {
-        kind: 'gRPC API + REST API',
-        processCount: 2,
-        pm2Command: 'bun run pm2:start:dev:grpc-rest',
-        processes: ['REST API', 'gRPC API']
-      }
-    };
-    const selectedProfile = runtimeProfiles[state.serviceConfiguration.serviceKind] || runtimeProfiles['rest-api'];
-    if (dom.serviceRuntimeProfilePreview) {
-      dom.serviceRuntimeProfilePreview.textContent = JSON.stringify({
-        selectedRuntimeProfile: selectedProfile.kind,
-        vmRequirement: 'Use PM2 with separated processes and ports',
-        processCount: selectedProfile.processCount,
-        processes: selectedProfile.processes,
-        ports: currentPorts,
-        suggestedPm2Command: selectedProfile.pm2Command
-      }, null, 2);
-    }
+    renderPm2EcosystemPreview();
     if (!dom.serviceConfigPreview) return;
     dom.serviceConfigPreview.textContent = JSON.stringify(state.serviceConfiguration, null, 2);
     renderServiceConfigStatus();
     renderRuntimeEnvironment();
+  }
+
+  // Service-kind → ecosystem app-name suffixes (JUM-480). The app names come
+  // from the real pm2/ecosystem.*.cjs files (`jumentix-<env>-restapi`, …);
+  // matching by suffix keeps the filter valid for every environment prefix
+  // (dev/staging/production) without enumerating names here.
+  const SERVICE_KIND_APP_SUFFIXES = {
+    'rest-api': ['restapi'],
+    'websocket-rest-api': ['restapi', 'websocketapi'],
+    'grpc-rest-api': ['restapi', 'grpcapi']
+  };
+  const SERVICE_KIND_LABELS = {
+    'rest-api': 'REST API',
+    'websocket-rest-api': 'WebSocket API + REST API',
+    'grpc-rest-api': 'gRPC API + REST API'
+  };
+
+  /**
+   * Renders the PM2 ecosystem preview (JUM-480) from the snapshot the
+   * orchestrator fetched from `GET /api/runtime/pm2-ecosystem`. Every process
+   * name, script and command comes from the real ecosystem file — the
+   * designer hardcodes no process list and no package-manager invocation, so
+   * an ecosystem edit (or the Bun cutover changing invocation format) is
+   * reflected without a code change. Missing ecosystem files and load
+   * failures render as explicit states, never a silently empty pane.
+   */
+  function renderPm2EcosystemPreview() {
+    if (!dom.serviceRuntimeProfilePreview) return;
+    const currentPorts = state.serviceConfiguration.ports || { rest: 3000, websocket: 3001, grpc: 3002 };
+    const serviceKind = state.serviceConfiguration.serviceKind || 'rest-api';
+    const preview = getPm2EcosystemPreview();
+    if (!preview) {
+      dom.serviceRuntimeProfilePreview.textContent = 'PM2 ecosystem preview not loaded yet — select a PM2 Preview Environment above.';
+      return;
+    }
+    if (preview.error) {
+      dom.serviceRuntimeProfilePreview.textContent = `PM2 ecosystem preview unavailable for environment "${preview.environment}": ${preview.error}`;
+      return;
+    }
+    if (!preview.exists) {
+      dom.serviceRuntimeProfilePreview.textContent = `No PM2 ecosystem file for environment "${preview.environment}" (expected ${preview.path}). The preview is intentionally empty.`;
+      return;
+    }
+    const suffixes = SERVICE_KIND_APP_SUFFIXES[serviceKind] || SERVICE_KIND_APP_SUFFIXES['rest-api'];
+    const selectedApps = preview.apps.filter((app) => suffixes.some((suffix) => app.name.endsWith(`-${suffix}`)));
+    const suggestedPm2Command = selectedApps.length > 0
+      ? `pm2 start ${preview.path} --only ${selectedApps.map((app) => app.name).join(',')} --update-env`
+      : '';
+    dom.serviceRuntimeProfilePreview.textContent = JSON.stringify({
+      selectedRuntimeProfile: SERVICE_KIND_LABELS[serviceKind] || SERVICE_KIND_LABELS['rest-api'],
+      vmRequirement: 'Use PM2 with separated processes and ports',
+      environment: preview.environment,
+      ecosystemFile: preview.path,
+      ecosystemApps: preview.apps.map((app) => ({
+        name: app.name,
+        script: app.script,
+        command: app.command
+      })),
+      processCount: selectedApps.length,
+      processes: selectedApps.map((app) => app.name),
+      ports: currentPorts,
+      suggestedPm2Command
+    }, null, 2);
   }
 
   /**
@@ -667,6 +709,7 @@ export function createInspectors({ dom, state, interaction, actions }) {
     renderSchemaDiffStatus,
     renderInterfaceAdapters,
     renderServiceConfiguration,
+    renderPm2EcosystemPreview,
     renderServiceConfigStatus,
     renderDeployments
   };

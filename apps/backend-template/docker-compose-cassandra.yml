@@ -6,6 +6,16 @@ services:
       - '9042:9042'
     volumes:
       - cassandra_data:/var/lib/cassandra
+    # `up -d` returns when the container starts; Cassandra needs roughly a
+    # minute more before it accepts CQL. Without this the suite connects into
+    # that window and fails for a reason that looks like a broken adapter
+    # (JUM-602, same shape as the RabbitMQ race in JUM-600).
+    healthcheck:
+      test: ['CMD-SHELL', 'cqlsh -e "describe keyspaces" || exit 1']
+      interval: 5s
+      timeout: 10s
+      retries: 30
+      start_period: 30s
 
 volumes:
   cassandra_data:

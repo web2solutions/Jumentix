@@ -79,6 +79,7 @@ const SERVICE_MANAGEMENT_INTEGRATION_AREA = {
   'spaBoot.browser.integration.test.ts': 'service-management/designer',
   'runtimeEnv.integration.test.ts': 'service-management/server',
   'runtimeEnvContract.integration.test.ts': 'service-management/server',
+  'pm2Ecosystem.integration.test.ts': 'service-management/server',
   'staticManifest.integration.test.ts': 'service-management/server',
   'staticServing.integration.test.ts': 'service-management/server'
 };
@@ -155,6 +156,16 @@ function packageSuitePaths(root) {
       path.join(packagesRoot, entry.name, 'test'),
       (file) => /\.test\.ts$/.test(file)
     ))
+    .map((file) => path.relative(root, file).replace(/\\/g, '/'))
+    .sort(byPath);
+}
+
+/** Every `*.cy.ts` spec under `packages/cana/cypress/`, repository-relative. */
+function browserSpecPaths(root) {
+  return walk(
+    path.join(root, PACKAGES_DIR, 'cana', 'cypress'),
+    (file) => /\.cy\.ts$/.test(file)
+  )
     .map((file) => path.relative(root, file).replace(/\\/g, '/'))
     .sort(byPath);
 }
@@ -341,6 +352,38 @@ function buildManifest(root = process.cwd()) {
       tier: 'gate',
       kind: 'non-hexagonal'
     },
+    // JUM-622. Cana's real coverage is eighteen Cypress specs running in a real
+    // browser (JUM-586 replaced the fake-indexeddb suites with them). None of
+    // them were in this manifest, and `packages/cana/cypress/**` matches no
+    // layer's globs — so a change confined to the harness mapped to nothing and
+    // the task gate refused the whole change set as `unsupported-change-set`.
+    // That is the gate failing closed, which is right; what was wrong is that a
+    // 294-test suite was unreachable by the selector that decides what runs.
+    //
+    // `dependsOn: []` is deliberate. Blast radius is outward, so a layer listed
+    // as depending on `adapters/out+infra` would drag a full browser run into
+    // every backend infra change. These specs exercise cana's IndexedDB engine
+    // and nothing else; the only changes that can affect them are cana's own.
+    'browser-harness': {
+      dependsOn: [],
+      //
+      // JUM-623: the harness is not all in one directory. Specs are authored
+      // under `packages/cana/cypress/`, compiled to `.browser-tests/`, and run
+      // against a support file and a config that live at the repository root.
+      // Registering only the spec directory left `cypress/support/e2e.js` and
+      // `cypress.config.js` — the two files every spec depends on — mapping to
+      // no layer, so the change set JUM-622 set out to unblock was still
+      // refused.
+      sourceGlobs: [
+        'packages/cana/cypress/**',
+        'packages/cana/src/**',
+        'cypress/**',
+        'cypress.config.js'
+      ],
+      runner: 'bun',
+      tier: 'gate',
+      kind: 'non-hexagonal'
+    },
     tooling: {
       dependsOn: [],
       // Pipeline definitions and root tooling configuration belong to this layer.
@@ -451,6 +494,31 @@ function buildManifest(root = process.cwd()) {
         + '\n  test-map.json by hand — layer, kind, type, runner, tier, timeoutMs — and'
         + '\n  this generator will carry it forward from then on.'
     );
+  }
+
+  // Browser specs (JUM-622). Enumerated rather than carried across like package
+  // suites: `packages/cana/cypress/*.cy.ts` *does* encode its classification —
+  // every file in that directory is a browser spec of the same layer — so there
+  // is nothing to guess and a new spec is picked up without a hand edit.
+  //
+  // They share one script. Eighteen suites resolve to a single `test:browser`
+  // invocation because `createLayerAwarePlan` de-duplicates integration scripts;
+  // registering them individually is what makes each spec visible to the
+  // manifest checks and to coverage, not eighteen Cypress runs.
+  for (const file of browserSpecPaths(root)) {
+    suites.push({
+      id: file,
+      path: file,
+      layer: 'browser-harness',
+      kind: 'non-hexagonal',
+      type: 'integration',
+      adapter: 'cypress',
+      script: 'test:browser',
+      runner: 'bun',
+      ciRunner: 'node',
+      tier: 'gate',
+      timeoutMs: 300_000
+    });
   }
 
   // Contract layer (JUM-440) — governance checks promoted to first-class suites.

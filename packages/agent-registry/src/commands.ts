@@ -19,11 +19,13 @@ import {
   getStoredAgents
 } from './firestore-client';
 import {
+  AGENTS_WITHOUT_DECLARED_WORKSPACE,
   canonicalAgentId,
   describeProblems,
   duplicateCanonicalIds,
   findIntegrityProblems,
-  isAgentStatus
+  isAgentStatus,
+  workspacePathProblem
 } from './validation';
 
 function snapshotPath(): string {
@@ -41,6 +43,23 @@ function requireNonEmpty(value: string | undefined, field: string): string {
     throw new Error(`Field "${field}" is required and cannot be empty.`);
   }
   return value.trim();
+}
+
+/**
+ * The front door for "declare where you work" (JUM-614).
+ *
+ * No exemption applies here. The seven exempt records exist because a migration
+ * invented `unknown` for them; an agent choosing to register is making a fresh
+ * declaration, and a fresh declaration that says nothing is the thing this
+ * requirement exists to stop.
+ */
+function requireDeclaredWorkspace(value: string | undefined): string {
+  const workspacePath = requireNonEmpty(value, 'workspace_path');
+  const problem = workspacePathProblem(workspacePath);
+  if (problem) {
+    throw new Error(`Field "workspace_path" ${problem}.`);
+  }
+  return workspacePath;
 }
 
 function buildDefaultCapabilities(): string[] {
@@ -66,7 +85,7 @@ export async function registerAgent(
     machine_id: requireNonEmpty(input.machine_id, 'machine_id'),
     machine_name: requireNonEmpty(input.machine_name, 'machine_name'),
     machine_os: requireNonEmpty(input.machine_os, 'machine_os'),
-    workspace_path: requireNonEmpty(input.workspace_path, 'workspace_path'),
+    workspace_path: requireDeclaredWorkspace(input.workspace_path),
     agent_runtime: requireNonEmpty(input.agent_runtime, 'agent_runtime'),
     agent_version: requireNonEmpty(input.agent_version, 'agent_version'),
     status: existing?.status || 'available',
@@ -263,7 +282,9 @@ export async function repairRegistry(
     // it an AgentRecord; the cast only tells the compiler so.
     const record = candidate as unknown as AgentRecord;
 
-    const problems = findIntegrityProblems(record);
+    // Exemptions honoured: the repair cleans formatting and must not be blocked
+    // by a placeholder workspace it is forbidden from inventing (JUM-614).
+    const problems = findIntegrityProblems(record, { honourExemptions: true });
     if (problems.length > 0) {
       throw new Error(
         `Repairing "${entry.documentId}" does not produce a valid record:\n`
@@ -336,7 +357,9 @@ export async function checkSnapshot(firestore: FirestoreLike): Promise<void> {
   // `agent_id`, so a corrupt document and its clean twin were two unrelated
   // keys that both matched — the gate reported success over ten broken
   // records. Comparing sides is only meaningful once each side is sound.
-  const corrupt = remote.agents.flatMap((agent) => findIntegrityProblems(agent));
+  const corrupt = remote.agents.flatMap(
+    (agent) => findIntegrityProblems(agent, { honourExemptions: true })
+  );
   if (corrupt.length > 0) {
     throw new Error(
       `Firestore holds ${corrupt.length} integrity problem(s):\n${describeProblems(corrupt)}\n`
@@ -349,6 +372,31 @@ export async function checkSnapshot(firestore: FirestoreLike): Promise<void> {
     throw new Error(
       `Firestore holds more than one document per agent: ${duplicates.join(', ')}\n`
       + 'Run: bun run agent-registry:repair'
+    );
+  }
+
+  // The workspace exemptions, in the direction that makes them a ratchet rather
+  // than a waiver (JUM-614). An agent that has since declared a real path must
+  // be struck from the list; leaving it there lets a dated concession quietly
+  // become permanent, which is what the coverage register learned the hard way.
+  //
+  // Fleet-level, not per-record: whether the register is stale is a fact about
+  // the register, and checking it inside `findIntegrityProblems` made the
+  // repair refuse to write records that were perfectly valid.
+  const spent = remote.agents
+    .filter((agent) => {
+      const exemption = AGENTS_WITHOUT_DECLARED_WORKSPACE[canonicalAgentId(agent.agent_id)];
+      return Boolean(exemption) && workspacePathProblem(agent.workspace_path) === undefined;
+    })
+    .map((agent) => canonicalAgentId(agent.agent_id));
+
+  if (spent.length > 0) {
+    throw new Error(
+      `${spent.length} agent(s) have declared a workspace but are still exempt: `
+      + `${spent.join(', ')}\n`
+      + 'Remove them from AGENTS_WITHOUT_DECLARED_WORKSPACE in '
+      + 'packages/agent-registry/src/validation.ts — an exemption that outlives '
+      + 'its reason is a permanently lowered bar.'
     );
   }
 

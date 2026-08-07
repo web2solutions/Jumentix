@@ -1,3 +1,8 @@
+// Side-effect import: registers this application's correlation id source
+// with the store errors that now live in @jumentix/persistence-contracts
+// (JUM-601). Must run before any of them is constructed.
+import './registerPersistenceCorrelation';
+
 export * from './BaseError';
 export * from './error.codes';
 export * from './ComposeEventError';

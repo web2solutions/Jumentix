@@ -56,7 +56,9 @@ armazenamento `IDesignerStore` estão documentados em
      - provedor de nuvem
      - comportamento de ativos estáticos
      - portas de tempo de execução (`REST`, `WebSocket`, `gRPC`)
-   - Mostra visualização de perfil orientado a PM2 para orquestração de tempo de execução de VM.
+   - Mostra visualização de perfil orientado a PM2 para orquestração de tempo de execução de VM,
+     lida dos arquivos reais `pm2/ecosystem.*.cjs` via `GET /api/runtime/pm2-ecosystem`
+     (JUM-480) — sem lista de processos ou comando de gerenciador de pacotes fixado em código.
    - Inclui controles de ambiente de tempo de execução com um modelo de três níveis:
      - **Editável** (seletores de topologia de leitura/gravação):
        `JUMENTIX_HTTP_FRAMEWORK`, `JUMENTIX_REALTIME_API`,
@@ -122,6 +124,7 @@ Caminho de desenvolvimento recomendado:
 
 - `GET /api/runtime/env?environment=dev|development|staging|ci|test`
 - `POST /api/runtime/env`
+- `GET /api/runtime/pm2-ecosystem?environment=dev|development|staging|production|prod|ci|test`
 
 O servidor persiste chaves de tempo de execução aprovadas para arquivos em `apps/backend-template/src/config/`.
 O contrato autoritativo — ambientes aceitos, classificação de chaves, conjuntos

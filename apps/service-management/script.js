@@ -46,8 +46,6 @@ import { LocalStorageDesignerStore } from './src/store/LocalStorageDesignerStore
 import * as model from './src/model/modelQueries.js';
 import { collectModelIssues } from './src/validation/modelValidation.js';
 import { collectServiceConfigurationIssues } from './src/validation/serviceConfigurationValidation.js';
-import { collectDeployTargetIssues } from './src/validation/deployTargetValidation.js';
-import { isPm2ManagedDeployTarget } from './src/model/deployCapabilityMatrix.js';
 import {
   buildBoilerplateBundleDocument,
   buildDomainPackageDocument,
@@ -303,19 +301,17 @@ const dom = {
   serviceConfigStatus: document.getElementById('service-config-status'),
   serviceRuntimeProfilePreview: document.getElementById('service-runtime-profile-preview'),
   serviceConfigPreview: document.getElementById('service-config-preview'),
+  pm2PreviewEnvironmentSelect: document.getElementById('pm2-preview-environment-select'),
+  pm2PreviewStatus: document.getElementById('pm2-preview-status'),
   runtimeEnvSelect: document.getElementById('runtime-env-select'),
   runtimeEnvFields: document.getElementById('runtime-env-fields'),
   runtimeEnvRefreshBtn: document.getElementById('runtime-env-refresh-btn'),
   runtimeEnvSaveBtn: document.getElementById('runtime-env-save-btn'),
   runtimeEnvPreview: document.getElementById('runtime-env-preview'),
   runtimeEnvStatus: document.getElementById('runtime-env-status'),
+  runtimeEnvTargetFile: document.getElementById('runtime-env-target-file'),
   deployNameInput: document.getElementById('deploy-name-input'),
   deployTypeSelect: document.getElementById('deploy-type-select'),
-  deployServiceTypeSelect: document.getElementById('deploy-service-type-select'),
-  deployRuntimeProtocolSelect: document.getElementById('deploy-runtime-protocol-select'),
-  deployDatabaseDriverSelect: document.getElementById('deploy-database-driver-select'),
-  deployKeyValueDriverSelect: document.getElementById('deploy-keyvalue-driver-select'),
-  deployPm2ProfileSelect: document.getElementById('deploy-pm2-profile-select'),
   deployRegionInput: document.getElementById('deploy-region-input'),
   deployRuntimeInput: document.getElementById('deploy-runtime-input'),
   addDeployTargetBtn: document.getElementById('add-deploy-target-btn'),
@@ -356,7 +352,8 @@ const inspectors = createInspectors({
     removeField,
     renderRuntimeEnvironment,
     loadSchemaBaseline,
-    showStatus
+    showStatus,
+    getPm2EcosystemPreview
   }
 });
 
@@ -460,6 +457,11 @@ function renderRuntimeEnvironment() {
   const fileName = String(runtimeEnvironment.fileName || '.env.dev');
   dom.runtimeEnvSelect.value = environment;
   renderRuntimeEnvFields(runtimeValues);
+  if (dom.runtimeEnvTargetFile) {
+    // Per-file targeting made explicit (JUM-480): the panel always names the
+    // exact env file the next Save writes, straight from the last API payload.
+    dom.runtimeEnvTargetFile.textContent = `Editing target: ${fileName} (environment "${environment}")`;
+  }
   if (dom.runtimeEnvPreview) {
     dom.runtimeEnvPreview.textContent = JSON.stringify({
       environment,
@@ -573,6 +575,54 @@ async function saveRuntimeEnvironment() {
   };
   saveState();
   renderRuntimeEnvironment();
+}
+
+// PM2 ecosystem preview (JUM-480). Transient, server-derived state — held in a
+// module-level variable, NOT in the persisted designer state, so the
+// `service-management.v1` schema (Requirement 126, Contract 2) is untouched.
+// The preview renders whatever the real pm2/ecosystem.*.cjs file defines; no
+// process list or package-manager command is hardcoded in the designer.
+let pm2EcosystemPreview = null;
+function getPm2EcosystemPreview() {
+  return pm2EcosystemPreview;
+}
+
+// Inline status line of the runtime profile panel's PM2 preview (JUM-543
+// pattern): load failures land here with environment, file and cause.
+function showPm2PreviewStatus(message, severity = 'error') {
+  if (!dom.pm2PreviewStatus) return;
+  dom.pm2PreviewStatus.textContent = String(message);
+  dom.pm2PreviewStatus.className = `hint status-line status-${severity}`;
+}
+
+async function loadPm2EcosystemPreview(environment) {
+  const selected = String(environment || 'dev');
+  const query = `?environment=${encodeURIComponent(selected)}`;
+  const response = await fetch(`/api/runtime/pm2-ecosystem${query}`);
+  if (!response.ok) {
+    throw await runtimeEnvApiError(response, `Could not load the PM2 ecosystem for ${selected}.`);
+  }
+  const payload = await response.json();
+  pm2EcosystemPreview = {
+    environment: String(payload.environment || selected),
+    fileName: String(payload.fileName || ''),
+    path: String(payload.path || ''),
+    exists: Boolean(payload.exists),
+    apps: Array.isArray(payload.apps) ? payload.apps : []
+  };
+  if (dom.pm2PreviewEnvironmentSelect) {
+    dom.pm2PreviewEnvironmentSelect.value = pm2EcosystemPreview.environment;
+  }
+  inspectors.renderPm2EcosystemPreview();
+}
+
+// Failure path shared by the select handler and boot: the preview pane itself
+// carries the explicit error state instead of going silently stale.
+function failPm2EcosystemPreview(environment, error) {
+  const message = error instanceof Error ? error.message : 'Could not load the PM2 ecosystem.';
+  pm2EcosystemPreview = { environment: String(environment || 'dev'), error: message };
+  inspectors.renderPm2EcosystemPreview();
+  showPm2PreviewStatus(`PM2 ecosystem "${String(environment || 'dev')}": ${message}`);
 }
 
 function nextId(prefix) {
@@ -1837,57 +1887,34 @@ function wireEvents() {
     };
   }
 
-  // JUM-481: the PM2 profile only exists on PM2-managed deploy targets (the
-  // Dedicated Server / VM rows of the Requirement 059 matrix). Picking a
-  // provider-managed function target clears and disables the select so the
-  // form cannot propose a combination the matrix cannot build; the add gate
-  // below still validates the candidate against the shared reader.
-  function syncDeployPm2Profile() {
-    if (!dom.deployTypeSelect || !dom.deployPm2ProfileSelect) return;
-    const pm2Managed = isPm2ManagedDeployTarget(dom.deployTypeSelect.value);
-    dom.deployPm2ProfileSelect.disabled = !pm2Managed;
-    if (!pm2Managed) {
-      dom.deployPm2ProfileSelect.value = '';
-    } else if (!dom.deployPm2ProfileSelect.value) {
-      dom.deployPm2ProfileSelect.value = 'dev';
-    }
-  }
-
-  if (dom.deployTypeSelect) {
-    dom.deployTypeSelect.onchange = () => syncDeployPm2Profile();
-    syncDeployPm2Profile();
+  if (dom.pm2PreviewEnvironmentSelect) {
+    dom.pm2PreviewEnvironmentSelect.onchange = () => {
+      const environment = dom.pm2PreviewEnvironmentSelect.value;
+      loadPm2EcosystemPreview(environment)
+        .then(() => {
+          showPm2PreviewStatus(
+            pm2EcosystemPreview?.exists
+              ? `PM2 ecosystem for "${environment}" loaded from ${pm2EcosystemPreview.fileName}.`
+              : `No PM2 ecosystem file for "${environment}" (${pm2EcosystemPreview?.fileName || 'ecosystem file'}).`,
+            'info'
+          );
+        })
+        .catch((error) => failPm2EcosystemPreview(environment, error));
+    };
   }
 
   if (dom.addDeployTargetBtn) {
     dom.addDeployTargetBtn.onclick = () => {
       const name = String(dom.deployNameInput.value || '').trim();
+      const type = dom.deployTypeSelect.value;
       const region = String(dom.deployRegionInput.value || '').trim();
       const runtime = String(dom.deployRuntimeInput.value || '').trim();
       if (!name || !region || !runtime) {
         showStatus('Deployment name, region and runtime are required.');
         return;
       }
-      const candidate = {
-        name,
-        region,
-        runtime,
-        serviceType: dom.deployServiceTypeSelect.value,
-        deployTarget: dom.deployTypeSelect.value,
-        runtimeProtocol: dom.deployRuntimeProtocolSelect.value,
-        databaseDriver: dom.deployDatabaseDriverSelect.value,
-        keyValueDriver: dom.deployKeyValueDriverSelect.value,
-        pm2Profile: dom.deployPm2ProfileSelect.value
-      };
-      // The candidate is validated against the shared Requirement 059 matrix
-      // reader BEFORE it touches state; every rejected combination names the
-      // constraint it violated on the non-blocking status surface (JUM-543).
-      const issues = collectDeployTargetIssues(candidate);
-      if (issues.length > 0) {
-        showStatus(issues.map((issue) => issue.message).join(' '));
-        return;
-      }
       withPersist(() => {
-        state.deployments.push(candidate);
+        state.deployments.push({ name, type, region, runtime });
         dom.deployNameInput.value = '';
         dom.deployRegionInput.value = '';
         dom.deployRuntimeInput.value = '';
@@ -2283,6 +2310,11 @@ async function boot() {
       // status line carries the cause the API returned.
       showRuntimeEnvStatus(error instanceof Error ? error.message : 'Could not load runtime environment.');
     });
+  // Boot-time PM2 preview load (JUM-480): the runtime profile pane reads the
+  // real ecosystem of the selected preview environment; a failure lands in
+  // the pane and its status line, never silently.
+  loadPm2EcosystemPreview(dom.pm2PreviewEnvironmentSelect?.value || 'dev')
+    .catch((error) => failPm2EcosystemPreview(dom.pm2PreviewEnvironmentSelect?.value || 'dev', error));
 }
 
 boot();

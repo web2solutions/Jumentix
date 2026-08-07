@@ -60,7 +60,19 @@ Uso detalhado de recursos:
    modo de execução × provedor de nuvem deve existir na matriz de implantação do Requisito 059
    (lida da fonte legível por máquina compartilhada `src/model/deployCapabilityMatrix.js`).
    Perfis inválidos são relatados na superfície de status da guia e não são salvos.
-   - Inclui visualização do perfil de tempo de execução PM2 para implantações de VM.
+   - A visualização do perfil de tempo de execução PM2 para implantações de VM lê os
+     arquivos reais `pm2/ecosystem.*.cjs` através de `GET /api/runtime/pm2-ecosystem`
+     (JUM-480): a lista de processos e o comando `pm2 start` sugerido derivam do
+     arquivo de ecossistema do ambiente de visualização selecionado — nenhuma lista
+     de processos ou invocação de gerenciador de pacotes é fixada em código, de modo
+     que uma edição no ecossistema (ou a mudança de formato de invocação da migração
+     para Bun) é refletida sem alteração no designer. Ambientes sem arquivo de
+     ecossistema exibem um estado vazio explícito, nunca uma visualização
+     silenciosamente em branco.
+   - Editor de ambiente de tempo de execução multi-ambiente (JUM-480): o seletor de
+     Environment carrega os valores do ambiente escolhido, o painel nomeia o arquivo
+     env exato que a próxima gravação escreverá, e a resposta da gravação confirma o
+     arquivo escrito.
    - Inclui editor de ambiente de tempo de execução para:
      - `JUMENTIX_HTTP_FRAMEWORK`
      - `JUMENTIX_REALTIME_API`
@@ -122,6 +134,12 @@ Integrada em `apps/service-management/server.js`:
 
 - `GET /api/runtime/env?environment=dev|development|staging|ci|test`
 - `POST /api/runtime/env`
+- `GET /api/runtime/pm2-ecosystem?environment=dev|development|staging|production|prod|ci|test`
+  (somente leitura; fonte da visualização PM2 — relata os apps do arquivo real
+  `pm2/ecosystem.*.cjs` do ambiente selecionado com comandos `pm2 start` por app
+  derivados da definição do ecossistema, um estado explícito `exists: false`
+  quando o arquivo está ausente, e o envelope 500 honesto quando o arquivo está
+  ilegível ou quebrado)
 
 O contrato completo (conjuntos de enum, semântica de escrita, higiene de resposta) está em
 [Contratos de ambiente de tempo de execução](../../documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.pt-BR.md).

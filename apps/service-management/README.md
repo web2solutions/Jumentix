@@ -56,7 +56,17 @@ Detailed feature usage:
    combination must exist in the Requirement 059 deploy matrix (read from the shared
    machine-readable source `src/model/deployCapabilityMatrix.js`). Invalid profiles are
    reported on the tab's status surface and are not saved.
-   - Includes PM2 runtime profile preview for VM deployments.
+   - PM2 runtime profile preview for VM deployments reads the real
+     `pm2/ecosystem.*.cjs` files through `GET /api/runtime/pm2-ecosystem`
+     (JUM-480): the process list and the suggested `pm2 start` command derive
+     from the selected preview environment's ecosystem file — no process list
+     or package-manager invocation is hardcoded, so an ecosystem edit (or the
+     Bun cutover's invocation-format change) is reflected without a designer
+     change. Environments without an ecosystem file render an explicit empty
+     state, never a silently blank preview.
+   - Multi-environment runtime env editor (JUM-480): the Environment selector
+     loads the chosen environment's values, the panel names the exact env file
+     the next save writes, and the save response confirms the file written.
    - Includes runtime env editor for:
      - `JUMENTIX_HTTP_FRAMEWORK`
      - `JUMENTIX_REALTIME_API`
@@ -114,6 +124,12 @@ Built into `apps/service-management/server.js`:
 
 - `GET /api/runtime/env?environment=dev|development|staging|ci|test`
 - `POST /api/runtime/env`
+- `GET /api/runtime/pm2-ecosystem?environment=dev|development|staging|production|prod|ci|test`
+  (read-only; the PM2 preview's source — reports the apps of the selected
+  environment's real `pm2/ecosystem.*.cjs` file with per-app `pm2 start`
+  commands derived from the ecosystem definition, an explicit
+  `exists: false` state when the file is absent, and the honest 500 envelope
+  when the file is unreadable or broken)
 
 The full contract (enum sets, write semantics, response hygiene) lives in
 [Runtime Environment Contracts](../../documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md).
