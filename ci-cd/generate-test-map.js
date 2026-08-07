@@ -79,6 +79,7 @@ const SERVICE_MANAGEMENT_INTEGRATION_AREA = {
   'spaBoot.browser.integration.test.ts': 'service-management/designer',
   'runtimeEnv.integration.test.ts': 'service-management/server',
   'runtimeEnvContract.integration.test.ts': 'service-management/server',
+  'pm2Ecosystem.integration.test.ts': 'service-management/server',
   'staticManifest.integration.test.ts': 'service-management/server',
   'staticServing.integration.test.ts': 'service-management/server'
 };

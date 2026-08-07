@@ -180,6 +180,37 @@ O Service Management expõe pontos de extremidade de leitura/gravação do ambie
 
 O editor env altera apenas as chaves aprovadas deste contrato, preservando as proteções.
 
+### API de visualização do ecossistema PM2 (JUM-480)
+
+O Service Management também expõe um endpoint PM2 somente leitura, a fonte
+única da visualização de perfil de tempo de execução do designer:
+
+- `GET /api/runtime/pm2-ecosystem?environment=dev|development|staging|production|prod|ci|test`
+
+O endpoint lê o arquivo real `pm2/ecosystem.*.cjs` do ambiente selecionado
+(diretório configurável via `JUMENTIX_SERVICE_MANAGEMENT_PM2_DIR`, padrão
+`<repo-root>/pm2`) e retorna `{ environment, fileName, path, exists, apps }`,
+onde cada app carrega `{ name, script, interpreter, interpreterArgs, env,
+command }`. `command` deriva da definição do ecossistema —
+`pm2 start <caminho do ecossistema> --only <nome do app> --update-env` — nunca
+uma string de gerenciador de pacotes embutida, de modo que a migração para Bun
+(JUM-33/JUM-40) não pode invalidar silenciosamente a visualização. O módulo do
+ecossistema é carregado sem cache: editar um arquivo de ecossistema muda a
+resposta sem reiniciar o servidor e sem alteração de código.
+
+Os estados de falha e de borda seguem a mesma disciplina de honestidade da API
+de arquivos env:
+
+- Ambiente desconhecido: `400 { "error": "Invalid environment request.", … }`
+  nomeando o valor e a lista aceita — nunca convertido silenciosamente para `dev`.
+- Arquivo de ecossistema ausente (por exemplo `ci`, que não possui um): `200`
+  com `exists: false` e lista `apps` vazia — um estado explícito que a UI
+  renderiza como "sem ecossistema para este ambiente", não uma visualização
+  silenciosamente vazia.
+- Arquivo de ecossistema ilegível ou sintaticamente quebrado:
+  `500 { "error": "PM2 ecosystem file operation failed.", "code", "path",
+  "details" }`.
+
 ### Localização dos arquivos env
 
 Os arquivos env de tempo de execução ficam em `apps/backend-template/src/config/` (`.env.dev`,
