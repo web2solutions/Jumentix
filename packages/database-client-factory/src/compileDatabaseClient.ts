@@ -108,11 +108,21 @@ const parseContactPoints = (value: string | undefined): string[] => {
     .filter((item) => item.length > 0);
 };
 
+/**
+ * Parses a JSON object, and only an object (JUM-599).
+ *
+ * `typeof parsed === 'object'` is true for an array, so a service account
+ * supplied as `[]` was returned as a `Record<string, unknown>` and carried a
+ * lie in its own declared type. Firebase then received something with no
+ * `project_id` and failed later, somewhere less obvious than here.
+ *
+ * `null` was already excluded by the truthiness check; the array case was not.
+ */
 const parseJson = (value: string | undefined): Record<string, unknown> | undefined => {
   if (!value || value.trim() === '') return undefined;
   try {
     const parsed = JSON.parse(value);
-    if (parsed && typeof parsed === 'object') {
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
       return parsed as Record<string, unknown>;
     }
   } catch (_error) {

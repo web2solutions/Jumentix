@@ -153,25 +153,40 @@ describe('queries', () => {
   });
 
   /**
-   * Records a gap rather than a guarantee, deliberately.
+   * The operator list is enforced (JUM-599).
    *
-   * `TFilterOperator` lists fifteen operators, but it is not enforced: a filter
-   * value may also be a `TStoreScalar`, which includes `Record<string, unknown>`,
-   * so *any* object satisfies the type and an invented operator compiles. This
-   * was written expecting the opposite and the compiler disagreed.
-   *
-   * It is pinned here so the gap is visible and so closing it — which means
-   * narrowing `TStoreScalar`, and touching every store adapter — announces
-   * itself by failing this test rather than passing unnoticed.
+   * This test used to assert the opposite. `TStoreScalar`'s object arm was a
+   * bare `Record<string, unknown>`, so every object satisfied it — a filter
+   * expression matched on the scalar arm, `TFilterOperator` was never
+   * consulted, and an invented operator compiled. `operator?: never` on that
+   * arm keeps the two disjoint: an object carrying `operator` can only be an
+   * `IStoreFilterExpression`, where the list is checked.
    */
-  it('does not currently enforce the operator list', () => {
+  it('rejects an operator that is not on the list', () => {
     expect.hasAssertions();
 
     const query: IStoreQuery<User> = { filters: { age: { operator: 'gte', value: 18 } } };
-    const invented = { filters: { age: { operator: 'approximately', value: 1 } } } as IStoreQuery<User>;
+
+    // @ts-expect-error 'approximately' is not a TFilterOperator.
+    const invented: IStoreQuery<User> = { filters: { age: { operator: 'approximately' } } };
 
     expect(query.filters?.age).toStrictEqual({ operator: 'gte', value: 18 });
-    expect(invented.filters?.age).toStrictEqual({ operator: 'approximately', value: 1 });
+    expect(invented.filters?.age).toStrictEqual({ operator: 'approximately' });
+  });
+
+  /**
+   * The narrowing must not cost the cases that were always legitimate: a bare
+   * value, and a nested document. Both are objects, and a rule written to
+   * exclude objects wholesale would have broken them.
+   */
+  it('still accepts a bare value and a nested document as filters', () => {
+    expect.hasAssertions();
+
+    const bare: IStoreQuery<User> = { filters: { age: 18 } };
+    const nested: IStoreQuery<User> = { filters: { name: { first: 'ada' } } };
+
+    expect(bare.filters?.age).toBe(18);
+    expect(nested.filters?.name).toStrictEqual({ first: 'ada' });
   });
 
   it('allows a query with nothing in it', () => {
