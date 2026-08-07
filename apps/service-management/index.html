@@ -20,6 +20,10 @@
       <button id="tab-deploy-management-btn" class="tab-btn" type="button">Deploy Management</button>
     </nav>
 
+    <!-- Non-blocking status surface (JUM-543): validation messages and API
+         results are announced here instead of blocking window.alert dialogs. -->
+    <div id="status-region" class="status-region" role="status" aria-live="polite" hidden></div>
+
     <section id="tab-domain-designer" class="tab-section active">
       <div class="app-shell">
         <aside class="sidebar">
@@ -484,6 +488,7 @@
             <button id="runtime-env-refresh-btn" type="button">Load Environment</button>
             <button id="runtime-env-save-btn" type="button">Save Environment</button>
           </div>
+          <p id="runtime-env-status" class="hint status-line" role="status" aria-live="polite"></p>
           <pre id="runtime-env-preview" class="code-preview"></pre>
         </section>
       </div>

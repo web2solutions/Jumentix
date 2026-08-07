@@ -186,6 +186,43 @@ button:focus {
   color: var(--muted);
 }
 
+/* Non-blocking status surfaces (JUM-543). The global region announces
+   validation messages and API results via aria-live; the inline status line
+   does the same inside the runtime env panel. The region is a fixed toast so
+   it never perturbs the shell grid layout (auto auto 1fr). */
+.status-region {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 20;
+  max-width: 420px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 4px 16px rgb(15 23 42 / 18%);
+  font-size: 13px;
+  color: var(--text);
+}
+
+.status-region.status-error {
+  border-color: #fca5a5;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.status-region.status-info {
+  color: var(--muted);
+}
+
+.status-line.status-error {
+  color: #b91c1c;
+}
+
+.status-line.status-info {
+  color: var(--muted);
+}
+
 .list {
   margin: 8px 0 0;
   padding: 0;

@@ -207,7 +207,11 @@ function normalizeEnvironment(runtime) {
   const selected = String(runtime || fallback).trim().toLowerCase();
   if (!envFileByRuntime[selected]) {
     const accepted = Object.keys(envFileByRuntime).join(', ');
-    throw new Error(`Unsupported environment "${selected}". Accepted values: ${accepted}`);
+    const error = new Error(`Unsupported environment "${selected}". Accepted values: ${accepted}`);
+    // Tagged so the HTTP layer can tell a client error (400) apart from a
+    // filesystem failure (500) — JUM-543.
+    error.code = 'UNSUPPORTED_ENVIRONMENT';
+    throw error;
   }
   return selected;
 }
@@ -290,6 +294,7 @@ function readRuntimeEnv(runtime) {
   if (!fs.existsSync(resolved.filePath)) {
     const error = new Error(`Environment file not found: ${resolved.filePath}`);
     error.code = 'ENV_FILE_NOT_FOUND';
+    error.filePath = resolved.filePath;
     throw error;
   }
   const fileContent = fs.readFileSync(resolved.filePath, 'utf8');
@@ -314,6 +319,7 @@ function updateRuntimeEnv(runtime, values) {
   if (!fs.existsSync(resolved.filePath)) {
     const error = new Error(`Environment file not found: ${resolved.filePath}`);
     error.code = 'ENV_FILE_NOT_FOUND';
+    error.filePath = resolved.filePath;
     throw error;
   }
   const currentContent = fs.readFileSync(resolved.filePath, 'utf8');
@@ -331,7 +337,11 @@ function updateRuntimeEnv(runtime, values) {
     }
   });
   if (validationErrors.length > 0) {
-    throw new Error(validationErrors.join(' '));
+    // Client-supplied values out of contract: tagged so the HTTP layer keeps
+    // these on the 400 payload envelope instead of the 500 filesystem class.
+    const error = new Error(validationErrors.join(' '));
+    error.code = 'INVALID_RUNTIME_VALUE';
+    throw error;
   }
 
   Object.entries(updates).forEach(([key, value]) => {
@@ -371,6 +381,46 @@ function writeJson(response, statusCode, payload) {
   response.end();
 }
 
+// Error-contract split (JUM-543, Requirement 126 §3): parse and validation
+// failures are client errors (400); filesystem failures are a distinct,
+// identifiable server-side class (500) carrying the error code and the
+// resolved env-file path, so a broken installation is never mistaken for a
+// malformed request.
+function isUnsupportedEnvironmentError(error) {
+  return error instanceof Error && error.code === 'UNSUPPORTED_ENVIRONMENT';
+}
+
+function isRuntimeValueError(error) {
+  return error instanceof Error && error.code === 'INVALID_RUNTIME_VALUE';
+}
+
+function writeInvalidEnvironment(response, error) {
+  writeJson(response, 400, {
+    error: 'Invalid environment request.',
+    details: error instanceof Error ? error.message : String(error)
+  });
+}
+
+function writeInvalidPayload(response, error) {
+  writeJson(response, 400, {
+    error: 'Invalid payload.',
+    details: error instanceof Error ? error.message : String(error)
+  });
+}
+
+function writeEnvironmentFileFailure(response, error) {
+  const code = error instanceof Error && error.code ? String(error.code) : 'ENV_IO_ERROR';
+  const filePath = error instanceof Error
+    ? (error.filePath || error.path || null)
+    : null;
+  writeJson(response, 500, {
+    error: 'Environment file operation failed.',
+    code,
+    path: filePath ? String(filePath) : null,
+    details: error instanceof Error ? error.message : String(error)
+  });
+}
+
 function readBody(request, callback) {
   let body = '';
   request.on('data', (chunk) => {
@@ -401,10 +451,11 @@ const server = http.createServer((request, response) => {
       const payload = readRuntimeEnv(environment);
       writeJson(response, 200, payload);
     } catch (error) {
-      writeJson(response, 400, {
-        error: 'Invalid environment request.',
-        details: error instanceof Error ? error.message : String(error)
-      });
+      if (isUnsupportedEnvironmentError(error)) {
+        writeInvalidEnvironment(response, error);
+        return;
+      }
+      writeEnvironmentFileFailure(response, error);
     }
     return;
   }
@@ -415,17 +466,31 @@ const server = http.createServer((request, response) => {
       return;
     }
     readBody(request, (rawBody) => {
+      // Parse errors are the only 400 "Invalid payload" class here: the try is
+      // narrowed to JSON.parse so a filesystem failure inside updateRuntimeEnv
+      // can never be reported as a malformed request (JUM-543).
+      let parsed;
       try {
-        const parsed = rawBody ? JSON.parse(rawBody) : {};
-        const environment = parsed.environment || process.env.NODE_ENV || 'dev';
+        parsed = rawBody ? JSON.parse(rawBody) : {};
+      } catch (error) {
+        writeInvalidPayload(response, error);
+        return;
+      }
+      const environment = parsed.environment || process.env.NODE_ENV || 'dev';
+      try {
         const payload = updateRuntimeEnv(environment, parsed.values || {});
         logMutation(environment, Object.keys(parsed.values || {}));
         writeJson(response, 200, payload);
       } catch (error) {
-        writeJson(response, 400, {
-          error: 'Invalid payload.',
-          details: error instanceof Error ? error.message : String(error)
-        });
+        if (isUnsupportedEnvironmentError(error)) {
+          writeInvalidEnvironment(response, error);
+          return;
+        }
+        if (isRuntimeValueError(error)) {
+          writeInvalidPayload(response, error);
+          return;
+        }
+        writeEnvironmentFileFailure(response, error);
       }
     });
     return;

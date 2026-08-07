@@ -155,6 +155,7 @@ const dom = {
   edges: document.getElementById('edges'),
   domainList: document.getElementById('domain-list'),
   status: document.getElementById('selection-status'),
+  statusRegion: document.getElementById('status-region'),
   zoomOutBtn: document.getElementById('zoom-out-btn'),
   zoomInBtn: document.getElementById('zoom-in-btn'),
   edgeStyleSelect: document.getElementById('edge-style-select'),
@@ -303,6 +304,7 @@ const dom = {
   runtimeEnvRefreshBtn: document.getElementById('runtime-env-refresh-btn'),
   runtimeEnvSaveBtn: document.getElementById('runtime-env-save-btn'),
   runtimeEnvPreview: document.getElementById('runtime-env-preview'),
+  runtimeEnvStatus: document.getElementById('runtime-env-status'),
   deployNameInput: document.getElementById('deploy-name-input'),
   deployTypeSelect: document.getElementById('deploy-type-select'),
   deployRegionInput: document.getElementById('deploy-region-input'),
@@ -344,7 +346,8 @@ const inspectors = createInspectors({
     updateField,
     removeField,
     renderRuntimeEnvironment,
-    loadSchemaBaseline
+    loadSchemaBaseline,
+    showStatus
   }
 });
 
@@ -457,12 +460,61 @@ function renderRuntimeEnvironment() {
   }
 }
 
+// Non-blocking status surfaces (JUM-543). Every former window.alert call site
+// announces through the aria-live toast region instead of blocking the UI.
+// Destructive-action gates keep their window.confirm — a toast is not a
+// substitute for a gate.
+let statusHideTimer = null;
+function showStatus(message, severity = 'error') {
+  if (!dom.statusRegion) return;
+  if (statusHideTimer) {
+    clearTimeout(statusHideTimer);
+    statusHideTimer = null;
+  }
+  dom.statusRegion.textContent = String(message);
+  dom.statusRegion.className = `status-region status-${severity}`;
+  dom.statusRegion.hidden = false;
+  if (severity === 'info') {
+    statusHideTimer = setTimeout(() => {
+      dom.statusRegion.hidden = true;
+      statusHideTimer = null;
+    }, 6000);
+  }
+}
+
+// Inline status line of the runtime env panel: load/save failures land here
+// with environment, file and cause, instead of a silent console error.
+function showRuntimeEnvStatus(message, severity = 'error') {
+  if (!dom.runtimeEnvStatus) return;
+  dom.runtimeEnvStatus.textContent = String(message);
+  dom.runtimeEnvStatus.className = `hint status-line status-${severity}`;
+}
+
+// Builds the client-side error from EXACTLY what the API returned — the
+// server's error envelope (error/details, plus code/path on the 500
+// filesystem class) is surfaced verbatim; there is no client-side remapping.
+async function runtimeEnvApiError(response, fallback) {
+  let payload = null;
+  try {
+    payload = await response.json();
+  } catch (_) {
+    payload = null;
+  }
+  if (!payload || typeof payload !== 'object') return new Error(fallback);
+  const parts = [];
+  if (payload.error) parts.push(String(payload.error));
+  if (payload.details) parts.push(String(payload.details));
+  if (payload.code) parts.push(`code: ${String(payload.code)}`);
+  if (payload.path) parts.push(`file: ${String(payload.path)}`);
+  return new Error(parts.length > 0 ? parts.join(' ') : fallback);
+}
+
 async function loadRuntimeEnvironment(environment) {
   const selectedEnvironment = String(environment || state.runtimeEnvironment?.environment || 'dev');
   const query = `?environment=${encodeURIComponent(selectedEnvironment)}`;
   const response = await fetch(`/api/runtime/env${query}`);
   if (!response.ok) {
-    throw new Error(`Could not load environment ${selectedEnvironment}.`);
+    throw await runtimeEnvApiError(response, `Could not load environment ${selectedEnvironment}.`);
   }
   const payload = await response.json();
   if (Array.isArray(payload?.editableKeys) && payload.editableKeys.length > 0) {
@@ -499,7 +551,7 @@ async function saveRuntimeEnvironment() {
     body: JSON.stringify(payload)
   });
   if (!response.ok) {
-    throw new Error('Could not save runtime environment.');
+    throw await runtimeEnvApiError(response, 'Could not save runtime environment.');
   }
   const saved = await response.json();
   if (Array.isArray(saved?.editableKeys) && saved.editableKeys.length > 0) {
@@ -542,7 +594,7 @@ function focusEntity(entityId) {
 
 function addDomain(name, options = {}) {
   if (isDomainNameTaken(name)) {
-    window.alert(`Domain "${name}" already exists.`);
+    showStatus(`Domain "${name}" already exists.`);
     return null;
   }
   const domain = {
@@ -571,7 +623,7 @@ function addEntity(domainId, name, options = {}) {
   const domain = state.domains.find((candidate) => candidate.id === domainId);
   if (!domain) return null;
   if (isEntityNameTaken(domain, name)) {
-    window.alert(`Entity "${name}" already exists in ${domain.name}.`);
+    showStatus(`Entity "${name}" already exists in ${domain.name}.`);
     return null;
   }
   const index = domain.entities.length;
@@ -648,13 +700,13 @@ function setSelectedEntity(entityId) {
 function addFieldToSelectedEntity() {
   const found = findEntity(state.selectedEntityId);
   if (!found) {
-    window.alert('Select an entity first.');
+    showStatus('Select an entity first.');
     return;
   }
   const name = dom.fieldNameInput.value.trim();
   if (!name) return;
   if (isFieldNameTaken(found.entity, name)) {
-    window.alert(`Field "${name}" already exists in ${found.entity.name}.`);
+    showStatus(`Field "${name}" already exists in ${found.entity.name}.`);
     return;
   }
   withPersist(() => {
@@ -680,7 +732,7 @@ function addFieldToSelectedEntity() {
 function applyFieldTemplateToSelectedEntity() {
   const found = findEntity(state.selectedEntityId);
   if (!found) {
-    window.alert('Select an entity first.');
+    showStatus('Select an entity first.');
     return;
   }
   const template = dom.fieldTemplateSelect.value;
@@ -730,11 +782,11 @@ function updateField(entityId, fieldName, nextPartial) {
   if (!target) return;
   const nextName = (nextPartial.name ?? target.name).trim();
   if (!nextName) {
-    window.alert('Field name cannot be empty.');
+    showStatus('Field name cannot be empty.');
     return;
   }
   if (isFieldNameTaken(found.entity, nextName, target.name)) {
-    window.alert(`Field "${nextName}" already exists in ${found.entity.name}.`);
+    showStatus(`Field "${nextName}" already exists in ${found.entity.name}.`);
     return;
   }
   withPersist(() => {
@@ -772,7 +824,7 @@ function removeField(entityId, fieldName) {
 
 function addRelationship(fromEntityId, toEntityId, fromCardinality, toCardinality, options = {}) {
   if (!fromEntityId || !toEntityId || fromEntityId === toEntityId) {
-    window.alert('Select two different entities to create a relationship.');
+    showStatus('Select two different entities to create a relationship.');
     return;
   }
   withPersist(() => {
@@ -837,7 +889,7 @@ function addRelationship(fromEntityId, toEntityId, fromCardinality, toCardinalit
       relationship.fromEntityId === toEntityId && relationship.toEntityId === fromEntityId
     ));
     if (exists) {
-      window.alert('A relationship between these entities already exists.');
+      showStatus('A relationship between these entities already exists.');
       return;
     }
     const relationship = {
@@ -911,7 +963,7 @@ function deleteRelationship(relationshipId) {
 function saveSelectedRelationship() {
   const relationship = state.relationships.find((candidate) => candidate.id === state.selectedRelationshipId);
   if (!relationship) {
-    window.alert('Select a relationship first.');
+    showStatus('Select a relationship first.');
     return;
   }
   const fromEntityId = dom.relationshipFromEntitySelect.value;
@@ -919,11 +971,11 @@ function saveSelectedRelationship() {
   const fromCardinality = dom.relationshipFromCardSelect.value;
   const toCardinality = dom.relationshipToCardSelect.value;
   if (!fromEntityId || !toEntityId || fromEntityId === toEntityId) {
-    window.alert('Relationship must link two different entities.');
+    showStatus('Relationship must link two different entities.');
     return;
   }
   if (!['1', 'N'].includes(fromCardinality) || !['1', 'N'].includes(toCardinality)) {
-    window.alert('Cardinality must be "1" or "N".');
+    showStatus('Cardinality must be "1" or "N".');
     return;
   }
   const duplicate = state.relationships.some((candidate) => {
@@ -934,7 +986,7 @@ function saveSelectedRelationship() {
     );
   });
   if (duplicate) {
-    window.alert('A relationship between these entities already exists.');
+    showStatus('A relationship between these entities already exists.');
     return;
   }
   withPersist(() => {
@@ -956,7 +1008,7 @@ function saveSelectedRelationship() {
 function reverseSelectedRelationship() {
   const relationship = state.relationships.find((candidate) => candidate.id === state.selectedRelationshipId);
   if (!relationship) {
-    window.alert('Select a relationship first.');
+    showStatus('Select a relationship first.');
     return;
   }
   withPersist(() => {
@@ -986,7 +1038,7 @@ function setRelationshipPickMode(active) {
 
 function startRelationshipPickFromSelectedEntity() {
   if (!state.selectedEntityId) {
-    window.alert('Select an entity first.');
+    showStatus('Select an entity first.');
     return;
   }
   interaction.relationshipPickActive = true;
@@ -1015,12 +1067,12 @@ function handleEntityRelationshipPick(entityId) {
 function setSelectedDomainColor(color) {
   const selected = getSelectedDomain();
   if (!selected) {
-    window.alert('Select a domain first.');
+    showStatus('Select a domain first.');
     return;
   }
   const isHexColor = /^#[0-9a-f]{6}$/i.test(color);
   if (!isHexColor) {
-    window.alert('Invalid color.');
+    showStatus('Invalid color.');
     return;
   }
   withPersist(() => {
@@ -1032,7 +1084,7 @@ function setSelectedDomainColor(color) {
 function saveSelectedDomainContext() {
   const selected = getSelectedDomain();
   if (!selected) {
-    window.alert('Select a domain first.');
+    showStatus('Select a domain first.');
     return;
   }
   withPersist(() => {
@@ -1052,16 +1104,16 @@ function saveSelectedDomainContext() {
 function saveSelectedEntityName(name) {
   const found = findEntity(state.selectedEntityId);
   if (!found) {
-    window.alert('Select an entity first.');
+    showStatus('Select an entity first.');
     return;
   }
   const value = String(name || '').trim();
   if (!value) {
-    window.alert('Entity name cannot be empty.');
+    showStatus('Entity name cannot be empty.');
     return;
   }
   if (isEntityNameTaken(found.domain, value, found.entity.id)) {
-    window.alert(`Entity "${value}" already exists in ${found.domain.name}.`);
+    showStatus(`Entity "${value}" already exists in ${found.domain.name}.`);
     return;
   }
   withPersist(() => {
@@ -1073,7 +1125,7 @@ function saveSelectedEntityName(name) {
 function saveSelectedEntityRules() {
   const found = findEntity(state.selectedEntityId);
   if (!found) {
-    window.alert('Select an entity first.');
+    showStatus('Select an entity first.');
     return;
   }
   withPersist(() => {
@@ -1091,7 +1143,7 @@ function saveSelectedEntityRules() {
 function saveSelectedEntityRbacRule() {
   const found = findEntity(state.selectedEntityId);
   if (!found) {
-    window.alert('Select an entity first.');
+    showStatus('Select an entity first.');
     return;
   }
   const action = dom.entityRbacActionSelect.value || 'list';
@@ -1106,7 +1158,7 @@ function saveSelectedEntityRbacRule() {
   const rule = { roles, tenantScoped: deriveTenantScoped(roles) };
   const verdict = validateRbacRule(rule);
   if (!verdict.ok) {
-    window.alert(verdict.reason);
+    showStatus(verdict.reason);
     return;
   }
   withPersist(() => {
@@ -1119,7 +1171,7 @@ function saveSelectedEntityRbacRule() {
 function addSelectedEntityContract() {
   const found = findEntity(state.selectedEntityId);
   if (!found) {
-    window.alert('Select an entity first.');
+    showStatus('Select an entity first.');
     return;
   }
   const name = String(dom.entityContractNameInput.value || '').trim();
@@ -1127,7 +1179,7 @@ function addSelectedEntityContract() {
   const channel = String(dom.entityContractChannelInput.value || '').trim();
   const version = String(dom.entityContractVersionInput.value || '').trim() || '1.0.0';
   if (!name) {
-    window.alert('Contract name is required.');
+    showStatus('Contract name is required.');
     return;
   }
   withPersist(() => {
@@ -1151,7 +1203,7 @@ function addSelectedEntityContract() {
 function saveSelectedEntityOasComposition() {
   const found = findEntity(state.selectedEntityId);
   if (!found) {
-    window.alert('Select an entity first.');
+    showStatus('Select an entity first.');
     return;
   }
   const mode = dom.entityOasCompositionModeSelect.value;
@@ -1173,7 +1225,7 @@ function saveSelectedEntityOasComposition() {
 function duplicateSelectedEntity() {
   const found = findEntity(state.selectedEntityId);
   if (!found) {
-    window.alert('Select an entity first.');
+    showStatus('Select an entity first.');
     return;
   }
   const baseName = `${found.entity.name}_copy`;
@@ -1199,14 +1251,14 @@ function duplicateSelectedEntity() {
 function moveSelectedEntityToDomain(targetDomainId) {
   const found = findEntity(state.selectedEntityId);
   if (!found) {
-    window.alert('Select an entity first.');
+    showStatus('Select an entity first.');
     return;
   }
   if (!targetDomainId || found.domain.id === targetDomainId) return;
   const targetDomain = state.domains.find((domain) => domain.id === targetDomainId);
   if (!targetDomain) return;
   if (isEntityNameTaken(targetDomain, found.entity.name)) {
-    window.alert(`Target domain already has entity "${found.entity.name}".`);
+    showStatus(`Target domain already has entity "${found.entity.name}".`);
     return;
   }
   withPersist(() => {
@@ -1256,7 +1308,7 @@ function editFieldMetadata(entityId, fieldName) {
       itemsType: FIELD_TYPES.includes(parsed.itemsType) ? parsed.itemsType : ''
     });
   } catch (error) {
-    window.alert('Invalid JSON metadata payload.');
+    showStatus('Invalid JSON metadata payload.');
   }
 }
 
@@ -1376,14 +1428,16 @@ function runModelChecks() {
 
 // The export quality gate (Requirement 126 §5). The issue list comes from
 // the DOM-free engine in src/validation/modelValidation.js; what remains
-// here is the gate's DOM half: render the blocking issues and alert.
+// here is the gate's DOM half: render the blocking issues and announce the
+// refusal on the non-blocking status region. The gate itself is unchanged —
+// it still refuses the export.
 function canExportModel() {
   if (!state.view.exportBlockCritical) return true;
   const issues = collectModelIssues(state);
   const criticalCount = issues.filter((issue) => issue.severity === 'error').length;
   if (criticalCount === 0) return true;
   inspectors.renderModelCheckResults(issues);
-  window.alert(`Export blocked: ${criticalCount} critical model issue(s). Run "Validate Model" and fix errors before exporting.`);
+  showStatus(`Export blocked: ${criticalCount} critical model issue(s). Run "Validate Model" and fix errors before exporting.`);
   return false;
 }
 
@@ -1438,7 +1492,7 @@ function exportAsPackage() {
   if (!canExportModel()) return;
   const selected = getSelectedDomain();
   if (!selected) {
-    window.alert('Select a domain to export package.');
+    showStatus('Select a domain to export package.');
     return;
   }
   downloadTextFile(
@@ -1456,7 +1510,7 @@ function exportAsOas() {
 // Import glue: FileReader + persist/selection/history around the pure
 // document→model mappers in src/importers/designerImporters.js (and
 // normalizeStatePayload from the JUM-468 core). One mapper failure reason
-// maps to exactly one pre-refactor alert.
+// maps to exactly one status-region message (the pre-refactor alert text).
 function importDomainPackage(file) {
   const reader = new FileReader();
   reader.onload = () => {
@@ -1464,7 +1518,7 @@ function importDomainPackage(file) {
       const parsed = JSON.parse(String(reader.result || '{}'));
       const result = buildDomainFromPackage(parsed, state.domains);
       if (!result.ok) {
-        window.alert('Invalid package format.');
+        showStatus('Invalid package format.');
         return;
       }
       withPersist(() => {
@@ -1476,7 +1530,7 @@ function importDomainPackage(file) {
         render();
       });
     } catch (_) {
-      window.alert('Could not parse package JSON.');
+      showStatus('Could not parse package JSON.');
     }
   };
   reader.readAsText(file);
@@ -1503,7 +1557,7 @@ function importStateFromFile(file) {
       history.future = [];
       saveState();
     } catch (error) {
-      window.alert('Could not parse JSON file.');
+      showStatus('Could not parse JSON file.');
     }
   };
   reader.readAsText(file);
@@ -1516,7 +1570,7 @@ function importStateFromOasFile(file) {
       const parsed = JSON.parse(String(reader.result));
       const result = buildDomainsFromOas(parsed);
       if (!result.ok) {
-        window.alert(result.reason === 'invalid-oas'
+        showStatus(result.reason === 'invalid-oas'
           ? 'Invalid OAS file: components.schemas not found.'
           : 'No schemas found to import.');
         return;
@@ -1544,7 +1598,7 @@ function importStateFromOasFile(file) {
       history.future = [];
       saveState();
     } catch (error) {
-      window.alert('Could not parse OAS JSON file.');
+      showStatus('Could not parse OAS JSON file.');
     }
   };
   reader.readAsText(file);
@@ -1689,7 +1743,7 @@ function wireEvents() {
       const entrypoint = String(dom.interfaceEntrypointInput.value || '').trim();
       const controller = String(dom.interfaceControllerInput.value || '').trim();
       if (!framework || !entrypoint || !controller) {
-        window.alert('Framework/runtime, entrypoint and controller mapping are required.');
+        showStatus('Framework/runtime, entrypoint and controller mapping are required.');
         return;
       }
       withPersist(() => {
@@ -1728,29 +1782,34 @@ function wireEvents() {
 
   if (dom.runtimeEnvRefreshBtn) {
     dom.runtimeEnvRefreshBtn.onclick = async () => {
+      const environment = dom.runtimeEnvSelect?.value || 'dev';
       try {
-        await loadRuntimeEnvironment(dom.runtimeEnvSelect?.value || 'dev');
+        await loadRuntimeEnvironment(environment);
+        showRuntimeEnvStatus(`Environment "${environment}" loaded from ${state.runtimeEnvironment?.fileName || 'env file'}.`, 'info');
       } catch (error) {
-        window.alert(error instanceof Error ? error.message : 'Could not load runtime environment.');
+        showRuntimeEnvStatus(`Environment "${environment}": ${error instanceof Error ? error.message : 'Could not load runtime environment.'}`);
       }
     };
   }
 
   if (dom.runtimeEnvSaveBtn) {
     dom.runtimeEnvSaveBtn.onclick = async () => {
+      const environment = dom.runtimeEnvSelect?.value || 'dev';
       try {
         await saveRuntimeEnvironment();
+        showRuntimeEnvStatus(`Environment "${environment}" saved to ${state.runtimeEnvironment?.fileName || 'env file'}.`, 'info');
       } catch (error) {
-        window.alert(error instanceof Error ? error.message : 'Could not save runtime environment.');
+        showRuntimeEnvStatus(`Environment "${environment}": ${error instanceof Error ? error.message : 'Could not save runtime environment.'}`);
       }
     };
   }
 
   if (dom.runtimeEnvSelect) {
     dom.runtimeEnvSelect.onchange = () => {
-      loadRuntimeEnvironment(dom.runtimeEnvSelect.value)
+      const environment = dom.runtimeEnvSelect.value;
+      loadRuntimeEnvironment(environment)
         .catch((error) => {
-          window.alert(error instanceof Error ? error.message : 'Could not load runtime environment.');
+          showRuntimeEnvStatus(`Environment "${environment}": ${error instanceof Error ? error.message : 'Could not load runtime environment.'}`);
         });
     };
   }
@@ -1762,7 +1821,7 @@ function wireEvents() {
       const region = String(dom.deployRegionInput.value || '').trim();
       const runtime = String(dom.deployRuntimeInput.value || '').trim();
       if (!name || !region || !runtime) {
-        window.alert('Deployment name, region and runtime are required.');
+        showStatus('Deployment name, region and runtime are required.');
         return;
       }
       withPersist(() => {
@@ -1779,7 +1838,7 @@ function wireEvents() {
     const value = dom.domainNameInput.value.trim();
     if (!value) return;
     if (isDomainNameTaken(value)) {
-      window.alert(`Domain "${value}" already exists.`);
+      showStatus(`Domain "${value}" already exists.`);
       return;
     }
     withPersist(() => {
@@ -1813,7 +1872,7 @@ function wireEvents() {
     const next = window.prompt('Rename domain', selected.name);
     if (!next || !next.trim()) return;
     if (isDomainNameTaken(next.trim(), selected.id)) {
-      window.alert(`Domain "${next.trim()}" already exists.`);
+      showStatus(`Domain "${next.trim()}" already exists.`);
       return;
     }
     withPersist(() => {
@@ -1834,11 +1893,11 @@ function wireEvents() {
 
   dom.addEntityBtn.onclick = () => {
     const selected = getSelectedDomain();
-    if (!selected) return window.alert('Select a domain first.');
+    if (!selected) return showStatus('Select a domain first.');
     const value = dom.entityNameInput.value.trim();
     if (!value) return;
     if (isEntityNameTaken(selected, value)) {
-      window.alert(`Entity "${value}" already exists in ${selected.name}.`);
+      showStatus(`Entity "${value}" already exists in ${selected.name}.`);
       return;
     }
     withPersist(() => {
@@ -1850,7 +1909,7 @@ function wireEvents() {
   dom.applyEntityTemplateBtn.onclick = () => {
     const found = findEntity(state.selectedEntityId);
     if (!found) {
-      window.alert('Select an entity first.');
+      showStatus('Select an entity first.');
       return;
     }
     const template = dom.entityTemplateSelect.value;
@@ -1899,7 +1958,7 @@ function wireEvents() {
     if (!search) return;
     const found = findEntityByName(search);
     if (!found) {
-      window.alert(`No entity found for "${search}".`);
+      showStatus(`No entity found for "${search}".`);
       return;
     }
     focusEntity(found.entity.id);
@@ -2057,7 +2116,7 @@ function wireEvents() {
 
   dom.clearStorageBtn.onclick = () => {
     store.clear();
-    window.alert('Saved designer state cleared.');
+    showStatus('Saved designer state cleared.', 'info');
   };
 
   // Canvas-level listeners (background click, wheel zoom, pan, anchor-drag
@@ -2156,8 +2215,11 @@ async function boot() {
   wireEvents();
   render();
   loadRuntimeEnvironment(state.runtimeEnvironment?.environment || 'dev')
-    .catch(() => {
+    .catch((error) => {
       renderRuntimeEnvironment();
+      // Boot-time load failure is not silent (JUM-543): the panel's inline
+      // status line carries the cause the API returned.
+      showRuntimeEnvStatus(error instanceof Error ? error.message : 'Could not load runtime environment.');
     });
 }
 
