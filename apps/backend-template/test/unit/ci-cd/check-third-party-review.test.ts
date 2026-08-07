@@ -40,6 +40,16 @@ function run(root: string): { code: number; output: string } {
   }
 }
 
+/** Inserts a raw step at the top of the `third-party-review` job's step list. */
+function addStepToReviewJob(directory: string, stepYaml: string): void {
+  const file = path.join(directory, contracts[0]);
+  const text = fs.readFileSync(file, 'utf8');
+  const marker = text.indexOf('  third-party-review:');
+  const stepsAt = text.indexOf('    steps:\n', marker);
+  const insertAt = stepsAt + '    steps:\n'.length;
+  fs.writeFileSync(file, text.slice(0, insertAt) + stepYaml + text.slice(insertAt));
+}
+
 describe('third-party review contract', () => {
   it('passes for pinned, least-privilege, fail-closed scanners', () => {
     expect.hasAssertions();
@@ -49,24 +59,115 @@ describe('third-party review contract', () => {
     expect(result.output).toContain('Gitleaks and native Semgrep');
   });
 
-  it('fails when remote Docker workspace mounts are introduced', () => {
+  /**
+   * These three used to be two, and the two asserted the opposite (JUM-616).
+   *
+   * The check matched the raw text of the whole file, so appending a *comment*
+   * naming a forbidden construct failed it — and those tests pinned that as the
+   * intended behaviour. It is not: a comment explaining why the repository does
+   * not do something is indistinguishable, to a text match, from doing it, and
+   * the cheapest response is to delete the explanation.
+   *
+   * The check reads the parsed `third-party-review` job now, so a violation has
+   * to be a violation.
+   */
+  it('fails when the review job declares the remote-docker step', () => {
     expect.hasAssertions();
 
     const root = fixture((directory) => {
-      const file = path.join(directory, contracts[0]);
-      fs.appendFileSync(file, '\n# setup_remote_docker\n# docker run -v "$PWD:/src"\n');
+      addStepToReviewJob(directory, '      - setup_remote_docker\n');
     });
     expect(run(root).output).toContain('without remote Docker workspace mounts');
   });
 
-  it('fails when an action uses a mutable version tag', () => {
+  it('fails when the review job shells out to docker run', () => {
+    expect.hasAssertions();
+
+    const root = fixture((directory) => {
+      addStepToReviewJob(
+        directory,
+        '      - run:\n          name: probe\n          command: docker run -v "$PWD:/src" scanner\n'
+      );
+    });
+    expect(run(root).output).toContain('without remote Docker workspace mounts');
+  });
+
+  it('fails when a command in the review job uses a mutable version tag', () => {
+    expect.hasAssertions();
+
+    const root = fixture((directory) => {
+      addStepToReviewJob(
+        directory,
+        '      - run:\n          name: probe\n          command: "uses: actions/checkout@v4"\n'
+      );
+    });
+    expect(run(root).output).toContain('mutable action reference');
+  });
+
+  /**
+   * The regression this issue is named for. A comment that names a forbidden
+   * construct — to explain why it is not used — must not fail the check.
+   */
+  it('tolerates a comment that names a forbidden construct', () => {
     expect.hasAssertions();
 
     const root = fixture((directory) => {
       const file = path.join(directory, contracts[0]);
-      fs.appendFileSync(file, '\n# uses: actions/checkout@v4\n');
+      fs.appendFileSync(
+        file,
+        '\n# A machine executor rather than setup_remote_docker, and never docker run.\n'
+        + '# uses: actions/checkout@v4 would be a mutable reference.\n'
+      );
     });
-    expect(run(root).output).toContain('mutable action reference');
+
+    const result = run(root);
+
+    expect(result.code).toBe(0);
+    expect(result.output).toContain('Gitleaks and native Semgrep');
+  });
+
+  /**
+   * The other bound. The rule is about the third-party job, so it must not
+   * constrain a job it was never about — `database-matrix` legitimately needs
+   * its own docker handling.
+   */
+  it('ignores docker usage in a job that is not the review job', () => {
+    expect.hasAssertions();
+
+    const root = fixture((directory) => {
+      const file = path.join(directory, contracts[0]);
+      const text = fs.readFileSync(file, 'utf8').replace(
+        '  workspace-builds:',
+        '  unrelated-job:\n'
+        + '    machine: true\n'
+        + '    steps:\n'
+        + '      - setup_remote_docker\n'
+        + '      - run:\n'
+        + '          name: probe\n'
+        + '          command: docker run hello-world\n'
+        + '\n'
+        + '  workspace-builds:'
+      );
+      fs.writeFileSync(file, text);
+    });
+
+    expect(run(root).code).toBe(0);
+  });
+
+  it('fails closed when the review job is missing entirely', () => {
+    expect.hasAssertions();
+
+    const root = fixture((directory) => {
+      const file = path.join(directory, contracts[0]);
+      // Renamed, not deleted: a job that is not there is not an absent
+      // violation, it is a contract that is not being run at all.
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace('  third-party-review:', '  renamed-review:')
+      );
+    });
+
+    expect(run(root).output).toContain('declares no "third-party-review" job');
   });
 
   it('fails when checksum verification is removed', () => {

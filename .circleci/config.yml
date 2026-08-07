@@ -425,16 +425,16 @@ jobs:
 
   # The docker-backed smoke suites (JUM-600).
   #
-  # A `machine` executor, rather than a docker executor with a remote daemon:
-  # the repository's own `docker:up:*` scripts run `docker compose`, and the
-  # smoke tests connect to `127.0.0.1`. Against a remote daemon the containers
-  # live on a different host and those ports are not reachable, so the suites
-  # would skip themselves and report success — the exact false green this job
-  # exists to prevent.
+  # A `machine` executor rather than `docker` + `setup_remote_docker`: the
+  # repository's own `docker:up:*` scripts run `docker compose`, and the smoke
+  # tests connect to `127.0.0.1`. With a remote daemon the containers live on a
+  # different host and those ports are not reachable, so the suites would skip
+  # themselves and report success — the exact false green this job exists to
+  # prevent.
   #
-  # The remote-daemon setup step is deliberately not named here: the
-  # third-party review contract greps this file as text, so writing the literal
-  # step name in a comment fails the check that forbids using it (JUM-616).
+  # Naming the step here is safe again: `check-third-party-review.js` reads the
+  # parsed `third-party-review` job rather than grepping this file as text
+  # (JUM-616), so a comment cannot fail the check that forbids the step.
   #
   # Runs on `dev` and `main` only, not on every pull request. Ten database
   # containers take minutes and pull images; per-PR is too expensive, and
