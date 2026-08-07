@@ -284,6 +284,11 @@ describe('designer exporters (JUM-469)', () => {
         version: '1.0.0',
         payloadSchema: { type: 'object' }
       }],
+      // JUM-478 meta carriage: the default RBAC policy is not emitted (an
+      // absent x-rbac normalizes back to it), and no field diverges from the
+      // importer's name heuristic, so no x-field-flags either.
+      'x-aggregate-root': true,
+      'x-invariants': ['total must be positive'],
       oneOf: [
         { $ref: '#/components/schemas/Base' },
         { $ref: '#/components/schemas/Audited' }
@@ -426,9 +431,9 @@ describe('designer exporters (JUM-469)', () => {
       entity: 'Invoice'
     }]);
     expect(document['x-relations']).toStrictEqual([{
+      // JUM-478: schema names, not model ids — ids are recomputed on import
+      // and would break the export → import → export fixed point.
       name: 'self link',
-      fromEntityId: 'entity-1',
-      toEntityId: 'entity-1',
       fromSchema: 'Billing_Invoice',
       toSchema: 'Billing_Invoice',
       fromCardinality: 'N',
@@ -476,6 +481,58 @@ describe('designer exporters (JUM-469)', () => {
     expect(schema['x-message-contracts']).toStrictEqual([]);
     expect(document['x-relations'][0].fromSchema).toBeNull();
     expect(document['x-relations'][0].toSchema).toBeNull();
+  });
+
+  it('carries the JUM-478 meta extensions: x-rbac only when non-default, x-fieldless, x-field-flags', () => {
+    const document = buildOasDocument(normalizeStatePayload({
+      domains: [{
+        id: 'domain-1',
+        name: 'Billing',
+        entities: [
+          {
+            id: 'entity-1',
+            name: 'Invoice',
+            fields: [
+              {
+                name: 'id', type: 'uuid', required: true, pk: true, unique: true
+              },
+              { name: 'code', type: 'string', unique: true }
+            ],
+            meta: {
+              rbac: {
+                list: { roles: ['superadmin'] }
+              }
+            }
+          },
+          {
+            id: 'entity-2',
+            name: 'Receipt',
+            fields: []
+          }
+        ]
+      }],
+      relationships: []
+    }));
+    const invoice = document.components.schemas.Billing_Invoice;
+    // A divergent policy crosses verbatim (normalized), with tenantScoped
+    // derived from the roles exactly as the runtime derives it.
+    expect(invoice['x-rbac']).toStrictEqual({
+      list: { roles: ['superadmin'], tenantScoped: false },
+      getById: { roles: ['superadmin', 'admin', 'user'], tenantScoped: true },
+      create: { roles: ['superadmin', 'admin'], tenantScoped: true },
+      update: { roles: ['superadmin', 'admin'], tenantScoped: true },
+      delete: { roles: ['superadmin', 'admin'], tenantScoped: true }
+    });
+    // `code` diverges from the name heuristic; `id` matches it and stays bare.
+    expect(invoice.properties.code['x-field-flags']).toStrictEqual({ pk: false, fk: false, unique: true });
+    expect(invoice.properties.id['x-field-flags']).toBeUndefined();
+    expect(invoice['x-fieldless']).toBeUndefined();
+    const receipt = document.components.schemas.Billing_Receipt;
+    expect(receipt['x-fieldless']).toBe(true);
+    // The default policy is what an absent x-rbac normalizes back to.
+    expect(receipt['x-rbac']).toBeUndefined();
+    expect(receipt['x-aggregate-root']).toBeUndefined();
+    expect(receipt['x-invariants']).toBeUndefined();
   });
 
   it('emits discriminator mapping only for declared refs', () => {

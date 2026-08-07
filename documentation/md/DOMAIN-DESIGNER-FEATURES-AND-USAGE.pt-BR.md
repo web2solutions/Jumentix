@@ -271,6 +271,41 @@ A exportação OpenAPI 3.1 produz um documento em conformidade com o Requisito
   (por exemplo `Foo Bar` vs `Foo-Bar`) falham no portão de qualidade de
   exportação em vez de sobrescrever silenciosamente uma à outra no documento.
 
+### 10.2) Ida e volta OAS sem perdas (JUM-478)
+
+A travessia OAS é um contrato entre o exportador e o importador: o que o OAS
+não consegue expressar nativamente atravessa como extensões `x-` acordadas e
+é normalizado de volta em `entity.meta` na importação, de modo que
+exportar → importar → exportar atinge um ponto fixo com uma lista de perdas
+no nível do modelo vazia (verificado por `designerRoundTrip.test.ts`).
+
+- `x-aggregate-root` e `x-invariants` carregam a declaração de agregado e as
+  invariantes quando presentes.
+- `x-rbac` carrega a política RBAC normalizada da entidade, emitida apenas
+  quando diverge do padrão do designer (um `x-rbac` ausente normaliza de
+  volta para a política padrão, com `tenantScoped` derivado dos papéis
+  conforme o contrato RBAC de tenant).
+- `x-fieldless: true` preserva o conjunto vazio de campos de uma entidade na
+  travessia (um schema sem marcação e sem propriedades ainda recebe os campos
+  padrão `id`/`createdAt`/`updatedAt` do importador).
+- `x-field-flags: { pk, fk, unique }` carrega as flags de um campo apenas
+  quando divergem da heurística de nomes do importador (`id` → PK/unique,
+  `*Id` → FK).
+- As linhas de `x-relations` carregam `{ name, fromSchema, toSchema,
+  fromCardinality, toCardinality }` — nomes de schema, não ids do modelo — e
+  o importador restaura os relacionamentos religados aos ids recomputados das
+  entidades, descartando linhas cujos extremos não foram importados.
+- Documentos externos sem as marcações do designer (o canônico
+  `spec/1.0.0.yml`) são reconhecidos pelas mesmas convenções de objetos de
+  porta: nomes `Request<Action>*` e `*ArrayOf`, `ResourceDeleteResponse`,
+  descrições "Port input/output object" que não são contratos de entidade
+  `<Name> resource`, e schemas não-objeto nunca viram entidades.
+- Perdas remanescentes nomeadas para documentos externos: facetas
+  `example`/`default`/`minItems`/`maxItems` e vínculos `$ref` de itens de
+  array (referências a objetos de valor achatam para o vocabulário
+  `itemsType`), blocos de contexto delimitado do domínio, posições no canvas
+  e operationIds legados (não canônicos).
+
 ## 11) Cobertura de fumaça
 
 Testes de fumaça de gerenciamento de serviços:

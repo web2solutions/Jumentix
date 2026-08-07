@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
+import fs from 'node:fs';
 import path from 'node:path';
 
 /**
@@ -19,9 +20,17 @@ import path from 'node:path';
  * - Lossy by design: `exportAsOas` → `importStateFromOasFile` cannot carry the
  *   whole model (OAS is narrower). The assertion there is idempotence —
  *   export → import → export reaches a fixed point — plus an explicit,
- *   asserted expected-loss list. That list is the baseline JUM-478 (lossless
- *   `spec/1.0.0.yml` round-trip) is committed to shrink: a field silently
- *   joining the list fails this suite.
+ *   asserted expected-loss list. JUM-478 drove that list to zero: the entity
+ *   meta OAS cannot express now crosses as agreed extensions
+ *   (`x-aggregate-root`, `x-invariants`, `x-rbac`, `x-message-contracts`,
+ *   composition, `x-fieldless`, `x-field-flags`) and relationships cross as
+ *   `x-relations` rows keyed by schema name. A field silently joining (or
+ *   silently rejoining) the loss list fails this suite.
+ * - The canonical target (JUM-478): the repo's own `spec/1.0.0.yml` imports
+ *   into a normalized model — no phantom port-object entities, full meta
+ *   normalization — and re-exports to a fixed point whose entity schemas keep
+ *   the source's structure: same properties, same required sets, same
+ *   canonical CRUD operation set.
  * - One-way: Markdown, JSON Schema, AsyncAPI and the boilerplate bundle have
  *   no importer, so they assert structural invariants instead — the test
  *   names say so.
@@ -56,11 +65,13 @@ const {
 const {
   createDesignerState,
   defaultFields,
+  getDefaultRbacPolicy,
   normalizeStatePayload
 } = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'designerState.js'));
 const {
   LocalStorageDesignerStore
 } = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'store', 'LocalStorageDesignerStore.js'));
+const YAML = require('yaml');
 
 type DesignerField = {
   name: string;
@@ -101,9 +112,11 @@ type ModelDomain = {
 
 /**
  * The reference model: two domains, every field type and facet, message
- * contracts, OAS composition, a cross-domain relationship and a non-default
- * view. `Receipt` intentionally has no fields — the OAS importer's
- * default-fields fallback is part of the documented loss list.
+ * contracts, OAS composition, RBAC defaults, a cross-domain relationship and
+ * a non-default view. `Receipt` intentionally has no fields — the
+ * `x-fieldless` marker (JUM-478) keeps the empty field set across the OAS
+ * crossing. `code` is unique without an `id`-suffixed name, so its flag only
+ * crosses through `x-field-flags`.
  */
 function createModelState() {
   return normalizeStatePayload({
@@ -320,20 +333,18 @@ function diffPaths(a: unknown, b: unknown, base = ''): string[] {
 }
 
 /**
- * The documented OAS field-facet loss, expressed as the transformation the
- * crossing applies to a normalized field: `pk`/`fk`/`unique` are not part of
- * OAS at all and are recomputed from the field name on import, and typed
- * fields (`uuid`/`date`/`datetime`) come back carrying the format the
- * exporter derived from their type. Everything else crosses verbatim.
+ * The documented OAS field-format normalization, expressed as the
+ * transformation the crossing applies to a normalized field: typed fields
+ * (`uuid`/`date`/`datetime`) come back carrying the canonical format the
+ * exporter derived from their type. Everything else — including PK/FK/unique,
+ * which JUM-478 carries through `x-field-flags` whenever the flags diverge
+ * from the importer's name heuristic — crosses verbatim.
  */
-function applyDocumentedOasFieldLoss(field: DesignerField): DesignerField {
+function applyDocumentedOasFormatNormalization(field: DesignerField): DesignerField {
   const typedFormats: Record<string, string> = { uuid: 'uuid', date: 'date', datetime: 'date-time' };
   return {
     ...field,
-    format: field.format || typedFormats[field.type] || '',
-    pk: field.name === 'id',
-    fk: /id$/i.test(field.name) && field.name !== 'id',
-    unique: field.name === 'id'
+    format: field.format || typedFormats[field.type] || ''
   };
 }
 
@@ -344,6 +355,75 @@ function stripImportIds(domains: Array<{ entities: Array<{ id: string }> }>) {
     id: '<recomputed>',
     entities: domain.entities.map((entity) => ({ ...entity, id: '<recomputed>' }))
   }));
+}
+
+/** The six contract schemas of the canonical `spec/1.0.0.yml`, in declaration order. */
+const SPEC_ENTITY_NAMES = ['Document', 'Email', 'Address', 'Phone', 'User', 'Organization'];
+
+/** The canonical OAS fixture, parsed once per suite run. */
+function loadCanonicalSpec() {
+  return YAML.parse(fs.readFileSync(path.join(repoRoot, 'spec', '1.0.0.yml'), 'utf8'));
+}
+
+/** Total `operationId` count across all paths of a document. */
+function countOperationIds(document: {
+  paths?: Record<string, Record<string, { operationId?: string }>>;
+}) {
+  return Object.values(document.paths || {}).reduce(
+    (total, methods) => total + Object.values(methods).filter((op) => op?.operationId).length,
+    0
+  );
+}
+
+/**
+ * Facets the designer field model has no slot for. They are the named
+ * remaining losses of a foreign-document import: the exporter never emits
+ * them, so designer-exported documents are unaffected, but the canonical
+ * spec carries them and they do not cross.
+ */
+const UNSUPPORTED_SOURCE_FACETS = ['example', 'default', 'minItems', 'maxItems'];
+
+/**
+ * Project a source schema's property set onto the facet surface the designer
+ * model can express: the unsupported facets dropped, and array item `$ref`s
+ * flattened to the `itemsType` vocabulary (the designer cannot represent a
+ * value-object reference as an item type — a named remaining loss).
+ */
+function projectSourceProperties(properties: Record<string, Record<string, any>>) {
+  return Object.fromEntries(Object.entries(properties).map(([fieldName, schema]) => {
+    const projected = Object.fromEntries(
+      Object.entries(schema || {}).filter(([key]) => !UNSUPPORTED_SOURCE_FACETS.includes(key))
+    );
+    if (projected.items?.$ref) {
+      projected.items = { type: 'string' };
+    }
+    return [fieldName, projected];
+  }));
+}
+
+/** First entity with the given name across the imported domains. */
+function entityByName(
+  domains: Array<{ entities: Array<{ name: string }> }>,
+  entityName: string
+): any {
+  return domains.flatMap((domain) => domain.entities).find((entity) => entity.name === entityName);
+}
+
+/** An entity's fields indexed by field name. */
+function fieldsByName(entity: { fields: DesignerField[] }) {
+  const entries = entity.fields.map((field) => [field.name, field]);
+  return Object.fromEntries(entries) as Record<string, DesignerField>;
+}
+
+/** Relationships without their recomputed ids, for cross-import comparison. */
+function stripRelationshipIds(relationships: Array<Record<string, unknown>>) {
+  return relationships.map((relationship) => {
+    const stripped = { ...relationship };
+    delete stripped.id;
+    delete stripped.fromEntityId;
+    delete stripped.toEntityId;
+    return stripped;
+  });
 }
 
 /** The channel derivation of the AsyncAPI export, kept conditional-free for the test body. */
@@ -477,94 +557,111 @@ describe('designer export/import round-trip (JUM-471)', () => {
       const first = buildOasDocument(createModelState());
       const firstImport = buildDomainsFromOas(JSON.parse(JSON.stringify(first)));
       expect(firstImport.ok).toBe(true);
-      const second = buildOasDocument({ domains: firstImport.domains, relationships: [] });
+      const second = buildOasDocument({
+        domains: firstImport.domains,
+        relationships: firstImport.relationships
+      });
       const secondImport = buildDomainsFromOas(JSON.parse(JSON.stringify(second)));
       expect(secondImport.ok).toBe(true);
-      const third = buildOasDocument({ domains: secondImport.domains, relationships: [] });
+      const third = buildOasDocument({
+        domains: secondImport.domains,
+        relationships: secondImport.relationships
+      });
       expect(third).toStrictEqual(second);
     });
 
-    it('loses exactly the documented field list in the first crossing (the JUM-478 baseline)', () => {
-      // EXPECTED-LOSS CONTRACT. Every entry is a design gap of the OAS
-      // crossing, not an accident: composition extensions and message
-      // contracts have no OAS import mapping, relationships are reset by the
-      // import glue, and a fieldless entity comes back with the importer's
-      // default fields. A field silently joining (or leaving) this list is
-      // the regression this assertion catches — update it only together with
-      // JUM-478's lossless-round-trip work. (JUM-474 added nine entries that
-      // are the Receipt default-fields loss propagated into the derived
-      // Request* wrappers the Req 036 export emits — the model-level loss
-      // list itself is unchanged.)
-      const EXPECTED_FIRST_CROSSING_DIFF = [
-        // OAS composition extensions are exported but never imported.
-        '.components.schemas.Billing_Invoice.discriminator (removed)',
-        '.components.schemas.Billing_Invoice.oneOf (removed)',
-        '.components.schemas.Billing_Invoice.x-external-refs (removed)',
-        // Message contracts are exported (per schema and top-level) but never imported.
-        '.components.schemas.Billing_Invoice.x-message-contracts.0 (removed)',
-        '.x-message-contracts.0 (removed)',
-        // Relationships are exported in x-relations but reset on import.
-        '.x-relations.0 (removed)',
-        // The fieldless Receipt comes back with the importer's default fields.
-        '.components.schemas.Billing_Receipt.properties.createdAt (added)',
-        '.components.schemas.Billing_Receipt.properties.id (added)',
-        '.components.schemas.Billing_Receipt.properties.updatedAt (added)',
-        '.components.schemas.Billing_Receipt.required.0 (added)',
-        '.components.schemas.Billing_Receipt.required.1 (added)',
-        '.components.schemas.Billing_Receipt.required.2 (added)',
-        // JUM-474: the same Receipt default-fields loss, propagated to the
-        // derived port input wrappers — not a new loss, the same one made
-        // visible in the Request*/ArrayOf schemas the Req 036 export adds.
-        '.components.schemas.RequestCreateBilling_Receipt.properties.createdAt (added)',
-        '.components.schemas.RequestCreateBilling_Receipt.properties.id (added)',
-        '.components.schemas.RequestCreateBilling_Receipt.properties.updatedAt (added)',
-        '.components.schemas.RequestCreateBilling_Receipt.required.0 (added)',
-        '.components.schemas.RequestCreateBilling_Receipt.required.1 (added)',
-        '.components.schemas.RequestUpdateBilling_Receipt.properties.createdAt (added)',
-        '.components.schemas.RequestUpdateBilling_Receipt.properties.id (added)',
-        '.components.schemas.RequestUpdateBilling_Receipt.properties.updatedAt (added)',
-        '.components.schemas.RequestUpdateBilling_Receipt.required.0 (added)'
-      ].sort();
+    it('loses exactly the documented field list in the first crossing (JUM-478: the list is empty)', () => {
+      // EXPECTED-LOSS CONTRACT. JUM-478 drove the JUM-471 baseline (21 paths)
+      // to zero: composition extensions, message contracts, `x-relations`,
+      // the fieldless-entity marker and entity meta (aggregate, invariants,
+      // RBAC) all cross as agreed extensions, and PK/FK/unique cross through
+      // `x-field-flags`. The port-object wrappers stay skipped by design —
+      // they are derived artifacts, not model state — and with the model
+      // lossless their propagation diffs vanish too. A path silently joining
+      // this list is the regression this assertion catches.
+      const EXPECTED_FIRST_CROSSING_DIFF: string[] = [];
       const first = buildOasDocument(createModelState());
       const firstImport = buildDomainsFromOas(JSON.parse(JSON.stringify(first)));
-      const second = buildOasDocument({ domains: firstImport.domains, relationships: [] });
+      const second = buildOasDocument({
+        domains: firstImport.domains,
+        relationships: firstImport.relationships
+      });
       expect(diffPaths(first, second).sort()).toStrictEqual(EXPECTED_FIRST_CROSSING_DIFF);
     });
 
-    it('restores every field facet except the documented name-heuristic and format gaps', () => {
+    it('restores every field facet except the documented typed-format normalization', () => {
       const state = createModelState();
       const first = buildOasDocument(state);
       const firstImport = buildDomainsFromOas(JSON.parse(JSON.stringify(first)));
       const importedInvoice = firstImport.domains[0].entities[0];
       const expectedFields = state.domains[0].entities[0].fields.map(
-        (field: DesignerField) => applyDocumentedOasFieldLoss(field)
+        (field: DesignerField) => applyDocumentedOasFormatNormalization(field)
       );
       expect(importedInvoice.fields).toStrictEqual(expectedFields);
-      // The name heuristic is visible in the fixture: `code` was unique in the
-      // model and is not after the crossing, while `customerId` keeps its FK
-      // because the name ends in `Id`.
+      // PK/FK/unique cross through `x-field-flags` (JUM-478): `code` stays
+      // unique even though the name heuristic alone would drop the flag.
       const byName = Object.fromEntries(
         importedInvoice.fields.map((field: DesignerField) => [field.name, field])
       ) as Record<string, DesignerField>;
-      expect(byName.code.unique).toBe(false);
+      expect(byName.code.unique).toBe(true);
       expect(byName.customerId.fk).toBe(true);
-      // The fieldless Receipt comes back with the default id/createdAt/updatedAt.
-      expect(firstImport.domains[0].entities[1].fields).toStrictEqual(defaultFields());
+      // The fieldless Receipt keeps its empty field set via `x-fieldless`.
+      expect(firstImport.domains[0].entities[1].fields).toStrictEqual([]);
     });
 
-    it('drops domain context, entity meta and canvas positions at the model level', () => {
+    it('drops domain context and canvas positions but restores entity meta and relationships', () => {
       const state = createModelState();
       const first = buildOasDocument(state);
       const firstImport = buildDomainsFromOas(JSON.parse(JSON.stringify(first)));
       const [billing, catalog] = firstImport.domains;
-      // Names survive; everything else about the domain is recomputed.
+      // Names survive; the bounded-context block and canvas layout are
+      // recomputed (they have no extension carriage — named remaining loss).
       expect(billing.name).toBe('Billing');
       expect(catalog.name).toBe('Catalog');
       expect(Object.keys(billing)).toStrictEqual(['id', 'name', 'color', 'x', 'y', 'entities']);
       expect(billing.color).not.toBe(state.domains[0].color);
-      expect(Object.keys(billing.entities[0])).toStrictEqual(['id', 'name', 'x', 'y', 'fields']);
+      expect(Object.keys(billing.entities[0])).toStrictEqual(['id', 'name', 'x', 'y', 'fields', 'meta']);
       expect(billing.entities.map((entity: { name: string }) => entity.name))
         .toStrictEqual(['Invoice', 'Receipt']);
+      // Entity meta crosses normalized: aggregate declaration, invariants,
+      // contracts, composition — and the RBAC policy (the default here).
+      expect(billing.entities[0].meta).toStrictEqual({
+        aggregateRoot: true,
+        invariants: ['total must be positive'],
+        rbac: getDefaultRbacPolicy(),
+        contracts: [{
+          id: 'contract-1',
+          name: 'issued',
+          type: 'event',
+          channel: 'billing.issued',
+          version: '1.0.0',
+          payloadSchema: { type: 'object' }
+        }],
+        oasComposition: {
+          mode: 'oneOf',
+          refs: ['Base', 'Audited'],
+          externalRefs: ['common.yaml#Money'],
+          discriminator: 'kind'
+        }
+      });
+      expect(billing.entities[1].meta).toStrictEqual({
+        aggregateRoot: false,
+        invariants: [],
+        rbac: getDefaultRbacPolicy(),
+        contracts: [],
+        oasComposition: {
+          mode: '', refs: [], externalRefs: [], discriminator: ''
+        }
+      });
+      // Relationships cross via `x-relations`, re-keyed to the imported ids.
+      expect(firstImport.relationships).toHaveLength(1);
+      expect(firstImport.relationships[0]).toMatchObject({
+        name: 'invoice products',
+        fromEntityId: billing.entities[0].id,
+        toEntityId: catalog.entities[0].id,
+        fromCardinality: '1',
+        toCardinality: 'N'
+      });
     });
 
     it('recomputes import ids with the fallback pattern, unique across repeated imports', () => {
@@ -585,6 +682,9 @@ describe('designer export/import round-trip (JUM-471)', () => {
       // Modulo the recomputed ids, both imports of the same file are identical.
       expect(stripImportIds(secondImport.domains))
         .toStrictEqual(stripImportIds(firstImport.domains));
+      // Relationships are idempotent too: same rows, recomputed ids.
+      expect(stripRelationshipIds(secondImport.relationships))
+        .toStrictEqual(stripRelationshipIds(firstImport.relationships));
     });
   });
 
@@ -605,15 +705,16 @@ describe('designer export/import round-trip (JUM-471)', () => {
       expect(secondImport).toStrictEqual(firstImport);
     });
 
-    it('oas export keeps the junction as a plain schema and loses its relationships on import', () => {
+    it('oas export keeps the junction as a plain schema and crosses its relationships by schema name', () => {
       const state = createJunctionState();
       const document = buildOasDocument(state);
       expect(Object.keys(document.components.schemas)).toContain('Billing_InvoiceProduct');
+      // JUM-478: x-relations rows key on schema names, not model ids — the
+      // importer recomputes ids, so ids in the document would break the
+      // export → import → export fixed point.
       expect(document['x-relations']).toStrictEqual([
         {
           name: 'InvoiceProduct -> Invoice',
-          fromEntityId: 'entity-3',
-          toEntityId: 'entity-1',
           fromSchema: 'Billing_InvoiceProduct',
           toSchema: 'Billing_Invoice',
           fromCardinality: 'N',
@@ -621,21 +722,35 @@ describe('designer export/import round-trip (JUM-471)', () => {
         },
         {
           name: 'InvoiceProduct -> Product',
-          fromEntityId: 'entity-3',
-          toEntityId: 'entity-2',
           fromSchema: 'Billing_InvoiceProduct',
           toSchema: 'Billing_Product',
           fromCardinality: 'N',
           toCardinality: '1'
         }
       ]);
-      // The junction entity survives the OAS crossing as a plain entity; the
-      // relationships do not (the import glue resets them) — so a re-imported
-      // junction is inert data, never a duplicated generated junction.
+      // The junction entity survives the OAS crossing as a plain entity and
+      // its two relationships come back re-keyed to the imported ids — inert
+      // data, never a duplicated generated junction.
       const firstImport = buildDomainsFromOas(JSON.parse(JSON.stringify(document)));
       expect(firstImport.domains[0].entities.map((entity: { name: string }) => entity.name))
         .toStrictEqual(['Invoice', 'Product', 'InvoiceProduct']);
-      expect(firstImport.domains[0]).not.toHaveProperty('relationships');
+      expect(firstImport.relationships).toHaveLength(2);
+      const idByName = Object.fromEntries(
+        firstImport.domains[0].entities.map(
+          (entity: { id: string; name: string }) => [entity.name, entity.id]
+        )
+      );
+      expect(
+        firstImport.relationships.map(
+          (relationship: { fromEntityId: string; toEntityId: string }) => [
+            relationship.fromEntityId,
+            relationship.toEntityId
+          ]
+        )
+      ).toStrictEqual([
+        [idByName.InvoiceProduct, idByName.Invoice],
+        [idByName.InvoiceProduct, idByName.Product]
+      ]);
     });
   });
 
@@ -679,6 +794,122 @@ describe('designer export/import round-trip (JUM-471)', () => {
       const secondCore = importIntoFreshCore();
       expect(firstCore.state.idCounter).toBe(secondCore.state.idCounter);
       expect(firstCore.state.idCounter).toBe(4);
+    });
+  });
+
+  describe('canonical spec/1.0.0.yml round-trip (JUM-478)', () => {
+    const specDocument = loadCanonicalSpec();
+
+    it('pins the canonical fixture: openapi 3.1.0 with 33 operationIds', () => {
+      expect(specDocument.openapi).toBe('3.1.0');
+      expect(countOperationIds(specDocument)).toBe(33);
+    });
+
+    it('imports the six contract schemas with full meta normalization and no phantom port objects', () => {
+      // The canonical spec carries no designer markers at all: the importer
+      // recognizes the port-object conventions (Request*/ArrayOf/
+      // ResourceDeleteResponse names, "Port input/output object" descriptions,
+      // non-object contracts) and keeps exactly the six contract schemas.
+      const result = buildDomainsFromOas(specDocument);
+      expect(result.ok).toBe(true);
+      expect(result.domains).toHaveLength(1);
+      expect(result.domains[0].name).toBe('Imported');
+      expect(result.domains[0].entities.map((entity: { name: string }) => entity.name))
+        .toStrictEqual(SPEC_ENTITY_NAMES);
+      expect(result.relationships).toStrictEqual([]);
+      const user = entityByName(result.domains, 'User');
+      // Full meta normalization: with no extension carriage in the source,
+      // every meta slot normalizes to its designer default.
+      expect(user.meta).toStrictEqual({
+        aggregateRoot: false,
+        invariants: [],
+        rbac: getDefaultRbacPolicy(),
+        contracts: [],
+        oasComposition: {
+          mode: '', refs: [], externalRefs: [], discriminator: ''
+        }
+      });
+      const userFields = fieldsByName(user);
+      expect(userFields.id).toMatchObject({
+        type: 'string', required: true, pk: true, unique: true
+      });
+      expect(userFields.password).toMatchObject({
+        type: 'string', format: 'password', minLength: 8, required: true
+      });
+      expect(userFields.organization).toMatchObject({ type: 'uuid', nullable: true, fk: false });
+      expect(userFields.lastName).toMatchObject({ type: 'string', nullable: true });
+      expect(userFields.createdAt).toMatchObject({ type: 'datetime', format: 'date-time', required: true });
+      // Array item `$ref`s flatten into the designer's itemsType vocabulary —
+      // a named remaining loss: the Email value-object linkage does not cross.
+      expect(userFields.emails).toMatchObject({ type: 'array', itemsType: 'string', required: true });
+      const documentEntity = entityByName(result.domains, 'Document');
+      expect(fieldsByName(documentEntity).type.enumValues).toStrictEqual(['CPF', 'RG', 'SSN', 'passport']);
+    });
+
+    it('is idempotent: importing the spec twice yields the same model modulo recomputed ids', () => {
+      const firstImport = buildDomainsFromOas(specDocument);
+      const secondImport = buildDomainsFromOas(specDocument);
+      expect(stripImportIds(secondImport.domains))
+        .toStrictEqual(stripImportIds(firstImport.domains));
+      expect(secondImport.relationships).toStrictEqual(firstImport.relationships);
+    });
+
+    it('re-exports to a fixed point: a second crossing is identical at model and document level', () => {
+      const firstImport = buildDomainsFromOas(specDocument);
+      const second = buildOasDocument({
+        domains: firstImport.domains,
+        relationships: firstImport.relationships
+      });
+      const secondImport = buildDomainsFromOas(JSON.parse(JSON.stringify(second)));
+      expect(secondImport.ok).toBe(true);
+      expect(stripImportIds(secondImport.domains))
+        .toStrictEqual(stripImportIds(firstImport.domains));
+      const third = buildOasDocument({
+        domains: secondImport.domains,
+        relationships: secondImport.relationships
+      });
+      expect(third).toStrictEqual(second);
+    });
+
+    it('preserves the Users and Organization schema structure across the crossing', () => {
+      const firstImport = buildDomainsFromOas(specDocument);
+      const exported = buildOasDocument({
+        domains: firstImport.domains,
+        relationships: firstImport.relationships
+      });
+      SPEC_ENTITY_NAMES.forEach((entityName) => {
+        const sourceSchema = specDocument.components.schemas[entityName];
+        const exportedSchema = exported.components.schemas[`Imported_${entityName}`];
+        expect(exportedSchema.properties)
+          .toStrictEqual(projectSourceProperties(sourceSchema.properties));
+        expect([...exportedSchema.required].sort())
+          .toStrictEqual([...sourceSchema.required].sort());
+      });
+    });
+
+    it('maps every imported contract schema to the five canonical CRUD operations', () => {
+      // The source's legacy operationIds (`getAll`, `create`, `deleteOne`,
+      // ...) do not cross: the export follows the Req 036 canonical verb
+      // scheme (JUM-474), qualified by schema name so ids stay unique across
+      // domains. "Same operations" is asserted as the full CRUD set per
+      // imported resource.
+      const firstImport = buildDomainsFromOas(specDocument);
+      const exported = buildOasDocument({
+        domains: firstImport.domains,
+        relationships: firstImport.relationships
+      });
+      const operationIds = Object.values(exported.paths).flatMap(
+        (methods) => Object.values(methods as Record<string, { operationId: string }>)
+          .map((operation) => operation.operationId)
+      );
+      const expected = SPEC_ENTITY_NAMES.flatMap((entityName) => [
+        `getAllImported_${entityName}`,
+        `createImported_${entityName}`,
+        `getImported_${entityName}ById`,
+        `updateImported_${entityName}`,
+        `deleteImported_${entityName}`
+      ]);
+      expect(operationIds).toStrictEqual(expected);
     });
   });
 

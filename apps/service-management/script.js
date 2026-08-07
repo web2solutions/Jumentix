@@ -1526,7 +1526,9 @@ function importStateFromOasFile(file) {
       const nextDomains = result.domains;
       withPersist(() => {
         state.domains = nextDomains;
-        state.relationships = [];
+        // JUM-478: relationships cross the OAS boundary via `x-relations`
+        // (endpoints re-keyed to the freshly imported entities).
+        state.relationships = result.relationships || [];
         state.selectedDomainId = nextDomains[0]?.id || null;
         state.selectedEntityId = null;
         state.selectedRelationshipId = null;
