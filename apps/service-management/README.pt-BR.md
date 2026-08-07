@@ -68,6 +68,15 @@ Uso detalhado de recursos:
      - `JUMENTIX_REALTIME_API_DATABASE_DRIVER`
 4. **Gerenciamento de implantação**
    - Registre alvos de implantação para VMs, servidores dedicados, EC2 e provedores de funções.
+   - Cada alvo carrega os metadados por serviço do Requisito 059 (JUM-481):
+     `serviceType`, `deployTarget`, `runtimeProtocol`, `databaseDriver`,
+     `keyValueDriver` e `pm2Profile`. As adições são validadas contra a
+     matriz de implantação lida da fonte legível por máquina compartilhada
+     `src/model/deployCapabilityMatrix.js` — combinações sem linha na matriz,
+     protocolos que o tipo de serviço não expõe e perfis PM2 em alvos
+     serverless são rejeitados na superfície de status com a restrição
+     nomeada. Alvos persistidos antes deste alinhamento migram no
+     carregamento.
 
 ## Correr
 

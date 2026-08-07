@@ -221,6 +221,24 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
    - `runtimeEnvironment`: `{ environment, fileName, values }` mirroring Contract 1
      (environment enum and the visible runtime keys — the editable and read-only
      tiers; never-exposed keys never enter this state).
+   - `deployments`: array of deploy targets aligned to the Requirement 059
+     Service Management metadata contract (`JUM-481`), each
+     `{ name, region, runtime, serviceType, deployTarget, runtimeProtocol,
+     databaseDriver, keyValueDriver, pm2Profile }` with
+     `serviceType` ∈ { `restapi`, `websocket+restapi`, `grpc+restapi`,
+     `functions` }, `deployTarget` ∈ { `dedicated-server`, `vm`, `ec2`,
+     `lambda`, `vercel-functions`, `cloudflare-workers` }, `runtimeProtocol` ∈
+     { `http`, `websocket`, `grpc` }, `databaseDriver`/`keyValueDriver` drawn
+     from the Contract 1 `JUMENTIX_DATABASE_DRIVER`/
+     `JUMENTIX_KEYVALUESTORAGE_DRIVER` enums, and `pm2Profile` ∈ { `dev`,
+     `staging`, `production` } on PM2-managed targets (`dedicated-server`,
+     `vm`, `ec2`) and empty otherwise. Entries persisted before this
+     alignment (`{ name, type, region, runtime }`) migrate forward on load:
+     `type` becomes `deployTarget` (`dedicated` → `dedicated-server`; values
+     with no Requirement 059 counterpart are kept verbatim so the migration
+     is lossless) and missing metadata fields take the contract defaults.
+     This is a backward-compatible extension of an existing section, so the
+     versioned key is unchanged.
    - `view`: `{ zoom (clamped 0.5–2), compactEntities, snapToGrid,
      edgeStyle ∈ { curved, orthogonal },
      modelCheckMinSeverity ∈ { info, warn, error }, exportBlockCritical (default

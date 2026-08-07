@@ -64,6 +64,15 @@ Detailed feature usage:
      - `JUMENTIX_REALTIME_API_DATABASE_DRIVER`
 4. **Deploy Management**
    - Register deployment targets for VMs, dedicated servers, EC2, and function providers.
+   - Each target carries the Requirement 059 per-service metadata (JUM-481):
+     `serviceType`, `deployTarget`, `runtimeProtocol`, `databaseDriver`,
+     `keyValueDriver` and `pm2Profile`. Additions are validated against the
+     deploy matrix read from the shared machine-readable source
+     `src/model/deployCapabilityMatrix.js` — combinations with no matrix row,
+     protocols the service type does not expose, and PM2 profiles on
+     serverless targets are rejected on the status surface with the
+     constraint named. Targets persisted before this alignment migrate
+     forward on load.
 
 ## Run
 

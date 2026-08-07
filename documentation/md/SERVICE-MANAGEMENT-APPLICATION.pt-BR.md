@@ -84,6 +84,18 @@ armazenamento `IDesignerStore` estão documentados em
     - `ci` -> `.env.ci` (`test` é um alias)
 4. **Gerenciamento de implantação**
    - Rastreia alvos de implantação e metadados de implantação em tempo de execução.
+   - Cada alvo carrega o contrato de metadados por serviço do Requisito 059
+     (JUM-481): `serviceType`, `deployTarget`, `runtimeProtocol`,
+     `databaseDriver`, `keyValueDriver`, `pm2Profile`, além de nome, região
+     e runtime.
+   - As adições são validadas contra a matriz de implantação do Requisito 059
+     lida da fonte legível por máquina compartilhada
+     `src/model/deployCapabilityMatrix.js`: combinações tipo de serviço ×
+     alvo de implantação sem linha na matriz, protocolos que o tipo de serviço
+     não expõe e perfis PM2 em alvos serverless (ou ausentes em alvos
+     gerenciados por PM2) são rejeitados na superfície de status não
+     bloqueante com a restrição violada nomeada. Alvos legados persistidos
+     antes deste alinhamento migram no carregamento.
 
 Guia de uso detalhado:
 

@@ -498,7 +498,7 @@
     <section id="tab-deploy-management" class="tab-section">
       <div class="tab-body">
         <h2>Deploy Management</h2>
-        <p class="hint">Register and track deployment targets for monoliths, APIs, and function sets.</p>
+        <p class="hint">Register and track deployment targets for monoliths, APIs, and function sets. Each target carries the Requirement 059 per-service metadata, validated against the deploy matrix.</p>
         <section class="panel">
           <h3>Deployment Target</h3>
           <div class="responsive-grid">
@@ -507,16 +507,65 @@
               <input id="deploy-name-input" type="text" placeholder="prod-us-east-1" />
             </div>
             <div>
-              <label for="deploy-type-select">Target Type</label>
+              <label for="deploy-type-select">Deploy Target</label>
               <select id="deploy-type-select">
-                <option value="vm">Virtual Machine</option>
-                <option value="dedicated">Dedicated Server</option>
+                <option value="dedicated-server">Dedicated Server (SSH)</option>
+                <option value="vm">VM Cloud Instance</option>
                 <option value="ec2">AWS EC2</option>
                 <option value="lambda">AWS Lambda</option>
-                <option value="azure-functions">Azure Functions</option>
-                <option value="google-functions">Google Functions</option>
                 <option value="vercel-functions">Vercel Functions</option>
                 <option value="cloudflare-workers">Cloudflare Workers</option>
+              </select>
+            </div>
+            <div>
+              <label for="deploy-service-type-select">Service Type</label>
+              <select id="deploy-service-type-select">
+                <option value="restapi">REST API</option>
+                <option value="websocket+restapi">WebSocket + REST API</option>
+                <option value="grpc+restapi">gRPC + REST API</option>
+                <option value="functions">Functions</option>
+              </select>
+            </div>
+            <div>
+              <label for="deploy-runtime-protocol-select">Runtime Protocol</label>
+              <select id="deploy-runtime-protocol-select">
+                <option value="http">HTTP</option>
+                <option value="websocket">WebSocket</option>
+                <option value="grpc">gRPC</option>
+              </select>
+            </div>
+            <div>
+              <label for="deploy-database-driver-select">Database Driver</label>
+              <select id="deploy-database-driver-select">
+                <option value="InMemory">InMemory</option>
+                <option value="IndexedDB">IndexedDB</option>
+                <option value="Mongo">Mongo</option>
+                <option value="PostgreSQL">PostgreSQL</option>
+                <option value="MySQL">MySQL</option>
+                <option value="MSSQL">MSSQL</option>
+                <option value="Oracle">Oracle</option>
+                <option value="SQLite">SQLite</option>
+                <option value="DynamoDB">DynamoDB</option>
+                <option value="Cassandra">Cassandra</option>
+                <option value="Firebase">Firebase</option>
+                <option value="Aurora">Aurora</option>
+                <option value="RDS">RDS</option>
+              </select>
+            </div>
+            <div>
+              <label for="deploy-keyvalue-driver-select">Key-Value Driver</label>
+              <select id="deploy-keyvalue-driver-select">
+                <option value="redis">redis</option>
+                <option value="inmemory">inmemory</option>
+              </select>
+            </div>
+            <div>
+              <label for="deploy-pm2-profile-select">PM2 Profile (VM-based targets)</label>
+              <select id="deploy-pm2-profile-select">
+                <option value="dev">dev</option>
+                <option value="staging">staging</option>
+                <option value="production">production</option>
+                <option value="">None (serverless targets)</option>
               </select>
             </div>
             <div>

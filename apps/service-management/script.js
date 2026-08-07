@@ -46,6 +46,8 @@ import { LocalStorageDesignerStore } from './src/store/LocalStorageDesignerStore
 import * as model from './src/model/modelQueries.js';
 import { collectModelIssues } from './src/validation/modelValidation.js';
 import { collectServiceConfigurationIssues } from './src/validation/serviceConfigurationValidation.js';
+import { collectDeployTargetIssues } from './src/validation/deployTargetValidation.js';
+import { isPm2ManagedDeployTarget } from './src/model/deployCapabilityMatrix.js';
 import {
   buildBoilerplateBundleDocument,
   buildDomainPackageDocument,
@@ -309,6 +311,11 @@ const dom = {
   runtimeEnvStatus: document.getElementById('runtime-env-status'),
   deployNameInput: document.getElementById('deploy-name-input'),
   deployTypeSelect: document.getElementById('deploy-type-select'),
+  deployServiceTypeSelect: document.getElementById('deploy-service-type-select'),
+  deployRuntimeProtocolSelect: document.getElementById('deploy-runtime-protocol-select'),
+  deployDatabaseDriverSelect: document.getElementById('deploy-database-driver-select'),
+  deployKeyValueDriverSelect: document.getElementById('deploy-keyvalue-driver-select'),
+  deployPm2ProfileSelect: document.getElementById('deploy-pm2-profile-select'),
   deployRegionInput: document.getElementById('deploy-region-input'),
   deployRuntimeInput: document.getElementById('deploy-runtime-input'),
   addDeployTargetBtn: document.getElementById('add-deploy-target-btn'),
@@ -1830,18 +1837,57 @@ function wireEvents() {
     };
   }
 
+  // JUM-481: the PM2 profile only exists on PM2-managed deploy targets (the
+  // Dedicated Server / VM rows of the Requirement 059 matrix). Picking a
+  // provider-managed function target clears and disables the select so the
+  // form cannot propose a combination the matrix cannot build; the add gate
+  // below still validates the candidate against the shared reader.
+  function syncDeployPm2Profile() {
+    if (!dom.deployTypeSelect || !dom.deployPm2ProfileSelect) return;
+    const pm2Managed = isPm2ManagedDeployTarget(dom.deployTypeSelect.value);
+    dom.deployPm2ProfileSelect.disabled = !pm2Managed;
+    if (!pm2Managed) {
+      dom.deployPm2ProfileSelect.value = '';
+    } else if (!dom.deployPm2ProfileSelect.value) {
+      dom.deployPm2ProfileSelect.value = 'dev';
+    }
+  }
+
+  if (dom.deployTypeSelect) {
+    dom.deployTypeSelect.onchange = () => syncDeployPm2Profile();
+    syncDeployPm2Profile();
+  }
+
   if (dom.addDeployTargetBtn) {
     dom.addDeployTargetBtn.onclick = () => {
       const name = String(dom.deployNameInput.value || '').trim();
-      const type = dom.deployTypeSelect.value;
       const region = String(dom.deployRegionInput.value || '').trim();
       const runtime = String(dom.deployRuntimeInput.value || '').trim();
       if (!name || !region || !runtime) {
         showStatus('Deployment name, region and runtime are required.');
         return;
       }
+      const candidate = {
+        name,
+        region,
+        runtime,
+        serviceType: dom.deployServiceTypeSelect.value,
+        deployTarget: dom.deployTypeSelect.value,
+        runtimeProtocol: dom.deployRuntimeProtocolSelect.value,
+        databaseDriver: dom.deployDatabaseDriverSelect.value,
+        keyValueDriver: dom.deployKeyValueDriverSelect.value,
+        pm2Profile: dom.deployPm2ProfileSelect.value
+      };
+      // The candidate is validated against the shared Requirement 059 matrix
+      // reader BEFORE it touches state; every rejected combination names the
+      // constraint it violated on the non-blocking status surface (JUM-543).
+      const issues = collectDeployTargetIssues(candidate);
+      if (issues.length > 0) {
+        showStatus(issues.map((issue) => issue.message).join(' '));
+        return;
+      }
       withPersist(() => {
-        state.deployments.push({ name, type, region, runtime });
+        state.deployments.push(candidate);
         dom.deployNameInput.value = '';
         dom.deployRegionInput.value = '';
         dom.deployRuntimeInput.value = '';
