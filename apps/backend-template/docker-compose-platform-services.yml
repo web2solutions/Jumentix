@@ -10,6 +10,11 @@ services:
       - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 3s
+      timeout: 5s
+      retries: 20
 
   mysql:
     image: mysql:8.4
@@ -23,15 +28,31 @@ services:
       - '3306:3306'
     volumes:
       - mysql_data:/var/lib/mysql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'mysqladmin ping -h 127.0.0.1 -u root -p"$$MYSQL_ROOT_PASSWORD" --silent'
+      interval: 3s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
 
   mssql:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: aaa-mssql
     environment:
       ACCEPT_EULA: 'Y'
-      MSSQL_SA_PASSWORD: '${JUMENTIX_MSSQL_SA_PASSWORD:-${AAA_MSSQL_SA_PASSWORD:-change_me_mssql_password}}'
+      MSSQL_SA_PASSWORD: '${JUMENTIX_MSSQL_SA_PASSWORD:-${AAA_MSSQL_SA_PASSWORD:-Change_me_mssql_password_1}}'
     ports:
       - '1433:1433'
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - '/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$$MSSQL_SA_PASSWORD" -C -Q "SELECT 1" || exit 1'
+      interval: 5s
+      timeout: 10s
+      retries: 30
+      start_period: 20s
 
   oracle:
     image: gvenzl/oracle-free:23-slim
@@ -42,6 +63,12 @@ services:
       APP_USER_PASSWORD: '${JUMENTIX_ORACLE_APP_USER_PASSWORD:-${AAA_ORACLE_APP_USER_PASSWORD:-change_me_oracle_app_password}}'
     ports:
       - '1521:1521'
+    healthcheck:
+      test: ['CMD-SHELL', 'healthcheck.sh']
+      interval: 10s
+      timeout: 10s
+      retries: 40
+      start_period: 60s
 
   mongodb:
     image: mongo:7
@@ -50,6 +77,11 @@ services:
       - '27017:27017'
     volumes:
       - mongo_data:/data/db
+    healthcheck:
+      test: ['CMD', 'mongosh', '--quiet', '--eval', "db.adminCommand('ping')"]
+      interval: 3s
+      timeout: 5s
+      retries: 20
 
   cassandra:
     image: cassandra:5.0
@@ -58,6 +90,12 @@ services:
       - '9042:9042'
     volumes:
       - cassandra_data:/var/lib/cassandra
+    healthcheck:
+      test: ['CMD-SHELL', 'cqlsh -e "describe keyspaces" || exit 1']
+      interval: 5s
+      timeout: 10s
+      retries: 30
+      start_period: 30s
 
   dynamodb-local:
     image: amazon/dynamodb-local:latest
@@ -67,6 +105,11 @@ services:
       - '8000:8000'
     volumes:
       - dynamodb_data:/home/dynamodblocal/data
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -s -o /dev/null http://127.0.0.1:8000 || exit 1']
+      interval: 3s
+      timeout: 5s
+      retries: 20
 
   localstack:
     image: localstack/localstack:3
@@ -80,6 +123,15 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - localstack_data:/var/lib/localstack
+    healthcheck:
+      # LocalStack's own readiness endpoint: it reports per-service state, which
+      # a port probe cannot see — the gateway listens well before the services
+      # behind it are up.
+      test: ['CMD-SHELL', 'curl -sf http://127.0.0.1:4566/_localstack/health || exit 1']
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 15s
 
   firebase-emulator:
     image: andreysenov/firebase-tools:latest
@@ -91,12 +143,27 @@ services:
       - '4000:4000'
     volumes:
       - firebase_data:/home/node/.cache
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          node -e "require('http').get('http://127.0.0.1:8080',r=>process.exit(0))
+          .on('error',()=>process.exit(1))"
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
 
   redis:
     image: redis:7-alpine
     container_name: aaa-redis
     ports:
       - '6379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 2s
+      timeout: 3s
+      retries: 15
 
   rabbitmq:
     image: rabbitmq:3.12-management
@@ -104,6 +171,14 @@ services:
     ports:
       - '5672:5672'
       - '15672:15672'
+    healthcheck:
+      # `check_port_connectivity`, not `ping`: ping reports healthy while the
+      # AMQP listener is still binding, which is the race JUM-600 found.
+      test: ['CMD', 'rabbitmq-diagnostics', 'check_port_connectivity']
+      interval: 3s
+      timeout: 10s
+      retries: 20
+      start_period: 10s
 
 volumes:
   postgres_data:

@@ -1,10 +1,3 @@
-/* eslint-disable jest/require-hook */
-/*
- * The rule above is disabled because `plugin:jest/all` is extended for the
- * whole repository rather than scoped to test files, so a rule about test
- * hooks reaches production source. Module-level state and a registration call
- * are both legitimate here. The config scope is the real defect (JUM-619).
- */
 /**
  * Where a store error gets its correlation id from (JUM-601).
  *

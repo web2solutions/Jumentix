@@ -45,11 +45,33 @@ import {
 } from '../model/modelQueries.js';
 
 /**
+ * Resolve an imported id against the ids already taken: an id that is free
+ * crosses verbatim; an id that collides with the model — or repeats within
+ * the package itself — is recomputed on the OAS fallback-id convention
+ * (`fallbackId(prefix, seed)`), so re-importing the same package never
+ * yields two domains sharing domain/entity ids (JUM-617).
+ */
+function uniqueImportedId(id, prefix, seed, takenIds) {
+  if (!id || takenIds.has(id)) {
+    let candidate = fallbackId(prefix, seed);
+    while (takenIds.has(candidate)) {
+      candidate = fallbackId(prefix, seed);
+    }
+    takenIds.add(candidate);
+    return candidate;
+  }
+  takenIds.add(id);
+  return id;
+}
+
+/**
  * Map a parsed `domain-package` document to a normalised domain ready to
  * append. Package/shared-value-object lists are deduped and the name is
  * suffixed (`_2`, `_3`, ...) until it does not collide with an existing
  * domain — exactly the monolith's rules. Layout comes from
  * `normalizeDomainInput` seeded at `existingDomains.length`, as before.
+ * Domain/entity ids cross verbatim only while they are free; colliding ids
+ * are recomputed (JUM-617, see `uniqueImportedId`).
  *
  * @param {Object} parsed - decoded JSON of the uploaded package file.
  * @param {Array} existingDomains - domains already in the model.
@@ -61,6 +83,17 @@ export function buildDomainFromPackage(parsed, existingDomains) {
     return { ok: false, reason: 'invalid-package' };
   }
   const nextDomain = normalizeDomainInput(sourceDomain, existingDomains.length);
+  const takenIds = new Set();
+  existingDomains.forEach((domain) => {
+    if (domain?.id) takenIds.add(domain.id);
+    (Array.isArray(domain?.entities) ? domain.entities : []).forEach((entity) => {
+      if (entity?.id) takenIds.add(entity.id);
+    });
+  });
+  nextDomain.id = uniqueImportedId(nextDomain.id, 'domain', existingDomains.length, takenIds);
+  nextDomain.entities.forEach((entity, entityIndex) => {
+    entity.id = uniqueImportedId(entity.id, 'entity', entityIndex, takenIds);
+  });
   nextDomain.context = nextDomain.context || {};
   nextDomain.context.packageDependencies = uniqueStrings(nextDomain.context.packageDependencies || []);
   nextDomain.context.sharedValueObjects = uniqueStrings(nextDomain.context.sharedValueObjects || []);

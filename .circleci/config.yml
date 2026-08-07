@@ -96,6 +96,15 @@ jobs:
             bun x playwright install webkit
             bun x playwright install-deps webkit
       - run:
+          # JUM-622 puts cana's eighteen Cypress specs in the manifest, so the
+          # task gate can now select `test:browser` here. The image carries
+          # Chrome, Firefox and Edge but not the Cypress binary — without this
+          # step the suite the selector just made reachable would fail to start.
+          name: Install the Cypress binary for the browser-harness layer
+          command: |
+            bun x cypress install
+            bun x cypress verify
+      - run:
           name: Run canonical branch quality gate
           no_output_timeout: 30m
           command: |
@@ -425,16 +434,16 @@ jobs:
 
   # The docker-backed smoke suites (JUM-600).
   #
-  # A `machine` executor, rather than a docker executor with a remote daemon:
-  # the repository's own `docker:up:*` scripts run `docker compose`, and the
-  # smoke tests connect to `127.0.0.1`. Against a remote daemon the containers
-  # live on a different host and those ports are not reachable, so the suites
-  # would skip themselves and report success — the exact false green this job
-  # exists to prevent.
+  # A `machine` executor rather than `docker` + `setup_remote_docker`: the
+  # repository's own `docker:up:*` scripts run `docker compose`, and the smoke
+  # tests connect to `127.0.0.1`. With a remote daemon the containers live on a
+  # different host and those ports are not reachable, so the suites would skip
+  # themselves and report success — the exact false green this job exists to
+  # prevent.
   #
-  # The remote-daemon setup step is deliberately not named here: the
-  # third-party review contract greps this file as text, so writing the literal
-  # step name in a comment fails the check that forbids using it (JUM-616).
+  # Naming the step here is safe again: `check-third-party-review.js` reads the
+  # parsed `third-party-review` job rather than grepping this file as text
+  # (JUM-616), so a comment cannot fail the check that forbids the step.
   #
   # Runs on `dev` and `main` only, not on every pull request. Ten database
   # containers take minutes and pull images; per-PR is too expensive, and
