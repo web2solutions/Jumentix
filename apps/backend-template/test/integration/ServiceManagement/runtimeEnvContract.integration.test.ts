@@ -10,14 +10,14 @@
  * Each group names the H1 fix it pins so a regression re-breaks a named test:
  *  - JUM-459: the environment parameter is honored (the Wave-5 defect).
  *  - JUM-558: unknown environments are rejected, never silently coerced to dev.
- *  - JUM-543: filesystem failures are distinguishable from malformed payloads.
+ *  - JUM-543: filesystem failures are distinguishable from malformed payloads
+ *    (500 with code and resolved path, never the 400 payload envelope).
  *  - JUM-462: loopback-by-default bind and token-gated mutation.
  *  - JUM-465/JUM-458: the pinned default config directory resolves.
  *
- * The contract asserted here is Requirement 126 §3. Where an H1 fix is still
- * in flight (JUM-543's 500-with-code surface), the test pins the part of the
- * contract that is true on both sides of that landing and says so loudly,
- * rather than claiming coverage it does not yet provide.
+ * The contract asserted here is Requirement 126 §3, landed in full: the
+ * JUM-543 error-surface split is no longer in flight, so the filesystem
+ * failure class is asserted strictly.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -214,8 +214,9 @@ describe('serviceManagement runtime env contract (JUM-466)', () => {
 
   it('surfaces a filesystem failure distinctly from a payload error (JUM-543)', async () => {
     expect.hasAssertions();
-    // A config dir without .env.ci: reading the ci environment is a filesystem
-    // failure, not a client error, and must not be reported as "Invalid payload."
+    // A config dir without .env.ci: reading or writing the ci environment is a
+    // filesystem failure, not a client error, and must not be reported as
+    // "Invalid payload."
     cleanupTempConfigDir(tempDir);
     tempDir = createTempConfigDir({
       '.env.dev': envFileContent('express'),
@@ -224,22 +225,27 @@ describe('serviceManagement runtime env contract (JUM-466)', () => {
     server = startServer(tempDir);
     await waitForServer(server.port);
 
+    // Strict contract, landed by JUM-543: filesystem failures are a 500 class
+    // carrying the error code and the resolved env-file path — read path…
     const res = await requestRaw(server.port, 'GET', '/api/runtime/env?environment=ci');
+    expect(res.status).toBe(500);
     expect(res.rawBody).not.toContain('Invalid payload.');
-    expect(res.rawBody).toContain('.env.ci');
+    const parsed = JSON.parse(res.rawBody);
+    expect(parsed.error).toBe('Environment file operation failed.');
+    expect(parsed.code).toBe('ENV_FILE_NOT_FOUND');
+    expect(parsed.path).toContain('.env.ci');
 
-    if (res.status !== 500) {
-      // JUM-543 is still in flight. Requirement 126 §3 already pins the part
-      // that must hold today: the failure is identifiable as a missing file,
-      // never mistaken for a malformed request. Loud, not silent — once the
-      // fix lands this branch disappears and the 500 above stands alone.
-      // eslint-disable-next-line no-console
-      console.warn(
-        '[JUM-466] JUM-543 pending: filesystem failure surfaced as '
-        + `${String(res.status)} instead of 500 with code and path.`
-      );
-      expect(res.status).toBe(400);
-    }
+    // …and write path alike.
+    const write = await requestJson<{ error: string; code: string; path: string }>(
+      server.port,
+      'POST',
+      '/api/runtime/env',
+      { environment: 'ci', values: { JUMENTIX_HTTP_FRAMEWORK: 'fastify' } }
+    );
+    expect(write.status).toBe(500);
+    expect(write.body.error).toBe('Environment file operation failed.');
+    expect(write.body.code).toBe('ENV_FILE_NOT_FOUND');
+    expect(write.body.path).toContain('.env.ci');
   });
 
   it('binds loopback by default and refuses non-loopback connections (JUM-462)', async () => {

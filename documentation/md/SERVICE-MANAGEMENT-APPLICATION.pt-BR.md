@@ -148,11 +148,13 @@ de enum, semântica de escrita — é
 - Ambiente desconhecido: `400` cujo `details` nomeia o valor e a lista de
   aceitos, nenhum arquivo escrito.
 - Diretório de configuração ausente na inicialização: servidor encerra com erro claro.
-- Arquivo de ambiente ausente: `400` cujo `details` carrega o path resolvido
-  (internamente código de erro `ENV_FILE_NOT_FOUND`).
+- Arquivo de ambiente ausente ou outra falha de filesystem (permissões, disco
+  cheio): `500 { "error": "Environment file operation failed.", "code": …,
+  "path": …, "details": … }` — `code` é `ENV_FILE_NOT_FOUND` ou o código de
+  erro do `fs` subjacente, `path` o path resolvido do arquivo env (JUM-543).
 - Payload JSON malformado: `400 { "error": "Invalid payload.", "details": … }`
   com a falha de parse em `details` — diferenciado de falhas de filesystem,
-  que carregam o path resolvido em vez disso.
+  que surgem como a classe 500 acima, nunca como erro de payload.
 - Mutação não autorizada: `401 { "error": "Unauthorized." }` quando token de auth está configurado.
 
 ## Fluxo de edição em tempo de execução

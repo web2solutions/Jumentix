@@ -290,25 +290,31 @@ distintas e devem ser rotuladas e editáveis separadamente na UI.
 
 ### Contrato de erro
 
-As respostas distinguem falhas de parse, validação e filesystem através do campo
-`details` do envelope de erro:
+As respostas distinguem falhas de parse, validação e filesystem (entregue pelo
+JUM-543; Requisito 126 §3):
 
 - Corpo JSON malformado (POST): `400 { "error": "Invalid payload.", "details": … }`.
-- Ambiente não suportado: `400` cujo `details` nomeia o valor não suportado e a
-  lista de aceitos — `{ "error": "Invalid environment request.", … }` no GET,
-  `{ "error": "Invalid payload.", … }` no POST; nenhum arquivo é escrito.
-- Arquivo env ausente: `400` cujo `details` carrega o path resolvido (internamente
-  código de erro `ENV_FILE_NOT_FOUND`), de modo que uma instalação quebrada é
-  identificável pela mensagem em vez de ser confundida com uma requisição malformada.
+  O `try` de parse é restrito apenas ao `JSON.parse`, de modo que este envelope
+  nunca pode relatar uma falha de filesystem.
+- Ambiente não suportado: `400 { "error": "Invalid environment request.",
+  "details": … }` cujo `details` nomeia o valor não suportado e a lista de
+  aceitos — tanto no GET quanto no POST; nenhum arquivo é escrito.
+- Falhas de filesystem — arquivo env ausente (código de erro
+  `ENV_FILE_NOT_FOUND`), erros de permissão, disco cheio: `500 { "error":
+  "Environment file operation failed.", "code": …, "path": …, "details": … }`,
+  onde `code` é `ENV_FILE_NOT_FOUND` ou o código de erro do `fs` subjacente e
+  `path` é o path resolvido do arquivo env. Uma instalação quebrada é uma
+  classe de falha distinta e identificável — nunca `400 Invalid payload.`.
+- Valor fora do enum ou com credenciais para uma chave editável: `400` nomeando a
+  chave, o valor rejeitado e a lista de aceitos; nenhum arquivo é escrito.
 - Token bearer ausente ou incorreto: `401 { "error": "Unauthorized." }` quando o
   token de auth está configurado.
 
-O Requisito 126 (JUM-543) especifica a divisão alvo na qual falhas de filesystem
-surgem como uma classe de falha distinta e identificável em vez de compartilhar o
-envelope de validação de payload; a UI apresenta essas falhas através de superfícies
-de status não bloqueantes, não `window.alert`.
-- Valor fora do enum ou com credenciais para uma chave editável: `400` nomeando a
-  chave, o valor rejeitado e a lista de aceitos; nenhum arquivo é escrito.
+A UI apresenta essas falhas através de superfícies de status não bloqueantes
+com `aria-live` (uma região toast global mais uma linha de status inline no
+painel de ambiente de runtime), não `window.alert`; o cliente renderiza
+exatamente o que a API retorna — `error`, `details`, e na classe 500 também
+`code` e `path` — sem remapeamento no cliente.
 
 ## Guarda-corpos
 

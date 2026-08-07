@@ -173,19 +173,23 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
      allowed without a token. Every mutation MUST be logged with timestamp,
      environment, and changed keys. This posture derives from Requirement `044`
      (PCI hardening): the endpoint writes real backend configuration.
-   - **Error contract (per `JUM-543`).** Parse, validation, and filesystem failures
-     are distinguishable:
+   - **Error contract (landed by `JUM-543`).** Parse, validation, and filesystem
+     failures are distinguishable:
      - malformed JSON body → `400 { "error": "Invalid payload.", "details": … }`;
      - unsupported/invalid environment →
        `400 { "error": "Invalid environment request.", "details": … }` whose details
        name the unsupported value and the accepted list;
      - missing or wrong bearer token → `401 { "error": "Unauthorized." }`;
-     - filesystem failures (missing env file — internally error code
+     - filesystem failures (missing env file — error code
        `ENV_FILE_NOT_FOUND` — permission errors, full disk) MUST NOT be reported as
-       `400 Invalid payload`; they surface as a distinct, identifiable failure so the
+       `400 Invalid payload`; they surface as the distinct, identifiable failure
+       class `500 { "error": "Environment file operation failed.", "code": …,
+       "path": …, "details": … }`, where `code` is `ENV_FILE_NOT_FOUND` or the
+       underlying `fs` error code and `path` is the resolved env-file path, so the
        user can tell a broken installation from a malformed request.
-     The UI surfaces these failures through non-blocking status surfaces, not
-     `window.alert` (`JUM-543`).
+     The UI surfaces these failures through non-blocking `aria-live` status
+     surfaces, not `window.alert` (`JUM-543`); the client renders exactly what
+     the API returns, with no client-side error remapping.
    - **Write semantics.** POST accepts `{ "environment"?, "values" { … } }`; only
      write-allowlisted keys present in `values` are updated — all other keys are
      ignored. Writes are atomic (temp file, `fsync`, rename), preserve unrelated
