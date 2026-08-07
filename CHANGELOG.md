@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-08-07 [JUM-619][CI] Scope the Jest ruleset to test files (#109) - Eduardo A.
+- 2026-08-07 ci(eslint): scope the Jest ruleset to test files - Eduardo Almeida
 - 2026-08-07 fix(JUM-617): recompute domain/entity ids on domain-package re-import (#104) - Eduardo A.
 - 2026-08-07 [JUM-602][Test] Make external-db-repositories coverage its own (#108) - Eduardo A.
 - 2026-08-07 [JUM-601][Refactor] Move the store errors into persistence-contracts so a library stops importing an application (#107) - Eduardo A.
