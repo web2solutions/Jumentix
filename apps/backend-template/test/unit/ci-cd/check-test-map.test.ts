@@ -11,6 +11,7 @@ import path from 'path';
 const {
   assertAcyclic,
   outwardClosure,
+  readTestMap,
   validateTestMap
 } = require('../../../../../ci-cd/lib/test-map');
 const { createLayerAwarePlan, matchGlob, resolveAlias } = require('../../../../../ci-cd/lib/layer-resolver');
@@ -114,8 +115,6 @@ describe('hexagonal test pyramid libraries', () => {
   it('validates the repository test-map against the real tree', () => {
     expect.hasAssertions();
     const root = path.resolve(__dirname, '../../../../../');
-    // eslint-disable-next-line global-require
-    const { readTestMap } = require('../../../../../ci-cd/lib/test-map');
     const result = validateTestMap(readTestMap(path.join(root, 'test-map.json')), { root });
     expect(result.ok).toBe(true);
   });
@@ -270,6 +269,72 @@ describe('service-management selection (JUM-472)', () => {
       'service-management/designer'
     ]));
     expect(plan.integrationScripts).toContain('test:integration:service-management');
+  });
+});
+
+/**
+ * JUM-622 — the browser harness is reachable by the selector that decides what runs.
+ *
+ * Asserted against the committed manifest, not a fixture. A fixture would prove
+ * the resolver can select a layer that exists; what failed here is that the
+ * layer did not exist, so `packages/cana/cypress/**` matched nothing and the
+ * task gate refused the change set outright. Cana's only real coverage is these
+ * eighteen specs, and none of them were in the map.
+ */
+describe('browser-harness selection (JUM-622)', () => {
+  const repoRoot = path.resolve(__dirname, '../../../../..');
+  const realManifest = readTestMap(path.join(repoRoot, 'test-map.json'));
+  const planFor = (files: string[]) => createLayerAwarePlan(files, {
+    manifest: realManifest,
+    root: repoRoot,
+    graph: new Map()
+  });
+
+  it('registers every cypress spec that exists on disk', () => {
+    expect.hasAssertions();
+
+    const registered = realManifest.suites
+      .filter((suite: { layer: string }) => suite.layer === 'browser-harness')
+      .map((suite: { path: string }) => suite.path)
+      .sort();
+    const onDisk = fs.readdirSync(path.join(repoRoot, 'packages/cana/cypress'))
+      .filter((name) => name.endsWith('.cy.ts'))
+      .map((name) => `packages/cana/cypress/${name}`)
+      .sort();
+
+    expect(registered).toStrictEqual(onDisk);
+  });
+
+  it('plans the browser suite for a change confined to the harness', () => {
+    expect.hasAssertions();
+
+    // The exact change set the gate rejected as `unsupported-change-set`.
+    const plan = planFor(['CHANGELOG.md', 'packages/cana/cypress/support/e2e.js']);
+
+    expect(plan.type).toBe('layer-aware');
+    expect(plan.selectedLayers).toStrictEqual(['browser-harness']);
+    expect(plan.integrationScripts).toStrictEqual(['test:browser']);
+  });
+
+  it('plans the browser suite for a change to cana source', () => {
+    expect.hasAssertions();
+
+    const plan = planFor(['packages/cana/src/CanaDatabase.ts']);
+
+    expect(plan.selectedLayers).toContain('browser-harness');
+    expect(plan.integrationScripts).toContain('test:browser');
+  });
+
+  it('keeps the browser run out of unrelated backend changes', () => {
+    expect.hasAssertions();
+
+    // `dependsOn: []` is the whole claim. Blast radius is outward, so listing
+    // any backend layer as a dependency would drag a 294-test browser run into
+    // every infra change; these specs cannot be affected by one.
+    const plan = planFor(['apps/backend-template/src/infra/exceptions/index.ts']);
+
+    expect(plan.selectedLayers).not.toContain('browser-harness');
+    expect(plan.integrationScripts).not.toContain('test:browser');
   });
 });
 

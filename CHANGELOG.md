@@ -4,7 +4,12 @@
 
 ## All Changes
 
+- 2026-08-07 ci(test-map): register cana's cypress specs so the gate can select them - Eduardo Almeida
+- 2026-08-07 [JUM-620][CI] Declare readiness on every compose service (#111) - Eduardo A.
+- 2026-08-07 ci(docker): declare readiness on every compose service - Eduardo Almeida
+- 2026-08-07 [JUM-616][CI] Read the parsed review job instead of grepping the config as text (#110) - Eduardo A.
 - 2026-08-07 [JUM-619][CI] Scope the Jest ruleset to test files (#109) - Eduardo A.
+- 2026-08-07 ci(third-party-review): read the parsed job instead of grepping the config as text - Eduardo Almeida
 - 2026-08-07 ci(eslint): scope the Jest ruleset to test files - Eduardo Almeida
 - 2026-08-07 fix(JUM-617): recompute domain/entity ids on domain-package re-import (#104) - Eduardo A.
 - 2026-08-07 [JUM-602][Test] Make external-db-repositories coverage its own (#108) - Eduardo A.
