@@ -310,13 +310,68 @@ Sob a regra de não-fallback, estes emergem através de `loadState()` como
 estado do designer (veja a tabela de resultados) — o designer nunca troca
 silenciosamente para outro backend.
 
+## O adaptador implementado: `CanaDesignerStore` (JUM-483)
+
+Fontes:
+[`apps/service-management/src/store/CanaDesignerStore.js`](../../apps/service-management/src/store/CanaDesignerStore.js)
+(adaptador) e
+[`apps/service-management/src/store/designerStoreFactory.js`](../../apps/service-management/src/store/designerStoreFactory.js)
+(costura de seleção); suíte de unidade
+[`canaDesignerStore.test.ts`](../../apps/backend-template/test/unit/service-management/canaDesignerStore.test.ts).
+
+O `CanaDesignerStore` implementa todos os sete métodos da porta sobre o
+cliente Cana, e a troca **não exigiu nenhuma mudança na lógica do designer** —
+a abstração da porta se sustentou. As decisões que um leitor precisa:
+
+- **Formato de transmissão inalterado.** Ambos os documentos vivem em um
+  único object store (`designerDocuments`, banco `service-management`, esquema
+  versão 1) sob as chaves fixadas do Contrato 2, cada valor o exato
+  `JSON.stringify` do mesmo documento que o adaptador transicional grava. A
+  migração do JUM-484 é uma cópia de bytes, não uma transformação.
+- **Mapeamento de estados.** IndexedDB ausente/inutilizável (Cana
+  `'Unavailable'`) → `'unavailable'` no `probe()`/`load()`; despejo
+  (`storageState().evicted` do Cana JUM-560, ou uma rejeição `'Evicted'`) sem
+  registro encontrado → `'lost'`, nunca `'empty'` — enquanto um registro que
+  É encontrado carrega normalmente; JSON ilegível → `'lost'`, como no
+  adaptador transicional. Cota, despejo e resultado desconhecido emergem
+  **distintamente**: dentro de um estado da porta, o `reason` é marcado
+  (`quota:`, `evicted:`, `unknown-outcome:`, `unavailable:`).
+- **Pressão de cota → qual estado da porta.** Uma escrita REJEITADA por cota
+  não aconteceu; a porta não tem estado de falha determinística para escrita,
+  então `save()` resolve `'unknown'` com `reason` `quota:` — nunca
+  `'persisted'`. Pressão de cota que ainda não falhou uma escrita
+  (`nearQuota`, armazenamento não persistente) emerge no `probe()` como
+  `'available'` com um `reason` diagnóstico, alimentando os estados de
+  ambiente do JUM-484.
+- **Resultados desconhecidos carregam seus identificadores de reconciliação.**
+  Escritas passam por `client.transaction()` (não pela tabela auto-commit)
+  para que um resultado `'unknown'` embuta `correlationId`/`attemptedAt` no
+  reason — os dois valores que `client.resolveWrite()` precisa (Cana
+  JUM-411/559).
+- **Aberturas falhas não são cacheadas.** `UpgradeBlocked` é transitório; a
+  próxima operação tenta de novo em vez de transformar um mau momento em uma
+  indisponibilidade permanente sem nada atrás.
+- **Injeção de cliente, no estilo da fábrica.** O adaptador nunca importa
+  `@jumentix/cana`: o cliente é injetado (`client`/`clientProvider`), espelhando
+  o `indexedDbClient` de `buildDatabaseClientCompilers`. A costura
+  (`createDesignerStore`) seleciona por nome (`cana`, aliases `indexeddb`/
+  `indexed-db`, como o normalizador da fábrica), com precedência argumento
+  explícito → global ambiente `JUMENTIX_DESIGNER_STORE_DRIVER` → parâmetro de
+  URL `?designer-store=cana` → **padrão `localstorage`**. Sem cliente
+  conectado, o provedor padrão importa `@jumentix/cana` tardiamente
+  (`import()`) e constrói via `createCanaDatabaseClient`; um host que não
+  consegue resolvê-lo recebe `'unavailable'`, nunca um fallback silencioso. O
+  padrão permanece localStorage até a migração do JUM-484 tornar o store Cana
+  o único.
+
 ## Referências
 
 - Contrato da porta: [`apps/service-management/src/store/IDesignerStore.js`](../../apps/service-management/src/store/IDesignerStore.js)
 - Adaptador transicional: [`apps/service-management/src/store/LocalStorageDesignerStore.js`](../../apps/service-management/src/store/LocalStorageDesignerStore.js)
+- Adaptador Cana + costura de seleção: [`apps/service-management/src/store/CanaDesignerStore.js`](../../apps/service-management/src/store/CanaDesignerStore.js), [`apps/service-management/src/store/designerStoreFactory.js`](../../apps/service-management/src/store/designerStoreFactory.js)
 - Núcleo de estado: [`apps/service-management/src/state/designerState.js`](../../apps/service-management/src/state/designerState.js)
 - Módulo de entrada: [`apps/service-management/script.js`](../../apps/service-management/script.js)
-- Suítes de unidade: [`designerStore.test.ts`](../../apps/backend-template/test/unit/service-management/designerStore.test.ts), [`designerState.test.ts`](../../apps/backend-template/test/unit/service-management/designerState.test.ts)
+- Suítes de unidade: [`designerStore.test.ts`](../../apps/backend-template/test/unit/service-management/designerStore.test.ts), [`designerState.test.ts`](../../apps/backend-template/test/unit/service-management/designerState.test.ts), [`canaDesignerStore.test.ts`](../../apps/backend-template/test/unit/service-management/canaDesignerStore.test.ts)
 - Esquema de armazenamento: [Requisito 126, Contrato 2](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md)
 - Visão geral do componente: [Aplicativo de gerenciamento de serviços](./SERVICE-MANAGEMENT-APPLICATION.pt-BR.md)
 - Linear: [JUM-468](https://linear.app/jumentix/issue/JUM-468/refactor-extract-statepersistence-core-as-es-module-behind) (a porta), [JUM-469](https://linear.app/jumentix/issue/JUM-469/refactor-modularize-designer-canvas-validation-exporters-importers) (o grafo de módulos), [JUM-483](https://linear.app/jumentix/issue/JUM-483/feature-canadesignerstore-idesignerstore-adapter-over-the-cana-client) (CanaDesignerStore), [JUM-484](https://linear.app/jumentix/issue/JUM-484) (migração que aposenta o adaptador transicional), [JUM-493](https://linear.app/jumentix/issue/JUM-493/feature-publish-designer-core-as-jumentix-package-xpertminds-org-dry) (publicação do pacote), Cana [JUM-560](https://linear.app/jumentix/issue/JUM-560/feature-storage-quota-persistence-and-eviction-policy) (política de cota/despejo)
