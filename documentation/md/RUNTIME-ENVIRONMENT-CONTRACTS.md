@@ -175,6 +175,34 @@ Service Management exposes runtime env read/write endpoints:
 
 The env editor mutates only approved keys from this contract, preserving guardrails.
 
+### PM2 ecosystem preview API (JUM-480)
+
+Service Management also exposes a read-only PM2 ecosystem endpoint, the single
+source of the designer's runtime profile preview:
+
+- `GET /api/runtime/pm2-ecosystem?environment=dev|development|staging|production|prod|ci|test`
+
+The endpoint reads the real `pm2/ecosystem.*.cjs` file of the selected
+environment (directory overridable via `JUMENTIX_SERVICE_MANAGEMENT_PM2_DIR`,
+default `<repo-root>/pm2`) and returns `{ environment, fileName, path, exists,
+apps }`, where each app carries `{ name, script, interpreter, interpreterArgs,
+env, command }`. `command` is derived from the ecosystem definition —
+`pm2 start <ecosystem path> --only <app name> --update-env` — never an embedded
+package-manager string, so the Bun cutover (JUM-33/JUM-40) cannot silently
+invalidate the preview. The ecosystem module is loaded cache-busted: editing an
+ecosystem file changes the response with no server restart and no code change.
+
+Failure and edge states follow the same honesty discipline as the env-file API:
+
+- Unknown environment: `400 { "error": "Invalid environment request.", … }`
+  naming the value and the accepted list — never coerced to `dev`.
+- Missing ecosystem file (e.g. `ci`, which has none): `200` with
+  `exists: false` and an empty `apps` list — an explicit state the UI renders
+  as "no ecosystem for this environment", not a silently empty preview.
+- Unreadable or syntactically broken ecosystem file:
+  `500 { "error": "PM2 ecosystem file operation failed.", "code", "path",
+  "details" }`.
+
 ### Env file location
 
 Runtime env files live in `apps/backend-template/src/config/` (`.env.dev`,

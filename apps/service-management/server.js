@@ -107,6 +107,27 @@ const envFileByRuntime = {
   ci: '.env.ci',
   test: '.env.ci'
 };
+// PM2 ecosystem resolution (JUM-480). The designer's PM2 preview reads the real
+// ecosystem files instead of a hardcoded command map, so adding an app to
+// pm2/ecosystem.*.cjs changes the preview with no code change — and the Bun
+// cutover (JUM-33/JUM-40) cannot silently invalidate the preview, because no
+// package-manager invocation is embedded anywhere: the reported command is
+// derived from the ecosystem file itself. `ci`/`test` map to a file that does
+// not exist in the repository; the endpoint reports that as an explicit
+// exists=false state rather than an error or a silently empty list.
+const repoRoot = path.resolve(__dirname, '..', '..');
+const pm2EcosystemDirectory = process.env.JUMENTIX_SERVICE_MANAGEMENT_PM2_DIR
+  ? path.resolve(process.env.JUMENTIX_SERVICE_MANAGEMENT_PM2_DIR)
+  : path.join(repoRoot, 'pm2');
+const ecosystemFileByRuntime = {
+  dev: 'ecosystem.dev.cjs',
+  development: 'ecosystem.dev.cjs',
+  staging: 'ecosystem.staging.cjs',
+  production: 'ecosystem.production.cjs',
+  prod: 'ecosystem.production.cjs',
+  ci: 'ecosystem.ci.cjs',
+  test: 'ecosystem.ci.cjs'
+};
 
 if (!fs.existsSync(configDirectory)) {
   // eslint-disable-next-line no-console
@@ -210,6 +231,21 @@ function normalizeEnvironment(runtime) {
     const error = new Error(`Unsupported environment "${selected}". Accepted values: ${accepted}`);
     // Tagged so the HTTP layer can tell a client error (400) apart from a
     // filesystem failure (500) — JUM-543.
+    error.code = 'UNSUPPORTED_ENVIRONMENT';
+    throw error;
+  }
+  return selected;
+}
+
+// Same explicit-resolution discipline as normalizeEnvironment (JUM-558), over
+// the ecosystem-file accepted set — a superset that includes production, which
+// has an ecosystem but no editable env file.
+function normalizeEcosystemEnvironment(runtime) {
+  const fallback = process.env.NODE_ENV || 'dev';
+  const selected = String(runtime || fallback).trim().toLowerCase();
+  if (!ecosystemFileByRuntime[selected]) {
+    const accepted = Object.keys(ecosystemFileByRuntime).join(', ');
+    const error = new Error(`Unsupported environment "${selected}". Accepted values: ${accepted}`);
     error.code = 'UNSUPPORTED_ENVIRONMENT';
     throw error;
   }
@@ -367,6 +403,65 @@ function updateRuntimeEnv(runtime, values) {
   return readRuntimeEnv(resolved.environment);
 }
 
+// Reads the PM2 ecosystem for an environment (JUM-480). The ecosystem module
+// is loaded cache-busted, so editing pm2/ecosystem.*.cjs is reflected on the
+// next read without a server restart. A missing file is NOT an error: it is
+// the explicit `exists: false` state the preview renders for environments
+// without an ecosystem (e.g. ci). An unreadable or syntactically broken file
+// throws with a 500-class code/path envelope, same discipline as the env-file
+// API (JUM-543).
+function readPm2Ecosystem(runtime) {
+  const environment = normalizeEcosystemEnvironment(runtime);
+  const fileName = ecosystemFileByRuntime[environment];
+  const filePath = path.join(pm2EcosystemDirectory, fileName);
+  const relativePath = path.relative(repoRoot, filePath).split(path.sep).join('/');
+  if (!fs.existsSync(filePath)) {
+    return {
+      environment,
+      fileName,
+      path: relativePath,
+      exists: false,
+      apps: []
+    };
+  }
+  let ecosystem;
+  try {
+    delete require.cache[require.resolve(filePath)];
+    // eslint-disable-next-line global-require, import/no-dynamic-require
+    ecosystem = require(filePath);
+  } catch (error) {
+    const loadError = new Error(
+      `Could not load PM2 ecosystem file: ${filePath} (${error instanceof Error ? error.message : String(error)})`
+    );
+    loadError.code = error instanceof Error && typeof error.code === 'string' && error.code
+      ? error.code
+      : 'ECOSYSTEM_LOAD_ERROR';
+    loadError.filePath = filePath;
+    throw loadError;
+  }
+  const apps = Array.isArray(ecosystem?.apps) ? ecosystem.apps : [];
+  return {
+    environment,
+    fileName,
+    path: relativePath,
+    exists: true,
+    apps: apps.map((app) => {
+      const name = String(app?.name || '');
+      const appEnv = app && typeof app.env === 'object' && app.env !== null ? app.env : {};
+      return {
+        name,
+        script: String(app?.script || ''),
+        interpreter: app?.interpreter ? String(app.interpreter) : '',
+        interpreterArgs: app?.interpreter_args ? String(app.interpreter_args) : '',
+        env: appEnv,
+        // Derived from the ecosystem definition — never a package-manager
+        // string, so the Bun cutover cannot invalidate it (JUM-480).
+        command: `pm2 start ${relativePath} --only ${name} --update-env`
+      };
+    })
+  };
+}
+
 function writeJson(response, statusCode, payload) {
   const sanitizedJson = JSON.stringify(payload)
     .replace(/</g, '\\u003c')
@@ -421,6 +516,21 @@ function writeEnvironmentFileFailure(response, error) {
   });
 }
 
+// Same honest 500 envelope as the env-file class (JUM-543), named for the
+// ecosystem surface so a broken pm2/ecosystem.*.cjs is identifiable (JUM-480).
+function writeEcosystemFileFailure(response, error) {
+  const code = error instanceof Error && error.code ? String(error.code) : 'ECOSYSTEM_IO_ERROR';
+  const filePath = error instanceof Error
+    ? (error.filePath || error.path || null)
+    : null;
+  writeJson(response, 500, {
+    error: 'PM2 ecosystem file operation failed.',
+    code,
+    path: filePath ? String(filePath) : null,
+    details: error instanceof Error ? error.message : String(error)
+  });
+}
+
 function readBody(request, callback) {
   let body = '';
   request.on('data', (chunk) => {
@@ -456,6 +566,21 @@ const server = http.createServer((request, response) => {
         return;
       }
       writeEnvironmentFileFailure(response, error);
+    }
+    return;
+  }
+
+  if (request.method === 'GET' && requestUrl.pathname === '/api/runtime/pm2-ecosystem') {
+    try {
+      const environment = requestUrl.searchParams.get('environment') || process.env.NODE_ENV || 'dev';
+      const payload = readPm2Ecosystem(environment);
+      writeJson(response, 200, payload);
+    } catch (error) {
+      if (isUnsupportedEnvironmentError(error)) {
+        writeInvalidEnvironment(response, error);
+        return;
+      }
+      writeEcosystemFileFailure(response, error);
     }
     return;
   }

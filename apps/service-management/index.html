@@ -467,6 +467,18 @@
               <input id="service-grpc-port-input" type="number" min="1" max="65535" placeholder="3002" />
             </div>
           </div>
+          <div class="responsive-grid">
+            <div>
+              <label for="pm2-preview-environment-select">PM2 Preview Environment</label>
+              <select id="pm2-preview-environment-select">
+                <option value="dev">dev</option>
+                <option value="staging">staging</option>
+                <option value="production">production</option>
+              </select>
+            </div>
+          </div>
+          <p class="hint">The preview below reads the real <code>pm2/ecosystem.*.cjs</code> file of the selected environment; it never hardcodes process lists or package-manager commands.</p>
+          <p id="pm2-preview-status" class="hint status-line" role="status" aria-live="polite"></p>
           <p id="service-config-status" class="hint" role="status" aria-live="polite"></p>
           <pre id="service-runtime-profile-preview" class="code-preview"></pre>
           <pre id="service-config-preview" class="code-preview"></pre>
@@ -484,6 +496,7 @@
               </select>
             </div>
           </div>
+          <p id="runtime-env-target-file" class="hint" role="status" aria-live="polite"></p>
           <div id="runtime-env-fields" class="responsive-grid"></div>
           <div class="row">
             <button id="runtime-env-refresh-btn" type="button">Load Environment</button>

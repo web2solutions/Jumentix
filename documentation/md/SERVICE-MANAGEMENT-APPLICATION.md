@@ -53,7 +53,9 @@ contract are documented in
      - cloud provider
      - static assets behavior
      - runtime ports (`REST`, `WebSocket`, `gRPC`)
-   - Shows PM2-oriented profile preview for VM runtime orchestration.
+   - Shows PM2-oriented profile preview for VM runtime orchestration, read from
+     the real `pm2/ecosystem.*.cjs` files via `GET /api/runtime/pm2-ecosystem`
+     (JUM-480) — no hardcoded process list or package-manager command.
    - Includes runtime env controls with a three-tier key model:
      - **Editable** (read/write runtime topology selectors):
        `JUMENTIX_HTTP_FRAMEWORK`, `JUMENTIX_REALTIME_API`,
@@ -107,6 +109,7 @@ Recommended dev path:
 
 - `GET /api/runtime/env?environment=dev|development|staging|ci|test`
 - `POST /api/runtime/env`
+- `GET /api/runtime/pm2-ecosystem?environment=dev|development|staging|production|prod|ci|test`
 
 The server persists approved runtime keys to files under `apps/backend-template/src/config/`.
 The authoritative contract — accepted environments, key classification, enum

@@ -681,6 +681,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/service-management/pm2EcosystemUi.contract.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/pm2EcosystemUi.contract.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/service-management/designerState.test.ts",
       "path": "apps/backend-template/test/unit/service-management/designerState.test.ts",
       "layer": "service-management/designer",
@@ -1487,6 +1497,19 @@
       "bunCompat": "pending-resetModules-or-native-gap",
       "tier": "gate",
       "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/integration/ServiceManagement/pm2Ecosystem.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/pm2Ecosystem.integration.test.ts",
+      "layer": "service-management/server",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
     },
     {
       "id": "apps/backend-template/test/integration/ServiceManagement/domainDesigner.smoke.test.ts",
@@ -3221,9 +3244,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 158,
-    "integration": 87,
+    "unit": 159,
+    "integration": 88,
     "smoke": 2,
-    "suites": 267
+    "suites": 269
   }
 }
