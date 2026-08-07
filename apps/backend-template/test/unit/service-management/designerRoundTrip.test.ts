@@ -449,26 +449,40 @@ describe('designer export/import round-trip (JUM-471)', () => {
       );
       expect(second.domain.name).toBe('Billing_2');
       expect(third.domain.name).toBe('Billing_3');
-      // The name is the only intended difference: everything else crosses.
-      expect({ ...second.domain, name: first.domain.name }).toStrictEqual(first.domain);
+      // Name and recomputed ids (JUM-617) aside, everything else crosses.
+      const stripIds = (domain: { id: string; name: string; entities: Array<{ id: string }> }) => ({
+        ...domain,
+        id: '<id>',
+        entities: domain.entities.map((entity) => ({ ...entity, id: '<id>' }))
+      });
+      expect({ ...stripIds(second.domain), name: first.domain.name })
+        .toStrictEqual(stripIds(first.domain));
     });
 
-    it('pins the pre-refactor id behaviour: package ids cross verbatim, so a twice-imported package shares ids', () => {
-      // DOCUMENTED GAP (candidate defect, reported under JUM-471; not fixed
-      // here — this suite tests what exists): `importDomainPackage` keeps the
-      // file's ids verbatim, so importing the same package twice yields two
-      // domains that share domain/entity ids. `recomputeIdCounter` and the
-      // name suffix absorb the collision in the UI, but id-uniqueness across
-      // the model is NOT guaranteed by the package crossing.
+    it('recomputes colliding package ids on re-import, so re-imported domains never share domain/entity ids (JUM-617)', () => {
+      // JUM-617 closed the gap this suite previously pinned as a candidate
+      // defect (found under JUM-471): `importDomainPackage` used to keep the
+      // file's ids verbatim, so importing the same package twice yielded two
+      // domains sharing domain/entity ids. The importer now keeps ids that
+      // are free and recomputes colliding ones on the OAS fallback-id
+      // convention, so id uniqueness across the model holds after any number
+      // of re-imports.
       const state = createModelState();
       const wire = JSON.parse(JSON.stringify(
         buildDomainPackageDocument(state.domains[0], '2026-08-05T00:00:00.000Z')
       ));
       const first = buildDomainFromPackage(JSON.parse(JSON.stringify(wire)), []);
       const second = buildDomainFromPackage(JSON.parse(JSON.stringify(wire)), [first.domain]);
-      expect(second.domain.id).toBe(first.domain.id);
-      expect(second.domain.entities.map((entity: { id: string }) => entity.id))
-        .toStrictEqual(first.domain.entities.map((entity: { id: string }) => entity.id));
+      // Ids that do not collide still cross verbatim (first import into an
+      // empty model) — the round-trip deep-equal above depends on it.
+      expect(first.domain.id).toBe(state.domains[0].id);
+      expect(second.domain.id).not.toBe(first.domain.id);
+      const firstEntityIds = first.domain.entities.map((entity: { id: string }) => entity.id);
+      const secondEntityIds = second.domain.entities.map((entity: { id: string }) => entity.id);
+      expect(secondEntityIds).toHaveLength(firstEntityIds.length);
+      secondEntityIds.forEach((id: string) => {
+        expect(firstEntityIds).not.toContain(id);
+      });
     });
   });
 
