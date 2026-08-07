@@ -11,8 +11,13 @@
  * No `FileReader`, no `window.alert`, no state mutation — the file-reading
  * and persistence glue stays in `script.js`, so this module imports and runs
  * under Bun/Node with no DOM shim (the JUM-471 round-trip suite's
- * precondition). Mapping logic is verbatim from the monolith: same
- * normalisation, same dedup rules, same fallback layout.
+ * precondition). `buildDomainFromPackage` is verbatim from the monolith;
+ * `buildDomainsFromOas` was extended by JUM-478 to normalise the entity meta
+ * extension set (`x-aggregate-root`/`x-invariants`/`x-rbac`/
+ * `x-message-contracts`/composition/`x-fieldless`/`x-field-flags`), to restore
+ * relationships from top-level `x-relations`, and to recognise unmarked port
+ * objects by the canonical naming/description conventions, so the OAS
+ * crossing is lossless for designer-exported documents.
  *
  * Result shape: `{ ok: true, ... }` on success, `{ ok: false, reason }` with
  * a stable machine-readable reason on failure, so the caller keeps mapping
@@ -23,14 +28,19 @@ import {
   DOMAIN_COLORS,
   defaultFields,
   fallbackId,
+  normalizeContractInput,
   normalizeDomainInput,
   normalizeField,
   normalizeOptionalNumber,
+  normalizeRbacPolicyInput,
+  normalizeRelationship,
+  parseCommaSeparated,
   parseEnumValues
 } from '../state/designerState.js';
 import {
   fromOasType,
   isDomainNameTaken,
+  oasFieldNameFlags,
   uniqueStrings
 } from '../model/modelQueries.js';
 
@@ -108,15 +118,100 @@ export function buildDomainFromPackage(parsed, existingDomains) {
 }
 
 /**
+ * Whether a schema declares an object contract — entities are object
+ * contracts, so foreign scalar/array schemas (for example the canonical
+ * `BooleanStringResult`) are not entity candidates at all (JUM-478).
+ */
+function isObjectContractSchema(schemaValue) {
+  return schemaValue.type === 'object'
+    || (schemaValue.properties && typeof schemaValue.properties === 'object')
+    || Array.isArray(schemaValue.oneOf)
+    || Array.isArray(schemaValue.allOf)
+    || Array.isArray(schemaValue.anyOf);
+}
+
+/**
+ * Whether a schema is a derived port object rather than model content
+ * (JUM-478). The designer's own documents mark wrappers with
+ * `'x-port-object': true` and entity schemas with `x-domain`/`x-entity`, so
+ * marked documents are decided by the markers alone. Unmarked documents (the
+ * canonical `spec/1.0.0.yml`) follow the same port-object conventions by name
+ * and description: `Request<Action>*` inputs, `<Schema>ArrayOf` collection
+ * wrappers, the shared `ResourceDeleteResponse`, and any schema described as
+ * a "Port input/output object" that is not a `<Name> resource` entity
+ * contract. What remains must still be an object contract to become an
+ * entity.
+ */
+function isPortObjectSchema(schemaKey, schemaValue) {
+  if (schemaValue['x-port-object'] === true) return true;
+  if (schemaValue['x-entity'] || schemaValue['x-domain']) return false;
+  if (schemaKey === 'ResourceDeleteResponse') return true;
+  if (/^Request[A-Z]/.test(schemaKey) || /ArrayOf$/.test(schemaKey)) return true;
+  const description = String(schemaValue.description || '');
+  if (/^Port (input|output) object/.test(description) && !/^Port output object for .+ resource\./.test(description)) {
+    return true;
+  }
+  return !isObjectContractSchema(schemaValue);
+}
+
+/**
+ * The composition mode a schema declares, if any: the first of
+ * `oneOf`/`allOf`/`anyOf` present as an array.
+ */
+function compositionModeOf(schemaValue) {
+  return ['oneOf', 'allOf', 'anyOf'].find((mode) => Array.isArray(schemaValue[mode])) || '';
+}
+
+/** Strip the local schemas prefix from a `$ref`, keeping anything else verbatim. */
+function schemaRefName(ref) {
+  return String(ref || '').replace(/^#\/components\/schemas\//, '').trim();
+}
+
+/**
+ * Normalise the entity meta a schema carries in the JUM-478 extension set
+ * back into the designer's `meta` shape — the same shape
+ * `normalizeEntityInput` produces, so an imported entity is
+ * indistinguishable from a UI-built one.
+ */
+function buildEntityMetaFromOas(schemaValue) {
+  const invariantsInput = schemaValue['x-invariants'];
+  const invariants = Array.isArray(invariantsInput)
+    ? invariantsInput.map((item) => String(item).trim()).filter(Boolean)
+    : parseCommaSeparated(invariantsInput || []);
+  const contracts = Array.isArray(schemaValue['x-message-contracts'])
+    ? schemaValue['x-message-contracts'].map((contract, index) => normalizeContractInput(contract, index))
+    : [];
+  const mode = compositionModeOf(schemaValue);
+  const refs = mode
+    ? schemaValue[mode].map((entry) => schemaRefName(entry?.$ref)).filter(Boolean)
+    : [];
+  return {
+    aggregateRoot: schemaValue['x-aggregate-root'] === true,
+    invariants,
+    rbac: normalizeRbacPolicyInput(schemaValue['x-rbac']),
+    contracts,
+    oasComposition: {
+      mode,
+      refs,
+      externalRefs: parseCommaSeparated(schemaValue['x-external-refs'] || []),
+      discriminator: String(schemaValue?.discriminator?.propertyName || '').trim()
+    }
+  };
+}
+
+/**
  * Map a parsed OpenAPI document to the designer's domain list: one entity
  * per `components.schemas` entry, grouped by `x-domain`, fields mapped back
- * through `fromOasType` — except schemas marked `'x-port-object': true`
- * (JUM-474 request/response wrappers), which are derived artifacts and
- * skipped. Relationship and view state are NOT part of this mapping — the
- * caller resets them, exactly as the monolith did.
+ * through `fromOasType` — except port input/output wrappers, which are
+ * derived artifacts decided by `isPortObjectSchema` and skipped. Entity meta
+ * (aggregate declaration, invariants, RBAC, message contracts, composition)
+ * is normalised back from the JUM-478 extension set, and top-level
+ * `x-relations` rows restore the model's relationships by schema name. View
+ * state is NOT part of this mapping — the caller resets it, exactly as the
+ * monolith did.
  *
  * @param {Object} parsed - decoded JSON of the uploaded OAS file.
- * @returns {{ ok: true, domains: Array } | { ok: false, reason: 'invalid-oas' | 'no-schemas' }}
+ * @returns {{ ok: true, domains: Array, relationships: Array } | { ok: false, reason: 'invalid-oas' | 'no-schemas' }}
  */
 export function buildDomainsFromOas(parsed) {
   const schemas = parsed?.components?.schemas;
@@ -126,16 +221,13 @@ export function buildDomainsFromOas(parsed) {
 
   const nextDomains = [];
   const byDomain = new Map();
+  const entityBySchema = new Map();
   let domainIndex = 0;
   let entityIndex = 0;
 
   Object.entries(schemas).forEach(([schemaKey, schemaValue]) => {
     if (!schemaValue || typeof schemaValue !== 'object') return;
-    // JUM-474: port input/output wrappers (`RequestCreate*`/`RequestUpdate*`/
-    // `*ArrayOf`/`ResourceDeleteResponse`) are derived from entity schemas at
-    // export time, not model content — importing them would fabricate phantom
-    // entities, so they carry a marker and are skipped here.
-    if (schemaValue['x-port-object'] === true) return;
+    if (isPortObjectSchema(schemaKey, schemaValue)) return;
     const domainName = String(schemaValue['x-domain'] || 'Imported').trim() || 'Imported';
     const entityName = String(schemaValue['x-entity'] || schemaKey).trim() || schemaKey;
     const required = Array.isArray(schemaValue.required) ? schemaValue.required : [];
@@ -160,6 +252,13 @@ export function buildDomainsFromOas(parsed) {
 
     const fields = Object.entries(properties).map(([fieldName, fieldSchema]) => {
       const field = fieldSchema || {};
+      // PK/FK/unique default to the name heuristic; an explicit
+      // `x-field-flags` extension (JUM-478) overrides it per flag.
+      const heuristic = oasFieldNameFlags(fieldName);
+      const flagOverrides = field['x-field-flags'] && typeof field['x-field-flags'] === 'object'
+        ? field['x-field-flags']
+        : {};
+      const flag = (key) => (typeof flagOverrides[key] === 'boolean' ? flagOverrides[key] : heuristic[key]);
       return normalizeField({
         name: fieldName,
         type: fromOasType(field),
@@ -174,24 +273,50 @@ export function buildDomainsFromOas(parsed) {
         maximum: normalizeOptionalNumber(field.maximum),
         itemsType: fromOasType(field.items || {}),
         required: required.includes(fieldName),
-        pk: fieldName === 'id',
-        fk: /id$/i.test(fieldName) && fieldName !== 'id',
-        unique: fieldName === 'id'
+        pk: flag('pk'),
+        fk: flag('fk'),
+        unique: flag('unique')
       }, 0);
     });
 
-    domain.entities.push({
+    const entity = {
       id: fallbackId('entity', entityIndex),
       name: entityName,
       x: 14 + (domain.entities.length % 2) * 206,
       y: 14 + Math.floor(domain.entities.length / 2) * 120,
-      fields: fields.length ? fields : defaultFields()
-    });
+      // A marked fieldless entity keeps its empty field set; an unmarked
+      // schema without properties keeps the legacy default-fields fallback.
+      fields: fields.length ? fields : (schemaValue['x-fieldless'] === true ? [] : defaultFields()),
+      meta: buildEntityMetaFromOas(schemaValue)
+    };
+    domain.entities.push(entity);
+    entityBySchema.set(schemaKey, entity);
     entityIndex += 1;
   });
 
   if (!nextDomains.length) {
     return { ok: false, reason: 'no-schemas' };
   }
-  return { ok: true, domains: nextDomains };
+
+  // Relationships cross by schema name (`x-relations`, JUM-478): endpoints
+  // resolve to the freshly imported entities, and rows pointing at schemas
+  // that did not import (dangling or port-object refs) are dropped — exactly
+  // the rule `normalizeStatePayload` applies to dangling model ids.
+  const relationships = [];
+  const relationsInput = Array.isArray(parsed['x-relations']) ? parsed['x-relations'] : [];
+  relationsInput.forEach((relation) => {
+    const fromEntity = entityBySchema.get(relation?.fromSchema);
+    const toEntity = entityBySchema.get(relation?.toSchema);
+    if (!fromEntity || !toEntity) return;
+    relationships.push(normalizeRelationship({
+      id: fallbackId('relationship', relationships.length),
+      name: String(relation.name || '').trim() || `${relation.fromSchema} -> ${relation.toSchema}`,
+      fromEntityId: fromEntity.id,
+      toEntityId: toEntity.id,
+      fromCardinality: relation.fromCardinality,
+      toCardinality: relation.toCardinality
+    }));
+  });
+
+  return { ok: true, domains: nextDomains, relationships };
 }

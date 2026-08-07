@@ -20,7 +20,7 @@ const { buildDomainFromPackage, buildDomainsFromOas } = require(
 const { buildOasDocument } = require(
   path.join(repoRoot, 'apps', 'service-management', 'src', 'exporters', 'designerExporters.js')
 );
-const { normalizeStatePayload } = require(
+const { normalizeStatePayload, getDefaultRbacPolicy } = require(
   path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'designerState.js')
 );
 
@@ -253,6 +253,148 @@ describe('designer importers (JUM-469)', () => {
       expect(result.domains[0].name).toBe('Imported');
       expect(result.domains[0].entities[0].name).toBe('Legacy');
       expect(result.domains[0].entities[0].fields[0]).toMatchObject({ name: 'ghost', type: 'string' });
+    });
+
+    it('normalizes the JUM-478 entity meta extension set back into meta', () => {
+      const result = buildDomainsFromOas({
+        components: {
+          schemas: {
+            Billing_Invoice: {
+              type: 'object',
+              'x-domain': 'Billing',
+              'x-entity': 'Invoice',
+              'x-aggregate-root': true,
+              'x-invariants': ['total must be positive'],
+              'x-rbac': { list: { roles: ['superadmin'] } },
+              'x-message-contracts': [{
+                id: 'contract-1', name: 'issued', type: 'event', channel: 'billing.issued', version: '1.0.0'
+              }],
+              oneOf: [{ $ref: '#/components/schemas/Base' }, { $ref: 'common.yaml#Money' }],
+              'x-external-refs': ['common.yaml#Money'],
+              discriminator: { propertyName: 'kind' },
+              properties: {
+                id: { type: 'string', format: 'uuid' },
+                code: { type: 'string', 'x-field-flags': { pk: false, fk: false, unique: true } }
+              }
+            },
+            Billing_Receipt: {
+              type: 'object',
+              'x-domain': 'Billing',
+              'x-entity': 'Receipt',
+              'x-fieldless': true,
+              properties: {}
+            }
+          }
+        }
+      });
+      expect(result.ok).toBe(true);
+      const [invoice, receipt] = result.domains[0].entities;
+      expect(invoice.meta).toStrictEqual({
+        aggregateRoot: true,
+        invariants: ['total must be positive'],
+        rbac: {
+          list: { roles: ['superadmin'], tenantScoped: false },
+          getById: { roles: ['superadmin', 'admin', 'user'], tenantScoped: true },
+          create: { roles: ['superadmin', 'admin'], tenantScoped: true },
+          update: { roles: ['superadmin', 'admin'], tenantScoped: true },
+          delete: { roles: ['superadmin', 'admin'], tenantScoped: true }
+        },
+        contracts: [{
+          id: 'contract-1',
+          name: 'issued',
+          type: 'event',
+          channel: 'billing.issued',
+          version: '1.0.0',
+          payloadSchema: {}
+        }],
+        oasComposition: {
+          mode: 'oneOf',
+          // Local refs strip the prefix; anything else crosses verbatim.
+          refs: ['Base', 'common.yaml#Money'],
+          externalRefs: ['common.yaml#Money'],
+          discriminator: 'kind'
+        }
+      });
+      // x-field-flags overrides the name heuristic per flag.
+      const byName = Object.fromEntries(
+        invoice.fields.map((field: { name: string }) => [field.name, field])
+      );
+      expect(byName.code.unique).toBe(true);
+      expect(byName.id.pk).toBe(true);
+      // The fieldless marker keeps the empty field set (no default-fields fallback).
+      expect(receipt.fields).toStrictEqual([]);
+      expect(receipt.meta).toStrictEqual({
+        aggregateRoot: false,
+        invariants: [],
+        rbac: getDefaultRbacPolicy(),
+        contracts: [],
+        oasComposition: {
+          mode: '', refs: [], externalRefs: [], discriminator: ''
+        }
+      });
+    });
+
+    it('restores relationships from x-relations, dropping rows that resolve to no entity', () => {
+      const result = buildDomainsFromOas({
+        components: {
+          schemas: {
+            Billing_Invoice: {
+              type: 'object', 'x-domain': 'Billing', 'x-entity': 'Invoice', properties: { id: { type: 'string' } }
+            },
+            Catalog_Product: {
+              type: 'object', 'x-domain': 'Catalog', 'x-entity': 'Product', properties: { id: { type: 'string' } }
+            }
+          }
+        },
+        'x-relations': [
+          {
+            name: 'invoice products',
+            fromSchema: 'Billing_Invoice',
+            toSchema: 'Catalog_Product',
+            fromCardinality: '1',
+            toCardinality: 'N'
+          },
+          { name: 'ghost', fromSchema: 'Billing_Invoice', toSchema: 'RequestCreateBilling_Invoice' },
+          { fromSchema: null, toSchema: 'Catalog_Product' }
+        ]
+      });
+      expect(result.ok).toBe(true);
+      expect(result.relationships).toHaveLength(1);
+      const [relationship] = result.relationships;
+      expect(relationship).toMatchObject({
+        name: 'invoice products',
+        fromEntityId: result.domains[0].entities[0].id,
+        toEntityId: result.domains[1].entities[0].id,
+        fromCardinality: '1',
+        toCardinality: 'N'
+      });
+    });
+
+    it('recognizes unmarked port objects by the canonical name and description conventions', () => {
+      const result = buildDomainsFromOas({
+        components: {
+          schemas: {
+            User: {
+              type: 'object',
+              description: 'Port output object for User resource.',
+              properties: { id: { type: 'string' } }
+            },
+            RequestCreateUser: { type: 'object', properties: { id: { type: 'string' } } },
+            UserArrayOf: { type: 'array', items: { $ref: '#/components/schemas/User' } },
+            ResourceDeleteResponse: { type: 'object', properties: { data: { type: 'boolean' } } },
+            AuthorizationHeader: {
+              type: 'object',
+              description: 'Port output object containing authorization header response contract.',
+              properties: { Authorization: { type: 'string' } }
+            },
+            BooleanStringResult: { type: 'string', example: true }
+          }
+        }
+      });
+      expect(result.ok).toBe(true);
+      // Only the entity contract survives; every port-object convention is skipped.
+      expect(result.domains[0].entities.map((entity: { name: string }) => entity.name))
+        .toStrictEqual(['User']);
     });
 
     it('round-trips an exported OAS document back to equivalent fields', () => {

@@ -277,25 +277,31 @@ UI.
 
 ### Error contract
 
-Responses distinguish parse, validation, and filesystem failures through the
-`details` field of the error envelope:
+Responses distinguish parse, validation, and filesystem failures (landed by
+JUM-543; Requirement 126 §3):
 
 - Malformed JSON body (POST): `400 { "error": "Invalid payload.", "details": … }`.
-- Unsupported environment: `400` whose `details` name the unsupported value
-  and the accepted list — `{ "error": "Invalid environment request.", … }` on
-  GET, `{ "error": "Invalid payload.", … }` on POST; no file is written.
-- Missing env file: `400` whose `details` carry the resolved path (internally
-  error code `ENV_FILE_NOT_FOUND`), so a broken installation is identifiable
-  from the message rather than mistaken for a malformed request.
+  The parse `try` is narrowed to `JSON.parse` only, so this envelope can never
+  report a filesystem failure.
+- Unsupported environment: `400 { "error": "Invalid environment request.",
+  "details": … }` whose `details` name the unsupported value and the accepted
+  list — on GET and POST alike; no file is written.
+- Filesystem failures — missing env file (error code `ENV_FILE_NOT_FOUND`),
+  permission errors, full disk: `500 { "error": "Environment file operation
+  failed.", "code": …, "path": …, "details": … }`, where `code` is
+  `ENV_FILE_NOT_FOUND` or the underlying `fs` error code and `path` is the
+  resolved env-file path. A broken installation is a distinct, identifiable
+  failure class — never `400 Invalid payload.`.
 - Out-of-enum or credential-bearing value for an editable key: `400` naming the
   key, the rejected value, and the accepted list; no file is written.
 - Missing or wrong bearer token: `401 { "error": "Unauthorized." }` when the
   auth token is configured.
 
-Requirement 126 (JUM-543) specifies the target split in which filesystem
-failures surface as a distinct, identifiable failure class rather than sharing
-the payload-validation envelope; the UI surfaces these failures through
-non-blocking status surfaces, not `window.alert`.
+The UI surfaces these failures through non-blocking `aria-live` status
+surfaces (a global toast region plus an inline status line in the runtime env
+panel), not `window.alert`; the client renders exactly what the API returns —
+`error`, `details`, and on the 500 class `code` and `path` — with no
+client-side remapping.
 
 ## Guardrails
 

@@ -471,17 +471,19 @@ describe('connector configuration', () => {
   );
 
   /**
-   * A JSON array is accepted, because the check is `typeof parsed === 'object'`
-   * and an array passes it. The declared return type says
-   * `Record<string, unknown>`, so this is the type lying rather than the code
-   * deciding — a Firebase service account is never an array, and one that is
-   * would be better refused here than three frames into the SDK.
+   * A JSON array is refused (JUM-599).
    *
-   * Pinned as it stands. Narrowing the check is a one-line change but it turns
-   * a startup that limps into a startup that stops, and that is a decision for
-   * whoever owns the deployment.
+   * This test used to assert the opposite. `typeof parsed === 'object'` is true
+   * for an array, so `[1,2]` was returned as a `Record<string, unknown>` and
+   * the declared type was lying. A Firebase service account is never an array,
+   * and one that is should be refused here rather than three frames into the
+   * SDK, where the message is about a missing `project_id`.
+   *
+   * Refused means `undefined`, which is the same answer the parser already
+   * gives for unparseable JSON — not a throw. The compiler treats an absent
+   * service account as "not configured", which is a state it already handles.
    */
-  it('accepts a JSON array as a service account, which it should not', async () => {
+  it('refuses a JSON array as a service account', async () => {
     expect.hasAssertions();
 
     const client = await withEnvironment(
@@ -490,7 +492,19 @@ describe('connector configuration', () => {
     );
 
     expect((chosen(client).options.extra as { serviceAccount?: unknown }).serviceAccount)
-      .toStrictEqual([1, 2]);
+      .toBeUndefined();
+  });
+
+  it('still accepts a JSON object as a service account', async () => {
+    expect.hasAssertions();
+
+    const client = await withEnvironment(
+      { JUMENTIX_FIREBASE_SERVICE_ACCOUNT_JSON: '{"project_id":"jumentix-test"}' },
+      () => compilers().compileFirebaseDbClient()
+    );
+
+    expect((chosen(client).options.extra as { serviceAccount?: unknown }).serviceAccount)
+      .toStrictEqual({ project_id: 'jumentix-test' });
   });
 
   it('defaults the Oracle credentials', async () => {

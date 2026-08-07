@@ -25,18 +25,29 @@
  */
 
 import {
+  getDefaultRbacPolicy,
   normalizeContractInput,
+  normalizeRbacPolicyInput,
   parseCommaSeparated
 } from '../state/designerState.js';
 import {
   entityLabel,
   getEntityRbacPolicy,
+  oasFieldNameFlags,
   toOasFieldSchema,
   toPathToken,
   toSchemaName
 } from '../model/modelQueries.js';
 import { buildHexagonalBundle } from '../codegen/hexagonalCodegen.js';
 import { buildAsyncApiTransportDocument } from './asyncApiExporters.js';
+
+/**
+ * The default per-entity RBAC policy, captured once: `buildOasDocument`
+ * compares each entity's normalised policy against it and only emits `x-rbac`
+ * for policies that diverge — an absent extension normalises back to exactly
+ * this policy on import (JUM-478).
+ */
+const DEFAULT_RBAC_POLICY = getDefaultRbacPolicy();
 
 /** `exportAsJson` payload: `{ domains, relationships, view }`. */
 export function buildJsonExportDocument(state) {
@@ -181,6 +192,14 @@ export function buildDomainPackageDocument(domain, exportedAt = new Date().toISO
  *   codes and descriptions (400/401/403/404/409).
  * - Composition (`oneOf`/`allOf`/`anyOf`/`discriminator`) serialises as
  *   native OAS 3.1 constructs.
+ * - JUM-478 (lossless round-trip): the entity meta OAS cannot express crosses
+ *   as agreed extensions the importer normalises back — `x-aggregate-root`,
+ *   `x-invariants`, `x-rbac` (only when the policy diverges from the default),
+ *   `x-fieldless` (empty field set survives instead of gaining the importer's
+ *   default fields) and per-field `x-field-flags` (only when PK/FK/unique
+ *   diverge from the importer's name heuristic). `x-relations` entries carry
+ *   schema names, not model ids, so relationships survive the crossing without
+ *   leaking recomputed ids into the document.
  */
 export function buildOasDocument(state) {
   const schemas = {};
@@ -196,7 +215,16 @@ export function buildOasDocument(state) {
       const properties = {};
       const required = [];
       entity.fields.forEach((field) => {
-        properties[field.name] = toOasFieldSchema(field);
+        const fieldSchema = toOasFieldSchema(field);
+        // JUM-478: PK/FK/unique are designer flags OAS cannot express. Fields
+        // that match the importer's name heuristic cross silently; a divergent
+        // field carries its flags explicitly so the crossing stays lossless.
+        const flags = { pk: Boolean(field.pk), fk: Boolean(field.fk), unique: Boolean(field.unique) };
+        const heuristic = oasFieldNameFlags(field.name);
+        if (flags.pk !== heuristic.pk || flags.fk !== heuristic.fk || flags.unique !== heuristic.unique) {
+          fieldSchema['x-field-flags'] = flags;
+        }
+        properties[field.name] = fieldSchema;
         if (field.required) required.push(field.name);
       });
       const schemaName = toSchemaName(domain.name, entity.name);
@@ -213,6 +241,30 @@ export function buildOasDocument(state) {
           ? entity.meta.contracts.map((contract, index) => normalizeContractInput(contract, index))
           : []
       };
+      // JUM-478: the rest of `entity.meta` crosses as agreed extensions, so
+      // the importer can normalise the full meta surface back (aggregate
+      // declaration, invariants, RBAC policy, composition) instead of dropping
+      // everything OAS cannot express natively.
+      if (entity?.meta?.aggregateRoot === true) {
+        entitySchema['x-aggregate-root'] = true;
+      }
+      const invariants = (Array.isArray(entity?.meta?.invariants) ? entity.meta.invariants : [])
+        .map((invariant) => String(invariant).trim())
+        .filter(Boolean);
+      if (invariants.length) {
+        entitySchema['x-invariants'] = invariants;
+      }
+      // The default policy is what the importer normalises an absent `x-rbac`
+      // to, so only a policy that diverges from it needs carriage.
+      const rbac = normalizeRbacPolicyInput(entity?.meta?.rbac);
+      if (JSON.stringify(rbac) !== JSON.stringify(DEFAULT_RBAC_POLICY)) {
+        entitySchema['x-rbac'] = rbac;
+      }
+      // A fieldless entity would otherwise come back with the importer's
+      // default fields — the marker keeps the empty field set intact.
+      if (!entity.fields.length) {
+        entitySchema['x-fieldless'] = true;
+      }
       const composition = entity?.meta?.oasComposition || {};
       const mode = ['oneOf', 'allOf', 'anyOf'].includes(composition.mode) ? composition.mode : '';
       const refs = parseCommaSeparated(composition.refs || []);
@@ -401,9 +453,10 @@ export function buildOasDocument(state) {
       ))
     )),
     'x-relations': state.relationships.map((relationship) => ({
+      // JUM-478: relationships cross by schema name, not by model id — the
+      // importer recomputes entity ids, so carrying them would make every
+      // re-export differ from its source and break the fixed point.
       name: relationship.name,
-      fromEntityId: relationship.fromEntityId,
-      toEntityId: relationship.toEntityId,
       fromSchema: entitySchemaIndex[relationship.fromEntityId] || null,
       toSchema: entitySchemaIndex[relationship.toEntityId] || null,
       fromCardinality: relationship.fromCardinality,
