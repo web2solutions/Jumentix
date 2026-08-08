@@ -4,8 +4,9 @@
 
 ## All Changes
 
-- 2026-08-08 chore(JUM-492): merge dev, union shell precache at 0.4.0 - Eduardo A.
-- 2026-08-08 feat(JUM-492): domain-package versioning with semantic conflict resolution - Eduardo A.
+- 2026-08-08 feat(JUM-491): multi-user shared catalog sync over Cana resync events - Eduardo A.
+- 2026-08-08 feat(JUM-492): domain-package versioning with semantic conflict resolution (#132) - Eduardo A.
+- 2026-08-08 feat(JUM-546): deploy target lifecycle with edit, duplicate and validation (#129) - Eduardo A.
 - 2026-08-08 feat(JUM-548): first-run experience with sample model loader and guided empty states (#131) - Eduardo A.
 - 2026-08-08 feat(JUM-547): full-suite export/import carrying all four tabs (#128) - Eduardo A.
 - 2026-08-08 docs(JUM-490): document E7 design system and PWA shell (EN/PT-BR) (#127) - Eduardo A.
