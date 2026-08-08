@@ -1,39 +1,31 @@
 # Cana — Adaptador de Banco de Dados Offline sobre IndexedDB
 
 `@jumentix/cana` é um motor IndexedDB próprio para aplicações offline-first da
-Jumentix. Não é um invólucro sobre uma biblioteca existente e não recorre a
-nenhum armazenamento alternativo quando o IndexedDB não está disponível.
+Jumentix. Não é um invólucro sobre uma biblioteca existente. Quando o IndexedDB
+não abre, ele pode degradar para um backend **explícito** em localStorage
+(JUM-615).
 
-Este documento registra o que ele faz, o que se recusa deliberadamente a fazer
-e — o mais importante — **o que ainda não foi comprovado**. Essa última seção
-não é um apêndice. Um banco offline que exagera suas garantias é pior do que um
-que não oferece nenhuma, porque a aplicação construída sobre ele fará ao usuário
-promessas que não pode cumprir.
+Este documento registra o que ele faz, o que se recusa deliberadamente a fazer e
+o que a suite de testes comprovou. Um banco offline que exagera suas garantias
+é pior do que um que não oferece nenhuma.
 
 ---
 
-## 1. A decisão que molda tudo: sem fallback
+## 1. A decisão que molda tudo: IndexedDB preferido, fallback explícito
 
-Se o IndexedDB não estiver disponível — navegação privada em alguns navegadores,
-ambiente hostil, armazenamento desabilitado — o Cana reporta `Unavailable` e
-para. Ele não recorre silenciosamente a `localStorage`, memória ou cookies.
+IndexedDB é o store principal. Depois de um `open()` bem-sucedido,
+`client.backend` é `'indexeddb'` ou `'localStorage'`.
 
-Isso é deliberado, e é a decisão com maior probabilidade de ser questionada, por
-isso o raciocínio fica registrado aqui e não apenas em uma mensagem de commit:
+Quando o IndexedDB não está disponível — navegação privada em alguns
+navegadores, ambiente hostil, armazenamento desabilitado — o Cana abre por
+padrão um store em localStorage (`ClientOptions.fallback: 'localStorage'`). Esse
+modo é **degradado e visível**: cota menor, sem índices reais, avaliação de
+durabilidade `best-effort`. Passe `fallback: false` para manter o `Unavailable`
+terminal pré-JUM-615.
 
-Um armazenamento alternativo tem durabilidade, capacidade e semântica
-transacional diferentes. Uma aplicação que recebe silenciosamente um no lugar do
-outro continua funcionando, continua aceitando escritas e continua dizendo ao
-usuário que o trabalho foi salvo — até a aba fechar e os dados estarem em
-memória, ou até a cota de 5 MB do `localStorage` estourar no meio de uma
-importação. A falha aparece longe da causa e é indistinguível de perda de dados.
-
-Reportar `Unavailable` é uma experiência pior no dia em que acontece e muito
-melhor em todos os dias seguintes.
-
-A consequência é que **`exportAll()` faz parte do contrato, não é conveniência**.
-Sem fallback, a exportação da própria aplicação é o único caminho de recuperação
-que o usuário tem.
+O fallback nunca é silencioso e nunca faz dual-write com IndexedDB. Evita-se
+split-brain escolhendo um backend por sessão; mova dados com `exportAll()` /
+import ao promover de volta para IndexedDB.
 
 ---
 
@@ -220,20 +212,20 @@ if (health.level === 'lost') {
 
 ---
 
-## 5. O que NÃO está comprovado
+## 5. Comprovado vs lacunas restantes (JUM-615)
 
 Declarado sem rodeios, porque os testes existentes poderiam ser confundidos com
 uma cobertura maior do que realmente representam.
 
 | Área | Situação |
 |---|---|
-| Correção de ciclo de vida, CRUD, consultas, transações, eventos, hooks, livro de operações | **Testado** — 106 testes contra uma implementação real de IndexedDB (`fake-indexeddb`) |
-| Comportamento entre navegadores (Chrome, Safari, Firefox) | **Não testado.** `fake-indexeddb` não é um navegador. JUM-417 |
-| O caminho `Unavailable` / navegação privada | **Não testado.** O shim é instalado de forma ambiente, então o global sempre existe |
-| Desempenho de consultas | **Não medido.** `explain()` prova que o índice foi aberto, não que é rápido. JUM-561 |
-| Cota e despejo reais | **Não testado.** `navigator.storage` não é implementado pelo shim; a política é testada contra estados construídos |
-| Execução dentro de um Worker real | **Não testado.** O roteador é testado sobre uma porta falsa. Ainda não existe host de worker |
-| Um worker realmente morto chegando a `unknown` | **Não testado.** O livro resolve corretamente *dado* que a transação confirmou ou não; que o motor chegue a `unknown` continua sem prova |
+| Ciclo de vida, CRUD, consultas, transações, eventos, hooks, livro no IndexedDB real do browser | **Testado** — suite Cypress do Cana (Requirement 112 §4) |
+| Matriz entre navegadores (Chrome / Firefox / WebKit) | **Testado** onde a matriz de CI executa esses engines (JUM-417 / JUM-581) |
+| Fallback localStorage quando IndexedDB indisponível | **Testado** — `cypress/localstorage-fallback.cy.ts` + conformance (JUM-615) |
+| Hosting em `Worker` dedicado | **Testado** — `cypress/real-worker.cy.ts` (JUM-615) |
+| Worker morto → timeout / pedidos em voo irresolutos | **Testado** — caminho `terminate` do Worker real |
+| Desempenho de consultas em escala | **Não medido.** `explain()` prova o plano, não o custo de parede |
+| Esgotamento real de cota em origem cheia | Política e mapeamento testados; encher cota real em CI não |
 
 ### Sobre o Dexie (JUM-399 — encerrado)
 

@@ -78,14 +78,36 @@ function findSpecs(root = SPEC_ROOT, list = fs.existsSync(root) ? fs.readdirSync
   });
 }
 
-/** Where a spec's bundle goes: the package name, then the spec name. */
+/**
+ * Dedicated Worker entry scripts (`*-worker.ts` under cypress/support).
+ *
+ * Bundled beside the specs so real-Worker suites can load them via blob URL
+ * (JUM-615). Not Cypress specs — they must not be handed to `cypress run`.
+ */
+function findWorkerEntries(
+  root = SPEC_ROOT,
+  list = fs.existsSync(root) ? fs.readdirSync(root) : []
+) {
+  return list.flatMap((name) => {
+    const full = path.join(root, name);
+    if (fs.statSync(full).isDirectory()) {
+      if (name === 'node_modules' || name === 'dist' || name === '.build') return [];
+      return findWorkerEntries(full);
+    }
+    return full.endsWith('-worker.ts') && full.includes(`${path.sep}cypress${path.sep}support${path.sep}`)
+      ? [full]
+      : [];
+  });
+}
+
+/** Where a spec's (or worker entry's) bundle goes: the package name, then the file name. */
 function bundlePath(specPath) {
   const relative = path.relative(SPEC_ROOT, specPath);
   const [packageName] = relative.split(path.sep);
   return path.join(BUILD_DIR, packageName, `${path.basename(specPath, '.ts')}.js`);
 }
 
-function bundle(specPath, spawn = spawnSync) {
+function bundle(specPath, spawn = spawnSync, { instrument = true } = {}) {
   const output = bundlePath(specPath);
   fs.mkdirSync(path.dirname(output), { recursive: true });
 
@@ -110,15 +132,18 @@ function bundle(specPath, spawn = spawnSync) {
     };
   }
 
-  instrumentBundle(output);
+  // Worker entries run under `self`, not `window`. Istanbul's browser coverage
+  // global is `window.__coverage__`, which throws ReferenceError inside a
+  // dedicated Worker (JUM-615).
+  if (instrument) instrumentBundle(output);
 
   return { ok: true, output };
 }
 
-function buildAll(specs, spawn = spawnSync) {
+function buildAll(specs, spawn = spawnSync, options = {}) {
   const failures = [];
   for (const spec of specs) {
-    const result = bundle(spec, spawn);
+    const result = bundle(spec, spawn, options);
     if (!result.ok) failures.push(result.message);
   }
   return failures;
@@ -142,12 +167,19 @@ function run(options = {}) {
 
   fs.rmSync(BUILD_DIR, { recursive: true, force: true });
 
-  const failures = buildAll(specs, spawn);
+  const workers = options.workers || findWorkerEntries();
+  const failures = [
+    ...buildAll(specs, spawn),
+    ...buildAll(workers, spawn, { instrument: false })
+  ];
   if (failures.length > 0) {
     return { ok: false, message: failures.join('\n\n') };
   }
 
-  console.log(`[browser] bundled ${specs.length} spec(s) with Bun; handing them to Cypress on ${browser}.`);
+  console.log(
+    `[browser] bundled ${specs.length} spec(s) and ${workers.length} worker entr(y/ies) with Bun; `
+      + `handing specs to Cypress on ${browser}.`
+  );
 
   // Bun exports ELECTRON_RUN_AS_NODE=1 into its children. Cypress's binary is
   // Electron, and under that flag it starts as plain Node: every Electron CLI
@@ -217,6 +249,7 @@ module.exports = {
   bundlePath,
   buildAll,
   findSpecs,
+  findWorkerEntries,
   main,
   requestedBrowser,
   run,

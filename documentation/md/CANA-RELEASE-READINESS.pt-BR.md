@@ -95,7 +95,8 @@ cada motor:
 - reporte de cota real e o limiar `nearQuota`
 - despejo de fato, e a lápide sobrevivendo a ele
 - o caminho `Unavailable` em navegação privada
-- o motor rodando dentro de um `Worker` real
+- o motor rodando dentro de um `Worker` real (suite dedicada, JUM-615)
+- fallback localStorage quando o IndexedDB não abre (modo degradado explícito, JUM-615)
 - dados sobrevivendo a um reload de página
 - os casos-limite de `databases()` e de structured-clone do WebKit,
   historicamente os que mais divergem

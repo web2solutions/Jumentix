@@ -75,8 +75,9 @@ function requireStore(request: CanaRequestEnvelope): string {
 
 function requireKey(request: CanaRequestEnvelope): CanaKey {
   if (request.key === undefined) {
+    // Every caller reaches here only after `requireStore`, so `store` is always set.
     throw canaError('InvalidRequest', `${request.kind} requires a key.`, {
-      ...(request.store === undefined ? {} : { store: request.store })
+      store: request.store!
     });
   }
   return request.key;

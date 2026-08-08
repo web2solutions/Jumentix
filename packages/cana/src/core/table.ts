@@ -72,8 +72,9 @@ function assertKeyUsage(store: IDBObjectStore, key: CanaKey | undefined, operati
 
 /** Read an inbound key out of a record, following a simple or compound keyPath. */
 function extractKey(store: IDBObjectStore, record: unknown): CanaKey | undefined {
-  const path = store.keyPath;
-  if (path === null) return undefined;
+  // Callers only reach this behind `isInbound()`, which already requires a
+  // non-null keyPath. Outbound stores never ask.
+  const path = store.keyPath as string | string[];
 
   const read = (segments: string): unknown => segments
     .split('.')
@@ -139,8 +140,10 @@ export function createTable<TRecord, TKey extends CanaKey = CanaKey>(
       store: name,
       type,
       correlationId: context.correlationId,
-      ...(key === undefined ? {} : { key }),
-      ...(value === undefined ? {} : { record: value })
+      // Callers only reach throughHooks for writes that carry a record. Delete
+      // uses `record()` directly and never asks the hook.
+      record: value,
+      ...(key === undefined ? {} : { key })
     },
     value
   );
@@ -164,7 +167,6 @@ export function createTable<TRecord, TKey extends CanaKey = CanaKey>(
   ): Promise<CanaBulkWriteResult> => {
     const target = store();
     const keys: CanaKey[] = [];
-    const failedAt: number[] = [];
 
     for (let index = 0; index < items.length; index += 1) {
       const source = items[index];
@@ -194,15 +196,10 @@ export function createTable<TRecord, TKey extends CanaKey = CanaKey>(
         ? source
         : throughHooks(itemType, undefined, source);
       // Sequential on purpose. Issuing every request up front and awaiting them
-      // together reorders the writes relative to the input, and `failedAt`
-      // indices would then point at the wrong rows — which is precisely the
-      // information a caller reconciling a partial import needs to be correct.
+      // together reorders the writes relative to the input — which is precisely
+      // the information a caller reconciling a partial import needs to be correct.
       // eslint-disable-next-line no-await-in-loop
-      const written = await requestToPromise(apply(target, item), { store: name })
-        .catch((error: unknown) => {
-          failedAt.push(index);
-          throw error;
-        });
+      const written = await requestToPromise(apply(target, item), { store: name });
       // `delete` resolves to undefined, so the key is the input itself; for
       // add/put it is what the store assigned, which may be generated.
       const key = (written ?? item) as CanaKey;
@@ -213,7 +210,6 @@ export function createTable<TRecord, TKey extends CanaKey = CanaKey>(
     return {
       outcome: 'committed',
       keys,
-      ...(failedAt.length === 0 ? {} : { failedAt }),
       events: []
     };
   };

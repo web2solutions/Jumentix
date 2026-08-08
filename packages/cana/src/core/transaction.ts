@@ -135,12 +135,10 @@ export async function runTransaction<TResult>(
     // Abort explicitly rather than letting the transaction commit whatever
     // succeeded before the failure. A half-applied batch that reports success is
     // the worst of the available outcomes.
-    if (settled === undefined) {
-      try {
-        transaction.abort();
-      } catch {
-        // Already finishing; the settled state below is what counts.
-      }
+    try {
+      transaction.abort();
+    } catch {
+      // Already finishing; the settled state below is what counts.
     }
   }
 
@@ -165,7 +163,7 @@ export async function runTransaction<TResult>(
   throw canaError(
     'TransactionAborted',
     `Transaction over [${stores.join(', ')}] ${ending === 'abort' ? 'was aborted' : 'failed'} `
-        + 'before committing. Nothing was written.',
+      + 'before committing. Nothing was written.',
     { cause: transaction.error }
   );
 }

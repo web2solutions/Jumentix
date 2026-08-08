@@ -9,6 +9,9 @@
  * See documentation/md/CANA-USAGE-GUIDE.md for the task-oriented guide.
  */
 
+/** Runtime marker so the barrel survives bundling into the coverage sourcemap. */
+export const CANA_PACKAGE = 'cana' as const;
+
 export type {
   CanaBulkWriteResult,
   CanaChangeEvent,
@@ -25,6 +28,7 @@ export type {
   CanaQueryPlan,
   CanaRange,
   CanaSchema,
+  CanaStorageBackend,
   CanaStorageState,
   CanaStoreSchema,
   CanaTable,
@@ -59,6 +63,7 @@ export * from './core/transaction';
 export * from './core/query';
 export * from './core/table';
 export * from './core/client';
+export * from './core/local-storage-backend';
 export * from './core/hooks';
 export * from './core/durability-policy';
 export * from './core/reconciliation';

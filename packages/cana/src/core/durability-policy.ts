@@ -22,9 +22,10 @@
  *    origin. Reporting that as "not evicted" is a claim the engine cannot
  *    support (see JUM-560).
  *
- * The policy deliberately has no `recover()`. Under the no-fallback decision
- * there is no second store to fall back to, so the only honest recovery path is
- * the application's own export/import — `CanaClient.exportAll()`.
+ * The policy deliberately has no `recover()` that mutates stores. When the
+ * localStorage fallback is active the assessment reports `best-effort` /
+ * degraded capacity; promoting data still goes through the application's own
+ * export/import — `CanaClient.exportAll()`.
  */
 
 import type { CanaStorageState } from '../contracts';
