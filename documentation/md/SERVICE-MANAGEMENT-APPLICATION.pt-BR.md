@@ -26,6 +26,11 @@ armazenamento `IDesignerStore` estão documentados em
 O que as exportações de contrato garantem — e as verificações que o comprovam —
 está documentado em
 [Garantias de paridade de contratos do Service Management](./SERVICE-MANAGEMENT-CONTRACT-PARITY.pt-BR.md).
+O console de operações — Service Configuration, o editor de ambiente de
+runtime, a prévia do ecossistema PM2 e o Deploy Management, com a matriz de
+capacidades compartilhada do Requisito 059 e as regras de ciclo de vida — está
+documentado em
+[Console de operações do Service Management](./SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.pt-BR.md).
 
 ## Guias
 

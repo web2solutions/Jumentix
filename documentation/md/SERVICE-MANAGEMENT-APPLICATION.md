@@ -22,6 +22,10 @@ contract are documented in
 What the contract exports guarantee — and the checks that prove it — are
 documented in
 [Service Management Contract Parity Guarantees](./SERVICE-MANAGEMENT-CONTRACT-PARITY.md).
+The operations console — Service Configuration, the runtime-environment
+editor, the PM2 ecosystem preview and Deploy Management, with the shared
+Requirement 059 capabilities matrix and the lifecycle rules — is documented in
+[Service Management Operations Console](./SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.md).
 
 ## Tabs
 
