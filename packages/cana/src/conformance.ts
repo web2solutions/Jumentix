@@ -322,10 +322,10 @@ export async function runConformance(
     async () => {
       const client = await open();
       const state = await client.storageState();
-      // IndexedDB path reports a boolean; the localStorage arm below covers
-      // `persistent === 'unknown'` without short-circuiting this assert.
+      // WebKit often has no working `navigator.storage.persisted`, so the engine
+      // correctly reports `'unknown'`. Chrome/Firefox usually return a boolean.
       assert(
-        state.persistent === true || state.persistent === false,
+        state.persistent === true || state.persistent === false || state.persistent === 'unknown',
         `persistent was ${String(state.persistent)}`
       );
       await client.close();

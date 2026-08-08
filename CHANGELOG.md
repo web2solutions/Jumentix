@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-08 fix(cana): make private-mode fallback test engine-portable (JUM-615) - Eduardo A.
 - 2026-08-08 chore(cana): register JUM-615 Cypress specs in test-map - Eduardo A.
 - 2026-08-08 chore(cana): satisfy ESLint on JUM-615 fallback and coverage files - Eduardo A.
 - 2026-08-08 feat(cana): localStorage fallback, real Workers, 100% src coverage (JUM-615) - Eduardo A.
