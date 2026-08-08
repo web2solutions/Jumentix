@@ -22,14 +22,27 @@ const https = require('https');
  */
 function readLinearKey(root = process.cwd()) {
   if (process.env.LINEAR_API_KEY) return process.env.LINEAR_API_KEY.trim();
-  const candidates = [
-    path.resolve(root, '../.linear'),
-    path.resolve(root, '../../.linear')
-  ];
-  for (const candidate of candidates) {
-    if (fs.existsSync(candidate)) return fs.readFileSync(candidate, 'utf8').trim();
+
+  // Ancestors rather than two fixed relative paths. The old `../.linear` and
+  // `../../.linear` were written for a checkout sitting one level below the
+  // directory holding the file; Requirement 114 moved agents to
+  // `<root>/<agent>/Jumentix`, which puts it three levels up, so the fallback
+  // had silently stopped finding anything. Walking up keeps it working at
+  // whatever depth the workspace is nested, and stops at the filesystem root.
+  let current = path.resolve(root);
+  for (;;) {
+    const parent = path.dirname(current);
+    if (parent === current) return null;
+    const candidate = path.join(parent, '.linear');
+    if (fs.existsSync(candidate)) {
+      // The file is `KEY=value` locally and a bare token in other setups; both
+      // reduce to the token, and it is never logged or written anywhere.
+      const contents = fs.readFileSync(candidate, 'utf8').trim();
+      const assignment = /^[A-Z_]+\s*=\s*(.+)$/m.exec(contents);
+      return (assignment ? assignment[1] : contents).trim().replace(/^["']|["']$/g, '');
+    }
+    current = parent;
   }
-  return null;
 }
 
 function linearRequest(apiKey, query, variables) {

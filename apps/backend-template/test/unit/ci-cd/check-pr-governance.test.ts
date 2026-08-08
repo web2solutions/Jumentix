@@ -436,3 +436,77 @@ describe('child task project membership (JUM-627)', () => {
     expect(failures[0]).toContain('no Linear credential');
   });
 });
+
+/**
+ * JUM-627 — the local credential fallback finds the file at any depth.
+ *
+ * It used to try exactly `../.linear` and `../../.linear`, which fitted a
+ * checkout one level below the directory holding the file. Requirement 114
+ * moved agents to `<root>/<agent>/Jumentix`, putting it three levels up, and the
+ * fallback had silently found nothing since — including for
+ * `quarantine-flake.js --create-issue`, which shares this reader.
+ */
+describe('linear credential fallback (JUM-627)', () => {
+  const { readLinearKey } = require('../../../../../ci-cd/lib/linear.js');
+
+  const withoutEnvKey = <T>(body: () => T): T => {
+    const previous = process.env.LINEAR_API_KEY;
+    delete process.env.LINEAR_API_KEY;
+    try {
+      return body();
+    } finally {
+      if (previous === undefined) delete process.env.LINEAR_API_KEY;
+      else process.env.LINEAR_API_KEY = previous;
+    }
+  };
+
+  const withEnvKey = <T>(value: string, body: () => T): T => {
+    const previous = process.env.LINEAR_API_KEY;
+    process.env.LINEAR_API_KEY = value;
+    try {
+      return body();
+    } finally {
+      if (previous === undefined) delete process.env.LINEAR_API_KEY;
+      else process.env.LINEAR_API_KEY = previous;
+    }
+  };
+
+  it('walks up to the file and reads the token out of a KEY=value line', () => {
+    expect.hasAssertions();
+
+    const base = prFs.mkdtempSync(prPath.join(prOs.tmpdir(), 'jum627-key-'));
+    const nested = prPath.join(base, 'XpertMinds', 'agent-001', 'Jumentix');
+    prFs.mkdirSync(nested, { recursive: true });
+    prFs.writeFileSync(prPath.join(base, '.linear'), 'LINEAR_API_KEY=lin_api_fixture\n');
+
+    // Three levels up: the depth the old two-path fallback could not reach.
+    expect(withoutEnvKey(() => readLinearKey(nested))).toBe('lin_api_fixture');
+
+    prFs.rmSync(base, { recursive: true, force: true });
+  });
+
+  it('accepts a bare token and returns null when there is no file', () => {
+    expect.hasAssertions();
+
+    const base = prFs.mkdtempSync(prPath.join(prOs.tmpdir(), 'jum627-bare-'));
+    const nested = prPath.join(base, 'repo');
+    prFs.mkdirSync(nested, { recursive: true });
+    prFs.writeFileSync(prPath.join(base, '.linear'), '  lin_api_bare  ');
+
+    expect(withoutEnvKey(() => readLinearKey(nested))).toBe('lin_api_bare');
+
+    prFs.rmSync(prPath.join(base, '.linear'));
+    // No file anywhere above a temp directory: null, not a throw and not a hang
+    // walking to the filesystem root.
+    expect(withoutEnvKey(() => readLinearKey(nested))).toBeNull();
+
+    prFs.rmSync(base, { recursive: true, force: true });
+  });
+
+  it('prefers the environment variable over any file', () => {
+    expect.hasAssertions();
+
+    expect(withEnvKey('lin_api_from_env', () => readLinearKey('/nonexistent')))
+      .toBe('lin_api_from_env');
+  });
+});
