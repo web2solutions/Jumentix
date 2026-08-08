@@ -731,6 +731,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/service-management/pwaShell.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/pwaShell.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/service-management/mvp.roadmap.features.test.ts",
       "path": "apps/backend-template/test/unit/service-management/mvp.roadmap.features.test.ts",
       "layer": "service-management/designer",
@@ -1542,6 +1552,19 @@
       "id": "apps/backend-template/test/integration/ServiceManagement/pm2Ecosystem.integration.test.ts",
       "path": "apps/backend-template/test/integration/ServiceManagement/pm2Ecosystem.integration.test.ts",
       "layer": "service-management/server",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/ServiceManagement/pwaShell.browser.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/pwaShell.browser.integration.test.ts",
+      "layer": "service-management/designer",
       "kind": "non-hexagonal",
       "type": "integration",
       "adapter": "service-management",
@@ -3297,9 +3320,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 163,
-    "integration": 89,
+    "unit": 164,
+    "integration": 90,
     "smoke": 2,
-    "suites": 274
+    "suites": 276
   }
 }

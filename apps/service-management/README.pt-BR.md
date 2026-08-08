@@ -130,6 +130,83 @@ A seleção de modo é configuração explícita, não inferida apenas de `NODE_
 - Não definido — o padrão deriva de `NODE_ENV`: `dev`/`development` =>
   `on-miss`, qualquer outro valor => `boot-only`.
 
+## Shell PWA
+
+O designer é um PWA instalável (JUM-489). O shell é composto por:
+
+- `manifest.webmanifest` — nome, ícones (`icons/`), tema, exibição
+  `standalone`, URL inicial/escopo `./`. Servido como
+  `application/manifest+json`.
+- `sw.js` — o service worker do app-shell. Um script CLÁSSICO (não um
+  módulo), servido a partir da raiz do aplicativo para que seu escopo seja o
+  aplicativo inteiro.
+- `src/pwa/pwaShell.js` — registro no lado da página, o aviso de atualização
+  e o caminho de recuperação, conectados por um pequeno módulo inline em
+  `index.html` (deliberadamente fora do `script.js`: o shell nunca reordena a
+  inicialização do designer).
+
+### Estratégia de cache
+
+O worker pré-armazena em cache APENAS o SHELL — HTML, CSS, o grafo de módulos
+JS, o manifesto e os ícones — sob um nome de cache VERSIONADO
+(`service-management-shell@<SHELL_VERSION>`), e serve essas entradas com
+cache-first. O `SHELL_VERSION` (em `sw.js`) é incrementado a cada mudança do
+shell, então uma atualização publicada nunca modifica o cache do qual a
+versão em execução é servida, e o `activate` exclui todos os caches
+`service-management-shell@*` obsoletos.
+
+Dados da aplicação NUNCA são armazenados em cache aqui: respostas de `/api/`,
+requisições não-GET e de origem cruzada passam direto para a rede e, offline,
+falham naturalmente. A persistência pertence ao Cana (JUM-483/484 — sem
+fallback); uma cópia de conveniência na Cache API seria um fallback pela
+porta dos fundos.
+
+A lista de pré-cache e o manifesto estático do servidor devem concordar sobre
+o que é o shell (JUM-463): a suíte de unidade garante que cada entrada
+pré-cacheada existe em disco, e o smoke de navegador requisita cada entrada
+contra o servidor real.
+
+### Fluxo de atualização
+
+Um shell cache-first é um cache sem expiração que o usuário não consegue ver
+— portanto o caminho de atualização é a substância, não um detalhe:
+
+1. Uma atualização publicada (um `sw.js` alterado) é instalada e AGUARDA; o
+   shell em execução continua servindo. Não há troca silenciosa no meio de
+   uma edição.
+2. A página exibe um aviso: "A new version of Service Management is
+   available." — com "Reload to update", "Later" e "Reset app shell".
+3. Somente em "Reload to update" a página envia `SKIP_WAITING`; o worker em
+   espera é ativado, exclui caches obsoletos, assume os clientes, e a página
+   recarrega no `controllerchange`. "Later" adia: o worker em espera continua
+   lá no próximo carregamento, e o aviso retorna.
+
+### Escopo offline e a fronteira de armazenamento
+
+Com a rede desabilitada o SHELL carrega e permanece interativo — esse é todo
+o contrato offline. A disponibilidade dos dados é domínio do Cana, não do
+shell: o shell nunca mascara um banco de dados despejado como uma primeira
+execução, e nunca apresenta dados em cache próprios.
+
+O cache do service worker e o banco de dados Cana são armazenamentos
+DIFERENTES, mas o "limpar dados do site" do navegador remove AMBOS. A
+presença do shell nunca implica que os dados do designer estão seguros. A
+ação "Reset app shell" é o caminho de recuperação que não exige conhecimento
+de service worker: ela cancela o registro do worker, exclui APENAS os caches
+`service-management-shell@*` e recarrega — os dados do Cana permanecem
+intocados.
+
+### Testes do PWA
+
+- Unidade: `apps/backend-template/test/unit/service-management/pwaShell.test.ts`
+  (handlers do worker, fluxo de atualização, recuperação — com fakes
+  injetados).
+- Smoke de navegador:
+  `apps/backend-template/test/integration/ServiceManagement/pwaShell.browser.integration.test.ts`
+  (tipos de conteúdo do manifesto/worker, concordância pré-cache↔manifesto
+  estático, registro, carregamento offline do shell com o servidor parado, o
+  fluxo completo de atualização com limpeza de caches obsoletos).
+
 ## API de ambiente de tempo de execução
 
 Integrada em `apps/service-management/server.js`:

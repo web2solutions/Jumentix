@@ -76,6 +76,7 @@ function classifyUnit(file) {
  */
 const SERVICE_MANAGEMENT_INTEGRATION_AREA = {
   'domainDesigner.smoke.test.ts': 'service-management/designer',
+  'pwaShell.browser.integration.test.ts': 'service-management/designer',
   'spaBoot.browser.integration.test.ts': 'service-management/designer',
   'canaMigration.browser.integration.test.ts': 'service-management/designer',
   'runtimeEnv.integration.test.ts': 'service-management/server',

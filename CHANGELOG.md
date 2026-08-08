@@ -4,6 +4,9 @@
 
 ## All Changes
 
+- 2026-08-08 feat(JUM-489): installable PWA shell with service worker and manifest - Eduardo A.
+- 2026-08-08 feat(JUM-484): one-way migration of service-management.v1 from localStorage to Cana (no fallback) (#120) - Eduardo A.
+- 2026-08-08 docs(JUM-482): document E5 operations console (EN/PT-BR) (#119) - Eduardo A.
 - 2026-08-07 [JUM-483][Feature] CanaDesignerStore adapter over the Cana client (#116) - Eduardo A.
 - 2026-08-07 [JUM-624][Fix] Close the redis connection the integration suite leaks (#117) - Eduardo A.
 - 2026-08-07 chore(release): reconcile main into dev before promotion - Eduardo A.

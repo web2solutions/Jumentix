@@ -3,7 +3,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0f172a" />
   <title>Service Management</title>
+  <!-- PWA shell (JUM-489): installable manifest + icons. The service worker
+       registration lives in the inline module at the end of <body>. -->
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
@@ -607,5 +613,13 @@
     }
   </script>
   <script type="module" src="./script.js"></script>
+  <!-- PWA shell registration (JUM-489). Kept out of script.js on purpose:
+       the service worker owns installability and shell caching, orthogonal to
+       the designer boot — this snippet never reorders load → wire → render.
+       The update prompt and the recovery path live in src/pwa/pwaShell.js. -->
+  <script type="module">
+    import { registerPwaShell } from './src/pwa/pwaShell.js';
+    registerPwaShell();
+  </script>
 </body>
 </html>

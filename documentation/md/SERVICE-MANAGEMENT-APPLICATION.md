@@ -120,6 +120,14 @@ The app state persists in Cana (IndexedDB). JUM-484's one-way migration moved
 the legacy browser `localStorage` payload across at boot — byte copy, same
 pinned keys, no fallback to localStorage.
 
+The designer is also an installable PWA (JUM-489): `manifest.webmanifest`, a
+classic app-shell service worker (`sw.js`) with a versioned, cleanable cache,
+and a user-visible update prompt — no silent swap mid-edit. The shell caches
+only HTML/CSS/JS/manifest/icons; application data stays with the designer
+store (Cana lane), never in the service worker. The full strategy — update
+flow, offline scope, storage boundary and recovery path — is documented in
+the [Service Management App README — PWA Shell](../../apps/service-management/README.md#pwa-shell).
+
 Recommended dev path:
 
 1. `bun run dev:service-management`
