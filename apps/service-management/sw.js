@@ -51,7 +51,7 @@
 
 /* eslint-env serviceworker, node */
 
-const SHELL_VERSION = '0.1.0';
+const SHELL_VERSION = '0.1.1';
 
 // Prefix shared with src/pwa/pwaShell.js (the page-side reset deletes by
 // prefix). The two copies cannot import each other — a classic worker has no
@@ -81,6 +81,7 @@ const SHELL_ASSETS = [
   './src/model/rbacContract.js',
   './src/pwa/pwaShell.js',
   './src/state/designerState.js',
+  './src/state/designerSync.js',
   './src/store/CanaDesignerStore.js',
   './src/store/canaMigration.js',
   './src/store/designerStoreFactory.js',
