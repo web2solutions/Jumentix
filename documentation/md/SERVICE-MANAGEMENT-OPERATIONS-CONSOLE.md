@@ -8,7 +8,8 @@ service — exactly as the code behaves today, after the operations-console lane
 ([JUM-480](https://linear.app/jumentix/issue/JUM-480/feature-real-multi-environment-editing-and-pm2-ecosystem-preview),
 [JUM-481](https://linear.app/jumentix/issue/JUM-481/feature-deploy-management-aligned-to-req-059-matrix-with-per-service),
 [JUM-543](https://linear.app/jumentix/issue/JUM-543/fix-replace-blocking-alerts-with-non-blocking-status-surfaces-and),
-[JUM-544](https://linear.app/jumentix/issue/JUM-544/fix-service-configuration-validation-port-conflicts-and-run-mode))
+[JUM-544](https://linear.app/jumentix/issue/JUM-544/fix-service-configuration-validation-port-conflicts-and-run-mode),
+[JUM-546](https://linear.app/jumentix/issue/JUM-546/feature-deploy-target-lifecycle-edit-duplicate-and-field-validation))
 landed.
 
 The console spans the **Service Configuration** tab (runtime profile, the PM2
@@ -262,6 +263,50 @@ backward-compatible extension of the storage schema (Requirement 126, Contract
 and the load-migration coverage in
 [`designerState.test.ts`](../../apps/backend-template/test/unit/service-management/designerState.test.ts).
 
+## Deploy target lifecycle: edit, duplicate and field validation (JUM-546)
+
+JUM-481 owns what a target may contain; JUM-546 owns how targets are managed.
+The tab's full lifecycle is **add, edit-in-place, duplicate and delete**:
+
+- **Edit-in-place.** `Edit` loads the entry into the form; the add button
+  becomes `Save Target` (with a `Cancel Edit` affordance) and the same
+  validation gate applies to the replacement. An edit may keep its own name —
+  the uniqueness check excludes the entry being replaced — and deleting an
+  entry mid-edit cancels the edit (or re-points the index) instead of writing
+  over another target.
+- **Duplicate.** `Duplicate` stores an independent **deep copy** — never a
+  shared reference — renamed by the ` (copy)` rule (`name (copy)`, then
+  `name (copy 2)`, … until unique, compared case-insensitively). Deploy
+  targets are the one thing operators create in near-identical sets (the same
+  service across staging and production, the same configuration across
+  regions); duplication is the primary defence against the retyping
+  inconsistencies the field validation then has to catch.
+- **Field validation** — `collectDeployTargetFieldIssues` in
+  [`deployTargetLifecycleValidation.js`](../../apps/service-management/src/validation/deployTargetLifecycleValidation.js),
+  run at the add/edit gate next to the JUM-481 matrix rules: the name is
+  required and unique; the runtime/version is required and must match a
+  name-plus-version pattern (`nodejs22.x`, `python3.12` — free text like
+  `latest` is rejected); the region is required on every cloud target and
+  optional on the self-hosted Dedicated Server (SSH) row, where the field may
+  carry host information instead. The self-hosted set is read from the shared
+  matrix reader (`SELF_HOSTED_DEPLOY_TARGETS` in
+  [`deployCapabilityMatrix.js`](../../apps/service-management/src/model/deployCapabilityMatrix.js)),
+  never transcribed. Every rejection names the reason on the JUM-543 status
+  surface, and the candidate never touches state.
+- **Target-type-aware field hints.** The hint line under the form
+  (`deployTargetFieldHint`) follows the selected matrix row: PM2-managed
+  targets (VM/dedicated rows) are pointed at host information and the PM2
+  profile; function providers at the runtime/version, with the PM2-profile
+  select disabled and cleared — a PM2 profile does not apply.
+
+**Proven by:**
+[`deployTargetLifecycle.test.ts`](../../apps/backend-template/test/unit/service-management/deployTargetLifecycle.test.ts)
+(the rules as pure functions) and
+[`deployTargetLifecycle.browser.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/deployTargetLifecycle.browser.integration.test.ts)
+(the real UI in WebKit: validated add, rejection reasons on the status
+region, the ` (copy)` renaming rule, edit-in-place independence, the per-type
+region rule, and the hint/PM2-select behaviour).
+
 ## Lifecycle rules — what exists today, and what is open
 
 The issue chain reserves full lifecycle (edit-in-place, duplicate, field-level
@@ -269,9 +314,9 @@ validation, uniqueness) for both console lists to
 [JUM-545](https://linear.app/jumentix/issue/JUM-545/feature-interface-adapter-lifecycle-edit-in-place-uniqueness-and)
 (interface adapters) and
 [JUM-546](https://linear.app/jumentix/issue/JUM-546/feature-deploy-target-lifecycle-edit-duplicate-and-field-validation)
-(deploy targets). **Neither has landed** — this section records the lifecycle
-the code actually implements today, so the gap is legible rather than
-discovered by clicking.
+(deploy targets). **JUM-546 has landed** (the section above); JUM-545 is
+still open — this section records the lifecycle the code actually implements
+today, so the remaining gap is legible rather than discovered by clicking.
 
 **Interface adapters (Communication Interface Designer).** Today an adapter is
 **added** and **deleted** — nothing else. The add gate
@@ -281,15 +326,11 @@ controller }` entry is stored; there is no edit-in-place, no duplicate, and no
 uniqueness constraint — two identical adapters can be registered. JUM-545 owns
 the missing rules, including the uniqueness constraints and their reasons.
 
-**Deploy targets (Deploy Management).** Today a target is **added** and
-**deleted**. The add gate (`script.js`) requires name, region and runtime and
-records the chosen deploy target (the select carries the matrix spellings
-since JUM-481); the entry is stored in the legacy field layout and **migrates
-to the full metadata contract on the next load** (above), and until then the
-list flags it exactly as it flags any entry the contract does not recognize.
-Field-level validation of the six metadata fields at add time, edit and
-duplicate are JUM-546's scope — the validation module's own header reserves
-required-field presence and lifecycle for it.
+**Deploy targets (Deploy Management).** The full lifecycle has landed with
+JUM-546 — **add, edit-in-place, duplicate and delete**, with field-level
+validation (unique name, runtime/version pattern, region per target type) at
+the add/edit gate and the ` (copy)` renaming rule on duplicates. See the
+JUM-546 section above.
 
 The reason this honest-gap section exists at all: the console's lists are the
 surfaces where a design becomes an operational intent, and an entry that only
@@ -343,10 +384,10 @@ same model:
 ## References
 
 - Shared matrix reader: [`deployCapabilityMatrix.js`](../../apps/service-management/src/model/deployCapabilityMatrix.js); matrix documents: [Deploy Target and Packaging Matrix](./JUMENTIX-DEPLOY-TARGET-AND-PACKAGING-MATRIX.md), [Service Factory Capabilities Matrix](./JUMENTIX-SERVICE-FACTORY-CAPABILITIES-MATRIX.md)
-- Validators: [`serviceConfigurationValidation.js`](../../apps/service-management/src/validation/serviceConfigurationValidation.js), [`deployTargetValidation.js`](../../apps/service-management/src/validation/deployTargetValidation.js)
+- Validators: [`serviceConfigurationValidation.js`](../../apps/service-management/src/validation/serviceConfigurationValidation.js), [`deployTargetValidation.js`](../../apps/service-management/src/validation/deployTargetValidation.js), [`deployTargetLifecycleValidation.js`](../../apps/service-management/src/validation/deployTargetLifecycleValidation.js)
 - Server endpoints: [`server.js`](../../apps/service-management/server.js); UI glue: [`script.js`](../../apps/service-management/script.js), [`inspectors.js`](../../apps/service-management/src/ui/inspectors.js), state/migration: [`designerState.js`](../../apps/service-management/src/state/designerState.js)
 - Ecosystem sources: [`pm2/ecosystem.dev.cjs`](../../pm2/ecosystem.dev.cjs), [`pm2/ecosystem.staging.cjs`](../../pm2/ecosystem.staging.cjs), [`pm2/ecosystem.production.cjs`](../../pm2/ecosystem.production.cjs)
-- Suites: [`serviceConfigurationValidation.test.ts`](../../apps/backend-template/test/unit/service-management/serviceConfigurationValidation.test.ts), [`deployTargetValidation.test.ts`](../../apps/backend-template/test/unit/service-management/deployTargetValidation.test.ts), [`designerState.test.ts`](../../apps/backend-template/test/unit/service-management/designerState.test.ts), [`pm2EcosystemUi.contract.test.ts`](../../apps/backend-template/test/unit/service-management/pm2EcosystemUi.contract.test.ts), [`runtimeEnvUi.contract.test.ts`](../../apps/backend-template/test/unit/service-management/runtimeEnvUi.contract.test.ts), [`pm2Ecosystem.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/pm2Ecosystem.integration.test.ts), [`runtimeEnv.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/runtimeEnv.integration.test.ts), [`runtimeEnvContract.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/runtimeEnvContract.integration.test.ts)
+- Suites: [`serviceConfigurationValidation.test.ts`](../../apps/backend-template/test/unit/service-management/serviceConfigurationValidation.test.ts), [`deployTargetValidation.test.ts`](../../apps/backend-template/test/unit/service-management/deployTargetValidation.test.ts), [`deployTargetLifecycle.test.ts`](../../apps/backend-template/test/unit/service-management/deployTargetLifecycle.test.ts), [`designerState.test.ts`](../../apps/backend-template/test/unit/service-management/designerState.test.ts), [`pm2EcosystemUi.contract.test.ts`](../../apps/backend-template/test/unit/service-management/pm2EcosystemUi.contract.test.ts), [`runtimeEnvUi.contract.test.ts`](../../apps/backend-template/test/unit/service-management/runtimeEnvUi.contract.test.ts), [`pm2Ecosystem.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/pm2Ecosystem.integration.test.ts), [`runtimeEnv.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/runtimeEnv.integration.test.ts), [`runtimeEnvContract.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/runtimeEnvContract.integration.test.ts), [`deployTargetLifecycle.browser.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/deployTargetLifecycle.browser.integration.test.ts)
 - Requirements: [126](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md) (Contracts 1, 1b and 2), [059](../../.agents/requirements/software/059-jumentix-service-factory-and-deploy-template-matrices.md) (the deploy and factory matrices), [076](../../.agents/requirements/project/076-task-documentation-and-bilingual-governance.md) (EN/PT parity)
 - Sibling E-chain documents: [Runtime Environment Contracts](./RUNTIME-ENVIRONMENT-CONTRACTS.md) (E1), [Service Management Module Architecture](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.md) (E3), [Service Management Contract Parity Guarantees](./SERVICE-MANAGEMENT-CONTRACT-PARITY.md) (E4), [Service Management Application](./SERVICE-MANAGEMENT-APPLICATION.md), [Domain Designer Features and Usage](./DOMAIN-DESIGNER-FEATURES-AND-USAGE.md)
 - Linear: [JUM-480](https://linear.app/jumentix/issue/JUM-480/feature-real-multi-environment-editing-and-pm2-ecosystem-preview), [JUM-481](https://linear.app/jumentix/issue/JUM-481/feature-deploy-management-aligned-to-req-059-matrix-with-per-service), [JUM-543](https://linear.app/jumentix/issue/JUM-543/fix-replace-blocking-alerts-with-non-blocking-status-surfaces-and), [JUM-544](https://linear.app/jumentix/issue/JUM-544/fix-service-configuration-validation-port-conflicts-and-run-mode), [JUM-545](https://linear.app/jumentix/issue/JUM-545/feature-interface-adapter-lifecycle-edit-in-place-uniqueness-and), [JUM-546](https://linear.app/jumentix/issue/JUM-546/feature-deploy-target-lifecycle-edit-duplicate-and-field-validation), [JUM-547](https://linear.app/jumentix/issue/JUM-547/feature-full-suite-exportimport-carry-interfaces-service-configuration), [JUM-464](https://linear.app/jumentix/issue/JUM-464/docs-e1-documentation-enpt-runtime-env-contract-and-fixed-paths), [JUM-33](https://linear.app/jumentix/issue/JUM-33/refactor-migrate-internal-development-cli-and-pm2-workflows-to-bun), [JUM-40](https://linear.app/jumentix/issue/JUM-40/release-complete-the-bun-only-internal-tooling-cutover)

@@ -51,7 +51,7 @@
 
 /* eslint-env serviceworker, node */
 
-const SHELL_VERSION = '0.2.0';
+const SHELL_VERSION = '0.3.0';
 
 // Prefix shared with src/pwa/pwaShell.js (the page-side reset deletes by
 // prefix). The two copies cannot import each other — a classic worker has no
@@ -95,6 +95,7 @@ const SHELL_ASSETS = [
   './src/ui/inspectors.js',
   './src/ui/tabs.js',
   './src/validation/asyncApi30Validation.js',
+  './src/validation/deployTargetLifecycleValidation.js',
   './src/validation/deployTargetValidation.js',
   './src/validation/modelValidation.js',
   './src/validation/serviceConfigurationValidation.js',

@@ -109,6 +109,13 @@ recovery path — is documented in
      PM2-managed targets) are rejected on the non-blocking status surface
      with the violated constraint named. Legacy targets persisted before this
      alignment migrate forward on load.
+   - Lifecycle (JUM-546): targets are editable in place and duplicable — a
+     duplicate is an independent deep copy renamed by the ` (copy)` rule. The
+     add/edit gate also enforces the field rules: a required, unique name; a
+     name-plus-version runtime pattern (`nodejs22.x`); and a region required
+     on cloud targets (optional on the self-hosted dedicated server, where
+     the field carries host information). Target-type-aware hints guide the
+     form, and every rejection names the reason on the status surface.
 
 Detailed usage guide:
 

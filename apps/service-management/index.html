@@ -532,7 +532,7 @@
     <section id="tab-deploy-management" class="tab-section" role="tabpanel" aria-labelledby="tab-deploy-management-btn">
       <div class="tab-body">
         <h2>Deploy Management</h2>
-        <p class="hint">Register and track deployment targets for monoliths, APIs, and function sets. Each target carries the Requirement 059 per-service metadata, validated against the deploy matrix.</p>
+        <p class="hint">Register and track deployment targets for monoliths, APIs, and function sets. Each target carries the Requirement 059 per-service metadata, validated against the deploy matrix. Targets can be edited in place and duplicated; a duplicate is an independent copy renamed by the " (copy)" rule.</p>
         <section class="panel">
           <h3>Deployment Target</h3>
           <div class="responsive-grid">
@@ -610,7 +610,9 @@
           <div class="row">
             <input id="deploy-runtime-input" type="text" placeholder="Runtime/version, e.g. nodejs22.x" aria-label="Runtime/version" />
             <button id="add-deploy-target-btn" type="button">Add Target</button>
+            <button id="cancel-deploy-target-edit-btn" type="button" hidden>Cancel Edit</button>
           </div>
+          <p id="deploy-field-hint" class="hint"></p>
           <ul id="deploy-target-list" class="list"></ul>
         </section>
       </div>
