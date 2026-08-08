@@ -110,6 +110,11 @@ jobs:
           command: |
             export FIREBASE_SERVICE_ACCOUNT_KEY="${FIREBASE_SERVICE_ACCOUNT_KEY:-}"
             export GH_TOKEN="${GH_TOKEN:-${GITHUB_TOKEN:-${AGENT_REGISTRY_TOKEN:-}}}"
+            # JUM-627: pr:governance:check resolves the child task issue in
+            # Linear to confirm it is in the epic the body names. Without this
+            # the check cannot verify membership, and it fails rather than
+            # passing on a lookup it never made.
+            export LINEAR_API_KEY="${LINEAR_API_KEY:-}"
             if [ -n "${CIRCLE_PULL_REQUEST:-}" ]; then
               export JUMENTIX_QUALITY_GATE_TARGET="${CIRCLE_PR_BASE_BRANCH:-dev}"
               export AAA_CI_IS_PULL_REQUEST=1

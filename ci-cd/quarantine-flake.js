@@ -10,8 +10,10 @@
  */
 const fs = require('fs');
 const path = require('path');
-const https = require('https');
 const { isEntryPoint } = require('./lib/entry-point.js');
+// JUM-627: one copy of the credential reader and the transport, shared with
+// check-pr-governance.js.
+const { linearRequest, readLinearKey } = require('./lib/linear.js');
 
 function parseArgs(argv) {
   const out = { createIssue: false };
@@ -24,49 +26,6 @@ function parseArgs(argv) {
     else if (arg === '--project') out.project = argv[++i];
   }
   return out;
-}
-
-function readLinearKey(root) {
-  if (process.env.LINEAR_API_KEY) return process.env.LINEAR_API_KEY.trim();
-  const candidates = [
-    path.resolve(root, '../.linear'),
-    path.resolve(root, '../../.linear')
-  ];
-  for (const candidate of candidates) {
-    if (fs.existsSync(candidate)) return fs.readFileSync(candidate, 'utf8').trim();
-  }
-  return null;
-}
-
-function linearRequest(apiKey, query, variables) {
-  const body = JSON.stringify({ query, variables });
-  return new Promise((resolve, reject) => {
-    const req = https.request({
-      hostname: 'api.linear.app',
-      path: '/graphql',
-      method: 'POST',
-      headers: {
-        Authorization: apiKey,
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(body)
-      }
-    }, (res) => {
-      let data = '';
-      res.on('data', (chunk) => { data += chunk; });
-      res.on('end', () => {
-        try {
-          const parsed = JSON.parse(data);
-          if (parsed.errors) reject(new Error(JSON.stringify(parsed.errors)));
-          else resolve(parsed.data);
-        } catch (error) {
-          reject(error);
-        }
-      });
-    });
-    req.on('error', reject);
-    req.write(body);
-    req.end();
-  });
 }
 
 async function createLinearIssue(apiKey, { title, description, projectId }) {
