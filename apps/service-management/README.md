@@ -111,6 +111,12 @@ sample is ordinary domain/entity deletion. Content is defined in
      serverless targets are rejected on the status surface with the
      constraint named. Targets persisted before this alignment migrate
      forward on load.
+   - Lifecycle (JUM-546): targets are editable in place and duplicable — a
+     duplicate is an independent deep copy renamed by the ` (copy)` rule. The
+     add/edit gate enforces the field rules too: unique name, a
+     name-plus-version runtime pattern (`nodejs22.x`), and region required on
+     cloud targets (optional on the self-hosted dedicated server, where the
+     field carries host information), with target-type-aware field hints.
 
 ## Design System and Accessibility
 

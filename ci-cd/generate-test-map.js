@@ -81,6 +81,7 @@ const SERVICE_MANAGEMENT_INTEGRATION_AREA = {
   'firstRun.browser.integration.test.ts': 'service-management/designer',
   'canaMigration.browser.integration.test.ts': 'service-management/designer',
   'multiTabSync.browser.integration.test.ts': 'service-management/designer',
+  'deployTargetLifecycle.browser.integration.test.ts': 'service-management/designer',
   'offlinePersistenceMatrix.browser.integration.test.ts': 'service-management/designer',
   'runtimeEnv.integration.test.ts': 'service-management/server',
   'runtimeEnvContract.integration.test.ts': 'service-management/server',

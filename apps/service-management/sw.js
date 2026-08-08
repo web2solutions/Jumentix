@@ -98,6 +98,7 @@ const SHELL_ASSETS = [
   './src/ui/inspectors.js',
   './src/ui/tabs.js',
   './src/validation/asyncApi30Validation.js',
+  './src/validation/deployTargetLifecycleValidation.js',
   './src/validation/deployTargetValidation.js',
   './src/validation/modelValidation.js',
   './src/validation/serviceConfigurationValidation.js',

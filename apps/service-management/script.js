@@ -32,6 +32,7 @@ import {
   createDesignerState,
   defaultFields,
   normalizeContractInput,
+  normalizeDeploymentInput,
   normalizeField,
   normalizeOptionalNumber,
   normalizeRbacPolicyInput,
@@ -50,9 +51,16 @@ import {
   migrateLocalStorageToCana
 } from './src/store/canaMigration.js';
 import * as model from './src/model/modelQueries.js';
+import { isPm2ManagedDeployTarget } from './src/model/deployCapabilityMatrix.js';
 import { buildSampleModelPayload } from './src/model/sampleModel.js';
 import { collectModelIssues } from './src/validation/modelValidation.js';
 import { collectServiceConfigurationIssues } from './src/validation/serviceConfigurationValidation.js';
+import { collectDeployTargetIssues } from './src/validation/deployTargetValidation.js';
+import {
+  collectDeployTargetFieldIssues,
+  deployTargetFieldHint,
+  duplicateDeployTargetName
+} from './src/validation/deployTargetLifecycleValidation.js';
 import {
   buildBoilerplateBundleDocument,
   buildDomainPackageDocument,
@@ -162,7 +170,10 @@ const interaction = {
   panStartX: 0,
   panStartY: 0,
   scrollStartLeft: 0,
-  scrollStartTop: 0
+  scrollStartTop: 0,
+  // JUM-546: index into state.deployments of the target loaded into the form
+  // for edit-in-place; null means the form adds a new target.
+  editingDeploymentIndex: null
 };
 
 const dom = {
@@ -341,9 +352,16 @@ const dom = {
   runtimeEnvTargetFile: document.getElementById('runtime-env-target-file'),
   deployNameInput: document.getElementById('deploy-name-input'),
   deployTypeSelect: document.getElementById('deploy-type-select'),
+  deployServiceTypeSelect: document.getElementById('deploy-service-type-select'),
+  deployRuntimeProtocolSelect: document.getElementById('deploy-runtime-protocol-select'),
+  deployDatabaseDriverSelect: document.getElementById('deploy-database-driver-select'),
+  deployKeyvalueDriverSelect: document.getElementById('deploy-keyvalue-driver-select'),
+  deployPm2ProfileSelect: document.getElementById('deploy-pm2-profile-select'),
   deployRegionInput: document.getElementById('deploy-region-input'),
   deployRuntimeInput: document.getElementById('deploy-runtime-input'),
   addDeployTargetBtn: document.getElementById('add-deploy-target-btn'),
+  cancelDeployTargetEditBtn: document.getElementById('cancel-deploy-target-edit-btn'),
+  deployFieldHint: document.getElementById('deploy-field-hint'),
   deployTargetList: document.getElementById('deploy-target-list')
 };
 
@@ -382,7 +400,10 @@ const inspectors = createInspectors({
     renderRuntimeEnvironment,
     loadSchemaBaseline,
     showStatus,
-    getPm2EcosystemPreview
+    getPm2EcosystemPreview,
+    editDeployment,
+    duplicateDeployment,
+    syncDeploymentEditStateAfterRemoval
   }
 });
 
@@ -1910,6 +1931,137 @@ function render() {
   dom.redoBtn.disabled = history.future.length === 0;
 }
 
+// Deploy Management lifecycle (JUM-546). The form doubles as the add and the
+// edit-in-place surface: `interaction.editingDeploymentIndex === null` adds,
+// a number replaces that entry. Every mutation validates the full candidate —
+// the JUM-546 field rules (name required/unique, runtime/version pattern,
+// region per target type) next to the JUM-481 matrix-content rules — and a
+// rejection is announced on the JUM-543 status surface with every reason,
+// never alert() and never a silent no-op.
+
+function readDeployTargetForm() {
+  return normalizeDeploymentInput({
+    name: dom.deployNameInput.value,
+    region: dom.deployRegionInput.value,
+    runtime: dom.deployRuntimeInput.value,
+    deployTarget: dom.deployTypeSelect.value,
+    serviceType: dom.deployServiceTypeSelect?.value,
+    runtimeProtocol: dom.deployRuntimeProtocolSelect?.value,
+    databaseDriver: dom.deployDatabaseDriverSelect?.value,
+    keyValueDriver: dom.deployKeyvalueDriverSelect?.value,
+    pm2Profile: dom.deployPm2ProfileSelect?.value
+  });
+}
+
+/**
+ * Target-type-aware field guidance (JUM-546 scope 3): the hint line names
+ * what the selected matrix row needs — host information and a PM2 profile on
+ * PM2-managed targets, a runtime/version on function providers — and the PM2
+ * profile select only applies to PM2-managed targets.
+ */
+function updateDeployTargetFieldHints() {
+  const deployTarget = dom.deployTypeSelect?.value || '';
+  if (dom.deployFieldHint) {
+    dom.deployFieldHint.textContent = deployTargetFieldHint(deployTarget);
+  }
+  if (dom.deployPm2ProfileSelect) {
+    const pm2Managed = isPm2ManagedDeployTarget(deployTarget);
+    dom.deployPm2ProfileSelect.disabled = !pm2Managed;
+    if (!pm2Managed) dom.deployPm2ProfileSelect.value = '';
+  }
+}
+
+function clearDeployTargetForm() {
+  interaction.editingDeploymentIndex = null;
+  dom.deployNameInput.value = '';
+  dom.deployRegionInput.value = '';
+  dom.deployRuntimeInput.value = '';
+  dom.addDeployTargetBtn.textContent = 'Add Target';
+  if (dom.cancelDeployTargetEditBtn) dom.cancelDeployTargetEditBtn.hidden = true;
+}
+
+function submitDeployTargetForm() {
+  const candidate = readDeployTargetForm();
+  const issues = [
+    ...collectDeployTargetFieldIssues(candidate, state.deployments, {
+      excludeIndex: interaction.editingDeploymentIndex
+    }),
+    ...collectDeployTargetIssues(candidate)
+  ];
+  if (issues.length > 0) {
+    showStatus(issues.map((issue) => issue.message).join(' '));
+    return;
+  }
+  const editingIndex = interaction.editingDeploymentIndex;
+  withPersist(() => {
+    if (editingIndex === null || !state.deployments[editingIndex]) {
+      state.deployments.push(candidate);
+    } else {
+      state.deployments.splice(editingIndex, 1, candidate);
+    }
+    clearDeployTargetForm();
+    inspectors.renderDeployments();
+  }, { recordHistory: false });
+  if (editingIndex !== null) {
+    showStatus(`Deploy target "${candidate.name}" updated.`, 'info');
+  }
+}
+
+function editDeployment(index) {
+  const target = state.deployments[index];
+  if (!target) return;
+  interaction.editingDeploymentIndex = index;
+  dom.deployNameInput.value = target.name || '';
+  dom.deployTypeSelect.value = target.deployTarget || '';
+  if (dom.deployServiceTypeSelect) dom.deployServiceTypeSelect.value = target.serviceType || '';
+  if (dom.deployRuntimeProtocolSelect) dom.deployRuntimeProtocolSelect.value = target.runtimeProtocol || '';
+  if (dom.deployDatabaseDriverSelect) dom.deployDatabaseDriverSelect.value = target.databaseDriver || '';
+  if (dom.deployKeyvalueDriverSelect) dom.deployKeyvalueDriverSelect.value = target.keyValueDriver || '';
+  if (dom.deployPm2ProfileSelect) dom.deployPm2ProfileSelect.value = target.pm2Profile || '';
+  dom.deployRegionInput.value = target.region || '';
+  dom.deployRuntimeInput.value = target.runtime || '';
+  dom.addDeployTargetBtn.textContent = 'Save Target';
+  if (dom.cancelDeployTargetEditBtn) dom.cancelDeployTargetEditBtn.hidden = false;
+  updateDeployTargetFieldHints();
+  dom.deployNameInput.focus();
+}
+
+/**
+ * Duplicate a registered target: a DEEP copy (the duplicate is independently
+ * editable, never a shared reference), re-normalised to the pinned shape and
+ * renamed by the ` (copy)` rule until unique (JUM-546 acceptance criteria).
+ */
+function duplicateDeployment(index) {
+  const source = state.deployments[index];
+  if (!source) return;
+  const copy = normalizeDeploymentInput(JSON.parse(JSON.stringify(source)));
+  copy.name = duplicateDeployTargetName(source.name, state.deployments.map((entry) => entry.name));
+  // Inserting before the edited entry shifts its index; keep the edit pointed
+  // at the same target.
+  if (interaction.editingDeploymentIndex !== null && interaction.editingDeploymentIndex > index) {
+    interaction.editingDeploymentIndex += 1;
+  }
+  withPersist(() => {
+    state.deployments.splice(index + 1, 0, copy);
+    inspectors.renderDeployments();
+  }, { recordHistory: false });
+  showStatus(`Duplicated "${source.name}" as "${copy.name}".`, 'info');
+}
+
+/**
+ * Keep the in-flight edit consistent when the list removes an entry: removing
+ * the edited target cancels the edit; removing an earlier one shifts the
+ * edited index. Called by `renderDeployments`' delete gate.
+ */
+function syncDeploymentEditStateAfterRemoval(removedIndex) {
+  if (interaction.editingDeploymentIndex === null) return;
+  if (interaction.editingDeploymentIndex === removedIndex) {
+    clearDeployTargetForm();
+  } else if (interaction.editingDeploymentIndex > removedIndex) {
+    interaction.editingDeploymentIndex -= 1;
+  }
+}
+
 function wireEvents() {
   if (dom.tabDomainDesignerBtn) dom.tabDomainDesignerBtn.onclick = () => tabs.setActiveTab('domain-designer');
   if (dom.tabInterfaceDesignerBtn) dom.tabInterfaceDesignerBtn.onclick = () => tabs.setActiveTab('interface-designer');
@@ -2023,23 +2175,22 @@ function wireEvents() {
   }
 
   if (dom.addDeployTargetBtn) {
-    dom.addDeployTargetBtn.onclick = () => {
-      const name = String(dom.deployNameInput.value || '').trim();
-      const type = dom.deployTypeSelect.value;
-      const region = String(dom.deployRegionInput.value || '').trim();
-      const runtime = String(dom.deployRuntimeInput.value || '').trim();
-      if (!name || !region || !runtime) {
-        showStatus('Deployment name, region and runtime are required.');
-        return;
-      }
-      withPersist(() => {
-        state.deployments.push({ name, type, region, runtime });
-        dom.deployNameInput.value = '';
-        dom.deployRegionInput.value = '';
-        dom.deployRuntimeInput.value = '';
-        inspectors.renderDeployments();
-      }, { recordHistory: false });
+    // JUM-546: one gate for add and edit-in-place — the full candidate is
+    // validated (field lifecycle rules + Requirement 059 matrix rules) before
+    // it touches state; rejections report every reason on the status surface.
+    dom.addDeployTargetBtn.onclick = submitDeployTargetForm;
+  }
+
+  if (dom.cancelDeployTargetEditBtn) {
+    dom.cancelDeployTargetEditBtn.onclick = () => {
+      clearDeployTargetForm();
+      showStatus('Deploy target edit cancelled.', 'info');
     };
+  }
+
+  if (dom.deployTypeSelect) {
+    dom.deployTypeSelect.onchange = updateDeployTargetFieldHints;
+    updateDeployTargetFieldHints();
   }
 
   dom.addDomainBtn.onclick = () => {

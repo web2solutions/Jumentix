@@ -112,6 +112,13 @@ definido em `src/model/sampleModel.js`.
      serverless são rejeitados na superfície de status com a restrição
      nomeada. Alvos persistidos antes deste alinhamento migram no
      carregamento.
+   - Ciclo de vida (JUM-546): os alvos são editáveis in-place e duplicáveis —
+     uma duplicata é uma cópia profunda independente renomeada pela regra
+     ` (copy)`. O portão de adição/edição também impõe as regras de campo:
+     nome único, padrão de runtime nome-mais-versão (`nodejs22.x`) e região
+     obrigatória em alvos de nuvem (opcional no servidor dedicado
+     self-hosted, onde o campo carrega informação de host), com dicas de
+     campo por tipo de alvo.
 
 ## Design System e Acessibilidade
 
