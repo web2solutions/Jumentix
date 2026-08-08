@@ -841,6 +841,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/service-management/canaDesignerStore.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/canaDesignerStore.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/service-management/designerExporters.test.ts",
       "path": "apps/backend-template/test/unit/service-management/designerExporters.test.ts",
       "layer": "service-management/designer",
@@ -3254,9 +3264,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 160,
+    "unit": 161,
     "integration": 88,
     "smoke": 2,
-    "suites": 270
+    "suites": 271
   }
 }

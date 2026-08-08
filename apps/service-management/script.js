@@ -9,7 +9,8 @@
  * Module map (acyclic — imports only ever point downwards):
  *
  *   src/state/designerState.js        state, persistence, history, normalisers (DOM-free)
- *   src/store/*.js                    IDesignerStore port + transitional localStorage adapter (DOM-free)
+ *   src/store/*.js                    IDesignerStore port + localStorage (transitional) and Cana
+ *                                     adapters + selection seam (DOM-free)
  *   src/model/modelQueries.js         pure helpers over the model (DOM-free)
  *   src/validation/modelValidation.js collectModelIssues engine (DOM-free)
  *   src/exporters/designerExporters.js the 7 export document builders (DOM-free)
@@ -42,7 +43,7 @@ import {
   deriveTenantScoped,
   validateRbacRule
 } from './src/model/rbacContract.js';
-import { LocalStorageDesignerStore } from './src/store/LocalStorageDesignerStore.js';
+import { createDesignerStore } from './src/store/designerStoreFactory.js';
 import * as model from './src/model/modelQueries.js';
 import { collectModelIssues } from './src/validation/modelValidation.js';
 import { collectServiceConfigurationIssues } from './src/validation/serviceConfigurationValidation.js';
@@ -105,11 +106,13 @@ let runtimeEnvEditableKeys = Object.keys(RUNTIME_ENV_EDITABLE_DEFAULTS);
 
 // State, persistence, history and normalisation live in the DOM-free core
 // (src/state/designerState.js) behind the IDesignerStore port
-// (src/store/IDesignerStore.js). LocalStorageDesignerStore is TRANSITIONAL —
-// JUM-484's migration retires it; Cana has no fallback to localStorage.
+// (src/store/IDesignerStore.js). The store is chosen through the selection
+// seam (src/store/designerStoreFactory.js, JUM-483): the DEFAULT stays the
+// TRANSITIONAL LocalStorageDesignerStore until JUM-484's migration makes the
+// CanaDesignerStore sole — Cana has no fallback to localStorage.
 // `seed` and `render` are function declarations below, hoisted before this
 // module body runs.
-const store = new LocalStorageDesignerStore();
+const store = createDesignerStore();
 const designerState = createDesignerState({
   store,
   seed,

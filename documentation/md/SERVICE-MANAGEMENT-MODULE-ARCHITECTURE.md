@@ -292,13 +292,65 @@ Under the no-fallback rule these surface through `loadState()` as designer
 state (see the outcome table) — the designer never silently swaps to another
 backend.
 
+## The implemented adapter: `CanaDesignerStore` (JUM-483)
+
+Sources:
+[`apps/service-management/src/store/CanaDesignerStore.js`](../../apps/service-management/src/store/CanaDesignerStore.js)
+(adapter) and
+[`apps/service-management/src/store/designerStoreFactory.js`](../../apps/service-management/src/store/designerStoreFactory.js)
+(selection seam); unit suite
+[`canaDesignerStore.test.ts`](../../apps/backend-template/test/unit/service-management/canaDesignerStore.test.ts).
+
+`CanaDesignerStore` implements all seven port methods over the Cana client,
+and the swap required **no designer-logic change** — the port abstraction
+held. The decisions a reader needs:
+
+- **Wire format unchanged.** Both documents live in one object store
+  (`designerDocuments`, database `service-management`, schema version 1)
+  under the pinned Contract 2 keys, each value the exact `JSON.stringify` of
+  the same document the transitional adapter writes. JUM-484's migration is a
+  byte copy, not a transformation.
+- **State mapping.** Missing/unusable IndexedDB (Cana `'Unavailable'`) →
+  `'unavailable'` at `probe()`/`load()`; eviction (Cana JUM-560's
+  `storageState().evicted`, or an `'Evicted'` rejection) with no record found
+  → `'lost'`, never `'empty'` — while a record that IS found loads normally;
+  unreadable JSON → `'lost'`, as in the transitional adapter. Quota, eviction
+  and unknown-outcome each surface **distinctly**: within a port state, the
+  `reason` is tagged (`quota:`, `evicted:`, `unknown-outcome:`,
+  `unavailable:`).
+- **Quota pressure → which port state.** A quota-REJECTED write did not
+  happen; the port has no deterministic-failure save state, so `save()`
+  resolves `'unknown'` with a `quota:` reason — never `'persisted'`. Quota
+  pressure that has not failed a write (`nearQuota`, non-persistent storage)
+  is surfaced at `probe()` as `'available'` with a diagnostic `reason`,
+  feeding JUM-484's environment states.
+- **Unknown outcomes carry their reconciliation handles.** Writes go through
+  `client.transaction()` (not the auto-commit table) so an `'unknown'`
+  outcome embeds `correlationId`/`attemptedAt` in the reason — the two values
+  `client.resolveWrite()` needs (Cana JUM-411/559).
+- **Failed opens are not cached.** `UpgradeBlocked` is transient; the next
+  operation retries rather than turning one bad moment into a permanent
+  outage with nothing behind it.
+- **Client injection, factory-style.** The adapter never imports
+  `@jumentix/cana`: the client is injected (`client`/`clientProvider`),
+  mirroring `buildDatabaseClientCompilers`'s `indexedDbClient`. The seam
+  (`createDesignerStore`) selects by name (`cana`, aliases `indexeddb`/
+  `indexed-db`, like the factory's normaliser), with precedence explicit
+  argument → ambient `JUMENTIX_DESIGNER_STORE_DRIVER` global →
+  `?designer-store=cana` URL parameter → **default `localstorage`**. With no
+  client wired, the default provider lazily `import()`s `@jumentix/cana` and
+  builds through `createCanaDatabaseClient`; a host that cannot resolve it
+  gets `'unavailable'`, never a silent fallback. The default stays
+  localStorage until JUM-484's migration makes the Cana store sole.
+
 ## References
 
 - Port contract: [`apps/service-management/src/store/IDesignerStore.js`](../../apps/service-management/src/store/IDesignerStore.js)
 - Transitional adapter: [`apps/service-management/src/store/LocalStorageDesignerStore.js`](../../apps/service-management/src/store/LocalStorageDesignerStore.js)
+- Cana adapter + selection seam: [`apps/service-management/src/store/CanaDesignerStore.js`](../../apps/service-management/src/store/CanaDesignerStore.js), [`apps/service-management/src/store/designerStoreFactory.js`](../../apps/service-management/src/store/designerStoreFactory.js)
 - State core: [`apps/service-management/src/state/designerState.js`](../../apps/service-management/src/state/designerState.js)
 - Entry module: [`apps/service-management/script.js`](../../apps/service-management/script.js)
-- Unit suites: [`designerStore.test.ts`](../../apps/backend-template/test/unit/service-management/designerStore.test.ts), [`designerState.test.ts`](../../apps/backend-template/test/unit/service-management/designerState.test.ts)
+- Unit suites: [`designerStore.test.ts`](../../apps/backend-template/test/unit/service-management/designerStore.test.ts), [`designerState.test.ts`](../../apps/backend-template/test/unit/service-management/designerState.test.ts), [`canaDesignerStore.test.ts`](../../apps/backend-template/test/unit/service-management/canaDesignerStore.test.ts)
 - Storage schema: [Requirement 126, Contract 2](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md)
 - Component overview: [Service Management Application](./SERVICE-MANAGEMENT-APPLICATION.md)
 - Linear: [JUM-468](https://linear.app/jumentix/issue/JUM-468/refactor-extract-statepersistence-core-as-es-module-behind) (the port), [JUM-469](https://linear.app/jumentix/issue/JUM-469/refactor-modularize-designer-canvas-validation-exporters-importers) (the module graph), [JUM-483](https://linear.app/jumentix/issue/JUM-483/feature-canadesignerstore-idesignerstore-adapter-over-the-cana-client) (CanaDesignerStore), [JUM-484](https://linear.app/jumentix/issue/JUM-484) (migration retiring the transitional adapter), [JUM-493](https://linear.app/jumentix/issue/JUM-493/feature-publish-designer-core-as-jumentix-package-xpertminds-org-dry) (package publish), Cana [JUM-560](https://linear.app/jumentix/issue/JUM-560/feature-storage-quota-persistence-and-eviction-policy) (quota/eviction policy)

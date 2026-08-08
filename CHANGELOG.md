@@ -4,6 +4,10 @@
 
 ## All Changes
 
+- 2026-08-07 chore(JUM-483): merge dev updates (changelog left to dev regen) - Eduardo A.
+- 2026-08-07 [JUM-624][Fix] Close the redis connection the integration suite leaks (#117) - Eduardo A.
+- 2026-08-07 chore(release): reconcile main into dev before promotion - Eduardo A.
+- 2026-08-07 fix(key-value): close the redis connection the integration suite opens - Eduardo Almeida
 - 2026-08-07 test(cana): tolerate browser timing quantization in performance shape - Eduardo A.
 - 2026-08-07 ci: avoid Sonar SCM blame in CircleCI partial clones - Eduardo A.
 - 2026-08-07 docs(JUM-479): document E4 contract parity guarantees (EN/PT-BR) (#105) - Eduardo A.
@@ -13,6 +17,7 @@
 - 2026-08-07 feat(JUM-480): real multi-environment editing and PM2 ecosystem preview (#106) - Eduardo A.
 - 2026-08-07 ci: fold coverage publishers into CircleCI coverage job - Eduardo A.
 - 2026-08-07 [JUM-618][Test] Stop the Cypress teardown reporting blocked deletes as clean (#112) - Eduardo A.
+- 2026-08-07 feat(JUM-483): add CanaDesignerStore adapter over the Cana client - Eduardo A.
 - 2026-08-07 test(cana-browser): give the teardown its own budget, and stop it lying about blocks - Eduardo Almeida
 - 2026-08-07 [JUM-623][CI] Cover the cypress support file and config, not just the specs (#114) - Eduardo A.
 - 2026-08-07 ci(test-map): cover the cypress support file and config, not just the specs - Eduardo Almeida
@@ -55,6 +60,7 @@
 - 2026-08-05 [JUM-465][Governance] Ownership registration and component requirement spec (#80) - Eduardo A.
 - 2026-08-05 docs(JUM-467): audit bilingual docs and repair links for service-management (#79) - Eduardo A.
 - 2026-08-05 [JUM-604][Governance] Support the Kimi agent with declarative agent support (#78) - Eduardo A.
+- 2026-08-05 [JUM-504][Release] Promote main branch-gate fix - Eduardo A.
 - 2026-08-05 test: isolate PR governance helpers - Eduardo A.
 - 2026-08-05 test: satisfy PR governance lint - Eduardo A.
 - 2026-08-05 chore(release): reconcile main ancestry after branch-gate fix - Eduardo A.
