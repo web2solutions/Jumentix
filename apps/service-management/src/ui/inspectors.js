@@ -43,7 +43,8 @@ import {
  * `deleteRelationship(id)`, `setSelectedDomain(id)`,
  * `editFieldMetadata(entityId, fieldName)`, `updateField(entityId, fieldName, partial)`,
  * `removeField(entityId, fieldName)`, `renderRuntimeEnvironment()`,
- * `loadSchemaBaseline()`.
+ * `loadSchemaBaseline()`, `showStatus(message, severity)` (JUM-543
+ * non-blocking status surface — replaces the monolith's window.alert).
  */
 export function createInspectors({ dom, state, interaction, actions }) {
   const {
@@ -56,7 +57,8 @@ export function createInspectors({ dom, state, interaction, actions }) {
     updateField,
     removeField,
     renderRuntimeEnvironment,
-    loadSchemaBaseline
+    loadSchemaBaseline,
+    showStatus
   } = actions;
 
   function getSelectedDomain() {
@@ -268,7 +270,7 @@ export function createInspectors({ dom, state, interaction, actions }) {
             renderEntityContractsInspector(entity);
           });
         } catch (_) {
-          window.alert('Invalid JSON payload schema.');
+          showStatus('Invalid JSON payload schema.');
         }
       };
       const removeBtn = document.createElement('button');

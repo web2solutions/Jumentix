@@ -136,6 +136,20 @@ export function toOasFieldSchema(field) {
   return schema;
 }
 
+/**
+ * The OAS importer's name-based PK/FK/unique heuristic, factored out so the
+ * exporter can detect divergence: a field whose flags differ from the
+ * heuristic gets them carried explicitly in `x-field-flags` (JUM-478), and
+ * every other field crosses with no per-field extension at all.
+ */
+export function oasFieldNameFlags(fieldName) {
+  return {
+    pk: fieldName === 'id',
+    fk: /id$/i.test(fieldName) && fieldName !== 'id',
+    unique: fieldName === 'id'
+  };
+}
+
 export function fromOasType(schema = {}) {
   const type = schema.type;
   const format = schema.format;

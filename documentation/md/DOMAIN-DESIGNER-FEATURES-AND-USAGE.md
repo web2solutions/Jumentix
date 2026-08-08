@@ -261,6 +261,39 @@ the route-resolution check (`ci-cd/check-oas-route-resolution.js`):
   (for example `Foo Bar` vs `Foo-Bar`) fail the export quality gate instead
   of silently overwriting each other in the document.
 
+### 10.2) Lossless OAS round-trip (JUM-478)
+
+The OAS crossing is a contract between the exporter and the importer: what
+OAS cannot express natively crosses as agreed `x-` extensions and is
+normalized back into `entity.meta` on import, so export → import → export
+reaches a fixed point with an empty model-level loss list (asserted by
+`designerRoundTrip.test.ts`).
+
+- `x-aggregate-root` and `x-invariants` carry the aggregate declaration and
+  invariants when set.
+- `x-rbac` carries the entity's normalized RBAC policy, emitted only when it
+  diverges from the designer default (an absent `x-rbac` normalizes back to
+  the default policy, with `tenantScoped` derived from the roles per the
+  tenant RBAC contract).
+- `x-fieldless: true` keeps an entity's empty field set across the crossing
+  (an unmarked schema without properties still gets the importer's default
+  `id`/`createdAt`/`updatedAt` fields).
+- `x-field-flags: { pk, fk, unique }` carries a field's flags only when they
+  diverge from the importer's name heuristic (`id` → PK/unique, `*Id` → FK).
+- `x-relations` rows carry `{ name, fromSchema, toSchema, fromCardinality,
+  toCardinality }` — schema names, not model ids — and the importer restores
+  relationships re-keyed to the recomputed entity ids, dropping rows whose
+  endpoints did not import.
+- Foreign documents without designer markers (the canonical
+  `spec/1.0.0.yml`) are recognized by the same port-object conventions:
+  `Request<Action>*` and `*ArrayOf` names, `ResourceDeleteResponse`, "Port
+  input/output object" descriptions that are not `<Name> resource` entity
+  contracts, and non-object schemas never become entities.
+- Named remaining losses for foreign documents: `example`/`default`/
+  `minItems`/`maxItems` facets and array item `$ref` linkages (value-object
+  references flatten to the `itemsType` vocabulary), domain bounded-context
+  blocks, canvas positions, and legacy (non-canonical) operationIds.
+
 ## 11) Smoke Coverage
 
 Service Management smoke tests:

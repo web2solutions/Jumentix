@@ -147,11 +147,13 @@ sets, write semantics — is
 - Unknown environment: `400` whose `details` name the value and the accepted
   list, no file written.
 - Missing config directory at boot: server exits with clear error.
-- Missing environment file: `400` whose `details` carry the resolved path
-  (internally error code `ENV_FILE_NOT_FOUND`).
+- Missing environment file or other filesystem failure (permissions, full
+  disk): `500 { "error": "Environment file operation failed.", "code": …,
+  "path": …, "details": … }` — `code` is `ENV_FILE_NOT_FOUND` or the
+  underlying `fs` error code, `path` the resolved env-file path (JUM-543).
 - Malformed JSON payload: `400 { "error": "Invalid payload.", "details": … }`
   with the parse failure in `details` — told apart from filesystem failures,
-  which carry the resolved path instead.
+  which surface as the 500 class above, never as a payload error.
 - Unauthorized mutation: `401 { "error": "Unauthorized." }` when auth token is configured.
 
 ## Runtime Edit Flow
