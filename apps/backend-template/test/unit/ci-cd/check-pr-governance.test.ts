@@ -27,6 +27,28 @@ const validBody = [
   '- Project Update: https://linear.app/jumentix/project/governance-foundation-c3cb6bae0771/activity#project-update-7ef876cc-30c5-41ba-b2ea-fdca9935b0e3'
 ].join('\n');
 
+/**
+ * Runs `body` with `LINEAR_API_KEY` absent, then restores it.
+ *
+ * Module scope so both JUM-627 describes share one copy, and so the conditional
+ * restore is not inside a test case.
+ *
+ * These cases assert what happens with *no* credential. Reading the ambient
+ * environment made them pass locally, where the variable is unset, and fail in
+ * CI the moment the secret was added — a test whose result depended on the
+ * machine rather than on the code.
+ */
+function withoutLinearEnvKey<T>(body: () => T): T {
+  const previous = process.env.LINEAR_API_KEY;
+  delete process.env.LINEAR_API_KEY;
+  try {
+    return body();
+  } finally {
+    if (previous === undefined) delete process.env.LINEAR_API_KEY;
+    else process.env.LINEAR_API_KEY = previous;
+  }
+}
+
 describe('check-pr-governance', () => {
   it('keeps every PR template aligned with focused epic metadata', () => {
     expect.hasAssertions();
@@ -435,10 +457,10 @@ describe('child task project membership (JUM-627)', () => {
   it('refuses to skip itself when no credential is configured', async () => {
     expect.hasAssertions();
 
-    const failures = await verifyIssueProjectMembership(
+    const failures = await withoutLinearEnvKey(async () => verifyIssueProjectMembership(
       { body: bodyFor(TASK) },
       { apiKey: null, rootDir: prFs.mkdtempSync(prPath.join(prOs.tmpdir(), 'jum627-')) }
-    );
+    ));
 
     expect(failures[0]).toContain('no Linear credential');
   });
@@ -455,17 +477,6 @@ describe('child task project membership (JUM-627)', () => {
  */
 describe('linear credential fallback (JUM-627)', () => {
   const { readLinearKey } = require('../../../../../ci-cd/lib/linear.js');
-
-  const withoutEnvKey = <T>(body: () => T): T => {
-    const previous = process.env.LINEAR_API_KEY;
-    delete process.env.LINEAR_API_KEY;
-    try {
-      return body();
-    } finally {
-      if (previous === undefined) delete process.env.LINEAR_API_KEY;
-      else process.env.LINEAR_API_KEY = previous;
-    }
-  };
 
   const withEnvKey = <T>(value: string, body: () => T): T => {
     const previous = process.env.LINEAR_API_KEY;
@@ -487,7 +498,7 @@ describe('linear credential fallback (JUM-627)', () => {
     prFs.writeFileSync(prPath.join(base, '.linear'), 'LINEAR_API_KEY=lin_api_fixture\n');
 
     // Three levels up: the depth the old two-path fallback could not reach.
-    expect(withoutEnvKey(() => readLinearKey(nested))).toBe('lin_api_fixture');
+    expect(withoutLinearEnvKey(() => readLinearKey(nested))).toBe('lin_api_fixture');
 
     prFs.rmSync(base, { recursive: true, force: true });
   });
@@ -500,12 +511,12 @@ describe('linear credential fallback (JUM-627)', () => {
     prFs.mkdirSync(nested, { recursive: true });
     prFs.writeFileSync(prPath.join(base, '.linear'), '  lin_api_bare  ');
 
-    expect(withoutEnvKey(() => readLinearKey(nested))).toBe('lin_api_bare');
+    expect(withoutLinearEnvKey(() => readLinearKey(nested))).toBe('lin_api_bare');
 
     prFs.rmSync(prPath.join(base, '.linear'));
     // No file anywhere above a temp directory: null, not a throw and not a hang
     // walking to the filesystem root.
-    expect(withoutEnvKey(() => readLinearKey(nested))).toBeNull();
+    expect(withoutLinearEnvKey(() => readLinearKey(nested))).toBeNull();
 
     prFs.rmSync(base, { recursive: true, force: true });
   });
