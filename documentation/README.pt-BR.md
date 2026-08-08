@@ -54,6 +54,8 @@ Para engenheiros que mantêm e evoluem o Jumentix:
   ([EN](./md/SERVICE-MANAGEMENT-CANA-ADOPTION.md))
 - [Sincronização do Catálogo Compartilhado (JUM-491)](./md/SHARED-CATALOG-SYNC.pt-BR.md)
   ([EN](./md/SHARED-CATALOG-SYNC.md))
+- [Colaboração e empacotamento do Service Management](./md/SERVICE-MANAGEMENT-COLLABORATION-PACKAGING.pt-BR.md)
+  ([EN](./md/SERVICE-MANAGEMENT-COLLABORATION-PACKAGING.md))
 
 ## Hubs Técnicos de Componentes
 

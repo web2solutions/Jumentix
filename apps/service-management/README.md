@@ -25,6 +25,7 @@ Detailed feature usage:
 - [Operations Console](../../documentation/md/SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.md)
 - [Design System and PWA Shell](../../documentation/md/SERVICE-MANAGEMENT-DESIGN-SYSTEM-PWA.md)
 - [Cana Adoption, Migration and Offline Behaviour](../../documentation/md/SERVICE-MANAGEMENT-CANA-ADOPTION.md)
+- [Collaboration and Packaging](../../documentation/md/SERVICE-MANAGEMENT-COLLABORATION-PACKAGING.md)
 - [Service Management Technical Documentation](./documentation/README.md)
 
 ## First Run
@@ -80,7 +81,17 @@ sample is ordinary domain/entity deletion. Content is defined in
    - Mini-map navigation and large-canvas performance mode.
 2. **Communication Interface Designer**
    - Register inbound interface adapters (`HTTP/REST`, `gRPC`, `WebSocket`, `SSE`).
-   - Track framework/runtime, entrypoint, and controller mapping.
+   - Full adapter lifecycle (JUM-545): every registered adapter edits in place (type,
+     framework, entrypoint and controller mapping) — no delete-and-re-add.
+   - Framework options are scoped per interface type from the canonical runtime matrix
+     (`src/model/interfaceFrameworkMatrix.js`): the eleven canonical HTTP frameworks
+     (JUM-461 spellings — `derby-js`/`sails-js` only, no alias duplicates) for
+     `HTTP/REST` and `SSE`, `socket-io` for `WebSocket`, `grpc` for `gRPC`.
+   - Adds and edits are validated (`src/validation/interfaceAdapterValidation.js`):
+     the entrypoint must be a TypeScript/JavaScript path under `src/interface/`, the
+     controller mapping must have the `XController.action` shape, and duplicates
+     (same type + entrypoint, or same controller mapping) are rejected with the reason
+     on the status surface. Invalid persisted entries are flagged inline.
 3. **Service Configuration**
    - Configure service kind (`REST API`, `WebSocket API + REST API`, `gRPC API + REST API`),
    execution model, cloud provider, static assets profile, and runtime ports.

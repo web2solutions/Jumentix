@@ -51,7 +51,7 @@
 
 /* eslint-env serviceworker, node */
 
-const SHELL_VERSION = '0.4.0';
+const SHELL_VERSION = '0.4.1';
 
 // Prefix shared with src/pwa/pwaShell.js (the page-side reset deletes by
 // prefix). The two copies cannot import each other — a classic worker has no
@@ -111,7 +111,9 @@ const SHELL_ASSETS = [
   // ci-cd/sync-service-management-cana-bundle.js, which the browser smoke
   // runs before booting the server; the smoke also requests every precached
   // entry against the real server, generated ones included.
-  './vendor/cana/index.js'
+  './vendor/cana/index.js',
+  './src/model/interfaceFrameworkMatrix.js',
+  './src/validation/interfaceAdapterValidation.js',
 ];
 
 const SKIP_WAITING_MESSAGE_TYPE = 'SKIP_WAITING';

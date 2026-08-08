@@ -332,19 +332,22 @@ para
 [JUM-545](https://linear.app/jumentix/issue/JUM-545/feature-interface-adapter-lifecycle-edit-in-place-uniqueness-and)
 (interface adapters) e
 [JUM-546](https://linear.app/jumentix/issue/JUM-546/feature-deploy-target-lifecycle-edit-duplicate-and-field-validation)
-(deploy targets). **A JUM-546 foi entregue** (a seção acima); a JUM-545
-continua aberta — esta seção registra o ciclo de vida que o código realmente
-implementa hoje, para que a lacuna restante seja legível em vez de descoberta
-clicando.
+(deploy targets). **A JUM-545 e a JUM-546 foram entregues** — esta seção
+registra o ciclo de vida que o código realmente implementa hoje.
 
-**Interface adapters (Communication Interface Designer).** Hoje um adapter é
-**adicionado** e **excluído** — nada mais. O portão de adição
-(`script.js`) exige que framework/runtime, entrypoint e o mapeamento de
-controller estejam todos presentes antes de a entrada `{ type, framework,
-entrypoint, controller }` ser armazenada; não há edição in-place, não há
-duplicação e não há restrição de unicidade — dois adapters idênticos podem ser
-registrados. A JUM-545 é dona das regras que faltam, incluindo as restrições
-de unicidade e suas razões.
+**Interface adapters (Communication Interface Designer).** Um adapter é
+**adicionado**, **editado in-place** e **excluído** (JUM-545). Os portões de
+adição e edição compartilham um único caminho de validação
+(`upsertInterfaceAdapter` em `src/validation/interfaceAdapterValidation.js`):
+o framework deve pertencer ao subconjunto por tipo de interface da matriz de
+tempo de execução canônica (`src/model/interfaceFrameworkMatrix.js` — as
+grafias canônicas da JUM-461, sem duplicatas de alias `derby`/`sails`), o
+entrypoint deve ser um caminho TypeScript/JavaScript sob `src/interface/`, o
+mapeamento de controller deve seguir o formato `XController.action`, e
+duplicatas — mesmo tipo + entrypoint, ou mesmo mapeamento de controller — são
+rejeitadas com o motivo na superfície de status. Entradas persistidas
+anteriores ao portão são sinalizadas inline em vez de passarem como designs
+válidos.
 
 **Deploy targets (Deploy Management).** O ciclo de vida completo foi entregue
 com a JUM-546 — **adicionar, editar in-place, duplicar e excluir**, com
@@ -354,7 +357,7 @@ por tipo de target) no portão de adição/edição e a regra de renomeação
 
 A razão de esta seção de lacuna honesta existir: as listas do console são as
 superfícies onde um design se torna uma intenção operacional, e uma entrada
-que só *se torna* válida após um reload — ou um adapter duplicado que nada
+que só *se torna* válida após um reload — ou uma entrada duplicada que nada
 rejeita — é uma regra que o usuário não consegue ver. Nomear as issues
 responsáveis mantém a regra visível até o código alcançá-la.
 

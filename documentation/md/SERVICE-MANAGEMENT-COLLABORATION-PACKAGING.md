@@ -1,0 +1,454 @@
+# Service Management Collaboration and Packaging
+
+This is the E8 document of the Service Management E1–E8 documentation chain
+([JUM-494](https://linear.app/jumentix/issue/JUM-494/docs-e8-documentation-collaboration-and-packaging))
+— the **last link of the chain and the epic's terminal documentation gate
+under
+[Requirement 094](../../.agents/requirements/project/094-epic-documentation-completion-gate.md)**:
+the Linear Project cannot be set to `Completed` while this Issue is in any
+state other than completed.
+
+It documents the collaboration and packaging lane exactly as it shipped:
+
+- **Collaboration** — the multi-user shared catalog
+  ([JUM-491](https://linear.app/jumentix/issue/JUM-491/feature-multi-user-shared-catalog-backend-sync-over-cana-resync-events)):
+  a contract-first `Catalogs` backend module, optimistic concurrency per
+  catalog record, tombstone deletion with restore, and a designer-side sync
+  client that converges by document read-back.
+- **Domain-package versioning**
+  ([JUM-492](https://linear.app/jumentix/issue/JUM-492/feature-domain-package-versioning-with-semantic-conflict-resolution)):
+  exported domain packages are versioned data with a dependency graph and
+  deterministic, explainable conflict resolution on import.
+- **Packaging**
+  ([JUM-493](https://linear.app/jumentix/issue/JUM-493/feature-publish-designer-core-as-jumentix-package-xpertminds-org-dry)):
+  **descoped** — the modularized designer core exists as a package boundary,
+  but the publish step did not ship. This document says so explicitly,
+  because a gate document that describes the plan rather than the delivery
+  would be a false green.
+
+Because this is the terminal gate, its content reflects **what was
+delivered**, including everything carried over — each descope below is named,
+not silently dropped. The chain-closure section at the end is the Req 094
+evidence: it names the E1–E8 chain completely and records its gate state.
+
+This document is the English reference. A versão em português está em
+[SERVICE-MANAGEMENT-COLLABORATION-PACKAGING.pt-BR.md](./SERVICE-MANAGEMENT-COLLABORATION-PACKAGING.pt-BR.md).
+
+## Collaboration: the shared catalog (JUM-491)
+
+Everything before JUM-491 treats the designer as a **single-browser tool**:
+Cana persists the designer document in the browser's IndexedDB, and JUM-485
+synchronizes it across that browser's tabs. JUM-491 turns the designer into
+a **multi-user system**: a team shares one catalog of domain designs through
+the backend — also the only continuous second copy of a user's work on
+different hardware (Cana has no fallback; export is manual).
+
+The full mechanism is owned by the dedicated
+[Shared Catalog Sync](./SHARED-CATALOG-SYNC.md) document (architecture, OAS
+contract, authorization model, convergence proof, verification commands).
+This document states what the delivery means for the epic — the concurrency
+unit, the rejection path, the deletion semantics and the convergence rule —
+once, and defers to it rather than maintaining a second, drifting
+explanation.
+
+### What shipped
+
+- **A contract-first `Catalogs` backend module**
+  ([`apps/backend-template/src/modules/Catalogs/domain/Model/Catalog.ts`](../../apps/backend-template/src/modules/Catalogs/domain/Model/Catalog.ts)),
+  hexagonal like the Users reference module: domain aggregate (version bump,
+  tombstone, restore), pure
+  [`CatalogAuthorizationPolicy`](../../apps/backend-template/src/modules/Catalogs/domain/security/CatalogAuthorizationPolicy.ts),
+  use cases
+  ([`CatalogUseCases.ts`](../../apps/backend-template/src/modules/Catalogs/application/use-cases/CatalogUseCases.ts)),
+  the optimistic-concurrency enforcement point
+  ([`CatalogDataRepository.ts`](../../apps/backend-template/src/modules/Catalogs/adapters/out/persistence/CatalogDataRepository.ts)),
+  the OAS-validated
+  [`CatalogController`](../../apps/backend-template/src/modules/Catalogs/adapters/in/http/controllers/CatalogController.ts)
+  and composition
+  ([`composeCatalogsServices.ts`](../../apps/backend-template/src/modules/Catalogs/composition/composeCatalogsServices.ts)).
+  Six operations on `/catalogs` in the canonical
+  [`spec/1.0.0.yml`](../../spec/1.0.0.yml) — list, create, get, update,
+  delete, restore — enforced by `bun run oas:check-routes`.
+- **Optimistic concurrency per catalog record.** The record (one shared
+  domain design) is the declared concurrency unit: coarse enough that a
+  relationship spanning two entities always has a consistent version to
+  check, fine enough that teammates never block each other across domains.
+  The server-managed `version` token starts at 1 on create and bumps on
+  every write; a stale write is rejected with a **reviewable 409** whose
+  metadata carries `catalogId`, `expectedVersion`, `currentVersion` **and
+  the current record** — the loser's edit is never discarded.
+- **Deletion is a tombstone, recoverable.** Delete sets `deletedAt` and
+  bumps the version so the deletion propagates on read-back; a locally-dirty
+  copy raises a `deleted-remotely` conflict instead of vanishing;
+  `POST /catalogs/{id}/restore` recovers the record.
+- **Server-side authorization, TENANT-RBAC aligned.** The role matrix gains
+  catalog scopes (`admin`: read/create/update/delete; `user`:
+  read/create/update — team members edit, only admins delete), and the
+  tenant policy binds the catalog to exactly one organization. A client
+  cannot grant itself access — proven by positive/negative integration
+  tests. See
+  [Tenant and RBAC Authorization Contract](./TENANT-RBAC-AUTHORIZATION-CONTRACT.md).
+- **Mediator events.** Every successful write publishes
+  `catalogs.catalog.created | updated | deleted | restored` with
+  `{ id, organization, version, actor }` — the same version token the API
+  enforces — on the message mediator
+  ([`CatalogService.ts`](../../apps/backend-template/src/modules/Catalogs/service/CatalogService.ts));
+  publication never breaks the primary write.
+- **A DOM-free designer sync client**
+  ([`apps/service-management/src/state/catalogSyncClient.js`](../../apps/service-management/src/state/catalogSyncClient.js)):
+  a sibling consumer of the same Cana committed-event stream that JUM-485's
+  tab sync subscribes to. Local commits schedule a debounced push of dirty
+  shared domains (dirtiness decided by the durable marker
+  `domain.context.catalog = { id, version, contentHash }`, carried
+  additively per JUM-492's pattern); convergence is a polled **document
+  read-back** diffed by `(id, version)` — Cana's resync rule applied across
+  the network: a gap is a reload signal, never an event replay, because Cana
+  cursors are per client instance and mean nothing across machines. Remote
+  changes cross the same `applyRemoteDocument` one-path as tab sync, so undo
+  isolation, selection reconciliation and redo truncation are identical.
+- **A real convergence proof.**
+  [`catalogSync.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/catalogSync.integration.test.ts)
+  boots the real Express backend (real JWT auth, real mediator) and runs two
+  real designer clients over real `fetch`; one is partitioned behind a real
+  `ECONNREFUSED`, both keep editing, and on heal the read-back converges
+  them — the partitioned edit survives as a reviewable conflict, resolved
+  explicitly (`take-server` / `take-local`, where `take-local` is a
+  deliberate new write against the server's current version, never a blind
+  overwrite).
+
+### What JUM-491 deliberately descoped (12-01 carry-over candidates)
+
+Named in
+[Shared Catalog Sync](./SHARED-CATALOG-SYNC.md#what-is-deliberately-descoped-12-01-carry-over-candidates)
+and restated here because the gate must see them:
+
+- **WebSocket fan-out to browsers** (push instead of poll): the broker
+  adapters exist in `packages/message-mediator`, but no fan-out to designer
+  clients is wired; poll-based read-back is correct under any broker choice.
+- **Designer share/conflict UI chrome**: the client module is DOM-free and
+  composable; the share/unshare/conflict surfaces (and the token-provider
+  UX) are a follow-up.
+- **Driver-level native conditional writes**: the repository's
+  read-check-write is the reference behavior; production drivers should later
+  map the same check into `IStoreMutationOptions.expectedVersion` native
+  conditionals.
+- **Offline deletion-intent queue**: an offline local deletion of a shared
+  domain cannot be pushed; the surviving server record is re-admitted on
+  read-back — the "committed document wins" boundary, session-scoped by
+  design in this slice.
+
+### What this changes for the user — and what it does not
+
+Before JUM-491, the designer was per-browser and **export was the only way
+work left the machine** — the E6 document,
+[Service Management Cana Adoption, Migration and Offline Behaviour](./SERVICE-MANAGEMENT-CANA-ADOPTION.md),
+owns that data story and this document does not restate it. The shared
+catalog adds the missing lane: work a user *shares* now lives on the server
+and converges across machines. Two honest boundaries remain, stated up
+front:
+
+- **A sync target is not a backup.** It propagates deletions; it does not
+  replace the storage-quota/eviction policy or the offline durability
+  contract.
+- **Cana still has no fallback.** When the catalog is unreachable the client
+  declares it (`degraded` on the status surface) and keeps saving locally to
+  Cana — it never silently degrades into a hidden single-user mode.
+
+## Domain-package versioning (JUM-492)
+
+A domain package (the `<domain>-package.json` export) is **versioned data,
+not code**, and import is a deterministic policy instead of an unconditional
+append. The public contract is pinned in
+[Requirement 126, Contract 3](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md);
+the implementation lives in
+[`src/packages/packageVersioning.js`](../../apps/service-management/src/packages/packageVersioning.js)
+(DOM-free), wired through the exporter
+([`buildDomainPackageDocument`](../../apps/service-management/src/exporters/designerExporters.js))
+and the importer
+([`designerImporters.js`](../../apps/service-management/src/importers/designerImporters.js)).
+
+### The versioned package document
+
+Export emits the v2 shape `{ kind: "domain-package", version: "2.0.0",
+exportedAt, package: { name, version, dependencies: [{ name, range }] },
+domain }`. The `package` block declares identity from the domain's context:
+`packageName` (falling back to the domain name), `packageVersion` (falling
+back to `1.0.0`) and `packageDependencies` entries (`name@range`; a bare
+name is a presence-only dependency). Compatibility is explicit in both
+directions: legacy v1 documents keep importing with a synthesized `1.0.0`
+identity; a document whose major is newer than the importer's, or a `kind`
+other than `domain-package`, is refused clearly.
+
+### Version semantics, redefined for a data model
+
+The usual semver meanings do not map onto a data model, so Requirement 126
+redefines them:
+
+- **patch** — documentation/metadata only (field descriptions, formats,
+  constraints, domain context text, OAS composition hints);
+- **minor** — additive structure (a new entity, field or message contract; a
+  required flag loosened);
+- **major** — removal or narrowing (a removed entity/field/contract, a field
+  type or PK/FK/unique change, a required flag tightened, an RBAC or
+  invariant change, an aggregate declaration change).
+
+### Provenance and the installed-package registry
+
+Imported content is stamped: the domain carries `context.provenance =
+{ package, version }` plus `context.packageName`/`context.packageVersion`,
+and every imported entity carries `meta.provenance`. The normalizers carry
+these fields **additively** — only when the source declares them — so
+pre-JUM-492 payloads are unchanged and provenance crosses storage, loads and
+the full-suite export intact. The installed-package registry derives from
+provenance **only**: a hand-built domain is never an installation, so
+importing a package named like a locally-built domain appends (with the
+JUM-617 id recomputation) instead of merging into unrelated content.
+
+### The dependency graph
+
+Dependencies resolve transitively over the registry with the incoming
+package overlaid. Ranges follow the npm convention: `*`/empty (any), exact
+`1.2.3`, caret `^1.2.3` (same major; for `0.x`, same minor), tilde `~1.2.3`
+(same major.minor); anything else is invalid and satisfies nothing, so it is
+reported rather than silently accepted. A missing or range-incompatible
+dependency is **reported** through the status region and the import proceeds
+— the designer reports, it is not the resolver. A cycle the incoming package
+would close is reported by name chain and the import is **refused** — cycles
+are detected, never entered.
+
+### Semantic conflict resolution
+
+Re-importing an installed package resolves deterministically and
+explainably:
+
+- **same version + equal content → no-op** — idempotent re-import, proven by
+  test;
+- **same version + different content → refused** (`same-version-conflict`,
+  divergences listed — version immutability);
+- **older version → refused** (`downgrade-rejected`);
+- **newer version → merge.** Additive and metadata changes (patch/minor
+  semantics — `AUTO_MERGE_CLASSES`) apply automatically. Removals,
+  narrowings and **always RBAC and invariants**
+  (`REQUIRES_DECISION_CLASSES`) keep the existing designer content and are
+  listed in the **merge preview**, rendered on the schema-diff surface
+  before anything changes; the merge applies only after the user explicitly
+  accepts (a gated `window.confirm` — one of the destructive-action gates
+  JUM-543 deliberately keeps). RBAC and invariants are always in the
+  decision class: automatically resolving a security policy or a domain
+  invariant is a decision a merge algorithm must not make. All outcomes
+  surface through `showStatus`, never `alert()`.
+
+Entity matching inside a merge is by name, never by id: colliding ids are
+recomputed at import on the
+[JUM-617](https://linear.app/jumentix/issue/JUM-617/fix-importdomainpackage-recompute-domainentity-ids-on-re-import)
+rule, so ids can never be the match key; new incoming entities receive
+collision-free ids through the importer's `uniqueId` callback.
+
+**Proven by:**
+[`designerPackageVersioning.test.ts`](../../apps/backend-template/test/unit/service-management/designerPackageVersioning.test.ts)
+(version parsing/ordering, range satisfaction, dependency parsing and
+transitive resolution, cycle detection, every conflict class),
+[`designerRoundTrip.test.ts`](../../apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts)
+(versioned export→import deep-equal with provenance, re-export fixed point,
+idempotent re-import, conflicting re-import refusal, deterministic merge
+with RBAC kept, compatible/incompatible dependency pairs, JUM-617 preserved
+on the append path) and
+[`designerExporters.test.ts`](../../apps/backend-template/test/unit/service-management/designerExporters.test.ts)
+(the v2 package document shape, pinned).
+
+## Packaging: the `@jumentix` designer core (JUM-493) — descoped
+
+**This lane did not ship, and this document says so plainly.** JUM-493 —
+publishing the framework-free designer core as a versioned `@jumentix`
+package under the xpertminds organization — is in **Backlog**; it is the
+12-01 descope decision for this epic lane. What exists and what does not:
+
+- **What exists: the package boundary.** JUM-468/JUM-469 modularized the
+  designer so the core *is* a separable thing: pure logic lives in DOM-free
+  modules under `apps/service-management/src/` (`state`, `store`, `model`,
+  `validation`, `exporters`, `importers`, `packages`, `codegen`), DOM access
+  lives in the entry module, and the DOM-free set is exactly what a package
+  could ship. The E3 document,
+  [Service Management Module Architecture](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.md),
+  owns that boundary and its rationale; it was written with this consumer in
+  mind.
+- **What does not exist: the package.** No `package.json`, entry points,
+  type declarations or publish wiring for the designer core were shipped;
+  the workspace manifest
+  ([`apps/service-management/package.json`](../../apps/service-management/package.json))
+  remains `private: true`. The acceptance bar JUM-493 sets — the core
+  loading and running in a non-DOM environment with no `document`, `window`
+  or `localStorage`, proven by a consumer smoke test against the published
+  artifact — is unmet by definition: there is no artifact.
+- **What the package would contain, when the lane resumes** (per the issue):
+  the domain model and its normalizers, the validation/model-check engine,
+  the exporters (JSON, Markdown, JSON Schema, AsyncAPI, boilerplate bundle,
+  package, OAS), the importers (domain package, state file, OAS file) and
+  the schema-diff engine — with `IDesignerStore` published as a
+  type/contract only. **Out**: every DOM module, the canvas, the inspectors,
+  the status surfaces and the storage adapters (`CanaDesignerStore` ships
+  with Cana's own package, not here).
+- **The publish policy stands regardless.** When the lane resumes,
+  publishing remains **dry-run only** by policy —
+  [Requirement 070](../../.agents/requirements/project/070-xpertminds-npm-and-web2solutions-vercel-integration.md)
+  forbids automatic publish; the repository already exposes the dry-run
+  surface (`npm:org:check:xpertminds`, `npm:publish:dry-run:packages`) the
+  lane will build on.
+
+The practical consequence for the user is unchanged from the E6 document:
+**export is how work leaves the machine** — as the full-suite document or as
+a versioned domain package — and the shared catalog (above) is the only
+continuous second copy.
+
+### The full-suite export (JUM-547), the portable bundle
+
+The JSON export is the versioned full-suite document
+(`{ kind: "service-management-suite", version: "2.0.0", domains,
+relationships, interfaces, serviceConfiguration, runtimeEnvironment,
+deployments, view }`) carrying **all four tabs** in a re-importable shape
+([JUM-547](https://linear.app/jumentix/issue/JUM-547/feature-full-suite-exportimport-carry-interfaces-service-configuration)).
+One recorded security decision matters for packaging: the bundle carries the
+runtime environment **selection only** (`{ environment, fileName }`) —
+**never values**, because the values mirror real `.env` contents of the
+machine the designer runs on. No secret can leave in a bundle; on import the
+selection is restored and the local machine's values are preserved. The
+contract is pinned in Requirement 126, Contract 3; the E5 document,
+[Service Management Operations Console](./SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.md),
+owns the operations-console side of the runtime-environment story.
+
+## Chain closure: the E1–E8 gate evidence (Req 094)
+
+This section is the epic's documentation-gate evidence: the chain named
+completely, each link's state, and the ownership boundaries that keep two
+documents from drifting over the same behaviour.
+
+**The published chain.** The chain is named E1–E8; the project published
+**seven** dedicated documentation issues — E1 and E3 through E8. **No E2
+documentation issue exists in the project** (an audit of the project's issue
+list confirms none was ever created), so the gate closes on the seven
+published documents:
+
+| Link | Issue | Document | State |
+|---|---|---|---|
+| E1 | [JUM-464](https://linear.app/jumentix/issue/JUM-464/docs-e1-documentation-enpt-runtime-env-contract-and-fixed-paths) | [Runtime Environment Contracts](./RUNTIME-ENVIRONMENT-CONTRACTS.md) | Done |
+| E3 | [JUM-473](https://linear.app/jumentix/issue/JUM-473/docs-e3-documentation-module-architecture-and-storage-port-contract) | [Service Management Module Architecture](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.md) | Done |
+| E4 | [JUM-479](https://linear.app/jumentix/issue/JUM-479/docs-e4-documentation-contract-parity-guarantees) | [Service Management Contract Parity Guarantees](./SERVICE-MANAGEMENT-CONTRACT-PARITY.md) | Done |
+| E5 | [JUM-482](https://linear.app/jumentix/issue/JUM-482/docs-e5-documentation-operations-console) | [Service Management Operations Console](./SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.md) | Done |
+| E6 | [JUM-487](https://linear.app/jumentix/issue/JUM-487/docs-e6-documentation-cana-adoption-migration-and-offline-behavior) | [Service Management Cana Adoption, Migration and Offline Behaviour](./SERVICE-MANAGEMENT-CANA-ADOPTION.md) | Done |
+| E7 | [JUM-490](https://linear.app/jumentix/issue/JUM-490/docs-e7-documentation-design-system-and-pwa-shell) | [Service Management Design System and PWA Shell](./SERVICE-MANAGEMENT-DESIGN-SYSTEM-PWA.md) | Done |
+| E8 | [JUM-494](https://linear.app/jumentix/issue/JUM-494/docs-e8-documentation-collaboration-and-packaging) | this document | this PR |
+
+Every link is published in EN and PT-BR, synchronized per
+[Requirement 076](../../.agents/requirements/project/076-task-documentation-and-bilingual-governance.md)
+— neither artifact is a stub.
+
+**Consistency: one owner per behaviour, the others link.** The chain was
+audited for duplicated, drifting description; where two documents touch the
+same behaviour, the ownership is:
+
+- **The data story** (where work lives, the one-way migration, offline data
+  behaviour, export as the only recovery path) — owned by **E6**; E7 states
+  the shell↔data boundary once and links, and this document links for the
+  per-browser baseline the shared catalog extends.
+- **The storage port contract and the DOM-free module boundary** — owned by
+  **E3**; this document links for the packaging boundary instead of
+  re-deriving it.
+- **The export contract and the domain-package contract** — pinned by
+  **Requirement 126** (Contract 3), with the parity guarantees owned by
+  **E4**; this document teaches the JUM-492 behaviour and cites the contract
+  rather than restating it.
+- **The env-file/enum semantics and the runtime-env API** — owned by **E1**;
+  **E5** owns the operations-console surfaces that consume them, including
+  the status-surface contract every document above references.
+- **The shared-catalog mechanism** — owned by
+  [Shared Catalog Sync](./SHARED-CATALOG-SYNC.md) (JUM-491's dedicated
+  document); this document states the delivery's meaning for the epic and
+  links.
+
+**Gate state, exactly.** Under Req 094 the Project cannot be set to
+`Completed` until this Issue is completed. At this PR: E1, E3–E7 are Done;
+E8 is delivered by this PR and transitions only after it merges. No pending
+check is described as passing here: the JUM-491 artifacts this document
+links (`SHARED-CATALOG-SYNC.md`, `catalogSyncClient.js`, the `Catalogs`
+module, the convergence test) land with their own PR, and the JUM-493
+packaging lane is Backlog by the 12-01 descope — both stated, not smoothed
+over. Project-completion evidence per Req 094 (linking this Issue, its PR
+and commit evidence, and the documentation-integrity validation results) is
+recorded in the epic's Project Updates feed per
+[Requirement 102](../../.agents/requirements/project/102-linear-project-task-progress-updates.md)
+when the gate closes.
+
+## What this document deliberately does not cover
+
+- **The shared-catalog mechanism in full** — owned by
+  [Shared Catalog Sync](./SHARED-CATALOG-SYNC.md): the OAS contract table,
+  the authorization decision matrix, the sync client API and the
+  verification commands.
+- **The per-browser data story** — owned by the E6 document,
+  [Service Management Cana Adoption, Migration and Offline Behaviour](./SERVICE-MANAGEMENT-CANA-ADOPTION.md);
+  this document references it for the baseline the shared catalog extends.
+- **The storage port and module boundary** — owned by the E3 document,
+  [Service Management Module Architecture](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.md).
+- **The export parity guarantees and the full contract text** — owned by the
+  E4 document,
+  [Service Management Contract Parity Guarantees](./SERVICE-MANAGEMENT-CONTRACT-PARITY.md),
+  and pinned by
+  [Requirement 126](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md).
+- **The operations console** (Service Configuration, the runtime-environment
+  editor, PM2 preview, Deploy Management) — owned by the E5 document,
+  [Service Management Operations Console](./SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.md).
+
+## References
+
+- Collaboration (JUM-491):
+  [`apps/backend-template/src/modules/Catalogs/domain/Model/Catalog.ts`](../../apps/backend-template/src/modules/Catalogs/domain/Model/Catalog.ts),
+  [`domain/security/CatalogAuthorizationPolicy.ts`](../../apps/backend-template/src/modules/Catalogs/domain/security/CatalogAuthorizationPolicy.ts),
+  [`application/use-cases/CatalogUseCases.ts`](../../apps/backend-template/src/modules/Catalogs/application/use-cases/CatalogUseCases.ts),
+  [`service/CatalogService.ts`](../../apps/backend-template/src/modules/Catalogs/service/CatalogService.ts),
+  [`adapters/out/persistence/CatalogDataRepository.ts`](../../apps/backend-template/src/modules/Catalogs/adapters/out/persistence/CatalogDataRepository.ts),
+  [`adapters/in/http/controllers/CatalogController.ts`](../../apps/backend-template/src/modules/Catalogs/adapters/in/http/controllers/CatalogController.ts),
+  [`composition/composeCatalogsServices.ts`](../../apps/backend-template/src/modules/Catalogs/composition/composeCatalogsServices.ts),
+  [`spec/1.0.0.yml`](../../spec/1.0.0.yml),
+  [`apps/service-management/src/state/catalogSyncClient.js`](../../apps/service-management/src/state/catalogSyncClient.js),
+  [Shared Catalog Sync](./SHARED-CATALOG-SYNC.md)
+- Domain-package versioning (JUM-492):
+  [`src/packages/packageVersioning.js`](../../apps/service-management/src/packages/packageVersioning.js),
+  [`src/exporters/designerExporters.js`](../../apps/service-management/src/exporters/designerExporters.js),
+  [`src/importers/designerImporters.js`](../../apps/service-management/src/importers/designerImporters.js)
+- Packaging (JUM-493, descoped):
+  [`apps/service-management/package.json`](../../apps/service-management/package.json)
+  (`private: true`), the DOM-free boundary under
+  [`apps/service-management/src/`](../../apps/service-management/src)
+- Suites:
+  [`catalogSyncClient.test.ts`](../../apps/backend-template/test/unit/service-management/catalogSyncClient.test.ts),
+  [`catalogSync.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/catalogSync.integration.test.ts),
+  [`designerPackageVersioning.test.ts`](../../apps/backend-template/test/unit/service-management/designerPackageVersioning.test.ts),
+  [`designerRoundTrip.test.ts`](../../apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts),
+  [`designerExporters.test.ts`](../../apps/backend-template/test/unit/service-management/designerExporters.test.ts)
+- Requirements:
+  [094](../../.agents/requirements/project/094-epic-documentation-completion-gate.md)
+  (epic documentation completion gate),
+  [076](../../.agents/requirements/project/076-task-documentation-and-bilingual-governance.md)
+  (EN/PT parity),
+  [070](../../.agents/requirements/project/070-xpertminds-npm-and-web2solutions-vercel-integration.md)
+  (dry-run-only publish),
+  [102](../../.agents/requirements/project/102-linear-project-task-progress-updates.md)
+  (project updates),
+  [126](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md)
+  (ownership and public contracts, Contract 3)
+- Sibling E-chain documents:
+  [Runtime Environment Contracts](./RUNTIME-ENVIRONMENT-CONTRACTS.md) (E1),
+  [Service Management Module Architecture](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.md) (E3),
+  [Service Management Contract Parity Guarantees](./SERVICE-MANAGEMENT-CONTRACT-PARITY.md) (E4),
+  [Service Management Operations Console](./SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.md) (E5),
+  [Service Management Cana Adoption, Migration and Offline Behaviour](./SERVICE-MANAGEMENT-CANA-ADOPTION.md) (E6),
+  [Service Management Design System and PWA Shell](./SERVICE-MANAGEMENT-DESIGN-SYSTEM-PWA.md) (E7),
+  [Service Management Application](./SERVICE-MANAGEMENT-APPLICATION.md),
+  [Tenant and RBAC Authorization Contract](./TENANT-RBAC-AUTHORIZATION-CONTRACT.md)
+- Linear:
+  [JUM-491](https://linear.app/jumentix/issue/JUM-491/feature-multi-user-shared-catalog-backend-sync-over-cana-resync-events),
+  [JUM-492](https://linear.app/jumentix/issue/JUM-492/feature-domain-package-versioning-with-semantic-conflict-resolution),
+  [JUM-493](https://linear.app/jumentix/issue/JUM-493/feature-publish-designer-core-as-jumentix-package-xpertminds-org-dry),
+  [JUM-494](https://linear.app/jumentix/issue/JUM-494/docs-e8-documentation-collaboration-and-packaging),
+  [JUM-547](https://linear.app/jumentix/issue/JUM-547/feature-full-suite-exportimport-carry-interfaces-service-configuration),
+  [JUM-617](https://linear.app/jumentix/issue/JUM-617/fix-importdomainpackage-recompute-domainentity-ids-on-re-import)
