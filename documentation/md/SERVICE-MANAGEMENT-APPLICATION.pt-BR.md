@@ -68,6 +68,15 @@ migração unidirecional, a matriz offline/de estados e por que a exportação �
      -gRPC
      -WebSocket
      - SSE
+   - Ciclo de vida completo do adaptador (JUM-545): cada adaptador registrado é
+     editado no local (tipo, framework, ponto de entrada e mapeamento de
+     controlador). Adições e edições são validadas — framework delimitado por
+     tipo de interface a partir da matriz de tempo de execução canônica
+     (grafias JUM-461, sem aliases `derby`/`sails`), ponto de entrada como
+     caminho TypeScript/JavaScript sob `src/interface/`, mapeamento de
+     controlador no formato `XController.action` e sem duplicatas (mesmo tipo +
+     ponto de entrada, ou mesmo mapeamento de controlador) — com rejeições
+     anunciadas na superfície de status.
 3. **Configuração do serviço**
    - Captura o perfil de tempo de execução e a forma de implantação:
      - tipo de serviço (`API REST`, `API WebSocket + API REST`, `API gRPC + API REST`)

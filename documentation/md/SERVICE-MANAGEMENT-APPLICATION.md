@@ -64,6 +64,14 @@ recovery path — is documented in
      - gRPC
      - WebSocket
      - SSE
+   - Full adapter lifecycle (JUM-545): every registered adapter edits in place
+     (type, framework, entrypoint and controller mapping). Adds and edits are
+     validated — framework scoped per interface type from the canonical runtime
+     matrix (JUM-461 spellings, no `derby`/`sails` aliases), entrypoint as a
+     TypeScript/JavaScript path under `src/interface/`, controller mapping in
+     the `XController.action` shape, and no duplicates (same type + entrypoint,
+     or same controller mapping) — with rejections announced on the status
+     surface.
 3. **Service Configuration**
    - Captures runtime profile and deployment shape:
      - service kind (`REST API`, `WebSocket API + REST API`, `gRPC API + REST API`)
