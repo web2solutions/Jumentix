@@ -60,6 +60,7 @@ has grown with each extraction and store landing; the rule has not.
 | `apps/service-management/src/store/CanaDesignerStore.js` | DOM-free | The sole `IDesignerStore` adapter (JUM-483), over the Cana client — injected, never imported. |
 | `apps/service-management/src/store/designerStoreFactory.js` | DOM-free | The store construction seam: `createDesignerStore()` always returns `CanaDesignerStore`; the Cana client is the only variable. |
 | `apps/service-management/src/store/canaMigration.js` | DOM-free | JUM-484's one-way localStorage → Cana migration (run at boot before any state load) and the declared storage-environment states. |
+| `apps/service-management/src/state/designerSync.js` | DOM-free | JUM-485's multi-tab sync engine: subscribes to Cana's ordered write events, bridges them across tabs over `BroadcastChannel`, and reconciles remote changes with the local undo/redo history, the pending local edit and the selection. |
 
 The dependency direction is one-way: `script.js` → `src/state/designerState.js`
 → (port) `src/store/IDesignerStore.js` ← `src/store/CanaDesignerStore.js`
@@ -396,14 +397,60 @@ the JUM-543 non-blocking status region (never `alert()`):
   diagnostic reason (near-quota, non-persistent storage): working, but
   durability is degraded.
 
+## Multi-tab write-event sync: `designerSync.js` (JUM-485)
+
+Source:
+[`apps/service-management/src/state/designerSync.js`](../../apps/service-management/src/state/designerSync.js).
+
+JUM-485 makes the designer consistent across tabs. The sync engine subscribes
+to the local Cana client's ordered write events (`CanaClient.subscribe`, Cana
+JUM-413) and re-publishes the committed state document on a shared
+`BroadcastChannel`, stamped with the tab's own `originId` — the channel is the
+cross-tab boundary, because Cana publishes committed events only to the
+subscribing client instance and each tab holds its own client. The `originId`
+is also the echo guard: a message attributed to this tab is never applied as
+remote. Remote catch-up is always by document read-back; the persisted event
+cursor governs only the local event stream (a cursor the retained window no
+longer covers throws Cana's `'NotFound'`, answered with a full resync), so a
+closed or backgrounded tab resumes without loss or duplication. A remote event
+storm (bulk import) coalesces into one trailing-edge apply.
+
+The issue demanded explicit answers to three questions; they are recorded in
+the module header and enforced by test:
+
+1. **Undo is local-only; remote changes are not undoable.** Remote applies
+   never enter the undo stack, and a remote change truncates the redo branch
+   rather than leaving a stack that replays into a state that no longer
+   exists. Undoing a LOCAL action after a remote change restores the local
+   snapshot as a new, deliberate local write (whole-document
+   last-writer-wins), never an undo OF the remote change.
+2. **A pending local edit keeps its unsaved surface while the committed
+   document wins.** The remote change applies to `state`; the re-render
+   preserves the mid-form input, focus, caret and canvas scroll/zoom, and the
+   remote document's `view`/`activeTab`/selection are never imported. The
+   status region (JUM-543) announces the change; the user's next explicit
+   save asserts their version.
+3. **The selection is per-tab and reconciled, never imported.** A remote
+   delete of the selected relationship/entity clears the selection; a remote
+   delete of the selected domain moves it to the first remaining domain.
+   Every reconciliation is announced — a dangling selection is impossible.
+
+The no-fallback rule holds here too: an unavailable channel or store is a
+DECLARED state through the status region (the designer never quietly reverts
+to a single-tab local session that still writes), and a save whose outcome
+Cana reports `'unknown'` (worker crash after dispatch, Cana JUM-411) is
+surfaced and reconciled by reading the stored document back — never silently
+assumed successful.
+
 ## References
 
 - Port contract: [`apps/service-management/src/store/IDesignerStore.js`](../../apps/service-management/src/store/IDesignerStore.js)
 - One-way migration + environment states: [`apps/service-management/src/store/canaMigration.js`](../../apps/service-management/src/store/canaMigration.js)
 - Cana adapter + factory: [`apps/service-management/src/store/CanaDesignerStore.js`](../../apps/service-management/src/store/CanaDesignerStore.js), [`apps/service-management/src/store/designerStoreFactory.js`](../../apps/service-management/src/store/designerStoreFactory.js)
 - State core: [`apps/service-management/src/state/designerState.js`](../../apps/service-management/src/state/designerState.js)
+- Multi-tab sync engine: [`apps/service-management/src/state/designerSync.js`](../../apps/service-management/src/state/designerSync.js)
 - Entry module: [`apps/service-management/script.js`](../../apps/service-management/script.js)
-- Unit suites: [`designerStore.test.ts`](../../apps/backend-template/test/unit/service-management/designerStore.test.ts), [`designerState.test.ts`](../../apps/backend-template/test/unit/service-management/designerState.test.ts), [`canaDesignerStore.test.ts`](../../apps/backend-template/test/unit/service-management/canaDesignerStore.test.ts)
+- Unit suites: [`designerStore.test.ts`](../../apps/backend-template/test/unit/service-management/designerStore.test.ts), [`designerState.test.ts`](../../apps/backend-template/test/unit/service-management/designerState.test.ts), [`canaDesignerStore.test.ts`](../../apps/backend-template/test/unit/service-management/canaDesignerStore.test.ts), [`designerSync.test.ts`](../../apps/backend-template/test/unit/service-management/designerSync.test.ts)
 - Storage schema: [Requirement 126, Contract 2](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md)
 - Component overview: [Service Management Application](./SERVICE-MANAGEMENT-APPLICATION.md)
-- Linear: [JUM-468](https://linear.app/jumentix/issue/JUM-468/refactor-extract-statepersistence-core-as-es-module-behind) (the port), [JUM-469](https://linear.app/jumentix/issue/JUM-469/refactor-modularize-designer-canvas-validation-exporters-importers) (the module graph), [JUM-483](https://linear.app/jumentix/issue/JUM-483/feature-canadesignerstore-idesignerstore-adapter-over-the-cana-client) (CanaDesignerStore), [JUM-484](https://linear.app/jumentix/issue/JUM-484) (the landed one-way migration that retired the transitional adapter), [JUM-493](https://linear.app/jumentix/issue/JUM-493/feature-publish-designer-core-as-jumentix-package-xpertminds-org-dry) (package publish), Cana [JUM-560](https://linear.app/jumentix/issue/JUM-560/feature-storage-quota-persistence-and-eviction-policy) (quota/eviction policy)
+- Linear: [JUM-468](https://linear.app/jumentix/issue/JUM-468/refactor-extract-statepersistence-core-as-es-module-behind) (the port), [JUM-469](https://linear.app/jumentix/issue/JUM-469/refactor-modularize-designer-canvas-validation-exporters-importers) (the module graph), [JUM-483](https://linear.app/jumentix/issue/JUM-483/feature-canadesignerstore-idesignerstore-adapter-over-the-cana-client) (CanaDesignerStore), [JUM-484](https://linear.app/jumentix/issue/JUM-484) (the landed one-way migration that retired the transitional adapter), [JUM-485](https://linear.app/jumentix/issue/JUM-485/feature-write-event-integration-multi-tab-sync-via-cana-message) (multi-tab write-event sync), [JUM-493](https://linear.app/jumentix/issue/JUM-493/feature-publish-designer-core-as-jumentix-package-xpertminds-org-dry) (package publish), Cana [JUM-560](https://linear.app/jumentix/issue/JUM-560/feature-storage-quota-persistence-and-eviction-policy) (quota/eviction policy)

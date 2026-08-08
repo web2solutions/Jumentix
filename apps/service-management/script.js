@@ -39,6 +39,7 @@ import {
   parseCommaSeparated,
   parseEnumValues
 } from './src/state/designerState.js';
+import { createDesignerSync } from './src/state/designerSync.js';
 import {
   deriveTenantScoped,
   validateRbacRule
@@ -116,13 +117,26 @@ let runtimeEnvEditableKeys = Object.keys(RUNTIME_ENV_EDITABLE_DEFAULTS);
 // to localStorage, decision 2026-07-29); the factory seam
 // (src/store/designerStoreFactory.js) only injects the Cana client.
 // `seed` and `render` are function declarations below, hoisted before this
-// module body runs.
+// module body runs. `designerSync` (JUM-485) is created during boot — after
+// the initial load — and observed by the save-outcome hook once it exists.
+let designerSync = null;
 const store = createDesignerStore();
 const designerState = createDesignerState({
   store,
   seed,
   render,
-  runtimeEnvDefaults: RUNTIME_ENV_EDITABLE_DEFAULTS
+  runtimeEnvDefaults: RUNTIME_ENV_EDITABLE_DEFAULTS,
+  // JUM-485: every save outcome is observed; an 'unknown' outcome is
+  // reconciled by the sync engine (read-back against Cana), never assumed
+  // durable. Before the sync engine starts (boot-time seeds), an unknown
+  // outcome still surfaces through the status region.
+  onSaveResult: (saveResult, attemptedPayload) => {
+    if (designerSync) {
+      designerSync.reportSaveOutcome(saveResult, attemptedPayload);
+    } else if (saveResult && saveResult.status !== 'persisted') {
+      showStatus(`A save could not be confirmed (${saveResult.reason || 'unknown outcome'}).`, 'error');
+    }
+  }
 });
 const {
   state,
@@ -499,6 +513,42 @@ function showStatus(message, severity = 'error') {
       statusHideTimer = null;
     }, 6000);
   }
+}
+
+// JUM-485 question 2: a remote change re-renders without clobbering the
+// user's in-flight interaction. The mid-form input value, caret, focus and
+// the canvas scroll position are captured before the render and restored
+// after it, so a pending local edit survives a remote apply and the status
+// region (not a stolen focus) is what announces the change. When the user
+// explicitly saves, their version is asserted — last-writer-wins, consistent
+// with whole-document sync.
+function renderPreservingInteraction() {
+  const active = document.activeElement;
+  const activeId = active && active.id ? active.id : null;
+  const isTextInput = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA');
+  const pending = isTextInput
+    ? { value: active.value, selectionStart: active.selectionStart, selectionEnd: active.selectionEnd }
+    : null;
+  const scrollLeft = dom.canvas ? dom.canvas.scrollLeft : 0;
+  const scrollTop = dom.canvas ? dom.canvas.scrollTop : 0;
+  render();
+  if (dom.canvas) {
+    dom.canvas.scrollLeft = scrollLeft;
+    dom.canvas.scrollTop = scrollTop;
+  }
+  if (!activeId) return;
+  const element = document.getElementById(activeId);
+  if (!element) return;
+  if (pending && 'value' in element) {
+    element.value = pending.value;
+    try {
+      element.setSelectionRange(pending.selectionStart, pending.selectionEnd);
+    } catch (_) {
+      // Some input types (number, color) reject setSelectionRange; the value
+      // and focus are still preserved.
+    }
+  }
+  element.focus({ preventScroll: true });
 }
 
 // Inline status line of the runtime env panel: load/save failures land here
@@ -2360,6 +2410,37 @@ async function boot() {
   await loadState();
   wireEvents();
   render();
+
+  // JUM-485: multi-tab sync starts only after the initial load — the boot
+  // load IS this tab's resume from whatever happened while it was closed.
+  // Starting earlier would apply remote events on top of an empty state.
+  designerSync = createDesignerSync({
+    store,
+    designerState,
+    render: renderPreservingInteraction,
+    notify: showStatus
+  });
+  designerSync.start().catch((error) => {
+    showStatus(`Multi-tab sync could not start: ${error instanceof Error ? error.message : String(error)}`, 'error');
+  });
+  // A backgrounded tab can miss channel messages (frozen pages queue nothing);
+  // on return it catches up by document read-back — no loss, no duplication.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && designerSync) {
+      designerSync.resume().catch(() => {});
+    }
+  });
+  window.addEventListener('pagehide', () => {
+    if (designerSync) designerSync.stop();
+  });
+  // A page restored from the back/forward cache was stopped at pagehide;
+  // restarting re-runs the cursor resume/resync path inside start().
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted && designerSync) {
+      designerSync.start().catch(() => {});
+    }
+  });
+
   loadRuntimeEnvironment(state.runtimeEnvironment?.environment || 'dev')
     .catch((error) => {
       renderRuntimeEnvironment();

@@ -352,8 +352,12 @@ export function createDefaultView() {
  * @param {Function} options.render - re-render after undo/redo restores a snapshot.
  * @param {Object} [options.runtimeEnvDefaults] - default values for the
  * `runtimeEnvironment.values` section (owned by the UI layer's env metadata).
+ * @param {Function} [options.onSaveResult] - `(saveResult, payload) => void`
+ * observer invoked with every resolved save outcome (JUM-485): an `'unknown'`
+ * outcome is surfaced and reconciled by the caller, never silently assumed
+ * successful. Observation is fire-and-forget; persistence timing is unchanged.
  */
-export function createDesignerState({ store, seed, render, runtimeEnvDefaults = {} }) {
+export function createDesignerState({ store, seed, render, runtimeEnvDefaults = {}, onSaveResult }) {
   const state = {
     domains: [],
     relationships: [],
@@ -449,7 +453,10 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
    * Persist the full `service-management.v1` document through the store. The
    * transitional adapter writes synchronously and resolves `'persisted'`, so
    * callers keep their pre-extraction fire-and-forget behaviour; the port
-   * itself is async and callers must not depend on the timing.
+   * itself is async and callers must not depend on the timing. The result is
+   * returned, and every resolved outcome is reported to the optional
+   * `onSaveResult` observer (JUM-485) so an indeterminate write is reconciled
+   * rather than assumed durable — the promise is never left unhandled.
    */
   function saveState() {
     const payload = {
@@ -466,7 +473,17 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
       deployments: state.deployments,
       view: state.view
     };
-    store.save(payload);
+    const result = store.save(payload);
+    if (typeof onSaveResult === 'function') {
+      Promise.resolve(result).then(
+        (saveResult) => onSaveResult(saveResult, payload),
+        (error) => onSaveResult({
+          status: 'unknown',
+          reason: `save-rejected: ${String((error && error.message) || error)}`
+        }, payload)
+      );
+    }
+    return result;
   }
 
   function recordHistory() {
