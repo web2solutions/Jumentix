@@ -37,6 +37,10 @@ The Cana adoption from the user's side — where the designer's data lives, the
 one-way migration, the offline/state matrix and why export is the only
 recovery path — is documented in
 [Service Management Cana Adoption, Migration and Offline Behaviour](./SERVICE-MANAGEMENT-CANA-ADOPTION.md).
+Collaboration and packaging — the multi-user shared catalog, versioned domain
+packages and the deferred designer-core publish, closing the E1–E8
+documentation chain — are documented in
+[Service Management Collaboration and Packaging](./SERVICE-MANAGEMENT-COLLABORATION-PACKAGING.md).
 
 ## Tabs
 

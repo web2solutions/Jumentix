@@ -25,6 +25,7 @@ Detailed feature usage:
 - [Operations Console](../../documentation/md/SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.md)
 - [Design System and PWA Shell](../../documentation/md/SERVICE-MANAGEMENT-DESIGN-SYSTEM-PWA.md)
 - [Cana Adoption, Migration and Offline Behaviour](../../documentation/md/SERVICE-MANAGEMENT-CANA-ADOPTION.md)
+- [Collaboration and Packaging](../../documentation/md/SERVICE-MANAGEMENT-COLLABORATION-PACKAGING.md)
 - [Service Management Technical Documentation](./documentation/README.md)
 
 ## First Run
