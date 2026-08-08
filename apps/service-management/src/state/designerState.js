@@ -667,6 +667,14 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
    *   surfaces this through the declared storage-environment states
    *   (JUM-484, `canaMigration.js`) so the session is never silently
    *   non-persisting.
+   *
+   * Returns the outcome so the boot can announce it (JUM-626):
+   * `{ status: 'ok'|'empty'|'unavailable'|'lost'|'recovered', reason? }` —
+   * `'lost'` is the port's verdict, `'recovered'` is a decodable payload
+   * whose normalisation still threw (the same silent-recovery shape as
+   * `'lost'`, announced through the same `data-lost` declared state), and
+   * `reason` carries the diagnostic the announcement names. Recovery itself
+   * stays unchanged; only the silence is fixed.
    */
   async function loadState() {
     const result = await store.load();
@@ -674,14 +682,14 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
       seed();
       saveState();
       clearHistory();
-      return;
+      return { status: 'empty' };
     }
     if (result.status === 'lost' || result.status === 'unavailable') {
       seed();
       if (result.status === 'lost') saveState();
       state.view = createDefaultView();
       clearHistory();
-      return;
+      return { status: result.status, reason: result.reason };
     }
     try {
       const parsed = normalizeStatePayload(result.payload);
@@ -695,11 +703,13 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
       state.view = parsed.view;
       recomputeIdCounter();
       clearHistory();
+      return { status: 'ok' };
     } catch (error) {
       seed();
       saveState();
       state.view = createDefaultView();
       clearHistory();
+      return { status: 'recovered', reason: String((error && error.message) || error) };
     }
   }
 

@@ -226,6 +226,47 @@ describe('designer state core (JUM-468)', () => {
     });
   });
 
+  describe('loadState outcome reporting (JUM-626)', () => {
+    it('reports empty on a first run, ok on a healthy restore', async () => {
+      const first = createCore();
+      await expect(first.core.loadState()).resolves.toStrictEqual({ status: 'empty' });
+
+      const second = createCore(first.storage);
+      await expect(second.core.loadState()).resolves.toStrictEqual({ status: 'ok' });
+    });
+
+    it('reports lost with the port reason on a corrupted payload — recovery still happens', async () => {
+      const storage = createFakeStorage({ 'service-management.v1': '{corrupted' });
+      const { core } = createCore(storage);
+      const outcome = await core.loadState();
+      expect(outcome.status).toBe('lost');
+      expect(outcome.reason).toContain('not readable JSON');
+      // Recovery is unchanged: the seed template is persisted over the corrupt record.
+      expect(JSON.parse(storage.map.get('service-management.v1') as string).domains[0].name).toBe('Seed');
+    });
+
+    it('reports unavailable with the reason when storage cannot be read', async () => {
+      const storage = createFakeStorage();
+      storage.getItem = () => { throw new Error('SecurityError'); };
+      storage.setItem = () => { throw new Error('SecurityError'); };
+      const { core } = createCore(storage);
+      const outcome = await core.loadState();
+      expect(outcome.status).toBe('unavailable');
+      expect(outcome.reason).toContain('SecurityError');
+    });
+
+    it('reports recovered with the cause when a decodable payload fails normalisation', async () => {
+      const storage = createFakeStorage({
+        'service-management.v1': JSON.stringify({ domains: [], relationships: [null] })
+      });
+      const { core } = createCore(storage);
+      const outcome = await core.loadState();
+      expect(outcome.status).toBe('recovered');
+      expect(typeof outcome.reason).toBe('string');
+      expect(core.state.domains[0].name).toBe('Seed');
+    });
+  });
+
   describe('withPersist / history / undo / redo', () => {
     it('records history before the action and saves after it', async () => {
       const { core, storage } = createCore();
