@@ -81,6 +81,7 @@ const SERVICE_MANAGEMENT_INTEGRATION_AREA = {
   'canaMigration.browser.integration.test.ts': 'service-management/designer',
   'multiTabSync.browser.integration.test.ts': 'service-management/designer',
   'offlinePersistenceMatrix.browser.integration.test.ts': 'service-management/designer',
+  'interfaceAdapters.browser.integration.test.ts': 'service-management/designer',
   'runtimeEnv.integration.test.ts': 'service-management/server',
   'runtimeEnvContract.integration.test.ts': 'service-management/server',
   'pm2Ecosystem.integration.test.ts': 'service-management/server',

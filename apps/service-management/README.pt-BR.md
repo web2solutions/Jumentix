@@ -54,7 +54,20 @@ Uso detalhado de recursos:
    - Navegação em minimapa e modo de desempenho em tela grande.
 2. **Designer de interface de comunicação**
    - Registrar adaptadores de interface de entrada (`HTTP/REST`, `gRPC`, `WebSocket`, `SSE`).
-   - Rastreie o mapeamento de estrutura/tempo de execução, ponto de entrada e controlador.
+   - Ciclo de vida completo do adaptador (JUM-545): cada adaptador registrado é editado
+     no local (tipo, framework, ponto de entrada e mapeamento de controlador) — sem
+     excluir e readicionar.
+   - As opções de framework são delimitadas por tipo de interface a partir da matriz de
+     tempo de execução canônica (`src/model/interfaceFrameworkMatrix.js`): os onze
+     frameworks HTTP canônicos (grafias JUM-461 — somente `derby-js`/`sails-js`, sem
+     duplicatas de alias) para `HTTP/REST` e `SSE`, `socket-io` para `WebSocket`,
+     `grpc` para `gRPC`.
+   - Adições e edições são validadas (`src/validation/interfaceAdapterValidation.js`):
+     o ponto de entrada deve ser um caminho TypeScript/JavaScript sob `src/interface/`,
+     o mapeamento de controlador deve ter o formato `XController.action`, e duplicatas
+     (mesmo tipo + ponto de entrada, ou mesmo mapeamento de controlador) são rejeitadas
+     com o motivo na superfície de status. Entradas persistidas inválidas são sinalizadas
+     inline.
 3. **Configuração do serviço**
    - Configurar tipo de serviço (`REST API`, `WebSocket API + REST API`, `gRPC API + REST API`),
    modelo de execução, provedor de nuvem, perfil de ativos estáticos e portas de tempo de execução.

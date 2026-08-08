@@ -54,6 +54,10 @@ import * as model from './src/model/modelQueries.js';
 import { collectModelIssues } from './src/validation/modelValidation.js';
 import { collectServiceConfigurationIssues } from './src/validation/serviceConfigurationValidation.js';
 import {
+  normalizeInterfaceAdapterInput,
+  upsertInterfaceAdapter
+} from './src/validation/interfaceAdapterValidation.js';
+import {
   buildBoilerplateBundleDocument,
   buildDomainPackageDocument,
   buildJsonExportDocument,
@@ -307,7 +311,7 @@ const dom = {
   clearBaselineBtn: document.getElementById('clear-baseline-btn'),
   schemaDiffList: document.getElementById('schema-diff-list'),
   interfaceTypeSelect: document.getElementById('interface-type-select'),
-  interfaceFrameworkInput: document.getElementById('interface-framework-input'),
+  interfaceFrameworkSelect: document.getElementById('interface-framework-select'),
   interfaceEntrypointInput: document.getElementById('interface-entrypoint-input'),
   interfaceControllerInput: document.getElementById('interface-controller-input'),
   addInterfaceAdapterBtn: document.getElementById('add-interface-adapter-btn'),
@@ -1855,19 +1859,31 @@ function wireEvents() {
   if (dom.tabServiceConfigBtn) dom.tabServiceConfigBtn.onclick = () => tabs.setActiveTab('service-config');
   if (dom.tabDeployManagementBtn) dom.tabDeployManagementBtn.onclick = () => tabs.setActiveTab('deploy-management');
 
+  if (dom.interfaceTypeSelect) {
+    dom.interfaceTypeSelect.onchange = () => inspectors.renderInterfaceFrameworkOptions(dom.interfaceTypeSelect.value);
+  }
+
   if (dom.addInterfaceAdapterBtn) {
     dom.addInterfaceAdapterBtn.onclick = () => {
-      const type = dom.interfaceTypeSelect.value;
-      const framework = String(dom.interfaceFrameworkInput.value || '').trim();
-      const entrypoint = String(dom.interfaceEntrypointInput.value || '').trim();
-      const controller = String(dom.interfaceControllerInput.value || '').trim();
-      if (!framework || !entrypoint || !controller) {
-        showStatus('Framework/runtime, entrypoint and controller mapping are required.');
+      // JUM-545: the candidate is validated BEFORE it touches state, through
+      // the same upsert gate the edit-in-place save uses — vocabulary
+      // (per-type framework subset), entrypoint/controller-mapping shapes and
+      // duplicate detection are reported on the JUM-543 status surface and
+      // the add is refused. Type and framework stay selected so registering
+      // several adapters of the same kind does not re-pick them each time.
+      const candidate = normalizeInterfaceAdapterInput({
+        type: dom.interfaceTypeSelect.value,
+        framework: dom.interfaceFrameworkSelect.value,
+        entrypoint: dom.interfaceEntrypointInput.value,
+        controller: dom.interfaceControllerInput.value
+      });
+      const result = upsertInterfaceAdapter(state.interfaces, candidate);
+      if (result.issues.length > 0) {
+        showStatus(result.issues.map((issue) => issue.message).join(' '));
         return;
       }
       withPersist(() => {
-        state.interfaces.push({ type, framework, entrypoint, controller });
-        dom.interfaceFrameworkInput.value = '';
+        state.interfaces = result.adapters;
         dom.interfaceEntrypointInput.value = '';
         dom.interfaceControllerInput.value = '';
         inspectors.renderInterfaceAdapters();

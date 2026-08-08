@@ -269,17 +269,22 @@ validation, uniqueness) for both console lists to
 [JUM-545](https://linear.app/jumentix/issue/JUM-545/feature-interface-adapter-lifecycle-edit-in-place-uniqueness-and)
 (interface adapters) and
 [JUM-546](https://linear.app/jumentix/issue/JUM-546/feature-deploy-target-lifecycle-edit-duplicate-and-field-validation)
-(deploy targets). **Neither has landed** — this section records the lifecycle
-the code actually implements today, so the gap is legible rather than
-discovered by clicking.
+(deploy targets). **JUM-545 has landed; JUM-546 is still open** — this section
+records the lifecycle the code actually implements today, so the remaining gap
+is legible rather than discovered by clicking.
 
-**Interface adapters (Communication Interface Designer).** Today an adapter is
-**added** and **deleted** — nothing else. The add gate
-(`script.js`) requires the framework/runtime, entrypoint and controller
-mapping to all be present before the `{ type, framework, entrypoint,
-controller }` entry is stored; there is no edit-in-place, no duplicate, and no
-uniqueness constraint — two identical adapters can be registered. JUM-545 owns
-the missing rules, including the uniqueness constraints and their reasons.
+**Interface adapters (Communication Interface Designer).** An adapter is
+**added**, **edited in place** and **deleted** (JUM-545). The add and edit
+gates share one validation path (`upsertInterfaceAdapter` in
+`src/validation/interfaceAdapterValidation.js`): the framework must belong to
+the per-interface-type subset of the canonical runtime matrix
+(`src/model/interfaceFrameworkMatrix.js` — the JUM-461 canonical spellings,
+with no `derby`/`sails` alias duplicates), the entrypoint must be a
+TypeScript/JavaScript path under `src/interface/`, the controller mapping must
+match the `XController.action` shape, and duplicates — same type + entrypoint,
+or same controller mapping — are rejected with the reason on the status
+surface. Persisted entries that predate the gate are flagged inline instead of
+passing as valid designs.
 
 **Deploy targets (Deploy Management).** Today a target is **added** and
 **deleted**. The add gate (`script.js`) requires name, region and runtime and
@@ -293,7 +298,7 @@ required-field presence and lifecycle for it.
 
 The reason this honest-gap section exists at all: the console's lists are the
 surfaces where a design becomes an operational intent, and an entry that only
-*becomes* valid after a reload — or a duplicated adapter that nothing rejects —
+*becomes* valid after a reload — or a duplicated entry that nothing rejects —
 is a rule the user cannot see. Naming the owning issues keeps the rule visible
 until the code catches up.
 
