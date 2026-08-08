@@ -4,7 +4,9 @@
 
 ## All Changes
 
+- 2026-08-08 chore(JUM-492): merge dev, union shell precache at 0.4.0 - Eduardo A.
 - 2026-08-08 feat(JUM-492): domain-package versioning with semantic conflict resolution - Eduardo A.
+- 2026-08-08 feat(JUM-548): first-run experience with sample model loader and guided empty states (#131) - Eduardo A.
 - 2026-08-08 feat(JUM-547): full-suite export/import carrying all four tabs (#128) - Eduardo A.
 - 2026-08-08 docs(JUM-490): document E7 design system and PWA shell (EN/PT-BR) (#127) - Eduardo A.
 - 2026-08-08 docs(JUM-487): document E6 Cana adoption, migration and offline behaviour (EN/PT-BR) (#126) - Eduardo A.

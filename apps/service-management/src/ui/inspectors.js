@@ -54,7 +54,10 @@ import {
  * `loadSchemaBaseline()`, `showStatus(message, severity)` (JUM-543
  * non-blocking status surface — replaces the monolith's window.alert),
  * `getPm2EcosystemPreview()` (JUM-480 — the latest `/api/runtime/pm2-ecosystem`
- * snapshot, or null before the first load).
+ * snapshot, or null before the first load),
+ * `editDeployment(index)` / `duplicateDeployment(index)` (JUM-546 deploy
+ * target lifecycle) and `syncDeploymentEditStateAfterRemoval(index)` (keeps an
+ * in-flight deploy-target edit consistent when the list removes an entry).
  */
 export function createInspectors({ dom, state, interaction, actions }) {
   const {
@@ -69,7 +72,10 @@ export function createInspectors({ dom, state, interaction, actions }) {
     renderRuntimeEnvironment,
     loadSchemaBaseline,
     showStatus,
-    getPm2EcosystemPreview
+    getPm2EcosystemPreview,
+    editDeployment,
+    duplicateDeployment,
+    syncDeploymentEditStateAfterRemoval
   } = actions;
 
   function getSelectedDomain() {
@@ -698,12 +704,28 @@ export function createInspectors({ dom, state, interaction, actions }) {
         item.appendChild(warning);
       }
 
+      // JUM-546 lifecycle: edit loads the entry into the form (the add gate
+      // becomes the save gate); duplicate stores an independent deep copy
+      // renamed by the " (copy)" rule.
+      const editBtn = document.createElement('button');
+      editBtn.type = 'button';
+      editBtn.textContent = 'Edit';
+      editBtn.onclick = () => editDeployment(index);
+      item.appendChild(editBtn);
+
+      const duplicateBtn = document.createElement('button');
+      duplicateBtn.type = 'button';
+      duplicateBtn.textContent = 'Duplicate';
+      duplicateBtn.onclick = () => duplicateDeployment(index);
+      item.appendChild(duplicateBtn);
+
       const removeBtn = document.createElement('button');
       removeBtn.type = 'button';
       removeBtn.textContent = 'Delete';
       removeBtn.onclick = () => {
         withPersist(() => {
           state.deployments.splice(index, 1);
+          syncDeploymentEditStateAfterRemoval(index);
           renderDeployments();
         });
       };

@@ -17,9 +17,10 @@
  *     rows of the matrix) and forbidden on function targets: a functions
  *     deploy target with a PM2 profile is a design the matrix cannot build.
  *
- * Required-field presence (name/region/runtime) stays in the `script.js`
- * glue, as before — JUM-546 owns field-level lifecycle validation; this
- * module owns what a deploy target may contain.
+ * Field-level lifecycle validation (name required/unique, runtime/version
+ * pattern, region per target type) lives in
+ * `deployTargetLifecycleValidation.js` (JUM-546); this module owns what a
+ * deploy target may contain.
  *
  * Every issue is severity `error`: an invalid target is not added. The add
  * gate (`script.js`) consumes this list; the function itself never touches
