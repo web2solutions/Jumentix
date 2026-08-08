@@ -4,7 +4,26 @@
 
 ## All Changes
 
+- 2026-08-07 chore(JUM-481): merge dev updates (changelog left to dev regen) - Eduardo A.
+- 2026-08-07 feat(JUM-480): real multi-environment editing and PM2 ecosystem preview (#106) - Eduardo A.
+- 2026-08-07 ci: fold coverage publishers into CircleCI coverage job - Eduardo A.
+- 2026-08-07 [JUM-618][Test] Stop the Cypress teardown reporting blocked deletes as clean (#112) - Eduardo A.
+- 2026-08-07 test(cana-browser): give the teardown its own budget, and stop it lying about blocks - Eduardo Almeida
+- 2026-08-07 [JUM-623][CI] Cover the cypress support file and config, not just the specs (#114) - Eduardo A.
+- 2026-08-07 ci(test-map): cover the cypress support file and config, not just the specs - Eduardo Almeida
+- 2026-08-07 [JUM-622][CI] Register cana's browser specs so the gate can select them (#113) - Eduardo A.
+- 2026-08-07 ci(test-map): register cana's cypress specs so the gate can select them - Eduardo Almeida
+- 2026-08-07 [JUM-620][CI] Declare readiness on every compose service (#111) - Eduardo A.
+- 2026-08-07 ci(docker): declare readiness on every compose service - Eduardo Almeida
+- 2026-08-07 [JUM-616][CI] Read the parsed review job instead of grepping the config as text (#110) - Eduardo A.
+- 2026-08-07 [JUM-619][CI] Scope the Jest ruleset to test files (#109) - Eduardo A.
+- 2026-08-07 ci(third-party-review): read the parsed job instead of grepping the config as text - Eduardo Almeida
+- 2026-08-07 ci(eslint): scope the Jest ruleset to test files - Eduardo Almeida
+- 2026-08-07 fix(JUM-617): recompute domain/entity ids on domain-package re-import (#104) - Eduardo A.
+- 2026-08-07 [JUM-602][Test] Make external-db-repositories coverage its own (#108) - Eduardo A.
+- 2026-08-07 [JUM-601][Refactor] Move the store errors into persistence-contracts so a library stops importing an application (#107) - Eduardo A.
 - 2026-08-07 feat(JUM-481): align Deploy Management to the Req 059 matrix with per-service metadata - Eduardo A.
+- 2026-08-07 [JUM-614][Governance] Require an agent to declare where it works (#103) - Eduardo A.
 - 2026-08-07 fix(JUM-543): replace blocking alerts with non-blocking status surfaces and honest env-API errors (#100) - Eduardo A.
 - 2026-08-07 feat(JUM-478): lossless OAS round-trip with full entity meta normalization (#102) - Eduardo A.
 - 2026-08-07 [JUM-599][Fix] Enforce the declared filter operators (#101) - Eduardo A.
