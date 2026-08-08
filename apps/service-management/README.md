@@ -27,6 +27,25 @@ Detailed feature usage:
 - [Cana Adoption, Migration and Offline Behaviour](../../documentation/md/SERVICE-MANAGEMENT-CANA-ADOPTION.md)
 - [Service Management Technical Documentation](./documentation/README.md)
 
+## First Run
+
+On a fresh profile the designer boots to an empty model and each tab shows a
+guided empty state (JUM-548) that names the tab's first action — no silent
+pre-populated template. The Domain Designer's first action is the **Load
+Sample Model** button (also available later in the Export panel): one click
+loads a realistic identity domain — Users and Organization, the same
+resources `spec/1.0.0.yml` declares — with relationships, per-entity RBAC, a
+message contract, invariants and OAS `oneOf` + discriminator composition.
+The sample passes the export quality gate and round-trips through
+export/import, so it doubles as a live demonstration of those crossings.
+
+Sample content is always distinguishable from your work: every sample id
+carries the `sample-` prefix and sample domains show a "sample" badge in the
+domain list. Loading the sample over an existing model asks for explicit
+confirmation (Undo restores the previous model afterwards), and deleting the
+sample is ordinary domain/entity deletion. Content is defined in
+`src/model/sampleModel.js`.
+
 ## Tabs
 
 1. **Domain Designer**
