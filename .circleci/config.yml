@@ -294,24 +294,6 @@ jobs:
               -f coverage/lcov.info \
               -f coverage/browser/lcov.info
       - run:
-          name: Backfill git objects for Sonar SCM blame
-          # CircleCI checkout is a blobless partial clone; JGit blame reads the
-          # local object store directly and dies on missing blobs. First let Git
-          # lazily hydrate every object while the promisor remote is still
-          # configured, then fail before Sonar if anything remains missing.
-          command: |
-            set -euo pipefail
-            git fetch --prune origin "+refs/heads/*:refs/remotes/origin/*"
-            git rev-list --objects --all \
-              | awk '{print $1}' \
-              | git cat-file --batch-check='%(objectname)' >/dev/null
-            missing="$(git rev-list --objects --all --missing=print | sed -n 's/^?//p')"
-            if [ -n "$missing" ]; then
-              echo "Git object backfill left missing objects for Sonar SCM blame:"
-              echo "$missing"
-              exit 1
-            fi
-      - run:
           name: Install Sonar scanner
           command: |
             set -euo pipefail
@@ -329,7 +311,7 @@ jobs:
             fi
             test -n "${SONAR_TOKEN:-}"
             source "$BASH_ENV"
-            sonar-scanner
+            sonar-scanner -Dsonar.scm.disabled=true
       - run:
           name: Report Sonar findings
           command: bun ci-cd/report-sonar-findings.js

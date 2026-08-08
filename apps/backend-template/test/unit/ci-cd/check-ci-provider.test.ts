@@ -81,17 +81,17 @@ describe('check-ci-provider', () => {
     expect(run(directory).output).toContain('must run inside the coverage job');
   });
 
-  it('fails when the Sonar SCM blob hydration guard is removed', () => {
+  it('fails when the CircleCI Sonar scanner partial-clone guard is removed', () => {
     expect.hasAssertions();
 
     const directory = fixture((root) => {
       const file = path.join(root, '.circleci/config.yml');
       fs.writeFileSync(
         file,
-        fs.readFileSync(file, 'utf8').replace('git cat-file --batch-check=\'%(objectname)\'', 'git cat-file --removed')
+        fs.readFileSync(file, 'utf8').replace('sonar-scanner -Dsonar.scm.disabled=true', 'sonar-scanner')
       );
     });
-    expect(run(directory).output).toContain('git cat-file --batch-check');
+    expect(run(directory).output).toContain('sonar-scanner -Dsonar\\.scm\\.disabled=true');
   });
 
   it('fails when a GitHub Actions workflow returns while billing is blocked', () => {
