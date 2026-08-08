@@ -1567,6 +1567,26 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/modules/Catalogs/adapters/in/http/restapiHandlers.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Catalogs/adapters/in/http/restapiHandlers.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Catalogs/index.exports.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Catalogs/index.exports.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/modules/Catalogs/application/catalogBoundaries.test.ts",
       "path": "apps/backend-template/test/unit/modules/Catalogs/application/catalogBoundaries.test.ts",
       "layer": "application",
@@ -3508,9 +3528,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 175,
+    "unit": 177,
     "integration": 96,
     "smoke": 2,
-    "suites": 293
+    "suites": 295
   }
 }
