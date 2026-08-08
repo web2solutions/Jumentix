@@ -4,7 +4,13 @@
 
 ## All Changes
 
+- 2026-08-08 chore(JUM-626): merge dev updates (changelog left to dev regen) - Eduardo A.
+- 2026-08-08 [JUM-627][Governance] Verify the child task issue is in the focused epic (#134) - Eduardo A.
 - 2026-08-08 fix(JUM-626): announce load-time storage corruption recovery in the boot UI - Eduardo A.
+- 2026-08-08 test(governance): stop the no-credential cases reading the ambient key - Eduardo Almeida
+- 2026-08-08 chore(governance): state which membership the check verified - Eduardo Almeida
+- 2026-08-08 fix(governance): find the linear key at any workspace depth - Eduardo Almeida
+- 2026-08-08 chore(governance): verify the child task issue is in the focused epic - Eduardo Almeida
 - 2026-08-08 [JUM-491][Feature] Multi-user shared catalog sync over Cana resync events (#133) - Eduardo A.
 - 2026-08-08 docs(JUM-494): document E8 collaboration and packaging, closing the E1-E8 chain (EN/PT-BR) (#135) - Eduardo A.
 - 2026-08-08 [JUM-545][Feature] Interface adapter lifecycle with edit-in-place and validation (#130) - Eduardo A.
