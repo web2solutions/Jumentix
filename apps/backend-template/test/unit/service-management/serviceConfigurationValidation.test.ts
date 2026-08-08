@@ -190,6 +190,16 @@ describe('service configuration validation (JUM-544)', () => {
   });
 });
 
+describe('nullish config fallbacks (JUM-493)', () => {
+  it('reports every selector as unsupported when the config is null', () => {
+    const issues = collectServiceConfigurationIssues(null);
+    const nullMessages = issues.map((issue: { message: string }) => issue.message);
+    expect(nullMessages.some((message: string) => message.includes('Service kind "" is not supported'))).toBe(true);
+    expect(nullMessages.some((message: string) => message.includes('Run mode "" is not supported'))).toBe(true);
+    expect(nullMessages.some((message: string) => message.includes('Cloud provider "" is not supported'))).toBe(true);
+  });
+});
+
 // Keeps this file a module: with no import/export left, TypeScript would
 // treat it as a script and its top-level requires would share one global
 // scope with every other script-mode suite in ts-jest's program (TS2451).

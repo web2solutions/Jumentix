@@ -347,6 +347,20 @@ describe('check-coverage-thresholds report reader', () => {
     expect(coverageGuard.isThresholdSubject('/repo/packages/sdk-rest-client/src/index.ts'))
       .toBe(false);
   });
+
+  it('measures designer-core sources as threshold subjects (JUM-493)', () => {
+    expect.hasAssertions();
+
+    // The service-management unit suites exercise the package's canonical
+    // sources through the workspace alias, so the package belongs to the
+    // global bar exactly like cana/src does.
+    expect(coverageGuard.isThresholdSubject('/repo/packages/designer-core/src/state/designerState.js'))
+      .toBe(true);
+    expect(coverageGuard.isThresholdSubject('/repo/packages/designer-core/test/packaging.test.ts'))
+      .toBe(false);
+    expect(coverageGuard.isThresholdSubject('/repo/packages/designer-core/dist/index.js'))
+      .toBe(false);
+  });
 });
 
 /**

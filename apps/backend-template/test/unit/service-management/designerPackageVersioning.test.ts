@@ -707,6 +707,123 @@ describe('domain package versioning (JUM-492)', () => {
   });
 });
 
+describe('defensive projection, identity and merge fallbacks (JUM-493)', () => {
+  it('treats two unparseable versions as equal and orders by patch', () => {
+    expect(comparePackageVersions('junk', 'also-junk')).toBe(0);
+    expect(comparePackageVersions('1.0.0', '1.0.1')).toBe(-1);
+  });
+
+  it('builds an empty registry from a non-array domain list', () => {
+    expect(buildPackageRegistry(null).size).toBe(0);
+  });
+
+  it('defaults the provenance version and a non-array dependency list in the registry', () => {
+    const registry = buildPackageRegistry([
+      { id: 'd1', name: 'D', context: { provenance: { package: 'p' }, packageDependencies: 'oops' } }
+    ]);
+    expect(registry.get('p').version).toBe('1.0.0');
+    expect(registry.get('p').dependencies).toStrictEqual([]);
+  });
+
+  it('overlays an incoming package without a dependency list', () => {
+    const graph = resolvePackageGraph(buildPackageRegistry([]), { name: 'n', version: '1.0.0' });
+    expect(graph).toMatchObject({ missing: [], incompatible: [], cycles: [] });
+  });
+
+  it('synthesizes the legacy identity when the document has no package block', () => {
+    expect(normalizePackageIdentity({}, {}).package)
+      .toStrictEqual({ name: 'package', version: '1.0.0', dependencies: [] });
+    expect(normalizePackageIdentity({}, { name: 'Orders' }).package.name).toBe('Orders');
+  });
+
+  it('rejects a blank package name and defaults a missing or blank version', () => {
+    expect(normalizePackageIdentity({ package: { name: ' ' } }, { name: 'D' }))
+      .toStrictEqual({ ok: false, reason: 'invalid-package' });
+    expect(normalizePackageIdentity({ package: { name: 'p' } }, { name: 'D' }).package.version).toBe('1.0.0');
+    expect(normalizePackageIdentity({ package: { name: 'p', version: ' ' } }, { name: 'D' }).package.version)
+      .toBe('1.0.0');
+  });
+
+  it('drops a non-array dependency block in the identity', () => {
+    const identity = normalizePackageIdentity(
+      { package: { name: 'p', version: '1.0.0', dependencies: 'oops' } },
+      { name: 'D' }
+    );
+    expect(identity.package.dependencies).toStrictEqual([]);
+  });
+
+  it('projects sparse content deterministically for comparison', () => {
+    const sparse = { name: 'D' };
+    const withSparseEntity = {
+      name: 'D',
+      entities: [{
+        name: 'E',
+        fields: [{ name: 'f', type: 'string' }],
+        meta: { contracts: [{ name: 'c', type: 'event' }] }
+      }]
+    };
+    expect(packageContentsEqual(sparse, sparse)).toBe(true);
+    expect(packageContentsEqual(sparse, withSparseEntity)).toBe(false);
+    expect(packageContentsEqual(withSparseEntity, withSparseEntity)).toBe(true);
+  });
+
+  it('merges domains with missing entity lists and no context', () => {
+    const merge = buildPackageMerge({ name: 'D' }, { name: 'D' }, { name: 'p', version: '2.0.0' });
+    expect(merge.domain.name).toBe('D');
+    expect(merge.autoCount).toBe(0);
+    expect(merge.requiresDecision).toBe(0);
+  });
+
+  it('keeps existing on contract and composition changes and appends a meta-less entity', () => {
+    const existing = {
+      name: 'D',
+      context: { ubiquitousLanguage: 'orders' },
+      entities: [
+        {
+          name: 'E',
+          fields: [{ name: 'f', type: 'string' }],
+          meta: {
+            contracts: [{
+              name: 'c', type: 'event', channel: 'old', version: '1.0.0', payloadSchema: {}
+            }],
+            oasComposition: {
+              mode: '', refs: [], externalRefs: [], discriminator: ''
+            }
+          }
+        },
+        { name: 'F' }
+      ]
+    };
+    const incoming = {
+      name: 'D',
+      entities: [
+        {
+          name: 'E',
+          fields: [{ name: 'f', type: 'integer', description: 'now documented' }],
+          meta: {
+            contracts: [{
+              name: 'c', type: 'event', channel: 'new', version: '1.0.0', payloadSchema: {}
+            }],
+            oasComposition: {
+              mode: 'oneOf', refs: ['A'], externalRefs: [], discriminator: 'kind'
+            }
+          }
+        },
+        { name: 'New' }
+      ]
+    };
+    const merge = buildPackageMerge(existing, incoming, { name: 'p', version: '2.0.0' });
+    const classes = merge.preview.map((item: { class: string }) => item.class);
+    expect(classes).toContain('entity-removed');
+    expect(classes).toContain('field-type-changed');
+    expect(classes).toContain('contract-changed');
+    expect(classes).toContain('composition-changed');
+    expect(classes).toContain('entity-added');
+    const appended = merge.domain.entities.find((entity: { name: string }) => entity.name === 'New');
+    expect(appended.meta.provenance).toStrictEqual({ package: 'p', version: '2.0.0' });
+  });
+});
+
 // Keeps this file a module: with no import/export left, TypeScript would
 // treat it as a script and its top-level requires would share one global
 // scope with every other script-mode suite in ts-jest's program (TS2451).

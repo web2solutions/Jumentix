@@ -605,6 +605,18 @@ describe('designer export/import round-trip (JUM-471)', () => {
       expect(result.state.runtimeEnvironment).toStrictEqual(state.runtimeEnvironment);
     });
 
+    it('preserves local env values when the document carries a null values field (JUM-493)', () => {
+      const state = createFullSuiteState();
+      const document = JSON.parse(JSON.stringify(buildJsonExportDocument(state)));
+      // A hand-edited or corrupted bundle with an explicit null values field
+      // must behave like the no-values case: the local machine's values win.
+      document.runtimeEnvironment = { environment: 'dev', fileName: '.env.dev', values: null };
+      const result = buildStateFromSuiteExport(document, state);
+      expect(result.ok).toBe(true);
+      expect(result.state.runtimeEnvironment.values)
+        .toStrictEqual(state.runtimeEnvironment.values);
+    });
+
     it('is idempotent at document level: a second export of the imported state is deep-equal to the first', () => {
       const first = buildJsonExportDocument(createFullSuiteState());
       const result = buildStateFromSuiteExport(

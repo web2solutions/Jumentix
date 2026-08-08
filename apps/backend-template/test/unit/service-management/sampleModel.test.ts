@@ -196,6 +196,17 @@ describe('first-run sample model (JUM-548)', () => {
   });
 });
 
+describe('sample id-marker predicates on nullish subjects (JUM-493)', () => {
+  it('treat missing or non-string ids as non-sample, never throwing', () => {
+    expect(isSampleDomain(undefined)).toBe(false);
+    expect(isSampleDomain({})).toBe(false);
+    expect(isSampleDomain({ id: 'user-1' })).toBe(false);
+    expect(isSampleEntity(null)).toBe(false);
+    expect(isSampleEntity({ id: `${SAMPLE_ID_PREFIX}entity-1` })).toBe(true);
+    expect(isSampleRelationship({ name: 'owns' })).toBe(false);
+  });
+});
+
 // Keeps this file a module: with no import/export left, TypeScript would
 // treat it as a script and its top-level requires would share one global
 // scope with every other script-mode suite in ts-jest's program (TS2451).

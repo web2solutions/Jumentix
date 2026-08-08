@@ -368,3 +368,13 @@ describe('model queries (JUM-469)', () => {
     });
   });
 });
+
+describe('format-less and field-less fallbacks (JUM-493)', () => {
+  it('renders a field label with neither format nor flags', () => {
+    expect(model.fieldLabel({ name: 'hostname', type: 'string' })).toBe('hostname: string');
+  });
+
+  it('builds an empty request example for an entity without fields', () => {
+    expect(model.buildEntityRequestExample({ name: 'Empty' })).toStrictEqual({});
+  });
+});

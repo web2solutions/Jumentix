@@ -767,3 +767,46 @@ describe('designer state core (JUM-468)', () => {
     });
   });
 });
+
+describe('additive metadata fallback arms (JUM-493)', () => {
+  it('carries entity provenance with missing fields as empty strings', () => {
+    const normalized = normalizeStatePayload({
+      domains: [{ name: 'D', entities: [{ name: 'E', fields: [], meta: { provenance: {} } }] }]
+    });
+    expect(normalized.domains[0].entities[0].meta.provenance).toStrictEqual({ package: '', version: '' });
+  });
+
+  it('carries domain package identity and catalog metadata with field defaults', () => {
+    const normalized = normalizeStatePayload({
+      domains: [{ name: 'D', context: { packageName: 'pkg', provenance: {}, catalog: {} } }]
+    });
+    const { context } = normalized.domains[0];
+    expect(context.packageName).toBe('pkg');
+    // packageVersion was not declared, so it is not carried at all (additive rule).
+    expect('packageVersion' in context).toBe(false);
+    expect(context.provenance).toStrictEqual({ package: '', version: '' });
+    expect(context.catalog).toStrictEqual({ id: '', version: 0, contentHash: '' });
+  });
+
+  it('reports a non-Error save rejection with the raw reason, never unhandled', async () => {
+    const seen: Array<{ status: string; reason?: string }> = [];
+    // A non-Error rejection is exactly the path under test: the reporter's
+    // `(error && error.message) || error` fallback exists for rejections that
+    // are not Error instances.
+    // eslint-disable-next-line prefer-promise-reject-errors
+    const rejectingStore = { save: () => Promise.reject('disk-on-fire') };
+    const core = createDesignerState({
+      store: rejectingStore,
+      seed: () => {},
+      render: () => {},
+      onSaveResult: (result: { status: string; reason?: string }) => seen.push(result)
+    } as any);
+    core.saveState();
+    // The rejection is reported through a promise — flush the microtask queue.
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(seen).toHaveLength(1);
+    expect(seen[0].status).toBe('unknown');
+    expect(seen[0].reason).toBe('save-rejected: disk-on-fire');
+  });
+});

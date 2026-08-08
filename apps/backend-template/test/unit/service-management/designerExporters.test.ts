@@ -748,6 +748,38 @@ describe('designer exporters (JUM-469)', () => {
   });
 });
 
+describe('sparse-input exporter fallbacks (JUM-493)', () => {
+  it('renders dashes for absent domain context fields in markdown', () => {
+    const markdown = buildMarkdownExport({
+      domains: [{
+        name: 'D', color: '#60a5fa', x: 0, y: 0, entities: [], context: {}
+      }],
+      relationships: []
+    });
+    expect(markdown).toContain('Ubiquitous Language: -');
+    expect(markdown).toContain('Owner Team: -');
+    expect(markdown).toContain('Upstream: -');
+    expect(markdown).toContain('Integration Channel: -');
+  });
+
+  it('derives the package identity from the domain name, then from the default', () => {
+    const named = buildDomainPackageDocument({ name: 'Billing', entities: [] });
+    expect(named.package.name).toBe('Billing');
+    expect(named.package.version).toBe('1.0.0');
+
+    const anonymous = buildDomainPackageDocument({ entities: [] });
+    expect(anonymous.package.name).toBe('package');
+  });
+
+  it('exports a JSON Schema document for an entity without fields', () => {
+    const document = buildJsonSchemaDocument({
+      domains: [{ name: 'D', entities: [{ name: 'Empty' }] }],
+      relationships: []
+    });
+    expect(JSON.stringify(document)).toContain('Empty');
+  });
+});
+
 // Keeps this file a module: with no import/export left, TypeScript would
 // treat it as a script and its top-level requires would share one global
 // scope with every other script-mode suite in ts-jest's program (TS2451).

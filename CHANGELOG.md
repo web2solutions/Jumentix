@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-08 refactor(JUM-493): make packages/designer-core the canonical home of the designer core - Eduardo A.
 - 2026-08-08 ci(JUM-493): map toolchain pins to the tooling layer and commit bun.lock - Eduardo A.
 - 2026-08-08 feat(JUM-493): publish designer core as @jumentix package (dry-run only) - Eduardo A.
 - 2026-08-08 [JUM-491][Feature] Multi-user shared catalog sync over Cana resync events (#133) - Eduardo A.

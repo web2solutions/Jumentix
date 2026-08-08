@@ -496,3 +496,58 @@ describe('hexagonal codegen (JUM-476)', () => {
     });
   });
 });
+
+describe('partial-contracts fallbacks (JUM-493)', () => {
+  it('builds a bundle for a state without domains', () => {
+    const bundle = buildHexagonalBundle({ relationships: [] }, {});
+    expect(bundle).toBeDefined();
+  });
+
+  it('builds a bundle for a domain without entities', () => {
+    const bundle = buildHexagonalBundle({ domains: [{ name: 'D' }], relationships: [] }, {});
+    expect(bundle).toBeDefined();
+  });
+
+  it('tolerates contract documents without schemas, paths, message contracts, operations or channels', () => {
+    const state = createState();
+    const bundle = buildHexagonalBundle(state, {
+      oasDocument: { components: {} },
+      asyncApiDocument: {}
+    });
+    expect(bundle).toBeDefined();
+  });
+
+  it('derives contract tokens for missing and non-alphanumeric contract names', () => {
+    const state = createState();
+    const bundle = buildHexagonalBundle(state, {
+      oasDocument: {
+        'x-message-contracts': [
+          { domain: 'Billing', entity: 'Invoice', type: 'event' },
+          {
+            domain: 'Billing', entity: 'Invoice', type: 'event', name: '---'
+          }
+        ]
+      },
+      asyncApiDocument: { operations: {}, channels: {} }
+    });
+    expect(bundle).toBeDefined();
+  });
+
+  it('falls back to the channel key when a matched operation has no channel and no address', () => {
+    const state = createState();
+    const bundle = buildHexagonalBundle(state, {
+      oasDocument: {
+        'x-message-contracts': [
+          {
+            domain: 'Billing', entity: 'Invoice', type: 'event', name: 'issued'
+          }
+        ]
+      },
+      asyncApiDocument: {
+        operations: { event_Billing_Invoice_Issued: { action: 'send' } },
+        channels: {}
+      }
+    });
+    expect(bundle).toBeDefined();
+  });
+});

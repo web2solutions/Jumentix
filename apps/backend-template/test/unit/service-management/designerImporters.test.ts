@@ -441,6 +441,142 @@ describe('designer importers (JUM-469)', () => {
   });
 });
 
+describe('package identity, graph warnings and importer-level merge (JUM-493)', () => {
+  const packageDocument = (
+    name: string,
+    version: string,
+    domain: Record<string, unknown>,
+    dependencies: Array<Record<string, string>> = []
+  ) => ({
+    kind: 'domain-package',
+    version: '2.0.0',
+    exportedAt: '2026-08-08T00:00:00.000Z',
+    package: { name, version, dependencies },
+    domain
+  });
+
+  const installedDomain = (name: string, version: string, dependencies: string[] = []) => ({
+    id: `domain-${name}`,
+    name: `Domain_${name}`,
+    entities: [] as Array<Record<string, unknown>>,
+    context: {
+      packageName: name,
+      packageVersion: version,
+      provenance: { package: name, version },
+      packageDependencies: dependencies
+    }
+  });
+
+  it('rejects a package block whose name is blank', () => {
+    const result = buildDomainFromPackage(
+      packageDocument('   ', '1.0.0', { name: 'X', entities: [] }),
+      []
+    );
+    expect(result).toStrictEqual({ ok: false, reason: 'invalid-package' });
+  });
+
+  it('rejects a package block whose version does not parse', () => {
+    const result = buildDomainFromPackage(
+      packageDocument('p', 'banana', { name: 'X', entities: [] }),
+      []
+    );
+    expect(result.ok).toBe(false);
+    expect(result.reason).toBe('invalid-package-version');
+  });
+
+  it('tolerates existing domains with a non-array entities field when collecting taken ids', () => {
+    const result = buildDomainFromPackage(
+      packageDocument('p', '1.0.0', { name: 'New', entities: [] }),
+      [{ id: 'd1', name: 'Old', entities: null }]
+    );
+    expect(result.ok).toBe(true);
+  });
+
+  it('warns about a registry cycle the incoming package is not part of', () => {
+    const existing = [
+      installedDomain('a', '1.0.0', ['b@*']),
+      installedDomain('b', '1.0.0', ['a@*'])
+    ];
+    const result = buildDomainFromPackage(
+      packageDocument('c', '1.0.0', { name: 'C', entities: [] }),
+      existing
+    );
+    expect(result.ok).toBe(true);
+    expect(result.warnings.some((warning: string) => warning.includes('Dependency cycle reported'))).toBe(true);
+  });
+
+  it('merges a newer version of an installed package, stamping appended entities through the importer callback', () => {
+    const userEntity = {
+      id: 'entity-user',
+      name: 'User',
+      fields: [{
+        name: 'id', type: 'uuid', pk: true, required: true
+      }],
+      meta: {}
+    };
+    const existing = [{
+      ...installedDomain('p', '1.0.0'),
+      entities: [userEntity]
+    }];
+    const result = buildDomainFromPackage(
+      packageDocument('p', '1.1.0', {
+        name: 'Domain_p',
+        entities: [
+          {
+            id: 'entity-user',
+            name: 'User',
+            fields: [{
+              name: 'id', type: 'uuid', pk: true, required: true
+            }]
+          },
+          {
+            name: 'Order',
+            fields: [{
+              name: 'id', type: 'uuid', pk: true, required: true
+            }]
+          }
+        ]
+      }),
+      existing
+    );
+    expect(result.ok).toBe(true);
+    expect(result.merged).toBe(true);
+    const order = result.domain.entities.find((entity: { name: string }) => entity.name === 'Order');
+    expect(order).toBeDefined();
+    expect(order.meta.provenance).toStrictEqual({ package: 'p', version: '1.1.0' });
+    expect(result.preview.some((item: { message: string }) => item.message.includes('Order'))).toBe(true);
+  });
+});
+
+describe('oAS composition and relation fallbacks (JUM-493)', () => {
+  it('imports allOf-only schemas, composition entries without $ref, and unnamed relations', () => {
+    const result = buildDomainsFromOas({
+      components: {
+        schemas: {
+          Billing_Invoice: {
+            'x-domain': 'Billing',
+            type: 'object',
+            properties: { id: { type: 'string', format: 'uuid' } },
+            required: ['id']
+          },
+          Billing_Receipt: { 'x-domain': 'Billing', allOf: [{}] },
+          Billing_Legacy: { 'x-domain': 'Billing', oneOf: [{}] }
+        }
+      },
+      'x-relations': [
+        {
+          fromSchema: 'Billing_Invoice', toSchema: 'Billing_Receipt', fromCardinality: '1', toCardinality: 'N'
+        }
+      ]
+    });
+    expect(result.ok).toBe(true);
+    const domain = result.domains.find((entry: { name: string }) => entry.name === 'Billing');
+    expect(domain.entities).toHaveLength(3);
+    // The relation row carried no name, so the fallback names it from its endpoints.
+    expect(result.relationships[0].name).toBe('Billing_Invoice -> Billing_Receipt');
+  });
+});
+
 // Keeps this file a module: with no import/export left, TypeScript would
 // treat it as a script and its top-level requires would share one global
 // scope with every other script-mode suite in ts-jest's program (TS2451).

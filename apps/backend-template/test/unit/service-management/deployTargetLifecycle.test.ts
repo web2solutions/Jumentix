@@ -214,6 +214,27 @@ describe('duplicate semantics — an independent deep copy (JUM-546 acceptance)'
   });
 });
 
+describe('defensive fallbacks (JUM-493)', () => {
+  it('treats a null candidate as all-fields-missing, against no existing deployments', () => {
+    const issues = collectDeployTargetFieldIssues(null);
+    const nullMessages = issues.map((issue: { message: string }) => issue.message);
+    expect(nullMessages).toContain('Deploy target name is required.');
+  });
+
+  it('ignores null entries when checking duplicate names', () => {
+    const issues = collectDeployTargetFieldIssues({
+      name: 'db', region: 'us-east-1', runtime: 'node22', deployTarget: 'vm'
+    }, [null]);
+    const dupMessages = issues.map((issue: { message: string }) => issue.message);
+    expect(dupMessages.some((message: string) => message.includes('already exists'))).toBe(false);
+  });
+
+  it('derives copy names with the default name list and skips nullish taken names', () => {
+    expect(duplicateDeployTargetName('db')).toBe('db (copy)');
+    expect(duplicateDeployTargetName('db', [null, 'db (copy)'])).toBe('db (copy 2)');
+  });
+});
+
 // Keeps this file a module: with no import/export left, TypeScript would
 // treat it as a script and its top-level requires would share one global
 // scope with every other script-mode suite in ts-jest's program (TS2451).
