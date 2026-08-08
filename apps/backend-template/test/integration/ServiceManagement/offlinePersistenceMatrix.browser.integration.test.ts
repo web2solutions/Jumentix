@@ -17,19 +17,20 @@
  *    and would test the emulator rather than the designer (JUM-489's lesson).
  *    The server restarts on the SAME port so the origin — and with it the
  *    IndexedDB database — survives the offline period.
- *  - Environment cells (private/blocked storage, missing IndexedDB, quota
- *    pressure) override exactly one ambient browser capability through an init
- *    script (`indexedDB.open` failing, `indexedDB` absent,
- *    `navigator.storage.estimate` reporting near-quota). Everything downstream
- *    — the real engine, the real adapter, the real boot, the real status
+ *  - Environment cells (private/blocked storage, missing IndexedDB) override
+ *    exactly one ambient browser capability through an init script
+ *    (`indexedDB.open` failing, `indexedDB` absent). Everything downstream —
+ *    the real engine, the real adapter, the real boot, the real status
  *    region — is genuine.
- *  - The worker-crash and quota-rejected-write cells use the ONE declared
- *    seam: a Playwright route serves a wrapper around the vendored bundle that
- *    re-exports the real module unchanged and only makes `transaction()` on
- *    the returned client scriptable via `window.__canaTestFaults`. The
- *    failures it raises carry the real `canaError: true` data contract (the
- *    taxonomy is data, see packages/cana/src/contracts.ts), and the assertions
- *    run the REAL `CanaDesignerStore` module (imported from the server's own
+ *  - The worker-crash, quota-pressure and quota-rejected-write cells use the
+ *    ONE declared seam: a Playwright route serves a wrapper around the
+ *    vendored bundle that re-exports the real module unchanged and only makes
+ *    `transaction()` and `storageState()` on the returned client scriptable
+ *    via `window.__canaTestFaults` (scripted storage state merges over the
+ *    real observation). The failures it raises carry the real
+ *    `canaError: true` data contract (the taxonomy is data, see
+ *    packages/cana/src/contracts.ts), and the assertions run the REAL
+ *    `CanaDesignerStore` module (imported from the server's own
  *    static root) against WebKit's genuine IndexedDB.
  *  - The eviction cell is entirely genuine: the database is really deleted
  *    between sessions while Cana's localStorage tombstone survives — the
@@ -71,6 +72,7 @@ const VENDORED_BUNDLE_PATH = path.join(staticRoot, 'vendor', 'cana', 'index.js')
 const STATE_KEY = 'service-management.v1';
 const MARKER_KEY = 'service-management.v1.cana-migration';
 const TOMBSTONE_KEY = 'cana.existed.v1:service-management';
+const SHELL_CACHE_PREFIX = serviceWorker.SHELL_CACHE_PREFIX as string;
 
 const LEGACY_PAYLOAD = {
   domains: [
@@ -126,7 +128,15 @@ export function createCanaDatabaseClient(options) {
     open: (...args) => real.open(...args),
     close: (...args) => real.close(...args),
     table: (...args) => real.table(...args),
-    storageState: (...args) => real.storageState(...args),
+    // Scripted storage state merges over the real observation: the quota cell
+    // pins nearQuota deterministically instead of depending on the host's
+    // StorageManager semantics (which differ across WebKit builds), while the
+    // eviction flag and everything else stays genuine.
+    storageState: async (...args) => {
+      const realState = await real.storageState(...args);
+      const faults = window.__canaTestFaults || {};
+      return faults.storageState ? { ...realState, ...faults.storageState } : realState;
+    },
     subscribe: (...args) => real.subscribe(...args),
     resolveWrite: (...args) => real.resolveWrite(...args),
     durabilityAssessment: (...args) => real.durabilityAssessment(...args),
@@ -315,12 +325,12 @@ async function addStatusRegionRecorder(context: BrowserContext) {
   });
 }
 
-async function waitForStatusLogged(page: Page, fragment: string) {
+async function waitForStatusLogged(page: Page, fragment: string, timeoutMs = 15000) {
   await page.waitForFunction(
     (text) => ((window as unknown as { __statusRegionLog?: string[] }).__statusRegionLog || [])
       .some((message) => message.includes(text)),
     fragment,
-    { polling: 100, timeout: 15000 }
+    { polling: 100, timeout: timeoutMs }
   );
 }
 
@@ -860,13 +870,19 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
   it('quota pressure warns before the hard failure with a reachable export path; a quota-failed write is never persisted', async () => {
     expect.hasAssertions();
     const context = await newFaultSeamContext(browser!);
-    // One ambient capability overridden: the origin is at 95% of its quota,
-    // so the real durability probe flips nearQuota on this very boot.
+    // Deterministic quota pressure through the fault seam (set before the
+    // first probe, so the very first boot sees it): scripting the client's
+    // storageState removes the dependence on the host WebKit's StorageManager
+    // property semantics — the CI failure mode, where shadowing
+    // `navigator.storage.estimate` produced no near-quota probe at all. The
+    // nearQuota → degraded-durability mapping below (real adapter, real boot,
+    // real status region) is exactly what this cell asserts; the estimate →
+    // nearQuota computation is unit-covered in packages/cana and
+    // canaDesignerStore.test.ts with the same scripted-state contract.
     await context.addInitScript(() => {
-      Object.defineProperty(navigator.storage, 'estimate', {
-        configurable: true,
-        value: async () => ({ usage: 950, quota: 1000 })
-      });
+      (window as unknown as { __canaTestFaults: unknown }).__canaTestFaults = {
+        storageState: { nearQuota: true, usageBytes: 950, quotaBytes: 1000 }
+      };
     });
     await addStatusRegionRecorder(context);
     const page = await context.newPage();
@@ -879,8 +895,9 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
 
       // The warning arrives BEFORE the hard failure: reads still work, so the
       // state stays available, but the degraded-durability surface names the
-      // quota pressure.
-      await waitForStatusLogged(page, 'quota: storage usage is near the origin quota');
+      // quota pressure. The generous timeout is CI boot-latency headroom, not
+      // a weaker assertion: the trigger above is deterministic.
+      await waitForStatusLogged(page, 'quota: storage usage is near the origin quota', 45000);
       await waitForHealthyBoot(page);
 
       // The backup/export path is reachable from the warned session.
@@ -890,7 +907,9 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       expect(downloads).toContain('domain-designer.json');
 
       // The hard failure: a write rejected with QuotaExceeded did NOT happen.
+      // The storageState scripting stays in place beside the write error.
       await page.evaluate('window.__canaTestFaults = {'
+        + ' storageState: { nearQuota: true, usageBytes: 950, quotaBytes: 1000 },'
         + ' writeError: {'
         + '   canaError: true,'
         + '   code: "QuotaExceeded",'
@@ -908,10 +927,23 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       await expect(canaStateRecord(page)).resolves.not.toContain('QuotaDoomedDomain');
 
       // Reload tells the truth: the quota-doomed edit is gone, and the
-      // pressure warning is still the state of the environment.
+      // pressure warning is still the state of the environment. The service
+      // worker is reset first (unregister + drop the shell caches, the same
+      // reset pwaShell implements): an active SW serves the precached REAL
+      // bundle from its cache — WebKit SW fetches do not pass through route
+      // interception — which would silently drop the fault seam on reload.
+      await page.evaluate(async (cachePrefix) => {
+        const registration = await navigator.serviceWorker.getRegistration();
+        await registration?.unregister();
+        const cacheKeys = await window.caches.keys();
+        await Promise.all(
+          cacheKeys.filter((key) => key.startsWith(cachePrefix))
+            .map((key) => window.caches.delete(key))
+        );
+      }, SHELL_CACHE_PREFIX);
       await page.reload({ waitUntil: 'load' });
       await page.waitForSelector('#tab-domain-designer-btn', { timeout: 15000 });
-      await waitForStatusLogged(page, 'quota: storage usage is near the origin quota');
+      await waitForStatusLogged(page, 'quota: storage usage is near the origin quota', 45000);
       await waitForDomainRendered(page, 'Users');
       await expect(domainListText(page)).resolves.not.toContain('QuotaDoomedDomain');
       expect(pageErrors).toStrictEqual([]);
