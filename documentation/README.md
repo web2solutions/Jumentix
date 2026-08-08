@@ -49,6 +49,8 @@ For engineers maintaining and evolving Jumentix:
   ([pt-BR](./md/SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.pt-BR.md))
 - [Service Management Contract Parity Guarantees](./md/SERVICE-MANAGEMENT-CONTRACT-PARITY.md)
   ([pt-BR](./md/SERVICE-MANAGEMENT-CONTRACT-PARITY.pt-BR.md))
+- [Service Management Operations Console](./md/SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.md)
+  ([pt-BR](./md/SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.pt-BR.md))
 
 ## Component Technical Hubs
 
