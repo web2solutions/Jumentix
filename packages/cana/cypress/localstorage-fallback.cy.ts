@@ -458,23 +458,22 @@ describe('cana localStorage fallback edge coverage', () => {
     ));
     expect(isCanaErrorCode(failure, 'Unavailable')).to.equal(true);
 
+    // Inject a storage that refuses reads rather than mutating ambient
+    // `localStorage.setItem` — Firefox (and some WebKit builds) expose setItem
+    // as a non-writable host function, so assignment is a no-op and open would
+    // succeed against a working store.
     await withoutIndexedDb(async () => {
-      const saved = {
-        getItem: localStorage.getItem.bind(localStorage),
-        setItem: localStorage.setItem.bind(localStorage),
-        removeItem: localStorage.removeItem.bind(localStorage)
-      };
-      localStorage.setItem = () => { throw new Error('private'); };
-      try {
-        const client = createClient({
-          name: uniqueName('ls-private'),
-          schema: schema()
-        });
-        const openFailure = await rejection(client.open());
-        expect(isCanaErrorCode(openFailure, 'Unavailable')).to.equal(true);
-      } finally {
-        localStorage.setItem = saved.setItem;
-      }
+      const client = createClient({
+        name: uniqueName('ls-private'),
+        schema: schema(),
+        localStorage: {
+          getItem: () => { throw new Error('private'); },
+          setItem: () => { throw new Error('private'); },
+          removeItem: () => undefined
+        }
+      });
+      const openFailure = await rejection(client.open());
+      expect(isCanaErrorCode(openFailure, 'Unavailable')).to.equal(true);
     });
   });
 
