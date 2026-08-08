@@ -15,8 +15,14 @@ import path from 'node:path';
  * The surface is honest about its asymmetries:
  *
  * - Symmetric: `exportAsJson` → `importStateFromFile` (the mapper is
- *   `normalizeStatePayload`) and `exportAsPackage` → `importDomainPackage`
- *   round-trip deep-equal.
+ *   `buildStateFromSuiteExport` over `normalizeStatePayload`) and
+ *   `exportAsPackage` → `importDomainPackage` round-trip deep-equal. Since
+ *   JUM-547 the JSON document is the versioned full-suite document: all four
+ *   tabs (`domains`/`relationships`, `interfaces`, `serviceConfiguration`,
+ *   `deployments`) cross deep-equal, `runtimeEnvironment` crosses as the
+ *   environment *selection* only (values never leave the machine), legacy
+ *   domain-only documents import with defaults, and unknown sections or a
+ *   newer major version fail clearly instead of half-importing.
  * - Lossy by design: `exportAsOas` → `importStateFromOasFile` cannot carry the
  *   whole model (OAS is narrower). The assertion there is idempotence —
  *   export → import → export reaches a fixed point — plus an explicit,
@@ -60,9 +66,11 @@ const {
 } = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'exporters', 'designerExporters.js'));
 const {
   buildDomainFromPackage,
-  buildDomainsFromOas
+  buildDomainsFromOas,
+  buildStateFromSuiteExport
 } = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'importers', 'designerImporters.js'));
 const {
+  createDefaultView,
   createDesignerState,
   defaultFields,
   getDefaultRbacPolicy,
@@ -308,6 +316,59 @@ function createJunctionState() {
 }
 
 /**
+ * A state designed across all four tabs (JUM-547): the reference model plus
+ * interface adapters, a non-default service configuration, a runtime
+ * environment selection with local values, and deploy targets — one in the
+ * Requirement 059 shape, one in the legacy pre-JUM-481 shape that migrates
+ * forward on normalisation.
+ */
+function createFullSuiteState() {
+  const base = createModelState();
+  return normalizeStatePayload({
+    ...base,
+    interfaces: [
+      {
+        type: 'grpc', framework: 'bun', entrypoint: 'src/grpc.ts', controller: 'BillingGrpcController'
+      },
+      {
+        type: 'http-rest', framework: 'express', entrypoint: 'src/http.ts', controller: 'InvoiceController'
+      }
+    ],
+    serviceConfiguration: {
+      serviceKind: 'grpc-rest-api',
+      runMode: 'container',
+      cloudProvider: 'google',
+      staticAssetsPath: 'public',
+      ports: { rest: 8080, websocket: 8081, grpc: 8082 }
+    },
+    runtimeEnvironment: {
+      environment: 'staging',
+      fileName: '.env.staging',
+      values: {
+        JUMENTIX_HTTP_FRAMEWORK: 'fastify',
+        JUMENTIX_REDIS_URL: 'redis://internal-host:6379'
+      }
+    },
+    deployments: [
+      {
+        name: 'prod-eu',
+        region: 'eu-west-1',
+        runtime: 'node22',
+        serviceType: 'restapi',
+        deployTarget: 'ec2',
+        runtimeProtocol: 'http',
+        databaseDriver: 'Mongo',
+        keyValueDriver: 'redis',
+        pm2Profile: 'production'
+      },
+      {
+        name: 'edge', type: 'lambda', region: 'us-east-1', runtime: 'node22'
+      }
+    ]
+  });
+}
+
+/**
  * Sorted list of JSON paths on which two documents differ, with an
  * `(added)`/`(removed)` marker when a key exists on one side only. The OAS
  * loss list is asserted through this: a newly lost (or newly preserved)
@@ -483,10 +544,24 @@ describe('designer export/import round-trip (JUM-471)', () => {
       expect(second).toStrictEqual(first);
     });
 
-    it('documents the export boundary: selections and idCounter are not part of the JSON document', () => {
+    it('documents the export boundary: versioned full-suite document; selections, idCounter and env values are not part of it', () => {
       const state = createModelState();
       const document = buildJsonExportDocument(state);
-      expect(Object.keys(document)).toStrictEqual(['domains', 'relationships', 'view']);
+      expect(Object.keys(document)).toStrictEqual([
+        'kind',
+        'version',
+        'domains',
+        'relationships',
+        'interfaces',
+        'serviceConfiguration',
+        'runtimeEnvironment',
+        'deployments',
+        'view'
+      ]);
+      expect(document.kind).toBe('service-management-suite');
+      expect(document.version).toBe('2.0.0');
+      // JUM-547 decision: the environment selection crosses; values never do.
+      expect(document.runtimeEnvironment).toStrictEqual({ environment: 'dev', fileName: '.env.dev' });
       const imported = normalizeStatePayload(JSON.parse(JSON.stringify(document)));
       expect(imported.idCounter).toBe(1);
       expect(imported.selectedDomainId).toBe(state.domains[0].id);
@@ -504,6 +579,138 @@ describe('designer export/import round-trip (JUM-471)', () => {
       );
       expect(entityCount(secondImport)).toBe(3);
       expect(secondImport.relationships).toHaveLength(1);
+    });
+  });
+
+  describe('full-suite export/import (JUM-547)', () => {
+    it('round-trips all four tabs deep-equal through the suite crossing', () => {
+      const state = createFullSuiteState();
+      const document = buildJsonExportDocument(state);
+      // The crossing includes the wire step: JSON.stringify/parse, as the
+      // downloaded file would.
+      const result = buildStateFromSuiteExport(JSON.parse(JSON.stringify(document)), state);
+      expect(result.ok).toBe(true);
+      expect(result.state.domains).toStrictEqual(state.domains);
+      expect(result.state.relationships).toStrictEqual(state.relationships);
+      expect(result.state.view).toStrictEqual(state.view);
+      expect(result.state.interfaces).toStrictEqual(state.interfaces);
+      expect(result.state.serviceConfiguration).toStrictEqual(state.serviceConfiguration);
+      expect(result.state.deployments).toStrictEqual(state.deployments);
+      // The environment selection crosses; the local machine's values (here
+      // the source state's own) are preserved, so the section is deep-equal.
+      expect(result.state.runtimeEnvironment).toStrictEqual(state.runtimeEnvironment);
+    });
+
+    it('is idempotent at document level: a second export of the imported state is deep-equal to the first', () => {
+      const first = buildJsonExportDocument(createFullSuiteState());
+      const result = buildStateFromSuiteExport(
+        JSON.parse(JSON.stringify(first)),
+        createFullSuiteState()
+      );
+      expect(result.ok).toBe(true);
+      const second = buildJsonExportDocument(result.state);
+      expect(second).toStrictEqual(first);
+    });
+
+    it('never carries runtime environment values in the bundle — the selection only', () => {
+      const state = createFullSuiteState();
+      const document = buildJsonExportDocument(state);
+      expect(Object.keys(document.runtimeEnvironment).sort()).toStrictEqual(['environment', 'fileName']);
+      // A value that names an internal endpoint must not appear anywhere in
+      // the wire document — the bundle cannot carry configuration (or a
+      // secret) off the machine.
+      const wireText = JSON.stringify(document);
+      expect(wireText).not.toContain('redis://internal-host:6379');
+      expect(wireText).not.toContain('JUMENTIX_REDIS_URL');
+      // The import targets a different machine with its own local values:
+      // the selection is restored, the local values survive the crossing.
+      const localState = {
+        runtimeEnvironment: {
+          environment: 'dev',
+          fileName: '.env.dev',
+          values: { JUMENTIX_DATABASE_DRIVER: 'InMemory' }
+        }
+      };
+      const result = buildStateFromSuiteExport(JSON.parse(wireText), localState);
+      expect(result.ok).toBe(true);
+      expect(result.state.runtimeEnvironment).toStrictEqual({
+        environment: 'staging',
+        fileName: '.env.staging',
+        values: { JUMENTIX_DATABASE_DRIVER: 'InMemory' }
+      });
+    });
+
+    it('imports a pre-JUM-547 domain-only document cleanly, defaulting the missing sections', () => {
+      // Backward compatibility: the shape `exportAsJson` produced before the
+      // full-suite change — no `kind`, no `version`, no suite sections.
+      const legacy = {
+        domains: [{
+          id: 'domain-1',
+          name: 'Billing',
+          entities: [{ id: 'entity-1', name: 'Invoice', fields: [] }]
+        }],
+        relationships: [],
+        view: { zoom: 1.5, edgeStyle: 'orthogonal' }
+      };
+      const result = buildStateFromSuiteExport(JSON.parse(JSON.stringify(legacy)));
+      expect(result.ok).toBe(true);
+      expect(result.state.domains[0].name).toBe('Billing');
+      expect(result.state.view).toStrictEqual({
+        ...createDefaultView(),
+        zoom: 1.5,
+        edgeStyle: 'orthogonal'
+      });
+      expect(result.state.interfaces).toStrictEqual([]);
+      expect(result.state.serviceConfiguration).toStrictEqual({
+        serviceKind: 'rest-api',
+        runMode: 'dedicated-server',
+        cloudProvider: 'aws',
+        staticAssetsPath: '',
+        ports: { rest: 3000, websocket: 3001, grpc: 3002 }
+      });
+      expect(result.state.runtimeEnvironment).toStrictEqual({
+        environment: 'dev', fileName: '.env.dev', values: {}
+      });
+      expect(result.state.deployments).toStrictEqual([]);
+    });
+
+    it('refuses a document with unknown sections instead of discarding them silently', () => {
+      const document = {
+        ...buildJsonExportDocument(createModelState()),
+        futureSection: { anything: true }
+      };
+      const result = buildStateFromSuiteExport(JSON.parse(JSON.stringify(document)));
+      expect(result.ok).toBe(false);
+      expect(result.reason).toBe('unknown-sections');
+      expect(result.sections).toStrictEqual(['futureSection']);
+    });
+
+    it('accepts same-major versions and refuses a newer major instead of half-importing', () => {
+      const wire = JSON.parse(JSON.stringify(buildJsonExportDocument(createModelState())));
+      const sameMajor = buildStateFromSuiteExport({ ...wire, version: '2.7.1' });
+      expect(sameMajor.ok).toBe(true);
+      const newerMajor = buildStateFromSuiteExport({ ...wire, version: '3.0.0' });
+      expect(newerMajor.ok).toBe(false);
+      expect(newerMajor.reason).toBe('unsupported-version');
+      expect(newerMajor.version).toBe('3.0.0');
+      const garbage = buildStateFromSuiteExport({ ...wire, version: 'banana' });
+      expect(garbage.ok).toBe(false);
+      expect(garbage.reason).toBe('unsupported-version');
+    });
+
+    it('refuses a different export kind fed to the suite import instead of "succeeding" as an empty model', () => {
+      const state = createModelState();
+      const packageDocument = buildDomainPackageDocument(state.domains[0], '2026-08-05T00:00:00.000Z');
+      const result = buildStateFromSuiteExport(JSON.parse(JSON.stringify(packageDocument)));
+      expect(result.ok).toBe(false);
+      expect(result.reason).toBe('wrong-document-kind');
+      expect(result.kind).toBe('domain-package');
+    });
+
+    it('refuses a non-object document', () => {
+      expect(buildStateFromSuiteExport(null)).toStrictEqual({ ok: false, reason: 'invalid-document' });
+      expect(buildStateFromSuiteExport([1, 2, 3]).reason).toBe('invalid-document');
+      expect(buildStateFromSuiteExport('text').reason).toBe('invalid-document');
     });
   });
 

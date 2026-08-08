@@ -45,6 +45,11 @@ Detailed feature usage:
    - Exporters: JSON, OpenAPI 3.1, Markdown, JSON Schema, AsyncAPI 3.0 per transport
      (`<version>.websocket.yml` / `<version>.grpc.yml`, canonical `spec/asyncapi/`
      conventions), gRPC proto (`async-api.proto`) and boilerplate bundle.
+   - The JSON export is the versioned full-suite document (JUM-547): it carries all
+     four tabs (`domains`/`relationships`, `interfaces`, `serviceConfiguration`,
+     `deployments`) plus the runtime-environment selection — never its values — and
+     Import JSON restores them, accepting pre-JUM-547 domain-only files and refusing
+     unknown sections or newer major versions clearly.
    - OpenAPI composition controls (`oneOf`, `allOf`, `anyOf`, external `$ref`, discriminator) per entity.
    - Domain package export/import for reusable model sharing.
    - Mini-map navigation and large-canvas performance mode.

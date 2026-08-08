@@ -345,11 +345,10 @@ console segue o mesmo modelo:
   [documento E3](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.pt-BR.md), e suas
   promessas ao usuário ao
   [documento E6](./SERVICE-MANAGEMENT-CANA-ADOPTION.pt-BR.md).
-- **Exportação/importação das abas do console** — as seções `interfaces`,
-  `serviceConfiguration` e `runtimeEnvironment` não cruzam nenhum caminho de
-  exportação hoje; o documento E4 nomeia esse limite e sua issue responsável
-  ([JUM-547](https://linear.app/jumentix/issue/JUM-547/feature-full-suite-exportimport-carry-interfaces-service-configuration))
-  em
+- **Exportação/importação das abas do console** — desde o JUM-547 as seções
+  `interfaces`, `serviceConfiguration` e `deployments` atravessam a exportação
+  JSON de suíte completa, e `runtimeEnvironment` atravessa apenas como a
+  seleção de ambiente; o documento E4 é o dono desse escopo e de sua prova em
   [Garantias de paridade de contratos do Service Management](./SERVICE-MANAGEMENT-CONTRACT-PARITY.pt-BR.md).
 - **O formato literal de invocação do PM2** — fixado pelo Requisito 126,
   Contrato 1b, e com mudança prevista na transição para o Bun

@@ -16,7 +16,11 @@
  * rule's roles because the runtime has no independent tenant-scope knob
  * (JUM-477); and the `deployments` section is restored on load, migrated
  * forward to the Requirement 059 metadata contract by
- * `normalizeDeploymentInput` (JUM-481).
+ * `normalizeDeploymentInput` (JUM-481). JUM-547 extended
+ * `normalizeStatePayload` to also normalise the `interfaces`,
+ * `serviceConfiguration` and `runtimeEnvironment` sections, so the full-suite
+ * export/import crossing applies the same normalisation discipline as the
+ * load path (load itself still restores the model slice only).
  */
 
 import {
@@ -32,6 +36,17 @@ import {
 
 export const DOMAIN_COLORS = ['#60a5fa', '#34d399', '#f59e0b', '#f472b6', '#22d3ee', '#a78bfa', '#fb7185', '#84cc16'];
 export const FIELD_TYPES = ['string', 'integer', 'number', 'boolean', 'array', 'object', 'date', 'datetime', 'uuid'];
+
+/**
+ * Identity and schema version of the full-suite JSON export document
+ * (JUM-547, Requirement 126 Contract 3). Pre-JUM-547 documents carry no
+ * `kind`/`version` and are treated as the legacy domain-only shape on import.
+ * `SUITE_EXPORT_MAJOR` is the highest document major version the importer
+ * accepts; a newer major fails clearly instead of half-importing.
+ */
+export const SUITE_EXPORT_KIND = 'service-management-suite';
+export const SUITE_EXPORT_VERSION = '2.0.0';
+export const SUITE_EXPORT_MAJOR = 2;
 
 /** History depth cap, unchanged from the pre-extraction `recordHistory`. */
 const HISTORY_LIMIT = 100;
@@ -177,6 +192,74 @@ export function normalizeDeploymentInput(deployment) {
 }
 
 /**
+ * Normalise one interface adapter entry (Interface Designer tab) to the
+ * `{ type, framework, entrypoint, controller }` shape the UI writes. Values
+ * are trimmed strings; an empty `type` falls back to `http-rest`, and unknown
+ * non-empty values are kept verbatim (the same lossless-migration precedent
+ * as `normalizeDeploymentInput`) so a sibling tab lifecycle change never
+ * makes the import path drop data.
+ */
+export function normalizeInterfaceInput(entry) {
+  const source = entry || {};
+  return {
+    type: String(source.type || '').trim() || 'http-rest',
+    framework: String(source.framework || '').trim(),
+    entrypoint: String(source.entrypoint || '').trim(),
+    controller: String(source.controller || '').trim()
+  };
+}
+
+/**
+ * Normalise the Service Configuration tab section to the Requirement 126
+ * Contract 2 shape: `{ serviceKind, runMode, cloudProvider, staticAssetsPath,
+ * ports: { rest, websocket, grpc } }`. Known enum values pass; unknown
+ * non-empty values are kept verbatim (lossless — the JUM-544 validation
+ * reports them); empty/missing values take the tab defaults. Ports are
+ * finite numbers, defaulting to the canonical 3000/3001/3002.
+ */
+export function normalizeServiceConfigurationInput(configuration) {
+  const source = configuration || {};
+  const enumOrDefault = (value, fallback) => String(value || '').trim() || fallback;
+  const portOrDefault = (value, fallback) => (Number.isFinite(Number(value)) && value !== null && value !== ''
+    ? Number(value)
+    : fallback);
+  const ports = source.ports || {};
+  return {
+    serviceKind: enumOrDefault(source.serviceKind, 'rest-api'),
+    runMode: enumOrDefault(source.runMode, 'dedicated-server'),
+    cloudProvider: enumOrDefault(source.cloudProvider, 'aws'),
+    staticAssetsPath: String(source.staticAssetsPath || '').trim(),
+    ports: {
+      rest: portOrDefault(ports.rest, 3000),
+      websocket: portOrDefault(ports.websocket, 3001),
+      grpc: portOrDefault(ports.grpc, 3002)
+    }
+  };
+}
+
+/**
+ * Normalise the `runtimeEnvironment` section to the Requirement 126 Contract 2
+ * shape `{ environment, fileName, values }`. Note the JUM-547 export decision
+ * (recorded in Requirement 126 Contract 3): the full-suite export document
+ * carries only the environment *selection* (`environment`, `fileName`) —
+ * `values` mirror real `.env` contents of the machine the designer runs on
+ * and never leave in a bundle. This normaliser still accepts a `values`
+ * object (a raw `service-management.v1` payload dump carries one); the import
+ * mapper decides whether the local machine's values are preserved.
+ */
+export function normalizeRuntimeEnvironmentInput(runtimeEnvironment) {
+  const source = runtimeEnvironment || {};
+  const values = source.values && typeof source.values === 'object' && !Array.isArray(source.values)
+    ? { ...source.values }
+    : {};
+  return {
+    environment: String(source.environment || '').trim() || 'dev',
+    fileName: String(source.fileName || '').trim() || '.env.dev',
+    values
+  };
+}
+
+/**
  * The designer's default per-entity RBAC policy. The role sets mirror the
  * runtime's normalized-role semantics (`ROLE_SCOPE_MATRIX` in `Rbac.ts`):
  * `admin`/`superadmin` for collection and mutating actions, `user` added for
@@ -285,14 +368,16 @@ export function normalizeDomainInput(domain, domainIndex) {
 }
 
 /**
- * Normalise a decoded `service-management.v1` payload into the model slice the
- * designer restores on load. Kept identical to the pre-extraction behaviour —
- * with one JUM-481 exception: `deployments` now comes back too, migrated
- * forward to the Requirement 059 metadata contract by
- * `normalizeDeploymentInput`, so Deploy Management targets survive a reload.
- * The remaining pinned sections (`interfaces`, `serviceConfiguration`,
+ * Normalise a decoded `service-management.v1` payload (or a full-suite export
+ * document, JUM-547) into the model slice the designer restores. The load
+ * path restores the domain slice plus `deployments` (migrated forward to the
+ * Requirement 059 metadata contract by `normalizeDeploymentInput`, JUM-481);
+ * the remaining pinned sections (`interfaces`, `serviceConfiguration`,
  * `runtimeEnvironment`, `activeTab`) are intentionally not restored at load
- * time.
+ * time. Since JUM-547 the sections ARE normalised and returned here — the
+ * full-suite import path (`buildStateFromSuiteExport`) applies them with the
+ * same normalisation discipline as a load — so both crossings share one
+ * normaliser.
  */
 export function normalizeStatePayload(parsed) {
   const domainsInput = Array.isArray(parsed?.domains) ? parsed.domains : [];
@@ -304,6 +389,10 @@ export function normalizeStatePayload(parsed) {
     .filter((relationship) => entityIds.has(relationship.fromEntityId) && entityIds.has(relationship.toEntityId));
   const deploymentsInput = Array.isArray(parsed?.deployments) ? parsed.deployments : [];
   const deployments = deploymentsInput.map(normalizeDeploymentInput);
+  const interfacesInput = Array.isArray(parsed?.interfaces) ? parsed.interfaces : [];
+  const interfaces = interfacesInput.map(normalizeInterfaceInput);
+  const serviceConfiguration = normalizeServiceConfigurationInput(parsed?.serviceConfiguration);
+  const runtimeEnvironment = normalizeRuntimeEnvironmentInput(parsed?.runtimeEnvironment);
   const view = {
     zoom: clampZoom(parsed?.view?.zoom || 1),
     compactEntities: Boolean(parsed?.view?.compactEntities),
@@ -322,6 +411,9 @@ export function normalizeStatePayload(parsed) {
     selectedEntityId: parsed?.selectedEntityId || null,
     selectedRelationshipId: parsed?.selectedRelationshipId || null,
     idCounter: parsed?.idCounter || 1,
+    interfaces,
+    serviceConfiguration,
+    runtimeEnvironment,
     deployments,
     view
   };

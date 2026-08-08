@@ -171,11 +171,19 @@ esperadas.
 
 ### Travessias simétricas (sem perdas, deep-equal assertado)
 
-- **JSON** (`buildJsonExportDocument` → `normalizeStatePayload`):
-  `domains`, `relationships` e `view` fazem ida e volta com deep-equal, e a
-  exportação é idempotente. A fronteira é documentada e assertada: o documento
-  JSON carrega exatamente `{ domains, relationships, view }` — seleções e
-  `idCounter` não fazem parte dele e são recomputados na importação.
+- **JSON** (`buildJsonExportDocument` → `buildStateFromSuiteExport` sobre
+  `normalizeStatePayload`): o documento versionado de suíte completa
+  (JUM-547) — `domains`, `relationships`, `view`, `interfaces`,
+  `serviceConfiguration` e `deployments` fazem ida e volta com deep-equal, e
+  a exportação é idempotente. A fronteira é documentada e assertada: seleções
+  e `idCounter` não fazem parte do documento e são recomputados na
+  importação, e `runtimeEnvironment` atravessa apenas como a *seleção* de
+  ambiente (veja a seção JUM-547 abaixo). Documentos anteriores ao JUM-547,
+  só de domínio (`{ domains, relationships, view }`, sem `kind`/`version`),
+  importam normalmente com as seções ausentes preenchidas com padrões; um
+  documento com seção desconhecida no nível raiz, `version` major mais recente
+  ou `kind` diferente de `service-management-suite` falha claramente em vez
+  de importar pela metade.
 - **Pacote de domínio** (`buildDomainPackageDocument` → `buildDomainFromPackage`):
   um pacote faz ida e volta com deep-equal em um modelo vazio; a reimportação
   adiciona sufixo ao nome do domínio (`Billing_2`, `Billing_3`, …) em vez de
@@ -324,27 +332,42 @@ divergir, a suíte reprova. É também por isso que o `x-rbac` faz ida e volta
 sem perdas (Garantia 4): a política exportada é a normalizada e aplicável, e
 o importador a reconstrói contra o mesmo contrato.
 
-## O que NÃO atravessa hoje: exportação de suíte completa (JUM-547, em aberto)
+## Exportação de suíte completa e a decisão sobre `runtimeEnvironment` (JUM-547, entregue)
 
-Atualmente, exportação e importação carregam **apenas o modelo de domínio**.
-As outras três abas — `interfaces`, `serviceConfiguration`,
-`runtimeEnvironment` — vivem no documento fixado `service-management.v1` —
-historicamente o payload do localStorage, agora armazenado no Cana sob a mesma
-chave após a migração unidirecional entregue do JUM-484 (Requisito 126,
-Contrato 2) —, mas não atravessam nenhum caminho de
-exportação/importação: um bundle compartilhado descreve uma aba de um design
-de quatro abas, e nada avisa o usuário ainda.
+Exportação e importação agora carregam **as quatro abas**, não apenas o
+modelo de domínio. A exportação JSON (`domain-designer.json`) é o documento
+versionado de suíte completa: `{ kind: "service-management-suite",
+version: "2.0.0", domains, relationships, interfaces, serviceConfiguration,
+runtimeEnvironment, deployments, view }` — as mesmas seções que o documento
+fixado `service-management.v1` persiste no Cana (Requisito 126, Contrato 2),
+menos as seleções de sessão e o `idCounter`. Um modelo desenhado nas quatro
+abas exporta e reimporta com todas as abas intactas; um bundle exportado
+antes desta mudança (o formato só de domínio, sem `kind`/`version`) importa
+normalmente com as seções ausentes preenchidas com padrões, e um bundle com
+seção desconhecida ou versão major mais recente falha claramente em vez de
+ter sucesso parcial.
 
-A decisão em aberto é o tratamento de `runtimeEnvironment`
-([JUM-547](https://linear.app/jumentix/issue/JUM-547/feature-full-suite-exportimport-carry-interfaces-service-configuration)):
-ele espelha conteúdo real de `.env`, então um bundle de exportação contendo os
-valores **é um arquivo que pode carregar configuração para fora da máquina**.
-As posições candidatas — exportar apenas a *seleção* de ambiente; exportar
-valores restritos à camada editável; ou omitir `runtimeEnvironment`
-inteiramente — estão registradas na issue, e a decisão pertence ao requisito
-do Requisito 126. Até que ela chegue, a postura efetiva é a terceira:
-**nenhum valor de ambiente de runtime sai em nenhum artefato exportado hoje**
-— o que também significa que nenhum segredo sai.
+A decisão registrada é o tratamento de `runtimeEnvironment`
+([JUM-547](https://linear.app/jumentix/issue/JUM-547/feature-full-suite-exportimport-carry-interfaces-service-configuration),
+Requisito 126 Contrato 3): ele espelha conteúdo real de `.env`, então um
+bundle de exportação contendo os valores **seria um arquivo que pode carregar
+configuração para fora da máquina**. Das três posições candidatas — exportar
+apenas a seleção; exportar valores restritos à camada editável; omitir a
+seção inteiramente — a postura entregue é a primeira: **o bundle carrega a
+seleção de ambiente (`environment`, `fileName`), mas nunca os `values`**, e a
+importação restaura a seleção preservando os valores da máquina local. O
+ambiente de runtime é uma propriedade de onde o designer está rodando; a
+seleção é metadado de design que vale compartilhar. Como nenhum valor
+atravessa, **nenhum segredo pode sair em um bundle** — a garantia pela qual a
+terceira posição era preferida, mantida sem perder a seleção. A suíte prova
+isso assertando que o documento no fio não contém nenhuma string de valor.
+
+**Comprovado por:**
+[`designerRoundTrip.test.ts`](../../apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts)
+(deep-equal de suíte completa, valores-nunca-atravessam, compatibilidade
+retroativa/para frente) e
+[`designerExporters.test.ts`](../../apps/backend-template/test/unit/service-management/designerExporters.test.ts)
+(formato do documento).
 
 ## Referências
 
