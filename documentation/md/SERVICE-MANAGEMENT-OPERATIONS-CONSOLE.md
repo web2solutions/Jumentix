@@ -327,11 +327,10 @@ same model:
   [E3 document](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.md), and their
   user-facing promises to the
   [E6 document](./SERVICE-MANAGEMENT-CANA-ADOPTION.md).
-- **Export/import of the console tabs** — the `interfaces`,
-  `serviceConfiguration` and `runtimeEnvironment` sections do not cross any
-  export path today; the E4 document names that boundary and its owning issue
-  ([JUM-547](https://linear.app/jumentix/issue/JUM-547/feature-full-suite-exportimport-carry-interfaces-service-configuration))
-  in
+- **Export/import of the console tabs** — since JUM-547 the `interfaces`,
+  `serviceConfiguration` and `deployments` sections cross the full-suite JSON
+  export, and `runtimeEnvironment` crosses as the environment selection only;
+  the E4 document owns that scope and its proof in
   [Service Management Contract Parity Guarantees](./SERVICE-MANAGEMENT-CONTRACT-PARITY.md).
 - **The literal PM2 invocation format** — pinned by Requirement 126 Contract
   1b and due to change with the Bun cutover

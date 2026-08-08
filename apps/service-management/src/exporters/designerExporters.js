@@ -28,7 +28,9 @@ import {
   getDefaultRbacPolicy,
   normalizeContractInput,
   normalizeRbacPolicyInput,
-  parseCommaSeparated
+  parseCommaSeparated,
+  SUITE_EXPORT_KIND,
+  SUITE_EXPORT_VERSION
 } from '../state/designerState.js';
 import {
   entityLabel,
@@ -49,9 +51,38 @@ import { buildAsyncApiTransportDocument } from './asyncApiExporters.js';
  */
 const DEFAULT_RBAC_POLICY = getDefaultRbacPolicy();
 
-/** `exportAsJson` payload: `{ domains, relationships, view }`. */
+/**
+ * `exportAsJson` payload: the full-suite document (JUM-547, Requirement 126
+ * Contract 3). The pre-JUM-547 shape carried `{ domains, relationships, view }`
+ * only — a four-tab design exported as one tab. The document now carries all
+ * four tabs, schema-versioned (`kind` + `version`, the
+ * boilerplate-bundle/domain-package convention), so import can tell a legacy
+ * domain-only document (no `kind`/`version`) from the full-suite shape and
+ * fail clearly on a document newer than the importer.
+ *
+ * `runtimeEnvironment` follows the decision recorded in Requirement 126: the
+ * bundle carries the environment *selection* (`environment`, `fileName`) but
+ * never `values` — those mirror real `.env` contents of the machine the
+ * designer runs on (editable and read-only tiers; the never-exposed tier
+ * never even enters state), and a bundle containing them could carry
+ * configuration off the machine. Selections and `idCounter` stay out of the
+ * document, as before.
+ */
 export function buildJsonExportDocument(state) {
-  return { domains: state.domains, relationships: state.relationships, view: state.view };
+  return {
+    kind: SUITE_EXPORT_KIND,
+    version: SUITE_EXPORT_VERSION,
+    domains: state.domains,
+    relationships: state.relationships,
+    interfaces: Array.isArray(state.interfaces) ? state.interfaces : [],
+    serviceConfiguration: state.serviceConfiguration,
+    runtimeEnvironment: {
+      environment: String(state.runtimeEnvironment?.environment || '').trim() || 'dev',
+      fileName: String(state.runtimeEnvironment?.fileName || '').trim() || '.env.dev'
+    },
+    deployments: Array.isArray(state.deployments) ? state.deployments : [],
+    view: state.view
+  };
 }
 
 /** `exportAsMarkdown` document text (the full markdown, newline-joined). */
