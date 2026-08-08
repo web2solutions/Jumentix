@@ -38,6 +38,10 @@ A adoção do design system, o modelo de teclado e leitor de tela e o shell PWA
 instalável (instalação, atualizações, recuperação e a fronteira de
 armazenamento) estão documentados em
 [Design system e shell PWA do Service Management](./SERVICE-MANAGEMENT-DESIGN-SYSTEM-PWA.pt-BR.md).
+A adoção do Cana pelo lado do usuário — onde os dados do designer vivem, a
+migração unidirecional, a matriz offline/de estados e por que a exportação é o
+único caminho de recuperação — está documentada em
+[Adoção do Cana no Service Management, migração e comportamento offline](./SERVICE-MANAGEMENT-CANA-ADOPTION.pt-BR.md).
 
 ## Guias
 

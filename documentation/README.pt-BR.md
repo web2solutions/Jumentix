@@ -50,6 +50,8 @@ Para engenheiros que mantêm e evoluem o Jumentix:
   ([EN](./md/SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.md))
 - [Design system e shell PWA do Service Management](./md/SERVICE-MANAGEMENT-DESIGN-SYSTEM-PWA.pt-BR.md)
   ([EN](./md/SERVICE-MANAGEMENT-DESIGN-SYSTEM-PWA.md))
+- [Adoção do Cana no Service Management, migração e comportamento offline](./md/SERVICE-MANAGEMENT-CANA-ADOPTION.pt-BR.md)
+  ([EN](./md/SERVICE-MANAGEMENT-CANA-ADOPTION.md))
 
 ## Hubs Técnicos de Componentes
 
