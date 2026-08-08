@@ -44,6 +44,11 @@ import {
   validateRbacRule
 } from './src/model/rbacContract.js';
 import { createDesignerStore } from './src/store/designerStoreFactory.js';
+import {
+  CANA_MIGRATION_SOURCE_RETENTION_DAYS,
+  describeDesignerStorageEnvironment,
+  migrateLocalStorageToCana
+} from './src/store/canaMigration.js';
 import * as model from './src/model/modelQueries.js';
 import { collectModelIssues } from './src/validation/modelValidation.js';
 import { collectServiceConfigurationIssues } from './src/validation/serviceConfigurationValidation.js';
@@ -106,10 +111,10 @@ let runtimeEnvEditableKeys = Object.keys(RUNTIME_ENV_EDITABLE_DEFAULTS);
 
 // State, persistence, history and normalisation live in the DOM-free core
 // (src/state/designerState.js) behind the IDesignerStore port
-// (src/store/IDesignerStore.js). The store is chosen through the selection
-// seam (src/store/designerStoreFactory.js, JUM-483): the DEFAULT stays the
-// TRANSITIONAL LocalStorageDesignerStore until JUM-484's migration makes the
-// CanaDesignerStore sole — Cana has no fallback to localStorage.
+// (src/store/IDesignerStore.js). Cana is the SOLE store (JUM-484's one-way
+// migration retired the transitional LocalStorageDesignerStore — no fallback
+// to localStorage, decision 2026-07-29); the factory seam
+// (src/store/designerStoreFactory.js) only injects the Cana client.
 // `seed` and `render` are function declarations below, hoisted before this
 // module body runs.
 const store = createDesignerStore();
@@ -2299,10 +2304,59 @@ function wireEvents() {
   });
 }
 
+// Pre-migration backup download (JUM-484): the verbatim localStorage payload,
+// offered as a file BEFORE anything is written to Cana — the recourse that
+// replaces the retired fallback.
+function downloadMigrationBackup(fileName, rawJson) {
+  const blob = new Blob([rawJson], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = fileName;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+
 // Boot is async because the IDesignerStore port is async (Cana crosses a
-// worker boundary); the transitional localStorage adapter resolves
-// immediately, so the load → wire → render order is unchanged.
+// worker boundary). Order: one-way migration → declared storage-environment
+// state → load → wire → render.
 async function boot() {
+  // JUM-484: one-way migration localStorage → Cana, before any state load so
+  // a migrated payload is read from Cana on this very boot. The source stays
+  // in localStorage, unused, for the declared retention period; nothing ever
+  // falls back to it (decision 2026-07-29).
+  const migration = await migrateLocalStorageToCana({
+    store,
+    downloadBackup: downloadMigrationBackup
+  });
+  if (migration.status === 'migrated') {
+    showStatus(
+      'Your saved design was moved to the new persistent store and verified. '
+      + `A backup was downloaded as ${migration.backupFileName}; the previous copy stays, unused, `
+      + `for ${CANA_MIGRATION_SOURCE_RETENTION_DAYS} days as a manual recovery path.`,
+      'info'
+    );
+  } else if (migration.status === 'failed') {
+    showStatus(`Your previously saved design could not be migrated: ${migration.reason}`, 'error');
+  }
+
+  // Declared storage-environment states (JUM-484): private/incognito browsing,
+  // unsupported browsers and lost data are detected and communicated through
+  // the status region — never a silent in-memory session. On a boot that
+  // migrated (or failed to), that message names the more specific cause and
+  // wins the single region; the environment states recur on later boots.
+  if (migration.status === 'already-migrated' || migration.status === 'no-source') {
+    const probe = await store.probe();
+    const environment = describeDesignerStorageEnvironment({
+      indexedDbPresent: typeof indexedDB !== 'undefined',
+      probeStatus: probe.status,
+      probeReason: probe.reason
+    });
+    if (environment.message) showStatus(environment.message, environment.severity);
+  }
+
   await loadState();
   wireEvents();
   render();

@@ -34,8 +34,8 @@ const {
   parseEnumValues
 } = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'designerState.js'));
 const {
-  LocalStorageDesignerStore
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'store', 'LocalStorageDesignerStore.js'));
+  MemoryDesignerStore
+} = require(path.join(repoRoot, 'apps', 'backend-template', 'test', 'helpers', 'MemoryDesignerStore.ts'));
 
 function createFakeStorage(initial: Record<string, string> = {}) {
   const map = new Map<string, string>(Object.entries(initial));
@@ -50,7 +50,7 @@ function createFakeStorage(initial: Record<string, string> = {}) {
 type Core = ReturnType<typeof createDesignerState>;
 
 function createCore(storage = createFakeStorage()) {
-  const store = new LocalStorageDesignerStore({ storage });
+  const store = new MemoryDesignerStore({ storage });
   let core: Core;
   const seed = () => {
     core.state.domains = [{
@@ -87,7 +87,7 @@ function createCore(storage = createFakeStorage()) {
 
 describe('designer state core (JUM-468)', () => {
   it('is DOM-free: no document/window references in the extracted modules', () => {
-    ['src/state/designerState.js', 'src/store/IDesignerStore.js', 'src/store/LocalStorageDesignerStore.js', 'src/model/rbacContract.js']
+    ['src/state/designerState.js', 'src/store/IDesignerStore.js', 'src/store/CanaDesignerStore.js', 'src/store/canaMigration.js', 'src/store/designerStoreFactory.js', 'src/model/rbacContract.js']
       .forEach((modulePath) => {
         const source = fs.readFileSync(
           path.join(repoRoot, 'apps', 'service-management', ...modulePath.split('/')),

@@ -12,7 +12,9 @@ Core implementation files:
 - `apps/service-management/script.js`
 - `apps/service-management/src/state/designerState.js`
 - `apps/service-management/src/store/IDesignerStore.js`
-- `apps/service-management/src/store/LocalStorageDesignerStore.js`
+- `apps/service-management/src/store/CanaDesignerStore.js`
+- `apps/service-management/src/store/designerStoreFactory.js`
+- `apps/service-management/src/store/canaMigration.js`
 - `apps/service-management/styles.css`
 - `apps/service-management/server.js`
 
@@ -110,7 +112,9 @@ PM2-served:
 - `bun run dev:service-management`
 - default dev profile (`bun run dev`) also starts `service-management` through PM2.
 
-The app state persists with browser `localStorage`.
+The app state persists in Cana (IndexedDB). JUM-484's one-way migration moved
+the legacy browser `localStorage` payload across at boot — byte copy, same
+pinned keys, no fallback to localStorage.
 
 Recommended dev path:
 

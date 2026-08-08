@@ -310,8 +310,10 @@ the importer rebuilds it against the same contract.
 
 Export and import currently carry **the domain model only**. The other three
 tabs — `interfaces`, `serviceConfiguration`, `runtimeEnvironment` — live in
-the `service-management.v1` localStorage payload (Requirement 126, Contract
-2) but do not cross any export/import path: a shared bundle describes one tab
+the pinned `service-management.v1` document — historically the localStorage
+payload, now stored in Cana under the same key after JUM-484's landed one-way
+migration (Requirement 126, Contract 2) — but do not cross any export/import
+path: a shared bundle describes one tab
 of a four-tab design, and nothing warns the user yet.
 
 The open decision is `runtimeEnvironment`'s treatment

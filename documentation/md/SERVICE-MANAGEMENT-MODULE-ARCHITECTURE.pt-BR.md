@@ -52,8 +52,10 @@ A arquitetura é uma única regra: **a lógica pura vive em módulos livres de D
 sob `src/`; o acesso ao DOM vive no módulo de entrada.** O conjunto livre de
 DOM é o que pode ser testado em unidade sob Bun/Node sem shim de DOM — e o que
 o JUM-493 pode publicar — portanto a fronteira é a arquitetura. A fronteira é
-garantida por um teste: `designerState.test.ts` lê os três módulos de `src/`,
-remove os comentários e falha se `document.` ou `window.` aparecer.
+garantida por um teste: `designerState.test.ts` lê os módulos livres de DOM de
+`src/`, remove os comentários e falha se `document.` ou `window.` aparecer. O
+conjunto que o teste lê cresceu com cada extração e entrega de store; a regra
+não.
 
 ### Módulos atuais
 
@@ -62,11 +64,14 @@ remove os comentários e falha se `document.` ou `window.` aparecer.
 | `apps/service-management/script.js` | Vinculado ao DOM | Módulo de entrada: conexão de eventos, renderização, fluxos de importação/exportação. Detém toda interação com `document`/`window`. |
 | `apps/service-management/src/state/designerState.js` | Livre de DOM | Núcleo de estado e persistência: o objeto de estado, a cadeia de normalização `normalizeStatePayload`, snapshot/apply, histórico (undo/redo), `loadState`, `buildModelSnapshot`. |
 | `apps/service-management/src/store/IDesignerStore.js` | Livre de DOM, sem dependências | A porta de armazenamento: contrato + classe base. Importável sob qualquer runtime JavaScript. |
-| `apps/service-management/src/store/LocalStorageDesignerStore.js` | Livre de DOM | Adaptador `IDesignerStore` TRANSICIONAL sobre `localStorage`. Aposentado pelo JUM-484. |
+| `apps/service-management/src/store/CanaDesignerStore.js` | Livre de DOM | O único adaptador `IDesignerStore` (JUM-483), sobre o cliente Cana — injetado, nunca importado. |
+| `apps/service-management/src/store/designerStoreFactory.js` | Livre de DOM | A costura de construção do store: `createDesignerStore()` sempre retorna `CanaDesignerStore`; o cliente Cana é a única variável. |
+| `apps/service-management/src/store/canaMigration.js` | Livre de DOM | A migração unidirecional localStorage → Cana do JUM-484 (executada no boot antes de qualquer carga de estado) e os estados de ambiente de armazenamento declarados. |
 
 A direção das dependências é unidirecional: `script.js` →
 `src/state/designerState.js` → (porta) `src/store/IDesignerStore.js` ←
-`src/store/LocalStorageDesignerStore.js`. O núcleo de estado não importa nada
+`src/store/CanaDesignerStore.js` (construído por
+`src/store/designerStoreFactory.js`). O núcleo de estado não importa nada
 vinculado ao DOM nem nada concreto de armazenamento — ele conhece apenas a
 porta.
 
@@ -83,7 +88,7 @@ porta.
 `script.js` constrói o núcleo uma única vez, no nível superior do módulo:
 
 ```js
-const store = new LocalStorageDesignerStore();
+const store = createDesignerStore();
 const designerState = createDesignerState({
   store,
   seed,
@@ -116,7 +121,9 @@ menos que `options.recordHistory === false`) e salva depois dela. O histórico
 o futuro de redo; `undo()`/`redo()` restauram um snapshot, salvam e chamam
 `render()` — e são no-ops com passado/futuro vazio.
 
-A inicialização é um único `await loadState()` em `script.js`.
+A inicialização executa primeiro a migração unidirecional do JUM-484 (veja a
+seção de migração abaixo) e depois um único `await loadState()` em
+`script.js`.
 
 ### O núcleo de estado (`src/state/designerState.js`)
 
@@ -146,14 +153,19 @@ A inicialização é um único `await loadState()` em `script.js`.
 ### O esquema de armazenamento `service-management.v1`
 
 Todo o estado da suíte (as quatro guias) persiste como UM payload JSON sob a
-chave única de localStorage `service-management.v1`; o baseline de diff de
-esquema vive sob `service-management.schema-baseline.v1`. O esquema — as doze
+chave única fixada `service-management.v1`; o baseline de diff de esquema vive
+sob `service-management.schema-baseline.v1`. Desde a migração entregue do
+JUM-484, ambos os documentos vivem no Cana — um único object store IndexedDB
+(`designerDocuments`, banco `service-management`, esquema versão 1) — como
+cópias de bytes dos mesmos documentos JSON que o adaptador localStorage
+gravava. A era do localStorage é histórica; o formato de transmissão fixado NÃO
+mudou. O esquema — as doze
 seções de nível superior, seus enums e o formato do baseline — é fixado pelo
 [Requisito 126, Contrato 2](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md)
 e **não é duplicado aqui** para que os dois não divirjam. Qualquer mudança
 estrutural deve incrementar a chave versionada e atualizar esse requisito no
 mesmo PR. A porta em si é agnóstica de esquema: o formato de transmissão
-fixado pertence ao adaptador transicional e à migração do JUM-484.
+fixado pertence ao adaptador e à migração (entregue) do JUM-484.
 
 ## O contrato da porta `IDesignerStore`
 
@@ -161,12 +173,13 @@ Fonte: [`apps/service-management/src/store/IDesignerStore.js`](../../apps/servic
 
 ### Por que a porta é moldada pelo Cana, não pelo localStorage
 
-`LocalStorageDesignerStore` é TRANSICIONAL: ele carrega o designer apenas até
-a migração unidirecional do `service-management.v1` do JUM-484 aposentá-lo. O
+`LocalStorageDesignerStore` era TRANSICIONAL e agora está aposentado e
+deletado: a migração unidirecional do `service-management.v1` do JUM-484 foi
+entregue, deixando o `CanaDesignerStore` como única implementação da porta. O
 Cana **não tem fallback para localStorage — nenhum fallback** (decisão de
 2026-07-29). A porta é, portanto, moldada pela semântica que o Cana (um banco
-de dados offline atrás de uma fronteira postmaster/worker) produz, e o
-adaptador localStorage se estica para se encaixar.
+de dados offline atrás de uma fronteira postmaster/worker) produz; o adaptador
+localStorage apenas se esticava para se encaixar nela.
 
 ### A regra de não-fallback e sua consequência
 
@@ -181,6 +194,14 @@ recuperação:
 | `'empty'` | Nada está armazenado. Primeira execução — NÃO é erro, NÃO é perda de dados. | Semeia o template padrão, persiste-o, limpa o histórico. |
 | `'lost'` | O armazenamento estava disponível e continha dados que não são mais legíveis (despejo, corrupção). Distinto de `'empty'`. | Semeia, persiste o estado recuperado (sobrescrevendo o payload ilegível), redefine a view, limpa o histórico. |
 | `'unavailable'` | O próprio backend de armazenamento não pode ser usado (modo privado, IndexedDB ausente). Terminal sob a regra de não-fallback. | Semeia **apenas em memória** — não há nada atrás do store para gravar, e nenhum fallback. |
+
+O JUM-484 tornou esses estados visíveis em vez de silenciosos: no boot, o app
+detecta e comunica quatro estados de ambiente de armazenamento declarados —
+`unsupported-environment`, `non-persisting-session`, `data-lost` e
+`degraded-durability` — através da região de status não bloqueante do JUM-543,
+nunca `alert()` (veja a seção de migração abaixo para o significado de cada
+estado). A semeadura apenas em memória no `'unavailable'` permanece, mas agora
+é sempre comunicada ao usuário.
 
 ### Operações
 
@@ -228,52 +249,32 @@ adaptador parcial falhe ruidosamente em vez de silenciosamente descartar
 estado do designer. A suíte de unidade assegura que todos os sete métodos base
 rejeitam.
 
-## A implementação de referência — e o que ela não consegue expressar
+## A implementação de referência aposentada — e no que seu formato de transmissão se tornou
 
-Fonte:
-[`apps/service-management/src/store/LocalStorageDesignerStore.js`](../../apps/service-management/src/store/LocalStorageDesignerStore.js).
+O `LocalStorageDesignerStore` era a implementação de referência da porta — um
+adaptador transicional sobre localStorage que se esticava para se encaixar em
+um contrato moldado pelo Cana. A migração entregue do JUM-484 o aposentou e o
+**deletou** (`apps/service-management/src/store/LocalStorageDesignerStore.js`
+não existe mais); seu comportamento é histórico. Dois fatos que ele fixava
+continuam verdadeiros para o formato de transmissão e foram carregados
+inalterados:
 
-`LocalStorageDesignerStore` é a implementação de referência, mas a porta é
-moldada pelo Cana e este adaptador **se estica para se encaixar**. Seu
-comportamento não deve ser confundido com o contrato:
+- **Chaves fixadas.** O documento de estado vive sob `service-management.v1` e
+  o baseline de diff de esquema sob `service-management.schema-baseline.v1`,
+  fixadas pelo Requisito 126 Contrato 2. A migração do JUM-484 lê a fonte sob
+  essas mesmas chaves e grava os mesmos documentos no Cana — uma cópia de
+  bytes, não uma transformação.
+- **Um documento JSON por chave.** O formato de transmissão é um
+  `JSON.stringify` do documento fixado por chave; apenas ONDE os documentos
+  vivem mudou (o object store `designerDocuments` do Cana, IndexedDB), nunca o
+  que eles contêm.
 
-- **Trabalho síncrono atrás de Promises resolvidas.** localStorage é síncrono,
-  portanto cada método executa seu trabalho antes de retornar uma Promise já
-  resolvida. `save()` executa `setItem` sincronamente, preservando a
-  durabilidade fire-and-forget anterior à extração para chamadores que não
-  usam await (todo o designer hoje). Nenhum chamador pode depender desse
-  timing — a porta é assíncrona.
-- **`setItem` que lança exceção propaga sincronamente.** Um erro de cota ou de
-  armazenamento bloqueado de `setItem`/`removeItem` lança para fora de
-  `save()`/`clear()` até o chamador, exatamente como o acesso direto ao
-  `localStorage` anterior à extração se comportava (garantido por teste).
-- **JSON corrompido → `'lost'`.** Um payload armazenado que não é JSON válido
-  é a única corrupção que o localStorage consegue expressar, e ele reporta
-  `'lost'` — nunca `'empty'`. Despejo verdadeiro não tem análogo em
-  localStorage e nunca é reportado por este adaptador.
-- **`'unknown'` nunca é reportado.** Um `setItem` que retorna é durável pelo
-  contrato de armazenamento HTML, e um que lança propaga — portanto este
-  adaptador nunca resolve `'unknown'`.
-- **`'unavailable'` apenas para backend ausente/que lança exceção.** O global
-  `localStorage` ambiente é resolvido tardiamente e defensivamente (o acesso à
-  propriedade em si pode lançar quando o armazenamento está bloqueado). Sem
-  backend, um global que lança, ou um `getItem` que lança, todos reportam
-  `'unavailable'`; um `getItem` retornando `null` (ou `undefined`) reporta
-  `'empty'`. `probe()` grava e remove uma chave `${stateKey}.probe`: sucesso é
-  `'available'`, uma exceção é `'unavailable'` com a mensagem de erro como
-  `reason`.
-- **Chaves fixadas.** As chaves padrão são exportadas como
-  `LOCAL_STORAGE_STATE_KEY` (`service-management.v1`) e
-  `LOCAL_STORAGE_BASELINE_KEY` (`service-management.schema-baseline.v1`),
-  fixadas pelo Requisito 126 Contrato 2. O construtor aceita overrides de
-  `storage`, `stateKey` e `baselineKey` para testes; o formato de transmissão
-  (um `JSON.stringify` sob a chave fixada) não deve mudar aqui — o esquema
-  pertence à migração do JUM-484.
-
-Como este adaptador raramente reportará `'unavailable'` ou `'lost'` e nunca
-reporta `'unknown'`, um implementador lendo apenas seu comportamento perderia
-a maior parte do contrato. O contrato é a porta; esta classe é um backend
-degenerado.
+Todo o resto sobre aquele adaptador — trabalho síncrono atrás de Promises
+resolvidas, JSON corrompido → `'lost'`, nunca reportar `'unknown'`,
+`'unavailable'` apenas para backend ausente/que lança exceção — descrevia a
+superfície degenerada do localStorage, não a porta, e não descreve mais nenhum
+código em produção. Quem implementa deve ler o contrato da própria porta; o
+único adaptador é o `CanaDesignerStore`.
 
 ## Implementando um novo adaptador: `CanaDesignerStore` (JUM-483)
 
@@ -316,7 +317,7 @@ Fontes:
 [`apps/service-management/src/store/CanaDesignerStore.js`](../../apps/service-management/src/store/CanaDesignerStore.js)
 (adaptador) e
 [`apps/service-management/src/store/designerStoreFactory.js`](../../apps/service-management/src/store/designerStoreFactory.js)
-(costura de seleção); suíte de unidade
+(fábrica); suíte de unidade
 [`canaDesignerStore.test.ts`](../../apps/backend-template/test/unit/service-management/canaDesignerStore.test.ts).
 
 O `CanaDesignerStore` implementa todos os sete métodos da porta sobre o
@@ -326,8 +327,8 @@ a abstração da porta se sustentou. As decisões que um leitor precisa:
 - **Formato de transmissão inalterado.** Ambos os documentos vivem em um
   único object store (`designerDocuments`, banco `service-management`, esquema
   versão 1) sob as chaves fixadas do Contrato 2, cada valor o exato
-  `JSON.stringify` do mesmo documento que o adaptador transicional grava. A
-  migração do JUM-484 é uma cópia de bytes, não uma transformação.
+  `JSON.stringify` do mesmo documento que o adaptador transicional gravava. A
+  migração do JUM-484 foi uma cópia de bytes, não uma transformação.
 - **Mapeamento de estados.** IndexedDB ausente/inutilizável (Cana
   `'Unavailable'`) → `'unavailable'` no `probe()`/`load()`; despejo
   (`storageState().evicted` do Cana JUM-560, ou uma rejeição `'Evicted'`) sem
@@ -353,25 +354,82 @@ a abstração da porta se sustentou. As decisões que um leitor precisa:
   indisponibilidade permanente sem nada atrás.
 - **Injeção de cliente, no estilo da fábrica.** O adaptador nunca importa
   `@jumentix/cana`: o cliente é injetado (`client`/`clientProvider`), espelhando
-  o `indexedDbClient` de `buildDatabaseClientCompilers`. A costura
-  (`createDesignerStore`) seleciona por nome (`cana`, aliases `indexeddb`/
-  `indexed-db`, como o normalizador da fábrica), com precedência argumento
-  explícito → global ambiente `JUMENTIX_DESIGNER_STORE_DRIVER` → parâmetro de
-  URL `?designer-store=cana` → **padrão `localstorage`**. Sem cliente
-  conectado, o provedor padrão importa `@jumentix/cana` tardiamente
-  (`import()`) e constrói via `createCanaDatabaseClient`; um host que não
-  consegue resolvê-lo recebe `'unavailable'`, nunca um fallback silencioso. O
-  padrão permanece localStorage até a migração do JUM-484 tornar o store Cana
-  o único.
+  o `indexedDbClient` de `buildDatabaseClientCompilers`. O JUM-484 removeu a
+  seleção de driver da costura — não há mais precedência: sem argumento
+  `driver`, sem global ambiente `JUMENTIX_DESIGNER_STORE_DRIVER`, sem parâmetro
+  de URL `?designer-store=`, sem padrão `localstorage`. `createDesignerStore()`
+  sempre retorna `CanaDesignerStore`; a única variável é o próprio cliente Cana
+  (`canaClient`, uma fábrica `indexedDbClient` ou `canaModuleSpecifier` para o
+  provedor padrão tardio). Sem cliente conectado, o provedor padrão importa
+  `@jumentix/cana` tardiamente (`import()`) e constrói via
+  `createCanaDatabaseClient`; no navegador, o especificador bare resolve
+  através do import map em `index.html` para o bundle vendored
+  (`vendor/cana/index.js`, ignorado pelo git, regenerado por
+  `ci-cd/sync-service-management-cana-bundle.js`). Um host que não consegue
+  resolvê-lo recebe `'unavailable'`, nunca um fallback silencioso.
+
+## A migração unidirecional: `canaMigration.js` (JUM-484)
+
+Fonte:
+[`apps/service-management/src/store/canaMigration.js`](../../apps/service-management/src/store/canaMigration.js).
+
+A migração do JUM-484 foi entregue e roda no boot, antes de qualquer carga de
+estado. Sem fallback para onde recuar, a segurança vem da construção:
+
+1. **Exportar antes de migrar.** Um backup baixável do payload verbatim do
+   localStorage (`service-management-v1-backup-<timestamp>.json`) é produzido
+   ANTES de qualquer escrita no Cana e anunciado ao usuário — o recurso que
+   substitui o fallback.
+2. **Verificar antes da virada.** O payload de estado e o baseline de diff de
+   esquema são gravados através da porta, relidos e comparados em conteúdo
+   contra a fonte. Apenas uma migração verificada grava seu marcador
+   (`service-management.v1.cana-migration`, JSON
+   `{version, status: 'verified', migratedAt, sourceRetainedUntil}`); qualquer
+   falha deixa a fonte intocada e a migração reexecutável.
+3. **Retenção postergada da fonte.** O payload-fonte do localStorage permanece
+   no lugar, SEM USO, por 30 dias após uma migração verificada — um caminho de
+   recuperação manual, nunca um fallback: nenhum código o lê como store. Após o
+   período de retenção o boot o remove; o marcador verificado permanece.
+4. **Idempotente.** As escritas são `put`s do mesmo payload sob as mesmas
+   chaves fixadas, portanto uma migração interrompida reexecuta para o mesmo
+   resultado, e um marcador verificado curto-circuita a reentrada.
+5. **Versionamento de esquema no Cana.** O banco Cana é versionado
+   (`schema.version = 1`) e uma migração verificada grava um registro de
+   proveniência sob `service-management.migration.v1` (versão, fonte,
+   timestamps, retenção) para que uma migração futura tenha uma versão sobre a
+   qual raciocinar.
+
+O formato de transmissão NÃO mudou (Requisito 126 Contrato 2): mesmas chaves,
+mesmos documentos JSON — apenas onde vivem. O baseline atravessa quando
+presente; um baseline ausente permanece ausente, nunca fabricado.
+
+O mesmo módulo declara os estados de ambiente de armazenamento que a decisão
+de não-fallback torna obrigatórios — `describeDesignerStorageEnvironment()`
+mapeia a presença de IndexedDB e o `probe()` para quatro estados, renderizados
+no boot através da região de status não bloqueante do JUM-543 (nunca
+`alert()`):
+
+- **`unsupported-environment`** (severidade error) — um navegador sem
+  IndexedDB utilizável: o designer pode ser explorado, mas nada pode ser salvo.
+- **`non-persisting-session`** (severidade error) — armazenamento
+  privado/incógnito/bloqueado (`probe()` → `'unavailable'`): o designer não
+  consegue persistir; qualquer coisa construída nesta sessão será perdida.
+- **`data-lost`** (severidade error) — `probe()` → `'lost'` (despejo,
+  corrupção): dados salvos anteriormente não são mais legíveis e não há store
+  de fallback; um template novo é carregado e o recurso é um backup/exportação
+  anterior.
+- **`degraded-durability`** (severidade info) — `probe()` → `'available'` com
+  um `reason` diagnóstico (quase na cota, armazenamento não persistente):
+  funcionando, mas com durabilidade degradada.
 
 ## Referências
 
 - Contrato da porta: [`apps/service-management/src/store/IDesignerStore.js`](../../apps/service-management/src/store/IDesignerStore.js)
-- Adaptador transicional: [`apps/service-management/src/store/LocalStorageDesignerStore.js`](../../apps/service-management/src/store/LocalStorageDesignerStore.js)
-- Adaptador Cana + costura de seleção: [`apps/service-management/src/store/CanaDesignerStore.js`](../../apps/service-management/src/store/CanaDesignerStore.js), [`apps/service-management/src/store/designerStoreFactory.js`](../../apps/service-management/src/store/designerStoreFactory.js)
+- Migração unidirecional + estados de ambiente: [`apps/service-management/src/store/canaMigration.js`](../../apps/service-management/src/store/canaMigration.js)
+- Adaptador Cana + fábrica: [`apps/service-management/src/store/CanaDesignerStore.js`](../../apps/service-management/src/store/CanaDesignerStore.js), [`apps/service-management/src/store/designerStoreFactory.js`](../../apps/service-management/src/store/designerStoreFactory.js)
 - Núcleo de estado: [`apps/service-management/src/state/designerState.js`](../../apps/service-management/src/state/designerState.js)
 - Módulo de entrada: [`apps/service-management/script.js`](../../apps/service-management/script.js)
 - Suítes de unidade: [`designerStore.test.ts`](../../apps/backend-template/test/unit/service-management/designerStore.test.ts), [`designerState.test.ts`](../../apps/backend-template/test/unit/service-management/designerState.test.ts), [`canaDesignerStore.test.ts`](../../apps/backend-template/test/unit/service-management/canaDesignerStore.test.ts)
 - Esquema de armazenamento: [Requisito 126, Contrato 2](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md)
 - Visão geral do componente: [Aplicativo de gerenciamento de serviços](./SERVICE-MANAGEMENT-APPLICATION.pt-BR.md)
-- Linear: [JUM-468](https://linear.app/jumentix/issue/JUM-468/refactor-extract-statepersistence-core-as-es-module-behind) (a porta), [JUM-469](https://linear.app/jumentix/issue/JUM-469/refactor-modularize-designer-canvas-validation-exporters-importers) (o grafo de módulos), [JUM-483](https://linear.app/jumentix/issue/JUM-483/feature-canadesignerstore-idesignerstore-adapter-over-the-cana-client) (CanaDesignerStore), [JUM-484](https://linear.app/jumentix/issue/JUM-484) (migração que aposenta o adaptador transicional), [JUM-493](https://linear.app/jumentix/issue/JUM-493/feature-publish-designer-core-as-jumentix-package-xpertminds-org-dry) (publicação do pacote), Cana [JUM-560](https://linear.app/jumentix/issue/JUM-560/feature-storage-quota-persistence-and-eviction-policy) (política de cota/despejo)
+- Linear: [JUM-468](https://linear.app/jumentix/issue/JUM-468/refactor-extract-statepersistence-core-as-es-module-behind) (a porta), [JUM-469](https://linear.app/jumentix/issue/JUM-469/refactor-modularize-designer-canvas-validation-exporters-importers) (o grafo de módulos), [JUM-483](https://linear.app/jumentix/issue/JUM-483/feature-canadesignerstore-idesignerstore-adapter-over-the-cana-client) (CanaDesignerStore), [JUM-484](https://linear.app/jumentix/issue/JUM-484) (a migração unidirecional entregue que aposentou o adaptador transicional), [JUM-493](https://linear.app/jumentix/issue/JUM-493/feature-publish-designer-core-as-jumentix-package-xpertminds-org-dry) (publicação do pacote), Cana [JUM-560](https://linear.app/jumentix/issue/JUM-560/feature-storage-quota-persistence-and-eviction-policy) (política de cota/despejo)

@@ -1,4 +1,5 @@
-/* eslint-disable jest/prefer-expect-assertions, jest/no-conditional-in-test, no-await-in-loop */
+/* eslint-disable jest/prefer-expect-assertions, jest/no-conditional-in-test */
+/* eslint-disable no-await-in-loop, jest/max-expects */
 /*
  * JUM-466 — SPA boot and export-gate assertions, run in a REAL browser
  * (Playwright WebKit, the engine this repository already pins for browser
@@ -130,7 +131,15 @@ describe('serviceManagement SPA boot and export gate (JUM-466)', () => {
       { key: STORAGE_KEY, snapshot: BROKEN_SNAPSHOT }
     );
     const page = await brokenContext.newPage();
+
+    // JUM-484: booting with a legacy localStorage payload triggers the
+    // one-way migration to Cana, whose pre-migration backup download fires
+    // BEFORE anything is written to the new store. It is expected here —
+    // and must be the ONLY download until the export gate lifts.
+    const backupDownloadPromise = page.waitForEvent('download');
     await page.goto(baseUrl, { waitUntil: 'load' });
+    const backupDownload = await backupDownloadPromise;
+    expect(backupDownload.suggestedFilename()).toMatch(/^service-management-v1-backup-.*\.json$/);
 
     let downloadFired = false;
     page.on('download', () => {

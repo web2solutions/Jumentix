@@ -513,7 +513,10 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
    * - `'lost'` → seed, persist the recovered state and reset the view (the
    *   old JSON.parse catch path);
    * - `'unavailable'` → seed in memory only — there is nothing behind the
-   *   store to write to, and no fallback (decision 2026-07-29).
+   *   store to write to, and no fallback (decision 2026-07-29). The boot
+   *   surfaces this through the declared storage-environment states
+   *   (JUM-484, `canaMigration.js`) so the session is never silently
+   *   non-persisting.
    */
   async function loadState() {
     const result = await store.load();

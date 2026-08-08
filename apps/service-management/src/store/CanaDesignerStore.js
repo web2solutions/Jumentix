@@ -4,10 +4,10 @@ import { IDesignerStore } from './IDesignerStore.js';
  * CanaDesignerStore — the `IDesignerStore` adapter over the Cana client
  * (JUM-483), the first stone of the H3 Cana adoption wave.
  *
- * This is the adapter the port was shaped for (JUM-468): after JUM-484's
- * one-way migration of `service-management.v1` it is the SOLE implementation
- * of the port. `LocalStorageDesignerStore` is transitional and is retired at
- * migration; Cana has no fallback to localStorage (decision 2026-07-29), so
+ * This is the adapter the port was shaped for (JUM-468) and, since JUM-484's
+ * one-way migration of `service-management.v1`, the SOLE implementation of
+ * the port: the transitional `LocalStorageDesignerStore` is retired and
+ * deleted, and Cana has no fallback to localStorage (decision 2026-07-29), so
  * every failure state the port expresses is genuinely produced here — nothing
  * behind this store catches the designer.
  *
@@ -55,10 +55,10 @@ import { IDesignerStore } from './IDesignerStore.js';
  * Records are stored in one object store (`designerDocuments`, outbound keys)
  * under the pinned Requirement 126 Contract 2 keys — `service-management.v1`
  * and `service-management.schema-baseline.v1` — and each value is the exact
- * `JSON.stringify` of the same document the transitional adapter writes. The
- * migration (JUM-484) is therefore a byte copy, not a transformation, and a
- * stored value that no longer parses reports `'lost'` exactly as the
- * transitional adapter's corrupt-JSON path does.
+ * `JSON.stringify` of the same document the retired localStorage adapter
+ * wrote. JUM-484's migration was therefore a byte copy, not a transformation,
+ * and a stored value that no longer parses reports `'lost'` exactly as the
+ * retired adapter's corrupt-JSON path did.
  *
  * ## Client injection
  *
