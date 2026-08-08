@@ -69,8 +69,8 @@ const {
   normalizeStatePayload
 } = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'designerState.js'));
 const {
-  LocalStorageDesignerStore
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'store', 'LocalStorageDesignerStore.js'));
+  MemoryDesignerStore
+} = require(path.join(repoRoot, 'apps', 'backend-template', 'test', 'helpers', 'MemoryDesignerStore.ts'));
 const YAML = require('yaml');
 
 type DesignerField = {
@@ -453,7 +453,7 @@ function contractMessageName(domainName: string, entityName: string, contract: M
 
 function createCore() {
   const storage = new Map<string, string>();
-  const store = new LocalStorageDesignerStore({
+  const store = new MemoryDesignerStore({
     storage: {
       getItem: (key: string) => (storage.has(key) ? storage.get(key) : null),
       setItem: (key: string, value: string) => { storage.set(key, String(value)); },

@@ -3,8 +3,8 @@
 import path from 'node:path';
 
 /**
- * Unit suite for the `CanaDesignerStore` adapter and the store selection seam
- * (JUM-483) — the first stone of the H3 Cana adoption wave.
+ * Unit suite for the `CanaDesignerStore` adapter (JUM-483) and the store
+ * factory that makes it the SOLE designer store (JUM-484).
  *
  * What is real here and what is a double, and why (Requirements 109/115):
  *
@@ -29,9 +29,6 @@ const {
   IDesignerStore
 } = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'store', 'IDesignerStore.js'));
 const {
-  LocalStorageDesignerStore
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'store', 'LocalStorageDesignerStore.js'));
-const {
   CANA_BASELINE_KEY,
   CANA_DESIGNER_CLIENT_OPTIONS,
   CANA_STATE_KEY,
@@ -39,10 +36,7 @@ const {
 } = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'store', 'CanaDesignerStore.js'));
 const {
   CANA_MODULE_SPECIFIER,
-  DEFAULT_DESIGNER_STORE_DRIVER,
-  createDesignerStore,
-  normalizeDesignerStoreDriver,
-  resolveDesignerStoreDriver
+  createDesignerStore
 } = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'store', 'designerStoreFactory.js'));
 const {
   canaError,
@@ -429,39 +423,36 @@ describe('cana designer store — quota and unknown outcomes, surfaced distinctl
   });
 });
 
-describe('designer store selection seam (JUM-483)', () => {
-  it('normalises driver names with the database-client-factory aliases', () => {
-    expect(normalizeDesignerStoreDriver('cana')).toBe('cana');
-    expect(normalizeDesignerStoreDriver('IndexedDB')).toBe('cana');
-    expect(normalizeDesignerStoreDriver('indexed-db')).toBe('cana');
-    expect(normalizeDesignerStoreDriver('localstorage')).toBe('localstorage');
-    expect(normalizeDesignerStoreDriver(' Local-Storage ')).toBe('localstorage');
-    expect(normalizeDesignerStoreDriver('mongo')).toBeUndefined();
-    expect(normalizeDesignerStoreDriver('')).toBeUndefined();
-    expect(normalizeDesignerStoreDriver(undefined)).toBeUndefined();
+describe('designer store factory — Cana is the sole store (JUM-484)', () => {
+  it('always builds the Cana adapter — there is no driver selection left', () => {
+    // JUM-484 retired the transitional LocalStorageDesignerStore and removed
+    // every localStorage path: no default, no explicit argument, no ambient
+    // global, no URL parameter (decision 2026-07-29 — no fallback at all).
+    expect(createDesignerStore()).toBeInstanceOf(CanaDesignerStore);
   });
 
-  it('resolves precedence: explicit > ambient global > URL parameter > default', () => {
-    expect(DEFAULT_DESIGNER_STORE_DRIVER).toBe('localstorage');
-    expect(resolveDesignerStoreDriver({})).toBe('localstorage');
-    expect(resolveDesignerStoreDriver({ searchParam: 'cana' })).toBe('cana');
-    expect(resolveDesignerStoreDriver({ globalDriver: 'cana', searchParam: 'localstorage' })).toBe('cana');
-    expect(resolveDesignerStoreDriver({ driver: 'cana', globalDriver: 'localstorage' })).toBe('cana');
-    // An unknown value falls through to the next level, not to the default.
-    expect(resolveDesignerStoreDriver({ driver: 'bogus', globalDriver: 'cana' })).toBe('cana');
-    expect(resolveDesignerStoreDriver({ driver: 'bogus' })).toBe('localstorage');
-  });
-
-  it('builds the transitional localStorage adapter by default — unchanged until JUM-484', () => {
-    const store = createDesignerStore();
-    expect(store).toBeInstanceOf(LocalStorageDesignerStore);
-    expect(createDesignerStore({ driver: 'localstorage' })).toBeInstanceOf(LocalStorageDesignerStore);
+  it('ignores the retired selection inputs rather than honouring them', () => {
+    const globalKey = 'JUMENTIX_DESIGNER_STORE_DRIVER';
+    try {
+      (globalThis as Record<string, unknown>)[globalKey] = 'localstorage';
+      Object.defineProperty(globalThis, 'location', {
+        configurable: true,
+        writable: true,
+        value: { search: '?designer-store=localstorage' }
+      });
+      // Even with every retired escape hatch set to localstorage, the factory
+      // still returns the Cana store: selected-localstorage is not a state
+      // the designer can boot into anymore.
+      expect(createDesignerStore()).toBeInstanceOf(CanaDesignerStore);
+    } finally {
+      delete (globalThis as Record<string, unknown>)[globalKey];
+      delete (globalThis as Record<string, unknown>).location;
+    }
   });
 
   it('builds the Cana adapter over an injected CanaDatabaseClient-shaped factory', async () => {
     const { client, records } = createCanaClientDouble();
     const store = createDesignerStore({
-      driver: 'cana',
       // The injection convention mirrors buildDatabaseClientCompilers: the
       // factory may return a CanaDatabaseClient (`.cana` is used) or a bare client.
       indexedDbClient: () => ({ cana: client })
@@ -474,58 +465,13 @@ describe('designer store selection seam (JUM-483)', () => {
 
   it('builds the Cana adapter over a bare injected client as well', async () => {
     const { client } = createCanaClientDouble();
-    const store = createDesignerStore({ driver: 'cana', indexedDbClient: () => client });
+    const store = createDesignerStore({ indexedDbClient: () => client });
     expect(store).toBeInstanceOf(CanaDesignerStore);
     expect((await store.probe()).status).toBe('available');
   });
 
   it('uses the default module specifier for the lazy provider', () => {
     expect(CANA_MODULE_SPECIFIER).toBe('@jumentix/cana');
-  });
-
-  describe('ambient selection inputs', () => {
-    const globalKey = 'JUMENTIX_DESIGNER_STORE_DRIVER';
-    afterEach(() => {
-      delete (globalThis as Record<string, unknown>)[globalKey];
-      delete (globalThis as Record<string, unknown>).location;
-    });
-
-    it('honours the ambient global when no explicit driver is given', () => {
-      (globalThis as Record<string, unknown>)[globalKey] = 'cana';
-      expect(createDesignerStore()).toBeInstanceOf(CanaDesignerStore);
-      (globalThis as Record<string, unknown>)[globalKey] = 'localstorage';
-      expect(createDesignerStore()).toBeInstanceOf(LocalStorageDesignerStore);
-    });
-
-    it('honours the designer-store URL parameter when no global is set', () => {
-      (globalThis as Record<string, unknown>).location = { search: '?designer-store=cana&other=1' };
-      expect(createDesignerStore()).toBeInstanceOf(CanaDesignerStore);
-      (globalThis as Record<string, unknown>).location = { search: '?other=1' };
-      expect(createDesignerStore()).toBeInstanceOf(LocalStorageDesignerStore);
-    });
-
-    it('falls through to the default when ambient reads throw', () => {
-      Object.defineProperty(globalThis, globalKey, {
-        configurable: true,
-        get() {
-          throw new Error('blocked global');
-        }
-      });
-      Object.defineProperty(globalThis, 'location', {
-        configurable: true,
-        get() {
-          throw new Error('blocked location');
-        }
-      });
-      expect(createDesignerStore()).toBeInstanceOf(LocalStorageDesignerStore);
-      delete (globalThis as Record<string, unknown>)[globalKey];
-      Object.defineProperty(globalThis, 'location', {
-        configurable: true,
-        writable: true,
-        value: { search: 123 }
-      });
-      expect(createDesignerStore()).toBeInstanceOf(LocalStorageDesignerStore);
-    });
   });
 });
 
@@ -545,7 +491,7 @@ describe('cana designer store — real Cana module detection (Requirement 109)',
     // The REAL Cana client is built and opened here. In Node there is no
     // `indexedDB` global, so the engine's own terminal `Unavailable` rejection
     // must flow through the real adapter — a fake engine cannot produce it.
-    const store = createDesignerStore({ driver: 'cana' });
+    const store = createDesignerStore();
     expect(store).toBeInstanceOf(CanaDesignerStore);
     const probe = await store.probe();
     expect(probe.status).toBe('unavailable');

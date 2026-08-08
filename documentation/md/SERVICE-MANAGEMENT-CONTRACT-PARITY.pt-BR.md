@@ -328,8 +328,10 @@ o importador a reconstrói contra o mesmo contrato.
 
 Atualmente, exportação e importação carregam **apenas o modelo de domínio**.
 As outras três abas — `interfaces`, `serviceConfiguration`,
-`runtimeEnvironment` — vivem no payload `service-management.v1` do
-localStorage (Requisito 126, Contrato 2), mas não atravessam nenhum caminho de
+`runtimeEnvironment` — vivem no documento fixado `service-management.v1` —
+historicamente o payload do localStorage, agora armazenado no Cana sob a mesma
+chave após a migração unidirecional entregue do JUM-484 (Requisito 126,
+Contrato 2) —, mas não atravessam nenhum caminho de
 exportação/importação: um bundle compartilhado descreve uma aba de um design
 de quatro abas, e nada avisa o usuário ainda.
 

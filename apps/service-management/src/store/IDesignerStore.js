@@ -7,12 +7,12 @@
  *
  * ## Why the port is shaped around Cana, not localStorage
  *
- * `LocalStorageDesignerStore` is TRANSITIONAL: it carries the designer only
- * until JUM-484's one-way migration of `service-management.v1` retires it.
  * Cana has NO fallback to localStorage — no fallback at all (decision
- * 2026-07-29). The port is therefore shaped around the semantics Cana (an
- * offline database behind a postmaster/worker boundary) produces, and the
- * localStorage adapter stretches to fit. H3 (JUM-483) implements
+ * 2026-07-29), and JUM-484's one-way migration of `service-management.v1`
+ * made the `CanaDesignerStore` the SOLE implementation of this port: the
+ * transitional `LocalStorageDesignerStore` is retired and deleted. The port
+ * is therefore shaped around the semantics Cana (an offline database behind
+ * a postmaster/worker boundary) produces. H3 (JUM-483) implemented
  * `CanaDesignerStore` against this exact contract without touching designer
  * logic.
  *
@@ -20,9 +20,8 @@
  *
  * 1. **Every operation is async.** Cana routes through a postmaster and
  *    workers; every operation crosses a boundary. All methods return Promises.
- *    Adapters over synchronous backends (localStorage) perform their work
- *    synchronously and return already-resolved Promises — callers MUST NOT
- *    rely on that and MUST treat every result as asynchronous.
+ *    Callers MUST treat every result as asynchronous — nothing may depend on
+ *    an adapter resolving synchronously.
  *
  * 2. **`load()` distinguishes four outcomes** (see `@typedef LoadResult`):
  *    - `'ok'` — a stored document was found and decoded.
@@ -54,8 +53,8 @@
  *    detectable terminal states under the no-fallback rule.
  *
  * 5. **The schema-diff baseline is part of the same backend.** The baseline
- *    document (`service-management.schema-baseline.v1` under the transitional
- *    adapter) crosses the same storage boundary, so the port carries it:
+ *    document (`service-management.schema-baseline.v1`) crosses the same
+ *    storage boundary, so the port carries it:
  *    `loadBaseline()`, `saveBaseline()`, `clearBaseline()` follow the same
  *    result semantics as their state counterparts.
  *
@@ -68,7 +67,7 @@
  * `selectedRelationshipId`, `idCounter`, `activeTab`, `interfaces`,
  * `serviceConfiguration`, `runtimeEnvironment`, `deployments`, `view`). The
  * port itself is schema-agnostic; the pinned wire format belongs to the
- * transitional adapter and to JUM-484's migration.
+ * Cana adapter and to JUM-484's migration (which moved it unchanged).
  *
  * This contract is documented externally by JUM-473.
  */

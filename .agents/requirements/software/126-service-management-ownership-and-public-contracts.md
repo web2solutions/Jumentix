@@ -15,7 +15,7 @@ The Wave 5 re-homing moved `apps/backend-template` and silently broke the
 live, no owner watched the component, and no smoke asserted the path resolves. The
 defect served default values as though they were real configuration. This requirement
 registers a formal owner for the component and pins its three public contracts —
-the `/api/runtime/env` API, the `service-management.v1` localStorage schema, and the
+the `/api/runtime/env` API, the `service-management.v1` storage schema, and the
 export formats — precisely enough that a violation is detectable by a test rather
 than by reading. The H1 child issues implement the behavior; this requirement is the
 contract they converge on, and the smoke expansion in `JUM-466` asserts it.
@@ -229,9 +229,13 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
        `{ "error": "PM2 ecosystem file operation failed.", "code", "path",
        "details" }`, parallel to the env-file filesystem class.
 
-4. **Contract 2 — `service-management.v1` localStorage storage schema.**
+4. **Contract 2 — `service-management.v1` storage schema (historically the
+   localStorage storage schema).**
    - The entire suite state (all four tabs) persists as ONE JSON payload under the
-     single localStorage key `service-management.v1`, with exactly these top-level
+     single pinned key `service-management.v1` — historically a localStorage key;
+     since `JUM-484`'s landed one-way migration, a key in Cana's
+     `designerDocuments` IndexedDB object store. The migration copied the exact
+     documents across without changing the wire format — with exactly these top-level
      sections: `domains`, `relationships`, `selectedDomainId`, `selectedEntityId`,
      `selectedRelationshipId`, `idCounter`, `activeTab`, `interfaces`,
      `serviceConfiguration`, `runtimeEnvironment`, `deployments`, `view`.
@@ -276,9 +280,12 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
      fields: [{ name, type, required, pk, fk, unique, nullable, format, itemsType,
      enumValues }] }] }], relationships: [{ id, fromEntityId, toEntityId,
      fromCardinality, toCardinality }] }`.
-   - This schema is the migration source for the `IDesignerStore` port (`JUM-468`)
-     and the Cana migration (`JUM-484`). Any structural change MUST bump the
-     versioned key and update this requirement in the same PR.
+   - This schema was the migration source for the `IDesignerStore` port (`JUM-468`)
+     and the Cana migration (`JUM-484`, landed): the migration copied these exact
+     documents into Cana (IndexedDB) without changing the wire format — the
+     versioned keys above are now Cana keys, byte-identical documents. Any
+     structural change MUST bump the versioned key and update this requirement
+     in the same PR.
 
 5. **Contract 3 — Export formats and the export quality gate.**
    Eight exporters exist; each guarantees:

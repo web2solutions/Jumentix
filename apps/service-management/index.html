@@ -595,6 +595,17 @@
       </div>
     </section>
   </div>
+  <!-- Import map (JUM-484): Cana is the sole designer store; the bare
+       `@jumentix/cana` specifier the store factory lazily imports resolves to
+       the vendored ESM bundle, synced from packages/cana's browser build by
+       ci-cd/sync-service-management-cana-bundle.js. -->
+  <script type="importmap">
+    {
+      "imports": {
+        "@jumentix/cana": "./vendor/cana/index.js"
+      }
+    }
+  </script>
   <script type="module" src="./script.js"></script>
 </body>
 </html>
