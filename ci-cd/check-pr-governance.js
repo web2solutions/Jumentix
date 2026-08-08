@@ -336,6 +336,13 @@ async function verifyIssueProjectMembership(metadata, options = {}) {
     ];
   }
 
+  // Said out loud on success, so a green run is evidence rather than silence.
+  // Without it the log cannot distinguish a lookup that confirmed membership
+  // from one that never ran — which is the distinction this whole rule exists
+  // to make.
+  (options.log ?? console.log)(
+    `[pr-governance] verified ${identifier} belongs to "${result.project.name}"`
+  );
   return [];
 }
 

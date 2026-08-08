@@ -361,9 +361,10 @@ describe('child task project membership (JUM-627)', () => {
   ].join('\n');
   const TASK = 'https://linear.app/jumentix/issue/JUM-163/focused-epic-metadata';
 
+  const logged: string[] = [];
   const verify = async (issueLink: string, fetchProject: unknown) => verifyIssueProjectMembership(
     { body: bodyFor(issueLink) },
-    { apiKey: 'test-key', fetchProject }
+    { apiKey: 'test-key', fetchProject, log: (line: string) => logged.push(line) }
   );
 
   it('reads the identifier and the project key out of the two links', () => {
@@ -380,6 +381,12 @@ describe('child task project membership (JUM-627)', () => {
       found: true,
       project: { id: 'c3cb6bae0771-full-id', name: 'Governance foundation', url: EPIC }
     }))).resolves.toStrictEqual([]);
+
+    // The pass is announced. Silence on success would leave a green run unable
+    // to show whether the lookup ran at all.
+    expect(logged).toStrictEqual([
+      '[pr-governance] verified JUM-163 belongs to "Governance foundation"'
+    ]);
   });
 
   it('fails when the issue belongs to no project at all', async () => {
