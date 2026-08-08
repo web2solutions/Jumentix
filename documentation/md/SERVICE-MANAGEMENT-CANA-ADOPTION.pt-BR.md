@@ -351,26 +351,32 @@ Sob a ausência de fallback, a exportação é o único mecanismo de recuperaç�
 que existe — portanto ela deve ser óbvia, não meramente disponível.
 
 - **Como exportar:** o botão **Export JSON** da barra de ferramentas do Domain
-  Designer baixa `domain-designer.json` — o documento do modelo
-  (`{ domains, relationships, view }`). O **Import JSON** na mesma barra o
-  restaura. Os outros botões de exportação (Markdown, JSON Schema, OAS 3.1,
-  AsyncAPI, gRPC proto, boilerplate bundle, pacote de domínio) são artefatos
-  de design para ferramentas downstream, não backups.
-- **O escopo da exportação, honestamente:** a exportação JSON carrega a fatia
-  do modelo. As seções `interfaces`, `serviceConfiguration` e
-  `runtimeEnvironment` do estado da suíte não atravessam nenhum caminho de
-  exportação hoje — esse limite e sua issue responsável
-  ([JUM-547](https://linear.app/jumentix/issue/JUM-547/feature-full-suite-exportimport-carry-interfaces-service-configuration))
-  são nomeados pelo documento E4,
+  Designer baixa `domain-designer.json` — o documento de suíte completa
+  (JUM-547: `{ kind: "service-management-suite", version: "2.0.0", domains,
+  relationships, interfaces, serviceConfiguration, runtimeEnvironment,
+  deployments, view }`). O **Import JSON** na mesma barra o restaura. Os
+  outros botões de exportação (Markdown, JSON Schema, OAS 3.1, AsyncAPI, gRPC
+  proto, boilerplate bundle, pacote de domínio) são artefatos de design para
+  ferramentas downstream, não backups.
+- **O escopo da exportação, honestamente:** a exportação JSON carrega as
+  quatro abas do estado da suíte — o modelo de domínio, os adaptadores de
+  interface, a configuração do serviço e os alvos de deploy — com um limite
+  registrado: o ambiente de runtime atravessa apenas como a *seleção* de
+  ambiente (`environment`, `fileName`), nunca seus valores, então nenhuma
+  configuração da máquina (e nenhum segredo) sai em um bundle; a importação
+  restaura a seleção e mantém os valores da máquina local. Bundles exportados
+  antes do JUM-547 (o formato só de domínio) ainda importam normalmente, com
+  as seções ausentes preenchidas com padrões; um bundle com seção
+  desconhecida ou versão major mais recente é recusado claramente em vez de
+  importado pela metade. Os detalhes e sua prova vivem no documento E4,
   [Garantias de paridade de contratos do Service Management](./SERVICE-MANAGEMENT-CONTRACT-PARITY.pt-BR.md).
-  Uma importação restaura o modelo, a seleção e a view — não a configuração
-  das abas do console.
 - **O backup da migração é a única cópia de fidelidade total.** O
   `service-management-v1-backup-<timestamp>.json` que a migração baixa é o
   payload verbatim do `service-management.v1` — todas as seções. Guarde-o: é
-  o único backup automático que o designer faz. (Importá-lo pela UI restaura
-  a mesma fatia de modelo de qualquer importação; suas seções extras ficam
-  preservadas no arquivo, mas não são lidas de volta pelo importador.)
+  o único backup automático que o designer faz. (Desde o JUM-547 a importação
+  pela UI lê todas as seções de volta — inclusive os valores de ambiente de
+  runtime que o backup carrega e um bundle nunca carrega — então ele também
+  serve como caminho de restauração de fidelidade total.)
 - **Quando exportar:** antes de limpar dados do site ou trocar de
   navegador/perfil/máquina; no momento em que um aviso de quota ou
   durabilidade aparecer; antes e depois de uma grande sessão de redesign; e
@@ -443,8 +449,9 @@ Registradas honestamente, com suas issues responsáveis:
   de estados do `IDesignerStore`, o mapeamento da taxonomia de erros do
   adaptador e a construção do módulo de migração pertencem ao documento E3,
   [Arquitetura de módulos do Service Management](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.pt-BR.md).
-- **Garantias de paridade** — incluindo o limite do escopo de exportação e a
-  JUM-547 — pertencem ao documento E4,
+- **Garantias de paridade** — incluindo o escopo da exportação de suíte
+  completa e a decisão do JUM-547 sobre `runtimeEnvironment` — pertencem ao
+  documento E4,
   [Garantias de paridade de contratos do Service Management](./SERVICE-MANAGEMENT-CONTRACT-PARITY.pt-BR.md).
 - **O contrato das superfícies de status** — como as mensagens são renderizadas
   (região aria-live, severidades, sem `alert()`) pertence ao documento E5,

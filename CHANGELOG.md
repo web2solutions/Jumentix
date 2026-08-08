@@ -4,7 +4,9 @@
 
 ## All Changes
 
+- 2026-08-08 chore(JUM-546): merge dev updates (changelog left to dev regen) - Eduardo A.
 - 2026-08-08 feat(JUM-546): deploy target lifecycle with edit, duplicate and validation - Eduardo A.
+- 2026-08-08 docs(JUM-490): document E7 design system and PWA shell (EN/PT-BR) (#127) - Eduardo A.
 - 2026-08-08 docs(JUM-487): document E6 Cana adoption, migration and offline behaviour (EN/PT-BR) (#126) - Eduardo A.
 - 2026-08-08 [JUM-486][Test] Offline/online persistence matrix for Cana (#124) - Eduardo A.
 - 2026-08-08 feat(JUM-488): adopt Jumentix design system tokens and Storybook coverage in the designer (#125) - Eduardo A.

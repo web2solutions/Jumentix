@@ -36,7 +36,6 @@ import {
   normalizeField,
   normalizeOptionalNumber,
   normalizeRbacPolicyInput,
-  normalizeStatePayload,
   parseCommaSeparated,
   parseEnumValues
 } from './src/state/designerState.js';
@@ -75,7 +74,8 @@ import {
 } from './src/exporters/asyncApiExporters.js';
 import {
   buildDomainFromPackage,
-  buildDomainsFromOas
+  buildDomainsFromOas,
+  buildStateFromSuiteExport
 } from './src/importers/designerImporters.js';
 import {
   flattenBundleFiles,
@@ -1674,18 +1674,43 @@ function importDomainPackage(file) {
   reader.readAsText(file);
 }
 
+// JUM-547: the suite import maps one mapper failure reason to exactly one
+// status-region message. The mapper itself (buildStateFromSuiteExport)
+// owns the versioning and compatibility rules of the full-suite document.
+function suiteExportFailureMessage(result) {
+  if (result.reason === 'wrong-document-kind') {
+    return `This file is a '${String(result.kind)}' document, not a suite export — use the matching import.`;
+  }
+  if (result.reason === 'unsupported-version') {
+    return `Unsupported suite export version '${String(result.version)}' — this designer reads up to major version 2.`;
+  }
+  if (result.reason === 'unknown-sections') {
+    return `Suite export carries unknown section(s): ${result.sections.join(', ')} — import refused rather than partially applied.`;
+  }
+  return 'Invalid suite export document.';
+}
+
 function importStateFromFile(file) {
   const reader = new FileReader();
   reader.onload = () => {
     try {
       const parsed = JSON.parse(String(reader.result));
-      const normalized = normalizeStatePayload(parsed);
+      const result = buildStateFromSuiteExport(parsed, state);
+      if (!result.ok) {
+        showStatus(suiteExportFailureMessage(result));
+        return;
+      }
+      const normalized = result.state;
       withPersist(() => {
         state.domains = normalized.domains;
         state.relationships = normalized.relationships;
         state.selectedDomainId = normalized.selectedDomainId;
         state.selectedEntityId = normalized.selectedEntityId;
         state.selectedRelationshipId = normalized.selectedRelationshipId;
+        state.interfaces = normalized.interfaces;
+        state.serviceConfiguration = normalized.serviceConfiguration;
+        state.runtimeEnvironment = normalized.runtimeEnvironment;
+        state.deployments = normalized.deployments;
         state.view = normalized.view;
         state.idCounter = normalized.idCounter;
         recomputeIdCounter();

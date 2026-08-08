@@ -4,8 +4,10 @@
  *
  * - `buildDomainFromPackage` backs `importDomainPackage`;
  * - `buildDomainsFromOas` backs `importStateFromOasFile`;
- * - `importStateFromFile` needs no mapper of its own: its document→model step
- *   IS `normalizeStatePayload` from `src/state/designerState.js` (JUM-468).
+ * - `buildStateFromSuiteExport` backs `importStateFromFile` (JUM-547): the
+ *   document→model step is `normalizeStatePayload` from
+ *   `src/state/designerState.js` (JUM-468), wrapped in the full-suite
+ *   document's versioning and compatibility rules.
  *
  * Both mappers are pure functions over parsed JSON: document in, result out.
  * No `FileReader`, no `window.alert`, no state mutation — the file-reading
@@ -34,8 +36,11 @@ import {
   normalizeOptionalNumber,
   normalizeRbacPolicyInput,
   normalizeRelationship,
+  normalizeStatePayload,
   parseCommaSeparated,
-  parseEnumValues
+  parseEnumValues,
+  SUITE_EXPORT_KIND,
+  SUITE_EXPORT_MAJOR
 } from '../state/designerState.js';
 import {
   fromOasType,
@@ -319,4 +324,87 @@ export function buildDomainsFromOas(parsed) {
   });
 
   return { ok: true, domains: nextDomains, relationships };
+}
+
+
+/**
+ * Sections a full-suite export document may carry (JUM-547): the Requirement
+ * 126 Contract 2 storage sections plus the document's own `kind`/`version`
+ * markers. Anything else is an unknown section — the import fails clearly
+ * rather than silently discarding it (forward compatibility).
+ */
+const SUITE_EXPORT_KNOWN_SECTIONS = new Set([
+  'kind',
+  'version',
+  'domains',
+  'relationships',
+  'selectedDomainId',
+  'selectedEntityId',
+  'selectedRelationshipId',
+  'idCounter',
+  'activeTab',
+  'interfaces',
+  'serviceConfiguration',
+  'runtimeEnvironment',
+  'deployments',
+  'view'
+]);
+
+/**
+ * Map a parsed full-suite export document (`domain-designer.json`) to the
+ * normalised state `importStateFromFile` applies (JUM-547). The
+ * document→model step is `normalizeStatePayload`, so the crossing applies the
+ * same normalisation discipline as a load; this wrapper owns the document
+ * rules:
+ *
+ * - **Backward compatibility.** A pre-JUM-547 domain-only document (no
+ *   `kind`/`version`, only `{ domains, relationships, view }`) imports
+ *   cleanly; the missing sections take the designer defaults.
+ * - **Versioning.** A document with no `version` is the legacy shape; a
+ *   `version` whose major is at most `SUITE_EXPORT_MAJOR` imports. A newer
+ *   major fails with `unsupported-version` instead of half-importing.
+ * - **Forward compatibility.** An unknown top-level section fails with
+ *   `unknown-sections` (named) — it never vanishes silently. A `kind` that
+ *   is not the suite kind fails with `wrong-document-kind` (a domain package
+ *   or boilerplate bundle fed to the wrong import no longer "succeeds" as an
+ *   empty model).
+ * - **The recorded `runtimeEnvironment` decision** (Requirement 126 Contract
+ *   3): bundles carry the environment selection, never `values`. When the
+ *   document carries no `values`, the local machine's values
+ *   (`currentState.runtimeEnvironment.values`) are preserved across the
+ *   import; a document that does carry `values` (a raw
+ *   `service-management.v1` payload dump) restores them.
+ *
+ * @param {Object} parsed - decoded JSON of the uploaded file.
+ * @param {Object} [currentState] - the live designer state (for the
+ * runtime-environment values preservation rule).
+ * @returns {{ ok: true, state: Object } | { ok: false, reason: string, ... }}
+ */
+export function buildStateFromSuiteExport(parsed, currentState) {
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    return { ok: false, reason: 'invalid-document' };
+  }
+  if (parsed.kind !== undefined && parsed.kind !== SUITE_EXPORT_KIND) {
+    return { ok: false, reason: 'wrong-document-kind', kind: parsed.kind };
+  }
+  if (parsed.version !== undefined) {
+    const major = Number.parseInt(String(parsed.version), 10);
+    if (!Number.isFinite(major) || major > SUITE_EXPORT_MAJOR) {
+      return { ok: false, reason: 'unsupported-version', version: parsed.version };
+    }
+  }
+  const unknownSections = Object.keys(parsed).filter((key) => !SUITE_EXPORT_KNOWN_SECTIONS.has(key));
+  if (unknownSections.length) {
+    return { ok: false, reason: 'unknown-sections', sections: unknownSections };
+  }
+  const state = normalizeStatePayload(parsed);
+  const documentCarriesValues = parsed.runtimeEnvironment
+    && typeof parsed.runtimeEnvironment === 'object'
+    && parsed.runtimeEnvironment.values !== undefined
+    && parsed.runtimeEnvironment.values !== null;
+  const localValues = currentState?.runtimeEnvironment?.values;
+  if (!documentCarriesValues && localValues && typeof localValues === 'object' && !Array.isArray(localValues)) {
+    state.runtimeEnvironment = { ...state.runtimeEnvironment, values: { ...localValues } };
+  }
+  return { ok: true, state };
 }

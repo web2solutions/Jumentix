@@ -162,11 +162,18 @@ behind fixed expected outputs.
 
 ### Symmetric crossings (lossless, deep-equal asserted)
 
-- **JSON** (`buildJsonExportDocument` → `normalizeStatePayload`):
-  `domains`, `relationships` and `view` round-trip deep-equal, and the export
-  is idempotent. The boundary is documented and asserted: the JSON document
-  carries exactly `{ domains, relationships, view }` — selections and
-  `idCounter` are not part of it and are recomputed on import.
+- **JSON** (`buildJsonExportDocument` → `buildStateFromSuiteExport` over
+  `normalizeStatePayload`): the versioned full-suite document (JUM-547) —
+  `domains`, `relationships`, `view`, `interfaces`, `serviceConfiguration`
+  and `deployments` round-trip deep-equal, and the export is idempotent. The
+  boundary is documented and asserted: selections and `idCounter` are not
+  part of the document and are recomputed on import, and `runtimeEnvironment`
+  crosses as the environment *selection* only (see the JUM-547 section
+  below). Pre-JUM-547 domain-only documents (`{ domains, relationships,
+  view }`, no `kind`/`version`) import cleanly with the missing sections
+  defaulted; a document with an unknown top-level section, a newer major
+  `version`, or a `kind` other than `service-management-suite` fails clearly
+  instead of half-importing.
 - **Domain package** (`buildDomainPackageDocument` → `buildDomainFromPackage`):
   a package round-trips deep-equal into an empty model; re-import suffixes
   the domain name (`Billing_2`, `Billing_3`, …) instead of colliding.
@@ -306,26 +313,41 @@ drifts, the suite fails. This is also why `x-rbac` round-trips losslessly
 (Guarantee 4): the exported policy is the normalized, enforceable one, and
 the importer rebuilds it against the same contract.
 
-## What does NOT cross today: full-suite export (JUM-547, open)
+## Full-suite export and the `runtimeEnvironment` decision (JUM-547, landed)
 
-Export and import currently carry **the domain model only**. The other three
-tabs — `interfaces`, `serviceConfiguration`, `runtimeEnvironment` — live in
-the pinned `service-management.v1` document — historically the localStorage
-payload, now stored in Cana under the same key after JUM-484's landed one-way
-migration (Requirement 126, Contract 2) — but do not cross any export/import
-path: a shared bundle describes one tab
-of a four-tab design, and nothing warns the user yet.
+Export and import now carry **all four tabs**, not just the domain model. The
+JSON export (`domain-designer.json`) is the versioned full-suite document:
+`{ kind: "service-management-suite", version: "2.0.0", domains, relationships,
+interfaces, serviceConfiguration, runtimeEnvironment, deployments, view }` —
+the same sections the pinned `service-management.v1` document persists in
+Cana (Requirement 126, Contract 2), minus the session selections and
+`idCounter`. A model designed across all four tabs exports and re-imports
+with every tab intact; a bundle exported before this change (the domain-only
+shape, no `kind`/`version`) imports cleanly with the missing sections
+defaulted, and a bundle with an unknown section or a newer major version
+fails clearly rather than half-succeeding.
 
-The open decision is `runtimeEnvironment`'s treatment
-([JUM-547](https://linear.app/jumentix/issue/JUM-547/feature-full-suite-exportimport-carry-interfaces-service-configuration)):
-it mirrors real `.env` contents, so an export bundle containing the values
-**is a file that can carry configuration off the machine**. The candidate
-positions — export the environment *selection* only; export values restricted
-to the editable tier; or omit `runtimeEnvironment` entirely — are recorded in
-the issue, and the decision belongs in the Requirement 126 requirement. Until
-it lands, the effective stance is the third one: **no runtime environment
-value leaves in any exported artifact today** — which also means no secret
-does.
+The recorded decision is `runtimeEnvironment`'s treatment
+([JUM-547](https://linear.app/jumentix/issue/JUM-547/feature-full-suite-exportimport-carry-interfaces-service-configuration),
+Requirement 126 Contract 3): it mirrors real `.env` contents, so an export
+bundle containing the values **would be a file that can carry configuration
+off the machine**. Of the three candidate positions — export the selection
+only; export values restricted to the editable tier; omit the section
+entirely — the landed stance is the first: **the bundle carries the
+environment selection (`environment`, `fileName`) but never `values`**, and
+import restores the selection while preserving the local machine's values.
+The runtime environment is a property of where the designer is running; the
+selection is design metadata worth sharing. Since no values cross, **no
+secret can leave in a bundle** — the guarantee the third position was
+preferred for, kept without losing the selection. The suite proves it by
+asserting the wire document contains no value string.
+
+**Proven by:**
+[`designerRoundTrip.test.ts`](../../apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts)
+(full-suite deep-equal, values-never-cross, backward/forward compatibility)
+and
+[`designerExporters.test.ts`](../../apps/backend-template/test/unit/service-management/designerExporters.test.ts)
+(document shape).
 
 ## References
 

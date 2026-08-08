@@ -331,26 +331,31 @@ Under no-fallback, export is the only recovery mechanism that exists — so it
 must be obvious, not merely available.
 
 - **How to export:** the Domain Designer toolbar's **Export JSON** button
-  downloads `domain-designer.json` — the model document
-  (`{ domains, relationships, view }`). **Import JSON** on the same toolbar
-  restores it. The other export buttons (Markdown, JSON Schema, OAS 3.1,
-  AsyncAPI, gRPC proto, boilerplate bundle, domain package) are design
-  artifacts for downstream tooling, not backups.
-- **The export's scope, honestly:** the JSON export carries the model slice.
-  The `interfaces`, `serviceConfiguration` and `runtimeEnvironment` sections
-  of the suite state do not cross any export path today — that boundary and
-  its owning issue
-  ([JUM-547](https://linear.app/jumentix/issue/JUM-547/feature-full-suite-exportimport-carry-interfaces-service-configuration))
-  are named by the E4 document,
+  downloads `domain-designer.json` — the full-suite document (JUM-547:
+  `{ kind: "service-management-suite", version: "2.0.0", domains,
+  relationships, interfaces, serviceConfiguration, runtimeEnvironment,
+  deployments, view }`). **Import JSON** on the same toolbar restores it. The
+  other export buttons (Markdown, JSON Schema, OAS 3.1, AsyncAPI, gRPC proto,
+  boilerplate bundle, domain package) are design artifacts for downstream
+  tooling, not backups.
+- **The export's scope, honestly:** the JSON export carries all four tabs of
+  the suite state — the domain model, the interface adapters, the service
+  configuration and the deploy targets — with one recorded boundary: the
+  runtime environment crosses as the environment *selection* only
+  (`environment`, `fileName`), never its values, so no machine configuration
+  (and no secret) leaves in a bundle; import restores the selection and keeps
+  the local machine's values. Bundles exported before JUM-547 (the domain-only
+  shape) still import cleanly, with the missing sections defaulted; a bundle
+  with an unknown section or a newer major version is refused clearly rather
+  than half-imported. The details and their proof live in the E4 document,
   [Service Management Contract Parity Guarantees](./SERVICE-MANAGEMENT-CONTRACT-PARITY.md).
-  An import restores the model, the selection and the view — not the console
-  tabs' configuration.
 - **The migration backup is the one full-fidelity copy.** The
   `service-management-v1-backup-<timestamp>.json` the migration downloads is
   the verbatim `service-management.v1` payload — every section. Keep it: it
-  is the only automatic backup the designer ever makes. (Importing it through
-  the UI restores the same model slice as any import; its extra sections are
-  preserved in the file but not read back by the importer.)
+  is the only automatic backup the designer ever makes. (Since JUM-547 the UI
+  import reads every section back — including the runtime environment values
+  the backup carries, which a bundle never does — so it doubles as a
+  full-fidelity restore path.)
 - **When to export:** before clearing site data or switching
   browser/profile/machine; the moment a quota or durability warning appears;
   before and after a large redesign session; and periodically on any project
@@ -419,8 +424,8 @@ Recorded honestly, with their owning issues:
   sets, the adapter's error-taxonomy mapping and the migration module's
   construction belong to the E3 document,
   [Service Management Module Architecture](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.md).
-- **Parity guarantees** — including the export-scope boundary and JUM-547 —
-  belong to the E4 document,
+- **Parity guarantees** — including the full-suite export scope and the
+  JUM-547 `runtimeEnvironment` decision — belong to the E4 document,
   [Service Management Contract Parity Guarantees](./SERVICE-MANAGEMENT-CONTRACT-PARITY.md).
 - **The status-surface contract** — how messages are rendered (aria-live
   region, severities, no `alert()`) belongs to the E5 document,
