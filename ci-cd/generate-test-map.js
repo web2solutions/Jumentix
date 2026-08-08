@@ -78,6 +78,7 @@ const SERVICE_MANAGEMENT_INTEGRATION_AREA = {
   'domainDesigner.smoke.test.ts': 'service-management/designer',
   'pwaShell.browser.integration.test.ts': 'service-management/designer',
   'spaBoot.browser.integration.test.ts': 'service-management/designer',
+  'firstRun.browser.integration.test.ts': 'service-management/designer',
   'canaMigration.browser.integration.test.ts': 'service-management/designer',
   'multiTabSync.browser.integration.test.ts': 'service-management/designer',
   'deployTargetLifecycle.browser.integration.test.ts': 'service-management/designer',

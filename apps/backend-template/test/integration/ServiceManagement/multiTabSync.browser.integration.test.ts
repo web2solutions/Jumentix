@@ -58,12 +58,51 @@ async function waitForRemoteChangeStatus(page: Page) {
   );
 }
 
-/** Boot a page and wait until the designer has rendered the model. */
+/**
+ * Boot a page and wait until the designer has finished its first render AND
+ * its first-run save is durable in the real IndexedDB. Since JUM-548 the
+ * first run boots to an intentionally EMPTY model (guided empty states
+ * instead of a pre-populated template), so the settle marker is the guided
+ * empty state, not a seeded domain list. The durability wait is what makes
+ * the suite's later writes safe to order: page B's boot save has committed
+ * before page A's sample load is dispatched, so last-writer-wins can never
+ * resurrect B's empty boot document over A's sample.
+ */
 async function bootPage(context: Awaited<ReturnType<Browser['newContext']>>, baseUrl: string) {
   const page = await context.newPage();
   await page.goto(baseUrl, { waitUntil: 'load' });
-  await page.waitForSelector('#domain-list li', { timeout: 20000 });
+  await page.waitForSelector('#domain-designer-empty-state:not([hidden])', { timeout: 20000 });
+  await page.waitForFunction(
+    () => new Promise((resolve) => {
+      const request = indexedDB.open('service-management');
+      request.onsuccess = () => {
+        try {
+          const tx = request.result.transaction('designerDocuments', 'readonly');
+          const getRequest = tx.objectStore('designerDocuments').get('service-management.v1');
+          getRequest.onsuccess = () => resolve(typeof getRequest.result === 'string');
+          getRequest.onerror = () => resolve(false);
+        } catch (_) {
+          resolve(false);
+        }
+      };
+      request.onerror = () => resolve(false);
+    }),
+    undefined,
+    { polling: 250, timeout: 20000 }
+  );
   return page;
+}
+
+/**
+ * Establish a shared model through the sync engine itself: page A loads the
+ * JUM-548 sample (the one-action loader) and page B converges on it over the
+ * real channel — the sample load doubles as the suite's first sync proof.
+ */
+async function loadSampleAndConverge(pageA: Page, pageB: Page) {
+  await pageA.click('#load-sample-btn');
+  await waitForDomain(pageA, 'Users');
+  await waitForDomain(pageB, 'Users');
+  await waitForRemoteChangeStatus(pageB);
 }
 
 /** Add a domain through the real UI (the same gesture a user makes). */
@@ -105,6 +144,7 @@ describe('serviceManagement multi-tab write-event sync (JUM-485)', () => {
     const context = await browser!.newContext();
     const pageA = await bootPage(context, baseUrl);
     const pageB = await bootPage(context, baseUrl);
+    await loadSampleAndConverge(pageA, pageB);
 
     // A writes; B converges and is told through the status region.
     await addDomain(pageA, 'Alpha Remote');
@@ -131,6 +171,12 @@ describe('serviceManagement multi-tab write-event sync (JUM-485)', () => {
     const context = await browser!.newContext();
     const pageA = await bootPage(context, baseUrl);
     const pageB = await bootPage(context, baseUrl);
+    await loadSampleAndConverge(pageA, pageB);
+
+    // Remote applies never import the selection (JUM-485 question 3), so B
+    // selects the sample domain through the real UI — the same gesture a
+    // human makes — before its context form enables.
+    await pageB.click('#domain-list li button');
 
     // B is mid-form: an unsaved value sits, focused, in the owner-team input.
     await pageB.click('#domain-owner-team-input');

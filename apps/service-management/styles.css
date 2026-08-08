@@ -682,3 +682,52 @@ body {
   outline: 3px solid var(--jtx-blue-200);
   outline-offset: 2px;
 }
+
+/* Guided empty states (JUM-548): first-run guidance, one per tab, hidden
+   until renderEmptyStates reveals it. Follows the panel idiom (line +
+   radius + surface tokens); the sample badge marks sample-loaded domains in
+   the domain list so first-run content is distinguishable from user work. */
+.empty-state {
+  margin: var(--jtx-space-3);
+  padding: var(--jtx-space-3);
+  border: 1px dashed var(--jtx-line);
+  border-radius: var(--jtx-radius-md);
+  background: var(--jtx-surface);
+  max-width: 640px;
+}
+
+.empty-state h2,
+.empty-state h3 {
+  margin: 0 0 var(--jtx-space-2);
+  font-size: 14px;
+}
+
+.empty-state p {
+  margin: var(--jtx-space-2) 0;
+  font-size: 13px;
+  color: var(--jtx-ink-muted);
+}
+
+.sample-badge {
+  margin-left: var(--jtx-space-2);
+  padding: 1px var(--jtx-space-2);
+  border-radius: var(--jtx-radius-sm);
+  background: var(--jtx-blue-50);
+  border: 1px solid var(--jtx-blue-200);
+  color: var(--jtx-blue-700);
+  font-size: 11px;
+}
+
+/* The Domain Designer's empty state overlays the blank canvas instead of
+   joining the workspace grid (whose rows are exactly header + canvas): an
+   in-flow aside would displace the header and intercept its pointer events.
+   Positioned below the 38px header, above the canvas, clear of the
+   bottom-right mini-map. */
+#domain-designer-empty-state {
+  position: absolute;
+  top: calc(38px + var(--jtx-space-3));
+  left: var(--jtx-space-3);
+  z-index: 5;
+  margin: 0;
+  box-shadow: var(--jtx-shadow-md);
+}

@@ -236,7 +236,7 @@ async function canaStateRecord(page: Page): Promise<string | null> {
   return page.evaluate(readCanaStateRecord) as Promise<string | null>;
 }
 
-/** Boot settled AND the seed save durable in the real IndexedDB. */
+/** Boot settled AND the first-run save durable in the real IndexedDB. */
 async function waitForHealthyBoot(page: Page) {
   await page.waitForSelector('#tab-domain-designer-btn', { timeout: 15000 });
   await page.waitForFunction(
@@ -289,6 +289,24 @@ async function waitForDomainRendered(page: Page, name: string) {
   await page.waitForFunction(
     (domainName) => (document.getElementById('domain-list')?.textContent || '').includes(domainName),
     name,
+    { polling: 250, timeout: 15000 }
+  );
+}
+
+/**
+ * The JUM-548 first-run surface: an empty model renders the Domain Designer's
+ * guided empty state. The recovery/environment cells assert the designer
+ * stays EXPLORABLE (never a blank screen) — since JUM-548 the proof of that
+ * is the guided empty state, not a pre-populated template (the seed is now
+ * intentionally empty; the sample model is an explicit one-action load).
+ */
+async function waitForGuidedEmptyState(page: Page) {
+  await page.waitForFunction(
+    () => {
+      const emptyState = document.getElementById('domain-designer-empty-state');
+      return Boolean(emptyState && !emptyState.hidden);
+    },
+    undefined,
     { polling: 250, timeout: 15000 }
   );
 }
@@ -400,7 +418,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
     const downloads: string[] = [];
     page.on('download', (download) => downloads.push(download.suggestedFilename()));
     try {
-      // Clean online boot: seed template durable, shell precached.
+      // Clean online boot: first-run save durable, shell precached.
       await page.goto(offlineUrl, { waitUntil: 'load' });
       await waitForHealthyBoot(page);
       await page.evaluate(() => navigator.serviceWorker.ready.then(() => undefined));
@@ -665,12 +683,13 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       await page.waitForSelector('#tab-domain-designer-btn', { timeout: 15000 });
 
       // The declared state arrives at startup, BEFORE the user invests work —
-      // and the designer is still explorable (no blank screen). Asserted
-      // against the mutation record: JUM-485's sync engine later claims the
-      // single region with its own start failure, which must not erase the
-      // fact that the declaration was made first.
+      // and the designer is still explorable (no blank screen): since
+      // JUM-548 the in-memory proof is the guided first-run empty state.
+      // Asserted against the mutation record: JUM-485's sync engine later
+      // claims the single region with its own start failure, which must not
+      // erase the fact that the declaration was made first.
       await waitForStatusLogged(page, 'Persistent storage is unavailable in this browsing context');
-      await waitForDomainRendered(page, 'Users');
+      await waitForGuidedEmptyState(page);
       const logBeforeEdit = await statusRegionLog(page);
       expect(logBeforeEdit.some(
         (message) => message.includes('Persistent storage is unavailable in this browsing context')
@@ -688,7 +707,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       await page.reload({ waitUntil: 'load' });
       await page.waitForSelector('#tab-domain-designer-btn', { timeout: 15000 });
       await waitForStatusLogged(page, 'Persistent storage is unavailable in this browsing context');
-      await waitForDomainRendered(page, 'Users');
+      await waitForGuidedEmptyState(page);
       await expect(domainListText(page)).resolves.not.toContain('DoomedDomain');
 
       expect(pageErrors).toStrictEqual([]);
@@ -727,8 +746,9 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       expect(declared).toContain('unsupported');
       expect(declared).toContain('nothing you build here can be saved');
 
-      // Explorable, not blank: the designer renders its template in memory.
-      await waitForDomainRendered(page, 'Users');
+      // Explorable, not blank: the designer renders its guided first-run
+      // empty state in memory (JUM-548 — the seed is intentionally empty).
+      await waitForGuidedEmptyState(page);
       expect(pageErrors).toStrictEqual([]);
     } finally {
       await context.close();
@@ -783,7 +803,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       await page.goto(baseUrl, { waitUntil: 'load' });
       await page.waitForSelector('#tab-domain-designer-btn', { timeout: 15000 });
       await waitForStatusRegion(page, 'Previously saved designer data is no longer readable');
-      await waitForDomainRendered(page, 'Users');
+      await waitForGuidedEmptyState(page);
       const evictedList = await domainListText(page);
       expect(evictedList).not.toContain('EvictionVictim');
       expect(pageErrors).toStrictEqual([]);
@@ -851,16 +871,17 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       expect(verdict.payload).toBeNull();
       expect(verdict.reason).toContain('not readable JSON');
 
-      // The designer recovers rather than crashing: the reload boots the seed
-      // template and the recovered save makes the record readable again.
+      // The designer recovers rather than crashing: the reload boots the
+      // (intentionally empty, JUM-548) first-run state — the guided empty
+      // state renders — and the recovered save makes the record readable again.
       await page.reload({ waitUntil: 'load' });
       await page.waitForSelector('#tab-domain-designer-btn', { timeout: 15000 });
-      await waitForDomainRendered(page, 'Users');
+      await waitForGuidedEmptyState(page);
       await expect(domainListText(page)).resolves.not.toContain('CorruptionVictim');
       const healed = JSON.parse((await canaStateRecord(page)) as string) as {
         domains: Array<{ name: string }>;
       };
-      expect(healed.domains.map((domain) => domain.name)).toContain('Users');
+      expect(Array.isArray(healed.domains)).toBe(true);
       expect(pageErrors).toStrictEqual([]);
     } finally {
       await context.close();
@@ -944,7 +965,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       await page.reload({ waitUntil: 'load' });
       await page.waitForSelector('#tab-domain-designer-btn', { timeout: 15000 });
       await waitForStatusLogged(page, 'quota: storage usage is near the origin quota', 45000);
-      await waitForDomainRendered(page, 'Users');
+      await waitForGuidedEmptyState(page);
       await expect(domainListText(page)).resolves.not.toContain('QuotaDoomedDomain');
       expect(pageErrors).toStrictEqual([]);
     } finally {

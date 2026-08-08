@@ -82,6 +82,9 @@ const SHELL_ASSETS = [
   './src/model/deployCapabilityMatrix.js',
   './src/model/modelQueries.js',
   './src/model/rbacContract.js',
+  // Eagerly imported by script.js (JUM-548 first-run sample loader); without
+  // it the offline shell could not resolve the module graph.
+  './src/model/sampleModel.js',
   './src/pwa/pwaShell.js',
   './src/state/designerState.js',
   // Eagerly imported by script.js (JUM-485); without it the offline shell
