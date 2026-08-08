@@ -42,6 +42,7 @@ import {
 } from '../model/modelQueries.js';
 import { buildHexagonalBundle } from '../codegen/hexagonalCodegen.js';
 import { buildAsyncApiTransportDocument } from './asyncApiExporters.js';
+import { parsePackageDependency } from '../packages/packageVersioning.js';
 
 /**
  * The default per-entity RBAC policy, captured once: `buildOasDocument`
@@ -194,10 +195,24 @@ export function buildBoilerplateBundleDocument(state, generatedAt = new Date().t
 
 /** `exportAsPackage` payload (single-domain package). */
 export function buildDomainPackageDocument(domain, exportedAt = new Date().toISOString()) {
+  // JUM-492 (Requirement 126 Contract 3): the v2 document declares the
+  // package identity — name, semantic version and dependency ranges — so the
+  // import flow can resolve the dependency graph and classify conflicts.
+  // The identity falls back to the domain name and 1.0.0 for a domain that
+  // was never imported or stamped; the document stays additive over the v1
+  // shape (kind/version/exportedAt/domain), which the importer still reads.
+  const context = domain?.context || {};
   return {
     kind: 'domain-package',
-    version: '1.0.0',
+    version: '2.0.0',
     exportedAt,
+    package: {
+      name: String(context.packageName || domain?.name || '').trim() || 'package',
+      version: String(context.packageVersion || '').trim() || '1.0.0',
+      dependencies: (Array.isArray(context.packageDependencies) ? context.packageDependencies : [])
+        .map(parsePackageDependency)
+        .filter(Boolean)
+    },
     domain
   };
 }

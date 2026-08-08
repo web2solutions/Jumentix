@@ -51,7 +51,13 @@ Uso detalhado de recursos:
      (`<version>.websocket.yml` / `<version>.grpc.yml`, convenções canônicas de
      `spec/asyncapi/`), proto gRPC (`async-api.proto`) e pacote padrão.
    - Controles de composição OpenAPI (`oneOf`, `allOf`, `anyOf`, externo `$ref`, discriminador) por entidade.
-   - Exportação/importação de pacotes de domínio para compartilhamento de modelos reutilizáveis.
+   - Exportação/importação de pacotes de domínio para compartilhamento de modelos reutilizáveis — versionada
+     (JUM-492): pacotes carregam versão semântica e faixas de dependências,
+     o conteúdo importado é carimbado com proveniência, e reimportações
+     resolvem deterministicamente (no-op em versão idêntica, recusa em
+     conflito de mesma versão ou downgrade, prévia de merge com decisão do
+     usuário para RBAC, invariantes, remoções e estreitamentos em uma versão
+     mais nova).
    - Navegação em minimapa e modo de desempenho em tela grande.
 2. **Designer de interface de comunicação**
    - Registrar adaptadores de interface de entrada (`HTTP/REST`, `gRPC`, `WebSocket`, `SSE`).

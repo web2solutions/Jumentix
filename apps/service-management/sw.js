@@ -51,7 +51,7 @@
 
 /* eslint-env serviceworker, node */
 
-const SHELL_VERSION = '0.2.0';
+const SHELL_VERSION = '0.3.0';
 
 // Prefix shared with src/pwa/pwaShell.js (the page-side reset deletes by
 // prefix). The two copies cannot import each other — a classic worker has no
@@ -82,6 +82,9 @@ const SHELL_ASSETS = [
   './src/model/deployCapabilityMatrix.js',
   './src/model/modelQueries.js',
   './src/model/rbacContract.js',
+  // Eagerly imported by the importer/exporter chain (JUM-492); without it
+  // the offline shell could not resolve the module graph.
+  './src/packages/packageVersioning.js',
   './src/pwa/pwaShell.js',
   './src/state/designerState.js',
   // Eagerly imported by script.js (JUM-485); without it the offline shell
