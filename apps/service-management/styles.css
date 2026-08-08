@@ -568,3 +568,49 @@ button:focus {
   font-size: 11px;
   white-space: pre;
 }
+
+/* PWA update banner (JUM-489). Fixed like the status toast, but persistent:
+   an update prompt must not auto-hide — the user decides when the running
+   shell (and its unsaved editor state) is replaced. */
+.pwa-update-banner {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 30;
+  max-width: 420px;
+  padding: 10px 12px;
+  border: 1px solid var(--focus);
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 4px 16px rgb(15 23 42 / 18%);
+  font-size: 13px;
+  color: var(--text);
+}
+
+.pwa-update-banner-message {
+  margin: 0 0 8px;
+}
+
+.pwa-update-banner-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.pwa-update-banner-btn {
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: #fff;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.pwa-update-banner-btn-reload {
+  border-color: var(--focus);
+  background: var(--focus);
+  color: #fff;
+}
+
+.pwa-update-banner-btn-reset {
+  color: var(--muted);
+}

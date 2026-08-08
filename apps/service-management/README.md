@@ -120,6 +120,73 @@ Mode selection is explicit configuration, not inferred from `NODE_ENV` alone:
 - Unset — default derives from `NODE_ENV`: `dev`/`development` => `on-miss`,
   anything else => `boot-only`.
 
+## PWA Shell
+
+The designer is an installable PWA (JUM-489). The shell is:
+
+- `manifest.webmanifest` — name, icons (`icons/`), theme, `standalone`
+  display, start URL/scope `./`. Served as `application/manifest+json`.
+- `sw.js` — the app-shell service worker. A CLASSIC script (not a module),
+  served from the app root so its scope is the whole app.
+- `src/pwa/pwaShell.js` — page-side registration, the update prompt and the
+  recovery path, wired by a small inline module in `index.html` (deliberately
+  outside `script.js`: the shell never reorders the designer boot).
+
+### Caching strategy
+
+The worker precaches the SHELL ONLY — HTML, CSS, the JS module graph, the
+manifest and icons — under a VERSIONED cache name
+(`service-management-shell@<SHELL_VERSION>`), and serves those entries
+cache-first. `SHELL_VERSION` (in `sw.js`) is bumped on every shell change, so
+a shipped update never mutates the cache the running version serves from, and
+`activate` deletes every stale `service-management-shell@*` cache.
+
+Application data is NEVER cached here: `/api/` responses, non-GET and
+cross-origin requests pass straight to the network, and offline they fail
+naturally. Persistence belongs to Cana (JUM-483/484 — no fallback); a
+convenience copy in the Cache API would be a fallback by the back door.
+
+The precache list and the server's static manifest must agree about what the
+shell is (JUM-463): the unit suite asserts every precached entry exists on
+disk, and the browser smoke requests every entry against the real server.
+
+### Update flow
+
+A cache-first shell is a cache with no expiry that the user cannot see — so
+the update path is the substance, not an afterthought:
+
+1. A shipped update (a changed `sw.js`) installs and WAITS; the running shell
+   keeps serving. There is no silent swap mid-edit.
+2. The page shows a banner: "A new version of Service Management is
+   available." — with "Reload to update", "Later" and "Reset app shell".
+3. Only on "Reload to update" does the page post `SKIP_WAITING`; the waiting
+   worker activates, deletes stale caches, claims clients, and the page
+   reloads on `controllerchange`. "Later" defers: the waiting worker is still
+   there on the next load, and the prompt returns.
+
+### Offline scope and the storage boundary
+
+With the network disabled the SHELL loads and stays interactive — that is the
+whole offline contract. Data availability is Cana's domain, not the shell's:
+the shell never masks an evicted database as a first run, and it never
+presents cached data of its own.
+
+The service worker cache and the Cana database are DIFFERENT storage, but the
+browser's "clear site data" removes BOTH. The shell's presence never implies
+designer data is safe. The "Reset app shell" action is the recovery path that
+requires no service-worker knowledge: it unregisters the worker, deletes ONLY
+the `service-management-shell@*` caches and reloads — Cana data is untouched.
+
+### PWA tests
+
+- Unit: `apps/backend-template/test/unit/service-management/pwaShell.test.ts`
+  (worker handlers, update flow, recovery — with injected fakes).
+- Browser smoke:
+  `apps/backend-template/test/integration/ServiceManagement/pwaShell.browser.integration.test.ts`
+  (manifest/worker content types, precache↔static-manifest agreement,
+  registration, offline shell load with the server down, the full update
+  flow with stale-cache cleanup).
+
 ## Runtime Env API
 
 Built into `apps/service-management/server.js`:

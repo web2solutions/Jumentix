@@ -140,6 +140,10 @@ const contentTypeByExtension = {
   '.css': 'text/css; charset=utf-8',
   '.js': 'application/javascript; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
+  // JUM-489: the web app manifest. A dedicated type keeps installability
+  // checks honest — browsers accept application/json, but the contract test
+  // pins the specific one.
+  '.webmanifest': 'application/manifest+json; charset=utf-8',
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
