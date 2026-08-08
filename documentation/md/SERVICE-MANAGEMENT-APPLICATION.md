@@ -83,6 +83,18 @@ contract are documented in
     - `ci` -> `.env.ci` (`test` is an alias)
 4. **Deploy Management**
    - Tracks deploy targets and runtime deployment metadata.
+   - Each target carries the Requirement 059 per-service metadata contract
+     (JUM-481): `serviceType`, `deployTarget`, `runtimeProtocol`,
+     `databaseDriver`, `keyValueDriver`, `pm2Profile`, alongside name, region
+     and runtime.
+   - Additions are validated against the Requirement 059 deploy matrix read
+     from the shared machine-readable source
+     `src/model/deployCapabilityMatrix.js`: service-type × deploy-target
+     combinations with no matrix row, protocols the service type does not
+     expose, and PM2 profiles on serverless targets (or missing on
+     PM2-managed targets) are rejected on the non-blocking status surface
+     with the violated constraint named. Legacy targets persisted before this
+     alignment migrate forward on load.
 
 Detailed usage guide:
 

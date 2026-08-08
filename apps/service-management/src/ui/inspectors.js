@@ -30,6 +30,7 @@
 import { FIELD_TYPES } from '../state/designerState.js';
 import { deriveTenantScoped } from '../model/rbacContract.js';
 import { collectServiceConfigurationIssues } from '../validation/serviceConfigurationValidation.js';
+import { collectDeployTargetIssues } from '../validation/deployTargetValidation.js';
 import {
   entityLabel,
   findEntity,
@@ -661,8 +662,23 @@ export function createInspectors({ dom, state, interaction, actions }) {
       item.className = 'relationship-item';
       const summary = document.createElement('div');
       summary.className = 'relationship-name';
-      summary.textContent = `${deployment.name} | ${deployment.type} | ${deployment.region} | ${deployment.runtime}`;
+      // Requirement 059 metadata contract (JUM-481): every target shows the
+      // six matrix dimensions next to the legacy name/region/runtime; the PM2
+      // profile appears only where the matrix has one (PM2-managed targets).
+      const profile = deployment.pm2Profile ? ` | pm2:${deployment.pm2Profile}` : '';
+      summary.textContent = `${deployment.name} | ${deployment.deployTarget} | ${deployment.serviceType} | ${deployment.runtimeProtocol} | db:${deployment.databaseDriver} | kv:${deployment.keyValueDriver}${profile} | ${deployment.region} | ${deployment.runtime}`;
       item.appendChild(summary);
+
+      // A persisted entry can predate the matrix alignment (e.g. a legacy
+      // provider with no Requirement 059 row, migrated losslessly on load):
+      // flag it inline instead of rendering it as a buildable design.
+      const issues = collectDeployTargetIssues(deployment);
+      if (issues.length > 0) {
+        const warning = document.createElement('div');
+        warning.className = 'hint status-error';
+        warning.textContent = issues.map((issue) => issue.message).join(' ');
+        item.appendChild(warning);
+      }
 
       const removeBtn = document.createElement('button');
       removeBtn.type = 'button';
