@@ -1114,3 +1114,189 @@ describe('designerSync — defensive defaults', () => {
     }
   });
 });
+
+describe('designerSync — defensive guards reach the coverage threshold (Req 020/063)', () => {
+  it('tolerates a hostile ambient localStorage (cursor persistence degrades, never throws)', async () => {
+    const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+    if (descriptor && descriptor.configurable !== true) {
+      // A non-configurable ambient localStorage cannot be made hostile here.
+      return;
+    }
+    const backend: Backend = { records: new Map() };
+    const hub = createFakeMediatorHub();
+    const tab = createTab(backend, hub);
+    Object.defineProperty(globalThis, 'localStorage', {
+      configurable: true,
+      get() { throw new Error('hostile storage'); }
+    });
+    try {
+      // No cursorStorage injected: the ambient resolution hits the guard on
+      // BOTH the read (start) and the write (local event) side.
+      const sync = createDesignerSync({
+        store: tab.store,
+        designerState: tab.core,
+        channel: hub.createChannel(),
+        originId: 'hostile-tab'
+      });
+      expect((await sync.start()).started).toBe(true);
+      sync.onLocalEvent({
+        store: STORE_NAME,
+        key: STATE_KEY,
+        record: JSON.stringify(makeDocument()),
+        cursor: 1
+      });
+      expect(sync.getLastCursor()).toBe(1);
+      sync.stop();
+    } finally {
+      if (descriptor) Object.defineProperty(globalThis, 'localStorage', descriptor);
+      else delete (globalThis as any).localStorage;
+    }
+  });
+
+  it('falls back to the Math.random tab identity when crypto.randomUUID is absent', () => {
+    const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'crypto');
+    if (descriptor && descriptor.configurable !== true) {
+      return;
+    }
+    const hadCrypto = 'crypto' in globalThis;
+    delete (globalThis as any).crypto;
+    try {
+      const sync = createDesignerSync({ store: undefined, designerState: undefined });
+      expect(sync.originId).toMatch(/^designer-tab-/);
+    } finally {
+      if (hadCrypto && descriptor) Object.defineProperty(globalThis, 'crypto', descriptor);
+    }
+  });
+
+  it('reads a persisted cursor defensively: throwing or garbage storage means no resume cursor', async () => {
+    const backend: Backend = { records: new Map() };
+    const hub = createFakeMediatorHub();
+    const throwing = createTab(backend, hub, {
+      cursorStorage: {
+        getItem: () => { throw new Error('hostile'); },
+        setItem: () => undefined,
+        removeItem: () => undefined,
+        map: new Map()
+      } as any
+    });
+    await throwing.core.loadState();
+    expect((await throwing.sync.start()).started).toBe(true);
+    throwing.sync.stop();
+
+    const garbage = createTab(backend, hub, {
+      cursorStorage: createFakeStorage({ [DESIGNER_SYNC_CURSOR_KEY]: 'not-a-number' })
+    });
+    expect((await garbage.sync.start()).started).toBe(true);
+    garbage.sync.stop();
+
+    // An injected null backend: cursor persistence is a no-op, never a crash.
+    const nullBackend = createTab(backend, hub, { cursorStorage: null as any });
+    expect((await nullBackend.sync.start()).started).toBe(true);
+    nullBackend.sync.onLocalEvent({
+      store: STORE_NAME,
+      key: STATE_KEY,
+      record: JSON.stringify(makeDocument()),
+      cursor: 3
+    });
+    expect(nullBackend.sync.getLastCursor()).toBe(3);
+    nullBackend.sync.stop();
+  });
+
+  it('delivers bare messages through the onmessage branch (no data wrapper)', async () => {
+    const backend: Backend = { records: new Map() };
+    const hub = createFakeMediatorHub();
+    const tab = createTab(backend, hub);
+    await tab.core.loadState();
+    await tab.sync.start();
+    const channel = [...hub.channels][0];
+    // The channel contract also accepts a bare message (no MessageEvent).
+    channel.onmessage({ originId: 'remote-tab', record: JSON.stringify(makeDocument({ domains: [] })) });
+    tab.flush();
+    expect(tab.core.state.domains).toStrictEqual([]);
+  });
+
+  it('applies a remote message with the default coalesced count and default render/notify', async () => {
+    const backend: Backend = { records: new Map() };
+    const hub = createFakeMediatorHub();
+    const tab = createTab(backend, hub);
+    const sync = createDesignerSync({
+      store: tab.store,
+      designerState: tab.core,
+      channel: hub.createChannel(),
+      originId: 'defaults-tab',
+      cursorStorage: createFakeStorage()
+    });
+    const result = sync.applyRemoteMessage({
+      originId: 'remote-tab',
+      record: JSON.stringify(makeDocument({ domains: [makeDomain('domain-8', 'Defaults')] }))
+    });
+    expect(result).toStrictEqual({ applied: true, reconciled: [] });
+    expect(tab.core.state.domains[0]?.name).toBe('Defaults');
+  });
+
+  it('announces an unknown save without a reason string as an unknown outcome', async () => {
+    const backend: Backend = { records: new Map() };
+    const hub = createFakeMediatorHub();
+    const tab = createTab(backend, hub);
+    await tab.core.loadState();
+    await tab.sync.start();
+    const outcome = await tab.sync.reportSaveOutcome({ status: 'unknown' });
+    expect(outcome.confirmed).toBe(false);
+    expect(tab.notifications.some((note) => note.message.includes('unknown outcome'))).toBe(true);
+  });
+
+  it('resyncs a minimal state object and declares a reason-less store outage', async () => {
+    const document = makeDocument({ domains: [makeDomain('domain-6', 'Minimal')] });
+    const stubStore = {
+      storeName: STORE_NAME,
+      loadCalls: 0,
+      fail: false,
+      async ensureOpen() { return { ok: true }; },
+      async load() {
+        stubStore.loadCalls += 1;
+        if (stubStore.fail) return { status: 'unavailable', payload: null };
+        return { status: 'ok', payload: JSON.parse(JSON.stringify(document)) };
+      }
+    };
+    // A bare state object: the model-slice fallbacks and the absent
+    // recomputeIdCounter branch all cross here.
+    const minimalCore = { state: {}, history: { future: ['redo'] } };
+    const renders: string[] = [];
+    const notes: Array<{ message: string; severity: string }> = [];
+    const sync = createDesignerSync({
+      store: stubStore,
+      designerState: minimalCore,
+      render: () => renders.push('render'),
+      notify: (message: string, severity: string) => notes.push({ message, severity }),
+      channel: undefined,
+      cursorStorage: createFakeStorage()
+    });
+    const resynced = await sync.resync();
+    expect(resynced.resynced).toBe(true);
+    expect((minimalCore.state as any).domains[0]?.name).toBe('Minimal');
+    expect(minimalCore.history.future).toStrictEqual([]);
+
+    stubStore.fail = true;
+    const failed = await sync.resync();
+    expect(failed).toStrictEqual({ resynced: false, reason: 'unavailable' });
+    expect(lastItem(notes).message).toContain('could not resynchronise');
+    expect(lastItem(notes).message).not.toContain('(');
+  });
+
+  it('applyRemoteDocument tolerates a null payload as an empty document', () => {
+    const core = createDesignerState({
+      store: { save: () => Promise.resolve({ status: 'persisted' }) },
+      seed: () => undefined,
+      render: () => undefined
+    });
+    const { reconciled } = applyRemoteDocument(core, null);
+    expect(core.state.domains).toStrictEqual([]);
+    expect(reconciled).toStrictEqual([]);
+  });
+
+  it('constructs with no options at all (defaults only)', () => {
+    const sync = createDesignerSync();
+    expect(typeof sync.originId).toBe('string');
+    expect(sync.getLastCursor()).toBeNull();
+  });
+});
