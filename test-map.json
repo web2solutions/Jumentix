@@ -1650,6 +1650,19 @@
       "timeoutMs": 120000
     },
     {
+      "id": "apps/backend-template/test/integration/ServiceManagement/offlinePersistenceMatrix.browser.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/offlinePersistenceMatrix.browser.integration.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
       "id": "apps/backend-template/test/integration/ServiceManagement/spaBoot.browser.integration.test.ts",
       "path": "apps/backend-template/test/integration/ServiceManagement/spaBoot.browser.integration.test.ts",
       "layer": "service-management/designer",
@@ -3343,9 +3356,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 164,
-    "integration": 90,
+    "unit": 165,
+    "integration": 92,
     "smoke": 2,
-    "suites": 276
+    "suites": 279
   }
 }
