@@ -761,6 +761,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/service-management/designerSync.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/designerSync.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/service-management/runtimeEnvUi.contract.test.ts",
       "path": "apps/backend-template/test/unit/service-management/runtimeEnvUi.contract.test.ts",
       "layer": "service-management/designer",
@@ -1591,6 +1601,19 @@
       "id": "apps/backend-template/test/integration/ServiceManagement/runtimeEnv.integration.test.ts",
       "path": "apps/backend-template/test/integration/ServiceManagement/runtimeEnv.integration.test.ts",
       "layer": "service-management/server",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/ServiceManagement/multiTabSync.browser.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/multiTabSync.browser.integration.test.ts",
+      "layer": "service-management/designer",
       "kind": "non-hexagonal",
       "type": "integration",
       "adapter": "service-management",

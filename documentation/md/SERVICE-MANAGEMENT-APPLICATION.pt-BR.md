@@ -15,6 +15,7 @@ Arquivos principais de implementação:
 - `apps/service-management/index.html`
 - `apps/service-management/script.js`
 - `apps/service-management/src/state/designerState.js`
+- `apps/service-management/src/state/designerSync.js`
 - `apps/service-management/src/store/IDesignerStore.js`
 - `apps/service-management/src/store/CanaDesignerStore.js`
 - `apps/service-management/src/store/designerStoreFactory.js`
@@ -122,7 +123,12 @@ Servido por PM2:
 
 O estado do aplicativo persiste no Cana (IndexedDB). A migração unidirecional
 do JUM-484 moveu o payload legado do `localStorage` do navegador no boot —
-cópia de bytes, mesmas chaves fixadas, sem fallback para localStorage.
+cópia de bytes, mesmas chaves fixadas, sem fallback para localStorage. O
+JUM-485 mantém as abas abertas consistentes: cada aba assina os eventos de
+escrita ordenados do Cana, os conecta através de um `BroadcastChannel`
+compartilhado e reconcilia as mudanças remotas com o histórico local de
+undo/redo, as edições pendentes e a seleção atual (o undo permanece somente
+local e mudanças remotas não são desfazíveis).
 
 O designer também é um PWA instalável (JUM-489): `manifest.webmanifest`, um
 service worker clássico de app-shell (`sw.js`) com cache versionado e

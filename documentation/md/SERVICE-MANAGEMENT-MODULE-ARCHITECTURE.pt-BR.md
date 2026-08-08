@@ -67,6 +67,7 @@ não.
 | `apps/service-management/src/store/CanaDesignerStore.js` | Livre de DOM | O único adaptador `IDesignerStore` (JUM-483), sobre o cliente Cana — injetado, nunca importado. |
 | `apps/service-management/src/store/designerStoreFactory.js` | Livre de DOM | A costura de construção do store: `createDesignerStore()` sempre retorna `CanaDesignerStore`; o cliente Cana é a única variável. |
 | `apps/service-management/src/store/canaMigration.js` | Livre de DOM | A migração unidirecional localStorage → Cana do JUM-484 (executada no boot antes de qualquer carga de estado) e os estados de ambiente de armazenamento declarados. |
+| `apps/service-management/src/state/designerSync.js` | Livre de DOM | O motor de sincronização multi-abas do JUM-485: assina os eventos de escrita ordenados do Cana, os conecta entre abas via `BroadcastChannel` e reconcilia as mudanças remotas com o histórico local de undo/redo, a edição local pendente e a seleção. |
 
 A direção das dependências é unidirecional: `script.js` →
 `src/state/designerState.js` → (porta) `src/store/IDesignerStore.js` ←
@@ -422,14 +423,63 @@ no boot através da região de status não bloqueante do JUM-543 (nunca
   um `reason` diagnóstico (quase na cota, armazenamento não persistente):
   funcionando, mas com durabilidade degradada.
 
+## Sincronização multi-abas por eventos de escrita: `designerSync.js` (JUM-485)
+
+Fonte:
+[`apps/service-management/src/state/designerSync.js`](../../apps/service-management/src/state/designerSync.js).
+
+O JUM-485 torna o designer consistente entre abas. O motor de sincronização
+assina os eventos de escrita ordenados do cliente Cana local
+(`CanaClient.subscribe`, Cana JUM-413) e republica o documento de estado
+confirmado em um `BroadcastChannel` compartilhado, marcado com o `originId`
+da própria aba — o canal é a fronteira entre abas, porque o Cana publica
+eventos confirmados apenas para a instância de cliente assinante e cada aba
+detém seu próprio cliente. O `originId` também é a proteção contra eco: uma
+mensagem atribuída a esta aba nunca é aplicada como remota. A recuperação de
+mudanças remotas é sempre por releitura do documento; o cursor de eventos
+persistido governa apenas o fluxo de eventos local (um cursor que a janela
+retida não cobre mais lança o `'NotFound'` do Cana, respondido com uma
+ressincronização completa), de modo que uma aba fechada ou em segundo plano
+retoma sem perda nem duplicação. Uma tempestade de eventos remotos
+(importação em massa) coalesce em uma única aplicação final.
+
+A issue exigiu respostas explícitas a três perguntas; elas estão registradas
+no cabeçalho do módulo e garantidas por teste:
+
+1. **O undo é somente local; mudanças remotas não são desfazíveis.** Aplicações
+   remotas nunca entram na pilha de undo, e uma mudança remota trunca o ramo
+   de redo em vez de deixar uma pilha que reexecuta para um estado que não
+   existe mais. Desfazer uma ação LOCAL após uma mudança remota restaura o
+   snapshot local como uma nova escrita local deliberada
+   (last-writer-wins de documento inteiro), nunca um undo DA mudança remota.
+2. **Uma edição local pendente mantém sua superfície não salva enquanto o
+   documento confirmado vence.** A mudança remota é aplicada ao `state`; a
+   re-renderização preserva o input em edição, o foco, o cursor de texto e o
+   scroll/zoom do canvas, e o `view`/`activeTab`/seleção do documento remoto
+   nunca são importados. A região de status (JUM-543) anuncia a mudança; a
+   próxima gravação explícita do usuário impõe sua versão.
+3. **A seleção é por aba e reconciliada, nunca importada.** Uma remoção remota
+   do relacionamento/entidade selecionado limpa a seleção; uma remoção remota
+   do domínio selecionado move a seleção para o primeiro domínio restante.
+   Toda reconciliação é anunciada — uma seleção pendente é impossível.
+
+A regra de não-fallback também vale aqui: um canal ou store indisponível é um
+estado DECLARADO através da região de status (o designer nunca volta
+silenciosamente a ser uma aplicação local de aba única que continua
+gravando), e uma gravação cujo resultado o Cana reporta como `'unknown'`
+(worker quebrado após o despacho, Cana JUM-411) é exposta e reconciliada
+relendo o documento armazenado — nunca assumida como bem-sucedida
+silenciosamente.
+
 ## Referências
 
 - Contrato da porta: [`apps/service-management/src/store/IDesignerStore.js`](../../apps/service-management/src/store/IDesignerStore.js)
 - Migração unidirecional + estados de ambiente: [`apps/service-management/src/store/canaMigration.js`](../../apps/service-management/src/store/canaMigration.js)
 - Adaptador Cana + fábrica: [`apps/service-management/src/store/CanaDesignerStore.js`](../../apps/service-management/src/store/CanaDesignerStore.js), [`apps/service-management/src/store/designerStoreFactory.js`](../../apps/service-management/src/store/designerStoreFactory.js)
 - Núcleo de estado: [`apps/service-management/src/state/designerState.js`](../../apps/service-management/src/state/designerState.js)
+- Motor de sincronização multi-abas: [`apps/service-management/src/state/designerSync.js`](../../apps/service-management/src/state/designerSync.js)
 - Módulo de entrada: [`apps/service-management/script.js`](../../apps/service-management/script.js)
-- Suítes de unidade: [`designerStore.test.ts`](../../apps/backend-template/test/unit/service-management/designerStore.test.ts), [`designerState.test.ts`](../../apps/backend-template/test/unit/service-management/designerState.test.ts), [`canaDesignerStore.test.ts`](../../apps/backend-template/test/unit/service-management/canaDesignerStore.test.ts)
+- Suítes de unidade: [`designerStore.test.ts`](../../apps/backend-template/test/unit/service-management/designerStore.test.ts), [`designerState.test.ts`](../../apps/backend-template/test/unit/service-management/designerState.test.ts), [`canaDesignerStore.test.ts`](../../apps/backend-template/test/unit/service-management/canaDesignerStore.test.ts), [`designerSync.test.ts`](../../apps/backend-template/test/unit/service-management/designerSync.test.ts)
 - Esquema de armazenamento: [Requisito 126, Contrato 2](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md)
 - Visão geral do componente: [Aplicativo de gerenciamento de serviços](./SERVICE-MANAGEMENT-APPLICATION.pt-BR.md)
-- Linear: [JUM-468](https://linear.app/jumentix/issue/JUM-468/refactor-extract-statepersistence-core-as-es-module-behind) (a porta), [JUM-469](https://linear.app/jumentix/issue/JUM-469/refactor-modularize-designer-canvas-validation-exporters-importers) (o grafo de módulos), [JUM-483](https://linear.app/jumentix/issue/JUM-483/feature-canadesignerstore-idesignerstore-adapter-over-the-cana-client) (CanaDesignerStore), [JUM-484](https://linear.app/jumentix/issue/JUM-484) (a migração unidirecional entregue que aposentou o adaptador transicional), [JUM-493](https://linear.app/jumentix/issue/JUM-493/feature-publish-designer-core-as-jumentix-package-xpertminds-org-dry) (publicação do pacote), Cana [JUM-560](https://linear.app/jumentix/issue/JUM-560/feature-storage-quota-persistence-and-eviction-policy) (política de cota/despejo)
+- Linear: [JUM-468](https://linear.app/jumentix/issue/JUM-468/refactor-extract-statepersistence-core-as-es-module-behind) (a porta), [JUM-469](https://linear.app/jumentix/issue/JUM-469/refactor-modularize-designer-canvas-validation-exporters-importers) (o grafo de módulos), [JUM-483](https://linear.app/jumentix/issue/JUM-483/feature-canadesignerstore-idesignerstore-adapter-over-the-cana-client) (CanaDesignerStore), [JUM-484](https://linear.app/jumentix/issue/JUM-484) (a migração unidirecional entregue que aposentou o adaptador transicional), [JUM-485](https://linear.app/jumentix/issue/JUM-485/feature-write-event-integration-multi-tab-sync-via-cana-message) (sincronização multi-abas por eventos de escrita), [JUM-493](https://linear.app/jumentix/issue/JUM-493/feature-publish-designer-core-as-jumentix-package-xpertminds-org-dry) (publicação do pacote), Cana [JUM-560](https://linear.app/jumentix/issue/JUM-560/feature-storage-quota-persistence-and-eviction-policy) (política de cota/despejo)

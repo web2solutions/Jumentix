@@ -79,6 +79,7 @@ const SERVICE_MANAGEMENT_INTEGRATION_AREA = {
   'pwaShell.browser.integration.test.ts': 'service-management/designer',
   'spaBoot.browser.integration.test.ts': 'service-management/designer',
   'canaMigration.browser.integration.test.ts': 'service-management/designer',
+  'multiTabSync.browser.integration.test.ts': 'service-management/designer',
   'runtimeEnv.integration.test.ts': 'service-management/server',
   'runtimeEnvContract.integration.test.ts': 'service-management/server',
   'pm2Ecosystem.integration.test.ts': 'service-management/server',
