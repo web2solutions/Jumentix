@@ -81,6 +81,19 @@ describe('check-ci-provider', () => {
     expect(run(directory).output).toContain('must run inside the coverage job');
   });
 
+  it('fails when the Sonar SCM blob hydration guard is removed', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.circleci/config.yml');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace('git cat-file --batch-check=\'%(objectname)\'', 'git cat-file --removed')
+      );
+    });
+    expect(run(directory).output).toContain('git cat-file --batch-check');
+  });
+
   it('fails when a GitHub Actions workflow returns while billing is blocked', () => {
     expect.hasAssertions();
 

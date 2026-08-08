@@ -4,7 +4,8 @@
 
 ## All Changes
 
-- 2026-08-07 chore(JUM-481): merge dev updates (changelog left to dev regen) - Eduardo A.
+- 2026-08-07 feat(JUM-481): align Deploy Management to the Req 059 matrix with per-service metadata (#115) - Eduardo A.
+- 2026-08-07 test: close Redis integration client after smoke suite - Eduardo A.
 - 2026-08-07 feat(JUM-480): real multi-environment editing and PM2 ecosystem preview (#106) - Eduardo A.
 - 2026-08-07 ci: fold coverage publishers into CircleCI coverage job - Eduardo A.
 - 2026-08-07 [JUM-618][Test] Stop the Cypress teardown reporting blocked deletes as clean (#112) - Eduardo A.
@@ -22,7 +23,6 @@
 - 2026-08-07 fix(JUM-617): recompute domain/entity ids on domain-package re-import (#104) - Eduardo A.
 - 2026-08-07 [JUM-602][Test] Make external-db-repositories coverage its own (#108) - Eduardo A.
 - 2026-08-07 [JUM-601][Refactor] Move the store errors into persistence-contracts so a library stops importing an application (#107) - Eduardo A.
-- 2026-08-07 feat(JUM-481): align Deploy Management to the Req 059 matrix with per-service metadata - Eduardo A.
 - 2026-08-07 [JUM-614][Governance] Require an agent to declare where it works (#103) - Eduardo A.
 - 2026-08-07 fix(JUM-543): replace blocking alerts with non-blocking status surfaces and honest env-API errors (#100) - Eduardo A.
 - 2026-08-07 feat(JUM-478): lossless OAS round-trip with full entity meta normalization (#102) - Eduardo A.
