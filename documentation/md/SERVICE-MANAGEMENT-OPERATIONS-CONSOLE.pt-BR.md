@@ -36,12 +36,11 @@ Dois limites deliberados:
   ([JUM-464](https://linear.app/jumentix/issue/JUM-464/docs-e1-documentation-enpt-runtime-env-contract-and-fixed-paths)).
   Este documento os referencia; não os repete.
 - **Persistência e comportamento de boot estão fora do escopo.** A porta de
-  armazenamento e o store transicional pertencem ao documento E3,
+  armazenamento e a migração de armazenamento pertencem ao documento E3,
   [Arquitetura de módulos do Service Management](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.pt-BR.md);
-  a migração para o Cana
-  ([JUM-484](https://linear.app/jumentix/issue/JUM-484/feature-one-way-migration-of-service-managementv1-from-localstorage-to))
-  está sendo entregue em paralelo, portanto nada aqui descreve onde o estado do
-  console viverá depois dela.
+  suas promessas ao usuário — onde os dados vivem, os modos de perda e o
+  recurso da exportação — pertencem ao documento E6,
+  [Adoção do Cana no Service Management, migração e comportamento offline](./SERVICE-MANAGEMENT-CANA-ADOPTION.pt-BR.md).
 
 ## A matriz de capacidades compartilhada (JUM-544, JUM-481)
 
@@ -339,11 +338,13 @@ console segue o mesmo modelo:
 
 ## O que este documento deliberadamente não cobre
 
-- **Persistência e comportamento de boot** — a porta `IDesignerStore`, o
-  adaptador localStorage transicional e a migração para o Cana em andamento
+- **Persistência e comportamento de boot** — a porta `IDesignerStore` e a
+  migração para o Cana já entregue
   ([JUM-484](https://linear.app/jumentix/issue/JUM-484/feature-one-way-migration-of-service-managementv1-from-localstorage-to))
   pertencem ao
-  [documento E3](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.pt-BR.md).
+  [documento E3](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.pt-BR.md), e suas
+  promessas ao usuário ao
+  [documento E6](./SERVICE-MANAGEMENT-CANA-ADOPTION.pt-BR.md).
 - **Exportação/importação das abas do console** — as seções `interfaces`,
   `serviceConfiguration` e `runtimeEnvironment` não cruzam nenhum caminho de
   exportação hoje; o documento E4 nomeia esse limite e sua issue responsável

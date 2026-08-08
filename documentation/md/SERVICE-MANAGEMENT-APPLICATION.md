@@ -29,6 +29,10 @@ The operations console — Service Configuration, the runtime-environment
 editor, the PM2 ecosystem preview and Deploy Management, with the shared
 Requirement 059 capabilities matrix and the lifecycle rules — is documented in
 [Service Management Operations Console](./SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.md).
+The Cana adoption from the user's side — where the designer's data lives, the
+one-way migration, the offline/state matrix and why export is the only
+recovery path — is documented in
+[Service Management Cana Adoption, Migration and Offline Behaviour](./SERVICE-MANAGEMENT-CANA-ADOPTION.md).
 
 ## Tabs
 

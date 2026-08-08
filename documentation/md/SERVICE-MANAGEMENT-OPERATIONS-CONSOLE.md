@@ -31,12 +31,11 @@ Two deliberate boundaries:
   ([JUM-464](https://linear.app/jumentix/issue/JUM-464/docs-e1-documentation-enpt-runtime-env-contract-and-fixed-paths)).
   This document references them; it does not restate them.
 - **Persistence and boot behavior are out of scope.** The storage port and the
-  transitional store belong to the E3 document,
+  storage migration belong to the E3 document,
   [Service Management Module Architecture](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.md);
-  the Cana migration
-  ([JUM-484](https://linear.app/jumentix/issue/JUM-484/feature-one-way-migration-of-service-managementv1-from-localstorage-to))
-  is landing in parallel, so nothing here describes where the console's state
-  will live after it.
+  their user-facing promises — where the data lives, the loss modes and the
+  export recourse — belong to the E6 document,
+  [Service Management Cana Adoption, Migration and Offline Behaviour](./SERVICE-MANAGEMENT-CANA-ADOPTION.md).
 
 ## The shared capabilities matrix (JUM-544, JUM-481)
 
@@ -321,11 +320,13 @@ same model:
 
 ## What this document deliberately does not cover
 
-- **Persistence and boot behaviour** — the `IDesignerStore` port, the
-  transitional localStorage adapter and the in-flight Cana migration
+- **Persistence and boot behaviour** — the `IDesignerStore` port and the
+  landed Cana migration
   ([JUM-484](https://linear.app/jumentix/issue/JUM-484/feature-one-way-migration-of-service-managementv1-from-localstorage-to))
   belong to the
-  [E3 document](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.md).
+  [E3 document](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.md), and their
+  user-facing promises to the
+  [E6 document](./SERVICE-MANAGEMENT-CANA-ADOPTION.md).
 - **Export/import of the console tabs** — the `interfaces`,
   `serviceConfiguration` and `runtimeEnvironment` sections do not cross any
   export path today; the E4 document names that boundary and its owning issue
