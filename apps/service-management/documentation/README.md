@@ -11,6 +11,7 @@
   - [Service Management Module Architecture and IDesignerStore Port Contract](../../../documentation/md/SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.md)
   - [Service Management Contract Parity Guarantees](../../../documentation/md/SERVICE-MANAGEMENT-CONTRACT-PARITY.md)
   - [Service Management Operations Console](../../../documentation/md/SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.md)
+  - [Service Management Design System and PWA Shell](../../../documentation/md/SERVICE-MANAGEMENT-DESIGN-SYSTEM-PWA.md)
   - [Domain Designer Features and Usage](../../../documentation/md/DOMAIN-DESIGNER-FEATURES-AND-USAGE.md)
   - [Domain Data Entities](../../../documentation/md/DOMAIN-DATA-ENTITIES.md)
   - [Runtime Environment Contracts](../../../documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md)

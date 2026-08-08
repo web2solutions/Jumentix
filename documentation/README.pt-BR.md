@@ -48,6 +48,8 @@ Para engenheiros que mantêm e evoluem o Jumentix:
   ([EN](./md/SERVICE-MANAGEMENT-CONTRACT-PARITY.md))
 - [Console de operações do Service Management](./md/SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.pt-BR.md)
   ([EN](./md/SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.md))
+- [Design system e shell PWA do Service Management](./md/SERVICE-MANAGEMENT-DESIGN-SYSTEM-PWA.pt-BR.md)
+  ([EN](./md/SERVICE-MANAGEMENT-DESIGN-SYSTEM-PWA.md))
 
 ## Hubs Técnicos de Componentes
 

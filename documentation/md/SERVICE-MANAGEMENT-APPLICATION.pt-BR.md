@@ -34,6 +34,10 @@ runtime, a prévia do ecossistema PM2 e o Deploy Management, com a matriz de
 capacidades compartilhada do Requisito 059 e as regras de ciclo de vida — está
 documentado em
 [Console de operações do Service Management](./SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.pt-BR.md).
+A adoção do design system, o modelo de teclado e leitor de tela e o shell PWA
+instalável (instalação, atualizações, recuperação e a fronteira de
+armazenamento) estão documentados em
+[Design system e shell PWA do Service Management](./SERVICE-MANAGEMENT-DESIGN-SYSTEM-PWA.pt-BR.md).
 
 ## Guias
 
