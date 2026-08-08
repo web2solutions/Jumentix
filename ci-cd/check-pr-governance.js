@@ -2,6 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 const { isEntryPoint } = require('./lib/entry-point.js');
+const { fetchIssueProject, readLinearKey } = require('./lib/linear.js');
 
 const TEMPLATE_PATHS = Object.freeze([
   '.github/pull_request_template.md',
@@ -249,6 +250,95 @@ function validatePullRequest(metadata, rootDir = process.cwd()) {
   return failures;
 }
 
+/** The `JUM-123` identifier inside a Linear issue URL, or null. */
+function issueIdentifierFrom(issueLink) {
+  const match = /\/issue\/([A-Z][A-Z0-9]*-\d+)(?:\/|$)/.exec(String(issueLink || ''));
+  return match ? match[1] : null;
+}
+
+/** The project slug-id Linear puts at the end of a project URL, or null. */
+function projectKeyFrom(projectLink) {
+  const match = /\/project\/([^/?#]+)/.exec(String(projectLink || ''));
+  if (!match) return null;
+  const slug = match[1];
+  const id = /-([0-9a-f]{8,})$/i.exec(slug);
+  return id ? id[1].toLowerCase() : slug.toLowerCase();
+}
+
+/**
+ * The child task issue is actually in the focused epic's project (JUM-627).
+ *
+ * Everything else in this file reads the PR body. Both link fields can be
+ * well-formed, match each other's shape, name the right epic in prose — and
+ * still describe an issue that belongs to no project at all. On 2026-08-07 five
+ * issues shipped in exactly that state while this check passed on every one.
+ * Requirement 090 is about delegation actually holding, not about the body
+ * saying it does.
+ *
+ * `fetchProject` is injected so the rule is measurable without a network or a
+ * credential; module substitution is not portable between Bun and Jest
+ * (JUM-583), so the seam is a parameter.
+ *
+ * The credential is required, not optional. A membership check that skips
+ * itself when `LINEAR_API_KEY` is unset would report success without doing its
+ * work — the same false green this rule exists to remove.
+ */
+async function verifyIssueProjectMembership(metadata, options = {}) {
+  const body = String(metadata.body || '');
+  const epicLink = readField(body, 'Focused epic link');
+  const taskLink = readField(body, 'Child task issue link');
+  if (!epicLink || !taskLink) return [];
+
+  const identifier = issueIdentifierFrom(taskLink);
+  const expectedProject = projectKeyFrom(epicLink);
+  if (!identifier || !expectedProject) return [];
+
+  const apiKey = options.apiKey ?? readLinearKey(options.rootDir ?? process.cwd());
+  if (!apiKey) {
+    return [
+      '[pr-governance] cannot verify that the child task issue belongs to the focused epic:'
+        + ' no Linear credential. Set LINEAR_API_KEY in the CI environment.'
+    ];
+  }
+
+  const fetchProject = options.fetchProject
+    ?? ((key, id) => fetchIssueProject(key, id));
+
+  let result;
+  try {
+    result = await fetchProject(apiKey, identifier);
+  } catch (error) {
+    // A lookup that could not run is not a pass. It says so, with the reason.
+    return [
+      `[pr-governance] could not resolve ${identifier} in Linear: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    ];
+  }
+
+  if (!result?.found) {
+    return [`[pr-governance] child task issue ${identifier} does not exist in Linear`];
+  }
+  if (!result.project) {
+    return [
+      `[pr-governance] child task issue ${identifier} belongs to no Linear project,`
+        + ' so the focused epic link in this body is not a delegation that holds'
+    ];
+  }
+
+  const actual = projectKeyFrom(result.project.url) ?? String(result.project.id || '').toLowerCase();
+  const matches = actual === expectedProject
+    || String(result.project.id || '').toLowerCase().startsWith(expectedProject);
+  if (!matches) {
+    return [
+      `[pr-governance] child task issue ${identifier} belongs to "${result.project.name}",`
+        + ' not to the project named in the focused epic link'
+    ];
+  }
+
+  return [];
+}
+
 function resolvePullRequestFlag(value = process.env.AAA_CI_IS_PULL_REQUEST) {
   if (typeof value === 'boolean') return value;
   const normalized = String(value || '').trim().toLowerCase();
@@ -257,7 +347,7 @@ function resolvePullRequestFlag(value = process.env.AAA_CI_IS_PULL_REQUEST) {
   return Boolean(process.env.CIRCLE_PULL_REQUEST);
 }
 
-function run(options = {}) {
+async function run(options = {}) {
   const metadata = {
     title: options.title ?? process.env.JUMENTIX_PR_TITLE,
     body: options.body ?? process.env.JUMENTIX_PR_BODY,
@@ -277,6 +367,17 @@ function run(options = {}) {
     ...(shouldValidatePullRequest ? validatePullRequest(metadata, options.rootDir) : [])
   ];
 
+  // Only when the structural rules hold: with a malformed or missing link there
+  // is nothing to look up, and a second complaint about the same field would
+  // bury the one that says what to fix.
+  if (shouldValidatePullRequest && failures.length === 0) {
+    failures.push(...await verifyIssueProjectMembership(metadata, {
+      rootDir: options.rootDir,
+      apiKey: options.apiKey,
+      fetchProject: options.fetchProject
+    }));
+  }
+
   if (failures.length > 0) {
     failures.forEach((failure) => console.error(failure));
     return 1;
@@ -287,7 +388,9 @@ function run(options = {}) {
 }
 
 if (isEntryPoint(module)) {
-  process.exitCode = run();
+  // Awaited, not fire-and-forget: an unawaited promise would let the process
+  // exit 0 before the membership lookup resolved.
+  run().then((code) => { process.exitCode = code; });
 }
 
 module.exports = {
@@ -300,10 +403,13 @@ module.exports = {
   agentBranchPatterns,
   isPlaceholder,
   loadSupportedAgents,
+  issueIdentifierFrom,
+  projectKeyFrom,
   readField,
   resolvePullRequestFlag,
   run,
   validatePullRequest,
   validateSupportedAgents,
-  validateTemplates
+  validateTemplates,
+  verifyIssueProjectMembership
 };

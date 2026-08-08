@@ -7,12 +7,15 @@ const {
   REQUIRED_TITLE_FORMAT,
   SUPPORTED_AGENTS_PATH,
   TEMPLATE_PATHS,
+  issueIdentifierFrom,
+  projectKeyFrom,
   readField,
   resolvePullRequestFlag: resolvePrGovernancePullRequestFlag,
   run: runPrGovernanceCheck,
   validatePullRequest,
   validateSupportedAgents,
-  validateTemplates
+  validateTemplates,
+  verifyIssueProjectMembership
 } = require('../../../../../ci-cd/check-pr-governance');
 
 const validBody = [
@@ -175,28 +178,28 @@ describe('check-pr-governance', () => {
     })).toHaveLength(2);
   });
 
-  it('validates templates but skips PR metadata on long-lived branch builds', () => {
+  it('validates templates but skips PR metadata on long-lived branch builds', async () => {
     expect.hasAssertions();
 
-    expect(runPrGovernanceCheck({
+    await expect(runPrGovernanceCheck({
       isPullRequest: false,
       title: '',
       body: '',
       headRef: 'main',
       baseRef: ''
-    })).toBe(0);
+    })).resolves.toBe(0);
   });
 
-  it('still validates PR metadata when CircleCI marks the job as a pull request', () => {
+  it('still validates PR metadata when CircleCI marks the job as a pull request', async () => {
     expect.hasAssertions();
 
-    expect(runPrGovernanceCheck({
+    await expect(runPrGovernanceCheck({
       isPullRequest: true,
       title: '',
       body: '',
       headRef: 'main',
       baseRef: ''
-    })).toBe(1);
+    })).resolves.toBe(1);
     expect(resolvePrGovernancePullRequestFlag('1')).toBe(true);
     expect(resolvePrGovernancePullRequestFlag('0')).toBe(false);
   });
@@ -331,5 +334,105 @@ describe('check-pr-governance', () => {
       'malformed supported agents declaration'
     );
     prFs.rmSync(rootDir, { recursive: true, force: true });
+  });
+});
+
+/**
+ * JUM-627 — the delegation named in the body is the delegation Linear records.
+ *
+ * Every other rule in this file reads the PR body and can only tell you it is
+ * well-formed. On 2026-08-07 five issues shipped with bodies naming the
+ * governance epic while the issues themselves had no project at all, and this
+ * check passed on all five.
+ *
+ * `fetchProject` is injected: module substitution is not portable between Bun
+ * and Jest (JUM-583), and a governance gate must be measurable without a
+ * network or a credential.
+ */
+describe('child task project membership (JUM-627)', () => {
+  const EPIC = 'https://linear.app/jumentix/project/governance-foundation-c3cb6bae0771/overview';
+  const bodyFor = (issueLink: string) => [
+    `- Focused epic link: ${EPIC}`,
+    '- Epic milestone: Governance foundation - 2026-08-08',
+    '- Primary task nature: ci',
+    '- Epic-delegated agent ID: codex-primary-001',
+    `- Child task issue link: ${issueLink}`,
+    '- Project Update: https://linear.app/jumentix/project/governance-foundation-c3cb6bae0771/activity#project-update-7ef876cc'
+  ].join('\n');
+  const TASK = 'https://linear.app/jumentix/issue/JUM-163/focused-epic-metadata';
+
+  const verify = async (issueLink: string, fetchProject: unknown) => verifyIssueProjectMembership(
+    { body: bodyFor(issueLink) },
+    { apiKey: 'test-key', fetchProject }
+  );
+
+  it('reads the identifier and the project key out of the two links', () => {
+    expect.hasAssertions();
+
+    expect(issueIdentifierFrom(TASK)).toBe('JUM-163');
+    expect(projectKeyFrom(EPIC)).toBe('c3cb6bae0771');
+  });
+
+  it('passes when the issue is in the project the body names', async () => {
+    expect.hasAssertions();
+
+    await expect(verify(TASK, async () => ({
+      found: true,
+      project: { id: 'c3cb6bae0771-full-id', name: 'Governance foundation', url: EPIC }
+    }))).resolves.toStrictEqual([]);
+  });
+
+  it('fails when the issue belongs to no project at all', async () => {
+    expect.hasAssertions();
+
+    // The exact state JUM-616, JUM-618, JUM-620, JUM-621 and JUM-622 shipped in.
+    const failures = await verify(TASK, async () => ({ found: true, project: null }));
+
+    expect(failures).toHaveLength(1);
+    expect(failures[0]).toContain('belongs to no Linear project');
+  });
+
+  it('fails when the issue belongs to a different project', async () => {
+    expect.hasAssertions();
+
+    const failures = await verify(TASK, async () => ({
+      found: true,
+      project: {
+        id: 'other',
+        name: 'Some other epic',
+        url: 'https://linear.app/jumentix/project/some-other-epic-9999abcd0000/overview'
+      }
+    }));
+
+    expect(failures[0]).toContain('not to the project named in the focused epic link');
+  });
+
+  it('fails when the issue does not exist', async () => {
+    expect.hasAssertions();
+
+    const failures = await verify(TASK, async () => ({ found: false, project: null }));
+
+    expect(failures[0]).toContain('does not exist in Linear');
+  });
+
+  it('reports a lookup that could not run instead of passing', async () => {
+    expect.hasAssertions();
+
+    // A verification that cannot reach Linear has verified nothing. Saying so is
+    // the difference between this gate and the one it replaces.
+    const failures = await verify(TASK, async () => { throw new Error('network down'); });
+
+    expect(failures[0]).toContain('could not resolve JUM-163 in Linear: network down');
+  });
+
+  it('refuses to skip itself when no credential is configured', async () => {
+    expect.hasAssertions();
+
+    const failures = await verifyIssueProjectMembership(
+      { body: bodyFor(TASK) },
+      { apiKey: null, rootDir: prFs.mkdtempSync(prPath.join(prOs.tmpdir(), 'jum627-')) }
+    );
+
+    expect(failures[0]).toContain('no Linear credential');
   });
 });
