@@ -27,8 +27,28 @@ Uso detalhado de recursos:
 - [Arquitetura de módulos e contrato da porta IDesignerStore](../../documentation/md/SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.pt-BR.md)
 - [Garantias de paridade de contratos](../../documentation/md/SERVICE-MANAGEMENT-CONTRACT-PARITY.pt-BR.md)
 - [Console de operações](../../documentation/md/SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.pt-BR.md)
+- [Design system e shell PWA](../../documentation/md/SERVICE-MANAGEMENT-DESIGN-SYSTEM-PWA.pt-BR.md)
 - [Adoção do Cana, migração e comportamento offline](../../documentation/md/SERVICE-MANAGEMENT-CANA-ADOPTION.pt-BR.md)
 - [Documentação técnica de gerenciamento de serviços](./documentation/README.pt-BR.md)
+
+## Primeira Execução
+
+Em um perfil novo, o designer inicia com um modelo vazio e cada guia mostra um
+estado vazio guiado (JUM-548) que indica a primeira ação da guia — sem modelo
+pré-carregado silencioso. A primeira ação do Designer de Domínio é o botão
+**Load Sample Model** (também disponível depois no painel Export): um clique
+carrega um domínio de identidade realista — Users e Organization, os mesmos
+recursos que `spec/1.0.0.yml` declara — com relacionamentos, RBAC por
+entidade, um contrato de mensagem, invariantes e composição OAS `oneOf` +
+discriminator. O exemplo passa pelo portão de qualidade de exportação e faz
+round-trip por export/import, servindo como demonstração viva desses percursos.
+
+O conteúdo de exemplo é sempre distinguível do seu trabalho: todo id de
+exemplo carrega o prefixo `sample-` e os domínios de exemplo mostram um selo
+"sample" na lista de domínios. Carregar o exemplo sobre um modelo existente
+exige confirmação explícita (Undo restaura o modelo anterior depois), e
+excluir o exemplo usa a exclusão comum de domínio/entidade. O conteúdo está
+definido em `src/model/sampleModel.js`.
 
 ## Guias
 
@@ -50,7 +70,13 @@ Uso detalhado de recursos:
      (`<version>.websocket.yml` / `<version>.grpc.yml`, convenções canônicas de
      `spec/asyncapi/`), proto gRPC (`async-api.proto`) e pacote padrão.
    - Controles de composição OpenAPI (`oneOf`, `allOf`, `anyOf`, externo `$ref`, discriminador) por entidade.
-   - Exportação/importação de pacotes de domínio para compartilhamento de modelos reutilizáveis.
+   - Exportação/importação de pacotes de domínio para compartilhamento de modelos reutilizáveis — versionada
+     (JUM-492): pacotes carregam versão semântica e faixas de dependências,
+     o conteúdo importado é carimbado com proveniência, e reimportações
+     resolvem deterministicamente (no-op em versão idêntica, recusa em
+     conflito de mesma versão ou downgrade, prévia de merge com decisão do
+     usuário para RBAC, invariantes, remoções e estreitamentos em uma versão
+     mais nova).
    - Navegação em minimapa e modo de desempenho em tela grande.
 2. **Designer de interface de comunicação**
    - Registrar adaptadores de interface de entrada (`HTTP/REST`, `gRPC`, `WebSocket`, `SSE`).
@@ -105,6 +131,13 @@ Uso detalhado de recursos:
      serverless são rejeitados na superfície de status com a restrição
      nomeada. Alvos persistidos antes deste alinhamento migram no
      carregamento.
+   - Ciclo de vida (JUM-546): os alvos são editáveis in-place e duplicáveis —
+     uma duplicata é uma cópia profunda independente renomeada pela regra
+     ` (copy)`. O portão de adição/edição também impõe as regras de campo:
+     nome único, padrão de runtime nome-mais-versão (`nodejs22.x`) e região
+     obrigatória em alvos de nuvem (opcional no servidor dedicado
+     self-hosted, onde o campo carrega informação de host), com dicas de
+     campo por tipo de alvo.
 
 ## Design System e Acessibilidade
 

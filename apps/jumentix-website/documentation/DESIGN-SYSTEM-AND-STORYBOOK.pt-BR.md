@@ -79,6 +79,12 @@ portanto não pode importar os componentes React. Ele adota o design system na c
 
 O smoke exige as oito histórias do designer e um catálogo mínimo de 54 entradas.
 
+A visão dessa adoção pelo lado do designer — a regra de sincronização do token
+vendorizado, o modelo de teclado e leitor de tela e o shell PWA compartilhado
+com estas histórias — está documentada em
+[Design system e shell PWA do Service Management](../../../documentation/md/SERVICE-MANAGEMENT-DESIGN-SYSTEM-PWA.pt-BR.md)
+(E7).
+
 Evidências visuais:
 
 - [Catálogo de componentes](./research/storybook-design-system.png)

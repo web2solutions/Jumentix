@@ -6,7 +6,7 @@
   adoption", milestone H1 (Correctness & runtime alignment), 2026-08-05.
 - Strengthens: `038`, `043`. Relates to: `044`, `052`, `123` and Linear `JUM-458`,
   `JUM-558`, `JUM-459`, `JUM-460`, `JUM-461`, `JUM-462`, `JUM-543`, `JUM-466`,
-  `JUM-468`, `JUM-475`, `JUM-484`.
+  `JUM-468`, `JUM-475`, `JUM-484`, `JUM-547`, `JUM-492`.
 
 ## Context
 
@@ -274,6 +274,13 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
      true), largeCanvasMode }`.
    - Entity field types ∈ { `string`, `integer`, `number`, `boolean`, `array`,
      `object`, `date`, `datetime`, `uuid` }.
+   - **Additive package-versioning fields (landed by `JUM-492`).** Domains MAY
+     carry `context.packageName`, `context.packageVersion` and
+     `context.provenance = { package, version }`, and entities MAY carry
+     `meta.provenance = { package, version }` (see Contract 3, domain
+     package). These are a backward-compatible extension of existing objects —
+     present only on content imported from a versioned package — so the
+     versioned key is unchanged, following the deployments precedent above.
    - The schema-diff baseline lives under the separate key
      `service-management.schema-baseline.v1` and holds
      `{ domains: [{ id, name, color, context, entities: [{ id, name, meta, contracts,
@@ -289,8 +296,30 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
 
 5. **Contract 3 — Export formats and the export quality gate.**
    Eight exporters exist; each guarantees:
-   - **JSON** (`domain-designer.json`): `{ domains, relationships, view }` — the
-     full model, re-importable shape.
+   - **JSON** (`domain-designer.json`): the full-suite document (shape landed
+     by `JUM-547`): `{ kind: "service-management-suite", version: "2.0.0",
+     domains, relationships, interfaces, serviceConfiguration,
+     runtimeEnvironment, deployments, view }` — all four tabs, re-importable
+     shape. `interfaces` entries are `{ type, framework, entrypoint,
+     controller }`; `serviceConfiguration` and `deployments` carry the
+     Contract 2 shapes. The pre-`JUM-547` shape was `{ domains, relationships,
+     view }` with no `kind`/`version`; import MUST keep accepting it,
+     defaulting the missing sections (backward compatibility). Import MUST
+     refuse a document whose `version` major is newer than the importer's, a
+     `kind` other than the suite kind, or any unknown top-level section —
+     failing clearly rather than half-importing or silently discarding
+     sections (forward compatibility).
+   - **`runtimeEnvironment` in the JSON export — the recorded `JUM-547`
+     decision.** The bundle carries the environment *selection* only
+     (`{ environment, fileName }`), never `values`. The values mirror real
+     `.env` contents of the machine the designer runs on — the editable and
+     read-only tiers of the Contract 1 classification (the never-exposed tier
+     never even enters this state) — so a bundle containing them is a file
+     that can carry configuration off the machine; the runtime environment is
+     a property of where the designer is running, not of the service being
+     designed. On import the selection is restored and, when the document
+     carries no `values`, the local machine's values are preserved. No secret
+     can leave in a bundle.
    - **Markdown** (`domain-designer-model.md`): human-readable model document —
      per-domain bounded-context metadata, per-entity field table
      (name/type/required/PK/FK/unique/nullable), RBAC per action, message contracts,
@@ -346,9 +375,79 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
      The Code Preview pane renders this same builder, so preview and bundle
      cannot diverge. (Shape pinned by JUM-476; `version` 1.0.0 emitted the
      pre-hexagonal path-only layout.)
-   - **Domain package** (`<domain>-package.json`): `{ kind: "domain-package",
-     version: "1.0.0", exportedAt, domain }` for the selected domain; the package
-     import flow accepts exactly this shape.
+   - **Domain package** (`<domain>-package.json`): versioned single-domain
+     package (shape landed by `JUM-492`): `{ kind: "domain-package",
+     version: "2.0.0", exportedAt, package: { name, version, dependencies:
+     [{ name, range }] }, domain }`. The `package` block declares the package
+     identity: `name` (the domain's `context.packageName`, falling back to
+     the domain name), `version` (the domain's `context.packageVersion`,
+     falling back to `1.0.0`) and `dependencies` parsed from the domain's
+     `context.packageDependencies` entries (`name@range`; a bare name is a
+     presence-only dependency). Import MUST keep accepting the pre-`JUM-492`
+     v1 shape (`{ kind, version: "1.0.0", exportedAt, domain }`, no `package`
+     block), synthesizing the identity `{ name: domain.name, version:
+     1.0.0, dependencies: [] }` (backward compatibility), and MUST refuse a
+     document whose `version` major is newer than the importer's (2) or a
+     `kind` other than `domain-package` (forward compatibility).
+   - **Domain-package versioning semantics (landed by `JUM-492`).** A domain
+     package is versioned data, not code, so the usual semver semantics are
+     redefined for it:
+     - *patch* — documentation/metadata only (field descriptions, formats,
+       constraints, domain context text, OAS composition hints);
+     - *minor* — additive structure (a new entity, field or message
+       contract; a required flag loosened);
+     - *major* — removal or narrowing (a removed entity/field/contract, a
+       field type or PK/FK/unique change, a required flag tightened, an RBAC
+       or invariant change, an aggregate declaration change).
+     Dependency ranges accept `*`/empty (any), exact `1.2.3`, caret `^1.2.3`
+     (same major; for `0.x`, same minor — the npm convention) and tilde
+     `~1.2.3` (same major.minor); anything else is invalid and satisfies
+     nothing, so it is reported rather than silently accepted.
+   - **Provenance (landed by `JUM-492`).** Imported content MUST be stamped:
+     the domain carries `context.provenance = { package, version }` plus
+     `context.packageName`/`context.packageVersion`, and every imported
+     entity carries `meta.provenance = { package, version }`. The
+     normalizers carry these fields additively (only when the source
+     declares them), so pre-`JUM-492` payloads are unchanged and provenance
+     crosses the full-suite export, the storage schema and loads intact.
+     The installed-package registry derives from provenance ONLY — a
+     locally-built domain is not an installation, so importing a package
+     named like a hand-built domain appends (with the JUM-617 id
+     recomputation) instead of merging into unrelated content.
+   - **Dependency graph (landed by `JUM-492`).** Import resolves the
+     registry (with the incoming package overlaid) as a graph, transitively:
+     a declared dependency no installed package provides, or an installed
+     version outside the declared range, is reported through the status
+     region (the import proceeds — the designer reports, it is not the
+     resolver); a cycle the incoming package participates in is reported by
+     name chain and the import is refused — cycles are detected and
+     reported, never entered.
+   - **Conflict classification and resolution (landed by `JUM-492`).**
+     Re-importing an installed package has a defined outcome per case, all
+     deterministic and explainable:
+     - same version, equal content → no-op (idempotent re-import — importing
+       the same package version twice changes nothing);
+     - same version, different content → refused (`same-version-conflict`):
+       version immutability — the differences are listed in the merge
+       preview and nothing is applied;
+     - older version → refused (`downgrade-rejected`);
+     - newer version → merge with a per-aspect classification:
+       - *auto-merge* (applied): added entity/field/contract, required flag
+         loosened, field metadata, OAS composition and domain context
+         changes;
+       - *requires a decision* (NEVER auto-applied — the existing designer
+         content is kept for the aspect): removed entity/field/contract,
+         contract change, field type or PK/FK/unique flag change, required
+         flag tightened, aggregate declaration change, and ALWAYS RBAC and
+         invariant changes — automatically resolving a security policy or a
+         domain invariant is a decision a merge algorithm must not make.
+       The merge preview renders every aspect (with its class and
+       resolution) on the schema-diff surface BEFORE anything changes, and a
+       merge carrying requires-decision aspects applies only after the user
+       explicitly accepts (a gated `window.confirm` — a toast is not a
+       substitute for the gate). After a merge the provenance advances to
+       the incoming version. All user-facing outcomes surface through the
+       non-blocking status region (`showStatus`), never `alert()`.
    - **OpenAPI 3.1** (`domain-designer-oas-3.1.json`): `openapi: 3.1.0`; CRUD paths
      per entity with unique operationIds on the canonical `spec/1.0.0.yml` verb
      scheme (`getAll<Schema>`/`create<Schema>`/`get<Schema>ById`/`update<Schema>`/
@@ -429,6 +528,28 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
   (server behavior) and
   `apps/backend-template/test/unit/service-management/pm2EcosystemUi.contract.test.ts`
   (designer-side no-hardcoded-command rule).
+- Contract 3 amended by `JUM-547` (branch
+  `kimi/feature/JUM-547-full-suite-export-import`): the JSON export became the
+  versioned full-suite document carrying all four tabs, and the
+  `runtimeEnvironment` decision (selection crosses, values never leave the
+  machine) is recorded above, in the JSON export bullet. Pinned by
+  `apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts`
+  (full-suite deep-equal, backward/forward compatibility) and
+  `apps/backend-template/test/unit/service-management/designerExporters.test.ts`
+  (document shape). The Contract 2 storage schema is unchanged — no versioned
+  key bump.
+- Contract 3 amended by `JUM-492` (branch
+  `kimi/feature/JUM-492-domain-package-versioning`): the domain package became
+  a versioned document (`package` block with name/version/dependencies), with
+  the versioning semantics, provenance stamping, dependency-graph resolution
+  and conflict classification recorded above. Contract 2 gained the additive
+  provenance/package fields (backward-compatible extension — no versioned key
+  bump). Pinned by
+  `apps/backend-template/test/unit/service-management/designerPackageVersioning.test.ts`
+  (version parsing/ordering, ranges, dependency graph, conflict policies) and
+  `apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts`
+  (versioned export→import, idempotent re-import, conflicting re-import,
+  compatible/incompatible dependency pairs).
 - Registry sync: `.agents/NFR-REGISTRY.md`,
   `documentation/md/SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md` (+ `.pt-BR.md`),
   `documentation/md/SPEC-REQUIREMENTS-COVERAGE-STATUS.md` (+ `.pt-BR.md`),

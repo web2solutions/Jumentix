@@ -32,10 +32,10 @@ import {
   createDesignerState,
   defaultFields,
   normalizeContractInput,
+  normalizeDeploymentInput,
   normalizeField,
   normalizeOptionalNumber,
   normalizeRbacPolicyInput,
-  normalizeStatePayload,
   parseCommaSeparated,
   parseEnumValues
 } from './src/state/designerState.js';
@@ -51,8 +51,16 @@ import {
   migrateLocalStorageToCana
 } from './src/store/canaMigration.js';
 import * as model from './src/model/modelQueries.js';
+import { isPm2ManagedDeployTarget } from './src/model/deployCapabilityMatrix.js';
+import { buildSampleModelPayload } from './src/model/sampleModel.js';
 import { collectModelIssues } from './src/validation/modelValidation.js';
 import { collectServiceConfigurationIssues } from './src/validation/serviceConfigurationValidation.js';
+import { collectDeployTargetIssues } from './src/validation/deployTargetValidation.js';
+import {
+  collectDeployTargetFieldIssues,
+  deployTargetFieldHint,
+  duplicateDeployTargetName
+} from './src/validation/deployTargetLifecycleValidation.js';
 import {
   normalizeInterfaceAdapterInput,
   upsertInterfaceAdapter
@@ -71,7 +79,8 @@ import {
 } from './src/exporters/asyncApiExporters.js';
 import {
   buildDomainFromPackage,
-  buildDomainsFromOas
+  buildDomainsFromOas,
+  buildStateFromSuiteExport
 } from './src/importers/designerImporters.js';
 import {
   flattenBundleFiles,
@@ -165,7 +174,10 @@ const interaction = {
   panStartX: 0,
   panStartY: 0,
   scrollStartLeft: 0,
-  scrollStartTop: 0
+  scrollStartTop: 0,
+  // JUM-546: index into state.deployments of the target loaded into the form
+  // for edit-in-place; null means the form adds a new target.
+  editingDeploymentIndex: null
 };
 
 const dom = {
@@ -294,6 +306,12 @@ const dom = {
   importOasInput: document.getElementById('import-oas-input'),
   importPackageBtn: document.getElementById('import-package-btn'),
   importPackageInput: document.getElementById('import-package-input'),
+  loadSampleBtn: document.getElementById('load-sample-btn'),
+  domainDesignerEmptyState: document.getElementById('domain-designer-empty-state'),
+  loadSampleEmptyBtn: document.getElementById('domain-designer-empty-load-sample-btn'),
+  interfaceDesignerEmptyState: document.getElementById('interface-designer-empty-state'),
+  serviceConfigEmptyState: document.getElementById('service-config-empty-state'),
+  deployManagementEmptyState: document.getElementById('deploy-management-empty-state'),
   generateCodePreviewBtn: document.getElementById('generate-code-preview-btn'),
   generateExamplesBtn: document.getElementById('generate-examples-btn'),
   codePreviewOutput: document.getElementById('code-preview-output'),
@@ -338,9 +356,16 @@ const dom = {
   runtimeEnvTargetFile: document.getElementById('runtime-env-target-file'),
   deployNameInput: document.getElementById('deploy-name-input'),
   deployTypeSelect: document.getElementById('deploy-type-select'),
+  deployServiceTypeSelect: document.getElementById('deploy-service-type-select'),
+  deployRuntimeProtocolSelect: document.getElementById('deploy-runtime-protocol-select'),
+  deployDatabaseDriverSelect: document.getElementById('deploy-database-driver-select'),
+  deployKeyvalueDriverSelect: document.getElementById('deploy-keyvalue-driver-select'),
+  deployPm2ProfileSelect: document.getElementById('deploy-pm2-profile-select'),
   deployRegionInput: document.getElementById('deploy-region-input'),
   deployRuntimeInput: document.getElementById('deploy-runtime-input'),
   addDeployTargetBtn: document.getElementById('add-deploy-target-btn'),
+  cancelDeployTargetEditBtn: document.getElementById('cancel-deploy-target-edit-btn'),
+  deployFieldHint: document.getElementById('deploy-field-hint'),
   deployTargetList: document.getElementById('deploy-target-list')
 };
 
@@ -379,7 +404,10 @@ const inspectors = createInspectors({
     renderRuntimeEnvironment,
     loadSchemaBaseline,
     showStatus,
-    getPm2EcosystemPreview
+    getPm2EcosystemPreview,
+    editDeployment,
+    duplicateDeployment,
+    syncDeploymentEditStateAfterRemoval
   }
 });
 
@@ -1632,6 +1660,33 @@ function exportAsOas() {
 // document→model mappers in src/importers/designerImporters.js (and
 // normalizeStatePayload from the JUM-468 core). One mapper failure reason
 // maps to exactly one status-region message (the pre-refactor alert text).
+// JUM-492: one mapper failure reason maps to exactly one status-region
+// message. The mapper (buildDomainFromPackage over the packageVersioning
+// core) owns the versioning, dependency-graph and conflict policies; this
+// glue only renders outcomes — never window.alert.
+function packageImportFailureMessage(result) {
+  const packageLabel = result.package ? `'${result.package.name}@${result.package.version}'` : 'package';
+  if (result.reason === 'wrong-document-kind') {
+    return `This file is a '${String(result.kind)}' document, not a domain package — use the matching import.`;
+  }
+  if (result.reason === 'unsupported-version') {
+    return `Unsupported domain-package document version '${String(result.version)}' — this designer reads up to major version 2.`;
+  }
+  if (result.reason === 'invalid-package-version') {
+    return `Package version '${String(result.version)}' is not a semantic version (major.minor.patch) — import refused.`;
+  }
+  if (result.reason === 'dependency-cycle') {
+    return `Importing ${packageLabel} would close a dependency cycle (${(result.cycle || []).join(' -> ')}) — import refused.`;
+  }
+  if (result.reason === 'downgrade-rejected') {
+    return `Package '${result.package.name}@${result.installed}' is already imported; ${packageLabel} is older — downgrades are refused.`;
+  }
+  if (result.reason === 'same-version-conflict') {
+    return `Package ${packageLabel} is already imported but the file's content differs — same version, different content. Bump the version or reconcile the package; nothing was changed.`;
+  }
+  return 'Invalid package format.';
+}
+
 function importDomainPackage(file) {
   const reader = new FileReader();
   reader.onload = () => {
@@ -1639,7 +1694,57 @@ function importDomainPackage(file) {
       const parsed = JSON.parse(String(reader.result || '{}'));
       const result = buildDomainFromPackage(parsed, state.domains);
       if (!result.ok) {
-        showStatus('Invalid package format.');
+        showStatus(packageImportFailureMessage(result));
+        // A refusal that carries a preview (same-version conflict) renders it
+        // on the schema-diff surface, so the user sees exactly which aspects
+        // diverged — the merge-preview basis of JUM-492.
+        if (Array.isArray(result.preview) && result.preview.length) {
+          inspectors.renderSchemaDiffResults(result.preview);
+        }
+        return;
+      }
+      if (result.noop) {
+        // Idempotent re-import (JUM-492): same package, same version, same
+        // content — importing twice changes nothing, proven by test.
+        showStatus(`Package '${result.package.name}@${result.package.version}' is already imported and unchanged — nothing to do.`, 'info');
+        return;
+      }
+      if (result.merged) {
+        // The merge preview renders BEFORE anything changes; aspects that
+        // require a decision (RBAC, invariants, removals, narrowings) keep
+        // the existing content and the merge applies only after the user
+        // explicitly accepts — a toast is not a substitute for that gate.
+        if (result.preview.length) {
+          inspectors.renderSchemaDiffResults(result.preview);
+        }
+        if (result.requiresDecision > 0) {
+          const accepted = window.confirm(
+            `Merge package '${result.package.name}' ${result.fromVersion} -> ${result.package.version}: `
+            + `${result.autoCount} change(s) apply automatically; ${result.requiresDecision} aspect(s) require a decision `
+            + '(the existing designer content is kept for them — see the schema-diff panel). Apply the merge?'
+          );
+          if (!accepted) {
+            showStatus(`Merge of package '${result.package.name}@${result.package.version}' cancelled — nothing was changed.`, 'info');
+            return;
+          }
+        }
+        withPersist(() => {
+          const index = state.domains.findIndex((domain) => domain.id === result.domain.id);
+          if (index >= 0) {
+            state.domains[index] = result.domain;
+          }
+          state.selectedDomainId = result.domain.id;
+          state.selectedEntityId = result.domain.entities[0]?.id || null;
+          recomputeIdCounter();
+          render();
+        });
+        const decisionNote = result.requiresDecision > 0
+          ? `; ${result.requiresDecision} aspect(s) kept the existing content (listed in the schema-diff panel)`
+          : '';
+        showStatus(
+          `Package '${result.package.name}' merged ${result.fromVersion} -> ${result.package.version}: ${result.autoCount} change(s) applied${decisionNote}.`,
+          'info'
+        );
         return;
       }
       withPersist(() => {
@@ -1650,6 +1755,11 @@ function importDomainPackage(file) {
         recomputeIdCounter();
         render();
       });
+      // Dependency-graph findings never block an import, but they are never
+      // silent either — they surface through the status region.
+      if (Array.isArray(result.warnings) && result.warnings.length) {
+        showStatus(result.warnings.join(' '), 'error');
+      }
     } catch (_) {
       showStatus('Could not parse package JSON.');
     }
@@ -1657,18 +1767,43 @@ function importDomainPackage(file) {
   reader.readAsText(file);
 }
 
+// JUM-547: the suite import maps one mapper failure reason to exactly one
+// status-region message. The mapper itself (buildStateFromSuiteExport)
+// owns the versioning and compatibility rules of the full-suite document.
+function suiteExportFailureMessage(result) {
+  if (result.reason === 'wrong-document-kind') {
+    return `This file is a '${String(result.kind)}' document, not a suite export — use the matching import.`;
+  }
+  if (result.reason === 'unsupported-version') {
+    return `Unsupported suite export version '${String(result.version)}' — this designer reads up to major version 2.`;
+  }
+  if (result.reason === 'unknown-sections') {
+    return `Suite export carries unknown section(s): ${result.sections.join(', ')} — import refused rather than partially applied.`;
+  }
+  return 'Invalid suite export document.';
+}
+
 function importStateFromFile(file) {
   const reader = new FileReader();
   reader.onload = () => {
     try {
       const parsed = JSON.parse(String(reader.result));
-      const normalized = normalizeStatePayload(parsed);
+      const result = buildStateFromSuiteExport(parsed, state);
+      if (!result.ok) {
+        showStatus(suiteExportFailureMessage(result));
+        return;
+      }
+      const normalized = result.state;
       withPersist(() => {
         state.domains = normalized.domains;
         state.relationships = normalized.relationships;
         state.selectedDomainId = normalized.selectedDomainId;
         state.selectedEntityId = normalized.selectedEntityId;
         state.selectedRelationshipId = normalized.selectedRelationshipId;
+        state.interfaces = normalized.interfaces;
+        state.serviceConfiguration = normalized.serviceConfiguration;
+        state.runtimeEnvironment = normalized.runtimeEnvironment;
+        state.deployments = normalized.deployments;
         state.view = normalized.view;
         state.idCounter = normalized.idCounter;
         recomputeIdCounter();
@@ -1768,6 +1903,13 @@ function generateExamplesPreview() {
   dom.examplesPreviewOutput.textContent = chunks.join('\n\n/* ---------------------------------------- */\n\n');
 }
 
+// JUM-548: the first-run state is intentionally EMPTY — no domains, no
+// relationships. A first-run user used to get a silently pre-populated toy
+// template; the guided per-tab empty states (renderEmptyStates) now explain
+// each tab instead, and the realistic sample model is an explicit one-action
+// load (loadSampleModel), so the user learns where a model comes from. The
+// state core calls this on first run and on recovery; the Reset button calls
+// it too — reset therefore means "back to the empty first-run state".
 function seed() {
   state.domains = [];
   state.relationships = [];
@@ -1784,45 +1926,66 @@ function seed() {
     exportBlockCritical: true,
     largeCanvasMode: false
   };
+}
 
-  const users = addDomain('Users', { x: 80, y: 80, color: '#93c5fd' });
-  const billing = addDomain('Billing', { x: 700, y: 200, color: '#86efac' });
-  const user = addEntity(users.id, 'User', {
-    fields: [
-      { name: 'id', type: 'uuid', required: true, pk: true, fk: false, unique: true },
-      { name: 'organizationId', type: 'uuid', required: true, pk: false, fk: true, unique: false },
-      { name: 'username', type: 'string', required: true, pk: false, fk: false, unique: true }
-    ]
+/**
+ * JUM-548: load the sample model (src/model/sampleModel.js) through the same
+ * normalisation crossing a JSON import takes. Non-destructive by contract:
+ * over existing work the load only proceeds after an explicit confirmation —
+ * one of the destructive-action gates JUM-543 keeps on `window.confirm` — and
+ * even then the previous work is one in-session Undo away (the load records
+ * history, unlike file imports which reset it). The status region, not an
+ * alert, announces the outcome and names the sample marker.
+ */
+function loadSampleModel() {
+  if (state.domains.length) {
+    const confirmed = window.confirm(
+      'Load the sample model? This replaces the current domains and relationships (Undo restores them).'
+    );
+    if (!confirmed) return;
+  }
+  // JUM-547: the sample document crosses the same suite-import mapper as a
+  // file import — one set of versioning/compatibility rules for every entry
+  // point. The sample is the model slice only; the tab sections the mapper
+  // normalises are not applied here.
+  const result = buildStateFromSuiteExport(buildSampleModelPayload(), state);
+  if (!result.ok) {
+    showStatus(suiteExportFailureMessage(result));
+    return;
+  }
+  const normalized = result.state;
+  withPersist(() => {
+    state.domains = normalized.domains;
+    state.relationships = normalized.relationships;
+    state.selectedDomainId = normalized.selectedDomainId;
+    state.selectedEntityId = normalized.selectedEntityId;
+    state.selectedRelationshipId = normalized.selectedRelationshipId;
+    state.view = normalized.view;
+    state.idCounter = normalized.idCounter;
+    recomputeIdCounter();
+    render();
   });
-  const organization = addEntity(users.id, 'Organization', {
-    fields: [
-      { name: 'id', type: 'uuid', required: true, pk: true, fk: false, unique: true },
-      { name: 'name', type: 'string', required: true, pk: false, fk: false, unique: false }
-    ]
-  });
-  const invoice = addEntity(billing.id, 'Invoice', {
-    fields: [
-      { name: 'id', type: 'uuid', required: true, pk: true, fk: false, unique: true },
-      { name: 'organizationId', type: 'uuid', required: true, pk: false, fk: true, unique: false },
-      { name: 'total', type: 'number', required: true, pk: false, fk: false, unique: false }
-    ]
-  });
-  state.relationships.push({
-    id: nextId('rel'),
-    fromEntityId: user.id,
-    toEntityId: organization.id,
-    name: 'User belongs to Organization',
-    fromCardinality: 'N',
-    toCardinality: '1'
-  });
-  state.relationships.push({
-    id: nextId('rel'),
-    fromEntityId: invoice.id,
-    toEntityId: organization.id,
-    name: 'Invoice belongs to Organization',
-    fromCardinality: 'N',
-    toCardinality: '1'
-  });
+  showStatus(
+    'Sample model loaded: the "Users" domain (marked "sample" in the domain list) demonstrates '
+    + 'relationships, per-entity RBAC, a message contract and OAS composition. It passes the export '
+    + 'gate — try "Validate Model", export it, then delete the sample and start your own model.',
+    'info'
+  );
+}
+
+/**
+ * JUM-548: per-tab guided empty states. Each names the tab's first action
+ * and describes the tab honestly (the Interface and Deploy tabs are thinner
+ * than the Domain Designer, and their empty states say so). The two toggles
+ * here track the domain model, which only ever changes through a full
+ * render(); the Interface/Deploy toggles live next to their list renderers
+ * in src/ui/inspectors.js, because adapters and targets also change through
+ * partial renders (delete buttons) that never reach this pass.
+ */
+function renderEmptyStates() {
+  const modelEmpty = state.domains.length === 0;
+  if (dom.domainDesignerEmptyState) dom.domainDesignerEmptyState.hidden = !modelEmpty;
+  if (dom.serviceConfigEmptyState) dom.serviceConfigEmptyState.hidden = !modelEmpty;
 }
 
 // The single render pass, in the monolith's exact order. The pre-refactor
@@ -1832,6 +1995,7 @@ function seed() {
 // preserved here as an explicit call sequence.
 function render() {
   tabs.renderTabs();
+  renderEmptyStates();
   inspectors.renderInterfaceAdapters();
   inspectors.renderServiceConfiguration();
   inspectors.renderDeployments();
@@ -1851,6 +2015,137 @@ function render() {
   generateExamplesPreview();
   dom.undoBtn.disabled = history.past.length === 0;
   dom.redoBtn.disabled = history.future.length === 0;
+}
+
+// Deploy Management lifecycle (JUM-546). The form doubles as the add and the
+// edit-in-place surface: `interaction.editingDeploymentIndex === null` adds,
+// a number replaces that entry. Every mutation validates the full candidate —
+// the JUM-546 field rules (name required/unique, runtime/version pattern,
+// region per target type) next to the JUM-481 matrix-content rules — and a
+// rejection is announced on the JUM-543 status surface with every reason,
+// never alert() and never a silent no-op.
+
+function readDeployTargetForm() {
+  return normalizeDeploymentInput({
+    name: dom.deployNameInput.value,
+    region: dom.deployRegionInput.value,
+    runtime: dom.deployRuntimeInput.value,
+    deployTarget: dom.deployTypeSelect.value,
+    serviceType: dom.deployServiceTypeSelect?.value,
+    runtimeProtocol: dom.deployRuntimeProtocolSelect?.value,
+    databaseDriver: dom.deployDatabaseDriverSelect?.value,
+    keyValueDriver: dom.deployKeyvalueDriverSelect?.value,
+    pm2Profile: dom.deployPm2ProfileSelect?.value
+  });
+}
+
+/**
+ * Target-type-aware field guidance (JUM-546 scope 3): the hint line names
+ * what the selected matrix row needs — host information and a PM2 profile on
+ * PM2-managed targets, a runtime/version on function providers — and the PM2
+ * profile select only applies to PM2-managed targets.
+ */
+function updateDeployTargetFieldHints() {
+  const deployTarget = dom.deployTypeSelect?.value || '';
+  if (dom.deployFieldHint) {
+    dom.deployFieldHint.textContent = deployTargetFieldHint(deployTarget);
+  }
+  if (dom.deployPm2ProfileSelect) {
+    const pm2Managed = isPm2ManagedDeployTarget(deployTarget);
+    dom.deployPm2ProfileSelect.disabled = !pm2Managed;
+    if (!pm2Managed) dom.deployPm2ProfileSelect.value = '';
+  }
+}
+
+function clearDeployTargetForm() {
+  interaction.editingDeploymentIndex = null;
+  dom.deployNameInput.value = '';
+  dom.deployRegionInput.value = '';
+  dom.deployRuntimeInput.value = '';
+  dom.addDeployTargetBtn.textContent = 'Add Target';
+  if (dom.cancelDeployTargetEditBtn) dom.cancelDeployTargetEditBtn.hidden = true;
+}
+
+function submitDeployTargetForm() {
+  const candidate = readDeployTargetForm();
+  const issues = [
+    ...collectDeployTargetFieldIssues(candidate, state.deployments, {
+      excludeIndex: interaction.editingDeploymentIndex
+    }),
+    ...collectDeployTargetIssues(candidate)
+  ];
+  if (issues.length > 0) {
+    showStatus(issues.map((issue) => issue.message).join(' '));
+    return;
+  }
+  const editingIndex = interaction.editingDeploymentIndex;
+  withPersist(() => {
+    if (editingIndex === null || !state.deployments[editingIndex]) {
+      state.deployments.push(candidate);
+    } else {
+      state.deployments.splice(editingIndex, 1, candidate);
+    }
+    clearDeployTargetForm();
+    inspectors.renderDeployments();
+  }, { recordHistory: false });
+  if (editingIndex !== null) {
+    showStatus(`Deploy target "${candidate.name}" updated.`, 'info');
+  }
+}
+
+function editDeployment(index) {
+  const target = state.deployments[index];
+  if (!target) return;
+  interaction.editingDeploymentIndex = index;
+  dom.deployNameInput.value = target.name || '';
+  dom.deployTypeSelect.value = target.deployTarget || '';
+  if (dom.deployServiceTypeSelect) dom.deployServiceTypeSelect.value = target.serviceType || '';
+  if (dom.deployRuntimeProtocolSelect) dom.deployRuntimeProtocolSelect.value = target.runtimeProtocol || '';
+  if (dom.deployDatabaseDriverSelect) dom.deployDatabaseDriverSelect.value = target.databaseDriver || '';
+  if (dom.deployKeyvalueDriverSelect) dom.deployKeyvalueDriverSelect.value = target.keyValueDriver || '';
+  if (dom.deployPm2ProfileSelect) dom.deployPm2ProfileSelect.value = target.pm2Profile || '';
+  dom.deployRegionInput.value = target.region || '';
+  dom.deployRuntimeInput.value = target.runtime || '';
+  dom.addDeployTargetBtn.textContent = 'Save Target';
+  if (dom.cancelDeployTargetEditBtn) dom.cancelDeployTargetEditBtn.hidden = false;
+  updateDeployTargetFieldHints();
+  dom.deployNameInput.focus();
+}
+
+/**
+ * Duplicate a registered target: a DEEP copy (the duplicate is independently
+ * editable, never a shared reference), re-normalised to the pinned shape and
+ * renamed by the ` (copy)` rule until unique (JUM-546 acceptance criteria).
+ */
+function duplicateDeployment(index) {
+  const source = state.deployments[index];
+  if (!source) return;
+  const copy = normalizeDeploymentInput(JSON.parse(JSON.stringify(source)));
+  copy.name = duplicateDeployTargetName(source.name, state.deployments.map((entry) => entry.name));
+  // Inserting before the edited entry shifts its index; keep the edit pointed
+  // at the same target.
+  if (interaction.editingDeploymentIndex !== null && interaction.editingDeploymentIndex > index) {
+    interaction.editingDeploymentIndex += 1;
+  }
+  withPersist(() => {
+    state.deployments.splice(index + 1, 0, copy);
+    inspectors.renderDeployments();
+  }, { recordHistory: false });
+  showStatus(`Duplicated "${source.name}" as "${copy.name}".`, 'info');
+}
+
+/**
+ * Keep the in-flight edit consistent when the list removes an entry: removing
+ * the edited target cancels the edit; removing an earlier one shifts the
+ * edited index. Called by `renderDeployments`' delete gate.
+ */
+function syncDeploymentEditStateAfterRemoval(removedIndex) {
+  if (interaction.editingDeploymentIndex === null) return;
+  if (interaction.editingDeploymentIndex === removedIndex) {
+    clearDeployTargetForm();
+  } else if (interaction.editingDeploymentIndex > removedIndex) {
+    interaction.editingDeploymentIndex -= 1;
+  }
 }
 
 function wireEvents() {
@@ -1978,23 +2273,22 @@ function wireEvents() {
   }
 
   if (dom.addDeployTargetBtn) {
-    dom.addDeployTargetBtn.onclick = () => {
-      const name = String(dom.deployNameInput.value || '').trim();
-      const type = dom.deployTypeSelect.value;
-      const region = String(dom.deployRegionInput.value || '').trim();
-      const runtime = String(dom.deployRuntimeInput.value || '').trim();
-      if (!name || !region || !runtime) {
-        showStatus('Deployment name, region and runtime are required.');
-        return;
-      }
-      withPersist(() => {
-        state.deployments.push({ name, type, region, runtime });
-        dom.deployNameInput.value = '';
-        dom.deployRegionInput.value = '';
-        dom.deployRuntimeInput.value = '';
-        inspectors.renderDeployments();
-      }, { recordHistory: false });
+    // JUM-546: one gate for add and edit-in-place — the full candidate is
+    // validated (field lifecycle rules + Requirement 059 matrix rules) before
+    // it touches state; rejections report every reason on the status surface.
+    dom.addDeployTargetBtn.onclick = submitDeployTargetForm;
+  }
+
+  if (dom.cancelDeployTargetEditBtn) {
+    dom.cancelDeployTargetEditBtn.onclick = () => {
+      clearDeployTargetForm();
+      showStatus('Deploy target edit cancelled.', 'info');
     };
+  }
+
+  if (dom.deployTypeSelect) {
+    dom.deployTypeSelect.onchange = updateDeployTargetFieldHints;
+    updateDeployTargetFieldHints();
   }
 
   dom.addDomainBtn.onclick = () => {
@@ -2269,8 +2563,13 @@ function wireEvents() {
     dom.importPackageInput.value = '';
   };
 
+  // JUM-548: the sample loader is reachable from the Export panel (always)
+  // and from the Domain Designer's guided empty state (the first action).
+  if (dom.loadSampleBtn) dom.loadSampleBtn.onclick = () => loadSampleModel();
+  if (dom.loadSampleEmptyBtn) dom.loadSampleEmptyBtn.onclick = () => loadSampleModel();
+
   dom.resetCanvasBtn.onclick = () => {
-    if (!window.confirm('Reset canvas to default template?')) return;
+    if (!window.confirm('Reset canvas? All domains and relationships will be cleared.')) return;
     withPersist(() => {
       seed();
       render();

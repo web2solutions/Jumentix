@@ -156,6 +156,15 @@ export const DEPLOY_TARGET_SERVICE_TYPES = {
 export const PM2_MANAGED_DEPLOY_TARGETS = ['dedicated-server', 'vm', 'ec2'];
 
 /**
+ * Deploy targets hosted on the operator's own machine — the Dedicated Server
+ * (SSH) row (`self-hosted` in the run-mode × provider support map above).
+ * JUM-546's lifecycle validation derives the region rule from this set: a
+ * provider region is required on cloud targets, while a self-hosted target
+ * may carry host information in that field instead.
+ */
+export const SELF_HOSTED_DEPLOY_TARGETS = ['dedicated-server'];
+
+/**
  * Protocols each service type actually exposes: REST serves HTTP,
  * WebSocket+REST adds the realtime WebSocket listener, gRPC+REST adds the
  * gRPC listener, and function APIs are HTTP entrypoints.
@@ -228,6 +237,15 @@ export function isServiceTypeSupportedByDeployTarget(serviceType, deployTarget) 
  */
 export function isPm2ManagedDeployTarget(deployTarget) {
   return PM2_MANAGED_DEPLOY_TARGETS.includes(deployTarget);
+}
+
+/**
+ * @param {string} deployTarget
+ * @returns {boolean} true when the target runs on the operator's own machine
+ *   (the Dedicated Server (SSH) row), so no provider region applies.
+ */
+export function isSelfHostedDeployTarget(deployTarget) {
+  return SELF_HOSTED_DEPLOY_TARGETS.includes(deployTarget);
 }
 
 /**

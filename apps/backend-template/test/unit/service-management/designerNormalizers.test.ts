@@ -17,6 +17,9 @@ import path from 'node:path';
  *   the user's saved model (data loss disguised as a load);
  * - `normalizeStatePayload` legacy/partial upgrade — old payloads are upgraded
  *   predictably, never silently dropped;
+ * - the JUM-547 section normalisers (`normalizeInterfaceInput`,
+ *   `normalizeServiceConfigurationInput`, `normalizeRuntimeEnvironmentInput`)
+ *   the full-suite import shares with the load path;
  * - the exact RBAC default policy every new/imported entity starts with.
  *
  * OAS field rules (`toOasType`/`toOasFieldSchema`/`fromOasType`) are pinned by
@@ -30,6 +33,9 @@ const {
   getDefaultRbacPolicy,
   normalizeContractInput,
   normalizeField,
+  normalizeInterfaceInput,
+  normalizeRuntimeEnvironmentInput,
+  normalizeServiceConfigurationInput,
   normalizeStatePayload
 } = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'designerState.js'));
 
@@ -266,6 +272,116 @@ describe('designer normalisers (JUM-470)', () => {
       expect(normalized.relationships).toStrictEqual([]);
       expect(normalized.selectedDomainId).toBeNull();
       expect(normalized.view).toStrictEqual(createDefaultView());
+    });
+  });
+
+  describe('full-suite section normalisers (JUM-547)', () => {
+    it('normalizeInterfaceInput trims values and defaults an empty type', () => {
+      expect(normalizeInterfaceInput({
+        type: ' grpc ', framework: ' bun ', entrypoint: ' src/grpc.ts ', controller: ' BillingGrpc '
+      })).toStrictEqual({
+        type: 'grpc', framework: 'bun', entrypoint: 'src/grpc.ts', controller: 'BillingGrpc'
+      });
+      expect(normalizeInterfaceInput({})).toStrictEqual({
+        type: 'http-rest', framework: '', entrypoint: '', controller: ''
+      });
+      // Unknown non-empty types are kept verbatim (lossless migration
+      // precedent) — a newer tab vocabulary never loses data on import.
+      expect(normalizeInterfaceInput({ type: 'graphql' }).type).toBe('graphql');
+      expect(normalizeInterfaceInput(null)).toStrictEqual({
+        type: 'http-rest', framework: '', entrypoint: '', controller: ''
+      });
+    });
+
+    it('normalizeServiceConfigurationInput applies the Contract 2 defaults and keeps unknown enum values verbatim', () => {
+      expect(normalizeServiceConfigurationInput(undefined)).toStrictEqual({
+        serviceKind: 'rest-api',
+        runMode: 'dedicated-server',
+        cloudProvider: 'aws',
+        staticAssetsPath: '',
+        ports: { rest: 3000, websocket: 3001, grpc: 3002 }
+      });
+      const normalized = normalizeServiceConfigurationInput({
+        serviceKind: 'grpc-rest-api',
+        runMode: 'container',
+        cloudProvider: 'self-hosted',
+        staticAssetsPath: ' public ',
+        ports: { rest: '8080', websocket: 'not-a-port', grpc: 8082 }
+      });
+      expect(normalized).toStrictEqual({
+        serviceKind: 'grpc-rest-api',
+        runMode: 'container',
+        // `self-hosted` is a UI value outside the Contract 2 enum: kept
+        // verbatim (lossless), for the JUM-544 validation to flag.
+        cloudProvider: 'self-hosted',
+        staticAssetsPath: 'public',
+        ports: { rest: 8080, websocket: 3001, grpc: 8082 }
+      });
+    });
+
+    it('normalizeRuntimeEnvironmentInput defaults the selection and isolates the values object', () => {
+      expect(normalizeRuntimeEnvironmentInput(undefined)).toStrictEqual({
+        environment: 'dev', fileName: '.env.dev', values: {}
+      });
+      const source = {
+        environment: ' staging ',
+        fileName: ' .env.staging ',
+        values: { JUMENTIX_HTTP_FRAMEWORK: 'fastify' }
+      };
+      const normalized = normalizeRuntimeEnvironmentInput(source);
+      expect(normalized).toStrictEqual({
+        environment: 'staging',
+        fileName: '.env.staging',
+        values: { JUMENTIX_HTTP_FRAMEWORK: 'fastify' }
+      });
+      // A copy, not the document's object — later mutation cannot alias back.
+      normalized.values.JUMENTIX_HTTP_FRAMEWORK = 'express';
+      expect(source.values.JUMENTIX_HTTP_FRAMEWORK).toBe('fastify');
+      // A non-object values section degrades to an empty map, not a throw.
+      expect(normalizeRuntimeEnvironmentInput({ values: ['oops'] }).values).toStrictEqual({});
+    });
+
+    it('normalizeStatePayload returns the full-suite sections with defaults for a legacy domain-only payload', () => {
+      const normalized = normalizeStatePayload({ domains: [], relationships: [] });
+      expect(normalized.interfaces).toStrictEqual([]);
+      expect(normalized.serviceConfiguration).toStrictEqual({
+        serviceKind: 'rest-api',
+        runMode: 'dedicated-server',
+        cloudProvider: 'aws',
+        staticAssetsPath: '',
+        ports: { rest: 3000, websocket: 3001, grpc: 3002 }
+      });
+      expect(normalized.runtimeEnvironment).toStrictEqual({
+        environment: 'dev', fileName: '.env.dev', values: {}
+      });
+      expect(normalized.deployments).toStrictEqual([]);
+    });
+
+    it('normalizeStatePayload full-suite idempotence: a normalized payload survives a second pass unchanged', () => {
+      const once = normalizeStatePayload({
+        domains: [],
+        relationships: [],
+        interfaces: [{
+          type: 'websocket', framework: 'bun', entrypoint: 'src/ws.ts', controller: 'Events'
+        }],
+        serviceConfiguration: {
+          serviceKind: 'websocket-rest-api',
+          runMode: 'virtual-machine',
+          cloudProvider: 'azure',
+          staticAssetsPath: 'assets',
+          ports: { rest: 4000, websocket: 4001, grpc: 4002 }
+        },
+        runtimeEnvironment: {
+          environment: 'ci', fileName: '.env.ci', values: { JUMENTIX_DATABASE_DRIVER: 'InMemory' }
+        },
+        deployments: [{
+          name: 'edge', type: 'lambda', region: 'us-east-1', runtime: 'node22'
+        }]
+      });
+      const twice = normalizeStatePayload(once);
+      expect(twice).toStrictEqual(once);
+      // Not vacuous: the legacy deployment migrated forward on the first pass.
+      expect(once.deployments[0].deployTarget).toBe('lambda');
     });
   });
 

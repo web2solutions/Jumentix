@@ -171,15 +171,34 @@ esperadas.
 
 ### Travessias simétricas (sem perdas, deep-equal assertado)
 
-- **JSON** (`buildJsonExportDocument` → `normalizeStatePayload`):
-  `domains`, `relationships` e `view` fazem ida e volta com deep-equal, e a
-  exportação é idempotente. A fronteira é documentada e assertada: o documento
-  JSON carrega exatamente `{ domains, relationships, view }` — seleções e
-  `idCounter` não fazem parte dele e são recomputados na importação.
+- **JSON** (`buildJsonExportDocument` → `buildStateFromSuiteExport` sobre
+  `normalizeStatePayload`): o documento versionado de suíte completa
+  (JUM-547) — `domains`, `relationships`, `view`, `interfaces`,
+  `serviceConfiguration` e `deployments` fazem ida e volta com deep-equal, e
+  a exportação é idempotente. A fronteira é documentada e assertada: seleções
+  e `idCounter` não fazem parte do documento e são recomputados na
+  importação, e `runtimeEnvironment` atravessa apenas como a *seleção* de
+  ambiente (veja a seção JUM-547 abaixo). Documentos anteriores ao JUM-547,
+  só de domínio (`{ domains, relationships, view }`, sem `kind`/`version`),
+  importam normalmente com as seções ausentes preenchidas com padrões; um
+  documento com seção desconhecida no nível raiz, `version` major mais recente
+  ou `kind` diferente de `service-management-suite` falha claramente em vez
+  de importar pela metade.
 - **Pacote de domínio** (`buildDomainPackageDocument` → `buildDomainFromPackage`):
-  um pacote faz ida e volta com deep-equal em um modelo vazio; a reimportação
-  adiciona sufixo ao nome do domínio (`Billing_2`, `Billing_3`, …) em vez de
-  colidir.
+  um pacote faz ida e volta com deep-equal em um modelo vazio, carimbado com
+  proveniência (JUM-492): o documento v2 carrega um bloco `package`
+  (`{ name, version, dependencies }`), e o conteúdo importado registra
+  `context.provenance`/`meta.provenance` (`{ package, version }`).
+  Reimportações são conscientes de versão: a mesma versão com conteúdo igual
+  é no-op, a mesma versão com conteúdo diferente e downgrades são recusados,
+  e uma versão mais nova faz merge determinístico — mudanças aditivas e de
+  metadados são aplicadas, e remoções, estreitamentos, RBAC e invariantes
+  mantêm o conteúdo existente e são listados na prévia de merge para decisão
+  do usuário (Requirement 126 Contrato 3). Faixas de versão de dependências
+  são resolvidas contra o registro de pacotes instalados; dependências
+  ausentes ou incompatíveis são reportadas, e um ciclo que o pacote de
+  entrada fecharia é recusado. A recomputação de ids do JUM-617 continua
+  guardando o caminho de anexação (um pacote diferente com ids colidindo).
 
 ### A travessia OAS: ponto fixo, lista de perdas vazia
 
@@ -324,27 +343,42 @@ divergir, a suíte reprova. É também por isso que o `x-rbac` faz ida e volta
 sem perdas (Garantia 4): a política exportada é a normalizada e aplicável, e
 o importador a reconstrói contra o mesmo contrato.
 
-## O que NÃO atravessa hoje: exportação de suíte completa (JUM-547, em aberto)
+## Exportação de suíte completa e a decisão sobre `runtimeEnvironment` (JUM-547, entregue)
 
-Atualmente, exportação e importação carregam **apenas o modelo de domínio**.
-As outras três abas — `interfaces`, `serviceConfiguration`,
-`runtimeEnvironment` — vivem no documento fixado `service-management.v1` —
-historicamente o payload do localStorage, agora armazenado no Cana sob a mesma
-chave após a migração unidirecional entregue do JUM-484 (Requisito 126,
-Contrato 2) —, mas não atravessam nenhum caminho de
-exportação/importação: um bundle compartilhado descreve uma aba de um design
-de quatro abas, e nada avisa o usuário ainda.
+Exportação e importação agora carregam **as quatro abas**, não apenas o
+modelo de domínio. A exportação JSON (`domain-designer.json`) é o documento
+versionado de suíte completa: `{ kind: "service-management-suite",
+version: "2.0.0", domains, relationships, interfaces, serviceConfiguration,
+runtimeEnvironment, deployments, view }` — as mesmas seções que o documento
+fixado `service-management.v1` persiste no Cana (Requisito 126, Contrato 2),
+menos as seleções de sessão e o `idCounter`. Um modelo desenhado nas quatro
+abas exporta e reimporta com todas as abas intactas; um bundle exportado
+antes desta mudança (o formato só de domínio, sem `kind`/`version`) importa
+normalmente com as seções ausentes preenchidas com padrões, e um bundle com
+seção desconhecida ou versão major mais recente falha claramente em vez de
+ter sucesso parcial.
 
-A decisão em aberto é o tratamento de `runtimeEnvironment`
-([JUM-547](https://linear.app/jumentix/issue/JUM-547/feature-full-suite-exportimport-carry-interfaces-service-configuration)):
-ele espelha conteúdo real de `.env`, então um bundle de exportação contendo os
-valores **é um arquivo que pode carregar configuração para fora da máquina**.
-As posições candidatas — exportar apenas a *seleção* de ambiente; exportar
-valores restritos à camada editável; ou omitir `runtimeEnvironment`
-inteiramente — estão registradas na issue, e a decisão pertence ao requisito
-do Requisito 126. Até que ela chegue, a postura efetiva é a terceira:
-**nenhum valor de ambiente de runtime sai em nenhum artefato exportado hoje**
-— o que também significa que nenhum segredo sai.
+A decisão registrada é o tratamento de `runtimeEnvironment`
+([JUM-547](https://linear.app/jumentix/issue/JUM-547/feature-full-suite-exportimport-carry-interfaces-service-configuration),
+Requisito 126 Contrato 3): ele espelha conteúdo real de `.env`, então um
+bundle de exportação contendo os valores **seria um arquivo que pode carregar
+configuração para fora da máquina**. Das três posições candidatas — exportar
+apenas a seleção; exportar valores restritos à camada editável; omitir a
+seção inteiramente — a postura entregue é a primeira: **o bundle carrega a
+seleção de ambiente (`environment`, `fileName`), mas nunca os `values`**, e a
+importação restaura a seleção preservando os valores da máquina local. O
+ambiente de runtime é uma propriedade de onde o designer está rodando; a
+seleção é metadado de design que vale compartilhar. Como nenhum valor
+atravessa, **nenhum segredo pode sair em um bundle** — a garantia pela qual a
+terceira posição era preferida, mantida sem perder a seleção. A suíte prova
+isso assertando que o documento no fio não contém nenhuma string de valor.
+
+**Comprovado por:**
+[`designerRoundTrip.test.ts`](../../apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts)
+(deep-equal de suíte completa, valores-nunca-atravessam, compatibilidade
+retroativa/para frente) e
+[`designerExporters.test.ts`](../../apps/backend-template/test/unit/service-management/designerExporters.test.ts)
+(formato do documento).
 
 ## Referências
 
@@ -353,9 +387,9 @@ do Requisito 126. Até que ela chegue, a postura efetiva é a terceira:
 - Codegen: [`hexagonalCodegen.js`](../../apps/service-management/src/codegen/hexagonalCodegen.js)
 - Validação de modelo / portão de exportação: [`modelValidation.js`](../../apps/service-management/src/validation/modelValidation.js), [`script.js`](../../apps/service-management/script.js)
 - Espelho RBAC: [`rbacContract.js`](../../apps/service-management/src/model/rbacContract.js); contrato: [Contrato de autorização de tenant e RBAC](./TENANT-RBAC-AUTHORIZATION-CONTRACT.pt-BR.md)
-- Suítes: [`designerRoundTrip.test.ts`](../../apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts), [`designerOasCompliance.test.ts`](../../apps/backend-template/test/unit/service-management/designerOasCompliance.test.ts), [`designerAsyncApiExport.test.ts`](../../apps/backend-template/test/unit/service-management/designerAsyncApiExport.test.ts), [`hexagonalCodegen.test.ts`](../../apps/backend-template/test/unit/service-management/hexagonalCodegen.test.ts), [`rbacContract.test.ts`](../../apps/backend-template/test/unit/service-management/rbacContract.test.ts), [`modelValidation.test.ts`](../../apps/backend-template/test/unit/service-management/modelValidation.test.ts)
+- Suítes: [`designerRoundTrip.test.ts`](../../apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts), [`designerPackageVersioning.test.ts`](../../apps/backend-template/test/unit/service-management/designerPackageVersioning.test.ts), [`designerOasCompliance.test.ts`](../../apps/backend-template/test/unit/service-management/designerOasCompliance.test.ts), [`designerAsyncApiExport.test.ts`](../../apps/backend-template/test/unit/service-management/designerAsyncApiExport.test.ts), [`hexagonalCodegen.test.ts`](../../apps/backend-template/test/unit/service-management/hexagonalCodegen.test.ts), [`rbacContract.test.ts`](../../apps/backend-template/test/unit/service-management/rbacContract.test.ts), [`modelValidation.test.ts`](../../apps/backend-template/test/unit/service-management/modelValidation.test.ts)
 - Portões: [`check-oas-route-resolution.js`](../../ci-cd/check-oas-route-resolution.js), [`check-hexagonal-boundaries.js`](../../ci-cd/check-hexagonal-boundaries.js), [`run-unit-tests.js`](../../ci-cd/run-unit-tests.js)
 - Alvos canônicos: [`spec/1.0.0.yml`](../../spec/1.0.0.yml), [`spec/asyncapi/1.0.0.websocket.yml`](../../spec/asyncapi/1.0.0.websocket.yml), [`spec/asyncapi/1.0.0.grpc.yml`](../../spec/asyncapi/1.0.0.grpc.yml), [`spec/asyncapi/async-api.proto`](../../spec/asyncapi/async-api.proto)
 - Requisitos: [036](../../.agents/requirements/software/036-openapi-port-objects-contracts.md) (objetos de porta), [026](../../.agents/requirements/software/026-openapi31-data-entity-model-compliance.md) (conformidade de entidades OAS 3.1), [126](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md) (ownership e contratos públicos, Contratos 2–3)
 - Documentos irmãos da cadeia E: [Aplicação Service Management](./SERVICE-MANAGEMENT-APPLICATION.pt-BR.md), [Arquitetura de módulos do Service Management e contrato da porta IDesignerStore](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.pt-BR.md), [Funcionalidades e uso do Domain Designer](./DOMAIN-DESIGNER-FEATURES-AND-USAGE.pt-BR.md)
-- Linear: [JUM-474](https://linear.app/jumentix/issue/JUM-474/feature-oas-31-export-compliant-with-req-036-and-route-resolution), [JUM-475](https://linear.app/jumentix/issue/JUM-475/feature-asyncapi-and-proto-exports-targeting-canonical-specasyncapi), [JUM-476](https://linear.app/jumentix/issue/JUM-476/feature-codegen-preview-and-boilerplate-bundle-emit-hexagonal-layout), [JUM-477](https://linear.app/jumentix/issue/JUM-477/feature-rbac-editor-aligned-to-tenant-rbac-authorization-contract), [JUM-478](https://linear.app/jumentix/issue/JUM-478/feature-lossless-round-trip-import-of-spec100yml-with-full-meta), [JUM-470](https://linear.app/jumentix/issue/JUM-470), [JUM-471](https://linear.app/jumentix/issue/JUM-471/test-bun-unit-suite-exportersimporters-round-trip), [JUM-547](https://linear.app/jumentix/issue/JUM-547/feature-full-suite-exportimport-carry-interfaces-service-configuration)
+- Linear: [JUM-474](https://linear.app/jumentix/issue/JUM-474/feature-oas-31-export-compliant-with-req-036-and-route-resolution), [JUM-475](https://linear.app/jumentix/issue/JUM-475/feature-asyncapi-and-proto-exports-targeting-canonical-specasyncapi), [JUM-476](https://linear.app/jumentix/issue/JUM-476/feature-codegen-preview-and-boilerplate-bundle-emit-hexagonal-layout), [JUM-477](https://linear.app/jumentix/issue/JUM-477/feature-rbac-editor-aligned-to-tenant-rbac-authorization-contract), [JUM-478](https://linear.app/jumentix/issue/JUM-478/feature-lossless-round-trip-import-of-spec100yml-with-full-meta), [JUM-470](https://linear.app/jumentix/issue/JUM-470), [JUM-471](https://linear.app/jumentix/issue/JUM-471/test-bun-unit-suite-exportersimporters-round-trip), [JUM-547](https://linear.app/jumentix/issue/JUM-547/feature-full-suite-exportimport-carry-interfaces-service-configuration), [JUM-492](https://linear.app/jumentix/issue/JUM-492/feature-domain-package-versioning-with-semantic-conflict-resolution)

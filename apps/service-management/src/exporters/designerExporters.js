@@ -28,7 +28,9 @@ import {
   getDefaultRbacPolicy,
   normalizeContractInput,
   normalizeRbacPolicyInput,
-  parseCommaSeparated
+  parseCommaSeparated,
+  SUITE_EXPORT_KIND,
+  SUITE_EXPORT_VERSION
 } from '../state/designerState.js';
 import {
   entityLabel,
@@ -40,6 +42,7 @@ import {
 } from '../model/modelQueries.js';
 import { buildHexagonalBundle } from '../codegen/hexagonalCodegen.js';
 import { buildAsyncApiTransportDocument } from './asyncApiExporters.js';
+import { parsePackageDependency } from '../packages/packageVersioning.js';
 
 /**
  * The default per-entity RBAC policy, captured once: `buildOasDocument`
@@ -49,9 +52,38 @@ import { buildAsyncApiTransportDocument } from './asyncApiExporters.js';
  */
 const DEFAULT_RBAC_POLICY = getDefaultRbacPolicy();
 
-/** `exportAsJson` payload: `{ domains, relationships, view }`. */
+/**
+ * `exportAsJson` payload: the full-suite document (JUM-547, Requirement 126
+ * Contract 3). The pre-JUM-547 shape carried `{ domains, relationships, view }`
+ * only — a four-tab design exported as one tab. The document now carries all
+ * four tabs, schema-versioned (`kind` + `version`, the
+ * boilerplate-bundle/domain-package convention), so import can tell a legacy
+ * domain-only document (no `kind`/`version`) from the full-suite shape and
+ * fail clearly on a document newer than the importer.
+ *
+ * `runtimeEnvironment` follows the decision recorded in Requirement 126: the
+ * bundle carries the environment *selection* (`environment`, `fileName`) but
+ * never `values` — those mirror real `.env` contents of the machine the
+ * designer runs on (editable and read-only tiers; the never-exposed tier
+ * never even enters state), and a bundle containing them could carry
+ * configuration off the machine. Selections and `idCounter` stay out of the
+ * document, as before.
+ */
 export function buildJsonExportDocument(state) {
-  return { domains: state.domains, relationships: state.relationships, view: state.view };
+  return {
+    kind: SUITE_EXPORT_KIND,
+    version: SUITE_EXPORT_VERSION,
+    domains: state.domains,
+    relationships: state.relationships,
+    interfaces: Array.isArray(state.interfaces) ? state.interfaces : [],
+    serviceConfiguration: state.serviceConfiguration,
+    runtimeEnvironment: {
+      environment: String(state.runtimeEnvironment?.environment || '').trim() || 'dev',
+      fileName: String(state.runtimeEnvironment?.fileName || '').trim() || '.env.dev'
+    },
+    deployments: Array.isArray(state.deployments) ? state.deployments : [],
+    view: state.view
+  };
 }
 
 /** `exportAsMarkdown` document text (the full markdown, newline-joined). */
@@ -163,10 +195,24 @@ export function buildBoilerplateBundleDocument(state, generatedAt = new Date().t
 
 /** `exportAsPackage` payload (single-domain package). */
 export function buildDomainPackageDocument(domain, exportedAt = new Date().toISOString()) {
+  // JUM-492 (Requirement 126 Contract 3): the v2 document declares the
+  // package identity — name, semantic version and dependency ranges — so the
+  // import flow can resolve the dependency graph and classify conflicts.
+  // The identity falls back to the domain name and 1.0.0 for a domain that
+  // was never imported or stamped; the document stays additive over the v1
+  // shape (kind/version/exportedAt/domain), which the importer still reads.
+  const context = domain?.context || {};
   return {
     kind: 'domain-package',
-    version: '1.0.0',
+    version: '2.0.0',
     exportedAt,
+    package: {
+      name: String(context.packageName || domain?.name || '').trim() || 'package',
+      version: String(context.packageVersion || '').trim() || '1.0.0',
+      dependencies: (Array.isArray(context.packageDependencies) ? context.packageDependencies : [])
+        .map(parsePackageDependency)
+        .filter(Boolean)
+    },
     domain
   };
 }

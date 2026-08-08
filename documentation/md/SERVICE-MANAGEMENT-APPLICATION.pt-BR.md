@@ -34,6 +34,10 @@ runtime, a prévia do ecossistema PM2 e o Deploy Management, com a matriz de
 capacidades compartilhada do Requisito 059 e as regras de ciclo de vida — está
 documentado em
 [Console de operações do Service Management](./SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.pt-BR.md).
+A adoção do design system, o modelo de teclado e leitor de tela e o shell PWA
+instalável (instalação, atualizações, recuperação e a fronteira de
+armazenamento) estão documentados em
+[Design system e shell PWA do Service Management](./SERVICE-MANAGEMENT-DESIGN-SYSTEM-PWA.pt-BR.md).
 A adoção do Cana pelo lado do usuário — onde os dados do designer vivem, a
 migração unidirecional, a matriz offline/de estados e por que a exportação é o
 único caminho de recuperação — está documentada em
@@ -122,6 +126,14 @@ migração unidirecional, a matriz offline/de estados e por que a exportação �
      gerenciados por PM2) são rejeitados na superfície de status não
      bloqueante com a restrição violada nomeada. Alvos legados persistidos
      antes deste alinhamento migram no carregamento.
+   - Ciclo de vida (JUM-546): os alvos são editáveis in-place e duplicáveis —
+     uma duplicata é uma cópia profunda independente renomeada pela regra
+     ` (copy)`. O portão de adição/edição também impõe as regras de campo:
+     nome obrigatório e único; padrão de runtime nome-mais-versão
+     (`nodejs22.x`); e região obrigatória em alvos de nuvem (opcional no
+     servidor dedicado self-hosted, onde o campo carrega informação de host).
+     Dicas por tipo de alvo orientam o formulário, e toda rejeição nomeia a
+     razão na superfície de status.
 
 Guia de uso detalhado:
 

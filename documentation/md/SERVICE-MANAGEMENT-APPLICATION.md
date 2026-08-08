@@ -29,6 +29,10 @@ The operations console — Service Configuration, the runtime-environment
 editor, the PM2 ecosystem preview and Deploy Management, with the shared
 Requirement 059 capabilities matrix and the lifecycle rules — is documented in
 [Service Management Operations Console](./SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.md).
+The design-system adoption, the keyboard and screen-reader model, and the
+installable PWA shell (installation, updates, recovery and the storage
+boundary) are documented in
+[Service Management Design System and PWA Shell](./SERVICE-MANAGEMENT-DESIGN-SYSTEM-PWA.md).
 The Cana adoption from the user's side — where the designer's data lives, the
 one-way migration, the offline/state matrix and why export is the only
 recovery path — is documented in
@@ -117,6 +121,13 @@ recovery path — is documented in
      PM2-managed targets) are rejected on the non-blocking status surface
      with the violated constraint named. Legacy targets persisted before this
      alignment migrate forward on load.
+   - Lifecycle (JUM-546): targets are editable in place and duplicable — a
+     duplicate is an independent deep copy renamed by the ` (copy)` rule. The
+     add/edit gate also enforces the field rules: a required, unique name; a
+     name-plus-version runtime pattern (`nodejs22.x`); and a region required
+     on cloud targets (optional on the self-hosted dedicated server, where
+     the field carries host information). Target-type-aware hints guide the
+     form, and every rejection names the reason on the status surface.
 
 Detailed usage guide:
 

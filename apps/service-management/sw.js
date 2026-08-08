@@ -51,7 +51,7 @@
 
 /* eslint-env serviceworker, node */
 
-const SHELL_VERSION = '0.3.0';
+const SHELL_VERSION = '0.4.1';
 
 // Prefix shared with src/pwa/pwaShell.js (the page-side reset deletes by
 // prefix). The two copies cannot import each other — a classic worker has no
@@ -80,9 +80,14 @@ const SHELL_ASSETS = [
   './src/exporters/designerExporters.js',
   './src/importers/designerImporters.js',
   './src/model/deployCapabilityMatrix.js',
-  './src/model/interfaceFrameworkMatrix.js',
   './src/model/modelQueries.js',
   './src/model/rbacContract.js',
+  // Eagerly imported by the importer/exporter chain (JUM-492); without it
+  // the offline shell could not resolve the module graph.
+  './src/packages/packageVersioning.js',
+  // Eagerly imported by script.js (JUM-548 first-run sample loader); without
+  // it the offline shell could not resolve the module graph.
+  './src/model/sampleModel.js',
   './src/pwa/pwaShell.js',
   './src/state/designerState.js',
   // Eagerly imported by script.js (JUM-485); without it the offline shell
@@ -96,10 +101,8 @@ const SHELL_ASSETS = [
   './src/ui/inspectors.js',
   './src/ui/tabs.js',
   './src/validation/asyncApi30Validation.js',
+  './src/validation/deployTargetLifecycleValidation.js',
   './src/validation/deployTargetValidation.js',
-  // Eagerly imported by script.js and inspectors.js (JUM-545); without it the
-  // offline shell could not resolve the module graph.
-  './src/validation/interfaceAdapterValidation.js',
   './src/validation/modelValidation.js',
   './src/validation/serviceConfigurationValidation.js',
   // The vendored Cana browser bundle (JUM-484) — the designer's sole store
@@ -108,7 +111,9 @@ const SHELL_ASSETS = [
   // ci-cd/sync-service-management-cana-bundle.js, which the browser smoke
   // runs before booting the server; the smoke also requests every precached
   // entry against the real server, generated ones included.
-  './vendor/cana/index.js'
+  './vendor/cana/index.js',
+  './src/model/interfaceFrameworkMatrix.js',
+  './src/validation/interfaceAdapterValidation.js',
 ];
 
 const SKIP_WAITING_MESSAGE_TYPE = 'SKIP_WAITING';

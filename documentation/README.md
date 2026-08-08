@@ -51,6 +51,8 @@ For engineers maintaining and evolving Jumentix:
   ([pt-BR](./md/SERVICE-MANAGEMENT-CONTRACT-PARITY.pt-BR.md))
 - [Service Management Operations Console](./md/SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.md)
   ([pt-BR](./md/SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.pt-BR.md))
+- [Service Management Design System and PWA Shell](./md/SERVICE-MANAGEMENT-DESIGN-SYSTEM-PWA.md)
+  ([pt-BR](./md/SERVICE-MANAGEMENT-DESIGN-SYSTEM-PWA.pt-BR.md))
 - [Service Management Cana Adoption, Migration and Offline Behaviour](./md/SERVICE-MANAGEMENT-CANA-ADOPTION.md)
   ([pt-BR](./md/SERVICE-MANAGEMENT-CANA-ADOPTION.pt-BR.md))
 

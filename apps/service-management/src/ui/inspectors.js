@@ -40,6 +40,7 @@
 
 import { FIELD_TYPES } from '../state/designerState.js';
 import { deriveTenantScoped } from '../model/rbacContract.js';
+import { isSampleDomain } from '../model/sampleModel.js';
 import { collectServiceConfigurationIssues } from '../validation/serviceConfigurationValidation.js';
 import { collectDeployTargetIssues } from '../validation/deployTargetValidation.js';
 import {
@@ -73,7 +74,10 @@ import {
  * `loadSchemaBaseline()`, `showStatus(message, severity)` (JUM-543
  * non-blocking status surface — replaces the monolith's window.alert),
  * `getPm2EcosystemPreview()` (JUM-480 — the latest `/api/runtime/pm2-ecosystem`
- * snapshot, or null before the first load).
+ * snapshot, or null before the first load),
+ * `editDeployment(index)` / `duplicateDeployment(index)` (JUM-546 deploy
+ * target lifecycle) and `syncDeploymentEditStateAfterRemoval(index)` (keeps an
+ * in-flight deploy-target edit consistent when the list removes an entry).
  */
 export function createInspectors({ dom, state, interaction, actions }) {
   const {
@@ -88,7 +92,10 @@ export function createInspectors({ dom, state, interaction, actions }) {
     renderRuntimeEnvironment,
     loadSchemaBaseline,
     showStatus,
-    getPm2EcosystemPreview
+    getPm2EcosystemPreview,
+    editDeployment,
+    duplicateDeployment,
+    syncDeploymentEditStateAfterRemoval
   } = actions;
 
   function getSelectedDomain() {
@@ -103,6 +110,14 @@ export function createInspectors({ dom, state, interaction, actions }) {
       btn.type = 'button';
       btn.className = state.selectedDomainId === domain.id ? 'active' : '';
       btn.textContent = domain.name;
+      // JUM-548: sample-loaded domains carry a visible marker so first-run
+      // content is always distinguishable from the user's own work.
+      if (isSampleDomain(domain)) {
+        const badge = document.createElement('span');
+        badge.className = 'sample-badge';
+        badge.textContent = 'sample';
+        btn.appendChild(badge);
+      }
       btn.onclick = () => setSelectedDomain(domain.id);
       li.appendChild(btn);
       dom.domainList.appendChild(li);
@@ -663,6 +678,10 @@ export function createInspectors({ dom, state, interaction, actions }) {
 
   function renderInterfaceAdapters() {
     if (!dom.interfaceAdapterList) return;
+    // JUM-548: the tab's guided empty state tracks the list on every render
+    // path, including the partial renders of the delete buttons.
+    if (dom.interfaceDesignerEmptyState) {
+      dom.interfaceDesignerEmptyState.hidden = state.interfaces.length > 0;
     if (editingAdapterIndex !== null
       && (editingAdapterIndex < 0 || editingAdapterIndex >= state.interfaces.length)) {
       editingAdapterIndex = null;
@@ -717,6 +736,7 @@ export function createInspectors({ dom, state, interaction, actions }) {
       }
       dom.interfaceAdapterList.appendChild(item);
     });
+  }
   }
 
   function renderServiceConfiguration() {
@@ -824,6 +844,10 @@ export function createInspectors({ dom, state, interaction, actions }) {
 
   function renderDeployments() {
     if (!dom.deployTargetList) return;
+    // JUM-548: same empty-state tracking as renderInterfaceAdapters.
+    if (dom.deployManagementEmptyState) {
+      dom.deployManagementEmptyState.hidden = state.deployments.length > 0;
+    }
     dom.deployTargetList.innerHTML = '';
     state.deployments.forEach((deployment, index) => {
       const item = document.createElement('li');
@@ -848,12 +872,28 @@ export function createInspectors({ dom, state, interaction, actions }) {
         item.appendChild(warning);
       }
 
+      // JUM-546 lifecycle: edit loads the entry into the form (the add gate
+      // becomes the save gate); duplicate stores an independent deep copy
+      // renamed by the " (copy)" rule.
+      const editBtn = document.createElement('button');
+      editBtn.type = 'button';
+      editBtn.textContent = 'Edit';
+      editBtn.onclick = () => editDeployment(index);
+      item.appendChild(editBtn);
+
+      const duplicateBtn = document.createElement('button');
+      duplicateBtn.type = 'button';
+      duplicateBtn.textContent = 'Duplicate';
+      duplicateBtn.onclick = () => duplicateDeployment(index);
+      item.appendChild(duplicateBtn);
+
       const removeBtn = document.createElement('button');
       removeBtn.type = 'button';
       removeBtn.textContent = 'Delete';
       removeBtn.onclick = () => {
         withPersist(() => {
           state.deployments.splice(index, 1);
+          syncDeploymentEditStateAfterRemoval(index);
           renderDeployments();
         });
       };

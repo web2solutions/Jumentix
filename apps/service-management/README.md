@@ -23,8 +23,28 @@ Detailed feature usage:
 - [Module Architecture and IDesignerStore Port Contract](../../documentation/md/SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.md)
 - [Contract Parity Guarantees](../../documentation/md/SERVICE-MANAGEMENT-CONTRACT-PARITY.md)
 - [Operations Console](../../documentation/md/SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.md)
+- [Design System and PWA Shell](../../documentation/md/SERVICE-MANAGEMENT-DESIGN-SYSTEM-PWA.md)
 - [Cana Adoption, Migration and Offline Behaviour](../../documentation/md/SERVICE-MANAGEMENT-CANA-ADOPTION.md)
 - [Service Management Technical Documentation](./documentation/README.md)
+
+## First Run
+
+On a fresh profile the designer boots to an empty model and each tab shows a
+guided empty state (JUM-548) that names the tab's first action — no silent
+pre-populated template. The Domain Designer's first action is the **Load
+Sample Model** button (also available later in the Export panel): one click
+loads a realistic identity domain — Users and Organization, the same
+resources `spec/1.0.0.yml` declares — with relationships, per-entity RBAC, a
+message contract, invariants and OAS `oneOf` + discriminator composition.
+The sample passes the export quality gate and round-trips through
+export/import, so it doubles as a live demonstration of those crossings.
+
+Sample content is always distinguishable from your work: every sample id
+carries the `sample-` prefix and sample domains show a "sample" badge in the
+domain list. Loading the sample over an existing model asks for explicit
+confirmation (Undo restores the previous model afterwards), and deleting the
+sample is ordinary domain/entity deletion. Content is defined in
+`src/model/sampleModel.js`.
 
 ## Tabs
 
@@ -45,8 +65,18 @@ Detailed feature usage:
    - Exporters: JSON, OpenAPI 3.1, Markdown, JSON Schema, AsyncAPI 3.0 per transport
      (`<version>.websocket.yml` / `<version>.grpc.yml`, canonical `spec/asyncapi/`
      conventions), gRPC proto (`async-api.proto`) and boilerplate bundle.
+   - The JSON export is the versioned full-suite document (JUM-547): it carries all
+     four tabs (`domains`/`relationships`, `interfaces`, `serviceConfiguration`,
+     `deployments`) plus the runtime-environment selection — never its values — and
+     Import JSON restores them, accepting pre-JUM-547 domain-only files and refusing
+     unknown sections or newer major versions clearly.
    - OpenAPI composition controls (`oneOf`, `allOf`, `anyOf`, external `$ref`, discriminator) per entity.
-   - Domain package export/import for reusable model sharing.
+   - Domain package export/import for reusable model sharing — versioned
+     (JUM-492): packages carry a semantic version and dependency ranges,
+     imported content is stamped with provenance, and re-imports resolve
+     deterministically (no-op on identical version, refusal on same-version
+     conflict or downgrade, merge preview with user decision for RBAC,
+     invariants, removals and narrowings on a newer version).
    - Mini-map navigation and large-canvas performance mode.
 2. **Communication Interface Designer**
    - Register inbound interface adapters (`HTTP/REST`, `gRPC`, `WebSocket`, `SSE`).
@@ -96,6 +126,12 @@ Detailed feature usage:
      serverless targets are rejected on the status surface with the
      constraint named. Targets persisted before this alignment migrate
      forward on load.
+   - Lifecycle (JUM-546): targets are editable in place and duplicable — a
+     duplicate is an independent deep copy renamed by the ` (copy)` rule. The
+     add/edit gate enforces the field rules too: unique name, a
+     name-plus-version runtime pattern (`nodejs22.x`), and region required on
+     cloud targets (optional on the self-hosted dedicated server, where the
+     field carries host information), with target-type-aware field hints.
 
 ## Design System and Accessibility
 

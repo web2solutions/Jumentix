@@ -303,6 +303,9 @@
               <input id="import-package-input" type="file" accept="application/json,.json" hidden />
             </div>
             <div class="row">
+              <button id="load-sample-btn" type="button">Load Sample Model</button>
+            </div>
+            <div class="row">
               <button id="generate-code-preview-btn" type="button">Code Preview</button>
               <button id="generate-examples-btn" type="button">Generate Examples</button>
             </div>
@@ -366,6 +369,32 @@
         </aside>
 
         <main class="workspace" id="workspace-main" tabindex="-1">
+          <!-- Guided empty state (JUM-548): first-run guidance for the Domain
+               Designer, shown while the model has no domains. Names the one
+               action that starts the flow (load the sample) and points at the
+               canvas controls, the model checks and the export gate. Toggled
+               by renderEmptyStates in script.js. -->
+          <aside class="empty-state" id="domain-designer-empty-state" hidden>
+            <h2>Start your domain model</h2>
+            <p>
+              This is the Domain Designer: model bounded contexts, entities and their fields,
+              relationships, per-entity RBAC, message contracts and OpenAPI composition on a
+              canvas with pan, zoom, snap, mini-map and undo/redo.
+            </p>
+            <p>
+              First action: load the sample model — a small identity domain (Users and Organization,
+              the same resources <code>spec/1.0.0.yml</code> declares) that exercises relationships,
+              RBAC, a message contract and composition. Or type a domain name in the Domains panel
+              and press Add to start from scratch.
+            </p>
+            <button id="domain-designer-empty-load-sample-btn" type="button">Load Sample Model</button>
+            <p class="hint">
+              The sample is marked "sample" in the domain list and is safe to delete — it never mixes
+              with your work. Once you have a model, run "Validate Model" in the Model Check panel;
+              the export gate refuses exports while critical issues exist. Canvas controls are listed
+              in the Legend panel (Space + drag to pan, Ctrl/Cmd + wheel to zoom).
+            </p>
+          </aside>
           <header class="workspace-header">
             <div id="selection-status" role="status" aria-live="polite">No domain selected</div>
             <div class="workspace-actions">
@@ -403,6 +432,17 @@
       <div class="tab-body">
         <h2>Communication Interface Designer</h2>
         <p class="hint">Configure inbound adapters and the controller operation map per interface.</p>
+        <!-- Guided empty state (JUM-548): honest about the tab's scope — it
+             records adapter declarations, it does not generate servers. -->
+        <aside class="empty-state" id="interface-designer-empty-state" hidden>
+          <h3>No interface adapters yet</h3>
+          <p>
+            This tab records how the outside world reaches the service: inbound adapters
+            (HTTP/REST, gRPC, WebSocket, SSE) with their framework/runtime, entrypoint file and
+            controller mapping. It declares the wiring — it does not generate the server code.
+          </p>
+          <p>First action: fill the form below and press Add Adapter.</p>
+        </aside>
         <section class="panel">
           <h3>Add Interface Adapter</h3>
           <div class="responsive-grid">
@@ -438,6 +478,17 @@
       <div class="tab-body">
         <h2>Service Configuration</h2>
         <p class="hint">Define runtime, execution model, cloud target, and static asset behavior.</p>
+        <!-- Guided empty state (JUM-548): shown while there is no domain
+             model — the profile describes the service that model becomes. -->
+        <aside class="empty-state" id="service-config-empty-state" hidden>
+          <h3>Nothing to configure around yet</h3>
+          <p>
+            This tab describes how the service runs: service kind, execution model, cloud provider,
+            ports and runtime environment variables. It configures the runtime for the service your
+            domain model becomes — most teams design the model in the Domain Designer tab first.
+          </p>
+          <p>First action: review the Runtime Profile below and press Save Profile.</p>
+        </aside>
         <section class="panel">
           <h3>Runtime Profile</h3>
           <div class="responsive-grid">
@@ -533,7 +584,18 @@
     <section id="tab-deploy-management" class="tab-section" role="tabpanel" aria-labelledby="tab-deploy-management-btn">
       <div class="tab-body">
         <h2>Deploy Management</h2>
-        <p class="hint">Register and track deployment targets for monoliths, APIs, and function sets. Each target carries the Requirement 059 per-service metadata, validated against the deploy matrix.</p>
+        <p class="hint">Register and track deployment targets for monoliths, APIs, and function sets. Each target carries the Requirement 059 per-service metadata, validated against the deploy matrix. Targets can be edited in place and duplicated; a duplicate is an independent copy renamed by the " (copy)" rule.</p>
+        <!-- Guided empty state (JUM-548): honest about the tab's scope — a
+             registry of targets, not a deployment pipeline. -->
+        <aside class="empty-state" id="deploy-management-empty-state" hidden>
+          <h3>No deployment targets yet</h3>
+          <p>
+            This tab is a registry of deployment targets (dedicated servers, VMs, EC2, function
+            providers), each carrying its Requirement 059 metadata and validated against the deploy
+            matrix. It records where the service will run — it does not trigger deployments.
+          </p>
+          <p>First action: fill the target form below and press Add Target.</p>
+        </aside>
         <section class="panel">
           <h3>Deployment Target</h3>
           <div class="responsive-grid">
@@ -611,7 +673,9 @@
           <div class="row">
             <input id="deploy-runtime-input" type="text" placeholder="Runtime/version, e.g. nodejs22.x" aria-label="Runtime/version" />
             <button id="add-deploy-target-btn" type="button">Add Target</button>
+            <button id="cancel-deploy-target-edit-btn" type="button" hidden>Cancel Edit</button>
           </div>
+          <p id="deploy-field-hint" class="hint"></p>
           <ul id="deploy-target-list" class="list"></ul>
         </section>
       </div>
