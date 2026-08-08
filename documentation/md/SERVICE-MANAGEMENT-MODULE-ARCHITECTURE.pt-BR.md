@@ -48,22 +48,27 @@ como um módulo ES; todo o resto é alcançado por imports estáticos.
 
 ### A convenção de camadas
 
-A arquitetura é uma única regra: **a lógica pura vive em módulos livres de DOM
-sob `src/`; o acesso ao DOM vive no módulo de entrada.** O conjunto livre de
-DOM é o que pode ser testado em unidade sob Bun/Node sem shim de DOM — e o que
-o JUM-493 pode publicar — portanto a fronteira é a arquitetura. A fronteira é
-garantida por um teste: `designerState.test.ts` lê os módulos livres de DOM de
-`src/`, remove os comentários e falha se `document.` ou `window.` aparecer. O
-conjunto que o teste lê cresceu com cada extração e entrega de store; a regra
-não.
+A arquitetura é uma única regra: **a lógica pura vive em módulos livres de
+DOM; o acesso ao DOM vive no módulo de entrada.** O conjunto livre de DOM é o
+que pode ser testado em unidade sob Bun/Node sem shim de DOM — e, desde o
+JUM-493, sua casa canônica é o pacote publicável: os módulos do núcleo
+(state, model, validation, exporters, importers, packages, codegen e a porta
+`IDesignerStore`) vivem em `packages/designer-core/src/`, enquanto o `src/`
+da própria app guarda a cola de DOM e os adaptadores Cana. A SPA consome o
+pacote por especificadores `@jumentix/designer-core/…` (import map → árvore
+vendored no navegador; tsconfig paths / mapper do Jest nos testes). A
+fronteira é garantida por prova nos dois lados: o `dom-free.test.ts` varre a
+AST do pacote construído em busca de globais de DOM, e as suítes unitárias do
+designer exercem os fontes canônicos diretamente. O conjunto cresceu com cada
+extração e entrega de store; a regra não.
 
 ### Módulos atuais
 
 | Módulo | Camada | Papel |
 | --- | --- | --- |
 | `apps/service-management/script.js` | Vinculado ao DOM | Módulo de entrada: conexão de eventos, renderização, fluxos de importação/exportação. Detém toda interação com `document`/`window`. |
-| `apps/service-management/src/state/designerState.js` | Livre de DOM | Núcleo de estado e persistência: o objeto de estado, a cadeia de normalização `normalizeStatePayload`, snapshot/apply, histórico (undo/redo), `loadState`, `buildModelSnapshot`. |
-| `apps/service-management/src/store/IDesignerStore.js` | Livre de DOM, sem dependências | A porta de armazenamento: contrato + classe base. Importável sob qualquer runtime JavaScript. |
+| `packages/designer-core/src/state/designerState.js` | Livre de DOM | Núcleo de estado e persistência: o objeto de estado, a cadeia de normalização `normalizeStatePayload`, snapshot/apply, histórico (undo/redo), `loadState`, `buildModelSnapshot`. |
+| `packages/designer-core/src/store/IDesignerStore.js` | Livre de DOM, sem dependências | A porta de armazenamento: contrato + classe base. Importável sob qualquer runtime JavaScript. |
 | `apps/service-management/src/store/CanaDesignerStore.js` | Livre de DOM | O único adaptador `IDesignerStore` (JUM-483), sobre o cliente Cana — injetado, nunca importado. |
 | `apps/service-management/src/store/designerStoreFactory.js` | Livre de DOM | A costura de construção do store: `createDesignerStore()` sempre retorna `CanaDesignerStore`; o cliente Cana é a única variável. |
 | `apps/service-management/src/store/canaMigration.js` | Livre de DOM | A migração unidirecional localStorage → Cana do JUM-484 (executada no boot antes de qualquer carga de estado) e os estados de ambiente de armazenamento declarados. |
@@ -170,7 +175,7 @@ fixado pertence ao adaptador e à migração (entregue) do JUM-484.
 
 ## O contrato da porta `IDesignerStore`
 
-Fonte: [`apps/service-management/src/store/IDesignerStore.js`](../../apps/service-management/src/store/IDesignerStore.js).
+Fonte: [`packages/designer-core/src/store/IDesignerStore.js`](../../packages/designer-core/src/store/IDesignerStore.js).
 
 ### Por que a porta é moldada pelo Cana, não pelo localStorage
 
@@ -473,10 +478,10 @@ silenciosamente.
 
 ## Referências
 
-- Contrato da porta: [`apps/service-management/src/store/IDesignerStore.js`](../../apps/service-management/src/store/IDesignerStore.js)
+- Contrato da porta: [`packages/designer-core/src/store/IDesignerStore.js`](../../packages/designer-core/src/store/IDesignerStore.js)
 - Migração unidirecional + estados de ambiente: [`apps/service-management/src/store/canaMigration.js`](../../apps/service-management/src/store/canaMigration.js)
 - Adaptador Cana + fábrica: [`apps/service-management/src/store/CanaDesignerStore.js`](../../apps/service-management/src/store/CanaDesignerStore.js), [`apps/service-management/src/store/designerStoreFactory.js`](../../apps/service-management/src/store/designerStoreFactory.js)
-- Núcleo de estado: [`apps/service-management/src/state/designerState.js`](../../apps/service-management/src/state/designerState.js)
+- Núcleo de estado: [`packages/designer-core/src/state/designerState.js`](../../packages/designer-core/src/state/designerState.js)
 - Motor de sincronização multi-abas: [`apps/service-management/src/state/designerSync.js`](../../apps/service-management/src/state/designerSync.js)
 - Módulo de entrada: [`apps/service-management/script.js`](../../apps/service-management/script.js)
 - Suítes de unidade: [`designerStore.test.ts`](../../apps/backend-template/test/unit/service-management/designerStore.test.ts), [`designerState.test.ts`](../../apps/backend-template/test/unit/service-management/designerState.test.ts), [`canaDesignerStore.test.ts`](../../apps/backend-template/test/unit/service-management/canaDesignerStore.test.ts), [`designerSync.test.ts`](../../apps/backend-template/test/unit/service-management/designerSync.test.ts)

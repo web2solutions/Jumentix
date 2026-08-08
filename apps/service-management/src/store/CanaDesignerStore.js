@@ -1,4 +1,4 @@
-import { IDesignerStore } from './IDesignerStore.js';
+import { IDesignerStore } from '@jumentix/designer-core/store/IDesignerStore.js';
 
 /**
  * CanaDesignerStore — the `IDesignerStore` adapter over the Cana client
@@ -193,7 +193,7 @@ export class CanaDesignerStore extends IDesignerStore {
     }
   }
 
-  /** @returns {Promise<import('./IDesignerStore.js').DesignerStoreStatus>} */
+  /** @returns {Promise<import('@jumentix/designer-core/store/IDesignerStore.js').DesignerStoreStatus>} */
   async probe() {
     const open = await this.ensureOpen();
     if (!open.ok) return { status: 'unavailable', reason: open.reason };
@@ -219,12 +219,12 @@ export class CanaDesignerStore extends IDesignerStore {
     return { status: 'available' };
   }
 
-  /** @returns {Promise<import('./IDesignerStore.js').DesignerStoreLoadResult>} */
+  /** @returns {Promise<import('@jumentix/designer-core/store/IDesignerStore.js').DesignerStoreLoadResult>} */
   load() {
     return this.readKey(this.stateKey);
   }
 
-  /** @returns {Promise<import('./IDesignerStore.js').DesignerStoreLoadResult>} */
+  /** @returns {Promise<import('@jumentix/designer-core/store/IDesignerStore.js').DesignerStoreLoadResult>} */
   loadBaseline() {
     return this.readKey(this.baselineKey);
   }
@@ -268,13 +268,13 @@ export class CanaDesignerStore extends IDesignerStore {
    * unserializable payload throws to the caller as a programmer error —
    * exactly the port's reserved synchronous throw.
    * @param {Object} payload
-   * @returns {Promise<import('./IDesignerStore.js').DesignerStoreSaveResult>}
+   * @returns {Promise<import('@jumentix/designer-core/store/IDesignerStore.js').DesignerStoreSaveResult>}
    */
   save(payload) {
     return this.writeKey(this.stateKey, JSON.stringify(payload));
   }
 
-  /** @param {Object} snapshot @returns {Promise<import('./IDesignerStore.js').DesignerStoreSaveResult>} */
+  /** @param {Object} snapshot @returns {Promise<import('@jumentix/designer-core/store/IDesignerStore.js').DesignerStoreSaveResult>} */
   saveBaseline(snapshot) {
     return this.writeKey(this.baselineKey, JSON.stringify(snapshot));
   }
@@ -312,12 +312,12 @@ export class CanaDesignerStore extends IDesignerStore {
     };
   }
 
-  /** @returns {Promise<import('./IDesignerStore.js').DesignerStoreSaveResult>} */
+  /** @returns {Promise<import('@jumentix/designer-core/store/IDesignerStore.js').DesignerStoreSaveResult>} */
   clear() {
     return this.deleteKey(this.stateKey);
   }
 
-  /** @returns {Promise<import('./IDesignerStore.js').DesignerStoreSaveResult>} */
+  /** @returns {Promise<import('@jumentix/designer-core/store/IDesignerStore.js').DesignerStoreSaveResult>} */
   clearBaseline() {
     return this.deleteKey(this.baselineKey);
   }

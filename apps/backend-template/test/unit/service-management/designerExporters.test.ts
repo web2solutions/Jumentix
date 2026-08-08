@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
-import path from 'node:path';
 
 /**
  * Unit suite for the export builders extracted from
  * `apps/service-management/script.js` by JUM-469
- * (`apps/service-management/src/exporters/designerExporters.js`).
+ * (`packages/designer-core/src/exporters/designerExporters.js`).
  *
  * These tests pin the export artifact shapes: for the same input the
  * builders must produce output byte-identical to the pre-refactor
@@ -20,7 +19,6 @@ import path from 'node:path';
  * identity block (name, semantic version, dependency ranges), pinned here.
  */
 
-const repoRoot = path.resolve(__dirname, '../../../../..');
 const {
   buildBoilerplateBundleDocument,
   buildDomainPackageDocument,
@@ -28,9 +26,9 @@ const {
   buildJsonSchemaDocument,
   buildMarkdownExport,
   buildOasDocument
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'exporters', 'designerExporters.js'));
+} = require('@jumentix/designer-core/exporters/designerExporters.js');
 const { normalizeStatePayload } = require(
-  path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'designerState.js')
+  '@jumentix/designer-core/state/designerState.js'
 );
 
 function createState() {
@@ -749,3 +747,9 @@ describe('designer exporters (JUM-469)', () => {
     expect(markdown).toContain('- list: [], tenantScoped=false');
   });
 });
+
+// Keeps this file a module: with no import/export left, TypeScript would
+// treat it as a script and its top-level requires would share one global
+// scope with every other script-mode suite in ts-jest's program (TS2451).
+// eslint-disable-next-line jest/no-export
+export {};

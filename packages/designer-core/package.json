@@ -18,6 +18,7 @@
     "build": "bun scripts/build.js",
     "clean": "rm -rf dist",
     "test": "bun test --isolate test",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
     "prepublishOnly": "bun run clean && bun run build"
   },
   "sideEffects": false,

@@ -201,14 +201,14 @@ describe('designer-core packaging manifest', () => {
     expect(realPublishScripts).toStrictEqual([]);
   });
 
-  it('keeps the barrel and the build module list in lockstep', () => {
+  it('keeps the barrel and the module tree in lockstep', () => {
     expect.hasAssertions();
-    // The barrel is what the workspace imports; MODULES is what the build
-    // ships. If they drift, the package and the SPA stop being the same code.
+    // The barrel is what consumers import; `src/` is what the build ships.
+    // If they drift, the published entry stops naming part of the package —
+    // or names a module that is not there.
     const barrel = fs.readFileSync(path.join(packageRoot, 'src', 'index.js'), 'utf8');
-    const barrelModules = [...barrel.matchAll(
-      /export \* from '\.\.\/\.\.\/\.\.\/apps\/service-management\/src\/([a-z]+\/[A-Za-z0-9]+\.js)'/g
-    )].map((match) => match[1]).sort();
+    const barrelModules = [...barrel.matchAll(/export \* from '\.\/([a-z]+\/[A-Za-z0-9]+\.js)'/g)]
+      .map((match) => match[1]).sort();
 
     expect(barrelModules).toStrictEqual([...builtModuleList(packageRoot)].sort());
   });
@@ -286,13 +286,13 @@ describe('designer-core built output', () => {
     expect(entry).not.toContain('module.exports');
   });
 
-  it('rewrites every barrel specifier into the shipped tree', () => {
+  it('ships a barrel whose every specifier resolves inside the artifact', () => {
     expect.hasAssertions();
-    // A leftover workspace-relative specifier in the artifact resolves only
-    // inside this monorepo — the exact "installs, then cannot be imported"
-    // failure this suite exists to catch. Specifiers are extracted from
-    // `export … from` statements so the barrel's doc comment (which names the
-    // app tree it was rewritten from) is not mistaken for code.
+    // The barrel ships verbatim (src/ is canonical), so this is the check
+    // that no workspace-only path survives into the artifact — the
+    // "installs, then cannot be imported" failure this suite exists to
+    // catch. Specifiers are extracted from `export … from` statements so the
+    // barrel's doc comment is not mistaken for code.
     const entry = readDist('index.js');
     const specifiers = [...entry.matchAll(/export \* from '([^']+)'/g)].map((match) => match[1]);
 

@@ -1,23 +1,21 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
-import path from 'node:path';
 
 /**
  * Unit suite for the Service Configuration validation (JUM-544):
  *
- * - `apps/service-management/src/validation/serviceConfigurationValidation.js`
+ * - `packages/designer-core/src/validation/serviceConfigurationValidation.js`
  *   (`collectServiceConfigurationIssues` — port range/uniqueness on the active
  *   port set, vocabulary rules, run-mode × provider consistency), and
- * - `apps/service-management/src/model/deployCapabilityMatrix.js` (the shared
+ * - `packages/designer-core/src/model/deployCapabilityMatrix.js` (the shared
  *   machine-readable reader of the Requirement 059 deploy matrix that both
  *   this validation and JUM-481's deploy targets consume).
  *
  * Both are exercised as pure functions — no DOM, no store.
  */
 
-const repoRoot = path.resolve(__dirname, '../../../../..');
 const { collectServiceConfigurationIssues } = require(
-  path.join(repoRoot, 'apps', 'service-management', 'src', 'validation', 'serviceConfigurationValidation.js')
+  '@jumentix/designer-core/validation/serviceConfigurationValidation.js'
 );
 const {
   CLOUD_PROVIDERS,
@@ -29,7 +27,7 @@ const {
   getSupportedProviders,
   isRunModeSupportedByProvider
 } = require(
-  path.join(repoRoot, 'apps', 'service-management', 'src', 'model', 'deployCapabilityMatrix.js')
+  '@jumentix/designer-core/model/deployCapabilityMatrix.js'
 );
 
 function createConfig(overrides: Record<string, unknown> = {}): any {
@@ -191,3 +189,9 @@ describe('service configuration validation (JUM-544)', () => {
     ]);
   });
 });
+
+// Keeps this file a module: with no import/export left, TypeScript would
+// treat it as a script and its top-level requires would share one global
+// scope with every other script-mode suite in ts-jest's program (TS2451).
+// eslint-disable-next-line jest/no-export
+export {};

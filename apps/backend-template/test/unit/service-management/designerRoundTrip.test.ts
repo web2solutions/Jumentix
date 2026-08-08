@@ -55,7 +55,7 @@ const repoRoot = path.resolve(__dirname, '../../../../..');
 const {
   buildAsyncApiFileSet,
   buildAsyncApiTransportDocument
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'exporters', 'asyncApiExporters.js'));
+} = require('@jumentix/designer-core/exporters/asyncApiExporters.js');
 const {
   buildBoilerplateBundleDocument,
   buildDomainPackageDocument,
@@ -63,22 +63,23 @@ const {
   buildJsonSchemaDocument,
   buildMarkdownExport,
   buildOasDocument
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'exporters', 'designerExporters.js'));
+} = require('@jumentix/designer-core/exporters/designerExporters.js');
 const {
   buildDomainFromPackage,
   buildDomainsFromOas,
   buildStateFromSuiteExport
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'importers', 'designerImporters.js'));
+} = require('@jumentix/designer-core/importers/designerImporters.js');
 const {
   createDefaultView,
   createDesignerState,
   defaultFields,
   getDefaultRbacPolicy,
   normalizeStatePayload
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'designerState.js'));
+} = require('@jumentix/designer-core/state/designerState.js');
 const {
   packageContentsEqual
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'packages', 'packageVersioning.js'));
+} = require('@jumentix/designer-core/packages/packageVersioning.js');
+
 const {
   MemoryDesignerStore
 } = require(path.join(repoRoot, 'apps', 'backend-template', 'test', 'helpers', 'MemoryDesignerStore.ts'));

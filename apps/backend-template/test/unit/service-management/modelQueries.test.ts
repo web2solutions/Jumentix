@@ -6,7 +6,7 @@ import path from 'node:path';
 /**
  * Unit suite for the pure model helpers extracted from
  * `apps/service-management/script.js` by JUM-469
- * (`apps/service-management/src/model/modelQueries.js`).
+ * (`packages/designer-core/src/model/modelQueries.js`).
  *
  * The suite runs with no DOM and no DOM shim — importing and exercising the
  * module here is itself the proof that the helpers the validation engine,
@@ -14,7 +14,7 @@ import path from 'node:path';
  */
 
 const repoRoot = path.resolve(__dirname, '../../../../..');
-const model = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'model', 'modelQueries.js'));
+const model = require('@jumentix/designer-core/model/modelQueries.js');
 
 function createDomains() {
   return [
@@ -50,14 +50,15 @@ function createDomains() {
 
 describe('model queries (JUM-469)', () => {
   it('is DOM-free: no document/window references in the new pure modules', () => {
+    // Since JUM-493 these modules live in the publishable package.
     [
-      'src/model/modelQueries.js',
-      'src/validation/modelValidation.js',
-      'src/exporters/designerExporters.js',
-      'src/importers/designerImporters.js'
+      'model/modelQueries.js',
+      'validation/modelValidation.js',
+      'exporters/designerExporters.js',
+      'importers/designerImporters.js'
     ].forEach((modulePath) => {
       const source = fs.readFileSync(
-        path.join(repoRoot, 'apps', 'service-management', ...modulePath.split('/')),
+        path.join(repoRoot, 'packages', 'designer-core', 'src', ...modulePath.split('/')),
         'utf-8'
       );
       // Strip comments so prose about the modules cannot false-positive;

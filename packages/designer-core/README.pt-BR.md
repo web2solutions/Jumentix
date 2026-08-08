@@ -13,11 +13,17 @@ The English version of this document is in [README.md](./README.md).
 O núcleo do designer é a lógica separável que a modularização JUM-468/JUM-469
 extraiu do designer de Service Management (`apps/service-management`): tudo o
 que o designer sabe sobre um modelo de domínio, sem nada sobre como esse
-modelo é renderizado ou persistido. A fonte única da verdade permanece em
-`apps/service-management/src/` — o build deste pacote copia exatamente o
-fechamento de módulos DOM-free para `dist/` e gera declarações de tipo a
-partir dos fontes anotados com JSDoc, de modo que o artefato e a SPA nunca
-divergem.
+modelo é renderizado ou persistido. **O `src/` deste pacote é a casa canônica
+desse código** — a direção da dependência é pacote → consumidor, nunca
+pacote → app. A SPA zero-build o consome por especificadores bare
+`@jumentix/designer-core/…`: o import map em
+`apps/service-management/index.html` os resolve para uma árvore vendored
+(`apps/service-management/vendor/designer-core/`, sincronizada a partir deste
+pacote por `ci-cd/sync-service-management-designer-core.js`, segura sob o
+containment do servidor estático da app), enquanto Bun, Jest e tsc resolvem
+os mesmos especificadores para `src/` pelos mapeamentos de path do
+repositório. O build de publicação copia `src/` para `dist/` verbatim e gera
+declarações de tipo a partir dos fontes anotados com JSDoc.
 
 **Dentro do pacote:**
 

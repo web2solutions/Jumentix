@@ -74,20 +74,24 @@ export async function ensureDesignerCoreBuilt(packageRoot: string): Promise<void
 }
 
 /**
- * The DOM-free module closure the build publishes, repository-relative to
- * `dist/`. Kept in one place because the packaging suite asserts the artifact
- * contains exactly this set and the DOM-free suite scans exactly this set.
+ * The module closure the build publishes, relative to `src/` (the barrel
+ * `index.js` excluded — the entry point is asserted separately).
  *
- * The list is parsed out of `scripts/build.js` rather than restated here: the
- * build's MODULES table is the single source of truth, and a suite that kept
- * its own copy would go stale in exactly the direction that hides a module
- * from the DOM-free proof.
+ * Derived by walking `src/`, because the package src/ IS the boundary: any
+ * module placed there is package surface by definition and must land in
+ * `dist/`. The DOM-free suite scans exactly this set plus the barrel, so a
+ * module joining the closure joins the proof in the same commit.
  */
 export function builtModuleList(packageRoot: string): string[] {
-  const buildScript = fs.readFileSync(path.join(packageRoot, 'scripts', 'build.js'), 'utf8');
-  const table = /const MODULES = Object\.freeze\(\[([\s\S]*?)\]\);/.exec(buildScript);
-  if (!table) throw new Error('Could not locate the MODULES table in scripts/build.js');
-  const modules = [...table[1].matchAll(/'([a-z]+\/[A-Za-z0-9]+\.js)'/g)].map((match) => match[1]);
-  if (modules.length === 0) throw new Error('The MODULES table in scripts/build.js parsed to zero entries');
+  const srcRoot = path.join(packageRoot, 'src');
+  const walk = (dir: string, prefix: string): string[] => fs
+    .readdirSync(dir, { withFileTypes: true })
+    .flatMap((entry) => {
+      const rel = prefix ? `${prefix}/${entry.name}` : entry.name;
+      if (entry.isDirectory()) return walk(path.join(dir, rel), rel);
+      return entry.name.endsWith('.js') && entry.name !== 'index.js' ? [rel] : [];
+    });
+  const modules = walk(srcRoot, '').sort();
+  if (modules.length === 0) throw new Error('packages/designer-core/src holds no modules');
   return modules;
 }

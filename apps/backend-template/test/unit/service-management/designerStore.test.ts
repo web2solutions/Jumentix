@@ -19,7 +19,7 @@ const repoRoot = path.resolve(__dirname, '../../../../..');
 const storeDir = path.join(repoRoot, 'apps', 'service-management', 'src', 'store');
 const {
   IDesignerStore
-} = require(path.join(storeDir, 'IDesignerStore.js'));
+} = require('@jumentix/designer-core/store/IDesignerStore.js');
 
 describe('designer store port contract (JUM-468)', () => {
   it('fails loudly when an adapter does not override a method', async () => {
@@ -34,7 +34,11 @@ describe('designer store port contract (JUM-468)', () => {
   });
 
   it('documents the Cana-shaped semantics the port must carry', () => {
-    const source = fs.readFileSync(path.join(storeDir, 'IDesignerStore.js'), 'utf-8');
+    // The port's canonical home is the publishable package (JUM-493).
+    const source = fs.readFileSync(
+      path.join(repoRoot, 'packages', 'designer-core', 'src', 'store', 'IDesignerStore.js'),
+      'utf-8'
+    );
     // The four load outcomes and the two save outcomes are contract terms.
     ['\'ok\'', '\'empty\'', '\'unavailable\'', '\'lost\'', '\'persisted\'', '\'unknown\''].forEach((term) => {
       expect(source).toContain(term);
@@ -50,11 +54,12 @@ describe('localStorage retirement (JUM-484, no fallback — decision 2026-07-29)
     expect(fs.existsSync(path.join(storeDir, 'LocalStorageDesignerStore.js'))).toBe(false);
   });
 
-  it('leaves Cana as the only store module beside the port, factory and migration', () => {
+  it('leaves Cana as the only store module beside the factory and migration', () => {
+    // The port itself moved to the publishable package (JUM-493); the app
+    // keeps only the Cana-facing side.
     const modules = fs.readdirSync(storeDir).filter((entry) => entry.endsWith('.js')).sort();
     expect(modules).toStrictEqual([
       'CanaDesignerStore.js',
-      'IDesignerStore.js',
       'canaMigration.js',
       'designerStoreFactory.js'
     ]);
@@ -63,10 +68,14 @@ describe('localStorage retirement (JUM-484, no fallback — decision 2026-07-29)
   it('keeps localStorage out of every runtime store path except the migration source', () => {
     // The ONLY module allowed to mention localStorage is the one-way
     // migration, which reads the legacy payload as a SOURCE — never as a
-    // store the designer can fall back to.
-    const runtimeModules = ['IDesignerStore.js', 'CanaDesignerStore.js', 'designerStoreFactory.js'];
-    runtimeModules.forEach((moduleName) => {
-      const source = fs.readFileSync(path.join(storeDir, moduleName), 'utf-8');
+    // store the designer can fall back to. The port lives in the package.
+    const runtimeModules: Array<[string, string]> = [
+      [path.join(repoRoot, 'packages', 'designer-core', 'src', 'store'), 'IDesignerStore.js'],
+      [storeDir, 'CanaDesignerStore.js'],
+      [storeDir, 'designerStoreFactory.js']
+    ];
+    runtimeModules.forEach(([dir, moduleName]) => {
+      const source = fs.readFileSync(path.join(dir, moduleName), 'utf-8');
       expect(source).not.toContain('getItem');
       expect(source).not.toContain('setItem');
       expect(source).not.toContain('removeItem');

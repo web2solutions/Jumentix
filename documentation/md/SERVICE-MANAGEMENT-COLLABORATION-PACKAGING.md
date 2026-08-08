@@ -163,11 +163,11 @@ not code**, and import is a deterministic policy instead of an unconditional
 append. The public contract is pinned in
 [Requirement 126, Contract 3](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md);
 the implementation lives in
-[`src/packages/packageVersioning.js`](../../apps/service-management/src/packages/packageVersioning.js)
+[`src/packages/packageVersioning.js`](../../packages/designer-core/src/packages/packageVersioning.js)
 (DOM-free), wired through the exporter
-([`buildDomainPackageDocument`](../../apps/service-management/src/exporters/designerExporters.js))
+([`buildDomainPackageDocument`](../../packages/designer-core/src/exporters/designerExporters.js))
 and the importer
-([`designerImporters.js`](../../apps/service-management/src/importers/designerImporters.js)).
+([`designerImporters.js`](../../packages/designer-core/src/importers/designerImporters.js)).
 
 ### The versioned package document
 
@@ -268,24 +268,31 @@ state. The framework-free designer core is now the versioned
 xpertminds organization — browser-safe ESM, zero runtime dependencies, MIT
 licensed, with provenance metadata pointing at its monorepo location.
 
-- **The package is a boundary, not a copy.** The single source of truth for
-  every shipped module stays in `apps/service-management/src/`, where the SPA
-  and its suites exercise it daily.
-  [`packages/designer-core/src/index.js`](../../packages/designer-core/src/index.js)
-  is a re-export-only barrel over the DOM-free closure (the domain model and
-  its normalizers, the validation/model-check engine, the exporters — JSON,
-  Markdown, JSON Schema, AsyncAPI, boilerplate bundle, package, OAS — the
-  importers, the schema-diff/merge-preview engine, the hexagonal codegen, and
-  `IDesignerStore` as a type/contract only). The build
-  ([`scripts/build.js`](../../packages/designer-core/scripts/build.js)) copies
-  exactly that enumerated closure into `dist/`, rewrites the barrel's
-  specifiers into the copied tree, and generates type declarations from the
-  JSDoc-annotated sources with the repo-pinned TypeScript compiler — so the
-  artifact and the SPA cannot drift apart. **Out**, enforced by test: every
-  DOM module (`script.js`, `ui/`, `pwa/`), the sync clients
-  (`state/designerSync.js`, `state/catalogSyncClient.js`) and the storage
-  adapters — neither `LocalStorageDesignerStore` nor `CanaDesignerStore`
-  ships, and the package has no dependency on Cana.
+- **The package is the canonical home, not a copy.** The core modules moved
+  from `apps/service-management/src/` into
+  [`packages/designer-core/src/`](../../packages/designer-core/src/) — the
+  workspace boundary gate forbids a package importing from an app, so the
+  dependency direction was inverted: the zero-build SPA now consumes the
+  package through `@jumentix/designer-core/…` bare specifiers, resolved by
+  the import map to a vendored tree
+  (`apps/service-management/vendor/designer-core/`, containment-safe, synced
+  by
+  [`ci-cd/sync-service-management-designer-core.js`](../../ci-cd/sync-service-management-designer-core.js)
+  — the same vendoring model as the Cana bundle) in the browser, and by the
+  repo's path mappings (tsconfig `paths`, Jest `moduleNameMapper`) straight
+  to the canonical sources in tests. The shipped surface — the domain model
+  and its normalizers, the validation/model-check engine, the exporters
+  (JSON, Markdown, JSON Schema, AsyncAPI, boilerplate bundle, package, OAS),
+  the importers, the schema-diff/merge-preview engine, the hexagonal codegen,
+  and `IDesignerStore` as a type/contract only — is exactly the package's
+  `src/` tree; the build
+  ([`scripts/build.js`](../../packages/designer-core/scripts/build.js))
+  copies it verbatim into `dist/` and generates type declarations from the
+  JSDoc-annotated sources with the repo-pinned TypeScript compiler. **Out**,
+  enforced by test: every DOM module (`script.js`, `ui/`, `pwa/`), the sync
+  clients (`state/designerSync.js`, `state/catalogSyncClient.js`) and the
+  storage adapters — neither `LocalStorageDesignerStore` nor
+  `CanaDesignerStore` ships, and the package has no dependency on Cana.
 - **The acceptance bar is met by proof, not by construction.** Three suites
   under [`packages/designer-core/test/`](../../packages/designer-core/test/)
   pin the package: `packaging.test.ts` asserts the manifest (entry points at
@@ -435,9 +442,9 @@ when the gate closes.
   [`apps/service-management/src/state/catalogSyncClient.js`](../../apps/service-management/src/state/catalogSyncClient.js),
   [Shared Catalog Sync](./SHARED-CATALOG-SYNC.md)
 - Domain-package versioning (JUM-492):
-  [`src/packages/packageVersioning.js`](../../apps/service-management/src/packages/packageVersioning.js),
-  [`src/exporters/designerExporters.js`](../../apps/service-management/src/exporters/designerExporters.js),
-  [`src/importers/designerImporters.js`](../../apps/service-management/src/importers/designerImporters.js)
+  [`src/packages/packageVersioning.js`](../../packages/designer-core/src/packages/packageVersioning.js),
+  [`src/exporters/designerExporters.js`](../../packages/designer-core/src/exporters/designerExporters.js),
+  [`src/importers/designerImporters.js`](../../packages/designer-core/src/importers/designerImporters.js)
 - Packaging (JUM-493):
   [`packages/designer-core/`](../../packages/designer-core/)
   ([manifest](../../packages/designer-core/package.json),

@@ -177,11 +177,11 @@ versionado, não código**, e a importação é uma política determinística em
 de um acréscimo incondicional. O contrato público está fixado no
 [Requisito 126, Contrato 3](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md);
 a implementação vive em
-[`src/packages/packageVersioning.js`](../../apps/service-management/src/packages/packageVersioning.js)
+[`src/packages/packageVersioning.js`](../../packages/designer-core/src/packages/packageVersioning.js)
 (livre de DOM), ligada através do exportador
-([`buildDomainPackageDocument`](../../apps/service-management/src/exporters/designerExporters.js))
+([`buildDomainPackageDocument`](../../packages/designer-core/src/exporters/designerExporters.js))
 e do importador
-([`designerImporters.js`](../../apps/service-management/src/importers/designerImporters.js)).
+([`designerImporters.js`](../../packages/designer-core/src/importers/designerImporters.js)).
 
 ### O documento de pacote versionado
 
@@ -288,23 +288,29 @@ xpertminds — ESM seguro para navegador, zero dependências de runtime,
 licenciado sob MIT, com metadados de procedência apontando para sua localização
 no monorepo.
 
-- **O pacote é uma fronteira, não uma cópia.** A fonte única da verdade de
-  cada módulo distribuído permanece em `apps/service-management/src/`, onde a
-  SPA e suas suítes o exercem diariamente.
-  [`packages/designer-core/src/index.js`](../../packages/designer-core/src/index.js)
-  é um barrel somente de reexportação sobre o fechamento livre de DOM (o
-  modelo de domínio e seus normalizadores, o motor de validação/checagem de
-  modelo, os exportadores — JSON, Markdown, JSON Schema, AsyncAPI, boilerplate
-  bundle, package, OAS —, os importadores, o motor de schema-diff/prévia de
-  merge, o codegen hexagonal e o `IDesignerStore` apenas como tipo/contrato).
-  O build
-  ([`scripts/build.js`](../../packages/designer-core/scripts/build.js)) copia
-  exatamente esse fechamento enumerado para `dist/`, reescreve os
-  especificadores do barrel para a árvore copiada e gera declarações de tipo
-  a partir dos fontes anotados com JSDoc usando o compilador TypeScript fixado
-  do repositório — de modo que o artefato e a SPA não podem divergir.
-  **Fora**, garantido por teste: todo módulo DOM (`script.js`, `ui/`, `pwa/`),
-  os clientes de sincronização (`state/designerSync.js`,
+- **O pacote é a casa canônica, não uma cópia.** Os módulos do núcleo
+  migraram de `apps/service-management/src/` para
+  [`packages/designer-core/src/`](../../packages/designer-core/src/) — o
+  portão de fronteira de workspaces proíbe um pacote importar de uma app,
+  então a direção da dependência foi invertida: a SPA zero-build agora
+  consome o pacote por especificadores bare `@jumentix/designer-core/…`,
+  resolvidos pelo import map para uma árvore vendored
+  (`apps/service-management/vendor/designer-core/`, segura sob o containment,
+  sincronizada por
+  [`ci-cd/sync-service-management-designer-core.js`](../../ci-cd/sync-service-management-designer-core.js)
+  — o mesmo modelo de vendorização do bundle do Cana) no navegador, e pelos
+  mapeamentos de path do repositório (tsconfig `paths`, `moduleNameMapper`
+  do Jest) diretamente aos fontes canônicos nos testes. A superfície
+  distribuída — o modelo de domínio e seus normalizadores, o motor de
+  validação/checagem de modelo, os exportadores (JSON, Markdown, JSON Schema,
+  AsyncAPI, boilerplate bundle, package, OAS), os importadores, o motor de
+  schema-diff/prévia de merge, o codegen hexagonal e o `IDesignerStore`
+  apenas como tipo/contrato — é exatamente a árvore `src/` do pacote; o build
+  ([`scripts/build.js`](../../packages/designer-core/scripts/build.js)) a
+  copia verbatim para `dist/` e gera declarações de tipo a partir dos fontes
+  anotados com JSDoc usando o compilador TypeScript fixado do repositório.
+  **Fora**, garantido por teste: todo módulo DOM (`script.js`, `ui/`,
+  `pwa/`), os clientes de sincronização (`state/designerSync.js`,
   `state/catalogSyncClient.js`) e os adaptadores de armazenamento — nem
   `LocalStorageDesignerStore` nem `CanaDesignerStore` são distribuídos, e o
   pacote não depende do Cana.
@@ -469,9 +475,9 @@ quando o portão fecha.
   [`apps/service-management/src/state/catalogSyncClient.js`](../../apps/service-management/src/state/catalogSyncClient.js),
   [Sincronização de catálogo compartilhado](./SHARED-CATALOG-SYNC.pt-BR.md)
 - Versionamento de pacotes de domínio (JUM-492):
-  [`src/packages/packageVersioning.js`](../../apps/service-management/src/packages/packageVersioning.js),
-  [`src/exporters/designerExporters.js`](../../apps/service-management/src/exporters/designerExporters.js),
-  [`src/importers/designerImporters.js`](../../apps/service-management/src/importers/designerImporters.js)
+  [`src/packages/packageVersioning.js`](../../packages/designer-core/src/packages/packageVersioning.js),
+  [`src/exporters/designerExporters.js`](../../packages/designer-core/src/exporters/designerExporters.js),
+  [`src/importers/designerImporters.js`](../../packages/designer-core/src/importers/designerImporters.js)
 - Empacotamento (JUM-493):
   [`packages/designer-core/`](../../packages/designer-core/)
   ([manifesto](../../packages/designer-core/package.json),

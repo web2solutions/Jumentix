@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable jest/prefer-expect-assertions, jest/max-expects, jest/no-conditional-in-test */
-import path from 'node:path';
 
 /**
  * Unit suite for the domain-package versioning core (JUM-492,
- * `apps/service-management/src/packages/packageVersioning.js`) and its wiring
+ * `packages/designer-core/src/packages/packageVersioning.js`) and its wiring
  * into the package import mapper (`buildDomainFromPackage`).
  *
  * The pins mirror Requirement 126 Contract 3: semantic-version
@@ -19,7 +18,6 @@ import path from 'node:path';
  * FileReader — matching the JUM-471 suite's discipline.
  */
 
-const repoRoot = path.resolve(__dirname, '../../../../..');
 const {
   AUTO_MERGE_CLASSES,
   REQUIRES_DECISION_CLASSES,
@@ -34,15 +32,15 @@ const {
   parsePackageVersion,
   resolvePackageGraph,
   satisfiesPackageRange
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'packages', 'packageVersioning.js'));
+} = require('@jumentix/designer-core/packages/packageVersioning.js');
 const { buildDomainFromPackage } = require(
-  path.join(repoRoot, 'apps', 'service-management', 'src', 'importers', 'designerImporters.js')
+  '@jumentix/designer-core/importers/designerImporters.js'
 );
 const { buildDomainPackageDocument } = require(
-  path.join(repoRoot, 'apps', 'service-management', 'src', 'exporters', 'designerExporters.js')
+  '@jumentix/designer-core/exporters/designerExporters.js'
 );
 const { getDefaultRbacPolicy, normalizeDomainInput } = require(
-  path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'designerState.js')
+  '@jumentix/designer-core/state/designerState.js'
 );
 
 type TestDomain = {
@@ -708,3 +706,9 @@ describe('domain package versioning (JUM-492)', () => {
     });
   });
 });
+
+// Keeps this file a module: with no import/export left, TypeScript would
+// treat it as a script and its top-level requires would share one global
+// scope with every other script-mode suite in ts-jest's program (TS2451).
+// eslint-disable-next-line jest/no-export
+export {};

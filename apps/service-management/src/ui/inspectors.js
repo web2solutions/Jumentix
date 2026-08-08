@@ -38,20 +38,20 @@
  * canonical runtime matrix.
  */
 
-import { FIELD_TYPES } from '../state/designerState.js';
-import { deriveTenantScoped } from '../model/rbacContract.js';
-import { isSampleDomain } from '../model/sampleModel.js';
-import { collectServiceConfigurationIssues } from '../validation/serviceConfigurationValidation.js';
-import { collectDeployTargetIssues } from '../validation/deployTargetValidation.js';
+import { FIELD_TYPES } from '@jumentix/designer-core/state/designerState.js';
+import { deriveTenantScoped } from '@jumentix/designer-core/model/rbacContract.js';
+import { isSampleDomain } from '@jumentix/designer-core/model/sampleModel.js';
+import { collectServiceConfigurationIssues } from '@jumentix/designer-core/validation/serviceConfigurationValidation.js';
+import { collectDeployTargetIssues } from '@jumentix/designer-core/validation/deployTargetValidation.js';
 import {
   INTERFACE_TYPES,
   getSupportedFrameworks
-} from '../model/interfaceFrameworkMatrix.js';
+} from '@jumentix/designer-core/model/interfaceFrameworkMatrix.js';
 import {
   collectInterfaceAdapterIssues,
   normalizeInterfaceAdapterInput,
   upsertInterfaceAdapter
-} from '../validation/interfaceAdapterValidation.js';
+} from '@jumentix/designer-core/validation/interfaceAdapterValidation.js';
 import {
   entityLabel,
   findEntity,
@@ -59,7 +59,7 @@ import {
   severityRank,
   toPathToken,
   toSchemaName
-} from '../model/modelQueries.js';
+} from '@jumentix/designer-core/model/modelQueries.js';
 
 /**
  * @param {Object} options

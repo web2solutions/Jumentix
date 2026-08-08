@@ -32,7 +32,8 @@ const {
   normalizeStatePayload,
   parseCommaSeparated,
   parseEnumValues
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'designerState.js'));
+} = require('@jumentix/designer-core/state/designerState.js');
+
 const {
   MemoryDesignerStore
 } = require(path.join(repoRoot, 'apps', 'backend-template', 'test', 'helpers', 'MemoryDesignerStore.ts'));
@@ -87,12 +88,15 @@ function createCore(storage = createFakeStorage()) {
 
 describe('designer state core (JUM-468)', () => {
   it('is DOM-free: no document/window references in the extracted modules', () => {
-    ['src/state/designerState.js', 'src/store/IDesignerStore.js', 'src/store/CanaDesignerStore.js', 'src/store/canaMigration.js', 'src/store/designerStoreFactory.js', 'src/model/rbacContract.js']
-      .forEach((modulePath) => {
-        const source = fs.readFileSync(
-          path.join(repoRoot, 'apps', 'service-management', ...modulePath.split('/')),
-          'utf-8'
-        );
+    // Since JUM-493 the core modules live in the publishable package; the
+    // store adapters stay in the app. Both sides keep the DOM-free rule.
+    const movedCore = ['state/designerState.js', 'store/IDesignerStore.js', 'model/rbacContract.js']
+      .map((rel) => path.join(repoRoot, 'packages', 'designer-core', 'src', ...rel.split('/')));
+    const appAdapters = ['src/store/CanaDesignerStore.js', 'src/store/canaMigration.js', 'src/store/designerStoreFactory.js']
+      .map((rel) => path.join(repoRoot, 'apps', 'service-management', ...rel.split('/')));
+    [...movedCore, ...appAdapters]
+      .forEach((absolutePath) => {
+        const source = fs.readFileSync(absolutePath, 'utf-8');
         // Strip comments so prose about the contract cannot false-positive;
         // what remains must not reach the DOM globals.
         const code = source

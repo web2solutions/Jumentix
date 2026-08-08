@@ -6,11 +6,11 @@ import path from 'node:path';
 /**
  * Unit suite for the Deploy Management matrix alignment (JUM-481):
  *
- * - `apps/service-management/src/model/deployCapabilityMatrix.js` — the
+ * - `packages/designer-core/src/model/deployCapabilityMatrix.js` — the
  *   deploy-target half of the shared Requirement 059 reader (metadata
  *   vocabularies, service-type × deploy-target support, PM2-managed targets,
  *   per-service-type protocols), and
- * - `apps/service-management/src/validation/deployTargetValidation.js`
+ * - `packages/designer-core/src/validation/deployTargetValidation.js`
  *   (`collectDeployTargetIssues` — vocabulary rules, matrix combinations,
  *   protocol exposure, PM2-profile applicability), and
  * - `normalizeDeploymentInput` in `src/state/designerState.js` — the lossless
@@ -21,7 +21,7 @@ import path from 'node:path';
 
 const repoRoot = path.resolve(__dirname, '../../../../..');
 const { collectDeployTargetIssues } = require(
-  path.join(repoRoot, 'apps', 'service-management', 'src', 'validation', 'deployTargetValidation.js')
+  '@jumentix/designer-core/validation/deployTargetValidation.js'
 );
 const {
   DATABASE_DRIVERS,
@@ -39,10 +39,10 @@ const {
   isProtocolSupportedByServiceType,
   isServiceTypeSupportedByDeployTarget
 } = require(
-  path.join(repoRoot, 'apps', 'service-management', 'src', 'model', 'deployCapabilityMatrix.js')
+  '@jumentix/designer-core/model/deployCapabilityMatrix.js'
 );
 const { normalizeDeploymentInput, normalizeStatePayload } = require(
-  path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'designerState.js')
+  '@jumentix/designer-core/state/designerState.js'
 );
 
 const enumValuesFor = (scriptSource: string, key: string): string[] => {

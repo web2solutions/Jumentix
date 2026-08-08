@@ -17,7 +17,7 @@
  * verbatim from the monolith.
  */
 
-import { clampZoom } from '../state/designerState.js';
+import { clampZoom } from '@jumentix/designer-core/state/designerState.js';
 import {
   applyAutoLayout,
   buildEdgePathD,
@@ -28,7 +28,7 @@ import {
   fieldLabel,
   findEntity,
   snapCoordinate
-} from '../model/modelQueries.js';
+} from '@jumentix/designer-core/model/modelQueries.js';
 
 /**
  * @param {Object} options

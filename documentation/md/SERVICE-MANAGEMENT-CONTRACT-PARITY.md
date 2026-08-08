@@ -31,7 +31,7 @@ live in
 ## Guarantee 1 — the OAS 3.1 export is boilerplate-consumable (JUM-474)
 
 Builder: `buildOasDocument` in
-[`apps/service-management/src/exporters/designerExporters.js`](../../apps/service-management/src/exporters/designerExporters.js).
+[`packages/designer-core/src/exporters/designerExporters.js`](../../packages/designer-core/src/exporters/designerExporters.js).
 
 **The document declares `openapi: '3.1.0'` — 3.1, not 3.0 — because that is
 the version the boilerplate consumes.** The canonical
@@ -73,14 +73,14 @@ a UI-style model — the export cannot drift from the gate without failing the
 suite. The name-collision half of the guarantee (two names that tokenize to
 the same schema/route, e.g. `Foo Bar` vs `Foo-Bar`, are export-gate-blocking
 errors rather than silent overwrites) lives in
-[`modelValidation.js`](../../apps/service-management/src/validation/modelValidation.js)
+[`modelValidation.js`](../../packages/designer-core/src/validation/modelValidation.js)
 and is pinned by
 [`modelValidation.test.ts`](../../apps/backend-template/test/unit/service-management/modelValidation.test.ts).
 
 ## Guarantee 2 — AsyncAPI 3.0 per transport and a canonical proto (JUM-475)
 
 Builders:
-[`apps/service-management/src/exporters/asyncApiExporters.js`](../../apps/service-management/src/exporters/asyncApiExporters.js).
+[`packages/designer-core/src/exporters/asyncApiExporters.js`](../../packages/designer-core/src/exporters/asyncApiExporters.js).
 
 - **One file per transport, canonical naming.** The export emits
   `<version>.websocket.yml` and `<version>.grpc.yml`, matching the
@@ -95,7 +95,7 @@ Builders:
   share one schema entry instead of being inlined per message.
 - **Every exported document validates against**
   `validateAsyncApi30Document`
-  ([`asyncApi30Validation.js`](../../apps/service-management/src/validation/asyncApi30Validation.js)),
+  ([`asyncApi30Validation.js`](../../packages/designer-core/src/validation/asyncApi30Validation.js)),
   the in-repo structural validator for the 3.0 shape (the repository does not
   depend on `@asyncapi/parser`). The canonical `spec/asyncapi/` files pass
   the same rules — drop-in shape parity between what the designer emits and
@@ -116,7 +116,7 @@ export drift together or fail together.
 ## Guarantee 3 — the codegen bundle is deliverable code (JUM-476)
 
 Builder:
-[`apps/service-management/src/codegen/hexagonalCodegen.js`](../../apps/service-management/src/codegen/hexagonalCodegen.js),
+[`packages/designer-core/src/codegen/hexagonalCodegen.js`](../../packages/designer-core/src/codegen/hexagonalCodegen.js),
 consumed by both the boilerplate-bundle exporter
 (`buildBoilerplateBundleDocument`, artifact `kind: 'boilerplate-bundle'`,
 `version: '2.0.0'`) and the designer's Code Preview pane — same builder, so
@@ -273,7 +273,7 @@ one bundle module per domain with the hexagonal file set.
 - **The export quality gate** (Requirement 126, Contract 3): with
   `view.exportBlockCritical` true (the default), every exporter refuses to
   run while
-  [`collectModelIssues`](../../apps/service-management/src/validation/modelValidation.js)
+  [`collectModelIssues`](../../packages/designer-core/src/validation/modelValidation.js)
   reports any `error`-severity issue — which includes the OAS name-collision
   rule and unenforceable RBAC roles (see below). The gate's DOM half is
   `canExportModel` in
@@ -296,7 +296,7 @@ one bundle module per domain with the hexagonal file set.
 The per-entity RBAC editor is aligned to the
 [Tenant and RBAC Authorization Contract](./TENANT-RBAC-AUTHORIZATION-CONTRACT.md)
 through
-[`src/model/rbacContract.js`](../../apps/service-management/src/model/rbacContract.js),
+[`src/model/rbacContract.js`](../../packages/designer-core/src/model/rbacContract.js),
 a designer-side mirror of the Users domain implementation (`Rbac.ts`,
 `TenantAuthorizationPolicy.ts`). The reconciliation found a real divergence,
 recorded here rather than quietly fixed:
@@ -362,11 +362,11 @@ and
 
 ## References
 
-- OAS exporter/importer: [`designerExporters.js`](../../apps/service-management/src/exporters/designerExporters.js), [`designerImporters.js`](../../apps/service-management/src/importers/designerImporters.js)
-- AsyncAPI/proto exporters: [`asyncApiExporters.js`](../../apps/service-management/src/exporters/asyncApiExporters.js); validator: [`asyncApi30Validation.js`](../../apps/service-management/src/validation/asyncApi30Validation.js)
-- Codegen: [`hexagonalCodegen.js`](../../apps/service-management/src/codegen/hexagonalCodegen.js)
-- Model validation / export gate: [`modelValidation.js`](../../apps/service-management/src/validation/modelValidation.js), [`script.js`](../../apps/service-management/script.js)
-- RBAC mirror: [`rbacContract.js`](../../apps/service-management/src/model/rbacContract.js); contract: [Tenant and RBAC Authorization Contract](./TENANT-RBAC-AUTHORIZATION-CONTRACT.md)
+- OAS exporter/importer: [`designerExporters.js`](../../packages/designer-core/src/exporters/designerExporters.js), [`designerImporters.js`](../../packages/designer-core/src/importers/designerImporters.js)
+- AsyncAPI/proto exporters: [`asyncApiExporters.js`](../../packages/designer-core/src/exporters/asyncApiExporters.js); validator: [`asyncApi30Validation.js`](../../packages/designer-core/src/validation/asyncApi30Validation.js)
+- Codegen: [`hexagonalCodegen.js`](../../packages/designer-core/src/codegen/hexagonalCodegen.js)
+- Model validation / export gate: [`modelValidation.js`](../../packages/designer-core/src/validation/modelValidation.js), [`script.js`](../../apps/service-management/script.js)
+- RBAC mirror: [`rbacContract.js`](../../packages/designer-core/src/model/rbacContract.js); contract: [Tenant and RBAC Authorization Contract](./TENANT-RBAC-AUTHORIZATION-CONTRACT.md)
 - Suites: [`designerRoundTrip.test.ts`](../../apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts), [`designerPackageVersioning.test.ts`](../../apps/backend-template/test/unit/service-management/designerPackageVersioning.test.ts), [`designerOasCompliance.test.ts`](../../apps/backend-template/test/unit/service-management/designerOasCompliance.test.ts), [`designerAsyncApiExport.test.ts`](../../apps/backend-template/test/unit/service-management/designerAsyncApiExport.test.ts), [`hexagonalCodegen.test.ts`](../../apps/backend-template/test/unit/service-management/hexagonalCodegen.test.ts), [`rbacContract.test.ts`](../../apps/backend-template/test/unit/service-management/rbacContract.test.ts), [`modelValidation.test.ts`](../../apps/backend-template/test/unit/service-management/modelValidation.test.ts)
 - Gates: [`check-oas-route-resolution.js`](../../ci-cd/check-oas-route-resolution.js), [`check-hexagonal-boundaries.js`](../../ci-cd/check-hexagonal-boundaries.js), [`run-unit-tests.js`](../../ci-cd/run-unit-tests.js)
 - Canonical targets: [`spec/1.0.0.yml`](../../spec/1.0.0.yml), [`spec/asyncapi/1.0.0.websocket.yml`](../../spec/asyncapi/1.0.0.websocket.yml), [`spec/asyncapi/1.0.0.grpc.yml`](../../spec/asyncapi/1.0.0.grpc.yml), [`spec/asyncapi/async-api.proto`](../../spec/asyncapi/async-api.proto)

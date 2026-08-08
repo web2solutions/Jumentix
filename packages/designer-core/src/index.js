@@ -2,13 +2,15 @@
  * `@jumentix/designer-core` — the framework-free Service Management designer
  * core (JUM-493).
  *
- * This barrel is the package boundary, and it is a *re-export only* boundary:
- * the single source of truth for every module below stays in
- * `apps/service-management/src/`, where the designer SPA and its suites
- * exercise it daily. The build (`scripts/build.js`) copies exactly the modules
- * listed here into `dist/` and rewrites these specifiers to `./…`, so what the
- * workspace imports through this file is what the published artifact ships —
- * no second copy to drift.
+ * This package is the canonical home of the designer core: the modules below
+ * were moved here from `apps/service-management/src/` so the dependency
+ * direction runs package → consumer, never package → app (the workspace
+ * boundary the architecture gate enforces). The zero-build SPA consumes them
+ * through the `@jumentix/designer-core/…` bare specifiers, which the import
+ * map in `apps/service-management/index.html` resolves to the vendored tree
+ * (`vendor/designer-core/`, synced from this package's `src/` by
+ * `ci-cd/sync-service-management-designer-core.js`), while Bun, Jest and tsc
+ * resolve the same specifiers to this `src/` through the repo's path mapping.
  *
  * What is in (per the issue): the domain model and its normalizers, the
  * validation/model-check engine, the exporters (JSON, Markdown, JSON Schema,
@@ -20,43 +22,44 @@
  * status surfaces, the sync clients (`state/designerSync.js`,
  * `state/catalogSyncClient.js`) and the storage adapters
  * (`store/CanaDesignerStore.js`, `store/canaMigration.js`,
- * `store/designerStoreFactory.js`). Nothing below imports Cana, the DOM,
- * `window`, `document` or `localStorage` — `test/dom-free.test.ts` proves it
- * on the built artifact, and `test/consumer-smoke.test.ts` loads and runs the
- * artifact in a non-DOM process.
+ * `store/designerStoreFactory.js`) — those stay in the app. Nothing below
+ * imports Cana, the DOM, `window`, `document` or `localStorage` —
+ * `test/dom-free.test.ts` proves it on the built artifact, and
+ * `test/consumer-smoke.test.ts` loads and runs the artifact in a non-DOM
+ * process.
  */
 
 // The domain model: queries, matrices, RBAC contract and the sample model.
-export * from '../../../apps/service-management/src/model/modelQueries.js';
-export * from '../../../apps/service-management/src/model/rbacContract.js';
-export * from '../../../apps/service-management/src/model/sampleModel.js';
-export * from '../../../apps/service-management/src/model/deployCapabilityMatrix.js';
-export * from '../../../apps/service-management/src/model/interfaceFrameworkMatrix.js';
+export * from './model/modelQueries.js';
+export * from './model/rbacContract.js';
+export * from './model/sampleModel.js';
+export * from './model/deployCapabilityMatrix.js';
+export * from './model/interfaceFrameworkMatrix.js';
 
 // The model normalizers and the designer state shape.
-export * from '../../../apps/service-management/src/state/designerState.js';
+export * from './state/designerState.js';
 
 // The validation / model-check engine.
-export * from '../../../apps/service-management/src/validation/modelValidation.js';
-export * from '../../../apps/service-management/src/validation/asyncApi30Validation.js';
-export * from '../../../apps/service-management/src/validation/deployTargetValidation.js';
-export * from '../../../apps/service-management/src/validation/deployTargetLifecycleValidation.js';
-export * from '../../../apps/service-management/src/validation/interfaceAdapterValidation.js';
-export * from '../../../apps/service-management/src/validation/serviceConfigurationValidation.js';
+export * from './validation/modelValidation.js';
+export * from './validation/asyncApi30Validation.js';
+export * from './validation/deployTargetValidation.js';
+export * from './validation/deployTargetLifecycleValidation.js';
+export * from './validation/interfaceAdapterValidation.js';
+export * from './validation/serviceConfigurationValidation.js';
 
 // The exporters: JSON, Markdown, JSON Schema, AsyncAPI, boilerplate bundle,
 // domain package and OAS.
-export * from '../../../apps/service-management/src/exporters/designerExporters.js';
-export * from '../../../apps/service-management/src/exporters/asyncApiExporters.js';
+export * from './exporters/designerExporters.js';
+export * from './exporters/asyncApiExporters.js';
 
 // The importers: domain package, state file and OAS file.
-export * from '../../../apps/service-management/src/importers/designerImporters.js';
+export * from './importers/designerImporters.js';
 
 // The schema-diff / domain-package versioning and merge-preview engine.
-export * from '../../../apps/service-management/src/packages/packageVersioning.js';
+export * from './packages/packageVersioning.js';
 
 // The hexagonal boilerplate codegen behind the bundle exporter.
-export * from '../../../apps/service-management/src/codegen/hexagonalCodegen.js';
+export * from './codegen/hexagonalCodegen.js';
 
 // The storage port as a contract only — no adapter ships in this package.
-export * from '../../../apps/service-management/src/store/IDesignerStore.js';
+export * from './store/IDesignerStore.js';

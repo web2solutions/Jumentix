@@ -14,10 +14,17 @@ A versão em português deste documento está em
 The designer core is the separable logic the JUM-468/JUM-469 modularization
 carved out of the Service Management designer (`apps/service-management`):
 everything the designer knows about a domain model, with nothing about how
-that model is rendered or persisted. The source of truth stays in
-`apps/service-management/src/` — this package's build copies exactly the
-DOM-free module closure into `dist/` and generates type declarations from the
-JSDoc-annotated sources, so the artifact and the SPA can never drift apart.
+that model is rendered or persisted. **This package's `src/` is the canonical
+home of that code** — the dependency direction runs package → consumer,
+never package → app. The zero-build SPA consumes it through
+`@jumentix/designer-core/…` bare specifiers: the import map in
+`apps/service-management/index.html` resolves them to a vendored tree
+(`apps/service-management/vendor/designer-core/`, synced from this package by
+`ci-cd/sync-service-management-designer-core.js`, containment-safe under the
+app's static server), while Bun, Jest and tsc resolve the same specifiers to
+`src/` through the repo's path mappings. The publish build copies `src/` into
+`dist/` verbatim and generates type declarations from the JSDoc-annotated
+sources.
 
 **In the package:**
 

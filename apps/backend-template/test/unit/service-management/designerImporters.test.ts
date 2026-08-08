@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
-import path from 'node:path';
 
 /**
  * Unit suite for the import mappers extracted from
  * `apps/service-management/script.js` by JUM-469
- * (`apps/service-management/src/importers/designerImporters.js`).
+ * (`packages/designer-core/src/importers/designerImporters.js`).
  *
  * Both mappers are exercised as pure functions over parsed JSON — no
  * FileReader, no DOM. The OAS round-trip test pins the export→import mapping
@@ -13,15 +12,14 @@ import path from 'node:path';
  * on.
  */
 
-const repoRoot = path.resolve(__dirname, '../../../../..');
 const { buildDomainFromPackage, buildDomainsFromOas } = require(
-  path.join(repoRoot, 'apps', 'service-management', 'src', 'importers', 'designerImporters.js')
+  '@jumentix/designer-core/importers/designerImporters.js'
 );
 const { buildOasDocument } = require(
-  path.join(repoRoot, 'apps', 'service-management', 'src', 'exporters', 'designerExporters.js')
+  '@jumentix/designer-core/exporters/designerExporters.js'
 );
 const { normalizeStatePayload, getDefaultRbacPolicy } = require(
-  path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'designerState.js')
+  '@jumentix/designer-core/state/designerState.js'
 );
 
 describe('designer importers (JUM-469)', () => {
@@ -442,3 +440,9 @@ describe('designer importers (JUM-469)', () => {
     });
   });
 });
+
+// Keeps this file a module: with no import/export left, TypeScript would
+// treat it as a script and its top-level requires would share one global
+// scope with every other script-mode suite in ts-jest's program (TS2451).
+// eslint-disable-next-line jest/no-export
+export {};
