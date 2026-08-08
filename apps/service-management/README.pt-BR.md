@@ -30,6 +30,25 @@ Uso detalhado de recursos:
 - [Adoção do Cana, migração e comportamento offline](../../documentation/md/SERVICE-MANAGEMENT-CANA-ADOPTION.pt-BR.md)
 - [Documentação técnica de gerenciamento de serviços](./documentation/README.pt-BR.md)
 
+## Primeira Execução
+
+Em um perfil novo, o designer inicia com um modelo vazio e cada guia mostra um
+estado vazio guiado (JUM-548) que indica a primeira ação da guia — sem modelo
+pré-carregado silencioso. A primeira ação do Designer de Domínio é o botão
+**Load Sample Model** (também disponível depois no painel Export): um clique
+carrega um domínio de identidade realista — Users e Organization, os mesmos
+recursos que `spec/1.0.0.yml` declara — com relacionamentos, RBAC por
+entidade, um contrato de mensagem, invariantes e composição OAS `oneOf` +
+discriminator. O exemplo passa pelo portão de qualidade de exportação e faz
+round-trip por export/import, servindo como demonstração viva desses percursos.
+
+O conteúdo de exemplo é sempre distinguível do seu trabalho: todo id de
+exemplo carrega o prefixo `sample-` e os domínios de exemplo mostram um selo
+"sample" na lista de domínios. Carregar o exemplo sobre um modelo existente
+exige confirmação explícita (Undo restaura o modelo anterior depois), e
+excluir o exemplo usa a exclusão comum de domínio/entidade. O conteúdo está
+definido em `src/model/sampleModel.js`.
+
 ## Guias
 
 1. **Designer de Domínio**
