@@ -340,7 +340,17 @@ export function normalizeEntityInput(entity, entityIndex) {
       invariants,
       rbac,
       contracts,
-      oasComposition
+      oasComposition,
+      // JUM-492: provenance is additive — carried only when present, so
+      // pre-JUM-492 payloads normalise to exactly the shape they always did.
+      ...(entity?.meta?.provenance && typeof entity.meta.provenance === 'object'
+        ? {
+          provenance: {
+            package: String(entity.meta.provenance.package || '').trim(),
+            version: String(entity.meta.provenance.version || '').trim()
+          }
+        }
+        : {})
     }
   };
 }
@@ -361,7 +371,24 @@ export function normalizeDomainInput(domain, domainIndex) {
       downstreamDependencies: parseCommaSeparated(domain?.context?.downstreamDependencies || []),
       integrationChannel: String(domain?.context?.integrationChannel || '').trim(),
       packageDependencies: parseCommaSeparated(domain?.context?.packageDependencies || []),
-      sharedValueObjects: parseCommaSeparated(domain?.context?.sharedValueObjects || [])
+      sharedValueObjects: parseCommaSeparated(domain?.context?.sharedValueObjects || []),
+      // JUM-492 (domain-package versioning, Requirement 126 Contract 3):
+      // package identity and provenance are additive — carried only when the
+      // source declares them, so pre-JUM-492 payloads are unchanged.
+      ...(String(domain?.context?.packageName || '').trim()
+        ? { packageName: String(domain.context.packageName).trim() }
+        : {}),
+      ...(String(domain?.context?.packageVersion || '').trim()
+        ? { packageVersion: String(domain.context.packageVersion).trim() }
+        : {}),
+      ...(domain?.context?.provenance && typeof domain.context.provenance === 'object'
+        ? {
+          provenance: {
+            package: String(domain.context.provenance.package || '').trim(),
+            version: String(domain.context.provenance.version || '').trim()
+          }
+        }
+        : {})
     },
     entities
   };

@@ -1656,6 +1656,33 @@ function exportAsOas() {
 // document→model mappers in src/importers/designerImporters.js (and
 // normalizeStatePayload from the JUM-468 core). One mapper failure reason
 // maps to exactly one status-region message (the pre-refactor alert text).
+// JUM-492: one mapper failure reason maps to exactly one status-region
+// message. The mapper (buildDomainFromPackage over the packageVersioning
+// core) owns the versioning, dependency-graph and conflict policies; this
+// glue only renders outcomes — never window.alert.
+function packageImportFailureMessage(result) {
+  const packageLabel = result.package ? `'${result.package.name}@${result.package.version}'` : 'package';
+  if (result.reason === 'wrong-document-kind') {
+    return `This file is a '${String(result.kind)}' document, not a domain package — use the matching import.`;
+  }
+  if (result.reason === 'unsupported-version') {
+    return `Unsupported domain-package document version '${String(result.version)}' — this designer reads up to major version 2.`;
+  }
+  if (result.reason === 'invalid-package-version') {
+    return `Package version '${String(result.version)}' is not a semantic version (major.minor.patch) — import refused.`;
+  }
+  if (result.reason === 'dependency-cycle') {
+    return `Importing ${packageLabel} would close a dependency cycle (${(result.cycle || []).join(' -> ')}) — import refused.`;
+  }
+  if (result.reason === 'downgrade-rejected') {
+    return `Package '${result.package.name}@${result.installed}' is already imported; ${packageLabel} is older — downgrades are refused.`;
+  }
+  if (result.reason === 'same-version-conflict') {
+    return `Package ${packageLabel} is already imported but the file's content differs — same version, different content. Bump the version or reconcile the package; nothing was changed.`;
+  }
+  return 'Invalid package format.';
+}
+
 function importDomainPackage(file) {
   const reader = new FileReader();
   reader.onload = () => {
@@ -1663,7 +1690,57 @@ function importDomainPackage(file) {
       const parsed = JSON.parse(String(reader.result || '{}'));
       const result = buildDomainFromPackage(parsed, state.domains);
       if (!result.ok) {
-        showStatus('Invalid package format.');
+        showStatus(packageImportFailureMessage(result));
+        // A refusal that carries a preview (same-version conflict) renders it
+        // on the schema-diff surface, so the user sees exactly which aspects
+        // diverged — the merge-preview basis of JUM-492.
+        if (Array.isArray(result.preview) && result.preview.length) {
+          inspectors.renderSchemaDiffResults(result.preview);
+        }
+        return;
+      }
+      if (result.noop) {
+        // Idempotent re-import (JUM-492): same package, same version, same
+        // content — importing twice changes nothing, proven by test.
+        showStatus(`Package '${result.package.name}@${result.package.version}' is already imported and unchanged — nothing to do.`, 'info');
+        return;
+      }
+      if (result.merged) {
+        // The merge preview renders BEFORE anything changes; aspects that
+        // require a decision (RBAC, invariants, removals, narrowings) keep
+        // the existing content and the merge applies only after the user
+        // explicitly accepts — a toast is not a substitute for that gate.
+        if (result.preview.length) {
+          inspectors.renderSchemaDiffResults(result.preview);
+        }
+        if (result.requiresDecision > 0) {
+          const accepted = window.confirm(
+            `Merge package '${result.package.name}' ${result.fromVersion} -> ${result.package.version}: `
+            + `${result.autoCount} change(s) apply automatically; ${result.requiresDecision} aspect(s) require a decision `
+            + '(the existing designer content is kept for them — see the schema-diff panel). Apply the merge?'
+          );
+          if (!accepted) {
+            showStatus(`Merge of package '${result.package.name}@${result.package.version}' cancelled — nothing was changed.`, 'info');
+            return;
+          }
+        }
+        withPersist(() => {
+          const index = state.domains.findIndex((domain) => domain.id === result.domain.id);
+          if (index >= 0) {
+            state.domains[index] = result.domain;
+          }
+          state.selectedDomainId = result.domain.id;
+          state.selectedEntityId = result.domain.entities[0]?.id || null;
+          recomputeIdCounter();
+          render();
+        });
+        const decisionNote = result.requiresDecision > 0
+          ? `; ${result.requiresDecision} aspect(s) kept the existing content (listed in the schema-diff panel)`
+          : '';
+        showStatus(
+          `Package '${result.package.name}' merged ${result.fromVersion} -> ${result.package.version}: ${result.autoCount} change(s) applied${decisionNote}.`,
+          'info'
+        );
         return;
       }
       withPersist(() => {
@@ -1674,6 +1751,11 @@ function importDomainPackage(file) {
         recomputeIdCounter();
         render();
       });
+      // Dependency-graph findings never block an import, but they are never
+      // silent either — they surface through the status region.
+      if (Array.isArray(result.warnings) && result.warnings.length) {
+        showStatus(result.warnings.join(' '), 'error');
+      }
     } catch (_) {
       showStatus('Could not parse package JSON.');
     }

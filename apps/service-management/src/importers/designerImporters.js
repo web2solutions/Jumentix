@@ -13,8 +13,8 @@
  * No `FileReader`, no `window.alert`, no state mutation — the file-reading
  * and persistence glue stays in `script.js`, so this module imports and runs
  * under Bun/Node with no DOM shim (the JUM-471 round-trip suite's
- * precondition). `buildDomainFromPackage` is verbatim from the monolith;
- * `buildDomainsFromOas` was extended by JUM-478 to normalise the entity meta
+ * precondition). `buildDomainsFromOas` was extended by JUM-478 to normalise
+ * the entity meta
  * extension set (`x-aggregate-root`/`x-invariants`/`x-rbac`/
  * `x-message-contracts`/composition/`x-fieldless`/`x-field-flags`), to restore
  * relationships from top-level `x-relations`, and to recognise unmarked port
@@ -24,6 +24,11 @@
  * Result shape: `{ ok: true, ... }` on success, `{ ok: false, reason }` with
  * a stable machine-readable reason on failure, so the caller keeps mapping
  * exactly one reason to exactly one pre-refactor alert.
+ * `buildDomainFromPackage` carries the monolith's append rules, extended by
+ * JUM-617 (colliding ids recomputed) and by JUM-492 (domain-package
+ * versioning: provenance stamping, dependency-graph resolution and the
+ * deterministic merge/no-op/refusal conflict policy of Requirement 126
+ * Contract 3, implemented in `src/packages/packageVersioning.js`).
  */
 
 import {
@@ -48,6 +53,16 @@ import {
   oasFieldNameFlags,
   uniqueStrings
 } from '../model/modelQueries.js';
+import {
+  buildPackageMerge,
+  buildPackageRegistry,
+  buildProvenance,
+  buildSameVersionConflictPreview,
+  comparePackageVersions,
+  normalizePackageIdentity,
+  packageContentsEqual,
+  resolvePackageGraph
+} from '../packages/packageVersioning.js';
 
 /**
  * Resolve an imported id against the ids already taken: an id that is free
@@ -71,22 +86,53 @@ function uniqueImportedId(id, prefix, seed, takenIds) {
 
 /**
  * Map a parsed `domain-package` document to a normalised domain ready to
- * append. Package/shared-value-object lists are deduped and the name is
- * suffixed (`_2`, `_3`, ...) until it does not collide with an existing
- * domain — exactly the monolith's rules. Layout comes from
- * `normalizeDomainInput` seeded at `existingDomains.length`, as before.
- * Domain/entity ids cross verbatim only while they are free; colliding ids
- * are recomputed (JUM-617, see `uniqueImportedId`).
+ * append — or, since JUM-492, to a version-aware merge/no-op/refusal when
+ * the package is already installed. Package/shared-value-object lists are
+ * deduped and the name is suffixed (`_2`, `_3`, ...) until it does not
+ * collide with an existing domain — exactly the monolith's rules. Layout
+ * comes from `normalizeDomainInput` seeded at `existingDomains.length`, as
+ * before. Domain/entity ids cross verbatim only while they are free;
+ * colliding ids are recomputed (JUM-617, see `uniqueImportedId`).
+ *
+ * The JUM-492 versioning layer (Requirement 126 Contract 3) runs before the
+ * append rules:
+ *
+ * - The document's package identity is normalised (`normalizePackageIdentity`):
+ *   a legacy v1 document synthesises `{ name: domain.name, version: 1.0.0 }`;
+ *   an unparseable version fails `invalid-package-version`, a document major
+ *   newer than the importer fails `unsupported-version`.
+ * - The installed-package registry (domains carrying provenance) is resolved
+ *   as a dependency graph: missing and range-incompatible dependencies are
+ *   reported as `warnings` (the import proceeds — the designer is not the
+ *   resolver, only the reporter), and a dependency cycle the incoming
+ *   package participates in fails `dependency-cycle` (cycles are reported,
+ *   never entered).
+ * - Re-importing an installed package: the same version with equal content
+ *   is a no-op (`noop: true` — idempotent re-import); the same version with
+ *   different content fails `same-version-conflict` (version immutability);
+ *   an older version fails `downgrade-rejected`; a newer version merges
+ *   deterministically (`buildPackageMerge`) — additive/metadata changes
+ *   apply, removals and narrowings (RBAC and invariants always) keep the
+ *   existing content and are listed in the `preview` for the user.
+ * - Imported content is stamped with provenance
+ *   (`context.provenance`/`packageName`/`packageVersion` on the domain,
+ *   `meta.provenance` on every entity), so the designer knows which package
+ *   and version each piece of content came from.
  *
  * @param {Object} parsed - decoded JSON of the uploaded package file.
  * @param {Array} existingDomains - domains already in the model.
- * @returns {{ ok: true, domain: Object } | { ok: false, reason: 'invalid-package' }}
+ * @returns {{ ok: true, domain: Object, ... } | { ok: false, reason: string, ... }}
  */
 export function buildDomainFromPackage(parsed, existingDomains) {
   const sourceDomain = parsed?.domain;
   if (!sourceDomain || !Array.isArray(sourceDomain.entities)) {
     return { ok: false, reason: 'invalid-package' };
   }
+  const identity = normalizePackageIdentity(parsed, sourceDomain);
+  if (!identity.ok) {
+    return identity;
+  }
+  const packageInfo = identity.package;
   const nextDomain = normalizeDomainInput(sourceDomain, existingDomains.length);
   const takenIds = new Set();
   existingDomains.forEach((domain) => {
@@ -95,23 +141,74 @@ export function buildDomainFromPackage(parsed, existingDomains) {
       if (entity?.id) takenIds.add(entity.id);
     });
   });
+  nextDomain.context = nextDomain.context || {};
+  nextDomain.context.packageDependencies = uniqueStrings(nextDomain.context.packageDependencies || []);
+  nextDomain.context.sharedValueObjects = uniqueStrings(nextDomain.context.sharedValueObjects || []);
+
+  // Dependency graph (JUM-492): the registry derives from provenance only,
+  // and the incoming package is overlaid before resolution so its own
+  // dependencies are checked against what is — and would be — installed.
+  const registry = buildPackageRegistry(existingDomains);
+  const graph = resolvePackageGraph(registry, packageInfo);
+  const incomingCycle = graph.cycles.find((cycle) => cycle.includes(packageInfo.name));
+  if (incomingCycle) {
+    return { ok: false, reason: 'dependency-cycle', cycle: incomingCycle, package: packageInfo };
+  }
+  const warnings = [
+    ...graph.missing.map((entry) => (
+      `Package '${entry.requiredBy}' depends on '${entry.name}@${entry.range}', which is not imported.`
+    )),
+    ...graph.incompatible.map((entry) => (
+      `Package '${entry.requiredBy}' requires '${entry.name}@${entry.range}' but '${entry.name}@${entry.installed}' is imported.`
+    )),
+    ...graph.cycles.map((cycle) => (
+      `Dependency cycle reported (not entered): ${cycle.join(' -> ')}.`
+    ))
+  ];
+
+  const installed = registry.get(packageInfo.name);
+  if (installed) {
+    const comparison = comparePackageVersions(packageInfo.version, installed.version);
+    if (comparison === 0) {
+      if (packageContentsEqual(installed.domain, nextDomain)) {
+        return { ok: true, noop: true, package: packageInfo, domain: installed.domain };
+      }
+      return {
+        ok: false,
+        reason: 'same-version-conflict',
+        package: packageInfo,
+        installed: installed.version,
+        preview: buildSameVersionConflictPreview(installed.domain, nextDomain, packageInfo)
+      };
+    }
+    if (comparison < 0) {
+      return {
+        ok: false,
+        reason: 'downgrade-rejected',
+        package: packageInfo,
+        installed: installed.version
+      };
+    }
+    const merge = buildPackageMerge(installed.domain, nextDomain, packageInfo, {
+      uniqueId: (id, prefix, seed) => uniqueImportedId(id, prefix, seed, takenIds)
+    });
+    return {
+      ok: true,
+      merged: true,
+      package: packageInfo,
+      fromVersion: installed.version,
+      domain: merge.domain,
+      preview: merge.preview,
+      autoCount: merge.autoCount,
+      requiresDecision: merge.requiresDecision,
+      warnings
+    };
+  }
+
   nextDomain.id = uniqueImportedId(nextDomain.id, 'domain', existingDomains.length, takenIds);
   nextDomain.entities.forEach((entity, entityIndex) => {
     entity.id = uniqueImportedId(entity.id, 'entity', entityIndex, takenIds);
   });
-  nextDomain.context = nextDomain.context || {};
-  nextDomain.context.packageDependencies = uniqueStrings(nextDomain.context.packageDependencies || []);
-  nextDomain.context.sharedValueObjects = uniqueStrings(nextDomain.context.sharedValueObjects || []);
-  const existingDeps = new Set(
-    existingDomains.flatMap((domain) => domain?.context?.packageDependencies || [])
-  );
-  const incomingNewDeps = nextDomain.context.packageDependencies.filter((dep) => !existingDeps.has(dep));
-  if (incomingNewDeps.length) {
-    nextDomain.context.packageDependencies = uniqueStrings([
-      ...nextDomain.context.packageDependencies,
-      ...incomingNewDeps
-    ]);
-  }
   let domainName = nextDomain.name;
   let suffix = 2;
   while (isDomainNameTaken(existingDomains, domainName)) {
@@ -119,7 +216,16 @@ export function buildDomainFromPackage(parsed, existingDomains) {
     suffix += 1;
   }
   nextDomain.name = domainName;
-  return { ok: true, domain: nextDomain };
+  // Provenance stamping (JUM-492): the domain and every imported entity
+  // record which package and version they came from.
+  const provenance = buildProvenance(packageInfo);
+  nextDomain.context.packageName = packageInfo.name;
+  nextDomain.context.packageVersion = packageInfo.version;
+  nextDomain.context.provenance = provenance;
+  nextDomain.entities.forEach((entity) => {
+    entity.meta = { ...(entity.meta || {}), provenance };
+  });
+  return { ok: true, domain: nextDomain, package: packageInfo, warnings };
 }
 
 /**

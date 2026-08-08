@@ -185,9 +185,20 @@ esperadas.
   ou `kind` diferente de `service-management-suite` falha claramente em vez
   de importar pela metade.
 - **Pacote de domínio** (`buildDomainPackageDocument` → `buildDomainFromPackage`):
-  um pacote faz ida e volta com deep-equal em um modelo vazio; a reimportação
-  adiciona sufixo ao nome do domínio (`Billing_2`, `Billing_3`, …) em vez de
-  colidir.
+  um pacote faz ida e volta com deep-equal em um modelo vazio, carimbado com
+  proveniência (JUM-492): o documento v2 carrega um bloco `package`
+  (`{ name, version, dependencies }`), e o conteúdo importado registra
+  `context.provenance`/`meta.provenance` (`{ package, version }`).
+  Reimportações são conscientes de versão: a mesma versão com conteúdo igual
+  é no-op, a mesma versão com conteúdo diferente e downgrades são recusados,
+  e uma versão mais nova faz merge determinístico — mudanças aditivas e de
+  metadados são aplicadas, e remoções, estreitamentos, RBAC e invariantes
+  mantêm o conteúdo existente e são listados na prévia de merge para decisão
+  do usuário (Requirement 126 Contrato 3). Faixas de versão de dependências
+  são resolvidas contra o registro de pacotes instalados; dependências
+  ausentes ou incompatíveis são reportadas, e um ciclo que o pacote de
+  entrada fecharia é recusado. A recomputação de ids do JUM-617 continua
+  guardando o caminho de anexação (um pacote diferente com ids colidindo).
 
 ### A travessia OAS: ponto fixo, lista de perdas vazia
 
@@ -376,9 +387,9 @@ retroativa/para frente) e
 - Codegen: [`hexagonalCodegen.js`](../../apps/service-management/src/codegen/hexagonalCodegen.js)
 - Validação de modelo / portão de exportação: [`modelValidation.js`](../../apps/service-management/src/validation/modelValidation.js), [`script.js`](../../apps/service-management/script.js)
 - Espelho RBAC: [`rbacContract.js`](../../apps/service-management/src/model/rbacContract.js); contrato: [Contrato de autorização de tenant e RBAC](./TENANT-RBAC-AUTHORIZATION-CONTRACT.pt-BR.md)
-- Suítes: [`designerRoundTrip.test.ts`](../../apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts), [`designerOasCompliance.test.ts`](../../apps/backend-template/test/unit/service-management/designerOasCompliance.test.ts), [`designerAsyncApiExport.test.ts`](../../apps/backend-template/test/unit/service-management/designerAsyncApiExport.test.ts), [`hexagonalCodegen.test.ts`](../../apps/backend-template/test/unit/service-management/hexagonalCodegen.test.ts), [`rbacContract.test.ts`](../../apps/backend-template/test/unit/service-management/rbacContract.test.ts), [`modelValidation.test.ts`](../../apps/backend-template/test/unit/service-management/modelValidation.test.ts)
+- Suítes: [`designerRoundTrip.test.ts`](../../apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts), [`designerPackageVersioning.test.ts`](../../apps/backend-template/test/unit/service-management/designerPackageVersioning.test.ts), [`designerOasCompliance.test.ts`](../../apps/backend-template/test/unit/service-management/designerOasCompliance.test.ts), [`designerAsyncApiExport.test.ts`](../../apps/backend-template/test/unit/service-management/designerAsyncApiExport.test.ts), [`hexagonalCodegen.test.ts`](../../apps/backend-template/test/unit/service-management/hexagonalCodegen.test.ts), [`rbacContract.test.ts`](../../apps/backend-template/test/unit/service-management/rbacContract.test.ts), [`modelValidation.test.ts`](../../apps/backend-template/test/unit/service-management/modelValidation.test.ts)
 - Portões: [`check-oas-route-resolution.js`](../../ci-cd/check-oas-route-resolution.js), [`check-hexagonal-boundaries.js`](../../ci-cd/check-hexagonal-boundaries.js), [`run-unit-tests.js`](../../ci-cd/run-unit-tests.js)
 - Alvos canônicos: [`spec/1.0.0.yml`](../../spec/1.0.0.yml), [`spec/asyncapi/1.0.0.websocket.yml`](../../spec/asyncapi/1.0.0.websocket.yml), [`spec/asyncapi/1.0.0.grpc.yml`](../../spec/asyncapi/1.0.0.grpc.yml), [`spec/asyncapi/async-api.proto`](../../spec/asyncapi/async-api.proto)
 - Requisitos: [036](../../.agents/requirements/software/036-openapi-port-objects-contracts.md) (objetos de porta), [026](../../.agents/requirements/software/026-openapi31-data-entity-model-compliance.md) (conformidade de entidades OAS 3.1), [126](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md) (ownership e contratos públicos, Contratos 2–3)
 - Documentos irmãos da cadeia E: [Aplicação Service Management](./SERVICE-MANAGEMENT-APPLICATION.pt-BR.md), [Arquitetura de módulos do Service Management e contrato da porta IDesignerStore](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.pt-BR.md), [Funcionalidades e uso do Domain Designer](./DOMAIN-DESIGNER-FEATURES-AND-USAGE.pt-BR.md)
-- Linear: [JUM-474](https://linear.app/jumentix/issue/JUM-474/feature-oas-31-export-compliant-with-req-036-and-route-resolution), [JUM-475](https://linear.app/jumentix/issue/JUM-475/feature-asyncapi-and-proto-exports-targeting-canonical-specasyncapi), [JUM-476](https://linear.app/jumentix/issue/JUM-476/feature-codegen-preview-and-boilerplate-bundle-emit-hexagonal-layout), [JUM-477](https://linear.app/jumentix/issue/JUM-477/feature-rbac-editor-aligned-to-tenant-rbac-authorization-contract), [JUM-478](https://linear.app/jumentix/issue/JUM-478/feature-lossless-round-trip-import-of-spec100yml-with-full-meta), [JUM-470](https://linear.app/jumentix/issue/JUM-470), [JUM-471](https://linear.app/jumentix/issue/JUM-471/test-bun-unit-suite-exportersimporters-round-trip), [JUM-547](https://linear.app/jumentix/issue/JUM-547/feature-full-suite-exportimport-carry-interfaces-service-configuration)
+- Linear: [JUM-474](https://linear.app/jumentix/issue/JUM-474/feature-oas-31-export-compliant-with-req-036-and-route-resolution), [JUM-475](https://linear.app/jumentix/issue/JUM-475/feature-asyncapi-and-proto-exports-targeting-canonical-specasyncapi), [JUM-476](https://linear.app/jumentix/issue/JUM-476/feature-codegen-preview-and-boilerplate-bundle-emit-hexagonal-layout), [JUM-477](https://linear.app/jumentix/issue/JUM-477/feature-rbac-editor-aligned-to-tenant-rbac-authorization-contract), [JUM-478](https://linear.app/jumentix/issue/JUM-478/feature-lossless-round-trip-import-of-spec100yml-with-full-meta), [JUM-470](https://linear.app/jumentix/issue/JUM-470), [JUM-471](https://linear.app/jumentix/issue/JUM-471/test-bun-unit-suite-exportersimporters-round-trip), [JUM-547](https://linear.app/jumentix/issue/JUM-547/feature-full-suite-exportimport-carry-interfaces-service-configuration), [JUM-492](https://linear.app/jumentix/issue/JUM-492/feature-domain-package-versioning-with-semantic-conflict-resolution)

@@ -901,6 +901,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/service-management/designerPackageVersioning.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/designerPackageVersioning.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/service-management/designerExporters.test.ts",
       "path": "apps/backend-template/test/unit/service-management/designerExporters.test.ts",
       "layer": "service-management/designer",
@@ -3402,9 +3412,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 167,
+    "unit": 168,
     "integration": 94,
     "smoke": 2,
-    "suites": 283
+    "suites": 284
   }
 }

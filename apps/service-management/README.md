@@ -71,7 +71,12 @@ sample is ordinary domain/entity deletion. Content is defined in
      Import JSON restores them, accepting pre-JUM-547 domain-only files and refusing
      unknown sections or newer major versions clearly.
    - OpenAPI composition controls (`oneOf`, `allOf`, `anyOf`, external `$ref`, discriminator) per entity.
-   - Domain package export/import for reusable model sharing.
+   - Domain package export/import for reusable model sharing — versioned
+     (JUM-492): packages carry a semantic version and dependency ranges,
+     imported content is stamped with provenance, and re-imports resolve
+     deterministically (no-op on identical version, refusal on same-version
+     conflict or downgrade, merge preview with user decision for RBAC,
+     invariants, removals and narrowings on a newer version).
    - Mini-map navigation and large-canvas performance mode.
 2. **Communication Interface Designer**
    - Register inbound interface adapters (`HTTP/REST`, `gRPC`, `WebSocket`, `SSE`).

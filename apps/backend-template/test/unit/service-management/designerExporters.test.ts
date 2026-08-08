@@ -15,7 +15,9 @@ import path from 'node:path';
  * (canonical `spec/asyncapi/` targeting) and is pinned by
  * `designerAsyncApiExport.test.ts`. The one deliberate shape change since the
  * extraction is the JSON export: JUM-547 turned it into the versioned
- * full-suite document (`kind`/`version`, all four tabs), pinned here.
+ * full-suite document (`kind`/`version`, all four tabs), pinned here. The
+ * domain package followed under JUM-492: the v2 document adds the `package`
+ * identity block (name, semantic version, dependency ranges), pinned here.
  */
 
 const repoRoot = path.resolve(__dirname, '../../../../..');
@@ -315,10 +317,18 @@ describe('designer exporters (JUM-469)', () => {
     const state = createState();
     const document = buildDomainPackageDocument(state.domains[0], '2026-08-05T00:00:00.000Z');
     expect(document.kind).toBe('domain-package');
-    expect(document.version).toBe('1.0.0');
+    expect(document.version).toBe('2.0.0');
     expect(document.exportedAt).toBe('2026-08-05T00:00:00.000Z');
     expect(document.domain).toBe(state.domains[0]);
-    expect(Object.keys(document)).toStrictEqual(['kind', 'version', 'exportedAt', 'domain']);
+    // JUM-492: the v2 document declares the package identity — name and
+    // version fall back to the domain name and 1.0.0 for a domain that was
+    // never stamped, dependencies parse from context.packageDependencies.
+    expect(document.package).toStrictEqual({
+      name: 'Billing',
+      version: '1.0.0',
+      dependencies: [{ name: 'shared-kernel', range: '*' }]
+    });
+    expect(Object.keys(document)).toStrictEqual(['kind', 'version', 'exportedAt', 'package', 'domain']);
     expect(buildDomainPackageDocument(state.domains[0]).exportedAt)
       .toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
   });
