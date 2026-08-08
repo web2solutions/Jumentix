@@ -51,8 +51,33 @@ O Storybook está configurado para:
 - builds estáticos determinísticos;
 - smoke test do manifesto, exigindo histórias fundamentais e tamanho mínimo do catálogo.
 
-O catálogo gera atualmente 42 entradas indexadas, incluindo estados mobile explícitos para o
-cabeçalho, fluxo de arquitetura, página comercial do produto e composições comerciais completas.
+O catálogo gera atualmente 54 entradas indexadas, incluindo estados mobile explícitos para o
+cabeçalho, fluxo de arquitetura, página comercial do produto, composições comerciais completas e a
+cobertura do designer de Service Management abaixo.
+
+## Cobertura do designer de Service Management
+
+O designer de Service Management (`apps/service-management`) é uma SPA vanilla sem etapa de build,
+portanto não pode importar os componentes React. Ele adota o design system na camada de tokens
+(JUM-488):
+
+- `apps/service-management/tokens.css` é uma cópia vendida de `components/design-system/tokens.css`
+  — as custom properties compartilhadas `--jtx-*` (cores, superfícies, linhas, raios, sombras,
+  espaçamento, movimento e as pilhas tipográficas `--jtx-font-sans`/`--jtx-font-mono`). Mudanças de
+  tokens acontecem primeiro no arquivo do site e são espelhadas na cópia vendida.
+- `apps/service-management/styles.css` resolve cada valor cosmético para esses tokens. Permanecem
+  literais apenas a geometria estrutural da qual a matemática do canvas depende (canvas de
+  3200×2200, grade de 24 px, domínios de 520 px, entidades de 190 px) e a densidade compacta dos
+  inspetores; suas regras em nível de elemento têm escopo em `.service-management-shell` para que
+  a incorporação da folha de estilo aqui nunca vaze para o chrome do Storybook.
+- `components/service-management-designer/ServiceManagementDesigner.stories.tsx` monta a marcação
+  e as folhas de estilo reais do designer neste Storybook — barra de guias, controles do workspace,
+  canvas de domínio com entidades/arestas/minimapa, as superfícies de status do JUM-543, inspetor
+  de entidade, painéis e listas, prévias de código e o banner de atualização PWA do JUM-489 — para
+  que os mesmos gates de build estático, smoke do manifesto, acessibilidade e tema claro/escuro
+  cubram os principais estados de UI do designer.
+
+O smoke exige as oito histórias do designer e um catálogo mínimo de 54 entradas.
 
 Evidências visuais:
 

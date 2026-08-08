@@ -1,11 +1,16 @@
-:root {
-  --bg: #f3f5f8;
-  --panel: #ffffff;
-  --line: #d7dde6;
-  --text: #0f172a;
-  --muted: #64748b;
-  --focus: #2563eb;
-}
+/*
+ * styles.css — Service Management designer, styled on the Jumentix design
+ * system (JUM-488). All color/typography/radius/shadow/motion values come
+ * from the shared `--jtx-*` custom properties vendored in ./tokens.css
+ * (source of truth: apps/jumentix-website/components/design-system/tokens.css).
+ * What stays literal is either structural geometry the canvas math depends on
+ * (3200x2200 canvas, 24px grid, 520px domains, 190px entities — pinned by
+ * src/model/modelQueries.js and its unit suite) or the designer's compact
+ * density (5-7px gaps in the dense inspectors), which has no token
+ * equivalent. Element-level rules are scoped under .service-management-shell
+ * with :where() so the stylesheet keeps its exact cascade when embedded in
+ * the website Storybook (components/service-management-designer).
+ */
 
 * {
   box-sizing: border-box;
@@ -17,9 +22,9 @@ body {
   padding: 0;
   width: 100%;
   height: 100%;
-  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  color: var(--text);
-  background: var(--bg);
+  font-family: var(--jtx-font-sans);
+  color: var(--jtx-ink);
+  background: var(--jtx-surface-subtle);
 }
 
 .service-management-shell {
@@ -29,10 +34,35 @@ body {
   height: 100%;
 }
 
+/* Skip link (JUM-488): first focusable element, jumps past the tab bar to
+   the canvas workspace. Absolutely positioned so it never perturbs the
+   shell grid; visible only while focused — the design-system focus ring
+   (3px --jtx-blue-200) doubles as the reveal affordance. */
+.skip-link {
+  position: absolute;
+  left: var(--jtx-space-3);
+  top: -48px;
+  z-index: 40;
+  padding: var(--jtx-space-2) var(--jtx-space-3);
+  border: 1px solid var(--jtx-line);
+  border-radius: var(--jtx-radius-sm);
+  background: var(--jtx-surface);
+  color: var(--jtx-blue-700);
+  font-size: 13px;
+  text-decoration: none;
+  transition: top var(--jtx-motion-fast);
+}
+
+.skip-link:focus-visible {
+  top: var(--jtx-space-3);
+  outline: 3px solid var(--jtx-blue-200);
+  outline-offset: 2px;
+}
+
 .service-management-header {
-  padding: 12px;
-  border-bottom: 1px solid var(--line);
-  background: #fff;
+  padding: var(--jtx-space-3);
+  border-bottom: 1px solid var(--jtx-line);
+  background: var(--jtx-surface);
 }
 
 .service-management-header h1 {
@@ -42,17 +72,17 @@ body {
 
 .service-management-header p {
   margin: 4px 0 0;
-  color: var(--muted);
+  color: var(--jtx-ink-muted);
   font-size: 12px;
 }
 
 .tab-nav {
   display: flex;
-  gap: 8px;
+  gap: var(--jtx-space-2);
   align-items: center;
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--line);
-  background: #f8fafc;
+  padding: var(--jtx-space-2) var(--jtx-space-3);
+  border-bottom: 1px solid var(--jtx-line);
+  background: var(--jtx-surface-subtle);
 }
 
 .tab-btn {
@@ -60,8 +90,8 @@ body {
 }
 
 .tab-btn.active {
-  border-color: var(--focus);
-  background: #eff6ff;
+  border-color: var(--jtx-blue-500);
+  background: var(--jtx-blue-50);
 }
 
 .tab-section {
@@ -75,7 +105,7 @@ body {
 }
 
 .tab-body {
-  padding: 12px;
+  padding: var(--jtx-space-3);
   overflow: auto;
   height: 100%;
 }
@@ -88,10 +118,10 @@ body {
 }
 
 .sidebar {
-  border-right: 1px solid var(--line);
-  background: var(--panel);
+  border-right: 1px solid var(--jtx-line);
+  background: var(--jtx-surface);
   overflow-y: auto;
-  padding: 12px;
+  padding: var(--jtx-space-3);
 }
 
 .sidebar-header h1 {
@@ -101,31 +131,31 @@ body {
 
 .sidebar-header p {
   margin: 2px 0 0;
-  color: var(--muted);
+  color: var(--jtx-ink-muted);
   font-size: 12px;
 }
 
 .panel {
-  margin-top: 12px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  margin-top: var(--jtx-space-3);
+  border: 1px solid var(--jtx-line);
+  border-radius: var(--jtx-radius-md);
   padding: 10px;
 }
 
 .panel h2 {
-  margin: 0 0 8px;
+  margin: 0 0 var(--jtx-space-2);
   font-size: 13px;
 }
 
 .panel h3 {
-  margin: 0 0 8px;
+  margin: 0 0 var(--jtx-space-2);
   font-size: 13px;
 }
 
 .row {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 8px;
+  gap: var(--jtx-space-2);
 }
 
 .row + .row {
@@ -134,7 +164,7 @@ body {
 
 .column {
   display: grid;
-  gap: 8px;
+  gap: var(--jtx-space-2);
 }
 
 .column.compact {
@@ -144,7 +174,7 @@ body {
 
 .check {
   font-size: 12px;
-  color: var(--muted);
+  color: var(--jtx-ink-muted);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -154,81 +184,93 @@ body {
   min-height: unset;
 }
 
-input,
-select,
-button {
-  border: 1px solid var(--line);
-  border-radius: 6px;
+/* Element base, scoped + :where() (zero specificity) so component classes
+   below override it exactly as they did when these were bare element
+   selectors — the cascade is byte-for-byte behavior-preserving in the app,
+   and the rules no longer leak into the Storybook chrome around the embedded
+   designer stories. */
+.service-management-shell :where(input, select, button) {
+  border: 1px solid var(--jtx-line);
+  border-radius: var(--jtx-radius-sm);
   min-height: 32px;
+  font-family: inherit;
   font-size: 13px;
-  padding: 6px 8px;
-  background: #fff;
+  padding: 6px var(--jtx-space-2);
+  background: var(--jtx-surface);
+  color: var(--jtx-ink);
 }
 
-button {
+.service-management-shell :where(button) {
   cursor: pointer;
+  transition:
+    border-color var(--jtx-motion-fast),
+    background var(--jtx-motion-fast),
+    color var(--jtx-motion-fast);
 }
 
-button:hover {
-  border-color: #b3bfce;
+/* Hover follows the design-system "secondary action" idiom
+   (DesignSystem.module.css .secondary:hover). */
+.service-management-shell :where(button):hover {
+  border-color: var(--jtx-blue-200);
+  background: var(--jtx-blue-50);
 }
 
-input:focus,
-select:focus,
-button:focus {
-  outline: 2px solid color-mix(in srgb, var(--focus) 35%, transparent);
-  outline-offset: 1px;
+.service-management-shell :where(input, select, button):focus-visible {
+  outline: 3px solid var(--jtx-blue-200);
+  outline-offset: 2px;
 }
 
 .hint {
-  margin: 8px 0 0;
+  margin: var(--jtx-space-2) 0 0;
   font-size: 12px;
-  color: var(--muted);
+  color: var(--jtx-ink-muted);
 }
 
 /* Non-blocking status surfaces (JUM-543). The global region announces
    validation messages and API results via aria-live; the inline status line
    does the same inside the runtime env panel. The region is a fixed toast so
-   it never perturbs the shell grid layout (auto auto 1fr). */
+   it never perturbs the shell grid layout (auto auto 1fr). Error styling
+   follows the design-system "attention" tone (coral-50 surface, coral ramp
+   text #a32e1a, border #ffc0ad — the same literals StatusBadge uses). */
 .status-region {
   position: fixed;
-  right: 16px;
-  bottom: 16px;
+  right: var(--jtx-space-4);
+  bottom: var(--jtx-space-4);
   z-index: 20;
   max-width: 420px;
-  padding: 8px 12px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: #fff;
-  box-shadow: 0 4px 16px rgb(15 23 42 / 18%);
+  padding: var(--jtx-space-2) var(--jtx-space-3);
+  border: 1px solid var(--jtx-line);
+  border-radius: var(--jtx-radius-sm);
+  background: var(--jtx-surface);
+  box-shadow: var(--jtx-shadow-md);
   font-size: 13px;
-  color: var(--text);
+  color: var(--jtx-ink);
 }
 
 .status-region.status-error {
-  border-color: #fca5a5;
-  background: #fef2f2;
-  color: #b91c1c;
+  border-color: #ffc0ad;
+  background: var(--jtx-coral-50);
+  color: #a32e1a;
 }
 
 .status-region.status-info {
-  color: var(--muted);
+  color: var(--jtx-ink-muted);
 }
 
 .status-line.status-error {
-  color: #b91c1c;
+  color: #a32e1a;
 }
 
 .status-line.status-info {
-  color: var(--muted);
+  color: var(--jtx-ink-muted);
 }
 
 .hint.status-error {
-  color: #b91c1c;
+  color: #a32e1a;
 }
 
 .list {
-  margin: 8px 0 0;
+  margin: var(--jtx-space-2) 0 0;
   padding: 0;
   list-style: none;
   display: grid;
@@ -247,13 +289,13 @@ button:focus {
 }
 
 .relationship-name {
-  border: 1px solid var(--line);
-  border-radius: 6px;
+  border: 1px solid var(--jtx-line);
+  border-radius: var(--jtx-radius-sm);
   min-height: 32px;
   font-size: 12px;
-  padding: 7px 8px;
-  background: #fff;
-  color: #334155;
+  padding: 7px var(--jtx-space-2);
+  background: var(--jtx-surface);
+  color: var(--jtx-ink-muted);
 }
 
 .field-row {
@@ -270,14 +312,14 @@ button:focus {
 }
 
 .list button.active {
-  border-color: var(--focus);
-  background: #eff6ff;
+  border-color: var(--jtx-blue-500);
+  background: var(--jtx-blue-50);
 }
 
 .legend {
   margin: 0;
   padding-left: 18px;
-  color: var(--muted);
+  color: var(--jtx-ink-muted);
   font-size: 12px;
   display: grid;
   gap: 5px;
@@ -294,11 +336,11 @@ button:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 12px;
-  border-bottom: 1px solid var(--line);
-  background: #fff;
+  padding: 0 var(--jtx-space-3);
+  border-bottom: 1px solid var(--jtx-line);
+  background: var(--jtx-surface);
   font-size: 12px;
-  color: var(--muted);
+  color: var(--jtx-ink-muted);
 }
 
 .workspace-actions {
@@ -310,36 +352,37 @@ button:focus {
 .workspace-actions button {
   min-height: 28px;
   font-size: 12px;
-  padding: 4px 8px;
+  padding: var(--jtx-space-1) var(--jtx-space-2);
 }
 
 .zoom-indicator {
   min-width: 48px;
   text-align: center;
-  color: #334155;
+  color: var(--jtx-ink-muted);
 }
 
 .responsive-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 8px;
+  gap: var(--jtx-space-2);
 }
 
 .responsive-grid label {
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: var(--jtx-space-1);
   font-size: 12px;
-  color: var(--muted);
+  color: var(--jtx-ink-muted);
 }
 
 .code-preview {
-  margin-top: 8px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: #0f172a;
-  color: #e2e8f0;
-  padding: 8px;
+  margin-top: var(--jtx-space-2);
+  border: 1px solid var(--jtx-line);
+  border-radius: var(--jtx-radius-sm);
+  background: var(--jtx-code);
+  color: var(--jtx-blue-50);
+  padding: var(--jtx-space-2);
   min-height: 120px;
+  font-family: var(--jtx-font-mono);
   font-size: 12px;
   overflow: auto;
 }
@@ -348,8 +391,8 @@ button:focus {
   position: relative;
   overflow: auto;
   background-image:
-    linear-gradient(#e7ecf2 1px, transparent 1px),
-    linear-gradient(90deg, #e7ecf2 1px, transparent 1px);
+    linear-gradient(color-mix(in srgb, var(--jtx-line) 55%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--jtx-line) 55%, transparent) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 
@@ -383,41 +426,41 @@ button:focus {
 
 .mini-map {
   position: absolute;
-  right: 12px;
-  bottom: 12px;
+  right: var(--jtx-space-3);
+  bottom: var(--jtx-space-3);
   width: 180px;
   height: 130px;
-  border: 1px solid #cbd5e1;
-  background: rgba(255, 255, 255, 0.92);
-  border-radius: 6px;
+  border: 1px solid var(--jtx-line);
+  background: color-mix(in srgb, var(--jtx-surface) 92%, transparent);
+  border-radius: var(--jtx-radius-sm);
   z-index: 10;
   overflow: hidden;
 }
 
 .mini-map-domain {
   position: absolute;
-  border: 1px solid #64748b;
-  background: rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--jtx-ink-muted);
+  background: color-mix(in srgb, var(--jtx-ink-muted) 12%, transparent);
   cursor: pointer;
 }
 
 .mini-map-domain.active {
   border-width: 2px;
-  border-color: #2563eb;
+  border-color: var(--jtx-blue-500);
 }
 
 .domain {
   position: absolute;
   width: 520px;
   min-height: 280px;
-  border: 1px solid color-mix(in srgb, var(--domain-color) 65%, #9ca3af);
-  background: color-mix(in srgb, var(--domain-color) 16%, white);
-  border-radius: 8px;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+  border: 1px solid color-mix(in srgb, var(--domain-color) 65%, var(--jtx-ink-muted));
+  background: color-mix(in srgb, var(--domain-color) 16%, var(--jtx-surface));
+  border-radius: var(--jtx-radius-md);
+  box-shadow: var(--jtx-shadow-sm);
 }
 
 .domain.selected {
-  outline: 2px solid var(--focus);
+  outline: 2px solid var(--jtx-blue-500);
   outline-offset: 2px;
 }
 
@@ -425,8 +468,8 @@ button:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 10px;
-  border-bottom: 1px dashed color-mix(in srgb, var(--domain-color) 25%, #cbd5e1);
+  padding: var(--jtx-space-2) 10px;
+  border-bottom: 1px dashed color-mix(in srgb, var(--domain-color) 25%, var(--jtx-line));
   cursor: move;
 }
 
@@ -437,7 +480,7 @@ button:focus {
 
 .entity-count {
   font-size: 11px;
-  color: var(--muted);
+  color: var(--jtx-ink-muted);
 }
 
 .domain-body {
@@ -448,18 +491,18 @@ button:focus {
 .entity {
   position: absolute;
   width: 190px;
-  border: 1px solid #c6d1df;
-  border-radius: 8px;
-  background: #fff;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+  border: 1px solid var(--jtx-line);
+  border-radius: var(--jtx-radius-md);
+  background: var(--jtx-surface);
+  box-shadow: var(--jtx-shadow-sm);
 }
 
 .entity-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 7px 8px;
-  border-bottom: 1px solid #e2e8f0;
+  padding: 7px var(--jtx-space-2);
+  border-bottom: 1px solid var(--jtx-line);
   font-size: 12px;
   font-weight: 600;
   cursor: move;
@@ -471,34 +514,34 @@ button:focus {
   justify-content: center;
   min-width: 20px;
   height: 18px;
-  border-radius: 4px;
-  border: 1px solid #0ea5e9;
-  color: #0369a1;
+  border-radius: var(--jtx-radius-sm);
+  border: 1px solid var(--jtx-blue-500);
+  color: var(--jtx-blue-700);
   font-size: 10px;
   font-weight: 700;
-  background: #e0f2fe;
+  background: var(--jtx-blue-50);
 }
 
 .entity-fields {
   margin: 0;
-  padding: 6px 8px 8px 18px;
+  padding: 6px var(--jtx-space-2) var(--jtx-space-2) 18px;
   font-size: 11px;
-  color: #334155;
+  color: var(--jtx-ink-muted);
   min-height: 48px;
 }
 
 .entity.selected {
-  border-color: var(--focus);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--focus) 24%, transparent);
+  border-color: var(--jtx-blue-500);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--jtx-blue-500) 24%, transparent);
 }
 
 .entity-anchor {
   position: absolute;
   width: 10px;
   height: 10px;
-  border: 1px solid #2563eb;
+  border: 1px solid var(--jtx-blue-500);
   border-radius: 999px;
-  background: #fff;
+  background: var(--jtx-surface);
   cursor: crosshair;
   z-index: 3;
 }
@@ -524,14 +567,14 @@ button:focus {
 }
 
 .edge-line {
-  stroke: #0f172a;
+  stroke: var(--jtx-ink);
   stroke-width: 1.7;
   fill: none;
   pointer-events: none;
 }
 
 .edge-preview {
-  stroke: #2563eb;
+  stroke: var(--jtx-blue-500);
   stroke-width: 1.7;
   stroke-dasharray: 6 4;
   fill: none;
@@ -539,7 +582,7 @@ button:focus {
 }
 
 .edge-line.active {
-  stroke: #2563eb;
+  stroke: var(--jtx-blue-500);
   stroke-width: 2.4;
 }
 
@@ -552,19 +595,20 @@ button:focus {
 
 .edge-label {
   font-size: 11px;
-  fill: #0f172a;
+  fill: var(--jtx-ink);
   font-weight: 600;
   pointer-events: none;
 }
 
 .code-preview-output {
-  margin: 8px 0 0;
-  padding: 8px;
+  margin: var(--jtx-space-2) 0 0;
+  padding: var(--jtx-space-2);
   max-height: 240px;
   overflow: auto;
-  background: #0f172a;
-  color: #e2e8f0;
-  border-radius: 6px;
+  background: var(--jtx-code);
+  color: var(--jtx-blue-50);
+  border-radius: var(--jtx-radius-sm);
+  font-family: var(--jtx-font-mono);
   font-size: 11px;
   white-space: pre;
 }
@@ -574,43 +618,67 @@ button:focus {
    shell (and its unsaved editor state) is replaced. */
 .pwa-update-banner {
   position: fixed;
-  right: 16px;
-  bottom: 16px;
+  right: var(--jtx-space-4);
+  bottom: var(--jtx-space-4);
   z-index: 30;
   max-width: 420px;
-  padding: 10px 12px;
-  border: 1px solid var(--focus);
-  border-radius: 6px;
-  background: #fff;
-  box-shadow: 0 4px 16px rgb(15 23 42 / 18%);
+  padding: 10px var(--jtx-space-3);
+  border: 1px solid var(--jtx-blue-500);
+  border-radius: var(--jtx-radius-sm);
+  background: var(--jtx-surface);
+  box-shadow: var(--jtx-shadow-md);
   font-size: 13px;
-  color: var(--text);
+  color: var(--jtx-ink);
 }
 
 .pwa-update-banner-message {
-  margin: 0 0 8px;
+  margin: 0 0 var(--jtx-space-2);
 }
 
 .pwa-update-banner-actions {
   display: flex;
-  gap: 8px;
+  gap: var(--jtx-space-2);
 }
 
+/* The banner mounts on <body> (src/pwa/pwaShell.js), outside
+   .service-management-shell, so it carries its own element base — the scoped
+   shell rules above must not be load-bearing here. */
 .pwa-update-banner-btn {
-  padding: 4px 10px;
-  border: 1px solid var(--line);
-  border-radius: 4px;
-  background: #fff;
-  color: var(--text);
+  min-height: 32px;
+  font: inherit;
+  padding: var(--jtx-space-1) 10px;
+  border: 1px solid var(--jtx-line);
+  border-radius: var(--jtx-radius-sm);
+  background: var(--jtx-surface);
+  color: var(--jtx-ink);
   cursor: pointer;
+  transition:
+    border-color var(--jtx-motion-fast),
+    background var(--jtx-motion-fast),
+    color var(--jtx-motion-fast);
+}
+
+.pwa-update-banner-btn:hover {
+  border-color: var(--jtx-blue-200);
+  background: var(--jtx-blue-50);
 }
 
 .pwa-update-banner-btn-reload {
-  border-color: var(--focus);
-  background: var(--focus);
+  border-color: var(--jtx-blue-500);
+  background: var(--jtx-blue-500);
   color: #fff;
 }
 
+.pwa-update-banner-btn-reload:hover {
+  border-color: var(--jtx-blue-700);
+  background: var(--jtx-blue-700);
+}
+
 .pwa-update-banner-btn-reset {
-  color: var(--muted);
+  color: var(--jtx-ink-muted);
+}
+
+.pwa-update-banner-btn:focus-visible {
+  outline: 3px solid var(--jtx-blue-200);
+  outline-offset: 2px;
 }

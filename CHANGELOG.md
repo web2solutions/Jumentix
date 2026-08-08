@@ -4,6 +4,11 @@
 
 ## All Changes
 
+- 2026-08-08 test(JUM-486): make the quota-pressure cell robust under CI timing - Eduardo A.
+- 2026-08-08 test(JUM-486): offline/online persistence matrix for designer on Cana - Eduardo A.
+- 2026-08-08 [JUM-485][Feature] Multi-tab write-event sync with undo isolation (#122) - Eduardo A.
+- 2026-08-08 [JUM-621][Fix] Keep BullMQ results long enough for the caller to read them (#123) - Eduardo A.
+- 2026-08-08 fix(message-mediator): keep bullmq results long enough to be read - Eduardo Almeida
 - 2026-08-08 feat(JUM-489): installable PWA shell with service worker and manifest (#121) - Eduardo A.
 - 2026-08-08 feat(JUM-484): one-way migration of service-management.v1 from localStorage to Cana (no fallback) (#120) - Eduardo A.
 - 2026-08-08 docs(JUM-482): document E5 operations console (EN/PT-BR) (#119) - Eduardo A.
