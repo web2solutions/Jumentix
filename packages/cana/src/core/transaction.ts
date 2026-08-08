@@ -115,14 +115,12 @@ export async function runTransaction<TResult>(
     throw translateError(error);
   }
 
-  let settled: 'complete' | 'abort' | 'error' | undefined;
-
   // Attached before the body runs. Registering them afterwards would miss an
   // abort that a synchronous failure inside the body triggers immediately.
   const finished = new Promise<'complete' | 'abort' | 'error'>((resolve) => {
-    transaction.oncomplete = () => { settled = 'complete'; resolve('complete'); };
-    transaction.onabort = () => { settled = 'abort'; resolve('abort'); };
-    transaction.onerror = () => { settled = 'error'; resolve('error'); };
+    transaction.oncomplete = () => { resolve('complete'); };
+    transaction.onabort = () => { resolve('abort'); };
+    transaction.onerror = () => { resolve('error'); };
   });
 
   let result: TResult | undefined;

@@ -124,7 +124,12 @@ describe('cana 100% coverage — localStorage backend edges', () => {
     // Compound primary-key range with open bounds + reverse length mismatch via query sort.
     const ranged = await backend.transaction('readonly', ['compound'], async (scope) => (
       scope.table('compound').query({
-        range: { lower: ['ana', 1], upper: ['ana', 9], lowerOpen: true, upperOpen: true },
+        range: {
+          lower: ['ana', 1],
+          upper: ['ana', 9],
+          lowerOpen: true,
+          upperOpen: true
+        },
         direction: 'prev'
       })
     ), 'c:range');
@@ -135,7 +140,7 @@ describe('cana 100% coverage — localStorage backend edges', () => {
     const nestedName = uniqueName('ls-nested-mid');
     nestedStorage.setItem(`cana.ls.v1:${nestedName}`, JSON.stringify({
       version: 1,
-      stores: { nested: { '1': { meta: null, tag: 't' } } },
+      stores: { nested: { 1: { meta: null, tag: 't' } } },
       sequences: { nested: 1 }
     }));
     const nestedBackend = openLocalStorageBackend({
@@ -339,7 +344,7 @@ describe('cana 100% coverage — localStorage backend edges', () => {
 
     const throwsString = {
       getItem: () => null,
-      setItem: () => { throw 'quota-string'; },
+      setItem: () => { throw new Error('quota-string'); },
       removeItem: () => undefined
     };
     const backend = openLocalStorageBackend({
@@ -559,7 +564,7 @@ describe('cana 100% coverage — protocol and conformance', () => {
     router.dispose();
   });
 
-  it('covers resolveOutcome default options and canaError cause shapes', () => {
+  it('covers resolveOutcome default options and canaError cause shapes', async () => {
     expect(canaError('Internal', 'x', { cause: { message: 'only' } }).cause).to.equal('only');
     expect(canaError('Internal', 'x', { cause: { name: 'OnlyName' } }).cause).to.equal('OnlyName');
     expect(canaError('Internal', 'x', { cause: { name: 'Named', message: 'and messaged' } }).cause)
@@ -569,9 +574,8 @@ describe('cana 100% coverage — protocol and conformance', () => {
       objectStoreNames: { contains: () => false },
       transaction: () => { throw new Error('no ledger'); }
     } as unknown as IDBDatabase;
-    return resolveOutcome(database, 'id', Date.now()).then((outcome) => {
-      expect(outcome).to.equal('unresolvable');
-    });
+    const outcome = await resolveOutcome(database, 'id', Date.now());
+    expect(outcome).to.equal('unresolvable');
   });
 
   it('records a failure detail from a throw with no message property', async () => {

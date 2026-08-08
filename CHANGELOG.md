@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-08 feat(cana): localStorage fallback, real Workers, 100% src coverage (JUM-615) - Eduardo A.
 - 2026-08-08 [JUM-627][Governance] Verify the child task issue is in the focused epic (#134) - Eduardo A.
 - 2026-08-08 test(governance): stop the no-credential cases reading the ambient key - Eduardo Almeida
 - 2026-08-08 chore(governance): state which membership the check verified - Eduardo Almeida

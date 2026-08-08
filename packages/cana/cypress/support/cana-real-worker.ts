@@ -15,6 +15,9 @@ const schema: CanaSchema = {
   ]
 };
 
+// Dedicated workers expose the global as `self`; the lint rule bans it in the
+// window realm, which this file never runs in.
+// eslint-disable-next-line no-restricted-globals
 const scope = self as unknown as {
   addEventListener: (type: string, listener: (event: { data: unknown }) => void) => void;
   removeEventListener: (type: string, listener: (event: { data: unknown }) => void) => void;

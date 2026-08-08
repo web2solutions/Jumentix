@@ -143,6 +143,8 @@ export async function runConformance(
   // Label used by coverage-100 for the `?? error` arm in `record`'s detail ternary.
   if (label === 'detail-fallback') {
     results.push(await record('throw without message', false, async () => {
+      // Covers record()'s detail ternary when the throw has no `.message`.
+      // eslint-disable-next-line no-throw-literal
       throw { noMessage: true };
     }));
   }
@@ -467,11 +469,12 @@ export async function runConformance(
     async () => {
       assert(typeof indexedDB !== 'undefined', 'no indexedDB global');
       const name = `cana-conformance-reload-${Date.now()}`;
-      const first = createClient({ name, schema: schema(), ...(factory === undefined ? {} : { factory }) });
+      const factoryOpt = factory === undefined ? {} : { factory };
+      const first = createClient({ name, schema: schema(), ...factoryOpt });
       await first.open();
       await first.table<{ id: number; value: number }>('conformance').put({ id: 1, value: 42 });
       await first.close();
-      const second = createClient({ name, schema: schema(), ...(factory === undefined ? {} : { factory }) });
+      const second = createClient({ name, schema: schema(), ...factoryOpt });
       await second.open();
       const row = await second.table<{ id: number; value: number }>('conformance').get(1);
       assert(row?.value === 42, `reload lost data: ${JSON.stringify(row)}`);

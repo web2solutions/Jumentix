@@ -305,6 +305,7 @@ interface TxState {
  */
 export function openLocalStorageBackend(
   options: LocalStorageBackendOptions
+  // eslint-disable-next-line no-use-before-define -- class is declared immediately below
 ): LocalStorageBackend {
   const storage = options.storage ?? browserLocalStorage();
   if (!storage) {
@@ -318,12 +319,13 @@ export function openLocalStorageBackend(
   // exist in the schema or every readwrite transaction fails with Unknown store.
   const schema: CanaSchema = options.operationLedger
     ? {
-        ...options.schema,
-        stores: withLedgerStore(options.schema.stores) as CanaSchema['stores']
-      }
+      ...options.schema,
+      stores: withLedgerStore(options.schema.stores) as CanaSchema['stores']
+    }
     : options.schema;
   const normalized = { ...options, schema };
   const snapshot = loadSnapshot(storage, normalized.name, normalized.schema);
+  // eslint-disable-next-line no-use-before-define -- class is declared immediately below
   return new LocalStorageBackend(normalized, storage, snapshot);
 }
 
@@ -468,10 +470,14 @@ export class LocalStorageBackend {
     correlationId: string,
     mode: CanaTransactionMode
   ): CanaTable<TRecord, TKey> {
+    // Nested table methods need the outer instance; `this` inside the returned
+    // object literal would be the table, not the backend.
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const backend = this;
     const schema = storeSchema(this.options.schema, name);
 
     const bag = (): Record<string, unknown> => {
+      // eslint-disable-next-line no-param-reassign -- TxState is the mutable scratch snapshot
       working.snapshot.stores[name] ??= {};
       return working.snapshot.stores[name]!;
     };
@@ -520,6 +526,7 @@ export class LocalStorageBackend {
         if (schema.autoIncrement) {
           // Sequences are initialised for every schema store at open time.
           const generated = working.snapshot.sequences[name]! + 1;
+          // eslint-disable-next-line no-param-reassign -- TxState is the mutable scratch snapshot
           working.snapshot.sequences[name] = generated;
           if (typeof schema.keyPath === 'string') {
             writePath(value as Record<string, unknown>, schema.keyPath, generated);
@@ -535,6 +542,7 @@ export class LocalStorageBackend {
       if (explicit !== undefined) return explicit;
       if (schema.autoIncrement) {
         const generated = working.snapshot.sequences[name]! + 1;
+        // eslint-disable-next-line no-param-reassign -- TxState is the mutable scratch snapshot
         working.snapshot.sequences[name] = generated;
         return generated;
       }
@@ -624,6 +632,7 @@ export class LocalStorageBackend {
 
       async clear(): Promise<CanaWriteResult> {
         assertWritable();
+        // eslint-disable-next-line no-param-reassign -- TxState is the mutable scratch snapshot
         working.snapshot.stores[name] = {};
         record('cleared', undefined);
         return { outcome: 'committed', events: [] };

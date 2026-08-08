@@ -25,16 +25,12 @@ const schema = (): CanaSchema => ({
 });
 
 /** In-memory localStorage stand-in so tests do not share origin state. */
-function memoryStorage(): {
-  getItem(key: string): string | null;
-  setItem(key: string, value: string): void;
-  removeItem(key: string): void;
-} {
+function memoryStorage() {
   const bag = new Map<string, string>();
   return {
-    getItem: (key) => (bag.has(key) ? bag.get(key)! : null),
-    removeItem: (key) => { bag.delete(key); },
-    setItem: (key, value) => { bag.set(key, String(value)); }
+    getItem: (key: string) => (bag.has(key) ? bag.get(key)! : null),
+    removeItem: (key: string) => { bag.delete(key); },
+    setItem: (key: string, value: string) => { bag.set(key, String(value)); }
   };
 }
 
