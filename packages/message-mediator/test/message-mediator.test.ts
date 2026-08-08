@@ -172,9 +172,14 @@ describe('bullMQ queue infrastructure readiness', () => {
   };
 
   const createBullMqHarness = (
-    readinessByName: Record<string, { events: Promise<void>; worker: Promise<void> }>
+    readinessByName: Record<string, { events: Promise<void>; worker: Promise<void> }>,
+    // JUM-621: the job options were discarded here, so nothing could assert on
+    // them, and `removeOnComplete: true` — which deletes the result before the
+    // caller can read it — was invisible to this suite.
+    finish: () => Promise<unknown> = async () => ({ contract: 'orders.create', result: 'ok' })
   ) => {
     const added: string[] = [];
+    const addedOptions: unknown[] = [];
     const closed: string[] = [];
     const mutableReadinessByName = { ...readinessByName };
     const waitsByName: Record<string, { events: number; worker: number }> = {};
@@ -191,11 +196,10 @@ describe('bullMQ queue infrastructure readiness', () => {
     ) {
       this.name = name;
       ensureQueue(name);
-      this.add = async () => {
+      this.add = async (_routeKey?: unknown, _data?: unknown, jobOptions?: unknown) => {
         added.push(this.name);
-        return {
-          waitUntilFinished: async () => ({ contract: 'orders.create', result: 'ok' })
-        };
+        addedOptions.push(jobOptions);
+        return { waitUntilFinished: finish };
       };
       this.close = async () => { closed.push(`queue:${this.name}`); };
     }
@@ -232,12 +236,111 @@ describe('bullMQ queue infrastructure readiness', () => {
 
     return {
       added,
+      addedOptions,
       closed,
       module: { Queue, QueueEvents, Worker },
       readinessByName: mutableReadinessByName,
       waitsByName
     };
   };
+
+  /**
+   * JUM-621 — the two halves of the intermittent BullMQ failure, made
+   * deterministic.
+   *
+   * The integration suite proved the behaviour against a real Redis; these two
+   * hold the invariants in place without one. Both failed before the fix.
+   */
+  const withHarness = async (
+    harness: { module: unknown },
+    body: () => Promise<void>
+  ) => {
+    const original = BullMqMessageMediatorAdapter.importBullMq;
+    BullMqMessageMediatorAdapter.importBullMq = async () => harness.module;
+    try {
+      await body();
+    } finally {
+      BullMqMessageMediatorAdapter.importBullMq = original;
+    }
+  };
+
+  it('keeps a finished job long enough for the caller to read its result', async () => {
+    expect.hasAssertions();
+
+    // `removeOnComplete: true` deletes the job the moment the worker finishes.
+    // `waitUntilFinished` polls `isFinished` once to catch a job that finished
+    // before it subscribed, and that poll then fails with `Missing key for job`
+    // — a correct answer reported as a failure, whenever the worker wins.
+    const harness = createBullMqHarness({});
+
+    await withHarness(harness, async () => {
+      const mediator = new BullMqMessageMediatorAdapter({
+        connection: { host: '127.0.0.1', port: 6379 }
+      });
+      // Both sides of the floor: a short timeout still keeps the job for the
+      // 60s minimum, and a long one keeps it for as long as someone may wait.
+      await mediator.request(message(), { queueName: 'retention.queue', timeoutMs: 20000 });
+      await mediator.request(message(), { queueName: 'retention.queue', timeoutMs: 120000 });
+
+      expect(harness.addedOptions).toStrictEqual([
+        {
+          removeOnComplete: { age: 60, count: 1000 },
+          removeOnFail: { age: 60, count: 1000 }
+        },
+        {
+          removeOnComplete: { age: 120, count: 1000 },
+          removeOnFail: { age: 120, count: 1000 }
+        }
+      ]);
+
+      await mediator.disconnect();
+    });
+  });
+
+  it('does not report a non-timeout failure as a timeout', async () => {
+    expect.hasAssertions();
+
+    // The missing-key rejection arrives in single-digit milliseconds. Reporting
+    // it as `timed out after 20000ms` names a duration that never elapsed, and
+    // is why JUM-621 was filed against the test rather than the adapter.
+    const missingKey = createBullMqHarness({}, async () => {
+      throw new Error('Missing key for job bull:q:1. isFinished');
+    });
+
+    await withHarness(missingKey, async () => {
+      const mediator = new BullMqMessageMediatorAdapter({
+        connection: { host: '127.0.0.1', port: 6379 }
+      });
+      const response = await mediator.request(message(), {
+        queueName: 'cause.queue',
+        timeoutMs: 20000
+      });
+
+      expect((response.error as Error).message)
+        .toBe('Message request failed: Missing key for job bull:q:1. isFinished');
+
+      await mediator.disconnect();
+    });
+
+    const timedOut = createBullMqHarness({}, async () => {
+      throw new Error('Job wait x timed out before finishing, no finish notification arrived after 20000ms (id=1)');
+    });
+
+    await withHarness(timedOut, async () => {
+      const mediator = new BullMqMessageMediatorAdapter({
+        connection: { host: '127.0.0.1', port: 6379 }
+      });
+      const response = await mediator.request(message(), {
+        queueName: 'timeout.queue',
+        timeoutMs: 20000
+      });
+
+      // A real timeout still reads as one.
+      expect((response.error as Error).message).toBe('Message request timed out after 20000ms');
+
+      await mediator.disconnect();
+    });
+  });
 
   it('makes concurrent callers wait for the same queue setup before enqueueing', async () => {
     expect.assertions(4);
