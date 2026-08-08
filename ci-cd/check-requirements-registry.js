@@ -54,8 +54,16 @@ function collectRequirementInventory(rootDir = process.cwd()) {
     .filter(([, count]) => count > 1)
     .map(([id]) => id)
     .sort();
+  // The files behind each duplicate, so the failure can name them instead of
+  // leaving the reader to grep two directories for a three-digit prefix.
+  const duplicateFiles = Object.fromEntries(duplicates.map((id) => [
+    id,
+    files.filter((file) => path.basename(file).startsWith(`${id}-`)).sort()
+  ]));
 
-  return { files, ids, duplicates, invalidFiles };
+  return {
+    files, ids, duplicates, duplicateFiles, invalidFiles
+  };
 }
 
 function extractIndexedFiles(contents) {
@@ -123,6 +131,25 @@ function validateRequirementsRegistry(rootDir = process.cwd()) {
 
   inventory.invalidFiles.forEach((file) => {
     failures.push(`[requirements] invalid requirement filename: ${file}`);
+  });
+
+  // JUM-609. A duplicate ID used to be counted, embedded in the inventory
+  // marker, printed in the success line — and never failed anything. It was
+  // refused only as a side effect: the marker stopped matching the documents,
+  // and the gate reported `stale inventory marker` in four files without once
+  // saying two requirements share a number. Every instruction that message
+  // gives leads towards making the documents agree with the duplicate.
+  //
+  // 055, 060 and 079 are in this repository's history for that reason. A
+  // requirement ID is the handle every specification, ledger row and commit
+  // message uses; two files answering to one handle makes traceability
+  // ambiguous at the point where it is supposed to be exact.
+  inventory.duplicates.forEach((id) => {
+    const owners = inventory.duplicateFiles[id] || [];
+    failures.push(
+      `[requirements] duplicate requirement ID ${id} used by ${owners.length} files: `
+      + `${owners.join(', ')}`
+    );
   });
   inventory.files.forEach((file) => {
     const count = indexCounts.get(file) || 0;
@@ -228,7 +255,7 @@ function run(rootDir = process.cwd()) {
   const inventory = collectRequirementInventory(rootDir);
   console.log(
     `Requirements registry is consistent: ${String(inventory.files.length)} files, `
-    + `${String(inventory.ids.length)} unique IDs, duplicates ${inventory.duplicates.join(', ')}.`
+    + `${String(inventory.ids.length)} unique IDs, no duplicates.`
   );
   return 0;
 }
