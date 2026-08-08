@@ -34,11 +34,18 @@ export const ROLE_SCOPE_MATRIX: Record<EUserRole, string[]> = {
     'delete_user',
     'read_organization',
     'create_organization',
-    'update_organization'
+    'update_organization',
+    'read_catalog',
+    'create_catalog',
+    'update_catalog',
+    'delete_catalog'
   ],
   [EUserRole.user]: [
     'access_allow',
-    'read_user'
+    'read_user',
+    'read_catalog',
+    'create_catalog',
+    'update_catalog'
   ]
 };
 

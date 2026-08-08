@@ -1132,9 +1132,11 @@ describe('designer export/import round-trip (JUM-471)', () => {
   describe('canonical spec/1.0.0.yml round-trip (JUM-478)', () => {
     const specDocument = loadCanonicalSpec();
 
-    it('pins the canonical fixture: openapi 3.1.0 with 33 operationIds', () => {
+    it('pins the canonical fixture: openapi 3.1.0 with 39 operationIds', () => {
+      // 33 pre-JUM-491 operations plus the six shared-catalog operations
+      // (getAll/create/getOneById/update/deleteOne/restore on /catalogs).
       expect(specDocument.openapi).toBe('3.1.0');
-      expect(countOperationIds(specDocument)).toBe(33);
+      expect(countOperationIds(specDocument)).toBe(39);
     });
 
     it('imports the six contract schemas with full meta normalization and no phantom port objects', () => {

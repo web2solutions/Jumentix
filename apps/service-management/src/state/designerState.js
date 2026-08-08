@@ -388,6 +388,20 @@ export function normalizeDomainInput(domain, domainIndex) {
             version: String(domain.context.provenance.version || '').trim()
           }
         }
+        : {}),
+      // JUM-491 (shared catalog sync): the catalog link is additive sync
+      // metadata — carried only when the source declares it, exactly like the
+      // JUM-492 package identity above, so non-shared domains are unchanged.
+      ...(domain?.context?.catalog && typeof domain.context.catalog === 'object'
+        ? {
+          catalog: {
+            id: String(domain.context.catalog.id || '').trim(),
+            version: Number.isFinite(domain.context.catalog.version)
+              ? domain.context.catalog.version
+              : 0,
+            contentHash: String(domain.context.catalog.contentHash || '')
+          }
+        }
         : {})
     },
     entities
