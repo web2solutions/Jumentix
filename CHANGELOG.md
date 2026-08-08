@@ -4,9 +4,12 @@
 
 ## All Changes
 
-- 2026-08-08 test(JUM-491): cover catalogs compose wiring in RestAPI and RealtimeAPIBase - Eduardo A.
-- 2026-08-08 test(JUM-491): cover framework handlers to the coverage gate - Eduardo A.
-- 2026-08-08 feat(JUM-491): multi-user shared catalog sync over Cana resync events - Eduardo A.
+- 2026-08-08 chore(governance): state which membership the check verified - Eduardo Almeida
+- 2026-08-08 fix(governance): find the linear key at any workspace depth - Eduardo Almeida
+- 2026-08-08 chore(governance): verify the child task issue is in the focused epic - Eduardo Almeida
+- 2026-08-08 [JUM-491][Feature] Multi-user shared catalog sync over Cana resync events (#133) - Eduardo A.
+- 2026-08-08 docs(JUM-494): document E8 collaboration and packaging, closing the E1-E8 chain (EN/PT-BR) (#135) - Eduardo A.
+- 2026-08-08 [JUM-545][Feature] Interface adapter lifecycle with edit-in-place and validation (#130) - Eduardo A.
 - 2026-08-08 feat(JUM-492): domain-package versioning with semantic conflict resolution (#132) - Eduardo A.
 - 2026-08-08 feat(JUM-546): deploy target lifecycle with edit, duplicate and validation (#129) - Eduardo A.
 - 2026-08-08 feat(JUM-548): first-run experience with sample model loader and guided empty states (#131) - Eduardo A.
