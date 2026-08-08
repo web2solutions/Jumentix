@@ -13,6 +13,7 @@
   - [Service Management Operations Console](../../../documentation/md/SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.md)
   - [Service Management Design System and PWA Shell](../../../documentation/md/SERVICE-MANAGEMENT-DESIGN-SYSTEM-PWA.md)
   - [Service Management Cana Adoption, Migration and Offline Behaviour](../../../documentation/md/SERVICE-MANAGEMENT-CANA-ADOPTION.md)
+  - [Service Management Collaboration and Packaging](../../../documentation/md/SERVICE-MANAGEMENT-COLLABORATION-PACKAGING.md)
   - [Domain Designer Features and Usage](../../../documentation/md/DOMAIN-DESIGNER-FEATURES-AND-USAGE.md)
   - [Domain Data Entities](../../../documentation/md/DOMAIN-DATA-ENTITIES.md)
   - [Runtime Environment Contracts](../../../documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md)

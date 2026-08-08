@@ -42,6 +42,10 @@ A adoção do Cana pelo lado do usuário — onde os dados do designer vivem, a
 migração unidirecional, a matriz offline/de estados e por que a exportação é o
 único caminho de recuperação — está documentada em
 [Adoção do Cana no Service Management, migração e comportamento offline](./SERVICE-MANAGEMENT-CANA-ADOPTION.pt-BR.md).
+Colaboração e empacotamento — o catálogo compartilhado multiusuário, os
+pacotes de domínio versionados e a publicação adiada do núcleo do designer,
+fechando a cadeia de documentação E1–E8 — estão documentados em
+[Colaboração e empacotamento do Service Management](./SERVICE-MANAGEMENT-COLLABORATION-PACKAGING.pt-BR.md).
 
 ## Guias
 

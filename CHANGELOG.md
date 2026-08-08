@@ -4,8 +4,12 @@
 
 ## All Changes
 
-- 2026-08-08 chore(JUM-545): merge dev updates (changelog left to dev regen) - Eduardo A.
-- 2026-08-08 feat(JUM-545): interface adapter lifecycle with edit-in-place, uniqueness and validation - Eduardo A.
+- 2026-08-08 [JUM-545][Feature] Interface adapter lifecycle with edit-in-place and validation (#130) - Eduardo A.
+- 2026-08-08 feat(JUM-492): domain-package versioning with semantic conflict resolution (#132) - Eduardo A.
+- 2026-08-08 feat(JUM-546): deploy target lifecycle with edit, duplicate and validation (#129) - Eduardo A.
+- 2026-08-08 feat(JUM-548): first-run experience with sample model loader and guided empty states (#131) - Eduardo A.
+- 2026-08-08 feat(JUM-547): full-suite export/import carrying all four tabs (#128) - Eduardo A.
+- 2026-08-08 docs(JUM-490): document E7 design system and PWA shell (EN/PT-BR) (#127) - Eduardo A.
 - 2026-08-08 docs(JUM-487): document E6 Cana adoption, migration and offline behaviour (EN/PT-BR) (#126) - Eduardo A.
 - 2026-08-08 [JUM-486][Test] Offline/online persistence matrix for Cana (#124) - Eduardo A.
 - 2026-08-08 feat(JUM-488): adopt Jumentix design system tokens and Storybook coverage in the designer (#125) - Eduardo A.

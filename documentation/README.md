@@ -55,6 +55,8 @@ For engineers maintaining and evolving Jumentix:
   ([pt-BR](./md/SERVICE-MANAGEMENT-DESIGN-SYSTEM-PWA.pt-BR.md))
 - [Service Management Cana Adoption, Migration and Offline Behaviour](./md/SERVICE-MANAGEMENT-CANA-ADOPTION.md)
   ([pt-BR](./md/SERVICE-MANAGEMENT-CANA-ADOPTION.pt-BR.md))
+- [Service Management Collaboration and Packaging](./md/SERVICE-MANAGEMENT-COLLABORATION-PACKAGING.md)
+  ([pt-BR](./md/SERVICE-MANAGEMENT-COLLABORATION-PACKAGING.pt-BR.md))
 
 ## Component Technical Hubs
 

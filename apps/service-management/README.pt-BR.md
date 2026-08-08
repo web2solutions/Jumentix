@@ -29,6 +29,7 @@ Uso detalhado de recursos:
 - [Console de operações](../../documentation/md/SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.pt-BR.md)
 - [Design system e shell PWA](../../documentation/md/SERVICE-MANAGEMENT-DESIGN-SYSTEM-PWA.pt-BR.md)
 - [Adoção do Cana, migração e comportamento offline](../../documentation/md/SERVICE-MANAGEMENT-CANA-ADOPTION.pt-BR.md)
+- [Colaboração e empacotamento](../../documentation/md/SERVICE-MANAGEMENT-COLLABORATION-PACKAGING.pt-BR.md)
 - [Documentação técnica de gerenciamento de serviços](./documentation/README.pt-BR.md)
 
 ## Primeira Execução
