@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-07 test(cana): tolerate browser timing quantization in performance shape - Eduardo A.
 - 2026-08-07 ci: avoid Sonar SCM blame in CircleCI partial clones - Eduardo A.
 - 2026-08-07 docs(JUM-479): document E4 contract parity guarantees (EN/PT-BR) (#105) - Eduardo A.
 - 2026-08-07 ci: hydrate git blobs before Sonar scan - Eduardo A.
