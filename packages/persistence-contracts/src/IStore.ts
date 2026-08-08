@@ -18,7 +18,29 @@ export interface IPagingResponse<T> {
 }
 
 export type TStorePrimitive = string | number | boolean | Date | null;
-export type TStoreScalar = TStorePrimitive | Record<string, unknown>;
+
+/**
+ * A value a store can hold, including a nested document.
+ *
+ * `operator?: never` is what makes `TFilterOperator` mean anything (JUM-599).
+ * Without it this arm was a bare `Record<string, unknown>`, so every object
+ * satisfied it — including a filter expression with an invented operator. The
+ * union then matched on the scalar arm, the operator list was never consulted,
+ * and `{ operator: 'approximately' }` compiled. A typo reached the adapter at
+ * runtime instead of failing here.
+ *
+ * Excluding the key rather than the value keeps the two arms disjoint: an
+ * object carrying `operator` can only be an `IStoreFilterExpression`, which is
+ * where the operator is checked against the declared list.
+ *
+ * A stored document that genuinely needs a field called `operator` has to be
+ * wrapped in an explicit filter expression rather than passed bare. That is a
+ * deliberate cost: the alternative is the type saying fifteen operators and
+ * meaning any string.
+ */
+export type TStoreScalar =
+  | TStorePrimitive
+  | (Record<string, unknown> & { operator?: never });
 
 export type TFilterOperator =
   | 'eq'

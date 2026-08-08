@@ -103,7 +103,8 @@ Como usar:
 
 ## 5) Mapeamento de políticas RBAC
 
-Política de ação por entidade:
+Política de ação por entidade, alinhada ao contrato de autorização de tenant e
+RBAC (`TENANT-RBAC-AUTHORIZATION-CONTRACT.pt-BR.md`, JUM-477):
 
 - Ações:
   - `lista`
@@ -111,16 +112,30 @@ Política de ação por entidade:
   - `criar`
   - `atualizar`
   - `excluir`
-- Alternância de função:
+- Alternância de função (as funções normalizadas do contrato):
   - `superadministrador`
   - `administrador`
   - `usuário`
-- Sinalizador de escopo do locatário
+- Escopo do locatário: **derivado das funções selecionadas**, não um
+  sinalizador livre. O runtime (`Rbac.ts` / `TenantAuthorizationPolicy.ts`)
+  restringe os principais `admin` e `user` à própria organização e concede ao
+  `superadmin` um limite global — não existe um botão independente de escopo de
+  locatário a ser honrado, portanto o editor exibe o valor derivado como uma
+  caixa de seleção somente leitura. Políticas armazenadas são reparadas para o
+  valor derivado no carregamento.
+- Escopos diretos legados (`read_user`, `create_organization`, ...) continuam
+  suportados pelo runtime e sobrevivem à importação/exportação, mas não são
+  editáveis no inspetor; a validação os aceita como expressíveis pelo contrato.
+- Uma função fora do vocabulário do contrato é rejeitada no momento da
+  gravação com uma mensagem acionável, e a validação do modelo relata qualquer
+  função armazenada desse tipo como `error`, de modo que o portão de qualidade
+  de exportação a bloqueia em vez de descartá-la.
 
 Como usar:
 
 1. Selecione entidade e ação.
-2. Marque as funções permitidas e o escopo do locatário.
+2. Marque as funções permitidas; o indicador de escopo do locatário acompanha
+   as funções.
 3. Clique em `Salvar regra RBAC`.
 4. Revise a matriz gerada na lista RBAC.
 
@@ -232,6 +247,64 @@ Como usar:
 1. Use os botões de exportação no painel `Exportar`.
 2. Use botões de importação para JSON/OAS/pacote.
 3. Para exportação de pacotes, o domínio selecionado é usado como pacote de origem.
+
+### 10.1) Contrato de exportação OAS 3.1 (Requisito 036, JUM-474)
+
+A exportação OpenAPI 3.1 produz um documento em conformidade com o Requisito
+036 e com a verificação de resolução de rotas
+(`ci-cd/check-oas-route-resolution.js`):
+
+- Toda operação carrega um `operationId` único no esquema de verbos canônico
+  do `spec/1.0.0.yml` (`getAll*`, `create*`, `get*ById`, `update*`,
+  `delete*`), qualificado pelo nome do schema (`getAllBilling_Invoice`).
+- Corpos de requisição referenciam os objetos de porta de entrada
+  `RequestCreate<Schema>` / `RequestUpdate<Schema>` via `$ref`; respostas 2xx
+  referenciam o schema da entidade, seu wrapper `<Schema>ArrayOf` ou
+  `ResourceDeleteResponse`. Sem schemas inline de requisição/resposta, e todo
+  schema referenciado tem descrição.
+- Os wrappers de porta de entrada/saída são marcados com
+  `'x-port-object': true` e ignorados na importação OAS, de modo que uma
+  ida e volta não cria entidades fantasmas.
+- Respostas de erro usam os códigos canônicos de
+  `ERROR-CONTRACTS-AND-RESPONSES` (400/401/403/404/409).
+- Entidades cujos nomes colapsam para o mesmo nome de schema OAS ou rota
+  (por exemplo `Foo Bar` vs `Foo-Bar`) falham no portão de qualidade de
+  exportação em vez de sobrescrever silenciosamente uma à outra no documento.
+
+### 10.2) Ida e volta OAS sem perdas (JUM-478)
+
+A travessia OAS é um contrato entre o exportador e o importador: o que o OAS
+não consegue expressar nativamente atravessa como extensões `x-` acordadas e
+é normalizado de volta em `entity.meta` na importação, de modo que
+exportar → importar → exportar atinge um ponto fixo com uma lista de perdas
+no nível do modelo vazia (verificado por `designerRoundTrip.test.ts`).
+
+- `x-aggregate-root` e `x-invariants` carregam a declaração de agregado e as
+  invariantes quando presentes.
+- `x-rbac` carrega a política RBAC normalizada da entidade, emitida apenas
+  quando diverge do padrão do designer (um `x-rbac` ausente normaliza de
+  volta para a política padrão, com `tenantScoped` derivado dos papéis
+  conforme o contrato RBAC de tenant).
+- `x-fieldless: true` preserva o conjunto vazio de campos de uma entidade na
+  travessia (um schema sem marcação e sem propriedades ainda recebe os campos
+  padrão `id`/`createdAt`/`updatedAt` do importador).
+- `x-field-flags: { pk, fk, unique }` carrega as flags de um campo apenas
+  quando divergem da heurística de nomes do importador (`id` → PK/unique,
+  `*Id` → FK).
+- As linhas de `x-relations` carregam `{ name, fromSchema, toSchema,
+  fromCardinality, toCardinality }` — nomes de schema, não ids do modelo — e
+  o importador restaura os relacionamentos religados aos ids recomputados das
+  entidades, descartando linhas cujos extremos não foram importados.
+- Documentos externos sem as marcações do designer (o canônico
+  `spec/1.0.0.yml`) são reconhecidos pelas mesmas convenções de objetos de
+  porta: nomes `Request<Action>*` e `*ArrayOf`, `ResourceDeleteResponse`,
+  descrições "Port input/output object" que não são contratos de entidade
+  `<Name> resource`, e schemas não-objeto nunca viram entidades.
+- Perdas remanescentes nomeadas para documentos externos: facetas
+  `example`/`default`/`minItems`/`maxItems` e vínculos `$ref` de itens de
+  array (referências a objetos de valor achatam para o vocabulário
+  `itemsType`), blocos de contexto delimitado do domínio, posições no canvas
+  e operationIds legados (não canônicos).
 
 ## 11) Cobertura de fumaça
 

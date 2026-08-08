@@ -4,6 +4,58 @@
 
 ## All Changes
 
+- 2026-08-07 test(cana): tolerate browser timing quantization in performance shape - Eduardo A.
+- 2026-08-07 ci: avoid Sonar SCM blame in CircleCI partial clones - Eduardo A.
+- 2026-08-07 docs(JUM-479): document E4 contract parity guarantees (EN/PT-BR) (#105) - Eduardo A.
+- 2026-08-07 ci: hydrate git blobs before Sonar scan - Eduardo A.
+- 2026-08-07 feat(JUM-481): align Deploy Management to the Req 059 matrix with per-service metadata (#115) - Eduardo A.
+- 2026-08-07 test: close Redis integration client after smoke suite - Eduardo A.
+- 2026-08-07 feat(JUM-480): real multi-environment editing and PM2 ecosystem preview (#106) - Eduardo A.
+- 2026-08-07 ci: fold coverage publishers into CircleCI coverage job - Eduardo A.
+- 2026-08-07 [JUM-618][Test] Stop the Cypress teardown reporting blocked deletes as clean (#112) - Eduardo A.
+- 2026-08-07 test(cana-browser): give the teardown its own budget, and stop it lying about blocks - Eduardo Almeida
+- 2026-08-07 [JUM-623][CI] Cover the cypress support file and config, not just the specs (#114) - Eduardo A.
+- 2026-08-07 ci(test-map): cover the cypress support file and config, not just the specs - Eduardo Almeida
+- 2026-08-07 [JUM-622][CI] Register cana's browser specs so the gate can select them (#113) - Eduardo A.
+- 2026-08-07 ci(test-map): register cana's cypress specs so the gate can select them - Eduardo Almeida
+- 2026-08-07 [JUM-620][CI] Declare readiness on every compose service (#111) - Eduardo A.
+- 2026-08-07 ci(docker): declare readiness on every compose service - Eduardo Almeida
+- 2026-08-07 [JUM-616][CI] Read the parsed review job instead of grepping the config as text (#110) - Eduardo A.
+- 2026-08-07 [JUM-619][CI] Scope the Jest ruleset to test files (#109) - Eduardo A.
+- 2026-08-07 ci(third-party-review): read the parsed job instead of grepping the config as text - Eduardo Almeida
+- 2026-08-07 ci(eslint): scope the Jest ruleset to test files - Eduardo Almeida
+- 2026-08-07 fix(JUM-617): recompute domain/entity ids on domain-package re-import (#104) - Eduardo A.
+- 2026-08-07 [JUM-602][Test] Make external-db-repositories coverage its own (#108) - Eduardo A.
+- 2026-08-07 [JUM-601][Refactor] Move the store errors into persistence-contracts so a library stops importing an application (#107) - Eduardo A.
+- 2026-08-07 [JUM-614][Governance] Require an agent to declare where it works (#103) - Eduardo A.
+- 2026-08-07 fix(JUM-543): replace blocking alerts with non-blocking status surfaces and honest env-API errors (#100) - Eduardo A.
+- 2026-08-07 feat(JUM-478): lossless OAS round-trip with full entity meta normalization (#102) - Eduardo A.
+- 2026-08-07 [JUM-599][Fix] Enforce the declared filter operators (#101) - Eduardo A.
+- 2026-08-07 fix(JUM-544): validate service configuration ports and run-mode x provider consistency (#99) - Eduardo A.
+- 2026-08-06 feat(JUM-474): make OAS 3.1 export compliant with Req 036 and route-resolution (#98) - Eduardo A.
+- 2026-08-06 feat(JUM-476): emit hexagonal layout from codegen preview and boilerplate bundle (#97) - Eduardo A.
+- 2026-08-06 feat(JUM-475): asyncapi 3.0 per-transport and grpc proto exports targeting canonical spec/asyncapi/ (#96) - Eduardo A.
+- 2026-08-06 feat(JUM-477): align RBAC editor with tenant authorization contract (#95) - Eduardo A.
+- 2026-08-06 test(JUM-471): add exporters/importers round-trip suite (#94) - Eduardo A.
+- 2026-08-06 test(JUM-470): pin validation severities, export-gate boundary and normalizer round-trips (#93) - Eduardo A.
+- 2026-08-06 [JUM-600][CI] Run the docker smoke matrix on dev and main, and fix its readiness race (#92) - Eduardo A.
+- 2026-08-06 [JUM-469][Refactor] Modularize designer exporters, importers, validation, canvas and tabs (#87) - Eduardo A.
+- 2026-08-06 [JUM-596][CI] Run lint before the branch gates that do not contain it (#91) - Eduardo A.
+- 2026-08-05 [JUM-613][Fix] Repair the Firestore agent-registry integration and its corrupted records (#88) - Eduardo A.
+- 2026-08-05 ci(JUM-472): register service-management in the path-to-layer manifest (#90) - Eduardo A.
+- 2026-08-05 docs(JUM-473): document E3 module architecture and IDesignerStore port contract (#89) - Eduardo A.
+- 2026-08-05 docs(website): document Vercel deploy auth and GITHUB_TOKEN (JUM-397) (#70) - Eduardo A.
+- 2026-08-05 [JUM-468][Refactor] Extract state/persistence core behind IDesignerStore port (#86) - Eduardo A.
+- 2026-08-05 [JUM-466][Test] Expand service-management integration smoke (#85) - Eduardo A.
+- 2026-08-05 feat(JUM-460): expand env key allowlist to the full runtime matrix (#84) - Eduardo A.
+- 2026-08-05 fix(JUM-461): truthful key labels and canonical framework selector in service-management (#83) - Eduardo A.
+- 2026-08-05 fix(JUM-463): refresh static manifest on miss in dev, keep boot manifest in production (#82) - Eduardo A.
+- 2026-08-05 docs(JUM-464): document runtime-env contract and fixed env paths (EN/PT-BR) (#81) - Eduardo A.
+- 2026-08-05 fix(service-management): repair env path, honor environment parameter, and protect runtime-env API [JUM-458][JUM-558][JUM-459][JUM-462] (#65) - Eduardo A.
+- 2026-08-05 [JUM-465][Governance] Ownership registration and component requirement spec (#80) - Eduardo A.
+- 2026-08-05 docs(JUM-467): audit bilingual docs and repair links for service-management (#79) - Eduardo A.
+- 2026-08-05 [JUM-604][Governance] Support the Kimi agent with declarative agent support (#78) - Eduardo A.
+- 2026-08-05 test: isolate PR governance helpers - Eduardo A.
 - 2026-08-05 test: satisfy PR governance lint - Eduardo A.
 - 2026-08-05 chore(release): reconcile main ancestry after branch-gate fix - Eduardo A.
 - 2026-08-05 ci: skip PR metadata checks on branch builds - Eduardo A.

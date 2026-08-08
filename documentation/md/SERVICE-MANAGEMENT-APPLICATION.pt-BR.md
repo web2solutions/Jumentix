@@ -14,8 +14,18 @@ Arquivos principais de implementação:
 
 - `apps/service-management/index.html`
 - `apps/service-management/script.js`
+- `apps/service-management/src/state/designerState.js`
+- `apps/service-management/src/store/IDesignerStore.js`
+- `apps/service-management/src/store/LocalStorageDesignerStore.js`
 - `apps/service-management/styles.css`
 - `apps/service-management/server.js`
+
+As camadas de módulos, o padrão de injeção e o contrato da porta de
+armazenamento `IDesignerStore` estão documentados em
+[Arquitetura de módulos do Service Management](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.pt-BR.md).
+O que as exportações de contrato garantem — e as verificações que o comprovam —
+está documentado em
+[Garantias de paridade de contratos do Service Management](./SERVICE-MANAGEMENT-CONTRACT-PARITY.pt-BR.md).
 
 ## Guias
 
@@ -30,8 +40,11 @@ Arquivos principais de implementação:
      - Composição OpenAPI (`oneOf/allOf/anyOf`, referências externas, discriminador)
      - diferença de esquema + dicas de migração
      - exemplos de solicitação/resposta
+     - visualização de código hexagonal (renderiza exatamente o que o pacote padrão emite)
      - visualização do esqueleto do código
-     - fluxos de exportação/importação (JSON, OAS, Markdown, JSON Schema, AsyncAPI, pacote, pacote padrão)
+     - fluxos de exportação/importação (JSON, OAS, Markdown, JSON Schema, AsyncAPI por
+       transporte (`<version>.websocket.yml` / `<version>.grpc.yml` seguindo as convenções
+       canônicas de `spec/asyncapi/`), proto gRPC (`async-api.proto`), pacote, pacote padrão)
      - modo minimapa e tela grande
 2. **Designer de interface de comunicação**
    - Registra adaptadores de interface de entrada e mapeamentos de controladores:
@@ -46,18 +59,48 @@ Arquivos principais de implementação:
      - provedor de nuvem
      - comportamento de ativos estáticos
      - portas de tempo de execução (`REST`, `WebSocket`, `gRPC`)
-   - Mostra visualização de perfil orientado a PM2 para orquestração de tempo de execução de VM.
-   - Inclui controles de ambiente de tempo de execução para leitura/atualização:
-     - `JUMENTIX_HTTP_FRAMEWORK`
-     - `JUMENTIX_REALTIME_API`
-     - `JUMENTIX_REALTIME_API_PROTOCOL`
-     - `JUMENTIX_REALTIME_API_DATABASE_DRIVER`
+   - Mostra visualização de perfil orientado a PM2 para orquestração de tempo de execução de VM,
+     lida dos arquivos reais `pm2/ecosystem.*.cjs` via `GET /api/runtime/pm2-ecosystem`
+     (JUM-480) — sem lista de processos ou comando de gerenciador de pacotes fixado em código.
+   - Inclui controles de ambiente de tempo de execução com um modelo de três níveis:
+     - **Editável** (seletores de topologia de leitura/gravação):
+       `JUMENTIX_HTTP_FRAMEWORK`, `JUMENTIX_REALTIME_API`,
+       `JUMENTIX_REALTIME_API_PROTOCOL`, `JUMENTIX_REALTIME_API_DATABASE_DRIVER`,
+       `JUMENTIX_DATABASE_DRIVER`, `JUMENTIX_KEYVALUESTORAGE_DRIVER`,
+       `JUMENTIX_MESSAGE_MEDIATOR_ADAPTER`, `JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER`,
+       `JUMENTIX_WEBSOCKET_REDIS_URL`.
+     - **Somente leitura** (endpoints de conexão e configuração não secreta,
+       exibidos mas não graváveis): host/porta/database do Redis,
+       exchange/fila/prefetch do RabbitMQ, nome do banco de dados, issuer/audience
+       do JWT, origens CORS e chaves de política de autenticação.
+     - **Nunca exposta** (nem exibida nem gravável): segredos como
+       `JUMENTIX_JWT_TOKEN_SECRET_KEY`, `JUMENTIX_REDIS_PASSWORD` e
+       `JUMENTIX_RABBITMQ_URL`.
+   - Valores editáveis são validados contra os conjuntos enum de
+     `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md`; valores fora do enum são
+     rejeitados com a lista de aceitos e nada é escrito.
    - O editor de ambiente de tempo de execução tem como alvo o arquivo de ambiente selecionado:
     - `dev` -> `apps/backend-template/src/config/.env.dev`
     - `staging` -> `apps/backend-template/src/config/.env.staging`
     - `ci` -> `apps/backend-template/src/config/.env.ci`
+     `apps/backend-template/src/config/`:
+    - `dev` -> `.env.dev` (`development` é um alias)
+    - `staging` -> `.env.staging`
+    - `ci` -> `.env.ci` (`test` é um alias)
 4. **Gerenciamento de implantação**
    - Rastreia alvos de implantação e metadados de implantação em tempo de execução.
+   - Cada alvo carrega o contrato de metadados por serviço do Requisito 059
+     (JUM-481): `serviceType`, `deployTarget`, `runtimeProtocol`,
+     `databaseDriver`, `keyValueDriver`, `pm2Profile`, além de nome, região
+     e runtime.
+   - As adições são validadas contra a matriz de implantação do Requisito 059
+     lida da fonte legível por máquina compartilhada
+     `src/model/deployCapabilityMatrix.js`: combinações tipo de serviço ×
+     alvo de implantação sem linha na matriz, protocolos que o tipo de serviço
+     não expõe e perfis PM2 em alvos serverless (ou ausentes em alvos
+     gerenciados por PM2) são rejeitados na superfície de status não
+     bloqueante com a restrição violada nomeada. Alvos legados persistidos
+     antes deste alinhamento migram no carregamento.
 
 Guia de uso detalhado:
 
@@ -77,15 +120,60 @@ Caminho de desenvolvimento recomendado:
 1. `bun run dev:service-management`
 2. Abra o URL de gerenciamento de serviço local
 3. Modelo de domínios/entidades
-4. Execute exportações (esquema OAS/AsyncAPI/JSON/pacote)
+4. Execute exportações (OAS/AsyncAPI por transporte/proto gRPC/esquema JSON/pacote)
 5. Use artefatos gerados como contratos para implementação de API
 
 ## API Runtime Env (integrada)
 
-- `GET /api/runtime/env?environment=dev|staging|ci`
+- `GET /api/runtime/env?environment=dev|development|staging|ci|test`
 - `POST /api/runtime/env`
+- `GET /api/runtime/pm2-ecosystem?environment=dev|development|staging|production|prod|ci|test`
 
 O servidor persiste chaves de tempo de execução aprovadas para arquivos em `apps/backend-template/src/config/`.
+O contrato autoritativo — ambientes aceitos, classificação de chaves, conjuntos
+de enum, semântica de escrita — é
+[Contratos de ambiente de tempo de execução](./RUNTIME-ENVIRONMENT-CONTRACTS.pt-BR.md).
+
+### O que H1 torna confiável
+
+- **Localização fixa dos arquivos env.** Os arquivos env ficam em
+  `apps/backend-template/src/config/` (substituível via
+  `JUMENTIX_SERVICE_MANAGEMENT_CONFIG_DIR`); o servidor falha fechado na
+  inicialização quando o diretório está ausente em vez de silenciosamente servir
+  padrões.
+- **Parâmetro `environment` real.** Apenas `dev`, `development`, `staging`,
+  `ci` e `test` são aceitos (insensível a maiúsculas após remoção de espaços);
+  valores desconhecidos são explicitamente rejeitados com a lista de aceitos,
+  nunca convertidos para `dev`.
+- **Superfície de chaves classificada.** Cada chave de ambiente é exatamente uma
+  de *editável*, *somente leitura* ou *nunca exposta* (segredos); as decisões de
+  classificação por chave estão no
+  [Requisito 126](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md).
+- **Endpoint protegido.** Bind loopback por padrão, token bearer opcional para
+  mutações e um log de auditoria de cada mutação.
+- **Erros distinguíveis.** Falhas de parse, validação e filesystem são
+  diferenciadas na resposta de erro (veja abaixo).
+
+### Postura de segurança
+
+- Bind padrão é `127.0.0.1` (apenas loopback).
+- Vincular a todas as interfaces requer opt-in explícito via `JUMENTIX_SERVICE_MANAGEMENT_HOST=0.0.0.0`.
+- Token bearer opcional para requisições de mutação via `JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN`.
+- Cada mutação é registrada com timestamp, ambiente e chaves alteradas (não valores).
+
+### Contrato de erro
+
+- Ambiente desconhecido: `400` cujo `details` nomeia o valor e a lista de
+  aceitos, nenhum arquivo escrito.
+- Diretório de configuração ausente na inicialização: servidor encerra com erro claro.
+- Arquivo de ambiente ausente ou outra falha de filesystem (permissões, disco
+  cheio): `500 { "error": "Environment file operation failed.", "code": …,
+  "path": …, "details": … }` — `code` é `ENV_FILE_NOT_FOUND` ou o código de
+  erro do `fs` subjacente, `path` o path resolvido do arquivo env (JUM-543).
+- Payload JSON malformado: `400 { "error": "Invalid payload.", "details": … }`
+  com a falha de parse em `details` — diferenciado de falhas de filesystem,
+  que surgem como a classe 500 acima, nunca como erro de payload.
+- Mutação não autorizada: `401 { "error": "Unauthorized." }` quando token de auth está configurado.
 
 ## Fluxo de edição em tempo de execução
 

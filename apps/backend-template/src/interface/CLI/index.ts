@@ -1,7 +1,6 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-constant-condition */
 /* eslint-disable no-continue */
-/* eslint-disable jest/require-hook */
 import { Prompt } from '@src/interface/CLI/core/prompt';
 import { getCatalogFilePath, loadCatalog, saveCatalog } from '@src/interface/CLI/core/catalogStorage';
 import type { ISubApplication, ISubApplicationContext } from '@src/interface/CLI/types';

@@ -16,9 +16,22 @@ module.exports = {
       '@typescript-eslint',
       'no-async-foreach'
     ],
+    /*
+     * `plugin:jest/all` is deliberately absent here and applied per-path in
+     * `overrides` instead (JUM-619).
+     *
+     * Extended globally, every rule in a *test* plugin also linted production
+     * source. `jest/require-hook` — "do not put setup outside beforeEach" —
+     * fired on module-level state and on a registration call in
+     * `packages/persistence-contracts` and `apps/backend-template/src`, neither
+     * of which is a test. The cheapest response to that is to restructure
+     * working code to satisfy a rule that was never meant to see it.
+     *
+     * The `jest` plugin itself stays loaded below, because the rule names in
+     * `rules` and in the later overrides have to resolve for every file.
+     */
     extends: [
       'airbnb-base',
-      'plugin:jest/all',
       'plugin:import/errors',
       'plugin:import/warnings',
       'plugin:import/typescript',
@@ -37,7 +50,6 @@ module.exports = {
       'no-console': 'error',
       
       'import/extensions': 'off',
-      'jest/no-hooks': 'off',
       'no-restricted-syntax': 'off',
       
       'import/no-unresolved': 'off',
@@ -49,7 +61,6 @@ module.exports = {
       '@typescript-eslint/no-explicit-any': 'off',
       'import/no-cycle' : 'off',
       'arrow-body-style' : 'off',
-      'jest/unbound-method': 'off',
       'import/no-extraneous-dependencies': ['error', {
         packageDir: [
           __dirname,
@@ -63,6 +74,37 @@ module.exports = {
       }]
     },
     overrides: [
+      {
+        /*
+         * Where the Jest rules apply: test files, and only test files.
+         *
+         * First in this list so the narrower entries below — which switch
+         * individual jest rules off for the docker-gated suites and the
+         * Mocha/Chai browser suites — still win.
+         */
+        files: [
+          '**/test/**/*.ts',
+          '**/*.test.ts',
+          '**/*.spec.ts',
+          '**/cypress/**/*.ts'
+        ],
+        extends: ['plugin:jest/all'],
+        /*
+         * These two were switched off in the top-level `rules` block while
+         * `plugin:jest/all` was extended globally. An `extends` inside an
+         * override is applied after the top-level rules, so moving the ruleset
+         * here re-enabled them and produced 262 errors across the existing
+         * suites — 195 of them `jest/no-hooks` objecting to `beforeAll` and
+         * `afterAll` that were always deliberate.
+         *
+         * They belong here now, beside the ruleset they modify, rather than at
+         * the top where they read as repository-wide policy.
+         */
+        rules: {
+          'jest/no-hooks': 'off',
+          'jest/unbound-method': 'off'
+        }
+      },
       {
         /*
          * Integration suites gated on a docker service.

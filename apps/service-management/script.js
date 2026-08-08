@@ -1,54 +1,132 @@
-const STORAGE_KEY = 'service-management.v1';
-const DIFF_BASELINE_KEY = 'service-management.schema-baseline.v1';
-const DOMAIN_COLORS = ['#60a5fa', '#34d399', '#f59e0b', '#f472b6', '#22d3ee', '#a78bfa', '#fb7185', '#84cc16'];
-const FIELD_TYPES = ['string', 'integer', 'number', 'boolean', 'array', 'object', 'date', 'datetime', 'uuid'];
+/**
+ * script.js — the orchestrator of the Service Management designer.
+ *
+ * After JUM-468 (state/persistence core) and JUM-469 (this refactor) the
+ * monolith is split into modules with explicit interfaces; this file keeps
+ * only what is genuinely orchestration: element lookup, event wiring,
+ * rendering glue and boot.
+ *
+ * Module map (acyclic — imports only ever point downwards):
+ *
+ *   src/state/designerState.js        state, persistence, history, normalisers (DOM-free)
+ *   src/store/*.js                    IDesignerStore port + transitional localStorage adapter (DOM-free)
+ *   src/model/modelQueries.js         pure helpers over the model (DOM-free)
+ *   src/validation/modelValidation.js collectModelIssues engine (DOM-free)
+ *   src/exporters/designerExporters.js the 7 export document builders (DOM-free)
+ *   src/importers/designerImporters.js the import document→model mappers (DOM-free)
+ *   src/ui/tabs.js                    tab switching (DOM)
+ *   src/ui/canvas.js                  canvas: pan/zoom/snap, domains/entities, edges, mini-map (DOM)
+ *   src/ui/inspectors.js              side panels, lists, diff/model-check renderers (DOM)
+ *   script.js                         this file: wiring + glue
+ *
+ * `render()` below calls the per-area renderers in exactly the pre-refactor
+ * order — the monolith's implicit sequencing (options before the inspector
+ * that reads them, domains before edges) is preserved as an explicit
+ * sequence.
+ */
 
-const state = {
-  domains: [],
-  relationships: [],
-  selectedDomainId: null,
-  selectedEntityId: null,
-  selectedRelationshipId: null,
-  idCounter: 1,
-  activeTab: 'domain-designer',
-  interfaces: [],
-  serviceConfiguration: {
-    serviceKind: 'rest-api',
-    runMode: 'dedicated-server',
-    cloudProvider: 'aws',
-    staticAssetsPath: '',
-    ports: {
-      rest: 3000,
-      websocket: 3001,
-      grpc: 3002
-    }
-  },
-  runtimeEnvironment: {
-    environment: 'dev',
-    fileName: '.env.dev',
-    values: {
-      JUMENTIX_HTTP_FRAMEWORK: 'express',
-      JUMENTIX_REALTIME_API: 'no',
-      JUMENTIX_REALTIME_API_PROTOCOL: 'websocket',
-      JUMENTIX_REALTIME_API_DATABASE_DRIVER: 'Mongo'
-    }
-  },
-  deployments: [],
-  view: {
-    zoom: 1,
-    compactEntities: false,
-    snapToGrid: true,
-    edgeStyle: 'curved',
-    modelCheckMinSeverity: 'info',
-    exportBlockCritical: true,
-    largeCanvasMode: false
-  }
+import {
+  DOMAIN_COLORS,
+  FIELD_TYPES,
+  createDesignerState,
+  defaultFields,
+  normalizeContractInput,
+  normalizeField,
+  normalizeOptionalNumber,
+  normalizeRbacPolicyInput,
+  normalizeStatePayload,
+  parseCommaSeparated,
+  parseEnumValues
+} from './src/state/designerState.js';
+import {
+  deriveTenantScoped,
+  validateRbacRule
+} from './src/model/rbacContract.js';
+import { LocalStorageDesignerStore } from './src/store/LocalStorageDesignerStore.js';
+import * as model from './src/model/modelQueries.js';
+import { collectModelIssues } from './src/validation/modelValidation.js';
+import { collectServiceConfigurationIssues } from './src/validation/serviceConfigurationValidation.js';
+import {
+  buildBoilerplateBundleDocument,
+  buildDomainPackageDocument,
+  buildJsonExportDocument,
+  buildJsonSchemaDocument,
+  buildMarkdownExport,
+  buildOasDocument
+} from './src/exporters/designerExporters.js';
+import {
+  buildAsyncApiFileSet,
+  buildGrpcProto
+} from './src/exporters/asyncApiExporters.js';
+import {
+  buildDomainFromPackage,
+  buildDomainsFromOas
+} from './src/importers/designerImporters.js';
+import {
+  flattenBundleFiles,
+  renderBundlePreview
+} from './src/codegen/hexagonalCodegen.js';
+import { createTabs } from './src/ui/tabs.js';
+import { createCanvas } from './src/ui/canvas.js';
+import { createInspectors } from './src/ui/inspectors.js';
+
+// Runtime env editor metadata — mirrors the allowlists and enum sets enforced by
+// server.js (write allowlist = editable tier; read-only keys render disabled).
+const RUNTIME_ENV_EDITABLE_DEFAULTS = {
+  JUMENTIX_HTTP_FRAMEWORK: 'express',
+  JUMENTIX_REALTIME_API: 'no',
+  JUMENTIX_REALTIME_API_PROTOCOL: 'websocket',
+  JUMENTIX_REALTIME_API_DATABASE_DRIVER: 'Mongo',
+  JUMENTIX_DATABASE_DRIVER: 'InMemory',
+  JUMENTIX_KEYVALUESTORAGE_DRIVER: 'redis',
+  JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: 'inmemory',
+  JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER: '',
+  JUMENTIX_WEBSOCKET_REDIS_URL: ''
+};
+const RUNTIME_ENV_ENUM_OPTIONS = {
+  JUMENTIX_HTTP_FRAMEWORK: ['express', 'fastify', 'restify', 'cloudflare-workers', 'vercel-functions', 'loopback', 'sails-js', 'feathers', 'derby-js', 'adonis-js', 'total-js'],
+  JUMENTIX_REALTIME_API: ['no', 'yes'],
+  JUMENTIX_REALTIME_API_PROTOCOL: ['websocket', 'grpc'],
+  JUMENTIX_REALTIME_API_DATABASE_DRIVER: ['Mongo', 'PostgreSQL', 'MySQL', 'MS SQL', 'RDS', 'Aurora', 'Cassandra'],
+  JUMENTIX_DATABASE_DRIVER: ['InMemory', 'IndexedDB', 'Mongo', 'PostgreSQL', 'MySQL', 'MSSQL', 'Oracle', 'SQLite', 'DynamoDB', 'Cassandra', 'Firebase', 'Aurora', 'RDS'],
+  JUMENTIX_KEYVALUESTORAGE_DRIVER: ['redis', 'inmemory'],
+  JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: ['inmemory', 'rabbitmq', 'bullmq'],
+  JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER: ['', 'cluster', 'redis-streams']
+};
+// Per-key context hints (JUM-461): enough context for the two driver keys and
+// the canonical-spelling rule to be legible without prior knowledge.
+const RUNTIME_ENV_FIELD_HINTS = {
+  JUMENTIX_HTTP_FRAMEWORK: 'Canonical spellings only: derby-js and sails-js (the backend rejects the derby/sails aliases).',
+  JUMENTIX_DATABASE_DRIVER: 'Main application database (REST API persistence).',
+  JUMENTIX_REALTIME_API_DATABASE_DRIVER: 'Realtime API (WebSocket/gRPC) database only - does not change the main application database.'
 };
 
-const history = {
-  past: [],
-  future: []
-};
+let runtimeEnvEditableKeys = Object.keys(RUNTIME_ENV_EDITABLE_DEFAULTS);
+
+// State, persistence, history and normalisation live in the DOM-free core
+// (src/state/designerState.js) behind the IDesignerStore port
+// (src/store/IDesignerStore.js). LocalStorageDesignerStore is TRANSITIONAL —
+// JUM-484's migration retires it; Cana has no fallback to localStorage.
+// `seed` and `render` are function declarations below, hoisted before this
+// module body runs.
+const store = new LocalStorageDesignerStore();
+const designerState = createDesignerState({
+  store,
+  seed,
+  render,
+  runtimeEnvDefaults: RUNTIME_ENV_EDITABLE_DEFAULTS
+});
+const {
+  state,
+  history,
+  saveState,
+  withPersist,
+  undo,
+  redo,
+  recomputeIdCounter,
+  loadState,
+  buildModelSnapshot
+} = designerState;
 
 const interaction = {
   spacePressed: false,
@@ -78,6 +156,7 @@ const dom = {
   edges: document.getElementById('edges'),
   domainList: document.getElementById('domain-list'),
   status: document.getElementById('selection-status'),
+  statusRegion: document.getElementById('status-region'),
   zoomOutBtn: document.getElementById('zoom-out-btn'),
   zoomInBtn: document.getElementById('zoom-in-btn'),
   edgeStyleSelect: document.getElementById('edge-style-select'),
@@ -180,6 +259,7 @@ const dom = {
   exportMdBtn: document.getElementById('export-md-btn'),
   exportJsonschemaBtn: document.getElementById('export-jsonschema-btn'),
   exportAsyncapiBtn: document.getElementById('export-asyncapi-btn'),
+  exportProtoBtn: document.getElementById('export-proto-btn'),
   exportBoilerplateBundleBtn: document.getElementById('export-boilerplate-bundle-btn'),
   exportPackageBtn: document.getElementById('export-package-btn'),
   importJsonBtn: document.getElementById('import-json-btn'),
@@ -218,16 +298,18 @@ const dom = {
   serviceWebsocketPortInput: document.getElementById('service-websocket-port-input'),
   serviceGrpcPortInput: document.getElementById('service-grpc-port-input'),
   saveServiceConfigBtn: document.getElementById('save-service-config-btn'),
+  serviceConfigStatus: document.getElementById('service-config-status'),
   serviceRuntimeProfilePreview: document.getElementById('service-runtime-profile-preview'),
   serviceConfigPreview: document.getElementById('service-config-preview'),
+  pm2PreviewEnvironmentSelect: document.getElementById('pm2-preview-environment-select'),
+  pm2PreviewStatus: document.getElementById('pm2-preview-status'),
   runtimeEnvSelect: document.getElementById('runtime-env-select'),
-  runtimeHttpFrameworkSelect: document.getElementById('runtime-http-framework-select'),
-  runtimeRealtimeApiSelect: document.getElementById('runtime-realtime-api-select'),
-  runtimeRealtimeProtocolSelect: document.getElementById('runtime-realtime-protocol-select'),
-  runtimeRealtimeDbDriverSelect: document.getElementById('runtime-realtime-db-driver-select'),
+  runtimeEnvFields: document.getElementById('runtime-env-fields'),
   runtimeEnvRefreshBtn: document.getElementById('runtime-env-refresh-btn'),
   runtimeEnvSaveBtn: document.getElementById('runtime-env-save-btn'),
   runtimeEnvPreview: document.getElementById('runtime-env-preview'),
+  runtimeEnvStatus: document.getElementById('runtime-env-status'),
+  runtimeEnvTargetFile: document.getElementById('runtime-env-target-file'),
   deployNameInput: document.getElementById('deploy-name-input'),
   deployTypeSelect: document.getElementById('deploy-type-select'),
   deployRegionInput: document.getElementById('deploy-region-input'),
@@ -236,318 +318,135 @@ const dom = {
   deployTargetList: document.getElementById('deploy-target-list')
 };
 
+// The UI modules. Their factories receive the shared state/interaction
+// objects plus callbacks into this file — the explicit interface the
+// monolith's closure used to provide. Everything they return is called
+// below exactly where the monolith called its own functions.
+const tabs = createTabs({ dom, state, saveState });
+const canvas = createCanvas({
+  dom,
+  state,
+  interaction,
+  actions: {
+    withPersist,
+    render,
+    saveState,
+    setSelectedDomain,
+    setSelectedEntity,
+    handleEntityRelationshipPick,
+    addRelationshipFromAnchor
+  }
+});
+const inspectors = createInspectors({
+  dom,
+  state,
+  interaction,
+  actions: {
+    withPersist,
+    render,
+    focusEntity,
+    deleteRelationship,
+    setSelectedDomain,
+    editFieldMetadata,
+    updateField,
+    removeField,
+    renderRuntimeEnvironment,
+    loadSchemaBaseline,
+    showStatus,
+    getPm2EcosystemPreview
+  }
+});
+
+// Thin delegations to the pure helpers in src/model/modelQueries.js, keeping
+// the monolith's call signatures (state closed over here, as before) so the
+// retained orchestration below reads exactly as it did pre-refactor.
 function normalizedName(value) {
-  return String(value || '').trim().toLowerCase();
+  return model.normalizedName(value);
 }
 
 function isDomainNameTaken(name, ignoredDomainId = null) {
-  const value = normalizedName(name);
-  return state.domains.some((domain) => domain.id !== ignoredDomainId && normalizedName(domain.name) === value);
+  return model.isDomainNameTaken(state.domains, name, ignoredDomainId);
 }
 
 function isEntityNameTaken(domain, name, ignoredEntityId = null) {
-  const value = normalizedName(name);
-  return domain.entities.some((entity) => entity.id !== ignoredEntityId && normalizedName(entity.name) === value);
+  return model.isEntityNameTaken(domain, name, ignoredEntityId);
 }
 
 function isFieldNameTaken(entity, name, ignoredFieldName = null) {
-  const value = normalizedName(name);
-  return entity.fields.some(
-    (field) => normalizedName(field.name) !== normalizedName(ignoredFieldName) && normalizedName(field.name) === value
-  );
-}
-
-function parseEnumValues(raw) {
-  if (!raw) return [];
-  if (Array.isArray(raw)) return raw.map((item) => String(item).trim()).filter(Boolean);
-  return String(raw)
-    .split(',')
-    .map((item) => item.trim())
-    .filter(Boolean);
-}
-
-function parseCommaSeparated(raw) {
-  if (Array.isArray(raw)) return raw.map((item) => String(item).trim()).filter(Boolean);
-  return String(raw || '')
-    .split(',')
-    .map((item) => item.trim())
-    .filter(Boolean);
+  return model.isFieldNameTaken(entity, name, ignoredFieldName);
 }
 
 function uniqueStrings(values) {
-  return Array.from(new Set((values || []).map((item) => String(item).trim()).filter(Boolean)));
+  return model.uniqueStrings(values);
 }
 
-function normalizeOptionalNumber(value) {
-  if (value === null || value === undefined || value === '') return null;
-  const numeric = Number(value);
-  return Number.isFinite(numeric) ? numeric : null;
+function findEntity(entityId) {
+  return model.findEntity(state.domains, entityId);
 }
 
-function normalizeField(field, fieldIndex) {
-  const name = String(field?.name || '').trim() || `field_${fieldIndex + 1}`;
-  const type = FIELD_TYPES.includes(field?.type) ? field.type : 'string';
-  const enumValues = parseEnumValues(field?.enumValues ?? field?.enum);
-  const format = String(field?.format || '').trim();
-  const description = String(field?.description || '').trim();
-  const pattern = String(field?.pattern || '').trim();
-  const itemsTypeRaw = String(field?.itemsType || '').trim();
-  const itemsType = FIELD_TYPES.includes(itemsTypeRaw) ? itemsTypeRaw : '';
-  const minLength = normalizeOptionalNumber(field?.minLength);
-  const maxLength = normalizeOptionalNumber(field?.maxLength);
-  const minimum = normalizeOptionalNumber(field?.minimum);
-  const maximum = normalizeOptionalNumber(field?.maximum);
-  return {
-    name,
-    type,
-    required: Boolean(field?.required),
-    pk: Boolean(field?.pk),
-    fk: Boolean(field?.fk),
-    unique: Boolean(field?.unique),
-    nullable: Boolean(field?.nullable),
-    format,
-    description,
-    enumValues,
-    pattern,
-    minLength,
-    maxLength,
-    minimum,
-    maximum,
-    itemsType: type === 'array' ? (itemsType || 'string') : ''
-  };
+function findEntityByName(name) {
+  return model.findEntityByName(state.domains, name);
 }
 
-function normalizeContractInput(contract, contractIndex = 0) {
-  const id = String(contract?.id || '').trim() || fallbackId('contract', contractIndex);
-  return {
-    id,
-    name: String(contract?.name || '').trim() || `Contract_${contractIndex + 1}`,
-    type: ['event', 'command', 'request', 'response'].includes(contract?.type) ? contract.type : 'event',
-    channel: String(contract?.channel || '').trim(),
-    version: String(contract?.version || '').trim() || '1.0.0',
-    payloadSchema: contract?.payloadSchema && typeof contract.payloadSchema === 'object'
-      ? contract.payloadSchema
-      : {}
-  };
+function buildRelationshipName(fromEntityId, toEntityId, fromCardinality, toCardinality) {
+  return model.buildRelationshipName(state.domains, fromEntityId, toEntityId, fromCardinality, toCardinality);
 }
 
-function saveState() {
-  const payload = {
-    domains: state.domains,
-    relationships: state.relationships,
-    selectedDomainId: state.selectedDomainId,
-    selectedEntityId: state.selectedEntityId,
-    selectedRelationshipId: state.selectedRelationshipId,
-    idCounter: state.idCounter,
-    activeTab: state.activeTab,
-    interfaces: state.interfaces,
-    serviceConfiguration: state.serviceConfiguration,
-    runtimeEnvironment: state.runtimeEnvironment,
-    deployments: state.deployments,
-    view: state.view
-  };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+function getEntityRbacPolicy(entity) {
+  return model.getEntityRbacPolicy(entity);
 }
 
-function snapshotState() {
-  return JSON.parse(JSON.stringify({
-    domains: state.domains,
-    relationships: state.relationships,
-    selectedDomainId: state.selectedDomainId,
-    selectedEntityId: state.selectedEntityId,
-    selectedRelationshipId: state.selectedRelationshipId,
-    idCounter: state.idCounter,
-    activeTab: state.activeTab,
-    interfaces: state.interfaces,
-    serviceConfiguration: state.serviceConfiguration,
-    runtimeEnvironment: state.runtimeEnvironment,
-    deployments: state.deployments,
-    view: state.view
-  }));
+function toPathToken(value) {
+  return model.toPathToken(value);
 }
 
-function applySnapshot(snapshot) {
-  state.domains = snapshot.domains || [];
-  state.relationships = (snapshot.relationships || []).map(normalizeRelationship);
-  state.selectedDomainId = snapshot.selectedDomainId || state.domains[0]?.id || null;
-  state.selectedEntityId = snapshot.selectedEntityId || null;
-  state.selectedRelationshipId = snapshot.selectedRelationshipId || null;
-  state.idCounter = snapshot.idCounter || 1;
-  state.activeTab = snapshot.activeTab || 'domain-designer';
-  state.interfaces = Array.isArray(snapshot.interfaces) ? snapshot.interfaces : [];
-  state.serviceConfiguration = {
-    ...state.serviceConfiguration,
-    ...(snapshot.serviceConfiguration || {})
-  };
-  state.runtimeEnvironment = {
-    ...state.runtimeEnvironment,
-    ...(snapshot.runtimeEnvironment || {})
-  };
-  state.deployments = Array.isArray(snapshot.deployments) ? snapshot.deployments : [];
-  state.view = snapshot.view || { zoom: 1 };
-  recomputeIdCounter();
+function snapCoordinate(value) {
+  return model.snapCoordinate(state.view.snapToGrid, value);
 }
 
-function recordHistory() {
-  history.past.push(snapshotState());
-  if (history.past.length > 100) history.past.shift();
-  history.future = [];
-}
+function renderRuntimeEnvFields(runtimeValues) {
+  const container = dom.runtimeEnvFields;
+  if (!container) return;
+  container.innerHTML = '';
+  const editableSet = new Set(runtimeEnvEditableKeys);
+  Object.keys(runtimeValues).forEach((key) => {
+    const isEditable = editableSet.has(key);
+    const wrapper = document.createElement('div');
+    const label = document.createElement('label');
+    const fieldId = `runtime-env-field-${key.toLowerCase().replace(/_/g, '-')}`;
+    label.setAttribute('for', fieldId);
+    label.textContent = isEditable ? key : `${key} (read-only)`;
+    wrapper.appendChild(label);
 
-function withPersist(action, options = {}) {
-  if (options.recordHistory !== false) recordHistory();
-  action();
-  saveState();
-}
-
-function undo() {
-  if (!history.past.length) return;
-  history.future.push(snapshotState());
-  const previous = history.past.pop();
-  applySnapshot(previous);
-  saveState();
-  render();
-}
-
-function redo() {
-  if (!history.future.length) return;
-  history.past.push(snapshotState());
-  const next = history.future.pop();
-  applySnapshot(next);
-  saveState();
-  render();
-}
-
-function clampZoom(value) {
-  return Math.max(0.5, Math.min(2, value));
-}
-
-function renderView() {
-  const zoom = clampZoom(state.view.zoom || 1);
-  state.view.zoom = zoom;
-  if (typeof state.view.snapToGrid !== 'boolean') state.view.snapToGrid = true;
-  if (!['curved', 'orthogonal'].includes(state.view.edgeStyle)) state.view.edgeStyle = 'curved';
-  if (!['info', 'warn', 'error'].includes(state.view.modelCheckMinSeverity)) state.view.modelCheckMinSeverity = 'info';
-  if (typeof state.view.exportBlockCritical !== 'boolean') state.view.exportBlockCritical = true;
-  if (typeof state.view.largeCanvasMode !== 'boolean') state.view.largeCanvasMode = false;
-  dom.canvasInner.style.transform = `scale(${zoom})`;
-  dom.canvas.classList.toggle('large-canvas-mode', Boolean(state.view.largeCanvasMode));
-  dom.zoomIndicator.textContent = `${Math.round(zoom * 100)}%`;
-  dom.toggleCompactViewBtn.textContent = state.view.compactEntities ? 'Full View' : 'Compact View';
-  dom.toggleSnapBtn.textContent = state.view.snapToGrid ? 'Snap: On' : 'Snap: Off';
-  dom.toggleLargeCanvasBtn.textContent = state.view.largeCanvasMode ? 'Large Canvas: On' : 'Large Canvas: Off';
-  dom.edgeStyleSelect.value = state.view.edgeStyle;
-  dom.modelCheckMinSeveritySelect.value = state.view.modelCheckMinSeverity;
-  dom.exportBlockCriticalCheck.checked = state.view.exportBlockCritical;
-}
-
-function renderTabs() {
-  const activeTab = state.activeTab || 'domain-designer';
-  const tabMap = [
-    {
-      key: 'domain-designer',
-      button: dom.tabDomainDesignerBtn,
-      section: dom.tabDomainDesigner
-    },
-    {
-      key: 'interface-designer',
-      button: dom.tabInterfaceDesignerBtn,
-      section: dom.tabInterfaceDesigner
-    },
-    {
-      key: 'service-config',
-      button: dom.tabServiceConfigBtn,
-      section: dom.tabServiceConfig
-    },
-    {
-      key: 'deploy-management',
-      button: dom.tabDeployManagementBtn,
-      section: dom.tabDeployManagement
-    }
-  ];
-
-  tabMap.forEach((tab) => {
-    if (tab.button) tab.button.classList.toggle('active', tab.key === activeTab);
-    if (tab.section) tab.section.classList.toggle('active', tab.key === activeTab);
-  });
-}
-
-function setActiveTab(tab) {
-  state.activeTab = tab;
-  renderTabs();
-  saveState();
-}
-
-function renderInterfaceAdapters() {
-  if (!dom.interfaceAdapterList) return;
-  dom.interfaceAdapterList.innerHTML = '';
-  state.interfaces.forEach((adapter, index) => {
-    const item = document.createElement('li');
-    item.className = 'relationship-item';
-    const summary = document.createElement('div');
-    summary.className = 'relationship-name';
-    summary.textContent = `${adapter.type} | ${adapter.framework} | ${adapter.entrypoint} -> ${adapter.controller}`;
-    item.appendChild(summary);
-
-    const removeBtn = document.createElement('button');
-    removeBtn.type = 'button';
-    removeBtn.textContent = 'Delete';
-    removeBtn.onclick = () => {
-      withPersist(() => {
-        state.interfaces.splice(index, 1);
-        renderInterfaceAdapters();
+    let field;
+    const enumOptions = RUNTIME_ENV_ENUM_OPTIONS[key];
+    if (isEditable && enumOptions) {
+      field = document.createElement('select');
+      enumOptions.forEach((optionValue) => {
+        const option = document.createElement('option');
+        option.value = optionValue;
+        option.textContent = optionValue === '' ? '(backend default)' : optionValue;
+        field.appendChild(option);
       });
-    };
-    item.appendChild(removeBtn);
-    dom.interfaceAdapterList.appendChild(item);
-  });
-}
-
-function renderServiceConfiguration() {
-  if (!dom.serviceKindSelect) return;
-  dom.serviceKindSelect.value = state.serviceConfiguration.serviceKind || 'rest-api';
-  dom.runModeSelect.value = state.serviceConfiguration.runMode || 'dedicated-server';
-  dom.cloudProviderSelect.value = state.serviceConfiguration.cloudProvider || 'aws';
-  dom.serviceStaticAssetsInput.value = state.serviceConfiguration.staticAssetsPath || '';
-  const currentPorts = state.serviceConfiguration.ports || { rest: 3000, websocket: 3001, grpc: 3002 };
-  if (dom.serviceHttpPortInput) dom.serviceHttpPortInput.value = String(currentPorts.rest || 3000);
-  if (dom.serviceWebsocketPortInput) dom.serviceWebsocketPortInput.value = String(currentPorts.websocket || 3001);
-  if (dom.serviceGrpcPortInput) dom.serviceGrpcPortInput.value = String(currentPorts.grpc || 3002);
-
-  const runtimeProfiles = {
-    'rest-api': {
-      kind: 'REST API',
-      processCount: 1,
-      pm2Command: 'bun run pm2:start:dev:restapi',
-      processes: ['REST API']
-    },
-    'websocket-rest-api': {
-      kind: 'WebSocket API + REST API',
-      processCount: 2,
-      pm2Command: 'bun run pm2:start:dev:websocket-rest',
-      processes: ['REST API', 'WebSocket API']
-    },
-    'grpc-rest-api': {
-      kind: 'gRPC API + REST API',
-      processCount: 2,
-      pm2Command: 'bun run pm2:start:dev:grpc-rest',
-      processes: ['REST API', 'gRPC API']
+      field.value = String(runtimeValues[key] ?? '');
+    } else {
+      field = document.createElement('input');
+      field.type = 'text';
+      field.value = String(runtimeValues[key] ?? '');
+      field.readOnly = !isEditable;
     }
-  };
-  const selectedProfile = runtimeProfiles[state.serviceConfiguration.serviceKind] || runtimeProfiles['rest-api'];
-  if (dom.serviceRuntimeProfilePreview) {
-    dom.serviceRuntimeProfilePreview.textContent = JSON.stringify({
-      selectedRuntimeProfile: selectedProfile.kind,
-      vmRequirement: 'Use PM2 with separated processes and ports',
-      processCount: selectedProfile.processCount,
-      processes: selectedProfile.processes,
-      ports: currentPorts,
-      suggestedPm2Command: selectedProfile.pm2Command
-    }, null, 2);
-  }
-  if (!dom.serviceConfigPreview) return;
-  dom.serviceConfigPreview.textContent = JSON.stringify(state.serviceConfiguration, null, 2);
-  renderRuntimeEnvironment();
+    field.id = fieldId;
+    field.dataset.runtimeKey = key;
+    wrapper.appendChild(field);
+    const hint = RUNTIME_ENV_FIELD_HINTS[key];
+    if (hint) {
+      const hintEl = document.createElement('p');
+      hintEl.className = 'hint';
+      hintEl.textContent = hint;
+      wrapper.appendChild(hintEl);
+    }
+    container.appendChild(wrapper);
+  });
 }
 
 function renderRuntimeEnvironment() {
@@ -557,17 +456,11 @@ function renderRuntimeEnvironment() {
   const environment = String(runtimeEnvironment.environment || 'dev');
   const fileName = String(runtimeEnvironment.fileName || '.env.dev');
   dom.runtimeEnvSelect.value = environment;
-  if (dom.runtimeHttpFrameworkSelect) {
-    dom.runtimeHttpFrameworkSelect.value = String(runtimeValues.JUMENTIX_HTTP_FRAMEWORK || 'express');
-  }
-  if (dom.runtimeRealtimeApiSelect) {
-    dom.runtimeRealtimeApiSelect.value = String(runtimeValues.JUMENTIX_REALTIME_API || 'no');
-  }
-  if (dom.runtimeRealtimeProtocolSelect) {
-    dom.runtimeRealtimeProtocolSelect.value = String(runtimeValues.JUMENTIX_REALTIME_API_PROTOCOL || 'websocket');
-  }
-  if (dom.runtimeRealtimeDbDriverSelect) {
-    dom.runtimeRealtimeDbDriverSelect.value = String(runtimeValues.JUMENTIX_REALTIME_API_DATABASE_DRIVER || 'Mongo');
+  renderRuntimeEnvFields(runtimeValues);
+  if (dom.runtimeEnvTargetFile) {
+    // Per-file targeting made explicit (JUM-480): the panel always names the
+    // exact env file the next Save writes, straight from the last API payload.
+    dom.runtimeEnvTargetFile.textContent = `Editing target: ${fileName} (environment "${environment}")`;
   }
   if (dom.runtimeEnvPreview) {
     dom.runtimeEnvPreview.textContent = JSON.stringify({
@@ -578,36 +471,88 @@ function renderRuntimeEnvironment() {
   }
 }
 
+// Non-blocking status surfaces (JUM-543). Every former window.alert call site
+// announces through the aria-live toast region instead of blocking the UI.
+// Destructive-action gates keep their window.confirm — a toast is not a
+// substitute for a gate.
+let statusHideTimer = null;
+function showStatus(message, severity = 'error') {
+  if (!dom.statusRegion) return;
+  if (statusHideTimer) {
+    clearTimeout(statusHideTimer);
+    statusHideTimer = null;
+  }
+  dom.statusRegion.textContent = String(message);
+  dom.statusRegion.className = `status-region status-${severity}`;
+  dom.statusRegion.hidden = false;
+  if (severity === 'info') {
+    statusHideTimer = setTimeout(() => {
+      dom.statusRegion.hidden = true;
+      statusHideTimer = null;
+    }, 6000);
+  }
+}
+
+// Inline status line of the runtime env panel: load/save failures land here
+// with environment, file and cause, instead of a silent console error.
+function showRuntimeEnvStatus(message, severity = 'error') {
+  if (!dom.runtimeEnvStatus) return;
+  dom.runtimeEnvStatus.textContent = String(message);
+  dom.runtimeEnvStatus.className = `hint status-line status-${severity}`;
+}
+
+// Builds the client-side error from EXACTLY what the API returned — the
+// server's error envelope (error/details, plus code/path on the 500
+// filesystem class) is surfaced verbatim; there is no client-side remapping.
+async function runtimeEnvApiError(response, fallback) {
+  let payload = null;
+  try {
+    payload = await response.json();
+  } catch (_) {
+    payload = null;
+  }
+  if (!payload || typeof payload !== 'object') return new Error(fallback);
+  const parts = [];
+  if (payload.error) parts.push(String(payload.error));
+  if (payload.details) parts.push(String(payload.details));
+  if (payload.code) parts.push(`code: ${String(payload.code)}`);
+  if (payload.path) parts.push(`file: ${String(payload.path)}`);
+  return new Error(parts.length > 0 ? parts.join(' ') : fallback);
+}
+
 async function loadRuntimeEnvironment(environment) {
   const selectedEnvironment = String(environment || state.runtimeEnvironment?.environment || 'dev');
   const query = `?environment=${encodeURIComponent(selectedEnvironment)}`;
   const response = await fetch(`/api/runtime/env${query}`);
   if (!response.ok) {
-    throw new Error(`Could not load environment ${selectedEnvironment}.`);
+    throw await runtimeEnvApiError(response, `Could not load environment ${selectedEnvironment}.`);
   }
   const payload = await response.json();
+  if (Array.isArray(payload?.editableKeys) && payload.editableKeys.length > 0) {
+    runtimeEnvEditableKeys = payload.editableKeys.map((key) => String(key));
+  }
   state.runtimeEnvironment = {
     environment: String(payload.environment || selectedEnvironment),
     fileName: String(payload.fileName || ''),
-    values: {
-      JUMENTIX_HTTP_FRAMEWORK: String(payload?.values?.JUMENTIX_HTTP_FRAMEWORK || 'express'),
-      JUMENTIX_REALTIME_API: String(payload?.values?.JUMENTIX_REALTIME_API || 'no'),
-      JUMENTIX_REALTIME_API_PROTOCOL: String(payload?.values?.JUMENTIX_REALTIME_API_PROTOCOL || 'websocket'),
-      JUMENTIX_REALTIME_API_DATABASE_DRIVER: String(payload?.values?.JUMENTIX_REALTIME_API_DATABASE_DRIVER || 'Mongo')
-    }
+    values: { ...(payload?.values || {}) }
   };
   renderRuntimeEnvironment();
 }
 
 async function saveRuntimeEnvironment() {
+  const editableSet = new Set(runtimeEnvEditableKeys);
+  const values = {};
+  if (dom.runtimeEnvFields) {
+    dom.runtimeEnvFields.querySelectorAll('[data-runtime-key]').forEach((field) => {
+      const key = field.dataset.runtimeKey;
+      if (editableSet.has(key)) {
+        values[key] = field.value;
+      }
+    });
+  }
   const payload = {
     environment: dom.runtimeEnvSelect?.value || 'dev',
-    values: {
-      JUMENTIX_HTTP_FRAMEWORK: dom.runtimeHttpFrameworkSelect?.value || 'express',
-      JUMENTIX_REALTIME_API: dom.runtimeRealtimeApiSelect?.value || 'no',
-      JUMENTIX_REALTIME_API_PROTOCOL: dom.runtimeRealtimeProtocolSelect?.value || 'websocket',
-      JUMENTIX_REALTIME_API_DATABASE_DRIVER: dom.runtimeRealtimeDbDriverSelect?.value || 'Mongo'
-    }
+    values
   };
   const response = await fetch('/api/runtime/env', {
     method: 'POST',
@@ -617,134 +562,67 @@ async function saveRuntimeEnvironment() {
     body: JSON.stringify(payload)
   });
   if (!response.ok) {
-    throw new Error('Could not save runtime environment.');
+    throw await runtimeEnvApiError(response, 'Could not save runtime environment.');
   }
   const saved = await response.json();
+  if (Array.isArray(saved?.editableKeys) && saved.editableKeys.length > 0) {
+    runtimeEnvEditableKeys = saved.editableKeys.map((key) => String(key));
+  }
   state.runtimeEnvironment = {
     environment: String(saved.environment || payload.environment),
     fileName: String(saved.fileName || ''),
-    values: {
-      JUMENTIX_HTTP_FRAMEWORK: String(saved?.values?.JUMENTIX_HTTP_FRAMEWORK || payload.values.JUMENTIX_HTTP_FRAMEWORK),
-      JUMENTIX_REALTIME_API: String(saved?.values?.JUMENTIX_REALTIME_API || payload.values.JUMENTIX_REALTIME_API),
-      JUMENTIX_REALTIME_API_PROTOCOL: String(saved?.values?.JUMENTIX_REALTIME_API_PROTOCOL || payload.values.JUMENTIX_REALTIME_API_PROTOCOL),
-      JUMENTIX_REALTIME_API_DATABASE_DRIVER:
-        String(saved?.values?.JUMENTIX_REALTIME_API_DATABASE_DRIVER || payload.values.JUMENTIX_REALTIME_API_DATABASE_DRIVER)
-    }
+    values: { ...(saved?.values || payload.values) }
   };
   saveState();
   renderRuntimeEnvironment();
 }
 
-function renderDeployments() {
-  if (!dom.deployTargetList) return;
-  dom.deployTargetList.innerHTML = '';
-  state.deployments.forEach((deployment, index) => {
-    const item = document.createElement('li');
-    item.className = 'relationship-item';
-    const summary = document.createElement('div');
-    summary.className = 'relationship-name';
-    summary.textContent = `${deployment.name} | ${deployment.type} | ${deployment.region} | ${deployment.runtime}`;
-    item.appendChild(summary);
-
-    const removeBtn = document.createElement('button');
-    removeBtn.type = 'button';
-    removeBtn.textContent = 'Delete';
-    removeBtn.onclick = () => {
-      withPersist(() => {
-        state.deployments.splice(index, 1);
-        renderDeployments();
-      });
-    };
-    item.appendChild(removeBtn);
-    dom.deployTargetList.appendChild(item);
-  });
+// PM2 ecosystem preview (JUM-480). Transient, server-derived state — held in a
+// module-level variable, NOT in the persisted designer state, so the
+// `service-management.v1` schema (Requirement 126, Contract 2) is untouched.
+// The preview renders whatever the real pm2/ecosystem.*.cjs file defines; no
+// process list or package-manager command is hardcoded in the designer.
+let pm2EcosystemPreview = null;
+function getPm2EcosystemPreview() {
+  return pm2EcosystemPreview;
 }
 
-function setZoom(zoomValue) {
-  state.view.zoom = clampZoom(zoomValue);
-  renderView();
-  saveState();
+// Inline status line of the runtime profile panel's PM2 preview (JUM-543
+// pattern): load failures land here with environment, file and cause.
+function showPm2PreviewStatus(message, severity = 'error') {
+  if (!dom.pm2PreviewStatus) return;
+  dom.pm2PreviewStatus.textContent = String(message);
+  dom.pm2PreviewStatus.className = `hint status-line status-${severity}`;
 }
 
-function zoomBy(delta) {
-  setZoom((state.view.zoom || 1) + delta);
-}
-
-function fitView() {
-  if (!state.domains.length) {
-    setZoom(1);
-    dom.canvas.scrollTo({ left: 0, top: 0, behavior: 'smooth' });
-    return;
+async function loadPm2EcosystemPreview(environment) {
+  const selected = String(environment || 'dev');
+  const query = `?environment=${encodeURIComponent(selected)}`;
+  const response = await fetch(`/api/runtime/pm2-ecosystem${query}`);
+  if (!response.ok) {
+    throw await runtimeEnvApiError(response, `Could not load the PM2 ecosystem for ${selected}.`);
   }
-
-  const bounds = {
-    minX: Infinity,
-    minY: Infinity,
-    maxX: 0,
-    maxY: 0
+  const payload = await response.json();
+  pm2EcosystemPreview = {
+    environment: String(payload.environment || selected),
+    fileName: String(payload.fileName || ''),
+    path: String(payload.path || ''),
+    exists: Boolean(payload.exists),
+    apps: Array.isArray(payload.apps) ? payload.apps : []
   };
-
-  state.domains.forEach((domain) => {
-    bounds.minX = Math.min(bounds.minX, domain.x);
-    bounds.minY = Math.min(bounds.minY, domain.y);
-    bounds.maxX = Math.max(bounds.maxX, domain.x + 520);
-    bounds.maxY = Math.max(bounds.maxY, domain.y + 280);
-  });
-
-  const padding = 80;
-  const contentWidth = Math.max(300, bounds.maxX - bounds.minX + padding * 2);
-  const contentHeight = Math.max(220, bounds.maxY - bounds.minY + padding * 2);
-  const zoomX = dom.canvas.clientWidth / contentWidth;
-  const zoomY = dom.canvas.clientHeight / contentHeight;
-  const nextZoom = clampZoom(Math.min(zoomX, zoomY));
-  state.view.zoom = nextZoom;
-  renderView();
-
-  const left = Math.max(0, (bounds.minX - padding) * nextZoom);
-  const top = Math.max(0, (bounds.minY - padding) * nextZoom);
-  dom.canvas.scrollTo({ left, top, behavior: 'smooth' });
-  saveState();
+  if (dom.pm2PreviewEnvironmentSelect) {
+    dom.pm2PreviewEnvironmentSelect.value = pm2EcosystemPreview.environment;
+  }
+  inspectors.renderPm2EcosystemPreview();
 }
 
-function resetView() {
-  state.view.zoom = 1;
-  renderView();
-  dom.canvas.scrollTo({ left: 0, top: 0, behavior: 'smooth' });
-  saveState();
-}
-
-function toggleCompactView() {
-  state.view.compactEntities = !state.view.compactEntities;
-  render();
-  saveState();
-}
-
-function autoLayout() {
-  withPersist(() => {
-    const domainWidth = 520;
-    const domainHeight = 300;
-    const gapX = 70;
-    const gapY = 70;
-    const columns = Math.max(1, Math.floor((3200 - 120) / (domainWidth + gapX)));
-
-    state.domains.forEach((domain, index) => {
-      const column = index % columns;
-      const row = Math.floor(index / columns);
-      domain.x = 40 + column * (domainWidth + gapX);
-      domain.y = 40 + row * (domainHeight + gapY);
-
-      domain.entities.forEach((entity, entityIndex) => {
-        const entityColumn = entityIndex % 2;
-        const entityRow = Math.floor(entityIndex / 2);
-        entity.x = 14 + entityColumn * 206;
-        entity.y = 14 + entityRow * 118;
-      });
-    });
-
-    render();
-  });
-
-  fitView();
+// Failure path shared by the select handler and boot: the preview pane itself
+// carries the explicit error state instead of going silently stale.
+function failPm2EcosystemPreview(environment, error) {
+  const message = error instanceof Error ? error.message : 'Could not load the PM2 ecosystem.';
+  pm2EcosystemPreview = { environment: String(environment || 'dev'), error: message };
+  inspectors.renderPm2EcosystemPreview();
+  showPm2PreviewStatus(`PM2 ecosystem "${String(environment || 'dev')}": ${message}`);
 }
 
 function nextId(prefix) {
@@ -755,24 +633,6 @@ function nextId(prefix) {
 
 function getSelectedDomain() {
   return state.domains.find((domain) => domain.id === state.selectedDomainId) || null;
-}
-
-function findEntity(entityId) {
-  for (const domain of state.domains) {
-    const entity = domain.entities.find((candidate) => candidate.id === entityId);
-    if (entity) return { domain, entity };
-  }
-  return null;
-}
-
-function findEntityByName(name) {
-  const normalized = normalizedName(name);
-  if (!normalized) return null;
-  for (const domain of state.domains) {
-    const entity = domain.entities.find((candidate) => normalizedName(candidate.name).includes(normalized));
-    if (entity) return { domain, entity };
-  }
-  return null;
 }
 
 function focusEntity(entityId) {
@@ -791,23 +651,9 @@ function focusEntity(entityId) {
   });
 }
 
-function defaultFields() {
-  return [
-    normalizeField({ name: 'id', type: 'uuid', required: true, pk: true, fk: false, unique: true }, 0),
-    normalizeField({ name: 'createdAt', type: 'date', required: true, pk: false, fk: false, unique: false }, 1),
-    normalizeField({ name: 'updatedAt', type: 'date', required: true, pk: false, fk: false, unique: false }, 2)
-  ];
-}
-
-function snapCoordinate(value) {
-  if (!state.view.snapToGrid) return value;
-  const GRID = 8;
-  return Math.round(value / GRID) * GRID;
-}
-
 function addDomain(name, options = {}) {
   if (isDomainNameTaken(name)) {
-    window.alert(`Domain "${name}" already exists.`);
+    showStatus(`Domain "${name}" already exists.`);
     return null;
   }
   const domain = {
@@ -836,7 +682,7 @@ function addEntity(domainId, name, options = {}) {
   const domain = state.domains.find((candidate) => candidate.id === domainId);
   if (!domain) return null;
   if (isEntityNameTaken(domain, name)) {
-    window.alert(`Entity "${name}" already exists in ${domain.name}.`);
+    showStatus(`Entity "${name}" already exists in ${domain.name}.`);
     return null;
   }
   const index = domain.entities.length;
@@ -851,7 +697,7 @@ function addEntity(domainId, name, options = {}) {
       invariants: Array.isArray(options?.meta?.invariants)
         ? options.meta.invariants.map((item) => String(item).trim()).filter(Boolean)
         : [],
-      rbac: options?.meta?.rbac || getDefaultRbacPolicy(),
+      rbac: normalizeRbacPolicyInput(options?.meta?.rbac),
       contracts: Array.isArray(options?.meta?.contracts)
         ? options.meta.contracts.map((contract, index) => normalizeContractInput(contract, index))
         : [],
@@ -913,13 +759,13 @@ function setSelectedEntity(entityId) {
 function addFieldToSelectedEntity() {
   const found = findEntity(state.selectedEntityId);
   if (!found) {
-    window.alert('Select an entity first.');
+    showStatus('Select an entity first.');
     return;
   }
   const name = dom.fieldNameInput.value.trim();
   if (!name) return;
   if (isFieldNameTaken(found.entity, name)) {
-    window.alert(`Field "${name}" already exists in ${found.entity.name}.`);
+    showStatus(`Field "${name}" already exists in ${found.entity.name}.`);
     return;
   }
   withPersist(() => {
@@ -945,7 +791,7 @@ function addFieldToSelectedEntity() {
 function applyFieldTemplateToSelectedEntity() {
   const found = findEntity(state.selectedEntityId);
   if (!found) {
-    window.alert('Select an entity first.');
+    showStatus('Select an entity first.');
     return;
   }
   const template = dom.fieldTemplateSelect.value;
@@ -995,11 +841,11 @@ function updateField(entityId, fieldName, nextPartial) {
   if (!target) return;
   const nextName = (nextPartial.name ?? target.name).trim();
   if (!nextName) {
-    window.alert('Field name cannot be empty.');
+    showStatus('Field name cannot be empty.');
     return;
   }
   if (isFieldNameTaken(found.entity, nextName, target.name)) {
-    window.alert(`Field "${nextName}" already exists in ${found.entity.name}.`);
+    showStatus(`Field "${nextName}" already exists in ${found.entity.name}.`);
     return;
   }
   withPersist(() => {
@@ -1037,7 +883,7 @@ function removeField(entityId, fieldName) {
 
 function addRelationship(fromEntityId, toEntityId, fromCardinality, toCardinality, options = {}) {
   if (!fromEntityId || !toEntityId || fromEntityId === toEntityId) {
-    window.alert('Select two different entities to create a relationship.');
+    showStatus('Select two different entities to create a relationship.');
     return;
   }
   withPersist(() => {
@@ -1102,7 +948,7 @@ function addRelationship(fromEntityId, toEntityId, fromCardinality, toCardinalit
       relationship.fromEntityId === toEntityId && relationship.toEntityId === fromEntityId
     ));
     if (exists) {
-      window.alert('A relationship between these entities already exists.');
+      showStatus('A relationship between these entities already exists.');
       return;
     }
     const relationship = {
@@ -1138,6 +984,18 @@ function addRelationship(fromEntityId, toEntityId, fromCardinality, toCardinalit
   });
 }
 
+// Canvas anchor drags end on this callback: the cardinality selects live in
+// this file's `dom` map, so the canvas module delegates relationship
+// creation back here with the anchor sides it tracked.
+function addRelationshipFromAnchor(fromEntityId, toEntityId, toSide) {
+  const fromCardinality = dom.fromCardSelect.value || 'N';
+  const toCardinality = dom.toCardSelect.value || '1';
+  addRelationship(fromEntityId, toEntityId, fromCardinality, toCardinality, {
+    fromAnchorSide: interaction.relationshipAnchorFromSide,
+    toAnchorSide: toSide
+  });
+}
+
 function ensureForeignKeyField(entity, referencedEntityName) {
   const fkName = `${String(referencedEntityName || '').trim().toLowerCase()}Id`;
   if (!fkName || fkName === 'id') return;
@@ -1161,53 +1019,10 @@ function deleteRelationship(relationshipId) {
   });
 }
 
-function syncRelationshipInspector() {
-  const relationship = state.relationships.find((candidate) => candidate.id === state.selectedRelationshipId);
-  const disabled = !relationship;
-  dom.relationshipNameInput.disabled = disabled;
-  dom.relationshipFromEntitySelect.disabled = disabled;
-  dom.relationshipToEntitySelect.disabled = disabled;
-  dom.relationshipFromCardSelect.disabled = disabled;
-  dom.relationshipToCardSelect.disabled = disabled;
-  dom.relationshipLabelOffsetXInput.disabled = disabled;
-  dom.relationshipLabelOffsetYInput.disabled = disabled;
-  dom.relationshipBendXInput.disabled = disabled;
-  dom.relationshipBendYInput.disabled = disabled;
-  dom.relationshipAnchorBehaviorSelect.disabled = disabled;
-  dom.resetRelationshipLabelOffsetBtn.disabled = disabled;
-  dom.saveRelationshipBtn.disabled = disabled;
-  dom.reverseRelationshipBtn.disabled = disabled;
-  if (!relationship) {
-    dom.relationshipNameInput.value = '';
-    dom.relationshipFromEntitySelect.value = '';
-    dom.relationshipToEntitySelect.value = '';
-    dom.relationshipFromCardSelect.value = '1';
-    dom.relationshipToCardSelect.value = '1';
-    dom.relationshipLabelOffsetXInput.value = '';
-    dom.relationshipLabelOffsetYInput.value = '';
-    dom.relationshipBendXInput.value = '';
-    dom.relationshipBendYInput.value = '';
-    dom.relationshipAnchorBehaviorSelect.value = 'auto';
-    dom.relationshipNameInput.placeholder = 'Select a relationship';
-    return;
-  }
-  dom.relationshipNameInput.placeholder = 'Relationship name';
-  dom.relationshipNameInput.value = relationship.name || '';
-  dom.relationshipFromEntitySelect.value = relationship.fromEntityId;
-  dom.relationshipToEntitySelect.value = relationship.toEntityId;
-  dom.relationshipFromCardSelect.value = relationship.fromCardinality || '1';
-  dom.relationshipToCardSelect.value = relationship.toCardinality || '1';
-  dom.relationshipLabelOffsetXInput.value = Number.isFinite(relationship.labelOffsetX) ? String(relationship.labelOffsetX) : '0';
-  dom.relationshipLabelOffsetYInput.value = Number.isFinite(relationship.labelOffsetY) ? String(relationship.labelOffsetY) : '0';
-  dom.relationshipBendXInput.value = Number.isFinite(relationship.bendX) ? String(relationship.bendX) : '';
-  dom.relationshipBendYInput.value = Number.isFinite(relationship.bendY) ? String(relationship.bendY) : '';
-  dom.relationshipAnchorBehaviorSelect.value = relationship.anchorBehavior === 'center' ? 'center' : 'auto';
-}
-
 function saveSelectedRelationship() {
   const relationship = state.relationships.find((candidate) => candidate.id === state.selectedRelationshipId);
   if (!relationship) {
-    window.alert('Select a relationship first.');
+    showStatus('Select a relationship first.');
     return;
   }
   const fromEntityId = dom.relationshipFromEntitySelect.value;
@@ -1215,11 +1030,11 @@ function saveSelectedRelationship() {
   const fromCardinality = dom.relationshipFromCardSelect.value;
   const toCardinality = dom.relationshipToCardSelect.value;
   if (!fromEntityId || !toEntityId || fromEntityId === toEntityId) {
-    window.alert('Relationship must link two different entities.');
+    showStatus('Relationship must link two different entities.');
     return;
   }
   if (!['1', 'N'].includes(fromCardinality) || !['1', 'N'].includes(toCardinality)) {
-    window.alert('Cardinality must be "1" or "N".');
+    showStatus('Cardinality must be "1" or "N".');
     return;
   }
   const duplicate = state.relationships.some((candidate) => {
@@ -1230,7 +1045,7 @@ function saveSelectedRelationship() {
     );
   });
   if (duplicate) {
-    window.alert('A relationship between these entities already exists.');
+    showStatus('A relationship between these entities already exists.');
     return;
   }
   withPersist(() => {
@@ -1252,7 +1067,7 @@ function saveSelectedRelationship() {
 function reverseSelectedRelationship() {
   const relationship = state.relationships.find((candidate) => candidate.id === state.selectedRelationshipId);
   if (!relationship) {
-    window.alert('Select a relationship first.');
+    showStatus('Select a relationship first.');
     return;
   }
   withPersist(() => {
@@ -1274,42 +1089,27 @@ function reverseSelectedRelationship() {
   });
 }
 
-function renderPickStatus() {
-  if (!interaction.relationshipPickActive) {
-    dom.relationshipPickStatus.textContent = 'Pick mode off';
-    dom.pickRelationshipBtn.textContent = 'Pick On Canvas';
-    return;
-  }
-  if (!interaction.relationshipPickFromEntityId) {
-    dom.relationshipPickStatus.textContent = 'Pick mode: select first entity';
-    dom.pickRelationshipBtn.textContent = 'Cancel Pick';
-    return;
-  }
-  dom.relationshipPickStatus.textContent = `Pick mode: select target for ${entityLabel(interaction.relationshipPickFromEntityId)}`;
-  dom.pickRelationshipBtn.textContent = 'Cancel Pick';
-}
-
 function setRelationshipPickMode(active) {
   interaction.relationshipPickActive = active;
   if (!active) interaction.relationshipPickFromEntityId = null;
-  renderPickStatus();
+  inspectors.renderPickStatus();
 }
 
 function startRelationshipPickFromSelectedEntity() {
   if (!state.selectedEntityId) {
-    window.alert('Select an entity first.');
+    showStatus('Select an entity first.');
     return;
   }
   interaction.relationshipPickActive = true;
   interaction.relationshipPickFromEntityId = state.selectedEntityId;
-  renderPickStatus();
+  inspectors.renderPickStatus();
 }
 
 function handleEntityRelationshipPick(entityId) {
   if (!interaction.relationshipPickActive) return;
   if (!interaction.relationshipPickFromEntityId) {
     interaction.relationshipPickFromEntityId = entityId;
-    renderPickStatus();
+    inspectors.renderPickStatus();
     return;
   }
   const fromId = interaction.relationshipPickFromEntityId;
@@ -1323,85 +1123,15 @@ function handleEntityRelationshipPick(entityId) {
   setRelationshipPickMode(false);
 }
 
-function attachDrag(el, onMove) {
-  let pointerId = null;
-  let startX = 0;
-  let startY = 0;
-
-  el.addEventListener('pointerdown', (event) => {
-    pointerId = event.pointerId;
-    startX = event.clientX;
-    startY = event.clientY;
-    el.setPointerCapture(pointerId);
-  });
-
-  el.addEventListener('pointermove', (event) => {
-    if (pointerId !== event.pointerId) return;
-    const zoom = state.view.zoom || 1;
-    const dx = (event.clientX - startX) / zoom;
-    const dy = (event.clientY - startY) / zoom;
-    startX = event.clientX;
-    startY = event.clientY;
-    onMove(dx, dy);
-  });
-
-  const end = (event) => {
-    if (pointerId !== event.pointerId) return;
-    el.releasePointerCapture(pointerId);
-    pointerId = null;
-  };
-
-  el.addEventListener('pointerup', end);
-  el.addEventListener('pointercancel', end);
-}
-
-function renderDomainList() {
-  dom.domainList.innerHTML = '';
-  state.domains.forEach((domain) => {
-    const li = document.createElement('li');
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = state.selectedDomainId === domain.id ? 'active' : '';
-    btn.textContent = domain.name;
-    btn.onclick = () => setSelectedDomain(domain.id);
-    li.appendChild(btn);
-    dom.domainList.appendChild(li);
-  });
-}
-
-function renderStatus() {
-  const selected = getSelectedDomain();
-  dom.status.textContent = selected ? `Selected domain: ${selected.name}` : 'No domain selected';
-  dom.domainColorInput.value = selected?.color || '#60a5fa';
-  const context = selected?.context || {};
-  dom.domainUbiquitousLanguageInput.value = context.ubiquitousLanguage || '';
-  dom.domainOwnerTeamInput.value = context.ownerTeam || '';
-  dom.domainUpstreamInput.value = Array.isArray(context.upstreamDependencies) ? context.upstreamDependencies.join(', ') : '';
-  dom.domainDownstreamInput.value = Array.isArray(context.downstreamDependencies) ? context.downstreamDependencies.join(', ') : '';
-  dom.domainIntegrationChannelInput.value = context.integrationChannel || '';
-  dom.domainPackageDependenciesInput.value = Array.isArray(context.packageDependencies) ? context.packageDependencies.join(', ') : '';
-  dom.domainSharedValueObjectsInput.value = Array.isArray(context.sharedValueObjects) ? context.sharedValueObjects.join(', ') : '';
-  const disabled = !selected;
-  dom.domainUbiquitousLanguageInput.disabled = disabled;
-  dom.domainOwnerTeamInput.disabled = disabled;
-  dom.domainUpstreamInput.disabled = disabled;
-  dom.domainDownstreamInput.disabled = disabled;
-  dom.domainIntegrationChannelInput.disabled = disabled;
-  dom.domainPackageDependenciesInput.disabled = disabled;
-  dom.domainSharedValueObjectsInput.disabled = disabled;
-  dom.saveDomainContextBtn.disabled = disabled;
-  dom.clearDomainContextBtn.disabled = disabled;
-}
-
 function setSelectedDomainColor(color) {
   const selected = getSelectedDomain();
   if (!selected) {
-    window.alert('Select a domain first.');
+    showStatus('Select a domain first.');
     return;
   }
   const isHexColor = /^#[0-9a-f]{6}$/i.test(color);
   if (!isHexColor) {
-    window.alert('Invalid color.');
+    showStatus('Invalid color.');
     return;
   }
   withPersist(() => {
@@ -1413,7 +1143,7 @@ function setSelectedDomainColor(color) {
 function saveSelectedDomainContext() {
   const selected = getSelectedDomain();
   if (!selected) {
-    window.alert('Select a domain first.');
+    showStatus('Select a domain first.');
     return;
   }
   withPersist(() => {
@@ -1426,23 +1156,23 @@ function saveSelectedDomainContext() {
       packageDependencies: uniqueStrings(parseCommaSeparated(dom.domainPackageDependenciesInput.value)),
       sharedValueObjects: uniqueStrings(parseCommaSeparated(dom.domainSharedValueObjectsInput.value))
     };
-    renderStatus();
+    inspectors.renderStatus();
   });
 }
 
 function saveSelectedEntityName(name) {
   const found = findEntity(state.selectedEntityId);
   if (!found) {
-    window.alert('Select an entity first.');
+    showStatus('Select an entity first.');
     return;
   }
   const value = String(name || '').trim();
   if (!value) {
-    window.alert('Entity name cannot be empty.');
+    showStatus('Entity name cannot be empty.');
     return;
   }
   if (isEntityNameTaken(found.domain, value, found.entity.id)) {
-    window.alert(`Entity "${value}" already exists in ${found.domain.name}.`);
+    showStatus(`Entity "${value}" already exists in ${found.domain.name}.`);
     return;
   }
   withPersist(() => {
@@ -1454,7 +1184,7 @@ function saveSelectedEntityName(name) {
 function saveSelectedEntityRules() {
   const found = findEntity(state.selectedEntityId);
   if (!found) {
-    window.alert('Select an entity first.');
+    showStatus('Select an entity first.');
     return;
   }
   withPersist(() => {
@@ -1469,45 +1199,10 @@ function saveSelectedEntityRules() {
   });
 }
 
-function getDefaultRbacPolicy() {
-  return {
-    list: { roles: ['superadmin', 'admin'], tenantScoped: true },
-    getById: { roles: ['superadmin', 'admin', 'user'], tenantScoped: true },
-    create: { roles: ['superadmin', 'admin'], tenantScoped: true },
-    update: { roles: ['superadmin', 'admin'], tenantScoped: true },
-    delete: { roles: ['superadmin', 'admin'], tenantScoped: true }
-  };
-}
-
-function getEntityRbacPolicy(entity) {
-  if (!entity.meta) entity.meta = {};
-  if (!entity.meta.rbac) entity.meta.rbac = getDefaultRbacPolicy();
-  return entity.meta.rbac;
-}
-
-function renderEntityRbacInspector(entity) {
-  const policy = getEntityRbacPolicy(entity);
-  const action = dom.entityRbacActionSelect.value || 'list';
-  const rule = policy[action] || { roles: [], tenantScoped: true };
-  const roles = Array.isArray(rule.roles) ? rule.roles : [];
-  dom.entityRbacSuperadminCheck.checked = roles.includes('superadmin');
-  dom.entityRbacAdminCheck.checked = roles.includes('admin');
-  dom.entityRbacUserCheck.checked = roles.includes('user');
-  dom.entityRbacTenantCheck.checked = Boolean(rule.tenantScoped);
-  dom.entityRbacList.innerHTML = '';
-  ['list', 'getById', 'create', 'update', 'delete'].forEach((key) => {
-    const item = document.createElement('li');
-    const actionRule = policy[key] || { roles: [], tenantScoped: true };
-    const label = `${key}: [${(actionRule.roles || []).join(', ')}] | tenantScoped=${Boolean(actionRule.tenantScoped)}`;
-    item.textContent = label;
-    dom.entityRbacList.appendChild(item);
-  });
-}
-
 function saveSelectedEntityRbacRule() {
   const found = findEntity(state.selectedEntityId);
   if (!found) {
-    window.alert('Select an entity first.');
+    showStatus('Select an entity first.');
     return;
   }
   const action = dom.entityRbacActionSelect.value || 'list';
@@ -1515,65 +1210,27 @@ function saveSelectedEntityRbacRule() {
   if (dom.entityRbacSuperadminCheck.checked) roles.push('superadmin');
   if (dom.entityRbacAdminCheck.checked) roles.push('admin');
   if (dom.entityRbacUserCheck.checked) roles.push('user');
+  // Edit-time gate (JUM-477): a rule the tenant RBAC contract cannot express
+  // is rejected with the reason, never persisted and dropped at export.
+  // Tenant scoping is derived from the roles — the runtime has no independent
+  // tenant-scope knob to honour.
+  const rule = { roles, tenantScoped: deriveTenantScoped(roles) };
+  const verdict = validateRbacRule(rule);
+  if (!verdict.ok) {
+    showStatus(verdict.reason);
+    return;
+  }
   withPersist(() => {
     const policy = getEntityRbacPolicy(found.entity);
-    policy[action] = {
-      roles,
-      tenantScoped: Boolean(dom.entityRbacTenantCheck.checked)
-    };
-    renderEntityRbacInspector(found.entity);
-  });
-}
-
-function renderEntityContractsInspector(entity) {
-  if (!entity.meta) entity.meta = {};
-  if (!Array.isArray(entity.meta.contracts)) entity.meta.contracts = [];
-  dom.entityContractList.innerHTML = '';
-  entity.meta.contracts.forEach((contract) => {
-    const item = document.createElement('li');
-    item.className = 'relationship-item';
-    const summary = document.createElement('div');
-    summary.className = 'relationship-name';
-    summary.textContent = `${contract.type}:${contract.name} | ${contract.channel || '-'} | v${contract.version}`;
-    item.appendChild(summary);
-    const payloadBtn = document.createElement('button');
-    payloadBtn.type = 'button';
-    payloadBtn.textContent = 'payload';
-    payloadBtn.onclick = () => {
-      const raw = window.prompt(
-        `Payload schema JSON for ${contract.type}:${contract.name}`,
-        JSON.stringify(contract.payloadSchema || {}, null, 2)
-      );
-      if (raw === null) return;
-      try {
-        const parsed = raw.trim() ? JSON.parse(raw) : {};
-        withPersist(() => {
-          contract.payloadSchema = parsed;
-          renderEntityContractsInspector(entity);
-        });
-      } catch (_) {
-        window.alert('Invalid JSON payload schema.');
-      }
-    };
-    const removeBtn = document.createElement('button');
-    removeBtn.type = 'button';
-    removeBtn.textContent = 'x';
-    removeBtn.onclick = () => {
-      withPersist(() => {
-        entity.meta.contracts = entity.meta.contracts.filter((candidate) => candidate.id !== contract.id);
-        renderEntityContractsInspector(entity);
-      });
-    };
-    item.appendChild(payloadBtn);
-    item.appendChild(removeBtn);
-    dom.entityContractList.appendChild(item);
+    policy[action] = rule;
+    inspectors.renderEntityRbacInspector(found.entity);
   });
 }
 
 function addSelectedEntityContract() {
   const found = findEntity(state.selectedEntityId);
   if (!found) {
-    window.alert('Select an entity first.');
+    showStatus('Select an entity first.');
     return;
   }
   const name = String(dom.entityContractNameInput.value || '').trim();
@@ -1581,7 +1238,7 @@ function addSelectedEntityContract() {
   const channel = String(dom.entityContractChannelInput.value || '').trim();
   const version = String(dom.entityContractVersionInput.value || '').trim() || '1.0.0';
   if (!name) {
-    window.alert('Contract name is required.');
+    showStatus('Contract name is required.');
     return;
   }
   withPersist(() => {
@@ -1598,14 +1255,14 @@ function addSelectedEntityContract() {
     dom.entityContractNameInput.value = '';
     dom.entityContractChannelInput.value = '';
     dom.entityContractVersionInput.value = '1.0.0';
-    renderEntityContractsInspector(found.entity);
+    inspectors.renderEntityContractsInspector(found.entity);
   });
 }
 
 function saveSelectedEntityOasComposition() {
   const found = findEntity(state.selectedEntityId);
   if (!found) {
-    window.alert('Select an entity first.');
+    showStatus('Select an entity first.');
     return;
   }
   const mode = dom.entityOasCompositionModeSelect.value;
@@ -1620,14 +1277,14 @@ function saveSelectedEntityOasComposition() {
       externalRefs,
       discriminator
     };
-    renderEntityInspector();
+    inspectors.renderEntityInspector();
   });
 }
 
 function duplicateSelectedEntity() {
   const found = findEntity(state.selectedEntityId);
   if (!found) {
-    window.alert('Select an entity first.');
+    showStatus('Select an entity first.');
     return;
   }
   const baseName = `${found.entity.name}_copy`;
@@ -1653,14 +1310,14 @@ function duplicateSelectedEntity() {
 function moveSelectedEntityToDomain(targetDomainId) {
   const found = findEntity(state.selectedEntityId);
   if (!found) {
-    window.alert('Select an entity first.');
+    showStatus('Select an entity first.');
     return;
   }
   if (!targetDomainId || found.domain.id === targetDomainId) return;
   const targetDomain = state.domains.find((domain) => domain.id === targetDomainId);
   if (!targetDomain) return;
   if (isEntityNameTaken(targetDomain, found.entity.name)) {
-    window.alert(`Target domain already has entity "${found.entity.name}".`);
+    showStatus(`Target domain already has entity "${found.entity.name}".`);
     return;
   }
   withPersist(() => {
@@ -1671,81 +1328,6 @@ function moveSelectedEntityToDomain(targetDomainId) {
     state.selectedDomainId = targetDomain.id;
     render();
   });
-}
-
-function renderEntityOptions() {
-  const entries = [];
-  state.domains.forEach((domain) => {
-    domain.entities.forEach((entity) => entries.push({ id: entity.id, label: `${domain.name} / ${entity.name}` }));
-  });
-  const selectedMoveDomain = dom.entityMoveDomainSelect.value;
-  dom.entityMoveDomainSelect.innerHTML = '';
-  state.domains.forEach((domain) => {
-    const option = document.createElement('option');
-    option.value = domain.id;
-    option.textContent = domain.name;
-    dom.entityMoveDomainSelect.appendChild(option);
-  });
-  if (state.domains.some((domain) => domain.id === selectedMoveDomain)) {
-    dom.entityMoveDomainSelect.value = selectedMoveDomain;
-  }
-
-  const fill = (selectEl) => {
-    const selected = selectEl.value;
-    selectEl.innerHTML = '';
-    entries.forEach((entry) => {
-      const option = document.createElement('option');
-      option.value = entry.id;
-      option.textContent = entry.label;
-      selectEl.appendChild(option);
-    });
-    if (entries.some((entry) => entry.id === selected)) selectEl.value = selected;
-  };
-  fill(dom.fromEntitySelect);
-  fill(dom.toEntitySelect);
-  fill(dom.relationshipFromEntitySelect);
-  fill(dom.relationshipToEntitySelect);
-}
-
-function entityLabel(entityId) {
-  const found = findEntity(entityId);
-  return found ? `${found.domain.name}/${found.entity.name}` : entityId;
-}
-
-function renderRelationshipList() {
-  dom.relationshipList.innerHTML = '';
-  state.relationships.forEach((relationship) => {
-    const li = document.createElement('li');
-    li.className = 'relationship-item';
-    const name = document.createElement('div');
-    name.className = 'relationship-name';
-    name.textContent = `${relationship.name || 'relation'} | ${entityLabel(relationship.fromEntityId)} (${relationship.fromCardinality}) -> (${relationship.toCardinality}) ${entityLabel(relationship.toEntityId)}`;
-    if (state.selectedRelationshipId === relationship.id) {
-      name.style.borderColor = '#2563eb';
-      name.style.background = '#eff6ff';
-    }
-    name.onclick = () => {
-      state.selectedRelationshipId = relationship.id;
-      render();
-    };
-    const del = document.createElement('button');
-    del.type = 'button';
-    del.textContent = 'x';
-    del.onclick = () => deleteRelationship(relationship.id);
-    li.appendChild(name);
-    li.appendChild(del);
-    dom.relationshipList.appendChild(li);
-  });
-}
-
-function fieldLabel(field) {
-  const flags = [];
-  if (field.pk) flags.push('PK');
-  if (field.fk) flags.push('FK');
-  if (field.unique) flags.push('UQ');
-  if (field.required) flags.push('REQ');
-  if (field.nullable) flags.push('NULL');
-  return `${field.name}: ${field.type}${field.format ? `(${field.format})` : ''}${flags.length ? ` [${flags.join(', ')}]` : ''}`;
 }
 
 function editFieldMetadata(entityId, fieldName) {
@@ -1785,686 +1367,26 @@ function editFieldMetadata(entityId, fieldName) {
       itemsType: FIELD_TYPES.includes(parsed.itemsType) ? parsed.itemsType : ''
     });
   } catch (error) {
-    window.alert('Invalid JSON metadata payload.');
+    showStatus('Invalid JSON metadata payload.');
   }
-}
-
-function buildRelationshipName(fromEntityId, toEntityId, fromCardinality, toCardinality) {
-  const from = entityLabel(fromEntityId);
-  const to = entityLabel(toEntityId);
-  if (fromCardinality === 'N' && toCardinality === '1') return `${from} belongs to ${to}`;
-  if (fromCardinality === '1' && toCardinality === 'N') return `${from} has many ${to}`;
-  if (fromCardinality === '1' && toCardinality === '1') return `${from} is linked to ${to}`;
-  return `${from} relates to ${to}`;
-}
-
-function severityRank(severity) {
-  if (severity === 'error') return 3;
-  if (severity === 'warn') return 2;
-  return 1;
-}
-
-function collectModelIssues() {
-  const issues = [];
-  const pushIssue = (message, entityId = null, severity = 'error') => issues.push({ message, entityId, severity });
-  const seenDomainNames = new Set();
-
-  state.domains.forEach((domain) => {
-    const domainNameKey = normalizedName(domain.name);
-    if (!domain.name || !domainNameKey) {
-      pushIssue('Domain with empty name found.', null, 'error');
-    }
-    if (seenDomainNames.has(domainNameKey)) {
-      pushIssue(`Duplicate domain name: ${domain.name}`, null, 'error');
-    }
-    seenDomainNames.add(domainNameKey);
-
-    const seenEntityNames = new Set();
-    domain.entities.forEach((entity) => {
-      const entityKey = normalizedName(entity.name);
-      if (!entity.name || !entityKey) {
-        pushIssue(`Entity with empty name in domain ${domain.name}`, entity.id, 'error');
-      }
-      if (seenEntityNames.has(entityKey)) {
-        pushIssue(`Duplicate entity name in domain ${domain.name}: ${entity.name}`, entity.id, 'error');
-      }
-      seenEntityNames.add(entityKey);
-
-      const seenFields = new Set();
-      let hasPrimaryKey = false;
-      entity.fields.forEach((field) => {
-        const fieldKey = normalizedName(field.name);
-        if (!field.name || !fieldKey) {
-          pushIssue(`Entity ${domain.name}/${entity.name} has an empty field name.`, entity.id, 'error');
-        }
-        if (seenFields.has(fieldKey)) {
-          pushIssue(`Entity ${domain.name}/${entity.name} has duplicated field: ${field.name}`, entity.id, 'error');
-        }
-        seenFields.add(fieldKey);
-        if (field.type === 'array' && !field.itemsType) {
-          pushIssue(`Field ${domain.name}/${entity.name}.${field.name} is array but has no itemsType.`, entity.id, 'error');
-        }
-        if (field.minLength !== null && field.maxLength !== null && field.minLength > field.maxLength) {
-          pushIssue(`Field ${domain.name}/${entity.name}.${field.name} has minLength > maxLength.`, entity.id, 'error');
-        }
-        if (field.minimum !== null && field.maximum !== null && field.minimum > field.maximum) {
-          pushIssue(`Field ${domain.name}/${entity.name}.${field.name} has minimum > maximum.`, entity.id, 'error');
-        }
-        if (field.pk) hasPrimaryKey = true;
-        if (field.required && field.nullable) {
-          pushIssue(`Field ${domain.name}/${entity.name}.${field.name} is required and nullable simultaneously.`, entity.id, 'warn');
-        }
-      });
-      if (!hasPrimaryKey) {
-        pushIssue(`Entity ${domain.name}/${entity.name} has no primary key field.`, entity.id, 'error');
-      }
-      if (!entity?.meta?.aggregateRoot && Array.isArray(entity?.meta?.invariants) && entity.meta.invariants.length > 0) {
-        pushIssue(`Entity ${domain.name}/${entity.name} has invariants but is not marked as aggregate root.`, entity.id, 'warn');
-      }
-      const policy = getEntityRbacPolicy(entity);
-      ['list', 'getById', 'create', 'update', 'delete'].forEach((action) => {
-        const roles = Array.isArray(policy?.[action]?.roles) ? policy[action].roles : [];
-        if (!roles.length) {
-          pushIssue(`Entity ${domain.name}/${entity.name} has no RBAC roles for action "${action}".`, entity.id, 'warn');
-        }
-      });
-      const contracts = Array.isArray(entity?.meta?.contracts) ? entity.meta.contracts : [];
-      contracts.forEach((contract) => {
-        if (!contract?.name) {
-          pushIssue(`Entity ${domain.name}/${entity.name} has a contract without name.`, entity.id, 'error');
-        }
-        if (!contract?.channel) {
-          pushIssue(`Contract ${domain.name}/${entity.name}.${contract?.name || 'unknown'} has empty channel/topic.`, entity.id, 'warn');
-        }
-      });
-      const composition = entity?.meta?.oasComposition || {};
-      const mode = ['oneOf', 'allOf', 'anyOf'].includes(composition.mode) ? composition.mode : '';
-      const refs = parseCommaSeparated(composition.refs || []);
-      if (mode && refs.length < 2) {
-        pushIssue(`Entity ${domain.name}/${entity.name} composition "${mode}" should reference at least 2 schemas.`, entity.id, 'warn');
-      }
-      if (composition.discriminator && !mode) {
-        pushIssue(`Entity ${domain.name}/${entity.name} has discriminator without composition mode.`, entity.id, 'warn');
-      }
-    });
-  });
-
-  state.relationships.forEach((relationship) => {
-    const from = findEntity(relationship.fromEntityId);
-    const to = findEntity(relationship.toEntityId);
-    if (!from || !to) {
-      pushIssue(`Relationship "${relationship.name || relationship.id}" references missing entities.`, null, 'error');
-    }
-    if (!['1', 'N'].includes(relationship.fromCardinality) || !['1', 'N'].includes(relationship.toCardinality)) {
-      pushIssue(`Relationship "${relationship.name || relationship.id}" has invalid cardinality.`, null, 'error');
-    }
-    const bendX = normalizeOptionalNumber(relationship.bendX);
-    const bendY = normalizeOptionalNumber(relationship.bendY);
-    if ((bendX === null) !== (bendY === null)) {
-      pushIssue(`Relationship "${relationship.name || relationship.id}" should define both bendX and bendY or none.`, null, 'warn');
-    }
-  });
-
-  return issues;
-}
-
-function runModelChecks() {
-  const issues = collectModelIssues();
-  renderModelCheckResults(issues);
-  return issues;
-}
-
-function renderModelCheckResults(issues) {
-  dom.modelCheckList.innerHTML = '';
-  const threshold = state.view.modelCheckMinSeverity || 'info';
-  const filtered = issues.filter((issue) => severityRank(issue.severity || 'error') >= severityRank(threshold));
-  if (!filtered.length) {
-    const li = document.createElement('li');
-    li.textContent = 'No issues found.';
-    dom.modelCheckList.appendChild(li);
-    return;
-  }
-  filtered.forEach((issue) => {
-    const li = document.createElement('li');
-    const prefix = `[${String(issue.severity || 'error').toUpperCase()}] `;
-    if (issue.entityId) {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.textContent = `${prefix}${issue.message}`;
-      btn.onclick = () => focusEntity(issue.entityId);
-      li.appendChild(btn);
-    } else {
-      li.textContent = `${prefix}${issue.message}`;
-    }
-    dom.modelCheckList.appendChild(li);
-  });
-}
-
-function renderDomains() {
-  dom.canvasInner.querySelectorAll('.domain').forEach((node) => node.remove());
-
-  state.domains.forEach((domain) => {
-    const domainEl = document.createElement('section');
-    domainEl.className = `domain${state.selectedDomainId === domain.id ? ' selected' : ''}`;
-    domainEl.style.left = `${domain.x}px`;
-    domainEl.style.top = `${domain.y}px`;
-    domainEl.style.setProperty('--domain-color', domain.color);
-    domainEl.onmousedown = () => setSelectedDomain(domain.id);
-
-    const headerEl = document.createElement('header');
-    headerEl.className = 'domain-header';
-    headerEl.innerHTML = `<div class="domain-title">${domain.name}</div><div class="entity-count">${domain.entities.length} entities</div>`;
-    domainEl.appendChild(headerEl);
-
-    const bodyEl = document.createElement('div');
-    bodyEl.className = 'domain-body';
-
-    attachDrag(headerEl, (dx, dy) => {
-      withPersist(() => {
-        domain.x = Math.max(0, snapCoordinate(domain.x + dx));
-        domain.y = Math.max(0, snapCoordinate(domain.y + dy));
-        domainEl.style.left = `${domain.x}px`;
-        domainEl.style.top = `${domain.y}px`;
-        renderEdges();
-      });
-    });
-
-    domain.entities.forEach((entity) => {
-      const entityEl = document.createElement('article');
-      const selectedClass = state.selectedEntityId === entity.id ? ' selected' : '';
-      entityEl.className = `entity${selectedClass}`;
-      entityEl.style.left = `${entity.x}px`;
-      entityEl.style.top = `${entity.y}px`;
-      entityEl.onclick = (event) => {
-        event.stopPropagation();
-        setSelectedEntity(entity.id);
-        handleEntityRelationshipPick(entity.id);
-      };
-
-      const entityHeader = document.createElement('header');
-      entityHeader.className = 'entity-header';
-      entityHeader.textContent = entity.name;
-      if (entity?.meta?.aggregateRoot) {
-        const aggregateTag = document.createElement('span');
-        aggregateTag.className = 'entity-aggregate-tag';
-        aggregateTag.textContent = 'AR';
-        entityHeader.appendChild(aggregateTag);
-      }
-      attachDrag(entityHeader, (dx, dy) => {
-        moveEntityInsideDomain(entity, entityEl, dx, dy);
-      });
-
-      const fieldsEl = document.createElement('ul');
-      fieldsEl.className = 'entity-fields';
-      if (!state.view.compactEntities) {
-        entity.fields.forEach((field) => {
-          const li = document.createElement('li');
-          li.textContent = fieldLabel(field);
-          fieldsEl.appendChild(li);
-        });
-      }
-
-      const anchorSides = ['top', 'right', 'bottom', 'left'];
-      anchorSides.forEach((side) => {
-        const anchorBtn = document.createElement('button');
-        anchorBtn.type = 'button';
-        anchorBtn.className = `entity-anchor entity-anchor-${side}`;
-        anchorBtn.title = `Drag from ${entity.name} (${side}) to create relationship`;
-        anchorBtn.addEventListener('pointerdown', (event) => {
-          event.stopPropagation();
-          startAnchorDrag(entity.id, side, event);
-        });
-        anchorBtn.addEventListener('pointerup', (event) => {
-          if (!interaction.relationshipAnchorDragActive) return;
-          event.stopPropagation();
-          const fromEntityId = interaction.relationshipAnchorFromEntityId;
-          if (!fromEntityId || fromEntityId === entity.id) {
-            stopAnchorDrag();
-            return;
-          }
-          const fromCardinality = dom.fromCardSelect.value || 'N';
-          const toCardinality = dom.toCardSelect.value || '1';
-          addRelationship(fromEntityId, entity.id, fromCardinality, toCardinality, {
-            fromAnchorSide: interaction.relationshipAnchorFromSide,
-            toAnchorSide: side
-          });
-          stopAnchorDrag();
-        });
-        entityEl.appendChild(anchorBtn);
-      });
-
-      entityEl.appendChild(entityHeader);
-      entityEl.appendChild(fieldsEl);
-      bodyEl.appendChild(entityEl);
-    });
-
-    domainEl.appendChild(bodyEl);
-    dom.canvasInner.appendChild(domainEl);
-  });
-}
-
-function moveEntityInsideDomain(entity, entityEl, dx, dy) {
-  withPersist(() => {
-    const maxX = 520 - 200;
-    const maxY = 180;
-    entity.x = Math.min(maxX, Math.max(8, snapCoordinate(entity.x + dx)));
-    entity.y = Math.min(maxY, Math.max(8, snapCoordinate(entity.y + dy)));
-    entityEl.style.left = `${entity.x}px`;
-    entityEl.style.top = `${entity.y}px`;
-    renderEdges();
-  });
-}
-
-function entityCenterOnCanvas(entityId) {
-  const found = findEntity(entityId);
-  if (!found) return null;
-  return {
-    x: found.domain.x + found.entity.x + 95,
-    y: found.domain.y + found.entity.y + 32
-  };
-}
-
-function entityAnchorOnCanvas(entityId, side) {
-  const found = findEntity(entityId);
-  if (!found) return null;
-  const originX = found.domain.x + found.entity.x;
-  const originY = found.domain.y + found.entity.y;
-  const width = 190;
-  const headerHeight = 32;
-  const bodyHeight = state.view.compactEntities ? 24 : 58;
-  const height = headerHeight + bodyHeight;
-  if (side === 'left') return { x: originX, y: originY + height / 2 };
-  if (side === 'right') return { x: originX + width, y: originY + height / 2 };
-  if (side === 'top') return { x: originX + width / 2, y: originY };
-  if (side === 'bottom') return { x: originX + width / 2, y: originY + height };
-  return entityCenterOnCanvas(entityId);
-}
-
-function pointerToCanvasPoint(clientX, clientY) {
-  const zoom = state.view.zoom || 1;
-  const rect = dom.canvas.getBoundingClientRect();
-  return {
-    x: (dom.canvas.scrollLeft + clientX - rect.left) / zoom,
-    y: (dom.canvas.scrollTop + clientY - rect.top) / zoom
-  };
-}
-
-function clearAnchorPreviewEdge() {
-  const preview = dom.edges.querySelector('.edge-preview');
-  if (preview) preview.remove();
-}
-
-function renderAnchorPreviewEdge(fromPoint, toPoint) {
-  clearAnchorPreviewEdge();
-  if (!fromPoint || !toPoint) return;
-  const controlX = (fromPoint.x + toPoint.x) / 2;
-  const isOrthogonal = state.view.edgeStyle === 'orthogonal';
-  const pathD = isOrthogonal
-    ? `M ${fromPoint.x} ${fromPoint.y} L ${controlX} ${fromPoint.y} L ${controlX} ${toPoint.y} L ${toPoint.x} ${toPoint.y}`
-    : `M ${fromPoint.x} ${fromPoint.y} C ${controlX} ${fromPoint.y}, ${controlX} ${toPoint.y}, ${toPoint.x} ${toPoint.y}`;
-  const previewPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  previewPath.setAttribute('class', 'edge-preview');
-  previewPath.setAttribute('d', pathD);
-  dom.edges.appendChild(previewPath);
-}
-
-function stopAnchorDrag() {
-  interaction.relationshipAnchorDragActive = false;
-  interaction.relationshipAnchorFromEntityId = null;
-  interaction.relationshipAnchorFromSide = null;
-  clearAnchorPreviewEdge();
-}
-
-function startAnchorDrag(entityId, side, event) {
-  const fromPoint = entityAnchorOnCanvas(entityId, side);
-  if (!fromPoint) return;
-  interaction.relationshipAnchorDragActive = true;
-  interaction.relationshipAnchorFromEntityId = entityId;
-  interaction.relationshipAnchorFromSide = side;
-  const pointer = pointerToCanvasPoint(event.clientX, event.clientY);
-  renderAnchorPreviewEdge(fromPoint, pointer);
-}
-
-function renderEdges() {
-  dom.edges.innerHTML = '';
-  state.relationships.forEach((relationship) => {
-    const useCenter = relationship.anchorBehavior === 'center';
-    const from = (!useCenter && relationship.fromAnchorSide)
-      ? entityAnchorOnCanvas(relationship.fromEntityId, relationship.fromAnchorSide)
-      : entityCenterOnCanvas(relationship.fromEntityId);
-    const to = (!useCenter && relationship.toAnchorSide)
-      ? entityAnchorOnCanvas(relationship.toEntityId, relationship.toAnchorSide)
-      : entityCenterOnCanvas(relationship.toEntityId);
-    if (!from || !to) return;
-
-    const controlX = Number.isFinite(relationship.bendX) ? relationship.bendX : (from.x + to.x) / 2;
-    const controlY = Number.isFinite(relationship.bendY) ? relationship.bendY : (from.y + to.y) / 2;
-    const isOrthogonal = state.view.edgeStyle === 'orthogonal';
-    const edgePathD = isOrthogonal
-      ? `M ${from.x} ${from.y} L ${controlX} ${from.y} L ${controlX} ${controlY} L ${controlX} ${to.y} L ${to.x} ${to.y}`
-      : `M ${from.x} ${from.y} C ${controlX} ${from.y}, ${controlX} ${to.y}, ${to.x} ${to.y}`;
-    const labelX = isOrthogonal ? controlX : controlX;
-    const labelY = isOrthogonal ? controlY : ((from.y + to.y) / 2);
-    const labelOffsetX = Number.isFinite(relationship.labelOffsetX) ? relationship.labelOffsetX : 0;
-    const labelOffsetY = Number.isFinite(relationship.labelOffsetY) ? relationship.labelOffsetY : 0;
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    const activeClass = state.selectedRelationshipId === relationship.id ? ' active' : '';
-    path.setAttribute('class', `edge-line${activeClass}`);
-    path.setAttribute('d', edgePathD);
-    dom.edges.appendChild(path);
-
-    const hit = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    hit.setAttribute('class', 'edge-hit');
-    hit.setAttribute('d', edgePathD);
-    hit.addEventListener('click', (event) => {
-      event.stopPropagation();
-      state.selectedRelationshipId = relationship.id;
-      render();
-    });
-    dom.edges.appendChild(hit);
-
-    if (!state.view.largeCanvasMode) {
-      const fromLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      fromLabel.setAttribute('class', 'edge-label');
-      fromLabel.setAttribute('x', String(from.x + 6));
-      fromLabel.setAttribute('y', String(from.y - 6));
-      fromLabel.textContent = relationship.fromCardinality;
-      dom.edges.appendChild(fromLabel);
-
-      const toLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      toLabel.setAttribute('class', 'edge-label');
-      toLabel.setAttribute('x', String(to.x + 6));
-      toLabel.setAttribute('y', String(to.y - 6));
-      toLabel.textContent = relationship.toCardinality;
-      dom.edges.appendChild(toLabel);
-
-      const nameLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      nameLabel.setAttribute('class', 'edge-label');
-      nameLabel.setAttribute('x', String(labelX + 6 + labelOffsetX));
-      nameLabel.setAttribute('y', String(labelY - 6 + labelOffsetY));
-      nameLabel.textContent = relationship.name || '';
-      dom.edges.appendChild(nameLabel);
-    }
-  });
-}
-
-function renderMiniMap() {
-  if (!dom.miniMap) return;
-  dom.miniMap.innerHTML = '';
-  const scale = 0.055;
-  state.domains.forEach((domain) => {
-    const box = document.createElement('div');
-    box.className = 'mini-map-domain';
-    box.style.left = `${domain.x * scale}px`;
-    box.style.top = `${domain.y * scale}px`;
-    box.style.width = `${520 * scale}px`;
-    box.style.height = `${280 * scale}px`;
-    box.style.borderColor = domain.color || '#64748b';
-    if (state.selectedDomainId === domain.id) box.classList.add('active');
-    box.title = domain.name;
-    box.onclick = () => setSelectedDomain(domain.id);
-    dom.miniMap.appendChild(box);
-  });
-}
-
-function renderEntityInspector() {
-  const found = findEntity(state.selectedEntityId);
-  dom.entityFieldList.innerHTML = '';
-  dom.entityApiPreviewList.innerHTML = '';
-  if (!found) {
-    dom.entityInspectorTitle.textContent = 'No entity selected';
-    dom.entityRenameInput.value = '';
-    dom.entityRenameInput.disabled = true;
-    dom.saveEntityRenameBtn.disabled = true;
-    dom.duplicateEntityBtn.disabled = true;
-    dom.entityMoveDomainSelect.disabled = true;
-    dom.moveEntityBtn.disabled = true;
-    dom.entityAggregateRootCheck.checked = false;
-    dom.entityAggregateRootCheck.disabled = true;
-    dom.entityInvariantsInput.value = '';
-    dom.entityInvariantsInput.disabled = true;
-    dom.saveEntityRulesBtn.disabled = true;
-    dom.entityRbacActionSelect.disabled = true;
-    dom.entityRbacSuperadminCheck.checked = false;
-    dom.entityRbacAdminCheck.checked = false;
-    dom.entityRbacUserCheck.checked = false;
-    dom.entityRbacTenantCheck.checked = false;
-    dom.entityRbacSuperadminCheck.disabled = true;
-    dom.entityRbacAdminCheck.disabled = true;
-    dom.entityRbacUserCheck.disabled = true;
-    dom.entityRbacTenantCheck.disabled = true;
-    dom.saveEntityRbacBtn.disabled = true;
-    dom.entityRbacList.innerHTML = '';
-    dom.entityContractNameInput.value = '';
-    dom.entityContractNameInput.disabled = true;
-    dom.entityContractTypeSelect.disabled = true;
-    dom.entityContractChannelInput.value = '';
-    dom.entityContractChannelInput.disabled = true;
-    dom.entityContractVersionInput.value = '1.0.0';
-    dom.entityContractVersionInput.disabled = true;
-    dom.addEntityContractBtn.disabled = true;
-    dom.entityContractList.innerHTML = '';
-    dom.entityOasCompositionModeSelect.value = '';
-    dom.entityOasCompositionModeSelect.disabled = true;
-    dom.entityOasCompositionRefsInput.value = '';
-    dom.entityOasCompositionRefsInput.disabled = true;
-    dom.entityOasExternalRefsInput.value = '';
-    dom.entityOasExternalRefsInput.disabled = true;
-    dom.entityOasDiscriminatorInput.value = '';
-    dom.entityOasDiscriminatorInput.disabled = true;
-    dom.saveEntityOasCompositionBtn.disabled = true;
-    dom.fieldTemplateSelect.disabled = true;
-    dom.applyFieldTemplateBtn.disabled = true;
-    return;
-  }
-  dom.entityInspectorTitle.textContent = `${found.domain.name} / ${found.entity.name}`;
-  dom.entityRenameInput.value = found.entity.name;
-  dom.entityRenameInput.disabled = false;
-  dom.saveEntityRenameBtn.disabled = false;
-  dom.duplicateEntityBtn.disabled = false;
-  dom.entityMoveDomainSelect.disabled = false;
-  dom.moveEntityBtn.disabled = false;
-  dom.entityAggregateRootCheck.disabled = false;
-  dom.entityAggregateRootCheck.checked = Boolean(found.entity?.meta?.aggregateRoot);
-  dom.entityInvariantsInput.disabled = false;
-  dom.entityInvariantsInput.value = Array.isArray(found.entity?.meta?.invariants)
-    ? found.entity.meta.invariants.join('\n')
-    : '';
-  dom.saveEntityRulesBtn.disabled = false;
-  dom.entityRbacActionSelect.disabled = false;
-  dom.entityRbacSuperadminCheck.disabled = false;
-  dom.entityRbacAdminCheck.disabled = false;
-  dom.entityRbacUserCheck.disabled = false;
-  dom.entityRbacTenantCheck.disabled = false;
-  dom.saveEntityRbacBtn.disabled = false;
-  renderEntityRbacInspector(found.entity);
-  dom.entityContractNameInput.disabled = false;
-  dom.entityContractTypeSelect.disabled = false;
-  dom.entityContractChannelInput.disabled = false;
-  dom.entityContractVersionInput.disabled = false;
-  dom.addEntityContractBtn.disabled = false;
-  if (!dom.entityContractVersionInput.value) dom.entityContractVersionInput.value = '1.0.0';
-  renderEntityContractsInspector(found.entity);
-  dom.entityOasCompositionModeSelect.disabled = false;
-  dom.entityOasCompositionRefsInput.disabled = false;
-  dom.entityOasExternalRefsInput.disabled = false;
-  dom.entityOasDiscriminatorInput.disabled = false;
-  dom.saveEntityOasCompositionBtn.disabled = false;
-  const composition = found.entity?.meta?.oasComposition || { mode: '', refs: [], externalRefs: [], discriminator: '' };
-  dom.entityOasCompositionModeSelect.value = composition.mode || '';
-  dom.entityOasCompositionRefsInput.value = Array.isArray(composition.refs) ? composition.refs.join(', ') : '';
-  dom.entityOasExternalRefsInput.value = Array.isArray(composition.externalRefs) ? composition.externalRefs.join(', ') : '';
-  dom.entityOasDiscriminatorInput.value = composition.discriminator || '';
-  dom.fieldTemplateSelect.disabled = false;
-  dom.applyFieldTemplateBtn.disabled = false;
-  dom.entityMoveDomainSelect.value = found.domain.id;
-  found.entity.fields.forEach((field) => {
-    const li = document.createElement('li');
-    const row = document.createElement('div');
-    row.className = 'field-row';
-    const nameInput = document.createElement('input');
-    nameInput.type = 'text';
-    nameInput.value = field.name;
-    const typeSelect = document.createElement('select');
-    FIELD_TYPES.forEach((optionValue) => {
-      const option = document.createElement('option');
-      option.value = optionValue;
-      option.textContent = optionValue;
-      typeSelect.appendChild(option);
-    });
-    typeSelect.value = field.type;
-    const requiredCheck = document.createElement('input');
-    requiredCheck.type = 'checkbox';
-    requiredCheck.checked = field.required;
-    requiredCheck.title = 'required';
-    const pkCheck = document.createElement('input');
-    pkCheck.type = 'checkbox';
-    pkCheck.checked = field.pk;
-    pkCheck.title = 'PK';
-    const fkCheck = document.createElement('input');
-    fkCheck.type = 'checkbox';
-    fkCheck.checked = field.fk;
-    fkCheck.title = 'FK';
-    const uniqueCheck = document.createElement('input');
-    uniqueCheck.type = 'checkbox';
-    uniqueCheck.checked = field.unique;
-    uniqueCheck.title = 'unique';
-    const nullableCheck = document.createElement('input');
-    nullableCheck.type = 'checkbox';
-    nullableCheck.checked = field.nullable;
-    nullableCheck.title = 'nullable';
-    const meta = document.createElement('button');
-    meta.type = 'button';
-    meta.textContent = 'meta';
-    meta.onclick = () => editFieldMetadata(found.entity.id, field.name);
-    const save = document.createElement('button');
-    save.type = 'button';
-    save.textContent = 'save';
-    save.onclick = () => updateField(found.entity.id, field.name, {
-      name: nameInput.value,
-      type: typeSelect.value,
-      required: requiredCheck.checked,
-      pk: pkCheck.checked,
-      fk: fkCheck.checked,
-      unique: uniqueCheck.checked,
-      nullable: nullableCheck.checked
-    });
-    const del = document.createElement('button');
-    del.type = 'button';
-    del.textContent = 'x';
-    del.onclick = () => removeField(found.entity.id, field.name);
-    row.appendChild(nameInput);
-    row.appendChild(typeSelect);
-    row.appendChild(requiredCheck);
-    row.appendChild(pkCheck);
-    row.appendChild(fkCheck);
-    row.appendChild(uniqueCheck);
-    row.appendChild(nullableCheck);
-    row.appendChild(meta);
-    row.appendChild(save);
-    row.appendChild(del);
-    li.appendChild(row);
-    dom.entityFieldList.appendChild(li);
-  });
-
-  const domainPath = toPathToken(found.domain.name) || 'domain';
-  const entityPath = toPathToken(found.entity.name) || 'entity';
-  const schemaName = toSchemaName(found.domain.name, found.entity.name);
-  const operations = [
-    `GET /${domainPath}/${entityPath} -> list${schemaName}`,
-    `POST /${domainPath}/${entityPath} -> create${schemaName}`,
-    `GET /${domainPath}/${entityPath}/{id} -> get${schemaName}ById`,
-    `PATCH /${domainPath}/${entityPath}/{id} -> update${schemaName}`,
-    `DELETE /${domainPath}/${entityPath}/{id} -> delete${schemaName}`
-  ];
-  operations.forEach((operation) => {
-    const li = document.createElement('li');
-    li.textContent = operation;
-    dom.entityApiPreviewList.appendChild(li);
-  });
-}
-
-function buildModelSnapshot() {
-  const domains = state.domains.map((domain) => ({
-    id: domain.id,
-    name: domain.name,
-    color: domain.color,
-    context: domain.context || {},
-    entities: domain.entities.map((entity) => ({
-      id: entity.id,
-      name: entity.name,
-      meta: entity.meta || { aggregateRoot: false, invariants: [] },
-      contracts: Array.isArray(entity?.meta?.contracts)
-        ? entity.meta.contracts.map((contract, index) => normalizeContractInput(contract, index))
-        : [],
-      fields: entity.fields.map((field) => ({
-        name: field.name,
-        type: field.type,
-        required: Boolean(field.required),
-        pk: Boolean(field.pk),
-        fk: Boolean(field.fk),
-        unique: Boolean(field.unique),
-        nullable: Boolean(field.nullable),
-        format: field.format || '',
-        itemsType: field.itemsType || '',
-        enumValues: Array.isArray(field.enumValues) ? [...field.enumValues] : []
-      }))
-    }))
-  }));
-  const relationships = state.relationships.map((relationship) => ({
-    id: relationship.id,
-    fromEntityId: relationship.fromEntityId,
-    toEntityId: relationship.toEntityId,
-    fromCardinality: relationship.fromCardinality,
-    toCardinality: relationship.toCardinality
-  }));
-  return { domains, relationships };
 }
 
 function saveSchemaBaseline() {
   const snapshot = buildModelSnapshot();
-  localStorage.setItem(DIFF_BASELINE_KEY, JSON.stringify(snapshot));
-  renderSchemaDiffResults([{ severity: 'info', message: 'Baseline saved.' }]);
+  store.saveBaseline(snapshot);
+  inspectors.renderSchemaDiffResults([{ severity: 'info', message: 'Baseline saved.' }]);
 }
 
-function loadSchemaBaseline() {
-  const raw = localStorage.getItem(DIFF_BASELINE_KEY);
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw);
-  } catch (_) {
-    return null;
-  }
+async function loadSchemaBaseline() {
+  const result = await store.loadBaseline();
+  if (result.status !== 'ok') return null;
+  return result.payload;
 }
 
-function renderSchemaDiffResults(items) {
-  dom.schemaDiffList.innerHTML = '';
-  if (!Array.isArray(items) || !items.length) {
-    const li = document.createElement('li');
-    li.textContent = 'No schema diff available.';
-    dom.schemaDiffList.appendChild(li);
-    return;
-  }
-  items.forEach((item) => {
-    const li = document.createElement('li');
-    li.textContent = `[${String(item.severity || 'info').toUpperCase()}] ${item.message}`;
-    dom.schemaDiffList.appendChild(li);
-  });
-}
-
-function renderSchemaDiffStatus() {
-  if (dom.schemaDiffList.children.length > 0) return;
-  const hasBaseline = Boolean(loadSchemaBaseline());
-  renderSchemaDiffResults([{
-    severity: hasBaseline ? 'info' : 'warn',
-    message: hasBaseline ? 'Baseline loaded. Run diff to preview migration hints.' : 'No baseline saved yet.'
-  }]);
-}
-
-function runSchemaDiff() {
-  const baseline = loadSchemaBaseline();
+async function runSchemaDiff() {
+  const baseline = await loadSchemaBaseline();
   if (!baseline) {
-    renderSchemaDiffResults([{ severity: 'warn', message: 'No baseline found. Save baseline first.' }]);
+    inspectors.renderSchemaDiffResults([{ severity: 'warn', message: 'No baseline found. Save baseline first.' }]);
     return;
   }
   const current = buildModelSnapshot();
@@ -2554,128 +1476,207 @@ function runSchemaDiff() {
   if (!changes.length) {
     changes.push({ severity: 'info', message: 'No schema changes detected versus baseline.' });
   }
-  renderSchemaDiffResults(changes);
+  inspectors.renderSchemaDiffResults(changes);
 }
 
+function runModelChecks() {
+  const issues = collectModelIssues(state);
+  inspectors.renderModelCheckResults(issues);
+  return issues;
+}
+
+// The export quality gate (Requirement 126 §5). The issue list comes from
+// the DOM-free engine in src/validation/modelValidation.js; what remains
+// here is the gate's DOM half: render the blocking issues and announce the
+// refusal on the non-blocking status region. The gate itself is unchanged —
+// it still refuses the export.
 function canExportModel() {
   if (!state.view.exportBlockCritical) return true;
-  const issues = collectModelIssues();
+  const issues = collectModelIssues(state);
   const criticalCount = issues.filter((issue) => issue.severity === 'error').length;
   if (criticalCount === 0) return true;
-  renderModelCheckResults(issues);
-  window.alert(`Export blocked: ${criticalCount} critical model issue(s). Run "Validate Model" and fix errors before exporting.`);
+  inspectors.renderModelCheckResults(issues);
+  showStatus(`Export blocked: ${criticalCount} critical model issue(s). Run "Validate Model" and fix errors before exporting.`);
   return false;
+}
+
+// Download glue shared by the export wrappers. The documents
+// themselves are built by the DOM-free src/exporters/designerExporters.js
+// (JSON/Markdown/JSON Schema/bundle/package/OAS) and
+// src/exporters/asyncApiExporters.js (AsyncAPI 3.0 per-transport files and
+// the gRPC proto, targeting the canonical spec/asyncapi/ conventions).
+function downloadTextFile(fileName, content, mimeType) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 function exportAsJson() {
   if (!canExportModel()) return;
-  const payload = { domains: state.domains, relationships: state.relationships, view: state.view };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'domain-designer.json';
-  a.click();
-  URL.revokeObjectURL(url);
+  downloadTextFile('domain-designer.json', JSON.stringify(buildJsonExportDocument(state), null, 2), 'application/json');
 }
 
 function exportAsMarkdown() {
   if (!canExportModel()) return;
-  const lines = [];
-  lines.push('# Domain Designer Model');
-  lines.push('');
-  state.domains.forEach((domain) => {
-    lines.push(`## Domain: ${domain.name}`);
-    lines.push('');
-    if (domain?.context) {
-      lines.push(`- Ubiquitous Language: ${domain.context.ubiquitousLanguage || '-'}`);
-      lines.push(`- Owner Team: ${domain.context.ownerTeam || '-'}`);
-      lines.push(`- Upstream: ${(domain.context.upstreamDependencies || []).join(', ') || '-'}`);
-      lines.push(`- Downstream: ${(domain.context.downstreamDependencies || []).join(', ') || '-'}`);
-      lines.push(`- Integration Channel: ${domain.context.integrationChannel || '-'}`);
-      lines.push(`- Package Dependencies: ${(domain.context.packageDependencies || []).join(', ') || '-'}`);
-      lines.push(`- Shared Value Objects: ${(domain.context.sharedValueObjects || []).join(', ') || '-'}`);
-      lines.push('');
-    }
-    domain.entities.forEach((entity) => {
-      lines.push(`### Entity: ${entity.name}`);
-      lines.push('');
-      lines.push(`- Aggregate Root: ${Boolean(entity?.meta?.aggregateRoot)}`);
-      lines.push(`- Invariants: ${(entity?.meta?.invariants || []).join('; ') || '-'}`);
-      lines.push('');
-      lines.push('| Field | Type | Required | PK | FK | Unique | Nullable |');
-      lines.push('|---|---|---:|---:|---:|---:|---:|');
-      entity.fields.forEach((field) => {
-        lines.push(`| ${field.name} | ${field.type}${field.format ? `(${field.format})` : ''} | ${Boolean(field.required)} | ${Boolean(field.pk)} | ${Boolean(field.fk)} | ${Boolean(field.unique)} | ${Boolean(field.nullable)} |`);
-      });
-      lines.push('');
-      lines.push('RBAC:');
-      const policy = getEntityRbacPolicy(entity);
-      ['list', 'getById', 'create', 'update', 'delete'].forEach((action) => {
-        const rule = policy[action] || { roles: [], tenantScoped: true };
-        lines.push(`- ${action}: [${(rule.roles || []).join(', ')}], tenantScoped=${Boolean(rule.tenantScoped)}`);
-      });
-      lines.push('');
-      lines.push('Message Contracts:');
-      const contracts = Array.isArray(entity?.meta?.contracts) ? entity.meta.contracts : [];
-      if (!contracts.length) {
-        lines.push('- none');
-      } else {
-        contracts.forEach((contract) => {
-          lines.push(`- ${contract.type}:${contract.name} | channel=${contract.channel || '-'} | version=${contract.version}`);
-        });
-      }
-      lines.push('');
-    });
+  downloadTextFile('domain-designer-model.md', buildMarkdownExport(state), 'text/markdown');
+}
+
+function exportAsJsonSchema() {
+  if (!canExportModel()) return;
+  downloadTextFile('domain-designer-json-schema.json', JSON.stringify(buildJsonSchemaDocument(state), null, 2), 'application/json');
+}
+
+function exportAsAsyncApi() {
+  if (!canExportModel()) return;
+  buildAsyncApiFileSet(state).files.forEach((file) => {
+    downloadTextFile(file.fileName, file.content, file.mimeType);
   });
-  if (state.relationships.length) {
-    lines.push('## Relationships');
-    lines.push('');
-    state.relationships.forEach((relationship) => {
-      lines.push(`- ${relationship.name || relationship.id}: ${entityLabel(relationship.fromEntityId)} (${relationship.fromCardinality}) -> (${relationship.toCardinality}) ${entityLabel(relationship.toEntityId)}`);
-    });
+}
+
+function exportAsProto() {
+  if (!canExportModel()) return;
+  downloadTextFile('async-api.proto', buildGrpcProto(state), 'text/plain');
+}
+
+function exportBoilerplateBundle() {
+  if (!canExportModel()) return;
+  downloadTextFile('domain-designer-boilerplate-bundle.json', JSON.stringify(buildBoilerplateBundleDocument(state), null, 2), 'application/json');
+}
+
+function exportAsPackage() {
+  if (!canExportModel()) return;
+  const selected = getSelectedDomain();
+  if (!selected) {
+    showStatus('Select a domain to export package.');
+    return;
   }
-  const blob = new Blob([lines.join('\n')], { type: 'text/markdown' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'domain-designer-model.md';
-  a.click();
-  URL.revokeObjectURL(url);
+  downloadTextFile(
+    `${toPathToken(selected.name) || 'domain'}-package.json`,
+    JSON.stringify(buildDomainPackageDocument(selected), null, 2),
+    'application/json'
+  );
 }
 
-function buildExampleValueForField(field) {
-  if (field.enumValues?.length) return field.enumValues[0];
-  if (field.type === 'uuid') return '00000000-0000-4000-8000-000000000001';
-  if (field.type === 'datetime') return '2026-01-01T00:00:00.000Z';
-  if (field.type === 'date') return '2026-01-01';
-  if (field.type === 'integer') return 1;
-  if (field.type === 'number') return 10.5;
-  if (field.type === 'boolean') return true;
-  if (field.type === 'array') return [];
-  if (field.type === 'object') return {};
-  if (field.format === 'email') return 'user@example.com';
-  if (field.format === 'uri') return 'https://example.com/resource';
-  return `${field.name || 'value'}_example`;
+function exportAsOas() {
+  if (!canExportModel()) return;
+  downloadTextFile('domain-designer-oas-3.1.json', JSON.stringify(buildOasDocument(state), null, 2), 'application/json');
 }
 
-function buildEntityRequestExample(entity, mode = 'create') {
-  const payload = {};
-  (entity.fields || []).forEach((field) => {
-    if (mode === 'create' && field.pk) return;
-    if (mode === 'update' && field.pk) return;
-    if (mode === 'update' && !field.required && !field.fk && !field.unique) return;
-    payload[field.name] = buildExampleValueForField(field);
-  });
-  return payload;
+// Import glue: FileReader + persist/selection/history around the pure
+// document→model mappers in src/importers/designerImporters.js (and
+// normalizeStatePayload from the JUM-468 core). One mapper failure reason
+// maps to exactly one status-region message (the pre-refactor alert text).
+function importDomainPackage(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(String(reader.result || '{}'));
+      const result = buildDomainFromPackage(parsed, state.domains);
+      if (!result.ok) {
+        showStatus('Invalid package format.');
+        return;
+      }
+      withPersist(() => {
+        const nextDomain = result.domain;
+        state.domains.push(nextDomain);
+        state.selectedDomainId = nextDomain.id;
+        state.selectedEntityId = nextDomain.entities[0]?.id || null;
+        recomputeIdCounter();
+        render();
+      });
+    } catch (_) {
+      showStatus('Could not parse package JSON.');
+    }
+  };
+  reader.readAsText(file);
 }
 
-function buildEntityResponseExample(entity) {
-  const payload = {};
-  (entity.fields || []).forEach((field) => {
-    payload[field.name] = buildExampleValueForField(field);
-  });
-  return payload;
+function importStateFromFile(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(String(reader.result));
+      const normalized = normalizeStatePayload(parsed);
+      withPersist(() => {
+        state.domains = normalized.domains;
+        state.relationships = normalized.relationships;
+        state.selectedDomainId = normalized.selectedDomainId;
+        state.selectedEntityId = normalized.selectedEntityId;
+        state.selectedRelationshipId = normalized.selectedRelationshipId;
+        state.view = normalized.view;
+        state.idCounter = normalized.idCounter;
+        recomputeIdCounter();
+        render();
+      }, { recordHistory: false });
+      history.past = [];
+      history.future = [];
+      saveState();
+    } catch (error) {
+      showStatus('Could not parse JSON file.');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function importStateFromOasFile(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(String(reader.result));
+      const result = buildDomainsFromOas(parsed);
+      if (!result.ok) {
+        showStatus(result.reason === 'invalid-oas'
+          ? 'Invalid OAS file: components.schemas not found.'
+          : 'No schemas found to import.');
+        return;
+      }
+      const nextDomains = result.domains;
+      withPersist(() => {
+        state.domains = nextDomains;
+        // JUM-478: relationships cross the OAS boundary via `x-relations`
+        // (endpoints re-keyed to the freshly imported entities).
+        state.relationships = result.relationships || [];
+        state.selectedDomainId = nextDomains[0]?.id || null;
+        state.selectedEntityId = null;
+        state.selectedRelationshipId = null;
+        state.view = {
+          zoom: 1,
+          compactEntities: false,
+          snapToGrid: true,
+          edgeStyle: 'curved',
+          modelCheckMinSeverity: 'info',
+          exportBlockCritical: true,
+          largeCanvasMode: false
+        };
+        recomputeIdCounter();
+        render();
+      }, { recordHistory: false });
+      history.past = [];
+      history.future = [];
+      saveState();
+    } catch (error) {
+      showStatus('Could not parse OAS JSON file.');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function generateCodePreview() {
+  const found = findEntity(state.selectedEntityId);
+  // The preview renders the exact bundle the export emits (same builder,
+  // same structure — JUM-476), scoped to the selected entity when there is
+  // one so its composition root stays internally consistent.
+  const previewState = found
+    ? { domains: [{ ...found.domain, entities: [found.entity] }], relationships: [] }
+    : state;
+  const bundle = buildBoilerplateBundleDocument(previewState);
+  dom.codePreviewOutput.textContent = flattenBundleFiles(bundle).length
+    ? renderBundlePreview(bundle)
+    : '// Select an entity or create domains/entities to preview generated skeletons.';
 }
 
 function generateExamplesPreview() {
@@ -2688,10 +1689,10 @@ function generateExamplesPreview() {
     return;
   }
   const chunks = targets.map(({ domain, entity }) => {
-    const schemaName = toSchemaName(domain.name, entity.name);
-    const requestCreate = buildEntityRequestExample(entity, 'create');
-    const requestUpdate = buildEntityRequestExample(entity, 'update');
-    const response = buildEntityResponseExample(entity);
+    const schemaName = model.toSchemaName(domain.name, entity.name);
+    const requestCreate = model.buildEntityRequestExample(entity, 'create');
+    const requestUpdate = model.buildEntityRequestExample(entity, 'update');
+    const response = model.buildEntityResponseExample(entity);
     return [
       `// ${domain.name}/${entity.name}`,
       `// create${schemaName} request`,
@@ -2703,475 +1704,6 @@ function generateExamplesPreview() {
     ].join('\n');
   });
   dom.examplesPreviewOutput.textContent = chunks.join('\n\n/* ---------------------------------------- */\n\n');
-}
-
-function exportAsJsonSchema() {
-  if (!canExportModel()) return;
-  const definitions = {};
-  state.domains.forEach((domain) => {
-    domain.entities.forEach((entity) => {
-      const schemaName = toSchemaName(domain.name, entity.name);
-      const properties = {};
-      const required = [];
-      (entity.fields || []).forEach((field) => {
-        properties[field.name] = toOasFieldSchema(field);
-        if (field.required) required.push(field.name);
-      });
-      definitions[schemaName] = {
-        $id: schemaName,
-        type: 'object',
-        properties,
-        required,
-        additionalProperties: false
-      };
-    });
-  });
-  const payload = {
-    $schema: 'https://json-schema.org/draft/2020-12/schema',
-    title: 'Domain Designer JSON Schemas',
-    type: 'object',
-    definitions
-  };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'domain-designer-json-schema.json';
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function exportAsAsyncApi() {
-  if (!canExportModel()) return;
-  const channels = {};
-  state.domains.forEach((domain) => {
-    domain.entities.forEach((entity) => {
-      const contracts = Array.isArray(entity?.meta?.contracts) ? entity.meta.contracts : [];
-      contracts.forEach((contract) => {
-        const channelName = contract.channel || `${toPathToken(domain.name)}/${toPathToken(entity.name)}/${contract.type}`;
-        if (!channels[channelName]) channels[channelName] = {};
-        const operationKey = contract.type === 'response' ? 'subscribe' : 'publish';
-        channels[channelName][operationKey] = {
-          operationId: `${contract.type}_${toSchemaName(domain.name, entity.name)}_${contract.name}`,
-          message: {
-            name: contract.name,
-            payload: contract.payloadSchema || {}
-          }
-        };
-      });
-    });
-  });
-  const payload = {
-    asyncapi: '3.0.0',
-    info: {
-      title: 'Domain Designer AsyncAPI Export',
-      version: '1.0.0'
-    },
-    channels
-  };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'domain-designer-asyncapi.json';
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function exportBoilerplateBundle() {
-  if (!canExportModel()) return;
-  const modules = state.domains.flatMap((domain) => domain.entities.map((entity) => ({
-    module: `${domain.name}/${entity.name}`,
-    files: {
-      model: `src/modules/${domain.name}/domain/Model/${entity.name}.ts`,
-      repository: `src/modules/${domain.name}/application/ports/${entity.name}Repository.ts`,
-      useCase: `src/modules/${domain.name}/application/useCases/Create${entity.name}.ts`,
-      controller: `src/modules/${domain.name}/interface/controller/${entity.name}Controller.ts`,
-      handler: `src/modules/${domain.name}/interface/restapi/frameworks/express/handlers/create${entity.name}.ts`
-    }
-  })));
-  const payload = {
-    kind: 'boilerplate-bundle',
-    version: '1.0.0',
-    generatedAt: new Date().toISOString(),
-    modules
-  };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'domain-designer-boilerplate-bundle.json';
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function exportAsPackage() {
-  if (!canExportModel()) return;
-  const selected = getSelectedDomain();
-  if (!selected) {
-    window.alert('Select a domain to export package.');
-    return;
-  }
-  const payload = {
-    kind: 'domain-package',
-    version: '1.0.0',
-    exportedAt: new Date().toISOString(),
-    domain: selected
-  };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `${toPathToken(selected.name) || 'domain'}-package.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function importDomainPackage(file) {
-  const reader = new FileReader();
-  reader.onload = () => {
-    try {
-      const parsed = JSON.parse(String(reader.result || '{}'));
-      const sourceDomain = parsed?.domain;
-      if (!sourceDomain || !Array.isArray(sourceDomain.entities)) {
-        window.alert('Invalid package format.');
-        return;
-      }
-      withPersist(() => {
-        const nextDomain = normalizeDomainInput(sourceDomain, state.domains.length);
-        nextDomain.context = nextDomain.context || {};
-        nextDomain.context.packageDependencies = uniqueStrings(nextDomain.context.packageDependencies || []);
-        nextDomain.context.sharedValueObjects = uniqueStrings(nextDomain.context.sharedValueObjects || []);
-        const existingDeps = new Set(
-          state.domains.flatMap((domain) => domain?.context?.packageDependencies || [])
-        );
-        const incomingNewDeps = nextDomain.context.packageDependencies.filter((dep) => !existingDeps.has(dep));
-        if (incomingNewDeps.length) {
-          nextDomain.context.packageDependencies = uniqueStrings([
-            ...nextDomain.context.packageDependencies,
-            ...incomingNewDeps
-          ]);
-        }
-        let domainName = nextDomain.name;
-        let suffix = 2;
-        while (isDomainNameTaken(domainName)) {
-          domainName = `${nextDomain.name}_${suffix}`;
-          suffix += 1;
-        }
-        nextDomain.name = domainName;
-        state.domains.push(nextDomain);
-        state.selectedDomainId = nextDomain.id;
-        state.selectedEntityId = nextDomain.entities[0]?.id || null;
-        recomputeIdCounter();
-        render();
-      });
-    } catch (_) {
-      window.alert('Could not parse package JSON.');
-    }
-  };
-  reader.readAsText(file);
-}
-
-function toOasType(fieldType) {
-  if (fieldType === 'integer') return { type: 'integer' };
-  if (fieldType === 'number') return { type: 'number' };
-  if (fieldType === 'boolean') return { type: 'boolean' };
-  if (fieldType === 'array') return { type: 'array' };
-  if (fieldType === 'object') return { type: 'object' };
-  if (fieldType === 'date') return { type: 'string', format: 'date' };
-  if (fieldType === 'datetime') return { type: 'string', format: 'date-time' };
-  if (fieldType === 'uuid') return { type: 'string', format: 'uuid' };
-  return { type: 'string' };
-}
-
-function toOasFieldSchema(field) {
-  const schema = {
-    ...toOasType(field.type)
-  };
-  if (field.type === 'array') {
-    schema.items = toOasType(field.itemsType || 'string');
-  }
-  if (field.format) schema.format = field.format;
-  if (field.description) schema.description = field.description;
-  if (field.nullable) schema.nullable = true;
-  if (field.enumValues?.length) schema.enum = [...field.enumValues];
-  if (typeof field.minLength === 'number') schema.minLength = field.minLength;
-  if (typeof field.maxLength === 'number') schema.maxLength = field.maxLength;
-  if (typeof field.minimum === 'number') schema.minimum = field.minimum;
-  if (typeof field.maximum === 'number') schema.maximum = field.maximum;
-  if (field.pattern) schema.pattern = field.pattern;
-  return schema;
-}
-
-function fromOasType(schema = {}) {
-  const type = schema.type;
-  const format = schema.format;
-  if (type === 'array') return 'array';
-  if (type === 'object') return 'object';
-  if (type === 'integer') return 'integer';
-  if (type === 'number') return 'number';
-  if (type === 'boolean') return 'boolean';
-  if (type === 'string' && format === 'date') return 'date';
-  if (type === 'string' && format === 'date-time') return 'datetime';
-  if (type === 'string' && format === 'uuid') return 'uuid';
-  return 'string';
-}
-
-function toSchemaName(domainName, entityName) {
-  const normalize = (value) => String(value || '')
-    .trim()
-    .replace(/[^a-zA-Z0-9]+/g, '_')
-    .replace(/^_+|_+$/g, '');
-  const domainToken = normalize(domainName) || 'Domain';
-  const entityToken = normalize(entityName) || 'Entity';
-  return `${domainToken}_${entityToken}`;
-}
-
-function toPathToken(value) {
-  return String(value || '')
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
-
-function buildCodePreviewForEntity(domain, entity) {
-  const className = toSchemaName('', entity.name).replace(/^_+/, '');
-  const repositoryName = `${className}RepositoryPort`;
-  const useCaseName = `Create${className}UseCase`;
-  const controllerName = `${className}Controller`;
-  const handlerName = `create${className}Handler`;
-  const fields = (entity.fields || []).map((field) => `  ${field.name}: ${field.type};`).join('\n');
-  return [
-    `// ${domain.name} / ${entity.name}`,
-    `export interface ${className}Model {`,
-    fields || '  id: uuid;',
-    '}',
-    '',
-    `export interface ${repositoryName} {`,
-    `  create(input: ${className}Model): Promise<${className}Model>;`,
-    `  getById(id: string): Promise<${className}Model | null>;`,
-    '}',
-    '',
-    `export class ${useCaseName} {`,
-    `  constructor(private readonly repo: ${repositoryName}) {}`,
-    `  async execute(input: ${className}Model): Promise<${className}Model> {`,
-    '    return this.repo.create(input);',
-    '  }',
-    '}',
-    '',
-    `export class ${controllerName} {`,
-    `  constructor(private readonly createUseCase: ${useCaseName}) {}`,
-    `  async create(input: ${className}Model) {`,
-    '    return this.createUseCase.execute(input);',
-    '  }',
-    '}',
-    '',
-    `export async function ${handlerName}(requestBody: unknown) {`,
-    `  // validate requestBody against OAS schema for ${className}`,
-    `  // map to controller.${'create'} and return framework-specific response`,
-    '}'
-  ].join('\n');
-}
-
-function generateCodePreview() {
-  const found = findEntity(state.selectedEntityId);
-  if (found) {
-    dom.codePreviewOutput.textContent = buildCodePreviewForEntity(found.domain, found.entity);
-    return;
-  }
-  const chunks = [];
-  state.domains.forEach((domain) => {
-    domain.entities.forEach((entity) => {
-      chunks.push(buildCodePreviewForEntity(domain, entity));
-    });
-  });
-  dom.codePreviewOutput.textContent = chunks.length
-    ? chunks.join('\n\n/* ---------------------------------------- */\n\n')
-    : '// Select an entity or create domains/entities to preview generated skeletons.';
-}
-
-function exportAsOas() {
-  if (!canExportModel()) return;
-  const schemas = {};
-  const paths = {};
-  const entitySchemaIndex = {};
-  state.domains.forEach((domain) => {
-    domain.entities.forEach((entity) => {
-      const properties = {};
-      const required = [];
-      entity.fields.forEach((field) => {
-        properties[field.name] = toOasFieldSchema(field);
-        if (field.required) required.push(field.name);
-      });
-      const schemaName = toSchemaName(domain.name, entity.name);
-      entitySchemaIndex[entity.id] = schemaName;
-      schemas[schemaName] = {
-        type: 'object',
-        properties,
-        required,
-        'x-domain': domain.name,
-        'x-entity': entity.name,
-        'x-message-contracts': Array.isArray(entity?.meta?.contracts)
-          ? entity.meta.contracts.map((contract, index) => normalizeContractInput(contract, index))
-          : []
-      };
-      const composition = entity?.meta?.oasComposition || {};
-      const mode = ['oneOf', 'allOf', 'anyOf'].includes(composition.mode) ? composition.mode : '';
-      const refs = parseCommaSeparated(composition.refs || []);
-      if (mode && refs.length) {
-        schemas[schemaName][mode] = refs.map((ref) => ({ $ref: `#/components/schemas/${ref}` }));
-      }
-      const externalRefs = parseCommaSeparated(composition.externalRefs || []);
-      if (externalRefs.length) {
-        schemas[schemaName]['x-external-refs'] = externalRefs;
-      }
-      const discriminator = String(composition.discriminator || '').trim();
-      if (discriminator) {
-        const mapping = {};
-        refs.forEach((refName) => {
-          mapping[refName] = `#/components/schemas/${refName}`;
-        });
-        schemas[schemaName].discriminator = {
-          propertyName: discriminator,
-          mapping
-        };
-      }
-
-      const domainPath = toPathToken(domain.name);
-      const entityPath = toPathToken(entity.name);
-      const collectionPath = `/${domainPath}/${entityPath}`;
-      const itemPath = `${collectionPath}/{id}`;
-      const idParam = [{
-        name: 'id',
-        in: 'path',
-        required: true,
-        schema: { type: 'string' }
-      }];
-
-      paths[collectionPath] = {
-        get: {
-          operationId: `list${schemaName}`,
-          responses: {
-            200: {
-              description: 'Success',
-              content: {
-                'application/json': {
-                  schema: {
-                    type: 'array',
-                    items: { $ref: `#/components/schemas/${schemaName}` }
-                  }
-                }
-              }
-            }
-          }
-        },
-        post: {
-          operationId: `create${schemaName}`,
-          requestBody: {
-            required: true,
-            content: {
-              'application/json': {
-                schema: { $ref: `#/components/schemas/${schemaName}` }
-              }
-            }
-          },
-          responses: {
-            201: {
-              description: 'Created',
-              content: {
-                'application/json': {
-                  schema: { $ref: `#/components/schemas/${schemaName}` }
-                }
-              }
-            }
-          }
-        }
-      };
-
-      paths[itemPath] = {
-        get: {
-          operationId: `get${schemaName}ById`,
-          parameters: idParam,
-          responses: {
-            200: {
-              description: 'Success',
-              content: {
-                'application/json': {
-                  schema: { $ref: `#/components/schemas/${schemaName}` }
-                }
-              }
-            },
-            404: { description: 'Not found' }
-          }
-        },
-        patch: {
-          operationId: `update${schemaName}`,
-          parameters: idParam,
-          requestBody: {
-            required: true,
-            content: {
-              'application/json': {
-                schema: { $ref: `#/components/schemas/${schemaName}` }
-              }
-            }
-          },
-          responses: {
-            200: {
-              description: 'Updated',
-              content: {
-                'application/json': {
-                  schema: { $ref: `#/components/schemas/${schemaName}` }
-                }
-              }
-            },
-            404: { description: 'Not found' }
-          }
-        },
-        delete: {
-          operationId: `delete${schemaName}`,
-          parameters: idParam,
-          responses: {
-            204: { description: 'Deleted' },
-            404: { description: 'Not found' }
-          }
-        }
-      };
-    });
-  });
-
-  const oas = {
-    openapi: '3.1.0',
-    info: { title: 'Domain Designer Export', version: '1.0.0' },
-    paths,
-    components: { schemas },
-    'x-message-contracts': state.domains.flatMap((domain) => (
-      domain.entities.flatMap((entity) => (
-        (Array.isArray(entity?.meta?.contracts) ? entity.meta.contracts : []).map((contract, index) => ({
-          ...normalizeContractInput(contract, index),
-          domain: domain.name,
-          entity: entity.name
-        }))
-      ))
-    )),
-    'x-relations': state.relationships.map((relationship) => ({
-      name: relationship.name,
-      fromEntityId: relationship.fromEntityId,
-      toEntityId: relationship.toEntityId,
-      fromSchema: entitySchemaIndex[relationship.fromEntityId] || null,
-      toSchema: entitySchemaIndex[relationship.toEntityId] || null,
-      fromCardinality: relationship.fromCardinality,
-      toCardinality: relationship.toCardinality
-    }))
-  };
-
-  const blob = new Blob([JSON.stringify(oas, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'domain-designer-oas-3.1.json';
-  a.click();
-  URL.revokeObjectURL(url);
 }
 
 function seed() {
@@ -3231,328 +1763,28 @@ function seed() {
   });
 }
 
-function normalizeRelationship(relationship) {
-  return {
-    ...relationship,
-    name: relationship.name || `${relationship.fromEntityId} -> ${relationship.toEntityId}`,
-    fromCardinality: relationship.fromCardinality || 'N',
-    toCardinality: relationship.toCardinality || '1',
-    fromAnchorSide: ['top', 'right', 'bottom', 'left'].includes(relationship.fromAnchorSide) ? relationship.fromAnchorSide : null,
-    toAnchorSide: ['top', 'right', 'bottom', 'left'].includes(relationship.toAnchorSide) ? relationship.toAnchorSide : null,
-    anchorBehavior: relationship.anchorBehavior === 'center' ? 'center' : 'auto',
-    bendX: normalizeOptionalNumber(relationship.bendX),
-    bendY: normalizeOptionalNumber(relationship.bendY),
-    labelOffsetX: normalizeOptionalNumber(relationship.labelOffsetX) ?? 0,
-    labelOffsetY: normalizeOptionalNumber(relationship.labelOffsetY) ?? 0
-  };
-}
-
-function fallbackId(prefix, seed) {
-  return `${prefix}-import-${seed}-${Math.random().toString(36).slice(2, 8)}`;
-}
-
-function normalizeEntityInput(entity, entityIndex) {
-  const fieldsInput = Array.isArray(entity?.fields) ? entity.fields : defaultFields();
-  const fields = fieldsInput.map((field, fieldIndex) => normalizeField(field, fieldIndex));
-  const entityName = String(entity?.name || '').trim() || `Entity_${entityIndex + 1}`;
-  const invariants = Array.isArray(entity?.meta?.invariants)
-    ? entity.meta.invariants.map((item) => String(item).trim()).filter(Boolean)
-    : parseCommaSeparated(String(entity?.meta?.invariants || '').replace(/\n/g, ','));
-  const rbac = getDefaultRbacPolicy();
-  const sourceRbac = entity?.meta?.rbac || {};
-  ['list', 'getById', 'create', 'update', 'delete'].forEach((action) => {
-    const rule = sourceRbac[action] || rbac[action] || {};
-    rbac[action] = {
-      roles: Array.isArray(rule.roles)
-        ? rule.roles.map((role) => String(role).trim()).filter(Boolean)
-        : Array.isArray(rbac[action]?.roles)
-          ? rbac[action].roles
-          : [],
-      tenantScoped: typeof rule.tenantScoped === 'boolean' ? rule.tenantScoped : Boolean(rbac[action]?.tenantScoped)
-    };
-  });
-  const contracts = Array.isArray(entity?.meta?.contracts)
-    ? entity.meta.contracts.map((contract, index) => normalizeContractInput(contract, index))
-    : [];
-  const oasComposition = {
-    mode: ['oneOf', 'allOf', 'anyOf'].includes(entity?.meta?.oasComposition?.mode)
-      ? entity.meta.oasComposition.mode
-      : '',
-    refs: parseCommaSeparated(entity?.meta?.oasComposition?.refs || []),
-    externalRefs: parseCommaSeparated(entity?.meta?.oasComposition?.externalRefs || []),
-    discriminator: String(entity?.meta?.oasComposition?.discriminator || '').trim()
-  };
-  return {
-    id: entity?.id || fallbackId('entity', entityIndex),
-    name: entityName,
-    x: Number.isFinite(entity?.x) ? entity.x : 14 + (entityIndex % 2) * 206,
-    y: Number.isFinite(entity?.y) ? entity.y : 14 + Math.floor(entityIndex / 2) * 120,
-    fields,
-    meta: {
-      aggregateRoot: Boolean(entity?.meta?.aggregateRoot),
-      invariants,
-      rbac,
-      contracts,
-      oasComposition
-    }
-  };
-}
-
-function normalizeDomainInput(domain, domainIndex) {
-  const entitiesInput = Array.isArray(domain?.entities) ? domain.entities : [];
-  const entities = entitiesInput.map((entity, entityIndex) => normalizeEntityInput(entity, entityIndex));
-  return {
-    id: domain?.id || fallbackId('domain', domainIndex),
-    name: String(domain?.name || '').trim() || `Domain_${domainIndex + 1}`,
-    color: /^#[0-9a-f]{6}$/i.test(domain?.color || '') ? domain.color : DOMAIN_COLORS[domainIndex % DOMAIN_COLORS.length],
-    x: Number.isFinite(domain?.x) ? domain.x : 120 + domainIndex * 40,
-    y: Number.isFinite(domain?.y) ? domain.y : 90 + domainIndex * 30,
-    context: {
-      ubiquitousLanguage: String(domain?.context?.ubiquitousLanguage || '').trim(),
-      ownerTeam: String(domain?.context?.ownerTeam || '').trim(),
-      upstreamDependencies: parseCommaSeparated(domain?.context?.upstreamDependencies || []),
-      downstreamDependencies: parseCommaSeparated(domain?.context?.downstreamDependencies || []),
-      integrationChannel: String(domain?.context?.integrationChannel || '').trim(),
-      packageDependencies: parseCommaSeparated(domain?.context?.packageDependencies || []),
-      sharedValueObjects: parseCommaSeparated(domain?.context?.sharedValueObjects || [])
-    },
-    entities
-  };
-}
-
-function normalizeStatePayload(parsed) {
-  const domainsInput = Array.isArray(parsed?.domains) ? parsed.domains : [];
-  const domains = domainsInput.map((domain, domainIndex) => normalizeDomainInput(domain, domainIndex));
-  const entityIds = new Set(domains.flatMap((domain) => domain.entities.map((entity) => entity.id)));
-  const relationshipsInput = Array.isArray(parsed?.relationships) ? parsed.relationships : [];
-  const relationships = relationshipsInput
-    .map(normalizeRelationship)
-    .filter((relationship) => entityIds.has(relationship.fromEntityId) && entityIds.has(relationship.toEntityId));
-  const view = {
-    zoom: clampZoom(parsed?.view?.zoom || 1),
-    compactEntities: Boolean(parsed?.view?.compactEntities),
-    snapToGrid: parsed?.view?.snapToGrid !== false,
-    edgeStyle: ['curved', 'orthogonal'].includes(parsed?.view?.edgeStyle) ? parsed.view.edgeStyle : 'curved',
-    modelCheckMinSeverity: ['info', 'warn', 'error'].includes(parsed?.view?.modelCheckMinSeverity)
-      ? parsed.view.modelCheckMinSeverity
-      : 'info',
-    exportBlockCritical: parsed?.view?.exportBlockCritical !== false,
-    largeCanvasMode: Boolean(parsed?.view?.largeCanvasMode)
-  };
-  return {
-    domains,
-    relationships,
-    selectedDomainId: parsed?.selectedDomainId || domains[0]?.id || null,
-    selectedEntityId: parsed?.selectedEntityId || null,
-    selectedRelationshipId: parsed?.selectedRelationshipId || null,
-    idCounter: parsed?.idCounter || 1,
-    view
-  };
-}
-
-function recomputeIdCounter() {
-  const allIds = [];
-  state.domains.forEach((domain) => {
-    allIds.push(domain.id);
-    domain.entities.forEach((entity) => allIds.push(entity.id));
-  });
-  state.relationships.forEach((relationship) => allIds.push(relationship.id));
-  let max = 0;
-  allIds.forEach((id) => {
-    const parts = String(id).split('-');
-    const numeric = Number(parts[parts.length - 1]);
-    if (!Number.isNaN(numeric)) max = Math.max(max, numeric);
-  });
-  state.idCounter = Math.max(max + 1, 1);
-}
-
-function loadState() {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) {
-    seed();
-    saveState();
-    history.past = [];
-    history.future = [];
-    return;
-  }
-  try {
-    const parsed = normalizeStatePayload(JSON.parse(raw));
-    state.domains = parsed.domains;
-    state.relationships = parsed.relationships;
-    state.selectedDomainId = parsed.selectedDomainId;
-    state.selectedEntityId = parsed.selectedEntityId;
-    state.selectedRelationshipId = parsed.selectedRelationshipId;
-    state.idCounter = parsed.idCounter;
-    state.view = parsed.view;
-    recomputeIdCounter();
-    history.past = [];
-    history.future = [];
-  } catch (error) {
-    seed();
-    saveState();
-    state.view = {
-      zoom: 1,
-      compactEntities: false,
-      snapToGrid: true,
-      edgeStyle: 'curved',
-      modelCheckMinSeverity: 'info',
-      exportBlockCritical: true,
-      largeCanvasMode: false
-    };
-    history.past = [];
-    history.future = [];
-  }
-}
-
-function importStateFromFile(file) {
-  const reader = new FileReader();
-  reader.onload = () => {
-    try {
-      const parsed = JSON.parse(String(reader.result));
-      const normalized = normalizeStatePayload(parsed);
-      withPersist(() => {
-        state.domains = normalized.domains;
-        state.relationships = normalized.relationships;
-        state.selectedDomainId = normalized.selectedDomainId;
-        state.selectedEntityId = normalized.selectedEntityId;
-        state.selectedRelationshipId = normalized.selectedRelationshipId;
-        state.view = normalized.view;
-        state.idCounter = normalized.idCounter;
-        recomputeIdCounter();
-        render();
-      }, { recordHistory: false });
-      history.past = [];
-      history.future = [];
-      saveState();
-    } catch (error) {
-      window.alert('Could not parse JSON file.');
-    }
-  };
-  reader.readAsText(file);
-}
-
-function importStateFromOasFile(file) {
-  const reader = new FileReader();
-  reader.onload = () => {
-    try {
-      const parsed = JSON.parse(String(reader.result));
-      const schemas = parsed?.components?.schemas;
-      if (!schemas || typeof schemas !== 'object') {
-        window.alert('Invalid OAS file: components.schemas not found.');
-        return;
-      }
-
-      const nextDomains = [];
-      const byDomain = new Map();
-      let domainIndex = 0;
-      let entityIndex = 0;
-
-      Object.entries(schemas).forEach(([schemaKey, schemaValue]) => {
-        if (!schemaValue || typeof schemaValue !== 'object') return;
-        const domainName = String(schemaValue['x-domain'] || 'Imported').trim() || 'Imported';
-        const entityName = String(schemaValue['x-entity'] || schemaKey).trim() || schemaKey;
-        const required = Array.isArray(schemaValue.required) ? schemaValue.required : [];
-        const properties = schemaValue.properties && typeof schemaValue.properties === 'object'
-          ? schemaValue.properties
-          : {};
-
-        let domain = byDomain.get(domainName);
-        if (!domain) {
-          domain = {
-            id: fallbackId('domain', domainIndex),
-            name: domainName,
-            color: DOMAIN_COLORS[domainIndex % DOMAIN_COLORS.length],
-            x: 120 + domainIndex * 40,
-            y: 90 + domainIndex * 30,
-            entities: []
-          };
-          domainIndex += 1;
-          byDomain.set(domainName, domain);
-          nextDomains.push(domain);
-        }
-
-        const fields = Object.entries(properties).map(([fieldName, fieldSchema]) => {
-          const field = fieldSchema || {};
-          return normalizeField({
-            name: fieldName,
-            type: fromOasType(field),
-            format: String(field.format || '').trim(),
-            description: String(field.description || '').trim(),
-            nullable: Boolean(field.nullable),
-            enumValues: parseEnumValues(field.enum),
-            pattern: String(field.pattern || '').trim(),
-            minLength: normalizeOptionalNumber(field.minLength),
-            maxLength: normalizeOptionalNumber(field.maxLength),
-            minimum: normalizeOptionalNumber(field.minimum),
-            maximum: normalizeOptionalNumber(field.maximum),
-            itemsType: fromOasType(field.items || {}),
-            required: required.includes(fieldName),
-            pk: fieldName === 'id',
-            fk: /id$/i.test(fieldName) && fieldName !== 'id',
-            unique: fieldName === 'id'
-          }, 0);
-        });
-
-        domain.entities.push({
-          id: fallbackId('entity', entityIndex),
-          name: entityName,
-          x: 14 + (domain.entities.length % 2) * 206,
-          y: 14 + Math.floor(domain.entities.length / 2) * 120,
-          fields: fields.length ? fields : defaultFields()
-        });
-        entityIndex += 1;
-      });
-
-      if (!nextDomains.length) {
-        window.alert('No schemas found to import.');
-        return;
-      }
-
-      withPersist(() => {
-        state.domains = nextDomains;
-        state.relationships = [];
-        state.selectedDomainId = nextDomains[0]?.id || null;
-        state.selectedEntityId = null;
-        state.selectedRelationshipId = null;
-        state.view = {
-          zoom: 1,
-          compactEntities: false,
-          snapToGrid: true,
-          edgeStyle: 'curved',
-          modelCheckMinSeverity: 'info',
-          exportBlockCritical: true,
-          largeCanvasMode: false
-        };
-        recomputeIdCounter();
-        render();
-      }, { recordHistory: false });
-      history.past = [];
-      history.future = [];
-      saveState();
-    } catch (error) {
-      window.alert('Could not parse OAS JSON file.');
-    }
-  };
-  reader.readAsText(file);
-}
-
+// The single render pass, in the monolith's exact order. The pre-refactor
+// implicit sequencing — interface adapters/service config/deployments before
+// the domain panel, domain list before the canvas, entity options before the
+// inspectors that read them, edges and mini-map after the canvas — is
+// preserved here as an explicit call sequence.
 function render() {
-  renderTabs();
-  renderInterfaceAdapters();
-  renderServiceConfiguration();
-  renderDeployments();
-  renderDomainList();
-  renderStatus();
-  renderView();
-  renderDomains();
-  renderEntityOptions();
-  renderRelationshipList();
-  syncRelationshipInspector();
-  renderPickStatus();
-  renderEntityInspector();
-  renderEdges();
-  renderMiniMap();
-  renderSchemaDiffStatus();
+  tabs.renderTabs();
+  inspectors.renderInterfaceAdapters();
+  inspectors.renderServiceConfiguration();
+  inspectors.renderDeployments();
+  inspectors.renderDomainList();
+  inspectors.renderStatus();
+  canvas.renderView();
+  canvas.renderDomains();
+  inspectors.renderEntityOptions();
+  inspectors.renderRelationshipList();
+  inspectors.syncRelationshipInspector();
+  inspectors.renderPickStatus();
+  inspectors.renderEntityInspector();
+  canvas.renderEdges();
+  canvas.renderMiniMap();
+  inspectors.renderSchemaDiffStatus();
   generateCodePreview();
   generateExamplesPreview();
   dom.undoBtn.disabled = history.past.length === 0;
@@ -3560,10 +1792,10 @@ function render() {
 }
 
 function wireEvents() {
-  if (dom.tabDomainDesignerBtn) dom.tabDomainDesignerBtn.onclick = () => setActiveTab('domain-designer');
-  if (dom.tabInterfaceDesignerBtn) dom.tabInterfaceDesignerBtn.onclick = () => setActiveTab('interface-designer');
-  if (dom.tabServiceConfigBtn) dom.tabServiceConfigBtn.onclick = () => setActiveTab('service-config');
-  if (dom.tabDeployManagementBtn) dom.tabDeployManagementBtn.onclick = () => setActiveTab('deploy-management');
+  if (dom.tabDomainDesignerBtn) dom.tabDomainDesignerBtn.onclick = () => tabs.setActiveTab('domain-designer');
+  if (dom.tabInterfaceDesignerBtn) dom.tabInterfaceDesignerBtn.onclick = () => tabs.setActiveTab('interface-designer');
+  if (dom.tabServiceConfigBtn) dom.tabServiceConfigBtn.onclick = () => tabs.setActiveTab('service-config');
+  if (dom.tabDeployManagementBtn) dom.tabDeployManagementBtn.onclick = () => tabs.setActiveTab('deploy-management');
 
   if (dom.addInterfaceAdapterBtn) {
     dom.addInterfaceAdapterBtn.onclick = () => {
@@ -3572,7 +1804,7 @@ function wireEvents() {
       const entrypoint = String(dom.interfaceEntrypointInput.value || '').trim();
       const controller = String(dom.interfaceControllerInput.value || '').trim();
       if (!framework || !entrypoint || !controller) {
-        window.alert('Framework/runtime, entrypoint and controller mapping are required.');
+        showStatus('Framework/runtime, entrypoint and controller mapping are required.');
         return;
       }
       withPersist(() => {
@@ -3580,61 +1812,94 @@ function wireEvents() {
         dom.interfaceFrameworkInput.value = '';
         dom.interfaceEntrypointInput.value = '';
         dom.interfaceControllerInput.value = '';
-        renderInterfaceAdapters();
+        inspectors.renderInterfaceAdapters();
       });
     };
   }
 
   if (dom.saveServiceConfigBtn) {
     dom.saveServiceConfigBtn.onclick = () => {
+      // JUM-544: the candidate is validated BEFORE it touches state. Invalid
+      // ports (out of range, or colliding across the protocols the selected
+      // service kind actually binds) and run-mode × provider combinations
+      // the Requirement 059 matrix has no deploy target for are reported on
+      // the tab's status surface and the save is refused — the previous
+      // behaviour silently coerced bad ports back to the defaults.
+      const parsePort = (value) => {
+        const raw = String(value ?? '').trim();
+        if (!raw) return null;
+        return Number(raw);
+      };
+      const candidate = {
+        serviceKind: dom.serviceKindSelect.value,
+        runMode: dom.runModeSelect.value,
+        cloudProvider: dom.cloudProviderSelect.value,
+        staticAssetsPath: String(dom.serviceStaticAssetsInput.value || '').trim(),
+        ports: {
+          rest: parsePort(dom.serviceHttpPortInput?.value),
+          websocket: parsePort(dom.serviceWebsocketPortInput?.value),
+          grpc: parsePort(dom.serviceGrpcPortInput?.value)
+        }
+      };
+      const issues = collectServiceConfigurationIssues(candidate);
+      if (issues.length > 0) {
+        inspectors.renderServiceConfigStatus(issues);
+        return;
+      }
       withPersist(() => {
-        const parsePort = (value, fallback) => {
-          const port = Number(value);
-          if (!Number.isInteger(port) || port < 1 || port > 65535) return fallback;
-          return port;
-        };
-        state.serviceConfiguration = {
-          serviceKind: dom.serviceKindSelect.value,
-          runMode: dom.runModeSelect.value,
-          cloudProvider: dom.cloudProviderSelect.value,
-          staticAssetsPath: String(dom.serviceStaticAssetsInput.value || '').trim(),
-          ports: {
-            rest: parsePort(dom.serviceHttpPortInput?.value, 3000),
-            websocket: parsePort(dom.serviceWebsocketPortInput?.value, 3001),
-            grpc: parsePort(dom.serviceGrpcPortInput?.value, 3002)
-          }
-        };
-        renderServiceConfiguration();
+        state.serviceConfiguration = candidate;
+        inspectors.renderServiceConfiguration();
       }, { recordHistory: false });
     };
   }
 
   if (dom.runtimeEnvRefreshBtn) {
     dom.runtimeEnvRefreshBtn.onclick = async () => {
+      const environment = dom.runtimeEnvSelect?.value || 'dev';
       try {
-        await loadRuntimeEnvironment(dom.runtimeEnvSelect?.value || 'dev');
+        await loadRuntimeEnvironment(environment);
+        showRuntimeEnvStatus(`Environment "${environment}" loaded from ${state.runtimeEnvironment?.fileName || 'env file'}.`, 'info');
       } catch (error) {
-        window.alert(error instanceof Error ? error.message : 'Could not load runtime environment.');
+        showRuntimeEnvStatus(`Environment "${environment}": ${error instanceof Error ? error.message : 'Could not load runtime environment.'}`);
       }
     };
   }
 
   if (dom.runtimeEnvSaveBtn) {
     dom.runtimeEnvSaveBtn.onclick = async () => {
+      const environment = dom.runtimeEnvSelect?.value || 'dev';
       try {
         await saveRuntimeEnvironment();
+        showRuntimeEnvStatus(`Environment "${environment}" saved to ${state.runtimeEnvironment?.fileName || 'env file'}.`, 'info');
       } catch (error) {
-        window.alert(error instanceof Error ? error.message : 'Could not save runtime environment.');
+        showRuntimeEnvStatus(`Environment "${environment}": ${error instanceof Error ? error.message : 'Could not save runtime environment.'}`);
       }
     };
   }
 
   if (dom.runtimeEnvSelect) {
     dom.runtimeEnvSelect.onchange = () => {
-      loadRuntimeEnvironment(dom.runtimeEnvSelect.value)
+      const environment = dom.runtimeEnvSelect.value;
+      loadRuntimeEnvironment(environment)
         .catch((error) => {
-          window.alert(error instanceof Error ? error.message : 'Could not load runtime environment.');
+          showRuntimeEnvStatus(`Environment "${environment}": ${error instanceof Error ? error.message : 'Could not load runtime environment.'}`);
         });
+    };
+  }
+
+  if (dom.pm2PreviewEnvironmentSelect) {
+    dom.pm2PreviewEnvironmentSelect.onchange = () => {
+      const environment = dom.pm2PreviewEnvironmentSelect.value;
+      loadPm2EcosystemPreview(environment)
+        .then(() => {
+          showPm2PreviewStatus(
+            pm2EcosystemPreview?.exists
+              ? `PM2 ecosystem for "${environment}" loaded from ${pm2EcosystemPreview.fileName}.`
+              : `No PM2 ecosystem file for "${environment}" (${pm2EcosystemPreview?.fileName || 'ecosystem file'}).`,
+            'info'
+          );
+        })
+        .catch((error) => failPm2EcosystemPreview(environment, error));
     };
   }
 
@@ -3645,7 +1910,7 @@ function wireEvents() {
       const region = String(dom.deployRegionInput.value || '').trim();
       const runtime = String(dom.deployRuntimeInput.value || '').trim();
       if (!name || !region || !runtime) {
-        window.alert('Deployment name, region and runtime are required.');
+        showStatus('Deployment name, region and runtime are required.');
         return;
       }
       withPersist(() => {
@@ -3653,7 +1918,7 @@ function wireEvents() {
         dom.deployNameInput.value = '';
         dom.deployRegionInput.value = '';
         dom.deployRuntimeInput.value = '';
-        renderDeployments();
+        inspectors.renderDeployments();
       }, { recordHistory: false });
     };
   }
@@ -3662,7 +1927,7 @@ function wireEvents() {
     const value = dom.domainNameInput.value.trim();
     if (!value) return;
     if (isDomainNameTaken(value)) {
-      window.alert(`Domain "${value}" already exists.`);
+      showStatus(`Domain "${value}" already exists.`);
       return;
     }
     withPersist(() => {
@@ -3696,7 +1961,7 @@ function wireEvents() {
     const next = window.prompt('Rename domain', selected.name);
     if (!next || !next.trim()) return;
     if (isDomainNameTaken(next.trim(), selected.id)) {
-      window.alert(`Domain "${next.trim()}" already exists.`);
+      showStatus(`Domain "${next.trim()}" already exists.`);
       return;
     }
     withPersist(() => {
@@ -3717,11 +1982,11 @@ function wireEvents() {
 
   dom.addEntityBtn.onclick = () => {
     const selected = getSelectedDomain();
-    if (!selected) return window.alert('Select a domain first.');
+    if (!selected) return showStatus('Select a domain first.');
     const value = dom.entityNameInput.value.trim();
     if (!value) return;
     if (isEntityNameTaken(selected, value)) {
-      window.alert(`Entity "${value}" already exists in ${selected.name}.`);
+      showStatus(`Entity "${value}" already exists in ${selected.name}.`);
       return;
     }
     withPersist(() => {
@@ -3733,7 +1998,7 @@ function wireEvents() {
   dom.applyEntityTemplateBtn.onclick = () => {
     const found = findEntity(state.selectedEntityId);
     if (!found) {
-      window.alert('Select an entity first.');
+      showStatus('Select an entity first.');
       return;
     }
     const template = dom.entityTemplateSelect.value;
@@ -3782,7 +2047,7 @@ function wireEvents() {
     if (!search) return;
     const found = findEntityByName(search);
     if (!found) {
-      window.alert(`No entity found for "${search}".`);
+      showStatus(`No entity found for "${search}".`);
       return;
     }
     focusEntity(found.entity.id);
@@ -3798,8 +2063,19 @@ function wireEvents() {
   dom.entityRbacActionSelect.onchange = () => {
     const found = findEntity(state.selectedEntityId);
     if (!found) return;
-    renderEntityRbacInspector(found.entity);
+    inspectors.renderEntityRbacInspector(found.entity);
   };
+  // The tenant-scope checkbox is read-only and previews the value derived
+  // from the currently checked roles (JUM-477).
+  [dom.entityRbacSuperadminCheck, dom.entityRbacAdminCheck, dom.entityRbacUserCheck].forEach((check) => {
+    check.onchange = () => {
+      const roles = [];
+      if (dom.entityRbacSuperadminCheck.checked) roles.push('superadmin');
+      if (dom.entityRbacAdminCheck.checked) roles.push('admin');
+      if (dom.entityRbacUserCheck.checked) roles.push('user');
+      dom.entityRbacTenantCheck.checked = deriveTenantScoped(roles);
+    };
+  });
   dom.addEntityContractBtn.onclick = addSelectedEntityContract;
   dom.saveEntityOasCompositionBtn.onclick = saveSelectedEntityOasComposition;
   dom.entityRenameInput.onkeydown = (event) => {
@@ -3833,8 +2109,8 @@ function wireEvents() {
   };
   dom.undoBtn.onclick = undo;
   dom.redoBtn.onclick = redo;
-  dom.zoomInBtn.onclick = () => zoomBy(0.1);
-  dom.zoomOutBtn.onclick = () => zoomBy(-0.1);
+  dom.zoomInBtn.onclick = () => canvas.zoomBy(0.1);
+  dom.zoomOutBtn.onclick = () => canvas.zoomBy(-0.1);
   dom.edgeStyleSelect.onchange = () => {
     const value = dom.edgeStyleSelect.value;
     if (!['curved', 'orthogonal'].includes(value)) return;
@@ -3843,11 +2119,11 @@ function wireEvents() {
       render();
     }, { recordHistory: false });
   };
-  dom.toggleCompactViewBtn.onclick = toggleCompactView;
+  dom.toggleCompactViewBtn.onclick = canvas.toggleCompactView;
   dom.toggleSnapBtn.onclick = () => {
     withPersist(() => {
       state.view.snapToGrid = !state.view.snapToGrid;
-      renderView();
+      canvas.renderView();
     }, { recordHistory: false });
   };
   dom.toggleLargeCanvasBtn.onclick = () => {
@@ -3861,24 +2137,24 @@ function wireEvents() {
   dom.modelCheckMinSeveritySelect.onchange = () => {
     withPersist(() => {
       state.view.modelCheckMinSeverity = dom.modelCheckMinSeveritySelect.value;
-      renderModelCheckResults(collectModelIssues());
+      inspectors.renderModelCheckResults(collectModelIssues(state));
     }, { recordHistory: false });
   };
   dom.exportBlockCriticalCheck.onchange = () => {
     withPersist(() => {
       state.view.exportBlockCritical = Boolean(dom.exportBlockCriticalCheck.checked);
-      renderView();
+      canvas.renderView();
     }, { recordHistory: false });
   };
   dom.saveBaselineBtn.onclick = saveSchemaBaseline;
   dom.runSchemaDiffBtn.onclick = runSchemaDiff;
   dom.clearBaselineBtn.onclick = () => {
-    localStorage.removeItem(DIFF_BASELINE_KEY);
-    renderSchemaDiffResults([{ severity: 'info', message: 'Baseline cleared.' }]);
+    store.clearBaseline();
+    inspectors.renderSchemaDiffResults([{ severity: 'info', message: 'Baseline cleared.' }]);
   };
-  dom.autoLayoutBtn.onclick = autoLayout;
-  dom.fitViewBtn.onclick = fitView;
-  dom.resetViewBtn.onclick = resetView;
+  dom.autoLayoutBtn.onclick = canvas.autoLayout;
+  dom.fitViewBtn.onclick = canvas.fitView;
+  dom.resetViewBtn.onclick = canvas.resetView;
 
   dom.addFieldBtn.onclick = addFieldToSelectedEntity;
   dom.applyFieldTemplateBtn.onclick = applyFieldTemplateToSelectedEntity;
@@ -3892,6 +2168,7 @@ function wireEvents() {
   dom.exportMdBtn.onclick = exportAsMarkdown;
   dom.exportJsonschemaBtn.onclick = exportAsJsonSchema;
   dom.exportAsyncapiBtn.onclick = exportAsAsyncApi;
+  dom.exportProtoBtn.onclick = exportAsProto;
   dom.exportBoilerplateBundleBtn.onclick = exportBoilerplateBundle;
   dom.exportPackageBtn.onclick = exportAsPackage;
   dom.generateCodePreviewBtn.onclick = generateCodePreview;
@@ -3927,68 +2204,13 @@ function wireEvents() {
   };
 
   dom.clearStorageBtn.onclick = () => {
-    localStorage.removeItem(STORAGE_KEY);
-    window.alert('Saved designer state cleared.');
+    store.clear();
+    showStatus('Saved designer state cleared.', 'info');
   };
 
-  dom.canvas.addEventListener('click', (event) => {
-    if (event.target !== dom.canvas && event.target !== dom.edges && event.target !== dom.canvasInner) return;
-    state.selectedRelationshipId = null;
-    render();
-  });
-
-  dom.canvas.addEventListener('wheel', (event) => {
-    if (!(event.ctrlKey || event.metaKey)) return;
-    event.preventDefault();
-    const direction = event.deltaY > 0 ? -0.1 : 0.1;
-    zoomBy(direction);
-  }, { passive: false });
-
-  dom.canvas.addEventListener('pointerdown', (event) => {
-    if (event.button !== 1 && !interaction.spacePressed) return;
-    interaction.panning = true;
-    interaction.panStartX = event.clientX;
-    interaction.panStartY = event.clientY;
-    interaction.scrollStartLeft = dom.canvas.scrollLeft;
-    interaction.scrollStartTop = dom.canvas.scrollTop;
-    dom.canvas.classList.add('panning');
-    event.preventDefault();
-  });
-
-  dom.canvas.addEventListener('pointermove', (event) => {
-    if (!interaction.panning) return;
-    const dx = event.clientX - interaction.panStartX;
-    const dy = event.clientY - interaction.panStartY;
-    dom.canvas.scrollLeft = interaction.scrollStartLeft - dx;
-    dom.canvas.scrollTop = interaction.scrollStartTop - dy;
-  });
-
-  const stopPan = () => {
-    interaction.panning = false;
-    dom.canvas.classList.remove('panning');
-  };
-  dom.canvas.addEventListener('pointerup', stopPan);
-  dom.canvas.addEventListener('pointercancel', stopPan);
-  dom.canvas.addEventListener('pointerleave', stopPan);
-
-  window.addEventListener('pointermove', (event) => {
-    if (!interaction.relationshipAnchorDragActive) return;
-    const fromPoint = entityAnchorOnCanvas(
-      interaction.relationshipAnchorFromEntityId,
-      interaction.relationshipAnchorFromSide
-    );
-    if (!fromPoint) {
-      stopAnchorDrag();
-      return;
-    }
-    const pointer = pointerToCanvasPoint(event.clientX, event.clientY);
-    renderAnchorPreviewEdge(fromPoint, pointer);
-  });
-
-  window.addEventListener('pointerup', () => {
-    if (!interaction.relationshipAnchorDragActive) return;
-    stopAnchorDrag();
-  });
+  // Canvas-level listeners (background click, wheel zoom, pan, anchor-drag
+  // preview) are wired by the canvas module.
+  canvas.wireCanvasEvents();
 
   window.addEventListener('keydown', (event) => {
     const key = event.key.toLowerCase();
@@ -4003,7 +2225,7 @@ function wireEvents() {
     }
     if (key === 'escape') {
       setRelationshipPickMode(false);
-      stopAnchorDrag();
+      canvas.stopAnchorDrag();
       state.selectedRelationshipId = null;
       render();
       return;
@@ -4020,7 +2242,7 @@ function wireEvents() {
     }
     if (event.altKey && key === 'l') {
       event.preventDefault();
-      autoLayout();
+      canvas.autoLayout();
       return;
     }
     if (event.altKey && key === 'r') {
@@ -4030,7 +2252,7 @@ function wireEvents() {
     }
     if (event.altKey && key === 'v') {
       event.preventDefault();
-      toggleCompactView();
+      canvas.toggleCompactView();
       return;
     }
     if (!editingInput && ['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key) && state.selectedEntityId) {
@@ -4074,10 +2296,25 @@ function wireEvents() {
   });
 }
 
-loadState();
-wireEvents();
-render();
-loadRuntimeEnvironment(state.runtimeEnvironment?.environment || 'dev')
-  .catch(() => {
-    renderRuntimeEnvironment();
-  });
+// Boot is async because the IDesignerStore port is async (Cana crosses a
+// worker boundary); the transitional localStorage adapter resolves
+// immediately, so the load → wire → render order is unchanged.
+async function boot() {
+  await loadState();
+  wireEvents();
+  render();
+  loadRuntimeEnvironment(state.runtimeEnvironment?.environment || 'dev')
+    .catch((error) => {
+      renderRuntimeEnvironment();
+      // Boot-time load failure is not silent (JUM-543): the panel's inline
+      // status line carries the cause the API returned.
+      showRuntimeEnvStatus(error instanceof Error ? error.message : 'Could not load runtime environment.');
+    });
+  // Boot-time PM2 preview load (JUM-480): the runtime profile pane reads the
+  // real ecosystem of the selected preview environment; a failure lands in
+  // the pane and its status line, never silently.
+  loadPm2EcosystemPreview(dom.pm2PreviewEnvironmentSelect?.value || 'dev')
+    .catch((error) => failPm2EcosystemPreview(dom.pm2PreviewEnvironmentSelect?.value || 'dev', error));
+}
+
+boot();

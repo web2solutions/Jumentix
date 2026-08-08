@@ -6,7 +6,8 @@
       "dependsOn": [],
       "sourceGlobs": [
         "packages/*/src/contracts/**",
-        "packages/persistence-contracts/src/**"
+        "packages/persistence-contracts/src/**",
+        "spec/**"
       ],
       "runner": "bun",
       "tier": "gate"
@@ -65,11 +66,48 @@
         "adapters/out+infra"
       ],
       "sourceGlobs": [
-        "apps/backend-template/src/interface/**",
-        "apps/service-management/**"
+        "apps/backend-template/src/interface/**"
       ],
       "runner": "node",
       "tier": "gate"
+    },
+    "service-management/server": {
+      "dependsOn": [
+        "contracts"
+      ],
+      "sourceGlobs": [
+        "apps/service-management/server.js",
+        "apps/service-management/package.json"
+      ],
+      "runner": "bun",
+      "tier": "gate",
+      "kind": "non-hexagonal"
+    },
+    "service-management/designer": {
+      "dependsOn": [
+        "service-management/server"
+      ],
+      "sourceGlobs": [
+        "apps/service-management/script.js",
+        "apps/service-management/src/**",
+        "apps/service-management/index.html",
+        "apps/service-management/styles.css"
+      ],
+      "runner": "bun",
+      "tier": "gate",
+      "kind": "non-hexagonal"
+    },
+    "browser-harness": {
+      "dependsOn": [],
+      "sourceGlobs": [
+        "packages/cana/cypress/**",
+        "packages/cana/src/**",
+        "cypress/**",
+        "cypress.config.js"
+      ],
+      "runner": "bun",
+      "tier": "gate",
+      "kind": "non-hexagonal"
     },
     "tooling": {
       "dependsOn": [],
@@ -643,9 +681,169 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/service-management/pm2EcosystemUi.contract.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/pm2EcosystemUi.contract.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/service-management/designerState.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/designerState.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/service-management/designerAsyncApiExport.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/designerAsyncApiExport.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/service-management/designerNormalizers.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/designerNormalizers.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/service-management/modelValidation.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/modelValidation.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/service-management/mvp.roadmap.features.test.ts",
       "path": "apps/backend-template/test/unit/service-management/mvp.roadmap.features.test.ts",
-      "layer": "tooling",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/service-management/deployTargetValidation.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/deployTargetValidation.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/service-management/runtimeEnvUi.contract.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/runtimeEnvUi.contract.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/service-management/serviceConfigurationValidation.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/serviceConfigurationValidation.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/service-management/designerOasCompliance.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/designerOasCompliance.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/service-management/designerImporters.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/designerImporters.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/service-management/modelQueries.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/modelQueries.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/service-management/designerStore.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/designerStore.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/service-management/rbacContract.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/rbacContract.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/service-management/hexagonalCodegen.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/hexagonalCodegen.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/service-management/designerExporters.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/designerExporters.test.ts",
+      "layer": "service-management/designer",
       "kind": "non-hexagonal",
       "type": "unit",
       "runner": "bun",
@@ -755,6 +953,16 @@
     {
       "id": "apps/backend-template/test/unit/ci-cd/check-canonical-integrations.test.ts",
       "path": "apps/backend-template/test/unit/ci-cd/check-canonical-integrations.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/ci-cd/migrate-agent-registry-to-firestore.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/migrate-agent-registry-to-firestore.test.ts",
       "layer": "tooling",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -1301,10 +1509,88 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/integration/ServiceManagement/pm2Ecosystem.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/pm2Ecosystem.integration.test.ts",
+      "layer": "service-management/server",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
       "id": "apps/backend-template/test/integration/ServiceManagement/domainDesigner.smoke.test.ts",
       "path": "apps/backend-template/test/integration/ServiceManagement/domainDesigner.smoke.test.ts",
-      "layer": "interface/runtime",
-      "kind": "hexagonal",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/ServiceManagement/runtimeEnv.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/runtimeEnv.integration.test.ts",
+      "layer": "service-management/server",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/ServiceManagement/runtimeEnvContract.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/runtimeEnvContract.integration.test.ts",
+      "layer": "service-management/server",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/ServiceManagement/staticServing.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/staticServing.integration.test.ts",
+      "layer": "service-management/server",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/ServiceManagement/spaBoot.browser.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/spaBoot.browser.integration.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/ServiceManagement/staticManifest.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/staticManifest.integration.test.ts",
+      "layer": "service-management/server",
+      "kind": "non-hexagonal",
       "type": "integration",
       "adapter": "service-management",
       "script": "test:integration:service-management",
@@ -2441,6 +2727,26 @@
       "timeoutMs": 60000
     },
     {
+      "id": "packages/agent-registry/test/repair.test.ts",
+      "path": "packages/agent-registry/test/repair.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "packages/agent-registry/test/validation.test.ts",
+      "path": "packages/agent-registry/test/validation.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "packages/cana/test/packaging.test.ts",
       "path": "packages/cana/test/packaging.test.ts",
       "layer": "adapters/out+infra",
@@ -2469,6 +2775,19 @@
       "runner": "bun",
       "tier": "gate",
       "timeoutMs": 60000
+    },
+    {
+      "id": "packages/external-db-repositories/test/integration/repositories.integration.test.ts",
+      "path": "packages/external-db-repositories/test/integration/repositories.integration.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "cassandra+mongo",
+      "script": "test:integration:db-repositories",
+      "runner": "bun",
+      "tier": "nightly",
+      "timeoutMs": 300000,
+      "reason": "Needs Cassandra and Mongo from docker-compose-cassandra.yml and docker-compose-mongodb.yml; skips itself without RUN_DB_REPOSITORIES_INTEGRATION rather than passing. Covers the keyspace auto-create retry and the post-handshake connection assignment, which no substitute can reach (JUM-602)."
     },
     {
       "id": "packages/external-db-repositories/test/repositories.test.ts",
@@ -2637,6 +2956,240 @@
       "timeoutMs": 60000
     },
     {
+      "id": "packages/cana/cypress/adapter.cy.ts",
+      "path": "packages/cana/cypress/adapter.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/client.cy.ts",
+      "path": "packages/cana/cypress/client.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/conformance.cy.ts",
+      "path": "packages/cana/cypress/conformance.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/coverage-gaps.cy.ts",
+      "path": "packages/cana/cypress/coverage-gaps.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/database.cy.ts",
+      "path": "packages/cana/cypress/database.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/differential-dexie.cy.ts",
+      "path": "packages/cana/cypress/differential-dexie.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/durability-policy.cy.ts",
+      "path": "packages/cana/cypress/durability-policy.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/edge-cases.cy.ts",
+      "path": "packages/cana/cypress/edge-cases.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/entry.cy.ts",
+      "path": "packages/cana/cypress/entry.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/failure-paths.cy.ts",
+      "path": "packages/cana/cypress/failure-paths.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/hooks.cy.ts",
+      "path": "packages/cana/cypress/hooks.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/performance.cy.ts",
+      "path": "packages/cana/cypress/performance.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/protocol.cy.ts",
+      "path": "packages/cana/cypress/protocol.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/reconciliation.cy.ts",
+      "path": "packages/cana/cypress/reconciliation.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/regressions.cy.ts",
+      "path": "packages/cana/cypress/regressions.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/storage.cy.ts",
+      "path": "packages/cana/cypress/storage.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/unknown-outcome.cy.ts",
+      "path": "packages/cana/cypress/unknown-outcome.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/worker-host.cy.ts",
+      "path": "packages/cana/cypress/worker-host.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
       "id": "contract:oas-routes",
       "path": "ci-cd/check-oas-route-resolution.js",
       "layer": "contracts",
@@ -2701,9 +3254,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 140,
-    "integration": 82,
+    "unit": 160,
+    "integration": 88,
     "smoke": 2,
-    "suites": 226
+    "suites": 270
   }
 }

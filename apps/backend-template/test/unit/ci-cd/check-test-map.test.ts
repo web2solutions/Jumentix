@@ -11,6 +11,7 @@ import path from 'path';
 const {
   assertAcyclic,
   outwardClosure,
+  readTestMap,
   validateTestMap
 } = require('../../../../../ci-cd/lib/test-map');
 const { createLayerAwarePlan, matchGlob, resolveAlias } = require('../../../../../ci-cd/lib/layer-resolver');
@@ -114,8 +115,6 @@ describe('hexagonal test pyramid libraries', () => {
   it('validates the repository test-map against the real tree', () => {
     expect.hasAssertions();
     const root = path.resolve(__dirname, '../../../../../');
-    // eslint-disable-next-line global-require
-    const { readTestMap } = require('../../../../../ci-cd/lib/test-map');
     const result = validateTestMap(readTestMap(path.join(root, 'test-map.json')), { root });
     expect(result.ok).toBe(true);
   });
@@ -145,6 +144,230 @@ describe('hexagonal test pyramid libraries', () => {
     const result = validateTestMap(bad, { root: path.resolve(__dirname, '../../../../../') });
     expect(result.ok).toBe(false);
     expect(result.errors.some((error: string) => error.includes('ciRunner'))).toBe(true);
+  });
+});
+
+/**
+ * The gate-side half of the JUM-472 registration: what the layer-aware selector
+ * plans for Service Management changes now that the component is its own
+ * non-hexagonal kind.
+ *
+ * Before the split, an SM source change selected `interface/runtime` — every
+ * backend interface suite and no SM unit suite — and an SM unit-suite change
+ * selected `tooling`, running fifty-odd governance suites instead.
+ */
+describe('service-management selection (JUM-472)', () => {
+  const smSuite = (suitePath: string, layer: string, type: string, extra: object = {}) => ({
+    id: suitePath,
+    path: suitePath,
+    layer,
+    kind: 'non-hexagonal',
+    type,
+    runner: 'bun',
+    tier: 'gate',
+    ...extra
+  });
+
+  const smManifest = {
+    schemaVersion: 1,
+    layers: {
+      contracts: { dependsOn: [], sourceGlobs: ['spec/**'] },
+      'service-management/server': {
+        dependsOn: ['contracts'],
+        sourceGlobs: ['apps/service-management/server.js', 'apps/service-management/package.json'],
+        kind: 'non-hexagonal'
+      },
+      'service-management/designer': {
+        dependsOn: ['service-management/server'],
+        sourceGlobs: ['apps/service-management/script.js', 'apps/service-management/src/**'],
+        kind: 'non-hexagonal'
+      },
+      tooling: { dependsOn: [], sourceGlobs: ['ci-cd/**'], kind: 'non-hexagonal' }
+    },
+    suites: [
+      smSuite(
+        'apps/backend-template/test/unit/service-management/designerStore.test.ts',
+        'service-management/designer',
+        'unit'
+      ),
+      smSuite(
+        'apps/backend-template/test/integration/ServiceManagement/runtimeEnv.integration.test.ts',
+        'service-management/server',
+        'integration',
+        { script: 'test:integration:service-management' }
+      ),
+      smSuite(
+        'apps/backend-template/test/integration/ServiceManagement/spaBoot.browser.integration.test.ts',
+        'service-management/designer',
+        'integration',
+        { script: 'test:integration:service-management' }
+      ),
+      smSuite('apps/backend-template/test/unit/ci-cd/check-test-map.test.ts', 'tooling', 'unit')
+    ],
+    quarantine: [],
+    pathAliases: {},
+    sourceRoots: []
+  };
+
+  const planFor = (files: string[]) => createLayerAwarePlan(files, {
+    manifest: smManifest,
+    root: path.resolve(__dirname, '../../../../../'),
+    graph: new Map()
+  });
+
+  it('selects exactly the designer suites for a designer SPA change', () => {
+    expect.hasAssertions();
+
+    const plan = planFor(['apps/service-management/src/store/LocalStorageDesignerStore.js']);
+
+    expect(plan.selectedLayers).toStrictEqual(['service-management/designer']);
+    expect(plan.unitSuites).toStrictEqual([
+      'apps/backend-template/test/unit/service-management/designerStore.test.ts'
+    ]);
+    expect(plan.integrationScripts).toStrictEqual(['test:integration:service-management']);
+  });
+
+  it('runs the whole component — and nothing else — for a server change', () => {
+    expect.hasAssertions();
+
+    // The designer is served by and calls the server, so a server change
+    // propagates outward to the designer suites; the blast radius stops there.
+    const plan = planFor(['apps/service-management/server.js']);
+
+    expect(plan.selectedLayers.sort()).toStrictEqual([
+      'service-management/designer',
+      'service-management/server'
+    ]);
+    expect(plan.unitSuites).toStrictEqual([
+      'apps/backend-template/test/unit/service-management/designerStore.test.ts'
+    ]);
+  });
+
+  it('selects the SM suites for a changed SM suite file, not the tooling layer', () => {
+    expect.hasAssertions();
+
+    const plan = planFor(['apps/backend-template/test/unit/service-management/designerStore.test.ts']);
+
+    expect(plan.selectedLayers).toStrictEqual(['service-management/designer']);
+    expect(plan.unitSuites).not.toContain('apps/backend-template/test/unit/ci-cd/check-test-map.test.ts');
+  });
+
+  it('reaches the SM contract suites from a contract-shape change through reverse dependencies', () => {
+    expect.hasAssertions();
+
+    // No SM file changed and no import edge can exist against a YAML spec — the
+    // selection has to come from the layer graph, or the contract-parity suites
+    // silently stop covering the artifact they assert against.
+    const plan = planFor(['spec/1.0.0.yml']);
+
+    // arrayContaining is the point: a contract-shape change selects the whole
+    // dependent pyramid; the claim here is that the SM layers are inside it.
+    // eslint-disable-next-line jest/prefer-strict-equal -- asymmetric matcher, see above
+    expect(plan.selectedLayers).toEqual(expect.arrayContaining([
+      'contracts',
+      'service-management/server',
+      'service-management/designer'
+    ]));
+    expect(plan.integrationScripts).toContain('test:integration:service-management');
+  });
+});
+
+/**
+ * JUM-622 and JUM-623 — the browser harness is reachable by the selector.
+ *
+ * Asserted against the committed manifest, not a fixture. A fixture would prove
+ * the resolver can select a layer that exists; what failed is that the layer did
+ * not exist, so nothing under the harness matched and the task gate refused the
+ * change set outright. Cana's only real coverage is these eighteen specs.
+ *
+ * JUM-623 then found the layer covered the spec directory and not the support
+ * file and config at the repository root — which every spec loads. The paths
+ * below are checked for existence for that reason: a glob matches a path that
+ * was never there just as happily as one that is.
+ */
+describe('browser-harness selection (JUM-622, JUM-623)', () => {
+  const repoRoot = path.resolve(__dirname, '../../../../..');
+  const realManifest = readTestMap(path.join(repoRoot, 'test-map.json'));
+  const planFor = (files: string[]) => createLayerAwarePlan(files, {
+    manifest: realManifest,
+    root: repoRoot,
+    graph: new Map()
+  });
+
+  it('registers every cypress spec that exists on disk', () => {
+    expect.hasAssertions();
+
+    const registered = realManifest.suites
+      .filter((suite: { layer: string }) => suite.layer === 'browser-harness')
+      .map((suite: { path: string }) => suite.path)
+      .sort();
+    const onDisk = fs.readdirSync(path.join(repoRoot, 'packages/cana/cypress'))
+      .filter((name) => name.endsWith('.cy.ts'))
+      .map((name) => `packages/cana/cypress/${name}`)
+      .sort();
+
+    expect(registered).toStrictEqual(onDisk);
+  });
+
+  // JUM-623. Every path asserted below has to exist, because glob matching does
+  // not care whether it does. The JUM-622 version of the case underneath this
+  // one asserted against `packages/cana/cypress/support/e2e.js` — a path that
+  // has never existed — and passed, while the real support file at
+  // `cypress/support/e2e.js` still mapped to no layer at all.
+  const harnessFile = (relativePath: string) => {
+    expect(fs.existsSync(path.join(repoRoot, relativePath))).toBe(true);
+    return relativePath;
+  };
+
+  it('plans the browser suite for a change confined to the harness', () => {
+    expect.hasAssertions();
+
+    // The exact change set the gate rejected as `unsupported-change-set`.
+    const plan = planFor(['CHANGELOG.md', harnessFile('cypress/support/e2e.js')]);
+
+    expect(plan.type).toBe('layer-aware');
+    expect(plan.selectedLayers).toStrictEqual(['browser-harness']);
+    expect(plan.integrationScripts).toStrictEqual(['test:browser']);
+  });
+
+  it('plans the browser suite for a change to the cypress config', () => {
+    expect.hasAssertions();
+
+    // `cypress.config.js` carries specPattern, supportFile and the timeouts —
+    // a change here can break every spec at once.
+    const plan = planFor([harnessFile('cypress.config.js')]);
+
+    expect(plan.selectedLayers).toStrictEqual(['browser-harness']);
+    expect(plan.integrationScripts).toStrictEqual(['test:browser']);
+  });
+
+  it('plans the browser suite for a change to the shared spec helpers', () => {
+    expect.hasAssertions();
+
+    const plan = planFor([harnessFile('packages/cana/cypress/harness.ts')]);
+
+    expect(plan.selectedLayers).toStrictEqual(['browser-harness']);
+  });
+
+  it('plans the browser suite for a change to cana source', () => {
+    expect.hasAssertions();
+
+    const plan = planFor(['packages/cana/src/CanaDatabase.ts']);
+
+    expect(plan.selectedLayers).toContain('browser-harness');
+    expect(plan.integrationScripts).toContain('test:browser');
+  });
+
+  it('keeps the browser run out of unrelated backend changes', () => {
+    expect.hasAssertions();
+
+    // `dependsOn: []` is the whole claim. Blast radius is outward, so listing
+    // any backend layer as a dependency would drag a 294-test browser run into
+    // every infra change; these specs cannot be affected by one.
+    const plan = planFor(['apps/backend-template/src/infra/exceptions/index.ts']);
+
+    expect(plan.selectedLayers).not.toContain('browser-harness');
+    expect(plan.integrationScripts).not.toContain('test:browser');
   });
 });
 

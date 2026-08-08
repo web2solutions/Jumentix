@@ -11,7 +11,22 @@ import type {
   HeartbeatInput,
   RegisterAgentInput
 } from './types';
-import { getAgent, upsertAgent, generateSnapshot } from './firestore-client';
+import {
+  getAgent,
+  upsertAgent,
+  deleteAgent,
+  generateSnapshot,
+  getStoredAgents
+} from './firestore-client';
+import {
+  AGENTS_WITHOUT_DECLARED_WORKSPACE,
+  canonicalAgentId,
+  describeProblems,
+  duplicateCanonicalIds,
+  findIntegrityProblems,
+  isAgentStatus,
+  workspacePathProblem
+} from './validation';
 
 function snapshotPath(): string {
   return process.env.JUMENTIX_AGENT_REGISTRY_SNAPSHOT_PATH
@@ -28,6 +43,23 @@ function requireNonEmpty(value: string | undefined, field: string): string {
     throw new Error(`Field "${field}" is required and cannot be empty.`);
   }
   return value.trim();
+}
+
+/**
+ * The front door for "declare where you work" (JUM-614).
+ *
+ * No exemption applies here. The seven exempt records exist because a migration
+ * invented `unknown` for them; an agent choosing to register is making a fresh
+ * declaration, and a fresh declaration that says nothing is the thing this
+ * requirement exists to stop.
+ */
+function requireDeclaredWorkspace(value: string | undefined): string {
+  const workspacePath = requireNonEmpty(value, 'workspace_path');
+  const problem = workspacePathProblem(workspacePath);
+  if (problem) {
+    throw new Error(`Field "workspace_path" ${problem}.`);
+  }
+  return workspacePath;
 }
 
 function buildDefaultCapabilities(): string[] {
@@ -53,7 +85,7 @@ export async function registerAgent(
     machine_id: requireNonEmpty(input.machine_id, 'machine_id'),
     machine_name: requireNonEmpty(input.machine_name, 'machine_name'),
     machine_os: requireNonEmpty(input.machine_os, 'machine_os'),
-    workspace_path: requireNonEmpty(input.workspace_path, 'workspace_path'),
+    workspace_path: requireDeclaredWorkspace(input.workspace_path),
     agent_runtime: requireNonEmpty(input.agent_runtime, 'agent_runtime'),
     agent_version: requireNonEmpty(input.agent_version, 'agent_version'),
     status: existing?.status || 'available',
@@ -144,6 +176,161 @@ export async function completeTask(
   return agent;
 }
 
+/**
+ * Strips markdown formatting from a stored value without changing its meaning.
+ *
+ * Every backtick, not only the wrapping pair. Some records carry a whole
+ * sentence with inline code spans in the middle — one live `active_epic` read
+ * "none (Cana epic closed: ... cf6098b)" with each of those three fragments
+ * individually wrapped — and removing only the outer pair leaves formatting
+ * behind. Taking them all out drops no words.
+ *
+ * Ids are deliberately not cleaned this way. `canonicalAgentId` removes only
+ * the wrapping pair, because an id with a backtick in the middle is an identity
+ * nobody can vouch for, and quietly renaming it would invent an agent.
+ */
+function cleanValue(value: unknown): string {
+  return typeof value === 'string' ? value.replace(/`/g, '').trim() : '';
+}
+
+export interface RepairAction {
+  documentId: string;
+  canonicalId: string;
+  /** `rewrite` when the id was already right, `merge` when a document moves. */
+  kind: 'rewrite' | 'merge';
+  /** Set when repairing this document also removes the one it came from. */
+  deletes?: string;
+  fieldsCleaned: string[];
+}
+
+export interface RepairResult {
+  actions: RepairAction[];
+  applied: boolean;
+}
+
+/**
+ * Repairs the records the JUM-611 migration corrupted (JUM-613).
+ *
+ * Formatting is removed and the document is refiled under its canonical id.
+ * Where a corrupt document and a clean one describe the same agent, the clean
+ * one wins on every field it holds: it was written later, by the CLI, from a
+ * live agent, whereas the corrupt one is a snapshot of a markdown file from
+ * July. The corrupt document is then deleted.
+ *
+ * Values are cleaned, never invented. `workspace_path: "unknown"` stays
+ * `unknown` — that is a Requirement 114 gap belonging to the agent that owns
+ * the record, and quietly filling it in would hide the gap rather than close
+ * it.
+ *
+ * Dry run by default. `apply` is the caller's explicit decision, because the
+ * repair deletes documents that belong to other agents.
+ */
+export async function repairRegistry(
+  firestore: FirestoreLike,
+  options: { apply?: boolean } = {}
+): Promise<RepairResult> {
+  const apply = options.apply === true;
+  const stored = await getStoredAgents(firestore);
+
+  const healthyByCanonical = new Map<string, AgentRecord>();
+  for (const entry of stored) {
+    if (entry.problems.length === 0) {
+      healthyByCanonical.set(canonicalAgentId(entry.record.agent_id), entry.record);
+    }
+  }
+
+  const actions: RepairAction[] = [];
+
+  for (const entry of stored.filter((candidate) => candidate.problems.length > 0)) {
+    const canonicalId = canonicalAgentId(entry.record.agent_id)
+      || canonicalAgentId(entry.documentId);
+    if (!canonicalId) {
+      throw new Error(
+        `Document "${entry.documentId}" has no recoverable agent id. `
+        + 'Repair it by hand rather than guessing at an identity.'
+      );
+    }
+
+    const cleaned: Record<string, unknown> = {};
+    const fieldsCleaned: string[] = [];
+    const scalarFields = Object.entries(entry.record).filter(([key]) => key !== 'capabilities');
+    for (const [key, value] of scalarFields) {
+      const clean = cleanValue(value);
+      cleaned[key] = clean;
+      if (clean !== value) fieldsCleaned.push(key);
+    }
+    cleaned.agent_id = canonicalId;
+    cleaned.capabilities = Array.isArray(entry.record.capabilities)
+      ? entry.record.capabilities.map((capability) => cleanValue(capability)).filter(Boolean)
+      : [];
+
+    // A status that survives cleaning but is still not a member of the union
+    // is not something to guess at.
+    if (!isAgentStatus(cleaned.status)) {
+      throw new Error(
+        `Document "${entry.documentId}" holds an unrecognised status "${String(cleaned.status)}". `
+        + 'Set it by hand rather than guessing at it.'
+      );
+    }
+
+    // The clean twin wins where one exists: it is the newer, live record.
+    const healthy = healthyByCanonical.get(canonicalId);
+    const candidate: Record<string, unknown> = healthy ? { ...cleaned, ...healthy } : cleaned;
+
+    // Cast through `unknown` because `candidate` is assembled field by field
+    // from a document that failed the rules. The validation below is what makes
+    // it an AgentRecord; the cast only tells the compiler so.
+    const record = candidate as unknown as AgentRecord;
+
+    // Exemptions honoured: the repair cleans formatting and must not be blocked
+    // by a placeholder workspace it is forbidden from inventing (JUM-614).
+    const problems = findIntegrityProblems(record, { honourExemptions: true });
+    if (problems.length > 0) {
+      throw new Error(
+        `Repairing "${entry.documentId}" does not produce a valid record:\n`
+        + `${describeProblems(problems)}\n`
+        + 'Fix it by hand rather than writing it back broken.'
+      );
+    }
+
+    const moves = entry.documentId !== canonicalId;
+    actions.push({
+      documentId: entry.documentId,
+      canonicalId,
+      kind: moves ? 'merge' : 'rewrite',
+      deletes: moves ? entry.documentId : undefined,
+      fieldsCleaned
+    });
+
+    if (apply) {
+      // Sequential on purpose. Each document is written and only then is its
+      // corrupt twin removed; running the collection in parallel would let a
+      // failure land after some deletes had already happened, and the point of
+      // a repair is that it stops at the first thing it does not understand.
+      /* eslint-disable no-await-in-loop */
+      await upsertAgent(firestore, record);
+      if (moves) await deleteAgent(firestore, entry.documentId);
+      /* eslint-enable no-await-in-loop */
+    }
+  }
+
+  const verb = apply ? 'repaired' : 'would repair';
+  console.log(`[agent-registry] ${verb} ${actions.length} document(s)`);
+  for (const action of actions) {
+    const suffix = action.deletes
+      ? ` (merged into "${action.canonicalId}", removing the old id)`
+      : '';
+    const cleaned = action.fieldsCleaned.join(', ') || '(no string fields changed)';
+    console.log(`  ${action.documentId} -> ${action.canonicalId}${suffix}`);
+    console.log(`    cleaned: ${cleaned}`);
+  }
+  if (!apply && actions.length > 0) {
+    console.log('\nThis was a dry run. Re-run with --apply to write the changes.');
+  }
+
+  return { actions, applied: apply };
+}
+
 export async function syncSnapshot(firestore: FirestoreLike): Promise<AgentRegistrySnapshot> {
   const snapshot = await generateSnapshot(firestore);
   const dir = path.dirname(snapshotPath());
@@ -165,6 +352,53 @@ export async function checkSnapshot(firestore: FirestoreLike): Promise<void> {
 
   const local = JSON.parse(fs.readFileSync(snapshotPath(), 'utf8')) as AgentRegistrySnapshot;
   const remote = await generateSnapshot(firestore);
+
+  // Integrity first (JUM-613). This check used to key both sides by
+  // `agent_id`, so a corrupt document and its clean twin were two unrelated
+  // keys that both matched — the gate reported success over ten broken
+  // records. Comparing sides is only meaningful once each side is sound.
+  const corrupt = remote.agents.flatMap(
+    (agent) => findIntegrityProblems(agent, { honourExemptions: true })
+  );
+  if (corrupt.length > 0) {
+    throw new Error(
+      `Firestore holds ${corrupt.length} integrity problem(s):\n${describeProblems(corrupt)}\n`
+      + 'Run: bun run agent-registry:repair'
+    );
+  }
+
+  const duplicates = duplicateCanonicalIds(remote.agents.map((agent) => agent.agent_id));
+  if (duplicates.length > 0) {
+    throw new Error(
+      `Firestore holds more than one document per agent: ${duplicates.join(', ')}\n`
+      + 'Run: bun run agent-registry:repair'
+    );
+  }
+
+  // The workspace exemptions, in the direction that makes them a ratchet rather
+  // than a waiver (JUM-614). An agent that has since declared a real path must
+  // be struck from the list; leaving it there lets a dated concession quietly
+  // become permanent, which is what the coverage register learned the hard way.
+  //
+  // Fleet-level, not per-record: whether the register is stale is a fact about
+  // the register, and checking it inside `findIntegrityProblems` made the
+  // repair refuse to write records that were perfectly valid.
+  const spent = remote.agents
+    .filter((agent) => {
+      const exemption = AGENTS_WITHOUT_DECLARED_WORKSPACE[canonicalAgentId(agent.agent_id)];
+      return Boolean(exemption) && workspacePathProblem(agent.workspace_path) === undefined;
+    })
+    .map((agent) => canonicalAgentId(agent.agent_id));
+
+  if (spent.length > 0) {
+    throw new Error(
+      `${spent.length} agent(s) have declared a workspace but are still exempt: `
+      + `${spent.join(', ')}\n`
+      + 'Remove them from AGENTS_WITHOUT_DECLARED_WORKSPACE in '
+      + 'packages/agent-registry/src/validation.ts — an exemption that outlives '
+      + 'its reason is a permanently lowered bar.'
+    );
+  }
 
   const localMap = new Map(local.agents.map((a) => [a.agent_id, a]));
   const remoteMap = new Map(remote.agents.map((a) => [a.agent_id, a]));

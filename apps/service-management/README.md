@@ -6,7 +6,7 @@
 [![Node](https://img.shields.io/badge/node-22.x-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-6BA539?logo=openapiinitiative&logoColor=white)](../../spec/1.0.0.yml)
 [![AsyncAPI](https://img.shields.io/badge/AsyncAPI-3.0-9146FF)](../../spec)
-[![License](https://img.shields.io/github/license/XpertMinds/Jumentix)](../../LICENSE)
+[![License](https://img.shields.io/github/license/XpertMinds/Jumentix)](../../LICENSE.md)
 [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=Jumentix)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=bugs)](https://sonarcloud.io/summary/new_code?id=Jumentix)
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=Jumentix)
@@ -20,6 +20,8 @@
 Detailed feature usage:
 
 - [Domain Designer Features and Usage](../../documentation/md/DOMAIN-DESIGNER-FEATURES-AND-USAGE.md)
+- [Module Architecture and IDesignerStore Port Contract](../../documentation/md/SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.md)
+- [Contract Parity Guarantees](../../documentation/md/SERVICE-MANAGEMENT-CONTRACT-PARITY.md)
 - [Service Management Technical Documentation](./documentation/README.md)
 
 ## Tabs
@@ -33,12 +35,14 @@ Detailed feature usage:
    - Aggregate root + invariants editor with visual AR marker on entity cards.
    - Schema diff/migration preview with baseline snapshot support.
    - Validation severity filter and export quality gate (block on critical issues).
-   - RBAC mapping editor by entity/action with tenant-scope flags.
+   - RBAC mapping editor by entity/action, aligned to the tenant RBAC authorization contract (normalized roles; tenant scope derived from roles).
    - Event/message contract designer (`event`, `command`, `request`, `response`) with payload schema metadata.
    - Entity templates: `crudAggregate`, `eventSourced`, `referenceData`, `tenantOwned`.
    - Code generation preview for domain model/repository/use-case/controller/handler skeletons.
    - Request/response example generator from entity schema.
-   - Exporters: JSON, OpenAPI 3.1, Markdown, JSON Schema, AsyncAPI and boilerplate bundle.
+   - Exporters: JSON, OpenAPI 3.1, Markdown, JSON Schema, AsyncAPI 3.0 per transport
+     (`<version>.websocket.yml` / `<version>.grpc.yml`, canonical `spec/asyncapi/`
+     conventions), gRPC proto (`async-api.proto`) and boilerplate bundle.
    - OpenAPI composition controls (`oneOf`, `allOf`, `anyOf`, external `$ref`, discriminator) per entity.
    - Domain package export/import for reusable model sharing.
    - Mini-map navigation and large-canvas performance mode.
@@ -48,7 +52,22 @@ Detailed feature usage:
 3. **Service Configuration**
    - Configure service kind (`REST API`, `WebSocket API + REST API`, `gRPC API + REST API`),
    execution model, cloud provider, static assets profile, and runtime ports.
-   - Includes PM2 runtime profile preview for VM deployments.
+   - Saves are validated (JUM-544): ports must be integers in 1–65535 and unique across the
+   protocols the selected service kind actually binds, and the run-mode × cloud-provider
+   combination must exist in the Requirement 059 deploy matrix (read from the shared
+   machine-readable source `src/model/deployCapabilityMatrix.js`). Invalid profiles are
+   reported on the tab's status surface and are not saved.
+   - PM2 runtime profile preview for VM deployments reads the real
+     `pm2/ecosystem.*.cjs` files through `GET /api/runtime/pm2-ecosystem`
+     (JUM-480): the process list and the suggested `pm2 start` command derive
+     from the selected preview environment's ecosystem file — no process list
+     or package-manager invocation is hardcoded, so an ecosystem edit (or the
+     Bun cutover's invocation-format change) is reflected without a designer
+     change. Environments without an ecosystem file render an explicit empty
+     state, never a silently blank preview.
+   - Multi-environment runtime env editor (JUM-480): the Environment selector
+     loads the chosen environment's values, the panel names the exact env file
+     the next save writes, and the save response confirms the file written.
    - Includes runtime env editor for:
      - `JUMENTIX_HTTP_FRAMEWORK`
      - `JUMENTIX_REALTIME_API`
@@ -56,6 +75,15 @@ Detailed feature usage:
      - `JUMENTIX_REALTIME_API_DATABASE_DRIVER`
 4. **Deploy Management**
    - Register deployment targets for VMs, dedicated servers, EC2, and function providers.
+   - Each target carries the Requirement 059 per-service metadata (JUM-481):
+     `serviceType`, `deployTarget`, `runtimeProtocol`, `databaseDriver`,
+     `keyValueDriver` and `pm2Profile`. Additions are validated against the
+     deploy matrix read from the shared machine-readable source
+     `src/model/deployCapabilityMatrix.js` — combinations with no matrix row,
+     protocols the service type does not expose, and PM2 profiles on
+     serverless targets are rejected on the status surface with the
+     constraint named. Targets persisted before this alignment migrate
+     forward on load.
 
 ## Run
 
@@ -68,10 +96,44 @@ Commands:
 - `pnpm run dev:service-management`
 - `pnpm run dev` (auto-starts service management + REST profile)
 
+## Static Serving
+
+`server.js` serves this zero-build vanilla SPA from a boot-time manifest: an
+allowlist of the files that existed when the process started. The manifest is a
+traversal-safety mechanism — it bounds the servable surface even if path
+normalisation has a flaw — so **production serves only the boot manifest** and
+files added later require a restart.
+
+In development this would be a defect (a hand-edited file added after boot
+would 404 until restart), so dev mode re-scans the manifest **on miss only** —
+never per request, which would turn every 404 into a directory walk — and the
+retry passes the same normalisation and containment validation as a boot-time
+hit.
+
+Mode selection is explicit configuration, not inferred from `NODE_ENV` alone:
+
+- `JUMENTIX_SERVICE_MANAGEMENT_STATIC_MANIFEST_REFRESH=on-miss` — re-scan on
+  miss (dev behaviour), regardless of `NODE_ENV`.
+- `JUMENTIX_SERVICE_MANAGEMENT_STATIC_MANIFEST_REFRESH=boot-only` — frozen boot
+  manifest (production behaviour), regardless of `NODE_ENV`.
+- Unset — default derives from `NODE_ENV`: `dev`/`development` => `on-miss`,
+  anything else => `boot-only`.
+
 ## Runtime Env API
 
-- `GET /api/runtime/env?environment=dev|staging|ci`
+Built into `apps/service-management/server.js`:
+
+- `GET /api/runtime/env?environment=dev|development|staging|ci|test`
 - `POST /api/runtime/env`
+- `GET /api/runtime/pm2-ecosystem?environment=dev|development|staging|production|prod|ci|test`
+  (read-only; the PM2 preview's source — reports the apps of the selected
+  environment's real `pm2/ecosystem.*.cjs` file with per-app `pm2 start`
+  commands derived from the ecosystem definition, an explicit
+  `exists: false` state when the file is absent, and the honest 500 envelope
+  when the file is unreadable or broken)
+
+The full contract (enum sets, write semantics, response hygiene) lives in
+[Runtime Environment Contracts](../../documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md).
 
 ### Editable Keys
 
@@ -80,8 +142,44 @@ Commands:
 - `JUMENTIX_REALTIME_API_PROTOCOL`
 - `JUMENTIX_REALTIME_API_DATABASE_DRIVER`
 
+Every env key belongs to exactly one of three tiers: *editable* (readable and
+writable), *read-only* (visible in GET, never writable), and *never exposed*
+(secrets — absent from GET and not writable). The authoritative per-key
+classification is maintained in
+[Requirement 126](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md).
+
 ### Environment Mapping
 
-- `dev` -> `src/config/.env.dev`
-- `staging` -> `src/config/.env.staging`
-- `ci` -> `src/config/.env.ci`
+Env files live in `apps/backend-template/src/config/`:
+
+- `dev` -> `apps/backend-template/src/config/.env.dev`
+- `development` -> `apps/backend-template/src/config/.env.dev` (alias)
+- `staging` -> `apps/backend-template/src/config/.env.staging`
+- `ci` -> `apps/backend-template/src/config/.env.ci`
+- `test` -> `apps/backend-template/src/config/.env.ci` (alias)
+
+`environment` is a real parameter: comparison is case-insensitive after
+trimming, unknown values are rejected with `400` and the accepted list (never
+silently coerced to `dev`), and when omitted it defaults to `NODE_ENV` or
+`dev`. The config directory can be overridden with
+`JUMENTIX_SERVICE_MANAGEMENT_CONFIG_DIR`; the server exits at boot with an
+error if the directory does not exist.
+
+### Security Posture
+
+- Default bind is `127.0.0.1` (loopback only); override with
+  `JUMENTIX_SERVICE_MANAGEMENT_HOST`, port with
+  `JUMENTIX_SERVICE_MANAGEMENT_PORT` (default `3200`).
+- When `JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN` is set, `POST
+  /api/runtime/env` requires `Authorization: Bearer <token>` and returns `401`
+  otherwise; when unset, loopback-only operation is allowed without a token.
+- Every mutation is logged with timestamp, environment, and changed keys (not
+  values).
+
+### Error Contract
+
+- Unknown environment: `400` naming the value and the accepted list; no file
+  written.
+- Malformed JSON body: `400` with the parse failure in `details`.
+- Missing env file: `400` with the resolved path in `details`.
+- Missing/wrong bearer token: `401` (`{ "error": "Unauthorized." }`).

@@ -93,24 +93,89 @@ after(() => {
   });
 });
 
-afterEach(() => cy.window({ log: false }).then((browserWindow) => {
-  const factory = browserWindow.indexedDB;
+/**
+ * How long the teardown is given, and why it is not the command default
+ * (JUM-618).
+ *
+ * Cypress's `defaultCommandTimeout` is 4000ms, and it applied here because this
+ * hook is a `cy.*` command like any other. That is the wrong budget for it. The
+ * default exists so an *assertion* about the application fails fast rather than
+ * hanging a run — but this hook asserts nothing about Cana. It deletes
+ * databases so the next spec starts clean, and how long that takes is a fact
+ * about the browser and the machine, not a signal about the code.
+ *
+ * On CI the `workspace-tests` job reported `cy.then() timed out after waiting
+ * 4000ms`, 2 of 18 specs, on a run that passed unchanged when re-run. Five
+ * consecutive local runs of the same commit passed in 24-27s with every spec
+ * under a second, so the trigger is load on the CI box rather than anything in
+ * the suite — and a teardown that is merely slow should not be reported as a
+ * failing test.
+ *
+ * This is not the timeout increase the issue warned against. That warning was
+ * about raising a budget to hide a race in the thing under test. Nothing under
+ * test is involved here.
+ */
+const TEARDOWN_TIMEOUT_MS = 30000;
 
-  // `databases()` is how a spec's leftovers are found without the suite having
-  // to remember its own names. Where a browser lacks it, the suite is
-  // responsible for its own cleanup and says so.
-  if (typeof factory.databases !== 'function') return undefined;
+/** How long one `deleteDatabase` is given before the suite says so out loud. */
+const DELETE_TIMEOUT_MS = 5000;
 
-  return factory.databases().then((open) => Promise.all(open.map((entry) => (
-    new Promise((resolve) => {
-      if (!entry.name) {
-        resolve();
-        return;
-      }
-      const request = factory.deleteDatabase(entry.name);
-      request.onsuccess = () => resolve();
-      request.onerror = () => resolve();
-      request.onblocked = () => resolve();
-    })
-  ))));
-}));
+/**
+ * Deletes one database, and reports what actually happened.
+ *
+ * `onblocked` used to resolve exactly like `onsuccess`. Blocked means another
+ * connection still holds the database and **the delete has not happened** —
+ * resolving as though it had left the database in place for the next spec while
+ * reporting a clean teardown. Nothing failed, so nothing was ever looked at.
+ *
+ * It still does not fail the run: a leftover database is a suite problem, and
+ * turning it into a red build punishes the next person rather than the cause.
+ * What changed is that it is no longer silent, and the outcome is returned so
+ * the caller can say how many survived.
+ */
+function deleteDatabase(factory, name) {
+  return new Promise((resolve) => {
+    const request = factory.deleteDatabase(name);
+    const settle = (outcome) => {
+      window.clearTimeout(giveUp);
+      resolve(outcome);
+    };
+    const giveUp = window.setTimeout(() => resolve('timed-out'), DELETE_TIMEOUT_MS);
+
+    request.onsuccess = () => settle('deleted');
+    request.onerror = () => settle('errored');
+    // Deliberately distinct from success: see above.
+    request.onblocked = () => settle('blocked');
+  });
+}
+
+afterEach(() => cy.window({ log: false, timeout: TEARDOWN_TIMEOUT_MS }).then(
+  { timeout: TEARDOWN_TIMEOUT_MS },
+  (browserWindow) => {
+    const factory = browserWindow.indexedDB;
+
+    // `databases()` is how a spec's leftovers are found without the suite
+    // having to remember its own names. Where a browser lacks it, the suite is
+    // responsible for its own cleanup and says so.
+    if (typeof factory.databases !== 'function') return undefined;
+
+    return factory.databases()
+      .then((open) => Promise.all(
+        open.filter((entry) => entry.name).map((entry) => deleteDatabase(factory, entry.name))
+      ))
+      .then((outcomes) => {
+        const survived = outcomes.filter((outcome) => outcome !== 'deleted');
+        if (survived.length > 0) {
+          // Visible, and not a failure. A database that outlives its spec makes
+          // the next one start dirty, which is the failure mode this hook
+          // exists to prevent — so it has to be sayable rather than swallowed.
+          // eslint-disable-next-line no-console
+          console.warn(
+            `[cana] ${survived.length} database(s) survived teardown `
+            + `(${survived.join(', ')}). The next spec starts with them present.`
+          );
+        }
+        return undefined;
+      });
+  }
+));

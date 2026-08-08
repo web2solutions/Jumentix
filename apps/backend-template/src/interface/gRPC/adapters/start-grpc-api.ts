@@ -7,7 +7,6 @@ export async function startGrpcApiAdapter(env: NodeJS.ProcessEnv = process.env):
   return true;
 }
 
-// eslint-disable-next-line jest/require-hook
 /* istanbul ignore if */
 if (require.main === module) {
   startGrpcApiAdapter();

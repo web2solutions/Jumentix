@@ -226,9 +226,11 @@ function executeLayerAwarePlan(plan, options = {}) {
     //
     // It stayed hidden while no change selected an integration layer. The
     // Express 5 upgrade selected them, and forty-odd suites were reported unrun
-    // immediately after passing.
+    // immediately after passing. Contract suites (JUM-440) share the mechanics:
+    // they run through `oas:check-routes` / `serverless:check-handlers`, so they
+    // are recorded here too (JUM-474).
     const covered = (plan.suites || [])
-      .filter((suite) => suite.type === 'integration' && suite.script === script)
+      .filter((suite) => (suite.type === 'integration' || suite.type === 'contract') && suite.script === script)
       .map((suite) => suite.path);
 
     for (const suite of covered) {

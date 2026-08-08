@@ -99,7 +99,8 @@ How to use:
 
 ## 5) RBAC Policy Mapping
 
-Per-entity action policy:
+Per-entity action policy, aligned with the tenant RBAC authorization contract
+(`TENANT-RBAC-AUTHORIZATION-CONTRACT.md`, JUM-477):
 
 - Actions:
   - `list`
@@ -107,16 +108,27 @@ Per-entity action policy:
   - `create`
   - `update`
   - `delete`
-- Role toggles:
+- Role toggles (the contract's normalized roles):
   - `superadmin`
   - `admin`
   - `user`
-- Tenant scope flag
+- Tenant scope: **derived from the selected roles**, not a free flag. The
+  runtime (`Rbac.ts` / `TenantAuthorizationPolicy.ts`) constrains `admin` and
+  `user` principals to their own organization and gives `superadmin` a global
+  boundary — there is no independent tenant-scope knob to honour, so the
+  editor displays the derived value as a read-only checkbox. Stored policies
+  are repaired to the derived value on load.
+- Legacy direct scopes (`read_user`, `create_organization`, ...) remain
+  runtime-supported and survive import/export, but are not editable in the
+  inspector; validation accepts them as contract-expressible.
+- A role outside the contract vocabulary is rejected at save time with an
+  actionable message, and model validation reports any such stored role as an
+  `error` so the export quality gate blocks it instead of dropping it.
 
 How to use:
 
 1. Select entity and action.
-2. Mark allowed roles and tenant scope.
+2. Mark allowed roles; the tenant-scope indicator follows the roles.
 3. Click `Save RBAC Rule`.
 4. Review generated matrix in the RBAC list.
 
@@ -228,6 +240,59 @@ How to use:
 1. Use export buttons in `Export` panel.
 2. Use import buttons for JSON/OAS/package.
 3. For package export, selected domain is used as source package.
+
+### 10.1) OAS 3.1 export contract (Requirement 036, JUM-474)
+
+The OpenAPI 3.1 export produces a document compliant with Requirement 036 and
+the route-resolution check (`ci-cd/check-oas-route-resolution.js`):
+
+- Every operation carries a unique `operationId` on the canonical
+  `spec/1.0.0.yml` verb scheme (`getAll*`, `create*`, `get*ById`, `update*`,
+  `delete*`), qualified by the schema name (`getAllBilling_Invoice`).
+- Request bodies reference `RequestCreate<Schema>` / `RequestUpdate<Schema>`
+  port input objects via `$ref`; 2xx responses reference the entity schema,
+  its `<Schema>ArrayOf` wrapper or `ResourceDeleteResponse`. No inline
+  request/response schemas, and every referenced schema has a description.
+- Port input/output wrappers are marked `'x-port-object': true` and skipped
+  on OAS import, so a round-trip creates no phantom entities.
+- Error responses use the canonical `ERROR-CONTRACTS-AND-RESPONSES` codes
+  (400/401/403/404/409).
+- Entities whose names collapse to the same OAS schema name or route path
+  (for example `Foo Bar` vs `Foo-Bar`) fail the export quality gate instead
+  of silently overwriting each other in the document.
+
+### 10.2) Lossless OAS round-trip (JUM-478)
+
+The OAS crossing is a contract between the exporter and the importer: what
+OAS cannot express natively crosses as agreed `x-` extensions and is
+normalized back into `entity.meta` on import, so export → import → export
+reaches a fixed point with an empty model-level loss list (asserted by
+`designerRoundTrip.test.ts`).
+
+- `x-aggregate-root` and `x-invariants` carry the aggregate declaration and
+  invariants when set.
+- `x-rbac` carries the entity's normalized RBAC policy, emitted only when it
+  diverges from the designer default (an absent `x-rbac` normalizes back to
+  the default policy, with `tenantScoped` derived from the roles per the
+  tenant RBAC contract).
+- `x-fieldless: true` keeps an entity's empty field set across the crossing
+  (an unmarked schema without properties still gets the importer's default
+  `id`/`createdAt`/`updatedAt` fields).
+- `x-field-flags: { pk, fk, unique }` carries a field's flags only when they
+  diverge from the importer's name heuristic (`id` → PK/unique, `*Id` → FK).
+- `x-relations` rows carry `{ name, fromSchema, toSchema, fromCardinality,
+  toCardinality }` — schema names, not model ids — and the importer restores
+  relationships re-keyed to the recomputed entity ids, dropping rows whose
+  endpoints did not import.
+- Foreign documents without designer markers (the canonical
+  `spec/1.0.0.yml`) are recognized by the same port-object conventions:
+  `Request<Action>*` and `*ArrayOf` names, `ResourceDeleteResponse`, "Port
+  input/output object" descriptions that are not `<Name> resource` entity
+  contracts, and non-object schemas never become entities.
+- Named remaining losses for foreign documents: `example`/`default`/
+  `minItems`/`maxItems` facets and array item `$ref` linkages (value-object
+  references flatten to the `itemsType` vocabulary), domain bounded-context
+  blocks, canvas positions, and legacy (non-canonical) operationIds.
 
 ## 11) Smoke Coverage
 

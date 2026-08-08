@@ -3,6 +3,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 
+// Through the package entry point rather than the modules: that is the surface
+// consumers get, and a barrel that dropped a re-export would otherwise pass
+// every test in this file.
 import {
   registerAgent,
   heartbeat,
@@ -10,9 +13,15 @@ import {
   completeTask,
   syncSnapshot,
   checkSnapshot
-} from '../src/commands';
-import type { AgentRecord } from '../src/types';
+} from '../src';
+import type { AgentRecord } from '../src';
 
+/**
+ * The double keys documents the way Firestore does: by document id, which is
+ * not necessarily `data().agent_id`. Those two disagreed for every record the
+ * JUM-611 migration wrote, and a double that conflates them cannot reproduce
+ * the bug (JUM-613).
+ */
 const mockFirestore = {
   agents: new Map<string, AgentRecord>(),
   collection: () => ({
@@ -23,12 +32,15 @@ const mockFirestore = {
       }),
       set: async (data: AgentRecord) => {
         mockFirestore.agents.set(id, data);
+      },
+      delete: async () => {
+        mockFirestore.agents.delete(id);
       }
     }),
     get: async () => ({
-      docs: Array.from(mockFirestore.agents.values()).map((agent) => ({
-        data: () => agent
-      }))
+      docs: Array.from(
+        mockFirestore.agents.entries() as Iterable<[string, AgentRecord]>
+      ).map(([id, agent]) => ({ id, data: () => agent }))
     })
   })
 } as any;

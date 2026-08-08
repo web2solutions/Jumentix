@@ -43,12 +43,18 @@ function classifyUnit(file) {
   if (rel.startsWith('infra/') || rel.startsWith('modules/Users/adapters/out/')) {
     return { layer: 'adapters/out+infra', kind: 'hexagonal' };
   }
+  // Service Management is a declared non-hexagonal kind (JUM-552), not tooling:
+  // lumping it into `tooling` meant a ci-cd change ran the SM designer suites and
+  // an SM change did not. Its unit suites cover the designer SPA (state, store,
+  // validation, exporters), so they belong to the designer sub-layer (JUM-472).
+  if (rel.startsWith('service-management/')) {
+    return { layer: 'service-management/designer', kind: 'non-hexagonal' };
+  }
   if (
     rel.startsWith('ci-cd/')
     || rel.startsWith('config/')
     || rel.startsWith('shared/')
     || rel.startsWith('sdk-clients/')
-    || rel.startsWith('service-management/')
     || rel.startsWith('packages/')
     || rel.startsWith('domains/')
   ) {
@@ -58,10 +64,51 @@ function classifyUnit(file) {
   return { layer: 'tooling', kind: 'non-hexagonal' };
 }
 
+/**
+ * Which Service Management sub-layer each integration suite covers (JUM-472).
+ *
+ * Enumerated, not derived from a pattern: JUM-552 forbids a wildcard catch-all,
+ * so a new SM integration suite has no area until it is named here — and the
+ * generator refuses to guess (a wrong guess puts the suite in the wrong
+ * selection set, where it runs for changes that cannot affect it and stays
+ * silent for the ones that can). Adding a suite is one line in this map plus
+ * `bun run test-map:generate`.
+ */
+const SERVICE_MANAGEMENT_INTEGRATION_AREA = {
+  'domainDesigner.smoke.test.ts': 'service-management/designer',
+  'spaBoot.browser.integration.test.ts': 'service-management/designer',
+  'runtimeEnv.integration.test.ts': 'service-management/server',
+  'runtimeEnvContract.integration.test.ts': 'service-management/server',
+  'pm2Ecosystem.integration.test.ts': 'service-management/server',
+  'staticManifest.integration.test.ts': 'service-management/server',
+  'staticServing.integration.test.ts': 'service-management/server'
+};
+
 function classifyIntegration(file) {
   const parts = file.split('/');
   const idx = parts.indexOf('integration');
   const bucket = parts[idx + 1] || 'unknown';
+  // Service Management is a declared non-hexagonal kind with its own internal
+  // structure (JUM-552/JUM-472): server suites and designer-SPA suites live in
+  // separate sub-layers so a `server.js` change and a `script.js` change do not
+  // drag each other's unit suites along. Filing it under `interface/runtime`
+  // made every SM change run the whole backend interface layer instead.
+  if (bucket === 'ServiceManagement') {
+    const area = SERVICE_MANAGEMENT_INTEGRATION_AREA[parts[parts.length - 1]];
+    if (!area) {
+      throw new Error(
+        `Service Management integration suite with no recorded area: ${file}\n`
+          + '  Name it in SERVICE_MANAGEMENT_INTEGRATION_AREA (ci-cd/generate-test-map.js)'
+          + '  — service-management/server or service-management/designer — and regenerate.'
+      );
+    }
+    return {
+      layer: area,
+      kind: 'non-hexagonal',
+      adapter: 'service-management',
+      script: 'test:integration:service-management'
+    };
+  }
   const map = {
     Express: { layer: 'adapters/in', adapter: 'express', script: 'test:integration:express' },
     Fastify: { layer: 'adapters/in', adapter: 'fastify', script: 'test:integration:fastify' },
@@ -84,11 +131,6 @@ function classifyIntegration(file) {
     'Adonis-JS': { layer: 'adapters/in', adapter: 'adonis-js', script: 'test:integration:adonis-js' },
     'Total-JS': { layer: 'adapters/in', adapter: 'total-js', script: 'test:integration:total-js' },
     realtime: { layer: 'interface/runtime', adapter: 'realtime', script: 'test:integration:realtime' },
-    ServiceManagement: {
-      layer: 'interface/runtime',
-      adapter: 'service-management',
-      script: 'test:integration:service-management'
-    },
     mutex: {
       layer: 'adapters/out+infra',
       adapter: 'mutex',
@@ -114,6 +156,16 @@ function packageSuitePaths(root) {
       path.join(packagesRoot, entry.name, 'test'),
       (file) => /\.test\.ts$/.test(file)
     ))
+    .map((file) => path.relative(root, file).replace(/\\/g, '/'))
+    .sort(byPath);
+}
+
+/** Every `*.cy.ts` spec under `packages/cana/cypress/`, repository-relative. */
+function browserSpecPaths(root) {
+  return walk(
+    path.join(root, PACKAGES_DIR, 'cana', 'cypress'),
+    (file) => /\.cy\.ts$/.test(file)
+  )
     .map((file) => path.relative(root, file).replace(/\\/g, '/'))
     .sort(byPath);
 }
@@ -212,7 +264,12 @@ function buildManifest(root = process.cwd()) {
   const layers = {
     contracts: {
       dependsOn: [],
-      sourceGlobs: ['packages/*/src/contracts/**', 'packages/persistence-contracts/src/**'],
+      // `spec/` holds the canonical OAS/AsyncAPI contract artifacts the designer
+      // emits and the boilerplate consumes. Mapping them to the contracts layer
+      // is what lets a contract-shape change reach every dependent layer — the
+      // service-management sub-layers included — through reverse dependencies,
+      // even though no importer edge can exist against a YAML file (JUM-472).
+      sourceGlobs: ['packages/*/src/contracts/**', 'packages/persistence-contracts/src/**', 'spec/**'],
       runner: 'bun',
       tier: 'gate'
     },
@@ -259,11 +316,73 @@ function buildManifest(root = process.cwd()) {
     'interface/runtime': {
       dependsOn: ['adapters/in', 'adapters/out+infra'],
       sourceGlobs: [
-        'apps/backend-template/src/interface/**',
-        'apps/service-management/**'
+        'apps/backend-template/src/interface/**'
       ],
       runner: 'node',
       tier: 'gate'
+    },
+    // Service Management is a zero-build vanilla SPA plus a dependency-free Node
+    // static server: no domain, no application layer, no adapters. JUM-552
+    // registers it as a declared non-hexagonal kind instead of forcing the
+    // six-layer model onto it, split into its two real parts (JUM-472): the
+    // server and the designer SPA it serves. The designer depends on the server
+    // (it is served by it and calls its runtime API), so a server change runs
+    // the whole component while designer iteration runs only the designer
+    // suites. Globs are enumerated per JUM-552 — a new file at the app root maps
+    // to no layer and turns the gate red until it is classified here.
+    'service-management/server': {
+      dependsOn: ['contracts'],
+      sourceGlobs: [
+        'apps/service-management/server.js',
+        'apps/service-management/package.json'
+      ],
+      runner: 'bun',
+      tier: 'gate',
+      kind: 'non-hexagonal'
+    },
+    'service-management/designer': {
+      dependsOn: ['service-management/server'],
+      sourceGlobs: [
+        'apps/service-management/script.js',
+        'apps/service-management/src/**',
+        'apps/service-management/index.html',
+        'apps/service-management/styles.css'
+      ],
+      runner: 'bun',
+      tier: 'gate',
+      kind: 'non-hexagonal'
+    },
+    // JUM-622. Cana's real coverage is eighteen Cypress specs running in a real
+    // browser (JUM-586 replaced the fake-indexeddb suites with them). None of
+    // them were in this manifest, and `packages/cana/cypress/**` matches no
+    // layer's globs — so a change confined to the harness mapped to nothing and
+    // the task gate refused the whole change set as `unsupported-change-set`.
+    // That is the gate failing closed, which is right; what was wrong is that a
+    // 294-test suite was unreachable by the selector that decides what runs.
+    //
+    // `dependsOn: []` is deliberate. Blast radius is outward, so a layer listed
+    // as depending on `adapters/out+infra` would drag a full browser run into
+    // every backend infra change. These specs exercise cana's IndexedDB engine
+    // and nothing else; the only changes that can affect them are cana's own.
+    'browser-harness': {
+      dependsOn: [],
+      //
+      // JUM-623: the harness is not all in one directory. Specs are authored
+      // under `packages/cana/cypress/`, compiled to `.browser-tests/`, and run
+      // against a support file and a config that live at the repository root.
+      // Registering only the spec directory left `cypress/support/e2e.js` and
+      // `cypress.config.js` — the two files every spec depends on — mapping to
+      // no layer, so the change set JUM-622 set out to unblock was still
+      // refused.
+      sourceGlobs: [
+        'packages/cana/cypress/**',
+        'packages/cana/src/**',
+        'cypress/**',
+        'cypress.config.js'
+      ],
+      runner: 'bun',
+      tier: 'gate',
+      kind: 'non-hexagonal'
     },
     tooling: {
       dependsOn: [],
@@ -322,7 +441,7 @@ function buildManifest(root = process.cwd()) {
       id: file,
       path: file,
       layer: meta.layer,
-      kind: 'hexagonal',
+      kind: meta.kind || 'hexagonal',
       type: 'integration',
       adapter: meta.adapter,
       script: meta.script,
@@ -375,6 +494,31 @@ function buildManifest(root = process.cwd()) {
         + '\n  test-map.json by hand — layer, kind, type, runner, tier, timeoutMs — and'
         + '\n  this generator will carry it forward from then on.'
     );
+  }
+
+  // Browser specs (JUM-622). Enumerated rather than carried across like package
+  // suites: `packages/cana/cypress/*.cy.ts` *does* encode its classification —
+  // every file in that directory is a browser spec of the same layer — so there
+  // is nothing to guess and a new spec is picked up without a hand edit.
+  //
+  // They share one script. Eighteen suites resolve to a single `test:browser`
+  // invocation because `createLayerAwarePlan` de-duplicates integration scripts;
+  // registering them individually is what makes each spec visible to the
+  // manifest checks and to coverage, not eighteen Cypress runs.
+  for (const file of browserSpecPaths(root)) {
+    suites.push({
+      id: file,
+      path: file,
+      layer: 'browser-harness',
+      kind: 'non-hexagonal',
+      type: 'integration',
+      adapter: 'cypress',
+      script: 'test:browser',
+      runner: 'bun',
+      ciRunner: 'node',
+      tier: 'gate',
+      timeoutMs: 300_000
+    });
   }
 
   // Contract layer (JUM-440) — governance checks promoted to first-class suites.
@@ -466,6 +610,7 @@ if (isEntryPoint(module)) {
 }
 
 module.exports = {
+  SERVICE_MANAGEMENT_INTEGRATION_AREA,
   buildManifest,
   classifyIntegration,
   classifyUnit,

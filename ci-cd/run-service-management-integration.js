@@ -9,10 +9,38 @@ const CANDIDATE_TEST_DIRS = [
   'test/integration/ServiceManagement'
 ];
 
+const TEST_FILE_PATTERN = /\.(test|spec)\.[jt]s$/;
+
+/**
+ * Recursively collects runnable test files under `directory`.
+ *
+ * The suite must fail closed when it discovers nothing (JUM-466, JUM-557):
+ * a smoke that silently runs zero tests produces confidence without evidence.
+ */
+function discoverTestFiles(directory) {
+  if (!fs.existsSync(directory)) return [];
+  const found = [];
+  const walk = (current) => {
+    fs.readdirSync(current, { withFileTypes: true }).forEach((entry) => {
+      const fullPath = path.join(current, entry.name);
+      if (entry.isDirectory()) {
+        walk(fullPath);
+        return;
+      }
+      if (TEST_FILE_PATTERN.test(entry.name)) {
+        found.push(fullPath);
+      }
+    });
+  };
+  walk(directory);
+  return found;
+}
+
 function runServiceManagementIntegration(options = {}) {
   const root = options.root || process.cwd();
   const exists = options.exists || fs.existsSync;
   const spawn = options.spawn || spawnSync;
+  const discover = options.discover || discoverTestFiles;
   const logger = options.logger || console;
   const testDir = CANDIDATE_TEST_DIRS.find((target) => exists(path.join(root, target)));
 
@@ -24,9 +52,26 @@ function runServiceManagementIntegration(options = {}) {
 
   logger.log(`[ci] service-management integration target: ${testDir}`);
 
+  const testFiles = discover(path.join(root, testDir));
+  if (testFiles.length === 0) {
+    logger.error(`[ci] service-management integration: no test files discovered in ${testDir}.`);
+    logger.error('[ci] failing closed: a smoke suite that runs nothing is a false green (JUM-557).');
+    return 1;
+  }
+
+  logger.log(`[ci] service-management integration: ${String(testFiles.length)} test file(s) discovered.`);
+
   const result = spawn('jest', [testDir, '--runInBand', '--coverage=false'], {
     stdio: 'inherit',
-    env: { ...process.env, NODE_ENV: process.env.NODE_ENV || 'dev' }
+    env: {
+      ...process.env,
+      NODE_ENV: process.env.NODE_ENV || 'dev',
+      // Invoked outside a package script the workspace `node_modules/.bin` is
+      // not on PATH, and the bare `jest` lookup fails before a single test
+      // runs — which reads as a broken suite rather than a broken PATH. Pin the
+      // resolution instead of depending on the caller's environment.
+      PATH: `${path.join(root, 'node_modules', '.bin')}${path.delimiter}${process.env.PATH || ''}`
+    }
   });
 
   return result.status === 0 ? 0 : (result.status || 1);
@@ -38,5 +83,7 @@ if (isEntryPoint(module)) {
 
 module.exports = {
   CANDIDATE_TEST_DIRS,
+  TEST_FILE_PATTERN,
+  discoverTestFiles,
   runServiceManagementIntegration
 };

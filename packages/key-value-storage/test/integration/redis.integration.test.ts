@@ -235,6 +235,27 @@ suite('the Redis client against a real server', () => {
 });
 
 suite('choosing the Redis driver with a server present', () => {
+  /**
+   * The socket this suite opens has to be closed, or the run never ends.
+   *
+   * `get` connects lazily, so the case below leaves a live TCP connection on a
+   * singleton nothing else touches. Under Bun the process exits anyway; under
+   * Jest — the instrument Requirement 110 runs this suite with — an open handle
+   * keeps the worker alive. The job did not fail a test: all fourteen passed,
+   * and then CircleCI killed it at the 15-minute no-output deadline, four
+   * consecutive times on `dev`.
+   *
+   * Only this suite needs it. The earlier suite ends with the client already
+   * quit, and the two cases here that call `resetRedisKeyValueStorageClientForTests`
+   * only ever `compile()` — they never issue a command, so they never connect.
+   * The handle Jest reported traced to the `get` below, and to nothing else.
+   */
+  afterAll(async () => {
+    const live = RedisKeyValueStorageClient.compile();
+    if (live.connected) await live.disconnect();
+    resetRedisKeyValueStorageClientForTests();
+  });
+
   it('compiles the Redis client when no driver is named', () => {
     expect.hasAssertions();
 
@@ -296,10 +317,16 @@ suite('choosing the Redis driver with a server present', () => {
     expect.hasAssertions();
 
     const redisClient = RedisKeyValueStorageClient.compile();
-    const success = await redisClient.get(key('shape'));
 
-    expect(success).toBeInstanceOf(ServiceResponse);
-    expect(Object.keys(success).sort()).toStrictEqual(['error', 'result']);
-    expect(success.error).toBeUndefined();
+    try {
+      const success = await redisClient.get(key('shape'));
+
+      expect(success).toBeInstanceOf(ServiceResponse);
+      expect(Object.keys(success).sort()).toStrictEqual(['error', 'result']);
+      expect(success.error).toBeUndefined();
+    } finally {
+      await redisClient.disconnect();
+      resetRedisKeyValueStorageClientForTests();
+    }
   }, 30000);
 });

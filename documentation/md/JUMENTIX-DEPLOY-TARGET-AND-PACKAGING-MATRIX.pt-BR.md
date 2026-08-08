@@ -18,6 +18,30 @@ Defina alvos de implantação e contratos de empacotamento de artefatos para ser
 | Funções Vercel | APIs de funções | Tempo de execução do Vercel | Pontos de entrada da função Vercel + configuração | Fluxo de trabalho de implantação do Vercel |
 | Trabalhadores da Cloudflare | APIs de função/evento | Tempo de execução do trabalhador | Pacote de módulo de trabalho + configuração de trabalhador | Implantação do Wrangler/Worker |
 
+## Leitor legível por máquina
+
+O suporte modo de execução × provedor de nuvem derivado desta matriz é mantido
+como dados em `apps/service-management/src/model/deployCapabilityMatrix.js`
+(extraído pelo JUM-544 para que a guia Configuração do Serviço e os alvos de
+implantação do JUM-481 validem contra uma única fonte compartilhada em vez de
+duas transcrições). A guia Configuração do Serviço do designer a aplica no
+momento da gravação (JUM-544): combinações sem alvo de implantação nesta
+matriz são rejeitadas.
+
+Desde o JUM-481, o mesmo leitor também carrega o Contrato de Metadados do
+Service Management abaixo como dados — os vocabulários `serviceType`,
+`deployTarget`, `runtimeProtocol` e `pm2Profile`, o suporte tipo de serviço ×
+alvo de implantação das linhas da matriz acima, o conjunto de alvos
+gerenciados por PM2 e os protocolos que cada tipo de serviço expõe
+(`databaseDriver`/`keyValueDriver` espelham os enums
+`JUMENTIX_DATABASE_DRIVER`/`JUMENTIX_KEYVALUESTORAGE_DRIVER` do contrato de
+ambiente de execução). A guia Gerenciamento de Implantação valida cada novo
+alvo contra ele: combinações sem linha nesta matriz, protocolos que o tipo de
+serviço não expõe e perfis PM2 em alvos serverless (ou ausentes em alvos
+gerenciados por PM2) são rejeitados com a restrição nomeada. Qualquer
+alteração nesta matriz deve atualizar esse módulo — e vice-versa — no mesmo
+PR.
+
 ## Contratos de embalagem
 
 | Tipo de artefato | Arquivos obrigatórios | Portão de validação |
