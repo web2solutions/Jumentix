@@ -50,7 +50,6 @@ const API = new RestAPI<Express>({
   messageMediator
 });
 
-// eslint-disable-next-line jest/require-hook
 (async () => {
   await API.start();
   await API.seedData();

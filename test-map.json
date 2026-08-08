@@ -97,6 +97,18 @@
       "tier": "gate",
       "kind": "non-hexagonal"
     },
+    "browser-harness": {
+      "dependsOn": [],
+      "sourceGlobs": [
+        "packages/cana/cypress/**",
+        "packages/cana/src/**",
+        "cypress/**",
+        "cypress.config.js"
+      ],
+      "runner": "bun",
+      "tier": "gate",
+      "kind": "non-hexagonal"
+    },
     "tooling": {
       "dependsOn": [],
       "sourceGlobs": [
@@ -669,6 +681,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/service-management/pm2EcosystemUi.contract.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/pm2EcosystemUi.contract.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/service-management/designerState.test.ts",
       "path": "apps/backend-template/test/unit/service-management/designerState.test.ts",
       "layer": "service-management/designer",
@@ -711,6 +733,16 @@
     {
       "id": "apps/backend-template/test/unit/service-management/mvp.roadmap.features.test.ts",
       "path": "apps/backend-template/test/unit/service-management/mvp.roadmap.features.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/service-management/deployTargetValidation.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/deployTargetValidation.test.ts",
       "layer": "service-management/designer",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -1475,6 +1507,19 @@
       "bunCompat": "pending-resetModules-or-native-gap",
       "tier": "gate",
       "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/integration/ServiceManagement/pm2Ecosystem.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/pm2Ecosystem.integration.test.ts",
+      "layer": "service-management/server",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
     },
     {
       "id": "apps/backend-template/test/integration/ServiceManagement/domainDesigner.smoke.test.ts",
@@ -2732,6 +2777,19 @@
       "timeoutMs": 60000
     },
     {
+      "id": "packages/external-db-repositories/test/integration/repositories.integration.test.ts",
+      "path": "packages/external-db-repositories/test/integration/repositories.integration.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "cassandra+mongo",
+      "script": "test:integration:db-repositories",
+      "runner": "bun",
+      "tier": "nightly",
+      "timeoutMs": 300000,
+      "reason": "Needs Cassandra and Mongo from docker-compose-cassandra.yml and docker-compose-mongodb.yml; skips itself without RUN_DB_REPOSITORIES_INTEGRATION rather than passing. Covers the keyspace auto-create retry and the post-handshake connection assignment, which no substitute can reach (JUM-602)."
+    },
+    {
       "id": "packages/external-db-repositories/test/repositories.test.ts",
       "path": "packages/external-db-repositories/test/repositories.test.ts",
       "layer": "adapters/out+infra",
@@ -2898,6 +2956,240 @@
       "timeoutMs": 60000
     },
     {
+      "id": "packages/cana/cypress/adapter.cy.ts",
+      "path": "packages/cana/cypress/adapter.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/client.cy.ts",
+      "path": "packages/cana/cypress/client.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/conformance.cy.ts",
+      "path": "packages/cana/cypress/conformance.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/coverage-gaps.cy.ts",
+      "path": "packages/cana/cypress/coverage-gaps.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/database.cy.ts",
+      "path": "packages/cana/cypress/database.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/differential-dexie.cy.ts",
+      "path": "packages/cana/cypress/differential-dexie.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/durability-policy.cy.ts",
+      "path": "packages/cana/cypress/durability-policy.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/edge-cases.cy.ts",
+      "path": "packages/cana/cypress/edge-cases.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/entry.cy.ts",
+      "path": "packages/cana/cypress/entry.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/failure-paths.cy.ts",
+      "path": "packages/cana/cypress/failure-paths.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/hooks.cy.ts",
+      "path": "packages/cana/cypress/hooks.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/performance.cy.ts",
+      "path": "packages/cana/cypress/performance.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/protocol.cy.ts",
+      "path": "packages/cana/cypress/protocol.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/reconciliation.cy.ts",
+      "path": "packages/cana/cypress/reconciliation.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/regressions.cy.ts",
+      "path": "packages/cana/cypress/regressions.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/storage.cy.ts",
+      "path": "packages/cana/cypress/storage.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/unknown-outcome.cy.ts",
+      "path": "packages/cana/cypress/unknown-outcome.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/worker-host.cy.ts",
+      "path": "packages/cana/cypress/worker-host.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
       "id": "contract:oas-routes",
       "path": "ci-cd/check-oas-route-resolution.js",
       "layer": "contracts",
@@ -2962,9 +3254,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 157,
-    "integration": 87,
+    "unit": 160,
+    "integration": 88,
     "smoke": 2,
-    "suites": 248
+    "suites": 270
   }
 }

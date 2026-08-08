@@ -28,7 +28,6 @@ export async function startWebSocketApiAdapter(
   return true;
 }
 
-// eslint-disable-next-line jest/require-hook
 /* istanbul ignore if */
 if (require.main === module) {
   startWebSocketApiAdapter();

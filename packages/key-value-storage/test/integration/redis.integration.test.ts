@@ -296,10 +296,16 @@ suite('choosing the Redis driver with a server present', () => {
     expect.hasAssertions();
 
     const redisClient = RedisKeyValueStorageClient.compile();
-    const success = await redisClient.get(key('shape'));
 
-    expect(success).toBeInstanceOf(ServiceResponse);
-    expect(Object.keys(success).sort()).toStrictEqual(['error', 'result']);
-    expect(success.error).toBeUndefined();
+    try {
+      const success = await redisClient.get(key('shape'));
+
+      expect(success).toBeInstanceOf(ServiceResponse);
+      expect(Object.keys(success).sort()).toStrictEqual(['error', 'result']);
+      expect(success.error).toBeUndefined();
+    } finally {
+      await redisClient.disconnect();
+      resetRedisKeyValueStorageClientForTests();
+    }
   }, 30000);
 });

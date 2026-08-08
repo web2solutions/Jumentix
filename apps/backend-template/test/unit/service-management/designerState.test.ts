@@ -160,6 +160,50 @@ describe('designer state core (JUM-468)', () => {
       expect(second.core.state.idCounter).toBe(2);
     });
 
+    it('restores deployments migrated to the Requirement 059 metadata contract (JUM-481)', async () => {
+      const storage = createFakeStorage({
+        'service-management.v1': JSON.stringify({
+          domains: [],
+          relationships: [],
+          deployments: [
+            {
+              name: 'prod', type: 'dedicated', region: 'us-east-1', runtime: 'nodejs22.x'
+            },
+            {
+              name: 'fn',
+              region: 'us-east-1',
+              runtime: 'nodejs22.x',
+              serviceType: 'functions',
+              deployTarget: 'lambda',
+              runtimeProtocol: 'http',
+              databaseDriver: 'InMemory',
+              keyValueDriver: 'redis',
+              pm2Profile: ''
+            }
+          ]
+        })
+      });
+      const { core } = createCore(storage);
+      await core.loadState();
+      expect(core.state.deployments).toHaveLength(2);
+      // The legacy entry migrates forward: type becomes deployTarget and the
+      // missing metadata takes the matrix-derived defaults.
+      expect(core.state.deployments[0]).toStrictEqual({
+        name: 'prod',
+        region: 'us-east-1',
+        runtime: 'nodejs22.x',
+        serviceType: 'restapi',
+        deployTarget: 'dedicated-server',
+        runtimeProtocol: 'http',
+        databaseDriver: 'InMemory',
+        keyValueDriver: 'redis',
+        pm2Profile: 'dev'
+      });
+      // The current-shape entry round-trips unchanged.
+      expect(core.state.deployments[1].deployTarget).toBe('lambda');
+      expect(core.state.deployments[1].pm2Profile).toBe('');
+    });
+
     it('recovers from lost (corrupted) storage by reseeding, persisting and resetting the view', async () => {
       const storage = createFakeStorage({ 'service-management.v1': '{corrupted' });
       const { core } = createCore(storage);

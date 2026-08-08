@@ -56,7 +56,9 @@ documented in
      - cloud provider
      - static assets behavior
      - runtime ports (`REST`, `WebSocket`, `gRPC`)
-   - Shows PM2-oriented profile preview for VM runtime orchestration.
+   - Shows PM2-oriented profile preview for VM runtime orchestration, read from
+     the real `pm2/ecosystem.*.cjs` files via `GET /api/runtime/pm2-ecosystem`
+     (JUM-480) — no hardcoded process list or package-manager command.
    - Includes runtime env controls with a three-tier key model:
      - **Editable** (read/write runtime topology selectors):
        `JUMENTIX_HTTP_FRAMEWORK`, `JUMENTIX_REALTIME_API`,
@@ -84,6 +86,18 @@ documented in
     - `ci` -> `.env.ci` (`test` is an alias)
 4. **Deploy Management**
    - Tracks deploy targets and runtime deployment metadata.
+   - Each target carries the Requirement 059 per-service metadata contract
+     (JUM-481): `serviceType`, `deployTarget`, `runtimeProtocol`,
+     `databaseDriver`, `keyValueDriver`, `pm2Profile`, alongside name, region
+     and runtime.
+   - Additions are validated against the Requirement 059 deploy matrix read
+     from the shared machine-readable source
+     `src/model/deployCapabilityMatrix.js`: service-type × deploy-target
+     combinations with no matrix row, protocols the service type does not
+     expose, and PM2 profiles on serverless targets (or missing on
+     PM2-managed targets) are rejected on the non-blocking status surface
+     with the violated constraint named. Legacy targets persisted before this
+     alignment migrate forward on load.
 
 Detailed usage guide:
 
@@ -110,6 +124,7 @@ Recommended dev path:
 
 - `GET /api/runtime/env?environment=dev|development|staging|ci|test`
 - `POST /api/runtime/env`
+- `GET /api/runtime/pm2-ecosystem?environment=dev|development|staging|production|prod|ci|test`
 
 The server persists approved runtime keys to files under `apps/backend-template/src/config/`.
 The authoritative contract — accepted environments, key classification, enum

@@ -23,8 +23,6 @@ if (!fs.existsSync(circleciPath)) {
     /coverage:/,
     /website:/,
     /third-party-review:/,
-    /sonarqube:/,
-    /codecov:/,
     /cimg\/node:22\./,
     /cypress\/browsers:node-22\..*-chrome-.*-ff-.*/,
     /redis:7\.2/,
@@ -53,6 +51,13 @@ if (!fs.existsSync(circleciPath)) {
     /sonar-scanner/,
     /SONAR_TARGET_BRANCH="\$\{CIRCLE_PR_BASE_BRANCH:-\$\{CIRCLE_BRANCH:-\}\}"/,
     /Sonar runs for PRs or pushes targeting dev\/main/,
+    /Report Sonar findings/,
+    /Backfill git objects for Sonar SCM blame/,
+    /git rev-list --objects --all/,
+    /git cat-file --batch-check/,
+    /--missing=print/,
+    /Install verified Codecov CLI/,
+    /Upload coverage to Codecov/,
     /codecov --verbose upload-process --disable-search --fail-on-error/,
     /CODECOV_TOKEN/,
     /store_artifacts/,
@@ -65,6 +70,16 @@ if (!fs.existsSync(circleciPath)) {
   for (const marker of requiredMarkers) {
     if (!marker.test(contents)) failures.push(`.circleci/config.yml is missing ${String(marker)}`);
   }
+  [
+    /\n\s+- codecov:\s*\n/,
+    /\n\s+- sonarqube:\s*\n/
+  ].forEach((marker) => {
+    if (marker.test(contents)) {
+      failures.push(
+        `Codecov and Sonar must run inside the coverage job, not as separate CircleCI jobs: ${String(marker)}`
+      );
+    }
+  });
 }
 
 if (fs.existsSync(actionsDir)) {
@@ -88,5 +103,5 @@ if (failures.length > 0) {
 
 console.log(
   'CI provider check passed: CircleCI covers branch gates, coverage, website validation, '
-    + 'third-party review, Codecov publishing, and Sonar defense-in-depth without GitHub Actions billing.'
+    + 'third-party review, and in-job Codecov/Sonar coverage publishing without GitHub Actions billing.'
 );

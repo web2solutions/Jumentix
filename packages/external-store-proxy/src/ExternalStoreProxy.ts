@@ -3,7 +3,7 @@ import {
   ConflictError,
   DataBaseNotFoundError,
   DatabasePagingError
-} from '@src/infra/exceptions';
+} from '@jumentix/persistence-contracts';
 import type { IPagingRequest, IPagingResponse, IStore } from '@jumentix/persistence-contracts';
 import { BaseExternalDataRepository } from '@jumentix/external-persistence-core';
 

@@ -203,6 +203,31 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
    - **Response hygiene.** JSON responses escape `<`, `>`, `&`, `U+2028`, `U+2029`
      and carry `Content-Type: application/json; charset=utf-8` plus
      `X-Content-Type-Options: nosniff`.
+   - **Contract 1b — `GET /api/runtime/pm2-ecosystem` (landed by `JUM-480`).**
+     Read-only; the single source of the designer's PM2 runtime profile preview.
+     - **Environments and file mapping.** Accepted `environment` values:
+       `dev`/`development` → `ecosystem.dev.cjs`, `staging` →
+       `ecosystem.staging.cjs`, `production`/`prod` → `ecosystem.production.cjs`,
+       `ci`/`test` → `ecosystem.ci.cjs`. Same resolution discipline as Contract 1:
+       case-insensitive after trimming, unknown values explicitly rejected with
+       `400` and the accepted list, default `NODE_ENV` or `dev` when omitted.
+     - **Ecosystem location.** The ecosystem directory resolves as
+       `JUMENTIX_SERVICE_MANAGEMENT_PM2_DIR` (absolute-resolved) when set,
+       otherwise `<repo-root>/pm2`.
+     - **Reads reality, never a literal.** The response is
+       `{ environment, fileName, path, exists, apps }`; each app carries
+       `{ name, script, interpreter, interpreterArgs, env, command }` straight
+       from the ecosystem module (loaded cache-busted, so an ecosystem edit is
+       reflected without a restart). `command` MUST be derived from the
+       ecosystem definition (`pm2 start <path> --only <name> --update-env`);
+       neither the server nor the designer may embed a package-manager
+       invocation (`pnpm run`, `bun run`, `npm run`) or a `pm2:start:*` script
+       name, so the Bun cutover cannot silently invalidate the preview.
+     - **Honest edge states.** A missing ecosystem file (e.g. `ci`) is `200`
+       with `exists: false` and empty `apps` — an explicit state, not a silent
+       empty preview. An unreadable or broken ecosystem file is the 500 class
+       `{ "error": "PM2 ecosystem file operation failed.", "code", "path",
+       "details" }`, parallel to the env-file filesystem class.
 
 4. **Contract 2 — `service-management.v1` localStorage storage schema.**
    - The entire suite state (all four tabs) persists as ONE JSON payload under the
@@ -221,6 +246,24 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
    - `runtimeEnvironment`: `{ environment, fileName, values }` mirroring Contract 1
      (environment enum and the visible runtime keys — the editable and read-only
      tiers; never-exposed keys never enter this state).
+   - `deployments`: array of deploy targets aligned to the Requirement 059
+     Service Management metadata contract (`JUM-481`), each
+     `{ name, region, runtime, serviceType, deployTarget, runtimeProtocol,
+     databaseDriver, keyValueDriver, pm2Profile }` with
+     `serviceType` ∈ { `restapi`, `websocket+restapi`, `grpc+restapi`,
+     `functions` }, `deployTarget` ∈ { `dedicated-server`, `vm`, `ec2`,
+     `lambda`, `vercel-functions`, `cloudflare-workers` }, `runtimeProtocol` ∈
+     { `http`, `websocket`, `grpc` }, `databaseDriver`/`keyValueDriver` drawn
+     from the Contract 1 `JUMENTIX_DATABASE_DRIVER`/
+     `JUMENTIX_KEYVALUESTORAGE_DRIVER` enums, and `pm2Profile` ∈ { `dev`,
+     `staging`, `production` } on PM2-managed targets (`dedicated-server`,
+     `vm`, `ec2`) and empty otherwise. Entries persisted before this
+     alignment (`{ name, type, region, runtime }`) migrate forward on load:
+     `type` becomes `deployTarget` (`dedicated` → `dedicated-server`; values
+     with no Requirement 059 counterpart are kept verbatim so the migration
+     is lossless) and missing metadata fields take the contract defaults.
+     This is a backward-compatible extension of an existing section, so the
+     versioned key is unchanged.
    - `view`: `{ zoom (clamped 0.5–2), compactEntities, snapToGrid,
      edgeStyle ∈ { curved, orthogonal },
      modelCheckMinSeverity ∈ { info, warn, error }, exportBlockCritical (default
@@ -371,6 +414,14 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
   (`async-api.proto`) was added, taking the exporter count from seven to eight.
   Pinned by
   `apps/backend-template/test/unit/service-management/designerAsyncApiExport.test.ts`.
+- Contract 1b added by `JUM-480` (branch
+  `kimi/feature/JUM-480-multi-env-pm2-preview`): the read-only
+  `GET /api/runtime/pm2-ecosystem` endpoint pins the PM2 preview to the real
+  `pm2/ecosystem.*.cjs` files. Pinned by
+  `apps/backend-template/test/integration/ServiceManagement/pm2Ecosystem.integration.test.ts`
+  (server behavior) and
+  `apps/backend-template/test/unit/service-management/pm2EcosystemUi.contract.test.ts`
+  (designer-side no-hardcoded-command rule).
 - Registry sync: `.agents/NFR-REGISTRY.md`,
   `documentation/md/SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md` (+ `.pt-BR.md`),
   `documentation/md/SPEC-REQUIREMENTS-COVERAGE-STATUS.md` (+ `.pt-BR.md`),
