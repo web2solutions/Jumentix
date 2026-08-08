@@ -86,6 +86,37 @@ Detailed feature usage:
      constraint named. Targets persisted before this alignment migrate
      forward on load.
 
+## Design System and Accessibility
+
+The designer adopts the Jumentix design system at the token layer (JUM-488) —
+it is a zero-build vanilla SPA, so adoption means shared tokens and idioms,
+not React component imports:
+
+- `tokens.css` — vendored copy of the shared `--jtx-*` custom properties
+  (source of truth: `apps/jumentix-website/components/design-system/tokens.css`):
+  color ramps, surfaces, lines, radii, shadows, the spacing scale, motion, and
+  the Inter/IBM Plex Mono typography stacks. Token changes land in the website
+  file first and are mirrored here.
+- `styles.css` — every cosmetic value (color, typography, radius, shadow,
+  spacing) resolves to a `--jtx-*` token. Only structural geometry the canvas
+  math depends on stays literal (3200×2200 canvas, 24px grid, 520px domains,
+  190px entities — pinned by `src/model/modelQueries.js` and its unit suite),
+  plus the compact inspector density. Element-level rules are scoped under
+  `.service-management-shell` so the stylesheet can be embedded in the website
+  Storybook without leaking.
+- Storybook coverage lives in the website workspace
+  (`apps/jumentix-website/components/service-management-designer/`), mounting
+  the designer's real markup and stylesheets; the manifest smoke check
+  requires those stories.
+
+Accessibility semantics layered onto the same markup: WAI-ARIA tablist with
+roving tabindex and Arrow/Home/End navigation (`src/ui/tabs.js`), `aria-pressed`
+on the view toggles (synced by `src/ui/canvas.js`), accessible names on every
+control, a live-region selection status, a skip link to the canvas workspace,
+and Space restored to native button activation. The canvas keyboard path is
+structural: select entities from the sidebar lists, move the selection with
+the arrow keys (Shift for larger steps), delete with Delete/Backspace.
+
 ## Run
 
 This application is served via PM2:

@@ -2275,7 +2275,10 @@ function wireEvents() {
     const targetTag = String(event.target?.tagName || '').toLowerCase();
     const editingInput = ['input', 'textarea', 'select'].includes(targetTag);
     if (event.code === 'Space') {
-      if (editingInput) return;
+      // Space on a focused control keeps its native activation (JUM-488) —
+      // the pan modifier only engages from non-interactive targets, so a
+      // keyboard user can still operate every button with Space.
+      if (editingInput || ['button', 'a'].includes(targetTag)) return;
       event.preventDefault();
       interaction.spacePressed = true;
       dom.canvas.classList.add('space-mode');

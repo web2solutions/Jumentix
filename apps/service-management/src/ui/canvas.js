@@ -67,6 +67,11 @@ export function createCanvas({ dom, state, interaction, actions }) {
     dom.toggleCompactViewBtn.textContent = state.view.compactEntities ? 'Full View' : 'Compact View';
     dom.toggleSnapBtn.textContent = state.view.snapToGrid ? 'Snap: On' : 'Snap: Off';
     dom.toggleLargeCanvasBtn.textContent = state.view.largeCanvasMode ? 'Large Canvas: On' : 'Large Canvas: Off';
+    // Toggle semantics (JUM-488): the three view switches are aria-pressed
+    // toggles; the pressed state mirrors the view flags they flip.
+    dom.toggleCompactViewBtn.setAttribute('aria-pressed', String(Boolean(state.view.compactEntities)));
+    dom.toggleSnapBtn.setAttribute('aria-pressed', String(Boolean(state.view.snapToGrid)));
+    dom.toggleLargeCanvasBtn.setAttribute('aria-pressed', String(Boolean(state.view.largeCanvasMode)));
     dom.edgeStyleSelect.value = state.view.edgeStyle;
     dom.modelCheckMinSeveritySelect.value = state.view.modelCheckMinSeverity;
     dom.exportBlockCriticalCheck.checked = state.view.exportBlockCritical;

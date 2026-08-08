@@ -92,6 +92,39 @@ Uso detalhado de recursos:
      nomeada. Alvos persistidos antes deste alinhamento migram no
      carregamento.
 
+## Design System e Acessibilidade
+
+O designer adota o design system Jumentix na camada de tokens (JUM-488) — é
+uma SPA vanilla sem etapa de build, portanto a adoção significa tokens e
+idiomas compartilhados, não importação de componentes React:
+
+- `tokens.css` — cópia vendida das custom properties compartilhadas `--jtx-*`
+  (fonte da verdade: `apps/jumentix-website/components/design-system/tokens.css`):
+  rampas de cores, superfícies, linhas, raios, sombras, escala de espaçamento,
+  movimento e as pilhas tipográficas Inter/IBM Plex Mono. Mudanças de tokens
+  acontecem primeiro no arquivo do site e são espelhadas aqui.
+- `styles.css` — cada valor cosmético (cor, tipografia, raio, sombra,
+  espaçamento) resolve para um token `--jtx-*`. Permanecem literais apenas a
+  geometria estrutural da qual a matemática do canvas depende (canvas de
+  3200×2200, grade de 24px, domínios de 520px, entidades de 190px — fixada por
+  `src/model/modelQueries.js` e sua suíte de unidade), além da densidade
+  compacta dos inspetores. As regras em nível de elemento têm escopo em
+  `.service-management-shell` para que a folha de estilo possa ser incorporada
+  no Storybook do site sem vazamentos.
+- A cobertura do Storybook vive no workspace do site
+  (`apps/jumentix-website/components/service-management-designer/`), montando a
+  marcação e as folhas de estilo reais do designer; o smoke do manifesto exige
+  essas histórias.
+
+Semântica de acessibilidade sobre a mesma marcação: tablist WAI-ARIA com
+tabindex móvel e navegação por setas/Home/End (`src/ui/tabs.js`), `aria-pressed`
+nos botões de alternância de visualização (sincronizado por `src/ui/canvas.js`),
+nomes acessíveis em todos os controles, status de seleção em live region, link
+de salto para o workspace do canvas e Espaço restaurado à ativação nativa de
+botões. O caminho de teclado do canvas é estrutural: selecione entidades nas
+listas da barra lateral, mova a seleção com as setas (Shift para passos
+maiores) e exclua com Delete/Backspace.
+
 ## Correr
 
 Este aplicativo é atendido via PM2:

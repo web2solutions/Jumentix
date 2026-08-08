@@ -1,3 +1,14 @@
+/*
+ * tokens.css — Jumentix design-system tokens vendored for the zero-build
+ * Service Management designer (JUM-488).
+ *
+ * SOURCE OF TRUTH: apps/jumentix-website/components/design-system/tokens.css
+ * This copy exists because the designer is a zero-build vanilla SPA served
+ * from its own static root — it cannot import across workspaces. Keep the
+ * token values byte-identical with the website file (the `.jtx-story-canvas`
+ * Storybook wrapper is website-only and intentionally omitted here); token
+ * changes land in the website file first and are mirrored here.
+ */
 :root {
   --jtx-blue-50: #eff7ff;
   --jtx-blue-200: #b8d9ff;
@@ -27,16 +38,11 @@
   --jtx-space-7: 48px;
   --jtx-motion-fast: 140ms ease;
   --jtx-content-width: 1200px;
-  /* Typography stacks (JUM-488): tokenized so non-Mantine consumers — the
-     zero-build Service Management designer vendors this file — inherit the
-     same type voice as the Mantine theme (theme.ts fontFamily /
-     fontFamilyMonospace). */
   --jtx-font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --jtx-font-mono: 'IBM Plex Mono', SFMono-Regular, Consolas, monospace;
 }
 
-:root.dark,
-:root[data-mantine-color-scheme='dark'] {
+:root.dark {
   --jtx-ink: #edf3fb;
   --jtx-ink-muted: #aebbd0;
   --jtx-surface: #111923;
@@ -47,19 +53,6 @@
   --jtx-blue-700: #6eb0ff;
   --jtx-shadow-sm: 0 1px 2px rgb(0 0 0 / 28%);
   --jtx-shadow-md: 0 12px 32px rgb(0 0 0 / 35%);
-}
-
-.jtx-story-canvas {
-  min-height: 100vh;
-  padding: var(--jtx-space-6);
-  color: var(--jtx-ink);
-  background: var(--jtx-surface-subtle);
-}
-
-@media (max-width: 640px) {
-  .jtx-story-canvas {
-    padding: var(--jtx-space-4);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

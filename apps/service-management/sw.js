@@ -51,7 +51,7 @@
 
 /* eslint-env serviceworker, node */
 
-const SHELL_VERSION = '0.1.0';
+const SHELL_VERSION = '0.2.0';
 
 // Prefix shared with src/pwa/pwaShell.js (the page-side reset deletes by
 // prefix). The two copies cannot import each other — a classic worker has no
@@ -64,6 +64,9 @@ const SHELL_CACHE_NAME = `${SHELL_CACHE_PREFIX}${SHELL_VERSION}`;
 const SHELL_ASSETS = [
   './',
   './index.html',
+  // Design-system token layer (JUM-488): styles.css is token-driven, so the
+  // offline shell is incomplete without the vendored --jtx-* properties.
+  './tokens.css',
   './styles.css',
   './script.js',
   './manifest.webmanifest',
@@ -81,6 +84,9 @@ const SHELL_ASSETS = [
   './src/model/rbacContract.js',
   './src/pwa/pwaShell.js',
   './src/state/designerState.js',
+  // Eagerly imported by script.js (JUM-485); without it the offline shell
+  // could not resolve the module graph (pre-existing precache gap).
+  './src/state/designerSync.js',
   './src/store/CanaDesignerStore.js',
   './src/store/canaMigration.js',
   './src/store/designerStoreFactory.js',
