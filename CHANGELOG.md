@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-08 test(JUM-491): cover framework handlers to the coverage gate - Eduardo A.
 - 2026-08-08 feat(JUM-491): multi-user shared catalog sync over Cana resync events - Eduardo A.
 - 2026-08-08 feat(JUM-492): domain-package versioning with semantic conflict resolution (#132) - Eduardo A.
 - 2026-08-08 feat(JUM-546): deploy target lifecycle with edit, duplicate and validation (#129) - Eduardo A.

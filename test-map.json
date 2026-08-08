@@ -259,6 +259,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/interface/Async/RealtimeAPIBase.catalogs.test.ts",
+      "path": "apps/backend-template/test/unit/interface/Async/RealtimeAPIBase.catalogs.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/interface/runtime/RuntimeEnvironment.test.ts",
       "path": "apps/backend-template/test/unit/interface/runtime/RuntimeEnvironment.test.ts",
       "layer": "interface/runtime",
@@ -321,8 +331,28 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/interface/HTTP/RestAPI.catalogs.test.ts",
+      "path": "apps/backend-template/test/unit/interface/HTTP/RestAPI.catalogs.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/interface/HTTP/adapters/express/ExpressServer.start.test.ts",
       "path": "apps/backend-template/test/unit/interface/HTTP/adapters/express/ExpressServer.start.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/HTTP/adapters/express/infraHandlers.test.ts",
+      "path": "apps/backend-template/test/unit/interface/HTTP/adapters/express/infraHandlers.test.ts",
       "layer": "interface/runtime",
       "kind": "hexagonal",
       "type": "unit",
@@ -3528,9 +3558,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 177,
+    "unit": 180,
     "integration": 96,
     "smoke": 2,
-    "suites": 295
+    "suites": 298
   }
 }
