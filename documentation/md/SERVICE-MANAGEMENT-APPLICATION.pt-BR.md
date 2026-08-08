@@ -34,6 +34,10 @@ runtime, a prévia do ecossistema PM2 e o Deploy Management, com a matriz de
 capacidades compartilhada do Requisito 059 e as regras de ciclo de vida — está
 documentado em
 [Console de operações do Service Management](./SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.pt-BR.md).
+A adoção do Cana pelo lado do usuário — onde os dados do designer vivem, a
+migração unidirecional, a matriz offline/de estados e por que a exportação é o
+único caminho de recuperação — está documentada em
+[Adoção do Cana no Service Management, migração e comportamento offline](./SERVICE-MANAGEMENT-CANA-ADOPTION.pt-BR.md).
 
 ## Guias
 
