@@ -29,6 +29,7 @@
 
 import { FIELD_TYPES } from '../state/designerState.js';
 import { deriveTenantScoped } from '../model/rbacContract.js';
+import { isSampleDomain } from '../model/sampleModel.js';
 import { collectServiceConfigurationIssues } from '../validation/serviceConfigurationValidation.js';
 import { collectDeployTargetIssues } from '../validation/deployTargetValidation.js';
 import {
@@ -83,6 +84,14 @@ export function createInspectors({ dom, state, interaction, actions }) {
       btn.type = 'button';
       btn.className = state.selectedDomainId === domain.id ? 'active' : '';
       btn.textContent = domain.name;
+      // JUM-548: sample-loaded domains carry a visible marker so first-run
+      // content is always distinguishable from the user's own work.
+      if (isSampleDomain(domain)) {
+        const badge = document.createElement('span');
+        badge.className = 'sample-badge';
+        badge.textContent = 'sample';
+        btn.appendChild(badge);
+      }
       btn.onclick = () => setSelectedDomain(domain.id);
       li.appendChild(btn);
       dom.domainList.appendChild(li);
@@ -528,6 +537,11 @@ export function createInspectors({ dom, state, interaction, actions }) {
 
   function renderInterfaceAdapters() {
     if (!dom.interfaceAdapterList) return;
+    // JUM-548: the tab's guided empty state tracks the list on every render
+    // path, including the partial renders of the delete buttons.
+    if (dom.interfaceDesignerEmptyState) {
+      dom.interfaceDesignerEmptyState.hidden = state.interfaces.length > 0;
+    }
     dom.interfaceAdapterList.innerHTML = '';
     state.interfaces.forEach((adapter, index) => {
       const item = document.createElement('li');
@@ -656,6 +670,10 @@ export function createInspectors({ dom, state, interaction, actions }) {
 
   function renderDeployments() {
     if (!dom.deployTargetList) return;
+    // JUM-548: same empty-state tracking as renderInterfaceAdapters.
+    if (dom.deployManagementEmptyState) {
+      dom.deployManagementEmptyState.hidden = state.deployments.length > 0;
+    }
     dom.deployTargetList.innerHTML = '';
     state.deployments.forEach((deployment, index) => {
       const item = document.createElement('li');

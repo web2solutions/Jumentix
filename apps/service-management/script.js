@@ -50,6 +50,7 @@ import {
   migrateLocalStorageToCana
 } from './src/store/canaMigration.js';
 import * as model from './src/model/modelQueries.js';
+import { buildSampleModelPayload } from './src/model/sampleModel.js';
 import { collectModelIssues } from './src/validation/modelValidation.js';
 import { collectServiceConfigurationIssues } from './src/validation/serviceConfigurationValidation.js';
 import {
@@ -290,6 +291,12 @@ const dom = {
   importOasInput: document.getElementById('import-oas-input'),
   importPackageBtn: document.getElementById('import-package-btn'),
   importPackageInput: document.getElementById('import-package-input'),
+  loadSampleBtn: document.getElementById('load-sample-btn'),
+  domainDesignerEmptyState: document.getElementById('domain-designer-empty-state'),
+  loadSampleEmptyBtn: document.getElementById('domain-designer-empty-load-sample-btn'),
+  interfaceDesignerEmptyState: document.getElementById('interface-designer-empty-state'),
+  serviceConfigEmptyState: document.getElementById('service-config-empty-state'),
+  deployManagementEmptyState: document.getElementById('deploy-management-empty-state'),
   generateCodePreviewBtn: document.getElementById('generate-code-preview-btn'),
   generateExamplesBtn: document.getElementById('generate-examples-btn'),
   codePreviewOutput: document.getElementById('code-preview-output'),
@@ -1871,6 +1878,13 @@ function generateExamplesPreview() {
   dom.examplesPreviewOutput.textContent = chunks.join('\n\n/* ---------------------------------------- */\n\n');
 }
 
+// JUM-548: the first-run state is intentionally EMPTY — no domains, no
+// relationships. A first-run user used to get a silently pre-populated toy
+// template; the guided per-tab empty states (renderEmptyStates) now explain
+// each tab instead, and the realistic sample model is an explicit one-action
+// load (loadSampleModel), so the user learns where a model comes from. The
+// state core calls this on first run and on recovery; the Reset button calls
+// it too — reset therefore means "back to the empty first-run state".
 function seed() {
   state.domains = [];
   state.relationships = [];
@@ -1887,45 +1901,66 @@ function seed() {
     exportBlockCritical: true,
     largeCanvasMode: false
   };
+}
 
-  const users = addDomain('Users', { x: 80, y: 80, color: '#93c5fd' });
-  const billing = addDomain('Billing', { x: 700, y: 200, color: '#86efac' });
-  const user = addEntity(users.id, 'User', {
-    fields: [
-      { name: 'id', type: 'uuid', required: true, pk: true, fk: false, unique: true },
-      { name: 'organizationId', type: 'uuid', required: true, pk: false, fk: true, unique: false },
-      { name: 'username', type: 'string', required: true, pk: false, fk: false, unique: true }
-    ]
+/**
+ * JUM-548: load the sample model (src/model/sampleModel.js) through the same
+ * normalisation crossing a JSON import takes. Non-destructive by contract:
+ * over existing work the load only proceeds after an explicit confirmation —
+ * one of the destructive-action gates JUM-543 keeps on `window.confirm` — and
+ * even then the previous work is one in-session Undo away (the load records
+ * history, unlike file imports which reset it). The status region, not an
+ * alert, announces the outcome and names the sample marker.
+ */
+function loadSampleModel() {
+  if (state.domains.length) {
+    const confirmed = window.confirm(
+      'Load the sample model? This replaces the current domains and relationships (Undo restores them).'
+    );
+    if (!confirmed) return;
+  }
+  // JUM-547: the sample document crosses the same suite-import mapper as a
+  // file import — one set of versioning/compatibility rules for every entry
+  // point. The sample is the model slice only; the tab sections the mapper
+  // normalises are not applied here.
+  const result = buildStateFromSuiteExport(buildSampleModelPayload(), state);
+  if (!result.ok) {
+    showStatus(suiteExportFailureMessage(result));
+    return;
+  }
+  const normalized = result.state;
+  withPersist(() => {
+    state.domains = normalized.domains;
+    state.relationships = normalized.relationships;
+    state.selectedDomainId = normalized.selectedDomainId;
+    state.selectedEntityId = normalized.selectedEntityId;
+    state.selectedRelationshipId = normalized.selectedRelationshipId;
+    state.view = normalized.view;
+    state.idCounter = normalized.idCounter;
+    recomputeIdCounter();
+    render();
   });
-  const organization = addEntity(users.id, 'Organization', {
-    fields: [
-      { name: 'id', type: 'uuid', required: true, pk: true, fk: false, unique: true },
-      { name: 'name', type: 'string', required: true, pk: false, fk: false, unique: false }
-    ]
-  });
-  const invoice = addEntity(billing.id, 'Invoice', {
-    fields: [
-      { name: 'id', type: 'uuid', required: true, pk: true, fk: false, unique: true },
-      { name: 'organizationId', type: 'uuid', required: true, pk: false, fk: true, unique: false },
-      { name: 'total', type: 'number', required: true, pk: false, fk: false, unique: false }
-    ]
-  });
-  state.relationships.push({
-    id: nextId('rel'),
-    fromEntityId: user.id,
-    toEntityId: organization.id,
-    name: 'User belongs to Organization',
-    fromCardinality: 'N',
-    toCardinality: '1'
-  });
-  state.relationships.push({
-    id: nextId('rel'),
-    fromEntityId: invoice.id,
-    toEntityId: organization.id,
-    name: 'Invoice belongs to Organization',
-    fromCardinality: 'N',
-    toCardinality: '1'
-  });
+  showStatus(
+    'Sample model loaded: the "Users" domain (marked "sample" in the domain list) demonstrates '
+    + 'relationships, per-entity RBAC, a message contract and OAS composition. It passes the export '
+    + 'gate — try "Validate Model", export it, then delete the sample and start your own model.',
+    'info'
+  );
+}
+
+/**
+ * JUM-548: per-tab guided empty states. Each names the tab's first action
+ * and describes the tab honestly (the Interface and Deploy tabs are thinner
+ * than the Domain Designer, and their empty states say so). The two toggles
+ * here track the domain model, which only ever changes through a full
+ * render(); the Interface/Deploy toggles live next to their list renderers
+ * in src/ui/inspectors.js, because adapters and targets also change through
+ * partial renders (delete buttons) that never reach this pass.
+ */
+function renderEmptyStates() {
+  const modelEmpty = state.domains.length === 0;
+  if (dom.domainDesignerEmptyState) dom.domainDesignerEmptyState.hidden = !modelEmpty;
+  if (dom.serviceConfigEmptyState) dom.serviceConfigEmptyState.hidden = !modelEmpty;
 }
 
 // The single render pass, in the monolith's exact order. The pre-refactor
@@ -1935,6 +1970,7 @@ function seed() {
 // preserved here as an explicit call sequence.
 function render() {
   tabs.renderTabs();
+  renderEmptyStates();
   inspectors.renderInterfaceAdapters();
   inspectors.renderServiceConfiguration();
   inspectors.renderDeployments();
@@ -2360,8 +2396,13 @@ function wireEvents() {
     dom.importPackageInput.value = '';
   };
 
+  // JUM-548: the sample loader is reachable from the Export panel (always)
+  // and from the Domain Designer's guided empty state (the first action).
+  if (dom.loadSampleBtn) dom.loadSampleBtn.onclick = () => loadSampleModel();
+  if (dom.loadSampleEmptyBtn) dom.loadSampleEmptyBtn.onclick = () => loadSampleModel();
+
   dom.resetCanvasBtn.onclick = () => {
-    if (!window.confirm('Reset canvas to default template?')) return;
+    if (!window.confirm('Reset canvas? All domains and relationships will be cleared.')) return;
     withPersist(() => {
       seed();
       render();
