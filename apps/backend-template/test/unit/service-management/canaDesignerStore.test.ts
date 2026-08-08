@@ -234,8 +234,8 @@ describe('cana designer store — happy path and wire format', () => {
     const store = new CanaDesignerStore({ client });
     const circular: Record<string, unknown> = {};
     circular.self = circular;
-    expect(() => store.save(circular)).toThrow('circular');
-    expect(() => store.saveBaseline(circular)).toThrow('circular');
+    expect(() => store.save(circular)).toThrow(/circular|cyclic/i);
+    expect(() => store.saveBaseline(circular)).toThrow(/circular|cyclic/i);
   });
 });
 
@@ -519,7 +519,11 @@ describe('designer store selection seam (JUM-483)', () => {
       });
       expect(createDesignerStore()).toBeInstanceOf(LocalStorageDesignerStore);
       delete (globalThis as Record<string, unknown>)[globalKey];
-      (globalThis as Record<string, unknown>).location = { search: 123 };
+      Object.defineProperty(globalThis, 'location', {
+        configurable: true,
+        writable: true,
+        value: { search: 123 }
+      });
       expect(createDesignerStore()).toBeInstanceOf(LocalStorageDesignerStore);
     });
   });
