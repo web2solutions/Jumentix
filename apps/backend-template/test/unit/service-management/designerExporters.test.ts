@@ -13,7 +13,9 @@ import path from 'node:path';
  * the baseline the contract-parity lane (JUM-474/475/476/478) rewrites from.
  * The AsyncAPI builder moved to `asyncApiExporters.js` under JUM-475
  * (canonical `spec/asyncapi/` targeting) and is pinned by
- * `designerAsyncApiExport.test.ts`.
+ * `designerAsyncApiExport.test.ts`. The one deliberate shape change since the
+ * extraction is the JSON export: JUM-547 turned it into the versioned
+ * full-suite document (`kind`/`version`, all four tabs), pinned here.
  */
 
 const repoRoot = path.resolve(__dirname, '../../../../..');
@@ -98,15 +100,77 @@ const EXPECTED_INVOICE_PROPERTIES = {
 };
 
 describe('designer exporters (JUM-469)', () => {
-  it('builds the JSON export document with domains, relationships and view', () => {
+  it('builds the JSON export as the versioned full-suite document carrying all four tabs (JUM-547)', () => {
     const state = createState();
+    state.interfaces = [
+      {
+        type: 'grpc', framework: 'bun', entrypoint: 'src/grpc.ts', controller: 'BillingGrpc'
+      }
+    ];
+    state.serviceConfiguration = {
+      serviceKind: 'grpc-rest-api',
+      runMode: 'container',
+      cloudProvider: 'google',
+      staticAssetsPath: 'public',
+      ports: { rest: 8080, websocket: 8081, grpc: 8082 }
+    };
+    state.runtimeEnvironment = {
+      environment: 'staging',
+      fileName: '.env.staging',
+      values: { JUMENTIX_HTTP_FRAMEWORK: 'fastify' }
+    };
+    state.deployments = [{
+      name: 'prod-eu',
+      region: 'eu-west-1',
+      runtime: 'node22',
+      serviceType: 'restapi',
+      deployTarget: 'ec2',
+      runtimeProtocol: 'http',
+      databaseDriver: 'Mongo',
+      keyValueDriver: 'redis',
+      pm2Profile: 'production'
+    }];
     const document = buildJsonExportDocument(state);
     expect(document).toStrictEqual({
+      kind: 'service-management-suite',
+      version: '2.0.0',
       domains: state.domains,
       relationships: state.relationships,
+      interfaces: state.interfaces,
+      serviceConfiguration: state.serviceConfiguration,
+      // JUM-547 decision: the environment selection crosses, values never do.
+      runtimeEnvironment: { environment: 'staging', fileName: '.env.staging' },
+      deployments: state.deployments,
       view: state.view
     });
-    expect(Object.keys(document)).toStrictEqual(['domains', 'relationships', 'view']);
+    expect(Object.keys(document)).toStrictEqual([
+      'kind',
+      'version',
+      'domains',
+      'relationships',
+      'interfaces',
+      'serviceConfiguration',
+      'runtimeEnvironment',
+      'deployments',
+      'view'
+    ]);
+    // No runtime environment value — and therefore no secret — leaves in the
+    // bundle, even when state carries them.
+    const wireText = JSON.stringify(document);
+    expect(wireText).not.toContain('JUMENTIX_HTTP_FRAMEWORK');
+    expect(wireText).not.toContain('fastify');
+  });
+
+  it('defaults the suite sections when the state predates the four-tab shape', () => {
+    const document = buildJsonExportDocument({
+      domains: [], relationships: [], view: { zoom: 1 }
+    });
+    expect(document.kind).toBe('service-management-suite');
+    expect(document.version).toBe('2.0.0');
+    expect(document.interfaces).toStrictEqual([]);
+    expect(document.serviceConfiguration).toBeUndefined();
+    expect(document.runtimeEnvironment).toStrictEqual({ environment: 'dev', fileName: '.env.dev' });
+    expect(document.deployments).toStrictEqual([]);
   });
 
   it('builds the markdown export verbatim', () => {

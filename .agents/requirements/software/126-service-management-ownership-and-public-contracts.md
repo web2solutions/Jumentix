@@ -6,7 +6,7 @@
   adoption", milestone H1 (Correctness & runtime alignment), 2026-08-05.
 - Strengthens: `038`, `043`. Relates to: `044`, `052`, `123` and Linear `JUM-458`,
   `JUM-558`, `JUM-459`, `JUM-460`, `JUM-461`, `JUM-462`, `JUM-543`, `JUM-466`,
-  `JUM-468`, `JUM-475`, `JUM-484`.
+  `JUM-468`, `JUM-475`, `JUM-484`, `JUM-547`.
 
 ## Context
 
@@ -289,8 +289,30 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
 
 5. **Contract 3 — Export formats and the export quality gate.**
    Eight exporters exist; each guarantees:
-   - **JSON** (`domain-designer.json`): `{ domains, relationships, view }` — the
-     full model, re-importable shape.
+   - **JSON** (`domain-designer.json`): the full-suite document (shape landed
+     by `JUM-547`): `{ kind: "service-management-suite", version: "2.0.0",
+     domains, relationships, interfaces, serviceConfiguration,
+     runtimeEnvironment, deployments, view }` — all four tabs, re-importable
+     shape. `interfaces` entries are `{ type, framework, entrypoint,
+     controller }`; `serviceConfiguration` and `deployments` carry the
+     Contract 2 shapes. The pre-`JUM-547` shape was `{ domains, relationships,
+     view }` with no `kind`/`version`; import MUST keep accepting it,
+     defaulting the missing sections (backward compatibility). Import MUST
+     refuse a document whose `version` major is newer than the importer's, a
+     `kind` other than the suite kind, or any unknown top-level section —
+     failing clearly rather than half-importing or silently discarding
+     sections (forward compatibility).
+   - **`runtimeEnvironment` in the JSON export — the recorded `JUM-547`
+     decision.** The bundle carries the environment *selection* only
+     (`{ environment, fileName }`), never `values`. The values mirror real
+     `.env` contents of the machine the designer runs on — the editable and
+     read-only tiers of the Contract 1 classification (the never-exposed tier
+     never even enters this state) — so a bundle containing them is a file
+     that can carry configuration off the machine; the runtime environment is
+     a property of where the designer is running, not of the service being
+     designed. On import the selection is restored and, when the document
+     carries no `values`, the local machine's values are preserved. No secret
+     can leave in a bundle.
    - **Markdown** (`domain-designer-model.md`): human-readable model document —
      per-domain bounded-context metadata, per-entity field table
      (name/type/required/PK/FK/unique/nullable), RBAC per action, message contracts,
@@ -429,6 +451,16 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
   (server behavior) and
   `apps/backend-template/test/unit/service-management/pm2EcosystemUi.contract.test.ts`
   (designer-side no-hardcoded-command rule).
+- Contract 3 amended by `JUM-547` (branch
+  `kimi/feature/JUM-547-full-suite-export-import`): the JSON export became the
+  versioned full-suite document carrying all four tabs, and the
+  `runtimeEnvironment` decision (selection crosses, values never leave the
+  machine) is recorded above, in the JSON export bullet. Pinned by
+  `apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts`
+  (full-suite deep-equal, backward/forward compatibility) and
+  `apps/backend-template/test/unit/service-management/designerExporters.test.ts`
+  (document shape). The Contract 2 storage schema is unchanged — no versioned
+  key bump.
 - Registry sync: `.agents/NFR-REGISTRY.md`,
   `documentation/md/SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md` (+ `.pt-BR.md`),
   `documentation/md/SPEC-REQUIREMENTS-COVERAGE-STATUS.md` (+ `.pt-BR.md`),

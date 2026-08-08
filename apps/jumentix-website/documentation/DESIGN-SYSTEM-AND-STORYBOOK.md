@@ -77,6 +77,12 @@ cannot import the React components. It adopts the design system at the token lay
 
 The smoke check requires the eight designer stories and a minimum catalog of 54 entries.
 
+The designer-side view of this adoption — the vendored-token sync rule, the
+keyboard and screen-reader model, and the PWA shell it shares with these
+stories — is documented in
+[Service Management Design System and PWA Shell](../../../documentation/md/SERVICE-MANAGEMENT-DESIGN-SYSTEM-PWA.md)
+(E7).
+
 Visual evidence:
 
 - [Component catalog](./research/storybook-design-system.png)
