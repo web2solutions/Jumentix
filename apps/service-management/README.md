@@ -23,6 +23,7 @@ Detailed feature usage:
 - [Module Architecture and IDesignerStore Port Contract](../../documentation/md/SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.md)
 - [Contract Parity Guarantees](../../documentation/md/SERVICE-MANAGEMENT-CONTRACT-PARITY.md)
 - [Operations Console](../../documentation/md/SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.md)
+- [Design System and PWA Shell](../../documentation/md/SERVICE-MANAGEMENT-DESIGN-SYSTEM-PWA.md)
 - [Cana Adoption, Migration and Offline Behaviour](../../documentation/md/SERVICE-MANAGEMENT-CANA-ADOPTION.md)
 - [Service Management Technical Documentation](./documentation/README.md)
 
