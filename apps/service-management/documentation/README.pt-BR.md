@@ -13,6 +13,7 @@ Idioma alvo: Português (Brasil)
 - Referências principais
   - [Aplicativo de gerenciamento de serviços](../../../documentation/md/SERVICE-MANAGEMENT-APPLICATION.pt-BR.md)
   - [Arquitetura de módulos do Service Management e contrato da porta IDesignerStore](../../../documentation/md/SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.pt-BR.md)
+  - [Garantias de paridade de contratos do Service Management](../../../documentation/md/SERVICE-MANAGEMENT-CONTRACT-PARITY.pt-BR.md)
   - [Recursos e uso do designer de domínio](../../../documentation/md/DOMAIN-DESIGNER-FEATURES-AND-USAGE.pt-BR.md)
   - [Entidades de dados de domínio](../../../documentation/md/DOMAIN-DATA-ENTITIES.pt-BR.md)
   - [Contratos de ambiente de tempo de execução](../../../documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.pt-BR.md)

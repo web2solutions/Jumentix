@@ -44,6 +44,8 @@ Para engenheiros que mantêm e evoluem o Jumentix:
   ([EN](./md/AGENT-OPERATING-REQUIREMENTS-114-121.md))
 - [Arquitetura de módulos do Service Management e contrato da porta IDesignerStore](./md/SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.pt-BR.md)
   ([EN](./md/SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.md))
+- [Garantias de paridade de contratos do Service Management](./md/SERVICE-MANAGEMENT-CONTRACT-PARITY.pt-BR.md)
+  ([EN](./md/SERVICE-MANAGEMENT-CONTRACT-PARITY.md))
 
 ## Hubs Técnicos de Componentes
 

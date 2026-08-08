@@ -19,6 +19,9 @@ Core implementation files:
 Module layering, the injection pattern and the `IDesignerStore` storage port
 contract are documented in
 [Service Management Module Architecture](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.md).
+What the contract exports guarantee — and the checks that prove it — are
+documented in
+[Service Management Contract Parity Guarantees](./SERVICE-MANAGEMENT-CONTRACT-PARITY.md).
 
 ## Tabs
 
