@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-08 feat(JUM-493): publish designer core as @jumentix package (dry-run only) - Eduardo A.
 - 2026-08-08 [JUM-491][Feature] Multi-user shared catalog sync over Cana resync events (#133) - Eduardo A.
 - 2026-08-08 docs(JUM-494): document E8 collaboration and packaging, closing the E1-E8 chain (EN/PT-BR) (#135) - Eduardo A.
 - 2026-08-08 [JUM-545][Feature] Interface adapter lifecycle with edit-in-place and validation (#130) - Eduardo A.
