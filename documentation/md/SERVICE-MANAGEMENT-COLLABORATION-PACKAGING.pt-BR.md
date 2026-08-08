@@ -26,10 +26,13 @@ entregue:
   importação.
 - **Empacotamento**
   ([JUM-493](https://linear.app/jumentix/issue/JUM-493/feature-publish-designer-core-as-jumentix-package-xpertminds-org-dry)):
-  **desescopado** — o núcleo modularizado do designer existe como fronteira
-  de pacote, mas a etapa de publicação não foi entregue. Este documento o
-  afirma explicitamente, porque um documento de portão que descreve o plano
-  em vez da entrega seria um falso verde.
+  o núcleo do designer livre de framework é o pacote versionado
+  `@jumentix/designer-core` sob
+  [`packages/designer-core/`](../../packages/designer-core/) — manifesto,
+  build determinístico, declarações de tipo, prova de ausência de DOM e um
+  teste de fumaça de consumidor contra o artefato construído. A publicação é
+  **somente dry-run** (Requisito 070): o caminho de publicação é verificado,
+  nunca disparado.
 
 Por ser o portão terminal, seu conteúdo reflete **o que foi entregue**,
 incluindo tudo o que foi postergado — cada desescopo abaixo é nomeado, não
@@ -273,52 +276,77 @@ compatíveis/incompatíveis, JUM-617 preservado no caminho de acréscimo) e
 [`designerExporters.test.ts`](../../apps/backend-template/test/unit/service-management/designerExporters.test.ts)
 (o formato do documento de pacote v2, fixado).
 
-## Empacotamento: o núcleo do designer `@jumentix` (JUM-493) — desescopado
+## Empacotamento: o núcleo do designer `@jumentix` (JUM-493)
 
-**Esta frente não foi entregue, e este documento o afirma claramente.** O
-JUM-493 — publicar o núcleo do designer livre de framework como um pacote
-`@jumentix` versionado sob a organização xpertminds — está em **Backlog**; é
-a decisão de desescopo de 12-01 desta frente do épico. O que existe e o que
-não existe:
+**Esta frente foi entregue como um pacote com dry run verificado — nunca uma
+publicação automática.** Esta seção antes registrava o JUM-493 como
+desescopado (a decisão de 12-01); o pacote desde então foi entregue, e este
+documento registra o estado entregue. O núcleo do designer livre de framework
+é agora o pacote versionado
+[`@jumentix/designer-core`](../../packages/designer-core/) sob a organização
+xpertminds — ESM seguro para navegador, zero dependências de runtime,
+licenciado sob MIT, com metadados de procedência apontando para sua localização
+no monorepo.
 
-- **O que existe: a fronteira de pacote.** O JUM-468/JUM-469 modularizou o
-  designer de modo que o núcleo *é* uma coisa separável: a lógica pura vive
-  em módulos livres de DOM sob `apps/service-management/src/` (`state`,
-  `store`, `model`, `validation`, `exporters`, `importers`, `packages`,
-  `codegen`), o acesso ao DOM vive no módulo de entrada, e o conjunto livre
-  de DOM é exatamente o que um pacote poderia distribuir. O documento E3,
-  [Arquitetura de módulos do Service Management](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.pt-BR.md),
-  é o dono dessa fronteira e de sua justificativa; foi escrito com este
-  consumidor em mente.
-- **O que não existe: o pacote.** Nenhum `package.json`, ponto de entrada,
-  declaração de tipos ou fiação de publicação do núcleo do designer foi
-  entregue; o manifesto do workspace
-  ([`apps/service-management/package.json`](../../apps/service-management/package.json))
-  permanece `private: true`. A barra de aceite que o JUM-493 define — o
-  núcleo carregando e executando em um ambiente sem DOM, sem `document`,
-  `window` ou `localStorage`, provado por um teste de fumaça de consumidor
-  contra o artefato publicado — está por definição não atendida: não há
-  artefato.
-- **O que o pacote conteria, quando a frente for retomada** (conforme a
-  issue): o modelo de domínio e seus normalizadores, o motor de
-  validação/checagem de modelo, os exportadores (JSON, Markdown, JSON Schema,
-  AsyncAPI, boilerplate bundle, package, OAS), os importadores (pacote de
-  domínio, arquivo de estado, arquivo OAS) e o motor de schema-diff — com o
-  `IDesignerStore` publicado apenas como tipo/contrato. **Fora**: todo módulo
-  DOM, o canvas, os inspetores, as superfícies de status e os adaptadores de
-  armazenamento (o `CanaDesignerStore` é distribuído com o pacote próprio do
-  Cana, não aqui).
-- **A política de publicação permanece independentemente.** Quando a frente
-  for retomada, a publicação continua **somente dry-run** por política — o
-  [Requisito 070](../../.agents/requirements/project/070-xpertminds-npm-and-web2solutions-vercel-integration.md)
-  proíbe publicação automática; o repositório já expõe a superfície de
-  dry-run (`npm:org:check:xpertminds`, `npm:publish:dry-run:packages`) sobre
-  a qual a frente será construída.
+- **O pacote é uma fronteira, não uma cópia.** A fonte única da verdade de
+  cada módulo distribuído permanece em `apps/service-management/src/`, onde a
+  SPA e suas suítes o exercem diariamente.
+  [`packages/designer-core/src/index.js`](../../packages/designer-core/src/index.js)
+  é um barrel somente de reexportação sobre o fechamento livre de DOM (o
+  modelo de domínio e seus normalizadores, o motor de validação/checagem de
+  modelo, os exportadores — JSON, Markdown, JSON Schema, AsyncAPI, boilerplate
+  bundle, package, OAS —, os importadores, o motor de schema-diff/prévia de
+  merge, o codegen hexagonal e o `IDesignerStore` apenas como tipo/contrato).
+  O build
+  ([`scripts/build.js`](../../packages/designer-core/scripts/build.js)) copia
+  exatamente esse fechamento enumerado para `dist/`, reescreve os
+  especificadores do barrel para a árvore copiada e gera declarações de tipo
+  a partir dos fontes anotados com JSDoc usando o compilador TypeScript fixado
+  do repositório — de modo que o artefato e a SPA não podem divergir.
+  **Fora**, garantido por teste: todo módulo DOM (`script.js`, `ui/`, `pwa/`),
+  os clientes de sincronização (`state/designerSync.js`,
+  `state/catalogSyncClient.js`) e os adaptadores de armazenamento — nem
+  `LocalStorageDesignerStore` nem `CanaDesignerStore` são distribuídos, e o
+  pacote não depende do Cana.
+- **A barra de aceite é atendida por prova, não por construção.** Três suítes
+  sob [`packages/designer-core/test/`](../../packages/designer-core/test/)
+  fixam o pacote: `packaging.test.ts` valida o manifesto (pontos de entrada
+  no output construído, mapa de exports com types primeiro, `files`, licença,
+  `sideEffects`, scripts somente dry-run, no estilo da suíte de packaging do
+  cana), afirma que o conjunto de arquivos construído é *exatamente* o
+  fechamento declarado e afirma o conteúdo do tarball empacotado via `npm
+  pack --dry-run --json`; `dom-free.test.ts` varre a AST do artefato
+  construído em busca de qualquer referência a `window`, `document`,
+  `localStorage`, `indexedDB`, `alert()` ou FileReader/DOMParser e de
+  qualquer import que cruze a fronteira do pacote; `consumer-smoke.test.ts`
+  executa o teste de aceite da issue — importa o artefato construído em um
+  **processo separado sem DOM** (sem `document`, sem `window`, sem
+  `localStorage`) e executa um round trip de validação → exportação →
+  reimportação sobre o modelo de exemplo, deep-equal com ponto fixo de
+  reexportação.
+- **A política de publicação permanece: somente dry-run.** Conforme o
+  [Requisito 070](../../.agents/requirements/project/070-xpertminds-npm-and-web2solutions-vercel-integration.md),
+  não existe publicação automática. A superfície de dry-run do repositório
+  (`bun run npm:publish:dry-run:packages`, com `npm:org:check:xpertminds`
+  para o lado da organização) reconhece o pacote como qualquer outro pacote
+  de workspace não privado e executa `bun publish --dry-run --access public`;
+  o `prepublishOnly` força um rebuild limpo antes, de modo que o dry run
+  verifica um artefato determinístico cujo conteúdo a suíte de packaging
+  validou.
+- **Política de versionamento.** O pacote segue semver sobre seu barrel
+  público: patch para correções internas, minor para exportações aditivas,
+  major para superfície removida ou estreitada. Os contratos de *dados* que
+  ele lê e escreve (exportação full-suite, documento de pacote de domínio)
+  permanecem versionados no payload sob a política do JUM-492 (Requisito 126,
+  Contrato 3) — a versão do pacote não os repete. O versionamento de pacotes
+  de domínio do JUM-492 se apoia exatamente nessa separação.
 
 A consequência prática para o usuário permanece a do documento E6:
 **a exportação é como o trabalho sai da máquina** — como documento
 full-suite ou como pacote de domínio versionado — e o catálogo
-compartilhado (acima) é a única segunda cópia contínua.
+compartilhado (acima) é a única segunda cópia contínua. O pacote muda quem
+pode *depender* do núcleo, não como o trabalho do usuário do designer é
+armazenado.
 
 ### A exportação full-suite (JUM-547), o pacote portátil
 
@@ -396,7 +424,8 @@ merge. Nenhuma verificação pendente é descrita como passando aqui: os
 artefatos do JUM-491 que este documento referencia
 (`SHARED-CATALOG-SYNC.md`, `catalogSyncClient.js`, o módulo `Catalogs`, o
 teste de convergência) chegam com o PR próprio deles, e a frente de
-empacotamento do JUM-493 está em Backlog pela decisão de desescopo de 12-01
+empacotamento do JUM-493 desde então foi entregue como
+`@jumentix/designer-core` — somente dry-run, conforme a seção acima
 — ambos afirmados, não suavizados. A evidência de conclusão do Project
 conforme o Req 094 (ligando esta Issue, seu PR e a evidência de commits, e
 os resultados de validação de integridade da documentação) é registrada no
@@ -443,9 +472,17 @@ quando o portão fecha.
   [`src/packages/packageVersioning.js`](../../apps/service-management/src/packages/packageVersioning.js),
   [`src/exporters/designerExporters.js`](../../apps/service-management/src/exporters/designerExporters.js),
   [`src/importers/designerImporters.js`](../../apps/service-management/src/importers/designerImporters.js)
-- Empacotamento (JUM-493, desescopado):
-  [`apps/service-management/package.json`](../../apps/service-management/package.json)
-  (`private: true`), a fronteira livre de DOM sob
+- Empacotamento (JUM-493):
+  [`packages/designer-core/`](../../packages/designer-core/)
+  ([manifesto](../../packages/designer-core/package.json),
+  [barrel](../../packages/designer-core/src/index.js),
+  [build](../../packages/designer-core/scripts/build.js),
+  [README](../../packages/designer-core/README.pt-BR.md)),
+  com as suítes
+  [`packaging.test.ts`](../../packages/designer-core/test/packaging.test.ts),
+  [`dom-free.test.ts`](../../packages/designer-core/test/dom-free.test.ts) e
+  [`consumer-smoke.test.ts`](../../packages/designer-core/test/consumer-smoke.test.ts);
+  a fonte da verdade permanece a fronteira livre de DOM sob
   [`apps/service-management/src/`](../../apps/service-management/src)
 - Suítes:
   [`catalogSyncClient.test.ts`](../../apps/backend-template/test/unit/service-management/catalogSyncClient.test.ts),

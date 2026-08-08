@@ -1,0 +1,106 @@
+# @jumentix/designer-core
+
+O núcleo framework-free do designer de Service Management, publicado como um
+pacote `@jumentix` versionado sob a organização xpertminds
+([JUM-493](https://linear.app/jumentix/issue/JUM-493/feature-publish-designer-core-as-jumentix-package-xpertminds-org-dry)).
+ESM seguro para navegador, zero dependências de runtime, sem DOM, sem
+implementação de armazenamento.
+
+The English version of this document is in [README.md](./README.md).
+
+## O que é
+
+O núcleo do designer é a lógica separável que a modularização JUM-468/JUM-469
+extraiu do designer de Service Management (`apps/service-management`): tudo o
+que o designer sabe sobre um modelo de domínio, sem nada sobre como esse
+modelo é renderizado ou persistido. A fonte única da verdade permanece em
+`apps/service-management/src/` — o build deste pacote copia exatamente o
+fechamento de módulos DOM-free para `dist/` e gera declarações de tipo a
+partir dos fontes anotados com JSDoc, de modo que o artefato e a SPA nunca
+divergem.
+
+**Dentro do pacote:**
+
+- o modelo de domínio, suas consultas e seus normalizadores
+  (`model/`, `state/designerState.js`);
+- o motor de validação / verificação de modelo (`validation/`);
+- os exportadores — JSON, Markdown, JSON Schema, AsyncAPI, bundle de
+  boilerplate, pacote de domínio, OAS (`exporters/`);
+- os importadores — pacote de domínio, arquivo de estado, arquivo OAS
+  (`importers/`);
+- o motor de schema-diff / versionamento de pacotes de domínio e prévia de
+  merge (`packages/packageVersioning.js`);
+- o codegen hexagonal de boilerplate (`codegen/hexagonalCodegen.js`);
+- `IDesignerStore` apenas como **tipo/contrato**, para que o consumidor
+  forneça seu próprio store.
+
+**Deliberadamente fora:** todo módulo DOM (`script.js`, `ui/`, `pwa/`), o
+canvas, os inspetores, as superfícies de status, os clientes de sincronização
+(`state/designerSync.js`, `state/catalogSyncClient.js`) e os adaptadores de
+armazenamento. Nem `LocalStorageDesignerStore` nem `CanaDesignerStore` são
+distribuídos aqui, e o pacote **não depende do Cana** — o Cana é publicado
+pelo seu próprio épico
+([JUM-416](https://linear.app/jumentix/issue/JUM-416/release-publish-the-browser-consumable-cana-typescript-package)).
+
+## Uso
+
+```js
+import {
+  buildSampleModelPayload,
+  normalizeStatePayload,
+  collectModelIssues,
+  buildJsonExportDocument
+} from '@jumentix/designer-core';
+
+const state = normalizeStatePayload(buildSampleModelPayload());
+const issues = collectModelIssues(state);           // valida
+const document = buildJsonExportDocument(state);    // exporta
+const back = normalizeStatePayload(JSON.parse(JSON.stringify(document))); // reimporta
+```
+
+O núcleo carrega e executa em qualquer runtime JavaScript — navegador, Bun,
+Node ≥ 20 — sem `document`, sem `window` e sem `localStorage`. Isso não é uma
+convenção, é uma propriedade testada: `test/dom-free.test.ts` varre a AST do
+artefato construído em busca de referências a globais de DOM, e
+`test/consumer-smoke.test.ts` importa o artefato construído em um processo sem
+DOM e executa um round trip de validação → exportação → reimportação.
+
+## Política de versionamento
+
+O pacote segue semver sobre sua **superfície de API pública** (o barrel
+`src/index.js`):
+
+- **patch** — correções internas sem mudança de assinatura exportada;
+- **minor** — exportações aditivas ou parâmetros opcionais;
+- **major** — exportações removidas/renomeadas, parâmetros ou retornos
+  estreitados.
+
+Os *contratos de dados* que o núcleo lê e escreve (o documento de exportação
+full-suite, o documento de pacote de domínio) são versionados de forma
+independente dentro dos próprios payloads — essa política pertence ao
+[JUM-492](https://linear.app/jumentix/issue/JUM-492/feature-domain-package-versioning-with-semantic-conflict-resolution)
+e está fixada no Requisito 126, Contrato 3; a versão deste pacote não a
+repete.
+
+## Política de publicação: apenas dry-run
+
+Conforme o
+[Requisito 070](../../.agents/requirements/project/070-xpertminds-npm-and-web2solutions-vercel-integration.md),
+**não existe publicação automática**. A superfície de dry-run do repositório
+(`bun run npm:publish:dry-run:packages`) reconhece este pacote como qualquer
+outro pacote de workspace não privado e executa `bun publish --dry-run
+--access public`, que roda o `prepublishOnly` — um rebuild limpo — antes de
+montar o tarball. O `test/packaging.test.ts` valida o manifesto e o conteúdo
+empacotado, de modo que o dry-run verifica um artefato cujo conteúdo é
+provado, não presumido.
+
+## Desenvolvimento
+
+```bash
+bun run build   # copia o fechamento de módulos + gera declarações em dist/
+bun test        # executa as suítes deste pacote (packaging, prova DOM-free, smoke do consumidor)
+```
+
+## Licença
+
+MIT — veja [LICENSE.md](./LICENSE.md).

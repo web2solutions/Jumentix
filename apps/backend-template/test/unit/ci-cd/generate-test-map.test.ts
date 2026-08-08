@@ -296,7 +296,10 @@ describe('service-management classification (JUM-472)', () => {
         'apps/service-management/script.js',
         'apps/service-management/src/**',
         'apps/service-management/index.html',
-        'apps/service-management/styles.css'
+        'apps/service-management/styles.css',
+        // JUM-493: the publishable designer-core package IS the designer core;
+        // its manifest, build and suites belong to the same layer.
+        'packages/designer-core/**'
       ]
     });
   });

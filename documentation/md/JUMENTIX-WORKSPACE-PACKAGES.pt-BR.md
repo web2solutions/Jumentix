@@ -21,6 +21,10 @@ Este documento rastreia o mapa de pacotes e aplicações implementado em `dev`.
 - `@jumentix/sdk-rest-client`
 - `@jumentix/sdk-websocket-client`
 - `@jumentix/sdk-grpc-client`
+- `@jumentix/designer-core` - núcleo do designer de Service Management livre de framework (modelo
+  de domínio, motor de validação, exportadores, importadores, versionamento de pacotes de domínio)
+  como ESM seguro para navegador com declarações de tipo geradas; publicável, somente dry-run
+  conforme o Requisito 070 (JUM-493).
 
 ## Pacotes Compartilhados de Contratos e Configuração
 

@@ -21,6 +21,9 @@ This document tracks the package and application workspace map implemented in `d
 - `@jumentix/sdk-rest-client`
 - `@jumentix/sdk-websocket-client`
 - `@jumentix/sdk-grpc-client`
+- `@jumentix/designer-core` - framework-free Service Management designer core (domain model,
+  validation engine, exporters, importers, domain-package versioning) as browser-safe ESM with
+  generated type declarations; publishable, dry-run-only per Requirement 070 (JUM-493).
 
 ## Shared Contract and Configuration Packages
 
