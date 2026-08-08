@@ -25,6 +25,7 @@ Uso detalhado de recursos:
 
 - [Recursos e uso do designer de domínio](../../documentation/md/DOMAIN-DESIGNER-FEATURES-AND-USAGE.pt-BR.md)
 - [Arquitetura de módulos e contrato da porta IDesignerStore](../../documentation/md/SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.pt-BR.md)
+- [Garantias de paridade de contratos](../../documentation/md/SERVICE-MANAGEMENT-CONTRACT-PARITY.pt-BR.md)
 - [Documentação técnica de gerenciamento de serviços](./documentation/README.pt-BR.md)
 
 ## Guias
@@ -60,7 +61,19 @@ Uso detalhado de recursos:
    modo de execução × provedor de nuvem deve existir na matriz de implantação do Requisito 059
    (lida da fonte legível por máquina compartilhada `src/model/deployCapabilityMatrix.js`).
    Perfis inválidos são relatados na superfície de status da guia e não são salvos.
-   - Inclui visualização do perfil de tempo de execução PM2 para implantações de VM.
+   - A visualização do perfil de tempo de execução PM2 para implantações de VM lê os
+     arquivos reais `pm2/ecosystem.*.cjs` através de `GET /api/runtime/pm2-ecosystem`
+     (JUM-480): a lista de processos e o comando `pm2 start` sugerido derivam do
+     arquivo de ecossistema do ambiente de visualização selecionado — nenhuma lista
+     de processos ou invocação de gerenciador de pacotes é fixada em código, de modo
+     que uma edição no ecossistema (ou a mudança de formato de invocação da migração
+     para Bun) é refletida sem alteração no designer. Ambientes sem arquivo de
+     ecossistema exibem um estado vazio explícito, nunca uma visualização
+     silenciosamente em branco.
+   - Editor de ambiente de tempo de execução multi-ambiente (JUM-480): o seletor de
+     Environment carrega os valores do ambiente escolhido, o painel nomeia o arquivo
+     env exato que a próxima gravação escreverá, e a resposta da gravação confirma o
+     arquivo escrito.
    - Inclui editor de ambiente de tempo de execução para:
      - `JUMENTIX_HTTP_FRAMEWORK`
      - `JUMENTIX_REALTIME_API`
@@ -68,6 +81,15 @@ Uso detalhado de recursos:
      - `JUMENTIX_REALTIME_API_DATABASE_DRIVER`
 4. **Gerenciamento de implantação**
    - Registre alvos de implantação para VMs, servidores dedicados, EC2 e provedores de funções.
+   - Cada alvo carrega os metadados por serviço do Requisito 059 (JUM-481):
+     `serviceType`, `deployTarget`, `runtimeProtocol`, `databaseDriver`,
+     `keyValueDriver` e `pm2Profile`. As adições são validadas contra a
+     matriz de implantação lida da fonte legível por máquina compartilhada
+     `src/model/deployCapabilityMatrix.js` — combinações sem linha na matriz,
+     protocolos que o tipo de serviço não expõe e perfis PM2 em alvos
+     serverless são rejeitados na superfície de status com a restrição
+     nomeada. Alvos persistidos antes deste alinhamento migram no
+     carregamento.
 
 ## Correr
 
@@ -113,6 +135,12 @@ Integrada em `apps/service-management/server.js`:
 
 - `GET /api/runtime/env?environment=dev|development|staging|ci|test`
 - `POST /api/runtime/env`
+- `GET /api/runtime/pm2-ecosystem?environment=dev|development|staging|production|prod|ci|test`
+  (somente leitura; fonte da visualização PM2 — relata os apps do arquivo real
+  `pm2/ecosystem.*.cjs` do ambiente selecionado com comandos `pm2 start` por app
+  derivados da definição do ecossistema, um estado explícito `exists: false`
+  quando o arquivo está ausente, e o envelope 500 honesto quando o arquivo está
+  ilegível ou quebrado)
 
 O contrato completo (conjuntos de enum, semântica de escrita, higiene de resposta) está em
 [Contratos de ambiente de tempo de execução](../../documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.pt-BR.md).

@@ -92,8 +92,9 @@ describe('cana performance shape', () => {
     const largeTime = await median(5, () => large.table<Row>('rows').query({ limit: 10 }));
 
     // 10x the data. A cursor-limited read should be near-flat; 4x leaves ample
-    // headroom for noise while still failing a linear implementation.
-    expect(largeTime).to.be.lessThan(Math.max(smallTime * 4, 5));
+    // headroom for noise while still failing a linear implementation. The floor
+    // allows equality because some CI browsers quantize tiny timings to 5ms.
+    expect(largeTime).to.be.at.most(Math.max(smallTime * 4, 5));
     await small.close();
     await large.close();
   });
@@ -150,7 +151,7 @@ describe('cana performance shape', () => {
     const smallTime = await median(10, () => small.table<Row>('rows').get(500));
     const largeTime = await median(10, () => large.table<Row>('rows').get(500));
 
-    expect(largeTime).to.be.lessThan(Math.max(smallTime * 4, 5));
+    expect(largeTime).to.be.at.most(Math.max(smallTime * 4, 5));
     await small.close();
     await large.close();
   });

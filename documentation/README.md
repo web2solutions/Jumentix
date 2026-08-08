@@ -47,6 +47,8 @@ For engineers maintaining and evolving Jumentix:
   ([pt-BR](./md/PROJECT-VS-SOFTWARE-REQUIREMENTS.pt-BR.md))
 - [Service Management Module Architecture and IDesignerStore Port Contract](./md/SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.md)
   ([pt-BR](./md/SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.pt-BR.md))
+- [Service Management Contract Parity Guarantees](./md/SERVICE-MANAGEMENT-CONTRACT-PARITY.md)
+  ([pt-BR](./md/SERVICE-MANAGEMENT-CONTRACT-PARITY.pt-BR.md))
 
 ## Component Technical Hubs
 

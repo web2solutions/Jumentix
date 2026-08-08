@@ -59,7 +59,6 @@ export async function startRestApiAdapter(
   await load();
 }
 
-// eslint-disable-next-line jest/require-hook
 /* istanbul ignore if */
 if (require.main === module) {
   startRestApiAdapter();

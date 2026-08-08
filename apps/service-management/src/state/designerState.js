@@ -10,10 +10,13 @@
  *
  * Behaviour is byte-identical to the pre-extraction `script.js`: same default
  * state, same normalisation on load, same history semantics, same payload
- * sections written through the store — with one deliberate JUM-477 exception:
+ * sections written through the store — with two deliberate exceptions:
  * `meta.rbac` rules are normalised against the tenant RBAC contract
  * (`src/model/rbacContract.js`), which re-derives `tenantScoped` from the
- * rule's roles because the runtime has no independent tenant-scope knob.
+ * rule's roles because the runtime has no independent tenant-scope knob
+ * (JUM-477); and the `deployments` section is restored on load, migrated
+ * forward to the Requirement 059 metadata contract by
+ * `normalizeDeploymentInput` (JUM-481).
  */
 
 import {
@@ -21,6 +24,11 @@ import {
   deriveTenantScoped,
   normalizeRbacRule
 } from '../model/rbacContract.js';
+import {
+  getSupportedProtocols,
+  getSupportedServiceTypes,
+  isPm2ManagedDeployTarget
+} from '../model/deployCapabilityMatrix.js';
 
 export const DOMAIN_COLORS = ['#60a5fa', '#34d399', '#f59e0b', '#f472b6', '#22d3ee', '#a78bfa', '#fb7185', '#84cc16'];
 export const FIELD_TYPES = ['string', 'integer', 'number', 'boolean', 'array', 'object', 'date', 'datetime', 'uuid'];
@@ -119,6 +127,52 @@ export function normalizeRelationship(relationship) {
     bendY: normalizeOptionalNumber(relationship.bendY),
     labelOffsetX: normalizeOptionalNumber(relationship.labelOffsetX) ?? 0,
     labelOffsetY: normalizeOptionalNumber(relationship.labelOffsetY) ?? 0
+  };
+}
+
+/**
+ * Legacy deploy-target `type` values (the pre-JUM-481 UI select) that differ
+ * from the Requirement 059 `deployTarget` vocabulary. Values already spelled
+ * as the matrix spells them pass through untouched; values with no matrix
+ * counterpart (`azure-functions`, `google-functions`) are kept verbatim so
+ * the migration is lossless — the validation vocabulary rule flags them.
+ */
+const LEGACY_DEPLOY_TYPE_ALIASES = {
+  dedicated: 'dedicated-server'
+};
+
+/**
+ * Normalise one deploy target to the Requirement 059 metadata contract
+ * (JUM-481): the pre-JUM-481 `{ name, type, region, runtime }` shape migrates
+ * forward — `type` becomes `deployTarget` (through the alias map) and the
+ * missing metadata fields take the matrix-derived defaults: the first
+ * service type the target supports, that type's first protocol, the runtime
+ * env contract's default drivers, and the `dev` PM2 profile on PM2-managed
+ * targets only.
+ */
+export function normalizeDeploymentInput(deployment) {
+  const source = deployment || {};
+  const legacyType = String(source.type || '').trim();
+  const deployTarget = String(source.deployTarget || '').trim()
+    || LEGACY_DEPLOY_TYPE_ALIASES[legacyType]
+    || legacyType;
+  const serviceType = String(source.serviceType || '').trim()
+    || getSupportedServiceTypes(deployTarget)[0]
+    || '';
+  const runtimeProtocol = String(source.runtimeProtocol || '').trim()
+    || getSupportedProtocols(serviceType)[0]
+    || '';
+  return {
+    name: String(source.name || '').trim(),
+    region: String(source.region || '').trim(),
+    runtime: String(source.runtime || '').trim(),
+    serviceType,
+    deployTarget,
+    runtimeProtocol,
+    databaseDriver: String(source.databaseDriver || '').trim() || 'InMemory',
+    keyValueDriver: String(source.keyValueDriver || '').trim() || 'redis',
+    pm2Profile: String(source.pm2Profile || '').trim()
+      || (isPm2ManagedDeployTarget(deployTarget) ? 'dev' : '')
   };
 }
 
@@ -232,10 +286,13 @@ export function normalizeDomainInput(domain, domainIndex) {
 
 /**
  * Normalise a decoded `service-management.v1` payload into the model slice the
- * designer restores on load. Kept identical to the pre-extraction behaviour:
- * only `domains`, `relationships`, the three selections, `idCounter` and
- * `view` come back — the other pinned sections are intentionally not restored
- * at load time.
+ * designer restores on load. Kept identical to the pre-extraction behaviour —
+ * with one JUM-481 exception: `deployments` now comes back too, migrated
+ * forward to the Requirement 059 metadata contract by
+ * `normalizeDeploymentInput`, so Deploy Management targets survive a reload.
+ * The remaining pinned sections (`interfaces`, `serviceConfiguration`,
+ * `runtimeEnvironment`, `activeTab`) are intentionally not restored at load
+ * time.
  */
 export function normalizeStatePayload(parsed) {
   const domainsInput = Array.isArray(parsed?.domains) ? parsed.domains : [];
@@ -245,6 +302,8 @@ export function normalizeStatePayload(parsed) {
   const relationships = relationshipsInput
     .map(normalizeRelationship)
     .filter((relationship) => entityIds.has(relationship.fromEntityId) && entityIds.has(relationship.toEntityId));
+  const deploymentsInput = Array.isArray(parsed?.deployments) ? parsed.deployments : [];
+  const deployments = deploymentsInput.map(normalizeDeploymentInput);
   const view = {
     zoom: clampZoom(parsed?.view?.zoom || 1),
     compactEntities: Boolean(parsed?.view?.compactEntities),
@@ -263,6 +322,7 @@ export function normalizeStatePayload(parsed) {
     selectedEntityId: parsed?.selectedEntityId || null,
     selectedRelationshipId: parsed?.selectedRelationshipId || null,
     idCounter: parsed?.idCounter || 1,
+    deployments,
     view
   };
 }
@@ -362,7 +422,9 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
       ...state.runtimeEnvironment,
       ...(snapshot.runtimeEnvironment || {})
     };
-    state.deployments = Array.isArray(snapshot.deployments) ? snapshot.deployments : [];
+    state.deployments = Array.isArray(snapshot.deployments)
+      ? snapshot.deployments.map(normalizeDeploymentInput)
+      : [];
     state.view = snapshot.view || { zoom: 1 };
     recomputeIdCounter();
   }
@@ -476,6 +538,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
       state.selectedEntityId = parsed.selectedEntityId;
       state.selectedRelationshipId = parsed.selectedRelationshipId;
       state.idCounter = parsed.idCounter;
+      state.deployments = parsed.deployments;
       state.view = parsed.view;
       recomputeIdCounter();
       clearHistory();

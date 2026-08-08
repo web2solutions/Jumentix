@@ -5,6 +5,11 @@ services:
     command: '-jar DynamoDBLocal.jar -sharedDb'
     ports:
       - '8000:8000'
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -s -o /dev/null http://127.0.0.1:8000 || exit 1']
+      interval: 3s
+      timeout: 5s
+      retries: 20
     volumes:
       - dynamodb_data:/home/dynamodblocal/data
 
