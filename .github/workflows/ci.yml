@@ -261,8 +261,6 @@ jobs:
     runs-on: [self-hosted, jumentix]
     env:
       AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
-      RUN_REDIS_INTEGRATION: '1'
-      RUN_BROKER_INTEGRATION: '1'
       AAA_REDIS_HOST: 127.0.0.1
       AAA_REDIS_PORT: '6379'
       AAA_BULLMQ_REDIS_HOST: 127.0.0.1

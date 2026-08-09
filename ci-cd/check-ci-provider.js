@@ -87,6 +87,13 @@ if (!fs.existsSync(workflowPath)) {
     }
   }
 
+  const coverageBlock = contents.match(/\n  coverage:\n[\s\S]*?(?=\n  [a-z-]+:\n|\n?$)/)?.[0] || '';
+  if (/RUN_(BROKER|REDIS)_INTEGRATION:\s*'1'/.test(coverageBlock)) {
+    failures.push(
+      '.github/workflows/ci.yml coverage job must keep real broker/Redis integration suites in dedicated jobs'
+    );
+  }
+
   [
     /\n\s+codecov:\s*\n/,
     /\n\s+sonarqube:\s*\n/
