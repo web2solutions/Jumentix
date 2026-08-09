@@ -4,6 +4,9 @@
 
 ## All Changes
 
+- 2026-08-09 fix(ci): keep db repository smoke on bun - Eduardo A.
+- 2026-08-09 [JUM-632][CI] Keep coverage free of live broker suites (#153) - Eduardo A.
+- 2026-08-09 ci: refresh branch gate status - Eduardo A.
 - 2026-08-09 ci: refresh checks after disabling circleci - Eduardo A.
 - 2026-08-09 ci: keep coverage free of live broker suites - Eduardo A.
 - 2026-08-09 [JUM-632][CI] Stabilize Redis database matrix smoke (#152) - Eduardo A.
