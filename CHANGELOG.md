@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-09 ci: make context classifier runtime configurable - Eduardo A.
 - 2026-08-09 ci: make dev delivery gates cheap and context-aware - Eduardo A.
 - 2026-08-09 [JUM-630][Governance] Requirement 127 — mandatory rtk and Caveman in every agent session (#142) - Eduardo A.
 - 2026-08-09 docs(governance): teach rtk and caveman, EN and PT-BR - Eduardo Almeida

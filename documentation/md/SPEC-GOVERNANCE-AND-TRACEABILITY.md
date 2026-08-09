@@ -121,6 +121,15 @@ Task isolation and naming policy:
 - Only a release-promotion PR sourced from `dev` may target `main`.
 - A `dev` to `main` promotion references the task PRs and Linear Issues already represented in
   `dev` and introduces no additional task changes.
+- Requirement `128`: a merged change under `.agents/requirements/` takes precedence in the
+  release queue. It is promoted ahead of feature, fix, refactor and chore work, and is not held
+  back to a later release to keep a batch tidy. A requirement left merged but unpromoted is a rule
+  that exists in `dev` and not in `main`, and agents working from the released state follow the
+  superseded one.
+- That precedence applies to **sequence only** and grants no exemption from any gate. A promotion
+  carrying a requirement change passes the same checks as any other, at the same thresholds, with
+  no quarantine or exemption relaxed to make it fit. Faster in the queue, never lighter at the
+  gate (Requirement `065`).
 - Direct task/topic PRs, pushes, and merges to `main` are prohibited.
 - Commit and push gates are destination-aware: feature, docs, fix, and other task
   branches run only specialized changed/related tests, `dev` runs the cheap
