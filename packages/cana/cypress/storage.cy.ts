@@ -155,7 +155,7 @@ describe('cana storage — durability surface', () => {
   });
 
   it('raises nearQuota before hard failure so an export is still possible', async () => {
-    // The threshold exists to leave room for recovery. With no fallback, the
+    // The threshold exists to leave room for recovery. On IndexedDB, the
     // export is the only recovery, so warning at 100% would be useless.
     const environment: StorageEnvironment = {
       estimate: async () => ({ usage: 90, quota: 100 })

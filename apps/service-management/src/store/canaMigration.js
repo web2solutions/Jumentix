@@ -144,7 +144,7 @@ async function writeMigrationRecord(store, record) {
  * @param {Object} [options]
  * @param {Storage} [options.storage] - the legacy backend; defaults to the
  *   ambient `localStorage`, resolved defensively.
- * @param {import('./IDesignerStore.js').IDesignerStore} options.store - the
+ * @param {import('@jumentix/designer-core/store/IDesignerStore.js').IDesignerStore} options.store - the
  *   Cana store (the port) the payload migrates INTO.
  * @param {Function} [options.downloadBackup] - `(fileName, rawJson) => void`,
  *   invoked with the verbatim source payload BEFORE any Cana write.

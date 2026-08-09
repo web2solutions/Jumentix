@@ -189,6 +189,10 @@
       "name": "@jumentix/database-client-factory",
       "version": "0.1.0",
     },
+    "packages/designer-core": {
+      "name": "@jumentix/designer-core",
+      "version": "0.1.0",
+    },
     "packages/external-db-repositories": {
       "name": "@jumentix/external-db-repositories",
       "version": "0.1.0",
@@ -935,6 +939,8 @@
     "@jumentix/config-ts": ["@jumentix/config-ts@workspace:packages/config-ts"],
 
     "@jumentix/database-client-factory": ["@jumentix/database-client-factory@workspace:packages/database-client-factory"],
+
+    "@jumentix/designer-core": ["@jumentix/designer-core@workspace:packages/designer-core"],
 
     "@jumentix/external-db-repositories": ["@jumentix/external-db-repositories@workspace:packages/external-db-repositories"],
 

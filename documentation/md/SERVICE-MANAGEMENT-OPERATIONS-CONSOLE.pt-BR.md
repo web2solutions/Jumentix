@@ -48,7 +48,7 @@ Dois limites deliberados:
 As duas superfícies de validação do console — Service Configuration e Deploy
 Management — leem as matrizes do Requisito 059 de **uma única fonte legível por
 máquina**:
-[`apps/service-management/src/model/deployCapabilityMatrix.js`](../../apps/service-management/src/model/deployCapabilityMatrix.js),
+[`packages/designer-core/src/model/deployCapabilityMatrix.js`](../../packages/designer-core/src/model/deployCapabilityMatrix.js),
 o leitor dos dois documentos de matriz
 ([JUMENTIX-DEPLOY-TARGET-AND-PACKAGING-MATRIX](./JUMENTIX-DEPLOY-TARGET-AND-PACKAGING-MATRIX.pt-BR.md)
 e
@@ -61,11 +61,11 @@ cabeçalho do módulo exige — nunca uma segunda cópia dentro da validação d
 aba. Os dois validadores do console já demonstram o porquê:
 
 - `collectServiceConfigurationIssues`
-  ([`serviceConfigurationValidation.js`](../../apps/service-management/src/validation/serviceConfigurationValidation.js),
+  ([`serviceConfigurationValidation.js`](../../packages/designer-core/src/validation/serviceConfigurationValidation.js),
   JUM-544) consome o mapa de suporte **run-mode × cloud-provider** e o mapa de
   portas ativas.
 - `collectDeployTargetIssues`
-  ([`deployTargetValidation.js`](../../apps/service-management/src/validation/deployTargetValidation.js),
+  ([`deployTargetValidation.js`](../../packages/designer-core/src/validation/deployTargetValidation.js),
   JUM-481) consome o mapa de suporte **service-type × deploy-target**, o mapa
   de protocolos por service type, o conjunto de targets gerenciados por PM2 e
   os vocabulários de drivers.
@@ -247,7 +247,7 @@ Contrato 2: a chave versionada permanece inalterada). As regras da aba:
 
 - **O que um target pode conter** é de responsabilidade de
   `collectDeployTargetIssues`
-  ([`deployTargetValidation.js`](../../apps/service-management/src/validation/deployTargetValidation.js)):
+  ([`deployTargetValidation.js`](../../packages/designer-core/src/validation/deployTargetValidation.js)):
   os seis vocabulários, a linha da matriz service-type × deploy-target, a
   exposição de protocolos e a aplicabilidade do perfil PM2 — cada rejeição
   nomeia a restrição violada (a seção da matriz compartilhada acima dá as
@@ -260,7 +260,7 @@ Contrato 2: a chave versionada permanece inalterada). As regras da aba:
   consumidos, independentemente de como a entrada chegou lá.
 - **Entradas legadas migram para frente na carga, sem perdas.**
   `normalizeDeploymentInput`
-  ([`designerState.js`](../../apps/service-management/src/state/designerState.js))
+  ([`designerState.js`](../../packages/designer-core/src/state/designerState.js))
   migra o formato pré-JUM-481 `{ name, type, region, runtime }`: `type`
   torna-se `deployTarget` através de um mapa de aliases (`dedicated` →
   `dedicated-server`), e os metadados ausentes recebem padrões derivados da
@@ -299,7 +299,7 @@ editar in-place, duplicar e excluir**:
   contra as inconsistências de redigitação que a validação de campos teria de
   capturar.
 - **Validação de campos** — `collectDeployTargetFieldIssues` em
-  [`deployTargetLifecycleValidation.js`](../../apps/service-management/src/validation/deployTargetLifecycleValidation.js),
+  [`deployTargetLifecycleValidation.js`](../../packages/designer-core/src/validation/deployTargetLifecycleValidation.js),
   executada no portão de adição/edição junto às regras de matriz da JUM-481:
   o nome é obrigatório e único; o runtime/version é obrigatório e deve seguir
   um padrão de nome-mais-versão (`nodejs22.x`, `python3.12` — texto livre
@@ -307,7 +307,7 @@ editar in-place, duplicar e excluir**:
   e opcional na linha self-hosted Dedicated Server (SSH), onde o campo pode
   carregar informação de host. O conjunto self-hosted é lido do leitor
   compartilhado da matriz (`SELF_HOSTED_DEPLOY_TARGETS` em
-  [`deployCapabilityMatrix.js`](../../apps/service-management/src/model/deployCapabilityMatrix.js)),
+  [`deployCapabilityMatrix.js`](../../packages/designer-core/src/model/deployCapabilityMatrix.js)),
   nunca transcrito. Toda rejeição nomeia a razão na superfície de status da
   JUM-543, e o candidato nunca toca o estado.
 - **Dicas de campo por tipo de target.** A linha de dica sob o formulário
@@ -405,9 +405,9 @@ console segue o mesmo modelo:
 
 ## Referências
 
-- Leitor compartilhado da matriz: [`deployCapabilityMatrix.js`](../../apps/service-management/src/model/deployCapabilityMatrix.js); documentos de matriz: [Matriz de deploy target e empacotamento](./JUMENTIX-DEPLOY-TARGET-AND-PACKAGING-MATRIX.pt-BR.md), [Matriz de capacidades da service factory](./JUMENTIX-SERVICE-FACTORY-CAPABILITIES-MATRIX.pt-BR.md)
-- Validadores: [`serviceConfigurationValidation.js`](../../apps/service-management/src/validation/serviceConfigurationValidation.js), [`deployTargetValidation.js`](../../apps/service-management/src/validation/deployTargetValidation.js), [`deployTargetLifecycleValidation.js`](../../apps/service-management/src/validation/deployTargetLifecycleValidation.js)
-- Endpoints do servidor: [`server.js`](../../apps/service-management/server.js); cola da UI: [`script.js`](../../apps/service-management/script.js), [`inspectors.js`](../../apps/service-management/src/ui/inspectors.js), estado/migração: [`designerState.js`](../../apps/service-management/src/state/designerState.js)
+- Leitor compartilhado da matriz: [`deployCapabilityMatrix.js`](../../packages/designer-core/src/model/deployCapabilityMatrix.js); documentos de matriz: [Matriz de deploy target e empacotamento](./JUMENTIX-DEPLOY-TARGET-AND-PACKAGING-MATRIX.pt-BR.md), [Matriz de capacidades da service factory](./JUMENTIX-SERVICE-FACTORY-CAPABILITIES-MATRIX.pt-BR.md)
+- Validadores: [`serviceConfigurationValidation.js`](../../packages/designer-core/src/validation/serviceConfigurationValidation.js), [`deployTargetValidation.js`](../../packages/designer-core/src/validation/deployTargetValidation.js), [`deployTargetLifecycleValidation.js`](../../packages/designer-core/src/validation/deployTargetLifecycleValidation.js)
+- Endpoints do servidor: [`server.js`](../../apps/service-management/server.js); cola da UI: [`script.js`](../../apps/service-management/script.js), [`inspectors.js`](../../apps/service-management/src/ui/inspectors.js), estado/migração: [`designerState.js`](../../packages/designer-core/src/state/designerState.js)
 - Fontes de ecossistema: [`pm2/ecosystem.dev.cjs`](../../pm2/ecosystem.dev.cjs), [`pm2/ecosystem.staging.cjs`](../../pm2/ecosystem.staging.cjs), [`pm2/ecosystem.production.cjs`](../../pm2/ecosystem.production.cjs)
 - Suítes: [`serviceConfigurationValidation.test.ts`](../../apps/backend-template/test/unit/service-management/serviceConfigurationValidation.test.ts), [`deployTargetValidation.test.ts`](../../apps/backend-template/test/unit/service-management/deployTargetValidation.test.ts), [`deployTargetLifecycle.test.ts`](../../apps/backend-template/test/unit/service-management/deployTargetLifecycle.test.ts), [`designerState.test.ts`](../../apps/backend-template/test/unit/service-management/designerState.test.ts), [`pm2EcosystemUi.contract.test.ts`](../../apps/backend-template/test/unit/service-management/pm2EcosystemUi.contract.test.ts), [`runtimeEnvUi.contract.test.ts`](../../apps/backend-template/test/unit/service-management/runtimeEnvUi.contract.test.ts), [`pm2Ecosystem.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/pm2Ecosystem.integration.test.ts), [`runtimeEnv.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/runtimeEnv.integration.test.ts), [`runtimeEnvContract.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/runtimeEnvContract.integration.test.ts), [`deployTargetLifecycle.browser.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/deployTargetLifecycle.browser.integration.test.ts)
 - Requisitos: [126](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md) (Contratos 1, 1b e 2), [059](../../.agents/requirements/software/059-jumentix-service-factory-and-deploy-template-matrices.md) (as matrizes de deploy e da factory), [076](../../.agents/requirements/project/076-task-documentation-and-bilingual-governance.md) (paridade EN/PT)

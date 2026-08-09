@@ -95,7 +95,8 @@ describe('run-integration-tests', () => {
     expect(INTEGRATION_TIMEOUT_OVERRIDES_MS).toStrictEqual({
       'test:integration:express': 300_000,
       'test:integration:fastify': 300_000,
-      'test:integration:restify': 600_000
+      'test:integration:restify': 600_000,
+      'test:integration:service-management': 1_200_000
     });
   });
 

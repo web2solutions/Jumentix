@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
-import path from 'node:path';
 
 /**
  * First-run sample model suite (JUM-548).
@@ -25,27 +24,26 @@ import path from 'node:path';
  *   export fixed point.
  */
 
-const repoRoot = path.resolve(__dirname, '../../../../..');
 const {
   SAMPLE_ID_PREFIX,
   buildSampleModelPayload,
   isSampleDomain,
   isSampleEntity,
   isSampleRelationship
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'model', 'sampleModel.js'));
+} = require('@jumentix/designer-core/model/sampleModel.js');
 const {
   normalizeStatePayload
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'designerState.js'));
+} = require('@jumentix/designer-core/state/designerState.js');
 const {
   collectModelIssues
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'validation', 'modelValidation.js'));
+} = require('@jumentix/designer-core/validation/modelValidation.js');
 const {
   buildJsonExportDocument,
   buildOasDocument
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'exporters', 'designerExporters.js'));
+} = require('@jumentix/designer-core/exporters/designerExporters.js');
 const {
   buildDomainsFromOas
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'importers', 'designerImporters.js'));
+} = require('@jumentix/designer-core/importers/designerImporters.js');
 
 function loadSample() {
   return normalizeStatePayload(buildSampleModelPayload());
@@ -197,3 +195,20 @@ describe('first-run sample model (JUM-548)', () => {
     });
   });
 });
+
+describe('sample id-marker predicates on nullish subjects (JUM-493)', () => {
+  it('treat missing or non-string ids as non-sample, never throwing', () => {
+    expect(isSampleDomain(undefined)).toBe(false);
+    expect(isSampleDomain({})).toBe(false);
+    expect(isSampleDomain({ id: 'user-1' })).toBe(false);
+    expect(isSampleEntity(null)).toBe(false);
+    expect(isSampleEntity({ id: `${SAMPLE_ID_PREFIX}entity-1` })).toBe(true);
+    expect(isSampleRelationship({ name: 'owns' })).toBe(false);
+  });
+});
+
+// Keeps this file a module: with no import/export left, TypeScript would
+// treat it as a script and its top-level requires would share one global
+// scope with every other script-mode suite in ts-jest's program (TS2451).
+// eslint-disable-next-line jest/no-export
+export {};

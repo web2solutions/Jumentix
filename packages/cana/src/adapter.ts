@@ -27,10 +27,9 @@
  * package into its dependency graph. Injection keeps the port as the shape and
  * lets each host supply what it can actually run (Requirements 015/016).
  *
- * Selecting `IndexedDB` without providing the factory, or in a runtime with no
- * `indexedDB` global, fails with an explanation. It does not fall back to
- * in-memory: an offline application silently running on a store that vanishes
- * when the tab closes would look healthy and lose everything.
+ * Selecting `IndexedDB` without a usable IndexedDB global opens Cana's
+ * localStorage fallback by default (JUM-615). Pass `fallback: false` on the
+ * Cana options when the host must fail closed instead of degrading.
  */
 
 import type {

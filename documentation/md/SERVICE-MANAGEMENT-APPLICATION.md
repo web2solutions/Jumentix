@@ -10,9 +10,9 @@ Core implementation files:
 
 - `apps/service-management/index.html`
 - `apps/service-management/script.js`
-- `apps/service-management/src/state/designerState.js`
+- `packages/designer-core/src/state/designerState.js`
 - `apps/service-management/src/state/designerSync.js`
-- `apps/service-management/src/store/IDesignerStore.js`
+- `packages/designer-core/src/store/IDesignerStore.js`
 - `apps/service-management/src/store/CanaDesignerStore.js`
 - `apps/service-management/src/store/designerStoreFactory.js`
 - `apps/service-management/src/store/canaMigration.js`

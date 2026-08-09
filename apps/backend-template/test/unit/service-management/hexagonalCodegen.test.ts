@@ -7,7 +7,7 @@ import { execFileSync } from 'node:child_process';
 
 /**
  * Structural suite for the hexagonal code generator (JUM-476,
- * `apps/service-management/src/codegen/hexagonalCodegen.js`).
+ * `packages/designer-core/src/codegen/hexagonalCodegen.js`).
  *
  * Snapshot-free by design: the assertions pin structure — file paths, layer
  * directories, contract wiring — not generated text, so a wording tweak in a
@@ -38,17 +38,18 @@ const {
   renderBundlePreview,
   toTypeToken,
   tsTypeFromOasSchema
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'codegen', 'hexagonalCodegen.js'));
+} = require('@jumentix/designer-core/codegen/hexagonalCodegen.js');
 const {
   buildBoilerplateBundleDocument,
   buildOasDocument
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'exporters', 'designerExporters.js'));
+} = require('@jumentix/designer-core/exporters/designerExporters.js');
 const { buildAsyncApiTransportDocument } = require(
-  path.join(repoRoot, 'apps', 'service-management', 'src', 'exporters', 'asyncApiExporters.js')
+  '@jumentix/designer-core/exporters/asyncApiExporters.js'
 );
 const { normalizeStatePayload } = require(
-  path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'designerState.js')
+  '@jumentix/designer-core/state/designerState.js'
 );
+
 const { validateControllerFile } = require(
   path.join(repoRoot, 'ci-cd', 'check-hexagonal-boundaries.js')
 );
@@ -493,5 +494,60 @@ describe('hexagonal codegen (JUM-476)', () => {
       expect(tsTypeFromOasSchema({ type: 'string' })).toBe('string');
       expect(tsTypeFromOasSchema({ nullable: true })).toBe('string | null');
     });
+  });
+});
+
+describe('partial-contracts fallbacks (JUM-493)', () => {
+  it('builds a bundle for a state without domains', () => {
+    const bundle = buildHexagonalBundle({ relationships: [] }, {});
+    expect(bundle).toBeDefined();
+  });
+
+  it('builds a bundle for a domain without entities', () => {
+    const bundle = buildHexagonalBundle({ domains: [{ name: 'D' }], relationships: [] }, {});
+    expect(bundle).toBeDefined();
+  });
+
+  it('tolerates contract documents without schemas, paths, message contracts, operations or channels', () => {
+    const state = createState();
+    const bundle = buildHexagonalBundle(state, {
+      oasDocument: { components: {} },
+      asyncApiDocument: {}
+    });
+    expect(bundle).toBeDefined();
+  });
+
+  it('derives contract tokens for missing and non-alphanumeric contract names', () => {
+    const state = createState();
+    const bundle = buildHexagonalBundle(state, {
+      oasDocument: {
+        'x-message-contracts': [
+          { domain: 'Billing', entity: 'Invoice', type: 'event' },
+          {
+            domain: 'Billing', entity: 'Invoice', type: 'event', name: '---'
+          }
+        ]
+      },
+      asyncApiDocument: { operations: {}, channels: {} }
+    });
+    expect(bundle).toBeDefined();
+  });
+
+  it('falls back to the channel key when a matched operation has no channel and no address', () => {
+    const state = createState();
+    const bundle = buildHexagonalBundle(state, {
+      oasDocument: {
+        'x-message-contracts': [
+          {
+            domain: 'Billing', entity: 'Invoice', type: 'event', name: 'issued'
+          }
+        ]
+      },
+      asyncApiDocument: {
+        operations: { event_Billing_Invoice_Issued: { action: 'send' } },
+        channels: {}
+      }
+    });
+    expect(bundle).toBeDefined();
   });
 });

@@ -50,7 +50,7 @@ export const CANA_MODULE_SPECIFIER = '@jumentix/cana';
  *   `indexedDbClient` injection of `buildDatabaseClientCompilers`.
  * @param {string} [options.canaModuleSpecifier] - module the default provider
  *   imports when neither client nor factory is supplied (tests).
- * @returns {import('./IDesignerStore.js').IDesignerStore}
+ * @returns {import('@jumentix/designer-core/store/IDesignerStore.js').IDesignerStore}
  */
 export function createDesignerStore({
   canaClient,

@@ -130,13 +130,22 @@ Política de isolamento e nomenclatura:
 - Somente um PR de promoção de release originado em `dev` pode ter `main` como destino.
 - Uma promoção de `dev` para `main` referencia os PRs de tarefa e Issues do Linear já
   representados em `dev` e não introduz mudanças adicionais de tarefa.
+- Requisito `128`: uma alteração já merged em `.agents/requirements/` tem precedência na fila de
+  release. É promovida à frente de trabalho de feature, fix, refactor e chore, e não fica retida
+  para um release posterior só para arrumar o lote. Um requisito merged mas não promovido é uma
+  regra que existe em `dev` e não em `main`, e agentes que trabalham a partir do estado promovido
+  seguem a antiga.
+- Essa precedência aplica-se **apenas à sequência** e não concede dispensa de gate nenhum. Uma
+  promoção que leve alteração de requisito passa pelas mesmas verificações que qualquer outra, nos
+  mesmos limiares, sem quarentena nem exceção relaxada para caber. Mais depressa na fila, nunca
+  mais leve no gate (Requisito `065`).
 - PRs diretos de tarefa/tópico, pushes e merges para `main` são proibidos.
 - Os gates são orientados ao destino: branches de feature, docs, fix e outras tarefas
   executam somente testes especializados alterados/relacionados, `dev` executa a suíte
   unitária completa e `main` executa a matriz local completa sem cobertura pesada.
-- PRs destinados a `dev` executam a matriz local completa sem cobertura pesada no CircleCI.
-  Promoções de `dev` para `main` executam a mesma matriz, além do job obrigatório de
-  cobertura CircleCI nas duas branches longas.
+- PRs destinados a `dev` executam o gate especializado por camada selecionado por
+  `test-map.json`, mais review obrigatório leve. Promoções de `dev` para `main`
+  executam a matriz completa, além do job obrigatório de cobertura GitHub Actions.
 - A evidência da matriz de `main` deve listar cada célula obrigatória e seu resultado terminal.
 - Uma matriz de `main` incompleta é evidência com falha; nunca pode ser interpretada como verde.
 - Review de PR é opcional. Branch protection e rulesets não devem exigir quantidade de
@@ -164,11 +173,13 @@ Se alguma porta falhar, a conformidade com as especificações será considerada
 Contrato de execução por branch:
 
 1. Branches de tarefa executam `ci:gate:task` sobre o diff pertencente à tarefa.
-2. Pushes em `dev` executam `test:unit`; pull requests destinados a `dev` executam `ci:gate:strict`.
+2. Pushes em `dev` executam `test:unit`; pull requests destinados a `dev` executam `ci:gate:task`.
 3. `main` e pull requests de promoção destinados a `main` executam `ci:gate:strict`.
-4. CircleCI é o executor hospedado pertencente ao repositório enquanto GitHub Actions billing
-   está bloqueado pelo Requisito `113`.
-5. `.circleci/config.yml` é responsável por Storybook e cobertura completa em `dev` e `main`;
+4. GitHub Actions é o orquestrador pertencente ao repositório, o runner
+   self-hosted `jumentix` fornece o caminho de execução sem custo, e CircleCI
+   está desabilitado pelo Requisito `113`.
+5. `.github/workflows/ci.yml` é responsável por Storybook, database smoke e cobertura
+   completa em promoções de release, `main` e execuções completas agendadas;
    a matriz completa local não executa Storybook nem produção de cobertura.
 6. Todo gate selecionado emite evidência auditável e falha de forma fechada quando um comando
    não retorna status, quebra ou termina com código diferente de zero.

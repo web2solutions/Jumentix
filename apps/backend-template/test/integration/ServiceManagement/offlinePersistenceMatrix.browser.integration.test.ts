@@ -319,30 +319,37 @@ async function waitForStatusRegion(page: Page, fragment: string, timeoutMs = 150
 async function addStatusRegionRecorder(context: BrowserContext) {
   await context.addInitScript(() => {
     (window as unknown as { __statusRegionLog: string[] }).__statusRegionLog = [];
-    document.addEventListener('DOMContentLoaded', () => {
-      const region = document.getElementById('status-region');
-      if (!region) return;
+    const appendStatus = (region: HTMLElement) => {
       const log = (window as unknown as { __statusRegionLog: string[] }).__statusRegionLog;
-      // JUM-628: a fast boot can announce BEFORE this observer attaches —
-      // the broken-indexedDB shim fails through a setTimeout(0) scheduled
-      // during module evaluation, so the whole probe → declare chain can
-      // settle ahead of DOMContentLoaded, and mutations that predate
-      // observation are never delivered. Capture the already-rendered text
-      // as the first record instead of missing the startup declaration.
-      const initial = region.textContent || '';
-      if (initial) log.push(initial);
+      const text = region.textContent || '';
+      if (text && log[log.length - 1] !== text) log.push(text);
+    };
+    const install = () => {
+      const region = document.getElementById('status-region');
+      if (!region) {
+        window.setTimeout(install, 25);
+        return;
+      }
+      appendStatus(region);
       new MutationObserver(() => {
-        const text = region.textContent || '';
-        if (log[log.length - 1] !== text) log.push(text);
+        appendStatus(region);
       }).observe(region, { childList: true, characterData: true, subtree: true });
-    });
+    };
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', install);
+    } else {
+      install();
+    }
   });
 }
 
 async function waitForStatusLogged(page: Page, fragment: string, timeoutMs = 15000) {
   await page.waitForFunction(
-    (text) => ((window as unknown as { __statusRegionLog?: string[] }).__statusRegionLog || [])
-      .some((message) => message.includes(text)),
+    (text) => {
+      const log = (window as unknown as { __statusRegionLog?: string[] }).__statusRegionLog || [];
+      const regionText = document.getElementById('status-region')?.textContent || '';
+      return regionText.includes(text) || log.some((message) => message.includes(text));
+    },
     fragment,
     { polling: 100, timeout: timeoutMs }
   );

@@ -21,12 +21,13 @@ await client.table('designs').add({ id: 1, name: 'first', owner: 'ana' });
 
 ## Three things to know before using it
 
-**There is no fallback.** If IndexedDB is unavailable, Cana reports
-`Unavailable` and stops — it does not quietly switch to `localStorage` or
-memory. A fallback with different durability and capacity would keep accepting
-writes and keep telling the user their work was saved, and the failure would
-surface far from its cause. `exportAll()` is therefore part of the contract, not
-a convenience: it is the only recovery path a user has.
+**IndexedDB preferred; localStorage fallback is explicit and degraded.** After
+`open()`, read `client.backend`: `'indexeddb'` or `'localStorage'`. When
+IndexedDB cannot open, Cana opens a localStorage-backed store by default
+(`fallback: 'localStorage'`). That path has a smaller quota and no real indexes —
+durability assessment reports `best-effort`. Pass `fallback: false` to restore
+terminal `Unavailable` instead. There is no dual-write or auto-promote between
+the two stores; use `exportAll()` / import to move data.
 
 **Writes have three outcomes, not two.** `committed | rolled-back | unknown`.
 The third covers a transaction torn down without either event firing — a killed
@@ -66,6 +67,6 @@ proven:
 - English: [`CANA-INDEXEDDB-ADAPTER.md`](../../documentation/md/CANA-INDEXEDDB-ADAPTER.md)
 - Português: [`CANA-INDEXEDDB-ADAPTER.pt-BR.md`](../../documentation/md/CANA-INDEXEDDB-ADAPTER.pt-BR.md)
 
-The "What is NOT proven" section of that document is required reading before
-relying on this package in production — notably that cross-browser behaviour,
-real quota handling, and execution inside a real Worker are all untested.
+The release-readiness notes in that document are required reading before
+relying on this package in production. Real dedicated Worker hosting and the
+localStorage fallback path are covered by the Cana browser suite (JUM-615).

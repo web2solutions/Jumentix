@@ -55,7 +55,7 @@ const repoRoot = path.resolve(__dirname, '../../../../..');
 const {
   buildAsyncApiFileSet,
   buildAsyncApiTransportDocument
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'exporters', 'asyncApiExporters.js'));
+} = require('@jumentix/designer-core/exporters/asyncApiExporters.js');
 const {
   buildBoilerplateBundleDocument,
   buildDomainPackageDocument,
@@ -63,22 +63,23 @@ const {
   buildJsonSchemaDocument,
   buildMarkdownExport,
   buildOasDocument
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'exporters', 'designerExporters.js'));
+} = require('@jumentix/designer-core/exporters/designerExporters.js');
 const {
   buildDomainFromPackage,
   buildDomainsFromOas,
   buildStateFromSuiteExport
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'importers', 'designerImporters.js'));
+} = require('@jumentix/designer-core/importers/designerImporters.js');
 const {
   createDefaultView,
   createDesignerState,
   defaultFields,
   getDefaultRbacPolicy,
   normalizeStatePayload
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'designerState.js'));
+} = require('@jumentix/designer-core/state/designerState.js');
 const {
   packageContentsEqual
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'packages', 'packageVersioning.js'));
+} = require('@jumentix/designer-core/packages/packageVersioning.js');
+
 const {
   MemoryDesignerStore
 } = require(path.join(repoRoot, 'apps', 'backend-template', 'test', 'helpers', 'MemoryDesignerStore.ts'));
@@ -602,6 +603,18 @@ describe('designer export/import round-trip (JUM-471)', () => {
       // The environment selection crosses; the local machine's values (here
       // the source state's own) are preserved, so the section is deep-equal.
       expect(result.state.runtimeEnvironment).toStrictEqual(state.runtimeEnvironment);
+    });
+
+    it('preserves local env values when the document carries a null values field (JUM-493)', () => {
+      const state = createFullSuiteState();
+      const document = JSON.parse(JSON.stringify(buildJsonExportDocument(state)));
+      // A hand-edited or corrupted bundle with an explicit null values field
+      // must behave like the no-values case: the local machine's values win.
+      document.runtimeEnvironment = { environment: 'dev', fileName: '.env.dev', values: null };
+      const result = buildStateFromSuiteExport(document, state);
+      expect(result.ok).toBe(true);
+      expect(result.state.runtimeEnvironment.values)
+        .toStrictEqual(state.runtimeEnvironment.values);
     });
 
     it('is idempotent at document level: a second export of the imported state is deep-equal to the first', () => {

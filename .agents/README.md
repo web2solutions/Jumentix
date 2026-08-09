@@ -150,6 +150,8 @@ See also:
 - [115-functional-value-tests-no-fakes-no-third-party-api](requirements/software/115-functional-value-tests-no-fakes-no-third-party-api.md)
 - [118-smoke-integration-docker-real-services](requirements/software/118-smoke-integration-docker-real-services.md)
 - [126-service-management-ownership-and-public-contracts](requirements/software/126-service-management-ownership-and-public-contracts.md)
+- [127-mandatory-rtk-and-caveman-agent-sessions](requirements/project/127-mandatory-rtk-and-caveman-agent-sessions.md)
+- [128-requirement-changes-release-precedence](requirements/project/128-requirement-changes-release-precedence.md)
 
 ## Other Registry Files
 

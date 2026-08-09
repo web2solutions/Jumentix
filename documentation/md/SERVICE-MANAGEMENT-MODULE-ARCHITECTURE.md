@@ -42,21 +42,27 @@ an ES module; everything else is reached through static imports.
 
 ### The layering convention
 
-The architecture is a single rule: **pure logic lives in DOM-free modules
-under `src/`; DOM access lives in the entry module.** The DOM-free set is what
-can be unit-tested under Bun/Node with no DOM shim — and what JUM-493 can
-publish — so the boundary is the architecture. The boundary is enforced by a
-test: `designerState.test.ts` reads the DOM-free `src/` modules, strips
-comments, and fails if `document.` or `window.` appears. The set the test reads
-has grown with each extraction and store landing; the rule has not.
+The architecture is a single rule: **pure logic lives in DOM-free modules;
+DOM access lives in the entry module.** The DOM-free set is what can be
+unit-tested under Bun/Node with no DOM shim — and, since JUM-493, its
+canonical home is the publishable package: the core modules (state, model,
+validation, exporters, importers, packages, codegen and the
+`IDesignerStore` port) live in `packages/designer-core/src/`, while the app's
+own `src/` keeps the DOM glue and the Cana-facing adapters. The SPA consumes
+the package through `@jumentix/designer-core/…` specifiers (import map →
+vendored tree in the browser; tsconfig paths / Jest mapper in tests). The
+boundary is enforced by proof on both sides: `dom-free.test.ts` AST-scans the
+built package for DOM globals, and the designer unit suites exercise the
+canonical sources directly. The set has grown with each extraction and store
+landing; the rule has not.
 
 ### Current modules
 
 | Module | Layer | Role |
 | --- | --- | --- |
 | `apps/service-management/script.js` | DOM-bound | Entry module: event wiring, rendering, import/export flows. Owns every `document`/`window` interaction. |
-| `apps/service-management/src/state/designerState.js` | DOM-free | State and persistence core: the state object, the `normalizeStatePayload` normalisation chain, snapshot/apply, history (undo/redo), `loadState`, `buildModelSnapshot`. |
-| `apps/service-management/src/store/IDesignerStore.js` | DOM-free, dependency-free | The storage port: contract + base class. Importable under any JavaScript runtime. |
+| `packages/designer-core/src/state/designerState.js` | DOM-free | State and persistence core: the state object, the `normalizeStatePayload` normalisation chain, snapshot/apply, history (undo/redo), `loadState`, `buildModelSnapshot`. |
+| `packages/designer-core/src/store/IDesignerStore.js` | DOM-free, dependency-free | The storage port: contract + base class. Importable under any JavaScript runtime. |
 | `apps/service-management/src/store/CanaDesignerStore.js` | DOM-free | The sole `IDesignerStore` adapter (JUM-483), over the Cana client — injected, never imported. |
 | `apps/service-management/src/store/designerStoreFactory.js` | DOM-free | The store construction seam: `createDesignerStore()` always returns `CanaDesignerStore`; the Cana client is the only variable. |
 | `apps/service-management/src/store/canaMigration.js` | DOM-free | JUM-484's one-way localStorage → Cana migration (run at boot before any state load) and the declared storage-environment states. |
@@ -157,7 +163,7 @@ and to JUM-484's (landed) migration.
 
 ## The `IDesignerStore` port contract
 
-Source: [`apps/service-management/src/store/IDesignerStore.js`](../../apps/service-management/src/store/IDesignerStore.js).
+Source: [`packages/designer-core/src/store/IDesignerStore.js`](../../packages/designer-core/src/store/IDesignerStore.js).
 
 ### Why the port is shaped around Cana, not localStorage
 
@@ -444,10 +450,10 @@ assumed successful.
 
 ## References
 
-- Port contract: [`apps/service-management/src/store/IDesignerStore.js`](../../apps/service-management/src/store/IDesignerStore.js)
+- Port contract: [`packages/designer-core/src/store/IDesignerStore.js`](../../packages/designer-core/src/store/IDesignerStore.js)
 - One-way migration + environment states: [`apps/service-management/src/store/canaMigration.js`](../../apps/service-management/src/store/canaMigration.js)
 - Cana adapter + factory: [`apps/service-management/src/store/CanaDesignerStore.js`](../../apps/service-management/src/store/CanaDesignerStore.js), [`apps/service-management/src/store/designerStoreFactory.js`](../../apps/service-management/src/store/designerStoreFactory.js)
-- State core: [`apps/service-management/src/state/designerState.js`](../../apps/service-management/src/state/designerState.js)
+- State core: [`packages/designer-core/src/state/designerState.js`](../../packages/designer-core/src/state/designerState.js)
 - Multi-tab sync engine: [`apps/service-management/src/state/designerSync.js`](../../apps/service-management/src/state/designerSync.js)
 - Entry module: [`apps/service-management/script.js`](../../apps/service-management/script.js)
 - Unit suites: [`designerStore.test.ts`](../../apps/backend-template/test/unit/service-management/designerStore.test.ts), [`designerState.test.ts`](../../apps/backend-template/test/unit/service-management/designerState.test.ts), [`canaDesignerStore.test.ts`](../../apps/backend-template/test/unit/service-management/canaDesignerStore.test.ts), [`designerSync.test.ts`](../../apps/backend-template/test/unit/service-management/designerSync.test.ts)

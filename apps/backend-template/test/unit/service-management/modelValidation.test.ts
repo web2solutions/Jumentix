@@ -1,23 +1,21 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
-import path from 'node:path';
 
 /**
  * Unit suite for the validation engine extracted from
  * `apps/service-management/script.js` by JUM-469
- * (`apps/service-management/src/validation/modelValidation.js`).
+ * (`packages/designer-core/src/validation/modelValidation.js`).
  *
  * `collectModelIssues` is exercised as a pure function over a state object —
  * no DOM, no store. Every rule, message and severity is pinned against the
  * pre-refactor behaviour.
  */
 
-const repoRoot = path.resolve(__dirname, '../../../../..');
 const { collectModelIssues } = require(
-  path.join(repoRoot, 'apps', 'service-management', 'src', 'validation', 'modelValidation.js')
+  '@jumentix/designer-core/validation/modelValidation.js'
 );
 const { getDefaultRbacPolicy, normalizeField } = require(
-  path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'designerState.js')
+  '@jumentix/designer-core/state/designerState.js'
 );
 
 function createEntity(overrides: Record<string, unknown> = {}): any {
@@ -623,3 +621,9 @@ describe('oas export gate collisions (JUM-474)', () => {
     })).toStrictEqual([]);
   });
 });
+
+// Keeps this file a module: with no import/export left, TypeScript would
+// treat it as a script and its top-level requires would share one global
+// scope with every other script-mode suite in ts-jest's program (TS2451).
+// eslint-disable-next-line jest/no-export
+export {};

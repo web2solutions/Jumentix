@@ -267,14 +267,16 @@ describe('cana database environment handling', () => {
 
   it('reports Unavailable when there is no IndexedDB to use', async () => {
     // Every other test injects a factory, so the ambient-lookup branch never ran.
-    // Cana has no fallback store by design — this is terminal, not degraded — so
-    // the message a user sees here is the whole of the diagnosis.
+    // openDatabase itself does not apply the client fallback — that is Client.open
+    // (JUM-615) — so this path stays Unavailable with a message that points at
+    // the optional localStorage fallback.
     await withAmbient(undefined, async () => {
       const failure = await openDatabase({ name: 'no-idb', schema: schema() })
         .catch((error: unknown) => error);
 
       expect(isCanaErrorCode(failure, 'Unavailable')).to.equal(true);
-      expect((failure as { message: string }).message).to.include('no fallback');
+      expect((failure as { message: string }).message).to.include('No usable IndexedDB');
+      expect((failure as { message: string }).message).to.include('localStorage fallback');
     });
   });
 

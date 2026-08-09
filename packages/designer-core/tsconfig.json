@@ -1,0 +1,16 @@
+{
+  "//": "checkJs stays off: the JSDoc in these modules is declaration-grade (the build emits d.ts from it) but not type-tight — enabling it reports pre-existing inference errors across the closure. This config typechecks the module graph and syntax of every shipped module.",
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": false,
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/**/*.js"
+  ]
+}

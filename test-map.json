@@ -91,7 +91,8 @@
         "apps/service-management/script.js",
         "apps/service-management/src/**",
         "apps/service-management/index.html",
-        "apps/service-management/styles.css"
+        "apps/service-management/styles.css",
+        "packages/designer-core/**"
       ],
       "runner": "bun",
       "tier": "gate",
@@ -116,7 +117,6 @@
         "tooling/**",
         "apps/jumentix-website/**",
         ".github/**",
-        ".circleci/**",
         "test-map.json",
         "jest.config.js",
         "sonar-project.properties",
@@ -991,6 +991,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/ci-cd/sync-service-management-designer-core.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/sync-service-management-designer-core.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/ci-cd/merge-browser-coverage.test.ts",
       "path": "apps/backend-template/test/unit/ci-cd/merge-browser-coverage.test.ts",
       "layer": "tooling",
@@ -1173,6 +1183,16 @@
     {
       "id": "apps/backend-template/test/unit/ci-cd/run-monorepo-ci.test.ts",
       "path": "apps/backend-template/test/unit/ci-cd/run-monorepo-ci.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/ci-cd/classify-ci-context.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/classify-ci-context.test.ts",
       "layer": "tooling",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -3114,6 +3134,36 @@
       "timeoutMs": 60000
     },
     {
+      "id": "packages/designer-core/test/consumer-smoke.test.ts",
+      "path": "packages/designer-core/test/consumer-smoke.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "packages/designer-core/test/dom-free.test.ts",
+      "path": "packages/designer-core/test/dom-free.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "packages/designer-core/test/packaging.test.ts",
+      "path": "packages/designer-core/test/packaging.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "packages/external-db-repositories/test/integration/repositories.integration.test.ts",
       "path": "packages/external-db-repositories/test/integration/repositories.integration.test.ts",
       "layer": "adapters/out+infra",
@@ -3332,6 +3382,19 @@
       "timeoutMs": 300000
     },
     {
+      "id": "packages/cana/cypress/coverage-100.cy.ts",
+      "path": "packages/cana/cypress/coverage-100.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
       "id": "packages/cana/cypress/coverage-gaps.cy.ts",
       "path": "packages/cana/cypress/coverage-gaps.cy.ts",
       "layer": "browser-harness",
@@ -3360,6 +3423,19 @@
     {
       "id": "packages/cana/cypress/differential-dexie.cy.ts",
       "path": "packages/cana/cypress/differential-dexie.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/dist-bundle.cy.ts",
+      "path": "packages/cana/cypress/dist-bundle.cy.ts",
       "layer": "browser-harness",
       "kind": "non-hexagonal",
       "type": "integration",
@@ -3436,6 +3512,19 @@
       "timeoutMs": 300000
     },
     {
+      "id": "packages/cana/cypress/localstorage-fallback.cy.ts",
+      "path": "packages/cana/cypress/localstorage-fallback.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
       "id": "packages/cana/cypress/performance.cy.ts",
       "path": "packages/cana/cypress/performance.cy.ts",
       "layer": "browser-harness",
@@ -3451,6 +3540,19 @@
     {
       "id": "packages/cana/cypress/protocol.cy.ts",
       "path": "packages/cana/cypress/protocol.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/real-worker.cy.ts",
+      "path": "packages/cana/cypress/real-worker.cy.ts",
       "layer": "browser-harness",
       "kind": "non-hexagonal",
       "type": "integration",
@@ -3578,7 +3680,7 @@
     },
     "dev": {
       "script": "test:unit",
-      "mode": "full-unit+contract"
+      "mode": "cheap-health"
     },
     "main": {
       "script": "ci:gate:strict",
@@ -3591,9 +3693,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 182,
+    "unit": 187,
     "integration": 97,
     "smoke": 2,
-    "suites": 301
+    "suites": 310
   }
 }

@@ -136,6 +136,12 @@ function layersForFile(manifest, filePath) {
   if (filePath.startsWith('ci-cd/') || filePath.startsWith('tooling/') || filePath.startsWith('apps/jumentix-website/')) {
     matched.add('tooling');
   }
+  // Root toolchain pins (lockfile, package manifests, version pins) gate the
+  // same toolchain evidence as ci-cd/ changes — a bun.lock-only change must
+  // not fall through to unsupported-change-set.
+  if (filePath === 'bun.lock' || filePath === 'package.json' || filePath === '.bun-version') {
+    matched.add('tooling');
+  }
   if (filePath.startsWith('apps/backend-template/test/unit/modules/Users/domain/')) matched.add('domain');
   if (filePath.startsWith('apps/backend-template/test/unit/modules/Users/application/')
     || filePath.startsWith('apps/backend-template/test/unit/modules/Users/composition/')

@@ -27,7 +27,8 @@ import path from 'node:path';
 const repoRoot = path.resolve(__dirname, '../../../../..');
 const {
   IDesignerStore
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'store', 'IDesignerStore.js'));
+} = require('@jumentix/designer-core/store/IDesignerStore.js');
+
 const {
   CANA_BASELINE_KEY,
   CANA_DESIGNER_CLIENT_OPTIONS,

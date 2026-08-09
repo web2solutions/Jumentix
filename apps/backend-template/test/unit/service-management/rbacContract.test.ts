@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
-import path from 'node:path';
 
 import {
   EUserRole,
@@ -10,7 +9,7 @@ import {
 
 /**
  * Unit suite for the tenant RBAC contract mirror added by JUM-477
- * (`apps/service-management/src/model/rbacContract.js`) and its consumers in
+ * (`packages/designer-core/src/model/rbacContract.js`) and its consumers in
  * the designer: the state normalisers (`designerState.js`), the model
  * validation rule that rejects unenforceable roles, and the `entity.meta`
  * round-trip through the JSON and domain-package export/import paths.
@@ -20,7 +19,6 @@ import {
  * the designer silently offering roles the boilerplate cannot enforce.
  */
 
-const repoRoot = path.resolve(__dirname, '../../../../..');
 const {
   LEGACY_DIRECT_SCOPES,
   NORMALIZED_ROLES,
@@ -31,23 +29,23 @@ const {
   normalizeRbacRule,
   validateRbacRule
 } = require(
-  path.join(repoRoot, 'apps', 'service-management', 'src', 'model', 'rbacContract.js')
+  '@jumentix/designer-core/model/rbacContract.js'
 );
 const {
   getDefaultRbacPolicy,
   normalizeRbacPolicyInput,
   normalizeStatePayload
 } = require(
-  path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'designerState.js')
+  '@jumentix/designer-core/state/designerState.js'
 );
 const { collectModelIssues } = require(
-  path.join(repoRoot, 'apps', 'service-management', 'src', 'validation', 'modelValidation.js')
+  '@jumentix/designer-core/validation/modelValidation.js'
 );
 const { buildDomainPackageDocument, buildJsonExportDocument } = require(
-  path.join(repoRoot, 'apps', 'service-management', 'src', 'exporters', 'designerExporters.js')
+  '@jumentix/designer-core/exporters/designerExporters.js'
 );
 const { buildDomainFromPackage } = require(
-  path.join(repoRoot, 'apps', 'service-management', 'src', 'importers', 'designerImporters.js')
+  '@jumentix/designer-core/importers/designerImporters.js'
 );
 
 function createEntity(overrides: Record<string, unknown> = {}): any {

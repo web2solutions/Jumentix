@@ -66,7 +66,7 @@ stylesheet. What deliberately stays literal:
 
 - **Structural geometry the canvas math depends on** — the 3200×2200 canvas,
   the 24 px grid, 520 px domains, 190 px entities — pinned by
-  [`src/model/modelQueries.js`](../../apps/service-management/src/model/modelQueries.js)
+  [`src/model/modelQueries.js`](../../packages/designer-core/src/model/modelQueries.js)
   and its unit suite. These numbers are behaviour, not cosmetics.
 - **The compact inspector density** (5–7 px gaps in the dense panels), which
   has no token equivalent.
@@ -358,7 +358,7 @@ explanation.
 ## References
 
 - Token layer: [`apps/service-management/tokens.css`](../../apps/service-management/tokens.css) (vendored; source of truth [`components/design-system/tokens.css`](../../apps/jumentix-website/components/design-system/tokens.css)), [`styles.css`](../../apps/service-management/styles.css), [`index.html`](../../apps/service-management/index.html)
-- Accessibility behaviour: [`src/ui/tabs.js`](../../apps/service-management/src/ui/tabs.js), [`src/ui/canvas.js`](../../apps/service-management/src/ui/canvas.js), [`src/ui/inspectors.js`](../../apps/service-management/src/ui/inspectors.js), the global keyboard map in [`script.js`](../../apps/service-management/script.js); structural geometry pinned by [`src/model/modelQueries.js`](../../apps/service-management/src/model/modelQueries.js)
+- Accessibility behaviour: [`src/ui/tabs.js`](../../apps/service-management/src/ui/tabs.js), [`src/ui/canvas.js`](../../apps/service-management/src/ui/canvas.js), [`src/ui/inspectors.js`](../../apps/service-management/src/ui/inspectors.js), the global keyboard map in [`script.js`](../../apps/service-management/script.js); structural geometry pinned by [`src/model/modelQueries.js`](../../packages/designer-core/src/model/modelQueries.js)
 - Storybook coverage: [`ServiceManagementDesigner.stories.tsx`](../../apps/jumentix-website/components/service-management-designer/ServiceManagementDesigner.stories.tsx), [`storybook-smoke.mjs`](../../apps/jumentix-website/scripts/storybook-smoke.mjs), [`.storybook/preview.tsx`](../../apps/jumentix-website/.storybook/preview.tsx)
 - PWA shell: [`manifest.webmanifest`](../../apps/service-management/manifest.webmanifest), [`sw.js`](../../apps/service-management/sw.js), [`src/pwa/pwaShell.js`](../../apps/service-management/src/pwa/pwaShell.js), [`icons/`](../../apps/service-management/icons), [`server.js`](../../apps/service-management/server.js)
 - Suites: [`pwaShell.test.ts`](../../apps/backend-template/test/unit/service-management/pwaShell.test.ts), [`pwaShell.browser.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/pwaShell.browser.integration.test.ts), [`spaBoot.browser.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/spaBoot.browser.integration.test.ts), [`modelQueries.test.ts`](../../apps/backend-template/test/unit/service-management/modelQueries.test.ts)

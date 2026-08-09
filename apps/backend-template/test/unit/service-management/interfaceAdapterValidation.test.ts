@@ -7,10 +7,10 @@ import path from 'node:path';
  * Unit suite for the Communication Interface Designer adapter lifecycle
  * (JUM-545):
  *
- * - `apps/service-management/src/model/interfaceFrameworkMatrix.js` — the
+ * - `packages/designer-core/src/model/interfaceFrameworkMatrix.js` — the
  *   per-interface-type framework subsets drawn from the canonical runtime
  *   matrix (JUM-461's canonical spellings; no `derby`/`sails` aliases), and
- * - `apps/service-management/src/validation/interfaceAdapterValidation.js` —
+ * - `packages/designer-core/src/validation/interfaceAdapterValidation.js` —
  *   `normalizeInterfaceAdapterInput`, `collectInterfaceAdapterIssues`
  *   (vocabulary, entrypoint path, `XController.action` controller-mapping
  *   shape, uniqueness) and `upsertInterfaceAdapter` (the add/edit-in-place
@@ -29,7 +29,7 @@ const {
   getSupportedFrameworks,
   isFrameworkSupportedByType
 } = require(
-  path.join(repoRoot, 'apps', 'service-management', 'src', 'model', 'interfaceFrameworkMatrix.js')
+  '@jumentix/designer-core/model/interfaceFrameworkMatrix.js'
 );
 const {
   CONTROLLER_MAPPING_PATTERN,
@@ -38,7 +38,7 @@ const {
   normalizeInterfaceAdapterInput,
   upsertInterfaceAdapter
 } = require(
-  path.join(repoRoot, 'apps', 'service-management', 'src', 'validation', 'interfaceAdapterValidation.js')
+  '@jumentix/designer-core/validation/interfaceAdapterValidation.js'
 );
 
 const enumValuesFor = (scriptSource: string, key: string): string[] => {
@@ -352,9 +352,10 @@ describe('interface designer tab wiring (JUM-545)', () => {
   it('keeps the new modules in the offline shell precache (sw.js SHELL_ASSETS)', () => {
     // The browser integration suites (pwaShell, offlinePersistenceMatrix)
     // caught their absence: without a precache entry the offline shell cannot
-    // resolve the module graph.
-    expect(sw).toContain('\'./src/model/interfaceFrameworkMatrix.js\'');
-    expect(sw).toContain('\'./src/validation/interfaceAdapterValidation.js\'');
+    // resolve the module graph. Since JUM-493 the core modules are vendored
+    // from packages/designer-core, so the precache names the vendored paths.
+    expect(sw).toContain('\'./vendor/designer-core/model/interfaceFrameworkMatrix.js\'');
+    expect(sw).toContain('\'./vendor/designer-core/validation/interfaceAdapterValidation.js\'');
   });
 
   it('replaces the free-text framework input with a matrix-driven select', () => {

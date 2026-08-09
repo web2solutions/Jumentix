@@ -144,11 +144,11 @@ describe('serverHarness runtime helpers against the real server (JUM-628)', () =
     expect(fs.existsSync(dir)).toBe(false);
   });
 
-  it('allocates ports inside the pinned 3200-4199 range', () => {
+  it('allocates ports inside the JUM-635 20000-49999 range', () => {
     for (let i = 0; i < 50; i += 1) {
       const port = allocatePort();
-      expect(port).toBeGreaterThanOrEqual(3200);
-      expect(port).toBeLessThan(4200);
+      expect(port).toBeGreaterThanOrEqual(20000);
+      expect(port).toBeLessThan(50000);
     }
   });
 
