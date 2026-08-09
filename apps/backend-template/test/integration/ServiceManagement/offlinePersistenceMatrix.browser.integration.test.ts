@@ -45,7 +45,7 @@
  *  - Unusable-storage environments produce their declared state before the
  *    user invests work.
  */
-import { execFileSync, spawn } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { webkit } from 'playwright-webkit';
@@ -54,7 +54,6 @@ import {
   createTempConfigDir,
   cleanupTempConfigDir,
   envFileContent,
-  serverPath,
   startServer,
   staticRoot,
   stopServer,
@@ -164,25 +163,14 @@ export function createCanaDatabaseClient(options) {
 `;
 
 /**
- * `startServer` deliberately randomises the port; the offline/recovery cells
- * need the server back on the SAME port after the kill, because IndexedDB (and
- * localStorage, and the service worker registration) are per-origin.
+ * The offline/recovery cells need the server back on the SAME port after the
+ * kill, because IndexedDB (and localStorage, and the service worker
+ * registration) are per-origin. That pin is the harness's `pinnedPort` mode:
+ * no retry to a different port — a busy pinned port fails fast with a clear
+ * error (JUM-628), since moving the origin would silently void the cell.
  */
-function startPinnedServer(configDir: string, port: number): StartedServer {
-  const env: NodeJS.ProcessEnv = {
-    ...process.env,
-    JUMENTIX_SERVICE_MANAGEMENT_CONFIG_DIR: configDir,
-    JUMENTIX_SERVICE_MANAGEMENT_PORT: String(port)
-  };
-  let capturedStderr = '';
-  const proc = spawn('node', [serverPath], {
-    env,
-    stdio: ['ignore', 'pipe', 'pipe']
-  });
-  proc.stderr?.on('data', (chunk) => {
-    capturedStderr += chunk;
-  });
-  return { proc, port, stderr: () => capturedStderr };
+function startPinnedServer(configDir: string, port: number): Promise<StartedServer> {
+  return startServer(configDir, {}, { pinnedPort: port });
 }
 
 /** A browser context whose vendored Cana bundle carries the fault seam. */
@@ -390,7 +378,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       stdio: 'inherit'
     });
     tempDir = createTempConfigDir({ '.env.dev': envFileContent('express') });
-    server = startServer(tempDir);
+    server = await startServer(tempDir);
     await waitForServer(server.port);
     baseUrl = `http://127.0.0.1:${String(server.port)}/`;
     browser = await webkit.launch({ headless: true });
@@ -409,7 +397,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
     // Own server on a pinned port: the origin must survive the offline period.
     const offlineTempDir = createTempConfigDir({ '.env.dev': envFileContent('express') });
     const port = 4400 + Math.floor(Math.random() * 400);
-    let offlineServer: StartedServer | undefined = startPinnedServer(offlineTempDir, port);
+    let offlineServer: StartedServer | undefined = await startPinnedServer(offlineTempDir, port);
     await waitForServer(port);
     const offlineUrl = `http://127.0.0.1:${String(port)}/`;
     const context = await browser!.newContext();
@@ -452,7 +440,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       // Back online after the offline period, same origin: nothing lost, no
       // duplicate, no migration re-run (there was never a legacy payload, so
       // no backup may ever have downloaded).
-      offlineServer = startPinnedServer(offlineTempDir, port);
+      offlineServer = await startPinnedServer(offlineTempDir, port);
       await waitForServer(port);
       await page.reload({ waitUntil: 'load' });
       await page.waitForSelector('#tab-domain-designer-btn', { timeout: 15000 });
@@ -487,7 +475,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
     expect.hasAssertions();
     const offlineTempDir = createTempConfigDir({ '.env.dev': envFileContent('express') });
     const port = 4900 + Math.floor(Math.random() * 400);
-    let offlineServer: StartedServer | undefined = startPinnedServer(offlineTempDir, port);
+    let offlineServer: StartedServer | undefined = await startPinnedServer(offlineTempDir, port);
     await waitForServer(port);
     const offlineUrl = `http://127.0.0.1:${String(port)}/`;
     const context = await browser!.newContext();
@@ -533,7 +521,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
 
       // Back online, same origin: the migrated model AND the offline edits
       // are present, and the migration still has not re-run.
-      offlineServer = startPinnedServer(offlineTempDir, port);
+      offlineServer = await startPinnedServer(offlineTempDir, port);
       await waitForServer(port);
       await page.reload({ waitUntil: 'load' });
       await page.waitForSelector('#tab-domain-designer-btn', { timeout: 15000 });

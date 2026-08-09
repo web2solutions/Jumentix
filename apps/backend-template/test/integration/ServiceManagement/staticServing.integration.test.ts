@@ -41,7 +41,7 @@ describe('serviceManagement static serving (JUM-466/JUM-463)', () => {
 
   it('serves the SPA index and its assets with content types', async () => {
     expect.hasAssertions();
-    server = startServer(tempDir);
+    server = await startServer(tempDir);
     await waitForServer(server.port);
 
     const index = await requestRaw(server.port, 'GET', '/');
@@ -61,7 +61,7 @@ describe('serviceManagement static serving (JUM-466/JUM-463)', () => {
 
   it('returns 404 for unknown paths', async () => {
     expect.hasAssertions();
-    server = startServer(tempDir);
+    server = await startServer(tempDir);
     await waitForServer(server.port);
 
     const res = await requestRaw(server.port, 'GET', '/definitely-not-a-real-file.js');
@@ -70,7 +70,7 @@ describe('serviceManagement static serving (JUM-466/JUM-463)', () => {
 
   it('rejects path traversal outside the static root', async () => {
     expect.hasAssertions();
-    server = startServer(tempDir);
+    server = await startServer(tempDir);
     await waitForServer(server.port);
 
     // Sent verbatim — a normalizing client would hide the attack. Twelve '..'
@@ -95,7 +95,7 @@ describe('serviceManagement static serving (JUM-466/JUM-463)', () => {
 
   it('serves a file added after boot in dev (JUM-463 manifest refresh)', async () => {
     expect.hasAssertions();
-    server = startServer(tempDir);
+    server = await startServer(tempDir);
     await waitForServer(server.port);
 
     const lateFileName = `smoke-late-added-${String(process.pid)}.txt`;
