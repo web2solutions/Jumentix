@@ -35,6 +35,7 @@ This file consolidates non-functional requirements already requested and stored 
 - `043` Runtime env docs + governance.
 - `126` Service Management ownership registration and pinned public contracts
 - `127` Mandatory `rtk` and Caveman usage in every agent session
+- `128` Requirement changes take precedence in the release process (sequence only, no gate exemption)
   (`/api/runtime/env`, `service-management.v1` storage schema, export formats),
   so component drift and re-homing breaks fail checks instead of serving silent
   defaults.
