@@ -6,6 +6,7 @@
 
 - 2026-08-09 chore(JUM-615): merge origin/dev (GitHub Actions CI) - Eduardo A.
 - 2026-08-09 chore(JUM-615): bump barrel comment to retrigger CI webhook - Eduardo A.
+- 2026-08-09 ci: reuse local broker services in GitHub Actions - Eduardo A.
 - 2026-08-09 [JUM-632][Release] Record main ancestry before promotion (#147) - Eduardo A.
 - 2026-08-09 chore(release): record main ancestry before promotion - Eduardo A.
 - 2026-08-09 [JUM-631][CI] Make dev delivery gates cheap and context-aware (#144) - Eduardo A.
