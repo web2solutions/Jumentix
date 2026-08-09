@@ -194,8 +194,8 @@ describe('check-pr-governance', () => {
       baseRef: 'main'
     })).toStrictEqual([]);
     expect(validatePullRequest({
-      title: '[JUM-634][Release] Promote dev to main',
-      headRef: 'codex/release/JUM-634-dev-main-signed-squash',
+      title: '[JUM-636][Release] Promote dev to main',
+      headRef: 'codex/release/JUM-636-dev-main-signed-squash',
       baseRef: 'main'
     })).toStrictEqual([]);
     expect(validatePullRequest({

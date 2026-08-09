@@ -167,7 +167,10 @@ jobs:
       github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch' ||
       github.ref_name == 'main' ||
-      (github.event_name == 'pull_request' && github.base_ref == 'main' && github.head_ref == 'dev')
+      (github.event_name == 'pull_request' && github.base_ref == 'main' && (
+        github.head_ref == 'dev' ||
+        (startsWith(github.head_ref, 'codex/release/') && endsWith(github.head_ref, '-dev-main-signed-squash'))
+      ))
     runs-on: [self-hosted, jumentix]
     steps:
       - uses: actions/checkout@v7
@@ -191,7 +194,10 @@ jobs:
       github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch' ||
       github.ref_name == 'main' ||
-      (github.event_name == 'pull_request' && github.base_ref == 'main' && github.head_ref == 'dev')
+      (github.event_name == 'pull_request' && github.base_ref == 'main' && (
+        github.head_ref == 'dev' ||
+        (startsWith(github.head_ref, 'codex/release/') && endsWith(github.head_ref, '-dev-main-signed-squash'))
+      ))
     runs-on: [self-hosted, jumentix]
     steps:
       - uses: actions/checkout@v7
@@ -222,7 +228,10 @@ jobs:
       github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch' ||
       github.ref_name == 'main' ||
-      (github.event_name == 'pull_request' && github.base_ref == 'main' && github.head_ref == 'dev')
+      (github.event_name == 'pull_request' && github.base_ref == 'main' && (
+        github.head_ref == 'dev' ||
+        (startsWith(github.head_ref, 'codex/release/') && endsWith(github.head_ref, '-dev-main-signed-squash'))
+      ))
     runs-on: [self-hosted, jumentix]
     env:
       AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
@@ -257,7 +266,10 @@ jobs:
       github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch' ||
       github.ref_name == 'main' ||
-      (github.event_name == 'pull_request' && github.base_ref == 'main' && github.head_ref == 'dev')
+      (github.event_name == 'pull_request' && github.base_ref == 'main' && (
+        github.head_ref == 'dev' ||
+        (startsWith(github.head_ref, 'codex/release/') && endsWith(github.head_ref, '-dev-main-signed-squash'))
+      ))
     runs-on: [self-hosted, jumentix]
     env:
       AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
@@ -380,7 +392,10 @@ jobs:
       github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch' ||
       github.ref_name == 'main' ||
-      (github.event_name == 'pull_request' && github.base_ref == 'main' && github.head_ref == 'dev')
+      (github.event_name == 'pull_request' && github.base_ref == 'main' && (
+        github.head_ref == 'dev' ||
+        (startsWith(github.head_ref, 'codex/release/') && endsWith(github.head_ref, '-dev-main-signed-squash'))
+      ))
     runs-on: [self-hosted, jumentix]
     env:
       JUMENTIX_WEBSITE_CYPRESS_SKIP_BUILD: '1'
@@ -414,7 +429,10 @@ jobs:
       github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch' ||
       github.ref_name == 'main' ||
-      (github.event_name == 'pull_request' && github.base_ref == 'main' && github.head_ref == 'dev')
+      (github.event_name == 'pull_request' && github.base_ref == 'main' && (
+        github.head_ref == 'dev' ||
+        (startsWith(github.head_ref, 'codex/release/') && endsWith(github.head_ref, '-dev-main-signed-squash'))
+      ))
     runs-on: [self-hosted, jumentix]
     env:
       FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
