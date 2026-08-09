@@ -130,6 +130,15 @@ Política de isolamento e nomenclatura:
 - Somente um PR de promoção de release originado em `dev` pode ter `main` como destino.
 - Uma promoção de `dev` para `main` referencia os PRs de tarefa e Issues do Linear já
   representados em `dev` e não introduz mudanças adicionais de tarefa.
+- Requisito `128`: uma alteração já merged em `.agents/requirements/` tem precedência na fila de
+  release. É promovida à frente de trabalho de feature, fix, refactor e chore, e não fica retida
+  para um release posterior só para arrumar o lote. Um requisito merged mas não promovido é uma
+  regra que existe em `dev` e não em `main`, e agentes que trabalham a partir do estado promovido
+  seguem a antiga.
+- Essa precedência aplica-se **apenas à sequência** e não concede dispensa de gate nenhum. Uma
+  promoção que leve alteração de requisito passa pelas mesmas verificações que qualquer outra, nos
+  mesmos limiares, sem quarentena nem exceção relaxada para caber. Mais depressa na fila, nunca
+  mais leve no gate (Requisito `065`).
 - PRs diretos de tarefa/tópico, pushes e merges para `main` são proibidos.
 - Os gates são orientados ao destino: branches de feature, docs, fix e outras tarefas
   executam somente testes especializados alterados/relacionados, `dev` executa a suíte
