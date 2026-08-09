@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-09 fix(ci): keep db repository smoke on bun (#154) - Eduardo A.
 - 2026-08-09 fix(ci): keep db repository smoke on bun - Eduardo A.
 - 2026-08-09 [JUM-632][CI] Keep coverage free of live broker suites (#153) - Eduardo A.
 - 2026-08-09 ci: refresh branch gate status - Eduardo A.

@@ -222,7 +222,7 @@
     "docker:up:mysql": "docker compose -f \"apps/backend-template/docker-compose-mysql.yml\" up -d --build --wait",
     "docker:up:mssql": "docker compose -f \"apps/backend-template/docker-compose-mssql.yml\" up -d --build --wait",
     "docker:up:oracle": "docker compose -f \"apps/backend-template/docker-compose-oracle.yml\" up -d --build --wait",
-    "docker:up:mongodb": "docker compose -f \"apps/backend-template/docker-compose-mongodb.yml\" up -d --build --wait",
+    "docker:up:mongodb": "docker compose -f \"apps/backend-template/docker-compose-mongodb.yml\" down --remove-orphans || true && docker compose -f \"apps/backend-template/docker-compose-mongodb.yml\" up -d --build --wait --force-recreate --remove-orphans",
     "docker:up:cassandra": "docker compose -f \"apps/backend-template/docker-compose-cassandra.yml\" down --remove-orphans || true && docker compose -f \"apps/backend-template/docker-compose-cassandra.yml\" up -d --build --wait --force-recreate --remove-orphans",
     "docker:up:dynamodb": "docker compose -f \"apps/backend-template/docker-compose-dynamodb.yml\" up -d --build --wait",
     "docker:up:firebase": "docker compose -f \"apps/backend-template/docker-compose-firebase.yml\" up -d --build --wait",
