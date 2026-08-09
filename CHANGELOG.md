@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-08-09 [JUM-632][CI] Stabilize Redis database matrix smoke (#152) - Eduardo A.
+- 2026-08-09 ci: stabilize Redis database matrix smoke - Eduardo A.
 - 2026-08-09 [JUM-632][CI] Make Sonar scanner install idempotent (#151) - Eduardo A.
 - 2026-08-09 ci: make Sonar scanner install idempotent - Eduardo A.
 - 2026-08-09 [JUM-632][CI] Recreate Cassandra compose service before database matrix (#150) - Eduardo A.

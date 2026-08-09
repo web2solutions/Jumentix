@@ -104,6 +104,26 @@ describe('check-ci-provider', () => {
     expect(run(directory).output).toContain('must guard coverage to release/full contexts');
   });
 
+  it('fails when the coverage job re-enables real broker or Redis integration suites', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.github/workflows/ci.yml');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace(
+          '      AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key\n'
+            + '      AAA_REDIS_HOST: 127.0.0.1',
+          '      AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key\n'
+            + '      RUN_BROKER_INTEGRATION: \'1\'\n'
+            + '      RUN_REDIS_INTEGRATION: \'1\'\n'
+            + '      AAA_REDIS_HOST: 127.0.0.1'
+        )
+      );
+    });
+    expect(run(directory).output).toContain('coverage job must keep real broker/Redis integration suites');
+  });
+
   it('fails when Codecov or Sonar return as separate GitHub Actions jobs', () => {
     expect.hasAssertions();
 
