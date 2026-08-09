@@ -33,7 +33,9 @@ const {
   CANA_MIGRATION_SOURCE_RETENTION_DAYS,
   CANA_MIGRATION_SOURCE_STATE_KEY,
   describeDesignerStorageEnvironment,
-  migrateLocalStorageToCana
+  describeLoadTimeDataLoss,
+  migrateLocalStorageToCana,
+  readRetainedMigrationSource
 } = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'store', 'canaMigration.js'));
 const {
   CANA_MODULE_SPECIFIER
@@ -543,6 +545,72 @@ describe('declared storage-environment states (no fallback — decision 2026-07-
     const state = describeDesignerStorageEnvironment({ indexedDbPresent: true, probeStatus: 'available' });
     expect(state.kind).toBe('ok');
     expect(state.message).toBeNull();
+  });
+});
+
+describe('load-time data-lost declaration (JUM-626)', () => {
+  it('declares data loss through the same data-lost state, naming the loss and the export recourse', () => {
+    const state = describeLoadTimeDataLoss({
+      reason: 'Stored payload under "service-management.v1" is not readable JSON',
+      retainedSource: { retained: false }
+    });
+    expect(state.kind).toBe('data-lost');
+    expect(state.severity).toBe('error');
+    expect(state.message).toContain('could not be loaded');
+    expect(state.message).toContain('corrupted');
+    expect(state.message).toContain('no fallback store');
+    expect(state.message).toContain('fresh template');
+    expect(state.message).toContain('backup/export made earlier');
+    expect(state.message).toContain('Import JSON');
+    expect(state.message).toContain('not readable JSON');
+  });
+
+  it('names the retained pre-migration localStorage copy as the recourse when one is still retained', () => {
+    const state = describeLoadTimeDataLoss({
+      retainedSource: { retained: true, retainedUntil: '2026-08-31T12:00:00.000Z' }
+    });
+    expect(state.kind).toBe('data-lost');
+    expect(state.message).toContain(CANA_MIGRATION_SOURCE_STATE_KEY);
+    expect(state.message).toContain('2026-08-31T12:00:00.000Z');
+    expect(state.message).toContain('Import JSON');
+    expect(state.message).not.toContain('backup/export made earlier');
+  });
+
+  it('omits the cause when the port reported none', () => {
+    const state = describeLoadTimeDataLoss({ retainedSource: { retained: false } });
+    expect(state.message).not.toContain('Cause:');
+  });
+
+  it('reads a retained source only inside its retention window, with the payload still present', () => {
+    const retainedUntil = new Date(FIXED_NOW.getTime() + 10 * 24 * 60 * 60 * 1000).toISOString();
+    const marker = JSON.stringify({ status: 'verified', migratedAt: FIXED_NOW.toISOString(), sourceRetainedUntil: retainedUntil });
+    const storage = createFakeStorage({
+      [CANA_MIGRATION_MARKER_KEY]: marker,
+      [CANA_MIGRATION_SOURCE_STATE_KEY]: JSON.stringify({ domains: [] })
+    });
+    expect(readRetainedMigrationSource({ storage, now }))
+      .toStrictEqual({ retained: true, retainedUntil });
+
+    // Past the retention window the source is no longer a recovery path.
+    const expired = createFakeStorage({
+      [CANA_MIGRATION_MARKER_KEY]: marker,
+      [CANA_MIGRATION_SOURCE_STATE_KEY]: JSON.stringify({ domains: [] })
+    });
+    const later = () => new Date(FIXED_NOW.getTime() + 31 * 24 * 60 * 60 * 1000);
+    expect(readRetainedMigrationSource({ storage: expired, now: later }))
+      .toStrictEqual({ retained: false });
+
+    // No marker (never migrated, or marker unreadable) means no retained source.
+    expect(readRetainedMigrationSource({
+      storage: createFakeStorage({ [CANA_MIGRATION_SOURCE_STATE_KEY]: '{}' }),
+      now
+    })).toStrictEqual({ retained: false });
+
+    // Marker inside the window but the payload itself already gone.
+    expect(readRetainedMigrationSource({
+      storage: createFakeStorage({ [CANA_MIGRATION_MARKER_KEY]: marker }),
+      now
+    })).toStrictEqual({ retained: false });
   });
 });
 

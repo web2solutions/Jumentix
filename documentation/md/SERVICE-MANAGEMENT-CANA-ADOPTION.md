@@ -244,18 +244,25 @@ write-path states surface at the moment they happen.
   (Import JSON). There is no other recourse — no fallback store, no server
   copy, no support recovery.
 
-### Corrupted record — lost, not empty, and the designer recovers
+### Corrupted record — lost, not empty, announced, and the designer recovers
 
-- **What happens:** a stored payload that no longer parses reports `'lost'`
+- **What you see** (at startup, severity error): *"Your previously saved
+  design could not be loaded: the stored data is corrupted and there is no
+  fallback store, so a fresh template was loaded instead and the saved model
+  was lost. Your recourse is a backup/export made earlier — restore it with
+  Import JSON."* A stored payload that no longer parses reports `'lost'`
   through the port — never `'empty'` — and the designer recovers instead of
   crashing: the seed template loads and the recovered save makes the record
-  readable again. **Honest gap:** the boot does not yet announce this
-  load-time corruption recovery in the UI; the eviction path above is
-  announced, the corruption-at-load path heals silently today. That
-  announcement is pending as
-  [JUM-626](https://linear.app/jumentix/issue/JUM-626/fix-announce-load-time-storage-corruption-recovery-in-the-boot-ui).
-- **What you can do:** restore from an earlier export; treat any unexplained
-  return to the seed template as a possible loss event.
+  readable again. The probe-time environment states cannot see an unreadable
+  record (only eviction), so the loss is declared at load time through the
+  same `data-lost` state and the same status region
+  ([JUM-626](https://linear.app/jumentix/issue/JUM-626/fix-announce-load-time-storage-corruption-recovery-in-the-boot-ui)).
+  When the verified pre-migration copy is still retained in localStorage
+  (its 30-day window, JUM-484), the message names it — the pinned key and the
+  retention date — as the first recourse.
+- **What you can do:** restore from an earlier export or migration backup
+  (Import JSON); when the message names the retained pre-migration copy, copy
+  it out before its retention date and import that.
 
 ### Unknown write outcome — worker crash after dispatch
 
@@ -395,11 +402,6 @@ must be obvious, not merely available.
 
 Recorded honestly, with their owning issues:
 
-- **[JUM-626](https://linear.app/jumentix/issue/JUM-626/fix-announce-load-time-storage-corruption-recovery-in-the-boot-ui)
-  — load-time corruption announcement pending.** The eviction path declares
-  data loss at boot; a corrupted record discovered at load currently heals
-  silently (seed template + recovered save). The boot UI announcement is the
-  pending fix.
 - **The Cana bundle bundling defect — belongs to the Cana lane.** The
   designer's vendored Cana bundle is built from `packages/cana`'s
   `adapter.ts` entry rather than the package index, because bun's full-graph

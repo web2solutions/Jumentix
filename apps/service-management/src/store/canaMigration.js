@@ -359,3 +359,71 @@ export function describeDesignerStorageEnvironment({ indexedDbPresent, probeStat
   }
   return { kind: 'ok', severity: 'info', message: null };
 }
+
+/**
+ * Read whether the verified pre-migration source payload is still retained in
+ * localStorage (unused, inside its retention window). This is the manual
+ * recovery path the load-time loss announcement names when it exists
+ * (JUM-626): a corrupted Cana record is unrecoverable from Cana itself, but
+ * the retained copy is still in the browser for the user to copy out.
+ *
+ * @param {Object} [options]
+ * @param {Storage} [options.storage] - the legacy backend; defaults to the
+ *   ambient `localStorage`, resolved defensively.
+ * @param {Function} [options.now] - clock injection (tests), `() => Date`.
+ * @returns {{retained: boolean, retainedUntil?: string}}
+ */
+export function readRetainedMigrationSource({ storage, now = () => new Date() } = {}) {
+  const backend = storage !== undefined ? storage : resolveDefaultStorage();
+  if (!backend) return { retained: false };
+  const marker = readMarker(backend);
+  if (!marker) return { retained: false };
+  const retainedUntil = Date.parse(marker.sourceRetainedUntil || '');
+  if (!Number.isFinite(retainedUntil) || now().getTime() > retainedUntil) {
+    return { retained: false };
+  }
+  let present = false;
+  try {
+    present = backend.getItem(CANA_MIGRATION_SOURCE_STATE_KEY) !== null;
+  } catch (_) {
+    present = false;
+  }
+  return present
+    ? { retained: true, retainedUntil: marker.sourceRetainedUntil }
+    : { retained: false };
+}
+
+/**
+ * The DECLARED `data-lost` state for corruption discovered at LOAD time
+ * (JUM-626) — the probe-time `data-lost` above covers eviction; this one
+ * covers a stored payload the port reports `'lost'` on read, which the probe
+ * cannot see. The boot recovers (seed template + recovered save, making the
+ * record readable again) and announces the loss through the JUM-543 status
+ * region instead of healing silently: the message names the loss and names
+ * the recourse — the retained pre-migration localStorage copy when one is
+ * still inside its retention window, an earlier export/backup otherwise.
+ * Never alert(); the caller renders through the status surfaces.
+ *
+ * @param {Object} [options]
+ * @param {string} [options.reason] - the port's diagnostic reason.
+ * @param {{retained: boolean, retainedUntil?: string}} [options.retainedSource] -
+ *   the `readRetainedMigrationSource` verdict.
+ * @returns {{kind: string, severity: 'error', message: string}}
+ */
+export function describeLoadTimeDataLoss({ reason, retainedSource } = {}) {
+  const recourse = retainedSource && retainedSource.retained
+    ? ` The pre-migration copy of your design is still retained, unused, in this browser's local `
+      + `storage under "${CANA_MIGRATION_SOURCE_STATE_KEY}" until ${retainedSource.retainedUntil} — `
+      + 'copy it out before then and restore it with Import JSON; an earlier export or migration '
+      + 'backup works too.'
+    : ' Your recourse is a backup/export made earlier — restore it with Import JSON.';
+  return {
+    kind: 'data-lost',
+    severity: 'error',
+    message: 'Your previously saved design could not be loaded: the stored data is corrupted and '
+      + 'there is no fallback store, so a fresh template was loaded instead and the saved model '
+      + 'was lost.'
+      + recourse
+      + (reason ? ` Cause: ${reason}` : '')
+  };
+}

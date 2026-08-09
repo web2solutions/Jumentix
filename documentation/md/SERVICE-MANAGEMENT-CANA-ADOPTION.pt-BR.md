@@ -257,19 +257,26 @@ momento em que acontecem.
   do backup da migração (Import JSON). Não há outro recurso — nenhum store de
   fallback, nenhuma cópia no servidor, nenhuma recuperação pelo suporte.
 
-### Registro corrompido — perdido, não vazio, e o designer se recupera
+### Registro corrompido — perdido, não vazio, anunciado, e o designer se recupera
 
-- **O que acontece:** um payload armazenado que não pode mais ser analisado
+- **O que você vê** (na inicialização, severidade erro): *"Your previously
+  saved design could not be loaded: the stored data is corrupted and there is
+  no fallback store, so a fresh template was loaded instead and the saved
+  model was lost. Your recourse is a backup/export made earlier — restore it
+  with Import JSON."* Um payload armazenado que não pode mais ser analisado
   reporta `'lost'` através da porta — nunca `'empty'` — e o designer se
   recupera em vez de quebrar: o template semente é carregado e a gravação de
-  recuperação torna o registro legível novamente. **Lacuna honesta:** o boot
-  ainda não anuncia essa recuperação de corrupção em tempo de carga na UI; o
-  caminho de evicção acima é anunciado, o caminho de corrupção na carga
-  atualmente se cura em silêncio. Esse anúncio está pendente como
-  [JUM-626](https://linear.app/jumentix/issue/JUM-626/fix-announce-load-time-storage-corruption-recovery-in-the-boot-ui).
-- **O que você pode fazer:** restaurar a partir de uma exportação anterior;
-  trate qualquer retorno inexplicado ao template semente como um possível
-  evento de perda.
+  recuperação torna o registro legível novamente. Os estados de ambiente
+  sondados no boot não enxergam um registro ilegível (somente evicção),
+  portanto a perda é declarada em tempo de carga através do mesmo estado
+  `data-lost` e da mesma região de status
+  ([JUM-626](https://linear.app/jumentix/issue/JUM-626/fix-announce-load-time-storage-corruption-recovery-in-the-boot-ui)).
+  Quando a cópia verificada pré-migração ainda está retida no localStorage
+  (sua janela de 30 dias, JUM-484), a mensagem a nomeia — a chave fixada e a
+  data de retenção — como o primeiro recurso.
+- **O que você pode fazer:** restaurar a partir de uma exportação anterior ou
+  do backup da migração (Import JSON); quando a mensagem nomeia a cópia
+  pré-migração retida, copie-a para fora antes da data de retenção e importe-a.
 
 ### Resultado de escrita desconhecido — falha do worker após o despacho
 
@@ -419,11 +426,6 @@ que existe — portanto ela deve ser óbvia, não meramente disponível.
 
 Registradas honestamente, com suas issues responsáveis:
 
-- **[JUM-626](https://linear.app/jumentix/issue/JUM-626/fix-announce-load-time-storage-corruption-recovery-in-the-boot-ui)
-  — anúncio de corrupção em tempo de carga pendente.** O caminho de evicção
-  declara a perda de dados no boot; um registro corrompido descoberto na carga
-  atualmente se cura em silêncio (template semente + gravação de recuperação).
-  O anúncio na UI de boot é a correção pendente.
 - **O defeito de bundling do bundle Cana — pertence à frente do Cana.** O
   bundle Cana vendored do designer é construído a partir da entrada
   `adapter.ts` do `packages/cana` em vez do índice do pacote, porque o

@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-08 ci(JUM-493): give the service-management integration matrix a real timeout budget - Eduardo A.
 - 2026-08-08 test(JUM-493): measure designer-core as a coverage subject and close its gaps - Eduardo A.
 - 2026-08-08 refactor(JUM-493): make packages/designer-core the canonical home of the designer core - Eduardo A.
 - 2026-08-08 ci(JUM-493): map toolchain pins to the tooling layer and commit bun.lock - Eduardo A.

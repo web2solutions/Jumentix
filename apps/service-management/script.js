@@ -51,7 +51,9 @@ import { createDesignerStore } from './src/store/designerStoreFactory.js';
 import {
   CANA_MIGRATION_SOURCE_RETENTION_DAYS,
   describeDesignerStorageEnvironment,
-  migrateLocalStorageToCana
+  describeLoadTimeDataLoss,
+  migrateLocalStorageToCana,
+  readRetainedMigrationSource
 } from './src/store/canaMigration.js';
 import * as model from '@jumentix/designer-core/model/modelQueries.js';
 import { isPm2ManagedDeployTarget } from '@jumentix/designer-core/model/deployCapabilityMatrix.js';
@@ -2692,7 +2694,7 @@ function downloadMigrationBackup(fileName, rawJson) {
 
 // Boot is async because the IDesignerStore port is async (Cana crosses a
 // worker boundary). Order: one-way migration → declared storage-environment
-// state → load → wire → render.
+// state → load (announcing load-time loss, JUM-626) → wire → render.
 async function boot() {
   // JUM-484: one-way migration localStorage → Cana, before any state load so
   // a migrated payload is read from Cana on this very boot. The source stays
@@ -2718,6 +2720,7 @@ async function boot() {
   // the status region — never a silent in-memory session. On a boot that
   // migrated (or failed to), that message names the more specific cause and
   // wins the single region; the environment states recur on later boots.
+  let probeDeclaredDataLoss = false;
   if (migration.status === 'already-migrated' || migration.status === 'no-source') {
     const probe = await store.probe();
     const environment = describeDesignerStorageEnvironment({
@@ -2726,9 +2729,25 @@ async function boot() {
       probeReason: probe.reason
     });
     if (environment.message) showStatus(environment.message, environment.severity);
+    probeDeclaredDataLoss = environment.kind === 'data-lost';
   }
 
-  await loadState();
+  // JUM-626: corruption discovered at LOAD time (the probe above cannot see
+  // an unreadable record — only eviction) is announced through the same
+  // data-lost declared state as eviction, naming the loss and the recourse
+  // — the retained pre-migration localStorage copy when one is still inside
+  // its retention window. An evicted database reports 'lost' at BOTH probe
+  // and load; the probe-time declaration already named that loss and wins
+  // the single region. 'unavailable' likewise stays with the probe-time
+  // states above; 'ok'/'empty' announce nothing.
+  const loadOutcome = await loadState();
+  if ((loadOutcome.status === 'lost' || loadOutcome.status === 'recovered') && !probeDeclaredDataLoss) {
+    const announcement = describeLoadTimeDataLoss({
+      reason: loadOutcome.reason,
+      retainedSource: readRetainedMigrationSource()
+    });
+    showStatus(announcement.message, announcement.severity);
+  }
   wireEvents();
   render();
 
