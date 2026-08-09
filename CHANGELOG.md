@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-08-09 fix(ci): isolate database compose projects (#156) - Eduardo A.
+- 2026-08-09 fix(ci): isolate database compose projects - Eduardo A.
 - 2026-08-09 fix(ci): recreate mongodb smoke container (#155) - Eduardo A.
 - 2026-08-09 fix(ci): recreate mongodb smoke container - Eduardo A.
 - 2026-08-09 fix(ci): keep db repository smoke on bun (#154) - Eduardo A.

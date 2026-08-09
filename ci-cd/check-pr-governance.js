@@ -152,38 +152,30 @@ function validateTemplates(rootDir = process.cwd()) {
   return failures;
 }
 
-function validatePullRequest(metadata, rootDir = process.cwd()) {
-  const title = String(metadata.title || '').trim();
-  const body = String(metadata.body || '');
-  const headRef = String(metadata.headRef || '').trim();
-  const baseRef = String(metadata.baseRef || '').trim();
+function hasPullRequestMetadata({ title, body, headRef, baseRef }) {
+  return Boolean(headRef || baseRef || title || body);
+}
+
+function validateReleasePullRequest({ title, headRef }) {
   const failures = [];
-
-  if (!headRef && !baseRef && !title && !body) return failures;
-
-  if (baseRef === 'main') {
-    if (headRef !== 'dev') {
-      failures.push('[pr-governance] only dev may target main');
-    }
-    if (!/^\[JUM-\d+\]\[Release\] .+/.test(title)) {
-      failures.push(
-        '[pr-governance] dev-to-main PR title must use [JUM-XXXX][Release] <concise outcome>'
-      );
-    }
-    return failures;
+  if (headRef !== 'dev') {
+    failures.push('[pr-governance] only dev may target main');
   }
-
-  if (baseRef !== 'dev') {
-    failures.push(`[pr-governance] task PR must target dev, got: ${baseRef || '<empty>'}`);
-    return failures;
+  if (!/^\[JUM-\d+\]\[Release\] .+/.test(title)) {
+    failures.push(
+      '[pr-governance] dev-to-main PR title must use [JUM-XXXX][Release] <concise outcome>'
+    );
   }
+  return failures;
+}
 
+function resolveTaskBranch(headRef, rootDir) {
+  const failures = [];
   let branchPatterns;
   try {
     branchPatterns = agentBranchPatterns(rootDir);
   } catch (error) {
-    failures.push(error.message);
-    return failures;
+    return { failures: [error.message], branchMatch: null, branchNature: '' };
   }
 
   const branchMatch = headRef.match(branchPatterns.strict);
@@ -192,23 +184,34 @@ function validatePullRequest(metadata, rootDir = process.cwd()) {
   if (!branchMatch && !legacyAgentBranchMatch) {
     failures.push(`[pr-governance] invalid task branch format: ${headRef || '<empty>'}`);
   }
+  return { failures, branchMatch, branchNature };
+}
 
-  for (const field of REQUIRED_EPIC_FIELDS) {
-    const value = readField(body, field);
-    if (isPlaceholder(value)) {
-      failures.push(`[pr-governance] missing structured PR field: ${field}`);
-    }
-  }
+function validateStructuredFields(body) {
+  return REQUIRED_EPIC_FIELDS
+    .filter((field) => isPlaceholder(readField(body, field)))
+    .map((field) => `[pr-governance] missing structured PR field: ${field}`);
+}
 
+function validateTaskNature(body, branchNature) {
   const nature = readField(body, 'Primary task nature').toLowerCase();
   if (branchNature && nature !== branchNature) {
-    failures.push(`[pr-governance] primary task nature must match branch nature (${branchNature})`);
+    return {
+      nature,
+      failures: [`[pr-governance] primary task nature must match branch nature (${branchNature})`]
+    };
   }
+  return { nature, failures: [] };
+}
 
-  const taskLink = readField(body, 'Child task issue link');
-  const taskIdentifier = taskLink.match(
+function taskIdentifierFromLink(taskLink) {
+  return taskLink.match(
     /^https:\/\/linear\.app\/[^/]+\/issue\/([A-Z][A-Z0-9]*-\d+)\//
   )?.[1] || '';
+}
+
+function validateTaskTitle({ title, nature, taskIdentifier, branchMatch }) {
+  const failures = [];
   const expectedPrefix = TITLE_PREFIX_BY_NATURE[nature];
   const expectedTitlePrefix = taskIdentifier && expectedPrefix
     ? `[${taskIdentifier}]${expectedPrefix} `
@@ -219,33 +222,60 @@ function validatePullRequest(metadata, rootDir = process.cwd()) {
       + `[JUM-XXXX][Nature] prefix (${expectedTitlePrefix.trim() || '<invalid metadata>'})`
     );
   }
-  if (
-    branchMatch
-    && taskIdentifier
-    && branchMatch[2] !== taskIdentifier
-  ) {
+  if (branchMatch && taskIdentifier && branchMatch[2] !== taskIdentifier) {
     failures.push(
       `[pr-governance] branch task identifier (${branchMatch[2]}) must match ${taskIdentifier}`
     );
   }
+  return failures;
+}
 
-  const epicLink = readField(body, 'Focused epic link');
-  const projectUpdateLink = readField(body, 'Project Update');
-  if (
-    epicLink
-    && !LINEAR_PROJECT_URL_PATTERN.test(epicLink)
-  ) {
+function validateLinearLinks({ epicLink, taskLink, projectUpdateLink }) {
+  const failures = [];
+  if (epicLink && !LINEAR_PROJECT_URL_PATTERN.test(epicLink)) {
     failures.push('[pr-governance] focused epic link must be a Linear project URL');
   }
-  if (
-    taskLink
-    && !LINEAR_ISSUE_URL_PATTERN.test(taskLink)
-  ) {
+  if (taskLink && !LINEAR_ISSUE_URL_PATTERN.test(taskLink)) {
     failures.push('[pr-governance] child task issue link must be a Linear issue URL');
   }
   if (projectUpdateLink && !LINEAR_PROJECT_UPDATE_URL_PATTERN.test(projectUpdateLink)) {
     failures.push('[pr-governance] Project Update must be a Linear project update URL');
   }
+  return failures;
+}
+
+function validatePullRequest(metadata, rootDir = process.cwd()) {
+  const title = String(metadata.title || '').trim();
+  const body = String(metadata.body || '');
+  const headRef = String(metadata.headRef || '').trim();
+  const baseRef = String(metadata.baseRef || '').trim();
+  const failures = [];
+
+  if (!hasPullRequestMetadata({ title, body, headRef, baseRef })) return failures;
+
+  if (baseRef === 'main') {
+    return validateReleasePullRequest({ title, headRef });
+  }
+
+  if (baseRef !== 'dev') {
+    failures.push(`[pr-governance] task PR must target dev, got: ${baseRef || '<empty>'}`);
+    return failures;
+  }
+
+  const { failures: branchFailures, branchMatch, branchNature } = resolveTaskBranch(headRef, rootDir);
+  if (branchFailures.length > 0 && !branchMatch) return branchFailures;
+  failures.push(...branchFailures, ...validateStructuredFields(body));
+
+  const { nature, failures: natureFailures } = validateTaskNature(body, branchNature);
+  failures.push(...natureFailures);
+
+  const taskLink = readField(body, 'Child task issue link');
+  const taskIdentifier = taskIdentifierFromLink(taskLink);
+  failures.push(...validateTaskTitle({ title, nature, taskIdentifier, branchMatch }));
+
+  const epicLink = readField(body, 'Focused epic link');
+  const projectUpdateLink = readField(body, 'Project Update');
+  failures.push(...validateLinearLinks({ epicLink, taskLink, projectUpdateLink }));
 
   return failures;
 }
