@@ -345,10 +345,12 @@ jobs:
             *) echo "Unsupported Sonar scanner platform: $(uname -s)-$(uname -m)" >&2; exit 1 ;;
           esac
           sonar_version="7.1.0.4889"
+          sonar_dir="/tmp/sonar-scanner-${sonar_version}-${sonar_platform}"
+          rm -rf "$sonar_dir" /tmp/sonar-scanner.zip
           curl -fsSL -o /tmp/sonar-scanner.zip \
             "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${sonar_version}-${sonar_platform}.zip"
-          unzip -q /tmp/sonar-scanner.zip -d /tmp
-          echo "/tmp/sonar-scanner-${sonar_version}-${sonar_platform}/bin" >> "$GITHUB_PATH"
+          unzip -qo /tmp/sonar-scanner.zip -d /tmp
+          echo "${sonar_dir}/bin" >> "$GITHUB_PATH"
       - name: SonarQube Cloud Scan
         run: |
           SONAR_TARGET_BRANCH="${GITHUB_BASE_REF:-${GITHUB_REF_NAME:-}}"
