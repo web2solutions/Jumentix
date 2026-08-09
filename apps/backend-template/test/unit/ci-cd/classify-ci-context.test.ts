@@ -69,6 +69,19 @@ describe('classify-ci-context', () => {
     expect(evidence.selectedJobs).toStrictEqual(FULL_JOBS);
   });
 
+  it('classifies signed dev promotion branches to main as full-suite release promotions', () => {
+    expect.hasAssertions();
+
+    const evidence = classify({
+      CIRCLE_BRANCH: 'codex/release/JUM-634-dev-main-signed-squash',
+      CIRCLE_PULL_REQUEST: 'https://github.com/XpertMinds/Jumentix/pull/204',
+      CIRCLE_PR_BASE_BRANCH: 'main'
+    });
+
+    expect(evidence.context).toBe(CONTEXTS.RELEASE_PR_TO_MAIN);
+    expect(evidence.selectedJobs).toStrictEqual(FULL_JOBS);
+  });
+
   it('classifies a main push as a full-suite event', () => {
     expect.hasAssertions();
 

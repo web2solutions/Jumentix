@@ -58,6 +58,10 @@ function isPullRequest(env = process.env) {
     || normalizeRef(env.CI_PULL_REQUEST) !== '';
 }
 
+function isSignedDevPromotionBranch(headRef) {
+  return /^codex\/release\/[A-Z0-9-]+-dev-main-signed-squash$/i.test(normalizeRef(headRef));
+}
+
 function resolveHeadRef(env = process.env) {
   return normalizeRef(
     env.JUMENTIX_PR_HEAD_REF
@@ -119,7 +123,7 @@ function classifyCiContext(options = {}) {
     if (!baseRef) {
       throw new Error('[ci-context] pull request context is missing the base branch');
     }
-    if (baseRef === 'main' && headRef === 'dev') {
+    if (baseRef === 'main' && (headRef === 'dev' || isSignedDevPromotionBranch(headRef))) {
       context = CONTEXTS.RELEASE_PR_TO_MAIN;
     } else if (baseRef === 'dev') {
       context = CONTEXTS.TASK_PR_TO_DEV;
