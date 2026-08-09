@@ -62,6 +62,7 @@ commands:
             set -e
             if [ "$status" = "78" ]; then
               circleci-agent step halt
+              exit 0
             fi
             exit "$status"
 
