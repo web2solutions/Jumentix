@@ -331,15 +331,27 @@ async function waitForStatusRegion(page: Page, fragment: string) {
 async function addStatusRegionRecorder(context: BrowserContext) {
   await context.addInitScript(() => {
     (window as unknown as { __statusRegionLog: string[] }).__statusRegionLog = [];
-    document.addEventListener('DOMContentLoaded', () => {
+    const appendStatus = (region: HTMLElement) => {
+      const log = (window as unknown as { __statusRegionLog: string[] }).__statusRegionLog;
+      const text = region.textContent || '';
+      if (text && log[log.length - 1] !== text) log.push(text);
+    };
+    const install = () => {
       const region = document.getElementById('status-region');
-      if (!region) return;
+      if (!region) {
+        window.setTimeout(install, 25);
+        return;
+      }
+      appendStatus(region);
       new MutationObserver(() => {
-        const log = (window as unknown as { __statusRegionLog: string[] }).__statusRegionLog;
-        const text = region.textContent || '';
-        if (log[log.length - 1] !== text) log.push(text);
+        appendStatus(region);
       }).observe(region, { childList: true, characterData: true, subtree: true });
-    });
+    };
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', install);
+    } else {
+      install();
+    }
   });
 }
 

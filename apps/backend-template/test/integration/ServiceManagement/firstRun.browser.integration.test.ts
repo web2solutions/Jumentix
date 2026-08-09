@@ -17,6 +17,8 @@
  *    it asks for explicit confirmation — dismissing keeps the user's model,
  *    accepting replaces it (with Undo as the in-session recourse).
  */
+import { execFileSync } from 'node:child_process';
+import path from 'node:path';
 import { webkit } from 'playwright-webkit';
 import type { Browser } from 'playwright-webkit';
 import {
@@ -35,6 +37,8 @@ const OTHER_TABS = [
   { key: 'deploy-management', emptyState: '#deploy-management-empty-state' }
 ];
 
+const repoRoot = path.resolve(__dirname, '../../../../..');
+
 async function isVisible(element: import('playwright-webkit').ElementHandle | null): Promise<boolean> {
   if (!element) return false;
   return element.isVisible();
@@ -47,6 +51,13 @@ describe('serviceManagement first-run experience (JUM-548)', () => {
   let baseUrl: string;
 
   beforeAll(async () => {
+    // The SPA resolves `@jumentix/cana` to the vendored bundle. Regenerate it
+    // here so this suite is order-independent when Jest schedules browser
+    // integration files in parallel on CI.
+    execFileSync('bun', ['ci-cd/sync-service-management-cana-bundle.js'], {
+      cwd: repoRoot,
+      stdio: 'inherit'
+    });
     tempDir = createTempConfigDir({ '.env.dev': envFileContent('express') });
     server = startServer(tempDir);
     await waitForServer(server.port);
