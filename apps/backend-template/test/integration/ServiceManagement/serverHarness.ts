@@ -95,7 +95,7 @@ export function startServer(
   if (syncResult !== 0) {
     throw new Error('designer-core vendor sync failed; the SPA cannot boot without it.');
   }
-  const port = 3200 + Math.floor(Math.random() * 1000);
+  const port = 20000 + Math.floor(Math.random() * 30000);
   const env: NodeJS.ProcessEnv = {
     ...process.env,
     ...envOverrides,
