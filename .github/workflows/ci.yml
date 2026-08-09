@@ -247,6 +247,9 @@ jobs:
       - name: Run integration matrix
         timeout-minutes: 30
         run: bun run ci:integration
+      - name: Stop local integration services
+        if: always()
+        run: ci-cd/cleanup-local-ci-services.sh
 
   coverage:
     name: coverage
@@ -362,6 +365,9 @@ jobs:
           sonar-scanner -Dsonar.scm.disabled=true
       - name: Report Sonar findings
         run: bun ci-cd/report-sonar-findings.js
+      - name: Stop local coverage services
+        if: always()
+        run: ci-cd/cleanup-local-ci-services.sh
       - name: Upload coverage evidence
         if: always()
         uses: actions/upload-artifact@v7
