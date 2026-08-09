@@ -69,7 +69,9 @@ describe('designer-core consumer smoke (JUM-493)', () => {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const barrel = require(path.join(packageRoot, 'src', 'index.js')) as Record<string, unknown>;
 
-    expect(Object.keys(barrel).sort()).toStrictEqual(result.exports);
+    expect(
+      Object.keys(barrel).sort((left, right) => left.localeCompare(right))
+    ).toStrictEqual(result.exports);
   });
 
   it('exports the core surface the issue names — model, validation, exporters, importers, schema-diff', () => {
