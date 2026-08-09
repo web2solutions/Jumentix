@@ -79,7 +79,7 @@ if (!fs.existsSync(workflowPath)) {
     if (!marker.test(ciContents)) failures.push(`GitHub Actions CI is missing ${String(marker)}`);
   }
 
-  const heavyContextGuard = /github\.event_name == 'schedule'[\s\S]+github\.event_name == 'workflow_dispatch'[\s\S]+github\.ref_name == 'main'[\s\S]+github\.event_name == 'pull_request' && github\.base_ref == 'main' && github\.head_ref == 'dev'/;
+  const heavyContextGuard = /github\.event_name == 'schedule'[\s\S]+github\.event_name == 'workflow_dispatch'[\s\S]+github\.ref_name == 'main'[\s\S]+github\.event_name == 'pull_request' && github\.base_ref == 'main'[\s\S]+github\.head_ref == 'dev'[\s\S]+startsWith\(github\.head_ref, 'codex\/release\/'\)[\s\S]+endsWith\(github\.head_ref, '-dev-main-signed-squash'\)/;
   for (const job of ['workspace-builds', 'workspace-tests', 'integration', 'coverage', 'website', 'database-matrix']) {
     const jobBlock = contents.match(new RegExp(`\\n  ${job}:\\n[\\s\\S]*?(?=\\n  [a-z-]+:\\n|\\n?$)`))?.[0] || '';
     if (!heavyContextGuard.test(jobBlock)) {

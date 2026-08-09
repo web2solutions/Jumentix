@@ -331,22 +331,37 @@ async function waitForStatusRegion(page: Page, fragment: string) {
 async function addStatusRegionRecorder(context: BrowserContext) {
   await context.addInitScript(() => {
     (window as unknown as { __statusRegionLog: string[] }).__statusRegionLog = [];
-    document.addEventListener('DOMContentLoaded', () => {
+    const appendStatus = (region: HTMLElement) => {
+      const log = (window as unknown as { __statusRegionLog: string[] }).__statusRegionLog;
+      const text = region.textContent || '';
+      if (text && log[log.length - 1] !== text) log.push(text);
+    };
+    const install = () => {
       const region = document.getElementById('status-region');
-      if (!region) return;
+      if (!region) {
+        window.setTimeout(install, 25);
+        return;
+      }
+      appendStatus(region);
       new MutationObserver(() => {
-        const log = (window as unknown as { __statusRegionLog: string[] }).__statusRegionLog;
-        const text = region.textContent || '';
-        if (log[log.length - 1] !== text) log.push(text);
+        appendStatus(region);
       }).observe(region, { childList: true, characterData: true, subtree: true });
-    });
+    };
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', install);
+    } else {
+      install();
+    }
   });
 }
 
 async function waitForStatusLogged(page: Page, fragment: string, timeoutMs = 15000) {
   await page.waitForFunction(
-    (text) => ((window as unknown as { __statusRegionLog?: string[] }).__statusRegionLog || [])
-      .some((message) => message.includes(text)),
+    (text) => {
+      const log = (window as unknown as { __statusRegionLog?: string[] }).__statusRegionLog || [];
+      const regionText = document.getElementById('status-region')?.textContent || '';
+      return regionText.includes(text) || log.some((message) => message.includes(text));
+    },
     fragment,
     { polling: 100, timeout: timeoutMs }
   );

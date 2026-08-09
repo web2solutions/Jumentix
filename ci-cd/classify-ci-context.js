@@ -58,10 +58,6 @@ function isPullRequest(env = process.env) {
     || normalizeRef(env.CI_PULL_REQUEST) !== '';
 }
 
-function isSignedDevPromotionBranch(headRef) {
-  return /^codex\/release\/[A-Z0-9-]+-dev-main-signed-squash$/i.test(normalizeRef(headRef));
-}
-
 function resolveHeadRef(env = process.env) {
   return normalizeRef(
     env.JUMENTIX_PR_HEAD_REF
@@ -106,6 +102,10 @@ function resolveDiffBaseRef(baseRef) {
 
 function selectedJobsFor(context) {
   return [...(JOBS_BY_CONTEXT[context] || [])];
+}
+
+function isSignedDevPromotionBranch(headRef) {
+  return /^codex\/release\/[A-Z0-9-]+-dev-main-signed-squash$/i.test(String(headRef || '').trim());
 }
 
 function classifyCiContext(options = {}) {
