@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-08-09 fix(ci): recreate mongodb smoke container (#155) - Eduardo A.
+- 2026-08-09 fix(ci): recreate mongodb smoke container - Eduardo A.
 - 2026-08-09 fix(ci): keep db repository smoke on bun (#154) - Eduardo A.
 - 2026-08-09 fix(ci): keep db repository smoke on bun - Eduardo A.
 - 2026-08-09 [JUM-632][CI] Keep coverage free of live broker suites (#153) - Eduardo A.
