@@ -18,6 +18,9 @@ if (!fs.existsSync(workflowPath)) {
   failures.push('Missing required GitHub Actions workflow: .github/workflows/ci.yml');
 } else {
   const contents = fs.readFileSync(workflowPath, 'utf8');
+  const servicesPath = path.join(root, 'ci-cd', 'ensure-local-ci-services.sh');
+  const serviceContents = fs.existsSync(servicesPath) ? fs.readFileSync(servicesPath, 'utf8') : '';
+  const ciContents = `${contents}\n${serviceContents}`;
   const requiredMarkers = [
     /name:\s*CI/,
     /pull_request:/,
@@ -51,8 +54,7 @@ if (!fs.existsSync(workflowPath)) {
     /bun run mono:test/,
     /bun run ci:integration/,
     /FIREBASE_SERVICE_ACCOUNT_KEY/,
-    /docker run -d --name jumentix-ci-redis -p 6379:6379 redis:7\.2-alpine/,
-    /docker run -d --name jumentix-ci-rabbitmq -p 5672:5672 rabbitmq:3\.13-alpine/,
+    /ci-cd\/ensure-local-ci-services\.sh/,
     /bun run test:coverage/,
     /coverage\/jest\/coverage-final\.json/,
     /bun run coverage:check/,
@@ -74,7 +76,7 @@ if (!fs.existsSync(workflowPath)) {
     /Report Sonar findings/
   ];
   for (const marker of requiredMarkers) {
-    if (!marker.test(contents)) failures.push(`.github/workflows/ci.yml is missing ${String(marker)}`);
+    if (!marker.test(ciContents)) failures.push(`GitHub Actions CI is missing ${String(marker)}`);
   }
 
   const heavyContextGuard = /github\.event_name == 'schedule'[\s\S]+github\.event_name == 'workflow_dispatch'[\s\S]+github\.ref_name == 'main'[\s\S]+github\.event_name == 'pull_request' && github\.base_ref == 'main' && github\.head_ref == 'dev'/;
