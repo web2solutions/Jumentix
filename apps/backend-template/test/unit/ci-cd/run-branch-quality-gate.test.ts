@@ -38,6 +38,14 @@ function executeCrashing(crashingId: string) {
 const stepIds = (execute: { mock: { calls: Array<[GateStep]> } }) => execute
   .mock.calls.map(([step]) => step.id);
 
+function runLocalBranchQualityGate(options: Record<string, unknown>) {
+  return runBranchQualityGate({
+    ...options,
+    env: {},
+    useCiContext: false
+  });
+}
+
 function restorePullRequestEnvFlag(previous: string | undefined) {
   if (previous === undefined) {
     delete process.env.AAA_CI_IS_PULL_REQUEST;
@@ -89,16 +97,16 @@ describe('run-branch-quality-gate', () => {
     expect.hasAssertions();
     const execute = jest.fn().mockReturnValue(0);
     const logger = { log: jest.fn(), error: jest.fn() };
-    const taskEvidence = runBranchQualityGate({
+    const taskEvidence = runLocalBranchQualityGate({
       targetBranch: 'codex/ci/191-example', isPullRequest: false, execute, logger, resultFile: ''
     });
-    const devEvidence = runBranchQualityGate({
+    const devEvidence = runLocalBranchQualityGate({
       targetBranch: 'dev', isPullRequest: false, execute, logger, resultFile: ''
     });
-    const mainEvidence = runBranchQualityGate({
+    const mainEvidence = runLocalBranchQualityGate({
       targetBranch: 'main', isPullRequest: false, execute, logger, resultFile: ''
     });
-    const devPrEvidence = runBranchQualityGate({
+    const devPrEvidence = runLocalBranchQualityGate({
       targetBranch: 'dev', isPullRequest: true, execute, logger, resultFile: ''
     });
 
@@ -241,7 +249,7 @@ describe('run-branch-quality-gate', () => {
     expect.hasAssertions();
     const resultFile = gatePath.join(__dirname, '.tmp-branch-gate-evidence.json');
     const logger = { log: jest.fn(), error: jest.fn() };
-    const evidence = runBranchQualityGate({
+    const evidence = runLocalBranchQualityGate({
       targetBranch: 'main',
       execute: () => null,
       logger,
@@ -257,7 +265,7 @@ describe('run-branch-quality-gate', () => {
   it('fails closed when the selected gate crashes', () => {
     expect.hasAssertions();
     const logger = { log: jest.fn(), error: jest.fn() };
-    const evidence = runBranchQualityGate({
+    const evidence = runLocalBranchQualityGate({
       targetBranch: 'main',
       execute: () => {
         throw new Error('deliberate failure');
@@ -289,7 +297,7 @@ describe('run-branch-quality-gate', () => {
     const logger = { log: jest.fn(), error: jest.fn() };
     const execute = executeFailing('lint');
 
-    const evidence = runBranchQualityGate({
+    const evidence = runLocalBranchQualityGate({
       targetBranch: 'claude/fix/JUM-596-example',
       isPullRequest: false,
       execute,
@@ -307,7 +315,7 @@ describe('run-branch-quality-gate', () => {
   it('records the preflight result, so a skipped lint cannot read as a passed one', () => {
     expect.hasAssertions();
     const logger = { log: jest.fn(), error: jest.fn() };
-    const evidence = runBranchQualityGate({
+    const evidence = runLocalBranchQualityGate({
       targetBranch: 'claude/fix/JUM-596-example',
       isPullRequest: false,
       execute: executeFailing('lint'),
@@ -323,7 +331,7 @@ describe('run-branch-quality-gate', () => {
     const logger = { log: jest.fn(), error: jest.fn() };
     const execute = executeCrashing('lint');
 
-    const evidence = runBranchQualityGate({
+    const evidence = runLocalBranchQualityGate({
       targetBranch: 'claude/fix/JUM-596-example',
       isPullRequest: false,
       execute,

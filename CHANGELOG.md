@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-09 ci: treat unselected CircleCI jobs as skipped - Eduardo A.
 - 2026-08-09 Merge remote-tracking branch 'origin/dev' into codex/ci/JUM-631-fast-cheap-dev-ci - Eduardo A.
 - 2026-08-09 ci: make context classifier runtime configurable - Eduardo A.
 - 2026-08-09 ci: make dev delivery gates cheap and context-aware - Eduardo A.
