@@ -93,7 +93,7 @@ describe('run-task-change-tests', () => {
     expect.hasAssertions();
     expect(createTaskTestPlan([
       '.github/dependabot.yml',
-      '.circleci/config.yml',
+      '.github/workflows/ci.yml',
       '.husky/pre-push'
     ])).toStrictEqual({
       type: 'mapped-unit-tests',

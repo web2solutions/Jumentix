@@ -45,6 +45,8 @@ function truthy(value) {
 function isScheduled(env = process.env) {
   return truthy(env.JUMENTIX_CI_FORCE_FULL)
     || truthy(env.JUMENTIX_CI_SCHEDULED_FULL)
+    || normalizeRef(env.GITHUB_EVENT_NAME) === 'schedule'
+    || normalizeRef(env.GITHUB_EVENT_NAME) === 'workflow_dispatch'
     || normalizeRef(env.CIRCLE_SCHEDULE_NAME) !== ''
     || normalizeRef(env.CIRCLE_PIPELINE_TRIGGER_SOURCE) === 'scheduled_pipeline';
 }
@@ -62,6 +64,7 @@ function resolveHeadRef(env = process.env) {
       || env.AAA_PR_HEAD_REF
       || env.CIRCLE_BRANCH
       || env.GITHUB_HEAD_REF
+      || env.GITHUB_REF_NAME
       || env.BRANCH_NAME
   );
 }

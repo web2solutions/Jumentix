@@ -1,7 +1,7 @@
 # Jumentix - Software Factory for Product Teams
 
-[![CircleCI dev pipeline](https://img.shields.io/badge/CircleCI-dev%20pipeline-343434?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/XpertMinds/Jumentix?branch=dev)
-[![CircleCI main pipeline](https://img.shields.io/badge/CircleCI-main%20pipeline-343434?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/XpertMinds/Jumentix?branch=main)
+[![GitHub Actions dev](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml?query=branch%3Adev)
+[![GitHub Actions main](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml?query=branch%3Amain)
 [![Codecov dev](https://codecov.io/gh/XpertMinds/Jumentix/branch/dev/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev)
 [![Codecov main](https://codecov.io/gh/XpertMinds/Jumentix/branch/main/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/main)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Jumentix)
@@ -31,7 +31,7 @@
 
 | Required gate | `main` | `dev` |
 | --- | :---: | :---: |
-| CircleCI workflow | [![main CircleCI pipeline](https://img.shields.io/badge/CircleCI-main%20pipeline-343434?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/XpertMinds/Jumentix?branch=main) | [![dev CircleCI pipeline](https://img.shields.io/badge/CircleCI-dev%20pipeline-343434?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/XpertMinds/Jumentix?branch=dev) |
+| GitHub Actions workflow | [![main GitHub Actions](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml?query=branch%3Amain) | [![dev GitHub Actions](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml?query=branch%3Adev) |
 | Codecov project coverage | [![main Codecov](https://codecov.io/gh/XpertMinds/Jumentix/branch/main/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/main) | [![dev Codecov](https://codecov.io/gh/XpertMinds/Jumentix/branch/dev/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev) |
 | Branch-aware tests | `branch-gate` | `branch-gate` |
 | Project + patch coverage | `coverage` | release-promotion only |
@@ -42,8 +42,8 @@ gate selected from `test-map.json`; the target is ten minutes or less. Full
 workspace, browser, coverage, website and database jobs are reserved for
 `dev -> main` release promotions, `main` pushes and scheduled full runs.
 
-Coverage is produced and enforced by the CircleCI `coverage` job when the full
-suite runs. CircleCI uploads LCOV to Codecov under the `project` flag when
+Coverage is produced and enforced by the GitHub Actions `coverage` job when the
+full suite runs. GitHub Actions uploads LCOV to Codecov under the `project` flag when
 `CODECOV_TOKEN` is configured. Codecov provides the file-by-file coverage map
 for each long-lived branch:
 
@@ -57,7 +57,7 @@ Istanbul JSON and LCOV evidence. The hard minimums are:
 | :---: | :---: | :---: | :---: | :---: |
 | ≥ 99% | ≥ 99% | ≥ 99% | ≥ 90% | ≥ 99% |
 
-[Open CircleCI pipelines and downloadable evidence](https://app.circleci.com/pipelines/github/XpertMinds/Jumentix)
+[Open GitHub Actions runs and downloadable evidence](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml)
 
 Jumentix is a monorepo product that works as a software factory for engineering teams and product owners. It helps you go from idea to production-ready SaaS in days, not months, with a contract-first architecture, runtime flexibility, and enterprise-grade governance.
 

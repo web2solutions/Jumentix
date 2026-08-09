@@ -103,9 +103,9 @@ This file consolidates non-functional requirements already requested and stored 
   selection, `JUMENTIX_GATE_V2` flag-gated flip/rollback, and fail-closed selective-gate evidence.
 - `106` Local Bun for **all** suite types; Node/Jest reserved for CI (`ciRunner` /
   `JUMENTIX_TEST_RUNTIME=node`). CI job greenness is out of scope for the Test Pyramid delivery.
-- `107` CircleCI is active again through `113` while GitHub Actions billing blocks
-  hosted execution. CircleCI must cover `dev` and `main` branch gates, coverage,
-  website, third-party review, Codecov publishing, and Sonar defense-in-depth.
+- `107` is superseded by `113`; CircleCI is disabled and GitHub Actions is the
+  canonical hosted executor. GitHub Actions must cover `dev` and `main` branch gates,
+  coverage, website, third-party review, Codecov publishing, and Sonar defense-in-depth.
 - `108` An HTTP adapter named for a web framework must import that framework and use it;
   a reference assigned to an unused field, or a require swallowed by try/catch, does not
   satisfy this, and the framework must be a declared dependency. Platform targets with no
@@ -154,7 +154,7 @@ This file consolidates non-functional requirements already requested and stored 
   become a permanent exemption. The same list is the Sonar coverage exclusion set, and the two
   disagreeing in either direction fails. `packages:check-suites` validates it.
 - `113` Private-repository CI must have a zero-cost repository-owned path.
-  CircleCI is the hosted executor while GitHub Actions billing blocks execution;
+  GitHub Actions is the hosted executor and CircleCI is disabled;
   local/self-hosted execution remains diagnostic fallback. Task delivery to
   `dev` uses cheap layer-aware gates; release promotion to `main` runs full
   coverage, Codecov publishing, Sonar defense-in-depth, website, integration,

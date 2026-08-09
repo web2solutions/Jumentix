@@ -136,7 +136,7 @@ Task isolation and naming policy:
   unit health gate, and `main` runs the complete local non-coverage matrix.
 - Pull requests targeting `dev` run the layer-aware specialized gate selected by
   `test-map.json`, plus lightweight mandatory review. Release-promotion PRs to
-  `main` run the complete matrix, plus the required CircleCI coverage job.
+  `main` run the complete matrix, plus the required GitHub Actions coverage job.
 - Main-matrix evidence must list every required cell and its terminal result.
 - An incomplete `main` matrix is failed evidence; it must never be interpreted as green.
 - PR review is optional. Branch protection and rulesets must not require an approval count.
@@ -165,9 +165,9 @@ Branch-aware execution contract:
 1. Task branches execute `ci:gate:task` against the task-owned diff.
 2. `dev` pushes execute `test:unit`; pull requests targeting `dev` execute `ci:gate:task`.
 3. `main` and release-promotion pull requests targeting `main` execute `ci:gate:strict`.
-4. CircleCI is the repository-owned hosted executor while GitHub Actions billing is blocked by
+4. GitHub Actions is the repository-owned hosted executor and CircleCI is disabled by
    Requirement `113`.
-5. `.circleci/config.yml` owns Storybook checks, database smoke, and full coverage for
+5. `.github/workflows/ci.yml` owns Storybook checks, database smoke, and full coverage for
    release promotions, `main`, and scheduled full runs; the local full matrix does not
    execute Storybook or coverage production.
 6. Every selected gate emits auditable evidence and fails closed for missing, crashed, or

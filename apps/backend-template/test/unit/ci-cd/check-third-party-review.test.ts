@@ -7,7 +7,7 @@ import path from 'node:path';
 const repoRoot = path.resolve(__dirname, '../../../../..');
 const checker = path.join(repoRoot, 'ci-cd/check-third-party-review.js');
 const contracts = [
-  '.circleci/config.yml',
+  '.github/workflows/ci.yml',
   'ci-cd/install-pinned-review-tools.sh',
   '.semgrep.yml'
 ];
@@ -139,7 +139,7 @@ describe('third-party review contract', () => {
       const text = fs.readFileSync(file, 'utf8').replace(
         '  workspace-builds:',
         '  unrelated-job:\n'
-        + '    machine: true\n'
+        + '    runs-on: ubuntu-latest\n'
         + '    steps:\n'
         + '      - setup_remote_docker\n'
         + '      - run:\n'

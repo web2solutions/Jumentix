@@ -8,22 +8,21 @@ A missing, skipped, cancelled, timed-out, or failed required check is never gree
 
 | Concern | Required free contract | Role |
 | --- | --- | --- |
-| CI | CircleCI canonical workflow tracked in this repository | Canonical hosted executor for PRs to `dev`, promotions to `main`, and both protected branches while GitHub Actions billing blocks hosted execution |
-| Coverage | repository-owned CircleCI coverage job, JSON/LCOV artifacts, project and patch thresholds | Canonical coverage authority; Codecov publishing is visibility only |
-| Codecov publishing | Codecov CLI upload from CircleCI with `CODECOV_TOKEN` | Coverage dashboard mirror after repository-owned thresholds pass |
+| CI | GitHub Actions canonical workflow tracked in this repository | Canonical hosted executor for PRs to `dev`, promotions to `main`, and both protected branches; CircleCI disabled |
+| Coverage | repository-owned GitHub Actions coverage job, JSON/LCOV artifacts, project and patch thresholds | Canonical coverage authority; Codecov publishing is visibility only |
+| Codecov publishing | Codecov CLI upload from GitHub Actions with `CODECOV_TOKEN` | Coverage dashboard mirror after repository-owned thresholds pass |
 | Quality | Branch-aware Bun quality gate and Storybook build/smoke/prepublish | Required product and governance validation |
 | SAST/quality | SonarQube Cloud | Defense in depth while its free private-project entitlement remains available |
 | Dependencies | Repository-owned OSV.dev scanner plus Dependabot | Fail-closed vulnerability detection and update proposals |
-| Secrets | Pinned OSS scanner executed by CircleCI | Repository-owned replacement for paid PR secret checks |
+| Secrets | Pinned OSS scanner executed by GitHub Actions | Repository-owned replacement for paid PR secret checks |
 | PR findings | SARIF artifacts from pinned OSS scanners | Third-party review evidence without granting a hosted reviewer authority |
 | Deployment | Reproducible website build and documented manual deployment | Free fallback when private organization Git binding is unavailable |
 
 ## Retired or optional services (2026-08-03)
 
-- **GitHub Actions billing blocked:** hosted Actions workflows are disabled in
-  this repository until billing allows execution again. CircleCI and the same
-  local Bun commands own the gates.
-- **Codecov publishing restored:** CircleCI uploads LCOV through Codecov CLI
+- **CircleCI disabled:** GitHub Actions is the active hosted executor and
+  `.circleci/config.yml` must not return without a governed requirement change.
+- **Codecov publishing restored:** GitHub Actions uploads LCOV through Codecov CLI
   after repository-owned coverage passes. Codecov is not the threshold authority.
 - **GitGuardian retired:** organization-private PR checks require a paid plan.
   A pinned OSS secret scanner owns this gate.
@@ -40,19 +39,19 @@ A missing, skipped, cancelled, timed-out, or failed required check is never gree
 
 The required `third-party-review` check runs Gitleaks `8.30.1` and Semgrep
 `1.172.0`. Release archives are checksum-verified, Semgrep is installed into a
-pinned job-local virtualenv, and the policy lives in `.semgrep.yml`. CircleCI retains SARIF
+pinned job-local virtualenv, and the policy lives in `.semgrep.yml`. GitHub Actions retains SARIF
 artifacts; scanner exit states are enforced so publishing evidence cannot mask a
 failed scan.
 
 ## Fail-closed rules
 
-1. CircleCI jobs use pinned tools, frozen dependencies, and fail-closed evidence.
+1. GitHub Actions jobs use pinned tools, frozen dependencies, and fail-closed evidence.
 2. Secrets are never printed, copied from legacy stores, or committed.
 3. The canonical branch gate, coverage, website, security, governance, and
    conversation-resolution checks must terminate successfully.
 4. No `--no-verify`, admin merge, force merge, fake status, or temporary
    relaxation is valid evidence.
-5. Branch protection lists only deterministic checks emitted by tracked CircleCI
+5. Branch protection lists only deterministic checks emitted by tracked GitHub Actions
    jobs. Optional providers never block a PR by being absent.
 
 ## Repository-owned validation
@@ -62,8 +61,8 @@ bun run ci:gate:branch
 bun run integrations:check
 ```
 
-The same non-coverage commands run locally and in CircleCI. The heavy coverage
-producer and threshold gate run in the CircleCI `coverage` job for release
+The same non-coverage commands run locally and in GitHub Actions. The heavy coverage
+producer and threshold gate run in the GitHub Actions `coverage` job for release
 promotions to `main`, `main` pushes, and scheduled full runs, then upload LCOV
 to Codecov for visibility.
 

@@ -78,6 +78,16 @@ describe('classify-ci-context', () => {
     expect(evidence.selectedJobs).toStrictEqual(FULL_JOBS);
   });
 
+  it('classifies a GitHub Actions main push as a full-suite event', () => {
+    expect.hasAssertions();
+
+    const evidence = classify({ GITHUB_REF_NAME: 'main' });
+
+    expect(evidence.context).toBe(CONTEXTS.MAIN_PUSH);
+    expect(evidence.headRef).toBe('main');
+    expect(evidence.selectedJobs).toStrictEqual(FULL_JOBS);
+  });
+
   it('classifies scheduled runs as full-suite events', () => {
     expect.hasAssertions();
 
@@ -88,6 +98,18 @@ describe('classify-ci-context', () => {
 
     expect(evidence.context).toBe(CONTEXTS.SCHEDULED_FULL);
     expect(evidence.selectedJobs).toStrictEqual(FULL_JOBS);
+  });
+
+  it('classifies GitHub Actions scheduled and manual runs as full-suite events', () => {
+    expect.hasAssertions();
+
+    const scheduled = classify({ GITHUB_EVENT_NAME: 'schedule', GITHUB_REF_NAME: 'dev' });
+    const manual = classify({ GITHUB_EVENT_NAME: 'workflow_dispatch', GITHUB_REF_NAME: 'dev' });
+
+    expect(scheduled.context).toBe(CONTEXTS.SCHEDULED_FULL);
+    expect(manual.context).toBe(CONTEXTS.SCHEDULED_FULL);
+    expect(scheduled.selectedJobs).toStrictEqual(FULL_JOBS);
+    expect(manual.selectedJobs).toStrictEqual(FULL_JOBS);
   });
 
   it('fails closed when PR metadata omits the base branch', () => {

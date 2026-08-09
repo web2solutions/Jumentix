@@ -5,8 +5,8 @@
 Task-owned branches must validate only the tests directly changed by the task or unit tests
 related to changed implementation files during commit and push. Pull requests targeting
 `dev` must execute the same layer-aware specialized gate plus lightweight review in
-CircleCI. The repository-owned CircleCI gate runs for PRs and for pushes to `dev`
-and `main` under Requirement `113`.
+GitHub Actions. The repository-owned GitHub Actions gate runs for PRs and for pushes
+to `dev` and `main` under Requirement `113`.
 
 ## Mandatory Rules
 
@@ -20,7 +20,7 @@ and `main` under Requirement `113`.
 6. Direct `dev` commit, push, and merge paths invoke the complete `test:unit` suite.
 7. PR paths targeting `dev` invoke `ci:gate:task`; release-promotion PR paths
    targeting `main` invoke `ci:gate:strict`.
-8. CircleCI is the canonical target-aware PR gate and runs direct pushes for
+8. GitHub Actions is the canonical target-aware PR gate and runs direct pushes for
    `dev` and `main`. Full coverage runs only for release/main/full contexts,
    keeping local task gates and `dev` delivery fast.
 
@@ -28,7 +28,7 @@ and `main` under Requirement `113`.
 
 - Tests prove changed-test, related-test, docs-only, missing-status, and crash outcomes.
 - Tests prove task branches, `dev` pushes, `dev` PRs, and `main` select the right gates.
-- The tracked CircleCI workflow accepts PRs and `dev`/`main` pushes.
+- The tracked GitHub Actions workflow accepts PRs and `dev`/`main` pushes.
 - Requirements, NFR registry, agent guidance, and Spec Development Driven resources are
   synchronized with the executable policy.
 
