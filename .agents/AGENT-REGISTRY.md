@@ -166,11 +166,11 @@ This registry tracks AI agents collaborating in the Jumentix project.
 - `agent_version`: `claude-opus-5`
 - `status`: `busy`
 - `registered_at_utc`: `2026-07-29T12:36:00Z`
-- `last_branch_check_utc`: `2026-08-08T01:05:00Z`
+- `last_branch_check_utc`: `2026-08-08T02:10:00Z`
 - `main_ref_checked`: `acc0c931`
-- `dev_ref_checked`: `22f0f32a`
+- `dev_ref_checked`: `219815f1`
 - `active_epic`: `https://linear.app/jumentix/project/epicgovernance-canonical-xpertminds-migration-and-legacy-freeze-f8bd0962ba8a`
-- `assigned_task`: `https://linear.app/jumentix/issue/JUM-627`
+- `assigned_task`: `https://linear.app/jumentix/issue/JUM-609`
 - `capabilities`:
   - requirements registry hygiene and traceability reconciliation
   - governance documentation delivery with EN/PT-BR parity
