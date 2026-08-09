@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-09 test(JUM-628): cover the harness runtime helpers and close the status-recorder race - Eduardo A.
 - 2026-08-08 chore(JUM-628): merge dev updates (changelog left to dev regen) - Eduardo A.
 - 2026-08-08 fix(JUM-628): retry port allocation on EADDRINUSE in the ServiceManagement test harness - Eduardo A.
 - 2026-08-08 [JUM-609][Governance] Fail on duplicate requirement IDs, for being duplicates (#139) - Eduardo A.

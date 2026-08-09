@@ -288,22 +288,22 @@ async function waitForDomainRendered(page: Page, name: string) {
  * is the guided empty state, not a pre-populated template (the seed is now
  * intentionally empty; the sample model is an explicit one-action load).
  */
-async function waitForGuidedEmptyState(page: Page) {
+async function waitForGuidedEmptyState(page: Page, timeoutMs = 15000) {
   await page.waitForFunction(
     () => {
       const emptyState = document.getElementById('domain-designer-empty-state');
       return Boolean(emptyState && !emptyState.hidden);
     },
     undefined,
-    { polling: 250, timeout: 15000 }
+    { polling: 250, timeout: timeoutMs }
   );
 }
 
-async function waitForStatusRegion(page: Page, fragment: string) {
+async function waitForStatusRegion(page: Page, fragment: string, timeoutMs = 15000) {
   await page.waitForFunction(
     (text) => (document.getElementById('status-region')?.textContent || '').includes(text),
     fragment,
-    { polling: 250, timeout: 15000 }
+    { polling: 250, timeout: timeoutMs }
   );
 }
 
@@ -683,9 +683,15 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       // JUM-548 the in-memory proof is the guided first-run empty state.
       // Asserted against the mutation record: JUM-485's sync engine later
       // claims the single region with its own start failure, which must not
-      // erase the fact that the declaration was made first.
-      await waitForStatusLogged(page, 'Persistent storage is unavailable in this browsing context');
-      await waitForGuidedEmptyState(page);
+      // erase the fact that the declaration was made first. The generous
+      // timeout is the same boot-latency headroom the quota cells document
+      // (below): the declaration itself is deterministic — the blocked shim
+      // fails by construction — but the whole boot (module graph, worker
+      // start, probe round-trip) shares the runner with the crash cell's
+      // teardown, and 15s of wall clock proved not to be a correctness
+      // bound (JUM-628's recurring flake was this wait, not the designer).
+      await waitForStatusLogged(page, 'Persistent storage is unavailable in this browsing context', 45000);
+      await waitForGuidedEmptyState(page, 45000);
       const logBeforeEdit = await statusRegionLog(page);
       expect(logBeforeEdit.some(
         (message) => message.includes('Persistent storage is unavailable in this browsing context')
@@ -696,14 +702,28 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       // surfaces the unconfirmed save explicitly.
       await page.fill('#domain-name-input', 'DoomedDomain');
       await page.click('#add-domain-btn');
-      await waitForStatusLogged(page, 'could not be confirmed');
+      await waitForStatusLogged(page, 'could not be confirmed', 45000);
 
       // Proof the edit was never silently persisted: a reload loses it and
-      // the declared state recurs instead of a phantom restore.
+      // the declared state recurs instead of a phantom restore. The service
+      // worker is reset first (unregister + drop the shell caches), the same
+      // reset the quota cell documents: a WebKit reload controlled by an
+      // active SW can stall the module graph fetch — the page loads, the
+      // static shell renders, and the boot never runs — which read exactly
+      // like a missing declaration (JUM-628's recurring flake at this wait).
+      await page.evaluate(async (cachePrefix) => {
+        const registration = await navigator.serviceWorker.getRegistration();
+        await registration?.unregister();
+        const cacheKeys = await window.caches.keys();
+        await Promise.all(
+          cacheKeys.filter((key) => key.startsWith(cachePrefix))
+            .map((key) => window.caches.delete(key))
+        );
+      }, SHELL_CACHE_PREFIX);
       await page.reload({ waitUntil: 'load' });
       await page.waitForSelector('#tab-domain-designer-btn', { timeout: 15000 });
-      await waitForStatusLogged(page, 'Persistent storage is unavailable in this browsing context');
-      await waitForGuidedEmptyState(page);
+      await waitForStatusLogged(page, 'Persistent storage is unavailable in this browsing context', 45000);
+      await waitForGuidedEmptyState(page, 45000);
       await expect(domainListText(page)).resolves.not.toContain('DoomedDomain');
 
       expect(pageErrors).toStrictEqual([]);
@@ -735,7 +755,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       // The unsupported-environment state is explicit, and it is NOT the
       // private-mode state — the two are distinct declared environments.
       // Asserted against the mutation record (see the private-mode cell).
-      await waitForStatusLogged(page, 'no usable IndexedDB storage');
+      await waitForStatusLogged(page, 'no usable IndexedDB storage', 45000);
       const declared = (await statusRegionLog(page)).find(
         (message) => message.includes('no usable IndexedDB storage')
       ) || '';
@@ -744,7 +764,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
 
       // Explorable, not blank: the designer renders its guided first-run
       // empty state in memory (JUM-548 — the seed is intentionally empty).
-      await waitForGuidedEmptyState(page);
+      await waitForGuidedEmptyState(page, 45000);
       expect(pageErrors).toStrictEqual([]);
     } finally {
       await context.close();
@@ -795,11 +815,12 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       )).resolves.toBe(true);
 
       // Session 2: the designer opens, finds the database gone, and declares
-      // the loss. It must NOT present this as a first run.
+      // the loss. It must NOT present this as a first run. (45s: boot-latency
+      // headroom, same rationale as the environment cells above.)
       await page.goto(baseUrl, { waitUntil: 'load' });
       await page.waitForSelector('#tab-domain-designer-btn', { timeout: 15000 });
-      await waitForStatusRegion(page, 'Previously saved designer data is no longer readable');
-      await waitForGuidedEmptyState(page);
+      await waitForStatusRegion(page, 'Previously saved designer data is no longer readable', 45000);
+      await waitForGuidedEmptyState(page, 45000);
       const evictedList = await domainListText(page);
       expect(evictedList).not.toContain('EvictionVictim');
       expect(pageErrors).toStrictEqual([]);
@@ -876,9 +897,10 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       // declared state as probe-time eviction, naming the loss and the
       // export/import recourse. Severity error persists in the region (only
       // info toasts auto-hide), so the live region still carries it here.
-      await waitForStatusRegion(page, 'Your previously saved design could not be loaded');
+      // (45s: boot-latency headroom, same rationale as the environment cells.)
+      await waitForStatusRegion(page, 'Your previously saved design could not be loaded', 45000);
       await expect(statusRegionText(page)).resolves.toContain('Import JSON');
-      await waitForGuidedEmptyState(page);
+      await waitForGuidedEmptyState(page, 45000);
       await expect(domainListText(page)).resolves.not.toContain('CorruptionVictim');
       const healed = JSON.parse((await canaStateRecord(page)) as string) as {
         domains: Array<{ name: string }>;
@@ -944,7 +966,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       await page.click('#add-domain-btn');
       // No silent acceptance: JUM-485's save-outcome hook surfaces the
       // unconfirmed save and reconciles by read-back.
-      await waitForStatusLogged(page, 'could not be confirmed');
+      await waitForStatusLogged(page, 'could not be confirmed', 45000);
       await page.waitForTimeout(1500);
       // The durable record does not carry the doomed write.
       await expect(canaStateRecord(page)).resolves.not.toContain('QuotaDoomedDomain');
@@ -967,7 +989,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       await page.reload({ waitUntil: 'load' });
       await page.waitForSelector('#tab-domain-designer-btn', { timeout: 15000 });
       await waitForStatusLogged(page, 'quota: storage usage is near the origin quota', 45000);
-      await waitForGuidedEmptyState(page);
+      await waitForGuidedEmptyState(page, 45000);
       await expect(domainListText(page)).resolves.not.toContain('QuotaDoomedDomain');
       expect(pageErrors).toStrictEqual([]);
     } finally {
