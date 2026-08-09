@@ -25,6 +25,10 @@
  * export or a colliding name fails loudly instead of leaking.
  */
 
+/** Runtime marker so the barrel survives bundling into the coverage sourcemap. */
+/** CI webhook bump JUM-615 — no behavior change. */
+export const CANA_PACKAGE = 'cana' as const;
+
 export * from './contracts';
 export * from './core/storage';
 export * from './core/schema';
@@ -34,6 +38,7 @@ export * from './core/transaction';
 export * from './core/query';
 export * from './core/table';
 export * from './core/client';
+export * from './core/local-storage-backend';
 export * from './core/hooks';
 export * from './core/durability-policy';
 export * from './core/reconciliation';

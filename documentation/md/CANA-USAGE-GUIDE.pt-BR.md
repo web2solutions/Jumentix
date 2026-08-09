@@ -622,7 +622,7 @@ try {
 
 | Código | Significado | Retentável |
 |---|---|---|
-| `Unavailable` | Sem IndexedDB utilizável. Terminal — não há fallback | não |
+| `Unavailable` | Nenhum store utilizável após falha do IndexedDB e do fallback configurado | não |
 | `QuotaExceeded` | Orçamento de armazenamento esgotado; a escrita não aconteceu | **não** |
 | `Evicted` | Um banco que existia sumiu | não |
 | `UpgradeFailed` | Atualização não concluída, ou downgrade recusado | não |
@@ -940,9 +940,9 @@ Outra aba segura a versão antiga. Escute `versionchange` na outra aba e feche l
 É `retryable`.
 
 **Tudo reporta `Unavailable`**
-Sem IndexedDB utilizável — navegação privada em alguns navegadores, ou
-armazenamento desabilitado. Não há fallback, por design. Avise o usuário em vez
-de degradar silenciosamente.
+O IndexedDB falhou e o fallback em localStorage também não abriu (ou
+`fallback: false` foi configurado). Depois de um `open()` bem-sucedido, confira
+`client.backend` — `'localStorage'` significa que o modo degradado já está ativo.
 
 **O despejo nunca é detectado**
 `evictionDetectable` é `false` quando nenhuma lápide pode ser gravada. Verifique

@@ -3372,6 +3372,19 @@
       "timeoutMs": 300000
     },
     {
+      "id": "packages/cana/cypress/coverage-100.cy.ts",
+      "path": "packages/cana/cypress/coverage-100.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
       "id": "packages/cana/cypress/coverage-gaps.cy.ts",
       "path": "packages/cana/cypress/coverage-gaps.cy.ts",
       "layer": "browser-harness",
@@ -3489,6 +3502,19 @@
       "timeoutMs": 300000
     },
     {
+      "id": "packages/cana/cypress/localstorage-fallback.cy.ts",
+      "path": "packages/cana/cypress/localstorage-fallback.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
       "id": "packages/cana/cypress/performance.cy.ts",
       "path": "packages/cana/cypress/performance.cy.ts",
       "layer": "browser-harness",
@@ -3504,6 +3530,19 @@
     {
       "id": "packages/cana/cypress/protocol.cy.ts",
       "path": "packages/cana/cypress/protocol.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/real-worker.cy.ts",
+      "path": "packages/cana/cypress/real-worker.cy.ts",
       "layer": "browser-harness",
       "kind": "non-hexagonal",
       "type": "integration",
@@ -3647,6 +3686,6 @@
     "unit": 186,
     "integration": 97,
     "smoke": 2,
-    "suites": 306
+    "suites": 309
   }
 }

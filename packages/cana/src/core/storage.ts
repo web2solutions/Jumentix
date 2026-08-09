@@ -10,9 +10,10 @@
  *    after inactivity. No event, no error. The database is simply empty on the
  *    next open.
  *
- * Under the recorded requirement that Cana has **no fallback to localStorage**,
- * eviction is not a degradation, it is data loss. So the central problem here is
- * not quota handling. It is this:
+ * When the client is on IndexedDB, eviction is not a quiet degradation — it is
+ * data loss for that backend. (A separate localStorage fallback may open when
+ * IndexedDB itself is unavailable; that path does not restore an evicted IDB.)
+ * The central problem here is not quota handling. It is this:
  *
  *   **An evicted database and a brand-new one are indistinguishable by
  *   inspection. Both open empty.**
@@ -25,10 +26,10 @@
  * A sentinel is written outside IndexedDB, in `localStorage`, on first successful
  * open. It records that a database of this name existed and at what version.
  *
- * `localStorage` is used **deliberately and only as a tombstone**, not as a
- * fallback store — it holds no user data, only the fact that user data once
- * existed. That distinction matters: the no-fallback requirement forbids a second
- * copy of the data, not a marker that the data was there.
+ * For IndexedDB eviction detection, `localStorage` is used **deliberately as a
+ * tombstone**: it holds no user data for that purpose, only the fact that an
+ * IndexedDB database once existed. The optional localStorage *data* fallback
+ * (JUM-615) is a separate key namespace (`cana.ls.v1:`) and is not this tombstone.
  *
  * The pairing works because the two are evicted on different schedules. Browsers
  * clear IndexedDB under storage pressure far more readily than `localStorage`,

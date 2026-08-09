@@ -253,7 +253,8 @@ describe('database lifecycle edge cases', () => {
         .catch((error: unknown) => error);
 
       expect(isCanaErrorCode(failure, 'Unavailable')).to.equal(true);
-      expect((failure as { message: string }).message).to.include('no fallback');
+      expect((failure as { message: string }).message).to.include('No usable IndexedDB');
+      expect((failure as { message: string }).message).to.include('localStorage fallback');
     } finally {
       Object.defineProperty(globalThis, 'indexedDB', { configurable: true, value: saved });
     }
