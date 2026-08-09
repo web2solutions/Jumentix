@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-08-09 [JUM-635][Fix] Isolate ServiceManagement test ports (#161) - Eduardo A.
+- 2026-08-09 fix(ci): isolate ServiceManagement test server ports - Eduardo A.
 - 2026-08-09 [JUM-635][Fix] Stabilize status-region browser assertion (#160) - Eduardo A.
 - 2026-08-09 fix(ci): stabilize status-region browser assertion - Eduardo A.
 - 2026-08-09 [JUM-635][Fix] Stabilize ServiceManagement browser gate (#159) - Eduardo A.

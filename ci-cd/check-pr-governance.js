@@ -156,9 +156,13 @@ function hasPullRequestMetadata({ title, body, headRef, baseRef }) {
   return Boolean(headRef || baseRef || title || body);
 }
 
+function isSignedDevPromotionBranch(headRef) {
+  return /^codex\/release\/[A-Z0-9-]+-dev-main-signed-squash$/i.test(String(headRef || '').trim());
+}
+
 function validateReleasePullRequest({ title, headRef }) {
   const failures = [];
-  if (headRef !== 'dev') {
+  if (headRef !== 'dev' && !isSignedDevPromotionBranch(headRef)) {
     failures.push('[pr-governance] only dev may target main');
   }
   if (!/^\[JUM-\d+\]\[Release\] .+/.test(title)) {
