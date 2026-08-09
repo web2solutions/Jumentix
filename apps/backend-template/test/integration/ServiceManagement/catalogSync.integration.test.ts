@@ -52,7 +52,8 @@ const repoRoot = path.resolve(__dirname, '../../../../..');
 const {
   createDesignerState,
   createDefaultView
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'designerState.js'));
+} = require('@jumentix/designer-core/state/designerState.js');
+
 const {
   createCatalogSyncClient,
   createCatalogHttpTransport

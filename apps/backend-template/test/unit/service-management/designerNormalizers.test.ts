@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
-import path from 'node:path';
 
 /**
  * JUM-470 — unit suite for the designer normalisers
- * (`apps/service-management/src/state/designerState.js`).
+ * (`packages/designer-core/src/state/designerState.js`).
  *
  * Scope is deliberately the complement of designerState.test.ts (JUM-468),
  * which already pins the UI-shaped happy paths. What is pinned here:
@@ -26,7 +25,6 @@ import path from 'node:path';
  * modelQueries.test.ts (JUM-469) and are not duplicated here.
  */
 
-const repoRoot = path.resolve(__dirname, '../../../../..');
 const {
   DOMAIN_COLORS,
   createDefaultView,
@@ -37,7 +35,7 @@ const {
   normalizeRuntimeEnvironmentInput,
   normalizeServiceConfigurationInput,
   normalizeStatePayload
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'designerState.js'));
+} = require('@jumentix/designer-core/state/designerState.js');
 
 describe('designer normalisers (JUM-470)', () => {
   describe('normalizeField — importer-shaped inputs', () => {
@@ -410,3 +408,9 @@ describe('designer normalisers (JUM-470)', () => {
     });
   });
 });
+
+// Keeps this file a module: with no import/export left, TypeScript would
+// treat it as a script and its top-level requires would share one global
+// scope with every other script-mode suite in ts-jest's program (TS2451).
+// eslint-disable-next-line jest/no-export
+export {};

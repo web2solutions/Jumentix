@@ -49,7 +49,7 @@ exemplo carrega o prefixo `sample-` e os domínios de exemplo mostram um selo
 "sample" na lista de domínios. Carregar o exemplo sobre um modelo existente
 exige confirmação explícita (Undo restaura o modelo anterior depois), e
 excluir o exemplo usa a exclusão comum de domínio/entidade. O conteúdo está
-definido em `src/model/sampleModel.js`.
+definido em `@jumentix/designer-core` (`packages/designer-core/src/model/sampleModel.js`).
 
 ## Guias
 
@@ -85,11 +85,11 @@ definido em `src/model/sampleModel.js`.
      no local (tipo, framework, ponto de entrada e mapeamento de controlador) — sem
      excluir e readicionar.
    - As opções de framework são delimitadas por tipo de interface a partir da matriz de
-     tempo de execução canônica (`src/model/interfaceFrameworkMatrix.js`): os onze
+     tempo de execução canônica (`@jumentix/designer-core` (`packages/designer-core/src/model/interfaceFrameworkMatrix.js`)): os onze
      frameworks HTTP canônicos (grafias JUM-461 — somente `derby-js`/`sails-js`, sem
      duplicatas de alias) para `HTTP/REST` e `SSE`, `socket-io` para `WebSocket`,
      `grpc` para `gRPC`.
-   - Adições e edições são validadas (`src/validation/interfaceAdapterValidation.js`):
+   - Adições e edições são validadas (`@jumentix/designer-core` (`packages/designer-core/src/validation/interfaceAdapterValidation.js`)):
      o ponto de entrada deve ser um caminho TypeScript/JavaScript sob `src/interface/`,
      o mapeamento de controlador deve ter o formato `XController.action`, e duplicatas
      (mesmo tipo + ponto de entrada, ou mesmo mapeamento de controlador) são rejeitadas
@@ -101,7 +101,7 @@ definido em `src/model/sampleModel.js`.
    - As gravações são validadas (JUM-544): as portas devem ser inteiros entre 1–65535 e únicas
    entre os protocolos que o tipo de serviço selecionado realmente vincula, e a combinação
    modo de execução × provedor de nuvem deve existir na matriz de implantação do Requisito 059
-   (lida da fonte legível por máquina compartilhada `src/model/deployCapabilityMatrix.js`).
+   (lida da fonte legível por máquina compartilhada `@jumentix/designer-core` (`packages/designer-core/src/model/deployCapabilityMatrix.js`)).
    Perfis inválidos são relatados na superfície de status da guia e não são salvos.
    - A visualização do perfil de tempo de execução PM2 para implantações de VM lê os
      arquivos reais `pm2/ecosystem.*.cjs` através de `GET /api/runtime/pm2-ecosystem`
@@ -127,7 +127,7 @@ definido em `src/model/sampleModel.js`.
      `serviceType`, `deployTarget`, `runtimeProtocol`, `databaseDriver`,
      `keyValueDriver` e `pm2Profile`. As adições são validadas contra a
      matriz de implantação lida da fonte legível por máquina compartilhada
-     `src/model/deployCapabilityMatrix.js` — combinações sem linha na matriz,
+     `@jumentix/designer-core` (`packages/designer-core/src/model/deployCapabilityMatrix.js`) — combinações sem linha na matriz,
      protocolos que o tipo de serviço não expõe e perfis PM2 em alvos
      serverless são rejeitados na superfície de status com a restrição
      nomeada. Alvos persistidos antes deste alinhamento migram no
@@ -155,7 +155,7 @@ idiomas compartilhados, não importação de componentes React:
   espaçamento) resolve para um token `--jtx-*`. Permanecem literais apenas a
   geometria estrutural da qual a matemática do canvas depende (canvas de
   3200×2200, grade de 24px, domínios de 520px, entidades de 190px — fixada por
-  `src/model/modelQueries.js` e sua suíte de unidade), além da densidade
+  `@jumentix/designer-core` (`packages/designer-core/src/model/modelQueries.js`) e sua suíte de unidade), além da densidade
   compacta dos inspetores. As regras em nível de elemento têm escopo em
   `.service-management-shell` para que a folha de estilo possa ser incorporada
   no Storybook do site sem vazamentos.

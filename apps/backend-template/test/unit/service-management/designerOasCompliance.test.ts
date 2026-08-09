@@ -26,17 +26,18 @@ import path from 'node:path';
 
 const repoRoot = path.resolve(__dirname, '../../../../..');
 const { buildOasDocument } = require(
-  path.join(repoRoot, 'apps', 'service-management', 'src', 'exporters', 'designerExporters.js')
+  '@jumentix/designer-core/exporters/designerExporters.js'
 );
 const { buildDomainsFromOas } = require(
-  path.join(repoRoot, 'apps', 'service-management', 'src', 'importers', 'designerImporters.js')
+  '@jumentix/designer-core/importers/designerImporters.js'
 );
 const { collectModelIssues } = require(
-  path.join(repoRoot, 'apps', 'service-management', 'src', 'validation', 'modelValidation.js')
+  '@jumentix/designer-core/validation/modelValidation.js'
 );
 const { normalizeStatePayload } = require(
-  path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'designerState.js')
+  '@jumentix/designer-core/state/designerState.js'
 );
+
 const {
   resolveSchemaByRef,
   validatePortObjectContracts

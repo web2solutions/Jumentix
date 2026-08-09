@@ -56,6 +56,11 @@ module.exports = {
     '@src/(.*)$': '<rootDir>/apps/backend-template/src/$1',
     '@seed/(.*)$': '<rootDir>/apps/backend-template/seed/$1',
     '@test/(.*)$': '<rootDir>/apps/backend-template/test/$1',
+    // Deep imports first: '@jumentix/<pkg>/<path>' resolves into the package
+    // source tree, mirroring the tsconfig `paths` the Bun side reads. The
+    // root-only rule below cannot express that ('$1' would swallow the
+    // subpath), so without this rule every deep import misses `src/`.
+    '^@jumentix/([^/]+)/(.+)$': '<rootDir>/packages/$1/src/$2',
     '@jumentix/(.*)$': '<rootDir>/packages/$1/src',
   },
   testPathIgnorePatterns: [

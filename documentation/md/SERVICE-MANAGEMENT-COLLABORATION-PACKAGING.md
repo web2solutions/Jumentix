@@ -21,10 +21,12 @@ It documents the collaboration and packaging lane exactly as it shipped:
   deterministic, explainable conflict resolution on import.
 - **Packaging**
   ([JUM-493](https://linear.app/jumentix/issue/JUM-493/feature-publish-designer-core-as-jumentix-package-xpertminds-org-dry)):
-  **descoped** — the modularized designer core exists as a package boundary,
-  but the publish step did not ship. This document says so explicitly,
-  because a gate document that describes the plan rather than the delivery
-  would be a false green.
+  the framework-free designer core is the versioned
+  `@jumentix/designer-core` package under
+  [`packages/designer-core/`](../../packages/designer-core/) — manifest,
+  deterministic build, type declarations, DOM-free proof and a consumer
+  smoke test against the built artifact. Publishing is **dry-run only**
+  (Requirement 070): the publish path is verified, never fired.
 
 Because this is the terminal gate, its content reflects **what was
 delivered**, including everything carried over — each descope below is named,
@@ -161,11 +163,11 @@ not code**, and import is a deterministic policy instead of an unconditional
 append. The public contract is pinned in
 [Requirement 126, Contract 3](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md);
 the implementation lives in
-[`src/packages/packageVersioning.js`](../../apps/service-management/src/packages/packageVersioning.js)
+[`src/packages/packageVersioning.js`](../../packages/designer-core/src/packages/packageVersioning.js)
 (DOM-free), wired through the exporter
-([`buildDomainPackageDocument`](../../apps/service-management/src/exporters/designerExporters.js))
+([`buildDomainPackageDocument`](../../packages/designer-core/src/exporters/designerExporters.js))
 and the importer
-([`designerImporters.js`](../../apps/service-management/src/importers/designerImporters.js)).
+([`designerImporters.js`](../../packages/designer-core/src/importers/designerImporters.js)).
 
 ### The versioned package document
 
@@ -256,49 +258,76 @@ on the append path) and
 [`designerExporters.test.ts`](../../apps/backend-template/test/unit/service-management/designerExporters.test.ts)
 (the v2 package document shape, pinned).
 
-## Packaging: the `@jumentix` designer core (JUM-493) — descoped
+## Packaging: the `@jumentix` designer core (JUM-493)
 
-**This lane did not ship, and this document says so plainly.** JUM-493 —
-publishing the framework-free designer core as a versioned `@jumentix`
-package under the xpertminds organization — is in **Backlog**; it is the
-12-01 descope decision for this epic lane. What exists and what does not:
+**This lane shipped as a package with a verified dry run — never an automatic
+publish.** This section previously recorded JUM-493 as descoped (the 12-01
+decision); the package has since landed, and this document records the landed
+state. The framework-free designer core is now the versioned
+[`@jumentix/designer-core`](../../packages/designer-core/) package under the
+xpertminds organization — browser-safe ESM, zero runtime dependencies, MIT
+licensed, with provenance metadata pointing at its monorepo location.
 
-- **What exists: the package boundary.** JUM-468/JUM-469 modularized the
-  designer so the core *is* a separable thing: pure logic lives in DOM-free
-  modules under `apps/service-management/src/` (`state`, `store`, `model`,
-  `validation`, `exporters`, `importers`, `packages`, `codegen`), DOM access
-  lives in the entry module, and the DOM-free set is exactly what a package
-  could ship. The E3 document,
-  [Service Management Module Architecture](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.md),
-  owns that boundary and its rationale; it was written with this consumer in
-  mind.
-- **What does not exist: the package.** No `package.json`, entry points,
-  type declarations or publish wiring for the designer core were shipped;
-  the workspace manifest
-  ([`apps/service-management/package.json`](../../apps/service-management/package.json))
-  remains `private: true`. The acceptance bar JUM-493 sets — the core
-  loading and running in a non-DOM environment with no `document`, `window`
-  or `localStorage`, proven by a consumer smoke test against the published
-  artifact — is unmet by definition: there is no artifact.
-- **What the package would contain, when the lane resumes** (per the issue):
-  the domain model and its normalizers, the validation/model-check engine,
-  the exporters (JSON, Markdown, JSON Schema, AsyncAPI, boilerplate bundle,
-  package, OAS), the importers (domain package, state file, OAS file) and
-  the schema-diff engine — with `IDesignerStore` published as a
-  type/contract only. **Out**: every DOM module, the canvas, the inspectors,
-  the status surfaces and the storage adapters (`CanaDesignerStore` ships
-  with Cana's own package, not here).
-- **The publish policy stands regardless.** When the lane resumes,
-  publishing remains **dry-run only** by policy —
+- **The package is the canonical home, not a copy.** The core modules moved
+  from `apps/service-management/src/` into
+  [`packages/designer-core/src/`](../../packages/designer-core/src/) — the
+  workspace boundary gate forbids a package importing from an app, so the
+  dependency direction was inverted: the zero-build SPA now consumes the
+  package through `@jumentix/designer-core/…` bare specifiers, resolved by
+  the import map to a vendored tree
+  (`apps/service-management/vendor/designer-core/`, containment-safe, synced
+  by
+  [`ci-cd/sync-service-management-designer-core.js`](../../ci-cd/sync-service-management-designer-core.js)
+  — the same vendoring model as the Cana bundle) in the browser, and by the
+  repo's path mappings (tsconfig `paths`, Jest `moduleNameMapper`) straight
+  to the canonical sources in tests. The shipped surface — the domain model
+  and its normalizers, the validation/model-check engine, the exporters
+  (JSON, Markdown, JSON Schema, AsyncAPI, boilerplate bundle, package, OAS),
+  the importers, the schema-diff/merge-preview engine, the hexagonal codegen,
+  and `IDesignerStore` as a type/contract only — is exactly the package's
+  `src/` tree; the build
+  ([`scripts/build.js`](../../packages/designer-core/scripts/build.js))
+  copies it verbatim into `dist/` and generates type declarations from the
+  JSDoc-annotated sources with the repo-pinned TypeScript compiler. **Out**,
+  enforced by test: every DOM module (`script.js`, `ui/`, `pwa/`), the sync
+  clients (`state/designerSync.js`, `state/catalogSyncClient.js`) and the
+  storage adapters — neither `LocalStorageDesignerStore` nor
+  `CanaDesignerStore` ships, and the package has no dependency on Cana.
+- **The acceptance bar is met by proof, not by construction.** Three suites
+  under [`packages/designer-core/test/`](../../packages/designer-core/test/)
+  pin the package: `packaging.test.ts` asserts the manifest (entry points at
+  built output, types-first exports map, `files`, licence, `sideEffects`,
+  dry-run-only scripts, in the style of the cana packaging suite), asserts
+  the built file set is *exactly* the declared closure, and asserts the
+  packed tarball contents via `npm pack --dry-run --json`;
+  `dom-free.test.ts` scans the built artifact's AST for any `window`,
+  `document`, `localStorage`, `indexedDB`, `alert()` or FileReader/DOMParser
+  reference and for any import crossing the package boundary;
+  `consumer-smoke.test.ts` executes the issue's acceptance test — it imports
+  the built artifact in a **separate non-DOM process** (no `document`, no
+  `window`, no `localStorage`) and runs a validate → export → re-import
+  round trip on the sample model, deep-equal with a re-export fixed point.
+- **The publish policy stands: dry-run only.** Per
   [Requirement 070](../../.agents/requirements/project/070-xpertminds-npm-and-web2solutions-vercel-integration.md)
-  forbids automatic publish; the repository already exposes the dry-run
-  surface (`npm:org:check:xpertminds`, `npm:publish:dry-run:packages`) the
-  lane will build on.
+  no automatic publish exists. The repository's dry-run surface
+  (`bun run npm:publish:dry-run:packages`, with
+  `npm:org:check:xpertminds` for the org side) picks the package up like
+  every other non-private workspace package and runs `bun publish --dry-run
+  --access public`; `prepublishOnly` forces a clean rebuild first, so the dry
+  run verifies a deterministic artifact whose contents the packaging suite
+  has asserted.
+- **Versioning policy.** The package follows semver over its public barrel:
+  patch for internal fixes, minor for additive exports, major for removed or
+  narrowed surface. The *data* contracts it reads and writes (full-suite
+  export, domain-package document) stay versioned in-payload under JUM-492's
+  policy (Requirement 126, Contract 3) — the package version does not restate
+  them. JUM-492's domain-package versioning builds on exactly this split.
 
 The practical consequence for the user is unchanged from the E6 document:
 **export is how work leaves the machine** — as the full-suite document or as
 a versioned domain package — and the shared catalog (above) is the only
-continuous second copy.
+continuous second copy. The package changes who can *depend on* the core, not
+how a designer user's work is stored.
 
 ### The full-suite export (JUM-547), the portable bundle
 
@@ -371,7 +400,8 @@ E8 is delivered by this PR and transitions only after it merges. No pending
 check is described as passing here: the JUM-491 artifacts this document
 links (`SHARED-CATALOG-SYNC.md`, `catalogSyncClient.js`, the `Catalogs`
 module, the convergence test) land with their own PR, and the JUM-493
-packaging lane is Backlog by the 12-01 descope — both stated, not smoothed
+packaging lane has since shipped as `@jumentix/designer-core` — dry-run
+only, per the section above — both stated, not smoothed
 over. Project-completion evidence per Req 094 (linking this Issue, its PR
 and commit evidence, and the documentation-integrity validation results) is
 recorded in the epic's Project Updates feed per
@@ -412,12 +442,20 @@ when the gate closes.
   [`apps/service-management/src/state/catalogSyncClient.js`](../../apps/service-management/src/state/catalogSyncClient.js),
   [Shared Catalog Sync](./SHARED-CATALOG-SYNC.md)
 - Domain-package versioning (JUM-492):
-  [`src/packages/packageVersioning.js`](../../apps/service-management/src/packages/packageVersioning.js),
-  [`src/exporters/designerExporters.js`](../../apps/service-management/src/exporters/designerExporters.js),
-  [`src/importers/designerImporters.js`](../../apps/service-management/src/importers/designerImporters.js)
-- Packaging (JUM-493, descoped):
-  [`apps/service-management/package.json`](../../apps/service-management/package.json)
-  (`private: true`), the DOM-free boundary under
+  [`src/packages/packageVersioning.js`](../../packages/designer-core/src/packages/packageVersioning.js),
+  [`src/exporters/designerExporters.js`](../../packages/designer-core/src/exporters/designerExporters.js),
+  [`src/importers/designerImporters.js`](../../packages/designer-core/src/importers/designerImporters.js)
+- Packaging (JUM-493):
+  [`packages/designer-core/`](../../packages/designer-core/)
+  ([manifest](../../packages/designer-core/package.json),
+  [barrel](../../packages/designer-core/src/index.js),
+  [build](../../packages/designer-core/scripts/build.js),
+  [README](../../packages/designer-core/README.md)),
+  with suites
+  [`packaging.test.ts`](../../packages/designer-core/test/packaging.test.ts),
+  [`dom-free.test.ts`](../../packages/designer-core/test/dom-free.test.ts) and
+  [`consumer-smoke.test.ts`](../../packages/designer-core/test/consumer-smoke.test.ts);
+  the source of truth remains the DOM-free boundary under
   [`apps/service-management/src/`](../../apps/service-management/src)
 - Suites:
   [`catalogSyncClient.test.ts`](../../apps/backend-template/test/unit/service-management/catalogSyncClient.test.ts),

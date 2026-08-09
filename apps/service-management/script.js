@@ -4,17 +4,20 @@
  * After JUM-468 (state/persistence core) and JUM-469 (this refactor) the
  * monolith is split into modules with explicit interfaces; this file keeps
  * only what is genuinely orchestration: element lookup, event wiring,
- * rendering glue and boot.
+ * rendering glue and boot. Since JUM-493 the DOM-free core modules live in
+ * the publishable package `packages/designer-core/src/` and are imported
+ * through `@jumentix/designer-core/…` bare specifiers (the import map in
+ * index.html resolves them to the vendored tree under vendor/designer-core/).
  *
  * Module map (acyclic — imports only ever point downwards):
  *
- *   src/state/designerState.js        state, persistence, history, normalisers (DOM-free)
- *   src/store/*.js                    IDesignerStore port + localStorage (transitional) and Cana
- *                                     adapters + selection seam (DOM-free)
- *   src/model/modelQueries.js         pure helpers over the model (DOM-free)
- *   src/validation/modelValidation.js collectModelIssues engine (DOM-free)
- *   src/exporters/designerExporters.js the 7 export document builders (DOM-free)
- *   src/importers/designerImporters.js the import document→model mappers (DOM-free)
+ *   @jumentix/designer-core/state/designerState.js        state, persistence, history, normalisers (DOM-free)
+ *   src/store/*.js                                        Cana adapter, migration + selection seam
+ *                                                         over the packaged IDesignerStore port (DOM-free)
+ *   @jumentix/designer-core/model/modelQueries.js         pure helpers over the model (DOM-free)
+ *   @jumentix/designer-core/validation/modelValidation.js collectModelIssues engine (DOM-free)
+ *   @jumentix/designer-core/exporters/designerExporters.js the 7 export document builders (DOM-free)
+ *   @jumentix/designer-core/importers/designerImporters.js the import document→model mappers (DOM-free)
  *   src/ui/tabs.js                    tab switching (DOM)
  *   src/ui/canvas.js                  canvas: pan/zoom/snap, domains/entities, edges, mini-map (DOM)
  *   src/ui/inspectors.js              side panels, lists, diff/model-check renderers (DOM)
@@ -38,12 +41,12 @@ import {
   normalizeRbacPolicyInput,
   parseCommaSeparated,
   parseEnumValues
-} from './src/state/designerState.js';
+} from '@jumentix/designer-core/state/designerState.js';
 import { createDesignerSync } from './src/state/designerSync.js';
 import {
   deriveTenantScoped,
   validateRbacRule
-} from './src/model/rbacContract.js';
+} from '@jumentix/designer-core/model/rbacContract.js';
 import { createDesignerStore } from './src/store/designerStoreFactory.js';
 import {
   CANA_MIGRATION_SOURCE_RETENTION_DAYS,
@@ -52,21 +55,21 @@ import {
   migrateLocalStorageToCana,
   readRetainedMigrationSource
 } from './src/store/canaMigration.js';
-import * as model from './src/model/modelQueries.js';
-import { isPm2ManagedDeployTarget } from './src/model/deployCapabilityMatrix.js';
-import { buildSampleModelPayload } from './src/model/sampleModel.js';
-import { collectModelIssues } from './src/validation/modelValidation.js';
-import { collectServiceConfigurationIssues } from './src/validation/serviceConfigurationValidation.js';
-import { collectDeployTargetIssues } from './src/validation/deployTargetValidation.js';
+import * as model from '@jumentix/designer-core/model/modelQueries.js';
+import { isPm2ManagedDeployTarget } from '@jumentix/designer-core/model/deployCapabilityMatrix.js';
+import { buildSampleModelPayload } from '@jumentix/designer-core/model/sampleModel.js';
+import { collectModelIssues } from '@jumentix/designer-core/validation/modelValidation.js';
+import { collectServiceConfigurationIssues } from '@jumentix/designer-core/validation/serviceConfigurationValidation.js';
+import { collectDeployTargetIssues } from '@jumentix/designer-core/validation/deployTargetValidation.js';
 import {
   collectDeployTargetFieldIssues,
   deployTargetFieldHint,
   duplicateDeployTargetName
-} from './src/validation/deployTargetLifecycleValidation.js';
+} from '@jumentix/designer-core/validation/deployTargetLifecycleValidation.js';
 import {
   normalizeInterfaceAdapterInput,
   upsertInterfaceAdapter
-} from './src/validation/interfaceAdapterValidation.js';
+} from '@jumentix/designer-core/validation/interfaceAdapterValidation.js';
 import {
   buildBoilerplateBundleDocument,
   buildDomainPackageDocument,
@@ -74,20 +77,20 @@ import {
   buildJsonSchemaDocument,
   buildMarkdownExport,
   buildOasDocument
-} from './src/exporters/designerExporters.js';
+} from '@jumentix/designer-core/exporters/designerExporters.js';
 import {
   buildAsyncApiFileSet,
   buildGrpcProto
-} from './src/exporters/asyncApiExporters.js';
+} from '@jumentix/designer-core/exporters/asyncApiExporters.js';
 import {
   buildDomainFromPackage,
   buildDomainsFromOas,
   buildStateFromSuiteExport
-} from './src/importers/designerImporters.js';
+} from '@jumentix/designer-core/importers/designerImporters.js';
 import {
   flattenBundleFiles,
   renderBundlePreview
-} from './src/codegen/hexagonalCodegen.js';
+} from '@jumentix/designer-core/codegen/hexagonalCodegen.js';
 import { createTabs } from './src/ui/tabs.js';
 import { createCanvas } from './src/ui/canvas.js';
 import { createInspectors } from './src/ui/inspectors.js';
@@ -126,7 +129,7 @@ const RUNTIME_ENV_FIELD_HINTS = {
 let runtimeEnvEditableKeys = Object.keys(RUNTIME_ENV_EDITABLE_DEFAULTS);
 
 // State, persistence, history and normalisation live in the DOM-free core
-// (src/state/designerState.js) behind the IDesignerStore port
+// (@jumentix/designer-core/state/designerState.js) behind the IDesignerStore port
 // (src/store/IDesignerStore.js). Cana is the SOLE store (JUM-484's one-way
 // migration retired the transitional LocalStorageDesignerStore — no fallback
 // to localStorage, decision 2026-07-29); the factory seam

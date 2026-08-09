@@ -40,6 +40,8 @@
       "@test/*": ["./apps/backend-template/test/*"],
       "@jumentix/cana": ["./packages/cana/src/index.ts"],
       "@jumentix/cana/*": ["./packages/cana/src/*"],
+      "@jumentix/designer-core": ["./packages/designer-core/src/index.js"],
+      "@jumentix/designer-core/*": ["./packages/designer-core/src/*"],
       "@jumentix/message-mediator": ["./packages/message-mediator/src/index.ts"],
       "@jumentix/message-mediator/*": ["./packages/message-mediator/src/*"],
       "@jumentix/key-value-storage": ["./packages/key-value-storage/src/index.ts"],
