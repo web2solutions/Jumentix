@@ -32,10 +32,11 @@ const {
   normalizeStatePayload,
   parseCommaSeparated,
   parseEnumValues
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'designerState.js'));
+} = require('@jumentix/designer-core/state/designerState.js');
+
 const {
-  LocalStorageDesignerStore
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'store', 'LocalStorageDesignerStore.js'));
+  MemoryDesignerStore
+} = require(path.join(repoRoot, 'apps', 'backend-template', 'test', 'helpers', 'MemoryDesignerStore.ts'));
 
 function createFakeStorage(initial: Record<string, string> = {}) {
   const map = new Map<string, string>(Object.entries(initial));
@@ -50,7 +51,7 @@ function createFakeStorage(initial: Record<string, string> = {}) {
 type Core = ReturnType<typeof createDesignerState>;
 
 function createCore(storage = createFakeStorage()) {
-  const store = new LocalStorageDesignerStore({ storage });
+  const store = new MemoryDesignerStore({ storage });
   let core: Core;
   const seed = () => {
     core.state.domains = [{
@@ -87,12 +88,15 @@ function createCore(storage = createFakeStorage()) {
 
 describe('designer state core (JUM-468)', () => {
   it('is DOM-free: no document/window references in the extracted modules', () => {
-    ['src/state/designerState.js', 'src/store/IDesignerStore.js', 'src/store/LocalStorageDesignerStore.js', 'src/model/rbacContract.js']
-      .forEach((modulePath) => {
-        const source = fs.readFileSync(
-          path.join(repoRoot, 'apps', 'service-management', ...modulePath.split('/')),
-          'utf-8'
-        );
+    // Since JUM-493 the core modules live in the publishable package; the
+    // store adapters stay in the app. Both sides keep the DOM-free rule.
+    const movedCore = ['state/designerState.js', 'store/IDesignerStore.js', 'model/rbacContract.js']
+      .map((rel) => path.join(repoRoot, 'packages', 'designer-core', 'src', ...rel.split('/')));
+    const appAdapters = ['src/store/CanaDesignerStore.js', 'src/store/canaMigration.js', 'src/store/designerStoreFactory.js']
+      .map((rel) => path.join(repoRoot, 'apps', 'service-management', ...rel.split('/')));
+    [...movedCore, ...appAdapters]
+      .forEach((absolutePath) => {
+        const source = fs.readFileSync(absolutePath, 'utf-8');
         // Strip comments so prose about the contract cannot false-positive;
         // what remains must not reach the DOM globals.
         const code = source
@@ -223,6 +227,47 @@ describe('designer state core (JUM-468)', () => {
       await core.loadState();
       expect(core.state.domains[0].name).toBe('Seed');
       expect(core.history.past).toStrictEqual([]);
+    });
+  });
+
+  describe('loadState outcome reporting (JUM-626)', () => {
+    it('reports empty on a first run, ok on a healthy restore', async () => {
+      const first = createCore();
+      await expect(first.core.loadState()).resolves.toStrictEqual({ status: 'empty' });
+
+      const second = createCore(first.storage);
+      await expect(second.core.loadState()).resolves.toStrictEqual({ status: 'ok' });
+    });
+
+    it('reports lost with the port reason on a corrupted payload — recovery still happens', async () => {
+      const storage = createFakeStorage({ 'service-management.v1': '{corrupted' });
+      const { core } = createCore(storage);
+      const outcome = await core.loadState();
+      expect(outcome.status).toBe('lost');
+      expect(outcome.reason).toContain('not readable JSON');
+      // Recovery is unchanged: the seed template is persisted over the corrupt record.
+      expect(JSON.parse(storage.map.get('service-management.v1') as string).domains[0].name).toBe('Seed');
+    });
+
+    it('reports unavailable with the reason when storage cannot be read', async () => {
+      const storage = createFakeStorage();
+      storage.getItem = () => { throw new Error('SecurityError'); };
+      storage.setItem = () => { throw new Error('SecurityError'); };
+      const { core } = createCore(storage);
+      const outcome = await core.loadState();
+      expect(outcome.status).toBe('unavailable');
+      expect(outcome.reason).toContain('SecurityError');
+    });
+
+    it('reports recovered with the cause when a decodable payload fails normalisation', async () => {
+      const storage = createFakeStorage({
+        'service-management.v1': JSON.stringify({ domains: [], relationships: [null] })
+      });
+      const { core } = createCore(storage);
+      const outcome = await core.loadState();
+      expect(outcome.status).toBe('recovered');
+      expect(typeof outcome.reason).toBe('string');
+      expect(core.state.domains[0].name).toBe('Seed');
     });
   });
 
@@ -761,5 +806,48 @@ describe('designer state core (JUM-468)', () => {
       expect(core.state.view).toStrictEqual(createDefaultView());
       expect(JSON.parse(storage.map.get('service-management.v1') as string).domains[0].name).toBe('Seed');
     });
+  });
+});
+
+describe('additive metadata fallback arms (JUM-493)', () => {
+  it('carries entity provenance with missing fields as empty strings', () => {
+    const normalized = normalizeStatePayload({
+      domains: [{ name: 'D', entities: [{ name: 'E', fields: [], meta: { provenance: {} } }] }]
+    });
+    expect(normalized.domains[0].entities[0].meta.provenance).toStrictEqual({ package: '', version: '' });
+  });
+
+  it('carries domain package identity and catalog metadata with field defaults', () => {
+    const normalized = normalizeStatePayload({
+      domains: [{ name: 'D', context: { packageName: 'pkg', provenance: {}, catalog: {} } }]
+    });
+    const { context } = normalized.domains[0];
+    expect(context.packageName).toBe('pkg');
+    // packageVersion was not declared, so it is not carried at all (additive rule).
+    expect('packageVersion' in context).toBe(false);
+    expect(context.provenance).toStrictEqual({ package: '', version: '' });
+    expect(context.catalog).toStrictEqual({ id: '', version: 0, contentHash: '' });
+  });
+
+  it('reports a non-Error save rejection with the raw reason, never unhandled', async () => {
+    const seen: Array<{ status: string; reason?: string }> = [];
+    // A non-Error rejection is exactly the path under test: the reporter's
+    // `(error && error.message) || error` fallback exists for rejections that
+    // are not Error instances.
+    // eslint-disable-next-line prefer-promise-reject-errors
+    const rejectingStore = { save: () => Promise.reject('disk-on-fire') };
+    const core = createDesignerState({
+      store: rejectingStore,
+      seed: () => {},
+      render: () => {},
+      onSaveResult: (result: { status: string; reason?: string }) => seen.push(result)
+    } as any);
+    core.saveState();
+    // The rejection is reported through a promise — flush the microtask queue.
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(seen).toHaveLength(1);
+    expect(seen[0].status).toBe('unknown');
+    expect(seen[0].reason).toBe('save-rejected: disk-on-fire');
   });
 });

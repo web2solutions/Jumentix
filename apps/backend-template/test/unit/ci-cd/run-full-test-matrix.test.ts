@@ -41,12 +41,12 @@ describe('run-full-test-matrix', () => {
     }
   });
 
-  it('keeps heavy coverage production in CircleCI instead of the local strict matrix', () => {
+  it('keeps heavy coverage production in GitHub Actions instead of the local strict matrix', () => {
     expect.hasAssertions();
 
     const ids = (FULL_TEST_MATRIX as FullMatrixTestCell[]).map((cell) => cell.id);
-    const circleci = matrixFs.readFileSync(
-      matrixPath.join(fullMatrixRootDir, '.circleci/config.yml'),
+    const workflow = matrixFs.readFileSync(
+      matrixPath.join(fullMatrixRootDir, '.github/workflows/ci.yml'),
       'utf8'
     );
 
@@ -57,12 +57,12 @@ describe('run-full-test-matrix', () => {
       'coverage-thresholds',
       'patch-coverage'
     ]));
-    expect(circleci).toContain('bun run test:coverage');
-    expect(circleci).toContain('bun run coverage:check');
-    expect(circleci).toContain('bun run coverage:patch');
+    expect(workflow).toContain('bun run test:coverage');
+    expect(workflow).toContain('bun run coverage:check');
+    expect(workflow).toContain('bun run coverage:patch');
   });
 
-  it('leaves the coverage scripts available for the CircleCI coverage gate', () => {
+  it('leaves the coverage scripts available for the GitHub Actions coverage gate', () => {
     expect.hasAssertions();
 
     expect(fullMatrixRootPackage.scripts['test:coverage'])
@@ -73,7 +73,7 @@ describe('run-full-test-matrix', () => {
       .toBe('bun ci-cd/check-patch-coverage.js');
   });
 
-  it('allows CircleCI to delegate expensive cells to dedicated jobs', () => {
+  it('allows GitHub Actions to delegate expensive cells to dedicated jobs', () => {
     expect.hasAssertions();
 
     const cells = resolveMatrixCells(FULL_TEST_MATRIX, {
@@ -313,26 +313,26 @@ describe('run-full-test-matrix', () => {
       read('.husky/pre-merge-commit').includes('bun run ci:gate:branch'),
       read('.husky/pre-commit').includes('check-commit-authorship.js --identity'),
       read('.husky/pre-push').includes('check-commit-authorship.js'),
-      read('.circleci/config.yml').includes('bun run ci:gate:branch'),
-      read('.circleci/config.yml').includes('JUMENTIX_TASK_TEST_MODE: range'),
-      read('.circleci/config.yml').includes('JUMENTIX_TASK_TEST_BASE: origin/dev'),
-      read('.circleci/config.yml').includes('full-test-matrix.json'),
-      read('.circleci/config.yml').includes('JUMENTIX_CI_GATE_RESULT_FILE: artifacts/ci/branch-quality-gate.json'),
-      read('.circleci/config.yml').includes('JUMENTIX_CI_MATRIX_RESULT_FILE: artifacts/ci/full-test-matrix.json'),
-      read('.circleci/config.yml').includes('JUMENTIX_FULL_MATRIX_SKIP_CELLS: workspace-builds,workspace-tests,website-prepublish,integration'),
-      read('.circleci/config.yml').includes('name: Run workspace package builds'),
-      read('.circleci/config.yml').includes('bun run mono:build'),
-      read('.circleci/config.yml').includes('name: Run workspace package tests'),
-      read('.circleci/config.yml').includes('bun run mono:test'),
-      read('.circleci/config.yml').includes('name: Run integration matrix'),
-      read('.circleci/config.yml').includes('bun run ci:integration'),
-      !read('.circleci/config.yml').includes('requirepass'),
-      !read('.circleci/config.yml').includes('AAA_REDIS_PASSWORD'),
-      read('.circleci/config.yml').includes('bun run website:storybook:build'),
-      read('.circleci/config.yml').includes('bun run website:storybook:smoke'),
-      read('.circleci/config.yml').includes('bun run website:test:cypress'),
-      read('.circleci/config.yml').includes('bun run coverage:patch'),
-      read('.circleci/config.yml').includes('codecov --verbose upload-process'),
+      read('.github/workflows/ci.yml').includes('bun run ci:gate:branch'),
+      read('.github/workflows/ci.yml').includes('JUMENTIX_TASK_TEST_MODE: range'),
+      read('.github/workflows/ci.yml').includes('JUMENTIX_TASK_TEST_BASE: origin/dev'),
+      read('.github/workflows/ci.yml').includes('full-test-matrix.json'),
+      read('.github/workflows/ci.yml').includes('JUMENTIX_CI_GATE_RESULT_FILE: artifacts/ci/branch-quality-gate.json'),
+      read('.github/workflows/ci.yml').includes('JUMENTIX_CI_MATRIX_RESULT_FILE: artifacts/ci/full-test-matrix.json'),
+      read('.github/workflows/ci.yml').includes('JUMENTIX_FULL_MATRIX_SKIP_CELLS: workspace-builds,workspace-tests,website-prepublish,integration'),
+      read('.github/workflows/ci.yml').includes('name: Run workspace package builds'),
+      read('.github/workflows/ci.yml').includes('bun run mono:build'),
+      read('.github/workflows/ci.yml').includes('name: Run workspace package tests'),
+      read('.github/workflows/ci.yml').includes('bun run mono:test'),
+      read('.github/workflows/ci.yml').includes('name: Run integration matrix'),
+      read('.github/workflows/ci.yml').includes('bun run ci:integration'),
+      !read('.github/workflows/ci.yml').includes('requirepass'),
+      !read('.github/workflows/ci.yml').includes('AAA_REDIS_PASSWORD'),
+      read('.github/workflows/ci.yml').includes('bun run website:storybook:build'),
+      read('.github/workflows/ci.yml').includes('bun run website:storybook:smoke'),
+      read('.github/workflows/ci.yml').includes('bun run website:test:cypress'),
+      read('.github/workflows/ci.yml').includes('bun run coverage:patch'),
+      read('.github/workflows/ci.yml').includes('codecov --verbose upload-process'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'pr:governance:check'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'requirements:check'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'integrations:check'),

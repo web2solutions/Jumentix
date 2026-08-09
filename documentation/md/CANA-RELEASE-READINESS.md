@@ -92,7 +92,8 @@ The behaviours a shim cannot answer are now verified on every engine:
 - real quota reporting and the `nearQuota` threshold
 - actual eviction, and the tombstone surviving it
 - the `Unavailable` path in private browsing
-- the engine running inside a real `Worker`
+- the engine running inside a real `Worker` (dedicated Worker suite, JUM-615)
+- localStorage fallback when IndexedDB cannot open (explicit degraded mode, JUM-615)
 - data surviving a page reload
 - WebKit's structured-clone and `databases()` edge cases, which are the ones
   that historically differ most

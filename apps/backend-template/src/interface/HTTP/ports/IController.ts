@@ -30,6 +30,7 @@ export interface IController {
   createOrganizationEmail?(event: BaseDomainEvent): Promise<IServiceResponse<any>>;
   updateOrganizationEmail?(event: BaseDomainEvent): Promise<IServiceResponse<any>>;
   deleteOrganizationEmail?(event: BaseDomainEvent): Promise<IServiceResponse<any>>;
+  restore?(event: BaseDomainEvent): Promise<IServiceResponse<any>>;
   // update(event: BaseDomainEvent): Promise<IServiceResponse<any>>;
   // create(event: BaseDomainEvent): Promise<IServiceResponse<any>>;
   // create(event: BaseDomainEvent): Promise<IServiceResponse<any>>;

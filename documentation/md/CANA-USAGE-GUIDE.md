@@ -612,7 +612,7 @@ try {
 
 | Code | Meaning | Retryable |
 |---|---|---|
-| `Unavailable` | No usable IndexedDB. Terminal — there is no fallback | no |
+| `Unavailable` | No usable store after IndexedDB and configured fallback both failed | no |
 | `QuotaExceeded` | Storage budget exhausted; the write did not happen | **no** |
 | `Evicted` | A database that existed is gone | no |
 | `UpgradeFailed` | Upgrade did not complete, or a downgrade was refused | no |
@@ -924,8 +924,9 @@ Another tab holds the old version. Listen for `versionchange` in the other tab
 and close there. It is `retryable`.
 
 **Everything reports `Unavailable`**
-No usable IndexedDB — private browsing in some browsers, or storage disabled.
-There is no fallback by design. Tell the user rather than degrading silently.
+IndexedDB failed and the localStorage fallback could not open either (or
+`fallback: false` was set). Check `client.backend` after a successful open —
+`'localStorage'` means degraded mode is already active.
 
 **Eviction is never detected**
 `evictionDetectable` is `false` when no tombstone can be written. Check

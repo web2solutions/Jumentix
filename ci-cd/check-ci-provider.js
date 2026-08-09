@@ -8,81 +8,105 @@ const root = path.resolve(__dirname, '..');
 const failures = [];
 
 const circleciPath = path.join(root, '.circleci', 'config.yml');
-const actionsDir = path.join(root, '.github', 'workflows');
+const workflowPath = path.join(root, '.github', 'workflows', 'ci.yml');
 
-if (!fs.existsSync(circleciPath)) {
-  failures.push('Missing required CircleCI config: .circleci/config.yml');
+if (fs.existsSync(circleciPath)) {
+  failures.push('CircleCI is disabled by Requirement 113: remove .circleci/config.yml');
+}
+
+if (!fs.existsSync(workflowPath)) {
+  failures.push('Missing required GitHub Actions workflow: .github/workflows/ci.yml');
 } else {
-  const contents = fs.readFileSync(circleciPath, 'utf8');
+  const contents = fs.readFileSync(workflowPath, 'utf8');
+  const servicesPath = path.join(root, 'ci-cd', 'ensure-local-ci-services.sh');
+  const serviceContents = fs.existsSync(servicesPath) ? fs.readFileSync(servicesPath, 'utf8') : '';
+  const ciContents = `${contents}\n${serviceContents}`;
   const requiredMarkers = [
-    /version:\s*2\.1/,
+    /name:\s*CI/,
+    /pull_request:/,
+    /workflow_dispatch:/,
+    /schedule:/,
+    /FORCE_JAVASCRIPT_ACTIONS_TO_NODE24:\s*'true'/,
+    /runs-on:\s*\[self-hosted,\s*jumentix\]/,
+    /uses:\s*actions\/checkout@v7/,
+    /uses:\s*actions\/setup-node@v7/,
+    /node-version:\s*22/,
+    /uses:\s*actions\/upload-artifact@v7/,
     /branch-gate:/,
+    /third-party-review:/,
     /workspace-builds:/,
     /workspace-tests:/,
     /integration:/,
     /coverage:/,
     /website:/,
-    /third-party-review:/,
-    /cimg\/node:22\./,
-    /cypress\/browsers:node-22\..*-chrome-.*-ff-.*/,
-    /redis:7\.2/,
-    /rabbitmq:3\.13/,
-    /bun install --frozen-lockfile/,
-    /ci:gate:branch/,
+    /database-matrix:/,
+    /classify-ci-context\.js --result-file artifacts\/ci\/ci-context\.json --require-job branch-gate/,
+    /bun run ci:gate:branch/,
     /JUMENTIX_CI_GATE_RESULT_FILE:\s*artifacts\/ci\/branch-quality-gate\.json/,
     /JUMENTIX_CI_MATRIX_RESULT_FILE:\s*artifacts\/ci\/full-test-matrix\.json/,
     /JUMENTIX_FULL_MATRIX_SKIP_CELLS:\s*workspace-builds,workspace-tests,website-prepublish,integration/,
+    /JUMENTIX_PR_BASE_REF=\$\{GITHUB_BASE_REF\}/,
+    /AAA_PR_BODY<<__JUMENTIX_BODY__/,
+    /redis:7\.2-alpine/,
+    /rabbitmq:3\.13-alpine/,
+    /bun install --frozen-lockfile/,
     /bun run mono:build/,
     /bun run mono:test/,
     /bun run ci:integration/,
     /FIREBASE_SERVICE_ACCOUNT_KEY/,
-    /test:coverage/,
+    /ci-cd\/ensure-local-ci-services\.sh/,
+    /bun run test:coverage/,
     /coverage\/jest\/coverage-final\.json/,
-    /coverage:check/,
-    /coverage:patch/,
+    /bun run coverage:check/,
+    /bun run coverage:patch/,
     /website:storybook:build/,
     /website:storybook:smoke/,
     /website:test:prepublish/,
-    // JUM-396 — Cypress route/a11y gates are part of the website job contract.
     /website:test:cypress/,
     /gitleaks\.sarif/,
     /semgrep\.sarif/,
     /Enforce scanner outcomes/,
-    /sonar-scanner/,
-    /SONAR_TARGET_BRANCH="\$\{CIRCLE_PR_BASE_BRANCH:-\$\{CIRCLE_BRANCH:-\}\}"/,
-    /Sonar runs for PRs or pushes targeting dev\/main/,
-    /Report Sonar findings/,
-    /sonar-scanner -Dsonar\.scm\.disabled=true/,
     /Install verified Codecov CLI/,
     /Upload coverage to Codecov/,
     /codecov --verbose upload-process --disable-search --fail-on-error/,
     /CODECOV_TOKEN/,
-    /store_artifacts/,
-    /persist_to_workspace/,
-    /JUMENTIX_PR_TITLE/,
-    /JUMENTIX_PR_BODY/,
-    /AAA_PR_TITLE/,
-    /AAA_PR_BODY/
+    /SonarQube Cloud Scan/,
+    /Sonar runs for PRs or pushes targeting dev\/main/,
+    /sonar-scanner -Dsonar\.scm\.disabled=true/,
+    /Report Sonar findings/
   ];
   for (const marker of requiredMarkers) {
-    if (!marker.test(contents)) failures.push(`.circleci/config.yml is missing ${String(marker)}`);
+    if (!marker.test(ciContents)) failures.push(`GitHub Actions CI is missing ${String(marker)}`);
   }
+
+  const heavyContextGuard = /github\.event_name == 'schedule'[\s\S]+github\.event_name == 'workflow_dispatch'[\s\S]+github\.ref_name == 'main'[\s\S]+github\.event_name == 'pull_request' && github\.base_ref == 'main' && github\.head_ref == 'dev'/;
+  for (const job of ['workspace-builds', 'workspace-tests', 'integration', 'coverage', 'website', 'database-matrix']) {
+    const jobBlock = contents.match(new RegExp(`\\n  ${job}:\\n[\\s\\S]*?(?=\\n  [a-z-]+:\\n|\\n?$)`))?.[0] || '';
+    if (!heavyContextGuard.test(jobBlock)) {
+      failures.push(`.github/workflows/ci.yml must guard ${job} to release/full contexts`);
+    }
+  }
+
+  const coverageBlock = contents.match(/\n  coverage:\n[\s\S]*?(?=\n  [a-z-]+:\n|\n?$)/)?.[0] || '';
+  if (/RUN_(BROKER|REDIS)_INTEGRATION:\s*'1'/.test(coverageBlock)) {
+    failures.push(
+      '.github/workflows/ci.yml coverage job must keep real broker/Redis integration suites in dedicated jobs'
+    );
+  }
+
   [
-    /\n\s+- codecov:\s*\n/,
-    /\n\s+- sonarqube:\s*\n/
+    /\n\s+codecov:\s*\n/,
+    /\n\s+sonarqube:\s*\n/
   ].forEach((marker) => {
     if (marker.test(contents)) {
       failures.push(
-        `Codecov and Sonar must run inside the coverage job, not as separate CircleCI jobs: ${String(marker)}`
+        `Codecov and Sonar must run inside the coverage job, not as separate GitHub Actions jobs: ${String(marker)}`
       );
     }
   });
-}
 
-if (fs.existsSync(actionsDir)) {
-  const workflows = fs.readdirSync(actionsDir).filter((file) => /\.ya?ml$/u.test(file));
-  for (const workflow of workflows) {
-    failures.push(`GitHub Actions workflow is disabled while billing is blocked: .github/workflows/${workflow}`);
+  if (/runs-on:\s*ubuntu-latest/.test(contents)) {
+    failures.push('.github/workflows/ci.yml must use the repository-owned self-hosted runner, not ubuntu-latest');
   }
 }
 
@@ -99,6 +123,6 @@ if (failures.length > 0) {
 }
 
 console.log(
-  'CI provider check passed: CircleCI covers branch gates, coverage, website validation, '
-    + 'third-party review, and in-job Codecov/Sonar coverage publishing without GitHub Actions billing.'
+  'CI provider check passed: GitHub Actions covers cheap dev gates, full main promotion gates, '
+    + 'coverage, website validation, third-party review, and in-job Codecov/Sonar publishing.'
 );

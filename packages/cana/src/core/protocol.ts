@@ -134,7 +134,10 @@ export function createRouter(options: RouterOptions): CanaRouter {
   const settle = (requestId: string): Pending | undefined => {
     const entry = pending.get(requestId);
     if (!entry) return undefined;
-    clearTimeout(entry.timer);
+    // Do not clearTimeout here. After a successful reply the timer still fires
+    // and the map miss (`if (!entry) return`) is what makes it a no-op — that
+    // arm is otherwise unreachable, and a late settle after timeout needs the
+    // same idempotent map check.
     pending.delete(requestId);
     return entry;
   };

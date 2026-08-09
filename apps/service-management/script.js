@@ -4,16 +4,20 @@
  * After JUM-468 (state/persistence core) and JUM-469 (this refactor) the
  * monolith is split into modules with explicit interfaces; this file keeps
  * only what is genuinely orchestration: element lookup, event wiring,
- * rendering glue and boot.
+ * rendering glue and boot. Since JUM-493 the DOM-free core modules live in
+ * the publishable package `packages/designer-core/src/` and are imported
+ * through `@jumentix/designer-core/…` bare specifiers (the import map in
+ * index.html resolves them to the vendored tree under vendor/designer-core/).
  *
  * Module map (acyclic — imports only ever point downwards):
  *
- *   src/state/designerState.js        state, persistence, history, normalisers (DOM-free)
- *   src/store/*.js                    IDesignerStore port + transitional localStorage adapter (DOM-free)
- *   src/model/modelQueries.js         pure helpers over the model (DOM-free)
- *   src/validation/modelValidation.js collectModelIssues engine (DOM-free)
- *   src/exporters/designerExporters.js the 7 export document builders (DOM-free)
- *   src/importers/designerImporters.js the import document→model mappers (DOM-free)
+ *   @jumentix/designer-core/state/designerState.js        state, persistence, history, normalisers (DOM-free)
+ *   src/store/*.js                                        Cana adapter, migration + selection seam
+ *                                                         over the packaged IDesignerStore port (DOM-free)
+ *   @jumentix/designer-core/model/modelQueries.js         pure helpers over the model (DOM-free)
+ *   @jumentix/designer-core/validation/modelValidation.js collectModelIssues engine (DOM-free)
+ *   @jumentix/designer-core/exporters/designerExporters.js the 7 export document builders (DOM-free)
+ *   @jumentix/designer-core/importers/designerImporters.js the import document→model mappers (DOM-free)
  *   src/ui/tabs.js                    tab switching (DOM)
  *   src/ui/canvas.js                  canvas: pan/zoom/snap, domains/entities, edges, mini-map (DOM)
  *   src/ui/inspectors.js              side panels, lists, diff/model-check renderers (DOM)
@@ -31,21 +35,41 @@ import {
   createDesignerState,
   defaultFields,
   normalizeContractInput,
+  normalizeDeploymentInput,
   normalizeField,
   normalizeOptionalNumber,
   normalizeRbacPolicyInput,
-  normalizeStatePayload,
   parseCommaSeparated,
   parseEnumValues
-} from './src/state/designerState.js';
+} from '@jumentix/designer-core/state/designerState.js';
+import { createDesignerSync } from './src/state/designerSync.js';
 import {
   deriveTenantScoped,
   validateRbacRule
-} from './src/model/rbacContract.js';
-import { LocalStorageDesignerStore } from './src/store/LocalStorageDesignerStore.js';
-import * as model from './src/model/modelQueries.js';
-import { collectModelIssues } from './src/validation/modelValidation.js';
-import { collectServiceConfigurationIssues } from './src/validation/serviceConfigurationValidation.js';
+} from '@jumentix/designer-core/model/rbacContract.js';
+import { createDesignerStore } from './src/store/designerStoreFactory.js';
+import {
+  CANA_MIGRATION_SOURCE_RETENTION_DAYS,
+  describeDesignerStorageEnvironment,
+  describeLoadTimeDataLoss,
+  migrateLocalStorageToCana,
+  readRetainedMigrationSource
+} from './src/store/canaMigration.js';
+import * as model from '@jumentix/designer-core/model/modelQueries.js';
+import { isPm2ManagedDeployTarget } from '@jumentix/designer-core/model/deployCapabilityMatrix.js';
+import { buildSampleModelPayload } from '@jumentix/designer-core/model/sampleModel.js';
+import { collectModelIssues } from '@jumentix/designer-core/validation/modelValidation.js';
+import { collectServiceConfigurationIssues } from '@jumentix/designer-core/validation/serviceConfigurationValidation.js';
+import { collectDeployTargetIssues } from '@jumentix/designer-core/validation/deployTargetValidation.js';
+import {
+  collectDeployTargetFieldIssues,
+  deployTargetFieldHint,
+  duplicateDeployTargetName
+} from '@jumentix/designer-core/validation/deployTargetLifecycleValidation.js';
+import {
+  normalizeInterfaceAdapterInput,
+  upsertInterfaceAdapter
+} from '@jumentix/designer-core/validation/interfaceAdapterValidation.js';
 import {
   buildBoilerplateBundleDocument,
   buildDomainPackageDocument,
@@ -53,19 +77,20 @@ import {
   buildJsonSchemaDocument,
   buildMarkdownExport,
   buildOasDocument
-} from './src/exporters/designerExporters.js';
+} from '@jumentix/designer-core/exporters/designerExporters.js';
 import {
   buildAsyncApiFileSet,
   buildGrpcProto
-} from './src/exporters/asyncApiExporters.js';
+} from '@jumentix/designer-core/exporters/asyncApiExporters.js';
 import {
   buildDomainFromPackage,
-  buildDomainsFromOas
-} from './src/importers/designerImporters.js';
+  buildDomainsFromOas,
+  buildStateFromSuiteExport
+} from '@jumentix/designer-core/importers/designerImporters.js';
 import {
   flattenBundleFiles,
   renderBundlePreview
-} from './src/codegen/hexagonalCodegen.js';
+} from '@jumentix/designer-core/codegen/hexagonalCodegen.js';
 import { createTabs } from './src/ui/tabs.js';
 import { createCanvas } from './src/ui/canvas.js';
 import { createInspectors } from './src/ui/inspectors.js';
@@ -104,17 +129,32 @@ const RUNTIME_ENV_FIELD_HINTS = {
 let runtimeEnvEditableKeys = Object.keys(RUNTIME_ENV_EDITABLE_DEFAULTS);
 
 // State, persistence, history and normalisation live in the DOM-free core
-// (src/state/designerState.js) behind the IDesignerStore port
-// (src/store/IDesignerStore.js). LocalStorageDesignerStore is TRANSITIONAL —
-// JUM-484's migration retires it; Cana has no fallback to localStorage.
+// (@jumentix/designer-core/state/designerState.js) behind the IDesignerStore port
+// (src/store/IDesignerStore.js). Cana is the SOLE store (JUM-484's one-way
+// migration retired the transitional LocalStorageDesignerStore — no fallback
+// to localStorage, decision 2026-07-29); the factory seam
+// (src/store/designerStoreFactory.js) only injects the Cana client.
 // `seed` and `render` are function declarations below, hoisted before this
-// module body runs.
-const store = new LocalStorageDesignerStore();
+// module body runs. `designerSync` (JUM-485) is created during boot — after
+// the initial load — and observed by the save-outcome hook once it exists.
+let designerSync = null;
+const store = createDesignerStore();
 const designerState = createDesignerState({
   store,
   seed,
   render,
-  runtimeEnvDefaults: RUNTIME_ENV_EDITABLE_DEFAULTS
+  runtimeEnvDefaults: RUNTIME_ENV_EDITABLE_DEFAULTS,
+  // JUM-485: every save outcome is observed; an 'unknown' outcome is
+  // reconciled by the sync engine (read-back against Cana), never assumed
+  // durable. Before the sync engine starts (boot-time seeds), an unknown
+  // outcome still surfaces through the status region.
+  onSaveResult: (saveResult, attemptedPayload) => {
+    if (designerSync) {
+      designerSync.reportSaveOutcome(saveResult, attemptedPayload);
+    } else if (saveResult && saveResult.status !== 'persisted') {
+      showStatus(`A save could not be confirmed (${saveResult.reason || 'unknown outcome'}).`, 'error');
+    }
+  }
 });
 const {
   state,
@@ -139,7 +179,10 @@ const interaction = {
   panStartX: 0,
   panStartY: 0,
   scrollStartLeft: 0,
-  scrollStartTop: 0
+  scrollStartTop: 0,
+  // JUM-546: index into state.deployments of the target loaded into the form
+  // for edit-in-place; null means the form adds a new target.
+  editingDeploymentIndex: null
 };
 
 const dom = {
@@ -268,6 +311,12 @@ const dom = {
   importOasInput: document.getElementById('import-oas-input'),
   importPackageBtn: document.getElementById('import-package-btn'),
   importPackageInput: document.getElementById('import-package-input'),
+  loadSampleBtn: document.getElementById('load-sample-btn'),
+  domainDesignerEmptyState: document.getElementById('domain-designer-empty-state'),
+  loadSampleEmptyBtn: document.getElementById('domain-designer-empty-load-sample-btn'),
+  interfaceDesignerEmptyState: document.getElementById('interface-designer-empty-state'),
+  serviceConfigEmptyState: document.getElementById('service-config-empty-state'),
+  deployManagementEmptyState: document.getElementById('deploy-management-empty-state'),
   generateCodePreviewBtn: document.getElementById('generate-code-preview-btn'),
   generateExamplesBtn: document.getElementById('generate-examples-btn'),
   codePreviewOutput: document.getElementById('code-preview-output'),
@@ -285,7 +334,7 @@ const dom = {
   clearBaselineBtn: document.getElementById('clear-baseline-btn'),
   schemaDiffList: document.getElementById('schema-diff-list'),
   interfaceTypeSelect: document.getElementById('interface-type-select'),
-  interfaceFrameworkInput: document.getElementById('interface-framework-input'),
+  interfaceFrameworkSelect: document.getElementById('interface-framework-select'),
   interfaceEntrypointInput: document.getElementById('interface-entrypoint-input'),
   interfaceControllerInput: document.getElementById('interface-controller-input'),
   addInterfaceAdapterBtn: document.getElementById('add-interface-adapter-btn'),
@@ -312,9 +361,16 @@ const dom = {
   runtimeEnvTargetFile: document.getElementById('runtime-env-target-file'),
   deployNameInput: document.getElementById('deploy-name-input'),
   deployTypeSelect: document.getElementById('deploy-type-select'),
+  deployServiceTypeSelect: document.getElementById('deploy-service-type-select'),
+  deployRuntimeProtocolSelect: document.getElementById('deploy-runtime-protocol-select'),
+  deployDatabaseDriverSelect: document.getElementById('deploy-database-driver-select'),
+  deployKeyvalueDriverSelect: document.getElementById('deploy-keyvalue-driver-select'),
+  deployPm2ProfileSelect: document.getElementById('deploy-pm2-profile-select'),
   deployRegionInput: document.getElementById('deploy-region-input'),
   deployRuntimeInput: document.getElementById('deploy-runtime-input'),
   addDeployTargetBtn: document.getElementById('add-deploy-target-btn'),
+  cancelDeployTargetEditBtn: document.getElementById('cancel-deploy-target-edit-btn'),
+  deployFieldHint: document.getElementById('deploy-field-hint'),
   deployTargetList: document.getElementById('deploy-target-list')
 };
 
@@ -353,7 +409,10 @@ const inspectors = createInspectors({
     renderRuntimeEnvironment,
     loadSchemaBaseline,
     showStatus,
-    getPm2EcosystemPreview
+    getPm2EcosystemPreview,
+    editDeployment,
+    duplicateDeployment,
+    syncDeploymentEditStateAfterRemoval
   }
 });
 
@@ -491,6 +550,42 @@ function showStatus(message, severity = 'error') {
       statusHideTimer = null;
     }, 6000);
   }
+}
+
+// JUM-485 question 2: a remote change re-renders without clobbering the
+// user's in-flight interaction. The mid-form input value, caret, focus and
+// the canvas scroll position are captured before the render and restored
+// after it, so a pending local edit survives a remote apply and the status
+// region (not a stolen focus) is what announces the change. When the user
+// explicitly saves, their version is asserted — last-writer-wins, consistent
+// with whole-document sync.
+function renderPreservingInteraction() {
+  const active = document.activeElement;
+  const activeId = active && active.id ? active.id : null;
+  const isTextInput = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA');
+  const pending = isTextInput
+    ? { value: active.value, selectionStart: active.selectionStart, selectionEnd: active.selectionEnd }
+    : null;
+  const scrollLeft = dom.canvas ? dom.canvas.scrollLeft : 0;
+  const scrollTop = dom.canvas ? dom.canvas.scrollTop : 0;
+  render();
+  if (dom.canvas) {
+    dom.canvas.scrollLeft = scrollLeft;
+    dom.canvas.scrollTop = scrollTop;
+  }
+  if (!activeId) return;
+  const element = document.getElementById(activeId);
+  if (!element) return;
+  if (pending && 'value' in element) {
+    element.value = pending.value;
+    try {
+      element.setSelectionRange(pending.selectionStart, pending.selectionEnd);
+    } catch (_) {
+      // Some input types (number, color) reject setSelectionRange; the value
+      // and focus are still preserved.
+    }
+  }
+  element.focus({ preventScroll: true });
 }
 
 // Inline status line of the runtime env panel: load/save failures land here
@@ -1570,6 +1665,33 @@ function exportAsOas() {
 // document→model mappers in src/importers/designerImporters.js (and
 // normalizeStatePayload from the JUM-468 core). One mapper failure reason
 // maps to exactly one status-region message (the pre-refactor alert text).
+// JUM-492: one mapper failure reason maps to exactly one status-region
+// message. The mapper (buildDomainFromPackage over the packageVersioning
+// core) owns the versioning, dependency-graph and conflict policies; this
+// glue only renders outcomes — never window.alert.
+function packageImportFailureMessage(result) {
+  const packageLabel = result.package ? `'${result.package.name}@${result.package.version}'` : 'package';
+  if (result.reason === 'wrong-document-kind') {
+    return `This file is a '${String(result.kind)}' document, not a domain package — use the matching import.`;
+  }
+  if (result.reason === 'unsupported-version') {
+    return `Unsupported domain-package document version '${String(result.version)}' — this designer reads up to major version 2.`;
+  }
+  if (result.reason === 'invalid-package-version') {
+    return `Package version '${String(result.version)}' is not a semantic version (major.minor.patch) — import refused.`;
+  }
+  if (result.reason === 'dependency-cycle') {
+    return `Importing ${packageLabel} would close a dependency cycle (${(result.cycle || []).join(' -> ')}) — import refused.`;
+  }
+  if (result.reason === 'downgrade-rejected') {
+    return `Package '${result.package.name}@${result.installed}' is already imported; ${packageLabel} is older — downgrades are refused.`;
+  }
+  if (result.reason === 'same-version-conflict') {
+    return `Package ${packageLabel} is already imported but the file's content differs — same version, different content. Bump the version or reconcile the package; nothing was changed.`;
+  }
+  return 'Invalid package format.';
+}
+
 function importDomainPackage(file) {
   const reader = new FileReader();
   reader.onload = () => {
@@ -1577,7 +1699,57 @@ function importDomainPackage(file) {
       const parsed = JSON.parse(String(reader.result || '{}'));
       const result = buildDomainFromPackage(parsed, state.domains);
       if (!result.ok) {
-        showStatus('Invalid package format.');
+        showStatus(packageImportFailureMessage(result));
+        // A refusal that carries a preview (same-version conflict) renders it
+        // on the schema-diff surface, so the user sees exactly which aspects
+        // diverged — the merge-preview basis of JUM-492.
+        if (Array.isArray(result.preview) && result.preview.length) {
+          inspectors.renderSchemaDiffResults(result.preview);
+        }
+        return;
+      }
+      if (result.noop) {
+        // Idempotent re-import (JUM-492): same package, same version, same
+        // content — importing twice changes nothing, proven by test.
+        showStatus(`Package '${result.package.name}@${result.package.version}' is already imported and unchanged — nothing to do.`, 'info');
+        return;
+      }
+      if (result.merged) {
+        // The merge preview renders BEFORE anything changes; aspects that
+        // require a decision (RBAC, invariants, removals, narrowings) keep
+        // the existing content and the merge applies only after the user
+        // explicitly accepts — a toast is not a substitute for that gate.
+        if (result.preview.length) {
+          inspectors.renderSchemaDiffResults(result.preview);
+        }
+        if (result.requiresDecision > 0) {
+          const accepted = window.confirm(
+            `Merge package '${result.package.name}' ${result.fromVersion} -> ${result.package.version}: `
+            + `${result.autoCount} change(s) apply automatically; ${result.requiresDecision} aspect(s) require a decision `
+            + '(the existing designer content is kept for them — see the schema-diff panel). Apply the merge?'
+          );
+          if (!accepted) {
+            showStatus(`Merge of package '${result.package.name}@${result.package.version}' cancelled — nothing was changed.`, 'info');
+            return;
+          }
+        }
+        withPersist(() => {
+          const index = state.domains.findIndex((domain) => domain.id === result.domain.id);
+          if (index >= 0) {
+            state.domains[index] = result.domain;
+          }
+          state.selectedDomainId = result.domain.id;
+          state.selectedEntityId = result.domain.entities[0]?.id || null;
+          recomputeIdCounter();
+          render();
+        });
+        const decisionNote = result.requiresDecision > 0
+          ? `; ${result.requiresDecision} aspect(s) kept the existing content (listed in the schema-diff panel)`
+          : '';
+        showStatus(
+          `Package '${result.package.name}' merged ${result.fromVersion} -> ${result.package.version}: ${result.autoCount} change(s) applied${decisionNote}.`,
+          'info'
+        );
         return;
       }
       withPersist(() => {
@@ -1588,6 +1760,11 @@ function importDomainPackage(file) {
         recomputeIdCounter();
         render();
       });
+      // Dependency-graph findings never block an import, but they are never
+      // silent either — they surface through the status region.
+      if (Array.isArray(result.warnings) && result.warnings.length) {
+        showStatus(result.warnings.join(' '), 'error');
+      }
     } catch (_) {
       showStatus('Could not parse package JSON.');
     }
@@ -1595,18 +1772,43 @@ function importDomainPackage(file) {
   reader.readAsText(file);
 }
 
+// JUM-547: the suite import maps one mapper failure reason to exactly one
+// status-region message. The mapper itself (buildStateFromSuiteExport)
+// owns the versioning and compatibility rules of the full-suite document.
+function suiteExportFailureMessage(result) {
+  if (result.reason === 'wrong-document-kind') {
+    return `This file is a '${String(result.kind)}' document, not a suite export — use the matching import.`;
+  }
+  if (result.reason === 'unsupported-version') {
+    return `Unsupported suite export version '${String(result.version)}' — this designer reads up to major version 2.`;
+  }
+  if (result.reason === 'unknown-sections') {
+    return `Suite export carries unknown section(s): ${result.sections.join(', ')} — import refused rather than partially applied.`;
+  }
+  return 'Invalid suite export document.';
+}
+
 function importStateFromFile(file) {
   const reader = new FileReader();
   reader.onload = () => {
     try {
       const parsed = JSON.parse(String(reader.result));
-      const normalized = normalizeStatePayload(parsed);
+      const result = buildStateFromSuiteExport(parsed, state);
+      if (!result.ok) {
+        showStatus(suiteExportFailureMessage(result));
+        return;
+      }
+      const normalized = result.state;
       withPersist(() => {
         state.domains = normalized.domains;
         state.relationships = normalized.relationships;
         state.selectedDomainId = normalized.selectedDomainId;
         state.selectedEntityId = normalized.selectedEntityId;
         state.selectedRelationshipId = normalized.selectedRelationshipId;
+        state.interfaces = normalized.interfaces;
+        state.serviceConfiguration = normalized.serviceConfiguration;
+        state.runtimeEnvironment = normalized.runtimeEnvironment;
+        state.deployments = normalized.deployments;
         state.view = normalized.view;
         state.idCounter = normalized.idCounter;
         recomputeIdCounter();
@@ -1706,6 +1908,13 @@ function generateExamplesPreview() {
   dom.examplesPreviewOutput.textContent = chunks.join('\n\n/* ---------------------------------------- */\n\n');
 }
 
+// JUM-548: the first-run state is intentionally EMPTY — no domains, no
+// relationships. A first-run user used to get a silently pre-populated toy
+// template; the guided per-tab empty states (renderEmptyStates) now explain
+// each tab instead, and the realistic sample model is an explicit one-action
+// load (loadSampleModel), so the user learns where a model comes from. The
+// state core calls this on first run and on recovery; the Reset button calls
+// it too — reset therefore means "back to the empty first-run state".
 function seed() {
   state.domains = [];
   state.relationships = [];
@@ -1722,45 +1931,66 @@ function seed() {
     exportBlockCritical: true,
     largeCanvasMode: false
   };
+}
 
-  const users = addDomain('Users', { x: 80, y: 80, color: '#93c5fd' });
-  const billing = addDomain('Billing', { x: 700, y: 200, color: '#86efac' });
-  const user = addEntity(users.id, 'User', {
-    fields: [
-      { name: 'id', type: 'uuid', required: true, pk: true, fk: false, unique: true },
-      { name: 'organizationId', type: 'uuid', required: true, pk: false, fk: true, unique: false },
-      { name: 'username', type: 'string', required: true, pk: false, fk: false, unique: true }
-    ]
+/**
+ * JUM-548: load the sample model (src/model/sampleModel.js) through the same
+ * normalisation crossing a JSON import takes. Non-destructive by contract:
+ * over existing work the load only proceeds after an explicit confirmation —
+ * one of the destructive-action gates JUM-543 keeps on `window.confirm` — and
+ * even then the previous work is one in-session Undo away (the load records
+ * history, unlike file imports which reset it). The status region, not an
+ * alert, announces the outcome and names the sample marker.
+ */
+function loadSampleModel() {
+  if (state.domains.length) {
+    const confirmed = window.confirm(
+      'Load the sample model? This replaces the current domains and relationships (Undo restores them).'
+    );
+    if (!confirmed) return;
+  }
+  // JUM-547: the sample document crosses the same suite-import mapper as a
+  // file import — one set of versioning/compatibility rules for every entry
+  // point. The sample is the model slice only; the tab sections the mapper
+  // normalises are not applied here.
+  const result = buildStateFromSuiteExport(buildSampleModelPayload(), state);
+  if (!result.ok) {
+    showStatus(suiteExportFailureMessage(result));
+    return;
+  }
+  const normalized = result.state;
+  withPersist(() => {
+    state.domains = normalized.domains;
+    state.relationships = normalized.relationships;
+    state.selectedDomainId = normalized.selectedDomainId;
+    state.selectedEntityId = normalized.selectedEntityId;
+    state.selectedRelationshipId = normalized.selectedRelationshipId;
+    state.view = normalized.view;
+    state.idCounter = normalized.idCounter;
+    recomputeIdCounter();
+    render();
   });
-  const organization = addEntity(users.id, 'Organization', {
-    fields: [
-      { name: 'id', type: 'uuid', required: true, pk: true, fk: false, unique: true },
-      { name: 'name', type: 'string', required: true, pk: false, fk: false, unique: false }
-    ]
-  });
-  const invoice = addEntity(billing.id, 'Invoice', {
-    fields: [
-      { name: 'id', type: 'uuid', required: true, pk: true, fk: false, unique: true },
-      { name: 'organizationId', type: 'uuid', required: true, pk: false, fk: true, unique: false },
-      { name: 'total', type: 'number', required: true, pk: false, fk: false, unique: false }
-    ]
-  });
-  state.relationships.push({
-    id: nextId('rel'),
-    fromEntityId: user.id,
-    toEntityId: organization.id,
-    name: 'User belongs to Organization',
-    fromCardinality: 'N',
-    toCardinality: '1'
-  });
-  state.relationships.push({
-    id: nextId('rel'),
-    fromEntityId: invoice.id,
-    toEntityId: organization.id,
-    name: 'Invoice belongs to Organization',
-    fromCardinality: 'N',
-    toCardinality: '1'
-  });
+  showStatus(
+    'Sample model loaded: the "Users" domain (marked "sample" in the domain list) demonstrates '
+    + 'relationships, per-entity RBAC, a message contract and OAS composition. It passes the export '
+    + 'gate — try "Validate Model", export it, then delete the sample and start your own model.',
+    'info'
+  );
+}
+
+/**
+ * JUM-548: per-tab guided empty states. Each names the tab's first action
+ * and describes the tab honestly (the Interface and Deploy tabs are thinner
+ * than the Domain Designer, and their empty states say so). The two toggles
+ * here track the domain model, which only ever changes through a full
+ * render(); the Interface/Deploy toggles live next to their list renderers
+ * in src/ui/inspectors.js, because adapters and targets also change through
+ * partial renders (delete buttons) that never reach this pass.
+ */
+function renderEmptyStates() {
+  const modelEmpty = state.domains.length === 0;
+  if (dom.domainDesignerEmptyState) dom.domainDesignerEmptyState.hidden = !modelEmpty;
+  if (dom.serviceConfigEmptyState) dom.serviceConfigEmptyState.hidden = !modelEmpty;
 }
 
 // The single render pass, in the monolith's exact order. The pre-refactor
@@ -1770,6 +2000,7 @@ function seed() {
 // preserved here as an explicit call sequence.
 function render() {
   tabs.renderTabs();
+  renderEmptyStates();
   inspectors.renderInterfaceAdapters();
   inspectors.renderServiceConfiguration();
   inspectors.renderDeployments();
@@ -1791,25 +2022,168 @@ function render() {
   dom.redoBtn.disabled = history.future.length === 0;
 }
 
+// Deploy Management lifecycle (JUM-546). The form doubles as the add and the
+// edit-in-place surface: `interaction.editingDeploymentIndex === null` adds,
+// a number replaces that entry. Every mutation validates the full candidate —
+// the JUM-546 field rules (name required/unique, runtime/version pattern,
+// region per target type) next to the JUM-481 matrix-content rules — and a
+// rejection is announced on the JUM-543 status surface with every reason,
+// never alert() and never a silent no-op.
+
+function readDeployTargetForm() {
+  return normalizeDeploymentInput({
+    name: dom.deployNameInput.value,
+    region: dom.deployRegionInput.value,
+    runtime: dom.deployRuntimeInput.value,
+    deployTarget: dom.deployTypeSelect.value,
+    serviceType: dom.deployServiceTypeSelect?.value,
+    runtimeProtocol: dom.deployRuntimeProtocolSelect?.value,
+    databaseDriver: dom.deployDatabaseDriverSelect?.value,
+    keyValueDriver: dom.deployKeyvalueDriverSelect?.value,
+    pm2Profile: dom.deployPm2ProfileSelect?.value
+  });
+}
+
+/**
+ * Target-type-aware field guidance (JUM-546 scope 3): the hint line names
+ * what the selected matrix row needs — host information and a PM2 profile on
+ * PM2-managed targets, a runtime/version on function providers — and the PM2
+ * profile select only applies to PM2-managed targets.
+ */
+function updateDeployTargetFieldHints() {
+  const deployTarget = dom.deployTypeSelect?.value || '';
+  if (dom.deployFieldHint) {
+    dom.deployFieldHint.textContent = deployTargetFieldHint(deployTarget);
+  }
+  if (dom.deployPm2ProfileSelect) {
+    const pm2Managed = isPm2ManagedDeployTarget(deployTarget);
+    dom.deployPm2ProfileSelect.disabled = !pm2Managed;
+    if (!pm2Managed) dom.deployPm2ProfileSelect.value = '';
+  }
+}
+
+function clearDeployTargetForm() {
+  interaction.editingDeploymentIndex = null;
+  dom.deployNameInput.value = '';
+  dom.deployRegionInput.value = '';
+  dom.deployRuntimeInput.value = '';
+  dom.addDeployTargetBtn.textContent = 'Add Target';
+  if (dom.cancelDeployTargetEditBtn) dom.cancelDeployTargetEditBtn.hidden = true;
+}
+
+function submitDeployTargetForm() {
+  const candidate = readDeployTargetForm();
+  const issues = [
+    ...collectDeployTargetFieldIssues(candidate, state.deployments, {
+      excludeIndex: interaction.editingDeploymentIndex
+    }),
+    ...collectDeployTargetIssues(candidate)
+  ];
+  if (issues.length > 0) {
+    showStatus(issues.map((issue) => issue.message).join(' '));
+    return;
+  }
+  const editingIndex = interaction.editingDeploymentIndex;
+  withPersist(() => {
+    if (editingIndex === null || !state.deployments[editingIndex]) {
+      state.deployments.push(candidate);
+    } else {
+      state.deployments.splice(editingIndex, 1, candidate);
+    }
+    clearDeployTargetForm();
+    inspectors.renderDeployments();
+  }, { recordHistory: false });
+  if (editingIndex !== null) {
+    showStatus(`Deploy target "${candidate.name}" updated.`, 'info');
+  }
+}
+
+function editDeployment(index) {
+  const target = state.deployments[index];
+  if (!target) return;
+  interaction.editingDeploymentIndex = index;
+  dom.deployNameInput.value = target.name || '';
+  dom.deployTypeSelect.value = target.deployTarget || '';
+  if (dom.deployServiceTypeSelect) dom.deployServiceTypeSelect.value = target.serviceType || '';
+  if (dom.deployRuntimeProtocolSelect) dom.deployRuntimeProtocolSelect.value = target.runtimeProtocol || '';
+  if (dom.deployDatabaseDriverSelect) dom.deployDatabaseDriverSelect.value = target.databaseDriver || '';
+  if (dom.deployKeyvalueDriverSelect) dom.deployKeyvalueDriverSelect.value = target.keyValueDriver || '';
+  if (dom.deployPm2ProfileSelect) dom.deployPm2ProfileSelect.value = target.pm2Profile || '';
+  dom.deployRegionInput.value = target.region || '';
+  dom.deployRuntimeInput.value = target.runtime || '';
+  dom.addDeployTargetBtn.textContent = 'Save Target';
+  if (dom.cancelDeployTargetEditBtn) dom.cancelDeployTargetEditBtn.hidden = false;
+  updateDeployTargetFieldHints();
+  dom.deployNameInput.focus();
+}
+
+/**
+ * Duplicate a registered target: a DEEP copy (the duplicate is independently
+ * editable, never a shared reference), re-normalised to the pinned shape and
+ * renamed by the ` (copy)` rule until unique (JUM-546 acceptance criteria).
+ */
+function duplicateDeployment(index) {
+  const source = state.deployments[index];
+  if (!source) return;
+  const copy = normalizeDeploymentInput(JSON.parse(JSON.stringify(source)));
+  copy.name = duplicateDeployTargetName(source.name, state.deployments.map((entry) => entry.name));
+  // Inserting before the edited entry shifts its index; keep the edit pointed
+  // at the same target.
+  if (interaction.editingDeploymentIndex !== null && interaction.editingDeploymentIndex > index) {
+    interaction.editingDeploymentIndex += 1;
+  }
+  withPersist(() => {
+    state.deployments.splice(index + 1, 0, copy);
+    inspectors.renderDeployments();
+  }, { recordHistory: false });
+  showStatus(`Duplicated "${source.name}" as "${copy.name}".`, 'info');
+}
+
+/**
+ * Keep the in-flight edit consistent when the list removes an entry: removing
+ * the edited target cancels the edit; removing an earlier one shifts the
+ * edited index. Called by `renderDeployments`' delete gate.
+ */
+function syncDeploymentEditStateAfterRemoval(removedIndex) {
+  if (interaction.editingDeploymentIndex === null) return;
+  if (interaction.editingDeploymentIndex === removedIndex) {
+    clearDeployTargetForm();
+  } else if (interaction.editingDeploymentIndex > removedIndex) {
+    interaction.editingDeploymentIndex -= 1;
+  }
+}
+
 function wireEvents() {
   if (dom.tabDomainDesignerBtn) dom.tabDomainDesignerBtn.onclick = () => tabs.setActiveTab('domain-designer');
   if (dom.tabInterfaceDesignerBtn) dom.tabInterfaceDesignerBtn.onclick = () => tabs.setActiveTab('interface-designer');
   if (dom.tabServiceConfigBtn) dom.tabServiceConfigBtn.onclick = () => tabs.setActiveTab('service-config');
   if (dom.tabDeployManagementBtn) dom.tabDeployManagementBtn.onclick = () => tabs.setActiveTab('deploy-management');
 
+  if (dom.interfaceTypeSelect) {
+    dom.interfaceTypeSelect.onchange = () => inspectors.renderInterfaceFrameworkOptions(dom.interfaceTypeSelect.value);
+  }
+
   if (dom.addInterfaceAdapterBtn) {
     dom.addInterfaceAdapterBtn.onclick = () => {
-      const type = dom.interfaceTypeSelect.value;
-      const framework = String(dom.interfaceFrameworkInput.value || '').trim();
-      const entrypoint = String(dom.interfaceEntrypointInput.value || '').trim();
-      const controller = String(dom.interfaceControllerInput.value || '').trim();
-      if (!framework || !entrypoint || !controller) {
-        showStatus('Framework/runtime, entrypoint and controller mapping are required.');
+      // JUM-545: the candidate is validated BEFORE it touches state, through
+      // the same upsert gate the edit-in-place save uses — vocabulary
+      // (per-type framework subset), entrypoint/controller-mapping shapes and
+      // duplicate detection are reported on the JUM-543 status surface and
+      // the add is refused. Type and framework stay selected so registering
+      // several adapters of the same kind does not re-pick them each time.
+      const candidate = normalizeInterfaceAdapterInput({
+        type: dom.interfaceTypeSelect.value,
+        framework: dom.interfaceFrameworkSelect.value,
+        entrypoint: dom.interfaceEntrypointInput.value,
+        controller: dom.interfaceControllerInput.value
+      });
+      const result = upsertInterfaceAdapter(state.interfaces, candidate);
+      if (result.issues.length > 0) {
+        showStatus(result.issues.map((issue) => issue.message).join(' '));
         return;
       }
       withPersist(() => {
-        state.interfaces.push({ type, framework, entrypoint, controller });
-        dom.interfaceFrameworkInput.value = '';
+        state.interfaces = result.adapters;
         dom.interfaceEntrypointInput.value = '';
         dom.interfaceControllerInput.value = '';
         inspectors.renderInterfaceAdapters();
@@ -1904,23 +2278,22 @@ function wireEvents() {
   }
 
   if (dom.addDeployTargetBtn) {
-    dom.addDeployTargetBtn.onclick = () => {
-      const name = String(dom.deployNameInput.value || '').trim();
-      const type = dom.deployTypeSelect.value;
-      const region = String(dom.deployRegionInput.value || '').trim();
-      const runtime = String(dom.deployRuntimeInput.value || '').trim();
-      if (!name || !region || !runtime) {
-        showStatus('Deployment name, region and runtime are required.');
-        return;
-      }
-      withPersist(() => {
-        state.deployments.push({ name, type, region, runtime });
-        dom.deployNameInput.value = '';
-        dom.deployRegionInput.value = '';
-        dom.deployRuntimeInput.value = '';
-        inspectors.renderDeployments();
-      }, { recordHistory: false });
+    // JUM-546: one gate for add and edit-in-place — the full candidate is
+    // validated (field lifecycle rules + Requirement 059 matrix rules) before
+    // it touches state; rejections report every reason on the status surface.
+    dom.addDeployTargetBtn.onclick = submitDeployTargetForm;
+  }
+
+  if (dom.cancelDeployTargetEditBtn) {
+    dom.cancelDeployTargetEditBtn.onclick = () => {
+      clearDeployTargetForm();
+      showStatus('Deploy target edit cancelled.', 'info');
     };
+  }
+
+  if (dom.deployTypeSelect) {
+    dom.deployTypeSelect.onchange = updateDeployTargetFieldHints;
+    updateDeployTargetFieldHints();
   }
 
   dom.addDomainBtn.onclick = () => {
@@ -2195,8 +2568,13 @@ function wireEvents() {
     dom.importPackageInput.value = '';
   };
 
+  // JUM-548: the sample loader is reachable from the Export panel (always)
+  // and from the Domain Designer's guided empty state (the first action).
+  if (dom.loadSampleBtn) dom.loadSampleBtn.onclick = () => loadSampleModel();
+  if (dom.loadSampleEmptyBtn) dom.loadSampleEmptyBtn.onclick = () => loadSampleModel();
+
   dom.resetCanvasBtn.onclick = () => {
-    if (!window.confirm('Reset canvas to default template?')) return;
+    if (!window.confirm('Reset canvas? All domains and relationships will be cleared.')) return;
     withPersist(() => {
       seed();
       render();
@@ -2217,7 +2595,10 @@ function wireEvents() {
     const targetTag = String(event.target?.tagName || '').toLowerCase();
     const editingInput = ['input', 'textarea', 'select'].includes(targetTag);
     if (event.code === 'Space') {
-      if (editingInput) return;
+      // Space on a focused control keeps its native activation (JUM-488) —
+      // the pan modifier only engages from non-interactive targets, so a
+      // keyboard user can still operate every button with Space.
+      if (editingInput || ['button', 'a'].includes(targetTag)) return;
       event.preventDefault();
       interaction.spacePressed = true;
       dom.canvas.classList.add('space-mode');
@@ -2296,13 +2677,110 @@ function wireEvents() {
   });
 }
 
+// Pre-migration backup download (JUM-484): the verbatim localStorage payload,
+// offered as a file BEFORE anything is written to Cana — the recourse that
+// replaces the retired fallback.
+function downloadMigrationBackup(fileName, rawJson) {
+  const blob = new Blob([rawJson], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = fileName;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+
 // Boot is async because the IDesignerStore port is async (Cana crosses a
-// worker boundary); the transitional localStorage adapter resolves
-// immediately, so the load → wire → render order is unchanged.
+// worker boundary). Order: one-way migration → declared storage-environment
+// state → load (announcing load-time loss, JUM-626) → wire → render.
 async function boot() {
-  await loadState();
+  // JUM-484: one-way migration localStorage → Cana, before any state load so
+  // a migrated payload is read from Cana on this very boot. The source stays
+  // in localStorage, unused, for the declared retention period; nothing ever
+  // falls back to it (decision 2026-07-29).
+  const migration = await migrateLocalStorageToCana({
+    store,
+    downloadBackup: downloadMigrationBackup
+  });
+  if (migration.status === 'migrated') {
+    showStatus(
+      'Your saved design was moved to the new persistent store and verified. '
+      + `A backup was downloaded as ${migration.backupFileName}; the previous copy stays, unused, `
+      + `for ${CANA_MIGRATION_SOURCE_RETENTION_DAYS} days as a manual recovery path.`,
+      'info'
+    );
+  } else if (migration.status === 'failed') {
+    showStatus(`Your previously saved design could not be migrated: ${migration.reason}`, 'error');
+  }
+
+  // Declared storage-environment states (JUM-484): private/incognito browsing,
+  // unsupported browsers and lost data are detected and communicated through
+  // the status region — never a silent in-memory session. On a boot that
+  // migrated (or failed to), that message names the more specific cause and
+  // wins the single region; the environment states recur on later boots.
+  let probeDeclaredDataLoss = false;
+  if (migration.status === 'already-migrated' || migration.status === 'no-source') {
+    const probe = await store.probe();
+    const environment = describeDesignerStorageEnvironment({
+      indexedDbPresent: typeof indexedDB !== 'undefined',
+      probeStatus: probe.status,
+      probeReason: probe.reason
+    });
+    if (environment.message) showStatus(environment.message, environment.severity);
+    probeDeclaredDataLoss = environment.kind === 'data-lost';
+  }
+
+  // JUM-626: corruption discovered at LOAD time (the probe above cannot see
+  // an unreadable record — only eviction) is announced through the same
+  // data-lost declared state as eviction, naming the loss and the recourse
+  // — the retained pre-migration localStorage copy when one is still inside
+  // its retention window. An evicted database reports 'lost' at BOTH probe
+  // and load; the probe-time declaration already named that loss and wins
+  // the single region. 'unavailable' likewise stays with the probe-time
+  // states above; 'ok'/'empty' announce nothing.
+  const loadOutcome = await loadState();
+  if ((loadOutcome.status === 'lost' || loadOutcome.status === 'recovered') && !probeDeclaredDataLoss) {
+    const announcement = describeLoadTimeDataLoss({
+      reason: loadOutcome.reason,
+      retainedSource: readRetainedMigrationSource()
+    });
+    showStatus(announcement.message, announcement.severity);
+  }
   wireEvents();
   render();
+
+  // JUM-485: multi-tab sync starts only after the initial load — the boot
+  // load IS this tab's resume from whatever happened while it was closed.
+  // Starting earlier would apply remote events on top of an empty state.
+  designerSync = createDesignerSync({
+    store,
+    designerState,
+    render: renderPreservingInteraction,
+    notify: showStatus
+  });
+  designerSync.start().catch((error) => {
+    showStatus(`Multi-tab sync could not start: ${error instanceof Error ? error.message : String(error)}`, 'error');
+  });
+  // A backgrounded tab can miss channel messages (frozen pages queue nothing);
+  // on return it catches up by document read-back — no loss, no duplication.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && designerSync) {
+      designerSync.resume().catch(() => {});
+    }
+  });
+  window.addEventListener('pagehide', () => {
+    if (designerSync) designerSync.stop();
+  });
+  // A page restored from the back/forward cache was stopped at pagehide;
+  // restarting re-runs the cursor resume/resync path inside start().
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted && designerSync) {
+      designerSync.start().catch(() => {});
+    }
+  });
+
   loadRuntimeEnvironment(state.runtimeEnvironment?.environment || 'dev')
     .catch((error) => {
       renderRuntimeEnvironment();

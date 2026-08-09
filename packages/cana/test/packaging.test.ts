@@ -44,6 +44,55 @@ const exists = (relative: string): boolean => fs.existsSync(path.join(packageRoo
 
 const runtimeDependencies = Object.keys(manifest.dependencies ?? {});
 
+/** The text of every `export { … }` statement in an ESM bundle. */
+const exportStatements = (bundle: string): string[] => [...bundle.matchAll(/export\s*\{([^}]*)\}/gs)].map((statement) => statement[1]);
+
+/** One entry of an export clause, whitespace and empties removed. */
+const exportEntries = (statement: string): string[] => statement
+  .split(',')
+  .map((part) => part.trim())
+  .filter((name) => name !== '');
+
+/** The local binding an export entry references: `x` for `x`, `y` for `y as x`. */
+const localBindingOf = (entry: string): string => /^([\w$]+)\s+as\s+[\w$]+$/.exec(entry)?.[1] ?? entry;
+
+/** The name a consumer sees for an export entry: `x` for `x`, `x` for `y as x`. */
+const exportedNameOf = (entry: string): string => /^[\w$]+\s+as\s+([\w$]+)$/.exec(entry)?.[1] ?? entry;
+
+const localBindingsOf = (bundle: string): string[] => {
+  const entries = exportStatements(bundle).flatMap(exportEntries);
+  return entries.map(localBindingOf);
+};
+
+const exportedNamesOf = (bundle: string): string[] => {
+  const entries = exportStatements(bundle).flatMap(exportEntries);
+  return entries.map(exportedNameOf);
+};
+
+/**
+ * Whether a binding's definition survived bundling: a defined local occurs at
+ * least twice (definition plus export reference), a dangling one exactly once.
+ */
+const isDefinedIn = (bundle: string, name: string): boolean => (bundle.match(new RegExp(`\\b${name}\\b`, 'g')) ?? []).length >= 2;
+
+const expectedEsmSurface = [
+  'canaError', 'translateError', 'requestToPromise',
+  'isCanaError', 'isCanaErrorCode',
+  'StorageDurability', 'browserStorageEnvironment', 'classifyOpen',
+  'applySchema', 'assertSchema', 'keyStrategyOf', 'validateSchema',
+  'openDatabase', 'closeDatabase', 'deleteDatabase',
+  'createClient', 'Client', 'createTable', 'createCanaDatabaseClient',
+  'runTransaction', 'runQuery', 'runCount', 'toKeyRange', 'planQuery',
+  'applyBeforeWrite', 'notifyCommitted', 'notifyRolledBack',
+  'assessDurability', 'requiresUserAttention', 'DEFAULT_DURABILITY_POLICY',
+  'withLedgerStore', 'recordOperation', 'resolveOutcome', 'pruneLedger',
+  'OPERATION_LEDGER_STORE', 'DEFAULT_LEDGER_HORIZON_MS',
+  'createRouter', 'isBroadcast', 'DEFAULT_REQUEST_TIMEOUT_MS',
+  'createWorkerHost', 'createWorkerClient', 'serve',
+  'runConformance', 'describeCoverage',
+  'createChangeBuffer', 'abortWithReason'
+];
+
 describe('cana packaging manifest', () => {
   it('points every entry point at built output, not at TypeScript source', () => {
     expect.hasAssertions();
@@ -190,6 +239,39 @@ describe('cana built output', () => {
 
     expect(bundle).toContain('export');
     expect(bundle).not.toContain('module.exports');
+  });
+
+  it('emits an ESM bundle with no dangling export bindings', () => {
+    expect.hasAssertions();
+    // JUM-629: bun 1.3.14 tree-shakes named re-exports out of a
+    // `sideEffects: false` package — the `export { x }` statement survives
+    // while the definition of `x` is dropped. Node and bun parse the export
+    // list lazily enough to look healthy; WebKit refuses to link the module
+    // at all. Every other assertion in this file passed on the broken bundle,
+    // which is how the defect shipped.
+    //
+    // The check is deliberately mechanical: every local name referenced by an
+    // export statement must occur somewhere else in the bundle (its
+    // definition). A dangling binding occurs exactly once — in the export
+    // list itself. bun's non-minified output always spells a definition with
+    // the same identifier, so a second word-boundary occurrence is proof the
+    // binding exists.
+    const bundle = fs.readFileSync(path.join(packageRoot, 'dist/index.mjs'), 'utf8');
+    const locals = localBindingsOf(bundle);
+
+    expect(locals.length).toBeGreaterThan(0);
+    expect(locals.filter((name) => !isDefinedIn(bundle, name))).toStrictEqual([]);
+  });
+
+  it('exports the full public surface from the ESM bundle', () => {
+    expect.hasAssertions();
+    // The barrel re-exports with `export *` (see src/index.ts for why), and a
+    // name collision between two star-exported modules is silently dropped by
+    // the module system rather than reported. Naming the surface here turns
+    // that silent loss into a test failure.
+    const bundle = fs.readFileSync(path.join(packageRoot, 'dist/index.mjs'), 'utf8');
+
+    expect(exportedNamesOf(bundle)).toStrictEqual(expect.arrayContaining(expectedEsmSurface));
   });
 
   it('exports the client surface from the built entry', () => {

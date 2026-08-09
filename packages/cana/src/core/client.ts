@@ -26,6 +26,7 @@ import type {
   CanaClient,
   CanaKey,
   CanaSchema,
+  CanaStorageBackend,
   CanaStorageState,
   CanaTable,
   CanaTransactionMode,
@@ -33,13 +34,18 @@ import type {
   CanaTransactionScope,
   CanaWriteOutcome
 } from '../contracts';
-import { isCanaError } from '../contracts';
+import { isCanaError, isCanaErrorCode } from '../contracts';
 import { canaError } from './errors';
 import type { DurabilityAssessment, DurabilityPolicy } from './durability-policy';
 import { DEFAULT_DURABILITY_POLICY, assessDurability } from './durability-policy';
 import type { CanaHooks } from './hooks';
 import { notifyCommitted, notifyRolledBack } from './hooks';
 import { openDatabase } from './database';
+import {
+  LocalStorageBackend,
+  openLocalStorageBackend,
+  type LocalStorageLike
+} from './local-storage-backend';
 import {
   OPERATION_LEDGER_STORE,
   recordOperation,
@@ -69,6 +75,15 @@ export interface ClientOptions {
    * can actually die mid-write (JUM-559).
    */
   readonly operationLedger?: boolean;
+  /**
+   * When IndexedDB cannot open, degrade to a localStorage-backed store.
+   *
+   * Defaults to `'localStorage'`. Pass `false` to restore terminal `Unavailable`
+   * when IndexedDB is missing (the pre-JUM-615 behaviour).
+   */
+  readonly fallback?: 'localStorage' | false;
+  /** Injected for tests; defaults to the browser `localStorage` when present. */
+  readonly localStorage?: LocalStorageLike;
 }
 
 /**
@@ -146,7 +161,12 @@ export class Client implements CanaClient {
 
   readonly version: number;
 
+  /** Set after a successful `open()`. */
+  backend?: CanaStorageBackend;
+
   private database?: IDBDatabase;
+
+  private localBackend?: LocalStorageBackend;
 
   private readonly durability: StorageDurability;
 
@@ -180,6 +200,10 @@ export class Client implements CanaClient {
     this.originId = options.originId ?? `cana-${crypto.randomUUID()}`;
   }
 
+  private fallbackEnabled(): boolean {
+    return this.options.fallback !== false;
+  }
+
   /**
    * The schema as it will actually be applied.
    *
@@ -197,42 +221,67 @@ export class Client implements CanaClient {
   }
 
   async open(): Promise<void> {
-    if (this.database) return;
-    const opened = await openDatabase({
+    if (this.backend) return;
+
+    try {
+      const opened = await openDatabase({
+        name: this.options.name,
+        schema: this.effectiveSchema(),
+        durability: this.durability,
+        ...(this.options.factory === undefined ? {} : { factory: this.options.factory })
+      });
+      this.database = opened.database;
+
+      // Enabling the ledger adds its store to the schema, but IndexedDB only runs
+      // an upgrade when the version increases. Turning `operationLedger` on
+      // against an existing database at the same version therefore creates no
+      // store — and the previous code then quietly disabled the ledger, so writes
+      // recorded nothing and `resolveWrite` answered `unresolvable` forever with
+      // no indication why. That is exactly the silent no-op the ledger exists to
+      // rule out, so it now fails loudly and says what to do.
+      if (this.options.operationLedger
+        && !opened.database.objectStoreNames.contains(OPERATION_LEDGER_STORE)) {
+        opened.database.close();
+        this.database = undefined;
+        throw canaError(
+          'UpgradeFailed',
+          `The operation ledger is enabled for "${this.name}" but its store does not exist. The `
+            + `database is already at version ${this.version}, and IndexedDB applies schema changes `
+            + 'only when the version increases. Raise the schema version so the ledger store can be '
+            + 'created — leaving it as-is would record nothing and make every crash unresolvable.'
+        );
+      }
+
+      this.backend = 'indexeddb';
+
+      // Asked for only when the application opted in. A persistence prompt fired
+      // by a library at an arbitrary moment is one the user denies, and some
+      // browsers make that denial sticky for the origin.
+      if (this.options.durabilityPolicy?.requestPersistenceOnOpen
+        ?? DEFAULT_DURABILITY_POLICY.requestPersistenceOnOpen) {
+        await this.durability.requestPersistence();
+      }
+      return;
+    } catch (error) {
+      if (!isCanaErrorCode(error, 'Unavailable') || !this.fallbackEnabled()) {
+        throw error;
+      }
+    }
+
+    this.localBackend = openLocalStorageBackend({
       name: this.options.name,
       schema: this.effectiveSchema(),
-      durability: this.durability,
-      ...(this.options.factory === undefined ? {} : { factory: this.options.factory })
+      originId: this.originId,
+      nextCursor: this.nextCursor,
+      ...(this.options.hooks === undefined ? {} : { hooks: this.options.hooks }),
+      ...(this.options.operationLedger === undefined
+        ? {}
+        : { operationLedger: this.options.operationLedger }),
+      ...(this.options.localStorage === undefined
+        ? {}
+        : { storage: this.options.localStorage })
     });
-    this.database = opened.database;
-
-    // Enabling the ledger adds its store to the schema, but IndexedDB only runs
-    // an upgrade when the version increases. Turning `operationLedger` on
-    // against an existing database at the same version therefore creates no
-    // store — and the previous code then quietly disabled the ledger, so writes
-    // recorded nothing and `resolveWrite` answered `unresolvable` forever with
-    // no indication why. That is exactly the silent no-op the ledger exists to
-    // rule out, so it now fails loudly and says what to do.
-    if (this.options.operationLedger
-      && !opened.database.objectStoreNames.contains(OPERATION_LEDGER_STORE)) {
-      opened.database.close();
-      this.database = undefined;
-      throw canaError(
-        'UpgradeFailed',
-        `The operation ledger is enabled for "${this.name}" but its store does not exist. The `
-          + `database is already at version ${this.version}, and IndexedDB applies schema changes `
-          + 'only when the version increases. Raise the schema version so the ledger store can be '
-          + 'created — leaving it as-is would record nothing and make every crash unresolvable.'
-      );
-    }
-
-    // Asked for only when the application opted in. A persistence prompt fired
-    // by a library at an arbitrary moment is one the user denies, and some
-    // browsers make that denial sticky for the origin.
-    if (this.options.durabilityPolicy?.requestPersistenceOnOpen
-      ?? DEFAULT_DURABILITY_POLICY.requestPersistenceOnOpen) {
-      await this.durability.requestPersistence();
-    }
+    this.backend = 'localStorage';
   }
 
   /**
@@ -242,6 +291,18 @@ export class Client implements CanaClient {
    * the policy that refuses to round 'unknown' up to 'durable' (JUM-415).
    */
   async durabilityAssessment(): Promise<DurabilityAssessment> {
+    if (this.backend === 'localStorage') {
+      return {
+        level: 'best-effort',
+        evictionDetectable: false,
+        summary: 'Cana is using the localStorage fallback. Capacity and durability are '
+          + 'weaker than IndexedDB; treat this session as degraded.',
+        advice: [
+          'Export with exportAll() and restore once IndexedDB is available.',
+          'Do not assume multi-megabyte imports will succeed on localStorage.'
+        ]
+      };
+    }
     const current = await this.durability.state();
     return assessDurability(current, this.durability.lastEvictionVerdict);
   }
@@ -249,17 +310,31 @@ export class Client implements CanaClient {
   async close(): Promise<void> {
     this.database?.close();
     this.database = undefined;
+    this.localBackend?.close();
+    this.localBackend = undefined;
+    this.backend = undefined;
   }
 
-  private requireOpen(): IDBDatabase {
+  private requireIndexedDb(): IDBDatabase {
     if (!this.database) {
+      throw canaError(
+        'InvalidRequest',
+        `Client for "${this.name}" is not open on IndexedDB. Call open() before using it — the `
+          + 'engine does not open implicitly, because an implicit open hides an upgrade behind '
+          + 'an unrelated call.'
+      );
+    }
+    return this.database;
+  }
+
+  private requireOpenBackend(): void {
+    if (!this.backend) {
       throw canaError(
         'InvalidRequest',
         `Client for "${this.name}" is not open. Call open() before using it — the engine does not `
           + 'open implicitly, because an implicit open hides an upgrade behind an unrelated call.'
       );
     }
-    return this.database;
   }
 
   private nextCursor = (): number => {
@@ -311,7 +386,11 @@ export class Client implements CanaClient {
     attemptedAt: number,
     options: { horizonMs?: number; now?: number } = {}
   ): Promise<ResolvedOutcome> {
-    return resolveOutcome(this.requireOpen(), correlationId, attemptedAt, options);
+    this.requireOpenBackend();
+    if (this.localBackend) {
+      return this.localBackend.resolveWrite(correlationId, attemptedAt, options);
+    }
+    return resolveOutcome(this.requireIndexedDb(), correlationId, attemptedAt, options);
   }
 
   async transaction<TResult>(
@@ -319,12 +398,34 @@ export class Client implements CanaClient {
     stores: readonly string[],
     body: (scope: CanaTransactionScope) => Promise<TResult> | TResult
   ): Promise<CanaTransactionResult<TResult>> {
-    const database = this.requireOpen();
-    const buffer = createChangeBuffer(this.nextCursor, this.originId);
+    this.requireOpenBackend();
     this.correlation += 1;
     const correlationId = `${this.originId}:${this.correlation}`;
-
     const { hooks } = this.options;
+
+    if (this.localBackend) {
+      try {
+        const outcome = await this.localBackend.transaction(
+          mode,
+          stores,
+          body,
+          correlationId
+        );
+        if (outcome.outcome === 'committed') {
+          this.publish(outcome.events);
+          notifyCommitted(hooks, outcome.events);
+        } else {
+          notifyRolledBack(hooks, outcome.outcome);
+        }
+        return outcome;
+      } catch (error: unknown) {
+        notifyRolledBack(hooks, 'rolled-back', isCanaError(error) ? error.message : undefined);
+        throw error;
+      }
+    }
+
+    const database = this.requireIndexedDb();
+    const buffer = createChangeBuffer(this.nextCursor, this.originId);
 
     // The ledger store joins the transaction's scope, so the operation id and
     // the data commit or roll back together. Recording it in a second
@@ -385,7 +486,9 @@ export class Client implements CanaClient {
     } catch (error: unknown) {
       // Every throw out of `runTransaction` means nothing was committed, so the
       // hook is told before the failure propagates. It cannot suppress it.
-      notifyRolledBack(hooks, 'rolled-back', isCanaError(error) ? error.message : undefined);
+      // `runTransaction` always translates to a CanaError before throwing, so
+      // the reason is always `.message` when present.
+      notifyRolledBack(hooks, 'rolled-back', String((error as { message?: unknown }).message));
       throw error;
     }
 
@@ -408,6 +511,16 @@ export class Client implements CanaClient {
   }
 
   storageState(): Promise<CanaStorageState> {
+    if (this.backend === 'localStorage') {
+      return Promise.resolve({
+        persistent: 'unknown' as const,
+        nearQuota: false,
+        evicted: false,
+        // localStorage is typically capped around 5 MiB; report that as quota so
+        // callers can surface headroom without pretending IndexedDB numbers apply.
+        quotaBytes: 5 * 1024 * 1024
+      });
+    }
     return this.durability.state();
   }
 
@@ -456,19 +569,22 @@ export class Client implements CanaClient {
   }
 
   async exportAll(): Promise<Record<string, readonly unknown[]>> {
-    const database = this.requireOpen();
+    this.requireOpenBackend();
+    if (this.localBackend) {
+      return this.localBackend.exportAll();
+    }
+    const database = this.requireIndexedDb();
     const names = Array.from(database.objectStoreNames);
     const dump: Record<string, readonly unknown[]> = {};
 
-    const { result } = await this.transaction('readonly', names, async (scope) => {
+    await this.transaction('readonly', names, async (scope) => {
       for (const name of names) {
         // eslint-disable-next-line no-await-in-loop
         dump[name] = await scope.table(name).query();
       }
-      return dump;
     });
 
-    return result ?? dump;
+    return dump;
   }
 }
 

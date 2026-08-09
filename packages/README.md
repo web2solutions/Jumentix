@@ -28,6 +28,10 @@ This folder contains reusable npm packages shared across Jumentix applications.
 - [`@jumentix/sdk-websocket-client`](./sdk-websocket-client/README.md) - WebSocket SDK client.
 - [`@jumentix/sdk-grpc-client`](./sdk-grpc-client/README.md) - gRPC SDK client.
 
+### Service Management
+
+- [`@jumentix/designer-core`](./designer-core/README.md) - framework-free designer core (model, validation, exporters, importers, domain-package versioning); browser-safe ESM, dry-run-only publish.
+
 ### Private workspace configuration
 
 - [`@jumentix/config-eslint`](./config-eslint/README.md) - reserved shared ESLint configuration.

@@ -14,9 +14,12 @@ Arquivos principais de implementação:
 
 - `apps/service-management/index.html`
 - `apps/service-management/script.js`
-- `apps/service-management/src/state/designerState.js`
-- `apps/service-management/src/store/IDesignerStore.js`
-- `apps/service-management/src/store/LocalStorageDesignerStore.js`
+- `packages/designer-core/src/state/designerState.js`
+- `apps/service-management/src/state/designerSync.js`
+- `packages/designer-core/src/store/IDesignerStore.js`
+- `apps/service-management/src/store/CanaDesignerStore.js`
+- `apps/service-management/src/store/designerStoreFactory.js`
+- `apps/service-management/src/store/canaMigration.js`
 - `apps/service-management/styles.css`
 - `apps/service-management/server.js`
 
@@ -26,6 +29,23 @@ armazenamento `IDesignerStore` estão documentados em
 O que as exportações de contrato garantem — e as verificações que o comprovam —
 está documentado em
 [Garantias de paridade de contratos do Service Management](./SERVICE-MANAGEMENT-CONTRACT-PARITY.pt-BR.md).
+O console de operações — Service Configuration, o editor de ambiente de
+runtime, a prévia do ecossistema PM2 e o Deploy Management, com a matriz de
+capacidades compartilhada do Requisito 059 e as regras de ciclo de vida — está
+documentado em
+[Console de operações do Service Management](./SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.pt-BR.md).
+A adoção do design system, o modelo de teclado e leitor de tela e o shell PWA
+instalável (instalação, atualizações, recuperação e a fronteira de
+armazenamento) estão documentados em
+[Design system e shell PWA do Service Management](./SERVICE-MANAGEMENT-DESIGN-SYSTEM-PWA.pt-BR.md).
+A adoção do Cana pelo lado do usuário — onde os dados do designer vivem, a
+migração unidirecional, a matriz offline/de estados e por que a exportação é o
+único caminho de recuperação — está documentada em
+[Adoção do Cana no Service Management, migração e comportamento offline](./SERVICE-MANAGEMENT-CANA-ADOPTION.pt-BR.md).
+Colaboração e empacotamento — o catálogo compartilhado multiusuário, os
+pacotes de domínio versionados e a publicação adiada do núcleo do designer,
+fechando a cadeia de documentação E1–E8 — estão documentados em
+[Colaboração e empacotamento do Service Management](./SERVICE-MANAGEMENT-COLLABORATION-PACKAGING.pt-BR.md).
 
 ## Guias
 
@@ -52,6 +72,15 @@ está documentado em
      -gRPC
      -WebSocket
      - SSE
+   - Ciclo de vida completo do adaptador (JUM-545): cada adaptador registrado é
+     editado no local (tipo, framework, ponto de entrada e mapeamento de
+     controlador). Adições e edições são validadas — framework delimitado por
+     tipo de interface a partir da matriz de tempo de execução canônica
+     (grafias JUM-461, sem aliases `derby`/`sails`), ponto de entrada como
+     caminho TypeScript/JavaScript sob `src/interface/`, mapeamento de
+     controlador no formato `XController.action` e sem duplicatas (mesmo tipo +
+     ponto de entrada, ou mesmo mapeamento de controlador) — com rejeições
+     anunciadas na superfície de status.
 3. **Configuração do serviço**
    - Captura o perfil de tempo de execução e a forma de implantação:
      - tipo de serviço (`API REST`, `API WebSocket + API REST`, `API gRPC + API REST`)
@@ -101,6 +130,14 @@ está documentado em
      gerenciados por PM2) são rejeitados na superfície de status não
      bloqueante com a restrição violada nomeada. Alvos legados persistidos
      antes deste alinhamento migram no carregamento.
+   - Ciclo de vida (JUM-546): os alvos são editáveis in-place e duplicáveis —
+     uma duplicata é uma cópia profunda independente renomeada pela regra
+     ` (copy)`. O portão de adição/edição também impõe as regras de campo:
+     nome obrigatório e único; padrão de runtime nome-mais-versão
+     (`nodejs22.x`); e região obrigatória em alvos de nuvem (opcional no
+     servidor dedicado self-hosted, onde o campo carrega informação de host).
+     Dicas por tipo de alvo orientam o formulário, e toda rejeição nomeia a
+     razão na superfície de status.
 
 Guia de uso detalhado:
 
@@ -113,7 +150,24 @@ Servido por PM2:
 - `bun run dev:service-management`
 - o perfil dev padrão (`bun run dev`) também inicia o `service-management` através do PM2.
 
-O estado do aplicativo persiste com o navegador `localStorage`.
+O estado do aplicativo persiste no Cana (IndexedDB). A migração unidirecional
+do JUM-484 moveu o payload legado do `localStorage` do navegador no boot —
+cópia de bytes, mesmas chaves fixadas, sem fallback para localStorage. O
+JUM-485 mantém as abas abertas consistentes: cada aba assina os eventos de
+escrita ordenados do Cana, os conecta através de um `BroadcastChannel`
+compartilhado e reconcilia as mudanças remotas com o histórico local de
+undo/redo, as edições pendentes e a seleção atual (o undo permanece somente
+local e mudanças remotas não são desfazíveis).
+
+O designer também é um PWA instalável (JUM-489): `manifest.webmanifest`, um
+service worker clássico de app-shell (`sw.js`) com cache versionado e
+limpável, e um aviso de atualização visível ao usuário — sem troca silenciosa
+no meio de uma edição. O shell armazena em cache apenas
+HTML/CSS/JS/manifesto/ícones; os dados da aplicação permanecem com o store do
+designer (linha do Cana), nunca no service worker. A estratégia completa —
+fluxo de atualização, escopo offline, fronteira de armazenamento e caminho de
+recuperação — está documentada no
+[README do aplicativo Service Management — Shell PWA](../../apps/service-management/README.pt-BR.md#shell-pwa).
 
 Caminho de desenvolvimento recomendado:
 

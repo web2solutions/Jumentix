@@ -33,6 +33,10 @@ pelas aplicações Jumentix.
 - [`@jumentix/sdk-websocket-client`](./sdk-websocket-client/README.pt-BR.md) - cliente SDK WebSocket.
 - [`@jumentix/sdk-grpc-client`](./sdk-grpc-client/README.pt-BR.md) - cliente SDK gRPC.
 
+### Service Management
+
+- [`@jumentix/designer-core`](./designer-core/README.pt-BR.md) - núcleo do designer livre de framework (modelo, validação, exportadores, importadores, versionamento de pacotes de domínio); ESM seguro para navegador, publicação somente dry-run.
+
 ### Configuração privada do workspace
 
 - [`@jumentix/config-eslint`](./config-eslint/README.pt-BR.md) - configuração ESLint compartilhada reservada.

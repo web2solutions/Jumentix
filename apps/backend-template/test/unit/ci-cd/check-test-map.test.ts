@@ -330,6 +330,17 @@ describe('browser-harness selection (JUM-622, JUM-623)', () => {
     expect(plan.integrationScripts).toStrictEqual(['test:browser']);
   });
 
+  it('plans the tooling layer for a lockfile-only change', () => {
+    expect.hasAssertions();
+
+    // bun.lock matches no source glob and is not documentation-only — without
+    // the toolchain pin rule the gate rejected it as `unsupported-change-set`.
+    const plan = planFor(['CHANGELOG.md', 'bun.lock']);
+
+    expect(plan.type).toBe('layer-aware');
+    expect(plan.selectedLayers).toStrictEqual(['tooling']);
+  });
+
   it('plans the browser suite for a change to the cypress config', () => {
     expect.hasAssertions();
 

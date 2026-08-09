@@ -260,7 +260,14 @@ function validateCoverage(totals, thresholds = THRESHOLDS, exceptions = ACCEPTED
  * is how ten unrelated tests failed the first time this was covered.
  */
 const browserReportPath = path.join(repoRoot, 'coverage', 'browser', 'coverage-final.json');
-const NON_LEGACY_PACKAGE_PATTERN = /\/packages\/(?!cana\/src\/)/;
+// Threshold subjects are the backend, ci-cd, and the two packages whose own
+// suites measure them fully: cana/src (browser run, Requirement 112 §4) and
+// designer-core/src (JUM-493 — the service-management unit suites exercise
+// the canonical sources through the workspace alias, so excluding them would
+// both hide the package from the bar and drop the global below it: the core
+// is covered above the repo average, and its pre-move coverage at
+// apps/service-management/src counted toward the global).
+const NON_LEGACY_PACKAGE_PATTERN = /\/packages\/(?!(?:cana|designer-core)\/src\/)/;
 
 function isThresholdSubject(filePath) {
   const normalizedPath = String(filePath).replace(/\\/g, '/');

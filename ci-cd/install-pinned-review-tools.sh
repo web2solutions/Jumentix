@@ -20,10 +20,25 @@ download_and_verify() {
   fi
 }
 
+case "$(uname -s)-$(uname -m)" in
+  Linux-x86_64)
+    gitleaks_asset='gitleaks_8.30.1_linux_x64.tar.gz'
+    gitleaks_checksum='551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb'
+    ;;
+  Darwin-arm64)
+    gitleaks_asset='gitleaks_8.30.1_darwin_arm64.tar.gz'
+    gitleaks_checksum='b40ab0ae55c505963e365f271a8d3846efbc170aa17f2607f13df610a9aeb6a5'
+    ;;
+  *)
+    echo "unsupported Gitleaks platform: $(uname -s)-$(uname -m)" >&2
+    exit 1
+    ;;
+esac
+
 gitleaks_archive="$destination/gitleaks.tar.gz"
 download_and_verify \
-  'https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz' \
-  '551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb' \
+  "https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/$gitleaks_asset" \
+  "$gitleaks_checksum" \
   "$gitleaks_archive"
 tar -xzf "$gitleaks_archive" -C "$destination" gitleaks
 
@@ -32,9 +47,5 @@ python3 -m venv "$destination/semgrep-venv"
 "$destination/semgrep-venv/bin/python" -m pip install --no-cache-dir semgrep==1.172.0
 ln -sf "$destination/semgrep-venv/bin/semgrep" "$destination/semgrep"
 
-if [ "$(uname -s)" = "Linux" ]; then
-  "$destination/gitleaks" version
-else
-  echo "Skipping Linux Gitleaks binary smoke on $(uname -s)."
-fi
+"$destination/gitleaks" version
 "$destination/semgrep" --version

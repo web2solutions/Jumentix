@@ -57,7 +57,7 @@ function resolveFactory(explicit?: IDBFactory): IDBFactory {
   throw canaError(
     'Unavailable',
     'No usable IndexedDB in this environment. Private browsing or an unsupported '
-      + 'browser — there is no fallback store, so this is terminal rather than degraded.'
+      + 'browser — the client may open a localStorage fallback when that option is enabled.'
   );
 }
 
@@ -130,8 +130,9 @@ export async function openDatabase(options: OpenOptions): Promise<OpenResult> {
     let settled = false;
     const request = factory.open(options.name, options.schema.version);
 
+    // finish() always clearTimeouts this handle before flipping `settled`, so a
+    // settled check here would be unreachable. The settled guard lives in finish.
     const blockedTimer = setTimeout(() => {
-      if (settled) return;
       settled = true;
       reject(canaError(
         'UpgradeBlocked',
@@ -235,7 +236,6 @@ export async function deleteDatabase(
     const request = factory.deleteDatabase(name);
 
     const timer = setTimeout(() => {
-      if (settled) return;
       settled = true;
       reject(canaError(
         'UpgradeBlocked',

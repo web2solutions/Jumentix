@@ -25,12 +25,33 @@
  * snapshot the orchestrator fetched from `GET /api/runtime/pm2-ecosystem`
  * (exposed through the `getPm2EcosystemPreview()` action), so the pane always
  * reflects the real `pm2/ecosystem.*.cjs` files.
+ *
+ * JUM-545: the interface adapter list is a full lifecycle, not add + delete.
+ * Each registered adapter edits in place (type, framework, entrypoint and
+ * controller mapping) through the same `upsertInterfaceAdapter` gate as the
+ * add handler — rejected saves announce every issue on the JUM-543 status
+ * surface and leave state untouched — and persisted entries that predate the
+ * validation (free-text legacy) are flagged inline, the
+ * `renderDeployments()` precedent. The add form's framework options are
+ * re-synced from `src/model/interfaceFrameworkMatrix.js` on every render and
+ * interface-type change, so the per-type subset never drifts from the
+ * canonical runtime matrix.
  */
 
-import { FIELD_TYPES } from '../state/designerState.js';
-import { deriveTenantScoped } from '../model/rbacContract.js';
-import { collectServiceConfigurationIssues } from '../validation/serviceConfigurationValidation.js';
-import { collectDeployTargetIssues } from '../validation/deployTargetValidation.js';
+import { FIELD_TYPES } from '@jumentix/designer-core/state/designerState.js';
+import { deriveTenantScoped } from '@jumentix/designer-core/model/rbacContract.js';
+import { isSampleDomain } from '@jumentix/designer-core/model/sampleModel.js';
+import { collectServiceConfigurationIssues } from '@jumentix/designer-core/validation/serviceConfigurationValidation.js';
+import { collectDeployTargetIssues } from '@jumentix/designer-core/validation/deployTargetValidation.js';
+import {
+  INTERFACE_TYPES,
+  getSupportedFrameworks
+} from '@jumentix/designer-core/model/interfaceFrameworkMatrix.js';
+import {
+  collectInterfaceAdapterIssues,
+  normalizeInterfaceAdapterInput,
+  upsertInterfaceAdapter
+} from '@jumentix/designer-core/validation/interfaceAdapterValidation.js';
 import {
   entityLabel,
   findEntity,
@@ -38,7 +59,7 @@ import {
   severityRank,
   toPathToken,
   toSchemaName
-} from '../model/modelQueries.js';
+} from '@jumentix/designer-core/model/modelQueries.js';
 
 /**
  * @param {Object} options
@@ -53,7 +74,10 @@ import {
  * `loadSchemaBaseline()`, `showStatus(message, severity)` (JUM-543
  * non-blocking status surface — replaces the monolith's window.alert),
  * `getPm2EcosystemPreview()` (JUM-480 — the latest `/api/runtime/pm2-ecosystem`
- * snapshot, or null before the first load).
+ * snapshot, or null before the first load),
+ * `editDeployment(index)` / `duplicateDeployment(index)` (JUM-546 deploy
+ * target lifecycle) and `syncDeploymentEditStateAfterRemoval(index)` (keeps an
+ * in-flight deploy-target edit consistent when the list removes an entry).
  */
 export function createInspectors({ dom, state, interaction, actions }) {
   const {
@@ -68,7 +92,10 @@ export function createInspectors({ dom, state, interaction, actions }) {
     renderRuntimeEnvironment,
     loadSchemaBaseline,
     showStatus,
-    getPm2EcosystemPreview
+    getPm2EcosystemPreview,
+    editDeployment,
+    duplicateDeployment,
+    syncDeploymentEditStateAfterRemoval
   } = actions;
 
   function getSelectedDomain() {
@@ -83,6 +110,14 @@ export function createInspectors({ dom, state, interaction, actions }) {
       btn.type = 'button';
       btn.className = state.selectedDomainId === domain.id ? 'active' : '';
       btn.textContent = domain.name;
+      // JUM-548: sample-loaded domains carry a visible marker so first-run
+      // content is always distinguishable from the user's own work.
+      if (isSampleDomain(domain)) {
+        const badge = document.createElement('span');
+        badge.className = 'sample-badge';
+        badge.textContent = 'sample';
+        btn.appendChild(badge);
+      }
       btn.onclick = () => setSelectedDomain(domain.id);
       li.appendChild(btn);
       dom.domainList.appendChild(li);
@@ -526,8 +561,134 @@ export function createInspectors({ dom, state, interaction, actions }) {
     }]);
   }
 
+  // Index of the adapter whose inline editor is open (JUM-545 edit-in-place);
+  // null when no edit is in flight. Reset whenever the list mutates.
+  let editingAdapterIndex = null;
+
+  /**
+   * Re-syncs the add form's framework `<select>` with the per-type subset of
+   * the canonical runtime matrix (`src/model/interfaceFrameworkMatrix.js`).
+   * The current selection is kept when it is still valid for the type.
+   *
+   * @param {string} type - the interface type the options must fit.
+   * @param {string} [selectedValue] - explicit selection; defaults to the
+   *   select's current value.
+   */
+  function renderInterfaceFrameworkOptions(type, selectedValue = '') {
+    if (!dom.interfaceFrameworkSelect) return;
+    const frameworks = getSupportedFrameworks(type);
+    const current = selectedValue || dom.interfaceFrameworkSelect.value;
+    dom.interfaceFrameworkSelect.innerHTML = '';
+    frameworks.forEach((framework) => {
+      const option = document.createElement('option');
+      option.value = framework;
+      option.textContent = framework;
+      dom.interfaceFrameworkSelect.appendChild(option);
+    });
+    dom.interfaceFrameworkSelect.value = frameworks.includes(current) ? current : (frameworks[0] || '');
+  }
+
+  /**
+   * Builds the edit-in-place editor for one adapter (JUM-545): type,
+   * framework (re-scoped to the type's subset on every type change),
+   * entrypoint and controller mapping. Save goes through the same
+   * `upsertInterfaceAdapter` gate as the add handler — a rejected save
+   * announces every issue on the JUM-543 status surface and leaves both
+   * state and the open editor untouched, so a typo can be corrected without
+   * delete-and-re-add.
+   */
+  function buildInterfaceAdapterEditor(adapter, index) {
+    const editor = document.createElement('div');
+    editor.className = 'interface-adapter-editor';
+
+    const typeSelect = document.createElement('select');
+    typeSelect.setAttribute('aria-label', 'Edit interface type');
+    INTERFACE_TYPES.forEach((optionValue) => {
+      const option = document.createElement('option');
+      option.value = optionValue;
+      option.textContent = optionValue;
+      typeSelect.appendChild(option);
+    });
+    typeSelect.value = INTERFACE_TYPES.includes(adapter.type) ? adapter.type : INTERFACE_TYPES[0];
+
+    const frameworkSelect = document.createElement('select');
+    frameworkSelect.setAttribute('aria-label', 'Edit framework/runtime');
+    const syncFrameworkOptions = (selectedValue) => {
+      const frameworks = getSupportedFrameworks(typeSelect.value);
+      frameworkSelect.innerHTML = '';
+      frameworks.forEach((framework) => {
+        const option = document.createElement('option');
+        option.value = framework;
+        option.textContent = framework;
+        frameworkSelect.appendChild(option);
+      });
+      frameworkSelect.value = frameworks.includes(selectedValue) ? selectedValue : (frameworks[0] || '');
+    };
+    typeSelect.onchange = () => syncFrameworkOptions('');
+    syncFrameworkOptions(adapter.framework);
+
+    const entrypointInput = document.createElement('input');
+    entrypointInput.type = 'text';
+    entrypointInput.value = adapter.entrypoint || '';
+    entrypointInput.setAttribute('aria-label', 'Edit entrypoint');
+
+    const controllerInput = document.createElement('input');
+    controllerInput.type = 'text';
+    controllerInput.value = adapter.controller || '';
+    controllerInput.setAttribute('aria-label', 'Edit controller mapping');
+
+    const saveBtn = document.createElement('button');
+    saveBtn.type = 'button';
+    saveBtn.textContent = 'Save';
+    saveBtn.onclick = () => {
+      const candidate = normalizeInterfaceAdapterInput({
+        type: typeSelect.value,
+        framework: frameworkSelect.value,
+        entrypoint: entrypointInput.value,
+        controller: controllerInput.value
+      });
+      const result = upsertInterfaceAdapter(state.interfaces, candidate, index);
+      if (result.issues.length > 0) {
+        showStatus(result.issues.map((issue) => issue.message).join(' '));
+        return;
+      }
+      withPersist(() => {
+        state.interfaces = result.adapters;
+        editingAdapterIndex = null;
+        renderInterfaceAdapters();
+      });
+    };
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.type = 'button';
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.onclick = () => {
+      editingAdapterIndex = null;
+      renderInterfaceAdapters();
+    };
+
+    editor.appendChild(typeSelect);
+    editor.appendChild(frameworkSelect);
+    editor.appendChild(entrypointInput);
+    editor.appendChild(controllerInput);
+    editor.appendChild(saveBtn);
+    editor.appendChild(cancelBtn);
+    return editor;
+  }
+
   function renderInterfaceAdapters() {
     if (!dom.interfaceAdapterList) return;
+    // JUM-548: the tab's guided empty state tracks the list on every render
+    // path, including the partial renders of the delete buttons.
+    if (dom.interfaceDesignerEmptyState) {
+      dom.interfaceDesignerEmptyState.hidden = state.interfaces.length > 0;
+    if (editingAdapterIndex !== null
+      && (editingAdapterIndex < 0 || editingAdapterIndex >= state.interfaces.length)) {
+      editingAdapterIndex = null;
+    }
+    if (dom.interfaceTypeSelect) {
+      renderInterfaceFrameworkOptions(dom.interfaceTypeSelect.value);
+    }
     dom.interfaceAdapterList.innerHTML = '';
     state.interfaces.forEach((adapter, index) => {
       const item = document.createElement('li');
@@ -537,18 +698,45 @@ export function createInspectors({ dom, state, interaction, actions }) {
       summary.textContent = `${adapter.type} | ${adapter.framework} | ${adapter.entrypoint} -> ${adapter.controller}`;
       item.appendChild(summary);
 
-      const removeBtn = document.createElement('button');
-      removeBtn.type = 'button';
-      removeBtn.textContent = 'Delete';
-      removeBtn.onclick = () => {
-        withPersist(() => {
-          state.interfaces.splice(index, 1);
+      // A persisted entry can predate the JUM-545 lifecycle validation (it
+      // was free text before the gate existed): flag it inline instead of
+      // rendering it as a valid design. The entry excludes itself from the
+      // duplicate scan (editingIndex = index).
+      const persistedIssues = collectInterfaceAdapterIssues(adapter, state.interfaces, index);
+      if (persistedIssues.length > 0) {
+        const warning = document.createElement('div');
+        warning.className = 'hint status-error';
+        warning.textContent = persistedIssues.map((issue) => issue.message).join(' ');
+        item.appendChild(warning);
+      }
+
+      if (editingAdapterIndex === index) {
+        item.appendChild(buildInterfaceAdapterEditor(adapter, index));
+      } else {
+        const editBtn = document.createElement('button');
+        editBtn.type = 'button';
+        editBtn.textContent = 'Edit';
+        editBtn.onclick = () => {
+          editingAdapterIndex = index;
           renderInterfaceAdapters();
-        });
-      };
-      item.appendChild(removeBtn);
+        };
+        item.appendChild(editBtn);
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.textContent = 'Delete';
+        removeBtn.onclick = () => {
+          withPersist(() => {
+            state.interfaces.splice(index, 1);
+            editingAdapterIndex = null;
+            renderInterfaceAdapters();
+          });
+        };
+        item.appendChild(removeBtn);
+      }
       dom.interfaceAdapterList.appendChild(item);
     });
+  }
   }
 
   function renderServiceConfiguration() {
@@ -656,6 +844,10 @@ export function createInspectors({ dom, state, interaction, actions }) {
 
   function renderDeployments() {
     if (!dom.deployTargetList) return;
+    // JUM-548: same empty-state tracking as renderInterfaceAdapters.
+    if (dom.deployManagementEmptyState) {
+      dom.deployManagementEmptyState.hidden = state.deployments.length > 0;
+    }
     dom.deployTargetList.innerHTML = '';
     state.deployments.forEach((deployment, index) => {
       const item = document.createElement('li');
@@ -680,12 +872,28 @@ export function createInspectors({ dom, state, interaction, actions }) {
         item.appendChild(warning);
       }
 
+      // JUM-546 lifecycle: edit loads the entry into the form (the add gate
+      // becomes the save gate); duplicate stores an independent deep copy
+      // renamed by the " (copy)" rule.
+      const editBtn = document.createElement('button');
+      editBtn.type = 'button';
+      editBtn.textContent = 'Edit';
+      editBtn.onclick = () => editDeployment(index);
+      item.appendChild(editBtn);
+
+      const duplicateBtn = document.createElement('button');
+      duplicateBtn.type = 'button';
+      duplicateBtn.textContent = 'Duplicate';
+      duplicateBtn.onclick = () => duplicateDeployment(index);
+      item.appendChild(duplicateBtn);
+
       const removeBtn = document.createElement('button');
       removeBtn.type = 'button';
       removeBtn.textContent = 'Delete';
       removeBtn.onclick = () => {
         withPersist(() => {
           state.deployments.splice(index, 1);
+          syncDeploymentEditStateAfterRemoval(index);
           renderDeployments();
         });
       };
@@ -708,6 +916,7 @@ export function createInspectors({ dom, state, interaction, actions }) {
     renderSchemaDiffResults,
     renderSchemaDiffStatus,
     renderInterfaceAdapters,
+    renderInterfaceFrameworkOptions,
     renderServiceConfiguration,
     renderPm2EcosystemPreview,
     renderServiceConfigStatus,

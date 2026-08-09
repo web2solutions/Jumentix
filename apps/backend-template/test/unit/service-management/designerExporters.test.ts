@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
-import path from 'node:path';
 
 /**
  * Unit suite for the export builders extracted from
  * `apps/service-management/script.js` by JUM-469
- * (`apps/service-management/src/exporters/designerExporters.js`).
+ * (`packages/designer-core/src/exporters/designerExporters.js`).
  *
  * These tests pin the export artifact shapes: for the same input the
  * builders must produce output byte-identical to the pre-refactor
@@ -13,10 +12,13 @@ import path from 'node:path';
  * the baseline the contract-parity lane (JUM-474/475/476/478) rewrites from.
  * The AsyncAPI builder moved to `asyncApiExporters.js` under JUM-475
  * (canonical `spec/asyncapi/` targeting) and is pinned by
- * `designerAsyncApiExport.test.ts`.
+ * `designerAsyncApiExport.test.ts`. The one deliberate shape change since the
+ * extraction is the JSON export: JUM-547 turned it into the versioned
+ * full-suite document (`kind`/`version`, all four tabs), pinned here. The
+ * domain package followed under JUM-492: the v2 document adds the `package`
+ * identity block (name, semantic version, dependency ranges), pinned here.
  */
 
-const repoRoot = path.resolve(__dirname, '../../../../..');
 const {
   buildBoilerplateBundleDocument,
   buildDomainPackageDocument,
@@ -24,9 +26,9 @@ const {
   buildJsonSchemaDocument,
   buildMarkdownExport,
   buildOasDocument
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'exporters', 'designerExporters.js'));
+} = require('@jumentix/designer-core/exporters/designerExporters.js');
 const { normalizeStatePayload } = require(
-  path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'designerState.js')
+  '@jumentix/designer-core/state/designerState.js'
 );
 
 function createState() {
@@ -98,15 +100,77 @@ const EXPECTED_INVOICE_PROPERTIES = {
 };
 
 describe('designer exporters (JUM-469)', () => {
-  it('builds the JSON export document with domains, relationships and view', () => {
+  it('builds the JSON export as the versioned full-suite document carrying all four tabs (JUM-547)', () => {
     const state = createState();
+    state.interfaces = [
+      {
+        type: 'grpc', framework: 'bun', entrypoint: 'src/grpc.ts', controller: 'BillingGrpc'
+      }
+    ];
+    state.serviceConfiguration = {
+      serviceKind: 'grpc-rest-api',
+      runMode: 'container',
+      cloudProvider: 'google',
+      staticAssetsPath: 'public',
+      ports: { rest: 8080, websocket: 8081, grpc: 8082 }
+    };
+    state.runtimeEnvironment = {
+      environment: 'staging',
+      fileName: '.env.staging',
+      values: { JUMENTIX_HTTP_FRAMEWORK: 'fastify' }
+    };
+    state.deployments = [{
+      name: 'prod-eu',
+      region: 'eu-west-1',
+      runtime: 'node22',
+      serviceType: 'restapi',
+      deployTarget: 'ec2',
+      runtimeProtocol: 'http',
+      databaseDriver: 'Mongo',
+      keyValueDriver: 'redis',
+      pm2Profile: 'production'
+    }];
     const document = buildJsonExportDocument(state);
     expect(document).toStrictEqual({
+      kind: 'service-management-suite',
+      version: '2.0.0',
       domains: state.domains,
       relationships: state.relationships,
+      interfaces: state.interfaces,
+      serviceConfiguration: state.serviceConfiguration,
+      // JUM-547 decision: the environment selection crosses, values never do.
+      runtimeEnvironment: { environment: 'staging', fileName: '.env.staging' },
+      deployments: state.deployments,
       view: state.view
     });
-    expect(Object.keys(document)).toStrictEqual(['domains', 'relationships', 'view']);
+    expect(Object.keys(document)).toStrictEqual([
+      'kind',
+      'version',
+      'domains',
+      'relationships',
+      'interfaces',
+      'serviceConfiguration',
+      'runtimeEnvironment',
+      'deployments',
+      'view'
+    ]);
+    // No runtime environment value — and therefore no secret — leaves in the
+    // bundle, even when state carries them.
+    const wireText = JSON.stringify(document);
+    expect(wireText).not.toContain('JUMENTIX_HTTP_FRAMEWORK');
+    expect(wireText).not.toContain('fastify');
+  });
+
+  it('defaults the suite sections when the state predates the four-tab shape', () => {
+    const document = buildJsonExportDocument({
+      domains: [], relationships: [], view: { zoom: 1 }
+    });
+    expect(document.kind).toBe('service-management-suite');
+    expect(document.version).toBe('2.0.0');
+    expect(document.interfaces).toStrictEqual([]);
+    expect(document.serviceConfiguration).toBeUndefined();
+    expect(document.runtimeEnvironment).toStrictEqual({ environment: 'dev', fileName: '.env.dev' });
+    expect(document.deployments).toStrictEqual([]);
   });
 
   it('builds the markdown export verbatim', () => {
@@ -251,10 +315,18 @@ describe('designer exporters (JUM-469)', () => {
     const state = createState();
     const document = buildDomainPackageDocument(state.domains[0], '2026-08-05T00:00:00.000Z');
     expect(document.kind).toBe('domain-package');
-    expect(document.version).toBe('1.0.0');
+    expect(document.version).toBe('2.0.0');
     expect(document.exportedAt).toBe('2026-08-05T00:00:00.000Z');
     expect(document.domain).toBe(state.domains[0]);
-    expect(Object.keys(document)).toStrictEqual(['kind', 'version', 'exportedAt', 'domain']);
+    // JUM-492: the v2 document declares the package identity — name and
+    // version fall back to the domain name and 1.0.0 for a domain that was
+    // never stamped, dependencies parse from context.packageDependencies.
+    expect(document.package).toStrictEqual({
+      name: 'Billing',
+      version: '1.0.0',
+      dependencies: [{ name: 'shared-kernel', range: '*' }]
+    });
+    expect(Object.keys(document)).toStrictEqual(['kind', 'version', 'exportedAt', 'package', 'domain']);
     expect(buildDomainPackageDocument(state.domains[0]).exportedAt)
       .toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
   });
@@ -675,3 +747,41 @@ describe('designer exporters (JUM-469)', () => {
     expect(markdown).toContain('- list: [], tenantScoped=false');
   });
 });
+
+describe('sparse-input exporter fallbacks (JUM-493)', () => {
+  it('renders dashes for absent domain context fields in markdown', () => {
+    const markdown = buildMarkdownExport({
+      domains: [{
+        name: 'D', color: '#60a5fa', x: 0, y: 0, entities: [], context: {}
+      }],
+      relationships: []
+    });
+    expect(markdown).toContain('Ubiquitous Language: -');
+    expect(markdown).toContain('Owner Team: -');
+    expect(markdown).toContain('Upstream: -');
+    expect(markdown).toContain('Integration Channel: -');
+  });
+
+  it('derives the package identity from the domain name, then from the default', () => {
+    const named = buildDomainPackageDocument({ name: 'Billing', entities: [] });
+    expect(named.package.name).toBe('Billing');
+    expect(named.package.version).toBe('1.0.0');
+
+    const anonymous = buildDomainPackageDocument({ entities: [] });
+    expect(anonymous.package.name).toBe('package');
+  });
+
+  it('exports a JSON Schema document for an entity without fields', () => {
+    const document = buildJsonSchemaDocument({
+      domains: [{ name: 'D', entities: [{ name: 'Empty' }] }],
+      relationships: []
+    });
+    expect(JSON.stringify(document)).toContain('Empty');
+  });
+});
+
+// Keeps this file a module: with no import/export left, TypeScript would
+// treat it as a script and its top-level requires would share one global
+// scope with every other script-mode suite in ts-jest's program (TS2451).
+// eslint-disable-next-line jest/no-export
+export {};

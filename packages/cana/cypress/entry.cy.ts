@@ -11,6 +11,7 @@ import * as cana from '../src';
 
 describe('cana public entry', () => {
   it('exposes the runtime surface the package documents', () => {
+    expect(cana.CANA_PACKAGE).to.equal('cana');
     expect(typeof cana.createClient).to.equal('function');
     expect(typeof cana.openDatabase).to.equal('function');
     expect(typeof cana.isCanaError).to.equal('function');

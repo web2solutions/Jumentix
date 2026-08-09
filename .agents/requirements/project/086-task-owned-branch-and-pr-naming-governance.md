@@ -25,15 +25,15 @@ closed when the selected required suite is missing, skipped, empty, aborted, or 
 12. A `dev` to `main` pull request is a release-promotion boundary, not a replacement for task-owned pull requests. It must introduce no unreviewed changes and must reference the task PRs and issues already merged into `dev`.
 13. Direct pushes or merges to `main` outside the `dev` release-promotion pull request are prohibited.
 14. Commits and pushes on task-owned branches must run only changed/related unit tests;
-    merges and PRs targeting `dev` must run the canonical unit-test gate.
+    merges and PRs targeting `dev` must run the layer-aware task gate.
 15. Commits, pushes, and merges targeting `main` must run the canonical full test matrix.
-16. CI must run the unit-test gate for PRs to `dev`; release-promotion PRs from `dev` to
+16. CI must run the cheap layer-aware gate for PRs to `dev`; release-promotion PRs from `dev` to
     `main` must run the full matrix and expose every required cell as auditable evidence.
 17. A full matrix includes every required unit, integration, adapter/framework, realtime, workspace, contract, architecture, security, smoke, build, and coverage suite declared by the repository.
 18. Required suites must propagate their real non-zero exit status. Masked failures, unconditional success fallbacks, `--passWithNoTests`, swallowed errors, and success after missing/empty discovery are prohibited.
 19. A required matrix cell that is skipped, cancelled, timed out, not reported, or unable to start is a failure, not a green result.
-20. Scope-aware optimization is permitted only for task-branch commit/push validation;
-    it must not omit all unit tests for `dev` PRs or required matrix cells for `main`.
+20. Scope-aware optimization is permitted for task-branch commit/push validation and
+    PRs to `dev`; it must not omit required matrix cells for `main`.
 21. Exceptions require explicit approval recorded in the linked issue and pull request; exceptions may not bypass the `dev`-first promotion path or convert a failed or incomplete matrix into success.
 22. PR review is not a merge prerequisite. All required non-review checks remain mandatory and cannot be bypassed for any merge.
 
@@ -52,8 +52,8 @@ closed when the selected required suite is missing, skipped, empty, aborted, or 
 3. Task PRs target `dev`, while only release-promotion PRs sourced from `dev` may target `main`.
 4. Branch protection or CI rejects any PR to `main` whose source branch is not `dev`.
 5. Gate 5 treats missing task isolation, invalid naming, or an invalid source/target branch path as a merge blocker.
-6. Commit and push hooks select changed/related tests for task branches, full unit tests
-   for `dev`, or the full matrix for `main`.
+6. Commit and push hooks select changed/related tests for task branches, cheap unit
+   health for `dev`, or the full matrix for `main`.
 7. Main promotion CI requires the full-matrix contract and reports incomplete, missing, or failed cells as failure.
 8. A deliberate failing test proves that commit, push, and PR gates cannot produce a false green.
 9. Requirement registry, NFR registry, traceability ledger, coverage status, and bilingual documentation remain synchronized.

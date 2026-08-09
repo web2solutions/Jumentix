@@ -4,6 +4,76 @@
 
 ## All Changes
 
+- 2026-08-09 fix(ci): isolate database compose projects (#156) - Eduardo A.
+- 2026-08-09 fix(ci): isolate database compose projects - Eduardo A.
+- 2026-08-09 fix(ci): recreate mongodb smoke container (#155) - Eduardo A.
+- 2026-08-09 fix(ci): recreate mongodb smoke container - Eduardo A.
+- 2026-08-09 fix(ci): keep db repository smoke on bun (#154) - Eduardo A.
+- 2026-08-09 fix(ci): keep db repository smoke on bun - Eduardo A.
+- 2026-08-09 [JUM-632][CI] Keep coverage free of live broker suites (#153) - Eduardo A.
+- 2026-08-09 ci: refresh branch gate status - Eduardo A.
+- 2026-08-09 ci: refresh checks after disabling circleci - Eduardo A.
+- 2026-08-09 ci: keep coverage free of live broker suites - Eduardo A.
+- 2026-08-09 [JUM-632][CI] Stabilize Redis database matrix smoke (#152) - Eduardo A.
+- 2026-08-09 ci: stabilize Redis database matrix smoke - Eduardo A.
+- 2026-08-09 [JUM-632][CI] Make Sonar scanner install idempotent (#151) - Eduardo A.
+- 2026-08-09 ci: make Sonar scanner install idempotent - Eduardo A.
+- 2026-08-09 [JUM-632][CI] Recreate Cassandra compose service before database matrix (#150) - Eduardo A.
+- 2026-08-09 ci: recreate Cassandra compose service before database matrix - Eduardo A.
+- 2026-08-09 [JUM-632][CI] Select macOS coverage publishing tools (#149) - Eduardo A.
+- 2026-08-09 ci: retrigger GitHub Actions after runner reset - Eduardo A.
+- 2026-08-09 ci: retrigger macOS coverage tool checks - Eduardo A.
+- 2026-08-09 ci: select macOS tools for coverage publishing - Eduardo A.
+- 2026-08-09 [JUM-615][Feature] Cana localStorage fallback, real Workers, 100% coverage (#138) - Eduardo A.
+- 2026-08-09 [JUM-632][CI] Reuse local broker services in GitHub Actions (#148) - Eduardo A.
+- 2026-08-09 ci: reuse local broker services in GitHub Actions - Eduardo A.
+- 2026-08-09 [JUM-632][Release] Record main ancestry before promotion (#147) - Eduardo A.
+- 2026-08-09 chore(release): record main ancestry before promotion - Eduardo A.
+- 2026-08-09 [JUM-631][CI] Make dev delivery gates cheap and context-aware (#144) - Eduardo A.
+- 2026-08-09 ci: run GitHub Actions on self-hosted runner - Eduardo A.
+- 2026-08-09 ci: replace CircleCI with GitHub Actions - Eduardo A.
+- 2026-08-09 test: isolate branch gate tests from CircleCI env - Eduardo A.
+- 2026-08-09 ci: treat unselected CircleCI jobs as skipped - Eduardo A.
+- 2026-08-09 Merge remote-tracking branch 'origin/dev' into codex/ci/JUM-631-fast-cheap-dev-ci - Eduardo A.
+- 2026-08-09 ci: make context classifier runtime configurable - Eduardo A.
+- 2026-08-09 ci: make dev delivery gates cheap and context-aware - Eduardo A.
+- 2026-08-09 [JUM-631][Governance] Requirement 128 — requirement changes take precedence in the release process (#143) - Eduardo A.
+- 2026-08-09 docs(governance): add requirement 128 for release precedence of requirement changes - Eduardo Almeida
+- 2026-08-09 [JUM-630][Governance] Requirement 127 — mandatory rtk and Caveman in every agent session (#142) - Eduardo A.
+- 2026-08-09 docs(governance): teach rtk and caveman, EN and PT-BR - Eduardo Almeida
+- 2026-08-09 docs(governance): add requirement 127 for mandatory rtk and caveman - Eduardo Almeida
+- 2026-08-08 [JUM-493][Feature] Designer core as @jumentix package with publish dry-run (#137) - Eduardo A.
+- 2026-08-08 fix(JUM-629): re-export Cana barrel with export `*` so bun 1.3.14 emits no dangling bindings (#141) - Eduardo A.
+- 2026-08-08 [JUM-609][Governance] Fail on duplicate requirement IDs, for being duplicates (#139) - Eduardo A.
+- 2026-08-08 chore(governance): fail on duplicate requirement IDs, for being duplicates - Eduardo Almeida
+- 2026-08-08 [JUM-626][Fix] Announce load-time storage corruption recovery in the boot UI (#136) - Eduardo A.
+- 2026-08-08 [JUM-627][Governance] Verify the child task issue is in the focused epic (#134) - Eduardo A.
+- 2026-08-08 test(governance): stop the no-credential cases reading the ambient key - Eduardo Almeida
+- 2026-08-08 chore(governance): state which membership the check verified - Eduardo Almeida
+- 2026-08-08 fix(governance): find the linear key at any workspace depth - Eduardo Almeida
+- 2026-08-08 chore(governance): verify the child task issue is in the focused epic - Eduardo Almeida
+- 2026-08-08 [JUM-491][Feature] Multi-user shared catalog sync over Cana resync events (#133) - Eduardo A.
+- 2026-08-08 docs(JUM-494): document E8 collaboration and packaging, closing the E1-E8 chain (EN/PT-BR) (#135) - Eduardo A.
+- 2026-08-08 [JUM-545][Feature] Interface adapter lifecycle with edit-in-place and validation (#130) - Eduardo A.
+- 2026-08-08 feat(JUM-492): domain-package versioning with semantic conflict resolution (#132) - Eduardo A.
+- 2026-08-08 feat(JUM-546): deploy target lifecycle with edit, duplicate and validation (#129) - Eduardo A.
+- 2026-08-08 feat(JUM-548): first-run experience with sample model loader and guided empty states (#131) - Eduardo A.
+- 2026-08-08 feat(JUM-547): full-suite export/import carrying all four tabs (#128) - Eduardo A.
+- 2026-08-08 docs(JUM-490): document E7 design system and PWA shell (EN/PT-BR) (#127) - Eduardo A.
+- 2026-08-08 docs(JUM-487): document E6 Cana adoption, migration and offline behaviour (EN/PT-BR) (#126) - Eduardo A.
+- 2026-08-08 [JUM-486][Test] Offline/online persistence matrix for Cana (#124) - Eduardo A.
+- 2026-08-08 feat(JUM-488): adopt Jumentix design system tokens and Storybook coverage in the designer (#125) - Eduardo A.
+- 2026-08-08 [JUM-485][Feature] Multi-tab write-event sync with undo isolation (#122) - Eduardo A.
+- 2026-08-08 [JUM-621][Fix] Keep BullMQ results long enough for the caller to read them (#123) - Eduardo A.
+- 2026-08-08 fix(message-mediator): keep bullmq results long enough to be read - Eduardo Almeida
+- 2026-08-08 feat(JUM-489): installable PWA shell with service worker and manifest (#121) - Eduardo A.
+- 2026-08-08 feat(JUM-484): one-way migration of service-management.v1 from localStorage to Cana (no fallback) (#120) - Eduardo A.
+- 2026-08-08 docs(JUM-482): document E5 operations console (EN/PT-BR) (#119) - Eduardo A.
+- 2026-08-07 [JUM-483][Feature] CanaDesignerStore adapter over the Cana client (#116) - Eduardo A.
+- 2026-08-07 [JUM-504][Release] Promote CircleCI-backed dev snapshot to main - Eduardo A.
+- 2026-08-07 [JUM-624][Fix] Close the redis connection the integration suite leaks (#117) - Eduardo A.
+- 2026-08-07 chore(release): reconcile main into dev before promotion - Eduardo A.
+- 2026-08-07 fix(key-value): close the redis connection the integration suite opens - Eduardo Almeida
 - 2026-08-07 test(cana): tolerate browser timing quantization in performance shape - Eduardo A.
 - 2026-08-07 ci: avoid Sonar SCM blame in CircleCI partial clones - Eduardo A.
 - 2026-08-07 docs(JUM-479): document E4 contract parity guarantees (EN/PT-BR) (#105) - Eduardo A.
@@ -55,6 +125,7 @@
 - 2026-08-05 [JUM-465][Governance] Ownership registration and component requirement spec (#80) - Eduardo A.
 - 2026-08-05 docs(JUM-467): audit bilingual docs and repair links for service-management (#79) - Eduardo A.
 - 2026-08-05 [JUM-604][Governance] Support the Kimi agent with declarative agent support (#78) - Eduardo A.
+- 2026-08-05 [JUM-504][Release] Promote main branch-gate fix - Eduardo A.
 - 2026-08-05 test: isolate PR governance helpers - Eduardo A.
 - 2026-08-05 test: satisfy PR governance lint - Eduardo A.
 - 2026-08-05 chore(release): reconcile main ancestry after branch-gate fix - Eduardo A.
