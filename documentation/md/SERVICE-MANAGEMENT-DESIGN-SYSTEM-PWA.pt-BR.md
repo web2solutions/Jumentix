@@ -73,7 +73,7 @@ de estilo. O que deliberadamente permanece literal:
 - **A geometria estrutural da qual a matemática do canvas depende** — o canvas
   de 3200×2200, a grade de 24 px, domínios de 520 px, entidades de 190 px —
   fixada por
-  [`src/model/modelQueries.js`](../../apps/service-management/src/model/modelQueries.js)
+  [`src/model/modelQueries.js`](../../packages/designer-core/src/model/modelQueries.js)
   e sua suíte de unidade. Esses números são comportamento, não cosmética.
 - **A densidade compacta dos inspetores** (espaços de 5–7 px nos painéis
   densos), que não tem equivalente em token.
@@ -382,7 +382,7 @@ explicação, que divergiria.
 ## Referências
 
 - Camada de tokens: [`apps/service-management/tokens.css`](../../apps/service-management/tokens.css) (vendorizada; fonte da verdade [`components/design-system/tokens.css`](../../apps/jumentix-website/components/design-system/tokens.css)), [`styles.css`](../../apps/service-management/styles.css), [`index.html`](../../apps/service-management/index.html)
-- Comportamento de acessibilidade: [`src/ui/tabs.js`](../../apps/service-management/src/ui/tabs.js), [`src/ui/canvas.js`](../../apps/service-management/src/ui/canvas.js), [`src/ui/inspectors.js`](../../apps/service-management/src/ui/inspectors.js), o mapa global de teclado em [`script.js`](../../apps/service-management/script.js); geometria estrutural fixada por [`src/model/modelQueries.js`](../../apps/service-management/src/model/modelQueries.js)
+- Comportamento de acessibilidade: [`src/ui/tabs.js`](../../apps/service-management/src/ui/tabs.js), [`src/ui/canvas.js`](../../apps/service-management/src/ui/canvas.js), [`src/ui/inspectors.js`](../../apps/service-management/src/ui/inspectors.js), o mapa global de teclado em [`script.js`](../../apps/service-management/script.js); geometria estrutural fixada por [`src/model/modelQueries.js`](../../packages/designer-core/src/model/modelQueries.js)
 - Cobertura Storybook: [`ServiceManagementDesigner.stories.tsx`](../../apps/jumentix-website/components/service-management-designer/ServiceManagementDesigner.stories.tsx), [`storybook-smoke.mjs`](../../apps/jumentix-website/scripts/storybook-smoke.mjs), [`.storybook/preview.tsx`](../../apps/jumentix-website/.storybook/preview.tsx)
 - Shell PWA: [`manifest.webmanifest`](../../apps/service-management/manifest.webmanifest), [`sw.js`](../../apps/service-management/sw.js), [`src/pwa/pwaShell.js`](../../apps/service-management/src/pwa/pwaShell.js), [`icons/`](../../apps/service-management/icons), [`server.js`](../../apps/service-management/server.js)
 - Suítes: [`pwaShell.test.ts`](../../apps/backend-template/test/unit/service-management/pwaShell.test.ts), [`pwaShell.browser.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/pwaShell.browser.integration.test.ts), [`spaBoot.browser.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/spaBoot.browser.integration.test.ts), [`modelQueries.test.ts`](../../apps/backend-template/test/unit/service-management/modelQueries.test.ts)

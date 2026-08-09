@@ -36,7 +36,8 @@ const {
   createDesignerState,
   createDefaultView,
   normalizeStatePayload
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'designerState.js'));
+} = require('@jumentix/designer-core/state/designerState.js');
+
 const {
   DESIGNER_SYNC_CHANNEL_NAME,
   DESIGNER_SYNC_CURSOR_KEY,

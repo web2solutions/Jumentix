@@ -95,7 +95,7 @@
  * resolved defensively from `globalThis`, exactly like the store port.
  */
 
-import { normalizeStatePayload } from './designerState.js';
+import { normalizeStatePayload } from '@jumentix/designer-core/state/designerState.js';
 import { CANA_STATE_KEY } from '../store/CanaDesignerStore.js';
 
 /** BroadcastChannel name shared by every designer tab of this origin. */

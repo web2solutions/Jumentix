@@ -21,7 +21,7 @@ Defina alvos de implantação e contratos de empacotamento de artefatos para ser
 ## Leitor legível por máquina
 
 O suporte modo de execução × provedor de nuvem derivado desta matriz é mantido
-como dados em `apps/service-management/src/model/deployCapabilityMatrix.js`
+como dados em `packages/designer-core/src/model/deployCapabilityMatrix.js`
 (extraído pelo JUM-544 para que a guia Configuração do Serviço e os alvos de
 implantação do JUM-481 validem contra uma única fonte compartilhada em vez de
 duas transcrições). A guia Configuração do Serviço do designer a aplica no

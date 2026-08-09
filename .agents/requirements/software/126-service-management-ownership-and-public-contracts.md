@@ -340,7 +340,7 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
      `components.schemas` entries referenced via `$ref` (structurally identical
      payloads share one entry), never inlined. Every exported document MUST pass
      the AsyncAPI 3.0 structural validation of
-     `apps/service-management/src/validation/asyncApi30Validation.js` — the same
+     `packages/designer-core/src/validation/asyncApi30Validation.js` — the same
      rules the canonical `spec/asyncapi/*.yml` files pass.
    - **gRPC proto** (`async-api.proto`; landed by `JUM-475`): aligned with the
      canonical `spec/asyncapi/async-api.proto` — proto3 syntax, package

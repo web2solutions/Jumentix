@@ -45,7 +45,7 @@ carries the `sample-` prefix and sample domains show a "sample" badge in the
 domain list. Loading the sample over an existing model asks for explicit
 confirmation (Undo restores the previous model afterwards), and deleting the
 sample is ordinary domain/entity deletion. Content is defined in
-`src/model/sampleModel.js`.
+`@jumentix/designer-core` (`packages/designer-core/src/model/sampleModel.js`).
 
 ## Tabs
 
@@ -84,10 +84,10 @@ sample is ordinary domain/entity deletion. Content is defined in
    - Full adapter lifecycle (JUM-545): every registered adapter edits in place (type,
      framework, entrypoint and controller mapping) — no delete-and-re-add.
    - Framework options are scoped per interface type from the canonical runtime matrix
-     (`src/model/interfaceFrameworkMatrix.js`): the eleven canonical HTTP frameworks
+     (`@jumentix/designer-core` (`packages/designer-core/src/model/interfaceFrameworkMatrix.js`)): the eleven canonical HTTP frameworks
      (JUM-461 spellings — `derby-js`/`sails-js` only, no alias duplicates) for
      `HTTP/REST` and `SSE`, `socket-io` for `WebSocket`, `grpc` for `gRPC`.
-   - Adds and edits are validated (`src/validation/interfaceAdapterValidation.js`):
+   - Adds and edits are validated (`@jumentix/designer-core` (`packages/designer-core/src/validation/interfaceAdapterValidation.js`)):
      the entrypoint must be a TypeScript/JavaScript path under `src/interface/`, the
      controller mapping must have the `XController.action` shape, and duplicates
      (same type + entrypoint, or same controller mapping) are rejected with the reason
@@ -98,7 +98,7 @@ sample is ordinary domain/entity deletion. Content is defined in
    - Saves are validated (JUM-544): ports must be integers in 1–65535 and unique across the
    protocols the selected service kind actually binds, and the run-mode × cloud-provider
    combination must exist in the Requirement 059 deploy matrix (read from the shared
-   machine-readable source `src/model/deployCapabilityMatrix.js`). Invalid profiles are
+   machine-readable source `@jumentix/designer-core` (`packages/designer-core/src/model/deployCapabilityMatrix.js`)). Invalid profiles are
    reported on the tab's status surface and are not saved.
    - PM2 runtime profile preview for VM deployments reads the real
      `pm2/ecosystem.*.cjs` files through `GET /api/runtime/pm2-ecosystem`
@@ -122,7 +122,7 @@ sample is ordinary domain/entity deletion. Content is defined in
      `serviceType`, `deployTarget`, `runtimeProtocol`, `databaseDriver`,
      `keyValueDriver` and `pm2Profile`. Additions are validated against the
      deploy matrix read from the shared machine-readable source
-     `src/model/deployCapabilityMatrix.js` — combinations with no matrix row,
+     `@jumentix/designer-core` (`packages/designer-core/src/model/deployCapabilityMatrix.js`) — combinations with no matrix row,
      protocols the service type does not expose, and PM2 profiles on
      serverless targets are rejected on the status surface with the
      constraint named. Targets persisted before this alignment migrate
@@ -148,7 +148,7 @@ not React component imports:
 - `styles.css` — every cosmetic value (color, typography, radius, shadow,
   spacing) resolves to a `--jtx-*` token. Only structural geometry the canvas
   math depends on stays literal (3200×2200 canvas, 24px grid, 520px domains,
-  190px entities — pinned by `src/model/modelQueries.js` and its unit suite),
+  190px entities — pinned by `@jumentix/designer-core` (`packages/designer-core/src/model/modelQueries.js`) and its unit suite),
   plus the compact inspector density. Element-level rules are scoped under
   `.service-management-shell` so the stylesheet can be embedded in the website
   Storybook without leaking.

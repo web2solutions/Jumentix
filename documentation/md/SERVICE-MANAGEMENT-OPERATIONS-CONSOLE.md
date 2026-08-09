@@ -43,7 +43,7 @@ Two deliberate boundaries:
 Both validating surfaces of the console — Service Configuration and Deploy
 Management — read the Requirement 059 matrices from **one machine-readable
 source**:
-[`apps/service-management/src/model/deployCapabilityMatrix.js`](../../apps/service-management/src/model/deployCapabilityMatrix.js),
+[`packages/designer-core/src/model/deployCapabilityMatrix.js`](../../packages/designer-core/src/model/deployCapabilityMatrix.js),
 the reader of the two matrix documents
 ([JUMENTIX-DEPLOY-TARGET-AND-PACKAGING-MATRIX](./JUMENTIX-DEPLOY-TARGET-AND-PACKAGING-MATRIX.md)
 and
@@ -56,11 +56,11 @@ header itself requires — never a second copy inside a tab's validation. The
 console's two validators already demonstrate why:
 
 - `collectServiceConfigurationIssues`
-  ([`serviceConfigurationValidation.js`](../../apps/service-management/src/validation/serviceConfigurationValidation.js),
+  ([`serviceConfigurationValidation.js`](../../packages/designer-core/src/validation/serviceConfigurationValidation.js),
   JUM-544) consumes the **run-mode × cloud-provider** support map and the
   active-port map.
 - `collectDeployTargetIssues`
-  ([`deployTargetValidation.js`](../../apps/service-management/src/validation/deployTargetValidation.js),
+  ([`deployTargetValidation.js`](../../packages/designer-core/src/validation/deployTargetValidation.js),
   JUM-481) consumes the **service-type × deploy-target** support map, the
   per-service-type protocol map, the PM2-managed target set, and the driver
   vocabularies.
@@ -233,7 +233,7 @@ backward-compatible extension of the storage schema (Requirement 126, Contract
 2: the versioned key is unchanged). The tab's rules:
 
 - **What a target may contain** is owned by `collectDeployTargetIssues`
-  ([`deployTargetValidation.js`](../../apps/service-management/src/validation/deployTargetValidation.js)):
+  ([`deployTargetValidation.js`](../../packages/designer-core/src/validation/deployTargetValidation.js)):
   the six vocabularies, the service-type × deploy-target matrix row, protocol
   exposure, and PM2-profile applicability — every rejection names the violated
   constraint (the shared matrix section above gives the reasons). Every issue
@@ -246,7 +246,7 @@ backward-compatible extension of the storage schema (Requirement 126, Contract
   how the entry arrived.
 - **Legacy entries migrate forward on load, losslessly.**
   `normalizeDeploymentInput`
-  ([`designerState.js`](../../apps/service-management/src/state/designerState.js))
+  ([`designerState.js`](../../packages/designer-core/src/state/designerState.js))
   migrates the pre-JUM-481 `{ name, type, region, runtime }` shape: `type`
   becomes `deployTarget` through an alias map (`dedicated` →
   `dedicated-server`), and missing metadata takes matrix-derived defaults —
@@ -282,7 +282,7 @@ The tab's full lifecycle is **add, edit-in-place, duplicate and delete**:
   regions); duplication is the primary defence against the retyping
   inconsistencies the field validation then has to catch.
 - **Field validation** — `collectDeployTargetFieldIssues` in
-  [`deployTargetLifecycleValidation.js`](../../apps/service-management/src/validation/deployTargetLifecycleValidation.js),
+  [`deployTargetLifecycleValidation.js`](../../packages/designer-core/src/validation/deployTargetLifecycleValidation.js),
   run at the add/edit gate next to the JUM-481 matrix rules: the name is
   required and unique; the runtime/version is required and must match a
   name-plus-version pattern (`nodejs22.x`, `python3.12` — free text like
@@ -290,7 +290,7 @@ The tab's full lifecycle is **add, edit-in-place, duplicate and delete**:
   optional on the self-hosted Dedicated Server (SSH) row, where the field may
   carry host information instead. The self-hosted set is read from the shared
   matrix reader (`SELF_HOSTED_DEPLOY_TARGETS` in
-  [`deployCapabilityMatrix.js`](../../apps/service-management/src/model/deployCapabilityMatrix.js)),
+  [`deployCapabilityMatrix.js`](../../packages/designer-core/src/model/deployCapabilityMatrix.js)),
   never transcribed. Every rejection names the reason on the JUM-543 status
   surface, and the candidate never touches state.
 - **Target-type-aware field hints.** The hint line under the form
@@ -386,9 +386,9 @@ same model:
 
 ## References
 
-- Shared matrix reader: [`deployCapabilityMatrix.js`](../../apps/service-management/src/model/deployCapabilityMatrix.js); matrix documents: [Deploy Target and Packaging Matrix](./JUMENTIX-DEPLOY-TARGET-AND-PACKAGING-MATRIX.md), [Service Factory Capabilities Matrix](./JUMENTIX-SERVICE-FACTORY-CAPABILITIES-MATRIX.md)
-- Validators: [`serviceConfigurationValidation.js`](../../apps/service-management/src/validation/serviceConfigurationValidation.js), [`deployTargetValidation.js`](../../apps/service-management/src/validation/deployTargetValidation.js), [`deployTargetLifecycleValidation.js`](../../apps/service-management/src/validation/deployTargetLifecycleValidation.js)
-- Server endpoints: [`server.js`](../../apps/service-management/server.js); UI glue: [`script.js`](../../apps/service-management/script.js), [`inspectors.js`](../../apps/service-management/src/ui/inspectors.js), state/migration: [`designerState.js`](../../apps/service-management/src/state/designerState.js)
+- Shared matrix reader: [`deployCapabilityMatrix.js`](../../packages/designer-core/src/model/deployCapabilityMatrix.js); matrix documents: [Deploy Target and Packaging Matrix](./JUMENTIX-DEPLOY-TARGET-AND-PACKAGING-MATRIX.md), [Service Factory Capabilities Matrix](./JUMENTIX-SERVICE-FACTORY-CAPABILITIES-MATRIX.md)
+- Validators: [`serviceConfigurationValidation.js`](../../packages/designer-core/src/validation/serviceConfigurationValidation.js), [`deployTargetValidation.js`](../../packages/designer-core/src/validation/deployTargetValidation.js), [`deployTargetLifecycleValidation.js`](../../packages/designer-core/src/validation/deployTargetLifecycleValidation.js)
+- Server endpoints: [`server.js`](../../apps/service-management/server.js); UI glue: [`script.js`](../../apps/service-management/script.js), [`inspectors.js`](../../apps/service-management/src/ui/inspectors.js), state/migration: [`designerState.js`](../../packages/designer-core/src/state/designerState.js)
 - Ecosystem sources: [`pm2/ecosystem.dev.cjs`](../../pm2/ecosystem.dev.cjs), [`pm2/ecosystem.staging.cjs`](../../pm2/ecosystem.staging.cjs), [`pm2/ecosystem.production.cjs`](../../pm2/ecosystem.production.cjs)
 - Suites: [`serviceConfigurationValidation.test.ts`](../../apps/backend-template/test/unit/service-management/serviceConfigurationValidation.test.ts), [`deployTargetValidation.test.ts`](../../apps/backend-template/test/unit/service-management/deployTargetValidation.test.ts), [`deployTargetLifecycle.test.ts`](../../apps/backend-template/test/unit/service-management/deployTargetLifecycle.test.ts), [`designerState.test.ts`](../../apps/backend-template/test/unit/service-management/designerState.test.ts), [`pm2EcosystemUi.contract.test.ts`](../../apps/backend-template/test/unit/service-management/pm2EcosystemUi.contract.test.ts), [`runtimeEnvUi.contract.test.ts`](../../apps/backend-template/test/unit/service-management/runtimeEnvUi.contract.test.ts), [`pm2Ecosystem.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/pm2Ecosystem.integration.test.ts), [`runtimeEnv.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/runtimeEnv.integration.test.ts), [`runtimeEnvContract.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/runtimeEnvContract.integration.test.ts), [`deployTargetLifecycle.browser.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/deployTargetLifecycle.browser.integration.test.ts)
 - Requirements: [126](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md) (Contracts 1, 1b and 2), [059](../../.agents/requirements/software/059-jumentix-service-factory-and-deploy-template-matrices.md) (the deploy and factory matrices), [076](../../.agents/requirements/project/076-task-documentation-and-bilingual-governance.md) (EN/PT parity)

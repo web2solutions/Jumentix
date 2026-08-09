@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "rootDir": "dist",
+    "outDir": "dist",
+    "skipLibCheck": true,
+    "strict": false,
+    "noEmitOnError": false
+  },
+  "include": [
+    "dist/**/*.js"
+  ],
+  "//": "outDir defaults into tsc's own exclude list; the declarations are emitted next to the modules on purpose, so the default exclusion of dist is lifted.",
+  "exclude": []
+}

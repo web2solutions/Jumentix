@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
-import path from 'node:path';
 
 /**
  * Unit suite for the Deploy Management lifecycle (JUM-546):
  *
- * - `apps/service-management/src/validation/deployTargetLifecycleValidation.js`
+ * - `packages/designer-core/src/validation/deployTargetLifecycleValidation.js`
  *   (`collectDeployTargetFieldIssues` — name required/unique, runtime/version
  *   pattern, region per target type; `duplicateDeployTargetName` — the
  *   ` (copy)` renaming rule; `deployTargetFieldHint` — target-type-aware
@@ -19,24 +18,23 @@ import path from 'node:path';
  * All exercised as pure functions — no DOM, no store.
  */
 
-const repoRoot = path.resolve(__dirname, '../../../../..');
 const {
   RUNTIME_VERSION_PATTERN,
   collectDeployTargetFieldIssues,
   deployTargetFieldHint,
   duplicateDeployTargetName
 } = require(
-  path.join(repoRoot, 'apps', 'service-management', 'src', 'validation', 'deployTargetLifecycleValidation.js')
+  '@jumentix/designer-core/validation/deployTargetLifecycleValidation.js'
 );
 const {
   DEPLOY_TARGETS,
   SELF_HOSTED_DEPLOY_TARGETS,
   isSelfHostedDeployTarget
 } = require(
-  path.join(repoRoot, 'apps', 'service-management', 'src', 'model', 'deployCapabilityMatrix.js')
+  '@jumentix/designer-core/model/deployCapabilityMatrix.js'
 );
 const { normalizeDeploymentInput } = require(
-  path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'designerState.js')
+  '@jumentix/designer-core/state/designerState.js'
 );
 
 function createTarget(overrides: Record<string, unknown> = {}): any {
@@ -215,3 +213,30 @@ describe('duplicate semantics — an independent deep copy (JUM-546 acceptance)'
     expect(source.pm2Profile).toBe('staging');
   });
 });
+
+describe('defensive fallbacks (JUM-493)', () => {
+  it('treats a null candidate as all-fields-missing, against no existing deployments', () => {
+    const issues = collectDeployTargetFieldIssues(null);
+    const nullMessages = issues.map((issue: { message: string }) => issue.message);
+    expect(nullMessages).toContain('Deploy target name is required.');
+  });
+
+  it('ignores null entries when checking duplicate names', () => {
+    const issues = collectDeployTargetFieldIssues({
+      name: 'db', region: 'us-east-1', runtime: 'node22', deployTarget: 'vm'
+    }, [null]);
+    const dupMessages = issues.map((issue: { message: string }) => issue.message);
+    expect(dupMessages.some((message: string) => message.includes('already exists'))).toBe(false);
+  });
+
+  it('derives copy names with the default name list and skips nullish taken names', () => {
+    expect(duplicateDeployTargetName('db')).toBe('db (copy)');
+    expect(duplicateDeployTargetName('db', [null, 'db (copy)'])).toBe('db (copy 2)');
+  });
+});
+
+// Keeps this file a module: with no import/export left, TypeScript would
+// treat it as a script and its top-level requires would share one global
+// scope with every other script-mode suite in ts-jest's program (TS2451).
+// eslint-disable-next-line jest/no-export
+export {};

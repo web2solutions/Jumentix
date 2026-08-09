@@ -51,7 +51,7 @@
 
 /* eslint-env serviceworker, node */
 
-const SHELL_VERSION = '0.4.1';
+const SHELL_VERSION = '0.5.0';
 
 // Prefix shared with src/pwa/pwaShell.js (the page-side reset deletes by
 // prefix). The two copies cannot import each other — a classic worker has no
@@ -75,36 +75,41 @@ const SHELL_ASSETS = [
   './icons/icon-512.png',
   './icons/icon-maskable-512.png',
   './icons/apple-touch-icon.png',
-  './src/codegen/hexagonalCodegen.js',
-  './src/exporters/asyncApiExporters.js',
-  './src/exporters/designerExporters.js',
-  './src/importers/designerImporters.js',
-  './src/model/deployCapabilityMatrix.js',
-  './src/model/modelQueries.js',
-  './src/model/rbacContract.js',
-  // Eagerly imported by the importer/exporter chain (JUM-492); without it
-  // the offline shell could not resolve the module graph.
-  './src/packages/packageVersioning.js',
-  // Eagerly imported by script.js (JUM-548 first-run sample loader); without
-  // it the offline shell could not resolve the module graph.
-  './src/model/sampleModel.js',
+  // The designer core (JUM-493): canonical home is packages/designer-core/src/,
+  // vendored into the app by ci-cd/sync-service-management-designer-core.js
+  // and imported through the import map's `@jumentix/designer-core/` prefix.
+  // GENERATED (gitignored), like the Cana bundle below; the browser smoke
+  // requests every precached entry against the real server, generated ones
+  // included. Every entry here is eagerly reachable from script.js's static
+  // module graph, so the offline shell could not boot without them.
+  './vendor/designer-core/codegen/hexagonalCodegen.js',
+  './vendor/designer-core/exporters/asyncApiExporters.js',
+  './vendor/designer-core/exporters/designerExporters.js',
+  './vendor/designer-core/importers/designerImporters.js',
+  './vendor/designer-core/model/deployCapabilityMatrix.js',
+  './vendor/designer-core/model/interfaceFrameworkMatrix.js',
+  './vendor/designer-core/model/modelQueries.js',
+  './vendor/designer-core/model/rbacContract.js',
+  './vendor/designer-core/model/sampleModel.js',
+  './vendor/designer-core/packages/packageVersioning.js',
+  './vendor/designer-core/state/designerState.js',
+  './vendor/designer-core/store/IDesignerStore.js',
+  './vendor/designer-core/validation/asyncApi30Validation.js',
+  './vendor/designer-core/validation/deployTargetLifecycleValidation.js',
+  './vendor/designer-core/validation/deployTargetValidation.js',
+  './vendor/designer-core/validation/interfaceAdapterValidation.js',
+  './vendor/designer-core/validation/modelValidation.js',
+  './vendor/designer-core/validation/serviceConfigurationValidation.js',
   './src/pwa/pwaShell.js',
-  './src/state/designerState.js',
   // Eagerly imported by script.js (JUM-485); without it the offline shell
   // could not resolve the module graph (pre-existing precache gap).
   './src/state/designerSync.js',
   './src/store/CanaDesignerStore.js',
   './src/store/canaMigration.js',
   './src/store/designerStoreFactory.js',
-  './src/store/IDesignerStore.js',
   './src/ui/canvas.js',
   './src/ui/inspectors.js',
   './src/ui/tabs.js',
-  './src/validation/asyncApi30Validation.js',
-  './src/validation/deployTargetLifecycleValidation.js',
-  './src/validation/deployTargetValidation.js',
-  './src/validation/modelValidation.js',
-  './src/validation/serviceConfigurationValidation.js',
   // The vendored Cana browser bundle (JUM-484) — the designer's sole store
   // crosses the import map to this module at boot, so the offline shell is
   // incomplete without it. GENERATED (gitignored): produced by
@@ -112,8 +117,6 @@ const SHELL_ASSETS = [
   // runs before booting the server; the smoke also requests every precached
   // entry against the real server, generated ones included.
   './vendor/cana/index.js',
-  './src/model/interfaceFrameworkMatrix.js',
-  './src/validation/interfaceAdapterValidation.js',
 ];
 
 const SKIP_WAITING_MESSAGE_TYPE = 'SKIP_WAITING';

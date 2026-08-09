@@ -69,9 +69,9 @@
  */
 
 import { applyRemoteDocument } from './designerSync.js';
-import { normalizeDomainInput } from './designerState.js';
+import { normalizeDomainInput } from '@jumentix/designer-core/state/designerState.js';
 import { CANA_STATE_KEY } from '../store/CanaDesignerStore.js';
-import { DOMAIN_PACKAGE_KIND, DOMAIN_PACKAGE_VERSION } from '../packages/packageVersioning.js';
+import { DOMAIN_PACKAGE_KIND, DOMAIN_PACKAGE_VERSION } from '@jumentix/designer-core/packages/packageVersioning.js';
 
 /** Default poll interval for catalog read-back. */
 export const CATALOG_SYNC_POLL_INTERVAL_MS = 15000;

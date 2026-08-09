@@ -354,7 +354,13 @@ function buildManifest(root = process.cwd()) {
         'apps/service-management/script.js',
         'apps/service-management/src/**',
         'apps/service-management/index.html',
-        'apps/service-management/styles.css'
+        'apps/service-management/styles.css',
+        // JUM-493: `@jumentix/designer-core` IS the designer core as a
+        // publishable package — its barrel re-exports `apps/service-management/src`
+        // modules and its suites assert the artifact built from them. Its own
+        // files (manifest, build script, suites) belong to this same layer so
+        // a packaging change runs the designer suites and vice versa.
+        'packages/designer-core/**'
       ],
       runner: 'bun',
       tier: 'gate',
