@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-09 ci: retrigger macOS coverage tool checks - Eduardo A.
 - 2026-08-09 ci: select macOS tools for coverage publishing - Eduardo A.
 - 2026-08-09 [JUM-615][Feature] Cana localStorage fallback, real Workers, 100% coverage (#138) - Eduardo A.
 - 2026-08-09 [JUM-632][CI] Reuse local broker services in GitHub Actions (#148) - Eduardo A.
