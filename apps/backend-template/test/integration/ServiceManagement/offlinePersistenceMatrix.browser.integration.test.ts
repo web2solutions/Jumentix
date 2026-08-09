@@ -826,7 +826,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
     }
   }, 120000);
 
-  it('a corrupted record reports lost — not empty — through the real port, and the designer recovers', async () => {
+  it('a corrupted record reports lost — not empty — through the real port, and the designer recovers and ANNOUNCES the loss (JUM-626)', async () => {
     expect.hasAssertions();
     const context = await browser!.newContext();
     const page = await context.newPage();
@@ -876,6 +876,12 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       // state renders — and the recovered save makes the record readable again.
       await page.reload({ waitUntil: 'load' });
       await page.waitForSelector('#tab-domain-designer-btn', { timeout: 15000 });
+      // JUM-626: the recovery is ANNOUNCED, never silent — the same data-lost
+      // declared state as probe-time eviction, naming the loss and the
+      // export/import recourse. Severity error persists in the region (only
+      // info toasts auto-hide), so the live region still carries it here.
+      await waitForStatusRegion(page, 'Your previously saved design could not be loaded');
+      await expect(statusRegionText(page)).resolves.toContain('Import JSON');
       await waitForGuidedEmptyState(page);
       await expect(domainListText(page)).resolves.not.toContain('CorruptionVictim');
       const healed = JSON.parse((await canaStateRecord(page)) as string) as {
