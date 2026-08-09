@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-09 ci: keep coverage free of live broker suites - Eduardo A.
 - 2026-08-09 [JUM-632][CI] Stabilize Redis database matrix smoke (#152) - Eduardo A.
 - 2026-08-09 ci: stabilize Redis database matrix smoke - Eduardo A.
 - 2026-08-09 [JUM-632][CI] Make Sonar scanner install idempotent (#151) - Eduardo A.
