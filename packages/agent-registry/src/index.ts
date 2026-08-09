@@ -2,11 +2,19 @@ export type {
   AgentRecord,
   AgentRegistrySnapshot,
   AgentStatus,
+  AgentBusEvent,
+  AgentBusEventKind,
+  AgentBusPresence,
   AssignTaskInput,
+  BusStatusResult,
   CompleteTaskInput,
   FirestoreLike,
   HeartbeatInput,
-  RegisterAgentInput
+  PublishProgressInput,
+  RegisterAgentInput,
+  RegistryCommandOptions,
+  RtdbLike,
+  WatchBusInput
 } from './types';
 
 export type { StoredAgent } from './firestore-client';
@@ -23,6 +31,21 @@ export {
   generateSnapshot,
   closeFirestore
 } from './firestore-client';
+
+export {
+  createRtdbClient,
+  closeRtdb,
+  sanitizeRtdbKey
+} from './rtdb-client';
+
+export {
+  publishProgress,
+  watchBus,
+  busStatus,
+  upsertPresence,
+  presenceFromAgent,
+  EVENT_KINDS
+} from './bus-commands';
 
 export {
   registerAgent,

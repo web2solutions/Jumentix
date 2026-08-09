@@ -57,6 +57,7 @@ describe('agent-registry firestore client', () => {
     expect(mockInitializeApp).toHaveBeenCalledWith({
       credential: { credential: expect.any(Object) }
     });
+    // FIREBASE_DATABASE_URL unset — Firestore-only init remains valid.
     expect(mockGetFirestore).toHaveBeenCalledTimes(1);
   });
 
@@ -98,9 +99,24 @@ describe('agent-registry firestore client', () => {
   it('exposes the runtime registry package surface from the index', () => {
     expect.hasAssertions();
 
-    expect(registry.createFirestoreClient).toBe(createFirestoreClient);
-    expect(registry.closeFirestore).toBe(closeFirestore);
-    expect(typeof registry.registerAgent).toBe('function');
-    expect(typeof registry.checkSnapshot).toBe('function');
+    expect({
+      createFirestoreClient: registry.createFirestoreClient,
+      closeFirestore: registry.closeFirestore,
+      registerAgent: typeof registry.registerAgent,
+      checkSnapshot: typeof registry.checkSnapshot,
+      createRtdbClient: typeof registry.createRtdbClient,
+      publishProgress: typeof registry.publishProgress,
+      watchBus: typeof registry.watchBus,
+      busStatus: typeof registry.busStatus
+    }).toStrictEqual({
+      createFirestoreClient,
+      closeFirestore,
+      registerAgent: 'function',
+      checkSnapshot: 'function',
+      createRtdbClient: 'function',
+      publishProgress: 'function',
+      watchBus: 'function',
+      busStatus: 'function'
+    });
   });
 });

@@ -2,7 +2,7 @@
   "name": "@jumentix/agent-registry",
   "version": "0.0.0",
   "private": true,
-  "description": "Firestore-backed agent registry for Jumentix multi-agent coordination",
+  "description": "Firestore agent registry + Firebase RTDB progress bus for Jumentix multi-agent coordination",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [

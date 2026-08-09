@@ -127,9 +127,23 @@ commands through `rtk`.
 `rtk` also warns `No hook installed — run 'rtk init -g' for automatic token savings`. That command
 changes global configuration outside this repository; it is the operator's decision, not an agent's.
 
+## 7. Agent progress bus (Requirement `129`)
+
+Peer sync uses Firebase RTDB. Prefer `rtk proxy` for the bus scripts:
+
+```
+rtk proxy bun run agent-bus:status -- --epic "<epic-url-or-id>"
+rtk proxy bun run agent-bus:publish -- --agent-id "<id>" --epic "<epic>" --task "<task>" --kind progress --summary "<short>"
+rtk proxy bun run agent-bus:watch -- --epic "<epic-url-or-id>"
+```
+
+Requires `FIREBASE_SERVICE_ACCOUNT_KEY` and `FIREBASE_DATABASE_URL`. Firestore remains ownership
+SSOT (`089`). Project Updates remain the human broadcast (`102` / `121`).
+
 ## Related
 
 - Requirement `127` — the obligation.
+- Requirement `129` — mandatory Firebase RTDB agent progress bus.
 - Requirements `106`, `110` — the Bun pin that makes `rtk proxy` necessary.
 - Requirement `099` — reading the requirement registry before executing.
 - [Portuguese version](AGENT-RTK-AND-CAVEMAN-GUIDE.pt-BR.md)

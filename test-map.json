@@ -3064,6 +3064,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "packages/agent-registry/test/bus-commands.test.ts",
+      "path": "packages/agent-registry/test/bus-commands.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "packages/agent-registry/test/commands.test.ts",
       "path": "packages/agent-registry/test/commands.test.ts",
       "layer": "adapters/out+infra",
@@ -3086,6 +3096,16 @@
     {
       "id": "packages/agent-registry/test/repair.test.ts",
       "path": "packages/agent-registry/test/repair.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "packages/agent-registry/test/rtdb-client.test.ts",
+      "path": "packages/agent-registry/test/rtdb-client.test.ts",
       "layer": "adapters/out+infra",
       "kind": "hexagonal",
       "type": "unit",
@@ -3693,9 +3713,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 187,
+    "unit": 189,
     "integration": 97,
     "smoke": 2,
-    "suites": 310
+    "suites": 312
   }
 }
