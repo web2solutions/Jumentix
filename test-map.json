@@ -3361,6 +3361,19 @@
       "timeoutMs": 300000
     },
     {
+      "id": "packages/cana/cypress/dist-bundle.cy.ts",
+      "path": "packages/cana/cypress/dist-bundle.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
       "id": "packages/cana/cypress/durability-policy.cy.ts",
       "path": "packages/cana/cypress/durability-policy.cy.ts",
       "layer": "browser-harness",
@@ -3584,6 +3597,6 @@
     "unit": 181,
     "integration": 97,
     "smoke": 2,
-    "suites": 300
+    "suites": 301
   }
 }
