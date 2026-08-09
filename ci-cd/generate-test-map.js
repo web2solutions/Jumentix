@@ -401,7 +401,7 @@ function buildManifest(root = process.cwd()) {
     tooling: {
       dependsOn: [],
       // Pipeline definitions and root tooling configuration belong to this layer.
-      // Without them a change touching only `.circleci/config.yml` or
+      // Without them a change touching only `.github/workflows/ci.yml` or
       // `test-map.json` maps to no layer and no suite, and the task gate refuses
       // it as an `unsupported-change-set` — correct for a file nobody can
       // classify, wrong for the configuration that drives the gates themselves.
@@ -410,7 +410,6 @@ function buildManifest(root = process.cwd()) {
         'tooling/**',
         'apps/jumentix-website/**',
         '.github/**',
-        '.circleci/**',
         'test-map.json',
         'jest.config.js',
         'sonar-project.properties',
@@ -590,7 +589,7 @@ function buildManifest(root = process.cwd()) {
     },
     gateTable: {
       task: { script: 'ci:gate:task', mode: 'layer-aware' },
-      dev: { script: 'test:unit', mode: 'full-unit+contract' },
+      dev: { script: 'test:unit', mode: 'cheap-health' },
       main: { script: 'ci:gate:strict', mode: 'full-matrix' }
     },
     flags: {

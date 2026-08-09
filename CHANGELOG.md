@@ -8,6 +8,16 @@
 - 2026-08-08 chore(cana): register JUM-615 Cypress specs in test-map - Eduardo A.
 - 2026-08-08 chore(cana): satisfy ESLint on JUM-615 fallback and coverage files - Eduardo A.
 - 2026-08-08 feat(cana): localStorage fallback, real Workers, 100% src coverage (JUM-615) - Eduardo A.
+- 2026-08-09 [JUM-631][CI] Make dev delivery gates cheap and context-aware (#144) - Eduardo A.
+- 2026-08-09 ci: run GitHub Actions on self-hosted runner - Eduardo A.
+- 2026-08-09 ci: replace CircleCI with GitHub Actions - Eduardo A.
+- 2026-08-09 test: isolate branch gate tests from CircleCI env - Eduardo A.
+- 2026-08-09 ci: treat unselected CircleCI jobs as skipped - Eduardo A.
+- 2026-08-09 Merge remote-tracking branch 'origin/dev' into codex/ci/JUM-631-fast-cheap-dev-ci - Eduardo A.
+- 2026-08-09 ci: make context classifier runtime configurable - Eduardo A.
+- 2026-08-09 ci: make dev delivery gates cheap and context-aware - Eduardo A.
+- 2026-08-09 [JUM-631][Governance] Requirement 128 — requirement changes take precedence in the release process (#143) - Eduardo A.
+- 2026-08-09 docs(governance): add requirement 128 for release precedence of requirement changes - Eduardo Almeida
 - 2026-08-09 [JUM-630][Governance] Requirement 127 — mandatory rtk and Caveman in every agent session (#142) - Eduardo A.
 - 2026-08-09 docs(governance): teach rtk and caveman, EN and PT-BR - Eduardo Almeida
 - 2026-08-09 docs(governance): add requirement 127 for mandatory rtk and caveman - Eduardo Almeida

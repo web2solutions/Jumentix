@@ -5,7 +5,6 @@ const { isEntryPoint } = require('./lib/entry-point.js');
 const ROOT_MARKERS = [
   'package.json',
   'bun.lock',
-  '.circleci/config.yml',
   '.github',
   'ci-cd',
   'tsconfig',

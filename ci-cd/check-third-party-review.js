@@ -7,13 +7,13 @@ const YAML = require('yaml');
 const root = path.resolve(__dirname, '..');
 const contracts = [
   {
-    file: '.circleci/config.yml',
+    file: '.github/workflows/ci.yml',
     markers: [
       'third-party-review:',
       'gitleaks.sarif',
       'semgrep.sarif',
       'Enforce scanner outcomes',
-      'store_artifacts',
+      'actions/upload-artifact@v7',
       '$HOME/review-tools/semgrep'
     ]
   },
@@ -62,14 +62,14 @@ function reviewJobFailures(configText) {
   try {
     config = YAML.parse(configText);
   } catch (error) {
-    return [`.circleci/config.yml is not parseable YAML: ${error.message}`];
+    return [`.github/workflows/ci.yml is not parseable YAML: ${error.message}`];
   }
 
   const job = config?.jobs?.['third-party-review'];
   if (!job) {
     // Fail closed. A missing job is not an absent violation; it means the
     // contract this check exists to hold is not being run at all.
-    return ['.circleci/config.yml declares no "third-party-review" job'];
+    return ['.github/workflows/ci.yml declares no "third-party-review" job'];
   }
 
   const steps = Array.isArray(job.steps) ? job.steps : [];
@@ -77,7 +77,7 @@ function reviewJobFailures(configText) {
 
   if (stepNames.includes('setup_remote_docker')) {
     problems.push(
-      'third-party CircleCI job must run native pinned scanners without remote Docker workspace mounts'
+      'third-party GitHub Actions job must run native pinned scanners without remote Docker workspace mounts'
     );
   }
 
@@ -88,24 +88,24 @@ function reviewJobFailures(configText) {
 
   if (commands.some((command) => /\bdocker\s+run\b/.test(command))) {
     problems.push(
-      'third-party CircleCI job must run native pinned scanners without remote Docker workspace mounts'
+      'third-party GitHub Actions job must run native pinned scanners without remote Docker workspace mounts'
     );
   }
 
   if (commands.some((command) => /\buses:\s*\S+@(v\d+|main|master)\b/.test(command))) {
-    problems.push('third-party CircleCI job contains a mutable action reference');
+    problems.push('third-party GitHub Actions job contains a mutable action reference');
   }
 
   return problems;
 }
 
-const circleci = fs.existsSync(path.join(root, contracts[0].file))
+const workflow = fs.existsSync(path.join(root, contracts[0].file))
   ? fs.readFileSync(path.join(root, contracts[0].file), 'utf8') : '';
-failures.push(...reviewJobFailures(circleci));
+failures.push(...reviewJobFailures(workflow));
 
 if (failures.length) {
   console.error('Third-party review contract failed:\n');
   failures.forEach((failure) => console.error(`- ${failure}`));
   process.exit(1);
 }
-console.log('Third-party review contract passed: pinned Gitleaks and native Semgrep are fail-closed in CircleCI.');
+console.log('Third-party review contract passed: pinned Gitleaks and native Semgrep are fail-closed in GitHub Actions.');

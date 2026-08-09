@@ -2,19 +2,20 @@
 
 ## Decision
 
-Jumentix remains private under `XpertMinds`. CircleCI is the canonical CI
-orchestrator while GitHub Actions billing blocks hosted execution; evidence is
-generated and retained by the repository wherever a hosted service charges for
-private-repository enforcement. Required checks fail closed and no skipped,
-neutral, missing, timed-out, or pending result is green.
+Jumentix remains private under `XpertMinds`. GitHub Actions is the canonical CI
+orchestrator again, CircleCI is disabled, and repository-owned self-hosted
+runners provide the zero-cost execution path while hosted billing blocks runner
+startup. Evidence is generated and retained by the repository wherever a hosted
+service charges for private-repository enforcement. Required checks fail closed
+and no skipped, neutral, missing, timed-out, or pending result is green.
 
 ## Free replacement map
 
 | Retired or unreliable service | Repository-owned replacement | Required evidence |
 | --- | --- | --- |
-| GitHub Actions billing | CircleCI branch-aware workflow | `branch-gate` plus JSON gate artifact |
-| Codecov private checks | Jest/Bun LCOV, project threshold and changed-lines checkers, then Codecov CLI upload from CircleCI | `coverage`, JSON, LCOV, patch evidence, and `codecov` upload |
-| GitGuardian | pinned Gitleaks CLI in CircleCI | SARIF artifacts and terminal `third-party-review` result |
+| Hosted CI drift | GitHub Actions branch-aware workflow on the `jumentix` self-hosted runner | `branch-gate` plus JSON gate artifact |
+| Codecov private checks | Jest/Bun LCOV, project threshold and changed-lines checkers, then Codecov CLI upload from GitHub Actions | `coverage`, JSON, LCOV, patch evidence, and `codecov` upload |
+| GitGuardian | pinned Gitleaks CLI in GitHub Actions | SARIF artifacts and terminal `third-party-review` result |
 | Snyk private enforcement | `bun audit`, override integrity and pinned Semgrep | dependency/security cells and SARIF artifacts |
 | Hosted PR reviewer dependency | repository-owned Semgrep and Gitleaks scanners | required `third-party-review` check |
 
@@ -29,15 +30,18 @@ Task PRs target `dev`; only release promotion from `dev` targets `main`.
 
 | Gate | `dev` task PR | `dev` push | `dev -> main` promotion |
 | --- | --- | --- | --- |
-| Branch-aware build/test | required, affected tests | required, canonical unit gate | required, full strict matrix |
-| Repository-owned coverage | required | required | required |
-| Third-party review | required | required | required |
-| Sonar quality gate | required | required | required while available |
-| Storybook/site quality | required when triggered | required | required |
-| Governance/traceability | required in selected matrix | required | required |
+| Branch-aware build/test | required, layer-affected tests | required, unit health gate | required, full strict matrix |
+| Repository-owned coverage | deferred to promotion | deferred to promotion | required |
+| Third-party review | required | not required | required |
+| Sonar quality gate | deferred to promotion | deferred to promotion | required while available |
+| Storybook/site quality | only when selected by the map | deferred to promotion | required |
+| Governance/traceability | required in the cheap gate | required | required |
 
-The strict matrix includes toolchain, dependency audit, secret/security smoke,
-architecture boundaries, workspace policy, requirements/NFR, registry source,
+Task PRs to `dev` have a ten-minute-or-less operating target. `branch-gate`
+classifies the context, reads `test-map.json`, and runs only affected/related
+suites plus lightweight governance and security checks. The strict matrix
+includes toolchain, dependency audit, secret/security smoke, architecture
+boundaries, workspace policy, requirements/NFR, registry source,
 unit/integration/e2e suites, coverage, OpenAPI/serverless contracts, build and
 smoke cells. Every cell emits terminal evidence; failures are fixed, never
 bypassed.
@@ -47,13 +51,13 @@ bypassed.
 - Statements, lines and functions: 99%.
 - Branches: 90%.
 - Changed lines: 99%.
-- CircleCI retains JSON and LCOV for independent audit and uploads LCOV to Codecov for visibility.
-- Local production/development gates stay fast: full coverage production and patch coverage are required in CircleCI for `dev` and `main`, not inside local `ci:gate`.
+- GitHub Actions retains JSON and LCOV for independent audit and uploads LCOV to Codecov for visibility.
+- Local gates and PRs up to `dev` stay fast: full coverage production and patch coverage are required in GitHub Actions for `dev -> main` promotions, `main` pushes, and scheduled full runs.
 - README branch badges and the coverage map point only to canonical workflows.
 
 ## Third-party review contract
 
-The CircleCI `third-party-review` job runs pinned Gitleaks and Semgrep binaries.
+The GitHub Actions `third-party-review` job runs pinned Gitleaks and Semgrep binaries.
 Downloads are checksum-verified, SARIF is retained, and scanner errors or
 findings return a non-zero terminal result. Mutable tags and silent
 `continue-on-error` paths are rejected by `ci:check-third-party-review`.
@@ -69,8 +73,8 @@ tests, coverage, human accountability, or resolution of valid PR comments.
    upgrades through governed PRs with checksum and contract tests.
 3. Retain gate, coverage, SARIF and scanner artifacts for the workflow retention
    window; never put secrets in logs or artifacts.
-4. If CircleCI capacity is unavailable, use an ephemeral XpertMinds self-hosted
-   runner with the same Bun commands and no persistent credentials. Local
+4. If the `jumentix` runner is unavailable, use an ephemeral XpertMinds self-hosted
+   GitHub Actions runner with the same labels, Bun commands and no persistent credentials. Local
    execution is diagnostic only; protected remote checks must still finish.
 5. If a provider stops working, fail closed, record the outage in the Linear
    Project Update, replace it with a pinned repository-owned tool, and change
@@ -83,9 +87,11 @@ tests, coverage, human accountability, or resolution of valid PR comments.
 - `branch-gate`
 - `coverage`
 - `third-party-review`
-- `codecov`
-- `sonarqube`
 - `website`
+- `workspace-builds`
+- `workspace-tests`
+- `integration`
+- `database-matrix`
 
 Cursor Bugbot is neutral/skipped and is not evidence. A future hosted reviewer
 may be defense in depth only; it cannot replace the pinned fail-closed workflow.
