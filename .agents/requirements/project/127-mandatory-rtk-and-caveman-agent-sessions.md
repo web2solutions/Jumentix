@@ -63,4 +63,7 @@ not been compressed. It has been degraded.
   typed, so this requirement is attestation-based in the same way Requirement `090`'s delegation
   fields were before `JUM-627` made one of them verifiable against Linear. Adding a declared,
   checked field is a separate decision and belongs to its own issue.
+- Operational guide: `documentation/md/AGENT-RTK-AND-CAVEMAN-GUIDE.md` and its PT-BR counterpart
+  — command map, the `rtk proxy bun run` rule, compression examples, and accepted replacement
+  patterns for agents lacking either tool.
 - Complements requirements `099`, `106`, `110`, and `114`.

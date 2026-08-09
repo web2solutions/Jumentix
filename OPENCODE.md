@@ -4,7 +4,7 @@ This repository supports OpenCode as an official engineering agent.
 
 ## Working Rules
 
-1. Execute repository commands using `rtk`, and compress your own prose with Caveman (Requirement `127`). Never compress code, commands, paths, identifiers, error messages, test counts, timings, or CI states — reproduce those verbatim. Bun scripts run as `rtk proxy bun run <script>`; where an agent lacks either tool, a declared replacement pattern is mandatory.
+1. Execute repository commands using `rtk`, and compress your own prose with Caveman (Requirement `127`). Never compress code, commands, paths, identifiers, error messages, test counts, timings, or CI states — reproduce those verbatim. Bun scripts run as `rtk proxy bun run <script>`; where an agent lacks either tool, a declared replacement pattern is mandatory. How to do it: `documentation/md/AGENT-RTK-AND-CAVEMAN-GUIDE.md` (PT-BR: `documentation/md/AGENT-RTK-AND-CAVEMAN-GUIDE.pt-BR.md`).
 2. Follow every file in `.agents/requirements/` and `.agents/NFR-REGISTRY.md`.
 3. Use Linear as the source of truth for projects and tasks; never expose its API credential.
 4. Before every task, fetch and read current `main` and `dev`, read the complete requirements inventory, NFR registry, and canonical specification index; block execution until current requirements are understood.
