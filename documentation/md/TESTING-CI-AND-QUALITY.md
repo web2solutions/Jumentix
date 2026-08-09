@@ -152,9 +152,10 @@ The selector reads `JUMENTIX_QUALITY_GATE_TARGET` and the PR flag
 (`CIRCLE_PULL_REQUEST` or `AAA_CI_IS_PULL_REQUEST`). A task branch runs
 `bun run ci:gate:task`, which executes only changed unit tests or tests related
 to changed implementation files. A direct `dev` push runs the complete
-`bun run test:unit` suite. A PR targeting `dev` or any `main` path runs
-`bun run ci:gate:strict`, the full local non-coverage matrix. This keeps task
-feedback focused, integration evidence complete, and release promotion strict.
+`bun run test:unit` suite. A PR targeting `dev` runs `bun run ci:gate:task`
+plus lightweight review. A release-promotion PR to `main` or any `main` path
+runs `bun run ci:gate:strict`, the full local non-coverage matrix. This keeps
+task feedback focused, `dev` delivery cheap, and release promotion strict.
 Documentation-only task changes emit explicit `not-applicable` task evidence after validating
 the changed Markdown files; they do not manufacture a passing test result.
 
@@ -170,10 +171,10 @@ Remote enforcement:
 
 - CircleCI invokes `bun run ci:gate:branch` while GitHub Actions billing blocks hosted execution
 - CircleCI passes the PR base branch or pushed branch explicitly, marks PR events, and stores branch-gate evidence even after failure
-- CircleCI owns full coverage production and patch coverage for `dev` and `main`; local gates stay fast and diagnostic
+- CircleCI owns full coverage production and patch coverage for `dev -> main` promotions, `main` pushes, and scheduled full runs; local gates and PRs up to `dev` stay fast and diagnostic
 - Task-branch push events compare `origin/dev...HEAD`; hosted CI never uses the local staged-diff mode
 - CircleCI stores `artifacts/ci/full-test-matrix.json` when the branch gate selects the full matrix
-- `.circleci/config.yml` independently runs Storybook build/smoke and website prepublish checks for both `dev` and `main`
+- `.circleci/config.yml` independently runs Storybook build/smoke and website prepublish checks only for release/full contexts
 - Storybook is absent from the repository full matrix
 - `ci:monorepo` remains a compatibility entrypoint but cannot select a reduced docs-only plan
 

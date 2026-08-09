@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-08-09 [JUM-630][Governance] Requirement 127 — mandatory rtk and Caveman in every agent session (#142) - Eduardo A.
+- 2026-08-09 docs(governance): teach rtk and caveman, EN and PT-BR - Eduardo Almeida
 - 2026-08-09 docs(governance): add requirement 127 for mandatory rtk and caveman - Eduardo Almeida
 - 2026-08-08 [JUM-493][Feature] Designer core as @jumentix package with publish dry-run (#137) - Eduardo A.
 - 2026-08-08 fix(JUM-629): re-export Cana barrel with export `*` so bun 1.3.14 emits no dangling bindings (#141) - Eduardo A.

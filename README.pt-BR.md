@@ -38,11 +38,17 @@ Idioma alvo: Português (Brasil)
 | Workflow CircleCI | [![Pipeline CircleCI main](https://img.shields.io/badge/CircleCI-main%20pipeline-343434?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/XpertMinds/Jumentix?branch=main) | [![Pipeline CircleCI dev](https://img.shields.io/badge/CircleCI-dev%20pipeline-343434?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/XpertMinds/Jumentix?branch=dev) |
 | Cobertura de projeto no Codecov | [![Codecov main](https://codecov.io/gh/XpertMinds/Jumentix/branch/main/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/main) | [![Codecov dev](https://codecov.io/gh/XpertMinds/Jumentix/branch/dev/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev) |
 | Testes por branch | `branch-gate` | `branch-gate` |
-| Cobertura de projeto + patch | `coverage` | `coverage` |
-| Review de segurança third-party | `third-party-review` | `third-party-review` |
+| Cobertura de projeto + patch | `coverage` | somente promoção de release |
+| Review de segurança third-party | `third-party-review` | somente PR |
 
-A cobertura é produzida e aplicada pelo job CircleCI `coverage` para `dev` e
-`main`. O CircleCI também envia LCOV ao Codecov com a flag `project` quando
+PRs de feature, fix, docs e CI miram `dev` e rodam o gate barato sensível a
+camadas selecionado por `test-map.json`; o alvo é dez minutos ou menos. Jobs
+completos de workspace, browser, cobertura, website e banco ficam reservados
+para promoções de release `dev -> main`, pushes em `main` e execuções completas
+agendadas.
+
+A cobertura é produzida e aplicada pelo job CircleCI `coverage` quando a suite
+completa roda. O CircleCI envia LCOV ao Codecov com a flag `project` quando
 `CODECOV_TOKEN` está configurado. O Codecov fornece o mapa de cobertura arquivo
 a arquivo para cada branch longa:
 

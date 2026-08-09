@@ -29,15 +29,18 @@ Task PRs target `dev`; only release promotion from `dev` targets `main`.
 
 | Gate | `dev` task PR | `dev` push | `dev -> main` promotion |
 | --- | --- | --- | --- |
-| Branch-aware build/test | required, affected tests | required, canonical unit gate | required, full strict matrix |
-| Repository-owned coverage | required | required | required |
-| Third-party review | required | required | required |
-| Sonar quality gate | required | required | required while available |
-| Storybook/site quality | required when triggered | required | required |
-| Governance/traceability | required in selected matrix | required | required |
+| Branch-aware build/test | required, layer-affected tests | required, unit health gate | required, full strict matrix |
+| Repository-owned coverage | deferred to promotion | deferred to promotion | required |
+| Third-party review | required | not required | required |
+| Sonar quality gate | deferred to promotion | deferred to promotion | required while available |
+| Storybook/site quality | only when selected by the map | deferred to promotion | required |
+| Governance/traceability | required in the cheap gate | required | required |
 
-The strict matrix includes toolchain, dependency audit, secret/security smoke,
-architecture boundaries, workspace policy, requirements/NFR, registry source,
+Task PRs to `dev` have a ten-minute-or-less operating target. `branch-gate`
+classifies the context, reads `test-map.json`, and runs only affected/related
+suites plus lightweight governance and security checks. The strict matrix
+includes toolchain, dependency audit, secret/security smoke, architecture
+boundaries, workspace policy, requirements/NFR, registry source,
 unit/integration/e2e suites, coverage, OpenAPI/serverless contracts, build and
 smoke cells. Every cell emits terminal evidence; failures are fixed, never
 bypassed.
@@ -48,7 +51,7 @@ bypassed.
 - Branches: 90%.
 - Changed lines: 99%.
 - CircleCI retains JSON and LCOV for independent audit and uploads LCOV to Codecov for visibility.
-- Local production/development gates stay fast: full coverage production and patch coverage are required in CircleCI for `dev` and `main`, not inside local `ci:gate`.
+- Local gates and PRs up to `dev` stay fast: full coverage production and patch coverage are required in CircleCI for `dev -> main` promotions, `main` pushes, and scheduled full runs.
 - README branch badges and the coverage map point only to canonical workflows.
 
 ## Third-party review contract

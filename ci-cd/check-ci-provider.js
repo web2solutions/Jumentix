@@ -16,6 +16,10 @@ if (!fs.existsSync(circleciPath)) {
   const contents = fs.readFileSync(circleciPath, 'utf8');
   const requiredMarkers = [
     /version:\s*2\.1/,
+    /prepare_ci_context:/,
+    /halt_unselected_job:/,
+    /classify-ci-context\.js/,
+    /--require-job/,
     /branch-gate:/,
     /workspace-builds:/,
     /workspace-tests:/,
@@ -31,7 +35,15 @@ if (!fs.existsSync(circleciPath)) {
     /ci:gate:branch/,
     /JUMENTIX_CI_GATE_RESULT_FILE:\s*artifacts\/ci\/branch-quality-gate\.json/,
     /JUMENTIX_CI_MATRIX_RESULT_FILE:\s*artifacts\/ci\/full-test-matrix\.json/,
+    /JUMENTIX_PR_BASE_REF/,
     /JUMENTIX_FULL_MATRIX_SKIP_CELLS:\s*workspace-builds,workspace-tests,website-prepublish,integration/,
+    /job:\s*workspace-builds\s*(?:\n|$)/,
+    /job:\s*workspace-tests\s*(?:\n|$)/,
+    /job:\s*integration\s*(?:\n|$)/,
+    /job:\s*coverage\s*(?:\n|$)/,
+    /job:\s*website\s*(?:\n|$)/,
+    /job:\s*third-party-review\s*(?:\n|$)/,
+    /job:\s*database-matrix\s*(?:\n|$)/,
     /bun run mono:build/,
     /bun run mono:test/,
     /bun run ci:integration/,
@@ -67,6 +79,14 @@ if (!fs.existsSync(circleciPath)) {
   for (const marker of requiredMarkers) {
     if (!marker.test(contents)) failures.push(`.circleci/config.yml is missing ${String(marker)}`);
   }
+  for (const job of ['workspace-builds', 'workspace-tests', 'integration', 'coverage', 'website', 'database-matrix']) {
+    const filteredToLongLivedBranches = new RegExp(
+      `- ${job}:\\n\\s+filters:\\n\\s+branches:\\n\\s+only:\\n\\s+- dev\\n\\s+- main`
+    );
+    if (!filteredToLongLivedBranches.test(contents)) {
+      failures.push(`.circleci/config.yml must filter ${job} to dev/main before context guards run`);
+    }
+  }
   [
     /\n\s+- codecov:\s*\n/,
     /\n\s+- sonarqube:\s*\n/
@@ -99,6 +119,6 @@ if (failures.length > 0) {
 }
 
 console.log(
-  'CI provider check passed: CircleCI covers branch gates, coverage, website validation, '
-    + 'third-party review, and in-job Codecov/Sonar coverage publishing without GitHub Actions billing.'
+  'CI provider check passed: CircleCI covers cheap dev gates, full main promotion gates, '
+    + 'coverage, website validation, third-party review, and in-job Codecov/Sonar publishing.'
 );

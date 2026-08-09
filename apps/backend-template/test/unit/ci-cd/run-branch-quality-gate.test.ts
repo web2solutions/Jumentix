@@ -59,17 +59,17 @@ describe('run-branch-quality-gate', () => {
     expect(selectQualityGate('dev', { isPullRequest: false })).toBe(UNIT_QUALITY_GATE);
   });
 
-  it('selects the canonical full matrix for pull requests to dev', () => {
+  it('selects the change-focused gate for pull requests to dev', () => {
     expect.hasAssertions();
-    expect(selectQualityGate('dev', { isPullRequest: true })).toBe(FULL_MATRIX_QUALITY_GATE);
+    expect(selectQualityGate('dev', { isPullRequest: true })).toBe(TASK_QUALITY_GATE);
   });
 
-  it('selects the canonical full matrix for environment-marked pull requests to dev', () => {
+  it('selects the change-focused gate for environment-marked pull requests to dev', () => {
     expect.hasAssertions();
     const previous = process.env.AAA_CI_IS_PULL_REQUEST;
     process.env.AAA_CI_IS_PULL_REQUEST = '1';
     try {
-      expect(selectQualityGate('dev')).toBe(FULL_MATRIX_QUALITY_GATE);
+      expect(selectQualityGate('dev')).toBe(TASK_QUALITY_GATE);
     } finally {
       restorePullRequestEnvFlag(previous);
     }
@@ -108,13 +108,15 @@ describe('run-branch-quality-gate', () => {
       'lint', 'task-changes',
       'lint', 'unit',
       'full-matrix',
-      'full-matrix'
+      'lint', 'task-changes'
     ]);
     const lintPassed = [{ id: 'lint', script: 'lint', status: 0 }];
     expect(taskEvidence).toStrictEqual({
       schemaVersion: 2,
       targetBranch: 'codex/ci/191-example',
       isPullRequest: false,
+      context: null,
+      selectedJobs: null,
       gate: 'task-changes',
       script: 'ci:gate:task',
       preflight: lintPassed,
@@ -125,6 +127,8 @@ describe('run-branch-quality-gate', () => {
       schemaVersion: 2,
       targetBranch: 'dev',
       isPullRequest: false,
+      context: null,
+      selectedJobs: null,
       gate: 'unit',
       script: 'test:unit',
       preflight: lintPassed,
@@ -135,6 +139,8 @@ describe('run-branch-quality-gate', () => {
       schemaVersion: 2,
       targetBranch: 'main',
       isPullRequest: false,
+      context: null,
+      selectedJobs: null,
       gate: 'full-matrix',
       script: 'ci:gate:strict',
       preflight: [],
@@ -145,12 +151,82 @@ describe('run-branch-quality-gate', () => {
       schemaVersion: 2,
       targetBranch: 'dev',
       isPullRequest: true,
-      gate: 'full-matrix',
-      script: 'ci:gate:strict',
-      preflight: [],
+      context: null,
+      selectedJobs: null,
+      gate: 'task-changes',
+      script: 'ci:gate:task',
+      preflight: lintPassed,
       outcome: 'passed',
       status: 0
     });
+  });
+
+  it('selects the full matrix only for release promotions, main, and scheduled full contexts', () => {
+    expect.hasAssertions();
+    expect([
+      selectQualityGate('dev', { context: 'task-pr-to-dev' }),
+      selectQualityGate('dev', { context: 'task-branch-push' }),
+      selectQualityGate('dev', { context: 'dev-push' }),
+      selectQualityGate('main', { context: 'release-pr-to-main' }),
+      selectQualityGate('main', { context: 'main-push' }),
+      selectQualityGate('main', { context: 'scheduled-full' })
+    ]).toStrictEqual([
+      TASK_QUALITY_GATE,
+      TASK_QUALITY_GATE,
+      UNIT_QUALITY_GATE,
+      FULL_MATRIX_QUALITY_GATE,
+      FULL_MATRIX_QUALITY_GATE,
+      FULL_MATRIX_QUALITY_GATE
+    ]);
+  });
+
+  it('records CI context evidence when CircleCI metadata is available', () => {
+    expect.hasAssertions();
+    const execute = jest.fn().mockReturnValue(0);
+    const evidence = runBranchQualityGate({
+      env: {
+        CIRCLE_BRANCH: 'codex/feature/JUM-631-fast-ci',
+        CIRCLE_PULL_REQUEST: 'https://github.com/XpertMinds/Jumentix/pull/200',
+        CIRCLE_PR_BASE_BRANCH: 'dev'
+      },
+      spawn: jest.fn().mockReturnValue({ status: 0, stdout: 'ci-cd/run-branch-quality-gate.js\n' }),
+      execute,
+      logger: { log: jest.fn(), error: jest.fn() },
+      resultFile: ''
+    });
+
+    expect(evidence).toMatchObject({
+      targetBranch: 'dev',
+      isPullRequest: true,
+      context: 'task-pr-to-dev',
+      selectedJobs: ['branch-gate', 'third-party-review'],
+      gate: 'task-changes',
+      script: 'ci:gate:task'
+    });
+    expect(stepIds(execute)).toStrictEqual(['lint', 'task-changes']);
+  });
+
+  it('fails closed when CI pull request context is incomplete', () => {
+    expect.hasAssertions();
+    const execute = jest.fn().mockReturnValue(0);
+    const evidence = runBranchQualityGate({
+      env: {
+        CIRCLE_BRANCH: 'codex/feature/JUM-631-fast-ci',
+        CIRCLE_PULL_REQUEST: 'https://github.com/XpertMinds/Jumentix/pull/200'
+      },
+      execute,
+      logger: { log: jest.fn(), error: jest.fn() },
+      resultFile: ''
+    });
+
+    expect(evidence).toMatchObject({
+      gate: 'context-classification',
+      script: 'classify-ci-context',
+      outcome: 'failed',
+      status: 1,
+      error: '[ci-context] pull request context is missing the base branch'
+    });
+    expect(execute).not.toHaveBeenCalled();
   });
 
   it('resolves explicit pull request flags', () => {

@@ -2,7 +2,7 @@
 
 - Status: Active
 - Nature: NFR (CI/CD, security, coverage, governance)
-- Source: Project owner decision, 2026-08-01; amended 2026-08-03 after GitHub Actions billing stopped hosted execution.
+- Source: Project owner decision, 2026-08-01; amended 2026-08-03 after GitHub Actions billing stopped hosted execution; amended 2026-08-09 to keep task delivery to `dev` under a cheap layer-aware gate.
 - Amends: `107` CircleCI redundancy.
 - Replaces: `014` external Codecov dependency with CircleCI-hosted Codecov publishing.
 
@@ -14,7 +14,7 @@
 4. Coverage is produced by Jest, checked fail-closed by `ci-cd/check-coverage-thresholds.js`, and checked at patch level by `ci-cd/check-patch-coverage.js`. Missing reports fail.
 5. Coverage evidence is uploaded as a CircleCI artifact and published to Codecov from CircleCI when `CODECOV_TOKEN` is configured. Codecov publishing is required for visibility, but Codecov is not the coverage authority and cannot weaken repository-owned thresholds.
 6. GitHub Actions workflows are disabled in this repository while billing prevents execution. A configured but quota-blocked duplicate pipeline is not redundancy and must not be represented as a passing provider.
-7. The full coverage gate runs in CircleCI for both `dev` and `main` so local production/development flows remain fast. Local commands may run coverage diagnostically, but local `ci:gate` and `ci:gate:strict` must not be the production coverage authority.
+7. The full coverage gate runs in CircleCI for `dev -> main` release promotions, `main` pushes, and scheduled full runs so task delivery to `dev` remains fast. Local commands may run coverage diagnostically, but local `ci:gate` and task PR gates must not be the production coverage authority.
 8. SonarQube Cloud may remain as defense-in-depth while operational, but repository-owned coverage and security gates remain authoritative if it becomes unavailable.
 9. CircleCI jobs use frozen dependencies, deterministic pinned tools/images where available, explicit failure on missing evidence, and retained evidence artifacts.
 10. Pending, skipped, missing, timed-out, cancelled, quota-blocked, or provider-inaccessible checks are never passing.
@@ -22,9 +22,11 @@
 
 ## Required CI plan
 
-- Task branches: changed/related tests plus governance, security, architecture, coverage-policy, and third-party review checks.
-- PRs to `dev`: complete unit/coverage gate, website gate, security/review gate, and Sonar defense-in-depth while configured.
-- Promotions to `main`: the same CircleCI checks must be green on `main` after promotion; Sonar runs on both `dev` and `main`.
+- Task branches: changed/related tests selected from `test-map.json`.
+- PRs to `dev`: the layer-aware task gate, plus mandatory lightweight third-party review; operational target is ten minutes or less.
+- Pushes to `dev`: cheap unit health gate.
+- Promotions to `main`: complete strict matrix, coverage, website, database smoke, third-party review, Codecov publishing, and Sonar defense-in-depth while configured.
+- Pushes to `main`: the same full suite remains mandatory after promotion.
 - Scheduled/manual: full history secret scan, dependency audit, workflow lint, and complete strict matrix.
 
 ## Temporary bridge: CircleCI (owner decision, 2026-08-03)
@@ -40,5 +42,5 @@ The §3 condition is currently false: the account's GitHub Actions allowance rej
 
 - `bun run ci:check-provider`
 - `bun run integrations:check`
-- CircleCI `coverage` job: `bun run test:coverage && bun run coverage:check && bun run coverage:patch`, followed by Codecov upload.
-- Required checks use CircleCI job names for both `dev` and `main`: `branch-gate`, `coverage`, `website`, `third-party-review`, `codecov`, and `sonarqube` where configured.
+- CircleCI `coverage` job during full-suite contexts: `bun run test:coverage && bun run coverage:check && bun run coverage:patch`, followed by Codecov upload.
+- Required task PR checks use CircleCI job names `branch-gate` and `third-party-review`; required release/main checks use `branch-gate`, `workspace-builds`, `workspace-tests`, `integration`, `coverage`, `website`, `third-party-review`, and `database-matrix`.

@@ -16,11 +16,11 @@ that integration stage. Applying a reduced gate to `main` would weaken release s
    selects it.
 3. Commits, pushes, and merges whose destination is `main` must run the canonical full
    non-coverage matrix: `bun run ci:gate:strict`. Full coverage is the required
-   CircleCI `coverage` job for `dev` and `main`.
+   CircleCI `coverage` job for `dev -> main` promotions, `main` pushes, and scheduled full runs.
 4. Local commits and pushes to feature, docs, fix, and other task branches run
-   only specialized changed/related tests. A PR to `dev` runs the full local
-   non-coverage matrix in CircleCI; a release-promotion PR from `dev` to `main`
-   runs the same full matrix.
+   only specialized changed/related tests. A PR to `dev` runs the layer-aware
+   specialized gate plus lightweight review in CircleCI; a release-promotion PR
+   from `dev` to `main` runs the full matrix.
 5. The branch-aware selector must fail closed for command crashes, missing status, and
    non-zero exit status, and must emit auditable JSON evidence.
 6. This policy does not relax branch protection, task isolation, coverage thresholds,
@@ -36,13 +36,13 @@ that integration stage. Applying a reduced gate to `main` would weaken release s
   selector.
 - CircleCI passes the PR base branch or pushed branch explicitly.
 - CircleCI runs the tracked target-aware workflow for PRs to `dev`, promotions
-  to `main`, and pushes to both long-lived branches while Requirement `113`
-  keeps GitHub Actions disabled by billing.
+  to `main`, pushes to long-lived branches, and scheduled full runs while
+  Requirement `113` keeps GitHub Actions disabled by billing.
 
 ## Acceptance Criteria
 
 - Task branches invoke `ci:gate:task`; direct `dev` pushes invoke `test:unit`;
-  PRs targeting `dev` invoke `ci:gate:strict`.
+  PRs targeting `dev` invoke `ci:gate:task`.
 - `main` paths invoke `ci:gate:strict`.
 - Unit tests cover branch selection, evidence generation, failed status, and crashes.
 - Requirements, NFR registry, agent instructions, and Spec Development Driven documents

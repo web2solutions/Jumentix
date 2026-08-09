@@ -3,6 +3,8 @@ const taskFs = require('fs');
 const taskPath = require('path');
 const {
   createTaskTestPlan,
+  documentationRequiresRegistryCheck,
+  executeDocumentationValidation,
   normalizeFiles,
   readChangedFiles,
   runTaskChangeTests,
@@ -134,6 +136,39 @@ describe('run-task-change-tests', () => {
     expect(validateDocumentationFiles(['valid.md'], rootDir)).toBe(0);
     expect(validateDocumentationFiles(['missing.md'], rootDir)).toBe(1);
     expect(validateDocumentationFiles(['conflict.md'], rootDir)).toBe(1);
+    taskFs.rmSync(rootDir, { recursive: true, force: true });
+  });
+
+  it('runs the requirements registry check for requirement documentation changes', () => {
+    expect.hasAssertions();
+    const rootDir = taskFs.mkdtempSync(taskPath.join(require('os').tmpdir(), 'task-docs-'));
+    taskFs.mkdirSync(taskPath.join(rootDir, '.agents/requirements/project'), { recursive: true });
+    taskFs.writeFileSync(
+      taskPath.join(rootDir, '.agents/requirements/project/999-example.md'),
+      '# Requirement 999\n'
+    );
+    const spawn = jest.fn().mockReturnValue({ status: 0 });
+
+    expect(documentationRequiresRegistryCheck(['.agents/requirements/project/999-example.md']))
+      .toBe(true);
+    expect(executeDocumentationValidation(['.agents/requirements/project/999-example.md'], {
+      rootDir,
+      spawn
+    })).toBe(0);
+    expect(spawn).toHaveBeenCalledWith('bun', ['run', 'requirements:check'], expect.any(Object));
+    taskFs.rmSync(rootDir, { recursive: true, force: true });
+  });
+
+  it('does not run the requirements registry check for ordinary docs-only changes', () => {
+    expect.hasAssertions();
+    const rootDir = taskFs.mkdtempSync(taskPath.join(require('os').tmpdir(), 'task-docs-'));
+    taskFs.mkdirSync(taskPath.join(rootDir, 'documentation/md'), { recursive: true });
+    taskFs.writeFileSync(taskPath.join(rootDir, 'documentation/md/ordinary.md'), '# Ordinary\n');
+    const spawn = jest.fn().mockReturnValue({ status: 0 });
+
+    expect(executeDocumentationValidation(['documentation/md/ordinary.md'], { rootDir, spawn }))
+      .toBe(0);
+    expect(spawn).not.toHaveBeenCalled();
     taskFs.rmSync(rootDir, { recursive: true, force: true });
   });
 

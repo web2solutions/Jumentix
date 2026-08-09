@@ -1,6 +1,69 @@
 version: 2.1
 
 commands:
+  prepare_ci_context:
+    steps:
+      - checkout
+      - run:
+          name: Fetch branch references
+          command: git fetch --prune origin "+refs/heads/*:refs/remotes/origin/*"
+      - run:
+          name: Load pull request metadata for context classification
+          command: |
+            set -euo pipefail
+            if [ -z "${CIRCLE_PULL_REQUEST:-}" ] || [ -n "${CIRCLE_PR_BASE_BRANCH:-}" ]; then
+              exit 0
+            fi
+            export GH_TOKEN="${GH_TOKEN:-${GITHUB_TOKEN:-${AGENT_REGISTRY_TOKEN:-}}}"
+            if [ -z "${GH_TOKEN:-}" ]; then
+              echo "GH_TOKEN, GITHUB_TOKEN, or AGENT_REGISTRY_TOKEN is required to classify private PR context."
+              exit 1
+            fi
+            PR_NUMBER="${CIRCLE_PULL_REQUEST##*/}"
+            PR_API_URL="https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME:-XpertMinds}/${CIRCLE_PROJECT_REPONAME:-Jumentix}/pulls/${PR_NUMBER}"
+            PR_JSON_FILE="$(mktemp)"
+            curl -fsSL \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              -o "$PR_JSON_FILE" \
+              "$PR_API_URL"
+            PR_JSON_FILE="$PR_JSON_FILE" node -e '
+            const fs = require("fs");
+            const pullRequest = JSON.parse(fs.readFileSync(process.env.PR_JSON_FILE, "utf8"));
+            const shellQuote = (value) => `"${String(value ?? "").replace(/(["\\$`])/g, "\\$1")}"`;
+            const values = {
+              JUMENTIX_PR_HEAD_REF: pullRequest.head?.ref || process.env.CIRCLE_BRANCH,
+              JUMENTIX_PR_BASE_REF: pullRequest.base?.ref || "",
+              AAA_PR_HEAD_REF: pullRequest.head?.ref || process.env.CIRCLE_BRANCH,
+              AAA_PR_BASE_REF: pullRequest.base?.ref || ""
+            };
+            for (const [key, value] of Object.entries(values)) {
+              console.log(`export ${key}=${shellQuote(value)}`);
+            }
+            ' >> "$BASH_ENV"
+            source "$BASH_ENV"
+
+  halt_unselected_job:
+    parameters:
+      job:
+        type: string
+    steps:
+      - run:
+          name: Classify CI context for << parameters.job >>
+          command: |
+            set +e
+            mkdir -p artifacts/ci
+            node ci-cd/classify-ci-context.js \
+              --result-file artifacts/ci/ci-context.json \
+              --require-job "<< parameters.job >>"
+            status="$?"
+            set -e
+            if [ "$status" = "78" ]; then
+              circleci-agent step halt
+            fi
+            exit "$status"
+
   install_bun:
     steps:
       - run:
@@ -19,12 +82,8 @@ commands:
             source "$BASH_ENV"
             bun --version
 
-  bootstrap:
+  bootstrap_dependencies:
     steps:
-      - checkout
-      - run:
-          name: Fetch branch references
-          command: git fetch --prune origin "+refs/heads/*:refs/remotes/origin/*"
       - restore_cache:
           keys:
             - bun-deps-v5-{{ .Branch }}-{{ checksum "bun.lock" }}
@@ -47,6 +106,11 @@ commands:
             - ~/.cache/Cypress
             - ~/.cache/ms-playwright
             - node_modules
+
+  bootstrap:
+    steps:
+      - prepare_ci_context
+      - bootstrap_dependencies
 
   wait_tcp:
     parameters:
@@ -116,7 +180,7 @@ jobs:
             # passing on a lookup it never made.
             export LINEAR_API_KEY="${LINEAR_API_KEY:-}"
             if [ -n "${CIRCLE_PULL_REQUEST:-}" ]; then
-              export JUMENTIX_QUALITY_GATE_TARGET="${CIRCLE_PR_BASE_BRANCH:-dev}"
+              export JUMENTIX_QUALITY_GATE_TARGET="${CIRCLE_PR_BASE_BRANCH:-${JUMENTIX_PR_BASE_REF:-dev}}"
               export AAA_CI_IS_PULL_REQUEST=1
               if [ -z "${GH_TOKEN:-}" ]; then
                 echo "GH_TOKEN, GITHUB_TOKEN, or AGENT_REGISTRY_TOKEN is required to load private PR metadata for branch-gate."
@@ -177,7 +241,10 @@ jobs:
       - image: cimg/node:22.23-browsers
     resource_class: large
     steps:
-      - bootstrap
+      - prepare_ci_context
+      - halt_unselected_job:
+          job: workspace-builds
+      - bootstrap_dependencies
       - run:
           name: Run workspace package builds
           no_output_timeout: 30m
@@ -188,7 +255,10 @@ jobs:
       - image: cypress/browsers:node-22.21.0-chrome-141.0.7390.107-1-ff-144.0-edge-141.0.3537.92-1
     resource_class: large
     steps:
-      - bootstrap
+      - prepare_ci_context
+      - halt_unselected_job:
+          job: workspace-tests
+      - bootstrap_dependencies
       - run:
           name: Run workspace package tests
           no_output_timeout: 30m
@@ -204,7 +274,10 @@ jobs:
       - image: rabbitmq:3.13-alpine
     resource_class: large
     steps:
-      - bootstrap
+      - prepare_ci_context
+      - halt_unselected_job:
+          job: integration
+      - bootstrap_dependencies
       - wait_tcp:
           port: 6379
       - wait_tcp:
@@ -229,7 +302,10 @@ jobs:
       - image: rabbitmq:3.13-alpine
     resource_class: large
     steps:
-      - bootstrap
+      - prepare_ci_context
+      - halt_unselected_job:
+          job: coverage
+      - bootstrap_dependencies
       - wait_tcp:
           port: 6379
       - wait_tcp:
@@ -333,7 +409,10 @@ jobs:
       - image: cimg/node:22.23-browsers
     resource_class: large
     steps:
-      - bootstrap
+      - prepare_ci_context
+      - halt_unselected_job:
+          job: website
+      - bootstrap_dependencies
       - run:
           name: Build Storybook
           command: bun run website:storybook:build
@@ -360,13 +439,9 @@ jobs:
       - image: cimg/node:22.23-browsers
     resource_class: large
     steps:
-      - checkout
-      - run:
-          name: Fetch branch references
-          command: |
-            git fetch --no-tags origin \
-              "+refs/heads/main:refs/remotes/origin/main" \
-              "+refs/heads/dev:refs/remotes/origin/dev"
+      - prepare_ci_context
+      - halt_unselected_job:
+          job: third-party-review
       - run:
           name: Install pinned review tools
           command: |
@@ -425,7 +500,9 @@ jobs:
       image: ubuntu-2404:current
     resource_class: large
     steps:
-      - checkout
+      - prepare_ci_context
+      - halt_unselected_job:
+          job: database-matrix
       - install_bun
       - run:
           name: Install frozen dependencies
@@ -455,11 +532,36 @@ workflows:
   continuous-integration:
     jobs:
       - branch-gate
-      - workspace-builds
-      - workspace-tests
-      - integration
-      - coverage
-      - website
+      - workspace-builds:
+          filters:
+            branches:
+              only:
+                - dev
+                - main
+      - workspace-tests:
+          filters:
+            branches:
+              only:
+                - dev
+                - main
+      - integration:
+          filters:
+            branches:
+              only:
+                - dev
+                - main
+      - coverage:
+          filters:
+            branches:
+              only:
+                - dev
+                - main
+      - website:
+          filters:
+            branches:
+              only:
+                - dev
+                - main
       - third-party-review
       - database-matrix:
           filters:

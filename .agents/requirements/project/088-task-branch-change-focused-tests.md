@@ -4,8 +4,9 @@
 
 Task-owned branches must validate only the tests directly changed by the task or unit tests
 related to changed implementation files during commit and push. Pull requests targeting
-`dev` must execute the full local non-coverage matrix in CircleCI. The repository-owned
-CircleCI gate runs for PRs and for pushes to `dev` and `main` under Requirement `113`.
+`dev` must execute the same layer-aware specialized gate plus lightweight review in
+CircleCI. The repository-owned CircleCI gate runs for PRs and for pushes to `dev`
+and `main` under Requirement `113`.
 
 ## Mandatory Rules
 
@@ -17,9 +18,11 @@ CircleCI gate runs for PRs and for pushes to `dev` and `main` under Requirement 
    `--passWithNoTests`, masked failure, or synthetic success is allowed.
 5. Commit and push hooks on task branches invoke `ci:gate:task`.
 6. Direct `dev` commit, push, and merge paths invoke the complete `test:unit` suite.
-7. PR paths targeting `dev` or `main` invoke `ci:gate:strict`.
+7. PR paths targeting `dev` invoke `ci:gate:task`; release-promotion PR paths
+   targeting `main` invoke `ci:gate:strict`.
 8. CircleCI is the canonical target-aware PR gate and runs direct pushes for
-   `dev` and `main`. Full coverage runs there, keeping local task gates fast.
+   `dev` and `main`. Full coverage runs only for release/main/full contexts,
+   keeping local task gates and `dev` delivery fast.
 
 ## Acceptance Criteria
 

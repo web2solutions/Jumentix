@@ -164,7 +164,7 @@ Se alguma porta falhar, a conformidade com as especificações será considerada
 Contrato de execução por branch:
 
 1. Branches de tarefa executam `ci:gate:task` sobre o diff pertencente à tarefa.
-2. Pushes em `dev` executam `test:unit`; pull requests destinados a `dev` executam `ci:gate:strict`.
+2. Pushes em `dev` executam `test:unit`; pull requests destinados a `dev` executam `ci:gate:task`.
 3. `main` e pull requests de promoção destinados a `main` executam `ci:gate:strict`.
 4. CircleCI é o executor hospedado pertencente ao repositório enquanto GitHub Actions billing
    está bloqueado pelo Requisito `113`.

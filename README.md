@@ -34,13 +34,18 @@
 | CircleCI workflow | [![main CircleCI pipeline](https://img.shields.io/badge/CircleCI-main%20pipeline-343434?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/XpertMinds/Jumentix?branch=main) | [![dev CircleCI pipeline](https://img.shields.io/badge/CircleCI-dev%20pipeline-343434?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/XpertMinds/Jumentix?branch=dev) |
 | Codecov project coverage | [![main Codecov](https://codecov.io/gh/XpertMinds/Jumentix/branch/main/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/main) | [![dev Codecov](https://codecov.io/gh/XpertMinds/Jumentix/branch/dev/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev) |
 | Branch-aware tests | `branch-gate` | `branch-gate` |
-| Project + patch coverage | `coverage` | `coverage` |
-| Third-party security review | `third-party-review` | `third-party-review` |
+| Project + patch coverage | `coverage` | release-promotion only |
+| Third-party security review | `third-party-review` | PR-only |
 
-Coverage is produced and enforced by the CircleCI `coverage` job for both
-`dev` and `main`. CircleCI also uploads LCOV to Codecov under the `project`
-flag when `CODECOV_TOKEN` is configured. Codecov provides the file-by-file
-coverage map for each long-lived branch:
+Feature, fix, docs and CI task PRs target `dev` and run the cheap layer-aware
+gate selected from `test-map.json`; the target is ten minutes or less. Full
+workspace, browser, coverage, website and database jobs are reserved for
+`dev -> main` release promotions, `main` pushes and scheduled full runs.
+
+Coverage is produced and enforced by the CircleCI `coverage` job when the full
+suite runs. CircleCI uploads LCOV to Codecov under the `project` flag when
+`CODECOV_TOKEN` is configured. Codecov provides the file-by-file coverage map
+for each long-lived branch:
 
 - [Codecov file map for `dev`](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev)
 - [Codecov file map for `main`](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/main)

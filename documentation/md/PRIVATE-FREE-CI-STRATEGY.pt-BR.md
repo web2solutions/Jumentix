@@ -29,17 +29,20 @@ PRs de tarefa miram `dev`; somente promoção de release de `dev` mira `main`.
 
 | Gate | PR de tarefa para `dev` | push em `dev` | promoção `dev -> main` |
 | --- | --- | --- | --- |
-| Build/teste por branch | obrigatório, testes afetados | unitário canônico | matriz estrita completa |
-| Cobertura do repositório | obrigatório | obrigatório | obrigatório |
-| Revisão third-party | obrigatório | obrigatório | obrigatório |
-| Quality gate Sonar | obrigatório | obrigatório | obrigatório enquanto disponível |
-| Qualidade Storybook/site | obrigatório quando disparado | obrigatório | obrigatório |
-| Governança/rastreabilidade | obrigatória na matriz | obrigatória | obrigatória |
+| Build/teste por branch | obrigatório, testes afetados por camada | unitário health | matriz estrita completa |
+| Cobertura do repositório | adiada para promoção | adiada para promoção | obrigatória |
+| Revisão third-party | obrigatória | não obrigatória | obrigatória |
+| Quality gate Sonar | adiado para promoção | adiado para promoção | obrigatório enquanto disponível |
+| Qualidade Storybook/site | somente quando selecionada pelo mapa | adiada para promoção | obrigatória |
+| Governança/rastreabilidade | obrigatória no gate barato | obrigatória | obrigatória |
 
-A matriz estrita cobre toolchain, auditoria de dependências, smoke de
-segredos/segurança, arquitetura, workspaces, requisitos/NFR, registry, testes
-unitários/integração/e2e, cobertura, OpenAPI/serverless, build e smoke. Toda
-célula produz evidência terminal; falhas são corrigidas, nunca contornadas.
+PRs de tarefa para `dev` têm alvo operacional de dez minutos ou menos. O
+`branch-gate` classifica o contexto, lê `test-map.json` e executa apenas suites
+afetadas/relacionadas, mais checks leves de governança e segurança. A matriz
+estrita cobre toolchain, auditoria de dependências, smoke de segredos/segurança,
+arquitetura, workspaces, requisitos/NFR, registry, testes unitários/integração/e2e,
+cobertura, OpenAPI/serverless, build e smoke. Toda célula produz evidência
+terminal; falhas são corrigidas, nunca contornadas.
 
 ## Contrato de cobertura
 
@@ -47,7 +50,7 @@ célula produz evidência terminal; falhas são corrigidas, nunca contornadas.
 - Branches: 90%.
 - Linhas alteradas: 99%.
 - CircleCI retém JSON e LCOV para auditoria independente e envia LCOV ao Codecov para visibilidade.
-- Gates locais de produção/desenvolvimento ficam rápidos: cobertura completa e patch coverage são obrigatórios no CircleCI para `dev` e `main`, não dentro do `ci:gate` local.
+- Gates locais e PRs até `dev` ficam rápidos: cobertura completa e patch coverage são obrigatórios no CircleCI para promoções `dev -> main`, pushes em `main` e execuções completas agendadas.
 - Badges e mapa de cobertura apontam apenas para workflows canônicos.
 
 ## Contrato de revisão third-party

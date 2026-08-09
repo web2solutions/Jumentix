@@ -3,14 +3,14 @@ const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const { isEntryPoint } = require('./lib/entry-point.js');
+const { classifyCiContext, CONTEXTS } = require('./classify-ci-context.js');
 
 /**
  * Lint runs before every gate that does not already contain it (JUM-596).
  *
- * Only `ci:gate:strict` declares a lint cell, and it is selected for `main` and
- * for pull requests into `dev`. The other two paths — a task branch, and a
- * direct push to `dev` — ran no lint at all. That is how twenty lint errors
- * reached `dev`: nothing on the way in looked.
+ * Only `ci:gate:strict` declares a lint cell, and it is selected for release
+ * promotion and `main`. The other paths — a task branch, a pull request into
+ * `dev`, and a direct push to `dev` — need lint preflight here.
  *
  * It is a preflight rather than another matrix cell because it must fail before
  * the suites run. A branch whose lint is broken has nothing to learn from
@@ -50,9 +50,21 @@ function resolvePullRequestFlag(value = process.env.AAA_CI_IS_PULL_REQUEST) {
 }
 
 function selectQualityGate(targetBranch, options = {}) {
+  if (options.context) {
+    if (
+      options.context === CONTEXTS.RELEASE_PR_TO_MAIN
+      || options.context === CONTEXTS.MAIN_PUSH
+      || options.context === CONTEXTS.SCHEDULED_FULL
+    ) {
+      return FULL_MATRIX_QUALITY_GATE;
+    }
+    if (options.context === CONTEXTS.DEV_PUSH) return UNIT_QUALITY_GATE;
+    return TASK_QUALITY_GATE;
+  }
+
   const branch = resolveTargetBranch(targetBranch);
   const isPullRequest = resolvePullRequestFlag(options.isPullRequest);
-  if (branch === 'dev' && isPullRequest) return FULL_MATRIX_QUALITY_GATE;
+  if (branch === 'dev' && isPullRequest) return TASK_QUALITY_GATE;
   if (branch === 'main') return FULL_MATRIX_QUALITY_GATE;
   if (branch === 'dev') return UNIT_QUALITY_GATE;
   return TASK_QUALITY_GATE;
@@ -76,14 +88,55 @@ function writeGateEvidence(evidence, resultFile) {
 }
 
 function runBranchQualityGate(options = {}) {
-  const targetBranch = resolveTargetBranch(options.targetBranch);
-  const isPullRequest = resolvePullRequestFlag(options.isPullRequest);
-  const gate = selectQualityGate(targetBranch, { isPullRequest });
+  let ciContext = options.ciContext || null;
+  const env = options.env || process.env;
   const execute = options.execute || executeQualityGate;
   const logger = options.logger || console;
   const resultFile = options.resultFile ?? process.env.JUMENTIX_CI_GATE_RESULT_FILE;
-
+  const hasCiSignal = Boolean(
+    env.CIRCLE_BRANCH
+      || env.CIRCLE_PULL_REQUEST
+      || env.CIRCLE_PR_BASE_BRANCH
+      || env.GITHUB_BASE_REF
+      || env.JUMENTIX_CI_FORCE_FULL
+      || env.JUMENTIX_CI_SCHEDULED_FULL
+  );
+  if (!ciContext && options.useCiContext !== false && hasCiSignal) {
+    try {
+      ciContext = classifyCiContext({
+        env,
+        spawn: options.spawn,
+        cwd: options.cwd || process.cwd()
+      });
+    } catch (error) {
+      const evidence = {
+        schemaVersion: 2,
+        targetBranch: resolveTargetBranch(options.targetBranch || env.CIRCLE_PR_BASE_BRANCH || env.CIRCLE_BRANCH),
+        isPullRequest: resolvePullRequestFlag(options.isPullRequest),
+        context: null,
+        selectedJobs: null,
+        gate: 'context-classification',
+        script: 'classify-ci-context',
+        preflight: [],
+        outcome: 'failed',
+        status: 1,
+        error: error.message
+      };
+      logger.error(`[ci] context classification failed: ${error.message}`);
+      writeGateEvidence(evidence, resultFile);
+      return evidence;
+    }
+  }
+  const targetBranch = resolveTargetBranch(
+    options.targetBranch || ciContext?.baseRef || ciContext?.headRef
+  );
+  const isPullRequest = ciContext?.isPullRequest ?? resolvePullRequestFlag(options.isPullRequest);
+  const gate = selectQualityGate(targetBranch, {
+    isPullRequest,
+    context: ciContext?.context
+  });
   logger.log(`[ci] target branch: ${targetBranch}`);
+  if (ciContext?.context) logger.log(`[ci] context: ${ciContext.context}`);
   logger.log(`[ci] selected quality gate: ${gate.id} (${gate.script})`);
 
   const runStep = (step, label) => {
@@ -120,6 +173,8 @@ function runBranchQualityGate(options = {}) {
     schemaVersion: 2,
     targetBranch,
     isPullRequest,
+    context: ciContext?.context || null,
+    selectedJobs: ciContext?.selectedJobs || null,
     gate: gate.id,
     script: gate.script,
     preflight,

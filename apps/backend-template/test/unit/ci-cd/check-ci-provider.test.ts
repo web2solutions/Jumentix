@@ -68,6 +68,16 @@ describe('check-ci-provider', () => {
     expect(run(directory).output).toContain('third-party-review');
   });
 
+  it('fails when expensive jobs lose the context classifier guard', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.circleci/config.yml');
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('job: coverage', 'job: coverage-removed'));
+    });
+    expect(run(directory).output).toContain('job:\\s*coverage\\s*(?:\\n|$)');
+  });
+
   it('fails when Codecov or Sonar return as separate CircleCI jobs', () => {
     expect.hasAssertions();
 

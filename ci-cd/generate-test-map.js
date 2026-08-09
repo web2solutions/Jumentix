@@ -590,7 +590,7 @@ function buildManifest(root = process.cwd()) {
     },
     gateTable: {
       task: { script: 'ci:gate:task', mode: 'layer-aware' },
-      dev: { script: 'test:unit', mode: 'full-unit+contract' },
+      dev: { script: 'test:unit', mode: 'cheap-health' },
       main: { script: 'ci:gate:strict', mode: 'full-matrix' }
     },
     flags: {

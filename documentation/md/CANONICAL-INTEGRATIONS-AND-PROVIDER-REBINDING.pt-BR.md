@@ -62,7 +62,8 @@ bun run integrations:check
 
 Os mesmos comandos sem cobertura pesada executam localmente e no CircleCI. O
 produtor de cobertura e o gate de thresholds rodam no job CircleCI `coverage`
-para `dev` e `main`, depois enviam LCOV ao Codecov para visibilidade.
+em promoções de release para `main`, pushes em `main` e execuções completas
+agendadas, depois enviam LCOV ao Codecov para visibilidade.
 
 ## Rollback e mudanças de provedor
 

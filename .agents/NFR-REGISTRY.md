@@ -154,9 +154,10 @@ This file consolidates non-functional requirements already requested and stored 
   disagreeing in either direction fails. `packages:check-suites` validates it.
 - `113` Private-repository CI must have a zero-cost repository-owned path.
   CircleCI is the hosted executor while GitHub Actions billing blocks execution;
-  local/self-hosted execution remains diagnostic fallback. Coverage remains
-  fail-closed in CircleCI through the repository's four-metric and patch checks,
-  then publishes to Codecov for visibility. Sonar is defense-in-depth.
+  local/self-hosted execution remains diagnostic fallback. Task delivery to
+  `dev` uses cheap layer-aware gates; release promotion to `main` runs full
+  coverage, Codecov publishing, Sonar defense-in-depth, website, integration,
+  workspace and database checks.
 - `114` Agent onboard uses an operator-confirmed filesystem root (this host:
   `/Users/eduardoalmeida/apps/XpertMinds`) and the layout
   `<root>/<agent-identifier>/Jumentix` as the only SoT checkout for that agent.

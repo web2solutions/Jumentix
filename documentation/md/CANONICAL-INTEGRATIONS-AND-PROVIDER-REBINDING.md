@@ -63,8 +63,9 @@ bun run integrations:check
 ```
 
 The same non-coverage commands run locally and in CircleCI. The heavy coverage
-producer and threshold gate run in the CircleCI `coverage` job for both `dev`
-and `main`, then upload LCOV to Codecov for visibility.
+producer and threshold gate run in the CircleCI `coverage` job for release
+promotions to `main`, `main` pushes, and scheduled full runs, then upload LCOV
+to Codecov for visibility.
 
 ## Rollback and provider changes
 

@@ -160,8 +160,9 @@ O seletor lê `JUMENTIX_QUALITY_GATE_TARGET` e o sinal de PR
 (`CIRCLE_PULL_REQUEST` ou `AAA_CI_IS_PULL_REQUEST`). Uma branch de tarefa executa
 `bun run ci:gate:task`, limitado aos testes unitários alterados ou relacionados.
 Um push direto para `dev` executa a suíte completa `bun run test:unit`. Um PR
-destinado a `dev` ou qualquer caminho para `main` executa `bun run ci:gate:strict`,
-a matriz local completa sem cobertura pesada. Alterações somente de documentação
+destinado a `dev` executa `bun run ci:gate:task` mais revisão leve. Uma promoção
+de release para `main`, ou qualquer caminho para `main`, executa
+`bun run ci:gate:strict`, a matriz local completa sem cobertura pesada. Alterações somente de documentação
 validam os arquivos Markdown e emitem evidência explícita `not-applicable`, sem
 fabricar um teste aprovado.
 
@@ -177,11 +178,11 @@ Aplicação remota:
 
 - CircleCI invoca `bun run ci:gate:branch` enquanto GitHub Actions billing bloqueia execução hospedada
 - o CircleCI passa a branch base do PR ou a branch enviada, marca eventos de PR e sempre retém a evidência do gate
-- CircleCI assume a produção completa de cobertura e patch coverage em `dev` e `main`; gates locais ficam rápidos e diagnósticos
+- CircleCI assume a produção completa de cobertura e patch coverage em promoções `dev -> main`, pushes em `main` e execuções completas agendadas; gates locais e PRs até `dev` ficam rápidos e diagnósticos
 - eventos de push em branches de tarefa comparam `origin/dev...HEAD`; a CI hospedada nunca usa o
   modo local de diff staged
 - o CircleCI publica `artifacts/ci/full-test-matrix.json` quando o gate seleciona a matriz completa
-- `.circleci/config.yml` executa build/smoke do Storybook e prepublish para `dev` e `main`
+- `.circleci/config.yml` executa build/smoke do Storybook e prepublish somente em contextos de release/full
 - o Storybook não é executado pela matriz global
 - `ci:monorepo` permanece como entrada de compatibilidade, mas não pode selecionar um plano reduzido somente para documentação
 

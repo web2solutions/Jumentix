@@ -123,9 +123,32 @@ function validateDocumentationFiles(files, rootDir = process.cwd()) {
   return 0;
 }
 
+function documentationRequiresRegistryCheck(files) {
+  return normalizeFiles(files).some((file) => file.startsWith('.agents/requirements/')
+    || file === '.agents/README.md'
+    || file === '.agents/NFR-REGISTRY.md'
+    || file === 'documentation/md/SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md'
+    || file === 'documentation/md/SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.pt-BR.md');
+}
+
+function executeDocumentationValidation(files, options = {}) {
+  const rootDir = options.rootDir || process.cwd();
+  const docsStatus = validateDocumentationFiles(files, rootDir);
+  if (docsStatus !== 0) return docsStatus;
+  if (!documentationRequiresRegistryCheck(files)) return 0;
+
+  const spawn = options.spawn || spawnSync;
+  const result = spawn('bun', ['run', 'requirements:check'], {
+    cwd: rootDir,
+    stdio: 'inherit',
+    env: { ...process.env }
+  });
+  return Number.isInteger(result.status) ? result.status : 1;
+}
+
 function executeTaskTestPlan(plan) {
   if (plan.type === 'documentation-validation') {
-    return validateDocumentationFiles(plan.files);
+    return executeDocumentationValidation(plan.files);
   }
   if (plan.type === 'unsupported-change-set') return 1;
 
@@ -370,7 +393,9 @@ module.exports = {
   createTaskTestPlan,
   executeTaskTestPlan,
   executeLayerAwarePlan,
+  executeDocumentationValidation,
   gateV2Enabled,
+  documentationRequiresRegistryCheck,
   normalizeFiles,
   readChangedFiles,
   runTaskChangeTests,
