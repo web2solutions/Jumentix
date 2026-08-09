@@ -6,8 +6,9 @@
  * The compose file already carries the local requirepass (since 2024). Putting
  * that same value into package.json scripts re-introduced it into the PR diff
  * and failed gitleaks. This runner copies the password from the compose file
- * into AAA_REDIS_PASSWORD only when the env var is unset, so package.json never
- * embeds a secret and CI can still override via secrets.
+ * into JUMENTIX_REDIS_PASSWORD only when the env var is unset, so package.json
+ * never embeds a secret and CI can still override via secrets. The legacy
+ * AAA_REDIS_PASSWORD name is still accepted as a fallback for older shells.
  */
 const fs = require('node:fs');
 const path = require('node:path');
@@ -34,8 +35,9 @@ function passwordFromCompose(composePath = COMPOSE) {
 
 function run() {
   const env = { ...process.env, NODE_ENV: 'dev', RUN_REDIS_INTEGRATION: '1' };
-  if (!env.AAA_REDIS_PASSWORD) {
-    env.AAA_REDIS_PASSWORD = passwordFromCompose();
+  if (!env.JUMENTIX_REDIS_PASSWORD) {
+    env.JUMENTIX_REDIS_PASSWORD =
+      env.AAA_REDIS_PASSWORD || passwordFromCompose();
   }
 
   const result = spawnSync(
