@@ -4,13 +4,13 @@
 
 ## All Changes
 
-- 2026-08-09 chore(JUM-615): merge origin/dev (GitHub Actions CI) - Eduardo A.
-- 2026-08-09 chore(JUM-615): bump barrel comment to retrigger CI webhook - Eduardo A.
+- 2026-08-09 ci: select macOS tools for coverage publishing - Eduardo A.
+- 2026-08-09 [JUM-615][Feature] Cana localStorage fallback, real Workers, 100% coverage (#138) - Eduardo A.
+- 2026-08-09 [JUM-632][CI] Reuse local broker services in GitHub Actions (#148) - Eduardo A.
 - 2026-08-09 ci: reuse local broker services in GitHub Actions - Eduardo A.
 - 2026-08-09 [JUM-632][Release] Record main ancestry before promotion (#147) - Eduardo A.
 - 2026-08-09 chore(release): record main ancestry before promotion - Eduardo A.
 - 2026-08-09 [JUM-631][CI] Make dev delivery gates cheap and context-aware (#144) - Eduardo A.
-- 2026-08-09 chore(JUM-615): retrigger CircleCI webhook on tip - Eduardo A.
 - 2026-08-09 ci: run GitHub Actions on self-hosted runner - Eduardo A.
 - 2026-08-09 ci: replace CircleCI with GitHub Actions - Eduardo A.
 - 2026-08-09 test: isolate branch gate tests from CircleCI env - Eduardo A.
@@ -18,25 +18,16 @@
 - 2026-08-09 Merge remote-tracking branch 'origin/dev' into codex/ci/JUM-631-fast-cheap-dev-ci - Eduardo A.
 - 2026-08-09 ci: make context classifier runtime configurable - Eduardo A.
 - 2026-08-09 ci: make dev delivery gates cheap and context-aware - Eduardo A.
-- 2026-08-09 chore(JUM-615): merge origin/dev (resolve CHANGELOG) - Eduardo A.
 - 2026-08-09 [JUM-631][Governance] Requirement 128 — requirement changes take precedence in the release process (#143) - Eduardo A.
-- 2026-08-09 chore(JUM-615): merge origin/dev (resolve CHANGELOG) - Eduardo A.
 - 2026-08-09 docs(governance): add requirement 128 for release precedence of requirement changes - Eduardo Almeida
 - 2026-08-09 [JUM-630][Governance] Requirement 127 — mandatory rtk and Caveman in every agent session (#142) - Eduardo A.
-- 2026-08-09 chore(JUM-615): merge origin/dev (cana barrel + test-map) - Eduardo A.
 - 2026-08-09 docs(governance): teach rtk and caveman, EN and PT-BR - Eduardo Almeida
 - 2026-08-09 docs(governance): add requirement 127 for mandatory rtk and caveman - Eduardo Almeida
-- 2026-08-09 chore(JUM-615): merge origin/dev (resolve CHANGELOG) - Eduardo A.
 - 2026-08-08 [JUM-493][Feature] Designer core as @jumentix package with publish dry-run (#137) - Eduardo A.
 - 2026-08-08 fix(JUM-629): re-export Cana barrel with export `*` so bun 1.3.14 emits no dangling bindings (#141) - Eduardo A.
 - 2026-08-08 [JUM-609][Governance] Fail on duplicate requirement IDs, for being duplicates (#139) - Eduardo A.
 - 2026-08-08 chore(governance): fail on duplicate requirement IDs, for being duplicates - Eduardo Almeida
-- 2026-08-08 fix(cana): accept unknown persistence on WebKit conformance (JUM-615) - Eduardo A.
 - 2026-08-08 [JUM-626][Fix] Announce load-time storage corruption recovery in the boot UI (#136) - Eduardo A.
-- 2026-08-08 fix(cana): make private-mode fallback test engine-portable (JUM-615) - Eduardo A.
-- 2026-08-08 chore(cana): register JUM-615 Cypress specs in test-map - Eduardo A.
-- 2026-08-08 chore(cana): satisfy ESLint on JUM-615 fallback and coverage files - Eduardo A.
-- 2026-08-08 feat(cana): localStorage fallback, real Workers, 100% src coverage (JUM-615) - Eduardo A.
 - 2026-08-08 [JUM-627][Governance] Verify the child task issue is in the focused epic (#134) - Eduardo A.
 - 2026-08-08 test(governance): stop the no-credential cases reading the ambient key - Eduardo Almeida
 - 2026-08-08 chore(governance): state which membership the check verified - Eduardo Almeida
