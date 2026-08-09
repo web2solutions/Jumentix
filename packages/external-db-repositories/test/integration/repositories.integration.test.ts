@@ -133,11 +133,15 @@ suite('the Cassandra repository against a real cluster', () => {
       extra: { contactPoints: [CASSANDRA_HOST], localDataCenter: 'no-such-datacenter' }
     });
 
-    // The message is asserted, not just the throw: a keyspace-shaped failure
-    // here would mean the retry swallowed the real cause and this test would
-    // pass for the wrong reason.
-    await expect(repository.connect()).rejects.toThrow(/datacenter|data center|no-such/i);
-    expect(state(repository).connected).toBe(false);
+    try {
+      // The message is asserted, not just the throw: a keyspace-shaped failure
+      // here would mean the retry swallowed the real cause and this test would
+      // pass for the wrong reason.
+      await expect(repository.connect()).rejects.toThrow(/datacenter|data center|no-such/i);
+      expect(state(repository).connected).toBe(false);
+    } finally {
+      await repository.disconnect().catch(() => undefined);
+    }
   }, 120000);
 
   it('shuts the client down and reports the new state', async () => {
