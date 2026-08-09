@@ -8,7 +8,7 @@
 
 GitHub Actions hosted execution has been restored by owner decision on
 2026-08-09. CircleCI is disabled again, `.circleci/config.yml` must not be
-present, and `.github/workflows/ci.yml` is the canonical hosted CI workflow.
+present, and `.github/workflows/ci.yml` is the canonical GitHub Actions workflow.
 
 The file keeps its original slug so existing links do not break; the title above
 is authoritative.

@@ -9,7 +9,7 @@ falha nunca é verde.
 
 | Área | Contrato gratuito obrigatório | Papel |
 | --- | --- | --- |
-| CI | Workflow GitHub Actions canônico deste repositório | Executor canônico das PRs para `dev`, promoções para `main` e branches protegidas; CircleCI desabilitado |
+| CI | Workflow GitHub Actions canônico deste repositório | Orquestrador canônico das PRs para `dev`, promoções para `main` e branches protegidas; runner self-hosted `jumentix` pertencente ao repositório; CircleCI desabilitado |
 | Cobertura | Job GitHub Actions de cobertura, artefatos JSON/LCOV e limites de projeto e patch | Autoridade canônica; publicação Codecov é visibilidade |
 | Publicação Codecov | Upload pelo Codecov CLI no GitHub Actions com `CODECOV_TOKEN` | Espelho de dashboard após os thresholds próprios passarem |
 | Qualidade | Gate Bun por branch e build/smoke/prepublish do Storybook | Validação obrigatória de produto e governança |
@@ -21,7 +21,8 @@ falha nunca é verde.
 
 ## Serviços aposentados ou opcionais (2026-08-03)
 
-- **CircleCI desabilitado:** GitHub Actions é o executor hospedado ativo e
+- **CircleCI desabilitado:** GitHub Actions é o orquestrador ativo, e runners
+  self-hosted pertencentes ao repositório fornecem execução enquanto billing hospedado está bloqueado.
   `.circleci/config.yml` não deve voltar sem mudança governada de requisito.
 - **Publicação Codecov restaurada:** GitHub Actions envia LCOV pelo Codecov CLI após
   a cobertura própria passar. Codecov não é a autoridade dos thresholds.

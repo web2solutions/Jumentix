@@ -165,7 +165,8 @@ Branch-aware execution contract:
 1. Task branches execute `ci:gate:task` against the task-owned diff.
 2. `dev` pushes execute `test:unit`; pull requests targeting `dev` execute `ci:gate:task`.
 3. `main` and release-promotion pull requests targeting `main` execute `ci:gate:strict`.
-4. GitHub Actions is the repository-owned hosted executor and CircleCI is disabled by
+4. GitHub Actions is the repository-owned orchestrator, the `jumentix` self-hosted
+   runner provides the zero-cost execution path, and CircleCI is disabled by
    Requirement `113`.
 5. `.github/workflows/ci.yml` owns Storybook checks, database smoke, and full coverage for
    release promotions, `main`, and scheduled full runs; the local full matrix does not

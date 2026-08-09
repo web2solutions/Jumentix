@@ -3,16 +3,18 @@
 ## Decisão
 
 O Jumentix permanece privado sob `XpertMinds`. GitHub Actions voltou a ser o
-orquestrador canônico, e CircleCI está desabilitado. Quando um serviço cobra pela
-validação de repositório privado, a evidência é gerada e retida pelo próprio
-repositório. Checks obrigatórios falham fechado: resultado pulado, neutro,
-ausente, expirado ou pendente nunca é verde.
+orquestrador canônico, CircleCI está desabilitado, e runners self-hosted do
+repositório fornecem o caminho de execução sem custo enquanto billing bloqueia
+runners hospedados. Quando um serviço cobra pela validação de repositório
+privado, a evidência é gerada e retida pelo próprio repositório. Checks
+obrigatórios falham fechado: resultado pulado, neutro, ausente, expirado ou
+pendente nunca é verde.
 
 ## Mapa de substituição gratuita
 
 | Serviço aposentado ou instável | Substituição do repositório | Evidência obrigatória |
 | --- | --- | --- |
-| Drift de CI hospedada | workflow GitHub Actions por branch | `branch-gate` e artefato JSON |
+| Drift de CI hospedada | workflow GitHub Actions por branch no runner self-hosted `jumentix` | `branch-gate` e artefato JSON |
 | Checks privados Codecov | LCOV Jest/Bun, threshold do projeto e linhas alteradas, depois upload Codecov CLI no GitHub Actions | `coverage`, JSON, LCOV, patch e upload `codecov` |
 | GitGuardian | Gitleaks CLI fixado no GitHub Actions | artefatos SARIF e `third-party-review` terminal |
 | Snyk privado | `bun audit`, integridade de overrides e Semgrep fixado | células de dependência/segurança e artefatos SARIF |
@@ -71,8 +73,8 @@ responsabilidade humana ou resolução de comentários válidos.
    governada com checksum e testes de contrato.
 3. Reter gate, cobertura, SARIF e scanners pelo prazo do workflow; nunca incluir
    segredos em logs ou artefatos.
-4. Se a capacidade hospedada falhar, usar runner GitHub Actions efêmero da
-   XpertMinds com os mesmos comandos Bun e sem credenciais persistentes. Execução local é só
+4. Se o runner `jumentix` ficar indisponível, usar runner GitHub Actions efêmero da
+   XpertMinds com os mesmos labels, comandos Bun e sem credenciais persistentes. Execução local é só
    diagnóstico; checks remotos protegidos ainda precisam terminar.
 5. Se um provedor parar, falhar fechado, registrar no Project Update do Linear,
    substituí-lo por ferramenta fixada e só alterar proteção após ficar verde.

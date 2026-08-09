@@ -3,16 +3,17 @@
 ## Decision
 
 Jumentix remains private under `XpertMinds`. GitHub Actions is the canonical CI
-orchestrator again, and CircleCI is disabled. Evidence is generated and retained
-by the repository wherever a hosted service charges for private-repository
-enforcement. Required checks fail closed and no skipped, neutral, missing,
-timed-out, or pending result is green.
+orchestrator again, CircleCI is disabled, and repository-owned self-hosted
+runners provide the zero-cost execution path while hosted billing blocks runner
+startup. Evidence is generated and retained by the repository wherever a hosted
+service charges for private-repository enforcement. Required checks fail closed
+and no skipped, neutral, missing, timed-out, or pending result is green.
 
 ## Free replacement map
 
 | Retired or unreliable service | Repository-owned replacement | Required evidence |
 | --- | --- | --- |
-| Hosted CI drift | GitHub Actions branch-aware workflow | `branch-gate` plus JSON gate artifact |
+| Hosted CI drift | GitHub Actions branch-aware workflow on the `jumentix` self-hosted runner | `branch-gate` plus JSON gate artifact |
 | Codecov private checks | Jest/Bun LCOV, project threshold and changed-lines checkers, then Codecov CLI upload from GitHub Actions | `coverage`, JSON, LCOV, patch evidence, and `codecov` upload |
 | GitGuardian | pinned Gitleaks CLI in GitHub Actions | SARIF artifacts and terminal `third-party-review` result |
 | Snyk private enforcement | `bun audit`, override integrity and pinned Semgrep | dependency/security cells and SARIF artifacts |
@@ -72,8 +73,8 @@ tests, coverage, human accountability, or resolution of valid PR comments.
    upgrades through governed PRs with checksum and contract tests.
 3. Retain gate, coverage, SARIF and scanner artifacts for the workflow retention
    window; never put secrets in logs or artifacts.
-4. If hosted runner capacity is unavailable, use an ephemeral XpertMinds self-hosted
-   GitHub Actions runner with the same Bun commands and no persistent credentials. Local
+4. If the `jumentix` runner is unavailable, use an ephemeral XpertMinds self-hosted
+   GitHub Actions runner with the same labels, Bun commands and no persistent credentials. Local
    execution is diagnostic only; protected remote checks must still finish.
 5. If a provider stops working, fail closed, record the outage in the Linear
    Project Update, replace it with a pinned repository-owned tool, and change

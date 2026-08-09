@@ -79,6 +79,16 @@ describe('check-ci-provider', () => {
     expect(run(directory).output).toContain('third-party-review');
   });
 
+  it('fails when hosted runners return to the canonical workflow', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.github/workflows/ci.yml');
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('runs-on: [self-hosted, jumentix]', 'runs-on: ubuntu-latest'));
+    });
+    expect(run(directory).output).toContain('repository-owned self-hosted runner');
+  });
+
   it('fails when expensive jobs lose the release/full context guard', () => {
     expect.hasAssertions();
 

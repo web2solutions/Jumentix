@@ -210,10 +210,11 @@ SonarQube Cloud coverage import:
 
 #### Active hosted provider
 
-GitHub Actions is active by Requirement 113, and CircleCI is disabled. The
-workflow runs on `dev`, `main`, and pull requests, with Sonar filtered to the two
-long-lived branches. Codecov publishing runs after the repository-owned coverage
-gate and never replaces it as the merge authority.
+GitHub Actions is active by Requirement 113, CircleCI is disabled, and the
+workflow runs on the repository-owned `jumentix` self-hosted runner. It runs on
+`dev`, `main`, and pull requests, with Sonar filtered to the two long-lived
+branches. Codecov publishing runs after the repository-owned coverage gate and
+never replaces it as the merge authority.
 
 ### Coverage Policy (Strict Standard)
 

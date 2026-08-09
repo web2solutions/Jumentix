@@ -175,8 +175,9 @@ Contrato de execução por branch:
 1. Branches de tarefa executam `ci:gate:task` sobre o diff pertencente à tarefa.
 2. Pushes em `dev` executam `test:unit`; pull requests destinados a `dev` executam `ci:gate:task`.
 3. `main` e pull requests de promoção destinados a `main` executam `ci:gate:strict`.
-4. GitHub Actions é o executor hospedado pertencente ao repositório, e CircleCI está
-   desabilitado pelo Requisito `113`.
+4. GitHub Actions é o orquestrador pertencente ao repositório, o runner
+   self-hosted `jumentix` fornece o caminho de execução sem custo, e CircleCI
+   está desabilitado pelo Requisito `113`.
 5. `.github/workflows/ci.yml` é responsável por Storybook, database smoke e cobertura
    completa em promoções de release, `main` e execuções completas agendadas;
    a matriz completa local não executa Storybook nem produção de cobertura.

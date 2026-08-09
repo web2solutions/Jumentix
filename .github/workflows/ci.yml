@@ -27,26 +27,7 @@ env:
 jobs:
   branch-gate:
     name: branch-gate
-    runs-on: ubuntu-latest
-    services:
-      redis:
-        image: redis:7.2-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 12
-      rabbitmq:
-        image: rabbitmq:3.13-alpine
-        ports:
-          - 5672:5672
-        options: >-
-          --health-cmd "rabbitmq-diagnostics -q ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 12
+    runs-on: [self-hosted, jumentix]
     env:
       AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
       JUMENTIX_TASK_TEST_MODE: range
@@ -136,7 +117,7 @@ jobs:
       github.ref_name == 'main' ||
       github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, jumentix]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -150,9 +131,6 @@ jobs:
         run: git fetch --prune origin "+refs/heads/*:refs/remotes/origin/*"
       - name: Install pinned review tools
         run: |
-          python_version="$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')"
-          sudo apt-get update
-          sudo apt-get install -y "python${python_version}-venv"
           ci-cd/install-pinned-review-tools.sh "$HOME/review-tools"
       - name: Scan Git history for secrets
         run: |
@@ -190,7 +168,7 @@ jobs:
       github.event_name == 'workflow_dispatch' ||
       github.ref_name == 'main' ||
       (github.event_name == 'pull_request' && github.base_ref == 'main' && github.head_ref == 'dev')
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, jumentix]
     steps:
       - uses: actions/checkout@v7
         with:
@@ -214,7 +192,7 @@ jobs:
       github.event_name == 'workflow_dispatch' ||
       github.ref_name == 'main' ||
       (github.event_name == 'pull_request' && github.base_ref == 'main' && github.head_ref == 'dev')
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, jumentix]
     steps:
       - uses: actions/checkout@v7
         with:
@@ -245,16 +223,7 @@ jobs:
       github.event_name == 'workflow_dispatch' ||
       github.ref_name == 'main' ||
       (github.event_name == 'pull_request' && github.base_ref == 'main' && github.head_ref == 'dev')
-    runs-on: ubuntu-latest
-    services:
-      redis:
-        image: redis:7.2-alpine
-        ports:
-          - 6379:6379
-      rabbitmq:
-        image: rabbitmq:3.13-alpine
-        ports:
-          - 5672:5672
+    runs-on: [self-hosted, jumentix]
     env:
       AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
     steps:
@@ -269,6 +238,21 @@ jobs:
           curl -fsSL https://bun.sh/install | BUN_VERSION="$BUN_VERSION" bash
           echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
           "$HOME/.bun/bin/bun" install --frozen-lockfile
+      - name: Start Redis and RabbitMQ containers
+        run: |
+          docker rm -f jumentix-ci-redis jumentix-ci-rabbitmq || true
+          docker run -d --name jumentix-ci-redis -p 6379:6379 redis:7.2-alpine
+          docker run -d --name jumentix-ci-rabbitmq -p 5672:5672 rabbitmq:3.13-alpine
+          for attempt in $(seq 1 30); do
+            if docker exec jumentix-ci-redis redis-cli ping >/dev/null 2>&1 \
+              && docker exec jumentix-ci-rabbitmq rabbitmq-diagnostics -q ping >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs jumentix-ci-redis || true
+          docker logs jumentix-ci-rabbitmq || true
+          exit 1
       - name: Install WebKit for browser-based integration tests
         run: |
           bun x playwright install webkit
@@ -284,16 +268,7 @@ jobs:
       github.event_name == 'workflow_dispatch' ||
       github.ref_name == 'main' ||
       (github.event_name == 'pull_request' && github.base_ref == 'main' && github.head_ref == 'dev')
-    runs-on: ubuntu-latest
-    services:
-      redis:
-        image: redis:7.2-alpine
-        ports:
-          - 6379:6379
-      rabbitmq:
-        image: rabbitmq:3.13-alpine
-        ports:
-          - 5672:5672
+    runs-on: [self-hosted, jumentix]
     env:
       AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
       RUN_REDIS_INTEGRATION: '1'
@@ -317,6 +292,21 @@ jobs:
           curl -fsSL https://bun.sh/install | BUN_VERSION="$BUN_VERSION" bash
           echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
           "$HOME/.bun/bin/bun" install --frozen-lockfile
+      - name: Start Redis and RabbitMQ containers
+        run: |
+          docker rm -f jumentix-ci-redis jumentix-ci-rabbitmq || true
+          docker run -d --name jumentix-ci-redis -p 6379:6379 redis:7.2-alpine
+          docker run -d --name jumentix-ci-rabbitmq -p 5672:5672 rabbitmq:3.13-alpine
+          for attempt in $(seq 1 30); do
+            if docker exec jumentix-ci-redis redis-cli ping >/dev/null 2>&1 \
+              && docker exec jumentix-ci-rabbitmq rabbitmq-diagnostics -q ping >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs jumentix-ci-redis || true
+          docker logs jumentix-ci-rabbitmq || true
+          exit 1
       - name: Produce Jest coverage
         run: |
           bun run test:coverage
@@ -399,7 +389,7 @@ jobs:
       github.event_name == 'workflow_dispatch' ||
       github.ref_name == 'main' ||
       (github.event_name == 'pull_request' && github.base_ref == 'main' && github.head_ref == 'dev')
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, jumentix]
     env:
       JUMENTIX_WEBSITE_CYPRESS_SKIP_BUILD: '1'
       JUMENTIX_WEBSITE_CYPRESS_BROWSER: chrome
@@ -433,7 +423,7 @@ jobs:
       github.event_name == 'workflow_dispatch' ||
       github.ref_name == 'main' ||
       (github.event_name == 'pull_request' && github.base_ref == 'main' && github.head_ref == 'dev')
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, jumentix]
     env:
       FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
     steps:

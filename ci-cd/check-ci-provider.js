@@ -24,6 +24,7 @@ if (!fs.existsSync(workflowPath)) {
     /workflow_dispatch:/,
     /schedule:/,
     /FORCE_JAVASCRIPT_ACTIONS_TO_NODE24:\s*'true'/,
+    /runs-on:\s*\[self-hosted,\s*jumentix\]/,
     /uses:\s*actions\/checkout@v7/,
     /uses:\s*actions\/setup-node@v7/,
     /node-version:\s*22/,
@@ -50,6 +51,8 @@ if (!fs.existsSync(workflowPath)) {
     /bun run mono:test/,
     /bun run ci:integration/,
     /FIREBASE_SERVICE_ACCOUNT_KEY/,
+    /docker run -d --name jumentix-ci-redis -p 6379:6379 redis:7\.2-alpine/,
+    /docker run -d --name jumentix-ci-rabbitmq -p 5672:5672 rabbitmq:3\.13-alpine/,
     /bun run test:coverage/,
     /coverage\/jest\/coverage-final\.json/,
     /bun run coverage:check/,
@@ -92,6 +95,10 @@ if (!fs.existsSync(workflowPath)) {
       );
     }
   });
+
+  if (/runs-on:\s*ubuntu-latest/.test(contents)) {
+    failures.push('.github/workflows/ci.yml must use the repository-owned self-hosted runner, not ubuntu-latest');
+  }
 }
 
 for (const retired of ['codecov.yml']) {

@@ -8,7 +8,7 @@ A missing, skipped, cancelled, timed-out, or failed required check is never gree
 
 | Concern | Required free contract | Role |
 | --- | --- | --- |
-| CI | GitHub Actions canonical workflow tracked in this repository | Canonical hosted executor for PRs to `dev`, promotions to `main`, and both protected branches; CircleCI disabled |
+| CI | GitHub Actions canonical workflow tracked in this repository | Canonical orchestrator for PRs to `dev`, promotions to `main`, and both protected branches; repository-owned self-hosted runner `jumentix`; CircleCI disabled |
 | Coverage | repository-owned GitHub Actions coverage job, JSON/LCOV artifacts, project and patch thresholds | Canonical coverage authority; Codecov publishing is visibility only |
 | Codecov publishing | Codecov CLI upload from GitHub Actions with `CODECOV_TOKEN` | Coverage dashboard mirror after repository-owned thresholds pass |
 | Quality | Branch-aware Bun quality gate and Storybook build/smoke/prepublish | Required product and governance validation |
@@ -20,7 +20,8 @@ A missing, skipped, cancelled, timed-out, or failed required check is never gree
 
 ## Retired or optional services (2026-08-03)
 
-- **CircleCI disabled:** GitHub Actions is the active hosted executor and
+- **CircleCI disabled:** GitHub Actions is the active orchestrator and
+  repository-owned self-hosted runners provide execution while hosted billing is blocked.
   `.circleci/config.yml` must not return without a governed requirement change.
 - **Codecov publishing restored:** GitHub Actions uploads LCOV through Codecov CLI
   after repository-owned coverage passes. Codecov is not the threshold authority.

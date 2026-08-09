@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-09 ci: replace CircleCI with GitHub Actions - Eduardo A.
 - 2026-08-09 test: isolate branch gate tests from CircleCI env - Eduardo A.
 - 2026-08-09 ci: treat unselected CircleCI jobs as skipped - Eduardo A.
 - 2026-08-09 Merge remote-tracking branch 'origin/dev' into codex/ci/JUM-631-fast-cheap-dev-ci - Eduardo A.

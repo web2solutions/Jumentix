@@ -10,10 +10,14 @@
 
 1. `XpertMinds/Jumentix` remains private and canonical.
 2. Required delivery evidence must have a zero-cost, repository-owned path. Paid-only provider checks must not be required.
-3. GitHub Actions is the canonical hosted executor. CircleCI disabled means `.circleci/config.yml` must not be present or required.
+3. GitHub Actions is the canonical orchestrator. Hosted billing failures are handled by
+   repository-owned self-hosted runners; CircleCI disabled means `.circleci/config.yml`
+   must not be present or required.
 4. Coverage is produced by Jest, checked fail-closed by `ci-cd/check-coverage-thresholds.js`, and checked at patch level by `ci-cd/check-patch-coverage.js`. Missing reports fail.
 5. Coverage evidence is uploaded as a GitHub Actions artifact and published to Codecov from GitHub Actions when `CODECOV_TOKEN` is configured. Codecov publishing is required for visibility, but Codecov is not the coverage authority and cannot weaken repository-owned thresholds.
 6. CircleCI workflows are disabled in this repository. A configured duplicate pipeline is not redundancy and must not be represented as a passing provider.
+7. GitHub Actions jobs must use the repository-owned self-hosted runner label `jumentix`
+   until hosted runner billing is explicitly restored through a governed requirement change.
 7. The full coverage gate runs in GitHub Actions for `dev -> main` release promotions, `main` pushes, and scheduled/manual full runs so task delivery to `dev` remains fast. Local commands may run coverage diagnostically, but local `ci:gate` and task PR gates must not be the production coverage authority.
 8. SonarQube Cloud may remain as defense-in-depth while operational, but repository-owned coverage and security gates remain authoritative if it becomes unavailable.
 9. GitHub Actions jobs use frozen dependencies, deterministic pinned tools/actions where available, explicit failure on missing evidence, and retained evidence artifacts.
