@@ -4,6 +4,10 @@
 
 ## All Changes
 
+- 2026-08-09 [JUM-635][Fix] Stabilize ServiceManagement browser gate (#159) - Eduardo A.
+- 2026-08-09 fix(ci): make first-run browser spec order independent - Eduardo A.
+- 2026-08-09 [JUM-633][CI] Resolve Sonar release gate findings (#157) - Eduardo A.
+- 2026-08-09 fix(ci): resolve Sonar release gate findings - Eduardo A.
 - 2026-08-09 fix(ci): isolate database compose projects (#156) - Eduardo A.
 - 2026-08-09 fix(ci): isolate database compose projects - Eduardo A.
 - 2026-08-09 fix(ci): recreate mongodb smoke container (#155) - Eduardo A.

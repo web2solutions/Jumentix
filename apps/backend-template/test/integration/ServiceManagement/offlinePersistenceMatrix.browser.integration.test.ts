@@ -357,8 +357,11 @@ async function addStatusRegionRecorder(context: BrowserContext) {
 
 async function waitForStatusLogged(page: Page, fragment: string, timeoutMs = 15000) {
   await page.waitForFunction(
-    (text) => ((window as unknown as { __statusRegionLog?: string[] }).__statusRegionLog || [])
-      .some((message) => message.includes(text)),
+    (text) => {
+      const log = (window as unknown as { __statusRegionLog?: string[] }).__statusRegionLog || [];
+      const regionText = document.getElementById('status-region')?.textContent || '';
+      return regionText.includes(text) || log.some((message) => message.includes(text));
+    },
     fragment,
     { polling: 100, timeout: timeoutMs }
   );
