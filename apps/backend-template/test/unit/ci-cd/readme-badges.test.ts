@@ -43,16 +43,16 @@ const sonarProperties = fs.readFileSync(
 const pinnedBunVersion = fs.readFileSync(path.join(repoRoot, '.bun-version'), 'utf8').trim();
 
 describe('rEADME badges', () => {
-  it('shows CircleCI for both long-lived branches', () => {
+  it('shows GitHub Actions for both long-lived branches', () => {
     expect.hasAssertions();
 
     expect.hasAssertions();
     for (const branch of ['dev', 'main']) {
-      expect(readme).toContain(`img.shields.io/badge/CircleCI-${branch}%20pipeline`);
-      expect(readme).toContain(`https://app.circleci.com/pipelines/github/XpertMinds/Jumentix?branch=${branch}`);
+      expect(readme).toContain(`https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml/badge.svg?branch=${branch}`);
+      expect(readme).toContain(`https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml?query=branch%3A${branch}`);
     }
+    expect(badges).not.toContain('CircleCI');
     expect(badges).not.toContain('dl.circleci.com/status-badge');
-    expect(badges).not.toContain('actions/workflows');
   });
 
   it('points SonarCloud at the project key the scanner actually reports to', () => {

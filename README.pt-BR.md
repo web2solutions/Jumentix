@@ -4,8 +4,8 @@ Idioma alvo: Português (Brasil)
 -->
 # Jumentix – Fábrica de Software para Equipes de Produto
 
-[![Pipeline CircleCI dev](https://img.shields.io/badge/CircleCI-dev%20pipeline-343434?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/XpertMinds/Jumentix?branch=dev)
-[![Pipeline CircleCI main](https://img.shields.io/badge/CircleCI-main%20pipeline-343434?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/XpertMinds/Jumentix?branch=main)
+[![GitHub Actions dev](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml?query=branch%3Adev)
+[![GitHub Actions main](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml?query=branch%3Amain)
 [![Codecov dev](https://codecov.io/gh/XpertMinds/Jumentix/branch/dev/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev)
 [![Codecov main](https://codecov.io/gh/XpertMinds/Jumentix/branch/main/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/main)
 [![Status do Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Jumentix)
@@ -35,14 +35,20 @@ Idioma alvo: Português (Brasil)
 
 | Gate obrigatório | `main` | `dev` |
 | --- | :---: | :---: |
-| Workflow CircleCI | [![Pipeline CircleCI main](https://img.shields.io/badge/CircleCI-main%20pipeline-343434?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/XpertMinds/Jumentix?branch=main) | [![Pipeline CircleCI dev](https://img.shields.io/badge/CircleCI-dev%20pipeline-343434?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/XpertMinds/Jumentix?branch=dev) |
+| Workflow GitHub Actions | [![GitHub Actions main](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml?query=branch%3Amain) | [![GitHub Actions dev](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml?query=branch%3Adev) |
 | Cobertura de projeto no Codecov | [![Codecov main](https://codecov.io/gh/XpertMinds/Jumentix/branch/main/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/main) | [![Codecov dev](https://codecov.io/gh/XpertMinds/Jumentix/branch/dev/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev) |
 | Testes por branch | `branch-gate` | `branch-gate` |
-| Cobertura de projeto + patch | `coverage` | `coverage` |
-| Review de segurança third-party | `third-party-review` | `third-party-review` |
+| Cobertura de projeto + patch | `coverage` | somente promoção de release |
+| Review de segurança third-party | `third-party-review` | somente PR |
 
-A cobertura é produzida e aplicada pelo job CircleCI `coverage` para `dev` e
-`main`. O CircleCI também envia LCOV ao Codecov com a flag `project` quando
+PRs de feature, fix, docs e CI miram `dev` e rodam o gate barato sensível a
+camadas selecionado por `test-map.json`; o alvo é dez minutos ou menos. Jobs
+completos de workspace, browser, cobertura, website e banco ficam reservados
+para promoções de release `dev -> main`, pushes em `main` e execuções completas
+agendadas.
+
+A cobertura é produzida e aplicada pelo job GitHub Actions `coverage` quando a suite
+completa roda. O workflow envia LCOV ao Codecov com a flag `project` quando
 `CODECOV_TOKEN` está configurado. O Codecov fornece o mapa de cobertura arquivo
 a arquivo para cada branch longa:
 
@@ -56,7 +62,7 @@ execução retém evidências Istanbul JSON e LCOV. Os mínimos são:
 | :---: | :---: | :---: | :---: | :---: |
 | ≥ 99% | ≥ 99% | ≥ 99% | ≥ 90% | ≥ 99% |
 
-[Abrir pipelines CircleCI e evidências para download](https://app.circleci.com/pipelines/github/XpertMinds/Jumentix)
+[Abrir execuções GitHub Actions e evidências para download](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml)
 
 Jumentix é um produto monorepo que funciona como uma fábrica de software para equipes de engenharia e proprietários de produtos. Ele ajuda você a passar da ideia ao SaaS pronto para produção em dias, não meses, com uma arquitetura que prioriza o contrato, flexibilidade de tempo de execução e governança de nível empresarial.
 

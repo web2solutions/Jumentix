@@ -143,9 +143,9 @@ Política de isolamento e nomenclatura:
 - Os gates são orientados ao destino: branches de feature, docs, fix e outras tarefas
   executam somente testes especializados alterados/relacionados, `dev` executa a suíte
   unitária completa e `main` executa a matriz local completa sem cobertura pesada.
-- PRs destinados a `dev` executam a matriz local completa sem cobertura pesada no CircleCI.
-  Promoções de `dev` para `main` executam a mesma matriz, além do job obrigatório de
-  cobertura CircleCI nas duas branches longas.
+- PRs destinados a `dev` executam o gate especializado por camada selecionado por
+  `test-map.json`, mais review obrigatório leve. Promoções de `dev` para `main`
+  executam a matriz completa, além do job obrigatório de cobertura GitHub Actions.
 - A evidência da matriz de `main` deve listar cada célula obrigatória e seu resultado terminal.
 - Uma matriz de `main` incompleta é evidência com falha; nunca pode ser interpretada como verde.
 - Review de PR é opcional. Branch protection e rulesets não devem exigir quantidade de
@@ -173,11 +173,13 @@ Se alguma porta falhar, a conformidade com as especificações será considerada
 Contrato de execução por branch:
 
 1. Branches de tarefa executam `ci:gate:task` sobre o diff pertencente à tarefa.
-2. Pushes em `dev` executam `test:unit`; pull requests destinados a `dev` executam `ci:gate:strict`.
+2. Pushes em `dev` executam `test:unit`; pull requests destinados a `dev` executam `ci:gate:task`.
 3. `main` e pull requests de promoção destinados a `main` executam `ci:gate:strict`.
-4. CircleCI é o executor hospedado pertencente ao repositório enquanto GitHub Actions billing
-   está bloqueado pelo Requisito `113`.
-5. `.circleci/config.yml` é responsável por Storybook e cobertura completa em `dev` e `main`;
+4. GitHub Actions é o orquestrador pertencente ao repositório, o runner
+   self-hosted `jumentix` fornece o caminho de execução sem custo, e CircleCI
+   está desabilitado pelo Requisito `113`.
+5. `.github/workflows/ci.yml` é responsável por Storybook, database smoke e cobertura
+   completa em promoções de release, `main` e execuções completas agendadas;
    a matriz completa local não executa Storybook nem produção de cobertura.
 6. Todo gate selecionado emite evidência auditável e falha de forma fechada quando um comando
    não retorna status, quebra ou termina com código diferente de zero.

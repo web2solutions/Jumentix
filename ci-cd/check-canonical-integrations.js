@@ -13,7 +13,7 @@ const INTEGRATION_CONTRACTS = Object.freeze([
     ]
   },
   {
-    file: '.circleci/config.yml',
+    file: '.github/workflows/ci.yml',
     markers: [
       'branch-gate',
       'bun run test:coverage',
@@ -45,8 +45,8 @@ const INTEGRATION_CONTRACTS = Object.freeze([
     markers: [
       'XpertMinds/Jumentix',
       'repository-owned coverage',
-      'CircleCI canonical',
-      'GitHub Actions billing',
+      'GitHub Actions canonical',
+      'CircleCI disabled',
       'Codecov publishing',
       'SonarQube Cloud',
       'OSV.dev',
@@ -60,8 +60,8 @@ const INTEGRATION_CONTRACTS = Object.freeze([
     file: 'documentation/md/CANONICAL-INTEGRATIONS-AND-PROVIDER-REBINDING.pt-BR.md',
     markers: [
       'XpertMinds/Jumentix',
-      'CircleCI',
-      'GitHub Actions billing',
+      'GitHub Actions',
+      'CircleCI desabilitado',
       'Codecov',
       'SonarQube Cloud',
       'OSV.dev',
