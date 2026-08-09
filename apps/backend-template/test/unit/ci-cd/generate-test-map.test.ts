@@ -222,10 +222,20 @@ describe('buildManifest', () => {
     // no layer, and the task gate refuses it as an unsupported change set.
     expect(globs).toStrictEqual(expect.arrayContaining([
       '.github/**',
-      '.circleci/**',
       'test-map.json',
       'jest.config.js'
     ]));
+    expect(globs).not.toContain('.circleci/**');
+  });
+
+  it('declares cheap dev health and full main matrix in the generated gate table', () => {
+    expect.hasAssertions();
+
+    expect(buildManifest(workspace({})).gateTable).toStrictEqual({
+      task: { script: 'ci:gate:task', mode: 'layer-aware' },
+      dev: { script: 'test:unit', mode: 'cheap-health' },
+      main: { script: 'ci:gate:strict', mode: 'full-matrix' }
+    });
   });
 });
 
@@ -296,7 +306,10 @@ describe('service-management classification (JUM-472)', () => {
         'apps/service-management/script.js',
         'apps/service-management/src/**',
         'apps/service-management/index.html',
-        'apps/service-management/styles.css'
+        'apps/service-management/styles.css',
+        // JUM-493: the publishable designer-core package IS the designer core;
+        // its manifest, build and suites belong to the same layer.
+        'packages/designer-core/**'
       ]
     });
   });

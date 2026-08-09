@@ -1,31 +1,34 @@
-# 107 - CircleCI Hosted CI While GitHub Actions Billing Is Blocked
+# 107 - Superseded CircleCI Hosted CI Bridge
 
-- Status: Active again through Requirement `113` amendment on 2026-08-03
+- Status: Superseded by Requirement `113` amendment on 2026-08-09
 - Nature: NFR (CI/CD, governance)
 - Source: Project owner decision, 2026-07-30, revised the same day.
 
-## Revision note
+## Supersession note
 
-GitHub Actions billing is again preventing hosted execution for the private
-repository. The project owner directed CircleCI to replace the disabled GitHub
-Actions setup and keep `main` and `dev` green from repository-owned commands.
+GitHub Actions hosted execution has been restored by owner decision on
+2026-08-09. CircleCI is disabled again, `.circleci/config.yml` must not be
+present, and `.github/workflows/ci.yml` is the canonical GitHub Actions workflow.
 
 The file keeps its original slug so existing links do not break; the title above
 is authoritative.
 
-## Requirement
+## Historical Requirement
 
-1. **CircleCI is the active hosted provider.** The `.circleci/config.yml`
+The following rules are historical and no longer active; Requirement `113` is
+the current executable policy.
+
+1. **CircleCI was the active hosted provider.** The `.circleci/config.yml`
    workflow owns the remote branch gate, coverage, website, third-party review,
    Codecov publishing, and Sonar defense-in-depth checks while GitHub Actions
    billing is blocked.
 
-2. **CircleCI must run on every branch**, not only `dev` and `main`. This was the
+2. **CircleCI had to run on every branch**, not only `dev` and `main`. This was the
    real gap and it survives the revision: the previous CircleCI configuration
    filtered to `only: [dev, main]`, so when GitHub Actions went dark, feature
    branches had coverage from neither provider.
 
-3. **CircleCI must cover every retired GitHub Actions check.** The replacement
+3. **CircleCI had to cover every retired GitHub Actions check.** The replacement
    is only valid when it carries the same branch gate, coverage, website,
    third-party review, Codecov publishing, and Sonar responsibilities.
 
@@ -46,22 +49,22 @@ red marks that look exactly like test failures. Reading them as failures sends
 people to debug code that never ran; reading them as noise trains people to
 merge without evidence. Both readings are worse than an honest "CI did not run".
 
-## Enforcement
+## Former Enforcement
 
-`ci-cd/check-ci-provider.js`, wired into `ci:gate`:
+This section described the bridge-era `ci-cd/check-ci-provider.js` behavior.
+It is retained for traceability only:
 
-- The CircleCI configuration must be present.
-- GitHub Actions workflow YAML must not be present while billing blocks
+- The CircleCI configuration had to be present.
+- GitHub Actions workflow YAML had to be absent while billing blocked
   execution.
-- The CircleCI configuration must express every retired workflow responsibility,
+- The CircleCI configuration had to express every retired workflow responsibility,
   enumerated explicitly — a dropped job is otherwise silent: nothing fails, the
   pipeline simply covers less.
-- The CircleCI quality gate must not be branch-filtered.
+- The CircleCI quality gate could not be branch-filtered.
 
-## Required project configuration
+## Former project configuration
 
-CircleCI must expose these, or the corresponding jobs fail closed rather than
-skipping:
+CircleCI had to expose these during the bridge:
 
 - `JUMENTIX_JWT_TOKEN_SECRET_KEY`, `JUMENTIX_REDIS_PASSWORD` — test fixtures
 - `FIREBASE_SERVICE_ACCOUNT_KEY` — Firestore service account JSON for the

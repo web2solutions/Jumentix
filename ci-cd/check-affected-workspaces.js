@@ -5,7 +5,6 @@ const { isEntryPoint } = require('./lib/entry-point.js');
 const ROOT_MARKERS = [
   'package.json',
   'bun.lock',
-  '.circleci/config.yml',
   '.github',
   'ci-cd',
   'tsconfig',
@@ -26,6 +25,16 @@ function isDocsOnlyPath(filePath) {
   return false;
 }
 
+function workspaceNameFor(file, marker) {
+  if (!file.startsWith(`${marker}/`)) return null;
+  const segments = file.split('/');
+  return segments.length >= 3 && segments[1] ? segments[1] : null;
+}
+
+function touchesRoot(file) {
+  return ROOT_MARKERS.some((marker) => file === marker || file.startsWith(`${marker}/`));
+}
+
 function computeAffectedWorkspaces(files) {
   const normalized = files.map(normalizePath).filter(Boolean);
   const affected = {
@@ -40,22 +49,14 @@ function computeAffectedWorkspaces(files) {
   const packagesSet = new Set();
 
   for (const file of normalized) {
-    if (ROOT_MARKERS.some((marker) => file === marker || file.startsWith(`${marker}/`))) {
+    if (touchesRoot(file)) {
       affected.root = true;
     }
 
-    if (file.startsWith('apps/')) {
-      const appSegments = file.split('/');
-      const appName = appSegments[1];
-      if (appName && appSegments.length >= 3) appsSet.add(appName);
-      continue;
-    }
-
-    if (file.startsWith('packages/')) {
-      const packageSegments = file.split('/');
-      const packageName = packageSegments[1];
-      if (packageName && packageSegments.length >= 3) packagesSet.add(packageName);
-    }
+    const appName = workspaceNameFor(file, 'apps');
+    const packageName = workspaceNameFor(file, 'packages');
+    if (appName) appsSet.add(appName);
+    if (packageName) packagesSet.add(packageName);
   }
 
   affected.apps = Array.from(appsSet).sort();

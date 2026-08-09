@@ -383,6 +383,41 @@ suite('BullMQ mediator against a real Redis', () => {
   }, 60000);
 
   /**
+   * The result has to survive the worker finishing first (JUM-621).
+   *
+   * `waitUntilFinished` subscribes to the completion event, then polls
+   * `isFinished` once to cover a job that finished before the subscription
+   * existed. Under `removeOnComplete: true` the job is already deleted by then
+   * and that poll returns `Missing key for job <id>`, so a request whose
+   * handler answered correctly fails — a race between worker and caller, which
+   * is why it showed up as one intermittent test rather than a broken feature.
+   *
+   * This case exercises that path against a real broker. It is **not** the
+   * deterministic guard — the race is timing-dependent and this passed against
+   * the unmended adapter on the run I measured. The guards are the two unit
+   * cases in `message-mediator.test.ts`, which pin the retention window and the
+   * error wording without a broker; both fail if the fix is reverted.
+   */
+  it('does not lose the reply when the handler finishes before the caller waits', async () => {
+    expect.hasAssertions();
+
+    const name = contract('bull-fast-handler');
+    mediator.registerHandler(name, async (incoming) => ({
+      contract: incoming.contract,
+      result: 'answered'
+    }));
+
+    // Warm the queue infrastructure so the worker is attached and idle, and the
+    // job is picked up the instant it is added.
+    await mediator.request(message(contract('bull-warmup')), { timeoutMs: 20000 });
+
+    const response = await mediator.request(message(name), { timeoutMs: 20000 });
+
+    expect(response.error).toBeUndefined();
+    expect(response.result).toBe('answered');
+  }, 60000);
+
+  /**
    * A handler that throws must come back as an error response, not as a job
    * that vanishes. BullMQ retries and eventually parks a failed job, so a
    * caller waiting on the reply learns nothing unless the adapter reports it.

@@ -121,13 +121,22 @@ Task isolation and naming policy:
 - Only a release-promotion PR sourced from `dev` may target `main`.
 - A `dev` to `main` promotion references the task PRs and Linear Issues already represented in
   `dev` and introduces no additional task changes.
+- Requirement `128`: a merged change under `.agents/requirements/` takes precedence in the
+  release queue. It is promoted ahead of feature, fix, refactor and chore work, and is not held
+  back to a later release to keep a batch tidy. A requirement left merged but unpromoted is a rule
+  that exists in `dev` and not in `main`, and agents working from the released state follow the
+  superseded one.
+- That precedence applies to **sequence only** and grants no exemption from any gate. A promotion
+  carrying a requirement change passes the same checks as any other, at the same thresholds, with
+  no quarantine or exemption relaxed to make it fit. Faster in the queue, never lighter at the
+  gate (Requirement `065`).
 - Direct task/topic PRs, pushes, and merges to `main` are prohibited.
 - Commit and push gates are destination-aware: feature, docs, fix, and other task
-  branches run only specialized changed/related tests, `dev` runs the complete
-  unit suite, and `main` runs the complete local non-coverage matrix.
-- Pull requests targeting `dev` run the complete local non-coverage matrix in
-  CircleCI. Release-promotion PRs to `main` run the same matrix, plus the required
-  CircleCI coverage job on both long-lived branches.
+  branches run only specialized changed/related tests, `dev` runs the cheap
+  unit health gate, and `main` runs the complete local non-coverage matrix.
+- Pull requests targeting `dev` run the layer-aware specialized gate selected by
+  `test-map.json`, plus lightweight mandatory review. Release-promotion PRs to
+  `main` run the complete matrix, plus the required GitHub Actions coverage job.
 - Main-matrix evidence must list every required cell and its terminal result.
 - An incomplete `main` matrix is failed evidence; it must never be interpreted as green.
 - PR review is optional. Branch protection and rulesets must not require an approval count.
@@ -154,12 +163,14 @@ If any gate fails, spec conformance is considered unproven and the change is not
 Branch-aware execution contract:
 
 1. Task branches execute `ci:gate:task` against the task-owned diff.
-2. `dev` pushes execute `test:unit`; pull requests targeting `dev` execute `ci:gate:strict`.
+2. `dev` pushes execute `test:unit`; pull requests targeting `dev` execute `ci:gate:task`.
 3. `main` and release-promotion pull requests targeting `main` execute `ci:gate:strict`.
-4. CircleCI is the repository-owned hosted executor while GitHub Actions billing is blocked by
+4. GitHub Actions is the repository-owned orchestrator, the `jumentix` self-hosted
+   runner provides the zero-cost execution path, and CircleCI is disabled by
    Requirement `113`.
-5. `.circleci/config.yml` owns Storybook checks and full coverage for `dev` and `main`;
-   the local full matrix does not execute Storybook or coverage production.
+5. `.github/workflows/ci.yml` owns Storybook checks, database smoke, and full coverage for
+   release promotions, `main`, and scheduled full runs; the local full matrix does not
+   execute Storybook or coverage production.
 6. Every selected gate emits auditable evidence and fails closed for missing, crashed, or
    non-zero command outcomes.
 

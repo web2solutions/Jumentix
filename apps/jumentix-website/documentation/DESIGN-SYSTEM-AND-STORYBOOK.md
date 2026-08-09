@@ -51,8 +51,37 @@ Storybook is configured for:
 - deterministic static builds;
 - a manifest-based smoke check for required stories and minimum catalog size.
 
-The catalog currently generates 42 indexed entries, including explicit mobile states for the site
-header, architecture flow, commercial product page, and complete commercial page compositions.
+The catalog currently generates 54 indexed entries, including explicit mobile states for the site
+header, architecture flow, commercial product page, complete commercial page compositions, and the
+Service Management designer coverage below.
+
+## Service Management Designer Coverage
+
+The Service Management designer (`apps/service-management`) is a zero-build vanilla SPA, so it
+cannot import the React components. It adopts the design system at the token layer (JUM-488):
+
+- `apps/service-management/tokens.css` vendors `components/design-system/tokens.css` — the shared
+  `--jtx-*` custom properties (colors, surfaces, lines, radii, shadows, spacing, motion, and the
+  `--jtx-font-sans`/`--jtx-font-mono` typography stacks). Token changes land in the website file
+  first and are mirrored into the vendored copy.
+- `apps/service-management/styles.css` resolves every cosmetic value to those tokens. Only
+  structural geometry the canvas math depends on (3200×2200 canvas, 24 px grid, 520 px domains,
+  190 px entities) and the compact inspector density stay literal, and its element-level rules are
+  scoped under `.service-management-shell` so embedding the stylesheet here never leaks into the
+  Storybook chrome.
+- `components/service-management-designer/ServiceManagementDesigner.stories.tsx` mounts the
+  designer's real markup and stylesheets in this Storybook — tab shell, workspace controls, domain
+  canvas with entities/edges/mini-map, the JUM-543 status surfaces, entity inspector, panels and
+  lists, code previews, and the JUM-489 PWA update banner — so the same static build, manifest
+  smoke, accessibility, and light/dark gates cover the designer's key UI states.
+
+The smoke check requires the eight designer stories and a minimum catalog of 54 entries.
+
+The designer-side view of this adoption — the vendored-token sync rule, the
+keyboard and screen-reader model, and the PWA shell it shares with these
+stories — is documented in
+[Service Management Design System and PWA Shell](../../../documentation/md/SERVICE-MANAGEMENT-DESIGN-SYSTEM-PWA.md)
+(E7).
 
 Visual evidence:
 

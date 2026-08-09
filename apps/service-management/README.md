@@ -22,7 +22,30 @@ Detailed feature usage:
 - [Domain Designer Features and Usage](../../documentation/md/DOMAIN-DESIGNER-FEATURES-AND-USAGE.md)
 - [Module Architecture and IDesignerStore Port Contract](../../documentation/md/SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.md)
 - [Contract Parity Guarantees](../../documentation/md/SERVICE-MANAGEMENT-CONTRACT-PARITY.md)
+- [Operations Console](../../documentation/md/SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.md)
+- [Design System and PWA Shell](../../documentation/md/SERVICE-MANAGEMENT-DESIGN-SYSTEM-PWA.md)
+- [Cana Adoption, Migration and Offline Behaviour](../../documentation/md/SERVICE-MANAGEMENT-CANA-ADOPTION.md)
+- [Collaboration and Packaging](../../documentation/md/SERVICE-MANAGEMENT-COLLABORATION-PACKAGING.md)
 - [Service Management Technical Documentation](./documentation/README.md)
+
+## First Run
+
+On a fresh profile the designer boots to an empty model and each tab shows a
+guided empty state (JUM-548) that names the tab's first action — no silent
+pre-populated template. The Domain Designer's first action is the **Load
+Sample Model** button (also available later in the Export panel): one click
+loads a realistic identity domain — Users and Organization, the same
+resources `spec/1.0.0.yml` declares — with relationships, per-entity RBAC, a
+message contract, invariants and OAS `oneOf` + discriminator composition.
+The sample passes the export quality gate and round-trips through
+export/import, so it doubles as a live demonstration of those crossings.
+
+Sample content is always distinguishable from your work: every sample id
+carries the `sample-` prefix and sample domains show a "sample" badge in the
+domain list. Loading the sample over an existing model asks for explicit
+confirmation (Undo restores the previous model afterwards), and deleting the
+sample is ordinary domain/entity deletion. Content is defined in
+`@jumentix/designer-core` (`packages/designer-core/src/model/sampleModel.js`).
 
 ## Tabs
 
@@ -43,19 +66,39 @@ Detailed feature usage:
    - Exporters: JSON, OpenAPI 3.1, Markdown, JSON Schema, AsyncAPI 3.0 per transport
      (`<version>.websocket.yml` / `<version>.grpc.yml`, canonical `spec/asyncapi/`
      conventions), gRPC proto (`async-api.proto`) and boilerplate bundle.
+   - The JSON export is the versioned full-suite document (JUM-547): it carries all
+     four tabs (`domains`/`relationships`, `interfaces`, `serviceConfiguration`,
+     `deployments`) plus the runtime-environment selection — never its values — and
+     Import JSON restores them, accepting pre-JUM-547 domain-only files and refusing
+     unknown sections or newer major versions clearly.
    - OpenAPI composition controls (`oneOf`, `allOf`, `anyOf`, external `$ref`, discriminator) per entity.
-   - Domain package export/import for reusable model sharing.
+   - Domain package export/import for reusable model sharing — versioned
+     (JUM-492): packages carry a semantic version and dependency ranges,
+     imported content is stamped with provenance, and re-imports resolve
+     deterministically (no-op on identical version, refusal on same-version
+     conflict or downgrade, merge preview with user decision for RBAC,
+     invariants, removals and narrowings on a newer version).
    - Mini-map navigation and large-canvas performance mode.
 2. **Communication Interface Designer**
    - Register inbound interface adapters (`HTTP/REST`, `gRPC`, `WebSocket`, `SSE`).
-   - Track framework/runtime, entrypoint, and controller mapping.
+   - Full adapter lifecycle (JUM-545): every registered adapter edits in place (type,
+     framework, entrypoint and controller mapping) — no delete-and-re-add.
+   - Framework options are scoped per interface type from the canonical runtime matrix
+     (`@jumentix/designer-core` (`packages/designer-core/src/model/interfaceFrameworkMatrix.js`)): the eleven canonical HTTP frameworks
+     (JUM-461 spellings — `derby-js`/`sails-js` only, no alias duplicates) for
+     `HTTP/REST` and `SSE`, `socket-io` for `WebSocket`, `grpc` for `gRPC`.
+   - Adds and edits are validated (`@jumentix/designer-core` (`packages/designer-core/src/validation/interfaceAdapterValidation.js`)):
+     the entrypoint must be a TypeScript/JavaScript path under `src/interface/`, the
+     controller mapping must have the `XController.action` shape, and duplicates
+     (same type + entrypoint, or same controller mapping) are rejected with the reason
+     on the status surface. Invalid persisted entries are flagged inline.
 3. **Service Configuration**
    - Configure service kind (`REST API`, `WebSocket API + REST API`, `gRPC API + REST API`),
    execution model, cloud provider, static assets profile, and runtime ports.
    - Saves are validated (JUM-544): ports must be integers in 1–65535 and unique across the
    protocols the selected service kind actually binds, and the run-mode × cloud-provider
    combination must exist in the Requirement 059 deploy matrix (read from the shared
-   machine-readable source `src/model/deployCapabilityMatrix.js`). Invalid profiles are
+   machine-readable source `@jumentix/designer-core` (`packages/designer-core/src/model/deployCapabilityMatrix.js`)). Invalid profiles are
    reported on the tab's status surface and are not saved.
    - PM2 runtime profile preview for VM deployments reads the real
      `pm2/ecosystem.*.cjs` files through `GET /api/runtime/pm2-ecosystem`
@@ -79,11 +122,48 @@ Detailed feature usage:
      `serviceType`, `deployTarget`, `runtimeProtocol`, `databaseDriver`,
      `keyValueDriver` and `pm2Profile`. Additions are validated against the
      deploy matrix read from the shared machine-readable source
-     `src/model/deployCapabilityMatrix.js` — combinations with no matrix row,
+     `@jumentix/designer-core` (`packages/designer-core/src/model/deployCapabilityMatrix.js`) — combinations with no matrix row,
      protocols the service type does not expose, and PM2 profiles on
      serverless targets are rejected on the status surface with the
      constraint named. Targets persisted before this alignment migrate
      forward on load.
+   - Lifecycle (JUM-546): targets are editable in place and duplicable — a
+     duplicate is an independent deep copy renamed by the ` (copy)` rule. The
+     add/edit gate enforces the field rules too: unique name, a
+     name-plus-version runtime pattern (`nodejs22.x`), and region required on
+     cloud targets (optional on the self-hosted dedicated server, where the
+     field carries host information), with target-type-aware field hints.
+
+## Design System and Accessibility
+
+The designer adopts the Jumentix design system at the token layer (JUM-488) —
+it is a zero-build vanilla SPA, so adoption means shared tokens and idioms,
+not React component imports:
+
+- `tokens.css` — vendored copy of the shared `--jtx-*` custom properties
+  (source of truth: `apps/jumentix-website/components/design-system/tokens.css`):
+  color ramps, surfaces, lines, radii, shadows, the spacing scale, motion, and
+  the Inter/IBM Plex Mono typography stacks. Token changes land in the website
+  file first and are mirrored here.
+- `styles.css` — every cosmetic value (color, typography, radius, shadow,
+  spacing) resolves to a `--jtx-*` token. Only structural geometry the canvas
+  math depends on stays literal (3200×2200 canvas, 24px grid, 520px domains,
+  190px entities — pinned by `@jumentix/designer-core` (`packages/designer-core/src/model/modelQueries.js`) and its unit suite),
+  plus the compact inspector density. Element-level rules are scoped under
+  `.service-management-shell` so the stylesheet can be embedded in the website
+  Storybook without leaking.
+- Storybook coverage lives in the website workspace
+  (`apps/jumentix-website/components/service-management-designer/`), mounting
+  the designer's real markup and stylesheets; the manifest smoke check
+  requires those stories.
+
+Accessibility semantics layered onto the same markup: WAI-ARIA tablist with
+roving tabindex and Arrow/Home/End navigation (`src/ui/tabs.js`), `aria-pressed`
+on the view toggles (synced by `src/ui/canvas.js`), accessible names on every
+control, a live-region selection status, a skip link to the canvas workspace,
+and Space restored to native button activation. The canvas keyboard path is
+structural: select entities from the sidebar lists, move the selection with
+the arrow keys (Shift for larger steps), delete with Delete/Backspace.
 
 ## Run
 
@@ -118,6 +198,73 @@ Mode selection is explicit configuration, not inferred from `NODE_ENV` alone:
   manifest (production behaviour), regardless of `NODE_ENV`.
 - Unset — default derives from `NODE_ENV`: `dev`/`development` => `on-miss`,
   anything else => `boot-only`.
+
+## PWA Shell
+
+The designer is an installable PWA (JUM-489). The shell is:
+
+- `manifest.webmanifest` — name, icons (`icons/`), theme, `standalone`
+  display, start URL/scope `./`. Served as `application/manifest+json`.
+- `sw.js` — the app-shell service worker. A CLASSIC script (not a module),
+  served from the app root so its scope is the whole app.
+- `src/pwa/pwaShell.js` — page-side registration, the update prompt and the
+  recovery path, wired by a small inline module in `index.html` (deliberately
+  outside `script.js`: the shell never reorders the designer boot).
+
+### Caching strategy
+
+The worker precaches the SHELL ONLY — HTML, CSS, the JS module graph, the
+manifest and icons — under a VERSIONED cache name
+(`service-management-shell@<SHELL_VERSION>`), and serves those entries
+cache-first. `SHELL_VERSION` (in `sw.js`) is bumped on every shell change, so
+a shipped update never mutates the cache the running version serves from, and
+`activate` deletes every stale `service-management-shell@*` cache.
+
+Application data is NEVER cached here: `/api/` responses, non-GET and
+cross-origin requests pass straight to the network, and offline they fail
+naturally. Persistence belongs to Cana (JUM-483/484 — no fallback); a
+convenience copy in the Cache API would be a fallback by the back door.
+
+The precache list and the server's static manifest must agree about what the
+shell is (JUM-463): the unit suite asserts every precached entry exists on
+disk, and the browser smoke requests every entry against the real server.
+
+### Update flow
+
+A cache-first shell is a cache with no expiry that the user cannot see — so
+the update path is the substance, not an afterthought:
+
+1. A shipped update (a changed `sw.js`) installs and WAITS; the running shell
+   keeps serving. There is no silent swap mid-edit.
+2. The page shows a banner: "A new version of Service Management is
+   available." — with "Reload to update", "Later" and "Reset app shell".
+3. Only on "Reload to update" does the page post `SKIP_WAITING`; the waiting
+   worker activates, deletes stale caches, claims clients, and the page
+   reloads on `controllerchange`. "Later" defers: the waiting worker is still
+   there on the next load, and the prompt returns.
+
+### Offline scope and the storage boundary
+
+With the network disabled the SHELL loads and stays interactive — that is the
+whole offline contract. Data availability is Cana's domain, not the shell's:
+the shell never masks an evicted database as a first run, and it never
+presents cached data of its own.
+
+The service worker cache and the Cana database are DIFFERENT storage, but the
+browser's "clear site data" removes BOTH. The shell's presence never implies
+designer data is safe. The "Reset app shell" action is the recovery path that
+requires no service-worker knowledge: it unregisters the worker, deletes ONLY
+the `service-management-shell@*` caches and reloads — Cana data is untouched.
+
+### PWA tests
+
+- Unit: `apps/backend-template/test/unit/service-management/pwaShell.test.ts`
+  (worker handlers, update flow, recovery — with injected fakes).
+- Browser smoke:
+  `apps/backend-template/test/integration/ServiceManagement/pwaShell.browser.integration.test.ts`
+  (manifest/worker content types, precache↔static-manifest agreement,
+  registration, offline shell load with the server down, the full update
+  flow with stale-cache cleanup).
 
 ## Runtime Env API
 

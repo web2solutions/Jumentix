@@ -28,6 +28,16 @@ const requiredStories = [
   'documentation-shell-navigation--portuguese',
   'documentation-shell-footer--default',
   'documentation-shell-footer--portuguese',
+  // Service Management designer coverage (JUM-488): the zero-build SPA's key
+  // UI states, rendered with its real stylesheets.
+  'service-management-designer-overview--tab-shell',
+  'service-management-designer-overview--workspace-controls',
+  'service-management-designer-overview--domain-canvas',
+  'service-management-designer-overview--status-surfaces',
+  'service-management-designer-overview--entity-inspector',
+  'service-management-designer-overview--panels-and-lists',
+  'service-management-designer-overview--code-previews',
+  'service-management-designer-overview--pwa-update-banner',
 ];
 
 for (const storyId of requiredStories) {
@@ -36,8 +46,8 @@ for (const storyId of requiredStories) {
   }
 }
 
-if (entries.length < 44) {
-  throw new Error(`Storybook smoke check failed: expected at least 44 entries, found ${entries.length}`);
+if (entries.length < 54) {
+  throw new Error(`Storybook smoke check failed: expected at least 54 entries, found ${entries.length}`);
 }
 
 console.log(`Storybook smoke check passed with ${entries.length} indexed entries.`);

@@ -46,6 +46,7 @@ function describeCause(cause: unknown): string | undefined {
     if (name && message) return `${name}: ${message}`;
     if (name) return name;
     if (message) return message;
+    return String(cause);
   }
   return String(cause);
 }

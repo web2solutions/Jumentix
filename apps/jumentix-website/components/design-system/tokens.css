@@ -27,6 +27,12 @@
   --jtx-space-7: 48px;
   --jtx-motion-fast: 140ms ease;
   --jtx-content-width: 1200px;
+  /* Typography stacks (JUM-488): tokenized so non-Mantine consumers — the
+     zero-build Service Management designer vendors this file — inherit the
+     same type voice as the Mantine theme (theme.ts fontFamily /
+     fontFamilyMonospace). */
+  --jtx-font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --jtx-font-mono: 'IBM Plex Mono', SFMono-Regular, Consolas, monospace;
 }
 
 :root.dark,

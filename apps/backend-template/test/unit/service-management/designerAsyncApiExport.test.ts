@@ -5,9 +5,9 @@ import path from 'node:path';
 
 /**
  * Canonical-target suite for the AsyncAPI 3.0 and gRPC proto exports
- * (JUM-475) — `apps/service-management/src/exporters/asyncApiExporters.js`
+ * (JUM-475) — `packages/designer-core/src/exporters/asyncApiExporters.js`
  * plus the structural validator in
- * `apps/service-management/src/validation/asyncApi30Validation.js`.
+ * `packages/designer-core/src/validation/asyncApi30Validation.js`.
  *
  * The canonical targets live in `spec/asyncapi/`: `1.0.0.websocket.yml` and
  * `1.0.0.grpc.yml` declare `asyncapi: 3.0.0` under the
@@ -38,12 +38,12 @@ const {
   buildAsyncApiTransportDocument,
   buildGrpcProto,
   toYaml
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'exporters', 'asyncApiExporters.js'));
+} = require('@jumentix/designer-core/exporters/asyncApiExporters.js');
 const {
   validateAsyncApi30Document
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'validation', 'asyncApi30Validation.js'));
+} = require('@jumentix/designer-core/validation/asyncApi30Validation.js');
 const { normalizeStatePayload } = require(
-  path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'designerState.js')
+  '@jumentix/designer-core/state/designerState.js'
 );
 
 const CANONICAL_SPEC_DIR = path.join(repoRoot, 'spec', 'asyncapi');

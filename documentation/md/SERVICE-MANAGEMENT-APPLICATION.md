@@ -10,9 +10,12 @@ Core implementation files:
 
 - `apps/service-management/index.html`
 - `apps/service-management/script.js`
-- `apps/service-management/src/state/designerState.js`
-- `apps/service-management/src/store/IDesignerStore.js`
-- `apps/service-management/src/store/LocalStorageDesignerStore.js`
+- `packages/designer-core/src/state/designerState.js`
+- `apps/service-management/src/state/designerSync.js`
+- `packages/designer-core/src/store/IDesignerStore.js`
+- `apps/service-management/src/store/CanaDesignerStore.js`
+- `apps/service-management/src/store/designerStoreFactory.js`
+- `apps/service-management/src/store/canaMigration.js`
 - `apps/service-management/styles.css`
 - `apps/service-management/server.js`
 
@@ -22,6 +25,22 @@ contract are documented in
 What the contract exports guarantee — and the checks that prove it — are
 documented in
 [Service Management Contract Parity Guarantees](./SERVICE-MANAGEMENT-CONTRACT-PARITY.md).
+The operations console — Service Configuration, the runtime-environment
+editor, the PM2 ecosystem preview and Deploy Management, with the shared
+Requirement 059 capabilities matrix and the lifecycle rules — is documented in
+[Service Management Operations Console](./SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.md).
+The design-system adoption, the keyboard and screen-reader model, and the
+installable PWA shell (installation, updates, recovery and the storage
+boundary) are documented in
+[Service Management Design System and PWA Shell](./SERVICE-MANAGEMENT-DESIGN-SYSTEM-PWA.md).
+The Cana adoption from the user's side — where the designer's data lives, the
+one-way migration, the offline/state matrix and why export is the only
+recovery path — is documented in
+[Service Management Cana Adoption, Migration and Offline Behaviour](./SERVICE-MANAGEMENT-CANA-ADOPTION.md).
+Collaboration and packaging — the multi-user shared catalog, versioned domain
+packages and the deferred designer-core publish, closing the E1–E8
+documentation chain — are documented in
+[Service Management Collaboration and Packaging](./SERVICE-MANAGEMENT-COLLABORATION-PACKAGING.md).
 
 ## Tabs
 
@@ -49,6 +68,14 @@ documented in
      - gRPC
      - WebSocket
      - SSE
+   - Full adapter lifecycle (JUM-545): every registered adapter edits in place
+     (type, framework, entrypoint and controller mapping). Adds and edits are
+     validated — framework scoped per interface type from the canonical runtime
+     matrix (JUM-461 spellings, no `derby`/`sails` aliases), entrypoint as a
+     TypeScript/JavaScript path under `src/interface/`, controller mapping in
+     the `XController.action` shape, and no duplicates (same type + entrypoint,
+     or same controller mapping) — with rejections announced on the status
+     surface.
 3. **Service Configuration**
    - Captures runtime profile and deployment shape:
      - service kind (`REST API`, `WebSocket API + REST API`, `gRPC API + REST API`)
@@ -98,6 +125,13 @@ documented in
      PM2-managed targets) are rejected on the non-blocking status surface
      with the violated constraint named. Legacy targets persisted before this
      alignment migrate forward on load.
+   - Lifecycle (JUM-546): targets are editable in place and duplicable — a
+     duplicate is an independent deep copy renamed by the ` (copy)` rule. The
+     add/edit gate also enforces the field rules: a required, unique name; a
+     name-plus-version runtime pattern (`nodejs22.x`); and a region required
+     on cloud targets (optional on the self-hosted dedicated server, where
+     the field carries host information). Target-type-aware hints guide the
+     form, and every rejection names the reason on the status surface.
 
 Detailed usage guide:
 
@@ -110,7 +144,21 @@ PM2-served:
 - `bun run dev:service-management`
 - default dev profile (`bun run dev`) also starts `service-management` through PM2.
 
-The app state persists with browser `localStorage`.
+The app state persists in Cana (IndexedDB). JUM-484's one-way migration moved
+the legacy browser `localStorage` payload across at boot — byte copy, same
+pinned keys, no fallback to localStorage. JUM-485 keeps open tabs consistent:
+each tab subscribes to Cana's ordered write events, bridges them over a shared
+`BroadcastChannel`, and reconciles remote changes with the local undo/redo
+history, pending edits and the current selection (undo stays local-only and
+remote changes are not undoable).
+
+The designer is also an installable PWA (JUM-489): `manifest.webmanifest`, a
+classic app-shell service worker (`sw.js`) with a versioned, cleanable cache,
+and a user-visible update prompt — no silent swap mid-edit. The shell caches
+only HTML/CSS/JS/manifest/icons; application data stays with the designer
+store (Cana lane), never in the service worker. The full strategy — update
+flow, offline scope, storage boundary and recovery path — is documented in
+the [Service Management App README — PWA Shell](../../apps/service-management/README.md#pwa-shell).
 
 Recommended dev path:
 

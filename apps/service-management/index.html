@@ -3,28 +3,42 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#142033" />
   <title>Service Management</title>
+  <!-- PWA shell (JUM-489): installable manifest + icons. The service worker
+       registration lives in the inline module at the end of <body>. -->
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+  <!-- Design system (JUM-488): the shared --jtx-* tokens must load before
+       styles.css, which consumes them. tokens.css is vendored from
+       apps/jumentix-website/components/design-system/tokens.css. -->
+  <link rel="stylesheet" href="./tokens.css" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
   <div class="service-management-shell">
+    <!-- Skip link (JUM-488): first tab stop, jumps to the canvas workspace. -->
+    <a class="skip-link" href="#workspace-main">Skip to canvas workspace</a>
     <header class="service-management-header">
       <h1>Service Management</h1>
       <p>Design domains, communication interfaces, runtime settings, and deployment targets.</p>
     </header>
 
-    <nav class="tab-nav" aria-label="Service management tabs">
-      <button id="tab-domain-designer-btn" class="tab-btn active" type="button">Domain Designer</button>
-      <button id="tab-interface-designer-btn" class="tab-btn" type="button">Communication Interface Designer</button>
-      <button id="tab-service-config-btn" class="tab-btn" type="button">Service Configuration</button>
-      <button id="tab-deploy-management-btn" class="tab-btn" type="button">Deploy Management</button>
+    <!-- Tab shell (JUM-488): WAI-ARIA tablist semantics. Roving tabindex and
+         arrow-key/Home/End navigation are managed by src/ui/tabs.js. -->
+    <nav class="tab-nav" role="tablist" aria-label="Service management tabs">
+      <button id="tab-domain-designer-btn" class="tab-btn active" type="button" role="tab" aria-selected="true" aria-controls="tab-domain-designer" tabindex="0">Domain Designer</button>
+      <button id="tab-interface-designer-btn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-interface-designer" tabindex="-1">Communication Interface Designer</button>
+      <button id="tab-service-config-btn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-service-config" tabindex="-1">Service Configuration</button>
+      <button id="tab-deploy-management-btn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-deploy-management" tabindex="-1">Deploy Management</button>
     </nav>
 
     <!-- Non-blocking status surface (JUM-543): validation messages and API
          results are announced here instead of blocking window.alert dialogs. -->
     <div id="status-region" class="status-region" role="status" aria-live="polite" hidden></div>
 
-    <section id="tab-domain-designer" class="tab-section active">
+    <section id="tab-domain-designer" class="tab-section active" role="tabpanel" aria-labelledby="tab-domain-designer-btn">
       <div class="app-shell">
         <aside class="sidebar">
           <header class="sidebar-header">
@@ -35,7 +49,7 @@
           <section class="panel">
             <h2>Domains</h2>
             <div class="row">
-              <input id="domain-name-input" type="text" placeholder="Domain name" />
+              <input id="domain-name-input" type="text" placeholder="Domain name" aria-label="Domain name" />
               <button id="add-domain-btn" type="button">Add</button>
             </div>
             <div class="row">
@@ -43,7 +57,7 @@
               <button id="delete-domain-btn" type="button">Delete</button>
             </div>
             <div class="row">
-              <input id="domain-color-input" type="color" value="#60a5fa" />
+              <input id="domain-color-input" type="color" value="#60a5fa" aria-label="Domain color" />
               <button id="set-domain-color-btn" type="button">Set Color</button>
             </div>
             <ul id="domain-list" class="list"></ul>
@@ -53,13 +67,13 @@
             <h2>Bounded Context</h2>
             <p class="hint">Metadata for selected domain context and ownership.</p>
             <div class="column compact">
-              <input id="domain-ubiquitous-language-input" type="text" placeholder="Ubiquitous language" />
-              <input id="domain-owner-team-input" type="text" placeholder="Owner team" />
-              <input id="domain-upstream-input" type="text" placeholder="Upstream dependencies (comma separated)" />
-              <input id="domain-downstream-input" type="text" placeholder="Downstream dependencies (comma separated)" />
-              <input id="domain-integration-channel-input" type="text" placeholder="Integration channel (http, async, grpc...)" />
-              <input id="domain-package-dependencies-input" type="text" placeholder="Package dependencies (comma separated)" />
-              <input id="domain-shared-value-objects-input" type="text" placeholder="Shared value objects (comma separated)" />
+              <input id="domain-ubiquitous-language-input" type="text" placeholder="Ubiquitous language" aria-label="Ubiquitous language" />
+              <input id="domain-owner-team-input" type="text" placeholder="Owner team" aria-label="Owner team" />
+              <input id="domain-upstream-input" type="text" placeholder="Upstream dependencies (comma separated)" aria-label="Upstream dependencies (comma separated)" />
+              <input id="domain-downstream-input" type="text" placeholder="Downstream dependencies (comma separated)" aria-label="Downstream dependencies (comma separated)" />
+              <input id="domain-integration-channel-input" type="text" placeholder="Integration channel (http, async, grpc...)" aria-label="Integration channel" />
+              <input id="domain-package-dependencies-input" type="text" placeholder="Package dependencies (comma separated)" aria-label="Package dependencies (comma separated)" />
+              <input id="domain-shared-value-objects-input" type="text" placeholder="Shared value objects (comma separated)" aria-label="Shared value objects (comma separated)" />
               <div class="row">
                 <button id="save-domain-context-btn" type="button">Save Context</button>
                 <button id="clear-domain-context-btn" type="button">Clear</button>
@@ -70,11 +84,11 @@
           <section class="panel">
             <h2>Entities</h2>
             <div class="row">
-              <input id="entity-name-input" type="text" placeholder="Entity name" />
+              <input id="entity-name-input" type="text" placeholder="Entity name" aria-label="Entity name" />
               <button id="add-entity-btn" type="button">Add</button>
             </div>
             <div class="row">
-              <select id="entity-template-select">
+              <select id="entity-template-select" aria-label="Entity template">
                 <option value="">Entity template</option>
                 <option value="crudAggregate">crudAggregate</option>
                 <option value="eventSourced">eventSourced</option>
@@ -91,7 +105,7 @@
               <button id="duplicate-entity-btn" type="button">Duplicate</button>
             </div>
             <div class="row">
-              <input id="entity-search-input" type="text" placeholder="Search entity" />
+              <input id="entity-search-input" type="text" placeholder="Search entity" aria-label="Search entity" />
               <button id="entity-search-btn" type="button">Find</button>
             </div>
             <p class="hint">Select a domain first.</p>
@@ -100,16 +114,16 @@
           <section class="panel">
             <h2>Relationship</h2>
             <div class="column">
-              <select id="from-entity-select"></select>
-              <select id="from-card-select">
+              <select id="from-entity-select" aria-label="From entity"></select>
+              <select id="from-card-select" aria-label="From cardinality">
                 <option value="1">1</option>
                 <option value="N">N</option>
               </select>
-              <select id="to-card-select">
+              <select id="to-card-select" aria-label="To cardinality">
                 <option value="1">1</option>
                 <option value="N">N</option>
               </select>
-              <select id="to-entity-select"></select>
+              <select id="to-entity-select" aria-label="To entity"></select>
               <label class="check"><input id="relationship-auto-fk-check" type="checkbox" checked /> auto FK</label>
               <div class="row">
                 <button id="add-relationship-btn" type="button">Connect</button>
@@ -119,17 +133,17 @@
             </div>
             <ul id="relationship-list" class="list"></ul>
             <div class="column compact">
-              <input id="relationship-name-input" type="text" placeholder="Selected relationship name" />
+              <input id="relationship-name-input" type="text" placeholder="Selected relationship name" aria-label="Selected relationship name" />
               <div class="row">
-                <select id="relationship-from-entity-select"></select>
-                <select id="relationship-to-entity-select"></select>
+                <select id="relationship-from-entity-select" aria-label="Relationship from entity"></select>
+                <select id="relationship-to-entity-select" aria-label="Relationship to entity"></select>
               </div>
               <div class="row">
-                <select id="relationship-from-card-select">
+                <select id="relationship-from-card-select" aria-label="Relationship from cardinality">
                   <option value="1">1</option>
                   <option value="N">N</option>
                 </select>
-                <select id="relationship-to-card-select">
+                <select id="relationship-to-card-select" aria-label="Relationship to cardinality">
                   <option value="1">1</option>
                   <option value="N">N</option>
                 </select>
@@ -139,14 +153,14 @@
                 <button id="reverse-relationship-btn" type="button">Reverse</button>
               </div>
               <div class="row">
-                <input id="relationship-label-offset-x-input" type="number" placeholder="Label X offset" />
-                <input id="relationship-label-offset-y-input" type="number" placeholder="Label Y offset" />
+                <input id="relationship-label-offset-x-input" type="number" placeholder="Label X offset" aria-label="Label X offset" />
+                <input id="relationship-label-offset-y-input" type="number" placeholder="Label Y offset" aria-label="Label Y offset" />
                 <button id="reset-relationship-label-offset-btn" type="button">Reset Label Pos</button>
               </div>
               <div class="row">
-                <input id="relationship-bend-x-input" type="number" placeholder="Bend X (optional)" />
-                <input id="relationship-bend-y-input" type="number" placeholder="Bend Y (optional)" />
-                <select id="relationship-anchor-behavior-select">
+                <input id="relationship-bend-x-input" type="number" placeholder="Bend X (optional)" aria-label="Bend X (optional)" />
+                <input id="relationship-bend-y-input" type="number" placeholder="Bend Y (optional)" aria-label="Bend Y (optional)" />
+                <select id="relationship-anchor-behavior-select" aria-label="Anchor behavior">
                   <option value="auto">anchor auto</option>
                   <option value="center">anchor center</option>
                 </select>
@@ -158,16 +172,16 @@
             <h2>Entity Inspector</h2>
             <p id="entity-inspector-title" class="hint">No entity selected</p>
             <div class="row">
-              <input id="entity-rename-input" type="text" placeholder="Entity name" />
+              <input id="entity-rename-input" type="text" placeholder="Entity name" aria-label="Entity name" />
               <button id="save-entity-rename-btn" type="button">Save Name</button>
             </div>
             <div class="row">
-              <select id="entity-move-domain-select"></select>
+              <select id="entity-move-domain-select" aria-label="Move entity to domain"></select>
               <button id="move-entity-btn" type="button">Move Domain</button>
             </div>
             <div class="column compact">
               <label class="check"><input id="entity-aggregate-root-check" type="checkbox" /> Aggregate root</label>
-              <textarea id="entity-invariants-input" rows="3" placeholder="Invariant rules (one per line)"></textarea>
+              <textarea id="entity-invariants-input" rows="3" placeholder="Invariant rules (one per line)" aria-label="Invariant rules (one per line)"></textarea>
               <button id="save-entity-rules-btn" type="button">Save Rules</button>
             </div>
             <div class="column compact">
@@ -191,16 +205,16 @@
               <label for="entity-contract-name-input">Message Contract</label>
               <input id="entity-contract-name-input" type="text" placeholder="Contract name" />
               <div class="row">
-                <select id="entity-contract-type-select">
+                <select id="entity-contract-type-select" aria-label="Contract type">
                   <option value="event">event</option>
                   <option value="command">command</option>
                   <option value="request">request</option>
                   <option value="response">response</option>
                 </select>
-                <input id="entity-contract-channel-input" type="text" placeholder="channel/topic" />
+                <input id="entity-contract-channel-input" type="text" placeholder="channel/topic" aria-label="Contract channel/topic" />
               </div>
               <div class="row">
-                <input id="entity-contract-version-input" type="text" placeholder="version (e.g. 1.0.0)" />
+                <input id="entity-contract-version-input" type="text" placeholder="version (e.g. 1.0.0)" aria-label="Contract version" />
                 <button id="add-entity-contract-btn" type="button">Add Contract</button>
               </div>
               <ul id="entity-contract-list" class="list"></ul>
@@ -213,17 +227,17 @@
                 <option value="allOf">allOf</option>
                 <option value="anyOf">anyOf</option>
               </select>
-              <input id="entity-oas-composition-refs-input" type="text" placeholder="Schema refs (comma), e.g. Users_User,Billing_Invoice" />
-              <input id="entity-oas-external-refs-input" type="text" placeholder="External $refs (comma URLs/paths)" />
-              <input id="entity-oas-discriminator-input" type="text" placeholder="Discriminator property (optional)" />
+              <input id="entity-oas-composition-refs-input" type="text" placeholder="Schema refs (comma), e.g. Users_User,Billing_Invoice" aria-label="Schema refs (comma separated)" />
+              <input id="entity-oas-external-refs-input" type="text" placeholder="External $refs (comma URLs/paths)" aria-label="External $refs (comma separated)" />
+              <input id="entity-oas-discriminator-input" type="text" placeholder="Discriminator property (optional)" aria-label="Discriminator property (optional)" />
               <button id="save-entity-oas-composition-btn" type="button">Save OAS Composition</button>
             </div>
             <div class="row">
-              <input id="field-name-input" type="text" placeholder="fieldName" />
+              <input id="field-name-input" type="text" placeholder="fieldName" aria-label="Field name" />
               <button id="add-field-btn" type="button">Add Field</button>
             </div>
             <div class="row">
-              <select id="field-template-select">
+              <select id="field-template-select" aria-label="Field template">
                 <option value="">Field template</option>
                 <option value="tenant">tenantRef</option>
                 <option value="audit">auditTrail</option>
@@ -233,7 +247,7 @@
               <button id="apply-field-template-btn" type="button">Apply Template</button>
             </div>
             <div class="column compact">
-              <select id="field-type-select">
+              <select id="field-type-select" aria-label="Field type">
                 <option value="string">string</option>
                 <option value="integer">integer</option>
                 <option value="number">number</option>
@@ -244,7 +258,7 @@
                 <option value="datetime">datetime</option>
                 <option value="uuid">uuid</option>
               </select>
-              <select id="field-format-select">
+              <select id="field-format-select" aria-label="Field format (optional)">
                 <option value="">format (optional)</option>
                 <option value="uuid">uuid</option>
                 <option value="date">date</option>
@@ -252,7 +266,7 @@
                 <option value="email">email</option>
                 <option value="uri">uri</option>
               </select>
-              <input id="field-enum-input" type="text" placeholder="enum: a,b,c (optional)" />
+              <input id="field-enum-input" type="text" placeholder="enum: a,b,c (optional)" aria-label="Enum values, comma separated (optional)" />
               <label class="check"><input id="field-required-check" type="checkbox" /> required</label>
               <label class="check"><input id="field-pk-check" type="checkbox" /> PK</label>
               <label class="check"><input id="field-fk-check" type="checkbox" /> FK</label>
@@ -289,6 +303,9 @@
               <input id="import-package-input" type="file" accept="application/json,.json" hidden />
             </div>
             <div class="row">
+              <button id="load-sample-btn" type="button">Load Sample Model</button>
+            </div>
+            <div class="row">
               <button id="generate-code-preview-btn" type="button">Code Preview</button>
               <button id="generate-examples-btn" type="button">Generate Examples</button>
             </div>
@@ -317,6 +334,8 @@
               <li>Alt + L to auto layout</li>
               <li>Select domain to add entity</li>
               <li>Drag from entity edge dots to connect entities</li>
+              <li>Arrow keys move the selected entity (Shift for larger steps)</li>
+              <li>Arrow keys, Home and End switch tabs on the focused tab bar</li>
             </ul>
           </section>
 
@@ -349,39 +368,81 @@
           </section>
         </aside>
 
-        <main class="workspace">
+        <main class="workspace" id="workspace-main" tabindex="-1">
+          <!-- Guided empty state (JUM-548): first-run guidance for the Domain
+               Designer, shown while the model has no domains. Names the one
+               action that starts the flow (load the sample) and points at the
+               canvas controls, the model checks and the export gate. Toggled
+               by renderEmptyStates in script.js. -->
+          <aside class="empty-state" id="domain-designer-empty-state" hidden>
+            <h2>Start your domain model</h2>
+            <p>
+              This is the Domain Designer: model bounded contexts, entities and their fields,
+              relationships, per-entity RBAC, message contracts and OpenAPI composition on a
+              canvas with pan, zoom, snap, mini-map and undo/redo.
+            </p>
+            <p>
+              First action: load the sample model — a small identity domain (Users and Organization,
+              the same resources <code>spec/1.0.0.yml</code> declares) that exercises relationships,
+              RBAC, a message contract and composition. Or type a domain name in the Domains panel
+              and press Add to start from scratch.
+            </p>
+            <button id="domain-designer-empty-load-sample-btn" type="button">Load Sample Model</button>
+            <p class="hint">
+              The sample is marked "sample" in the domain list and is safe to delete — it never mixes
+              with your work. Once you have a model, run "Validate Model" in the Model Check panel;
+              the export gate refuses exports while critical issues exist. Canvas controls are listed
+              in the Legend panel (Space + drag to pan, Ctrl/Cmd + wheel to zoom).
+            </p>
+          </aside>
           <header class="workspace-header">
-            <div id="selection-status">No domain selected</div>
+            <div id="selection-status" role="status" aria-live="polite">No domain selected</div>
             <div class="workspace-actions">
-              <button id="zoom-out-btn" type="button" title="Zoom out">-</button>
+              <button id="zoom-out-btn" type="button" title="Zoom out" aria-label="Zoom out">-</button>
               <div id="zoom-indicator" class="zoom-indicator">100%</div>
-              <button id="zoom-in-btn" type="button" title="Zoom in">+</button>
-              <select id="edge-style-select" title="Relationship routing style">
+              <button id="zoom-in-btn" type="button" title="Zoom in" aria-label="Zoom in">+</button>
+              <select id="edge-style-select" title="Relationship routing style" aria-label="Relationship routing style">
                 <option value="curved">Curved</option>
                 <option value="orthogonal">Orthogonal</option>
               </select>
-              <button id="toggle-compact-view-btn" type="button">Compact View</button>
-              <button id="toggle-snap-btn" type="button">Snap: On</button>
+              <button id="toggle-compact-view-btn" type="button" aria-pressed="false">Compact View</button>
+              <button id="toggle-snap-btn" type="button" aria-pressed="true">Snap: On</button>
               <button id="auto-layout-btn" type="button">Auto Layout</button>
-              <button id="toggle-large-canvas-btn" type="button">Large Canvas: Off</button>
+              <button id="toggle-large-canvas-btn" type="button" aria-pressed="false">Large Canvas: Off</button>
               <button id="fit-view-btn" type="button">Fit</button>
               <button id="reset-view-btn" type="button">Reset View</button>
             </div>
           </header>
-          <div id="canvas" class="canvas">
+          <!-- The canvas is a visual surface; its keyboard/screen-reader path
+               is the structural one: entities are selected from the Entities
+               panel and list buttons, then moved with the arrow keys. The
+               decorative edge SVG and the mini-map duplicate are hidden from
+               assistive technology. -->
+          <div id="canvas" class="canvas" role="region" tabindex="0" aria-label="Domain model canvas. Select an entity from the Entities panel, then use the arrow keys to move it.">
             <div id="canvas-inner" class="canvas-inner">
-              <svg id="edges" class="edges"></svg>
+              <svg id="edges" class="edges" aria-hidden="true" focusable="false"></svg>
             </div>
           </div>
-          <div id="mini-map" class="mini-map"></div>
+          <div id="mini-map" class="mini-map" aria-hidden="true"></div>
         </main>
       </div>
     </section>
 
-    <section id="tab-interface-designer" class="tab-section">
+    <section id="tab-interface-designer" class="tab-section" role="tabpanel" aria-labelledby="tab-interface-designer-btn">
       <div class="tab-body">
         <h2>Communication Interface Designer</h2>
         <p class="hint">Configure inbound adapters and the controller operation map per interface.</p>
+        <!-- Guided empty state (JUM-548): honest about the tab's scope — it
+             records adapter declarations, it does not generate servers. -->
+        <aside class="empty-state" id="interface-designer-empty-state" hidden>
+          <h3>No interface adapters yet</h3>
+          <p>
+            This tab records how the outside world reaches the service: inbound adapters
+            (HTTP/REST, gRPC, WebSocket, SSE) with their framework/runtime, entrypoint file and
+            controller mapping. It declares the wiring — it does not generate the server code.
+          </p>
+          <p>First action: fill the form below and press Add Adapter.</p>
+        </aside>
         <section class="panel">
           <h3>Add Interface Adapter</h3>
           <div class="responsive-grid">
@@ -395,8 +456,9 @@
               </select>
             </div>
             <div>
-              <label for="interface-framework-input">Framework/Runtime</label>
-              <input id="interface-framework-input" type="text" placeholder="fastify, ws, @grpc/grpc-js..." />
+              <label for="interface-framework-select">Framework/Runtime</label>
+              <select id="interface-framework-select"></select>
+              <p class="hint">Framework options follow the interface type, drawn from the canonical runtime matrix (canonical spellings only: derby-js, sails-js).</p>
             </div>
             <div>
               <label for="interface-entrypoint-input">Entrypoint</label>
@@ -404,7 +466,7 @@
             </div>
           </div>
           <div class="row">
-            <input id="interface-controller-input" type="text" placeholder="Controller mapping (e.g. UsersController.create)" />
+            <input id="interface-controller-input" type="text" placeholder="Controller mapping (e.g. UsersController.create)" aria-label="Controller mapping" />
             <button id="add-interface-adapter-btn" type="button">Add Adapter</button>
           </div>
           <ul id="interface-adapter-list" class="list"></ul>
@@ -412,10 +474,21 @@
       </div>
     </section>
 
-    <section id="tab-service-config" class="tab-section">
+    <section id="tab-service-config" class="tab-section" role="tabpanel" aria-labelledby="tab-service-config-btn">
       <div class="tab-body">
         <h2>Service Configuration</h2>
         <p class="hint">Define runtime, execution model, cloud target, and static asset behavior.</p>
+        <!-- Guided empty state (JUM-548): shown while there is no domain
+             model — the profile describes the service that model becomes. -->
+        <aside class="empty-state" id="service-config-empty-state" hidden>
+          <h3>Nothing to configure around yet</h3>
+          <p>
+            This tab describes how the service runs: service kind, execution model, cloud provider,
+            ports and runtime environment variables. It configures the runtime for the service your
+            domain model becomes — most teams design the model in the Domain Designer tab first.
+          </p>
+          <p>First action: review the Runtime Profile below and press Save Profile.</p>
+        </aside>
         <section class="panel">
           <h3>Runtime Profile</h3>
           <div class="responsive-grid">
@@ -450,7 +523,7 @@
             </div>
           </div>
           <div class="row">
-            <input id="service-static-assets-input" type="text" placeholder="Static assets path (optional), e.g. public/" />
+            <input id="service-static-assets-input" type="text" placeholder="Static assets path (optional), e.g. public/" aria-label="Static assets path (optional)" />
             <button id="save-service-config-btn" type="button">Save Profile</button>
           </div>
           <div class="responsive-grid">
@@ -508,10 +581,21 @@
       </div>
     </section>
 
-    <section id="tab-deploy-management" class="tab-section">
+    <section id="tab-deploy-management" class="tab-section" role="tabpanel" aria-labelledby="tab-deploy-management-btn">
       <div class="tab-body">
         <h2>Deploy Management</h2>
-        <p class="hint">Register and track deployment targets for monoliths, APIs, and function sets. Each target carries the Requirement 059 per-service metadata, validated against the deploy matrix.</p>
+        <p class="hint">Register and track deployment targets for monoliths, APIs, and function sets. Each target carries the Requirement 059 per-service metadata, validated against the deploy matrix. Targets can be edited in place and duplicated; a duplicate is an independent copy renamed by the " (copy)" rule.</p>
+        <!-- Guided empty state (JUM-548): honest about the tab's scope — a
+             registry of targets, not a deployment pipeline. -->
+        <aside class="empty-state" id="deploy-management-empty-state" hidden>
+          <h3>No deployment targets yet</h3>
+          <p>
+            This tab is a registry of deployment targets (dedicated servers, VMs, EC2, function
+            providers), each carrying its Requirement 059 metadata and validated against the deploy
+            matrix. It records where the service will run — it does not trigger deployments.
+          </p>
+          <p>First action: fill the target form below and press Add Target.</p>
+        </aside>
         <section class="panel">
           <h3>Deployment Target</h3>
           <div class="responsive-grid">
@@ -587,14 +671,39 @@
             </div>
           </div>
           <div class="row">
-            <input id="deploy-runtime-input" type="text" placeholder="Runtime/version, e.g. nodejs22.x" />
+            <input id="deploy-runtime-input" type="text" placeholder="Runtime/version, e.g. nodejs22.x" aria-label="Runtime/version" />
             <button id="add-deploy-target-btn" type="button">Add Target</button>
+            <button id="cancel-deploy-target-edit-btn" type="button" hidden>Cancel Edit</button>
           </div>
+          <p id="deploy-field-hint" class="hint"></p>
           <ul id="deploy-target-list" class="list"></ul>
         </section>
       </div>
     </section>
   </div>
+  <!-- Import map (JUM-484/JUM-493): Cana is the sole designer store; the bare
+       `@jumentix/cana` specifier the store factory lazily imports resolves to
+       the vendored ESM bundle, synced from packages/cana's browser build by
+       ci-cd/sync-service-management-cana-bundle.js. The designer core moved
+       to packages/designer-core (JUM-493); its bare deep specifiers resolve
+       through the prefix entry to the vendored module tree, synced from the
+       package's src/ by ci-cd/sync-service-management-designer-core.js. -->
+  <script type="importmap">
+    {
+      "imports": {
+        "@jumentix/cana": "./vendor/cana/index.js",
+        "@jumentix/designer-core/": "./vendor/designer-core/"
+      }
+    }
+  </script>
   <script type="module" src="./script.js"></script>
+  <!-- PWA shell registration (JUM-489). Kept out of script.js on purpose:
+       the service worker owns installability and shell caching, orthogonal to
+       the designer boot — this snippet never reorders load → wire → render.
+       The update prompt and the recovery path live in src/pwa/pwaShell.js. -->
+  <script type="module">
+    import { registerPwaShell } from './src/pwa/pwaShell.js';
+    registerPwaShell();
+  </script>
 </body>
 </html>

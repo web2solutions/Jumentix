@@ -7,6 +7,9 @@ const INTEGRATION_TIMEOUT_OVERRIDES_MS = Object.freeze({
   'test:integration:express': 300_000,
   'test:integration:fastify': 300_000,
   'test:integration:restify': 600_000,
+  // The service-management matrix boots real WebKit browsers over a real
+  // server (JUM-466+); the default 120s was sized for a single-suite harness.
+  'test:integration:service-management': 1_200_000,
 });
 
 const INTEGRATION_SCRIPTS = Object.freeze([

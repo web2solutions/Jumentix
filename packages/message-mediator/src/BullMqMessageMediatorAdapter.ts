@@ -147,20 +147,65 @@ export class BullMqMessageMediatorAdapter implements IMessageMediator {
           routeKey
         }
       },
-      { removeOnComplete: true, removeOnFail: true }
+      BullMqMessageMediatorAdapter.retentionFor(timeoutMs)
     );
 
     try {
       const response = await job.waitUntilFinished(this.queueEventsByName[queueName], timeoutMs);
       return response as IMessageResponse<TResult>;
-    } catch {
+    } catch (error) {
       return {
         contract: message.contract,
         version: message.version,
         metadata: message.metadata,
-        error: new Error(`Message request timed out after ${timeoutMs}ms`)
+        error: BullMqMessageMediatorAdapter.requestFailure(error, timeoutMs)
       };
     }
+  }
+
+  /**
+   * How long a finished job has to survive for the caller to read its result.
+   *
+   * `removeOnComplete: true` deletes the job the instant the worker finishes.
+   * `waitUntilFinished` subscribes to the completion event and then polls
+   * `isFinished` **once** to cover the case where the job finished before the
+   * subscription existed. With the job already deleted that poll returns
+   * `Missing key for job <id>. isFinished` and the wait rejects — so a request
+   * whose handler answered correctly comes back as a failure. It is a race
+   * between the worker and the caller, which is why it surfaced as an
+   * intermittent test (JUM-621) rather than a broken feature.
+   *
+   * Measured against a real Redis: with a 300ms head start for the worker,
+   * `removeOnComplete: true` rejects in 3ms with the missing-key error, and
+   * `{ age }` resolves with the handler's value.
+   *
+   * The retention window is the request timeout, because nothing waits for a
+   * reply after that, with a floor for very short timeouts and a count cap so a
+   * busy queue cannot grow without bound.
+   */
+  private static retentionFor(timeoutMs: number) {
+    const age = Math.max(60, Math.ceil(timeoutMs / 1000));
+    return {
+      removeOnComplete: { age, count: 1000 },
+      removeOnFail: { age, count: 1000 }
+    };
+  }
+
+  /**
+   * The failure the caller is told about is the failure that happened.
+   *
+   * This used to report every rejection as `timed out after ${timeoutMs}ms`,
+   * including the missing-key rejection above — which arrives in single-digit
+   * milliseconds. The message named a duration that had not elapsed and a cause
+   * that was not the cause, and JUM-621 was filed against the test on the
+   * strength of it.
+   */
+  private static requestFailure(error: unknown, timeoutMs: number): Error {
+    const detail = error instanceof Error ? error.message : String(error);
+    if (detail.includes('timed out before finishing')) {
+      return new Error(`Message request timed out after ${timeoutMs}ms`);
+    }
+    return new Error(`Message request failed: ${detail}`);
   }
 
   private async ensureConnected(): Promise<void> {

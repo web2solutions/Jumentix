@@ -17,7 +17,7 @@ Define deploy targets and artifact packaging contracts for backend and frontend 
 ## Machine-readable Reader
 
 The run-mode × cloud-provider support derived from this matrix is maintained
-as data in `apps/service-management/src/model/deployCapabilityMatrix.js`
+as data in `packages/designer-core/src/model/deployCapabilityMatrix.js`
 (extracted by JUM-544 so the Service Configuration tab and JUM-481's deploy
 targets validate against one shared source instead of two transcriptions).
 The designer's Service Configuration tab enforces it at save time (JUM-544):

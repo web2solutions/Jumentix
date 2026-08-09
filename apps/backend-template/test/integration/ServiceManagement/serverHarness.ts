@@ -13,6 +13,11 @@ import http from 'node:http';
 import fs from 'node:fs';
 import os from 'node:os';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { syncServiceManagementDesignerCore } = require(
+  path.resolve(process.cwd(), 'ci-cd', 'sync-service-management-designer-core.js')
+) as { syncServiceManagementDesignerCore: (options: { root: string }) => number };
+
 export const serverPath = path.resolve(process.cwd(), 'apps/service-management/server.js');
 export const staticRoot = path.resolve(process.cwd(), 'apps/service-management');
 // Pinned by Requirement 126 §2: the runtime env files live here. A future
@@ -79,6 +84,17 @@ export function startServer(
   configDir: string | null,
   envOverrides: Record<string, string> = {}
 ): StartedServer {
+  // The SPA statically imports the designer core through the import map's
+  // `@jumentix/designer-core/` prefix (JUM-493), which resolves to the
+  // vendored, gitignored module tree. Booting without it is a module-load
+  // failure, so the harness regenerates the tree for every boot — one sync
+  // point, impossible for a suite to forget. It is a verbatim file copy from
+  // the canonical `packages/designer-core/src/` (nothing to compile, unlike
+  // the Cana bundle), cheap enough to run per server start.
+  const syncResult = syncServiceManagementDesignerCore({ root: process.cwd() });
+  if (syncResult !== 0) {
+    throw new Error('designer-core vendor sync failed; the SPA cannot boot without it.');
+  }
   const port = 3200 + Math.floor(Math.random() * 1000);
   const env: NodeJS.ProcessEnv = {
     ...process.env,

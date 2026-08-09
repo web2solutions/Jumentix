@@ -26,7 +26,30 @@ Uso detalhado de recursos:
 - [Recursos e uso do designer de domínio](../../documentation/md/DOMAIN-DESIGNER-FEATURES-AND-USAGE.pt-BR.md)
 - [Arquitetura de módulos e contrato da porta IDesignerStore](../../documentation/md/SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.pt-BR.md)
 - [Garantias de paridade de contratos](../../documentation/md/SERVICE-MANAGEMENT-CONTRACT-PARITY.pt-BR.md)
+- [Console de operações](../../documentation/md/SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.pt-BR.md)
+- [Design system e shell PWA](../../documentation/md/SERVICE-MANAGEMENT-DESIGN-SYSTEM-PWA.pt-BR.md)
+- [Adoção do Cana, migração e comportamento offline](../../documentation/md/SERVICE-MANAGEMENT-CANA-ADOPTION.pt-BR.md)
+- [Colaboração e empacotamento](../../documentation/md/SERVICE-MANAGEMENT-COLLABORATION-PACKAGING.pt-BR.md)
 - [Documentação técnica de gerenciamento de serviços](./documentation/README.pt-BR.md)
+
+## Primeira Execução
+
+Em um perfil novo, o designer inicia com um modelo vazio e cada guia mostra um
+estado vazio guiado (JUM-548) que indica a primeira ação da guia — sem modelo
+pré-carregado silencioso. A primeira ação do Designer de Domínio é o botão
+**Load Sample Model** (também disponível depois no painel Export): um clique
+carrega um domínio de identidade realista — Users e Organization, os mesmos
+recursos que `spec/1.0.0.yml` declara — com relacionamentos, RBAC por
+entidade, um contrato de mensagem, invariantes e composição OAS `oneOf` +
+discriminator. O exemplo passa pelo portão de qualidade de exportação e faz
+round-trip por export/import, servindo como demonstração viva desses percursos.
+
+O conteúdo de exemplo é sempre distinguível do seu trabalho: todo id de
+exemplo carrega o prefixo `sample-` e os domínios de exemplo mostram um selo
+"sample" na lista de domínios. Carregar o exemplo sobre um modelo existente
+exige confirmação explícita (Undo restaura o modelo anterior depois), e
+excluir o exemplo usa a exclusão comum de domínio/entidade. O conteúdo está
+definido em `@jumentix/designer-core` (`packages/designer-core/src/model/sampleModel.js`).
 
 ## Guias
 
@@ -48,18 +71,37 @@ Uso detalhado de recursos:
      (`<version>.websocket.yml` / `<version>.grpc.yml`, convenções canônicas de
      `spec/asyncapi/`), proto gRPC (`async-api.proto`) e pacote padrão.
    - Controles de composição OpenAPI (`oneOf`, `allOf`, `anyOf`, externo `$ref`, discriminador) por entidade.
-   - Exportação/importação de pacotes de domínio para compartilhamento de modelos reutilizáveis.
+   - Exportação/importação de pacotes de domínio para compartilhamento de modelos reutilizáveis — versionada
+     (JUM-492): pacotes carregam versão semântica e faixas de dependências,
+     o conteúdo importado é carimbado com proveniência, e reimportações
+     resolvem deterministicamente (no-op em versão idêntica, recusa em
+     conflito de mesma versão ou downgrade, prévia de merge com decisão do
+     usuário para RBAC, invariantes, remoções e estreitamentos em uma versão
+     mais nova).
    - Navegação em minimapa e modo de desempenho em tela grande.
 2. **Designer de interface de comunicação**
    - Registrar adaptadores de interface de entrada (`HTTP/REST`, `gRPC`, `WebSocket`, `SSE`).
-   - Rastreie o mapeamento de estrutura/tempo de execução, ponto de entrada e controlador.
+   - Ciclo de vida completo do adaptador (JUM-545): cada adaptador registrado é editado
+     no local (tipo, framework, ponto de entrada e mapeamento de controlador) — sem
+     excluir e readicionar.
+   - As opções de framework são delimitadas por tipo de interface a partir da matriz de
+     tempo de execução canônica (`@jumentix/designer-core` (`packages/designer-core/src/model/interfaceFrameworkMatrix.js`)): os onze
+     frameworks HTTP canônicos (grafias JUM-461 — somente `derby-js`/`sails-js`, sem
+     duplicatas de alias) para `HTTP/REST` e `SSE`, `socket-io` para `WebSocket`,
+     `grpc` para `gRPC`.
+   - Adições e edições são validadas (`@jumentix/designer-core` (`packages/designer-core/src/validation/interfaceAdapterValidation.js`)):
+     o ponto de entrada deve ser um caminho TypeScript/JavaScript sob `src/interface/`,
+     o mapeamento de controlador deve ter o formato `XController.action`, e duplicatas
+     (mesmo tipo + ponto de entrada, ou mesmo mapeamento de controlador) são rejeitadas
+     com o motivo na superfície de status. Entradas persistidas inválidas são sinalizadas
+     inline.
 3. **Configuração do serviço**
    - Configurar tipo de serviço (`REST API`, `WebSocket API + REST API`, `gRPC API + REST API`),
    modelo de execução, provedor de nuvem, perfil de ativos estáticos e portas de tempo de execução.
    - As gravações são validadas (JUM-544): as portas devem ser inteiros entre 1–65535 e únicas
    entre os protocolos que o tipo de serviço selecionado realmente vincula, e a combinação
    modo de execução × provedor de nuvem deve existir na matriz de implantação do Requisito 059
-   (lida da fonte legível por máquina compartilhada `src/model/deployCapabilityMatrix.js`).
+   (lida da fonte legível por máquina compartilhada `@jumentix/designer-core` (`packages/designer-core/src/model/deployCapabilityMatrix.js`)).
    Perfis inválidos são relatados na superfície de status da guia e não são salvos.
    - A visualização do perfil de tempo de execução PM2 para implantações de VM lê os
      arquivos reais `pm2/ecosystem.*.cjs` através de `GET /api/runtime/pm2-ecosystem`
@@ -85,11 +127,51 @@ Uso detalhado de recursos:
      `serviceType`, `deployTarget`, `runtimeProtocol`, `databaseDriver`,
      `keyValueDriver` e `pm2Profile`. As adições são validadas contra a
      matriz de implantação lida da fonte legível por máquina compartilhada
-     `src/model/deployCapabilityMatrix.js` — combinações sem linha na matriz,
+     `@jumentix/designer-core` (`packages/designer-core/src/model/deployCapabilityMatrix.js`) — combinações sem linha na matriz,
      protocolos que o tipo de serviço não expõe e perfis PM2 em alvos
      serverless são rejeitados na superfície de status com a restrição
      nomeada. Alvos persistidos antes deste alinhamento migram no
      carregamento.
+   - Ciclo de vida (JUM-546): os alvos são editáveis in-place e duplicáveis —
+     uma duplicata é uma cópia profunda independente renomeada pela regra
+     ` (copy)`. O portão de adição/edição também impõe as regras de campo:
+     nome único, padrão de runtime nome-mais-versão (`nodejs22.x`) e região
+     obrigatória em alvos de nuvem (opcional no servidor dedicado
+     self-hosted, onde o campo carrega informação de host), com dicas de
+     campo por tipo de alvo.
+
+## Design System e Acessibilidade
+
+O designer adota o design system Jumentix na camada de tokens (JUM-488) — é
+uma SPA vanilla sem etapa de build, portanto a adoção significa tokens e
+idiomas compartilhados, não importação de componentes React:
+
+- `tokens.css` — cópia vendida das custom properties compartilhadas `--jtx-*`
+  (fonte da verdade: `apps/jumentix-website/components/design-system/tokens.css`):
+  rampas de cores, superfícies, linhas, raios, sombras, escala de espaçamento,
+  movimento e as pilhas tipográficas Inter/IBM Plex Mono. Mudanças de tokens
+  acontecem primeiro no arquivo do site e são espelhadas aqui.
+- `styles.css` — cada valor cosmético (cor, tipografia, raio, sombra,
+  espaçamento) resolve para um token `--jtx-*`. Permanecem literais apenas a
+  geometria estrutural da qual a matemática do canvas depende (canvas de
+  3200×2200, grade de 24px, domínios de 520px, entidades de 190px — fixada por
+  `@jumentix/designer-core` (`packages/designer-core/src/model/modelQueries.js`) e sua suíte de unidade), além da densidade
+  compacta dos inspetores. As regras em nível de elemento têm escopo em
+  `.service-management-shell` para que a folha de estilo possa ser incorporada
+  no Storybook do site sem vazamentos.
+- A cobertura do Storybook vive no workspace do site
+  (`apps/jumentix-website/components/service-management-designer/`), montando a
+  marcação e as folhas de estilo reais do designer; o smoke do manifesto exige
+  essas histórias.
+
+Semântica de acessibilidade sobre a mesma marcação: tablist WAI-ARIA com
+tabindex móvel e navegação por setas/Home/End (`src/ui/tabs.js`), `aria-pressed`
+nos botões de alternância de visualização (sincronizado por `src/ui/canvas.js`),
+nomes acessíveis em todos os controles, status de seleção em live region, link
+de salto para o workspace do canvas e Espaço restaurado à ativação nativa de
+botões. O caminho de teclado do canvas é estrutural: selecione entidades nas
+listas da barra lateral, mova a seleção com as setas (Shift para passos
+maiores) e exclua com Delete/Backspace.
 
 ## Correr
 
@@ -128,6 +210,83 @@ A seleção de modo é configuração explícita, não inferida apenas de `NODE_
   `NODE_ENV`.
 - Não definido — o padrão deriva de `NODE_ENV`: `dev`/`development` =>
   `on-miss`, qualquer outro valor => `boot-only`.
+
+## Shell PWA
+
+O designer é um PWA instalável (JUM-489). O shell é composto por:
+
+- `manifest.webmanifest` — nome, ícones (`icons/`), tema, exibição
+  `standalone`, URL inicial/escopo `./`. Servido como
+  `application/manifest+json`.
+- `sw.js` — o service worker do app-shell. Um script CLÁSSICO (não um
+  módulo), servido a partir da raiz do aplicativo para que seu escopo seja o
+  aplicativo inteiro.
+- `src/pwa/pwaShell.js` — registro no lado da página, o aviso de atualização
+  e o caminho de recuperação, conectados por um pequeno módulo inline em
+  `index.html` (deliberadamente fora do `script.js`: o shell nunca reordena a
+  inicialização do designer).
+
+### Estratégia de cache
+
+O worker pré-armazena em cache APENAS o SHELL — HTML, CSS, o grafo de módulos
+JS, o manifesto e os ícones — sob um nome de cache VERSIONADO
+(`service-management-shell@<SHELL_VERSION>`), e serve essas entradas com
+cache-first. O `SHELL_VERSION` (em `sw.js`) é incrementado a cada mudança do
+shell, então uma atualização publicada nunca modifica o cache do qual a
+versão em execução é servida, e o `activate` exclui todos os caches
+`service-management-shell@*` obsoletos.
+
+Dados da aplicação NUNCA são armazenados em cache aqui: respostas de `/api/`,
+requisições não-GET e de origem cruzada passam direto para a rede e, offline,
+falham naturalmente. A persistência pertence ao Cana (JUM-483/484 — sem
+fallback); uma cópia de conveniência na Cache API seria um fallback pela
+porta dos fundos.
+
+A lista de pré-cache e o manifesto estático do servidor devem concordar sobre
+o que é o shell (JUM-463): a suíte de unidade garante que cada entrada
+pré-cacheada existe em disco, e o smoke de navegador requisita cada entrada
+contra o servidor real.
+
+### Fluxo de atualização
+
+Um shell cache-first é um cache sem expiração que o usuário não consegue ver
+— portanto o caminho de atualização é a substância, não um detalhe:
+
+1. Uma atualização publicada (um `sw.js` alterado) é instalada e AGUARDA; o
+   shell em execução continua servindo. Não há troca silenciosa no meio de
+   uma edição.
+2. A página exibe um aviso: "A new version of Service Management is
+   available." — com "Reload to update", "Later" e "Reset app shell".
+3. Somente em "Reload to update" a página envia `SKIP_WAITING`; o worker em
+   espera é ativado, exclui caches obsoletos, assume os clientes, e a página
+   recarrega no `controllerchange`. "Later" adia: o worker em espera continua
+   lá no próximo carregamento, e o aviso retorna.
+
+### Escopo offline e a fronteira de armazenamento
+
+Com a rede desabilitada o SHELL carrega e permanece interativo — esse é todo
+o contrato offline. A disponibilidade dos dados é domínio do Cana, não do
+shell: o shell nunca mascara um banco de dados despejado como uma primeira
+execução, e nunca apresenta dados em cache próprios.
+
+O cache do service worker e o banco de dados Cana são armazenamentos
+DIFERENTES, mas o "limpar dados do site" do navegador remove AMBOS. A
+presença do shell nunca implica que os dados do designer estão seguros. A
+ação "Reset app shell" é o caminho de recuperação que não exige conhecimento
+de service worker: ela cancela o registro do worker, exclui APENAS os caches
+`service-management-shell@*` e recarrega — os dados do Cana permanecem
+intocados.
+
+### Testes do PWA
+
+- Unidade: `apps/backend-template/test/unit/service-management/pwaShell.test.ts`
+  (handlers do worker, fluxo de atualização, recuperação — com fakes
+  injetados).
+- Smoke de navegador:
+  `apps/backend-template/test/integration/ServiceManagement/pwaShell.browser.integration.test.ts`
+  (tipos de conteúdo do manifesto/worker, concordância pré-cache↔manifesto
+  estático, registro, carregamento offline do shell com o servidor parado, o
+  fluxo completo de atualização com limpeza de caches obsoletos).
 
 ## API de ambiente de tempo de execução
 

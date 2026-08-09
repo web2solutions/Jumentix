@@ -91,7 +91,8 @@
         "apps/service-management/script.js",
         "apps/service-management/src/**",
         "apps/service-management/index.html",
-        "apps/service-management/styles.css"
+        "apps/service-management/styles.css",
+        "packages/designer-core/**"
       ],
       "runner": "bun",
       "tier": "gate",
@@ -116,7 +117,6 @@
         "tooling/**",
         "apps/jumentix-website/**",
         ".github/**",
-        ".circleci/**",
         "test-map.json",
         "jest.config.js",
         "sonar-project.properties",
@@ -259,6 +259,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/interface/Async/RealtimeAPIBase.catalogs.test.ts",
+      "path": "apps/backend-template/test/unit/interface/Async/RealtimeAPIBase.catalogs.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/interface/runtime/RuntimeEnvironment.test.ts",
       "path": "apps/backend-template/test/unit/interface/runtime/RuntimeEnvironment.test.ts",
       "layer": "interface/runtime",
@@ -321,8 +331,28 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/interface/HTTP/RestAPI.catalogs.test.ts",
+      "path": "apps/backend-template/test/unit/interface/HTTP/RestAPI.catalogs.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/interface/HTTP/adapters/express/ExpressServer.start.test.ts",
       "path": "apps/backend-template/test/unit/interface/HTTP/adapters/express/ExpressServer.start.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/HTTP/adapters/express/infraHandlers.test.ts",
+      "path": "apps/backend-template/test/unit/interface/HTTP/adapters/express/infraHandlers.test.ts",
       "layer": "interface/runtime",
       "kind": "hexagonal",
       "type": "unit",
@@ -681,6 +711,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/service-management/deployTargetLifecycle.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/deployTargetLifecycle.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/service-management/pm2EcosystemUi.contract.test.ts",
       "path": "apps/backend-template/test/unit/service-management/pm2EcosystemUi.contract.test.ts",
       "layer": "service-management/designer",
@@ -731,6 +771,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/service-management/pwaShell.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/pwaShell.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/service-management/mvp.roadmap.features.test.ts",
       "path": "apps/backend-template/test/unit/service-management/mvp.roadmap.features.test.ts",
       "layer": "service-management/designer",
@@ -741,8 +791,38 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/service-management/interfaceAdapterValidation.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/interfaceAdapterValidation.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/service-management/catalogSyncClient.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/catalogSyncClient.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/service-management/deployTargetValidation.test.ts",
       "path": "apps/backend-template/test/unit/service-management/deployTargetValidation.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/service-management/designerSync.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/designerSync.test.ts",
       "layer": "service-management/designer",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -831,8 +911,48 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/service-management/canaMigration.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/canaMigration.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/service-management/hexagonalCodegen.test.ts",
       "path": "apps/backend-template/test/unit/service-management/hexagonalCodegen.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/service-management/canaDesignerStore.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/canaDesignerStore.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/service-management/sampleModel.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/sampleModel.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/service-management/designerPackageVersioning.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/designerPackageVersioning.test.ts",
       "layer": "service-management/designer",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -853,6 +973,16 @@
     {
       "id": "apps/backend-template/test/unit/ci-cd/run-branch-quality-gate.test.ts",
       "path": "apps/backend-template/test/unit/ci-cd/run-branch-quality-gate.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/ci-cd/sync-service-management-designer-core.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/sync-service-management-designer-core.test.ts",
       "layer": "tooling",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -1051,6 +1181,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/ci-cd/classify-ci-context.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/classify-ci-context.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/ci-cd/check-affected-workspaces.test.ts",
       "path": "apps/backend-template/test/unit/ci-cd/check-affected-workspaces.test.ts",
       "layer": "tooling",
@@ -1165,6 +1305,16 @@
     {
       "id": "apps/backend-template/test/unit/ci-cd/run-task-change-tests.test.ts",
       "path": "apps/backend-template/test/unit/ci-cd/run-task-change-tests.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/ci-cd/sync-service-management-cana-bundle.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/sync-service-management-cana-bundle.test.ts",
       "layer": "tooling",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -1457,6 +1607,86 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/modules/Catalogs/composition/composeCatalogsServices.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Catalogs/composition/composeCatalogsServices.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Catalogs/adapters/in/http/CatalogController.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Catalogs/adapters/in/http/CatalogController.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Catalogs/adapters/in/http/restapiHandlers.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Catalogs/adapters/in/http/restapiHandlers.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Catalogs/index.exports.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Catalogs/index.exports.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Catalogs/application/catalogBoundaries.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Catalogs/application/catalogBoundaries.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Catalogs/service/CatalogService.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Catalogs/service/CatalogService.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Catalogs/domain/security/CatalogAuthorizationPolicy.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Catalogs/domain/security/CatalogAuthorizationPolicy.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Catalogs/domain/Model/Catalog.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Catalogs/domain/Model/Catalog.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/modules/port/core.test.ts",
       "path": "apps/backend-template/test/unit/modules/port/core.test.ts",
       "layer": "application",
@@ -1522,6 +1752,45 @@
       "timeoutMs": 120000
     },
     {
+      "id": "apps/backend-template/test/integration/ServiceManagement/catalogSync.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/catalogSync.integration.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/ServiceManagement/deployTargetLifecycle.browser.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/deployTargetLifecycle.browser.integration.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/ServiceManagement/pwaShell.browser.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/pwaShell.browser.integration.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
       "id": "apps/backend-template/test/integration/ServiceManagement/domainDesigner.smoke.test.ts",
       "path": "apps/backend-template/test/integration/ServiceManagement/domainDesigner.smoke.test.ts",
       "layer": "service-management/designer",
@@ -1538,6 +1807,45 @@
       "id": "apps/backend-template/test/integration/ServiceManagement/runtimeEnv.integration.test.ts",
       "path": "apps/backend-template/test/integration/ServiceManagement/runtimeEnv.integration.test.ts",
       "layer": "service-management/server",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/ServiceManagement/interfaceAdapters.browser.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/interfaceAdapters.browser.integration.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/ServiceManagement/firstRun.browser.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/firstRun.browser.integration.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/ServiceManagement/multiTabSync.browser.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/multiTabSync.browser.integration.test.ts",
+      "layer": "service-management/designer",
       "kind": "non-hexagonal",
       "type": "integration",
       "adapter": "service-management",
@@ -1574,8 +1882,34 @@
       "timeoutMs": 120000
     },
     {
+      "id": "apps/backend-template/test/integration/ServiceManagement/offlinePersistenceMatrix.browser.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/offlinePersistenceMatrix.browser.integration.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
       "id": "apps/backend-template/test/integration/ServiceManagement/spaBoot.browser.integration.test.ts",
       "path": "apps/backend-template/test/integration/ServiceManagement/spaBoot.browser.integration.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/ServiceManagement/canaMigration.browser.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/canaMigration.browser.integration.test.ts",
       "layer": "service-management/designer",
       "kind": "non-hexagonal",
       "type": "integration",
@@ -1888,6 +2222,19 @@
     {
       "id": "apps/backend-template/test/integration/Express/Users/createPhone.test.ts",
       "path": "apps/backend-template/test/integration/Express/Users/createPhone.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "express",
+      "script": "test:integration:express",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Express/Catalogs/catalogs.test.ts",
+      "path": "apps/backend-template/test/integration/Express/Catalogs/catalogs.test.ts",
       "layer": "adapters/in",
       "kind": "hexagonal",
       "type": "integration",
@@ -2777,6 +3124,36 @@
       "timeoutMs": 60000
     },
     {
+      "id": "packages/designer-core/test/consumer-smoke.test.ts",
+      "path": "packages/designer-core/test/consumer-smoke.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "packages/designer-core/test/dom-free.test.ts",
+      "path": "packages/designer-core/test/dom-free.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "packages/designer-core/test/packaging.test.ts",
+      "path": "packages/designer-core/test/packaging.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "packages/external-db-repositories/test/integration/repositories.integration.test.ts",
       "path": "packages/external-db-repositories/test/integration/repositories.integration.test.ts",
       "layer": "adapters/out+infra",
@@ -2995,6 +3372,19 @@
       "timeoutMs": 300000
     },
     {
+      "id": "packages/cana/cypress/coverage-100.cy.ts",
+      "path": "packages/cana/cypress/coverage-100.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
       "id": "packages/cana/cypress/coverage-gaps.cy.ts",
       "path": "packages/cana/cypress/coverage-gaps.cy.ts",
       "layer": "browser-harness",
@@ -3023,6 +3413,19 @@
     {
       "id": "packages/cana/cypress/differential-dexie.cy.ts",
       "path": "packages/cana/cypress/differential-dexie.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/dist-bundle.cy.ts",
+      "path": "packages/cana/cypress/dist-bundle.cy.ts",
       "layer": "browser-harness",
       "kind": "non-hexagonal",
       "type": "integration",
@@ -3099,6 +3502,19 @@
       "timeoutMs": 300000
     },
     {
+      "id": "packages/cana/cypress/localstorage-fallback.cy.ts",
+      "path": "packages/cana/cypress/localstorage-fallback.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
       "id": "packages/cana/cypress/performance.cy.ts",
       "path": "packages/cana/cypress/performance.cy.ts",
       "layer": "browser-harness",
@@ -3114,6 +3530,19 @@
     {
       "id": "packages/cana/cypress/protocol.cy.ts",
       "path": "packages/cana/cypress/protocol.cy.ts",
+      "layer": "browser-harness",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "test:browser",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "packages/cana/cypress/real-worker.cy.ts",
+      "path": "packages/cana/cypress/real-worker.cy.ts",
       "layer": "browser-harness",
       "kind": "non-hexagonal",
       "type": "integration",
@@ -3241,7 +3670,7 @@
     },
     "dev": {
       "script": "test:unit",
-      "mode": "full-unit+contract"
+      "mode": "cheap-health"
     },
     "main": {
       "script": "ci:gate:strict",
@@ -3254,9 +3683,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 160,
-    "integration": 88,
+    "unit": 186,
+    "integration": 97,
     "smoke": 2,
-    "suites": 270
+    "suites": 309
   }
 }

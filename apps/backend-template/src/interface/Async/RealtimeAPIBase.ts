@@ -12,6 +12,7 @@ import type { IKeyValueStorageClient } from '@src/infra/persistence/KeyValueStor
 import { RealtimeDomainEvent } from '@src/interface/Async/RealtimeDomainEvent';
 import type { IAuthService } from '@src/modules/Users';
 import { composeUsersAuthServices } from '@src/modules/Users';
+import { composeCatalogsServices } from '@src/modules/Catalogs';
 import type { IEventBus, IMessageMediator } from '@src/modules/port';
 
 export interface IAsyncOperationRequest {
@@ -72,7 +73,13 @@ export interface IRealtimeHandlerFactoryDeps {
 const OPERATION_TO_CONTROLLER_METHOD: Record<string, string> = {
   deleteOne: 'delete',
   // SONAR false-positive: this is an operation-id mapping, not a credential literal.
-  updateUserPassword: 'updatePassword' // NOSONAR
+  updateUserPassword: 'updatePassword', // NOSONAR
+  getAllCatalogs: 'getAll',
+  createCatalog: 'create',
+  getCatalogById: 'getOneById',
+  updateCatalog: 'update',
+  deleteCatalog: 'delete',
+  restoreCatalog: 'restore'
 };
 
 export abstract class RealtimeAPIBase {
@@ -104,6 +111,8 @@ export abstract class RealtimeAPIBase {
 
   private usersComposition: ReturnType<typeof composeUsersAuthServices> | undefined;
 
+  private catalogsComposition: ReturnType<typeof composeCatalogsServices> | undefined;
+
   constructor(config: IRealtimeAPIFactory, autoBuild = true) {
     this.databaseClient = config.databaseClient;
     this.mutexClient = config.mutexService;
@@ -122,6 +131,17 @@ export abstract class RealtimeAPIBase {
     if (autoBuild) {
       this.buildOperationsFromOAS();
     }
+  }
+
+  protected composeCatalogsModule(): ReturnType<typeof composeCatalogsServices> {
+    if (this.catalogsComposition) return this.catalogsComposition;
+
+    this.catalogsComposition = composeCatalogsServices({
+      databaseClient: this.databaseClient,
+      eventBus: this.eventBus,
+      messageMediator: this.messageMediator
+    });
+    return this.catalogsComposition;
   }
 
   protected composeUsersModule(): ReturnType<typeof composeUsersAuthServices> {
@@ -295,6 +315,7 @@ export abstract class RealtimeAPIBase {
       controllerName
     );
     const usersModuleComposition = moduleName === 'Users' ? this.composeUsersModule() : undefined;
+    const catalogsModuleComposition = moduleName === 'Catalogs' ? this.composeCatalogsModule() : undefined;
     const controller = new ControllerModule({
       authService: usersModuleComposition?.authService ?? this.authService,
       openApiSpecification: spec,
@@ -303,6 +324,7 @@ export abstract class RealtimeAPIBase {
       userUseCases: usersModuleComposition?.userUseCases,
       organizationUseCases: usersModuleComposition?.organizationUseCases,
       authUseCases: usersModuleComposition?.authUseCases,
+      catalogUseCases: catalogsModuleComposition?.catalogUseCases,
       mutexService: this.mutexClient,
       passwordCryptoService: this.passwordCryptoService,
       messageMediator: this.messageMediator
