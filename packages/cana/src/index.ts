@@ -26,6 +26,7 @@
  */
 
 /** Runtime marker so the barrel survives bundling into the coverage sourcemap. */
+/** CI webhook bump JUM-615 — no behavior change. */
 export const CANA_PACKAGE = 'cana' as const;
 
 export * from './contracts';
