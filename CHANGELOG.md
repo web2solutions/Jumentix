@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-08-09 [JUM-631][CI] Make dev delivery gates cheap and context-aware (#144) - Eduardo A.
+- 2026-08-09 ci: run GitHub Actions on self-hosted runner - Eduardo A.
 - 2026-08-09 ci: replace CircleCI with GitHub Actions - Eduardo A.
 - 2026-08-09 test: isolate branch gate tests from CircleCI env - Eduardo A.
 - 2026-08-09 ci: treat unselected CircleCI jobs as skipped - Eduardo A.
