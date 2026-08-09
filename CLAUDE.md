@@ -4,7 +4,7 @@ This repository supports Claude Code as an official engineering agent.
 
 ## Working Rules
 
-1. Execute repository commands using `rtk`.
+1. Execute repository commands using `rtk`, and compress your own prose with Caveman (Requirement `127`). Never compress code, commands, paths, identifiers, error messages, test counts, timings, or CI states — reproduce those verbatim. Bun scripts run as `rtk proxy bun run <script>`; where an agent lacks either tool, a declared replacement pattern is mandatory.
 2. Follow all requirements in `.agents/requirements/*`.
 3. Keep `.agents/NFR-REGISTRY.md` synchronized when NFR behavior changes.
 4. Use Linear as the source of truth for project management and new tasks. Read `../.linear`
