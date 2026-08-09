@@ -1,0 +1,441 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - dev
+      - main
+  workflow_dispatch:
+  schedule:
+    - cron: '17 3 * * *'
+
+permissions:
+  contents: read
+  pull-requests: read
+  security-events: write
+
+env:
+  BUN_VERSION: 1.3.14
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+  JUMENTIX_CI_GATE_RESULT_FILE: artifacts/ci/branch-quality-gate.json
+  JUMENTIX_CI_MATRIX_RESULT_FILE: artifacts/ci/full-test-matrix.json
+  JUMENTIX_FULL_MATRIX_SKIP_CELLS: workspace-builds,workspace-tests,website-prepublish,integration
+
+jobs:
+  branch-gate:
+    name: branch-gate
+    runs-on: [self-hosted, jumentix]
+    env:
+      AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
+      JUMENTIX_TASK_TEST_MODE: range
+      JUMENTIX_TASK_TEST_BASE: origin/dev
+      GH_TOKEN: ${{ github.token }}
+      LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+      FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Use Node.js 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Fetch branch references
+        run: git fetch --prune origin "+refs/heads/*:refs/remotes/origin/*"
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | BUN_VERSION="$BUN_VERSION" bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+      - name: Export pull request metadata
+        run: |
+          set -euo pipefail
+          if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
+            {
+              echo "AAA_CI_IS_PULL_REQUEST=1"
+              echo "JUMENTIX_CI_IS_PULL_REQUEST=1"
+              echo "JUMENTIX_QUALITY_GATE_TARGET=${GITHUB_BASE_REF}"
+              echo "JUMENTIX_PR_HEAD_REF=${GITHUB_HEAD_REF}"
+              echo "JUMENTIX_PR_BASE_REF=${GITHUB_BASE_REF}"
+              echo "AAA_PR_HEAD_REF=${GITHUB_HEAD_REF}"
+              echo "AAA_PR_BASE_REF=${GITHUB_BASE_REF}"
+              echo "JUMENTIX_PR_TITLE<<__JUMENTIX_TITLE__"
+              jq -r '.pull_request.title // ""' "$GITHUB_EVENT_PATH"
+              echo "__JUMENTIX_TITLE__"
+              echo "AAA_PR_TITLE<<__JUMENTIX_TITLE__"
+              jq -r '.pull_request.title // ""' "$GITHUB_EVENT_PATH"
+              echo "__JUMENTIX_TITLE__"
+              echo "JUMENTIX_PR_BODY<<__JUMENTIX_BODY__"
+              jq -r '.pull_request.body // ""' "$GITHUB_EVENT_PATH"
+              echo "__JUMENTIX_BODY__"
+              echo "AAA_PR_BODY<<__JUMENTIX_BODY__"
+              jq -r '.pull_request.body // ""' "$GITHUB_EVENT_PATH"
+              echo "__JUMENTIX_BODY__"
+            } >> "$GITHUB_ENV"
+          else
+            {
+              echo "AAA_CI_IS_PULL_REQUEST=0"
+              echo "JUMENTIX_CI_IS_PULL_REQUEST=0"
+              echo "JUMENTIX_QUALITY_GATE_TARGET=${GITHUB_REF_NAME}"
+              echo "JUMENTIX_PR_HEAD_REF=${GITHUB_REF_NAME}"
+              echo "AAA_PR_HEAD_REF=${GITHUB_REF_NAME}"
+            } >> "$GITHUB_ENV"
+          fi
+      - name: Install frozen dependencies
+        run: |
+          bun ci-cd/check-bun-version.js
+          bun install --frozen-lockfile
+          bun run compat:check-node-version
+      - name: Install WebKit for browser-based integration tests
+        run: |
+          bun x playwright install webkit
+          bun x playwright install-deps webkit
+      - name: Install the Cypress binary for the browser-harness layer
+        run: |
+          bun x cypress install
+          bun x cypress verify
+      - name: Classify CI context
+        run: node ci-cd/classify-ci-context.js --result-file artifacts/ci/ci-context.json --require-job branch-gate
+      - name: Run canonical branch quality gate
+        timeout-minutes: 30
+        run: bun run ci:gate:branch
+      - name: Upload branch gate evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: branch-gate
+          path: artifacts/ci
+          if-no-files-found: ignore
+
+  third-party-review:
+    name: third-party-review
+    if: >-
+      github.event_name == 'pull_request' ||
+      github.ref_name == 'main' ||
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch'
+    runs-on: [self-hosted, jumentix]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Use Node.js 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Fetch branch references
+        run: git fetch --prune origin "+refs/heads/*:refs/remotes/origin/*"
+      - name: Install pinned review tools
+        run: |
+          ci-cd/install-pinned-review-tools.sh "$HOME/review-tools"
+      - name: Scan Git history for secrets
+        run: |
+          set +e
+          BASE_REF="${GITHUB_BASE_REF:-dev}"
+          "$HOME/review-tools/gitleaks" git . \
+            --log-opts="origin/${BASE_REF}..HEAD" \
+            --redact --report-format sarif --report-path gitleaks.sarif
+          echo "$?" > gitleaks.exit
+      - name: Run repository-owned Semgrep policy
+        run: |
+          set +e
+          BASE_REF="${GITHUB_BASE_REF:-dev}"
+          "$HOME/review-tools/semgrep" scan --config .semgrep.yml --baseline-commit "origin/${BASE_REF}" \
+            --sarif --output semgrep.sarif
+          echo "$?" > semgrep.exit
+      - name: Upload review evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: third-party-review
+          path: |
+            gitleaks.sarif
+            semgrep.sarif
+          if-no-files-found: ignore
+      - name: Enforce scanner outcomes
+        run: |
+          test "$(cat gitleaks.exit)" = "0"
+          test "$(cat semgrep.exit)" = "0"
+
+  workspace-builds:
+    name: workspace-builds
+    if: >-
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' ||
+      github.ref_name == 'main' ||
+      (github.event_name == 'pull_request' && github.base_ref == 'main' && github.head_ref == 'dev')
+    runs-on: [self-hosted, jumentix]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Install Bun and dependencies
+        run: |
+          curl -fsSL https://bun.sh/install | BUN_VERSION="$BUN_VERSION" bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+          "$HOME/.bun/bin/bun" install --frozen-lockfile
+      - name: Run workspace package builds
+        timeout-minutes: 30
+        run: bun run mono:build
+
+  workspace-tests:
+    name: workspace-tests
+    if: >-
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' ||
+      github.ref_name == 'main' ||
+      (github.event_name == 'pull_request' && github.base_ref == 'main' && github.head_ref == 'dev')
+    runs-on: [self-hosted, jumentix]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Install Bun and dependencies
+        run: |
+          curl -fsSL https://bun.sh/install | BUN_VERSION="$BUN_VERSION" bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+          "$HOME/.bun/bin/bun" install --frozen-lockfile
+      - name: Run workspace package tests
+        timeout-minutes: 30
+        run: bun run mono:test
+      - name: Upload workspace test evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: workspace-tests
+          path: artifacts/ci
+          if-no-files-found: ignore
+
+  integration:
+    name: integration
+    if: >-
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' ||
+      github.ref_name == 'main' ||
+      (github.event_name == 'pull_request' && github.base_ref == 'main' && github.head_ref == 'dev')
+    runs-on: [self-hosted, jumentix]
+    env:
+      AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Install Bun and dependencies
+        run: |
+          curl -fsSL https://bun.sh/install | BUN_VERSION="$BUN_VERSION" bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+          "$HOME/.bun/bin/bun" install --frozen-lockfile
+      - name: Start Redis and RabbitMQ containers
+        run: ci-cd/ensure-local-ci-services.sh
+      - name: Install WebKit for browser-based integration tests
+        run: |
+          bun x playwright install webkit
+          bun x playwright install-deps webkit
+      - name: Run integration matrix
+        timeout-minutes: 30
+        run: bun run ci:integration
+
+  coverage:
+    name: coverage
+    if: >-
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' ||
+      github.ref_name == 'main' ||
+      (github.event_name == 'pull_request' && github.base_ref == 'main' && github.head_ref == 'dev')
+    runs-on: [self-hosted, jumentix]
+    env:
+      AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
+      RUN_REDIS_INTEGRATION: '1'
+      RUN_BROKER_INTEGRATION: '1'
+      AAA_REDIS_HOST: 127.0.0.1
+      AAA_REDIS_PORT: '6379'
+      AAA_BULLMQ_REDIS_HOST: 127.0.0.1
+      AAA_BULLMQ_REDIS_PORT: '6379'
+      AAA_RABBITMQ_URL: amqp://127.0.0.1:5672
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Install Bun and dependencies
+        run: |
+          curl -fsSL https://bun.sh/install | BUN_VERSION="$BUN_VERSION" bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+          "$HOME/.bun/bin/bun" install --frozen-lockfile
+      - name: Start Redis and RabbitMQ containers
+        run: ci-cd/ensure-local-ci-services.sh
+      - name: Produce Jest coverage
+        run: |
+          bun run test:coverage
+          mkdir -p coverage/jest
+          cp coverage/coverage-final.json coverage/jest/coverage-final.json
+      - name: Produce browser coverage for every supported engine
+        run: |
+          set -euo pipefail
+          bun x cypress install
+          bun x cypress verify
+          for engine in chrome firefox webkit; do
+            if [ "$engine" = webkit ]; then
+              bun x playwright install webkit
+              bun x playwright install-deps webkit
+            fi
+            bun ci-cd/run-browser-tests.js --browser "$engine"
+            bun ci-cd/write-browser-lcov.js
+            mkdir -p "coverage/browser-$engine"
+            cp coverage/browser/coverage-final.json "coverage/browser-$engine/coverage-final.json"
+            cp coverage/browser/lcov.info "coverage/browser-$engine/lcov.info"
+          done
+      - name: Union browser engines and enforce thresholds
+        run: |
+          bun ci-cd/merge-browser-coverage.js --from-dir coverage
+          bun run coverage:check
+      - name: Enforce patch coverage
+        run: |
+          if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
+            bun run coverage:merge
+            bun run coverage:patch
+          else
+            echo "Patch coverage is PR-only; project coverage already passed."
+          fi
+      - name: Install verified Codecov CLI
+        run: |
+          set -euo pipefail
+          case "$(uname -s)" in
+            Darwin) codecov_os="macos" ;;
+            Linux) codecov_os="linux" ;;
+            *) echo "Unsupported Codecov CLI OS: $(uname -s)" >&2; exit 1 ;;
+          esac
+          curl -Os "https://cli.codecov.io/latest/${codecov_os}/codecov"
+          curl -Os "https://cli.codecov.io/latest/${codecov_os}/codecov.SHA256SUM"
+          shasum -a 256 -c codecov.SHA256SUM
+          chmod +x codecov
+      - name: Upload coverage to Codecov
+        run: |
+          test -n "${CODECOV_TOKEN:-}"
+          ./codecov --verbose upload-process --disable-search --fail-on-error \
+            -t "$CODECOV_TOKEN" \
+            -n "jumentix-${GITHUB_RUN_ID}" \
+            -F project \
+            -f coverage/lcov.info \
+            -f coverage/browser/lcov.info
+      - name: Install Sonar scanner
+        run: |
+          set -euo pipefail
+          case "$(uname -s)-$(uname -m)" in
+            Darwin-arm64) sonar_platform="macosx-aarch64" ;;
+            Darwin-x86_64) sonar_platform="macosx-x64" ;;
+            Linux-x86_64) sonar_platform="linux-x64" ;;
+            *) echo "Unsupported Sonar scanner platform: $(uname -s)-$(uname -m)" >&2; exit 1 ;;
+          esac
+          sonar_version="7.1.0.4889"
+          curl -fsSL -o /tmp/sonar-scanner.zip \
+            "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${sonar_version}-${sonar_platform}.zip"
+          unzip -q /tmp/sonar-scanner.zip -d /tmp
+          echo "/tmp/sonar-scanner-${sonar_version}-${sonar_platform}/bin" >> "$GITHUB_PATH"
+      - name: SonarQube Cloud Scan
+        run: |
+          SONAR_TARGET_BRANCH="${GITHUB_BASE_REF:-${GITHUB_REF_NAME:-}}"
+          if [ "$SONAR_TARGET_BRANCH" != "main" ] && [ "$SONAR_TARGET_BRANCH" != "dev" ]; then
+            echo "Skipping Sonar for ${SONAR_TARGET_BRANCH:-unknown}; Sonar runs for PRs or pushes targeting dev/main."
+            exit 0
+          fi
+          test -n "${SONAR_TOKEN:-}"
+          sonar-scanner -Dsonar.scm.disabled=true
+      - name: Report Sonar findings
+        run: bun ci-cd/report-sonar-findings.js
+      - name: Upload coverage evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage
+          path: coverage
+          if-no-files-found: ignore
+
+  website:
+    name: website
+    if: >-
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' ||
+      github.ref_name == 'main' ||
+      (github.event_name == 'pull_request' && github.base_ref == 'main' && github.head_ref == 'dev')
+    runs-on: [self-hosted, jumentix]
+    env:
+      JUMENTIX_WEBSITE_CYPRESS_SKIP_BUILD: '1'
+      JUMENTIX_WEBSITE_CYPRESS_BROWSER: chrome
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Install Bun and dependencies
+        run: |
+          curl -fsSL https://bun.sh/install | BUN_VERSION="$BUN_VERSION" bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+          "$HOME/.bun/bin/bun" install --frozen-lockfile
+      - name: Build Storybook
+        run: bun run website:storybook:build
+      - name: Validate Storybook inventory
+        run: bun run website:storybook:smoke
+      - name: Validate publishable website content
+        run: bun run website:test:prepublish
+      - name: Install Cypress binary
+        run: bun x cypress install
+      - name: Cypress website quality gates
+        run: bun run website:test:cypress
+
+  database-matrix:
+    name: database-matrix
+    if: >-
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' ||
+      github.ref_name == 'main' ||
+      (github.event_name == 'pull_request' && github.base_ref == 'main' && github.head_ref == 'dev')
+    runs-on: [self-hosted, jumentix]
+    env:
+      FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Install Bun and dependencies
+        run: |
+          curl -fsSL https://bun.sh/install | BUN_VERSION="$BUN_VERSION" bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+          "$HOME/.bun/bin/bun" install --frozen-lockfile
+      - name: Database driver smoke matrix against real containers
+        timeout-minutes: 45
+        run: bun run test:smoke:db:all
+      - name: Redis key-value integration against a real server
+        timeout-minutes: 15
+        run: bun run smoke:key-value:redis
+      - name: Broker integration against real RabbitMQ and Redis
+        timeout-minutes: 15
+        run: bun run smoke:message-mediator
+      - name: External repository adapters against Cassandra and MongoDB
+        timeout-minutes: 20
+        run: bun run smoke:db-repositories
+      - name: Container logs for a failed run
+        if: failure()
+        run: docker ps -a && docker compose ls || true

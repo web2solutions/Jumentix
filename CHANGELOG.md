@@ -4,6 +4,23 @@
 
 ## All Changes
 
+- 2026-08-09 ci: retrigger macOS coverage tool checks - Eduardo A.
+- 2026-08-09 ci: select macOS tools for coverage publishing - Eduardo A.
+- 2026-08-09 [JUM-615][Feature] Cana localStorage fallback, real Workers, 100% coverage (#138) - Eduardo A.
+- 2026-08-09 [JUM-632][CI] Reuse local broker services in GitHub Actions (#148) - Eduardo A.
+- 2026-08-09 ci: reuse local broker services in GitHub Actions - Eduardo A.
+- 2026-08-09 [JUM-632][Release] Record main ancestry before promotion (#147) - Eduardo A.
+- 2026-08-09 chore(release): record main ancestry before promotion - Eduardo A.
+- 2026-08-09 [JUM-631][CI] Make dev delivery gates cheap and context-aware (#144) - Eduardo A.
+- 2026-08-09 ci: run GitHub Actions on self-hosted runner - Eduardo A.
+- 2026-08-09 ci: replace CircleCI with GitHub Actions - Eduardo A.
+- 2026-08-09 test: isolate branch gate tests from CircleCI env - Eduardo A.
+- 2026-08-09 ci: treat unselected CircleCI jobs as skipped - Eduardo A.
+- 2026-08-09 Merge remote-tracking branch 'origin/dev' into codex/ci/JUM-631-fast-cheap-dev-ci - Eduardo A.
+- 2026-08-09 ci: make context classifier runtime configurable - Eduardo A.
+- 2026-08-09 ci: make dev delivery gates cheap and context-aware - Eduardo A.
+- 2026-08-09 [JUM-631][Governance] Requirement 128 — requirement changes take precedence in the release process (#143) - Eduardo A.
+- 2026-08-09 docs(governance): add requirement 128 for release precedence of requirement changes - Eduardo Almeida
 - 2026-08-09 [JUM-630][Governance] Requirement 127 — mandatory rtk and Caveman in every agent session (#142) - Eduardo A.
 - 2026-08-09 docs(governance): teach rtk and caveman, EN and PT-BR - Eduardo Almeida
 - 2026-08-09 docs(governance): add requirement 127 for mandatory rtk and caveman - Eduardo Almeida
@@ -35,6 +52,7 @@
 - 2026-08-08 feat(JUM-484): one-way migration of service-management.v1 from localStorage to Cana (no fallback) (#120) - Eduardo A.
 - 2026-08-08 docs(JUM-482): document E5 operations console (EN/PT-BR) (#119) - Eduardo A.
 - 2026-08-07 [JUM-483][Feature] CanaDesignerStore adapter over the Cana client (#116) - Eduardo A.
+- 2026-08-07 [JUM-504][Release] Promote CircleCI-backed dev snapshot to main - Eduardo A.
 - 2026-08-07 [JUM-624][Fix] Close the redis connection the integration suite leaks (#117) - Eduardo A.
 - 2026-08-07 chore(release): reconcile main into dev before promotion - Eduardo A.
 - 2026-08-07 fix(key-value): close the redis connection the integration suite opens - Eduardo Almeida

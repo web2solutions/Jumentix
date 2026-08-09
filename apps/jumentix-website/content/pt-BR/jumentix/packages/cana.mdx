@@ -28,13 +28,13 @@ await client.table('designs').add({ id: 1, name: 'first', owner: 'ana' });
 
 ## Três coisas a saber antes de usar
 
-**Não existe fallback.** Se o IndexedDB não estiver disponível, o Cana reporta
-`Unavailable` e para — ele não passa silenciosamente para `localStorage` ou
-memória. Um fallback com durabilidade e capacidade diferentes continuaria
-aceitando escritas e continuaria dizendo ao usuário que o trabalho dele foi
-salvo, e a falha só apareceria muito longe da sua causa. Por isso `exportAll()`
-faz parte do contrato, e não é uma conveniência: é o único caminho de
-recuperação que o usuário tem.
+**IndexedDB preferido; fallback em localStorage é explícito e degradado.** Depois
+de `open()`, leia `client.backend`: `'indexeddb'` ou `'localStorage'`. Quando o
+IndexedDB não abre, o Cana abre por padrão um store em localStorage
+(`fallback: 'localStorage'`). Esse caminho tem cota menor e sem índices reais —
+a avaliação de durabilidade reporta `best-effort`. Passe `fallback: false` para
+voltar ao `Unavailable` terminal. Não há dual-write nem auto-promote entre os
+dois stores; use `exportAll()` / import para mover dados.
 
 **Escritas têm três desfechos, não dois.** `committed | rolled-back | unknown`.
 O terceiro cobre uma transação derrubada sem que nenhum dos dois eventos
@@ -66,16 +66,16 @@ if (isCanaErrorCode(error, 'QuotaExceeded')) { /* ... */ }
 **Guia de uso** — referência da API, consultas, transações, hooks, recuperação
 de falhas, solução de problemas:
 
-- English: [`CANA-USAGE-GUIDE.md`](https://github.com/XpertMinds/Jumentix/blob/dev/documentation/md/CANA-USAGE-GUIDE.md)
-- Português: [`CANA-USAGE-GUIDE.pt-BR.md`](https://github.com/XpertMinds/Jumentix/blob/dev/documentation/md/CANA-USAGE-GUIDE.pt-BR.md)
+- English: [`CANA-USAGE-GUIDE.md`](../../documentation/md/CANA-USAGE-GUIDE.md)
+- Português: [`CANA-USAGE-GUIDE.pt-BR.md`](../../documentation/md/CANA-USAGE-GUIDE.pt-BR.md)
 
 **Racional de projeto** — por que cada comportamento é o que é, e o que ainda
 não está comprovado:
 
-- English: [`CANA-INDEXEDDB-ADAPTER.md`](https://github.com/XpertMinds/Jumentix/blob/dev/documentation/md/CANA-INDEXEDDB-ADAPTER.md)
-- Português: [`CANA-INDEXEDDB-ADAPTER.pt-BR.md`](https://github.com/XpertMinds/Jumentix/blob/dev/documentation/md/CANA-INDEXEDDB-ADAPTER.pt-BR.md)
+- English: [`CANA-INDEXEDDB-ADAPTER.md`](../../documentation/md/CANA-INDEXEDDB-ADAPTER.md)
+- Português: [`CANA-INDEXEDDB-ADAPTER.pt-BR.md`](../../documentation/md/CANA-INDEXEDDB-ADAPTER.pt-BR.md)
 
-A seção "O que NÃO está comprovado" desse documento é leitura obrigatória antes
-de depender deste pacote em produção — em especial que o comportamento entre
-navegadores, o tratamento real de cota e a execução dentro de um Worker de
-verdade continuam todos sem teste.
+As notas de prontidão para release desse documento são leitura obrigatória antes
+de depender deste pacote em produção. O hosting em Worker dedicado real e o
+caminho de fallback em localStorage são cobertos pela suite de browser do Cana
+(JUM-615).

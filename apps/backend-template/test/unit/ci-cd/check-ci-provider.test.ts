@@ -25,9 +25,9 @@ function run(directory: string): { code: number; output: string } {
 function fixture(change?: (directory: string) => void): string {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'ci-provider-'));
   fs.mkdirSync(path.join(directory, 'ci-cd'), { recursive: true });
-  fs.mkdirSync(path.join(directory, '.circleci'), { recursive: true });
+  fs.mkdirSync(path.join(directory, '.github/workflows'), { recursive: true });
   fs.copyFileSync(checker, path.join(directory, 'ci-cd', 'check-ci-provider.js'));
-  fs.copyFileSync(path.join(repoRoot, '.circleci/config.yml'), path.join(directory, '.circleci/config.yml'));
+  fs.copyFileSync(path.join(repoRoot, '.github/workflows/ci.yml'), path.join(directory, '.github/workflows/ci.yml'));
   change?.(directory);
   return directory;
 }
@@ -38,71 +38,96 @@ describe('check-ci-provider', () => {
 
     const result = run(repoRoot);
     expect(result.code).toBe(0);
-    expect(result.output).toContain('CircleCI covers');
+    expect(result.output).toContain('GitHub Actions covers');
   });
 
-  it('fails when the repository-owned CircleCI config is absent', () => {
+  it('fails when the repository-owned GitHub Actions workflow is absent', () => {
     expect.hasAssertions();
 
-    const directory = fixture((root) => fs.unlinkSync(path.join(root, '.circleci/config.yml')));
-    expect(run(directory).output).toContain('Missing required CircleCI config');
+    const directory = fixture((root) => fs.unlinkSync(path.join(root, '.github/workflows/ci.yml')));
+    expect(run(directory).output).toContain('Missing required GitHub Actions workflow');
+  });
+
+  it('fails when CircleCI is re-enabled', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.circleci/config.yml');
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, 'version: 2.1\n');
+    });
+    expect(run(directory).output).toContain('CircleCI is disabled');
   });
 
   it('fails when patch coverage enforcement is removed', () => {
     expect.hasAssertions();
 
     const directory = fixture((root) => {
-      const file = path.join(root, '.circleci/config.yml');
+      const file = path.join(root, '.github/workflows/ci.yml');
       fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('coverage:patch', 'coverage:removed'));
     });
     expect(run(directory).output).toContain('coverage:patch');
   });
 
-  it('fails when an essential CircleCI job is absent', () => {
+  it('fails when an essential GitHub Actions job is absent', () => {
     expect.hasAssertions();
 
     const directory = fixture((root) => {
-      const file = path.join(root, '.circleci/config.yml');
+      const file = path.join(root, '.github/workflows/ci.yml');
       fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('third-party-review:', 'third-party-review-removed:'));
     });
     expect(run(directory).output).toContain('third-party-review');
   });
 
-  it('fails when Codecov or Sonar return as separate CircleCI jobs', () => {
+  it('fails when hosted runners return to the canonical workflow', () => {
     expect.hasAssertions();
 
     const directory = fixture((root) => {
-      const file = path.join(root, '.circleci/config.yml');
+      const file = path.join(root, '.github/workflows/ci.yml');
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('runs-on: [self-hosted, jumentix]', 'runs-on: ubuntu-latest'));
+    });
+    expect(run(directory).output).toContain('repository-owned self-hosted runner');
+  });
+
+  it('fails when expensive jobs lose the release/full context guard', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.github/workflows/ci.yml');
       fs.writeFileSync(
         file,
-        `${fs.readFileSync(file, 'utf8')}\nworkflows:\n  extra:\n    jobs:\n      - codecov:\n      - sonarqube:\n`
+        fs.readFileSync(file, 'utf8')
+          .split('(github.event_name == \'pull_request\' && github.base_ref == \'main\' && github.head_ref == \'dev\')')
+          .join('(github.event_name == \'pull_request\' && github.base_ref == \'dev\' && github.head_ref == \'feature\')')
+      );
+    });
+    expect(run(directory).output).toContain('must guard coverage to release/full contexts');
+  });
+
+  it('fails when Codecov or Sonar return as separate GitHub Actions jobs', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.github/workflows/ci.yml');
+      fs.writeFileSync(
+        file,
+        `${fs.readFileSync(file, 'utf8')}\n  codecov:\n    runs-on: ubuntu-latest\n  sonarqube:\n    runs-on: ubuntu-latest\n`
       );
     });
     expect(run(directory).output).toContain('must run inside the coverage job');
   });
 
-  it('fails when the CircleCI Sonar scanner partial-clone guard is removed', () => {
+  it('fails when the Sonar scanner partial-clone guard is removed', () => {
     expect.hasAssertions();
 
     const directory = fixture((root) => {
-      const file = path.join(root, '.circleci/config.yml');
+      const file = path.join(root, '.github/workflows/ci.yml');
       fs.writeFileSync(
         file,
         fs.readFileSync(file, 'utf8').replace('sonar-scanner -Dsonar.scm.disabled=true', 'sonar-scanner')
       );
     });
     expect(run(directory).output).toContain('sonar-scanner -Dsonar\\.scm\\.disabled=true');
-  });
-
-  it('fails when a GitHub Actions workflow returns while billing is blocked', () => {
-    expect.hasAssertions();
-
-    const directory = fixture((root) => {
-      const file = path.join(root, '.github/workflows/test.yml');
-      fs.mkdirSync(path.dirname(file), { recursive: true });
-      fs.writeFileSync(file, 'name: should-not-run\n');
-    });
-    expect(run(directory).output).toContain('GitHub Actions workflow is disabled');
   });
 
   it('fails when retired Codecov contract returns', () => {
@@ -127,8 +152,8 @@ describe('requirement 113 is registered and enforced', () => {
     );
     const text = fs.readFileSync(requirement, 'utf8');
     expect(text).toContain('014');
-    expect(text).toContain('CircleCI');
-    expect(text).toContain('GitHub Actions billing');
+    expect(text).toContain('GitHub Actions');
+    expect(text).toContain('CircleCI disabled');
   });
 
   it('is enforced by the canonical gate', () => {

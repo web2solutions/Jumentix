@@ -57,8 +57,8 @@ export type CanaKeyPath = string | readonly string[];
  */
 export type CanaErrorCode =
   /**
-   * No usable IndexedDB: private browsing, or an unsupported browser.
-   * Terminal, not degraded — there is no fallback to fall back to.
+   * No usable store: IndexedDB failed and the configured fallback (when any)
+   * could not open either. Terminal for this open attempt.
    */
   | 'Unavailable'
   /** The origin's storage budget is exhausted. The write did not happen. */
@@ -231,7 +231,7 @@ export interface CanaStorageState {
    * True once usage crosses the configured headroom threshold.
    *
    * Deliberately raised *before* hard failure so a consumer still has room to
-   * offer an export — which, with no fallback, is the only recovery that exists.
+   * offer an export or switch recovery strategy before writes start failing.
    */
   readonly nearQuota: boolean;
   /**
@@ -408,9 +408,23 @@ export interface CanaTransactionResult<TResult> {
   readonly attemptedAt: number;
 }
 
+/**
+ * Which physical store a client is using after a successful `open()`.
+ *
+ * `localStorage` is an explicit degraded mode: smaller quota, no real indexes,
+ * and different transactional semantics than IndexedDB.
+ */
+export type CanaStorageBackend = 'indexeddb' | 'localStorage';
+
 export interface CanaClient {
   readonly name: string;
   readonly version: number;
+  /**
+   * Set after `open()` resolves. `undefined` until then.
+   *
+   * Prefer IndexedDB; `localStorage` means the fallback path is active.
+   */
+  readonly backend?: CanaStorageBackend;
 
   open(): Promise<void>;
   close(): Promise<void>;
@@ -441,9 +455,9 @@ export interface CanaClient {
   /**
    * Export the whole database as plain data.
    *
-   * Part of the contract, not a utility, because under the no-fallback
-   * requirement this is the only recovery path a user has. It must therefore work
-   * against a degraded database — which is exactly when it is needed.
+   * Part of the contract, not a utility: it is the recovery path when promoting
+   * off a degraded localStorage session or when IndexedDB is about to be wiped.
+   * It must work against either backend.
    */
   exportAll(): Promise<Record<string, readonly unknown[]>>;
 }

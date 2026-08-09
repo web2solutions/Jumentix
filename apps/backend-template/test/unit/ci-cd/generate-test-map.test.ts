@@ -222,10 +222,20 @@ describe('buildManifest', () => {
     // no layer, and the task gate refuses it as an unsupported change set.
     expect(globs).toStrictEqual(expect.arrayContaining([
       '.github/**',
-      '.circleci/**',
       'test-map.json',
       'jest.config.js'
     ]));
+    expect(globs).not.toContain('.circleci/**');
+  });
+
+  it('declares cheap dev health and full main matrix in the generated gate table', () => {
+    expect.hasAssertions();
+
+    expect(buildManifest(workspace({})).gateTable).toStrictEqual({
+      task: { script: 'ci:gate:task', mode: 'layer-aware' },
+      dev: { script: 'test:unit', mode: 'cheap-health' },
+      main: { script: 'ci:gate:strict', mode: 'full-matrix' }
+    });
   });
 });
 

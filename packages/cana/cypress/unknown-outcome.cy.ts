@@ -94,7 +94,7 @@ describe('unknown write outcome', () => {
   });
 
   it('distinguishes an errored transaction from an aborted one in the message', async () => {
-    const transaction = {
+    const errored = {
       oncomplete: null as (() => void) | null,
       onabort: null as (() => void) | null,
       onerror: null as (() => void) | null,
@@ -102,23 +102,46 @@ describe('unknown write outcome', () => {
       abort() { /* no-op */ },
       objectStore: () => ({ name: 'designs' })
     };
-    const database = {
-      transaction: () => {
-        setTimeout(() => transaction.onerror?.(), 0);
-        return transaction;
-      }
-    } as unknown as IDBDatabase;
+    const aborted = {
+      oncomplete: null as (() => void) | null,
+      onabort: null as (() => void) | null,
+      onerror: null as (() => void) | null,
+      error: null,
+      abort() { /* no-op */ },
+      objectStore: () => ({ name: 'designs' })
+    };
 
-    const failure = await runTransaction({
-      database,
+    const failed = await runTransaction({
+      database: {
+        transaction: () => {
+          setTimeout(() => errored.onerror?.(), 0);
+          return errored;
+        }
+      } as unknown as IDBDatabase,
       stores: ['designs'],
       mode: 'readwrite',
       buffer: createChangeBuffer(() => 1, 'origin'),
       body: async () => undefined
     }).catch((error: unknown) => error);
 
-    expect(isCanaErrorCode(failure, 'TransactionAborted')).to.equal(true);
-    expect((failure as { message: string }).message).to.include('failed');
+    expect(isCanaErrorCode(failed, 'TransactionAborted')).to.equal(true);
+    expect((failed as { message: string }).message).to.include('failed');
+
+    const rolled = await runTransaction({
+      database: {
+        transaction: () => {
+          setTimeout(() => aborted.onabort?.(), 0);
+          return aborted;
+        }
+      } as unknown as IDBDatabase,
+      stores: ['designs'],
+      mode: 'readwrite',
+      buffer: createChangeBuffer(() => 1, 'origin'),
+      body: async () => undefined
+    }).catch((error: unknown) => error);
+
+    expect(isCanaErrorCode(rolled, 'TransactionAborted')).to.equal(true);
+    expect((rolled as { message: string }).message).to.include('was aborted');
   });
 
   it('translates a failure raised while starting the transaction', async () => {
