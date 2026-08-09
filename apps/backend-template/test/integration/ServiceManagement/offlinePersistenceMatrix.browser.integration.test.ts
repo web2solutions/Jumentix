@@ -322,8 +322,16 @@ async function addStatusRegionRecorder(context: BrowserContext) {
     document.addEventListener('DOMContentLoaded', () => {
       const region = document.getElementById('status-region');
       if (!region) return;
+      const log = (window as unknown as { __statusRegionLog: string[] }).__statusRegionLog;
+      // JUM-628: a fast boot can announce BEFORE this observer attaches —
+      // the broken-indexedDB shim fails through a setTimeout(0) scheduled
+      // during module evaluation, so the whole probe → declare chain can
+      // settle ahead of DOMContentLoaded, and mutations that predate
+      // observation are never delivered. Capture the already-rendered text
+      // as the first record instead of missing the startup declaration.
+      const initial = region.textContent || '';
+      if (initial) log.push(initial);
       new MutationObserver(() => {
-        const log = (window as unknown as { __statusRegionLog: string[] }).__statusRegionLog;
         const text = region.textContent || '';
         if (log[log.length - 1] !== text) log.push(text);
       }).observe(region, { childList: true, characterData: true, subtree: true });

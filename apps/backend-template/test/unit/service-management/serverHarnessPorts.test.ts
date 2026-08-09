@@ -4,12 +4,33 @@
  * (`runWithPortRetry`): bounded retry with a fresh random port on EADDRINUSE,
  * a clear error once the attempts are exhausted, no retry for non-bind
  * failures, and no port movement for pinned origins.
+ *
+ * Importing the harness pulls the WHOLE file into the coverage report (before
+ * this suite only the integration runner imported it, and `test:coverage`
+ * never loads those), so the second describe below exercises the runtime
+ * helpers for real — a genuinely spawned `server.js`, a genuinely occupied
+ * port, a genuine connection refusal — exactly as Requirement 115 demands.
  */
+import fs from 'node:fs';
+import http from 'node:http';
+import path from 'node:path';
 import {
   DEFAULT_PORT_ATTEMPTS,
+  allocatePort,
+  cleanupTempConfigDir,
+  createTempConfigDir,
+  envFileContent,
+  firstNonLoopbackAddress,
   isAddrInUseError,
-  runWithPortRetry
+  probeConnection,
+  requestJson,
+  requestRaw,
+  runWithPortRetry,
+  startServer,
+  stopServer,
+  waitForServer
 } from '../../integration/ServiceManagement/serverHarness';
+import type { StartedServer } from '../../integration/ServiceManagement/serverHarness';
 
 function addrInUse(port: number): NodeJS.ErrnoException {
   const error: NodeJS.ErrnoException = new Error(
@@ -109,4 +130,106 @@ describe('serverHarness port allocation (JUM-628)', () => {
     expect(isAddrInUseError(undefined)).toBe(false);
     expect(isAddrInUseError(null)).toBe(false);
   });
+});
+
+describe('serverHarness runtime helpers against the real server (JUM-628)', () => {
+  it('creates a real temp config dir with the pinned env content, and cleans it up', () => {
+    const dir = createTempConfigDir({ '.env.dev': envFileContent('fastify') });
+    try {
+      expect(fs.readFileSync(path.join(dir, '.env.dev'), 'utf-8'))
+        .toContain('JUMENTIX_HTTP_FRAMEWORK=fastify');
+    } finally {
+      cleanupTempConfigDir(dir);
+    }
+    expect(fs.existsSync(dir)).toBe(false);
+  });
+
+  it('allocates ports inside the pinned 3200-4199 range', () => {
+    for (let i = 0; i < 50; i += 1) {
+      const port = allocatePort();
+      expect(port).toBeGreaterThanOrEqual(3200);
+      expect(port).toBeLessThan(4200);
+    }
+  });
+
+  it('boots the real server, serves the runtime env endpoint, probes connected and stops', async () => {
+    const dir = createTempConfigDir({ '.env.dev': envFileContent('express') });
+    let server: StartedServer | undefined;
+    try {
+      server = await startServer(dir);
+      await waitForServer(server.port);
+      const env = await requestJson<{ environment: string }>(
+        server.port,
+        'GET',
+        '/api/runtime/env?environment=dev'
+      );
+      expect(env.status).toBe(200);
+      const raw = await requestRaw(server.port, 'GET', '/api/runtime/env?environment=dev');
+      expect(raw.status).toBe(200);
+      expect(raw.rawBody).toContain('"environment"');
+      // A request carrying a body exercises the write path of requestRaw; the
+      // server answers with its honest rejection, not a hang.
+      const posted = await requestRaw(server.port, 'POST', '/api/runtime/env', '{}');
+      expect([200, 400, 401, 403, 422]).toContain(posted.status);
+      await expect(probeConnection('127.0.0.1', server.port)).resolves.toBe('connected');
+      // The machine may or may not expose a non-loopback address; both are
+      // honest answers — the contract is the shape, not the value.
+      const address = firstNonLoopbackAddress();
+      expect(address === null || typeof address === 'string').toBe(true);
+    } finally {
+      stopServer(server);
+      cleanupTempConfigDir(dir);
+    }
+  }, 30000);
+
+  it('reports a genuine connection refusal on a port nothing listens on', async () => {
+    // Bind a real listener, learn its port, close it: the port is then
+    // guaranteed free, so the refusal below is real, not emulated.
+    const blocker = http.createServer();
+    const freePort = await new Promise<number>((resolve, reject) => {
+      blocker.listen(0, '127.0.0.1', () => {
+        const address = blocker.address();
+        blocker.close(() => {
+          if (address && typeof address === 'object') resolve(address.port);
+          else reject(new Error('no address'));
+        });
+      });
+    });
+    await expect(probeConnection('127.0.0.1', freePort)).resolves.toBe('refused');
+    // waitForServer against the same dead port burns its one retry and then
+    // reports the honest failure — both the retry and the reject paths.
+    await expect(waitForServer(freePort, 1)).rejects.toThrow('server did not start');
+  }, 30000);
+
+  it('boots against the pinned default config dir when none is injected', async () => {
+    // startServer(null) exercises the Requirement 126 §2 default resolution
+    // branch (no JUMENTIX_SERVICE_MANAGEMENT_CONFIG_DIR in the child env).
+    let server: StartedServer | undefined;
+    try {
+      server = await startServer(null);
+      await waitForServer(server.port);
+      await expect(probeConnection('127.0.0.1', server.port)).resolves.toBe('connected');
+    } finally {
+      stopServer(server);
+    }
+  }, 30000);
+
+  it('a busy pinned port dies on the real EADDRINUSE exit and fails fast, naming the port', async () => {
+    const blocker = http.createServer();
+    const busyPort = await new Promise<number>((resolve, reject) => {
+      blocker.listen(0, '127.0.0.1', () => {
+        const address = blocker.address();
+        if (address && typeof address === 'object') resolve(address.port);
+        else reject(new Error('no address'));
+      });
+    });
+    const dir = createTempConfigDir({ '.env.dev': envFileContent('express') });
+    try {
+      await expect(startServer(dir, {}, { pinnedPort: busyPort }))
+        .rejects.toThrow(`pinned port ${String(busyPort)} is already in use`);
+    } finally {
+      cleanupTempConfigDir(dir);
+      await new Promise<void>((resolve) => { blocker.close(() => resolve()); });
+    }
+  }, 30000);
 });

@@ -4,7 +4,10 @@
 
 ## All Changes
 
+- 2026-08-08 chore(JUM-628): merge dev updates (changelog left to dev regen) - Eduardo A.
 - 2026-08-08 fix(JUM-628): retry port allocation on EADDRINUSE in the ServiceManagement test harness - Eduardo A.
+- 2026-08-08 [JUM-609][Governance] Fail on duplicate requirement IDs, for being duplicates (#139) - Eduardo A.
+- 2026-08-08 chore(governance): fail on duplicate requirement IDs, for being duplicates - Eduardo Almeida
 - 2026-08-08 [JUM-626][Fix] Announce load-time storage corruption recovery in the boot UI (#136) - Eduardo A.
 - 2026-08-08 [JUM-627][Governance] Verify the child task issue is in the focused epic (#134) - Eduardo A.
 - 2026-08-08 test(governance): stop the no-credential cases reading the ambient key - Eduardo Almeida
