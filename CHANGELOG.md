@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-08-10 [JUM-638][Fix] Isolate HTTP update integration targets (#171) - Eduardo A.
+- 2026-08-10 test(governance): isolate http update integration targets - Eduardo A.
 - 2026-08-10 [JUM-638][Fix] Stabilize dev promotion gates (#167) - Eduardo A.
 - 2026-08-10 test(governance): stabilize dev promotion gates - Eduardo A.
 - 2026-08-10 [JUM-637][Governance] Mandatory Firebase RTDB agent progress bus (Requirement 129) (#164) - Eduardo A.
