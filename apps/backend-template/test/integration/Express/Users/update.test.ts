@@ -11,7 +11,8 @@ import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
 import { InMemoryKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
 import { MutexService } from '@src/infra/mutex/adapter/MutexService';
 import {
-  BasicAuthorizationHeaderUserGuest
+  BasicAuthorizationHeaderUserGuest,
+  user1 as updateUserTemplate
 } from '@test/mock';
 import { UserDataRepository, UserService } from '@src/modules/Users';
 import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
@@ -75,6 +76,7 @@ describe('express -> update User suite', () => {
     });
 
     server = API.server.application;
+    await API.deleteUsers();
     await API.seedUsers();
     // await server.ready();
 
@@ -115,13 +117,31 @@ describe('express -> update User suite', () => {
 
   it('user1 must be able to update an user', async () => {
     expect.hasAssertions();
+    const username = `express-update-${Date.now()}@xpertminds.dev`;
+    const createPayload = {
+      ...updateUserTemplate,
+      username,
+      emails: updateUserTemplate.emails.map((email) => ({
+        ...email,
+        email: username
+      }))
+    };
+    const createdResponse = await request(server)
+      .post('/api/1.0.0/users')
+      .send(createPayload)
+      .set('Content-Type', 'application/json; charset=utf-8')
+      .set('Accept', 'application/json; charset=utf-8')
+      .set(authorizationHeaderUser1);
+    expect(createdResponse.statusCode).toBe(201);
     const payload = {
-      ...createdUser1,
-      id: createdUser1.id
+      ...createPayload,
+      id: createdResponse.body.id,
+      firstName: 'Express Update',
+      lastName: 'Target'
     };
     delete (payload as any).password;
     const response = await request(server)
-      .put(`/api/1.0.0/users/${createdUser1.id}`)
+      .put(`/api/1.0.0/users/${createdResponse.body.id}`)
       .send(payload)
       .set('Content-Type', 'application/json; charset=utf-8')
       .set('Accept', 'application/json; charset=utf-8')

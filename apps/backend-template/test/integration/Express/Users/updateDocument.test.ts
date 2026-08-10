@@ -83,6 +83,7 @@ describe('express -> User updateDocument suite', () => {
     server = API.server.application;
 
     // await server.ready();
+    await API.deleteUsers();
     usersAll = await API.seedUsers();
     [user1] = usersAll;
     [document1] = user1.documents || [];

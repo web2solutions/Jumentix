@@ -95,6 +95,7 @@ See also:
 - [123-wave5-app-rehoming-cutover-governance](requirements/project/123-wave5-app-rehoming-cutover-governance.md)
 - [124-monorepo-root-layout-governance](requirements/project/124-monorepo-root-layout-governance.md)
 - [125-agent-support-declaration](requirements/project/125-agent-support-declaration.md)
+- [129-mandatory-firebase-agent-bus](requirements/project/129-mandatory-firebase-agent-bus.md)
 
 ## Software and Product Requirements
 

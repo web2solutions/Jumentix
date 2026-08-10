@@ -76,6 +76,7 @@ describe('express -> getUserById suite', () => {
     });
 
     server = API.server.application;
+    await API.deleteUsers();
     await API.seedData();
     // await server.ready();
     // create user

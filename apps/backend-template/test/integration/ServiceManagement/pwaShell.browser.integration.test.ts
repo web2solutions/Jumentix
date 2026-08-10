@@ -79,7 +79,7 @@ describe('serviceManagement PWA shell (JUM-489)', () => {
       stdio: 'inherit'
     });
     tempDir = createTempConfigDir({ '.env.dev': envFileContent('express') });
-    server = startServer(tempDir);
+    server = await startServer(tempDir);
     await waitForServer(server.port);
     baseUrl = `http://127.0.0.1:${String(server.port)}/`;
     browser = await webkit.launch({ headless: true });
@@ -186,7 +186,7 @@ describe('serviceManagement PWA shell (JUM-489)', () => {
       await context.close();
       // Restart for the suites that follow: the server is shared per file.
       if (!server) {
-        server = startServer(tempDir);
+        server = await startServer(tempDir);
         await waitForServer(server.port);
         baseUrl = `http://127.0.0.1:${String(server.port)}/`;
       }

@@ -74,7 +74,7 @@ describe('serviceManagement SPA boot and export gate (JUM-466)', () => {
 
   beforeAll(async () => {
     tempDir = createTempConfigDir({ '.env.dev': envFileContent('express') });
-    server = startServer(tempDir);
+    server = await startServer(tempDir);
     await waitForServer(server.port);
     baseUrl = `http://127.0.0.1:${String(server.port)}/`;
     browser = await webkit.launch({ headless: true });

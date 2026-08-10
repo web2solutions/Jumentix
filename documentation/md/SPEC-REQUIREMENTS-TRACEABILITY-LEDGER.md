@@ -1,6 +1,6 @@
 # Spec Requirements Traceability Ledger
 
-<!-- requirements-inventory: files=128 unique=128 mapped=128 duplicates= -->
+<!-- requirements-inventory: files=129 unique=129 mapped=129 duplicates= -->
 
 This ledger maps requirement IDs to spec resources and validation evidence expectations.
 
@@ -96,7 +96,7 @@ For any change, identify impacted requirement IDs and ensure:
 
 ## G. Documentation, Governance Process, and Multi-Agent Operations
 
-- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `056`, `057`, `064`, `066`, `067`, `068`, `071`, `072`, `073`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `094`, `095`, `097`, `098`, `099`, `100`, `101`, `102`, `103`, `104`, `105`, `106`, `107`, `108`, `109`, `110`, `111`, `112`, `113`, `114`, `116`, `117`, `119`, `120`, `121`, `122`, `124`, `125`, `126`, `127`, `128`
+- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `056`, `057`, `064`, `066`, `067`, `068`, `071`, `072`, `073`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `094`, `095`, `097`, `098`, `099`, `100`, `101`, `102`, `103`, `104`, `105`, `106`, `107`, `108`, `109`, `110`, `111`, `112`, `113`, `114`, `116`, `117`, `119`, `120`, `121`, `122`, `124`, `125`, `126`, `127`, `128`, `129`
 - Spec resources:
   - `documentation/README.md`
   - `documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`
@@ -162,6 +162,10 @@ As of `2026-08-05`, this ledger covers all unique requirement IDs currently regi
 - Specs: `documentation/md/AGENT-OPERATING-REQUIREMENTS-114-121.md` (+ pt-BR)
 - Requirements: `.agents/requirements/project/114-*.md` … `121-*.md`
 - Evidence: `bun run requirements:check`; agent instruction parity in `AGENTS.md` / `CLAUDE.md` / `GROK.md`; Docker-backed smoke/integration scripts for `118`; API-first / `gh` orchestration for `119`; Linear agent-assignment visibility for `120`; cross-agent coordination evidence for `121`
+
+### `129` Mandatory Firebase RTDB agent progress bus
+- Specs: `.agents/requirements/project/129-mandatory-firebase-agent-bus.md`, `documentation/md/AGENT-OPERATING-REQUIREMENTS-114-121.md` (+ pt-BR), `documentation/md/AGENT-RTK-AND-CAVEMAN-GUIDE.md` (+ pt-BR)
+- Evidence: `packages/agent-registry/src/rtdb-client.ts`, `packages/agent-registry/src/bus-commands.ts`, `ci-cd/agent-registry-cli.js`, `bun run agent-bus:publish|watch|status`, package unit tests with mocked RTDB
 
 ### `126` Service Management ownership and public contracts (JUM-465)
 - Specs: `.agents/requirements/software/126-service-management-ownership-and-public-contracts.md`, `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md`, `documentation/md/SERVICE-MANAGEMENT-APPLICATION.md`, `.agents/COMPONENT-OWNERSHIP.md`

@@ -54,6 +54,19 @@ const serverType = EHTTPFrameworks.express;
 let API: RestAPI<Express>;
 let server: any;
 
+const registerPayload = (user: typeof user1, username = user.username) => {
+  const payload = { ...user, username };
+  delete (payload as any).lastName;
+  delete (payload as any).id;
+  delete (payload as any).emails;
+  delete (payload as any).avatar;
+  delete (payload as any).roles;
+  delete (payload as any).organization;
+  delete (payload as any).documents;
+  delete (payload as any).phones;
+  return payload;
+};
+
 describe('express -> register suite', () => {
   beforeAll(async () => {
     await databaseClient.connect();
@@ -85,25 +98,18 @@ describe('express -> register suite', () => {
   users.forEach((user, index) => {
     it(`user${index + 1} must be able to register`, async () => {
       expect.hasAssertions();
-      delete (user as any).lastName;
-      delete (user as any).id;
-      delete (user as any).emails;
-      delete (user as any).avatar;
-      delete (user as any).roles;
-      delete (user as any).organization;
-      delete (user as any).documents;
-      delete (user as any).phones;
+      const newUser = registerPayload(user);
       const response = await request(server)
         .post('/api/1.0.0/auth/register')
-        .send(user)
+        .send(newUser)
         .set('Content-Type', 'application/json; charset=utf-8')
         .set('Accept', 'application/json; charset=utf-8');
       expect(response.statusCode).toBe(201);
-      expect(response.body.username).toBe(user.username);
-      expect(response.body.firstName).toBe(user.firstName);
+      expect(response.body.username).toBe(newUser.username);
+      expect(response.body.firstName).toBe(newUser.firstName);
       expect(response.body.password).toBeUndefined();
       expect(response.body.emails[0]).toMatchObject({
-        email: user.username,
+        email: newUser.username,
         type: 'work',
         isPrimary: true
       });
@@ -112,9 +118,8 @@ describe('express -> register suite', () => {
 
   it('invalid uername must return 400', async () => {
     expect.hasAssertions();
-    const newUser = { ...user1 };
+    const newUser = registerPayload(user1, `missing-username-${Date.now()}@example.com`);
     delete (newUser as any).username;
-    delete (newUser as any).id;
     const response = await request(server)
       .post('/api/1.0.0/auth/register')
       .send(newUser)
@@ -127,9 +132,8 @@ describe('express -> register suite', () => {
 
   it('invalid password must return 400', async () => {
     expect.hasAssertions();
-    const newUser = { ...user1 };
+    const newUser = registerPayload(user1, `invalid-password-${Date.now()}@example.com`);
     newUser.password = '123456';
-    delete (newUser as any).id;
     const response = await request(server)
       .post('/api/1.0.0/auth/register')
       .send(newUser)
@@ -142,9 +146,8 @@ describe('express -> register suite', () => {
 
   it('undefined password must return 400', async () => {
     expect.hasAssertions();
-    const newUser = { ...user1 };
+    const newUser = registerPayload(user1, `missing-password-${Date.now()}@example.com`);
     delete (newUser as any).password;
-    delete (newUser as any).id;
     const response = await request(server)
       .post('/api/1.0.0/auth/register')
       .send(newUser)
@@ -157,10 +160,14 @@ describe('express -> register suite', () => {
 
   it('non-existing fields must return 400', async () => {
     expect.hasAssertions();
-    const { username, password } = user1;
+    const username = `unknown-field-${Date.now()}@example.com`;
+    const newUser = {
+      ...registerPayload(user1, username),
+      usernames: username
+    };
     const response = await request(server)
       .post('/api/1.0.0/auth/register')
-      .send({ usernames: username, password })
+      .send(newUser)
       .set('Content-Type', 'application/json; charset=utf-8')
       .set('Accept', 'application/json; charset=utf-8');
     expect(response.statusCode).toBe(400);

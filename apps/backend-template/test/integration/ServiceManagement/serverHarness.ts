@@ -80,22 +80,95 @@ export function cleanupTempConfigDir(dir: string) {
   fs.rmSync(dir, { recursive: true, force: true });
 }
 
-export function startServer(
-  configDir: string | null,
-  envOverrides: Record<string, string> = {}
-): StartedServer {
-  // The SPA statically imports the designer core through the import map's
-  // `@jumentix/designer-core/` prefix (JUM-493), which resolves to the
-  // vendored, gitignored module tree. Booting without it is a module-load
-  // failure, so the harness regenerates the tree for every boot — one sync
-  // point, impossible for a suite to forget. It is a verbatim file copy from
-  // the canonical `packages/designer-core/src/` (nothing to compile, unlike
-  // the Cana bundle), cheap enough to run per server start.
-  const syncResult = syncServiceManagementDesignerCore({ root: process.cwd() });
-  if (syncResult !== 0) {
-    throw new Error('designer-core vendor sync failed; the SPA cannot boot without it.');
+/**
+ * JUM-628 — port allocation used to be a single `3200 + random*1000` shot:
+ * under parallel agent sessions or stale `server.js` processes the port
+ * collided, the child died on EADDRINUSE, and `waitForServer` burned 20-120s
+ * of timeouts before the suite failed (the recurring 2026-08-05..08 flake).
+ * The port must be known BEFORE listen (server.js reads it from
+ * `JUMENTIX_SERVICE_MANAGEMENT_PORT`), so OS-assigned port 0 is not an option —
+ * the harness retries with a fresh random port, bounded by
+ * `DEFAULT_PORT_ATTEMPTS`. The range follows JUM-635's wider
+ * `20000 + random*30000` window; retry handles the residual collisions that
+ * a wider range alone cannot.
+ */
+export const DEFAULT_PORT_ATTEMPTS = 10;
+
+/** How long one boot attempt may take before it counts as failed. */
+const LISTEN_TIMEOUT_MS = 15000;
+
+export function allocatePort(): number {
+  return 20000 + Math.floor(Math.random() * 30000);
+}
+
+export function isAddrInUseError(error: unknown): boolean {
+  return (error as NodeJS.ErrnoException | null)?.code === 'EADDRINUSE';
+}
+
+export type PortRetryOptions<T> = {
+  /**
+   * Forced port. Pinned origins (offline matrix cells restarting a server on
+   * the SAME origin for IDB/SW) cannot move to another port, so a busy pinned
+   * port fails immediately with a clear error instead of retrying.
+   */
+  pinnedPort?: number;
+  maxAttempts?: number;
+  pickPort?: () => number;
+  /** One bind attempt; rejects with an EADDRINUSE-coded error when the port is busy. */
+  attempt: (port: number) => Promise<T>;
+  /** Called before each retry — the harness logs here so flakes are diagnosable. */
+  onRetry?: (event: {
+    port: number;
+    attempt: number;
+    maxAttempts: number;
+  }) => void;
+};
+
+/**
+ * Runs `attempt(port)` until it succeeds, retrying with a fresh random port on
+ * EADDRINUSE. Any other failure propagates immediately; exhausting the
+ * attempts raises an error that says so (and names the last busy port) instead
+ * of surfacing as a generic 'server did not start' timeout.
+ */
+export async function runWithPortRetry<T>(options: PortRetryOptions<T>): Promise<T> {
+  const maxAttempts = options.maxAttempts ?? DEFAULT_PORT_ATTEMPTS;
+  const pickPort = options.pickPort ?? allocatePort;
+  let lastBusyPort: number | null = null;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    const port = options.pinnedPort ?? pickPort();
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      return await options.attempt(port);
+    } catch (error) {
+      if (!isAddrInUseError(error)) {
+        throw error;
+      }
+      lastBusyPort = port;
+      if (options.pinnedPort !== undefined) {
+        throw new Error(
+          `[serverHarness] pinned port ${String(port)} is already in use (EADDRINUSE); `
+            + 'a pinned origin cannot move — free the stale process holding it and re-run.'
+        );
+      }
+      if (attempt < maxAttempts) {
+        options.onRetry?.({ port, attempt, maxAttempts });
+      }
+    }
   }
-  const port = 20000 + Math.floor(Math.random() * 30000);
+  throw new Error(
+    `[serverHarness] no free port after ${String(maxAttempts)} attempts `
+      + `(last busy port ${String(lastBusyPort)}); stale server.js processes are `
+      + 'likely holding the range — kill them and re-run.'
+  );
+}
+
+type SpawnedServer = StartedServer & { stdout: () => string };
+
+function spawnServerProcess(
+  configDir: string | null,
+  envOverrides: Record<string, string>,
+  port: number
+): SpawnedServer {
   const env: NodeJS.ProcessEnv = {
     ...process.env,
     ...envOverrides,
@@ -107,21 +180,125 @@ export function startServer(
     // Exercise the pinned default resolution from Requirement 126 §2.
     delete env.JUMENTIX_SERVICE_MANAGEMENT_CONFIG_DIR;
   }
+  let capturedStdout = '';
   let capturedStderr = '';
   const proc = spawn('node', [serverPath], {
     env,
     stdio: ['ignore', 'pipe', 'pipe']
   });
+  proc.stdout?.on('data', (chunk) => {
+    capturedStdout += chunk;
+  });
   proc.stderr?.on('data', (chunk) => {
     capturedStderr += chunk;
   });
-  return { proc, port, stderr: () => capturedStderr };
+  return {
+    proc,
+    port,
+    stdout: () => capturedStdout,
+    stderr: () => capturedStderr
+  };
+}
+
+/**
+ * Settles one boot attempt: resolves once THIS child reports its listen line
+ * (a probe would be answered just as happily by the stale server we are
+ * trying to avoid), rejects with an EADDRINUSE-coded error when the child dies
+ * on a busy port, and rejects plainly on any other early exit or timeout.
+ */
+function waitForListening(server: SpawnedServer): Promise<void> {
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const finish = (error?: Error) => {
+      if (settled) return;
+      settled = true;
+      if (timer) clearTimeout(timer);
+      if (error) {
+        reject(error);
+      } else {
+        resolve();
+      }
+    };
+    timer = setTimeout(() => {
+      finish(
+        new Error(
+          `[serverHarness] server on port ${String(server.port)} printed no listen line `
+            + `within ${String(LISTEN_TIMEOUT_MS)}ms; stderr so far:\n${server.stderr()}`
+        )
+      );
+    }, LISTEN_TIMEOUT_MS);
+    server.proc.on('exit', (code, signal) => {
+      const stderr = server.stderr();
+      if (stderr.includes('EADDRINUSE')) {
+        const error: NodeJS.ErrnoException = new Error(
+          `port ${String(server.port)} is already in use (EADDRINUSE)`
+        );
+        error.code = 'EADDRINUSE';
+        finish(error);
+        return;
+      }
+      finish(
+        new Error(
+          `[serverHarness] server on port ${String(server.port)} exited before listening `
+            + `(code ${String(code)}, signal ${String(signal)}); stderr:\n${stderr}`
+        )
+      );
+    });
+    server.proc.on('error', (error) => {
+      finish(error);
+    });
+    server.proc.stdout?.on('data', () => {
+      if (server.stdout().includes('Service Management listening on http://')) {
+        finish();
+      }
+    });
+  });
 }
 
 export function stopServer(server: StartedServer | undefined) {
   if (server?.proc) {
     server.proc.kill();
   }
+}
+
+export async function startServer(
+  configDir: string | null,
+  envOverrides: Record<string, string> = {},
+  options: { pinnedPort?: number; maxAttempts?: number } = {}
+): Promise<StartedServer> {
+  // The SPA statically imports the designer core through the import map's
+  // `@jumentix/designer-core/` prefix (JUM-493), which resolves to the
+  // vendored, gitignored module tree. Booting without it is a module-load
+  // failure, so the harness regenerates the tree for every boot — one sync
+  // point, impossible for a suite to forget. It is a verbatim file copy from
+  // the canonical `packages/designer-core/src/` (nothing to compile, unlike
+  // the Cana bundle), cheap enough to run per server start.
+  const syncResult = syncServiceManagementDesignerCore({ root: process.cwd() });
+  if (syncResult !== 0) {
+    throw new Error('designer-core vendor sync failed; the SPA cannot boot without it.');
+  }
+  return runWithPortRetry({
+    pinnedPort: options.pinnedPort,
+    maxAttempts: options.maxAttempts,
+    onRetry: ({ port, attempt, maxAttempts }) => {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `[serverHarness] port ${String(port)} busy (EADDRINUSE); `
+          + `retrying with a fresh port (attempt ${String(attempt)}/${String(maxAttempts)})`
+      );
+    },
+    attempt: async (port) => {
+      const server = spawnServerProcess(configDir, envOverrides, port);
+      try {
+        await waitForListening(server);
+      } catch (error) {
+        stopServer(server);
+        throw error;
+      }
+      return server;
+    }
+  });
 }
 
 export function waitForServer(port: number, maxAttempts = 50): Promise<void> {
