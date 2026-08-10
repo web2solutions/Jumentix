@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-10 test(website): discover every route and sweep it, and gate the deploy - Eduardo Almeida
 - 2026-08-10 [JUM-638][CI] Keep Sonar analysis within LOC budget (#172) - Eduardo A.
 - 2026-08-10 ci(governance): keep sonar analysis within loc budget - Eduardo A.
 - 2026-08-10 [JUM-638][Fix] Isolate HTTP update integration targets (#171) - Eduardo A.

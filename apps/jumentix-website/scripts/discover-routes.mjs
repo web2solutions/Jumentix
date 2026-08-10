@@ -3,10 +3,12 @@
  * JUM-158 — enumerate every public route from the tree, not from a hand-list.
  *
  * The acceptance criterion is "all public routes are discovered and exercised".
- * A hard-coded array in a spec cannot satisfy that: it passes on the day it is
- * written and silently stops covering the site the first time somebody adds a
- * page. The four specs this replaces visited four routes while eighteen static
- * page files existed.
+ * A hard-coded array cannot satisfy that: it covers the site on the day it is
+ * written and silently stops the first time somebody adds a page.
+ *
+ * The existing specs are not neglect — they reference 52 distinct routes with
+ * real content assertions. But 151 routes exist, so 99 were never requested,
+ * and every one of the 52 had to be typed by hand.
  *
  * Two sources, because the site has two:
  *
