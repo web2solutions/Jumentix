@@ -12,6 +12,7 @@ Restrições canônicas adicionadas em 2026-08-01 sob o Linear [JUM-595](https:/
 | `119` | Orquestração via API | Preferir APIs (ou CLIs oficiais) a automação de browser/app para Linear, GitHub e outros; GitHub deve sempre usar `gh`. |
 | `120` | Visibilidade de assignment de agente no Linear | Issues e Projects/Epics no Linear devem identificar o agente ativo e sincronizar com o Agent Registry canônico. |
 | `121` | Consciência coordenada de entrega entre agentes | Agentes registrados devem refrescar progresso, bloqueios, branches, PRs e Project Updates de agentes irmãos antes de iniciar ou retomar trabalho. |
+| `129` | Bus Firebase RTDB de progresso | Agentes devem publicar e consumir o `agent-bus` RTDB via `agent-bus:publish|watch|status`; Firestore continua SSOT de ownership. |
 
 ## Arquivos de requisito
 
@@ -23,6 +24,7 @@ Restrições canônicas adicionadas em 2026-08-01 sob o Linear [JUM-595](https:/
 - `.agents/requirements/project/119-api-first-service-orchestration-github-gh.md`
 - `.agents/requirements/project/120-linear-agent-assignment-visibility.md`
 - `.agents/requirements/project/121-registered-agent-coordinated-delivery-awareness.md`
+- `.agents/requirements/project/129-mandatory-firebase-agent-bus.md`
 
 ## Nota ao operador (Req 114)
 
@@ -48,3 +50,15 @@ Antes de iniciar implementação, a Issue do Linear e seu Project/Epic devem mos
 ## Nota ao operador (Req 121)
 
 Agentes não trabalham isolados. Antes de iniciar ou retomar trabalho, leia a atividade dos agentes irmãos no registry, nos Project Updates do Linear, nas Issues relacionadas, branches ativas e PRs abertos. Se outro agente registrado possuir escopo sobreposto, coordene handoff, dependência ou divisão de escopo antes de editar arquivos.
+
+## Nota ao operador (Req 129)
+
+Use o bus Firebase RTDB para sync peer legível por máquina:
+
+```bash
+bun run agent-bus:status -- --epic "<epic-url-or-id>"
+bun run agent-bus:publish -- --agent-id "<id>" --epic "<epic>" --task "<task>" --kind progress --summary "<curto>"
+bun run agent-bus:watch -- --epic "<epic-url-or-id>"
+```
+
+Exige `FIREBASE_SERVICE_ACCOUNT_KEY` e `FIREBASE_DATABASE_URL`. Firestore continua SSOT de ownership (`089`); Project Updates continuam o broadcast humano (`102` / `121`).

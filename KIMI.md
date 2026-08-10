@@ -37,7 +37,8 @@ This repository supports Kimi Code CLI as an official engineering agent.
     smoke/integration use Docker real services (`118`); orchestrate Linear/GitHub/others via
     APIs and always use `gh` for GitHub (`119`). Linear must identify the active
     `agent_identifier` on each Issue and Project/Epic (`120`), and agents must refresh sibling
-    progress, blockers, branches, PRs, and Project Updates before starting or resuming work (`121`).
+    progress, blockers, branches, PRs, and Project Updates before starting or resuming work (`121`),
+    and must publish/consume the Firebase RTDB agent bus via `agent-bus:publish|watch|status` (`129`).
 18. Use the declared `kimi` branch prefix: `kimi/<nature>/<issue-id>-<short-slug>`
     (`.agents/supported-agents.json`, Requirement `125`), and start every PR title with the
     matching Linear Issue identifier: `[JUM-XXXX][Nature] <concise outcome>` (086).

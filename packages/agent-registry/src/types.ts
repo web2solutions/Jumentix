@@ -98,3 +98,101 @@ export interface CollectionReference<T> {
 export interface FirestoreLike {
   collection(name: string): CollectionReference<AgentRecord>;
 }
+
+/** Progress kinds published on the Firebase RTDB agent bus (Requirement 129). */
+export type AgentBusEventKind =
+  | 'started'
+  | 'progress'
+  | 'blocked'
+  | 'handoff'
+  | 'completed'
+  | 'conflict';
+
+export interface AgentBusPresence {
+  agentId: string;
+  status: AgentStatus;
+  epicId: string;
+  taskId: string;
+  branch?: string;
+  machineId: string;
+  updatedAt: string;
+}
+
+export interface AgentBusEvent {
+  agentId: string;
+  taskId: string;
+  epicId: string;
+  kind: AgentBusEventKind;
+  summary: string;
+  refs?: string[];
+  ts: string;
+  ttlHint: string;
+}
+
+export interface PublishProgressInput {
+  agentId: string;
+  epicId: string;
+  taskId: string;
+  kind: AgentBusEventKind;
+  summary: string;
+  refs?: string[];
+  /** ISO timestamp; defaults to now. */
+  ts?: string;
+  /** Days until suggested retention cleanup; defaults to 14. */
+  ttlDays?: number;
+}
+
+export interface WatchBusInput {
+  epicId: string;
+  /** Only emit events with ts >= since (ISO). */
+  since?: string;
+  /** Called for each event (live + optional backlog). */
+  onEvent: (event: AgentBusEvent, pushId: string) => void;
+}
+
+export interface BusStatusResult {
+  epicId: string;
+  presence: AgentBusPresence[];
+  recentEvents: Array<AgentBusEvent & { pushId: string }>;
+}
+
+export interface RtdbDataSnapshotLike {
+  key: string | null;
+  val(): unknown;
+  forEach(callback: (child: RtdbDataSnapshotLike) => boolean | void): void;
+}
+
+export interface RtdbThenableReferenceLike {
+  key: string | null;
+  set(value: unknown): Promise<void>;
+}
+
+export interface RtdbQueryLike {
+  once(eventType: 'value'): Promise<RtdbDataSnapshotLike>;
+  on(
+    eventType: 'child_added',
+    callback: (snapshot: RtdbDataSnapshotLike) => void
+  ): (snapshot: RtdbDataSnapshotLike) => void;
+  off(
+    eventType?: 'child_added',
+    callback?: (snapshot: RtdbDataSnapshotLike) => void
+  ): void;
+  limitToLast(limit: number): RtdbQueryLike;
+  orderByChild(path: string): RtdbQueryLike;
+}
+
+export interface RtdbReferenceLike extends RtdbQueryLike {
+  child(path: string): RtdbReferenceLike;
+  set(value: unknown): Promise<void>;
+  push(value?: unknown): RtdbThenableReferenceLike;
+  update(value: Record<string, unknown>): Promise<void>;
+}
+
+export interface RtdbLike {
+  ref(path?: string): RtdbReferenceLike;
+}
+
+export interface RegistryCommandOptions {
+  /** When provided, mirror presence / fail closed on RTDB errors (Requirement 129). */
+  rtdb?: RtdbLike;
+}
