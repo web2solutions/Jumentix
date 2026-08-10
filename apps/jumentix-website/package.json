@@ -18,14 +18,16 @@
     "storybook:smoke": "bun ./scripts/storybook-smoke.mjs",
     "test:cypress": "bun ./scripts/run-cypress.mjs",
     "test:prepublish": "bun run content:sync && bun run content:smoke && bun ./scripts/prepublish-site-checks.mjs",
-    "test:quality": "bun run test:prepublish && bun run test:cypress",
+    "test:quality": "bun run test:prepublish && bun run test:routes && bun run storybook:build && bun run storybook:smoke && bun run test:cypress",
     "test": "bun run typecheck",
     "vercel:link": "vercel link --project jumentix-website --yes",
     "vercel:pull:preview": "vercel pull --environment=preview --yes",
     "vercel:pull:prod": "vercel pull --environment=production --yes",
-    "deploy:vercel": "vercel --prod",
+    "deploy:vercel": "bun run test:quality && vercel --prod",
     "deploy:vercel:safe": "bun run test:prepublish && bun run deploy:vercel",
-    "deploy:vercel:preview": "vercel"
+    "deploy:vercel:preview": "vercel",
+    "routes:discover": "bun ./scripts/discover-routes.mjs",
+    "test:routes": "bun ./scripts/route-sweep.mjs"
   },
   "dependencies": {
     "@gfazioli/mantine-border-animate": "^2.0.7",
