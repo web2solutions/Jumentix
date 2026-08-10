@@ -3084,6 +3084,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "packages/agent-registry/test/firebase-credentials.test.ts",
+      "path": "packages/agent-registry/test/firebase-credentials.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "packages/agent-registry/test/firestore-client.test.ts",
       "path": "packages/agent-registry/test/firestore-client.test.ts",
       "layer": "adapters/out+infra",
@@ -3713,9 +3723,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 189,
+    "unit": 190,
     "integration": 97,
     "smoke": 2,
-    "suites": 312
+    "suites": 313
   }
 }

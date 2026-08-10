@@ -37,10 +37,14 @@ describe('agent-registry firestore client', () => {
     jest.clearAllMocks();
     mockGetApps.mockReturnValue([]);
     delete process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+    delete process.env.FIREBASE_SERVICE_ACCOUNT_KEY_FILE;
+    delete process.env.FIREBASE_DATABASE_URL;
   });
 
   afterEach(() => {
     delete process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+    delete process.env.FIREBASE_SERVICE_ACCOUNT_KEY_FILE;
+    delete process.env.FIREBASE_DATABASE_URL;
   });
 
   it('initializes Firestore from the service account JSON', () => {
@@ -54,10 +58,11 @@ describe('agent-registry firestore client', () => {
       privateKey: 'line-one\nline-two',
       clientEmail: 'registry@example.test'
     });
+    // Same project as the agent bus: derive default RTDB URL when unset.
     expect(mockInitializeApp).toHaveBeenCalledWith({
-      credential: { credential: expect.any(Object) }
+      credential: { credential: expect.any(Object) },
+      databaseURL: 'https://jumentix-service-registry-default-rtdb.firebaseio.com'
     });
-    // FIREBASE_DATABASE_URL unset — Firestore-only init remains valid.
     expect(mockGetFirestore).toHaveBeenCalledTimes(1);
   });
 
@@ -75,7 +80,7 @@ describe('agent-registry firestore client', () => {
     expect.hasAssertions();
 
     expect(() => createFirestoreClient())
-      .toThrow('Missing required environment variable: FIREBASE_SERVICE_ACCOUNT_KEY');
+      .toThrow('Missing Firebase credentials');
 
     process.env.FIREBASE_SERVICE_ACCOUNT_KEY = 'not-json';
     expect(() => createFirestoreClient()).toThrow('not valid JSON');

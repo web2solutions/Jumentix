@@ -4,6 +4,7 @@
 
 ## All Changes
 
+<<<<<<< HEAD
 - 2026-08-10 [JUM-638][CI] Make SonarCloud advisory while budget is unavailable (#173) - Eduardo A.
 - 2026-08-10 Merge remote-tracking branch 'origin/dev' into codex/bug/JUM-638-sonar-opt-in - Eduardo A.
 - 2026-08-10 [JUM-158][Test] Discover, sweep and gate every website route (#169) - Eduardo A.
@@ -20,6 +21,8 @@
 - 2026-08-10 Merge remote-tracking branch 'origin/dev' into kimi/governance/JUM-637-mandatory-firebase-agent-bus - Eduardo A.
 - 2026-08-09 [JUM-639][Release] Reconcile main ancestry into dev (#166) - Eduardo A.
 - 2026-08-09 chore(release): reconcile main ancestry into dev for JUM-639 - Eduardo Almeida
+=======
+>>>>>>> 0b1adb2d (fix(agent-registry): reuse existing Firebase registry credentials for RTDB bus)
 - 2026-08-09 feat(agent-registry): add Firebase RTDB agent progress bus - Eduardo A.
 - 2026-08-09 [JUM-628][Fix] Retry port allocation on EADDRINUSE in the test harness (#140) - Eduardo A.
 - 2026-08-09 [JUM-636][Release] Promote dev to main (#162) - Eduardo A.

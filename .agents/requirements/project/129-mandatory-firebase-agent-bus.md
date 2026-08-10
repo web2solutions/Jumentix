@@ -24,9 +24,14 @@
    and non-authoritative presence only — agents MUST NOT treat RTDB as the
    source of task ownership.
 
-4. **Credentials and fail-closed behaviour.** Bus operations require
-   `FIREBASE_SERVICE_ACCOUNT_KEY` and `FIREBASE_DATABASE_URL`. Credentials must
-   never be committed or logged. Missing credentials, RTDB unavailability, or
+4. **Credentials and fail-closed behaviour.** Bus operations reuse the **same
+   Firebase project and service account as the agent registry** (`089`,
+   project `jumentix-service-registry`). Credentials are supplied via
+   `FIREBASE_SERVICE_ACCOUNT_KEY` (inline JSON) or
+   `FIREBASE_SERVICE_ACCOUNT_KEY_FILE` (path to the existing adminsdk JSON).
+   `FIREBASE_DATABASE_URL` is optional — when unset, the client derives
+   `https://<project_id>-default-rtdb.firebaseio.com`. Credentials must never
+   be committed or logged. Missing credentials, RTDB unavailability, or
    publish/watch/status transport failures fail closed — silent local-only
    progress is non-compliant.
 
@@ -43,14 +48,21 @@
 - Firebase Realtime Database under path `agent-bus/`
 - Presence: `agent-bus/presence/{agentId}`
 - Events: `agent-bus/events/{epicId}/{pushId}`
-- Organization: XpertMinds (same Firebase project as the agent registry)
-- Expected env: `FIREBASE_DATABASE_URL=https://<project>-default-rtdb.<region>.firebasedatabase.app`
+- Organization: XpertMinds — **same Firebase project as the agent registry**
+  (`jumentix-service-registry`); do not provision a second project
+- Default URL (derived): `https://jumentix-service-registry-default-rtdb.firebaseio.com`
+- Override when needed: `FIREBASE_DATABASE_URL=https://<project>-default-rtdb.<region>.firebasedatabase.app`
+- Operator one-time enablement (if RTDB was never created on that project):
+  https://console.developers.google.com/apis/api/firebasedatabase.googleapis.com/overview?project=jumentix-service-registry
+  then create the default Realtime Database in the Firebase console
 
 ## Acceptance Criteria
 
 1. Package and CLI expose `publish`, `watch`, and `status` against RTDB.
-2. Heartbeat/assign/complete mirror presence when `FIREBASE_DATABASE_URL` is set.
-3. Requirement docs and agent operating guides instruct agents to consume the bus.
+2. Heartbeat/assign/complete mirror presence when the bus client can resolve RTDB
+   (explicit URL or project_id-derived default).
+3. Requirement docs and agent operating guides instruct agents to consume the bus
+   using the existing registry credentials (`KEY` or `KEY_FILE`).
 4. Unit tests cover bus commands with mocked RTDB (no live Firebase required in CI).
 5. `bun run requirements:check` includes this requirement.
 

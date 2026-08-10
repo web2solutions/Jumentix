@@ -39,6 +39,13 @@ export {
 } from './rtdb-client';
 
 export {
+  defaultDatabaseUrl,
+  hasFirebaseCredentials,
+  loadServiceAccount,
+  resolveDatabaseUrl
+} from './firebase-credentials';
+
+export {
   publishProgress,
   watchBus,
   busStatus,
