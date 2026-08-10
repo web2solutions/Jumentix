@@ -17,7 +17,7 @@ jest.mock<typeof import('firebase-admin/database')>('firebase-admin/database', (
   getDatabase: mockGetDatabase
 } as unknown as typeof import('firebase-admin/database')));
 
-import { createRtdbClient, sanitizeRtdbKey } from '../src/rtdb-client';
+import { closeRtdb, createRtdbClient, sanitizeRtdbKey } from '../src/rtdb-client';
 
 function setServiceAccount() {
   process.env.FIREBASE_SERVICE_ACCOUNT_KEY = JSON.stringify({
@@ -47,6 +47,7 @@ describe('agent-registry rtdb client', () => {
     );
     expect(sanitizeRtdbKey('a/b#c$[d]')).toBe('a_b_c__d_');
     expect(sanitizeRtdbKey('   ')).toBe('unknown');
+    expect(sanitizeRtdbKey('x'.repeat(250))).toHaveLength(200);
   });
 
   it('initializes RTDB with service account and database URL', () => {
@@ -69,6 +70,22 @@ describe('agent-registry rtdb client', () => {
       .toThrow('Missing required environment variable: FIREBASE_DATABASE_URL');
   });
 
+  it('fails closed when FIREBASE_SERVICE_ACCOUNT_KEY is invalid JSON', () => {
+    expect.hasAssertions();
+    process.env.FIREBASE_DATABASE_URL = 'https://example-default-rtdb.firebaseio.com';
+    process.env.FIREBASE_SERVICE_ACCOUNT_KEY = '{';
+
+    expect(() => createRtdbClient()).toThrow('FIREBASE_SERVICE_ACCOUNT_KEY is not valid JSON');
+  });
+
+  it('fails closed when FIREBASE_SERVICE_ACCOUNT_KEY is missing required fields', () => {
+    expect.hasAssertions();
+    process.env.FIREBASE_DATABASE_URL = 'https://example-default-rtdb.firebaseio.com';
+    process.env.FIREBASE_SERVICE_ACCOUNT_KEY = JSON.stringify({ project_id: 'only-project' });
+
+    expect(() => createRtdbClient()).toThrow('Invalid service account structure');
+  });
+
   it('fails closed when an app exists without databaseURL', () => {
     expect.hasAssertions();
     setServiceAccount();
@@ -88,5 +105,28 @@ describe('agent-registry rtdb client', () => {
 
     expect(createRtdbClient()).toBe(mockDatabase);
     expect(mockInitializeApp).not.toHaveBeenCalled();
+  });
+
+  it('fails closed when an existing app has a different databaseURL', () => {
+    expect.hasAssertions();
+    process.env.FIREBASE_DATABASE_URL = 'https://expected-default-rtdb.firebaseio.com';
+    mockGetApps.mockReturnValue([{
+      name: '[DEFAULT]',
+      options: { databaseURL: 'https://other-default-rtdb.firebaseio.com' }
+    }]);
+
+    expect(() => createRtdbClient()).toThrow('databaseURL does not match');
+  });
+
+  it('closes all initialized Firebase apps', async () => {
+    expect.hasAssertions();
+    const apps = [{ name: 'one' }, { name: 'two' }];
+    mockGetApps.mockReturnValue(apps);
+
+    await closeRtdb();
+
+    expect(mockDeleteApp).toHaveBeenCalledTimes(2);
+    expect(mockDeleteApp).toHaveBeenNthCalledWith(1, apps[0]);
+    expect(mockDeleteApp).toHaveBeenNthCalledWith(2, apps[1]);
   });
 });

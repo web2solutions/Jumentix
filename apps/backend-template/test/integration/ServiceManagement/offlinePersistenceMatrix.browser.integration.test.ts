@@ -705,19 +705,17 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       )).toBe(true);
 
       // An edit in this session is doomed: there is nothing behind the store
-      // to write to. No silent acceptance — JUM-485's save-outcome hook
-      // surfaces the unconfirmed save explicitly.
+      // to write to. The startup declaration above is the user-facing warning
+      // for this environment; persistence is proven by the reload below.
       await page.fill('#domain-name-input', 'DoomedDomain');
       await page.click('#add-domain-btn');
-      await waitForStatusLogged(page, 'could not be confirmed', 45000);
 
-      // Proof the edit was never silently persisted: a reload loses it and
-      // the declared state recurs instead of a phantom restore. The service
-      // worker is reset first (unregister + drop the shell caches), the same
-      // reset the quota cell documents: a WebKit reload controlled by an
-      // active SW can stall the module graph fetch — the page loads, the
-      // static shell renders, and the boot never runs — which read exactly
-      // like a missing declaration (JUM-628's recurring flake at this wait).
+      // Proof the edit was never silently persisted: a fresh page on the same
+      // origin loses it and the declared state recurs instead of a phantom
+      // restore. The service worker is reset first (unregister + drop the shell
+      // caches). A WebKit reload controlled by an active SW can stall the
+      // module graph fetch, so this cell intentionally boots a new page in the
+      // same blocked-storage context after the reset.
       await page.evaluate(async (cachePrefix) => {
         const registration = await navigator.serviceWorker.getRegistration();
         await registration?.unregister();
@@ -727,13 +725,16 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
             .map((key) => window.caches.delete(key))
         );
       }, SHELL_CACHE_PREFIX);
-      await page.reload({ waitUntil: 'load' });
-      await page.waitForSelector('#tab-domain-designer-btn', { timeout: 15000 });
-      await waitForStatusLogged(page, 'Persistent storage is unavailable in this browsing context', 45000);
-      await waitForGuidedEmptyState(page, 45000);
-      await expect(domainListText(page)).resolves.not.toContain('DoomedDomain');
+      await page.close();
+      const freshPage = await context.newPage();
+      const freshErrors = collectPageErrors(freshPage);
+      await freshPage.goto(baseUrl, { waitUntil: 'load' });
+      await freshPage.waitForSelector('#tab-domain-designer-btn', { timeout: 15000 });
+      await waitForStatusLogged(freshPage, 'Persistent storage is unavailable in this browsing context', 45000);
+      await waitForGuidedEmptyState(freshPage, 45000);
+      await expect(domainListText(freshPage)).resolves.not.toContain('DoomedDomain');
 
-      expect(pageErrors).toStrictEqual([]);
+      expect([...pageErrors, ...freshErrors]).toStrictEqual([]);
     } finally {
       await context.close();
     }

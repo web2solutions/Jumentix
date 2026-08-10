@@ -4,7 +4,14 @@
 
 ## All Changes
 
+- 2026-08-10 [JUM-637][Governance] Mandatory Firebase RTDB agent progress bus (Requirement 129) (#164) - Eduardo A.
+- 2026-08-10 Merge remote-tracking branch 'origin/dev' into kimi/governance/JUM-637-mandatory-firebase-agent-bus - Eduardo A.
+- 2026-08-09 [JUM-639][Release] Reconcile main ancestry into dev (#166) - Eduardo A.
+- 2026-08-09 chore(release): reconcile main ancestry into dev for JUM-639 - Eduardo Almeida
+- 2026-08-09 feat(agent-registry): add Firebase RTDB agent progress bus - Eduardo A.
 - 2026-08-09 [JUM-628][Fix] Retry port allocation on EADDRINUSE in the test harness (#140) - Eduardo A.
+- 2026-08-09 [JUM-636][Release] Promote dev to main (#162) - Eduardo A.
+- 2026-08-09 chore(release): promote dev to main - Eduardo A.
 - 2026-08-09 [JUM-636][Fix] Run full gate for signed release branches (#163) - Eduardo A.
 - 2026-08-09 fix(ci): run full gate for signed release branches - Eduardo A.
 - 2026-08-09 [JUM-635][Fix] Isolate ServiceManagement test ports (#161) - Eduardo A.
@@ -13,6 +20,10 @@
 - 2026-08-09 fix(ci): stabilize status-region browser assertion - Eduardo A.
 - 2026-08-09 [JUM-635][Fix] Stabilize ServiceManagement browser gate (#159) - Eduardo A.
 - 2026-08-09 fix(ci): make first-run browser spec order independent - Eduardo A.
+- 2026-08-09 [JUM-634][Release] Promote dev to main (#158) - Eduardo A.
+- 2026-08-09 fix(ci): allow signed dev promotion governance - Eduardo A.
+- 2026-08-09 fix(ci): classify signed dev promotion release branches - Eduardo A.
+- 2026-08-09 chore(release): promote dev to main - Eduardo A.
 - 2026-08-09 [JUM-633][CI] Resolve Sonar release gate findings (#157) - Eduardo A.
 - 2026-08-09 fix(ci): resolve Sonar release gate findings - Eduardo A.
 - 2026-08-09 fix(ci): isolate database compose projects (#156) - Eduardo A.
