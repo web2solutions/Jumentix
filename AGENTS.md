@@ -67,6 +67,10 @@ Primary Codex runtime instructions for this repository:
 24g. **Coordinated agent delivery (Requirement `121`):** registered agents must refresh
     sibling-agent progress, blockers, branches, PRs, and Linear Project Updates before starting
     or resuming work, and coordinate any overlapping scope before editing files.
+24h. **Firebase RTDB agent bus (Requirement `129`):** publish material progress with
+    `bun run agent-bus:publish` and consume sibling progress with `agent-bus:status` /
+    `agent-bus:watch` before start/resume and while waiting on remote checks. Requires
+    `FIREBASE_DATABASE_URL`. Firestore remains ownership SSOT (`089`).
 25. **Resolve valid PR comments before merge**: every valid human, security, or automated
     finding blocks merge until corrected, validated, and evidenced. No bypass is allowed
     (Requirement `100`).

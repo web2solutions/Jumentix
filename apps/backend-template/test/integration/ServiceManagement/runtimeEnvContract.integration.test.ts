@@ -96,7 +96,7 @@ describe('serviceManagement runtime env contract (JUM-466)', () => {
 
   it('honors the environment parameter on GET for every accepted environment (JUM-459)', async () => {
     expect.hasAssertions();
-    server = startServer(tempDir);
+    server = await startServer(tempDir);
     await waitForServer(server.port);
 
     for (const { requested, fileName } of ACCEPTED_ENVIRONMENTS) {
@@ -119,7 +119,7 @@ describe('serviceManagement runtime env contract (JUM-466)', () => {
 
   it('trims and case-folds the environment parameter (Requirement 126 §3)', async () => {
     expect.hasAssertions();
-    server = startServer(tempDir);
+    server = await startServer(tempDir);
     await waitForServer(server.port);
 
     const res = await requestJson<RuntimeEnvPayload>(
@@ -134,7 +134,7 @@ describe('serviceManagement runtime env contract (JUM-466)', () => {
 
   it('honors the environment parameter on POST and writes the correct file (JUM-459)', async () => {
     expect.hasAssertions();
-    server = startServer(tempDir);
+    server = await startServer(tempDir);
     await waitForServer(server.port);
 
     const expectedByFile = { ...INITIAL_MARKERS };
@@ -158,7 +158,7 @@ describe('serviceManagement runtime env contract (JUM-466)', () => {
 
   it('rejects an unknown environment on GET instead of redirecting to dev (JUM-558)', async () => {
     expect.hasAssertions();
-    server = startServer(tempDir);
+    server = await startServer(tempDir);
     await waitForServer(server.port);
 
     const res = await requestJson<{ error: string; details: string }>(
@@ -177,7 +177,7 @@ describe('serviceManagement runtime env contract (JUM-466)', () => {
 
   it('rejects an unknown environment on POST and leaves every file untouched (JUM-558)', async () => {
     expect.hasAssertions();
-    server = startServer(tempDir);
+    server = await startServer(tempDir);
     await waitForServer(server.port);
 
     const res = await requestJson<{ error: string; details: string }>(
@@ -198,7 +198,7 @@ describe('serviceManagement runtime env contract (JUM-466)', () => {
 
   it('returns 400 Invalid payload for a malformed JSON body (JUM-543)', async () => {
     expect.hasAssertions();
-    server = startServer(tempDir);
+    server = await startServer(tempDir);
     await waitForServer(server.port);
 
     const res = await requestRaw(
@@ -222,7 +222,7 @@ describe('serviceManagement runtime env contract (JUM-466)', () => {
       '.env.dev': envFileContent('express'),
       '.env.staging': envFileContent('fastify')
     });
-    server = startServer(tempDir);
+    server = await startServer(tempDir);
     await waitForServer(server.port);
 
     // Strict contract, landed by JUM-543: filesystem failures are a 500 class
@@ -250,7 +250,7 @@ describe('serviceManagement runtime env contract (JUM-466)', () => {
 
   it('binds loopback by default and refuses non-loopback connections (JUM-462)', async () => {
     expect.hasAssertions();
-    server = startServer(tempDir); // no JUMENTIX_SERVICE_MANAGEMENT_HOST override
+    server = await startServer(tempDir); // no JUMENTIX_SERVICE_MANAGEMENT_HOST override
     await waitForServer(server.port);
 
     const local = await requestJson<RuntimeEnvPayload>(server.port, 'GET', '/api/runtime/env');
@@ -268,7 +268,7 @@ describe('serviceManagement runtime env contract (JUM-466)', () => {
 
   it('rejects a mutating request with a missing or wrong token, never gates reads (JUM-462)', async () => {
     expect.hasAssertions();
-    server = startServer(tempDir, { JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN: 'secret' });
+    server = await startServer(tempDir, { JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN: 'secret' });
     await waitForServer(server.port);
 
     const read = await requestJson<RuntimeEnvPayload>(server.port, 'GET', '/api/runtime/env');
@@ -302,7 +302,7 @@ describe('serviceManagement runtime env contract (JUM-466)', () => {
       expect(fs.existsSync(path.join(pinnedDefaultConfigDir, fileName))).toBe(true);
     });
 
-    server = startServer(null); // no JUMENTIX_SERVICE_MANAGEMENT_CONFIG_DIR
+    server = await startServer(null); // no JUMENTIX_SERVICE_MANAGEMENT_CONFIG_DIR
     await waitForServer(server.port);
 
     // Read-only on purpose: this boots against the real repository env files.

@@ -9,7 +9,8 @@ import type {
   CompleteTaskInput,
   FirestoreLike,
   HeartbeatInput,
-  RegisterAgentInput
+  RegisterAgentInput,
+  RegistryCommandOptions
 } from './types';
 import {
   getAgent,
@@ -18,6 +19,7 @@ import {
   generateSnapshot,
   getStoredAgents
 } from './firestore-client';
+import { presenceFromAgent, upsertPresence } from './bus-commands';
 import {
   AGENTS_WITHOUT_DECLARED_WORKSPACE,
   canonicalAgentId,
@@ -27,6 +29,14 @@ import {
   isAgentStatus,
   workspacePathProblem
 } from './validation';
+
+async function mirrorPresence(
+  agent: AgentRecord,
+  options?: RegistryCommandOptions
+): Promise<void> {
+  if (!options?.rtdb) return;
+  await upsertPresence(options.rtdb, presenceFromAgent(agent));
+}
 
 function snapshotPath(): string {
   return process.env.JUMENTIX_AGENT_REGISTRY_SNAPSHOT_PATH
@@ -106,7 +116,8 @@ export async function registerAgent(
 
 export async function heartbeat(
   firestore: FirestoreLike,
-  input: HeartbeatInput
+  input: HeartbeatInput,
+  options?: RegistryCommandOptions
 ): Promise<AgentRecord> {
   const agent_id = requireNonEmpty(input.agent_id, 'agent_id');
   const existing = await getAgent(firestore, agent_id);
@@ -125,13 +136,15 @@ export async function heartbeat(
   };
 
   await upsertAgent(firestore, agent);
+  await mirrorPresence(agent, options);
   console.log(`[agent-registry] heartbeat ${agent_id} (status=${agent.status})`);
   return agent;
 }
 
 export async function assignTask(
   firestore: FirestoreLike,
-  input: AssignTaskInput
+  input: AssignTaskInput,
+  options?: RegistryCommandOptions
 ): Promise<AgentRecord> {
   const agent_id = requireNonEmpty(input.agent_id, 'agent_id');
   const existing = await getAgent(firestore, agent_id);
@@ -148,13 +161,15 @@ export async function assignTask(
   };
 
   await upsertAgent(firestore, agent);
+  await mirrorPresence(agent, options);
   console.log(`[agent-registry] assigned ${agent_id} to ${input.assigned_task}`);
   return agent;
 }
 
 export async function completeTask(
   firestore: FirestoreLike,
-  input: CompleteTaskInput
+  input: CompleteTaskInput,
+  options?: RegistryCommandOptions
 ): Promise<AgentRecord> {
   const agent_id = requireNonEmpty(input.agent_id, 'agent_id');
   const existing = await getAgent(firestore, agent_id);
@@ -172,6 +187,7 @@ export async function completeTask(
   };
 
   await upsertAgent(firestore, agent);
+  await mirrorPresence(agent, options);
   console.log(`[agent-registry] completed task for ${agent_id} (status=${status})`);
   return agent;
 }

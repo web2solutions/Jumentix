@@ -178,6 +178,67 @@ describe('agent-registry commands', () => {
     expect(result.last_heartbeat_utc).not.toBe('2026-01-01T00:00:00.000Z');
   });
 
+  it('mirrors presence to RTDB after heartbeat when rtdb is provided', async () => {
+    expect.hasAssertions();
+    seedAgent(buildAgent({
+      agent_id: 'presence-agent',
+      active_epic: 'epic-a',
+      assigned_task: 'JUM-1',
+      status: 'busy'
+    }));
+    const presenceWrites: unknown[] = [];
+    const rtdb = {
+      ref: (rtdbPath = '') => ({
+        set: async (value: unknown) => {
+          presenceWrites.push({ path: rtdbPath, value });
+        },
+        child: () => { throw new Error('unused'); },
+        push: () => ({ key: 'x', set: async () => undefined }),
+        update: async () => undefined,
+        once: async () => ({ key: null, val: () => null, forEach: () => undefined }),
+        on: () => () => undefined,
+        off: () => undefined,
+        orderByChild: function orderByChild() { return this; },
+        limitToLast: function limitToLast() { return this; }
+      })
+    } as any;
+
+    await heartbeat(mockFirestore, { agent_id: 'presence-agent', status: 'busy' }, { rtdb });
+
+    expect(presenceWrites).toHaveLength(1);
+    expect(presenceWrites[0]).toMatchObject({
+      path: 'agent-bus/presence/presence-agent',
+      value: {
+        agentId: 'presence-agent',
+        epicId: 'epic-a',
+        taskId: 'JUM-1',
+        status: 'busy'
+      }
+    });
+  });
+
+  it('fails closed when RTDB presence mirror fails after heartbeat', async () => {
+    expect.hasAssertions();
+    seedAgent(buildAgent({ agent_id: 'presence-fail-agent' }));
+    const rtdb = {
+      ref: () => ({
+        set: async () => { throw new Error('offline'); },
+        child: () => { throw new Error('unused'); },
+        push: () => ({ key: 'x', set: async () => undefined }),
+        update: async () => undefined,
+        once: async () => ({ key: null, val: () => null, forEach: () => undefined }),
+        on: () => () => undefined,
+        off: () => undefined,
+        orderByChild: function orderByChild() { return this; },
+        limitToLast: function limitToLast() { return this; }
+      })
+    } as any;
+
+    await expect(
+      heartbeat(mockFirestore, { agent_id: 'presence-fail-agent' }, { rtdb })
+    ).rejects.toThrow('RTDB presence upsert failed');
+  });
+
   it('rejects heartbeat for unregistered agent', async () => {
     expect.hasAssertions();
     await expect(

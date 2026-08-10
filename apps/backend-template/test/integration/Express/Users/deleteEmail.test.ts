@@ -73,6 +73,7 @@ describe('express -> User deleteEmail suite', () => {
     server = API.server.application;
 
     // await server.ready();
+    await API.deleteUsers();
     usersAll = await API.seedUsers();
     [user1] = usersAll;
     [email1] = user1.emails || [];

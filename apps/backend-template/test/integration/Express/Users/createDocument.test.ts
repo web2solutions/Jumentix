@@ -89,6 +89,7 @@ describe('express -> User createDocument suite', () => {
 
     // await server.ready();
 
+    await API.deleteUsers();
     usersAll = await API.seedUsers();
     [user1] = usersAll;
     [document1] = documents;

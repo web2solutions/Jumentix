@@ -612,6 +612,54 @@ describe('load-time data-lost declaration (JUM-626)', () => {
       now
     })).toStrictEqual({ retained: false });
   });
+
+  it('resolves the ambient storage defensively when none is injected — none exists off-DOM', () => {
+    // This suite runs with no DOM, so the ambient `localStorage` is absent:
+    // the default clock and the ambient-storage guard both engage for real.
+    expect(readRetainedMigrationSource()).toStrictEqual({ retained: false });
+  });
+
+  it('uses the real clock when none is injected (far-future retention date)', () => {
+    const storage = createFakeStorage({
+      [CANA_MIGRATION_MARKER_KEY]: JSON.stringify({
+        status: 'verified',
+        migratedAt: FIXED_NOW.toISOString(),
+        sourceRetainedUntil: '2099-01-01T00:00:00.000Z'
+      }),
+      [CANA_MIGRATION_SOURCE_STATE_KEY]: '{}'
+    });
+    expect(readRetainedMigrationSource({ storage }))
+      .toStrictEqual({ retained: true, retainedUntil: '2099-01-01T00:00:00.000Z' });
+  });
+
+  it('treats a marker without a parseable retention date as not retained', () => {
+    const storage = createFakeStorage({
+      [CANA_MIGRATION_MARKER_KEY]: JSON.stringify({
+        status: 'verified',
+        migratedAt: FIXED_NOW.toISOString(),
+        sourceRetainedUntil: 'not-a-date'
+      }),
+      [CANA_MIGRATION_SOURCE_STATE_KEY]: '{}'
+    });
+    expect(readRetainedMigrationSource({ storage, now })).toStrictEqual({ retained: false });
+  });
+
+  it('reports not retained when the retained payload itself cannot be read', () => {
+    const retainedUntil = new Date(FIXED_NOW.getTime() + 10 * 24 * 60 * 60 * 1000).toISOString();
+    const storage = createFakeStorage({
+      [CANA_MIGRATION_MARKER_KEY]: JSON.stringify({
+        status: 'verified',
+        migratedAt: FIXED_NOW.toISOString(),
+        sourceRetainedUntil: retainedUntil
+      })
+    });
+    const readable = storage.getItem;
+    storage.getItem = (key: string) => {
+      if (key === CANA_MIGRATION_MARKER_KEY) return readable(key);
+      throw new Error('SecurityError');
+    };
+    expect(readRetainedMigrationSource({ storage, now })).toStrictEqual({ retained: false });
+  });
 });
 
 describe('browser wiring — the Cana bundle is servable by the zero-build SPA (JUM-484)', () => {

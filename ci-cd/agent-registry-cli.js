@@ -50,15 +50,18 @@ function parseArgs() {
 
 function printHelp() {
   console.log(`
-Jumentix Agent Registry CLI (Firestore)
+Jumentix Agent Registry + Bus CLI (Firestore + Firebase RTDB)
 
 Usage: bun ci-cd/agent-registry-cli.js <command> [flags]
 
 Commands:
   register   Register or update the current agent
-  heartbeat  Update agent heartbeat and status
-  assign     Assign agent to a Linear task and epic
-  complete   Mark current task as complete
+  heartbeat  Update agent heartbeat and status (mirrors RTDB presence)
+  assign     Assign agent to a Linear task and epic (mirrors RTDB presence)
+  complete   Mark current task as complete (mirrors RTDB presence)
+  publish    Publish a progress event on the RTDB agent bus
+  watch      Stream RTDB progress events for an epic (JSONL)
+  status     Snapshot RTDB presence + recent events for an epic
   repair     Repair records corrupted by the markdown migration (JUM-613)
   sync       Write local snapshot to .agents/registry-snapshot.json
   check      Validate local snapshot against Firestore
@@ -94,16 +97,31 @@ Flags for complete:
   --agent-id        Agent identifier (required)
   --status          available|busy|blocked|offline (optional)
 
+Flags for publish:
+  --agent-id        Agent identifier (required)
+  --epic            Epic id or URL (required)
+  --task            Task id or URL (required)
+  --kind            started|progress|blocked|handoff|completed|conflict (required)
+  --summary         Short progress summary (required)
+  --refs            Comma-separated PR/branch refs (optional)
+
+Flags for watch:
+  --epic            Epic id or URL (required)
+  --since           ISO timestamp; only emit later events (optional)
+
+Flags for status:
+  --epic            Epic id or URL (required)
+  --limit           Recent event limit (optional, default 50)
+
 Environment:
   FIREBASE_SERVICE_ACCOUNT_KEY  Service account JSON (required)
+  FIREBASE_DATABASE_URL         RTDB URL (required for heartbeat/assign/complete/publish/watch/status)
 
 Examples:
-  bun ci-cd/agent-registry-cli.js register --agent-id kimi-code-primary-001 ...
   bun ci-cd/agent-registry-cli.js heartbeat --agent-id kimi-code-primary-001 --status busy
-  bun ci-cd/agent-registry-cli.js assign --agent-id kimi-code-primary-001 --task https://... --epic https://...
-  bun ci-cd/agent-registry-cli.js complete --agent-id kimi-code-primary-001 --status available
-  bun ci-cd/agent-registry-cli.js sync
-  bun ci-cd/agent-registry-cli.js check
+  bun ci-cd/agent-registry-cli.js publish --agent-id kimi-code-primary-001 --epic https://linear.app/... --task JUM-615 --kind progress --summary "fallback wired"
+  bun ci-cd/agent-registry-cli.js watch --epic https://linear.app/...
+  bun ci-cd/agent-registry-cli.js status --epic https://linear.app/...
 `);
 }
 
@@ -132,6 +150,23 @@ function logSkippedCiRegistryCheck() {
   );
 }
 
+const RTDB_COMMANDS = new Set([
+  'heartbeat',
+  'assign',
+  'complete',
+  'publish',
+  'watch',
+  'status'
+]);
+
+function requireDatabaseUrl(command) {
+  if (!RTDB_COMMANDS.has(command)) return;
+  if (!process.env.FIREBASE_DATABASE_URL || !String(process.env.FIREBASE_DATABASE_URL).trim()) {
+    console.error('Missing required environment variable: FIREBASE_DATABASE_URL');
+    process.exit(1);
+  }
+}
+
 async function main() {
   const { command, flags } = parseArgs();
   if (command === 'help') {
@@ -149,11 +184,20 @@ async function main() {
     process.exit(1);
   }
 
+  requireDatabaseUrl(command);
+
   const registry = await loadRegistry();
   let firestore;
+  let rtdb;
 
   try {
+    // Prefer RTDB-aware init first when the bus is required so the Admin app
+    // receives databaseURL before any Firestore-only initialize.
+    if (RTDB_COMMANDS.has(command)) {
+      rtdb = registry.createRtdbClient();
+    }
     firestore = registry.createFirestoreClient();
+
     switch (command) {
       case 'register':
         await registry.registerAgent(firestore, {
@@ -176,7 +220,7 @@ async function main() {
           status: flags.status,
           main_ref_checked: flags['main-ref'],
           dev_ref_checked: flags['dev-ref']
-        });
+        }, { rtdb });
         break;
 
       case 'assign':
@@ -184,15 +228,56 @@ async function main() {
           agent_id: flags['agent-id'],
           assigned_task: flags.task,
           active_epic: flags.epic
-        });
+        }, { rtdb });
         break;
 
       case 'complete':
         await registry.completeTask(firestore, {
           agent_id: flags['agent-id'],
           status: flags.status
-        });
+        }, { rtdb });
         break;
+
+      case 'publish': {
+        const published = await registry.publishProgress(rtdb, {
+          agentId: flags['agent-id'],
+          epicId: flags.epic,
+          taskId: flags.task,
+          kind: flags.kind,
+          summary: flags.summary,
+          refs: flags.refs
+            ? String(flags.refs).split(',').map((value) => value.trim()).filter(Boolean)
+            : undefined
+        });
+        console.log(JSON.stringify(published));
+        break;
+      }
+
+      case 'watch': {
+        const unsubscribe = registry.watchBus(rtdb, {
+          epicId: flags.epic,
+          since: flags.since,
+          onEvent: (event, pushId) => {
+            process.stdout.write(`${JSON.stringify({ pushId, ...event })}\n`);
+          }
+        });
+        const shutdown = () => {
+          unsubscribe();
+          process.exit(0);
+        };
+        process.on('SIGINT', shutdown);
+        process.on('SIGTERM', shutdown);
+        // Keep the process alive until interrupted.
+        await new Promise(() => {});
+        break;
+      }
+
+      case 'status': {
+        const limit = flags.limit ? Number(flags.limit) : undefined;
+        const result = await registry.busStatus(rtdb, flags.epic, { recentLimit: limit });
+        console.log(JSON.stringify(result, null, 2));
+        break;
+      }
 
       case 'repair': {
         // Dry run unless --apply is passed: this deletes documents belonging
@@ -256,5 +341,6 @@ if (isEntryPoint(module)) {
 module.exports = {
   isFirestoreUnavailable,
   resolveRegistryEntrypoint,
-  shouldSkipCiRegistryCheck
+  shouldSkipCiRegistryCheck,
+  RTDB_COMMANDS
 };

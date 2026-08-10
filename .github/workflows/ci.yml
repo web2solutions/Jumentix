@@ -35,6 +35,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
       FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+      FIREBASE_DATABASE_URL: ${{ secrets.FIREBASE_DATABASE_URL }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -349,6 +350,7 @@ jobs:
             -f coverage/lcov.info \
             -f coverage/browser/lcov.info
       - name: Install Sonar scanner
+        if: vars.JUMENTIX_ENABLE_SONAR == 'true'
         run: |
           set -euo pipefail
           case "$(uname -s)-$(uname -m)" in
@@ -365,6 +367,7 @@ jobs:
           unzip -qo /tmp/sonar-scanner.zip -d /tmp
           echo "${sonar_dir}/bin" >> "$GITHUB_PATH"
       - name: SonarQube Cloud Scan
+        if: vars.JUMENTIX_ENABLE_SONAR == 'true'
         run: |
           SONAR_TARGET_BRANCH="${GITHUB_BASE_REF:-${GITHUB_REF_NAME:-}}"
           if [ "$SONAR_TARGET_BRANCH" != "main" ] && [ "$SONAR_TARGET_BRANCH" != "dev" ]; then
@@ -374,6 +377,7 @@ jobs:
           test -n "${SONAR_TOKEN:-}"
           sonar-scanner -Dsonar.scm.disabled=true
       - name: Report Sonar findings
+        if: vars.JUMENTIX_ENABLE_SONAR == 'true'
         run: bun ci-cd/report-sonar-findings.js
       - name: Stop local coverage services
         if: always()
@@ -436,6 +440,7 @@ jobs:
     runs-on: [self-hosted, jumentix]
     env:
       FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+      FIREBASE_DATABASE_URL: ${{ secrets.FIREBASE_DATABASE_URL }}
     steps:
       - uses: actions/checkout@v7
         with:
