@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-08-10 [JUM-638][Fix] Stabilize dev promotion gates (#167) - Eduardo A.
+- 2026-08-10 test(governance): stabilize dev promotion gates - Eduardo A.
 - 2026-08-10 [JUM-637][Governance] Mandatory Firebase RTDB agent progress bus (Requirement 129) (#164) - Eduardo A.
 - 2026-08-10 Merge remote-tracking branch 'origin/dev' into kimi/governance/JUM-637-mandatory-firebase-agent-bus - Eduardo A.
 - 2026-08-09 [JUM-639][Release] Reconcile main ancestry into dev (#166) - Eduardo A.
