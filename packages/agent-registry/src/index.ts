@@ -42,6 +42,7 @@ export {
   defaultDatabaseUrl,
   hasFirebaseCredentials,
   loadServiceAccount,
+  normalizeDatabaseUrl,
   resolveDatabaseUrl
 } from './firebase-credentials';
 

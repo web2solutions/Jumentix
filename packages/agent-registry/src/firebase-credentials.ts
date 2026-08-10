@@ -11,7 +11,13 @@ export function defaultDatabaseUrl(projectId: string): string {
   if (!id) {
     throw new Error('Cannot derive FIREBASE_DATABASE_URL: empty project_id');
   }
+  // Canonical URL for jumentix-service-registry (trailing slash optional / stripped).
   return `https://${id}-default-rtdb.firebaseio.com`;
+}
+
+/** Normalize explicit RTDB URLs so a trailing slash does not fork config. */
+export function normalizeDatabaseUrl(url: string): string {
+  return url.trim().replace(/\/+$/, '');
 }
 
 function parseServiceAccountJson(raw: string, source: string): Record<string, unknown> {
@@ -74,7 +80,7 @@ export function resolveDatabaseUrl(
   serviceAccount?: Record<string, unknown>
 ): string {
   const explicit = process.env.FIREBASE_DATABASE_URL?.trim();
-  if (explicit) return explicit;
+  if (explicit) return normalizeDatabaseUrl(explicit);
   const account = serviceAccount ?? loadServiceAccount();
   return defaultDatabaseUrl(String(account.project_id));
 }

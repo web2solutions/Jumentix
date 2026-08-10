@@ -32,6 +32,17 @@ function requireNonEmpty(value: string | undefined, field: string): string {
   return value.trim();
 }
 
+/** RTDB rejects `undefined` property values — drop them before write. */
+function omitUndefined<T extends Record<string, unknown>>(value: T): T {
+  const cleaned = { ...value };
+  for (const key of Object.keys(cleaned)) {
+    if (cleaned[key] === undefined) {
+      delete cleaned[key];
+    }
+  }
+  return cleaned;
+}
+
 function assertEventKind(kind: string): AgentBusEventKind {
   if (!EVENT_KINDS.includes(kind as AgentBusEventKind)) {
     throw new Error(
@@ -97,7 +108,9 @@ export async function upsertPresence(
 ): Promise<void> {
   const agentKey = sanitizeRtdbKey(presence.agentId);
   try {
-    await rtdb.ref(`${BUS_ROOT}/presence/${agentKey}`).set(presence);
+    await rtdb.ref(`${BUS_ROOT}/presence/${agentKey}`).set(
+      omitUndefined(presence as unknown as Record<string, unknown>)
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     throw new Error(`RTDB presence upsert failed: ${message}`);
@@ -119,13 +132,14 @@ export async function publishProgress(
     throw new Error('Field "ttlDays" must be a positive number.');
   }
 
+  const refs = input.refs?.map((ref) => ref.trim()).filter(Boolean);
   const event: AgentBusEvent = {
     agentId,
     taskId,
     epicId,
     kind,
     summary,
-    refs: input.refs?.map((ref) => ref.trim()).filter(Boolean),
+    ...(refs && refs.length > 0 ? { refs } : {}),
     ts,
     ttlHint: ttlHintIso(ttlDays)
   };
@@ -137,7 +151,9 @@ export async function publishProgress(
     if (!pushId) {
       throw new Error('RTDB push did not return a key.');
     }
-    await pushRef.set(event);
+    await pushRef.set(
+      omitUndefined(event as unknown as Record<string, unknown>)
+    );
     console.log(`[agent-bus] published ${kind} for ${agentId} on epic ${epicId}`);
     return { ...event, pushId };
   } catch (error) {

@@ -50,11 +50,11 @@
 - Events: `agent-bus/events/{epicId}/{pushId}`
 - Organization: XpertMinds — **same Firebase project as the agent registry**
   (`jumentix-service-registry`); do not provision a second project
-- Default URL (derived): `https://jumentix-service-registry-default-rtdb.firebaseio.com`
-- Override when needed: `FIREBASE_DATABASE_URL=https://<project>-default-rtdb.<region>.firebasedatabase.app`
-- Operator one-time enablement (if RTDB was never created on that project):
-  https://console.developers.google.com/apis/api/firebasedatabase.googleapis.com/overview?project=jumentix-service-registry
-  then create the default Realtime Database in the Firebase console
+- Canonical URL:
+  `https://jumentix-service-registry-default-rtdb.firebaseio.com`
+  (trailing slash optional; client normalizes it)
+- Default when `FIREBASE_DATABASE_URL` unset: derived as
+  `https://<project_id>-default-rtdb.firebaseio.com`
 
 ## Acceptance Criteria
 

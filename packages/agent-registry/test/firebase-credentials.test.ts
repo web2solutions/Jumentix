@@ -5,6 +5,7 @@ import {
   defaultDatabaseUrl,
   hasFirebaseCredentials,
   loadServiceAccount,
+  normalizeDatabaseUrl,
   resolveDatabaseUrl
 } from '../src/firebase-credentials';
 
@@ -67,6 +68,18 @@ describe('firebase-credentials', () => {
     process.env.FIREBASE_DATABASE_URL = 'https://custom.example.firebasedatabase.app';
 
     expect(resolveDatabaseUrl()).toBe('https://custom.example.firebasedatabase.app');
+  });
+
+  it('strips a trailing slash from an explicit RTDB URL', () => {
+    expect.hasAssertions();
+    expect(normalizeDatabaseUrl(
+      'https://jumentix-service-registry-default-rtdb.firebaseio.com/'
+    )).toBe('https://jumentix-service-registry-default-rtdb.firebaseio.com');
+
+    process.env.FIREBASE_DATABASE_URL = 'https://jumentix-service-registry-default-rtdb.firebaseio.com/';
+    expect(resolveDatabaseUrl()).toBe(
+      'https://jumentix-service-registry-default-rtdb.firebaseio.com'
+    );
   });
 
   it('fails closed when neither key nor key file is set', () => {
