@@ -180,6 +180,32 @@ describe('agent-bus commands', () => {
     }));
   });
 
+  it('fills default timestamps and validates positive TTL values', async () => {
+    expect.hasAssertions();
+    jest.useFakeTimers().setSystemTime(new Date('2026-08-10T12:00:00.000Z'));
+    const { rtdb } = createMockRtdb();
+
+    const published = await publishProgress(rtdb, {
+      agentId: 'a',
+      epicId: 'epic-a',
+      taskId: 'JUM-1',
+      kind: 'started',
+      summary: 'started work'
+    });
+
+    expect(published.ts).toBe('2026-08-10T12:00:00.000Z');
+    expect(published.ttlHint).toBe('2026-08-24T12:00:00.000Z');
+    await expect(publishProgress(rtdb, {
+      agentId: 'a',
+      epicId: 'epic-a',
+      taskId: 'JUM-1',
+      kind: 'progress',
+      summary: 'bad ttl',
+      ttlDays: 0
+    })).rejects.toThrow('ttlDays');
+    jest.useRealTimers();
+  });
+
   it('rejects invalid publish kinds and empty fields', async () => {
     expect.hasAssertions();
     const { rtdb } = createMockRtdb();
@@ -198,6 +224,31 @@ describe('agent-bus commands', () => {
       kind: 'progress',
       summary: 'x'
     })).rejects.toThrow('agentId');
+  });
+
+  it('fails closed when RTDB push cannot allocate an event key', async () => {
+    expect.hasAssertions();
+    const rtdb: RtdbLike = {
+      ref: () => ({
+        set: async () => undefined,
+        child: () => { throw new Error('unused'); },
+        push: () => ({ key: null, set: async () => undefined }),
+        update: async () => undefined,
+        once: async () => ({ key: null, val: () => null, forEach: () => undefined }),
+        on: () => () => undefined,
+        off: () => undefined,
+        orderByChild: function orderByChild() { return this; },
+        limitToLast: function limitToLast() { return this; }
+      }) as any
+    };
+
+    await expect(publishProgress(rtdb, {
+      agentId: 'a',
+      epicId: 'epic-a',
+      taskId: 'JUM-1',
+      kind: 'progress',
+      summary: 'cannot publish'
+    })).rejects.toThrow('RTDB progress publish failed');
   });
 
   it('watches events and filters by since', async () => {
@@ -258,6 +309,25 @@ describe('agent-bus commands', () => {
     expect(status.presence[0].agentId).toBe('test-agent-001');
     expect(status.recentEvents).toHaveLength(1);
     expect(status.recentEvents[0].kind).toBe('blocked');
+  });
+
+  it('fails closed when RTDB status reads fail', async () => {
+    expect.hasAssertions();
+    const rtdb: RtdbLike = {
+      ref: () => ({
+        set: async () => undefined,
+        child: () => { throw new Error('unused'); },
+        push: () => ({ key: 'push-1', set: async () => undefined }),
+        update: async () => undefined,
+        once: async () => { throw new Error('offline'); },
+        on: () => () => undefined,
+        off: () => undefined,
+        orderByChild: function orderByChild() { return this; },
+        limitToLast: function limitToLast() { return this; }
+      }) as any
+    };
+
+    await expect(busStatus(rtdb, 'epic-a')).rejects.toThrow('RTDB bus status failed: offline');
   });
 
   it('fails closed when RTDB set throws', async () => {
