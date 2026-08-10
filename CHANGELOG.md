@@ -4,6 +4,11 @@
 
 ## All Changes
 
+- 2026-08-10 [JUM-638][CI] Make SonarCloud advisory while budget is unavailable (#173) - Eduardo A.
+- 2026-08-10 Merge remote-tracking branch 'origin/dev' into codex/bug/JUM-638-sonar-opt-in - Eduardo A.
+- 2026-08-10 [JUM-158][Test] Discover, sweep and gate every website route (#169) - Eduardo A.
+- 2026-08-10 test(website): make the unit suite runnable and assert browser-only failures - Eduardo Almeida
+- 2026-08-10 test(website): discover every route and sweep it, and gate the deploy - Eduardo Almeida
 - 2026-08-10 ci(governance): keep sonar analysis within loc budget - Eduardo A.
 - 2026-08-10 [JUM-638][CI] Keep Sonar analysis within LOC budget (#172) - Eduardo A.
 - 2026-08-10 ci(governance): keep sonar analysis within loc budget - Eduardo A.
