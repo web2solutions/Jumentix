@@ -42,7 +42,7 @@ describe('check-dependency-override-integrity', () => {
     const failures = validateOverrideIntegrity(manifest);
 
     expect(failures).toHaveLength(1);
-    expect(failures[0]).toContain('expected "^8.5.23"');
+    expect(failures[0]).toContain('expected "^8.5.26"');
   });
 
   it('rejects pnpm nested-selector syntax, which resolves to nothing under Bun and npm', () => {
@@ -106,7 +106,7 @@ describe('check-dependency-override-integrity CLI', () => {
 
     main();
 
-    expect(log.mock.calls.flat().join('\n')).toContain('16 pins');
+    expect(log.mock.calls.flat().join('\n')).toContain('17 pins');
   });
 
   it('prints each failure and exits non-zero when a pin is missing', () => {

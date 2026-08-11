@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-11 test(fastify): seed the user the localhost request authenticates as (JUM-663) (#187) - Eduardo A.
 - 2026-08-11 test(restify): make the localhost suite establish what it depends on (JUM-663) (#186) - Eduardo A.
 - 2026-08-11 fix(users): stop a refused caller from releasing another writer's lock (JUM-663) (#185) - Eduardo A.
 - 2026-08-11 [JUM-53][Feature] Replay worker, real-Redis suite and full documentation (#183) - Eduardo A.
