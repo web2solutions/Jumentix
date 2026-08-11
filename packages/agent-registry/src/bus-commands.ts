@@ -132,6 +132,15 @@ export async function publishProgress(
     throw new Error('Field "ttlDays" must be a positive number.');
   }
 
+  // `refs` is optional, and RTDB `set()` rejects any object carrying an
+  // `undefined` value. Spelling it as `refs: input.refs?.map(...)` therefore
+  // made the documented default invocation — no `--refs` — fail every time
+  // with "value argument contains undefined in property ... .refs", so nothing
+  // could satisfy Requirement 129 by following its own instructions.
+  //
+  // The key is omitted entirely when there is nothing to record, rather than
+  // written as an empty array: absent and "explicitly empty" are different
+  // claims, and only one of them is true here.
   const refs = input.refs?.map((ref) => ref.trim()).filter(Boolean);
   const event: AgentBusEvent = {
     agentId,
@@ -139,9 +148,9 @@ export async function publishProgress(
     epicId,
     kind,
     summary,
-    ...(refs && refs.length > 0 ? { refs } : {}),
     ts,
-    ttlHint: ttlHintIso(ttlDays)
+    ttlHint: ttlHintIso(ttlDays),
+    ...(refs && refs.length > 0 ? { refs } : {})
   };
 
   const epicKey = sanitizeRtdbKey(epicId);
@@ -205,9 +214,22 @@ export async function busStatus(
       return false;
     });
 
+    // JUM-656: ordered by key, not by the `ts` child.
+    //
+    // Realtime Database builds no index on its own. `.orderByChild('ts')` with
+    // no `.indexOn: "ts"` in the security rules still answers correctly — the
+    // server sends every child under this path and the client sorts in memory,
+    // with `limitToLast` trimming after the download. Nothing fails; Firebase
+    // logs a warning and the cost grows with the number of events, so it
+    // degrades exactly as the bus starts being used.
+    //
+    // Push keys are assigned from the server clock and are indexed by default,
+    // so `orderByKey()` needs no rule. It is also the sounder ordering: `ts` is
+    // a client-written ISO string compared lexicographically, so one agent
+    // writing `-03:00` instead of `Z` would sort wrong, silently.
     const eventsSnap = await rtdb
       .ref(`${BUS_ROOT}/events/${epicKey}`)
-      .orderByChild('ts')
+      .orderByKey()
       .limitToLast(recentLimit)
       .once('value');
 
@@ -219,7 +241,10 @@ export async function busStatus(
       }
       return false;
     });
-    recentEvents.sort((left, right) => left.ts.localeCompare(right.ts));
+    // No re-sort on `ts`. `forEach` yields the snapshot in query order, which is
+    // ascending push key, so the list is already chronological by the server
+    // clock. Sorting on the client-written `ts` string here would put the
+    // lexicographic comparison this change removed straight back in.
 
     return { epicId, presence, recentEvents };
   } catch (error) {

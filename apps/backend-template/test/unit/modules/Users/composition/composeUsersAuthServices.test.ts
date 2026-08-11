@@ -76,7 +76,12 @@ describe('compose users auth services', () => {
       authService,
       userUseCases,
       organizationUseCases,
-      authUseCases
+      authUseCases,
+      // JUM-53. No `keyValueStorageClient` here, so there is no shared store
+      // and neither is built: a process-local queue would be lost on restart
+      // while looking like durability.
+      deadLetterQueue: undefined,
+      deadLetterWorker: undefined
     });
   });
 

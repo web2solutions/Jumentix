@@ -69,6 +69,8 @@ const ACCEPTED_RISK = {
   'GHSA-f88m-g3jw-g9cj': { until: '2026-10-31', reason: 'Next.js still resolves sharp 0.34.x transitively in the current Nextra stack' },
   'GHSA-6g55-p6wh-862q': { until: '2026-10-31', reason: 'postcss inherited from the Next.js transitive chain; awaiting upstream' },
   'GHSA-r28c-9q8g-f849': { until: '2026-10-31', reason: 'website stack retains transitive postcss chains until upstream updates land' },
+  'GHSA-5p2g-fcmc-qvqq': { until: '2026-10-31', reason: 'image-size 2.0.2 is the latest release and is inherited through Storybook/SVG tooling' },
+  'GHSA-w3rx-r6r6-pgpr': { until: '2026-10-31', reason: 'image-size 2.0.2 is the latest release and is inherited through Storybook/SVG tooling' },
 };
 
 /**

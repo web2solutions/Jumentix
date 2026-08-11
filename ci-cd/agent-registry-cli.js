@@ -13,19 +13,69 @@ function resolveRegistryEntrypoint(root = packageRoot) {
   return path.join(root, manifest.main || 'dist/index.js');
 }
 
+/**
+ * Exports every command here needs. A build older than the source loads without
+ * throwing and is simply missing the newer ones, which is how the mandatory
+ * agent bus (Requirement 129) came to fail with
+ * `registry.createRtdbClient is not a function` while `dist/index.js` sat on
+ * disk looking perfectly built.
+ */
+const REQUIRED_REGISTRY_EXPORTS = Object.freeze([
+  'createFirestoreClient',
+  'createRtdbClient',
+  'publishProgress'
+]);
+
+function missingExports(registry) {
+  return REQUIRED_REGISTRY_EXPORTS.filter((name) => typeof registry?.[name] !== 'function');
+}
+
+function buildRegistryPackage() {
+  const { execFileSync } = require('child_process');
+  console.log('[agent-registry-cli] building package...');
+  execFileSync('bun', ['--filter', '@jumentix/agent-registry', 'build'], {
+    cwd: path.resolve(__dirname, '..'),
+    stdio: 'inherit'
+  });
+}
+
 async function loadRegistry() {
+  let registry;
   try {
-    return require(resolveRegistryEntrypoint());
-  } catch (error) {
-    // Package not built yet — try to build on the fly for local dev
-    const { execFileSync } = require('child_process');
-    console.log('[agent-registry-cli] building package...');
-    execFileSync('bun', ['--filter', '@jumentix/agent-registry', 'build'], {
-      cwd: path.resolve(__dirname, '..'),
-      stdio: 'inherit'
-    });
-    return require(resolveRegistryEntrypoint());
+    registry = require(resolveRegistryEntrypoint());
+  } catch {
+    // Package not built yet.
+    buildRegistryPackage();
+    registry = require(resolveRegistryEntrypoint());
+    const stillMissing = missingExports(registry);
+    if (stillMissing.length > 0) {
+      throw new Error(
+        `@jumentix/agent-registry build is missing: ${stillMissing.join(', ')}`
+      );
+    }
+    return registry;
   }
+
+  // The case the original fallback did not cover: a stale build. It requires
+  // cleanly and is only detectable by asking whether it carries what the
+  // caller needs.
+  const stale = missingExports(registry);
+  if (stale.length === 0) return registry;
+
+  console.log(`[agent-registry-cli] stale build (missing ${stale.join(', ')}); rebuilding...`);
+  delete require.cache[require.resolve(resolveRegistryEntrypoint())];
+  buildRegistryPackage();
+  registry = require(resolveRegistryEntrypoint());
+
+  const stillMissing = missingExports(registry);
+  if (stillMissing.length > 0) {
+    // Fail closed and name the exports. Continuing here reproduces the original
+    // defect one layer deeper, with a worse message.
+    throw new Error(
+      `@jumentix/agent-registry build is missing after rebuild: ${stillMissing.join(', ')}`
+    );
+  }
+  return registry;
 }
 
 function parseArgs() {

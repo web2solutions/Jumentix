@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-10 chore(changelog): regenerate after rebase onto latest dev - Eduardo A.
 - 2026-08-10 fix(agent-registry): lock canonical RTDB URL and strip undefined writes - Eduardo A.
 - 2026-08-10 fix(agent-registry): reuse existing Firebase registry credentials for RTDB bus - Eduardo A.
 - 2026-08-10 [JUM-641][Docs] Record the Jumentix epic delivery baseline (#170) - Eduardo A.

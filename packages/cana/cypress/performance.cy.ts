@@ -78,7 +78,7 @@ const SMALL = 1_000;
 const LARGE = 10_000;
 
 describe('cana performance shape', () => {
-  it('does not scale a limited query with table size', async function () {
+  it('does not scale a limited query with table size', async function limitedQueryDoesNotScale() {
     // Seeding and draining a real IndexedDB is not instant; Mocha's own
     // timeout is what governs an async test here.
     this.timeout(60_000);
@@ -99,7 +99,7 @@ describe('cana performance shape', () => {
     await large.close();
   });
 
-  it('does not scale an indexed lookup proportionally with table size', async function () {
+  it('does not scale an indexed lookup proportionally with table size', async function indexedLookupDoesNotScale() {
     // Seeding and draining a real IndexedDB is not instant; Mocha's own
     // timeout is what governs an async test here.
     this.timeout(60_000);
@@ -123,7 +123,7 @@ describe('cana performance shape', () => {
     await large.close();
   });
 
-  it('counts without reading the rows', async function () {
+  it('counts without reading the rows', async function countDoesNotReadRows() {
     // Seeding and draining a real IndexedDB is not instant; Mocha's own
     // timeout is what governs an async test here.
     this.timeout(60_000);
@@ -139,7 +139,7 @@ describe('cana performance shape', () => {
     await client.close();
   });
 
-  it('does not scale a keyed get with table size', async function () {
+  it('does not scale a keyed get with table size', async function keyedGetDoesNotScale() {
     // Seeding and draining a real IndexedDB is not instant; Mocha's own
     // timeout is what governs an async test here.
     this.timeout(60_000);
@@ -156,7 +156,7 @@ describe('cana performance shape', () => {
     await large.close();
   });
 
-  it('completes a bulk write of ten thousand rows', async function () {
+  it('completes a bulk write of ten thousand rows', async function bulkWriteCompletes() {
     // Seeding and draining a real IndexedDB is not instant; Mocha's own
     // timeout is what governs an async test here.
     this.timeout(120_000);
@@ -178,7 +178,7 @@ describe('cana performance shape', () => {
     await client.close();
   });
 
-  it('applies a deep offset through the cursor rather than materialising', async function () {
+  it('applies a deep offset through the cursor rather than materialising', async function deepOffsetUsesCursor() {
     // Seeding and draining a real IndexedDB is not instant; Mocha's own
     // timeout is what governs an async test here.
     this.timeout(60_000);
