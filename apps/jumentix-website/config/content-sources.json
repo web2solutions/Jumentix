@@ -119,6 +119,26 @@
       "descriptionPtBr": "Contratos de erro e comportamento de resposta das interfaces.",
       "source": "../../documentation/md/ERROR-CONTRACTS-AND-RESPONSES.md",
       "sourcePtBr": "../../documentation/md/ERROR-CONTRACTS-AND-RESPONSES.pt-BR.md"
+    },
+    {
+      "section": "packages/cana",
+      "slug": "index",
+      "title": "@jumentix/cana",
+      "titlePtBr": "@jumentix/cana",
+      "description": "IndexedDB offline database adapter for Jumentix applications.",
+      "descriptionPtBr": "Adaptador de banco de dados offline sobre IndexedDB para aplicações Jumentix.",
+      "source": "../../packages/cana/README.md",
+      "sourcePtBr": "../../packages/cana/README.pt-BR.md"
+    },
+    {
+      "section": "packages/cana",
+      "slug": "usage",
+      "title": "Cana usage guide",
+      "titlePtBr": "Guia de uso do Cana",
+      "description": "Consumer API guide for @jumentix/cana with runnable examples.",
+      "descriptionPtBr": "Guia de API do consumidor para @jumentix/cana com exemplos executáveis.",
+      "source": "../../documentation/md/CANA-USAGE-GUIDE.md",
+      "sourcePtBr": "../../documentation/md/CANA-USAGE-GUIDE.pt-BR.md"
     }
   ],
   "collections": [

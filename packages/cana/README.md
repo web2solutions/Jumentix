@@ -53,20 +53,13 @@ import { isCanaError, isCanaErrorCode } from '@jumentix/cana';
 if (isCanaErrorCode(error, 'QuotaExceeded')) { /* ... */ }
 ```
 
+## Try it in the browser
+
+Run a first client against IndexedDB in this page:
+
+<CanaPlayground id="getting-started" />
+
 ## Full documentation
 
-**Usage guide** — API reference, querying, transactions, hooks, crash recovery,
-troubleshooting:
-
-- English: [`CANA-USAGE-GUIDE.md`](../../documentation/md/CANA-USAGE-GUIDE.md)
-- Português: [`CANA-USAGE-GUIDE.pt-BR.md`](../../documentation/md/CANA-USAGE-GUIDE.pt-BR.md)
-
-**Design rationale** — why each behaviour is what it is, and what is not yet
-proven:
-
-- English: [`CANA-INDEXEDDB-ADAPTER.md`](../../documentation/md/CANA-INDEXEDDB-ADAPTER.md)
-- Português: [`CANA-INDEXEDDB-ADAPTER.pt-BR.md`](../../documentation/md/CANA-INDEXEDDB-ADAPTER.pt-BR.md)
-
-The release-readiness notes in that document are required reading before
-relying on this package in production. Real dedicated Worker hosting and the
-localStorage fallback path are covered by the Cana browser suite (JUM-615).
+Continue with the consumer [usage guide](../../documentation/md/CANA-USAGE-GUIDE.md)
+for the API, querying, transactions, hooks, crash recovery, and troubleshooting.

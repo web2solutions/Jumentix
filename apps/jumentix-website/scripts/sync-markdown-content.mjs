@@ -2,6 +2,12 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
+import {
+  assertNoCanaContentLeaks,
+  isCanaPublishedSource,
+  isCanaUsageGuideSource,
+  toCanaConsumerMarkdown
+} from './cana-consumer-filter.mjs';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const appRoot = path.resolve(scriptDir, '..');
@@ -101,15 +107,24 @@ async function resolveMarkdownTarget(sourceFile, hrefPath) {
 async function rewriteRepositoryLinks(markdown, sourceFile, routesBySource) {
   const linkPattern = /(?<!!)\[([^\]]+)\]\(([^)\s]+)\)/g;
   const replacements = new Map();
+  const canaSource = isCanaPublishedSource(sourceFile);
 
   for (const match of markdown.matchAll(linkPattern)) {
     const href = match[2];
     if (
       replacements.has(href) ||
-      href.startsWith('#') ||
-      href.startsWith('/') ||
-      /^[a-z][a-z\d+.-]*:/i.test(href)
+      href.startsWith('#')
+      || href.startsWith('/')
     ) {
+      continue;
+    }
+
+    if (/^[a-z][a-z\d+.-]*:/i.test(href)) {
+      if (canaSource && /github\.com\/XpertMinds\/Jumentix/i.test(href)) {
+        throw new Error(
+          `Cana consumer docs cannot keep GitHub content link ${href} (${sourceFile})`
+        );
+      }
       continue;
     }
 
@@ -117,12 +132,26 @@ async function rewriteRepositoryLinks(markdown, sourceFile, routesBySource) {
     const hrefPath = hashIndex === -1 ? href : href.slice(0, hashIndex);
     const anchor = hashIndex === -1 ? '' : href.slice(hashIndex);
     const target = await resolveMarkdownTarget(sourceFile, hrefPath);
-    if (!target) continue;
+    if (!target) {
+      if (canaSource) {
+        throw new Error(
+          `Cana consumer docs link does not resolve: ${href} (${sourceFile})`
+        );
+      }
+      continue;
+    }
     const publishedTarget = routesBySource.get(target);
-    replacements.set(
-      href,
-      publishedTarget ? `${publishedTarget.route}${anchor}` : toRepositoryUrl(target, anchor)
-    );
+    if (!publishedTarget) {
+      if (canaSource) {
+        throw new Error(
+          `Cana consumer docs must link to published site routes, not the repo: `
+          + `${href} (${sourceFile})`
+        );
+      }
+      replacements.set(href, toRepositoryUrl(target, anchor));
+      continue;
+    }
+    replacements.set(href, `${publishedTarget.route}${anchor}`);
   }
 
   return markdown.replace(linkPattern, (fullMatch, label, href) =>
@@ -194,6 +223,12 @@ async function prepareRecords(config) {
     );
 
     for (const englishSource of englishFiles) {
+      const slug = collectionSlug(sourceDir, englishSource);
+      // Cana hub + usage are explicit content-sources entries under packages/cana.
+      if (collection.section === 'packages' && slug === 'cana') {
+        continue;
+      }
+
       const portugueseSource = englishSource.replace(/\.md$/i, '.pt-BR.md');
       try {
         await fs.access(portugueseSource);
@@ -208,7 +243,7 @@ async function prepareRecords(config) {
         records.push({
           locale,
           section: collection.section,
-          slug: collectionSlug(sourceDir, source),
+          slug,
           title: inferTitle(markdown, fallbackTitle),
           description:
             locale === 'pt-BR'
@@ -231,10 +266,16 @@ const recordRoute = (record) =>
 async function writeGeneratedDoc(record, routesBySource) {
   const outputDirectory = path.join(localeConfig[record.locale].outputDir, record.section);
   await fs.mkdir(outputDirectory, { recursive: true });
-  const raw = await fs.readFile(record.source, 'utf8');
+  let raw = await fs.readFile(record.source, 'utf8');
+  if (isCanaUsageGuideSource(record.source)) {
+    raw = toCanaConsumerMarkdown(raw, { locale: record.locale });
+  }
   const body = sanitizeDocBody(
     await rewriteRepositoryLinks(raw, record.source, routesBySource)
   );
+  if (isCanaPublishedSource(record.source)) {
+    assertNoCanaContentLeaks(body, record.source);
+  }
   const relativeSource = path.relative(appRoot, record.source).replaceAll('\\', '/');
   const content = `---
 title: ${JSON.stringify(record.title)}
@@ -387,32 +428,50 @@ async function writeNavigation(locale, records) {
         'utf8'
       );
     }
-    if (sectionRecords.length > 0) {
-      await writeMeta(
-        directory,
-        sectionRecords.map((record) => ({
-          slug: record.slug,
-          title: record.title,
-          display: record.slug === 'index' ? 'hidden' : undefined,
-        }))
-      );
-      continue;
-    }
-
-    const children = [...new Set(
+    const childSlugs = [...new Set(
       records
         .map((record) => record.section)
         .filter((candidate) => candidate.startsWith(`${section}/`))
-        .map((candidate) => candidate.split('/')[1])
+        .map((candidate) => candidate.split('/')[section.split('/').length])
+        .filter(Boolean)
     )];
+
+    const childTitle = (slug) => {
+      if (slug === 'cana') return '@jumentix/cana';
+      if (locale === 'pt-BR') {
+        return ({ http: 'HTTP', databases: 'Bancos de dados', realtime: 'Realtime' }[slug] ?? slug);
+      }
+      return ({ http: 'HTTP', databases: 'Databases', realtime: 'Realtime' }[slug] ?? slug);
+    };
+
+    if (sectionRecords.length > 0 || childSlugs.length > 0) {
+      const metaEntries = [
+        ...sectionRecords.map((record) => ({
+          slug: record.slug,
+          title: record.title,
+          display: record.slug === 'index' ? 'hidden' : undefined,
+        })),
+        ...childSlugs.map((slug) => ({
+          slug,
+          title: childTitle(slug),
+        })),
+      ];
+      // Prefer nested package folders ahead of flat package pages when titles collide.
+      const seen = new Set();
+      const deduped = metaEntries.filter((entry) => {
+        if (seen.has(entry.slug)) return false;
+        seen.add(entry.slug);
+        return true;
+      });
+      await writeMeta(directory, deduped);
+      continue;
+    }
+
     await writeMeta(
       directory,
-      children.map((slug) => ({
+      childSlugs.map((slug) => ({
         slug,
-        title:
-          locale === 'pt-BR'
-            ? ({ http: 'HTTP', databases: 'Bancos de dados', realtime: 'Realtime' }[slug] ?? slug)
-            : ({ http: 'HTTP', databases: 'Databases', realtime: 'Realtime' }[slug] ?? slug),
+        title: childTitle(slug),
       }))
     );
   }

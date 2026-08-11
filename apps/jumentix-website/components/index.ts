@@ -3,6 +3,8 @@ export { Logo } from './Logo/Logo';
 export { MantineFooter } from './MantineFooter/MantineFooter';
 export { MantineNavBar } from './MantineNavBar/MantineNavBar';
 export { MantineNextraThemeObserver } from './MantineNextraThemeObserver/MantineNextraThemeObserver';
+export { CanaPlayground } from './cana/CanaPlayground';
+export { CANA_SNIPPETS, getCanaSnippet } from './cana/snippets';
 export {
   ActionLink,
   ArchitectureFlow,
