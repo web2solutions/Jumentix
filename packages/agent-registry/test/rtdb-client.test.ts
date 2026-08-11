@@ -32,11 +32,13 @@ describe('agent-registry rtdb client', () => {
     jest.clearAllMocks();
     mockGetApps.mockReturnValue([]);
     delete process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+    delete process.env.FIREBASE_SERVICE_ACCOUNT_KEY_FILE;
     delete process.env.FIREBASE_DATABASE_URL;
   });
 
   afterEach(() => {
     delete process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+    delete process.env.FIREBASE_SERVICE_ACCOUNT_KEY_FILE;
     delete process.env.FIREBASE_DATABASE_URL;
   });
 
@@ -50,7 +52,7 @@ describe('agent-registry rtdb client', () => {
     expect(sanitizeRtdbKey('x'.repeat(250))).toHaveLength(200);
   });
 
-  it('initializes RTDB with service account and database URL', () => {
+  it('initializes RTDB with an explicit database URL', () => {
     expect.hasAssertions();
     setServiceAccount();
     process.env.FIREBASE_DATABASE_URL = 'https://example-default-rtdb.firebaseio.com';
@@ -63,11 +65,15 @@ describe('agent-registry rtdb client', () => {
     expect(mockGetDatabase).toHaveBeenCalledTimes(1);
   });
 
-  it('fails closed when FIREBASE_DATABASE_URL is missing', () => {
+  it('derives the RTDB URL from the service-account project_id when unset', () => {
     expect.hasAssertions();
     setServiceAccount();
-    expect(() => createRtdbClient())
-      .toThrow('Missing required environment variable: FIREBASE_DATABASE_URL');
+
+    expect(createRtdbClient()).toBe(mockDatabase);
+    expect(mockInitializeApp).toHaveBeenCalledWith({
+      credential: { credential: expect.any(Object) },
+      databaseURL: 'https://jumentix-service-registry-default-rtdb.firebaseio.com'
+    });
   });
 
   it('fails closed when FIREBASE_SERVICE_ACCOUNT_KEY is invalid JSON', () => {
@@ -89,10 +95,9 @@ describe('agent-registry rtdb client', () => {
   it('fails closed when an app exists without databaseURL', () => {
     expect.hasAssertions();
     setServiceAccount();
-    process.env.FIREBASE_DATABASE_URL = 'https://example-default-rtdb.firebaseio.com';
     mockGetApps.mockReturnValue([{ name: '[DEFAULT]', options: {} }]);
 
-    expect(() => createRtdbClient()).toThrow('already initialized without FIREBASE_DATABASE_URL');
+    expect(() => createRtdbClient()).toThrow('already initialized without a Realtime Database URL');
   });
 
   it('reuses an app that already has the matching databaseURL', () => {

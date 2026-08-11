@@ -6,31 +6,11 @@ import {
   deleteApp
 } from 'firebase-admin/app';
 import { getDatabase } from 'firebase-admin/database';
+import {
+  loadServiceAccount,
+  resolveDatabaseUrl
+} from './firebase-credentials';
 import type { RtdbLike } from './types';
-
-function requiredEnv(name: string): string {
-  const value = process.env[name];
-  if (!value || value.trim() === '') {
-    throw new Error(`Missing required environment variable: ${name}`);
-  }
-  return value.trim();
-}
-
-function parseServiceAccount(): Record<string, unknown> {
-  const raw = requiredEnv('FIREBASE_SERVICE_ACCOUNT_KEY');
-  try {
-    const parsed = JSON.parse(raw) as Record<string, unknown>;
-    if (!parsed.project_id || !parsed.private_key || !parsed.client_email) {
-      throw new Error('Invalid service account structure');
-    }
-    return parsed;
-  } catch (error) {
-    if (error instanceof SyntaxError) {
-      throw new Error(`FIREBASE_SERVICE_ACCOUNT_KEY is not valid JSON: ${error.message}`);
-    }
-    throw error;
-  }
-}
 
 /**
  * Ensure the Admin app exists with a Realtime Database URL.
@@ -46,20 +26,21 @@ function ensureAppWithDatabaseUrl(databaseURL: string): void {
     const existingUrl = existing.options?.databaseURL;
     if (!existingUrl) {
       throw new Error(
-        'Firebase app is already initialized without FIREBASE_DATABASE_URL. '
+        'Firebase app is already initialized without a Realtime Database URL. '
         + 'Create the RTDB client before Firestore, or set FIREBASE_DATABASE_URL '
-        + 'before the first Firebase initialize call.'
+        + '(or rely on the project_id-derived default) before the first Firebase '
+        + 'initialize call.'
       );
     }
     if (existingUrl !== databaseURL) {
       throw new Error(
-        'Firebase app databaseURL does not match FIREBASE_DATABASE_URL.'
+        'Firebase app databaseURL does not match the resolved RTDB URL.'
       );
     }
     return;
   }
 
-  const serviceAccount = parseServiceAccount();
+  const serviceAccount = loadServiceAccount();
   initializeApp({
     credential: cert({
       projectId: String(serviceAccount.project_id),
@@ -70,8 +51,16 @@ function ensureAppWithDatabaseUrl(databaseURL: string): void {
   });
 }
 
+/**
+ * Create an RTDB client against the existing Firebase project used by the
+ * agent registry (same service account as Firestore).
+ *
+ * `FIREBASE_DATABASE_URL` is optional: when unset, the default
+ * `https://<project_id>-default-rtdb.firebaseio.com` is derived from the
+ * service account.
+ */
 export function createRtdbClient(): RtdbLike {
-  const databaseURL = requiredEnv('FIREBASE_DATABASE_URL');
+  const databaseURL = resolveDatabaseUrl();
   ensureAppWithDatabaseUrl(databaseURL);
   return getDatabase() as unknown as RtdbLike;
 }

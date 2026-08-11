@@ -4,20 +4,9 @@
 
 ## All Changes
 
-- 2026-08-11 test(fastify): seed the user the localhost request authenticates as (JUM-663) (#187) - Eduardo A.
-- 2026-08-11 test(restify): make the localhost suite establish what it depends on (JUM-663) (#186) - Eduardo A.
-- 2026-08-11 fix(users): stop a refused caller from releasing another writer's lock (JUM-663) (#185) - Eduardo A.
-- 2026-08-11 [JUM-53][Feature] Replay worker, real-Redis suite and full documentation (#183) - Eduardo A.
-- 2026-08-11 [JUM-53][Feature] Dead-letter queue for mutex-refused transactions (#182) - Eduardo A.
-- 2026-08-11 chore(lint): clear the 662 warnings so the next one is visible for JUM-657 (#181) - Eduardo A.
-- 2026-08-11 fix(agent-bus): order recent events by key and gate RTDB indexes for JUM-656 (#180) - Eduardo A.
-- 2026-08-11 chore(website): delete the orphaned content pages for JUM-640 (#179) - Eduardo A.
-- 2026-08-10 [JUM-655][CI] Gate stale builds and orphaned content, declare requirements 130-132 (#177) - Eduardo A.
-- 2026-08-10 chore(governance): gate the defect classes that recurred, and declare the rules - Eduardo Almeida
-- 2026-08-10 [JUM-640][Docs] State the real cause of the orphaned docs content (#176) - Eduardo A.
-- 2026-08-10 docs(website): state the real cause of the orphaned docs content - Eduardo Almeida
-- 2026-08-10 [JUM-654][Fix] Make the mandatory agent bus usable (#175) - Eduardo A.
-- 2026-08-10 fix(agent-registry): make the mandatory agent bus usable - Eduardo Almeida
+- 2026-08-10 chore(changelog): regenerate after rebase onto latest dev - Eduardo A.
+- 2026-08-10 fix(agent-registry): lock canonical RTDB URL and strip undefined writes - Eduardo A.
+- 2026-08-10 fix(agent-registry): reuse existing Firebase registry credentials for RTDB bus - Eduardo A.
 - 2026-08-10 [JUM-641][Docs] Record the Jumentix epic delivery baseline (#170) - Eduardo A.
 - 2026-08-10 docs(jumentix): record the epic delivery baseline, EN and PT-BR - Eduardo Almeida
 - 2026-08-10 [JUM-638][CI] Make SonarCloud advisory while budget is unavailable (#173) - Eduardo A.

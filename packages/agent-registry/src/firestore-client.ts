@@ -6,52 +6,32 @@ import {
   deleteApp
 } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
+import {
+  loadServiceAccount,
+  resolveDatabaseUrl
+} from './firebase-credentials';
 import type { AgentRecord, AgentRegistrySnapshot, FirestoreLike } from './types';
 import { assertValidAgentRecord, findIntegrityProblems } from './validation';
 import type { IntegrityProblem } from './validation';
 
 const COLLECTION = 'agents';
 
-function requiredEnv(name: string): string {
-  const value = process.env[name];
-  if (!value || value.trim() === '') {
-    throw new Error(`Missing required environment variable: ${name}`);
-  }
-  return value.trim();
-}
-
-function parseServiceAccount(): Record<string, unknown> {
-  const raw = requiredEnv('FIREBASE_SERVICE_ACCOUNT_KEY');
-  try {
-    const parsed = JSON.parse(raw) as Record<string, unknown>;
-    if (!parsed.project_id || !parsed.private_key || !parsed.client_email) {
-      throw new Error('Invalid service account structure');
-    }
-    return parsed;
-  } catch (error) {
-    if (error instanceof SyntaxError) {
-      throw new Error(`FIREBASE_SERVICE_ACCOUNT_KEY is not valid JSON: ${error.message}`);
-    }
-    throw error;
-  }
-}
-
 export function createFirestoreClient(): FirestoreLike {
   if (getApps().length > 0) {
     return getFirestore() as unknown as FirestoreLike;
   }
 
-  const serviceAccount = parseServiceAccount();
-  const databaseURL = process.env.FIREBASE_DATABASE_URL?.trim();
+  const serviceAccount = loadServiceAccount();
+  // Attach the RTDB URL (explicit or project_id-derived) so createRtdbClient()
+  // can reuse this Admin app — same Firebase project as Firestore (089 / 129).
+  const databaseURL = resolveDatabaseUrl(serviceAccount);
   initializeApp({
     credential: cert({
       projectId: String(serviceAccount.project_id),
       privateKey: String(serviceAccount.private_key).replace(/\\n/g, '\n'),
       clientEmail: String(serviceAccount.client_email)
     }),
-    // Include RTDB URL when present so a later createRtdbClient() can reuse
-    // the same Admin app (Requirement 129).
-    ...(databaseURL ? { databaseURL } : {})
+    databaseURL
   });
   return getFirestore() as unknown as FirestoreLike;
 }
