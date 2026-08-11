@@ -473,7 +473,8 @@
       "Delivery Blueprint",
       "Target Audience",
       "Related Docs",
-      "Next steps"
+      "Next steps",
+      "Junior checklist (“I can …”)"
     ]
   },
   {
@@ -517,7 +518,8 @@
       "Operational Pattern",
       "Product and Engineering Benefits",
       "Related Docs",
-      "Next steps"
+      "Next steps",
+      "Junior checklist (“I can …”)"
     ]
   },
   {
@@ -1095,6 +1097,73 @@
     ]
   },
   {
+    "title": "jumentix-website",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/apps/jumentix-website",
+    "description": "Public docs and marketing site hub.",
+    "section": "apps",
+    "locale": "en",
+    "headings": [
+      "jumentix-website (docs + marketing)",
+      "What it is",
+      "Why it exists",
+      "Responsibility in context",
+      "Prerequisites",
+      "Glossary",
+      "Numbered steps",
+      "Common errors",
+      "Junior checklist (“I can …”)",
+      "Next step"
+    ]
+  },
+  {
+    "title": "apps",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/apps",
+    "description": "Explore the Jumentix apps section.",
+    "section": "apps",
+    "locale": "en",
+    "headings": [
+      "apps"
+    ]
+  },
+  {
+    "title": "backend-template",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/apps/backend-template",
+    "description": "Reference backend composition for juniors.",
+    "section": "apps",
+    "locale": "en",
+    "headings": [
+      "backend-template (reference backend)",
+      "What it is",
+      "Why it exists",
+      "Responsibility in context",
+      "Prerequisites",
+      "Glossary",
+      "Numbered steps",
+      "Common errors",
+      "Junior checklist (“I can …”)",
+      "Next step"
+    ]
+  },
+  {
+    "title": "service-management",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/apps/service-management",
+    "description": "Domain Designer SPA / PWA app hub.",
+    "section": "apps",
+    "locale": "en",
+    "headings": [
+      "service-management (Domain Designer SPA)",
+      "What it is",
+      "Why it exists",
+      "Responsibility in context",
+      "Prerequisites",
+      "Glossary",
+      "Numbered steps",
+      "Common errors",
+      "Junior checklist (“I can …”)",
+      "Next step"
+    ]
+  },
+  {
     "title": "Reference",
     "url": "https://jumentix-website.vercel.app/docs/jumentix/reference",
     "description": "Explore the Jumentix Reference section.",
@@ -1622,7 +1691,8 @@
       "5. Validar a disponibilidade de entrega",
       "6. Offline com Cana + designs",
       "Próximos passos",
-      "Referências"
+      "Referências",
+      "Checklist júnior (“Eu consigo …”)"
     ]
   },
   {
@@ -1648,7 +1718,8 @@
       "Plano de entrega",
       "Público-alvo",
       "Documentos relacionados",
-      "Próximos passos"
+      "Próximos passos",
+      "Checklist júnior (“Eu consigo …”)"
     ]
   },
   {
@@ -1692,7 +1763,8 @@
       "Padrão Operacional",
       "Benefícios de produto e engenharia",
       "Documentos relacionados",
-      "Próximos passos"
+      "Próximos passos",
+      "Checklist júnior (“Eu consigo …”)"
     ]
   },
   {
@@ -2264,6 +2336,73 @@
       "Exemplos",
       "Chamada mínima de client REST (estático)",
       "Registro offline com Cana (estático)",
+      "Erros comuns",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
+    ]
+  },
+  {
+    "title": "jumentix-website",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/apps/jumentix-website",
+    "description": "Hub do site público de docs e marketing.",
+    "section": "apps",
+    "locale": "pt-BR",
+    "headings": [
+      "jumentix-website (docs + marketing)",
+      "O que é",
+      "Por que existe",
+      "Responsabilidade no escopo",
+      "Pré-requisitos",
+      "Glossário",
+      "Passos numerados",
+      "Erros comuns",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
+    ]
+  },
+  {
+    "title": "apps",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/apps",
+    "description": "Explore a seção apps do Jumentix.",
+    "section": "apps",
+    "locale": "pt-BR",
+    "headings": [
+      "apps"
+    ]
+  },
+  {
+    "title": "backend-template",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/apps/backend-template",
+    "description": "Backend de referência para juniores.",
+    "section": "apps",
+    "locale": "pt-BR",
+    "headings": [
+      "backend-template (backend de referência)",
+      "O que é",
+      "Por que existe",
+      "Responsabilidade no escopo",
+      "Pré-requisitos",
+      "Glossário",
+      "Passos numerados",
+      "Erros comuns",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
+    ]
+  },
+  {
+    "title": "service-management",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/apps/service-management",
+    "description": "Hub do app SPA/PWA Domain Designer.",
+    "section": "apps",
+    "locale": "pt-BR",
+    "headings": [
+      "service-management (SPA Domain Designer)",
+      "O que é",
+      "Por que existe",
+      "Responsabilidade no escopo",
+      "Pré-requisitos",
+      "Glossário",
+      "Passos numerados",
       "Erros comuns",
       "Checklist júnior (“Eu consigo …”)",
       "Próximo passo"

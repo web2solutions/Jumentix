@@ -43,3 +43,10 @@ Use esse caminho quando desejar uma entrega rápida com limites modulares fortes
 
 1. [Começando](/docs/pt-BR/jumentix/concepts/getting-started)
 2. [REST](/docs/pt-BR/jumentix/guides/rest-api)
+
+## Checklist júnior (“Eu consigo …”)
+
+- [ ] Explico o objetivo deste guia em uma frase
+- [ ] Completei o primeiro sucesso sem adivinhar jargão
+- [ ] Sei a próxima página de docs a abrir
+

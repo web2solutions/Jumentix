@@ -64,3 +64,10 @@ Para arquitetura PWA/offline-first:
 ## Referências
 
 - Pacotes: [/docs/pt-BR/jumentix/packages](/docs/pt-BR/jumentix/packages)
+
+## Checklist júnior (“Eu consigo …”)
+
+- [ ] Explico o objetivo deste guia em uma frase
+- [ ] Completei o primeiro sucesso sem adivinhar jargão
+- [ ] Sei a próxima página de docs a abrir
+

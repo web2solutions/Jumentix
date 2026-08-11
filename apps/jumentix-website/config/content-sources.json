@@ -349,6 +349,36 @@
       "descriptionPtBr": "Helpers de infraestrutura de runtime para adapters.",
       "source": "../../documentation/consumers/packages/runtime-infra.md",
       "sourcePtBr": "../../documentation/consumers/packages/runtime-infra.pt-BR.md"
+    },
+    {
+      "section": "apps",
+      "slug": "backend-template",
+      "title": "backend-template",
+      "titlePtBr": "backend-template",
+      "description": "Reference backend composition for juniors.",
+      "descriptionPtBr": "Backend de refer\u00eancia para juniores.",
+      "source": "../../documentation/consumers/apps/backend-template.md",
+      "sourcePtBr": "../../documentation/consumers/apps/backend-template.pt-BR.md"
+    },
+    {
+      "section": "apps",
+      "slug": "service-management",
+      "title": "service-management",
+      "titlePtBr": "service-management",
+      "description": "Domain Designer SPA / PWA app hub.",
+      "descriptionPtBr": "Hub do app SPA/PWA Domain Designer.",
+      "source": "../../documentation/consumers/apps/service-management.md",
+      "sourcePtBr": "../../documentation/consumers/apps/service-management.pt-BR.md"
+    },
+    {
+      "section": "apps",
+      "slug": "jumentix-website",
+      "title": "jumentix-website",
+      "titlePtBr": "jumentix-website",
+      "description": "Public docs and marketing site hub.",
+      "descriptionPtBr": "Hub do site p\u00fablico de docs e marketing.",
+      "source": "../../documentation/consumers/apps/jumentix-website.md",
+      "sourcePtBr": "../../documentation/consumers/apps/jumentix-website.pt-BR.md"
     }
   ],
   "collections": [

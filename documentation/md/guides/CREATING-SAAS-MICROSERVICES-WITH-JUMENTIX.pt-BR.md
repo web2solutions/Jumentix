@@ -43,3 +43,10 @@ Utilize este caminho quando a escala de domínio, a autonomia da equipa e os per
 
 1. [Começando](/docs/pt-BR/jumentix/concepts/getting-started)
 2. [REST](/docs/pt-BR/jumentix/guides/rest-api)
+
+## Checklist júnior (“Eu consigo …”)
+
+- [ ] Explico o objetivo deste guia em uma frase
+- [ ] Completei o primeiro sucesso sem adivinhar jargão
+- [ ] Sei a próxima página de docs a abrir
+

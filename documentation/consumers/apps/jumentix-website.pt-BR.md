@@ -1,0 +1,51 @@
+# jumentix-website (docs + marketing)
+
+Public documentation and marketing site. Publishes curated consumer docs only — private packages are excluded by fail-closed sync.
+
+## O que é
+
+Public documentation and marketing site. Publishes curated consumer docs only — private packages are excluded by fail-closed sync.
+
+## Por que existe
+
+Juniores precisam de um app concreto para abrir — não só APIs de pacotes.
+
+## Responsabilidade no escopo
+
+- **Responsável por:** public docs IA, DocsPlayground, SEO/AI surfaces (`llms.txt`, docs-index)
+- **Camada:** application (Next/Nextra)
+- **Usado com:** content sync from `documentation/consumers/**` and selected guides
+- **Não responsável por:** hosting private tooling docs (config-*, agent-registry, etc.)
+
+
+## Pré-requisitos
+
+- [Começando](/docs/pt-BR/jumentix/concepts/getting-started)
+- Bun 1.3.14+
+
+## Glossário
+
+- **App de referência** — aplicação no monorepo usada como composição de ensino.
+
+## Passos numerados
+
+1. Abra `apps/jumentix-website` no monorepo.
+2. Leia o README para scripts locais.
+3. Siga o guia ligado para o primeiro sucesso.
+4. Vá aos pacotes que sustentam o app.
+
+## Erros comuns
+
+| Sintoma | Causa | Correção |
+|---------|-------|----------|
+| Procurar docs de pacotes privados no site | Pacotes excluídos | Use só o hub público de pacotes |
+
+## Checklist júnior (“Eu consigo …”)
+
+- [ ] Explico o app em uma frase
+- [ ] Sei qual guia abrir em seguida
+- [ ] Sei que tooling privado não está neste site
+
+## Próximo passo
+
+[/docs/jumentix/concepts/getting-started](/docs/pt-BR/jumentix/concepts/getting-started)

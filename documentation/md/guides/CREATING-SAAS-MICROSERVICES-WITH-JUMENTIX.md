@@ -39,3 +39,10 @@ Use this path when domain scale, team autonomy, and traffic profiles demand serv
 
 1. [Getting started](/docs/jumentix/concepts/getting-started)
 2. [REST](/docs/jumentix/guides/rest-api)
+
+## Junior checklist (“I can …”)
+
+- [ ] I can explain the goal of this guide in one sentence
+- [ ] I completed the first success path without guessing jargon
+- [ ] I know the single next docs page to open
+

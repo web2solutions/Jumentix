@@ -507,6 +507,7 @@ Headings:
 - Target Audience
 - Related Docs
 - Next steps
+- Junior checklist (“I can …”)
 
 ---
 
@@ -553,6 +554,7 @@ Headings:
 - Product and Engineering Benefits
 - Related Docs
 - Next steps
+- Junior checklist (“I can …”)
 
 ---
 
@@ -1150,6 +1152,77 @@ Headings:
 - Examples
 - Minimal REST client call (static)
 - Offline record with Cana (static)
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
+
+---
+
+# jumentix-website
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/apps/jumentix-website
+
+Public docs and marketing site hub.
+
+Headings:
+- jumentix-website (docs + marketing)
+- What it is
+- Why it exists
+- Responsibility in context
+- Prerequisites
+- Glossary
+- Numbered steps
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
+
+---
+
+# apps
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/apps
+
+Explore the Jumentix apps section.
+
+Headings:
+- apps
+
+---
+
+# backend-template
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/apps/backend-template
+
+Reference backend composition for juniors.
+
+Headings:
+- backend-template (reference backend)
+- What it is
+- Why it exists
+- Responsibility in context
+- Prerequisites
+- Glossary
+- Numbered steps
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
+
+---
+
+# service-management
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/apps/service-management
+
+Domain Designer SPA / PWA app hub.
+
+Headings:
+- service-management (Domain Designer SPA)
+- What it is
+- Why it exists
+- Responsibility in context
+- Prerequisites
+- Glossary
+- Numbered steps
 - Common errors
 - Junior checklist (“I can …”)
 - Next step
