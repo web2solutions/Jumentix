@@ -7,6 +7,12 @@ description: "Construa interfaces Socket.IO e gRPC com fallback REST."
 
 # Criando API em tempo real com Jumentix
 
+## Responsabilidade no escopo
+
+- **Responsável por:** Adapters realtime (Socket.IO / gRPC) em torno dos mesmos use-cases
+- **Usado com:** sdk-websocket-client, sdk-grpc-client, shared-contracts
+- **Não responsável por:** Fluxos só REST ou IndexedDB no browser
+
 ## O que é
 
 Este guia cobre como habilitar **comunicação push e bidirecional** no template de

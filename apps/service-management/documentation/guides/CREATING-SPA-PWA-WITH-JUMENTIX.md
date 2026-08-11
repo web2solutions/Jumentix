@@ -1,5 +1,11 @@
 # Creating SPA/PWA with Jumentix
 
+## Responsibility in context
+
+- **Owns:** Frontend/offline journey for Service Management style apps
+- **Used with:** designer-core, cana, service-management app hub
+- **Not responsible for:** Server DB repositories or gRPC Node clients
+
 ## What it is
 
 This guide describes how to plan and deliver a **Single Page Application (SPA)** or

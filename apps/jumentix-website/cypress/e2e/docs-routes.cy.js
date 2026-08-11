@@ -18,6 +18,12 @@ const documentationRoutes = [
   ['/docs/jumentix/packages/mutex-service/usage', ['mutex-service usage']],
   ['/docs/jumentix/packages/cana', ['@jumentix/cana', 'Try it in the browser']],
   ['/docs/jumentix/packages/cana/usage', ['Cana usage guide', 'Interactive playgrounds']],
+  ['/docs/jumentix/packages', ['Jumentix packages', 'consumer map']],
+  ['/docs/jumentix/packages/external-db-repositories', ['Responsibility in context']],
+  ['/docs/jumentix/packages/sdk-rest-client', ['@jumentix/sdk-rest-client']],
+  ['/docs/jumentix/apps/backend-template', ['backend-template']],
+  ['/docs/jumentix/apps/service-management', ['service-management']],
+  ['/docs/jumentix/apps/jumentix-website', ['jumentix-website']],
   ['/docs/jumentix/reference/runtime-contracts', ['Runtime']],
   ['/docs/pt-BR/jumentix', ['Construa com o Jumentix']],
   ['/docs/pt-BR/jumentix/concepts', ['Conceitos']],
@@ -80,6 +86,19 @@ describe('Docs playground matrix', () => {
     cy.request('/llms.txt').its('status').should('eq', 200);
     cy.request('/docs-index.json').its('status').should('eq', 200);
     cy.request('/llms-full.txt').its('status').should('eq', 200);
+  });
+});
+
+
+describe('designer-core playground', () => {
+  it('validates the sample design on spa-pwa', () => {
+    const ids = playgroundIds('designer-core', 'getting-started');
+    cy.visitQuiet('/docs/jumentix/guides/spa-pwa');
+    cy.get(`[data-testid="${ids.root}"]`).should('exist');
+    cy.get(`[data-testid="${ids.run}"]`).click();
+    cy.get(`[data-testid="${ids.output}"]`, { timeout: 15000 })
+      .should('exist')
+      .and('contain.text', 'ok');
   });
 });
 

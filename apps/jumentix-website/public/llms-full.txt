@@ -19,8 +19,14 @@ Database Adapters documentation.
 
 Headings:
 - Aurora Adapter
+- Glossary
+- Responsibility in context
+- Why it exists
+- What it is
 - Technology
 - Build Services with Aurora
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -32,8 +38,14 @@ Database Adapters documentation.
 
 Headings:
 - Firebase Adapter
+- Glossary
+- Responsibility in context
+- Why it exists
+- What it is
 - Technology
 - Build Services with Firebase
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -45,8 +57,14 @@ Database Adapters documentation.
 
 Headings:
 - Oracle Adapter
+- Glossary
+- Responsibility in context
+- Why it exists
+- What it is
 - Technology
 - Build Services with Oracle
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -70,8 +88,14 @@ Database Adapters documentation.
 
 Headings:
 - DynamoDB Adapter
+- Glossary
+- Responsibility in context
+- Why it exists
+- What it is
 - Technology
 - Build Services with DynamoDB
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -83,9 +107,15 @@ Database Adapters documentation.
 
 Headings:
 - InMemory Database Adapter
+- Glossary
+- Responsibility in context
+- Why it exists
+- What it is
 - Purpose
 - Entrypoints
 - Build Services with InMemory
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -97,8 +127,14 @@ Database Adapters documentation.
 
 Headings:
 - MongoDB Adapter
+- Glossary
+- Responsibility in context
+- Why it exists
+- What it is
 - Technology
 - Build Services with MongoDB
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -110,8 +146,14 @@ Database Adapters documentation.
 
 Headings:
 - SQLite Adapter
+- Glossary
+- Responsibility in context
+- Why it exists
+- What it is
 - Technology
 - Build Services with SQLite
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -123,8 +165,14 @@ Database Adapters documentation.
 
 Headings:
 - SQL Server Adapter
+- Glossary
+- Responsibility in context
+- Why it exists
+- What it is
 - Technology
 - Build Services with SQL Server
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -136,8 +184,14 @@ Database Adapters documentation.
 
 Headings:
 - RDS Adapter
+- Glossary
+- Responsibility in context
+- Why it exists
+- What it is
 - Technology
 - Build Services with RDS
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -149,8 +203,14 @@ Database Adapters documentation.
 
 Headings:
 - MySQL Adapter
+- Glossary
+- Responsibility in context
+- Why it exists
+- What it is
 - Technology
 - Build Services with MySQL
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -162,8 +222,14 @@ Database Adapters documentation.
 
 Headings:
 - Cassandra Adapter
+- Glossary
+- Responsibility in context
+- Why it exists
+- What it is
 - Technology
 - Build Services with Cassandra
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -175,8 +241,14 @@ Database Adapters documentation.
 
 Headings:
 - PostgreSQL Adapter
+- Glossary
+- Responsibility in context
+- Why it exists
+- What it is
 - Technology
 - Build Services with PostgreSQL
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -210,6 +282,10 @@ Realtime Adapters documentation.
 
 Headings:
 - gRPC Realtime API
+- Glossary
+- Responsibility in context
+- Why it exists
+- What it is
 - Scope
 - Contract References
 - Service Contract
@@ -218,6 +294,8 @@ Headings:
 - Deep Example: Native gRPC Bi-directional Stream
 - Payload Serialization Rules
 - Operational Guidance
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -229,6 +307,10 @@ Realtime Adapters documentation.
 
 Headings:
 - WebSocket Realtime API
+- Glossary
+- Responsibility in context
+- Why it exists
+- What it is
 - Scope
 - Contract References
 - Endpoint and Channels
@@ -241,6 +323,8 @@ Headings:
 - SDK Example
 - Response/Error Handling Rules
 - Operational Guidance
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -252,9 +336,15 @@ HTTP Adapters documentation.
 
 Headings:
 - Cloudflare Workers Adapter
+- Glossary
+- Responsibility in context
+- Why it exists
+- What it is
 - Purpose
 - Entrypoints
 - Build a Service with Cloudflare Workers
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -266,10 +356,16 @@ HTTP Adapters documentation.
 
 Headings:
 - Restify Adapter
+- Glossary
+- Responsibility in context
+- Why it exists
+- What it is
 - Purpose
 - Entrypoints
 - Build a Service with Restify
 - Production
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -281,9 +377,15 @@ HTTP Adapters documentation.
 
 Headings:
 - Vercel Functions Adapter
+- Glossary
+- Responsibility in context
+- Why it exists
+- What it is
 - Purpose
 - Entrypoints
 - Build a Service with Vercel Functions
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -295,10 +397,16 @@ HTTP Adapters documentation.
 
 Headings:
 - Express Adapter
+- Glossary
+- Responsibility in context
+- Why it exists
+- What it is
 - Purpose
 - Entrypoints
 - Build a Service with Express
 - Production
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -310,9 +418,15 @@ HTTP Adapters documentation.
 
 Headings:
 - Adonis.js Adapter
+- Glossary
+- Responsibility in context
+- Why it exists
+- What it is
 - Purpose
 - Entrypoints
 - Build a Service with Adonis.js
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -336,11 +450,17 @@ HTTP Adapters documentation.
 
 Headings:
 - Fastify Adapter
+- Glossary
+- Responsibility in context
+- Why it exists
+- What it is
 - Purpose
 - Entrypoints
 - Build a Service with Fastify
 - Production
 - Static Documentation Lifecycle
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -352,9 +472,15 @@ HTTP Adapters documentation.
 
 Headings:
 - Feathers Adapter
+- Glossary
+- Responsibility in context
+- Why it exists
+- What it is
 - Purpose
 - Entrypoints
 - Build a Service with Feathers
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -366,9 +492,15 @@ HTTP Adapters documentation.
 
 Headings:
 - LoopBack Adapter
+- Glossary
+- Responsibility in context
+- Why it exists
+- What it is
 - Purpose
 - Entrypoints
 - Build a Service with LoopBack
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -380,10 +512,16 @@ HTTP Adapters documentation.
 
 Headings:
 - AWS Lambda Adapter
+- Glossary
+- Responsibility in context
+- Why it exists
+- What it is
 - Purpose
 - Entrypoints
 - Build a Service with Lambda
 - Notes
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -395,9 +533,15 @@ HTTP Adapters documentation.
 
 Headings:
 - Sails.js Adapter
+- Glossary
+- Responsibility in context
+- Why it exists
+- What it is
 - Purpose
 - Entrypoints
 - Build a Service with Sails.js
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -409,9 +553,15 @@ HTTP Adapters documentation.
 
 Headings:
 - Derby.js Adapter
+- Glossary
+- Responsibility in context
+- Why it exists
+- What it is
 - Purpose
 - Entrypoints
 - Build a Service with Derby.js
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -423,9 +573,15 @@ HTTP Adapters documentation.
 
 Headings:
 - Total.js Adapter
+- Glossary
+- Responsibility in context
+- Why it exists
+- What it is
 - Purpose
 - Entrypoints
 - Build a Service with Total.js
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -437,6 +593,7 @@ Build contract-first REST APIs with Jumentix.
 
 Headings:
 - Creating REST API with Jumentix
+- Responsibility in context
 - What it is
 - Why it exists
 - Prerequisites
@@ -465,6 +622,7 @@ Build frontend products with shared SDKs and offline behavior.
 
 Headings:
 - Creating SPA/PWA with Jumentix
+- Responsibility in context
 - What it is
 - Why it exists
 - Prerequisites
@@ -501,6 +659,9 @@ Launch a modular monolith with service-ready boundaries.
 
 Headings:
 - Creating SaaS Monolith with Jumentix
+- Responsibility in context
+- Glossary
+- What it is
 - Recommended Strategy
 - Why This Works
 - Delivery Blueprint
@@ -519,6 +680,7 @@ Build Socket.IO and gRPC interfaces with REST fallback.
 
 Headings:
 - Creating Realtime API with Jumentix
+- Responsibility in context
 - What it is
 - Why it exists
 - Prerequisites
@@ -548,6 +710,9 @@ Build distributed services with contract-based communication.
 
 Headings:
 - Creating SaaS Microservices with Jumentix
+- Responsibility in context
+- Glossary
+- What it is
 - Recommended Strategy
 - Evolution Path from Monolith
 - Operational Pattern
@@ -717,6 +882,7 @@ Browser-safe design document helpers for Jumentix frontends.
 
 Headings:
 - @jumentix/designer-core
+- Responsibility in context
 - What it is
 - Usage
 - Versioning policy
@@ -843,6 +1009,7 @@ Named locks built on key/value storage.
 
 Headings:
 - @jumentix/mutex-service
+- Responsibility in context
 - Contract
 - Validation
 - Try it in the browser
@@ -885,6 +1052,7 @@ Key/value storage clients with an in-memory adapter for tests and demos.
 
 Headings:
 - @jumentix/key-value-storage
+- Responsibility in context
 - Try it in the browser
 - Full documentation
 
@@ -1006,6 +1174,7 @@ In-process and broker-backed message mediation.
 
 Headings:
 - @jumentix/message-mediator
+- Responsibility in context
 - Try it in the browser
 - Full documentation
 
@@ -1047,6 +1216,7 @@ IndexedDB offline database adapter for Jumentix applications.
 
 Headings:
 - @jumentix/cana
+- Responsibility in context
 - Three things to know before using it
 - Errors are plain data
 - Try it in the browser
@@ -1136,6 +1306,7 @@ Junior on-ramp: install, mental model, and first adoption journey.
 
 Headings:
 - Getting started with Jumentix
+- Responsibility in context
 - What it is
 - Why it exists
 - Prerequisites
@@ -1253,6 +1424,7 @@ Headings:
 - Runtime Control
 - Deployment Modes
 - Reliability and Scale
+- Next step
 
 ---
 
@@ -1318,3 +1490,4 @@ Every supported monorepo command and its usage.
 
 Headings:
 - Package.json Scripts Reference (Consumer)
+- Next step

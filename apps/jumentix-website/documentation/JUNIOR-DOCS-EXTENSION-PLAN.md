@@ -1,6 +1,6 @@
 # Junior docs extension plan — zero → uso pleno, verificado
 
-**Status:** Active plan (2026-08-11)  
+**Status:** Implemented on PR #184 (2026-08-11) — public allowlist + fail-closed private exclusion  
 **Workspace:** `apps/jumentix-website`  
 **Related prior work:** [PR #184](https://github.com/XpertMinds/Jumentix/pull/184), Linear project [epicdocs-jumentix-website-deep-docs-playgrounds-seoai](https://linear.app/jumentix/project/epicdocs-jumentix-website-deep-docs-playgrounds-seoai-dae8af894bf6)  
 **Language policy:** EN + pt-BR parity on every page (no orphan locale)  
@@ -287,3 +287,5 @@ Marcos M0–M10 amarram bugs, jornadas, tiers de pacotes, apps e superfícies SE
 |------|--------|
 | 2026-08-11 | Initial plan; contrast + designer-core playground root causes; zero→pleno verified bar; inventories |
 | 2026-08-11 | Private package fail-closed + consumer allowlist; responsibility-in-scope mandatory |
+
+| 2026-08-11 | Epic completion pass: adapters/guides/apps template bar; private exclusion verified; Linear M1–M10 closed or canceled per policy |

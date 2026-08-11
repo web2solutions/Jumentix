@@ -6,6 +6,21 @@ Idioma alvo: Português (Brasil)
 
 Este guia descreve como usar Jumentix para planejar e entregar aplicativos frontend (SPA/PWA) integrados com serviços backend.
 
+## Responsabilidade no escopo
+
+- **Responsável por:** Jornada frontend/offline para apps no estilo Service Management
+- **Usado com:** designer-core, cana, hub do app service-management
+- **Não responsável por:** Repositórios de banco server-side ou clientes gRPC Node
+
+## Glossário
+
+- **Guia** — documento de jornada; siga os passos em ordem antes de pular para mapas de API.
+- **Composition root** — startup que liga env → adapters → use-cases.
+
+## O que é
+
+Construa uma SPA/PWA com designer-core para o modelo e Cana para persistência offline.
+
 ## 1. Modele primeiro os domínios de negócios
 
 Use o Designer de Domínio para definir:
@@ -70,4 +85,3 @@ Para arquitetura PWA/offline-first:
 - [ ] Explico o objetivo deste guia em uma frase
 - [ ] Completei o primeiro sucesso sem adivinhar jargão
 - [ ] Sei a próxima página de docs a abrir
-

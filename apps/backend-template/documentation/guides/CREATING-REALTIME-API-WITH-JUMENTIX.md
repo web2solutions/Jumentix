@@ -1,5 +1,11 @@
 # Creating Realtime API with Jumentix
 
+## Responsibility in context
+
+- **Owns:** Realtime adapters (Socket.IO / gRPC) around the same use-cases
+- **Used with:** sdk-websocket-client, sdk-grpc-client, shared-contracts
+- **Not responsible for:** Plain REST-only flows or browser IndexedDB
+
 ## What it is
 
 This guide covers enabling **push and bidirectional communication** on top of the

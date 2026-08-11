@@ -19,6 +19,13 @@ await client.open();
 await client.table('designs').add({ id: 1, name: 'first', owner: 'ana' });
 ```
 
+## Responsabilidade no escopo
+
+- **Camada:** persistência offline / browser
+- **Responsável por:** API de cliente IndexedDB (com fallback explícito localStorage) para PWAs
+- **Usado com:** designer-core, guia SPA/PWA, service-management
+- **Não responsável por:** bancos server-side, Redis KV, REST/WebSocket
+
 ## Três coisas a saber antes de usar
 
 **IndexedDB preferido; fallback em localStorage é explícito e degradado.** Depois

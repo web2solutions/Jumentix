@@ -15,6 +15,13 @@ Incluído:
 
 Este pacote foi projetado para reutilização de vários serviços e evita a duplicação de adaptadores por serviço.
 
+## Responsabilidade no escopo
+
+- **Camada:** persistência / infraestrutura
+- **Responsável por:** porta chave/valor + adapters InMemory/Redis
+- **Usado com:** mutex-service, composição de backend
+- **Não responsável por:** repos SQL/documentos, IndexedDB (Cana), SDKs HTTP
+
 ## Experimente no navegador
 
 Adapter in-memory (mock no browser do mesmo contrato):

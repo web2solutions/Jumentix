@@ -1,5 +1,11 @@
 # Criando API REST com Jumentix
 
+## Responsabilidade no escopo
+
+- **Responsável por:** Adapter HTTP + use-cases de aplicação para REST
+- **Usado com:** sdk-rest-client, pacotes de persistência, hub do app backend-template
+- **Não responsável por:** Realtime WebSocket/gRPC (guia realtime) ou IndexedDB offline (Cana)
+
 ## O que é
 
 Este guia mostra como inicializar, executar e validar um serviço REST usando o

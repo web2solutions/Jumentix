@@ -6,6 +6,21 @@ Idioma alvo: Português (Brasil)
 
 Use esse caminho quando desejar uma entrega rápida com limites modulares fortes e um caminho de migração futuro limpo.
 
+## Responsabilidade no escopo
+
+- **Responsável por:** Orientação de topologia para SaaS monólito modular
+- **Usado com:** Guias REST/realtime, hub de pacotes, backend-template
+- **Não responsável por:** Referência profunda de API de pacotes (veja páginas de pacotes)
+
+## Glossário
+
+- **Guia** — documento de jornada; siga os passos em ordem antes de pular para mapas de API.
+- **Composition root** — startup que liga env → adapters → use-cases.
+
+## O que é
+
+Lance um monólito modular com limites claros prontos para extrair depois.
+
 ## Estratégia recomendada
 
 1. Comece com contextos limitados no Domain Designer.
@@ -49,4 +64,3 @@ Use esse caminho quando desejar uma entrega rápida com limites modulares fortes
 - [ ] Explico o objetivo deste guia em uma frase
 - [ ] Completei o primeiro sucesso sem adivinhar jargão
 - [ ] Sei a próxima página de docs a abrir
-

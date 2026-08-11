@@ -2,6 +2,13 @@
 
 Private reusable mutex adapter for Jumentix runtimes.
 
+## Responsibility in context
+
+- **Stack layer:** persistence / coordination
+- **Owns:** named locks backed by a KV client
+- **Used with:** key-value-storage
+- **Not responsible for:** business documents or messaging
+
 ## Contract
 
 `MutexService.compile(keyValueStorageClient, options)` creates a process-wide singleton backed by an

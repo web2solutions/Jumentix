@@ -16,6 +16,13 @@ Escopo extraído atual:
 - adaptador BullMQ;
 - helper `compileMessageMediator` orientado pelo ambiente.
 
+## Responsabilidade no escopo
+
+- **Camada:** messaging / adaptador de aplicação
+- **Responsável por:** mediação em processo ou via broker
+- **Usado com:** use-cases de backend
+- **Não responsável por:** rotas OpenAPI ou persistência de banco
+
 ## Experimente no navegador
 
 Mediator in-memory:

@@ -19,8 +19,14 @@
     "locale": "en",
     "headings": [
       "Aurora Adapter",
+      "Glossary",
+      "Responsibility in context",
+      "Why it exists",
+      "What it is",
       "Technology",
-      "Build Services with Aurora"
+      "Build Services with Aurora",
+      "Junior checklist (“I can …”)",
+      "Next step"
     ]
   },
   {
@@ -31,8 +37,14 @@
     "locale": "en",
     "headings": [
       "Firebase Adapter",
+      "Glossary",
+      "Responsibility in context",
+      "Why it exists",
+      "What it is",
       "Technology",
-      "Build Services with Firebase"
+      "Build Services with Firebase",
+      "Junior checklist (“I can …”)",
+      "Next step"
     ]
   },
   {
@@ -43,8 +55,14 @@
     "locale": "en",
     "headings": [
       "Oracle Adapter",
+      "Glossary",
+      "Responsibility in context",
+      "Why it exists",
+      "What it is",
       "Technology",
-      "Build Services with Oracle"
+      "Build Services with Oracle",
+      "Junior checklist (“I can …”)",
+      "Next step"
     ]
   },
   {
@@ -66,8 +84,14 @@
     "locale": "en",
     "headings": [
       "DynamoDB Adapter",
+      "Glossary",
+      "Responsibility in context",
+      "Why it exists",
+      "What it is",
       "Technology",
-      "Build Services with DynamoDB"
+      "Build Services with DynamoDB",
+      "Junior checklist (“I can …”)",
+      "Next step"
     ]
   },
   {
@@ -78,9 +102,15 @@
     "locale": "en",
     "headings": [
       "InMemory Database Adapter",
+      "Glossary",
+      "Responsibility in context",
+      "Why it exists",
+      "What it is",
       "Purpose",
       "Entrypoints",
-      "Build Services with InMemory"
+      "Build Services with InMemory",
+      "Junior checklist (“I can …”)",
+      "Next step"
     ]
   },
   {
@@ -91,8 +121,14 @@
     "locale": "en",
     "headings": [
       "MongoDB Adapter",
+      "Glossary",
+      "Responsibility in context",
+      "Why it exists",
+      "What it is",
       "Technology",
-      "Build Services with MongoDB"
+      "Build Services with MongoDB",
+      "Junior checklist (“I can …”)",
+      "Next step"
     ]
   },
   {
@@ -103,8 +139,14 @@
     "locale": "en",
     "headings": [
       "SQLite Adapter",
+      "Glossary",
+      "Responsibility in context",
+      "Why it exists",
+      "What it is",
       "Technology",
-      "Build Services with SQLite"
+      "Build Services with SQLite",
+      "Junior checklist (“I can …”)",
+      "Next step"
     ]
   },
   {
@@ -115,8 +157,14 @@
     "locale": "en",
     "headings": [
       "SQL Server Adapter",
+      "Glossary",
+      "Responsibility in context",
+      "Why it exists",
+      "What it is",
       "Technology",
-      "Build Services with SQL Server"
+      "Build Services with SQL Server",
+      "Junior checklist (“I can …”)",
+      "Next step"
     ]
   },
   {
@@ -127,8 +175,14 @@
     "locale": "en",
     "headings": [
       "RDS Adapter",
+      "Glossary",
+      "Responsibility in context",
+      "Why it exists",
+      "What it is",
       "Technology",
-      "Build Services with RDS"
+      "Build Services with RDS",
+      "Junior checklist (“I can …”)",
+      "Next step"
     ]
   },
   {
@@ -139,8 +193,14 @@
     "locale": "en",
     "headings": [
       "MySQL Adapter",
+      "Glossary",
+      "Responsibility in context",
+      "Why it exists",
+      "What it is",
       "Technology",
-      "Build Services with MySQL"
+      "Build Services with MySQL",
+      "Junior checklist (“I can …”)",
+      "Next step"
     ]
   },
   {
@@ -151,8 +211,14 @@
     "locale": "en",
     "headings": [
       "Cassandra Adapter",
+      "Glossary",
+      "Responsibility in context",
+      "Why it exists",
+      "What it is",
       "Technology",
-      "Build Services with Cassandra"
+      "Build Services with Cassandra",
+      "Junior checklist (“I can …”)",
+      "Next step"
     ]
   },
   {
@@ -163,8 +229,14 @@
     "locale": "en",
     "headings": [
       "PostgreSQL Adapter",
+      "Glossary",
+      "Responsibility in context",
+      "Why it exists",
+      "What it is",
       "Technology",
-      "Build Services with PostgreSQL"
+      "Build Services with PostgreSQL",
+      "Junior checklist (“I can …”)",
+      "Next step"
     ]
   },
   {
@@ -195,6 +267,10 @@
     "locale": "en",
     "headings": [
       "gRPC Realtime API",
+      "Glossary",
+      "Responsibility in context",
+      "Why it exists",
+      "What it is",
       "Scope",
       "Contract References",
       "Service Contract",
@@ -202,7 +278,9 @@
       "Deep Example: Unary Request",
       "Deep Example: Native gRPC Bi-directional Stream",
       "Payload Serialization Rules",
-      "Operational Guidance"
+      "Operational Guidance",
+      "Junior checklist (“I can …”)",
+      "Next step"
     ]
   },
   {
@@ -213,6 +291,10 @@
     "locale": "en",
     "headings": [
       "WebSocket Realtime API",
+      "Glossary",
+      "Responsibility in context",
+      "Why it exists",
+      "What it is",
       "Scope",
       "Contract References",
       "Endpoint and Channels",
@@ -224,7 +306,9 @@
       "Deep Example: Per-operation Channel Request",
       "SDK Example",
       "Response/Error Handling Rules",
-      "Operational Guidance"
+      "Operational Guidance",
+      "Junior checklist (“I can …”)",
+      "Next step"
     ]
   },
   {
@@ -235,9 +319,15 @@
     "locale": "en",
     "headings": [
       "Cloudflare Workers Adapter",
+      "Glossary",
+      "Responsibility in context",
+      "Why it exists",
+      "What it is",
       "Purpose",
       "Entrypoints",
-      "Build a Service with Cloudflare Workers"
+      "Build a Service with Cloudflare Workers",
+      "Junior checklist (“I can …”)",
+      "Next step"
     ]
   },
   {
@@ -248,10 +338,16 @@
     "locale": "en",
     "headings": [
       "Restify Adapter",
+      "Glossary",
+      "Responsibility in context",
+      "Why it exists",
+      "What it is",
       "Purpose",
       "Entrypoints",
       "Build a Service with Restify",
-      "Production"
+      "Production",
+      "Junior checklist (“I can …”)",
+      "Next step"
     ]
   },
   {
@@ -262,9 +358,15 @@
     "locale": "en",
     "headings": [
       "Vercel Functions Adapter",
+      "Glossary",
+      "Responsibility in context",
+      "Why it exists",
+      "What it is",
       "Purpose",
       "Entrypoints",
-      "Build a Service with Vercel Functions"
+      "Build a Service with Vercel Functions",
+      "Junior checklist (“I can …”)",
+      "Next step"
     ]
   },
   {
@@ -275,10 +377,16 @@
     "locale": "en",
     "headings": [
       "Express Adapter",
+      "Glossary",
+      "Responsibility in context",
+      "Why it exists",
+      "What it is",
       "Purpose",
       "Entrypoints",
       "Build a Service with Express",
-      "Production"
+      "Production",
+      "Junior checklist (“I can …”)",
+      "Next step"
     ]
   },
   {
@@ -289,9 +397,15 @@
     "locale": "en",
     "headings": [
       "Adonis.js Adapter",
+      "Glossary",
+      "Responsibility in context",
+      "Why it exists",
+      "What it is",
       "Purpose",
       "Entrypoints",
-      "Build a Service with Adonis.js"
+      "Build a Service with Adonis.js",
+      "Junior checklist (“I can …”)",
+      "Next step"
     ]
   },
   {
@@ -313,11 +427,17 @@
     "locale": "en",
     "headings": [
       "Fastify Adapter",
+      "Glossary",
+      "Responsibility in context",
+      "Why it exists",
+      "What it is",
       "Purpose",
       "Entrypoints",
       "Build a Service with Fastify",
       "Production",
-      "Static Documentation Lifecycle"
+      "Static Documentation Lifecycle",
+      "Junior checklist (“I can …”)",
+      "Next step"
     ]
   },
   {
@@ -328,9 +448,15 @@
     "locale": "en",
     "headings": [
       "Feathers Adapter",
+      "Glossary",
+      "Responsibility in context",
+      "Why it exists",
+      "What it is",
       "Purpose",
       "Entrypoints",
-      "Build a Service with Feathers"
+      "Build a Service with Feathers",
+      "Junior checklist (“I can …”)",
+      "Next step"
     ]
   },
   {
@@ -341,9 +467,15 @@
     "locale": "en",
     "headings": [
       "LoopBack Adapter",
+      "Glossary",
+      "Responsibility in context",
+      "Why it exists",
+      "What it is",
       "Purpose",
       "Entrypoints",
-      "Build a Service with LoopBack"
+      "Build a Service with LoopBack",
+      "Junior checklist (“I can …”)",
+      "Next step"
     ]
   },
   {
@@ -354,10 +486,16 @@
     "locale": "en",
     "headings": [
       "AWS Lambda Adapter",
+      "Glossary",
+      "Responsibility in context",
+      "Why it exists",
+      "What it is",
       "Purpose",
       "Entrypoints",
       "Build a Service with Lambda",
-      "Notes"
+      "Notes",
+      "Junior checklist (“I can …”)",
+      "Next step"
     ]
   },
   {
@@ -368,9 +506,15 @@
     "locale": "en",
     "headings": [
       "Sails.js Adapter",
+      "Glossary",
+      "Responsibility in context",
+      "Why it exists",
+      "What it is",
       "Purpose",
       "Entrypoints",
-      "Build a Service with Sails.js"
+      "Build a Service with Sails.js",
+      "Junior checklist (“I can …”)",
+      "Next step"
     ]
   },
   {
@@ -381,9 +525,15 @@
     "locale": "en",
     "headings": [
       "Derby.js Adapter",
+      "Glossary",
+      "Responsibility in context",
+      "Why it exists",
+      "What it is",
       "Purpose",
       "Entrypoints",
-      "Build a Service with Derby.js"
+      "Build a Service with Derby.js",
+      "Junior checklist (“I can …”)",
+      "Next step"
     ]
   },
   {
@@ -394,9 +544,15 @@
     "locale": "en",
     "headings": [
       "Total.js Adapter",
+      "Glossary",
+      "Responsibility in context",
+      "Why it exists",
+      "What it is",
       "Purpose",
       "Entrypoints",
-      "Build a Service with Total.js"
+      "Build a Service with Total.js",
+      "Junior checklist (“I can …”)",
+      "Next step"
     ]
   },
   {
@@ -407,6 +563,7 @@
     "locale": "en",
     "headings": [
       "Creating REST API with Jumentix",
+      "Responsibility in context",
       "What it is",
       "Why it exists",
       "Prerequisites",
@@ -434,6 +591,7 @@
     "locale": "en",
     "headings": [
       "Creating SPA/PWA with Jumentix",
+      "Responsibility in context",
       "What it is",
       "Why it exists",
       "Prerequisites",
@@ -468,6 +626,9 @@
     "locale": "en",
     "headings": [
       "Creating SaaS Monolith with Jumentix",
+      "Responsibility in context",
+      "Glossary",
+      "What it is",
       "Recommended Strategy",
       "Why This Works",
       "Delivery Blueprint",
@@ -485,6 +646,7 @@
     "locale": "en",
     "headings": [
       "Creating Realtime API with Jumentix",
+      "Responsibility in context",
       "What it is",
       "Why it exists",
       "Prerequisites",
@@ -513,6 +675,9 @@
     "locale": "en",
     "headings": [
       "Creating SaaS Microservices with Jumentix",
+      "Responsibility in context",
+      "Glossary",
+      "What it is",
       "Recommended Strategy",
       "Evolution Path from Monolith",
       "Operational Pattern",
@@ -675,6 +840,7 @@
     "locale": "en",
     "headings": [
       "@jumentix/designer-core",
+      "Responsibility in context",
       "What it is",
       "Usage",
       "Versioning policy",
@@ -796,6 +962,7 @@
     "locale": "en",
     "headings": [
       "@jumentix/mutex-service",
+      "Responsibility in context",
       "Contract",
       "Validation",
       "Try it in the browser",
@@ -836,6 +1003,7 @@
     "locale": "en",
     "headings": [
       "@jumentix/key-value-storage",
+      "Responsibility in context",
       "Try it in the browser",
       "Full documentation"
     ]
@@ -952,6 +1120,7 @@
     "locale": "en",
     "headings": [
       "@jumentix/message-mediator",
+      "Responsibility in context",
       "Try it in the browser",
       "Full documentation"
     ]
@@ -991,6 +1160,7 @@
     "locale": "en",
     "headings": [
       "@jumentix/cana",
+      "Responsibility in context",
       "Three things to know before using it",
       "Errors are plain data",
       "Try it in the browser",
@@ -1075,6 +1245,7 @@
     "locale": "en",
     "headings": [
       "Getting started with Jumentix",
+      "Responsibility in context",
       "What it is",
       "Why it exists",
       "Prerequisites",
@@ -1185,7 +1356,8 @@
       "Service Interfaces",
       "Runtime Control",
       "Deployment Modes",
-      "Reliability and Scale"
+      "Reliability and Scale",
+      "Next step"
     ]
   },
   {
@@ -1246,7 +1418,8 @@
     "section": "reference",
     "locale": "en",
     "headings": [
-      "Package.json Scripts Reference (Consumer)"
+      "Package.json Scripts Reference (Consumer)",
+      "Next step"
     ]
   },
   {
@@ -1269,8 +1442,14 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador Aurora",
+      "Glossário",
+      "Responsabilidade no escopo",
+      "Por que existe",
+      "O que é",
       "Tecnologia",
-      "Crie serviços com Aurora"
+      "Crie serviços com Aurora",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
     ]
   },
   {
@@ -1281,8 +1460,14 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador Firebase",
+      "Glossário",
+      "Responsabilidade no escopo",
+      "Por que existe",
+      "O que é",
       "Tecnologia",
-      "Crie serviços com Firebase"
+      "Crie serviços com Firebase",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
     ]
   },
   {
@@ -1293,8 +1478,14 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador Oracle",
+      "Glossário",
+      "Responsabilidade no escopo",
+      "Por que existe",
+      "O que é",
       "Tecnologia",
-      "Crie serviços com Oracle"
+      "Crie serviços com Oracle",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
     ]
   },
   {
@@ -1316,8 +1507,14 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador DynamoDB",
+      "Glossário",
+      "Responsabilidade no escopo",
+      "Por que existe",
+      "O que é",
       "Tecnologia",
-      "Crie serviços com DynamoDB"
+      "Crie serviços com DynamoDB",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
     ]
   },
   {
@@ -1328,9 +1525,15 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador de banco de dados InMemory",
+      "Glossário",
+      "Responsabilidade no escopo",
+      "Por que existe",
+      "O que é",
       "Propósito",
       "Pontos de entrada",
-      "Crie serviços com InMemory"
+      "Crie serviços com InMemory",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
     ]
   },
   {
@@ -1341,8 +1544,14 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador MongoDB",
+      "Glossário",
+      "Responsabilidade no escopo",
+      "Por que existe",
+      "O que é",
       "Tecnologia",
-      "Construa serviços com MongoDB"
+      "Construa serviços com MongoDB",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
     ]
   },
   {
@@ -1353,8 +1562,14 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador SQLite",
+      "Glossário",
+      "Responsabilidade no escopo",
+      "Por que existe",
+      "O que é",
       "Tecnologia",
-      "Construa serviços com SQLite"
+      "Construa serviços com SQLite",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
     ]
   },
   {
@@ -1365,8 +1580,14 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador SQL Server",
+      "Glossário",
+      "Responsabilidade no escopo",
+      "Por que existe",
+      "O que é",
       "Tecnologia",
-      "Construa serviços com SQL Server"
+      "Construa serviços com SQL Server",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
     ]
   },
   {
@@ -1377,8 +1598,14 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador RDS",
+      "Glossário",
+      "Responsabilidade no escopo",
+      "Por que existe",
+      "O que é",
       "Tecnologia",
-      "Crie serviços com RDS"
+      "Crie serviços com RDS",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
     ]
   },
   {
@@ -1389,8 +1616,14 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador MySQL",
+      "Glossário",
+      "Responsabilidade no escopo",
+      "Por que existe",
+      "O que é",
       "Tecnologia",
-      "Crie serviços com MySQL"
+      "Crie serviços com MySQL",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
     ]
   },
   {
@@ -1401,8 +1634,14 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador Cassandra",
+      "Glossário",
+      "Responsabilidade no escopo",
+      "Por que existe",
+      "O que é",
       "Tecnologia",
-      "Crie serviços com Cassandra"
+      "Crie serviços com Cassandra",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
     ]
   },
   {
@@ -1413,8 +1652,14 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador PostgreSQL",
+      "Glossário",
+      "Responsabilidade no escopo",
+      "Por que existe",
+      "O que é",
       "Tecnologia",
-      "Crie serviços com PostgreSQL"
+      "Crie serviços com PostgreSQL",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
     ]
   },
   {
@@ -1445,6 +1690,10 @@
     "locale": "pt-BR",
     "headings": [
       "API gRPC em tempo real",
+      "Glossário",
+      "Responsabilidade no escopo",
+      "Por que existe",
+      "O que é",
       "Escopo",
       "Referências de contrato",
       "Contrato de serviço",
@@ -1452,7 +1701,9 @@
       "Exemplo profundo: solicitação unária",
       "Exemplo profundo: fluxo bidirecional gRPC nativo",
       "Regras de serialização de carga útil",
-      "Orientação Operacional"
+      "Orientação Operacional",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
     ]
   },
   {
@@ -1463,6 +1714,10 @@
     "locale": "pt-BR",
     "headings": [
       "API WebSocket em tempo real",
+      "Glossário",
+      "Responsabilidade no escopo",
+      "Por que existe",
+      "O que é",
       "Escopo",
       "Referências de contrato",
       "Endpoint e canais",
@@ -1474,7 +1729,9 @@
       "Exemplo profundo: solicitação de canal por operação",
       "Exemplo de SDK",
       "Regras de resposta/tratamento de erros",
-      "Orientação Operacional"
+      "Orientação Operacional",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
     ]
   },
   {
@@ -1485,9 +1742,15 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador de trabalhadores Cloudflare",
+      "Glossário",
+      "Responsabilidade no escopo",
+      "Por que existe",
+      "O que é",
       "Propósito",
       "Pontos de entrada",
-      "Crie um serviço com trabalhadores da Cloudflare"
+      "Crie um serviço com trabalhadores da Cloudflare",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
     ]
   },
   {
@@ -1498,10 +1761,16 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador Restify",
+      "Glossário",
+      "Responsabilidade no escopo",
+      "Por que existe",
+      "O que é",
       "Propósito",
       "Pontos de entrada",
       "Construa um serviço com Restify",
-      "Produção"
+      "Produção",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
     ]
   },
   {
@@ -1512,9 +1781,15 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador de funções Vercel",
+      "Glossário",
+      "Responsabilidade no escopo",
+      "Por que existe",
+      "O que é",
       "Propósito",
       "Pontos de entrada",
-      "Construa um serviço com funções Vercel"
+      "Construa um serviço com funções Vercel",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
     ]
   },
   {
@@ -1525,10 +1800,16 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador Expresso",
+      "Glossário",
+      "Responsabilidade no escopo",
+      "Por que existe",
+      "O que é",
       "Propósito",
       "Pontos de entrada",
       "Crie um serviço com Express",
-      "Produção"
+      "Produção",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
     ]
   },
   {
@@ -1539,9 +1820,15 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador Adonis.js",
+      "Glossário",
+      "Responsabilidade no escopo",
+      "Por que existe",
+      "O que é",
       "Propósito",
       "Pontos de entrada",
-      "Construa um serviço com Adonis.js"
+      "Construa um serviço com Adonis.js",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
     ]
   },
   {
@@ -1563,11 +1850,17 @@
     "locale": "pt-BR",
     "headings": [
       "Fastify Adaptador",
+      "Glossário",
+      "Responsabilidade no escopo",
+      "Por que existe",
+      "O que é",
       "Propósito",
       "Pontos de entrada",
       "Crie um serviço com Fastify",
       "Produção",
-      "Ciclo de vida da documentação estática"
+      "Ciclo de vida da documentação estática",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
     ]
   },
   {
@@ -1578,9 +1871,15 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador de Penas",
+      "Glossário",
+      "Responsabilidade no escopo",
+      "Por que existe",
+      "O que é",
       "Propósito",
       "Pontos de entrada",
-      "Construa um serviço com penas"
+      "Construa um serviço com penas",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
     ]
   },
   {
@@ -1591,9 +1890,15 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador LoopBack",
+      "Glossário",
+      "Responsabilidade no escopo",
+      "Por que existe",
+      "O que é",
       "Propósito",
       "Pontos de entrada",
-      "Construa um serviço com LoopBack"
+      "Construa um serviço com LoopBack",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
     ]
   },
   {
@@ -1604,10 +1909,16 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador AWS Lambda",
+      "Glossário",
+      "Responsabilidade no escopo",
+      "Por que existe",
+      "O que é",
       "Propósito",
       "Pontos de entrada",
       "Crie um serviço com Lambda",
-      "Notas"
+      "Notas",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
     ]
   },
   {
@@ -1618,9 +1929,15 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador Sails.js",
+      "Glossário",
+      "Responsabilidade no escopo",
+      "Por que existe",
+      "O que é",
       "Propósito",
       "Pontos de entrada",
-      "Construa um serviço com Sails.js"
+      "Construa um serviço com Sails.js",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
     ]
   },
   {
@@ -1631,9 +1948,15 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador Derby.js",
+      "Glossário",
+      "Responsabilidade no escopo",
+      "Por que existe",
+      "O que é",
       "Propósito",
       "Pontos de entrada",
-      "Construa um serviço com Derby.js"
+      "Construa um serviço com Derby.js",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
     ]
   },
   {
@@ -1644,9 +1967,15 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador Total.js",
+      "Glossário",
+      "Responsabilidade no escopo",
+      "Por que existe",
+      "O que é",
       "Propósito",
       "Pontos de entrada",
-      "Construa um serviço com Total.js"
+      "Construa um serviço com Total.js",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
     ]
   },
   {
@@ -1657,6 +1986,7 @@
     "locale": "pt-BR",
     "headings": [
       "Criando API REST com Jumentix",
+      "Responsabilidade no escopo",
       "O que é",
       "Por que existe",
       "Pré-requisitos",
@@ -1684,6 +2014,9 @@
     "locale": "pt-BR",
     "headings": [
       "Criando SPA/PWA com Jumentix",
+      "Responsabilidade no escopo",
+      "Glossário",
+      "O que é",
       "1. Modele primeiro os domínios de negócios",
       "2. Definir contratos de comunicação",
       "3. Configurar o tempo de execução do serviço",
@@ -1713,6 +2046,9 @@
     "locale": "pt-BR",
     "headings": [
       "Criando SaaS Monolith com Jumentix",
+      "Responsabilidade no escopo",
+      "Glossário",
+      "O que é",
       "Estratégia recomendada",
       "Por que isso funciona",
       "Plano de entrega",
@@ -1730,6 +2066,7 @@
     "locale": "pt-BR",
     "headings": [
       "Criando API em tempo real com Jumentix",
+      "Responsabilidade no escopo",
       "O que é",
       "Por que existe",
       "Pré-requisitos",
@@ -1758,6 +2095,9 @@
     "locale": "pt-BR",
     "headings": [
       "Criando microsserviços SaaS com Jumentix",
+      "Responsabilidade no escopo",
+      "Glossário",
+      "O que é",
       "Estratégia recomendada",
       "Caminho de evolução do Monolith",
       "Padrão Operacional",
@@ -1920,6 +2260,7 @@
     "locale": "pt-BR",
     "headings": [
       "@jumentix/designer-core",
+      "Responsabilidade no escopo",
       "O que é",
       "Uso",
       "Política de versionamento",
@@ -2041,6 +2382,7 @@
     "locale": "pt-BR",
     "headings": [
       "@jumentix/mutex-service",
+      "Responsabilidade no escopo",
       "Contrato",
       "Validação",
       "Experimente no navegador",
@@ -2081,6 +2423,7 @@
     "locale": "pt-BR",
     "headings": [
       "@jumentix/key-value-storage",
+      "Responsabilidade no escopo",
       "Experimente no navegador",
       "Documentação completa"
     ]
@@ -2197,6 +2540,7 @@
     "locale": "pt-BR",
     "headings": [
       "@jumentix/message-mediator",
+      "Responsabilidade no escopo",
       "Experimente no navegador",
       "Documentação completa"
     ]
@@ -2236,6 +2580,7 @@
     "locale": "pt-BR",
     "headings": [
       "@jumentix/cana",
+      "Responsabilidade no escopo",
       "Três coisas a saber antes de usar",
       "Erros são dados puros",
       "Experimente no navegador",
@@ -2320,6 +2665,7 @@
     "locale": "pt-BR",
     "headings": [
       "Começando com o Jumentix",
+      "Responsabilidade no escopo",
       "O que é",
       "Por que existe",
       "Pré-requisitos",

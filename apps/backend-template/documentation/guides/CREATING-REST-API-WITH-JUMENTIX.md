@@ -1,5 +1,11 @@
 # Creating REST API with Jumentix
 
+## Responsibility in context
+
+- **Owns:** HTTP adapter + application use-cases for REST
+- **Used with:** sdk-rest-client, persistence packages, backend-template app hub
+- **Not responsible for:** WebSocket/gRPC realtime (see realtime guide) or offline IndexedDB (Cana)
+
 ## What it is
 
 This guide walks you through bootstrapping, running, and validating a REST service

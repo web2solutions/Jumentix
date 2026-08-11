@@ -2,6 +2,25 @@
 
 This guide is exclusively for the Socket.IO realtime interface.
 
+## Glossary
+
+- **Inbound adapter** — accepts external protocol calls and translates them into use-case calls.
+
+## Responsibility in context
+
+- **Stack layer:** adapter / realtime
+- **Owns:** framework-specific wiring for this technology
+- **Used with:** backend-template composition, persistence/SDK packages as needed, matching delivery guide
+- **Not responsible for:** domain rules, OpenAPI authoring, or browser offline storage
+
+## Why it exists
+
+Framework choice should stay at the edge. This adapter keeps Express/Fastify/DB/realtime details replaceable.
+
+## What it is
+
+Websocket Api adapter for Jumentix realtime interfaces — mounts application use-cases without leaking framework types into the domain.
+
 ## Scope
 
 - Transport: WebSocket (Socket.IO protocol)
@@ -204,3 +223,13 @@ client.disconnect();
 1. Always send `metadata.requestId` from the client.
 2. Subscribe to both `api:response` and `api:{operationId}:response` when building generic clients.
 3. Keep a client-side timeout and retry strategy for transient network failures.
+
+## Junior checklist (“I can …”)
+
+- [ ] I know when to pick this adapter
+- [ ] I can start it from the documented script
+- [ ] I know the next guide/package to read
+
+## Next step
+
+Return to [Getting started](/docs/jumentix/concepts/getting-started) or the matching delivery guide.
