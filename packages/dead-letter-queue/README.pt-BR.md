@@ -42,6 +42,36 @@ guardar.
 Registos terminais são mantidos em vez de apagados, para que "essa escrita
 chegou a acontecer?" continue a ter resposta depois do facto.
 
+## O worker de replay
+
+`new DeadLetterReplayWorker({ queue, handlers, intervalMs, onReport, onError })`
+
+`start()` drena no intervalo (por omissão 30s), `stop()` termina, `tick()` força
+uma drenagem. O timer leva `unref`, para que uma drenagem em fundo nunca segure
+uma CLI ou um test runner vivos.
+
+Três propriedades, cada uma um modo de um ciclo de timer ingénuo correr mal:
+
+- **Sem sobreposição.** Uma drenagem mais lenta que o intervalo não recomeça
+  enquanto a anterior corre, ou o mesmo registo é reexecutado duas vezes em
+  simultâneo.
+- **Uma drenagem que falha não mata o worker.** Redis em baixo é um tick mau,
+  não o fim. Um worker que morre ao primeiro erro é indistinguível de um que
+  nunca arrancou.
+- **Parar é completo.** Nenhum tick corre depois de `stop()`.
+
+No `apps/backend-template`, `composeUserDeadLetterReplay.ts` constrói os
+handlers a partir do `UserService`. O replay passa **pelo serviço**, não pelo
+repositório, logo readquire o mutex: um registo cujo lock não libertou é
+recusado outra vez e continua em fila. Um replay ao nível do repositório
+escreveria por cima do lock.
+
+Esse ficheiro carrega também o ponto mais subtil do desenho: o `UserService`
+reporta falha em `response.error` e não lança. Um handler que ignorasse isso
+retornaria normalmente para um registo ainda bloqueado, a fila marcaria
+`succeeded`, e a escrita perder-se-ia com o relatório a dizer que passou. Todos
+os handlers passam por `orThrow`.
+
 ## Stores
 
 - `InMemoryDeadLetterStore` — local ao processo, para testes e runtimes de
@@ -73,4 +103,9 @@ bun run --filter @jumentix/dead-letter-queue build
 bun run --filter @jumentix/dead-letter-queue typecheck
 bun run --filter @jumentix/dead-letter-queue lint
 bun run --filter @jumentix/dead-letter-queue test
+bun run smoke:dead-letter:redis   # contra um contentor Redis real
 ```
+
+A suite de integração salta-se a si própria sem `RUN_REDIS_INTEGRATION=1` em vez
+de passar, porque uma suite que reporta sucesso sem a sua dependência é o
+falso-verde que este repositório continua a encontrar.

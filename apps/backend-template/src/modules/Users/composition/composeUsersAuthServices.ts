@@ -24,6 +24,11 @@ import { registerUserEventListeners } from '@src/modules/Users/events/listeners/
 import { registerUserMessageHandlers } from '@src/modules/Users/events/listeners/registerUserMessageHandlers';
 import type { IUserProvider } from '@src/modules/Users/service/ports/IUserProvider';
 import type { IAuthService } from '@src/modules/Users/service/ports/IAuthService';
+import type { DeadLetterQueue, DeadLetterReplayWorker } from '@jumentix/dead-letter-queue';
+import {
+  composeUserDeadLetterQueue,
+  composeUserDeadLetterWorker
+} from '@src/modules/Users/composition/composeUserDeadLetterReplay';
 
 interface IUsersAuthCompositionConfig {
   databaseClient: IDatabaseClient;
@@ -34,6 +39,7 @@ interface IUsersAuthCompositionConfig {
   eventBus?: IEventBus;
   messageMediator?: IMessageMediator;
   userEventListeners?: IUserEventListeners;
+  deadLetterIntervalMs?: number;
 }
 
 interface IUsersAuthComposition {
@@ -46,6 +52,8 @@ interface IUsersAuthComposition {
   userUseCases: IUserUseCases;
   organizationUseCases: IOrganizationUseCases;
   authUseCases: IAuthUseCases;
+  deadLetterQueue?: DeadLetterQueue;
+  deadLetterWorker?: DeadLetterReplayWorker;
 }
 
 export const composeUsersAuthServices = (
@@ -59,7 +67,8 @@ export const composeUsersAuthServices = (
     keyValueStorageClient,
     eventBus,
     messageMediator,
-    userEventListeners
+    userEventListeners,
+    deadLetterIntervalMs
   } = config;
   const integrationBus = messageMediator ?? eventBus;
   const cacheService = keyValueStorageClient
@@ -72,6 +81,10 @@ export const composeUsersAuthServices = (
   const organizationDataRepository = OrganizationDataRepository.compile({
     databaseClient
   });
+  // JUM-53. Built before the service because the service takes it, and only
+  // when there is a shared store: a process-local queue would be lost on
+  // restart while looking like durability.
+  const deadLetterQueue = composeUserDeadLetterQueue(keyValueStorageClient);
   const userService = UserService.compile({
     dataRepository,
     organizationDataRepository,
@@ -79,9 +92,17 @@ export const composeUsersAuthServices = (
       passwordCryptoService,
       mutexService,
       eventBus: integrationBus,
-      cacheService
+      cacheService,
+      deadLetterQueue
     }
   });
+  // Returned rather than started here. Composition builds; a background timer
+  // is the runtime's to start and, more importantly, to stop.
+  const deadLetterWorker = composeUserDeadLetterWorker(
+    deadLetterQueue,
+    userService,
+    deadLetterIntervalMs
+  );
   const organizationService = OrganizationService.compile({
     dataRepository: organizationDataRepository,
     services: {
@@ -117,6 +138,8 @@ export const composeUsersAuthServices = (
     authService,
     userUseCases,
     organizationUseCases,
-    authUseCases
+    authUseCases,
+    deadLetterQueue,
+    deadLetterWorker
   };
 };

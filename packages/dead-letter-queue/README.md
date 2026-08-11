@@ -41,6 +41,34 @@ exactly the data this exists to keep.
 Terminal records are kept rather than deleted, so "did that write ever happen"
 stays answerable after the fact.
 
+## The replay worker
+
+`new DeadLetterReplayWorker({ queue, handlers, intervalMs, onReport, onError })`
+
+`start()` drains on the interval (default 30s), `stop()` ends it, `tick()`
+forces one drain. The timer is `unref`ed, so a background drain never keeps a
+CLI or a test runner alive.
+
+Three properties it holds, each a way a naive timer loop goes wrong:
+
+- **No overlap.** A drain slower than the interval is not started again while
+  the previous one runs, or the same record is replayed twice concurrently.
+- **A failing drain does not stop the worker.** Redis down is a bad tick, not
+  the end. One that dies on the first error is indistinguishable from one never
+  started.
+- **Stopping is complete.** No tick runs after `stop()`.
+
+In `apps/backend-template`, `composeUserDeadLetterReplay.ts` builds the handlers
+from `UserService`. Replay goes **through the service**, not the repository, so
+it re-acquires the mutex: a record whose lock has not cleared is refused again
+and stays queued. A repository-level replay would write past the lock.
+
+That file also carries the subtlest point in the design: `UserService` reports
+failure in `response.error` and does not throw. A handler that ignored it would
+return normally for a still-locked record, the queue would mark it `succeeded`,
+and the write would be lost while the report said it landed. Every handler goes
+through `orThrow`.
+
 ## Stores
 
 - `InMemoryDeadLetterStore` — process-local, for tests and single-process runtimes.
@@ -71,4 +99,9 @@ bun run --filter @jumentix/dead-letter-queue build
 bun run --filter @jumentix/dead-letter-queue typecheck
 bun run --filter @jumentix/dead-letter-queue lint
 bun run --filter @jumentix/dead-letter-queue test
+bun run smoke:dead-letter:redis   # against a real Redis container
 ```
+
+The integration suite skips itself without `RUN_REDIS_INTEGRATION=1` rather
+than passing, because a suite that reports success without its dependency is
+the false green this repository keeps finding.
