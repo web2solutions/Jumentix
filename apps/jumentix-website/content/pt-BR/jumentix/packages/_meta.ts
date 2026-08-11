@@ -7,6 +7,7 @@ export default {
   'config-jest': '@jumentix/config-jest',
   'config-ts': '@jumentix/config-ts',
   'database-client-factory': '@jumentix/database-client-factory',
+  'dead-letter-queue': '@jumentix/dead-letter-queue',
   'designer-core': '@jumentix/designer-core',
   'external-db-repositories': '@jumentix/external-db-repositories',
   'external-persistence-core': '@jumentix/external-persistence-core',
