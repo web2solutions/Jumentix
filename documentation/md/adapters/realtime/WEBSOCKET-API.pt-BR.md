@@ -15,9 +15,9 @@ Este guia é exclusivo para a interface em tempo real do Socket.IO.
 
 ## Referências de contrato
 
-- [Contratos em tempo real WebSocket](../../contracts/WEBSOCKET-REALTIME-CONTRACTS.md)
-- [Contratos e respostas de erro](../../ERROR-CONTRACTS-AND-RESPONSES.md)
-- [Mapa de eventos e mensagens](../../EVENTS-AND-MESSAGES-MAP.md)
+- Contratos em tempo real WebSocket
+- [Contratos e respostas de erro](/docs/jumentix/reference/errors-responses)
+- [Mapa de eventos e mensagens](/docs/jumentix/reference/events-messages)
 
 ## Endpoint e canais
 

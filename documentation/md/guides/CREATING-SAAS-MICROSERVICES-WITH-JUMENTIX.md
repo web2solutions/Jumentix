@@ -30,6 +30,12 @@ Use this path when domain scale, team autonomy, and traffic profiles demand serv
 
 ## Related Docs
 
-- [Message and Event Contracts](../EVENTS-AND-MESSAGES-MAP.md)
-- [Jumentix Workspace Packages](../JUMENTIX-WORKSPACE-PACKAGES.md)
-- [Architecture and Structure](../ARCHITECTURE-AND-STRUCTURE.md)
+- [Message and Event Contracts](/docs/jumentix/reference/events-messages)
+- [Jumentix Workspace Packages](/docs/jumentix/packages)
+- [Architecture and Structure](/docs/jumentix/concepts/architecture)
+
+
+## Next steps
+
+1. [Getting started](/docs/jumentix/concepts/getting-started)
+2. [REST](/docs/jumentix/guides/rest-api)

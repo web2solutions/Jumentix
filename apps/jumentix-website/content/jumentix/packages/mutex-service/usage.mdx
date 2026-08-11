@@ -1,0 +1,38 @@
+---
+title: "mutex-service usage"
+description: "Junior guide and playground for mutex locks."
+---
+
+> Source: `../../documentation/md/MUTEX-SERVICE-USAGE-GUIDE.md`
+
+# @jumentix/mutex-service — usage guide
+
+Named locks prevent two workers from mutating the same resource. In docs and
+tests, back the mutex with an in-memory KV client.
+
+## Install
+
+```bash
+bun add @jumentix/mutex-service @jumentix/key-value-storage
+```
+
+## Try it
+
+<DocsPlayground runtime="mutex-service" id="getting-started" />
+
+```js
+const mutex = api.create();
+const lock = await mutex.acquire('docs-demo');
+await mutex.release(lock);
+```
+
+## Junior rules
+
+1. Always release in `finally`.
+2. Keep critical sections tiny.
+3. Do not hold a lock across `await fetch` to a remote API unless you accept timeouts.
+
+## Next steps
+
+- [key-value-storage](/docs/jumentix/packages/key-value-storage/usage)
+- [message-mediator](/docs/jumentix/packages/message-mediator/usage)

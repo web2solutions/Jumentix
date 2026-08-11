@@ -40,9 +40,22 @@ bun run test:integration:realtime
 bun run test:smoke:realtime
 ```
 
+## 6. Client playground (WebSocket)
+
+Prefer WebSocket for browser apps. gRPC stays Node-to-Node — use static snippets
+on the gRPC adapter page, not a browser Run button.
+
+<DocsPlayground runtime="sdk-websocket-client" id="getting-started" />
+
+## Next steps
+
+1. [Getting started](/docs/jumentix/concepts/getting-started)
+2. [REST guide](/docs/jumentix/guides/rest-api) (fallback)
+3. [WebSocket adapter](/docs/jumentix/adapters/realtime/websocket-api)
+4. [gRPC adapter](/docs/jumentix/adapters/realtime/grpc-api) (Node-only)
+
 ## References
 
-- [Realtime WebSocket API](../../../../documentation/md/adapters/realtime/WEBSOCKET-API.md)
-- [Realtime gRPC API](../../../../documentation/md/adapters/realtime/GRPC-API.md)
-- [WebSocket Realtime Contracts](../../../../documentation/md/contracts/WEBSOCKET-REALTIME-CONTRACTS.md)
-- [gRPC Realtime Contracts](../../../../documentation/md/contracts/GRPC-REALTIME-CONTRACTS.md)
+- WebSocket adapter: [/docs/jumentix/adapters/realtime/websocket-api](/docs/jumentix/adapters/realtime/websocket-api)
+- gRPC adapter: [/docs/jumentix/adapters/realtime/grpc-api](/docs/jumentix/adapters/realtime/grpc-api)
+- Events map: [/docs/jumentix/reference/events-messages](/docs/jumentix/reference/events-messages)

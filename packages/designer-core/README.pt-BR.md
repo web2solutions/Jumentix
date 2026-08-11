@@ -110,3 +110,12 @@ bun test        # executa as suítes deste pacote (packaging, prova DOM-free, sm
 ## Licença
 
 MIT — veja [LICENSE.md](./LICENSE.md).
+
+## Experimente no navegador
+
+<DocsPlayground runtime="designer-core" id="getting-started" />
+
+## Documentação completa
+
+Continue com o [guia de uso](../../documentation/md/DESIGNER-CORE-USAGE-GUIDE.pt-BR.md)
+para fluxos normalize → validate → export e troubleshooting.

@@ -34,6 +34,12 @@ Use esse caminho quando desejar uma entrega rápida com limites modulares fortes
 
 ## Documentos relacionados
 
-- [Arquitetura e Estrutura](../ARCHITECTURE-AND-STRUCTURE.md)
-- [Hub de modelo de back-end](../../../apps/backend-template/documentation/README.md)
-- [Implantar matriz de destino e empacotamento](../JUMENTIX-DEPLOY-TARGET-AND-PACKAGING-MATRIX.md)
+- [Arquitetura e Estrutura](/docs/jumentix/concepts/architecture)
+- [Hub de modelo de back-end](/docs/jumentix/guides/rest-api)
+- Implantar matriz de destino e empacotamento
+
+
+## Próximos passos
+
+1. [Começando](/docs/pt-BR/jumentix/concepts/getting-started)
+2. [REST](/docs/pt-BR/jumentix/guides/rest-api)

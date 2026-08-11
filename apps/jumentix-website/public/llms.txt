@@ -1,0 +1,91 @@
+# Jumentix
+
+> Jumentix is a software factory framework for building REST, realtime, and offline apps with shared contracts.
+
+Site: https://jumentix-website.vercel.app
+Docs index JSON: https://jumentix-website.vercel.app/docs-index.json
+
+## Start here
+- Getting started: https://jumentix-website.vercel.app/docs/jumentix/concepts/getting-started
+- Concepts overview: https://jumentix-website.vercel.app/docs/jumentix/concepts/overview
+- Architecture: https://jumentix-website.vercel.app/docs/jumentix/concepts/architecture
+
+## Guides
+- Create a REST API: https://jumentix-website.vercel.app/docs/jumentix/guides/rest-api
+- Create a SPA or Offline PWA: https://jumentix-website.vercel.app/docs/jumentix/guides/spa-pwa
+- Guides: https://jumentix-website.vercel.app/docs/jumentix/guides
+- Create a Modular SaaS: https://jumentix-website.vercel.app/docs/jumentix/guides/saas-monolith
+- Create a Realtime API: https://jumentix-website.vercel.app/docs/jumentix/guides/realtime-api
+- Create a Microservices SaaS: https://jumentix-website.vercel.app/docs/jumentix/guides/saas-microservices
+
+## Packages
+- @jumentix/sdk-grpc-client: https://jumentix-website.vercel.app/docs/jumentix/packages/sdk-grpc-client
+- @jumentix/external-db-repositories: https://jumentix-website.vercel.app/docs/jumentix/packages/external-db-repositories
+- @jumentix/external-store-proxy: https://jumentix-website.vercel.app/docs/jumentix/packages/external-store-proxy
+- @jumentix/external-persistence-core: https://jumentix-website.vercel.app/docs/jumentix/packages/external-persistence-core
+- @jumentix/config-jest: https://jumentix-website.vercel.app/docs/jumentix/packages/config-jest
+- Jumentix Workspace Packages: https://jumentix-website.vercel.app/docs/jumentix/packages
+- @jumentix/persistence-contracts: https://jumentix-website.vercel.app/docs/jumentix/packages/persistence-contracts
+- @jumentix/config-eslint: https://jumentix-website.vercel.app/docs/jumentix/packages/config-eslint
+- @jumentix/designer-core: https://jumentix-website.vercel.app/docs/jumentix/packages/designer-core
+- designer-core usage: https://jumentix-website.vercel.app/docs/jumentix/packages/designer-core/usage
+- @jumentix/cli-init: https://jumentix-website.vercel.app/docs/jumentix/packages/cli-init
+- @jumentix/sdk-rest-client: https://jumentix-website.vercel.app/docs/jumentix/packages/sdk-rest-client
+- @jumentix/runtime-infra: https://jumentix-website.vercel.app/docs/jumentix/packages/runtime-infra
+- @jumentix/database-client-factory: https://jumentix-website.vercel.app/docs/jumentix/packages/database-client-factory
+- @jumentix/mutex-service: https://jumentix-website.vercel.app/docs/jumentix/packages/mutex-service
+- mutex-service usage: https://jumentix-website.vercel.app/docs/jumentix/packages/mutex-service/usage
+- @jumentix/key-value-storage: https://jumentix-website.vercel.app/docs/jumentix/packages/key-value-storage
+- key-value-storage usage: https://jumentix-website.vercel.app/docs/jumentix/packages/key-value-storage/usage
+- @jumentix/shared-contracts: https://jumentix-website.vercel.app/docs/jumentix/packages/shared-contracts
+- @jumentix/adapter-runtime-bootstrap: https://jumentix-website.vercel.app/docs/jumentix/packages/adapter-runtime-bootstrap
+- @jumentix/sdk-websocket-client: https://jumentix-website.vercel.app/docs/jumentix/packages/sdk-websocket-client
+- @jumentix/config-ts: https://jumentix-website.vercel.app/docs/jumentix/packages/config-ts
+- @jumentix/message-mediator: https://jumentix-website.vercel.app/docs/jumentix/packages/message-mediator
+- message-mediator usage: https://jumentix-website.vercel.app/docs/jumentix/packages/message-mediator/usage
+- @jumentix/cana: https://jumentix-website.vercel.app/docs/jumentix/packages/cana
+- Cana usage guide: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage
+
+## Adapters
+- Aurora Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/aurora
+- Firebase Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/firebase
+- Oracle Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/oracle
+- Database Adapters Documentation: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases
+- DynamoDB Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/dynamodb
+- InMemory Database Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/inmemory
+- MongoDB Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/mongodb
+- SQLite Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/sqlite
+- SQL Server Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/mssql
+- RDS Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/rds
+- MySQL Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/mysql
+- Cassandra Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/cassandra
+- PostgreSQL Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/postgresql
+- Adapters: https://jumentix-website.vercel.app/docs/jumentix/adapters
+- Realtime: https://jumentix-website.vercel.app/docs/jumentix/adapters/realtime
+- gRPC Realtime API: https://jumentix-website.vercel.app/docs/jumentix/adapters/realtime/grpc-api
+- WebSocket Realtime API: https://jumentix-website.vercel.app/docs/jumentix/adapters/realtime/websocket-api
+- Cloudflare Workers Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/cloudflare-workers
+- Restify Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/restify
+- Vercel Functions Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/vercel-functions
+- Express Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/express
+- Adonis.js Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/adonis-js
+- HTTP Interface Adapters Documentation: https://jumentix-website.vercel.app/docs/jumentix/adapters/http
+- Fastify Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/fastify
+- Feathers Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/feathers
+- LoopBack Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/loopback
+- AWS Lambda Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/aws-lambda
+- Sails.js Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/sails-js
+- Derby.js Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/derby-js
+- Total.js Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/total-js
+
+## Reference
+- Reference: https://jumentix-website.vercel.app/docs/jumentix/reference
+- Runtime Environment Contracts: https://jumentix-website.vercel.app/docs/jumentix/reference/runtime-contracts
+- Events and Messages Map: https://jumentix-website.vercel.app/docs/jumentix/reference/events-messages
+- Security and PCI Hardening: https://jumentix-website.vercel.app/docs/jumentix/reference/security-compliance
+- Errors and Responses Map: https://jumentix-website.vercel.app/docs/jumentix/reference/errors-responses
+- Package Scripts Reference: https://jumentix-website.vercel.app/docs/jumentix/reference/package-scripts
+
+## Portuguese
+- Docs hub: https://jumentix-website.vercel.app/docs/pt-BR/jumentix
+- Getting started: https://jumentix-website.vercel.app/docs/pt-BR/jumentix/concepts/getting-started

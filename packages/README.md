@@ -52,5 +52,5 @@ consumer-facing compatibility target where packages expose Node runtime artifact
 
 ## Related Docs
 
-- [Jumentix Workspace Packages (Architecture)](../documentation/md/JUMENTIX-WORKSPACE-PACKAGES.md)
-- [SDK Compatibility Bridge](../documentation/md/SDK-COMPATIBILITY-BRIDGE.md)
+- [Jumentix Workspace Packages (Architecture)](/docs/jumentix/concepts/architecture)
+- [SDK Compatibility Bridge](/docs/jumentix/packages)

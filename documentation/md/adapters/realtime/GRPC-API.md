@@ -12,9 +12,9 @@ This guide is exclusively for the gRPC realtime interface.
 
 ## Contract References
 
-- [gRPC Realtime Contracts](../../contracts/GRPC-REALTIME-CONTRACTS.md)
-- [Error Contracts and Responses](../../ERROR-CONTRACTS-AND-RESPONSES.md)
-- [Events and Messages Map](../../EVENTS-AND-MESSAGES-MAP.md)
+- gRPC Realtime Contracts
+- [Error Contracts and Responses](/docs/jumentix/reference/errors-responses)
+- [Events and Messages Map](/docs/jumentix/reference/events-messages)
 
 ## Service Contract
 

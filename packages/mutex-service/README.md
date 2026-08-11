@@ -24,3 +24,11 @@ bun run --filter @jumentix/mutex-service typecheck
 bun run --filter @jumentix/mutex-service lint
 bun run --filter @jumentix/mutex-service test
 ```
+
+## Try it in the browser
+
+<DocsPlayground runtime="mutex-service" id="getting-started" />
+
+## Full documentation
+
+See the consumer [usage guide](../../documentation/md/MUTEX-SERVICE-USAGE-GUIDE.md).

@@ -57,5 +57,5 @@ artefatos de runtime expostos a consumidores.
 
 ## Documentos relacionados
 
-- [Pacotes Jumentix Workspace (Arquitetura)](../documentation/md/JUMENTIX-WORKSPACE-PACKAGES.md)
-- [Ponte de compatibilidade do SDK](../documentation/md/SDK-COMPATIBILITY-BRIDGE.md)
+- [Pacotes Jumentix Workspace (Arquitetura)](/docs/jumentix/concepts/architecture)
+- [Ponte de compatibilidade do SDK](/docs/jumentix/packages)

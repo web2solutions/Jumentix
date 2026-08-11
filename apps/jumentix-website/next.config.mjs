@@ -23,7 +23,16 @@ export default withNextra(
     reactStrictMode: false,
     cleanDistDir: true,
     outputFileTracingRoot: monorepoRoot,
-    transpilePackages: ['@jumentix/cana'],
+    transpilePackages: [
+      '@jumentix/cana',
+      '@jumentix/designer-core',
+      '@jumentix/key-value-storage',
+      '@jumentix/message-mediator',
+      '@jumentix/mutex-service',
+      '@jumentix/sdk-rest-client',
+      '@jumentix/sdk-websocket-client'
+    ],
+
     experimental: {
       optimizePackageImports: ['@mantine/core', '@mantine/hooks'],
     },

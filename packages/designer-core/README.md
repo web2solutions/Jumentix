@@ -108,3 +108,12 @@ bun test        # run this package's suites (packaging, DOM-free proof, consumer
 ## License
 
 MIT — see [LICENSE.md](./LICENSE.md).
+
+## Try it in the browser
+
+<DocsPlayground runtime="designer-core" id="getting-started" />
+
+## Full documentation
+
+Continue with the consumer [usage guide](../../documentation/md/DESIGNER-CORE-USAGE-GUIDE.md)
+for normalize → validate → export flows and troubleshooting.

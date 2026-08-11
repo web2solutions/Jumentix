@@ -34,6 +34,12 @@ Utilize este caminho quando a escala de domínio, a autonomia da equipa e os per
 
 ## Documentos relacionados
 
-- [Contratos de mensagens e eventos](../EVENTS-AND-MESSAGES-MAP.md)
-- [Pacotes do workspace Jumentix](../JUMENTIX-WORKSPACE-PACKAGES.md)
-- [Arquitetura e estrutura](../ARCHITECTURE-AND-STRUCTURE.md)
+- [Contratos de mensagens e eventos](/docs/jumentix/reference/events-messages)
+- [Pacotes do workspace Jumentix](/docs/jumentix/packages)
+- [Arquitetura e estrutura](/docs/jumentix/concepts/architecture)
+
+
+## Próximos passos
+
+1. [Começando](/docs/pt-BR/jumentix/concepts/getting-started)
+2. [REST](/docs/pt-BR/jumentix/guides/rest-api)

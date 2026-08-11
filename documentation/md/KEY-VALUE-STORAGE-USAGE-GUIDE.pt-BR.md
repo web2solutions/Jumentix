@@ -1,0 +1,19 @@
+# @jumentix/key-value-storage — guia de uso
+
+Armazenamento chave/valor é a porta compartilhada para caches, flags e backends
+de mutex. Comece com **InMemory** no browser e nos testes.
+
+## Instalar
+
+```bash
+bun add @jumentix/key-value-storage
+```
+
+## Experimente
+
+<DocsPlayground runtime="key-value-storage" id="getting-started" />
+
+## Próximos passos
+
+- [mutex-service](/docs/pt-BR/jumentix/packages/mutex-service/usage)
+- [Começando](/docs/pt-BR/jumentix/concepts/getting-started)

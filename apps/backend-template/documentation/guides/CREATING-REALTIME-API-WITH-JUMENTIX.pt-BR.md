@@ -44,9 +44,17 @@ bun run test:integration:realtime
 bun run test:smoke:realtime
 ```
 
+## 6. Playground WebSocket
+
+<DocsPlayground runtime="sdk-websocket-client" id="getting-started" />
+
+## Próximos passos
+
+1. [Começando](/docs/pt-BR/jumentix/concepts/getting-started)
+2. [Guia REST](/docs/pt-BR/jumentix/guides/rest-api)
+3. [Adapter WebSocket](/docs/pt-BR/jumentix/adapters/realtime/websocket-api)
+
 ## Referências
 
-- [API WebSocket em tempo real](../../../../documentation/md/adapters/realtime/WEBSOCKET-API.md)
-- [API gRPC em tempo real](../../../../documentation/md/adapters/realtime/GRPC-API.md)
-- [Contratos em tempo real WebSocket](../../../../documentation/md/contracts/WEBSOCKET-REALTIME-CONTRACTS.md)
-- [Contratos em tempo real gRPC](../../../../documentation/md/contracts/GRPC-REALTIME-CONTRACTS.md)
+- WebSocket: [/docs/pt-BR/jumentix/adapters/realtime/websocket-api](/docs/pt-BR/jumentix/adapters/realtime/websocket-api)
+- gRPC: [/docs/pt-BR/jumentix/adapters/realtime/grpc-api](/docs/pt-BR/jumentix/adapters/realtime/grpc-api)

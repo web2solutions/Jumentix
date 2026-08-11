@@ -1,6 +1,6 @@
 ---
 title: "@jumentix/designer-core"
-description: "Packages documentation."
+description: "Browser-safe design document helpers for Jumentix frontends."
 ---
 
 > Source: `../../packages/designer-core/README.md`
@@ -96,7 +96,7 @@ restate it.
 ## Publish policy: dry-run only
 
 Per
-[Requirement 070](https://github.com/XpertMinds/Jumentix/blob/dev/.agents/requirements/project/070-xpertminds-npm-and-web2solutions-vercel-integration.md),
+Requirement 070,
 **no automatic publish exists**. The repository-wide dry-run surface
 (`bun run npm:publish:dry-run:packages`) picks this package up like every
 other non-private workspace package and runs `bun publish --dry-run
@@ -114,4 +114,13 @@ bun test        # run this package's suites (packaging, DOM-free proof, consumer
 
 ## License
 
-MIT — see [LICENSE.md](https://github.com/XpertMinds/Jumentix/blob/dev/packages/designer-core/LICENSE.md).
+MIT — see LICENSE.md.
+
+## Try it in the browser
+
+<DocsPlayground runtime="designer-core" id="getting-started" />
+
+## Full documentation
+
+Continue with the consumer [usage guide](/docs/jumentix/packages/designer-core/usage)
+for normalize → validate → export flows and troubleshooting.

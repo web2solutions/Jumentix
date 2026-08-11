@@ -16,9 +16,9 @@ Este guia é exclusivo para a interface em tempo real do gRPC.
 
 ## Referências de contrato
 
-- [Contratos em tempo real gRPC](../../contracts/GRPC-REALTIME-CONTRACTS.md)
-- [Contratos e respostas de erro](../../ERROR-CONTRACTS-AND-RESPONSES.md)
-- [Mapa de eventos e mensagens](../../EVENTS-AND-MESSAGES-MAP.md)
+- Contratos em tempo real gRPC
+- [Contratos e respostas de erro](/docs/jumentix/reference/errors-responses)
+- [Mapa de eventos e mensagens](/docs/jumentix/reference/events-messages)
 
 ## Contrato de serviço
 

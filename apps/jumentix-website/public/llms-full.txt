@@ -1,0 +1,1066 @@
+# Jumentix Documentation
+
+URL: https://jumentix-website.vercel.app/docs/jumentix
+
+Jumentix technical documentation portal.
+
+Headings:
+- Build with Jumentix
+- Explore the documentation
+- Recommended journeys
+
+---
+
+# Aurora Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/aurora
+
+Database Adapters documentation.
+
+Headings:
+- Aurora Adapter
+- Technology
+- Build Services with Aurora
+
+---
+
+# Firebase Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/firebase
+
+Database Adapters documentation.
+
+Headings:
+- Firebase Adapter
+- Technology
+- Build Services with Firebase
+
+---
+
+# Oracle Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/oracle
+
+Database Adapters documentation.
+
+Headings:
+- Oracle Adapter
+- Technology
+- Build Services with Oracle
+
+---
+
+# Database Adapters Documentation
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases
+
+Database Adapters documentation.
+
+Headings:
+- Database Adapters Documentation
+- Database Pages
+
+---
+
+# DynamoDB Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/dynamodb
+
+Database Adapters documentation.
+
+Headings:
+- DynamoDB Adapter
+- Technology
+- Build Services with DynamoDB
+
+---
+
+# InMemory Database Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/inmemory
+
+Database Adapters documentation.
+
+Headings:
+- InMemory Database Adapter
+- Purpose
+- Entrypoints
+- Build Services with InMemory
+
+---
+
+# MongoDB Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/mongodb
+
+Database Adapters documentation.
+
+Headings:
+- MongoDB Adapter
+- Technology
+- Build Services with MongoDB
+
+---
+
+# SQLite Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/sqlite
+
+Database Adapters documentation.
+
+Headings:
+- SQLite Adapter
+- Technology
+- Build Services with SQLite
+
+---
+
+# SQL Server Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/mssql
+
+Database Adapters documentation.
+
+Headings:
+- SQL Server Adapter
+- Technology
+- Build Services with SQL Server
+
+---
+
+# RDS Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/rds
+
+Database Adapters documentation.
+
+Headings:
+- RDS Adapter
+- Technology
+- Build Services with RDS
+
+---
+
+# MySQL Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/mysql
+
+Database Adapters documentation.
+
+Headings:
+- MySQL Adapter
+- Technology
+- Build Services with MySQL
+
+---
+
+# Cassandra Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/cassandra
+
+Database Adapters documentation.
+
+Headings:
+- Cassandra Adapter
+- Technology
+- Build Services with Cassandra
+
+---
+
+# PostgreSQL Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/postgresql
+
+Database Adapters documentation.
+
+Headings:
+- PostgreSQL Adapter
+- Technology
+- Build Services with PostgreSQL
+
+---
+
+# Adapters
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters
+
+Explore the Jumentix Adapters section.
+
+Headings:
+- Adapters
+
+---
+
+# Realtime
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/realtime
+
+Explore the Jumentix Realtime section.
+
+Headings:
+- Realtime
+
+---
+
+# gRPC Realtime API
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/realtime/grpc-api
+
+Realtime Adapters documentation.
+
+Headings:
+- gRPC Realtime API
+- Scope
+- Contract References
+- Service Contract
+- Runtime Flow
+- Deep Example: Unary Request
+- Deep Example: Native gRPC Bi-directional Stream
+- Payload Serialization Rules
+- Operational Guidance
+
+---
+
+# WebSocket Realtime API
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/realtime/websocket-api
+
+Realtime Adapters documentation.
+
+Headings:
+- WebSocket Realtime API
+- Scope
+- Contract References
+- Endpoint and Channels
+- Horizontal Scaling with Redis Streams Adapter
+- Multi-thread Resilience with Socket.IO Cluster Adapter
+- Multi-instance Validation Test
+- Runtime Flow
+- Deep Example: Generic Request + ACK correlation
+- Deep Example: Per-operation Channel Request
+- SDK Example
+- Response/Error Handling Rules
+- Operational Guidance
+
+---
+
+# Cloudflare Workers Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/cloudflare-workers
+
+HTTP Adapters documentation.
+
+Headings:
+- Cloudflare Workers Adapter
+- Purpose
+- Entrypoints
+- Build a Service with Cloudflare Workers
+
+---
+
+# Restify Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/restify
+
+HTTP Adapters documentation.
+
+Headings:
+- Restify Adapter
+- Purpose
+- Entrypoints
+- Build a Service with Restify
+- Production
+
+---
+
+# Vercel Functions Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/vercel-functions
+
+HTTP Adapters documentation.
+
+Headings:
+- Vercel Functions Adapter
+- Purpose
+- Entrypoints
+- Build a Service with Vercel Functions
+
+---
+
+# Express Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/express
+
+HTTP Adapters documentation.
+
+Headings:
+- Express Adapter
+- Purpose
+- Entrypoints
+- Build a Service with Express
+- Production
+
+---
+
+# Adonis.js Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/adonis-js
+
+HTTP Adapters documentation.
+
+Headings:
+- Adonis.js Adapter
+- Purpose
+- Entrypoints
+- Build a Service with Adonis.js
+
+---
+
+# HTTP Interface Adapters Documentation
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/http
+
+HTTP Adapters documentation.
+
+Headings:
+- HTTP Interface Adapters Documentation
+- Adapter Pages
+
+---
+
+# Fastify Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/fastify
+
+HTTP Adapters documentation.
+
+Headings:
+- Fastify Adapter
+- Purpose
+- Entrypoints
+- Build a Service with Fastify
+- Production
+- Static Documentation Lifecycle
+
+---
+
+# Feathers Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/feathers
+
+HTTP Adapters documentation.
+
+Headings:
+- Feathers Adapter
+- Purpose
+- Entrypoints
+- Build a Service with Feathers
+
+---
+
+# LoopBack Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/loopback
+
+HTTP Adapters documentation.
+
+Headings:
+- LoopBack Adapter
+- Purpose
+- Entrypoints
+- Build a Service with LoopBack
+
+---
+
+# AWS Lambda Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/aws-lambda
+
+HTTP Adapters documentation.
+
+Headings:
+- AWS Lambda Adapter
+- Purpose
+- Entrypoints
+- Build a Service with Lambda
+- Notes
+
+---
+
+# Sails.js Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/sails-js
+
+HTTP Adapters documentation.
+
+Headings:
+- Sails.js Adapter
+- Purpose
+- Entrypoints
+- Build a Service with Sails.js
+
+---
+
+# Derby.js Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/derby-js
+
+HTTP Adapters documentation.
+
+Headings:
+- Derby.js Adapter
+- Purpose
+- Entrypoints
+- Build a Service with Derby.js
+
+---
+
+# Total.js Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/total-js
+
+HTTP Adapters documentation.
+
+Headings:
+- Total.js Adapter
+- Purpose
+- Entrypoints
+- Build a Service with Total.js
+
+---
+
+# Create a REST API
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/guides/rest-api
+
+Build contract-first REST APIs with Jumentix.
+
+Headings:
+- Creating REST API with Jumentix
+- 1. Select Runtime Profile
+- 2. Model Domain and Contracts
+- 3. Implement Domain Flow
+- 4. Bind to HTTP Adapter
+- 5. Validate
+- 6. Call the API from a client (junior path)
+- Next steps
+- References
+
+---
+
+# Create a SPA or Offline PWA
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/guides/spa-pwa
+
+Build frontend products with shared SDKs and offline behavior.
+
+Headings:
+- Creating SPA/PWA with Jumentix
+- 1. Model Business Domains First
+- 2. Define Communication Contracts
+- 3. Configure Service Runtime
+- 4. Build Offline-Capable PWA
+- 5. Validate Delivery Readiness
+- 6. Offline storage with Cana + designs
+- Next steps
+- References
+
+---
+
+# Guides
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/guides
+
+Explore the Jumentix Guides section.
+
+Headings:
+- Guides
+
+---
+
+# Create a Modular SaaS
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/guides/saas-monolith
+
+Launch a modular monolith with service-ready boundaries.
+
+Headings:
+- Creating SaaS Monolith with Jumentix
+- Recommended Strategy
+- Why This Works
+- Delivery Blueprint
+- Target Audience
+- Related Docs
+- Next steps
+
+---
+
+# Create a Realtime API
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/guides/realtime-api
+
+Build Socket.IO and gRPC interfaces with REST fallback.
+
+Headings:
+- Creating Realtime API with Jumentix
+- 1. Enable Realtime Runtime
+- or
+- 2. Define Async Contracts
+- 3. Implement Message Handlers
+- 4. Keep REST Fallback Available
+- 5. Validate Realtime Stability
+- 6. Client playground (WebSocket)
+- Next steps
+- References
+
+---
+
+# Create a Microservices SaaS
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/guides/saas-microservices
+
+Build distributed services with contract-based communication.
+
+Headings:
+- Creating SaaS Microservices with Jumentix
+- Recommended Strategy
+- Evolution Path from Monolith
+- Operational Pattern
+- Product and Engineering Benefits
+- Related Docs
+- Next steps
+
+---
+
+# @jumentix/sdk-grpc-client
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/sdk-grpc-client
+
+Packages documentation.
+
+Headings:
+- @jumentix/sdk-grpc-client
+- What it does
+- Quick usage
+- Build
+
+---
+
+# @jumentix/external-db-repositories
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/external-db-repositories
+
+Packages documentation.
+
+Headings:
+- @jumentix/external-db-repositories
+- Exports
+
+---
+
+# @jumentix/external-store-proxy
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/external-store-proxy
+
+Packages documentation.
+
+Headings:
+- @jumentix/external-store-proxy
+- Exports
+
+---
+
+# @jumentix/external-persistence-core
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/external-persistence-core
+
+Packages documentation.
+
+Headings:
+- @jumentix/external-persistence-core
+- Exports
+
+---
+
+# @jumentix/config-jest
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/config-jest
+
+Packages documentation.
+
+Headings:
+- @jumentix/config-jest
+- Current `dev` status
+
+---
+
+# Jumentix Workspace Packages
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages
+
+Packages documentation.
+
+Headings:
+- Jumentix Workspace Packages
+- Package Index
+- Runtime and persistence
+- Messaging, bootstrap, and contracts
+- SDK clients
+- Service Management
+- Private workspace configuration
+- Usage Pattern
+- Related Docs
+
+---
+
+# @jumentix/persistence-contracts
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/persistence-contracts
+
+Packages documentation.
+
+Headings:
+- @jumentix/persistence-contracts
+- Exports
+
+---
+
+# @jumentix/config-eslint
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/config-eslint
+
+Packages documentation.
+
+Headings:
+- @jumentix/config-eslint
+- Current `dev` status
+
+---
+
+# @jumentix/designer-core
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/designer-core
+
+Browser-safe design document helpers for Jumentix frontends.
+
+Headings:
+- @jumentix/designer-core
+- What it is
+- Usage
+- Versioning policy
+- Publish policy: dry-run only
+- Development
+- License
+- Try it in the browser
+- Full documentation
+
+---
+
+# designer-core usage
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/designer-core/usage
+
+Junior guide and playground for @jumentix/designer-core.
+
+Headings:
+- @jumentix/designer-core — usage guide
+- When to use it
+- Install
+- Try it
+- Junior checklist
+- Errors to expect
+- Next steps
+
+---
+
+# @jumentix/cli-init
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cli-init
+
+Packages documentation.
+
+Headings:
+- @jumentix/cli-init
+- Commands
+- Behavior
+- Non-interactive usage
+- Help
+- Run local package entrypoint
+
+---
+
+# @jumentix/sdk-rest-client
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/sdk-rest-client
+
+Packages documentation.
+
+Headings:
+- @jumentix/sdk-rest-client
+- What it does
+- Quick usage
+- Build
+
+---
+
+# @jumentix/runtime-infra
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/runtime-infra
+
+Packages documentation.
+
+Headings:
+- @jumentix/runtime-infra
+- Exports
+
+---
+
+# @jumentix/database-client-factory
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/database-client-factory
+
+Packages documentation.
+
+Headings:
+- @jumentix/database-client-factory
+- Exports
+
+---
+
+# @jumentix/mutex-service
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/mutex-service
+
+Named locks built on key/value storage.
+
+Headings:
+- @jumentix/mutex-service
+- Contract
+- Validation
+- Try it in the browser
+- Full documentation
+
+---
+
+# mutex-service usage
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/mutex-service/usage
+
+Junior guide and playground for mutex locks.
+
+Headings:
+- @jumentix/mutex-service — usage guide
+- Install
+- Try it
+- Junior rules
+- Next steps
+
+---
+
+# @jumentix/key-value-storage
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/key-value-storage
+
+Key/value storage clients with an in-memory adapter for tests and demos.
+
+Headings:
+- @jumentix/key-value-storage
+- Try it in the browser
+- Full documentation
+
+---
+
+# key-value-storage usage
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/key-value-storage/usage
+
+Junior guide and in-memory playground for key/value storage.
+
+Headings:
+- @jumentix/key-value-storage — usage guide
+- Install
+- Try the in-memory client
+- When to use which adapter
+- Next steps
+
+---
+
+# @jumentix/shared-contracts
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/shared-contracts
+
+Packages documentation.
+
+Headings:
+- @jumentix/shared-contracts
+- Purpose
+
+---
+
+# @jumentix/adapter-runtime-bootstrap
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/adapter-runtime-bootstrap
+
+Packages documentation.
+
+Headings:
+- @jumentix/adapter-runtime-bootstrap
+- Exports
+
+---
+
+# @jumentix/sdk-websocket-client
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/sdk-websocket-client
+
+Packages documentation.
+
+Headings:
+- @jumentix/sdk-websocket-client
+- What it does
+- Quick usage
+- Build
+
+---
+
+# @jumentix/config-ts
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/config-ts
+
+Packages documentation.
+
+Headings:
+- @jumentix/config-ts
+- Current `dev` status
+
+---
+
+# @jumentix/message-mediator
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/message-mediator
+
+In-process and broker-backed message mediation.
+
+Headings:
+- @jumentix/message-mediator
+- Try it in the browser
+- Full documentation
+
+---
+
+# message-mediator usage
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/message-mediator/usage
+
+Junior guide and in-memory mediator playground.
+
+Headings:
+- @jumentix/message-mediator — usage guide
+- Install
+- Try it
+- When not to use in-memory
+- Next steps
+
+---
+
+# @jumentix/cana
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana
+
+IndexedDB offline database adapter for Jumentix applications.
+
+Headings:
+- @jumentix/cana
+- Three things to know before using it
+- Errors are plain data
+- Try it in the browser
+- Full documentation
+
+---
+
+# Cana usage guide
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage
+
+Consumer API guide for @jumentix/cana with runnable examples.
+
+Headings:
+- Cana — Usage Guide
+- Table of contents
+- 1. Getting started
+- Typing your records
+- 2. Schema and versioning
+- Upgrading
+- What an upgrade will and will not do
+- Downgrades are refused
+- Validation happens before anything is touched
+- 3. Keys
+- Valid key types
+- 4. Reading and writing
+- `add` vs `put` vs `update`
+- The result
+- Deleting a key that is not there
+- 5. Bulk operations
+- 6. Querying
+- `CanaQuery`
+- Counting
+- `explain` — checking that an index was used
+- What Cana does not do
+- 7. Transactions
+- The one rule
+- Aborting
+
+---
+
+# Jumentix Overview
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/concepts/overview
+
+Product, audience, and adoption overview.
+
+Headings:
+- Jumentix Product Overview (Consumer View)
+- What You Can Build
+- Why Teams Adopt Jumentix
+- Adoption Outcome
+
+---
+
+# Concepts
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/concepts
+
+Explore the Jumentix Concepts section.
+
+Headings:
+- Concepts
+
+---
+
+# Architecture and Structure
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/concepts/architecture
+
+DDD, Hexagonal, Event-Driven, and monorepo structure.
+
+Headings:
+- Architecture for Consumers
+- Consumer Impact
+- Interface Options
+- Data and Integration Options
+
+---
+
+# Getting started
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/concepts/getting-started
+
+Junior on-ramp: install, mental model, and first adoption journey.
+
+Headings:
+- Getting started with Jumentix
+- What you will build
+- Prerequisites
+- Mental model (keep this picture)
+- Install the monorepo (contributors / local factory)
+- Your first journey (recommended order)
+- 1. Concepts
+- 2. Create a REST API
+- 3. Add realtime when you need push
+- 4. Build a SPA / offline PWA
+- 5. Browse packages
+- Common mistakes (read before you debug)
+- How this documentation is organized
+- Next step
+
+---
+
+# Reference
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/reference
+
+Explore the Jumentix Reference section.
+
+Headings:
+- Reference
+- Start here
+
+---
+
+# Runtime Environment Contracts
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/reference/runtime-contracts
+
+Environment variables and runtime composition behavior.
+
+Headings:
+- Runtime Capabilities (Consumer View)
+- Service Interfaces
+- Runtime Control
+- Deployment Modes
+- Reliability and Scale
+
+---
+
+# Events and Messages Map
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/reference/events-messages
+
+Application event, request, response, and worker contracts.
+
+Headings:
+- Events and Messages Map
+- 1) Integration Event Envelope
+- 2) Request/Response Message Envelope
+- 3) Message Mediator Adapters
+- 4) Current Domain Event Map (Users)
+- 5) Current Request/Response Contract Map (Users/Auth)
+- 6) Where Contracts Are Consumed
+- 7) Runtime Topology (Current)
+- 8) Extension Guidelines for New Domains
+- 9) Realtime Interface Contract References
+
+---
+
+# Security and PCI Hardening
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/reference/security-compliance
+
+Security controls and compliance evidence.
+
+Headings:
+- Security and Compliance for Consumers
+- Security Baseline
+- Compliance-Oriented Delivery
+- Recommended Consumer Practice
+
+---
+
+# Errors and Responses Map
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/reference/errors-responses
+
+Error contracts and interface response behavior.
+
+Headings:
+- Error Contracts and HTTP Error Responses
+- 1) Base Error Contract
+- 2) Canonical Error Codes
+- 3) Error Class to Code Mapping
+- 4) HTTP Error Response Shape
+- 5) MessageMediator Request/Response Error Contract
+- 6) Current Consistency Notes
+- 7) HTTP Request Validation Contract
+- 8) Extension Rules
+- 9) Realtime Error Envelopes
+
+---
+
+# Package Scripts Reference
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/reference/package-scripts
+
+Every supported monorepo command and its usage.
+
+Headings:
+- Package.json Scripts Reference (Consumer)

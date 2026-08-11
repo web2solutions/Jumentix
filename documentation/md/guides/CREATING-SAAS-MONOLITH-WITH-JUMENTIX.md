@@ -30,6 +30,12 @@ Use this path when you want fast delivery with strong modular boundaries and a c
 
 ## Related Docs
 
-- [Architecture and Structure](../ARCHITECTURE-AND-STRUCTURE.md)
-- [Backend Template Hub](../../../apps/backend-template/documentation/README.md)
-- [Deploy Target and Packaging Matrix](../JUMENTIX-DEPLOY-TARGET-AND-PACKAGING-MATRIX.md)
+- [Architecture and Structure](/docs/jumentix/concepts/architecture)
+- [Backend Template Hub](/docs/jumentix/guides/rest-api)
+- Deploy Target and Packaging Matrix
+
+
+## Next steps
+
+1. [Getting started](/docs/jumentix/concepts/getting-started)
+2. [REST](/docs/jumentix/guides/rest-api)

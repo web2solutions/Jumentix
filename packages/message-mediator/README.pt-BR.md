@@ -15,3 +15,13 @@ Escopo extraído atual:
 - adaptador RabbitMQ;
 - adaptador BullMQ;
 - helper `compileMessageMediator` orientado pelo ambiente.
+
+## Experimente no navegador
+
+Mediator in-memory:
+
+<DocsPlayground runtime="message-mediator" id="getting-started" />
+
+## Documentação completa
+
+Veja o [guia de uso](../../documentation/md/MESSAGE-MEDIATOR-USAGE-GUIDE.pt-BR.md).

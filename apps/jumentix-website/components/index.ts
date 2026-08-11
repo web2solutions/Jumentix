@@ -5,6 +5,8 @@ export { MantineNavBar } from './MantineNavBar/MantineNavBar';
 export { MantineNextraThemeObserver } from './MantineNextraThemeObserver/MantineNextraThemeObserver';
 export { CanaPlayground } from './cana/CanaPlayground';
 export { CANA_SNIPPETS, getCanaSnippet } from './cana/snippets';
+export { DocsPlayground, getDocsSnippet, listDocsSnippets } from './docs-playground';
+export { DocsJsonLd } from './seo/DocsJsonLd';
 export {
   ActionLink,
   ArchitectureFlow,

@@ -54,8 +54,28 @@ bun run oas:check-routes
 bun run test:integration:express
 ```
 
+## 6. Call the API from a client (junior path)
+
+In Node or the browser docs playground, inject the OpenAPI document instead of
+loading it from disk:
+
+```js
+const client = api.createMockClient();
+const result = await client.request({ method: 'GET', path: '/health' });
+```
+
+Try the mocked REST client:
+
+<DocsPlayground runtime="sdk-rest-client" id="getting-started" />
+
+## Next steps
+
+1. [Getting started](/docs/jumentix/concepts/getting-started)
+2. [Realtime guide](/docs/jumentix/guides/realtime-api)
+3. [HTTP adapters](/docs/jumentix/adapters/http)
+4. [Errors and responses](/docs/jumentix/reference/errors-responses)
+
 ## References
 
-- [HTTP Adapters Index](/docs/jumentix/adapters/http)
-- [OpenAPI Spec](https://github.com/XpertMinds/Jumentix/blob/dev/spec/1.0.0.yml)
-- [Setup Runtime and API](https://github.com/XpertMinds/Jumentix/blob/dev/documentation/md/SETUP-RUNTIME-AND-API.md)
+- HTTP adapters on this site: [/docs/jumentix/adapters/http](/docs/jumentix/adapters/http)
+- Runtime contracts: [/docs/jumentix/reference/runtime-contracts](/docs/jumentix/reference/runtime-contracts)

@@ -1,0 +1,108 @@
+---
+title: "Começando"
+description: "Rampa júnior: instalação, modelo mental e primeira jornada de adoção."
+---
+
+> Source: `../../documentation/consumers/GETTING-STARTED.pt-BR.md`
+
+# Começando com o Jumentix
+
+Jumentix é um **framework de fábrica de software**: você descreve contratos e
+regras de domínio uma vez e gera/executa clientes REST, realtime e offline em
+torno do mesmo núcleo. Esta página é a rampa de entrada para desenvolvedores
+júnior.
+
+## O que você vai construir
+
+Em uma tarde você deve conseguir:
+
+1. Instalar a toolchain (Bun).
+2. Entender o modelo mental (hexagonal + contratos).
+3. Seguir o guia REST para expor uma API.
+4. Seguir os guias realtime e SPA/PWA quando precisar de sockets ou offline.
+5. Escolher pacotes no mapa de packages sem sair deste site.
+
+## Pré-requisitos
+
+- **Bun 1.3.14+** (pinado no monorepo)
+- Node 22 apenas se alguma ferramenta ainda exigir
+- Terminal e editor
+
+```bash
+curl -fsSL https://bun.sh/install | bash
+bun --version
+```
+
+## Modelo mental (guarde esta figura)
+
+```
+[ Adaptadores ]  Express / Fastify / Socket.IO / gRPC / IndexedDB (Cana)
+      ↓
+[ Aplicação ] use-cases, ports
+      ↓
+[ Domínio ] entidades, regras, eventos
+```
+
+- **Contratos primeiro** — OpenAPI / AsyncAPI / packages compartilhados descrevem a forma.
+- **Adaptadores são substituíveis** — troque Express por Fastify sem reescrever o domínio.
+- **Offline é de primeira classe** — `@jumentix/cana` é o adaptador IndexedDB para PWAs.
+
+## Instalar o monorepo
+
+```bash
+git clone <seu-checkout>
+cd Jumentix
+bun install
+```
+
+Para times que consomem packages publicados:
+
+```bash
+bun add @jumentix/cana @jumentix/sdk-rest-client
+```
+
+## Sua primeira jornada (ordem recomendada)
+
+### 1. Conceitos
+
+Leia [Visão geral](/docs/pt-BR/jumentix/concepts/overview) e
+[Arquitetura](/docs/pt-BR/jumentix/concepts/architecture).
+
+### 2. Criar uma API REST
+
+Siga [Criar uma API REST](/docs/pt-BR/jumentix/guides/rest-api).
+
+### 3. Realtime
+
+Siga [Criar uma API realtime](/docs/pt-BR/jumentix/guides/realtime-api). Prefira
+WebSocket primeiro.
+
+### 4. SPA / PWA offline
+
+Siga [Criar SPA ou PWA offline](/docs/pt-BR/jumentix/guides/spa-pwa). Use
+`@jumentix/designer-core` e `@jumentix/cana`.
+
+<DocsPlayground runtime="cana" id="getting-started" />
+
+### 5. Pacotes
+
+Abra [Pacotes](/docs/pt-BR/jumentix/packages) e procure playgrounds **Try it**.
+
+## Erros comuns
+
+| Sintoma | Causa provável | Correção |
+| --- | --- | --- |
+| `TransactionInactive` no Cana | `await fetch` dentro da transação | Só aguarde trabalho IndexedDB dentro da tx |
+| Cliente REST não carrega specs | loader `fs` no browser | Injete o objeto OpenAPI |
+| Funciona em memória, falha no Redis | adaptador KV errado | Comece com InMemory nos testes |
+| Dados offline perdidos | achar que localStorage = IndexedDB | Leia `client.backend` após `open()` |
+
+## Mapas para agentes de IA
+
+- [/llms.txt](/llms.txt)
+- [/docs-index.json](/docs-index.json)
+
+## Próximo passo
+
+Vá para [Criar uma API REST](/docs/pt-BR/jumentix/guides/rest-api) e complete o
+caminho hello-world de ponta a ponta.

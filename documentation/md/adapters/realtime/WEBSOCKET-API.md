@@ -11,9 +11,9 @@ This guide is exclusively for the Socket.IO realtime interface.
 
 ## Contract References
 
-- [WebSocket Realtime Contracts](../../contracts/WEBSOCKET-REALTIME-CONTRACTS.md)
-- [Error Contracts and Responses](../../ERROR-CONTRACTS-AND-RESPONSES.md)
-- [Events and Messages Map](../../EVENTS-AND-MESSAGES-MAP.md)
+- WebSocket Realtime Contracts
+- [Error Contracts and Responses](/docs/jumentix/reference/errors-responses)
+- [Events and Messages Map](/docs/jumentix/reference/events-messages)
 
 ## Endpoint and Channels
 

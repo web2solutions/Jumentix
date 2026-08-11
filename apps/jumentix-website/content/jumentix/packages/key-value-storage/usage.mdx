@@ -1,0 +1,40 @@
+---
+title: "key-value-storage usage"
+description: "Junior guide and in-memory playground for key/value storage."
+---
+
+> Source: `../../documentation/md/KEY-VALUE-STORAGE-USAGE-GUIDE.md`
+
+# @jumentix/key-value-storage — usage guide
+
+Key/value storage is the shared port for caches, feature flags, and mutex
+backends. Start with **InMemory** in the browser and tests; compile Redis only
+in Node servers.
+
+## Install
+
+```bash
+bun add @jumentix/key-value-storage
+```
+
+## Try the in-memory client
+
+<DocsPlayground runtime="key-value-storage" id="getting-started" />
+
+```js
+const client = api.createInMemory();
+await client.set('greeting', 'hello jumentix');
+const value = await client.get('greeting');
+```
+
+## When to use which adapter
+
+| Adapter | Environment | Notes |
+| --- | --- | --- |
+| InMemory | Browser demos, unit tests | Fast, not durable |
+| Redis (Node) | Servers | Requires `redis` + env |
+
+## Next steps
+
+- [mutex-service](/docs/jumentix/packages/mutex-service/usage) builds locks on KV
+- [Getting started](/docs/jumentix/concepts/getting-started)

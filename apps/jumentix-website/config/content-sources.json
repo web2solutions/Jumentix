@@ -12,6 +12,16 @@
     },
     {
       "section": "concepts",
+      "slug": "getting-started",
+      "title": "Getting started",
+      "titlePtBr": "Começando",
+      "description": "Junior on-ramp: install, mental model, and first adoption journey.",
+      "descriptionPtBr": "Rampa júnior: instalação, modelo mental e primeira jornada de adoção.",
+      "source": "../../documentation/consumers/GETTING-STARTED.md",
+      "sourcePtBr": "../../documentation/consumers/GETTING-STARTED.pt-BR.md"
+    },
+    {
+      "section": "concepts",
       "slug": "architecture",
       "title": "Architecture and Structure",
       "titlePtBr": "Arquitetura e estrutura",
@@ -139,6 +149,86 @@
       "descriptionPtBr": "Guia de API do consumidor para @jumentix/cana com exemplos executáveis.",
       "source": "../../documentation/md/CANA-USAGE-GUIDE.md",
       "sourcePtBr": "../../documentation/md/CANA-USAGE-GUIDE.pt-BR.md"
+    },
+    {
+      "section": "packages/designer-core",
+      "slug": "index",
+      "title": "@jumentix/designer-core",
+      "titlePtBr": "@jumentix/designer-core",
+      "description": "Browser-safe design document helpers for Jumentix frontends.",
+      "descriptionPtBr": "Helpers de documento de design seguros para browser em frontends Jumentix.",
+      "source": "../../packages/designer-core/README.md",
+      "sourcePtBr": "../../packages/designer-core/README.pt-BR.md"
+    },
+    {
+      "section": "packages/designer-core",
+      "slug": "usage",
+      "title": "designer-core usage",
+      "titlePtBr": "Uso do designer-core",
+      "description": "Junior guide and playground for @jumentix/designer-core.",
+      "descriptionPtBr": "Guia júnior e playground para @jumentix/designer-core.",
+      "source": "../../documentation/md/DESIGNER-CORE-USAGE-GUIDE.md",
+      "sourcePtBr": "../../documentation/md/DESIGNER-CORE-USAGE-GUIDE.pt-BR.md"
+    },
+    {
+      "section": "packages/key-value-storage",
+      "slug": "index",
+      "title": "@jumentix/key-value-storage",
+      "titlePtBr": "@jumentix/key-value-storage",
+      "description": "Key/value storage clients with an in-memory adapter for tests and demos.",
+      "descriptionPtBr": "Clientes chave/valor com adaptador em memória para testes e demos.",
+      "source": "../../packages/key-value-storage/README.md",
+      "sourcePtBr": "../../packages/key-value-storage/README.pt-BR.md"
+    },
+    {
+      "section": "packages/key-value-storage",
+      "slug": "usage",
+      "title": "key-value-storage usage",
+      "titlePtBr": "Uso do key-value-storage",
+      "description": "Junior guide and in-memory playground for key/value storage.",
+      "descriptionPtBr": "Guia júnior e playground em memória para chave/valor.",
+      "source": "../../documentation/md/KEY-VALUE-STORAGE-USAGE-GUIDE.md",
+      "sourcePtBr": "../../documentation/md/KEY-VALUE-STORAGE-USAGE-GUIDE.pt-BR.md"
+    },
+    {
+      "section": "packages/mutex-service",
+      "slug": "index",
+      "title": "@jumentix/mutex-service",
+      "titlePtBr": "@jumentix/mutex-service",
+      "description": "Named locks built on key/value storage.",
+      "descriptionPtBr": "Locks nomeados sobre armazenamento chave/valor.",
+      "source": "../../packages/mutex-service/README.md",
+      "sourcePtBr": "../../packages/mutex-service/README.pt-BR.md"
+    },
+    {
+      "section": "packages/mutex-service",
+      "slug": "usage",
+      "title": "mutex-service usage",
+      "titlePtBr": "Uso do mutex-service",
+      "description": "Junior guide and playground for mutex locks.",
+      "descriptionPtBr": "Guia júnior e playground para locks mutex.",
+      "source": "../../documentation/md/MUTEX-SERVICE-USAGE-GUIDE.md",
+      "sourcePtBr": "../../documentation/md/MUTEX-SERVICE-USAGE-GUIDE.pt-BR.md"
+    },
+    {
+      "section": "packages/message-mediator",
+      "slug": "index",
+      "title": "@jumentix/message-mediator",
+      "titlePtBr": "@jumentix/message-mediator",
+      "description": "In-process and broker-backed message mediation.",
+      "descriptionPtBr": "Mediação de mensagens em processo e via brokers.",
+      "source": "../../packages/message-mediator/README.md",
+      "sourcePtBr": "../../packages/message-mediator/README.pt-BR.md"
+    },
+    {
+      "section": "packages/message-mediator",
+      "slug": "usage",
+      "title": "message-mediator usage",
+      "titlePtBr": "Uso do message-mediator",
+      "description": "Junior guide and in-memory mediator playground.",
+      "descriptionPtBr": "Guia júnior e playground do mediator em memória.",
+      "source": "../../documentation/md/MESSAGE-MEDIATOR-USAGE-GUIDE.md",
+      "sourcePtBr": "../../documentation/md/MESSAGE-MEDIATOR-USAGE-GUIDE.pt-BR.md"
     }
   ],
   "collections": [
