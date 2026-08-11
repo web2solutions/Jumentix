@@ -23,6 +23,7 @@ export default withNextra(
     reactStrictMode: false,
     cleanDistDir: true,
     outputFileTracingRoot: monorepoRoot,
+    transpilePackages: ['@jumentix/cana'],
     experimental: {
       optimizePackageImports: ['@mantine/core', '@mantine/hooks'],
     },

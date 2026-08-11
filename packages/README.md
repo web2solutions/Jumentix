@@ -7,6 +7,7 @@ This folder contains reusable npm packages shared across Jumentix applications.
 ### Runtime and persistence
 
 - [`@jumentix/adapter-runtime-bootstrap`](./adapter-runtime-bootstrap/README.md) - shared adapter runtime composition.
+- [`@jumentix/cana`](./cana/README.md) - IndexedDB offline database adapter with consumer docs and playgrounds.
 - [`@jumentix/database-client-factory`](./database-client-factory/README.md) - database client compilation by selected driver.
 - [`@jumentix/external-db-repositories`](./external-db-repositories/README.md) - reusable external database repositories.
 - [`@jumentix/external-persistence-core`](./external-persistence-core/README.md) - base external-persistence contracts and implementations.

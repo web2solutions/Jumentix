@@ -12,6 +12,7 @@ pelas aplicações Jumentix.
 ### Runtime e persistência
 
 - [`@jumentix/adapter-runtime-bootstrap`](./adapter-runtime-bootstrap/README.pt-BR.md) - composição compartilhada do runtime de adapters.
+- [`@jumentix/cana`](./cana/README.pt-BR.md) - adaptador IndexedDB offline com documentação e playgrounds para o consumidor.
 - [`@jumentix/database-client-factory`](./database-client-factory/README.pt-BR.md) - compilação do cliente de banco por driver selecionado.
 - [`@jumentix/external-db-repositories`](./external-db-repositories/README.pt-BR.md) - repositórios reutilizáveis para bancos externos.
 - [`@jumentix/external-persistence-core`](./external-persistence-core/README.pt-BR.md) - contratos e implementações-base de persistência externa.

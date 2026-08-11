@@ -1,7 +1,6 @@
 export default {
   index: { title: 'Pacotes do workspace Jumentix', display: 'hidden' },
   'adapter-runtime-bootstrap': '@jumentix/adapter-runtime-bootstrap',
-  cana: '@jumentix/cana',
   'cli-init': '@jumentix/cli-init',
   'config-eslint': '@jumentix/config-eslint',
   'config-jest': '@jumentix/config-jest',
@@ -19,5 +18,6 @@ export default {
   'sdk-grpc-client': '@jumentix/sdk-grpc-client',
   'sdk-rest-client': '@jumentix/sdk-rest-client',
   'sdk-websocket-client': '@jumentix/sdk-websocket-client',
-  'shared-contracts': '@jumentix/shared-contracts'
+  'shared-contracts': '@jumentix/shared-contracts',
+  cana: '@jumentix/cana'
 };
