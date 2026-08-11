@@ -1507,6 +1507,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/modules/Users/application/service/UserService.lockRelease.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Users/application/service/UserService.lockRelease.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/modules/Users/application/service/UserService.test.ts",
       "path": "apps/backend-template/test/unit/modules/Users/application/service/UserService.test.ts",
       "layer": "application",
@@ -3786,9 +3796,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 196,
+    "unit": 197,
     "integration": 97,
     "smoke": 2,
-    "suites": 319
+    "suites": 320
   }
 }
