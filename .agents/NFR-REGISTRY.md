@@ -43,6 +43,7 @@ This file consolidates non-functional requirements already requested and stored 
 - `130` Measured claims and bounded work: no unmeasured numbers, no proxy stated as cause
 - `131` Built artifacts must carry every runtime export their source barrel declares
 - `132` No orphaned published artifacts: reachable, or declared with the issue that owns it
+- `133` Declared indexes for ordered queries: `.indexOn` in versioned rules, or order by key
 
 ## Documentation and Governance NFRs
 

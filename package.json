@@ -71,7 +71,7 @@
     "ci:smoke": "JUMENTIX_JWT_TOKEN_SECRET_KEY=${JUMENTIX_JWT_TOKEN_SECRET_KEY:-ci_jwt_secret_key} NODE_ENV=ci bun ci-cd/run-api-smoke.js",
     "ci:integration": "JUMENTIX_JWT_TOKEN_SECRET_KEY=${JUMENTIX_JWT_TOKEN_SECRET_KEY:-ci_jwt_secret_key} bun ci-cd/run-integration-tests.js",
     "ci:security-smoke": "NODE_ENV=ci bun ci-cd/run-security-smoke.js",
-    "ci:gate": "bun run check-bun-version && bun run deps:check-overrides && bun run deps:audit && bun run lint && bun run deps:check-cycles && bun run arch:check-boundaries && bun run arch:check-users-legacy-imports && bun run arch:check-workspace-boundaries && bun run arch:check-http-adapters && bun run workspace:check-quality && bun run workspace:check-coverage-policy && bun run release:governance:check && bun run governance:check-authorship && bun run requirements:check && bun run packages:check-suites && bun run packages:check-build-freshness && bun run website:check-content-routes && bun run test-map:check && bun run ci:check-provider && bun run ci:check-third-party-review && bun run integrations:check && bun run integration-migration:check && bun run agent-registry:check && bun run test:unit && bun run ci:security-smoke && bun run oas:check-routes && bun run serverless:check-handlers && bun run build:dev && bun run ci:smoke",
+    "ci:gate": "bun run check-bun-version && bun run deps:check-overrides && bun run deps:audit && bun run lint && bun run deps:check-cycles && bun run arch:check-boundaries && bun run arch:check-users-legacy-imports && bun run arch:check-workspace-boundaries && bun run arch:check-http-adapters && bun run workspace:check-quality && bun run workspace:check-coverage-policy && bun run release:governance:check && bun run governance:check-authorship && bun run requirements:check && bun run packages:check-suites && bun run packages:check-build-freshness && bun run website:check-content-routes && bun run rtdb:check-indexes && bun run test-map:check && bun run ci:check-provider && bun run ci:check-third-party-review && bun run integrations:check && bun run integration-migration:check && bun run agent-registry:check && bun run test:unit && bun run ci:security-smoke && bun run oas:check-routes && bun run serverless:check-handlers && bun run build:dev && bun run ci:smoke",
     "ci:gate:branch": "bun ci-cd/run-branch-quality-gate.js",
     "ci:gate:task": "bun ci-cd/run-task-change-tests.js",
     "ci:gate:strict": "bun ci-cd/run-full-test-matrix.js",
@@ -294,7 +294,9 @@
     "smoke:message-mediator": "bun run docker:composemessaging && bun run test:integration:message-mediator && docker compose -f \"apps/backend-template/docker-compose-messaging.yml\" down",
     "smoke:db-repositories": "bun run docker:up:cassandra && bun run docker:up:mongodb && bun run test:integration:db-repositories; status=$?; bun run docker:down:cassandra; bun run docker:down:mongodb; exit $status",
     "packages:check-build-freshness": "bun ci-cd/check-package-build-freshness.js",
-    "website:check-content-routes": "bun ci-cd/check-website-content-routes.js"
+    "website:check-content-routes": "bun ci-cd/check-website-content-routes.js",
+    "rtdb:check-indexes": "bun ci-cd/check-rtdb-indexes.js",
+    "rtdb:export-rules": "bun ci-cd/export-database-rules.js"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.940.0",

@@ -199,6 +199,7 @@ describe('agent-registry commands', () => {
         on: () => () => undefined,
         off: () => undefined,
         orderByChild: function orderByChild() { return this; },
+        orderByKey: function orderByKey() { return this; },
         limitToLast: function limitToLast() { return this; }
       })
     } as any;
@@ -230,6 +231,7 @@ describe('agent-registry commands', () => {
         on: () => () => undefined,
         off: () => undefined,
         orderByChild: function orderByChild() { return this; },
+        orderByKey: function orderByKey() { return this; },
         limitToLast: function limitToLast() { return this; }
       })
     } as any;

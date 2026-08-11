@@ -179,6 +179,7 @@ export interface RtdbQueryLike {
   ): void;
   limitToLast(limit: number): RtdbQueryLike;
   orderByChild(path: string): RtdbQueryLike;
+  orderByKey(): RtdbQueryLike;
 }
 
 export interface RtdbReferenceLike extends RtdbQueryLike {

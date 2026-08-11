@@ -127,6 +127,7 @@ function createMockRtdb() {
         else set.clear();
       },
       orderByChild: () => makeRef(full),
+      orderByKey: () => makeRef(full),
       limitToLast: () => makeRef(full)
     };
   }
@@ -238,6 +239,7 @@ describe('agent-bus commands', () => {
         on: () => () => undefined,
         off: () => undefined,
         orderByChild: function orderByChild() { return this; },
+        orderByKey: function orderByKey() { return this; },
         limitToLast: function limitToLast() { return this; }
       }) as any
     };
@@ -311,6 +313,35 @@ describe('agent-bus commands', () => {
     expect(status.recentEvents[0].kind).toBe('blocked');
   });
 
+  it('reads recent events by key, never by the ts child (JUM-656)', async () => {
+    expect.hasAssertions();
+
+    // `.orderByChild('ts')` needs `.indexOn: "ts"` in the security rules, which
+    // live in the Firebase console and are not part of this repository. Without
+    // it the query still answers — the server ships every child and the client
+    // sorts — so no test would fail and no user would notice until the bill.
+    // Push keys carry the server clock and are indexed by default.
+    const ordering: string[] = [];
+    const query = {
+      orderByChild: (path: string) => { ordering.push(`orderByChild:${path}`); return query; },
+      orderByKey: () => { ordering.push('orderByKey'); return query; },
+      limitToLast: () => query,
+      once: async () => ({ forEach: () => undefined }),
+      set: async () => undefined,
+      child: () => { throw new Error('unused'); },
+      push: () => ({ key: 'push-1', set: async () => undefined }),
+      update: async () => undefined,
+      on: () => () => undefined,
+      off: () => undefined
+    };
+    const rtdb = { ref: () => query } as unknown as RtdbLike;
+
+    await busStatus(rtdb, 'epic-a');
+
+    expect(ordering).toContain('orderByKey');
+    expect(ordering).not.toContain('orderByChild:ts');
+  });
+
   it('fails closed when RTDB status reads fail', async () => {
     expect.hasAssertions();
     const rtdb: RtdbLike = {
@@ -323,6 +354,7 @@ describe('agent-bus commands', () => {
         on: () => () => undefined,
         off: () => undefined,
         orderByChild: function orderByChild() { return this; },
+        orderByKey: function orderByKey() { return this; },
         limitToLast: function limitToLast() { return this; }
       }) as any
     };
@@ -342,6 +374,7 @@ describe('agent-bus commands', () => {
         on: () => () => undefined,
         off: () => undefined,
         orderByChild: function orderByChild() { return this; },
+        orderByKey: function orderByKey() { return this; },
         limitToLast: function limitToLast() { return this; }
       }) as any
     };

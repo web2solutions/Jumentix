@@ -99,6 +99,7 @@ See also:
 - [130-measured-claims-and-bounded-work](requirements/project/130-measured-claims-and-bounded-work.md)
 - [131-built-artifacts-carry-source-exports](requirements/software/131-built-artifacts-carry-source-exports.md)
 - [132-no-orphaned-published-artifacts](requirements/software/132-no-orphaned-published-artifacts.md)
+- [133-declared-indexes-for-ordered-queries](requirements/software/133-declared-indexes-for-ordered-queries.md)
 
 ## Software and Product Requirements
 

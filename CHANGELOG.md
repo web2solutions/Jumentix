@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-08-11 fix(agent-bus): order recent events by key and gate RTDB indexes for JUM-656 - Eduardo Almeida
+- 2026-08-11 chore(website): delete the orphaned content pages for JUM-640 (#179) - Eduardo A.
 - 2026-08-10 [JUM-655][CI] Gate stale builds and orphaned content, declare requirements 130-132 (#177) - Eduardo A.
 - 2026-08-10 chore(governance): gate the defect classes that recurred, and declare the rules - Eduardo Almeida
 - 2026-08-10 [JUM-640][Docs] State the real cause of the orphaned docs content (#176) - Eduardo A.
