@@ -33,24 +33,13 @@ const CONTENT_DIR = `${WEBSITE_DIR}/content`;
  * Content files known to be unreachable, each with the issue that owns the
  * decision. Entries are removed by fixing the file's placement, not by editing
  * this list — the check refuses a listed file that has become reachable.
+ *
+ * Empty since JUM-640: the six Nextra template leftovers were deleted and
+ * `release-notes.mdx` moved under `jumentix/`, so every content file is now
+ * served. An empty register is the goal state, not a disabled check — the
+ * failure paths below run against every file regardless.
  */
-const ACCEPTED_UNREACHABLE = Object.freeze([
-  { file: 'api.mdx', issue: 'JUM-640', reason: 'Nextra starter template leftover' },
-  { file: 'inline-svg.mdx', issue: 'JUM-640', reason: 'Nextra starter template leftover' },
-  { file: 'mantine.mdx', issue: 'JUM-640', reason: 'Nextra starter template leftover' },
-  { file: 'markdown.mdx', issue: 'JUM-640', reason: 'Nextra starter template leftover' },
-  { file: 'index.mdx', issue: 'JUM-640', reason: '/docs is served by jumentix/index.mdx' },
-  {
-    file: 'release-notes.mdx',
-    issue: 'JUM-640',
-    reason: 'real Jumentix documentation, pending a decision to move it under jumentix/'
-  },
-  {
-    file: 'versioning.mdx',
-    issue: 'JUM-640',
-    reason: 'real Jumentix documentation, pending a decision to move it under jumentix/'
-  }
-]);
+const ACCEPTED_UNREACHABLE = Object.freeze([]);
 
 function walk(dir, predicate, out = []) {
   if (!fs.existsSync(dir)) return out;
@@ -81,12 +70,17 @@ function isReachable(relativePath) {
   return false;
 }
 
-function validateWebsiteContentRoutes(rootDir = process.cwd()) {
+/**
+ * `register` is injectable so the stale-entry path stays testable now that the
+ * real register is empty. A guard whose failure mode cannot be exercised is
+ * indistinguishable from one that is switched off.
+ */
+function validateWebsiteContentRoutes(rootDir = process.cwd(), register = ACCEPTED_UNREACHABLE) {
   const contentRoot = path.join(rootDir, CONTENT_DIR);
   if (!fs.existsSync(contentRoot)) return [];
 
   const failures = [];
-  const accepted = new Map(ACCEPTED_UNREACHABLE.map((entry) => [entry.file, entry]));
+  const accepted = new Map(register.map((entry) => [entry.file, entry]));
   const seenAccepted = new Set();
 
   const files = walk(

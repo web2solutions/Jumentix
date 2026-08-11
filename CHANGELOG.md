@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-08-10 [JUM-655][CI] Gate stale builds and orphaned content, declare requirements 130-132 (#177) - Eduardo A.
+- 2026-08-10 chore(governance): gate the defect classes that recurred, and declare the rules - Eduardo Almeida
 - 2026-08-10 [JUM-640][Docs] State the real cause of the orphaned docs content (#176) - Eduardo A.
 - 2026-08-10 docs(website): state the real cause of the orphaned docs content - Eduardo Almeida
 - 2026-08-10 [JUM-654][Fix] Make the mandatory agent bus usable (#175) - Eduardo A.
