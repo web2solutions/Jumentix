@@ -191,6 +191,10 @@
       "name": "@jumentix/database-client-factory",
       "version": "0.1.0",
     },
+    "packages/dead-letter-queue": {
+      "name": "@jumentix/dead-letter-queue",
+      "version": "0.1.0",
+    },
     "packages/designer-core": {
       "name": "@jumentix/designer-core",
       "version": "0.1.0",
@@ -957,6 +961,8 @@
     "@jumentix/config-ts": ["@jumentix/config-ts@workspace:packages/config-ts"],
 
     "@jumentix/database-client-factory": ["@jumentix/database-client-factory@workspace:packages/database-client-factory"],
+
+    "@jumentix/dead-letter-queue": ["@jumentix/dead-letter-queue@workspace:packages/dead-letter-queue"],
 
     "@jumentix/designer-core": ["@jumentix/designer-core@workspace:packages/designer-core"],
 
