@@ -4,6 +4,10 @@
 
 ## All Changes
 
+- 2026-08-10 [JUM-640][Docs] State the real cause of the orphaned docs content (#176) - Eduardo A.
+- 2026-08-10 docs(website): state the real cause of the orphaned docs content - Eduardo Almeida
+- 2026-08-10 [JUM-654][Fix] Make the mandatory agent bus usable (#175) - Eduardo A.
+- 2026-08-10 fix(agent-registry): make the mandatory agent bus usable - Eduardo Almeida
 - 2026-08-10 [JUM-641][Docs] Record the Jumentix epic delivery baseline (#170) - Eduardo A.
 - 2026-08-10 docs(jumentix): record the epic delivery baseline, EN and PT-BR - Eduardo Almeida
 - 2026-08-10 [JUM-638][CI] Make SonarCloud advisory while budget is unavailable (#173) - Eduardo A.
