@@ -16,6 +16,13 @@ workers, testes e resolução de problemas. Este guia é sobre usar `@jumentix/c
 
 ---
 
+## Responsabilidade no escopo
+
+- **Camada:** persistência offline / browser
+- **Responsável por:** IndexedDB (com fallback explícito localStorage)
+- **Usado com:** designer-core e guia SPA/PWA
+- **Não responsável por:** bancos server-side, Redis KV, REST/WebSocket
+
 ## Sumário
 
 1. [Primeiros passos](#1-primeiros-passos)
@@ -35,6 +42,10 @@ workers, testes e resolução de problemas. Este guia é sobre usar `@jumentix/c
 16. [Testando seu próprio código](#16-testando-seu-próprio-código)
 17. [Resolução de problemas](#17-resolução-de-problemas)
 18. [Referência da API](#18-referência-da-api)
+19. [Glossário](#19-glossário)
+20. [Checklist júnior](#20-checklist-júnior-eu-consigo--)
+21. [Erros comuns (referência rápida)](#21-erros-comuns-referência-rápida)
+22. [Próximo passo](#22-próximo-passo)
 
 ---
 
@@ -983,6 +994,61 @@ intervalo.
 | `pruneLedger` / `resolveOutcome` | Manutenção do livro |
 | `createRouter` | Mensageria de worker |
 | `createCanaDatabaseClient` | Adaptador Jumentix |
+
+---
+
+## 19. Glossário
+
+| Termo | Significado |
+| --- | --- |
+| **Client** | Retorno de `createClient` — ponto de entrada para `open`, tabelas, transações e assinaturas. |
+| **Store** | Um object store no schema (como uma tabela); nomeado em `schema.stores`. |
+| **Versão do schema** | Inteiro `schema.version`; deve aumentar para o IndexedDB aplicar mudanças estruturais. |
+| **Chave inbound** | Chave dentro do registro via `keyPath`. |
+| **Chave outbound** | Chave passada como segundo argumento de `add`/`put`. |
+| **Escopo da transação** | Lista de nomes de stores em `transaction`; tocar outros falha. |
+| **Evento de mudança** | `CanaChangeEvent` emitido só após escrita confirmada (`created`, `updated`, `deleted`, `cleared`). |
+| **Desfecho de escrita** | `committed`, `rolled-back` ou `unknown` — veja §12 para recuperação de falhas. |
+| **Livro de operações** | Store opcional que grava ids de operação na mesma transação dos dados (`operationLedger: true`). |
+| **Avaliação de durabilidade** | `durabilityAssessment()` — saúde do armazenamento local para o usuário (`lost`, `at-risk`, `best-effort`, `durable`). |
+
+---
+
+## 20. Checklist júnior (“Eu consigo …”)
+
+- [ ] Criar client, definir schema, chamar `open()` e adicionar um registro.
+- [ ] Explicar por que `open()` é explícito e o que acontece se eu pular.
+- [ ] Escolher `add` vs `put` vs `update` para um cenário dado.
+- [ ] Executar `query` limitada com índice e confirmar com `explain()` que `fullScan` é false.
+- [ ] Escrever transação multi-store sem await de trabalho não-IndexedDB dentro do escopo.
+- [ ] Assinar eventos de mudança e ignorar minhas escritas com `originId`.
+- [ ] Tratar `QuotaExceeded` e `TransactionInactive` com `isCanaErrorCode`.
+- [ ] Exportar com `exportAll()` e descrever quando avisar o usuário sobre armazenamento `at-risk`.
+
+---
+
+## 21. Erros comuns (referência rápida)
+
+Condensado de §10 e §17. Para contexto completo, siga os links das seções.
+
+| Sintoma | Causa | Correção | Verificar sucesso |
+| --- | --- | --- | --- |
+| `InvalidRequest` antes de qualquer leitura | Tabela chamada antes de `await client.open()` | Aguarde `open()` uma vez na inicialização | `get`/`add` funcionam |
+| Mudança de schema sem efeito | Não aumentou `schema.version` | Aumente a versão e reabra | Novo store/índice aparece no DevTools |
+| `TransactionInactive` | `await fetch` ou trabalho não-IDB dentro da transação | Mova awaits externos para fora; abra nova transação | Escrita confirma com `outcome: 'committed'` |
+| `UpgradeBlocked` | Outra aba segura versão antiga do banco | Feche ou recarregue a outra aba | `open()` funciona na nova tentativa |
+| `QuotaExceeded` | Armazenamento do browser cheio | Libere espaço; exporte dados críticos antes | `durabilityAssessment().level` melhora |
+| Assinante perdeu mudanças | `sinceCursor` fora da janela retida | Recarga completa; reassine sem cursor obsoleto | Eventos aplicam sem lacuna |
+| `resolveWrite` → `unresolvable` | Livro desligado ou versão do schema não aumentada ao ligar livro | Ative `operationLedger` e aumente versão do schema | `committed` ou `rolled-back` definitivo |
+
+---
+
+## 22. Próximo passo
+
+Combine persistência offline com validação de domínio em
+[designer-core](/docs/pt-BR/jumentix/packages/designer-core/usage) e siga o
+[guia SPA/PWA](/docs/pt-BR/jumentix/guides/spa-pwa) para entregar um app offline
+zero-build.
 
 ---
 

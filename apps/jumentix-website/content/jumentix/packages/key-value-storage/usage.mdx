@@ -7,19 +7,129 @@ description: "Junior guide and in-memory playground for key/value storage."
 
 # @jumentix/key-value-storage — usage guide
 
-Key/value storage is the shared port for caches, feature flags, and mutex
-backends. Start with **InMemory** in the browser and tests; compile Redis only
-in Node servers.
+## Responsibility in context
 
-## Install
+- **Stack layer:** persistence / infrastructure adapter
+- **Owns:** key/value port + InMemory/Redis adapters for shared state
+- **Used with:** `@jumentix/mutex-service` (locks on top of KV), backend composition
+- **Not responsible for:** document/SQL repositories, IndexedDB offline (Cana), HTTP SDKs
+
+## What it is
+
+`@jumentix/key-value-storage` is the shared key/value port for caches, feature
+flags, session blobs, and mutex backends across Jumentix services. Every adapter
+implements the same `IKeyValueStorageClient` contract: `connect`, `get`, `set`,
+`del`, and `disconnect`.
+
+## Why it exists
+
+Junior teams should not re-implement Redis wiring, in-memory test doubles, and
+response wrapping in every app. One port lets you start with **InMemory** in the
+browser and unit tests, then swap to **Redis** in Node servers via environment
+configuration — without changing call sites.
+
+## Prerequisites
+
+- **Runtime:** browser (InMemory only) or Node/Bun (InMemory or Redis).
+- **For Redis:** a running Redis instance and the `redis` peer dependency
+  installed in the consuming app.
+- **Prior reading:** [Getting started](/docs/jumentix/concepts/getting-started).
+- **Environment (Redis):** `JUMENTIX_KEYVALUESTORAGE_DRIVER=redis` plus Redis
+  connection settings your deployment documents.
+
+## Glossary
+
+| Term | Meaning |
+| --- | --- |
+| **Port** | `IKeyValueStorageClient` — the interface every adapter implements. |
+| **Adapter** | A concrete client (`InMemoryKeyValueStorageClient`, `RedisKeyValueStorageClient`). |
+| **ServiceResponse** | Wrapper `{ result?, error? }` returned by every method — check `error` before using `result`. |
+| **Prefix** | Keys are stored as `{prefix}:{keyName}`; default prefix comes from `JUMENTIX_KV_KEY_PREFIX` or `jumentix__`. |
+| **Driver** | Value of `JUMENTIX_KEYVALUESTORAGE_DRIVER` passed to `compileKeyValueStorageClient`. |
+| **Connected** | Boolean flag set by `connect()`; adapters expect `connect()` before reads/writes in server code. |
+
+## Steps
+
+### 1. Install (< 5 minutes)
 
 ```bash
 bun add @jumentix/key-value-storage
 ```
 
-## Try the in-memory client
+For Redis in Node, also install the Redis client your deployment uses (see
+package README for the supported version).
+
+### 2. First success — in-memory get/set (< 10 minutes)
+
+```ts
+import { InMemoryKeyValueStorageClient } from '@jumentix/key-value-storage';
+
+const client = InMemoryKeyValueStorageClient.compile();
+await client.connect();
+
+const write = await client.set('greeting', 'hello jumentix');
+if (write.error) throw write.error;
+
+const read = await client.get('greeting');
+console.log(read.result); // 'hello jumentix'
+
+await client.del('greeting');
+await client.disconnect();
+```
+
+**Verify success:** `read.result === 'hello jumentix'` and no `error` field.
+
+### 3. Core workflow — compile by environment
+
+Use the factory when the driver should follow deployment config:
+
+```ts
+import { compileKeyValueStorageClient } from '@jumentix/key-value-storage';
+
+// JUMENTIX_KEYVALUESTORAGE_DRIVER=inmemory | redis (default: redis)
+const client = compileKeyValueStorageClient();
+await client.connect();
+```
+
+| Driver value | Adapter | Environment |
+| --- | --- | --- |
+| `inmemory`, `in-memory`, `memory` | InMemory | Browser demos, unit tests |
+| *(default / redis)* | Redis | Node servers |
+
+### 4. Core workflow — error-safe reads
+
+Never assume `result` is defined — always branch on `error`:
+
+```ts
+async function readFlag(client, key: string, fallback = false) {
+  const { result, error } = await client.get(key);
+  if (error) throw error;
+  return result ?? fallback;
+}
+```
+
+### 5. Core workflow — pair with mutex-service
+
+Mutex locks are KV keys under a configurable prefix. Create one shared KV client
+and pass it to `MutexService.compile` (see
+[mutex-service usage guide](/docs/jumentix/packages/mutex-service/usage)).
+
+### 6. Full surface — API map
+
+| Export | Role |
+| --- | --- |
+| `IKeyValueStorageClient` | Type of every adapter |
+| `InMemoryKeyValueStorageClient.compile()` | Singleton in-memory Map |
+| `RedisKeyValueStorageClient.compile()` | Redis-backed client (Node) |
+| `compileKeyValueStorageClient(driver?)` | Env-driven factory |
+| `ServiceResponse` | Standard `{ result, error }` helper |
+| `BaseKeyValueStorageClient` | Shared prefix/connect logic for custom adapters |
+
+## Try it in the docs playground
 
 <DocsPlayground runtime="key-value-storage" id="getting-started" />
+
+The playground stub exposes a simplified API for demos:
 
 ```js
 const client = api.createInMemory();
@@ -27,14 +137,31 @@ await client.set('greeting', 'hello jumentix');
 const value = await client.get('greeting');
 ```
 
-## When to use which adapter
+In real apps, use `InMemoryKeyValueStorageClient.compile()` and handle
+`ServiceResponse` as shown above.
 
-| Adapter | Environment | Notes |
-| --- | --- | --- |
-| InMemory | Browser demos, unit tests | Fast, not durable |
-| Redis (Node) | Servers | Requires `redis` + env |
+## Common errors
 
-## Next steps
+| Symptom | Cause | Fix | Verify success |
+| --- | --- | --- | --- |
+| `result` is `undefined` but no error | Key never set or was deleted | Call `set` first; confirm key spelling | `get` returns expected value |
+| Redis connection refused | Redis not running or wrong host/port | Start Redis; check env vars | `connect()` returns without `error` |
+| Wrong value under load tests | Singleton InMemory client reused | Call `InMemoryKeyValueStorageClient` fresh per test suite or reset keys | Isolated keys per test |
+| Keys collide between apps | Same prefix on shared Redis | Set `JUMENTIX_KV_KEY_PREFIX` per service | Keys namespaced in Redis CLI |
+| `connected` stays false | Skipped `connect()` | Await `connect()` before I/O | `client.connected === true` |
 
-- [mutex-service](/docs/jumentix/packages/mutex-service/usage) builds locks on KV
-- [Getting started](/docs/jumentix/concepts/getting-started)
+## Junior checklist (“I can …”)
+
+- [ ] Install the package and run an in-memory `set` / `get` / `del` cycle.
+- [ ] Explain why every method returns `ServiceResponse` instead of throwing.
+- [ ] Choose InMemory vs Redis for a given environment and justify the choice.
+- [ ] Use `compileKeyValueStorageClient` with the correct driver env var.
+- [ ] Read a value safely with a fallback when the key is missing.
+- [ ] Describe how mutex-service builds on top of this port.
+
+## Next step
+
+Add coordinated access with
+[mutex-service](/docs/jumentix/packages/mutex-service/usage), then continue the
+persistence journey from
+[Getting started](/docs/jumentix/concepts/getting-started).

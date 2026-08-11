@@ -1,0 +1,96 @@
+# @jumentix/external-persistence-core
+
+Shared base class and connection options for every external database repository adapter.
+
+## What it is
+
+Shared base class and connection options for every external database repository adapter.
+
+## Why it exists
+
+Without a shared base, each DB adapter reinvented connect/disconnect and options shapes.
+
+**When to use:** You are implementing or extending an external DB repository adapter.
+
+**When not to use:** You only need the port types (use persistence-contracts) or a finished Mongo/SQL class (use external-db-repositories).
+
+## Responsibility in context
+
+- **Stack layer:** persistence / adapter base
+- **Problem boundary it owns:** `BaseExternalDataRepository` and `IRepositoryConnectionOptions`.
+- **Used with:** Concrete adapters in `@jumentix/external-db-repositories`; ports in `@jumentix/persistence-contracts`.
+- **Typical composition:** extended by external-db-repositories classes; configured at backend composition root.
+- **Journeys:** Persistence packages after Getting started / REST guide.
+- **Not responsible for:** Concrete Mongo/SQL drivers, HTTP, or offline browser storage.
+
+## Prerequisites
+
+- Bun 1.3.14+ (monorepo pin) or the Node runtime your service already uses
+- Read [Getting started](/docs/jumentix/concepts/getting-started) first
+- Basic TypeScript modules/`import` knowledge
+
+## Glossary
+
+- **Port** — TypeScript contract the application depends on (no vendor types).
+- **Adapter** — Concrete implementation that talks to a driver, broker, or protocol.
+- **Composition root** — Process startup code that wires env → adapters → use-cases.
+
+## Numbered steps
+
+### 1. Install
+
+```bash
+bun add @jumentix/external-persistence-core
+```
+
+### 2. First success (<30 min)
+
+```ts
+import { BaseExternalDataRepository } from '@jumentix/external-persistence-core';
+
+// Prefer ready adapters in external-db-repositories.
+// Extend the base only when adding a new driver adapter.
+class DemoRepository extends BaseExternalDataRepository {
+  // implement driver-specific connect/query hooks
+}
+```
+
+
+### 3. Core workflows
+
+### 1. Read connection options
+
+Pass URI/database/options objects — never hardcode secrets.
+
+### 2. Extend base for a new driver
+
+Subclass only when a supported adapter does not exist yet.
+
+### 3. Keep domain pure
+
+Expose ports upward; hide driver types inside the adapter.
+
+
+### 4. Full practical surface (exports)
+
+- `IRepositoryConnectionOptions`
+- `BaseExternalDataRepository`
+
+Use exports from application/adapters layers as described above — not from domain entities.
+
+## Common errors
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| Subclass leaks mongoose types to use-cases | Boundary break | Map to persistence-contracts types before crossing the port. |
+
+**Verify success:** the first-success snippet runs (or typechecks against your service) and your use-case depends only on ports.
+
+## Junior checklist (“I can …”)
+
+- [ ] I can explain the base vs concrete adapter split
+- [ ] I know not to put this package in browser code
+
+## Next step
+
+Continue with [external-db-repositories](/docs/jumentix/packages/external-db-repositories).

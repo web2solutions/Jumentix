@@ -19,6 +19,60 @@ const monorepoRoot = path.resolve(appRoot, '../..');
 const sourcesPath = path.join(appRoot, 'config', 'content-sources.json');
 const contentRoot = path.join(appRoot, 'content');
 
+
+/**
+ * Public site package docs policy (fail-closed):
+ * - Never auto-publish a package whose package.json has `"private": true`.
+ * - Never publish internal tooling/governance packages even if mis-labeled.
+ * - Consumer-facing workspace packages appear only via explicit content-sources
+ *   entries pointing at curated consumer markdown (not raw private READMEs).
+ */
+const NEVER_PUBLISH_PACKAGE_SLUGS = new Set([
+  'config-eslint',
+  'config-jest',
+  'config-ts',
+  'agent-registry',
+  'security-scanner',
+  'cli-init',
+]);
+
+const NESTED_PACKAGE_HUB_SLUGS = new Set([
+  'cana',
+  'designer-core',
+  'key-value-storage',
+  'mutex-service',
+  'message-mediator',
+]);
+
+async function readPackagePrivateFlag(packageDir) {
+  try {
+    const raw = await fs.readFile(path.join(packageDir, 'package.json'), 'utf8');
+    const meta = JSON.parse(raw);
+    return Boolean(meta.private);
+  } catch {
+    // Fail closed: missing/unreadable package.json → treat as private.
+    return true;
+  }
+}
+
+async function shouldSkipPackagesCollectionSource(sourceDir, englishSource, slug) {
+  if (slug === 'index') {
+    // Monorepo packages/README lists private tooling; use the consumer hub entry instead.
+    return true;
+  }
+  if (NEVER_PUBLISH_PACKAGE_SLUGS.has(slug) || NESTED_PACKAGE_HUB_SLUGS.has(slug)) {
+    return true;
+  }
+  const packageDir = path.dirname(englishSource);
+  // Only apply private:true to package folders directly under packages/.
+  if (path.basename(path.dirname(packageDir)) === 'packages' || path.basename(sourceDir) === 'packages') {
+    const isPrivate = await readPackagePrivateFlag(packageDir);
+    if (isPrivate) return true;
+  }
+  return false;
+}
+
+
 const localeConfig = {
   en: {
     basePath: '/docs/jumentix',
@@ -219,10 +273,9 @@ async function prepareRecords(config) {
 
     for (const englishSource of englishFiles) {
       const slug = collectionSlug(sourceDir, englishSource);
-      // Nested package hubs are explicit content-sources entries.
       if (
         collection.section === 'packages'
-        && ['cana', 'designer-core', 'key-value-storage', 'mutex-service', 'message-mediator'].includes(slug)
+        && await shouldSkipPackagesCollectionSource(sourceDir, englishSource, slug)
       ) {
         continue;
       }

@@ -60,8 +60,16 @@ Execute um primeiro client contra IndexedDB nesta página:
 
 <CanaPlayground id="getting-started" />
 
-## Documentação completa
+## Checklist júnior (“Eu consigo …”)
+
+- [ ] Abrir um client, adicionar uma linha e lê-la de volta.
+- [ ] Conferir `client.backend` após `open()` e explicar indexeddb vs localStorage.
+- [ ] Evitar `TransactionInactive` mantendo `await`s externos fora de transações.
+
+## Próximo passo
 
 Continue no [guia de uso](../../documentation/md/CANA-USAGE-GUIDE.pt-BR.md) do
-consumidor — API, consultas, transações, hooks, recuperação de falhas e solução
-de problemas.
+consumidor — API completa, consultas, transações, hooks, recuperação de falhas e
+solução de problemas — depois
+[designer-core](/docs/pt-BR/jumentix/packages/designer-core/usage) para validar
+designs antes de persistir.

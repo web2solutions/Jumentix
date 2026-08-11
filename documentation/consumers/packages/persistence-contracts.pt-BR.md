@@ -1,0 +1,96 @@
+# @jumentix/persistence-contracts
+
+Shared TypeScript contracts (`IStore`, `IDatabaseClient`, paging) that keep domain/application code free of database vendors.
+
+## O que é
+
+Shared TypeScript contracts (`IStore`, `IDatabaseClient`, paging) that keep domain/application code free of database vendors.
+
+## Por que existe
+
+Without shared ports, every adapter invents incompatible method names and paging shapes.
+
+**Quando usar:** You write use-cases or adapters that read/write data through ports.
+
+**Quando não usar:** You need a concrete Mongo class (external-db-repositories) or browser IndexedDB (Cana).
+
+## Responsabilidade no escopo
+
+- **Camada:** persistence / ports (application boundary)
+- **Fronteira do problema:** Persistence port types only — no runtime drivers.
+- **Usado com:** Implemented by external-* packages and database-client-factory compositions.
+- **Composição típica:** Application imports contracts; adapters implement them; guides wire backend-template.
+- **Jornadas:** Concepts architecture → REST guide → persistence adapters.
+- **Não é responsável por:** Connecting to databases, Redis, or HTTP.
+
+## Pré-requisitos
+
+- Bun 1.3.14+ (pin do monorepo) ou o Node do seu serviço
+- Leia [Começando](/docs/pt-BR/jumentix/concepts/getting-started)
+- TypeScript básico (`import`/módulos)
+
+## Glossário
+
+- **Porta (port)** — contrato TypeScript da aplicação (sem tipos de vendor).
+- **Adaptador** — implementação concreta de driver/broker/protocolo.
+- **Composition root** — startup que liga env → adaptadores → use-cases.
+
+## Passos numerados
+
+### 1. Instalar
+
+```bash
+bun add @jumentix/persistence-contracts
+```
+
+### 2. Primeiro sucesso (<30 min)
+
+```ts
+import type { IStore } from '@jumentix/persistence-contracts';
+
+export async function listItems(store: IStore) {
+  return store.query({ /* paging / filter per contract */ });
+}
+```
+
+
+### 3. Fluxos centrais
+
+### 1. Type a use-case port
+
+Accept `IStore` / `IDatabaseClient` in application code.
+
+### 2. Keep adapters behind the port
+
+Only adapters import mongoose/sequelize.
+
+### 3. Share paging types
+
+Use `IPagingRequest` / `IPagingResponse` across HTTP and DB.
+
+
+### 4. Superfície prática (exports)
+
+- `IStore`
+- `IDatabaseClient`
+- `IPagingRequest`
+- `IPagingResponse`
+
+Use os exports nas camadas de aplicação/adaptadores — não em entidades de domínio.
+
+## Erros comuns
+
+| Sintoma | Causa | Correção |
+|---------|-------|----------|
+| Domain imports mongoose | Wrong layer | Depend on these contracts instead. |
+
+**Como verificar:** o snippet de primeiro sucesso roda (ou typechecka no serviço) e o use-case depende só de ports.
+
+## Checklist júnior (“Eu consigo …”)
+
+- [ ] I can write a use-case against IStore without a driver
+- [ ] I know which package implements the port at runtime
+
+## Próximo passo
+
+Continue com [external-persistence-core](/docs/pt-BR/jumentix/packages/external-persistence-core).

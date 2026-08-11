@@ -1,48 +1,115 @@
-<!--
-Arquivo gerado automaticamente a partir de: apps/backend-template/documentation/guides/CREATING-REST-API-WITH-JUMENTIX.md
-Idioma alvo: Português (Brasil)
--->
 # Criando API REST com Jumentix
 
-Este guia mostra como inicializar e executar um serviço REST usando o modelo de back-end.
+## O que é
 
-## 1. Selecione o perfil de tempo de execução
+Este guia mostra como inicializar, executar e validar um serviço REST usando o
+template de backend Jumentix. Você vai ligar lógica de domínio a um adaptador
+HTTP (Express por padrão) e chamar a API por um client tipado.
 
-Defina variáveis ​​de ambiente:
+## Por que existe
 
-- `JUMENTIX_HTTP_FRAMEWORK=express` (ou qualquer adaptador suportado)
-- `JUMENTIX_REALTIME_API = não`
+Times júnior costumam editar controllers e esperar que rotas permaneçam alinhadas
+à documentação. O Jumentix inverte isso: **OpenAPI é o contrato**, o código de
+domínio fica no centro e o framework HTTP é um adaptador substituível. Este guia
+oferece um caminho repetível de perfil de env → servidor rodando → testes verdes.
 
-Então comece:
+## Pré-requisitos
+
+| Item | Obrigatório | Notas |
+| --- | --- | --- |
+| Bun 1.3.14+ | Sim | Veja [Começando](/docs/pt-BR/jumentix/concepts/getting-started) |
+| Getting-started concluído | Recomendado | Modelo mental + playground Cana |
+| Backend template ou scaffold cli-init | Sim | [`@jumentix/cli-init`](/docs/pt-BR/jumentix/packages/cli-init) ou monorepo `apps/backend-template` |
+| Service Management (opcional) | Times design-first | Domain Designer gera entidades alinhadas ao OpenAPI |
+
+**Arquivo de ambiente:** `apps/backend-template/src/config/.env.dev` (ou equivalente do seu scaffold).
+
+## Glossário
+
+| Termo | Significado nesta página |
+| --- | --- |
+| **REST** | API HTTP com verbos (GET, POST, …) e payloads JSON. |
+| **OpenAPI** | Spec em `spec/1.0.0.yml` descrevendo paths, schemas e operationIds. |
+| **Perfil de runtime** | Variáveis de env (`JUMENTIX_HTTP_FRAMEWORK`, `JUMENTIX_REALTIME_API`) que selecionam adaptadores. |
+| **Controller** | Classe da camada de interface mapeando requests HTTP para casos de uso. |
+| **Caso de uso** | Serviço de aplicação implementando uma operação de negócio. |
+| **Porta de repositório** | Interface de persistência; implementada por adaptador de banco. |
+| **Adaptador HTTP** | Módulo Express/Fastify/etc. montando rotas a partir de operationIds OpenAPI. |
+| **oas:check-routes** | Script que verifica se todo path OpenAPI resolve para um handler registrado. |
+
+## Passos numerados
+
+### Passo 1 — Selecionar perfil REST (< 5 minutos)
+
+1. Abra seu arquivo de env (padrão: `apps/backend-template/src/config/.env.dev`).
+2. Configure modo só REST:
+
+```bash
+JUMENTIX_HTTP_FRAMEWORK=express
+JUMENTIX_REALTIME_API=no
+```
+
+Frameworks HTTP suportados estão em [Adaptadores HTTP](/docs/pt-BR/jumentix/adapters/http).
+
+3. Inicie o servidor dev na raiz do monorepo:
 
 ```bash
 bun run dev:http
 ```
 
-## 2. Modelo de Domínio e Contratos
+Ou de dentro de `apps/backend-template`:
 
-1. Desenhar entidades e relacionamentos em Gestão de Serviços (Designer de Domínio).
-2. Gere ou atualize definições OpenAPI em `spec/1.0.0.yml`.
-3. Mantenha os objetos do contrato de solicitação/resposta alinhados com as entradas/saídas do controlador.
+```bash
+bun run dev:rest
+```
 
-## 3. Implementar fluxo de domínio
+**Verificação de sucesso:** PM2 reporta `jumentix-dev-http` online; curl ou browser
+acessa `/health` (ou rota de health do scaffold) com HTTP 200.
 
-Use o padrão de camadas do projeto:
+### Passo 2 — Modelar domínio e contratos (< 15 minutos)
 
-1. modelo/entidade/objetos de valor
-2. portas/adaptadores de repositório
-3. serviços/casos de uso
-4. controladores
-5. manipuladores de estrutura
+1. **Design-first (recomendado):** abra Service Management → Domain Designer.
+   Defina entidades, relacionamentos e contextos limitados.
+2. **Spec-first:** edite OpenAPI em `spec/1.0.0.yml` — adicione paths, schemas e
+   `operationId` estáveis.
+3. Mantenha DTOs de request/response alinhados às entradas/saídas do controller.
+4. Packages de contrato compartilhado (`@jumentix/shared-contracts`) devem espelhar
+   as mesmas formas; veja [/docs/pt-BR/jumentix/packages/shared-contracts](/docs/pt-BR/jumentix/packages/shared-contracts).
 
-## 4. Vincular ao adaptador HTTP
+**Verificação de sucesso:** `bun run oas:check-routes` passa sem rotas não resolvidas.
 
-Escolha o adaptador por env (`JUMENTIX_HTTP_FRAMEWORK`) e use o carregador de inicialização REST.
-Os endpoints REST são expostos por meio de manipuladores nativos da estrutura nas interfaces do módulo.
+### Passo 3 — Implementar fluxo de domínio (< 30 minutos por feature)
 
-## 5. Validar
+Siga as camadas do backend template — de baixo para cima:
 
-Execute portões de qualidade:
+1. **Domínio** — entidades, value objects, eventos em `src/domain/`.
+2. **Portas** — interfaces de repositório e gateway dos casos de uso.
+3. **Casos de uso** — serviços de aplicação orquestrando regras de domínio.
+4. **Controllers** — traduzem DTOs HTTP ↔ entradas/saídas do caso de uso.
+5. **Handlers** — bindings de rota específicos do framework (módulos Express).
+
+Regra: **domínio e casos de uso não importam Express/Fastify.** Só adaptadores importam.
+
+**Verificação de sucesso:** testes unitários do caso de uso passam sem subir HTTP.
+
+### Passo 4 — Vincular ao adaptador HTTP (< 10 minutos)
+
+1. Confirme que `JUMENTIX_HTTP_FRAMEWORK` corresponde ao adaptador ligado.
+2. O startup REST carrega `start-rest-api.ts` (ou entry do scaffold) registrando
+   handlers das interfaces de módulo.
+3. Cada `operationId` OpenAPI mapeia para um método de controller via registro do adaptador.
+
+Troque adaptadores só mudando env — código de domínio intacto:
+
+```bash
+JUMENTIX_HTTP_FRAMEWORK=fastify   # exemplo; confirme suporte na página de adaptadores
+```
+
+**Verificação de sucesso:** request manual a um endpoint novo retorna JSON no formato do contrato.
+
+### Passo 5 — Validar portões de qualidade (< 10 minutos)
+
+Execute na raiz do monorepo (ou `bun --cwd ../..` a partir de backend-template):
 
 ```bash
 bun run lint
@@ -51,17 +118,67 @@ bun run oas:check-routes
 bun run test:integration:express
 ```
 
-## 6. Chamar a API de um client
+Smoke opcional antes do push:
+
+```bash
+cd apps/backend-template && bun run test:integration:smoke
+```
+
+**Verificação de sucesso:** os quatro comandos saem com código 0; teste de integração
+bate HTTP real contra o perfil rodando.
+
+### Passo 6 — Chamar a API de um client (caminho júnior)
+
+No Node ou no playground de docs do browser, **injete o documento OpenAPI** em vez
+de carregar do disco com `fs`:
+
+```js
+const client = api.createMockClient();
+const result = await client.request({ method: 'GET', path: '/health' });
+console.log(result.status, result.body);
+```
+
+Para clients de produção, use `@jumentix/sdk-rest-client` com a mesma spec injetada
+em bundles de browser.
+
+## Exemplos
+
+### Client mock estático
+
+```js
+const client = api.createMockClient();
+const result = await client.request({ method: 'GET', path: '/health' });
+```
+
+### Playground interativo REST client
+
+Experimente o client REST mockado — **Run** deve retornar `/health` com sucesso:
 
 <DocsPlayground runtime="sdk-rest-client" id="getting-started" />
 
-## Próximos passos
+## Erros comuns
 
-1. [Começando](/docs/pt-BR/jumentix/concepts/getting-started)
-2. [Guia realtime](/docs/pt-BR/jumentix/guides/realtime-api)
-3. [Adaptadores HTTP](/docs/pt-BR/jumentix/adapters/http)
+| Sintoma | Causa provável | Correção | Verificar sucesso |
+| --- | --- | --- | --- |
+| Processo PM2 sai imediatamente | Caminho de env inválido ou secret ausente | Confirme `--env-file=./apps/backend-template/src/config/.env.dev` | `bun run dev:http` permanece online |
+| `oas:check-routes` falha | Path OpenAPI sem handler | Adicione handler + método de controller; rode de novo | Script sai com 0 |
+| 404 em rota documentada | Adaptador HTTP errado carregado | Alinhe `JUMENTIX_HTTP_FRAMEWORK` ao módulo ligado | curl retorna 200 |
+| Timeout em teste de integração | Servidor parado ou porta errada | Suba perfil dev antes da suite | `test:integration:express` verde |
+| Client browser não carrega YAML | `fs.readFile` no bundle | Injete objeto OpenAPI parseado (padrão do playground) | Mock client funciona no browser |
+| Domínio importa Express | Violação de camada | Mova código HTTP para adaptador/handler | `arch:check-boundaries` passa |
 
-## Referências
+## Checklist júnior (“Eu consigo …”)
 
-- Adaptadores HTTP: [/docs/pt-BR/jumentix/adapters/http](/docs/pt-BR/jumentix/adapters/http)
-- Contratos de runtime: [/docs/pt-BR/jumentix/reference/runtime-contracts](/docs/pt-BR/jumentix/reference/runtime-contracts)
+- [ ] Definir `JUMENTIX_HTTP_FRAMEWORK` e `JUMENTIX_REALTIME_API=no` e iniciar `bun run dev:http`.
+- [ ] Localizar `spec/1.0.0.yml` e explicar o que é um `operationId`.
+- [ ] Adicionar ou rastrear um path: OpenAPI → controller → caso de uso → porta de repositório.
+- [ ] Rodar `bun run oas:check-routes` e `bun run test:integration:express` com sucesso.
+- [ ] Chamar `/health` via playground sdk-rest-client (**Run** verde).
+- [ ] Citar um adaptador HTTP alternativo sem alterar código de domínio.
+
+## Próximo passo
+
+Quando precisar de push ou atualizações ao vivo, continue em
+[Criar API em tempo real](/docs/pt-BR/jumentix/guides/realtime-api). Para referência
+de adaptadores, veja [Adaptadores HTTP](/docs/pt-BR/jumentix/adapters/http) e
+[Erros e respostas](/docs/pt-BR/jumentix/reference/errors-responses).

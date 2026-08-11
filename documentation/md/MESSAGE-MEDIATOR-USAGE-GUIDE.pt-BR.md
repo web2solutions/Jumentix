@@ -1,20 +1,191 @@
 # @jumentix/message-mediator — guia de uso
 
-O mediator desacopla publishers de handlers. Use o adaptador **em memória** no
-browser e nos testes unitários.
+## Responsabilidade no escopo
 
-## Instalar
+- **Camada:** messaging / adaptador de aplicação
+- **Responsável por:** mediação pub/sub e request em processo ou via broker
+- **Usado com:** use-cases de backend
+- **Não responsável por:** rotas OpenAPI ou persistência de banco
+
+## O que é
+
+`@jumentix/message-mediator` desacopla **publishers de eventos** de **handlers**
+e suporta **request/response** sobre contratos nomeados. O adaptador in-memory
+roda no browser e nos testes unitários; adaptadores RabbitMQ e BullMQ visam
+servidores Node selecionados por variáveis de ambiente.
+
+## Por que existe
+
+Times júnior precisam de um padrão para “algo aconteceu” (eventos) e “faça
+isso” (comandos/consultas) sem ligar cada módulo diretamente. O mediator permite
+prototipar in-memory numa SPA e depois deployar as mesmas assinaturas de handler
+atrás de um broker — sem reescrever lógica de negócio.
+
+## Pré-requisitos
+
+- **Runtime:** browser (in-memory) ou Node/Bun (in-memory, RabbitMQ ou BullMQ).
+- **Leitura prévia:** [Começando](/docs/pt-BR/jumentix/concepts/getting-started)
+  e async/await básico em JavaScript.
+- **Para brokers:** URL RabbitMQ ou env de conexão Redis (veja
+  `compileMessageMediator` no pacote).
+- **Opcional:** [shared-contracts](/docs/pt-BR/jumentix/packages/shared-contracts)
+  para convenções de nomes de contrato em serviços maiores.
+
+## Glossário
+
+| Termo | Significado |
+| --- | --- |
+| **Evento de integração** | Notificação fire-and-forget: `{ name, payload, occurredAt, metadata? }`. |
+| **Message** | Payload de request: `{ contract, version?, payload, metadata? }`. |
+| **Handler** | Função registrada para um `contract` — retorna `IMessageResponse`. |
+| **Mediator** | Objeto com publish/subscribe **e** registerHandler/request. |
+| **Contrato** | Id string estável de comando ou query (ex.: `users.create`). |
+| **Adaptador in-memory** | `InMemoryMessageMediatorAdapter` — sem durabilidade, mesmo processo. |
+| **Adaptador broker** | RabbitMQ ou BullMQ — multi-processo, sobrevive a restarts (só Node). |
+
+## Passos
+
+### 1. Instalar (< 5 minutos)
 
 ```bash
 bun add @jumentix/message-mediator
 ```
 
-## Experimente
+### 2. Primeiro sucesso — publicar e assinar (< 15 minutos)
+
+```ts
+import { InMemoryMessageMediatorAdapter } from '@jumentix/message-mediator';
+
+const mediator = InMemoryMessageMediatorAdapter.compile();
+const seen: string[] = [];
+
+mediator.subscribe('demo.ping', async (event) => {
+  seen.push(event.name);
+});
+
+await mediator.publish({
+  name: 'demo.ping',
+  payload: { hello: true },
+  occurredAt: new Date().toISOString()
+});
+
+console.log(seen); // ['demo.ping']
+```
+
+**Verifique o sucesso:** `seen.length === 1` após `publish` resolver.
+
+### 3. Fluxo central — request/response
+
+Registre handler e chame `request`:
+
+```ts
+mediator.registerHandler('users.create', async (message) => ({
+  result: { id: 'user-1', username: message.payload.username }
+}));
+
+const response = await mediator.request({
+  contract: 'users.create',
+  version: '1.0.0',
+  payload: { username: 'ana' }
+});
+
+if (response.error) throw response.error;
+console.log(response.result);
+```
+
+Handlers podem ser sync ou async. Erros em `response.error` não lançam exceção
+a menos que seu wrapper escolha lançar.
+
+### 4. Fluxo central — compilar por ambiente
+
+```ts
+import { compileMessageMediator } from '@jumentix/message-mediator';
+
+// JUMENTIX_MESSAGE_MEDIATOR_ADAPTER=inmemory | rabbitmq | bullmq
+const mediator = compileMessageMediator();
+```
+
+| Env do adaptador | Quando usar |
+| --- | --- |
+| `inmemory` (padrão) | Dev local, demos no browser, testes unitários |
+| `rabbitmq` / `rabbit` | Mensageria async multi-serviço |
+| `bullmq` / `bull` | Filas de jobs com Redis |
+
+Adaptadores broker exigem env vars documentadas; URL ausente lança na compilação
+com mensagem clara.
+
+### 5. Fluxo central — timeouts e opções de roteamento
+
+```ts
+const response = await mediator.request(
+  { contract: 'billing.charge', payload: { amount: 10 } },
+  { timeoutMs: 5000, routeKey: 'billing-primary' }
+);
+```
+
+Registre handlers com `routeKey` ou `queueName` correspondentes em
+`IMessageHandlerRegistrationOptions` quando precisar de mais de um consumidor por
+contrato.
+
+### 6. Superfície completa — mapa da API
+
+| Export | Papel |
+| --- | --- |
+| `IMessageMediator` | Tipo da porta completa |
+| `IEventBus` | Só `publish` + `subscribe` |
+| `InMemoryMessageMediatorAdapter.compile()` | Mediator in-process |
+| `RabbitMqMessageMediatorAdapter` | RabbitMQ (Node) |
+| `BullMqMessageMediatorAdapter` | BullMQ (Node) |
+| `compileMessageMediator()` | Factory orientada a env |
+| Tipos: `IMessage`, `IMessageResponse`, `IIntegrationEvent`, `MessageHandler` | Tipagem de handlers e payloads |
+
+## Experimente no playground de docs
 
 <DocsPlayground runtime="message-mediator" id="getting-started" />
 
-## Próximos passos
+O stub do playground usa subscribe/publish estilo tópico:
 
-- [Guia REST](/docs/pt-BR/jumentix/guides/rest-api)
-- [Guia realtime](/docs/pt-BR/jumentix/guides/realtime-api)
-- [Começando](/docs/pt-BR/jumentix/concepts/getting-started)
+```js
+const seen = [];
+const mediator = api.createInMemory();
+await mediator.subscribe('demo.ping', async (msg) => { seen.push(msg); });
+await mediator.publish('demo.ping', { hello: true });
+```
+
+Em código de produção, prefira `InMemoryMessageMediatorAdapter.compile()` com
+objetos de evento completos e `registerHandler` / `request` para comandos.
+
+## Quando não usar in-memory
+
+- **Workers multi-processo** — cada processo tem memória própria; eventos não
+  cruzam fronteiras de processo.
+- **Filas duráveis entre deploys** — use adaptadores RabbitMQ ou BullMQ em Node.
+
+Mantenha adaptadores broker fora de bundles de browser.
+
+## Erros comuns
+
+| Sintoma | Causa | Correção | Verificar sucesso |
+| --- | --- | --- | --- |
+| Handler nunca roda | String errada de `name` ou `contract` | Igualdade exata; logue registros | `seen` ou `response.result` preenchido |
+| `No handler registered for contract …` | Falta `registerHandler` | Registre antes de `request` | `response.error` ausente |
+| Request trava até timeout | Handler nunca resolve | Retorne ou rejeite no handler; use `timeoutMs` | Resposta dentro do timeout |
+| Eventos perdidos após refresh | Adaptador in-memory | Troque para broker em Node | Evento sobrevive a restart |
+| `JUMENTIX_RABBITMQ_URL is required` | Adaptador Rabbit sem URL | Configure env ou use `inmemory` local | `compileMessageMediator()` funciona |
+
+## Checklist júnior (“Eu consigo …”)
+
+- [ ] Publicar evento de integração e tratá-lo com `subscribe`.
+- [ ] Registrar handler e completar round-trip `request` / `response`.
+- [ ] Explicar por que in-memory serve em testes unitários mas não em produção multi-worker.
+- [ ] Selecionar adaptador correto via `JUMENTIX_MESSAGE_MEDIATOR_ADAPTER`.
+- [ ] Passar `timeoutMs` e tratar `response.error` sem derrubar quem chamou.
+- [ ] Descrever diferença entre evento (`publish`) e comando (`request`).
+
+## Próximo passo
+
+Conecte clientes HTTP e realtime nos guias
+[REST API](/docs/pt-BR/jumentix/guides/rest-api) e
+[Realtime API](/docs/pt-BR/jumentix/guides/realtime-api), depois volte a
+[Começando](/docs/pt-BR/jumentix/concepts/getting-started) para a jornada
+completa de comunicação.

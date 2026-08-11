@@ -8,6 +8,15 @@
 
 ---
 
+
+## 0. Public site package policy (fail-closed)
+
+- If `packages/<name>/package.json` has `"private": true`, the package README is **never** auto-synced onto the website.
+- Internal tooling is additionally deny-listed: `config-eslint`, `config-jest`, `config-ts`, `agent-registry`, `security-scanner`, `cli-init`.
+- Consumer-facing packages appear only through **explicit** `content-sources.json` entries that point at curated consumer markdown under `documentation/consumers/**` (or public npm package docs such as cana / designer-core hubs).
+- Every public package page must include **Responsibility in context / Responsabilidade no escopo**.
+- M7 tooling configs are **out of public site scope** (private packages).
+
 ## 1. Outcome
 
 Make every package and every application on the Jumentix website teach a junior engineer **from absolute zero to full practical usage**, with **verified** acceptance — not shallow stubs or README mirrors.
@@ -219,10 +228,10 @@ A milestone is **Done** only when:
 - adapter-runtime-bootstrap, runtime-infra + adapters IA pages  
 - **DoD:** junior can pick HTTP/realtime/DB adapter path without jargon gaps  
 
-### M7 — Tooling configs
+### M7 — Tooling configs (NOT on public site)
 
-- config-ts, config-eslint, config-jest L3 consumer docs  
-- **DoD:** copy-paste configs work against backend-template  
+- `config-ts`, `config-eslint`, `config-jest` remain **private** workspace packages  
+- **DoD:** confirm they do **not** appear under `/docs/**/packages/config-*`, `llms.txt`, or packages hub  
 
 ### M8 — Governance packages (missing today)
 
@@ -277,3 +286,4 @@ Marcos M0–M10 amarram bugs, jornadas, tiers de pacotes, apps e superfícies SE
 | Date | Change |
 |------|--------|
 | 2026-08-11 | Initial plan; contrast + designer-core playground root causes; zero→pleno verified bar; inventories |
+| 2026-08-11 | Private package fail-closed + consumer allowlist; responsibility-in-scope mandatory |

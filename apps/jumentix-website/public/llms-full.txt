@@ -437,14 +437,23 @@ Build contract-first REST APIs with Jumentix.
 
 Headings:
 - Creating REST API with Jumentix
-- 1. Select Runtime Profile
-- 2. Model Domain and Contracts
-- 3. Implement Domain Flow
-- 4. Bind to HTTP Adapter
-- 5. Validate
-- 6. Call the API from a client (junior path)
-- Next steps
-- References
+- What it is
+- Why it exists
+- Prerequisites
+- Glossary
+- Numbered steps
+- Step 1 — Select the REST runtime profile (< 5 minutes)
+- Step 2 — Model domain and contracts (< 15 minutes)
+- Step 3 — Implement the domain flow (< 30 minutes per feature)
+- Step 4 — Bind to the HTTP adapter (< 10 minutes)
+- Step 5 — Validate quality gates (< 10 minutes)
+- Step 6 — Call the API from a client (junior path)
+- Examples
+- Static mock client
+- Interactive REST client playground
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -456,14 +465,20 @@ Build frontend products with shared SDKs and offline behavior.
 
 Headings:
 - Creating SPA/PWA with Jumentix
-- 1. Model Business Domains First
-- 2. Define Communication Contracts
-- 3. Configure Service Runtime
-- 4. Build Offline-Capable PWA
-- 5. Validate Delivery Readiness
-- 6. Offline storage with Cana + designs
-- Next steps
-- References
+- What it is
+- Why it exists
+- Prerequisites
+- Glossary
+- Numbered steps
+- Step 1 — Model business domains first (< 20 minutes)
+- Step 2 — Define communication contracts (< 10 minutes)
+- Step 3 — Configure service runtime (< 10 minutes)
+- Step 4 — Build offline-capable PWA storage (< 30 minutes)
+- Step 5 — Validate delivery readiness (< 15 minutes)
+- Step 6 — Wire designers to storage (hands-on)
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -503,15 +518,24 @@ Build Socket.IO and gRPC interfaces with REST fallback.
 
 Headings:
 - Creating Realtime API with Jumentix
-- 1. Enable Realtime Runtime
-- or
-- 2. Define Async Contracts
-- 3. Implement Message Handlers
-- 4. Keep REST Fallback Available
-- 5. Validate Realtime Stability
-- 6. Client playground (WebSocket)
-- Next steps
-- References
+- What it is
+- Why it exists
+- Prerequisites
+- Glossary
+- Numbered steps
+- Step 1 — Enable the realtime runtime profile (< 5 minutes)
+- WebSocket + REST fallback (start here for browser apps)
+- gRPC + REST fallback (Node service mesh)
+- Step 2 — Define Async contracts (< 15 minutes)
+- Step 3 — Implement message handlers (< 30 minutes)
+- Step 4 — Keep REST fallback available (< 5 minutes)
+- Step 5 — Validate realtime stability (< 10 minutes)
+- Step 6 — Client integration (junior path)
+- Examples
+- Interactive WebSocket client playground
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -536,13 +560,26 @@ Headings:
 
 URL: https://jumentix-website.vercel.app/docs/jumentix/packages/sdk-grpc-client
 
-Packages documentation.
+AsyncAPI/gRPC realtime SDK client (Node).
 
 Headings:
 - @jumentix/sdk-grpc-client
-- What it does
-- Quick usage
-- Build
+- What it is
+- Why it exists
+- Responsibility in context
+- Prerequisites
+- Glossary
+- Numbered steps
+- 1. Install
+- 2. First success (<30 min)
+- 3. Core workflows
+- 1. Point at host:port
+- 2. Send envelope
+- 3. Deploy only on Node
+- 4. Full practical surface (exports)
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -550,11 +587,26 @@ Headings:
 
 URL: https://jumentix-website.vercel.app/docs/jumentix/packages/external-db-repositories
 
-Packages documentation.
+Reusable external DB repository adapters.
 
 Headings:
 - @jumentix/external-db-repositories
-- Exports
+- What it is
+- Why it exists
+- Responsibility in context
+- Prerequisites
+- Glossary
+- Numbered steps
+- 1. Install
+- 2. First success (<30 min)
+- 3. Core workflows
+- 1. Connect with env options
+- 2. Run a repository operation
+- 3. Disconnect on shutdown
+- 4. Full practical surface (exports)
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -562,11 +614,26 @@ Headings:
 
 URL: https://jumentix-website.vercel.app/docs/jumentix/packages/external-store-proxy
 
-Packages documentation.
+IStore proxies over external database clients.
 
 Headings:
 - @jumentix/external-store-proxy
-- Exports
+- What it is
+- Why it exists
+- Responsibility in context
+- Prerequisites
+- Glossary
+- Numbered steps
+- 1. Install
+- 2. First success (<30 min)
+- 3. Core workflows
+- 1. Create stores from a client
+- 2. Inject into use-cases
+- 3. Test with fakes
+- 4. Full practical surface (exports)
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -574,42 +641,42 @@ Headings:
 
 URL: https://jumentix-website.vercel.app/docs/jumentix/packages/external-persistence-core
 
-Packages documentation.
+Base class and options for external persistence adapters.
 
 Headings:
 - @jumentix/external-persistence-core
-- Exports
+- What it is
+- Why it exists
+- Responsibility in context
+- Prerequisites
+- Glossary
+- Numbered steps
+- 1. Install
+- 2. First success (<30 min)
+- 3. Core workflows
+- 1. Read connection options
+- 2. Extend base for a new driver
+- 3. Keep domain pure
+- 4. Full practical surface (exports)
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
-# @jumentix/config-jest
-
-URL: https://jumentix-website.vercel.app/docs/jumentix/packages/config-jest
-
-Packages documentation.
-
-Headings:
-- @jumentix/config-jest
-- Current `dev` status
-
----
-
-# Jumentix Workspace Packages
+# Jumentix packages
 
 URL: https://jumentix-website.vercel.app/docs/jumentix/packages
 
-Packages documentation.
+Consumer package map for adopters (public site; private tooling excluded).
 
 Headings:
-- Jumentix Workspace Packages
-- Package Index
-- Runtime and persistence
-- Messaging, bootstrap, and contracts
-- SDK clients
-- Service Management
-- Private workspace configuration
-- Usage Pattern
-- Related Docs
+- Jumentix packages (consumer map)
+- Start here
+- Browser / offline
+- Persistence
+- Communication
+- Runtime composition
 
 ---
 
@@ -617,23 +684,26 @@ Headings:
 
 URL: https://jumentix-website.vercel.app/docs/jumentix/packages/persistence-contracts
 
-Packages documentation.
+Shared persistence ports (IStore, IDatabaseClient).
 
 Headings:
 - @jumentix/persistence-contracts
-- Exports
-
----
-
-# @jumentix/config-eslint
-
-URL: https://jumentix-website.vercel.app/docs/jumentix/packages/config-eslint
-
-Packages documentation.
-
-Headings:
-- @jumentix/config-eslint
-- Current `dev` status
+- What it is
+- Why it exists
+- Responsibility in context
+- Prerequisites
+- Glossary
+- Numbered steps
+- 1. Install
+- 2. First success (<30 min)
+- 3. Core workflows
+- 1. Type a use-case port
+- 2. Keep adapters behind the port
+- 3. Share paging types
+- 4. Full practical surface (exports)
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -664,28 +734,21 @@ Junior guide and playground for @jumentix/designer-core.
 
 Headings:
 - @jumentix/designer-core — usage guide
-- When to use it
-- Install
-- Try it
-- Junior checklist
-- Errors to expect
-- Next steps
-
----
-
-# @jumentix/cli-init
-
-URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cli-init
-
-Packages documentation.
-
-Headings:
-- @jumentix/cli-init
-- Commands
-- Behavior
-- Non-interactive usage
-- Help
-- Run local package entrypoint
+- Responsibility in context
+- What it is
+- Why it exists
+- Prerequisites
+- Glossary
+- Steps
+- 1. Install (< 5 minutes)
+- 2. First success — validate the sample model (< 15 minutes)
+- 3. Core workflow — validate before save
+- 4. Core workflow — export and re-import round-trip
+- 5. Full surface — public API map
+- Try it in the docs playground
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -693,13 +756,26 @@ Headings:
 
 URL: https://jumentix-website.vercel.app/docs/jumentix/packages/sdk-rest-client
 
-Packages documentation.
+OpenAPI-driven REST SDK client.
 
 Headings:
 - @jumentix/sdk-rest-client
-- What it does
-- Quick usage
-- Build
+- What it is
+- Why it exists
+- Responsibility in context
+- Prerequisites
+- Glossary
+- Numbered steps
+- 1. Install
+- 2. First success (<30 min)
+- 3. Core workflows
+- 1. Construct with base URL
+- 2. Call by operationId
+- 3. Handle envelope errors
+- 4. Full practical surface (exports)
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -707,11 +783,26 @@ Headings:
 
 URL: https://jumentix-website.vercel.app/docs/jumentix/packages/runtime-infra
 
-Packages documentation.
+Runtime infrastructure helpers for adapters.
 
 Headings:
 - @jumentix/runtime-infra
-- Exports
+- What it is
+- Why it exists
+- Responsibility in context
+- Prerequisites
+- Glossary
+- Numbered steps
+- 1. Install
+- 2. First success (<30 min)
+- 3. Core workflows
+- 1. Follow REST guide first
+- 2. Read with bootstrap
+- 3. Avoid UI imports
+- 4. Full practical surface (exports)
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -719,11 +810,26 @@ Headings:
 
 URL: https://jumentix-website.vercel.app/docs/jumentix/packages/database-client-factory
 
-Packages documentation.
+Compile database clients from env/driver selection.
 
 Headings:
 - @jumentix/database-client-factory
-- Exports
+- What it is
+- Why it exists
+- Responsibility in context
+- Prerequisites
+- Glossary
+- Numbered steps
+- 1. Install
+- 2. First success (<30 min)
+- 3. Core workflows
+- 1. Read driver from env
+- 2. Compile once at boot
+- 3. Inject ports upward
+- 4. Full practical surface (exports)
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -750,10 +856,22 @@ Junior guide and playground for mutex locks.
 
 Headings:
 - @jumentix/mutex-service — usage guide
-- Install
-- Try it
-- Junior rules
-- Next steps
+- Responsibility in context
+- What it is
+- Why it exists
+- Prerequisites
+- Glossary
+- Steps
+- 1. Install (< 5 minutes)
+- 2. First success — acquire and release (< 15 minutes)
+- 3. Core workflow — always release in `finally`
+- 4. Core workflow — check before retry
+- 5. Core workflow — production wiring
+- 6. Full surface — API map
+- Try it in the docs playground
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -778,10 +896,22 @@ Junior guide and in-memory playground for key/value storage.
 
 Headings:
 - @jumentix/key-value-storage — usage guide
-- Install
-- Try the in-memory client
-- When to use which adapter
-- Next steps
+- Responsibility in context
+- What it is
+- Why it exists
+- Prerequisites
+- Glossary
+- Steps
+- 1. Install (< 5 minutes)
+- 2. First success — in-memory get/set (< 10 minutes)
+- 3. Core workflow — compile by environment
+- 4. Core workflow — error-safe reads
+- 5. Core workflow — pair with mutex-service
+- 6. Full surface — API map
+- Try it in the docs playground
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -789,11 +919,26 @@ Headings:
 
 URL: https://jumentix-website.vercel.app/docs/jumentix/packages/shared-contracts
 
-Packages documentation.
+Canonical OpenAPI/AsyncAPI spec loading for SDKs.
 
 Headings:
 - @jumentix/shared-contracts
-- Purpose
+- What it is
+- Why it exists
+- Responsibility in context
+- Prerequisites
+- Glossary
+- Numbered steps
+- 1. Install
+- 2. First success (<30 min)
+- 3. Core workflows
+- 1. Load OpenAPI for REST
+- 2. Load AsyncAPI for realtime
+- 3. Fail closed on missing spec
+- 4. Full practical surface (exports)
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -801,11 +946,26 @@ Headings:
 
 URL: https://jumentix-website.vercel.app/docs/jumentix/packages/adapter-runtime-bootstrap
 
-Packages documentation.
+Shared adapter runtime bootstrap compiler.
 
 Headings:
 - @jumentix/adapter-runtime-bootstrap
-- Exports
+- What it is
+- Why it exists
+- Responsibility in context
+- Prerequisites
+- Glossary
+- Numbered steps
+- 1. Install
+- 2. First success (<30 min)
+- 3. Core workflows
+- 1. Read env contracts
+- 2. Compile adapters once
+- 3. Mount interfaces
+- 4. Full practical surface (exports)
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -813,25 +973,26 @@ Headings:
 
 URL: https://jumentix-website.vercel.app/docs/jumentix/packages/sdk-websocket-client
 
-Packages documentation.
+AsyncAPI/Socket.IO realtime SDK client.
 
 Headings:
 - @jumentix/sdk-websocket-client
-- What it does
-- Quick usage
-- Build
-
----
-
-# @jumentix/config-ts
-
-URL: https://jumentix-website.vercel.app/docs/jumentix/packages/config-ts
-
-Packages documentation.
-
-Headings:
-- @jumentix/config-ts
-- Current `dev` status
+- What it is
+- Why it exists
+- Responsibility in context
+- Prerequisites
+- Glossary
+- Numbered steps
+- 1. Install
+- 2. First success (<30 min)
+- 3. Core workflows
+- 1. Connect
+- 2. Request with operationId
+- 3. Reconnect policy
+- 4. Full practical surface (exports)
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -856,10 +1017,23 @@ Junior guide and in-memory mediator playground.
 
 Headings:
 - @jumentix/message-mediator — usage guide
-- Install
-- Try it
+- Responsibility in context
+- What it is
+- Why it exists
+- Prerequisites
+- Glossary
+- Steps
+- 1. Install (< 5 minutes)
+- 2. First success — publish and subscribe (< 15 minutes)
+- 3. Core workflow — request/response
+- 4. Core workflow — compile by environment
+- 5. Core workflow — timeouts and routing options
+- 6. Full surface — API map
+- Try it in the docs playground
 - When not to use in-memory
-- Next steps
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -874,7 +1048,8 @@ Headings:
 - Three things to know before using it
 - Errors are plain data
 - Try it in the browser
-- Full documentation
+- Junior checklist (“I can …”)
+- Next step
 
 ---
 
@@ -886,6 +1061,7 @@ Consumer API guide for @jumentix/cana with runnable examples.
 
 Headings:
 - Cana — Usage Guide
+- Responsibility in context
 - Table of contents
 - 1. Getting started
 - Typing your records
@@ -908,7 +1084,6 @@ Headings:
 - What Cana does not do
 - 7. Transactions
 - The one rule
-- Aborting
 
 ---
 
@@ -959,18 +1134,24 @@ Junior on-ramp: install, mental model, and first adoption journey.
 
 Headings:
 - Getting started with Jumentix
-- What you will build
+- What it is
+- Why it exists
 - Prerequisites
-- Mental model (keep this picture)
-- Install the monorepo (contributors / local factory)
-- Your first journey (recommended order)
-- 1. Concepts
-- 2. Create a REST API
-- 3. Add realtime when you need push
-- 4. Build a SPA / offline PWA
-- 5. Browse packages
-- Common mistakes (read before you debug)
-- How this documentation is organized
+- Glossary
+- Numbered steps
+- Step 1 — Install the toolchain (< 5 minutes)
+- Step 2 — Pick your starting path (< 2 minutes)
+- Step 3 — Open the reference backend (< 10 minutes)
+- follow scripts in that app's package.json / README for local run
+- Step 4 — Learn the mental model (< 5 minutes)
+- Step 5 — First success: touch Cana in the browser (< 10 minutes)
+- Step 6 — Core workflows (this week)
+- Step 7 — Full surface (when you need lookup, not tutorials)
+- Examples
+- Minimal REST client call (static)
+- Offline record with Cana (static)
+- Common errors
+- Junior checklist (“I can …”)
 - Next step
 
 ---

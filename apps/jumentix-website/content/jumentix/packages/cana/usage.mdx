@@ -16,6 +16,13 @@ This guide is about using `@jumentix/cana` in your application.
 
 ---
 
+## Responsibility in context
+
+- **Stack layer:** offline / browser persistence adapter
+- **Owns:** IndexedDB (with explicit localStorage fallback) for offline apps
+- **Used with:** designer-core and SPA/PWA guide
+- **Not responsible for:** server databases, Redis KV, or REST/WebSocket protocols
+
 ## Table of contents
 
 1. [Getting started](#1-getting-started)
@@ -35,6 +42,10 @@ This guide is about using `@jumentix/cana` in your application.
 16. [Testing your own code](#16-testing-your-own-code)
 17. [Troubleshooting](#17-troubleshooting)
 18. [API reference](#18-api-reference)
+19. [Glossary](#19-glossary)
+20. [Junior checklist](#20-junior-checklist-i-can--)
+21. [Common errors (quick reference)](#21-common-errors-quick-reference)
+22. [Next step](#22-next-step)
 
 ---
 
@@ -969,6 +980,60 @@ Call `explain()`. If `fullScan` is true, add an index or a range.
 | `pruneLedger` / `resolveOutcome` | Ledger maintenance |
 | `createRouter` | Worker messaging |
 | `createCanaDatabaseClient` | Jumentix adapter |
+
+---
+
+## 19. Glossary
+
+| Term | Meaning |
+| --- | --- |
+| **Client** | Return value of `createClient` — entry point for `open`, tables, transactions, and subscriptions. |
+| **Store** | One object store in the schema (like a table); named in `schema.stores`. |
+| **Schema version** | Integer `schema.version`; must increase for IndexedDB to apply structural changes. |
+| **Inbound key** | Key stored inside the record via `keyPath`. |
+| **Outbound key** | Key passed as the second argument to `add`/`put`. |
+| **Transaction scope** | List of store names passed to `transaction`; touching others fails. |
+| **Change event** | `CanaChangeEvent` emitted only after a committed write (`created`, `updated`, `deleted`, `cleared`). |
+| **Write outcome** | `committed`, `rolled-back`, or `unknown` — see §12 for crash recovery. |
+| **Operation ledger** | Optional store that records operation ids in the same transaction as data (`operationLedger: true`). |
+| **Durability assessment** | `durabilityAssessment()` — user-facing health of local storage (`lost`, `at-risk`, `best-effort`, `durable`). |
+
+---
+
+## 20. Junior checklist (“I can …”)
+
+- [ ] Create a client, define a schema, call `open()`, and add one record.
+- [ ] Explain why `open()` is explicit and what happens if I skip it.
+- [ ] Choose `add` vs `put` vs `update` for a given scenario.
+- [ ] Run a bounded `query` with an index and confirm with `explain()` that `fullScan` is false.
+- [ ] Write a multi-store transaction without awaiting non-IndexedDB work inside the scope.
+- [ ] Subscribe to change events and ignore my own writes with `originId`.
+- [ ] Handle `QuotaExceeded` and `TransactionInactive` using `isCanaErrorCode`.
+- [ ] Export with `exportAll()` and describe when to warn the user about `at-risk` storage.
+
+---
+
+## 21. Common errors (quick reference)
+
+Condensed from §10 and §17. For full context, follow the section links.
+
+| Symptom | Cause | Fix | Verify success |
+| --- | --- | --- | --- |
+| `InvalidRequest` before any read | Called a table before `await client.open()` | Await `open()` once at startup | `get`/`add` succeed |
+| Schema change had no effect | Did not bump `schema.version` | Increase version and reopen | New store/index appears in DevTools |
+| `TransactionInactive` | `await fetch` or other non-IDB work inside a transaction | Move external awaits outside; open a new transaction | Write commits with `outcome: 'committed'` |
+| `UpgradeBlocked` | Another tab holds the old DB version | Close or reload the other tab | `open()` succeeds on retry |
+| `QuotaExceeded` | Browser storage full | Free space; export critical data first | `durabilityAssessment().level` improves |
+| Subscriber missed changes | Used `sinceCursor` outside the retained window | Full reload; resubscribe without stale cursor | Events apply without gap |
+| `resolveWrite` → `unresolvable` | Ledger off or schema version not raised when enabling ledger | Enable `operationLedger` and bump schema version | Definitive `committed` or `rolled-back` |
+
+---
+
+## 22. Next step
+
+Pair offline persistence with domain validation in
+[designer-core](/docs/jumentix/packages/designer-core/usage), then follow the
+[SPA/PWA guide](/docs/jumentix/guides/spa-pwa) to ship a zero-build offline app.
 
 ---
 

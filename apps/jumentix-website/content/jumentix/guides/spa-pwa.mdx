@@ -7,67 +7,159 @@ description: "Build frontend products with shared SDKs and offline behavior."
 
 # Creating SPA/PWA with Jumentix
 
-This guide describes how to use Jumentix to plan and deliver frontend applications (SPA/PWA) integrated with backend services.
+## What it is
 
-## 1. Model Business Domains First
+This guide describes how to plan and deliver a **Single Page Application (SPA)** or
+**Progressive Web App (PWA)** that stays aligned with backend contracts and supports
+offline-first storage through Jumentix packages and Service Management designers.
 
-Use Domain Designer to define:
+## Why it exists
 
-- domains and bounded contexts
-- data entities and value objects
-- relationships and constraints
-- API and event contracts
+Frontend and backend teams often diverge after the first sprint — DTO shapes drift,
+realtime channels are guessed, and “offline support” becomes a fragile
+localStorage hack. Jumentix keeps **one design document** for domains and contracts,
+generates matching SDKs, and uses **Cana (IndexedDB)** for durable offline data.
 
-This keeps frontend state and backend contracts aligned from the first iteration.
+## Prerequisites
 
-## 2. Define Communication Contracts
+| Item | Required | Notes |
+| --- | --- | --- |
+| Bun 1.3.14+ | Yes | [Getting started](/docs/jumentix/concepts/getting-started) |
+| Service Management app | Recommended | Domain Designer + Communication Interface Designer |
+| Backend contracts | Yes | OpenAPI and/or AsyncAPI from REST/realtime guides |
+| Browser with IndexedDB | Yes | Chrome, Firefox, Safari, Edge |
 
-Use Communication Interface Designer to choose:
+## Glossary
 
-- REST-only consumption
-- Realtime with WebSocket
-- Realtime with gRPC (for Node-based backend consumers)
+| Term | Meaning on this page |
+| --- | --- |
+| **SPA** | Single-page app — UI loads once; routing happens client-side. |
+| **PWA** | Web app installable/offline-capable via service worker + local storage. |
+| **Domain Designer** | Service Management tool for entities, relationships, bounded contexts. |
+| **Communication Interface Designer** | Tool picking REST-only vs WebSocket vs gRPC consumption. |
+| **designer-core** | `@jumentix/designer-core` — validates design documents (`domains`, `relationships`). |
+| **Cana** | `@jumentix/cana` — IndexedDB adapter; not the same as `localStorage`. |
+| **Conflict strategy** | Rule when offline edits sync — e.g. last-write-wins or domain merge. |
+| **Service profile** | Env keys like `JUMENTIX_HTTP_FRAMEWORK` chosen in Service Configuration. |
 
-Contracts become the source for SDK/client integration.
+## Numbered steps
 
-## 3. Configure Service Runtime
+### Step 1 — Model business domains first (< 20 minutes)
 
-In Service Configuration:
+Open Service Management → **Domain Designer** and define:
 
-- choose service type (`RESTAPI`, `websocketAPI + RESTAPI`, `grpcAPI + RESTAPI`)
-- configure runtime and deployment target
-- edit env keys like `JUMENTIX_HTTP_FRAMEWORK`, `JUMENTIX_REALTIME_API`, `JUMENTIX_REALTIME_API_PROTOCOL`
+1. **Domains and bounded contexts** — what belongs together vs what is separate.
+2. **Entities and value objects** — fields, types, invariants.
+3. **Relationships and constraints** — cardinality, required links, uniqueness.
+4. **API and event contracts** — which resources expose REST vs realtime channels.
 
-## 4. Build Offline-Capable PWA
+This keeps frontend state models and backend OpenAPI/AsyncAPI aligned from iteration one.
 
-For PWA/offline-first architecture:
+**Success check:** exported design validates with zero blocking issues in designer-core.
 
-- use local IndexedDB in frontend
-- sync with backend contracts asynchronously
-- keep conflict strategies explicit (last-write-wins or domain-specific merge)
+### Step 2 — Define communication contracts (< 10 minutes)
 
-## 5. Validate Delivery Readiness
+Use **Communication Interface Designer** to choose how the SPA talks to backend:
 
-- contract checks from OpenAPI/AsyncAPI
-- backend CI gates
-- frontend build and offline smoke checks
+| Mode | Choose when | Client package |
+| --- | --- | --- |
+| REST only | CRUD screens, no live push | `@jumentix/sdk-rest-client` |
+| WebSocket + REST | Live dashboards, notifications | `@jumentix/sdk-websocket-client` + REST fallback |
+| gRPC + REST | Node-based BFF consuming backend | gRPC SDK (Node) + REST for browser |
 
-## 6. Offline storage with Cana + designs
+Contracts become the source for SDK integration — do not hand-write fetch URLs that
+are not in OpenAPI.
 
-Validate a design document, then persist records with Cana:
+**Success check:** OpenAPI/AsyncAPI files match designer export; operationIds stable.
+
+### Step 3 — Configure service runtime (< 10 minutes)
+
+In Service Management → **Service Configuration**:
+
+1. Pick service type: `RESTAPI`, `websocketAPI + RESTAPI`, or `grpcAPI + RESTAPI`.
+2. Set deployment target and runtime profile.
+3. Edit env keys the backend will use:
+
+```bash
+JUMENTIX_HTTP_FRAMEWORK=express
+JUMENTIX_REALTIME_API=yes                    # if using realtime
+JUMENTIX_REALTIME_API_PROTOCOL=websocket     # browser path
+```
+
+Cross-check [REST](/docs/jumentix/guides/rest-api) and
+[Realtime](/docs/jumentix/guides/realtime-api) guides for startup commands.
+
+**Success check:** backend dev profile starts with the same env the designer exported.
+
+### Step 4 — Build offline-capable PWA storage (< 30 minutes)
+
+For offline-first architecture:
+
+1. **Validate design** with `@jumentix/designer-core` before persisting data.
+2. **Open Cana** IndexedDB database matching your entity stores.
+3. **Read/write locally** during offline periods; queue sync operations.
+4. **Sync asynchronously** when online — use REST/WS contracts, not ad-hoc JSON.
+5. **Document conflict strategy** explicitly (last-write-wins or domain-specific merge).
+
+Static offline write:
+
+```js
+const db = await cana.open({ name: 'my-pwa', version: 1 });
+await db.put('tasks', { id: '1', title: 'Draft offline', updatedAt: Date.now() });
+```
+
+**Success check:** data survives browser reload; `client.backend` reports `indexeddb`.
+
+### Step 5 — Validate delivery readiness (< 15 minutes)
+
+Run these gates before calling the PWA “done”:
+
+| Gate | Command / action |
+| --- | --- |
+| Contract alignment | OpenAPI/AsyncAPI diff vs designer export |
+| Backend CI | `bun run test:unit`, `bun run oas:check-routes` |
+| Frontend build | Production bundle builds without contract import errors |
+| Offline smoke | Load app offline; Cana records still readable |
+| Playgrounds | designer-core + Cana **Run** green below |
+
+**Success check:** all gates pass; offline reload shows persisted entities.
+
+### Step 6 — Wire designers to storage (hands-on)
+
+Validate a design document, then persist records with Cana.
+
+**designer-core** — validates `{ domains, relationships }` shape:
 
 <DocsPlayground runtime="designer-core" id="getting-started" />
 
+**Cana** — IndexedDB put/get inside validated entity stores:
+
 <DocsPlayground runtime="cana" id="getting-started" />
 
-## Next steps
+## Common errors
 
-1. [Getting started](/docs/jumentix/concepts/getting-started)
-2. [Cana usage](/docs/jumentix/packages/cana/usage)
-3. [designer-core usage](/docs/jumentix/packages/designer-core/usage)
-4. [Packages map](/docs/jumentix/packages)
+| Symptom | Likely cause | Fix | Verify success |
+| --- | --- | --- | --- |
+| designer-core Run throws on `forEach` | Invalid payload shape (`entities` toy object) | Use `{ domains, relationships }` via `buildSampleModelPayload` pattern | Playground `{ ok: true }` |
+| `TransactionInactive` in Cana | Network I/O inside Cana transaction | Only IndexedDB awaits inside tx callback | Cana playground Run green |
+| SPA calls wrong URL | Hand-written paths bypass OpenAPI | Generate calls from `@jumentix/sdk-rest-client` | Network tab matches spec paths |
+| Offline data missing after reload | Used `localStorage` instead of Cana | Migrate stores to Cana IndexedDB | Reload retains records |
+| Realtime works locally, fails prod | WS URL not in AsyncAPI / env mismatch | Align Service Configuration env with deployment | WS connect + subscribe smoke |
+| Sync conflicts silently overwrite | No documented conflict strategy | Pick LWW or merge rules per entity | Test offline edit + online sync |
 
-## References
+## Junior checklist (“I can …”)
 
-- Packages: [/docs/jumentix/packages](/docs/jumentix/packages)
-- Cana: [/docs/jumentix/packages/cana](/docs/jumentix/packages/cana)
+- [ ] Model one bounded context in Domain Designer with entities and relationships.
+- [ ] Choose REST-only or WebSocket+REST in Communication Interface Designer.
+- [ ] Explain why Cana is not `localStorage`.
+- [ ] Run designer-core playground (**Run** green, valid model issues list).
+- [ ] Run Cana playground (**Run** green, records created).
+- [ ] Name my conflict strategy for at least one entity.
+- [ ] Link frontend SDK calls to OpenAPI `operationId`s.
+
+## Next step
+
+Deepen offline and design skills on
+[Cana usage](/docs/jumentix/packages/cana/usage) and
+[designer-core usage](/docs/jumentix/packages/designer-core/usage), then explore the
+full [Packages map](/docs/jumentix/packages) for persistence and communication helpers.
