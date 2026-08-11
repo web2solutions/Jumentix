@@ -2,9 +2,7 @@ import type { DerbyJsRequest, DerbyJsResponse } from '@src/interface/HTTP/adapte
 import { sendErrorResponse } from '@src/interface/HTTP/adapters/derby-js/responses/sendErrorResponse';
 
 import type {
-  IHandlerFactory
-} from '@src/interface/HTTP/ports';
-import type {
+  IHandlerFactory,
   IbaseHandler,
   EndPointFactory
 } from '@src/interface/HTTP/ports';
