@@ -54,10 +54,20 @@ const API: RestAPI<Fastify> = new RestAPI<Fastify>({
 // eslint-disable-next-line prefer-destructuring
 const application = API.server.application;
 
+/**
+ * JUM-663 — the request below authenticates as user1, so user1 has to exist.
+ *
+ * The Restify twin of this suite answered 401 on CI for exactly that reason:
+ * it presented credentials for a user nothing had created. This one waits for
+ * the server, which the Restify one did not, but it seeded nobody either.
+ */
 describe('/localhost suite', () => {
   beforeAll(async () => {
+    await InMemoryDbClient.connect();
+    await keyValueStorageClient.connect();
     await application.ready();
     await application.listen({ port: 0, host: '127.0.0.1' });
+    await API.seedUsers();
   });
   afterAll(async () => {
     await application.close();
