@@ -15,6 +15,7 @@ import { JwtService } from '@src/infra/jwt/JwtService';
 import { InMemoryKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
 import { MutexService } from '@src/infra/mutex/adapter/MutexService';
 import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal';
+import { listenForSupertest } from '@test/helpers/listenForSupertest';
 
 const passwordCryptoService = PasswordCryptoService.compile();
 const jwtService = JwtService.compile();
@@ -41,20 +42,43 @@ const authService = AuthService.compile(
 // LOCAL IDENTITY PROVIDER
 const serverType = EHTTPFrameworks.restify;
 const webServer = RestifyServer.compile();
-const API: RestAPI<Restify> = new RestAPI<Restify>({
-  databaseClient: InMemoryDbClient,
-  webServer,
-  infraHandlers,
-  serverType,
-  authService,
-  passwordCryptoService,
-  keyValueStorageClient,
-  mutexService
-});
-// eslint-disable-next-line prefer-destructuring
-const server = API.server.application;
 
+let API: RestAPI<Restify>;
+let server: any;
+
+/**
+ * JUM-663 — this suite used to build the API at module scope and request `/`
+ * with a Basic header, having connected nothing, seeded nobody and never
+ * waited for the server to listen. It answered 401 on CI:
+ *
+ *   ● restify -> /localhost suite › localhost should return 200
+ *     Expected: 200
+ *     Received: 401
+ *
+ * A test that sends credentials for a user it never created depends on state
+ * it does not establish, and the fact that it usually passed is what made that
+ * invisible. Its sibling `get.apiVersions.test.ts` already does all three.
+ */
 describe('restify -> /localhost suite', () => {
+  beforeAll(async () => {
+    await InMemoryDbClient.connect();
+    await keyValueStorageClient.connect();
+    API = new RestAPI<Restify>({
+      databaseClient: InMemoryDbClient,
+      webServer,
+      infraHandlers,
+      serverType,
+      authService,
+      passwordCryptoService,
+      keyValueStorageClient,
+      mutexService
+    });
+    server = API.server.application;
+    await listenForSupertest(server);
+    // The request below authenticates as user1, so user1 has to exist.
+    await API.seedUsers();
+  });
+
   afterAll(async () => {
     await API.stop();
   });
