@@ -459,6 +459,9 @@ jobs:
       - name: Redis key-value integration against a real server
         timeout-minutes: 15
         run: bun run smoke:key-value:redis
+      - name: Dead-letter queue integration against a real Redis
+        timeout-minutes: 15
+        run: bun run smoke:dead-letter:redis
       - name: Broker integration against real RabbitMQ and Redis
         timeout-minutes: 15
         run: bun run smoke:message-mediator

@@ -12,6 +12,7 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint ./src --ext .ts",
-    "test": "bun test --isolate test"
+    "test": "bun test --isolate test",
+    "example": "bun examples/replay.ts"
   }
 }

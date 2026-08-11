@@ -137,3 +137,21 @@
 }
 
 @layer components, mantine, nextra, overwrite;
+
+/*
+ * JUM-53 — make Mermaid diagrams render at all.
+ *
+ * `@theguild/remark-mermaid` renders its chart only once an
+ * IntersectionObserver reports the container visible, and the container it
+ * observes is an empty `div` with no height. A zero-area box never reports an
+ * intersection, so the chart never renders, so the box stays zero-area. Every
+ * ```mermaid fence in the documentation was a blank space on the page, in
+ * silence: `WEBSOCKET-API`, `GRPC-API` and the dead-letter queue reference.
+ *
+ * Giving the empty container a sliver of height breaks the deadlock. The rule
+ * stops applying the moment the SVG lands, because the container is no longer
+ * empty.
+ */
+main > div:empty {
+  min-height: 2px;
+}
