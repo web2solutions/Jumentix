@@ -18,9 +18,7 @@ import {
   emails
 } from '@test/mock';
 import type {
-  IUser
-} from '@src/modules/Users';
-import type {
+  IUser,
   RequestCreateEmail
 } from '@src/modules/Users';
 import {

@@ -2,9 +2,7 @@ import type { FeathersRequest, FeathersResponse } from '@src/interface/HTTP/adap
 import { sendErrorResponse } from '@src/interface/HTTP/adapters/feathers/responses/sendErrorResponse';
 
 import type {
-  IHandlerFactory
-} from '@src/interface/HTTP/ports';
-import type {
+  IHandlerFactory,
   IbaseHandler,
   EndPointFactory
 } from '@src/interface/HTTP/ports';

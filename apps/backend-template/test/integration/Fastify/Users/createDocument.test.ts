@@ -22,9 +22,7 @@ import {
 } from '@test/mock';
 
 import type {
-  IUser
-} from '@src/modules/Users';
-import type {
+  IUser,
   RequestCreateDocument
 } from '@src/modules/Users';
 import {
