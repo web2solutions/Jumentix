@@ -4,7 +4,9 @@
 
 ## All Changes
 
-- 2026-08-11 feat(dead-letter): drain the queue and prove it against a real Redis for JUM-53 - Eduardo Almeida
+- 2026-08-11 test(restify): make the localhost suite establish what it depends on (JUM-663) (#186) - Eduardo A.
+- 2026-08-11 fix(users): stop a refused caller from releasing another writer's lock (JUM-663) (#185) - Eduardo A.
+- 2026-08-11 [JUM-53][Feature] Replay worker, real-Redis suite and full documentation (#183) - Eduardo A.
 - 2026-08-11 [JUM-53][Feature] Dead-letter queue for mutex-refused transactions (#182) - Eduardo A.
 - 2026-08-11 chore(lint): clear the 662 warnings so the next one is visible for JUM-657 (#181) - Eduardo A.
 - 2026-08-11 fix(agent-bus): order recent events by key and gate RTDB indexes for JUM-656 (#180) - Eduardo A.

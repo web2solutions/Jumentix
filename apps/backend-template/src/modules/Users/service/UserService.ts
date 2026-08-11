@@ -127,6 +127,20 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     throw new ResourceLockedError(`${this.entityName} ${id} is locked`);
   }
 
+  /**
+   * Release the lock, unless the lock belongs to somebody else.
+   *
+   * A caller the mutex refused never acquired it. Unlocking here frees the
+   * writer that does hold it, letting a third writer in while the first is
+   * still mid-write — precisely the corruption the mutex exists to prevent.
+   * `ResourceLockedError` is raised only by `rejectLocked`, so it marks exactly
+   * the case where nothing was acquired.
+   */
+  private async releaseIfHeld(error: unknown, id: string): Promise<void> {
+    if (error instanceof ResourceLockedError) return;
+    await this.mutexService.unlock(this.entityName, id);
+  }
+
   private static sortPayload(payload: any): any {
     if (Array.isArray(payload)) {
       return payload.map((item) => UserService.sortPayload(item));
@@ -301,7 +315,7 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     } catch (error) {
       serviceResponse.error = error as BaseError;
       // console.log(error);
-      await this.mutexService.unlock(this.entityName, id);
+      await this.releaseIfHeld(error, id);
     }
     return serviceResponse;
   }
@@ -322,7 +336,7 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     } catch (error) {
       serviceResponse.error = error as BaseError;
 
-      await this.mutexService.unlock(this.entityName, id);
+      await this.releaseIfHeld(error, id);
     }
     return serviceResponse;
   }
@@ -406,7 +420,7 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     } catch (error) {
       serviceResponse.error = error as BaseError;
 
-      await this.mutexService.unlock(this.entityName, id);
+      await this.releaseIfHeld(error, id);
     }
     return new ServiceResponse(serviceResponse);
   }
@@ -427,7 +441,7 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
       await this.mutexService.unlock(this.entityName, id);
     } catch (error) {
       serviceResponse.error = error as BaseError;
-      await this.mutexService.unlock(this.entityName, id);
+      await this.releaseIfHeld(error, id);
     }
     return serviceResponse;
   }
@@ -450,7 +464,7 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     } catch (error) {
       serviceResponse.error = error as BaseError;
 
-      await this.mutexService.unlock(this.entityName, id);
+      await this.releaseIfHeld(error, id);
     }
     return serviceResponse;
   }
@@ -472,7 +486,7 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     } catch (error) {
       serviceResponse.error = error as BaseError;
 
-      await this.mutexService.unlock(this.entityName, id);
+      await this.releaseIfHeld(error, id);
     }
     return serviceResponse;
   }
@@ -494,7 +508,7 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     } catch (error) {
       serviceResponse.error = error as BaseError;
 
-      await this.mutexService.unlock(this.entityName, id);
+      await this.releaseIfHeld(error, id);
     }
     return serviceResponse;
   }
@@ -517,7 +531,7 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     } catch (error) {
       serviceResponse.error = error as BaseError;
 
-      await this.mutexService.unlock(this.entityName, id);
+      await this.releaseIfHeld(error, id);
     }
     return serviceResponse;
   }
@@ -539,7 +553,7 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     } catch (error) {
       serviceResponse.error = error as BaseError;
 
-      await this.mutexService.unlock(this.entityName, id);
+      await this.releaseIfHeld(error, id);
     }
     return serviceResponse;
   }
@@ -561,7 +575,7 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     } catch (error) {
       serviceResponse.error = error as BaseError;
 
-      await this.mutexService.unlock(this.entityName, id);
+      await this.releaseIfHeld(error, id);
     }
     return serviceResponse;
   }
@@ -584,7 +598,7 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     } catch (error) {
       serviceResponse.error = error as BaseError;
 
-      await this.mutexService.unlock(this.entityName, id);
+      await this.releaseIfHeld(error, id);
     }
     return serviceResponse;
   }
@@ -606,7 +620,7 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     } catch (error) {
       serviceResponse.error = error as BaseError;
 
-      await this.mutexService.unlock(this.entityName, id);
+      await this.releaseIfHeld(error, id);
     }
     return serviceResponse;
   }
