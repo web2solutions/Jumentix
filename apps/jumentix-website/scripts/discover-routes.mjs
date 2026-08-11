@@ -58,39 +58,25 @@ function routeFromPageFile(absolute) {
 }
 
 /**
- * Content entries marked `display: 'hidden'` in a `_meta` file.
+ * `/docs` with no segments, which no content path spells.
  *
- * These are excluded because they 404, but the flag is **not** the reason —
- * that was my first reading and it was wrong. The docs route resolver rewrites
- * every single-segment path into the `jumentix/` subtree:
+ * The resolver answers the bare route from the `jumentix/` index:
  *
  *   `app/docs/[[...mdxPath]]/page.tsx`
- *   return [alias ? ['jumentix', ...alias] : ['jumentix', ...normalized]];
+ *   if (normalized.length === 0) return [['jumentix']];
  *
- * So `/docs/api` looks for `content/jumentix/api`, while the file sits at
- * `content/api.mdx`. Every top-level content file is orphaned by that rewrite,
- * hidden or not, and `content/index.mdx` with it — `/docs` is served by
- * `content/jumentix/index.mdx`, not by the top-level index.
+ * so `content/jumentix/index.mdx` maps to `/docs/jumentix` by the rule below
+ * and `/docs` would be discovered by nothing. It is the site's most-visited
+ * documentation URL, so it is named here rather than left out.
  *
- * The `display: 'hidden'` set happens to name exactly the orphaned files today,
- * which is why filtering on it works. It is a proxy, not the cause, and it will
- * stop matching the moment someone adds a top-level page without hiding it.
- * JUM-640 carries the decision: delete the four Nextra template leftovers, and
- * decide whether `release-notes` and `versioning` — real Jumentix documentation
- * — should move into `content/jumentix/` to become reachable.
- *
- * `index` is kept in discovery because `/docs` is a real, reachable route,
- * whatever file serves it.
+ * Until JUM-640 this list was instead filtered by `display: 'hidden'` in
+ * `content/_meta.ts`, which happened to name the seven orphaned top-level files
+ * — a proxy for the real cause (the rewrite above), and one that would have
+ * stopped matching the first time somebody added a top-level page without
+ * hiding it. Those files are gone; `ci-cd/check-website-content-routes.js` now
+ * asks the reachability question directly, on every content file.
  */
-function hiddenContentKeys(metaFile) {
-  if (!fs.existsSync(metaFile)) return new Set();
-  const source = fs.readFileSync(metaFile, 'utf8');
-  const hidden = new Set();
-  for (const match of source.matchAll(/'?([\w-]+)'?\s*:\s*\{[^{}]*display\s*:\s*'hidden'[^{}]*\}/g)) {
-    if (match[1] !== 'index') hidden.add(match[1]);
-  }
-  return hidden;
-}
+const RESOLVER_ONLY_ROUTES = ['/docs'];
 
 /** `content/foo/bar.mdx` serves `/docs/foo/bar`; `index.mdx` serves the parent. */
 function routeFromContentFile(absolute) {
@@ -110,15 +96,12 @@ export function discoverRoutes() {
     .filter(Boolean);
 
   const contentRoot = path.join(websiteRoot, 'content');
-  const hidden = hiddenContentKeys(path.join(contentRoot, '_meta.ts'));
   const docsRoutes = walk(
     contentRoot,
     (file) => /\.mdx?$/.test(file) && !/(^|[\\/])_meta\./.test(file)
-  )
-    .filter((file) => !hidden.has(path.basename(file).replace(/\.mdx?$/, '')))
-    .map(routeFromContentFile);
+  ).map(routeFromContentFile);
 
-  return [...new Set([...staticRoutes, ...docsRoutes])].sort();
+  return [...new Set([...staticRoutes, ...docsRoutes, ...RESOLVER_ONLY_ROUTES])].sort();
 }
 
 if (import.meta.main) {

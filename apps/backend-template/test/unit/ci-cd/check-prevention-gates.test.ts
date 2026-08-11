@@ -108,19 +108,37 @@ describe('website content reachability (JUM-655, Requirement 132)', () => {
 
     expect(isReachable(gatePath.join('jumentix', 'reference', 'errors-responses.mdx'))).toBe(true);
     expect(isReachable(gatePath.join('pt-BR', 'jumentix', 'index.mdx'))).toBe(true);
-    // The seven orphans: the resolver rewrites `/docs/api` to `jumentix/api`.
+    // The shape that orphaned seven files: the resolver rewrites `/docs/api`
+    // to `jumentix/api`, so a top-level file can never be served.
     expect(isReachable('api.mdx')).toBe(false);
     expect(isReachable('release-notes.mdx')).toBe(false);
   });
 
-  it('passes against the repository, with the orphans declared', () => {
+  it('passes against the repository with nothing left declared', () => {
     expect.hasAssertions();
 
+    // JUM-640 emptied the register by fixing the files, not by exempting them.
     expect(validateWebsiteContentRoutes(repoRoot)).toStrictEqual([]);
-    expect(ACCEPTED_UNREACHABLE).toHaveLength(7);
-    const declared = ACCEPTED_UNREACHABLE as Array<{ issue: string }>;
+    expect(ACCEPTED_UNREACHABLE).toStrictEqual([]);
+  });
 
-    expect(declared.every((entry) => Boolean(entry.issue))).toBe(true);
+  it('keeps the ReleaseNotes component on a route that survives a build', () => {
+    expect.hasAssertions();
+
+    // The orphaned `content/release-notes.mdx` was the component's only
+    // consumer, so deleting it outright would have left `/api/github-releases`
+    // with no surface. `content/jumentix/` is not a home for it either:
+    // `scripts/sync-markdown-content.mjs` removes that directory on every
+    // prebuild, so a file placed there disappears before Next.js sees it.
+    const route = gatePath.join(repoRoot, 'apps/jumentix-website/app/release-notes/page.tsx');
+
+    expect(gateFs.existsSync(route)).toBe(true);
+    expect(gateFs.readFileSync(route, 'utf8')).toContain('<ReleaseNotes />');
+
+    const generatorRelative = 'apps/jumentix-website/scripts/sync-markdown-content.mjs';
+    const generator = gateFs.readFileSync(gatePath.join(repoRoot, generatorRelative), 'utf8');
+
+    expect(generator).toContain('fs.rm(settings.outputDir');
   });
 
   it('fails an unreachable file that nobody declared', () => {
@@ -151,7 +169,12 @@ describe('website content reachability (JUM-655, Requirement 132)', () => {
     gateFs.mkdirSync(gatePath.join(content, 'jumentix'), { recursive: true });
     gateFs.writeFileSync(gatePath.join(content, 'jumentix', 'index.mdx'), '# ok\n');
 
-    const failures = validateWebsiteContentRoutes(root);
+    // The register is empty since JUM-640, so this path is exercised with an
+    // injected one. Otherwise emptying the register would have quietly retired
+    // the guard along with the entries.
+    const failures = validateWebsiteContentRoutes(root, [
+      { file: 'deleted-page.mdx', issue: 'JUM-640', reason: 'gone' }
+    ]);
 
     expect(failures.length).toBeGreaterThan(0);
     expect(failures.some((f: string) => f.includes('no longer exists'))).toBe(true);
