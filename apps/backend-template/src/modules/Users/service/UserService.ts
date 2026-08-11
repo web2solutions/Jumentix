@@ -51,6 +51,7 @@ import type { IPasswordCryptoService } from '@src/infra/security/IPasswordCrypto
 import { BaseError, ResourceLockedError } from '@src/infra/exceptions';
 import { shouldRequireOrganization } from '@src/modules/Users/domain/security/Rbac';
 import type { ICacheService } from '@src/infra/cache';
+import type { IDeadLetterQueue } from '@jumentix/dead-letter-queue';
 
 interface IUserServiceConfig extends IServiceConfig {
   organizationDataRepository?: OrganizationDataRepository;
@@ -71,6 +72,15 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
 
   private readonly cacheService?: ICacheService;
 
+  /**
+   * JUM-53 — where writes refused by the mutex go.
+   *
+   * Optional: without it the service behaves exactly as before, throwing and
+   * discarding the transaction. Wiring it in is what stops a write lost to
+   * contention from being indistinguishable from one never attempted.
+   */
+  private readonly deadLetterQueue?: IDeadLetterQueue;
+
   public constructor(
     config: IUserServiceConfig
   ) {
@@ -85,6 +95,36 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     this.mutexService = services!.mutexService;
     this.eventBus = services?.eventBus as IEventBus | undefined;
     this.cacheService = services?.cacheService as ICacheService | undefined;
+    this.deadLetterQueue = services?.deadLetterQueue as IDeadLetterQueue | undefined;
+  }
+
+  /**
+   * Record the refused write, then refuse it.
+   *
+   * The order is the whole point. The caller still receives
+   * `ResourceLockedError`, because the write has **not** happened — a client
+   * told otherwise would act on a lie. The queue only makes the attempt
+   * recoverable.
+   *
+   * A queue failure must not change the error the caller sees either: it is
+   * swallowed here, because "the resource is locked" remains the true answer
+   * whether or not the record was stored. Losing the record is bad; reporting
+   * a Redis outage to a user who hit contention is worse and hides the cause.
+   */
+  private async rejectLocked(operation: string, id: string, payload: unknown): Promise<never> {
+    if (this.deadLetterQueue) {
+      try {
+        await this.deadLetterQueue.enqueue({
+          entityName: this.entityName, resourceId: id, operation, payload
+        });
+      } catch (error: unknown) {
+        // eslint-disable-next-line no-console
+        console.error('[dead-letter] failed to record a locked write', {
+          entityName: this.entityName, resourceId: id, operation, error
+        });
+      }
+    }
+    throw new ResourceLockedError(`${this.entityName} ${id} is locked`);
   }
 
   private static sortPayload(payload: any): any {
@@ -244,7 +284,7 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
         roles: data.roles ?? previous.roles
       });
       const { result: { previouslyLocked } } = await this.mutexService.lock(this.entityName, id);
-      if (previouslyLocked) throw new ResourceLockedError(`${this.entityName} ${id} is locked`);
+      if (previouslyLocked) await this.rejectLocked('update', id, data);
       // console.log('data', data);
       const user = await updateUser(id, data, this.dataRepository);
       // console.log('user', user)
@@ -270,7 +310,7 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     const serviceResponse: IServiceResponse<boolean> = {};
     try {
       const { result: { previouslyLocked } } = await this.mutexService.lock(this.entityName, id);
-      if (previouslyLocked) throw new ResourceLockedError(`${this.entityName} ${id} is locked`);
+      if (previouslyLocked) await this.rejectLocked('delete', id, {});
       const previous = await this.dataRepository.getOneById(id);
       const deleted = await deleteUserById(id, this.dataRepository);
       serviceResponse.result = deleted;
@@ -351,7 +391,7 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
       mustBePassword('password', data.password);
 
       const { result: { previouslyLocked } } = await this.mutexService.lock(this.entityName, id);
-      if (previouslyLocked) throw new ResourceLockedError(`${this.entityName} ${id} is locked`);
+      if (previouslyLocked) await this.rejectLocked('updatePassword', id, data);
 
       const newData = { ...data };
       const { hash, salt } = await this.passwordCryptoService.hash(data.password);
@@ -378,7 +418,7 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     const serviceResponse: IServiceResponse<IUser> = {};
     try {
       const { result: { previouslyLocked } } = await this.mutexService.lock(this.entityName, id);
-      if (previouslyLocked) throw new ResourceLockedError(`${this.entityName} ${id} is locked`);
+      if (previouslyLocked) await this.rejectLocked('createDocument', id, data);
 
       const user = await createDocument(id, data, this.dataRepository);
       serviceResponse.result = UserService.sanitizeUser(user);
@@ -400,7 +440,7 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     const serviceResponse: IServiceResponse<IUser> = {};
     try {
       const { result: { previouslyLocked } } = await this.mutexService.lock(this.entityName, id);
-      if (previouslyLocked) throw new ResourceLockedError(`${this.entityName} ${id} is locked`);
+      if (previouslyLocked) await this.rejectLocked('updateDocument', id, { documentId, data });
 
       const user = await updateDocument(id, documentId, data, this.dataRepository);
       serviceResponse.result = UserService.sanitizeUser(user);
@@ -422,7 +462,7 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     const serviceResponse: IServiceResponse<IUser> = {};
     try {
       const { result: { previouslyLocked } } = await this.mutexService.lock(this.entityName, id);
-      if (previouslyLocked) throw new ResourceLockedError(`${this.entityName} ${id} is locked`);
+      if (previouslyLocked) await this.rejectLocked('deleteDocument', id, { documentId });
 
       const user = await deleteDocument(id, documentId, this.dataRepository);
       serviceResponse.result = UserService.sanitizeUser(user);
@@ -444,7 +484,7 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     const serviceResponse: IServiceResponse<IUser> = {};
     try {
       const { result: { previouslyLocked } } = await this.mutexService.lock(this.entityName, id);
-      if (previouslyLocked) throw new ResourceLockedError(`${this.entityName} ${id} is locked`);
+      if (previouslyLocked) await this.rejectLocked('createPhone', id, data);
 
       const user = await createPhone(id, data, this.dataRepository);
       serviceResponse.result = UserService.sanitizeUser(user);
@@ -467,7 +507,7 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     const serviceResponse: IServiceResponse<IUser> = {};
     try {
       const { result: { previouslyLocked } } = await this.mutexService.lock(this.entityName, id);
-      if (previouslyLocked) throw new ResourceLockedError(`${this.entityName} ${id} is locked`);
+      if (previouslyLocked) await this.rejectLocked('updatePhone', id, { phoneId, data });
 
       const user = await updatePhone(id, phoneId, data, this.dataRepository);
       serviceResponse.result = UserService.sanitizeUser(user);
@@ -489,7 +529,7 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     const serviceResponse: IServiceResponse<IUser> = {};
     try {
       const { result: { previouslyLocked } } = await this.mutexService.lock(this.entityName, id);
-      if (previouslyLocked) throw new ResourceLockedError(`${this.entityName} ${id} is locked`);
+      if (previouslyLocked) await this.rejectLocked('deletePhone', id, { phoneId });
 
       const user = await deletePhone(id, phoneId, this.dataRepository);
       serviceResponse.result = UserService.sanitizeUser(user);
@@ -511,7 +551,7 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     const serviceResponse: IServiceResponse<IUser> = {};
     try {
       const { result: { previouslyLocked } } = await this.mutexService.lock(this.entityName, id);
-      if (previouslyLocked) throw new ResourceLockedError(`${this.entityName} ${id} is locked`);
+      if (previouslyLocked) await this.rejectLocked('createEmail', id, data);
 
       const user = await createEmail(id, data, this.dataRepository);
       serviceResponse.result = UserService.sanitizeUser(user);
@@ -534,7 +574,7 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     const serviceResponse: IServiceResponse<IUser> = {};
     try {
       const { result: { previouslyLocked } } = await this.mutexService.lock(this.entityName, id);
-      if (previouslyLocked) throw new ResourceLockedError(`${this.entityName} ${id} is locked`);
+      if (previouslyLocked) await this.rejectLocked('updateEmail', id, { emailId, data });
 
       const user = await updateEmail(id, emailId, data, this.dataRepository);
       serviceResponse.result = UserService.sanitizeUser(user);
@@ -556,7 +596,7 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     const serviceResponse: IServiceResponse<IUser> = {};
     try {
       const { result: { previouslyLocked } } = await this.mutexService.lock(this.entityName, id);
-      if (previouslyLocked) throw new ResourceLockedError(`${this.entityName} ${id} is locked`);
+      if (previouslyLocked) await this.rejectLocked('deleteEmail', id, { emailId });
 
       const user = await deleteEmail(id, emailId, this.dataRepository);
       serviceResponse.result = UserService.sanitizeUser(user);
