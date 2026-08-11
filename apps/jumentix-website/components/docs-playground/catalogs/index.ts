@@ -6,18 +6,22 @@ export const DESIGNER_CORE_SNIPPETS: readonly DocsSnippet[] = [
     id: 'getting-started',
     title: { en: 'Validate a design', 'pt-BR': 'Validar um design' },
     description: {
-      en: 'Build a minimal design document and validate it.',
-      'pt-BR': 'Monte um documento de design mínimo e valide.'
+      en: 'Normalize the sample model and collect validation issues (real designer-core API).',
+      'pt-BR': 'Normalize o modelo de exemplo e colete issues de validação (API real do designer-core).'
     },
-    code: `const design = {
-  version: 1,
-  name: 'hello',
-  entities: [{ name: 'Note', fields: [{ name: 'id', type: 'string' }, { name: 'text', type: 'string' }] }]
-};
-const result = api.validate
-  ? api.validate(design)
-  : { ok: true, design };
-return result;`
+    // Must match @jumentix/designer-core public surface:
+    // collectModelIssues(state) expects { domains, relationships } after
+    // normalizeStatePayload — a fake { version, name, entities } shape throws.
+    code: `const raw = api.buildSampleModelPayload();
+const state = api.normalizeStatePayload(raw);
+const issues = api.collectModelIssues(state);
+const errors = issues.filter((issue) => issue.severity === 'error');
+return {
+  ok: errors.length === 0,
+  issueCount: issues.length,
+  errorCount: errors.length,
+  sample: issues.slice(0, 3)
+};`
   }
 ];
 

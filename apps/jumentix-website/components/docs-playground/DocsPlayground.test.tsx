@@ -16,6 +16,14 @@ describe('DocsPlayground catalogs', () => {
       expect(listDocsSnippets(runtime).some((s) => s.id === 'getting-started')).toBe(true);
     }
   });
+
+  it('designer-core getting-started uses real sample/normalize/collect APIs', () => {
+    const snippet = listDocsSnippets('designer-core').find((s) => s.id === 'getting-started');
+    expect(snippet?.code).toContain('buildSampleModelPayload');
+    expect(snippet?.code).toContain('normalizeStatePayload');
+    expect(snippet?.code).toContain('collectModelIssues');
+    expect(snippet?.code).not.toMatch(/version:\s*1/);
+  });
 });
 
 describe('DocsPlayground', () => {

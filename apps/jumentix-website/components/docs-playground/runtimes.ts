@@ -14,15 +14,47 @@ async function loadCana(sessionKey: string) {
 async function loadDesignerCore() {
   try {
     const mod = await import('@jumentix/designer-core') as unknown as Record<string, unknown>;
-    const candidate = mod.validate ?? mod.collectModelIssues;
-    const validate = typeof candidate === 'function'
-      ? (candidate as (design: unknown) => unknown)
-      : (design: unknown) => ({ ok: true, design, note: 'designer-core stub' });
-    return { api: { ...mod, validate } };
+    const {
+      collectModelIssues,
+      normalizeStatePayload,
+      buildSampleModelPayload
+    } = mod;
+
+    // Friendly alias: validate(stateOrRaw) → { ok, issues } using the real
+    // collectModelIssues contract (domains/relationships), never a toy shape.
+    const validate = (input: unknown) => {
+      if (typeof collectModelIssues !== 'function') {
+        return { ok: true, issues: [], note: 'designer-core stub' };
+      }
+      const state = typeof normalizeStatePayload === 'function'
+        ? (normalizeStatePayload as (v: unknown) => unknown)(input)
+        : input;
+      const issues = (collectModelIssues as (v: unknown) => unknown[])(state);
+      const list = Array.isArray(issues) ? issues : [];
+      const errors = list.filter((issue) => (
+        Boolean(issue)
+        && typeof issue === 'object'
+        && (issue as { severity?: string }).severity === 'error'
+      ));
+      return { ok: errors.length === 0, issues: list, errorCount: errors.length };
+    };
+
+    return {
+      api: {
+        ...mod,
+        validate,
+        collectModelIssues,
+        normalizeStatePayload,
+        buildSampleModelPayload
+      }
+    };
   } catch {
     return {
       api: {
-        validate: (design: unknown) => ({ ok: true, design, note: 'designer-core stub' })
+        buildSampleModelPayload: () => ({ domains: [], relationships: [] }),
+        normalizeStatePayload: (v: unknown) => v,
+        collectModelIssues: () => [],
+        validate: () => ({ ok: true, issues: [], note: 'designer-core stub' })
       }
     };
   }

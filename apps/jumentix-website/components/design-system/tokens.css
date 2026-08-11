@@ -43,6 +43,12 @@
   --jtx-surface-subtle: #17212e;
   --jtx-line: #2b3849;
   --jtx-code: #080d14;
+  /* Pastel fills must darken in dark mode — light greens/blues + light ink
+     produced white-on-white on marketing quote bands and callouts. */
+  --jtx-blue-50: #152536;
+  --jtx-green-50: #143528;
+  --jtx-coral-50: #2a1a16;
+  --jtx-yellow-100: #2a2610;
   /* Lighter accent on dark surfaces so large metric text meets WCAG AA. */
   --jtx-blue-700: #6eb0ff;
   --jtx-shadow-sm: 0 1px 2px rgb(0 0 0 / 28%);

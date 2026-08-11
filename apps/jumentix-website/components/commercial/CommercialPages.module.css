@@ -265,8 +265,10 @@
   margin: 0;
   padding: 32px;
   border-left: 4px solid var(--jtx-green-500);
+  /* Ink-on-surface mix keeps WCAG contrast in light and dark schemes even if
+     a pastel token regresses; never rely on light fills alone in dark mode. */
   color: var(--jtx-ink);
-  background: var(--jtx-green-50);
+  background: color-mix(in srgb, var(--jtx-green-500) 14%, var(--jtx-surface));
   font-size: clamp(1.25rem, 3vw, 1.75rem);
   font-weight: 700;
   line-height: 1.45;
