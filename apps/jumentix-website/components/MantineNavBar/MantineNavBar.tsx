@@ -34,7 +34,7 @@ export const MantineNavBar = () => {
     <>
       <MantineNextraThemeObserver />
       <Navbar
-        logo={<BrandMark href={portuguese ? '/pt-BR' : '/'} />}
+        logo={<BrandMark asLink={false} />}
         projectIcon={
           <>
             <span className="sr-only">GitHub repository</span>

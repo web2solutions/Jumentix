@@ -26,13 +26,34 @@ export type ActionLinkProps = {
   external?: boolean;
 };
 
-export function BrandMark({ href = '/' }: { href?: string }) {
-  return (
-    <a className={classes.brand} href={href} aria-label="Jumentix home">
+/**
+ * JUM-664 — `asLink={false}` is not cosmetic.
+ *
+ * Nextra's `Navbar` wraps whatever it is given as `logo` in its own anchor to
+ * the home page. An anchor inside an anchor is invalid HTML, and React does not
+ * merely warn: hydration of that tree fails, so **every client component below
+ * the navbar never mounts**. That is why no ```mermaid diagram has ever
+ * rendered on this site — the component that draws them is one of those.
+ *
+ * The marketing header renders its own link, so it keeps the anchor.
+ */
+export function BrandMark({ href = '/', asLink = true }: { href?: string; asLink?: boolean }) {
+  const content = (
+    <>
       <span className={classes.brandIcon} aria-hidden="true">
         <IconTopologyStar3 size={22} stroke={2} />
       </span>
       <span>Jumentix</span>
+    </>
+  );
+
+  if (!asLink) {
+    return <span className={classes.brand}>{content}</span>;
+  }
+
+  return (
+    <a className={classes.brand} href={href} aria-label="Jumentix home">
+      {content}
     </a>
   );
 }
