@@ -119,15 +119,25 @@ export async function publishProgress(
     throw new Error('Field "ttlDays" must be a positive number.');
   }
 
+  // `refs` is optional, and RTDB `set()` rejects any object carrying an
+  // `undefined` value. Spelling it as `refs: input.refs?.map(...)` therefore
+  // made the documented default invocation — no `--refs` — fail every time
+  // with "value argument contains undefined in property ... .refs", so nothing
+  // could satisfy Requirement 129 by following its own instructions.
+  //
+  // The key is omitted entirely when there is nothing to record, rather than
+  // written as an empty array: absent and "explicitly empty" are different
+  // claims, and only one of them is true here.
+  const refs = input.refs?.map((ref) => ref.trim()).filter(Boolean);
   const event: AgentBusEvent = {
     agentId,
     taskId,
     epicId,
     kind,
     summary,
-    refs: input.refs?.map((ref) => ref.trim()).filter(Boolean),
     ts,
-    ttlHint: ttlHintIso(ttlDays)
+    ttlHint: ttlHintIso(ttlDays),
+    ...(refs && refs.length > 0 ? { refs } : {})
   };
 
   const epicKey = sanitizeRtdbKey(epicId);
