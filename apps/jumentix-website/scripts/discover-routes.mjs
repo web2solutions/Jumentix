@@ -60,18 +60,27 @@ function routeFromPageFile(absolute) {
 /**
  * Content entries marked `display: 'hidden'` in a `_meta` file.
  *
- * In this configuration hidden entries are not routable — all six currently
- * hidden top-level pages answer 404 — so sweeping them would make the gate red
- * for a pre-existing condition rather than for a regression.
+ * These are excluded because they 404, but the flag is **not** the reason —
+ * that was my first reading and it was wrong. The docs route resolver rewrites
+ * every single-segment path into the `jumentix/` subtree:
  *
- * `index` is the exception and is deliberately kept: it addresses the section
- * root (`content/index.mdx` serves `/docs`), which is a real, reachable page.
- * Dropping it would remove `/docs` from the sweep entirely.
+ *   `app/docs/[[...mdxPath]]/page.tsx`
+ *   return [alias ? ['jumentix', ...alias] : ['jumentix', ...normalized]];
  *
- * This exclusion is not an endorsement. Four of the hidden pages are Nextra
- * starter-template leftovers and two — `release-notes` and `versioning` — read
- * as genuine Jumentix documentation that is currently unreachable. That is
- * recorded in its own issue rather than resolved by a route script.
+ * So `/docs/api` looks for `content/jumentix/api`, while the file sits at
+ * `content/api.mdx`. Every top-level content file is orphaned by that rewrite,
+ * hidden or not, and `content/index.mdx` with it — `/docs` is served by
+ * `content/jumentix/index.mdx`, not by the top-level index.
+ *
+ * The `display: 'hidden'` set happens to name exactly the orphaned files today,
+ * which is why filtering on it works. It is a proxy, not the cause, and it will
+ * stop matching the moment someone adds a top-level page without hiding it.
+ * JUM-640 carries the decision: delete the four Nextra template leftovers, and
+ * decide whether `release-notes` and `versioning` — real Jumentix documentation
+ * — should move into `content/jumentix/` to become reachable.
+ *
+ * `index` is kept in discovery because `/docs` is a real, reachable route,
+ * whatever file serves it.
  */
 function hiddenContentKeys(metaFile) {
   if (!fs.existsSync(metaFile)) return new Set();
