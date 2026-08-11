@@ -311,10 +311,32 @@ export class RestAPI<T> {
 
     await this.databaseClient.connect();
     await this.server.start();
+    this.startDeadLetterReplay();
     this.started = true;
   }
 
+  /**
+   * JUM-53 — drain the writes the mutex refused.
+   *
+   * The composition builds the worker and deliberately leaves it stopped: a
+   * background timer is the runtime's to own. This is the runtime. Every
+   * adapter reaches here through `start()`, and `stop()` below ends it, so the
+   * timer's life is exactly the server's.
+   *
+   * Without a key-value client the composition returns no queue and no worker,
+   * and this does nothing — the service keeps its previous behaviour of
+   * throwing and discarding.
+   */
+  private startDeadLetterReplay(): void {
+    const worker = this.composeUsersModule().deadLetterWorker;
+    if (!worker) return;
+    worker.start();
+  }
+
   public async stop(): Promise<void> {
+    // Before the clients close, or the drain would run against a disconnected
+    // store and report a failure that means nothing.
+    this.usersComposition?.deadLetterWorker?.stop();
     if (this.keyValueStorageClient) {
       await this.keyValueStorageClient.disconnect();
       // this.keyValueStorageClient = undefined;
