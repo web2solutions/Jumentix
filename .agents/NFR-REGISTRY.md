@@ -44,6 +44,8 @@ This file consolidates non-functional requirements already requested and stored 
 - `131` Built artifacts must carry every runtime export their source barrel declares
 - `132` No orphaned published artifacts: reachable, or declared with the issue that owns it
 - `133` Declared indexes for ordered queries: `.indexOn` in versioned rules, or order by key
+- `134` No flaky tests: a suite establishes what it depends on, never sleeps to synchronise
+- `135` No fake tests: assert the effect, declare the assertions, never target a percentage
 
 ## Documentation and Governance NFRs
 
