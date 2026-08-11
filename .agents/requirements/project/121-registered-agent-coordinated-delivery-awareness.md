@@ -3,7 +3,7 @@
 - Status: Active
 - Nature: NFR (governance, multi-agent operations, coordinated delivery)
 - Source: Project owner decision in Codex session, 2026-08-02.
-- Relates to: `077`, `078`, `089`, `090`, `095`, `097`, `101`, `102`, `116`, `119`, `120`.
+- Relates to: `077`, `078`, `089`, `090`, `095`, `097`, `101`, `102`, `116`, `119`, `120`, `129`.
 
 ## Requirement
 
@@ -17,6 +17,7 @@
    context.** The minimum coordination refresh is:
    - canonical Agent Registry state
    - local registry mirror state
+   - Firebase RTDB agent bus status/watch for the focused epic (`129`)
    - Linear Project/Epic Updates for the focused epic
    - related active Linear Issues in the same epic/milestone/component
    - open PRs or branches owned by other agents that can overlap the task
@@ -30,7 +31,8 @@
 4. **Material progress MUST be broadcast where other agents can consume it.**
    Project Updates and task comments must make progress, blockers, changed
    scope, test status, review readiness, and handoff points visible enough for
-   another registered agent to continue without rediscovery.
+   another registered agent to continue without rediscovery. Machine-readable
+   peer progress MUST also be published on the Firebase RTDB agent bus (`129`).
 
 5. **Waiting on remote checks does not remove coordination duties.** When `101`
    allows an agent to progress a non-conflicting task while checks run, the
@@ -45,6 +47,7 @@
 ## Evidence
 
 - Canonical and local Agent Registry entries refreshed before execution
+- Firebase RTDB agent bus status/watch for the focused epic (`129`)
 - Linear Project Updates showing current agent progress and handoff state
 - Linear Issue comments or metadata documenting cross-agent dependencies
 - PR descriptions referencing coordinated scope and related active work

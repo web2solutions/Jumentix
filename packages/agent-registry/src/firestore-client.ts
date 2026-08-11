@@ -42,12 +42,16 @@ export function createFirestoreClient(): FirestoreLike {
   }
 
   const serviceAccount = parseServiceAccount();
+  const databaseURL = process.env.FIREBASE_DATABASE_URL?.trim();
   initializeApp({
     credential: cert({
       projectId: String(serviceAccount.project_id),
       privateKey: String(serviceAccount.private_key).replace(/\\n/g, '\n'),
       clientEmail: String(serviceAccount.client_email)
-    })
+    }),
+    // Include RTDB URL when present so a later createRtdbClient() can reuse
+    // the same Admin app (Requirement 129).
+    ...(databaseURL ? { databaseURL } : {})
   });
   return getFirestore() as unknown as FirestoreLike;
 }

@@ -1,0 +1,241 @@
+/* eslint-disable no-console */
+import type {
+  AgentBusEvent,
+  AgentBusEventKind,
+  AgentBusPresence,
+  AgentRecord,
+  BusStatusResult,
+  PublishProgressInput,
+  RtdbLike,
+  WatchBusInput
+} from './types';
+import { sanitizeRtdbKey } from './rtdb-client';
+
+const BUS_ROOT = 'agent-bus';
+const EVENT_KINDS: AgentBusEventKind[] = [
+  'started',
+  'progress',
+  'blocked',
+  'handoff',
+  'completed',
+  'conflict'
+];
+
+function nowIso(): string {
+  return new Date().toISOString();
+}
+
+function requireNonEmpty(value: string | undefined, field: string): string {
+  if (!value || value.trim() === '') {
+    throw new Error(`Field "${field}" is required and cannot be empty.`);
+  }
+  return value.trim();
+}
+
+function assertEventKind(kind: string): AgentBusEventKind {
+  if (!EVENT_KINDS.includes(kind as AgentBusEventKind)) {
+    throw new Error(
+      `Field "kind" must be one of: ${EVENT_KINDS.join(', ')}. Got "${kind}".`
+    );
+  }
+  return kind as AgentBusEventKind;
+}
+
+function ttlHintIso(ttlDays: number): string {
+  const ms = Date.now() + ttlDays * 24 * 60 * 60 * 1000;
+  return new Date(ms).toISOString();
+}
+
+function isBusEvent(value: unknown): value is AgentBusEvent {
+  if (!value || typeof value !== 'object') return false;
+  const event = value as Record<string, unknown>;
+  return (
+    typeof event.agentId === 'string'
+    && typeof event.taskId === 'string'
+    && typeof event.epicId === 'string'
+    && typeof event.kind === 'string'
+    && typeof event.summary === 'string'
+    && typeof event.ts === 'string'
+  );
+}
+
+function isPresence(value: unknown): value is AgentBusPresence {
+  if (!value || typeof value !== 'object') return false;
+  const presence = value as Record<string, unknown>;
+  return (
+    typeof presence.agentId === 'string'
+    && typeof presence.status === 'string'
+    && typeof presence.epicId === 'string'
+    && typeof presence.taskId === 'string'
+    && typeof presence.machineId === 'string'
+    && typeof presence.updatedAt === 'string'
+  );
+}
+
+export function presenceFromAgent(
+  agent: AgentRecord,
+  extras: { branch?: string } = {}
+): AgentBusPresence {
+  return {
+    agentId: agent.agent_id,
+    status: agent.status,
+    epicId: agent.active_epic,
+    taskId: agent.assigned_task,
+    branch: extras.branch,
+    machineId: agent.machine_id,
+    updatedAt: agent.last_heartbeat_utc || nowIso()
+  };
+}
+
+/**
+ * Mirror non-authoritative presence into RTDB.
+ * Ownership / assignment remain Firestore SSOT (Requirement 089).
+ */
+export async function upsertPresence(
+  rtdb: RtdbLike,
+  presence: AgentBusPresence
+): Promise<void> {
+  const agentKey = sanitizeRtdbKey(presence.agentId);
+  try {
+    await rtdb.ref(`${BUS_ROOT}/presence/${agentKey}`).set(presence);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`RTDB presence upsert failed: ${message}`);
+  }
+}
+
+export async function publishProgress(
+  rtdb: RtdbLike,
+  input: PublishProgressInput
+): Promise<AgentBusEvent & { pushId: string }> {
+  const agentId = requireNonEmpty(input.agentId, 'agentId');
+  const epicId = requireNonEmpty(input.epicId, 'epicId');
+  const taskId = requireNonEmpty(input.taskId, 'taskId');
+  const kind = assertEventKind(requireNonEmpty(input.kind, 'kind'));
+  const summary = requireNonEmpty(input.summary, 'summary');
+  const ts = input.ts || nowIso();
+  const ttlDays = input.ttlDays ?? 14;
+  if (!Number.isFinite(ttlDays) || ttlDays <= 0) {
+    throw new Error('Field "ttlDays" must be a positive number.');
+  }
+
+  // `refs` is optional, and RTDB `set()` rejects any object carrying an
+  // `undefined` value. Spelling it as `refs: input.refs?.map(...)` therefore
+  // made the documented default invocation — no `--refs` — fail every time
+  // with "value argument contains undefined in property ... .refs", so nothing
+  // could satisfy Requirement 129 by following its own instructions.
+  //
+  // The key is omitted entirely when there is nothing to record, rather than
+  // written as an empty array: absent and "explicitly empty" are different
+  // claims, and only one of them is true here.
+  const refs = input.refs?.map((ref) => ref.trim()).filter(Boolean);
+  const event: AgentBusEvent = {
+    agentId,
+    taskId,
+    epicId,
+    kind,
+    summary,
+    ts,
+    ttlHint: ttlHintIso(ttlDays),
+    ...(refs && refs.length > 0 ? { refs } : {})
+  };
+
+  const epicKey = sanitizeRtdbKey(epicId);
+  try {
+    const pushRef = rtdb.ref(`${BUS_ROOT}/events/${epicKey}`).push();
+    const pushId = pushRef.key;
+    if (!pushId) {
+      throw new Error('RTDB push did not return a key.');
+    }
+    await pushRef.set(event);
+    console.log(`[agent-bus] published ${kind} for ${agentId} on epic ${epicId}`);
+    return { ...event, pushId };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`RTDB progress publish failed: ${message}`);
+  }
+}
+
+/**
+ * Subscribe to progress events for an epic. Returns an unsubscribe function.
+ */
+export function watchBus(rtdb: RtdbLike, input: WatchBusInput): () => void {
+  const epicId = requireNonEmpty(input.epicId, 'epicId');
+  const epicKey = sanitizeRtdbKey(epicId);
+  const sinceMs = input.since ? Date.parse(input.since) : Number.NaN;
+  const ref = rtdb.ref(`${BUS_ROOT}/events/${epicKey}`);
+
+  const handler = (snapshot: { key: string | null; val(): unknown }) => {
+    const value = snapshot.val();
+    if (!isBusEvent(value)) return;
+    if (!Number.isNaN(sinceMs) && Date.parse(value.ts) < sinceMs) return;
+    input.onEvent(value, snapshot.key || 'unknown');
+  };
+
+  ref.on('child_added', handler);
+  console.log(`[agent-bus] watching epic ${epicId}`);
+  return () => {
+    ref.off('child_added', handler);
+  };
+}
+
+export async function busStatus(
+  rtdb: RtdbLike,
+  epicIdRaw: string,
+  options: { recentLimit?: number } = {}
+): Promise<BusStatusResult> {
+  const epicId = requireNonEmpty(epicIdRaw, 'epicId');
+  const epicKey = sanitizeRtdbKey(epicId);
+  const recentLimit = options.recentLimit ?? 50;
+
+  try {
+    const presenceSnap = await rtdb.ref(`${BUS_ROOT}/presence`).once('value');
+    const presence: AgentBusPresence[] = [];
+    presenceSnap.forEach((child) => {
+      const value = child.val();
+      if (isPresence(value) && sanitizeRtdbKey(value.epicId) === epicKey) {
+        presence.push(value);
+      }
+      return false;
+    });
+
+    // JUM-656: ordered by key, not by the `ts` child.
+    //
+    // Realtime Database builds no index on its own. `.orderByChild('ts')` with
+    // no `.indexOn: "ts"` in the security rules still answers correctly — the
+    // server sends every child under this path and the client sorts in memory,
+    // with `limitToLast` trimming after the download. Nothing fails; Firebase
+    // logs a warning and the cost grows with the number of events, so it
+    // degrades exactly as the bus starts being used.
+    //
+    // Push keys are assigned from the server clock and are indexed by default,
+    // so `orderByKey()` needs no rule. It is also the sounder ordering: `ts` is
+    // a client-written ISO string compared lexicographically, so one agent
+    // writing `-03:00` instead of `Z` would sort wrong, silently.
+    const eventsSnap = await rtdb
+      .ref(`${BUS_ROOT}/events/${epicKey}`)
+      .orderByKey()
+      .limitToLast(recentLimit)
+      .once('value');
+
+    const recentEvents: Array<AgentBusEvent & { pushId: string }> = [];
+    eventsSnap.forEach((child) => {
+      const value = child.val();
+      if (isBusEvent(value)) {
+        recentEvents.push({ ...value, pushId: child.key || 'unknown' });
+      }
+      return false;
+    });
+    // No re-sort on `ts`. `forEach` yields the snapshot in query order, which is
+    // ascending push key, so the list is already chronological by the server
+    // clock. Sorting on the client-written `ts` string here would put the
+    // lexicographic comparison this change removed straight back in.
+
+    return { epicId, presence, recentEvents };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`RTDB bus status failed: ${message}`);
+  }
+}
+
+export { EVENT_KINDS };

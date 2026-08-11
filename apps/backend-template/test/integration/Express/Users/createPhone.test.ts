@@ -18,9 +18,7 @@ import {
   phones
 } from '@test/mock';
 import type {
-  IUser
-} from '@src/modules/Users';
-import type {
+  IUser,
   RequestCreatePhone
 } from '@src/modules/Users';
 import {
@@ -171,8 +169,12 @@ describe('express -> User createPhone suite', () => {
       .set('Content-Type', 'application/json; charset=utf-8')
       .set('Accept', 'application/json; charset=utf-8')
       .set(BasicAuthorizationHeaderUser1);
-    expect(response.body.message).toBe('Bad Request - The property invalidFieldName from input payload does not exist.');
+    // JUM-663: status first, deliberately. This assertion once failed on CI
+    // with `response.body.message` undefined, which says only that the body
+    // was not the JSON error payload — not what the server actually answered.
+    // The status carries that, so it is asserted before the message.
     expect(response.statusCode).toBe(400);
+    expect(response.body.message).toBe('Bad Request - The property invalidFieldName from input payload does not exist.');
   });
 
   it('user1 must not be able to create a phone for an user with empty payload', async () => {

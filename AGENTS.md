@@ -67,6 +67,10 @@ Primary Codex runtime instructions for this repository:
 24g. **Coordinated agent delivery (Requirement `121`):** registered agents must refresh
     sibling-agent progress, blockers, branches, PRs, and Linear Project Updates before starting
     or resuming work, and coordinate any overlapping scope before editing files.
+24h. **Firebase RTDB agent bus (Requirement `129`):** publish material progress with
+    `bun run agent-bus:publish` and consume sibling progress with `agent-bus:status` /
+    `agent-bus:watch` before start/resume and while waiting on remote checks. Requires
+    `FIREBASE_DATABASE_URL`. Firestore remains ownership SSOT (`089`).
 25. **Resolve valid PR comments before merge**: every valid human, security, or automated
     finding blocks merge until corrected, validated, and evidenced. No bypass is allowed
     (Requirement `100`).
@@ -85,3 +89,21 @@ Canonical governance/spec references:
 - `documentation/md/SPEC-GOVERNANCE-AND-TRACEABILITY.md`
 - `documentation/md/SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`
 - `documentation/md/SPEC-DEVELOPMENT-DRIVEN-INDEX.md`
+
+## Requirements Added Recently — Read Before Executing
+
+Requirement `099` obliges every agent to read the full inventory before acting. These are the
+most recent additions, listed here because an agent resuming from an older checkout will not
+otherwise know they exist.
+
+| requirement | obligation | enforced by |
+| --- | --- | --- |
+| `127` | Repository commands through `rtk`; agent prose compressed. Never compress code, commands, paths, identifiers, error messages, counts, timings or CI states. Bun scripts run as `rtk proxy bun run <script>`. | attestation |
+| `128` | A merged change under `.agents/requirements/` takes precedence in the release queue. Precedence is **sequence only** and grants no exemption from any gate. | attestation + `065` |
+| `129` | Publish material progress to the Firebase RTDB agent bus and consume it before starting or resuming a task. Firestore stays the ownership SSOT. | `agent-bus:publish` / `agent-bus:status` |
+| `130` | Measured claims and bounded work: no number without the command that produced it, no proxy stated as a cause, corrections published where the claim was published, partial delivery reported as partial. | attestation |
+| `131` | Every built entrypoint must carry every runtime export its source barrel declares. A stale `dist` loads cleanly and fails only at call time. | `bun run packages:check-build-freshness` |
+| `132` | No orphaned published artifacts: content must resolve to a servable route, or be declared with the issue that owns the decision. The register fails in both directions. | `bun run website:check-content-routes` |
+
+Both new gates run inside `ci:gate`. Requirements `127`, `128` and `130` are attestation-based
+and say so in their own text — do not mistake them for gates.

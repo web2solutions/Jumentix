@@ -7,9 +7,7 @@ import path from 'path';
 import { RestAPI } from '@src/interface/HTTP/RestAPI';
 import type {
   IHTTPRequest,
-  IHTTPResponse
-} from '@src/interface/HTTP/ports';
-import type {
+  IHTTPResponse,
   IbaseHandler
 } from '@src/interface/HTTP/ports';
 import {

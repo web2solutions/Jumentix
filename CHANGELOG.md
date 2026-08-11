@@ -4,6 +4,59 @@
 
 ## All Changes
 
+- 2026-08-11 test(restify): make the localhost suite establish what it depends on (JUM-663) (#186) - Eduardo A.
+- 2026-08-11 fix(users): stop a refused caller from releasing another writer's lock (JUM-663) (#185) - Eduardo A.
+- 2026-08-11 [JUM-53][Feature] Replay worker, real-Redis suite and full documentation (#183) - Eduardo A.
+- 2026-08-11 [JUM-53][Feature] Dead-letter queue for mutex-refused transactions (#182) - Eduardo A.
+- 2026-08-11 chore(lint): clear the 662 warnings so the next one is visible for JUM-657 (#181) - Eduardo A.
+- 2026-08-11 fix(agent-bus): order recent events by key and gate RTDB indexes for JUM-656 (#180) - Eduardo A.
+- 2026-08-11 chore(website): delete the orphaned content pages for JUM-640 (#179) - Eduardo A.
+- 2026-08-10 [JUM-655][CI] Gate stale builds and orphaned content, declare requirements 130-132 (#177) - Eduardo A.
+- 2026-08-10 chore(governance): gate the defect classes that recurred, and declare the rules - Eduardo Almeida
+- 2026-08-10 [JUM-640][Docs] State the real cause of the orphaned docs content (#176) - Eduardo A.
+- 2026-08-10 docs(website): state the real cause of the orphaned docs content - Eduardo Almeida
+- 2026-08-10 [JUM-654][Fix] Make the mandatory agent bus usable (#175) - Eduardo A.
+- 2026-08-10 fix(agent-registry): make the mandatory agent bus usable - Eduardo Almeida
+- 2026-08-10 [JUM-641][Docs] Record the Jumentix epic delivery baseline (#170) - Eduardo A.
+- 2026-08-10 docs(jumentix): record the epic delivery baseline, EN and PT-BR - Eduardo Almeida
+- 2026-08-10 [JUM-638][CI] Make SonarCloud advisory while budget is unavailable (#173) - Eduardo A.
+- 2026-08-10 Merge remote-tracking branch 'origin/dev' into codex/bug/JUM-638-sonar-opt-in - Eduardo A.
+- 2026-08-10 [JUM-158][Test] Discover, sweep and gate every website route (#169) - Eduardo A.
+- 2026-08-10 test(website): make the unit suite runnable and assert browser-only failures - Eduardo Almeida
+- 2026-08-10 test(website): discover every route and sweep it, and gate the deploy - Eduardo Almeida
+- 2026-08-10 ci(governance): keep sonar analysis within loc budget - Eduardo A.
+- 2026-08-10 [JUM-638][CI] Keep Sonar analysis within LOC budget (#172) - Eduardo A.
+- 2026-08-10 ci(governance): keep sonar analysis within loc budget - Eduardo A.
+- 2026-08-10 [JUM-638][Fix] Isolate HTTP update integration targets (#171) - Eduardo A.
+- 2026-08-10 test(governance): isolate http update integration targets - Eduardo A.
+- 2026-08-10 [JUM-638][Fix] Stabilize dev promotion gates (#167) - Eduardo A.
+- 2026-08-10 test(governance): stabilize dev promotion gates - Eduardo A.
+- 2026-08-10 [JUM-637][Governance] Mandatory Firebase RTDB agent progress bus (Requirement 129) (#164) - Eduardo A.
+- 2026-08-10 Merge remote-tracking branch 'origin/dev' into kimi/governance/JUM-637-mandatory-firebase-agent-bus - Eduardo A.
+- 2026-08-09 [JUM-639][Release] Reconcile main ancestry into dev (#166) - Eduardo A.
+- 2026-08-09 chore(release): reconcile main ancestry into dev for JUM-639 - Eduardo Almeida
+- 2026-08-09 feat(agent-registry): add Firebase RTDB agent progress bus - Eduardo A.
+- 2026-08-09 [JUM-628][Fix] Retry port allocation on EADDRINUSE in the test harness (#140) - Eduardo A.
+- 2026-08-09 [JUM-636][Release] Promote dev to main (#162) - Eduardo A.
+- 2026-08-09 chore(release): promote dev to main - Eduardo A.
+- 2026-08-09 [JUM-636][Fix] Run full gate for signed release branches (#163) - Eduardo A.
+- 2026-08-09 fix(ci): run full gate for signed release branches - Eduardo A.
+- 2026-08-09 [JUM-635][Fix] Isolate ServiceManagement test ports (#161) - Eduardo A.
+- 2026-08-09 fix(ci): isolate ServiceManagement test server ports - Eduardo A.
+- 2026-08-09 [JUM-635][Fix] Stabilize status-region browser assertion (#160) - Eduardo A.
+- 2026-08-09 fix(ci): stabilize status-region browser assertion - Eduardo A.
+- 2026-08-09 [JUM-635][Fix] Stabilize ServiceManagement browser gate (#159) - Eduardo A.
+- 2026-08-09 fix(ci): make first-run browser spec order independent - Eduardo A.
+- 2026-08-09 [JUM-634][Release] Promote dev to main (#158) - Eduardo A.
+- 2026-08-09 fix(ci): allow signed dev promotion governance - Eduardo A.
+- 2026-08-09 fix(ci): classify signed dev promotion release branches - Eduardo A.
+- 2026-08-09 chore(release): promote dev to main - Eduardo A.
+- 2026-08-09 [JUM-633][CI] Resolve Sonar release gate findings (#157) - Eduardo A.
+- 2026-08-09 fix(ci): resolve Sonar release gate findings - Eduardo A.
+- 2026-08-09 fix(ci): isolate database compose projects (#156) - Eduardo A.
+- 2026-08-09 fix(ci): isolate database compose projects - Eduardo A.
+- 2026-08-09 fix(ci): recreate mongodb smoke container (#155) - Eduardo A.
+- 2026-08-09 fix(ci): recreate mongodb smoke container - Eduardo A.
 - 2026-08-09 fix(ci): keep db repository smoke on bun (#154) - Eduardo A.
 - 2026-08-09 fix(ci): keep db repository smoke on bun - Eduardo A.
 - 2026-08-09 [JUM-632][CI] Keep coverage free of live broker suites (#153) - Eduardo A.

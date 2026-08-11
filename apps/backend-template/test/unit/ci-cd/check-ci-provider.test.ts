@@ -96,9 +96,10 @@ describe('check-ci-provider', () => {
       const file = path.join(root, '.github/workflows/ci.yml');
       fs.writeFileSync(
         file,
-        fs.readFileSync(file, 'utf8')
-          .split('(github.event_name == \'pull_request\' && github.base_ref == \'main\' && github.head_ref == \'dev\')')
-          .join('(github.event_name == \'pull_request\' && github.base_ref == \'dev\' && github.head_ref == \'feature\')')
+        fs.readFileSync(file, 'utf8').replace(
+          /\|\|\n\s+\(startsWith\(github\.head_ref, 'codex\/release\/'\) && endsWith\(github\.head_ref, '-dev-main-signed-squash'\)\)/g,
+          ''
+        )
       );
     });
     expect(run(directory).output).toContain('must guard coverage to release/full contexts');

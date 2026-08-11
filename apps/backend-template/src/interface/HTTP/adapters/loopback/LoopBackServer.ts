@@ -4,9 +4,7 @@
 import { _HTTP_PORT_ } from '@src/config/constants';
 import type {
   IHTTPRequest,
-  IHTTPResponse
-} from '@src/interface/HTTP/ports';
-import type {
+  IHTTPResponse,
   IbaseHandler
 } from '@src/interface/HTTP/ports';
 import {

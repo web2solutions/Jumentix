@@ -61,5 +61,5 @@ console.log(JSON.stringify({
   ok: true,
   exportCount: Object.keys(core).length,
   domainCount: state.domains.length,
-  exports: Object.keys(core).sort()
+  exports: Object.keys(core).sort((left, right) => left.localeCompare(right))
 }));

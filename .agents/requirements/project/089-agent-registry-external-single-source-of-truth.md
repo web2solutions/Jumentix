@@ -7,7 +7,10 @@ Agent coordination must be centralized across repositories and runtimes. Keeping
 ## Requirement
 
 1. The agent registry must be tracked in Firestore Database.
-2. Firestore is the single source of truth for agent coordination.
+2. Firestore is the single source of truth for agent **ownership** coordination
+   (registration, assignment, authoritative heartbeat fields). Realtime progress
+   events and non-authoritative presence live on the Firebase RTDB agent bus
+   required by `129` and do not replace this SSOT.
 3. Agent registration, heartbeat, assignment, and completion are written directly to Firestore through the `agent-registry` CLI.
 4. A local snapshot `.agents/registry-snapshot.json` may be generated with `bun run agent-registry:sync` for offline consultation. It is regenerable, must be ignored by Git, and is not a source of truth.
 5. Quality gates validate the local snapshot against Firestore when the snapshot exists. A missing snapshot does not fail the gate; a stale snapshot fails with guidance to run `bun run agent-registry:sync`.

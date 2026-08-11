@@ -95,6 +95,11 @@ See also:
 - [123-wave5-app-rehoming-cutover-governance](requirements/project/123-wave5-app-rehoming-cutover-governance.md)
 - [124-monorepo-root-layout-governance](requirements/project/124-monorepo-root-layout-governance.md)
 - [125-agent-support-declaration](requirements/project/125-agent-support-declaration.md)
+- [129-mandatory-firebase-agent-bus](requirements/project/129-mandatory-firebase-agent-bus.md)
+- [130-measured-claims-and-bounded-work](requirements/project/130-measured-claims-and-bounded-work.md)
+- [131-built-artifacts-carry-source-exports](requirements/software/131-built-artifacts-carry-source-exports.md)
+- [132-no-orphaned-published-artifacts](requirements/software/132-no-orphaned-published-artifacts.md)
+- [133-declared-indexes-for-ordered-queries](requirements/software/133-declared-indexes-for-ordered-queries.md)
 
 ## Software and Product Requirements
 

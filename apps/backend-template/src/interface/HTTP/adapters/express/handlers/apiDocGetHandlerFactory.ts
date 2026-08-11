@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 
-import type { IHandlerFactory } from '@src/interface/HTTP/ports';
-import type { EndPointFactory, IbaseHandler } from '@src/interface/HTTP/ports';
+import type { IHandlerFactory, EndPointFactory, IbaseHandler } from '@src/interface/HTTP/ports';
 import { sendErrorResponse } from '@src/interface/HTTP/adapters/express/responses/sendErrorResponse';
 
 const apiDocGetHandlerFactory: EndPointFactory = (

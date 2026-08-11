@@ -34,11 +34,16 @@ This file consolidates non-functional requirements already requested and stored 
 - `042` Env-driven runtime adapter selection.
 - `043` Runtime env docs + governance.
 - `126` Service Management ownership registration and pinned public contracts
-- `127` Mandatory `rtk` and Caveman usage in every agent session
-- `128` Requirement changes take precedence in the release process (sequence only, no gate exemption)
   (`/api/runtime/env`, `service-management.v1` storage schema, export formats),
   so component drift and re-homing breaks fail checks instead of serving silent
   defaults.
+- `127` Mandatory `rtk` and Caveman usage in every agent session
+- `128` Requirement changes take precedence in the release process (sequence only, no gate exemption)
+- `129` Mandatory Firebase RTDB agent progress bus (`agent-bus:publish|watch|status`)
+- `130` Measured claims and bounded work: no unmeasured numbers, no proxy stated as cause
+- `131` Built artifacts must carry every runtime export their source barrel declares
+- `132` No orphaned published artifacts: reachable, or declared with the issue that owns it
+- `133` Declared indexes for ordered queries: `.indexOn` in versioned rules, or order by key
 
 ## Documentation and Governance NFRs
 
@@ -181,6 +186,8 @@ This file consolidates non-functional requirements already requested and stored 
 - `121` Registered agents must work as a coordinated delivery system by refreshing
   sibling-agent progress, blockers, branches, PRs, and Linear Project Updates before
   starting or resuming work, avoiding silent overlap or duplicate delivery.
+- `129` Agents must publish and consume the Firebase RTDB agent progress bus for
+  machine-readable peer sync; Firestore remains ownership SSOT (`089` / `121`).
 - `122` Task-owned branch and PR naming governance (migrated from duplicate `079`).
 - `123` Wave 5 app re-homing cutover governance (migrated from duplicate `055`).
 - `124` Monorepo root layout governance (migrated from duplicate `060`).

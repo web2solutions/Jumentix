@@ -12,6 +12,7 @@ Canonical constraints added 2026-08-01 under Linear [JUM-595](https://linear.app
 | `119` | API-first orchestration | Prefer APIs (or official CLIs) over browser/app automation for Linear, GitHub, and other services; GitHub must always use `gh`. |
 | `120` | Linear agent assignment visibility | Linear Issues and Projects/Epics must identify the active agent assignment and stay synchronized with the canonical Agent Registry. |
 | `121` | Coordinated agent delivery awareness | Registered agents must refresh sibling-agent progress, blockers, branches, PRs, and Project Updates before starting or resuming work. |
+| `129` | Firebase RTDB agent progress bus | Agents must publish and consume the RTDB `agent-bus` via `agent-bus:publish|watch|status`; Firestore stays ownership SSOT. |
 
 ## Requirement files
 
@@ -23,10 +24,11 @@ Canonical constraints added 2026-08-01 under Linear [JUM-595](https://linear.app
 - `.agents/requirements/project/119-api-first-service-orchestration-github-gh.md`
 - `.agents/requirements/project/120-linear-agent-assignment-visibility.md`
 - `.agents/requirements/project/121-registered-agent-coordinated-delivery-awareness.md`
+- `.agents/requirements/project/129-mandatory-firebase-agent-bus.md`
 
 ## Related existing requirements
 
-- `099` (strengthened by `116`), `025`/`076` (strengthened by `117`), `046`/`047` (strengthened by `118`), `109`/`112` (aligned with `115`), `078`/`081`/`089` (aligned with `114`), `081`/`095` (strengthened by `119`), `078`/`089`/`090`/`095`/`097`/`102` (strengthened by `120`), and `077`/`078`/`089`/`090`/`101`/`102`/`116` (strengthened by `121`).
+- `099` (strengthened by `116`), `025`/`076` (strengthened by `117`), `046`/`047` (strengthened by `118`), `109`/`112` (aligned with `115`), `078`/`081`/`089` (aligned with `114`), `081`/`095` (strengthened by `119`), `078`/`089`/`090`/`095`/`097`/`102` (strengthened by `120`), `077`/`078`/`089`/`090`/`101`/`102`/`116` (strengthened by `121`), and `089`/`121` (strengthened by `129`).
 
 ## Operator note for Requirement 114
 
@@ -52,3 +54,15 @@ Before implementation starts, the Linear Issue and its Project/Epic must show wh
 ## Operator note for Requirement 121
 
 Agents are not isolated workers. Before starting or resuming work, read sibling-agent activity in the registry, Linear Project Updates, related Issues, active branches, and open PRs. If another registered agent owns overlapping scope, coordinate the handoff, dependency, or scope split before editing files.
+
+## Operator note for Requirement 129
+
+Use the Firebase RTDB agent bus for machine-readable peer sync:
+
+```bash
+bun run agent-bus:status -- --epic "<epic-url-or-id>"
+bun run agent-bus:publish -- --agent-id "<id>" --epic "<epic>" --task "<task>" --kind progress --summary "<short>"
+bun run agent-bus:watch -- --epic "<epic-url-or-id>"
+```
+
+Requires `FIREBASE_SERVICE_ACCOUNT_KEY` and `FIREBASE_DATABASE_URL`. Firestore remains ownership SSOT (`089`); Project Updates remain the human broadcast (`102` / `121`).

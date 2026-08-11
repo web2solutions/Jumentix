@@ -1,6 +1,5 @@
 import type { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
-import type { IHTTPServer } from '@src/interface/HTTP/ports';
-import type { EndPointFactory } from '@src/interface/HTTP/ports';
+import type { IHTTPServer, EndPointFactory } from '@src/interface/HTTP/ports';
 import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
 // import { IMutexService } from '@src/domains/ports/mutex/IMutexService';
 import type { IAuthService } from '@src/modules/Users/service/ports/IAuthService';

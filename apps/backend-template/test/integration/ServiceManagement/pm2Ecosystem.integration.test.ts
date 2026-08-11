@@ -92,7 +92,7 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
       // No ecosystem.ci.cjs on purpose: the missing-file state is an
       // acceptance criterion, asserted below.
     });
-    server = startServer(configDir, { JUMENTIX_SERVICE_MANAGEMENT_PM2_DIR: pm2Dir });
+    server = await startServer(configDir, { JUMENTIX_SERVICE_MANAGEMENT_PM2_DIR: pm2Dir });
     await waitForServer(server.port);
   });
 
@@ -220,7 +220,7 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
     // A second server WITHOUT JUMENTIX_SERVICE_MANAGEMENT_PM2_DIR must find the
     // repo's real pm2/ecosystem.dev.cjs — the pinned default resolution, same
     // discipline as the config directory (Requirement 126 §2).
-    const defaultServer = startServer(configDir);
+    const defaultServer = await startServer(configDir);
     try {
       await waitForServer(defaultServer.port);
       const { status, body } = await requestJson<Pm2EcosystemPayload>(

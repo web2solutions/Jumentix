@@ -6,6 +6,7 @@ import {
   type UseCaseName,
 } from '@/components/commercial/CommercialPages';
 import { CommercialChangelogPage } from '@/components/commercial/ChangelogPage';
+import { ReleaseNotes } from '@/components/ReleaseNotes/ReleaseNotes';
 
 const pages: Record<string, CommercialPageName> = {
   '': 'home',
@@ -46,6 +47,11 @@ export default async function PortuguesePage({
     const { page } = (await searchParams) ?? {};
     return <CommercialChangelogPage locale="pt-BR" page={page} />;
   }
+
+  // JUM-640: the language switcher offers `/pt-BR/<path>` for every page, so an
+  // English-only route is a broken link rather than a missing translation. The
+  // release list itself is GitHub data, identical in both locales.
+  if (path === 'release-notes') return <ReleaseNotes />;
 
   const page = pages[path];
   if (!page) notFound();
