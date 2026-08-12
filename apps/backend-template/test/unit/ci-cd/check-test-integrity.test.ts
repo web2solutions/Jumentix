@@ -61,6 +61,27 @@ describe('test integrity check (Requirements 134 and 135)', () => {
     integrityFs.rmSync(root, { recursive: true, force: true });
   });
 
+  it('accepts toHaveBeenCalledWith, which asserts the payload (JUM-678)', () => {
+    expect.hasAssertions();
+
+    // The measurement error this check shipped with. For a handler whose whole
+    // effect is `res.json(payload)`, the argument *is* the effect.
+    const suite = 'packages/sample/test/payload.test.ts';
+    const root = scratchRepo('jum678-with-', {
+      [suite]: [
+        'it(\'answers\', () => {',
+        '  expect.hasAssertions();',
+        '  expect(response.json).toHaveBeenCalledWith({ status: \'result\' });',
+        '});'
+      ].join('\n'),
+      'test-map.json': mapFor([suite])
+    });
+
+    expect(validateTestIntegrity(root, empty)).toStrictEqual([]);
+
+    integrityFs.rmSync(root, { recursive: true, force: true });
+  });
+
   it('fails a suite that asserts only that functions were called', () => {
     expect.hasAssertions();
 
@@ -186,7 +207,10 @@ describe('test integrity check (Requirements 134 and 135)', () => {
     // the issue that will remove it, and a new violation fails immediately.
     // JUM-677 emptied this one by declaring assertions in all 31 files.
     expect(ACCEPTED_NO_ASSERTIONS).toStrictEqual([]);
-    expect(ACCEPTED_MOCK_ONLY).toHaveLength(14);
+    // JUM-678: never fourteen. The rule matched the substring
+    // `toHaveBeenCalled`, so `toHaveBeenCalledWith(payload)` read as
+    // asserting nothing. It asserts the payload.
+    expect(ACCEPTED_MOCK_ONLY).toStrictEqual([]);
     // JUM-679 emptied this one by fixing all five files.
     expect(ACCEPTED_SLEEPS).toStrictEqual([]);
     const owned = [...ACCEPTED_NO_ASSERTIONS, ...ACCEPTED_MOCK_ONLY, ...ACCEPTED_SLEEPS];
