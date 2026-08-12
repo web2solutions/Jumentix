@@ -103,6 +103,7 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
   });
 
   it('reads the real ecosystem file — names, env and derived commands, no package-manager string', async () => {
+    expect.hasAssertions();
     const { status, body } = await requestJson<Pm2EcosystemPayload>(
       server!.port,
       'GET',
@@ -130,6 +131,7 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
   });
 
   it('reflects an ecosystem edit with no code change and no server restart', async () => {
+    expect.hasAssertions();
     fs.writeFileSync(
       path.join(pm2Dir, 'ecosystem.dev.cjs'),
       ecosystemSource([
@@ -149,6 +151,7 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
   });
 
   it('covers every environment the ecosystems define, not only dev', async () => {
+    expect.hasAssertions();
     const staging = await requestJson<Pm2EcosystemPayload>(
       server!.port,
       'GET',
@@ -177,6 +180,7 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
   });
 
   it('reports a missing ecosystem file as an explicit state, not a silent empty preview or a 500', async () => {
+    expect.hasAssertions();
     const { status, body } = await requestJson<Pm2EcosystemPayload>(
       server!.port,
       'GET',
@@ -191,6 +195,7 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
   });
 
   it('rejects an unknown environment explicitly, never coercing to dev', async () => {
+    expect.hasAssertions();
     const { status, body } = await requestJson<ErrorEnvelope>(
       server!.port,
       'GET',
@@ -203,6 +208,7 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
   });
 
   it('surfaces a broken ecosystem file as the honest 500 envelope with code and path', async () => {
+    expect.hasAssertions();
     fs.writeFileSync(path.join(pm2Dir, 'ecosystem.staging.cjs'), 'module.exports = { apps: [', 'utf8');
     const { status, body } = await requestJson<ErrorEnvelope>(
       server!.port,
@@ -217,6 +223,7 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
   });
 
   it('resolves the repository pm2/ directory by default when the override is unset', async () => {
+    expect.hasAssertions();
     // A second server WITHOUT JUMENTIX_SERVICE_MANAGEMENT_PM2_DIR must find the
     // repo's real pm2/ecosystem.dev.cjs — the pinned default resolution, same
     // discipline as the config directory (Requirement 126 §2).

@@ -50,6 +50,7 @@ function createDomains() {
 
 describe('model queries (JUM-469)', () => {
   it('is DOM-free: no document/window references in the new pure modules', () => {
+    expect.hasAssertions();
     // Since JUM-493 these modules live in the publishable package.
     [
       'model/modelQueries.js',
@@ -73,17 +74,20 @@ describe('model queries (JUM-469)', () => {
 
   describe('name helpers', () => {
     it('normalizes names case- and whitespace-insensitively', () => {
+      expect.hasAssertions();
       expect(model.normalizedName('  Invoice ')).toBe('invoice');
       expect(model.normalizedName(null)).toBe('');
       expect(model.normalizedName(undefined)).toBe('');
     });
 
     it('dedupes and trims string lists', () => {
+      expect.hasAssertions();
       expect(model.uniqueStrings([' a ', 'b', 'a', ''])).toStrictEqual(['a', 'b']);
       expect(model.uniqueStrings(null)).toStrictEqual([]);
     });
 
     it('detects taken domain names, ignoring a given id', () => {
+      expect.hasAssertions();
       const domains = createDomains();
       expect(model.isDomainNameTaken(domains, 'billing')).toBe(true);
       expect(model.isDomainNameTaken(domains, 'Billing', 'domain-1')).toBe(false);
@@ -91,6 +95,7 @@ describe('model queries (JUM-469)', () => {
     });
 
     it('detects taken entity names inside one domain, ignoring a given id', () => {
+      expect.hasAssertions();
       const [domain] = createDomains();
       expect(model.isEntityNameTaken(domain, 'invoice')).toBe(true);
       expect(model.isEntityNameTaken(domain, 'Invoice', 'entity-1')).toBe(false);
@@ -98,6 +103,7 @@ describe('model queries (JUM-469)', () => {
     });
 
     it('detects taken field names inside one entity, ignoring the field being renamed', () => {
+      expect.hasAssertions();
       const entity = { fields: [{ name: 'total' }, { name: 'status' }] };
       expect(model.isFieldNameTaken(entity, 'TOTAL')).toBe(true);
       expect(model.isFieldNameTaken(entity, 'total', 'total')).toBe(false);
@@ -108,6 +114,7 @@ describe('model queries (JUM-469)', () => {
 
   describe('entity lookup', () => {
     it('finds an entity with its domain by id', () => {
+      expect.hasAssertions();
       const found = model.findEntity(createDomains(), 'entity-2');
       expect(found.domain.id).toBe('domain-1');
       expect(found.entity.name).toBe('Payment Method');
@@ -115,6 +122,7 @@ describe('model queries (JUM-469)', () => {
     });
 
     it('finds an entity by case-insensitive substring', () => {
+      expect.hasAssertions();
       const found = model.findEntityByName(createDomains(), 'payment');
       expect(found.entity.id).toBe('entity-2');
       expect(model.findEntityByName(createDomains(), 'nothing')).toBeNull();
@@ -122,6 +130,7 @@ describe('model queries (JUM-469)', () => {
     });
 
     it('labels entities as domain/entity, falling back to the raw id', () => {
+      expect.hasAssertions();
       expect(model.entityLabel(createDomains(), 'entity-3')).toBe('Users/User');
       expect(model.entityLabel(createDomains(), 'missing')).toBe('missing');
     });
@@ -129,6 +138,7 @@ describe('model queries (JUM-469)', () => {
 
   describe('labels and names', () => {
     it('renders field labels with flags and format', () => {
+      expect.hasAssertions();
       expect(model.fieldLabel({
         name: 'id', type: 'uuid', pk: true, unique: true, required: true
       }))
@@ -142,6 +152,7 @@ describe('model queries (JUM-469)', () => {
     });
 
     it('builds relationship names per cardinality pair', () => {
+      expect.hasAssertions();
       const domains = createDomains();
       expect(model.buildRelationshipName(domains, 'entity-1', 'entity-2', 'N', '1'))
         .toBe('Billing/Invoice belongs to Billing/Payment Method');
@@ -154,6 +165,7 @@ describe('model queries (JUM-469)', () => {
     });
 
     it('ranks severities with unknown values at the bottom', () => {
+      expect.hasAssertions();
       expect(model.severityRank('error')).toBe(3);
       expect(model.severityRank('warn')).toBe(2);
       expect(model.severityRank('info')).toBe(1);
@@ -163,6 +175,7 @@ describe('model queries (JUM-469)', () => {
 
   describe('rbac policy', () => {
     it('installs the default policy on entities without meta', () => {
+      expect.hasAssertions();
       const entity: Record<string, unknown> = {};
       const policy = model.getEntityRbacPolicy(entity);
       expect(policy.list.roles).toStrictEqual(['superadmin', 'admin']);
@@ -170,6 +183,7 @@ describe('model queries (JUM-469)', () => {
     });
 
     it('keeps an existing policy untouched', () => {
+      expect.hasAssertions();
       const custom = { list: { roles: ['user'], tenantScoped: false } };
       const entity = { meta: { rbac: custom } };
       expect(model.getEntityRbacPolicy(entity)).toBe(custom);
@@ -178,6 +192,7 @@ describe('model queries (JUM-469)', () => {
 
   describe('oAS type mapping', () => {
     it('maps designer field types to OAS types', () => {
+      expect.hasAssertions();
       expect(model.toOasType('integer')).toStrictEqual({ type: 'integer' });
       expect(model.toOasType('number')).toStrictEqual({ type: 'number' });
       expect(model.toOasType('boolean')).toStrictEqual({ type: 'boolean' });
@@ -191,6 +206,7 @@ describe('model queries (JUM-469)', () => {
     });
 
     it('maps OAS schemas back to designer field types', () => {
+      expect.hasAssertions();
       expect(model.fromOasType({ type: 'array' })).toBe('array');
       expect(model.fromOasType({ type: 'object' })).toBe('object');
       expect(model.fromOasType({ type: 'integer' })).toBe('integer');
@@ -205,6 +221,7 @@ describe('model queries (JUM-469)', () => {
     });
 
     it('builds field schemas with every supported constraint', () => {
+      expect.hasAssertions();
       const schema = model.toOasFieldSchema({
         name: 'status',
         type: 'string',
@@ -233,6 +250,7 @@ describe('model queries (JUM-469)', () => {
     });
 
     it('defaults array items to string and omits absent constraints', () => {
+      expect.hasAssertions();
       expect(model.toOasFieldSchema({ name: 'tags', type: 'array' }))
         .toStrictEqual({ type: 'array', items: { type: 'string' } });
       expect(model.toOasFieldSchema({ name: 'tags', type: 'array', itemsType: 'uuid' }))
@@ -244,12 +262,14 @@ describe('model queries (JUM-469)', () => {
 
   describe('schema and path tokens', () => {
     it('builds schema names with sane fallbacks', () => {
+      expect.hasAssertions();
       expect(model.toSchemaName('Billing', 'Invoice')).toBe('Billing_Invoice');
       expect(model.toSchemaName('Payment Method!', 'Line Item')).toBe('Payment_Method_Line_Item');
       expect(model.toSchemaName('', '')).toBe('Domain_Entity');
     });
 
     it('builds path tokens with sane fallbacks', () => {
+      expect.hasAssertions();
       expect(model.toPathToken('Payment Method')).toBe('payment-method');
       expect(model.toPathToken('  --Weird__Name--  ')).toBe('weird-name');
       expect(model.toPathToken('')).toBe('');
@@ -258,6 +278,7 @@ describe('model queries (JUM-469)', () => {
 
   describe('example builders', () => {
     it('builds example values per field type and format', () => {
+      expect.hasAssertions();
       expect(model.buildExampleValueForField({ name: 's', enumValues: ['a', 'b'] })).toBe('a');
       expect(model.buildExampleValueForField({ name: 'id', type: 'uuid' })).toBe('00000000-0000-4000-8000-000000000001');
       expect(model.buildExampleValueForField({ name: 'at', type: 'datetime' })).toBe('2026-01-01T00:00:00.000Z');
@@ -274,6 +295,7 @@ describe('model queries (JUM-469)', () => {
     });
 
     it('builds create/update request examples with the pre-refactor field rules', () => {
+      expect.hasAssertions();
       const entity = {
         fields: [
           {
@@ -300,6 +322,7 @@ describe('model queries (JUM-469)', () => {
     });
 
     it('builds a response example with every field', () => {
+      expect.hasAssertions();
       expect(model.buildEntityResponseExample({ fields: [{ name: 'id', type: 'uuid' }] }))
         .toStrictEqual({ id: '00000000-0000-4000-8000-000000000001' });
       expect(model.buildEntityResponseExample({})).toStrictEqual({});
@@ -308,12 +331,14 @@ describe('model queries (JUM-469)', () => {
 
   describe('canvas geometry', () => {
     it('snaps coordinates to the 8px grid only when enabled', () => {
+      expect.hasAssertions();
       expect(model.snapCoordinate(true, 13)).toBe(16);
       expect(model.snapCoordinate(true, 11)).toBe(8);
       expect(model.snapCoordinate(false, 13)).toBe(13);
     });
 
     it('computes entity centres and side anchors in canvas coordinates', () => {
+      expect.hasAssertions();
       const domain = { x: 100, y: 50 };
       const entity = { x: 14, y: 14 };
       expect(model.entityCenterPoint(domain, entity)).toStrictEqual({ x: 209, y: 96 });
@@ -327,6 +352,7 @@ describe('model queries (JUM-469)', () => {
     });
 
     it('builds edge paths byte-identically for both styles', () => {
+      expect.hasAssertions();
       const from = { x: 1, y: 2 };
       const to = { x: 100, y: 200 };
       expect(model.buildEdgePathD(from, to, 50, 100, false)).toBe('M 1 2 C 50 2, 50 200, 100 200');
@@ -336,6 +362,7 @@ describe('model queries (JUM-469)', () => {
     });
 
     it('computes fit-view zoom and scroll for the empty and populated canvas', () => {
+      expect.hasAssertions();
       expect(model.computeFitView([], 800, 600)).toStrictEqual({ zoom: 1, left: 0, top: 0 });
       const domains = [{ x: 80, y: 80 }];
       const fit = model.computeFitView(domains, 680, 440);
@@ -355,6 +382,7 @@ describe('model queries (JUM-469)', () => {
     });
 
     it('lays out domains in a grid and entities in two columns', () => {
+      expect.hasAssertions();
       const domains = [
         { x: 0, y: 0, entities: [{ x: 0, y: 0 }, { x: 0, y: 0 }, { x: 0, y: 0 }] },
         { x: 0, y: 0, entities: [] }
@@ -371,10 +399,12 @@ describe('model queries (JUM-469)', () => {
 
 describe('format-less and field-less fallbacks (JUM-493)', () => {
   it('renders a field label with neither format nor flags', () => {
+    expect.hasAssertions();
     expect(model.fieldLabel({ name: 'hostname', type: 'string' })).toBe('hostname: string');
   });
 
   it('builds an empty request example for an entity without fields', () => {
+    expect.hasAssertions();
     expect(model.buildEntityRequestExample({ name: 'Empty' })).toStrictEqual({});
   });
 });

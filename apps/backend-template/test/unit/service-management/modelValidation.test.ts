@@ -56,10 +56,12 @@ function messages(issues: Array<{ message: string }>) {
 
 describe('model validation engine (JUM-469)', () => {
   it('reports no issues for a clean model', () => {
+    expect.hasAssertions();
     expect(collectModelIssues(createState())).toStrictEqual([]);
   });
 
   it('flags empty and duplicate domain names', () => {
+    expect.hasAssertions();
     const issues = collectModelIssues(createState({
       domains: [
         { id: 'domain-1', name: '', entities: [] },
@@ -82,6 +84,7 @@ describe('model validation engine (JUM-469)', () => {
   });
 
   it('flags empty and duplicate entity names', () => {
+    expect.hasAssertions();
     const issues = collectModelIssues(createState({
       domains: [{
         id: 'domain-1',
@@ -104,6 +107,7 @@ describe('model validation engine (JUM-469)', () => {
   });
 
   it('flags empty and duplicated field names', () => {
+    expect.hasAssertions();
     const issues = collectModelIssues(createState({
       domains: [{
         id: 'domain-1',
@@ -125,6 +129,7 @@ describe('model validation engine (JUM-469)', () => {
   });
 
   it('flags array fields without itemsType', () => {
+    expect.hasAssertions();
     const field = normalizeField({ name: 'tags', type: 'array', itemsType: 'string' }, 1);
     field.itemsType = '';
     const issues = collectModelIssues(createState({
@@ -142,6 +147,7 @@ describe('model validation engine (JUM-469)', () => {
   });
 
   it('flags inverted length and range constraints', () => {
+    expect.hasAssertions();
     const issues = collectModelIssues(createState({
       domains: [{
         id: 'domain-1',
@@ -166,6 +172,7 @@ describe('model validation engine (JUM-469)', () => {
   });
 
   it('flags entities without a primary key', () => {
+    expect.hasAssertions();
     const issues = collectModelIssues(createState({
       domains: [{
         id: 'domain-1',
@@ -177,6 +184,7 @@ describe('model validation engine (JUM-469)', () => {
   });
 
   it('warns about fields that are required and nullable at once', () => {
+    expect.hasAssertions();
     const issues = collectModelIssues(createState({
       domains: [{
         id: 'domain-1',
@@ -198,6 +206,7 @@ describe('model validation engine (JUM-469)', () => {
   });
 
   it('warns about invariants on entities that are not aggregate roots', () => {
+    expect.hasAssertions();
     const issues = collectModelIssues(createState({
       domains: [{
         id: 'domain-1',
@@ -219,6 +228,7 @@ describe('model validation engine (JUM-469)', () => {
   });
 
   it('warns once per RBAC action without roles', () => {
+    expect.hasAssertions();
     const entity = createEntity();
     entity.meta.rbac = {
       list: { roles: [], tenantScoped: true },
@@ -239,6 +249,7 @@ describe('model validation engine (JUM-469)', () => {
   });
 
   it('flags contracts without name and warns about empty channels', () => {
+    expect.hasAssertions();
     const entity = createEntity();
     entity.meta.contracts = [
       {
@@ -261,6 +272,7 @@ describe('model validation engine (JUM-469)', () => {
   });
 
   it('warns about compositions with too few refs and orphan discriminators', () => {
+    expect.hasAssertions();
     const entity = createEntity();
     entity.meta.oasComposition = {
       mode: 'oneOf', refs: ['Only'], externalRefs: [], discriminator: ''
@@ -279,6 +291,7 @@ describe('model validation engine (JUM-469)', () => {
   });
 
   it('flags relationships with missing endpoints, invalid cardinality and half bends', () => {
+    expect.hasAssertions();
     const state = createState({
       relationships: [
         {
@@ -303,6 +316,7 @@ describe('model validation engine (JUM-469)', () => {
   });
 
   it('accepts relationships with both bend coordinates set', () => {
+    expect.hasAssertions();
     const state = createState({
       relationships: [{
         id: 'rel-1',
@@ -321,6 +335,7 @@ describe('model validation engine (JUM-469)', () => {
 
 describe('model validation severity contract (JUM-470)', () => {
   it('pins every issue type with its exact message, severity and focus entity, in engine order', () => {
+    expect.hasAssertions();
     const rbacEmpty = {
       list: { roles: [], tenantScoped: true },
       getById: { roles: [], tenantScoped: true },
@@ -428,6 +443,7 @@ describe('export quality gate boundary (JUM-470)', () => {
   // least one `severity === 'error'` issue. Both directions are pinned here:
   // a false negative ships a broken OAS, a false positive blocks a valid model.
   it('a model with only warnings stays below the blocking threshold', () => {
+    expect.hasAssertions();
     const entity = createEntity({
       fields: [
         normalizeField({ name: 'id', type: 'uuid', pk: true }, 0),
@@ -452,6 +468,7 @@ describe('export quality gate boundary (JUM-470)', () => {
   });
 
   it('a single error crosses the blocking threshold', () => {
+    expect.hasAssertions();
     const issues = collectModelIssues(createState({
       domains: [{
         id: 'domain-1',
@@ -467,6 +484,7 @@ describe('export quality gate boundary (JUM-470)', () => {
 
 describe('validation boundary inputs (JUM-470)', () => {
   it('treats a partial RBAC policy as empty roles instead of crashing', () => {
+    expect.hasAssertions();
     const entity = createEntity();
     entity.meta.rbac = { list: { roles: 'oops', tenantScoped: true } };
     const issues = collectModelIssues(createState({
@@ -483,6 +501,7 @@ describe('validation boundary inputs (JUM-470)', () => {
   });
 
   it('ignores non-array invariants and contracts and a missing oasComposition', () => {
+    expect.hasAssertions();
     const entity = createEntity();
     entity.meta = {
       aggregateRoot: false,
@@ -496,6 +515,7 @@ describe('validation boundary inputs (JUM-470)', () => {
   });
 
   it('validates an entity without meta against the installed default RBAC policy', () => {
+    expect.hasAssertions();
     const entity = {
       id: 'entity-1',
       name: 'Invoice',
@@ -507,6 +527,7 @@ describe('validation boundary inputs (JUM-470)', () => {
   });
 
   it('does not flag a well-formed array field or a two-ref composition', () => {
+    expect.hasAssertions();
     const entity = createEntity({
       fields: [
         normalizeField({ name: 'id', type: 'uuid', pk: true }, 0),
@@ -522,6 +543,7 @@ describe('validation boundary inputs (JUM-470)', () => {
   });
 
   it('does not flag equal or single-sided length and range constraints', () => {
+    expect.hasAssertions();
     const entity = createEntity({
       fields: [
         normalizeField({ name: 'id', type: 'uuid', pk: true }, 0),
@@ -541,6 +563,7 @@ describe('validation boundary inputs (JUM-470)', () => {
   });
 
   it('does not flag a relationship with no bend coordinates', () => {
+    expect.hasAssertions();
     const state = createState({
       relationships: [{
         id: 'rel-1',
@@ -557,6 +580,7 @@ describe('validation boundary inputs (JUM-470)', () => {
 
 describe('oas export gate collisions (JUM-474)', () => {
   it('reports an error when distinct entity names collapse to the same OAS schema name and route path', () => {
+    expect.hasAssertions();
     const issues = collectModelIssues({
       domains: [
         {
@@ -580,6 +604,7 @@ describe('oas export gate collisions (JUM-474)', () => {
   });
 
   it('reports an error when two domains share an entity route but not a schema name', () => {
+    expect.hasAssertions();
     // Same route path, different schema names: the exported document would
     // silently keep only one path item.
     const issues = collectModelIssues({
@@ -604,6 +629,7 @@ describe('oas export gate collisions (JUM-474)', () => {
   });
 
   it('does not flag entities whose names survive the OAS tokenisation intact', () => {
+    expect.hasAssertions();
     expect(collectModelIssues({
       domains: [
         {

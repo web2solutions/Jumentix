@@ -149,6 +149,7 @@ const PINNED_PAYLOAD = {
 
 describe('cana designer store — port identity (JUM-483)', () => {
   it('is an IDesignerStore that overrides all seven port methods', async () => {
+    expect.hasAssertions();
     const { client } = createCanaClientDouble();
     const store = new CanaDesignerStore({ client });
     expect(store).toBeInstanceOf(IDesignerStore);
@@ -162,6 +163,7 @@ describe('cana designer store — port identity (JUM-483)', () => {
   });
 
   it('pins the Requirement 126 Contract 2 record keys and database shape', () => {
+    expect.hasAssertions();
     expect(CANA_STATE_KEY).toBe('service-management.v1');
     expect(CANA_BASELINE_KEY).toBe('service-management.schema-baseline.v1');
     expect(CANA_DESIGNER_CLIENT_OPTIONS.name).toBe('service-management');
@@ -172,6 +174,7 @@ describe('cana designer store — port identity (JUM-483)', () => {
 
 describe('cana designer store — happy path and wire format', () => {
   it('reports empty — not lost, not unavailable — on a first run', async () => {
+    expect.hasAssertions();
     const { client } = createCanaClientDouble();
     const store = new CanaDesignerStore({ client });
     const result = await store.load();
@@ -182,6 +185,7 @@ describe('cana designer store — happy path and wire format', () => {
   });
 
   it('round-trips a save with the wire format unchanged', async () => {
+    expect.hasAssertions();
     const { client, records } = createCanaClientDouble();
     const store = new CanaDesignerStore({ client });
     const saveResult = await store.save(PINNED_PAYLOAD);
@@ -194,6 +198,7 @@ describe('cana designer store — happy path and wire format', () => {
   });
 
   it('round-trips the baseline under the pinned baseline key', async () => {
+    expect.hasAssertions();
     const { client, records } = createCanaClientDouble();
     const store = new CanaDesignerStore({ client });
     const snapshot = {
@@ -212,6 +217,7 @@ describe('cana designer store — happy path and wire format', () => {
   });
 
   it('clears the state document so a later load reports empty, independently of the baseline', async () => {
+    expect.hasAssertions();
     const { client } = createCanaClientDouble();
     const store = new CanaDesignerStore({ client });
     await store.save(PINNED_PAYLOAD);
@@ -225,6 +231,7 @@ describe('cana designer store — happy path and wire format', () => {
   });
 
   it('throws synchronously for an unserializable payload — the port’s programmer-error escape', () => {
+    expect.hasAssertions();
     const { client } = createCanaClientDouble();
     const store = new CanaDesignerStore({ client });
     const circular: Record<string, unknown> = {};
@@ -236,6 +243,7 @@ describe('cana designer store — happy path and wire format', () => {
 
 describe('cana designer store — unavailable (no usable IndexedDB / not wired)', () => {
   it('reports unavailable when Cana open rejects with the real Unavailable error', async () => {
+    expect.hasAssertions();
     const { client, script } = createCanaClientDouble();
     script.openError = canaError(
       'Unavailable',
@@ -250,6 +258,7 @@ describe('cana designer store — unavailable (no usable IndexedDB / not wired)'
   });
 
   it('never reports a save against an unavailable backend as persisted', async () => {
+    expect.hasAssertions();
     const { client, records, script } = createCanaClientDouble();
     script.openError = canaError('Unavailable', 'No usable IndexedDB in this environment.');
     const store = new CanaDesignerStore({ client });
@@ -262,6 +271,7 @@ describe('cana designer store — unavailable (no usable IndexedDB / not wired)'
   });
 
   it('reports unavailable when no client and no provider are wired — never a silent fallback', async () => {
+    expect.hasAssertions();
     const store = new CanaDesignerStore();
     const probe = await store.probe();
     expect(probe.status).toBe('unavailable');
@@ -271,6 +281,7 @@ describe('cana designer store — unavailable (no usable IndexedDB / not wired)'
   });
 
   it('does not cache a failed open — a later attempt retries and can recover', async () => {
+    expect.hasAssertions();
     const { client, script } = createCanaClientDouble();
     script.openError = canaError('UpgradeBlocked', 'Blocked by another connection.', {});
     const store = new CanaDesignerStore({ client });
@@ -283,6 +294,7 @@ describe('cana designer store — unavailable (no usable IndexedDB / not wired)'
 
 describe('cana designer store — lost (eviction and corruption), never empty', () => {
   it('reports lost — not empty — when the record is gone and Cana flags eviction', async () => {
+    expect.hasAssertions();
     const { client, script } = createCanaClientDouble();
     script.storageState = { evicted: true };
     const store = new CanaDesignerStore({ client });
@@ -295,6 +307,7 @@ describe('cana designer store — lost (eviction and corruption), never empty', 
   });
 
   it('loads a record found after an eviction open — re-saved data is real data', async () => {
+    expect.hasAssertions();
     const { client, script } = createCanaClientDouble({
       'service-management.v1': JSON.stringify(PINNED_PAYLOAD)
     });
@@ -306,6 +319,7 @@ describe('cana designer store — lost (eviction and corruption), never empty', 
   });
 
   it('reports lost when a stored payload is unreadable JSON', async () => {
+    expect.hasAssertions();
     const { client } = createCanaClientDouble({ 'service-management.v1': '{corrupted json' });
     const store = new CanaDesignerStore({ client });
     const result = await store.load();
@@ -314,6 +328,7 @@ describe('cana designer store — lost (eviction and corruption), never empty', 
   });
 
   it('maps a read rejected with the real Evicted error to lost', async () => {
+    expect.hasAssertions();
     const { client, script } = createCanaClientDouble();
     script.readError = canaError('Evicted', 'The database that held this data is gone.');
     const store = new CanaDesignerStore({ client });
@@ -321,6 +336,7 @@ describe('cana designer store — lost (eviction and corruption), never empty', 
   });
 
   it('maps an unclassified read failure to unavailable, not lost', async () => {
+    expect.hasAssertions();
     const { client, script } = createCanaClientDouble();
     script.readError = canaError('Internal', 'Engine fault.');
     const store = new CanaDesignerStore({ client });
@@ -332,6 +348,7 @@ describe('cana designer store — lost (eviction and corruption), never empty', 
 
 describe('cana designer store — quota and unknown outcomes, surfaced distinctly', () => {
   it('reports a quota-rejected write as unknown with a quota reason — never persisted', async () => {
+    expect.hasAssertions();
     const { client, records, script } = createCanaClientDouble();
     script.writeError = canaError('QuotaExceeded', 'The origin’s storage budget is exhausted.');
     const store = new CanaDesignerStore({ client });
@@ -343,6 +360,7 @@ describe('cana designer store — quota and unknown outcomes, surfaced distinctl
   });
 
   it('surfaces quota pressure at probe as available-with-diagnostic, distinct from hard failure', async () => {
+    expect.hasAssertions();
     const { client, script } = createCanaClientDouble();
     script.storageState = {
       persistent: false, nearQuota: true, usageBytes: 900, quotaBytes: 1000, evicted: false
@@ -354,6 +372,7 @@ describe('cana designer store — quota and unknown outcomes, surfaced distinctl
   });
 
   it('surfaces non-persistent storage at probe as a durability diagnostic', async () => {
+    expect.hasAssertions();
     const { client, script } = createCanaClientDouble();
     script.storageState = { persistent: false, nearQuota: false, evicted: false };
     const store = new CanaDesignerStore({ client });
@@ -363,6 +382,7 @@ describe('cana designer store — quota and unknown outcomes, surfaced distinctl
   });
 
   it('reports an indeterminate transaction as unknown, carrying the reconciliation handles', async () => {
+    expect.hasAssertions();
     const { client, script } = createCanaClientDouble();
     script.transactionOutcome = 'unknown';
     const store = new CanaDesignerStore({ client });
@@ -378,6 +398,7 @@ describe('cana designer store — quota and unknown outcomes, surfaced distinctl
   });
 
   it('tags an evicted-mid-write failure distinctly from a quota failure', async () => {
+    expect.hasAssertions();
     const { client, script } = createCanaClientDouble();
     script.writeError = canaError('Evicted', 'The database was reclaimed mid-session.');
     const store = new CanaDesignerStore({ client });
@@ -387,6 +408,7 @@ describe('cana designer store — quota and unknown outcomes, surfaced distinctl
   });
 
   it('tags unavailable and unknown-outcome write rejections distinctly', async () => {
+    expect.hasAssertions();
     const { client, script } = createCanaClientDouble();
     const store = new CanaDesignerStore({ client });
     script.writeError = canaError('Unavailable', 'The backend vanished mid-session.');
@@ -400,6 +422,7 @@ describe('cana designer store — quota and unknown outcomes, surfaced distinctl
   });
 
   it('applies the same write-failure mapping to clear and clearBaseline', async () => {
+    expect.hasAssertions();
     const { client, script } = createCanaClientDouble({ 'service-management.v1': '{}' });
     const store = new CanaDesignerStore({ client });
     script.writeError = canaError('QuotaExceeded', 'Budget exhausted.');
@@ -410,6 +433,7 @@ describe('cana designer store — quota and unknown outcomes, surfaced distinctl
   });
 
   it('still probes available when the durability state cannot be read', async () => {
+    expect.hasAssertions();
     const { client } = createCanaClientDouble();
     const throwing = {
       ...client,
@@ -426,6 +450,7 @@ describe('cana designer store — quota and unknown outcomes, surfaced distinctl
 
 describe('designer store factory — Cana is the sole store (JUM-484)', () => {
   it('always builds the Cana adapter — there is no driver selection left', () => {
+    expect.hasAssertions();
     // JUM-484 retired the transitional LocalStorageDesignerStore and removed
     // every localStorage path: no default, no explicit argument, no ambient
     // global, no URL parameter (decision 2026-07-29 — no fallback at all).
@@ -433,6 +458,7 @@ describe('designer store factory — Cana is the sole store (JUM-484)', () => {
   });
 
   it('ignores the retired selection inputs rather than honouring them', () => {
+    expect.hasAssertions();
     const globalKey = 'JUMENTIX_DESIGNER_STORE_DRIVER';
     try {
       (globalThis as Record<string, unknown>)[globalKey] = 'localstorage';
@@ -452,6 +478,7 @@ describe('designer store factory — Cana is the sole store (JUM-484)', () => {
   });
 
   it('builds the Cana adapter over an injected CanaDatabaseClient-shaped factory', async () => {
+    expect.hasAssertions();
     const { client, records } = createCanaClientDouble();
     const store = createDesignerStore({
       // The injection convention mirrors buildDatabaseClientCompilers: the
@@ -465,6 +492,7 @@ describe('designer store factory — Cana is the sole store (JUM-484)', () => {
   });
 
   it('builds the Cana adapter over a bare injected client as well', async () => {
+    expect.hasAssertions();
     const { client } = createCanaClientDouble();
     const store = createDesignerStore({ indexedDbClient: () => client });
     expect(store).toBeInstanceOf(CanaDesignerStore);
@@ -472,12 +500,14 @@ describe('designer store factory — Cana is the sole store (JUM-484)', () => {
   });
 
   it('uses the default module specifier for the lazy provider', () => {
+    expect.hasAssertions();
     expect(CANA_MODULE_SPECIFIER).toBe('@jumentix/cana');
   });
 });
 
 describe('cana designer store — real Cana module detection (Requirement 109)', () => {
   it('resolves the real @jumentix/cana module with the adapter entry points', () => {
+    expect.hasAssertions();
     expect(typeof createCanaDatabaseClient).toBe('function');
     expect(typeof canaError).toBe('function');
     const database = createCanaDatabaseClient(CANA_DESIGNER_CLIENT_OPTIONS);
@@ -489,6 +519,7 @@ describe('cana designer store — real Cana module detection (Requirement 109)',
   });
 
   it('drives the default provider against the real engine: no indexedDB in Node → unavailable', async () => {
+    expect.hasAssertions();
     // The REAL Cana client is built and opened here. In Node there is no
     // `indexedDB` global, so the engine's own terminal `Unavailable` rejection
     // must flow through the real adapter — a fake engine cannot produce it.

@@ -184,7 +184,8 @@ describe('test integrity check (Requirements 134 and 135)', () => {
     expect(validateTestIntegrity(repoRoot)).toStrictEqual([]);
     // The ratchet: these are the findings as measured today. Each entry names
     // the issue that will remove it, and a new violation fails immediately.
-    expect(ACCEPTED_NO_ASSERTIONS).toHaveLength(31);
+    // JUM-677 emptied this one by declaring assertions in all 31 files.
+    expect(ACCEPTED_NO_ASSERTIONS).toStrictEqual([]);
     expect(ACCEPTED_MOCK_ONLY).toHaveLength(14);
     // JUM-679 emptied this one by fixing all five files.
     expect(ACCEPTED_SLEEPS).toStrictEqual([]);
