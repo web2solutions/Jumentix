@@ -43,7 +43,7 @@ Without a shared base, each DB adapter reinvented connect/disconnect and options
 bun add @jumentix/external-persistence-core
 ```
 
-### 2. Primeiro sucesso (<30 min)
+### 2. Primeiro sucesso (menos de 30 min)
 
 ```ts
 import { BaseExternalDataRepository } from '@jumentix/external-persistence-core';

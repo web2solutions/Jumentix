@@ -43,7 +43,7 @@ gRPC clients need the proto + envelope conventions; this package standardizes th
 bun add @jumentix/sdk-grpc-client
 ```
 
-### 2. Primeiro sucesso (<30 min)
+### 2. Primeiro sucesso (menos de 30 min)
 
 ```ts
 import { GrpcApiClient } from '@jumentix/sdk-grpc-client';
