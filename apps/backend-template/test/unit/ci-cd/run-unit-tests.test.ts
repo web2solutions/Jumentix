@@ -19,6 +19,7 @@ const repoRoot = path.resolve(__dirname, '../../../../..');
 const {
   partitionUnitSuites,
   runReportOnlyUnit,
+  runScriptedUnit,
   runUnitTests
 } = require(path.join(repoRoot, 'ci-cd', 'run-unit-tests.js'));
 
@@ -36,6 +37,75 @@ const manifest = {
   ],
   quarantine: [{ path: 'apps/a/test/unit/flaky.test.ts', issue: 'JUM-1', reason: 'flaky' }]
 };
+
+/**
+ * JUM-680 — a suite that names its own script is run by that script.
+ *
+ * The website's React suites need jsdom and the website's own Jest config.
+ * Handing their paths to `bun test` does not run them under a different runner;
+ * it fails to run them at all, which is how three of them sat broken while the
+ * gate stayed green — they were not in the manifest to begin with.
+ */
+describe('scripted unit suites (JUM-680)', () => {
+  const scripted = {
+    suites: [
+      { path: 'apps/a/test/unit/plain.test.ts', type: 'unit', runner: 'bun' },
+      {
+        path: 'apps/jumentix-website/components/X.test.tsx',
+        type: 'unit',
+        runner: 'bun',
+        script: 'website:test:unit'
+      },
+      {
+        path: 'apps/jumentix-website/components/Y.test.tsx',
+        type: 'unit',
+        runner: 'bun',
+        script: 'website:test:unit'
+      }
+    ],
+    quarantine: []
+  };
+
+  it('keeps a scripted suite out of the path lists', () => {
+    expect.hasAssertions();
+
+    const { bunSuites, nodeSuites, scripts } = partitionUnitSuites(scripted, local);
+
+    expect(bunSuites).toStrictEqual(['apps/a/test/unit/plain.test.ts']);
+    expect(nodeSuites).toStrictEqual([]);
+    // Two suites, one script: the script runs once, not once per file.
+    expect(scripts).toStrictEqual(['website:test:unit']);
+  });
+
+  it('runs each script once and gates on its status', () => {
+    expect.hasAssertions();
+
+    const calls: string[][] = [];
+    const spawn = (cmd: string, args: string[]) => {
+      calls.push([cmd, ...args]);
+      return { status: 0 } as never;
+    };
+
+    expect(runScriptedUnit(['website:test:unit'], { spawn })).toBe(0);
+    expect(calls).toStrictEqual([['bun', 'run', 'website:test:unit']]);
+  });
+
+  it('fails the gate when a scripted suite fails', () => {
+    expect.hasAssertions();
+
+    // The point of mapping them at all. A scripted suite that fails must fail
+    // the build, or it is invisible in a second way.
+    const spawn = () => ({ status: 1 }) as never;
+
+    expect(runScriptedUnit(['website:test:unit'], { spawn })).toBe(1);
+  });
+
+  it('does nothing when no suite declares a script', () => {
+    expect.hasAssertions();
+
+    expect(runScriptedUnit([], {})).toBe(0);
+  });
+});
 
 describe('partitionUnitSuites', () => {
   it('keeps a quarantined suite out of the gating lists', () => {

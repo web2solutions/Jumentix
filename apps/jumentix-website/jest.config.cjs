@@ -9,6 +9,14 @@ const customJestConfig = {
   moduleNameMapper: {
     '^@/components/(.*)$': '<rootDir>/components/$1',
     '^@/pages/(.*)$': '<rootDir>/pages/$1',
+    // JUM-680: resolve the workspace package from source, not from `dist`.
+    //
+    // `@jumentix/cana`'s `main` is `dist/index.js`, so a suite importing it
+    // passes on a machine that happens to have built the package and fails on a
+    // clean checkout — which is exactly what CI reported once these suites
+    // started running there. Mapping to the source removes the dependency on
+    // build order for the tests; the site's own build still consumes `dist`.
+    '^@jumentix/cana$': '<rootDir>/../../packages/cana/src/index.ts',
   },
   testEnvironment: 'jest-environment-jsdom',
   // JUM-158: the route-discovery suite is ESM (.mjs) because the script it

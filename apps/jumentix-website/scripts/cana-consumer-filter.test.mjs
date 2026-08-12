@@ -5,6 +5,7 @@ import {
 
 describe('cana consumer filter', () => {
   test('strips workers + related and appends playgrounds', () => {
+    expect.hasAssertions();
     const input = `# Guide
 
 ## Table of contents

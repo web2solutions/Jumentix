@@ -4,6 +4,7 @@ import { listDocsSnippets } from './catalogs';
 
 describe('DocsPlayground catalogs', () => {
   it('exposes getting-started for each runtime', () => {
+    expect.hasAssertions();
     for (const runtime of [
       'cana',
       'designer-core',
@@ -18,6 +19,7 @@ describe('DocsPlayground catalogs', () => {
   });
 
   it('designer-core getting-started uses real sample/normalize/collect APIs', () => {
+    expect.hasAssertions();
     const snippet = listDocsSnippets('designer-core').find((s) => s.id === 'getting-started');
     expect(snippet?.code).toContain('buildSampleModelPayload');
     expect(snippet?.code).toContain('normalizeStatePayload');
@@ -28,6 +30,7 @@ describe('DocsPlayground catalogs', () => {
 
 describe('DocsPlayground', () => {
   it('renders Run/Reset and keeps agent code as hidden markdown for cana', () => {
+    expect.hasAssertions();
     render(<DocsPlayground runtime="cana" id="getting-started" />);
     expect(screen.getByTestId('docs-playground-cana-getting-started')).toBeInTheDocument();
     expect(screen.getByTestId('docs-playground-cana-getting-started-run')).toBeInTheDocument();

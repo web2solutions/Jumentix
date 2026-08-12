@@ -85,6 +85,7 @@
     "website:test:prepublish": "bun run --filter @jumentix/website test:prepublish",
     "website:test:unit": "bun run --filter @jumentix/website test:unit",
     "website:test:cypress": "bun run --filter @jumentix/website test:cypress",
+    "website:test:routes": "bun run --filter @jumentix/website test:routes",
     "website:test:quality": "bun run --filter @jumentix/website test:quality",
     "website:vercel:link": "bun x vercel link --cwd apps/jumentix-website --project jumentix-website --yes",
     "website:vercel:pull:preview": "bun x vercel pull --cwd apps/jumentix-website --environment=preview --yes",

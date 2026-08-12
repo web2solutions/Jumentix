@@ -142,7 +142,13 @@ function walk(dir, out = []) {
       walk(absolute, out);
       continue;
     }
-    if (/\.test\.(ts|tsx|js)$/.test(entry.name) && absolute.includes(`${path.sep}test${path.sep}`)) {
+    // Suites live under `test/` in the backend and the packages, and beside the
+    // component they cover in the website (JUM-680). Both are suites; only the
+    // convention differs, and a convention is not a reason to be unchecked.
+    const isSuite = /\.test\.(ts|tsx|js|mjs)$/.test(entry.name);
+    const underTestDir = absolute.includes(`${path.sep}test${path.sep}`);
+    const inWebsite = absolute.includes(`${path.sep}jumentix-website${path.sep}`);
+    if (isSuite && (underTestDir || inWebsite)) {
       out.push(absolute);
     }
   }
