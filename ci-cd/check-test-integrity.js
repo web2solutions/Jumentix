@@ -29,8 +29,19 @@ const SKIP_DIRECTORIES = new Set(['node_modules', 'dist', 'build', 'coverage', '
 /** Declares that the test asserts. */
 const ASSERTION_DECLARATIONS = /expect\.hasAssertions\(\)|expect\.assertions\(/;
 
-/** Asserts on something other than a call. */
-const STATE_ASSERTIONS = /\.(toBe|toEqual|toStrictEqual|toMatchObject|toContain|toHaveLength|toThrow|toBeTruthy|toBeFalsy|toBeDefined|toBeUndefined|toBeNull|toBeGreaterThan|toBeLessThan|toMatchSnapshot|resolves|rejects)\b/;
+/**
+ * Asserts on content rather than merely on the fact of a call.
+ *
+ * `toHaveBeenCalledWith` belongs here, and leaving it out was a measurement
+ * error (JUM-678). It asserts the argument — for a handler whose whole effect
+ * is `res.json(payload)`, the argument *is* the effect. The first sweep counted
+ * fourteen suites as "mock-only" on the strength of the substring
+ * `toHaveBeenCalled`; every one of them was in fact asserting a payload.
+ *
+ * What stays reportable is the bare form: `toHaveBeenCalled()` and
+ * `toHaveBeenCalledTimes(n)` say a function ran and nothing about what it did.
+ */
+const STATE_ASSERTIONS = /\.(toBe|toEqual|toStrictEqual|toMatchObject|toContain|toHaveLength|toThrow|toBeTruthy|toBeFalsy|toBeDefined|toBeUndefined|toBeNull|toBeGreaterThan|toBeLessThan|toMatchSnapshot|toHaveBeenCalledWith|toHaveBeenLastCalledWith|resolves|rejects)\b/;
 
 /** `setTimeout(resolve, 40)` and friends: a sleep, not a timeout. */
 const FIXED_SLEEP = /setTimeout\(\s*(?:resolve|\(\)\s*=>\s*resolve\([^)]*\))\s*,\s*(\d+)/g;
@@ -46,27 +57,15 @@ const FIXED_SLEEP = /setTimeout\(\s*(?:resolve|\(\)\s*=>\s*resolve\([^)]*\))\s*,
 const ACCEPTED_SLEEPS = Object.freeze([]);
 
 /**
- * Suites that assert only on mocks today, each owned by JUM-678.
+ * Suites that assert only on mocks.
  *
- * A ratchet, not an exemption: these are the findings as measured, and a new
- * suite that asserts only on calls fails immediately.
+ * **Empty since JUM-678, and not because they were fixed.** The fourteen
+ * entries were a measurement error: the rule matched the substring
+ * `toHaveBeenCalled`, so `toHaveBeenCalledWith(payload)` counted as asserting
+ * nothing. It asserts the payload. The rule is corrected above; the register is
+ * empty because there was never anything in it.
  */
-const ACCEPTED_MOCK_ONLY = Object.freeze([
-  { file: 'apps/backend-template/test/integration/Adonis-JS/get.localhost.test.ts', issue: 'JUM-678' },
-  { file: 'apps/backend-template/test/integration/Cloudflare-Workers/get.localhost.test.ts', issue: 'JUM-678' },
-  { file: 'apps/backend-template/test/integration/Derby-JS/get.localhost.test.ts', issue: 'JUM-678' },
-  { file: 'apps/backend-template/test/integration/Express/get.localhost.test.ts', issue: 'JUM-678' },
-  { file: 'apps/backend-template/test/integration/Feathers/get.localhost.test.ts', issue: 'JUM-678' },
-  { file: 'apps/backend-template/test/integration/LoopBack/get.localhost.test.ts', issue: 'JUM-678' },
-  { file: 'apps/backend-template/test/integration/Sails-JS/get.localhost.test.ts', issue: 'JUM-678' },
-  { file: 'apps/backend-template/test/integration/Total-JS/get.localhost.test.ts', issue: 'JUM-678' },
-  { file: 'apps/backend-template/test/integration/Vercel-Functions/get.localhost.test.ts', issue: 'JUM-678' },
-  { file: 'apps/backend-template/test/unit/infra/events/InMemoryEventBus.test.ts', issue: 'JUM-678' },
-  { file: 'apps/backend-template/test/unit/interface/CLI/index.test.ts', issue: 'JUM-678' },
-  { file: 'apps/backend-template/test/unit/interface/WebSocket/adapters/clusterAdapter.lifecycle.test.ts', issue: 'JUM-678' },
-  { file: 'apps/backend-template/test/unit/interface/WebSocket/adapters/redisStreamsAdapter.lifecycle.test.ts', issue: 'JUM-678' },
-  { file: 'apps/backend-template/test/unit/modules/Users/application/service/UserProviderLocal.test.ts', issue: 'JUM-678' }
-]);
+const ACCEPTED_MOCK_ONLY = Object.freeze([]);
 
 /**
  * Suites with no assertion declaration.
