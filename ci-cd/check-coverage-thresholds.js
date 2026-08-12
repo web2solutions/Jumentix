@@ -47,7 +47,12 @@ const jestReportPath = path.join(repoRoot, 'coverage', 'jest', 'coverage-final.j
  */
 const THRESHOLDS = {
   statements: 99,
-  branches: 90,
+  // JUM-681: 99, like the other three. It was 90, and a round number ten points
+  // below its neighbours is not a threshold — it is a place where the failure
+  // paths were allowed to go unmeasured, which is where every defect this
+  // repository has found recently lived. The measured gap is carried as a
+  // dated, enumerated floor below, which can only be held or improved.
+  branches: 99,
   functions: 99,
   lines: 99
 };
@@ -78,7 +83,43 @@ const THRESHOLDS = {
  * browser, which is JUM-417.
  */
 const ACCEPTED_BELOW_THRESHOLD = {
-  // Empty, and that is the state to keep it in.
+  /**
+   * JUM-681 — branches, measured rather than assumed.
+   *
+   * Two numbers, and the difference matters. `bun run test:coverage` — unit
+   * suites and packages only — reports **4373 of 4799 branches, 91.12%**. The
+   * report this checker actually reads is the merged one, browser coverage
+   * included, and that is **93.20%**. The floor is the merged figure, because a
+   * floor set from the smaller run would leave two points of slack and ratchet
+   * nothing.
+   *
+   * 426 branches uncovered across 95 files in the unit run, and the shape of
+   * the gap is the argument for a floor rather than a lowered threshold:
+   *
+   *   41  packages/message-mediator/src/RabbitMqMessageMediatorAdapter.ts
+   *   25  apps/backend-template/src/interface/CLI/subapps/entityModelManager.ts
+   *   23  packages/message-mediator/src/BullMqMessageMediatorAdapter.ts
+   *   22  apps/service-management/src/state/catalogSyncClient.js
+   *   18  packages/designer-core/src/packages/packageVersioning.js
+   *
+   * The two broker adapters alone are 64 of the 426, and they are reconnect and
+   * error paths that no unit run can reach — they belong to the integration
+   * suites that run against real RabbitMQ and Redis, whose coverage this report
+   * does not include. Raising the threshold without that would fail the build
+   * for branches the run is not able to execute.
+   *
+   * So: the threshold is the real one, and this floor is the debt, dated and
+   * enumerated. It fails below 91.12 and it fails once the metric reaches 99
+   * with the entry still here, which is what stops it becoming a lowered bar.
+   */
+  branches: {
+    floor: 93.2,
+    issue: 'JUM-681',
+    since: '2026-08-12',
+    reason: 'Broker reconnect and error paths need the integration suites; their coverage is not merged into this report.'
+  }
+
+  // Empty otherwise, and that is the state to keep it in.
   //
   // One entry lived here for a few hours on 2026-07-31: `statements` at a floor
   // of 98.99% after the coverage scope widened to include `packages/cana/src`

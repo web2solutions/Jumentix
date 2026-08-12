@@ -4,7 +4,8 @@
 
 ## All Changes
 
-- 2026-08-12 fix(ci): correct the mock-only rule, and make the Express suite integrate (JUM-678) - Eduardo A.
+- 2026-08-12 fix(ci): make the branch threshold a real one, with the gap as a dated floor (JUM-681) - Eduardo A.
+- 2026-08-12 fix(ci): correct the mock-only rule, and make the Express suite integrate (JUM-678) (#199) - Eduardo A.
 - 2026-08-12 test: declare assertions in the 31 suites that did not (JUM-677) (#197) - Eduardo A.
 - 2026-08-12 test: wait on the event, not the clock (JUM-679) (#195) - Eduardo A.
 - 2026-08-12 test(website): bring the website's suites under the test map (JUM-680) (#194) - Eduardo A.

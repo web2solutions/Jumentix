@@ -81,7 +81,8 @@ describe('check-coverage-thresholds', () => {
     // an exception: this asserts the rule, not today's concession.
     const { failures } = coverageGuard.validateCoverage(
       coverageGuard.summarize(reportWith({})),
-      { branches: 90, functions: 99, lines: 99 }
+      { branches: 90, functions: 99, lines: 99 },
+      {}
     );
 
     expect(failures).toStrictEqual([]);
@@ -93,7 +94,8 @@ describe('check-coverage-thresholds', () => {
     // would catch it.
     const { failures } = coverageGuard.validateCoverage(
       coverageGuard.summarize(reportWith({ brf: 100, brh: 89 })),
-      { branches: 90, functions: 99, lines: 99 }
+      { branches: 90, functions: 99, lines: 99 },
+      {}
     );
 
     expect(failures).toHaveLength(1);
@@ -130,7 +132,8 @@ describe('check-coverage-thresholds', () => {
 
     const { failures } = coverageGuard.validateCoverage(
       coverageGuard.summarize(withoutBranches),
-      { branches: 90, functions: 99, lines: 99 }
+      { branches: 90, functions: 99, lines: 99 },
+      {}
     );
 
     expect(failures).toHaveLength(1);
@@ -149,9 +152,13 @@ describe('check-coverage-thresholds', () => {
     expect.hasAssertions();
     // Pinned so the migration off Jest cannot relax a number in passing.
     // Lowering any of these is a governance decision under Requirements 020/063.
+    // JUM-681 raised branches from 90 to 99. The measured gap moved into
+    // `ACCEPTED_BELOW_THRESHOLD` as a dated floor, which can only be held or
+    // improved — a threshold ten points below its neighbours was not a
+    // threshold, it was where the failure paths went unmeasured.
     expect(coverageGuard.THRESHOLDS).toStrictEqual({
       statements: 99,
-      branches: 90,
+      branches: 99,
       functions: 99,
       lines: 99
     });
@@ -199,7 +206,10 @@ describe('check-coverage-thresholds CLI', () => {
     const result = runMain(reportWith({ brf: 100, brh: 50 }));
 
     expect(result.thrown?.message).toBe('exit:1');
-    expect(result.errors).toContain('branches: 50.00% is below the required 90%');
+    // JUM-681: branches is under a tracked floor, so the message names the
+    // floor and the exception rather than the bare threshold. That is the more
+    // useful failure — it says how far it may fall and who owns the debt.
+    expect(result.errors).toContain('branches: 50.00% is below the accepted floor of 93.2% (JUM-681)');
   });
 
   it('exits non-zero when the report is absent, rather than treating it as a pass', () => {
@@ -218,10 +228,11 @@ describe('check-coverage-thresholds CLI', () => {
 
     expect(result.thrown).toBeNull();
     expect(result.logs).toContain('branches 95.00%');
-    // No live exception, so no note. When one is recorded the summary names it,
-    // so a reader is never shown a number without being told it sits under a
-    // tracked concession.
-    expect(result.logs).not.toContain('under JUM-');
+    // JUM-681 recorded the first live exception, and this is the behaviour the
+    // previous version of this test described but could not exercise: a reader
+    // is never shown the number without being told it sits under a tracked
+    // concession, and who owns it.
+    expect(result.logs).toContain('under JUM-681');
   });
 });
 
