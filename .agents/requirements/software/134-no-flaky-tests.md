@@ -61,7 +61,7 @@ pass, certify a fake rather than the real engine.
 - Applies to every suite under `apps/**/test` and `packages/*/test`, and to the
   Cypress suites.
 - Partly machine-verifiable: `ci-cd/check-test-integrity.js` catches the
-  mechanical patterns — fixed sleeps, unseeded authentication, unmapped suites.
-  Rules `1` and `5` are judgement and are stated as attestation, in the manner
-  of `130`.
+  mechanical patterns — fixed sleeps and unmapped suites — and **runs inside
+  `ci:gate` since JUM-683**, with every register empty. Rules `1` and `5` are
+  judgement and are stated as attestation, in the manner of `130`.
 - Complements requirements `112`, `115`, `130`, `135`.

@@ -4,7 +4,14 @@
  *
  * Judgement cannot be gated. These four conditions can:
  *
- *  1. A suite with no assertion declaration. A test whose `expect` never runs —
+ *  1. A suite with no assertion declaration — **per file, not per test**. That
+ *     limit is worth knowing: removing one `expect.hasAssertions()` from a file
+ *     that still has others does not trip this, as the JUM-683 verification
+ *     showed. Catching it per test needs a parse rather than a scan, and is
+ *     JUM-702. What this does catch is a whole suite arriving with none, which
+ *     is how all 31 of them got in.
+ *
+ *     A test whose `expect` never runs —
  *     inside an unentered branch, after an unawaited promise — passes. 38 of
  *     296 suites had none.
  *  2. A suite that asserts only on mocks. `toHaveBeenCalled` says a function
@@ -18,6 +25,14 @@
  * Registers, not exemptions: an entry names the issue that owns it, and a
  * register entry whose file no longer exists is itself a failure, because a
  * stale exemption is how a register stops meaning anything.
+ *
+ * **All three registers are empty (JUM-683), and this check is now in
+ * `ci:gate`.** They are kept rather than deleted, which is a deliberate
+ * departure from the plan that said to remove the machinery: the injectable
+ * options are what let the suite exercise every failure path, and the
+ * stale-entry checks are what will make the *next* exception as auditable as
+ * these were. A mechanism with nothing in it costs a few lines; re-inventing
+ * one under pressure costs the audit trail.
  */
 const fs = require('fs');
 const path = require('path');
