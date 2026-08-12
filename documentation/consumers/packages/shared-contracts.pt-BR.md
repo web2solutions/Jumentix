@@ -43,7 +43,7 @@ Each SDK copied walk-up logic to find `spec/` files; copies drifted and failed d
 bun add @jumentix/shared-contracts
 ```
 
-### 2. Primeiro sucesso (<30 min)
+### 2. Primeiro sucesso (menos de 30 min)
 
 ```ts
 import { loadCanonicalSpec } from '@jumentix/shared-contracts';

@@ -43,7 +43,7 @@ Low-level runtime utilities were duplicated across adapters.
 Consumed via backend-template / monorepo composition.
 ```
 
-### 2. Primeiro sucesso (<30 min)
+### 2. Primeiro sucesso (menos de 30 min)
 
 ```ts
 // Juniors rarely import this directly.

@@ -43,7 +43,7 @@ Without shared ports, every adapter invents incompatible method names and paging
 bun add @jumentix/persistence-contracts
 ```
 
-### 2. Primeiro sucesso (<30 min)
+### 2. Primeiro sucesso (menos de 30 min)
 
 ```ts
 import type { IStore } from '@jumentix/persistence-contracts';

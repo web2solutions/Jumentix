@@ -43,7 +43,7 @@ Each service copied bootstrap glue. Drift caused subtle env bugs. This package c
 Used from the monorepo/backend-template composition — prefer following the REST guide first.
 ```
 
-### 2. First success (<30 min)
+### 2. First success (under 30 min)
 
 ```ts
 // At the service composition root (backend-template pattern):

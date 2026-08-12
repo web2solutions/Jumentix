@@ -42,7 +42,7 @@ Every consumer page follows this structure (EN and pt-BR):
 2. **Why it exists** — problem it solves for a junior team  
 3. **Prerequisites** — tools, prior docs pages, runtime assumptions  
 4. **Glossary** — terms used on this page (or links to prior definitions)  
-5. **Numbered steps** — install → first success (<30 min) → core workflows → full surface  
+5. **Numbered steps** — install → first success (under 30 min) → core workflows → full surface  
 6. **Runnable / static example** — static code block always; `<DocsPlayground>` when Tier A/B  
 7. **Common errors** — symptoms → cause → fix → how to verify success  
 8. **Junior checklist (“I can …”)** — 3–7 measurable outcomes  
@@ -271,7 +271,7 @@ A milestone is **Done** only when:
 
 Este plano exige documentação **do zero ao uso pleno**, com **aceitação verificada** por página:
 
-- Começo absoluto → sucesso em <30 min → fluxos centrais → cobertura da superfície pública necessária ao trabalho real  
+- Começo absoluto → sucesso em menos de 30 min → fluxos centrais → cobertura da superfície pública necessária ao trabalho real  
 - Checklist “Eu consigo …” + exemplos estáticos + playground verde (quando a Tier permitir) + evidência Cypress/smoke  
 - EN e pt-BR em paridade; zero links de GitHub no corpo do conteúdo  
 - 22 pacotes + 3 apps inventariados; a maioria ainda está em profundidade rasa (L0–L1)  

@@ -43,7 +43,7 @@ Ad-hoc socket emit/ack code drifts from the AsyncAPI contract.
 bun add @jumentix/sdk-websocket-client
 ```
 
-### 2. Primeiro sucesso (<30 min)
+### 2. Primeiro sucesso (menos de 30 min)
 
 ```ts
 import { WebSocketApiClient } from '@jumentix/sdk-websocket-client';

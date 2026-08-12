@@ -738,7 +738,7 @@ Headings:
 - Glossary
 - Numbered steps
 - 1. Install
-- 2. First success (<30 min)
+- 2. First success (under 30 min)
 - 3. Core workflows
 - 1. Point at host:port
 - 2. Send envelope
@@ -765,7 +765,7 @@ Headings:
 - Glossary
 - Numbered steps
 - 1. Install
-- 2. First success (<30 min)
+- 2. First success (under 30 min)
 - 3. Core workflows
 - 1. Connect with env options
 - 2. Run a repository operation
@@ -792,7 +792,7 @@ Headings:
 - Glossary
 - Numbered steps
 - 1. Install
-- 2. First success (<30 min)
+- 2. First success (under 30 min)
 - 3. Core workflows
 - 1. Create stores from a client
 - 2. Inject into use-cases
@@ -819,7 +819,7 @@ Headings:
 - Glossary
 - Numbered steps
 - 1. Install
-- 2. First success (<30 min)
+- 2. First success (under 30 min)
 - 3. Core workflows
 - 1. Read connection options
 - 2. Extend base for a new driver
@@ -862,7 +862,7 @@ Headings:
 - Glossary
 - Numbered steps
 - 1. Install
-- 2. First success (<30 min)
+- 2. First success (under 30 min)
 - 3. Core workflows
 - 1. Type a use-case port
 - 2. Keep adapters behind the port
@@ -935,7 +935,7 @@ Headings:
 - Glossary
 - Numbered steps
 - 1. Install
-- 2. First success (<30 min)
+- 2. First success (under 30 min)
 - 3. Core workflows
 - 1. Construct with base URL
 - 2. Call by operationId
@@ -962,7 +962,7 @@ Headings:
 - Glossary
 - Numbered steps
 - 1. Install
-- 2. First success (<30 min)
+- 2. First success (under 30 min)
 - 3. Core workflows
 - 1. Follow REST guide first
 - 2. Read with bootstrap
@@ -989,7 +989,7 @@ Headings:
 - Glossary
 - Numbered steps
 - 1. Install
-- 2. First success (<30 min)
+- 2. First success (under 30 min)
 - 3. Core workflows
 - 1. Read driver from env
 - 2. Compile once at boot
@@ -1100,7 +1100,7 @@ Headings:
 - Glossary
 - Numbered steps
 - 1. Install
-- 2. First success (<30 min)
+- 2. First success (under 30 min)
 - 3. Core workflows
 - 1. Load OpenAPI for REST
 - 2. Load AsyncAPI for realtime
@@ -1127,7 +1127,7 @@ Headings:
 - Glossary
 - Numbered steps
 - 1. Install
-- 2. First success (<30 min)
+- 2. First success (under 30 min)
 - 3. Core workflows
 - 1. Read env contracts
 - 2. Compile adapters once
@@ -1154,7 +1154,7 @@ Headings:
 - Glossary
 - Numbered steps
 - 1. Install
-- 2. First success (<30 min)
+- 2. First success (under 30 min)
 - 3. Core workflows
 - 1. Connect
 - 2. Request with operationId

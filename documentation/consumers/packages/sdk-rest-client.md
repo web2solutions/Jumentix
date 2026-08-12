@@ -43,7 +43,7 @@ Hand-written fetch URLs drift from the OpenAPI contract. This client stays align
 bun add @jumentix/sdk-rest-client
 ```
 
-### 2. First success (<30 min)
+### 2. First success (under 30 min)
 
 ```ts
 import { RestApiClient } from '@jumentix/sdk-rest-client';
