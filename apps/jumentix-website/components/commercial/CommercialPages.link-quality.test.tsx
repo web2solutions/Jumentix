@@ -74,27 +74,30 @@ describe('Link quality', () => {
   describe.each(pages)('%s page', (page) => {
     describe.each(locales)('%s locale', (locale) => {
       it('has no invalid link patterns', () => {
+    expect.hasAssertions();
         render(<CommercialPage locale={locale} page={page} />);
         const html = screen.getByRole('main').innerHTML;
         const internalLinks = extractInternalLinks(html);
 
-        for (const link of internalLinks) {
-          const invalid = hasInvalidPattern(link);
-          expect(invalid).toBeNull();
-        }
+        // JUM-677: asserted as a set, not in a loop. A page with no internal
+        // links — `contact` is one — never entered the loop, so the test
+        // asserted nothing and passed. The declaration above turned that from
+        // a silent pass into a failure; this is the fix.
+        expect(internalLinks.filter((link) => hasInvalidPattern(link) !== null))
+          .toStrictEqual([]);
       });
 
       it('all internal links start with /', () => {
+    expect.hasAssertions();
         render(<CommercialPage locale={locale} page={page} />);
         const html = screen.getByRole('main').innerHTML;
         const internalLinks = extractInternalLinks(html);
 
-        for (const link of internalLinks) {
-          expect(link).toMatch(/^\//);
-        }
+        expect(internalLinks.filter((link) => !link.startsWith('/'))).toStrictEqual([]);
       });
 
       it('has no duplicate internal hrefs in same page (excluding known duplicates)', () => {
+    expect.hasAssertions();
         render(<CommercialPage locale={locale} page={page} />);
         const html = screen.getByRole('main').innerHTML;
         const internalLinks = extractInternalLinks(html);
@@ -122,60 +125,68 @@ describe('Link quality', () => {
   describe.each(useCases)('%s use case page', (name) => {
     describe.each(locales)('%s locale', (locale) => {
       it('has no invalid link patterns', () => {
+    expect.hasAssertions();
         render(<CommercialUseCasePage locale={locale} name={name} />);
         const html = screen.getByRole('main').innerHTML;
         const internalLinks = extractInternalLinks(html);
 
-        for (const link of internalLinks) {
-          const invalid = hasInvalidPattern(link);
-          expect(invalid).toBeNull();
-        }
+        // JUM-677: asserted as a set, not in a loop. A page with no internal
+        // links — `contact` is one — never entered the loop, so the test
+        // asserted nothing and passed. The declaration above turned that from
+        // a silent pass into a failure; this is the fix.
+        expect(internalLinks.filter((link) => hasInvalidPattern(link) !== null))
+          .toStrictEqual([]);
       });
 
       it('all internal links start with /', () => {
+    expect.hasAssertions();
         render(<CommercialUseCasePage locale={locale} name={name} />);
         const html = screen.getByRole('main').innerHTML;
         const internalLinks = extractInternalLinks(html);
 
-        for (const link of internalLinks) {
-          expect(link).toMatch(/^\//);
-        }
+        expect(internalLinks.filter((link) => !link.startsWith('/'))).toStrictEqual([]);
       });
     });
   });
 
   describe('Design System components', () => {
     it('BrandMark has valid href', () => {
+    expect.hasAssertions();
       render(<BrandMark />);
       const link = screen.getByRole('link');
       expect(link).toHaveAttribute('href', '/');
     });
 
     it('BrandMark with custom href', () => {
+    expect.hasAssertions();
       render(<BrandMark href="/custom" />);
       const link = screen.getByRole('link');
       expect(link).toHaveAttribute('href', '/custom');
     });
 
     it('ActionLink has valid href', () => {
+    expect.hasAssertions();
       render(<ActionLink href="/test">Test</ActionLink>);
       const link = screen.getByRole('link');
       expect(link).toHaveAttribute('href', '/test');
     });
 
     it('ActionLink external has valid href', () => {
+    expect.hasAssertions();
       render(<ActionLink href="https://github.com/XpertMinds/Jumentix" external>GitHub</ActionLink>);
       const link = screen.getByRole('link');
       expect(link).toHaveAttribute('href', 'https://github.com/XpertMinds/Jumentix');
     });
 
     it('ActionLink quiet variant has valid href', () => {
+    expect.hasAssertions();
       render(<ActionLink href="/docs" variant="quiet">Docs</ActionLink>);
       const link = screen.getByRole('link');
       expect(link).toHaveAttribute('href', '/docs');
     });
 
     it('SiteHeader has valid internal links (EN)', () => {
+    expect.hasAssertions();
       render(<SiteHeader locale="en" currentPath="/" />);
       const navLinks = screen.getAllByRole('link');
       for (const link of navLinks) {
@@ -186,6 +197,7 @@ describe('Link quality', () => {
     });
 
     it('SiteHeader has valid internal links (PT-BR)', () => {
+    expect.hasAssertions();
       render(<SiteHeader locale="pt-BR" currentPath="/produto" />);
       const navLinks = screen.getAllByRole('link');
       for (const link of navLinks) {
@@ -196,6 +208,7 @@ describe('Link quality', () => {
     });
 
     it('SiteFooter has valid internal links (EN)', () => {
+    expect.hasAssertions();
       render(<SiteFooter locale="en" />);
       const links = screen.getAllByRole('link');
       for (const link of links) {
@@ -206,6 +219,7 @@ describe('Link quality', () => {
     });
 
     it('SiteFooter has valid internal links (PT-BR)', () => {
+    expect.hasAssertions();
       render(<SiteFooter locale="pt-BR" />);
       const links = screen.getAllByRole('link');
       for (const link of links) {
@@ -216,6 +230,7 @@ describe('Link quality', () => {
     });
 
     it('Pagination links have valid hrefs', () => {
+    expect.hasAssertions();
       render(<Pagination current={2} total={5} hrefBase="/test" />);
       const links = screen.getAllByRole('link');
       for (const link of links) {
@@ -225,12 +240,14 @@ describe('Link quality', () => {
     });
 
     it('LocaleSwitch link has valid href', () => {
+    expect.hasAssertions();
       render(<LocaleSwitch locale="EN" href="/pt-BR" />);
       const link = screen.getByRole('link');
       expect(link).toHaveAttribute('href', '/pt-BR');
     });
 
     it('DocsToolbar has valid links', () => {
+    expect.hasAssertions();
       render(<DocsToolbar />);
       const links = screen.getAllByRole('link');
       for (const link of links) {
@@ -241,15 +258,15 @@ describe('Link quality', () => {
     });
 
     it('ArchitectureFlow has no invalid link patterns', () => {
+    expect.hasAssertions();
       render(<ArchitectureFlow steps={[{ title: 'Step 1', description: 'Desc 1' }]} />);
       const container = screen.getByLabelText('Architecture flow');
       const html = container.innerHTML;
       const internalLinks = extractInternalLinks(html);
 
-      for (const link of internalLinks) {
-        const invalid = hasInvalidPattern(link);
-        expect(invalid).toBeNull();
-      }
+      // JUM-677: a set, not a loop — see the commercial suite.
+      expect(internalLinks.filter((link) => hasInvalidPattern(link) !== null))
+        .toStrictEqual([]);
     });
   });
 });
