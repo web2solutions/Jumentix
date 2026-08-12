@@ -34,7 +34,8 @@ describe('CanaFrameworkPlayground', () => {
     expect(screen.getByTestId('cana-framework-playground-react-context-basic')).toBeInTheDocument();
     expect(screen.getByTestId('cana-framework-playground-react-context-basic-run')).toBeInTheDocument();
     expect(screen.getByTestId('cana-framework-playground-react-context-basic-reset')).toBeInTheDocument();
-    expect(screen.getByTestId('cana-framework-playground-react-context-basic-preview')).toBeInTheDocument();
+    expect(screen.getByTestId('cana-framework-playground-react-context-basic-preview'))
+      .toHaveClass('cana-framework-preview');
     expect(screen.getByText('React Context: categorized task list')).toBeInTheDocument();
     expect(screen.getAllByText(/TasksProvider.tsx/).length).toBeGreaterThan(0);
   });

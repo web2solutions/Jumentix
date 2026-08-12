@@ -1,11 +1,9 @@
 'use client';
 
-import { javascript } from '@codemirror/lang-javascript';
-import { EditorState } from '@codemirror/state';
-import { EditorView, basicSetup } from 'codemirror';
-import { Alert, Button, Code, Group, Paper, Stack, Text, Title } from '@mantine/core';
+import { Alert, Button, Group, Paper, Stack, Text, Title } from '@mantine/core';
 import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { MonacoCodeBlock } from '../code/MonacoCodeBlock';
 import { getDocsSnippet } from './catalogs';
 import { runDocsSnippet } from './runSnippet';
 import { getRuntime } from './runtimes';
@@ -49,8 +47,6 @@ export function DocsPlayground({
     [id]
   );
 
-  const hostRef = useRef<HTMLDivElement | null>(null);
-  const viewRef = useRef<EditorView | null>(null);
   const resetRef = useRef<(() => Promise<void>) | undefined>(undefined);
   const [draft, setDraft] = useState(initialCode);
   const [running, setRunning] = useState(false);
@@ -61,31 +57,6 @@ export function DocsPlayground({
   useEffect(() => {
     setDraft(initialCode);
   }, [initialCode]);
-
-  useEffect(() => {
-    if (!hostRef.current) return undefined;
-    const state = EditorState.create({
-      doc: draft,
-      extensions: [
-        basicSetup,
-        javascript(),
-        EditorView.updateListener.of((update) => {
-          if (update.docChanged) setDraft(update.state.doc.toString());
-        }),
-        EditorView.theme({
-          '&': { fontSize: '13px', maxHeight: '320px' },
-          '.cm-scroller': { overflow: 'auto' }
-        })
-      ]
-    });
-    const view = new EditorView({ state, parent: hostRef.current });
-    viewRef.current = view;
-    return () => {
-      view.destroy();
-      viewRef.current = null;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [runtime, id, initialCode]);
 
   const labels = locale === 'pt-BR'
     ? {
@@ -121,9 +92,8 @@ export function DocsPlayground({
       const rt = getRuntime(runtime);
       const loaded = await rt.load(sessionKey);
       resetRef.current = loaded.reset;
-      const source = viewRef.current?.state.doc.toString() ?? draft;
       const { result, logs: captured } = await runDocsSnippet(
-        source,
+        draft,
         rt.apiGlobalName,
         loaded.api,
         loaded.extras ?? {}
@@ -145,15 +115,6 @@ export function DocsPlayground({
     try {
       if (resetRef.current) await resetRef.current();
       setDraft(initialCode);
-      if (viewRef.current) {
-        viewRef.current.dispatch({
-          changes: {
-            from: 0,
-            to: viewRef.current.state.doc.length,
-            insert: initialCode
-          }
-        });
-      }
     } catch (err) {
       setError(formatOutput(err));
     } finally {
@@ -164,7 +125,7 @@ export function DocsPlayground({
   if (!snippet && !code) {
     return (
       <Alert color="red" my="md" title={labels.missing}>
-        <Code>{runtime}/{id}</Code>
+        <Text component="code" className="jtx-inline-code">{runtime}/{id}</Text>
       </Alert>
     );
   }
@@ -187,12 +148,26 @@ export function DocsPlayground({
 
         <Stack gap={4}>
           <Text fw={600} size="sm">{labels.staticCode}</Text>
-          <Code block data-testid={`${testId}-static`}>{initialCode}</Code>
+          <MonacoCodeBlock
+            value={initialCode}
+            language="typescript"
+            readOnly
+            minHeight={140}
+            maxHeight={360}
+            ariaLabel={`${labels.title} static code`}
+            testId={`${testId}-static`}
+          />
         </Stack>
 
-        <div
-          ref={hostRef}
-          data-testid={`${testId}-editor`}
+        <MonacoCodeBlock
+          value={draft}
+          language="typescript"
+          readOnly={false}
+          onChange={setDraft}
+          minHeight={200}
+          maxHeight={420}
+          ariaLabel={`${labels.title} editable playground code`}
+          testId={`${testId}-editor`}
           {...(canaCompat ? { 'data-cana-editor': `cana-playground-editor-${id}` } : {})}
         />
 
@@ -237,24 +212,27 @@ export function DocsPlayground({
 
         {error ? (
           <Alert color="red" title="Error">
-            <Code block>{error}</Code>
+            <MonacoCodeBlock value={error} language="text" readOnly minHeight={100} maxHeight={260} />
           </Alert>
         ) : null}
 
         {output ? (
           <Stack gap={4}>
             <Text fw={600} size="sm">{labels.output}</Text>
-            <Code
-              block
-              data-testid={`${testId}-output`}
+            <MonacoCodeBlock
+              value={output}
+              language="json"
+              readOnly
+              minHeight={120}
+              maxHeight={320}
+              ariaLabel={`${labels.title} output`}
+              testId={`${testId}-output`}
               {...(canaCompat ? { 'data-testid-alias': `cana-playground-output-${id}` } : {})}
-            >
-              {output}
-            </Code>
+            />
             {canaCompat ? (
-              <Code block data-testid={`cana-playground-output-${id}`} style={{ display: 'none' }}>
+              <span data-testid={`cana-playground-output-${id}`} style={{ display: 'none' }}>
                 {output}
-              </Code>
+              </span>
             ) : null}
           </Stack>
         ) : null}
@@ -262,7 +240,15 @@ export function DocsPlayground({
         {logs.length > 0 ? (
           <Stack gap={4}>
             <Text fw={600} size="sm">{labels.logs}</Text>
-            <Code block data-testid={`${testId}-logs`}>{logs.join('\n')}</Code>
+            <MonacoCodeBlock
+              value={logs.join('\n')}
+              language="text"
+              readOnly
+              minHeight={100}
+              maxHeight={260}
+              ariaLabel={`${labels.title} console logs`}
+              testId={`${testId}-logs`}
+            />
           </Stack>
         ) : null}
       </Stack>

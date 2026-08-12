@@ -2,7 +2,7 @@
 
 import { TextAnimate } from '@gfazioli/mantine-text-animate';
 import { IconBrandGithub, IconExternalLink } from '@tabler/icons-react';
-import { Anchor, Button, Center, Code, Paper, Text, Title } from '@mantine/core';
+import { Anchor, Button, Center, Paper, Text, Title } from '@mantine/core';
 import pack from '../../package.json';
 import { ProductHunt } from '../ProductHunt/ProductHunt';
 import classes from './Welcome.module.css';
@@ -38,7 +38,7 @@ export function Welcome() {
         This starter Next.js project includes a minimal setup for server side rendering, if you want
         to learn more on Mantine + Next.js integration follow{' '}
         <Anchor href="https://mantine.dev/guides/next/">this guide</Anchor>. To get started edit{' '}
-        <Code fz="xl">page.tsx</Code> file.
+        <code className="jtx-inline-code jtx-inline-code-lg">page.tsx</code> file.
       </Text>
 
       <Center>

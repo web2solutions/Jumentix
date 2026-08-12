@@ -76,6 +76,22 @@ function canaFrameworkIds(id) {
   };
 }
 
+function assertDarkDocsThemeIsReadable() {
+  cy.document().then((document) => {
+    const win = document.defaultView;
+    const htmlBackground = win.getComputedStyle(document.documentElement).backgroundColor;
+    const bodyBackground = win.getComputedStyle(document.body).backgroundColor;
+    expect(document.documentElement.getAttribute('data-mantine-color-scheme')).to.equal('dark');
+    expect([htmlBackground, bodyBackground], 'docs page background should not flip to white')
+      .not.to.include('rgb(255, 255, 255)');
+  });
+}
+
+function assertMonacoMounted(scopeSelector) {
+  cy.get(scopeSelector).find('.jtx-monaco-code').should('exist');
+  cy.get(scopeSelector).find('.monaco-editor', { timeout: 20000 }).should('exist');
+}
+
 describe('Cana framework tutorial playgrounds', () => {
   const tutorials = [
     ['/docs/jumentix/packages/cana/react-context', ['react-context-basic', 'react-context-advanced']],
@@ -86,11 +102,14 @@ describe('Cana framework tutorial playgrounds', () => {
   for (const [path, exampleIds] of tutorials) {
     it(`runs every Cana framework playground on ${path}`, () => {
       cy.visitQuiet(path);
+      assertDarkDocsThemeIsReadable();
 
       for (const exampleId of exampleIds) {
         const ids = canaFrameworkIds(exampleId);
         cy.get(`[data-testid="${ids.root}"]`).should('exist');
+        assertMonacoMounted(`[data-testid="${ids.root}"]`);
         cy.get(`[data-testid="${ids.run}"]`).click();
+        assertDarkDocsThemeIsReadable();
         cy.get(`[data-testid="${ids.output}"]`, { timeout: 15000 })
           .should('exist')
           .and('contain.text', 'tasks');
@@ -116,6 +135,7 @@ describe('Docs playground matrix', () => {
       const ids = playgroundIds(runtime, id);
       cy.visitQuiet(path);
       cy.get(`[data-testid="${ids.root}"]`).should('exist');
+      assertMonacoMounted(`[data-testid="${ids.root}"]`);
       cy.get(`[data-testid="${ids.run}"]`).click();
       cy.get(`[data-testid="${ids.output}"]`, { timeout: 15000 }).should('exist');
       cy.get(`[data-testid="${ids.reset}"]`).click();
@@ -136,6 +156,7 @@ describe('designer-core playground', () => {
     const ids = playgroundIds('designer-core', 'getting-started');
     cy.visitQuiet('/docs/jumentix/guides/spa-pwa');
     cy.get(`[data-testid="${ids.root}"]`).should('exist');
+    assertMonacoMounted(`[data-testid="${ids.root}"]`);
     cy.get(`[data-testid="${ids.run}"]`).click();
     cy.get(`[data-testid="${ids.output}"]`, { timeout: 15000 })
       .should('exist')

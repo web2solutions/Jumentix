@@ -326,12 +326,13 @@
 .code {
   min-height: 230px;
   margin: 0;
-  padding: var(--jtx-space-5);
-  overflow: auto;
-  color: #dce8f7;
-  font-family: var(--mantine-font-family-monospace);
-  font-size: 0.88rem;
-  line-height: 1.65;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.code :global(.jtx-monaco-code__editor) {
+  min-height: 230px;
 }
 
 .searchWrap {

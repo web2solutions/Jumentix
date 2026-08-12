@@ -17,6 +17,7 @@ import {
   IconSearch,
   IconTopologyStar3,
 } from '@tabler/icons-react';
+import { MonacoCodeBlock } from '../code/MonacoCodeBlock';
 import classes from './DesignSystem.module.css';
 
 export type ActionLinkProps = {
@@ -255,9 +256,17 @@ export function CodeShowcase({
           {copied ? <IconCheck size={17} /> : <IconClipboard size={17} />}
         </button>
       </div>
-      <pre className={classes.code} id="jtx-code-panel" role="tabpanel">
-        <code data-language={sample.language}>{sample.code}</code>
-      </pre>
+      <div id="jtx-code-panel" role="tabpanel">
+        <MonacoCodeBlock
+          value={sample.code}
+          language={sample.language}
+          readOnly
+          minHeight={160}
+          maxHeight={360}
+          ariaLabel={`${sample.label} code sample`}
+          className={classes.code}
+        />
+      </div>
     </section>
   );
 }
