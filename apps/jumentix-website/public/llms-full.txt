@@ -1044,6 +1044,20 @@ Headings:
 
 ---
 
+# @jumentix/cana-react
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana-react
+
+Packages documentation.
+
+Headings:
+- @jumentix/cana-react
+- Install
+- Hooks
+- Redux bridge
+
+---
+
 # @jumentix/key-value-storage
 
 URL: https://jumentix-website.vercel.app/docs/jumentix/packages/key-value-storage
@@ -1208,6 +1222,19 @@ Headings:
 
 ---
 
+# @jumentix/cana-vue
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana-vue
+
+Packages documentation.
+
+Headings:
+- @jumentix/cana-vue
+- Install
+- Live query
+
+---
+
 # Cana with React Context API
 
 URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/react-context
@@ -1255,6 +1282,7 @@ Headings:
 - Errors are plain data
 - Try it in the browser
 - Design notes
+- Mental model in 30 seconds
 - Postgres-shaped architecture
 - Worker model
 - Performance data

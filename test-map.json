@@ -3223,6 +3223,26 @@
       "timeoutMs": 60000
     },
     {
+      "id": "packages/cana-react/test/collection.test.ts",
+      "path": "packages/cana-react/test/collection.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "packages/cana-vue/test/collection.test.ts",
+      "path": "packages/cana-vue/test/collection.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "packages/cli-init/test/bootstrap.test.ts",
       "path": "packages/cli-init/test/bootstrap.test.ts",
       "layer": "tooling",

@@ -6,24 +6,39 @@ Adaptador de banco de dados offline sobre IndexedDB para aplicações Jumentix.
 import { createClient } from '@jumentix/cana';
 
 const client = createClient({
-  name: 'designer',
+  name: 'tarefas-app',
   schema: {
     version: 1,
     stores: [
-      { name: 'designs', keyPath: 'id', indexes: [{ name: 'byOwner', keyPath: 'owner' }] }
+      { name: 'categorias', keyPath: 'id', indexes: [{ name: 'porNome', keyPath: 'nome' }] },
+      {
+        name: 'tarefas',
+        keyPath: 'id',
+        indexes: [
+          { name: 'porCategoria', keyPath: 'categoriaId' },
+          { name: 'porAtualizadaEm', keyPath: 'atualizadaEm' }
+        ]
+      }
     ]
   }
 });
 
 await client.open();
-await client.table('designs').add({ id: 1, name: 'first', owner: 'ana' });
+await client.table('categorias').put({ id: 'trabalho', nome: 'Trabalho' });
+await client.table('tarefas').add({
+  id: 'tarefa-1',
+  titulo: 'Escrever tutorial do Cana',
+  categoriaId: 'trabalho',
+  concluida: false,
+  atualizadaEm: Date.now()
+});
 ```
 
 ## Responsabilidade no escopo
 
 - **Camada:** persistência offline / browser
 - **Responsável por:** API de cliente IndexedDB (com fallback explícito localStorage) para PWAs
-- **Usado com:** designer-core, guia SPA/PWA, service-management
+- **Usado com:** `@jumentix/cana-react`, `@jumentix/cana-vue`, designer-core, guia SPA/PWA, service-management
 - **Não responsável por:** bancos server-side, Redis KV, REST/WebSocket
 
 ## Três coisas a saber antes de usar
@@ -75,6 +90,30 @@ pelo armazenamento durável; o Cana adiciona a superfície de cliente, desfechos
 explícitos de transação, replay de mudanças, reconciliação após falha e uma
 fronteira opcional de worker para aplicações que precisam tirar persistência da
 thread de UI.
+
+![Modelo de workers do Cana](/images/cana/cana-worker-model.svg)
+
+### Modelo mental em 30 segundos
+
+```mermaid
+flowchart LR
+  UI["Componentes"] --> Store["Context / Redux / Pinia"]
+  Store --> Client["Client Cana"]
+  Client --> Worker["Worker opcional"]
+  Client --> IDB["Commit IndexedDB"]
+  Worker --> IDB
+  IDB --> Events["Stream CanaChangeEvent confirmado"]
+  Events --> Store
+```
+
+Leia o diagrama da esquerda para a direita quando o usuário age, e da direita
+para a esquerda quando a escrita faz commit:
+
+1. Componentes chamam uma action do framework.
+2. A action escreve em `categorias` ou `tarefas` pelo Cana.
+3. IndexedDB confirma ou reverte de forma atômica.
+4. Cana emite um evento confirmado.
+5. Context, Redux ou Pinia atualiza o estado renderizado a partir desse evento.
 
 ### Arquitetura no estilo Postgres
 
@@ -129,21 +168,82 @@ página e transformam chamadas tipadas em mensagens de dados puros.
   do worker porque o corpo é uma função. Execute essa transação dentro do
   worker, ou envie escritas individuais pelo `createWorkerClient()`.
 
+```mermaid
+sequenceDiagram
+  participant Page as "Thread da pagina"
+  participant Router as "Router Cana"
+  participant Worker as "Worker host"
+  participant DB as "IndexedDB"
+  Page->>Router: put("tarefas", record)
+  Router->>Worker: request plana + requestId
+  Worker->>DB: transacao readwrite
+  DB-->>Worker: oncomplete
+  Worker-->>Router: resultado committed
+  Worker-->>Router: evento de mudanca
+  Router-->>Page: callback do subscriber
+```
+
 ### Dados de performance
 
 A suíte de performance do Cana no navegador roda contra IndexedDB real em disco
 e usa asserções de proporção em vez de promessas absolutas de milissegundos.
-Isso mantém os dados portáveis entre CI e máquinas de usuários, mas ainda prova
-o formato importante do motor.
+Isso mantém os dados portáveis entre browsers, discos e runners compartilhados.
+As proporções ainda protegem o ponto importante: quanto trabalho o Cana pede
+para o navegador executar.
 
-| Operação | Massa de dados | Contrato de performance atual |
+![Escada de performance do Cana](/images/cana/cana-performance-ladder.svg)
+
+#### Modelo algorítmico
+
+| Caminho | Forma algorítmica | O que a implementação evita |
 | --- | --- | --- |
-| Query limitada | 1.000 linhas vs 10.000 linhas, `limit: 10` | A mediana com 10.000 linhas fica no máximo em `max(4x a mediana de 1.000 linhas, 5ms)`. |
-| Busca indexada | 1.000 linhas vs 10.000 linhas, 100 grupos indexados | A mediana com 10.000 linhas fica abaixo de `max(25x a mediana de 1.000 linhas, 20ms)`, mesmo com o resultado 10x maior. |
-| Count nativo | 10.000 linhas | `count()` deve ser mais rápido do que ler todas as linhas com uma query completa. |
-| Get por chave primária | 1.000 linhas vs 10.000 linhas | A mediana com 10.000 linhas fica no máximo em `max(4x a mediana de 1.000 linhas, 5ms)`. |
-| Bulk add | 10.000 linhas | Um único `bulkAdd()` commita todas as linhas e o count final é exatamente 10.000. |
-| Paginação profunda | 10.000 linhas, `offset: 9000`, `limit: 20` | A página profunda fica abaixo de `max(60x a mediana de uma página inicial, 60ms)`, provando avanço de cursor em vez de materializar 9.000 linhas. |
+| Query limitada | `O(limit)` depois que o cursor abre. | Ler a store inteira e cortar o array em JavaScript. |
+| Busca indexada | Modelo comum de índice do IndexedDB: `O(log n + matches)`. | Anunciar um índice no `explain()` enquanto ainda faz full scan. |
+| `get()` por chave primária | Modelo comum de busca por chave no IndexedDB: `O(log n)`. | Varrer linhas para encontrar uma chave conhecida. |
+| `count()` nativo | Uma requisição nativa `count()` do IndexedDB; o Cana não materializa linhas em JavaScript. O custo interno do browser depende da implementação. | Contar lendo todos os registros. |
+| `bulkAdd()` | `O(n)` escritas em uma transação IndexedDB. | Disparar um fan-out grande e desordenado de promises que perde a ordem de entrada e a posição de falha parcial. |
+| Paginação profunda | `O(offset + limit)` de movimento de cursor, com clone para JavaScript só dos registros retornados. | Ler milhares de registros em um array antes de aplicar `offset`. |
+
+#### Referência medida
+
+Estes números são uma amostra local de referência, não um SLA de latência. Eles
+foram medidos em 2026-08-12 com Headless Chrome 151 no macOS, usando o bundle
+ESM publicado do Cana, o mesmo schema de `packages/cana/cypress/performance.cy.ts`,
+cinco execuções de leitura por operação e três execuções de `bulkAdd()`. O valor
+mostrado é a mediana.
+
+| Operação | Registros na store | Query / tamanho do resultado | Complexidade usada no exemplo | Mediana local |
+| --- | ---: | --- | --- | ---: |
+| `bulkAdd()` | 10.000 | escreve 10.000 linhas | `O(n)` | 1.117,5 ms |
+| Query limitada | 1.000 | `limit: 10`, retorna 10 linhas | `O(limit)` | 0,4 ms |
+| Query limitada | 10.000 | `limit: 10`, retorna 10 linhas | `O(limit)` | 0,5 ms |
+| Busca indexada | 1.000 | 100 grupos, `equals: 'g7'`, retorna 10 linhas | `O(log n + matches)` | 0,5 ms |
+| Busca indexada | 10.000 | 100 grupos, `equals: 'g7'`, retorna 100 linhas | `O(log n + matches)` | 1,4 ms |
+| `get()` por chave primária | 1.000 | chave `500` | `O(log n)` | 0,2 ms |
+| `get()` por chave primária | 10.000 | chave `500` | `O(log n)` | 0,2 ms |
+| `count()` nativo | 10.000 | conta todas as linhas sem retorná-las | uma requisição nativa; sem materialização em JS | 3,2 ms |
+| Query completa | 10.000 | retorna as 10.000 linhas | `O(n)` | 55,2 ms |
+| Página inicial | 10.000 | `offset: 10`, `limit: 20`, retorna 20 linhas | `O(offset + limit)` | 0,5 ms |
+| Página profunda | 10.000 | `offset: 9000`, `limit: 20`, retorna 20 linhas | `O(offset + limit)` com avanço de cursor | 13,8 ms |
+
+#### Guardrails da CI
+
+Os testes automatizados de performance mantêm estes contratos verdes:
+
+- Uma query com `limit: 10` em 10.000 linhas fica quase constante em relação a
+  1.000 linhas: no máximo `max(4x a mediana de 1.000 linhas, 5ms)`.
+- Uma busca indexada em 10.000 linhas fica abaixo de
+  `max(25x a mediana de 1.000 linhas, 20ms)`, mesmo com o resultado crescendo de
+  10 para 100 linhas.
+- `count()` em 10.000 linhas fica mais rápido do que uma query completa que
+  retorna todas as linhas.
+- Um `get()` por chave primária em 10.000 linhas fica quase constante em relação
+  a 1.000 linhas: no máximo `max(4x a mediana de 1.000 linhas, 5ms)`.
+- `bulkAdd()` commita todas as 10.000 linhas em uma transação e reporta
+  exatamente 10.000 chaves.
+- Paginação profunda em `offset: 9000`, `limit: 20` fica abaixo de
+  `max(60x a mediana de uma página inicial, 60ms)`, provando avanço de cursor em
+  vez de materializar as linhas puladas.
 
 ## Checklist júnior (“Eu consigo …”)
 
@@ -159,10 +259,17 @@ Construa o mesmo app de tarefas categorizadas com state management de frontend:
 - [React Redux](/docs/pt-BR/jumentix/packages/cana/react-redux)
 - [Vue 3 e Pinia](/docs/pt-BR/jumentix/packages/cana/vue-pinia)
 
+Use os pacotes pequenos de integração nas aplicações:
+
+```bash
+bun add @jumentix/cana @jumentix/cana-react
+bun add @jumentix/cana @jumentix/cana-vue
+```
+
 ## Próximo passo
 
 Continue no [guia de uso](../../documentation/md/CANA-USAGE-GUIDE.pt-BR.md) do
 consumidor — API completa, consultas, transações, hooks, recuperação de falhas e
-solução de problemas — depois
-[designer-core](/docs/pt-BR/jumentix/packages/designer-core/usage) para validar
-designs antes de persistir.
+solução de problemas. Use
+[designer-core](/docs/pt-BR/jumentix/packages/designer-core/usage) quando uma
+UI Jumentix também precisar validar documentos de domínio antes de persistir.

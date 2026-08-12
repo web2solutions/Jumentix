@@ -32,6 +32,7 @@ Docs index JSON: https://jumentix-website.vercel.app/docs-index.json
 - @jumentix/database-client-factory: https://jumentix-website.vercel.app/docs/jumentix/packages/database-client-factory
 - @jumentix/mutex-service: https://jumentix-website.vercel.app/docs/jumentix/packages/mutex-service
 - mutex-service usage: https://jumentix-website.vercel.app/docs/jumentix/packages/mutex-service/usage
+- @jumentix/cana-react: https://jumentix-website.vercel.app/docs/jumentix/packages/cana-react
 - @jumentix/key-value-storage: https://jumentix-website.vercel.app/docs/jumentix/packages/key-value-storage
 - key-value-storage usage: https://jumentix-website.vercel.app/docs/jumentix/packages/key-value-storage/usage
 - @jumentix/shared-contracts: https://jumentix-website.vercel.app/docs/jumentix/packages/shared-contracts
@@ -39,6 +40,7 @@ Docs index JSON: https://jumentix-website.vercel.app/docs-index.json
 - @jumentix/sdk-websocket-client: https://jumentix-website.vercel.app/docs/jumentix/packages/sdk-websocket-client
 - @jumentix/message-mediator: https://jumentix-website.vercel.app/docs/jumentix/packages/message-mediator
 - message-mediator usage: https://jumentix-website.vercel.app/docs/jumentix/packages/message-mediator/usage
+- @jumentix/cana-vue: https://jumentix-website.vercel.app/docs/jumentix/packages/cana-vue
 - Cana with React Context API: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/react-context
 - Cana with Vue 3 and Pinia: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/vue-pinia
 - @jumentix/cana: https://jumentix-website.vercel.app/docs/jumentix/packages/cana

@@ -16,10 +16,10 @@ que recebe eventos confirmados do Cana.
 ```bash
 bun create vite cana-react-redux --template react-ts
 cd cana-react-redux
-bun add @jumentix/cana @reduxjs/toolkit react-redux
+bun add @jumentix/cana @jumentix/cana-react @reduxjs/toolkit react-redux
 ```
 
-O schema é o mesmo do tutorial com Context: `categories` e `tasks`, com indexes
+O schema é o mesmo do tutorial com Context: `categorias` e `tarefas`, com indexes
 por nome, categoria, estado concluído e atualização.
 
 ## 2. Implementação simples
@@ -61,11 +61,7 @@ controlam efeitos colaterais.
 src/
   cana.ts
   store.ts
-  advancedStore.ts
   App.tsx
-  components/
-    CategoryColumn.tsx
-    TaskComposer.tsx
 ```
 
 Use selectors para visões derivadas:
@@ -73,6 +69,9 @@ Use selectors para visões derivadas:
 - tarefas por categoria;
 - tarefas pendentes;
 - alterações recentes vindas de `events`.
+
+Baixe o app Vite completo usado pelo exemplo avançado:
+[cana-react-redux.zip](/downloads/cana/cana-react-redux.zip).
 
 ## 5. Checklist
 

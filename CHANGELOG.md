@@ -4,6 +4,9 @@
 
 ## All Changes
 
+- 2026-08-12 Merge remote-tracking branch 'origin/dev' into codex/docs/JUM-703-cana-performance-notes - Eduardo A.
+- 2026-08-12 feat(cana): add React and Vue integration packages (JUM-703) - Eduardo A.
+- 2026-08-12 fix(ci): count assertion declarations per test, not per file (JUM-702) (#209) - Eduardo A.
 - 2026-08-12 feat(ci): make the test-integrity check mandatory (JUM-683) (#208) - Eduardo A.
 - 2026-08-12 fix(ci): make the branch threshold a real one, with the gap as a dated floor (JUM-681) (#200) - Eduardo A.
 - 2026-08-12 fix(ci): correct the mock-only rule, and make the Express suite integrate (JUM-678) (#199) - Eduardo A.

@@ -996,6 +996,19 @@
     ]
   },
   {
+    "title": "@jumentix/cana-react",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana-react",
+    "description": "Packages documentation.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "@jumentix/cana-react",
+      "Install",
+      "Hooks",
+      "Redux bridge"
+    ]
+  },
+  {
     "title": "@jumentix/key-value-storage",
     "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/key-value-storage",
     "description": "Key/value storage clients with an in-memory adapter for tests and demos.",
@@ -1153,6 +1166,18 @@
     ]
   },
   {
+    "title": "@jumentix/cana-vue",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana-vue",
+    "description": "Packages documentation.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "@jumentix/cana-vue",
+      "Install",
+      "Live query"
+    ]
+  },
+  {
     "title": "Cana with React Context API",
     "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana/react-context",
     "description": "From zero to final implementation: categorized tasks with Cana and React Context.",
@@ -1197,6 +1222,7 @@
       "Errors are plain data",
       "Try it in the browser",
       "Design notes",
+      "Mental model in 30 seconds",
       "Postgres-shaped architecture",
       "Worker model",
       "Performance data",
@@ -2469,6 +2495,19 @@
     ]
   },
   {
+    "title": "@jumentix/cana-react",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana-react",
+    "description": "Documentação de Pacotes.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "@jumentix/cana-react",
+      "Instalação",
+      "Hooks",
+      "Bridge Redux"
+    ]
+  },
+  {
     "title": "@jumentix/key-value-storage",
     "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/key-value-storage",
     "description": "Clientes chave/valor com adaptador em memória para testes e demos.",
@@ -2626,6 +2665,18 @@
     ]
   },
   {
+    "title": "@jumentix/cana-vue",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana-vue",
+    "description": "Documentação de Pacotes.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "@jumentix/cana-vue",
+      "Instalação",
+      "Live query"
+    ]
+  },
+  {
     "title": "Cana com React Context API",
     "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana/react-context",
     "description": "Do zero à implementação final: tarefas categorizadas com Cana e React Context.",
@@ -2670,6 +2721,7 @@
       "Erros são dados puros",
       "Experimente no navegador",
       "Design notes",
+      "Modelo mental em 30 segundos",
       "Arquitetura no estilo Postgres",
       "Modelo de workers",
       "Dados de performance",
