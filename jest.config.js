@@ -99,7 +99,10 @@ module.exports = {
   // block is a fail-fast inner guard so a coverage run stops before the scan.
   coverageThreshold: {
     global: {
-      branches: 90,
+      // JUM-681: 99 here too. This inner guard has no exception mechanism, so
+      // the runs that enforce it pass `--coverageThreshold='{}'` and defer to
+      // the authority, which holds the floor.
+      branches: 99,
       functions: 99,
       lines: 99,
       statements: 99
