@@ -5,6 +5,7 @@
 ## All Changes
 
 - 2026-08-12 fix(http): establish the request context in four adapters, and make their suites integrate (JUM-698) - Eduardo A.
+- 2026-08-12 [JUM-703][Docs] Expand Cana tutorials and integrations (#210) - Eduardo A.
 - 2026-08-12 Merge remote-tracking branch 'origin/dev' into codex/docs/JUM-703-cana-performance-notes - Eduardo A.
 - 2026-08-12 feat(cana): add React and Vue integration packages (JUM-703) - Eduardo A.
 - 2026-08-12 fix(ci): count assertion declarations per test, not per file (JUM-702) (#209) - Eduardo A.

@@ -3211,16 +3211,6 @@
       "timeoutMs": 60000
     },
     {
-      "id": "packages/cana/test/packaging.test.ts",
-      "path": "packages/cana/test/packaging.test.ts",
-      "layer": "adapters/out+infra",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
       "id": "packages/cana-react/test/collection.test.ts",
       "path": "packages/cana-react/test/collection.test.ts",
       "layer": "adapters/out+infra",
@@ -3233,6 +3223,16 @@
     {
       "id": "packages/cana-vue/test/collection.test.ts",
       "path": "packages/cana-vue/test/collection.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "packages/cana/test/packaging.test.ts",
+      "path": "packages/cana/test/packaging.test.ts",
       "layer": "adapters/out+infra",
       "kind": "hexagonal",
       "type": "unit",
@@ -4080,9 +4080,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 205,
+    "unit": 207,
     "integration": 93,
     "smoke": 2,
-    "suites": 343
+    "suites": 345
   }
 }
