@@ -422,6 +422,8 @@ jobs:
         run: bun run website:storybook:smoke
       - name: Validate publishable website content
         run: bun run website:test:prepublish
+      - name: Jest component, accessibility, and link quality gates
+        run: bun run website:test:unit
       - name: Install Cypress binary
         run: bun x cypress install
       - name: Cypress website quality gates

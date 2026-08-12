@@ -85,7 +85,7 @@ export function StatusBadge({
 }) {
   return (
     <span className={classes.badge} data-tone={tone}>
-      {tone === 'success' ? <IconCheck size={14} aria-hidden="true" /> : null}
+      {tone === 'success' ? <IconCheck size={14} aria-hidden="true" data-testid="status-badge-icon" /> : null}
       {children}
     </span>
   );
@@ -143,11 +143,11 @@ export function Callout({
   return (
     <aside className={classes.callout} data-tone={tone}>
       {tone === 'warning' ? (
-        <IconAlertTriangle size={20} aria-hidden="true" />
+        <IconAlertTriangle size={20} aria-hidden="true" data-testid="callout-icon" />
       ) : tone === 'success' ? (
-        <IconCheck size={20} aria-hidden="true" />
+        <IconCheck size={20} aria-hidden="true" data-testid="callout-icon" />
       ) : (
-        <IconBook2 size={20} aria-hidden="true" />
+        <IconBook2 size={20} aria-hidden="true" data-testid="callout-icon" />
       )}
       <div>
         <strong>{title}</strong>
