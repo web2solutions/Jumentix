@@ -331,6 +331,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/interface/HTTP/RestAPI.deadLetterReplay.test.ts",
+      "path": "apps/backend-template/test/unit/interface/HTTP/RestAPI.deadLetterReplay.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/interface/HTTP/RestAPI.catalogs.test.ts",
       "path": "apps/backend-template/test/unit/interface/HTTP/RestAPI.catalogs.test.ts",
       "layer": "interface/runtime",
@@ -3806,9 +3816,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 198,
+    "unit": 199,
     "integration": 97,
     "smoke": 2,
-    "suites": 321
+    "suites": 322
   }
 }

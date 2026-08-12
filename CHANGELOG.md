@@ -4,7 +4,16 @@
 
 ## All Changes
 
-- 2026-08-11 fix(website): stop the nested navbar anchor that breaks hydration (JUM-664) - Eduardo A.
+- 2026-08-11 feat(dead-letter): run the replay worker for the life of the server (JUM-53) - Eduardo A.
+- 2026-08-11 [JUM-658][Docs] Site-wide deep docs, playgrounds, SEO/AI (#184) - Eduardo A.
+- 2026-08-11 fix(website): document always-on Vercel Analytics (JUM-686) - Eduardo A.
+- 2026-08-11 docs(website): finish junior zero-to-pleno epic pass (JUM-671–676) - Eduardo A.
+- 2026-08-11 docs(website): add public apps hubs and guide checklists (JUM-675, JUM-685) - Eduardo A.
+- 2026-08-11 fix(website): exclude private packages; deepen public package docs (JUM-685) - Eduardo A.
+- 2026-08-11 fix(website): dark-mode quote contrast and designer-core playground (JUM-665, JUM-666) - Eduardo A.
+- 2026-08-11 docs(website): site-wide deep docs, playgrounds, and SEO/AI for JUM-658 - Eduardo A.
+- 2026-08-11 docs(website): publish cana consumer docs and playgrounds - Eduardo A.
+- 2026-08-11 fix(website): stop the nested navbar anchor that breaks hydration (JUM-664) (#190) - Eduardo A.
 - 2026-08-11 [JUM-637][Governance] Reuse existing Firebase credentials for RTDB agent bus (#168) - Eduardo A.
 - 2026-08-11 Merge remote-tracking branch 'origin/dev' into kimi/governance/JUM-637-reuse-firebase-rtdb-credentials - Eduardo A.
 - 2026-08-11 [JUM-684][Chore] Consolidate Dependabot dependency updates (#189) - Eduardo A.
