@@ -80,12 +80,17 @@ describe('in-memory message mediator', () => {
     );
     expect(queueResponse.result).toStrictEqual({ ok: true });
 
+    // JUM-679: the handler is held open by the test rather than by a 25ms
+    // sleep. The old form raced the 5ms timeout with a wall clock — it only
+    // worked because 25 is comfortably more than 5, and "comfortably" is a
+    // statement about a quiet machine. Here the handler cannot finish until
+    // this test lets it, so the timeout is the only clock in the assertion.
+    let releaseSlowHandler: () => void = () => undefined;
+    const slowHandler = new Promise<void>((resolve) => { releaseSlowHandler = resolve; });
     mediator.registerHandler(
       'users.auth.slow',
       async () => {
-        await new Promise((resolve) => {
-          setTimeout(() => resolve(undefined), 25);
-        });
+        await slowHandler;
         return { contract: 'users.auth.slow', result: { ok: true } };
       }
     );
@@ -94,6 +99,8 @@ describe('in-memory message mediator', () => {
       { contract: 'users.auth.slow', payload: {} },
       { timeoutMs: 5 }
     );
+    // Let the handler finish, so nothing is left pending after the test.
+    releaseSlowHandler();
     expect(timeoutResponse.error).toBeInstanceOf(Error);
     expect((timeoutResponse.error as Error).message).toContain('timed out');
   });

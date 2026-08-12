@@ -38,37 +38,12 @@ const FIXED_SLEEP = /setTimeout\(\s*(?:resolve|\(\)\s*=>\s*resolve\([^)]*\))\s*,
 /**
  * Sleeps that are accepted, each with the issue that owns the decision.
  *
- * A zero-millisecond sleep is a macrotask flush rather than a wait on wall
- * clock, so it is not in the same class; it is still listed, because it is
- * still a scheduling assumption.
+ * **Empty since JUM-679.** All five files were fixed rather than exempted:
+ * three hold a promise open under the test's control, one drives the injected
+ * scheduler the client already accepted, and the broker suite polls with a
+ * bound. A zero-millisecond flush is not in this class and is not counted.
  */
-const ACCEPTED_SLEEPS = Object.freeze([
-  {
-    file: 'apps/backend-template/test/unit/infra/messages/InMemoryMessageMediator.test.ts',
-    issue: 'JUM-679',
-    reason: '25ms wait on an in-process handler; should await the handler promise'
-  },
-  {
-    file: 'apps/backend-template/test/unit/service-management/catalogSyncClient.test.ts',
-    issue: 'JUM-679',
-    reason: '40ms wait on a debounce; should inject the scheduler'
-  },
-  {
-    file: 'apps/backend-template/test/unit/service-management/designerSync.test.ts',
-    issue: 'JUM-679',
-    reason: '5ms and 100ms waits on the real trailing-edge scheduler; should inject it'
-  },
-  {
-    file: 'packages/message-mediator/test/message-mediator.test.ts',
-    issue: 'JUM-679',
-    reason: '10ms and 30ms waits on in-process delivery'
-  },
-  {
-    file: 'packages/message-mediator/test/integration/brokers.integration.test.ts',
-    issue: 'JUM-679',
-    reason: 'waits on real broker delivery; should poll the condition with a bound'
-  }
-]);
+const ACCEPTED_SLEEPS = Object.freeze([]);
 
 /**
  * Suites that assert only on mocks today, each owned by JUM-678.

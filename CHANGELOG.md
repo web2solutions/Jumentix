@@ -4,7 +4,9 @@
 
 ## All Changes
 
-- 2026-08-12 test(website): bring the website's suites under the test map (JUM-680) - Eduardo A.
+- 2026-08-12 test: wait on the event, not the clock (JUM-679) - Eduardo A.
+- 2026-08-12 test(website): bring the website's suites under the test map (JUM-680) (#194) - Eduardo A.
+- 2026-08-12 [JUM-700][Fix] Hide agent metadata and add Cana design notes - Eduardo A.
 - 2026-08-12 test: bound the quarantine to suites that still exist (JUM-682) (#196) - Eduardo A.
 - 2026-08-12 [JUM-699][Fix] Stabilize Cana playground theme and Monaco code widgets - Eduardo A.
 - 2026-08-12 docs(JUM-690): add Cana framework tutorials (#198) - Eduardo A.
