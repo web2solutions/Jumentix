@@ -17,6 +17,12 @@ const customJestConfig = {
     // started running there. Mapping to the source removes the dependency on
     // build order for the tests; the site's own build still consumes `dist`.
     '^@jumentix/cana$': '<rootDir>/../../packages/cana/src/index.ts',
+    // JUM-701: Monaco's published entry is an AMD bundle that calls `define` at
+    // load, which throws under jsdom. The component used to dodge that by
+    // checking `NODE_ENV === 'test'` and never mounting — so the suites tested a
+    // component that had switched itself off. The double lets the mount path
+    // run; the real editor is covered by the Cypress suites, in a real browser.
+    '^monaco-editor$': '<rootDir>/test/mocks/monaco-editor.ts',
   },
   testEnvironment: 'jest-environment-jsdom',
   // JUM-158: the route-discovery suite is ESM (.mjs) because the script it
