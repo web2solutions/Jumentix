@@ -65,7 +65,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <MantineProvider theme={theme} defaultColorScheme={head.mantine.defaultColorScheme}>
           <CommercialChrome>{children}</CommercialChrome>
         </MantineProvider>
-        {process.env.NEXT_PUBLIC_VERCEL_ENV ? <Analytics /> : null}
+        <Analytics />
       </body>
     </html>
   );

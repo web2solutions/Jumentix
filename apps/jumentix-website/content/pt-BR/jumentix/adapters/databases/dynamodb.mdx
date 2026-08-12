@@ -7,6 +7,25 @@ description: "Documentação de Adaptadores de banco de dados."
 
 # Adaptador DynamoDB
 
+## Glossário
+
+- **Adapter de entrada** — aceita chamadas de protocolo externo e traduz para use-cases.
+
+## Responsabilidade no escopo
+
+- **Camada:** adapter / databases
+- **Responsável por:** wiring específico deste framework/tecnologia
+- **Usado com:** composição do backend-template, pacotes de persistência/SDK, guia correspondente
+- **Não responsável por:** regras de domínio, autoría OpenAPI ou storage offline no browser
+
+## Por que existe
+
+A escolha de framework fica na borda. Este adapter mantém detalhes Express/Fastify/DB/realtime substituíveis.
+
+## O que é
+
+Adapter DYNAMODB para interfaces databases do Jumentix — monta use-cases sem vazar tipos de framework no domínio.
+
 ## Tecnologia
 
 Perfil do cliente AWS SDK DynamoDB.
@@ -28,3 +47,13 @@ JUMENTIX_AWS_REGION=us-east-1
 ```
 
 3. Inicie o adaptador de serviço.
+
+## Checklist júnior (“Eu consigo …”)
+
+- [ ] Sei quando escolher este adapter
+- [ ] Consigo iniciá-lo pelo script documentado
+- [ ] Sei o próximo guia/pacote
+
+## Próximo passo
+
+Volte para [Começando](/docs/pt-BR/jumentix/concepts/getting-started) ou o guia correspondente.

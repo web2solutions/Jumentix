@@ -1,0 +1,91 @@
+# @jumentix/runtime-infra
+
+Infrastructure helpers used while compiling and running adapter runtimes.
+
+## O que é
+
+Infrastructure helpers used while compiling and running adapter runtimes.
+
+## Por que existe
+
+Low-level runtime utilities were duplicated across adapters.
+
+**Quando usar:** Working inside backend adapter composition (with bootstrap).
+
+**Quando não usar:** Building UI features or offline IndexedDB features.
+
+## Responsabilidade no escopo
+
+- **Camada:** runtime / infrastructure helpers
+- **Fronteira do problema:** Runtime infrastructure compiler utilities.
+- **Usado com:** adapter-runtime-bootstrap and adapter docs.
+- **Composição típica:** Used under the hood by backend composition.
+- **Jornadas:** Runtime contracts reference after REST guide.
+- **Não é responsável por:** Business use-cases or SDK HTTP calls.
+
+## Pré-requisitos
+
+- Bun 1.3.14+ (pin do monorepo) ou o Node do seu serviço
+- Leia [Começando](/docs/pt-BR/jumentix/concepts/getting-started)
+- TypeScript básico (`import`/módulos)
+
+## Glossário
+
+- **Porta (port)** — contrato TypeScript da aplicação (sem tipos de vendor).
+- **Adaptador** — implementação concreta de driver/broker/protocolo.
+- **Composition root** — startup que liga env → adaptadores → use-cases.
+
+## Passos numerados
+
+### 1. Instalar
+
+```bash
+Consumed via backend-template / monorepo composition.
+```
+
+### 2. Primeiro sucesso (<30 min)
+
+```ts
+// Juniors rarely import this directly.
+// Learn it after you can boot backend-template via the REST guide,
+// then inspect how composition uses runtime helpers.
+```
+
+
+### 3. Fluxos centrais
+
+### 1. Follow REST guide first
+
+Get a service running before digging here.
+
+### 2. Read with bootstrap
+
+Treat this as a support package under adapter-runtime-bootstrap.
+
+### 3. Avoid UI imports
+
+Never bundle into SPA code.
+
+
+### 4. Superfície prática (exports)
+
+- `(see package barrel — runtime infra helpers)`
+
+Use os exports nas camadas de aplicação/adaptadores — não em entidades de domínio.
+
+## Erros comuns
+
+| Sintoma | Causa | Correção |
+|---------|-------|----------|
+| Imported in frontend | Wrong runtime | Remove the dependency from browser bundles. |
+
+**Como verificar:** o snippet de primeiro sucesso roda (ou typechecka no serviço) e o use-case depende só de ports.
+
+## Checklist júnior (“Eu consigo …”)
+
+- [ ] I know this supports backend composition only
+- [ ] I can find the next learning step (adapters / REST guide)
+
+## Próximo passo
+
+Continue com [Adapters hub](/docs/pt-BR/jumentix/adapters).

@@ -1,0 +1,94 @@
+# @jumentix/database-client-factory
+
+Compiles the correct database client implementation from environment/driver configuration.
+
+## O que é
+
+Compiles the correct database client implementation from environment/driver configuration.
+
+## Por que existe
+
+Services hard-coded a driver. Switching Mongo→SQL meant editing use-cases. The factory keeps selection at the composition root.
+
+**Quando usar:** Bootstrapping a backend runtime that must pick a DB driver from env.
+
+**Quando não usar:** Browser apps, or when you only need the port types.
+
+## Responsabilidade no escopo
+
+- **Camada:** persistence / runtime composition
+- **Fronteira do problema:** `buildDatabaseClientCompilers`, `DriverName`, and related factory types.
+- **Usado com:** Works with persistence-contracts + external-* adapters.
+- **Composição típica:** env driver → factory → client/stores → use-cases.
+- **Jornadas:** backend-template / REST guide runtime setup.
+- **Não é responsável por:** SQL query building inside use-cases or OpenAPI routing.
+
+## Pré-requisitos
+
+- Bun 1.3.14+ (pin do monorepo) ou o Node do seu serviço
+- Leia [Começando](/docs/pt-BR/jumentix/concepts/getting-started)
+- TypeScript básico (`import`/módulos)
+
+## Glossário
+
+- **Porta (port)** — contrato TypeScript da aplicação (sem tipos de vendor).
+- **Adaptador** — implementação concreta de driver/broker/protocolo.
+- **Composition root** — startup que liga env → adaptadores → use-cases.
+
+## Passos numerados
+
+### 1. Instalar
+
+```bash
+bun add @jumentix/database-client-factory
+```
+
+### 2. Primeiro sucesso (<30 min)
+
+```ts
+import { buildDatabaseClientCompilers } from '@jumentix/database-client-factory';
+
+const compilers = buildDatabaseClientCompilers();
+// Select compiler from env (e.g. DB_DRIVER=mongo) at composition root.
+```
+
+
+### 3. Fluxos centrais
+
+### 1. Read driver from env
+
+Map `DB_DRIVER` (or project equivalent) to `DriverName`.
+
+### 2. Compile once at boot
+
+Do not rebuild clients per request.
+
+### 3. Inject ports upward
+
+Pass contracts to use-cases, not the factory.
+
+
+### 4. Superfície prática (exports)
+
+- `buildDatabaseClientCompilers`
+- `DriverName`
+- `IDatabaseClientLike`
+
+Use os exports nas camadas de aplicação/adaptadores — não em entidades de domínio.
+
+## Erros comuns
+
+| Sintoma | Causa | Correção |
+|---------|-------|----------|
+| Unknown driver string | Env typo | Fail closed with a clear error listing supported drivers. |
+
+**Como verificar:** o snippet de primeiro sucesso roda (ou typechecka no serviço) e o use-case depende só de ports.
+
+## Checklist júnior (“Eu consigo …”)
+
+- [ ] I can select a driver from env without touching domain code
+- [ ] I know the factory is Node/backend-only
+
+## Próximo passo
+
+Continue com [external-store-proxy](/docs/pt-BR/jumentix/packages/external-store-proxy).

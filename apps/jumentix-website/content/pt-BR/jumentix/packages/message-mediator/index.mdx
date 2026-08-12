@@ -1,0 +1,37 @@
+---
+title: "@jumentix/message-mediator"
+description: "Mediação de mensagens em processo e via brokers."
+---
+
+> Source: `../../packages/message-mediator/README.pt-BR.md`
+
+# @jumentix/message-mediator
+
+Pacote de workspace para contratos do Message Mediator Jumentix e seu adaptador in-memory de
+referência.
+
+Escopo extraído atual:
+
+- contratos principais (`IMessage`, `IMessageResponse`, metadados)
+- barramento de eventos e interfaces de mediador
+- adaptador in-memory;
+- adaptador RabbitMQ;
+- adaptador BullMQ;
+- helper `compileMessageMediator` orientado pelo ambiente.
+
+## Responsabilidade no escopo
+
+- **Camada:** messaging / adaptador de aplicação
+- **Responsável por:** mediação em processo ou via broker
+- **Usado com:** use-cases de backend
+- **Não responsável por:** rotas OpenAPI ou persistência de banco
+
+## Experimente no navegador
+
+Mediator in-memory:
+
+<DocsPlayground runtime="message-mediator" id="getting-started" />
+
+## Documentação completa
+
+Veja o [guia de uso](/docs/pt-BR/jumentix/packages/message-mediator/usage).

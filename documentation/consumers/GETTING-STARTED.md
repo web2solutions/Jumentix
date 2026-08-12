@@ -1,0 +1,213 @@
+# Getting started with Jumentix
+
+## Responsibility in context
+
+- **Owns:** the public on-ramp for juniors adopting Jumentix (mental model + first journey)
+- **Stack:** concepts / learning path (not a runtime package)
+- **Used with:** guides (REST, realtime, SPA/PWA), public packages hub, apps hubs
+- **Not responsible for:** private workspace tooling docs (config-*, agent-registry, cli-init, security-scanner)
+
+## What it is
+
+Jumentix is a **software factory framework**: you describe business rules and API
+contracts once, then generate and run REST APIs, realtime channels, and offline
+clients from the same core. This page is the on-ramp for junior developers who
+have never used Jumentix before.
+
+## Why it exists
+
+Product teams often rebuild the same plumbing — HTTP wiring, OpenAPI alignment,
+WebSocket handlers, IndexedDB sync — in every project. Jumentix gives you a
+repeatable path so you spend time on domain logic instead of adapter glue. This
+page gets you from zero to a verified first success in under 30 minutes.
+
+## Prerequisites
+
+| Item | Minimum | How to verify |
+| --- | --- | --- |
+| **Bun** | 1.3.14+ (pinned in the monorepo) | `bun --version` prints `1.3.14` or higher |
+| **Terminal** | Any modern shell | You can run commands in your project folder |
+| **Editor** | VS Code, Cursor, or similar | You can open TypeScript files |
+| **Node.js** | 22.x (optional) | Only needed if a legacy tool still requires Node |
+
+Install Bun if you do not have it yet:
+
+```bash
+curl -fsSL https://bun.sh/install | bash
+bun --version
+```
+
+**Prior reading (skim once, return when a term appears):**
+
+- [Jumentix Overview](/docs/jumentix/concepts/overview)
+- [Architecture](/docs/jumentix/concepts/architecture)
+
+## Glossary
+
+| Term | Plain meaning |
+| --- | --- |
+| **Contract** | A machine-readable description of an API shape — usually OpenAPI (REST) or AsyncAPI (realtime). |
+| **Adapter** | Code that connects your domain to a technology (Express, Socket.IO, IndexedDB, Redis, etc.). Adapters are swappable. |
+| **Domain** | Business entities, rules, and events — the code that should not change when you swap HTTP frameworks. |
+| **Use case** | Application-layer logic that orchestrates domain rules for one user-facing action. |
+| **Port** | An interface your domain defines; an adapter implements it. |
+| **Hexagonal architecture** | Domain at the center; adapters on the outside. Also called ports and adapters. |
+| **OpenAPI** | YAML/JSON spec describing REST endpoints, request bodies, and response shapes. |
+| **AsyncAPI** | Spec describing channels and message payloads for WebSocket or event streams. |
+| **Bun** | Fast JavaScript/TypeScript runtime and package manager used across Jumentix workspaces. |
+| **backend-template** | Reference backend app in the monorepo that shows REST/realtime composition for juniors. |
+| **Cana** | `@jumentix/cana` — IndexedDB adapter for offline-first PWAs. |
+| **Service Management** | The Jumentix app where Domain Designer and service configuration live. |
+
+## Numbered steps
+
+### Step 1 — Install the toolchain (< 5 minutes)
+
+1. Install Bun (see Prerequisites).
+2. Confirm the version gate passes: `bun --version`.
+
+**Success check:** the command exits 0 and prints a semver ≥ 1.3.14.
+
+### Step 2 — Pick your starting path (< 2 minutes)
+
+Choose one path — do not try both on day one:
+
+| Path | When to use | First command after setup |
+| --- | --- | --- |
+| **Consume published packages** | You build an app that calls Jumentix SDKs | `bun add @jumentix/sdk-rest-client` |
+| **Work inside the monorepo** | You contribute to or extend the factory itself | `bun install` at the repo root |
+| **Study the reference backend** | You need a working REST/realtime service to copy patterns from | See Step 3 (backend-template) |
+
+For product teams consuming published packages:
+
+```bash
+bun add @jumentix/cana @jumentix/sdk-rest-client
+```
+
+For contributors working in the full workspace:
+
+```bash
+cd Jumentix
+bun install
+```
+
+**Success check:** `bun install` completes without errors; `node_modules` exists.
+
+### Step 3 — Open the reference backend (< 10 minutes)
+
+Private bootstrap tooling is **not** documented on this public site. For your first
+backend, study the reference app already in the monorepo:
+
+```bash
+cd apps/backend-template
+bun install
+# follow scripts in that app's package.json / README for local run
+```
+
+Then open the [REST API guide](/docs/jumentix/guides/rest-api) and reproduce the
+hello path against that template.
+
+**Success check:** you can locate the HTTP adapter + a use-case folder inside
+`apps/backend-template` and open the REST guide next.
+
+### Step 4 — Learn the mental model (< 5 minutes)
+
+Keep this picture visible while you read guides:
+
+```
+[ Adapters ]  Express / Fastify / Socket.IO / gRPC / IndexedDB (Cana)
+      ↓
+[ Application ] use-cases, ports
+      ↓
+[ Domain ] entities, rules, events
+```
+
+Three rules that prevent most junior mistakes:
+
+1. **Contracts first** — OpenAPI / AsyncAPI / shared packages describe the shape before you wire handlers.
+2. **Adapters are replaceable** — swap Express for Fastify without rewriting domain code.
+3. **Offline is first-class** — `@jumentix/cana` is the IndexedDB adapter for PWAs; it is not the same as `localStorage`.
+
+### Step 5 — First success: touch Cana in the browser (< 10 minutes)
+
+Before building a full API, confirm the docs toolchain works. Run the playground
+below — **Run** should return a green result, then **Reset** should restore the
+starting state.
+
+<DocsPlayground runtime="cana" id="getting-started" />
+
+**Success check:** playground Run completes without errors; you see IndexedDB
+records created in the output panel.
+
+### Step 6 — Core workflows (this week)
+
+Complete these guides in order when you need each capability:
+
+| Order | Guide | You will |
+| --- | --- | --- |
+| 1 | [Create a REST API](/docs/jumentix/guides/rest-api) | Start a REST service, align OpenAPI, call it from `@jumentix/sdk-rest-client` |
+| 2 | [Create a Realtime API](/docs/jumentix/guides/realtime-api) | Enable WebSocket (or gRPC server-to-server) with REST fallback |
+| 3 | [Create a SPA or Offline PWA](/docs/jumentix/guides/spa-pwa) | Model domains in Service Management and persist offline with Cana |
+| 4 | [SaaS Monolith](/docs/jumentix/guides/saas-monolith) | Ship one deployment unit with modular boundaries |
+| 5 | [SaaS Microservices](/docs/jumentix/guides/saas-microservices) | Split bounded contexts when scale demands it |
+
+### Step 7 — Full surface (when you need lookup, not tutorials)
+
+| Area | Path | Use when |
+| --- | --- | --- |
+| Packages | [/docs/jumentix/packages](/docs/jumentix/packages) | You need API docs or a **Try it** playground |
+| Adapters | [/docs/jumentix/adapters/http](/docs/jumentix/adapters/http) | You pick HTTP, database, or realtime adapters |
+| Reference | [/docs/jumentix/reference/errors-responses](/docs/jumentix/reference/errors-responses) | You debug status codes and error contracts |
+| AI maps | [/llms.txt](/llms.txt), [/docs-index.json](/docs-index.json) | Agents or search tools need a machine-readable index |
+
+## Examples
+
+### Minimal REST client call (static)
+
+Inject the OpenAPI document in the browser — do not load specs with Node `fs`:
+
+```js
+const client = api.createMockClient();
+const result = await client.request({ method: 'GET', path: '/health' });
+console.log(result.status, result.body);
+```
+
+See the interactive version on [Create a REST API](/docs/jumentix/guides/rest-api).
+
+### Offline record with Cana (static)
+
+```js
+const client = await cana.open({ name: 'my-app', version: 1 });
+await client.put('tasks', { id: '1', title: 'Hello Jumentix' });
+const task = await client.get('tasks', '1');
+console.log(task.title);
+```
+
+Use the Cana playground in Step 5 to run this pattern live.
+
+## Common errors
+
+| Symptom | Likely cause | Fix | Verify success |
+| --- | --- | --- | --- |
+| `bun: command not found` | Bun not on PATH | Re-run the install script; restart the terminal | `bun --version` works |
+| `TransactionInactive` in Cana | `await fetch` (or other non-IndexedDB I/O) inside a Cana transaction | Only await IndexedDB work inside the transaction callback | Playground Run green; no transaction errors |
+| REST client cannot load specs | Node `fs` loader used in the browser | Inject the OpenAPI object (see REST guide playground) | Mock client returns `/health` |
+| Works in memory, fails in Redis | Wrong key-value adapter for the runtime | Start with InMemory in tests; use Redis adapter only in Node | Unit tests pass locally |
+| Lost offline data | Expecting `localStorage` to behave like IndexedDB | Use Cana; read `client.backend` after `open()` | Records survive page reload |
+| Cannot find adapters in backend-template | Wrong folder | Stay under `apps/backend-template` and use the REST guide map | You can name one HTTP adapter file |
+
+## Junior checklist (“I can …”)
+
+- [ ] Install Bun 1.3.14+ and confirm `bun --version`.
+- [ ] Explain the adapter → application → domain layers using the diagram above.
+- [ ] Scaffold or open a Jumentix service and locate `.jumentix/service-profile.json`.
+- [ ] Run the Cana playground (**Run** green, **Reset** restores state).
+- [ ] Name the difference between OpenAPI (REST) and AsyncAPI (realtime).
+- [ ] Open the [REST guide](/docs/jumentix/guides/rest-api) and know it is my next hands-on task.
+- [ ] Find package docs and playgrounds at [/docs/jumentix/packages](/docs/jumentix/packages).
+
+## Next step
+
+Go to [Create a REST API](/docs/jumentix/guides/rest-api) and complete the
+hello-world path end to end — that is the default second page in the learning
+journey.

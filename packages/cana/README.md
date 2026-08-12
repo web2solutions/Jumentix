@@ -19,6 +19,13 @@ await client.open();
 await client.table('designs').add({ id: 1, name: 'first', owner: 'ana' });
 ```
 
+## Responsibility in context
+
+- **Stack layer:** offline / browser persistence adapter
+- **Owns:** IndexedDB client API (with explicit localStorage fallback) for PWAs
+- **Used with:** designer-core, SPA/PWA guide, service-management
+- **Not responsible for:** server databases, Redis KV, REST/WebSocket protocols
+
 ## Three things to know before using it
 
 **IndexedDB preferred; localStorage fallback is explicit and degraded.** After
@@ -53,20 +60,22 @@ import { isCanaError, isCanaErrorCode } from '@jumentix/cana';
 if (isCanaErrorCode(error, 'QuotaExceeded')) { /* ... */ }
 ```
 
-## Full documentation
+## Try it in the browser
 
-**Usage guide** — API reference, querying, transactions, hooks, crash recovery,
-troubleshooting:
+Run a first client against IndexedDB in this page:
 
-- English: [`CANA-USAGE-GUIDE.md`](../../documentation/md/CANA-USAGE-GUIDE.md)
-- Português: [`CANA-USAGE-GUIDE.pt-BR.md`](../../documentation/md/CANA-USAGE-GUIDE.pt-BR.md)
+<CanaPlayground id="getting-started" />
 
-**Design rationale** — why each behaviour is what it is, and what is not yet
-proven:
+## Junior checklist (“I can …”)
 
-- English: [`CANA-INDEXEDDB-ADAPTER.md`](../../documentation/md/CANA-INDEXEDDB-ADAPTER.md)
-- Português: [`CANA-INDEXEDDB-ADAPTER.pt-BR.md`](../../documentation/md/CANA-INDEXEDDB-ADAPTER.pt-BR.md)
+- [ ] Open a client, add a row, and read it back.
+- [ ] Check `client.backend` after `open()` and explain indexeddb vs localStorage.
+- [ ] Avoid `TransactionInactive` by keeping foreign `await`s outside transactions.
 
-The release-readiness notes in that document are required reading before
-relying on this package in production. Real dedicated Worker hosting and the
-localStorage fallback path are covered by the Cana browser suite (JUM-615).
+## Next step
+
+Continue with the consumer [usage guide](../../documentation/md/CANA-USAGE-GUIDE.md)
+for the full API, querying, transactions, hooks, crash recovery, and
+troubleshooting — then
+[designer-core](/docs/jumentix/packages/designer-core/usage) to validate designs
+before you persist them.

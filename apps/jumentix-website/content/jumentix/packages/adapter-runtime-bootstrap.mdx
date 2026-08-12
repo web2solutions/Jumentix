@@ -1,14 +1,100 @@
 ---
 title: "@jumentix/adapter-runtime-bootstrap"
-description: "Packages documentation."
+description: "Shared adapter runtime bootstrap compiler."
 ---
 
-> Source: `../../packages/adapter-runtime-bootstrap/README.md`
+> Source: `../../documentation/consumers/packages/adapter-runtime-bootstrap.md`
 
 # @jumentix/adapter-runtime-bootstrap
 
-Shared runtime bootstrap helpers for HTTP, WebSocket, and gRPC adapters.
+Shared compiler that boots adapter runtimes from environment-driven composition.
 
-## Exports
+## What it is
 
-- `compileAdapterRuntime`
+Shared compiler that boots adapter runtimes from environment-driven composition.
+
+## Why it exists
+
+Each service copied bootstrap glue. Drift caused subtle env bugs. This package centralizes composition.
+
+**When to use:** Composing HTTP/realtime/DB adapters in a backend service.
+
+**When not to use:** Frontend-only apps or package-level unit tests that fake ports.
+
+## Responsibility in context
+
+- **Stack layer:** runtime / composition
+- **Problem boundary it owns:** Adapter runtime bootstrap compilation helpers.
+- **Used with:** runtime-infra, database-client-factory, HTTP/realtime adapter docs.
+- **Typical composition:** backend-template composition root.
+- **Journeys:** REST / Realtime guides → runtime reference.
+- **Not responsible for:** Domain rules or OpenAPI authoring.
+
+## Prerequisites
+
+- Bun 1.3.14+ (monorepo pin) or the Node runtime your service already uses
+- Read [Getting started](/docs/jumentix/concepts/getting-started) first
+- Basic TypeScript modules/`import` knowledge
+
+## Glossary
+
+- **Port** — TypeScript contract the application depends on (no vendor types).
+- **Adapter** — Concrete implementation that talks to a driver, broker, or protocol.
+- **Composition root** — Process startup code that wires env → adapters → use-cases.
+
+## Numbered steps
+
+### 1. Install
+
+```bash
+Used from the monorepo/backend-template composition — prefer following the REST guide first.
+```
+
+### 2. First success (<30 min)
+
+```ts
+// At the service composition root (backend-template pattern):
+// 1) read env
+// 2) compile adapters through the bootstrap helpers
+// 3) mount HTTP/realtime servers
+// Follow the REST guide for the full walkthrough.
+```
+
+
+### 3. Core workflows
+
+### 1. Read env contracts
+
+Use documented runtime env vars.
+
+### 2. Compile adapters once
+
+Bootstrap at process start.
+
+### 3. Mount interfaces
+
+HTTP/realtime adapters receive compiled deps.
+
+
+### 4. Full practical surface (exports)
+
+- `(see package barrel — bootstrap compilers/helpers)`
+
+Use exports from application/adapters layers as described above — not from domain entities.
+
+## Common errors
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| Missing env | Incomplete .env | Compare with runtime contracts reference. |
+
+**Verify success:** the first-success snippet runs (or typechecks against your service) and your use-case depends only on ports.
+
+## Junior checklist (“I can …”)
+
+- [ ] I can point to where bootstrap runs in backend-template
+- [ ] I know this is backend composition, not a browser package
+
+## Next step
+
+Continue with [runtime-infra](/docs/jumentix/packages/runtime-infra).

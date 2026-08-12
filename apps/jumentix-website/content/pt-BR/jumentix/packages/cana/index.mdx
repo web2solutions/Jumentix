@@ -1,0 +1,89 @@
+---
+title: "@jumentix/cana"
+description: "Adaptador de banco de dados offline sobre IndexedDB para aplicações Jumentix."
+---
+
+> Source: `../../packages/cana/README.pt-BR.md`
+
+# @jumentix/cana
+
+Adaptador de banco de dados offline sobre IndexedDB para aplicações Jumentix.
+
+```ts
+import { createClient } from '@jumentix/cana';
+
+const client = createClient({
+  name: 'designer',
+  schema: {
+    version: 1,
+    stores: [
+      { name: 'designs', keyPath: 'id', indexes: [{ name: 'byOwner', keyPath: 'owner' }] }
+    ]
+  }
+});
+
+await client.open();
+await client.table('designs').add({ id: 1, name: 'first', owner: 'ana' });
+```
+
+## Responsabilidade no escopo
+
+- **Camada:** persistência offline / browser
+- **Responsável por:** API de cliente IndexedDB (com fallback explícito localStorage) para PWAs
+- **Usado com:** designer-core, guia SPA/PWA, service-management
+- **Não responsável por:** bancos server-side, Redis KV, REST/WebSocket
+
+## Três coisas a saber antes de usar
+
+**IndexedDB preferido; fallback em localStorage é explícito e degradado.** Depois
+de `open()`, leia `client.backend`: `'indexeddb'` ou `'localStorage'`. Quando o
+IndexedDB não abre, o Cana abre por padrão um store em localStorage
+(`fallback: 'localStorage'`). Esse caminho tem cota menor e sem índices reais —
+a avaliação de durabilidade reporta `best-effort`. Passe `fallback: false` para
+voltar ao `Unavailable` terminal. Não há dual-write nem auto-promote entre os
+dois stores; use `exportAll()` / import para mover dados.
+
+**Escritas têm três desfechos, não dois.** `committed | rolled-back | unknown`.
+O terceiro cobre uma transação derrubada sem que nenhum dos dois eventos
+dispare — um worker morto, uma aba fechada. Ative `operationLedger: true` e
+`resolveWrite()` responderá de forma definitiva, porque o id da operação é
+gravado dentro da mesma transação que os dados.
+
+**Nunca dê `await` em algo que não seja uma requisição do IndexedDB dentro de
+uma transação.** A transação faz auto-commit assim que o event loop cede sem
+requisições pendentes, então `await fetch(...)` não pausa a transação — ele a
+encerra. O Cana reporta a violação como `TransactionInactive` em vez de deixar
+uma `DOMException` crua escapar.
+
+## Erros são dados puros
+
+`CanaError` não é uma subclasse de `Error`, porque o structured clone não
+preserva identidade de classe ao atravessar o armazenamento ou a fronteira de um
+worker — uma verificação `instanceof` passaria a retornar `false` sem avisar.
+Use os guards:
+
+```ts
+import { isCanaError, isCanaErrorCode } from '@jumentix/cana';
+
+if (isCanaErrorCode(error, 'QuotaExceeded')) { /* ... */ }
+```
+
+## Experimente no navegador
+
+Execute um primeiro client contra IndexedDB nesta página:
+
+<CanaPlayground id="getting-started" />
+
+## Checklist júnior (“Eu consigo …”)
+
+- [ ] Abrir um client, adicionar uma linha e lê-la de volta.
+- [ ] Conferir `client.backend` após `open()` e explicar indexeddb vs localStorage.
+- [ ] Evitar `TransactionInactive` mantendo `await`s externos fora de transações.
+
+## Próximo passo
+
+Continue no [guia de uso](/docs/pt-BR/jumentix/packages/cana/usage) do
+consumidor — API completa, consultas, transações, hooks, recuperação de falhas e
+solução de problemas — depois
+[designer-core](/docs/pt-BR/jumentix/packages/designer-core/usage) para validar
+designs antes de persistir.

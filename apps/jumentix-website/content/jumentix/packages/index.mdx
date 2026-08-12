@@ -1,62 +1,49 @@
 ---
-title: "Jumentix Workspace Packages"
-description: "Packages documentation."
+title: "Jumentix packages"
+description: "Consumer package map for adopters (public site; private tooling excluded)."
 ---
 
-> Source: `../../packages/README.md`
+> Source: `../../documentation/consumers/PACKAGES-HUB.md`
 
-# Jumentix Workspace Packages
+# Jumentix packages (consumer map)
 
-This folder contains reusable npm packages shared across Jumentix applications.
+This hub lists **packages documented for adopters** on the public site.
 
-## Package Index
+Internal/private workspace packages (shared ESLint/Jest/TS configs, agent registry,
+security scanner, CLI bootstrap, and any `package.json` `"private": true` package
+without a curated consumer page) are **not** published here.
 
-### Runtime and persistence
+## Start here
 
-- [`@jumentix/adapter-runtime-bootstrap`](/docs/jumentix/packages/adapter-runtime-bootstrap) - shared adapter runtime composition.
-- [`@jumentix/database-client-factory`](/docs/jumentix/packages/database-client-factory) - database client compilation by selected driver.
-- [`@jumentix/external-db-repositories`](/docs/jumentix/packages/external-db-repositories) - reusable external database repositories.
-- [`@jumentix/external-persistence-core`](/docs/jumentix/packages/external-persistence-core) - base external-persistence contracts and implementations.
-- [`@jumentix/external-store-proxy`](/docs/jumentix/packages/external-store-proxy) - native database client to `IStore` bridges.
-- [`@jumentix/key-value-storage`](/docs/jumentix/packages/key-value-storage) - key-value contracts and in-memory/Redis adapters.
-- [`@jumentix/mutex-service`](/docs/jumentix/packages/mutex-service) - reusable mutex compiler and runtime adapter.
-- [`@jumentix/persistence-contracts`](/docs/jumentix/packages/persistence-contracts) - shared `IDatabaseClient` and `IStore` abstractions.
-- [`@jumentix/runtime-infra`](/docs/jumentix/packages/runtime-infra) - runtime environment and infrastructure helpers.
+1. [Getting started](/docs/jumentix/concepts/getting-started)
+2. Offline UI: [designer-core](/docs/jumentix/packages/designer-core) → [cana](/docs/jumentix/packages/cana)
+3. HTTP consumers: [sdk-rest-client](/docs/jumentix/packages/sdk-rest-client)
+4. Persistence ports: [persistence-contracts](/docs/jumentix/packages/persistence-contracts)
 
-### Messaging, bootstrap, and contracts
+## Browser / offline
 
-- [`@jumentix/cli-init`](/docs/jumentix/packages/cli-init) - bootstrap CLI for project structures.
-- [`@jumentix/message-mediator`](/docs/jumentix/packages/message-mediator) - event and request/response mediator.
-- [`@jumentix/shared-contracts`](/docs/jumentix/packages/shared-contracts) - shared canonical OpenAPI/AsyncAPI spec resolution helpers.
+- [@jumentix/cana](/docs/jumentix/packages/cana)
+- [@jumentix/designer-core](/docs/jumentix/packages/designer-core)
 
-### SDK clients
+## Persistence
 
-- [`@jumentix/sdk-rest-client`](/docs/jumentix/packages/sdk-rest-client) - REST SDK client.
-- [`@jumentix/sdk-websocket-client`](/docs/jumentix/packages/sdk-websocket-client) - WebSocket SDK client.
-- [`@jumentix/sdk-grpc-client`](/docs/jumentix/packages/sdk-grpc-client) - gRPC SDK client.
+- [@jumentix/persistence-contracts](/docs/jumentix/packages/persistence-contracts)
+- [@jumentix/external-persistence-core](/docs/jumentix/packages/external-persistence-core)
+- [@jumentix/external-db-repositories](/docs/jumentix/packages/external-db-repositories)
+- [@jumentix/external-store-proxy](/docs/jumentix/packages/external-store-proxy)
+- [@jumentix/database-client-factory](/docs/jumentix/packages/database-client-factory)
+- [@jumentix/key-value-storage](/docs/jumentix/packages/key-value-storage)
+- [@jumentix/mutex-service](/docs/jumentix/packages/mutex-service)
 
-### Service Management
+## Communication
 
-- [`@jumentix/designer-core`](/docs/jumentix/packages/designer-core) - framework-free designer core (model, validation, exporters, importers, domain-package versioning); browser-safe ESM, dry-run-only publish.
+- [@jumentix/shared-contracts](/docs/jumentix/packages/shared-contracts)
+- [@jumentix/sdk-rest-client](/docs/jumentix/packages/sdk-rest-client)
+- [@jumentix/sdk-websocket-client](/docs/jumentix/packages/sdk-websocket-client)
+- [@jumentix/sdk-grpc-client](/docs/jumentix/packages/sdk-grpc-client)
+- [@jumentix/message-mediator](/docs/jumentix/packages/message-mediator)
 
-### Private workspace configuration
+## Runtime composition
 
-- [`@jumentix/config-eslint`](/docs/jumentix/packages/config-eslint) - reserved shared ESLint configuration.
-- [`@jumentix/config-jest`](/docs/jumentix/packages/config-jest) - reserved shared Jest configuration.
-- [`@jumentix/config-ts`](/docs/jumentix/packages/config-ts) - reserved shared TypeScript configuration.
-
-Packages described as **reserved** are intentionally private placeholders in the current `dev`
-baseline. Their scripts report that the migration wave is pending; they must not be documented as
-published or production-ready.
-
-## Usage Pattern
-
-Each package has its own English and Portuguese README, scripts, and ownership boundaries. Import
-packages from applications instead of duplicating adapter logic in each app. The canonical runtime
-is Bun 1.3.14 for internal engineering workflows, with Node.js 22 kept as the explicit
-consumer-facing compatibility target where packages expose Node runtime artifacts.
-
-## Related Docs
-
-- [Jumentix Workspace Packages (Architecture)](https://github.com/XpertMinds/Jumentix/blob/dev/documentation/md/JUMENTIX-WORKSPACE-PACKAGES.md)
-- [SDK Compatibility Bridge](https://github.com/XpertMinds/Jumentix/blob/dev/documentation/md/SDK-COMPATIBILITY-BRIDGE.md)
+- [@jumentix/adapter-runtime-bootstrap](/docs/jumentix/packages/adapter-runtime-bootstrap)
+- [@jumentix/runtime-infra](/docs/jumentix/packages/runtime-infra)

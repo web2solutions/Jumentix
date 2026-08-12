@@ -1,0 +1,96 @@
+# @jumentix/external-persistence-core
+
+Shared base class and connection options for every external database repository adapter.
+
+## O que é
+
+Shared base class and connection options for every external database repository adapter.
+
+## Por que existe
+
+Without a shared base, each DB adapter reinvented connect/disconnect and options shapes.
+
+**Quando usar:** You are implementing or extending an external DB repository adapter.
+
+**Quando não usar:** You only need the port types (use persistence-contracts) or a finished Mongo/SQL class (use external-db-repositories).
+
+## Responsabilidade no escopo
+
+- **Camada:** persistence / adapter base
+- **Fronteira do problema:** `BaseExternalDataRepository` and `IRepositoryConnectionOptions`.
+- **Usado com:** Concrete adapters in `@jumentix/external-db-repositories`; ports in `@jumentix/persistence-contracts`.
+- **Composição típica:** extended by external-db-repositories classes; configured at backend composition root.
+- **Jornadas:** Persistence packages after Getting started / REST guide.
+- **Não é responsável por:** Concrete Mongo/SQL drivers, HTTP, or offline browser storage.
+
+## Pré-requisitos
+
+- Bun 1.3.14+ (pin do monorepo) ou o Node do seu serviço
+- Leia [Começando](/docs/pt-BR/jumentix/concepts/getting-started)
+- TypeScript básico (`import`/módulos)
+
+## Glossário
+
+- **Porta (port)** — contrato TypeScript da aplicação (sem tipos de vendor).
+- **Adaptador** — implementação concreta de driver/broker/protocolo.
+- **Composition root** — startup que liga env → adaptadores → use-cases.
+
+## Passos numerados
+
+### 1. Instalar
+
+```bash
+bun add @jumentix/external-persistence-core
+```
+
+### 2. Primeiro sucesso (<30 min)
+
+```ts
+import { BaseExternalDataRepository } from '@jumentix/external-persistence-core';
+
+// Prefer ready adapters in external-db-repositories.
+// Extend the base only when adding a new driver adapter.
+class DemoRepository extends BaseExternalDataRepository {
+  // implement driver-specific connect/query hooks
+}
+```
+
+
+### 3. Fluxos centrais
+
+### 1. Read connection options
+
+Pass URI/database/options objects — never hardcode secrets.
+
+### 2. Extend base for a new driver
+
+Subclass only when a supported adapter does not exist yet.
+
+### 3. Keep domain pure
+
+Expose ports upward; hide driver types inside the adapter.
+
+
+### 4. Superfície prática (exports)
+
+- `IRepositoryConnectionOptions`
+- `BaseExternalDataRepository`
+
+Use os exports nas camadas de aplicação/adaptadores — não em entidades de domínio.
+
+## Erros comuns
+
+| Sintoma | Causa | Correção |
+|---------|-------|----------|
+| Subclass leaks mongoose types to use-cases | Boundary break | Map to persistence-contracts types before crossing the port. |
+
+**Como verificar:** o snippet de primeiro sucesso roda (ou typechecka no serviço) e o use-case depende só de ports.
+
+## Checklist júnior (“Eu consigo …”)
+
+- [ ] I can explain the base vs concrete adapter split
+- [ ] I know not to put this package in browser code
+
+## Próximo passo
+
+Continue com [external-db-repositories](/docs/pt-BR/jumentix/packages/external-db-repositories).

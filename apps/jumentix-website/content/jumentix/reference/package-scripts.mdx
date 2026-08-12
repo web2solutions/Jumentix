@@ -288,3 +288,7 @@ bun run <command>
 | `test:integration:db-repositories` | Run tests for specific scope or profile. | `bun run test:integration:db-repositories` | `JUMENTIX_TEST_RUNTIME=bun NODE_ENV=dev RUN_DB_REPOSITORIES_INTEGRATION=1 bun ci-cd/run-suite.js --script-label db-repositories --timeout 120000 packages/external-db-repositories/test/integration` |
 | `smoke:message-mediator` | Run smoke checks for fast environment validation. | `bun run smoke:message-mediator` | `bun run docker:composemessaging && bun run test:integration:message-mediator && docker compose -f "apps/backend-template/docker-compose-messaging.yml" down` |
 | `smoke:db-repositories` | Run smoke checks for fast environment validation. | `bun run smoke:db-repositories` | `bun run docker:up:cassandra && bun run docker:up:mongodb && bun run test:integration:db-repositories; status=$?; bun run docker:down:cassandra; bun run docker:down:mongodb; exit $status` |
+
+## Next step
+
+Return to [Getting started](/docs/jumentix/concepts/getting-started) or the [packages hub](/docs/jumentix/packages).

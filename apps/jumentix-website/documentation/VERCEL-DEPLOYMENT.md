@@ -71,11 +71,9 @@ Set these on the Vercel project (Production + Preview):
 | --- | --- |
 | `GITHUB_TOKEN` | Changelog commits + GitHub releases API (`ChangelogPage`, `/api/github-releases`) |
 
-Optional:
-
-| Name | Purpose |
-| --- | --- |
-| `NEXT_PUBLIC_VERCEL_ENV` | Enables Vercel Analytics only when set by the platform |
+Vercel Analytics is mounted in the root App Router layout via
+`@vercel/analytics/react` (`<Analytics />`) and does not require a custom
+environment variable.
 
 ## Post-deploy verification
 

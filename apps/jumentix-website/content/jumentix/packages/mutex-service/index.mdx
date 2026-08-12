@@ -1,0 +1,48 @@
+---
+title: "@jumentix/mutex-service"
+description: "Named locks built on key/value storage."
+---
+
+> Source: `../../packages/mutex-service/README.md`
+
+# @jumentix/mutex-service
+
+Private reusable mutex adapter for Jumentix runtimes.
+
+## Responsibility in context
+
+- **Stack layer:** persistence / coordination
+- **Owns:** named locks backed by a KV client
+- **Used with:** key-value-storage
+- **Not responsible for:** business documents or messaging
+
+## Contract
+
+`MutexService.compile(keyValueStorageClient, options)` creates a process-wide singleton backed by an
+`IKeyValueStorageClient`. The client must implement asynchronous `get`, `set`, `del`, `connect`, and
+`disconnect` methods returning `IServiceResponse`.
+
+- `lock(resourceName, uuid)` returns `{ previouslyLocked, locked }` in `result`.
+- `isLocked(resourceName, uuid)` returns a boolean in `result`.
+- `unlock(resourceName, uuid)` forwards the storage deletion result.
+- Failures are returned in `error`; they are not thrown to the caller.
+- `reset()` clears the singleton, primarily for isolated tests and composition resets.
+
+The default key prefix is `mutex`; a custom `prefix` can be supplied at compilation.
+
+## Validation
+
+```bash
+bun run --filter @jumentix/mutex-service build
+bun run --filter @jumentix/mutex-service typecheck
+bun run --filter @jumentix/mutex-service lint
+bun run --filter @jumentix/mutex-service test
+```
+
+## Try it in the browser
+
+<DocsPlayground runtime="mutex-service" id="getting-started" />
+
+## Full documentation
+
+See the consumer [usage guide](/docs/jumentix/packages/mutex-service/usage).

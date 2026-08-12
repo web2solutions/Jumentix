@@ -1,63 +1,49 @@
 ---
-title: "Pacotes do workspace Jumentix"
-description: "Documentação de Pacotes."
+title: "Pacotes Jumentix"
+description: "Mapa de pacotes para adotantes (site público; tooling privado excluído)."
 ---
 
-> Source: `../../packages/README.pt-BR.md`
+> Source: `../../documentation/consumers/PACKAGES-HUB.pt-BR.md`
 
-# Pacotes do workspace Jumentix
+# Pacotes Jumentix (mapa do consumidor)
 
-Esta pasta contém os pacotes npm reutilizáveis e os pacotes privados de configuração compartilhados
-pelas aplicações Jumentix.
+Este hub lista **pacotes documentados para adotantes** no site público.
 
-## Índice de pacotes
+Pacotes internos/privados do workspace (configs ESLint/Jest/TS, agent registry,
+security scanner, CLI de bootstrap e qualquer pacote `"private": true` sem página
+curada) **não** são publicados aqui.
 
-### Runtime e persistência
+## Comece aqui
 
-- [`@jumentix/adapter-runtime-bootstrap`](/docs/pt-BR/jumentix/packages/adapter-runtime-bootstrap) - composição compartilhada do runtime de adapters.
-- [`@jumentix/database-client-factory`](/docs/pt-BR/jumentix/packages/database-client-factory) - compilação do cliente de banco por driver selecionado.
-- [`@jumentix/external-db-repositories`](/docs/pt-BR/jumentix/packages/external-db-repositories) - repositórios reutilizáveis para bancos externos.
-- [`@jumentix/external-persistence-core`](/docs/pt-BR/jumentix/packages/external-persistence-core) - contratos e implementações-base de persistência externa.
-- [`@jumentix/external-store-proxy`](/docs/pt-BR/jumentix/packages/external-store-proxy) - pontes entre clientes nativos e `IStore`.
-- [`@jumentix/key-value-storage`](/docs/pt-BR/jumentix/packages/key-value-storage) - contratos e adapters in-memory/Redis.
-- [`@jumentix/mutex-service`](/docs/pt-BR/jumentix/packages/mutex-service) - compiler e adapter reutilizável de mutex.
-- [`@jumentix/persistence-contracts`](/docs/pt-BR/jumentix/packages/persistence-contracts) - abstrações `IDatabaseClient` e `IStore`.
-- [`@jumentix/runtime-infra`](/docs/pt-BR/jumentix/packages/runtime-infra) - utilitários de ambiente e infraestrutura de runtime.
+1. [Começando](/docs/pt-BR/jumentix/concepts/getting-started)
+2. UI offline: [designer-core](/docs/pt-BR/jumentix/packages/designer-core) → [cana](/docs/pt-BR/jumentix/packages/cana)
+3. HTTP: [sdk-rest-client](/docs/pt-BR/jumentix/packages/sdk-rest-client)
+4. Persistência: [persistence-contracts](/docs/pt-BR/jumentix/packages/persistence-contracts)
 
-### Mensageria, bootstrap e contratos
+## Browser / offline
 
-- [`@jumentix/cli-init`](/docs/pt-BR/jumentix/packages/cli-init) - CLI de bootstrap de estruturas de projeto.
-- [`@jumentix/message-mediator`](/docs/pt-BR/jumentix/packages/message-mediator) - mediador de eventos e request/response.
-- [`@jumentix/shared-contracts`](/docs/pt-BR/jumentix/packages/shared-contracts) - auxiliares compartilhados de resolução de specs canônicas OpenAPI/AsyncAPI.
+- [@jumentix/cana](/docs/pt-BR/jumentix/packages/cana)
+- [@jumentix/designer-core](/docs/pt-BR/jumentix/packages/designer-core)
 
-### Clientes SDK
+## Persistência
 
-- [`@jumentix/sdk-rest-client`](/docs/pt-BR/jumentix/packages/sdk-rest-client) - cliente SDK REST.
-- [`@jumentix/sdk-websocket-client`](/docs/pt-BR/jumentix/packages/sdk-websocket-client) - cliente SDK WebSocket.
-- [`@jumentix/sdk-grpc-client`](/docs/pt-BR/jumentix/packages/sdk-grpc-client) - cliente SDK gRPC.
+- [@jumentix/persistence-contracts](/docs/pt-BR/jumentix/packages/persistence-contracts)
+- [@jumentix/external-persistence-core](/docs/pt-BR/jumentix/packages/external-persistence-core)
+- [@jumentix/external-db-repositories](/docs/pt-BR/jumentix/packages/external-db-repositories)
+- [@jumentix/external-store-proxy](/docs/pt-BR/jumentix/packages/external-store-proxy)
+- [@jumentix/database-client-factory](/docs/pt-BR/jumentix/packages/database-client-factory)
+- [@jumentix/key-value-storage](/docs/pt-BR/jumentix/packages/key-value-storage)
+- [@jumentix/mutex-service](/docs/pt-BR/jumentix/packages/mutex-service)
 
-### Service Management
+## Comunicação
 
-- [`@jumentix/designer-core`](/docs/pt-BR/jumentix/packages/designer-core) - núcleo do designer livre de framework (modelo, validação, exportadores, importadores, versionamento de pacotes de domínio); ESM seguro para navegador, publicação somente dry-run.
+- [@jumentix/shared-contracts](/docs/pt-BR/jumentix/packages/shared-contracts)
+- [@jumentix/sdk-rest-client](/docs/pt-BR/jumentix/packages/sdk-rest-client)
+- [@jumentix/sdk-websocket-client](/docs/pt-BR/jumentix/packages/sdk-websocket-client)
+- [@jumentix/sdk-grpc-client](/docs/pt-BR/jumentix/packages/sdk-grpc-client)
+- [@jumentix/message-mediator](/docs/pt-BR/jumentix/packages/message-mediator)
 
-### Configuração privada do workspace
+## Composição de runtime
 
-- [`@jumentix/config-eslint`](/docs/pt-BR/jumentix/packages/config-eslint) - configuração ESLint compartilhada reservada.
-- [`@jumentix/config-jest`](/docs/pt-BR/jumentix/packages/config-jest) - configuração Jest compartilhada reservada.
-- [`@jumentix/config-ts`](/docs/pt-BR/jumentix/packages/config-ts) - configuração TypeScript compartilhada reservada.
-
-Pacotes descritos como **reservados** são placeholders privados intencionais no `dev` atual. Seus
-scripts informam que a onda de migração está pendente; eles não devem ser apresentados como
-publicados ou prontos para produção.
-
-## Padrão de uso
-
-Cada pacote possui README em inglês e português, scripts e limites de propriedade. Importe os
-pacotes nas aplicações em vez de duplicar lógica de adapter. O runtime canônico dos fluxos internos
-de engenharia é Bun 1.3.14, com Node.js 22 mantido como alvo explícito de compatibilidade para
-artefatos de runtime expostos a consumidores.
-
-## Documentos relacionados
-
-- [Pacotes Jumentix Workspace (Arquitetura)](https://github.com/XpertMinds/Jumentix/blob/dev/documentation/md/JUMENTIX-WORKSPACE-PACKAGES.md)
-- [Ponte de compatibilidade do SDK](https://github.com/XpertMinds/Jumentix/blob/dev/documentation/md/SDK-COMPATIBILITY-BRIDGE.md)
+- [@jumentix/adapter-runtime-bootstrap](/docs/pt-BR/jumentix/packages/adapter-runtime-bootstrap)
+- [@jumentix/runtime-infra](/docs/pt-BR/jumentix/packages/runtime-infra)

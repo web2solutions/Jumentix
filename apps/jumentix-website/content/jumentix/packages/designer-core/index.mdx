@@ -1,0 +1,133 @@
+---
+title: "@jumentix/designer-core"
+description: "Browser-safe design document helpers for Jumentix frontends."
+---
+
+> Source: `../../packages/designer-core/README.md`
+
+# @jumentix/designer-core
+
+The framework-free Service Management designer core, published as a versioned
+`@jumentix` package under the xpertminds organization
+([JUM-493](https://linear.app/jumentix/issue/JUM-493/feature-publish-designer-core-as-jumentix-package-xpertminds-org-dry)).
+Browser-safe ESM, zero runtime dependencies, no DOM, no storage
+implementation.
+
+A versão em português deste documento está em
+[README.pt-BR.md](/docs/pt-BR/jumentix/packages/designer-core).
+
+## Responsibility in context
+
+- **Stack layer:** domain-model toolkit (no DOM)
+- **Owns:** normalize/validate/export/import of design documents
+- **Used with:** cana, SPA/PWA guide, service-management
+- **Not responsible for:** rendering UI, IndexedDB itself, HTTP APIs
+
+## What it is
+
+The designer core is the separable logic the JUM-468/JUM-469 modularization
+carved out of the Service Management designer (`apps/service-management`):
+everything the designer knows about a domain model, with nothing about how
+that model is rendered or persisted. **This package's `src/` is the canonical
+home of that code** — the dependency direction runs package → consumer,
+never package → app. The zero-build SPA consumes it through
+`@jumentix/designer-core/…` bare specifiers: the import map in
+`apps/service-management/index.html` resolves them to a vendored tree
+(`apps/service-management/vendor/designer-core/`, synced from this package by
+`ci-cd/sync-service-management-designer-core.js`, containment-safe under the
+app's static server), while Bun, Jest and tsc resolve the same specifiers to
+`src/` through the repo's path mappings. The publish build copies `src/` into
+`dist/` verbatim and generates type declarations from the JSDoc-annotated
+sources.
+
+**In the package:**
+
+- the domain model, its queries and its normalizers
+  (`model/`, `state/designerState.js`);
+- the validation / model-check engine (`validation/`);
+- the exporters — JSON, Markdown, JSON Schema, AsyncAPI, boilerplate bundle,
+  domain package, OAS (`exporters/`);
+- the importers — domain package, state file, OAS file (`importers/`);
+- the schema-diff / domain-package versioning and merge-preview engine
+  (`packages/packageVersioning.js`);
+- the hexagonal boilerplate codegen (`codegen/hexagonalCodegen.js`);
+- `IDesignerStore` as a **type/contract only**, so a consumer can supply
+  their own store.
+
+**Deliberately out:** every DOM module (`script.js`, `ui/`, `pwa/`), the
+canvas, the inspectors, the status surfaces, the sync clients
+(`state/designerSync.js`, `state/catalogSyncClient.js`) and the storage
+adapters. Neither `LocalStorageDesignerStore` nor `CanaDesignerStore` ships
+here, and the package has **no dependency on Cana** — Cana is published by
+its own epic ([JUM-416](https://linear.app/jumentix/issue/JUM-416/release-publish-the-browser-consumable-cana-typescript-package)).
+
+## Usage
+
+```js
+import {
+  buildSampleModelPayload,
+  normalizeStatePayload,
+  collectModelIssues,
+  buildJsonExportDocument
+} from '@jumentix/designer-core';
+
+const state = normalizeStatePayload(buildSampleModelPayload());
+const issues = collectModelIssues(state);           // validate
+const document = buildJsonExportDocument(state);    // export
+const back = normalizeStatePayload(JSON.parse(JSON.stringify(document))); // re-import
+```
+
+The core loads and runs in any JavaScript runtime — browser, Bun, Node ≥ 20 —
+with no `document`, no `window` and no `localStorage`. That is not a
+convention, it is a tested property: `test/dom-free.test.ts` scans the built
+artifact's AST for DOM global references, and `test/consumer-smoke.test.ts`
+imports the built artifact in a non-DOM process and runs a
+validate → export → re-import round trip.
+
+## Versioning policy
+
+The package follows semver over its **public API surface** (the barrel
+`src/index.js`):
+
+- **patch** — internal fixes with no exported-signature change;
+- **minor** — additive exports or optional parameters;
+- **major** — removed/renamed exports, narrowed parameter or return shapes.
+
+The *data contracts* the core reads and writes (the full-suite export
+document, the domain-package document) are versioned independently inside the
+payloads themselves — that policy is owned by
+[JUM-492](https://linear.app/jumentix/issue/JUM-492/feature-domain-package-versioning-with-semantic-conflict-resolution)
+and pinned in Requirement 126, Contract 3; this package's version does not
+restate it.
+
+## Publish policy: dry-run only
+
+Per
+Requirement 070,
+**no automatic publish exists**. The repository-wide dry-run surface
+(`bun run npm:publish:dry-run:packages`) picks this package up like every
+other non-private workspace package and runs `bun publish --dry-run
+--access public`, which executes `prepublishOnly` — a clean rebuild — before
+assembling the tarball. `test/packaging.test.ts` asserts the manifest and the
+packed contents, so the dry run verifies an artifact whose contents are
+proven, not assumed.
+
+## Development
+
+```bash
+bun run build   # copy the module closure + generate declarations into dist/
+bun test        # run this package's suites (packaging, DOM-free proof, consumer smoke)
+```
+
+## License
+
+MIT — see LICENSE.md.
+
+## Try it in the browser
+
+<DocsPlayground runtime="designer-core" id="getting-started" />
+
+## Full documentation
+
+Continue with the consumer [usage guide](/docs/jumentix/packages/designer-core/usage)
+for normalize → validate → export flows and troubleshooting.

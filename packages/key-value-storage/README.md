@@ -10,3 +10,20 @@ Included:
 - `compileKeyValueStorageClient` environment-driven selector
 
 This package is designed for multi-service reuse and avoids per-service adapter duplication.
+
+## Responsibility in context
+
+- **Stack layer:** persistence / infrastructure adapter
+- **Owns:** key/value port + InMemory/Redis adapters
+- **Used with:** mutex-service, backend composition
+- **Not responsible for:** SQL/document repos, IndexedDB (Cana), HTTP SDKs
+
+## Try it in the browser
+
+In-memory adapter (browser mock of the same contract):
+
+<DocsPlayground runtime="key-value-storage" id="getting-started" />
+
+## Full documentation
+
+See the consumer [usage guide](../../documentation/md/KEY-VALUE-STORAGE-USAGE-GUIDE.md).

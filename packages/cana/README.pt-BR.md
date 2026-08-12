@@ -19,6 +19,13 @@ await client.open();
 await client.table('designs').add({ id: 1, name: 'first', owner: 'ana' });
 ```
 
+## Responsabilidade no escopo
+
+- **Camada:** persistência offline / browser
+- **Responsável por:** API de cliente IndexedDB (com fallback explícito localStorage) para PWAs
+- **Usado com:** designer-core, guia SPA/PWA, service-management
+- **Não responsável por:** bancos server-side, Redis KV, REST/WebSocket
+
 ## Três coisas a saber antes de usar
 
 **IndexedDB preferido; fallback em localStorage é explícito e degradado.** Depois
@@ -54,21 +61,22 @@ import { isCanaError, isCanaErrorCode } from '@jumentix/cana';
 if (isCanaErrorCode(error, 'QuotaExceeded')) { /* ... */ }
 ```
 
-## Documentação completa
+## Experimente no navegador
 
-**Guia de uso** — referência da API, consultas, transações, hooks, recuperação
-de falhas, solução de problemas:
+Execute um primeiro client contra IndexedDB nesta página:
 
-- English: [`CANA-USAGE-GUIDE.md`](../../documentation/md/CANA-USAGE-GUIDE.md)
-- Português: [`CANA-USAGE-GUIDE.pt-BR.md`](../../documentation/md/CANA-USAGE-GUIDE.pt-BR.md)
+<CanaPlayground id="getting-started" />
 
-**Racional de projeto** — por que cada comportamento é o que é, e o que ainda
-não está comprovado:
+## Checklist júnior (“Eu consigo …”)
 
-- English: [`CANA-INDEXEDDB-ADAPTER.md`](../../documentation/md/CANA-INDEXEDDB-ADAPTER.md)
-- Português: [`CANA-INDEXEDDB-ADAPTER.pt-BR.md`](../../documentation/md/CANA-INDEXEDDB-ADAPTER.pt-BR.md)
+- [ ] Abrir um client, adicionar uma linha e lê-la de volta.
+- [ ] Conferir `client.backend` após `open()` e explicar indexeddb vs localStorage.
+- [ ] Evitar `TransactionInactive` mantendo `await`s externos fora de transações.
 
-As notas de prontidão para release desse documento são leitura obrigatória antes
-de depender deste pacote em produção. O hosting em Worker dedicado real e o
-caminho de fallback em localStorage são cobertos pela suite de browser do Cana
-(JUM-615).
+## Próximo passo
+
+Continue no [guia de uso](../../documentation/md/CANA-USAGE-GUIDE.pt-BR.md) do
+consumidor — API completa, consultas, transações, hooks, recuperação de falhas e
+solução de problemas — depois
+[designer-core](/docs/pt-BR/jumentix/packages/designer-core/usage) para validar
+designs antes de persistir.

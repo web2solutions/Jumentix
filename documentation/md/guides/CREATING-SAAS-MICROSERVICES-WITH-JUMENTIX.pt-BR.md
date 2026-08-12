@@ -6,6 +6,21 @@ Idioma alvo: Português (Brasil)
 
 Utilize este caminho quando a escala de domínio, a autonomia da equipa e os perfis de tráfego exigirem a decomposição do nível de serviço.
 
+## Responsabilidade no escopo
+
+- **Responsável por:** Orientação de topologia para SaaS com microsserviços
+- **Usado com:** shared-contracts, SDKs, message-mediator, guias REST/realtime
+- **Não responsável por:** Detalhes de monólito modular (veja guia de monólito)
+
+## Glossário
+
+- **Guia** — documento de jornada; siga os passos em ordem antes de pular para mapas de API.
+- **Composition root** — startup que liga env → adapters → use-cases.
+
+## O que é
+
+Separe microsserviços que se comunicam por contrato sem perder regras de domínio.
+
 ## Estratégia recomendada
 
 1. Comece modular e contrate primeiro desde o primeiro dia.
@@ -34,6 +49,18 @@ Utilize este caminho quando a escala de domínio, a autonomia da equipa e os per
 
 ## Documentos relacionados
 
-- [Contratos de mensagens e eventos](../EVENTS-AND-MESSAGES-MAP.md)
-- [Pacotes do workspace Jumentix](../JUMENTIX-WORKSPACE-PACKAGES.md)
-- [Arquitetura e estrutura](../ARCHITECTURE-AND-STRUCTURE.md)
+- [Contratos de mensagens e eventos](/docs/jumentix/reference/events-messages)
+- [Pacotes do workspace Jumentix](/docs/jumentix/packages)
+- [Arquitetura e estrutura](/docs/jumentix/concepts/architecture)
+
+
+## Próximos passos
+
+1. [Começando](/docs/pt-BR/jumentix/concepts/getting-started)
+2. [REST](/docs/pt-BR/jumentix/guides/rest-api)
+
+## Checklist júnior (“Eu consigo …”)
+
+- [ ] Explico o objetivo deste guia em uma frase
+- [ ] Completei o primeiro sucesso sem adivinhar jargão
+- [ ] Sei a próxima página de docs a abrir
