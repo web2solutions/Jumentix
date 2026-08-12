@@ -328,6 +328,23 @@ export interface CanaQueryPlan {
   readonly appliedOffsetInCursor: boolean;
 }
 
+/**
+ * What the execution actually touched (JUM-682).
+ *
+ * The plan states an intention; these are facts about the run. `limit: 10`
+ * over ten thousand rows examines ten records, and an implementation that
+ * materialises the range and slices it examines ten thousand — a difference no
+ * correctness test can see and, until this existed, only a stopwatch could
+ * suggest. Wall-clock ratios on shared hardware are what Requirement 134 §3
+ * forbids, so the engine reports the number instead.
+ */
+export interface CanaQueryMetrics {
+  /** Records read from the cursor. Skipped offsets are not read. */
+  readonly recordsExamined: number;
+  /** The offset was skipped with `advance()` rather than read through. */
+  readonly cursorAdvanced: boolean;
+}
+
 /* ------------------------------------------------------------------ *
  * Client surface
  * ------------------------------------------------------------------ */
@@ -367,8 +384,12 @@ export interface CanaTable<TRecord, TKey extends CanaKey = CanaKey> {
   bulkDelete(keys: readonly TKey[]): Promise<CanaBulkWriteResult>;
   count(query?: CanaQuery): Promise<number>;
   query(query?: CanaQuery): Promise<readonly TRecord[]>;
-  /** Same as `query`, plus the plan the engine used. */
-  explain(query?: CanaQuery): Promise<{ records: readonly TRecord[]; plan: CanaQueryPlan }>;
+  /** Same as `query`, plus the plan the engine used and what it touched. */
+  explain(query?: CanaQuery): Promise<{
+    records: readonly TRecord[];
+    plan: CanaQueryPlan;
+    metrics: CanaQueryMetrics;
+  }>;
 }
 
 /**

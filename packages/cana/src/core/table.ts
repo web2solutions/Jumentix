@@ -27,12 +27,15 @@ import type {
   CanaChangeType,
   CanaKey,
   CanaQuery,
+  CanaQueryMetrics,
   CanaQueryPlan,
   CanaTable,
   CanaWriteResult
 } from '../contracts';
 import { canaError, requestToPromise, translateError } from './errors';
-import { planQuery, runCount, runQuery } from './query';
+import {
+  planQuery, runCount, runQuery, runQueryWithMetrics
+} from './query';
 import type { CanaHooks } from './hooks';
 import { applyBeforeWrite } from './hooks';
 import type { ChangeBuffer } from './transaction';
@@ -335,10 +338,17 @@ export function createTable<TRecord, TKey extends CanaKey = CanaKey>(
 
     async explain(
       query?: CanaQuery
-    ): Promise<{ records: readonly TRecord[]; plan: CanaQueryPlan }> {
+    ): Promise<{
+      records: readonly TRecord[];
+      plan: CanaQueryPlan;
+      metrics: CanaQueryMetrics;
+    }> {
       const plan = planQuery(name, query);
-      const records = await runQuery<TRecord>(store(), query);
-      return { records, plan };
+      const { records, recordsExamined, cursorAdvanced } = await runQueryWithMetrics<TRecord>(
+        store(),
+        query
+      );
+      return { records, plan, metrics: { recordsExamined, cursorAdvanced } };
     }
   };
 }

@@ -92,17 +92,37 @@ function sourceFor(store: IDBObjectStore, query: CanaQuery | undefined): IDBObje
  * and cannot stop: it materialises the whole matching set before any limit is
  * applied, which defeats the plan this module publishes.
  */
-export function runQuery<TRecord>(
+/**
+ * The same execution, with what it actually touched (JUM-682).
+ *
+ * "A `limit: 10` query reads ten records, not the table" was until now only
+ * assertable with a stopwatch: an implementation that reads everything and
+ * slices returns identical records and an identical plan, and differs only in
+ * time. Timing it on shared CI hardware is what Requirement 134 §3 forbids, and
+ * the ratios it needed were loose enough to pass a half-broken cursor anyway.
+ *
+ * `recordsExamined` is the count of records actually read from the cursor.
+ * `cursorAdvanced` says the offset was skipped rather than read through. Both
+ * are facts about the execution, so the property becomes an assertion rather
+ * than an inference from a clock.
+ */
+export function runQueryWithMetrics<TRecord>(
   store: IDBObjectStore,
   query: CanaQuery | undefined
-): Promise<readonly TRecord[]> {
+): Promise<{ records: readonly TRecord[]; recordsExamined: number; cursorAdvanced: boolean }> {
   const range = toKeyRange(query);
   const offset = query?.offset ?? 0;
   const limit = query?.limit;
 
-  return new Promise<readonly TRecord[]>((resolve, reject) => {
+  return new Promise<{
+    records: readonly TRecord[];
+    recordsExamined: number;
+    cursorAdvanced: boolean;
+  }>((resolve, reject) => {
     const records: TRecord[] = [];
     let skipped = false;
+    let recordsExamined = 0;
+    const settle = () => resolve({ records, recordsExamined, cursorAdvanced: skipped });
 
     // Resolving the source is inside the executor on purpose. A named index that
     // does not exist throws, and a function typed to return a Promise that can
@@ -122,7 +142,7 @@ export function runQuery<TRecord>(
       const cursor = request.result;
 
       if (!cursor) {
-        resolve(records);
+        settle();
         return;
       }
 
@@ -134,17 +154,26 @@ export function runQuery<TRecord>(
         return;
       }
 
+      recordsExamined += 1;
       records.push(cursor.value as TRecord);
 
       if (limit !== undefined && records.length >= limit) {
         // Stop here. Continuing would read the rest of the range to discard it.
-        resolve(records);
+        settle();
         return;
       }
 
       cursor.continue();
     };
   });
+}
+
+/** The records alone, for callers that do not need the metrics. */
+export function runQuery<TRecord>(
+  store: IDBObjectStore,
+  query: CanaQuery | undefined
+): Promise<readonly TRecord[]> {
+  return runQueryWithMetrics<TRecord>(store, query).then((result) => result.records);
 }
 
 /**
