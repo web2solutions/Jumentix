@@ -1208,6 +1208,40 @@ Headings:
 
 ---
 
+# Cana with React Context API
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/react-context
+
+From zero to final implementation: categorized tasks with Cana and React Context.
+
+Headings:
+- Cana with React Context API
+- 1. Start from zero
+- 2. Simple implementation
+- 3. Advanced implementation
+- 4. Final app shape
+- 5. Checklist
+- Next
+
+---
+
+# Cana with Vue 3 and Pinia
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/vue-pinia
+
+From zero to final implementation: categorized tasks with Cana, Vue 3 and Pinia.
+
+Headings:
+- Cana with Vue 3 and Pinia
+- 1. Start from zero
+- 2. Simple implementation
+- 3. Advanced implementation
+- 4. Final app shape
+- 5. Checklist
+- Next
+
+---
+
 # @jumentix/cana
 
 URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana
@@ -1221,7 +1255,25 @@ Headings:
 - Errors are plain data
 - Try it in the browser
 - Junior checklist (“I can …”)
+- Framework tutorials
 - Next step
+
+---
+
+# Cana with React Redux
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/react-redux
+
+From zero to final implementation: categorized tasks with Cana and Redux.
+
+Headings:
+- Cana with React Redux
+- 1. Start from zero
+- 2. Simple implementation
+- 3. Advanced implementation
+- 4. Final app shape
+- 5. Checklist
+- Next
 
 ---
 

@@ -1153,6 +1153,38 @@
     ]
   },
   {
+    "title": "Cana with React Context API",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana/react-context",
+    "description": "From zero to final implementation: categorized tasks with Cana and React Context.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "Cana with React Context API",
+      "1. Start from zero",
+      "2. Simple implementation",
+      "3. Advanced implementation",
+      "4. Final app shape",
+      "5. Checklist",
+      "Next"
+    ]
+  },
+  {
+    "title": "Cana with Vue 3 and Pinia",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana/vue-pinia",
+    "description": "From zero to final implementation: categorized tasks with Cana, Vue 3 and Pinia.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "Cana with Vue 3 and Pinia",
+      "1. Start from zero",
+      "2. Simple implementation",
+      "3. Advanced implementation",
+      "4. Final app shape",
+      "5. Checklist",
+      "Next"
+    ]
+  },
+  {
     "title": "@jumentix/cana",
     "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana",
     "description": "IndexedDB offline database adapter for Jumentix applications.",
@@ -1165,7 +1197,24 @@
       "Errors are plain data",
       "Try it in the browser",
       "Junior checklist (“I can …”)",
+      "Framework tutorials",
       "Next step"
+    ]
+  },
+  {
+    "title": "Cana with React Redux",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana/react-redux",
+    "description": "From zero to final implementation: categorized tasks with Cana and Redux.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "Cana with React Redux",
+      "1. Start from zero",
+      "2. Simple implementation",
+      "3. Advanced implementation",
+      "4. Final app shape",
+      "5. Checklist",
+      "Next"
     ]
   },
   {
@@ -2573,6 +2622,38 @@
     ]
   },
   {
+    "title": "Cana com React Context API",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana/react-context",
+    "description": "Do zero à implementação final: tarefas categorizadas com Cana e React Context.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "Cana com React Context API",
+      "1. Comece do zero",
+      "2. Implementação simples",
+      "3. Implementação avançada",
+      "4. Formato final do app",
+      "5. Checklist",
+      "Próximo"
+    ]
+  },
+  {
+    "title": "Cana com Vue 3 e Pinia",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana/vue-pinia",
+    "description": "Do zero à implementação final: tarefas categorizadas com Cana, Vue 3 e Pinia.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "Cana com Vue 3 e Pinia",
+      "1. Comece do zero",
+      "2. Implementação simples",
+      "3. Implementação avançada",
+      "4. Formato final do app",
+      "5. Checklist",
+      "Próximo"
+    ]
+  },
+  {
     "title": "@jumentix/cana",
     "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana",
     "description": "Adaptador de banco de dados offline sobre IndexedDB para aplicações Jumentix.",
@@ -2585,7 +2666,24 @@
       "Erros são dados puros",
       "Experimente no navegador",
       "Checklist júnior (“Eu consigo …”)",
+      "Tutoriais por framework",
       "Próximo passo"
+    ]
+  },
+  {
+    "title": "Cana com React Redux",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana/react-redux",
+    "description": "Do zero à implementação final: tarefas categorizadas com Cana e Redux.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "Cana com React Redux",
+      "1. Comece do zero",
+      "2. Implementação simples",
+      "3. Implementação avançada",
+      "4. Formato final do app",
+      "5. Checklist",
+      "Próximo"
     ]
   },
   {

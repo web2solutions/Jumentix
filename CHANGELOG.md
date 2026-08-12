@@ -4,7 +4,10 @@
 
 ## All Changes
 
-- 2026-08-11 test(website): add component, a11y, and link-quality jest gates for JUM-158 - Eduardo A.
+- 2026-08-12 test(website): add component, a11y, and link-quality jest gates for JUM-158 (#192) - Eduardo A.
+- 2026-08-12 [JUM-688][Docs] Fix MDX build break from angle-bracket headings (#193) - Eduardo A.
+- 2026-08-12 fix(website): escape MDX-breaking (<30 min) package headings (JUM-688) - Eduardo A.
+- 2026-08-12 feat(governance): declare and gate test integrity — requirements 134 and 135 (#188) - Eduardo A.
 - 2026-08-12 feat(dead-letter): run the replay worker for the life of the server (JUM-53) (#191) - Eduardo A.
 - 2026-08-11 [JUM-658][Docs] Site-wide deep docs, playgrounds, SEO/AI (#184) - Eduardo A.
 - 2026-08-11 fix(website): document always-on Vercel Analytics (JUM-686) - Eduardo A.
