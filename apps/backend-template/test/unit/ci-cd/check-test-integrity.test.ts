@@ -186,7 +186,8 @@ describe('test integrity check (Requirements 134 and 135)', () => {
     // the issue that will remove it, and a new violation fails immediately.
     expect(ACCEPTED_NO_ASSERTIONS).toHaveLength(31);
     expect(ACCEPTED_MOCK_ONLY).toHaveLength(14);
-    expect(ACCEPTED_SLEEPS).toHaveLength(5);
+    // JUM-679 emptied this one by fixing all five files.
+    expect(ACCEPTED_SLEEPS).toStrictEqual([]);
     const owned = [...ACCEPTED_NO_ASSERTIONS, ...ACCEPTED_MOCK_ONLY, ...ACCEPTED_SLEEPS];
 
     expect(owned.every((entry: { issue: string }) => /^JUM-\d+$/.test(entry.issue))).toBe(true);

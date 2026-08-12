@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable jest/prefer-expect-assertions, jest/max-expects, jest/no-conditional-in-test */
 import path from 'node:path';
+import { until } from '@test/helpers/until';
 
 /**
  * Unit suite for the multi-tab write-event sync engine (JUM-485),
@@ -1076,8 +1077,15 @@ describe('designerSync — defensive defaults', () => {
       originId: 'remote-tab',
       record: JSON.stringify(makeDocument({ domains: [makeDomain('domain-5', 'Ambient')] }))
     });
-    // The DEFAULT trailing-edge scheduler (real setTimeout) coalesces.
-    await new Promise((resolve) => { setTimeout(resolve, 5 * 20); });
+    // JUM-679: polled, not slept through. This test exercises the DEFAULT
+    // scheduler on purpose, so the schedule cannot be injected here — but a
+    // 100ms wait was still a guess about how fast the machine is. The poll
+    // returns the moment the coalesced write lands and says what it was waiting
+    // for if it never does.
+    await until(() => tab.core.state.domains[0]?.name === 'Ambient', {
+      describe: 'the coalesced ambient write from the default scheduler'
+    });
+
     expect(tab.core.state.domains[0]?.name).toBe('Ambient');
     expect(tab.renders).toContain('ambient-render');
     expect(tab.renders.filter((kind) => kind === 'ambient-render')).toHaveLength(1);
