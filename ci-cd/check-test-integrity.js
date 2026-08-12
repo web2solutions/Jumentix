@@ -4,16 +4,17 @@
  *
  * Judgement cannot be gated. These four conditions can:
  *
- *  1. A suite with no assertion declaration — **per file, not per test**. That
- *     limit is worth knowing: removing one `expect.hasAssertions()` from a file
- *     that still has others does not trip this, as the JUM-683 verification
- *     showed. Catching it per test needs a parse rather than a scan, and is
- *     JUM-702. What this does catch is a whole suite arriving with none, which
- *     is how all 31 of them got in.
+ *  1. A test with no assertion declaration — **per test since JUM-702**. A test
+ *     whose `expect` never runs — inside an unentered branch, after an unawaited
+ *     promise — passes. 38 of 296 suites had none.
  *
- *     A test whose `expect` never runs —
- *     inside an unentered branch, after an unawaited promise — passes. 38 of
- *     296 suites had none.
+ *     This was per file until the JUM-683 verification showed what that missed:
+ *     removing one `expect.hasAssertions()` from a file that still had others
+ *     did not trip the gate, which is exactly what a refactor does. Answering it
+ *     per test needs a parse, and `lib/test-assertions.js` does it with the
+ *     TypeScript parser already in the tree. Across 3,091 tests it found one —
+ *     an `it.each` in the driver smoke suite, passing on a declaration twelve
+ *     lines away in a different test.
  *  2. A suite that asserts only on mocks. `toHaveBeenCalled` says a function
  *     ran; whether the write landed is the question that matters.
  *  3. A fixed sleep used as synchronisation. Waiting a set number of
@@ -37,12 +38,17 @@
 const fs = require('fs');
 const path = require('path');
 const { isEntryPoint } = require('./lib/entry-point.js');
+const { testsWithoutDeclarations } = require('./lib/test-assertions.js');
 
 const TEST_ROOTS = ['apps', 'packages'];
 const SKIP_DIRECTORIES = new Set(['node_modules', 'dist', 'build', 'coverage', '.next']);
 
-/** Declares that the test asserts. */
-const ASSERTION_DECLARATIONS = /expect\.hasAssertions\(\)|expect\.assertions\(/;
+/**
+ * The declaration is now recognised by `lib/test-assertions.js`, per test, and
+ * counts when it sits in the test's own body or in a `beforeEach`/`beforeAll`
+ * of an enclosing `describe` — a hook that runs before every test declares for
+ * every test as surely as the line would.
+ */
 
 /**
  * Asserts on content rather than merely on the fact of a call.
@@ -83,12 +89,15 @@ const ACCEPTED_SLEEPS = Object.freeze([]);
 const ACCEPTED_MOCK_ONLY = Object.freeze([]);
 
 /**
- * Suites with no assertion declaration.
+ * Suites with no assertion declaration. An entry exempts the whole file.
  *
  * **Empty since JUM-677**: 644 declarations were added across the 31 files and
  * every test still passed, which is the honest result — none of them had been
  * asserting nothing. The declaration is now what makes that true tomorrow as
  * well as today.
+ *
+ * It stayed empty through JUM-702, which tightened the rule from per file to
+ * per test: 3,091 tests, one finding, fixed rather than registered.
  */
 const ACCEPTED_NO_ASSERTIONS = Object.freeze([]);
 
@@ -145,14 +154,19 @@ function validateTestIntegrity(rootDir = process.cwd(), options = {}) {
     const relative = path.relative(rootDir, absolute).split(path.sep).join('/');
     const source = fs.readFileSync(absolute, 'utf8');
 
-    if (!ASSERTION_DECLARATIONS.test(source)) {
+    const undeclared = testsWithoutDeclarations(source, absolute);
+    if (undeclared.length > 0) {
       const declared = assertRegister.get(relative);
       if (declared) seenAssert.add(relative);
-      else failures.push(
-        `[test-integrity] ${relative} declares no assertions. Add \`expect.hasAssertions()\``
-        + ' to each test: an expect that never runs is a test that passes for free'
-        + ' (Requirement 135 §2).'
-      );
+      else {
+        for (const test of undeclared) {
+          failures.push(
+            `[test-integrity] ${relative}:${test.line} "${test.title}" declares no assertions.`
+            + ' Add `expect.hasAssertions()`: an expect that never runs is a test that'
+            + ' passes for free (Requirement 135 §2).'
+          );
+        }
+      }
     }
 
     if (/toHaveBeenCalled/.test(source) && !STATE_ASSERTIONS.test(source)) {

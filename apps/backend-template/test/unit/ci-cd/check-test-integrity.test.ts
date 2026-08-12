@@ -10,6 +10,9 @@ const {
   fixedSleeps,
   validateTestIntegrity
 } = require('../../../../../ci-cd/check-test-integrity');
+const {
+  testsWithoutDeclarations
+} = require('../../../../../ci-cd/lib/test-assertions');
 
 const repoRoot = integrityPath.resolve(__dirname, '../../../../..');
 
@@ -57,6 +60,54 @@ describe('test integrity check (Requirements 134 and 135)', () => {
 
     expect(failures).toHaveLength(1);
     expect(failures[0]).toContain('declares no assertions');
+
+    integrityFs.rmSync(root, { recursive: true, force: true });
+  });
+
+  it('fails one test that lost its declaration in a file that still has others (JUM-702)', () => {
+    expect.hasAssertions();
+
+    // The gap the JUM-683 verification found. Under the old per-file rule this
+    // file passed on the *first* test's declaration, which is precisely what a
+    // refactor that drops one line looks like.
+    const suite = 'packages/sample/test/partial.test.ts';
+    const root = scratchRepo('jum702-partial-', {
+      [suite]: [
+        'describe(\'group\', () => {',
+        '  it(\'declares\', () => { expect.hasAssertions(); expect(1).toBe(1); });',
+        '  it(\'does not\', () => { expect(2).toBe(2); });',
+        '});'
+      ].join('\n'),
+      'test-map.json': mapFor([suite])
+    });
+
+    const failures = validateTestIntegrity(root, empty);
+
+    expect(failures).toHaveLength(1);
+    // The line and the title are what make it actionable: a file name alone
+    // sends the reader through 40 tests looking for the one that lost it.
+    expect(failures[0]).toContain('partial.test.ts:3 "does not"');
+
+    integrityFs.rmSync(root, { recursive: true, force: true });
+  });
+
+  it('accepts a declaration made once in a beforeEach', () => {
+    expect.hasAssertions();
+
+    // Not a loophole. A hook that runs before every test declares for every
+    // test as surely as the line inside each body would.
+    const suite = 'packages/sample/test/hooked.test.ts';
+    const root = scratchRepo('jum702-hook-', {
+      [suite]: [
+        'describe(\'group\', () => {',
+        '  beforeEach(() => { expect.hasAssertions(); });',
+        '  it(\'inherits\', () => { expect(1).toBe(1); });',
+        '});'
+      ].join('\n'),
+      'test-map.json': mapFor([suite])
+    });
+
+    expect(validateTestIntegrity(root, empty)).toStrictEqual([]);
 
     integrityFs.rmSync(root, { recursive: true, force: true });
   });
@@ -197,6 +248,27 @@ describe('test integrity check (Requirements 134 and 135)', () => {
     expect(failures[0]).toContain('now declares assertions or no longer exists');
 
     integrityFs.rmSync(root, { recursive: true, force: true });
+  });
+
+  it('reads through the modifier chains rather than enumerating them (JUM-702)', () => {
+    expect.hasAssertions();
+
+    // `it.each([...])(...)` is a call whose callee is a call; a rule written
+    // against the text `it(` misses it, and the one finding in the repository
+    // was exactly this shape.
+    expect(testsWithoutDeclarations('it.each([1])(\'case %s\', (n) => { expect(n).toBe(1); });'))
+      .toStrictEqual([{ title: 'case %s', line: 1 }]);
+    expect(testsWithoutDeclarations('it.only(\'x\', () => { expect(1).toBe(1); });'))
+      .toStrictEqual([{ title: 'x', line: 1 }]);
+  });
+
+  it('says nothing about tests with no body to run', () => {
+    expect.hasAssertions();
+
+    // A declaration inside a body that never executes asserts nothing about
+    // anything. `it.todo` has no body at all.
+    expect(testsWithoutDeclarations('it.todo(\'later\');\nit.skip(\'x\', () => {});'))
+      .toStrictEqual([]);
   });
 
   it('passes against the repository, with every finding on a register', () => {
