@@ -159,6 +159,15 @@ function executeTaskTestPlan(plan) {
     });
     if (websiteResult.status !== 0) return Number(websiteResult.status ?? 1);
 
+    // JUM-158: website component, accessibility, and link-quality jest suites
+    // are owned by the website workflow (Requirement 091). Run them whenever a
+    // website file changes so a dev task branch cannot merge past them.
+    const websiteUnitResult = spawnSync(process.execPath, ['run', '--filter', '@jumentix/website', 'test:unit'], {
+      stdio: 'inherit',
+      env: { ...process.env }
+    });
+    if (websiteUnitResult.status !== 0) return Number(websiteUnitResult.status ?? 1);
+
     if (plan.unitTests.length > 0) {
       const status = runSuitePaths(plan.unitTests, { label: 'website-unit' });
       if (status !== 0) return status;

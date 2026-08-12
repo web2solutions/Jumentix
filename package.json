@@ -83,6 +83,7 @@
     "website:storybook:build": "bun run --filter @jumentix/website storybook:build",
     "website:storybook:smoke": "bun run --filter @jumentix/website storybook:smoke",
     "website:test:prepublish": "bun run --filter @jumentix/website test:prepublish",
+    "website:test:unit": "bun run --filter @jumentix/website test:unit",
     "website:test:cypress": "bun run --filter @jumentix/website test:cypress",
     "website:test:quality": "bun run --filter @jumentix/website test:quality",
     "website:vercel:link": "bun x vercel link --cwd apps/jumentix-website --project jumentix-website --yes",
