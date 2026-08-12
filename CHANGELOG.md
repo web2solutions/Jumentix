@@ -4,7 +4,8 @@
 
 ## All Changes
 
-- 2026-08-11 feat(dead-letter): run the replay worker for the life of the server (JUM-53) - Eduardo A.
+- 2026-08-11 feat(governance): declare and gate test integrity — requirements 134 and 135 - Eduardo A.
+- 2026-08-12 feat(dead-letter): run the replay worker for the life of the server (JUM-53) (#191) - Eduardo A.
 - 2026-08-11 [JUM-658][Docs] Site-wide deep docs, playgrounds, SEO/AI (#184) - Eduardo A.
 - 2026-08-11 fix(website): document always-on Vercel Analytics (JUM-686) - Eduardo A.
 - 2026-08-11 docs(website): finish junior zero-to-pleno epic pass (JUM-671–676) - Eduardo A.

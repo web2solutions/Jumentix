@@ -298,6 +298,7 @@
     "packages:check-build-freshness": "bun ci-cd/check-package-build-freshness.js",
     "website:check-content-routes": "bun ci-cd/check-website-content-routes.js",
     "rtdb:check-indexes": "bun ci-cd/check-rtdb-indexes.js",
+    "test:integrity": "bun ci-cd/check-test-integrity.js",
     "rtdb:export-rules": "bun ci-cd/export-database-rules.js"
   },
   "dependencies": {

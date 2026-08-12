@@ -1301,6 +1301,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/ci-cd/check-test-integrity.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/check-test-integrity.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/ci-cd/check-fail-closed.test.ts",
       "path": "apps/backend-template/test/unit/ci-cd/check-fail-closed.test.ts",
       "layer": "tooling",
