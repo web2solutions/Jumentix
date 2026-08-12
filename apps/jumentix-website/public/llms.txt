@@ -39,7 +39,10 @@ Docs index JSON: https://jumentix-website.vercel.app/docs-index.json
 - @jumentix/sdk-websocket-client: https://jumentix-website.vercel.app/docs/jumentix/packages/sdk-websocket-client
 - @jumentix/message-mediator: https://jumentix-website.vercel.app/docs/jumentix/packages/message-mediator
 - message-mediator usage: https://jumentix-website.vercel.app/docs/jumentix/packages/message-mediator/usage
+- Cana with React Context API: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/react-context
+- Cana with Vue 3 and Pinia: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/vue-pinia
 - @jumentix/cana: https://jumentix-website.vercel.app/docs/jumentix/packages/cana
+- Cana with React Redux: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/react-redux
 - Cana usage guide: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage
 
 ## Adapters

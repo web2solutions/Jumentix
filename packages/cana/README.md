@@ -72,6 +72,14 @@ Run a first client against IndexedDB in this page:
 - [ ] Check `client.backend` after `open()` and explain indexeddb vs localStorage.
 - [ ] Avoid `TransactionInactive` by keeping foreign `await`s outside transactions.
 
+## Framework tutorials
+
+Build the same categorized task app with framework state management:
+
+- [React Context API](/docs/jumentix/packages/cana/react-context)
+- [React Redux](/docs/jumentix/packages/cana/react-redux)
+- [Vue 3 and Pinia](/docs/jumentix/packages/cana/vue-pinia)
+
 ## Next step
 
 Continue with the consumer [usage guide](../../documentation/md/CANA-USAGE-GUIDE.md)

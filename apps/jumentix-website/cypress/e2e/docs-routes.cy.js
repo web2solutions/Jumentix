@@ -18,6 +18,9 @@ const documentationRoutes = [
   ['/docs/jumentix/packages/mutex-service/usage', ['mutex-service usage']],
   ['/docs/jumentix/packages/cana', ['@jumentix/cana', 'Try it in the browser']],
   ['/docs/jumentix/packages/cana/usage', ['Cana usage guide', 'Interactive playgrounds']],
+  ['/docs/jumentix/packages/cana/react-context', ['Cana with React Context API', 'React Context: categorized task list']],
+  ['/docs/jumentix/packages/cana/react-redux', ['Cana with React Redux', 'React Redux: store updated by Cana events']],
+  ['/docs/jumentix/packages/cana/vue-pinia', ['Cana with Vue 3 and Pinia', 'Vue 3 + Pinia: store patched from Cana']],
   ['/docs/jumentix/packages', ['Jumentix packages', 'consumer map']],
   ['/docs/jumentix/packages/external-db-repositories', ['Responsibility in context']],
   ['/docs/jumentix/packages/sdk-rest-client', ['@jumentix/sdk-rest-client']],
@@ -33,7 +36,10 @@ const documentationRoutes = [
   ['/docs/pt-BR/jumentix/adapters/http/express', ['Express']],
   ['/docs/pt-BR/jumentix/packages/message-mediator', ['@jumentix/message-mediator']],
   ['/docs/pt-BR/jumentix/packages/cana', ['@jumentix/cana']],
-  ['/docs/pt-BR/jumentix/packages/cana/usage', ['Guia de uso do Cana', 'Playgrounds interativos']]
+  ['/docs/pt-BR/jumentix/packages/cana/usage', ['Guia de uso do Cana', 'Playgrounds interativos']],
+  ['/docs/pt-BR/jumentix/packages/cana/react-context', ['Cana com React Context API', 'React Context: categorized task list']],
+  ['/docs/pt-BR/jumentix/packages/cana/react-redux', ['Cana com React Redux', 'React Redux: store updated by Cana events']],
+  ['/docs/pt-BR/jumentix/packages/cana/vue-pinia', ['Cana com Vue 3 e Pinia', 'Vue 3 + Pinia: store patched from Cana']]
 ];
 
 function playgroundIds(runtime, id) {
@@ -58,6 +64,41 @@ describe('Cana playground', () => {
     cy.get(`[data-testid="${ids.reset}"]`).click();
     cy.get(`[data-testid="${ids.output}"]`).should('not.exist');
   });
+});
+
+function canaFrameworkIds(id) {
+  const root = `cana-framework-playground-${id}`;
+  return {
+    root,
+    run: `${root}-run`,
+    reset: `${root}-reset`,
+    output: `${root}-output`
+  };
+}
+
+describe('Cana framework tutorial playgrounds', () => {
+  const tutorials = [
+    ['/docs/jumentix/packages/cana/react-context', ['react-context-basic', 'react-context-advanced']],
+    ['/docs/jumentix/packages/cana/react-redux', ['react-redux-basic', 'react-redux-advanced']],
+    ['/docs/jumentix/packages/cana/vue-pinia', ['vue-pinia-basic', 'vue-pinia-advanced']]
+  ];
+
+  for (const [path, exampleIds] of tutorials) {
+    it(`runs every Cana framework playground on ${path}`, () => {
+      cy.visitQuiet(path);
+
+      for (const exampleId of exampleIds) {
+        const ids = canaFrameworkIds(exampleId);
+        cy.get(`[data-testid="${ids.root}"]`).should('exist');
+        cy.get(`[data-testid="${ids.run}"]`).click();
+        cy.get(`[data-testid="${ids.output}"]`, { timeout: 15000 })
+          .should('exist')
+          .and('contain.text', 'tasks');
+        cy.get(`[data-testid="${ids.reset}"]`).click();
+        cy.get(`[data-testid="${ids.output}"]`).should('not.exist');
+      }
+    });
+  }
 });
 
 describe('Docs playground matrix', () => {

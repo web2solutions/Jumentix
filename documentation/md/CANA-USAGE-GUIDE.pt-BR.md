@@ -1083,6 +1083,12 @@ Combine persistência offline com validação de domínio em
 [guia SPA/PWA](/docs/pt-BR/jumentix/guides/spa-pwa) para entregar um app offline
 zero-build.
 
+Para exemplos por framework, continue com:
+
+- [Cana com React Context API](/docs/pt-BR/jumentix/packages/cana/react-context)
+- [Cana com React Redux](/docs/pt-BR/jumentix/packages/cana/react-redux)
+- [Cana com Vue 3 e Pinia](/docs/pt-BR/jumentix/packages/cana/vue-pinia)
+
 ---
 
 ## Relacionados

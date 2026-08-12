@@ -161,6 +161,36 @@
       "sourcePtBr": "../../documentation/md/CANA-USAGE-GUIDE.pt-BR.md"
     },
     {
+      "section": "packages/cana",
+      "slug": "react-context",
+      "title": "Cana with React Context API",
+      "titlePtBr": "Cana com React Context API",
+      "description": "From zero to final implementation: categorized tasks with Cana and React Context.",
+      "descriptionPtBr": "Do zero \u00e0 implementa\u00e7\u00e3o final: tarefas categorizadas com Cana e React Context.",
+      "source": "../../documentation/md/CANA-REACT-CONTEXT-TUTORIAL.md",
+      "sourcePtBr": "../../documentation/md/CANA-REACT-CONTEXT-TUTORIAL.pt-BR.md"
+    },
+    {
+      "section": "packages/cana",
+      "slug": "react-redux",
+      "title": "Cana with React Redux",
+      "titlePtBr": "Cana com React Redux",
+      "description": "From zero to final implementation: categorized tasks with Cana and Redux.",
+      "descriptionPtBr": "Do zero \u00e0 implementa\u00e7\u00e3o final: tarefas categorizadas com Cana e Redux.",
+      "source": "../../documentation/md/CANA-REACT-REDUX-TUTORIAL.md",
+      "sourcePtBr": "../../documentation/md/CANA-REACT-REDUX-TUTORIAL.pt-BR.md"
+    },
+    {
+      "section": "packages/cana",
+      "slug": "vue-pinia",
+      "title": "Cana with Vue 3 and Pinia",
+      "titlePtBr": "Cana com Vue 3 e Pinia",
+      "description": "From zero to final implementation: categorized tasks with Cana, Vue 3 and Pinia.",
+      "descriptionPtBr": "Do zero \u00e0 implementa\u00e7\u00e3o final: tarefas categorizadas com Cana, Vue 3 e Pinia.",
+      "source": "../../documentation/md/CANA-VUE-PINIA-TUTORIAL.md",
+      "sourcePtBr": "../../documentation/md/CANA-VUE-PINIA-TUTORIAL.pt-BR.md"
+    },
+    {
       "section": "packages/designer-core",
       "slug": "index",
       "title": "@jumentix/designer-core",
