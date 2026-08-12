@@ -3,6 +3,7 @@ import { createMDXSourceBlockquote } from './MDXSourceBlockquote';
 
 describe('MDXSourceBlockquote', () => {
   it('keeps generated source metadata hidden for agents', () => {
+    expect.hasAssertions();
     const Blockquote = createMDXSourceBlockquote('blockquote');
     const { container } = render(
       <Blockquote>
@@ -18,6 +19,7 @@ describe('MDXSourceBlockquote', () => {
   });
 
   it('renders normal blockquotes through the default component', () => {
+    expect.hasAssertions();
     const Blockquote = createMDXSourceBlockquote('blockquote');
     const { container } = render(<Blockquote>Keep this visible.</Blockquote>);
 

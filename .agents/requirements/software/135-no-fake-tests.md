@@ -57,7 +57,11 @@ Found in this repository:
 ## Evidence and Scope
 
 - Applies to every suite in the monorepo, including Cypress.
-- Machine-verifiable in part: `ci-cd/check-test-integrity.js`.
+- Machine-verifiable in part: `ci-cd/check-test-integrity.js`, **inside
+  `ci:gate` since JUM-683**. Its assertion rule is **per test since JUM-702**:
+  the check parses each suite and names the file, line and title of any test
+  that does not declare, counting a declaration made once in a `beforeEach` or
+  `beforeAll` of an enclosing `describe`.
 - Rules `1`, `4` and `7` are judgement, and are attestation in the manner of
   `130`.
 - Complements requirements `112`, `115`, `130`, `134`.

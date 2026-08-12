@@ -192,6 +192,11 @@ describe('database driver smoke tests', () => {
   }
 
   it.each(selectedCases)('driver $driver can connect/disconnect', async (smokeCase) => {
+    // Found by the per-test rule (JUM-702). The file-level rule passed on the
+    // declaration in the disabled-case test above, twelve lines away, which is
+    // the whole reason that rule was replaced.
+    expect.hasAssertions();
+
     process.env.JUMENTIX_DATABASE_DRIVER = smokeCase.driver;
     process.env.JUMENTIX_DATABASE_NAME = 'jumentix';
     Object.entries(smokeCase.env).forEach(([key, value]) => {

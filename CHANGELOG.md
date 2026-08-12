@@ -4,6 +4,15 @@
 
 ## All Changes
 
+- 2026-08-12 Merge remote-tracking branch 'origin/dev' into codex/docs/JUM-703-cana-performance-notes - Eduardo A.
+- 2026-08-12 feat(cana): add React and Vue integration packages (JUM-703) - Eduardo A.
+- 2026-08-12 fix(ci): count assertion declarations per test, not per file (JUM-702) (#209) - Eduardo A.
+- 2026-08-12 feat(ci): make the test-integrity check mandatory (JUM-683) (#208) - Eduardo A.
+- 2026-08-12 fix(ci): make the branch threshold a real one, with the gap as a dated floor (JUM-681) (#200) - Eduardo A.
+- 2026-08-12 fix(ci): correct the mock-only rule, and make the Express suite integrate (JUM-678) (#199) - Eduardo A.
+- 2026-08-12 test: declare assertions in the 31 suites that did not (JUM-677) (#197) - Eduardo A.
+- 2026-08-12 test: wait on the event, not the clock (JUM-679) (#195) - Eduardo A.
+- 2026-08-12 test(website): bring the website's suites under the test map (JUM-680) (#194) - Eduardo A.
 - 2026-08-12 [JUM-700][Fix] Hide agent metadata and add Cana design notes - Eduardo A.
 - 2026-08-12 test: bound the quarantine to suites that still exist (JUM-682) (#196) - Eduardo A.
 - 2026-08-12 [JUM-699][Fix] Stabilize Cana playground theme and Monaco code widgets - Eduardo A.

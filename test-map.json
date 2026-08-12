@@ -98,6 +98,15 @@
       "tier": "gate",
       "kind": "non-hexagonal"
     },
+    "website": {
+      "dependsOn": [],
+      "sourceGlobs": [
+        "apps/jumentix-website/**"
+      ],
+      "runner": "bun",
+      "tier": "gate",
+      "kind": "non-hexagonal"
+    },
     "browser-harness": {
       "dependsOn": [],
       "sourceGlobs": [
@@ -3496,6 +3505,239 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/jumentix-website/components/Welcome/Welcome.test.tsx",
+      "path": "apps/jumentix-website/components/Welcome/Welcome.test.tsx",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/components/cana-framework/CanaFrameworkPlayground.test.tsx",
+      "path": "apps/jumentix-website/components/cana-framework/CanaFrameworkPlayground.test.tsx",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/components/cana/CanaPlayground.test.tsx",
+      "path": "apps/jumentix-website/components/cana/CanaPlayground.test.tsx",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/components/code/MDXSourceBlockquote.test.tsx",
+      "path": "apps/jumentix-website/components/code/MDXSourceBlockquote.test.tsx",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/components/commercial/CommercialPages.a11y.test.tsx",
+      "path": "apps/jumentix-website/components/commercial/CommercialPages.a11y.test.tsx",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/components/commercial/CommercialPages.link-quality.test.tsx",
+      "path": "apps/jumentix-website/components/commercial/CommercialPages.link-quality.test.tsx",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/components/commercial/CommercialPages.test.tsx",
+      "path": "apps/jumentix-website/components/commercial/CommercialPages.test.tsx",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/components/design-system/DesignSystem.a11y.test.tsx",
+      "path": "apps/jumentix-website/components/design-system/DesignSystem.a11y.test.tsx",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/components/design-system/DesignSystem.link-quality.test.tsx",
+      "path": "apps/jumentix-website/components/design-system/DesignSystem.link-quality.test.tsx",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/components/design-system/DesignSystem.test.tsx",
+      "path": "apps/jumentix-website/components/design-system/DesignSystem.test.tsx",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/components/docs-playground/DocsPlayground.test.tsx",
+      "path": "apps/jumentix-website/components/docs-playground/DocsPlayground.test.tsx",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/scripts/cana-consumer-filter.test.mjs",
+      "path": "apps/jumentix-website/scripts/cana-consumer-filter.test.mjs",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/scripts/discover-routes.test.mjs",
+      "path": "apps/jumentix-website/scripts/discover-routes.test.mjs",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/scripts/private-packages-sync.test.mjs",
+      "path": "apps/jumentix-website/scripts/private-packages-sync.test.mjs",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/cypress/e2e/accessibility.cy.js",
+      "path": "apps/jumentix-website/cypress/e2e/accessibility.cy.js",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "website:test:cypress",
+      "runner": "bun",
+      "tier": "nightly",
+      "timeoutMs": 600000,
+      "reason": "Needs a production build and a running server; nightly rather than gate for that cost alone."
+    },
+    {
+      "id": "apps/jumentix-website/cypress/e2e/commercial-routes.cy.js",
+      "path": "apps/jumentix-website/cypress/e2e/commercial-routes.cy.js",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "website:test:cypress",
+      "runner": "bun",
+      "tier": "nightly",
+      "timeoutMs": 600000,
+      "reason": "Needs a production build and a running server; nightly rather than gate for that cost alone."
+    },
+    {
+      "id": "apps/jumentix-website/cypress/e2e/docs-routes.cy.js",
+      "path": "apps/jumentix-website/cypress/e2e/docs-routes.cy.js",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "website:test:cypress",
+      "runner": "bun",
+      "tier": "nightly",
+      "timeoutMs": 600000,
+      "reason": "Needs a production build and a running server; nightly rather than gate for that cost alone."
+    },
+    {
+      "id": "apps/jumentix-website/cypress/e2e/responsive-nav.cy.js",
+      "path": "apps/jumentix-website/cypress/e2e/responsive-nav.cy.js",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "website:test:cypress",
+      "runner": "bun",
+      "tier": "nightly",
+      "timeoutMs": 600000,
+      "reason": "Needs a production build and a running server; nightly rather than gate for that cost alone."
+    },
+    {
+      "id": "apps/jumentix-website/cypress/e2e/route-integrity.cy.js",
+      "path": "apps/jumentix-website/cypress/e2e/route-integrity.cy.js",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "website:test:cypress",
+      "runner": "bun",
+      "tier": "nightly",
+      "timeoutMs": 600000,
+      "reason": "Needs a production build and a running server; nightly rather than gate for that cost alone."
+    },
+    {
       "id": "packages/cana/cypress/adapter.cy.ts",
       "path": "packages/cana/cypress/adapter.cy.ts",
       "layer": "browser-harness",
@@ -3843,6 +4085,6 @@
     "unit": 200,
     "integration": 97,
     "smoke": 2,
-    "suites": 323
+    "suites": 342
   }
 }

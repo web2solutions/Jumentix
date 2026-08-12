@@ -17,6 +17,7 @@ import {
 
 describe('domain validators', () => {
   it('throwIfNotFound must throw', async () => {
+    expect.hasAssertions();
     expect(
       () => {
         throwIfNotFound(false);
@@ -24,6 +25,7 @@ describe('domain validators', () => {
     ).toThrow('Record not found');
   });
   it('throwIfValuesAreDifferent must throw', async () => {
+    expect.hasAssertions();
     expect(
       () => {
         throwIfValuesAreDifferent([1, 2]);
@@ -31,6 +33,7 @@ describe('domain validators', () => {
     ).toThrow('The provided values are different');
   });
   it('throwIfIsNotObject must throw with field name', async () => {
+    expect.hasAssertions();
     const field = 'field name';
     expect(
       () => {
@@ -39,6 +42,7 @@ describe('domain validators', () => {
     ).toThrow(`The property ${field} must be an object`);
   });
   it('throwIfIsNotObject must throw for primitive value', async () => {
+    expect.hasAssertions();
     const field = 'field name';
     expect(
       () => {
@@ -47,6 +51,7 @@ describe('domain validators', () => {
     ).toThrow(`The property ${field} must be an object`);
   });
   it('canNotWriteDirectly must throw with field name', async () => {
+    expect.hasAssertions();
     const field = 'field name';
     expect(
       () => {
@@ -55,6 +60,7 @@ describe('domain validators', () => {
     ).toThrow(`The property ${field} can not be directly changed`);
   });
   it('mustBeNumeric must throw with field name', async () => {
+    expect.hasAssertions();
     const field = 'field name';
     const value = 'bb';
     expect(
@@ -64,6 +70,7 @@ describe('domain validators', () => {
     ).toThrow(`${field} must be a number`);
   });
   it('mustBePassword must be string', async () => {
+    expect.hasAssertions();
     const field = 'password field';
     const value = 12345678;
     expect(
@@ -73,6 +80,7 @@ describe('domain validators', () => {
     ).toThrow(`${field} must be a string.`);
   });
   it('mustBePassword must have at least 8 chars', async () => {
+    expect.hasAssertions();
     const field = 'password field';
     const value = '1234567';
     expect(
@@ -82,6 +90,7 @@ describe('domain validators', () => {
     ).toThrow(`${field} must have at least 8 chars.`);
   });
   it('mustBePassword strict policy branches', async () => {
+    expect.hasAssertions();
     const field = 'password field';
     const previous = process.env.JUMENTIX_STRICT_PASSWORD_POLICY;
     process.env.JUMENTIX_STRICT_PASSWORD_POLICY = 'yes';
@@ -96,6 +105,7 @@ describe('domain validators', () => {
     }
   });
   it('mustBeArray', async () => {
+    expect.hasAssertions();
     const field = 'password field';
     const value = '1234567';
     expect(
@@ -105,6 +115,7 @@ describe('domain validators', () => {
     ).toThrow(`${field} must be an array`);
   });
   it('mustBeGreaterThanZero throw with field name', async () => {
+    expect.hasAssertions();
     const field = 'fake field';
     const value = -1;
     expect(
@@ -114,6 +125,7 @@ describe('domain validators', () => {
     ).toThrow(`${field} must be greater than 0`);
   });
   it('mustBeGreaterThanZero throw must be a number', async () => {
+    expect.hasAssertions();
     const field = 'fake field';
     const value = 'a';
     expect(
@@ -124,6 +136,7 @@ describe('domain validators', () => {
   });
 
   it('mustBePositiveNumber throw with field name', async () => {
+    expect.hasAssertions();
     const field = 'fake field';
     const value = -1;
     expect(
@@ -133,6 +146,7 @@ describe('domain validators', () => {
     ).toThrow(`${field} must be a positive number`);
   });
   it('mustBePositiveNumber throw must be a number', async () => {
+    expect.hasAssertions();
     const field = 'fake field';
     const value = 'a';
     expect(
@@ -143,6 +157,7 @@ describe('domain validators', () => {
   });
 
   it('throwIfReadOnly must throw with field name', async () => {
+    expect.hasAssertions();
     const field = 'field name';
     expect(
       () => {
@@ -152,6 +167,7 @@ describe('domain validators', () => {
   });
 
   it('throwIfPreUpdateValidationFails', async () => {
+    expect.hasAssertions();
     const id = '1';
     expect(
       () => {
@@ -161,6 +177,7 @@ describe('domain validators', () => {
   });
 
   it('canNotBeEmpty string', async () => {
+    expect.hasAssertions();
     const field = 'field name';
     const value = '';
     expect(
@@ -170,6 +187,7 @@ describe('domain validators', () => {
     ).toThrow(`${field} can not be empty`);
   });
   it('canNotBeEmpty null', async () => {
+    expect.hasAssertions();
     const field = 'field name';
     const value = null;
     expect(
@@ -179,6 +197,7 @@ describe('domain validators', () => {
     ).toThrow(`${field} can not be empty`);
   });
   it('canNotBeEmpty undefined', async () => {
+    expect.hasAssertions();
     const field = 'field name';
     const value = undefined;
     expect(
@@ -188,6 +207,7 @@ describe('domain validators', () => {
     ).toThrow(`${field} can not be empty`);
   });
   it('canNotBeEmpty []', async () => {
+    expect.hasAssertions();
     const field = 'field name';
     const value: any = [];
     expect(
@@ -197,6 +217,7 @@ describe('domain validators', () => {
     ).toThrow(`${field} can not be empty`);
   });
   it('canNotBeEmpty {}', async () => {
+    expect.hasAssertions();
     const field = 'field name';
     const value: any = {};
     expect(
@@ -206,11 +227,13 @@ describe('domain validators', () => {
     ).toThrow(`${field} can not be empty`);
   });
   it('canNotBeEmpty allows non-empty values', async () => {
+    expect.hasAssertions();
     expect(() => canNotBeEmpty('field', 'x')).not.toThrow();
     expect(() => canNotBeEmpty('field', { id: '1' })).not.toThrow();
     expect(() => canNotBeEmpty('field', [1])).not.toThrow();
   });
   it('mustEndsAtLeastInMinutes must ends before 5 minutes - 2 hours in the past', async () => {
+    expect.hasAssertions();
     const twoHoursBefore = new Date();
     twoHoursBefore.setHours(twoHoursBefore.getHours() - 2);
     const minutesIntheFuture = 5;
@@ -221,6 +244,7 @@ describe('domain validators', () => {
     ).toThrow(`Event must ends in at least ${minutesIntheFuture} minutes in the future`);
   });
   it('mustEndsAtLeastInMinutes must ends before 5 minutes - 10 minutes in the past', async () => {
+    expect.hasAssertions();
     const _10MinutesBefore = new Date();
     _10MinutesBefore.setMinutes(_10MinutesBefore.getMinutes() - 10);
     const minutesIntheFuture = 5;
@@ -232,6 +256,7 @@ describe('domain validators', () => {
   });
   // eslint-disable-next-line jest/no-commented-out-tests
   /* it('mustEndsAtLeastInMinutes must ends before 5 minutes - 1 day in the past', async () => {
+    expect.hasAssertions();
     const oneDayInThePast = new Date();
     oneDayInThePast.setDate(oneDayInThePast.getDay() - 2);
     const minutesIntheFuture = 5;
@@ -242,6 +267,7 @@ describe('domain validators', () => {
     ).toThrow(`Event must ends in at least ${minutesIntheFuture} minutes in the future`);
   }); */
   it('mustEndsAtLeastInMinutes must ends before 5 minutes - 1 month in the past', async () => {
+    expect.hasAssertions();
     const oneMonthPast = new Date();
     oneMonthPast.setMonth(oneMonthPast.getMonth() - 1);
     const minutesIntheFuture = 5;
@@ -252,6 +278,7 @@ describe('domain validators', () => {
     ).toThrow(`Event must ends in at least ${minutesIntheFuture} minutes in the future`);
   });
   it('mustEndsAtLeastInMinutes must ends before 5 minutes - 10 year in the past', async () => {
+    expect.hasAssertions();
     const _10YearsBefore = new Date();
     _10YearsBefore.setFullYear(_10YearsBefore.getFullYear() - 10);
     const minutesIntheFuture = 5;
@@ -263,6 +290,7 @@ describe('domain validators', () => {
   });
 
   it('mustEndsAtLeastInMinutes validates same-hour minute threshold', () => {
+    expect.hasAssertions();
     jest.useFakeTimers().setSystemTime(new Date('2026-06-26T10:00:00.000Z'));
     try {
       expect(

@@ -64,6 +64,7 @@ function createHarness(options: {
 
 describe('sync-service-management-cana-bundle (JUM-484)', () => {
   it('pins the source, dist and vendored paths', () => {
+    expect.hasAssertions();
     expect(CANA_SOURCE_ENTRY).toBe(path.join('packages', 'cana', 'src', 'adapter.ts'));
     expect(CANA_DIST_FILE).toBe(path.join('packages', 'cana', 'dist', 'service-management-cana.mjs'));
     expect(VENDORED_FILE).toBe(path.join('apps', 'service-management', 'vendor', 'cana', 'index.js'));
@@ -72,6 +73,7 @@ describe('sync-service-management-cana-bundle (JUM-484)', () => {
   });
 
   it('fails closed when the Cana source entry is missing', () => {
+    expect.hasAssertions();
     const { harness, errors, written } = createHarness({ sourceExists: false });
     expect(syncServiceManagementCanaBundle(harness)).toBe(1);
     expect(errors.join('\n')).toContain('source entry not found');
@@ -79,6 +81,7 @@ describe('sync-service-management-cana-bundle (JUM-484)', () => {
   });
 
   it('fails closed when the bun build fails, writing nothing', () => {
+    expect.hasAssertions();
     const {
       harness, errors, written, spawnCalls
     } = createHarness({ buildStatus: 2 });
@@ -89,6 +92,7 @@ describe('sync-service-management-cana-bundle (JUM-484)', () => {
   });
 
   it('fails closed when the build reports success but the dist file is missing', () => {
+    expect.hasAssertions();
     const { harness, errors, written } = createHarness({ distExists: false });
     expect(syncServiceManagementCanaBundle(harness)).toBe(1);
     expect(errors.join('\n')).toContain('is missing');
@@ -96,6 +100,7 @@ describe('sync-service-management-cana-bundle (JUM-484)', () => {
   });
 
   it('fails closed when the built artifact does not define the required binding', () => {
+    expect.hasAssertions();
     const { harness, errors, written } = createHarness({
       distContents: 'export { createCanaDatabaseClient2 as createCanaDatabaseClient };\n'
     });
@@ -105,6 +110,7 @@ describe('sync-service-management-cana-bundle (JUM-484)', () => {
   });
 
   it('builds the browser ESM artifact and vendors it with the generated-file header', () => {
+    expect.hasAssertions();
     const {
       harness, logs, written, spawnCalls
     } = createHarness();

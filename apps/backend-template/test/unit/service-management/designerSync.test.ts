@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable jest/prefer-expect-assertions, jest/max-expects, jest/no-conditional-in-test */
 import path from 'node:path';
+import { until } from '@test/helpers/until';
 
 /**
  * Unit suite for the multi-tab write-event sync engine (JUM-485),
@@ -347,6 +348,7 @@ async function edit(tab: any, action: () => void) {
 
 describe('designerSync — two-tab convergence over a shared mediator (JUM-485)', () => {
   it('converges both tabs on the same state after a write in one tab', async () => {
+    expect.hasAssertions();
     const backend: Backend = { records: new Map() };
     const hub = createFakeMediatorHub();
     const tabA = createTab(backend, hub);
@@ -396,6 +398,7 @@ describe('designerSync — two-tab convergence over a shared mediator (JUM-485)'
   });
 
   it('attributes events by origin: a tab never applies its own echo', async () => {
+    expect.hasAssertions();
     const backend: Backend = { records: new Map() };
     const hub = createFakeMediatorHub();
     const tab = createTab(backend, hub);
@@ -411,6 +414,7 @@ describe('designerSync — two-tab convergence over a shared mediator (JUM-485)'
   });
 
   it('re-publishes only state-document events; baseline writes and foreign stores stay local', async () => {
+    expect.hasAssertions();
     const backend: Backend = { records: new Map() };
     const hub = createFakeMediatorHub();
     const tab = createTab(backend, hub);
@@ -432,6 +436,7 @@ describe('designerSync — two-tab convergence over a shared mediator (JUM-485)'
   });
 
   it('wires channels that expose addEventListener instead of onmessage', async () => {
+    expect.hasAssertions();
     const backend: Backend = { records: new Map() };
     const hub = createFakeMediatorHub();
     const eventTargetChannel: any = {
@@ -453,6 +458,7 @@ describe('designerSync — two-tab convergence over a shared mediator (JUM-485)'
 
 describe('designerSync — undo is local-only and remote changes are not undoable (question 1)', () => {
   it('a remote apply is never recorded on the undo stack', async () => {
+    expect.hasAssertions();
     const backend: Backend = { records: new Map() };
     const hub = createFakeMediatorHub();
     const tabA = createTab(backend, hub);
@@ -483,6 +489,7 @@ describe('designerSync — undo is local-only and remote changes are not undoabl
   });
 
   it('undoing a local action after a remote change restores the local snapshot as a new local write', async () => {
+    expect.hasAssertions();
     const backend: Backend = { records: new Map() };
     const hub = createFakeMediatorHub();
     const tabA = createTab(backend, hub);
@@ -515,6 +522,7 @@ describe('designerSync — undo is local-only and remote changes are not undoabl
   });
 
   it('a remote change truncates the redo branch rather than replaying into a state that no longer exists', async () => {
+    expect.hasAssertions();
     const backend: Backend = { records: new Map() };
     const hub = createFakeMediatorHub();
     const tabA = createTab(backend, hub);
@@ -542,6 +550,7 @@ describe('designerSync — undo is local-only and remote changes are not undoabl
 
 describe('designerSync — pending local edits keep their unsaved surface (question 2)', () => {
   it('a remote apply replaces the model but never imports the remote view, tab or selection', async () => {
+    expect.hasAssertions();
     const backend: Backend = { records: new Map() };
     const hub = createFakeMediatorHub();
     const tabA = createTab(backend, hub);
@@ -585,6 +594,7 @@ describe('designerSync — selection reconciliation on remote deletes (question 
   }
 
   it('a remote delete of the selected entity clears the selection and announces it', async () => {
+    expect.hasAssertions();
     const { tabA, tabB } = await bootPair();
     tabB.core.state.selectedEntityId = 'entity-1';
     await edit(tabA, () => {
@@ -596,6 +606,7 @@ describe('designerSync — selection reconciliation on remote deletes (question 
   });
 
   it('a remote delete of the selected relationship clears the selection', async () => {
+    expect.hasAssertions();
     const { tabA, tabB } = await bootPair();
     tabB.core.withPersist(() => {
       tabB.core.state.relationships = [{
@@ -614,6 +625,7 @@ describe('designerSync — selection reconciliation on remote deletes (question 
   });
 
   it('a remote delete of the selected domain moves the selection to the first remaining domain', async () => {
+    expect.hasAssertions();
     const { tabA, tabB } = await bootPair();
     await edit(tabA, () => {
       tabA.core.state.domains = [
@@ -632,6 +644,7 @@ describe('designerSync — selection reconciliation on remote deletes (question 
   });
 
   it('reconcileSelection leaves a valid selection untouched and accepts an empty model', () => {
+    expect.hasAssertions();
     const state = {
       domains: [makeDomain('domain-1', 'Billing', [makeEntity('entity-1', 'Invoice')])],
       relationships: [],
@@ -651,6 +664,7 @@ describe('designerSync — selection reconciliation on remote deletes (question 
 
 describe('designerSync — event storms coalesce into bounded re-render work', () => {
   it('a burst of remote writes applies the latest document once, with the count announced', async () => {
+    expect.hasAssertions();
     const backend: Backend = { records: new Map() };
     const hub = createFakeMediatorHub();
     const tabA = createTab(backend, hub);
@@ -678,6 +692,7 @@ describe('designerSync — event storms coalesce into bounded re-render work', (
 
 describe('designerSync — durable cursor, resume and closed-tab recovery (Cana JUM-413)', () => {
   it('persists the cursor of every observed local event', async () => {
+    expect.hasAssertions();
     const backend: Backend = { records: new Map() };
     const hub = createFakeMediatorHub();
     const cursorStorage = createFakeStorage();
@@ -693,6 +708,7 @@ describe('designerSync — durable cursor, resume and closed-tab recovery (Cana 
   });
 
   it('resumes the subscription from the persisted cursor and replays what the window retained', async () => {
+    expect.hasAssertions();
     const backend: Backend = { records: new Map() };
     const hub = createFakeMediatorHub();
     const cursorStorage = createFakeStorage();
@@ -734,6 +750,7 @@ describe('designerSync — durable cursor, resume and closed-tab recovery (Cana 
   });
 
   it('a cursor the retained window no longer covers resyncs from the document, then subscribes fresh', async () => {
+    expect.hasAssertions();
     const backend: Backend = { records: new Map() };
     backend.records.set(STATE_KEY, JSON.stringify(makeDocument({ domains: [makeDomain('domain-7', 'Recovered')] })));
     const hub = createFakeMediatorHub();
@@ -759,6 +776,7 @@ describe('designerSync — durable cursor, resume and closed-tab recovery (Cana 
   });
 
   it('a tab closed during activity resumes without loss or duplication (boot load + no-op resync)', async () => {
+    expect.hasAssertions();
     const backend: Backend = { records: new Map() };
     backend.records.set(STATE_KEY, JSON.stringify(makeDocument()));
     const hub = createFakeMediatorHub();
@@ -775,6 +793,7 @@ describe('designerSync — durable cursor, resume and closed-tab recovery (Cana 
   });
 
   it('a backgrounded tab catches up on resume and pays no re-render when nothing changed', async () => {
+    expect.hasAssertions();
     const backend: Backend = { records: new Map() };
     const hub = createFakeMediatorHub();
     const tabA = createTab(backend, hub);
@@ -798,6 +817,7 @@ describe('designerSync — durable cursor, resume and closed-tab recovery (Cana 
   });
 
   it('resume() before start() is a declared no-op', async () => {
+    expect.hasAssertions();
     const backend: Backend = { records: new Map() };
     const hub = createFakeMediatorHub();
     const tab = createTab(backend, hub);
@@ -808,6 +828,7 @@ describe('designerSync — durable cursor, resume and closed-tab recovery (Cana 
 
 describe('designerSync — unknown-outcome saves surface and reconcile (Cana JUM-411)', () => {
   it('a committed save reports nothing', async () => {
+    expect.hasAssertions();
     const backend: Backend = { records: new Map() };
     const hub = createFakeMediatorHub();
     const tab = createTab(backend, hub);
@@ -818,6 +839,7 @@ describe('designerSync — unknown-outcome saves surface and reconcile (Cana JUM
   });
 
   it('an unknown save whose write landed is confirmed by read-back reconciliation', async () => {
+    expect.hasAssertions();
     const backend: Backend = { records: new Map() };
     const hub = createFakeMediatorHub();
     const tab = createTab(backend, hub);
@@ -839,6 +861,7 @@ describe('designerSync — unknown-outcome saves surface and reconcile (Cana JUM
   });
 
   it('an unknown save whose write did NOT land reloads the last confirmed state', async () => {
+    expect.hasAssertions();
     const backend: Backend = { records: new Map() };
     const hub = createFakeMediatorHub();
     const tab = createTab(backend, hub);
@@ -859,6 +882,7 @@ describe('designerSync — unknown-outcome saves surface and reconcile (Cana JUM
   });
 
   it('an unknown save with an unreadable store surfaces the no-fallback state', async () => {
+    expect.hasAssertions();
     const backend: Backend = { records: new Map() };
     const hub = createFakeMediatorHub();
     const tab = createTab(backend, hub);
@@ -871,6 +895,7 @@ describe('designerSync — unknown-outcome saves surface and reconcile (Cana JUM
   });
 
   it('a rejected save promise is observed as an unknown outcome, never unhandled', async () => {
+    expect.hasAssertions();
     const observed: Array<{ result: any; payload: any }> = [];
     const rejectingStore = {
       save: () => Promise.reject(new Error('worker gone')),
@@ -893,6 +918,7 @@ describe('designerSync — unknown-outcome saves surface and reconcile (Cana JUM
 
 describe('designerSync — declared unavailable states, never a silent single-tab session', () => {
   it('an unavailable BroadcastChannel is declared through the status region and local saves keep working', async () => {
+    expect.hasAssertions();
     const backend: Backend = { records: new Map() };
     const hub = createFakeMediatorHub();
     const tab = createTab(backend, hub, { noChannel: true });
@@ -910,6 +936,7 @@ describe('designerSync — declared unavailable states, never a silent single-ta
   });
 
   it('a store that cannot open declares the sync outage instead of faking convergence', async () => {
+    expect.hasAssertions();
     const backend: Backend = { records: new Map() };
     const hub = createFakeMediatorHub();
     const tab = createTab(backend, hub);
@@ -921,6 +948,7 @@ describe('designerSync — declared unavailable states, never a silent single-ta
   });
 
   it('a client without the ordered listener API declares the outage', async () => {
+    expect.hasAssertions();
     const backend: Backend = { records: new Map() };
     const hub = createFakeMediatorHub();
     const tab = createTab(backend, hub);
@@ -931,6 +959,7 @@ describe('designerSync — declared unavailable states, never a silent single-ta
   });
 
   it('a resync against an unreadable store is declared, with the current state kept', async () => {
+    expect.hasAssertions();
     const backend: Backend = { records: new Map() };
     const hub = createFakeMediatorHub();
     const tab = createTab(backend, hub);
@@ -946,6 +975,7 @@ describe('designerSync — declared unavailable states, never a silent single-ta
 
 describe('designerSync — malformed remote input never applies partially', () => {
   it('an undecodable remote record triggers a resync instead of a partial apply', async () => {
+    expect.hasAssertions();
     const backend: Backend = { records: new Map() };
     const hub = createFakeMediatorHub();
     const tabA = createTab(backend, hub);
@@ -962,6 +992,7 @@ describe('designerSync — malformed remote input never applies partially', () =
   });
 
   it('ignores malformed channel messages', async () => {
+    expect.hasAssertions();
     const backend: Backend = { records: new Map() };
     const hub = createFakeMediatorHub();
     const tab = createTab(backend, hub);
@@ -978,6 +1009,7 @@ describe('designerSync — malformed remote input never applies partially', () =
 
 describe('designerSync — lifecycle', () => {
   it('stop() unsubscribes, drops pending applies and leaves injected channels open', async () => {
+    expect.hasAssertions();
     const backend: Backend = { records: new Map() };
     const hub = createFakeMediatorHub();
     const tabA = createTab(backend, hub);
@@ -1002,6 +1034,7 @@ describe('designerSync — lifecycle', () => {
   });
 
   it('resolves and closes its own BroadcastChannel when none is injected', async () => {
+    expect.hasAssertions();
     const backend: Backend = { records: new Map() };
     const hub = createFakeMediatorHub();
     const tab = createTab(backend, hub);
@@ -1019,6 +1052,7 @@ describe('designerSync — lifecycle', () => {
   });
 
   it('applyRemoteDocument is the one apply path: exported for the boot and tests', () => {
+    expect.hasAssertions();
     const core = createDesignerState({
       store: { save: () => Promise.resolve({ status: 'persisted' }) },
       seed: () => undefined,
@@ -1033,6 +1067,7 @@ describe('designerSync — lifecycle', () => {
   });
 
   it('pins the channel name and cursor key', () => {
+    expect.hasAssertions();
     expect(DESIGNER_SYNC_CHANNEL_NAME).toBe('service-management.cana-write-events');
     expect(DESIGNER_SYNC_CURSOR_KEY).toBe('service-management.v1.sync-cursor');
   });
@@ -1040,6 +1075,7 @@ describe('designerSync — lifecycle', () => {
 
 describe('designerSync — defensive defaults', () => {
   it('reconciles dangling relationship and entity selections directly', () => {
+    expect.hasAssertions();
     const state = {
       domains: [makeDomain('domain-1', 'Billing', [makeEntity('entity-1', 'Invoice')])],
       relationships: [{ id: 'rel-1', fromEntityId: 'entity-1', toEntityId: 'entity-1' }],
@@ -1054,6 +1090,7 @@ describe('designerSync — defensive defaults', () => {
   });
 
   it('runs with the ambient cursor storage and the real scheduler when none are injected', async () => {
+    expect.hasAssertions();
     const backend: Backend = { records: new Map() };
     const hub = createFakeMediatorHub();
     const tab = createTab(backend, hub);
@@ -1076,8 +1113,15 @@ describe('designerSync — defensive defaults', () => {
       originId: 'remote-tab',
       record: JSON.stringify(makeDocument({ domains: [makeDomain('domain-5', 'Ambient')] }))
     });
-    // The DEFAULT trailing-edge scheduler (real setTimeout) coalesces.
-    await new Promise((resolve) => { setTimeout(resolve, 5 * 20); });
+    // JUM-679: polled, not slept through. This test exercises the DEFAULT
+    // scheduler on purpose, so the schedule cannot be injected here — but a
+    // 100ms wait was still a guess about how fast the machine is. The poll
+    // returns the moment the coalesced write lands and says what it was waiting
+    // for if it never does.
+    await until(() => tab.core.state.domains[0]?.name === 'Ambient', {
+      describe: 'the coalesced ambient write from the default scheduler'
+    });
+
     expect(tab.core.state.domains[0]?.name).toBe('Ambient');
     expect(tab.renders).toContain('ambient-render');
     expect(tab.renders.filter((kind) => kind === 'ambient-render')).toHaveLength(1);
@@ -1085,6 +1129,7 @@ describe('designerSync — defensive defaults', () => {
   });
 
   it('a runtime without BroadcastChannel resolves no channel and declares the outage', async () => {
+    expect.hasAssertions();
     const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'BroadcastChannel');
     if (!descriptor || descriptor.configurable !== true) {
       // A non-configurable global cannot be removed for this probe; the
@@ -1118,6 +1163,7 @@ describe('designerSync — defensive defaults', () => {
 
 describe('designerSync — defensive guards reach the coverage threshold (Req 020/063)', () => {
   it('tolerates a hostile ambient localStorage (cursor persistence degrades, never throws)', async () => {
+    expect.hasAssertions();
     const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
     if (descriptor && descriptor.configurable !== true) {
       // A non-configurable ambient localStorage cannot be made hostile here.
@@ -1155,6 +1201,7 @@ describe('designerSync — defensive guards reach the coverage threshold (Req 02
   });
 
   it('falls back to the Math.random tab identity when crypto.randomUUID is absent', () => {
+    expect.hasAssertions();
     const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'crypto');
     if (descriptor && descriptor.configurable !== true) {
       return;
@@ -1170,6 +1217,7 @@ describe('designerSync — defensive guards reach the coverage threshold (Req 02
   });
 
   it('reads a persisted cursor defensively: throwing or garbage storage means no resume cursor', async () => {
+    expect.hasAssertions();
     const backend: Backend = { records: new Map() };
     const hub = createFakeMediatorHub();
     const throwing = createTab(backend, hub, {
@@ -1204,6 +1252,7 @@ describe('designerSync — defensive guards reach the coverage threshold (Req 02
   });
 
   it('delivers bare messages through the onmessage branch (no data wrapper)', async () => {
+    expect.hasAssertions();
     const backend: Backend = { records: new Map() };
     const hub = createFakeMediatorHub();
     const tab = createTab(backend, hub);
@@ -1217,6 +1266,7 @@ describe('designerSync — defensive guards reach the coverage threshold (Req 02
   });
 
   it('applies a remote message with the default coalesced count and default render/notify', async () => {
+    expect.hasAssertions();
     const backend: Backend = { records: new Map() };
     const hub = createFakeMediatorHub();
     const tab = createTab(backend, hub);
@@ -1236,6 +1286,7 @@ describe('designerSync — defensive guards reach the coverage threshold (Req 02
   });
 
   it('announces an unknown save without a reason string as an unknown outcome', async () => {
+    expect.hasAssertions();
     const backend: Backend = { records: new Map() };
     const hub = createFakeMediatorHub();
     const tab = createTab(backend, hub);
@@ -1247,6 +1298,7 @@ describe('designerSync — defensive guards reach the coverage threshold (Req 02
   });
 
   it('resyncs a minimal state object and declares a reason-less store outage', async () => {
+    expect.hasAssertions();
     const document = makeDocument({ domains: [makeDomain('domain-6', 'Minimal')] });
     const stubStore = {
       storeName: STORE_NAME,
@@ -1285,6 +1337,7 @@ describe('designerSync — defensive guards reach the coverage threshold (Req 02
   });
 
   it('applyRemoteDocument tolerates a null payload as an empty document', () => {
+    expect.hasAssertions();
     const core = createDesignerState({
       store: { save: () => Promise.resolve({ status: 'persisted' }) },
       seed: () => undefined,
@@ -1296,6 +1349,7 @@ describe('designerSync — defensive guards reach the coverage threshold (Req 02
   });
 
   it('constructs with no options at all (defaults only)', () => {
+    expect.hasAssertions();
     const sync = createDesignerSync();
     expect(typeof sync.originId).toBe('string');
     expect(sync.getLastCursor()).toBeNull();

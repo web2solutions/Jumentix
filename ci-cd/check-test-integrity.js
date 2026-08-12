@@ -4,9 +4,17 @@
  *
  * Judgement cannot be gated. These four conditions can:
  *
- *  1. A suite with no assertion declaration. A test whose `expect` never runs —
- *     inside an unentered branch, after an unawaited promise — passes. 38 of
- *     296 suites had none.
+ *  1. A test with no assertion declaration — **per test since JUM-702**. A test
+ *     whose `expect` never runs — inside an unentered branch, after an unawaited
+ *     promise — passes. 38 of 296 suites had none.
+ *
+ *     This was per file until the JUM-683 verification showed what that missed:
+ *     removing one `expect.hasAssertions()` from a file that still had others
+ *     did not trip the gate, which is exactly what a refactor does. Answering it
+ *     per test needs a parse, and `lib/test-assertions.js` does it with the
+ *     TypeScript parser already in the tree. Across 3,091 tests it found one —
+ *     an `it.each` in the driver smoke suite, passing on a declaration twelve
+ *     lines away in a different test.
  *  2. A suite that asserts only on mocks. `toHaveBeenCalled` says a function
  *     ran; whether the write landed is the question that matters.
  *  3. A fixed sleep used as synchronisation. Waiting a set number of
@@ -18,19 +26,43 @@
  * Registers, not exemptions: an entry names the issue that owns it, and a
  * register entry whose file no longer exists is itself a failure, because a
  * stale exemption is how a register stops meaning anything.
+ *
+ * **All three registers are empty (JUM-683), and this check is now in
+ * `ci:gate`.** They are kept rather than deleted, which is a deliberate
+ * departure from the plan that said to remove the machinery: the injectable
+ * options are what let the suite exercise every failure path, and the
+ * stale-entry checks are what will make the *next* exception as auditable as
+ * these were. A mechanism with nothing in it costs a few lines; re-inventing
+ * one under pressure costs the audit trail.
  */
 const fs = require('fs');
 const path = require('path');
 const { isEntryPoint } = require('./lib/entry-point.js');
+const { testsWithoutDeclarations } = require('./lib/test-assertions.js');
 
 const TEST_ROOTS = ['apps', 'packages'];
 const SKIP_DIRECTORIES = new Set(['node_modules', 'dist', 'build', 'coverage', '.next']);
 
-/** Declares that the test asserts. */
-const ASSERTION_DECLARATIONS = /expect\.hasAssertions\(\)|expect\.assertions\(/;
+/**
+ * The declaration is now recognised by `lib/test-assertions.js`, per test, and
+ * counts when it sits in the test's own body or in a `beforeEach`/`beforeAll`
+ * of an enclosing `describe` — a hook that runs before every test declares for
+ * every test as surely as the line would.
+ */
 
-/** Asserts on something other than a call. */
-const STATE_ASSERTIONS = /\.(toBe|toEqual|toStrictEqual|toMatchObject|toContain|toHaveLength|toThrow|toBeTruthy|toBeFalsy|toBeDefined|toBeUndefined|toBeNull|toBeGreaterThan|toBeLessThan|toMatchSnapshot|resolves|rejects)\b/;
+/**
+ * Asserts on content rather than merely on the fact of a call.
+ *
+ * `toHaveBeenCalledWith` belongs here, and leaving it out was a measurement
+ * error (JUM-678). It asserts the argument — for a handler whose whole effect
+ * is `res.json(payload)`, the argument *is* the effect. The first sweep counted
+ * fourteen suites as "mock-only" on the strength of the substring
+ * `toHaveBeenCalled`; every one of them was in fact asserting a payload.
+ *
+ * What stays reportable is the bare form: `toHaveBeenCalled()` and
+ * `toHaveBeenCalledTimes(n)` say a function ran and nothing about what it did.
+ */
+const STATE_ASSERTIONS = /\.(toBe|toEqual|toStrictEqual|toMatchObject|toContain|toHaveLength|toThrow|toBeTruthy|toBeFalsy|toBeDefined|toBeUndefined|toBeNull|toBeGreaterThan|toBeLessThan|toMatchSnapshot|toHaveBeenCalledWith|toHaveBeenLastCalledWith|resolves|rejects)\b/;
 
 /** `setTimeout(resolve, 40)` and friends: a sleep, not a timeout. */
 const FIXED_SLEEP = /setTimeout\(\s*(?:resolve|\(\)\s*=>\s*resolve\([^)]*\))\s*,\s*(\d+)/g;
@@ -38,100 +70,36 @@ const FIXED_SLEEP = /setTimeout\(\s*(?:resolve|\(\)\s*=>\s*resolve\([^)]*\))\s*,
 /**
  * Sleeps that are accepted, each with the issue that owns the decision.
  *
- * A zero-millisecond sleep is a macrotask flush rather than a wait on wall
- * clock, so it is not in the same class; it is still listed, because it is
- * still a scheduling assumption.
+ * **Empty since JUM-679.** All five files were fixed rather than exempted:
+ * three hold a promise open under the test's control, one drives the injected
+ * scheduler the client already accepted, and the broker suite polls with a
+ * bound. A zero-millisecond flush is not in this class and is not counted.
  */
-const ACCEPTED_SLEEPS = Object.freeze([
-  {
-    file: 'apps/backend-template/test/unit/infra/messages/InMemoryMessageMediator.test.ts',
-    issue: 'JUM-679',
-    reason: '25ms wait on an in-process handler; should await the handler promise'
-  },
-  {
-    file: 'apps/backend-template/test/unit/service-management/catalogSyncClient.test.ts',
-    issue: 'JUM-679',
-    reason: '40ms wait on a debounce; should inject the scheduler'
-  },
-  {
-    file: 'apps/backend-template/test/unit/service-management/designerSync.test.ts',
-    issue: 'JUM-679',
-    reason: '5ms and 100ms waits on the real trailing-edge scheduler; should inject it'
-  },
-  {
-    file: 'packages/message-mediator/test/message-mediator.test.ts',
-    issue: 'JUM-679',
-    reason: '10ms and 30ms waits on in-process delivery'
-  },
-  {
-    file: 'packages/message-mediator/test/integration/brokers.integration.test.ts',
-    issue: 'JUM-679',
-    reason: 'waits on real broker delivery; should poll the condition with a bound'
-  }
-]);
+const ACCEPTED_SLEEPS = Object.freeze([]);
 
 /**
- * Suites that assert only on mocks today, each owned by JUM-678.
+ * Suites that assert only on mocks.
  *
- * A ratchet, not an exemption: these are the findings as measured, and a new
- * suite that asserts only on calls fails immediately.
+ * **Empty since JUM-678, and not because they were fixed.** The fourteen
+ * entries were a measurement error: the rule matched the substring
+ * `toHaveBeenCalled`, so `toHaveBeenCalledWith(payload)` counted as asserting
+ * nothing. It asserts the payload. The rule is corrected above; the register is
+ * empty because there was never anything in it.
  */
-const ACCEPTED_MOCK_ONLY = Object.freeze([
-  { file: 'apps/backend-template/test/integration/Adonis-JS/get.localhost.test.ts', issue: 'JUM-678' },
-  { file: 'apps/backend-template/test/integration/Cloudflare-Workers/get.localhost.test.ts', issue: 'JUM-678' },
-  { file: 'apps/backend-template/test/integration/Derby-JS/get.localhost.test.ts', issue: 'JUM-678' },
-  { file: 'apps/backend-template/test/integration/Express/get.localhost.test.ts', issue: 'JUM-678' },
-  { file: 'apps/backend-template/test/integration/Feathers/get.localhost.test.ts', issue: 'JUM-678' },
-  { file: 'apps/backend-template/test/integration/LoopBack/get.localhost.test.ts', issue: 'JUM-678' },
-  { file: 'apps/backend-template/test/integration/Sails-JS/get.localhost.test.ts', issue: 'JUM-678' },
-  { file: 'apps/backend-template/test/integration/Total-JS/get.localhost.test.ts', issue: 'JUM-678' },
-  { file: 'apps/backend-template/test/integration/Vercel-Functions/get.localhost.test.ts', issue: 'JUM-678' },
-  { file: 'apps/backend-template/test/unit/infra/events/InMemoryEventBus.test.ts', issue: 'JUM-678' },
-  { file: 'apps/backend-template/test/unit/interface/CLI/index.test.ts', issue: 'JUM-678' },
-  { file: 'apps/backend-template/test/unit/interface/WebSocket/adapters/clusterAdapter.lifecycle.test.ts', issue: 'JUM-678' },
-  { file: 'apps/backend-template/test/unit/interface/WebSocket/adapters/redisStreamsAdapter.lifecycle.test.ts', issue: 'JUM-678' },
-  { file: 'apps/backend-template/test/unit/modules/Users/application/service/UserProviderLocal.test.ts', issue: 'JUM-678' }
-]);
+const ACCEPTED_MOCK_ONLY = Object.freeze([]);
 
 /**
- * Suites with no assertion declaration today, each owned by JUM-677.
+ * Suites with no assertion declaration. An entry exempts the whole file.
  *
- * Same ratchet. Removing an entry is done by fixing the suite; the check fails
- * on an entry whose file no longer matches.
+ * **Empty since JUM-677**: 644 declarations were added across the 31 files and
+ * every test still passed, which is the honest result — none of them had been
+ * asserting nothing. The declaration is now what makes that true tomorrow as
+ * well as today.
+ *
+ * It stayed empty through JUM-702, which tightened the rule from per file to
+ * per test: 3,091 tests, one finding, fixed rather than registered.
  */
-const ACCEPTED_NO_ASSERTIONS = Object.freeze([
-  { file: 'apps/backend-template/test/integration/ServiceManagement/domainDesigner.smoke.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/integration/ServiceManagement/pm2Ecosystem.integration.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/ci-cd/sync-service-management-cana-bundle.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/ci-cd/sync-service-management-designer-core.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/domains/validators/index.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/canaDesignerStore.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/canaMigration.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/deployTargetLifecycle.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/deployTargetValidation.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/designerAsyncApiExport.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/designerExporters.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/designerImporters.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/designerNormalizers.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/designerOasCompliance.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/designerPackageVersioning.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/designerState.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/designerStore.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/designerSync.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/hexagonalCodegen.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/interfaceAdapterValidation.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/modelQueries.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/modelValidation.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/mvp.roadmap.features.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/pm2EcosystemUi.contract.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/pwaShell.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/rbacContract.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/runtimeEnvUi.contract.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/sampleModel.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/serverHarnessPorts.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/serviceConfigurationValidation.test.ts', issue: 'JUM-677' }
-]);
+const ACCEPTED_NO_ASSERTIONS = Object.freeze([]);
 
 function walk(dir, out = []) {
   if (!fs.existsSync(dir)) return out;
@@ -142,7 +110,13 @@ function walk(dir, out = []) {
       walk(absolute, out);
       continue;
     }
-    if (/\.test\.(ts|tsx|js)$/.test(entry.name) && absolute.includes(`${path.sep}test${path.sep}`)) {
+    // Suites live under `test/` in the backend and the packages, and beside the
+    // component they cover in the website (JUM-680). Both are suites; only the
+    // convention differs, and a convention is not a reason to be unchecked.
+    const isSuite = /\.test\.(ts|tsx|js|mjs)$/.test(entry.name);
+    const underTestDir = absolute.includes(`${path.sep}test${path.sep}`);
+    const inWebsite = absolute.includes(`${path.sep}jumentix-website${path.sep}`);
+    if (isSuite && (underTestDir || inWebsite)) {
       out.push(absolute);
     }
   }
@@ -180,14 +154,19 @@ function validateTestIntegrity(rootDir = process.cwd(), options = {}) {
     const relative = path.relative(rootDir, absolute).split(path.sep).join('/');
     const source = fs.readFileSync(absolute, 'utf8');
 
-    if (!ASSERTION_DECLARATIONS.test(source)) {
+    const undeclared = testsWithoutDeclarations(source, absolute);
+    if (undeclared.length > 0) {
       const declared = assertRegister.get(relative);
       if (declared) seenAssert.add(relative);
-      else failures.push(
-        `[test-integrity] ${relative} declares no assertions. Add \`expect.hasAssertions()\``
-        + ' to each test: an expect that never runs is a test that passes for free'
-        + ' (Requirement 135 §2).'
-      );
+      else {
+        for (const test of undeclared) {
+          failures.push(
+            `[test-integrity] ${relative}:${test.line} "${test.title}" declares no assertions.`
+            + ' Add `expect.hasAssertions()`: an expect that never runs is a test that'
+            + ' passes for free (Requirement 135 §2).'
+          );
+        }
+      }
     }
 
     if (/toHaveBeenCalled/.test(source) && !STATE_ASSERTIONS.test(source)) {

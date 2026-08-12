@@ -129,14 +129,27 @@ describe('publishing events', () => {
     const mediator = new InMemoryMessageMediatorAdapter();
     let done = false;
 
+    // JUM-679: the subscriber is held open by this test rather than by a 10ms
+    // sleep, which proves the property better than the sleep did. `publish` is
+    // started and *not* awaited; the flag is still false while the subscriber
+    // is blocked, and only becomes true once the publish resolves. A sleep
+    // could only ever show that 10ms had passed.
+    let releaseSubscriber: () => void = () => undefined;
+    const subscriberWork = new Promise<void>((resolve) => { releaseSubscriber = resolve; });
+
     mediator.subscribe('order.created', async () => {
-      await new Promise((resolve) => { setTimeout(resolve, 10); });
+      await subscriberWork;
       done = true;
     });
 
-    await mediator.publish({
+    const publishing = mediator.publish({
       name: 'order.created', payload: {}, occurredAt: '2026-01-01T00:00:00.000Z'
     });
+
+    expect(done).toBe(false);
+
+    releaseSubscriber();
+    await publishing;
 
     expect(done).toBe(true);
   });
@@ -748,13 +761,26 @@ describe('request timeouts', () => {
     expect.hasAssertions();
 
     const mediator = new InMemoryMessageMediatorAdapter();
+    // JUM-679: held open rather than slept through. "Waits indefinitely" is
+    // shown by the request still being pending while the handler is blocked —
+    // a 30ms sleep only showed that it waited 30ms, which every timeout does.
+    let releaseHandler: () => void = () => undefined;
+    const handlerWork = new Promise<void>((resolve) => { releaseHandler = resolve; });
     mediator.registerHandler('orders.create', async () => {
-      await new Promise((resolve) => { setTimeout(resolve, 30); });
+      await handlerWork;
       return { contract: 'orders.create', result: 'slow but fine' };
     });
 
-    await expect(mediator.request(message(), { timeoutMs }))
-      .resolves.toMatchObject({ result: 'slow but fine' });
+    const pending = mediator.request(message(), { timeoutMs });
+    let settled = false;
+    pending.then(() => { settled = true; }).catch(() => undefined);
+    await Promise.resolve();
+
+    expect(settled).toBe(false);
+
+    releaseHandler();
+
+    await expect(pending).resolves.toMatchObject({ result: 'slow but fine' });
   });
 });
 

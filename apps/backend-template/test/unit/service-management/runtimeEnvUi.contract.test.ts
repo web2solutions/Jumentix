@@ -33,6 +33,7 @@ describe('service management runtime env UI contract (JUM-461)', () => {
   const serverPath = path.resolve(process.cwd(), 'apps/service-management/server.js');
 
   it('labels every rendered field with the key it actually writes', () => {
+    expect.hasAssertions();
     const script = fs.readFileSync(scriptPath, 'utf-8');
     // The dynamic renderer names each field after its own env key — a field can
     // never write a key other than the one its label shows.
@@ -44,6 +45,7 @@ describe('service management runtime env UI contract (JUM-461)', () => {
   });
 
   it('exposes the main database driver as a separately editable key with its own hint', () => {
+    expect.hasAssertions();
     const script = fs.readFileSync(scriptPath, 'utf-8');
     const values = enumValuesFor(script, 'JUMENTIX_DATABASE_DRIVER');
     expect(values).toContain('InMemory');
@@ -55,6 +57,7 @@ describe('service management runtime env UI contract (JUM-461)', () => {
   });
 
   it('offers exactly the canonical HTTP framework set, without aliases', () => {
+    expect.hasAssertions();
     const script = fs.readFileSync(scriptPath, 'utf-8');
     const values = enumValuesFor(script, 'JUMENTIX_HTTP_FRAMEWORK');
     expect(values).toStrictEqual(CANONICAL_HTTP_FRAMEWORKS);
@@ -64,6 +67,7 @@ describe('service management runtime env UI contract (JUM-461)', () => {
   });
 
   it('keeps every UI-offered framework inside the backend accepted set', () => {
+    expect.hasAssertions();
     const script = fs.readFileSync(scriptPath, 'utf-8');
     const runtimeSource = fs.readFileSync(
       path.resolve(process.cwd(), 'apps/backend-template/src/interface/runtime/RuntimeEnvironment.ts'),
@@ -75,6 +79,7 @@ describe('service management runtime env UI contract (JUM-461)', () => {
   });
 
   it('round-trips both driver keys through script.js and the server allowlist', () => {
+    expect.hasAssertions();
     const script = fs.readFileSync(scriptPath, 'utf-8');
     const server = fs.readFileSync(serverPath, 'utf-8');
     // The save path collects every rendered editable field by its own key.

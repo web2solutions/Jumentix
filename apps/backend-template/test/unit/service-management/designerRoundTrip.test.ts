@@ -531,6 +531,7 @@ function createCore() {
 describe('designer export/import round-trip (JUM-471)', () => {
   describe('json state export → importStateFromFile mapping (symmetric)', () => {
     it('round-trips domains, relationships and view deep-equal through the JSON crossing', () => {
+      expect.hasAssertions();
       const state = createModelState();
       const document = buildJsonExportDocument(state);
       // The crossing includes the wire step: JSON.stringify/parse, as the
@@ -542,6 +543,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
     });
 
     it('is idempotent: a second export of the imported state is deep-equal to the first', () => {
+      expect.hasAssertions();
       const first = buildJsonExportDocument(createModelState());
       const imported = normalizeStatePayload(JSON.parse(JSON.stringify(first)));
       const second = buildJsonExportDocument(imported);
@@ -549,6 +551,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
     });
 
     it('documents the export boundary: versioned full-suite document; selections, idCounter and env values are not part of it', () => {
+      expect.hasAssertions();
       const state = createModelState();
       const document = buildJsonExportDocument(state);
       expect(Object.keys(document)).toStrictEqual([
@@ -574,6 +577,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
     });
 
     it('re-importing the same file twice produces the identical state, not duplicates', () => {
+      expect.hasAssertions();
       const wire = JSON.parse(JSON.stringify(buildJsonExportDocument(createModelState())));
       const firstImport = normalizeStatePayload(JSON.parse(JSON.stringify(wire)));
       const secondImport = normalizeStatePayload(JSON.parse(JSON.stringify(wire)));
@@ -588,6 +592,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
 
   describe('full-suite export/import (JUM-547)', () => {
     it('round-trips all four tabs deep-equal through the suite crossing', () => {
+      expect.hasAssertions();
       const state = createFullSuiteState();
       const document = buildJsonExportDocument(state);
       // The crossing includes the wire step: JSON.stringify/parse, as the
@@ -606,6 +611,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
     });
 
     it('preserves local env values when the document carries a null values field (JUM-493)', () => {
+      expect.hasAssertions();
       const state = createFullSuiteState();
       const document = JSON.parse(JSON.stringify(buildJsonExportDocument(state)));
       // A hand-edited or corrupted bundle with an explicit null values field
@@ -618,6 +624,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
     });
 
     it('is idempotent at document level: a second export of the imported state is deep-equal to the first', () => {
+      expect.hasAssertions();
       const first = buildJsonExportDocument(createFullSuiteState());
       const result = buildStateFromSuiteExport(
         JSON.parse(JSON.stringify(first)),
@@ -629,6 +636,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
     });
 
     it('never carries runtime environment values in the bundle — the selection only', () => {
+      expect.hasAssertions();
       const state = createFullSuiteState();
       const document = buildJsonExportDocument(state);
       expect(Object.keys(document.runtimeEnvironment).sort()).toStrictEqual(['environment', 'fileName']);
@@ -657,6 +665,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
     });
 
     it('imports a pre-JUM-547 domain-only document cleanly, defaulting the missing sections', () => {
+      expect.hasAssertions();
       // Backward compatibility: the shape `exportAsJson` produced before the
       // full-suite change — no `kind`, no `version`, no suite sections.
       const legacy = {
@@ -691,6 +700,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
     });
 
     it('refuses a document with unknown sections instead of discarding them silently', () => {
+      expect.hasAssertions();
       const document = {
         ...buildJsonExportDocument(createModelState()),
         futureSection: { anything: true }
@@ -702,6 +712,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
     });
 
     it('accepts same-major versions and refuses a newer major instead of half-importing', () => {
+      expect.hasAssertions();
       const wire = JSON.parse(JSON.stringify(buildJsonExportDocument(createModelState())));
       const sameMajor = buildStateFromSuiteExport({ ...wire, version: '2.7.1' });
       expect(sameMajor.ok).toBe(true);
@@ -715,6 +726,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
     });
 
     it('refuses a different export kind fed to the suite import instead of "succeeding" as an empty model', () => {
+      expect.hasAssertions();
       const state = createModelState();
       const packageDocument = buildDomainPackageDocument(state.domains[0], '2026-08-05T00:00:00.000Z');
       const result = buildStateFromSuiteExport(JSON.parse(JSON.stringify(packageDocument)));
@@ -724,6 +736,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
     });
 
     it('refuses a non-object document', () => {
+      expect.hasAssertions();
       expect(buildStateFromSuiteExport(null)).toStrictEqual({ ok: false, reason: 'invalid-document' });
       expect(buildStateFromSuiteExport([1, 2, 3]).reason).toBe('invalid-document');
       expect(buildStateFromSuiteExport('text').reason).toBe('invalid-document');
@@ -732,6 +745,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
 
   describe('domain package export → importDomainPackage mapping (symmetric)', () => {
     it('round-trips a domain package deep-equal into an empty model, stamped with provenance (JUM-492)', () => {
+      expect.hasAssertions();
       const state = createModelState();
       const document = buildDomainPackageDocument(state.domains[0], '2026-08-05T00:00:00.000Z');
       const result = buildDomainFromPackage(JSON.parse(JSON.stringify(document)), []);
@@ -765,6 +779,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
     });
 
     it('re-importing the same package version is a no-op (idempotent re-import, JUM-492)', () => {
+      expect.hasAssertions();
       // JUM-492 replaced the pre-versioning behaviour this suite pinned
       // (every re-import appended a `_2`-suffixed duplicate): importing the
       // same package version twice now changes nothing.
@@ -783,6 +798,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
     });
 
     it('refuses a conflicting re-import — same version, different content — and changes nothing (JUM-492)', () => {
+      expect.hasAssertions();
       const state = createModelState();
       const wire = JSON.parse(JSON.stringify(
         buildDomainPackageDocument(state.domains[0], '2026-08-05T00:00:00.000Z')
@@ -803,6 +819,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
     });
 
     it('a newer version merges deterministically: additive applies, RBAC keeps the existing policy (JUM-492)', () => {
+      expect.hasAssertions();
       const state = createModelState();
       const wire = JSON.parse(JSON.stringify(
         buildDomainPackageDocument(state.domains[0], '2026-08-05T00:00:00.000Z')
@@ -837,6 +854,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
     });
 
     it('resolves compatible and incompatible dependency pairs on import (JUM-492)', () => {
+      expect.hasAssertions();
       const state = createModelState();
       // The reference Billing domain declares `shared-kernel` (bare name —
       // presence-only). Importing the kernel first satisfies it.
@@ -867,6 +885,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
     });
 
     it('recomputes colliding package ids when appending a different package (JUM-617 preserved)', () => {
+      expect.hasAssertions();
       // JUM-617 closed the gap this suite previously pinned as a candidate
       // defect (found under JUM-471): `importDomainPackage` used to keep the
       // file's ids verbatim, so importing the same package twice yielded two
@@ -899,6 +918,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
 
   describe('oas export → importStateFromOasFile mapping (lossy by design)', () => {
     it('is idempotent: export → import → export reaches a fixed point', () => {
+      expect.hasAssertions();
       const first = buildOasDocument(createModelState());
       const firstImport = buildDomainsFromOas(JSON.parse(JSON.stringify(first)));
       expect(firstImport.ok).toBe(true);
@@ -916,6 +936,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
     });
 
     it('loses exactly the documented field list in the first crossing (JUM-478: the list is empty)', () => {
+      expect.hasAssertions();
       // EXPECTED-LOSS CONTRACT. JUM-478 drove the JUM-471 baseline (21 paths)
       // to zero: composition extensions, message contracts, `x-relations`,
       // the fieldless-entity marker and entity meta (aggregate, invariants,
@@ -935,6 +956,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
     });
 
     it('restores every field facet except the documented typed-format normalization', () => {
+      expect.hasAssertions();
       const state = createModelState();
       const first = buildOasDocument(state);
       const firstImport = buildDomainsFromOas(JSON.parse(JSON.stringify(first)));
@@ -955,6 +977,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
     });
 
     it('drops domain context and canvas positions but restores entity meta and relationships', () => {
+      expect.hasAssertions();
       const state = createModelState();
       const first = buildOasDocument(state);
       const firstImport = buildDomainsFromOas(JSON.parse(JSON.stringify(first)));
@@ -1010,6 +1033,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
     });
 
     it('recomputes import ids with the fallback pattern, unique across repeated imports', () => {
+      expect.hasAssertions();
       const wire = JSON.parse(JSON.stringify(buildOasDocument(createModelState())));
       const firstImport = buildDomainsFromOas(JSON.parse(JSON.stringify(wire)));
       const secondImport = buildDomainsFromOas(JSON.parse(JSON.stringify(wire)));
@@ -1035,6 +1059,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
 
   describe('junction auto-generation across the crossings', () => {
     it('json export carries the generated junction and re-import keeps exactly one', () => {
+      expect.hasAssertions();
       const state = createJunctionState();
       const wire = JSON.parse(JSON.stringify(buildJsonExportDocument(state)));
       const firstImport = normalizeStatePayload(JSON.parse(JSON.stringify(wire)));
@@ -1051,6 +1076,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
     });
 
     it('oas export keeps the junction as a plain schema and crosses its relationships by schema name', () => {
+      expect.hasAssertions();
       const state = createJunctionState();
       const document = buildOasDocument(state);
       expect(Object.keys(document.components.schemas)).toContain('Billing_InvoiceProduct');
@@ -1101,6 +1127,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
 
   describe('id recomputation', () => {
     it('advances the idCounter past the highest numeric id suffix on JSON import', () => {
+      expect.hasAssertions();
       // The importStateFromFile glue applies the normalized payload to the
       // core and calls recomputeIdCounter — exercised here against the real
       // core and the real storage port, exactly as the glue does.
@@ -1126,6 +1153,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
     });
 
     it('recomputes the same idCounter when the same file is imported twice', () => {
+      expect.hasAssertions();
       const wire = JSON.parse(JSON.stringify(buildJsonExportDocument(createJunctionState())));
       const importIntoFreshCore = () => {
         const core = createCore();
@@ -1146,6 +1174,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
     const specDocument = loadCanonicalSpec();
 
     it('pins the canonical fixture: openapi 3.1.0 with 39 operationIds', () => {
+      expect.hasAssertions();
       // 33 pre-JUM-491 operations plus the six shared-catalog operations
       // (getAll/create/getOneById/update/deleteOne/restore on /catalogs).
       expect(specDocument.openapi).toBe('3.1.0');
@@ -1153,6 +1182,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
     });
 
     it('imports the six contract schemas with full meta normalization and no phantom port objects', () => {
+      expect.hasAssertions();
       // The canonical spec carries no designer markers at all: the importer
       // recognizes the port-object conventions (Request*/ArrayOf/
       // ResourceDeleteResponse names, "Port input/output object" descriptions,
@@ -1194,6 +1224,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
     });
 
     it('is idempotent: importing the spec twice yields the same model modulo recomputed ids', () => {
+      expect.hasAssertions();
       const firstImport = buildDomainsFromOas(specDocument);
       const secondImport = buildDomainsFromOas(specDocument);
       expect(stripImportIds(secondImport.domains))
@@ -1202,6 +1233,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
     });
 
     it('re-exports to a fixed point: a second crossing is identical at model and document level', () => {
+      expect.hasAssertions();
       const firstImport = buildDomainsFromOas(specDocument);
       const second = buildOasDocument({
         domains: firstImport.domains,
@@ -1219,6 +1251,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
     });
 
     it('preserves the Users and Organization schema structure across the crossing', () => {
+      expect.hasAssertions();
       const firstImport = buildDomainsFromOas(specDocument);
       const exported = buildOasDocument({
         domains: firstImport.domains,
@@ -1235,6 +1268,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
     });
 
     it('maps every imported contract schema to the five canonical CRUD operations', () => {
+      expect.hasAssertions();
       // The source's legacy operationIds (`getAll`, `create`, `deleteOne`,
       // ...) do not cross: the export follows the Req 036 canonical verb
       // scheme (JUM-474), qualified by schema name so ids stay unique across
@@ -1262,6 +1296,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
 
   describe('one-way exporters (no importer exists — structural invariants instead of round-trip)', () => {
     it('markdown has no importer: pins that every domain, entity, field and relationship is rendered', () => {
+      expect.hasAssertions();
       const state = createModelState();
       const markdown = buildMarkdownExport(state);
       expect(markdown.startsWith('# Domain Designer Model\n')).toBe(true);
@@ -1279,6 +1314,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
     });
 
     it('json schema has no importer: pins one definition per entity with required ⊆ properties', () => {
+      expect.hasAssertions();
       const state = createModelState();
       const document = buildJsonSchemaDocument(state);
       expect(document.$schema).toBe('https://json-schema.org/draft/2020-12/schema');
@@ -1303,6 +1339,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
     });
 
     it('asyncapi has no importer: pins one 3.0 operation per contract per transport with shared payload refs', () => {
+      expect.hasAssertions();
       const state = createModelState();
       const fileSet = buildAsyncApiFileSet(state);
       // The canonical naming: one <version>.<transport>.yml file per transport.
@@ -1334,6 +1371,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
     });
 
     it('boilerplate bundle emits code, not a model: pins one module per domain with the hexagonal file set', () => {
+      expect.hasAssertions();
       const state = createModelState();
       const document = buildBoilerplateBundleDocument(state, '2026-08-05T00:00:00.000Z');
       expect(document.kind).toBe('boilerplate-bundle');

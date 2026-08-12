@@ -223,8 +223,31 @@ function executeLayerAwarePlan(plan, options = {}) {
 
   if (plan.unitSuites.length > 0) {
     const runtime = resolveTestRuntime();
-    const unitPaths = plan.suites.filter((suite) => suite.type === 'unit').map((s) => s.path);
-    const status = runSuites(unitPaths, { label: 'layer-aware-unit', runtime });
+    const unitSuites = plan.suites.filter((suite) => suite.type === 'unit');
+    // JUM-680: a suite that names its own script is run by that script, not by
+    // handing its path to the default runner. The website's React suites need
+    // jsdom and the website's Jest config; `bun test` cannot run them at all.
+    const scripted = [...new Set(unitSuites.filter((s) => s.script).map((s) => s.script))];
+    const unitPaths = unitSuites.filter((suite) => !suite.script).map((s) => s.path);
+    let status = unitPaths.length > 0
+      ? runSuites(unitPaths, { label: 'layer-aware-unit', runtime })
+      : 0;
+    for (const script of scripted) {
+      if (status !== 0) break;
+      console.log(`[ci] layer-aware unit script: ${script}`);
+      const result = spawn('bun', ['run', script], { stdio: 'inherit', env: process.env });
+      status = typeof result.status === 'number' ? result.status : 1;
+      // Recorded as executed, or the fail-closed evidence check reports them as
+      // planned-but-missing — which it did, correctly, the first time.
+      for (const suite of unitSuites.filter((s) => s.script === script)) {
+        executedSuites.push(suite.path);
+        suiteResults.push({
+          suite: suite.path,
+          status: status === 0 ? 'passed' : 'failed',
+          runner: script
+        });
+      }
+    }
     for (const suite of unitPaths) {
       executedSuites.push(suite);
       suiteResults.push({

@@ -6,7 +6,10 @@ const MINIMUM_GLOBAL_THRESHOLDS = {
   statements: 99,
   lines: 99,
   functions: 99,
-  branches: 90
+  // JUM-681: 99, matching the other three and the authority. It was 90, and the
+  // exception register below — which this reads rather than copies — is where
+  // the measured gap now lives, as a floor that can only be held or improved.
+  branches: 99
 };
 
 /**

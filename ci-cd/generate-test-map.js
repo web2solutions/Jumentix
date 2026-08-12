@@ -201,6 +201,40 @@ function carriedQuarantine(root, previousManifest) {
   return kept;
 }
 
+/**
+ * The website's own suites (JUM-680).
+ *
+ * Two kinds with different costs, so they carry different tiers:
+ *
+ *  - unit suites — React components and the `scripts/*.mjs` helpers — run under
+ *    the website's own Jest config in milliseconds, so they belong in the gate;
+ *  - the Cypress specs need a production build and a running server, which is
+ *    minutes, so they are nightly and say so.
+ *
+ * Both name the script that runs them, exactly as the Redis integration suites
+ * do: the root runner must not try to execute a `.tsx` React test under Bun
+ * without the website's config.
+ */
+function websiteSuitePaths(root) {
+  const websiteRoot = path.join(root, 'apps', 'jumentix-website');
+  const unit = walk(
+    websiteRoot,
+    (file) => /\.test\.(ts|tsx|mjs)$/.test(file)
+      && !file.includes(`${path.sep}node_modules${path.sep}`)
+      && !file.includes(`${path.sep}.next${path.sep}`)
+  );
+  const cypress = walk(
+    path.join(websiteRoot, 'cypress', 'e2e'),
+    (file) => /\.cy\.(js|ts)$/.test(file)
+  );
+
+  const relative = (file) => path.relative(root, file).replace(/\\/g, '/');
+  return {
+    unit: unit.map(relative).sort(byPath),
+    cypress: cypress.map(relative).sort(byPath)
+  };
+}
+
 function readPreviousManifest(root) {
   const previousPath = path.join(root, 'test-map.json');
   if (!fs.existsSync(previousPath)) return null;
@@ -401,6 +435,23 @@ function buildManifest(root = process.cwd()) {
     // as depending on `adapters/out+infra` would drag a full browser run into
     // every backend infra change. These specs exercise cana's IndexedDB engine
     // and nothing else; the only changes that can affect them are cana's own.
+    //
+    // JUM-680: the website had no layer at all. Its five Cypress specs and six
+    // unit suites were absent from the manifest, so the selector could not see
+    // them and no `branch-gate` job ran them — the `website` job in
+    // `.github/workflows/ci.yml` is gated on `base_ref == 'main'`. A website
+    // change reached `dev` with its own tests never having run.
+    //
+    // `dependsOn: []` for the same reason as `browser-harness`: blast radius
+    // is outward, and nothing in the backend can change what the website
+    // renders. The site consumes published packages, not their sources.
+    website: {
+      dependsOn: [],
+      sourceGlobs: ['apps/jumentix-website/**'],
+      runner: 'bun',
+      tier: 'gate',
+      kind: 'non-hexagonal'
+    },
     'browser-harness': {
       dependsOn: [],
       //
@@ -541,6 +592,37 @@ function buildManifest(root = process.cwd()) {
   // invocation because `createLayerAwarePlan` de-duplicates integration scripts;
   // registering them individually is what makes each spec visible to the
   // manifest checks and to coverage, not eighteen Cypress runs.
+  const websiteSuites = websiteSuitePaths(root);
+  for (const file of websiteSuites.unit) {
+    suites.push({
+      id: file,
+      path: file,
+      layer: 'website',
+      kind: 'non-hexagonal',
+      type: 'unit',
+      script: 'website:test:unit',
+      runner: 'bun',
+      tier: 'gate',
+      timeoutMs: 60000,
+      reason: 'Runs under the website\'s own Jest config; the root runner cannot execute it directly.'
+    });
+  }
+  for (const file of websiteSuites.cypress) {
+    suites.push({
+      id: file,
+      path: file,
+      layer: 'website',
+      kind: 'non-hexagonal',
+      type: 'integration',
+      adapter: 'cypress',
+      script: 'website:test:cypress',
+      runner: 'bun',
+      tier: 'nightly',
+      timeoutMs: 600000,
+      reason: 'Needs a production build and a running server; nightly rather than gate for that cost alone.'
+    });
+  }
+
   for (const file of browserSpecPaths(root)) {
     suites.push({
       id: file,

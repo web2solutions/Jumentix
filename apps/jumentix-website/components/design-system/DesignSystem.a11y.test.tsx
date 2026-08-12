@@ -30,88 +30,106 @@ describe('Design System a11y', () => {
 
   describe('BrandMark', () => {
     it('has no a11y violations', async () => {
+    expect.hasAssertions();
       await testA11y(<BrandMark />);
     });
 
     it('has no a11y violations with custom href', async () => {
+    expect.hasAssertions();
       await testA11y(<BrandMark href="/custom" />);
     });
   });
 
   describe('ActionLink', () => {
     it('has no a11y violations (primary)', async () => {
+    expect.hasAssertions();
       await testA11y(<ActionLink href="/test">Test</ActionLink>);
     });
 
     it('has no a11y violations (secondary)', async () => {
+    expect.hasAssertions();
       await testA11y(<ActionLink href="/test" variant="secondary">Test</ActionLink>);
     });
 
     it('has no a11y violations (quiet)', async () => {
+    expect.hasAssertions();
       await testA11y(<ActionLink href="/test" variant="quiet">Test</ActionLink>);
     });
 
     it('has no a11y violations (external)', async () => {
+    expect.hasAssertions();
       await testA11y(<ActionLink href="https://example.com" external>External</ActionLink>);
     });
   });
 
   describe('StatusBadge', () => {
     it('has no a11y violations (neutral)', async () => {
+    expect.hasAssertions();
       await testA11y(<StatusBadge>Neutral</StatusBadge>);
     });
 
     it('has no a11y violations (success)', async () => {
+    expect.hasAssertions();
       await testA11y(<StatusBadge tone="success">Success</StatusBadge>);
     });
 
     it('has no a11y violations (attention)', async () => {
+    expect.hasAssertions();
       await testA11y(<StatusBadge tone="attention">Attention</StatusBadge>);
     });
   });
 
   describe('SectionHeading', () => {
     it('has no a11y violations', async () => {
+    expect.hasAssertions();
       await testA11y(<SectionHeading eyebrow="Eyebrow" title="Title" description="Description" />);
     });
 
     it('has no a11y violations without description', async () => {
+    expect.hasAssertions();
       await testA11y(<SectionHeading eyebrow="Eyebrow" title="Title" />);
     });
   });
 
   describe('FeatureGrid', () => {
     it('has no a11y violations', async () => {
+    expect.hasAssertions();
       await testA11y(<FeatureGrid features={[{ title: 'F', description: 'D' }]} />);
     });
 
     it('has no a11y violations with icon', async () => {
+    expect.hasAssertions();
       await testA11y(<FeatureGrid features={[{ title: 'F', description: 'D', icon: 'Icon' }]} />);
     });
   });
 
   describe('Callout', () => {
     it('has no a11y violations (info)', async () => {
+    expect.hasAssertions();
       await testA11y(<Callout title="Info">Content</Callout>);
     });
 
     it('has no a11y violations (success)', async () => {
+    expect.hasAssertions();
       await testA11y(<Callout title="Success" tone="success">Content</Callout>);
     });
 
     it('has no a11y violations (warning)', async () => {
+    expect.hasAssertions();
       await testA11y(<Callout title="Warning" tone="warning">Content</Callout>);
     });
   });
 
   describe('MetricStrip', () => {
     it('has no a11y violations', async () => {
+    expect.hasAssertions();
       await testA11y(<MetricStrip metrics={[{ value: '100', label: 'Percent' }]} />);
     });
   });
 
   describe('CapabilityTable', () => {
     it('has no a11y violations', async () => {
+    expect.hasAssertions();
       await testA11y(<CapabilityTable rows={[{ capability: 'Cap', implementation: 'Impl', status: 'Done' }]} />);
     });
   });
@@ -123,80 +141,96 @@ describe('Design System a11y', () => {
     ];
 
     it('has no a11y violations', async () => {
+    expect.hasAssertions();
       await testA11y(<CodeShowcase samples={samples} />);
     });
   });
 
   describe('SearchField', () => {
     it('has no a11y violations', async () => {
+    expect.hasAssertions();
       await testA11y(<SearchField />);
     });
 
     it('has no a11y violations with custom props', async () => {
+    expect.hasAssertions();
       await testA11y(<SearchField label="Custom" placeholder="Search" />);
     });
   });
 
   describe('Pagination', () => {
     it('has no a11y violations (first page)', async () => {
+    expect.hasAssertions();
       await testA11y(<Pagination current={1} total={5} hrefBase="/test" />);
     });
 
     it('has no a11y violations (middle page)', async () => {
+    expect.hasAssertions();
       await testA11y(<Pagination current={3} total={5} hrefBase="/test" />);
     });
 
     it('has no a11y violations (last page)', async () => {
+    expect.hasAssertions();
       await testA11y(<Pagination current={5} total={5} hrefBase="/test" />);
     });
 
     it('has no a11y violations with onChange callback', async () => {
+    expect.hasAssertions();
       await testA11y(<Pagination current={2} total={5} onChange={() => {}} />);
     });
   });
 
   describe('LocaleSwitch', () => {
     it('has no a11y violations (button)', async () => {
+    expect.hasAssertions();
       await testA11y(<LocaleSwitch locale="EN" />);
     });
 
     it('has no a11y violations (link)', async () => {
+    expect.hasAssertions();
       await testA11y(<LocaleSwitch locale="PT-BR" href="/pt-BR" />);
     });
   });
 
   describe('SiteHeader', () => {
     it('has no a11y violations (en)', async () => {
+    expect.hasAssertions();
       await testA11y(<SiteHeader locale="en" currentPath="/" />);
     });
 
     it('has no a11y violations (pt-BR)', async () => {
+    expect.hasAssertions();
       await testA11y(<SiteHeader locale="pt-BR" currentPath="/produto" />);
     });
 
     it('has no a11y violations with mobile menu open state', async () => {
+    expect.hasAssertions();
       await testA11y(<SiteHeader locale="en" currentPath="/product" />);
     });
   });
 
   describe('SiteFooter', () => {
     it('has no a11y violations (en)', async () => {
+    expect.hasAssertions();
       await testA11y(<SiteFooter locale="en" />);
     });
 
     it('has no a11y violations (pt-BR)', async () => {
+    expect.hasAssertions();
       await testA11y(<SiteFooter locale="pt-BR" />);
     });
   });
 
   describe('DocsToolbar', () => {
     it('has no a11y violations', async () => {
+    expect.hasAssertions();
       await testA11y(<DocsToolbar />);
     });
   });
 
   describe('ArchitectureFlow', () => {
     it('has no a11y violations', async () => {
+    expect.hasAssertions();
       await testA11y(<ArchitectureFlow steps={[{ title: 'Step 1', description: 'Desc 1' }]} />);
     });
   });

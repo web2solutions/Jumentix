@@ -5,6 +5,31 @@ import {
 import type { IMessage, IMessageResponse } from '../../src';
 
 /**
+ * Wait for a condition, with a bound (JUM-679, Requirement 134 §2).
+ *
+ * A broker delivers when it delivers; the old form waited a flat second for the
+ * binding and two more for the message. That is a guess about how fast the
+ * container is, and it spends the full time even when delivery was instant.
+ * This returns the moment the condition holds and names what never happened
+ * when it does not.
+ */
+async function until(
+  condition: () => boolean | Promise<boolean>,
+  { timeoutMs = 15000, stepMs = 25, describe = 'condition' } = {}
+): Promise<void> {
+  const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    // eslint-disable-next-line no-await-in-loop
+    if (await condition()) return;
+    if (Date.now() > deadline) {
+      throw new Error(`Timed out after ${timeoutMs}ms waiting for ${describe}`);
+    }
+    // eslint-disable-next-line no-await-in-loop
+    await new Promise((resolve) => { setTimeout(resolve, stepMs); });
+  }
+}
+
+/**
  * The broker adapters against real brokers (Requirement 112 §1).
  *
  * What these adapters do is talk to a broker; the unit suite covers compiler
@@ -156,13 +181,15 @@ suite('RabbitMQ mediator against a real broker', () => {
     mediator.subscribe(name, (event) => { delivered.push(event.payload); });
 
     // Subscription is asynchronous on a broker: the binding has to exist before
-    // the publish, which is a step the in-memory mediator does not have.
-    await new Promise((resolve) => { setTimeout(resolve, 1000); });
-    await mediator.publish({
-      name, payload: { id: 1 }, occurredAt: new Date().toISOString()
-    });
-
-    await new Promise((resolve) => { setTimeout(resolve, 2000); });
+    // the publish, which is a step the in-memory mediator does not have. The
+    // publish is retried until one lands rather than waiting a flat second for
+    // the binding to appear (JUM-679).
+    await until(async () => {
+      await mediator.publish({
+        name, payload: { id: 1 }, occurredAt: new Date().toISOString()
+      });
+      return delivered.length > 0;
+    }, { describe: 'the broker to bind the subscription and deliver' });
 
     expect(delivered).toStrictEqual([{ id: 1 }]);
   }, 60000);
@@ -311,7 +338,10 @@ suite('RabbitMQ mediator against a real broker', () => {
       { replyTo: replyQueue, correlationId: 'orphan' }
     );
 
-    await new Promise((resolve) => { setTimeout(resolve, 500); });
+    await until(() => replyQueue.length > 0, {
+      describe: 'the adapter to answer the malformed request'
+    });
+
     expect(replyQueue.length).toBeGreaterThan(0);
   }, 60000);
 
@@ -460,12 +490,19 @@ suite('BullMQ mediator against a real Redis', () => {
     // job but not completed it — an unclaimed contract finishes immediately
     // with a "no handler" payload and never enters the catch.
     const name = contract('bull-slow');
+    // JUM-679: the handler is held open by this test rather than by a 60-second
+    // sleep. A minute-long timer left running is a handle the runner has to
+    // survive, and the number was only ever "much larger than 500ms".
+    let releaseHandler: () => void = () => undefined;
+    const handlerWork = new Promise<void>((resolve) => { releaseHandler = resolve; });
     mediator.registerHandler(name, async () => {
-      await new Promise((resolve) => { setTimeout(resolve, 60000); });
+      await handlerWork;
       return { contract: name, result: 'late' };
     });
 
     const response = await mediator.request(message(name), { timeoutMs: 500 });
+    releaseHandler();
+
     expect(response.error).toBeDefined();
     const errorMessage = String((response.error as Error).message);
     expect(errorMessage).toMatch(/timed out/);

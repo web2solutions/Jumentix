@@ -35,10 +35,12 @@ describe('Commercial pages a11y', () => {
 
   describe.each(pages)('%s page', (page) => {
     it(`has no a11y violations (EN)`, async () => {
+    expect.hasAssertions();
       await testA11y(<CommercialPage locale="en" page={page} />);
     });
 
     it(`has no a11y violations (PT-BR)`, async () => {
+    expect.hasAssertions();
       await testA11y(<CommercialPage locale="pt-BR" page={page} />);
     });
   });
@@ -54,10 +56,12 @@ describe('Commercial pages a11y', () => {
 
     describe.each(useCases)('%s', (name) => {
       it(`has no a11y violations (EN)`, async () => {
+    expect.hasAssertions();
         await testA11y(<CommercialUseCasePage locale="en" name={name} />);
       });
 
       it(`has no a11y violations (PT-BR)`, async () => {
+    expect.hasAssertions();
         await testA11y(<CommercialUseCasePage locale="pt-BR" name={name} />);
       });
     });
