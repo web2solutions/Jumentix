@@ -178,6 +178,29 @@ function browserSpecPaths(root) {
     .sort(byPath);
 }
 
+/**
+ * The quarantine, carried across but not past the file's own deletion.
+ *
+ * Carrying it forward is right: regenerating the map must not silently
+ * un-quarantine a suite. Carrying an entry whose file no longer exists is not —
+ * `packages/cana/test/performance.test.ts` was deleted in JUM-581 and its entry
+ * sat in the manifest for months afterwards, describing a suite nobody could
+ * read, run or fix (JUM-682).
+ *
+ * A quarantine says "this suite exists and is knowingly not gating". When the
+ * suite is gone the sentence has no subject.
+ */
+function carriedQuarantine(root, previousManifest) {
+  const previous = previousManifest?.quarantine || [];
+  const kept = previous.filter((entry) => fs.existsSync(path.join(root, entry.path)));
+  for (const entry of previous) {
+    if (!kept.includes(entry)) {
+      console.log(`[ci] quarantine entry dropped, file no longer exists: ${entry.path} (${entry.issue})`);
+    }
+  }
+  return kept;
+}
+
 function readPreviousManifest(root) {
   const previousPath = path.join(root, 'test-map.json');
   if (!fs.existsSync(previousPath)) return null;
@@ -571,7 +594,7 @@ function buildManifest(root = process.cwd()) {
     // would have silently un-quarantined it and put a known-flaky suite back in
     // front of every commit — the same class of loss as dropping the package
     // suites, in the opposite direction.
-    quarantine: previousManifest?.quarantine || [],
+    quarantine: carriedQuarantine(root, previousManifest),
     sourceRoots: [
       'apps/backend-template/src',
       'apps/backend-template/test',
@@ -625,6 +648,7 @@ if (isEntryPoint(module)) {
 module.exports = {
   SERVICE_MANAGEMENT_INTEGRATION_AREA,
   buildManifest,
+  carriedQuarantine,
   classifyIntegration,
   classifyUnit,
   loadPackageSuiteClassification,

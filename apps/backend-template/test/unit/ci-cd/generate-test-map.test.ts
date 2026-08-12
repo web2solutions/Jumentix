@@ -25,6 +25,7 @@ import path from 'node:path';
 const repoRoot = path.resolve(__dirname, '../../../../..');
 const {
   buildManifest,
+  carriedQuarantine,
   classifyIntegration,
   classifyUnit,
   loadPackageSuiteClassification,
@@ -59,6 +60,47 @@ const suite = (over: Record<string, unknown> = {}) => JSON.stringify({
     ...over
   }],
   quarantine: []
+});
+
+/**
+ * JUM-682 — a quarantine entry outlives its file, and should not.
+ *
+ * `packages/cana/test/performance.test.ts` was deleted in JUM-581. Its
+ * quarantine entry stayed in the manifest for months, describing a suite nobody
+ * could read, run or fix. A quarantine says "this suite exists and is knowingly
+ * not gating"; with the suite gone the sentence has no subject.
+ */
+describe('quarantine carry-forward (JUM-682)', () => {
+  it('keeps an entry whose suite still exists', () => {
+    expect.hasAssertions();
+
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'jum682-keep-'));
+    const quarantined = 'packages/sample/test/flaky.test.ts';
+    fs.mkdirSync(path.join(root, 'packages/sample/test'), { recursive: true });
+    fs.writeFileSync(path.join(root, quarantined), 'it(\'x\', () => undefined);\n');
+
+    const kept = carriedQuarantine(root, {
+      quarantine: [{ path: quarantined, issue: 'JUM-1', reason: 'why' }]
+    });
+
+    expect(kept).toHaveLength(1);
+
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  it('drops an entry whose suite was deleted', () => {
+    expect.hasAssertions();
+
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'jum682-drop-'));
+
+    const kept = carriedQuarantine(root, {
+      quarantine: [{ path: 'packages/gone/test/vanished.test.ts', issue: 'JUM-1', reason: 'why' }]
+    });
+
+    expect(kept).toStrictEqual([]);
+
+    fs.rmSync(root, { recursive: true, force: true });
+  });
 });
 
 describe('fixtures', () => {
@@ -192,6 +234,10 @@ describe('buildManifest', () => {
 
     const quarantine = [{ path: 'apps/a/test/flaky.test.ts', issue: 'JUM-1', reason: 'flaky' }];
     const dir = workspace({
+      // The suite has to exist for the entry to survive (JUM-682): a quarantine
+      // describes a suite that is knowingly not gating, and the fixture claimed
+      // one that was never on disk.
+      'apps/a/test/flaky.test.ts': '',
       'test-map.json': JSON.stringify({ suites: [], quarantine })
     });
 

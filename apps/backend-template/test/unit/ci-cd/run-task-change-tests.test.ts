@@ -172,6 +172,19 @@ describe('run-task-change-tests', () => {
     taskFs.rmSync(rootDir, { recursive: true, force: true });
   });
 
+  /**
+   * JUM-682: this needs longer than the 5s default, and it is a bound rather
+   * than an assertion.
+   *
+   * `execute` is injected, so nothing is spawned — but each of the four calls
+   * resolves the layer-aware plan against the real repository, and that grew
+   * with the manifest. It was already failing on `dev` at 6.1s before this
+   * branch touched anything.
+   *
+   * The timeout buys room; it does not fix the cost. The plan resolution should
+   * be injectable so this suite stops reading the whole repository four times —
+   * recorded as JUM-697.
+   */
   it('records success, failure, crash, and documentation not-applicable evidence', () => {
     expect.hasAssertions();
     const logger = { log: jest.fn(), error: jest.fn() };
@@ -207,7 +220,7 @@ describe('run-task-change-tests', () => {
       plan: 'documentation-validation', outcome: 'not-applicable', status: 0
     });
     expect(logger.error).toHaveBeenCalledTimes(2);
-  });
+  }, 30000);
 
   it('keeps Storybook outside the global task-change executor', () => {
     expect.hasAssertions();
