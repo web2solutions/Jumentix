@@ -1196,6 +1196,10 @@
       "Three things to know before using it",
       "Errors are plain data",
       "Try it in the browser",
+      "Design notes",
+      "Postgres-shaped architecture",
+      "Worker model",
+      "Performance data",
       "Junior checklist (“I can …”)",
       "Framework tutorials",
       "Next step"
@@ -2665,6 +2669,10 @@
       "Três coisas a saber antes de usar",
       "Erros são dados puros",
       "Experimente no navegador",
+      "Design notes",
+      "Arquitetura no estilo Postgres",
+      "Modelo de workers",
+      "Dados de performance",
       "Checklist júnior (“Eu consigo …”)",
       "Tutoriais por framework",
       "Próximo passo"

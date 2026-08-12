@@ -67,6 +67,84 @@ Execute um primeiro client contra IndexedDB nesta página:
 
 <CanaPlayground id="getting-started" />
 
+## Design notes
+
+O Cana é intencionalmente mais próximo de um pequeno motor de banco de dados no
+navegador do que de uma store de estado de frontend. O IndexedDB é responsável
+pelo armazenamento durável; o Cana adiciona a superfície de cliente, desfechos
+explícitos de transação, replay de mudanças, reconciliação após falha e uma
+fronteira opcional de worker para aplicações que precisam tirar persistência da
+thread de UI.
+
+### Arquitetura no estilo Postgres
+
+A analogia é limitada, mas útil. O PostgreSQL registra mudanças com
+[write-ahead logging](https://www.postgresql.org/docs/current/wal-intro.html),
+separa trabalho de primeiro plano de manutenção com processos como o
+[background writer](https://www.postgresql.org/docs/current/runtime-config-resource.html)
+e permite que extensões executem
+[background workers](https://www.postgresql.org/docs/current/bgworker.html). O
+Cana mapeia essas ideias para primitivas do navegador em vez de entregar um
+servidor:
+
+- **Camada de armazenamento:** IndexedDB é a camada durável de stores/páginas e
+  é quem controla commit e rollback atômicos. O fallback em localStorage é
+  explícito e degradado.
+- **Fronteira de commit:** uma transação Cana é a unidade de durabilidade. Os
+  eventos de mudança ficam em buffer durante o corpo e só são liberados após
+  `oncomplete` do IndexedDB, então subscribers nunca reagem a escritas que
+  depois sofrem rollback.
+- **Stream lógico de mudanças:** subscribers recebem `CanaChangeEvent`
+  confirmados, com cursores monotônicos. `sinceCursor` consegue fazer replay de
+  uma janela retida e limitada; se o cursor pedido ficou antigo demais, o Cana
+  informa que a UI precisa ressincronizar em vez de fingir que o replay foi
+  completo.
+- **Reconciliação de crash:** `operationLedger: true` grava um registro de
+  operação na mesma transação dos dados. Depois de um worker morto, aba fechada
+  ou resposta perdida, `resolveWrite()` consegue distinguir `committed`,
+  `rolled-back` e `unresolvable`.
+- **Fronteira com state management:** Cana não substitui React Context, Redux,
+  Pinia, Zustand ou outra store de UI. O formato recomendado é tratar o Cana
+  como fonte durável da verdade, ouvir os eventos do Cana e atualizar a store do
+  framework a partir desses eventos já commitados.
+
+### Modelo de workers
+
+`createWorkerHost()` executa um client Cana real atrás de um `MessagePort` ou de
+um `Worker` dedicado. `createRouter()` e `createWorkerClient()` ficam no lado da
+página e transformam chamadas tipadas em mensagens de dados puros.
+
+- As mensagens carregam apenas dados compatíveis com structured clone: funções,
+  objetos DOM, instâncias de `IDBRequest`, instâncias de classe e subclasses de
+  `Error` não atravessam a fronteira.
+- Toda requisição carrega um `requestId`, porque um worker pode responder
+  requisições concorrentes fora de ordem.
+- O timeout padrão de requisição é de 15 segundos. Leituras que expiram reportam
+  `Unavailable`; escritas que expiram reportam `UnknownOutcome`, porque o worker
+  pode ter commitado antes de morrer ou antes de postar a resposta.
+- O host transmite mudanças commitadas como `{ kind: 'change', event }`, que é o
+  gancho usado nos tutoriais de React Context, Redux e Pinia para atualizar o
+  estado dos componentes.
+- Corpos de `transaction()` com múltiplas operações não atravessam a fronteira
+  do worker porque o corpo é uma função. Execute essa transação dentro do
+  worker, ou envie escritas individuais pelo `createWorkerClient()`.
+
+### Dados de performance
+
+A suíte de performance do Cana no navegador roda contra IndexedDB real em disco
+e usa asserções de proporção em vez de promessas absolutas de milissegundos.
+Isso mantém os dados portáveis entre CI e máquinas de usuários, mas ainda prova
+o formato importante do motor.
+
+| Operação | Massa de dados | Contrato de performance atual |
+| --- | --- | --- |
+| Query limitada | 1.000 linhas vs 10.000 linhas, `limit: 10` | A mediana com 10.000 linhas fica no máximo em `max(4x a mediana de 1.000 linhas, 5ms)`. |
+| Busca indexada | 1.000 linhas vs 10.000 linhas, 100 grupos indexados | A mediana com 10.000 linhas fica abaixo de `max(25x a mediana de 1.000 linhas, 20ms)`, mesmo com o resultado 10x maior. |
+| Count nativo | 10.000 linhas | `count()` deve ser mais rápido do que ler todas as linhas com uma query completa. |
+| Get por chave primária | 1.000 linhas vs 10.000 linhas | A mediana com 10.000 linhas fica no máximo em `max(4x a mediana de 1.000 linhas, 5ms)`. |
+| Bulk add | 10.000 linhas | Um único `bulkAdd()` commita todas as linhas e o count final é exatamente 10.000. |
+| Paginação profunda | 10.000 linhas, `offset: 9000`, `limit: 20` | A página profunda fica abaixo de `max(60x a mediana de uma página inicial, 60ms)`, provando avanço de cursor em vez de materializar 9.000 linhas. |
+
 ## Checklist júnior (“Eu consigo …”)
 
 - [ ] Abrir um client, adicionar uma linha e lê-la de volta.
