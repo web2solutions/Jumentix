@@ -27,9 +27,12 @@ describe('Cana framework playground catalog', () => {
       expect(example.download?.href).toMatch(/^\/downloads\/cana\/.+\.zip$/);
       expect(sources).toContain('createClient');
       expect(sources).toMatch(/subscribe|CanaChangeEvent/);
-      expect(sources).toContain("'categorias'");
-      expect(sources).toContain("'tarefas'");
+      expect(sources).toContain("'categories'");
+      expect(sources).toContain("'tasks'");
       expect(sources).not.toContain("'designs'");
+      expect(sources).not.toMatch(
+        /\b(textoEvento|criarDadosIniciais|carregarTudo|adicionarTarefa|alternarTarefa|TarefasProvider|useTarefas|categoriaId|concluida|atualizadaEm|criadaEm|porCategoria|porConcluida|porAtualizadaEm|porNome)\b/
+      );
     }
   });
 
@@ -48,8 +51,8 @@ describe('CanaFrameworkPlayground', () => {
     expect(screen.getByTestId('cana-framework-playground-react-context-basic-reset')).toBeInTheDocument();
     expect(screen.getByTestId('cana-framework-playground-react-context-basic-preview'))
       .toHaveClass('cana-framework-preview');
-    expect(screen.getByText('React Context: Categoria and Tarefa tables')).toBeInTheDocument();
-    expect(screen.getAllByText(/TarefasProvider.tsx/).length).toBeGreaterThan(0);
+    expect(screen.getByText('React Context: Category and Task tables')).toBeInTheDocument();
+    expect(screen.getAllByText(/TasksProvider.tsx/).length).toBeGreaterThan(0);
     expect(screen.getByRole('link', { name: /download app/i })).toHaveAttribute(
       'href',
       '/downloads/cana/cana-react-context.zip'

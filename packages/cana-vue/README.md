@@ -13,11 +13,11 @@ npm install @jumentix/cana @jumentix/cana-vue vue
 ```ts
 import { useCanaLiveQuery } from '@jumentix/cana-vue';
 
-const tarefas = useCanaLiveQuery<Tarefa>({
+const tasks = useCanaLiveQuery<Task>({
   client,
-  store: 'tarefas',
-  query: { index: 'porCategoria', equals: categoriaId },
-  getKey: (tarefa) => tarefa.id
+  store: 'tasks',
+  query: { index: 'byCategory', equals: categoryId },
+  getKey: (task) => task.id
 });
 ```
 

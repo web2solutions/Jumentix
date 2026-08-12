@@ -44,45 +44,45 @@ const schema: CanaSchema = {
   version: 1,
   stores: [
     {
-      name: 'categorias',
+      name: 'categories',
       keyPath: 'id',
-      indexes: [{ name: 'porNome', keyPath: 'nome', unique: true }]
+      indexes: [{ name: 'byName', keyPath: 'name', unique: true }]
     },
     {
-      name: 'tarefas',
+      name: 'tasks',
       keyPath: 'id',
       indexes: [
-        { name: 'porCategoria', keyPath: 'categoriaId' },
-        { name: 'porConcluida', keyPath: 'concluida' },
-        { name: 'porAtualizadaEm', keyPath: 'atualizadaEm' }
+        { name: 'byCategory', keyPath: 'categoryId' },
+        { name: 'byCompleted', keyPath: 'completed' },
+        { name: 'byUpdatedAt', keyPath: 'updatedAt' }
       ]
     }
   ]
 };
 
 const baseCategories: TaskCategory[] = [
-  { id: 'trabalho', nome: 'Trabalho', cor: '#2563eb', criadaEm: 1, atualizadaEm: 1 },
-  { id: 'casa', nome: 'Casa', cor: '#16a34a', criadaEm: 2, atualizadaEm: 2 }
+  { id: 'work', name: 'Work', color: '#2563eb', createdAt: 1, updatedAt: 1 },
+  { id: 'home', name: 'Home', color: '#16a34a', createdAt: 2, updatedAt: 2 }
 ];
 
 const baseTasks: Task[] = [
   {
-    id: 'tarefa-1',
-    titulo: 'Escrever tutorial do Cana',
-    categoriaId: 'trabalho',
-    concluida: false,
-    prioridade: 'alta',
-    criadaEm: 3,
-    atualizadaEm: 3
+    id: 'task-1',
+    title: 'Write the Cana tutorial',
+    categoryId: 'work',
+    completed: false,
+    priority: 'high',
+    createdAt: 3,
+    updatedAt: 3
   },
   {
-    id: 'tarefa-2',
-    titulo: 'Revisar filtros por categoria',
-    categoriaId: 'casa',
-    concluida: true,
-    prioridade: 'media',
-    criadaEm: 4,
-    atualizadaEm: 4
+    id: 'task-2',
+    title: 'Review category filters',
+    categoryId: 'home',
+    completed: true,
+    priority: 'medium',
+    createdAt: 4,
+    updatedAt: 4
   }
 ];
 
@@ -120,13 +120,13 @@ async function openTaskClient(dbName: string, originId: string): Promise<CanaCli
 }
 
 async function seed(client: CanaClient): Promise<void> {
-  await client.table<TaskCategory>('categorias').bulkPut(baseCategories);
-  await client.table<Task>('tarefas').bulkPut(baseTasks);
+  await client.table<TaskCategory>('categories').bulkPut(baseCategories);
+  await client.table<Task>('tasks').bulkPut(baseTasks);
 }
 
 async function snapshot(client: CanaClient): Promise<TaskDemoSnapshot> {
-  const categories = await client.table<TaskCategory>('categorias').query({ index: 'porNome' });
-  const tasks = await client.table<Task>('tarefas').query({ index: 'porAtualizadaEm' });
+  const categories = await client.table<TaskCategory>('categories').query({ index: 'byName' });
+  const tasks = await client.table<Task>('tasks').query({ index: 'byUpdatedAt' });
   return {
     categories: [...categories],
     tasks: [...tasks]
@@ -134,7 +134,7 @@ async function snapshot(client: CanaClient): Promise<TaskDemoSnapshot> {
 }
 
 function applyEvent(state: TaskDemoSnapshot, event: CanaChangeEvent): TaskDemoSnapshot {
-  if (event.store === 'categorias') {
+  if (event.store === 'categories') {
     if (event.type === 'cleared') return { ...state, categories: [] };
     if (event.type === 'deleted') {
       return { ...state, categories: state.categories.filter((item) => item.id !== event.key) };
@@ -145,11 +145,11 @@ function applyEvent(state: TaskDemoSnapshot, event: CanaChangeEvent): TaskDemoSn
       categories: [
         ...state.categories.filter((item) => item.id !== record.id),
         record
-      ].sort((a, b) => a.nome.localeCompare(b.nome))
+      ].sort((a, b) => a.name.localeCompare(b.name))
     };
   }
 
-  if (event.store === 'tarefas') {
+  if (event.store === 'tasks') {
     if (event.type === 'cleared') return { ...state, tasks: [] };
     if (event.type === 'deleted') {
       return { ...state, tasks: state.tasks.filter((item) => item.id !== event.key) };
@@ -160,7 +160,7 @@ function applyEvent(state: TaskDemoSnapshot, event: CanaChangeEvent): TaskDemoSn
       tasks: [
         ...state.tasks.filter((item) => item.id !== record.id),
         record
-      ].sort((a, b) => a.atualizadaEm - b.atualizadaEm)
+      ].sort((a, b) => a.updatedAt - b.updatedAt)
     };
   }
 
@@ -186,7 +186,7 @@ function TaskBoard({
 }) {
   const grouped = value.categories.map((category) => ({
     category,
-    tasks: value.tasks.filter((task) => task.categoriaId === category.id)
+    tasks: value.tasks.filter((task) => task.categoryId === category.id)
   }));
 
   return (
@@ -203,20 +203,20 @@ function TaskBoard({
         {grouped.map(({ category, tasks }) => (
           <Paper key={category.id} className="cana-framework-demo-card" withBorder p="sm" radius={6}>
             <Group justify="space-between" mb={6}>
-              <Text fw={700}>{category.nome}</Text>
-              <Badge color={category.id === 'trabalho' ? 'blue' : 'green'}>{tasks.length}</Badge>
+              <Text fw={700}>{category.name}</Text>
+              <Badge color={category.id === 'work' ? 'blue' : 'green'}>{tasks.length}</Badge>
             </Group>
             <Stack gap={4}>
               {tasks.map((task) => (
                 <Button
                   key={task.id}
                   className="cana-framework-demo-task"
-                  variant={task.concluida ? 'light' : 'default'}
+                  variant={task.completed ? 'light' : 'default'}
                   size="xs"
                   justify="space-between"
                   onClick={() => onToggle(task)}
                 >
-                  {task.concluida ? 'Done: ' : ''}{task.titulo}
+                  {task.completed ? 'Done: ' : ''}{task.title}
                 </Button>
               ))}
             </Stack>
@@ -267,41 +267,41 @@ function ReactContextProvider({
     state,
     addTask: async () => {
       counter.current += 1;
-      await client.table<Task>('tarefas').add({
+      await client.table<Task>('tasks').add({
         id: `context-${counter.current}`,
-        titulo: `Tarefa Context ${counter.current}`,
-        categoriaId: counter.current % 2 ? 'trabalho' : 'casa',
-        concluida: false,
-        prioridade: 'media',
-        criadaEm: counter.current,
-        atualizadaEm: counter.current
+        title: `Context task ${counter.current}`,
+        categoryId: counter.current % 2 ? 'work' : 'home',
+        completed: false,
+        priority: 'medium',
+        createdAt: counter.current,
+        updatedAt: counter.current
       });
     },
     toggleTask: async (task: Task) => {
-      await client.table<Task>('tarefas').update(task.id, {
-        concluida: !task.concluida,
-        atualizadaEm: Date.now()
+      await client.table<Task>('tasks').update(task.id, {
+        completed: !task.completed,
+        updatedAt: Date.now()
       });
     },
     runTransaction: advanced
       ? async () => {
           counter.current += 1;
-          await client.transaction('readwrite', ['categorias', 'tarefas'], async (scope) => {
-            await scope.table<TaskCategory>('categorias').put({
+          await client.transaction('readwrite', ['categories', 'tasks'], async (scope) => {
+            await scope.table<TaskCategory>('categories').put({
               id: 'ops',
-              nome: 'Operacoes',
-              cor: '#f97316',
-              criadaEm: counter.current,
-              atualizadaEm: counter.current
+              name: 'Operations',
+              color: '#f97316',
+              createdAt: counter.current,
+              updatedAt: counter.current
             });
-            await scope.table<Task>('tarefas').put({
+            await scope.table<Task>('tasks').put({
               id: `context-tx-${counter.current}`,
-              titulo: 'Criada com uma transacao Cana',
-              categoriaId: 'ops',
-              concluida: false,
-              prioridade: 'alta',
-              criadaEm: counter.current,
-              atualizadaEm: counter.current
+              title: 'Created with a Cana transaction',
+              categoryId: 'ops',
+              completed: false,
+              priority: 'high',
+              createdAt: counter.current,
+              updatedAt: counter.current
             });
           });
         }
@@ -348,14 +348,14 @@ type ReduxState = TaskDemoSnapshot & { events: string[] };
 
 function createReduxStore(initial: TaskDemoSnapshot) {
   const categories = createSlice({
-    name: 'categorias',
+    name: 'categories',
     initialState: initial.categories,
     reducers: {
       upsert: (state, action: PayloadAction<TaskCategory>) => {
         const index = state.findIndex((item) => item.id === action.payload.id);
         if (index >= 0) state[index] = action.payload;
         else state.push(action.payload);
-        state.sort((a, b) => a.nome.localeCompare(b.nome));
+        state.sort((a, b) => a.name.localeCompare(b.name));
       },
       remove: (state, action: PayloadAction<string>) =>
         state.filter((item) => item.id !== action.payload),
@@ -363,14 +363,14 @@ function createReduxStore(initial: TaskDemoSnapshot) {
     }
   });
   const tasks = createSlice({
-    name: 'tarefas',
+    name: 'tasks',
     initialState: initial.tasks,
     reducers: {
       upsert: (state, action: PayloadAction<Task>) => {
         const index = state.findIndex((item) => item.id === action.payload.id);
         if (index >= 0) state[index] = action.payload;
         else state.push(action.payload);
-        state.sort((a, b) => a.atualizadaEm - b.atualizadaEm);
+        state.sort((a, b) => a.updatedAt - b.updatedAt);
       },
       remove: (state, action: PayloadAction<string>) =>
         state.filter((item) => item.id !== action.payload),
@@ -393,12 +393,12 @@ function createReduxStore(initial: TaskDemoSnapshot) {
   });
   const apply = (event: CanaChangeEvent) => {
     store.dispatch(events.actions.add(eventLabel(event)));
-    if (event.store === 'categorias') {
+    if (event.store === 'categories') {
       if (event.type === 'cleared') store.dispatch(categories.actions.clear());
       else if (event.type === 'deleted') store.dispatch(categories.actions.remove(String(event.key)));
       else store.dispatch(categories.actions.upsert(event.record as TaskCategory));
     }
-    if (event.store === 'tarefas') {
+    if (event.store === 'tasks') {
       if (event.type === 'cleared') store.dispatch(tasks.actions.clear());
       else if (event.type === 'deleted') store.dispatch(tasks.actions.remove(String(event.key)));
       else store.dispatch(tasks.actions.upsert(event.record as Task));
@@ -422,43 +422,43 @@ function ReduxBoard({
 
   const writeTask = async () => {
     counter.current += 1;
-    await client.table<Task>('tarefas').put({
+    await client.table<Task>('tasks').put({
       id: `redux-${counter.current}`,
-      titulo: `Tarefa Redux ${counter.current}`,
-      categoriaId: counter.current % 2 ? 'trabalho' : 'casa',
-      concluida: false,
-      prioridade: 'media',
-      criadaEm: counter.current,
-      atualizadaEm: counter.current
+      title: `Redux task ${counter.current}`,
+      categoryId: counter.current % 2 ? 'work' : 'home',
+      completed: false,
+      priority: 'medium',
+      createdAt: counter.current,
+      updatedAt: counter.current
     });
   };
 
   const toggle = async (task: Task) => {
-    await client.table<Task>('tarefas').update(task.id, {
-      concluida: !task.concluida,
-      atualizadaEm: Date.now()
+    await client.table<Task>('tasks').update(task.id, {
+      completed: !task.completed,
+      updatedAt: Date.now()
     });
   };
 
   const runTransaction = advanced
     ? async () => {
         counter.current += 1;
-        await client.transaction('readwrite', ['categorias', 'tarefas'], async (scope) => {
-          await scope.table<TaskCategory>('categorias').put({
+        await client.transaction('readwrite', ['categories', 'tasks'], async (scope) => {
+          await scope.table<TaskCategory>('categories').put({
             id: 'release',
-            nome: 'Release',
-            cor: '#7c3aed',
-            criadaEm: counter.current,
-            atualizadaEm: counter.current
+            name: 'Release',
+            color: '#7c3aed',
+            createdAt: counter.current,
+            updatedAt: counter.current
           });
-          await scope.table<Task>('tarefas').put({
+          await scope.table<Task>('tasks').put({
             id: `redux-tx-${counter.current}`,
-            titulo: 'Redux recebeu eventos da transacao',
-            categoriaId: 'release',
-            concluida: false,
-            prioridade: 'alta',
-            criadaEm: counter.current,
-            atualizadaEm: counter.current
+            title: 'Redux received transaction events',
+            categoryId: 'release',
+            completed: false,
+            priority: 'high',
+            createdAt: counter.current,
+            updatedAt: counter.current
           });
         });
         dispatch({ type: 'demo/transactionFinished' });
@@ -523,7 +523,7 @@ async function runVuePinia(context: CanaFrameworkRunContext, advanced: boolean) 
     getters: {
       groups: (state) => state.categories.map((category) => ({
         category,
-        tasks: state.tasks.filter((task) => task.categoriaId === category.id)
+        tasks: state.tasks.filter((task) => task.categoryId === category.id)
       }))
     },
     actions: {
@@ -535,40 +535,40 @@ async function runVuePinia(context: CanaFrameworkRunContext, advanced: boolean) 
       },
       async addTask() {
         this.counter += 1;
-        await client.table<Task>('tarefas').put({
+        await client.table<Task>('tasks').put({
           id: `pinia-${this.counter}`,
-          titulo: `Tarefa Pinia ${this.counter}`,
-          categoriaId: this.counter % 2 ? 'trabalho' : 'casa',
-          concluida: false,
-          prioridade: 'media',
-          criadaEm: this.counter,
-          atualizadaEm: this.counter
+          title: `Pinia task ${this.counter}`,
+          categoryId: this.counter % 2 ? 'work' : 'home',
+          completed: false,
+          priority: 'medium',
+          createdAt: this.counter,
+          updatedAt: this.counter
         });
       },
       async toggle(task: Task) {
-        await client.table<Task>('tarefas').update(task.id, {
-          concluida: !task.concluida,
-          atualizadaEm: Date.now()
+        await client.table<Task>('tasks').update(task.id, {
+          completed: !task.completed,
+          updatedAt: Date.now()
         });
       },
       async runTransaction() {
         this.counter += 1;
-        await client.transaction('readwrite', ['categorias', 'tarefas'], async (scope) => {
-          await scope.table<TaskCategory>('categorias').put({
+        await client.transaction('readwrite', ['categories', 'tasks'], async (scope) => {
+          await scope.table<TaskCategory>('categories').put({
             id: 'qa',
-            nome: 'QA',
-            cor: '#dc2626',
-            criadaEm: this.counter,
-            atualizadaEm: this.counter
+            name: 'QA',
+            color: '#dc2626',
+            createdAt: this.counter,
+            updatedAt: this.counter
           });
-          await scope.table<Task>('tarefas').put({
+          await scope.table<Task>('tasks').put({
             id: `pinia-tx-${this.counter}`,
-            titulo: 'Pinia atualizada pela transacao Cana',
-            categoriaId: 'qa',
-            concluida: false,
-            prioridade: 'alta',
-            criadaEm: this.counter,
-            atualizadaEm: this.counter
+            title: 'Pinia updated by the Cana transaction',
+            categoryId: 'qa',
+            completed: false,
+            priority: 'high',
+            createdAt: this.counter,
+            updatedAt: this.counter
           });
         });
       }
@@ -604,14 +604,14 @@ async function runVuePinia(context: CanaFrameworkRunContext, advanced: boolean) 
             key: category.id,
             class: 'cana-framework-demo-card'
           }, [
-            h('strong', category.nome),
+            h('strong', category.name),
             h('span', { class: 'cana-framework-demo-count' }, `${list.length} tasks`),
             h('div', { class: 'cana-framework-demo-list' }, list.map((task) => h('button', {
               class: 'cana-framework-demo-task cana-framework-demo-native-task',
               key: task.id,
               type: 'button',
               onClick: () => void store.toggle(task)
-            }, `${task.concluida ? 'Done: ' : ''}${task.titulo}`)))
+            }, `${task.completed ? 'Done: ' : ''}${task.title}`)))
           ]))
         ),
         h('pre', { class: 'cana-framework-demo-events cana-framework-demo-native-events' }, store.events.length

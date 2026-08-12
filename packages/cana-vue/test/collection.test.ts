@@ -1,17 +1,17 @@
 import type { CanaChangeEvent } from '@jumentix/cana';
 import { applyCanaEventToRecords, connectCanaToPinia } from '../src';
 
-type Categoria = {
+type Category = {
   id: string;
-  nome: string;
-  cor: string;
+  name: string;
+  color: string;
 };
 
-const event = (overrides: Partial<CanaChangeEvent<Categoria>>): CanaChangeEvent<Categoria> => ({
+const event = (overrides: Partial<CanaChangeEvent<Category>>): CanaChangeEvent<Category> => ({
   type: 'created',
-  store: 'categorias',
+  store: 'categories',
   key: 'docs',
-  record: { id: 'docs', nome: 'Documentacao', cor: '#2563eb' },
+  record: { id: 'docs', name: 'Documentation', color: '#2563eb' },
   cursor: 1,
   correlationId: 'corr-1',
   at: 1,
@@ -23,19 +23,19 @@ describe('applyCanaEventToRecords', () => {
   it('patches Vue/Pinia arrays from committed Cana events', () => {
     expect.hasAssertions();
 
-    const created = applyCanaEventToRecords<Categoria>([], event({}), {
-      store: 'categorias',
-      getKey: (categoria) => categoria.id
+    const created = applyCanaEventToRecords<Category>([], event({}), {
+      store: 'categories',
+      getKey: (category) => category.id
     });
     const updated = applyCanaEventToRecords(created, event({
       type: 'updated',
-      record: { id: 'docs', nome: 'Docs', cor: '#0f766e' }
+      record: { id: 'docs', name: 'Docs', color: '#0f766e' }
     }), {
-      store: 'categorias',
-      getKey: (categoria) => categoria.id
+      store: 'categories',
+      getKey: (category) => category.id
     });
 
-    expect(updated).toStrictEqual([{ id: 'docs', nome: 'Docs', cor: '#0f766e' }]);
+    expect(updated).toStrictEqual([{ id: 'docs', name: 'Docs', color: '#0f766e' }]);
   });
 });
 

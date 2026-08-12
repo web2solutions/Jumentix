@@ -17,13 +17,13 @@ const client = createClient({
   schema: {
     version: 1,
     stores: [
-      { name: 'categorias', keyPath: 'id', indexes: [{ name: 'porNome', keyPath: 'nome' }] },
+      { name: 'categories', keyPath: 'id', indexes: [{ name: 'byName', keyPath: 'name' }] },
       {
-        name: 'tarefas',
+        name: 'tasks',
         keyPath: 'id',
         indexes: [
-          { name: 'porCategoria', keyPath: 'categoriaId' },
-          { name: 'porAtualizadaEm', keyPath: 'atualizadaEm' }
+          { name: 'byCategory', keyPath: 'categoryId' },
+          { name: 'byUpdatedAt', keyPath: 'updatedAt' }
         ]
       }
     ]
@@ -31,13 +31,13 @@ const client = createClient({
 });
 
 await client.open();
-await client.table('categorias').put({ id: 'trabalho', nome: 'Work' });
-await client.table('tarefas').add({
-  id: 'tarefa-1',
-  titulo: 'Write the Cana tutorial',
-  categoriaId: 'trabalho',
-  concluida: false,
-  atualizadaEm: Date.now()
+await client.table('categories').put({ id: 'work', name: 'Work' });
+await client.table('tasks').add({
+  id: 'task-1',
+  title: 'Write the Cana tutorial',
+  categoryId: 'work',
+  completed: false,
+  updatedAt: Date.now()
 });
 ```
 
@@ -115,7 +115,7 @@ Read the diagram left to right when the user acts, then right to left when the
 write commits:
 
 1. Components call a framework action.
-2. The action writes to `categorias` or `tarefas` through Cana.
+2. The action writes to `categories` or `tasks` through Cana.
 3. IndexedDB commits or rolls back atomically.
 4. Cana emits a committed event.
 5. Context, Redux or Pinia updates the rendered state from that event.
@@ -174,7 +174,7 @@ sequenceDiagram
   participant Router as "Cana router"
   participant Worker as "Worker host"
   participant DB as "IndexedDB"
-  Page->>Router: put("tarefas", record)
+  Page->>Router: put("tasks", record)
   Router->>Worker: plain request + requestId
   Worker->>DB: readwrite transaction
   DB-->>Worker: oncomplete

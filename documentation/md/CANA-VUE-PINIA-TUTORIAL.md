@@ -21,8 +21,8 @@ returns the unsubscribe function from `client.subscribe`.
 
 Components call store actions:
 
-- `tarefas.adicionarTarefa(titulo, categoriaId)`
-- `tarefas.alternarTarefa(tarefa)`
+- `tasks.addTask(title, categoryId)`
+- `tasks.toggleTask(task)`
 
 The store patches its arrays from `CanaChangeEvent`, so every component using the
 store re-renders from committed storage state.
@@ -48,8 +48,8 @@ src/
   main.ts
   App.vue
   stores/
-    tarefas.ts
-    tarefasAvancadas.ts
+    tasks.ts
+    advancedTasks.ts
 ```
 
 Pinia getters should hold derived views such as tasks by category, not duplicated
