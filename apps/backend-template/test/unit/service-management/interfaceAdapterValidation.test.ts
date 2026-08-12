@@ -63,6 +63,7 @@ function messages(issues: Array<{ message: string }>) {
 
 describe('interface framework matrix (JUM-545)', () => {
   it('pins the interface types and the canonical framework subsets per type', () => {
+    expect.hasAssertions();
     expect(INTERFACE_TYPES).toStrictEqual(['http-rest', 'grpc', 'websocket', 'sse']);
     expect(HTTP_FRAMEWORKS).toStrictEqual([
       'express', 'fastify', 'restify', 'cloudflare-workers', 'vercel-functions',
@@ -79,6 +80,7 @@ describe('interface framework matrix (JUM-545)', () => {
   });
 
   it('offers only the JUM-461 canonical spellings — no alias duplicates', () => {
+    expect.hasAssertions();
     expect(HTTP_FRAMEWORKS).not.toContain('derby');
     expect(HTTP_FRAMEWORKS).not.toContain('sails');
     expect(HTTP_FRAMEWORKS).not.toContain('hyper-express');
@@ -88,6 +90,7 @@ describe('interface framework matrix (JUM-545)', () => {
   });
 
   it('keeps the HTTP subset in parity with the runtime env contract enum', () => {
+    expect.hasAssertions();
     // Drift guard between the designer tab and the declared canonical mirror
     // (script.js RUNTIME_ENV_ENUM_OPTIONS, itself pinned against
     // RuntimeEnvironment.ts by runtimeEnvUi.contract.test.ts).
@@ -96,6 +99,7 @@ describe('interface framework matrix (JUM-545)', () => {
   });
 
   it('lookups fall back to empty/false for unknown values', () => {
+    expect.hasAssertions();
     expect(getSupportedFrameworks('soap')).toStrictEqual([]);
     expect(isFrameworkSupportedByType('http-rest', 'socket-io')).toBe(false);
     expect(isFrameworkSupportedByType('websocket', 'socket-io')).toBe(true);
@@ -106,6 +110,7 @@ describe('interface framework matrix (JUM-545)', () => {
 
 describe('adapter field patterns (JUM-545)', () => {
   it('accepts boilerplate entrypoint paths and rejects off-shape ones', () => {
+    expect.hasAssertions();
     expect(INTERFACE_ENTRYPOINT_PATTERN.test('src/interface/HTTP/server.ts')).toBe(true);
     expect(INTERFACE_ENTRYPOINT_PATTERN.test('src/interface/WebSocket/adapters/socket-io/socket-io.ts')).toBe(true);
     expect(INTERFACE_ENTRYPOINT_PATTERN.test('src/interface/gRPC/server.js')).toBe(true);
@@ -116,6 +121,7 @@ describe('adapter field patterns (JUM-545)', () => {
   });
 
   it('accepts XController.action mappings and rejects off-shape ones', () => {
+    expect.hasAssertions();
     expect(CONTROLLER_MAPPING_PATTERN.test('UsersController.create')).toBe(true);
     expect(CONTROLLER_MAPPING_PATTERN.test('UserController.getOneById')).toBe(true);
     expect(CONTROLLER_MAPPING_PATTERN.test('usersController.create')).toBe(false);
@@ -129,6 +135,7 @@ describe('adapter field patterns (JUM-545)', () => {
 
 describe('normalizeInterfaceAdapterInput (JUM-545)', () => {
   it('trims all four fields into the persisted record shape', () => {
+    expect.hasAssertions();
     expect(normalizeInterfaceAdapterInput({
       type: ' http-rest ',
       framework: ' fastify ',
@@ -138,6 +145,7 @@ describe('normalizeInterfaceAdapterInput (JUM-545)', () => {
   });
 
   it('normalizes garbage input to empty strings', () => {
+    expect.hasAssertions();
     expect(normalizeInterfaceAdapterInput(null)).toStrictEqual({
       type: '', framework: '', entrypoint: '', controller: ''
     });
@@ -149,6 +157,7 @@ describe('normalizeInterfaceAdapterInput (JUM-545)', () => {
 
 describe('collectInterfaceAdapterIssues (JUM-545)', () => {
   it('accepts a valid adapter for every interface type', () => {
+    expect.hasAssertions();
     expect(collectInterfaceAdapterIssues(createAdapter())).toStrictEqual([]);
     expect(collectInterfaceAdapterIssues(createAdapter({
       type: 'grpc', framework: 'grpc', entrypoint: 'src/interface/gRPC/server.ts', controller: 'UsersController.list'
@@ -162,6 +171,7 @@ describe('collectInterfaceAdapterIssues (JUM-545)', () => {
   });
 
   it('rejects an unknown interface type without running the framework rule', () => {
+    expect.hasAssertions();
     // Same guard as the deploy-target validator: with an unknown vocabulary
     // value the combination rules stay silent — the vocabulary error names
     // the fix on its own.
@@ -172,6 +182,7 @@ describe('collectInterfaceAdapterIssues (JUM-545)', () => {
   });
 
   it('rejects a framework outside the per-type subset, naming the valid options', () => {
+    expect.hasAssertions();
     const found = messages(collectInterfaceAdapterIssues(createAdapter({ type: 'websocket', framework: 'fastify' })));
     expect(found).toStrictEqual([
       'Framework "fastify" is not supported for interface type "websocket" — choose one of: socket-io.'
@@ -179,6 +190,7 @@ describe('collectInterfaceAdapterIssues (JUM-545)', () => {
   });
 
   it('rejects the rejected JUM-461 alias spellings', () => {
+    expect.hasAssertions();
     expect(messages(collectInterfaceAdapterIssues(createAdapter({ framework: 'derby' })))[0])
       .toContain('Framework "derby" is not supported for interface type "http-rest"');
     expect(messages(collectInterfaceAdapterIssues(createAdapter({ framework: 'sails' })))[0])
@@ -186,6 +198,7 @@ describe('collectInterfaceAdapterIssues (JUM-545)', () => {
   });
 
   it('requires framework, entrypoint and controller mapping', () => {
+    expect.hasAssertions();
     const found = messages(collectInterfaceAdapterIssues(createAdapter({
       framework: '', entrypoint: '', controller: ''
     })));
@@ -197,6 +210,7 @@ describe('collectInterfaceAdapterIssues (JUM-545)', () => {
   });
 
   it('rejects an off-shape entrypoint with the expected pattern', () => {
+    expect.hasAssertions();
     const found = messages(collectInterfaceAdapterIssues(createAdapter({ entrypoint: 'server.ts' })));
     expect(found).toStrictEqual([
       'Entrypoint "server.ts" must be a TypeScript/JavaScript path under src/interface/ (e.g. src/interface/HTTP/server.ts).'
@@ -204,6 +218,7 @@ describe('collectInterfaceAdapterIssues (JUM-545)', () => {
   });
 
   it('rejects an off-shape controller mapping with the expected shape', () => {
+    expect.hasAssertions();
     const found = messages(collectInterfaceAdapterIssues(createAdapter({ controller: 'userscontroller' })));
     expect(found).toStrictEqual([
       'Controller mapping "userscontroller" must have the shape XController.action (e.g. UsersController.create).'
@@ -211,6 +226,7 @@ describe('collectInterfaceAdapterIssues (JUM-545)', () => {
   });
 
   it('aggregates several issues and keeps the ModelIssue shape', () => {
+    expect.hasAssertions();
     const issues = collectInterfaceAdapterIssues(createAdapter({
       framework: 'ws', entrypoint: 'nope', controller: 'nope'
     }));
@@ -222,6 +238,7 @@ describe('collectInterfaceAdapterIssues (JUM-545)', () => {
   });
 
   it('rejects a duplicate type + entrypoint pair with the reason', () => {
+    expect.hasAssertions();
     const existing = [createAdapter()];
     const found = messages(collectInterfaceAdapterIssues(createAdapter({ controller: 'UsersController.list' }), existing));
     expect(found).toStrictEqual([
@@ -230,6 +247,7 @@ describe('collectInterfaceAdapterIssues (JUM-545)', () => {
   });
 
   it('rejects a duplicate controller mapping with the reason', () => {
+    expect.hasAssertions();
     const existing = [createAdapter()];
     const found = messages(collectInterfaceAdapterIssues(createAdapter({
       entrypoint: 'src/interface/HTTP/other-server.ts'
@@ -240,11 +258,13 @@ describe('collectInterfaceAdapterIssues (JUM-545)', () => {
   });
 
   it('reports both duplicate rules when both collide', () => {
+    expect.hasAssertions();
     const existing = [createAdapter()];
     expect(collectInterfaceAdapterIssues(createAdapter(), existing)).toHaveLength(2);
   });
 
   it('does not flag the same type + entrypoint on a different interface type', () => {
+    expect.hasAssertions();
     const existing = [createAdapter()];
     expect(collectInterfaceAdapterIssues(createAdapter({
       type: 'sse', framework: 'fastify', controller: 'UsersController.list'
@@ -252,6 +272,7 @@ describe('collectInterfaceAdapterIssues (JUM-545)', () => {
   });
 
   it('excludes the adapter being edited from the duplicate scan', () => {
+    expect.hasAssertions();
     const existing = [createAdapter(), createAdapter({
       entrypoint: 'src/interface/HTTP/other-server.ts', controller: 'UsersController.list'
     })];
@@ -266,6 +287,7 @@ describe('collectInterfaceAdapterIssues (JUM-545)', () => {
   });
 
   it('treats a missing candidate and a non-array sibling list as field errors only', () => {
+    expect.hasAssertions();
     expect(messages(collectInterfaceAdapterIssues(null))).toStrictEqual([
       'Interface type "" is not supported — choose one of: http-rest, grpc, websocket, sse.',
       'Framework/runtime is required.',
@@ -278,6 +300,7 @@ describe('collectInterfaceAdapterIssues (JUM-545)', () => {
 
 describe('upsertInterfaceAdapter — the add/edit-in-place gate (JUM-545)', () => {
   it('appends a valid candidate when adding', () => {
+    expect.hasAssertions();
     const existing = [createAdapter()];
     const result = upsertInterfaceAdapter(existing, createAdapter({
       entrypoint: 'src/interface/HTTP/other-server.ts', controller: 'UsersController.list'
@@ -290,6 +313,7 @@ describe('upsertInterfaceAdapter — the add/edit-in-place gate (JUM-545)', () =
   });
 
   it('replaces the entry at editingIndex when editing in place', () => {
+    expect.hasAssertions();
     const existing = [
       createAdapter(),
       createAdapter({ entrypoint: 'src/interface/HTTP/other-server.ts', controller: 'UsersController.list' })
@@ -311,6 +335,7 @@ describe('upsertInterfaceAdapter — the add/edit-in-place gate (JUM-545)', () =
   });
 
   it('lets an edit keep its own type + entrypoint and controller mapping', () => {
+    expect.hasAssertions();
     const existing = [createAdapter()];
     const result = upsertInterfaceAdapter(existing, createAdapter({ framework: 'restify' }), 0);
     expect(result.issues).toStrictEqual([]);
@@ -318,6 +343,7 @@ describe('upsertInterfaceAdapter — the add/edit-in-place gate (JUM-545)', () =
   });
 
   it('refuses an invalid candidate and leaves the list untouched', () => {
+    expect.hasAssertions();
     const existing = [createAdapter()];
     const result = upsertInterfaceAdapter(existing, createAdapter({
       entrypoint: 'src/interface/HTTP/other-server.ts'
@@ -329,6 +355,7 @@ describe('upsertInterfaceAdapter — the add/edit-in-place gate (JUM-545)', () =
   });
 
   it('refuses an editing index beyond the list end', () => {
+    expect.hasAssertions();
     const result = upsertInterfaceAdapter([createAdapter()], createAdapter({
       entrypoint: 'src/interface/HTTP/other-server.ts', controller: 'UsersController.list'
     }), 5);
@@ -337,6 +364,7 @@ describe('upsertInterfaceAdapter — the add/edit-in-place gate (JUM-545)', () =
   });
 
   it('adds to an empty list when the current list is missing', () => {
+    expect.hasAssertions();
     const result = upsertInterfaceAdapter(null, createAdapter());
     expect(result.issues).toStrictEqual([]);
     expect(result.adapters).toStrictEqual([createAdapter()]);
@@ -350,6 +378,7 @@ describe('interface designer tab wiring (JUM-545)', () => {
   const inspectors = fs.readFileSync(path.join(repoRoot, 'apps', 'service-management', 'src', 'ui', 'inspectors.js'), 'utf-8');
 
   it('keeps the new modules in the offline shell precache (sw.js SHELL_ASSETS)', () => {
+    expect.hasAssertions();
     // The browser integration suites (pwaShell, offlinePersistenceMatrix)
     // caught their absence: without a precache entry the offline shell cannot
     // resolve the module graph. Since JUM-493 the core modules are vendored
@@ -359,11 +388,13 @@ describe('interface designer tab wiring (JUM-545)', () => {
   });
 
   it('replaces the free-text framework input with a matrix-driven select', () => {
+    expect.hasAssertions();
     expect(html).toContain('id="interface-framework-select"');
     expect(html).not.toContain('id="interface-framework-input"');
   });
 
   it('wires the add handler and the edit-in-place save through the shared upsert gate', () => {
+    expect.hasAssertions();
     expect(script).toContain('upsertInterfaceAdapter(state.interfaces, candidate)');
     expect(script).toContain('renderInterfaceFrameworkOptions');
     expect(inspectors).toContain('upsertInterfaceAdapter(state.interfaces, candidate, index)');

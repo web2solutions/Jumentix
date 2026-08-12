@@ -177,11 +177,13 @@ function portObjectSchemaNames(document: any): string[] {
 
 describe('oas export compliance with Req 036 and the route-resolution check (JUM-474)', () => {
   it('passes the repository port-object contract validation for every exported operation', () => {
+    expect.hasAssertions();
     const document = buildOasDocument(createUiModelState());
     expect(validateDocumentOperations(document)).toStrictEqual([]);
   });
 
   it('gives every operation a unique operationId on the canonical verb scheme', () => {
+    expect.hasAssertions();
     const document = buildOasDocument(createUiModelState());
     const operations = operationsOf(document);
     // Five CRUD operations per entity, three entities.
@@ -196,6 +198,7 @@ describe('oas export compliance with Req 036 and the route-resolution check (JUM
   });
 
   it('never inlines a request or 2xx response schema, and every referenced schema is described', () => {
+    expect.hasAssertions();
     const document = buildOasDocument(createUiModelState());
     const resolvedRefs = resolvePortSchemaRefs(document, collectPortSchemaRefs(document));
     expect(resolvedRefs.length).toBeGreaterThan(0);
@@ -208,6 +211,7 @@ describe('oas export compliance with Req 036 and the route-resolution check (JUM
   });
 
   it('emits error responses consistent with ERROR-CONTRACTS-AND-RESPONSES', () => {
+    expect.hasAssertions();
     const document = buildOasDocument(createUiModelState());
     const canonicalErrorCodes = ['400', '401', '403', '404', '409'];
     const errorResponses = collectErrorResponses(document);
@@ -226,6 +230,7 @@ describe('oas export compliance with Req 036 and the route-resolution check (JUM
   });
 
   it('serialises composition as native OAS 3.1 constructs', () => {
+    expect.hasAssertions();
     const document = buildOasDocument(createUiModelState());
     const invoice = document.components.schemas.Billing_Invoice;
     expect(invoice.oneOf).toStrictEqual([
@@ -242,6 +247,7 @@ describe('oas export compliance with Req 036 and the route-resolution check (JUM
   });
 
   it('marks port input/output wrappers so a re-import creates no phantom entities', () => {
+    expect.hasAssertions();
     const document = buildOasDocument(createUiModelState());
     expect(portObjectSchemaNames(document)).toStrictEqual([
       'Billing_InvoiceArrayOf',
@@ -266,6 +272,7 @@ describe('oas export compliance with Req 036 and the route-resolution check (JUM
   });
 
   it('fails the export quality gate for a model whose export would lose operations', () => {
+    expect.hasAssertions();
     // Distinct names that collapse to the same OAS tokens would silently
     // overwrite each other's path/schema in the document — the gate must
     // block the export instead of emitting a document that fails downstream.

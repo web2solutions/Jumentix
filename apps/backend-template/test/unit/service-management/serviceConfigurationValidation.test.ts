@@ -47,6 +47,7 @@ function messages(issues: Array<{ message: string }>) {
 
 describe('deploy capability matrix reader (JUM-544, shared with JUM-481)', () => {
   it('pins the Requirement 126 vocabularies', () => {
+    expect.hasAssertions();
     expect(SERVICE_KINDS).toStrictEqual(['rest-api', 'websocket-rest-api', 'grpc-rest-api']);
     expect(RUN_MODES).toStrictEqual(['dedicated-server', 'virtual-machine', 'container', 'functions']);
     expect(CLOUD_PROVIDERS).toStrictEqual([
@@ -55,6 +56,7 @@ describe('deploy capability matrix reader (JUM-544, shared with JUM-481)', () =>
   });
 
   it('maps each service kind to the ports it actually binds', () => {
+    expect.hasAssertions();
     expect(SERVICE_KIND_ACTIVE_PORTS).toStrictEqual({
       'rest-api': ['rest'],
       'websocket-rest-api': ['rest', 'websocket'],
@@ -65,6 +67,7 @@ describe('deploy capability matrix reader (JUM-544, shared with JUM-481)', () =>
   });
 
   it('transcribes the Requirement 059 deploy target matrix exactly once', () => {
+    expect.hasAssertions();
     expect(RUN_MODE_PROVIDER_SUPPORT).toStrictEqual({
       'dedicated-server': ['self-hosted'],
       'virtual-machine': ['aws', 'google', 'azure'],
@@ -80,10 +83,12 @@ describe('deploy capability matrix reader (JUM-544, shared with JUM-481)', () =>
 
 describe('service configuration validation (JUM-544)', () => {
   it('accepts the default profile unchanged', () => {
+    expect.hasAssertions();
     expect(collectServiceConfigurationIssues(createConfig())).toStrictEqual([]);
   });
 
   it('accepts every valid run-mode × provider combination in the matrix', () => {
+    expect.hasAssertions();
     Object.entries(RUN_MODE_PROVIDER_SUPPORT).forEach(([runMode, providers]) => {
       (providers as string[]).forEach((cloudProvider) => {
         const issues = collectServiceConfigurationIssues(createConfig({ runMode, cloudProvider }));
@@ -93,6 +98,7 @@ describe('service configuration validation (JUM-544)', () => {
   });
 
   it('rejects ports outside 1-65535', () => {
+    expect.hasAssertions();
     expect(messages(collectServiceConfigurationIssues(createConfig({
       ports: { rest: 0, websocket: 3001, grpc: 3002 }
     })))).toStrictEqual([
@@ -106,6 +112,7 @@ describe('service configuration validation (JUM-544)', () => {
   });
 
   it('rejects non-integer and missing ports', () => {
+    expect.hasAssertions();
     expect(messages(collectServiceConfigurationIssues(createConfig({
       serviceKind: 'websocket-rest-api',
       ports: { rest: 3000.5, websocket: null, grpc: 3002 }
@@ -116,6 +123,7 @@ describe('service configuration validation (JUM-544)', () => {
   });
 
   it('rejects colliding ports on the protocols the service kind binds', () => {
+    expect.hasAssertions();
     expect(messages(collectServiceConfigurationIssues(createConfig({
       serviceKind: 'websocket-rest-api',
       ports: { rest: 3001, websocket: 3001, grpc: 3002 }
@@ -131,6 +139,7 @@ describe('service configuration validation (JUM-544)', () => {
   });
 
   it('ignores collisions on ports the selected service kind does not use', () => {
+    expect.hasAssertions();
     const config = createConfig({
       serviceKind: 'rest-api',
       ports: { rest: 3000, websocket: 4000, grpc: 4000 }
@@ -139,6 +148,7 @@ describe('service configuration validation (JUM-544)', () => {
   });
 
   it('rejects run-mode × provider combinations the Requirement 059 matrix has no target for', () => {
+    expect.hasAssertions();
     expect(messages(collectServiceConfigurationIssues(createConfig({
       runMode: 'functions',
       cloudProvider: 'self-hosted'
@@ -156,6 +166,7 @@ describe('service configuration validation (JUM-544)', () => {
   });
 
   it('rejects values outside the Requirement 126 vocabularies', () => {
+    expect.hasAssertions();
     expect(messages(collectServiceConfigurationIssues(createConfig({
       serviceKind: 'soap-api',
       runMode: 'cluster',
@@ -168,6 +179,7 @@ describe('service configuration validation (JUM-544)', () => {
   });
 
   it('reports issues in the export-gate severity shape (error, no entity)', () => {
+    expect.hasAssertions();
     const issues = collectServiceConfigurationIssues(createConfig({
       runMode: 'functions',
       cloudProvider: 'self-hosted'
@@ -179,6 +191,7 @@ describe('service configuration validation (JUM-544)', () => {
   });
 
   it('does not cross-validate an unknown run mode or provider against the matrix', () => {
+    expect.hasAssertions();
     const issues = collectServiceConfigurationIssues(createConfig({
       runMode: 'cluster',
       cloudProvider: 'oracle'
@@ -192,6 +205,7 @@ describe('service configuration validation (JUM-544)', () => {
 
 describe('nullish config fallbacks (JUM-493)', () => {
   it('reports every selector as unsupported when the config is null', () => {
+    expect.hasAssertions();
     const issues = collectServiceConfigurationIssues(null);
     const nullMessages = issues.map((issue: { message: string }) => issue.message);
     expect(nullMessages.some((message: string) => message.includes('Service kind "" is not supported'))).toBe(true);

@@ -42,6 +42,7 @@ function addrInUse(port: number): NodeJS.ErrnoException {
 
 describe('serverHarness port allocation (JUM-628)', () => {
   it('retries with a fresh port on EADDRINUSE and succeeds within the bound', async () => {
+    expect.hasAssertions();
     const candidates = [3301, 3302, 3303];
     const triedPorts: number[] = [];
     const retries: Array<{ port: number; attempt: number; maxAttempts: number }> = [];
@@ -70,6 +71,7 @@ describe('serverHarness port allocation (JUM-628)', () => {
   });
 
   it('fails with a clear error once the bounded attempts are exhausted', async () => {
+    expect.hasAssertions();
     let attempts = 0;
 
     await expect(
@@ -93,6 +95,7 @@ describe('serverHarness port allocation (JUM-628)', () => {
   });
 
   it('propagates a non-EADDRINUSE failure immediately, without retrying', async () => {
+    expect.hasAssertions();
     let attempts = 0;
 
     await expect(
@@ -108,6 +111,7 @@ describe('serverHarness port allocation (JUM-628)', () => {
   });
 
   it('never moves a pinned port: a busy pin fails fast and names the port', async () => {
+    expect.hasAssertions();
     let pickCalls = 0;
 
     await expect(
@@ -125,6 +129,7 @@ describe('serverHarness port allocation (JUM-628)', () => {
   });
 
   it('recognises only EADDRINUSE-coded errors as port collisions', () => {
+    expect.hasAssertions();
     expect(isAddrInUseError(addrInUse(3200))).toBe(true);
     expect(isAddrInUseError(new Error('boom'))).toBe(false);
     expect(isAddrInUseError(undefined)).toBe(false);
@@ -134,6 +139,7 @@ describe('serverHarness port allocation (JUM-628)', () => {
 
 describe('serverHarness runtime helpers against the real server (JUM-628)', () => {
   it('creates a real temp config dir with the pinned env content, and cleans it up', () => {
+    expect.hasAssertions();
     const dir = createTempConfigDir({ '.env.dev': envFileContent('fastify') });
     try {
       expect(fs.readFileSync(path.join(dir, '.env.dev'), 'utf-8'))
@@ -145,6 +151,7 @@ describe('serverHarness runtime helpers against the real server (JUM-628)', () =
   });
 
   it('allocates ports inside the JUM-635 20000-49999 range', () => {
+    expect.hasAssertions();
     for (let i = 0; i < 50; i += 1) {
       const port = allocatePort();
       expect(port).toBeGreaterThanOrEqual(20000);
@@ -153,6 +160,7 @@ describe('serverHarness runtime helpers against the real server (JUM-628)', () =
   });
 
   it('boots the real server, serves the runtime env endpoint, probes connected and stops', async () => {
+    expect.hasAssertions();
     const dir = createTempConfigDir({ '.env.dev': envFileContent('express') });
     let server: StartedServer | undefined;
     try {
@@ -183,6 +191,7 @@ describe('serverHarness runtime helpers against the real server (JUM-628)', () =
   }, 30000);
 
   it('reports a genuine connection refusal on a port nothing listens on', async () => {
+    expect.hasAssertions();
     // Bind a real listener, learn its port, close it: the port is then
     // guaranteed free, so the refusal below is real, not emulated.
     const blocker = http.createServer();
@@ -202,6 +211,7 @@ describe('serverHarness runtime helpers against the real server (JUM-628)', () =
   }, 30000);
 
   it('boots against the pinned default config dir when none is injected', async () => {
+    expect.hasAssertions();
     // startServer(null) exercises the Requirement 126 §2 default resolution
     // branch (no JUMENTIX_SERVICE_MANAGEMENT_CONFIG_DIR in the child env).
     let server: StartedServer | undefined;
@@ -215,6 +225,7 @@ describe('serverHarness runtime helpers against the real server (JUM-628)', () =
   }, 30000);
 
   it('a busy pinned port dies on the real EADDRINUSE exit and fails fast, naming the port', async () => {
+    expect.hasAssertions();
     const blocker = http.createServer();
     const busyPort = await new Promise<number>((resolve, reject) => {
       blocker.listen(0, '127.0.0.1', () => {

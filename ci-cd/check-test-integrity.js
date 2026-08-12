@@ -69,44 +69,14 @@ const ACCEPTED_MOCK_ONLY = Object.freeze([
 ]);
 
 /**
- * Suites with no assertion declaration today, each owned by JUM-677.
+ * Suites with no assertion declaration.
  *
- * Same ratchet. Removing an entry is done by fixing the suite; the check fails
- * on an entry whose file no longer matches.
+ * **Empty since JUM-677**: 644 declarations were added across the 31 files and
+ * every test still passed, which is the honest result — none of them had been
+ * asserting nothing. The declaration is now what makes that true tomorrow as
+ * well as today.
  */
-const ACCEPTED_NO_ASSERTIONS = Object.freeze([
-  { file: 'apps/backend-template/test/integration/ServiceManagement/domainDesigner.smoke.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/integration/ServiceManagement/pm2Ecosystem.integration.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/ci-cd/sync-service-management-cana-bundle.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/ci-cd/sync-service-management-designer-core.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/domains/validators/index.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/canaDesignerStore.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/canaMigration.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/deployTargetLifecycle.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/deployTargetValidation.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/designerAsyncApiExport.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/designerExporters.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/designerImporters.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/designerNormalizers.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/designerOasCompliance.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/designerPackageVersioning.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/designerState.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/designerStore.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/designerSync.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/hexagonalCodegen.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/interfaceAdapterValidation.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/modelQueries.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/modelValidation.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/mvp.roadmap.features.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/pm2EcosystemUi.contract.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/pwaShell.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/rbacContract.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/runtimeEnvUi.contract.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/sampleModel.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/serverHarnessPorts.test.ts', issue: 'JUM-677' },
-  { file: 'apps/backend-template/test/unit/service-management/serviceConfigurationValidation.test.ts', issue: 'JUM-677' }
-]);
+const ACCEPTED_NO_ASSERTIONS = Object.freeze([]);
 
 function walk(dir, out = []) {
   if (!fs.existsSync(dir)) return out;

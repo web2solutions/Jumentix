@@ -40,6 +40,7 @@ const {
 describe('designer normalisers (JUM-470)', () => {
   describe('normalizeField — importer-shaped inputs', () => {
     it('coerces non-string names and boolean-ish flags', () => {
+      expect.hasAssertions();
       const field = normalizeField({
         name: 42, type: 'integer', required: 1, pk: 0, fk: 'yes', unique: null, nullable: undefined
       }, 0);
@@ -52,11 +53,13 @@ describe('designer normalisers (JUM-470)', () => {
     });
 
     it('keeps itemsType only on array fields and repairs unknown array item types', () => {
+      expect.hasAssertions();
       expect(normalizeField({ name: 'a', type: 'array', itemsType: 'weird' }, 0).itemsType).toBe('string');
       expect(normalizeField({ name: 'b', type: 'string', itemsType: 'uuid' }, 1).itemsType).toBe('');
     });
 
     it('maps non-numeric constraint values to null (no constraint)', () => {
+      expect.hasAssertions();
       const field = normalizeField({
         name: 'c', type: 'string', minLength: 'abc', maxLength: 'many', minimum: {}, maximum: NaN
       }, 2);
@@ -67,6 +70,7 @@ describe('designer normalisers (JUM-470)', () => {
     });
 
     it('keeps zero-valued constraints — 0 is not "unset"', () => {
+      expect.hasAssertions();
       const field = normalizeField({
         name: 'n', type: 'number', minLength: 0, maxLength: 0, minimum: 0, maximum: 0
       }, 0);
@@ -77,6 +81,7 @@ describe('designer normalisers (JUM-470)', () => {
     });
 
     it('stringifies enum members arriving from an OAS importer enum array', () => {
+      expect.hasAssertions();
       expect(normalizeField({ name: 'status', enum: ['a', 1, ' b '] }, 0).enumValues)
         .toStrictEqual(['a', '1', 'b']);
     });
@@ -84,12 +89,14 @@ describe('designer normalisers (JUM-470)', () => {
 
   describe('normalizeContractInput — importer-shaped inputs', () => {
     it('builds fallback ids and names from the importer index', () => {
+      expect.hasAssertions();
       const contract = normalizeContractInput(null, 3);
       expect(contract.id).toMatch(/^contract-import-3-[a-z0-9]+$/);
       expect(contract.name).toBe('Contract_4');
     });
 
     it('repairs whitespace names, channels and versions and unknown types', () => {
+      expect.hasAssertions();
       expect(normalizeContractInput({
         id: ' c-1 ', name: '  ', type: 'query', channel: ' ch ', version: ' '
       }, 0)).toStrictEqual({
@@ -103,6 +110,7 @@ describe('designer normalisers (JUM-470)', () => {
     });
 
     it('keeps object payload schemas (arrays included) and drops null', () => {
+      expect.hasAssertions();
       expect(normalizeContractInput({ payloadSchema: null }, 0).payloadSchema).toStrictEqual({});
       expect(normalizeContractInput({ payloadSchema: ['schema'] }, 1).payloadSchema)
         .toStrictEqual(['schema']);
@@ -111,6 +119,7 @@ describe('designer normalisers (JUM-470)', () => {
 
   describe('normalizeStatePayload — round-trip stability', () => {
     it('is idempotent: a normalized payload survives the load normalisation unchanged', () => {
+      expect.hasAssertions();
       const input = {
         domains: [{
           id: 'domain-1',
@@ -201,6 +210,7 @@ describe('designer normalisers (JUM-470)', () => {
 
   describe('normalizeStatePayload — legacy and partial payloads', () => {
     it('upgrades a legacy partial payload predictably instead of dropping it', () => {
+      expect.hasAssertions();
       const normalized = normalizeStatePayload({
         domains: [{
           name: ' Legacy ',
@@ -265,6 +275,7 @@ describe('designer normalisers (JUM-470)', () => {
     });
 
     it('treats a non-array domains section as an empty model', () => {
+      expect.hasAssertions();
       const normalized = normalizeStatePayload({ domains: { 0: { name: 'Ghost' } }, relationships: null });
       expect(normalized.domains).toStrictEqual([]);
       expect(normalized.relationships).toStrictEqual([]);
@@ -275,6 +286,7 @@ describe('designer normalisers (JUM-470)', () => {
 
   describe('full-suite section normalisers (JUM-547)', () => {
     it('normalizeInterfaceInput trims values and defaults an empty type', () => {
+      expect.hasAssertions();
       expect(normalizeInterfaceInput({
         type: ' grpc ', framework: ' bun ', entrypoint: ' src/grpc.ts ', controller: ' BillingGrpc '
       })).toStrictEqual({
@@ -292,6 +304,7 @@ describe('designer normalisers (JUM-470)', () => {
     });
 
     it('normalizeServiceConfigurationInput applies the Contract 2 defaults and keeps unknown enum values verbatim', () => {
+      expect.hasAssertions();
       expect(normalizeServiceConfigurationInput(undefined)).toStrictEqual({
         serviceKind: 'rest-api',
         runMode: 'dedicated-server',
@@ -318,6 +331,7 @@ describe('designer normalisers (JUM-470)', () => {
     });
 
     it('normalizeRuntimeEnvironmentInput defaults the selection and isolates the values object', () => {
+      expect.hasAssertions();
       expect(normalizeRuntimeEnvironmentInput(undefined)).toStrictEqual({
         environment: 'dev', fileName: '.env.dev', values: {}
       });
@@ -340,6 +354,7 @@ describe('designer normalisers (JUM-470)', () => {
     });
 
     it('normalizeStatePayload returns the full-suite sections with defaults for a legacy domain-only payload', () => {
+      expect.hasAssertions();
       const normalized = normalizeStatePayload({ domains: [], relationships: [] });
       expect(normalized.interfaces).toStrictEqual([]);
       expect(normalized.serviceConfiguration).toStrictEqual({
@@ -356,6 +371,7 @@ describe('designer normalisers (JUM-470)', () => {
     });
 
     it('normalizeStatePayload full-suite idempotence: a normalized payload survives a second pass unchanged', () => {
+      expect.hasAssertions();
       const once = normalizeStatePayload({
         domains: [],
         relationships: [],
@@ -385,6 +401,7 @@ describe('designer normalisers (JUM-470)', () => {
 
   describe('rBAC defaults', () => {
     it('pins the default policy: five actions, exact roles, all tenant-scoped', () => {
+      expect.hasAssertions();
       expect(getDefaultRbacPolicy()).toStrictEqual({
         list: { roles: ['superadmin', 'admin'], tenantScoped: true },
         getById: { roles: ['superadmin', 'admin', 'user'], tenantScoped: true },
@@ -395,6 +412,7 @@ describe('designer normalisers (JUM-470)', () => {
     });
 
     it('returns an independent copy per call, so entities cannot corrupt the default', () => {
+      expect.hasAssertions();
       const first = getDefaultRbacPolicy();
       first.list.roles.push('intruder');
       first.delete.tenantScoped = false;

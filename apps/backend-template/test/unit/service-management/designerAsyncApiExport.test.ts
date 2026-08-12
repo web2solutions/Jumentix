@@ -130,6 +130,7 @@ function createModelState() {
 describe('asyncapi 3.0 per-transport export (JUM-475)', () => {
   describe('file set and canonical naming', () => {
     it('emits one file per canonical transport following the <version>.<transport>.yml pattern', () => {
+      expect.hasAssertions();
       const fileSet = buildAsyncApiFileSet(createModelState());
       expect(fileSet.version).toBe('1.0.0');
       expect(fileSet.files.map((file: { fileName: string }) => file.fileName)).toStrictEqual([
@@ -144,6 +145,7 @@ describe('asyncapi 3.0 per-transport export (JUM-475)', () => {
     });
 
     it('honours an explicit export version in the file names and info blocks', () => {
+      expect.hasAssertions();
       const fileSet = buildAsyncApiFileSet(createModelState(), { version: '2.1.0' });
       expect(fileSet.files.map((file: { fileName: string }) => file.fileName)).toStrictEqual([
         '2.1.0.websocket.yml',
@@ -155,6 +157,7 @@ describe('asyncapi 3.0 per-transport export (JUM-475)', () => {
     });
 
     it('matches the canonical directory layout one-for-one', () => {
+      expect.hasAssertions();
       const canonicalYamlFiles = fs.readdirSync(CANONICAL_SPEC_DIR)
         .filter((fileName) => fileName.endsWith('.yml'))
         .sort();
@@ -167,6 +170,7 @@ describe('asyncapi 3.0 per-transport export (JUM-475)', () => {
 
   describe('document structure', () => {
     it('declares asyncapi 3.0.0 with info, defaultContentType and the per-transport server', () => {
+      expect.hasAssertions();
       const websocket = buildAsyncApiTransportDocument(createModelState(), 'websocket');
       const grpc = buildAsyncApiTransportDocument(createModelState(), 'grpc');
       [websocket, grpc].forEach((document) => {
@@ -189,6 +193,7 @@ describe('asyncapi 3.0 per-transport export (JUM-475)', () => {
     });
 
     it('reads the server ports from serviceConfiguration and falls back to the canonical defaults', () => {
+      expect.hasAssertions();
       // normalizeStatePayload keeps only domains/relationships/view, so the
       // configured-ports branch is exercised with the live-state shape
       // createDesignerState holds (serviceConfiguration included).
@@ -204,11 +209,13 @@ describe('asyncapi 3.0 per-transport export (JUM-475)', () => {
     });
 
     it('falls back to the websocket conventions for an unknown transport', () => {
+      expect.hasAssertions();
       const document = buildAsyncApiTransportDocument(createModelState(), 'sse');
       expect(document.servers.local.protocol).toBe('ws');
     });
 
     it('builds 3.0 channels and operations: addresses, message refs and send/receive actions', () => {
+      expect.hasAssertions();
       const document = buildAsyncApiTransportDocument(createModelState(), 'websocket');
       expect(document.channels['billing.issued']).toStrictEqual({
         address: 'billing.issued',
@@ -231,6 +238,7 @@ describe('asyncapi 3.0 per-transport export (JUM-475)', () => {
     });
 
     it('derives the <domain>/<entity>/<type> channel address when the contract has no channel', () => {
+      expect.hasAssertions();
       const document = buildAsyncApiTransportDocument(createModelState(), 'websocket');
       expect(document.channels['billing/receipt/command']).toStrictEqual({
         address: 'billing/receipt/command',
@@ -241,6 +249,7 @@ describe('asyncapi 3.0 per-transport export (JUM-475)', () => {
     });
 
     it('references shared schema definitions instead of inlining payloads', () => {
+      expect.hasAssertions();
       const document = buildAsyncApiTransportDocument(createModelState(), 'websocket');
       const { messages, schemas } = document.components;
       Object.values(messages).forEach((message) => {
@@ -265,6 +274,7 @@ describe('asyncapi 3.0 per-transport export (JUM-475)', () => {
     });
 
     it('treats a non-object payload schema as the empty schema', () => {
+      expect.hasAssertions();
       const document = buildAsyncApiTransportDocument({
         domains: [{
           name: 'Billing',
@@ -282,6 +292,7 @@ describe('asyncapi 3.0 per-transport export (JUM-475)', () => {
     });
 
     it('emits empty maps for a contract-less model', () => {
+      expect.hasAssertions();
       const document = buildAsyncApiTransportDocument({ domains: [] }, 'grpc');
       expect(document.channels).toStrictEqual({});
       expect(document.operations).toStrictEqual({});
@@ -291,6 +302,7 @@ describe('asyncapi 3.0 per-transport export (JUM-475)', () => {
 
   describe('yaml emission', () => {
     it('round-trips every exported file through the yaml parser back to the document object', () => {
+      expect.hasAssertions();
       const state = createModelState();
       const fileSet = buildAsyncApiFileSet(state);
       ASYNCAPI_TRANSPORTS.forEach((transport: string, index: number) => {
@@ -302,6 +314,7 @@ describe('asyncapi 3.0 per-transport export (JUM-475)', () => {
     });
 
     it('quotes strings that are unsafe as plain YAML scalars', () => {
+      expect.hasAssertions();
       const document = {
         plain: 'value',
         withColon: 'a: b',
@@ -323,12 +336,14 @@ describe('asyncapi 3.0 per-transport export (JUM-475)', () => {
     });
 
     it('keeps safe plain scalars unquoted, matching the canonical style', () => {
+      expect.hasAssertions();
       expect(toYaml({ asyncapi: '3.0.0' })).toBe('asyncapi: 3.0.0\n');
       expect(toYaml({ address: 'api:{operationId}:request' })).toBe('address: api:{operationId}:request\n');
       expect(toYaml({ 'billing.issued': 1 })).toBe('billing.issued: 1\n');
     });
 
     it('serializes nested maps, lists, list-of-lists and empty containers', () => {
+      expect.hasAssertions();
       const document = {
         root: {
           nested: [{ a: 1 }, { b: [1, 2] }, [[1]], 'x', null],
@@ -341,10 +356,12 @@ describe('asyncapi 3.0 per-transport export (JUM-475)', () => {
     });
 
     it('serializes a bare scalar document', () => {
+      expect.hasAssertions();
       expect(toYaml('just text')).toBe('just text\n');
     });
 
     it('serializes empty root containers', () => {
+      expect.hasAssertions();
       expect(toYaml({})).toBe('{}\n');
       expect(toYaml([])).toBe('[]\n');
     });
@@ -352,6 +369,7 @@ describe('asyncapi 3.0 per-transport export (JUM-475)', () => {
 
   describe('malformed model tolerance', () => {
     it('tolerates missing domains, missing entities and non-array contracts', () => {
+      expect.hasAssertions();
       expect(buildAsyncApiTransportDocument({}, 'websocket').channels).toStrictEqual({});
       expect(buildAsyncApiTransportDocument({ domains: [{ name: 'Empty' }] }, 'websocket').channels)
         .toStrictEqual({});
@@ -367,6 +385,7 @@ describe('asyncapi 3.0 per-transport export (JUM-475)', () => {
     });
 
     it('falls back to the component name when a contract has no usable name', () => {
+      expect.hasAssertions();
       // Real states are normalized (normalizeContractInput always assigns a
       // name); raw states can still reach the exporter, and the fallbacks
       // must yield valid identifiers rather than empty keys.
@@ -407,6 +426,7 @@ describe('asyncapi 3.0 per-transport export (JUM-475)', () => {
 
   describe('asyncapi 3.0 structural validation gate', () => {
     it('validates every exported document', () => {
+      expect.hasAssertions();
       const state = createModelState();
       ASYNCAPI_TRANSPORTS.forEach((transport: string) => {
         const document = buildAsyncApiTransportDocument(state, transport);
@@ -415,6 +435,7 @@ describe('asyncapi 3.0 per-transport export (JUM-475)', () => {
     });
 
     it('validates the canonical spec/asyncapi documents with the same rules (drop-in shape parity)', () => {
+      expect.hasAssertions();
       ['1.0.0.websocket.yml', '1.0.0.grpc.yml'].forEach((fileName) => {
         const canonical = YAML.parse(
           fs.readFileSync(path.join(CANONICAL_SPEC_DIR, fileName), 'utf8')
@@ -424,6 +445,7 @@ describe('asyncapi 3.0 per-transport export (JUM-475)', () => {
     });
 
     it('rejects a 2.x-shaped document — publish/subscribe under channels parses as neither', () => {
+      expect.hasAssertions();
       const legacy = {
         asyncapi: '3.0.0',
         info: { title: 'Legacy', version: '1.0.0' },
@@ -440,6 +462,7 @@ describe('asyncapi 3.0 per-transport export (JUM-475)', () => {
     });
 
     it('reports every structural violation class', () => {
+      expect.hasAssertions();
       expect(validateAsyncApi30Document(null)).toStrictEqual(['document must be an object']);
       expect(validateAsyncApi30Document({ info: { title: 't', version: '1' } }))
         .toContain('asyncapi must declare a 3.x version, got "<missing>"');
@@ -564,6 +587,7 @@ describe('asyncapi 3.0 per-transport export (JUM-475)', () => {
     });
 
     it('accepts inline message payloads and non-$ref channel messages', () => {
+      expect.hasAssertions();
       const document = {
         asyncapi: '3.0.0',
         info: { title: 'Inline', version: '1.0.0' },
@@ -577,17 +601,20 @@ describe('asyncapi 3.0 per-transport export (JUM-475)', () => {
 
 describe('gRPC proto export (JUM-475)', () => {
   it('is byte-identical to the canonical async-api.proto for a contract-less model', () => {
+    expect.hasAssertions();
     const canonical = fs.readFileSync(path.join(CANONICAL_SPEC_DIR, 'async-api.proto'), 'utf8');
     expect(buildGrpcProto({ domains: [] })).toBe(canonical);
   });
 
   it('emits proto3 with the canonical package and service conventions', () => {
+    expect.hasAssertions();
     const proto = buildGrpcProto(createModelState());
     expect(proto.startsWith('syntax = "proto3";\n\npackage realtime;\n')).toBe(true);
     expect(proto).toContain('service AsyncApiGateway {');
   });
 
   it('derives one message per contract with proto-typed fields from the payload schema', () => {
+    expect.hasAssertions();
     const proto = buildGrpcProto(createModelState());
     expect(proto).toContain([
       'message BillingInvoiceIssued {',
@@ -598,6 +625,7 @@ describe('gRPC proto export (JUM-475)', () => {
   });
 
   it('pairs request/response contracts on the same channel into a unary rpc', () => {
+    expect.hasAssertions();
     const proto = buildGrpcProto(createModelState());
     expect(proto).toContain('rpc Fetch (BillingInvoiceFetch) returns (BillingInvoiceFetched);');
     // The paired response does not get a second rpc of its own.
@@ -605,6 +633,7 @@ describe('gRPC proto export (JUM-475)', () => {
   });
 
   it('maps event and command contracts to bidirectional streaming rpcs (the Exchange convention)', () => {
+    expect.hasAssertions();
     const proto = buildGrpcProto(createModelState());
     expect(proto).toContain(
       'rpc Issued (stream BillingInvoiceIssued) returns (stream BillingInvoiceIssued);'
@@ -615,6 +644,7 @@ describe('gRPC proto export (JUM-475)', () => {
   });
 
   it('falls back to the canonical envelopes for unpaired request/response contracts', () => {
+    expect.hasAssertions();
     const state = normalizeStatePayload({
       domains: [{
         id: 'domain-1',
@@ -645,6 +675,7 @@ describe('gRPC proto export (JUM-475)', () => {
   });
 
   it('includes only the response envelope when just requests are unpaired', () => {
+    expect.hasAssertions();
     const state = normalizeStatePayload({
       domains: [{
         id: 'domain-1',
@@ -668,6 +699,7 @@ describe('gRPC proto export (JUM-475)', () => {
   });
 
   it('maps payload property types and sanitizes proto identifiers', () => {
+    expect.hasAssertions();
     const proto = buildGrpcProto({
       domains: [{
         name: 'Billing',
@@ -717,11 +749,13 @@ describe('gRPC proto export (JUM-475)', () => {
   });
 
   it('emits an empty message for a contract without payload properties', () => {
+    expect.hasAssertions();
     const proto = buildGrpcProto(createModelState());
     expect(proto).toContain('message BillingReceiptReconcile {\n}');
   });
 
   it('honours package and service name overrides', () => {
+    expect.hasAssertions();
     const proto = buildGrpcProto(createModelState(), {
       packageName: 'billing',
       serviceName: 'BillingGateway'
