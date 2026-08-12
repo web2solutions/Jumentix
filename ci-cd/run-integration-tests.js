@@ -19,10 +19,9 @@ const INTEGRATION_SCRIPTS = Object.freeze([
   'test:integration:lambda',
   'test:integration:cloudflare-workers',
   'test:integration:vercel-functions',
-  'test:integration:loopback',
-  'test:integration:sails-js',
-  'test:integration:feathers',
-  'test:integration:derby-js',
+  // loopback, sails-js, feathers, derby-js: removed by JUM-698. Their framework
+  // packages are not installed, so the adapters cannot be started by any suite
+  // here; what is left of those suites is a unit test of the handler (JUM-704).
   'test:integration:adonis-js',
   'test:integration:total-js',
   'test:integration:realtime',

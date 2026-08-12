@@ -245,6 +245,22 @@ export class RestAPI<T> {
     });
   }
 
+  /**
+   * "This framework has no handler for that operation", across runtimes.
+   *
+   * The fallback to Express depends on recognising a missing module, and it
+   * used to test `error.code === 'MODULE_NOT_FOUND'` alone. Bun and Node set
+   * that code; **Jest's resolver does not** — it throws its own error whose
+   * message is `Cannot find module ... from ...` and whose `code` is
+   * undefined. So the same adapter fell back correctly under `bun test` and
+   * threw under Jest, which is how the Adonis-JS and Total-JS suites passed on
+   * one runner and failed on the other (JUM-698).
+   */
+  private static isModuleNotFound(error: any): boolean {
+    if (error?.code === 'MODULE_NOT_FOUND') return true;
+    return /cannot find module|could not locate module/i.test(String(error?.message || ''));
+  }
+
   private getHandlerFactory({
     moduleName,
     operationId,
@@ -263,7 +279,7 @@ export class RestAPI<T> {
           return handlerModule.default(factoryDeps);
         }
       } catch (error: any) {
-        if (error?.code !== 'MODULE_NOT_FOUND') {
+        if (!RestAPI.isModuleNotFound(error)) {
           throw error;
         }
       }

@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-12 docs(JUM-705): use English cana example identifiers - Eduardo A.
 - 2026-08-12 [JUM-703][Docs] Expand Cana tutorials and integrations (#210) - Eduardo A.
 - 2026-08-12 Merge remote-tracking branch 'origin/dev' into codex/docs/JUM-703-cana-performance-notes - Eduardo A.
 - 2026-08-12 feat(cana): add React and Vue integration packages (JUM-703) - Eduardo A.
