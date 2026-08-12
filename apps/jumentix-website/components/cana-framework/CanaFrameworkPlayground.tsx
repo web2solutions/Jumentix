@@ -12,7 +12,6 @@ import {
   Badge,
   Box,
   Button,
-  Code,
   Group,
   MantineProvider,
   Paper,
@@ -26,6 +25,8 @@ import {
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import React, { createContext, useContext, useMemo, useReducer, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { theme as jumentixTheme } from '../../theme';
+import { languageFromPath, MonacoCodeBlock } from '../code/MonacoCodeBlock';
 import { deleteEphemeralDatabase } from '../docs-playground/runSnippet';
 import { getCanaFrameworkExample } from './catalog';
 import type {
@@ -84,6 +85,26 @@ const baseTasks: Task[] = [
 ];
 
 type Listener = (event: CanaChangeEvent) => void;
+
+function currentColorScheme(): 'light' | 'dark' {
+  if (typeof document === 'undefined') return 'dark';
+  return document.documentElement.getAttribute('data-mantine-color-scheme') === 'light'
+    ? 'light'
+    : 'dark';
+}
+
+function DemoMantineProvider({ children }: { children: React.ReactNode }) {
+  return (
+    <MantineProvider
+      theme={jumentixTheme}
+      withCssVariables={false}
+      withGlobalClasses={false}
+      forceColorScheme={currentColorScheme()}
+    >
+      {children}
+    </MantineProvider>
+  );
+}
 
 async function openTaskClient(dbName: string, originId: string): Promise<CanaClient> {
   const client = createClient({
@@ -167,14 +188,18 @@ function TaskBoard({
   }));
 
   return (
-    <Stack gap="sm">
+    <Stack gap="sm" className="cana-framework-demo">
       <Group gap="xs">
-        <Button size="xs" onClick={onAddTask}>Add task through Cana</Button>
-        {onAdvanced ? <Button size="xs" variant="default" onClick={onAdvanced}>Run transaction</Button> : null}
+        <Button className="cana-framework-demo-action" size="xs" onClick={onAddTask}>Add task through Cana</Button>
+        {onAdvanced ? (
+          <Button className="cana-framework-demo-action" size="xs" variant="default" onClick={onAdvanced}>
+            Run transaction
+          </Button>
+        ) : null}
       </Group>
       <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
         {grouped.map(({ category, tasks }) => (
-          <Paper key={category.id} withBorder p="sm" radius={6}>
+          <Paper key={category.id} className="cana-framework-demo-card" withBorder p="sm" radius={6}>
             <Group justify="space-between" mb={6}>
               <Text fw={700}>{category.name}</Text>
               <Badge color={category.id === 'work' ? 'blue' : 'green'}>{tasks.length}</Badge>
@@ -183,6 +208,7 @@ function TaskBoard({
               {tasks.map((task) => (
                 <Button
                   key={task.id}
+                  className="cana-framework-demo-task"
                   variant={task.completed ? 'light' : 'default'}
                   size="xs"
                   justify="space-between"
@@ -195,7 +221,9 @@ function TaskBoard({
           </Paper>
         ))}
       </SimpleGrid>
-      <Code block>{events.length ? events.join('\n') : 'No Cana events yet.'}</Code>
+      <pre className="cana-framework-demo-events">
+        {events.length ? events.join('\n') : 'No Cana events yet.'}
+      </pre>
     </Stack>
   );
 }
@@ -301,11 +329,11 @@ async function runReactContext(context: CanaFrameworkRunContext, advanced: boole
   const initial = await snapshot(client);
   const root = createRoot(context.root);
   root.render(
-    <MantineProvider>
+    <DemoMantineProvider>
       <ReactContextProvider client={client} initial={initial} advanced={advanced}>
         <ReactContextBoard />
       </ReactContextProvider>
-    </MantineProvider>
+    </DemoMantineProvider>
   );
   context.report({ backend: client.backend, state: initial });
   return () => {
@@ -454,11 +482,11 @@ async function runRedux(context: CanaFrameworkRunContext, advanced: boolean) {
   const stop = client.subscribe(apply);
   const root = createRoot(context.root);
   root.render(
-    <MantineProvider>
+    <DemoMantineProvider>
       <Provider store={store}>
         <ReduxBoard client={client} advanced={advanced} />
       </Provider>
-    </MantineProvider>
+    </DemoMantineProvider>
   );
   context.report({ backend: client.backend, state: store.getState() });
   return () => {
@@ -554,28 +582,37 @@ async function runVuePinia(context: CanaFrameworkRunContext, advanced: boolean) 
         stop.value = client.subscribe((event) => store.apply(event));
       });
       onUnmounted(() => stop.value?.());
-      return () => h('div', { class: 'cana-vue-demo' }, [
-        h('div', { style: 'display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap' }, [
-          h('button', { type: 'button', onClick: () => void store.addTask() }, 'Add task through Cana'),
+      return () => h('div', { class: 'cana-framework-demo cana-vue-demo' }, [
+        h('div', { class: 'cana-framework-demo-actions' }, [
+          h('button', {
+            class: 'cana-framework-demo-action cana-framework-demo-native-action',
+            type: 'button',
+            onClick: () => void store.addTask()
+          }, 'Add task through Cana'),
           advanced
-            ? h('button', { type: 'button', onClick: () => void store.runTransaction() }, 'Run transaction')
+            ? h('button', {
+                class: 'cana-framework-demo-action cana-framework-demo-native-action',
+                type: 'button',
+                onClick: () => void store.runTransaction()
+              }, 'Run transaction')
             : null
         ]),
-        h('div', { style: 'display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px' },
+        h('div', { class: 'cana-framework-demo-grid' },
           groups.value.map(({ category, tasks: list }) => h('section', {
             key: category.id,
-            style: 'border:1px solid #d0d5dd;border-radius:6px;padding:10px'
+            class: 'cana-framework-demo-card'
           }, [
             h('strong', category.name),
-            h('span', { style: 'margin-left:8px;color:#667085' }, `${list.length} tasks`),
-            h('div', { style: 'display:grid;gap:4px;margin-top:8px' }, list.map((task) => h('button', {
+            h('span', { class: 'cana-framework-demo-count' }, `${list.length} tasks`),
+            h('div', { class: 'cana-framework-demo-list' }, list.map((task) => h('button', {
+              class: 'cana-framework-demo-task cana-framework-demo-native-task',
               key: task.id,
               type: 'button',
               onClick: () => void store.toggle(task)
             }, `${task.completed ? 'Done: ' : ''}${task.title}`)))
           ]))
         ),
-        h('pre', { style: 'white-space:pre-wrap;margin-top:12px' }, store.events.length
+        h('pre', { class: 'cana-framework-demo-events cana-framework-demo-native-events' }, store.events.length
           ? store.events.join('\n')
           : 'No Cana events yet.')
       ]);
@@ -678,7 +715,7 @@ export function CanaFrameworkPlayground({ id }: CanaFrameworkPlaygroundProps) {
   if (!example) {
     return (
       <Alert color="red" my="md" title="Cana framework example not found">
-        <Code>{id}</Code>
+        <Text component="code" className="jtx-inline-code">{id}</Text>
       </Alert>
     );
   }
@@ -686,7 +723,13 @@ export function CanaFrameworkPlayground({ id }: CanaFrameworkPlaygroundProps) {
   const selected = example.files.find((file) => file.path === activeFile) ?? example.files[0];
 
   return (
-    <Paper withBorder p="md" my="md" data-testid={`cana-framework-playground-${id}`}>
+    <Paper
+      withBorder
+      p="md"
+      my="md"
+      className="cana-framework-playground"
+      data-testid={`cana-framework-playground-${id}`}
+    >
       <Stack gap="sm">
         <div>
           <Group gap="xs" mb={4}>
@@ -721,7 +764,7 @@ export function CanaFrameworkPlayground({ id }: CanaFrameworkPlaygroundProps) {
           ref={rootRef}
           mih={180}
           p="sm"
-          style={{ border: '1px solid var(--mantine-color-gray-3)', borderRadius: 6 }}
+          className="cana-framework-preview"
           data-testid={`cana-framework-playground-${id}-preview`}
         />
 
@@ -739,9 +782,15 @@ export function CanaFrameworkPlayground({ id }: CanaFrameworkPlaygroundProps) {
           </Tabs.List>
           {example.files.map((file) => (
             <Tabs.Panel key={file.path} value={file.path} pt="xs">
-              <Code block data-testid={`cana-framework-playground-${id}-${file.path}`}>
-                {file.source}
-              </Code>
+              <MonacoCodeBlock
+                value={file.source}
+                language={languageFromPath(file.path)}
+                readOnly
+                minHeight={220}
+                maxHeight={680}
+                ariaLabel={`${file.path} implementation code`}
+                testId={`cana-framework-playground-${id}-${file.path}`}
+              />
             </Tabs.Panel>
           ))}
         </Tabs>
@@ -749,20 +798,35 @@ export function CanaFrameworkPlayground({ id }: CanaFrameworkPlaygroundProps) {
         {output ? (
           <Stack gap={4}>
             <Text fw={600} size="sm">Initial result</Text>
-            <Code block data-testid={`cana-framework-playground-${id}-output`}>{output}</Code>
+            <MonacoCodeBlock
+              value={output}
+              language="json"
+              readOnly
+              minHeight={120}
+              maxHeight={320}
+              ariaLabel={`${example.title.en} initial result`}
+              testId={`cana-framework-playground-${id}-output`}
+            />
           </Stack>
         ) : null}
 
         {logs.length ? (
           <Stack gap={4}>
             <Text fw={600} size="sm">Console</Text>
-            <Code block>{logs.join('\n')}</Code>
+            <MonacoCodeBlock
+              value={logs.join('\n')}
+              language="text"
+              readOnly
+              minHeight={100}
+              maxHeight={260}
+              ariaLabel={`${example.title.en} console logs`}
+            />
           </Stack>
         ) : null}
 
         {error ? (
           <Alert color="red" title="Error">
-            <Code block>{error}</Code>
+            <MonacoCodeBlock value={error} language="text" readOnly minHeight={100} maxHeight={260} />
           </Alert>
         ) : null}
       </Stack>

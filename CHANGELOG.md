@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-12 docs(JUM-690): add Cana framework tutorials (#198) - Eduardo A.
 - 2026-08-12 test(website): add component, a11y, and link-quality jest gates for JUM-158 (#192) - Eduardo A.
 - 2026-08-12 [JUM-688][Docs] Fix MDX build break from angle-bracket headings (#193) - Eduardo A.
 - 2026-08-12 fix(website): escape MDX-breaking (<30 min) package headings (JUM-688) - Eduardo A.

@@ -1,25 +1,52 @@
 * {
-  --marquee-fade-edge-color: var(--mantine-color-gray-1);
+  --marquee-fade-edge-color: var(--jtx-page-bg);
 
   @mixin dark {
-    --marquee-fade-edge-color: var(--mantine-color-dark-9);
-    --mantine-color-body: var(--mantine-color-dark-9);
+    --marquee-fade-edge-color: var(--jtx-page-bg);
+    --mantine-color-body: var(--jtx-page-bg);
   }
 }
 
+html,
 body {
-  background-color: var(--mantine-color-gray-1);
+  min-height: 100%;
+  color: var(--jtx-ink);
+  background-color: var(--jtx-page-bg);
+}
+
+html {
+  color-scheme: light;
+}
+
+:root[data-mantine-color-scheme='dark'] {
+  color-scheme: dark;
+}
+
+body {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--jtx-page-band) 82%, transparent) 0, transparent 360px),
+    linear-gradient(90deg, color-mix(in srgb, var(--jtx-page-warm) 42%, transparent) 0, transparent 36%),
+    var(--jtx-page-bg);
 
   @mixin dark {
-    background-color: var(--mantine-color-dark-9);
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--jtx-page-band) 76%, transparent) 0, transparent 360px),
+      linear-gradient(90deg, color-mix(in srgb, var(--jtx-green-50) 24%, transparent) 0, transparent 40%),
+      var(--jtx-page-bg);
   }
 }
 
 .mantine-Button-root {
   transition: all 0.2s ease;
-  border-radius: 256px;
+  border-radius: var(--jtx-radius-sm);
 
   &:hover {
-    transform: scale(1.02);
+    box-shadow: var(--jtx-shadow-sm);
+    transform: translateY(-1px);
   }
+}
+
+::selection {
+  color: var(--jtx-code-ink);
+  background: color-mix(in srgb, var(--jtx-blue-500) 72%, var(--jtx-green-500));
 }

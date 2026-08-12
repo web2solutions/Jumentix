@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { IconCornerRightDown } from '@tabler/icons-react';
-import { Anchor, Code, Group } from '@mantine/core';
+import { Anchor, Group } from '@mantine/core';
 
 type FileTreeLabelProps = {
   name: string;
@@ -32,9 +32,12 @@ export function FileTreeLabel({
       )}
       {type === 'folder' && <IconCornerRightDown size={20} color="grey" />}
       {children && (
-        <Code fz={12} color={color} px={6} py={0}>
+        <code
+          className="jtx-inline-code"
+          style={{ '--jtx-inline-code-accent': `var(--mantine-color-${color}-6)` } as React.CSSProperties}
+        >
           {children}
-        </Code>
+        </code>
       )}
     </Group>
   );
