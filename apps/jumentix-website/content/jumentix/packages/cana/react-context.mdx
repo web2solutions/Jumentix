@@ -16,30 +16,30 @@ committed Cana events, and updates React state through a Context provider.
 ```bash
 bun create vite cana-react-context --template react-ts
 cd cana-react-context
-bun add @jumentix/cana
+bun add @jumentix/cana @jumentix/cana-react
 ```
 
 Use two stores:
 
-- `categories`: task buckets with `id`, `name`, `color`, timestamps.
-- `tasks`: records with `categoryId`, `completed`, `priority`, timestamps.
+- `categorias`: task buckets with `id`, `nome`, `cor`, timestamps.
+- `tarefas`: records with `categoriaId`, `concluida`, `prioridade`, timestamps.
 
 Indexes make the UI cheap to reload:
 
-- `categories.byName`
-- `tasks.byCategory`
-- `tasks.byCompleted`
-- `tasks.byUpdatedAt`
+- `categorias.porNome`
+- `tarefas.porCategoria`
+- `tarefas.porConcluida`
+- `tarefas.porAtualizadaEm`
 
 ## 2. Simple implementation
 
-Create `src/cana.ts`, then wrap the app with `TasksProvider`. The provider opens
+Create `src/cana.ts`, then wrap the app with `TarefasProvider`. The provider opens
 Cana once, loads the current tables, subscribes to `CanaChangeEvent`, and uses a
 reducer to patch component state when writes commit.
 
 The important part is this flow:
 
-1. UI calls `cana.table('tasks').add(...)`.
+1. UI calls `cana.table('tarefas').add(...)`.
 2. Cana commits the write.
 3. `client.subscribe((event) => ...)` receives the committed event.
 4. The reducer maps `created | updated | deleted | cleared` to React state.
@@ -70,14 +70,18 @@ The finished Context implementation has this shape:
 ```text
 src/
   cana.ts
-  TasksProvider.tsx
+  TarefasProvider.tsx
   advancedCana.ts
   App.tsx
 ```
 
-`TasksProvider` is the only component that knows how Cana events become React
-state. Leaf components stay boring: they call `addTask` and `toggleTask`, then
-render `state.categories`, `state.tasks`, and `state.events`.
+`TarefasProvider` is the only component that knows how Cana events become React
+state. Leaf components stay boring: they call `adicionarTarefa` and
+`alternarTarefa`, then render `state.categorias`, `state.tarefas`, and
+`state.eventos`.
+
+Download the complete Vite app used by the advanced example:
+[cana-react-context.zip](/downloads/cana/cana-react-context.zip).
 
 ## 5. Checklist
 

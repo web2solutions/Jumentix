@@ -4,7 +4,8 @@
 
 ## All Changes
 
-- 2026-08-12 test: bound the quarantine to suites that still exist (JUM-682) - Eduardo A.
+- 2026-08-12 [JUM-700][Fix] Hide agent metadata and add Cana design notes - Eduardo A.
+- 2026-08-12 test: bound the quarantine to suites that still exist (JUM-682) (#196) - Eduardo A.
 - 2026-08-12 [JUM-699][Fix] Stabilize Cana playground theme and Monaco code widgets - Eduardo A.
 - 2026-08-12 docs(JUM-690): add Cana framework tutorials (#198) - Eduardo A.
 - 2026-08-12 test(website): add component, a11y, and link-quality jest gates for JUM-158 (#192) - Eduardo A.

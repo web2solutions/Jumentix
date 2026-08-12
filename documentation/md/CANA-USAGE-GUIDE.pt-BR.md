@@ -59,16 +59,21 @@ bun add @jumentix/cana
 import { createClient } from '@jumentix/cana';
 
 const client = createClient({
-  name: 'designer',
+  name: 'tarefas-app',
   schema: {
     version: 1,
     stores: [
       {
-        name: 'designs',
+        name: 'categorias',
+        keyPath: 'id',
+        indexes: [{ name: 'porNome', keyPath: 'nome' }]
+      },
+      {
+        name: 'tarefas',
         keyPath: 'id',
         indexes: [
-          { name: 'byOwner', keyPath: 'owner' },
-          { name: 'byUpdatedAt', keyPath: 'updatedAt' }
+          { name: 'porCategoria', keyPath: 'categoriaId' },
+          { name: 'porAtualizadaEm', keyPath: 'atualizadaEm' }
         ]
       }
     ]
@@ -90,21 +95,22 @@ antes de `open()` resolver falha com `InvalidRequest`.
 Passe o tipo do registro no ponto de chamada:
 
 ```ts
-interface Design {
+interface Tarefa {
   id: number;
-  name: string;
-  owner: string;
-  updatedAt: number;
+  titulo: string;
+  categoriaId: string;
+  concluida: boolean;
+  atualizadaEm: number;
 }
 
-const designs = client.table<Design>('designs');
-const one = await designs.get(1);   // Design | undefined
+const tarefas = client.table<Tarefa>('tarefas');
+const one = await tarefas.get(1);   // Tarefa | undefined
 ```
 
 Para tipar também a chave:
 
 ```ts
-const designs = client.table<Design, number>('designs');
+const tarefas = client.table<Tarefa, number>('tarefas');
 ```
 
 ---
@@ -117,8 +123,8 @@ Um schema é dado puro:
 const schema = {
   version: 2,
   stores: [
-    { name: 'designs', keyPath: 'id', indexes: [{ name: 'byOwner', keyPath: 'owner' }] },
-    { name: 'drafts', autoIncrement: true },
+    { name: 'categorias', keyPath: 'id', indexes: [{ name: 'porNome', keyPath: 'nome' }] },
+    { name: 'tarefas', keyPath: 'id', indexes: [{ name: 'porCategoria', keyPath: 'categoriaId' }] },
     { name: 'members', keyPath: ['tenantId', 'userId'] }
   ]
 };
@@ -132,14 +138,14 @@ mudança não fez nada".
 
 ```ts
 // v1
-{ version: 1, stores: [{ name: 'designs', keyPath: 'id' }] }
+{ version: 1, stores: [{ name: 'tarefas', keyPath: 'id' }] }
 
 // v2 — adiciona um store e um índice
 {
   version: 2,
   stores: [
-    { name: 'designs', keyPath: 'id', indexes: [{ name: 'byOwner', keyPath: 'owner' }] },
-    { name: 'deployments', keyPath: 'id' }
+    { name: 'categorias', keyPath: 'id', indexes: [{ name: 'porNome', keyPath: 'nome' }] },
+    { name: 'tarefas', keyPath: 'id', indexes: [{ name: 'porCategoria', keyPath: 'categoriaId' }] }
   ]
 }
 ```
@@ -202,7 +208,7 @@ O IndexedDB tem duas formas de chave, e confundi-las é fonte comum de problemas
 
 ```ts
 // Inbound: a chave vive no registro
-await client.table('designs').add({ id: 1, name: 'a' });
+await client.table('tarefas').add({ id: 1, titulo: 'a' });
 
 // Outbound: a chave vai ao lado
 await client.table('cache').put({ body: '...' }, 'https://example.com/x');
@@ -233,14 +239,14 @@ await table.get(['acme', 42]);
 ## 4. Leitura e escrita
 
 ```ts
-const designs = client.table<Design>('designs');
+const tarefas = client.table<Tarefa>('tarefas');
 
-await designs.get(1);                          // Design | undefined
-await designs.add({ id: 1, name: 'first' });   // falha se a chave existir
-await designs.put({ id: 1, name: 'replaced' }); // insere ou substitui
-await designs.update(1, { name: 'renamed' });  // mescla em um registro existente
-await designs.delete(1);
-await designs.clear();
+await tarefas.get(1);                          // Tarefa | undefined
+await tarefas.add({ id: 1, titulo: 'first' });   // falha se a chave existir
+await tarefas.put({ id: 1, titulo: 'replaced' }); // insere ou substitui
+await tarefas.update(1, { titulo: 'renamed' });  // mescla em um registro existente
+await tarefas.delete(1);
+await tarefas.clear();
 ```
 
 ### `add` vs `put` vs `update`
@@ -284,9 +290,9 @@ sem nunca ter existido.
 ## 5. Operações em lote
 
 ```ts
-await designs.bulkAdd([{ id: 1, name: 'a' }, { id: 2, name: 'b' }]);
-await designs.bulkPut([{ id: 1, name: 'changed' }, { id: 3, name: 'new' }]);
-await designs.bulkDelete([1, 2]);
+await tarefas.bulkAdd([{ id: 1, titulo: 'a' }, { id: 2, titulo: 'b' }]);
+await tarefas.bulkPut([{ id: 1, titulo: 'changed' }, { id: 3, titulo: 'new' }]);
+await tarefas.bulkDelete([1, 2]);
 ```
 
 Escritas em lote são **atômicas**: uma linha falhando desfaz o lote inteiro. A
@@ -315,25 +321,25 @@ toda linha reporta `created`.
 
 ```ts
 // Tudo
-await designs.query();
+await tarefas.query();
 
 // Por índice, correspondência exata
-await designs.query({ index: 'byOwner', equals: 'ana' });
+await tarefas.query({ index: 'porCategoria', equals: 'trabalho' });
 
 // Intervalo
-await designs.query({ index: 'byUpdatedAt', range: { lower: start, upper: end } });
+await tarefas.query({ index: 'porAtualizadaEm', range: { lower: start, upper: end } });
 
 // Intervalo semiaberto
-await designs.query({ index: 'byUpdatedAt', range: { lower: start, upperOpen: true } });
+await tarefas.query({ index: 'porAtualizadaEm', range: { lower: start, upperOpen: true } });
 
 // Ordem inversa, limitada
-await designs.query({ index: 'byUpdatedAt', direction: 'prev', limit: 20 });
+await tarefas.query({ index: 'porAtualizadaEm', direction: 'prev', limit: 20 });
 
 // Paginação
-await designs.query({ index: 'byUpdatedAt', offset: 40, limit: 20 });
+await tarefas.query({ index: 'porAtualizadaEm', offset: 40, limit: 20 });
 
 // Somente valores únicos
-await designs.query({ index: 'byOwner', distinct: true });
+await tarefas.query({ index: 'porCategoria', distinct: true });
 ```
 
 ### `CanaQuery`
@@ -353,8 +359,8 @@ await designs.query({ index: 'byOwner', distinct: true });
 ### Contando
 
 ```ts
-await designs.count();                                   // tudo
-await designs.count({ index: 'byOwner', equals: 'ana' }); // correspondentes
+await tarefas.count();                                   // tudo
+await tarefas.count({ index: 'porCategoria', equals: 'trabalho' }); // correspondentes
 ```
 
 `count` usa a contagem nativa do IndexedDB — uma requisição, nenhum registro
@@ -364,9 +370,9 @@ então recorre ao cursor. Ainda assim concorda com `query` na mesma entrada.
 ### `explain` — verificando que um índice foi usado
 
 ```ts
-const { records, plan } = await designs.explain({ index: 'byOwner', equals: 'ana' });
+const { records, plan } = await tarefas.explain({ index: 'porCategoria', equals: 'trabalho' });
 
-plan.usedIndex             // 'byOwner'
+plan.usedIndex             // 'porCategoria'
 plan.fullScan              // false
 plan.boundedByRange        // true
 plan.appliedOffsetInCursor // false
@@ -377,8 +383,8 @@ limite. Esse é o caso que degrada com o volume de dados em vez de com a
 complexidade da consulta, então vale afirmar isso nos seus próprios testes:
 
 ```ts
-it('não faz varredura completa na tabela designs', async () => {
-  const { plan } = await designs.explain({ index: 'byOwner', equals: currentUser });
+it('não faz varredura completa na tabela tarefas', async () => {
+  const { plan } = await tarefas.explain({ index: 'porCategoria', equals: categoriaAtual });
   expect(plan.fullScan).toBe(false);
 });
 ```
@@ -391,8 +397,8 @@ existe para tornar visível, então não é oferecido como operação de primeir
 classe. Leia um conjunto limitado e filtre você mesmo, deliberadamente:
 
 ```ts
-const recent = await designs.query({ index: 'byUpdatedAt', range: { lower: since } });
-const mine = recent.filter((design) => design.owner === me);
+const recent = await tarefas.query({ index: 'porAtualizadaEm', range: { lower: since } });
+const tarefasTrabalho = recent.filter((tarefa) => tarefa.categoriaId === 'trabalho');
 ```
 
 Também não há joins. Leia de cada store dentro de uma transação.
@@ -403,10 +409,18 @@ Também não há joins. Leia de cada store dentro de uma transação.
 
 ```ts
 const { outcome, result, events, correlationId, attemptedAt } =
-  await client.transaction('readwrite', ['designs', 'deployments'], async (scope) => {
-    const design = await scope.table<Design>('designs').get(1);
-    await scope.table('deployments').add({ id: 9, designId: design.id });
-    return design;
+  await client.transaction('readwrite', ['categorias', 'tarefas'], async (scope) => {
+    const agora = Date.now();
+    await scope.table('categorias').put({ id: 'trabalho', nome: 'Trabalho' });
+    const tarefa = {
+      id: 9,
+      titulo: 'Publicar quadro offline de tarefas',
+      categoriaId: 'trabalho',
+      concluida: false,
+      atualizadaEm: agora
+    };
+    await scope.table<Tarefa>('tarefas').add(tarefa);
+    return tarefa;
   });
 ```
 
@@ -423,17 +437,17 @@ requisições pendentes contra ela. Então isto não pausa a transação — ele
 
 ```ts
 // ERRADO
-await client.transaction('readwrite', ['designs'], async (scope) => {
-  const remote = await fetch('/api/design/1');   // ← a transação termina aqui
-  await scope.table('designs').put(await remote.json());  // TransactionInactive
+await client.transaction('readwrite', ['tarefas'], async (scope) => {
+  const remote = await fetch('/api/tarefas/1');   // ← a transação termina aqui
+  await scope.table('tarefas').put(await remote.json());  // TransactionInactive
 });
 ```
 
 ```ts
 // CERTO — busque primeiro, depois abra a transação
-const remote = await (await fetch('/api/design/1')).json();
-await client.transaction('readwrite', ['designs'], async (scope) => {
-  await scope.table('designs').put(remote);
+const remote = await (await fetch('/api/tarefas/1')).json();
+await client.transaction('readwrite', ['tarefas'], async (scope) => {
+  await scope.table('tarefas').put(remote);
 });
 ```
 
@@ -446,8 +460,8 @@ não controla.
 ### Abortando
 
 ```ts
-await client.transaction('readwrite', ['designs'], async (scope) => {
-  await scope.table('designs').add({ id: 1, name: 'a' });
+await client.transaction('readwrite', ['tarefas'], async (scope) => {
+  await scope.table('tarefas').add({ id: 1, titulo: 'a' });
   scope.abort('o usuário cancelou');
 });
 ```
@@ -547,10 +561,10 @@ longa.
 
 ```ts
 const client = createClient({
-  name: 'designer',
+  name: 'tarefas-app',
   schema,
   hooks: {
-    beforeWrite: (context) => ({ ...(context.record as Design), updatedAt: Date.now() }),
+    beforeWrite: (context) => ({ ...(context.record as Tarefa), atualizadaEm: Date.now() }),
     afterCommit: (events) => telemetry.record(events.length),
     afterRollback: (outcome, reason) => telemetry.warn(outcome, reason)
   }
@@ -603,7 +617,7 @@ silenciosamente.
 import { isCanaError, isCanaErrorCode } from '@jumentix/cana';
 
 try {
-  await designs.add(record);
+  await tarefas.add(record);
 } catch (error) {
   if (isCanaErrorCode(error, 'QuotaExceeded')) {
     await freeSomeSpace();
@@ -736,7 +750,7 @@ reportar como sucesso arrisca alegar dados que nunca foram gravados.
 ### Tornando-o resolvível
 
 ```ts
-const client = createClient({ name: 'designer', schema, operationLedger: true });
+const client = createClient({ name: 'tarefas-app', schema, operationLedger: true });
 ```
 
 O id da operação passa a ser gravado **dentro da mesma transação que os dados**,
@@ -792,7 +806,7 @@ utilitário.
 
 ```ts
 const dump = await client.exportAll();
-// { designs: [...], deployments: [...] }
+// { tarefas: [...], categorias: [...] }
 
 const blob = new Blob([JSON.stringify(dump)], { type: 'application/json' });
 ```
@@ -827,7 +841,7 @@ import { createCanaDatabaseClient } from '@jumentix/cana';
 
 const compilers = buildDatabaseClientCompilers<IDatabaseClient>({
   inMemoryClient: InMemoryDbClient,
-  indexedDbClient: () => createCanaDatabaseClient({ name: 'designer', schema })
+  indexedDbClient: () => createCanaDatabaseClient({ name: 'tarefas-app', schema })
 });
 ```
 
@@ -846,10 +860,10 @@ saudável e perderia tudo.
 ### A forma do adaptador
 
 ```ts
-const database = createCanaDatabaseClient({ name: 'designer', schema });
+const database = createCanaDatabaseClient({ name: 'tarefas-app', schema });
 
 await database.connect();               // abre
-database.stores.designs                 // CanaTable, chaveado pelos nomes do schema
+database.stores.tarefas                 // CanaTable, chaveado pelos nomes do schema
 database.cana                           // o cliente completo, para transações etc.
 database.subscribe(listener);
 await database.disconnect();
@@ -873,7 +887,7 @@ const router = createRouter({
   onBroadcast: (event) => applyChange(event)
 });
 
-const rows = await router.send({ kind: 'query', store: 'designs' });
+const rows = await router.send({ kind: 'query', store: 'tarefas' });
 ```
 
 - Requisições carregam ids; respostas são pareadas por id, nunca por ordem de
@@ -907,7 +921,7 @@ import { createClient } from '@jumentix/cana';
 
 function testClient() {
   // Uma factory nova por teste, para que estado de banco não vaze entre eles.
-  return createClient({ name: 'designer', schema, factory: new IDBFactory() });
+  return createClient({ name: 'tarefas-app', schema, factory: new IDBFactory() });
 }
 ```
 

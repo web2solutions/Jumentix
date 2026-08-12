@@ -18,7 +18,7 @@ const documentationRoutes = [
   ['/docs/jumentix/packages/mutex-service/usage', ['mutex-service usage']],
   ['/docs/jumentix/packages/cana', ['@jumentix/cana', 'Try it in the browser']],
   ['/docs/jumentix/packages/cana/usage', ['Cana usage guide', 'Interactive playgrounds']],
-  ['/docs/jumentix/packages/cana/react-context', ['Cana with React Context API', 'React Context: categorized task list']],
+  ['/docs/jumentix/packages/cana/react-context', ['Cana with React Context API', 'React Context: Categoria and Tarefa tables']],
   ['/docs/jumentix/packages/cana/react-redux', ['Cana with React Redux', 'React Redux: store updated by Cana events']],
   ['/docs/jumentix/packages/cana/vue-pinia', ['Cana with Vue 3 and Pinia', 'Vue 3 + Pinia: store patched from Cana']],
   ['/docs/jumentix/packages', ['Jumentix packages', 'consumer map']],
@@ -37,9 +37,9 @@ const documentationRoutes = [
   ['/docs/pt-BR/jumentix/packages/message-mediator', ['@jumentix/message-mediator']],
   ['/docs/pt-BR/jumentix/packages/cana', ['@jumentix/cana']],
   ['/docs/pt-BR/jumentix/packages/cana/usage', ['Guia de uso do Cana', 'Playgrounds interativos']],
-  ['/docs/pt-BR/jumentix/packages/cana/react-context', ['Cana com React Context API', 'React Context: categorized task list']],
-  ['/docs/pt-BR/jumentix/packages/cana/react-redux', ['Cana com React Redux', 'React Redux: store updated by Cana events']],
-  ['/docs/pt-BR/jumentix/packages/cana/vue-pinia', ['Cana com Vue 3 e Pinia', 'Vue 3 + Pinia: store patched from Cana']]
+  ['/docs/pt-BR/jumentix/packages/cana/react-context', ['Cana com React Context API', 'React Context: tabelas Categoria e Tarefa']],
+  ['/docs/pt-BR/jumentix/packages/cana/react-redux', ['Cana com React Redux', 'React Redux: store atualizada por eventos Cana']],
+  ['/docs/pt-BR/jumentix/packages/cana/vue-pinia', ['Cana com Vue 3 e Pinia', 'Vue 3 + Pinia: store atualizada pelo Cana']]
 ];
 
 function playgroundIds(runtime, id) {

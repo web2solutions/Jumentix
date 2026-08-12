@@ -8,7 +8,7 @@ browser storage, while Pinia owns the reactive state that components render.
 ```bash
 bun create vite cana-vue-pinia --template vue-ts
 cd cana-vue-pinia
-bun add @jumentix/cana pinia
+bun add @jumentix/cana @jumentix/cana-vue pinia
 ```
 
 Register Pinia in `main.ts`, create `src/cana.ts`, then define task stores under
@@ -21,8 +21,8 @@ returns the unsubscribe function from `client.subscribe`.
 
 Components call store actions:
 
-- `tasks.addTask(title, categoryId)`
-- `tasks.toggle(task)`
+- `tarefas.adicionarTarefa(titulo, categoriaId)`
+- `tarefas.alternarTarefa(tarefa)`
 
 The store patches its arrays from `CanaChangeEvent`, so every component using the
 store re-renders from committed storage state.
@@ -48,15 +48,15 @@ src/
   main.ts
   App.vue
   stores/
-    tasks.ts
-    advancedTasks.ts
-  components/
-    CategoryColumn.vue
-    TaskComposer.vue
+    tarefas.ts
+    tarefasAvancadas.ts
 ```
 
 Pinia getters should hold derived views such as tasks by category, not duplicated
 copies of Cana data.
+
+Download the complete Vite app used by the advanced example:
+[cana-vue-pinia.zip](/downloads/cana/cana-vue-pinia.zip).
 
 ## 5. Checklist
 

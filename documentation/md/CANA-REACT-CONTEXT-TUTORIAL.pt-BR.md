@@ -10,30 +10,30 @@ provider.
 ```bash
 bun create vite cana-react-context --template react-ts
 cd cana-react-context
-bun add @jumentix/cana
+bun add @jumentix/cana @jumentix/cana-react
 ```
 
 Use duas stores:
 
-- `categories`: categorias de tarefas com `id`, `name`, `color` e timestamps.
-- `tasks`: tarefas com `categoryId`, `completed`, `priority` e timestamps.
+- `categorias`: categorias de tarefas com `id`, `nome`, `cor` e timestamps.
+- `tarefas`: tarefas com `categoriaId`, `concluida`, `prioridade` e timestamps.
 
 Indexes deixam o reload da UI barato:
 
-- `categories.byName`
-- `tasks.byCategory`
-- `tasks.byCompleted`
-- `tasks.byUpdatedAt`
+- `categorias.porNome`
+- `tarefas.porCategoria`
+- `tarefas.porConcluida`
+- `tarefas.porAtualizadaEm`
 
 ## 2. Implementação simples
 
-Crie `src/cana.ts` e envolva o app com `TasksProvider`. O provider abre o Cana
+Crie `src/cana.ts` e envolva o app com `TarefasProvider`. O provider abre o Cana
 uma vez, carrega as tabelas atuais, assina `CanaChangeEvent` e usa um reducer
 para atualizar o estado dos componentes quando as escritas fazem commit.
 
 O fluxo essencial é:
 
-1. A UI chama `cana.table('tasks').add(...)`.
+1. A UI chama `cana.table('tarefas').add(...)`.
 2. O Cana confirma a escrita.
 3. `client.subscribe((event) => ...)` recebe o evento confirmado.
 4. O reducer mapeia `created | updated | deleted | cleared` para o estado React.
@@ -64,14 +64,18 @@ A implementação final com Context fica assim:
 ```text
 src/
   cana.ts
-  TasksProvider.tsx
+  TarefasProvider.tsx
   advancedCana.ts
   App.tsx
 ```
 
-`TasksProvider` é o único componente que sabe como eventos Cana viram estado
-React. Componentes de folha ficam simples: chamam `addTask` e `toggleTask`, e
-renderizam `state.categories`, `state.tasks` e `state.events`.
+`TarefasProvider` é o único componente que sabe como eventos Cana viram estado
+React. Componentes de folha ficam simples: chamam `adicionarTarefa` e
+`alternarTarefa`, e renderizam `state.categorias`, `state.tarefas` e
+`state.eventos`.
+
+Baixe o app Vite completo usado pelo exemplo avançado:
+[cana-react-context.zip](/downloads/cana/cana-react-context.zip).
 
 ## 5. Checklist
 

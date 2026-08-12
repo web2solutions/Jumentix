@@ -13,24 +13,39 @@ IndexedDB offline database adapter for Jumentix applications.
 import { createClient } from '@jumentix/cana';
 
 const client = createClient({
-  name: 'designer',
+  name: 'tasks-app',
   schema: {
     version: 1,
     stores: [
-      { name: 'designs', keyPath: 'id', indexes: [{ name: 'byOwner', keyPath: 'owner' }] }
+      { name: 'categorias', keyPath: 'id', indexes: [{ name: 'porNome', keyPath: 'nome' }] },
+      {
+        name: 'tarefas',
+        keyPath: 'id',
+        indexes: [
+          { name: 'porCategoria', keyPath: 'categoriaId' },
+          { name: 'porAtualizadaEm', keyPath: 'atualizadaEm' }
+        ]
+      }
     ]
   }
 });
 
 await client.open();
-await client.table('designs').add({ id: 1, name: 'first', owner: 'ana' });
+await client.table('categorias').put({ id: 'trabalho', nome: 'Work' });
+await client.table('tarefas').add({
+  id: 'tarefa-1',
+  titulo: 'Write the Cana tutorial',
+  categoriaId: 'trabalho',
+  concluida: false,
+  atualizadaEm: Date.now()
+});
 ```
 
 ## Responsibility in context
 
 - **Stack layer:** offline / browser persistence adapter
 - **Owns:** IndexedDB client API (with explicit localStorage fallback) for PWAs
-- **Used with:** designer-core, SPA/PWA guide, service-management
+- **Used with:** `@jumentix/cana-react`, `@jumentix/cana-vue`, designer-core, SPA/PWA guide, service-management
 - **Not responsible for:** server databases, Redis KV, REST/WebSocket protocols
 
 ## Three things to know before using it
@@ -81,6 +96,30 @@ surface, explicit transaction outcomes, change replay, crash reconciliation and
 an optional worker boundary for applications that need to move persistence work
 off the UI thread.
 
+![Cana worker model](/images/cana/cana-worker-model.svg)
+
+### Mental model in 30 seconds
+
+```mermaid
+flowchart LR
+  UI["Components"] --> Store["Context / Redux / Pinia"]
+  Store --> Client["Cana client"]
+  Client --> Worker["Optional worker"]
+  Client --> IDB["IndexedDB commit"]
+  Worker --> IDB
+  IDB --> Events["Committed CanaChangeEvent stream"]
+  Events --> Store
+```
+
+Read the diagram left to right when the user acts, then right to left when the
+write commits:
+
+1. Components call a framework action.
+2. The action writes to `categorias` or `tarefas` through Cana.
+3. IndexedDB commits or rolls back atomically.
+4. Cana emits a committed event.
+5. Context, Redux or Pinia updates the rendered state from that event.
+
 ### Postgres-shaped architecture
 
 The analogy is scoped, but useful. PostgreSQL records changes through
@@ -129,21 +168,80 @@ turn typed method calls into plain messages.
   because the body is a function. Run that transaction inside the worker, or
   send individual write requests through `createWorkerClient()`.
 
+```mermaid
+sequenceDiagram
+  participant Page as "Page thread"
+  participant Router as "Cana router"
+  participant Worker as "Worker host"
+  participant DB as "IndexedDB"
+  Page->>Router: put("tarefas", record)
+  Router->>Worker: plain request + requestId
+  Worker->>DB: readwrite transaction
+  DB-->>Worker: oncomplete
+  Worker-->>Router: committed result
+  Worker-->>Router: change event
+  Router-->>Page: subscriber callback
+```
+
 ### Performance data
 
-Cana's browser performance suite runs against real disk-backed IndexedDB and
-uses ratio assertions rather than absolute millisecond promises. That keeps the
-data portable across CI runners and user machines while still proving the
-important shape of the engine.
+Cana's browser performance suite runs against real disk-backed IndexedDB. The
+CI assertions stay ratio-based, because an absolute millisecond threshold would
+be noisy across browsers, disks and shared runners. The ratios still protect the
+important thing: the amount of work Cana asks the browser to do.
 
-| Operation | Data set | Current performance contract |
+![Cana performance ladder](/images/cana/cana-performance-ladder.svg)
+
+#### Algorithmic model
+
+| Path | Algorithmic shape | What the implementation avoids |
 | --- | --- | --- |
-| Limited query | 1,000 rows vs 10,000 rows, `limit: 10` | The 10,000-row median stays at most `max(4x the 1,000-row median, 5ms)`. |
-| Indexed lookup | 1,000 rows vs 10,000 rows, 100 indexed groups | The 10,000-row median stays below `max(25x the 1,000-row median, 20ms)` even though the matching result set grows 10x. |
-| Native count | 10,000 rows | `count()` must be faster than reading every row with a full query. |
-| Primary-key get | 1,000 rows vs 10,000 rows | The 10,000-row median stays at most `max(4x the 1,000-row median, 5ms)`. |
-| Bulk add | 10,000 rows | A single `bulkAdd()` commits all rows and the final count is exactly 10,000. |
-| Deep pagination | 10,000 rows, `offset: 9000`, `limit: 20` | The deep page stays below `max(60x an early-page median, 60ms)`, proving cursor advance instead of materializing 9,000 rows. |
+| Limited query | `O(limit)` after the cursor opens. | Reading the whole store and slicing in JavaScript. |
+| Indexed lookup | Common IndexedDB index model: `O(log n + matches)`. | Announcing an index in `explain()` while still doing a full scan. |
+| Primary-key get | Common IndexedDB key lookup model: `O(log n)`. | Scanning rows to find a known key. |
+| Native count | One native IndexedDB `count()` request; Cana does not materialize rows in JavaScript. Browser-internal cost is implementation-defined. | Counting by reading every record. |
+| Bulk add | `O(n)` writes in one IndexedDB transaction. | Issuing a large unordered promise fan-out that loses input order and partial-failure position. |
+| Deep pagination | `O(offset + limit)` cursor movement, with only returned records cloned into JavaScript. | Reading thousands of records into an array before applying `offset`. |
+
+#### Measured reference
+
+These numbers are a local reference sample, not a latency SLA. They were measured
+on 2026-08-12 with Headless Chrome 151 on macOS, using the shipped Cana ESM
+bundle, the same schema as `packages/cana/cypress/performance.cy.ts`, five read
+runs per operation and three `bulkAdd()` runs. The value shown is the median.
+
+| Operation | Records in store | Query / result size | Complexity used by the example | Local median |
+| --- | ---: | --- | --- | ---: |
+| `bulkAdd()` | 10,000 | writes 10,000 rows | `O(n)` | 1,117.5 ms |
+| Limited query | 1,000 | `limit: 10`, returns 10 rows | `O(limit)` | 0.4 ms |
+| Limited query | 10,000 | `limit: 10`, returns 10 rows | `O(limit)` | 0.5 ms |
+| Indexed lookup | 1,000 | 100 groups, `equals: 'g7'`, returns 10 rows | `O(log n + matches)` | 0.5 ms |
+| Indexed lookup | 10,000 | 100 groups, `equals: 'g7'`, returns 100 rows | `O(log n + matches)` | 1.4 ms |
+| Primary-key `get()` | 1,000 | key `500` | `O(log n)` | 0.2 ms |
+| Primary-key `get()` | 10,000 | key `500` | `O(log n)` | 0.2 ms |
+| Native `count()` | 10,000 | counts all rows without returning them | one native request; no JS materialization | 3.2 ms |
+| Full read query | 10,000 | returns all 10,000 rows | `O(n)` | 55.2 ms |
+| Early page | 10,000 | `offset: 10`, `limit: 20`, returns 20 rows | `O(offset + limit)` | 0.5 ms |
+| Deep page | 10,000 | `offset: 9000`, `limit: 20`, returns 20 rows | `O(offset + limit)` cursor advance | 13.8 ms |
+
+#### CI guardrails
+
+The automated performance tests keep these contracts green:
+
+- A `limit: 10` query over 10,000 rows stays near-flat against 1,000 rows:
+  at most `max(4x the 1,000-row median, 5ms)`.
+- An indexed lookup over 10,000 rows stays below
+  `max(25x the 1,000-row median, 20ms)`, even though the matching result set
+  grows from 10 to 100 rows.
+- `count()` over 10,000 rows stays faster than a full query that returns every
+  row.
+- A primary-key `get()` over 10,000 rows stays near-flat against 1,000 rows:
+  at most `max(4x the 1,000-row median, 5ms)`.
+- `bulkAdd()` commits all 10,000 rows in one transaction and reports exactly
+  10,000 keys.
+- Deep pagination at `offset: 9000`, `limit: 20` stays below
+  `max(60x an early-page median, 60ms)`, proving cursor advance instead of
+  materializing the skipped rows.
 
 ## Junior checklist (“I can …”)
 
@@ -159,10 +257,17 @@ Build the same categorized task app with framework state management:
 - [React Redux](/docs/jumentix/packages/cana/react-redux)
 - [Vue 3 and Pinia](/docs/jumentix/packages/cana/vue-pinia)
 
+Use the small integration packages in applications:
+
+```bash
+bun add @jumentix/cana @jumentix/cana-react
+bun add @jumentix/cana @jumentix/cana-vue
+```
+
 ## Next step
 
 Continue with the consumer [usage guide](/docs/jumentix/packages/cana/usage)
 for the full API, querying, transactions, hooks, crash recovery, and
-troubleshooting — then
-[designer-core](/docs/jumentix/packages/designer-core/usage) to validate designs
-before you persist them.
+troubleshooting. Use [designer-core](/docs/jumentix/packages/designer-core/usage)
+when a Jumentix UI also needs to validate domain documents before persisting
+them.

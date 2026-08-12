@@ -1,0 +1,58 @@
+{
+  "name": "@jumentix/cana-react",
+  "version": "0.1.0",
+  "description": "React hooks and Redux-friendly helpers for @jumentix/cana.",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "default": "./dist/index.mjs"
+    },
+    "./redux": {
+      "types": "./dist/redux.d.ts",
+      "import": "./dist/redux.mjs",
+      "require": "./dist/redux.js",
+      "default": "./dist/redux.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "README.md",
+    "README.pt-BR.md",
+    "LICENSE.md"
+  ],
+  "peerDependencies": {
+    "@jumentix/cana": "^0.1.0",
+    "react": ">=18.0.0 || >=19.0.0"
+  },
+  "devDependencies": {
+    "@jumentix/cana": "workspace:*",
+    "@types/react": "19.2.18",
+    "react": "19.2.8"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json --noEmit false && bun run build:esm",
+    "build:esm": "bun build src/index.ts --outfile dist/index.mjs --format esm --target browser --external react --external @jumentix/cana && bun build src/redux.ts --outfile dist/redux.mjs --format esm --target browser --external @jumentix/cana",
+    "test": "bun test --isolate test",
+    "lint": "echo \"cana-react: covered by the root eslint run\"",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "indexeddb",
+    "offline-first",
+    "react",
+    "redux",
+    "jumentix",
+    "cana"
+  ]
+}

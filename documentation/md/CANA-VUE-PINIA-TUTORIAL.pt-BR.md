@@ -9,7 +9,7 @@ os componentes renderizam.
 ```bash
 bun create vite cana-vue-pinia --template vue-ts
 cd cana-vue-pinia
-bun add @jumentix/cana pinia
+bun add @jumentix/cana @jumentix/cana-vue pinia
 ```
 
 Registre Pinia em `main.ts`, crie `src/cana.ts` e então defina stores em
@@ -22,8 +22,8 @@ função de unsubscribe de `client.subscribe`.
 
 Componentes chamam actions da store:
 
-- `tasks.addTask(title, categoryId)`
-- `tasks.toggle(task)`
+- `tarefas.adicionarTarefa(titulo, categoriaId)`
+- `tarefas.alternarTarefa(tarefa)`
 
 A store atualiza seus arrays a partir de `CanaChangeEvent`, então todo
 componente que usa a store renderiza novamente com o estado confirmado no
@@ -51,15 +51,15 @@ src/
   main.ts
   App.vue
   stores/
-    tasks.ts
-    advancedTasks.ts
-  components/
-    CategoryColumn.vue
-    TaskComposer.vue
+    tarefas.ts
+    tarefasAvancadas.ts
 ```
 
 Getters do Pinia devem conter visões derivadas, como tarefas por categoria, não
 cópias duplicadas dos dados do Cana.
+
+Baixe o app Vite completo usado pelo exemplo avançado:
+[cana-vue-pinia.zip](/downloads/cana/cana-vue-pinia.zip).
 
 ## 5. Checklist
 

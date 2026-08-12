@@ -16,10 +16,18 @@ describe('Cana framework playground catalog', () => {
 
   it('ships complete implementation files for every example', () => {
     for (const example of CANA_FRAMEWORK_EXAMPLES) {
-      expect(example.files.length).toBeGreaterThanOrEqual(2);
+      const sources = example.files.map((file) => file.source).join('\n');
+
+      expect(example.files.length).toBeGreaterThanOrEqual(8);
       expect(example.files.some((file) => file.path.endsWith('cana.ts'))).toBe(true);
-      expect(example.files.map((file) => file.source).join('\n')).toContain('createClient');
-      expect(example.files.map((file) => file.source).join('\n')).toMatch(/subscribe|CanaChangeEvent/);
+      expect(example.files.some((file) => file.path === 'src/App.tsx' || file.path === 'src/App.vue')).toBe(true);
+      expect(example.files.some((file) => file.path === 'src/vite-env.d.ts')).toBe(true);
+      expect(example.download?.href).toMatch(/^\/downloads\/cana\/.+\.zip$/);
+      expect(sources).toContain('createClient');
+      expect(sources).toMatch(/subscribe|CanaChangeEvent/);
+      expect(sources).toContain("'categorias'");
+      expect(sources).toContain("'tarefas'");
+      expect(sources).not.toContain("'designs'");
     }
   });
 
@@ -36,7 +44,11 @@ describe('CanaFrameworkPlayground', () => {
     expect(screen.getByTestId('cana-framework-playground-react-context-basic-reset')).toBeInTheDocument();
     expect(screen.getByTestId('cana-framework-playground-react-context-basic-preview'))
       .toHaveClass('cana-framework-preview');
-    expect(screen.getByText('React Context: categorized task list')).toBeInTheDocument();
-    expect(screen.getAllByText(/TasksProvider.tsx/).length).toBeGreaterThan(0);
+    expect(screen.getByText('React Context: Categoria and Tarefa tables')).toBeInTheDocument();
+    expect(screen.getAllByText(/TarefasProvider.tsx/).length).toBeGreaterThan(0);
+    expect(screen.getByRole('link', { name: /download app/i })).toHaveAttribute(
+      'href',
+      '/downloads/cana/cana-react-context.zip'
+    );
   });
 });

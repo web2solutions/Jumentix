@@ -11,6 +11,8 @@ export default {
   'sdk-grpc-client': '@jumentix/sdk-grpc-client',
   'adapter-runtime-bootstrap': '@jumentix/adapter-runtime-bootstrap',
   'runtime-infra': '@jumentix/runtime-infra',
+  'cana-react': '@jumentix/cana-react',
+  'cana-vue': '@jumentix/cana-vue',
   cana: '@jumentix/cana',
   'designer-core': '@jumentix/designer-core',
   'key-value-storage': '@jumentix/key-value-storage',

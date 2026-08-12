@@ -1,463 +1,1050 @@
 import type { CanaFrameworkExample, CanaFrameworkExampleId } from './types';
 
-const sharedCanaTs = `import { createClient, type CanaChangeEvent, type CanaSchema } from '@jumentix/cana';
+const canaTs = `import { createClient, type CanaChangeEvent, type CanaSchema } from '@jumentix/cana';
 
-export type TaskCategory = {
+export type Categoria = {
   id: string;
-  name: string;
-  color: string;
-  createdAt: number;
-  updatedAt: number;
+  nome: string;
+  cor: string;
+  criadaEm: number;
+  atualizadaEm: number;
 };
 
-export type Task = {
+export type Tarefa = {
   id: string;
-  title: string;
-  categoryId: string;
-  completed: boolean;
-  priority: 'low' | 'medium' | 'high';
-  notes?: string;
-  createdAt: number;
-  updatedAt: number;
+  titulo: string;
+  categoriaId: string;
+  concluida: boolean;
+  prioridade: 'baixa' | 'media' | 'alta';
+  notas?: string;
+  criadaEm: number;
+  atualizadaEm: number;
 };
 
-export const taskSchema: CanaSchema = {
+export const esquemaTarefas: CanaSchema = {
   version: 1,
   stores: [
-    { name: 'categories', keyPath: 'id', indexes: [{ name: 'byName', keyPath: 'name', unique: true }] },
+    { name: 'categorias', keyPath: 'id', indexes: [{ name: 'porNome', keyPath: 'nome', unique: true }] },
     {
-      name: 'tasks',
+      name: 'tarefas',
       keyPath: 'id',
       indexes: [
-        { name: 'byCategory', keyPath: 'categoryId' },
-        { name: 'byCompleted', keyPath: 'completed' },
-        { name: 'byUpdatedAt', keyPath: 'updatedAt' }
+        { name: 'porCategoria', keyPath: 'categoriaId' },
+        { name: 'porConcluida', keyPath: 'concluida' },
+        { name: 'porAtualizadaEm', keyPath: 'atualizadaEm' }
       ]
     }
   ]
 };
 
 export const cana = createClient({
-  name: 'task-tutorial',
-  schema: taskSchema,
-  originId: 'task-ui',
+  name: 'tutorial-cana-tarefas',
+  schema: esquemaTarefas,
+  originId: 'tarefas-ui',
   retainedEvents: 100
 });
 
-export async function openTasksDatabase() {
+export async function abrirBancoDeTarefas() {
   await cana.open();
   return cana;
 }
 
-export function eventText(event: CanaChangeEvent) {
-  return \`\${event.cursor}: \${event.type} \${event.store}/\${String(event.key ?? 'all')}\`;
-}`;
-
-const reactContextBasic = `import React, { createContext, useContext, useEffect, useReducer } from 'react';
-import { cana, eventText, openTasksDatabase, type Task, type TaskCategory } from './cana';
-
-type State = { categories: TaskCategory[]; tasks: Task[]; events: string[] };
-type Action =
-  | { type: 'loaded'; payload: Omit<State, 'events'> }
-  | { type: 'cana-event'; event: any };
-
-function reducer(state: State, action: Action): State {
-  if (action.type === 'loaded') return { ...action.payload, events: [] };
-  const { event } = action;
-  const events = [...state.events, eventText(event)].slice(-8);
-  if (event.store === 'categories' && event.record) {
-    const next = state.categories.filter((item) => item.id !== event.record.id).concat(event.record);
-    return { ...state, categories: next.sort((a, b) => a.name.localeCompare(b.name)), events };
-  }
-  if (event.store === 'tasks' && event.record) {
-    const next = state.tasks.filter((item) => item.id !== event.record.id).concat(event.record);
-    return { ...state, tasks: next.sort((a, b) => a.updatedAt - b.updatedAt), events };
-  }
-  return { ...state, events };
+export async function carregarTudo() {
+  const [categorias, tarefas] = await Promise.all([
+    cana.table<Categoria>('categorias').query({ index: 'porNome' }),
+    cana.table<Tarefa>('tarefas').query({ index: 'porAtualizadaEm' })
+  ]);
+  return { categorias: [...categorias], tarefas: [...tarefas] };
 }
 
-const TasksContext = createContext<{
+export async function criarDadosIniciais() {
+  await abrirBancoDeTarefas();
+  if (await cana.table<Categoria>('categorias').count()) return;
+  const agora = Date.now();
+  await cana.transaction('readwrite', ['categorias', 'tarefas'], async (scope) => {
+    await scope.table<Categoria>('categorias').bulkAdd([
+      { id: 'trabalho', nome: 'Trabalho', cor: '#2563eb', criadaEm: agora, atualizadaEm: agora },
+      { id: 'casa', nome: 'Casa', cor: '#16a34a', criadaEm: agora, atualizadaEm: agora }
+    ]);
+    await scope.table<Tarefa>('tarefas').bulkAdd([
+      {
+        id: 'tarefa-1',
+        titulo: 'Escrever tutorial do Cana',
+        categoriaId: 'trabalho',
+        concluida: false,
+        prioridade: 'alta',
+        criadaEm: agora,
+        atualizadaEm: agora
+      },
+      {
+        id: 'tarefa-2',
+        titulo: 'Revisar filtros por categoria',
+        categoriaId: 'casa',
+        concluida: true,
+        prioridade: 'media',
+        criadaEm: agora,
+        atualizadaEm: agora
+      }
+    ]);
+  });
+}
+
+export function textoEvento(event: CanaChangeEvent) {
+  return event.cursor + ': ' + event.type + ' ' + event.store + '/' + String(event.key ?? 'all');
+}`;
+
+const reactStylesCss = `body {
+  margin: 0;
+  font-family: Inter, system-ui, sans-serif;
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+button {
+  cursor: pointer;
+}
+
+.app {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+.toolbar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.categoria {
+  border: 1px solid #dbe3ef;
+  border-radius: 8px;
+  padding: 16px;
+  background: white;
+}
+
+.tarefa {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  border: 1px solid #dbe3ef;
+  border-radius: 6px;
+  padding: 8px;
+  text-align: left;
+  background: #f8fafc;
+}
+
+.eventos {
+  margin-top: 16px;
+  border: 1px solid #dbe3ef;
+  border-radius: 8px;
+  padding: 12px;
+  background: #0f172a;
+  color: #dbeafe;
+  white-space: pre-wrap;
+}`;
+
+const reactMainTsx = `import React from 'react';
+import { createRoot } from 'react-dom/client';
+import App from './App';
+import './styles.css';
+
+createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);`;
+
+const reactContextPackageJson = `{
+  "name": "cana-react-context-tarefas",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@jumentix/cana": "^0.1.0",
+    "@jumentix/cana-react": "^0.1.0",
+    "@vitejs/plugin-react": "^5.1.2",
+    "typescript": "^6.0.3",
+    "vite": "^7.2.7",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4"
+  }
+}`;
+
+const reactReduxPackageJson = `{
+  "name": "cana-react-redux-tarefas",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@jumentix/cana": "^0.1.0",
+    "@jumentix/cana-react": "^0.1.0",
+    "@reduxjs/toolkit": "^2.12.0",
+    "@vitejs/plugin-react": "^5.1.2",
+    "typescript": "^6.0.3",
+    "vite": "^7.2.7",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-redux": "^9.3.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4"
+  }
+}`;
+
+const vuePackageJson = `{
+  "name": "cana-vue-pinia-tarefas",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@jumentix/cana": "^0.1.0",
+    "@jumentix/cana-vue": "^0.1.0",
+    "@vitejs/plugin-vue": "^6.0.5",
+    "pinia": "^4.0.3",
+    "typescript": "^6.0.3",
+    "vite": "^7.2.7",
+    "vue": "^3.5.41",
+    "vue-tsc": "^3.1.8"
+  }
+}`;
+
+const viteReactConfig = `import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()]
+});`;
+
+const viteVueConfig = `import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+
+export default defineConfig({
+  plugins: [vue()]
+});`;
+
+const indexHtml = `<div id="root"></div>
+<script type="module" src="/src/main.tsx"></script>`;
+
+const vueIndexHtml = `<div id="app"></div>
+<script type="module" src="/src/main.ts"></script>`;
+
+const reactTsconfig = `{
+  "compilerOptions": {
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "allowJs": false,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "types": ["vite/client"],
+    "jsx": "react-jsx"
+  },
+  "include": ["src"]
+}`;
+
+const vueTsconfig = `{
+  "compilerOptions": {
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "allowJs": false,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "preserve",
+    "types": ["vite/client"]
+  },
+  "include": ["src/**/*.ts", "src/**/*.vue"]
+}`;
+
+const viteEnvDts = `/// <reference types="vite/client" />
+`;
+
+const reactContextProvider = `import React, { createContext, useContext, useEffect, useReducer, useState } from 'react';
+import { applyCanaEventToRecords, useCanaSubscription } from '@jumentix/cana-react';
+import { cana, carregarTudo, criarDadosIniciais, textoEvento, type Categoria, type Tarefa } from './cana';
+
+type State = { categorias: Categoria[]; tarefas: Tarefa[]; eventos: string[] };
+type Action =
+  | { type: 'loaded'; payload: Omit<State, 'eventos'> }
+  | { type: 'event'; event: Parameters<typeof textoEvento>[0] };
+
+function reducer(state: State, action: Action): State {
+  if (action.type === 'loaded') return { ...action.payload, eventos: [] };
+  const event = action.event;
+  return {
+    categorias: applyCanaEventToRecords(state.categorias, event, {
+      store: 'categorias',
+      getKey: (categoria) => categoria.id,
+      sort: (a, b) => a.nome.localeCompare(b.nome)
+    }),
+    tarefas: applyCanaEventToRecords(state.tarefas, event, {
+      store: 'tarefas',
+      getKey: (tarefa) => tarefa.id,
+      sort: (a, b) => a.atualizadaEm - b.atualizadaEm
+    }),
+    eventos: [...state.eventos, textoEvento(event)].slice(-8)
+  };
+}
+
+const TarefasContext = createContext<{
   state: State;
-  addTask(title: string, categoryId: string): Promise<void>;
-  toggleTask(task: Task): Promise<void>;
+  adicionarTarefa(titulo: string, categoriaId: string): Promise<void>;
+  alternarTarefa(tarefa: Tarefa): Promise<void>;
 } | null>(null);
 
-export function TasksProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, { categories: [], tasks: [], events: [] });
+export function TarefasProvider({ children }: { children: React.ReactNode }) {
+  const [ready, setReady] = useState(false);
+  const [state, dispatch] = useReducer(reducer, { categorias: [], tarefas: [], eventos: [] });
 
   useEffect(() => {
-    let stop = () => {};
-    void openTasksDatabase().then(async (client) => {
-      dispatch({
-        type: 'loaded',
-        payload: {
-          categories: [...await client.table<TaskCategory>('categories').query({ index: 'byName' })],
-          tasks: [...await client.table<Task>('tasks').query({ index: 'byUpdatedAt' })]
-        }
+    let alive = true;
+    void criarDadosIniciais()
+      .then(carregarTudo)
+      .then((payload) => {
+        if (!alive) return;
+        dispatch({ type: 'loaded', payload });
+        setReady(true);
       });
-      stop = client.subscribe((event) => dispatch({ type: 'cana-event', event }));
-    });
-    return () => stop();
+    return () => { alive = false; };
   }, []);
+
+  useCanaSubscription(ready ? cana : null, (event) => {
+    dispatch({ type: 'event', event });
+  });
 
   const api = {
     state,
-    async addTask(title: string, categoryId: string) {
-      const now = Date.now();
-      await cana.table<Task>('tasks').add({
+    async adicionarTarefa(titulo: string, categoriaId: string) {
+      const agora = Date.now();
+      await cana.table<Tarefa>('tarefas').add({
         id: crypto.randomUUID(),
-        title,
-        categoryId,
-        completed: false,
-        priority: 'medium',
-        createdAt: now,
-        updatedAt: now
+        titulo,
+        categoriaId,
+        concluida: false,
+        prioridade: 'media',
+        criadaEm: agora,
+        atualizadaEm: agora
       });
     },
-    async toggleTask(task: Task) {
-      await cana.table<Task>('tasks').update(task.id, {
-        completed: !task.completed,
-        updatedAt: Date.now()
+    async alternarTarefa(tarefa: Tarefa) {
+      await cana.table<Tarefa>('tarefas').update(tarefa.id, {
+        concluida: !tarefa.concluida,
+        atualizadaEm: Date.now()
       });
     }
   };
 
-  return <TasksContext.Provider value={api}>{children}</TasksContext.Provider>;
+  return <TarefasContext.Provider value={api}>{children}</TarefasContext.Provider>;
 }
 
-export function useTasks() {
-  const ctx = useContext(TasksContext);
-  if (!ctx) throw new Error('useTasks must be used inside TasksProvider');
+export function useTarefas() {
+  const ctx = useContext(TarefasContext);
+  if (!ctx) throw new Error('useTarefas must run inside TarefasProvider');
   return ctx;
 }`;
 
+const reactContextApp = `import { TarefasProvider, useTarefas } from './TarefasProvider';
+
+function QuadroDeTarefas() {
+  const { state, adicionarTarefa, alternarTarefa } = useTarefas();
+  const grupos = state.categorias.map((categoria) => ({
+    categoria,
+    tarefas: state.tarefas.filter((tarefa) => tarefa.categoriaId === categoria.id)
+  }));
+
+  return (
+    <main className="app">
+      <h1>Cana + React Context</h1>
+      <div className="toolbar">
+        <button onClick={() => void adicionarTarefa('Nova tarefa de trabalho', 'trabalho')}>
+          Adicionar tarefa
+        </button>
+      </div>
+      <section className="board">
+        {grupos.map(({ categoria, tarefas }) => (
+          <article className="categoria" key={categoria.id}>
+            <h2>{categoria.nome}</h2>
+            {tarefas.map((tarefa) => (
+              <button className="tarefa" key={tarefa.id} onClick={() => void alternarTarefa(tarefa)}>
+                {tarefa.concluida ? 'Concluida: ' : ''}{tarefa.titulo}
+              </button>
+            ))}
+          </article>
+        ))}
+      </section>
+      <pre className="eventos">{state.eventos.join('\\n') || 'Sem eventos ainda.'}</pre>
+    </main>
+  );
+}
+
+export default function App() {
+  return (
+    <TarefasProvider>
+      <QuadroDeTarefas />
+    </TarefasProvider>
+  );
+}`;
+
 const reactContextAdvanced = `import { isCanaErrorCode, type CanaChangeEvent } from '@jumentix/cana';
-import { cana, openTasksDatabase, type Task, type TaskCategory } from './cana';
+import { cana, carregarTudo, type Categoria, type Tarefa } from './cana';
 
-let lastSeenCursor = Number(localStorage.getItem('tasks:lastCursor') ?? 0);
-const ORIGIN_ID = 'task-ui';
+let ultimoCursor = Number(localStorage.getItem('tarefas:lastCursor') ?? 0);
 
-export async function subscribeWithReplay(apply: (event: CanaChangeEvent) => void) {
-  await openTasksDatabase();
+export async function ouvirComReplay(apply: (event: CanaChangeEvent) => void) {
   try {
     return cana.subscribe((event) => {
-      // If you also apply optimistic UI patches, skip your own echo here.
-      // This demo applies committed Cana events, so it records every event.
       apply(event);
-      lastSeenCursor = event.cursor;
-      localStorage.setItem('tasks:lastCursor', String(lastSeenCursor));
-    }, { sinceCursor: lastSeenCursor });
+      ultimoCursor = event.cursor;
+      localStorage.setItem('tarefas:lastCursor', String(ultimoCursor));
+    }, { sinceCursor: ultimoCursor });
   } catch (error) {
     if (isCanaErrorCode(error, 'NotFound')) {
-      await reloadFromTables();
+      await carregarTudo();
       return cana.subscribe(apply);
     }
     throw error;
   }
 }
 
-export async function createCategoryWithFirstTask(name: string, title: string) {
-  await openTasksDatabase();
-  const now = Date.now();
-  const categoryId = name.toLowerCase().replace(/\\s+/g, '-');
-  return cana.transaction('readwrite', ['categories', 'tasks'], async (scope) => {
-    await scope.table<TaskCategory>('categories').put({
-      id: categoryId,
-      name,
-      color: '#f97316',
-      createdAt: now,
-      updatedAt: now
+export async function criarCategoriaComPrimeiraTarefa(nome: string, titulo: string) {
+  const agora = Date.now();
+  const categoriaId = nome.toLowerCase().replace(/\\s+/g, '-');
+  return cana.transaction('readwrite', ['categorias', 'tarefas'], async (scope) => {
+    await scope.table<Categoria>('categorias').put({
+      id: categoriaId,
+      nome,
+      cor: '#f97316',
+      criadaEm: agora,
+      atualizadaEm: agora
     });
-    await scope.table<Task>('tasks').put({
+    await scope.table<Tarefa>('tarefas').put({
       id: crypto.randomUUID(),
-      title,
-      categoryId,
-      completed: false,
-      priority: 'high',
-      createdAt: now,
-      updatedAt: now
+      titulo,
+      categoriaId,
+      concluida: false,
+      prioridade: 'alta',
+      criadaEm: agora,
+      atualizadaEm: agora
     });
   });
-}
-
-async function reloadFromTables() {
-  const categories = await cana.table<TaskCategory>('categories').query({ index: 'byName' });
-  const tasks = await cana.table<Task>('tasks').query({ index: 'byUpdatedAt' });
-  return { categories, tasks };
 }`;
 
-const reduxBasic = `import { configureStore, createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import { cana, eventText, openTasksDatabase, type Task, type TaskCategory } from './cana';
+const reactContextAdvancedApp = `import { criarCategoriaComPrimeiraTarefa } from './advancedCana';
+import { TarefasProvider, useTarefas } from './TarefasProvider';
 
-const categories = createSlice({
-  name: 'categories',
-  initialState: [] as TaskCategory[],
-  reducers: {
-    upsert(state, action: PayloadAction<TaskCategory>) {
-      const i = state.findIndex((item) => item.id === action.payload.id);
-      if (i >= 0) state[i] = action.payload;
-      else state.push(action.payload);
-      state.sort((a, b) => a.name.localeCompare(b.name));
-    }
-  }
-});
+function QuadroAvancado() {
+  const { state, adicionarTarefa, alternarTarefa } = useTarefas();
+  const grupos = state.categorias.map((categoria) => ({
+    categoria,
+    tarefas: state.tarefas.filter((tarefa) => tarefa.categoriaId === categoria.id)
+  }));
 
-const tasks = createSlice({
-  name: 'tasks',
-  initialState: [] as Task[],
-  reducers: {
-    upsert(state, action: PayloadAction<Task>) {
-      const i = state.findIndex((item) => item.id === action.payload.id);
-      if (i >= 0) state[i] = action.payload;
-      else state.push(action.payload);
-      state.sort((a, b) => a.updatedAt - b.updatedAt);
-    }
-  }
-});
-
-const events = createSlice({
-  name: 'events',
-  initialState: [] as string[],
-  reducers: { add: (state, action: PayloadAction<string>) => [...state, action.payload].slice(-8) }
-});
-
-export const store = configureStore({
-  reducer: {
-    categories: categories.reducer,
-    tasks: tasks.reducer,
-    events: events.reducer
-  }
-});
-
-export async function startCanaListener() {
-  const client = await openTasksDatabase();
-  return client.subscribe((event) => {
-    store.dispatch(events.actions.add(eventText(event)));
-    if (event.store === 'categories' && event.record) {
-      store.dispatch(categories.actions.upsert(event.record as TaskCategory));
-    }
-    if (event.store === 'tasks' && event.record) {
-      store.dispatch(tasks.actions.upsert(event.record as Task));
-    }
-  });
+  return (
+    <main className="app">
+      <h1>Cana + React Context avancado</h1>
+      <div className="toolbar">
+        <button onClick={() => void adicionarTarefa('Tarefa avulsa', 'trabalho')}>Adicionar tarefa</button>
+        <button onClick={() => void criarCategoriaComPrimeiraTarefa('Operacoes', 'Criada na mesma transacao')}>
+          Criar categoria + tarefa
+        </button>
+      </div>
+      <section className="board">
+        {grupos.map(({ categoria, tarefas }) => (
+          <article className="categoria" key={categoria.id}>
+            <h2>{categoria.nome}</h2>
+            {tarefas.map((tarefa) => (
+              <button className="tarefa" key={tarefa.id} onClick={() => void alternarTarefa(tarefa)}>
+                {tarefa.concluida ? 'Concluida: ' : ''}{tarefa.titulo}
+              </button>
+            ))}
+          </article>
+        ))}
+      </section>
+      <pre className="eventos">{state.eventos.join('\\n') || 'Sem eventos ainda.'}</pre>
+    </main>
+  );
 }
 
-export async function addTask(title: string, categoryId: string) {
-  const now = Date.now();
-  await cana.table<Task>('tasks').put({
+export default function App() {
+  return (
+    <TarefasProvider>
+      <QuadroAvancado />
+    </TarefasProvider>
+  );
+}`;
+
+const reduxStoreBasic = `import { configureStore, createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import type { CanaChangeEvent } from '@jumentix/cana';
+import { connectCanaToRedux } from '@jumentix/cana-react/redux';
+import { cana, carregarTudo, criarDadosIniciais, textoEvento, type Categoria, type Tarefa } from './cana';
+
+type State = { categorias: Categoria[]; tarefas: Tarefa[]; eventos: string[] };
+
+function upsert<T extends { id: string }>(records: T[], record: T) {
+  const next = records.filter((item) => item.id !== record.id).concat(record);
+  return next;
+}
+
+const slice = createSlice({
+  name: 'tarefas',
+  initialState: { categorias: [], tarefas: [], eventos: [] } as State,
+  reducers: {
+    replaceAll(_state, action: PayloadAction<{ categorias: Categoria[]; tarefas: Tarefa[] }>) {
+      return { categorias: action.payload.categorias, tarefas: action.payload.tarefas, eventos: [] };
+    },
+    applyCanaEvent(state, action: PayloadAction<CanaChangeEvent>) {
+      const event = action.payload;
+      state.eventos = [...state.eventos, textoEvento(event)].slice(-8);
+      if (event.store === 'categorias' && event.record) {
+        state.categorias = upsert(state.categorias, event.record as Categoria)
+          .sort((a, b) => a.nome.localeCompare(b.nome));
+      }
+      if (event.store === 'tarefas' && event.record) {
+        state.tarefas = upsert(state.tarefas, event.record as Tarefa)
+          .sort((a, b) => a.atualizadaEm - b.atualizadaEm);
+      }
+    }
+  }
+});
+
+export const { applyCanaEvent, replaceAll } = slice.actions;
+
+export const store = configureStore({ reducer: slice.reducer });
+export type RootState = ReturnType<typeof store.getState>;
+
+export async function startCanaRedux() {
+  await criarDadosIniciais();
+  store.dispatch(replaceAll(await carregarTudo()));
+  const bridge = connectCanaToRedux({
+    client: cana,
+    dispatch: store.dispatch,
+    mapEvent: (event) => applyCanaEvent(event)
+  });
+  return bridge.stop;
+}
+
+export async function adicionarTarefa(titulo: string, categoriaId: string) {
+  const agora = Date.now();
+  await cana.table<Tarefa>('tarefas').add({
     id: crypto.randomUUID(),
-    title,
-    categoryId,
-    completed: false,
-    priority: 'medium',
-    createdAt: now,
-    updatedAt: now
+    titulo,
+    categoriaId,
+    concluida: false,
+    prioridade: 'media',
+    criadaEm: agora,
+    atualizadaEm: agora
+  });
+}
+
+export async function alternarTarefa(tarefa: Tarefa) {
+  await cana.table<Tarefa>('tarefas').update(tarefa.id, {
+    concluida: !tarefa.concluida,
+    atualizadaEm: Date.now()
   });
 }`;
 
-const reduxAdvanced = `import { createAsyncThunk } from '@reduxjs/toolkit';
+const reduxApp = `import { useEffect } from 'react';
+import { Provider, useSelector } from 'react-redux';
+import { adicionarTarefa, alternarTarefa, startCanaRedux, store, type RootState } from './store';
+
+function QuadroRedux() {
+  const { categorias, tarefas, eventos } = useSelector((state: RootState) => state);
+
+  useEffect(() => {
+    let stop = () => {};
+    void startCanaRedux().then((cleanup) => { stop = cleanup; });
+    return () => stop();
+  }, []);
+
+  return (
+    <main className="app">
+      <h1>Cana + React Redux</h1>
+      <div className="toolbar">
+        <button onClick={() => void adicionarTarefa('Nova tarefa Redux', 'trabalho')}>Adicionar tarefa</button>
+      </div>
+      <section className="board">
+        {categorias.map((categoria) => (
+          <article className="categoria" key={categoria.id}>
+            <h2>{categoria.nome}</h2>
+            {tarefas.filter((tarefa) => tarefa.categoriaId === categoria.id).map((tarefa) => (
+              <button className="tarefa" key={tarefa.id} onClick={() => void alternarTarefa(tarefa)}>
+                {tarefa.concluida ? 'Concluida: ' : ''}{tarefa.titulo}
+              </button>
+            ))}
+          </article>
+        ))}
+      </section>
+      <pre className="eventos">{eventos.join('\\n') || 'Sem eventos ainda.'}</pre>
+    </main>
+  );
+}
+
+export default function App() {
+  return (
+    <Provider store={store}>
+      <QuadroRedux />
+    </Provider>
+  );
+}`;
+
+const reduxStoreAdvanced = `import { configureStore, createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { isCanaErrorCode, type CanaChangeEvent } from '@jumentix/cana';
-import { cana, openTasksDatabase, type Task, type TaskCategory } from './cana';
-import { store, applyCanaEvent, replaceAll, setCanaError } from './store';
+import { connectCanaToRedux } from '@jumentix/cana-react/redux';
+import { cana, carregarTudo, criarDadosIniciais, textoEvento, type Categoria, type Tarefa } from './cana';
 
-let lastCursor = Number(localStorage.getItem('redux:lastCursor') ?? 0);
+type State = { categorias: Categoria[]; tarefas: Tarefa[]; eventos: string[]; canaError: unknown };
+let ultimoCursor = Number(localStorage.getItem('redux:lastCursor') ?? 0);
 
-export async function attachCanaEvents() {
-  await openTasksDatabase();
+function upsert<T extends { id: string }>(records: T[], record: T) {
+  return records.filter((item) => item.id !== record.id).concat(record);
+}
+
+const slice = createSlice({
+  name: 'tarefas',
+  initialState: { categorias: [], tarefas: [], eventos: [], canaError: null } as State,
+  reducers: {
+    replaceAll(state, action: PayloadAction<{ categorias: Categoria[]; tarefas: Tarefa[] }>) {
+      state.categorias = action.payload.categorias;
+      state.tarefas = action.payload.tarefas;
+    },
+    setCanaError(state, action: PayloadAction<unknown>) {
+      state.canaError = action.payload;
+    },
+    applyCanaEvent(state, action: PayloadAction<CanaChangeEvent>) {
+      const event = action.payload;
+      ultimoCursor = event.cursor;
+      localStorage.setItem('redux:lastCursor', String(ultimoCursor));
+      state.eventos = [...state.eventos, textoEvento(event)].slice(-8);
+      if (event.store === 'categorias' && event.record) {
+        state.categorias = upsert(state.categorias, event.record as Categoria)
+          .sort((a, b) => a.nome.localeCompare(b.nome));
+      }
+      if (event.store === 'tarefas' && event.record) {
+        state.tarefas = upsert(state.tarefas, event.record as Tarefa)
+          .sort((a, b) => a.atualizadaEm - b.atualizadaEm);
+      }
+    }
+  }
+});
+
+export const { applyCanaEvent, replaceAll, setCanaError } = slice.actions;
+export const store = configureStore({ reducer: slice.reducer });
+export type RootState = ReturnType<typeof store.getState>;
+
+export async function startCanaReduxComReplay() {
+  await criarDadosIniciais();
+  store.dispatch(replaceAll(await carregarTudo()));
   try {
-    return cana.subscribe((event: CanaChangeEvent) => {
-      store.dispatch(applyCanaEvent(event));
-      lastCursor = event.cursor;
-      localStorage.setItem('redux:lastCursor', String(lastCursor));
-    }, { sinceCursor: lastCursor });
+    const bridge = connectCanaToRedux({
+      client: cana,
+      dispatch: store.dispatch,
+      sinceCursor: ultimoCursor,
+      mapEvent: (event) => applyCanaEvent(event)
+    });
+    return bridge.stop;
   } catch (error) {
     if (isCanaErrorCode(error, 'NotFound')) {
-      const [categories, tasks] = await Promise.all([
-        cana.table<TaskCategory>('categories').query({ index: 'byName' }),
-        cana.table<Task>('tasks').query({ index: 'byUpdatedAt' })
-      ]);
-      store.dispatch(replaceAll({ categories: [...categories], tasks: [...tasks] }));
-      return cana.subscribe((event) => store.dispatch(applyCanaEvent(event)));
+      store.dispatch(replaceAll(await carregarTudo()));
+      const bridge = connectCanaToRedux({
+        client: cana,
+        dispatch: store.dispatch,
+        mapEvent: (event) => applyCanaEvent(event)
+      });
+      return bridge.stop;
     }
     store.dispatch(setCanaError(error));
     throw error;
   }
 }
 
-export const createCategoryWithFirstTask = createAsyncThunk(
-  'tasks/createCategoryWithFirstTask',
-  async ({ name, title }: { name: string; title: string }) => {
-    const now = Date.now();
-    const categoryId = name.toLowerCase().replace(/\\s+/g, '-');
-    const tx = await cana.transaction('readwrite', ['categories', 'tasks'], async (scope) => {
-      await scope.table<TaskCategory>('categories').put({
-        id: categoryId,
-        name,
-        color: '#7c3aed',
-        createdAt: now,
-        updatedAt: now
+export const criarCategoriaComPrimeiraTarefa = createAsyncThunk(
+  'tarefas/criarCategoriaComPrimeiraTarefa',
+  async ({ nome, titulo }: { nome: string; titulo: string }) => {
+    const agora = Date.now();
+    const categoriaId = nome.toLowerCase().replace(/\\s+/g, '-');
+    return cana.transaction('readwrite', ['categorias', 'tarefas'], async (scope) => {
+      await scope.table<Categoria>('categorias').put({
+        id: categoriaId,
+        nome,
+        cor: '#7c3aed',
+        criadaEm: agora,
+        atualizadaEm: agora
       });
-      await scope.table<Task>('tasks').put({
+      await scope.table<Tarefa>('tarefas').put({
         id: crypto.randomUUID(),
-        title,
-        categoryId,
-        completed: false,
-        priority: 'high',
-        createdAt: now,
-        updatedAt: now
+        titulo,
+        categoriaId,
+        concluida: false,
+        prioridade: 'alta',
+        criadaEm: agora,
+        atualizadaEm: agora
       });
     });
-    return { outcome: tx.outcome, correlationId: tx.correlationId };
   }
-);`;
+);
 
-const vueBasic = `<script setup lang="ts">
-import { computed, onMounted, onUnmounted } from 'vue';
-import { useTaskStore } from './stores/tasks';
+export async function adicionarTarefa(titulo: string, categoriaId: string) {
+  const agora = Date.now();
+  await cana.table<Tarefa>('tarefas').add({
+    id: crypto.randomUUID(),
+    titulo,
+    categoriaId,
+    concluida: false,
+    prioridade: 'media',
+    criadaEm: agora,
+    atualizadaEm: agora
+  });
+}
 
-const tasks = useTaskStore();
-const grouped = computed(() => tasks.categories.map((category) => ({
-  category,
-  tasks: tasks.tasks.filter((task) => task.categoryId === category.id)
-})));
+export async function alternarTarefa(tarefa: Tarefa) {
+  await cana.table<Tarefa>('tarefas').update(tarefa.id, {
+    concluida: !tarefa.concluida,
+    atualizadaEm: Date.now()
+  });
+}`;
 
-let stop = () => {};
-onMounted(async () => { stop = await tasks.init(); });
-onUnmounted(() => stop());
-</script>
+const reduxAdvancedApp = `import { useEffect } from 'react';
+import { Provider, useDispatch, useSelector } from 'react-redux';
+import {
+  adicionarTarefa,
+  alternarTarefa,
+  criarCategoriaComPrimeiraTarefa,
+  startCanaReduxComReplay,
+  store,
+  type RootState
+} from './store';
 
-<template>
-  <section>
-    <button @click="tasks.addTask('New Pinia task', 'work')">Add task through Cana</button>
-    <article v-for="group in grouped" :key="group.category.id">
-      <h3>{{ group.category.name }}</h3>
-      <button v-for="task in group.tasks" :key="task.id" @click="tasks.toggle(task)">
-        {{ task.completed ? 'Done: ' : '' }}{{ task.title }}
-      </button>
-    </article>
-    <pre>{{ tasks.events.join('\\n') || 'No Cana events yet.' }}</pre>
-  </section>
-</template>`;
+function QuadroReduxAvancado() {
+  const dispatch = useDispatch<typeof store.dispatch>();
+  const { categorias, tarefas, eventos } = useSelector((state: RootState) => state);
 
-const vueStore = `import { defineStore } from 'pinia';
-import { cana, eventText, openTasksDatabase, type Task, type TaskCategory } from '../cana';
-import type { CanaChangeEvent } from '@jumentix/cana';
+  useEffect(() => {
+    let stop = () => {};
+    void startCanaReduxComReplay().then((cleanup) => { stop = cleanup; });
+    return () => stop();
+  }, []);
 
-export const useTaskStore = defineStore('tasks', {
+  return (
+    <main className="app">
+      <h1>Cana + React Redux avancado</h1>
+      <div className="toolbar">
+        <button onClick={() => void adicionarTarefa('Nova tarefa Redux', 'trabalho')}>Adicionar tarefa</button>
+        <button onClick={() => void dispatch(criarCategoriaComPrimeiraTarefa({
+          nome: 'Release',
+          titulo: 'Criada em uma transacao'
+        }))}>
+          Criar categoria + tarefa
+        </button>
+      </div>
+      <section className="board">
+        {categorias.map((categoria) => (
+          <article className="categoria" key={categoria.id}>
+            <h2>{categoria.nome}</h2>
+            {tarefas.filter((tarefa) => tarefa.categoriaId === categoria.id).map((tarefa) => (
+              <button className="tarefa" key={tarefa.id} onClick={() => void alternarTarefa(tarefa)}>
+                {tarefa.concluida ? 'Concluida: ' : ''}{tarefa.titulo}
+              </button>
+            ))}
+          </article>
+        ))}
+      </section>
+      <pre className="eventos">{eventos.join('\\n') || 'Sem eventos ainda.'}</pre>
+    </main>
+  );
+}
+
+export default function App() {
+  return (
+    <Provider store={store}>
+      <QuadroReduxAvancado />
+    </Provider>
+  );
+}`;
+
+const vueMainTs = `import { createApp } from 'vue';
+import { createPinia } from 'pinia';
+import App from './App.vue';
+import './styles.css';
+
+createApp(App).use(createPinia()).mount('#app');`;
+
+const vueStylesCss = reactStylesCss;
+
+const vueStoreBasic = `import { defineStore } from 'pinia';
+import { applyCanaEventToRecords, connectCanaToPinia } from '@jumentix/cana-vue';
+import { cana, carregarTudo, criarDadosIniciais, textoEvento, type Categoria, type Tarefa } from '../cana';
+
+export const useTarefasStore = defineStore('tarefas', {
   state: () => ({
-    categories: [] as TaskCategory[],
-    tasks: [] as Task[],
-    events: [] as string[]
+    categorias: [] as Categoria[],
+    tarefas: [] as Tarefa[],
+    eventos: [] as string[]
   }),
+  getters: {
+    porCategoria: (state) => (categoriaId: string) =>
+      state.tarefas.filter((tarefa) => tarefa.categoriaId === categoriaId)
+  },
   actions: {
     async init() {
-      await openTasksDatabase();
-      this.categories = [...await cana.table<TaskCategory>('categories').query({ index: 'byName' })];
-      this.tasks = [...await cana.table<Task>('tasks').query({ index: 'byUpdatedAt' })];
-      return cana.subscribe((event) => this.applyCanaEvent(event));
+      await criarDadosIniciais();
+      Object.assign(this, await carregarTudo());
+      const bridge = connectCanaToPinia({
+        client: cana,
+        apply: (event) => this.applyEvent(event)
+      });
+      return bridge.stop;
     },
-    applyCanaEvent(event: CanaChangeEvent) {
-      this.events = [...this.events, eventText(event)].slice(-8);
-      if (event.store === 'categories' && event.record) {
-        this.categories = this.categories.filter((item) => item.id !== event.record.id)
-          .concat(event.record as TaskCategory)
-          .sort((a, b) => a.name.localeCompare(b.name));
-      }
-      if (event.store === 'tasks' && event.record) {
-        this.tasks = this.tasks.filter((item) => item.id !== event.record.id)
-          .concat(event.record as Task)
-          .sort((a, b) => a.updatedAt - b.updatedAt);
-      }
-    },
-    async addTask(title: string, categoryId: string) {
-      const now = Date.now();
-      await cana.table<Task>('tasks').put({
-        id: crypto.randomUUID(),
-        title,
-        categoryId,
-        completed: false,
-        priority: 'medium',
-        createdAt: now,
-        updatedAt: now
+    applyEvent(event: Parameters<typeof textoEvento>[0]) {
+      this.eventos = [...this.eventos, textoEvento(event)].slice(-8);
+      this.categorias = applyCanaEventToRecords(this.categorias, event, {
+        store: 'categorias',
+        getKey: (categoria) => categoria.id,
+        sort: (a, b) => a.nome.localeCompare(b.nome)
+      });
+      this.tarefas = applyCanaEventToRecords(this.tarefas, event, {
+        store: 'tarefas',
+        getKey: (tarefa) => tarefa.id,
+        sort: (a, b) => a.atualizadaEm - b.atualizadaEm
       });
     },
-    async toggle(task: Task) {
-      await cana.table<Task>('tasks').update(task.id, {
-        completed: !task.completed,
-        updatedAt: Date.now()
+    async adicionarTarefa(titulo: string, categoriaId: string) {
+      const agora = Date.now();
+      await cana.table<Tarefa>('tarefas').add({
+        id: crypto.randomUUID(),
+        titulo,
+        categoriaId,
+        concluida: false,
+        prioridade: 'media',
+        criadaEm: agora,
+        atualizadaEm: agora
+      });
+    },
+    async alternarTarefa(tarefa: Tarefa) {
+      await cana.table<Tarefa>('tarefas').update(tarefa.id, {
+        concluida: !tarefa.concluida,
+        atualizadaEm: Date.now()
       });
     }
   }
 });`;
 
-const vueAdvanced = `import { isCanaErrorCode, type CanaChangeEvent } from '@jumentix/cana';
-import { defineStore } from 'pinia';
-import { cana, openTasksDatabase, type Task, type TaskCategory } from '../cana';
+const vueAppBasic = `<script setup lang="ts">
+import { onMounted, onUnmounted } from 'vue';
+import { useTarefasStore } from './stores/tarefas';
 
-let lastCursor = Number(localStorage.getItem('pinia:lastCursor') ?? 0);
+const tarefas = useTarefasStore();
+let stop = () => {};
 
-export const useAdvancedTaskStore = defineStore('advancedTasks', {
+onMounted(async () => {
+  stop = await tarefas.init();
+});
+onUnmounted(() => stop());
+</script>
+
+<template>
+  <main class="app">
+    <h1>Cana + Vue 3 + Pinia</h1>
+    <div class="toolbar">
+      <button @click="tarefas.adicionarTarefa('Nova tarefa Pinia', 'trabalho')">Adicionar tarefa</button>
+    </div>
+    <section class="board">
+      <article v-for="categoria in tarefas.categorias" :key="categoria.id" class="categoria">
+        <h2>{{ categoria.nome }}</h2>
+        <button
+          v-for="tarefa in tarefas.porCategoria(categoria.id)"
+          :key="tarefa.id"
+          class="tarefa"
+          @click="tarefas.alternarTarefa(tarefa)"
+        >
+          {{ tarefa.concluida ? 'Concluida: ' : '' }}{{ tarefa.titulo }}
+        </button>
+      </article>
+    </section>
+    <pre class="eventos">{{ tarefas.eventos.join('\\n') || 'Sem eventos ainda.' }}</pre>
+  </main>
+</template>`;
+
+const vueStoreAdvanced = `import { defineStore } from 'pinia';
+import { isCanaErrorCode } from '@jumentix/cana';
+import { applyCanaEventToRecords, connectCanaToPinia } from '@jumentix/cana-vue';
+import { cana, carregarTudo, criarDadosIniciais, textoEvento, type Categoria, type Tarefa } from '../cana';
+
+let ultimoCursor = Number(localStorage.getItem('pinia:lastCursor') ?? 0);
+
+export const useTarefasStore = defineStore('tarefasAvancadas', {
   state: () => ({
-    categories: [] as TaskCategory[],
-    tasks: [] as Task[],
-    events: [] as string[],
+    categorias: [] as Categoria[],
+    tarefas: [] as Tarefa[],
+    eventos: [] as string[],
     canaError: null as unknown
   }),
+  getters: {
+    porCategoria: (state) => (categoriaId: string) =>
+      state.tarefas.filter((tarefa) => tarefa.categoriaId === categoriaId)
+  },
   actions: {
     async init() {
-      await openTasksDatabase();
+      await criarDadosIniciais();
+      Object.assign(this, await carregarTudo());
       try {
-        return cana.subscribe((event) => this.applyEvent(event), { sinceCursor: lastCursor });
+        const bridge = connectCanaToPinia({
+          client: cana,
+          sinceCursor: ultimoCursor,
+          apply: (event) => this.applyEvent(event)
+        });
+        return bridge.stop;
       } catch (error) {
         if (isCanaErrorCode(error, 'NotFound')) {
-          await this.reload();
-          return cana.subscribe((event) => this.applyEvent(event));
+          Object.assign(this, await carregarTudo());
+          const bridge = connectCanaToPinia({
+            client: cana,
+            apply: (event) => this.applyEvent(event)
+          });
+          return bridge.stop;
         }
         this.canaError = error;
         throw error;
       }
     },
-    applyEvent(event: CanaChangeEvent) {
-      lastCursor = event.cursor;
-      localStorage.setItem('pinia:lastCursor', String(lastCursor));
-      this.events = [...this.events, \`\${event.cursor}: \${event.type} \${event.store}\`].slice(-8);
-      if (event.store === 'tasks' && event.record) {
-        const record = event.record as Task;
-        this.tasks = this.tasks.filter((task) => task.id !== record.id).concat(record);
-      }
-      if (event.store === 'categories' && event.record) {
-        const record = event.record as TaskCategory;
-        this.categories = this.categories.filter((category) => category.id !== record.id).concat(record);
-      }
+    applyEvent(event: Parameters<typeof textoEvento>[0]) {
+      ultimoCursor = event.cursor;
+      localStorage.setItem('pinia:lastCursor', String(ultimoCursor));
+      this.eventos = [...this.eventos, textoEvento(event)].slice(-8);
+      this.categorias = applyCanaEventToRecords(this.categorias, event, {
+        store: 'categorias',
+        getKey: (categoria) => categoria.id,
+        sort: (a, b) => a.nome.localeCompare(b.nome)
+      });
+      this.tarefas = applyCanaEventToRecords(this.tarefas, event, {
+        store: 'tarefas',
+        getKey: (tarefa) => tarefa.id,
+        sort: (a, b) => a.atualizadaEm - b.atualizadaEm
+      });
     },
-    async reload() {
-      this.categories = [...await cana.table<TaskCategory>('categories').query({ index: 'byName' })];
-      this.tasks = [...await cana.table<Task>('tasks').query({ index: 'byUpdatedAt' })];
-    },
-    async createCategoryWithFirstTask(name: string, title: string) {
-      const now = Date.now();
-      const categoryId = name.toLowerCase().replace(/\\s+/g, '-');
-      await cana.transaction('readwrite', ['categories', 'tasks'], async (scope) => {
-        await scope.table<TaskCategory>('categories').put({
-          id: categoryId,
-          name,
-          color: '#dc2626',
-          createdAt: now,
-          updatedAt: now
+    async criarCategoriaComPrimeiraTarefa(nome: string, titulo: string) {
+      const agora = Date.now();
+      const categoriaId = nome.toLowerCase().replace(/\\s+/g, '-');
+      await cana.transaction('readwrite', ['categorias', 'tarefas'], async (scope) => {
+        await scope.table<Categoria>('categorias').put({
+          id: categoriaId,
+          nome,
+          cor: '#dc2626',
+          criadaEm: agora,
+          atualizadaEm: agora
         });
-        await scope.table<Task>('tasks').put({
+        await scope.table<Tarefa>('tarefas').put({
           id: crypto.randomUUID(),
-          title,
-          categoryId,
-          completed: false,
-          priority: 'high',
-          createdAt: now,
-          updatedAt: now
+          titulo,
+          categoriaId,
+          concluida: false,
+          prioridade: 'alta',
+          criadaEm: agora,
+          atualizadaEm: agora
         });
+      });
+    },
+    async alternarTarefa(tarefa: Tarefa) {
+      await cana.table<Tarefa>('tarefas').update(tarefa.id, {
+        concluida: !tarefa.concluida,
+        atualizadaEm: Date.now()
       });
     }
   }
 });`;
+
+const vueAppAdvanced = `<script setup lang="ts">
+import { onMounted, onUnmounted } from 'vue';
+import { useTarefasStore } from './stores/tarefasAvancadas';
+
+const tarefas = useTarefasStore();
+let stop = () => {};
+
+onMounted(async () => {
+  stop = await tarefas.init();
+});
+onUnmounted(() => stop());
+</script>
+
+<template>
+  <main class="app">
+    <h1>Cana + Vue 3 + Pinia avancado</h1>
+    <div class="toolbar">
+      <button @click="tarefas.criarCategoriaComPrimeiraTarefa('QA', 'Criada em uma transacao')">
+        Criar categoria + tarefa
+      </button>
+    </div>
+    <section class="board">
+      <article v-for="categoria in tarefas.categorias" :key="categoria.id" class="categoria">
+        <h2>{{ categoria.nome }}</h2>
+        <button
+          v-for="tarefa in tarefas.porCategoria(categoria.id)"
+          :key="tarefa.id"
+          class="tarefa"
+          @click="tarefas.alternarTarefa(tarefa)"
+        >
+          {{ tarefa.concluida ? 'Concluida: ' : '' }}{{ tarefa.titulo }}
+        </button>
+      </article>
+    </section>
+    <pre class="eventos">{{ tarefas.eventos.join('\\n') || 'Sem eventos ainda.' }}</pre>
+  </main>
+</template>`;
+
+const download = {
+  reactContext: {
+    href: '/downloads/cana/cana-react-context.zip',
+    label: { en: 'Download app', 'pt-BR': 'Baixar app' }
+  },
+  reactRedux: {
+    href: '/downloads/cana/cana-react-redux.zip',
+    label: { en: 'Download app', 'pt-BR': 'Baixar app' }
+  },
+  vuePinia: {
+    href: '/downloads/cana/cana-vue-pinia.zip',
+    label: { en: 'Download app', 'pt-BR': 'Baixar app' }
+  }
+};
 
 export const CANA_FRAMEWORK_EXAMPLES: readonly CanaFrameworkExample[] = [
   {
@@ -465,16 +1052,25 @@ export const CANA_FRAMEWORK_EXAMPLES: readonly CanaFrameworkExample[] = [
     framework: 'React Context',
     level: 'simple',
     title: {
-      en: 'React Context: categorized task list',
-      'pt-BR': 'React Context: lista de tarefas por categoria'
+      en: 'React Context: Categoria and Tarefa tables',
+      'pt-BR': 'React Context: tabelas Categoria e Tarefa'
     },
     description: {
-      en: 'A provider listens to committed Cana events and updates React reducer state.',
-      'pt-BR': 'Um provider ouve eventos confirmados do Cana e atualiza o reducer do React.'
+      en: 'A provider listens to committed Cana events and updates reducer state.',
+      'pt-BR': 'Um provider ouve eventos confirmados do Cana e atualiza o reducer.'
     },
+    download: download.reactContext,
     files: [
-      { path: 'src/cana.ts', source: sharedCanaTs },
-      { path: 'src/TasksProvider.tsx', source: reactContextBasic }
+      { path: 'package.json', source: reactContextPackageJson },
+      { path: 'tsconfig.json', source: reactTsconfig },
+      { path: 'index.html', source: indexHtml },
+      { path: 'vite.config.ts', source: viteReactConfig },
+      { path: 'src/vite-env.d.ts', source: viteEnvDts },
+      { path: 'src/cana.ts', source: canaTs },
+      { path: 'src/TarefasProvider.tsx', source: reactContextProvider },
+      { path: 'src/App.tsx', source: reactContextApp },
+      { path: 'src/main.tsx', source: reactMainTsx },
+      { path: 'src/styles.css', source: reactStylesCss }
     ]
   },
   {
@@ -482,16 +1078,26 @@ export const CANA_FRAMEWORK_EXAMPLES: readonly CanaFrameworkExample[] = [
     framework: 'React Context',
     level: 'advanced',
     title: {
-      en: 'React Context: transactions and replay',
-      'pt-BR': 'React Context: transações e replay'
+      en: 'React Context: replay and transaction flow',
+      'pt-BR': 'React Context: replay e fluxo transacional'
     },
     description: {
-      en: 'Use one write transaction, keep a cursor, and recover when the replay window is gone.',
-      'pt-BR': 'Use uma transação de escrita, mantenha cursor e recupere quando a janela de replay expirou.'
+      en: 'The app keeps the same tables and adds replay recovery plus one multi-store transaction.',
+      'pt-BR': 'A app mantem as mesmas tabelas e adiciona replay e uma transacao multi-store.'
     },
+    download: download.reactContext,
     files: [
-      { path: 'src/cana.ts', source: sharedCanaTs },
-      { path: 'src/advancedCana.ts', source: reactContextAdvanced }
+      { path: 'package.json', source: reactContextPackageJson },
+      { path: 'tsconfig.json', source: reactTsconfig },
+      { path: 'index.html', source: indexHtml },
+      { path: 'vite.config.ts', source: viteReactConfig },
+      { path: 'src/vite-env.d.ts', source: viteEnvDts },
+      { path: 'src/cana.ts', source: canaTs },
+      { path: 'src/TarefasProvider.tsx', source: reactContextProvider },
+      { path: 'src/advancedCana.ts', source: reactContextAdvanced },
+      { path: 'src/App.tsx', source: reactContextAdvancedApp },
+      { path: 'src/main.tsx', source: reactMainTsx },
+      { path: 'src/styles.css', source: reactStylesCss }
     ]
   },
   {
@@ -500,15 +1106,24 @@ export const CANA_FRAMEWORK_EXAMPLES: readonly CanaFrameworkExample[] = [
     level: 'simple',
     title: {
       en: 'React Redux: store updated by Cana events',
-      'pt-BR': 'React Redux: store atualizado por eventos Cana'
+      'pt-BR': 'React Redux: store atualizada por eventos Cana'
     },
     description: {
-      en: 'A Cana listener dispatches slice actions for category and task records.',
-      'pt-BR': 'Um listener do Cana dispara actions dos slices de categorias e tarefas.'
+      en: 'Redux renders the cache; Cana remains the durable source of truth.',
+      'pt-BR': 'Redux renderiza o cache; Cana continua sendo a fonte duravel.'
     },
+    download: download.reactRedux,
     files: [
-      { path: 'src/cana.ts', source: sharedCanaTs },
-      { path: 'src/store.ts', source: reduxBasic }
+      { path: 'package.json', source: reactReduxPackageJson },
+      { path: 'tsconfig.json', source: reactTsconfig },
+      { path: 'index.html', source: indexHtml },
+      { path: 'vite.config.ts', source: viteReactConfig },
+      { path: 'src/vite-env.d.ts', source: viteEnvDts },
+      { path: 'src/cana.ts', source: canaTs },
+      { path: 'src/store.ts', source: reduxStoreBasic },
+      { path: 'src/App.tsx', source: reduxApp },
+      { path: 'src/main.tsx', source: reactMainTsx },
+      { path: 'src/styles.css', source: reactStylesCss }
     ]
   },
   {
@@ -516,16 +1131,25 @@ export const CANA_FRAMEWORK_EXAMPLES: readonly CanaFrameworkExample[] = [
     framework: 'React Redux',
     level: 'advanced',
     title: {
-      en: 'React Redux: transaction thunk and replay',
-      'pt-BR': 'React Redux: thunk transacional e replay'
+      en: 'React Redux: replay-safe transaction thunk',
+      'pt-BR': 'React Redux: thunk transacional com replay'
     },
     description: {
-      en: 'Redux Toolkit thunks write to Cana while subscriptions keep the store canonical.',
-      'pt-BR': 'Thunks do Redux Toolkit escrevem no Cana enquanto subscriptions mantêm a store canônica.'
+      en: 'A Redux thunk writes Categoria and Tarefa together while the listener resumes from the last cursor.',
+      'pt-BR': 'Um thunk grava Categoria e Tarefa juntas enquanto o listener retoma do ultimo cursor.'
     },
+    download: download.reactRedux,
     files: [
-      { path: 'src/cana.ts', source: sharedCanaTs },
-      { path: 'src/advancedStore.ts', source: reduxAdvanced }
+      { path: 'package.json', source: reactReduxPackageJson },
+      { path: 'tsconfig.json', source: reactTsconfig },
+      { path: 'index.html', source: indexHtml },
+      { path: 'vite.config.ts', source: viteReactConfig },
+      { path: 'src/vite-env.d.ts', source: viteEnvDts },
+      { path: 'src/cana.ts', source: canaTs },
+      { path: 'src/store.ts', source: reduxStoreAdvanced },
+      { path: 'src/App.tsx', source: reduxAdvancedApp },
+      { path: 'src/main.tsx', source: reactMainTsx },
+      { path: 'src/styles.css', source: reactStylesCss }
     ]
   },
   {
@@ -537,13 +1161,21 @@ export const CANA_FRAMEWORK_EXAMPLES: readonly CanaFrameworkExample[] = [
       'pt-BR': 'Vue 3 + Pinia: store atualizada pelo Cana'
     },
     description: {
-      en: 'A Pinia store owns actions and patches state from CanaChangeEvent.',
-      'pt-BR': 'Uma store Pinia possui actions e atualiza estado a partir de CanaChangeEvent.'
+      en: 'Pinia actions write to Cana and patch state from committed events.',
+      'pt-BR': 'Actions Pinia escrevem no Cana e atualizam estado por eventos confirmados.'
     },
+    download: download.vuePinia,
     files: [
-      { path: 'src/cana.ts', source: sharedCanaTs },
-      { path: 'src/stores/tasks.ts', source: vueStore },
-      { path: 'src/App.vue', source: vueBasic }
+      { path: 'package.json', source: vuePackageJson },
+      { path: 'tsconfig.json', source: vueTsconfig },
+      { path: 'index.html', source: vueIndexHtml },
+      { path: 'vite.config.ts', source: viteVueConfig },
+      { path: 'src/vite-env.d.ts', source: viteEnvDts },
+      { path: 'src/cana.ts', source: canaTs },
+      { path: 'src/stores/tarefas.ts', source: vueStoreBasic },
+      { path: 'src/App.vue', source: vueAppBasic },
+      { path: 'src/main.ts', source: vueMainTs },
+      { path: 'src/styles.css', source: vueStylesCss }
     ]
   },
   {
@@ -555,12 +1187,21 @@ export const CANA_FRAMEWORK_EXAMPLES: readonly CanaFrameworkExample[] = [
       'pt-BR': 'Vue 3 + Pinia: fluxo transacional com replay'
     },
     description: {
-      en: 'Pinia records the last Cana cursor and reloads from tables when replay is unavailable.',
-      'pt-BR': 'Pinia registra o último cursor do Cana e recarrega das tabelas quando o replay não está disponível.'
+      en: 'The Pinia store records the last Cana cursor and reloads when replay is unavailable.',
+      'pt-BR': 'A store Pinia guarda o ultimo cursor do Cana e recarrega quando o replay nao esta disponivel.'
     },
+    download: download.vuePinia,
     files: [
-      { path: 'src/cana.ts', source: sharedCanaTs },
-      { path: 'src/stores/advancedTasks.ts', source: vueAdvanced }
+      { path: 'package.json', source: vuePackageJson },
+      { path: 'tsconfig.json', source: vueTsconfig },
+      { path: 'index.html', source: vueIndexHtml },
+      { path: 'vite.config.ts', source: viteVueConfig },
+      { path: 'src/vite-env.d.ts', source: viteEnvDts },
+      { path: 'src/cana.ts', source: canaTs },
+      { path: 'src/stores/tarefasAvancadas.ts', source: vueStoreAdvanced },
+      { path: 'src/App.vue', source: vueAppAdvanced },
+      { path: 'src/main.ts', source: vueMainTs },
+      { path: 'src/styles.css', source: vueStylesCss }
     ]
   }
 ];

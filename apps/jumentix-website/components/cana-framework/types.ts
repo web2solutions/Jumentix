@@ -2,28 +2,31 @@ import type { CanaChangeEvent } from '@jumentix/cana';
 
 export type LocaleText = { en: string; 'pt-BR': string };
 
-export type TaskCategory = {
+export type Categoria = {
   id: string;
-  name: string;
-  color: string;
-  createdAt: number;
-  updatedAt: number;
+  nome: string;
+  cor: string;
+  criadaEm: number;
+  atualizadaEm: number;
 };
 
-export type Task = {
+export type Tarefa = {
   id: string;
-  title: string;
-  categoryId: string;
-  completed: boolean;
-  priority: 'low' | 'medium' | 'high';
-  notes?: string;
-  createdAt: number;
-  updatedAt: number;
+  titulo: string;
+  categoriaId: string;
+  concluida: boolean;
+  prioridade: 'baixa' | 'media' | 'alta';
+  notas?: string;
+  criadaEm: number;
+  atualizadaEm: number;
 };
+
+export type TaskCategory = Categoria;
+export type Task = Tarefa;
 
 export type TaskDemoSnapshot = {
-  categories: TaskCategory[];
-  tasks: Task[];
+  categories: Categoria[];
+  tasks: Tarefa[];
 };
 
 export type CanaFrameworkExampleId =
@@ -40,6 +43,10 @@ export type CanaFrameworkExample = {
   level: 'simple' | 'advanced';
   title: LocaleText;
   description: LocaleText;
+  download?: {
+    href: string;
+    label: LocaleText;
+  };
   files: Array<{
     path: string;
     source: string;
