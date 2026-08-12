@@ -27,10 +27,15 @@ describe('DocsPlayground catalogs', () => {
 });
 
 describe('DocsPlayground', () => {
-  it('renders Run/Reset and static code for cana', () => {
+  it('renders Run/Reset and keeps agent code as hidden markdown for cana', () => {
     render(<DocsPlayground runtime="cana" id="getting-started" />);
     expect(screen.getByTestId('docs-playground-cana-getting-started')).toBeInTheDocument();
     expect(screen.getByTestId('docs-playground-cana-getting-started-run')).toBeInTheDocument();
-    expect(screen.getByTestId('docs-playground-cana-getting-started-static')).toBeInTheDocument();
+
+    const agentMarkdown = screen.getByTestId('docs-playground-cana-getting-started-static');
+    expect(screen.queryByText('Code (copy for agents/LLMs)')).not.toBeInTheDocument();
+    expect(agentMarkdown).not.toBeVisible();
+    expect(agentMarkdown).toHaveAttribute('data-agent-markdown', 'docs-playground-static-code');
+    expect(agentMarkdown).toHaveTextContent('```ts');
   });
 });

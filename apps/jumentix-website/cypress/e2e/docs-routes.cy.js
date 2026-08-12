@@ -57,6 +57,8 @@ describe('Cana playground', () => {
     const ids = playgroundIds('cana', 'getting-started');
     cy.visitQuiet('/docs/jumentix/packages/cana');
     cy.get(`[data-testid="${ids.root}"]`).should('exist');
+    assertNoVisibleAgentOnlyMetadata();
+    assertAgentMarkdownPayload(`[data-testid="${ids.root}"]`);
     cy.get(`[data-testid="${ids.run}"]`).click();
     cy.get(`[data-testid="${ids.output}"]`, { timeout: 15000 })
       .should('exist')
@@ -92,6 +94,54 @@ function assertMonacoMounted(scopeSelector) {
   cy.get(scopeSelector).find('.monaco-editor', { timeout: 20000 }).should('exist');
 }
 
+function textNodeIsVisible(node) {
+  let element = node.parentElement;
+  while (element) {
+    const style = node.ownerDocument.defaultView.getComputedStyle(element);
+    if (
+      element.hidden ||
+      style.display === 'none' ||
+      style.visibility === 'hidden' ||
+      style.opacity === '0'
+    ) {
+      return false;
+    }
+    element = element.parentElement;
+  }
+  return true;
+}
+
+function assertNoVisibleAgentOnlyMetadata() {
+  cy.document().then((document) => {
+    const walker = document.createTreeWalker(
+      document.body,
+      document.defaultView.NodeFilter.SHOW_TEXT
+    );
+    const visibleMatches = [];
+    let node = walker.nextNode();
+    while (node) {
+      const text = node.nodeValue || '';
+      if (
+        (/Code \(copy for agents\/LLMs\)/i.test(text) || /^Source:\s*/i.test(text.trim())) &&
+        textNodeIsVisible(node)
+      ) {
+        visibleMatches.push(text.trim());
+      }
+      node = walker.nextNode();
+    }
+    expect(visibleMatches, 'agent-only code labels and source metadata should be hidden')
+      .to.deep.equal([]);
+  });
+}
+
+function assertAgentMarkdownPayload(rootSelector) {
+  cy.get(rootSelector)
+    .find('[data-agent-markdown="docs-playground-static-code"]')
+    .should('exist')
+    .and('not.be.visible')
+    .and('contain.text', '```ts');
+}
+
 describe('Cana framework tutorial playgrounds', () => {
   const tutorials = [
     ['/docs/jumentix/packages/cana/react-context', ['react-context-basic', 'react-context-advanced']],
@@ -103,6 +153,7 @@ describe('Cana framework tutorial playgrounds', () => {
     it(`runs every Cana framework playground on ${path}`, () => {
       cy.visitQuiet(path);
       assertDarkDocsThemeIsReadable();
+      assertNoVisibleAgentOnlyMetadata();
 
       for (const exampleId of exampleIds) {
         const ids = canaFrameworkIds(exampleId);
@@ -135,6 +186,8 @@ describe('Docs playground matrix', () => {
       const ids = playgroundIds(runtime, id);
       cy.visitQuiet(path);
       cy.get(`[data-testid="${ids.root}"]`).should('exist');
+      assertNoVisibleAgentOnlyMetadata();
+      assertAgentMarkdownPayload(`[data-testid="${ids.root}"]`);
       assertMonacoMounted(`[data-testid="${ids.root}"]`);
       cy.get(`[data-testid="${ids.run}"]`).click();
       cy.get(`[data-testid="${ids.output}"]`, { timeout: 15000 }).should('exist');
@@ -156,6 +209,8 @@ describe('designer-core playground', () => {
     const ids = playgroundIds('designer-core', 'getting-started');
     cy.visitQuiet('/docs/jumentix/guides/spa-pwa');
     cy.get(`[data-testid="${ids.root}"]`).should('exist');
+    assertNoVisibleAgentOnlyMetadata();
+    assertAgentMarkdownPayload(`[data-testid="${ids.root}"]`);
     assertMonacoMounted(`[data-testid="${ids.root}"]`);
     cy.get(`[data-testid="${ids.run}"]`).click();
     cy.get(`[data-testid="${ids.output}"]`, { timeout: 15000 })
@@ -168,6 +223,7 @@ describe('documentation routes and compatibility redirects', () => {
   for (const [path, includes] of documentationRoutes) {
     it(`renders ${path}`, () => {
       cy.visitQuiet(path);
+      assertNoVisibleAgentOnlyMetadata();
       for (const fragment of includes) {
         cy.contains(fragment, { matchCase: false }).should('exist');
       }

@@ -1254,6 +1254,10 @@ Headings:
 - Three things to know before using it
 - Errors are plain data
 - Try it in the browser
+- Design notes
+- Postgres-shaped architecture
+- Worker model
+- Performance data
 - Junior checklist (“I can …”)
 - Framework tutorials
 - Next step

@@ -66,6 +66,78 @@ Run a first client against IndexedDB in this page:
 
 <CanaPlayground id="getting-started" />
 
+## Design notes
+
+Cana is intentionally closer to a small browser database engine than to a
+frontend state store. IndexedDB owns the durable storage; Cana adds the client
+surface, explicit transaction outcomes, change replay, crash reconciliation and
+an optional worker boundary for applications that need to move persistence work
+off the UI thread.
+
+### Postgres-shaped architecture
+
+The analogy is scoped, but useful. PostgreSQL records changes through
+[write-ahead logging](https://www.postgresql.org/docs/current/wal-intro.html),
+keeps foreground work separate from maintenance work through processes such as
+the [background writer](https://www.postgresql.org/docs/current/runtime-config-resource.html),
+and lets extensions run [background workers](https://www.postgresql.org/docs/current/bgworker.html).
+Cana maps those ideas to browser primitives instead of shipping a server:
+
+- **Storage layer:** IndexedDB is the durable page/store layer and owns atomic
+  commit and rollback. The localStorage fallback is explicit and degraded.
+- **Commit boundary:** a Cana transaction is the unit of durability. Change
+  events are buffered during the body and released only after IndexedDB
+  `oncomplete`, so subscribers never react to writes that later roll back.
+- **Logical change stream:** subscribers receive committed `CanaChangeEvent`
+  entries with monotonically increasing cursors. `sinceCursor` can replay a
+  bounded retained window; if the requested cursor is too old, Cana reports that
+  the UI must resync instead of pretending the replay was complete.
+- **Crash reconciliation:** `operationLedger: true` writes an operation record in
+  the same transaction as the data. After a killed worker, closed tab, or lost
+  response, `resolveWrite()` can distinguish `committed`, `rolled-back` and
+  `unresolvable`.
+- **State-management boundary:** Cana does not replace React Context, Redux,
+  Pinia, Zustand or another UI store. The recommended shape is to treat Cana as
+  the durable source of truth, subscribe to Cana events, then update the
+  framework store from those committed events.
+
+### Worker model
+
+`createWorkerHost()` runs a real Cana client behind a `MessagePort` or dedicated
+`Worker`. `createRouter()` and `createWorkerClient()` sit on the page side and
+turn typed method calls into plain messages.
+
+- Messages are structured-cloneable data only: no functions, DOM objects,
+  `IDBRequest` instances, class instances or `Error` subclasses cross the
+  boundary.
+- Every request carries a `requestId`, because a worker can answer concurrent
+  requests out of order.
+- The default request timeout is 15 seconds. Timed-out reads report
+  `Unavailable`; timed-out writes report `UnknownOutcome`, because the worker
+  may have committed before it died or before the response was posted.
+- The host broadcasts committed changes as `{ kind: 'change', event }`, which is
+  the hook used by React Context, Redux and Pinia tutorials to refresh their
+  component state.
+- Multi-operation `transaction()` bodies do not cross the worker boundary
+  because the body is a function. Run that transaction inside the worker, or
+  send individual write requests through `createWorkerClient()`.
+
+### Performance data
+
+Cana's browser performance suite runs against real disk-backed IndexedDB and
+uses ratio assertions rather than absolute millisecond promises. That keeps the
+data portable across CI runners and user machines while still proving the
+important shape of the engine.
+
+| Operation | Data set | Current performance contract |
+| --- | --- | --- |
+| Limited query | 1,000 rows vs 10,000 rows, `limit: 10` | The 10,000-row median stays at most `max(4x the 1,000-row median, 5ms)`. |
+| Indexed lookup | 1,000 rows vs 10,000 rows, 100 indexed groups | The 10,000-row median stays below `max(25x the 1,000-row median, 20ms)` even though the matching result set grows 10x. |
+| Native count | 10,000 rows | `count()` must be faster than reading every row with a full query. |
+| Primary-key get | 1,000 rows vs 10,000 rows | The 10,000-row median stays at most `max(4x the 1,000-row median, 5ms)`. |
+| Bulk add | 10,000 rows | A single `bulkAdd()` commits all rows and the final count is exactly 10,000. |
+| Deep pagination | 10,000 rows, `offset: 9000`, `limit: 20` | The deep page stays below `max(60x an early-page median, 60ms)`, proving cursor advance instead of materializing 9,000 rows. |
+
 ## Junior checklist (“I can …”)
 
 - [ ] Open a client, add a row, and read it back.

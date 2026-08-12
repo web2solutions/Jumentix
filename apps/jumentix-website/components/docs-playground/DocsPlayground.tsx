@@ -31,6 +31,17 @@ function formatOutput(value: unknown): string {
   }
 }
 
+function agentMarkdownForCode(title: string, source: string): string {
+  return [
+    `### ${title}`,
+    '',
+    '```ts',
+    source,
+    '```',
+    ''
+  ].join('\n');
+}
+
 export function DocsPlayground({
   runtime,
   id = 'getting-started',
@@ -64,7 +75,6 @@ export function DocsPlayground({
         reset: 'Resetar',
         output: 'Resultado',
         logs: 'Console',
-        staticCode: 'Código (cópia para agentes/LLM)',
         missing: 'Snippet não encontrado.',
         title: snippet?.title['pt-BR'] ?? id,
         description: snippet?.description['pt-BR'] ?? ''
@@ -74,7 +84,6 @@ export function DocsPlayground({
         reset: 'Reset',
         output: 'Result',
         logs: 'Console',
-        staticCode: 'Code (copy for agents/LLMs)',
         missing: 'Snippet not found.',
         title: snippet?.title.en ?? id,
         description: snippet?.description.en ?? ''
@@ -146,18 +155,13 @@ export function DocsPlayground({
           ) : null}
         </div>
 
-        <Stack gap={4}>
-          <Text fw={600} size="sm">{labels.staticCode}</Text>
-          <MonacoCodeBlock
-            value={initialCode}
-            language="typescript"
-            readOnly
-            minHeight={140}
-            maxHeight={360}
-            ariaLabel={`${labels.title} static code`}
-            testId={`${testId}-static`}
-          />
-        </Stack>
+        <pre
+          hidden
+          data-agent-markdown="docs-playground-static-code"
+          data-testid={`${testId}-static`}
+        >
+          {agentMarkdownForCode(labels.title, initialCode)}
+        </pre>
 
         <MonacoCodeBlock
           value={draft}
