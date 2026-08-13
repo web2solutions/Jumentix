@@ -17,6 +17,7 @@ import {
   IconSearch,
 } from '@tabler/icons-react';
 import { MonacoCodeBlock } from '../code/MonacoCodeBlock';
+import { trimTrailingBlankCodeLines } from '../code/normalizeCode';
 import classes from './DesignSystem.module.css';
 
 export type ActionLinkProps = {
@@ -223,10 +224,11 @@ export function CodeShowcase({
   const [active, setActive] = useState(0);
   const [copied, setCopied] = useState(false);
   const sample = samples[active] ?? samples[0];
+  const sampleCode = sample ? trimTrailingBlankCodeLines(sample.code) : '';
 
   const copy = async () => {
     if (!sample) return;
-    await navigator.clipboard?.writeText(sample.code);
+    await navigator.clipboard?.writeText(sampleCode);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1200);
   };
@@ -263,7 +265,7 @@ export function CodeShowcase({
       </div>
       <div id="jtx-code-panel" role="tabpanel">
         <MonacoCodeBlock
-          value={sample.code}
+          value={sampleCode}
           language={sample.language}
           readOnly
           minHeight={160}

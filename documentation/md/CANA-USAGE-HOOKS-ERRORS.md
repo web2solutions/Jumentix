@@ -1,7 +1,7 @@
 # Hooks and errors
 
 Hooks keep write-time policies close to persistence. Error guards keep recovery
-branches stable across IndexedDB, localStorage and worker boundaries.
+branches stable across storage and worker boundaries.
 
 ## Write hooks
 
@@ -91,7 +91,7 @@ try {
 | `ConstraintViolation` | Duplicate key or unique index conflict. | Show create-only conflict UI. |
 | `NotFound` | `update()` target missing or replay cursor too old. | Reload durable state, then subscribe again. |
 | `TransactionInactive` | Awaited non-IndexedDB work inside a transaction. | Move network/timer work outside the transaction body. |
-| `QuotaExceeded` | Browser storage full or localStorage fallback too small. | Export, clear or ask for persistent storage. |
+| `QuotaExceeded` | Browser storage quota is full. | Export, clear or ask for persistent storage. |
 | `UnknownOutcome` | Worker/tab died while a write was in flight. | Use `operationLedger` and `resolveWrite()`. |
 
 ## Run it here

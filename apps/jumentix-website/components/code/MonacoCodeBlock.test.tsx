@@ -41,6 +41,22 @@ describe('MonacoCodeBlock mount (JUM-701)', () => {
     expect(editor.host).toBe(screen.getByTestId('mount').querySelector('.jtx-monaco-code__editor'));
   });
 
+  it('removes trailing blank lines before rendering code', async () => {
+    expect.hasAssertions();
+
+    render(<MonacoCodeBlock value={'const answer = 42;\n\n  \n'} language="ts" testId="trim" />);
+
+    await waitFor(() => expect(monacoTestState.editors).toHaveLength(1));
+
+    const [model] = monacoTestState.models;
+    const fallback = screen
+      .getByTestId('trim')
+      .querySelector('.jtx-monaco-code__fallback code') as HTMLElement;
+
+    expect(model.getValue()).toBe('const answer = 42;');
+    expect(fallback.textContent).toBe('const answer = 42;');
+  });
+
   it('hides the fallback once the editor is up', async () => {
     expect.hasAssertions();
 

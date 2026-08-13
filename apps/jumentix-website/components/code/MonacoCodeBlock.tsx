@@ -3,6 +3,7 @@
 import type * as Monaco from 'monaco-editor';
 import type { CSSProperties, HTMLAttributes } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { trimTrailingBlankCodeLines } from './normalizeCode';
 
 type MonacoApi = typeof Monaco;
 type MonacoEditor = Monaco.editor.IStandaloneCodeEditor;
@@ -192,10 +193,11 @@ export function MonacoCodeBlock({
   const [scheme, setScheme] = useState<'light' | 'dark'>(getColorScheme);
   const schemeRef = useRef(scheme);
   const normalizedLanguage = useMemo(() => normalizeLanguage(language), [language]);
+  const normalizedValue = useMemo(() => trimTrailingBlankCodeLines(value), [value]);
   const dataTestId = testId ?? (rootProps as { 'data-testid'?: string })['data-testid'];
   const height = useMemo(
-    () => getEditorHeight(value, minHeight, maxHeight),
-    [maxHeight, minHeight, value]
+    () => getEditorHeight(normalizedValue, minHeight, maxHeight),
+    [maxHeight, minHeight, normalizedValue]
   );
 
   useEffect(() => {
@@ -232,7 +234,7 @@ export function MonacoCodeBlock({
       defineThemes(monaco);
       monaco.editor.setTheme(scheme === 'dark' ? 'jumentix-dark' : 'jumentix-light');
 
-      const model = monaco.editor.createModel(value, normalizedLanguage);
+      const model = monaco.editor.createModel(normalizedValue, normalizedLanguage);
       const editor = monaco.editor.create(hostRef.current, {
         model,
         automaticLayout: true,
@@ -259,7 +261,7 @@ export function MonacoCodeBlock({
       });
 
       if (onChange) {
-        editor.onDidChangeModelContent(() => onChange(model.getValue()));
+        editor.onDidChangeModelContent(() => onChange(trimTrailingBlankCodeLines(model.getValue())));
       }
 
       monacoRef.current = monaco;
@@ -285,9 +287,10 @@ export function MonacoCodeBlock({
 
   useEffect(() => {
     const model = modelRef.current;
-    if (!model || model.getValue() === value) return;
-    model.setValue(value);
-  }, [value]);
+    if (!model || model.getValue() === normalizedValue) return;
+    model.setValue(normalizedValue);
+    editorRef.current?.layout();
+  }, [normalizedValue]);
 
   useEffect(() => {
     const monaco = monacoRef.current;
@@ -339,7 +342,7 @@ export function MonacoCodeBlock({
         aria-hidden="false"
         data-mounted="false"
       >
-        <code data-language={normalizedLanguage}>{value}</code>
+        <code data-language={normalizedLanguage}>{normalizedValue}</code>
       </pre>
     </div>
   );

@@ -29,6 +29,7 @@ import React, { createContext, useContext, useMemo, useReducer, useRef, useState
 import { createRoot } from 'react-dom/client';
 import { theme as jumentixTheme } from '../../theme';
 import { languageFromPath, MonacoCodeBlock } from '../code/MonacoCodeBlock';
+import { trimTrailingBlankCodeLines } from '../code/normalizeCode';
 import { deleteEphemeralDatabase } from '../docs-playground/runSnippet';
 import { getCanaFrameworkExample } from './catalog';
 import type {
@@ -648,20 +649,19 @@ function formatOutput(value: unknown): string {
 }
 
 function agentMarkdownForExample(example: CanaFrameworkExample, locale: 'en' | 'pt-BR'): string {
+  const fileBlocks = example.files.map((file) => [
+    `#### ${file.path}`,
+    '',
+    `\`\`\`${languageFromPath(file.path)}`,
+    trimTrailingBlankCodeLines(file.source),
+    '```'
+  ].join('\n'));
+
   return [
     `### ${example.title[locale]}`,
-    '',
     example.description[locale],
-    '',
-    ...example.files.flatMap((file) => [
-      `#### ${file.path}`,
-      '',
-      `\`\`\`${languageFromPath(file.path)}`,
-      file.source,
-      '```',
-      ''
-    ])
-  ].join('\n');
+    ...fileBlocks
+  ].join('\n\n');
 }
 
 export type CanaFrameworkPlaygroundProps = {
@@ -824,7 +824,7 @@ export function CanaFrameworkPlayground({ id }: CanaFrameworkPlaygroundProps) {
           {example.files.map((file) => (
             <Tabs.Panel key={file.path} value={file.path} pt="xs">
               <MonacoCodeBlock
-                value={file.source}
+                value={trimTrailingBlankCodeLines(file.source)}
                 language={languageFromPath(file.path)}
                 readOnly
                 minHeight={220}

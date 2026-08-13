@@ -86,8 +86,7 @@ console.log({ backend: client.backend, categories, tasks });
 
 - `open()` é explícito. O Cana não esconde upgrade de schema atrás de um `get()`
   ou `put()` sem relação.
-- `client.backend` informa se o navegador abriu IndexedDB ou caiu para
-  localStorage.
+- `client.backend` informa qual backend de storage abriu, útil para diagnóstico.
 - Nomes de tabela são strings porque atravessam fronteiras de worker e
   IndexedDB. Mantenha nomes estáveis e pequenos: `categories`, `tasks`.
 - Estado de UI não fica no Cana. Guarde estado renderizado em React, Redux,

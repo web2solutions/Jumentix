@@ -1463,7 +1463,7 @@ Assess durability, export/import data and resolve uncertain writes.
 
 Headings:
 - Storage and crash recovery
-- Backend selection
+- Storage assessment
 - Export and import
 - Resolve an uncertain write
 - Run it here

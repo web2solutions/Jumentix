@@ -236,6 +236,55 @@ bun run test:integration
 bun run ci:gate`,
     },
   ],
+  tooling: [
+    {
+      label: 'Fast local loop',
+      language: 'shell',
+      code: `bun install
+bun run website:dev
+bun run ci:affected`,
+    },
+    {
+      label: 'Workspace gates',
+      language: 'shell',
+      code: `bun run check-bun-version
+bun run requirements:check
+bun run test-map:check
+bun run ci:gate:branch`,
+    },
+    {
+      label: 'Package workflow',
+      language: 'shell',
+      code: `bun run packages:check-suites
+bun run npm:publish:dry-run:packages
+bun run release:governance:check`,
+    },
+  ],
+  quality: [
+    {
+      label: 'Requirements',
+      language: 'shell',
+      code: `bun run requirements:check
+bun run docs:consumers:package-scripts
+bun run website:test:prepublish`,
+    },
+    {
+      label: 'Tests',
+      language: 'shell',
+      code: `bun run test:unit
+bun run test:integration
+bun run website:test:routes
+bun run website:test:cypress`,
+    },
+    {
+      label: 'Architecture',
+      language: 'shell',
+      code: `bun run deps:check-cycles
+bun run arch:check-boundaries
+bun run arch:check-workspace-boundaries
+bun run oas:check-routes`,
+    },
+  ],
 };
 
 function PageHero({
@@ -304,6 +353,104 @@ function FinalCta({ locale }: { locale: CommercialLocale }) {
             GitHub
           </ActionLink>
         </div>
+      </div>
+    </Band>
+  );
+}
+
+function BunToolingBand({
+  locale,
+  alternate = false,
+}: {
+  locale: CommercialLocale;
+  alternate?: boolean;
+}) {
+  const packageScriptsHref = locale === 'pt-BR'
+    ? '/docs/pt-BR/jumentix/reference/package-scripts'
+    : '/docs/jumentix/reference/package-scripts';
+
+  return (
+    <Band alternate={alternate}>
+      <div className={classes.sectionStack}>
+        <SectionHeading
+          eyebrow={t(locale, 'Bun-powered tooling', 'Tooling movido a Bun')}
+          title={t(locale, 'The fast path is the default path', 'O caminho rápido é o caminho padrão')}
+          description={t(
+            locale,
+            'Jumentix standardizes on Bun as the pinned monorepo runtime, package manager, script runner, test runner and browser-spec bundler. That keeps local work, CI gates, package checks and website publishing on one toolchain.',
+            'O Jumentix padroniza Bun como runtime, gerenciador de pacotes, executor de scripts, test runner e bundler das specs de browser do monorepo. Isso mantém trabalho local, gates de CI, checagens de pacote e publicação do site em uma ferramenta só.',
+          )}
+        />
+        <div className={classes.twoColumn}>
+          <div className={classes.prose}>
+            <h2>{t(locale, 'Why Bun matters here', 'Por que Bun importa aqui')}</h2>
+            <p>
+              {t(
+                locale,
+                'The repository uses Bun where it actually reduces friction: fast installs with workspaces, direct TypeScript execution, repeatable package scripts, focused branch gates, and browser-test bundling before Cypress runs against real IndexedDB and DOM APIs.',
+                'O repositório usa Bun onde ele realmente reduz atrito: installs rápidos com workspaces, execução direta de TypeScript, scripts repetíveis, gates focados por branch e bundling das specs de browser antes de o Cypress rodar contra IndexedDB e DOM reais.',
+              )}
+            </p>
+            <ProofList items={[
+              t(locale, 'One pinned version, `bun@1.3.14`, protects every workspace from “works on my machine” drift.', 'Uma versão pinada, `bun@1.3.14`, protege todos os workspaces contra drift de ambiente.'),
+              t(locale, '`bun run --filter` lets package checks stay scoped while full gates remain available for release work.', '`bun run --filter` mantém checagens de pacote focadas enquanto gates completos seguem disponíveis para release.'),
+              t(locale, 'Bun bundles Cana browser specs before Cypress, avoiding Cypress webpack fragility while preserving real-browser evidence.', 'Bun empacota specs browser do Cana antes do Cypress, evitando fragilidade do webpack do Cypress sem perder evidência em browser real.'),
+              t(locale, 'The same CLI drives local dev, docs sync, package dry-runs, security checks and production website publishing.', 'A mesma CLI move dev local, sync de docs, dry-runs de pacote, checagens de segurança e publicação do site em produção.'),
+            ]} />
+            <div className={classes.sectionActions}>
+              <ActionLink href={packageScriptsHref} variant="secondary">
+                {t(locale, 'See Jumentix scripts', 'Ver scripts Jumentix')}
+              </ActionLink>
+              <ActionLink href="https://bun.sh/docs" variant="quiet" external>
+                Bun docs
+              </ActionLink>
+            </div>
+          </div>
+          <CodeShowcase samples={codeSamples.tooling} title={t(locale, 'Bun tooling commands', 'Comandos Bun do tooling')} />
+        </div>
+        <MetricStrip metrics={[
+          { value: '1', label: t(locale, 'runtime/package/test/bundle tool', 'ferramenta de runtime/pacote/teste/bundle') },
+          { value: '1.3.14+', label: t(locale, 'pinned Bun version', 'versão Bun pinada') },
+          { value: '3', label: t(locale, 'workspace roots: apps, packages, tooling', 'raízes: apps, packages, tooling') },
+          { value: '30x', label: t(locale, 'official Bun install-speed ceiling vs npm', 'teto oficial de velocidade de install vs npm') },
+        ]} />
+      </div>
+    </Band>
+  );
+}
+
+function QualityEvidenceBand({
+  locale,
+  alternate = false,
+}: {
+  locale: CommercialLocale;
+  alternate?: boolean;
+}) {
+  return (
+    <Band alternate={alternate}>
+      <div className={classes.sectionStack}>
+        <SectionHeading
+          eyebrow={t(locale, 'Quality as product surface', 'Qualidade como superfície do produto')}
+          title={t(locale, 'Requirements, tests and evidence are not hidden plumbing', 'Requisitos, testes e evidências não ficam escondidos')}
+          description={t(
+            locale,
+            'Jumentix treats quality as part of the user-facing promise. Requirements are checked, tests are mapped, architecture rules are executable, and publish paths carry evidence instead of relying on ceremony.',
+            'O Jumentix trata qualidade como parte da promessa visível do produto. Requisitos são checados, testes são mapeados, regras de arquitetura são executáveis e caminhos de publicação carregam evidências em vez de depender de cerimônia.',
+          )}
+        />
+        <MetricStrip metrics={[
+          { value: '99/90', label: t(locale, 'statement/branch quality standard', 'padrão de statements/branches') },
+          { value: 'reqs', label: t(locale, 'requirements tied to executable checks', 'requisitos ligados a checagens executáveis') },
+          { value: '0', label: t(locale, 'tolerance for hidden docs drift', 'tolerância a drift oculto de docs') },
+          { value: 'real', label: t(locale, 'browser tests for browser APIs', 'testes browser para APIs browser') },
+        ]} />
+        <DetailGrid items={[
+          { title: t(locale, 'Requirement registry', 'Registro de requisitos'), description: t(locale, 'Delivery work is expected to connect behavior, docs, tests and release evidence so “done” is auditable.', 'O trabalho de entrega conecta comportamento, docs, testes e evidência de release para que “pronto” seja auditável.'), meta: 'requirements:check', icon: <IconShieldCheck /> },
+          { title: t(locale, 'Reliable tests', 'Testes confiáveis'), description: t(locale, 'Unit, integration, Cypress route sweeps, browser specs and Storybook smoke checks cover the surface each layer actually owns.', 'Unit, integração, route sweep Cypress, specs de browser e smoke de Storybook cobrem a superfície real de cada camada.'), meta: 'test-map:check', icon: <IconGitBranch /> },
+          { title: t(locale, 'Executable architecture', 'Arquitetura executável'), description: t(locale, 'Boundary scripts reject imports and shortcuts that would leak frameworks, databases or infrastructure into domain code.', 'Scripts de limite rejeitam imports e atalhos que vazariam frameworks, bancos ou infraestrutura para o domínio.'), meta: 'arch:check-*', icon: <IconHierarchy3 /> },
+          { title: t(locale, 'Publish discipline', 'Disciplina de publicação'), description: t(locale, 'Content sync, route checks, package dry-runs and release governance run before public artifacts move.', 'Sync de conteúdo, checagens de rota, dry-runs de pacote e governança de release rodam antes de artefatos públicos avançarem.'), meta: 'website:test:prepublish', icon: <IconRocket /> },
+        ]} />
+        <CodeShowcase samples={codeSamples.quality} title={t(locale, 'Quality commands', 'Comandos de qualidade')} />
       </div>
     </Band>
   );
@@ -537,6 +684,8 @@ function Home({ locale }: { locale: CommercialLocale }) {
           <CodeShowcase samples={codeSamples.start} title={t(locale, 'Start Jumentix', 'Inicie o Jumentix')} />
         </div>
       </Band>
+      <BunToolingBand locale={locale} />
+      <QualityEvidenceBand locale={locale} />
       <Band alternate>
         <div className={classes.sectionStack}>
           <SectionHeading
@@ -597,6 +746,7 @@ function Product({ locale }: { locale: CommercialLocale }) {
           ]} />
         </div>
       </Band>
+      <BunToolingBand locale={locale} alternate />
       <Band alternate>
         <div className={classes.sectionStack}>
           <SectionHeading
@@ -616,6 +766,7 @@ function Product({ locale }: { locale: CommercialLocale }) {
           ]} />
         </div>
       </Band>
+      <QualityEvidenceBand locale={locale} />
       <Band>
         <div className={classes.twoColumn}>
           <div className={classes.prose}>
@@ -826,6 +977,7 @@ function Integrations({ locale }: { locale: CommercialLocale }) {
   return (
     <>
       <PageHero locale={locale} eyebrow={t(locale, 'Integrations', 'Integrações')} title={t(locale, 'Choose infrastructure per service, not per platform', 'Escolha a infraestrutura por serviço, não por plataforma')} description={t(locale, 'Jumentix keeps technology decisions at the adapter boundary, where they can be tested and replaced.', 'O Jumentix mantém decisões de tecnologia no limite dos adaptadores, onde podem ser testadas e substituídas.')} />
+      <BunToolingBand locale={locale} />
       <Band>
         <div className={classes.sectionStack}>
           <SectionHeading
@@ -1003,6 +1155,7 @@ function Architecture({ locale }: { locale: CommercialLocale }) {
           ]} />
         </div>
       </Band>
+      <QualityEvidenceBand locale={locale} alternate />
       <FinalCta locale={locale} />
     </>
   );

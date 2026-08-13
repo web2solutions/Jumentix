@@ -17,7 +17,7 @@ const INVALID_LINK_PATTERNS = [
   /href="\s*$/,
 ];
 
-const EXTERNAL_DOMAINS = ['github.com', 'vercel.com', 'mantine.dev', 'tabler.io'];
+const EXTERNAL_DOMAINS = ['github.com', 'vercel.com', 'mantine.dev', 'tabler.io', 'bun.sh'];
 
 function extractInternalLinks(html: string): string[] {
   const links: string[] = [];
