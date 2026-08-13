@@ -369,52 +369,51 @@ export class RestAPI<T> {
     await this.seedUsers();
   }
 
+  /**
+   * Seeded one at a time, on purpose (JUM-687).
+   *
+   * This used to run every create concurrently through `Promise.all`. Seeding a
+   * handful of fixtures is not a throughput path — the concurrency bought
+   * nothing and put several writers on the same organization record at once,
+   * which is the shape the intermittent CI failures point at: a user that
+   * exists but is not where a later request expects to find it.
+   */
   public async seedOrganizations(): Promise<any[]> {
     const { organizationUseCases } = this.composeUsersModule();
-    const requests: Promise<any>[] = [];
+    const seeded: any[] = [];
+
     for (const organization of organizations) {
-      requests.push(new Promise((resolve, reject) => {
-        (async () => {
-          try {
-            const existing = await organizationUseCases.getOneById(organization.id);
-            if (existing.result) {
-              resolve(existing.result);
-              return;
-            }
-            const created = await organizationUseCases.create(organization as any);
-            if (created.error) throw created.error;
-            if (!created.result) throw new Error('Organization seed failed');
-            resolve(created.result);
-          } catch (error: any) {
-            reject(new Error(error.message));
-          }
-        })();
-      }));
+      // eslint-disable-next-line no-await-in-loop
+      const existing = await organizationUseCases.getOneById(organization.id);
+      if (existing.result) {
+        seeded.push(existing.result);
+      } else {
+        // eslint-disable-next-line no-await-in-loop
+        const created = await organizationUseCases.create(organization as any);
+        if (created.error) throw new Error((created.error as Error).message);
+        if (!created.result) throw new Error('Organization seed failed');
+        seeded.push(created.result);
+      }
     }
-    return Promise.all(requests);
+
+    return seeded;
   }
 
+  /** Sequential for the same reason as `seedOrganizations` (JUM-687). */
   public async seedUsers(): Promise<IUser[]> {
     await this.seedOrganizations();
     const { userUseCases } = this.composeUsersModule();
-    const requests: Promise<IUser>[] = [];
+    const seeded: IUser[] = [];
+
     for (const user of users) {
-      requests.push(new Promise((resolve, reject) => {
-        (async () => {
-          try {
-            const newUser = await userUseCases.create(user);
-            if (newUser.error) throw newUser.error;
-            if (!newUser.result) throw new Error('User seed failed');
-            resolve(newUser.result);
-          } catch (error: any) {
-            // console.log(error.message);
-            reject(new Error(error.message));
-          }
-        })();
-      }));
+      // eslint-disable-next-line no-await-in-loop
+      const newUser = await userUseCases.create(user);
+      if (newUser.error) throw new Error((newUser.error as Error).message);
+      if (!newUser.result) throw new Error('User seed failed');
+      seeded.push(newUser.result);
     }
-    return Promise.all(requests);
-    // console.log('>>>> done');
+
+    return seeded;
   }
 
   public async deleteUsers(): Promise<boolean[]> {
