@@ -430,27 +430,54 @@ function BulkDlqMetricsCharts({
   locale: Locale;
   testId: string;
 }) {
-  const attempted = flowState.attempted;
+  const hasFinalMetrics = flowState.hasRun;
+  const attempted = hasFinalMetrics
+    ? flowState.attempted
+    : Math.max(
+        liveMetrics.attempted,
+        liveMetrics.processed + liveMetrics.rejected + liveMetrics.replayed
+      );
+  const submitted = hasFinalMetrics ? flowState.submitted : liveMetrics.attempted;
+  const accepted = hasFinalMetrics ? flowState.accepted : liveMetrics.processed;
+  const rejected = hasFinalMetrics ? flowState.rejected : liveMetrics.rejected;
+  const interrupted = hasFinalMetrics ? flowState.interrupted : 0;
+  const replayed = hasFinalMetrics ? flowState.replayed : liveMetrics.replayed;
+  const finalTaskCount = hasFinalMetrics ? flowState.finalTaskCount : liveMetrics.processed + liveMetrics.replayed;
   const durationSeconds = Math.max(1, Number(metrics?.actualRunDurationMs ?? metrics?.streamDurationMs ?? 30000) / 1000);
   const throughput = attempted / durationSeconds;
   const outcomeBars = [
-    { key: 'accepted', label: locale === 'pt-BR' ? 'Criadas direto' : 'Created directly', value: flowState.accepted, tone: 'accepted' },
-    { key: 'rejected', label: locale === 'pt-BR' ? 'Lock -> DLQ' : 'Lock -> DLQ', value: flowState.rejected, tone: 'rejected' },
-    { key: 'interrupted', label: locale === 'pt-BR' ? 'Interrompidas' : 'Interrupted', value: flowState.interrupted, tone: 'interrupted' },
-    { key: 'replayed', label: locale === 'pt-BR' ? 'Reprocessadas' : 'Replayed', value: flowState.replayed, tone: 'replay' },
+    { key: 'accepted', label: locale === 'pt-BR' ? 'Criadas direto' : 'Created directly', value: accepted, tone: 'accepted' },
+    { key: 'rejected', label: locale === 'pt-BR' ? 'Lock -> DLQ' : 'Lock -> DLQ', value: rejected, tone: 'rejected' },
+    { key: 'interrupted', label: locale === 'pt-BR' ? 'Interrompidas' : 'Interrupted', value: interrupted, tone: 'interrupted' },
+    { key: 'replayed', label: locale === 'pt-BR' ? 'Reprocessadas' : 'Replayed', value: replayed, tone: 'replay' },
   ];
-  const comparisonTotal = Math.max(1, attempted, flowState.finalTaskCount, flowState.replayed);
+  const comparisonTotal = Math.max(1, attempted, finalTaskCount, replayed);
   const comparisonBars = [
     { key: 'attempted', label: locale === 'pt-BR' ? 'Entrada total' : 'Total input', value: attempted, tone: 'cana' },
-    { key: 'admitted', label: locale === 'pt-BR' ? 'Admitidas no controller' : 'Controller admitted', value: flowState.submitted, tone: 'cana' },
-    { key: 'direct', label: locale === 'pt-BR' ? 'Criadas sem retry' : 'Created without retry', value: flowState.accepted, tone: 'accepted' },
-    { key: 'dlq', label: locale === 'pt-BR' ? 'Rejeitadas para DLQ' : 'Rejected to DLQ', value: flowState.rejected, tone: 'rejected' },
-    { key: 'replayed', label: locale === 'pt-BR' ? 'Recuperadas por replay' : 'Recovered by replay', value: flowState.replayed, tone: 'replay' },
-    { key: 'final', label: locale === 'pt-BR' ? 'Persistidas no IndexedDB' : 'Persisted in IndexedDB', value: flowState.finalTaskCount, tone: 'accepted' },
+    { key: 'admitted', label: locale === 'pt-BR' ? 'Admitidas no controller' : 'Controller admitted', value: submitted, tone: 'cana' },
+    { key: 'direct', label: locale === 'pt-BR' ? 'Criadas sem retry' : 'Created without retry', value: accepted, tone: 'accepted' },
+    { key: 'dlq', label: locale === 'pt-BR' ? 'Rejeitadas para DLQ' : 'Rejected to DLQ', value: rejected, tone: 'rejected' },
+    { key: 'replayed', label: locale === 'pt-BR' ? 'Recuperadas por replay' : 'Recovered by replay', value: replayed, tone: 'replay' },
+    { key: 'final', label: locale === 'pt-BR' ? 'Persistidas no IndexedDB' : 'Persisted in IndexedDB', value: finalTaskCount, tone: 'accepted' },
   ];
-  const directPercent = percentOf(flowState.accepted, comparisonTotal);
-  const dlqPercent = percentOf(flowState.rejected, comparisonTotal);
-  const replayPercent = percentOf(flowState.replayed, comparisonTotal);
+  const firstPassTotal = Math.max(1, accepted + rejected + interrupted);
+  const unresolvedAfterReplay = Math.max(0, rejected - replayed);
+  const finalOutcomeTotal = Math.max(1, finalTaskCount + unresolvedAfterReplay + interrupted);
+  const admissionRate = percentOf(submitted, attempted);
+  const lockRejectionRate = percentOf(rejected, firstPassTotal);
+  const recoveryRate = percentOf(replayed, Math.max(1, rejected));
+  const persistedRate = percentOf(finalTaskCount, comparisonTotal);
+  const firstPassSegments = [
+    { key: 'accepted', label: locale === 'pt-BR' ? 'aceitas' : 'accepted', value: accepted, tone: 'accepted' },
+    { key: 'rejected', label: locale === 'pt-BR' ? 'lock rejeitou' : 'lock rejected', value: rejected, tone: 'rejected' },
+    { key: 'interrupted', label: locale === 'pt-BR' ? 'interrompidas' : 'interrupted', value: interrupted, tone: 'interrupted' },
+  ];
+  const finalOutcomeSegments = [
+    { key: 'persisted', label: locale === 'pt-BR' ? 'persistidas' : 'persisted', value: finalTaskCount, tone: 'accepted' },
+    { key: 'recovered', label: locale === 'pt-BR' ? 'via replay' : 'via replay', value: replayed, tone: 'replay' },
+    { key: 'unresolved', label: locale === 'pt-BR' ? 'não recuperadas' : 'not recovered', value: unresolvedAfterReplay, tone: 'rejected' },
+    { key: 'interrupted', label: locale === 'pt-BR' ? 'interrompidas' : 'interrupted', value: interrupted, tone: 'interrupted' },
+  ];
   const maxClientTotal = Math.max(1, ...flowState.reactClients.map((client) => Number(client.taskCount ?? 0)));
   const maxWorkerTotal = Math.max(1, ...canaState.workers.map((worker) => Number(worker.handledRequests ?? 0)));
   const samples = canaState.storageSamples.length > 0 ? canaState.storageSamples : [{ percent: 0 }];
@@ -512,14 +539,60 @@ function BulkDlqMetricsCharts({
 
       <article className={`${classes.metricsChart} ${classes.comparisonChart}`}>
         <h6>{locale === 'pt-BR' ? 'Comparação do pipeline' : 'Pipeline comparison'}</h6>
-        <svg className={classes.comparisonStack} viewBox="0 0 100 42" role="img" aria-label="direct rejected replayed comparison chart">
-          <rect x="0" y="4" width="100" height="8" rx="3" />
-          <rect x="0" y="17" width="100" height="8" rx="3" />
-          <rect x="0" y="30" width="100" height="8" rx="3" />
-          <rect data-tone="accepted" x="0" y="4" width={directPercent} height="8" rx="3" />
-          <rect data-tone="rejected" x="0" y="17" width={dlqPercent} height="8" rx="3" />
-          <rect data-tone="replayed" x="0" y="30" width={replayPercent} height="8" rx="3" />
-        </svg>
+        <div className={classes.comparisonSummary}>
+          <span>
+            <small>{locale === 'pt-BR' ? 'Admissão' : 'Admission'}</small>
+            <strong>{admissionRate.toFixed(1)}%</strong>
+          </span>
+          <span>
+            <small>{locale === 'pt-BR' ? 'Pressão no lock' : 'Lock pressure'}</small>
+            <strong>{lockRejectionRate.toFixed(1)}%</strong>
+          </span>
+          <span>
+            <small>{locale === 'pt-BR' ? 'DLQ recuperada' : 'DLQ recovered'}</small>
+            <strong>{recoveryRate.toFixed(1)}%</strong>
+          </span>
+          <span>
+            <small>{locale === 'pt-BR' ? 'Persistência final' : 'Final persistence'}</small>
+            <strong>{persistedRate.toFixed(1)}%</strong>
+          </span>
+        </div>
+        <div className={classes.comparisonFunnel} role="img" aria-label="pipeline comparison stacked bars">
+          <div className={classes.comparisonFunnelRow}>
+            <span>{locale === 'pt-BR' ? 'Primeira passagem pelo lock' : 'First lock pass'}</span>
+            <div className={classes.comparisonRail}>
+              {firstPassSegments.map((segment) => (
+                <i
+                  key={segment.key}
+                  data-tone={segment.tone}
+                  style={{ width: `${percentOf(segment.value, firstPassTotal)}%` }}
+                  title={`${segment.label}: ${formatCount(segment.value)}`}
+                />
+              ))}
+            </div>
+          </div>
+          <div className={classes.comparisonFunnelRow}>
+            <span>{locale === 'pt-BR' ? 'Estado final depois do replay' : 'Final state after replay'}</span>
+            <div className={classes.comparisonRail}>
+              {finalOutcomeSegments.map((segment) => (
+                <i
+                  key={segment.key}
+                  data-tone={segment.tone}
+                  style={{ width: `${percentOf(segment.value, finalOutcomeTotal)}%` }}
+                  title={`${segment.label}: ${formatCount(segment.value)}`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className={classes.comparisonLegend}>
+          {[...firstPassSegments, finalOutcomeSegments[1]].map((segment) => (
+            <span key={segment.key}>
+              <i data-tone={segment.tone} />
+              {segment.label}
+            </span>
+          ))}
+        </div>
         <div className={classes.barList}>
           {comparisonBars.map((bar) => {
             const width = percentOf(bar.value, comparisonTotal);
@@ -534,8 +607,8 @@ function BulkDlqMetricsCharts({
         </div>
         <p className={classes.comparisonNote}>
           {locale === 'pt-BR'
-            ? `${formatCount(flowState.replayed)} requests foram recuperadas depois do lock; ${formatCount(flowState.finalTaskCount)} chegaram ao banco.`
-            : `${formatCount(flowState.replayed)} requests were recovered after lock rejection; ${formatCount(flowState.finalTaskCount)} reached the database.`}
+            ? `${formatCount(replayed)} requests foram recuperadas depois do lock; ${formatCount(finalTaskCount)} chegaram ao banco.`
+            : `${formatCount(replayed)} requests were recovered after lock rejection; ${formatCount(finalTaskCount)} reached the database.`}
         </p>
       </article>
 
