@@ -73,7 +73,7 @@ Defina no projeto Vercel (Production + Preview):
 
 | Nome | Propósito |
 | --- | --- |
-| `GITHUB_TOKEN` | Commits do changelog + API de releases (`ChangelogPage`, `/api/github-releases`) |
+| `GITHUB_TOKEN` | API de releases do GitHub (`/api/github-releases`). Não é necessário para o `/changelog`, que empacota seus dados em build via `scripts/sync-changelog.mjs`. |
 
 Analytics da Vercel é montado no layout raiz do App Router via
 `@vercel/analytics/react` (`<Analytics />`) e não exige variável de
