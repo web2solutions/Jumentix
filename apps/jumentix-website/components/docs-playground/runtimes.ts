@@ -87,6 +87,31 @@ type PlaygroundWebSocketRequest = {
   operationId: string;
   input?: PlaygroundRecord;
 };
+type PlaygroundDeadLetterStatus = 'pending' | 'succeeded' | 'abandoned';
+type PlaygroundDeadLetterInput = {
+  entityName: string;
+  resourceId: string;
+  operation: string;
+  payload: unknown;
+  actorId?: string;
+};
+type PlaygroundDeadLetterRecord = PlaygroundDeadLetterInput & {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  attempts: number;
+  status: PlaygroundDeadLetterStatus;
+  lastError?: string;
+};
+type PlaygroundDeadLetterReplayReport = {
+  replayed: string[];
+  retried: string[];
+  abandoned: string[];
+  skipped: string[];
+};
+type PlaygroundDeadLetterReplayHandler = (
+  record: PlaygroundDeadLetterRecord
+) => unknown | Promise<unknown>;
 
 function ok<T>(result: T): ServiceResult<T> {
   return { result };
@@ -199,6 +224,110 @@ function createMutexApi() {
   };
 
   return service;
+}
+
+function createDeadLetterQueueApi({
+  maxAttempts = 5
+}: { maxAttempts?: number } = {}) {
+  if (maxAttempts < 1) throw new Error('dead letter queue requires maxAttempts of at least 1');
+
+  const records = new Map<string, PlaygroundDeadLetterRecord>();
+  let sequence = 0;
+  const timestamp = () => new Date().toISOString();
+
+  const clone = (record: PlaygroundDeadLetterRecord) => ({ ...record });
+  const settle = async (
+    record: PlaygroundDeadLetterRecord,
+    status: PlaygroundDeadLetterStatus,
+    lastError?: string
+  ) => {
+    const next = {
+      ...record,
+      status,
+      updatedAt: timestamp(),
+      ...(lastError ? { lastError } : {})
+    };
+    records.set(record.id, next);
+  };
+
+  return {
+    enqueue: async (input: PlaygroundDeadLetterInput) => {
+      if (!input.entityName) throw new Error('enqueue requires entityName');
+      if (!input.resourceId) throw new Error('enqueue requires resourceId');
+      if (!input.operation) throw new Error('enqueue requires operation');
+      sequence += 1;
+      const now = timestamp();
+      const record: PlaygroundDeadLetterRecord = {
+        id: `dlq-${sequence}`,
+        entityName: input.entityName,
+        resourceId: input.resourceId,
+        operation: input.operation,
+        payload: input.payload,
+        actorId: input.actorId,
+        createdAt: now,
+        updatedAt: now,
+        attempts: 0,
+        status: 'pending'
+      };
+      records.set(record.id, record);
+      return clone(record);
+    },
+    pending: async () => Array.from(records.values())
+      .filter((record) => record.status === 'pending')
+      .map(clone),
+    list: async () => Array.from(records.values()).map(clone),
+    find: async (id: string) => {
+      const record = records.get(id);
+      return record ? clone(record) : undefined;
+    },
+    replay: async (
+      handlers: Record<string, PlaygroundDeadLetterReplayHandler>
+    ): Promise<PlaygroundDeadLetterReplayReport> => {
+      const report: PlaygroundDeadLetterReplayReport = {
+        replayed: [], retried: [], abandoned: [], skipped: []
+      };
+      const pendingRecords = Array.from(records.values()).filter((item) => item.status === 'pending');
+
+      const replayNext = async (index: number): Promise<void> => {
+        const record = pendingRecords[index];
+        if (!record) return;
+        const handler = handlers[record.operation];
+        if (!handler) {
+          report.skipped.push(record.id);
+          await replayNext(index + 1);
+          return;
+        }
+
+        try {
+          await handler(clone(record));
+          await settle(record, 'succeeded');
+          report.replayed.push(record.id);
+        } catch (error) {
+          const attempts = record.attempts + 1;
+          const lastError = error instanceof Error ? error.message : String(error);
+          if (attempts >= maxAttempts) {
+            await settle({ ...record, attempts }, 'abandoned', lastError);
+            report.abandoned.push(record.id);
+            await replayNext(index + 1);
+            return;
+          }
+          records.set(record.id, {
+            ...record,
+            attempts,
+            updatedAt: timestamp(),
+            lastError
+          });
+          report.retried.push(record.id);
+        }
+
+        await replayNext(index + 1);
+      };
+
+      await replayNext(0);
+
+      return report;
+    }
+  };
 }
 
 function createInMemoryStore() {
@@ -324,7 +453,8 @@ async function loadMutex() {
   return {
     api: {
       createKeyValueStorage: createKeyValueStorageApi,
-      create: () => createMutexApi()
+      create: () => createMutexApi(),
+      createDeadLetterQueue: createDeadLetterQueueApi
     }
   };
 }
@@ -353,6 +483,7 @@ async function loadJumentixBrowserLab() {
       createKeyValueStorage: createKeyValueStorageApi,
       createMessageMediator: createMessageMediatorApi,
       createMutex: () => createMutexApi(),
+      createDeadLetterQueue: createDeadLetterQueueApi,
       createRestClient: createRestClientApi,
       createWebSocketClient: createWebSocketClientApi,
       createServiceModel: (input: Record<string, unknown>) => ({
