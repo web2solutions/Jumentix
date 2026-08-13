@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-08-13 feat(website): add white Jumentix site icon (#222) - Eduardo A.
+- 2026-08-13 feat(website): add white Jumentix site icon - Eduardo A.
 - 2026-08-13 feat(website): show energized Jumentix eating sugarcane (#221) - Eduardo A.
 - 2026-08-13 feat(website): energize Jumentix sugarcane art - Eduardo A.
 - 2026-08-13 feat(website): show Jumentix eating sugarcane on Cana docs - Eduardo A.

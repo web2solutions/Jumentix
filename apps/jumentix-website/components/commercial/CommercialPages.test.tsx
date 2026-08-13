@@ -62,6 +62,11 @@ describe('Commercial pages', () => {
       expect(screen.getByText('Portable persistence')).toBeInTheDocument();
       expect(screen.getByText('Service communication')).toBeInTheDocument();
       expect(screen.getByText('Governed delivery')).toBeInTheDocument();
+      expect(screen.getByText('Domain Designer')).toBeInTheDocument();
+      expect(screen.getByText('Backend Template')).toBeInTheDocument();
+      expect(screen.getByText('Generated SDKs')).toBeInTheDocument();
+      expect(screen.getByText('Who uses what in the platform')).toBeInTheDocument();
+      expect(screen.getByText('Platform team')).toBeInTheDocument();
     });
 
     it('renders architecture flow steps', () => {
@@ -84,6 +89,9 @@ describe('Commercial pages', () => {
       expect(screen.getByRole('link', { name: /Modular SaaS/ })).toBeInTheDocument();
       expect(screen.getByRole('link', { name: /Microservices/ })).toBeInTheDocument();
       expect(screen.getByRole('link', { name: /SPA and offline PWA/ })).toBeInTheDocument();
+      expect(screen.getByText('When to choose each Jumentix path')).toBeInTheDocument();
+      expect(screen.getByText('Shared foundation')).toBeInTheDocument();
+      expect(screen.getByText('Contracts before adapters')).toBeInTheDocument();
     });
   });
 
@@ -96,8 +104,11 @@ describe('Commercial pages', () => {
       expect(screen.getByText('Realtime')).toBeInTheDocument();
       expect(screen.getByText('SQL')).toBeInTheDocument();
       expect(screen.getByText('NoSQL')).toBeInTheDocument();
-      expect(screen.getByText('Messaging')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Messaging' })).toBeInTheDocument();
       expect(screen.getByText('Deployment')).toBeInTheDocument();
+      expect(screen.getByText('How to pick the right adapter')).toBeInTheDocument();
+      expect(screen.getByText('@jumentix/database-client-factory')).toBeInTheDocument();
+      expect(screen.getByText('@jumentix/message-mediator')).toBeInTheDocument();
     });
   });
 
@@ -112,6 +123,10 @@ describe('Commercial pages', () => {
       expect(screen.getByText('Output port')).toBeInTheDocument();
       expect(screen.getByText('Domain isolation')).toBeInTheDocument();
       expect(screen.getByText('Interface portability')).toBeInTheDocument();
+      expect(screen.getByText('What is allowed to know what')).toBeInTheDocument();
+      expect(screen.getByText('Topology evolution')).toBeInTheDocument();
+      expect(screen.getByText('Architecture governance')).toBeInTheDocument();
+      expect(screen.getByText('Boundary checks')).toBeInTheDocument();
     });
   });
 
