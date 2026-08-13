@@ -134,22 +134,37 @@ describe('cana query shape', () => {
     await client.close();
   });
 
-  it('counts the table without the query path', async function countMatchesTheTable() {
+  it('counts without reading a single row', async function countReadsNoRows() {
     this.timeout(60_000);
 
-    // `count()` uses IndexedDB's native count — one request, no records read.
-    // **That last part is not asserted here**, and the honest reason is that it
-    // is not observable through the public API: `count` returns a number, not a
-    // plan. The old test compared its duration against a full read, which is the
-    // wall-clock inference this file exists to remove. What is asserted is that
-    // count and the query path agree; JUM-706 covers exposing the metric.
+    // The property JUM-682 had to drop for lack of an observable, and JUM-706
+    // gave one. `count()` uses IndexedDB's own counter — one request, no rows —
+    // and the old test could only infer that by timing it against a full read,
+    // which is the wall-clock comparison Requirement 134 §3 forbids.
     const client = await seeded(LARGE);
 
-    const counted = await client.table<Row>('rows').count();
-    const read = await client.table<Row>('rows').query();
+    const counted = await client.table<Row>('rows').explainCount();
 
-    expect(counted).to.equal(LARGE);
-    expect(read).to.have.lengthOf(LARGE);
+    expect(counted.count).to.equal(LARGE);
+    expect(counted.metrics.recordsExamined).to.equal(0);
+    expect(counted.metrics.usedNativeCount).to.equal(true);
+
+    await client.close();
+  });
+
+  it('says so when a count has to walk the cursor', async function countFallsBackToCursor() {
+    this.timeout(60_000);
+
+    // `offset` and `limit` cannot be expressed in a native count, so this one
+    // reads rows. The metric reports that rather than implying a cheapness the
+    // path does not have — which is what makes the assertion above meaningful.
+    const client = await seeded(SMALL);
+
+    const counted = await client.table<Row>('rows').explainCount({ offset: 10, limit: 20 });
+
+    expect(counted.count).to.equal(20);
+    expect(counted.metrics.usedNativeCount).to.equal(false);
+    expect(counted.metrics.recordsExamined).to.equal(20);
 
     await client.close();
   });

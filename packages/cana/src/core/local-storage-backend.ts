@@ -15,6 +15,7 @@ import type {
   CanaChangeType,
   CanaKey,
   CanaQuery,
+  CanaCountMetrics,
   CanaQueryMetrics,
   CanaQueryPlan,
   CanaSchema,
@@ -696,6 +697,19 @@ export class LocalStorageBackend {
 
       async query(query?: CanaQuery): Promise<readonly TRecord[]> {
         return runLocalQuery<TRecord>(schema, bag(), query);
+      },
+
+      async explainCount(
+        query?: CanaQuery
+      ): Promise<{ count: number; metrics: CanaCountMetrics }> {
+        // The fallback filters the whole bag in memory, so its count reads
+        // every record. Reporting a native count here would claim a cheapness
+        // this backend does not have (JUM-706).
+        const records = runLocalQuery(schema, bag(), query);
+        return {
+          count: records.length,
+          metrics: { recordsExamined: Object.keys(bag()).length, usedNativeCount: false }
+        };
       },
 
       async explain(

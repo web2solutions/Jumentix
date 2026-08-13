@@ -345,6 +345,22 @@ export interface CanaQueryMetrics {
   readonly cursorAdvanced: boolean;
 }
 
+/**
+ * What a count actually read (JUM-706).
+ *
+ * A native `count()` is a single request that reads no rows; a count carrying
+ * `offset` or `limit` cannot be expressed natively and walks the cursor
+ * instead. The two cost different things and the difference was invisible: the
+ * only way to tell them apart was to time them, which is what Requirement 134
+ * §3 forbids.
+ */
+export interface CanaCountMetrics {
+  /** Rows read. `0` on the native path. */
+  readonly recordsExamined: number;
+  /** The count came from IndexedDB's own counter rather than the cursor. */
+  readonly usedNativeCount: boolean;
+}
+
 /* ------------------------------------------------------------------ *
  * Client surface
  * ------------------------------------------------------------------ */
@@ -384,6 +400,8 @@ export interface CanaTable<TRecord, TKey extends CanaKey = CanaKey> {
   bulkDelete(keys: readonly TKey[]): Promise<CanaBulkWriteResult>;
   count(query?: CanaQuery): Promise<number>;
   query(query?: CanaQuery): Promise<readonly TRecord[]>;
+  /** Same as `count`, plus what the count actually read (JUM-706). */
+  explainCount(query?: CanaQuery): Promise<{ count: number; metrics: CanaCountMetrics }>;
   /** Same as `query`, plus the plan the engine used and what it touched. */
   explain(query?: CanaQuery): Promise<{
     records: readonly TRecord[];
