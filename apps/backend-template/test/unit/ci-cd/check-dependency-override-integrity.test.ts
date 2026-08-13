@@ -255,3 +255,47 @@ describe('installed dependent range reader', () => {
     expect(guardModule.readInstalledDependentRange('express', 'not-a-real-dependency')).toBeNull();
   });
 });
+
+/**
+ * The two paths the major-compatibility guard takes before it compares
+ * anything (JUM-681).
+ *
+ * The mismatch itself is covered above. What was not: the early return for an
+ * override the manifest does not carry, and the accepting path. Between them
+ * they are the difference between "this pin is fine" and "this pin was never
+ * looked at", which read the same in a passing build.
+ */
+describe('override major compatibility, before the comparison (JUM-681)', () => {
+  // Required locally, matching the suite above: the module is CommonJS and the
+  // top-level import list is the shape the other describes already use.
+  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+  const majors = require('../../../../../ci-cd/check-dependency-override-integrity') as {
+    OVERRIDE_MAJOR_COMPATIBILITY: Array<{
+      dependent: string; overridden: string; requiredMajor: number;
+    }>;
+    validateOverrideMajors: (
+      pkg: { overrides?: Record<string, string> },
+      read: (dependent: string, overridden: string) => string | null
+    ) => string[];
+  };
+  const [firstPair] = majors.OVERRIDE_MAJOR_COMPATIBILITY;
+
+  it('says nothing about an override the manifest does not carry', () => {
+    expect.hasAssertions();
+
+    // Absence is the concern of `validateOverrideIntegrity`; reporting it twice
+    // would make one dropped pin look like two unrelated problems.
+    expect(majors.validateOverrideMajors({ overrides: {} }, () => '^1.0.0')).toStrictEqual([]);
+  });
+
+  it('accepts a dependent still declaring the expected major', () => {
+    expect.hasAssertions();
+
+    const failures = majors.validateOverrideMajors(
+      { overrides: { [firstPair.overridden]: '1.2.3' } },
+      () => `^${String(firstPair.requiredMajor)}.0.0`
+    );
+
+    expect(failures).toStrictEqual([]);
+  });
+});
