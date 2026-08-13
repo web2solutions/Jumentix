@@ -156,3 +156,86 @@ describe('run-suite execution (JUM-681)', () => {
     })).toBe(false);
   });
 });
+
+/**
+ * Path resolution against the map (JUM-681).
+ *
+ * `resolveMappedSuitePaths` is what turns a requested directory into the suite
+ * paths that actually execute. Its two rejections are the false greens
+ * Requirement 065 names: a request matching nothing would run zero tests and
+ * report success, and a file on disk that the map does not list would sit in a
+ * directory reported as fully run.
+ */
+describe('run-suite path resolution (JUM-681)', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+  const suiteModule = require('../../../../../ci-cd/run-suite') as {
+    canonicalSuitePaths: (paths: string[], root?: string) => string[];
+    resolveMappedSuitePaths: (paths: string[], options?: Record<string, unknown>) => {
+      resolved: string[]; unmatched: string[]; unmapped: string[];
+    };
+  };
+
+  const root = '/repo';
+  const readResolutionMap = () => ({
+    suites: [
+      { path: 'packages/sample/test/a.test.ts' },
+      { path: 'packages/sample/test/b.test.ts' }
+    ]
+  });
+
+  it('canonicalises a request rather than executing the string it was given', () => {
+    expect.hasAssertions();
+
+    // The executed value is derived from the validated one, so `./a/../b`
+    // shapes cannot smuggle a different path past the check.
+    expect(suiteModule.canonicalSuitePaths(['packages/./sample/../sample/test'], root))
+      .toStrictEqual(['packages/sample/test']);
+  });
+
+  it('expands a directory to every mapped suite beneath it', () => {
+    expect.hasAssertions();
+
+    const result = suiteModule.resolveMappedSuitePaths(['packages/sample/test'], {
+      root,
+      readTestMap: readResolutionMap,
+      listTestFiles: () => ['packages/sample/test/a.test.ts', 'packages/sample/test/b.test.ts']
+    });
+
+    expect(result.resolved).toStrictEqual([
+      'packages/sample/test/a.test.ts',
+      'packages/sample/test/b.test.ts'
+    ]);
+    expect(result.unmatched).toStrictEqual([]);
+    expect(result.unmapped).toStrictEqual([]);
+  });
+
+  it('reports a request that matches nothing instead of running zero tests', () => {
+    expect.hasAssertions();
+
+    const result = suiteModule.resolveMappedSuitePaths(['packages/sample/tes'], {
+      root,
+      readTestMap: readResolutionMap,
+      listTestFiles: () => []
+    });
+
+    expect(result.resolved).toStrictEqual([]);
+    expect(result.unmatched).toStrictEqual(['packages/sample/tes']);
+  });
+
+  it('reports a file on disk that the map does not list', () => {
+    expect.hasAssertions();
+
+    // The directory reports as fully run while one of its suites is invisible
+    // to the selector — the shape JUM-680 found across the website.
+    const result = suiteModule.resolveMappedSuitePaths(['packages/sample/test'], {
+      root,
+      readTestMap: readResolutionMap,
+      listTestFiles: () => [
+        'packages/sample/test/a.test.ts',
+        'packages/sample/test/unmapped.test.ts'
+      ]
+    });
+
+    expect(result.unmapped).toStrictEqual(['packages/sample/test/unmapped.test.ts']);
+  });
+});

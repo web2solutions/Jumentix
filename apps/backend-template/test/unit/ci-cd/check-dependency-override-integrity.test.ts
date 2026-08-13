@@ -299,3 +299,71 @@ describe('override major compatibility, before the comparison (JUM-681)', () => 
     expect(failures).toStrictEqual([]);
   });
 });
+
+/**
+ * The rest of the major-compatibility guard (JUM-681).
+ *
+ * The pairing it enforces is the one that broke LoopBack and Sails: `send` was
+ * overridden to `^1.2.0` for Express 5 while Express 4 still reached into
+ * `send@0`'s `mime.charsets`. Each branch below is a way that guard can go
+ * quiet — a dependent that dropped the dependency, a range it cannot parse, a
+ * mismatch it should report.
+ */
+describe('override major compatibility, the remaining branches (JUM-681)', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+  const guard = require('../../../../../ci-cd/check-dependency-override-integrity') as {
+    OVERRIDE_MAJOR_COMPATIBILITY: Array<{
+      dependent: string; overridden: string; requiredMajor: number;
+    }>;
+    rangeMajor: (range: string) => number | null;
+    validateOverrideMajors: (
+      pkg: { overrides?: Record<string, string> },
+      read: (dependent: string, overridden: string) => string | null
+    ) => string[];
+    readInstalledDependentRange: (dependent: string, overridden: string) => string | null;
+  };
+  const [pair] = guard.OVERRIDE_MAJOR_COMPATIBILITY;
+
+  it('reads the leading major out of every range shape it will meet', () => {
+    expect.hasAssertions();
+
+    expect(guard.rangeMajor('^1.2.0')).toBe(1);
+    expect(guard.rangeMajor('~0.19.0')).toBe(0);
+    expect(guard.rangeMajor('2.x')).toBe(2);
+    // Not a version at all — reported as unknown rather than coerced to 0,
+    // which would read as "major 0" and compare equal to `~0.x`.
+    expect(guard.rangeMajor('latest')).toBeNull();
+  });
+
+  it('says so when the dependent no longer depends on the overridden package', () => {
+    expect.hasAssertions();
+
+    // The pairing outlived its reason: the override may now be pinning
+    // something for nobody.
+    const failures = guard.validateOverrideMajors(
+      { overrides: { [pair.overridden]: '1.2.3' } },
+      () => null
+    );
+
+    expect(failures).toHaveLength(1);
+    expect(failures[0]).toContain('no longer depends on');
+  });
+
+  it('rejects an override whose major differs from the dependent declaration', () => {
+    expect.hasAssertions();
+
+    const failures = guard.validateOverrideMajors(
+      { overrides: { [pair.overridden]: '9.0.0' } },
+      () => `^${String(pair.requiredMajor)}.0.0`
+    );
+
+    expect(failures.join(' ')).toContain(pair.dependent);
+  });
+
+  it('returns null for a dependent that is not installed', () => {
+    expect.hasAssertions();
+
+    // A missing package must not crash the guard on a partial tree.
+    expect(guard.readInstalledDependentRange('no-such-package-here', 'send')).toBeNull();
+  });
+});
