@@ -66,6 +66,10 @@
   background: #ea580c;
 }
 
+.flowLegend i[data-tone='mediator'] {
+  background: #fb7185;
+}
+
 .flowLegend i[data-tone='cana'] {
   background: #38bdf8;
 }
@@ -95,8 +99,192 @@
   font-weight: 800;
 }
 
+.metricsCharts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.metricsChart {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid color-mix(in srgb, var(--jtx-line-strong) 62%, transparent);
+  border-radius: var(--jtx-radius-sm);
+  background: color-mix(in srgb, var(--jtx-surface) 84%, transparent);
+}
+
+.metricsChart h6 {
+  margin: 0;
+  color: var(--jtx-ink-muted);
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.metricsChart strong {
+  color: var(--jtx-ink);
+  font-size: 1.35rem;
+  line-height: 1.1;
+}
+
+.metricsChart span {
+  color: var(--jtx-ink-muted);
+  font-size: 0.8rem;
+  font-weight: 750;
+}
+
+.barList {
+  display: grid;
+  gap: 7px;
+}
+
+.metricBarRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px 10px;
+  align-items: center;
+}
+
+.metricBarRow span {
+  overflow: hidden;
+  color: var(--jtx-ink);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.metricBarRow b {
+  color: var(--jtx-ink);
+  font-size: 0.78rem;
+}
+
+.metricBarRow i {
+  grid-column: 1 / -1;
+  display: block;
+  width: 0;
+  min-width: 2px;
+  height: 8px;
+  border-radius: 999px;
+  background: #38bdf8;
+}
+
+.metricBarRow i[data-tone='accepted'] {
+  background: #16a34a;
+}
+
+.metricBarRow i[data-tone='rejected'] {
+  background: #dc2626;
+}
+
+.metricBarRow i[data-tone='interrupted'] {
+  background: #facc15;
+}
+
+.metricBarRow i[data-tone='replay'] {
+  background: #ea580c;
+}
+
+.metricBarRow i[data-tone='mediator'] {
+  background: #fb7185;
+}
+
+.metricBarRow i[data-tone='cana'] {
+  background: #38bdf8;
+}
+
+.realtimeChart {
+  display: block;
+  width: 100%;
+  height: 76px;
+  overflow: visible;
+}
+
+.realtimeChart path {
+  fill: none;
+  stroke: color-mix(in srgb, var(--jtx-line-strong) 72%, transparent);
+  stroke-width: 1.5;
+}
+
+.realtimeChart polyline {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+}
+
+.realtimeChart polyline[data-tone='processed'] {
+  stroke: #16a34a;
+}
+
+.realtimeChart polyline[data-tone='rejected'] {
+  stroke: #dc2626;
+}
+
+.realtimeChart polyline[data-tone='replayed'] {
+  stroke: #ea580c;
+}
+
+.realtimeTotals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+
+.realtimeTotals span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--jtx-ink);
+}
+
+.realtimeTotals i {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+}
+
+.realtimeTotals i[data-tone='processed'] {
+  background: #16a34a;
+}
+
+.realtimeTotals i[data-tone='rejected'] {
+  background: #dc2626;
+}
+
+.realtimeTotals i[data-tone='replayed'] {
+  background: #ea580c;
+}
+
+.quotaChart {
+  display: block;
+  width: 100%;
+  height: 68px;
+  overflow: visible;
+}
+
+.quotaChart path {
+  fill: none;
+  stroke: color-mix(in srgb, var(--jtx-line-strong) 72%, transparent);
+  stroke-width: 1.5;
+}
+
+.quotaChart polyline {
+  fill: none;
+  stroke: #38bdf8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+}
+
 @media (max-width: 700px) {
   .flowStats {
+    grid-template-columns: 1fr;
+  }
+
+  .metricsCharts {
     grid-template-columns: 1fr;
   }
 }
