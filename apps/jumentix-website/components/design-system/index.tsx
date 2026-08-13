@@ -279,6 +279,60 @@ export function CodeShowcase({
   );
 }
 
+export type JourneyStep = {
+  label: string;
+  title: string;
+  description: string;
+  output: string;
+  tasks: string[];
+  code: CodeSample[];
+  playground?: ReactNode;
+};
+
+export function MvpJourney({
+  steps,
+  ariaLabel = 'Zero to first MVP journey',
+}: {
+  steps: JourneyStep[];
+  ariaLabel?: string;
+}) {
+  const [active, setActive] = useState(0);
+  const panelId = useId();
+  const step = steps[active] ?? steps[0];
+
+  if (!step) return null;
+
+  return (
+    <section className={classes.journey} aria-label={ariaLabel}>
+      <div className={classes.journeyTabs} role="tablist" aria-label={ariaLabel}>
+        {steps.map((entry, index) => (
+          <button
+            className={classes.journeyTab}
+            key={`${entry.label}-${entry.title}`}
+            type="button"
+            role="tab"
+            aria-selected={active === index}
+            aria-controls={panelId}
+            onClick={() => setActive(index)}
+          >
+            {entry.label}
+          </button>
+        ))}
+      </div>
+      <div className={classes.journeyPanel} id={panelId} role="tabpanel">
+        <h3>{step.title}</h3>
+        <p>{step.description}</p>
+        <ul className={classes.journeyTasks}>
+          {step.tasks.map((task) => <li key={task}>{task}</li>)}
+        </ul>
+        <p className={classes.journeyMeta}>{step.output}</p>
+        {step.playground}
+        {step.code.length > 0 ? <CodeShowcase samples={step.code} title={step.title} /> : null}
+      </div>
+    </section>
+  );
+}
+
 export function SearchField({
   label = 'Search documentation',
   placeholder = 'Search Jumentix docs',
