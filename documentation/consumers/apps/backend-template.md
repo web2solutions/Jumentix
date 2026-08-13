@@ -21,7 +21,7 @@ Juniors need a concrete app to open — not only package APIs. This hub orients 
 ## Prerequisites
 
 - [Getting started](/docs/jumentix/concepts/getting-started)
-- Bun 1.3.14+
+- Bun 1.3.13+
 
 ## Glossary
 

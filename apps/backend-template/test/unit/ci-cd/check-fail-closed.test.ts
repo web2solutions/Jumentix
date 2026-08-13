@@ -6,7 +6,7 @@ describe('check-fail-closed', () => {
     expect.hasAssertions();
     // Pinning the interpreter is the point of Requirement 096 §1: a PATH lookup
     // could run a different Bun than the one executing the harness.
-    expect(resolveBunBinary({ bun: '1.3.14' } as never, '/usr/local/bin/bun')).toBe('/usr/local/bin/bun');
+    expect(resolveBunBinary({ bun: '1.3.13' } as never, '/usr/local/bin/bun')).toBe('/usr/local/bin/bun');
   });
 
   it('refuses to run under Node, where execPath would be the wrong runtime', () => {

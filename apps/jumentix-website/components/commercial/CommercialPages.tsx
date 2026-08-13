@@ -1056,7 +1056,7 @@ function BunToolingBand({
               )}
             </p>
             <ProofList items={[
-              t(locale, 'One pinned version, `bun@1.3.14`, protects every workspace from “works on my machine” drift.', 'Uma versão pinada, `bun@1.3.14`, protege todos os workspaces contra drift de ambiente.'),
+              t(locale, 'One pinned version, `bun@1.3.13`, protects every workspace from “works on my machine” drift.', 'Uma versão pinada, `bun@1.3.13`, protege todos os workspaces contra drift de ambiente.'),
               t(locale, '`bun run --filter` lets package checks stay scoped while full gates remain available for release work.', '`bun run --filter` mantém checagens de pacote focadas enquanto gates completos seguem disponíveis para release.'),
               t(locale, 'Bun bundles Cana browser specs before Cypress, avoiding Cypress webpack fragility while preserving real-browser evidence.', 'Bun empacota specs browser do Cana antes do Cypress, evitando fragilidade do webpack do Cypress sem perder evidência em browser real.'),
               t(locale, 'The same CLI drives local dev, docs sync, package dry-runs, security checks and production website publishing.', 'A mesma CLI move dev local, sync de docs, dry-runs de pacote, checagens de segurança e publicação do site em produção.'),
@@ -1074,7 +1074,7 @@ function BunToolingBand({
         </div>
         <MetricStrip metrics={[
           { value: '1', label: t(locale, 'runtime/package/test/bundle tool', 'ferramenta de runtime/pacote/teste/bundle') },
-          { value: '1.3.14+', label: t(locale, 'pinned Bun version', 'versão Bun pinada') },
+          { value: '1.3.13+', label: t(locale, 'pinned Bun version', 'versão Bun pinada') },
           { value: '3', label: t(locale, 'workspace roots: apps, packages, tooling', 'raízes: apps, packages, tooling') },
           { value: '30x', label: t(locale, 'official Bun install-speed ceiling vs npm', 'teto oficial de velocidade de install vs npm') },
         ]} />

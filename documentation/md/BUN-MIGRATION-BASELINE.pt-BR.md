@@ -1,6 +1,6 @@
 # Baseline de Compatibilidade e Migração para Bun
 
-Entregável da task [JUM-23] do Linear (projeto: `[Tooling] Replace Internal Node and pnpm Workflows with Bun`). Evidências coletadas em 2026-07-26, Bun `1.3.14` (Homebrew, macOS), worktree dedicado a partir de `origin/dev` (`63ecaef`).
+Entregável da task [JUM-23] do Linear (projeto: `[Tooling] Replace Internal Node and pnpm Workflows with Bun`). Evidências coletadas em 2026-07-26, Bun `1.3.13` (Homebrew, macOS), worktree dedicado a partir de `origin/dev` (`63ecaef`).
 
 ## 1. Inventário (superfície atual Node/pnpm)
 

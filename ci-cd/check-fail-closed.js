@@ -120,7 +120,7 @@ assertFailsClosed(
   'toolchain guard rejects a pin mismatch',
   () => writeFile('.bun-version', '0.0.1\n'),
   () => run(BUN_BINARY, ['ci-cd/check-bun-version.js']),
-  () => writeFile('.bun-version', '1.3.14\n'),
+  () => writeFile('.bun-version', '1.3.13\n'),
 );
 
 // 2. Dependency override integrity — a dropped security pin.

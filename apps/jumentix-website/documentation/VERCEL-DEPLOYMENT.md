@@ -45,8 +45,8 @@ bun run website:vercel:link
 Vercel's default Bun image may lag the repo pin (`.bun-version` / `packageManager`).
 `apps/jumentix-website/vercel.json` forces:
 
-- `installCommand`: `bunx bun@1.3.14 install --frozen-lockfile`
-- `buildCommand`: `bunx bun@1.3.14 run build`
+- `installCommand`: `bunx bun@1.3.13 install --frozen-lockfile`
+- `buildCommand`: `bunx bun@1.3.13 run build`
 
 ## Configuration
 

@@ -231,8 +231,8 @@ never replaces it as the merge authority.
 The project is locked to Bun for internal engineering workflows and keeps Node 22 as the
 consumer-facing compatibility target:
 
-- `package.json` -> `"packageManager": "bun@1.3.14"`
-- `package.json` -> `"engines": { "bun": ">=1.3.14", "node": ">=22.0.0 <23.0.0" }`
+- `package.json` -> `"packageManager": "bun@1.3.13"`
+- `package.json` -> `"engines": { "bun": ">=1.3.13", "node": ">=22.0.0 <23.0.0" }`
 - `bunfig.toml` keeps Bun as the script runner boundary.
 - `ci-cd/check-bun-version.js` validates the active Bun toolchain.
 - `ci-cd/check-node-version.js` is exposed through `compat:check-node-version` for Node compatibility checks.

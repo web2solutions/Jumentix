@@ -18,7 +18,7 @@ Migration order remains inward→outward: domain → application → adapters �
 
 ## JUM-433 — Pinned Bun satisfies pyramid DX needs
 
-Pin: Bun `1.3.14`.
+Pin: Bun `1.3.13`.
 
 | Need | Verified |
 | --- | --- |

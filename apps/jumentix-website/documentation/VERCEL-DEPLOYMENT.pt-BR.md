@@ -49,8 +49,8 @@ bun run website:vercel:link
 A imagem Bun padrão da Vercel pode ficar atrás do pin do repositório (`.bun-version` / `packageManager`).
 `apps/jumentix-website/vercel.json` força:
 
-- `installCommand`: `bunx bun@1.3.14 install --frozen-lockfile`
-- `buildCommand`: `bunx bun@1.3.14 run build`
+- `installCommand`: `bunx bun@1.3.13 install --frozen-lockfile`
+- `buildCommand`: `bunx bun@1.3.13 run build`
 
 ## Configuração
 
