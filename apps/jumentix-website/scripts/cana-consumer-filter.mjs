@@ -18,7 +18,7 @@ export function isCanaUsageGuideSource(sourceFile) {
 export function isCanaPublishedSource(sourceFile) {
   const base = sourceFile.replace(/\\/g, '/');
   return (
-    isCanaUsageGuideSource(sourceFile)
+    /\/CANA-USAGE(?:-[A-Z-]+)?(\.pt-BR)?\.md$/i.test(base)
     || /\/packages\/cana\/README(\.pt-BR)?\.md$/i.test(base)
   );
 }
@@ -52,10 +52,6 @@ export function toCanaConsumerMarkdown(markdown, { locale = 'en' } = {}) {
     ''
   );
 
-  // Workers host is not a stable public demo surface on the site yet.
-  out = out.replace(/\n## 15\. Workers\n[\s\S]*?(?=\n## \d+\.|\n## Related|\n## Relacionados?\n|$)/i, '\n');
-  out = out.replace(/^\d+\.\s*\[Workers\]\([^)]+\)\n/gim, '');
-
   // Drop any leftover links to internal markdown docs.
   for (const name of INTERNAL_DOC_NAMES) {
     const linkRe = new RegExp(`\\[[^\\]]+\\]\\([^)]*${name}[^)]*\\)`, 'gi');
@@ -64,42 +60,6 @@ export function toCanaConsumerMarkdown(markdown, { locale = 'en' } = {}) {
 
   // Collapse excessive blank lines left by removals.
   out = out.replace(/\n{3,}/g, '\n\n').trim();
-
-  const playgroundHeading = locale === 'pt-BR'
-    ? '## Playgrounds interativos'
-    : '## Interactive playgrounds';
-  const playgroundIntro = locale === 'pt-BR'
-    ? 'Execute features públicas do Cana neste site (IndexedDB real; Reset apaga o banco efêmero).'
-    : 'Run public Cana features on this site (real IndexedDB; Reset deletes the ephemeral database).';
-  const playgroundIds = [
-    'getting-started',
-    'schema-versioning',
-    'keys',
-    'crud',
-    'bulk',
-    'query-explain',
-    'transactions',
-    'change-events',
-    'hooks',
-    'errors',
-    'storage-durability',
-    'crash-recovery',
-    'export-import',
-    'fallback-backend',
-    'factory-adapter'
-  ];
-  const playgroundBlock = [
-    playgroundHeading,
-    '',
-    playgroundIntro,
-    '',
-    ...playgroundIds.map((id) => `<CanaPlayground id="${id}" />`),
-    ''
-  ].join('\n');
-
-  if (!out.includes('<CanaPlayground')) {
-    out = `${out}\n\n${playgroundBlock}`;
-  }
 
   return `${out.trim()}\n`;
 }

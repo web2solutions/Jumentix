@@ -80,7 +80,25 @@ Use os guards:
 ```ts
 import { isCanaError, isCanaErrorCode } from '@jumentix/cana';
 
-if (isCanaErrorCode(error, 'QuotaExceeded')) { /* ... */ }
+try {
+  await client.table('tasks').add({
+    id: 'task-1',
+    title: 'Write the Cana tutorial',
+    categoryId: 'work',
+    completed: false,
+    priority: 'high',
+    createdAt: Date.now(),
+    updatedAt: Date.now()
+  });
+} catch (error) {
+  if (isCanaErrorCode(error, 'QuotaExceeded')) {
+    console.warn('Storage quota is full. Export or clear local data before retrying.');
+  } else if (isCanaError(error)) {
+    console.warn(`Cana failed with ${error.code}: ${error.message}`);
+  } else {
+    throw error;
+  }
+}
 ```
 
 ## Experimente no navegador

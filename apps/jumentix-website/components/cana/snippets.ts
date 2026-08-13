@@ -482,6 +482,80 @@ return {
   stores: Object.keys(adapter.stores),
   task
 };`
+  },
+  {
+    id: 'worker-client-flow',
+    title: { en: 'Worker client flow', 'pt-BR': 'Fluxo com worker client' },
+    description: {
+      en: 'Drive Cana through createWorkerHost, createRouter and createWorkerClient using MessageChannel.',
+      'pt-BR': 'Use createWorkerHost, createRouter e createWorkerClient com MessageChannel.'
+    },
+    code: `const channel = new MessageChannel();
+channel.port1.start?.();
+channel.port2.start?.();
+
+const broadcasts = [];
+const router = cana.createRouter({
+  port: channel.port1,
+  timeoutMs: 5000,
+  onBroadcast(event) {
+    broadcasts.push({
+      cursor: event.cursor,
+      type: event.type,
+      store: event.store,
+      key: event.key
+    });
+  }
+});
+
+const host = cana.createWorkerHost({
+  port: channel.port2,
+  name: dbName,
+  schema: ${schemaSource},
+  originId: 'docs-worker-host',
+  retainedEvents: 20,
+  operationLedger: true
+});
+
+const workerClient = cana.createWorkerClient(router);
+
+try {
+  await workerClient.open();
+  const now = Date.now();
+  await workerClient.put('categories', {
+    id: 'work',
+    name: 'Work',
+    color: '#2563eb',
+    createdAt: now,
+    updatedAt: now
+  });
+  await workerClient.add('tasks', {
+    id: 'task-worker-1',
+    title: 'Persist through the worker boundary',
+    categoryId: 'work',
+    completed: false,
+    priority: 'medium',
+    createdAt: now,
+    updatedAt: now
+  });
+  const tasks = await workerClient.query('tasks', {
+    index: 'byCategory',
+    equals: 'work'
+  });
+  const count = await workerClient.count('tasks');
+  return {
+    ping: await workerClient.ping(),
+    count,
+    tasks,
+    broadcasts
+  };
+} finally {
+  await workerClient.close();
+  router.dispose();
+  await host.dispose();
+  channel.port1.close();
+  channel.port2.close();
+}`
   }
 ];
 

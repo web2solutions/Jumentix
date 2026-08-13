@@ -1309,37 +1309,165 @@ Headings:
 
 ---
 
+# Workers and testing
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/workers-testing
+
+Run Cana through a worker boundary and plan browser tests.
+
+Headings:
+- Workers and testing
+- Worker request flow
+- Complete same-thread worker-host demo
+- Production file layout
+- Testing strategy
+- Next
+
+---
+
+# Querying and plans
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/querying
+
+Query Cana indexes, inspect explain plans and understand complexity.
+
+Headings:
+- Querying and plans
+- Indexed task query
+- Pagination
+- Count and explain
+- Complexity quick map
+- Run it here
+- Next
+
+---
+
+# Reading, writing and bulk operations
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/crud-bulk
+
+Use CRUD and bulk operations with complete task examples.
+
+Headings:
+- Reading, writing and bulk operations
+- Single-record writes
+- Method choice
+- Bulk writes
+- Run it here
+- Next
+
+---
+
 # Cana usage guide
 
 URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage
 
-Consumer API guide for @jumentix/cana with runnable examples.
+Consumer API guide hub for @jumentix/cana with focused subpages.
 
 Headings:
 - Cana — Usage Guide
-- Responsibility in context
-- Table of contents
-- 1. Getting started
-- Typing your records
-- 2. Schema and versioning
-- Upgrading
-- What an upgrade will and will not do
-- Downgrades are refused
-- Validation happens before anything is touched
-- 3. Keys
-- Valid key types
-- 4. Reading and writing
-- `add` vs `put` vs `update`
-- The result
-- Deleting a key that is not there
-- 5. Bulk operations
-- 6. Querying
-- `CanaQuery`
-- Counting
-- `explain` — checking that an index was used
-- What Cana does not do
-- 7. Transactions
-- The one rule
+- Choose the next step
+- The running example
+- Complete code policy
+- Framework tutorials
+- Package integrations
+
+---
+
+# API reference
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/api-reference
+
+Compact reference for the Cana APIs used in the guide.
+
+Headings:
+- API reference
+- Client lifecycle
+- Tables
+- Transactions and events
+- Worker APIs
+- Factory adapter
+- Glossary
+
+---
+
+# Schema and keys
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/schema-keys
+
+Version schemas and choose stable key strategies for Cana stores.
+
+Headings:
+- Schema and keys
+- Versioned schema
+- Upgrade rules
+- Key strategies
+- Run it here
+- Next
+
+---
+
+# Hooks and errors
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/hooks-errors
+
+Apply write hooks and handle plain-data Cana errors.
+
+Headings:
+- Hooks and errors
+- Write hooks
+- Plain-data errors
+- Common errors
+- Run it here
+- Next
+
+---
+
+# Getting started with Cana
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/getting-started
+
+Install Cana and build the minimal categorized task database.
+
+Headings:
+- Getting started with Cana
+- Install
+- Complete minimal task app
+- What to notice
+- Run it here
+- Next
+
+---
+
+# Transactions and change events
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/transactions-events
+
+Write atomically and update UI stores from committed Cana events.
+
+Headings:
+- Transactions and change events
+- Multi-store transaction
+- Listen to committed events
+- Replay after the UI was gone
+- Run it here
+- Next
+
+---
+
+# Storage and crash recovery
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/storage-recovery
+
+Assess durability, export/import data and resolve uncertain writes.
+
+Headings:
+- Storage and crash recovery
+- Backend selection
+- Export and import
+- Resolve an uncertain write
+- Run it here
+- Next
 
 ---
 

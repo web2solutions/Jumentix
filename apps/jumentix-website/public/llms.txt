@@ -45,7 +45,16 @@ Docs index JSON: https://jumentix-website.vercel.app/docs-index.json
 - Cana with Vue 3 and Pinia: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/vue-pinia
 - @jumentix/cana: https://jumentix-website.vercel.app/docs/jumentix/packages/cana
 - Cana with React Redux: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/react-redux
+- Workers and testing: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/workers-testing
+- Querying and plans: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/querying
+- Reading, writing and bulk operations: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/crud-bulk
 - Cana usage guide: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage
+- API reference: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/api-reference
+- Schema and keys: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/schema-keys
+- Hooks and errors: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/hooks-errors
+- Getting started with Cana: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/getting-started
+- Transactions and change events: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/transactions-events
+- Storage and crash recovery: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/storage-recovery
 
 ## Adapters
 - Aurora Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/aurora

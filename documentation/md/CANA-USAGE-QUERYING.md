@@ -1,0 +1,96 @@
+# Querying and plans
+
+Cana keeps querying intentionally small: choose a table, optionally choose an
+index, then constrain the cursor with `equals`, `limit`, `offset` and direction.
+
+## Indexed task query
+
+```ts
+type Task = {
+  id: string;
+  title: string;
+  categoryId: string;
+  completed: boolean;
+  priority: 'low' | 'medium' | 'high';
+  createdAt: number;
+  updatedAt: number;
+};
+
+const workTasks = await client.table<Task>('tasks').query({
+  index: 'byCategory',
+  equals: 'work',
+  direction: 'next',
+  limit: 20
+});
+
+console.log(workTasks.map((task) => task.title));
+```
+
+There is no expression-based `filter(record => record.completed)`. Filtering in
+JavaScript forces a full read and hides performance problems. Add an index such
+as `byCompleted` when the query is part of the user workflow.
+
+## Pagination
+
+```ts
+const firstPage = await client.table<Task>('tasks').query({
+  index: 'byUpdatedAt',
+  direction: 'next',
+  offset: 0,
+  limit: 20
+});
+
+const secondPage = await client.table<Task>('tasks').query({
+  index: 'byUpdatedAt',
+  direction: 'next',
+  offset: 20,
+  limit: 20
+});
+
+console.log({
+  firstPageSize: firstPage.length,
+  secondPageSize: secondPage.length
+});
+```
+
+Deep offset pagination advances the IndexedDB cursor. It does not clone skipped
+records into a JavaScript array, but the cursor still has to move, so the shape
+is `O(offset + limit)`.
+
+## Count and explain
+
+```ts
+const openCount = await client.table<Task>('tasks').count({
+  index: 'byCompleted',
+  equals: false
+});
+
+const explained = await client.table<Task>('tasks').explain({
+  index: 'byCategory',
+  equals: 'work'
+});
+
+console.log({
+  openCount,
+  plan: explained.plan,
+  records: explained.records
+});
+```
+
+## Complexity quick map
+
+| Query shape | Complexity model | Notes |
+| --- | --- | --- |
+| Primary-key `get(key)` | Common IndexedDB key lookup model: `O(log n)`. | Browser implementation owns the tree details. |
+| Indexed `equals` | Common IndexedDB index model: `O(log n + matches)`. | Result size still matters. |
+| `limit: n` after cursor open | `O(limit)`. | Cana does not materialize the whole store. |
+| `offset + limit` | `O(offset + limit)`. | Cursor movement is the cost. |
+| Native `count()` | One native request. | Cana does not read every record into JS. |
+
+## Run it here
+
+<CanaPlayground id="query-explain" />
+
+## Next
+
+Continue to [transactions and change events](./CANA-USAGE-TRANSACTIONS-EVENTS.md).

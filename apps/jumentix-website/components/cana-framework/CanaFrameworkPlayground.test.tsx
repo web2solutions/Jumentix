@@ -57,5 +57,12 @@ describe('CanaFrameworkPlayground', () => {
       'href',
       '/downloads/cana/cana-react-context.zip'
     );
+
+    const agentMarkdown = screen.getByTestId('cana-framework-playground-react-context-basic-agent-markdown');
+    expect(agentMarkdown).not.toBeVisible();
+    expect(agentMarkdown).toHaveAttribute('data-agent-markdown', 'cana-framework-full-app');
+    expect(agentMarkdown).toHaveTextContent('#### src/App.tsx');
+    expect(agentMarkdown).toHaveTextContent('#### src/TasksProvider.tsx');
+    expect(agentMarkdown).toHaveTextContent('```typescript');
   });
 });

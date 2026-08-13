@@ -4,8 +4,8 @@
 
 ## All Changes
 
-- 2026-08-12 docs(JUM-705): use English cana example identifiers - Eduardo A.
-- 2026-08-12 fix(website): run the Monaco mount in tests instead of switching it off (JUM-701) - Eduardo A.
+- 2026-08-12 [JUM-705][Docs] Use English Cana example identifiers - Eduardo A.
+- 2026-08-12 [JUM-701][Fix] Run the Monaco mount in tests, and stop the task-change gate reading the repository four times (#213) - Eduardo A.
 - 2026-08-12 [JUM-698][Bug] Establish the request context in four adapters, and make their suites integrate (#211) - Eduardo A.
 - 2026-08-12 [JUM-703][Docs] Expand Cana tutorials and integrations (#210) - Eduardo A.
 - 2026-08-12 Merge remote-tracking branch 'origin/dev' into codex/docs/JUM-703-cana-performance-notes - Eduardo A.

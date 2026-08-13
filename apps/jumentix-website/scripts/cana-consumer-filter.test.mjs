@@ -4,7 +4,7 @@ import {
 } from './cana-consumer-filter.mjs';
 
 describe('cana consumer filter', () => {
-  test('strips workers + related and appends playgrounds', () => {
+  test('strips related internal links without appending hidden content', () => {
     expect.hasAssertions();
     const input = `# Guide
 
@@ -31,11 +31,11 @@ test me
 [design](./CANA-INDEXEDDB-ADAPTER.md)
 `;
     const out = toCanaConsumerMarkdown(input, { locale: 'en' });
-    expect(out).not.toContain('## 15. Workers');
-    expect(out).not.toContain('[Workers]');
+    expect(out).toContain('## 15. Workers');
+    expect(out).toContain('secret internals');
     expect(out).not.toContain('CANA-INDEXEDDB-ADAPTER');
-    expect(out).toContain('## Interactive playgrounds');
-    expect(out).toContain('<CanaPlayground id="getting-started" />');
+    expect(out).not.toContain('## Interactive playgrounds');
+    expect(out).not.toContain('<CanaPlayground id="getting-started" />');
     assertNoCanaContentLeaks(out, 'fixture');
   });
 });

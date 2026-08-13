@@ -431,17 +431,23 @@ import { cana, loadAll, type Category, type Task } from './cana';
 
 let lastCursor = Number(localStorage.getItem('tasks:lastCursor') ?? 0);
 
-export async function subscribeWithReplay(apply: (event: CanaChangeEvent) => void) {
+export async function subscribeWithReplay(
+  apply: (event: CanaChangeEvent) => void,
+  reload: () => Promise<void>
+) {
+  const rememberAndApply = (event: CanaChangeEvent) => {
+    apply(event);
+    lastCursor = event.cursor;
+    localStorage.setItem('tasks:lastCursor', String(lastCursor));
+  };
   try {
-    return cana.subscribe((event) => {
-      apply(event);
-      lastCursor = event.cursor;
-      localStorage.setItem('tasks:lastCursor', String(lastCursor));
-    }, { sinceCursor: lastCursor });
+    return cana.subscribe(rememberAndApply, { sinceCursor: lastCursor });
   } catch (error) {
     if (isCanaErrorCode(error, 'NotFound')) {
-      await loadAll();
-      return cana.subscribe(apply);
+      lastCursor = 0;
+      localStorage.setItem('tasks:lastCursor', '0');
+      await reload();
+      return cana.subscribe(rememberAndApply);
     }
     throw error;
   }
@@ -468,6 +474,108 @@ export async function createCategoryWithFirstTask(name: string, title: string) {
       updatedAt: now
     });
   });
+}`;
+
+const reactContextAdvancedProvider = `import React, { createContext, useContext, useEffect, useReducer, useState } from 'react';
+import { applyCanaEventToRecords } from '@jumentix/cana-react';
+import { cana, loadAll, seedInitialData, formatEvent, type Category, type Task } from './cana';
+import { subscribeWithReplay } from './advancedCana';
+
+type State = { categories: Category[]; tasks: Task[]; events: string[] };
+type Action =
+  | { type: 'loaded'; payload: Omit<State, 'events'> }
+  | { type: 'event'; event: Parameters<typeof formatEvent>[0] };
+
+function reducer(state: State, action: Action): State {
+  if (action.type === 'loaded') return { ...action.payload, events: state.events };
+  const event = action.event;
+  return {
+    categories: applyCanaEventToRecords(state.categories, event, {
+      store: 'categories',
+      getKey: (category) => category.id,
+      sort: (a, b) => a.name.localeCompare(b.name)
+    }),
+    tasks: applyCanaEventToRecords(state.tasks, event, {
+      store: 'tasks',
+      getKey: (task) => task.id,
+      sort: (a, b) => a.updatedAt - b.updatedAt
+    }),
+    events: [...state.events, formatEvent(event)].slice(-8)
+  };
+}
+
+const TasksContext = createContext<{
+  state: State;
+  addTask(title: string, categoryId: string): Promise<void>;
+  toggleTask(task: Task): Promise<void>;
+} | null>(null);
+
+export function TasksProvider({ children }: { children: React.ReactNode }) {
+  const [ready, setReady] = useState(false);
+  const [state, dispatch] = useReducer(reducer, { categories: [], tasks: [], events: [] });
+
+  async function reloadState() {
+    dispatch({ type: 'loaded', payload: await loadAll() });
+  }
+
+  useEffect(() => {
+    let alive = true;
+    void seedInitialData()
+      .then(loadAll)
+      .then((payload) => {
+        if (!alive) return;
+        dispatch({ type: 'loaded', payload });
+        setReady(true);
+      });
+    return () => { alive = false; };
+  }, []);
+
+  useEffect(() => {
+    if (!ready) return undefined;
+    let stop: (() => void) | undefined;
+    let active = true;
+    void subscribeWithReplay(
+      (event) => dispatch({ type: 'event', event }),
+      reloadState
+    ).then((cleanup) => {
+      if (active) stop = cleanup;
+      else cleanup();
+    });
+    return () => {
+      active = false;
+      stop?.();
+    };
+  }, [ready]);
+
+  const api = {
+    state,
+    async addTask(title: string, categoryId: string) {
+      const now = Date.now();
+      await cana.table<Task>('tasks').add({
+        id: crypto.randomUUID(),
+        title,
+        categoryId,
+        completed: false,
+        priority: 'medium',
+        createdAt: now,
+        updatedAt: now
+      });
+    },
+    async toggleTask(task: Task) {
+      await cana.table<Task>('tasks').update(task.id, {
+        completed: !task.completed,
+        updatedAt: Date.now()
+      });
+    }
+  };
+
+  return <TasksContext.Provider value={api}>{children}</TasksContext.Provider>;
+}
+
+export function useTasks() {
+  const ctx = useContext(TasksContext);
+  if (!ctx) throw new Error('useTasks must run inside TasksProvider');
+  return ctx;
 }`;
 
 const reactContextAdvancedApp = `import { createCategoryWithFirstTask } from './advancedCana';
@@ -1093,7 +1201,7 @@ export const CANA_FRAMEWORK_EXAMPLES: readonly CanaFrameworkExample[] = [
       { path: 'vite.config.ts', source: viteReactConfig },
       { path: 'src/vite-env.d.ts', source: viteEnvDts },
       { path: 'src/cana.ts', source: canaTs },
-      { path: 'src/TasksProvider.tsx', source: reactContextProvider },
+      { path: 'src/TasksProvider.tsx', source: reactContextAdvancedProvider },
       { path: 'src/advancedCana.ts', source: reactContextAdvanced },
       { path: 'src/App.tsx', source: reactContextAdvancedApp },
       { path: 'src/main.tsx', source: reactMainTsx },
@@ -1106,7 +1214,7 @@ export const CANA_FRAMEWORK_EXAMPLES: readonly CanaFrameworkExample[] = [
     level: 'simple',
     title: {
       en: 'React Redux: store updated by Cana events',
-      'pt-BR': 'React Redux: store atualizada por events Cana'
+      'pt-BR': 'React Redux: store atualizada por eventos Cana'
     },
     description: {
       en: 'Redux renders the cache; Cana remains the durable source of truth.',

@@ -510,6 +510,7 @@ async function writeNavigation(locale, records) {
     const childTitle = (slug) => {
       const packageTitles = {
         cana: '@jumentix/cana',
+        usage: locale === 'pt-BR' ? 'Guia de uso' : 'Usage guide',
         'designer-core': '@jumentix/designer-core',
         'key-value-storage': '@jumentix/key-value-storage',
         'mutex-service': '@jumentix/mutex-service',
@@ -534,6 +535,17 @@ async function writeNavigation(locale, records) {
           title: childTitle(slug),
         })),
       ];
+      if (section === 'packages/cana') {
+        const order = ['index', 'usage', 'react-context', 'react-redux', 'vue-pinia'];
+        metaEntries.sort((a, b) => {
+          const aIndex = order.indexOf(a.slug);
+          const bIndex = order.indexOf(b.slug);
+          if (aIndex === -1 && bIndex === -1) return 0;
+          if (aIndex === -1) return 1;
+          if (bIndex === -1) return -1;
+          return aIndex - bIndex;
+        });
+      }
       // Prefer nested package folders ahead of flat package pages when titles collide.
       const seen = new Set();
       const deduped = metaEntries.filter((entry) => {

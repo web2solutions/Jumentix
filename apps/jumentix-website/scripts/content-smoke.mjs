@@ -42,7 +42,9 @@ const requiredDocuments = [
   'packages/mutex-service/index.mdx',
   'packages/mutex-service/usage.mdx',
   'packages/cana/index.mdx',
-  'packages/cana/usage.mdx',
+  'packages/cana/usage/index.mdx',
+  'packages/cana/usage/getting-started.mdx',
+  'packages/cana/usage/workers-testing.mdx',
   'reference/index.mdx',
   'reference/runtime-contracts.mdx',
 ];

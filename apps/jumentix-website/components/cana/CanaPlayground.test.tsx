@@ -21,7 +21,8 @@ describe('Cana playground catalog', () => {
       'crash-recovery',
       'export-import',
       'fallback-backend',
-      'factory-adapter'
+      'factory-adapter',
+      'worker-client-flow'
     ]));
     expect(getCanaSnippet('getting-started')?.code).toContain('createClient');
   });
