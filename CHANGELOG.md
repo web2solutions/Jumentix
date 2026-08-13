@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-13 fix(website): bake changelog data at build instead of github api (JUM-718) - Eduardo Almeida
 - 2026-08-13 [JUM-709][Feature] Day-by-day tasks and real code for zero-to-MVP paths (#235) - Eduardo A.
 - 2026-08-13 feat(website): merge cana heavy data canvas - Eduardo A.
 - 2026-08-13 Merge remote-tracking branch 'origin/dev' into fix/cana-multi-client-workers-canvas - Eduardo A.
