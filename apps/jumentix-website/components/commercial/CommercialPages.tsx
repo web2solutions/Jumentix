@@ -27,6 +27,7 @@ import {
   CodeShowcase,
   FeatureGrid,
   MetricStrip,
+  MvpJourney,
   SectionHeading,
   StatusBadge,
 } from '../design-system';
@@ -1537,6 +1538,16 @@ function MvpLaunchBand({
             { focus: t(locale, 'Evolve', 'Evoluir'), when: t(locale, 'What changes after the first user feedback?', 'O que muda após o primeiro feedback de usuário?'), implementation: t(locale, 'Swap adapters, add events, introduce workers, or extract a service while preserving contracts.', 'Troque adaptadores, adicione eventos, introduza workers ou extraia um serviço preservando contratos.'), outcome: t(locale, 'A next increment that does not rewrite the MVP.', 'Um próximo incremento que não reescreve o MVP.') },
           ]}
         />
+        <div className={classes.prose}>
+          <h3>{t(locale, 'Demo-ready checklist', 'Checklist de pronto para demo')}</h3>
+          <ProofList items={[
+            t(locale, 'One happy path running locally that a first user can complete without help.', 'Um happy path rodando localmente que o primeiro usuário conclui sem ajuda.'),
+            t(locale, 'One published contract — OpenAPI, AsyncAPI, or message contract — that matches the running behavior.', 'Um contrato publicado — OpenAPI, AsyncAPI ou contrato de mensagem — que corresponde ao comportamento em execução.'),
+            t(locale, 'One real consumer calling the MVP: a frontend, an SDK client, or an integration script.', 'Um consumidor real chamando o MVP: um frontend, um client SDK ou um script de integração.'),
+            t(locale, 'Green focused tests, route checks, docs sync, and architecture boundary gates with captured evidence.', 'Testes focados, checks de rota, sync de docs e gates de limites arquiteturais verdes com evidência capturada.'),
+            t(locale, 'A written next increment that evolves the MVP without rewriting contracts or domain code.', 'Um próximo incremento escrito que evolui o MVP sem reescrever contratos ou código de domínio.'),
+          ]} />
+        </div>
       </div>
     </Band>
   );
@@ -1850,9 +1861,19 @@ const useCaseDetails: Record<UseCaseName, {
     outcomes: string[];
     sample: keyof typeof codeSamples;
     mvpIntro: string;
-    mvpSteps: Array<{ label: string; title: string; description: string; output: string }>;
+    mvpSteps: Array<{
+      label: string;
+      title: string;
+      description: string;
+      output: string;
+      tasks: string[];
+      code: CodeSample[];
+      playground?: { runtime: DocsRuntimeId; id: string };
+    }>;
     mvpScope: Array<{ title: string; description: string; meta: string }>;
     validationRows: CommercialMatrixRow[];
+    doneCriteria: string[];
+    deferList: string[];
   };
   pt: {
     eyebrow: string;
@@ -1861,9 +1882,19 @@ const useCaseDetails: Record<UseCaseName, {
     outcomes: string[];
     sample: keyof typeof codeSamples;
     mvpIntro: string;
-    mvpSteps: Array<{ label: string; title: string; description: string; output: string }>;
+    mvpSteps: Array<{
+      label: string;
+      title: string;
+      description: string;
+      output: string;
+      tasks: string[];
+      code: CodeSample[];
+      playground?: { runtime: DocsRuntimeId; id: string };
+    }>;
     mvpScope: Array<{ title: string; description: string; meta: string }>;
     validationRows: CommercialMatrixRow[];
+    doneCriteria: string[];
+    deferList: string[];
   };
 }> = {
   'rest-api': {
@@ -1875,10 +1906,103 @@ const useCaseDetails: Record<UseCaseName, {
       sample: 'rest',
       mvpIntro: 'Use this path when the first MVP must expose predictable CRUD or integration behavior that another system, admin screen, or frontend can call immediately.',
       mvpSteps: [
-        { label: 'Day 0', title: 'Choose the first resource', description: 'Model one resource such as Task with Category ownership, required fields, validation, and the first create/list operations.', output: 'MVP output: a tiny OpenAPI surface with one command and one query.' },
-        { label: 'Day 1', title: 'Wire the controller path', description: 'Connect request validation, controller, use-case, repository port, in-memory adapter, and response contract.', output: 'MVP output: a running REST route with the domain still independent from the HTTP framework.' },
-        { label: 'Day 2', title: 'Generate a usable client', description: 'Expose the contract to a frontend or integration client, then call it from a smokeable example.', output: 'MVP output: API docs, SDK behavior, and a repeatable request example.' },
-        { label: 'Release', title: 'Prove the route', description: 'Run route resolution, unit tests, docs sync, architecture checks, and website/package gates before the demo.', output: 'MVP output: evidence that the route, docs, validation and use-case agree.' },
+        {
+          label: 'Day 0', title: 'Choose the first resource', description: 'Model one resource such as Task with Category ownership, required fields, validation, and the first create/list operations.', output: 'MVP output: a tiny OpenAPI surface with one command and one query.',
+          tasks: [
+            'Write the Category and Task types with required fields and the completed flag.',
+            'Seed the work category so the first command has a valid owner.',
+            'Pick create and list as the only MVP operations.',
+            'Write acceptance criteria: empty title returns 400, unknown category returns 404.',
+          ],
+          code: [
+            {
+              label: 'domain.ts',
+              language: 'typescript',
+              code: `type Category = { id: string; name: string };
+type Task = { id: string; title: string; categoryId: string; completed: boolean };
+
+const categories = new Map<string, Category>([
+  ['work', { id: 'work', name: 'Work' }]
+]);
+const tasks = new Map<string, Task>();`,
+            },
+          ],
+        },
+        {
+          label: 'Day 1', title: 'Wire the controller path', description: 'Connect request validation, controller, use-case, repository port, in-memory adapter, and response contract.', output: 'MVP output: a running REST route with the domain still independent from the HTTP framework.',
+          tasks: [
+            'Implement the create task use-case against the real in-memory database adapter.',
+            'Prove the 201/400/404 validation rules with one Run in the executable playground.',
+            'List the stored tasks back from the same adapter to close the read path.',
+          ],
+          code: [],
+          playground: { runtime: 'jumentix-browser-lab', id: 'rest-mvp-use-case' },
+        },
+        {
+          label: 'Day 2', title: 'Generate a usable client', description: 'Expose the contract to a frontend or integration client, then call it from a smokeable example.', output: 'MVP output: API docs, SDK behavior, and a repeatable request example.',
+          tasks: [
+            'Publish openapi.yaml with the listTasks and createTask operationIds.',
+            'Route the operationIds through a real REST client into the in-memory adapter.',
+            'Run create and list through the client and capture the 201/400 evidence.',
+          ],
+          code: [
+            {
+              label: 'docs/openapi.yaml',
+              language: 'yaml',
+              code: `openapi: 3.1.0
+info:
+  title: Tasks MVP API
+  version: 0.1.0
+paths:
+  /tasks:
+    get:
+      operationId: listTasks
+      responses:
+        '200':
+          description: Tasks listed
+    post:
+      operationId: createTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, categoryId]
+              properties:
+                title: { type: string, minLength: 1 }
+                categoryId: { type: string }
+      responses:
+        '201':
+          description: Task created
+        '400':
+          description: Invalid input
+        '404':
+          description: Category not found`,
+            },
+          ],
+          playground: { runtime: 'jumentix-browser-lab', id: 'rest-mvp-client' },
+        },
+        {
+          label: 'Release', title: 'Prove the route', description: 'Run route resolution, unit tests, docs sync, architecture checks, and website/package gates before the demo.', output: 'MVP output: evidence that the route, docs, validation and use-case agree.',
+          tasks: [
+            'Run bun run test:unit to lock the use-case validation rules.',
+            'Run bun run oas:check-routes to prove contract and handler agree.',
+            'Replay the smoke request and capture the response as demo evidence.',
+          ],
+          code: [
+            {
+              label: 'verify.sh',
+              language: 'shell',
+              code: `bun run test:unit
+bun run oas:check-routes
+
+curl -s -X POST http://localhost:3000/tasks \\
+  -H 'content-type: application/json' \\
+  -d '{"title":"Smoke task","categoryId":"work"}'`,
+            },
+          ],
+        },
       ],
       mvpScope: [
         { title: 'One resource family', description: 'Task and Category are enough to prove CRUD, filtering, validation, and ownership.', meta: 'Domain slice' },
@@ -1890,6 +2014,18 @@ const useCaseDetails: Record<UseCaseName, {
         { focus: 'Behavior', when: 'Does the first workflow enforce validation and domain rules?', implementation: 'Controller/use-case tests and error contract checks.', outcome: 'Invalid input fails before persistence; domain errors stay explicit.' },
         { focus: 'Adoption', when: 'Can a frontend or partner call it today?', implementation: 'Generated REST client and copyable request example.', outcome: 'A first consumer can create and list records.' },
       ],
+      doneCriteria: [
+        'The OpenAPI contract and the running handler describe the same routes and schemas.',
+        'A typed client can create and list tasks without reading server source code.',
+        'Invalid input fails with 400 and unknown categories with 404 before persistence.',
+        'Unit tests, route checks, and a captured smoke request prove the slice before the demo.',
+      ],
+      deferList: [
+        'Bulk operations and reporting endpoints.',
+        'Webhooks and outbound event delivery.',
+        'Rate limiting, authentication, and API versioning policy.',
+        'Production database adapter — the swap happens after first feedback.',
+      ],
     },
     pt: {
       eyebrow: 'Blueprint de API REST',
@@ -1899,10 +2035,103 @@ const useCaseDetails: Record<UseCaseName, {
       sample: 'rest',
       mvpIntro: 'Use este caminho quando o primeiro MVP precisa expor CRUD previsível ou comportamento de integração que outro sistema, tela admin ou frontend consiga chamar imediatamente.',
       mvpSteps: [
-        { label: 'Dia 0', title: 'Escolha o primeiro recurso', description: 'Modele um recurso como Task com Category, campos obrigatórios, validação e as primeiras operações de create/list.', output: 'Saída MVP: uma superfície OpenAPI pequena com um comando e uma query.' },
-        { label: 'Dia 1', title: 'Conecte o caminho do controller', description: 'Ligue validação de request, controller, use-case, port de repository, adaptador in-memory e contrato de resposta.', output: 'Saída MVP: uma rota REST rodando com domínio independente do framework HTTP.' },
-        { label: 'Dia 2', title: 'Gere um client utilizável', description: 'Exponha o contrato para um frontend ou cliente de integração e chame a rota em um exemplo testável.', output: 'Saída MVP: docs de API, comportamento de SDK e exemplo repetível de request.' },
-        { label: 'Release', title: 'Comprove a rota', description: 'Rode resolução de rotas, testes unitários, sync de docs, checks de arquitetura e gates de website/pacote antes da demo.', output: 'Saída MVP: evidência de que rota, docs, validação e use-case concordam.' },
+        {
+          label: 'Dia 0', title: 'Escolha o primeiro recurso', description: 'Modele um recurso como Task com Category, campos obrigatórios, validação e as primeiras operações de create/list.', output: 'Saída MVP: uma superfície OpenAPI pequena com um comando e uma query.',
+          tasks: [
+            'Escreva os tipos Category e Task com campos obrigatórios e a flag completed.',
+            'Semeie a categoria work para que o primeiro comando tenha um dono válido.',
+            'Escolha create e list como únicas operações do MVP.',
+            'Escreva critérios de aceite: título vazio retorna 400, categoria desconhecida retorna 404.',
+          ],
+          code: [
+            {
+              label: 'domain.ts',
+              language: 'typescript',
+              code: `type Category = { id: string; name: string };
+type Task = { id: string; title: string; categoryId: string; completed: boolean };
+
+const categories = new Map<string, Category>([
+  ['work', { id: 'work', name: 'Work' }]
+]);
+const tasks = new Map<string, Task>();`,
+            },
+          ],
+        },
+        {
+          label: 'Dia 1', title: 'Conecte o caminho do controller', description: 'Ligue validação de request, controller, use-case, port de repository, adaptador in-memory e contrato de resposta.', output: 'Saída MVP: uma rota REST rodando com domínio independente do framework HTTP.',
+          tasks: [
+            'Implemente o use-case de criar task contra o adaptador real in-memory.',
+            'Prove as regras 201/400/404 com um Run no playground executável.',
+            'Liste as tasks armazenadas de volta pelo mesmo adaptador, fechando a leitura.',
+          ],
+          code: [],
+          playground: { runtime: 'jumentix-browser-lab', id: 'rest-mvp-use-case' },
+        },
+        {
+          label: 'Dia 2', title: 'Gere um client utilizável', description: 'Exponha o contrato para um frontend ou cliente de integração e chame a rota em um exemplo testável.', output: 'Saída MVP: docs de API, comportamento de SDK e exemplo repetível de request.',
+          tasks: [
+            'Publique openapi.yaml com os operationIds listTasks e createTask.',
+            'Roteie os operationIds por um client REST real até o adaptador in-memory.',
+            'Rode create e list pelo client e capture a evidência 201/400.',
+          ],
+          code: [
+            {
+              label: 'docs/openapi.yaml',
+              language: 'yaml',
+              code: `openapi: 3.1.0
+info:
+  title: Tasks MVP API
+  version: 0.1.0
+paths:
+  /tasks:
+    get:
+      operationId: listTasks
+      responses:
+        '200':
+          description: Tasks listed
+    post:
+      operationId: createTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, categoryId]
+              properties:
+                title: { type: string, minLength: 1 }
+                categoryId: { type: string }
+      responses:
+        '201':
+          description: Task created
+        '400':
+          description: Invalid input
+        '404':
+          description: Category not found`,
+            },
+          ],
+          playground: { runtime: 'jumentix-browser-lab', id: 'rest-mvp-client' },
+        },
+        {
+          label: 'Release', title: 'Comprove a rota', description: 'Rode resolução de rotas, testes unitários, sync de docs, checks de arquitetura e gates de website/pacote antes da demo.', output: 'Saída MVP: evidência de que rota, docs, validação e use-case concordam.',
+          tasks: [
+            'Rode bun run test:unit para travar as regras de validação do use-case.',
+            'Rode bun run oas:check-routes para provar que contrato e handler concordam.',
+            'Repita o request de fumaça e capture a resposta como evidência de demo.',
+          ],
+          code: [
+            {
+              label: 'verify.sh',
+              language: 'shell',
+              code: `bun run test:unit
+bun run oas:check-routes
+
+curl -s -X POST http://localhost:3000/tasks \\
+  -H 'content-type: application/json' \\
+  -d '{"title":"Smoke task","categoryId":"work"}'`,
+            },
+          ],
+        },
       ],
       mvpScope: [
         { title: 'Uma família de recurso', description: 'Task e Category bastam para provar CRUD, filtro, validação e ownership.', meta: 'Fatia de domínio' },
@@ -1913,6 +2142,18 @@ const useCaseDetails: Record<UseCaseName, {
         { focus: 'Contrato', when: 'Outro client entende a API sem ler o código fonte?', implementation: 'OpenAPI 3.1, check de rota, exemplos de schema.', outcome: 'Docs e metadados de rota batem com o handler.' },
         { focus: 'Comportamento', when: 'O primeiro fluxo aplica validação e regras de domínio?', implementation: 'Testes de controller/use-case e checks de contrato de erro.', outcome: 'Input inválido falha antes da persistência; erros de domínio ficam explícitos.' },
         { focus: 'Adoção', when: 'Um frontend ou parceiro consegue chamar hoje?', implementation: 'Client REST gerado e exemplo copiável de request.', outcome: 'Um primeiro consumidor consegue criar e listar registros.' },
+      ],
+      doneCriteria: [
+        'O contrato OpenAPI e o handler em execução descrevem as mesmas rotas e schemas.',
+        'Um client tipado cria e lista tasks sem ler o código fonte do servidor.',
+        'Input inválido falha com 400 e categoria desconhecida com 404 antes da persistência.',
+        'Testes unitários, checks de rota e um request de fumaça capturado provam a fatia antes da demo.',
+      ],
+      deferList: [
+        'Operações bulk e endpoints de relatório.',
+        'Webhooks e entrega de eventos outbound.',
+        'Rate limiting, autenticação e política de versionamento de API.',
+        'Adaptador de banco de produção — a troca acontece após o primeiro feedback.',
       ],
     },
   },
@@ -1925,10 +2166,72 @@ const useCaseDetails: Record<UseCaseName, {
       sample: 'realtime',
       mvpIntro: 'Use this path when the first MVP must feel live: progress updates, collaboration, notifications, or command results that return through a bidirectional channel.',
       mvpSteps: [
-        { label: 'Day 0', title: 'Pick the live moment', description: 'Choose the one event users must see without refreshing, such as task.created or task.statusChanged.', output: 'MVP output: one AsyncAPI channel and one correlated request/response subject.' },
-        { label: 'Day 1', title: 'Run the realtime adapter', description: 'Start Socket.IO or gRPC beside the REST fallback and map messages to the same use-case contract.', output: 'MVP output: a live command that returns acknowledgement and payload.' },
-        { label: 'Day 2', title: 'Connect a browser client', description: 'Subscribe to the event, render it in the UI, and keep a REST fallback for reconnect or degraded mode.', output: 'MVP output: the user sees a live update and the fallback returns the same business result.' },
-        { label: 'Release', title: 'Prove delivery and reconnect', description: 'Validate message correlation, fallback parity, docs, and process supervision before the pilot.', output: 'MVP output: evidence for delivery acknowledgement, reconnect behavior, and fallback parity.' },
+        {
+          label: 'Day 0', title: 'Pick the live moment', description: 'Choose the one event users must see without refreshing, such as task.created or task.statusChanged.', output: 'MVP output: one AsyncAPI channel and one correlated request/response subject.',
+          tasks: [
+            'Choose tasks.create as the single command the MVP accepts over the socket.',
+            'Choose tasks.created as the single event the UI renders without refresh.',
+            'Freeze the message shape: subject plus payload, nothing anonymous.',
+            'Write acceptance criteria: unsupported subjects return an explicit error.',
+          ],
+          code: [
+            {
+              label: 'contract.ts',
+              language: 'typescript',
+              code: `type Task = { id: string; title: string; categoryId: string; completed: boolean };
+
+type TaskCommand = {
+  subject: 'tasks.create';
+  payload: { title: string; categoryId: string };
+};
+
+type TaskEvent =
+  | { subject: 'tasks.ready'; payload: { total: number } }
+  | { subject: 'tasks.created'; payload: Task };`,
+            },
+          ],
+        },
+        {
+          label: 'Day 1', title: 'Run the realtime adapter', description: 'Start Socket.IO or gRPC beside the REST fallback and map messages to the same use-case contract.', output: 'MVP output: a live command that returns acknowledgement and payload.',
+          tasks: [
+            'Register the tasks.create.v1 handler on the real in-memory mediator.',
+            'Persist each command through the in-memory database adapter, then broadcast tasks.created.',
+            'Run the WebSocket client and capture the correlated acknowledgement plus the live card.',
+          ],
+          code: [],
+          playground: { runtime: 'jumentix-browser-lab', id: 'realtime-mvp-live' },
+        },
+        {
+          label: 'Day 2', title: 'Connect a browser client', description: 'Subscribe to the event, render it in the UI, and keep a REST fallback for reconnect or degraded mode.', output: 'MVP output: the user sees a live update and the fallback returns the same business result.',
+          tasks: [
+            'Run the fallback drill in the playground: the socket handler is down.',
+            'Confirm the REST fallback creates the same task through the same in-memory adapter.',
+            'Capture transportUsed=rest and the stored record as parity evidence.',
+          ],
+          code: [],
+          playground: { runtime: 'jumentix-browser-lab', id: 'realtime-mvp-fallback' },
+        },
+        {
+          label: 'Release', title: 'Prove delivery and reconnect', description: 'Validate message correlation, fallback parity, docs, and process supervision before the pilot.', output: 'MVP output: evidence for delivery acknowledgement, reconnect behavior, and fallback parity.',
+          tasks: [
+            'Run bun run test:unit over message handling and validation rules.',
+            'Run both processes under a named PM2 profile and inspect the logs.',
+            'Capture a reconnect drill: kill the socket, confirm the REST fallback returns the same task.',
+          ],
+          code: [
+            {
+              label: 'verify.sh',
+              language: 'shell',
+              code: `bun run test:unit
+
+# Start the supervised realtime + fallback processes
+bun run pm2:start:dev:restapi
+
+# Reconnect drill: stop the socket process, then replay the command.
+# The fallback must return the same business result over REST.`,
+            },
+          ],
+        },
       ],
       mvpScope: [
         { title: 'One live event', description: 'Start with one event that visibly changes the UI or confirms a command.', meta: 'Realtime slice' },
@@ -1940,6 +2243,18 @@ const useCaseDetails: Record<UseCaseName, {
         { focus: 'Fallback', when: 'Does REST return the same result when realtime is unavailable?', implementation: 'Fallback route and shared use-case contract.', outcome: 'Degraded mode remains usable.' },
         { focus: 'Operations', when: 'Can the process be started, inspected and restarted?', implementation: 'PM2/runtime profile and logs.', outcome: 'The MVP is demoable outside a dev terminal.' },
       ],
+      doneCriteria: [
+        'Every realtime response carries the subject the client sent — no anonymous side effects.',
+        'The REST fallback returns the same business result when the socket is unavailable.',
+        'A reconnect drill is captured as evidence before the pilot.',
+        'Realtime and fallback processes run under a named PM2 profile with inspectable logs.',
+      ],
+      deferList: [
+        'Multi-region fan-out and Redis Streams clustering.',
+        'Presence, typing indicators, and history replay.',
+        'gRPC streaming beyond the first request/response subject.',
+        'Horizontal scaling of the socket layer.',
+      ],
     },
     pt: {
       eyebrow: 'Blueprint realtime',
@@ -1949,10 +2264,72 @@ const useCaseDetails: Record<UseCaseName, {
       sample: 'realtime',
       mvpIntro: 'Use este caminho quando o primeiro MVP precisa parecer vivo: progresso, colaboração, notificações ou resultados de comando voltando por canal bidirecional.',
       mvpSteps: [
-        { label: 'Dia 0', title: 'Escolha o momento live', description: 'Escolha o único evento que usuários precisam ver sem refresh, como task.created ou task.statusChanged.', output: 'Saída MVP: um canal AsyncAPI e um subject request/response correlacionado.' },
-        { label: 'Dia 1', title: 'Rode o adapter realtime', description: 'Inicie Socket.IO ou gRPC ao lado do fallback REST e mapeie mensagens para o mesmo contrato de use-case.', output: 'Saída MVP: um comando live que retorna acknowledgement e payload.' },
-        { label: 'Dia 2', title: 'Conecte um client browser', description: 'Assine o evento, renderize na UI e mantenha fallback REST para reconnect ou modo degradado.', output: 'Saída MVP: usuário vê atualização live e fallback retorna o mesmo resultado de negócio.' },
-        { label: 'Release', title: 'Comprove entrega e reconnect', description: 'Valide correlação de mensagens, paridade do fallback, docs e supervisão de processo antes do piloto.', output: 'Saída MVP: evidência de acknowledgement, reconnect e paridade do fallback.' },
+        {
+          label: 'Dia 0', title: 'Escolha o momento live', description: 'Escolha o único evento que usuários precisam ver sem refresh, como task.created ou task.statusChanged.', output: 'Saída MVP: um canal AsyncAPI e um subject request/response correlacionado.',
+          tasks: [
+            'Escolha tasks.create como único comando aceito pelo socket no MVP.',
+            'Escolha tasks.created como único evento que a UI renderiza sem refresh.',
+            'Congele o formato de mensagem: subject mais payload, nada anônimo.',
+            'Escreva critérios de aceite: subjects não suportados retornam erro explícito.',
+          ],
+          code: [
+            {
+              label: 'contract.ts',
+              language: 'typescript',
+              code: `type Task = { id: string; title: string; categoryId: string; completed: boolean };
+
+type TaskCommand = {
+  subject: 'tasks.create';
+  payload: { title: string; categoryId: string };
+};
+
+type TaskEvent =
+  | { subject: 'tasks.ready'; payload: { total: number } }
+  | { subject: 'tasks.created'; payload: Task };`,
+            },
+          ],
+        },
+        {
+          label: 'Dia 1', title: 'Rode o adapter realtime', description: 'Inicie Socket.IO ou gRPC ao lado do fallback REST e mapeie mensagens para o mesmo contrato de use-case.', output: 'Saída MVP: um comando live que retorna acknowledgement e payload.',
+          tasks: [
+            'Registre o handler tasks.create.v1 no mediator in-memory real.',
+            'Persista cada comando pelo adaptador in-memory e transmita tasks.created.',
+            'Rode o client WebSocket e capture o acknowledgement correlacionado e o card live.',
+          ],
+          code: [],
+          playground: { runtime: 'jumentix-browser-lab', id: 'realtime-mvp-live' },
+        },
+        {
+          label: 'Dia 2', title: 'Conecte um client browser', description: 'Assine o evento, renderize na UI e mantenha fallback REST para reconnect ou modo degradado.', output: 'Saída MVP: usuário vê atualização live e fallback retorna o mesmo resultado de negócio.',
+          tasks: [
+            'Rode o drill de fallback no playground: o handler do socket está fora.',
+            'Confirme que o fallback REST cria a mesma task pelo mesmo adaptador in-memory.',
+            'Capture transportUsed=rest e o registro persistido como evidência de paridade.',
+          ],
+          code: [],
+          playground: { runtime: 'jumentix-browser-lab', id: 'realtime-mvp-fallback' },
+        },
+        {
+          label: 'Release', title: 'Comprove entrega e reconnect', description: 'Valide correlação de mensagens, paridade do fallback, docs e supervisão de processo antes do piloto.', output: 'Saída MVP: evidência de acknowledgement, reconnect e paridade do fallback.',
+          tasks: [
+            'Rode bun run test:unit sobre o tratamento de mensagens e regras de validação.',
+            'Rode os dois processos sob um perfil PM2 nomeado e inspecione os logs.',
+            'Capture um drill de reconnect: derrube o socket e confirme que o fallback REST retorna a mesma task.',
+          ],
+          code: [
+            {
+              label: 'verify.sh',
+              language: 'shell',
+              code: `bun run test:unit
+
+# Start the supervised realtime + fallback processes
+bun run pm2:start:dev:restapi
+
+# Reconnect drill: stop the socket process, then replay the command.
+# The fallback must return the same business result over REST.`,
+            },
+          ],
+        },
       ],
       mvpScope: [
         { title: 'Um evento live', description: 'Comece com um evento que muda a UI ou confirma um comando de forma visível.', meta: 'Fatia realtime' },
@@ -1963,6 +2340,18 @@ const useCaseDetails: Record<UseCaseName, {
         { focus: 'Correlação', when: 'O client relaciona toda resposta ao request?', implementation: 'Message id, contrato de subject, testes do response handler.', outcome: 'Sem efeitos realtime anônimos.' },
         { focus: 'Fallback', when: 'REST retorna o mesmo resultado quando realtime cai?', implementation: 'Rota fallback e contrato de use-case compartilhado.', outcome: 'Modo degradado continua usável.' },
         { focus: 'Operação', when: 'O processo pode iniciar, ser inspecionado e reiniciado?', implementation: 'Perfil PM2/runtime e logs.', outcome: 'O MVP é demonstrável fora do terminal de dev.' },
+      ],
+      doneCriteria: [
+        'Toda resposta realtime carrega o subject que o client enviou — sem efeitos anônimos.',
+        'O fallback REST retorna o mesmo resultado de negócio quando o socket está indisponível.',
+        'Um drill de reconnect é capturado como evidência antes do piloto.',
+        'Processos realtime e fallback rodam sob um perfil PM2 nomeado com logs inspecionáveis.',
+      ],
+      deferList: [
+        'Fan-out multi-região e cluster com Redis Streams.',
+        'Presence, indicadores de digitação e replay de histórico.',
+        'Streaming gRPC além do primeiro subject request/response.',
+        'Escala horizontal da camada de socket.',
       ],
     },
   },
@@ -1975,10 +2364,99 @@ const useCaseDetails: Record<UseCaseName, {
       sample: 'start',
       mvpIntro: 'Use this path when the first MVP is a complete SaaS slice: sign in, tenant or organization scope, one core workflow, and one deployable.',
       mvpSteps: [
-        { label: 'Day 0', title: 'Define the tenant-owned workflow', description: 'Choose the first organization-owned capability, such as categorized tasks, and define who can create, view, and complete it.', output: 'MVP output: one bounded context with tenant and RBAC expectations.' },
-        { label: 'Day 1', title: 'Compose one deployable', description: 'Use the backend template, authentication, authorization, controllers, use-cases, repository ports, and local adapter profile.', output: 'MVP output: one application process that demonstrates the full product path.' },
-        { label: 'Day 2', title: 'Add the first UI or SDK consumer', description: 'Connect a frontend, admin view, or generated client to the same contracts.', output: 'MVP output: a user can complete the workflow end to end.' },
-        { label: 'Release', title: 'Protect the monolith boundaries', description: 'Run workspace boundaries, route/docs checks, tests, and release evidence before shipping to a pilot environment.', output: 'MVP output: one deployable with extraction-ready domain boundaries.' },
+        {
+          label: 'Day 0', title: 'Define the tenant-owned workflow', description: 'Choose the first organization-owned capability, such as categorized tasks, and define who can create, view, and complete it.', output: 'MVP output: one bounded context with tenant and RBAC expectations.',
+          tasks: [
+            'Define TenantContext with organizationId and userId on every request.',
+            'Model Task with organizationId so every record belongs to a tenant.',
+            'Write the TenantPolicy rule: a tenant can only write its own records.',
+            'Write acceptance criteria: cross-tenant writes are denied with an explicit error.',
+          ],
+          code: [
+            {
+              label: 'domain.ts',
+              language: 'typescript',
+              code: `type TenantContext = { organizationId: string; userId: string };
+type Task = { id: string; organizationId: string; title: string; categoryId: string };
+
+class TenantPolicy {
+  canWriteTask(context: TenantContext, organizationId: string) {
+    return context.organizationId === organizationId;
+  }
+}`,
+            },
+          ],
+        },
+        {
+          label: 'Day 1', title: 'Compose one deployable', description: 'Use the backend template, authentication, authorization, controllers, use-cases, repository ports, and local adapter profile.', output: 'MVP output: one application process that demonstrates the full product path.',
+          tasks: [
+            'Guard every write with the tenant policy before touching the in-memory adapter.',
+            'Run the cross-tenant drill in the playground: org-1 writes, org-2 is denied with 403.',
+            'Read the store back and confirm only the legitimate record exists.',
+          ],
+          code: [],
+          playground: { runtime: 'jumentix-browser-lab', id: 'saas-mvp-tenant' },
+        },
+        {
+          label: 'Day 2', title: 'Add the first UI or SDK consumer', description: 'Connect a frontend, admin view, or generated client to the same contracts.', output: 'MVP output: a user can complete the workflow end to end.',
+          tasks: [
+            'Expose createTenantTask reading the tenant headers from the request.',
+            'Map module errors to HTTP status without leaking domain details.',
+            'Write an end-to-end request that asserts the 201 response.',
+          ],
+          code: [
+            {
+              label: 'src/route.ts',
+              language: 'typescript',
+              code: `import { modules } from './modules';
+
+export async function createTenantTask(request: Request) {
+  const organizationId = request.headers.get('x-organization-id') ?? '';
+  const userId = request.headers.get('x-user-id') ?? '';
+  const input = await request.json() as { title: string; categoryId: string };
+
+  const result = modules.taskModule.create({ organizationId, userId }, input);
+  if (!result.ok) return Response.json({ error: result.error }, { status: 403 });
+  return Response.json(result.result, { status: 201 });
+}`,
+            },
+            {
+              label: 'test.ts',
+              language: 'typescript',
+              code: `const request = new Request('http://localhost/tasks', {
+  method: 'POST',
+  headers: {
+    'content-type': 'application/json',
+    'x-organization-id': 'org-1',
+    'x-user-id': 'user-1'
+  },
+  body: JSON.stringify({ title: 'Tenant scoped task', categoryId: 'work' })
+});
+
+const response = await createTenantTask(request);
+console.assert(response.status === 201);`,
+            },
+          ],
+        },
+        {
+          label: 'Release', title: 'Protect the monolith boundaries', description: 'Run workspace boundaries, route/docs checks, tests, and release evidence before shipping to a pilot environment.', output: 'MVP output: one deployable with extraction-ready domain boundaries.',
+          tasks: [
+            'Run bun run test:unit over the module and policy rules.',
+            'Run bun run arch:check-workspace-boundaries to prove modules stay decoupled.',
+            'Capture the cross-tenant drill: org-2 must not read or write org-1 tasks.',
+          ],
+          code: [
+            {
+              label: 'verify.sh',
+              language: 'shell',
+              code: `bun run test:unit
+bun run arch:check-workspace-boundaries
+
+# Cross-tenant drill: replay the Day 2 request with x-organization-id: org-2.
+# The module must deny the write and the route must answer 403.`,
+            },
+          ],
+        },
       ],
       mvpScope: [
         { title: 'One tenant workflow', description: 'Organization, user, Category and Task prove tenancy plus real feature behavior.', meta: 'Product slice' },
@@ -1990,6 +2468,18 @@ const useCaseDetails: Record<UseCaseName, {
         { focus: 'Module boundary', when: 'Can the first feature change without touching unrelated modules?', implementation: 'Feature folder and workspace boundary checks.', outcome: 'Changes stay local to the bounded context.' },
         { focus: 'Pilot readiness', when: 'Can the whole MVP run as one supervised app?', implementation: 'Dev/staging profile, smoke test, docs and prepublish evidence.', outcome: 'One deployable is ready for first users.' },
       ],
+      doneCriteria: [
+        'A cross-tenant read or write fails in an automated test.',
+        'The first feature changes stay inside its module boundary.',
+        'One supervised process runs the tenant workflow end to end.',
+        'Docs, routes, and module boundaries agree in the release evidence.',
+      ],
+      deferList: [
+        'Billing, plans, and subscription lifecycle.',
+        'SSO and external identity providers.',
+        'Full audit log and fine-grained permission matrix.',
+        'Module extraction into separate services.',
+      ],
     },
     pt: {
       eyebrow: 'Blueprint SaaS modular',
@@ -1999,10 +2489,99 @@ const useCaseDetails: Record<UseCaseName, {
       sample: 'start',
       mvpIntro: 'Use este caminho quando o primeiro MVP é uma fatia SaaS completa: login, escopo de tenant ou organização, um fluxo central e um deploy.',
       mvpSteps: [
-        { label: 'Dia 0', title: 'Defina o fluxo do tenant', description: 'Escolha a primeira capacidade da organização, como tarefas por categoria, e defina quem cria, vê e conclui.', output: 'Saída MVP: um contexto delimitado com expectativas de tenant e RBAC.' },
-        { label: 'Dia 1', title: 'Componha um deploy', description: 'Use backend template, autenticação, autorização, controllers, use-cases, ports de repository e perfil local de adapter.', output: 'Saída MVP: um processo de aplicação demonstrando o caminho completo do produto.' },
-        { label: 'Dia 2', title: 'Adicione o primeiro consumidor', description: 'Conecte frontend, visão admin ou client gerado aos mesmos contratos.', output: 'Saída MVP: usuário completa o fluxo de ponta a ponta.' },
-        { label: 'Release', title: 'Proteja os limites do monólito', description: 'Rode limites de workspace, checks de rota/docs, testes e evidência de release antes do piloto.', output: 'Saída MVP: um deploy com limites de domínio prontos para extração.' },
+        {
+          label: 'Dia 0', title: 'Defina o fluxo do tenant', description: 'Escolha a primeira capacidade da organização, como tarefas por categoria, e defina quem cria, vê e conclui.', output: 'Saída MVP: um contexto delimitado com expectativas de tenant e RBAC.',
+          tasks: [
+            'Defina TenantContext com organizationId e userId em todo request.',
+            'Modele Task com organizationId para cada registro pertencer a um tenant.',
+            'Escreva a regra da TenantPolicy: um tenant só escreve nos próprios registros.',
+            'Escreva critérios de aceite: escrita cross-tenant é negada com erro explícito.',
+          ],
+          code: [
+            {
+              label: 'domain.ts',
+              language: 'typescript',
+              code: `type TenantContext = { organizationId: string; userId: string };
+type Task = { id: string; organizationId: string; title: string; categoryId: string };
+
+class TenantPolicy {
+  canWriteTask(context: TenantContext, organizationId: string) {
+    return context.organizationId === organizationId;
+  }
+}`,
+            },
+          ],
+        },
+        {
+          label: 'Dia 1', title: 'Componha um deploy', description: 'Use backend template, autenticação, autorização, controllers, use-cases, ports de repository e perfil local de adapter.', output: 'Saída MVP: um processo de aplicação demonstrando o caminho completo do produto.',
+          tasks: [
+            'Proteja toda escrita com a policy de tenant antes de tocar o adaptador in-memory.',
+            'Rode o drill cross-tenant no playground: org-1 escreve, org-2 é negado com 403.',
+            'Leia o store de volta e confirme que só o registro legítimo existe.',
+          ],
+          code: [],
+          playground: { runtime: 'jumentix-browser-lab', id: 'saas-mvp-tenant' },
+        },
+        {
+          label: 'Dia 2', title: 'Adicione o primeiro consumidor', description: 'Conecte frontend, visão admin ou client gerado aos mesmos contratos.', output: 'Saída MVP: usuário completa o fluxo de ponta a ponta.',
+          tasks: [
+            'Exponha createTenantTask lendo os headers de tenant do request.',
+            'Mapeie erros do módulo para status HTTP sem vazar detalhes de domínio.',
+            'Escreva um request de ponta a ponta que valida a resposta 201.',
+          ],
+          code: [
+            {
+              label: 'src/route.ts',
+              language: 'typescript',
+              code: `import { modules } from './modules';
+
+export async function createTenantTask(request: Request) {
+  const organizationId = request.headers.get('x-organization-id') ?? '';
+  const userId = request.headers.get('x-user-id') ?? '';
+  const input = await request.json() as { title: string; categoryId: string };
+
+  const result = modules.taskModule.create({ organizationId, userId }, input);
+  if (!result.ok) return Response.json({ error: result.error }, { status: 403 });
+  return Response.json(result.result, { status: 201 });
+}`,
+            },
+            {
+              label: 'test.ts',
+              language: 'typescript',
+              code: `const request = new Request('http://localhost/tasks', {
+  method: 'POST',
+  headers: {
+    'content-type': 'application/json',
+    'x-organization-id': 'org-1',
+    'x-user-id': 'user-1'
+  },
+  body: JSON.stringify({ title: 'Tenant scoped task', categoryId: 'work' })
+});
+
+const response = await createTenantTask(request);
+console.assert(response.status === 201);`,
+            },
+          ],
+        },
+        {
+          label: 'Release', title: 'Proteja os limites do monólito', description: 'Rode limites de workspace, checks de rota/docs, testes e evidência de release antes do piloto.', output: 'Saída MVP: um deploy com limites de domínio prontos para extração.',
+          tasks: [
+            'Rode bun run test:unit sobre as regras de módulo e policy.',
+            'Rode bun run arch:check-workspace-boundaries para provar módulos desacoplados.',
+            'Capture o drill cross-tenant: org-2 não pode ler nem escrever tasks de org-1.',
+          ],
+          code: [
+            {
+              label: 'verify.sh',
+              language: 'shell',
+              code: `bun run test:unit
+bun run arch:check-workspace-boundaries
+
+# Cross-tenant drill: replay the Day 2 request with x-organization-id: org-2.
+# The module must deny the write and the route must answer 403.`,
+            },
+          ],
+        },
       ],
       mvpScope: [
         { title: 'Um fluxo tenant', description: 'Organization, user, Category e Task provam tenancy e comportamento real de feature.', meta: 'Fatia de produto' },
@@ -2013,6 +2592,18 @@ const useCaseDetails: Record<UseCaseName, {
         { focus: 'Segurança tenant', when: 'Uma organização consegue ver dados de outra?', implementation: 'Testes tenant-aware de use-case e checks de policy.', outcome: 'Leituras e escritas cross-tenant falham.' },
         { focus: 'Limite de módulo', when: 'A primeira feature muda sem tocar módulos não relacionados?', implementation: 'Pasta por feature e checks de workspace boundary.', outcome: 'Mudanças ficam locais ao contexto delimitado.' },
         { focus: 'Pronto para piloto', when: 'O MVP inteiro roda como um app supervisionado?', implementation: 'Perfil dev/staging, smoke test, docs e evidência prepublish.', outcome: 'Um deploy está pronto para primeiros usuários.' },
+      ],
+      doneCriteria: [
+        'Leitura ou escrita cross-tenant falha em teste automatizado.',
+        'Mudanças da primeira feature ficam dentro do limite do módulo.',
+        'Um processo supervisionado roda o fluxo do tenant de ponta a ponta.',
+        'Docs, rotas e limites de módulo concordam na evidência de release.',
+      ],
+      deferList: [
+        'Billing, planos e ciclo de vida de assinatura.',
+        'SSO e provedores externos de identidade.',
+        'Audit log completo e matriz fina de permissões.',
+        'Extração de módulos para serviços separados.',
       ],
     },
   },
@@ -2025,10 +2616,79 @@ const useCaseDetails: Record<UseCaseName, {
       sample: 'deploy',
       mvpIntro: 'Use this path when the first MVP already needs independent ownership or a background capability that should not share the main application lifecycle.',
       mvpSteps: [
-        { label: 'Day 0', title: 'Extract only one boundary', description: 'Choose one bounded context or worker behavior, such as task notification, category analytics, or async import.', output: 'MVP output: one service boundary with a clear subject and payload contract.' },
-        { label: 'Day 1', title: 'Start in process, then broker', description: 'Prove the Message Mediator contract in-memory before introducing RabbitMQ, BullMQ, Redis Streams, or another durable transport.', output: 'MVP output: request/response or publish/listen works without consumer imports.' },
-        { label: 'Day 2', title: 'Give the service its own profile', description: 'Run the service with a named PM2, Docker, or worker profile and independent tests.', output: 'MVP output: the service can restart or deploy without rewriting the producer.' },
-        { label: 'Release', title: 'Prove compatibility', description: 'Validate contract compatibility, retry/dead-letter behavior where relevant, and per-service evidence.', output: 'MVP output: one independent service with measured blast radius.' },
+        {
+          label: 'Day 0', title: 'Extract only one boundary', description: 'Choose one bounded context or worker behavior, such as task notification, category analytics, or async import.', output: 'MVP output: one service boundary with a clear subject and payload contract.',
+          tasks: [
+            'Pick one worker behavior: notify an assignee when a task is created.',
+            'Freeze the versioned subject tasks.created.v1 and its payload example.',
+            'Derive the payload type from the contract example so producer and worker share one source.',
+            'Write acceptance criteria: producer and worker import only contracts.ts.',
+          ],
+          code: [
+            {
+              label: 'shared/contracts.ts',
+              language: 'typescript',
+              code: `export const TaskCreatedEvent = {
+  subject: 'tasks.created.v1',
+  example: {
+    id: 'task-1',
+    title: 'Notify assignee',
+    categoryId: 'work'
+  }
+} as const;
+
+export type TaskCreatedPayload = typeof TaskCreatedEvent.example;`,
+            },
+          ],
+        },
+        {
+          label: 'Day 1', title: 'Start in process, then broker', description: 'Prove the Message Mediator contract in-memory before introducing RabbitMQ, BullMQ, Redis Streams, or another durable transport.', output: 'MVP output: request/response or publish/listen works without consumer imports.',
+          tasks: [
+            'Register the tasks.create.v1 handler on the real in-memory mediator.',
+            'Publish tasks.created.v1 from the handler and prove the subscriber receives it.',
+            'Call an unknown contract and capture the explicit handler-not-found error.',
+          ],
+          code: [],
+          playground: { runtime: 'message-mediator', id: 'micro-mvp-mediator' },
+        },
+        {
+          label: 'Day 2', title: 'Give the service its own profile', description: 'Run the service with a named PM2, Docker, or worker profile and independent tests.', output: 'MVP output: the service can restart or deploy without rewriting the producer.',
+          tasks: [
+            'Subscribe the notification worker and persist each delivery in its own in-memory store.',
+            'Prove the producer stays unchanged while the worker stores real notifications.',
+            'Start the service under its own named PM2 profile.',
+          ],
+          code: [
+            {
+              label: 'profiles.sh',
+              language: 'shell',
+              code: `bun run pm2:start:dev:restapi
+bun run pm2:start:staging:restapi
+bun run pm2:start:prod:restapi`,
+            },
+          ],
+          playground: { runtime: 'jumentix-browser-lab', id: 'micro-mvp-worker' },
+        },
+        {
+          label: 'Release', title: 'Prove compatibility', description: 'Validate contract compatibility, retry/dead-letter behavior where relevant, and per-service evidence.', output: 'MVP output: one independent service with measured blast radius.',
+          tasks: [
+            'Run bun run test:unit over producer, mediator, and worker contract handling.',
+            'Assert the payload type still matches the versioned contract example.',
+            'Replay the poison message through the dead-letter queue and capture the report.',
+          ],
+          code: [
+            {
+              label: 'verify.sh',
+              language: 'shell',
+              code: `bun run test:unit
+
+# Compatibility drill: producer and worker only import contracts.ts.
+# Failure drill: make the worker throw and confirm the mediator
+# surfaces the error instead of swallowing it.`,
+            },
+          ],
+          playground: { runtime: 'jumentix-browser-lab', id: 'micro-mvp-dead-letter' },
+        },
       ],
       mvpScope: [
         { title: 'One service boundary', description: 'Extract the smallest behavior with a clear owner and message contract.', meta: 'Ownership slice' },
@@ -2040,6 +2700,18 @@ const useCaseDetails: Record<UseCaseName, {
         { focus: 'Isolation', when: 'Can this service fail without hiding the failure?', implementation: 'Retry, error contract, dead-letter or fallback evidence.', outcome: 'Failure mode is explicit.' },
         { focus: 'Ownership', when: 'Can one team ship the service independently?', implementation: 'Per-service profile, tests and release evidence.', outcome: 'Independent ownership is real, not organizational theater.' },
       ],
+      doneCriteria: [
+        'Producer and worker import only contracts.ts — never each other.',
+        'The in-memory mediator proves publish/subscribe before any broker is introduced.',
+        'The worker runs under its own named profile and restarts without producer changes.',
+        'Failure is explicit: the poison message lands in the DLQ and the replay is measured.',
+      ],
+      deferList: [
+        'Service mesh and distributed tracing.',
+        'Multiple brokers or transport migration.',
+        'Dead-letter topology beyond the first explicit retry.',
+        'Extracting additional bounded contexts.',
+      ],
     },
     pt: {
       eyebrow: 'Blueprint SaaS distribuído',
@@ -2049,10 +2721,79 @@ const useCaseDetails: Record<UseCaseName, {
       sample: 'deploy',
       mvpIntro: 'Use este caminho quando o primeiro MVP já precisa de ownership independente ou uma capacidade background que não deve compartilhar o ciclo de vida da aplicação principal.',
       mvpSteps: [
-        { label: 'Dia 0', title: 'Extraia só um limite', description: 'Escolha um contexto delimitado ou comportamento worker, como notificação de task, analytics de category ou import assíncrono.', output: 'Saída MVP: um limite de serviço com subject e payload claros.' },
-        { label: 'Dia 1', title: 'Comece em processo, depois use broker', description: 'Comprove o contrato do Message Mediator in-memory antes de RabbitMQ, BullMQ, Redis Streams ou outro transporte durável.', output: 'Saída MVP: request/response ou publish/listen funciona sem imports de consumidor.' },
-        { label: 'Dia 2', title: 'Dê perfil próprio ao serviço', description: 'Rode o serviço com perfil PM2, Docker ou worker nomeado e testes independentes.', output: 'Saída MVP: serviço reinicia ou deploya sem reescrever o produtor.' },
-        { label: 'Release', title: 'Comprove compatibilidade', description: 'Valide compatibilidade de contrato, retry/dead-letter quando relevante e evidência por serviço.', output: 'Saída MVP: um serviço independente com blast radius medido.' },
+        {
+          label: 'Dia 0', title: 'Extraia só um limite', description: 'Escolha um contexto delimitado ou comportamento worker, como notificação de task, analytics de category ou import assíncrono.', output: 'Saída MVP: um limite de serviço com subject e payload claros.',
+          tasks: [
+            'Escolha um comportamento worker: notificar o responsável quando uma task é criada.',
+            'Congele o subject versionado tasks.created.v1 e seu payload de exemplo.',
+            'Derive o tipo do payload do exemplo do contrato para produtor e worker compartilharem uma fonte.',
+            'Escreva critérios de aceite: produtor e worker importam apenas contracts.ts.',
+          ],
+          code: [
+            {
+              label: 'shared/contracts.ts',
+              language: 'typescript',
+              code: `export const TaskCreatedEvent = {
+  subject: 'tasks.created.v1',
+  example: {
+    id: 'task-1',
+    title: 'Notify assignee',
+    categoryId: 'work'
+  }
+} as const;
+
+export type TaskCreatedPayload = typeof TaskCreatedEvent.example;`,
+            },
+          ],
+        },
+        {
+          label: 'Dia 1', title: 'Comece em processo, depois use broker', description: 'Comprove o contrato do Message Mediator in-memory antes de RabbitMQ, BullMQ, Redis Streams ou outro transporte durável.', output: 'Saída MVP: request/response ou publish/listen funciona sem imports de consumidor.',
+          tasks: [
+            'Registre o handler tasks.create.v1 no mediator in-memory real.',
+            'Publique tasks.created.v1 no handler e prove que o subscriber recebe.',
+            'Chame um contrato desconhecido e capture o erro explícito de handler não encontrado.',
+          ],
+          code: [],
+          playground: { runtime: 'message-mediator', id: 'micro-mvp-mediator' },
+        },
+        {
+          label: 'Dia 2', title: 'Dê perfil próprio ao serviço', description: 'Rode o serviço com perfil PM2, Docker ou worker nomeado e testes independentes.', output: 'Saída MVP: serviço reinicia ou deploya sem reescrever o produtor.',
+          tasks: [
+            'Assine o worker de notificação e persista cada entrega no próprio store in-memory.',
+            'Prove que o produtor permanece igual enquanto o worker guarda notificações reais.',
+            'Suba o serviço sob um perfil PM2 nomeado próprio.',
+          ],
+          code: [
+            {
+              label: 'profiles.sh',
+              language: 'shell',
+              code: `bun run pm2:start:dev:restapi
+bun run pm2:start:staging:restapi
+bun run pm2:start:prod:restapi`,
+            },
+          ],
+          playground: { runtime: 'jumentix-browser-lab', id: 'micro-mvp-worker' },
+        },
+        {
+          label: 'Release', title: 'Comprove compatibilidade', description: 'Valide compatibilidade de contrato, retry/dead-letter quando relevante e evidência por serviço.', output: 'Saída MVP: um serviço independente com blast radius medido.',
+          tasks: [
+            'Rode bun run test:unit sobre produtor, mediator e tratamento de contrato do worker.',
+            'Valide que o tipo do payload ainda corresponde ao exemplo do contrato versionado.',
+            'Reprocesse a mensagem venenosa pela dead-letter queue e capture o relatório.',
+          ],
+          code: [
+            {
+              label: 'verify.sh',
+              language: 'shell',
+              code: `bun run test:unit
+
+# Compatibility drill: producer and worker only import contracts.ts.
+# Failure drill: make the worker throw and confirm the mediator
+# surfaces the error instead of swallowing it.`,
+            },
+          ],
+          playground: { runtime: 'jumentix-browser-lab', id: 'micro-mvp-dead-letter' },
+        },
       ],
       mvpScope: [
         { title: 'Um limite de serviço', description: 'Extraia o menor comportamento com owner e contrato de mensagem claros.', meta: 'Fatia de ownership' },
@@ -2063,6 +2804,18 @@ const useCaseDetails: Record<UseCaseName, {
         { focus: 'Compatibilidade', when: 'Produtor e consumidor evoluem sem importar um ao outro?', implementation: 'Testes de contrato de mensagem e exemplos de subject/payload.', outcome: 'O contrato controla compatibilidade.' },
         { focus: 'Isolamento', when: 'O serviço pode falhar sem esconder a falha?', implementation: 'Retry, contrato de erro, dead-letter ou evidência de fallback.', outcome: 'O modo de falha é explícito.' },
         { focus: 'Ownership', when: 'Um time consegue publicar o serviço sozinho?', implementation: 'Perfil, testes e evidência de release por serviço.', outcome: 'Ownership independente é real, não teatro organizacional.' },
+      ],
+      doneCriteria: [
+        'Produtor e worker importam apenas contracts.ts — nunca um ao outro.',
+        'O mediator in-memory prova publish/subscribe antes de qualquer broker.',
+        'O worker roda sob perfil nomeado próprio e reinicia sem mudança no produtor.',
+        'Falha explícita: mensagem venenosa vai para a DLQ e o replay é medido.',
+      ],
+      deferList: [
+        'Service mesh e tracing distribuído.',
+        'Múltiplos brokers ou migração de transporte.',
+        'Topologia de dead-letter além do primeiro retry explícito.',
+        'Extração de mais contextos delimitados.',
       ],
     },
   },
@@ -2075,10 +2828,65 @@ const useCaseDetails: Record<UseCaseName, {
       sample: 'start',
       mvpIntro: 'Use this path when the first MVP must run in the browser, keep local state, and later synchronize with backend contracts.',
       mvpSteps: [
-        { label: 'Day 0', title: 'Model local records', description: 'Start with Category and Task tables, one filter, one create action, and one event the UI can listen to.', output: 'MVP output: browser data model with a visible workflow.' },
-        { label: 'Day 1', title: 'Run in memory first', description: 'Use Cana, generated SDK contracts, or browser-native in-memory adapters before adding a backend dependency.', output: 'MVP output: the app works entirely in the browser.' },
-        { label: 'Day 2', title: 'Connect state management', description: 'Wire React Context, Redux, Vue 3 Pinia, or another store to Cana events and refresh component state.', output: 'MVP output: UI updates when local data changes.' },
-        { label: 'Release', title: 'Prove offline behavior', description: 'Validate local persistence, event listeners, sync assumptions, accessibility, route rendering, and copyable examples.', output: 'MVP output: an installable or browser-ready first product demo.' },
+        {
+          label: 'Day 0', title: 'Model local records', description: 'Start with Category and Task tables, one filter, one create action, and one event the UI can listen to.', output: 'MVP output: browser data model with a visible workflow.',
+          tasks: [
+            'Define the Cana schema: categories and tasks stores with id keyPaths.',
+            'Add the byCategory and byCompleted indexes the UI filters will use.',
+            'Freeze schema version 1 and write the upgrade rule for the next version.',
+            'Write acceptance criteria: records survive a browser reload.',
+          ],
+          code: [
+            {
+              label: 'schema.ts',
+              language: 'typescript',
+              code: `const schema = {
+  version: 1,
+  stores: [
+    { name: 'categories', keyPath: 'id', indexes: [{ name: 'byName', keyPath: 'name', unique: true }] },
+    {
+      name: 'tasks',
+      keyPath: 'id',
+      indexes: [
+        { name: 'byCategory', keyPath: 'categoryId' },
+        { name: 'byCompleted', keyPath: 'completed' }
+      ]
+    }
+  ]
+} as const;`,
+            },
+          ],
+        },
+        {
+          label: 'Day 1', title: 'Run in memory first', description: 'Use Cana, generated SDK contracts, or browser-native in-memory adapters before adding a backend dependency.', output: 'MVP output: the app works entirely in the browser.',
+          tasks: [
+            'Open a real Cana IndexedDB client with the Day 0 schema.',
+            'Seed the work category and create the first task through client.table().add().',
+            'Read both records back and confirm client.backend reports indexeddb.',
+          ],
+          code: [],
+          playground: { runtime: 'cana', id: 'spa-mvp-offline' },
+        },
+        {
+          label: 'Day 2', title: 'Connect state management', description: 'Wire React Context, Redux, Vue 3 Pinia, or another store to Cana events and refresh component state.', output: 'MVP output: UI updates when local data changes.',
+          tasks: [
+            'Subscribe to committed Cana change events — the same signal your store forwards to components.',
+            'Add and update a task, collecting every committed event.',
+            'Read the work list back through the byCategory index, like the UI filter does.',
+          ],
+          code: [],
+          playground: { runtime: 'cana', id: 'spa-mvp-events' },
+        },
+        {
+          label: 'Release', title: 'Prove offline behavior', description: 'Validate local persistence, event listeners, sync assumptions, accessibility, route rendering, and copyable examples.', output: 'MVP output: an installable or browser-ready first product demo.',
+          tasks: [
+            'Close the client and reopen the same database in the playground.',
+            'Prove every offline record survives the reopen — durable local state, not localStorage.',
+            'Document the sync premise: local-only, sync-later, or API-backed.',
+          ],
+          code: [],
+          playground: { runtime: 'cana', id: 'spa-mvp-durability' },
+        },
       ],
       mvpScope: [
         { title: 'Two local tables', description: 'Category and Task prove relationship, filtering, and event-driven UI updates.', meta: 'Data slice' },
@@ -2090,6 +2898,18 @@ const useCaseDetails: Record<UseCaseName, {
         { focus: 'State updates', when: 'Do components refresh from Cana events?', implementation: 'React/Vue state-management examples and event listener assertions.', outcome: 'UI stays consistent with local data.' },
         { focus: 'Future backend', when: 'Can the same vocabulary map to API contracts later?', implementation: 'Generated SDK names and Category/Task contract parity.', outcome: 'The frontend MVP does not invent a separate domain.' },
       ],
+      doneCriteria: [
+        'The create/list workflow works with the network disabled.',
+        'Components re-render from committed Cana change events.',
+        'The sync assumption is documented: local-only, sync-later, or API-backed.',
+        'Records survive a browser reload — durable IndexedDB, not localStorage.',
+      ],
+      deferList: [
+        'Advanced conflict resolution for concurrent edits.',
+        'Push notifications and background sync.',
+        'Multi-device identity and session management.',
+        'IndexedDB schema migrations beyond version 1.',
+      ],
     },
     pt: {
       eyebrow: 'Blueprint frontend',
@@ -2099,10 +2919,65 @@ const useCaseDetails: Record<UseCaseName, {
       sample: 'start',
       mvpIntro: 'Use este caminho quando o primeiro MVP precisa rodar no browser, manter estado local e depois sincronizar com contratos backend.',
       mvpSteps: [
-        { label: 'Dia 0', title: 'Modele registros locais', description: 'Comece com tabelas Category e Task, um filtro, uma ação de create e um evento que a UI consegue ouvir.', output: 'Saída MVP: modelo de dados browser com fluxo visível.' },
-        { label: 'Dia 1', title: 'Rode primeiro in-memory', description: 'Use Cana, contratos SDK gerados ou adaptadores in-memory nativos do browser antes de depender de backend.', output: 'Saída MVP: o app funciona 100% no browser.' },
-        { label: 'Dia 2', title: 'Conecte state management', description: 'Ligue React Context, Redux, Vue 3 Pinia ou outro store aos eventos do Cana e atualize componentes.', output: 'Saída MVP: UI atualiza quando dados locais mudam.' },
-        { label: 'Release', title: 'Comprove comportamento offline', description: 'Valide persistência local, listeners de evento, premissas de sync, acessibilidade, rotas e exemplos copiáveis.', output: 'Saída MVP: primeira demo instalável ou pronta para browser.' },
+        {
+          label: 'Dia 0', title: 'Modele registros locais', description: 'Comece com tabelas Category e Task, um filtro, uma ação de create e um evento que a UI consegue ouvir.', output: 'Saída MVP: modelo de dados browser com fluxo visível.',
+          tasks: [
+            'Defina o schema Cana: stores categories e tasks com keyPath id.',
+            'Adicione os índices byCategory e byCompleted que os filtros da UI vão usar.',
+            'Congele a versão 1 do schema e escreva a regra de upgrade da próxima versão.',
+            'Escreva critérios de aceite: registros sobrevivem a um reload do browser.',
+          ],
+          code: [
+            {
+              label: 'schema.ts',
+              language: 'typescript',
+              code: `const schema = {
+  version: 1,
+  stores: [
+    { name: 'categories', keyPath: 'id', indexes: [{ name: 'byName', keyPath: 'name', unique: true }] },
+    {
+      name: 'tasks',
+      keyPath: 'id',
+      indexes: [
+        { name: 'byCategory', keyPath: 'categoryId' },
+        { name: 'byCompleted', keyPath: 'completed' }
+      ]
+    }
+  ]
+} as const;`,
+            },
+          ],
+        },
+        {
+          label: 'Dia 1', title: 'Rode primeiro in-memory', description: 'Use Cana, contratos SDK gerados ou adaptadores in-memory nativos do browser antes de depender de backend.', output: 'Saída MVP: o app funciona 100% no browser.',
+          tasks: [
+            'Abra um client Cana IndexedDB real com o schema do Dia 0.',
+            'Semeie a categoria work e crie a primeira task com client.table().add().',
+            'Leia os dois registros de volta e confirme client.backend reportando indexeddb.',
+          ],
+          code: [],
+          playground: { runtime: 'cana', id: 'spa-mvp-offline' },
+        },
+        {
+          label: 'Dia 2', title: 'Conecte state management', description: 'Ligue React Context, Redux, Vue 3 Pinia ou outro store aos eventos do Cana e atualize componentes.', output: 'Saída MVP: UI atualiza quando dados locais mudam.',
+          tasks: [
+            'Assine eventos de mudança confirmados do Cana — o mesmo sinal que seu store repassa aos componentes.',
+            'Adicione e atualize uma task, coletando cada evento confirmado.',
+            'Leia a lista de work pelo índice byCategory, como o filtro da UI faz.',
+          ],
+          code: [],
+          playground: { runtime: 'cana', id: 'spa-mvp-events' },
+        },
+        {
+          label: 'Release', title: 'Comprove comportamento offline', description: 'Valide persistência local, listeners de evento, premissas de sync, acessibilidade, rotas e exemplos copiáveis.', output: 'Saída MVP: primeira demo instalável ou pronta para browser.',
+          tasks: [
+            'Feche o client e reabra o mesmo banco no playground.',
+            'Prove que todo registro offline sobrevive à reabertura — estado local durável, não localStorage.',
+            'Documente a premissa de sync: local-only, sync-later ou apoiado por API.',
+          ],
+          code: [],
+          playground: { runtime: 'cana', id: 'spa-mvp-durability' },
+        },
       ],
       mvpScope: [
         { title: 'Duas tabelas locais', description: 'Category e Task provam relacionamento, filtro e atualização de UI por evento.', meta: 'Fatia de dados' },
@@ -2113,6 +2988,18 @@ const useCaseDetails: Record<UseCaseName, {
         { focus: 'Dados locais', when: 'O app cria e lê registros sem servidor?', implementation: 'Playground Cana/browser in-memory e checks de persistência local.', outcome: 'O primeiro fluxo funciona offline.' },
         { focus: 'Atualizações de estado', when: 'Componentes atualizam a partir dos eventos do Cana?', implementation: 'Exemplos React/Vue de state management e assertions de listener.', outcome: 'UI permanece consistente com dados locais.' },
         { focus: 'Backend futuro', when: 'O mesmo vocabulário mapeia para contratos de API depois?', implementation: 'Nomes de SDK gerado e paridade de contrato Category/Task.', outcome: 'O MVP frontend não inventa outro domínio.' },
+      ],
+      doneCriteria: [
+        'O fluxo create/list funciona com a rede desligada.',
+        'Componentes re-renderizam a partir dos eventos de mudança confirmados do Cana.',
+        'A premissa de sync está documentada: local-only, sync-later ou apoiado por API.',
+        'Registros sobrevivem a reload do browser — IndexedDB durável, não localStorage.',
+      ],
+      deferList: [
+        'Resolução de conflitos avançada para edições concorrentes.',
+        'Push notifications e background sync.',
+        'Identidade multi-device e gerenciamento de sessão.',
+        'Migrações de schema IndexedDB além da versão 1.',
       ],
     },
   },
@@ -2144,18 +3031,25 @@ export function CommercialUseCasePage({ locale, name }: { locale: CommercialLoca
             title={t(locale, 'A practical launch sequence for this blueprint', 'Uma sequência prática de lançamento para este blueprint')}
             description={content.mvpIntro}
           />
-          <ol className={classes.timeline}>
-            {content.mvpSteps.map((step) => (
-              <li key={`${step.label}-${step.title}`}>
-                <strong>{step.label}</strong>
-                <div>
-                  <h3>{step.title}</h3>
-                  <p>{step.description}</p>
-                  <p className={classes.timelineMeta}>{step.output}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
+          <MvpJourney
+            steps={content.mvpSteps.map((step) => ({
+              ...step,
+              playground: step.playground
+                ? <DocsPlayground runtime={step.playground.runtime} id={step.playground.id} />
+                : undefined,
+            }))}
+            ariaLabel={t(locale, 'Build the MVP day by day', 'Construa o MVP dia a dia')}
+          />
+          <div className={classes.twoColumn}>
+            <div className={classes.prose}>
+              <h3>{t(locale, 'Definition of done for the first MVP', 'Critérios de pronto do primeiro MVP')}</h3>
+              <ProofList items={content.doneCriteria} />
+            </div>
+            <div className={classes.prose}>
+              <h3>{t(locale, 'Deliberately out of scope', 'Fora de escopo de propósito')}</h3>
+              <ul>{content.deferList.map((item) => <li key={item}>{item}</li>)}</ul>
+            </div>
+          </div>
         </div>
       </Band>
       <Band>
