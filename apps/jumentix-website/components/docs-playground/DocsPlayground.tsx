@@ -149,6 +149,13 @@ type RealtimeBulkMetricSample = {
   replayed: number;
   timestamp: number;
 };
+type RealtimeBulkRequestSignal = {
+  taskId: string;
+  clientId: string;
+  workerId: string;
+  phase: string;
+  timestamp: number;
+};
 type RealtimeBulkMetrics = {
   attempted: number;
   processed: number;
@@ -156,6 +163,7 @@ type RealtimeBulkMetrics = {
   replayed: number;
   phase?: string;
   samples: RealtimeBulkMetricSample[];
+  requestSignals: RealtimeBulkRequestSignal[];
 };
 
 function resolveLocale(pathname: string | null): Locale {
@@ -220,6 +228,7 @@ function emptyRealtimeMetrics(): RealtimeBulkMetrics {
     rejected: 0,
     replayed: 0,
     samples: [],
+    requestSignals: [],
   };
 }
 
@@ -430,6 +439,18 @@ function BulkDlqMetricsCharts({
     { key: 'interrupted', label: locale === 'pt-BR' ? 'Interrompidas' : 'Interrupted', value: flowState.interrupted, tone: 'interrupted' },
     { key: 'replayed', label: locale === 'pt-BR' ? 'Reprocessadas' : 'Replayed', value: flowState.replayed, tone: 'replay' },
   ];
+  const comparisonTotal = Math.max(1, attempted, flowState.finalTaskCount, flowState.replayed);
+  const comparisonBars = [
+    { key: 'attempted', label: locale === 'pt-BR' ? 'Entrada total' : 'Total input', value: attempted, tone: 'cana' },
+    { key: 'admitted', label: locale === 'pt-BR' ? 'Admitidas no controller' : 'Controller admitted', value: flowState.submitted, tone: 'cana' },
+    { key: 'direct', label: locale === 'pt-BR' ? 'Criadas sem retry' : 'Created without retry', value: flowState.accepted, tone: 'accepted' },
+    { key: 'dlq', label: locale === 'pt-BR' ? 'Rejeitadas para DLQ' : 'Rejected to DLQ', value: flowState.rejected, tone: 'rejected' },
+    { key: 'replayed', label: locale === 'pt-BR' ? 'Recuperadas por replay' : 'Recovered by replay', value: flowState.replayed, tone: 'replay' },
+    { key: 'final', label: locale === 'pt-BR' ? 'Persistidas no IndexedDB' : 'Persisted in IndexedDB', value: flowState.finalTaskCount, tone: 'accepted' },
+  ];
+  const directPercent = percentOf(flowState.accepted, comparisonTotal);
+  const dlqPercent = percentOf(flowState.rejected, comparisonTotal);
+  const replayPercent = percentOf(flowState.replayed, comparisonTotal);
   const maxClientTotal = Math.max(1, ...flowState.reactClients.map((client) => Number(client.taskCount ?? 0)));
   const maxWorkerTotal = Math.max(1, ...canaState.workers.map((worker) => Number(worker.handledRequests ?? 0)));
   const samples = canaState.storageSamples.length > 0 ? canaState.storageSamples : [{ percent: 0 }];
@@ -487,6 +508,35 @@ function BulkDlqMetricsCharts({
           <span><i data-tone="rejected" />rejected <b>{formatCount(liveMetrics.rejected || flowState.rejected)}</b></span>
           <span><i data-tone="replayed" />replayed <b>{formatCount(liveMetrics.replayed || flowState.replayed)}</b></span>
         </div>
+      </article>
+
+      <article className={`${classes.metricsChart} ${classes.comparisonChart}`}>
+        <h6>{locale === 'pt-BR' ? 'Comparação do pipeline' : 'Pipeline comparison'}</h6>
+        <svg className={classes.comparisonStack} viewBox="0 0 100 42" role="img" aria-label="direct rejected replayed comparison chart">
+          <rect x="0" y="4" width="100" height="8" rx="3" />
+          <rect x="0" y="17" width="100" height="8" rx="3" />
+          <rect x="0" y="30" width="100" height="8" rx="3" />
+          <rect data-tone="accepted" x="0" y="4" width={directPercent} height="8" rx="3" />
+          <rect data-tone="rejected" x="0" y="17" width={dlqPercent} height="8" rx="3" />
+          <rect data-tone="replayed" x="0" y="30" width={replayPercent} height="8" rx="3" />
+        </svg>
+        <div className={classes.barList}>
+          {comparisonBars.map((bar) => {
+            const width = percentOf(bar.value, comparisonTotal);
+            return (
+              <div key={bar.key} className={classes.metricBarRow}>
+                <span>{bar.label}</span>
+                <b>{formatCount(bar.value)} · {width.toFixed(1)}%</b>
+                <i data-tone={bar.tone} style={{ width: `${width}%` }} />
+              </div>
+            );
+          })}
+        </div>
+        <p className={classes.comparisonNote}>
+          {locale === 'pt-BR'
+            ? `${formatCount(flowState.replayed)} requests foram recuperadas depois do lock; ${formatCount(flowState.finalTaskCount)} chegaram ao banco.`
+            : `${formatCount(flowState.replayed)} requests were recovered after lock rejection; ${formatCount(flowState.finalTaskCount)} reached the database.`}
+        </p>
       </article>
 
       <article className={classes.metricsChart}>
@@ -625,6 +675,20 @@ function BulkDeadLetterFlowCanvas({
       { id: 'events', label: 'Change Events', x: 340, y: 318 },
       { id: 'subscriber', label: 'Canvas Subscriber', x: 205, y: 318 },
     ];
+    const nodeById = new Map(nodes.map((node) => [node.id, node]));
+    const node = (id: string) => nodeById.get(id) ?? nodes[1];
+    const clientNodeFor = (clientId: string) => {
+      if (clientId.endsWith('-a')) return node('react-a');
+      if (clientId.endsWith('-b')) return node('react-b');
+      if (clientId.endsWith('-c')) return node('react-c');
+      return node('react-b');
+    };
+    const workerNodeFor = (workerId: string) => {
+      if (workerId.endsWith('-a')) return node('worker-a');
+      if (workerId.endsWith('-b')) return node('worker-b');
+      if (workerId.endsWith('-c')) return node('worker-c');
+      return node('worker-b');
+    };
     const flowRoutes: Record<BulkDlqFlowKind, {
       from: { x: number; y: number };
       to: { x: number; y: number };
@@ -658,6 +722,7 @@ function BulkDeadLetterFlowCanvas({
     ];
     const activeKinds = new Set(flowState.events.map((event) => event.kind));
     const animationsActive = running || !flowState.hasRun || !flowState.dlqProcessed || !canaState.queueDrained;
+    const liveRequestSignals = liveMetrics.requestSignals.slice(-420);
 
     const resize = () => {
       const ratio = window.devicePixelRatio || 1;
@@ -697,6 +762,65 @@ function BulkDeadLetterFlowCanvas({
       context.closePath();
       context.fill();
       context.globalAlpha = 1;
+    };
+    const requestRoutesFor = (signal: RealtimeBulkRequestSignal) => {
+      const sourceClient = clientNodeFor(signal.clientId);
+      const targetClient = sourceClient;
+      const targetWorker = workerNodeFor(signal.workerId);
+      const route = (fromId: string, toId: string, color: string, label: string) => ({
+        from: node(fromId),
+        to: node(toId),
+        color,
+        label,
+      });
+      const phase = signal.phase;
+      if (phase === 'submitted') {
+        return [
+          { from: sourceClient, to: node('context'), color: '#38bdf8', label: 'client -> context' },
+          route('context', 'controller', '#38bdf8', 'context -> controller'),
+          route('controller', 'mutex', '#2563eb', 'controller -> mutex'),
+        ];
+      }
+      if (phase === 'accepted') {
+        return [
+          route('mutex', targetWorker.id, '#16a34a', 'lock -> worker'),
+        ];
+      }
+      if (phase === 'rejected') {
+        return [
+          route('mutex', 'dlq', '#dc2626', 'lock -> DLQ'),
+          route('dlq', 'mediator', '#fb7185', 'DLQ -> mediator'),
+        ];
+      }
+      if (phase === 'interrupted') {
+        return [
+          route('controller', 'context', '#facc15', 'controller -> context'),
+          { from: node('context'), to: targetClient, color: '#facc15', label: 'context -> client' },
+        ];
+      }
+      if (phase === 'replayed') {
+        return [
+          route('dlq', 'mediator', '#fb7185', 'DLQ -> mediator'),
+          route('mediator', 'replay', '#ea580c', 'mediator -> replay'),
+          route('replay', 'controller', '#ea580c', 'replay -> controller'),
+          route('controller', 'mutex', '#ea580c', 'controller -> mutex'),
+          { from: node('mutex'), to: targetWorker, color: '#ea580c', label: 'mutex -> worker' },
+          { from: targetWorker, to: node('table'), color: '#a78bfa', label: 'worker -> table' },
+          route('table', 'indexeddb', '#22c55e', 'table -> IndexedDB'),
+          route('indexeddb', 'events', '#f59e0b', 'IndexedDB -> events'),
+          route('events', 'subscriber', '#f59e0b', 'events -> subscriber'),
+          route('subscriber', 'context', '#a78bfa', 'subscriber -> context'),
+          { from: node('context'), to: targetClient, color: '#a78bfa', label: 'context -> client' },
+        ];
+      }
+      return [
+        { from: targetWorker, to: node('table'), color: '#22c55e', label: 'worker -> table' },
+        route('table', 'indexeddb', '#22c55e', 'table -> IndexedDB'),
+        route('indexeddb', 'events', '#f59e0b', 'IndexedDB -> events'),
+        route('events', 'subscriber', '#f59e0b', 'events -> subscriber'),
+        route('subscriber', 'context', '#a78bfa', 'subscriber -> context'),
+        { from: node('context'), to: targetClient, color: '#a78bfa', label: 'context -> client' },
+      ];
     };
 
     const draw = (time: number) => {
@@ -819,6 +943,37 @@ function BulkDeadLetterFlowCanvas({
         context.fillText(`${event.store ?? 'store'}:${String(event.key ?? event.cursor ?? index + 1)}`, pulseX + 10, pulseY - 8);
         context.globalAlpha = 1;
       });
+      if (animationsActive) {
+        liveRequestSignals.forEach((signal, index) => {
+          const routes = requestRoutesFor(signal);
+          const ageMs = Math.max(0, Date.now() - signal.timestamp);
+          const laneOffset = ((index % 9) - 4) * 2.8;
+          const journey = Math.min(0.998, (ageMs % 2200) / 2200);
+          const routeIndex = Math.min(routes.length - 1, Math.floor(journey * routes.length));
+          const localProgress = (journey * routes.length) % 1;
+          const route = routes[routeIndex];
+          const pulseX = route.from.x + (route.to.x - route.from.x) * localProgress;
+          const pulseY = route.from.y + (route.to.y - route.from.y) * localProgress + laneOffset;
+          const isRejected = signal.phase === 'rejected';
+          const isReplay = signal.phase === 'replayed';
+          const radius = isRejected ? 5.8 : isReplay ? 5.2 : 4.8;
+          context.globalAlpha = Math.max(0.35, 1 - ageMs / 3200);
+          context.fillStyle = route.color;
+          context.beginPath();
+          context.arc(pulseX, pulseY, radius, 0, Math.PI * 2);
+          context.fill();
+          context.strokeStyle = '#e2e8f0';
+          context.lineWidth = 1;
+          context.stroke();
+          if (index % 5 === 0) {
+            context.fillStyle = '#e2e8f0';
+            context.font = '800 9px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+            context.textAlign = 'left';
+            context.fillText(signal.taskId.replace('task-', '#'), pulseX + 8, pulseY - 7);
+          }
+          context.globalAlpha = 1;
+        });
+      }
 
       context.textAlign = 'left';
       context.fillStyle = '#e2e8f0';
@@ -845,6 +1000,8 @@ function BulkDeadLetterFlowCanvas({
       context.fillText(`final tasks: ${flowState.finalTaskCount}`, 128, height - 62);
       context.fillStyle = '#c4b5fd';
       context.fillText(`workers: ${canaState.workers.length} · events: ${canaState.events.length}`, 265, height - 62);
+      context.fillStyle = '#bfdbfe';
+      context.fillText(`live request tokens: ${liveRequestSignals.length}`, 470, height - 62);
       context.fillStyle = flowState.dlqProcessed && flowState.noLostJobs ? '#bbf7d0' : '#cbd5e1';
       context.fillText(`dlq drained: ${flowState.dlqProcessed ? 'yes' : 'no'} | no lost jobs: ${flowState.noLostJobs ? 'yes' : 'no'}`, 18, height - 40);
       const chartX = 18;
@@ -912,8 +1069,8 @@ function BulkDeadLetterFlowCanvas({
         </Title>
         <Text size="sm" c="dimmed">
           {locale === 'pt-BR'
-            ? 'Um canvas único acompanha requisições concorrentes por 30 segundos: múltiplos clientes React com Context API, controller, mutex, DLQ, Message Mediator, replay, workers do Cana, commits no IndexedDB, eventos de subscribe e consumo de quota. Rejeições pelo lock aparecem em vermelho.'
-            : 'One merged canvas follows concurrent requests for 30 seconds: multiple React Context API clients, controller, mutex, DLQ, Message Mediator, replay, Cana workers, IndexedDB commits, subscribe events, and quota consumption. Lock rejections are red.'}
+            ? 'Um canvas único acompanha requisições concorrentes por 30 segundos: cada request recente vira um token próprio atravessando cliente React, Context API, controller, mutex, DLQ, Message Mediator, replay, workers do Cana, commits no IndexedDB, eventos de subscribe e retorno ao cliente. Rejeições pelo lock aparecem em vermelho.'
+            : 'One merged canvas follows concurrent requests for 30 seconds: each recent request becomes its own token across the React client, Context API, controller, mutex, DLQ, Message Mediator, replay, Cana workers, IndexedDB commits, subscribe events, and the return path to the client. Lock rejections are red.'}
         </Text>
       </div>
       <canvas
@@ -949,6 +1106,7 @@ function BulkDeadLetterFlowCanvas({
         <span>{locale === 'pt-BR' ? 'Tasks finais' : 'Final tasks'}: {flowState.finalTaskCount}</span>
         <span>{locale === 'pt-BR' ? 'Eventos reais' : 'Real events'}: {flowState.events.length}</span>
         <span>{locale === 'pt-BR' ? 'Eventos Cana' : 'Cana events'}: {canaState.events.length}</span>
+        <span>{locale === 'pt-BR' ? 'Tokens vivos de request' : 'Live request tokens'}: {liveMetrics.requestSignals.length}</span>
         <span>IndexedDB quota: {canaState.quotaUsagePercent.toFixed(4)}%</span>
         <span>{locale === 'pt-BR' ? 'Uso IndexedDB' : 'IndexedDB usage'}: {formatBytes(canaState.quotaUsageBytes)}</span>
         <span>{locale === 'pt-BR' ? 'Amostras quota' : 'Quota samples'}: {canaState.storageSamples.length}</span>
@@ -985,6 +1143,7 @@ export function DocsPlayground({
 
   const resetRef = useRef<(() => Promise<void>) | undefined>(undefined);
   const realtimeSamplesRef = useRef<RealtimeBulkMetricSample[]>([]);
+  const realtimeRequestSignalsRef = useRef<RealtimeBulkRequestSignal[]>([]);
   const realtimeLastUpdateRef = useRef(0);
   const [draft, setDraft] = useState(initialCode);
   const [running, setRunning] = useState(false);
@@ -1023,6 +1182,7 @@ export function DocsPlayground({
 
   function resetLiveMetrics() {
     realtimeSamplesRef.current = [];
+    realtimeRequestSignalsRef.current = [];
     realtimeLastUpdateRef.current = 0;
     setLiveMetrics(emptyRealtimeMetrics());
   }
@@ -1036,12 +1196,28 @@ export function DocsPlayground({
       replayed?: number;
       phase?: string;
       timestamp?: number;
+      taskId?: string;
+      clientId?: string;
+      workerId?: string;
     };
     const timestamp = Number(progress.timestamp ?? Date.now());
     const phase = String(progress.phase ?? 'running');
+    const taskId = typeof progress.taskId === 'string' ? progress.taskId : '';
+    if (taskId) {
+      realtimeRequestSignalsRef.current = [
+        ...realtimeRequestSignalsRef.current,
+        {
+          taskId,
+          clientId: typeof progress.clientId === 'string' ? progress.clientId : 'client',
+          workerId: typeof progress.workerId === 'string' ? progress.workerId : 'worker',
+          phase,
+          timestamp,
+        },
+      ].slice(-900);
+    }
     const shouldUpdate = phase === 'complete'
       || phase === 'replayed'
-      || timestamp - realtimeLastUpdateRef.current >= 250;
+      || timestamp - realtimeLastUpdateRef.current >= 80;
     if (!shouldUpdate) return;
     realtimeLastUpdateRef.current = timestamp;
 
@@ -1059,6 +1235,7 @@ export function DocsPlayground({
       replayed: sample.replayed,
       phase,
       samples: realtimeSamplesRef.current,
+      requestSignals: realtimeRequestSignalsRef.current,
     });
   }
 

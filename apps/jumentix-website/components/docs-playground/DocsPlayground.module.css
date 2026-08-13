@@ -258,6 +258,40 @@
   background: #ea580c;
 }
 
+.comparisonChart {
+  grid-row: span 2;
+}
+
+.comparisonStack {
+  display: block;
+  width: 100%;
+  height: 72px;
+  overflow: visible;
+}
+
+.comparisonStack rect {
+  fill: #172033;
+}
+
+.comparisonStack rect[data-tone='accepted'] {
+  fill: #16a34a;
+}
+
+.comparisonStack rect[data-tone='rejected'] {
+  fill: #dc2626;
+}
+
+.comparisonStack rect[data-tone='replayed'] {
+  fill: #ea580c;
+}
+
+.comparisonNote {
+  margin: 4px 0 0;
+  color: var(--jtx-ink-muted);
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+
 .quotaChart {
   display: block;
   width: 100%;
