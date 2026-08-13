@@ -10,6 +10,7 @@ import { runDocsSnippet } from './runSnippet';
 import { getRuntime } from './runtimes';
 import type { DocsRuntimeId } from './types';
 import classes from './DocsPlayground.module.css';
+import { docsPlaygroundAnchor } from './anchors';
 
 export type DocsPlaygroundProps = {
   runtime: DocsRuntimeId;
@@ -24,6 +25,31 @@ type BulkDlqOutput = {
   rejectedToDeadLetterQueue?: number;
   finalTaskCount?: number;
   replayReport?: { replayed?: string[] };
+  requestTimeline?: BulkDlqTimelineEntry[];
+  timeline?: BulkDlqTimelineEntry[];
+};
+type BulkDlqTimelineEntry = {
+  step?: string;
+  taskId?: string;
+  recordId?: string;
+  source?: string;
+  categoryId?: string;
+};
+type BulkDlqFlowKind = 'submitted' | 'accepted' | 'rejected' | 'replay' | 'retry';
+type BulkDlqFlowEvent = {
+  key: string;
+  kind: BulkDlqFlowKind;
+  taskId: string;
+  label: string;
+};
+type BulkDlqFlowState = {
+  attempted: number;
+  accepted: number;
+  rejected: number;
+  replayed: number;
+  finalTaskCount: number;
+  events: BulkDlqFlowEvent[];
+  hasRun: boolean;
 };
 
 function resolveLocale(pathname: string | null): Locale {
@@ -60,6 +86,92 @@ function parseBulkDlqOutput(output: string): BulkDlqOutput | null {
   }
 }
 
+function uniqueCount(values: string[]): number {
+  return new Set(values.filter(Boolean)).size;
+}
+
+function buildBulkDlqFlowState(metrics: BulkDlqOutput | null): BulkDlqFlowState {
+  const timeline = Array.isArray(metrics?.requestTimeline)
+    ? metrics.requestTimeline
+    : Array.isArray(metrics?.timeline)
+      ? metrics.timeline
+      : [];
+  const events: BulkDlqFlowEvent[] = [];
+
+  for (const [index, entry] of timeline.entries()) {
+    const taskId = entry.taskId ?? entry.recordId ?? `request-${index + 1}`;
+    if (entry.step === 'controller-create') {
+      events.push({
+        key: `${index}-submitted-${taskId}`,
+        kind: 'submitted',
+        taskId,
+        label: `submit ${taskId}`,
+      });
+    }
+    if (entry.step === 'lock-acquired') {
+      events.push({
+        key: `${index}-accepted-${taskId}`,
+        kind: 'accepted',
+        taskId,
+        label: `store ${taskId}`,
+      });
+    }
+    if (entry.step === 'dead-letter-listener-received') {
+      events.push({
+        key: `${index}-rejected-${taskId}`,
+        kind: 'rejected',
+        taskId,
+        label: `reject ${taskId}`,
+      });
+    }
+    if (entry.step === 'controller-replay') {
+      events.push({
+        key: `${index}-replay-${taskId}`,
+        kind: 'replay',
+        taskId,
+        label: `replay ${taskId}`,
+      });
+      events.push({
+        key: `${index}-retry-${taskId}`,
+        kind: 'retry',
+        taskId,
+        label: `retry ${taskId}`,
+      });
+    }
+  }
+
+  const attemptedFromTimeline = uniqueCount(
+    timeline
+      .filter((entry) => entry.step === 'controller-create')
+      .map((entry) => entry.taskId ?? '')
+  );
+  const acceptedFromTimeline = uniqueCount(
+    timeline
+      .filter((entry) => entry.step === 'lock-acquired')
+      .map((entry) => entry.taskId ?? '')
+  );
+  const rejectedFromTimeline = uniqueCount(
+    timeline
+      .filter((entry) => entry.step === 'dead-letter-listener-received')
+      .map((entry) => entry.taskId ?? '')
+  );
+  const replayedFromTimeline = uniqueCount(
+    timeline
+      .filter((entry) => entry.step === 'controller-replay')
+      .map((entry) => entry.taskId ?? '')
+  );
+
+  return {
+    attempted: metrics?.attemptedBulkCount ?? attemptedFromTimeline,
+    accepted: metrics?.createdDuringBulk ?? acceptedFromTimeline,
+    rejected: metrics?.rejectedToDeadLetterQueue ?? rejectedFromTimeline,
+    replayed: metrics?.replayReport?.replayed?.length ?? replayedFromTimeline,
+    finalTaskCount: metrics?.finalTaskCount ?? acceptedFromTimeline,
+    events,
+    hasRun: Boolean(metrics),
+  };
+}
+
 function BulkDeadLetterFlowCanvas({
   output,
   running,
@@ -73,6 +185,7 @@ function BulkDeadLetterFlowCanvas({
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const metrics = useMemo(() => parseBulkDlqOutput(output), [output]);
+  const flowState = useMemo(() => buildBulkDlqFlowState(metrics), [metrics]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -93,13 +206,19 @@ function BulkDeadLetterFlowCanvas({
       { id: 'dlq', label: 'DLQ', x: 250, y: 205 },
       { id: 'replay', label: 'Replay Controller', x: 430, y: 205 },
     ];
-    const flows = [
-      { from: nodes[0], to: nodes[1], color: '#2563eb', offset: 0, label: 'bulk request' },
-      { from: nodes[1], to: nodes[2], color: '#16a34a', offset: 0.22, label: 'lock acquired' },
-      { from: nodes[1], to: nodes[3], color: '#dc2626', offset: 0.42, label: 'lock rejected' },
-      { from: nodes[3], to: nodes[4], color: '#ea580c', offset: 0.62, label: 'replay' },
-      { from: nodes[4], to: nodes[1], color: '#ea580c', offset: 0.82, label: 'controller retry' },
-    ];
+    const flowRoutes: Record<BulkDlqFlowKind, {
+      from: { x: number; y: number };
+      to: { x: number; y: number };
+      color: string;
+      label: string;
+    }> = {
+      submitted: { from: nodes[0], to: nodes[1], color: '#2563eb', label: 'bulk request' },
+      accepted: { from: nodes[1], to: nodes[2], color: '#16a34a', label: 'lock acquired' },
+      rejected: { from: nodes[1], to: nodes[3], color: '#dc2626', label: 'lock rejected' },
+      replay: { from: nodes[3], to: nodes[4], color: '#ea580c', label: 'dlq replay' },
+      retry: { from: nodes[4], to: nodes[1], color: '#ea580c', label: 'controller retry' },
+    };
+    const activeKinds = new Set(flowState.events.map((event) => event.kind));
 
     const resize = () => {
       const ratio = window.devicePixelRatio || 1;
@@ -149,18 +268,11 @@ function BulkDeadLetterFlowCanvas({
       context.fillRect(0, 0, width, height);
 
       context.font = '700 12px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
-      flows.forEach((flow) => {
-        const progress = ((time / 1300 + flow.offset) % 1);
-        const pulseX = flow.from.x + (flow.to.x - flow.from.x) * progress;
-        const pulseY = flow.from.y + (flow.to.y - flow.from.y) * progress;
-        const isRejected = flow.color === '#dc2626';
-        drawArrow(flow.from, flow.to, flow.color, running || Boolean(metrics));
-        context.globalAlpha = isRejected ? 0.96 : 0.82;
+      Object.entries(flowRoutes).forEach(([kind, flow]) => {
+        const active = activeKinds.has(kind as BulkDlqFlowKind);
+        drawArrow(flow.from, flow.to, flow.color, active);
+        context.globalAlpha = active ? 0.75 : 0.32;
         context.fillStyle = flow.color;
-        context.beginPath();
-        context.arc(pulseX, pulseY, isRejected ? 6.5 : 5, 0, Math.PI * 2);
-        context.fill();
-        context.globalAlpha = 0.75;
         context.fillText(flow.label, (flow.from.x + flow.to.x) / 2 - 34, (flow.from.y + flow.to.y) / 2 - 10);
         context.globalAlpha = 1;
       });
@@ -178,17 +290,45 @@ function BulkDeadLetterFlowCanvas({
         context.fillText(node.label, node.x, node.y + 4);
       });
 
-      const rejected = metrics?.rejectedToDeadLetterQueue ?? (running ? 7 : 0);
-      const created = metrics?.createdDuringBulk ?? (running ? 1 : 0);
-      const replayed = metrics?.replayReport?.replayed?.length ?? (metrics ? rejected : 0);
+      flowState.events.forEach((event, index) => {
+        const route = flowRoutes[event.kind];
+        const progress = ((time / 1500 + index / Math.max(flowState.events.length, 1)) % 1);
+        const pulseX = route.from.x + (route.to.x - route.from.x) * progress;
+        const pulseY = route.from.y + (route.to.y - route.from.y) * progress;
+        const isRejected = event.kind === 'rejected';
+        context.globalAlpha = isRejected ? 0.98 : 0.86;
+        context.fillStyle = route.color;
+        context.beginPath();
+        context.arc(pulseX, pulseY, isRejected ? 6.75 : 5.25, 0, Math.PI * 2);
+        context.fill();
+        context.globalAlpha = 0.9;
+        context.fillStyle = '#e2e8f0';
+        context.fillText(event.taskId, pulseX + 8, pulseY - 8);
+        context.globalAlpha = 1;
+      });
+
       context.textAlign = 'left';
       context.fillStyle = '#e2e8f0';
       context.font = '800 13px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
-      context.fillText(`accepted: ${created}`, 18, height - 46);
+      context.fillText(`attempted: ${flowState.attempted}`, 18, height - 46);
+      context.fillStyle = '#bbf7d0';
+      context.fillText(`accepted in bulk: ${flowState.accepted}`, 128, height - 46);
       context.fillStyle = '#fecaca';
-      context.fillText(`rejected by lock: ${rejected}`, 140, height - 46);
+      context.fillText(`rejected by lock: ${flowState.rejected}`, 285, height - 46);
       context.fillStyle = '#fed7aa';
-      context.fillText(`replayed through controller: ${replayed}`, 315, height - 46);
+      context.fillText(`replayed: ${flowState.replayed}`, 18, height - 24);
+      context.fillStyle = '#e2e8f0';
+      context.fillText(`final tasks: ${flowState.finalTaskCount}`, 128, height - 24);
+
+      if (!flowState.hasRun) {
+        context.fillStyle = running ? '#bfdbfe' : '#94a3b8';
+        context.font = '800 14px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+        context.fillText(
+          running ? 'executing playground code...' : 'run the playground to capture real request flow',
+          18,
+          28
+        );
+      }
 
       frameId = window.requestAnimationFrame(draw);
     };
@@ -200,7 +340,7 @@ function BulkDeadLetterFlowCanvas({
       window.cancelAnimationFrame(frameId);
       window.removeEventListener('resize', resize);
     };
-  }, [metrics, running]);
+  }, [flowState, running]);
 
   return (
     <section className={classes.flowPanel} aria-label={locale === 'pt-BR' ? 'Fluxo visual de mutex e DLQ' : 'Mutex and DLQ visual flow'}>
@@ -227,6 +367,14 @@ function BulkDeadLetterFlowCanvas({
         <span><i data-tone="accepted" />{locale === 'pt-BR' ? 'Aceito' : 'Accepted'}</span>
         <span><i data-tone="rejected" />{locale === 'pt-BR' ? 'Rejeitado pelo lock' : 'Rejected by lock'}</span>
         <span><i data-tone="replay" />Replay</span>
+      </div>
+      <div className={classes.flowStats} data-testid={`${testId}-flow-state`}>
+        <span>{locale === 'pt-BR' ? 'Tentadas' : 'Attempted'}: {flowState.attempted}</span>
+        <span>{locale === 'pt-BR' ? 'Aceitas no bulk' : 'Accepted in bulk'}: {flowState.accepted}</span>
+        <span>{locale === 'pt-BR' ? 'Rejeitadas pelo lock' : 'Rejected by lock'}: {flowState.rejected}</span>
+        <span>{locale === 'pt-BR' ? 'Reprocessadas' : 'Replayed'}: {flowState.replayed}</span>
+        <span>{locale === 'pt-BR' ? 'Tasks finais' : 'Final tasks'}: {flowState.finalTaskCount}</span>
+        <span>{locale === 'pt-BR' ? 'Eventos reais' : 'Real events'}: {flowState.events.length}</span>
       </div>
     </section>
   );
@@ -333,9 +481,11 @@ export function DocsPlayground({
 
   return (
     <Paper
+      id={docsPlaygroundAnchor(runtime, id)}
       withBorder
       p="md"
       my="md"
+      style={{ scrollMarginTop: 96 }}
       data-testid={testId}
       {...(canaCompat ? { 'data-testid-cana': `cana-playground-${id}` } : {})}
     >

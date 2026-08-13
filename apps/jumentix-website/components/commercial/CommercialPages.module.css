@@ -334,6 +334,67 @@
   grid-column: 1 / -1;
 }
 
+.playgroundDirectorySection {
+  display: grid;
+  gap: 22px;
+}
+
+.playgroundDirectory {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.playgroundDirectoryCard {
+  display: grid;
+  gap: 8px;
+  min-height: 190px;
+  padding: 18px;
+  border: 1px solid var(--jtx-line);
+  border-radius: var(--jtx-radius-md);
+  color: var(--jtx-ink);
+  background: var(--jtx-surface);
+  text-decoration: none;
+  transition:
+    border-color var(--jtx-motion-fast),
+    box-shadow var(--jtx-motion-fast),
+    transform var(--jtx-motion-fast);
+}
+
+.playgroundDirectoryCard:hover {
+  border-color: var(--jtx-blue-200);
+  box-shadow: var(--jtx-shadow-md);
+  transform: translateY(-2px);
+}
+
+.playgroundDirectoryCard span,
+.playgroundDirectoryCard strong {
+  color: var(--jtx-blue-700);
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.playgroundDirectoryCard h3 {
+  margin: 0;
+  font-size: 1rem;
+  letter-spacing: 0;
+}
+
+.playgroundDirectoryCard p {
+  margin: 0;
+  color: var(--jtx-ink-muted);
+  font-size: 0.88rem;
+  line-height: 1.52;
+}
+
+.playgroundDirectoryCard strong {
+  align-self: end;
+  color: var(--jtx-ink-muted);
+  text-transform: none;
+}
+
 .aiFlow {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -637,6 +698,7 @@
   .linkGrid,
   .integrationGrid,
   .detailGrid,
+  .playgroundDirectory,
   .playgroundGrid,
   .aiFlow {
     grid-template-columns: 1fr 1fr;
@@ -703,6 +765,7 @@
   .linkGrid,
   .integrationGrid,
   .detailGrid,
+  .playgroundDirectory,
   .playgroundGrid,
   .aiFlow {
     grid-template-columns: 1fr;

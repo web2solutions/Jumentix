@@ -367,6 +367,7 @@ return {
   replayReport: replay.report,
   finalTaskCount: tasks.total,
   lastTaskInCategory: lastTask.result,
+  requestTimeline: timeline,
   controllerLevelReplay: timeline
     .filter((entry) => entry.step.startsWith('controller'))
     .map((entry) => entry.step),

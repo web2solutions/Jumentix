@@ -54,6 +54,7 @@ describe('DocsPlayground catalogs', () => {
     expect(snippet?.code).toContain("step: request.replay ? 'controller-replay' : 'controller-create'");
     expect(snippet?.code).toContain('Promise.all(bulkTasks.map');
     expect(snippet?.code).toContain('rejectedToDeadLetterQueue');
+    expect(snippet?.code).toContain('requestTimeline: timeline');
     expect(snippet?.code).not.toMatch(/textoEvento|criarDadosIniciais|carregarTudo/);
   });
 
@@ -74,6 +75,7 @@ describe('DocsPlayground', () => {
     expect.hasAssertions();
     render(<DocsPlayground runtime="cana" id="getting-started" />);
     expect(screen.getByTestId('docs-playground-cana-getting-started')).toBeInTheDocument();
+    expect(screen.getByTestId('docs-playground-cana-getting-started')).toHaveAttribute('id', 'playground-cana-getting-started');
     expect(screen.getByTestId('docs-playground-cana-getting-started-run')).toBeInTheDocument();
 
     const agentMarkdown = screen.getByTestId('docs-playground-cana-getting-started-static');
@@ -90,5 +92,6 @@ describe('DocsPlayground', () => {
     expect(screen.getByText('Live data flow')).toBeInTheDocument();
     expect(screen.getByText('Rejected by lock')).toBeInTheDocument();
     expect(screen.getByText(/Lock-rejected data flows are red/i)).toBeInTheDocument();
+    expect(screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-state')).toHaveTextContent('Real events: 0');
   });
 });
