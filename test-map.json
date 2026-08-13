@@ -3555,6 +3555,30 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/jumentix-website/app/api/github-releases/route.test.ts",
+      "path": "apps/jumentix-website/app/api/github-releases/route.test.ts",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/components/ReleaseNotes/ReleaseNotes.test.tsx",
+      "path": "apps/jumentix-website/components/ReleaseNotes/ReleaseNotes.test.tsx",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
       "id": "apps/jumentix-website/components/Welcome/Welcome.test.tsx",
       "path": "apps/jumentix-website/components/Welcome/Welcome.test.tsx",
       "layer": "website",
@@ -4171,6 +4195,6 @@
     "unit": 207,
     "integration": 97,
     "smoke": 2,
-    "suites": 351
+    "suites": 354
   }
 }

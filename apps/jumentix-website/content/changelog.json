@@ -1,5 +1,41 @@
 [
   {
+    "sha": "d9bd8dc6a0157b3853e02253dec7a138d13d8fb4",
+    "date": "2026-08-13T19:30:41-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(website): bake changelog data at build instead of github api (JUM-718) (#238)"
+  },
+  {
+    "sha": "cf11249e7c947286fa36959ca3aea4195c3d22a5",
+    "date": "2026-08-13T19:04:09-03:00",
+    "author": "Eduardo A.",
+    "message": "test(ci): cover four guard behaviours, and state what the floor is really made of (JUM-681) (#237)"
+  },
+  {
+    "sha": "69e8033c728352f32ff9b415bcff5720f1351532",
+    "date": "2026-08-13T18:45:47-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(users): serialise organization membership writes, and seed sequentially (JUM-687) (#223)"
+  },
+  {
+    "sha": "98b4cc097fedd8e7a39815d2924ee68f009185ae",
+    "date": "2026-08-13T18:18:41-03:00",
+    "author": "Eduardo A.",
+    "message": "feat(website): graph cana 30s flow metrics"
+  },
+  {
+    "sha": "9c2dc01ea88a78cbde9fe0704911e8a5b963fa71",
+    "date": "2026-08-13T18:03:19-03:00",
+    "author": "Eduardo A.",
+    "message": "Merge remote-tracking branch 'origin/dev' into fix/cana-infinite-30s-flow"
+  },
+  {
+    "sha": "11b511668bb499383b81460b44a23a767c0fd21f",
+    "date": "2026-08-13T17:39:13-03:00",
+    "author": "Eduardo A.",
+    "message": "feat(website): graph cana 30s flow metrics"
+  },
+  {
     "sha": "5a35c4acbe12794274fbf907b83613a83cfcf085",
     "date": "2026-08-13T17:47:19-03:00",
     "author": "Eduardo A.",
