@@ -1,0 +1,105 @@
+# Hooks e erros
+
+Hooks mantêm políticas de escrita perto da persistência. Guards de erro mantêm
+ramos de recuperação estáveis entre IndexedDB, localStorage e workers.
+
+## Hooks de escrita
+
+```ts
+import { createClient, type CanaSchema } from '@jumentix/cana';
+
+type Task = {
+  id: string;
+  title: string;
+  categoryId: string;
+  completed: boolean;
+  priority: 'low' | 'medium' | 'high';
+  createdAt: number;
+  updatedAt: number;
+};
+
+const schema: CanaSchema = {
+  version: 1,
+  stores: [
+    { name: 'categories', keyPath: 'id' },
+    { name: 'tasks', keyPath: 'id', indexes: [{ name: 'byUpdatedAt', keyPath: 'updatedAt' }] }
+  ]
+};
+
+const trail: string[] = [];
+const client = createClient({
+  name: 'tasks-hooks-demo',
+  schema,
+  hooks: {
+    beforeWrite(context) {
+      trail.push(`before:${context.store}:${context.type}`);
+      if (context.store !== 'tasks' || context.type === 'deleted' || !context.record) {
+        return context.record;
+      }
+      const task = context.record as Task;
+      return { ...task, updatedAt: Date.now() };
+    },
+    afterCommit(events) {
+      trail.push(`commit:${events.length}`);
+    }
+  }
+});
+
+await client.open();
+await client.table('categories').put({ id: 'work', name: 'Work' });
+await client.table<Task>('tasks').put({
+  id: 'task-1',
+  title: 'Updated by hook',
+  categoryId: 'work',
+  completed: false,
+  priority: 'medium',
+  createdAt: Date.now(),
+  updatedAt: 0
+});
+
+console.log({ trail, task: await client.table<Task>('tasks').get('task-1') });
+```
+
+## Erros como dados puros
+
+`CanaError` é dado puro, não uma subclasse de `Error`. Isso o mantém seguro em
+structured clone e mensagens de worker.
+
+```ts
+import { isCanaError, isCanaErrorCode } from '@jumentix/cana';
+
+try {
+  await client.table('categories').add({ id: 'work', name: 'Duplicate Work' });
+} catch (error) {
+  if (isCanaErrorCode(error, 'ConstraintViolation')) {
+    console.warn('Category id already exists.');
+  } else if (isCanaErrorCode(error, 'QuotaExceeded')) {
+    console.warn('Storage quota is full. Ask the user to remove local data or export first.');
+  } else if (isCanaError(error)) {
+    console.warn(`Cana failed with ${error.code}: ${error.message}`);
+  } else {
+    throw error;
+  }
+}
+```
+
+## Erros comuns
+
+| Código | Causa típica | Recuperação |
+| --- | --- | --- |
+| `InvalidRequest` | Usar tabela antes de `open()` ou enviar chave inválida. | Corrigir ordem de chamada ou formato da chave. |
+| `ConstraintViolation` | Chave duplicada ou conflito de índice único. | Mostrar conflito de criação para o usuário. |
+| `NotFound` | Alvo de `update()` ausente ou cursor de replay antigo demais. | Recarregar estado durável e assinar novamente. |
+| `TransactionInactive` | `await` de trabalho não IndexedDB dentro da transação. | Mover rede/timer para fora do corpo da transação. |
+| `QuotaExceeded` | Storage do navegador cheio ou fallback localStorage pequeno demais. | Exportar, limpar ou pedir storage persistente. |
+| `UnknownOutcome` | Worker/aba morreu com escrita em andamento. | Usar `operationLedger` e `resolveWrite()`. |
+
+## Execute aqui
+
+<CanaPlayground id="hooks" />
+
+<CanaPlayground id="errors" />
+
+## Próximo
+
+Continue em [storage e recuperação de crash](./CANA-USAGE-STORAGE-RECOVERY.pt-BR.md).

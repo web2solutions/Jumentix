@@ -1248,36 +1248,155 @@
     ]
   },
   {
+    "title": "Workers and testing",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/workers-testing",
+    "description": "Run Cana through a worker boundary and plan browser tests.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "Workers and testing",
+      "Worker request flow",
+      "Complete same-thread worker-host demo",
+      "Production file layout",
+      "Testing strategy",
+      "Next"
+    ]
+  },
+  {
+    "title": "Querying and plans",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/querying",
+    "description": "Query Cana indexes, inspect explain plans and understand complexity.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "Querying and plans",
+      "Indexed task query",
+      "Pagination",
+      "Count and explain",
+      "Complexity quick map",
+      "Run it here",
+      "Next"
+    ]
+  },
+  {
+    "title": "Reading, writing and bulk operations",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/crud-bulk",
+    "description": "Use CRUD and bulk operations with complete task examples.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "Reading, writing and bulk operations",
+      "Single-record writes",
+      "Method choice",
+      "Bulk writes",
+      "Run it here",
+      "Next"
+    ]
+  },
+  {
     "title": "Cana usage guide",
     "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage",
-    "description": "Consumer API guide for @jumentix/cana with runnable examples.",
+    "description": "Consumer API guide hub for @jumentix/cana with focused subpages.",
     "section": "packages",
     "locale": "en",
     "headings": [
       "Cana — Usage Guide",
-      "Responsibility in context",
-      "Table of contents",
-      "1. Getting started",
-      "Typing your records",
-      "2. Schema and versioning",
-      "Upgrading",
-      "What an upgrade will and will not do",
-      "Downgrades are refused",
-      "Validation happens before anything is touched",
-      "3. Keys",
-      "Valid key types",
-      "4. Reading and writing",
-      "`add` vs `put` vs `update`",
-      "The result",
-      "Deleting a key that is not there",
-      "5. Bulk operations",
-      "6. Querying",
-      "`CanaQuery`",
-      "Counting",
-      "`explain` — checking that an index was used",
-      "What Cana does not do",
-      "7. Transactions",
-      "The one rule"
+      "Choose the next step",
+      "The running example",
+      "Complete code policy",
+      "Framework tutorials",
+      "Package integrations"
+    ]
+  },
+  {
+    "title": "API reference",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/api-reference",
+    "description": "Compact reference for the Cana APIs used in the guide.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "API reference",
+      "Client lifecycle",
+      "Tables",
+      "Transactions and events",
+      "Worker APIs",
+      "Factory adapter",
+      "Glossary"
+    ]
+  },
+  {
+    "title": "Schema and keys",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/schema-keys",
+    "description": "Version schemas and choose stable key strategies for Cana stores.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "Schema and keys",
+      "Versioned schema",
+      "Upgrade rules",
+      "Key strategies",
+      "Run it here",
+      "Next"
+    ]
+  },
+  {
+    "title": "Hooks and errors",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/hooks-errors",
+    "description": "Apply write hooks and handle plain-data Cana errors.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "Hooks and errors",
+      "Write hooks",
+      "Plain-data errors",
+      "Common errors",
+      "Run it here",
+      "Next"
+    ]
+  },
+  {
+    "title": "Getting started with Cana",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/getting-started",
+    "description": "Install Cana and build the minimal categorized task database.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "Getting started with Cana",
+      "Install",
+      "Complete minimal task app",
+      "What to notice",
+      "Run it here",
+      "Next"
+    ]
+  },
+  {
+    "title": "Transactions and change events",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/transactions-events",
+    "description": "Write atomically and update UI stores from committed Cana events.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "Transactions and change events",
+      "Multi-store transaction",
+      "Listen to committed events",
+      "Replay after the UI was gone",
+      "Run it here",
+      "Next"
+    ]
+  },
+  {
+    "title": "Storage and crash recovery",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/storage-recovery",
+    "description": "Assess durability, export/import data and resolve uncertain writes.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "Storage and crash recovery",
+      "Backend selection",
+      "Export and import",
+      "Resolve an uncertain write",
+      "Run it here",
+      "Next"
     ]
   },
   {
@@ -2747,36 +2866,155 @@
     ]
   },
   {
-    "title": "Guia de uso do Cana",
-    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana/usage",
-    "description": "Guia de API do consumidor para @jumentix/cana com exemplos executáveis.",
+    "title": "Workers e testes",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana/usage/workers-testing",
+    "description": "Execute Cana através da fronteira de worker e planeje testes no browser.",
     "section": "packages",
     "locale": "pt-BR",
     "headings": [
-      "Cana — Guia de Uso",
-      "Responsabilidade no escopo",
-      "Sumário",
-      "1. Primeiros passos",
-      "Tipando seus registros",
-      "2. Schema e versionamento",
-      "Atualizando",
-      "O que uma atualização faz e não faz",
-      "Downgrades são recusados",
-      "A validação acontece antes de qualquer toque",
-      "3. Chaves",
-      "Tipos de chave válidos",
-      "4. Leitura e escrita",
-      "`add` vs `put` vs `update`",
-      "O resultado",
-      "Excluir uma chave que não existe",
-      "5. Operações em lote",
-      "6. Consultas",
-      "`CanaQuery`",
-      "Contando",
-      "`explain` — verificando que um índice foi usado",
-      "O que o Cana não faz",
-      "7. Transações",
-      "A única regra"
+      "Workers e testes",
+      "Fluxo de requisição do worker",
+      "Demo completa de worker-host na mesma thread",
+      "Layout de arquivos em produção",
+      "Estratégia de testes",
+      "Próximo"
+    ]
+  },
+  {
+    "title": "Queries e planos",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana/usage/querying",
+    "description": "Consulte índices do Cana, inspecione planos explain e entenda complexidade.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "Queries e planos",
+      "Query indexada de tarefas",
+      "Paginação",
+      "Count e explain",
+      "Mapa rápido de complexidade",
+      "Execute aqui",
+      "Próximo"
+    ]
+  },
+  {
+    "title": "Leitura, escrita e operações em lote",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana/usage/crud-bulk",
+    "description": "Use CRUD e operações em lote com exemplos completos de tarefas.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "Leitura, escrita e operações em lote",
+      "Escritas de registro único",
+      "Escolha do método",
+      "Escritas em lote",
+      "Execute aqui",
+      "Próximo"
+    ]
+  },
+  {
+    "title": "Guia de uso do Cana",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana/usage",
+    "description": "Hub do guia de API do consumidor para @jumentix/cana com subpáginas focadas.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "Cana — Guia de uso",
+      "Escolha o próximo passo",
+      "O exemplo contínuo",
+      "Política de código completo",
+      "Tutoriais por framework",
+      "Integrações de pacote"
+    ]
+  },
+  {
+    "title": "Referência de API",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana/usage/api-reference",
+    "description": "Referência compacta das APIs Cana usadas no guia.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "Referência de API",
+      "Ciclo de vida do client",
+      "Tabelas",
+      "Transações e eventos",
+      "APIs de worker",
+      "Factory adapter",
+      "Glossário"
+    ]
+  },
+  {
+    "title": "Schema e chaves",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana/usage/schema-keys",
+    "description": "Versione schemas e escolha estratégias de chave estáveis para stores Cana.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "Schema e chaves",
+      "Schema versionado",
+      "Regras de upgrade",
+      "Estratégias de chave",
+      "Execute aqui",
+      "Próximo"
+    ]
+  },
+  {
+    "title": "Hooks e erros",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana/usage/hooks-errors",
+    "description": "Aplique hooks de escrita e trate erros Cana como dados puros.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "Hooks e erros",
+      "Hooks de escrita",
+      "Erros como dados puros",
+      "Erros comuns",
+      "Execute aqui",
+      "Próximo"
+    ]
+  },
+  {
+    "title": "Primeiros passos com Cana",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana/usage/getting-started",
+    "description": "Instale o Cana e construa o banco mínimo de tarefas categorizadas.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "Primeiros passos com Cana",
+      "Instalação",
+      "App mínimo completo de tarefas",
+      "O que observar",
+      "Execute aqui",
+      "Próximo"
+    ]
+  },
+  {
+    "title": "Transações e eventos de mudança",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana/usage/transactions-events",
+    "description": "Grave de forma atômica e atualize stores de UI a partir de eventos Cana commitados.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "Transações e eventos de mudança",
+      "Transação multi-store",
+      "Ouvir eventos commitados",
+      "Replay depois que a UI ficou ausente",
+      "Execute aqui",
+      "Próximo"
+    ]
+  },
+  {
+    "title": "Storage e recuperação de crash",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana/usage/storage-recovery",
+    "description": "Avalie durabilidade, exporte/importe dados e resolva escritas incertas.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "Storage e recuperação de crash",
+      "Seleção de backend",
+      "Export e import",
+      "Resolver uma escrita incerta",
+      "Execute aqui",
+      "Próximo"
     ]
   },
   {

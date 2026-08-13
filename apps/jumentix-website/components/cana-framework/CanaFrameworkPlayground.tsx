@@ -647,6 +647,23 @@ function formatOutput(value: unknown): string {
   }
 }
 
+function agentMarkdownForExample(example: CanaFrameworkExample, locale: 'en' | 'pt-BR'): string {
+  return [
+    `### ${example.title[locale]}`,
+    '',
+    example.description[locale],
+    '',
+    ...example.files.flatMap((file) => [
+      `#### ${file.path}`,
+      '',
+      `\`\`\`${languageFromPath(file.path)}`,
+      file.source,
+      '```',
+      ''
+    ])
+  ].join('\n');
+}
+
 export type CanaFrameworkPlaygroundProps = {
   id: CanaFrameworkExampleId;
 };
@@ -743,6 +760,14 @@ export function CanaFrameworkPlayground({ id }: CanaFrameworkPlaygroundProps) {
           <Title order={4}>{example.title[locale]}</Title>
           <Text size="sm" c="dimmed">{example.description[locale]}</Text>
         </div>
+
+        <pre
+          hidden
+          data-agent-markdown="cana-framework-full-app"
+          data-testid={`cana-framework-playground-${id}-agent-markdown`}
+        >
+          {agentMarkdownForExample(example, locale)}
+        </pre>
 
         <Group>
           <Button

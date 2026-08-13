@@ -17,7 +17,9 @@ const documentationRoutes = [
   ['/docs/jumentix/packages/key-value-storage/usage', ['key-value-storage usage']],
   ['/docs/jumentix/packages/mutex-service/usage', ['mutex-service usage']],
   ['/docs/jumentix/packages/cana', ['@jumentix/cana', 'Try it in the browser']],
-  ['/docs/jumentix/packages/cana/usage', ['Cana usage guide', 'Interactive playgrounds']],
+  ['/docs/jumentix/packages/cana/usage', ['Cana usage guide', 'Choose the next step']],
+  ['/docs/jumentix/packages/cana/usage/getting-started', ['Getting started with Cana', 'Complete minimal task app']],
+  ['/docs/jumentix/packages/cana/usage/workers-testing', ['Workers and testing', 'Worker request flow']],
   ['/docs/jumentix/packages/cana/react-context', ['Cana with React Context API', 'React Context: Category and Task tables']],
   ['/docs/jumentix/packages/cana/react-redux', ['Cana with React Redux', 'React Redux: store updated by Cana events']],
   ['/docs/jumentix/packages/cana/vue-pinia', ['Cana with Vue 3 and Pinia', 'Vue 3 + Pinia: store patched from Cana']],
@@ -36,9 +38,11 @@ const documentationRoutes = [
   ['/docs/pt-BR/jumentix/adapters/http/express', ['Express']],
   ['/docs/pt-BR/jumentix/packages/message-mediator', ['@jumentix/message-mediator']],
   ['/docs/pt-BR/jumentix/packages/cana', ['@jumentix/cana']],
-  ['/docs/pt-BR/jumentix/packages/cana/usage', ['Guia de uso do Cana', 'Playgrounds interativos']],
+  ['/docs/pt-BR/jumentix/packages/cana/usage', ['Guia de uso do Cana', 'Escolha o próximo passo']],
+  ['/docs/pt-BR/jumentix/packages/cana/usage/getting-started', ['Primeiros passos com Cana', 'App mínimo completo de tarefas']],
+  ['/docs/pt-BR/jumentix/packages/cana/usage/workers-testing', ['Workers e testes', 'Fluxo de requisição do worker']],
   ['/docs/pt-BR/jumentix/packages/cana/react-context', ['Cana com React Context API', 'React Context: tabelas Category e Task']],
-  ['/docs/pt-BR/jumentix/packages/cana/react-redux', ['Cana com React Redux', 'React Redux: store atualizada por events Cana']],
+  ['/docs/pt-BR/jumentix/packages/cana/react-redux', ['Cana com React Redux', 'React Redux: store atualizada por eventos Cana']],
   ['/docs/pt-BR/jumentix/packages/cana/vue-pinia', ['Cana com Vue 3 e Pinia', 'Vue 3 + Pinia: store atualizada pelo Cana']]
 ];
 
@@ -65,6 +69,19 @@ describe('Cana playground', () => {
       .and('contain.text', 'backend');
     cy.get(`[data-testid="${ids.reset}"]`).click();
     cy.get(`[data-testid="${ids.output}"]`).should('not.exist');
+  });
+
+  it('runs the worker client flow playground', () => {
+    const ids = playgroundIds('cana', 'worker-client-flow');
+    cy.visitQuiet('/docs/jumentix/packages/cana/usage/workers-testing');
+    cy.get(`[data-testid="${ids.root}"]`).should('exist');
+    assertNoVisibleAgentOnlyMetadata();
+    assertAgentMarkdownPayload(`[data-testid="${ids.root}"]`);
+    cy.get(`[data-testid="${ids.run}"]`).click();
+    cy.get(`[data-testid="${ids.output}"]`, { timeout: 15000 })
+      .should('exist')
+      .and('contain.text', 'pong')
+      .and('contain.text', 'broadcasts');
   });
 });
 
@@ -142,6 +159,15 @@ function assertAgentMarkdownPayload(rootSelector) {
     .and('contain.text', '```ts');
 }
 
+function assertFrameworkAgentMarkdownPayload(rootSelector) {
+  cy.get(rootSelector)
+    .find('[data-agent-markdown="cana-framework-full-app"]')
+    .should('exist')
+    .and('not.be.visible')
+    .and('contain.text', '#### src/App.')
+    .and('contain.text', '#### package.json');
+}
+
 describe('Cana framework tutorial playgrounds', () => {
   const tutorials = [
     ['/docs/jumentix/packages/cana/react-context', ['react-context-basic', 'react-context-advanced']],
@@ -158,6 +184,7 @@ describe('Cana framework tutorial playgrounds', () => {
       for (const exampleId of exampleIds) {
         const ids = canaFrameworkIds(exampleId);
         cy.get(`[data-testid="${ids.root}"]`).should('exist');
+        assertFrameworkAgentMarkdownPayload(`[data-testid="${ids.root}"]`);
         assertMonacoMounted(`[data-testid="${ids.root}"]`);
         cy.get(`[data-testid="${ids.run}"]`).click();
         assertDarkDocsThemeIsReadable();

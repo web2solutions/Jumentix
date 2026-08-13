@@ -1,0 +1,68 @@
+# API reference
+
+Compact map of the public Cana surface used by the guide.
+
+## Client lifecycle
+
+| API | Purpose |
+| --- | --- |
+| `createClient(options)` | Create a browser database client. |
+| `client.open()` | Open or upgrade the database. |
+| `client.close()` | Close the open connection. |
+| `client.backend` | Read `indexeddb` or `localStorage` after `open()`. |
+| `client.storageState()` | Inspect storage availability and quota signal. |
+| `client.durabilityAssessment()` | Inspect persistence confidence. |
+
+## Tables
+
+| API | Purpose |
+| --- | --- |
+| `client.table<TRecord>(name)` | Create a typed table handle. |
+| `table.get(key)` | Read one record by primary key. |
+| `table.add(record, key)` | Insert only when the key is unused. |
+| `table.put(record, key)` | Insert or replace. |
+| `table.update(key, changes)` | Merge fields into an existing record. |
+| `table.delete(key)` | Delete one record. |
+| `table.clear()` | Delete all records from the store. |
+| `table.bulkAdd(records)` | Insert a batch in one transaction. |
+| `table.bulkPut(records)` | Upsert a batch in one transaction. |
+| `table.bulkDelete(keys)` | Delete a batch in one transaction. |
+| `table.query(query)` | Read records with optional index, direction, offset and limit. |
+| `table.count(query)` | Count records without materializing them in JavaScript. |
+| `table.explain(query)` | Return records plus the query plan Cana used. |
+
+## Transactions and events
+
+| API | Purpose |
+| --- | --- |
+| `client.transaction(mode, stores, body)` | Run a multi-store commit boundary. |
+| `client.subscribe(listener)` | Listen to committed `CanaChangeEvent` entries. |
+| `client.subscribe(listener, { sinceCursor })` | Replay retained events newer than the cursor. |
+| `client.resolveWrite(correlationId, attemptedAt)` | Resolve a write with unknown outcome when `operationLedger` is enabled. |
+
+## Worker APIs
+
+| API | Purpose |
+| --- | --- |
+| `createWorkerHost(options)` | Serve a real Cana client behind a Worker or MessagePort. |
+| `createRouter(options)` | Correlate requests and responses on the page side. |
+| `createWorkerClient(router)` | Typed facade for request/response operations across the boundary. |
+
+## Factory adapter
+
+Use the factory adapter when the rest of a Jumentix application expects
+repository-like store handles instead of calling `client.table()` directly.
+
+<CanaPlayground id="factory-adapter" />
+
+## Glossary
+
+| Term | Meaning |
+| --- | --- |
+| Backend | The actual storage implementation: IndexedDB or localStorage fallback. |
+| Cursor | Monotonic number attached to committed change events. |
+| Durable source of truth | The data layer that survives reloads. Cana plays this role for browser offline data. |
+| Event replay | Delivering retained events after a subscriber reconnects with `sinceCursor`. |
+| Operation ledger | Optional store that lets Cana resolve an uncertain write outcome. |
+| Query plan | Description of whether Cana used an index, key range, count request or scan. |
+| Structured clone | Browser serialization used by Worker messages; it rejects functions and class instances with private state. |

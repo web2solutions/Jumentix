@@ -151,14 +151,104 @@
       "sourcePtBr": "../../packages/cana/README.pt-BR.md"
     },
     {
-      "section": "packages/cana",
-      "slug": "usage",
+      "section": "packages/cana/usage",
+      "slug": "index",
       "title": "Cana usage guide",
       "titlePtBr": "Guia de uso do Cana",
-      "description": "Consumer API guide for @jumentix/cana with runnable examples.",
-      "descriptionPtBr": "Guia de API do consumidor para @jumentix/cana com exemplos execut\u00e1veis.",
+      "description": "Consumer API guide hub for @jumentix/cana with focused subpages.",
+      "descriptionPtBr": "Hub do guia de API do consumidor para @jumentix/cana com subp\u00e1ginas focadas.",
       "source": "../../documentation/md/CANA-USAGE-GUIDE.md",
       "sourcePtBr": "../../documentation/md/CANA-USAGE-GUIDE.pt-BR.md"
+    },
+    {
+      "section": "packages/cana/usage",
+      "slug": "getting-started",
+      "title": "Getting started with Cana",
+      "titlePtBr": "Primeiros passos com Cana",
+      "description": "Install Cana and build the minimal categorized task database.",
+      "descriptionPtBr": "Instale o Cana e construa o banco mínimo de tarefas categorizadas.",
+      "source": "../../documentation/md/CANA-USAGE-GETTING-STARTED.md",
+      "sourcePtBr": "../../documentation/md/CANA-USAGE-GETTING-STARTED.pt-BR.md"
+    },
+    {
+      "section": "packages/cana/usage",
+      "slug": "schema-keys",
+      "title": "Schema and keys",
+      "titlePtBr": "Schema e chaves",
+      "description": "Version schemas and choose stable key strategies for Cana stores.",
+      "descriptionPtBr": "Versione schemas e escolha estratégias de chave estáveis para stores Cana.",
+      "source": "../../documentation/md/CANA-USAGE-SCHEMA-KEYS.md",
+      "sourcePtBr": "../../documentation/md/CANA-USAGE-SCHEMA-KEYS.pt-BR.md"
+    },
+    {
+      "section": "packages/cana/usage",
+      "slug": "crud-bulk",
+      "title": "Reading, writing and bulk operations",
+      "titlePtBr": "Leitura, escrita e operações em lote",
+      "description": "Use CRUD and bulk operations with complete task examples.",
+      "descriptionPtBr": "Use CRUD e operações em lote com exemplos completos de tarefas.",
+      "source": "../../documentation/md/CANA-USAGE-CRUD-BULK.md",
+      "sourcePtBr": "../../documentation/md/CANA-USAGE-CRUD-BULK.pt-BR.md"
+    },
+    {
+      "section": "packages/cana/usage",
+      "slug": "querying",
+      "title": "Querying and plans",
+      "titlePtBr": "Queries e planos",
+      "description": "Query Cana indexes, inspect explain plans and understand complexity.",
+      "descriptionPtBr": "Consulte índices do Cana, inspecione planos explain e entenda complexidade.",
+      "source": "../../documentation/md/CANA-USAGE-QUERYING.md",
+      "sourcePtBr": "../../documentation/md/CANA-USAGE-QUERYING.pt-BR.md"
+    },
+    {
+      "section": "packages/cana/usage",
+      "slug": "transactions-events",
+      "title": "Transactions and change events",
+      "titlePtBr": "Transações e eventos de mudança",
+      "description": "Write atomically and update UI stores from committed Cana events.",
+      "descriptionPtBr": "Grave de forma atômica e atualize stores de UI a partir de eventos Cana commitados.",
+      "source": "../../documentation/md/CANA-USAGE-TRANSACTIONS-EVENTS.md",
+      "sourcePtBr": "../../documentation/md/CANA-USAGE-TRANSACTIONS-EVENTS.pt-BR.md"
+    },
+    {
+      "section": "packages/cana/usage",
+      "slug": "hooks-errors",
+      "title": "Hooks and errors",
+      "titlePtBr": "Hooks e erros",
+      "description": "Apply write hooks and handle plain-data Cana errors.",
+      "descriptionPtBr": "Aplique hooks de escrita e trate erros Cana como dados puros.",
+      "source": "../../documentation/md/CANA-USAGE-HOOKS-ERRORS.md",
+      "sourcePtBr": "../../documentation/md/CANA-USAGE-HOOKS-ERRORS.pt-BR.md"
+    },
+    {
+      "section": "packages/cana/usage",
+      "slug": "storage-recovery",
+      "title": "Storage and crash recovery",
+      "titlePtBr": "Storage e recuperação de crash",
+      "description": "Assess durability, export/import data and resolve uncertain writes.",
+      "descriptionPtBr": "Avalie durabilidade, exporte/importe dados e resolva escritas incertas.",
+      "source": "../../documentation/md/CANA-USAGE-STORAGE-RECOVERY.md",
+      "sourcePtBr": "../../documentation/md/CANA-USAGE-STORAGE-RECOVERY.pt-BR.md"
+    },
+    {
+      "section": "packages/cana/usage",
+      "slug": "workers-testing",
+      "title": "Workers and testing",
+      "titlePtBr": "Workers e testes",
+      "description": "Run Cana through a worker boundary and plan browser tests.",
+      "descriptionPtBr": "Execute Cana através da fronteira de worker e planeje testes no browser.",
+      "source": "../../documentation/md/CANA-USAGE-WORKERS-TESTING.md",
+      "sourcePtBr": "../../documentation/md/CANA-USAGE-WORKERS-TESTING.pt-BR.md"
+    },
+    {
+      "section": "packages/cana/usage",
+      "slug": "api-reference",
+      "title": "API reference",
+      "titlePtBr": "Referência de API",
+      "description": "Compact reference for the Cana APIs used in the guide.",
+      "descriptionPtBr": "Referência compacta das APIs Cana usadas no guia.",
+      "source": "../../documentation/md/CANA-USAGE-API-REFERENCE.md",
+      "sourcePtBr": "../../documentation/md/CANA-USAGE-API-REFERENCE.pt-BR.md"
     },
     {
       "section": "packages/cana",
