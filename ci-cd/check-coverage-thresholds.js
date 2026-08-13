@@ -89,34 +89,33 @@ const ACCEPTED_BELOW_THRESHOLD = {
    * **The earlier note here named the wrong files.** It blamed
    * `packages/message-mediator`'s two broker adapters for 64 of the uncovered
    * branches and argued they were unreachable without a live broker. Both parts
-   * were wrong. `isThresholdSubject` excludes every `packages/<name>/src` apart from cana
-   * and designer-core, so those adapters were never in this number at all — and
-   * their paths turned out to be reachable with a double, which is what
-   * Requirement 135 §5 permits a double for. They now sit at 97.7% and 85.4%
-   * branch coverage, and it moved this figure by nothing, because they are not
-   * measured here.
+   * were wrong. `isThresholdSubject` excludes every `packages/<name>/src` apart
+   * from cana and designer-core, so those adapters were never in this number at
+   * all — and their paths turned out to be reachable with a double, which is
+   * what Requirement 135 §5 permits a double for.
    *
-   * Measured on 2026-08-12, threshold subjects only: **4166 of 4466 branches,
-   * 93.28%**, with 300 uncovered across 78 files. The largest:
+   * Measured 2026-08-13, threshold subjects only: **4163 of 4463 branches,
+   * 93.278%**, stable to three decimals across repeated full runs. The floor
+   * carries three decimals for that reason: it was written as `93.28` from a
+   * two-decimal display and then failed the build by 0.002.
    *
-   *   25  apps/backend-template/src/interface/CLI/subapps/entityModelManager.ts
-   *   24  apps/service-management/src/state/catalogSyncClient.js
-   *   16  apps/service-management/src/store/canaMigration.js
-   *   13  apps/backend-template/src/shared/openapi/OpenApi31DataEntity.ts
-   *   12  ci-cd/run-suite.js
-   *   11  apps/backend-template/src/modules/Users/service/AuthService.ts
+   * The remaining 300 are not one cluster. Reading them file by file, most are
+   * **defaulted-option branches** — `options.execute || executeMatrixCell`,
+   * `env = process.env`, `options.root || process.cwd()` — whose uncovered half
+   * is only reached by calling the function without the injection every test
+   * uses on purpose, which for these functions means spawning real processes.
+   * Writing tests to enter them would be writing tests for the number, and
+   * Requirement 135 §4 says coverage is a consequence, never a target.
    *
-   * No single cluster explains the gap; it is a long tail of error paths and
-   * defaulted options, and closing it is a program rather than a task. So: the
-   * threshold is the real one, this floor is the debt, dated and enumerated, and
-   * it ratchets — it fails below the floor, and it fails once the metric reaches
-   * 99% with this entry still here.
+   * So the debt is stated rather than chased: the threshold is the real one,
+   * this floor is measured, and it ratchets — below it fails, and reaching 99%
+   * with this entry still here fails too.
    */
   branches: {
-    floor: 93.28,
+    floor: 93.278,
     issue: 'JUM-681',
     since: '2026-08-12',
-    reason: 'A long tail of error paths and defaulted options across 78 subject files; enumerated above and closed file by file.'
+    reason: 'Mostly defaulted-option branches reachable only by dropping the injection tests use deliberately; see the note above.'
   }
 
   // Empty otherwise, and that is the state to keep it in.

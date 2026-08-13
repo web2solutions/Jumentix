@@ -647,3 +647,58 @@ describe('check-commit-authorship', () => {
     });
   });
 });
+
+/**
+ * The CLI's two modes, and what each exits with (JUM-681).
+ *
+ * `--identity` validates what the *next* commit would be stamped with; the
+ * default validates the commits that already exist. Wiring the wrong one to a
+ * hook is a silent hole — the flag would still print a reassuring line — so both
+ * dispatch paths and both exit codes are asserted here.
+ */
+describe('check-commit-authorship CLI (JUM-681)', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+  const authorship = require('../../../../../ci-cd/check-commit-authorship') as {
+    main: (
+      argv: string[],
+      io: { log: (m: string) => void; error: (m: string) => void },
+      options?: Record<string, unknown>
+    ) => number;
+  };
+
+  const collect = () => {
+    const logs: string[] = [];
+    const errors: string[] = [];
+    const io = {
+      log: (m: string) => logs.push(m),
+      error: (m: string) => errors.push(m)
+    };
+    return { io, logs, errors };
+  };
+
+  it('validates the configured identity when asked, and exits 0 on success', () => {
+    expect.hasAssertions();
+
+    const { io, logs } = collect();
+    const status = authorship.main(['bun', 'check', '--identity'], io, {
+      checkConfiguredIdentity: () => ({ ok: true, message: 'identity is authorized' }),
+      run: () => ({ ok: false, message: 'history check must not run here' })
+    });
+
+    expect(status).toBe(0);
+    expect(logs).toStrictEqual(['identity is authorized']);
+  });
+
+  it('validates the existing history by default, and exits 1 on failure', () => {
+    expect.hasAssertions();
+
+    const { io, errors } = collect();
+    const status = authorship.main(['bun', 'check'], io, {
+      checkConfiguredIdentity: () => ({ ok: true, message: 'identity check must not run here' }),
+      run: () => ({ ok: false, message: 'unauthorized author in history' })
+    });
+
+    expect(status).toBe(1);
+    expect(errors).toStrictEqual(['unauthorized author in history']);
+  });
+});

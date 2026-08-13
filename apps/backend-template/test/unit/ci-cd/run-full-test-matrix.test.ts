@@ -398,3 +398,64 @@ describe('full matrix manifest refusals (JUM-681)', () => {
       .toThrow('missing from package.json: no:such:script');
   });
 });
+
+/**
+ * Skipping a cell, and the evidence file (JUM-681).
+ *
+ * `JUMENTIX_FULL_MATRIX_SKIP_CELLS` is how a promotion drops a cell that cannot
+ * run in a given environment. An unnoticed typo there would silently skip
+ * nothing — or worse, silently skip the wrong thing — and the matrix would
+ * report a clean pass over a smaller list than the one it claims.
+ */
+describe('full matrix skip list and evidence (JUM-681)', () => {
+  const cells = [
+    { id: 'lint', script: 'lint' },
+    { id: 'unit', script: 'test:unit' }
+  ];
+
+  it('runs everything when nothing is skipped', () => {
+    expect.hasAssertions();
+
+    expect(resolveMatrixCells(cells, {})).toStrictEqual(cells);
+    expect(resolveMatrixCells(cells, { JUMENTIX_FULL_MATRIX_SKIP_CELLS: '   ' })).toStrictEqual(cells);
+  });
+
+  it('drops only the named cells, ignoring blanks and spacing', () => {
+    expect.hasAssertions();
+
+    const remaining = resolveMatrixCells(cells, {
+      JUMENTIX_FULL_MATRIX_SKIP_CELLS: ' lint , '
+    });
+
+    expect(remaining).toStrictEqual([{ id: 'unit', script: 'test:unit' }]);
+  });
+
+  it('refuses a skip list that names a cell the matrix does not have', () => {
+    expect.hasAssertions();
+
+    // The failure this prevents: a typo skips nothing, the matrix runs the cell
+    // anyway, and whoever wrote the list believes it was excluded.
+    expect(() => resolveMatrixCells(cells, {
+      JUMENTIX_FULL_MATRIX_SKIP_CELLS: 'lint,typo-cell'
+    })).toThrow('unknown cell(s): typo-cell');
+  });
+
+  it('writes evidence only when a destination is given, creating its directory', () => {
+    expect.hasAssertions();
+
+    const root = matrixFs.mkdtempSync(matrixPath.join(require('os').tmpdir(), 'jum681-matrix-'));
+    const target = matrixPath.join(root, 'nested', 'matrix.json');
+
+    // No destination: nothing written, and no crash for the caller that does
+    // not collect evidence.
+    expect(writeMatrixEvidence({ outcome: 'passed' }, '')).toBeUndefined();
+
+    writeMatrixEvidence({ outcome: 'passed', results: [] }, target);
+
+    expect(JSON.parse(matrixFs.readFileSync(target, 'utf8'))).toStrictEqual({
+      outcome: 'passed', results: []
+    });
+
+    matrixFs.rmSync(root, { recursive: true, force: true });
+  });
+});
