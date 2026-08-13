@@ -191,6 +191,38 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     await this.organizationDataRepository.getOneById(organization);
   }
 
+  /**
+   * One membership edit at a time, per organization (JUM-687).
+   *
+   * `syncOrganizationUsers` reads an organization, appends or removes a user id,
+   * and writes the whole list back. Two of those interleaved lose one edit: both
+   * read the same array, and the second write erases the first. The user then
+   * exists but is not a member of its organization, and a request about it comes
+   * back 404 or 403 depending on which check runs first — the family of symptoms
+   * recorded on JUM-687, all of them "the user is not there".
+   *
+   * This queue is per process. It is not the mutex service, deliberately: this
+   * runs inside `create`, `update` and `delete`, and taking the distributed lock
+   * there would make a routine write fail with `ResourceLockedError` whenever
+   * two users of one organization are written at once. What it removes is the
+   * interleaving this process controls; a second process editing the same
+   * organization is a distributed problem and not this one.
+   */
+  private static organizationWriteQueue: Map<string, Promise<void>> = new Map();
+
+  private static queueOrganizationWrite(
+    organizationId: string,
+    write: () => Promise<void>
+  ): Promise<void> {
+    const pending = UserService.organizationWriteQueue.get(organizationId) ?? Promise.resolve();
+    // `catch` so one failed write does not poison every later one queued behind
+    // it; the failure still reaches its own caller through `next`.
+    const next = pending.then(write, write);
+    const settled = next.then(() => undefined, () => undefined);
+    UserService.organizationWriteQueue.set(organizationId, settled);
+    return next;
+  }
+
   private async syncOrganizationUsers(
     userId: string,
     previousOrganizationId: string = '',
@@ -200,29 +232,33 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     let relationshipChanged = false;
 
     if (previousOrganizationId && previousOrganizationId !== nextOrganizationId) {
-      const previous = await this.organizationDataRepository.getOneById(previousOrganizationId);
-      const nextUsers = previous.users.filter((id: string) => id !== userId);
-      await this.organizationDataRepository.update(previousOrganizationId, {
-        id: previous.id,
-        name: previous.name,
-        address: previous.address,
-        phone: previous.phone,
-        email: previous.email,
-        users: nextUsers
+      await UserService.queueOrganizationWrite(previousOrganizationId, async () => {
+        const previous = await this.organizationDataRepository!.getOneById(previousOrganizationId);
+        const nextUsers = previous.users.filter((id: string) => id !== userId);
+        await this.organizationDataRepository!.update(previousOrganizationId, {
+          id: previous.id,
+          name: previous.name,
+          address: previous.address,
+          phone: previous.phone,
+          email: previous.email,
+          users: nextUsers
+        });
       });
       relationshipChanged = true;
     }
 
     if (nextOrganizationId) {
-      const organization = await this.organizationDataRepository.getOneById(nextOrganizationId);
-      const linkedUsers = [...new Set([...(organization.users || []), userId])];
-      await this.organizationDataRepository.update(nextOrganizationId, {
-        id: organization.id,
-        name: organization.name,
-        address: organization.address,
-        phone: organization.phone,
-        email: organization.email,
-        users: linkedUsers
+      await UserService.queueOrganizationWrite(nextOrganizationId, async () => {
+        const organization = await this.organizationDataRepository!.getOneById(nextOrganizationId);
+        const linkedUsers = [...new Set([...(organization.users || []), userId])];
+        await this.organizationDataRepository!.update(nextOrganizationId, {
+          id: organization.id,
+          name: organization.name,
+          address: organization.address,
+          phone: organization.phone,
+          email: organization.email,
+          users: linkedUsers
+        });
       });
       relationshipChanged = true;
     }
