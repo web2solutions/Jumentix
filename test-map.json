@@ -3617,6 +3617,18 @@
       "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
     },
     {
+      "id": "apps/jumentix-website/components/commercial/ChangelogPage.test.tsx",
+      "path": "apps/jumentix-website/components/commercial/ChangelogPage.test.tsx",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
       "id": "apps/jumentix-website/components/commercial/CommercialPages.a11y.test.tsx",
       "path": "apps/jumentix-website/components/commercial/CommercialPages.a11y.test.tsx",
       "layer": "website",
@@ -4149,6 +4161,6 @@
     "unit": 206,
     "integration": 97,
     "smoke": 2,
-    "suites": 350
+    "suites": 351
   }
 }

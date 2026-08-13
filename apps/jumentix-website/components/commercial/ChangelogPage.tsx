@@ -1,68 +1,31 @@
 import config from '@/config';
+import changelogEntries from '@/content/changelog.json';
 import { ActionLink, Pagination, SectionHeading, StatusBadge } from '../design-system';
 import type { CommercialLocale } from './CommercialPages';
 import classes from './CommercialPages.module.css';
 
-const COMMITS_PER_GITHUB_PAGE = 100;
 const CHANGES_PER_PAGE = 200;
 
-interface GitHubCommitResponse {
-  sha: string;
-  html_url: string;
-  commit: {
-    message: string;
-    author: { name: string; date: string };
-  };
-  author: { login: string } | null;
+interface ChangelogEntry {
+  sha: string | null;
+  date: string;
+  author: string;
+  message: string;
 }
+
+const entries = changelogEntries as ChangelogEntry[];
 
 const clampPage = (value: number) =>
   Number.isFinite(value) && value >= 1 ? Math.floor(value) : 1;
 
-const parseLastPage = (value: string | null) => {
-  if (!value) return null;
-  const match =
-    value.match(/<[^>]*[?&]page=(\d+)[^>]*>;\s*rel="last"/) ??
-    value.match(/<[^>]*[?&]page=(\d+)[^>]*>;\s*rel="next"/);
-  return match?.[1] ? Number(match[1]) : null;
-};
-
-const fetchCommitPage = async (page: number) => {
-  const url = new URL(config.gitHub.commitsUrl);
-  url.searchParams.set('sha', config.gitHub.defaultBranch);
-  url.searchParams.set('per_page', String(COMMITS_PER_GITHUB_PAGE));
-  url.searchParams.set('page', String(page));
-
-  const headers: Record<string, string> = {
-    Accept: 'application/vnd.github+json',
-    'User-Agent': config.gitHub.repo,
-  };
-  if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
-
-  return fetch(url, {
-    headers,
-    next: { revalidate: 300 },
-    signal: AbortSignal.timeout(10000),
-  });
-};
-
-const loadChanges = async (page: number) => {
-  const firstGitHubPage = page * 2 - 1;
-  const firstResponse = await fetchCommitPage(firstGitHubPage);
-  if (!firstResponse.ok) throw new Error(`GitHub API returned ${firstResponse.status}`);
-
-  const first = (await firstResponse.json()) as GitHubCommitResponse[];
-  const lastGitHubPage = parseLastPage(firstResponse.headers.get('link')) ?? firstGitHubPage;
-  const secondGitHubPage = firstGitHubPage + 1;
-  const second =
-    secondGitHubPage <= lastGitHubPage
-      ? ((await (await fetchCommitPage(secondGitHubPage)).json()) as GitHubCommitResponse[])
-      : [];
-
+const loadChanges = (page: number) => {
+  const totalPages = Math.max(1, Math.ceil(entries.length / CHANGES_PER_PAGE));
+  const currentPage = Math.min(clampPage(page), totalPages);
+  const start = (currentPage - 1) * CHANGES_PER_PAGE;
   return {
-    changes: [...first, ...second].slice(0, CHANGES_PER_PAGE),
-    currentPage: Math.min(page, Math.max(1, Math.ceil(lastGitHubPage / 2))),
-    totalPages: Math.max(1, Math.ceil(lastGitHubPage / 2)),
+    changes: entries.slice(start, start + CHANGES_PER_PAGE),
+    currentPage,
+    totalPages,
   };
 };
 
@@ -73,7 +36,12 @@ const formatDate = (value: string, locale: CommercialLocale) =>
     day: '2-digit',
   });
 
-export async function CommercialChangelogPage({
+const changeUrl = (change: ChangelogEntry) =>
+  change.sha
+    ? `https://github.com/${config.gitHub.repo}/commit/${change.sha}`
+    : `https://github.com/${config.gitHub.repo}/commits/${config.gitHub.defaultBranch}`;
+
+export function CommercialChangelogPage({
   locale = 'en',
   page: requestedPage = '1',
 }: {
@@ -81,17 +49,7 @@ export async function CommercialChangelogPage({
   page?: string;
 }) {
   const portuguese = locale === 'pt-BR';
-  let changes: GitHubCommitResponse[] = [];
-  let currentPage = clampPage(Number(requestedPage));
-  let totalPages = 1;
-  let loadError = false;
-
-  try {
-    ({ changes, currentPage, totalPages } = await loadChanges(currentPage));
-  } catch (error) {
-    loadError = true;
-    console.error('[changelog-page] failed to fetch commits', error);
-  }
+  const { changes, currentPage, totalPages } = loadChanges(Number(requestedPage));
 
   const basePath = portuguese ? '/pt-BR/changelog' : '/changelog';
   return (
@@ -135,34 +93,25 @@ export async function CommercialChangelogPage({
               hrefBase={basePath}
             />
           </div>
-          {loadError ? (
-            <p>
-              {portuguese
-                ? 'O GitHub está temporariamente indisponível. Use o link do histórico completo.'
-                : 'GitHub is temporarily unavailable. Use the full history link.'}
-            </p>
-          ) : (
-            <div className={classes.changelogList}>
-              {changes.map((change) => (
-                <article className={classes.change} key={change.sha}>
-                  <div className={classes.changeHeader}>
-                    <h2>{change.commit.message.split('\n')[0]}</h2>
-                    <StatusBadge>{change.sha.slice(0, 8)}</StatusBadge>
-                  </div>
-                  <div className={classes.changeMeta}>
-                    <span>{formatDate(change.commit.author.date, locale)}</span>
-                    <span>
-                      {portuguese ? 'por' : 'by'}{' '}
-                      {change.author?.login ?? change.commit.author.name}
-                    </span>
-                  </div>
-                  <a href={change.html_url} target="_blank" rel="noreferrer">
-                    {portuguese ? 'Ver mudança no GitHub' : 'View change on GitHub'}
-                  </a>
-                </article>
-              ))}
-            </div>
-          )}
+          <div className={classes.changelogList}>
+            {changes.map((change) => (
+              <article className={classes.change} key={change.sha ?? `${change.date}-${change.message}`}>
+                <div className={classes.changeHeader}>
+                  <h2>{change.message}</h2>
+                  {change.sha ? <StatusBadge>{change.sha.slice(0, 8)}</StatusBadge> : null}
+                </div>
+                <div className={classes.changeMeta}>
+                  <span>{formatDate(change.date, locale)}</span>
+                  <span>
+                    {portuguese ? 'por' : 'by'} {change.author}
+                  </span>
+                </div>
+                <a href={changeUrl(change)} target="_blank" rel="noreferrer">
+                  {portuguese ? 'Ver mudança no GitHub' : 'View change on GitHub'}
+                </a>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
     </main>

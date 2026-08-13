@@ -69,7 +69,7 @@ Set these on the Vercel project (Production + Preview):
 
 | Name | Purpose |
 | --- | --- |
-| `GITHUB_TOKEN` | Changelog commits + GitHub releases API (`ChangelogPage`, `/api/github-releases`) |
+| `GITHUB_TOKEN` | GitHub releases API (`/api/github-releases`). Not needed by `/changelog`, which bundles its data at build time via `scripts/sync-changelog.mjs`. |
 
 Vercel Analytics is mounted in the root App Router layout via
 `@vercel/analytics/react` (`<Analytics />`) and does not require a custom
