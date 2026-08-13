@@ -373,14 +373,28 @@ function Home({ locale }: { locale: CommercialLocale }) {
     <>
       <section className={classes.hero}>
         <div className={classes.heroMedia} />
+        <img
+          className={classes.heroMascot}
+          src="/brand/jumentix-mascot.png"
+          alt={t(locale, 'Jumentix mascot, inspired by the Brazilian jegue', 'Mascote Jumentix, inspirada no jegue brasileiro')}
+          width="300"
+          height="300"
+        />
         <div className={`${classes.container} ${classes.heroContent}`}>
           <StatusBadge tone="success">{t(locale, 'Open-source software factory', 'Fábrica de software open source')}</StatusBadge>
           <h1>Jumentix</h1>
           <p>
             {t(
               locale,
-              'Design, generate, govern, and deploy enterprise Node.js products from one architecture system, from the first modular monolith to an unlimited service landscape.',
-              'Projete, gere, governe e publique produtos Node.js enterprise a partir de um único sistema de arquitetura, do primeiro monólito modular a um ecossistema ilimitado de serviços.',
+              'The Jumentix mark comes from the Brazilian jegue: steady, practical, resilient. The platform carries enterprise Node.js architecture from the first modular monolith to an unlimited service landscape.',
+              'A marca Jumentix vem do jegue brasileiro: firme, prático e resistente. A plataforma carrega a arquitetura Node.js enterprise do primeiro monólito modular a um ecossistema ilimitado de serviços.',
+            )}
+          </p>
+          <p className={classes.heroBrandNote}>
+            {t(
+              locale,
+              'The animal is the promise: less ceremony, more load-bearing software.',
+              'O animal é a promessa: menos cerimônia, mais software que aguenta carga.',
             )}
           </p>
           <div className={classes.heroActions}>
@@ -400,12 +414,12 @@ function Home({ locale }: { locale: CommercialLocale }) {
       <Band>
         <div className={classes.sectionStack}>
           <SectionHeading
-            eyebrow={t(locale, 'One factory, many products', 'Uma fábrica, muitos produtos')}
-            title={t(locale, 'Move from idea to governed software without rebuilding the foundation', 'Vá da ideia ao software governado sem reconstruir a fundação')}
+            eyebrow={t(locale, 'Jumentix carries the load', 'Jumentix carrega a carga')}
+            title={t(locale, 'A practical mascot for practical architecture', 'Uma mascote prática para uma arquitetura prática')}
             description={t(
               locale,
-              'Jumentix combines visual domain design, contract-first runtimes, reusable adapters, developer automation, and deployment governance.',
-              'O Jumentix combina design visual de domínios, runtimes orientados a contratos, adaptadores reutilizáveis, automação de desenvolvimento e governança de deploy.',
+              'The jegue is part of the product language: dependable movement, strong footing, and no drama when the terrain changes. Jumentix applies that to visual domain design, contract-first runtimes, reusable adapters, developer automation, and deployment governance.',
+              'O jegue faz parte da linguagem do produto: avanço confiável, pé firme e pouca cerimônia quando o terreno muda. O Jumentix aplica isso a design visual de domínios, runtimes orientados a contratos, adaptadores reutilizáveis, automação de desenvolvimento e governança de deploy.',
             )}
           />
           <MetricStrip metrics={[

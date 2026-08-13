@@ -4,7 +4,12 @@
 
 ## All Changes
 
+- 2026-08-13 docs(JUM-707): split Cana usage guide and complete examples (#217) - Eduardo A.
+- 2026-08-13 Merge remote-tracking branch 'origin/dev' into codex/docs/JUM-707-split-cana-usage-complete-examples - Eduardo A.
 - 2026-08-13 docs(JUM-707): split Cana usage guide and complete examples - Eduardo A.
+- 2026-08-13 fix(website): render mermaid diagrams, for the first time (JUM-664) (#216) - Eduardo A.
+- 2026-08-12 [JUM-681][Test] Cover the paths the floor was blamed on, and correct the analysis (#215) - Eduardo A.
+- 2026-08-12 feat(cana): report what a query examined, and drop the stopwatch (JUM-682) (#214) - Eduardo A.
 - 2026-08-12 [JUM-705][Docs] Use English Cana example identifiers - Eduardo A.
 - 2026-08-12 [JUM-701][Fix] Run the Monaco mount in tests, and stop the task-change gate reading the repository four times (#213) - Eduardo A.
 - 2026-08-12 [JUM-698][Bug] Establish the request context in four adapters, and make their suites integrate (#211) - Eduardo A.
