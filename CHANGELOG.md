@@ -4,6 +4,9 @@
 
 ## All Changes
 
+- 2026-08-13 feat(website): show Jumentix eating sugarcane on Cana docs - Eduardo A.
+- 2026-08-13 feat(website): promote Jumentix mascot brand identity (#220) - Eduardo A.
+- 2026-08-13 feat(website): promote Jumentix mascot brand identity - Eduardo A.
 - 2026-08-13 docs(JUM-707): split Cana usage guide and complete examples (#217) - Eduardo A.
 - 2026-08-13 Merge remote-tracking branch 'origin/dev' into codex/docs/JUM-707-split-cana-usage-complete-examples - Eduardo A.
 - 2026-08-13 docs(JUM-707): split Cana usage guide and complete examples - Eduardo A.
