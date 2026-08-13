@@ -19,10 +19,12 @@ describe('run-integration-tests', () => {
       'test:integration:lambda',
       'test:integration:cloudflare-workers',
       'test:integration:vercel-functions',
-      // loopback, sails-js, feathers and derby-js were removed by JUM-698:
-      // their framework packages are not dependencies, so the server classes
-      // cannot be constructed and the suites never started an adapter. What
-      // remains of them is a handler unit test; the adapters are JUM-704.
+      // Restored by JUM-704 with the framework packages that make them
+      // runnable; removed by JUM-698 when nothing could construct them.
+      'test:integration:loopback',
+      'test:integration:sails-js',
+      'test:integration:feathers',
+      'test:integration:derby-js',
       'test:integration:adonis-js',
       'test:integration:total-js',
       'test:integration:realtime',

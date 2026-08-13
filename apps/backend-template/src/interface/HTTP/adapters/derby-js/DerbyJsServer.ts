@@ -4,7 +4,9 @@
 import { createServer, Server } from 'http';
 import fs from 'fs';
 import path from 'path';
+import { v4 } from 'uuid';
 import { _HTTP_PORT_ } from '@src/config/constants';
+import { Context as RequestContext } from '@src/infra/context/Context';
 import type {
   IHTTPRequest,
   IHTTPResponse,
@@ -31,6 +33,8 @@ class DerbyJsServer extends HTTPBaseServer<any> {
   private server: Server | undefined;
 
   private staticDocs: Record<string, Map<string, string>> = {};
+
+  private staticDocsRegistered = false;
 
   private static getContentType(fileName: string): string {
     if (fileName.endsWith('.html')) return 'text/html; charset=utf-8';
@@ -180,11 +184,41 @@ class DerbyJsServer extends HTTPBaseServer<any> {
     });
   }
 
+  /**
+   * The listener `start` binds, exposed so a test can drive it (JUM-704).
+   *
+   * Extracted rather than invented, matching Adonis-JS and Total-JS: `start`
+   * built this inline and bound it to a fixed port, which is why the suite named
+   * after this adapter never went near it.
+   */
+  public requestListener(): (req: any, res: any) => void {
+    if (!this.staticDocsRegistered) {
+      this.registerStaticDocsRoutes();
+      this.staticDocsRegistered = true;
+    }
+
+    /*
+     * The per-request store every handler reads. Express, Restify, Fastify and
+     * Lambda each establish it; this adapter did not, and it serves the same
+     * handlers — `localhost.get` reads `correlationId` from the store, so every
+     * request through it answered 500 with an empty message (JUM-698 found this
+     * in the four adapters that could be started; this is the same defect in one
+     * that could not).
+     */
+    return (req: any, res: any) => {
+      const store = new Map();
+      RequestContext.run(store, () => {
+        store.set('correlationId', v4());
+        store.set('timeStart', +new Date());
+        store.set('request', req);
+        store.set('authorization', req.headers?.authorization || '');
+        this.router.lookup(req, res);
+      });
+    };
+  }
+
   public async start(): Promise<void> {
-    this.registerStaticDocsRoutes();
-    this.server = createServer((req, res) => {
-      this.router.lookup(req, res);
-    });
+    this.server = createServer(this.requestListener());
     await new Promise<void>((resolve) => {
       this.server!.listen(_HTTP_PORT_, resolve);
     });

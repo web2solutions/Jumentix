@@ -132,11 +132,12 @@ function classifyIntegration(file) {
       adapter: 'vercel-functions',
       script: 'test:integration:vercel-functions'
     },
-    // LoopBack, Sails-JS, Feathers and Derby-JS had entries here until JUM-698.
-    // Their framework packages are not dependencies of this repository, so the
-    // server classes cannot be constructed and no suite could start them; the
-    // suites moved to `test/unit/interface/HTTP/adapters/` and the adapters
-    // themselves are untested, which is JUM-704.
+    // Restored by JUM-704, which added the four framework packages the adapters
+    // require. Removed by JUM-698 when nothing could construct them.
+    LoopBack: { layer: 'adapters/in', adapter: 'loopback', script: 'test:integration:loopback' },
+    'Sails-JS': { layer: 'adapters/in', adapter: 'sails-js', script: 'test:integration:sails-js' },
+    Feathers: { layer: 'adapters/in', adapter: 'feathers', script: 'test:integration:feathers' },
+    'Derby-JS': { layer: 'adapters/in', adapter: 'derby-js', script: 'test:integration:derby-js' },
     'Adonis-JS': { layer: 'adapters/in', adapter: 'adonis-js', script: 'test:integration:adonis-js' },
     'Total-JS': { layer: 'adapters/in', adapter: 'total-js', script: 'test:integration:total-js' },
     realtime: { layer: 'interface/runtime', adapter: 'realtime', script: 'test:integration:realtime' },

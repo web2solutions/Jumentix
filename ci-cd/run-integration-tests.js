@@ -19,9 +19,13 @@ const INTEGRATION_SCRIPTS = Object.freeze([
   'test:integration:lambda',
   'test:integration:cloudflare-workers',
   'test:integration:vercel-functions',
-  // loopback, sails-js, feathers, derby-js: removed by JUM-698. Their framework
-  // packages are not installed, so the adapters cannot be started by any suite
-  // here; what is left of those suites is a unit test of the handler (JUM-704).
+  // Restored by JUM-704, which installed the four framework packages and made
+  // each adapter serve a real request. Removed by JUM-698, when none of them
+  // could be constructed.
+  'test:integration:loopback',
+  'test:integration:sails-js',
+  'test:integration:feathers',
+  'test:integration:derby-js',
   'test:integration:adonis-js',
   'test:integration:total-js',
   'test:integration:realtime',
