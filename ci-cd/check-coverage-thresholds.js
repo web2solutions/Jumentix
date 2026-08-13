@@ -86,37 +86,37 @@ const ACCEPTED_BELOW_THRESHOLD = {
   /**
    * JUM-681 — branches, measured rather than assumed.
    *
-   * Two numbers, and the difference matters. `bun run test:coverage` — unit
-   * suites and packages only — reports **4373 of 4799 branches, 91.12%**. The
-   * report this checker actually reads is the merged one, browser coverage
-   * included, and that is **93.20%**. The floor is the merged figure, because a
-   * floor set from the smaller run would leave two points of slack and ratchet
-   * nothing.
+   * **The earlier note here named the wrong files.** It blamed
+   * `packages/message-mediator`'s two broker adapters for 64 of the uncovered
+   * branches and argued they were unreachable without a live broker. Both parts
+   * were wrong. `isThresholdSubject` excludes every `packages/<name>/src` apart from cana
+   * and designer-core, so those adapters were never in this number at all — and
+   * their paths turned out to be reachable with a double, which is what
+   * Requirement 135 §5 permits a double for. They now sit at 97.7% and 85.4%
+   * branch coverage, and it moved this figure by nothing, because they are not
+   * measured here.
    *
-   * 426 branches uncovered across 95 files in the unit run, and the shape of
-   * the gap is the argument for a floor rather than a lowered threshold:
+   * Measured on 2026-08-12, threshold subjects only: **4166 of 4466 branches,
+   * 93.28%**, with 300 uncovered across 78 files. The largest:
    *
-   *   41  packages/message-mediator/src/RabbitMqMessageMediatorAdapter.ts
    *   25  apps/backend-template/src/interface/CLI/subapps/entityModelManager.ts
-   *   23  packages/message-mediator/src/BullMqMessageMediatorAdapter.ts
-   *   22  apps/service-management/src/state/catalogSyncClient.js
-   *   18  packages/designer-core/src/packages/packageVersioning.js
+   *   24  apps/service-management/src/state/catalogSyncClient.js
+   *   16  apps/service-management/src/store/canaMigration.js
+   *   13  apps/backend-template/src/shared/openapi/OpenApi31DataEntity.ts
+   *   12  ci-cd/run-suite.js
+   *   11  apps/backend-template/src/modules/Users/service/AuthService.ts
    *
-   * The two broker adapters alone are 64 of the 426, and they are reconnect and
-   * error paths that no unit run can reach — they belong to the integration
-   * suites that run against real RabbitMQ and Redis, whose coverage this report
-   * does not include. Raising the threshold without that would fail the build
-   * for branches the run is not able to execute.
-   *
-   * So: the threshold is the real one, and this floor is the debt, dated and
-   * enumerated. It fails below 91.12 and it fails once the metric reaches 99
-   * with the entry still here, which is what stops it becoming a lowered bar.
+   * No single cluster explains the gap; it is a long tail of error paths and
+   * defaulted options, and closing it is a program rather than a task. So: the
+   * threshold is the real one, this floor is the debt, dated and enumerated, and
+   * it ratchets — it fails below the floor, and it fails once the metric reaches
+   * 99% with this entry still here.
    */
   branches: {
-    floor: 93.2,
+    floor: 93.28,
     issue: 'JUM-681',
     since: '2026-08-12',
-    reason: 'Broker reconnect and error paths need the integration suites; their coverage is not merged into this report.'
+    reason: 'A long tail of error paths and defaulted options across 78 subject files; enumerated above and closed file by file.'
   }
 
   // Empty otherwise, and that is the state to keep it in.

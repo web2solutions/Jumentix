@@ -346,3 +346,55 @@ describe('run-full-test-matrix', () => {
     ]).toStrictEqual(Array(33).fill(true));
   });
 });
+
+/**
+ * The manifest guard's refusals (JUM-681).
+ *
+ * The matrix is the list of everything that must pass before a promotion. A
+ * malformed entry that slips through is a cell nobody runs and nobody misses —
+ * the same false green as an unmapped suite, one level up.
+ */
+describe('full matrix manifest refusals (JUM-681)', () => {
+  const scripts = { lint: 'eslint .', 'test:unit': 'bun test' };
+
+  it('refuses an empty matrix', () => {
+    expect.hasAssertions();
+
+    expect(() => validateMatrixManifest([], scripts)).toThrow('at least one required cell');
+    expect(() => validateMatrixManifest(null, scripts)).toThrow('at least one required cell');
+  });
+
+  it('refuses a cell with no id or no script', () => {
+    expect.hasAssertions();
+
+    expect(() => validateMatrixManifest([{ id: '', script: 'lint' }], scripts))
+      .toThrow('non-empty id and script');
+    expect(() => validateMatrixManifest([{ id: 'lint' }], scripts))
+      .toThrow('non-empty id and script');
+  });
+
+  it('refuses a duplicate id and a duplicate script separately', () => {
+    expect.hasAssertions();
+
+    // Two names for one script is a cell that reports twice; two scripts under
+    // one name is a cell that reports once for two things.
+    expect(() => validateMatrixManifest([
+      { id: 'lint', script: 'lint' },
+      { id: 'lint', script: 'test:unit' }
+    ], scripts)).toThrow('Duplicate full-matrix cell id: lint');
+
+    expect(() => validateMatrixManifest([
+      { id: 'lint', script: 'lint' },
+      { id: 'lint-again', script: 'lint' }
+    ], scripts)).toThrow('Duplicate full-matrix script: lint');
+  });
+
+  it('refuses a script that package.json does not define', () => {
+    expect.hasAssertions();
+
+    // The failure mode this prevents: a renamed script leaves a matrix cell
+    // pointing at nothing, and `bun run missing` is not a test that ran.
+    expect(() => validateMatrixManifest([{ id: 'gone', script: 'no:such:script' }], scripts))
+      .toThrow('missing from package.json: no:such:script');
+  });
+});

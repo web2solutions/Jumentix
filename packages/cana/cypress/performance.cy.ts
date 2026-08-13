@@ -2,33 +2,25 @@ import type { CanaSchema } from '../src';
 import { createClient } from '../src';
 
 /**
- * Performance baseline (JUM-561, second half).
+ * Query shape, asserted from the engine rather than from a clock (JUM-682).
  *
- * `explain()` proves an indexed query opened its index and that offset was
- * applied in the cursor. It proves nothing about speed. This measures the thing
- * the plan only claims.
+ * These questions were always the right ones: does a limited query read the
+ * table, does an indexed lookup open its index, does a deep offset advance the
+ * cursor or materialise nine thousand records. The answers used to be inferred
+ * from wall-clock ratios on shared CI hardware — `largeTime <= smallTime * 4`,
+ * `deepPage < earlyPage * 60` — which Requirement 134 §3 forbids for good
+ * reason: the margins had to be loose enough to survive a noisy runner, and a
+ * margin that loose passes a half-broken cursor too.
  *
- * ## What these assert, and what they deliberately do not
+ * `explain()` now reports `metrics.recordsExamined` and `metrics.cursorAdvanced`
+ * alongside the plan, so the property is a number the engine states rather than
+ * a duration a test guesses from. Ten records examined is ten records examined
+ * on any machine, under any load, in any order.
  *
- * They assert **complexity, not latency**. A wall-clock threshold on a shared CI
- * runner is a flaky test that gets deleted within a month, and deleting it takes
- * the coverage with it. So the assertions are ratios: an indexed lookup over
- * 10k rows must not cost proportionally more than one over 1k, and a limited
- * query must not scale with table size at all.
- *
- * A full scan that got 10x slower with 10x the data is correct behaviour. An
- * *indexed* query that did is the bug — it means the index was announced and not
- * used, which is exactly the failure `explain()` was built to make visible and
- * which no correctness test can detect.
- *
- * ## What this is NOT
- *
- * These now run against a browser's own disk-backed IndexedDB, so the constant
- * factors are real — but a shared CI runner's are still not a user's laptop, so
- * **no absolute number here transfers to production**. What transfers is the
- * shape: if an operation
- * scales linearly here where it should be logarithmic or constant, it will scale
- * linearly in a browser too, only worse.
+ * What is deliberately **not** here: latency. Nothing in this file says Cana is
+ * fast, and nothing should be quoted as if it did. It says nothing scales in a
+ * shape that would make it slow. A real latency baseline needs the browser
+ * conformance run (JUM-417).
  */
 
 interface Row { id: number; group: string; value: number }
@@ -62,108 +54,113 @@ async function seeded(count: number) {
   return client;
 }
 
-/** Median of several runs, so one scheduling hiccup does not decide the result. */
-async function median(runs: number, operation: () => Promise<unknown>): Promise<number> {
-  const samples: number[] = [];
-  for (let run = 0; run < runs; run += 1) {
-    const started = performance.now();
-    // eslint-disable-next-line no-await-in-loop
-    await operation();
-    samples.push(performance.now() - started);
-  }
-  return samples.sort((a, b) => a - b)[Math.floor(samples.length / 2)];
-}
-
 const SMALL = 1_000;
 const LARGE = 10_000;
 
-describe('cana performance shape', () => {
-  it('does not scale a limited query with table size', async function limitedQueryDoesNotScale() {
-    // Seeding and draining a real IndexedDB is not instant; Mocha's own
-    // timeout is what governs an async test here.
+describe('cana query shape', () => {
+  it('reads only the limit, whatever the table size', async function limitedQueryReadsTheLimit() {
+    // Seeding a real IndexedDB is not instant; Mocha's own timeout governs.
     this.timeout(60_000);
-    // The claim `explain()` makes: `limit: 10` reads ten records, not the table.
-    // If this scaled with size, the cursor would be materialising everything and
-    // slicing — which passes every correctness test ever written.
+
+    // The claim: `limit: 10` reads ten records, not the table. An
+    // implementation that materialises the range and slices it returns the same
+    // ten records and reports the same plan — it differs only in what it read,
+    // which is why the engine now reports that.
     const small = await seeded(SMALL);
     const large = await seeded(LARGE);
 
-    const smallTime = await median(5, () => small.table<Row>('rows').query({ limit: 10 }));
-    const largeTime = await median(5, () => large.table<Row>('rows').query({ limit: 10 }));
+    const smallRun = await small.table<Row>('rows').explain({ limit: 10 });
+    const largeRun = await large.table<Row>('rows').explain({ limit: 10 });
 
-    // 10x the data. A cursor-limited read should be near-flat; 4x leaves ample
-    // headroom for noise while still failing a linear implementation. The floor
-    // allows equality because some CI browsers quantize tiny timings to 5ms.
-    expect(largeTime).to.be.at.most(Math.max(smallTime * 4, 5));
+    expect(smallRun.metrics.recordsExamined).to.equal(10);
+    // Ten times the data, the same ten records read.
+    expect(largeRun.metrics.recordsExamined).to.equal(10);
+    expect(largeRun.records).to.have.lengthOf(10);
+
     await small.close();
     await large.close();
   });
 
-  it('does not scale an indexed lookup proportionally with table size', async function indexedLookupDoesNotScale() {
-    // Seeding and draining a real IndexedDB is not instant; Mocha's own
-    // timeout is what governs an async test here.
+  it('opens the index and reads only the matches', async function indexedLookupReadsMatches() {
     this.timeout(60_000);
-    // 100 groups, so 10x the rows means 10x the matches — the result set grows
-    // but the search should not degrade on top of that. A linear scan would show
-    // considerably worse than the 10x the result set alone accounts for.
-    const small = await seeded(SMALL);
+
+    // 100 groups, so 10k rows hold 100 matches for one group. A scan would read
+    // all 10,000 and filter; the index reads the 100 that match.
     const large = await seeded(LARGE);
 
-    const smallTime = await median(
-      5,
-      () => small.table<Row>('rows').query({ index: 'byGroup', equals: 'g7' })
-    );
-    const largeTime = await median(
-      5,
-      () => large.table<Row>('rows').query({ index: 'byGroup', equals: 'g7' })
-    );
+    const run = await large.table<Row>('rows').explain({ index: 'byGroup', equals: 'g7' });
 
-    expect(largeTime).to.be.lessThan(Math.max(smallTime * 25, 20));
-    await small.close();
+    expect(run.plan.usedIndex).to.equal('byGroup');
+    expect(run.plan.fullScan).to.equal(false);
+    expect(run.records).to.have.lengthOf(LARGE / 100);
+    expect(run.metrics.recordsExamined).to.equal(LARGE / 100);
+
     await large.close();
   });
 
-  it('counts without reading the rows', async function countDoesNotReadRows() {
-    // Seeding and draining a real IndexedDB is not instant; Mocha's own
-    // timeout is what governs an async test here.
+  it('advances a deep offset instead of reading through it', async function deepOffsetAdvances() {
     this.timeout(60_000);
-    // `count()` uses IndexedDB's native count — one request. If it were reading
-    // records it would track the cost of a full query, and this comparison is
-    // what would show it.
+
+    // Deep pagination is where read-then-slice collapses: page 450 costs as much
+    // as reading the whole table. `advance()` skips without reading, so a page
+    // at offset 9,000 examines the same twenty records as a page at offset 10.
     const client = await seeded(LARGE);
 
-    const countTime = await median(5, () => client.table<Row>('rows').count());
-    const readTime = await median(5, () => client.table<Row>('rows').query());
+    const earlyPage = await client.table<Row>('rows').explain({ offset: 10, limit: 20 });
+    const deepPage = await client.table<Row>('rows').explain({ offset: 9_000, limit: 20 });
 
-    expect(countTime).to.be.lessThan(readTime);
+    expect(earlyPage.metrics.recordsExamined).to.equal(20);
+    expect(deepPage.metrics.recordsExamined).to.equal(20);
+    expect(deepPage.plan.appliedOffsetInCursor).to.equal(true);
+    expect(deepPage.metrics.cursorAdvanced).to.equal(true);
+    expect(deepPage.records[0].id).to.equal(9_000);
+
     await client.close();
   });
 
-  it('does not scale a keyed get with table size', async function keyedGetDoesNotScale() {
-    // Seeding and draining a real IndexedDB is not instant; Mocha's own
-    // timeout is what governs an async test here.
+  it('reads every record when the query asks for every record', async function fullReadExaminesAll() {
     this.timeout(60_000);
-    // A primary-key get is the most common operation in any application. It must
-    // be independent of how much else is stored.
-    const small = await seeded(SMALL);
-    const large = await seeded(LARGE);
 
-    const smallTime = await median(10, () => small.table<Row>('rows').get(500));
-    const largeTime = await median(10, () => large.table<Row>('rows').get(500));
+    // The control. Without it, `recordsExamined` could be returning
+    // `records.length` and every assertion above would pass for the wrong
+    // reason — the metric has to be able to say a large number too.
+    const client = await seeded(SMALL);
 
-    expect(largeTime).to.be.at.most(Math.max(smallTime * 4, 5));
-    await small.close();
-    await large.close();
+    const run = await client.table<Row>('rows').explain();
+
+    expect(run.metrics.recordsExamined).to.equal(SMALL);
+    expect(run.metrics.cursorAdvanced).to.equal(false);
+
+    await client.close();
+  });
+
+  it('counts the table without the query path', async function countMatchesTheTable() {
+    this.timeout(60_000);
+
+    // `count()` uses IndexedDB's native count — one request, no records read.
+    // **That last part is not asserted here**, and the honest reason is that it
+    // is not observable through the public API: `count` returns a number, not a
+    // plan. The old test compared its duration against a full read, which is the
+    // wall-clock inference this file exists to remove. What is asserted is that
+    // count and the query path agree; JUM-706 covers exposing the metric.
+    const client = await seeded(LARGE);
+
+    const counted = await client.table<Row>('rows').count();
+    const read = await client.table<Row>('rows').query();
+
+    expect(counted).to.equal(LARGE);
+    expect(read).to.have.lengthOf(LARGE);
+
+    await client.close();
   });
 
   it('completes a bulk write of ten thousand rows', async function bulkWriteCompletes() {
-    // Seeding and draining a real IndexedDB is not instant; Mocha's own
-    // timeout is what governs an async test here.
     this.timeout(120_000);
-    // Not a speed assertion — a completeness one. Bulk writes are sequential by
-    // design so `failedAt` indices line up with the input, and a naive
-    // implementation can stack ten thousand promises and exhaust the stack.
-    // This is the test that would catch that.
+
+    // Not a speed assertion — a completeness one, and it never was a timing
+    // test. Bulk writes are sequential by design so `failedAt` indices line up
+    // with the input, and a naive implementation can stack ten thousand promises
+    // and exhaust the stack. This is the test that would catch that.
     const client = createClient({
       name: `perf-bulk-${Math.random().toString(36).slice(2, 8)}`,
       schema
@@ -175,44 +172,7 @@ describe('cana performance shape', () => {
     expect(result.outcome).to.equal('committed');
     expect(result.keys).to.have.lengthOf(LARGE);
     expect(await client.table<Row>('rows').count()).to.equal(LARGE);
-    await client.close();
-  });
 
-  it('applies a deep offset through the cursor rather than materialising', async function deepOffsetUsesCursor() {
-    // Seeding and draining a real IndexedDB is not instant; Mocha's own
-    // timeout is what governs an async test here.
-    this.timeout(60_000);
-    // Deep pagination is where slice-after-read collapses: page 500 costs as
-    // much as reading the whole table. Advancing the cursor should cost roughly
-    // the same as an early page.
-    const client = await seeded(LARGE);
-
-    const earlyPage = await median(
-      5,
-      () => client.table<Row>('rows').query({ offset: 10, limit: 20 })
-    );
-    const deepPage = await median(
-      5,
-      () => client.table<Row>('rows').query({ offset: 9_000, limit: 20 })
-    );
-
-    // `advance()` still walks the index, so a deep offset is not free — but it
-    // must not cost what reading nine thousand full records would.
-    expect(deepPage).to.be.lessThan(Math.max(earlyPage * 60, 60));
     await client.close();
   });
 });
-
-/*
- * NO ABSOLUTE NUMBERS ARE ASSERTED HERE, deliberately.
- *
- * These run against a browser's own disk-backed IndexedDB, which is the right
- * cost profile — but a shared CI runner's disk and scheduler are not a user's,
- * so a millisecond threshold measured here would still be flaky and would still
- * say nothing about production.
- *
- * A real latency baseline needs the browser conformance run — JUM-417 — and
- * until that exists, nobody should be told Cana is fast on the basis of this
- * file. What this file establishes is that nothing scales in a shape that would
- * make it slow.
- */

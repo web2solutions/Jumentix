@@ -273,3 +273,50 @@ describe('documentation routes and compatibility redirects', () => {
     });
   });
 });
+
+/**
+ * JUM-664 — a ```mermaid fence must reach the reader as a diagram.
+ *
+ * Every fence in this documentation was a blank space on the published page for
+ * as long as the fences have existed, and nothing reported it: no console error,
+ * no failed request, no test. This is that report, and it is deliberately a
+ * browser test — "the component rendered" is not the claim. The claim is that a
+ * reader loading the page sees an `<svg>`.
+ *
+ * Requirement 132: an artifact that exists in the source, is committed, and
+ * never reaches a reader is the same defect class as the orphaned content pages.
+ */
+describe('Mermaid diagrams (JUM-664)', () => {
+  const pagesWithDiagrams = [
+    '/docs/jumentix/adapters/realtime/websocket-api',
+    '/docs/jumentix/adapters/realtime/grpc-api'
+  ];
+
+  pagesWithDiagrams.forEach((path) => {
+    it(`renders every diagram on ${path}`, () => {
+      cy.visitQuiet(path);
+
+      // Present at all: the fence has to become a diagram element, not a code
+      // block that quietly kept its text.
+      cy.get('[data-testid="mermaid"]').should('have.length.at.least', 1);
+
+      // And rendered without anything having to scroll — the patched component
+      // no longer waits for an intersection its empty container could never
+      // report.
+      //
+      // Re-queried rather than wrapped: the container is replaced when its SVG
+      // arrives, so a held reference detaches mid-assertion. Counting the
+      // rendered ones against the total is also the stronger claim — `each`
+      // over a stale collection would pass while a later diagram stayed blank.
+      cy.get('[data-testid="mermaid"]').its('length').then((total) => {
+        cy.get('[data-testid="mermaid"][data-rendered="true"]', { timeout: 20000 })
+          .should('have.length', total);
+        cy.get('[data-testid="mermaid"] svg').should('have.length.at.least', total);
+      });
+
+      // A diagram that fails to parse now renders its source instead of
+      // nothing, which is visible — and must not be what ships.
+      cy.get('[data-testid="mermaid-fallback"]').should('not.exist');
+    });
+  });
+});
