@@ -187,6 +187,196 @@ return {
   taskBoard: taskBoard.result.cards,
   emittedEvents
 };`
+  },
+  {
+    id: 'bulk-mutex-dead-letter',
+    title: { en: 'Bulk writes with mutex + DLQ', 'pt-BR': 'Criação em massa com mutex + DLQ' },
+    description: {
+      en: 'Create many Task records for one Category, force lock contention, enqueue rejected controller requests in a dead-letter queue, then replay them through the controller workflow.',
+      'pt-BR': 'Crie muitos registros Task para uma Category, force contenção de lock, envie requests rejeitados pelo controller para uma dead-letter queue e reprocesse tudo pelo fluxo do controller.'
+    },
+    code: `const database = api.createInMemoryDatabase({
+  stores: ['categories', 'tasks']
+});
+const keyValue = api.createKeyValueStorage();
+const mutex = api.createMutex(keyValue);
+const mediator = api.createMessageMediator();
+const deadLetterQueue = api.createDeadLetterQueue({ maxAttempts: 3 });
+const replayInbox = [];
+const timeline = [];
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+await database.connect();
+await keyValue.connect();
+
+await database.stores.categories.create('work', {
+  id: 'work',
+  name: 'Work',
+  color: '#2563eb'
+});
+
+await mediator.subscribe('dead-letter.enqueued', async (event) => {
+  replayInbox.push(event.payload.recordId);
+  timeline.push({
+    step: 'dead-letter-listener-received',
+    taskId: event.payload.taskId,
+    recordId: event.payload.recordId
+  });
+});
+
+await mediator.subscribe('tasks.created', async (event) => {
+  timeline.push({
+    step: 'task-created-event',
+    taskId: event.payload.id,
+    source: event.payload.source
+  });
+});
+
+async function createTaskUseCase(input) {
+  const lock = await mutex.lock('category', input.categoryId);
+  if (!lock.result.locked) {
+    const record = await deadLetterQueue.enqueue({
+      entityName: 'Task',
+      resourceId: input.categoryId,
+      operation: 'tasks.create.v1',
+      payload: input,
+      actorId: input.requestedBy
+    });
+    await mediator.publish({
+      name: 'dead-letter.enqueued',
+      payload: {
+        recordId: record.id,
+        taskId: input.id,
+        categoryId: input.categoryId
+      },
+      metadata: {
+        source: 'tasks.create.use-case',
+        reason: 'category resource is already locked'
+      }
+    });
+    return {
+      ok: false,
+      status: 409,
+      error: 'category is locked; request queued for replay',
+      deadLetterId: record.id
+    };
+  }
+
+  try {
+    timeline.push({
+      step: 'lock-acquired',
+      taskId: input.id,
+      categoryId: input.categoryId
+    });
+    await sleep(input.processingMs);
+    const task = {
+      id: input.id,
+      title: input.title,
+      categoryId: input.categoryId,
+      completed: false,
+      source: input.source,
+      createdAt: new Date().toISOString()
+    };
+    await database.stores.tasks.create(task.id, task);
+    await keyValue.set(\`category:\${task.categoryId}:lastTask\`, task.id);
+    await mediator.publish({ name: 'tasks.created', payload: task });
+    return { ok: true, status: 201, result: task };
+  } finally {
+    await mutex.unlock('category', input.categoryId);
+    timeline.push({
+      step: 'lock-released',
+      taskId: input.id,
+      categoryId: input.categoryId
+    });
+  }
+}
+
+async function createTaskController(request) {
+  timeline.push({
+    step: request.replay ? 'controller-replay' : 'controller-create',
+    taskId: request.body.id
+  });
+  return createTaskUseCase({
+    ...request.body,
+    requestedBy: request.actorId,
+    source: request.replay ? 'dead-letter-replay' : 'bulk-import'
+  });
+}
+
+const deadLetterHandlers = {
+  'tasks.create.v1': async (record) => {
+    const response = await createTaskController({
+      body: {
+        ...record.payload,
+        processingMs: 1
+      },
+      actorId: 'dlq-replay-controller',
+      replay: true
+    });
+    if (!response.ok) throw new Error(response.error ?? 'replay failed');
+  }
+};
+
+async function replayDeadLettersController() {
+  const pendingBefore = await deadLetterQueue.pending();
+  const report = await deadLetterQueue.replay(deadLetterHandlers);
+  const records = await deadLetterQueue.list();
+  return {
+    ok: true,
+    status: 200,
+    pendingBefore: pendingBefore.length,
+    report,
+    records: records.map((record) => ({
+      id: record.id,
+      taskId: record.payload.id,
+      status: record.status,
+      attempts: record.attempts
+    }))
+  };
+}
+
+const bulkTasks = Array.from({ length: 8 }, (_, index) => ({
+  id: \`task-\${index + 1}\`,
+  title: \`Bulk imported Task \${index + 1}\`,
+  categoryId: 'work',
+  processingMs: index === 0 ? 45 : 5
+}));
+
+const bulkResponses = await Promise.all(bulkTasks.map((task) => (
+  createTaskController({
+    body: task,
+    actorId: 'bulk-import-controller'
+  })
+)));
+const pendingAfterBulk = await deadLetterQueue.pending();
+const replay = await replayDeadLettersController();
+const tasks = await database.stores.tasks.getAll({}, { page: 1, size: 20 });
+const lastTask = await keyValue.get('category:work:lastTask');
+
+return {
+  attemptedBulkCount: bulkTasks.length,
+  createdDuringBulk: bulkResponses.filter((response) => response.ok).length,
+  rejectedToDeadLetterQueue: bulkResponses.filter((response) => !response.ok).length,
+  pendingBeforeReplay: pendingAfterBulk.map((record) => ({
+    id: record.id,
+    taskId: record.payload.id,
+    resourceId: record.resourceId,
+    status: record.status
+  })),
+  replayInbox,
+  replayReport: replay.report,
+  finalTaskCount: tasks.total,
+  lastTaskInCategory: lastTask.result,
+  controllerLevelReplay: timeline
+    .filter((entry) => entry.step.startsWith('controller'))
+    .map((entry) => entry.step),
+  storedTasks: tasks.result.map((task) => ({
+    id: task.id,
+    title: task.title,
+    source: task.source
+  })),
+  deadLetterRecords: replay.records
+};`
   }
 ];
 

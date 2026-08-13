@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-13 docs: expand MVP use cases and mediator playgrounds (#228) - Eduardo A.
 - 2026-08-13 docs: expand AI governance website showcase (#226) - Eduardo A.
 - 2026-08-13 docs: expand Cana and Jumentix website showcases - Eduardo A.
 - 2026-08-13 feat(cana): report what a count read (JUM-706) (#219) - Eduardo A.

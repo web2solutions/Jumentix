@@ -41,6 +41,22 @@ describe('DocsPlayground catalogs', () => {
     expect(snippet?.code).not.toMatch(/textoEvento|criarDadosIniciais|carregarTudo/);
   });
 
+  it('jumentix browser lab demonstrates mutex rejection and dead-letter replay through controllers', () => {
+    expect.hasAssertions();
+    const snippet = listDocsSnippets('jumentix-browser-lab').find((s) => s.id === 'bulk-mutex-dead-letter');
+    expect(snippet?.title.en).toBe('Bulk writes with mutex + DLQ');
+    expect(snippet?.description.en).toContain('force lock contention');
+    expect(snippet?.code).toContain('api.createDeadLetterQueue({ maxAttempts: 3 })');
+    expect(snippet?.code).toContain("name: 'dead-letter.enqueued'");
+    expect(snippet?.code).toContain('deadLetterQueue.enqueue');
+    expect(snippet?.code).toContain('deadLetterQueue.replay(deadLetterHandlers)');
+    expect(snippet?.code).toContain('createTaskController({');
+    expect(snippet?.code).toContain("step: request.replay ? 'controller-replay' : 'controller-create'");
+    expect(snippet?.code).toContain('Promise.all(bulkTasks.map');
+    expect(snippet?.code).toContain('rejectedToDeadLetterQueue');
+    expect(snippet?.code).not.toMatch(/textoEvento|criarDadosIniciais|carregarTudo/);
+  });
+
   it('message mediator playground composes data across domains', () => {
     expect.hasAssertions();
     const snippet = listDocsSnippets('message-mediator').find((s) => s.id === 'getting-started');

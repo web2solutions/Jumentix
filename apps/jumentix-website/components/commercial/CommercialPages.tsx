@@ -594,18 +594,22 @@ function BrowserInMemoryLabBand({
         <MetricStrip metrics={[
           { value: '100%', label: t(locale, 'browser execution', 'execução no browser') },
           { value: '0', label: t(locale, 'servers required for the lab', 'servidores exigidos no lab') },
-          { value: '7', label: t(locale, 'package contracts showcased', 'contratos de pacote demonstrados') },
+          { value: '8', label: t(locale, 'package contracts showcased', 'contratos de pacote demonstrados') },
           { value: '2', label: t(locale, 'apps represented: Service Management and Backend Template', 'apps representados: Service Management e Backend Template') },
         ]} />
         <DetailGrid items={[
           { title: t(locale, 'Service Management UI', 'Service Management UI'), description: t(locale, 'The full lab starts from a visual service model, validates the domain shape, then feeds runtime contracts from the same Category and Task vocabulary.', 'O lab completo parte de um modelo visual de serviço, valida o formato do domínio e alimenta contratos de runtime com o mesmo vocabulário Category e Task.'), meta: t(locale, 'App surface', 'Superfície de app'), icon: <IconHierarchy3 /> },
           { title: t(locale, 'Backend Template', 'Backend Template'), description: t(locale, 'The request path mirrors controller, use-case, repository, mediator and client boundaries without exposing users to infrastructure setup.', 'O caminho de request espelha limites de controller, caso de uso, repository, mediator e client sem expor usuários a setup de infraestrutura.'), meta: t(locale, 'App runtime', 'Runtime de app'), icon: <IconBuildingFactory2 /> },
           { title: t(locale, 'Persistence and cache', 'Persistência e cache'), description: t(locale, 'In-memory stores and key/value state keep Category filters, Task records and UI preferences in the same service-result shape as external adapters.', 'Stores in-memory e estado chave/valor mantêm filtros de Category, registros Task e preferências de UI no mesmo formato de resposta dos adaptadores externos.'), meta: '@jumentix/key-value-storage', icon: <IconDatabase /> },
-          { title: t(locale, 'Messaging and locks', 'Mensageria e locks'), description: t(locale, 'Message Mediator and Mutex Service show request/response, events and write protection before a durable broker or distributed lock is introduced.', 'Message Mediator e Mutex Service mostram request/response, eventos e proteção de escrita antes de broker durável ou lock distribuído entrar.'), meta: '@jumentix/message-mediator', icon: <IconMessages /> },
+          { title: t(locale, 'Messaging and locks', 'Mensageria e locks'), description: t(locale, 'Message Mediator, Mutex Service and Dead Letter Queue show request/response, events, write protection and recoverable rejection before durable infrastructure is introduced.', 'Message Mediator, Mutex Service e Dead Letter Queue mostram request/response, eventos, proteção de escrita e rejeição recuperável antes de infraestrutura durável entrar.'), meta: '@jumentix/message-mediator', icon: <IconMessages /> },
+          { title: t(locale, 'Bulk write recovery', 'Recuperação de escrita em massa'), description: t(locale, 'The DLQ playground sends rejected bulk Task requests back through the controller workflow, so replay still reacquires the Category mutex before writing.', 'O playground de DLQ envia requests Task rejeitados em massa de volta pelo fluxo do controller, então o replay ainda readquire o mutex da Category antes de escrever.'), meta: '@jumentix/dead-letter-queue', icon: <IconShieldCheck /> },
         ]} />
         <div className={classes.playgroundGrid}>
           <div className={classes.playgroundWide}>
             <DocsPlayground runtime="jumentix-browser-lab" id="getting-started" />
+          </div>
+          <div className={classes.playgroundWide}>
+            <DocsPlayground runtime="jumentix-browser-lab" id="bulk-mutex-dead-letter" />
           </div>
           <DocsPlayground runtime="key-value-storage" id="getting-started" />
           <DocsPlayground runtime="message-mediator" id="getting-started" />

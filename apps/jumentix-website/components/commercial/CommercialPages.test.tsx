@@ -68,6 +68,8 @@ describe('Commercial pages', () => {
       expect(screen.getByText('Generated SDKs')).toBeInTheDocument();
       expect(screen.getByText('Browser in-memory playgrounds')).toBeInTheDocument();
       expect(screen.getByText('Full Jumentix browser app')).toBeInTheDocument();
+      expect(screen.getByText('Bulk write recovery')).toBeInTheDocument();
+      expect(screen.getByText('Bulk writes with mutex + DLQ')).toBeInTheDocument();
       expect(screen.getByText('AI-ready platform')).toBeInTheDocument();
       expect(screen.getByText('AI work becomes governed delivery')).toBeInTheDocument();
       expect(screen.getByText(/Model service/)).toBeInTheDocument();
@@ -124,6 +126,7 @@ describe('Commercial pages', () => {
       expect(screen.getByText('@jumentix/database-client-factory')).toBeInTheDocument();
       expect(screen.getAllByText('@jumentix/message-mediator').length).toBeGreaterThan(0);
       expect(screen.getByText('Browser in-memory playgrounds')).toBeInTheDocument();
+      expect(screen.getByText('Bulk writes with mutex + DLQ')).toBeInTheDocument();
       expect(screen.getByText('PM2 operations')).toBeInTheDocument();
     });
   });
@@ -147,6 +150,7 @@ describe('Commercial pages', () => {
       expect(screen.getByText('AI work becomes governed delivery')).toBeInTheDocument();
       expect(screen.getByText('Governance guardrail')).toBeInTheDocument();
       expect(screen.getByText('Browser in-memory playgrounds')).toBeInTheDocument();
+      expect(screen.getByText('Bulk writes with mutex + DLQ')).toBeInTheDocument();
       expect(screen.getByText('PM2 operations')).toBeInTheDocument();
     });
   });
