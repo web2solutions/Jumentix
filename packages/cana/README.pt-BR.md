@@ -6,17 +6,17 @@ Adaptador de banco de dados offline sobre IndexedDB para aplicações Jumentix.
 import { createClient } from '@jumentix/cana';
 
 const client = createClient({
-  name: 'tarefas-app',
+  name: 'tasks-app',
   schema: {
     version: 1,
     stores: [
-      { name: 'categorias', keyPath: 'id', indexes: [{ name: 'porNome', keyPath: 'nome' }] },
+      { name: 'categories', keyPath: 'id', indexes: [{ name: 'byName', keyPath: 'name' }] },
       {
-        name: 'tarefas',
+        name: 'tasks',
         keyPath: 'id',
         indexes: [
-          { name: 'porCategoria', keyPath: 'categoriaId' },
-          { name: 'porAtualizadaEm', keyPath: 'atualizadaEm' }
+          { name: 'byCategory', keyPath: 'categoryId' },
+          { name: 'byUpdatedAt', keyPath: 'updatedAt' }
         ]
       }
     ]
@@ -24,13 +24,13 @@ const client = createClient({
 });
 
 await client.open();
-await client.table('categorias').put({ id: 'trabalho', nome: 'Trabalho' });
-await client.table('tarefas').add({
-  id: 'tarefa-1',
-  titulo: 'Escrever tutorial do Cana',
-  categoriaId: 'trabalho',
-  concluida: false,
-  atualizadaEm: Date.now()
+await client.table('categories').put({ id: 'work', name: 'Work' });
+await client.table('tasks').add({
+  id: 'task-1',
+  title: 'Write the Cana tutorial',
+  categoryId: 'work',
+  completed: false,
+  updatedAt: Date.now()
 });
 ```
 
@@ -110,7 +110,7 @@ Leia o diagrama da esquerda para a direita quando o usuário age, e da direita
 para a esquerda quando a escrita faz commit:
 
 1. Componentes chamam uma action do framework.
-2. A action escreve em `categorias` ou `tarefas` pelo Cana.
+2. A action escreve em `categories` ou `tasks` pelo Cana.
 3. IndexedDB confirma ou reverte de forma atômica.
 4. Cana emite um evento confirmado.
 5. Context, Redux ou Pinia atualiza o estado renderizado a partir desse evento.
@@ -174,7 +174,7 @@ sequenceDiagram
   participant Router as "Router Cana"
   participant Worker as "Worker host"
   participant DB as "IndexedDB"
-  Page->>Router: put("tarefas", record)
+  Page->>Router: put("tasks", record)
   Router->>Worker: request plana + requestId
   Worker->>DB: transacao readwrite
   DB-->>Worker: oncomplete

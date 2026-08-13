@@ -2,31 +2,30 @@ import type { CanaChangeEvent } from '@jumentix/cana';
 
 export type LocaleText = { en: string; 'pt-BR': string };
 
-export type Categoria = {
+export type Category = {
   id: string;
-  nome: string;
-  cor: string;
-  criadaEm: number;
-  atualizadaEm: number;
+  name: string;
+  color: string;
+  createdAt: number;
+  updatedAt: number;
 };
 
-export type Tarefa = {
+export type Task = {
   id: string;
-  titulo: string;
-  categoriaId: string;
-  concluida: boolean;
-  prioridade: 'baixa' | 'media' | 'alta';
-  notas?: string;
-  criadaEm: number;
-  atualizadaEm: number;
+  title: string;
+  categoryId: string;
+  completed: boolean;
+  priority: 'low' | 'medium' | 'high';
+  notes?: string;
+  createdAt: number;
+  updatedAt: number;
 };
 
-export type TaskCategory = Categoria;
-export type Task = Tarefa;
+export type TaskCategory = Category;
 
 export type TaskDemoSnapshot = {
-  categories: Categoria[];
-  tasks: Tarefa[];
+  categories: Category[];
+  tasks: Task[];
 };
 
 export type CanaFrameworkExampleId =

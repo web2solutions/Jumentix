@@ -20,11 +20,11 @@ npm install @jumentix/cana @jumentix/cana-react react
 ```ts
 import { useCanaLiveQuery } from '@jumentix/cana-react';
 
-const { records, status, reload } = useCanaLiveQuery<Tarefa>({
+const { records, status, reload } = useCanaLiveQuery<Task>({
   client,
-  store: 'tarefas',
-  query: { index: 'porCategoria', equals: categoriaId },
-  getKey: (tarefa) => tarefa.id
+  store: 'tasks',
+  query: { index: 'byCategory', equals: categoryId },
+  getKey: (task) => task.id
 });
 ```
 

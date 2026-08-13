@@ -29,8 +29,8 @@ função de unsubscribe de `client.subscribe`.
 
 Componentes chamam actions da store:
 
-- `tarefas.adicionarTarefa(titulo, categoriaId)`
-- `tarefas.alternarTarefa(tarefa)`
+- `tasks.addTask(title, categoryId)`
+- `tasks.toggleTask(task)`
 
 A store atualiza seus arrays a partir de `CanaChangeEvent`, então todo
 componente que usa a store renderiza novamente com o estado confirmado no
@@ -58,8 +58,8 @@ src/
   main.ts
   App.vue
   stores/
-    tarefas.ts
-    tarefasAvancadas.ts
+    tasks.ts
+    advancedTasks.ts
 ```
 
 Getters do Pinia devem conter visões derivadas, como tarefas por categoria, não

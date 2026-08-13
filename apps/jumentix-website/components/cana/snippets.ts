@@ -8,42 +8,42 @@ export type CanaSnippet = {
 const schemaSource = `{
   version: 1,
   stores: [
-    { name: 'categorias', keyPath: 'id', indexes: [{ name: 'porNome', keyPath: 'nome', unique: true }] },
+    { name: 'categories', keyPath: 'id', indexes: [{ name: 'byName', keyPath: 'name', unique: true }] },
     {
-      name: 'tarefas',
+      name: 'tasks',
       keyPath: 'id',
       indexes: [
-        { name: 'porCategoria', keyPath: 'categoriaId' },
-        { name: 'porConcluida', keyPath: 'concluida' },
-        { name: 'porAtualizadaEm', keyPath: 'atualizadaEm' }
+        { name: 'byCategory', keyPath: 'categoryId' },
+        { name: 'byCompleted', keyPath: 'completed' },
+        { name: 'byUpdatedAt', keyPath: 'updatedAt' }
       ]
     }
   ]
 }`;
 
-const seedSource = `const agora = Date.now();
-await client.table('categorias').bulkAdd([
-  { id: 'trabalho', nome: 'Trabalho', cor: '#2563eb', criadaEm: agora, atualizadaEm: agora },
-  { id: 'casa', nome: 'Casa', cor: '#16a34a', criadaEm: agora, atualizadaEm: agora }
+const seedSource = `const now = Date.now();
+await client.table('categories').bulkAdd([
+  { id: 'work', name: 'Work', color: '#2563eb', createdAt: now, updatedAt: now },
+  { id: 'home', name: 'Home', color: '#16a34a', createdAt: now, updatedAt: now }
 ]);
-await client.table('tarefas').bulkAdd([
+await client.table('tasks').bulkAdd([
   {
-    id: 'tarefa-1',
-    titulo: 'Escrever tutorial do Cana',
-    categoriaId: 'trabalho',
-    concluida: false,
-    prioridade: 'alta',
-    criadaEm: agora,
-    atualizadaEm: agora
+    id: 'task-1',
+    title: 'Write the Cana tutorial',
+    categoryId: 'work',
+    completed: false,
+    priority: 'high',
+    createdAt: now,
+    updatedAt: now
   },
   {
-    id: 'tarefa-2',
-    titulo: 'Revisar filtros por categoria',
-    categoriaId: 'casa',
-    concluida: true,
-    prioridade: 'media',
-    criadaEm: agora,
-    atualizadaEm: agora + 1
+    id: 'task-2',
+    title: 'Review category filters',
+    categoryId: 'home',
+    completed: true,
+    priority: 'medium',
+    createdAt: now,
+    updatedAt: now + 1
   }
 ]);`;
 
@@ -56,52 +56,52 @@ export const CANA_SNIPPETS: readonly CanaSnippet[] = [
     id: 'getting-started',
     title: { en: 'Getting started', 'pt-BR': 'Primeiros passos' },
     description: {
-      en: 'Open a client, create Categoria and Tarefa records, then read them back.',
-      'pt-BR': 'Abra um client, crie registros Categoria e Tarefa, depois leia de volta.'
+      en: 'Open a client, create Category and Task records, then read them back.',
+      'pt-BR': 'Abra um client, crie registros Category e Task, depois leia de volta.'
     },
     code: `const client = cana.createClient({
   name: dbName,
   schema: ${schemaSource}
 });
 await client.open();
-await client.table('categorias').add({
-  id: 'trabalho',
-  nome: 'Trabalho',
-  cor: '#2563eb',
-  criadaEm: Date.now(),
-  atualizadaEm: Date.now()
+await client.table('categories').add({
+  id: 'work',
+  name: 'Work',
+  color: '#2563eb',
+  createdAt: Date.now(),
+  updatedAt: Date.now()
 });
-await client.table('tarefas').add({
-  id: 'tarefa-1',
-  titulo: 'Escrever tutorial do Cana',
-  categoriaId: 'trabalho',
-  concluida: false,
-  prioridade: 'alta',
-  criadaEm: Date.now(),
-  atualizadaEm: Date.now()
+await client.table('tasks').add({
+  id: 'task-1',
+  title: 'Write the Cana tutorial',
+  categoryId: 'work',
+  completed: false,
+  priority: 'high',
+  createdAt: Date.now(),
+  updatedAt: Date.now()
 });
 return {
   backend: client.backend,
-  categoria: await client.table('categorias').get('trabalho'),
-  tarefa: await client.table('tarefas').get('tarefa-1')
+  category: await client.table('categories').get('work'),
+  task: await client.table('tasks').get('task-1')
 };`
   },
   {
     id: 'schema-versioning',
     title: { en: 'Schema upgrade', 'pt-BR': 'Upgrade de schema' },
     description: {
-      en: 'Start with Categoria, then raise the version and add the Tarefa table.',
-      'pt-BR': 'Comece com Categoria, depois suba a versao e adicione a tabela Tarefa.'
+      en: 'Start with Category, then raise the version and add the Task table.',
+      'pt-BR': 'Comece com Category, depois suba a versao e adicione a tabela Task.'
     },
     code: `const v1 = cana.createClient({
   name: dbName,
   schema: {
     version: 1,
-    stores: [{ name: 'categorias', keyPath: 'id' }]
+    stores: [{ name: 'categories', keyPath: 'id' }]
   }
 });
 await v1.open();
-await v1.table('categorias').add({ id: 'trabalho', nome: 'Trabalho' });
+await v1.table('categories').add({ id: 'work', name: 'Work' });
 await v1.close();
 
 const v2 = cana.createClient({
@@ -109,88 +109,88 @@ const v2 = cana.createClient({
   schema: ${schemaSource}
 });
 await v2.open();
-await v2.table('tarefas').add({
-  id: 'tarefa-1',
-  titulo: 'Criada apos upgrade',
-  categoriaId: 'trabalho',
-  concluida: false,
-  prioridade: 'media',
-  criadaEm: Date.now(),
-  atualizadaEm: Date.now()
+await v2.table('tasks').add({
+  id: 'task-1',
+  title: 'Created after upgrade',
+  categoryId: 'work',
+  completed: false,
+  priority: 'medium',
+  createdAt: Date.now(),
+  updatedAt: Date.now()
 });
 return {
-  categorias: await v2.table('categorias').query(),
-  tarefas: await v2.table('tarefas').query()
+  categories: await v2.table('categories').query(),
+  tasks: await v2.table('tasks').query()
 };`
   },
   {
     id: 'keys',
     title: { en: 'Keys', 'pt-BR': 'Chaves' },
     description: {
-      en: 'Use stable ids in Categoria and Tarefa records.',
-      'pt-BR': 'Use ids estaveis nos registros Categoria e Tarefa.'
+      en: 'Use stable ids in Category and Task records.',
+      'pt-BR': 'Use ids estaveis nos registros Category e Task.'
     },
     code: `const client = cana.createClient({
   name: dbName,
   schema: ${schemaSource}
 });
 await client.open();
-await client.table('categorias').add({
+await client.table('categories').add({
   id: 'docs',
-  nome: 'Docs',
-  cor: '#0f766e',
-  criadaEm: 1,
-  atualizadaEm: 1
+  name: 'Docs',
+  color: '#0f766e',
+  createdAt: 1,
+  updatedAt: 1
 });
-await client.table('tarefas').add({
+await client.table('tasks').add({
   id: 'docs-1',
-  titulo: 'Documentar chaves estaveis',
-  categoriaId: 'docs',
-  concluida: false,
-  prioridade: 'media',
-  criadaEm: 2,
-  atualizadaEm: 2
+  title: 'Document stable keys',
+  categoryId: 'docs',
+  completed: false,
+  priority: 'medium',
+  createdAt: 2,
+  updatedAt: 2
 });
 return {
-  categoriaKey: 'docs',
-  tarefaKey: 'docs-1',
-  tarefa: await client.table('tarefas').get('docs-1')
+  categoryKey: 'docs',
+  taskKey: 'docs-1',
+  task: await client.table('tasks').get('docs-1')
 };`
   },
   {
     id: 'crud',
     title: { en: 'CRUD', 'pt-BR': 'CRUD' },
     description: {
-      en: 'Create, read, update and delete one Tarefa.',
-      'pt-BR': 'Crie, leia, atualize e remova uma Tarefa.'
+      en: 'Create, read, update and delete one Task.',
+      'pt-BR': 'Crie, leia, atualize e remova uma Task.'
     },
     code: `const client = cana.createClient({
   name: dbName,
   schema: ${schemaSource}
 });
 await client.open();
-await client.table('categorias').add({ id: 'trabalho', nome: 'Trabalho', cor: '#2563eb' });
-const tarefas = client.table('tarefas');
-await tarefas.add({
-  id: 'tarefa-1',
-  titulo: 'Rascunhar tutorial',
-  categoriaId: 'trabalho',
-  concluida: false,
-  prioridade: 'alta',
-  criadaEm: 1,
-  atualizadaEm: 1
+await client.table('categories').add({ id: 'work', name: 'Work', color: '#2563eb' });
+const tasks = client.table('tasks');
+await tasks.add({
+  id: 'task-1',
+  title: 'Draft the tutorial',
+  categoryId: 'work',
+  completed: false,
+  priority: 'high',
+  createdAt: 1,
+  updatedAt: 1
 });
-await tarefas.update('tarefa-1', { concluida: true, atualizadaEm: 2 });
-const depoisDoUpdate = await tarefas.get('tarefa-1');
-await tarefas.delete('tarefa-1');
-return { depoisDoUpdate, depoisDoDelete: await tarefas.get('tarefa-1') };`
+await tasks.update('task-1', { completed: true, updatedAt: 2 });
+const afterUpdate = await tasks.get('task-1');
+await tasks.delete('task-1');
+return { afterUpdate, afterDelete: await tasks.get('task-1') };`
   },
   {
     id: 'bulk',
     title: { en: 'Bulk operations', 'pt-BR': 'Operacoes em lote' },
     description: {
-      en: 'Seed Categoria and Tarefa records with bulk operations.',
-      'pt-BR': 'Popule Categoria e Tarefa com operacoes em lote.'
+      en: 'Seed Category and Task records with bulk operations.',
+      'pt-BR': 'Popule Category e Task com operacoes em lote.'
     },
     code: `const client = cana.createClient({
   name: dbName,
@@ -198,38 +198,38 @@ return { depoisDoUpdate, depoisDoDelete: await tarefas.get('tarefa-1') };`
 });
 await client.open();
 ${seedSource}
-const put = await client.table('tarefas').bulkPut([
+const put = await client.table('tasks').bulkPut([
   {
-    id: 'tarefa-2',
-    titulo: 'Revisar filtros por categoria',
-    categoriaId: 'casa',
-    concluida: false,
-    prioridade: 'alta',
-    criadaEm: Date.now(),
-    atualizadaEm: Date.now()
+    id: 'task-2',
+    title: 'Review category filters',
+    categoryId: 'home',
+    completed: false,
+    priority: 'high',
+    createdAt: Date.now(),
+    updatedAt: Date.now()
   },
   {
-    id: 'tarefa-3',
-    titulo: 'Publicar app de exemplo',
-    categoriaId: 'trabalho',
-    concluida: false,
-    prioridade: 'media',
-    criadaEm: Date.now(),
-    atualizadaEm: Date.now()
+    id: 'task-3',
+    title: 'Publish the example app',
+    categoryId: 'work',
+    completed: false,
+    priority: 'medium',
+    createdAt: Date.now(),
+    updatedAt: Date.now()
   }
 ]);
 return {
   put,
-  categorias: await client.table('categorias').query({ index: 'porNome' }),
-  tarefas: await client.table('tarefas').query({ index: 'porAtualizadaEm' })
+  categories: await client.table('categories').query({ index: 'byName' }),
+  tasks: await client.table('tasks').query({ index: 'byUpdatedAt' })
 };`
   },
   {
     id: 'query-explain',
     title: { en: 'Query + explain', 'pt-BR': 'Query + explain' },
     description: {
-      en: 'Run an indexed Tarefa query by Categoria and inspect the plan.',
-      'pt-BR': 'Rode uma query indexada de Tarefa por Categoria e inspecione o plano.'
+      en: 'Run an indexed Task query by Category and inspect the plan.',
+      'pt-BR': 'Rode uma query indexada de Task por Category e inspecione o plano.'
     },
     code: `const client = cana.createClient({
   name: dbName,
@@ -237,9 +237,9 @@ return {
 });
 await client.open();
 ${seedSource}
-const { records, plan } = await client.table('tarefas').explain({
-  index: 'porCategoria',
-  equals: 'trabalho'
+const { records, plan } = await client.table('tasks').explain({
+  index: 'byCategory',
+  equals: 'work'
 });
 return { records, plan };`
   },
@@ -247,47 +247,47 @@ return { records, plan };`
     id: 'transactions',
     title: { en: 'Transactions', 'pt-BR': 'Transacoes' },
     description: {
-      en: 'Create one Categoria and its first Tarefa in a single commit.',
-      'pt-BR': 'Crie uma Categoria e sua primeira Tarefa em um unico commit.'
+      en: 'Create one Category and its first Task in a single commit.',
+      'pt-BR': 'Crie uma Category e sua primeira Task em um unico commit.'
     },
     code: `const client = cana.createClient({
   name: dbName,
   schema: ${schemaSource}
 });
 await client.open();
-const tx = await client.transaction('readwrite', ['categorias', 'tarefas'], async (scope) => {
-  const agora = Date.now();
-  await scope.table('categorias').put({
+const tx = await client.transaction('readwrite', ['categories', 'tasks'], async (scope) => {
+  const now = Date.now();
+  await scope.table('categories').put({
     id: 'ops',
-    nome: 'Operacoes',
-    cor: '#f97316',
-    criadaEm: agora,
-    atualizadaEm: agora
+    name: 'Operations',
+    color: '#f97316',
+    createdAt: now,
+    updatedAt: now
   });
-  await scope.table('tarefas').put({
+  await scope.table('tasks').put({
     id: 'ops-1',
-    titulo: 'Criada junto com a categoria',
-    categoriaId: 'ops',
-    concluida: false,
-    prioridade: 'alta',
-    criadaEm: agora,
-    atualizadaEm: agora
+    title: 'Created with the category',
+    categoryId: 'ops',
+    completed: false,
+    priority: 'high',
+    createdAt: now,
+    updatedAt: now
   });
   return 'ok';
 });
 return {
   outcome: tx.outcome,
   result: tx.result,
-  categorias: await client.table('categorias').query(),
-  tarefas: await client.table('tarefas').query()
+  categories: await client.table('categories').query(),
+  tasks: await client.table('tasks').query()
 };`
   },
   {
     id: 'change-events',
     title: { en: 'Change events', 'pt-BR': 'Eventos de mudanca' },
     description: {
-      en: 'Subscribe and collect committed Tarefa events.',
-      'pt-BR': 'Assine e colete eventos confirmados de Tarefa.'
+      en: 'Subscribe and collect committed Task events.',
+      'pt-BR': 'Assine e colete eventos confirmados de Task.'
     },
     code: `const client = cana.createClient({
   name: dbName,
@@ -298,17 +298,17 @@ const seen = [];
 const stop = client.subscribe((event) => {
   seen.push({ cursor: event.cursor, type: event.type, store: event.store, key: event.key });
 });
-await client.table('categorias').add({ id: 'docs', nome: 'Docs', cor: '#0f766e' });
-await client.table('tarefas').add({
+await client.table('categories').add({ id: 'docs', name: 'Docs', color: '#0f766e' });
+await client.table('tasks').add({
   id: 'docs-1',
-  titulo: 'Ouvir eventos do Cana',
-  categoriaId: 'docs',
-  concluida: false,
-  prioridade: 'media',
-  criadaEm: 1,
-  atualizadaEm: 1
+  title: 'Listen to Cana events',
+  categoryId: 'docs',
+  completed: false,
+  priority: 'medium',
+  createdAt: 1,
+  updatedAt: 1
 });
-await client.table('tarefas').update('docs-1', { concluida: true, atualizadaEm: 2 });
+await client.table('tasks').update('docs-1', { completed: true, updatedAt: 2 });
 stop();
 return { events: seen };`
   },
@@ -316,8 +316,8 @@ return { events: seen };`
     id: 'hooks',
     title: { en: 'Hooks', 'pt-BR': 'Hooks' },
     description: {
-      en: 'Run beforeWrite and afterCommit hooks around Tarefa writes.',
-      'pt-BR': 'Rode hooks beforeWrite e afterCommit ao redor de escritas de Tarefa.'
+      en: 'Run beforeWrite and afterCommit hooks around Task writes.',
+      'pt-BR': 'Rode hooks beforeWrite e afterCommit ao redor de escritas de Task.'
     },
     code: `const trail = [];
 const client = cana.createClient({
@@ -329,33 +329,33 @@ const client = cana.createClient({
   }
 });
 await client.open();
-await client.table('categorias').add({ id: 'docs', nome: 'Docs', cor: '#0f766e' });
-await client.table('tarefas').add({
+await client.table('categories').add({ id: 'docs', name: 'Docs', color: '#0f766e' });
+await client.table('tasks').add({
   id: 'docs-1',
-  titulo: 'Passa pelos hooks',
-  categoriaId: 'docs',
-  concluida: false,
-  prioridade: 'media',
-  criadaEm: 1,
-  atualizadaEm: 1
+  title: 'Passes through hooks',
+  categoryId: 'docs',
+  completed: false,
+  priority: 'medium',
+  createdAt: 1,
+  updatedAt: 1
 });
-return { trail, tarefa: await client.table('tarefas').get('docs-1') };`
+return { trail, task: await client.table('tasks').get('docs-1') };`
   },
   {
     id: 'errors',
     title: { en: 'Errors', 'pt-BR': 'Erros' },
     description: {
-      en: 'Detect duplicate Categoria ids with isCanaErrorCode.',
-      'pt-BR': 'Detecte ids duplicados de Categoria com isCanaErrorCode.'
+      en: 'Detect duplicate Category ids with isCanaErrorCode.',
+      'pt-BR': 'Detecte ids duplicados de Category com isCanaErrorCode.'
     },
     code: `const client = cana.createClient({
   name: dbName,
   schema: ${schemaSource}
 });
 await client.open();
-await client.table('categorias').add({ id: 'docs', nome: 'Docs', cor: '#0f766e' });
+await client.table('categories').add({ id: 'docs', name: 'Docs', color: '#0f766e' });
 try {
-  await client.table('categorias').add({ id: 'docs', nome: 'Duplicada', cor: '#dc2626' });
+  await client.table('categories').add({ id: 'docs', name: 'Duplicada', color: '#dc2626' });
   return { unexpected: 'no error' };
 } catch (error) {
   return {
@@ -369,23 +369,23 @@ try {
     id: 'storage-durability',
     title: { en: 'Storage assessment', 'pt-BR': 'Avaliacao de storage' },
     description: {
-      en: 'Read storageState and durabilityAssessment after writing Tarefa data.',
-      'pt-BR': 'Leia storageState e durabilityAssessment depois de gravar Tarefa.'
+      en: 'Read storageState and durabilityAssessment after writing Task data.',
+      'pt-BR': 'Leia storageState e durabilityAssessment depois de gravar Task.'
     },
     code: `const client = cana.createClient({
   name: dbName,
   schema: ${schemaSource}
 });
 await client.open();
-await client.table('categorias').add({ id: 'docs', nome: 'Docs', cor: '#0f766e' });
-await client.table('tarefas').add({
+await client.table('categories').add({ id: 'docs', name: 'Docs', color: '#0f766e' });
+await client.table('tasks').add({
   id: 'docs-1',
-  titulo: 'Dados que precisam sobreviver',
-  categoriaId: 'docs',
-  concluida: false,
-  prioridade: 'alta',
-  criadaEm: 1,
-  atualizadaEm: 1
+  title: 'Durable data',
+  categoryId: 'docs',
+  completed: false,
+  priority: 'high',
+  createdAt: 1,
+  updatedAt: 1
 });
 const storage = await client.storageState();
 const durability = await client.durabilityAssessment();
@@ -395,8 +395,8 @@ return { backend: client.backend, storage, durability };`
     id: 'crash-recovery',
     title: { en: 'Operation ledger', 'pt-BR': 'Operation ledger' },
     description: {
-      en: 'Resolve a committed Tarefa write with the operation ledger enabled.',
-      'pt-BR': 'Resolva uma escrita de Tarefa commitada com operation ledger ligado.'
+      en: 'Resolve a committed Task write with the operation ledger enabled.',
+      'pt-BR': 'Resolva uma escrita de Task commitada com operation ledger ligado.'
     },
     code: `const client = cana.createClient({
   name: dbName,
@@ -404,29 +404,29 @@ return { backend: client.backend, storage, durability };`
   operationLedger: true
 });
 await client.open();
-const tx = await client.transaction('readwrite', ['categorias', 'tarefas'], async (scope) => {
-  const agora = Date.now();
-  await scope.table('categorias').put({ id: 'docs', nome: 'Docs', cor: '#0f766e' });
-  await scope.table('tarefas').put({
+const tx = await client.transaction('readwrite', ['categories', 'tasks'], async (scope) => {
+  const now = Date.now();
+  await scope.table('categories').put({ id: 'docs', name: 'Docs', color: '#0f766e' });
+  await scope.table('tasks').put({
     id: 'docs-1',
-    titulo: 'Reconcilia escrita incerta',
-    categoriaId: 'docs',
-    concluida: false,
-    prioridade: 'alta',
-    criadaEm: agora,
-    atualizadaEm: agora
+    title: 'Reconcile uncertain write',
+    categoryId: 'docs',
+    completed: false,
+    priority: 'high',
+    createdAt: now,
+    updatedAt: now
   });
   return 'wrote';
 });
 const resolved = await client.resolveWrite(tx.correlationId, tx.attemptedAt);
-return { outcome: tx.outcome, resolved, tarefa: await client.table('tarefas').get('docs-1') };`
+return { outcome: tx.outcome, resolved, task: await client.table('tasks').get('docs-1') };`
   },
   {
     id: 'export-import',
     title: { en: 'Export', 'pt-BR': 'Export' },
     description: {
-      en: 'Export Categoria and Tarefa stores as plain data.',
-      'pt-BR': 'Exporte as stores Categoria e Tarefa como dados puros.'
+      en: 'Export Category and Task stores as plain data.',
+      'pt-BR': 'Exporte as stores Category e Task como dados puros.'
     },
     code: `const client = cana.createClient({
   name: dbName,
@@ -442,7 +442,7 @@ return dump;`
     title: { en: 'Backend selection', 'pt-BR': 'Selecao de backend' },
     description: {
       en: 'Show client.backend after opening the task database.',
-      'pt-BR': 'Mostre client.backend apos abrir o banco de tarefas.'
+      'pt-BR': 'Mostre client.backend apos abrir o banco de tasks.'
     },
     code: `const client = cana.createClient({
   name: dbName,
@@ -450,37 +450,37 @@ return dump;`
   fallback: 'localStorage'
 });
 await client.open();
-await client.table('categorias').add({ id: 'docs', nome: 'Docs', cor: '#0f766e' });
-return { backend: client.backend, categorias: await client.table('categorias').query() };`
+await client.table('categories').add({ id: 'docs', name: 'Docs', color: '#0f766e' });
+return { backend: client.backend, categories: await client.table('categories').query() };`
   },
   {
     id: 'factory-adapter',
     title: { en: 'Factory adapter', 'pt-BR': 'Adapter de factory' },
     description: {
-      en: 'Use createCanaDatabaseClient with Categoria and Tarefa stores.',
-      'pt-BR': 'Use createCanaDatabaseClient com stores Categoria e Tarefa.'
+      en: 'Use createCanaDatabaseClient with Category and Task stores.',
+      'pt-BR': 'Use createCanaDatabaseClient com stores Category e Task.'
     },
     code: `const adapter = cana.createCanaDatabaseClient({
   name: dbName,
   schema: ${schemaSource}
 });
 await adapter.connect();
-await adapter.stores.categorias.add({ id: 'docs', nome: 'Docs', cor: '#0f766e' });
-await adapter.stores.tarefas.add({
+await adapter.stores.categories.add({ id: 'docs', name: 'Docs', color: '#0f766e' });
+await adapter.stores.tasks.add({
   id: 'docs-1',
-  titulo: 'Criada via adapter',
-  categoriaId: 'docs',
-  concluida: false,
-  prioridade: 'media',
-  criadaEm: 1,
-  atualizadaEm: 1
+  title: 'Created through the adapter',
+  categoryId: 'docs',
+  completed: false,
+  priority: 'medium',
+  createdAt: 1,
+  updatedAt: 1
 });
-const tarefa = await adapter.stores.tarefas.get('docs-1');
+const task = await adapter.stores.tasks.get('docs-1');
 await adapter.disconnect();
 return {
   backend: adapter.cana.backend,
   stores: Object.keys(adapter.stores),
-  tarefa
+  task
 };`
   }
 ];
