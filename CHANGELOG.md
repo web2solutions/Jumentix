@@ -4,7 +4,8 @@
 
 ## All Changes
 
-- 2026-08-13 chore(deps): consolidate Dependabot updates (JUM-717) - Eduardo A.
+- 2026-08-13 Merge remote-tracking branch 'origin/dev' into fix/cana-multi-client-workers-canvas - Eduardo A.
+- 2026-08-13 feat(website): merge cana heavy data canvas - Eduardo A.
 - 2026-08-13 [JUM-704][Bug] Install the four missing frameworks and make their adapters serve (#218) - Eduardo A.
 - 2026-08-13 feat(website): show cana dlq client flow (#232) - Eduardo A.
 - 2026-08-13 [JUM-708][Chore] Pin Bun to 1.3.13 until the frozen-lockfile regression is fixed (#227) - Eduardo A.
