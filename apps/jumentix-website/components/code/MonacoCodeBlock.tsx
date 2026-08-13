@@ -172,8 +172,25 @@ export function MonacoCodeBlock({
   const monacoRef = useRef<MonacoApi | null>(null);
   const editorRef = useRef<MonacoEditor | null>(null);
   const modelRef = useRef<MonacoModel | null>(null);
-  const [mounted, setMounted] = useState(false);
+  /*
+   * The fallback's visibility is a DOM fact, not React state (JUM-701).
+   *
+   * It used to be `useState`, set when the editor finished mounting. That is a
+   * state update from a promise nothing in a test awaits, which React reports
+   * as an update outside `act` — 108 of them once the mount stopped being
+   * skipped under `NODE_ENV=test`. Writing the attributes through the ref keeps
+   * the rendered DOM identical and takes a render pass out of the mount.
+   */
+  const fallbackRef = useRef<HTMLPreElement | null>(null);
+
+  const markMounted = (isMounted: boolean) => {
+    const fallback = fallbackRef.current;
+    if (!fallback) return;
+    fallback.setAttribute('aria-hidden', isMounted ? 'true' : 'false');
+    fallback.setAttribute('data-mounted', isMounted ? 'true' : 'false');
+  };
   const [scheme, setScheme] = useState<'light' | 'dark'>(getColorScheme);
+  const schemeRef = useRef(scheme);
   const normalizedLanguage = useMemo(() => normalizeLanguage(language), [language]);
   const dataTestId = testId ?? (rootProps as { 'data-testid'?: string })['data-testid'];
   const height = useMemo(
@@ -182,10 +199,20 @@ export function MonacoCodeBlock({
   );
 
   useEffect(() => {
-    if (process.env.NODE_ENV === 'test' || typeof MutationObserver === 'undefined') {
-      return undefined;
-    }
-    const observer = new MutationObserver(() => setScheme(getColorScheme()));
+    // A capability check, not an environment check. `NODE_ENV === 'test'` used
+    // to be part of this condition, which made the component behave one way for
+    // its tests and another for its users (JUM-701).
+    if (typeof MutationObserver === 'undefined') return undefined;
+    // Only dispatch when the scheme actually changed. Mantine writes the
+    // attribute on first paint with the value already in place, and React warns
+    // about the dispatch itself — an updater that returns the same value still
+    // counts as an update outside `act` (JUM-701).
+    const observer = new MutationObserver(() => {
+      const next = getColorScheme();
+      if (next === schemeRef.current) return;
+      schemeRef.current = next;
+      setScheme(next);
+    });
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ['data-mantine-color-scheme']
@@ -194,8 +221,6 @@ export function MonacoCodeBlock({
   }, []);
 
   useEffect(() => {
-    if (process.env.NODE_ENV === 'test') return undefined;
-
     let cancelled = false;
 
     async function mountEditor() {
@@ -240,7 +265,7 @@ export function MonacoCodeBlock({
       monacoRef.current = monaco;
       modelRef.current = model;
       editorRef.current = editor;
-      setMounted(true);
+      markMounted(true);
     }
 
     void mountEditor();
@@ -252,6 +277,7 @@ export function MonacoCodeBlock({
       editorRef.current = null;
       modelRef.current = null;
       monacoRef.current = null;
+      markMounted(false);
     };
     // The editor is mounted once; later prop updates are synchronized below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -308,9 +334,10 @@ export function MonacoCodeBlock({
         aria-label={ariaLabel ?? `${normalizedLanguage} code`}
       />
       <pre
+        ref={fallbackRef}
         className="jtx-monaco-code__fallback"
-        aria-hidden={mounted}
-        data-mounted={mounted ? 'true' : 'false'}
+        aria-hidden="false"
+        data-mounted="false"
       >
         <code data-language={normalizedLanguage}>{value}</code>
       </pre>

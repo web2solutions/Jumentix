@@ -11,7 +11,50 @@ const {
   validateDocumentationFiles
 } = require('../../../../../ci-cd/run-task-change-tests');
 
+/**
+ * Plan shapes for the outcome-mapping test (JUM-697).
+ *
+ * They are not invented: each is what `createLayerAwarePlan` returns today for
+ * the inputs that test uses — `unsupported-change-set` for a bare unit test,
+ * `layer-aware` for a `ci-cd/` change, `documentation-validation` for a `.md`.
+ * The first test below calls the real resolver once and asserts the type and
+ * keys these stand in for, so a stub that drifts from the resolver fails there
+ * rather than quietly keeping the outcome test green.
+ *
+ * What this removes is cost, not coverage. Resolving the real plan reads
+ * `test-map.json` and walks the tree; doing that four times to assert four
+ * outcome strings is what pushed this test past a 5-second timeout.
+ */
+function planFor(type: string) {
+  return (files: string[]) => ({
+    type,
+    files,
+    selectedLayers: type === 'layer-aware' ? ['tooling'] : [],
+    notRunLayers: [],
+    reasons: [],
+    unitSuites: [],
+    integrationScripts: [],
+    suites: []
+  });
+}
+
 describe('run-task-change-tests', () => {
+  it('keeps the stubbed plan shapes honest against the real resolver (JUM-697)', () => {
+    expect.hasAssertions();
+
+    // One real resolution, not four: enough to catch the resolver changing its
+    // type strings or its shape under the stubs, without paying the cost per
+    // assertion in the outcome test.
+    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+    const { createLayerAwarePlan } = require('../../../../../ci-cd/lib/layer-resolver');
+    const real = createLayerAwarePlan(['ci-cd/example.js'], {});
+    const stub = planFor('layer-aware')(['ci-cd/example.js']);
+
+    expect(real.type).toBe(stub.type);
+    expect(real.selectedLayers).toStrictEqual(stub.selectedLayers);
+    expect(Object.keys(stub).every((key) => key in real)).toBe(true);
+  });
+
   it('normalizes unique changed file paths', () => {
     expect.hasAssertions();
     expect(normalizeFiles(['apps\\backend-template\\src\\a.ts', 'apps/backend-template/src/a.ts', '']))
@@ -190,24 +233,28 @@ describe('run-task-change-tests', () => {
     const logger = { log: jest.fn(), error: jest.fn() };
     const successful = runTaskChangeTests({
       files: ['apps/backend-template/test/unit/example.test.ts'],
+      resolvePlan: planFor('unsupported-change-set'),
       execute: jest.fn().mockReturnValue(0),
       logger,
       resultFile: ''
     });
     const failed = runTaskChangeTests({
       files: ['ci-cd/example.js'],
+      resolvePlan: planFor('layer-aware'),
       execute: () => 3,
       logger,
       resultFile: ''
     });
     const crashed = runTaskChangeTests({
       files: ['ci-cd/example.js'],
+      resolvePlan: planFor('layer-aware'),
       execute: () => { throw new Error('deliberate failure'); },
       logger,
       resultFile: ''
     });
     const documentation = runTaskChangeTests({
       files: ['README.md'],
+      resolvePlan: planFor('documentation-validation'),
       execute: () => 0,
       logger,
       resultFile: ''
@@ -220,7 +267,9 @@ describe('run-task-change-tests', () => {
       plan: 'documentation-validation', outcome: 'not-applicable', status: 0
     });
     expect(logger.error).toHaveBeenCalledTimes(2);
-  }, 30000);
+    // The 30s bound this carried is gone: nothing here reads the repository
+    // any more, so the default is ample (JUM-697).
+  });
 
   it('keeps Storybook outside the global task-change executor', () => {
     expect.hasAssertions();

@@ -328,7 +328,16 @@ function runTaskChangeTests(options = {}) {
   let shadow = null;
 
   if (useV2 || useShadow) {
-    const v2Plan = createLayerAwarePlan(changedFiles, options);
+    /*
+     * Injectable for the same reason `execute` and `logger` are (JUM-697).
+     *
+     * Resolving the layer-aware plan reads `test-map.json` and walks the tree.
+     * A suite asserting the outcome mapping did that four times per test, which
+     * grew with the manifest until the four crossed a 5-second timeout — a test
+     * failing on the cost of what it was not testing.
+     */
+    const resolvePlan = options.resolvePlan || createLayerAwarePlan;
+    const v2Plan = resolvePlan(changedFiles, options);
     if (useShadow && !useV2) {
       shadow = {
         mode: 'report-only',
