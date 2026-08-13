@@ -1200,6 +1200,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/ci-cd/run-suite-execution.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/run-suite-execution.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/ci-cd/run-unit-tests.test.ts",
       "path": "apps/backend-template/test/unit/ci-cd/run-unit-tests.test.ts",
       "layer": "tooling",
@@ -3390,6 +3400,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "packages/message-mediator/test/bullmq-adapter.test.ts",
+      "path": "packages/message-mediator/test/bullmq-adapter.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "packages/message-mediator/test/integration/brokers.integration.test.ts",
       "path": "packages/message-mediator/test/integration/brokers.integration.test.ts",
       "layer": "adapters/out+infra",
@@ -3405,6 +3425,16 @@
     {
       "id": "packages/message-mediator/test/message-mediator.test.ts",
       "path": "packages/message-mediator/test/message-mediator.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "packages/message-mediator/test/rabbitmq-adapter.test.ts",
+      "path": "packages/message-mediator/test/rabbitmq-adapter.test.ts",
       "layer": "adapters/out+infra",
       "kind": "hexagonal",
       "type": "unit",
@@ -3541,18 +3571,6 @@
     {
       "id": "apps/jumentix-website/components/code/MDXSourceBlockquote.test.tsx",
       "path": "apps/jumentix-website/components/code/MDXSourceBlockquote.test.tsx",
-      "layer": "website",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "script": "website:test:unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000,
-      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
-    },
-    {
-      "id": "apps/jumentix-website/components/code/MonacoCodeBlock.test.tsx",
-      "path": "apps/jumentix-website/components/code/MonacoCodeBlock.test.tsx",
       "layer": "website",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -4092,9 +4110,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 207,
+    "unit": 210,
     "integration": 93,
     "smoke": 2,
-    "suites": 346
+    "suites": 348
   }
 }
