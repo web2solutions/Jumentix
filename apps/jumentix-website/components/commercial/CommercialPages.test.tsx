@@ -25,6 +25,8 @@ describe('Commercial pages', () => {
       renderPage('home', 'en');
       expect(screen.getByText('Open-source software factory')).toBeInTheDocument();
       expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Jumentix');
+      expect(screen.getByAltText('Jumentix mascot, inspired by the Brazilian jegue')).toBeInTheDocument();
+      expect(screen.getByText(/Brazilian jegue/i)).toBeInTheDocument();
       expect(screen.getByRole('link', { name: 'Start building' })).toBeInTheDocument();
       expect(screen.getByRole('link', { name: 'Explore the platform' })).toBeInTheDocument();
     });
@@ -34,6 +36,8 @@ describe('Commercial pages', () => {
       renderPage('home', 'pt-BR');
       expect(screen.getByText('Fábrica de software open source')).toBeInTheDocument();
       expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Jumentix');
+      expect(screen.getByAltText('Mascote Jumentix, inspirada no jegue brasileiro')).toBeInTheDocument();
+      expect(screen.getByText(/jegue brasileiro/i)).toBeInTheDocument();
       expect(screen.getByRole('link', { name: 'Comece a construir' })).toBeInTheDocument();
     });
 

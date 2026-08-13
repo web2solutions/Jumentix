@@ -15,7 +15,6 @@ import {
   IconLanguage,
   IconMenu2,
   IconSearch,
-  IconTopologyStar3,
 } from '@tabler/icons-react';
 import { MonacoCodeBlock } from '../code/MonacoCodeBlock';
 import classes from './DesignSystem.module.css';
@@ -42,9 +41,15 @@ export function BrandMark({ href = '/', asLink = true }: { href?: string; asLink
   const content = (
     <>
       <span className={classes.brandIcon} aria-hidden="true">
-        <IconTopologyStar3 size={22} stroke={2} />
+        <img
+          data-testid="jumentix-brand-mascot"
+          src="/brand/jumentix-mascot.png"
+          alt=""
+          width="48"
+          height="48"
+        />
       </span>
-      <span>Jumentix</span>
+      <span className={classes.brandType}>Jumentix</span>
     </>
   );
 
@@ -472,8 +477,8 @@ export function SiteFooter({ locale = 'en' }: { locale?: 'en' | 'pt-BR' }) {
           <BrandMark href={localizePath('/', locale)} />
           <p className={classes.footerDescription}>
             {isPortuguese
-              ? 'Uma fábrica de software open source para produtos Node.js escaláveis e orientados a contratos.'
-              : 'An open-source software factory for contract-first, scalable Node.js products.'}
+              ? 'A fábrica open source do jegue Jumentix: produtos Node.js escaláveis, orientados a contratos e feitos para carregar trabalho real.'
+              : 'The open-source factory behind the Jumentix jegue: scalable, contract-first Node.js products built to carry real work.'}
           </p>
         </div>
         <div className={classes.footerColumn}>

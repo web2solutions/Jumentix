@@ -31,15 +31,29 @@
 
 .heroMedia::after {
   background:
-    linear-gradient(90deg, rgb(7 12 19 / 94%) 0%, rgb(7 12 19 / 76%) 48%, rgb(7 12 19 / 24%) 100%),
+    linear-gradient(90deg, rgb(7 12 19 / 96%) 0%, rgb(7 12 19 / 78%) 52%, rgb(7 12 19 / 38%) 100%),
     linear-gradient(0deg, rgb(7 12 19 / 82%) 0%, transparent 58%);
   content: '';
 }
 
+.heroMascot {
+  position: absolute;
+  right: max(24px, calc((100vw - var(--jtx-content-width)) / 2));
+  bottom: 34px;
+  z-index: 1;
+  width: clamp(210px, 28vw, 360px);
+  height: auto;
+  object-fit: contain;
+  filter:
+    drop-shadow(0 28px 44px rgb(0 0 0 / 54%))
+    drop-shadow(0 0 28px rgb(208 154 82 / 24%));
+  pointer-events: none;
+}
+
 .heroContent {
   position: relative;
-  z-index: 1;
-  max-width: 780px;
+  z-index: 2;
+  max-width: 720px;
   padding-block: 80px 92px;
   color: #fff;
 }
@@ -59,6 +73,15 @@
   color: #d7e2ef;
   font-size: clamp(1.08rem, 2.2vw, 1.35rem);
   line-height: 1.65;
+}
+
+.heroContent > .heroBrandNote {
+  max-width: 560px;
+  margin-top: 16px;
+  color: #f3d5a7;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.5;
 }
 
 .heroActions,
@@ -397,6 +420,13 @@
     justify-self: start;
   }
 
+  .heroMascot {
+    right: 20px;
+    bottom: 28px;
+    width: 220px;
+    opacity: 0.38;
+  }
+
   .journeyGrid,
   .linkGrid,
   .integrationGrid {
@@ -421,8 +451,29 @@
     background: linear-gradient(0deg, rgb(7 12 19 / 96%) 0%, rgb(7 12 19 / 78%) 72%, rgb(7 12 19 / 55%) 100%);
   }
 
+  .heroMascot {
+    top: 78px;
+    right: -14px;
+    bottom: auto;
+    width: 210px;
+    opacity: 0.3;
+  }
+
   .heroContent {
     padding-block: 56px;
+  }
+
+  .heroActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .heroActions a {
+    width: min(100%, 260px);
+  }
+
+  .heroProof {
+    gap: 12px 18px;
   }
 
   .heroContent h1,

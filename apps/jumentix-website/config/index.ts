@@ -27,6 +27,11 @@ export default {
     appleWebApp: {
       title: 'Jumentix'
     },
+    icons: {
+      icon: '/brand/jumentix-mascot.png',
+      shortcut: '/brand/jumentix-mascot.png',
+      apple: '/brand/jumentix-mascot.png'
+    },
     openGraph: {
       // https://github.com/vercel/next.js/discussions/50189#discussioncomment-10826632
       url: './',
@@ -35,10 +40,10 @@ export default {
       type: 'website',
       images: [
         {
-          url: '/product/domain-designer.png',
-          width: 1200,
-          height: 630,
-          alt: 'Jumentix Enterprise Software Factory'
+          url: '/brand/jumentix-mascot.png',
+          width: 300,
+          height: 300,
+          alt: 'Jumentix mascot inspired by the Brazilian jegue'
         }
       ]
     },
@@ -48,7 +53,7 @@ export default {
     twitter: {
       site: 'https://jumentix-website.vercel.app/',
       card: 'summary_large_image',
-      images: ['/product/domain-designer.png']
+      images: ['/brand/jumentix-mascot.png']
     },
     alternates: {
       // https://github.com/vercel/next.js/discussions/50189#discussioncomment-10826632
