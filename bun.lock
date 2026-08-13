@@ -210,12 +210,8 @@
       },
       "peerDependencies": {
         "@jumentix/cana": "^0.1.0",
-        "pinia": "*",
         "vue": ">=3.3.0",
       },
-      "optionalPeers": [
-        "pinia",
-      ],
     },
     "packages/cli-init": {
       "name": "@jumentix/cli-init",
