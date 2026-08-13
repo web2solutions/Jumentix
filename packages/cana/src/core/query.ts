@@ -185,17 +185,43 @@ export function runQuery<TRecord>(
  * the cursor — stated here rather than silently ignoring them, which would make
  * `count` disagree with `query` on the same input.
  */
-export function runCount(
+/**
+ * The same count, with what it actually read (JUM-706).
+ *
+ * "A native count is one request, not a read of every row" was a claim in this
+ * file's own comment and nowhere else. The only way to test it was to time
+ * `count()` against a full read — a wall-clock comparison on shared hardware,
+ * which Requirement 134 §3 forbids and which JUM-682 removed, leaving the
+ * property real and untested.
+ *
+ * `recordsExamined` is 0 on the native path and the number of rows walked on
+ * the cursor fallback, so "did this read the table?" is a number the engine
+ * states rather than a duration a test infers.
+ */
+type CountWithMetrics = {
+  count: number;
+  recordsExamined: number;
+  usedNativeCount: boolean;
+};
+
+export function runCountWithMetrics(
   store: IDBObjectStore,
   query: CanaQuery | undefined
-): Promise<number> {
+): Promise<CountWithMetrics> {
+  // `offset` and `limit` are not expressible in a native count, so those
+  // queries walk the cursor — and the metric says so instead of implying a
+  // cheapness this path does not have.
   if ((query?.offset ?? 0) > 0 || query?.limit !== undefined) {
-    return runQuery(store, query).then((records) => records.length);
+    return runQueryWithMetrics(store, query).then((result) => ({
+      count: result.records.length,
+      recordsExamined: result.recordsExamined,
+      usedNativeCount: false
+    }));
   }
 
   const range = toKeyRange(query);
 
-  return new Promise<number>((resolve, reject) => {
+  return new Promise<CountWithMetrics>((resolve, reject) => {
     // Inside the executor for the same reason as `runQuery`.
     let request: IDBRequest<number>;
     try {
@@ -205,7 +231,19 @@ export function runCount(
       reject(translateError(error, { store: store.name }));
       return;
     }
-    request.onsuccess = () => resolve(request.result);
+    request.onsuccess = () => resolve({
+      count: request.result,
+      recordsExamined: 0,
+      usedNativeCount: true
+    });
     request.onerror = () => reject(translateError(request.error, { store: store.name }));
   });
+}
+
+/** The number alone, for callers that do not need the metrics. */
+export function runCount(
+  store: IDBObjectStore,
+  query: CanaQuery | undefined
+): Promise<number> {
+  return runCountWithMetrics(store, query).then((result) => result.count);
 }

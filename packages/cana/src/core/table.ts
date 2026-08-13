@@ -27,6 +27,7 @@ import type {
   CanaChangeType,
   CanaKey,
   CanaQuery,
+  CanaCountMetrics,
   CanaQueryMetrics,
   CanaQueryPlan,
   CanaTable,
@@ -34,7 +35,7 @@ import type {
 } from '../contracts';
 import { canaError, requestToPromise, translateError } from './errors';
 import {
-  planQuery, runCount, runQuery, runQueryWithMetrics
+  planQuery, runCount, runCountWithMetrics, runQuery, runQueryWithMetrics
 } from './query';
 import type { CanaHooks } from './hooks';
 import { applyBeforeWrite } from './hooks';
@@ -330,6 +331,13 @@ export function createTable<TRecord, TKey extends CanaKey = CanaKey>(
 
     count(query?: CanaQuery): Promise<number> {
       return runCount(store(), query);
+    },
+
+    async explainCount(
+      query?: CanaQuery
+    ): Promise<{ count: number; metrics: CanaCountMetrics }> {
+      const { count, recordsExamined, usedNativeCount } = await runCountWithMetrics(store(), query);
+      return { count, metrics: { recordsExamined, usedNativeCount } };
     },
 
     query(query?: CanaQuery): Promise<readonly TRecord[]> {

@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-13 feat(http): install the four missing frameworks and make their adapters serve (JUM-704) - Eduardo A.
 - 2026-08-13 feat(website): add white Jumentix site icon (#222) - Eduardo A.
 - 2026-08-13 feat(website): add white Jumentix site icon - Eduardo A.
 - 2026-08-13 feat(website): show energized Jumentix eating sugarcane (#221) - Eduardo A.
