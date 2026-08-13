@@ -130,7 +130,7 @@ describe('DocsPlayground', () => {
     expect(screen.getByText('Live data flow')).toBeInTheDocument();
     expect(screen.getByText('Rejected by lock')).toBeInTheDocument();
     expect(screen.getByText('Input stopped')).toBeInTheDocument();
-    expect(screen.getByText(/One merged canvas follows concurrent requests for 30 seconds/i)).toBeInTheDocument();
+    expect(screen.getByText(/each recent request becomes its own token/i)).toBeInTheDocument();
     expect(screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-state')).toHaveTextContent('Real events: 0');
     expect(screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-state')).toHaveTextContent('React clients: 0');
     expect(screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-state')).toHaveTextContent('Cana workers: 0');
@@ -138,11 +138,13 @@ describe('DocsPlayground', () => {
     expect(screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-state')).toHaveTextContent('DLQ drained: no');
     expect(screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-state')).toHaveTextContent('No lost jobs: no');
     expect(screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-state')).toHaveTextContent('Cana events: 0');
+    expect(screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-state')).toHaveTextContent('Live request tokens: 0');
     expect(screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-state')).toHaveTextContent('IndexedDB quota: 0.0000%');
     expect(screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-state')).toHaveTextContent('Window: 30s');
     expect(screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-state')).toHaveTextContent('Concurrency/client: 12');
     expect(screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-metrics-charts')).toBeInTheDocument();
     expect(screen.getByText('Request outcomes')).toBeInTheDocument();
+    expect(screen.getByText('Pipeline comparison')).toBeInTheDocument();
     expect(screen.getByText('Realtime flow')).toBeInTheDocument();
     expect(screen.getAllByText(/processed/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/rejected/i).length).toBeGreaterThan(0);

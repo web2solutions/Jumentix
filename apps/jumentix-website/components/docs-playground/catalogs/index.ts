@@ -246,10 +246,13 @@ const criticalTimelineSteps = new Set([
   'controller-replay',
   'react-component-render'
 ]);
-function publishRealtimeMetrics(phase) {
+function publishRealtimeMetrics(phase, request = {}) {
   if (typeof reportPlaygroundProgress === 'function') {
     reportPlaygroundProgress({
       ...realtimeMetrics,
+      taskId: request.taskId,
+      clientId: request.clientId,
+      workerId: request.workerId,
       phase,
       timestamp: Date.now()
     });
@@ -583,7 +586,11 @@ async function createTaskUseCase(input) {
       }
     });
     realtimeMetrics.rejected += 1;
-    publishRealtimeMetrics('rejected');
+    publishRealtimeMetrics('rejected', {
+      taskId: input.id,
+      clientId: input.clientId,
+      workerId: input.workerId
+    });
     return {
       ok: false,
       status: 409,
@@ -597,6 +604,11 @@ async function createTaskUseCase(input) {
       step: 'lock-acquired',
       taskId: input.id,
       categoryId: input.categoryId
+    });
+    publishRealtimeMetrics('accepted', {
+      taskId: input.id,
+      clientId: input.clientId,
+      workerId: input.workerId
     });
     await sleep(input.processingMs);
     const task = createTaskRecord(input, input.source);
@@ -612,7 +624,11 @@ async function createTaskUseCase(input) {
     });
     await mediator.publish({ name: 'tasks.created', payload: task });
     realtimeMetrics.processed += 1;
-    publishRealtimeMetrics('processed');
+    publishRealtimeMetrics('processed', {
+      taskId: task.id,
+      clientId: task.clientId,
+      workerId: write.workerId
+    });
     return { ok: true, status: 201, result: task };
   } finally {
     await mutex.unlock('category', input.categoryId);
@@ -627,7 +643,11 @@ async function createTaskUseCase(input) {
 async function createTaskController(request) {
   if (!request.replay) {
     realtimeMetrics.attempted += 1;
-    publishRealtimeMetrics('submitted');
+    publishRealtimeMetrics('submitted', {
+      taskId: request.body.id,
+      clientId: request.body.clientId,
+      workerId: request.body.workerId
+    });
   }
   recordTimeline({
     step: request.replay ? 'controller-replay' : 'controller-create',
@@ -678,6 +698,11 @@ async function bulkImportController(request) {
         workerId: task.workerId,
         elapsedMs
       });
+      publishRealtimeMetrics('interrupted', {
+        taskId: task.id,
+        clientId: request.client,
+        workerId: task.workerId
+      });
       return {
         ok: false,
         status: 202,
@@ -713,6 +738,13 @@ async function replayDeadLettersController() {
   const bulkReports = await writeTasksWithCanaWorkers(replayTasks, 'dead-letter-replay');
   await Promise.all(replayableRecords.map((record) => deadLetterQueue.settle(record.id, 'succeeded')));
   realtimeMetrics.replayed += replayableRecords.length;
+  replayableRecords.slice(-900).forEach((record) => {
+    publishRealtimeMetrics('replayed', {
+      taskId: record.payload.id,
+      clientId: record.payload.clientId,
+      workerId: record.payload.workerId
+    });
+  });
   publishRealtimeMetrics('replayed');
   replayableRecords.slice(0, 80).forEach((record) => {
     recordTimeline({
