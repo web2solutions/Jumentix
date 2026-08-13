@@ -73,7 +73,7 @@ Defina no projeto Vercel (Production + Preview):
 
 | Nome | Propósito |
 | --- | --- |
-| `GITHUB_TOKEN` | API de releases do GitHub (`/api/github-releases`). Não é necessário para o `/changelog`, que empacota seus dados em build via `scripts/sync-changelog.mjs`. |
+| `GITHUB_TOKEN` | Variável legada opcional. Nada em runtime precisa dela: `/changelog` e `/api/github-releases` empacotam seus dados em build (`scripts/sync-changelog.mjs`, `scripts/sync-releases.mjs`). O snapshot de releases a utiliza em build quando presente. |
 
 Analytics da Vercel é montado no layout raiz do App Router via
 `@vercel/analytics/react` (`<Analytics />`) e não exige variável de

@@ -4,11 +4,11 @@
   "private": true,
   "packageManager": "bun@1.3.13",
   "scripts": {
-    "content:sync": "bun ./scripts/sync-markdown-content.mjs && bun ./scripts/sync-changelog.mjs",
+    "content:sync": "bun ./scripts/sync-markdown-content.mjs && bun ./scripts/sync-changelog.mjs && bun ./scripts/sync-releases.mjs",
     "content:smoke": "bun ./scripts/content-smoke.mjs",
     "examples:cana:downloads": "bun ./scripts/build-cana-example-downloads.mjs",
     "predev": "bun ./scripts/sync-markdown-content.mjs",
-    "prebuild": "bun ./scripts/sync-markdown-content.mjs && bun ./scripts/sync-changelog.mjs",
+    "prebuild": "bun ./scripts/sync-markdown-content.mjs && bun ./scripts/sync-changelog.mjs && bun ./scripts/sync-releases.mjs",
     "dev": "next dev -p 3010",
     "build": "next build",
     "start": "next start -p 3010",
