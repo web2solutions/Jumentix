@@ -320,6 +320,20 @@
   font-size: 0.9rem;
 }
 
+.playgroundGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.playgroundGrid > * {
+  min-width: 0;
+}
+
+.playgroundWide {
+  grid-column: 1 / -1;
+}
+
 .proofList {
   display: grid;
   gap: 12px;
@@ -549,7 +563,8 @@
   .journeyGrid,
   .linkGrid,
   .integrationGrid,
-  .detailGrid {
+  .detailGrid,
+  .playgroundGrid {
     grid-template-columns: 1fr 1fr;
   }
 
@@ -609,7 +624,8 @@
   .journeyGrid,
   .linkGrid,
   .integrationGrid,
-  .detailGrid {
+  .detailGrid,
+  .playgroundGrid {
     grid-template-columns: 1fr;
   }
 

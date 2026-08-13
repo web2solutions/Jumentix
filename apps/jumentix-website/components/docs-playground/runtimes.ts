@@ -60,55 +60,271 @@ async function loadDesignerCore() {
   }
 }
 
+type ServiceResult<T> = { result: T; error?: string };
+type PlaygroundEvent = {
+  name?: string;
+  subject?: string;
+  payload?: unknown;
+  metadata?: Record<string, unknown>;
+};
+type PlaygroundMessage = {
+  contract?: string;
+  subject?: string;
+  name?: string;
+  payload?: unknown;
+  metadata?: Record<string, unknown>;
+};
+type PlaygroundRecord = Record<string, unknown> & { id?: string };
+type PlaygroundEventListener = (event: PlaygroundEvent) => unknown | Promise<unknown>;
+type PlaygroundMessageHandler = (message: PlaygroundMessage) => unknown | Promise<unknown>;
+type PlaygroundRestRequest = {
+  operationId: string;
+  method?: string;
+  path?: string;
+  body?: PlaygroundRecord;
+};
+type PlaygroundWebSocketRequest = {
+  operationId: string;
+  input?: PlaygroundRecord;
+};
+
+function ok<T>(result: T): ServiceResult<T> {
+  return { result };
+}
+
+function createKeyValueStorageApi() {
+  const store = new Map<string, unknown>();
+  return {
+    connect: async () => ok(true),
+    disconnect: async () => ok(true),
+    set: async (key: string, value: unknown) => {
+      store.set(key, value);
+      return ok(true);
+    },
+    get: async (key: string) => ok(store.get(key) ?? null),
+    del: async (key: string) => ok(store.delete(key)),
+    clear: async () => {
+      store.clear();
+      return ok(true);
+    }
+  };
+}
+
+function createMessageMediatorApi() {
+  const subscribers = new Map<string, Set<PlaygroundEventListener>>();
+  const handlers = new Map<string, PlaygroundMessageHandler>();
+
+  const contractName = (value: string | PlaygroundMessage | Record<string, unknown>) => {
+    if (typeof value === 'string') return value;
+    return String(value.contract ?? value.subject ?? value.name ?? '');
+  };
+
+  const eventName = (value: string | PlaygroundEvent) => {
+    if (typeof value === 'string') return value;
+    return String(value.name ?? value.subject ?? '');
+  };
+
+  return {
+    subscribe: async (
+      name: string,
+      listener: PlaygroundEventListener
+    ) => {
+      const list = subscribers.get(name) ?? new Set<PlaygroundEventListener>();
+      list.add(listener);
+      subscribers.set(name, list);
+      return ok(true);
+    },
+    publish: async (eventOrName: PlaygroundEvent | string, payload?: unknown) => {
+      const event = typeof eventOrName === 'string'
+        ? { name: eventOrName, payload }
+        : eventOrName;
+      const name = eventName(event);
+      const list = Array.from(subscribers.get(name) ?? []);
+      await Promise.all(list.map((listener) => listener(event)));
+      return ok({ event: name, delivered: list.length });
+    },
+    registerHandler: (
+      contract: string | PlaygroundMessage | Record<string, unknown>,
+      handler: (message: PlaygroundMessage) => unknown | Promise<unknown>
+    ) => {
+      handlers.set(contractName(contract), handler);
+      return ok(true);
+    },
+    request: async (message: PlaygroundMessage) => {
+      const name = contractName(message);
+      const handler = handlers.get(name);
+      if (!handler) {
+        return { ok: false, error: `handler not found: ${name}`, contract: name };
+      }
+      const response = await handler(message);
+      if (response && typeof response === 'object' && ('ok' in response || 'result' in response || 'error' in response)) {
+        return response;
+      }
+      return { ok: true, contract: name, result: response };
+    }
+  };
+}
+
+function createMutexApi() {
+  const locks = new Set<string>();
+  const lockKey = (resourceName: string, uuid = 'default') => `${resourceName}:${uuid}`;
+
+  const service = {
+    lock: async (resourceName: string, uuid = 'default') => {
+      const key = lockKey(resourceName, uuid);
+      if (locks.has(key)) {
+        return ok({
+          resourceName, uuid, key, locked: false, alreadyLocked: true
+        });
+      }
+      locks.add(key);
+      return ok({
+        resourceName, uuid, key, locked: true, alreadyLocked: false
+      });
+    },
+    isLocked: async (resourceName: string, uuid = 'default') => ok(locks.has(lockKey(resourceName, uuid))),
+    unlock: async (resourceName: string, uuid = 'default') => ok(locks.delete(lockKey(resourceName, uuid))),
+    acquire: async (name: string) => {
+      const response = await service.lock(name);
+      if (!response.result.locked) throw new Error(`lock busy: ${name}`);
+      return { name, key: response.result.key };
+    },
+    release: async (lock: { name?: string; key?: string }) => {
+      if (lock.key) {
+        locks.delete(lock.key);
+        return ok(true);
+      }
+      return service.unlock(String(lock.name ?? 'unknown'));
+    }
+  };
+
+  return service;
+}
+
+function createInMemoryStore() {
+  const records = new Map<string, PlaygroundRecord>();
+
+  const normalize = (idOrRecord: string | PlaygroundRecord, value?: PlaygroundRecord) => {
+    if (typeof idOrRecord === 'string') {
+      return { ...(value ?? {}), id: value?.id ?? idOrRecord };
+    }
+    return { ...idOrRecord, id: idOrRecord.id ?? crypto.randomUUID() };
+  };
+
+  return {
+    create: async (idOrRecord: string | PlaygroundRecord, value?: PlaygroundRecord) => {
+      const record = normalize(idOrRecord, value);
+      records.set(String(record.id), record);
+      return ok(record);
+    },
+    update: async (id: string, patch: PlaygroundRecord) => {
+      const current = records.get(id);
+      if (!current) return { result: null, error: `record not found: ${id}` };
+      const next = { ...current, ...patch, id };
+      records.set(id, next);
+      return ok(next);
+    },
+    getOneById: async (id: string) => ok(records.get(id) ?? null),
+    delete: async (id: string) => ok(records.delete(id)),
+    getByRelation: async (field: string, value: unknown) => ok(
+      Array.from(records.values()).filter((record) => record[field] === value)
+    ),
+    getAll: async (
+      filters: Record<string, unknown> = {},
+      paging: { page?: number; size?: number } = {}
+    ) => {
+      const entries = Object.entries(filters).filter(([, value]) => (
+        value !== undefined && value !== null
+      ));
+      let list = Array.from(records.values());
+      for (const [field, value] of entries) {
+        list = list.filter((record) => record[field] === value);
+      }
+      const total = list.length;
+      const page = paging.page ?? 1;
+      const size = paging.size ?? (total || 1);
+      const start = (page - 1) * size;
+      return {
+        result: list.slice(start, start + size),
+        total,
+        page,
+        size
+      };
+    }
+  };
+}
+
+function createInMemoryDatabaseApi(config: { stores?: string[] } = {}) {
+  const names = config.stores ?? ['categories', 'tasks'];
+  const stores = Object.fromEntries(names.map((name) => [name, createInMemoryStore()]));
+  return {
+    stores,
+    connect: async () => ok(true),
+    disconnect: async () => ok(true)
+  };
+}
+
+function createRestClientApi(
+  handler?: (request: PlaygroundRestRequest) => unknown | Promise<unknown>
+) {
+  const tasks: PlaygroundRecord[] = [];
+  return {
+    request: async (request: PlaygroundRestRequest) => {
+      if (handler) return handler(request);
+      if (request.operationId === 'createTask' && request.body) {
+        tasks.push(request.body);
+        return {
+          ok: true, status: 201, operationId: request.operationId, result: request.body
+        };
+      }
+      return {
+        ok: true, status: 200, operationId: request.operationId, result: tasks
+      };
+    }
+  };
+}
+
+function createWebSocketClientApi(
+  handler?: (request: PlaygroundWebSocketRequest) => unknown | Promise<unknown>
+) {
+  const tasks: PlaygroundRecord[] = [];
+  return {
+    connect: async () => ({ ok: true, status: 'connected' }),
+    request: async (request: PlaygroundWebSocketRequest) => {
+      if (handler) return handler(request);
+      if (request.operationId === 'tasks.create' && request.input) {
+        tasks.push(request.input);
+        return { ok: true, operationId: request.operationId, result: request.input };
+      }
+      return { ok: true, operationId: request.operationId, result: tasks };
+    },
+    disconnect: async () => ({ ok: true, status: 'disconnected' })
+  };
+}
+
 async function loadKv() {
   // Browser playground uses a contract-compatible in-memory stub so demos stay
   // independent of Node-oriented Redis adapters and private constructors.
-  const store = new Map<string, unknown>();
   return {
     api: {
-      createInMemory: () => ({
-        set: async (k: string, v: unknown) => {
-          store.set(k, v);
-        },
-        get: async (k: string) => store.get(k)
-      })
+      createInMemory: createKeyValueStorageApi
     }
   };
 }
 
 async function loadMediator() {
-  const handlers = new Map<string, Array<(msg: unknown) => Promise<void>>>();
   return {
     api: {
-      createInMemory: () => ({
-        subscribe: async (topic: string, handler: (msg: unknown) => Promise<void>) => {
-          const list = handlers.get(topic) ?? [];
-          list.push(handler);
-          handlers.set(topic, list);
-        },
-        publish: async (topic: string, msg: unknown) => {
-          const list = handlers.get(topic) ?? [];
-          await Promise.all(list.map((handler) => handler(msg)));
-        }
-      })
+      createInMemory: createMessageMediatorApi
     }
   };
 }
 
 async function loadMutex() {
-  const locks = new Set<string>();
   return {
     api: {
-      create: () => ({
-        acquire: async (name: string) => {
-          if (locks.has(name)) throw new Error(`lock busy: ${name}`);
-          locks.add(name);
-          return { name };
-        },
-        release: async (lock: { name: string }) => {
-          locks.delete(lock.name);
-        }
-      })
+      createKeyValueStorage: createKeyValueStorageApi,
+      create: () => createMutexApi()
     }
   };
 }
@@ -116,14 +332,7 @@ async function loadMutex() {
 async function loadRestSdk() {
   return {
     api: {
-      createMockClient: () => ({
-        request: async ({ method, path }: { method: string; path: string }) => ({
-          status: 200,
-          method,
-          path,
-          body: { ok: true, mocked: true }
-        })
-      })
+      createMockClient: createRestClientApi
     }
   };
 }
@@ -131,10 +340,41 @@ async function loadRestSdk() {
 async function loadWsSdk() {
   return {
     api: {
-      createFakeClient: () => ({
-        connect: async () => 'connected',
-        disconnect: async () => 'disconnected'
-      })
+      createFakeClient: createWebSocketClientApi
+    }
+  };
+}
+
+async function loadJumentixBrowserLab() {
+  const designerCore = await loadDesignerCore();
+  return {
+    api: {
+      createInMemoryDatabase: createInMemoryDatabaseApi,
+      createKeyValueStorage: createKeyValueStorageApi,
+      createMessageMediator: createMessageMediatorApi,
+      createMutex: () => createMutexApi(),
+      createRestClient: createRestClientApi,
+      createWebSocketClient: createWebSocketClientApi,
+      createServiceModel: (input: Record<string, unknown>) => ({
+        domains: [{
+          id: 'tasks-domain',
+          name: String(input.domain ?? 'Tasks'),
+          entities: [
+            { id: 'category', name: 'Category', fields: ['id', 'name', 'color'] },
+            { id: 'task', name: 'Task', fields: ['id', 'title', 'categoryId', 'completed'] }
+          ],
+          app: input.app ?? 'service-management'
+        }],
+        relationships: [{
+          id: 'task-category',
+          from: 'task',
+          to: 'category',
+          type: 'many-to-one'
+        }]
+      }),
+      validateDesign: (input: unknown) => (
+        designerCore.api.validate as (value: unknown) => unknown
+      )(input)
     }
   };
 }
@@ -149,6 +389,7 @@ const LOADERS: Record<
 > = {
   cana: loadCana,
   'designer-core': async () => loadDesignerCore(),
+  'jumentix-browser-lab': async () => loadJumentixBrowserLab(),
   'key-value-storage': async () => loadKv(),
   'message-mediator': async () => loadMediator(),
   'mutex-service': async () => loadMutex(),
@@ -159,6 +400,7 @@ const LOADERS: Record<
 const API_NAMES: Record<DocsRuntimeId, string> = {
   cana: 'cana',
   'designer-core': 'api',
+  'jumentix-browser-lab': 'api',
   'key-value-storage': 'api',
   'message-mediator': 'api',
   'mutex-service': 'api',

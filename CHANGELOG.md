@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-13 docs: refine Cana docs and website quality showcase - Eduardo A.
 - 2026-08-13 feat(website): expand commercial page content (#224) - Eduardo A.
 - 2026-08-13 feat(website): expand commercial page content - Eduardo A.
 - 2026-08-13 feat(website): add white Jumentix site icon (#222) - Eduardo A.
