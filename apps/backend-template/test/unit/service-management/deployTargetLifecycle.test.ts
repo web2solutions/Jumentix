@@ -73,7 +73,7 @@ describe('self-hosted deploy targets in the shared matrix reader (JUM-546)', () 
 describe('rUNTIME_VERSION_PATTERN (JUM-546)', () => {
   it('accepts name-plus-version spellings, including the provider wildcard', () => {
     expect.hasAssertions();
-    ['nodejs22.x', 'nodejs22', 'node20', 'python3.12', 'go1.22', 'bun1.3.14', 'dotnet8.0']
+    ['nodejs22.x', 'nodejs22', 'node20', 'python3.12', 'go1.22', 'bun1.3.13', 'dotnet8.0']
       .forEach((runtime) => expect(RUNTIME_VERSION_PATTERN.test(runtime)).toBe(true));
   });
 

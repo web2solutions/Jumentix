@@ -25,7 +25,7 @@ Without shared ports, every adapter invents incompatible method names and paging
 
 ## Prerequisites
 
-- Bun 1.3.14+ (monorepo pin) or the Node runtime your service already uses
+- Bun 1.3.13+ (monorepo pin) or the Node runtime your service already uses
 - Read [Getting started](/docs/jumentix/concepts/getting-started) first
 - Basic TypeScript modules/`import` knowledge
 

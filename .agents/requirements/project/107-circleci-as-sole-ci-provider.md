@@ -39,7 +39,7 @@ the current executable policy.
 
 5. The pinned Bun toolchain (Requirement `096`) remains the internal runtime.
    CircleCI may use a Node 22 browser image for browser compatibility, but the
-   repository commands still install and assert Bun `1.3.14`.
+   repository commands still install and assert Bun `1.3.13`.
 
 ## Why both, rather than one
 

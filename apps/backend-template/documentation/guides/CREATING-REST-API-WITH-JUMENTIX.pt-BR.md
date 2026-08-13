@@ -23,7 +23,7 @@ oferece um caminho repetível de perfil de env → servidor rodando → testes v
 
 | Item | Obrigatório | Notas |
 | --- | --- | --- |
-| Bun 1.3.14+ | Sim | Veja [Começando](/docs/pt-BR/jumentix/concepts/getting-started) |
+| Bun 1.3.13+ | Sim | Veja [Começando](/docs/pt-BR/jumentix/concepts/getting-started) |
 | Getting-started concluído | Recomendado | Modelo mental + playground Cana |
 | Scaffold backend-template | Sim | Use o monorepo `apps/backend-template` ou o fluxo interno de bootstrap |
 | Service Management (opcional) | Times design-first | Domain Designer gera entidades alinhadas ao OpenAPI |

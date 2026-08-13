@@ -57,6 +57,6 @@ medido para cobertura; não é mais um placeholder.
 - O pacote CLI agora possui implementação de bootstrap canônico.
 - O ponto de entrada Root CLI permanece como wrapper de compatibilidade.
 - Estados, links e READMEs de cada pacote estão indexados em `packages/README.pt-BR.md`.
-- Bun 1.3.14 é o runtime e gerenciador de pacotes interno de engenharia do repositório. Node.js
+- Bun 1.3.13 é o runtime e gerenciador de pacotes interno de engenharia do repositório. Node.js
   22 permanece como alvo declarado de compatibilidade para consumidores quando os pacotes expõem
   artefatos de runtime Node.

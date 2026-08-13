@@ -238,8 +238,8 @@ nunca substitui esse gate como autoridade de merge.
 O projeto usa Bun nos fluxos internos de engenharia e mantém Node 22 como alvo
 de compatibilidade voltado a consumidores:
 
-- `package.json` -> `"packageManager": "bun@1.3.14"`
-- `package.json` -> `"engines": { "bun": ">=1.3.14", "node": ">=22.0.0 <23.0.0" }`
+- `package.json` -> `"packageManager": "bun@1.3.13"`
+- `package.json` -> `"engines": { "bun": ">=1.3.13", "node": ">=22.0.0 <23.0.0" }`
 - `bunfig.toml` mantém Bun como fronteira do runner de scripts.
 - `ci-cd/check-bun-version.js` valida a toolchain Bun ativa.
 - `ci-cd/check-node-version.js` é exposto por `compat:check-node-version` para checks de compatibilidade Node.

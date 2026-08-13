@@ -76,4 +76,4 @@ Cadeias de configuração Next.js (`next.config.mjs`): `nextra()` → `bundleAna
 - **Formatador**: oxfmt (`.oxfmtrc.json`)
 - **Linter**: oxlint + stylelint
 - **TypeScript**: 6.x
-- **Gerenciador de Pacotes**: Bun 1.3.14 (padrão do workspace). Não use npm, pnpm ou yarn dentro deste monorepo.
+- **Gerenciador de Pacotes**: Bun 1.3.13 (padrão do workspace). Não use npm, pnpm ou yarn dentro deste monorepo.

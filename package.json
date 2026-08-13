@@ -2,14 +2,14 @@
   "name": "jumentix",
   "version": "0.0.2",
   "description": "Jumentix software factory for product teams. Build services with Authentication, Authorization, and Accounting principles, including service management, REST API, gRPC API, WebSocket API, and more.",
-  "packageManager": "bun@1.3.14",
+  "packageManager": "bun@1.3.13",
   "main": "apps/backend-template/src/interface/HTTP/adapters/fastify.ts",
   "bin": {
     "jumentix-bootstrap": "./bin/jumentix-bootstrap.js",
     "jumentix-init": "./bin/jumentix-bootstrap.js"
   },
   "engines": {
-    "bun": ">=1.3.14",
+    "bun": ">=1.3.13",
     "node": ">=22.0.0 <23.0.0"
   },
   "engineStrict": true,

@@ -1,6 +1,6 @@
 # Bun Compatibility and Migration Baseline
 
-Deliverable of Linear task [JUM-23] (project: `[Tooling] Replace Internal Node and pnpm Workflows with Bun`). Research evidence collected on 2026-07-26, Bun `1.3.14` (Homebrew, macOS), dedicated worktree from `origin/dev` (`63ecaef`).
+Deliverable of Linear task [JUM-23] (project: `[Tooling] Replace Internal Node and pnpm Workflows with Bun`). Research evidence collected on 2026-07-26, Bun `1.3.13` (Homebrew, macOS), dedicated worktree from `origin/dev` (`63ecaef`).
 
 ## 1. Inventory (current Node/pnpm surface)
 

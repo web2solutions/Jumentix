@@ -250,7 +250,7 @@ flowchart LR
 #### Measured reference
 
 These numbers are a local reference sample, not a latency SLA. They were measured
-on 2026-08-13 with Chrome 151 headless, Cypress 15.19.0, Bun 1.3.14 and Node
+on 2026-08-13 with Chrome 151 headless, Cypress 15.19.0, Bun 1.3.13 and Node
 22.23.1 on macOS 26.5.2, Apple M5, arm64, 24 GB RAM. The benchmark used a fresh
 IndexedDB database per scenario, the shipped Cana source bundled for the browser,
 a `rows` store with primary key `id` and indexes `byGroup` / `byValue`, and
