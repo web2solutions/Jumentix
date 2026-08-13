@@ -324,6 +324,38 @@ pm2 save`,
   ],
   ai: [
     {
+      label: 'UI blueprint',
+      language: 'json',
+      code: `{
+  "boundedContext": "Tasks",
+  "entities": [
+    { "name": "Category", "fields": ["id", "name", "color"] },
+    { "name": "Task", "fields": ["id", "title", "categoryId", "completed"] }
+  ],
+  "interfaces": ["REST", "WebSocket"],
+  "deploymentProfiles": ["dev", "staging", "production"],
+  "requirements": ["REQ-TASK-CATEGORY", "REQ-TASK-LIVE-UPDATES"],
+  "governanceChecks": [
+    "requirements:check",
+    "test-map:check",
+    "arch:check-workspace-boundaries"
+  ]
+}`,
+    },
+    {
+      label: 'Agent brief',
+      language: 'markdown',
+      code: `# Agent task: Tasks service
+
+Use the Service Management UI blueprint as source of truth.
+
+- Preserve the Category and Task bounded context.
+- Generate REST and WebSocket contracts from the same model.
+- Keep domain code behind use-cases and repository ports.
+- Add tests mapped to REQ-TASK-CATEGORY and REQ-TASK-LIVE-UPDATES.
+- Run governance checks before publishing the PR.`,
+    },
+    {
       label: 'Agent context',
       language: 'typescript',
       code: `export async function loadAgentContext() {
@@ -667,15 +699,89 @@ function AIReadyBand({
           { value: 'reqs', label: t(locale, 'requirements tied to checks', 'requisitos ligados a checks') },
           { value: 'gates', label: t(locale, 'architecture and publish evidence', 'evidência de arquitetura e publish') },
         ]} />
+        <AIGovernanceFlow locale={locale} />
         <DetailGrid items={[
           { title: t(locale, 'Low-context instructions', 'Instruções de baixo contexto'), description: t(locale, 'Agents can start from docs index, package pages, route metadata and code snippets instead of guessing which file owns a behavior.', 'Agentes podem partir do índice de docs, páginas de pacote, metadados de rotas e snippets de código em vez de adivinhar qual arquivo possui um comportamento.'), meta: '/llms-full.txt', icon: <IconCode /> },
           { title: t(locale, 'UI as architecture input', 'UI como input de arquitetura'), description: t(locale, 'The Service Management UI turns product concepts into bounded contexts, interfaces and deployment choices that generators and reviewers can inspect.', 'A UI de Service Management transforma conceitos de produto em contextos, interfaces e escolhas de deploy que geradores e revisores conseguem inspecionar.'), meta: 'service-management-ui', icon: <IconDeviceDesktop /> },
           { title: t(locale, 'Governed generation', 'Geração governada'), description: t(locale, 'Generated or agent-authored changes still pass requirements, test maps, route checks, package boundaries and release governance before publication.', 'Mudanças geradas ou escritas por agentes ainda passam por requisitos, test maps, rotas, limites de pacote e governança de release antes de publicar.'), meta: 'requirements:check', icon: <IconShieldCheck /> },
           { title: t(locale, 'Grounded package graph', 'Grafo de pacotes fundamentado'), description: t(locale, 'Reusable packages give AI work stable names for persistence, mediation, clients, Cana, runtime bootstrap and architecture boundaries.', 'Pacotes reutilizáveis dão ao trabalho de AI nomes estáveis para persistência, mediação, clientes, Cana, bootstrap de runtime e limites arquiteturais.'), meta: 'packages/*', icon: <IconPackage /> },
         ]} />
+        <div className={classes.twoColumn}>
+          <div className={classes.prose}>
+            <h2>{t(locale, 'AI work becomes governed delivery', 'Trabalho de AI vira entrega governada')}</h2>
+            <p>
+              {t(
+                locale,
+                'The UI gives AI a constrained starting point: the service vocabulary, boundaries, interfaces, runtime profile and quality obligations are explicit before a prompt is written. That turns the agent from a code guesser into a contributor working inside the platform rules.',
+                'A UI entrega para a AI um ponto de partida restrito: vocabulário do serviço, limites, interfaces, perfil de runtime e obrigações de qualidade são explícitos antes de qualquer prompt. Isso transforma o agente de um gerador por chute em um contribuidor dentro das regras da plataforma.',
+              )}
+            </p>
+            <ProofList items={[
+              t(locale, 'Prompts reference named bounded contexts, entities, requirements and packages instead of broad implementation wishes.', 'Prompts referenciam contextos delimitados, entidades, requisitos e pacotes nomeados em vez de desejos amplos de implementação.'),
+              t(locale, 'Generated code has a known landing zone: UI model, contracts, SDKs, use-cases, adapters, tests and docs.', 'Código gerado tem destino conhecido: modelo da UI, contratos, SDKs, casos de uso, adaptadores, testes e docs.'),
+              t(locale, 'Reviewers can reject drift with executable checks instead of relying only on manual architecture review.', 'Revisores podem rejeitar drift com checagens executáveis em vez de depender apenas de review arquitetural manual.'),
+            ]} />
+          </div>
+          <CommercialMatrix
+            headers={t(locale, ['AI action', 'UI source', 'Governance guardrail', 'Useful output'], ['Ação de AI', 'Fonte da UI', 'Guarda-corpo de governança', 'Saída útil'])}
+            rows={[
+              { focus: t(locale, 'Design safely', 'Desenhar com segurança'), when: t(locale, 'Bounded context, entities, relationships and requirements.', 'Contexto delimitado, entidades, relacionamentos e requisitos.'), implementation: t(locale, 'Service model validation and requirement registry.', 'Validação do modelo de serviço e registro de requisitos.'), outcome: t(locale, 'A service spec that product, architecture and engineering can review together.', 'Uma spec de serviço que produto, arquitetura e engenharia revisam juntas.') },
+              { focus: t(locale, 'Generate safely', 'Gerar com segurança'), when: t(locale, 'Interfaces, events, deployment profile and package choices.', 'Interfaces, eventos, perfil de deploy e escolhas de pacote.'), implementation: t(locale, 'OpenAPI, AsyncAPI, route checks and workspace boundaries.', 'OpenAPI, AsyncAPI, checagens de rota e limites de workspace.'), outcome: t(locale, 'Contracts, SDKs, handlers and examples aligned to the same model.', 'Contratos, SDKs, handlers e exemplos alinhados ao mesmo modelo.') },
+              { focus: t(locale, 'Ship with evidence', 'Publicar com evidência'), when: t(locale, 'Quality expectations, release path and docs index.', 'Expectativas de qualidade, caminho de release e índice de docs.'), implementation: t(locale, 'Test map, architecture checks, docs sync and prepublish gates.', 'Test map, checagens de arquitetura, sync de docs e gates prepublish.'), outcome: t(locale, 'A PR reviewers can audit with concrete proof instead of narrative confidence.', 'Uma PR que revisores auditam com prova concreta em vez de confiança narrativa.') },
+            ]}
+          />
+        </div>
         <CodeShowcase samples={codeSamples.ai} title={t(locale, 'AI governance examples', 'Exemplos de governança AI')} />
       </div>
     </Band>
+  );
+}
+
+function AIGovernanceFlow({ locale }: { locale: CommercialLocale }) {
+  const steps = [
+    {
+      label: t(locale, '1. Model service', '1. Modele o serviço'),
+      title: t(locale, 'UI captures the domain', 'A UI captura o domínio'),
+      description: t(locale, 'Category, Task, relationships, validations and API surfaces become explicit platform data.', 'Category, Task, relacionamentos, validações e superfícies de API viram dados explícitos da plataforma.'),
+      icon: <IconDeviceDesktop />,
+    },
+    {
+      label: t(locale, '2. Ground the agent', '2. Fundamente o agente'),
+      title: t(locale, 'Docs and packages name the path', 'Docs e pacotes nomeiam o caminho'),
+      description: t(locale, 'The agent reads the docs index, package contracts and UI blueprint before choosing files to change.', 'O agente lê índice de docs, contratos de pacote e blueprint da UI antes de escolher arquivos para alterar.'),
+      icon: <IconCode />,
+    },
+    {
+      label: t(locale, '3. Generate inside boundaries', '3. Gere dentro dos limites'),
+      title: t(locale, 'Ports and adapters shape the code', 'Ports e adapters moldam o código'),
+      description: t(locale, 'Use-cases, controllers, SDK clients, Cana examples and runtime profiles keep their ownership boundaries.', 'Casos de uso, controllers, SDKs, exemplos Cana e perfis de runtime preservam seus limites de ownership.'),
+      icon: <IconHierarchy3 />,
+    },
+    {
+      label: t(locale, '4. Verify evidence', '4. Verifique evidências'),
+      title: t(locale, 'Governance checks catch drift', 'Checks de governança capturam drift'),
+      description: t(locale, 'Requirements, test maps, architecture scripts, route checks and prepublish gates validate the change.', 'Requisitos, test maps, scripts de arquitetura, checagens de rota e gates prepublish validam a mudança.'),
+      icon: <IconShieldCheck />,
+    },
+    {
+      label: t(locale, '5. Publish with confidence', '5. Publique com confiança'),
+      title: t(locale, 'PR carries proof', 'A PR carrega prova'),
+      description: t(locale, 'Reviewers see what changed, why it fits the architecture and which checks prove it is ready.', 'Revisores veem o que mudou, por que cabe na arquitetura e quais checks provam que está pronto.'),
+      icon: <IconRocket />,
+    },
+  ];
+
+  return (
+    <div className={classes.aiFlow} aria-label={t(locale, 'UI to governed PR', 'UI até PR governada')}>
+      {steps.map((step) => (
+        <article className={classes.aiStep} key={step.label}>
+          <span className={classes.aiStepIcon} aria-hidden="true">{step.icon}</span>
+          <strong>{step.label}</strong>
+          <h3>{step.title}</h3>
+          <p>{step.description}</p>
+        </article>
+      ))}
+    </div>
   );
 }
 
