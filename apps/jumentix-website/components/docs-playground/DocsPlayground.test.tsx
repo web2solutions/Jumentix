@@ -82,4 +82,13 @@ describe('DocsPlayground', () => {
     expect(agentMarkdown).toHaveAttribute('data-agent-markdown', 'docs-playground-static-code');
     expect(agentMarkdown).toHaveTextContent('```ts');
   });
+
+  it('renders a canvas flow for the bulk mutex dead-letter playground with red rejected-flow semantics', () => {
+    expect.hasAssertions();
+    render(<DocsPlayground runtime="jumentix-browser-lab" id="bulk-mutex-dead-letter" />);
+    expect(screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-canvas')).toBeInTheDocument();
+    expect(screen.getByText('Live data flow')).toBeInTheDocument();
+    expect(screen.getByText('Rejected by lock')).toBeInTheDocument();
+    expect(screen.getByText(/Lock-rejected data flows are red/i)).toBeInTheDocument();
+  });
 });

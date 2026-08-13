@@ -223,6 +223,11 @@ describe('Commercial pages', () => {
       expect(screen.getByText('Choose the first resource')).toBeInTheDocument();
       expect(screen.getByText('MVP scope')).toBeInTheDocument();
       expect(screen.getByText('MVP evidence')).toBeInTheDocument();
+      expect(screen.getByText('Practical implementation')).toBeInTheDocument();
+      expect(screen.getByText('Complete code for the first working slice')).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: 'app.ts' })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: 'openapi.yaml' })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: 'client.ts' })).toBeInTheDocument();
     });
 
     it('renders Realtime API use case page', () => {
@@ -232,6 +237,8 @@ describe('Commercial pages', () => {
       expect(screen.getByText('Correlated request/response messages')).toBeInTheDocument();
       expect(screen.getByText('Pick the live moment')).toBeInTheDocument();
       expect(screen.getByText('Prove delivery and reconnect')).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: 'server.ts' })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: 'fallback.ts' })).toBeInTheDocument();
     });
 
     it('renders SaaS Monolith use case page', () => {
@@ -241,6 +248,8 @@ describe('Commercial pages', () => {
       expect(screen.getByText('Lower first-release operating cost')).toBeInTheDocument();
       expect(screen.getByText('Define the tenant-owned workflow')).toBeInTheDocument();
       expect(screen.getByText('Protect the monolith boundaries')).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: 'modules.ts' })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: 'route.ts' })).toBeInTheDocument();
     });
 
     it('renders SaaS Microservices use case page', () => {
@@ -250,6 +259,8 @@ describe('Commercial pages', () => {
       expect(screen.getByText('Independent service ownership')).toBeInTheDocument();
       expect(screen.getByText('Extract only one boundary')).toBeInTheDocument();
       expect(screen.getByText('Prove compatibility')).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: 'contracts.ts' })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: 'worker.ts' })).toBeInTheDocument();
     });
 
     it('renders SPA PWA use case page', () => {
@@ -259,6 +270,8 @@ describe('Commercial pages', () => {
       expect(screen.getByText('Offline-first data workflows')).toBeInTheDocument();
       expect(screen.getByText('Model local records')).toBeInTheDocument();
       expect(screen.getByText('Connect state management')).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: 'store.ts' })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: 'TaskApp.tsx' })).toBeInTheDocument();
     });
 
     it('localizes to PT-BR', () => {
@@ -268,6 +281,8 @@ describe('Commercial pages', () => {
       expect(screen.getByText('Adaptadores nativos para vários runtimes HTTP Node.js')).toBeInTheDocument();
       expect(screen.getByText('Do zero ao primeiro MVP')).toBeInTheDocument();
       expect(screen.getByText('Escolha o primeiro recurso')).toBeInTheDocument();
+      expect(screen.getByText('Implementação prática')).toBeInTheDocument();
+      expect(screen.getByText('Código completo para a primeira fatia funcional')).toBeInTheDocument();
     });
   });
 });
