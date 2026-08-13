@@ -28,9 +28,9 @@ export default {
       title: 'Jumentix'
     },
     icons: {
-      icon: '/brand/jumentix-mascot.png',
-      shortcut: '/brand/jumentix-mascot.png',
-      apple: '/brand/jumentix-mascot.png'
+      icon: '/brand/jumentix-icon.png',
+      shortcut: '/brand/jumentix-icon.png',
+      apple: '/brand/jumentix-icon.png'
     },
     openGraph: {
       // https://github.com/vercel/next.js/discussions/50189#discussioncomment-10826632

@@ -15,23 +15,20 @@
   flex: 0 0 42px;
   place-items: center;
   overflow: hidden;
-  border: 1px solid rgb(255 255 255 / 28%);
+  border: 1px solid color-mix(in srgb, var(--jtx-line-strong) 72%, transparent);
   border-radius: 50%;
-  background:
-    radial-gradient(circle at 44% 28%, rgb(255 255 255 / 34%), transparent 32%),
-    linear-gradient(140deg, #2a150c 0%, #7b3b15 54%, #d09a52 100%);
+  background: #fff;
   box-shadow:
-    inset 0 0 0 1px rgb(27 15 9 / 38%),
-    0 8px 18px rgb(68 31 10 / 22%);
+    inset 0 0 0 1px rgb(255 255 255 / 88%),
+    0 8px 18px rgb(20 32 51 / 16%);
 }
 
 .brandIcon img {
   display: block;
-  width: 38px;
-  height: 38px;
+  width: 42px;
+  height: 42px;
   object-fit: contain;
-  object-position: center 62%;
-  transform: scale(1.28) translateY(4px);
+  object-position: center;
 }
 
 .brandType {

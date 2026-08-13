@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-08-13 feat(website): show energized Jumentix eating sugarcane (#221) - Eduardo A.
+- 2026-08-13 feat(website): energize Jumentix sugarcane art - Eduardo A.
 - 2026-08-13 feat(website): show Jumentix eating sugarcane on Cana docs - Eduardo A.
 - 2026-08-13 feat(website): promote Jumentix mascot brand identity (#220) - Eduardo A.
 - 2026-08-13 feat(website): promote Jumentix mascot brand identity - Eduardo A.

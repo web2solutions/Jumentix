@@ -42,8 +42,8 @@ export function BrandMark({ href = '/', asLink = true }: { href?: string; asLink
     <>
       <span className={classes.brandIcon} aria-hidden="true">
         <img
-          data-testid="jumentix-brand-mascot"
-          src="/brand/jumentix-mascot.png"
+          data-testid="jumentix-brand-icon"
+          src="/brand/jumentix-icon.png"
           alt=""
           width="48"
           height="48"

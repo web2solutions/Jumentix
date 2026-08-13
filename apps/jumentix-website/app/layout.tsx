@@ -55,8 +55,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         >
           {colorSchemeBootstrap}
         </Script>
-        <link rel="icon" type="image/png" href="/brand/jumentix-mascot.png" />
-        <link rel="apple-touch-icon" href="/brand/jumentix-mascot.png" />
+        <link rel="icon" type="image/png" href="/brand/jumentix-icon.png" />
+        <link rel="apple-touch-icon" href="/brand/jumentix-icon.png" />
         <meta
           name="viewport"
           content="minimum-scale=1, initial-scale=1, width=device-width, user-scalable=no"
