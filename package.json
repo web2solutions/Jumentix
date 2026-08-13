@@ -395,7 +395,8 @@
     "dompurify": "^3.4.13"
   },
   "patchedDependencies": {
-    "nextra-theme-docs@4.6.1": "patches/nextra-theme-docs@4.6.1.patch"
+    "nextra-theme-docs@4.6.1": "patches/nextra-theme-docs@4.6.1.patch",
+    "@theguild/remark-mermaid@0.3.0": "patches/@theguild%2Fremark-mermaid@0.3.0.patch"
   },
   "config": {
     "commitizen": {

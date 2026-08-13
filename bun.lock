@@ -324,6 +324,7 @@
     },
   },
   "patchedDependencies": {
+    "@theguild/remark-mermaid@0.3.0": "patches/@theguild%2Fremark-mermaid@0.3.0.patch",
     "nextra-theme-docs@4.6.1": "patches/nextra-theme-docs@4.6.1.patch",
   },
   "overrides": {

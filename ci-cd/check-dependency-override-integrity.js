@@ -90,6 +90,12 @@ const REQUIRED_RESOLUTIONS = {
  */
 const REQUIRED_PATCHES = {
   'nextra-theme-docs@4.6.1': 'patches/nextra-theme-docs@4.6.1.patch',
+  // JUM-664: removes the IntersectionObserver gate from the Mermaid component
+  // the MDX compiler imports. Without it, no ```mermaid fence on the
+  // documentation site renders — the container it observes is empty, an empty
+  // box has no area, and a box with no area never intersects. Dropped silently,
+  // the site goes back to shipping blank spaces where diagrams should be.
+  '@theguild/remark-mermaid@0.3.0': 'patches/@theguild%2Fremark-mermaid@0.3.0.patch',
 };
 
 /**
