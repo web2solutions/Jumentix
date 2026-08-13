@@ -69,6 +69,11 @@ describe('Commercial pages', () => {
       expect(screen.getByText('Browser in-memory playgrounds')).toBeInTheDocument();
       expect(screen.getByText('Full Jumentix browser app')).toBeInTheDocument();
       expect(screen.getByText('AI-ready platform')).toBeInTheDocument();
+      expect(screen.getByText('AI work becomes governed delivery')).toBeInTheDocument();
+      expect(screen.getByText(/Model service/)).toBeInTheDocument();
+      expect(screen.getByText('Generate safely')).toBeInTheDocument();
+      expect(screen.getByText('Ship with evidence')).toBeInTheDocument();
+      expect(screen.getByText('UI blueprint')).toBeInTheDocument();
       expect(screen.getByText('PM2 operations')).toBeInTheDocument();
       expect(screen.getByText('Who uses what in the platform')).toBeInTheDocument();
       expect(screen.getByText('Platform team')).toBeInTheDocument();
@@ -135,6 +140,8 @@ describe('Commercial pages', () => {
       expect(screen.getByText('Architecture governance')).toBeInTheDocument();
       expect(screen.getByText('Boundary checks')).toBeInTheDocument();
       expect(screen.getByText('AI-ready platform')).toBeInTheDocument();
+      expect(screen.getByText('AI work becomes governed delivery')).toBeInTheDocument();
+      expect(screen.getByText('Governance guardrail')).toBeInTheDocument();
       expect(screen.getByText('Browser in-memory playgrounds')).toBeInTheDocument();
       expect(screen.getByText('PM2 operations')).toBeInTheDocument();
     });
