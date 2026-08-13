@@ -2,6 +2,17 @@
 
 IndexedDB offline database adapter for Jumentix applications.
 
+<figure className="cana-brand-scene">
+  <img
+    src="/images/cana/jumentix-eating-sugarcane.png"
+    alt="Jumentix mascot eating a sugarcane plant"
+  />
+  <figcaption>
+    Cana keeps durable browser data close to the application, with the Jumentix
+    mascot carrying the idea literally: sturdy software eating sugarcane.
+  </figcaption>
+</figure>
+
 ```ts
 import { createClient } from '@jumentix/cana';
 

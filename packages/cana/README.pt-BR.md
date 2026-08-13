@@ -2,6 +2,17 @@
 
 Adaptador de banco de dados offline sobre IndexedDB para aplicações Jumentix.
 
+<figure className="cana-brand-scene">
+  <img
+    src="/images/cana/jumentix-eating-sugarcane.png"
+    alt="Mascote Jumentix comendo uma planta de cana-de-açúcar"
+  />
+  <figcaption>
+    O Cana mantém dados duráveis no navegador perto da aplicação, com a mascote
+    Jumentix levando a ideia ao pé da letra: software firme comendo cana.
+  </figcaption>
+</figure>
+
 ```ts
 import { createClient } from '@jumentix/cana';
 
