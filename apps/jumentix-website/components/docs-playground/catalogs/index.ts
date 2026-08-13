@@ -227,12 +227,43 @@ const mediator = api.createMessageMediator();
 const deadLetterQueue = api.createDeadLetterQueue({ maxAttempts: 3 });
 const replayInbox = [];
 const timeline = [];
+let totalTimelineEvents = 0;
 const canaEvents = [];
 const storageUsageSamples = [];
 const workerShards = [];
 const React = api.React;
 const BulkTaskImportContext = React.createContext(null);
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const realtimeMetrics = {
+  attempted: 0,
+  processed: 0,
+  rejected: 0,
+  replayed: 0
+};
+const criticalTimelineSteps = new Set([
+  'client-ingestion-stopped',
+  'controller-replay-batch',
+  'controller-replay',
+  'react-component-render'
+]);
+function publishRealtimeMetrics(phase) {
+  if (typeof reportPlaygroundProgress === 'function') {
+    reportPlaygroundProgress({
+      ...realtimeMetrics,
+      phase,
+      timestamp: Date.now()
+    });
+  }
+}
+function recordTimeline(entry) {
+  totalTimelineEvents += 1;
+  if (timeline.length < 320) {
+    timeline.push(entry);
+  } else if (criticalTimelineSteps.has(entry.step)) {
+    timeline.shift();
+    timeline.push(entry);
+  }
+}
 async function recordIndexedDbQuota(label, tasks = 0) {
   const estimate = navigator.storage && navigator.storage.estimate
     ? await navigator.storage.estimate()
@@ -325,10 +356,10 @@ function createBulkTaskImportProvider({ actorId, clientId }) {
     actorId,
     clientId,
     getState: () => ({ ...state }),
-    submitBulkImport: async (tasks) => {
+    submitBulkImport: async (tasks, options = {}) => {
       state.submittedBatches += 1;
       state.lastBatchSize = tasks.length;
-      timeline.push({
+      recordTimeline({
         step: 'react-context-submit',
         component: 'BulkTaskImportProvider',
         actorId,
@@ -339,12 +370,12 @@ function createBulkTaskImportProvider({ actorId, clientId }) {
         body: { tasks },
         actorId,
         client: clientId,
-        stopNewRequestsAfterMs: 5000
+        stopNewRequestsAfterMs: options.stopNewRequestsAfterMs ?? Number.POSITIVE_INFINITY
       });
-      state.accepted = responses.filter((response) => response.ok).length;
-      state.rejected = responses.filter((response) => response.deadLetterId).length;
-      state.interrupted = responses.filter((response) => response.interrupted).length;
-      timeline.push({
+      state.accepted = (state.accepted ?? 0) + responses.filter((response) => response.ok).length;
+      state.rejected = (state.rejected ?? 0) + responses.filter((response) => response.deadLetterId).length;
+      state.interrupted = (state.interrupted ?? 0) + responses.filter((response) => response.interrupted).length;
+      recordTimeline({
         step: 'react-context-complete',
         component: 'BulkTaskImportProvider',
         clientId,
@@ -361,7 +392,7 @@ function createBulkTaskImportProvider({ actorId, clientId }) {
   };
 }
 
-function BulkImportPanel({ provider, tasks }) {
+function BulkImportPanel({ provider, createNextTask, streamConfig }) {
   const previewTree = React.createElement(
     provider.Context.Provider,
     { value: provider.value },
@@ -372,15 +403,54 @@ function BulkImportPanel({ provider, tasks }) {
     previewElementType: previewTree.type === provider.Context.Provider
       ? 'BulkTaskImportContext.Provider'
       : 'unknown',
-    clickRun: async () => {
-      timeline.push({
+    startStream: async () => {
+      recordTimeline({
         step: 'react-component-click',
         component: 'BulkImportPanel',
         clientId: provider.value.clientId,
-        taskCount: tasks.length
+        mode: 'concurrent-30s-stream',
+        durationMs: streamConfig.durationMs,
+        maxConcurrentRequests: streamConfig.maxConcurrentRequests
       });
-      const responses = await provider.value.submitBulkImport(tasks);
-      timeline.push({
+      const responses = [];
+      let stopped = false;
+      let inFlight = 0;
+      const startedAt = Date.now();
+
+      await new Promise((resolve) => {
+        const launchNext = () => {
+          if (Date.now() - startedAt >= streamConfig.durationMs) {
+            if (!stopped) {
+              stopped = true;
+              recordTimeline({
+                step: 'client-ingestion-stopped',
+                component: 'BulkImportPanel',
+                clientId: provider.value.clientId,
+                elapsedMs: Date.now() - startedAt,
+                reason: '30 second stream window completed'
+              });
+            }
+            if (inFlight === 0) resolve();
+            return;
+          }
+
+          while (inFlight < streamConfig.maxConcurrentRequests && Date.now() - startedAt < streamConfig.durationMs) {
+            const task = createNextTask(provider.value.clientId);
+            inFlight += 1;
+            provider.value.submitBulkImport([task])
+              .then((batchResponses) => {
+                responses.push(...batchResponses);
+              })
+              .finally(() => {
+                inFlight -= 1;
+                launchNext();
+              });
+          }
+        };
+        launchNext();
+      });
+
+      recordTimeline({
         step: 'react-component-render',
         component: 'BulkImportPanel',
         clientId: provider.value.clientId,
@@ -415,7 +485,7 @@ await recordIndexedDbQuota('category seeded', 0);
 
 await mediator.subscribe('dead-letter.enqueued', async (event) => {
   replayInbox.push(event.payload.recordId);
-  timeline.push({
+  recordTimeline({
     step: 'dead-letter-listener-received',
     taskId: event.payload.taskId,
     recordId: event.payload.recordId
@@ -423,7 +493,7 @@ await mediator.subscribe('dead-letter.enqueued', async (event) => {
 });
 
 await mediator.subscribe('tasks.created', async (event) => {
-  timeline.push({
+  recordTimeline({
     step: 'task-created-event',
     taskId: event.payload.id,
     source: event.payload.source
@@ -434,7 +504,7 @@ let committedTaskCount = 0;
 
 async function recordWriteQuota(taskId) {
   committedTaskCount += 1;
-  if (committedTaskCount <= 3 || committedTaskCount % 500 === 0 || committedTaskCount === 10000) {
+  if (committedTaskCount <= 3 || committedTaskCount % 500 === 0) {
     await recordIndexedDbQuota(\`\${taskId}: \${committedTaskCount} tasks\`, committedTaskCount);
   }
 }
@@ -512,6 +582,8 @@ async function createTaskUseCase(input) {
         reason: 'category resource is already locked'
       }
     });
+    realtimeMetrics.rejected += 1;
+    publishRealtimeMetrics('rejected');
     return {
       ok: false,
       status: 409,
@@ -521,7 +593,7 @@ async function createTaskUseCase(input) {
   }
 
   try {
-    timeline.push({
+    recordTimeline({
       step: 'lock-acquired',
       taskId: input.id,
       categoryId: input.categoryId
@@ -529,7 +601,7 @@ async function createTaskUseCase(input) {
     await sleep(input.processingMs);
     const task = createTaskRecord(input, input.source);
     const [write] = await writeTasksWithCanaWorkers([task], input.source);
-    timeline.push({
+    recordTimeline({
       step: 'cana-task-written',
       taskId: task.id,
       categoryId: task.categoryId,
@@ -539,10 +611,12 @@ async function createTaskUseCase(input) {
       emittedEvents: write.emittedEvents
     });
     await mediator.publish({ name: 'tasks.created', payload: task });
+    realtimeMetrics.processed += 1;
+    publishRealtimeMetrics('processed');
     return { ok: true, status: 201, result: task };
   } finally {
     await mutex.unlock('category', input.categoryId);
-    timeline.push({
+    recordTimeline({
       step: 'lock-released',
       taskId: input.id,
       categoryId: input.categoryId
@@ -551,7 +625,11 @@ async function createTaskUseCase(input) {
 }
 
 async function createTaskController(request) {
-  timeline.push({
+  if (!request.replay) {
+    realtimeMetrics.attempted += 1;
+    publishRealtimeMetrics('submitted');
+  }
+  recordTimeline({
     step: request.replay ? 'controller-replay' : 'controller-create',
     taskId: request.body.id,
     clientId: request.body.clientId,
@@ -567,7 +645,7 @@ async function createTaskController(request) {
 async function bulkImportController(request) {
   const startedAt = Date.now();
   let stopRecorded = false;
-  timeline.push({
+  recordTimeline({
     step: 'bulk-import-controller',
     component: 'BulkImportController',
     actorId: request.actorId,
@@ -584,7 +662,7 @@ async function bulkImportController(request) {
     if (elapsedMs > request.stopNewRequestsAfterMs) {
       if (!stopRecorded) {
         stopRecorded = true;
-        timeline.push({
+        recordTimeline({
           step: 'client-ingestion-stopped',
           component: 'BulkImportController',
           clientId: request.client,
@@ -592,7 +670,7 @@ async function bulkImportController(request) {
           reason: 'stop accepting new client requests'
         });
       }
-      timeline.push({
+      recordTimeline({
         step: 'client-request-interrupted',
         component: 'BulkImportController',
         taskId: task.id,
@@ -619,7 +697,7 @@ async function replayDeadLettersController() {
   const pendingBefore = await deadLetterQueue.pending();
   const replayableRecords = pendingBefore.filter((record) => record.operation === 'tasks.create.v1');
   const skippedRecords = pendingBefore.filter((record) => record.operation !== 'tasks.create.v1');
-  timeline.push({
+  recordTimeline({
     step: 'controller-replay-batch',
     component: 'ReplayDeadLettersController',
     taskCount: replayableRecords.length,
@@ -634,8 +712,10 @@ async function replayDeadLettersController() {
   ));
   const bulkReports = await writeTasksWithCanaWorkers(replayTasks, 'dead-letter-replay');
   await Promise.all(replayableRecords.map((record) => deadLetterQueue.settle(record.id, 'succeeded')));
+  realtimeMetrics.replayed += replayableRecords.length;
+  publishRealtimeMetrics('replayed');
   replayableRecords.slice(0, 80).forEach((record) => {
-    timeline.push({
+    recordTimeline({
       step: 'controller-replay',
       taskId: record.payload.id,
       clientId: record.payload.clientId,
@@ -665,20 +745,26 @@ async function replayDeadLettersController() {
 }
 
 const reactClientIds = ['react-client-a', 'react-client-b', 'react-client-c'];
-const requestTotal = 10000;
-const bulkTasks = Array.from({ length: requestTotal }, (_, index) => ({
-  id: \`task-\${index + 1}\`,
-  title: \`Bulk imported Task \${index + 1}\`,
-  categoryId: 'work',
-  clientId: reactClientIds[index % reactClientIds.length],
-  workerId: workerShards[index % workerShards.length].id,
-  sequence: index,
-  processingMs: index === 0 ? 80 : 0,
-  clientDelayMs: 0
-}));
+const streamDurationMs = 30000;
+const maxConcurrentRequestsPerClient = 12;
+const requestPaceMs = 25;
+let globalSequence = 0;
+function createNextTask(clientId) {
+  const sequence = globalSequence;
+  globalSequence += 1;
+  return {
+    id: \`task-\${sequence + 1}\`,
+    title: \`Concurrent Task \${sequence + 1}\`,
+    categoryId: 'work',
+    clientId,
+    workerId: workerShards[sequence % workerShards.length].id,
+    sequence,
+    processingMs: 12,
+    clientDelayMs: requestPaceMs
+  };
+}
 
 const reactClients = reactClientIds.map((clientId) => {
-  const tasks = bulkTasks.filter((task) => task.clientId === clientId);
   const provider = createBulkTaskImportProvider({
     actorId: \`\${clientId}-controller\`,
     clientId
@@ -686,13 +772,21 @@ const reactClients = reactClientIds.map((clientId) => {
   return {
     id: clientId,
     provider,
-    panel: BulkImportPanel({ provider, tasks }),
-    taskCount: tasks.length
+    panel: BulkImportPanel({
+      provider,
+      createNextTask,
+      streamConfig: {
+        durationMs: streamDurationMs,
+        maxConcurrentRequests: maxConcurrentRequestsPerClient
+      }
+    })
   };
 });
+const streamStartedAt = Date.now();
 const bulkResponseGroups = await Promise.all(
-  reactClients.map((client) => client.panel.clickRun())
+  reactClients.map((client) => client.panel.startStream())
 );
+const actualRunDurationMs = Date.now() - streamStartedAt;
 const bulkResponses = bulkResponseGroups.flat();
 const pendingAfterBulk = await deadLetterQueue.pending();
 const replay = await replayDeadLettersController();
@@ -734,22 +828,27 @@ const rejectedToDeadLetterQueue = bulkResponses.filter((response) => response.de
 const deadLetterQueueFullyProcessed = pendingAfterReplay.length === 0
   && replay.records.every((record) => record.status === 'succeeded');
 const jobsAccountedFor = taskRows.length + interruptedBeforeController;
+publishRealtimeMetrics('complete');
 
 return {
   databaseAdapter: 'Cana',
   databaseBackend: databaseSnapshot.backend,
-  attemptedBulkCount: bulkTasks.length,
-  requestTotal,
+  requestMode: 'concurrent-30s-stream',
+  streamDurationMs,
+  actualRunDurationMs,
+  maxConcurrentRequestsPerClient,
+  requestPaceMs,
+  attemptedBulkCount: bulkResponses.length,
   createdDuringBulk,
   submittedToController,
   interruptedBeforeController,
   rejectedToDeadLetterQueue,
   shutdownReport: {
-    stopNewRequestsAfterMs: 5000,
+    stopNewRequestsAfterMs: streamDurationMs,
     pendingDeadLettersAfterReplay: pendingAfterReplay.length,
     deadLetterQueueFullyProcessed,
     jobsAccountedFor,
-    noLostJobs: deadLetterQueueFullyProcessed && jobsAccountedFor === bulkTasks.length
+    noLostJobs: deadLetterQueueFullyProcessed && jobsAccountedFor === bulkResponses.length
   },
   pendingBeforeReplay: pendingAfterBulk.map((record) => ({
     id: record.id,
@@ -763,14 +862,16 @@ return {
   lastTaskInCategory: lastTask.result,
   reactClients: reactClients.map((client) => ({
     id: client.id,
-    taskCount: client.taskCount,
+    taskCount: client.provider.value.getState().accepted
+      + client.provider.value.getState().rejected
+      + client.provider.value.getState().interrupted,
     accepted: client.provider.value.getState().accepted,
     rejected: client.provider.value.getState().rejected,
     interrupted: client.provider.value.getState().interrupted
   })),
   workerShards: workerShardSummary,
-  requestTimeline: timeline.slice(0, 240),
-  totalTimelineEvents: timeline.length,
+  requestTimeline: timeline,
+  totalTimelineEvents,
   canaEvents: canaEvents.slice(-500),
   totalCanaEvents: canaEvents.length,
   storageUsageSamples,
