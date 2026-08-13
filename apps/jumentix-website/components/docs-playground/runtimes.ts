@@ -280,6 +280,17 @@ function createDeadLetterQueueApi({
       const record = records.get(id);
       return record ? clone(record) : undefined;
     },
+    settle: async (
+      id: string,
+      status?: PlaygroundDeadLetterStatus,
+      lastError?: string
+    ) => {
+      const record = records.get(id);
+      if (!record) throw new Error(`dead letter record not found: ${id}`);
+      await settle(record, status ?? 'succeeded', lastError);
+      const next = records.get(id);
+      return next ? clone(next) : undefined;
+    },
     replay: async (
       handlers: Record<string, PlaygroundDeadLetterReplayHandler>
     ): Promise<PlaygroundDeadLetterReplayReport> => {
@@ -486,6 +497,9 @@ async function loadJumentixBrowserLab(sessionKey: string) {
       createInMemoryDatabase: createInMemoryDatabaseApi,
       createCanaDatabaseClient: cana.createCanaDatabaseClient,
       createCanaClient: cana.createClient,
+      createCanaRouter: cana.createRouter,
+      createCanaWorkerHost: cana.createWorkerHost,
+      createCanaWorkerClient: cana.createWorkerClient,
       createCanaDatabaseName: (label = 'demo') => `${dbPrefix}-${label}-${Date.now()}`,
       createKeyValueStorage: createKeyValueStorageApi,
       createMessageMediator: createMessageMediatorApi,

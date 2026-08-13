@@ -195,27 +195,31 @@ return {
       en: 'Create many Task records for one Category, force lock contention, enqueue rejected controller requests in a dead-letter queue, then replay them through the controller workflow.',
       'pt-BR': 'Crie muitos registros Task para uma Category, force contenção de lock, envie requests rejeitados pelo controller para uma dead-letter queue e reprocesse tudo pelo fluxo do controller.'
     },
-    code: `const database = api.createCanaDatabaseClient({
-  name: api.createCanaDatabaseName('bulk-mutex-dlq'),
-  schema: {
-    version: 1,
-    stores: [
-      {
-        name: 'categories',
-        keyPath: 'id',
-        indexes: [{ name: 'byName', keyPath: 'name', unique: true }]
-      },
-      {
-        name: 'tasks',
-        keyPath: 'id',
-        indexes: [
-          { name: 'byCategory', keyPath: 'categoryId' },
-          { name: 'byUpdatedAt', keyPath: 'updatedAt' },
-          { name: 'bySource', keyPath: 'source' }
-        ]
-      }
-    ]
-  }
+    code: `const taskSchema = {
+  version: 1,
+  stores: [
+    {
+      name: 'categories',
+      keyPath: 'id',
+      indexes: [{ name: 'byName', keyPath: 'name', unique: true }]
+    },
+    {
+      name: 'tasks',
+      keyPath: 'id',
+      indexes: [
+        { name: 'byCategory', keyPath: 'categoryId' },
+        { name: 'byUpdatedAt', keyPath: 'updatedAt' },
+        { name: 'bySource', keyPath: 'source' },
+        { name: 'byClient', keyPath: 'clientId' },
+        { name: 'byWorker', keyPath: 'workerId' }
+      ]
+    }
+  ]
+};
+const database = api.createCanaDatabaseClient({
+  name: api.createCanaDatabaseName('bulk-mutex-dlq-workers'),
+  schema: taskSchema,
+  operationLedger: true
 });
 const keyValue = api.createKeyValueStorage();
 const mutex = api.createMutex(keyValue);
@@ -224,29 +228,102 @@ const deadLetterQueue = api.createDeadLetterQueue({ maxAttempts: 3 });
 const replayInbox = [];
 const timeline = [];
 const canaEvents = [];
+const storageUsageSamples = [];
+const workerShards = [];
 const React = api.React;
 const BulkTaskImportContext = React.createContext(null);
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+async function recordIndexedDbQuota(label, tasks = 0) {
+  const estimate = navigator.storage && navigator.storage.estimate
+    ? await navigator.storage.estimate()
+    : {};
+  const usage = Number(estimate.usage ?? 0);
+  const quota = Number(estimate.quota ?? 0);
+  const percent = quota > 0 ? (usage / quota) * 100 : 0;
+  storageUsageSamples.push({ label, usage, quota, percent, tasks });
+  return storageUsageSamples[storageUsageSamples.length - 1];
+}
 const stopCanaEvents = database.subscribe((event) => {
   canaEvents.push({
     cursor: event.cursor,
     type: event.type,
     store: event.store,
     key: event.key,
-    taskId: event.store === 'tasks' ? event.record.id : undefined,
+    taskId: event.store === 'tasks' && event.record ? event.record.id : undefined,
     categoryId: event.record && event.record.categoryId ? event.record.categoryId : event.key,
+    clientId: event.record && event.record.clientId ? event.record.clientId : undefined,
+    workerId: event.record && event.record.workerId ? event.record.workerId : undefined,
     source: event.record && event.record.source ? event.record.source : 'category-seed'
   });
 });
 
-function createBulkTaskImportProvider({ actorId }) {
+function createCanaWorkerShard(id) {
+  const channel = new MessageChannel();
+  channel.port1.start?.();
+  channel.port2.start?.();
+  const shard = {
+    id,
+    status: 'starting',
+    handledRequests: 0,
+    events: 0,
+    database: database.cana.name,
+    channel,
+    router: null,
+    host: null,
+    client: null
+  };
+  shard.router = api.createCanaRouter({
+    port: channel.port1,
+    timeoutMs: 5000,
+    onBroadcast(event) {
+      shard.events += 1;
+      canaEvents.push({
+        cursor: event.cursor,
+        type: event.type,
+        store: event.store,
+        key: event.key,
+        taskId: event.store === 'tasks' && event.record ? event.record.id : undefined,
+        categoryId: event.record && event.record.categoryId ? event.record.categoryId : event.key,
+        clientId: event.record && event.record.clientId ? event.record.clientId : undefined,
+        workerId: id,
+        source: event.record && event.record.source ? event.record.source : 'worker-broadcast'
+      });
+    }
+  });
+  shard.host = api.createCanaWorkerHost({
+    port: channel.port2,
+    name: database.cana.name,
+    schema: taskSchema,
+    originId: \`docs-\${id}\`,
+    retainedEvents: 50,
+    operationLedger: true
+  });
+  shard.client = api.createCanaWorkerClient(shard.router);
+  return shard;
+}
+
+function closeWorkerShard(shard) {
+  return Promise.resolve()
+    .then(() => shard.client.close())
+    .catch(() => undefined)
+    .then(() => {
+      shard.router.dispose();
+      shard.channel.port1.close();
+      shard.channel.port2.close();
+      return shard.host.dispose();
+    });
+}
+
+function createBulkTaskImportProvider({ actorId, clientId }) {
   const state = {
     actorId,
+    clientId,
     submittedBatches: 0,
     lastBatchSize: 0
   };
   const contextValue = {
     actorId,
+    clientId,
     getState: () => ({ ...state }),
     submitBulkImport: async (tasks) => {
       state.submittedBatches += 1;
@@ -255,13 +332,14 @@ function createBulkTaskImportProvider({ actorId }) {
         step: 'react-context-submit',
         component: 'BulkTaskImportProvider',
         actorId,
+        clientId,
         taskCount: tasks.length
       });
       const responses = await bulkImportController({
         body: { tasks },
         actorId,
-        client: 'react-context-api',
-        stopNewRequestsAfterMs: 26
+        client: clientId,
+        stopNewRequestsAfterMs: 5000
       });
       state.accepted = responses.filter((response) => response.ok).length;
       state.rejected = responses.filter((response) => response.deadLetterId).length;
@@ -269,6 +347,7 @@ function createBulkTaskImportProvider({ actorId }) {
       timeline.push({
         step: 'react-context-complete',
         component: 'BulkTaskImportProvider',
+        clientId,
         accepted: state.accepted,
         rejected: state.rejected,
         interrupted: state.interrupted
@@ -297,12 +376,14 @@ function BulkImportPanel({ provider, tasks }) {
       timeline.push({
         step: 'react-component-click',
         component: 'BulkImportPanel',
+        clientId: provider.value.clientId,
         taskCount: tasks.length
       });
       const responses = await provider.value.submitBulkImport(tasks);
       timeline.push({
         step: 'react-component-render',
         component: 'BulkImportPanel',
+        clientId: provider.value.clientId,
         state: provider.value.getState()
       });
       return responses;
@@ -312,6 +393,16 @@ function BulkImportPanel({ provider, tasks }) {
 
 await database.connect();
 await keyValue.connect();
+workerShards.push(
+  createCanaWorkerShard('worker-a'),
+  createCanaWorkerShard('worker-b'),
+  createCanaWorkerShard('worker-c')
+);
+await Promise.all(workerShards.map(async (shard) => {
+  await shard.client.open();
+  shard.status = 'ready';
+}));
+await recordIndexedDbQuota('opened', 0);
 
 await database.stores.categories.add({
   id: 'work',
@@ -320,6 +411,7 @@ await database.stores.categories.add({
   createdAt: Date.now(),
   updatedAt: Date.now()
 });
+await recordIndexedDbQuota('category seeded', 0);
 
 await mediator.subscribe('dead-letter.enqueued', async (event) => {
   replayInbox.push(event.payload.recordId);
@@ -337,6 +429,66 @@ await mediator.subscribe('tasks.created', async (event) => {
     source: event.payload.source
   });
 });
+
+let committedTaskCount = 0;
+
+async function recordWriteQuota(taskId) {
+  committedTaskCount += 1;
+  if (committedTaskCount <= 3 || committedTaskCount % 500 === 0 || committedTaskCount === 10000) {
+    await recordIndexedDbQuota(\`\${taskId}: \${committedTaskCount} tasks\`, committedTaskCount);
+  }
+}
+
+function createTaskRecord(input, source) {
+  return {
+    id: input.id,
+    title: input.title,
+    categoryId: input.categoryId,
+    completed: false,
+    clientId: input.clientId,
+    workerId: input.workerId,
+    source,
+    createdAt: new Date().toISOString(),
+    updatedAt: Date.now()
+  };
+}
+
+async function writeTasksWithCanaWorkers(tasks, source) {
+  const groups = new Map();
+  for (const task of tasks) {
+    const selectedWorker = workerShards.find((shard) => shard.id === task.workerId)
+      ?? workerShards[groups.size % workerShards.length];
+    const record = {
+      ...task,
+      workerId: selectedWorker.id,
+      source
+    };
+    const current = groups.get(selectedWorker) ?? [];
+    current.push(record);
+    groups.set(selectedWorker, current);
+  }
+
+  const reports = [];
+  for (const [worker, records] of groups.entries()) {
+    worker.status = records.length > 1 ? 'bulk-writing' : 'writing';
+    const write = records.length === 1
+      ? await worker.client.add('tasks', records[0])
+      : await worker.client.bulkAdd('tasks', records);
+    worker.handledRequests += records.length;
+    worker.status = 'ready';
+    for (const task of records) {
+      await recordWriteQuota(task.id);
+    }
+    const lastTask = records[records.length - 1];
+    await keyValue.set(\`category:\${lastTask.categoryId}:lastTask\`, lastTask.id);
+    reports.push({
+      workerId: worker.id,
+      count: records.length,
+      emittedEvents: write.events ? write.events.length : records.length
+    });
+  }
+  return reports;
+}
 
 async function createTaskUseCase(input) {
   const lock = await mutex.lock('category', input.categoryId);
@@ -375,24 +527,17 @@ async function createTaskUseCase(input) {
       categoryId: input.categoryId
     });
     await sleep(input.processingMs);
-    const task = {
-      id: input.id,
-      title: input.title,
-      categoryId: input.categoryId,
-      completed: false,
-      source: input.source,
-      createdAt: new Date().toISOString(),
-      updatedAt: Date.now()
-    };
-    const write = await database.stores.tasks.add(task);
+    const task = createTaskRecord(input, input.source);
+    const [write] = await writeTasksWithCanaWorkers([task], input.source);
     timeline.push({
       step: 'cana-task-written',
       taskId: task.id,
       categoryId: task.categoryId,
+      clientId: task.clientId,
+      workerId: write.workerId,
       source: task.source,
-      emittedEvents: write.events.length
+      emittedEvents: write.emittedEvents
     });
-    await keyValue.set(\`category:\${task.categoryId}:lastTask\`, task.id);
     await mediator.publish({ name: 'tasks.created', payload: task });
     return { ok: true, status: 201, result: task };
   } finally {
@@ -408,7 +553,9 @@ async function createTaskUseCase(input) {
 async function createTaskController(request) {
   timeline.push({
     step: request.replay ? 'controller-replay' : 'controller-create',
-    taskId: request.body.id
+    taskId: request.body.id,
+    clientId: request.body.clientId,
+    workerId: request.body.workerId
   });
   return createTaskUseCase({
     ...request.body,
@@ -425,11 +572,14 @@ async function bulkImportController(request) {
     component: 'BulkImportController',
     actorId: request.actorId,
     client: request.client,
+    clientId: request.client,
     taskCount: request.body.tasks.length,
     stopNewRequestsAfterMs: request.stopNewRequestsAfterMs
   });
   return Promise.all(request.body.tasks.map(async (task) => {
-    await sleep(task.clientDelayMs);
+    if (task.clientDelayMs > 0) {
+      await sleep(task.clientDelayMs);
+    }
     const elapsedMs = Date.now() - startedAt;
     if (elapsedMs > request.stopNewRequestsAfterMs) {
       if (!stopRecorded) {
@@ -437,6 +587,7 @@ async function bulkImportController(request) {
         timeline.push({
           step: 'client-ingestion-stopped',
           component: 'BulkImportController',
+          clientId: request.client,
           elapsedMs,
           reason: 'stop accepting new client requests'
         });
@@ -445,6 +596,8 @@ async function bulkImportController(request) {
         step: 'client-request-interrupted',
         component: 'BulkImportController',
         taskId: task.id,
+        clientId: request.client,
+        workerId: task.workerId,
         elapsedMs
       });
       return {
@@ -462,29 +615,46 @@ async function bulkImportController(request) {
   }));
 }
 
-const deadLetterHandlers = {
-  'tasks.create.v1': async (record) => {
-    const response = await createTaskController({
-      body: {
-        ...record.payload,
-        processingMs: 1
-      },
-      actorId: 'dlq-replay-controller',
-      replay: true
-    });
-    if (!response.ok) throw new Error(response.error ?? 'replay failed');
-  }
-};
-
 async function replayDeadLettersController() {
   const pendingBefore = await deadLetterQueue.pending();
-  const report = await deadLetterQueue.replay(deadLetterHandlers);
+  const replayableRecords = pendingBefore.filter((record) => record.operation === 'tasks.create.v1');
+  const skippedRecords = pendingBefore.filter((record) => record.operation !== 'tasks.create.v1');
+  timeline.push({
+    step: 'controller-replay-batch',
+    component: 'ReplayDeadLettersController',
+    taskCount: replayableRecords.length,
+    mode: 'worker-bulk-add'
+  });
+  const replayTasks = replayableRecords.map((record) => createTaskRecord(
+    {
+      ...record.payload,
+      processingMs: 0
+    },
+    'dead-letter-replay'
+  ));
+  const bulkReports = await writeTasksWithCanaWorkers(replayTasks, 'dead-letter-replay');
+  await Promise.all(replayableRecords.map((record) => deadLetterQueue.settle(record.id, 'succeeded')));
+  replayableRecords.slice(0, 80).forEach((record) => {
+    timeline.push({
+      step: 'controller-replay',
+      taskId: record.payload.id,
+      clientId: record.payload.clientId,
+      workerId: record.payload.workerId
+    });
+  });
+  const report = {
+    replayed: replayableRecords.map((record) => record.id),
+    retried: [],
+    abandoned: [],
+    skipped: skippedRecords.map((record) => record.id)
+  };
   const records = await deadLetterQueue.list();
   return {
     ok: true,
     status: 200,
     pendingBefore: pendingBefore.length,
     report,
+    bulkReports,
     records: records.map((record) => ({
       id: record.id,
       taskId: record.payload.id,
@@ -494,27 +664,55 @@ async function replayDeadLettersController() {
   };
 }
 
-const bulkTasks = Array.from({ length: 8 }, (_, index) => ({
+const reactClientIds = ['react-client-a', 'react-client-b', 'react-client-c'];
+const requestTotal = 10000;
+const bulkTasks = Array.from({ length: requestTotal }, (_, index) => ({
   id: \`task-\${index + 1}\`,
   title: \`Bulk imported Task \${index + 1}\`,
   categoryId: 'work',
-  processingMs: index === 0 ? 45 : 5,
-  clientDelayMs: index * 6
+  clientId: reactClientIds[index % reactClientIds.length],
+  workerId: workerShards[index % workerShards.length].id,
+  sequence: index,
+  processingMs: index === 0 ? 80 : 0,
+  clientDelayMs: 0
 }));
 
-const provider = createBulkTaskImportProvider({ actorId: 'bulk-import-controller' });
-const bulkImportPanel = BulkImportPanel({ provider, tasks: bulkTasks });
-const bulkResponses = await bulkImportPanel.clickRun();
+const reactClients = reactClientIds.map((clientId) => {
+  const tasks = bulkTasks.filter((task) => task.clientId === clientId);
+  const provider = createBulkTaskImportProvider({
+    actorId: \`\${clientId}-controller\`,
+    clientId
+  });
+  return {
+    id: clientId,
+    provider,
+    panel: BulkImportPanel({ provider, tasks }),
+    taskCount: tasks.length
+  };
+});
+const bulkResponseGroups = await Promise.all(
+  reactClients.map((client) => client.panel.clickRun())
+);
+const bulkResponses = bulkResponseGroups.flat();
 const pendingAfterBulk = await deadLetterQueue.pending();
 const replay = await replayDeadLettersController();
 const pendingAfterReplay = await deadLetterQueue.pending();
 const taskRows = await database.stores.tasks.query({ index: 'byUpdatedAt' });
 const categoryRows = await database.stores.categories.query({ index: 'byName' });
 const lastTask = await keyValue.get('category:work:lastTask');
+await recordIndexedDbQuota('final', taskRows.length);
 const storage = await database.cana.storageState();
+const workerShardSummary = workerShards.map((shard) => ({
+  id: shard.id,
+  database: shard.database,
+  status: shard.status,
+  handledRequests: shard.handledRequests,
+  events: shard.events
+}));
 const databaseSnapshot = {
   adapter: 'Cana database adapter',
   backend: database.cana.backend,
+  workerMode: 'createWorkerHost + createWorkerClient',
   storage,
   indexedDbDatabase: database.cana.name,
   stores: {
@@ -526,6 +724,7 @@ const databaseSnapshot = {
 };
 
 stopCanaEvents();
+await Promise.all(workerShards.map(closeWorkerShard));
 await database.disconnect();
 
 const createdDuringBulk = bulkResponses.filter((response) => response.ok).length;
@@ -540,12 +739,13 @@ return {
   databaseAdapter: 'Cana',
   databaseBackend: databaseSnapshot.backend,
   attemptedBulkCount: bulkTasks.length,
+  requestTotal,
   createdDuringBulk,
   submittedToController,
   interruptedBeforeController,
   rejectedToDeadLetterQueue,
   shutdownReport: {
-    stopNewRequestsAfterMs: 26,
+    stopNewRequestsAfterMs: 5000,
     pendingDeadLettersAfterReplay: pendingAfterReplay.length,
     deadLetterQueueFullyProcessed,
     jobsAccountedFor,
@@ -561,17 +761,32 @@ return {
   replayReport: replay.report,
   finalTaskCount: taskRows.length,
   lastTaskInCategory: lastTask.result,
-  requestTimeline: timeline,
-  canaEvents,
+  reactClients: reactClients.map((client) => ({
+    id: client.id,
+    taskCount: client.taskCount,
+    accepted: client.provider.value.getState().accepted,
+    rejected: client.provider.value.getState().rejected,
+    interrupted: client.provider.value.getState().interrupted
+  })),
+  workerShards: workerShardSummary,
+  requestTimeline: timeline.slice(0, 240),
+  totalTimelineEvents: timeline.length,
+  canaEvents: canaEvents.slice(-500),
+  totalCanaEvents: canaEvents.length,
+  storageUsageSamples,
   databaseSnapshot,
   controllerLevelReplay: timeline
     .filter((entry) => entry.step.startsWith('controller'))
+    .slice(0, 40)
     .map((entry) => entry.step),
-  storedTasks: taskRows.map((task) => ({
+  storedTasks: taskRows.slice(0, 20).map((task) => ({
     id: task.id,
     title: task.title,
-    source: task.source
+    source: task.source,
+    clientId: task.clientId,
+    workerId: task.workerId
   })),
+  omittedStoredTasks: Math.max(0, taskRows.length - 20),
   deadLetterRecords: replay.records
 };`
   },
