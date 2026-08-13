@@ -72,6 +72,13 @@ const REQUIRED_OVERRIDES = {
   // Was `cassandra-driver>adm-zip` under pnpm; the only nested selector with no
   // flat counterpart, so the flat pin below is what carries it forward.
   'adm-zip': '^0.6.0',
+  // Raised on 2026-08-13: monaco-editor nested `dompurify@3.4.8` past the
+  // resolutions pin; flat override lifts GHSA-55q2-fjhq-7xh7 / GHSA-cmwh-pvxp-8882.
+  dompurify: '^3.4.13',
+  // Raised on 2026-08-13: openapi-typescript@5 nested `undici@5.29.0` past the
+  // resolutions pin; 5.29.0 is the latest 5.x and carries HIGH WebSocket GHSAs.
+  // Flat override lifts it to the already-resolved 6.28.0 line.
+  undici: '^6.28.0',
 };
 
 /** Resolutions that must survive alongside the overrides. */
