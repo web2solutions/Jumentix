@@ -25,7 +25,7 @@ describe('Design System components', () => {
       render(<BrandMark />);
       const link = screen.getByRole('link', { name: 'Jumentix home' });
       expect(link).toHaveAttribute('href', '/');
-      expect(screen.getByTestId('jumentix-brand-mascot')).toHaveAttribute('src', '/brand/jumentix-mascot.png');
+      expect(screen.getByTestId('jumentix-brand-icon')).toHaveAttribute('src', '/brand/jumentix-icon.png');
     });
 
     it('renders custom href when provided', () => {
