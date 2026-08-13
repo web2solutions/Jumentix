@@ -4,10 +4,16 @@
 
 ## All Changes
 
-- 2026-08-13 fix(website): bundle release notes at build and add empty state (JUM-719) - Eduardo Almeida
+- 2026-08-13 fix(website): bundle release notes at build and add empty state (JUM-719) (#240) - Eduardo A.
+- 2026-08-13 fix(website): show per-request cana canvas flow - Eduardo A.
+- 2026-08-13 Merge remote-tracking branch 'origin/dev' into fix/cana-per-request-canvas-flow - Eduardo A.
 - 2026-08-13 fix(website): bake changelog data at build instead of github api (JUM-718) (#238) - Eduardo A.
+- 2026-08-13 fix(website): improve cana comparison charts - Eduardo A.
+- 2026-08-13 Merge remote-tracking branch 'origin/dev' into fix/cana-per-request-canvas-flow - Eduardo A.
 - 2026-08-13 test(ci): cover four guard behaviours, and state what the floor is really made of (JUM-681) (#237) - Eduardo A.
+- 2026-08-13 Merge remote-tracking branch 'origin/dev' into fix/cana-per-request-canvas-flow - Eduardo A.
 - 2026-08-13 fix(users): serialise organization membership writes, and seed sequentially (JUM-687) (#223) - Eduardo A.
+- 2026-08-13 fix(website): show per-request cana canvas flow - Eduardo A.
 - 2026-08-13 feat(website): graph cana 30s flow metrics - Eduardo A.
 - 2026-08-13 Merge remote-tracking branch 'origin/dev' into fix/cana-infinite-30s-flow - Eduardo A.
 - 2026-08-13 feat(website): graph cana 30s flow metrics - Eduardo A.

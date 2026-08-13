@@ -100,3 +100,6 @@ Rollback: use a implantação de Production anterior no painel do projeto Vercel
 - Builds locais e da Vercel usam o lockfile Bun do workspace e seus patches de dependência.
 - Os scripts de implantação raiz são intencionalmente independentes de escopo (sem `--scope` forçado) para suportar
   contextos Vercel de conta pessoal e conta de equipe.
+- O link de projeto do Vercel CLI (`.vercel/project.json`, criado por `vercel link` ou deploy
+  manual) é configuração local da máquina. Está no .gitignore da raiz do repositório e nunca
+  deve ser commitado.
