@@ -26,7 +26,7 @@ menores para cada assunto mostrar código completo sem virar uma parede única.
    UI.
 6. [Hooks e erros](./CANA-USAGE-HOOKS-ERRORS.pt-BR.md) — `beforeWrite`, `afterCommit`, guards de
    `CanaError` e ramos comuns de recuperação.
-7. [Storage e recuperação de crash](./CANA-USAGE-STORAGE-RECOVERY.pt-BR.md) — seleção de backend,
+7. [Storage e recuperação de crash](./CANA-USAGE-STORAGE-RECOVERY.pt-BR.md) — avaliação de storage,
    avaliação de durabilidade, export/import e `resolveWrite()`.
 8. [Workers e testes](./CANA-USAGE-WORKERS-TESTING.pt-BR.md) — `createWorkerHost()`,
    `createRouter()`, `createWorkerClient()` e estratégia de testes.

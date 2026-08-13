@@ -16,7 +16,7 @@ Mapa compacto da superfície pública do Cana usada pelo guia.
 | `createClient(options)` | Criar um client de banco no navegador. |
 | `client.open()` | Abrir ou atualizar o banco. |
 | `client.close()` | Fechar a conexão aberta. |
-| `client.backend` | Ler `indexeddb` ou `localStorage` depois de `open()`. |
+| `client.backend` | Ler o backend de storage ativo depois de `open()` para diagnóstico. |
 | `client.storageState()` | Inspecionar disponibilidade de storage e sinal de cota. |
 | `client.durabilityAssessment()` | Inspecionar confiança de persistência. |
 
@@ -66,7 +66,7 @@ de store parecidos com repositórios em vez de chamar `client.table()` direto.
 
 | Termo | Significado |
 | --- | --- |
-| Backend | Implementação real de storage: IndexedDB ou fallback localStorage. |
+| Backend | Implementação de storage ativa por trás do client. |
 | Cursor | Número monotônico anexado a eventos de mudança commitados. |
 | Fonte durável da verdade | Camada de dados que sobrevive a reloads. O Cana ocupa esse papel para dados offline no navegador. |
 | Replay de eventos | Entrega de eventos retidos depois que um subscriber reconecta com `sinceCursor`. |

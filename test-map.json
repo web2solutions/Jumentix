@@ -3569,6 +3569,18 @@
       "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
     },
     {
+      "id": "apps/jumentix-website/components/code/MDXMonacoPre.test.tsx",
+      "path": "apps/jumentix-website/components/code/MDXMonacoPre.test.tsx",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
       "id": "apps/jumentix-website/components/code/MDXSourceBlockquote.test.tsx",
       "path": "apps/jumentix-website/components/code/MDXSourceBlockquote.test.tsx",
       "layer": "website",
@@ -4125,6 +4137,6 @@
     "unit": 210,
     "integration": 93,
     "smoke": 2,
-    "suites": 349
+    "suites": 350
   }
 }

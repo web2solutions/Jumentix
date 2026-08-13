@@ -25,7 +25,7 @@ each topic can show complete code without turning one document into a wall.
    `CanaChangeEvent`, replay windows and UI store synchronization.
 6. [Hooks and errors](./CANA-USAGE-HOOKS-ERRORS.md) — `beforeWrite`, `afterCommit`,
    `CanaError` guards and common recovery branches.
-7. [Storage and crash recovery](./CANA-USAGE-STORAGE-RECOVERY.md) — backend selection,
+7. [Storage and crash recovery](./CANA-USAGE-STORAGE-RECOVERY.md) — storage assessment,
    durability assessment, export/import and `resolveWrite()`.
 8. [Workers and testing](./CANA-USAGE-WORKERS-TESTING.md) — `createWorkerHost()`,
    `createRouter()`, `createWorkerClient()` and test strategy.

@@ -46,7 +46,7 @@ The advanced Redux version adds:
 - a listener that dispatches `applyCanaEvent`;
 - a stored `lastCursor`;
 - a replay path using `subscribe(..., { sinceCursor })`;
-- a reload fallback when Cana reports `NotFound` for an old cursor;
+- a reload path when Cana reports `NotFound` for an old cursor;
 - an error slice that stores plain `CanaError` data.
 
 This pattern scales well because reducers stay deterministic while thunks own

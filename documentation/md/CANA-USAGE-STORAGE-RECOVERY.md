@@ -1,10 +1,9 @@
 # Storage and crash recovery
 
-Cana prefers IndexedDB. When IndexedDB is unavailable, the localStorage fallback
-is explicit and degraded: it has smaller quota, no real indexes and lower
-durability confidence.
+Cana stores browser data durably and exposes enough signals for the application
+to decide when to back up, clean up or reconcile local data.
 
-## Backend selection
+## Storage assessment
 
 ```ts
 import { createClient, type CanaSchema } from '@jumentix/cana';
@@ -19,8 +18,7 @@ const schema: CanaSchema = {
 
 const client = createClient({
   name: 'tasks-storage-demo',
-  schema,
-  fallback: 'localStorage'
+  schema
 });
 
 await client.open();
@@ -35,8 +33,8 @@ console.log({
 });
 ```
 
-Pass `fallback: false` when your application prefers a terminal error over a
-degraded store.
+Use the storage and durability signals to decide when the UI should offer export,
+cleanup or retry options.
 
 ## Export and import
 
@@ -57,8 +55,8 @@ console.log({
 });
 ```
 
-Use export/import for user-controlled backup, migration from fallback storage or
-diagnostics. Cana does not dual-write between IndexedDB and localStorage.
+Use export/import for user-controlled backup, migration between application
+versions or diagnostics.
 
 ## Resolve an uncertain write
 
@@ -110,8 +108,6 @@ tab or connection dies before the caller receives the result.
 <CanaPlayground id="crash-recovery" />
 
 <CanaPlayground id="export-import" />
-
-<CanaPlayground id="fallback-backend" />
 
 ## Next
 

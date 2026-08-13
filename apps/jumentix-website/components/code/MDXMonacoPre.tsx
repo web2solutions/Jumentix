@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 import { isValidElement } from 'react';
 import { MonacoCodeBlock } from './MonacoCodeBlock';
+import { trimTrailingBlankCodeLines } from './normalizeCode';
 
 function textFromNode(node: ReactNode): string {
   if (node === null || node === undefined || typeof node === 'boolean') return '';
@@ -18,17 +19,30 @@ function languageFromClassName(className: unknown): string | undefined {
   return match?.[1];
 }
 
+function languageFromNode(node: ReactNode): string | undefined {
+  if (node === null || node === undefined || typeof node === 'boolean') return undefined;
+  if (typeof node === 'string' || typeof node === 'number') return undefined;
+  if (Array.isArray(node)) {
+    for (const child of node) {
+      const language = languageFromNode(child);
+      if (language) return language;
+    }
+    return undefined;
+  }
+  if (!isValidElement<{ children?: ReactNode; className?: string }>(node)) return undefined;
+
+  return languageFromClassName(node.props.className) ?? languageFromNode(node.props.children);
+}
+
 export function MDXMonacoPre(props: {
   children?: ReactNode;
   className?: string;
   [key: string]: unknown;
 }) {
-  const child = Array.isArray(props.children) ? props.children[0] : props.children;
+  const code = trimTrailingBlankCodeLines(textFromNode(props.children));
+  const language = languageFromNode(props.children) ?? languageFromClassName(props.className);
 
-  if (isValidElement<{ className?: string; children?: ReactNode }>(child)) {
-    const code = textFromNode(child.props.children).replace(/\n$/, '');
-    const language = languageFromClassName(child.props.className) ?? languageFromClassName(props.className);
-
+  if (code.trim().length > 0) {
     return (
       <MonacoCodeBlock
         value={code}

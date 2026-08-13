@@ -55,19 +55,17 @@ await client.table('tasks').add({
 ## Responsabilidade no escopo
 
 - **Camada:** persistência offline / browser
-- **Responsável por:** API de cliente IndexedDB (com fallback explícito localStorage) para PWAs
+- **Responsável por:** API de cliente IndexedDB para PWAs
 - **Usado com:** `@jumentix/cana-react`, `@jumentix/cana-vue`, designer-core, guia SPA/PWA, service-management
 - **Não responsável por:** bancos server-side, Redis KV, REST/WebSocket
 
 ## Três coisas a saber antes de usar
 
-**IndexedDB preferido; fallback em localStorage é explícito e degradado.** Depois
-de `open()`, leia `client.backend`: `'indexeddb'` ou `'localStorage'`. Quando o
-IndexedDB não abre, o Cana abre por padrão um store em localStorage
-(`fallback: 'localStorage'`). Esse caminho tem cota menor e sem índices reais —
-a avaliação de durabilidade reporta `best-effort`. Passe `fallback: false` para
-voltar ao `Unavailable` terminal. Não há dual-write nem auto-promote entre os
-dois stores; use `exportAll()` / import para mover dados.
+**IndexedDB é o banco durável do navegador.** O Cana mantém a API pública perto
+da semântica do IndexedDB: `open()` explícito, versões de schema estáveis,
+tabelas indexadas, transações atômicas e eventos de mudança já commitados. Se a
+aplicação precisa de diagnóstico de storage, use `storageState()` e
+`durabilityAssessment()` depois que o client abre.
 
 **Escritas têm três desfechos, não dois.** `committed | rolled-back | unknown`.
 O terceiro cobre uma transação derrubada sem que nenhum dos dois eventos
@@ -222,12 +220,33 @@ sequenceDiagram
 ### Dados de performance
 
 A suíte de performance do Cana no navegador roda contra IndexedDB real em disco
-e usa asserções de proporção em vez de promessas absolutas de milissegundos.
-Isso mantém os dados portáveis entre browsers, discos e runners compartilhados.
-As proporções ainda protegem o ponto importante: quanto trabalho o Cana pede
-para o navegador executar.
+e usa asserções de forma algorítmica em vez de relógio. Limites absolutos de
+milissegundos são ruidosos entre browsers, discos e runners compartilhados, mas
+`recordsExamined`, `cursorAdvanced` e planos de query mostram se o engine pediu
+ao navegador a quantidade certa de trabalho.
 
 ![Escada de performance do Cana](/images/cana/cana-performance-ladder.svg)
+
+#### Como ler os dados
+
+O Cana mede duas coisas diferentes:
+
+- **Forma algorítmica:** o que o engine pede para o IndexedDB executar. A suíte
+  automatizada valida registros examinados, avanço de cursor e escolha de índice
+  em vez de inferir performance por relógio de CI.
+- **Tempo local de execução:** uma amostra de referência em browser. Esses
+  números ajudam a formar intuição, mas não são SLA de latência.
+
+```mermaid
+flowchart LR
+  Query["Query"] --> Plan["Plano Cana"]
+  Plan --> IDB["Cursor/indice IndexedDB"]
+  IDB --> Result["Registros retornados"]
+  Bulk["Bulk write"] --> Tx["Uma transacao readwrite"]
+  Tx --> Commit["Chaves commitadas"]
+  WorkerBulk["Bulk em worker"] --> Worker["Worker dedicado"]
+  Worker --> Tx
+```
 
 #### Modelo algorítmico
 
@@ -238,53 +257,74 @@ para o navegador executar.
 | `get()` por chave primária | Modelo comum de busca por chave no IndexedDB: `O(log n)`. | Varrer linhas para encontrar uma chave conhecida. |
 | `count()` nativo | Uma requisição nativa `count()` do IndexedDB; o Cana não materializa linhas em JavaScript. O custo interno do browser depende da implementação. | Contar lendo todos os registros. |
 | `bulkAdd()` | `O(n)` escritas em uma transação IndexedDB. | Disparar um fan-out grande e desordenado de promises que perde a ordem de entrada e a posição de falha parcial. |
+| `bulkAdd()` via worker | Ainda é `O(n)` de trabalho de storage, mais overhead de structured clone e mensagens. | Bloquear a thread da página enquanto o caminho de persistência prepara e commita o lote. |
+| Shards paralelos em workers | Alvo de wall-clock `O(n / w)` para bancos independentes ou shards independentes, com trabalho total `O(n)`. Locks de storage do browser podem limitar o ganho. | Fingir que vários workers tornam paralela uma única transação IndexedDB no mesmo object store. |
 | Paginação profunda | `O(offset + limit)` de movimento de cursor, com clone para JavaScript só dos registros retornados. | Ler milhares de registros em um array antes de aplicar `offset`. |
 
 #### Referência medida
 
 Estes números são uma amostra local de referência, não um SLA de latência. Eles
-foram medidos em 2026-08-12 com Headless Chrome 151 no macOS, usando o bundle
-ESM publicado do Cana, o mesmo schema de `packages/cana/cypress/performance.cy.ts`,
-cinco execuções de leitura por operação e três execuções de `bulkAdd()`. O valor
-mostrado é a mediana.
+foram medidos em 2026-08-13 com Chrome 151 headless, Cypress 15.19.0, Bun 1.3.14
+e Node 22.23.1 no macOS 26.5.2, Apple M5, arm64, 24 GB RAM. O benchmark usou um
+banco IndexedDB novo por cenário, o source do Cana empacotado para browser, uma
+store `rows` com chave primária `id` e índices `byGroup` / `byValue`, e validou
+quantidade de chaves commitadas antes de apagar cada banco. Leituras mostram a
+mediana de cinco execuções salvo quando indicado; escritas em lote mostram uma
+execução medida porque cada execução grava uma massa nova de dados.
 
 | Operação | Registros na store | Query / tamanho do resultado | Complexidade usada no exemplo | Mediana local |
 | --- | ---: | --- | --- | ---: |
-| `bulkAdd()` | 10.000 | escreve 10.000 linhas | `O(n)` | 1.117,5 ms |
-| Query limitada | 1.000 | `limit: 10`, retorna 10 linhas | `O(limit)` | 0,4 ms |
-| Query limitada | 10.000 | `limit: 10`, retorna 10 linhas | `O(limit)` | 0,5 ms |
-| Busca indexada | 1.000 | 100 grupos, `equals: 'g7'`, retorna 10 linhas | `O(log n + matches)` | 0,5 ms |
-| Busca indexada | 10.000 | 100 grupos, `equals: 'g7'`, retorna 100 linhas | `O(log n + matches)` | 1,4 ms |
-| `get()` por chave primária | 1.000 | chave `500` | `O(log n)` | 0,2 ms |
-| `get()` por chave primária | 10.000 | chave `500` | `O(log n)` | 0,2 ms |
-| `count()` nativo | 10.000 | conta todas as linhas sem retorná-las | uma requisição nativa; sem materialização em JS | 3,2 ms |
-| Query completa | 10.000 | retorna as 10.000 linhas | `O(n)` | 55,2 ms |
-| Página inicial | 10.000 | `offset: 10`, `limit: 20`, retorna 20 linhas | `O(offset + limit)` | 0,5 ms |
-| Página profunda | 10.000 | `offset: 9000`, `limit: 20`, retorna 20 linhas | `O(offset + limit)` com avanço de cursor | 13,8 ms |
+| `bulkAdd()` | 1.000 | escreve 1.000 linhas | `O(n)` | 172,6 ms |
+| `bulkAdd()` | 10.000 | escreve 10.000 linhas | `O(n)` | 1.811,8 ms |
+| `bulkAdd()` via worker | 10.000 | 1 worker dedicado escreve 10.000 linhas | `O(n)` mais overhead de mensagem | 1.815,4 ms |
+| `bulkAdd()` paralelo em workers | 10.000 total | 4 workers dedicados x 2.500 linhas em bancos independentes | alvo `O(n / w)` wall-clock, trabalho total `O(n)` | 1.442,6 ms |
+| Query limitada | 1.000 | `limit: 10`, retorna 10 linhas | `O(limit)` | 1,5 ms |
+| Query limitada | 10.000 | `limit: 10`, retorna 10 linhas | `O(limit)` | 0,6 ms |
+| Busca indexada | 1.000 | 100 grupos, `equals: 'g7'`, retorna 10 linhas | `O(log n + matches)` | 1,1 ms |
+| Busca indexada | 10.000 | 100 grupos, `equals: 'g7'`, retorna 100 linhas | `O(log n + matches)` | 2,7 ms |
+| `get()` por chave primária | 1.000 | chave `500` | `O(log n)` | 0,3 ms |
+| `get()` por chave primária | 10.000 | chave `5000` | `O(log n)` | 0,3 ms |
+| `count()` nativo | 10.000 | conta todas as linhas sem retorná-las | uma requisição nativa; sem materialização em JS | 5,5 ms |
+| Query completa | 10.000 | retorna as 10.000 linhas | `O(n)` | 96,7 ms |
+| Página inicial | 10.000 | `offset: 10`, `limit: 20`, retorna 20 linhas | `O(offset + limit)` | 1,6 ms |
+| Página profunda | 10.000 | `offset: 9000`, `limit: 20`, retorna 20 linhas | `O(offset + limit)` com avanço de cursor | 29,8 ms |
+
+#### O que workers mudam
+
+Workers são mais úteis para experiência de uso: a thread de UI não fica dona do
+loop de lote, da validação de mensagens nem do fan-out de eventos. Para um banco
+e um object store, o IndexedDB ainda serializa a transação de escrita, então
+worker não é promessa de reduzir o tempo total de commit. Na medição local,
+10.000 escritas diretas levaram 1.811,8 ms e as mesmas 10.000 escritas por um
+worker dedicado levaram 1.815,4 ms. O custo wall-clock ficou quase igual, mas o
+caminho por worker mantém a thread da página mais limpa.
+
+Workers paralelos ajudam só quando os dados podem ser particionados com
+segurança. Quatro workers dedicados escrevendo quatro bancos independentes de
+2.500 linhas completaram 10.000 linhas totais em 1.442,6 ms na amostra local.
+Se esses workers miram o mesmo object store, espere que o lock de storage do
+browser serialize boa parte do trabalho.
 
 #### Guardrails da CI
 
 Os testes automatizados de performance mantêm estes contratos verdes:
 
-- Uma query com `limit: 10` em 10.000 linhas fica quase constante em relação a
-  1.000 linhas: no máximo `max(4x a mediana de 1.000 linhas, 5ms)`.
-- Uma busca indexada em 10.000 linhas fica abaixo de
-  `max(25x a mediana de 1.000 linhas, 20ms)`, mesmo com o resultado crescendo de
-  10 para 100 linhas.
-- `count()` em 10.000 linhas fica mais rápido do que uma query completa que
-  retorna todas as linhas.
-- Um `get()` por chave primária em 10.000 linhas fica quase constante em relação
-  a 1.000 linhas: no máximo `max(4x a mediana de 1.000 linhas, 5ms)`.
+- Uma query com `limit: 10` examina 10 registros tanto em 1.000 quanto em 10.000
+  linhas.
+- Uma busca indexada abre `byGroup`, evita full scan e examina só os 100
+  registros correspondentes no dataset de 10.000 linhas.
+- Paginação profunda em `offset: 9000`, `limit: 20` examina 20 registros e
+  reporta `cursorAdvanced: true`.
+- Uma leitura completa é o caso de controle: ela examina todos os registros,
+  provando que a métrica reporta trabalho grande quando a query pede isso.
+- `count()` concorda com o tamanho da tabela sem passar pelo caminho de query.
 - `bulkAdd()` commita todas as 10.000 linhas em uma transação e reporta
   exatamente 10.000 chaves.
-- Paginação profunda em `offset: 9000`, `limit: 20` fica abaixo de
-  `max(60x a mediana de uma página inicial, 60ms)`, provando avanço de cursor em
-  vez de materializar as linhas puladas.
 
 ## Checklist júnior (“Eu consigo …”)
 
 - [ ] Abrir um client, adicionar uma linha e lê-la de volta.
-- [ ] Conferir `client.backend` após `open()` e explicar indexeddb vs localStorage.
+- [ ] Conferir diagnósticos de storage após `open()` quando a app precisa de sinais de durabilidade.
 - [ ] Evitar `TransactionInactive` mantendo `await`s externos fora de transações.
 
 ## Tutoriais por framework

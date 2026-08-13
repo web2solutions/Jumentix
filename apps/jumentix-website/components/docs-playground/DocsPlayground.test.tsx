@@ -8,6 +8,7 @@ describe('DocsPlayground catalogs', () => {
     for (const runtime of [
       'cana',
       'designer-core',
+      'jumentix-browser-lab',
       'key-value-storage',
       'message-mediator',
       'mutex-service',
@@ -25,6 +26,16 @@ describe('DocsPlayground catalogs', () => {
     expect(snippet?.code).toContain('normalizeStatePayload');
     expect(snippet?.code).toContain('collectModelIssues');
     expect(snippet?.code).not.toMatch(/version:\s*1/);
+  });
+
+  it('jumentix browser lab demonstrates complete in-memory task contracts', () => {
+    expect.hasAssertions();
+    const snippet = listDocsSnippets('jumentix-browser-lab').find((s) => s.id === 'getting-started');
+    expect(snippet?.code).toContain("stores: ['categories', 'tasks']");
+    expect(snippet?.code).toContain('tasks.create.v1');
+    expect(snippet?.code).toContain('createRestClient');
+    expect(snippet?.code).toContain('createWebSocketClient');
+    expect(snippet?.code).not.toMatch(/textoEvento|criarDadosIniciais|carregarTudo/);
   });
 });
 

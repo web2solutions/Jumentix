@@ -4,6 +4,7 @@ import { Alert, Button, Group, Paper, Stack, Text, Title } from '@mantine/core';
 import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { MonacoCodeBlock } from '../code/MonacoCodeBlock';
+import { trimTrailingBlankCodeLines } from '../code/normalizeCode';
 import { getDocsSnippet } from './catalogs';
 import { runDocsSnippet } from './runSnippet';
 import { getRuntime } from './runtimes';
@@ -36,9 +37,8 @@ function agentMarkdownForCode(title: string, source: string): string {
     `### ${title}`,
     '',
     '```ts',
-    source,
-    '```',
-    ''
+    trimTrailingBlankCodeLines(source),
+    '```'
   ].join('\n');
 }
 
@@ -50,7 +50,7 @@ export function DocsPlayground({
   const pathname = usePathname();
   const locale = resolveLocale(pathname);
   const snippet = getDocsSnippet(runtime, id);
-  const initialCode = code ?? snippet?.code ?? '';
+  const initialCode = trimTrailingBlankCodeLines(code ?? snippet?.code ?? '');
   const sessionKey = useMemo(
     () => `${id}-${typeof crypto !== 'undefined' && crypto.randomUUID
       ? crypto.randomUUID().slice(0, 8)
@@ -101,8 +101,10 @@ export function DocsPlayground({
       const rt = getRuntime(runtime);
       const loaded = await rt.load(sessionKey);
       resetRef.current = loaded.reset;
+      const source = trimTrailingBlankCodeLines(draft);
+      if (source !== draft) setDraft(source);
       const { result, logs: captured } = await runDocsSnippet(
-        draft,
+        source,
         rt.apiGlobalName,
         loaded.api,
         loaded.extras ?? {}
@@ -123,7 +125,7 @@ export function DocsPlayground({
     setLogs([]);
     try {
       if (resetRef.current) await resetRef.current();
-      setDraft(initialCode);
+      setDraft(trimTrailingBlankCodeLines(initialCode));
     } catch (err) {
       setError(formatOutput(err));
     } finally {

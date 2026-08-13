@@ -10,6 +10,7 @@ export type DocsSnippet = {
 export type DocsRuntimeId =
   | 'cana'
   | 'designer-core'
+  | 'jumentix-browser-lab'
   | 'key-value-storage'
   | 'message-mediator'
   | 'mutex-service'

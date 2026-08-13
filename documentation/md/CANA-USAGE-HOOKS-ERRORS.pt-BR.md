@@ -1,7 +1,7 @@
 # Hooks e erros
 
 Hooks mantêm políticas de escrita perto da persistência. Guards de erro mantêm
-ramos de recuperação estáveis entre IndexedDB, localStorage e workers.
+ramos de recuperação estáveis entre storage e workers.
 
 ## Hooks de escrita
 
@@ -91,7 +91,7 @@ try {
 | `ConstraintViolation` | Chave duplicada ou conflito de índice único. | Mostrar conflito de criação para o usuário. |
 | `NotFound` | Alvo de `update()` ausente ou cursor de replay antigo demais. | Recarregar estado durável e assinar novamente. |
 | `TransactionInactive` | `await` de trabalho não IndexedDB dentro da transação. | Mover rede/timer para fora do corpo da transação. |
-| `QuotaExceeded` | Storage do navegador cheio ou fallback localStorage pequeno demais. | Exportar, limpar ou pedir storage persistente. |
+| `QuotaExceeded` | Cota de storage do navegador cheia. | Exportar, limpar ou pedir storage persistente. |
 | `UnknownOutcome` | Worker/aba morreu com escrita em andamento. | Usar `operationLedger` e `resolveWrite()`. |
 
 ## Execute aqui

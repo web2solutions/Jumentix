@@ -1392,7 +1392,7 @@
     "locale": "en",
     "headings": [
       "Storage and crash recovery",
-      "Backend selection",
+      "Storage assessment",
       "Export and import",
       "Resolve an uncertain write",
       "Run it here",
@@ -3010,7 +3010,7 @@
     "locale": "pt-BR",
     "headings": [
       "Storage e recuperação de crash",
-      "Seleção de backend",
+      "Avaliação de storage",
       "Export e import",
       "Resolver uma escrita incerta",
       "Execute aqui",

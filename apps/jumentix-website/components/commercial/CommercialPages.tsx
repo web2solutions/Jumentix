@@ -29,6 +29,7 @@ import {
   SectionHeading,
   StatusBadge,
 } from '../design-system';
+import { DocsPlayground } from '../docs-playground/DocsPlayground';
 import classes from './CommercialPages.module.css';
 
 export type CommercialLocale = 'en' | 'pt-BR';
@@ -236,6 +237,138 @@ bun run test:integration
 bun run ci:gate`,
     },
   ],
+  tooling: [
+    {
+      label: 'Fast local loop',
+      language: 'shell',
+      code: `bun install
+bun run website:dev
+bun run ci:affected`,
+    },
+    {
+      label: 'Workspace gates',
+      language: 'shell',
+      code: `bun run check-bun-version
+bun run requirements:check
+bun run test-map:check
+bun run ci:gate:branch`,
+    },
+    {
+      label: 'Package workflow',
+      language: 'shell',
+      code: `bun run packages:check-suites
+bun run npm:publish:dry-run:packages
+bun run release:governance:check`,
+    },
+  ],
+  quality: [
+    {
+      label: 'Requirements',
+      language: 'shell',
+      code: `bun run requirements:check
+bun run docs:consumers:package-scripts
+bun run website:test:prepublish`,
+    },
+    {
+      label: 'Tests',
+      language: 'shell',
+      code: `bun run test:unit
+bun run test:integration
+bun run website:test:routes
+bun run website:test:cypress`,
+    },
+    {
+      label: 'Architecture',
+      language: 'shell',
+      code: `bun run deps:check-cycles
+bun run arch:check-boundaries
+bun run arch:check-workspace-boundaries
+bun run oas:check-routes`,
+    },
+  ],
+  pm2: [
+    {
+      label: 'Profiles',
+      language: 'shell',
+      code: `bun run pm2:start:dev:restapi
+bun run pm2:start:staging:websocket-rest
+bun run pm2:start:prod:grpc-rest`,
+    },
+    {
+      label: 'Ecosystem',
+      language: 'javascript',
+      code: `module.exports = {
+  apps: [
+    {
+      name: 'jumentix-prod-restapi',
+      script: '.build/apps/backend-template/src/main.js',
+      interpreter: 'bun',
+      args: '--env-file=apps/backend-template/.env.production'
+    },
+    {
+      name: 'jumentix-prod-service-management',
+      script: '.build/apps/service-management-ui/server.js',
+      interpreter: 'bun'
+    }
+  ]
+};`,
+    },
+    {
+      label: 'Operate',
+      language: 'shell',
+      code: `bun run pm2:list
+bun run pm2:logs
+pm2 reload jumentix-prod-restapi
+pm2 save`,
+    },
+  ],
+  ai: [
+    {
+      label: 'Agent context',
+      language: 'typescript',
+      code: `export async function loadAgentContext() {
+  const [llms, docsIndex] = await Promise.all([
+    fetch('/llms-full.txt').then((response) => response.text()),
+    fetch('/docs-index.json').then((response) => response.json())
+  ]);
+
+  const canaDocs = docsIndex.filter((entry) => entry.href.includes('/cana'));
+  return {
+    contextBytes: llms.length,
+    canaDocPages: canaDocs.length,
+    firstPage: canaDocs[0]?.href
+  };
+}`,
+    },
+    {
+      label: 'Governance',
+      language: 'shell',
+      code: `bun run requirements:check
+bun run test-map:check
+bun run arch:check-workspace-boundaries
+bun run website:test:prepublish`,
+    },
+    {
+      label: 'UI model',
+      language: 'typescript',
+      code: `const serviceModel = {
+  boundedContext: 'Tasks',
+  entities: [
+    { name: 'Category', fields: ['id', 'name', 'color'] },
+    { name: 'Task', fields: ['id', 'title', 'categoryId', 'completed'] }
+  ],
+  interfaces: ['REST', 'WebSocket'],
+  deploymentProfiles: ['dev', 'staging', 'production']
+};
+
+export async function generateGovernedService(generator, governance) {
+  await governance.assertRequirements(serviceModel);
+  await generator.emitOpenApi(serviceModel);
+  await generator.emitSdkClients(serviceModel);
+  return serviceModel;
+}`,
+    },
+  ],
 };
 
 function PageHero({
@@ -304,6 +437,243 @@ function FinalCta({ locale }: { locale: CommercialLocale }) {
             GitHub
           </ActionLink>
         </div>
+      </div>
+    </Band>
+  );
+}
+
+function BunToolingBand({
+  locale,
+  alternate = false,
+}: {
+  locale: CommercialLocale;
+  alternate?: boolean;
+}) {
+  const packageScriptsHref = locale === 'pt-BR'
+    ? '/docs/pt-BR/jumentix/reference/package-scripts'
+    : '/docs/jumentix/reference/package-scripts';
+
+  return (
+    <Band alternate={alternate}>
+      <div className={classes.sectionStack}>
+        <SectionHeading
+          eyebrow={t(locale, 'Bun-powered tooling', 'Tooling movido a Bun')}
+          title={t(locale, 'The fast path is the default path', 'O caminho rápido é o caminho padrão')}
+          description={t(
+            locale,
+            'Jumentix standardizes on Bun as the pinned monorepo runtime, package manager, script runner, test runner and browser-spec bundler. That keeps local work, CI gates, package checks and website publishing on one toolchain.',
+            'O Jumentix padroniza Bun como runtime, gerenciador de pacotes, executor de scripts, test runner e bundler das specs de browser do monorepo. Isso mantém trabalho local, gates de CI, checagens de pacote e publicação do site em uma ferramenta só.',
+          )}
+        />
+        <div className={classes.twoColumn}>
+          <div className={classes.prose}>
+            <h2>{t(locale, 'Why Bun matters here', 'Por que Bun importa aqui')}</h2>
+            <p>
+              {t(
+                locale,
+                'The repository uses Bun where it actually reduces friction: fast installs with workspaces, direct TypeScript execution, repeatable package scripts, focused branch gates, and browser-test bundling before Cypress runs against real IndexedDB and DOM APIs.',
+                'O repositório usa Bun onde ele realmente reduz atrito: installs rápidos com workspaces, execução direta de TypeScript, scripts repetíveis, gates focados por branch e bundling das specs de browser antes de o Cypress rodar contra IndexedDB e DOM reais.',
+              )}
+            </p>
+            <ProofList items={[
+              t(locale, 'One pinned version, `bun@1.3.14`, protects every workspace from “works on my machine” drift.', 'Uma versão pinada, `bun@1.3.14`, protege todos os workspaces contra drift de ambiente.'),
+              t(locale, '`bun run --filter` lets package checks stay scoped while full gates remain available for release work.', '`bun run --filter` mantém checagens de pacote focadas enquanto gates completos seguem disponíveis para release.'),
+              t(locale, 'Bun bundles Cana browser specs before Cypress, avoiding Cypress webpack fragility while preserving real-browser evidence.', 'Bun empacota specs browser do Cana antes do Cypress, evitando fragilidade do webpack do Cypress sem perder evidência em browser real.'),
+              t(locale, 'The same CLI drives local dev, docs sync, package dry-runs, security checks and production website publishing.', 'A mesma CLI move dev local, sync de docs, dry-runs de pacote, checagens de segurança e publicação do site em produção.'),
+            ]} />
+            <div className={classes.sectionActions}>
+              <ActionLink href={packageScriptsHref} variant="secondary">
+                {t(locale, 'See Jumentix scripts', 'Ver scripts Jumentix')}
+              </ActionLink>
+              <ActionLink href="https://bun.sh/docs" variant="quiet" external>
+                Bun docs
+              </ActionLink>
+            </div>
+          </div>
+          <CodeShowcase samples={codeSamples.tooling} title={t(locale, 'Bun tooling commands', 'Comandos Bun do tooling')} />
+        </div>
+        <MetricStrip metrics={[
+          { value: '1', label: t(locale, 'runtime/package/test/bundle tool', 'ferramenta de runtime/pacote/teste/bundle') },
+          { value: '1.3.14+', label: t(locale, 'pinned Bun version', 'versão Bun pinada') },
+          { value: '3', label: t(locale, 'workspace roots: apps, packages, tooling', 'raízes: apps, packages, tooling') },
+          { value: '30x', label: t(locale, 'official Bun install-speed ceiling vs npm', 'teto oficial de velocidade de install vs npm') },
+        ]} />
+      </div>
+    </Band>
+  );
+}
+
+function QualityEvidenceBand({
+  locale,
+  alternate = false,
+}: {
+  locale: CommercialLocale;
+  alternate?: boolean;
+}) {
+  return (
+    <Band alternate={alternate}>
+      <div className={classes.sectionStack}>
+        <SectionHeading
+          eyebrow={t(locale, 'Quality as product surface', 'Qualidade como superfície do produto')}
+          title={t(locale, 'Requirements, tests and evidence are not hidden plumbing', 'Requisitos, testes e evidências não ficam escondidos')}
+          description={t(
+            locale,
+            'Jumentix treats quality as part of the user-facing promise. Requirements are checked, tests are mapped, architecture rules are executable, and publish paths carry evidence instead of relying on ceremony.',
+            'O Jumentix trata qualidade como parte da promessa visível do produto. Requisitos são checados, testes são mapeados, regras de arquitetura são executáveis e caminhos de publicação carregam evidências em vez de depender de cerimônia.',
+          )}
+        />
+        <MetricStrip metrics={[
+          { value: '99/90', label: t(locale, 'statement/branch quality standard', 'padrão de statements/branches') },
+          { value: 'reqs', label: t(locale, 'requirements tied to executable checks', 'requisitos ligados a checagens executáveis') },
+          { value: '0', label: t(locale, 'tolerance for hidden docs drift', 'tolerância a drift oculto de docs') },
+          { value: 'real', label: t(locale, 'browser tests for browser APIs', 'testes browser para APIs browser') },
+        ]} />
+        <DetailGrid items={[
+          { title: t(locale, 'Requirement registry', 'Registro de requisitos'), description: t(locale, 'Delivery work is expected to connect behavior, docs, tests and release evidence so “done” is auditable.', 'O trabalho de entrega conecta comportamento, docs, testes e evidência de release para que “pronto” seja auditável.'), meta: 'requirements:check', icon: <IconShieldCheck /> },
+          { title: t(locale, 'Reliable tests', 'Testes confiáveis'), description: t(locale, 'Unit, integration, Cypress route sweeps, browser specs and Storybook smoke checks cover the surface each layer actually owns.', 'Unit, integração, route sweep Cypress, specs de browser e smoke de Storybook cobrem a superfície real de cada camada.'), meta: 'test-map:check', icon: <IconGitBranch /> },
+          { title: t(locale, 'Executable architecture', 'Arquitetura executável'), description: t(locale, 'Boundary scripts reject imports and shortcuts that would leak frameworks, databases or infrastructure into domain code.', 'Scripts de limite rejeitam imports e atalhos que vazariam frameworks, bancos ou infraestrutura para o domínio.'), meta: 'arch:check-*', icon: <IconHierarchy3 /> },
+          { title: t(locale, 'Publish discipline', 'Disciplina de publicação'), description: t(locale, 'Content sync, route checks, package dry-runs and release governance run before public artifacts move.', 'Sync de conteúdo, checagens de rota, dry-runs de pacote e governança de release rodam antes de artefatos públicos avançarem.'), meta: 'website:test:prepublish', icon: <IconRocket /> },
+        ]} />
+        <CodeShowcase samples={codeSamples.quality} title={t(locale, 'Quality commands', 'Comandos de qualidade')} />
+      </div>
+    </Band>
+  );
+}
+
+function BrowserInMemoryLabBand({
+  locale,
+  alternate = false,
+}: {
+  locale: CommercialLocale;
+  alternate?: boolean;
+}) {
+  return (
+    <Band alternate={alternate}>
+      <div className={classes.sectionStack}>
+        <SectionHeading
+          eyebrow={t(locale, 'Browser in-memory playgrounds', 'Playgrounds in-memory no browser')}
+          title={t(locale, 'The package contracts run without servers', 'Os contratos dos pacotes rodam sem servidores')}
+          description={t(
+            locale,
+            'These runnable examples use Category and Task records across contract-compatible in-memory adapters and browser-native local storage. They execute entirely in the browser, so teams can inspect package behavior before adding Redis, RabbitMQ, databases, PM2 processes or a backend runtime.',
+            'Estes exemplos executáveis usam registros Category e Task em adaptadores in-memory compatíveis com contrato e armazenamento local nativo do browser. Tudo roda no browser, para o time inspecionar o comportamento dos pacotes antes de adicionar Redis, RabbitMQ, bancos, processos PM2 ou runtime backend.',
+          )}
+        />
+        <MetricStrip metrics={[
+          { value: '100%', label: t(locale, 'browser execution', 'execução no browser') },
+          { value: '0', label: t(locale, 'servers required for the lab', 'servidores exigidos no lab') },
+          { value: '7', label: t(locale, 'package contracts showcased', 'contratos de pacote demonstrados') },
+          { value: '2', label: t(locale, 'apps represented: Service Management and Backend Template', 'apps representados: Service Management e Backend Template') },
+        ]} />
+        <DetailGrid items={[
+          { title: t(locale, 'Service Management UI', 'Service Management UI'), description: t(locale, 'The full lab starts from a visual service model, validates the domain shape, then feeds runtime contracts from the same Category and Task vocabulary.', 'O lab completo parte de um modelo visual de serviço, valida o formato do domínio e alimenta contratos de runtime com o mesmo vocabulário Category e Task.'), meta: t(locale, 'App surface', 'Superfície de app'), icon: <IconHierarchy3 /> },
+          { title: t(locale, 'Backend Template', 'Backend Template'), description: t(locale, 'The request path mirrors controller, use-case, repository, mediator and client boundaries without exposing users to infrastructure setup.', 'O caminho de request espelha limites de controller, caso de uso, repository, mediator e client sem expor usuários a setup de infraestrutura.'), meta: t(locale, 'App runtime', 'Runtime de app'), icon: <IconBuildingFactory2 /> },
+          { title: t(locale, 'Persistence and cache', 'Persistência e cache'), description: t(locale, 'In-memory stores and key/value state keep Category filters, Task records and UI preferences in the same service-result shape as external adapters.', 'Stores in-memory e estado chave/valor mantêm filtros de Category, registros Task e preferências de UI no mesmo formato de resposta dos adaptadores externos.'), meta: '@jumentix/key-value-storage', icon: <IconDatabase /> },
+          { title: t(locale, 'Messaging and locks', 'Mensageria e locks'), description: t(locale, 'Message Mediator and Mutex Service show request/response, events and write protection before a durable broker or distributed lock is introduced.', 'Message Mediator e Mutex Service mostram request/response, eventos e proteção de escrita antes de broker durável ou lock distribuído entrar.'), meta: '@jumentix/message-mediator', icon: <IconMessages /> },
+        ]} />
+        <div className={classes.playgroundGrid}>
+          <div className={classes.playgroundWide}>
+            <DocsPlayground runtime="jumentix-browser-lab" id="getting-started" />
+          </div>
+          <DocsPlayground runtime="key-value-storage" id="getting-started" />
+          <DocsPlayground runtime="message-mediator" id="getting-started" />
+          <DocsPlayground runtime="mutex-service" id="getting-started" />
+          <DocsPlayground runtime="sdk-rest-client" id="getting-started" />
+          <DocsPlayground runtime="sdk-websocket-client" id="getting-started" />
+          <DocsPlayground runtime="cana" id="getting-started" />
+          <DocsPlayground runtime="designer-core" id="getting-started" />
+        </div>
+      </div>
+    </Band>
+  );
+}
+
+function PM2OperationsBand({
+  locale,
+  alternate = false,
+}: {
+  locale: CommercialLocale;
+  alternate?: boolean;
+}) {
+  return (
+    <Band alternate={alternate}>
+      <div className={classes.sectionStack}>
+        <SectionHeading
+          eyebrow={t(locale, 'PM2 operations', 'Operação com PM2')}
+          title={t(locale, 'Bun-built services get supervised runtime profiles', 'Serviços Bun ganham perfis supervisionados')}
+          description={t(
+            locale,
+            'Jumentix uses PM2 where a long-running VM or container needs process supervision: environment-specific profiles, logs, status, metrics, reloads and startup recovery. The ecosystem files keep REST, WebSocket, gRPC and Service Management processes explicit.',
+            'O Jumentix usa PM2 quando uma VM ou container precisa de supervisão de processo: perfis por ambiente, logs, status, métricas, reloads e recuperação no startup. Os arquivos ecosystem deixam explícitos os processos REST, WebSocket, gRPC e Service Management.',
+          )}
+        />
+        <MetricStrip metrics={[
+          { value: '4', label: t(locale, 'named process families', 'famílias de processo nomeadas') },
+          { value: '3', label: t(locale, 'dev/staging/production profiles', 'perfis dev/staging/production') },
+          { value: 'bun', label: t(locale, 'PM2 interpreter in ecosystem files', 'interpreter PM2 nos ecosystem files') },
+          { value: 'reload', label: t(locale, 'zero-downtime path for compatible services', 'caminho zero-downtime para serviços compatíveis') },
+        ]} />
+        <div className={classes.twoColumn}>
+          <div className={classes.prose}>
+            <h2>{t(locale, 'Why PM2 belongs in the Jumentix story', 'Por que PM2 pertence à história do Jumentix')}</h2>
+            <p>
+              {t(
+                locale,
+                'PM2 is not the only deployment option, but it is a strong operational bridge for teams that run Node/Bun services on persistent machines. It daemonizes apps, restarts failed processes, exposes logs and metrics, supports cluster mode and preserves process lists across restarts.',
+                'PM2 não é a única opção de deploy, mas é uma ponte operacional forte para times que rodam serviços Node/Bun em máquinas persistentes. Ele daemoniza apps, reinicia processos com falha, expõe logs e métricas, suporta cluster mode e preserva a lista de processos após restarts.',
+              )}
+            </p>
+            <ProofList items={[
+              t(locale, 'Profiles are environment-specific instead of hidden in ad hoc shell history.', 'Perfis são específicos por ambiente em vez de ficarem escondidos no histórico do shell.'),
+              t(locale, 'REST fallback, realtime and gRPC can be started, inspected and restarted independently.', 'Fallback REST, realtime e gRPC podem iniciar, ser inspecionados e reiniciados de forma independente.'),
+              t(locale, 'Bun remains the interpreter, so the same runtime choice powers dev scripts and supervised services.', 'Bun permanece como interpreter, então a mesma escolha de runtime move scripts de dev e serviços supervisionados.'),
+              t(locale, 'The PM2 model complements Docker, serverless and cloud functions without changing domain code.', 'O modelo PM2 complementa Docker, serverless e cloud functions sem mudar código de domínio.'),
+            ]} />
+            <div className={classes.sectionActions}>
+              <ActionLink href="https://pm2.keymetrics.io/docs/usage/quick-start/" variant="quiet" external>
+                PM2 docs
+              </ActionLink>
+            </div>
+          </div>
+          <CodeShowcase samples={codeSamples.pm2} title={t(locale, 'PM2 runtime profiles', 'Perfis runtime PM2')} />
+        </div>
+      </div>
+    </Band>
+  );
+}
+
+function AIReadyBand({
+  locale,
+  alternate = false,
+}: {
+  locale: CommercialLocale;
+  alternate?: boolean;
+}) {
+  return (
+    <Band alternate={alternate}>
+      <div className={classes.sectionStack}>
+        <SectionHeading
+          eyebrow={t(locale, 'AI-ready platform', 'Plataforma pronta para AI')}
+          title={t(locale, 'The UI gives agents architecture with governance attached', 'A UI entrega arquitetura com governança acoplada')}
+          description={t(
+            locale,
+            'Jumentix is prepared for AI because the product does not ask agents to infer architecture from scattered code. The UI captures bounded contexts, entities, interfaces, deployment profiles and requirements; the repository exposes agent-readable docs and executable checks that keep generated work accountable.',
+            'O Jumentix é preparado para AI porque o produto não obriga agentes a inferir arquitetura a partir de código espalhado. A UI captura contextos delimitados, entidades, interfaces, perfis de deploy e requisitos; o repositório expõe docs legíveis por agentes e checagens executáveis que tornam trabalho gerado auditável.',
+          )}
+        />
+        <MetricStrip metrics={[
+          { value: 'UI', label: t(locale, 'domain model as first-class input', 'modelo de domínio como input de primeira classe') },
+          { value: 'llms', label: t(locale, 'agent-readable website context', 'contexto do site legível por agentes') },
+          { value: 'reqs', label: t(locale, 'requirements tied to checks', 'requisitos ligados a checks') },
+          { value: 'gates', label: t(locale, 'architecture and publish evidence', 'evidência de arquitetura e publish') },
+        ]} />
+        <DetailGrid items={[
+          { title: t(locale, 'Low-context instructions', 'Instruções de baixo contexto'), description: t(locale, 'Agents can start from docs index, package pages, route metadata and code snippets instead of guessing which file owns a behavior.', 'Agentes podem partir do índice de docs, páginas de pacote, metadados de rotas e snippets de código em vez de adivinhar qual arquivo possui um comportamento.'), meta: '/llms-full.txt', icon: <IconCode /> },
+          { title: t(locale, 'UI as architecture input', 'UI como input de arquitetura'), description: t(locale, 'The Service Management UI turns product concepts into bounded contexts, interfaces and deployment choices that generators and reviewers can inspect.', 'A UI de Service Management transforma conceitos de produto em contextos, interfaces e escolhas de deploy que geradores e revisores conseguem inspecionar.'), meta: 'service-management-ui', icon: <IconDeviceDesktop /> },
+          { title: t(locale, 'Governed generation', 'Geração governada'), description: t(locale, 'Generated or agent-authored changes still pass requirements, test maps, route checks, package boundaries and release governance before publication.', 'Mudanças geradas ou escritas por agentes ainda passam por requisitos, test maps, rotas, limites de pacote e governança de release antes de publicar.'), meta: 'requirements:check', icon: <IconShieldCheck /> },
+          { title: t(locale, 'Grounded package graph', 'Grafo de pacotes fundamentado'), description: t(locale, 'Reusable packages give AI work stable names for persistence, mediation, clients, Cana, runtime bootstrap and architecture boundaries.', 'Pacotes reutilizáveis dão ao trabalho de AI nomes estáveis para persistência, mediação, clientes, Cana, bootstrap de runtime e limites arquiteturais.'), meta: 'packages/*', icon: <IconPackage /> },
+        ]} />
+        <CodeShowcase samples={codeSamples.ai} title={t(locale, 'AI governance examples', 'Exemplos de governança AI')} />
       </div>
     </Band>
   );
@@ -537,6 +907,9 @@ function Home({ locale }: { locale: CommercialLocale }) {
           <CodeShowcase samples={codeSamples.start} title={t(locale, 'Start Jumentix', 'Inicie o Jumentix')} />
         </div>
       </Band>
+      <BunToolingBand locale={locale} />
+      <QualityEvidenceBand locale={locale} />
+      <AIReadyBand locale={locale} alternate />
       <Band alternate>
         <div className={classes.sectionStack}>
           <SectionHeading
@@ -597,6 +970,8 @@ function Product({ locale }: { locale: CommercialLocale }) {
           ]} />
         </div>
       </Band>
+      <BunToolingBand locale={locale} alternate />
+      <BrowserInMemoryLabBand locale={locale} />
       <Band alternate>
         <div className={classes.sectionStack}>
           <SectionHeading
@@ -616,6 +991,8 @@ function Product({ locale }: { locale: CommercialLocale }) {
           ]} />
         </div>
       </Band>
+      <QualityEvidenceBand locale={locale} />
+      <AIReadyBand locale={locale} alternate />
       <Band>
         <div className={classes.twoColumn}>
           <div className={classes.prose}>
@@ -652,6 +1029,7 @@ function Product({ locale }: { locale: CommercialLocale }) {
           />
         </div>
       </Band>
+      <PM2OperationsBand locale={locale} />
       <Band>
         <div className={classes.sectionStack}>
           <SectionHeading eyebrow={t(locale, 'Architecture flow', 'Fluxo de arquitetura')} title={t(locale, 'Changes stay close to the feature', 'Mudanças permanecem próximas da feature')} />
@@ -826,6 +1204,9 @@ function Integrations({ locale }: { locale: CommercialLocale }) {
   return (
     <>
       <PageHero locale={locale} eyebrow={t(locale, 'Integrations', 'Integrações')} title={t(locale, 'Choose infrastructure per service, not per platform', 'Escolha a infraestrutura por serviço, não por plataforma')} description={t(locale, 'Jumentix keeps technology decisions at the adapter boundary, where they can be tested and replaced.', 'O Jumentix mantém decisões de tecnologia no limite dos adaptadores, onde podem ser testadas e substituídas.')} />
+      <BunToolingBand locale={locale} />
+      <BrowserInMemoryLabBand locale={locale} alternate />
+      <PM2OperationsBand locale={locale} />
       <Band>
         <div className={classes.sectionStack}>
           <SectionHeading
@@ -935,6 +1316,8 @@ function Architecture({ locale }: { locale: CommercialLocale }) {
           ]} />
         </div>
       </Band>
+      <AIReadyBand locale={locale} alternate />
+      <BrowserInMemoryLabBand locale={locale} />
       <Band alternate>
         <div className={classes.sectionStack}>
           <SectionHeading
@@ -1003,6 +1386,8 @@ function Architecture({ locale }: { locale: CommercialLocale }) {
           ]} />
         </div>
       </Band>
+      <QualityEvidenceBand locale={locale} alternate />
+      <PM2OperationsBand locale={locale} />
       <FinalCta locale={locale} />
     </>
   );

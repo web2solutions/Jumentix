@@ -48,6 +48,7 @@ describe('Commercial pages', () => {
       expect(screen.getByText('DDD + Hexagonal')).toBeInTheDocument();
       expect(screen.getByText('Bun monorepo')).toBeInTheDocument();
       expect(screen.getByText('Open source')).toBeInTheDocument();
+      expect(screen.getByText('AI-ready platform')).toBeInTheDocument();
     });
   });
 
@@ -63,8 +64,12 @@ describe('Commercial pages', () => {
       expect(screen.getByText('Service communication')).toBeInTheDocument();
       expect(screen.getByText('Governed delivery')).toBeInTheDocument();
       expect(screen.getByText('Domain Designer')).toBeInTheDocument();
-      expect(screen.getByText('Backend Template')).toBeInTheDocument();
+      expect(screen.getAllByText('Backend Template').length).toBeGreaterThan(0);
       expect(screen.getByText('Generated SDKs')).toBeInTheDocument();
+      expect(screen.getByText('Browser in-memory playgrounds')).toBeInTheDocument();
+      expect(screen.getByText('Full Jumentix browser app')).toBeInTheDocument();
+      expect(screen.getByText('AI-ready platform')).toBeInTheDocument();
+      expect(screen.getByText('PM2 operations')).toBeInTheDocument();
       expect(screen.getByText('Who uses what in the platform')).toBeInTheDocument();
       expect(screen.getByText('Platform team')).toBeInTheDocument();
     });
@@ -108,7 +113,9 @@ describe('Commercial pages', () => {
       expect(screen.getByText('Deployment')).toBeInTheDocument();
       expect(screen.getByText('How to pick the right adapter')).toBeInTheDocument();
       expect(screen.getByText('@jumentix/database-client-factory')).toBeInTheDocument();
-      expect(screen.getByText('@jumentix/message-mediator')).toBeInTheDocument();
+      expect(screen.getAllByText('@jumentix/message-mediator').length).toBeGreaterThan(0);
+      expect(screen.getByText('Browser in-memory playgrounds')).toBeInTheDocument();
+      expect(screen.getByText('PM2 operations')).toBeInTheDocument();
     });
   });
 
@@ -127,6 +134,9 @@ describe('Commercial pages', () => {
       expect(screen.getByText('Topology evolution')).toBeInTheDocument();
       expect(screen.getByText('Architecture governance')).toBeInTheDocument();
       expect(screen.getByText('Boundary checks')).toBeInTheDocument();
+      expect(screen.getByText('AI-ready platform')).toBeInTheDocument();
+      expect(screen.getByText('Browser in-memory playgrounds')).toBeInTheDocument();
+      expect(screen.getByText('PM2 operations')).toBeInTheDocument();
     });
   });
 
