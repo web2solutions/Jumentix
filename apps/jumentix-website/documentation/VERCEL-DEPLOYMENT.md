@@ -96,3 +96,6 @@ Rollback: use the previous Production deployment in the Vercel project dashboard
 - Vercel and local builds use the Bun workspace lockfile and patched dependency declarations.
 - Root deployment scripts are intentionally scope-agnostic (no forced `--scope`) to support
   personal-account and team-account Vercel contexts.
+- The Vercel CLI project link (`.vercel/project.json`, created by `vercel link` or a manual
+  deploy) is machine-specific local config. It is gitignored at the repository root and must
+  never be committed.
