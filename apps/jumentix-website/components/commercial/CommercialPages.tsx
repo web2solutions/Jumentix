@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import type { CodeSample } from '../design-system';
 import {
   IconApi,
   IconArrowRight,
@@ -402,6 +403,522 @@ export async function generateGovernedService(generator, governance) {
     },
   ],
 };
+
+const useCaseImplementationSamples: Record<UseCaseName, Record<CommercialLocale, CodeSample[]>> = {
+  'rest-api': {
+    en: [
+      {
+        label: 'app.ts',
+        language: 'typescript',
+        code: `type Category = { id: string; name: string };
+type Task = { id: string; title: string; categoryId: string; completed: boolean };
+
+const categories = new Map<string, Category>([
+  ['work', { id: 'work', name: 'Work' }]
+]);
+const tasks = new Map<string, Task>();
+
+class CreateTaskUseCase {
+  async execute(input: { title: string; categoryId: string }) {
+    if (!input.title.trim()) return { status: 400, body: { error: 'title is required' } };
+    if (!categories.has(input.categoryId)) return { status: 404, body: { error: 'category not found' } };
+
+    const task: Task = {
+      id: crypto.randomUUID(),
+      title: input.title,
+      categoryId: input.categoryId,
+      completed: false
+    };
+    tasks.set(task.id, task);
+    return { status: 201, body: task };
+  }
+}
+
+class TaskController {
+  constructor(private readonly createTask: CreateTaskUseCase) {}
+
+  async create(request: Request) {
+    const input = await request.json() as { title: string; categoryId: string };
+    const response = await this.createTask.execute(input);
+    return Response.json(response.body, { status: response.status });
+  }
+
+  async list() {
+    return Response.json([...tasks.values()]);
+  }
+}
+
+const controller = new TaskController(new CreateTaskUseCase());
+
+export async function handleRequest(request: Request) {
+  const url = new URL(request.url);
+  if (request.method === 'POST' && url.pathname === '/tasks') return controller.create(request);
+  if (request.method === 'GET' && url.pathname === '/tasks') return controller.list();
+  return Response.json({ error: 'not found' }, { status: 404 });
+}`,
+      },
+      {
+        label: 'openapi.yaml',
+        language: 'yaml',
+        code: `openapi: 3.1.0
+info:
+  title: Tasks MVP API
+  version: 0.1.0
+paths:
+  /tasks:
+    get:
+      operationId: listTasks
+      responses:
+        '200':
+          description: Tasks listed
+    post:
+      operationId: createTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, categoryId]
+              properties:
+                title: { type: string, minLength: 1 }
+                categoryId: { type: string }
+      responses:
+        '201':
+          description: Task created
+        '400':
+          description: Invalid input
+        '404':
+          description: Category not found`,
+      },
+      {
+        label: 'client.ts',
+        language: 'typescript',
+        code: `export async function createTask(baseUrl: string, input: { title: string; categoryId: string }) {
+  const response = await fetch(\`\${baseUrl}/tasks\`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(input)
+  });
+
+  const body = await response.json();
+  if (!response.ok) throw new Error(body.error ?? 'request failed');
+  return body as { id: string; title: string; categoryId: string; completed: boolean };
+}
+
+const task = await createTask('http://localhost:3000', {
+  title: 'Publish first REST MVP',
+  categoryId: 'work'
+});
+console.log(task);`,
+      },
+    ],
+    'pt-BR': [
+      {
+        label: 'app.ts',
+        language: 'typescript',
+        code: `type Category = { id: string; name: string };
+type Task = { id: string; title: string; categoryId: string; completed: boolean };
+
+const categories = new Map<string, Category>([
+  ['work', { id: 'work', name: 'Work' }]
+]);
+const tasks = new Map<string, Task>();
+
+class CreateTaskUseCase {
+  async execute(input: { title: string; categoryId: string }) {
+    if (!input.title.trim()) return { status: 400, body: { error: 'title is required' } };
+    if (!categories.has(input.categoryId)) return { status: 404, body: { error: 'category not found' } };
+
+    const task: Task = {
+      id: crypto.randomUUID(),
+      title: input.title,
+      categoryId: input.categoryId,
+      completed: false
+    };
+    tasks.set(task.id, task);
+    return { status: 201, body: task };
+  }
+}
+
+class TaskController {
+  constructor(private readonly createTask: CreateTaskUseCase) {}
+
+  async create(request: Request) {
+    const input = await request.json() as { title: string; categoryId: string };
+    const response = await this.createTask.execute(input);
+    return Response.json(response.body, { status: response.status });
+  }
+
+  async list() {
+    return Response.json([...tasks.values()]);
+  }
+}
+
+const controller = new TaskController(new CreateTaskUseCase());
+
+export async function handleRequest(request: Request) {
+  const url = new URL(request.url);
+  if (request.method === 'POST' && url.pathname === '/tasks') return controller.create(request);
+  if (request.method === 'GET' && url.pathname === '/tasks') return controller.list();
+  return Response.json({ error: 'not found' }, { status: 404 });
+}`,
+      },
+      {
+        label: 'openapi.yaml',
+        language: 'yaml',
+        code: `openapi: 3.1.0
+info:
+  title: Tasks MVP API
+  version: 0.1.0
+paths:
+  /tasks:
+    get:
+      operationId: listTasks
+      responses:
+        '200':
+          description: Tasks listed
+    post:
+      operationId: createTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, categoryId]
+              properties:
+                title: { type: string, minLength: 1 }
+                categoryId: { type: string }
+      responses:
+        '201':
+          description: Task created
+        '400':
+          description: Invalid input
+        '404':
+          description: Category not found`,
+      },
+      {
+        label: 'client.ts',
+        language: 'typescript',
+        code: `export async function createTask(baseUrl: string, input: { title: string; categoryId: string }) {
+  const response = await fetch(\`\${baseUrl}/tasks\`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(input)
+  });
+
+  const body = await response.json();
+  if (!response.ok) throw new Error(body.error ?? 'request failed');
+  return body as { id: string; title: string; categoryId: string; completed: boolean };
+}
+
+const task = await createTask('http://localhost:3000', {
+  title: 'Publish first REST MVP',
+  categoryId: 'work'
+});
+console.log(task);`,
+      },
+    ],
+  },
+  'realtime-api': {
+    en: [
+      {
+        label: 'server.ts',
+        language: 'typescript',
+        code: `type Task = { id: string; title: string; categoryId: string; completed: boolean };
+type Client = { send: (message: string) => void };
+
+const tasks = new Map<string, Task>();
+const clients = new Set<Client>();
+
+function broadcast(subject: string, payload: unknown) {
+  const message = JSON.stringify({ subject, payload });
+  for (const client of clients) client.send(message);
+}
+
+export function connectTaskSocket(client: Client) {
+  clients.add(client);
+  client.send(JSON.stringify({ subject: 'tasks.ready', payload: { total: tasks.size } }));
+  return () => clients.delete(client);
+}
+
+export async function handleTaskMessage(message: { subject: string; payload: { title: string; categoryId: string } }) {
+  if (message.subject !== 'tasks.create') return { ok: false, error: 'unsupported subject' };
+  const task: Task = {
+    id: crypto.randomUUID(),
+    title: message.payload.title,
+    categoryId: message.payload.categoryId,
+    completed: false
+  };
+  tasks.set(task.id, task);
+  broadcast('tasks.created', task);
+  return { ok: true, result: task };
+}`,
+      },
+      {
+        label: 'client.ts',
+        language: 'typescript',
+        code: `const socket = new WebSocket('ws://localhost:3001/tasks');
+
+socket.addEventListener('message', (event) => {
+  const message = JSON.parse(event.data);
+  if (message.subject === 'tasks.created') {
+    console.log('render live card', message.payload);
+  }
+});
+
+socket.addEventListener('open', () => {
+  socket.send(JSON.stringify({
+    subject: 'tasks.create',
+    payload: {
+      title: 'Show realtime status',
+      categoryId: 'work'
+    }
+  }));
+});`,
+      },
+      {
+        label: 'fallback.ts',
+        language: 'typescript',
+        code: `export async function createTaskWithFallback(input: { title: string; categoryId: string }) {
+  try {
+    const socket = new WebSocket('ws://localhost:3001/tasks');
+    await new Promise((resolve, reject) => {
+      socket.addEventListener('open', resolve, { once: true });
+      socket.addEventListener('error', reject, { once: true });
+    });
+    socket.send(JSON.stringify({ subject: 'tasks.create', payload: input }));
+    return { transport: 'websocket' };
+  } catch {
+    const response = await fetch('/tasks', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(input)
+    });
+    return { transport: 'rest', task: await response.json() };
+  }
+}`,
+      },
+    ],
+    'pt-BR': [],
+  },
+  'saas-monolith': {
+    en: [
+      {
+        label: 'modules.ts',
+        language: 'typescript',
+        code: `type TenantContext = { organizationId: string; userId: string };
+type Task = { id: string; organizationId: string; title: string; categoryId: string };
+
+class TenantPolicy {
+  canWriteTask(context: TenantContext, organizationId: string) {
+    return context.organizationId === organizationId;
+  }
+}
+
+class TaskModule {
+  private readonly tasks = new Map<string, Task>();
+
+  constructor(private readonly tenantPolicy: TenantPolicy) {}
+
+  create(context: TenantContext, input: { title: string; categoryId: string }) {
+    if (!this.tenantPolicy.canWriteTask(context, context.organizationId)) {
+      return { ok: false, error: 'tenant access denied' };
+    }
+    const task: Task = {
+      id: crypto.randomUUID(),
+      organizationId: context.organizationId,
+      title: input.title,
+      categoryId: input.categoryId
+    };
+    this.tasks.set(task.id, task);
+    return { ok: true, result: task };
+  }
+}
+
+const taskModule = new TaskModule(new TenantPolicy());
+export const modules = { taskModule };`,
+      },
+      {
+        label: 'route.ts',
+        language: 'typescript',
+        code: `import { modules } from './modules';
+
+export async function createTenantTask(request: Request) {
+  const organizationId = request.headers.get('x-organization-id') ?? '';
+  const userId = request.headers.get('x-user-id') ?? '';
+  const input = await request.json() as { title: string; categoryId: string };
+
+  const result = modules.taskModule.create({ organizationId, userId }, input);
+  if (!result.ok) return Response.json({ error: result.error }, { status: 403 });
+  return Response.json(result.result, { status: 201 });
+}`,
+      },
+      {
+        label: 'test.ts',
+        language: 'typescript',
+        code: `const request = new Request('http://localhost/tasks', {
+  method: 'POST',
+  headers: {
+    'content-type': 'application/json',
+    'x-organization-id': 'org-1',
+    'x-user-id': 'user-1'
+  },
+  body: JSON.stringify({ title: 'Tenant scoped task', categoryId: 'work' })
+});
+
+const response = await createTenantTask(request);
+console.assert(response.status === 201);`,
+      },
+    ],
+    'pt-BR': [],
+  },
+  'saas-microservices': {
+    en: [
+      {
+        label: 'contracts.ts',
+        language: 'typescript',
+        code: `export const TaskCreatedEvent = {
+  subject: 'tasks.created.v1',
+  example: {
+    id: 'task-1',
+    title: 'Notify assignee',
+    categoryId: 'work'
+  }
+} as const;
+
+export type TaskCreatedPayload = typeof TaskCreatedEvent.example;`,
+      },
+      {
+        label: 'producer.ts',
+        language: 'typescript',
+        code: `import type { TaskCreatedPayload } from './contracts';
+
+export async function createTask(input: { title: string; categoryId: string }, mediator: {
+  publish: (event: { subject: string; payload: TaskCreatedPayload }) => Promise<void>;
+}) {
+  const task = {
+    id: crypto.randomUUID(),
+    title: input.title,
+    categoryId: input.categoryId
+  };
+  await mediator.publish({ subject: 'tasks.created.v1', payload: task });
+  return task;
+}`,
+      },
+      {
+        label: 'worker.ts',
+        language: 'typescript',
+        code: `import type { TaskCreatedPayload } from './contracts';
+
+export function startNotificationWorker(mediator: {
+  subscribe: (subject: string, listener: (payload: TaskCreatedPayload) => Promise<void>) => Promise<void>;
+}) {
+  return mediator.subscribe('tasks.created.v1', async (task) => {
+    await fetch('https://notifications.internal/messages', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        template: 'task-created',
+        data: task
+      })
+    });
+  });
+}`,
+      },
+    ],
+    'pt-BR': [],
+  },
+  'spa-pwa': {
+    en: [
+      {
+        label: 'store.ts',
+        language: 'typescript',
+        code: `type Category = { id: string; name: string };
+type Task = { id: string; title: string; categoryId: string; completed: boolean };
+
+const categories = new Map<string, Category>([
+  ['work', { id: 'work', name: 'Work' }]
+]);
+const tasks = new Map<string, Task>();
+const listeners = new Set<() => void>();
+
+export function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+export function createTask(input: { title: string; categoryId: string }) {
+  if (!categories.has(input.categoryId)) throw new Error('category not found');
+  const task = { id: crypto.randomUUID(), completed: false, ...input };
+  tasks.set(task.id, task);
+  listeners.forEach((listener) => listener());
+  return task;
+}
+
+export function listTaskCards() {
+  return [...tasks.values()].map((task) => ({
+    ...task,
+    category: categories.get(task.categoryId)
+  }));
+}`,
+      },
+      {
+        label: 'TaskApp.tsx',
+        language: 'tsx',
+        code: `import { useEffect, useState } from 'react';
+import { createTask, listTaskCards, subscribe } from './store';
+
+export function TaskApp() {
+  const [cards, setCards] = useState(listTaskCards);
+
+  useEffect(() => subscribe(() => setCards(listTaskCards())), []);
+
+  return (
+    <main>
+      <button onClick={() => createTask({ title: 'Offline task', categoryId: 'work' })}>
+        Add task
+      </button>
+      {cards.map((card) => (
+        <article key={card.id}>
+          <strong>{card.title}</strong>
+          <span>{card.category?.name ?? 'Uncategorized'}</span>
+        </article>
+      ))}
+    </main>
+  );
+}`,
+      },
+      {
+        label: 'sync.ts',
+        language: 'typescript',
+        code: `import { listTaskCards } from './store';
+
+export async function syncWhenOnline() {
+  if (!navigator.onLine) return { synced: 0, skipped: 'offline' };
+
+  const cards = listTaskCards();
+  await fetch('/tasks/sync', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ tasks: cards })
+  });
+
+  return { synced: cards.length };
+}`,
+      },
+    ],
+    'pt-BR': [],
+  },
+};
+
+for (const name of Object.keys(useCaseImplementationSamples) as UseCaseName[]) {
+  if (useCaseImplementationSamples[name]['pt-BR'].length === 0) {
+    useCaseImplementationSamples[name]['pt-BR'] = useCaseImplementationSamples[name].en;
+  }
+}
+
 
 function PageHero({
   locale,
@@ -1591,6 +2108,23 @@ export function CommercialUseCasePage({ locale, name }: { locale: CommercialLoca
         </div>
       </Band>
       <Band alternate>
+        <div className={classes.sectionStack}>
+          <SectionHeading
+            eyebrow={t(locale, 'Practical implementation', 'Implementação prática')}
+            title={t(locale, 'Complete code for the first working slice', 'Código completo para a primeira fatia funcional')}
+            description={t(
+              locale,
+              'These examples keep Category and Task as the product vocabulary and show the controller, contract, client, worker, or state layer needed to reach a runnable MVP.',
+              'Estes exemplos mantêm Category e Task como vocabulário de produto e mostram controller, contrato, client, worker ou camada de estado necessários para chegar a um MVP executável.',
+            )}
+          />
+          <CodeShowcase
+            samples={useCaseImplementationSamples[name][locale]}
+            title={t(locale, `${content.title} complete MVP code`, `${content.title} código MVP completo`)}
+          />
+        </div>
+      </Band>
+      <Band>
         <div className={classes.sectionStack}>
           <SectionHeading eyebrow={t(locale, 'Keep exploring', 'Continue explorando')} title={t(locale, 'Related delivery paths', 'Jornadas relacionadas')} />
           <UseCaseLinks locale={locale} />

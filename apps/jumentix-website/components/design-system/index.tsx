@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import {
   IconAlertTriangle,
   IconArrowLeft,
@@ -223,6 +223,7 @@ export function CodeShowcase({
 }) {
   const [active, setActive] = useState(0);
   const [copied, setCopied] = useState(false);
+  const panelId = useId();
   const sample = samples[active] ?? samples[0];
   const sampleCode = sample ? trimTrailingBlankCodeLines(sample.code) : '';
 
@@ -246,7 +247,7 @@ export function CodeShowcase({
               type="button"
               role="tab"
               aria-selected={active === index}
-              aria-controls="jtx-code-panel"
+              aria-controls={panelId}
               onClick={() => setActive(index)}
             >
               {entry.label}
@@ -263,7 +264,7 @@ export function CodeShowcase({
           {copied ? <IconCheck size={17} /> : <IconClipboard size={17} />}
         </button>
       </div>
-      <div id="jtx-code-panel" role="tabpanel">
+      <div id={panelId} role="tabpanel">
         <MonacoCodeBlock
           value={sampleCode}
           language={sample.language}
