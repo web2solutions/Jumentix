@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-13 feat(website): add MvpJourney day tabs and executable MVP snippets (JUM-709) (JUM-710) - Eduardo Almeida
 - 2026-08-13 docs: expand use case code and dlq canvas (#230) - Eduardo A.
 - 2026-08-13 docs: showcase mutex dead-letter replay (#229) - Eduardo A.
 - 2026-08-13 docs: expand MVP use cases and mediator playgrounds (#228) - Eduardo A.
