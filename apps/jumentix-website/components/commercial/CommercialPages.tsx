@@ -30,7 +30,10 @@ import {
   SectionHeading,
   StatusBadge,
 } from '../design-system';
+import { docsPlaygroundAnchor } from '../docs-playground/anchors';
+import { listDocsSnippets } from '../docs-playground/catalogs';
 import { DocsPlayground } from '../docs-playground/DocsPlayground';
+import type { DocsRuntimeId } from '../docs-playground/types';
 import classes from './CommercialPages.module.css';
 
 export type CommercialLocale = 'en' | 'pt-BR';
@@ -63,6 +66,34 @@ const localize = (href: string, locale: CommercialLocale) =>
 const t = <T,>(locale: CommercialLocale, en: T, pt: T) => (locale === 'pt-BR' ? pt : en);
 
 const repositoryUrl = 'https://github.com/XpertMinds/Jumentix';
+const playgroundRuntimeOrder: readonly DocsRuntimeId[] = [
+  'jumentix-browser-lab',
+  'cana',
+  'message-mediator',
+  'key-value-storage',
+  'mutex-service',
+  'sdk-rest-client',
+  'sdk-websocket-client',
+  'designer-core',
+];
+const playgroundRuntimeLabels: Record<DocsRuntimeId, { en: string; 'pt-BR': string }> = {
+  cana: { en: 'Cana', 'pt-BR': 'Cana' },
+  'designer-core': { en: 'Designer Core', 'pt-BR': 'Designer Core' },
+  'jumentix-browser-lab': { en: 'Jumentix browser lab', 'pt-BR': 'Jumentix browser lab' },
+  'key-value-storage': { en: 'Key/value storage', 'pt-BR': 'Key/value storage' },
+  'message-mediator': { en: 'Message Mediator', 'pt-BR': 'Message Mediator' },
+  'mutex-service': { en: 'Mutex Service', 'pt-BR': 'Mutex Service' },
+  'sdk-rest-client': { en: 'REST SDK', 'pt-BR': 'REST SDK' },
+  'sdk-websocket-client': { en: 'WebSocket SDK', 'pt-BR': 'WebSocket SDK' },
+};
+const playgroundCatalogEntries = playgroundRuntimeOrder.flatMap((runtime) =>
+  listDocsSnippets(runtime).map((snippet) => ({
+    runtime,
+    id: snippet.id,
+    title: snippet.title,
+    description: snippet.description,
+  }))
+);
 
 const codeSamples = {
   start: [
@@ -1089,6 +1120,29 @@ function QualityEvidenceBand({
   );
 }
 
+function PlaygroundDirectory({
+  locale,
+}: {
+  locale: CommercialLocale;
+}) {
+  return (
+    <div className={classes.playgroundDirectory}>
+      {playgroundCatalogEntries.map((entry) => (
+        <a
+          key={`${entry.runtime}-${entry.id}`}
+          href={`#${docsPlaygroundAnchor(entry.runtime, entry.id)}`}
+          className={classes.playgroundDirectoryCard}
+        >
+          <span>{playgroundRuntimeLabels[entry.runtime][locale]}</span>
+          <h3>{entry.title[locale]}</h3>
+          <p>{entry.description[locale]}</p>
+          <strong>{entry.runtime}/{entry.id}</strong>
+        </a>
+      ))}
+    </div>
+  );
+}
+
 function BrowserInMemoryLabBand({
   locale,
   alternate = false,
@@ -1096,6 +1150,7 @@ function BrowserInMemoryLabBand({
   locale: CommercialLocale;
   alternate?: boolean;
 }) {
+  const playgroundCount = String(playgroundCatalogEntries.length);
   return (
     <Band alternate={alternate}>
       <div className={classes.sectionStack}>
@@ -1111,7 +1166,7 @@ function BrowserInMemoryLabBand({
         <MetricStrip metrics={[
           { value: '100%', label: t(locale, 'browser execution', 'execução no browser') },
           { value: '0', label: t(locale, 'servers required for the lab', 'servidores exigidos no lab') },
-          { value: '8', label: t(locale, 'package contracts showcased', 'contratos de pacote demonstrados') },
+          { value: playgroundCount, label: t(locale, 'available code playgrounds', 'code playgrounds disponíveis') },
           { value: '2', label: t(locale, 'apps represented: Service Management and Backend Template', 'apps representados: Service Management e Backend Template') },
         ]} />
         <DetailGrid items={[
@@ -1121,20 +1176,29 @@ function BrowserInMemoryLabBand({
           { title: t(locale, 'Messaging and locks', 'Mensageria e locks'), description: t(locale, 'Message Mediator, Mutex Service and Dead Letter Queue show request/response, events, write protection and recoverable rejection before durable infrastructure is introduced.', 'Message Mediator, Mutex Service e Dead Letter Queue mostram request/response, eventos, proteção de escrita e rejeição recuperável antes de infraestrutura durável entrar.'), meta: '@jumentix/message-mediator', icon: <IconMessages /> },
           { title: t(locale, 'Bulk write recovery', 'Recuperação de escrita em massa'), description: t(locale, 'The DLQ playground sends rejected bulk Task requests back through the controller workflow, so replay still reacquires the Category mutex before writing.', 'O playground de DLQ envia requests Task rejeitados em massa de volta pelo fluxo do controller, então o replay ainda readquire o mutex da Category antes de escrever.'), meta: '@jumentix/dead-letter-queue', icon: <IconShieldCheck /> },
         ]} />
+        <div className={classes.playgroundDirectorySection}>
+          <SectionHeading
+            eyebrow={t(locale, 'Playground directory', 'Diretório de playgrounds')}
+            title={t(locale, 'Jump to any runnable package example', 'Navegue para qualquer exemplo executável')}
+            description={t(
+              locale,
+              'Every registered code playground is listed here with a direct link to the live widget below. Use it as a map across Cana, messaging, persistence, mutex, SDK and design examples.',
+              'Todos os code playgrounds registrados aparecem aqui com link direto para o widget executável abaixo. Use como mapa entre Cana, mensageria, persistência, mutex, SDK e exemplos de design.',
+            )}
+          />
+          <PlaygroundDirectory locale={locale} />
+        </div>
         <div className={classes.playgroundGrid}>
-          <div className={classes.playgroundWide}>
-            <DocsPlayground runtime="jumentix-browser-lab" id="getting-started" />
-          </div>
-          <div className={classes.playgroundWide}>
-            <DocsPlayground runtime="jumentix-browser-lab" id="bulk-mutex-dead-letter" />
-          </div>
-          <DocsPlayground runtime="key-value-storage" id="getting-started" />
-          <DocsPlayground runtime="message-mediator" id="getting-started" />
-          <DocsPlayground runtime="mutex-service" id="getting-started" />
-          <DocsPlayground runtime="sdk-rest-client" id="getting-started" />
-          <DocsPlayground runtime="sdk-websocket-client" id="getting-started" />
-          <DocsPlayground runtime="cana" id="getting-started" />
-          <DocsPlayground runtime="designer-core" id="getting-started" />
+          {playgroundCatalogEntries.map((entry) => (
+            <div
+              key={`${entry.runtime}-${entry.id}`}
+              className={entry.runtime === 'jumentix-browser-lab' || entry.id === 'worker-client-flow'
+                ? classes.playgroundWide
+                : undefined}
+            >
+              <DocsPlayground runtime={entry.runtime} id={entry.id} />
+            </div>
+          ))}
         </div>
       </div>
     </Band>

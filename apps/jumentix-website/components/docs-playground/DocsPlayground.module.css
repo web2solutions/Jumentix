@@ -54,3 +54,26 @@
 .flowLegend i[data-tone='replay'] {
   background: #ea580c;
 }
+
+.flowStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.flowStats span {
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--jtx-line-strong) 62%, transparent);
+  border-radius: var(--jtx-radius-sm);
+  background: color-mix(in srgb, var(--jtx-surface) 82%, transparent);
+  color: var(--jtx-ink);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+@media (max-width: 700px) {
+  .flowStats {
+    grid-template-columns: 1fr;
+  }
+}
