@@ -2,7 +2,6 @@ import type { ReactNode } from 'react';
 import {
   IconApi,
   IconArrowRight,
-  IconBolt,
   IconBrandGithub,
   IconBuildingFactory2,
   IconCloud,
@@ -368,6 +367,75 @@ function UseCaseLinks({ locale }: { locale: CommercialLocale }) {
   );
 }
 
+type DetailCard = {
+  title: string;
+  description: string;
+  eyebrow?: string;
+  meta?: string;
+  icon?: ReactNode;
+};
+
+function DetailGrid({ items }: { items: DetailCard[] }) {
+  return (
+    <div className={classes.detailGrid}>
+      {items.map((item) => (
+        <article className={classes.detailCard} key={`${item.eyebrow ?? 'detail'}-${item.title}`}>
+          {item.icon ? <span className={classes.detailIcon} aria-hidden="true">{item.icon}</span> : null}
+          {item.eyebrow ? <p className={classes.cardEyebrow}>{item.eyebrow}</p> : null}
+          <h3>{item.title}</h3>
+          <p>{item.description}</p>
+          {item.meta ? <strong>{item.meta}</strong> : null}
+        </article>
+      ))}
+    </div>
+  );
+}
+
+type CommercialMatrixRow = {
+  focus: string;
+  when: string;
+  implementation: string;
+  outcome: string;
+};
+
+function CommercialMatrix({
+  headers,
+  rows,
+}: {
+  headers: string[];
+  rows: CommercialMatrixRow[];
+}) {
+  return (
+    <div className={classes.matrixWrap}>
+      <table className={classes.matrix}>
+        <thead>
+          <tr>
+            {headers.map((header) => <th scope="col" key={header}>{header}</th>)}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.focus}>
+              <th scope="row">{row.focus}</th>
+              <td>{row.when}</td>
+              <td>{row.implementation}</td>
+              <td>{row.outcome}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function ProofList({ items }: { items: string[] }) {
+  return (
+    <ul className={classes.proofList}>
+      {items.map((item) => <li key={item}><IconShieldCheck size={17} /> {item}</li>)}
+    </ul>
+  );
+}
+
 function Home({ locale }: { locale: CommercialLocale }) {
   return (
     <>
@@ -514,22 +582,74 @@ function Product({ locale }: { locale: CommercialLocale }) {
         <div className={classes.sectionStack}>
           <SectionHeading eyebrow={t(locale, 'Platform capabilities', 'Capacidades da plataforma')} title={t(locale, 'The full delivery lifecycle, connected', 'Todo o ciclo de entrega, conectado')} />
           <FeatureGrid features={[
-            { title: t(locale, 'Service Management', 'Gerenciamento de serviços'), description: t(locale, 'Visual tools for domains, interfaces, environments, and deployments.', 'Ferramentas visuais para domínios, interfaces, ambientes e deploys.'), icon: <IconBuildingFactory2 /> },
-            { title: t(locale, 'Contract-first runtimes', 'Runtimes orientados a contratos'), description: t(locale, 'OpenAPI and AsyncAPI align handlers, clients, validation, and docs.', 'OpenAPI e AsyncAPI alinham handlers, clientes, validação e docs.'), icon: <IconRoute /> },
-            { title: t(locale, 'Reusable package ecosystem', 'Ecossistema de pacotes reutilizáveis'), description: t(locale, 'Generic adapters become distributable packages shared by services.', 'Adaptadores genéricos viram pacotes distribuíveis compartilhados por serviços.'), icon: <IconPackage /> },
-            { title: t(locale, 'Portable persistence', 'Persistência portável'), description: t(locale, 'One store contract spans relational, document, key-value, and queue-backed adapters.', 'Um contrato de store cobre adaptadores relacionais, documentos, chave-valor e filas.'), icon: <IconDatabase /> },
-            { title: t(locale, 'Service communication', 'Comunicação entre serviços'), description: t(locale, 'Message Mediator request/response and events avoid domain coupling.', 'Request/response e eventos do Message Mediator evitam acoplamento de domínios.'), icon: <IconMessages /> },
-            { title: t(locale, 'Governed delivery', 'Entrega governada'), description: t(locale, 'Coverage, security, CI, traceability, and evidence are product defaults.', 'Cobertura, segurança, CI, rastreabilidade e evidências são padrões do produto.'), icon: <IconShieldCheck /> },
+            { title: t(locale, 'Service Management', 'Gerenciamento de serviços'), description: t(locale, 'Model domains, entities, relationships, interfaces, environments, and deployment profiles before code generation starts.', 'Modele domínios, entidades, relacionamentos, interfaces, ambientes e perfis de deploy antes da geração de código.'), icon: <IconBuildingFactory2 /> },
+            { title: t(locale, 'Contract-first runtimes', 'Runtimes orientados a contratos'), description: t(locale, 'OpenAPI 3.1 and AsyncAPI contracts align request validation, handlers, generated clients, docs, and route checks.', 'Contratos OpenAPI 3.1 e AsyncAPI alinham validação de requests, handlers, clientes gerados, docs e checagens de rota.'), icon: <IconRoute /> },
+            { title: t(locale, 'Reusable package ecosystem', 'Ecossistema de pacotes reutilizáveis'), description: t(locale, 'SDK clients, persistence contracts, message mediation, runtime bootstrap, Cana, and adapters live as packages that services can share.', 'SDKs, contratos de persistência, mediação de mensagens, bootstrap de runtime, Cana e adaptadores vivem como pacotes compartilháveis entre serviços.'), icon: <IconPackage /> },
+            { title: t(locale, 'Portable persistence', 'Persistência portável'), description: t(locale, 'Repository and store ports keep use-cases stable while PostgreSQL, MySQL, MongoDB, DynamoDB, SQLite, Firebase, or in-memory adapters change.', 'Ports de repository e store mantêm casos de uso estáveis enquanto adaptadores PostgreSQL, MySQL, MongoDB, DynamoDB, SQLite, Firebase ou in-memory mudam.'), icon: <IconDatabase /> },
+            { title: t(locale, 'Service communication', 'Comunicação entre serviços'), description: t(locale, 'Message Mediator supports request/response and event flows so modules can stay in-process today and move to workers or brokers later.', 'O Message Mediator suporta fluxos request/response e eventos para módulos ficarem em processo hoje e migrarem para workers ou brokers depois.'), icon: <IconMessages /> },
+            { title: t(locale, 'Governed delivery', 'Entrega governada'), description: t(locale, 'Branch-aware CI, security scanning, architectural boundary checks, documentation sync, route checks, and evidence files protect every release.', 'CI por branch, scan de segurança, checagens de limites arquiteturais, sincronização de docs, checagens de rotas e evidências protegem cada release.'), icon: <IconShieldCheck /> },
+          ]} />
+          <MetricStrip metrics={[
+            { value: '12', label: t(locale, 'HTTP/function runtime adapters', 'adaptadores HTTP/functions') },
+            { value: '12', label: t(locale, 'database adapter targets', 'alvos de banco de dados') },
+            { value: '3', label: t(locale, 'contracted API styles', 'estilos de API contratados') },
+            { value: '99/90', label: t(locale, 'statement/branch quality standard', 'padrão de statements/branches') },
           ]} />
         </div>
       </Band>
       <Band alternate>
+        <div className={classes.sectionStack}>
+          <SectionHeading
+            eyebrow={t(locale, 'Product surfaces', 'Superfícies do produto')}
+            title={t(locale, 'What Jumentix gives each team', 'O que o Jumentix entrega para cada equipe')}
+            description={t(
+              locale,
+              'The site should not hide behind vague platform language: Jumentix is a connected set of tools, packages, templates, contracts, and release rules.',
+              'O site não deve se esconder atrás de linguagem vaga de plataforma: o Jumentix é um conjunto conectado de ferramentas, pacotes, templates, contratos e regras de release.',
+            )}
+          />
+          <DetailGrid items={[
+            { eyebrow: t(locale, 'Model', 'Modelo'), title: t(locale, 'Domain Designer', 'Domain Designer'), description: t(locale, 'Design bounded contexts, entities, fields, relationships, validation rules, OpenAPI composition, AsyncAPI exports, and boilerplate bundles from one workspace.', 'Desenhe contextos delimitados, entidades, campos, relacionamentos, regras de validação, composição OpenAPI, exportações AsyncAPI e pacotes boilerplate em um workspace.'), icon: <IconHierarchy3 /> },
+            { eyebrow: t(locale, 'Build', 'Construa'), title: t(locale, 'Backend Template', 'Backend Template'), description: t(locale, 'Start from Users, Auth, RBAC, tenancy, controllers, use-cases, ports, adapters, error contracts, and smokeable runtime profiles.', 'Comece com Users, Auth, RBAC, tenancy, controllers, casos de uso, ports, adaptadores, contratos de erro e perfis de runtime testáveis.'), icon: <IconCode /> },
+            { eyebrow: t(locale, 'Consume', 'Consuma'), title: t(locale, 'Generated SDKs', 'SDKs gerados'), description: t(locale, 'REST, WebSocket, and gRPC clients read the canonical contracts so frontend and backend teams share one API vocabulary.', 'Clientes REST, WebSocket e gRPC leem os contratos canônicos para frontend e backend compartilharem o mesmo vocabulário de API.'), icon: <IconDeviceDesktop /> },
+            { eyebrow: t(locale, 'Operate', 'Opere'), title: t(locale, 'Governance and deploy paths', 'Governança e caminhos de deploy'), description: t(locale, 'Quality gates, dependency policy, service profiles, Docker, PM2, serverless targets, and release evidence make adoption auditable.', 'Gates de qualidade, política de dependências, perfis de serviço, Docker, PM2, alvos serverless e evidências de release tornam a adoção auditável.'), icon: <IconRocket /> },
+          ]} />
+        </div>
+      </Band>
+      <Band>
         <div className={classes.twoColumn}>
           <div className={classes.prose}>
             <h2>{t(locale, 'Compose the runtime instead of marrying it', 'Componha o runtime em vez de ficar preso a ele')}</h2>
-            <p>{t(locale, 'Choose the interface and infrastructure that fit each service. Domain and use-case code stay behind stable ports.', 'Escolha a interface e a infraestrutura adequadas a cada serviço. Domínio e casos de uso permanecem atrás de ports estáveis.')}</p>
+            <p>{t(locale, 'Choose the interface and infrastructure that fit each service. Domain and use-case code stay behind stable ports, so a team can test Express locally, deploy a serverless handler later, or move a bounded context into a worker without rewriting business behavior.', 'Escolha a interface e a infraestrutura adequadas a cada serviço. Domínio e casos de uso permanecem atrás de ports estáveis, então a equipe pode testar Express localmente, publicar um handler serverless depois ou mover um contexto delimitado para um worker sem reescrever comportamento de negócio.')}</p>
+            <ProofList items={[
+              t(locale, 'Environment variables select adapters; use-cases do not import framework types.', 'Variáveis de ambiente selecionam adaptadores; casos de uso não importam tipos de framework.'),
+              t(locale, 'The same contracts feed documentation, validation, SDKs, and route governance.', 'Os mesmos contratos alimentam documentação, validação, SDKs e governança de rotas.'),
+              t(locale, 'Each package has an owner boundary and a test expectation before release.', 'Cada pacote tem limite de ownership e expectativa de teste antes do release.'),
+            ]} />
           </div>
           <CodeShowcase samples={codeSamples.persistence} title={t(locale, 'Portable persistence', 'Persistência portável')} />
+        </div>
+      </Band>
+      <Band alternate>
+        <div className={classes.sectionStack}>
+          <SectionHeading
+            eyebrow={t(locale, 'Operating model', 'Modelo operacional')}
+            title={t(locale, 'Who uses what in the platform', 'Quem usa o quê na plataforma')}
+            description={t(
+              locale,
+              'Jumentix is useful only when each role can see its part of the delivery system. This matrix connects the product surface to daily work.',
+              'O Jumentix só é útil quando cada papel enxerga sua parte do sistema de entrega. Esta matriz conecta a superfície do produto ao trabalho diário.',
+            )}
+          />
+          <CommercialMatrix
+            headers={t(locale, ['Role', 'When they use it', 'Jumentix surface', 'Result'], ['Papel', 'Quando usa', 'Superfície Jumentix', 'Resultado'])}
+            rows={[
+              { focus: t(locale, 'Product owner', 'Product owner'), when: t(locale, 'A new SaaS capability needs clear scope before implementation.', 'Uma nova capacidade SaaS precisa de escopo claro antes da implementação.'), implementation: t(locale, 'Domain Designer, exported model docs, use-case blueprints.', 'Domain Designer, documentação exportada do modelo, blueprints de casos de uso.'), outcome: t(locale, 'Backlog items map to domain boundaries instead of loose technical tasks.', 'Itens de backlog mapeiam para limites de domínio em vez de tarefas técnicas soltas.') },
+              { focus: t(locale, 'Backend engineer', 'Engenharia backend'), when: t(locale, 'A service needs routes, validation, persistence, auth, or realtime behavior.', 'Um serviço precisa de rotas, validação, persistência, auth ou comportamento realtime.'), implementation: t(locale, 'Backend template, ports/adapters, OpenAPI and AsyncAPI contracts.', 'Backend template, ports/adapters, contratos OpenAPI e AsyncAPI.'), outcome: t(locale, 'Feature work stays inside application and domain modules.', 'Trabalho de feature fica dentro dos módulos de aplicação e domínio.') },
+              { focus: t(locale, 'Frontend engineer', 'Engenharia frontend'), when: t(locale, 'A SPA/PWA needs typed access to APIs and offline workflows.', 'Uma SPA/PWA precisa de acesso tipado a APIs e fluxos offline.'), implementation: t(locale, 'Generated SDKs, Cana, React/Vue integration packages, IndexedDB-ready examples.', 'SDKs gerados, Cana, pacotes de integração React/Vue, exemplos prontos para IndexedDB.'), outcome: t(locale, 'UI state and server contracts stay synchronized.', 'Estado da UI e contratos do servidor permanecem sincronizados.') },
+              { focus: t(locale, 'Platform team', 'Time de plataforma'), when: t(locale, 'Multiple squads need the same standards without copy-paste governance.', 'Várias squads precisam dos mesmos padrões sem governança copiada à mão.'), implementation: t(locale, 'Branch gates, workspace policies, package boundaries, deployment profiles.', 'Gates por branch, políticas de workspace, limites de pacotes, perfis de deploy.'), outcome: t(locale, 'Reusable golden paths with evidence for security and quality reviews.', 'Golden paths reutilizáveis com evidência para revisões de segurança e qualidade.') },
+            ]}
+          />
         </div>
       </Band>
       <Band>
@@ -552,7 +672,56 @@ function UseCases({ locale }: { locale: CommercialLocale }) {
   return (
     <>
       <PageHero locale={locale} eyebrow={t(locale, 'Use cases', 'Casos de uso')} title={t(locale, 'Start with the product you need now', 'Comece com o produto de que você precisa agora')} description={t(locale, 'Every blueprint uses the same contracts and boundaries, so today’s architecture does not block tomorrow’s scale.', 'Cada blueprint usa os mesmos contratos e limites, para que a arquitetura de hoje não bloqueie a escala de amanhã.')} />
-      <Band><UseCaseLinks locale={locale} /></Band>
+      <Band>
+        <div className={classes.sectionStack}>
+          <SectionHeading
+            eyebrow={t(locale, 'Blueprint catalog', 'Catálogo de blueprints')}
+            title={t(locale, 'Pick the entry point that matches the product risk', 'Escolha o ponto de entrada que combina com o risco do produto')}
+            description={t(
+              locale,
+              'The blueprints are not separate templates. They are different topologies over the same domain, contract, adapter, and governance model.',
+              'Os blueprints não são templates separados. Eles são topologias diferentes sobre o mesmo modelo de domínio, contratos, adaptadores e governança.',
+            )}
+          />
+          <UseCaseLinks locale={locale} />
+        </div>
+      </Band>
+      <Band alternate>
+        <div className={classes.sectionStack}>
+          <SectionHeading
+            eyebrow={t(locale, 'Decision matrix', 'Matriz de decisão')}
+            title={t(locale, 'When to choose each Jumentix path', 'Quando escolher cada caminho Jumentix')}
+            description={t(
+              locale,
+              'Start with the smallest topology that proves the product. Jumentix keeps the contracts stable so the architecture can grow without a rewrite.',
+              'Comece com a menor topologia que prova o produto. O Jumentix mantém contratos estáveis para a arquitetura crescer sem reescrita.',
+            )}
+          />
+          <CommercialMatrix
+            headers={t(locale, ['Path', 'Use it when', 'Implementation shape', 'What to measure'], ['Caminho', 'Use quando', 'Formato de implementação', 'O que medir'])}
+            rows={[
+              { focus: t(locale, 'REST API', 'API REST'), when: t(locale, 'The product needs predictable CRUD, integrations, admin workflows, or public API documentation.', 'O produto precisa de CRUD previsível, integrações, fluxos administrativos ou documentação pública de API.'), implementation: t(locale, 'OpenAPI 3.1, native HTTP adapter, controller, use-case, repository port, SDK client.', 'OpenAPI 3.1, adaptador HTTP nativo, controller, caso de uso, port de repository, SDK cliente.'), outcome: t(locale, 'Route coverage, validation failures, API latency, SDK adoption.', 'Cobertura de rotas, falhas de validação, latência da API, adoção do SDK.') },
+              { focus: t(locale, 'Realtime API', 'API realtime'), when: t(locale, 'Users need live collaboration, progress updates, notifications, streaming command results, or bidirectional control.', 'Usuários precisam de colaboração ao vivo, progresso, notificações, resultados de comando em streaming ou controle bidirecional.'), implementation: t(locale, 'Socket.IO or gRPC process with REST fallback, AsyncAPI contracts, correlated messages, optional Redis Streams.', 'Processo Socket.IO ou gRPC com fallback REST, contratos AsyncAPI, mensagens correlacionadas, Redis Streams opcional.'), outcome: t(locale, 'Delivery acknowledgement, reconnect behavior, fan-out reliability, fallback parity.', 'Acknowledgement de entrega, reconexão, confiabilidade de fan-out, paridade do fallback.') },
+              { focus: t(locale, 'Modular SaaS', 'SaaS modular'), when: t(locale, 'You need to ship one product quickly but still protect domain ownership, tenancy, RBAC, and later extraction.', 'Você precisa lançar um produto rápido, preservando domínio, tenancy, RBAC e extração futura.'), implementation: t(locale, 'One deployable, feature modules, shared composition root, tenant-aware policies, contract events.', 'Um deploy, módulos por feature, composition root compartilhada, políticas tenant-aware, eventos contratados.'), outcome: t(locale, 'Release frequency, onboarding time, module coupling, cost per environment.', 'Frequência de release, tempo de onboarding, acoplamento entre módulos, custo por ambiente.') },
+              { focus: t(locale, 'Microservices', 'Microsserviços'), when: t(locale, 'Team ownership, scaling profile, data lifecycle, or deployment cadence requires independent services.', 'Ownership de times, perfil de escala, ciclo de vida dos dados ou cadência de deploy exigem serviços independentes.'), implementation: t(locale, 'Independent workers/services, Message Mediator contracts, broker adapters, per-service gates.', 'Workers/serviços independentes, contratos do Message Mediator, adaptadores de broker, gates por serviço.'), outcome: t(locale, 'Service autonomy, broker durability, contract compatibility, incident isolation.', 'Autonomia de serviço, durabilidade do broker, compatibilidade contratual, isolamento de incidentes.') },
+              { focus: t(locale, 'SPA/PWA', 'SPA/PWA'), when: t(locale, 'The frontend must work offline, sync later, or share API contracts across React/Vue products.', 'O frontend precisa funcionar offline, sincronizar depois ou compartilhar contratos de API entre produtos React/Vue.'), implementation: t(locale, 'Generated SDKs, Cana local store, React/Vue hooks, IndexedDB-ready state flow.', 'SDKs gerados, store local Cana, hooks React/Vue, fluxo de estado pronto para IndexedDB.'), outcome: t(locale, 'Offline completion rate, sync conflicts, stale reads, UI event latency.', 'Taxa de conclusão offline, conflitos de sync, leituras antigas, latência de eventos da UI.') },
+            ]}
+          />
+        </div>
+      </Band>
+      <Band>
+        <div className={classes.sectionStack}>
+          <SectionHeading
+            eyebrow={t(locale, 'Shared foundation', 'Fundação compartilhada')}
+            title={t(locale, 'Every use case keeps the same engineering rules', 'Todo caso de uso mantém as mesmas regras de engenharia')}
+          />
+          <DetailGrid items={[
+            { title: t(locale, 'Contracts before adapters', 'Contratos antes de adaptadores'), description: t(locale, 'OpenAPI, AsyncAPI, message contracts, and error contracts describe the boundary before framework code handles it.', 'OpenAPI, AsyncAPI, contratos de mensagem e contratos de erro descrevem o limite antes do código de framework tratá-lo.'), icon: <IconRoute /> },
+            { title: t(locale, 'Use-cases before infrastructure', 'Casos de uso antes da infraestrutura'), description: t(locale, 'Application services depend on ports. Databases, queues, HTTP servers, and cloud providers plug in at composition time.', 'Serviços de aplicação dependem de ports. Bancos, filas, servidores HTTP e provedores cloud entram no momento de composição.'), icon: <IconHierarchy3 /> },
+            { title: t(locale, 'Evidence before release', 'Evidência antes do release'), description: t(locale, 'Tests, route checks, architectural boundary checks, security review, and docs synchronization are part of delivery.', 'Testes, checagens de rota, limites arquiteturais, revisão de segurança e sincronização de docs fazem parte da entrega.'), icon: <IconShieldCheck /> },
+          ]} />
+        </div>
+      </Band>
       <FinalCta locale={locale} />
     </>
   );
@@ -615,12 +784,42 @@ export function CommercialUseCasePage({ locale, name }: { locale: CommercialLoca
 }
 
 const integrations = [
-  ['HTTP runtimes', 'Express, Fastify, Restify, Hono, Vercel, LoopBack, Sails, Feathers, Derby, AdonisJS, Total.js', <IconApi key="http" />],
-  ['Realtime', 'Socket.IO, Redis Streams, cluster adapter, gRPC, AsyncAPI', <IconMessages key="realtime" />],
-  ['SQL', 'PostgreSQL, MySQL, SQL Server, Oracle, SQLite, Aurora DSQL, RDS through Sequelize and Postgres.js', <IconDatabase key="sql" />],
-  ['NoSQL', 'MongoDB, DynamoDB, Cassandra, Firebase and in-memory reference adapter', <IconDatabase key="nosql" />],
-  ['Messaging', 'In-memory Message Mediator, RabbitMQ and BullMQ-compatible contracts', <IconTopologyStar3 key="messaging" />],
-  ['Deployment', 'PM2, Docker, Serverless, AWS, Azure, Google Cloud, Vercel and Cloudflare', <IconCloud key="deployment" />],
+  {
+    title: 'HTTP runtimes',
+    description: 'Express, Fastify, Restify, AWS Lambda, Cloudflare Workers, Vercel Functions, LoopBack, Sails, Feathers, Derby, AdonisJS, and Total.js.',
+    ptDescription: 'Express, Fastify, Restify, AWS Lambda, Cloudflare Workers, Vercel Functions, LoopBack, Sails, Feathers, Derby, AdonisJS e Total.js.',
+    icon: <IconApi key="http" />,
+  },
+  {
+    title: 'Realtime',
+    description: 'Socket.IO, Redis Streams, cluster adapter, gRPC, REST fallback, AsyncAPI documents, and generated realtime clients.',
+    ptDescription: 'Socket.IO, Redis Streams, adapter de cluster, gRPC, fallback REST, documentos AsyncAPI e clientes realtime gerados.',
+    icon: <IconMessages key="realtime" />,
+  },
+  {
+    title: 'SQL',
+    description: 'PostgreSQL, MySQL, SQL Server, Oracle, SQLite, Aurora DSQL, and RDS through shared persistence contracts.',
+    ptDescription: 'PostgreSQL, MySQL, SQL Server, Oracle, SQLite, Aurora DSQL e RDS por contratos compartilhados de persistência.',
+    icon: <IconDatabase key="sql" />,
+  },
+  {
+    title: 'NoSQL',
+    description: 'MongoDB, DynamoDB, Cassandra, Firebase, key-value storage, and in-memory adapters for local tests and prototypes.',
+    ptDescription: 'MongoDB, DynamoDB, Cassandra, Firebase, key-value storage e adaptadores in-memory para testes locais e protótipos.',
+    icon: <IconDatabase key="nosql" />,
+  },
+  {
+    title: 'Messaging',
+    description: 'In-memory Message Mediator for local/browser flows, with RabbitMQ and BullMQ-compatible contracts for durable Node workers.',
+    ptDescription: 'Message Mediator in-memory para fluxos locais/browser, com contratos compatíveis com RabbitMQ e BullMQ para workers Node duráveis.',
+    icon: <IconTopologyStar3 key="messaging" />,
+  },
+  {
+    title: 'Deployment',
+    description: 'PM2, Docker, Serverless, AWS, Azure, Google Cloud, Vercel, Cloudflare, and environment-specific runtime profiles.',
+    ptDescription: 'PM2, Docker, Serverless, AWS, Azure, Google Cloud, Vercel, Cloudflare e perfis de runtime por ambiente.',
+    icon: <IconCloud key="deployment" />,
+  },
 ] as const;
 
 function Integrations({ locale }: { locale: CommercialLocale }) {
@@ -628,14 +827,78 @@ function Integrations({ locale }: { locale: CommercialLocale }) {
     <>
       <PageHero locale={locale} eyebrow={t(locale, 'Integrations', 'Integrações')} title={t(locale, 'Choose infrastructure per service, not per platform', 'Escolha a infraestrutura por serviço, não por plataforma')} description={t(locale, 'Jumentix keeps technology decisions at the adapter boundary, where they can be tested and replaced.', 'O Jumentix mantém decisões de tecnologia no limite dos adaptadores, onde podem ser testadas e substituídas.')} />
       <Band>
-        <div className={classes.integrationGrid}>
-          {integrations.map(([title, description, icon]) => <article className={classes.integration} key={title}>{icon}<h3>{title}</h3><p>{description}</p></article>)}
+        <div className={classes.sectionStack}>
+          <SectionHeading
+            eyebrow={t(locale, 'Adapter catalog', 'Catálogo de adaptadores')}
+            title={t(locale, 'The practical integration surface', 'A superfície prática de integração')}
+            description={t(
+              locale,
+              'Each adapter sits outside the domain. The application selects ports and contracts; the composition root decides which technology runs in each environment.',
+              'Cada adaptador fica fora do domínio. A aplicação seleciona ports e contratos; a raiz de composição decide qual tecnologia roda em cada ambiente.',
+            )}
+          />
+          <div className={classes.integrationGrid}>
+            {integrations.map((item) => (
+              <article className={classes.integration} key={item.title}>
+                {item.icon}
+                <h3>{item.title}</h3>
+                <p>{t(locale, item.description, item.ptDescription)}</p>
+              </article>
+            ))}
+          </div>
         </div>
       </Band>
       <Band alternate>
         <div className={classes.twoColumn}>
-          <div className={classes.prose}><h2>{t(locale, 'Change the driver, preserve the application', 'Troque o driver, preserve a aplicação')}</h2><p>{t(locale, 'Bootstrap adapters read environment configuration, compile the selected database and key-value clients, and inject contracts into the application composition root.', 'Adaptadores de bootstrap leem a configuração do ambiente, compilam os clientes de banco e chave-valor escolhidos e injetam contratos na raiz de composição.')}</p></div>
+          <div className={classes.prose}>
+            <h2>{t(locale, 'Change the driver, preserve the application', 'Troque o driver, preserve a aplicação')}</h2>
+            <p>{t(locale, 'Bootstrap adapters read environment configuration, compile the selected database and key-value clients, and inject contracts into the application composition root. That keeps business code independent from Sequelize, Postgres.js, Mongo clients, queues, or HTTP framework request objects.', 'Adaptadores de bootstrap leem a configuração do ambiente, compilam os clientes de banco e chave-valor escolhidos e injetam contratos na raiz de composição. Isso mantém código de negócio independente de Sequelize, Postgres.js, clientes Mongo, filas ou objetos de request de frameworks HTTP.')}</p>
+            <ProofList items={[
+              t(locale, 'Local test profile can use in-memory adapters without changing use-cases.', 'O perfil de teste local pode usar adaptadores in-memory sem alterar casos de uso.'),
+              t(locale, 'Production profile can choose a relational or NoSQL adapter per service.', 'O perfil de produção pode escolher um adaptador relacional ou NoSQL por serviço.'),
+              t(locale, 'Realtime, REST, and function deployments reuse the same application contracts.', 'Deploys realtime, REST e functions reutilizam os mesmos contratos de aplicação.'),
+            ]} />
+          </div>
           <CodeShowcase samples={codeSamples.persistence} title={t(locale, 'Infrastructure adapter selection', 'Seleção de adaptadores de infraestrutura')} />
+        </div>
+      </Band>
+      <Band>
+        <div className={classes.sectionStack}>
+          <SectionHeading
+            eyebrow={t(locale, 'Selection guide', 'Guia de escolha')}
+            title={t(locale, 'How to pick the right adapter', 'Como escolher o adaptador certo')}
+            description={t(
+              locale,
+              'The goal is not to support every technology for its own sake. The goal is to let each service choose the smallest reliable infrastructure that fits its data, latency, and operations profile.',
+              'O objetivo não é suportar toda tecnologia por vaidade. O objetivo é permitir que cada serviço escolha a menor infraestrutura confiável para seu perfil de dados, latência e operação.',
+            )}
+          />
+          <CommercialMatrix
+            headers={t(locale, ['Decision', 'Prefer this when', 'Jumentix mechanism', 'Avoids'], ['Decisão', 'Prefira quando', 'Mecanismo Jumentix', 'Evita'])}
+            rows={[
+              { focus: t(locale, 'Express/Fastify/Restify', 'Express/Fastify/Restify'), when: t(locale, 'You want a long-running Node service with standard REST semantics and mature middleware.', 'Você quer um serviço Node persistente com semântica REST padrão e middleware maduro.'), implementation: t(locale, 'HTTP adapter maps request/response to controller methods and OpenAPI validation.', 'Adaptador HTTP mapeia request/response para controllers e validação OpenAPI.'), outcome: t(locale, 'Framework-specific request objects leaking into use-cases.', 'Objetos de request do framework vazando para casos de uso.') },
+              { focus: t(locale, 'Cloudflare/Vercel/Lambda', 'Cloudflare/Vercel/Lambda'), when: t(locale, 'Traffic is bursty, globally distributed, or owned by platform function routing.', 'O tráfego é irregular, distribuído globalmente ou pertence ao roteamento de functions da plataforma.'), implementation: t(locale, 'Function adapter wraps the same operation contracts used by REST controllers.', 'Adaptador de function encapsula os mesmos contratos de operação usados por controllers REST.'), outcome: t(locale, 'A separate business implementation for serverless.', 'Uma implementação de negócio separada para serverless.') },
+              { focus: t(locale, 'PostgreSQL/MySQL/SQL Server', 'PostgreSQL/MySQL/SQL Server'), when: t(locale, 'You need relational constraints, transactions, reporting, or familiar operations.', 'Você precisa de constraints relacionais, transações, reporting ou operação familiar.'), implementation: t(locale, 'Database client factory composes repository adapters behind store contracts.', 'Database client factory compõe adaptadores de repository atrás de contratos de store.'), outcome: t(locale, 'SQL decisions coupled to domain entities.', 'Decisões SQL acopladas a entidades de domínio.') },
+              { focus: t(locale, 'MongoDB/DynamoDB/Cassandra', 'MongoDB/DynamoDB/Cassandra'), when: t(locale, 'Data shape, throughput, distribution, or access patterns fit document/key-value/wide-column storage.', 'Formato de dados, throughput, distribuição ou padrões de acesso combinam com document/key-value/wide-column.'), implementation: t(locale, 'External persistence adapters implement the same repository contract expected by use-cases.', 'Adaptadores externos de persistência implementam o mesmo contrato de repository esperado pelos casos de uso.'), outcome: t(locale, 'A NoSQL rewrite of the application layer.', 'Uma reescrita NoSQL da camada de aplicação.') },
+              { focus: t(locale, 'RabbitMQ/BullMQ', 'RabbitMQ/BullMQ'), when: t(locale, 'Commands or events must survive process restarts and cross service boundaries.', 'Comandos ou eventos precisam sobreviver a restarts e atravessar limites de serviço.'), implementation: t(locale, 'Message Mediator contracts define subjects, payloads, request/response, and publish/listen behavior.', 'Contratos do Message Mediator definem subjects, payloads, request/response e comportamento publish/listen.'), outcome: t(locale, 'Consumers importing producer implementations.', 'Consumidores importando implementações de produtores.') },
+            ]}
+          />
+        </div>
+      </Band>
+      <Band alternate>
+        <div className={classes.sectionStack}>
+          <SectionHeading
+            eyebrow={t(locale, 'Package map', 'Mapa de pacotes')}
+            title={t(locale, 'Integration code is packaged, not scattered', 'Código de integração é empacotado, não espalhado')}
+          />
+          <DetailGrid items={[
+            { title: '@jumentix/adapter-runtime-bootstrap', description: t(locale, 'Centralizes runtime and infrastructure wiring so services avoid one-off bootstraps.', 'Centraliza wiring de runtime e infraestrutura para serviços evitarem bootstraps únicos.'), meta: t(locale, 'Runtime composition', 'Composição de runtime'), icon: <IconCloud /> },
+            { title: '@jumentix/database-client-factory', description: t(locale, 'Compiles the configured database client and keeps selection rules out of business modules.', 'Compila o cliente de banco configurado e mantém regras de seleção fora dos módulos de negócio.'), meta: t(locale, 'Database selection', 'Seleção de banco'), icon: <IconDatabase /> },
+            { title: '@jumentix/persistence-contracts', description: t(locale, 'Defines stable store/repository contracts shared by in-memory and external adapters.', 'Define contratos estáveis de store/repository compartilhados por adaptadores in-memory e externos.'), meta: t(locale, 'Ports', 'Ports'), icon: <IconHierarchy3 /> },
+            { title: '@jumentix/message-mediator', description: t(locale, 'Coordinates commands, requests, responses, and events across modules or services.', 'Coordena comandos, requests, responses e eventos entre módulos ou serviços.'), meta: t(locale, 'Messaging', 'Mensageria'), icon: <IconMessages /> },
+            { title: '@jumentix/sdk-rest-client', description: t(locale, 'Reads canonical OpenAPI contracts and exposes typed REST client behavior.', 'Lê contratos OpenAPI canônicos e expõe comportamento tipado de cliente REST.'), meta: t(locale, 'Client SDK', 'SDK cliente'), icon: <IconDeviceDesktop /> },
+            { title: '@jumentix/cana', description: t(locale, 'Provides local relational state, event listening, and browser persistence for frontend examples and future apps.', 'Fornece estado relacional local, escuta de eventos e persistência browser para exemplos frontend e apps futuros.'), meta: t(locale, 'Frontend data', 'Dados frontend'), icon: <IconPackage /> },
+          ]} />
         </div>
       </Band>
       <FinalCta locale={locale} />
@@ -649,6 +912,15 @@ function Architecture({ locale }: { locale: CommercialLocale }) {
       <PageHero locale={locale} eyebrow={t(locale, 'Architecture', 'Arquitetura')} title={t(locale, 'Domain ownership at the center, technology at the edges', 'Domínio no centro, tecnologia nas bordas')} description={t(locale, 'DDD, Hexagonal Architecture, Event-Driven Design, SOLID, and feature-driven modules are operational constraints, not presentation labels.', 'DDD, Arquitetura Hexagonal, Event-Driven Design, SOLID e módulos por feature são restrições operacionais, não apenas rótulos.')} />
       <Band>
         <div className={classes.sectionStack}>
+          <SectionHeading
+            eyebrow={t(locale, 'Request path', 'Caminho do request')}
+            title={t(locale, 'The same path works for HTTP, realtime, functions, and workers', 'O mesmo caminho funciona para HTTP, realtime, functions e workers')}
+            description={t(
+              locale,
+              'Every interface starts outside the domain and moves inward through contracts. Every infrastructure call moves outward through ports.',
+              'Toda interface começa fora do domínio e entra por contratos. Toda chamada de infraestrutura sai por ports.',
+            )}
+          />
           <ArchitectureFlow steps={[
             { title: t(locale, 'External request', 'Request externo'), description: t(locale, 'HTTP, WebSocket, gRPC, message, function.', 'HTTP, WebSocket, gRPC, mensagem, function.') },
             { title: t(locale, 'Input adapter', 'Adaptador de entrada'), description: t(locale, 'Validates contract and maps transport.', 'Valida o contrato e mapeia o transporte.') },
@@ -663,7 +935,74 @@ function Architecture({ locale }: { locale: CommercialLocale }) {
           ]} />
         </div>
       </Band>
-      <Band alternate><div className={classes.twoColumn}><div className={classes.prose}><h2>{t(locale, 'Contracts survive topology changes', 'Contratos sobrevivem a mudanças de topologia')}</h2><p>{t(locale, 'A domain service can consume and produce messages as an independent worker. Move it out of process without making its consumers import the implementation.', 'Um serviço de domínio pode consumir e produzir mensagens como worker independente. Retire-o do processo sem obrigar consumidores a importar a implementação.')}</p></div><CodeShowcase samples={codeSamples.start.slice(1, 2)} title="Message Mediator" /></div></Band>
+      <Band alternate>
+        <div className={classes.sectionStack}>
+          <SectionHeading
+            eyebrow={t(locale, 'Layer responsibilities', 'Responsabilidades por camada')}
+            title={t(locale, 'What is allowed to know what', 'O que pode conhecer o quê')}
+            description={t(
+              locale,
+              'The value of the architecture is the restriction. Jumentix makes the boundaries explicit so scaling the system does not turn every feature into a cross-cutting rewrite.',
+              'O valor da arquitetura está na restrição. O Jumentix torna limites explícitos para que escalar o sistema não transforme toda feature em reescrita transversal.',
+            )}
+          />
+          <CommercialMatrix
+            headers={t(locale, ['Layer', 'Owns', 'Can depend on', 'Must not contain'], ['Camada', 'É dona de', 'Pode depender de', 'Não deve conter'])}
+            rows={[
+              { focus: t(locale, 'Interface adapter', 'Adaptador de interface'), when: t(locale, 'HTTP/WebSocket/gRPC/function transport, request parsing, protocol responses.', 'Transporte HTTP/WebSocket/gRPC/function, parsing de request, responses de protocolo.'), implementation: t(locale, 'OpenAPI/AsyncAPI contracts, controller contracts, runtime utilities.', 'Contratos OpenAPI/AsyncAPI, contratos de controller, utilitários de runtime.'), outcome: t(locale, 'Business rules, database queries, tenant policy decisions.', 'Regras de negócio, queries de banco, decisões de política tenant.') },
+              { focus: t(locale, 'Controller', 'Controller'), when: t(locale, 'Request-to-use-case mapping, input shape, response shape, error exposure.', 'Mapeamento request-para-caso-de-uso, formato de input, formato de output, exposição de erro.'), implementation: t(locale, 'Application use-cases and validation contracts.', 'Casos de uso de aplicação e contratos de validação.'), outcome: t(locale, 'Framework request objects or concrete repository clients.', 'Objetos request de framework ou clientes concretos de repository.') },
+              { focus: t(locale, 'Application use-case', 'Caso de uso de aplicação'), when: t(locale, 'Business workflow, authorization calls, orchestration, transaction boundary decisions.', 'Workflow de negócio, chamadas de autorização, orquestração, decisões de fronteira transacional.'), implementation: t(locale, 'Domain objects, domain services, repository ports, mediator ports.', 'Objetos de domínio, serviços de domínio, ports de repository, ports de mediator.'), outcome: t(locale, 'Express/Fastify/Sequelize/Mongo/BullMQ imports.', 'Imports de Express/Fastify/Sequelize/Mongo/BullMQ.') },
+              { focus: t(locale, 'Domain', 'Domínio'), when: t(locale, 'Entities, value objects, invariants, tenant/RBAC policies, domain events.', 'Entidades, value objects, invariantes, políticas tenant/RBAC, eventos de domínio.'), implementation: t(locale, 'Pure types, policies, and business rules inside the bounded context.', 'Tipos puros, políticas e regras de negócio dentro do contexto delimitado.'), outcome: t(locale, 'I/O, environment variables, logging, HTTP status codes.', 'I/O, variáveis de ambiente, logging, status code HTTP.') },
+              { focus: t(locale, 'Output adapter', 'Adaptador de saída'), when: t(locale, 'Persistence, queues, external providers, cache, files, email, and broker-specific details.', 'Persistência, filas, provedores externos, cache, arquivos, email e detalhes de broker.'), implementation: t(locale, 'Ports and contracts owned by the application layer.', 'Ports e contratos pertencentes à camada de aplicação.'), outcome: t(locale, 'Domain decisions that belong in use-cases or entities.', 'Decisões de domínio que pertencem a casos de uso ou entidades.') },
+            ]}
+          />
+        </div>
+      </Band>
+      <Band>
+        <div className={classes.twoColumn}>
+          <div className={classes.prose}>
+            <h2>{t(locale, 'Contracts survive topology changes', 'Contratos sobrevivem a mudanças de topologia')}</h2>
+            <p>{t(locale, 'A domain service can consume and produce messages as an independent worker. Move it out of process without making its consumers import the implementation.', 'Um serviço de domínio pode consumir e produzir mensagens como worker independente. Retire-o do processo sem obrigar consumidores a importar a implementação.')}</p>
+            <ProofList items={[
+              t(locale, 'In-process calls can become brokered messages through the same subject and payload contract.', 'Chamadas em processo podem virar mensagens em broker pelo mesmo subject e payload.'),
+              t(locale, 'REST fallback can stay available while realtime or gRPC handles the primary interaction.', 'Fallback REST pode continuar disponível enquanto realtime ou gRPC lida com a interação principal.'),
+              t(locale, 'Workers own process lifecycle; contracts own compatibility.', 'Workers controlam o ciclo de vida do processo; contratos controlam compatibilidade.'),
+            ]} />
+          </div>
+          <CodeShowcase samples={codeSamples.start.slice(1, 2)} title="Message Mediator" />
+        </div>
+      </Band>
+      <Band alternate>
+        <div className={classes.sectionStack}>
+          <SectionHeading
+            eyebrow={t(locale, 'Topology evolution', 'Evolução de topologia')}
+            title={t(locale, 'Scale by extracting boundaries, not by rewriting features', 'Escale extraindo limites, não reescrevendo features')}
+          />
+          <DetailGrid items={[
+            { eyebrow: t(locale, 'Stage 1', 'Etapa 1'), title: t(locale, 'Modular monolith', 'Monólito modular'), description: t(locale, 'One deployable, multiple bounded contexts, shared composition root, one operational surface for the first release.', 'Um deploy, múltiplos contextos delimitados, composition root compartilhada, uma superfície operacional para o primeiro release.'), meta: t(locale, 'Best for first product proof', 'Melhor para primeira prova de produto'), icon: <IconBuildingFactory2 /> },
+            { eyebrow: t(locale, 'Stage 2', 'Etapa 2'), title: t(locale, 'Dedicated runtime process', 'Processo de runtime dedicado'), description: t(locale, 'Move realtime, gRPC, or background behavior into a separate process while REST remains available as fallback.', 'Mova realtime, gRPC ou comportamento background para processo separado enquanto REST permanece como fallback.'), meta: t(locale, 'Best for latency or long-running work', 'Melhor para latência ou trabalho longo'), icon: <IconMessages /> },
+            { eyebrow: t(locale, 'Stage 3', 'Etapa 3'), title: t(locale, 'Extracted service', 'Serviço extraído'), description: t(locale, 'Promote a bounded context into its own service with its own database adapter, deployment profile, broker, and CI evidence.', 'Promova um contexto delimitado para seu próprio serviço com adaptador de banco, perfil de deploy, broker e evidência de CI.'), meta: t(locale, 'Best for team ownership', 'Melhor para ownership de time'), icon: <IconTopologyStar3 /> },
+          ]} />
+        </div>
+      </Band>
+      <Band>
+        <div className={classes.sectionStack}>
+          <SectionHeading
+            eyebrow={t(locale, 'Architecture governance', 'Governança arquitetural')}
+            title={t(locale, 'The repository checks the rules humans forget', 'O repositório checa as regras que humanos esquecem')}
+            description={t(
+              locale,
+              'The architecture page is only meaningful because the repo enforces it. Jumentix ships tests and scripts that fail when boundaries, contracts, coverage, or docs drift.',
+              'A página de arquitetura só tem valor porque o repo a aplica. O Jumentix entrega testes e scripts que falham quando limites, contratos, cobertura ou docs saem de sincronia.',
+            )}
+          />
+          <DetailGrid items={[
+            { title: t(locale, 'Boundary checks', 'Checagens de limite'), description: t(locale, 'Hexagonal and workspace boundary scripts reject controller-to-infra shortcuts and cross-package imports that break ownership.', 'Scripts de limite hexagonal e workspace rejeitam atalhos controller-para-infra e imports entre pacotes que quebram ownership.'), meta: 'arch:check-*', icon: <IconGitBranch /> },
+            { title: t(locale, 'Contract checks', 'Checagens de contrato'), description: t(locale, 'OpenAPI route resolution, AsyncAPI exports, generated docs, and SDK paths keep external interfaces synchronized.', 'Resolução de rotas OpenAPI, exportações AsyncAPI, docs gerados e caminhos de SDK mantêm interfaces externas sincronizadas.'), meta: 'oas:check-routes', icon: <IconRoute /> },
+            { title: t(locale, 'Quality evidence', 'Evidência de qualidade'), description: t(locale, 'Branch-aware gates choose focused suites for task branches and full suites for release contexts, preserving speed and discipline.', 'Gates por branch escolhem suítes focadas para branches de tarefa e suítes completas para release, preservando velocidade e disciplina.'), meta: 'ci:gate:branch', icon: <IconShieldCheck /> },
+          ]} />
+        </div>
+      </Band>
       <FinalCta locale={locale} />
     </>
   );
