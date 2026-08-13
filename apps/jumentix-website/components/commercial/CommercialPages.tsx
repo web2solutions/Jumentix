@@ -912,6 +912,51 @@ function ProofList({ items }: { items: string[] }) {
   );
 }
 
+function MvpLaunchBand({
+  locale,
+  alternate = false,
+}: {
+  locale: CommercialLocale;
+  alternate?: boolean;
+}) {
+  return (
+    <Band alternate={alternate}>
+      <div className={classes.sectionStack}>
+        <SectionHeading
+          eyebrow={t(locale, 'Zero to first MVP', 'Do zero ao primeiro MVP')}
+          title={t(locale, 'Every use case is a launch path, not just an architecture label', 'Todo caso de uso é uma jornada de lançamento, não só um rótulo arquitetural')}
+          description={t(
+            locale,
+            'The use cases now describe the smallest product slice a team can ship first: what to model, which interface to expose, which Jumentix packages to use, what to validate, and what evidence proves the MVP is ready.',
+            'Os casos de uso agora descrevem a menor fatia de produto que um time pode publicar primeiro: o que modelar, qual interface expor, quais pacotes Jumentix usar, o que validar e qual evidência prova que o MVP está pronto.',
+          )}
+        />
+        <MetricStrip metrics={[
+          { value: '1', label: t(locale, 'bounded context to start', 'contexto delimitado inicial') },
+          { value: '1', label: t(locale, 'primary interface for the first user flow', 'interface primária para o primeiro fluxo') },
+          { value: '4', label: t(locale, 'MVP gates: model, contract, runtime, evidence', 'gates MVP: modelo, contrato, runtime, evidência') },
+          { value: '5', label: t(locale, 'launch paths from the same architecture', 'jornadas de lançamento na mesma arquitetura') },
+        ]} />
+        <DetailGrid items={[
+          { title: t(locale, 'Model one slice', 'Modele uma fatia'), description: t(locale, 'Start with one bounded context, two or three entities, the first command, and the user-visible outcome the MVP must prove.', 'Comece com um contexto delimitado, duas ou três entidades, o primeiro comando e o resultado visível que o MVP precisa provar.'), meta: t(locale, 'Day 0', 'Dia 0'), icon: <IconHierarchy3 /> },
+          { title: t(locale, 'Expose one workflow', 'Exponha um fluxo'), description: t(locale, 'Choose REST, realtime, modular SaaS, microservice, or SPA/PWA based on the first interaction the product must make usable.', 'Escolha REST, realtime, SaaS modular, microsserviço ou SPA/PWA conforme a primeira interação que o produto precisa tornar utilizável.'), meta: t(locale, 'First usable path', 'Primeiro caminho usável'), icon: <IconRoute /> },
+          { title: t(locale, 'Use replaceable adapters', 'Use adaptadores substituíveis'), description: t(locale, 'Run in-memory or local infrastructure first, then swap database, broker, function, PM2, or cloud adapters without rewriting use-cases.', 'Rode primeiro com infraestrutura in-memory ou local, depois troque banco, broker, function, PM2 ou cloud adapters sem reescrever casos de uso.'), meta: t(locale, 'No lock-in for the MVP', 'MVP sem lock-in'), icon: <IconDatabase /> },
+          { title: t(locale, 'Ship with proof', 'Publique com prova'), description: t(locale, 'Treat route checks, docs sync, focused tests, architecture boundaries, and prepublish evidence as part of the MVP definition.', 'Trate checks de rota, sync de docs, testes focados, limites arquiteturais e evidência prepublish como parte da definição do MVP.'), meta: t(locale, 'Ready to demo', 'Pronto para demo'), icon: <IconShieldCheck /> },
+        ]} />
+        <CommercialMatrix
+          headers={t(locale, ['MVP stage', 'Product question', 'Jumentix action', 'Ready evidence'], ['Etapa do MVP', 'Pergunta de produto', 'Ação no Jumentix', 'Evidência de pronto'])}
+          rows={[
+            { focus: t(locale, 'Frame', 'Enquadrar'), when: t(locale, 'What is the one behavior the first customer must complete?', 'Qual é o comportamento que o primeiro cliente precisa concluir?'), implementation: t(locale, 'Capture the bounded context, entities, command, query and owner in Service Management.', 'Capture contexto delimitado, entidades, comando, query e owner no Service Management.'), outcome: t(locale, 'A reviewable domain slice with acceptance criteria.', 'Uma fatia de domínio revisável com critérios de aceite.') },
+            { focus: t(locale, 'Build', 'Construir'), when: t(locale, 'Which interface makes that behavior usable fastest?', 'Qual interface torna esse comportamento utilizável mais rápido?'), implementation: t(locale, 'Generate or compose the chosen contract, controller/use-case path, SDK/client, and in-memory adapter.', 'Gere ou componha o contrato escolhido, caminho controller/use-case, SDK/client e adaptador in-memory.'), outcome: t(locale, 'One complete happy path running locally.', 'Um happy path completo rodando localmente.') },
+            { focus: t(locale, 'Prove', 'Provar'), when: t(locale, 'Can the team trust the MVP enough to demo or pilot it?', 'O time pode confiar no MVP para demo ou piloto?'), implementation: t(locale, 'Run focused tests, route checks, docs sync, architecture boundaries, and website/package gates.', 'Rode testes focados, checks de rota, sync de docs, limites arquiteturais e gates de website/pacote.'), outcome: t(locale, 'Evidence that behavior, docs and architecture agree.', 'Evidência de que comportamento, docs e arquitetura concordam.') },
+            { focus: t(locale, 'Evolve', 'Evoluir'), when: t(locale, 'What changes after the first user feedback?', 'O que muda após o primeiro feedback de usuário?'), implementation: t(locale, 'Swap adapters, add events, introduce workers, or extract a service while preserving contracts.', 'Troque adaptadores, adicione eventos, introduza workers ou extraia um serviço preservando contratos.'), outcome: t(locale, 'A next increment that does not rewrite the MVP.', 'Um próximo incremento que não reescreve o MVP.') },
+          ]}
+        />
+      </div>
+    </Band>
+  );
+}
+
 function Home({ locale }: { locale: CommercialLocale }) {
   return (
     <>
@@ -1155,7 +1200,7 @@ function Product({ locale }: { locale: CommercialLocale }) {
 function UseCases({ locale }: { locale: CommercialLocale }) {
   return (
     <>
-      <PageHero locale={locale} eyebrow={t(locale, 'Use cases', 'Casos de uso')} title={t(locale, 'Start with the product you need now', 'Comece com o produto de que você precisa agora')} description={t(locale, 'Every blueprint uses the same contracts and boundaries, so today’s architecture does not block tomorrow’s scale.', 'Cada blueprint usa os mesmos contratos e limites, para que a arquitetura de hoje não bloqueie a escala de amanhã.')} />
+      <PageHero locale={locale} eyebrow={t(locale, 'Use cases', 'Casos de uso')} title={t(locale, 'Start with the product you need now', 'Comece com o produto de que você precisa agora')} description={t(locale, 'Every blueprint now reads like a zero-to-first-MVP path: choose the first product behavior, model the domain slice, expose one usable interface, prove it, then evolve without rewriting the architecture.', 'Cada blueprint agora funciona como uma jornada do zero ao primeiro MVP: escolha o primeiro comportamento de produto, modele a fatia de domínio, exponha uma interface usável, comprove e evolua sem reescrever a arquitetura.')} />
       <Band>
         <div className={classes.sectionStack}>
           <SectionHeading
@@ -1170,7 +1215,8 @@ function UseCases({ locale }: { locale: CommercialLocale }) {
           <UseCaseLinks locale={locale} />
         </div>
       </Band>
-      <Band alternate>
+      <MvpLaunchBand locale={locale} alternate />
+      <Band>
         <div className={classes.sectionStack}>
           <SectionHeading
             eyebrow={t(locale, 'Decision matrix', 'Matriz de decisão')}
@@ -1193,7 +1239,7 @@ function UseCases({ locale }: { locale: CommercialLocale }) {
           />
         </div>
       </Band>
-      <Band>
+      <Band alternate>
         <div className={classes.sectionStack}>
           <SectionHeading
             eyebrow={t(locale, 'Shared foundation', 'Fundação compartilhada')}
@@ -1212,28 +1258,278 @@ function UseCases({ locale }: { locale: CommercialLocale }) {
 }
 
 const useCaseDetails: Record<UseCaseName, {
-  en: { eyebrow: string; title: string; description: string; outcomes: string[]; sample: keyof typeof codeSamples };
-  pt: { eyebrow: string; title: string; description: string; outcomes: string[]; sample: keyof typeof codeSamples };
+  en: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    outcomes: string[];
+    sample: keyof typeof codeSamples;
+    mvpIntro: string;
+    mvpSteps: Array<{ label: string; title: string; description: string; output: string }>;
+    mvpScope: Array<{ title: string; description: string; meta: string }>;
+    validationRows: CommercialMatrixRow[];
+  };
+  pt: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    outcomes: string[];
+    sample: keyof typeof codeSamples;
+    mvpIntro: string;
+    mvpSteps: Array<{ label: string; title: string; description: string; output: string }>;
+    mvpScope: Array<{ title: string; description: string; meta: string }>;
+    validationRows: CommercialMatrixRow[];
+  };
 }> = {
   'rest-api': {
-    en: { eyebrow: 'REST API blueprint', title: 'Contract-first REST APIs without domain lock-in', description: 'Use OpenAPI 3.1 to bind request validation, handlers, controllers, SDK clients, and documentation.', outcomes: ['Native adapters for multiple Node.js HTTP runtimes', 'Swagger documentation and static asset serving', 'Two validation layers: interface and domain'], sample: 'rest' },
-    pt: { eyebrow: 'Blueprint de API REST', title: 'APIs REST orientadas a contratos sem aprisionar o domínio', description: 'Use OpenAPI 3.1 para conectar validação, handlers, controllers, SDKs e documentação.', outcomes: ['Adaptadores nativos para vários runtimes HTTP Node.js', 'Documentação Swagger e arquivos estáticos', 'Duas camadas de validação: interface e domínio'], sample: 'rest' },
+    en: {
+      eyebrow: 'REST API blueprint',
+      title: 'Contract-first REST APIs without domain lock-in',
+      description: 'Use OpenAPI 3.1 to bind request validation, handlers, controllers, SDK clients, and documentation.',
+      outcomes: ['Native adapters for multiple Node.js HTTP runtimes', 'Swagger documentation and static asset serving', 'Two validation layers: interface and domain'],
+      sample: 'rest',
+      mvpIntro: 'Use this path when the first MVP must expose predictable CRUD or integration behavior that another system, admin screen, or frontend can call immediately.',
+      mvpSteps: [
+        { label: 'Day 0', title: 'Choose the first resource', description: 'Model one resource such as Task with Category ownership, required fields, validation, and the first create/list operations.', output: 'MVP output: a tiny OpenAPI surface with one command and one query.' },
+        { label: 'Day 1', title: 'Wire the controller path', description: 'Connect request validation, controller, use-case, repository port, in-memory adapter, and response contract.', output: 'MVP output: a running REST route with the domain still independent from the HTTP framework.' },
+        { label: 'Day 2', title: 'Generate a usable client', description: 'Expose the contract to a frontend or integration client, then call it from a smokeable example.', output: 'MVP output: API docs, SDK behavior, and a repeatable request example.' },
+        { label: 'Release', title: 'Prove the route', description: 'Run route resolution, unit tests, docs sync, architecture checks, and website/package gates before the demo.', output: 'MVP output: evidence that the route, docs, validation and use-case agree.' },
+      ],
+      mvpScope: [
+        { title: 'One resource family', description: 'Task and Category are enough to prove CRUD, filtering, validation, and ownership.', meta: 'Domain slice' },
+        { title: 'One primary route group', description: 'Create, list, update status, and fetch by id before adding reporting or bulk operations.', meta: 'API slice' },
+        { title: 'One adapter profile', description: 'Start with in-memory or local SQL, then swap the repository adapter after feedback.', meta: 'Runtime slice' },
+      ],
+      validationRows: [
+        { focus: 'Contract', when: 'Can another client understand the API without reading source code?', implementation: 'OpenAPI 3.1, route check, schema examples.', outcome: 'Docs and route metadata match the handler.' },
+        { focus: 'Behavior', when: 'Does the first workflow enforce validation and domain rules?', implementation: 'Controller/use-case tests and error contract checks.', outcome: 'Invalid input fails before persistence; domain errors stay explicit.' },
+        { focus: 'Adoption', when: 'Can a frontend or partner call it today?', implementation: 'Generated REST client and copyable request example.', outcome: 'A first consumer can create and list records.' },
+      ],
+    },
+    pt: {
+      eyebrow: 'Blueprint de API REST',
+      title: 'APIs REST orientadas a contratos sem aprisionar o domínio',
+      description: 'Use OpenAPI 3.1 para conectar validação, handlers, controllers, SDKs e documentação.',
+      outcomes: ['Adaptadores nativos para vários runtimes HTTP Node.js', 'Documentação Swagger e arquivos estáticos', 'Duas camadas de validação: interface e domínio'],
+      sample: 'rest',
+      mvpIntro: 'Use este caminho quando o primeiro MVP precisa expor CRUD previsível ou comportamento de integração que outro sistema, tela admin ou frontend consiga chamar imediatamente.',
+      mvpSteps: [
+        { label: 'Dia 0', title: 'Escolha o primeiro recurso', description: 'Modele um recurso como Task com Category, campos obrigatórios, validação e as primeiras operações de create/list.', output: 'Saída MVP: uma superfície OpenAPI pequena com um comando e uma query.' },
+        { label: 'Dia 1', title: 'Conecte o caminho do controller', description: 'Ligue validação de request, controller, use-case, port de repository, adaptador in-memory e contrato de resposta.', output: 'Saída MVP: uma rota REST rodando com domínio independente do framework HTTP.' },
+        { label: 'Dia 2', title: 'Gere um client utilizável', description: 'Exponha o contrato para um frontend ou cliente de integração e chame a rota em um exemplo testável.', output: 'Saída MVP: docs de API, comportamento de SDK e exemplo repetível de request.' },
+        { label: 'Release', title: 'Comprove a rota', description: 'Rode resolução de rotas, testes unitários, sync de docs, checks de arquitetura e gates de website/pacote antes da demo.', output: 'Saída MVP: evidência de que rota, docs, validação e use-case concordam.' },
+      ],
+      mvpScope: [
+        { title: 'Uma família de recurso', description: 'Task e Category bastam para provar CRUD, filtro, validação e ownership.', meta: 'Fatia de domínio' },
+        { title: 'Um grupo de rotas', description: 'Create, list, update status e fetch by id antes de reporting ou operações bulk.', meta: 'Fatia de API' },
+        { title: 'Um perfil de adapter', description: 'Comece com in-memory ou SQL local, depois troque o repository adapter após feedback.', meta: 'Fatia de runtime' },
+      ],
+      validationRows: [
+        { focus: 'Contrato', when: 'Outro client entende a API sem ler o código fonte?', implementation: 'OpenAPI 3.1, check de rota, exemplos de schema.', outcome: 'Docs e metadados de rota batem com o handler.' },
+        { focus: 'Comportamento', when: 'O primeiro fluxo aplica validação e regras de domínio?', implementation: 'Testes de controller/use-case e checks de contrato de erro.', outcome: 'Input inválido falha antes da persistência; erros de domínio ficam explícitos.' },
+        { focus: 'Adoção', when: 'Um frontend ou parceiro consegue chamar hoje?', implementation: 'Client REST gerado e exemplo copiável de request.', outcome: 'Um primeiro consumidor consegue criar e listar registros.' },
+      ],
+    },
   },
   'realtime-api': {
-    en: { eyebrow: 'Realtime blueprint', title: 'Bidirectional APIs with a built-in fallback', description: 'Run Socket.IO or gRPC as the primary interface while a separate REST process provides fallback and AsyncAPI documentation.', outcomes: ['Correlated request/response messages', 'Redis Streams and cluster resilience for Socket.IO', 'AsyncAPI contracts shared with generated clients'], sample: 'realtime' },
-    pt: { eyebrow: 'Blueprint realtime', title: 'APIs bidirecionais com fallback incorporado', description: 'Execute Socket.IO ou gRPC como interface principal enquanto um processo REST separado oferece fallback e documentação AsyncAPI.', outcomes: ['Mensagens request/response correlacionadas', 'Redis Streams e resiliência em cluster para Socket.IO', 'Contratos AsyncAPI compartilhados com clientes gerados'], sample: 'realtime' },
+    en: {
+      eyebrow: 'Realtime blueprint',
+      title: 'Bidirectional APIs with a built-in fallback',
+      description: 'Run Socket.IO or gRPC as the primary interface while a separate REST process provides fallback and AsyncAPI documentation.',
+      outcomes: ['Correlated request/response messages', 'Redis Streams and cluster resilience for Socket.IO', 'AsyncAPI contracts shared with generated clients'],
+      sample: 'realtime',
+      mvpIntro: 'Use this path when the first MVP must feel live: progress updates, collaboration, notifications, or command results that return through a bidirectional channel.',
+      mvpSteps: [
+        { label: 'Day 0', title: 'Pick the live moment', description: 'Choose the one event users must see without refreshing, such as task.created or task.statusChanged.', output: 'MVP output: one AsyncAPI channel and one correlated request/response subject.' },
+        { label: 'Day 1', title: 'Run the realtime adapter', description: 'Start Socket.IO or gRPC beside the REST fallback and map messages to the same use-case contract.', output: 'MVP output: a live command that returns acknowledgement and payload.' },
+        { label: 'Day 2', title: 'Connect a browser client', description: 'Subscribe to the event, render it in the UI, and keep a REST fallback for reconnect or degraded mode.', output: 'MVP output: the user sees a live update and the fallback returns the same business result.' },
+        { label: 'Release', title: 'Prove delivery and reconnect', description: 'Validate message correlation, fallback parity, docs, and process supervision before the pilot.', output: 'MVP output: evidence for delivery acknowledgement, reconnect behavior, and fallback parity.' },
+      ],
+      mvpScope: [
+        { title: 'One live event', description: 'Start with one event that visibly changes the UI or confirms a command.', meta: 'Realtime slice' },
+        { title: 'One fallback path', description: 'Keep REST available so the first MVP has a supportable recovery path.', meta: 'Reliability slice' },
+        { title: 'One process profile', description: 'Run realtime and fallback processes explicitly with local or PM2 profiles.', meta: 'Operations slice' },
+      ],
+      validationRows: [
+        { focus: 'Correlation', when: 'Can the client match every response to its request?', implementation: 'Message id, subject contract, response handler tests.', outcome: 'No anonymous realtime side effects.' },
+        { focus: 'Fallback', when: 'Does REST return the same result when realtime is unavailable?', implementation: 'Fallback route and shared use-case contract.', outcome: 'Degraded mode remains usable.' },
+        { focus: 'Operations', when: 'Can the process be started, inspected and restarted?', implementation: 'PM2/runtime profile and logs.', outcome: 'The MVP is demoable outside a dev terminal.' },
+      ],
+    },
+    pt: {
+      eyebrow: 'Blueprint realtime',
+      title: 'APIs bidirecionais com fallback incorporado',
+      description: 'Execute Socket.IO ou gRPC como interface principal enquanto um processo REST separado oferece fallback e documentação AsyncAPI.',
+      outcomes: ['Mensagens request/response correlacionadas', 'Redis Streams e resiliência em cluster para Socket.IO', 'Contratos AsyncAPI compartilhados com clientes gerados'],
+      sample: 'realtime',
+      mvpIntro: 'Use este caminho quando o primeiro MVP precisa parecer vivo: progresso, colaboração, notificações ou resultados de comando voltando por canal bidirecional.',
+      mvpSteps: [
+        { label: 'Dia 0', title: 'Escolha o momento live', description: 'Escolha o único evento que usuários precisam ver sem refresh, como task.created ou task.statusChanged.', output: 'Saída MVP: um canal AsyncAPI e um subject request/response correlacionado.' },
+        { label: 'Dia 1', title: 'Rode o adapter realtime', description: 'Inicie Socket.IO ou gRPC ao lado do fallback REST e mapeie mensagens para o mesmo contrato de use-case.', output: 'Saída MVP: um comando live que retorna acknowledgement e payload.' },
+        { label: 'Dia 2', title: 'Conecte um client browser', description: 'Assine o evento, renderize na UI e mantenha fallback REST para reconnect ou modo degradado.', output: 'Saída MVP: usuário vê atualização live e fallback retorna o mesmo resultado de negócio.' },
+        { label: 'Release', title: 'Comprove entrega e reconnect', description: 'Valide correlação de mensagens, paridade do fallback, docs e supervisão de processo antes do piloto.', output: 'Saída MVP: evidência de acknowledgement, reconnect e paridade do fallback.' },
+      ],
+      mvpScope: [
+        { title: 'Um evento live', description: 'Comece com um evento que muda a UI ou confirma um comando de forma visível.', meta: 'Fatia realtime' },
+        { title: 'Um fallback', description: 'Mantenha REST disponível para que o primeiro MVP tenha recuperação suportável.', meta: 'Fatia de confiabilidade' },
+        { title: 'Um perfil de processo', description: 'Rode realtime e fallback explicitamente com perfis locais ou PM2.', meta: 'Fatia operacional' },
+      ],
+      validationRows: [
+        { focus: 'Correlação', when: 'O client relaciona toda resposta ao request?', implementation: 'Message id, contrato de subject, testes do response handler.', outcome: 'Sem efeitos realtime anônimos.' },
+        { focus: 'Fallback', when: 'REST retorna o mesmo resultado quando realtime cai?', implementation: 'Rota fallback e contrato de use-case compartilhado.', outcome: 'Modo degradado continua usável.' },
+        { focus: 'Operação', when: 'O processo pode iniciar, ser inspecionado e reiniciado?', implementation: 'Perfil PM2/runtime e logs.', outcome: 'O MVP é demonstrável fora do terminal de dev.' },
+      ],
+    },
   },
   'saas-monolith': {
-    en: { eyebrow: 'Modular SaaS blueprint', title: 'Launch one deployable, preserve every domain boundary', description: 'Ship faster as a modular monolith with multi-tenancy, RBAC, organizations, users, and event-driven collaboration already modeled.', outcomes: ['Lower first-release operating cost', 'Feature-driven modules keep changes local', 'Message contracts support later extraction'], sample: 'start' },
-    pt: { eyebrow: 'Blueprint SaaS modular', title: 'Lance um deploy, preserve cada limite de domínio', description: 'Entregue mais rápido como monólito modular com multitenancy, RBAC, organizações, usuários e colaboração orientada a eventos já modelados.', outcomes: ['Menor custo operacional na primeira versão', 'Módulos por feature mantêm mudanças locais', 'Contratos de mensagem suportam extração futura'], sample: 'start' },
+    en: {
+      eyebrow: 'Modular SaaS blueprint',
+      title: 'Launch one deployable, preserve every domain boundary',
+      description: 'Ship faster as a modular monolith with multi-tenancy, RBAC, organizations, users, and event-driven collaboration already modeled.',
+      outcomes: ['Lower first-release operating cost', 'Feature-driven modules keep changes local', 'Message contracts support later extraction'],
+      sample: 'start',
+      mvpIntro: 'Use this path when the first MVP is a complete SaaS slice: sign in, tenant or organization scope, one core workflow, and one deployable.',
+      mvpSteps: [
+        { label: 'Day 0', title: 'Define the tenant-owned workflow', description: 'Choose the first organization-owned capability, such as categorized tasks, and define who can create, view, and complete it.', output: 'MVP output: one bounded context with tenant and RBAC expectations.' },
+        { label: 'Day 1', title: 'Compose one deployable', description: 'Use the backend template, authentication, authorization, controllers, use-cases, repository ports, and local adapter profile.', output: 'MVP output: one application process that demonstrates the full product path.' },
+        { label: 'Day 2', title: 'Add the first UI or SDK consumer', description: 'Connect a frontend, admin view, or generated client to the same contracts.', output: 'MVP output: a user can complete the workflow end to end.' },
+        { label: 'Release', title: 'Protect the monolith boundaries', description: 'Run workspace boundaries, route/docs checks, tests, and release evidence before shipping to a pilot environment.', output: 'MVP output: one deployable with extraction-ready domain boundaries.' },
+      ],
+      mvpScope: [
+        { title: 'One tenant workflow', description: 'Organization, user, Category and Task prove tenancy plus real feature behavior.', meta: 'Product slice' },
+        { title: 'One deployable', description: 'Keep operations simple while preserving feature modules and composition boundaries.', meta: 'Delivery slice' },
+        { title: 'One role policy', description: 'Prove superadmin/admin/user behavior before adding a full permission matrix.', meta: 'Security slice' },
+      ],
+      validationRows: [
+        { focus: 'Tenant safety', when: 'Can one organization see another organization data?', implementation: 'Tenant-aware use-case tests and policy checks.', outcome: 'Cross-tenant reads and writes fail.' },
+        { focus: 'Module boundary', when: 'Can the first feature change without touching unrelated modules?', implementation: 'Feature folder and workspace boundary checks.', outcome: 'Changes stay local to the bounded context.' },
+        { focus: 'Pilot readiness', when: 'Can the whole MVP run as one supervised app?', implementation: 'Dev/staging profile, smoke test, docs and prepublish evidence.', outcome: 'One deployable is ready for first users.' },
+      ],
+    },
+    pt: {
+      eyebrow: 'Blueprint SaaS modular',
+      title: 'Lance um deploy, preserve cada limite de domínio',
+      description: 'Entregue mais rápido como monólito modular com multitenancy, RBAC, organizações, usuários e colaboração orientada a eventos já modelados.',
+      outcomes: ['Menor custo operacional na primeira versão', 'Módulos por feature mantêm mudanças locais', 'Contratos de mensagem suportam extração futura'],
+      sample: 'start',
+      mvpIntro: 'Use este caminho quando o primeiro MVP é uma fatia SaaS completa: login, escopo de tenant ou organização, um fluxo central e um deploy.',
+      mvpSteps: [
+        { label: 'Dia 0', title: 'Defina o fluxo do tenant', description: 'Escolha a primeira capacidade da organização, como tarefas por categoria, e defina quem cria, vê e conclui.', output: 'Saída MVP: um contexto delimitado com expectativas de tenant e RBAC.' },
+        { label: 'Dia 1', title: 'Componha um deploy', description: 'Use backend template, autenticação, autorização, controllers, use-cases, ports de repository e perfil local de adapter.', output: 'Saída MVP: um processo de aplicação demonstrando o caminho completo do produto.' },
+        { label: 'Dia 2', title: 'Adicione o primeiro consumidor', description: 'Conecte frontend, visão admin ou client gerado aos mesmos contratos.', output: 'Saída MVP: usuário completa o fluxo de ponta a ponta.' },
+        { label: 'Release', title: 'Proteja os limites do monólito', description: 'Rode limites de workspace, checks de rota/docs, testes e evidência de release antes do piloto.', output: 'Saída MVP: um deploy com limites de domínio prontos para extração.' },
+      ],
+      mvpScope: [
+        { title: 'Um fluxo tenant', description: 'Organization, user, Category e Task provam tenancy e comportamento real de feature.', meta: 'Fatia de produto' },
+        { title: 'Um deploy', description: 'Mantenha operação simples preservando módulos de feature e limites de composição.', meta: 'Fatia de entrega' },
+        { title: 'Uma política de papel', description: 'Prove superadmin/admin/user antes de uma matriz completa de permissões.', meta: 'Fatia de segurança' },
+      ],
+      validationRows: [
+        { focus: 'Segurança tenant', when: 'Uma organização consegue ver dados de outra?', implementation: 'Testes tenant-aware de use-case e checks de policy.', outcome: 'Leituras e escritas cross-tenant falham.' },
+        { focus: 'Limite de módulo', when: 'A primeira feature muda sem tocar módulos não relacionados?', implementation: 'Pasta por feature e checks de workspace boundary.', outcome: 'Mudanças ficam locais ao contexto delimitado.' },
+        { focus: 'Pronto para piloto', when: 'O MVP inteiro roda como um app supervisionado?', implementation: 'Perfil dev/staging, smoke test, docs e evidência prepublish.', outcome: 'Um deploy está pronto para primeiros usuários.' },
+      ],
+    },
   },
   'saas-microservices': {
-    en: { eyebrow: 'Distributed SaaS blueprint', title: 'Scale services without rewriting communication', description: 'Use independent workers and contract-based mediation so in-process requests can move to RabbitMQ, BullMQ, or another transport.', outcomes: ['Independent service ownership', 'Request/response and publish/listen patterns', 'Per-service runtimes, tests, and deployment'], sample: 'deploy' },
-    pt: { eyebrow: 'Blueprint SaaS distribuído', title: 'Escale serviços sem reescrever a comunicação', description: 'Use workers independentes e mediação baseada em contratos para mover requests em processo para RabbitMQ, BullMQ ou outro transporte.', outcomes: ['Propriedade independente por serviço', 'Padrões request/response e publish/listen', 'Runtime, testes e deploy por serviço'], sample: 'deploy' },
+    en: {
+      eyebrow: 'Distributed SaaS blueprint',
+      title: 'Scale services without rewriting communication',
+      description: 'Use independent workers and contract-based mediation so in-process requests can move to RabbitMQ, BullMQ, or another transport.',
+      outcomes: ['Independent service ownership', 'Request/response and publish/listen patterns', 'Per-service runtimes, tests, and deployment'],
+      sample: 'deploy',
+      mvpIntro: 'Use this path when the first MVP already needs independent ownership or a background capability that should not share the main application lifecycle.',
+      mvpSteps: [
+        { label: 'Day 0', title: 'Extract only one boundary', description: 'Choose one bounded context or worker behavior, such as task notification, category analytics, or async import.', output: 'MVP output: one service boundary with a clear subject and payload contract.' },
+        { label: 'Day 1', title: 'Start in process, then broker', description: 'Prove the Message Mediator contract in-memory before introducing RabbitMQ, BullMQ, Redis Streams, or another durable transport.', output: 'MVP output: request/response or publish/listen works without consumer imports.' },
+        { label: 'Day 2', title: 'Give the service its own profile', description: 'Run the service with a named PM2, Docker, or worker profile and independent tests.', output: 'MVP output: the service can restart or deploy without rewriting the producer.' },
+        { label: 'Release', title: 'Prove compatibility', description: 'Validate contract compatibility, retry/dead-letter behavior where relevant, and per-service evidence.', output: 'MVP output: one independent service with measured blast radius.' },
+      ],
+      mvpScope: [
+        { title: 'One service boundary', description: 'Extract the smallest behavior with a clear owner and message contract.', meta: 'Ownership slice' },
+        { title: 'One durable path', description: 'Add broker durability only after the in-memory contract proves the interaction.', meta: 'Messaging slice' },
+        { title: 'One independent gate', description: 'Run service-focused tests and deployment checks for the extracted boundary.', meta: 'Governance slice' },
+      ],
+      validationRows: [
+        { focus: 'Compatibility', when: 'Can producer and consumer evolve without importing each other?', implementation: 'Message contract tests and subject/payload examples.', outcome: 'The contract owns compatibility.' },
+        { focus: 'Isolation', when: 'Can this service fail without hiding the failure?', implementation: 'Retry, error contract, dead-letter or fallback evidence.', outcome: 'Failure mode is explicit.' },
+        { focus: 'Ownership', when: 'Can one team ship the service independently?', implementation: 'Per-service profile, tests and release evidence.', outcome: 'Independent ownership is real, not organizational theater.' },
+      ],
+    },
+    pt: {
+      eyebrow: 'Blueprint SaaS distribuído',
+      title: 'Escale serviços sem reescrever a comunicação',
+      description: 'Use workers independentes e mediação baseada em contratos para mover requests em processo para RabbitMQ, BullMQ ou outro transporte.',
+      outcomes: ['Propriedade independente por serviço', 'Padrões request/response e publish/listen', 'Runtime, testes e deploy por serviço'],
+      sample: 'deploy',
+      mvpIntro: 'Use este caminho quando o primeiro MVP já precisa de ownership independente ou uma capacidade background que não deve compartilhar o ciclo de vida da aplicação principal.',
+      mvpSteps: [
+        { label: 'Dia 0', title: 'Extraia só um limite', description: 'Escolha um contexto delimitado ou comportamento worker, como notificação de task, analytics de category ou import assíncrono.', output: 'Saída MVP: um limite de serviço com subject e payload claros.' },
+        { label: 'Dia 1', title: 'Comece em processo, depois use broker', description: 'Comprove o contrato do Message Mediator in-memory antes de RabbitMQ, BullMQ, Redis Streams ou outro transporte durável.', output: 'Saída MVP: request/response ou publish/listen funciona sem imports de consumidor.' },
+        { label: 'Dia 2', title: 'Dê perfil próprio ao serviço', description: 'Rode o serviço com perfil PM2, Docker ou worker nomeado e testes independentes.', output: 'Saída MVP: serviço reinicia ou deploya sem reescrever o produtor.' },
+        { label: 'Release', title: 'Comprove compatibilidade', description: 'Valide compatibilidade de contrato, retry/dead-letter quando relevante e evidência por serviço.', output: 'Saída MVP: um serviço independente com blast radius medido.' },
+      ],
+      mvpScope: [
+        { title: 'Um limite de serviço', description: 'Extraia o menor comportamento com owner e contrato de mensagem claros.', meta: 'Fatia de ownership' },
+        { title: 'Um caminho durável', description: 'Adicione durabilidade de broker só após o contrato in-memory provar a interação.', meta: 'Fatia de mensageria' },
+        { title: 'Um gate independente', description: 'Rode testes e checks de deploy focados no limite extraído.', meta: 'Fatia de governança' },
+      ],
+      validationRows: [
+        { focus: 'Compatibilidade', when: 'Produtor e consumidor evoluem sem importar um ao outro?', implementation: 'Testes de contrato de mensagem e exemplos de subject/payload.', outcome: 'O contrato controla compatibilidade.' },
+        { focus: 'Isolamento', when: 'O serviço pode falhar sem esconder a falha?', implementation: 'Retry, contrato de erro, dead-letter ou evidência de fallback.', outcome: 'O modo de falha é explícito.' },
+        { focus: 'Ownership', when: 'Um time consegue publicar o serviço sozinho?', implementation: 'Perfil, testes e evidência de release por serviço.', outcome: 'Ownership independente é real, não teatro organizacional.' },
+      ],
+    },
   },
   'spa-pwa': {
-    en: { eyebrow: 'Frontend blueprint', title: 'Build installable products that keep working offline', description: 'Pair generated SDK clients with a SPA or PWA architecture, IndexedDB persistence, and the same contract vocabulary as the backend.', outcomes: ['Offline-first data workflows', 'REST, Socket.IO, and gRPC client packages', 'Shared governance across frontend and backend'], sample: 'start' },
-    pt: { eyebrow: 'Blueprint frontend', title: 'Crie produtos instaláveis que continuam funcionando offline', description: 'Combine SDKs gerados com arquitetura SPA ou PWA, persistência IndexedDB e o mesmo vocabulário de contratos do backend.', outcomes: ['Fluxos de dados offline-first', 'Pacotes cliente REST, Socket.IO e gRPC', 'Governança compartilhada entre frontend e backend'], sample: 'start' },
+    en: {
+      eyebrow: 'Frontend blueprint',
+      title: 'Build installable products that keep working offline',
+      description: 'Pair generated SDK clients with a SPA or PWA architecture, IndexedDB persistence, and the same contract vocabulary as the backend.',
+      outcomes: ['Offline-first data workflows', 'REST, Socket.IO, and gRPC client packages', 'Shared governance across frontend and backend'],
+      sample: 'start',
+      mvpIntro: 'Use this path when the first MVP must run in the browser, keep local state, and later synchronize with backend contracts.',
+      mvpSteps: [
+        { label: 'Day 0', title: 'Model local records', description: 'Start with Category and Task tables, one filter, one create action, and one event the UI can listen to.', output: 'MVP output: browser data model with a visible workflow.' },
+        { label: 'Day 1', title: 'Run in memory first', description: 'Use Cana, generated SDK contracts, or browser-native in-memory adapters before adding a backend dependency.', output: 'MVP output: the app works entirely in the browser.' },
+        { label: 'Day 2', title: 'Connect state management', description: 'Wire React Context, Redux, Vue 3 Pinia, or another store to Cana events and refresh component state.', output: 'MVP output: UI updates when local data changes.' },
+        { label: 'Release', title: 'Prove offline behavior', description: 'Validate local persistence, event listeners, sync assumptions, accessibility, route rendering, and copyable examples.', output: 'MVP output: an installable or browser-ready first product demo.' },
+      ],
+      mvpScope: [
+        { title: 'Two local tables', description: 'Category and Task prove relationship, filtering, and event-driven UI updates.', meta: 'Data slice' },
+        { title: 'One state library', description: 'Use Context, Redux, or Pinia as the first integration surface.', meta: 'UI slice' },
+        { title: 'One sync assumption', description: 'Document whether the MVP is local-only, sync-later, or API-backed.', meta: 'Product slice' },
+      ],
+      validationRows: [
+        { focus: 'Local data', when: 'Can the app create and read records with no server?', implementation: 'Cana/browser in-memory playground and local persistence checks.', outcome: 'The first workflow works offline.' },
+        { focus: 'State updates', when: 'Do components refresh from Cana events?', implementation: 'React/Vue state-management examples and event listener assertions.', outcome: 'UI stays consistent with local data.' },
+        { focus: 'Future backend', when: 'Can the same vocabulary map to API contracts later?', implementation: 'Generated SDK names and Category/Task contract parity.', outcome: 'The frontend MVP does not invent a separate domain.' },
+      ],
+    },
+    pt: {
+      eyebrow: 'Blueprint frontend',
+      title: 'Crie produtos instaláveis que continuam funcionando offline',
+      description: 'Combine SDKs gerados com arquitetura SPA ou PWA, persistência IndexedDB e o mesmo vocabulário de contratos do backend.',
+      outcomes: ['Fluxos de dados offline-first', 'Pacotes cliente REST, Socket.IO e gRPC', 'Governança compartilhada entre frontend e backend'],
+      sample: 'start',
+      mvpIntro: 'Use este caminho quando o primeiro MVP precisa rodar no browser, manter estado local e depois sincronizar com contratos backend.',
+      mvpSteps: [
+        { label: 'Dia 0', title: 'Modele registros locais', description: 'Comece com tabelas Category e Task, um filtro, uma ação de create e um evento que a UI consegue ouvir.', output: 'Saída MVP: modelo de dados browser com fluxo visível.' },
+        { label: 'Dia 1', title: 'Rode primeiro in-memory', description: 'Use Cana, contratos SDK gerados ou adaptadores in-memory nativos do browser antes de depender de backend.', output: 'Saída MVP: o app funciona 100% no browser.' },
+        { label: 'Dia 2', title: 'Conecte state management', description: 'Ligue React Context, Redux, Vue 3 Pinia ou outro store aos eventos do Cana e atualize componentes.', output: 'Saída MVP: UI atualiza quando dados locais mudam.' },
+        { label: 'Release', title: 'Comprove comportamento offline', description: 'Valide persistência local, listeners de evento, premissas de sync, acessibilidade, rotas e exemplos copiáveis.', output: 'Saída MVP: primeira demo instalável ou pronta para browser.' },
+      ],
+      mvpScope: [
+        { title: 'Duas tabelas locais', description: 'Category e Task provam relacionamento, filtro e atualização de UI por evento.', meta: 'Fatia de dados' },
+        { title: 'Uma biblioteca de estado', description: 'Use Context, Redux ou Pinia como primeira superfície de integração.', meta: 'Fatia de UI' },
+        { title: 'Uma premissa de sync', description: 'Documente se o MVP é local-only, sync-later ou apoiado por API.', meta: 'Fatia de produto' },
+      ],
+      validationRows: [
+        { focus: 'Dados locais', when: 'O app cria e lê registros sem servidor?', implementation: 'Playground Cana/browser in-memory e checks de persistência local.', outcome: 'O primeiro fluxo funciona offline.' },
+        { focus: 'Atualizações de estado', when: 'Componentes atualizam a partir dos eventos do Cana?', implementation: 'Exemplos React/Vue de state management e assertions de listener.', outcome: 'UI permanece consistente com dados locais.' },
+        { focus: 'Backend futuro', when: 'O mesmo vocabulário mapeia para contratos de API depois?', implementation: 'Nomes de SDK gerado e paridade de contrato Category/Task.', outcome: 'O MVP frontend não inventa outro domínio.' },
+      ],
+    },
   },
 };
 
@@ -1254,6 +1550,40 @@ export function CommercialUseCasePage({ locale, name }: { locale: CommercialLoca
             <ul>{content.outcomes.map((outcome) => <li key={outcome}>{outcome}</li>)}</ul>
           </div>
           <CodeShowcase samples={codeSamples[content.sample]} title={content.title} />
+        </div>
+      </Band>
+      <Band alternate>
+        <div className={classes.sectionStack}>
+          <SectionHeading
+            eyebrow={t(locale, 'From zero to first MVP', 'Do zero ao primeiro MVP')}
+            title={t(locale, 'A practical launch sequence for this blueprint', 'Uma sequência prática de lançamento para este blueprint')}
+            description={content.mvpIntro}
+          />
+          <ol className={classes.timeline}>
+            {content.mvpSteps.map((step) => (
+              <li key={`${step.label}-${step.title}`}>
+                <strong>{step.label}</strong>
+                <div>
+                  <h3>{step.title}</h3>
+                  <p>{step.description}</p>
+                  <p className={classes.timelineMeta}>{step.output}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </Band>
+      <Band>
+        <div className={classes.sectionStack}>
+          <SectionHeading
+            eyebrow={t(locale, 'MVP scope', 'Escopo MVP')}
+            title={t(locale, 'Keep the first release small enough to prove', 'Mantenha a primeira versão pequena o bastante para comprovar')}
+          />
+          <DetailGrid items={content.mvpScope.map((item) => ({ ...item, icon: <IconShieldCheck /> }))} />
+          <CommercialMatrix
+            headers={t(locale, ['Proof area', 'Question to answer', 'Jumentix mechanism', 'MVP evidence'], ['Área de prova', 'Pergunta a responder', 'Mecanismo Jumentix', 'Evidência MVP'])}
+            rows={content.validationRows}
+          />
         </div>
       </Band>
       <Band alternate>

@@ -99,6 +99,10 @@ describe('Commercial pages', () => {
       expect(screen.getByRole('link', { name: /Modular SaaS/ })).toBeInTheDocument();
       expect(screen.getByRole('link', { name: /Microservices/ })).toBeInTheDocument();
       expect(screen.getByRole('link', { name: /SPA and offline PWA/ })).toBeInTheDocument();
+      expect(screen.getByText('Zero to first MVP')).toBeInTheDocument();
+      expect(screen.getByText('Every use case is a launch path, not just an architecture label')).toBeInTheDocument();
+      expect(screen.getByText('MVP stage')).toBeInTheDocument();
+      expect(screen.getByText('Ready evidence')).toBeInTheDocument();
       expect(screen.getByText('When to choose each Jumentix path')).toBeInTheDocument();
       expect(screen.getByText('Shared foundation')).toBeInTheDocument();
       expect(screen.getByText('Contracts before adapters')).toBeInTheDocument();
@@ -211,6 +215,10 @@ describe('Commercial pages', () => {
       render(<CommercialUseCasePage locale="en" name="rest-api" />);
       expect(screen.getByText('Contract-first REST APIs without domain lock-in')).toBeInTheDocument();
       expect(screen.getByText('Native adapters for multiple Node.js HTTP runtimes')).toBeInTheDocument();
+      expect(screen.getByText('From zero to first MVP')).toBeInTheDocument();
+      expect(screen.getByText('Choose the first resource')).toBeInTheDocument();
+      expect(screen.getByText('MVP scope')).toBeInTheDocument();
+      expect(screen.getByText('MVP evidence')).toBeInTheDocument();
     });
 
     it('renders Realtime API use case page', () => {
@@ -218,6 +226,8 @@ describe('Commercial pages', () => {
       render(<CommercialUseCasePage locale="en" name="realtime-api" />);
       expect(screen.getByText('Bidirectional APIs with a built-in fallback')).toBeInTheDocument();
       expect(screen.getByText('Correlated request/response messages')).toBeInTheDocument();
+      expect(screen.getByText('Pick the live moment')).toBeInTheDocument();
+      expect(screen.getByText('Prove delivery and reconnect')).toBeInTheDocument();
     });
 
     it('renders SaaS Monolith use case page', () => {
@@ -225,6 +235,8 @@ describe('Commercial pages', () => {
       render(<CommercialUseCasePage locale="en" name="saas-monolith" />);
       expect(screen.getByText('Launch one deployable, preserve every domain boundary')).toBeInTheDocument();
       expect(screen.getByText('Lower first-release operating cost')).toBeInTheDocument();
+      expect(screen.getByText('Define the tenant-owned workflow')).toBeInTheDocument();
+      expect(screen.getByText('Protect the monolith boundaries')).toBeInTheDocument();
     });
 
     it('renders SaaS Microservices use case page', () => {
@@ -232,6 +244,8 @@ describe('Commercial pages', () => {
       render(<CommercialUseCasePage locale="en" name="saas-microservices" />);
       expect(screen.getByText('Scale services without rewriting communication')).toBeInTheDocument();
       expect(screen.getByText('Independent service ownership')).toBeInTheDocument();
+      expect(screen.getByText('Extract only one boundary')).toBeInTheDocument();
+      expect(screen.getByText('Prove compatibility')).toBeInTheDocument();
     });
 
     it('renders SPA PWA use case page', () => {
@@ -239,6 +253,8 @@ describe('Commercial pages', () => {
       render(<CommercialUseCasePage locale="en" name="spa-pwa" />);
       expect(screen.getByText('Build installable products that keep working offline')).toBeInTheDocument();
       expect(screen.getByText('Offline-first data workflows')).toBeInTheDocument();
+      expect(screen.getByText('Model local records')).toBeInTheDocument();
+      expect(screen.getByText('Connect state management')).toBeInTheDocument();
     });
 
     it('localizes to PT-BR', () => {
@@ -246,6 +262,8 @@ describe('Commercial pages', () => {
       render(<CommercialUseCasePage locale="pt-BR" name="rest-api" />);
       expect(screen.getByText('APIs REST orientadas a contratos sem aprisionar o domínio')).toBeInTheDocument();
       expect(screen.getByText('Adaptadores nativos para vários runtimes HTTP Node.js')).toBeInTheDocument();
+      expect(screen.getByText('Do zero ao primeiro MVP')).toBeInTheDocument();
+      expect(screen.getByText('Escolha o primeiro recurso')).toBeInTheDocument();
     });
   });
 });

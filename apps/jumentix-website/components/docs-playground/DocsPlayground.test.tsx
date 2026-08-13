@@ -33,9 +33,23 @@ describe('DocsPlayground catalogs', () => {
     const snippet = listDocsSnippets('jumentix-browser-lab').find((s) => s.id === 'getting-started');
     expect(snippet?.code).toContain("stores: ['categories', 'tasks']");
     expect(snippet?.code).toContain('tasks.create.v1');
+    expect(snippet?.code).toContain('categories.get.v1');
+    expect(snippet?.code).toContain('tasks.board.v1');
+    expect(snippet?.code).toContain("composedBy: ['Tasks', 'Categories']");
     expect(snippet?.code).toContain('createRestClient');
     expect(snippet?.code).toContain('createWebSocketClient');
     expect(snippet?.code).not.toMatch(/textoEvento|criarDadosIniciais|carregarTudo/);
+  });
+
+  it('message mediator playground composes data across domains', () => {
+    expect.hasAssertions();
+    const snippet = listDocsSnippets('message-mediator').find((s) => s.id === 'getting-started');
+    expect(snippet?.description.en).toContain('Exchange messages between Category and Task domains');
+    expect(snippet?.code).toContain('categories.get.v1');
+    expect(snippet?.code).toContain('tasks.board.v1');
+    expect(snippet?.code).toContain("sourceDomain: 'Tasks'");
+    expect(snippet?.code).toContain("composedFrom: ['Tasks', 'Categories']");
+    expect(snippet?.code).toContain('domainMessages');
   });
 });
 
