@@ -10,7 +10,7 @@
  *
  * ## Why every line below is `export *`
  *
- * bun 1.3.14 (the pinned toolchain) tree-shakes named re-exports —
+ * bun 1.3.13 (the pinned toolchain) tree-shakes named re-exports —
  * `export { x } from './module'` and `import { x } … export { x }` alike —
  * out of a `sideEffects: false` package: the emitted ESM bundle keeps the
  * export statement but drops the definition, leaving dangling bindings that

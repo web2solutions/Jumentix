@@ -24,7 +24,7 @@ REST, e realtime degradado cai para HTTP.
 
 | Item | Obrigatório | Notas |
 | --- | --- | --- |
-| Bun 1.3.14+ | Sim | [Começando](/docs/pt-BR/jumentix/concepts/getting-started) |
+| Bun 1.3.13+ | Sim | [Começando](/docs/pt-BR/jumentix/concepts/getting-started) |
 | Perfil REST funcionando | Recomendado | Complete o [guia REST](/docs/pt-BR/jumentix/guides/rest-api) primeiro |
 | Specs AsyncAPI | Sim | Em `spec/` junto com OpenAPI |
 | Arquivo de env | Sim | `apps/backend-template/src/config/.env.dev` |

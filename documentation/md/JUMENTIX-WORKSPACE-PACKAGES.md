@@ -56,6 +56,6 @@ longer a placeholder.
 - CLI package now owns canonical bootstrap implementation.
 - Root CLI entrypoint remains as compatibility wrapper.
 - Package status, links, and per-package README files are indexed in `packages/README.md`.
-- Bun 1.3.14 is the repository's internal engineering runtime and package manager. Node.js 22
+- Bun 1.3.13 is the repository's internal engineering runtime and package manager. Node.js 22
   remains the declared consumer-facing compatibility target where packages expose Node runtime
   artifacts.

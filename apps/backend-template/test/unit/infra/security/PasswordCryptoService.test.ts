@@ -13,15 +13,15 @@ import type { IPasswordHasher } from '@src/infra/security/IPasswordCryptoService
  * (JUM-583).
  *
  * Injecting also makes the assertions say what they mean: the claim is "when the
- * hasher calls back with an error, the promise rejects with it", and that is now
- * literally what is set up.
+ * hasher rejects, the promise rejects with it", and that is now literally what
+ * is set up. bcryptjs@3 is Promise-based, so the port matches that surface.
  */
 
-/** A hasher whose three callbacks are set per test. */
+/** A hasher whose three methods are set per test. */
 const hasherWith = (over: Partial<IPasswordHasher>): IPasswordHasher => ({
-  genSalt: (_rounds, callback) => callback(null, 'salt'),
-  hash: (_password, _salt, callback) => callback(null, 'hash'),
-  compare: (_plain, _hash, callback) => callback(null, true),
+  genSalt: async () => 'salt',
+  hash: async () => 'hash',
+  compare: async () => true,
   ...over
 });
 
@@ -59,7 +59,9 @@ describe('password crypto service', () => {
   it('rejects when the hasher fails to generate a salt', async () => {
     expect.hasAssertions();
     const service = new PasswordCryptoService(hasherWith({
-      genSalt: (_rounds, callback) => callback(new Error('salt-failed'))
+      genSalt: async () => {
+        throw new Error('salt-failed');
+      }
     }));
 
     await expect(service.hash('12345678')).rejects.toThrow('salt-failed');
@@ -68,7 +70,9 @@ describe('password crypto service', () => {
   it('rejects when the hasher fails to hash', async () => {
     expect.hasAssertions();
     const service = new PasswordCryptoService(hasherWith({
-      hash: (_password, _salt, callback) => callback(new Error('hash-failed'))
+      hash: async () => {
+        throw new Error('hash-failed');
+      }
     }));
 
     await expect(service.hash('12345678')).rejects.toThrow('hash-failed');
@@ -77,7 +81,9 @@ describe('password crypto service', () => {
   it('rejects when the hasher fails to compare', async () => {
     expect.hasAssertions();
     const service = new PasswordCryptoService(hasherWith({
-      compare: (_plain, _hash, callback) => callback(new Error('compare-failed'))
+      compare: async () => {
+        throw new Error('compare-failed');
+      }
     }));
 
     await expect(service.compare('12345678', 'hash')).rejects.toThrow('compare-failed');
@@ -88,8 +94,8 @@ describe('password crypto service', () => {
     // The success path through the injected seam, so the wrapper is shown to
     // pass values through rather than only to propagate errors.
     const service = new PasswordCryptoService(hasherWith({
-      genSalt: (_rounds, callback) => callback(null, 'the-salt'),
-      hash: (_password, salt, callback) => callback(null, `hashed-with-${salt}`)
+      genSalt: async () => 'the-salt',
+      hash: async (_password, salt) => `hashed-with-${salt}`
     }));
 
     await expect(service.hash('12345678')).resolves.toStrictEqual({
@@ -99,18 +105,18 @@ describe('password crypto service', () => {
   });
 
   /**
-   * bcrypt's callback signature permits `(null, undefined)` — no error and no
-   * value. The earlier code cast the result to `IHash`, so that combination
-   * resolved with `undefined`: a stored "password hash" of undefined, reported
-   * as a successful registration. These two guards turn it into a rejection at
-   * the point it happens, and they are the only paths that tell the two
+   * A Promise hasher can still resolve `undefined` — no rejection and no value.
+   * The earlier code cast the result to `IHash`, so that combination resolved
+   * with `undefined`: a stored "password hash" of undefined, reported as a
+   * successful registration. These two guards turn it into a rejection at the
+   * point it happens, and they are the only paths that tell the two
    * implementations apart, so they are asserted rather than assumed.
    */
   it('rejects when the hasher reports neither a salt nor an error', async () => {
     expect.hasAssertions();
 
     const service = new PasswordCryptoService(hasherWith({
-      genSalt: (_rounds, callback) => callback(null, undefined as unknown as string)
+      genSalt: async () => undefined as unknown as string
     }));
 
     await expect(service.hash('12345678'))
@@ -121,7 +127,7 @@ describe('password crypto service', () => {
     expect.hasAssertions();
 
     const service = new PasswordCryptoService(hasherWith({
-      hash: (_password, _salt, callback) => callback(null, undefined as unknown as string)
+      hash: async () => undefined as unknown as string
     }));
 
     await expect(service.hash('12345678'))

@@ -25,7 +25,7 @@ Each SDK copied walk-up logic to find `spec/` files; copies drifted and failed d
 
 ## Prerequisites
 
-- Bun 1.3.14+ (monorepo pin) or the Node runtime your service already uses
+- Bun 1.3.13+ (monorepo pin) or the Node runtime your service already uses
 - Read [Getting started](/docs/jumentix/concepts/getting-started) first
 - Basic TypeScript modules/`import` knowledge
 

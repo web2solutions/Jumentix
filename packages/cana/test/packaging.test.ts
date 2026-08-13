@@ -243,7 +243,7 @@ describe('cana built output', () => {
 
   it('emits an ESM bundle with no dangling export bindings', () => {
     expect.hasAssertions();
-    // JUM-629: bun 1.3.14 tree-shakes named re-exports out of a
+    // JUM-629: bun 1.3.13 tree-shakes named re-exports out of a
     // `sideEffects: false` package — the `export { x }` statement survives
     // while the definition of `x` is dropped. Node and bun parse the export
     // list lazily enough to look healthy; WebKit refuses to link the module

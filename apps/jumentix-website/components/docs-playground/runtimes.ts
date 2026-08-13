@@ -475,11 +475,18 @@ async function loadWsSdk() {
   };
 }
 
-async function loadJumentixBrowserLab() {
+async function loadJumentixBrowserLab(sessionKey: string) {
+  const cana = await import('@jumentix/cana') as unknown as Record<string, unknown>;
+  const React = await import('react') as unknown as Record<string, unknown>;
   const designerCore = await loadDesignerCore();
+  const dbPrefix = `jumentix-browser-lab-${sessionKey}`;
   return {
     api: {
+      React,
       createInMemoryDatabase: createInMemoryDatabaseApi,
+      createCanaDatabaseClient: cana.createCanaDatabaseClient,
+      createCanaClient: cana.createClient,
+      createCanaDatabaseName: (label = 'demo') => `${dbPrefix}-${label}-${Date.now()}`,
       createKeyValueStorage: createKeyValueStorageApi,
       createMessageMediator: createMessageMediatorApi,
       createMutex: () => createMutexApi(),
@@ -506,7 +513,8 @@ async function loadJumentixBrowserLab() {
       validateDesign: (input: unknown) => (
         designerCore.api.validate as (value: unknown) => unknown
       )(input)
-    }
+    },
+    reset: () => deleteEphemeralDatabase(dbPrefix)
   };
 }
 
@@ -520,7 +528,7 @@ const LOADERS: Record<
 > = {
   cana: loadCana,
   'designer-core': async () => loadDesignerCore(),
-  'jumentix-browser-lab': async () => loadJumentixBrowserLab(),
+  'jumentix-browser-lab': loadJumentixBrowserLab,
   'key-value-storage': async () => loadKv(),
   'message-mediator': async () => loadMediator(),
   'mutex-service': async () => loadMutex(),

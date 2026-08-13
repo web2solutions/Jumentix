@@ -25,7 +25,7 @@ Without a shared base, each DB adapter reinvented connect/disconnect and options
 
 ## Pré-requisitos
 
-- Bun 1.3.14+ (pin do monorepo) ou o Node do seu serviço
+- Bun 1.3.13+ (pin do monorepo) ou o Node do seu serviço
 - Leia [Começando](/docs/pt-BR/jumentix/concepts/getting-started)
 - TypeScript básico (`import`/módulos)
 

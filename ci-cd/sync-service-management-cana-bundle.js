@@ -20,7 +20,7 @@ const { isEntryPoint } = require('./lib/entry-point.js');
  *
  * The bundle is built from `packages/cana/src/adapter.ts` — the module that
  * DEFINES `createCanaDatabaseClient`, the one binding the SPA imports — not
- * from the package index: bun 1.3.14's full-graph bundling of
+ * from the package index: bun 1.3.13's full-graph bundling of
  * `packages/cana/src/index.ts` emits dangling export bindings (renamed
  * `x2` references with no top-level definition) that WebKit refuses to link
  * at all. The artifact check below fails closed if the required binding is

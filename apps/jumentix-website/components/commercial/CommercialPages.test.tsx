@@ -70,9 +70,9 @@ describe('Commercial pages', () => {
       expect(screen.getAllByText('Backend Template').length).toBeGreaterThan(0);
       expect(screen.getByText('Generated SDKs')).toBeInTheDocument();
       expect(screen.getByText('Browser in-memory playgrounds')).toBeInTheDocument();
-      expect(screen.getByText('Full Jumentix browser app')).toBeInTheDocument();
+      expect(screen.getAllByText('Full Jumentix browser app').length).toBeGreaterThan(0);
       expect(screen.getByText('Bulk write recovery')).toBeInTheDocument();
-      expect(screen.getByText('Bulk writes with mutex + DLQ')).toBeInTheDocument();
+      expect(screen.getAllByText('Bulk writes with mutex + DLQ').length).toBeGreaterThan(0);
       expect(screen.getByText('AI-ready platform')).toBeInTheDocument();
       expect(screen.getByText('AI work becomes governed delivery')).toBeInTheDocument();
       expect(screen.getByText(/Model service/)).toBeInTheDocument();
@@ -129,7 +129,7 @@ describe('Commercial pages', () => {
       expect(screen.getByText('@jumentix/database-client-factory')).toBeInTheDocument();
       expect(screen.getAllByText('@jumentix/message-mediator').length).toBeGreaterThan(0);
       expect(screen.getByText('Browser in-memory playgrounds')).toBeInTheDocument();
-      expect(screen.getByText('Bulk writes with mutex + DLQ')).toBeInTheDocument();
+      expect(screen.getAllByText('Bulk writes with mutex + DLQ').length).toBeGreaterThan(0);
       expect(screen.getByText('PM2 operations')).toBeInTheDocument();
     });
   });
@@ -153,7 +153,12 @@ describe('Commercial pages', () => {
       expect(screen.getByText('AI work becomes governed delivery')).toBeInTheDocument();
       expect(screen.getByText('Governance guardrail')).toBeInTheDocument();
       expect(screen.getByText('Browser in-memory playgrounds')).toBeInTheDocument();
-      expect(screen.getByText('Bulk writes with mutex + DLQ')).toBeInTheDocument();
+      expect(screen.getByText('Playground directory')).toBeInTheDocument();
+      expect(screen.getByText('Jump to any runnable package example')).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /Cana Getting started/ })).toHaveAttribute('href', '#playground-cana-getting-started');
+      expect(screen.getByRole('link', { name: /Cana Worker client flow/ })).toHaveAttribute('href', '#playground-cana-worker-client-flow');
+      expect(screen.getByRole('link', { name: /Jumentix browser lab Bulk writes with mutex \+ DLQ/ })).toHaveAttribute('href', '#playground-jumentix-browser-lab-bulk-mutex-dead-letter');
+      expect(screen.getAllByText('Bulk writes with mutex + DLQ').length).toBeGreaterThan(0);
       expect(screen.getByText('PM2 operations')).toBeInTheDocument();
     });
   });

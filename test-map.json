@@ -370,16 +370,6 @@
       "timeoutMs": 60000
     },
     {
-      "id": "apps/backend-template/test/unit/interface/HTTP/adapters/sails-js/localhost.handler.test.ts",
-      "path": "apps/backend-template/test/unit/interface/HTTP/adapters/sails-js/localhost.handler.test.ts",
-      "layer": "interface/runtime",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
       "id": "apps/backend-template/test/unit/interface/HTTP/adapters/express/ExpressServer.start.test.ts",
       "path": "apps/backend-template/test/unit/interface/HTTP/adapters/express/ExpressServer.start.test.ts",
       "layer": "interface/runtime",
@@ -400,16 +390,6 @@
       "timeoutMs": 60000
     },
     {
-      "id": "apps/backend-template/test/unit/interface/HTTP/adapters/feathers/localhost.handler.test.ts",
-      "path": "apps/backend-template/test/unit/interface/HTTP/adapters/feathers/localhost.handler.test.ts",
-      "layer": "interface/runtime",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
       "id": "apps/backend-template/test/unit/interface/HTTP/adapters/start-rest-api.test.ts",
       "path": "apps/backend-template/test/unit/interface/HTTP/adapters/start-rest-api.test.ts",
       "layer": "interface/runtime",
@@ -418,26 +398,6 @@
       "runner": "bun",
       "ciRunner": "node",
       "bunCompat": "pending-resetModules-or-native-gap",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/interface/HTTP/adapters/loopback/localhost.handler.test.ts",
-      "path": "apps/backend-template/test/unit/interface/HTTP/adapters/loopback/localhost.handler.test.ts",
-      "layer": "interface/runtime",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/interface/HTTP/adapters/derby-js/localhost.handler.test.ts",
-      "path": "apps/backend-template/test/unit/interface/HTTP/adapters/derby-js/localhost.handler.test.ts",
-      "layer": "interface/runtime",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
       "tier": "gate",
       "timeoutMs": 60000
     },
@@ -2083,6 +2043,19 @@
       "timeoutMs": 120000
     },
     {
+      "id": "apps/backend-template/test/integration/Sails-JS/get.localhost.test.ts",
+      "path": "apps/backend-template/test/integration/Sails-JS/get.localhost.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "sails-js",
+      "script": "test:integration:sails-js",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
       "id": "apps/backend-template/test/integration/Express/get.localhost.test.ts",
       "path": "apps/backend-template/test/integration/Express/get.localhost.test.ts",
       "layer": "adapters/in",
@@ -2382,6 +2355,19 @@
       "timeoutMs": 300000
     },
     {
+      "id": "apps/backend-template/test/integration/Feathers/get.localhost.test.ts",
+      "path": "apps/backend-template/test/integration/Feathers/get.localhost.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "feathers",
+      "script": "test:integration:feathers",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
       "id": "apps/backend-template/test/integration/realtime/socketio.redis-streams.multi-instance.test.ts",
       "path": "apps/backend-template/test/integration/realtime/socketio.redis-streams.multi-instance.test.ts",
       "layer": "interface/runtime",
@@ -2428,6 +2414,19 @@
       "type": "integration",
       "adapter": "total-js",
       "script": "test:integration:total-js",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/LoopBack/get.localhost.test.ts",
+      "path": "apps/backend-template/test/integration/LoopBack/get.localhost.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "loopback",
+      "script": "test:integration:loopback",
       "runner": "bun",
       "ciRunner": "node",
       "tier": "gate",
@@ -2536,6 +2535,19 @@
       "runner": "bun",
       "ciRunner": "node",
       "tier": "nightly",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Derby-JS/get.localhost.test.ts",
+      "path": "apps/backend-template/test/integration/Derby-JS/get.localhost.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "derby-js",
+      "script": "test:integration:derby-js",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
       "timeoutMs": 120000
     },
     {
@@ -4134,8 +4146,8 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 210,
-    "integration": 93,
+    "unit": 206,
+    "integration": 97,
     "smoke": 2,
     "suites": 350
   }

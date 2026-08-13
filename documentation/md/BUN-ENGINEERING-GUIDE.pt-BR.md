@@ -13,9 +13,12 @@ O Bun é pinado exatamente. Uma versão, idêntica localmente e no CI — uma fa
 
 | Fonte de verdade | Valor |
 | --- | --- |
-| `.bun-version` | `1.3.14` |
-| `package.json#packageManager` | `bun@1.3.14` |
-| `package.json#engines.bun` | `>=1.3.14` |
+| `.bun-version` | `1.3.13` |
+| `package.json#packageManager` | `bun@1.3.13` |
+| `package.json#engines.bun` | `>=1.3.13` |
+
+> **Por que 1.3.13 e não o release mais novo.** O Bun 1.3.14 rejeita um lockfile que ele mesmo acabou de escrever para certas árvores de dependência — `bun install` passa, `bun install --frozen-lockfile` falha no mesmo arquivo, e um lock escrito pelo 1.3.13 também é rejeitado. 1.3.13, 1.3.11 e 1.3.9 aceitam. O pin sobe de volta quando um release corrigir (JUM-708).
+
 
 O `ci-cd/check-bun-version.js` valida as três e falha fechado. Ele roda como `preinstall`, então é
 propositalmente livre de dependências: num clone frio o `node_modules` ainda não existe, e exigir `semver`

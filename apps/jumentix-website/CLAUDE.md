@@ -72,7 +72,7 @@ Next.js config (`next.config.mjs`) chains: `nextra()` → `bundleAnalyzer()`. Tu
 - **Formatter**: oxfmt (`.oxfmtrc.json`)
 - **Linter**: oxlint + stylelint
 - **TypeScript**: 6.x
-- **Package Manager**: Bun 1.3.14 (workspace standard). Do not use npm, pnpm, or yarn inside this monorepo.
+- **Package Manager**: Bun 1.3.13 (workspace standard). Do not use npm, pnpm, or yarn inside this monorepo.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

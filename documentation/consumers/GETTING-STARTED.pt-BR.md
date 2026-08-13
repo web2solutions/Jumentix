@@ -26,7 +26,7 @@ verificado em menos de 30 minutos.
 
 | Item | Mínimo | Como verificar |
 | --- | --- | --- |
-| **Bun** | 1.3.14+ (pinado no monorepo) | `bun --version` imprime `1.3.14` ou superior |
+| **Bun** | 1.3.13+ (pinado no monorepo) | `bun --version` imprime `1.3.13` ou superior |
 | **Terminal** | Qualquer shell moderno | Você consegue rodar comandos na pasta do projeto |
 | **Editor** | VS Code, Cursor ou similar | Você consegue abrir arquivos TypeScript |
 | **Node.js** | 22.x (opcional) | Só se alguma ferramenta legada ainda exigir Node |
@@ -67,7 +67,7 @@ bun --version
 1. Instale o Bun (veja Pré-requisitos).
 2. Confirme o gate de versão: `bun --version`.
 
-**Verificação de sucesso:** o comando sai com código 0 e imprime semver ≥ 1.3.14.
+**Verificação de sucesso:** o comando sai com código 0 e imprime semver ≥ 1.3.13.
 
 ### Passo 2 — Escolher o caminho inicial (< 2 minutos)
 
@@ -199,7 +199,7 @@ Use o playground Cana no Passo 5 para executar este padrão ao vivo.
 
 ## Checklist júnior (“Eu consigo …”)
 
-- [ ] Instalar Bun 1.3.14+ e confirmar `bun --version`.
+- [ ] Instalar Bun 1.3.13+ e confirmar `bun --version`.
 - [ ] Explicar as camadas adaptador → aplicação → domínio usando o diagrama acima.
 - [ ] Gerar ou abrir um serviço Jumentix e localizar `.jumentix/service-profile.json`.
 - [ ] Executar o playground Cana (**Run** verde, **Reset** restaura estado).

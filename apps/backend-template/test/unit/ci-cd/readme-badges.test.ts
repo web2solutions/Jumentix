@@ -316,6 +316,6 @@ describe('readme badge parity across languages (Requirement 076)', () => {
     // The previous translation rendered Node as "Nó". Product names are proper
     // nouns; translating them makes the badge describe nothing.
     expect(ptBadges).not.toContain('Nó');
-    expect(ptBadges).toContain('bun-1.3.14');
+    expect(ptBadges).toContain('bun-1.3.13');
   });
 });
