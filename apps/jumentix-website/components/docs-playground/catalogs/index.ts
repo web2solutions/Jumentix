@@ -30,8 +30,8 @@ export const JUMENTIX_BROWSER_LAB_SNIPPETS: readonly DocsSnippet[] = [
     id: 'getting-started',
     title: { en: 'Full Jumentix browser app', 'pt-BR': 'App Jumentix completo no browser' },
     description: {
-      en: 'Run Category and Task through in-memory database, key/value, mutex, mediator, REST and WebSocket contracts without a server.',
-      'pt-BR': 'Execute Category e Task com banco in-memory, chave/valor, mutex, mediator, REST e WebSocket sem servidor.'
+      en: 'Run Category and Task as separate domains that exchange messages through the mediator to compose a task board without a server.',
+      'pt-BR': 'Execute Category e Task como domínios separados que trocam mensagens pelo mediator para compor um task board sem servidor.'
     },
     code: `const database = api.createInMemoryDatabase({
   stores: ['categories', 'tasks']
@@ -61,6 +61,18 @@ await database.stores.categories.create('home', {
   color: '#16a34a'
 });
 
+mediator.registerHandler('categories.get.v1', async (message) => {
+  const category = await database.stores.categories.getOneById(message.payload.id);
+  return {
+    ok: Boolean(category.result),
+    result: category.result,
+    metadata: {
+      domain: 'Categories',
+      servedBy: 'categories.get.v1'
+    }
+  };
+});
+
 await mediator.subscribe('tasks.created', async (event) => {
   emittedEvents.push({
     title: event.payload.title,
@@ -86,6 +98,43 @@ mediator.registerHandler('tasks.create.v1', async (message) => {
   } finally {
     await mutex.unlock('category', task.categoryId);
   }
+});
+
+mediator.registerHandler('tasks.board.v1', async (message) => {
+  const taskList = await database.stores.tasks.getAll(
+    { completed: message.payload.completed },
+    { page: 1, size: 20 }
+  );
+  const cards = await Promise.all(taskList.result.map(async (task) => {
+    const category = await mediator.request({
+      contract: 'categories.get.v1',
+      payload: { id: task.categoryId },
+      metadata: {
+        sourceDomain: 'Tasks',
+        reason: 'compose task board'
+      }
+    });
+    return {
+      id: task.id,
+      title: task.title,
+      completed: task.completed,
+      category: category.result
+        ? {
+          id: category.result.id,
+          name: category.result.name,
+          color: category.result.color
+        }
+        : null
+    };
+  }));
+  return {
+    ok: true,
+    result: {
+      view: 'task-board',
+      composedBy: ['Tasks', 'Categories'],
+      cards
+    }
+  };
 });
 
 const restClient = api.createRestClient((request) => mediator.request({
@@ -122,6 +171,11 @@ await websocketClient.disconnect();
 
 const tasks = await database.stores.tasks.getAll({}, { page: 1, size: 10 });
 const lastWorkTask = await keyValue.get('category:work:lastTask');
+const taskBoard = await mediator.request({
+  contract: 'tasks.board.v1',
+  payload: { completed: false },
+  metadata: { source: 'browser-playground' }
+});
 
 return {
   designOk: designReport.ok,
@@ -129,6 +183,8 @@ return {
   createdByRest: firstTask.result.title,
   createdByWebSocket: secondTask.result.title,
   lastWorkTask: lastWorkTask.result,
+  composedDomains: taskBoard.result.composedBy,
+  taskBoard: taskBoard.result.cards,
   emittedEvents
 };`
   }
@@ -171,17 +227,37 @@ export const MEDIATOR_SNIPPETS: readonly DocsSnippet[] = [
     id: 'getting-started',
     title: { en: 'In-memory mediator', 'pt-BR': 'Mediator em memória' },
     description: {
-      en: 'Create a Task through request/response and emit an event for UI listeners.',
-      'pt-BR': 'Crie uma Task por request/response e emita um evento para listeners da UI.'
+      en: 'Exchange messages between Category and Task domains, then compose a read model through mediator request/response.',
+      'pt-BR': 'Troque mensagens entre os domínios Category e Task e componha um read model via request/response do mediator.'
     },
-    code: `const events = [];
+    code: `const domainMessages = [];
+const events = [];
 const mediator = api.createInMemory();
+
+const categories = new Map([
+  ['work', { id: 'work', name: 'Work', color: '#2563eb' }],
+  ['home', { id: 'home', name: 'Home', color: '#16a34a' }]
+]);
+const tasks = [];
 
 await mediator.subscribe('tasks.created', async (event) => {
   events.push({
     title: event.payload.title,
     categoryId: event.payload.categoryId
   });
+});
+
+mediator.registerHandler('categories.get.v1', async (message) => {
+  domainMessages.push({
+    from: message.metadata.sourceDomain,
+    to: 'Categories',
+    contract: 'categories.get.v1',
+    categoryId: message.payload.id
+  });
+  return {
+    ok: true,
+    result: categories.get(message.payload.id) ?? null
+  };
 });
 
 mediator.registerHandler('tasks.create.v1', async (message) => {
@@ -191,8 +267,36 @@ mediator.registerHandler('tasks.create.v1', async (message) => {
     categoryId: message.payload.categoryId,
     completed: false
   };
+  tasks.push(task);
   await mediator.publish({ name: 'tasks.created', payload: task });
   return { ok: true, result: task };
+});
+
+mediator.registerHandler('tasks.board.v1', async () => {
+  const cards = await Promise.all(tasks.map(async (task) => {
+    const category = await mediator.request({
+      contract: 'categories.get.v1',
+      payload: { id: task.categoryId },
+      metadata: {
+        sourceDomain: 'Tasks',
+        reason: 'compose task board read model'
+      }
+    });
+    return {
+      id: task.id,
+      title: task.title,
+      categoryName: category.result?.name ?? 'Uncategorized',
+      categoryColor: category.result?.color ?? '#64748b'
+    };
+  }));
+  return {
+    ok: true,
+    result: {
+      readModel: 'TaskBoard',
+      composedFrom: ['Tasks', 'Categories'],
+      cards
+    }
+  };
 });
 
 const response = await mediator.request({
@@ -204,9 +308,16 @@ const response = await mediator.request({
   },
   metadata: { source: 'browser-playground' }
 });
+const board = await mediator.request({
+  contract: 'tasks.board.v1',
+  payload: {},
+  metadata: { source: 'task-board-page' }
+});
 
 return {
   createdTask: response.result,
+  board: board.result,
+  domainMessages,
   events
 };`
   }
