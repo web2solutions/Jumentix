@@ -377,6 +377,339 @@ return {
   })),
   deadLetterRecords: replay.records
 };`
+  },
+  {
+    id: 'rest-mvp-use-case',
+    title: { en: 'REST MVP Day 1 — use-case on the in-memory adapter', 'pt-BR': 'MVP REST Dia 1 — use-case no adaptador in-memory' },
+    description: {
+      en: 'Run the create task use-case against the real in-memory database adapter and prove the 201/400/404 rules.',
+      'pt-BR': 'Execute o use-case de criar task contra o adaptador real in-memory e prove as regras 201/400/404.'
+    },
+    code: `const database = api.createInMemoryDatabase({ stores: ['categories', 'tasks'] });
+await database.connect();
+await database.stores.categories.create('work', { id: 'work', name: 'Work' });
+
+async function createTaskUseCase(input) {
+  if (!input.title || !String(input.title).trim()) {
+    return { status: 400, body: { error: 'title is required' } };
+  }
+  const category = await database.stores.categories.getOneById(input.categoryId);
+  if (!category.result) {
+    return { status: 404, body: { error: 'category not found' } };
+  }
+  const task = {
+    id: crypto.randomUUID(),
+    title: input.title,
+    categoryId: input.categoryId,
+    completed: false
+  };
+  await database.stores.tasks.create(task.id, task);
+  return { status: 201, body: task };
+}
+
+const created = await createTaskUseCase({ title: 'Ship the MVP', categoryId: 'work' });
+const invalid = await createTaskUseCase({ title: ' ', categoryId: 'work' });
+const orphan = await createTaskUseCase({ title: 'No owner', categoryId: 'missing' });
+const listed = await database.stores.tasks.getAll({}, { page: 1, size: 10 });
+
+return {
+  created: created.status,
+  invalid: invalid.status,
+  unknownCategory: orphan.status,
+  storedTotal: listed.total,
+  firstTask: listed.result[0].title
+};`
+  },
+  {
+    id: 'rest-mvp-client',
+    title: { en: 'REST MVP Day 2 — typed client over the same adapter', 'pt-BR': 'MVP REST Dia 2 — client tipado sobre o mesmo adaptador' },
+    description: {
+      en: 'Route OpenAPI operationIds through a REST client into a handler backed by the in-memory adapter.',
+      'pt-BR': 'Roteie operationIds OpenAPI por um client REST para um handler apoiado no adaptador in-memory.'
+    },
+    code: `const database = api.createInMemoryDatabase({ stores: ['categories', 'tasks'] });
+await database.connect();
+await database.stores.categories.create('work', { id: 'work', name: 'Work' });
+
+const client = api.createRestClient(async (request) => {
+  if (request.operationId === 'createTask') {
+    const input = request.body ?? {};
+    if (!input.title || !String(input.title).trim()) {
+      return { ok: false, status: 400, error: 'title is required' };
+    }
+    const category = await database.stores.categories.getOneById(input.categoryId);
+    if (!category.result) {
+      return { ok: false, status: 404, error: 'category not found' };
+    }
+    const task = { id: crypto.randomUUID(), ...input, completed: false };
+    await database.stores.tasks.create(task.id, task);
+    return { ok: true, status: 201, result: task };
+  }
+  if (request.operationId === 'listTasks') {
+    const tasks = await database.stores.tasks.getAll({}, { page: 1, size: 20 });
+    return { ok: true, status: 200, result: tasks.result };
+  }
+  return { ok: false, status: 404, error: 'unknown operationId' };
+});
+
+const created = await client.request({
+  operationId: 'createTask',
+  method: 'POST',
+  path: '/tasks',
+  body: { title: 'Publish first REST MVP', categoryId: 'work' }
+});
+const rejected = await client.request({
+  operationId: 'createTask',
+  method: 'POST',
+  path: '/tasks',
+  body: { title: '', categoryId: 'work' }
+});
+const listed = await client.request({ operationId: 'listTasks', method: 'GET', path: '/tasks' });
+
+return {
+  created: created.status,
+  rejected: rejected.status,
+  listed: listed.status,
+  total: listed.result.length,
+  firstTask: listed.result[0].title
+};`
+  },
+  {
+    id: 'realtime-mvp-live',
+    title: { en: 'Realtime MVP Day 1 — live command with ack and broadcast', 'pt-BR': 'MVP realtime Dia 1 — comando live com ack e broadcast' },
+    description: {
+      en: 'Wire a WebSocket client to a mediator handler that persists through the in-memory adapter and broadcasts the created event.',
+      'pt-BR': 'Ligue um client WebSocket a um handler do mediator que persiste pelo adaptador in-memory e transmite o evento de criação.'
+    },
+    code: `const database = api.createInMemoryDatabase({ stores: ['categories', 'tasks'] });
+const mediator = api.createMessageMediator();
+await database.connect();
+await database.stores.categories.create('work', { id: 'work', name: 'Work' });
+
+const liveCards = [];
+await mediator.subscribe('tasks.created', async (event) => {
+  liveCards.push(event.payload.title);
+});
+
+mediator.registerHandler('tasks.create.v1', async (message) => {
+  const category = await database.stores.categories.getOneById(message.payload.categoryId);
+  if (!category.result) {
+    return { ok: false, error: 'category not found' };
+  }
+  const task = {
+    id: crypto.randomUUID(),
+    title: message.payload.title,
+    categoryId: message.payload.categoryId,
+    completed: false
+  };
+  await database.stores.tasks.create(task.id, task);
+  await mediator.publish({ name: 'tasks.created', payload: task });
+  return { ok: true, result: task };
+});
+
+const socket = api.createWebSocketClient((request) => mediator.request({
+  contract: 'tasks.create.v1',
+  payload: request.input,
+  metadata: { transport: 'websocket' }
+}));
+
+await socket.connect();
+const ack = await socket.request({
+  operationId: 'tasks.create',
+  input: { title: 'Show realtime status', categoryId: 'work' }
+});
+const rejected = await socket.request({
+  operationId: 'tasks.create',
+  input: { title: 'No owner', categoryId: 'missing' }
+});
+await socket.disconnect();
+
+return {
+  ack: ack.ok,
+  createdTask: ack.result.title,
+  rejectedError: rejected.error,
+  broadcastedToUi: liveCards
+};`
+  },
+  {
+    id: 'realtime-mvp-fallback',
+    title: { en: 'Realtime MVP Day 2 — REST fallback parity drill', 'pt-BR': 'MVP realtime Dia 2 — drill de paridade do fallback REST' },
+    description: {
+      en: 'Kill the socket handler and prove the REST fallback returns the same business result through the same in-memory adapter.',
+      'pt-BR': 'Derrube o handler do socket e prove que o fallback REST retorna o mesmo resultado de negócio pelo mesmo adaptador in-memory.'
+    },
+    code: `const database = api.createInMemoryDatabase({ stores: ['categories', 'tasks'] });
+await database.connect();
+await database.stores.categories.create('work', { id: 'work', name: 'Work' });
+
+async function createTaskUseCase(input) {
+  const task = {
+    id: crypto.randomUUID(),
+    title: input.title,
+    categoryId: input.categoryId,
+    completed: false
+  };
+  await database.stores.tasks.create(task.id, task);
+  return { ok: true, result: task };
+}
+
+const downSocket = api.createWebSocketClient(async () => {
+  throw new Error('socket unavailable');
+});
+const restFallback = api.createRestClient((request) => createTaskUseCase(request.body));
+
+async function createTaskWithFallback(input) {
+  try {
+    const live = await downSocket.request({ operationId: 'tasks.create', input });
+    return { transport: 'websocket', result: live };
+  } catch {
+    const fallback = await restFallback.request({
+      operationId: 'createTask',
+      method: 'POST',
+      path: '/tasks',
+      body: input
+    });
+    return { transport: 'rest', result: fallback };
+  }
+}
+
+const response = await createTaskWithFallback({ title: 'Fallback parity task', categoryId: 'work' });
+const stored = await database.stores.tasks.getAll({}, { page: 1, size: 10 });
+
+return {
+  transportUsed: response.transport,
+  ok: response.result.ok,
+  storedTotal: stored.total,
+  storedTitle: response.result.result.title
+};`
+  },
+  {
+    id: 'saas-mvp-tenant',
+    title: { en: 'SaaS MVP Day 1 — tenant policy on the in-memory adapter', 'pt-BR': 'MVP SaaS Dia 1 — policy de tenant no adaptador in-memory' },
+    description: {
+      en: 'Prove the tenant guard: org-1 writes its own task, org-2 is denied, and the store only holds the legitimate record.',
+      'pt-BR': 'Prove a guarda de tenant: org-1 escreve a própria task, org-2 é negado e o store só guarda o registro legítimo.'
+    },
+    code: `const database = api.createInMemoryDatabase({ stores: ['categories', 'tasks'] });
+await database.connect();
+await database.stores.categories.create('work', { id: 'work', name: 'Work' });
+
+async function createTenantTask(context, input) {
+  if (context.organizationId !== input.organizationId) {
+    return { ok: false, status: 403, error: 'tenant access denied' };
+  }
+  const task = {
+    id: crypto.randomUUID(),
+    organizationId: input.organizationId,
+    title: input.title,
+    categoryId: input.categoryId
+  };
+  await database.stores.tasks.create(task.id, task);
+  return { ok: true, status: 201, result: task };
+}
+
+const own = await createTenantTask(
+  { organizationId: 'org-1', userId: 'user-1' },
+  { organizationId: 'org-1', title: 'Tenant scoped task', categoryId: 'work' }
+);
+const denied = await createTenantTask(
+  { organizationId: 'org-2', userId: 'user-2' },
+  { organizationId: 'org-1', title: 'Cross-tenant write', categoryId: 'work' }
+);
+const org1Tasks = await database.stores.tasks.getByRelation('organizationId', 'org-1');
+const org2Tasks = await database.stores.tasks.getByRelation('organizationId', 'org-2');
+
+return {
+  ownWrite: own.status,
+  crossTenantWrite: denied.status,
+  org1Sees: org1Tasks.result.map((task) => task.title),
+  org2Sees: org2Tasks.result.length
+};`
+  },
+  {
+    id: 'micro-mvp-worker',
+    title: { en: 'Microservices MVP Day 2 — worker persisting real notifications', 'pt-BR': 'MVP microsserviços Dia 2 — worker persistindo notificações reais' },
+    description: {
+      en: 'Subscribe a notification worker to the mediator and persist each delivery in its own in-memory store — no fake HTTP endpoint.',
+      'pt-BR': 'Assine um worker de notificação no mediator e persista cada entrega no próprio store in-memory — sem endpoint HTTP falso.'
+    },
+    code: `const database = api.createInMemoryDatabase({ stores: ['tasks', 'notifications'] });
+const mediator = api.createMessageMediator();
+await database.connect();
+
+await mediator.subscribe('tasks.created.v1', async (event) => {
+  await database.stores.notifications.create(crypto.randomUUID(), {
+    template: 'task-created',
+    taskId: event.payload.id,
+    title: event.payload.title
+  });
+});
+
+mediator.registerHandler('tasks.create.v1', async (message) => {
+  const task = {
+    id: crypto.randomUUID(),
+    title: message.payload.title,
+    categoryId: message.payload.categoryId,
+    completed: false
+  };
+  await database.stores.tasks.create(task.id, task);
+  await mediator.publish({ name: 'tasks.created.v1', payload: task });
+  return { ok: true, result: task };
+});
+
+const created = await mediator.request({
+  contract: 'tasks.create.v1',
+  payload: { title: 'Notify assignee', categoryId: 'work' }
+});
+const sent = await database.stores.notifications.getAll({}, { page: 1, size: 10 });
+
+return {
+  task: created.result.title,
+  notificationsDelivered: sent.total,
+  firstNotification: sent.result[0]
+};`
+  },
+  {
+    id: 'micro-mvp-dead-letter',
+    title: { en: 'Microservices MVP Release — explicit failure with DLQ replay', 'pt-BR': 'MVP microsserviços Release — falha explícita com replay via DLQ' },
+    description: {
+      en: 'Route a poison message to the dead-letter queue and replay it, proving the failure mode is explicit and measured.',
+      'pt-BR': 'Envie uma mensagem venenosa para a dead-letter queue e reprocesse, provando que o modo de falha é explícito e medido.'
+    },
+    code: `const deadLetterQueue = api.createDeadLetterQueue({ maxAttempts: 2 });
+const mediator = api.createMessageMediator();
+
+mediator.registerHandler('tasks.create.v1', async (message) => {
+  if (!message.payload.title) {
+    const record = await deadLetterQueue.enqueue({
+      entityName: 'Task',
+      resourceId: message.payload.categoryId ?? 'unknown',
+      operation: 'tasks.create.v1',
+      payload: message.payload
+    });
+    return { ok: false, error: 'queued for replay', deadLetterId: record.id };
+  }
+  return { ok: true, result: { id: crypto.randomUUID(), ...message.payload } };
+});
+
+const failed = await mediator.request({
+  contract: 'tasks.create.v1',
+  payload: { categoryId: 'work' }
+});
+const report = await deadLetterQueue.replay({
+  'tasks.create.v1': async (record) => {
+    if (!record.payload.title) throw new Error('title is required');
+    return record.id;
+  }
+});
+const after = await deadLetterQueue.find(failed.deadLetterId);
+
+return {
+  firstAttempt: failed.error,
+  replayReport: report,
+  statusAfterReplay: after.status,
+  lastError: after.lastError
+};`
   }
 ];
 
@@ -509,6 +842,46 @@ return {
   board: board.result,
   domainMessages,
   events
+};`
+  },
+  {
+    id: 'micro-mvp-mediator',
+    title: { en: 'Microservices MVP Day 1 — contract over the in-memory mediator', 'pt-BR': 'MVP microsserviços Dia 1 — contrato sobre o mediator in-memory' },
+    description: {
+      en: 'Prove request/response and publish/listen on the real in-memory mediator, including the explicit error for an unknown contract.',
+      'pt-BR': 'Prove request/response e publish/listen no mediator in-memory real, incluindo o erro explícito para contrato desconhecido.'
+    },
+    code: `const mediator = api.createInMemory();
+const receivedEvents = [];
+
+await mediator.subscribe('tasks.created.v1', async (event) => {
+  receivedEvents.push(event.payload.title);
+});
+
+mediator.registerHandler('tasks.create.v1', async (message) => {
+  const task = {
+    id: crypto.randomUUID(),
+    title: message.payload.title,
+    categoryId: message.payload.categoryId,
+    completed: false
+  };
+  await mediator.publish({ name: 'tasks.created.v1', payload: task });
+  return { ok: true, result: task };
+});
+
+const created = await mediator.request({
+  contract: 'tasks.create.v1',
+  payload: { title: 'Notify assignee', categoryId: 'work' }
+});
+const unknown = await mediator.request({
+  contract: 'tasks.unknown.v1',
+  payload: {}
+});
+
+return {
+  createdTask: created.result.title,
+  eventDelivered: receivedEvents,
+  unknownContractError: unknown.error
 };`
   }
 ];

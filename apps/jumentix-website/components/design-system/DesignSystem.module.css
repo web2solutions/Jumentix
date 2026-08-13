@@ -353,6 +353,70 @@
   min-height: 230px;
 }
 
+.journey {
+  display: grid;
+  gap: var(--jtx-space-4);
+}
+
+.journeyTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--jtx-space-2);
+}
+
+.journeyTab {
+  min-height: 36px;
+  padding: 0 var(--jtx-space-4);
+  border: 1px solid var(--jtx-line);
+  border-radius: var(--jtx-radius-sm);
+  color: var(--jtx-ink-muted);
+  background: var(--jtx-surface);
+  cursor: pointer;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.journeyTab:hover {
+  color: var(--jtx-blue-700);
+  border-color: var(--jtx-blue-700);
+}
+
+.journeyTab[aria-selected='true'] {
+  color: #fff;
+  border-color: var(--jtx-blue-700);
+  background: var(--jtx-blue-700);
+}
+
+.journeyPanel {
+  display: grid;
+  gap: var(--jtx-space-3);
+}
+
+.journeyPanel h3 {
+  margin: 0;
+}
+
+.journeyPanel p {
+  margin: 0;
+  color: var(--jtx-ink-muted);
+  line-height: 1.6;
+}
+
+.journeyTasks {
+  display: grid;
+  gap: var(--jtx-space-2);
+  margin: 0;
+  padding-left: var(--jtx-space-5);
+  color: var(--jtx-ink-muted);
+  line-height: 1.6;
+}
+
+.journeyPanel .journeyMeta {
+  color: var(--jtx-green-500);
+  font-size: 0.94rem;
+  font-weight: 800;
+}
+
 .searchWrap {
   position: relative;
   width: min(100%, 420px);

@@ -556,6 +556,137 @@ try {
   channel.port1.close();
   channel.port2.close();
 }`
+  },
+  {
+    id: 'spa-mvp-offline',
+    title: { en: 'SPA MVP Day 1 — offline records in Cana', 'pt-BR': 'MVP SPA Dia 1 — registros offline no Cana' },
+    description: {
+      en: 'Open a real Cana IndexedDB client, seed Category, and create the first Task — the whole workflow runs in the browser.',
+      'pt-BR': 'Abra um client Cana IndexedDB real, semeie Category e crie a primeira Task — o fluxo inteiro roda no browser.'
+    },
+    code: `const client = cana.createClient({
+  name: dbName,
+  schema: ${schemaSource}
+});
+await client.open();
+
+const now = Date.now();
+await client.table('categories').add({
+  id: 'work',
+  name: 'Work',
+  color: '#2563eb',
+  createdAt: now,
+  updatedAt: now
+});
+await client.table('tasks').add({
+  id: 'task-1',
+  title: 'Offline task',
+  categoryId: 'work',
+  completed: false,
+  priority: 'high',
+  createdAt: now,
+  updatedAt: now
+});
+
+return {
+  backend: client.backend,
+  category: await client.table('categories').get('work'),
+  task: await client.table('tasks').get('task-1')
+};`
+  },
+  {
+    id: 'spa-mvp-events',
+    title: { en: 'SPA MVP Day 2 — UI state from Cana events and indexed queries', 'pt-BR': 'MVP SPA Dia 2 — estado da UI via eventos do Cana e queries indexadas' },
+    description: {
+      en: 'Subscribe to committed change events, write and update a Task, then read it back through the byCategory index.',
+      'pt-BR': 'Assine eventos de mudança confirmados, escreva e atualize uma Task, depois leia de volta pelo índice byCategory.'
+    },
+    code: `const client = cana.createClient({
+  name: dbName,
+  schema: ${schemaSource}
+});
+await client.open();
+
+const seen = [];
+const stop = client.subscribe((event) => {
+  seen.push({ type: event.type, store: event.store, key: event.key });
+});
+
+const now = Date.now();
+await client.table('categories').add({
+  id: 'work',
+  name: 'Work',
+  color: '#2563eb',
+  createdAt: now,
+  updatedAt: now
+});
+await client.table('tasks').add({
+  id: 'task-1',
+  title: 'Listen to local changes',
+  categoryId: 'work',
+  completed: false,
+  priority: 'medium',
+  createdAt: now,
+  updatedAt: now
+});
+await client.table('tasks').update('task-1', { completed: true, updatedAt: now + 1 });
+stop();
+
+const workTasks = await client.table('tasks').query({
+  index: 'byCategory',
+  equals: 'work'
+});
+
+return {
+  events: seen,
+  workTasks: workTasks.map((task) => ({ title: task.title, completed: task.completed }))
+};`
+  },
+  {
+    id: 'spa-mvp-durability',
+    title: { en: 'SPA MVP Release — durability across reopen', 'pt-BR': 'MVP SPA Release — durabilidade ao reabrir' },
+    description: {
+      en: 'Close the client and reopen the same database: the offline records survive, proving durable local state.',
+      'pt-BR': 'Feche o client e reabra o mesmo banco: os registros offline sobrevivem, provando estado local durável.'
+    },
+    code: `const client = cana.createClient({
+  name: dbName,
+  schema: ${schemaSource}
+});
+await client.open();
+
+const now = Date.now();
+await client.table('categories').add({
+  id: 'work',
+  name: 'Work',
+  color: '#2563eb',
+  createdAt: now,
+  updatedAt: now
+});
+await client.table('tasks').add({
+  id: 'task-1',
+  title: 'Survives reload',
+  categoryId: 'work',
+  completed: false,
+  priority: 'high',
+  createdAt: now,
+  updatedAt: now
+});
+await client.close();
+
+const reopened = cana.createClient({
+  name: dbName,
+  schema: ${schemaSource}
+});
+await reopened.open();
+const tasksAfterReopen = await reopened.table('tasks').query();
+const categoriesAfterReopen = await reopened.table('categories').query();
+
+return {
+  backend: reopened.backend,
+  categoriesAfterReopen: categoriesAfterReopen.length,
+  tasksAfterReopen: tasksAfterReopen.map((task) => task.title)
+};`
   }
 ];
 
