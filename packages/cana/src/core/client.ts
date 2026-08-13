@@ -145,6 +145,7 @@ function createAutoCommitTable<TRecord, TKey extends CanaKey = CanaKey>(
     count: (query) => read((table) => table.count(query)),
     query: (query) => read((table) => table.query(query)),
     explain: (query) => read((table) => table.explain(query)),
+    explainCount: (query) => read((table) => table.explainCount(query)),
     add: (record, key) => write((table) => table.add(record, key)),
     put: (record, key) => write((table) => table.put(record, key)),
     update: (key, changes) => write((table) => table.update(key, changes)),
