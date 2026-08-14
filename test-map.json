@@ -1786,8 +1786,8 @@
       "timeoutMs": 60000
     },
     {
-      "id": "apps/backend-template/test/unit/modules/Catalogs/adapters/out/CatalogDataRepositoryDefaults.test.ts",
-      "path": "apps/backend-template/test/unit/modules/Catalogs/adapters/out/CatalogDataRepositoryDefaults.test.ts",
+      "id": "apps/backend-template/test/unit/modules/Catalogs/adapters/CatalogDataRepositoryDefaults.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Catalogs/adapters/CatalogDataRepositoryDefaults.test.ts",
       "layer": "application",
       "kind": "hexagonal",
       "type": "unit",

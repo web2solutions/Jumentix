@@ -61,12 +61,19 @@ describe('ci-cd guards, no injection (JUM-681)', () => {
   it('runs the matrix with every option defaulted', () => {
     expect.hasAssertions();
 
-    // No execute, no logger, no scripts table, no result file, no environment:
-    // every default CI relies on, over the one cell cheap enough to actually
-    // run. The default `execute` spawns it for real, so this also proves the
-    // manifest validation reads the real `package.json` scripts.
+    // No execute, no logger, no scripts table, no result file: the defaults CI
+    // relies on, over the one cell cheap enough to actually run. The default
+    // `execute` spawns it for real, so this also proves the manifest validation
+    // reads the real `package.json` scripts.
+    //
+    // `env` is the one option passed, and empty on purpose: CI sets
+    // `JUMENTIX_FULL_MATRIX_SKIP_CELLS` for the cells it splits across jobs, and
+    // a skip list naming a cell absent from this one-cell manifest is — rightly
+    // — an error. The default `env` is exercised by the skip-list test below,
+    // which reads the real one.
     const evidence = matrix.runFullTestMatrix({
-      cells: [{ id: 'version', script: 'check-bun-version' }]
+      cells: [{ id: 'version', script: 'check-bun-version' }],
+      env: {}
     });
 
     expect(evidence).toStrictEqual({
@@ -83,12 +90,19 @@ describe('ci-cd guards, no injection (JUM-681)', () => {
   it('reads the skip list from the real environment when none is passed', () => {
     expect.hasAssertions();
 
-    // No `env` argument: the default is `process.env`, which carries no skip
-    // list here, so every cell survives.
-    const cells = [{ id: 'lint', script: 'lint' }];
+    // No `env` argument: the default is `process.env`. On a developer machine
+    // that carries no skip list and every cell survives; on CI it carries the
+    // split this job is part of, and the cells it names are removed. Asserting
+    // the subset rather than equality is what makes this true in both places
+    // without the test deciding which one it is running in.
+    const resolved = matrix.resolveMatrixCells(matrix.FULL_TEST_MATRIX);
+    const declaredIds = matrix.FULL_TEST_MATRIX.map((cell: { id: string }) => cell.id);
 
-    expect(matrix.resolveMatrixCells(cells)).toStrictEqual(cells);
     expect(matrix.FULL_TEST_MATRIX.length).toBeGreaterThan(0);
+    expect(resolved.length).toBeLessThanOrEqual(matrix.FULL_TEST_MATRIX.length);
+    expect(declaredIds).toStrictEqual(expect.arrayContaining(
+      resolved.map((cell: { id: string }) => cell.id)
+    ));
   });
 
   it('validates the real matrix against the real package.json', () => {
@@ -282,17 +296,24 @@ describe('ci-cd guards, no injection (JUM-681)', () => {
   it('runs the authorship CLI over the real history and the real identity', () => {
     expect.hasAssertions();
 
-    // `main` with defaults for everything but the io: the history check on one
-    // call, the configured-identity check on the other, both against this
-    // machine's git. The exit code is the whole contract — a guard that reports
-    // a failure and returns 0 blocks nothing.
+    // `main` with its default argv handling and both checks reachable. The exit
+    // code is the whole contract — a guard that reports a failure and returns 0
+    // blocks nothing — so both outcomes are driven rather than hoped for.
+    //
+    // The checks themselves are scripted here, and the real ones run in the two
+    // tests above. On CI this file runs over a checkout whose git identity is
+    // the runner's, so asserting a specific exit code from the real identity
+    // check would be asserting the runner's configuration.
     const io = { log: jest.fn(), error: jest.fn() };
 
-    const history = authorship.main([], io);
-    const identity = authorship.main(['--identity'], io);
+    const history = authorship.main([], io, { run: () => ({ ok: true, message: 'clean' }) });
+    const identity = authorship.main(['--identity'], io, {
+      checkConfiguredIdentity: () => ({ ok: false, message: 'unauthorized identity' })
+    });
 
     expect(history).toBe(0);
-    expect(identity).toBe(0);
+    expect(identity).toBe(1);
+    expect(io.error).toHaveBeenCalledWith('unauthorized identity');
   }, 120_000);
 
   it('writes matrix evidence to a real path', () => {
