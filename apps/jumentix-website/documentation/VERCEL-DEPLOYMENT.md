@@ -69,7 +69,7 @@ Set these on the Vercel project (Production + Preview):
 
 | Name | Purpose |
 | --- | --- |
-| `GITHUB_TOKEN` | GitHub releases API (`/api/github-releases`). Not needed by `/changelog`, which bundles its data at build time via `scripts/sync-changelog.mjs`. |
+| `GITHUB_TOKEN` | Optional legacy variable. Nothing at runtime needs it: `/changelog` and `/api/github-releases` bundle their data at build time (`scripts/sync-changelog.mjs`, `scripts/sync-releases.mjs`). The releases snapshot uses it at build time when present. |
 
 Vercel Analytics is mounted in the root App Router layout via
 `@vercel/analytics/react` (`<Analytics />`) and does not require a custom
@@ -96,3 +96,6 @@ Rollback: use the previous Production deployment in the Vercel project dashboard
 - Vercel and local builds use the Bun workspace lockfile and patched dependency declarations.
 - Root deployment scripts are intentionally scope-agnostic (no forced `--scope`) to support
   personal-account and team-account Vercel contexts.
+- The Vercel CLI project link (`.vercel/project.json`, created by `vercel link` or a manual
+  deploy) is machine-specific local config. It is gitignored at the repository root and must
+  never be committed.
