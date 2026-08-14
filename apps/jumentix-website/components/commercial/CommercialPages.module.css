@@ -339,6 +339,38 @@
   gap: 22px;
 }
 
+.playgroundDirectoryGroups {
+  display: grid;
+  gap: 22px;
+}
+
+.playgroundDirectoryGroup {
+  display: grid;
+  gap: 12px;
+}
+
+.playgroundDirectoryGroupHeader {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.34fr) minmax(0, 0.66fr);
+  gap: 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--jtx-line);
+}
+
+.playgroundDirectoryGroupHeader h3 {
+  margin: 0;
+  color: var(--jtx-ink);
+  font-size: 1.05rem;
+  letter-spacing: 0;
+}
+
+.playgroundDirectoryGroupHeader p {
+  margin: 0;
+  color: var(--jtx-ink-muted);
+  font-size: 0.94rem;
+  line-height: 1.58;
+}
+
 .playgroundDirectory {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -393,6 +425,110 @@
   align-self: end;
   color: var(--jtx-ink-muted);
   text-transform: none;
+}
+
+.playgroundLearningPath {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.playgroundLearningCard {
+  min-height: 230px;
+  padding: 20px;
+  border: 1px solid var(--jtx-line);
+  border-radius: var(--jtx-radius-md);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--jtx-blue-50) 34%, transparent), transparent 58%),
+    var(--jtx-surface);
+}
+
+.playgroundLearningIcon {
+  display: inline-grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 1px solid var(--jtx-blue-200);
+  border-radius: 8px;
+  color: var(--jtx-blue-700);
+  background: color-mix(in srgb, var(--jtx-blue-50) 70%, var(--jtx-surface));
+}
+
+.playgroundLearningCard strong,
+.playgroundIntro span {
+  display: block;
+  margin-top: 18px;
+  color: var(--jtx-green-700);
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.playgroundLearningCard h3,
+.playgroundIntro h3 {
+  margin: 8px 0 0;
+  font-size: 1.05rem;
+  letter-spacing: 0;
+  line-height: 1.25;
+}
+
+.playgroundLearningCard p,
+.playgroundIntro p,
+.playgroundIntro dd {
+  margin: 10px 0 0;
+  color: var(--jtx-ink-muted);
+  font-size: 0.94rem;
+  line-height: 1.58;
+}
+
+.playgroundFrame {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--jtx-line);
+  border-radius: var(--jtx-radius-md);
+  background: color-mix(in srgb, var(--jtx-surface-subtle) 72%, var(--jtx-surface));
+}
+
+.playgroundFrameWide {
+  grid-column: 1 / -1;
+}
+
+.playgroundIntro {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(280px, 1.05fr);
+  gap: 18px;
+  margin-bottom: 16px;
+  padding: 18px;
+  border: 1px solid var(--jtx-line);
+  border-radius: 8px;
+  background: var(--jtx-surface);
+}
+
+.playgroundIntro span {
+  margin-top: 0;
+}
+
+.playgroundIntro dl {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.playgroundIntro div {
+  min-width: 0;
+}
+
+.playgroundIntro dt {
+  color: var(--jtx-blue-700);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.playgroundIntro dd {
+  margin-top: 4px;
 }
 
 .aiFlow {
@@ -700,8 +836,18 @@
   .detailGrid,
   .playgroundDirectory,
   .playgroundGrid,
+  .playgroundLearningPath,
   .aiFlow {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .playgroundIntro {
+    grid-template-columns: 1fr;
+  }
+
+  .playgroundDirectoryGroupHeader {
+    grid-template-columns: 1fr;
+    gap: 8px;
   }
 
   .aiStep::after {
@@ -767,6 +913,7 @@
   .detailGrid,
   .playgroundDirectory,
   .playgroundGrid,
+  .playgroundLearningPath,
   .aiFlow {
     grid-template-columns: 1fr;
   }
