@@ -9,7 +9,7 @@ describe('CommercialChangelogPage (JUM-718)', () => {
     render(<CommercialChangelogPage locale="en" page="1" />);
     const first = changelogEntries[0];
     expect(screen.getByText('Jumentix changelog')).toBeInTheDocument();
-    expect(screen.getByText(first.message)).toBeInTheDocument();
+    expect(screen.getAllByText(first.message).length).toBeGreaterThan(0);
     expect(screen.getByText(first.sha.slice(0, 8))).toBeInTheDocument();
     expect(screen.getAllByRole('link', { name: 'View change on GitHub' }).length).toBeGreaterThan(0);
   });

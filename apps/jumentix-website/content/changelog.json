@@ -1,9 +1,75 @@
 [
   {
+    "sha": "f11f90513096520744ccc4e20c99044e2c48caad",
+    "date": "2026-08-13T23:33:06-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(website): show live indexeddb flow in cana canvas"
+  },
+  {
+    "sha": "523ba233c11474571b37d9667d39b73f1ef8b70e",
+    "date": "2026-08-13T23:28:56-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(website): show live indexeddb flow in cana canvas"
+  },
+  {
+    "sha": "112178b5dbd4d304da5913af92bd21e0d7df9f7c",
+    "date": "2026-08-13T22:30:36-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(website): show live dlq flow in cana canvas"
+  },
+  {
+    "sha": "060e14062d6b450008b3fd05025957e5066aeda9",
+    "date": "2026-08-13T22:26:00-03:00",
+    "author": "Eduardo A.",
+    "message": "Merge remote-tracking branch 'origin/dev' into fix/cana-dlq-live-canvas"
+  },
+  {
+    "sha": "6855982f44ee5db4ac6323029c4afd7903ac624c",
+    "date": "2026-08-13T22:24:05-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(website): show live dlq flow in cana canvas"
+  },
+  {
+    "sha": "f67d1d251be51880e9dfc3ace738cafefaadd727",
+    "date": "2026-08-13T20:58:00-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: untrack vercel cli local project link (JUM-719) (#241)"
+  },
+  {
+    "sha": "4e5618f40eba610551cbead8b99657544b441553",
+    "date": "2026-08-13T20:39:28-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(website): bundle release notes at build and add empty state (JUM-719) (#240)"
+  },
+  {
+    "sha": "57a1076b3f3e9e4d53380e3d19a8f9cd974a8438",
+    "date": "2026-08-13T19:41:21-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(website): show per-request cana canvas flow"
+  },
+  {
+    "sha": "465b733917acba10214906cb3819092623698785",
+    "date": "2026-08-13T19:36:07-03:00",
+    "author": "Eduardo A.",
+    "message": "Merge remote-tracking branch 'origin/dev' into fix/cana-per-request-canvas-flow"
+  },
+  {
     "sha": "d9bd8dc6a0157b3853e02253dec7a138d13d8fb4",
     "date": "2026-08-13T19:30:41-03:00",
     "author": "Eduardo A.",
     "message": "fix(website): bake changelog data at build instead of github api (JUM-718) (#238)"
+  },
+  {
+    "sha": "a7896f15b6b6572cdefeddf8c0675d6ac26a4003",
+    "date": "2026-08-13T19:15:50-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(website): improve cana comparison charts"
+  },
+  {
+    "sha": "10c3a462343ccec38204cf6499fec7be1b259fff",
+    "date": "2026-08-13T19:10:56-03:00",
+    "author": "Eduardo A.",
+    "message": "Merge remote-tracking branch 'origin/dev' into fix/cana-per-request-canvas-flow"
   },
   {
     "sha": "cf11249e7c947286fa36959ca3aea4195c3d22a5",
@@ -12,10 +78,22 @@
     "message": "test(ci): cover four guard behaviours, and state what the floor is really made of (JUM-681) (#237)"
   },
   {
+    "sha": "f9bb806c37c83acbb205c4fa59edf94d767d9d75",
+    "date": "2026-08-13T18:56:10-03:00",
+    "author": "Eduardo A.",
+    "message": "Merge remote-tracking branch 'origin/dev' into fix/cana-per-request-canvas-flow"
+  },
+  {
     "sha": "69e8033c728352f32ff9b415bcff5720f1351532",
     "date": "2026-08-13T18:45:47-03:00",
     "author": "Eduardo A.",
     "message": "fix(users): serialise organization membership writes, and seed sequentially (JUM-687) (#223)"
+  },
+  {
+    "sha": "3508af750f11e9101335248601df906f3c93cc92",
+    "date": "2026-08-13T18:30:12-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(website): show per-request cana canvas flow"
   },
   {
     "sha": "98b4cc097fedd8e7a39815d2924ee68f009185ae",

@@ -95,6 +95,87 @@ const playgroundCatalogEntries = playgroundRuntimeOrder.flatMap((runtime) =>
     description: snippet.description,
   }))
 );
+type PlaygroundCatalogEntry = (typeof playgroundCatalogEntries)[number];
+type PlaygroundGuide = {
+  stage: string;
+  focus: string;
+  proves: string;
+  observe: string;
+  concept: string;
+};
+
+function playgroundGuideFor(entry: PlaygroundCatalogEntry, locale: CommercialLocale): PlaygroundGuide {
+  if (entry.runtime === 'jumentix-browser-lab' && entry.id === 'bulk-mutex-dead-letter') {
+    return {
+      stage: t(locale, 'Stress path', 'Caminho de stress'),
+      focus: t(locale, 'Concurrent writes, locks, DLQ replay and browser persistence in one heavy-data scenario.', 'Escritas concorrentes, locks, replay DLQ e persistência browser em um cenário heavy-data.'),
+      proves: t(locale, 'Rejected requests are recoverable work, not lost work.', 'Requests rejeitados são trabalho recuperável, não trabalho perdido.'),
+      observe: t(locale, 'Red lock rejections, DLQ intake, Message Mediator replay, worker commits and IndexedDB events while the stream is still running.', 'Rejeições vermelhas do lock, entrada na DLQ, replay pelo Message Mediator, commits dos workers e eventos IndexedDB enquanto o stream ainda roda.'),
+      concept: t(locale, 'Mutex + Dead Letter Queue + Cana', 'Mutex + Dead Letter Queue + Cana'),
+    };
+  }
+  if (entry.runtime === 'jumentix-browser-lab') {
+    return {
+      stage: t(locale, 'MVP path', 'Caminho MVP'),
+      focus: t(locale, 'A complete browser-only product slice using Category and Task records.', 'Uma fatia completa de produto 100% browser usando Category e Task.'),
+      proves: t(locale, 'The same architecture can start with in-memory adapters before external infrastructure exists.', 'A mesma arquitetura pode começar com adaptadores in-memory antes da infraestrutura externa existir.'),
+      observe: t(locale, 'Controller boundaries, service results, mediator messages and client state updates.', 'Limites de controller, service results, mensagens via mediator e atualizações de estado no cliente.'),
+      concept: t(locale, 'Zero to first MVP', 'Do zero ao primeiro MVP'),
+    };
+  }
+  if (entry.runtime === 'cana') {
+    return {
+      stage: t(locale, 'Frontend data', 'Dados frontend'),
+      focus: t(locale, 'Local relational state, workers, events and IndexedDB-backed UI examples.', 'Estado relacional local, workers, eventos e exemplos de UI com IndexedDB.'),
+      proves: t(locale, 'Frontend components can listen to data events instead of polling or duplicating storage logic.', 'Componentes frontend podem ouvir eventos de dados em vez de fazer polling ou duplicar lógica de storage.'),
+      observe: t(locale, 'Schema setup, table operations, event listeners, worker flow and state-management integration points.', 'Configuração de schema, operações de tabela, listeners de eventos, fluxo de workers e pontos de integração com state management.'),
+      concept: t(locale, 'Cana architecture', 'Arquitetura Cana'),
+    };
+  }
+  if (entry.runtime === 'message-mediator') {
+    return {
+      stage: t(locale, 'Domain messaging', 'Mensageria de domínio'),
+      focus: t(locale, 'Request/response and event composition across independent domain modules.', 'Composição request/response e eventos entre módulos de domínio independentes.'),
+      proves: t(locale, 'Modules can exchange data through contracts without importing each other directly.', 'Módulos podem trocar dados por contratos sem importar um ao outro diretamente.'),
+      observe: t(locale, 'Subjects, payloads, handlers, composed reads and the return path to the caller.', 'Subjects, payloads, handlers, leituras compostas e caminho de retorno ao chamador.'),
+      concept: t(locale, 'Event-driven boundaries', 'Limites orientados a eventos'),
+    };
+  }
+  if (entry.runtime === 'mutex-service') {
+    return {
+      stage: t(locale, 'Concurrency guard', 'Guarda de concorrência'),
+      focus: t(locale, 'Category-scoped locks around Task workflows.', 'Locks por Category em volta dos fluxos de Task.'),
+      proves: t(locale, 'A use-case can protect shared work without coupling the domain to storage internals.', 'Um caso de uso pode proteger trabalho compartilhado sem acoplar o domínio ao storage.'),
+      observe: t(locale, 'Lock acquisition, rejection, release and the service-result returned to the controller.', 'Aquisição de lock, rejeição, release e service-result retornado ao controller.'),
+      concept: t(locale, 'Operational consistency', 'Consistência operacional'),
+    };
+  }
+  if (entry.runtime === 'key-value-storage') {
+    return {
+      stage: t(locale, 'Local state port', 'Port de estado local'),
+      focus: t(locale, 'Small state records with the same contract shape used by replaceable adapters.', 'Pequenos registros de estado com o mesmo formato contratual usado por adaptadores substituíveis.'),
+      proves: t(locale, 'Infrastructure can remain swappable while callers keep stable service results.', 'A infraestrutura continua substituível enquanto consumidores mantêm service results estáveis.'),
+      observe: t(locale, 'Create/read/update/delete behavior and predictable error envelopes.', 'Comportamento create/read/update/delete e envelopes de erro previsíveis.'),
+      concept: t(locale, 'Persistence ports', 'Ports de persistência'),
+    };
+  }
+  if (entry.runtime === 'sdk-rest-client' || entry.runtime === 'sdk-websocket-client') {
+    return {
+      stage: t(locale, 'Consumer contract', 'Contrato consumidor'),
+      focus: t(locale, 'A client-side consumer calling the same Task behavior through a stable API surface.', 'Um consumidor client-side chamando o mesmo comportamento de Task por uma superfície de API estável.'),
+      proves: t(locale, 'Consumers can depend on generated contracts instead of handwritten transport details.', 'Consumidores podem depender de contratos gerados em vez de detalhes de transporte escritos à mão.'),
+      observe: t(locale, 'Request shape, response shape, error handling and typed integration points.', 'Formato de request, formato de response, tratamento de erro e pontos de integração tipados.'),
+      concept: t(locale, 'Contract-first clients', 'Clientes contract-first'),
+    };
+  }
+  return {
+    stage: t(locale, 'Design model', 'Modelo de design'),
+    focus: t(locale, 'Domain shape, entities and relationships before runtime code.', 'Formato do domínio, entidades e relações antes do código runtime.'),
+    proves: t(locale, 'The UI model can become executable contracts and examples.', 'O modelo da UI pode virar contratos e exemplos executáveis.'),
+    observe: t(locale, 'Category and Task modeling, validation output and generated contract-ready data.', 'Modelagem de Category e Task, saída de validação e dados prontos para contrato.'),
+    concept: t(locale, 'Service Management source of truth', 'Service Management como fonte de verdade'),
+  };
+}
 
 const codeSamples = {
   start: [
@@ -1126,21 +1207,139 @@ function PlaygroundDirectory({
 }: {
   locale: CommercialLocale;
 }) {
+  const groups = [
+    {
+      key: 'browser-lab',
+      title: t(locale, 'Browser MVP lab', 'Lab MVP no browser'),
+      description: t(locale, 'Complete product slices with Category and Task records, from first MVP to heavy-data recovery.', 'Fatias completas de produto com Category e Task, do primeiro MVP à recuperação heavy-data.'),
+      entries: playgroundCatalogEntries.filter((entry) => entry.runtime === 'jumentix-browser-lab'),
+    },
+    {
+      key: 'cana',
+      title: t(locale, 'Cana frontend data', 'Dados frontend com Cana'),
+      description: t(locale, 'Relational browser data, workers, event listeners, IndexedDB and UI state integration.', 'Dados relacionais no browser, workers, listeners de eventos, IndexedDB e integração com estado de UI.'),
+      entries: playgroundCatalogEntries.filter((entry) => entry.runtime === 'cana'),
+    },
+    {
+      key: 'coordination',
+      title: t(locale, 'Coordination and state ports', 'Coordenação e ports de estado'),
+      description: t(locale, 'Mediator, mutex and key/value examples that explain the architecture boundaries around shared work.', 'Exemplos de mediator, mutex e key/value que explicam os limites arquiteturais em volta de trabalho compartilhado.'),
+      entries: playgroundCatalogEntries.filter((entry) => ['message-mediator', 'mutex-service', 'key-value-storage'].includes(entry.runtime)),
+    },
+    {
+      key: 'consumers',
+      title: t(locale, 'Consumers and design source', 'Consumidores e fonte de design'),
+      description: t(locale, 'SDK clients and Designer Core examples that connect UI modeling to runnable consumers.', 'Exemplos de SDK clients e Designer Core que conectam modelagem de UI a consumidores executáveis.'),
+      entries: playgroundCatalogEntries.filter((entry) => ['sdk-rest-client', 'sdk-websocket-client', 'designer-core'].includes(entry.runtime)),
+    },
+  ].filter((group) => group.entries.length > 0);
+
   return (
-    <div className={classes.playgroundDirectory}>
-      {playgroundCatalogEntries.map((entry) => (
-        <a
-          key={`${entry.runtime}-${entry.id}`}
-          href={`#${docsPlaygroundAnchor(entry.runtime, entry.id)}`}
-          className={classes.playgroundDirectoryCard}
-        >
-          <span>{playgroundRuntimeLabels[entry.runtime][locale]}</span>
-          <h3>{entry.title[locale]}</h3>
-          <p>{entry.description[locale]}</p>
-          <strong>{entry.runtime}/{entry.id}</strong>
-        </a>
+    <div className={classes.playgroundDirectoryGroups}>
+      {groups.map((group) => (
+        <section className={classes.playgroundDirectoryGroup} key={group.key}>
+          <div className={classes.playgroundDirectoryGroupHeader}>
+            <h3>{group.title}</h3>
+            <p>{group.description}</p>
+          </div>
+          <div className={classes.playgroundDirectory}>
+            {group.entries.map((entry) => {
+              const guide = playgroundGuideFor(entry, locale);
+              return (
+                <a
+                  key={`${entry.runtime}-${entry.id}`}
+                  href={`#${docsPlaygroundAnchor(entry.runtime, entry.id)}`}
+                  className={classes.playgroundDirectoryCard}
+                >
+                  <span>{guide.stage}</span>
+                  <h3>{entry.title[locale]}</h3>
+                  <p>{guide.focus}</p>
+                  <strong>{playgroundRuntimeLabels[entry.runtime][locale]} · {guide.concept}</strong>
+                </a>
+              );
+            })}
+          </div>
+        </section>
       ))}
     </div>
+  );
+}
+
+function PlaygroundLearningPath({ locale }: { locale: CommercialLocale }) {
+  const cards = [
+    {
+      title: t(locale, '1. Read the boundary', '1. Leia o limite'),
+      description: t(locale, 'Start with the request path and layer matrix so each playground has a place in the architecture.', 'Comece pelo caminho do request e pela matriz de camadas para cada playground ter lugar na arquitetura.'),
+      meta: t(locale, 'Concept first', 'Conceito primeiro'),
+      icon: <IconHierarchy3 />,
+    },
+    {
+      title: t(locale, '2. Run the smallest slice', '2. Rode a menor fatia'),
+      description: t(locale, 'Use the browser lab to see Category and Task flow through controller, use-case, adapter and client state.', 'Use o browser lab para ver Category e Task passarem por controller, caso de uso, adapter e estado do cliente.'),
+      meta: t(locale, 'MVP path', 'Caminho MVP'),
+      icon: <IconDeviceDesktop />,
+    },
+    {
+      title: t(locale, '3. Compose domains', '3. Componha domínios'),
+      description: t(locale, 'Move to Message Mediator, SDKs and storage ports when the example needs cross-domain data or a consumer contract.', 'Vá para Message Mediator, SDKs e ports de storage quando o exemplo precisar de dados entre domínios ou contrato consumidor.'),
+      meta: t(locale, 'Contracts', 'Contratos'),
+      icon: <IconMessages />,
+    },
+    {
+      title: t(locale, '4. Stress the system', '4. Estresse o sistema'),
+      description: t(locale, 'Finish with the bulk mutex + DLQ playground to watch real lock rejection, replay and IndexedDB commits in the canvas.', 'Finalize com o playground bulk mutex + DLQ para observar rejeição real de lock, replay e commits IndexedDB no canvas.'),
+      meta: t(locale, 'Heavy data', 'Heavy data'),
+      icon: <IconShieldCheck />,
+    },
+  ];
+
+  return (
+    <div className={classes.playgroundLearningPath} aria-label={t(locale, 'Recommended playground reading order', 'Ordem recomendada dos playgrounds')}>
+      {cards.map((card) => (
+        <article className={classes.playgroundLearningCard} key={card.title}>
+          <span className={classes.playgroundLearningIcon} aria-hidden="true">{card.icon}</span>
+          <strong>{card.meta}</strong>
+          <h3>{card.title}</h3>
+          <p>{card.description}</p>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function GuidedPlayground({
+  entry,
+  locale,
+}: {
+  entry: PlaygroundCatalogEntry;
+  locale: CommercialLocale;
+}) {
+  const guide = playgroundGuideFor(entry, locale);
+  return (
+    <article
+      className={`${classes.playgroundFrame} ${entry.runtime === 'jumentix-browser-lab' || entry.id === 'worker-client-flow'
+        ? classes.playgroundFrameWide
+        : ''}`}
+    >
+      <div className={classes.playgroundIntro}>
+        <div>
+          <span>{guide.stage}</span>
+          <h3>{entry.title[locale]}</h3>
+          <p>{guide.focus}</p>
+        </div>
+        <dl>
+          <div>
+            <dt>{t(locale, 'Proves', 'Prova')}</dt>
+            <dd>{guide.proves}</dd>
+          </div>
+          <div>
+            <dt>{t(locale, 'Watch', 'Observe')}</dt>
+            <dd>{guide.observe}</dd>
+          </div>
+        </dl>
+      </div>
+      <DocsPlayground runtime={entry.runtime} id={entry.id} />
+    </article>
   );
 }
 
@@ -1170,6 +1369,7 @@ function BrowserInMemoryLabBand({
           { value: playgroundCount, label: t(locale, 'available code playgrounds', 'code playgrounds disponíveis') },
           { value: '2', label: t(locale, 'apps represented: Service Management and Backend Template', 'apps representados: Service Management e Backend Template') },
         ]} />
+        <PlaygroundLearningPath locale={locale} />
         <DetailGrid items={[
           { title: t(locale, 'Service Management UI', 'Service Management UI'), description: t(locale, 'The full lab starts from a visual service model, validates the domain shape, then feeds runtime contracts from the same Category and Task vocabulary.', 'O lab completo parte de um modelo visual de serviço, valida o formato do domínio e alimenta contratos de runtime com o mesmo vocabulário Category e Task.'), meta: t(locale, 'App surface', 'Superfície de app'), icon: <IconHierarchy3 /> },
           { title: t(locale, 'Backend Template', 'Backend Template'), description: t(locale, 'The request path mirrors controller, use-case, repository, mediator and client boundaries without exposing users to infrastructure setup.', 'O caminho de request espelha limites de controller, caso de uso, repository, mediator e client sem expor usuários a setup de infraestrutura.'), meta: t(locale, 'App runtime', 'Runtime de app'), icon: <IconBuildingFactory2 /> },
@@ -1191,14 +1391,11 @@ function BrowserInMemoryLabBand({
         </div>
         <div className={classes.playgroundGrid}>
           {playgroundCatalogEntries.map((entry) => (
-            <div
+            <GuidedPlayground
+              entry={entry}
               key={`${entry.runtime}-${entry.id}`}
-              className={entry.runtime === 'jumentix-browser-lab' || entry.id === 'worker-client-flow'
-                ? classes.playgroundWide
-                : undefined}
-            >
-              <DocsPlayground runtime={entry.runtime} id={entry.id} />
-            </div>
+              locale={locale}
+            />
           ))}
         </div>
       </div>
@@ -3249,7 +3446,6 @@ function Architecture({ locale }: { locale: CommercialLocale }) {
         </div>
       </Band>
       <AIReadyBand locale={locale} alternate />
-      <BrowserInMemoryLabBand locale={locale} />
       <Band alternate>
         <div className={classes.sectionStack}>
           <SectionHeading
@@ -3319,6 +3515,7 @@ function Architecture({ locale }: { locale: CommercialLocale }) {
         </div>
       </Band>
       <QualityEvidenceBand locale={locale} alternate />
+      <BrowserInMemoryLabBand locale={locale} />
       <PM2OperationsBand locale={locale} />
       <FinalCta locale={locale} />
     </>

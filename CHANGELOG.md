@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-08-13 fix(website): show live indexeddb flow in cana canvas - Eduardo A.
+- 2026-08-13 fix(website): show live indexeddb flow in cana canvas - Eduardo A.
 - 2026-08-13 fix(website): show live dlq flow in cana canvas - Eduardo A.
 - 2026-08-13 Merge remote-tracking branch 'origin/dev' into fix/cana-dlq-live-canvas - Eduardo A.
 - 2026-08-13 fix(website): show live dlq flow in cana canvas - Eduardo A.
