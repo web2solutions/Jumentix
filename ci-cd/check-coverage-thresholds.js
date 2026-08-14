@@ -94,8 +94,8 @@ const ACCEPTED_BELOW_THRESHOLD = {
    * written as `93.28` from a two-decimal display and then failed the build by
    * 0.002.
    *
-   * Measured 2026-08-14: **4221 of 4466 branches, 94.514%**, and the floor
-   * ratcheted to match. The 58 branches closed since are not a number that was
+   * Measured 2026-08-14: **4230 of 4466 branches, 94.715%**, and the floor
+   * ratcheted to match. The 67 branches closed since are not a number that was
    * chased — each came with the behaviour it was hiding:
    *
    * - `run-suite` spawned Bun through `process.execPath`, so started from
@@ -109,6 +109,12 @@ const ACCEPTED_BELOW_THRESHOLD = {
    *   deletes the user's only copy.
    * - The React hooks and the Vue composables, whose subscribe/load/cleanup all
    *   live in effects that only run under a real renderer.
+   * - The agent bus's refusals: a presence record from an older agent, an event
+   *   missing a field, a push whose key came back null — each one a silent
+   *   wrong answer in a status report rather than a crash.
+   * - The catalog repository's fallbacks, where `?? current.name` is what keeps
+   *   a partial update from blanking the fields it did not mention, and
+   *   `expectedVersion ?? -1` is what stops an unconditional delete.
    *
    * What is left is still mostly **defaulted-option branches** —
    * `options.execute || executeMatrixCell`, `env = process.env`,
@@ -122,7 +128,7 @@ const ACCEPTED_BELOW_THRESHOLD = {
    * threshold with this entry still here fails too.
    */
   branches: {
-    floor: 94.514,
+    floor: 94.715,
     issue: 'JUM-681',
     since: '2026-08-12',
     reason: 'Mostly defaulted-option branches reachable only by dropping the injection tests use deliberately; see the note above.'
