@@ -1,0 +1,313 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
+const guardDefaultsPath = require('path');
+const guardDefaultsFs = require('fs');
+const guardDefaultsOs = require('os');
+
+/**
+ * The guards called the way CI calls them: with no injection at all (JUM-681).
+ *
+ * Every other suite passes `spawn`, `readTestMap`, `execute` and friends, which
+ * is what makes those suites fast and deterministic — and it means the default
+ * side of each seam (`options.spawn || spawnSync`, `env = process.env`,
+ * `options.root || process.cwd()`) is never executed. That half is not
+ * decoration: it is the wiring CI actually runs, and until now nothing here
+ * proved the two halves agree.
+ *
+ * These call the real thing. They spawn real `bun run` processes, read the real
+ * `test-map.json` and shell out to the real `git`, which is slower than a double
+ * and is the point: an injected spawn cannot catch a default that resolves to
+ * the wrong binary, and an injected map cannot catch a resolver that reads the
+ * wrong file.
+ *
+ * Kept cheap on purpose: the scripts chosen are the ones that do nothing
+ * expensive (`check-bun-version`), and the paths are real suites that already
+ * exist in the map.
+ */
+const matrix = require('../../../../../ci-cd/run-full-test-matrix');
+const suiteRunner = require('../../../../../ci-cd/run-suite');
+const coverageGuard = require('../../../../../ci-cd/check-coverage-thresholds');
+const overrideGuard = require('../../../../../ci-cd/check-dependency-override-integrity');
+const authorship = require('../../../../../ci-cd/check-commit-authorship');
+const packageSuites = require('../../../../../ci-cd/check-package-suites');
+
+const repoRoot = guardDefaultsPath.resolve(__dirname, '../../../../..');
+
+describe('ci-cd guards, no injection (JUM-681)', () => {
+  it('spawns a real script and returns its exit status', () => {
+    expect.hasAssertions();
+
+    // `executeMatrixCell` with its own `spawnSync`: the pinned-toolchain guard
+    // is the cheapest script in the manifest and answers 0 on a healthy tree.
+    expect(matrix.executeMatrixCell({ id: 'version', script: 'check-bun-version' })).toBe(0);
+
+    // And a script that does not exist must not be read as success.
+    expect(matrix.executeMatrixCell({ id: 'missing', script: 'no:such:script' })).not.toBe(0);
+  });
+
+  it('passes a cell environment through to the child', () => {
+    expect.hasAssertions();
+
+    // `cell.env` is how a cell asks for a different runtime or a skip list. It
+    // is merged over `process.env` inside the real spawn, so a cell that
+    // declares one and never gets it would run the wrong configuration and
+    // still report the exit status of the run it did do.
+    expect(matrix.executeMatrixCell({
+      id: 'version',
+      script: 'check-bun-version',
+      env: { JUMENTIX_MATRIX_CELL: 'jum681' }
+    })).toBe(0);
+  });
+
+  it('runs the matrix with every option defaulted', () => {
+    expect.hasAssertions();
+
+    // No execute, no logger, no scripts table, no result file, no environment:
+    // every default CI relies on, over the one cell cheap enough to actually
+    // run. The default `execute` spawns it for real, so this also proves the
+    // manifest validation reads the real `package.json` scripts.
+    const evidence = matrix.runFullTestMatrix({
+      cells: [{ id: 'version', script: 'check-bun-version' }]
+    });
+
+    expect(evidence).toStrictEqual({
+      schemaVersion: 1,
+      outcome: 'passed',
+      requiredCellCount: 1,
+      reportedCellCount: 1,
+      results: [{
+        id: 'version', script: 'check-bun-version', state: 'passed', status: 0
+      }]
+    });
+  });
+
+  it('reads the skip list from the real environment when none is passed', () => {
+    expect.hasAssertions();
+
+    // No `env` argument: the default is `process.env`, which carries no skip
+    // list here, so every cell survives.
+    const cells = [{ id: 'lint', script: 'lint' }];
+
+    expect(matrix.resolveMatrixCells(cells)).toStrictEqual(cells);
+    expect(matrix.FULL_TEST_MATRIX.length).toBeGreaterThan(0);
+  });
+
+  it('validates the real matrix against the real package.json', () => {
+    expect.hasAssertions();
+
+    // Both defaults at once: the manifest CI runs, checked against the scripts
+    // that actually exist. A renamed script fails here without any fixture.
+    expect(() => matrix.validateMatrixManifest(
+      matrix.FULL_TEST_MATRIX,
+      require('../../../../../package.json').scripts
+    )).not.toThrow();
+  });
+
+  it('resolves suite paths against the real test map', () => {
+    expect.hasAssertions();
+
+    // No `readTestMap`, no `listTestFiles`, no `root`: the resolver reads
+    // `test-map.json` from disk and walks the tree, which is what the runner
+    // does for every gate invocation.
+    const resolved = suiteRunner.resolveMappedSuitePaths([
+      'apps/backend-template/test/unit/ci-cd'
+    ]);
+
+    expect(resolved.resolved.length).toBeGreaterThan(5);
+    expect(resolved.unmatched).toStrictEqual([]);
+    expect(resolved.unmapped).toStrictEqual([]);
+  });
+
+  it('canonicalises against the real working directory', () => {
+    expect.hasAssertions();
+
+    expect(suiteRunner.canonicalSuitePaths(['ci-cd/./run-suite.js']))
+      .toStrictEqual(['ci-cd/run-suite.js']);
+  });
+
+  it('reads the real map when asked whether a path is pinned to node', () => {
+    expect.hasAssertions();
+
+    // The default `readTestMap`, against the manifest as it stands today.
+    expect(suiteRunner.mapPinsToNode(['apps/backend-template/test/unit/ci-cd']))
+      .toStrictEqual(expect.any(Boolean));
+  });
+
+  it('spawns the real runner for a real suite', () => {
+    expect.hasAssertions();
+
+    // No `spawn`: `runSuitePaths` uses `spawnSync` and actually executes a
+    // suite. This one is small and has no external dependency.
+    const status = suiteRunner.runSuitePaths(
+      ['packages/mutex-service/test/ServiceResponse.test.ts'],
+      { label: 'jum681-defaults' }
+    );
+
+    expect(status).toBe(0);
+  }, 120_000);
+
+  it('reads the coverage report from disk when no reader is injected', () => {
+    expect.hasAssertions();
+
+    // `defaultReadReport` either finds a report or reports its absence — both
+    // are valid on a developer machine, and neither may throw.
+    const report = coverageGuard.defaultReadReport();
+
+    // `null` is an object to `typeof`, so this reads "an object or nothing" —
+    // what it rules out is a string, a number, or a throw.
+    expect(typeof report).toBe('object');
+  });
+
+  it('validates coverage against the real thresholds and exceptions', () => {
+    expect.hasAssertions();
+
+    // No thresholds and no exception register passed: both defaults, which is
+    // how the CLI runs it.
+    const perfect = {
+      statements: { found: 100, hit: 100 },
+      lines: { found: 100, hit: 100 },
+      functions: { found: 100, hit: 100 },
+      branches: { found: 100, hit: 100 }
+    };
+
+    // The ratchet, running against the register as it actually stands: an
+    // accepted exception that the code has outgrown is a failure, not a pass,
+    // because a floor nobody removes stops being a floor.
+    const { failures } = coverageGuard.validateCoverage(perfect);
+
+    expect(failures).toHaveLength(1);
+    expect(failures[0]).toMatch(/exception is still recorded/);
+  });
+
+  it('checks the real manifest for override integrity', () => {
+    expect.hasAssertions();
+
+    // Default `retiredSurfacesPresent` and default `patchExists`: the second
+    // resolves patch files from disk, so a declared patch that was deleted
+    // fails here without a fixture.
+    const failures = overrideGuard.validateOverrideIntegrity(
+      require('../../../../../package.json')
+    );
+
+    expect(failures).toStrictEqual([]);
+  });
+
+  it('detects retired package-manager surfaces against the real tree', () => {
+    expect.hasAssertions();
+
+    // Default root: the repository itself, which must carry none of them.
+    expect(overrideGuard.detectRetiredSurfaces()).toStrictEqual([]);
+  });
+
+  it('reads the installed dependent range from the real node_modules', () => {
+    expect.hasAssertions();
+
+    const [pair] = overrideGuard.OVERRIDE_MAJOR_COMPATIBILITY;
+    const range = overrideGuard.readInstalledDependentRange(pair.dependent, pair.overridden);
+
+    // Express declares `send`, and the guard must read it from disk rather than
+    // from a table that can go stale.
+    expect(['string', 'object']).toContain(typeof range);
+  });
+
+  it('reads a range of null for a dependent that is not installed', () => {
+    expect.hasAssertions();
+
+    // `require.resolve` throws for a package that is not there. Answering null
+    // rather than throwing is what lets the guard report "no longer depends on"
+    // as a failure instead of crashing the whole check.
+    expect(overrideGuard.readInstalledDependentRange('jum681-not-a-package', 'send')).toBeNull();
+  });
+
+  it('checks major compatibility against a manifest with no overrides at all', () => {
+    expect.hasAssertions();
+
+    // Both defaults: no `overrides` key, and the real installed-tree reader. A
+    // manifest that declares no overrides has no pairs to violate.
+    expect(overrideGuard.validateOverrideMajors({})).toStrictEqual([]);
+  });
+
+  it('checks package suites against the real tree with no options', () => {
+    expect.hasAssertions();
+
+    // Default root, default register, default reader: the guard walks this
+    // repository's packages and reads their manifests from disk.
+    const result = packageSuites.run();
+
+    expect(result.ok).toBe(true);
+    expect(result.message).toContain('Package suite check passed');
+  });
+
+  it('reports the package-suite result through the default console and runner', () => {
+    expect.hasAssertions();
+
+    // `main` with neither an io nor an execute: the exit code CI reads comes
+    // from the same pair of defaults.
+    const log = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+
+    const code = packageSuites.main();
+
+    log.mockRestore();
+
+    expect(code).toBe(0);
+  });
+
+  it('runs the real git history check', () => {
+    expect.hasAssertions();
+
+    // `run` with its own `runGit`: `execFileSync` against the absolute git
+    // binary, over this repository's commits.
+    const result = authorship.run();
+
+    expect(typeof result.ok).toBe('boolean');
+    expect(typeof result.message).toBe('string');
+  }, 120_000);
+
+  it('reads the real declaration file', () => {
+    expect.hasAssertions();
+
+    const declaration = guardDefaultsFs.readFileSync(
+      guardDefaultsPath.join(repoRoot, authorship.DECLARATION_PATH),
+      'utf8'
+    );
+
+    const parsed = authorship.parseDeclaration(declaration);
+
+    // The declaration the gate enforces, read from disk rather than restated in
+    // a fixture: an empty list here would authorise nobody and pass every commit
+    // that the cutoff excludes.
+    expect(parsed.emails.size).toBeGreaterThan(0);
+    expect(typeof parsed.cutoff).toBe('string');
+  });
+
+  it('runs the authorship CLI over the real history and the real identity', () => {
+    expect.hasAssertions();
+
+    // `main` with defaults for everything but the io: the history check on one
+    // call, the configured-identity check on the other, both against this
+    // machine's git. The exit code is the whole contract — a guard that reports
+    // a failure and returns 0 blocks nothing.
+    const io = { log: jest.fn(), error: jest.fn() };
+
+    const history = authorship.main([], io);
+    const identity = authorship.main(['--identity'], io);
+
+    expect(history).toBe(0);
+    expect(identity).toBe(0);
+  }, 120_000);
+
+  it('writes matrix evidence to a real path', () => {
+    expect.hasAssertions();
+
+    const root = guardDefaultsFs.mkdtempSync(
+      guardDefaultsPath.join(guardDefaultsOs.tmpdir(), 'jum681-defaults-')
+    );
+    const target = guardDefaultsPath.join(root, 'evidence.json');
+
+    matrix.writeMatrixEvidence({ outcome: 'passed' }, target);
+
+    expect(JSON.parse(guardDefaultsFs.readFileSync(target, 'utf8')))
+      .toStrictEqual({ outcome: 'passed' });
+
+    guardDefaultsFs.rmSync(root, { recursive: true, force: true });
+  });
+});

@@ -3,13 +3,13 @@ const fs = require('fs');
 const path = require('path');
 
 const MINIMUM_GLOBAL_THRESHOLDS = {
-  statements: 99,
-  lines: 99,
-  functions: 99,
-  // JUM-681: 99, matching the other three and the authority. It was 90, and the
-  // exception register below — which this reads rather than copies — is where
-  // the measured gap now lives, as a floor that can only be held or improved.
-  branches: 99
+  // JUM-681: 98 across the board, set by the requirement owner. The exception
+  // register below — which this reads rather than copies — is where the measured
+  // branch gap lives, as a floor that can only be held or improved.
+  statements: 98,
+  lines: 98,
+  functions: 98,
+  branches: 98
 };
 
 /**

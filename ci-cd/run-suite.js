@@ -238,7 +238,14 @@ function runSuitePaths(paths, options = {}) {
   // directory reports 25 pass across 25. Eleven tests never ran at all — a
   // seeded user collided with one left behind by the previous file, the failure
   // aborted the rest of that suite, and the run still looked almost healthy.
-  const result = spawn(process.execPath, ['test', '--isolate', ...safePaths], {
+  // `bun` by name, not `process.execPath`: the runtime the suites run under is a
+  // decision this file makes, not an accident of what started it. Under Bun the
+  // two agreed, which is why this went unnoticed; started from Node — a Jest
+  // suite, an editor task, any wrapper — `execPath` spawned `node test
+  // --isolate`, and Node answered `Cannot find module '<repo>/test'`. That exits
+  // non-zero, so it failed loudly rather than passing a run that never happened,
+  // but it made the Bun path unreachable from anywhere but Bun (JUM-681).
+  const result = spawn('bun', ['test', '--isolate', ...safePaths], {
     shell: false,
     stdio: 'inherit',
     env: {
