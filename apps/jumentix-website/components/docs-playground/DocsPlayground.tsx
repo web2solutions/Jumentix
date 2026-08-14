@@ -731,22 +731,22 @@ function BulkDeadLetterFlowCanvas({
 
     let frameId = 0;
     const nodes = [
-      { id: 'react-a', label: 'React A', x: 70, y: 48 },
-      { id: 'react-b', label: 'React B', x: 70, y: 115 },
-      { id: 'react-c', label: 'React C', x: 70, y: 182 },
-      { id: 'context', label: 'Context Provider', x: 205, y: 115 },
-      { id: 'controller', label: 'Controller', x: 340, y: 115 },
-      { id: 'mutex', label: 'Mutex', x: 475, y: 115 },
-      { id: 'worker-a', label: 'Worker A', x: 640, y: 48 },
-      { id: 'worker-b', label: 'Worker B', x: 640, y: 115 },
-      { id: 'worker-c', label: 'Worker C', x: 640, y: 182 },
-      { id: 'dlq', label: 'DLQ', x: 475, y: 238 },
-      { id: 'mediator', label: 'Message Mediator', x: 340, y: 238 },
-      { id: 'replay', label: 'Replay Controller', x: 205, y: 238 },
-      { id: 'table', label: 'Table API', x: 640, y: 238 },
-      { id: 'indexeddb', label: 'IndexedDB', x: 475, y: 318 },
-      { id: 'events', label: 'Change Events', x: 340, y: 318 },
-      { id: 'subscriber', label: 'Canvas Subscriber', x: 205, y: 318 },
+      { id: 'react-a', label: 'React A', x: 75, y: 70 },
+      { id: 'react-b', label: 'React B', x: 75, y: 145 },
+      { id: 'react-c', label: 'React C', x: 75, y: 220 },
+      { id: 'context', label: 'Context Provider', x: 230, y: 145 },
+      { id: 'controller', label: 'Controller', x: 385, y: 145 },
+      { id: 'mutex', label: 'Mutex', x: 540, y: 145 },
+      { id: 'worker-a', label: 'Worker A', x: 700, y: 70 },
+      { id: 'worker-b', label: 'Worker B', x: 700, y: 145 },
+      { id: 'worker-c', label: 'Worker C', x: 700, y: 220 },
+      { id: 'dlq', label: 'DLQ', x: 540, y: 300 },
+      { id: 'mediator', label: 'Message Mediator', x: 385, y: 300 },
+      { id: 'replay', label: 'Replay Controller', x: 230, y: 300 },
+      { id: 'table', label: 'Table API', x: 855, y: 145 },
+      { id: 'indexeddb', label: 'IndexedDB', x: 855, y: 300 },
+      { id: 'events', label: 'Change Events', x: 700, y: 390 },
+      { id: 'subscriber', label: 'Canvas Subscriber', x: 540, y: 390 },
     ];
     const nodeById = new Map(nodes.map((node) => [node.id, node]));
     const node = (id: string) => nodeById.get(id) ?? nodes[1];
@@ -781,7 +781,7 @@ function BulkDeadLetterFlowCanvas({
     };
     const mediatorRoutes = [
       { from: nodes[9], to: nodes[10], color: '#fb7185', label: 'dead-letter.enqueued' },
-      { from: nodes[5], to: nodes[10], color: '#f59e0b', label: 'tasks.created' },
+      { from: nodes[10], to: nodes[11], color: '#ea580c', label: 'replay dispatch' },
       { from: nodes[10], to: nodes[14], color: '#f59e0b', label: 'publish/subscribe' },
     ];
     const canaRoutes = [
@@ -795,7 +795,12 @@ function BulkDeadLetterFlowCanvas({
     ];
     const activeKinds = new Set(flowState.events.map((event) => event.kind));
     const animationsActive = running || !flowState.hasRun || !flowState.dlqProcessed || !canaState.queueDrained;
-    const liveRequestSignals = liveMetrics.requestSignals.slice(-420);
+    const liveRequestSignals = liveMetrics.requestSignals.slice(-260);
+    const recentLiveSignals = liveMetrics.requestSignals.slice(-900);
+    const liveActivePhases = new Set(recentLiveSignals.map((signal) => signal.phase));
+    const liveRejectedSignals = recentLiveSignals.filter((signal) => signal.phase === 'rejected').slice(-120);
+    const dlqLiveActive = running && (liveMetrics.rejected > 0 || liveRejectedSignals.length > 0);
+    const replayLiveActive = liveMetrics.replayed > 0 || liveActivePhases.has('replayed');
 
     const resize = () => {
       const ratio = window.devicePixelRatio || 1;
@@ -834,6 +839,29 @@ function BulkDeadLetterFlowCanvas({
       );
       context.closePath();
       context.fill();
+      context.globalAlpha = 1;
+    };
+    const drawTrafficPulse = (
+      from: { x: number; y: number },
+      to: { x: number; y: number },
+      color: string,
+      count: number,
+      timeOffset: number
+    ) => {
+      const pulseCount = Math.max(1, Math.min(count, 18));
+      for (let index = 0; index < pulseCount; index += 1) {
+        const progress = ((timeOffset / 1050) + index / pulseCount) % 1;
+        const x = from.x + (to.x - from.x) * progress;
+        const y = from.y + (to.y - from.y) * progress;
+        context.globalAlpha = 0.38 + progress * 0.44;
+        context.fillStyle = color;
+        context.beginPath();
+        context.arc(x, y, 5.2, 0, Math.PI * 2);
+        context.fill();
+        context.strokeStyle = '#fecaca';
+        context.lineWidth = 1;
+        context.stroke();
+      }
       context.globalAlpha = 1;
     };
     const requestRoutesFor = (signal: RealtimeBulkRequestSignal) => {
@@ -903,29 +931,73 @@ function BulkDeadLetterFlowCanvas({
       context.fillStyle = '#07111f';
       context.fillRect(0, 0, width, height);
 
+      const designWidth = 930;
+      const designHeight = 445;
+      const flowViewportHeight = Math.max(360, height - 145);
+      const flowScale = Math.max(0.36, Math.min((width - 24) / designWidth, flowViewportHeight / designHeight, 1));
+      const flowOffsetX = Math.max(12, (width - designWidth * flowScale) / 2);
+      context.save();
+      context.translate(flowOffsetX, 14);
+      context.scale(flowScale, flowScale);
+
+      const drawArea = (
+        label: string,
+        x: number,
+        y: number,
+        areaWidth: number,
+        areaHeight: number,
+        stroke: string
+      ) => {
+        context.globalAlpha = 0.72;
+        context.fillStyle = '#081827';
+        context.strokeStyle = stroke;
+        context.lineWidth = 1.5;
+        context.beginPath();
+        context.roundRect(x, y, areaWidth, areaHeight, 14);
+        context.fill();
+        context.stroke();
+        context.globalAlpha = 1;
+        context.fillStyle = '#94a3b8';
+        context.font = '900 11px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+        context.textAlign = 'left';
+        context.fillText(label.toUpperCase(), x + 14, y + 22);
+      };
+
+      drawArea('React clients', 12, 24, 132, 236, '#1d4ed8');
+      drawArea('Context + controllers', 166, 84, 442, 118, '#2563eb');
+      drawArea('DLQ replay lane', 166, 244, 442, 96, '#dc2626');
+      drawArea('Cana workers', 632, 24, 138, 236, '#7c3aed');
+      drawArea('IndexedDB + events', 632, 270, 282, 150, '#16a34a');
+
       context.font = '700 12px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
       Object.entries(flowRoutes).forEach(([kind, flow]) => {
-        const active = activeKinds.has(kind as BulkDlqFlowKind);
+        const active = activeKinds.has(kind as BulkDlqFlowKind)
+          || liveActivePhases.has(kind)
+          || (kind === 'rejected' && dlqLiveActive)
+          || (kind === 'replay' && replayLiveActive)
+          || (kind === 'accepted' && liveActivePhases.has('processed'));
         drawArrow(flow.from, flow.to, flow.color, active);
-        context.globalAlpha = active ? 0.75 : 0.32;
-        context.fillStyle = flow.color;
-        context.fillText(flow.label, (flow.from.x + flow.to.x) / 2 - 34, (flow.from.y + flow.to.y) / 2 - 10);
-        context.globalAlpha = 1;
       });
       canaRoutes.forEach((route) => {
         drawArrow(route.from, route.to, route.color, canaState.hasRun);
-        context.globalAlpha = canaState.hasRun ? 0.78 : 0.28;
-        context.fillStyle = route.color;
-        context.fillText(route.label, (route.from.x + route.to.x) / 2 - 34, (route.from.y + route.to.y) / 2 - 10);
-        context.globalAlpha = 1;
       });
       mediatorRoutes.forEach((route) => {
-        drawArrow(route.from, route.to, route.color, activeKinds.has('rejected') || activeKinds.has('accepted') || canaState.hasRun);
-        context.globalAlpha = activeKinds.has('rejected') || activeKinds.has('accepted') || canaState.hasRun ? 0.78 : 0.28;
-        context.fillStyle = route.color;
-        context.fillText(route.label, (route.from.x + route.to.x) / 2 - 48, (route.from.y + route.to.y) / 2 - 10);
-        context.globalAlpha = 1;
+        const active = route.label === 'dead-letter.enqueued'
+          ? dlqLiveActive || activeKinds.has('rejected')
+          : route.label === 'replay dispatch'
+            ? replayLiveActive || activeKinds.has('replay')
+            : activeKinds.has('accepted') || canaState.hasRun || liveActivePhases.has('processed');
+        drawArrow(route.from, route.to, route.color, active);
       });
+
+      if (dlqLiveActive) {
+        drawTrafficPulse(node('mutex'), node('dlq'), '#dc2626', Math.max(6, Math.ceil(liveRejectedSignals.length / 12)), time);
+        drawTrafficPulse(node('dlq'), node('mediator'), '#fb7185', Math.max(4, Math.ceil(liveRejectedSignals.length / 18)), time + 360);
+        context.fillStyle = '#fecaca';
+        context.font = '900 11px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+        context.textAlign = 'center';
+        context.fillText(`receiving ${formatCount(liveMetrics.rejected)}`, node('dlq').x, node('dlq').y + 38);
+      }
 
       nodes.forEach((node) => {
         const isStorage = node.id === 'indexeddb';
@@ -933,10 +1005,12 @@ function BulkDeadLetterFlowCanvas({
         const isMediator = node.id === 'mediator';
         const isWorker = node.id.startsWith('worker');
         const isClientSide = node.id.startsWith('react') || node.id === 'context';
+        const isLiveDlq = node.id === 'dlq' && dlqLiveActive;
+        const isLiveMediator = node.id === 'mediator' && dlqLiveActive;
         context.fillStyle = node.id === 'dlq'
-          ? '#220b0b'
+          ? isLiveDlq ? '#3b0b0b' : '#220b0b'
           : isMediator
-            ? '#24120d'
+            ? isLiveMediator ? '#3a1320' : '#24120d'
           : isStorage
             ? '#102214'
             : isEvents
@@ -958,10 +1032,15 @@ function BulkDeadLetterFlowCanvas({
                   ? '#a78bfa'
                   : '#334155';
         context.lineWidth = node.id === 'dlq' || isMediator || isClientSide || isWorker || isStorage || isEvents ? 2.5 : 1.5;
+        if (isLiveDlq || isLiveMediator) {
+          context.shadowColor = node.id === 'dlq' ? '#dc2626' : '#fb7185';
+          context.shadowBlur = 14;
+        }
         context.beginPath();
         context.roundRect(node.x - 58, node.y - 24, 116, 48, 9);
         context.fill();
         context.stroke();
+        context.shadowBlur = 0;
         context.fillStyle = '#e2e8f0';
         context.textAlign = 'center';
         context.fillText(node.label, node.x, node.y + 4);
@@ -974,28 +1053,27 @@ function BulkDeadLetterFlowCanvas({
         context.fillText(`${worker.status ?? 'ready'} · ${worker.handledRequests ?? 0} req`, node.x, node.y + 35);
       });
 
-      flowState.events.forEach((event, index) => {
-        const route = flowRoutes[event.kind];
-        const progress = animationsActive
-          ? ((time / 1500 + index / Math.max(flowState.events.length, 1)) % 1)
-          : 1;
-        const pulseX = route.from.x + (route.to.x - route.from.x) * progress;
-        const pulseY = route.from.y + (route.to.y - route.from.y) * progress;
-        const isRejected = event.kind === 'rejected';
-        const isInterrupted = event.kind === 'interrupted';
-        context.globalAlpha = isRejected ? 0.98 : 0.86;
-        context.fillStyle = route.color;
-        context.beginPath();
-        context.arc(pulseX, pulseY, isRejected ? 6.75 : isInterrupted ? 6 : 5.25, 0, Math.PI * 2);
-        context.fill();
-        context.globalAlpha = 0.9;
-        context.fillStyle = '#e2e8f0';
-        context.fillText(event.taskId, pulseX + 8, pulseY - 8);
-        context.globalAlpha = 1;
-      });
-      canaState.events.forEach((event, index) => {
+      if (!running && liveRequestSignals.length === 0) {
+        flowState.events.forEach((event, index) => {
+          const route = flowRoutes[event.kind];
+          const progress = animationsActive
+            ? ((time / 1500 + index / Math.max(flowState.events.length, 1)) % 1)
+            : 1;
+          const pulseX = route.from.x + (route.to.x - route.from.x) * progress;
+          const pulseY = route.from.y + (route.to.y - route.from.y) * progress;
+          const isRejected = event.kind === 'rejected';
+          const isInterrupted = event.kind === 'interrupted';
+          context.globalAlpha = isRejected ? 0.98 : 0.86;
+          context.fillStyle = route.color;
+          context.beginPath();
+          context.arc(pulseX, pulseY, isRejected ? 6.75 : isInterrupted ? 6 : 5.25, 0, Math.PI * 2);
+          context.fill();
+          context.globalAlpha = 1;
+        });
+      }
+      canaState.events.slice(-90).forEach((event, index) => {
         const eventProgress = animationsActive
-          ? ((time / 1700 + index / Math.max(canaState.events.length, 1)) % 1)
+          ? ((time / 1700 + index / Math.max(Math.min(canaState.events.length, 90), 1)) % 1)
           : 1;
         const routeIndex = Math.floor(eventProgress * canaRoutes.length);
         const route = canaRoutes[Math.min(routeIndex, canaRoutes.length - 1)];
@@ -1010,13 +1088,29 @@ function BulkDeadLetterFlowCanvas({
         context.beginPath();
         context.arc(pulseX, pulseY, isTask ? 5.75 : 4.75, 0, Math.PI * 2);
         context.fill();
-        context.fillStyle = '#e2e8f0';
-        context.font = '800 10px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
-        context.textAlign = 'left';
-        context.fillText(`${event.store ?? 'store'}:${String(event.key ?? event.cursor ?? index + 1)}`, pulseX + 10, pulseY - 8);
         context.globalAlpha = 1;
       });
       if (animationsActive) {
+        liveRejectedSignals.forEach((signal, index) => {
+          const routes = requestRoutesFor(signal);
+          const ageMs = Math.max(0, Date.now() - signal.timestamp);
+          const laneOffset = ((index % 7) - 3) * 3.6;
+          const journey = Math.min(0.998, (ageMs % 1800) / 1800);
+          const routeIndex = Math.min(routes.length - 1, Math.floor(journey * routes.length));
+          const localProgress = (journey * routes.length) % 1;
+          const route = routes[routeIndex];
+          const pulseX = route.from.x + (route.to.x - route.from.x) * localProgress;
+          const pulseY = route.from.y + (route.to.y - route.from.y) * localProgress + laneOffset;
+          context.globalAlpha = Math.max(0.48, 1 - ageMs / 2800);
+          context.fillStyle = route.color;
+          context.beginPath();
+          context.arc(pulseX, pulseY, 6.4, 0, Math.PI * 2);
+          context.fill();
+          context.strokeStyle = '#fecaca';
+          context.lineWidth = 1.4;
+          context.stroke();
+          context.globalAlpha = 1;
+        });
         liveRequestSignals.forEach((signal, index) => {
           const routes = requestRoutesFor(signal);
           const ageMs = Math.max(0, Date.now() - signal.timestamp);
@@ -1038,7 +1132,7 @@ function BulkDeadLetterFlowCanvas({
           context.strokeStyle = '#e2e8f0';
           context.lineWidth = 1;
           context.stroke();
-          if (index % 5 === 0) {
+          if (index % 29 === 0) {
             context.fillStyle = '#e2e8f0';
             context.font = '800 9px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
             context.textAlign = 'left';
@@ -1048,39 +1142,54 @@ function BulkDeadLetterFlowCanvas({
         });
       }
 
+      context.restore();
+
       context.textAlign = 'left';
-      context.fillStyle = '#e2e8f0';
-      context.font = '800 13px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
-      const processed = liveMetrics.processed || flowState.accepted;
-      const rejected = liveMetrics.rejected || flowState.rejected;
-      const replayed = liveMetrics.replayed || flowState.replayed;
-      context.fillText(`processed: ${processed}`, 18, height - 106);
-      context.fillStyle = '#fecaca';
-      context.fillText(`rejected: ${rejected}`, 150, height - 106);
-      context.fillStyle = '#fed7aa';
-      context.fillText(`replayed: ${replayed}`, 280, height - 106);
-      context.fillStyle = '#e2e8f0';
-      context.fillText(`attempted: ${flowState.attempted || liveMetrics.attempted}`, 18, height - 84);
-      context.fillStyle = '#bbf7d0';
-      context.fillText(`admitted: ${flowState.submitted}`, 128, height - 84);
-      context.fillStyle = '#fecaca';
-      context.fillText(`lock rejected: ${flowState.rejected}`, 245, height - 84);
-      context.fillStyle = '#fef08a';
-      context.fillText(`input stopped: ${flowState.interrupted}`, 390, height - 84);
-      context.fillStyle = '#fed7aa';
-      context.fillText(`replayed: ${flowState.replayed}`, 18, height - 62);
-      context.fillStyle = '#e2e8f0';
-      context.fillText(`final tasks: ${flowState.finalTaskCount}`, 128, height - 62);
-      context.fillStyle = '#c4b5fd';
-      context.fillText(`workers: ${canaState.workers.length} · events: ${canaState.events.length}`, 265, height - 62);
-      context.fillStyle = '#bfdbfe';
-      context.fillText(`live request tokens: ${liveRequestSignals.length}`, 470, height - 62);
-      context.fillStyle = flowState.dlqProcessed && flowState.noLostJobs ? '#bbf7d0' : '#cbd5e1';
-      context.fillText(`dlq drained: ${flowState.dlqProcessed ? 'yes' : 'no'} | no lost jobs: ${flowState.noLostJobs ? 'yes' : 'no'}`, 18, height - 40);
+      const hasFinalMetrics = flowState.hasRun;
+      const processed = hasFinalMetrics ? flowState.accepted : liveMetrics.processed;
+      const rejected = hasFinalMetrics ? flowState.rejected : liveMetrics.rejected;
+      const replayed = hasFinalMetrics ? flowState.replayed : liveMetrics.replayed;
+      const attempted = hasFinalMetrics ? flowState.attempted : liveMetrics.attempted;
+      const admitted = hasFinalMetrics ? flowState.submitted : liveMetrics.attempted;
+      const dashboardY = height - 124;
+      const metricCards = [
+        { label: 'processed', value: formatCount(processed), color: '#bbf7d0' },
+        { label: 'rejected -> DLQ', value: formatCount(rejected), color: '#fecaca' },
+        { label: 'replayed', value: formatCount(replayed), color: '#fed7aa' },
+        { label: 'live tokens', value: formatCount(liveRequestSignals.length), color: '#bfdbfe' },
+        { label: 'attempted', value: formatCount(attempted), color: '#e2e8f0' },
+        { label: 'admitted', value: formatCount(admitted), color: '#bbf7d0' },
+        { label: 'workers/events', value: `${canaState.workers.length}/${canaState.events.length}`, color: '#c4b5fd' },
+        { label: 'dlq drained', value: flowState.dlqProcessed ? 'yes' : 'running', color: flowState.dlqProcessed ? '#bbf7d0' : '#fecaca' },
+      ];
+      context.fillStyle = 'rgba(7, 17, 31, 0.92)';
+      context.strokeStyle = '#223047';
+      context.lineWidth = 1.5;
+      context.beginPath();
+      context.roundRect(14, dashboardY - 10, Math.max(240, width - 28), 90, 12);
+      context.fill();
+      context.stroke();
+      const cardWidth = Math.max(94, Math.min(138, (width - 52) / 4));
+      metricCards.forEach((metric, index) => {
+        const x = 24 + (index % 4) * (cardWidth + 8);
+        const y = dashboardY + Math.floor(index / 4) * 40;
+        context.fillStyle = '#0f1b2d';
+        context.strokeStyle = '#334155';
+        context.beginPath();
+        context.roundRect(x, y, cardWidth, 30, 8);
+        context.fill();
+        context.stroke();
+        context.fillStyle = '#94a3b8';
+        context.font = '800 9px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+        context.fillText(metric.label.toUpperCase(), x + 8, y + 12);
+        context.fillStyle = metric.color;
+        context.font = '900 13px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+        context.fillText(metric.value, x + 8, y + 25);
+      });
       const chartX = 18;
-      const chartY = height - 30;
+      const chartY = height - 28;
       const chartWidth = Math.max(220, width - 36);
-      const chartHeight = 18;
+      const chartHeight = 14;
       context.strokeStyle = '#334155';
       context.fillStyle = '#0f1b2d';
       context.lineWidth = 1.5;
@@ -1107,7 +1216,7 @@ function BulkDeadLetterFlowCanvas({
       context.fillText(
         `IndexedDB quota used: ${canaState.quotaUsagePercent.toFixed(4)}% (${formatBytes(canaState.quotaUsageBytes)} / ${formatBytes(canaState.quotaBytes)})`,
         chartX + 8,
-        chartY - 6
+        chartY - 7
       );
 
       if (!flowState.hasRun) {

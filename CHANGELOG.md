@@ -4,6 +4,9 @@
 
 ## All Changes
 
+- 2026-08-13 fix(website): show per-request cana canvas flow - Eduardo A.
+- 2026-08-13 Merge remote-tracking branch 'origin/dev' into fix/cana-per-request-canvas-flow - Eduardo A.
+- 2026-08-13 fix(website): bake changelog data at build instead of github api (JUM-718) (#238) - Eduardo A.
 - 2026-08-13 fix(website): improve cana comparison charts - Eduardo A.
 - 2026-08-13 Merge remote-tracking branch 'origin/dev' into fix/cana-per-request-canvas-flow - Eduardo A.
 - 2026-08-13 test(ci): cover four guard behaviours, and state what the floor is really made of (JUM-681) (#237) - Eduardo A.
