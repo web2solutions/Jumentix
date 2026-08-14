@@ -799,8 +799,16 @@ function BulkDeadLetterFlowCanvas({
     const recentLiveSignals = liveMetrics.requestSignals.slice(-900);
     const liveActivePhases = new Set(recentLiveSignals.map((signal) => signal.phase));
     const liveRejectedSignals = recentLiveSignals.filter((signal) => signal.phase === 'rejected').slice(-120);
+    const liveCanaSignals = recentLiveSignals
+      .filter((signal) => signal.phase === 'processed' || signal.phase === 'replayed')
+      .slice(-180);
     const dlqLiveActive = running && (liveMetrics.rejected > 0 || liveRejectedSignals.length > 0);
     const replayLiveActive = liveMetrics.replayed > 0 || liveActivePhases.has('replayed');
+    const storageLiveActive = running && (
+      liveMetrics.processed > 0
+      || liveMetrics.replayed > 0
+      || liveCanaSignals.length > 0
+    );
 
     const resize = () => {
       const ratio = window.devicePixelRatio || 1;
@@ -979,14 +987,15 @@ function BulkDeadLetterFlowCanvas({
         drawArrow(flow.from, flow.to, flow.color, active);
       });
       canaRoutes.forEach((route) => {
-        drawArrow(route.from, route.to, route.color, canaState.hasRun);
+        const active = canaState.hasRun || storageLiveActive;
+        drawArrow(route.from, route.to, route.color, active);
       });
       mediatorRoutes.forEach((route) => {
         const active = route.label === 'dead-letter.enqueued'
           ? dlqLiveActive || activeKinds.has('rejected')
           : route.label === 'replay dispatch'
             ? replayLiveActive || activeKinds.has('replay')
-            : activeKinds.has('accepted') || canaState.hasRun || liveActivePhases.has('processed');
+            : activeKinds.has('accepted') || canaState.hasRun || liveActivePhases.has('processed') || storageLiveActive;
         drawArrow(route.from, route.to, route.color, active);
       });
 
@@ -997,6 +1006,24 @@ function BulkDeadLetterFlowCanvas({
         context.font = '900 11px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
         context.textAlign = 'center';
         context.fillText(`receiving ${formatCount(liveMetrics.rejected)}`, node('dlq').x, node('dlq').y + 38);
+      }
+      if (storageLiveActive) {
+        const storagePulseCount = Math.max(5, Math.ceil(liveCanaSignals.length / 14));
+        drawTrafficPulse(node('worker-a'), node('table'), '#a78bfa', Math.ceil(storagePulseCount / 3), time + 90);
+        drawTrafficPulse(node('worker-b'), node('table'), '#a78bfa', Math.ceil(storagePulseCount / 3), time + 260);
+        drawTrafficPulse(node('worker-c'), node('table'), '#a78bfa', Math.ceil(storagePulseCount / 3), time + 430);
+        drawTrafficPulse(node('table'), node('indexeddb'), '#22c55e', storagePulseCount, time + 180);
+        drawTrafficPulse(node('indexeddb'), node('events'), '#f59e0b', storagePulseCount, time + 360);
+        drawTrafficPulse(node('events'), node('subscriber'), '#f59e0b', Math.ceil(storagePulseCount / 2), time + 520);
+        drawTrafficPulse(node('subscriber'), node('context'), '#a78bfa', Math.ceil(storagePulseCount / 2), time + 680);
+        context.fillStyle = '#bbf7d0';
+        context.font = '900 11px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+        context.textAlign = 'center';
+        context.fillText(
+          `committing ${formatCount(liveMetrics.processed + liveMetrics.replayed)}`,
+          node('indexeddb').x,
+          node('indexeddb').y + 38
+        );
       }
 
       nodes.forEach((node) => {
@@ -1032,8 +1059,13 @@ function BulkDeadLetterFlowCanvas({
                   ? '#a78bfa'
                   : '#334155';
         context.lineWidth = node.id === 'dlq' || isMediator || isClientSide || isWorker || isStorage || isEvents ? 2.5 : 1.5;
-        if (isLiveDlq || isLiveMediator) {
-          context.shadowColor = node.id === 'dlq' ? '#dc2626' : '#fb7185';
+        const isLiveStorage = storageLiveActive && (isStorage || isEvents);
+        if (isLiveDlq || isLiveMediator || isLiveStorage) {
+          context.shadowColor = node.id === 'dlq'
+            ? '#dc2626'
+            : isLiveStorage
+              ? isStorage ? '#22c55e' : '#f59e0b'
+              : '#fb7185';
           context.shadowBlur = 14;
         }
         context.beginPath();
