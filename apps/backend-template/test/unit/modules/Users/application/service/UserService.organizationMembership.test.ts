@@ -117,3 +117,75 @@ describe('organization membership under concurrency (JUM-687)', () => {
     expect(repository.state.users).toStrictEqual(['user-b']);
   });
 });
+
+/**
+ * The same sync called the way the service's own callers call it (JUM-681).
+ *
+ * `create`, `update` and `delete` reach `syncOrganizationUsers` with
+ * `user.organization || ''` — so "the user belongs to no organization" arrives
+ * as an empty string, and a user created without one arrives with both sides
+ * empty. Those are the ordinary cases, and each has to do nothing rather than
+ * look up an organization named "".
+ *
+ * Without them the sync would call `getOneById('')` on every user who has no
+ * organization, and what happens next depends on the store: a rejection that
+ * fails the create, or — worse — a record found under an empty key.
+ */
+describe('organization membership with nothing to sync (JUM-681)', () => {
+  /** Records every call, so "did nothing" is an assertion rather than a hope. */
+  function watchfulRepository() {
+    const reads: string[] = [];
+    const writes: string[] = [];
+    return {
+      reads,
+      writes,
+      async getOneById(id: string) {
+        reads.push(id);
+        return { id, name: 'Acme', users: [] };
+      },
+      async update(id: string) {
+        writes.push(id);
+        return { id, name: 'Acme', users: [] };
+      }
+    };
+  }
+
+  it('does nothing for a user who belongs to no organization', async () => {
+    expect.hasAssertions();
+
+    const repository = watchfulRepository();
+    const sync = syncFor(repository);
+
+    await sync('user-a', '', '');
+
+    expect(repository.reads).toStrictEqual([]);
+    expect(repository.writes).toStrictEqual([]);
+  });
+
+  it('never removes a member from the organization it is still in', async () => {
+    expect.hasAssertions();
+
+    // An update that edited the name and left the organization alone. The
+    // membership is re-affirmed on the one organization and the removal side is
+    // skipped entirely — a sync that ran both halves would take the user out of
+    // the organization it just put them in, and which of the two wrote last
+    // would decide whether they are a member.
+    const repository = watchfulRepository();
+    const sync = syncFor(repository);
+
+    await sync('user-a', 'org-1', 'org-1');
+
+    expect(repository.writes).toStrictEqual(['org-1']);
+    expect(repository.reads).toStrictEqual(['org-1']);
+  });
+
+  it('does nothing at all without an organization repository', async () => {
+    expect.hasAssertions();
+
+    // The composition that leaves it out — the Users module standing alone —
+    // must not fail every create.
+    const sync = syncFor(undefined);
+
+    await expect(sync('user-a', 'org-1', 'org-2')).resolves.toBeUndefined();
+  });
+});

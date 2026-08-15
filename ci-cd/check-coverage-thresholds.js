@@ -94,8 +94,8 @@ const ACCEPTED_BELOW_THRESHOLD = {
    * written as `93.28` from a two-decimal display and then failed the build by
    * 0.002.
    *
-   * Measured 2026-08-15: **4231 of 4466 branches, 94.738%**, stable across
-   * repeated clean runs, and the floor ratcheted to match. The 68 branches
+   * Measured 2026-08-15: **4237 of 4466 branches, 94.872%**, stable across
+   * repeated clean runs, and the floor ratcheted to match. The 74 branches
    * closed since are not a number that was chased — each came with the
    * behaviour it was hiding:
    *
@@ -121,6 +121,12 @@ const ACCEPTED_BELOW_THRESHOLD = {
    *   environment, and both are decided by one.
    * - The two CLI managers' refusals — a create with no name, a duplicate domain
    *   differing only in case, a typed status that is not one of the three.
+   * - The relational store's index maintenance when an indexed value moves: a
+   *   freed unique name has to be claimable again, and a record repointed at
+   *   another parent must stop being listed under the old one.
+   * - The catalog aggregate's own defaults, reached only when something other
+   *   than the repository constructs it — the version that starts at 1, and the
+   *   tombstone and restore that each bump it.
    *
    * What is left is still mostly **defaulted-option branches** —
    * `options.execute || executeMatrixCell`, `env = process.env`,
@@ -143,7 +149,7 @@ const ACCEPTED_BELOW_THRESHOLD = {
    * threshold with this entry still here fails too.
    */
   branches: {
-    floor: 94.738,
+    floor: 94.872,
     issue: 'JUM-681',
     since: '2026-08-12',
     reason: 'Mostly defaulted-option branches reachable only by dropping the injection tests use deliberately; see the note above.'
