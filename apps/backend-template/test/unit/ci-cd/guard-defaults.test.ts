@@ -159,18 +159,13 @@ describe('ci-cd guards, no injection (JUM-681)', () => {
     expect(status).toBe(0);
   }, 120_000);
 
-  it('reads the coverage report from disk when no reader is injected', () => {
-    expect.hasAssertions();
-
-    // `defaultReadReport` either finds a report or reports its absence — both
-    // are valid on a developer machine, and neither may throw.
-    const report = coverageGuard.defaultReadReport();
-
-    // `null` is an object to `typeof`, so this reads "an object or nothing" —
-    // what it rules out is a string, a number, or a throw.
-    expect(typeof report).toBe('object');
-  });
-
+  // `defaultReadReport` is deliberately NOT called here. It reads
+  // `coverage/coverage-final.json`, which the run measuring this very suite is
+  // writing — so the branch it takes depends on whether a previous report was
+  // left on disk, and the branch count moved by three between two identical
+  // runs because of it. A gate whose floor drifts is a gate that fails at
+  // random (Requirement 134). The reader is covered with an injected path in
+  // `check-coverage-thresholds.test.ts`, where it is deterministic.
   it('validates coverage against the real thresholds and exceptions', () => {
     expect.hasAssertions();
 

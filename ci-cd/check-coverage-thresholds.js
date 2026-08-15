@@ -94,9 +94,10 @@ const ACCEPTED_BELOW_THRESHOLD = {
    * written as `93.28` from a two-decimal display and then failed the build by
    * 0.002.
    *
-   * Measured 2026-08-14: **4230 of 4466 branches, 94.715%**, and the floor
-   * ratcheted to match. The 67 branches closed since are not a number that was
-   * chased — each came with the behaviour it was hiding:
+   * Measured 2026-08-14: **4227 of 4466 branches, 94.648%**, stable to four
+   * decimals across repeated clean runs, and the floor ratcheted to match. The
+   * 64 branches closed since are not a number that was chased — each came with
+   * the behaviour it was hiding:
    *
    * - `run-suite` spawned Bun through `process.execPath`, so started from
    *   anything but Bun it ran `node test --isolate`. Found by calling the
@@ -123,12 +124,21 @@ const ACCEPTED_BELOW_THRESHOLD = {
    * reads the real manifests; `test/unit/ci-cd/guard-defaults.test.ts` is that
    * suite. The rest are in interactive CLI subapps and adapter error paths.
    *
+   * One measurement was thrown away on the way here, and the reason is worth
+   * keeping: a test called `defaultReadReport()` with no injection, which reads
+   * `coverage/coverage-final.json` — the file the run measuring that very test
+   * is writing. The branch it took depended on whether a previous report had
+   * been left on disk, and the total moved between two otherwise identical runs
+   * (4230 against 4227). A floor read off a number that does not reproduce is a
+   * gate that fails at random, so the test went and the lower, stable number is
+   * the one recorded here.
+   *
    * The debt is stated rather than chased: the threshold is the real one, this
    * floor is measured, and it ratchets — below it fails, and reaching the
    * threshold with this entry still here fails too.
    */
   branches: {
-    floor: 94.715,
+    floor: 94.648,
     issue: 'JUM-681',
     since: '2026-08-12',
     reason: 'Mostly defaulted-option branches reachable only by dropping the injection tests use deliberately; see the note above.'
