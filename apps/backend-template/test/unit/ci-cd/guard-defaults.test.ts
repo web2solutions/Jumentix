@@ -23,11 +23,11 @@ const guardDefaultsOs = require('os');
  * expensive (`check-bun-version`), and the paths are real suites that already
  * exist in the map.
  */
-const guardDefaultsMatrix = require('../../../../../ci-cd/run-full-test-guardDefaultsMatrix');
+const guardDefaultsMatrix = require('../../../../../ci-cd/run-full-test-matrix');
 const guardDefaultsSuiteRunner = require('../../../../../ci-cd/run-suite');
 const guardDefaultsCoverage = require('../../../../../ci-cd/check-coverage-thresholds');
 const guardDefaultsOverrides = require('../../../../../ci-cd/check-dependency-override-integrity');
-const guardDefaultsAuthorship = require('../../../../../ci-cd/check-commit-guardDefaultsAuthorship');
+const guardDefaultsAuthorship = require('../../../../../ci-cd/check-commit-authorship');
 const guardDefaultsPackageSuites = require('../../../../../ci-cd/check-package-suites');
 
 const guardDefaultsRepoRoot = guardDefaultsPath.resolve(__dirname, '../../../../..');
@@ -58,7 +58,7 @@ describe('ci-cd guards, no injection (JUM-681)', () => {
     })).toBe(0);
   });
 
-  it('runs the guardDefaultsMatrix with every option defaulted', () => {
+  it('runs the matrix with every option defaulted', () => {
     expect.hasAssertions();
 
     // No execute, no logger, no scripts table, no result file: the defaults CI
@@ -105,7 +105,7 @@ describe('ci-cd guards, no injection (JUM-681)', () => {
     ));
   });
 
-  it('validates the real guardDefaultsMatrix against the real package.json', () => {
+  it('validates the real matrix against the real package.json', () => {
     expect.hasAssertions();
 
     // Both defaults at once: the manifest CI runs, checked against the scripts

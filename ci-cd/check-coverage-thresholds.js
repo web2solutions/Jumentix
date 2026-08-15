@@ -94,10 +94,10 @@ const ACCEPTED_BELOW_THRESHOLD = {
    * written as `93.28` from a two-decimal display and then failed the build by
    * 0.002.
    *
-   * Measured 2026-08-14: **4227 of 4466 branches, 94.648%**, stable to four
-   * decimals across repeated clean runs, and the floor ratcheted to match. The
-   * 64 branches closed since are not a number that was chased — each came with
-   * the behaviour it was hiding:
+   * Measured 2026-08-15: **4231 of 4466 branches, 94.738%**, stable across
+   * repeated clean runs, and the floor ratcheted to match. The 68 branches
+   * closed since are not a number that was chased — each came with the
+   * behaviour it was hiding:
    *
    * - `run-suite` spawned Bun through `process.execPath`, so started from
    *   anything but Bun it ran `node test --isolate`. Found by calling the
@@ -116,6 +116,11 @@ const ACCEPTED_BELOW_THRESHOLD = {
    * - The catalog repository's fallbacks, where `?? current.name` is what keeps
    *   a partial update from blanking the fields it did not mention, and
    *   `expectedVersion ?? -1` is what stops an unconditional delete.
+   * - The login lockout thresholds and the production error masking, neither of
+   *   which the existing auth suite could reach: it runs with an empty
+   *   environment, and both are decided by one.
+   * - The two CLI managers' refusals — a create with no name, a duplicate domain
+   *   differing only in case, a typed status that is not one of the three.
    *
    * What is left is still mostly **defaulted-option branches** —
    * `options.execute || executeMatrixCell`, `env = process.env`,
@@ -138,7 +143,7 @@ const ACCEPTED_BELOW_THRESHOLD = {
    * threshold with this entry still here fails too.
    */
   branches: {
-    floor: 94.648,
+    floor: 94.738,
     issue: 'JUM-681',
     since: '2026-08-12',
     reason: 'Mostly defaulted-option branches reachable only by dropping the injection tests use deliberately; see the note above.'
