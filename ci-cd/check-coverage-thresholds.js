@@ -94,8 +94,8 @@ const ACCEPTED_BELOW_THRESHOLD = {
    * written as `93.28` from a two-decimal display and then failed the build by
    * 0.002.
    *
-   * Measured 2026-08-15: **4241 of 4466 branches, 94.961%**, stable across
-   * repeated clean runs, and the floor ratcheted to match. The 78 branches
+   * Measured 2026-08-15: **4249 of 4466 branches, 95.141%**, stable across
+   * repeated clean runs, and the floor ratcheted to match. The 86 branches
    * closed since are not a number that was chased — each came with the
    * behaviour it was hiding:
    *
@@ -133,6 +133,10 @@ const ACCEPTED_BELOW_THRESHOLD = {
    * - The BullMQ adapter's routing: a route key and a queue name each resolve
    *   ahead of the contract, which is how two deployments of one contract are
    *   told apart.
+   * - The entity manager's flows driven to the end — a field created with a
+   *   type, a format and a validation rule; the schema that field generates;
+   *   a payload validated against it. That is where the CLI's real output is:
+   *   the catalog the designer, the codegen and the exporters all read.
    *
    * What is left is still mostly **defaulted-option branches** —
    * `options.execute || executeMatrixCell`, `env = process.env`,
@@ -155,7 +159,7 @@ const ACCEPTED_BELOW_THRESHOLD = {
    * threshold with this entry still here fails too.
    */
   branches: {
-    floor: 94.961,
+    floor: 95.141,
     issue: 'JUM-681',
     since: '2026-08-12',
     reason: 'Mostly defaulted-option branches reachable only by dropping the injection tests use deliberately; see the note above.'

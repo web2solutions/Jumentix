@@ -308,6 +308,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/interface/CLI/entityModelManager.flows.test.ts",
+      "path": "apps/backend-template/test/unit/interface/CLI/entityModelManager.flows.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/interface/CLI/prompt.test.ts",
       "path": "apps/backend-template/test/unit/interface/CLI/prompt.test.ts",
       "layer": "interface/runtime",
@@ -4352,9 +4362,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 223,
+    "unit": 224,
     "integration": 97,
     "smoke": 2,
-    "suites": 370
+    "suites": 371
   }
 }
