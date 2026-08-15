@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-08-14 fix(website): organize architecture playground ux - Eduardo A.
+- 2026-08-14 fix(website): organize architecture playground ux - Eduardo A.
 - 2026-08-13 fix(website): show live indexeddb flow in cana canvas - Eduardo A.
 - 2026-08-13 fix(website): show live indexeddb flow in cana canvas - Eduardo A.
 - 2026-08-13 fix(website): show live dlq flow in cana canvas - Eduardo A.

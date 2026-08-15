@@ -60,9 +60,9 @@ Docs index JSON: https://jumentix-website.vercel.app/docs-index.json
 - Aurora Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/aurora
 - Firebase Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/firebase
 - Oracle Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/oracle
-- Database Adapters Documentation: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases
+- Database Adapters: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases
 - DynamoDB Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/dynamodb
-- InMemory Database Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/inmemory
+- InMemory Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/inmemory
 - MongoDB Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/mongodb
 - SQLite Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/sqlite
 - SQL Server Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/mssql
@@ -79,7 +79,7 @@ Docs index JSON: https://jumentix-website.vercel.app/docs-index.json
 - Vercel Functions Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/vercel-functions
 - Express Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/express
 - Adonis.js Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/adonis-js
-- HTTP Interface Adapters Documentation: https://jumentix-website.vercel.app/docs/jumentix/adapters/http
+- HTTP Adapters: https://jumentix-website.vercel.app/docs/jumentix/adapters/http
 - Fastify Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/fastify
 - Feathers Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/feathers
 - LoopBack Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/loopback

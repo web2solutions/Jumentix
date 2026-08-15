@@ -328,7 +328,6 @@ async function writeGeneratedDoc(record, routesBySource) {
     assertNoCanaContentLeaks(body, record.source);
   }
   assertNoContentLeaks(body, record.source);
-  const relativeSource = path.relative(appRoot, record.source).replaceAll('\\', '/');
   const description = record.description
     || (record.locale === 'pt-BR'
       ? 'Documentação do framework Jumentix para adoção rápida.'
@@ -337,8 +336,6 @@ async function writeGeneratedDoc(record, routesBySource) {
 title: ${JSON.stringify(record.title)}
 description: ${JSON.stringify(description)}
 ---
-
-> Source: \`${relativeSource}\`
 
 ${body}
 `;
@@ -443,6 +440,11 @@ function sectionLandingContent(locale, section, records) {
       return portuguese
         ? `Comece por **Começando**, depois visão geral e arquitetura.\n\n**Próximo:** [Começando](/docs/pt-BR/jumentix/concepts/getting-started).`
         : `Start with **Getting started**, then overview and architecture.\n\n**Next:** [Getting started](/docs/jumentix/concepts/getting-started).`;
+    }
+    if (section === 'adapters') {
+      return portuguese
+        ? `Adapters são a borda substituível do Jumentix. Eles recebem protocolo, runtime ou banco de dados, traduzem para contratos da aplicação e mantêm o domínio livre de detalhes de framework.\n\n## Como escolher\n\n1. Escolha o adapter HTTP que melhor combina com seu runtime de entrega.\n2. Escolha o adapter de banco pelo modelo de dados, operação e smoke test disponível.\n3. Use realtime quando o produto precisar de mensagens long-lived, streams ou comunicação entre clientes.\n4. Mantenha regras de negócio em use cases; adapters só conectam o mundo externo.\n\n**Próximo:** [Adapters HTTP](/docs/pt-BR/jumentix/adapters/http) ou [Adapters de bancos de dados](/docs/pt-BR/jumentix/adapters/databases).`
+        : `Adapters are Jumentix's replaceable edge. They receive protocol, runtime, or database details, translate them into application contracts, and keep the domain free from framework concerns.\n\n## How to choose\n\n1. Pick the HTTP adapter that matches your delivery runtime.\n2. Pick the database adapter by data model, operations profile, and available smoke test.\n3. Use realtime when the product needs long-lived messages, streams, or client-to-client communication.\n4. Keep business rules in use cases; adapters only connect the outside world.\n\n**Next:** [HTTP adapters](/docs/jumentix/adapters/http) or [Database adapters](/docs/jumentix/adapters/databases).`;
     }
     return portuguese
       ? 'Escolha um recurso para continuar sua jornada técnica com o Jumentix.'

@@ -1,59 +1,111 @@
-<!--
-Arquivo gerado automaticamente a partir de: documentation/md/adapters/databases/ORACLE.md
-Idioma alvo: Português (Brasil)
--->
 # Adaptador Oracle
 
-## Glossário
+O adapter Oracle conecta o contrato de persistência do Jumentix à tecnologia Oracle. Use cases continuam falando com portas de repositório; a escolha de banco fica na composição.
 
-- **Adapter de entrada** — aceita chamadas de protocolo externo e traduz para use-cases.
+## Tecnologia integrada
 
-## Responsabilidade no escopo
+Oracle Database pelo perfil de cliente SQL
 
-- **Camada:** adapter / databases
-- **Responsável por:** wiring específico deste framework/tecnologia
-- **Usado com:** composição do backend-template, pacotes de persistência/SDK, guia correspondente
-- **Não responsável por:** regras de domínio, autoría OpenAPI ou storage offline no browser
+- **Modelo de dados:** SQL relacional
+- **Driver Jumentix:** `Oracle`
+- **Seleção de runtime:** `JUMENTIX_DATABASE_DRIVER=Oracle`
 
-## Por que existe
+## Quando usar
 
-A escolha de framework fica na borda. Este adapter mantém detalhes Express/Fastify/DB/realtime substituíveis.
+Use quando: Sistemas enterprise já investidos em operação e governança Oracle.
 
-## O que é
+## Quando evitar
 
-Adapter ORACLE para interfaces databases do Jumentix — monta use-cases sem vazar tipos de framework no domínio.
+Evite para apps leves em que custo operacional importa mais que compatibilidade Oracle.
 
-## Tecnologia
+## Como validar localmente
 
-Sequelize + perfil Oracle.
-
-## Crie serviços com Oracle
-
-1. Inicie o contêiner:
+Use o smoke test real do monorepo. Ele valida o ciclo de vida do adapter e evita publicar configuração que não conecta.
 
 ```bash
 bun run docker:up:oracle
+JUMENTIX_DATABASE_DRIVER=Oracle bun run smoke:db:oracle
 ```
 
-2. Definir ambiente:
+## Exemplo completo: Task e Category com porta de banco
 
-```bash
-JUMENTIX_DATABASE_DRIVER=Oracle
-JUMENTIX_DB_HOST=127.0.0.1
-JUMENTIX_DB_PORT=1521
-JUMENTIX_DB_NAME=XE
-JUMENTIX_DB_USERNAME=system
-JUMENTIX_DB_PASSWORD=oracle
+```ts
+type Category = {
+  id: string;
+  name: string;
+};
+
+type Task = {
+  id: string;
+  title: string;
+  categoryId: string;
+  completed: boolean;
+};
+
+type Repository<T extends { id: string }> = {
+  create(record: T): Promise<T>;
+  getById(id: string): Promise<T | undefined>;
+  list(): Promise<T[]>;
+};
+
+function createRepository<T extends { id: string }>(): Repository<T> {
+  const records = new Map<string, T>();
+
+  return {
+    async create(record) {
+      records.set(record.id, record);
+      return record;
+    },
+    async getById(id) {
+      return records.get(id);
+    },
+    async list() {
+      return [...records.values()];
+    }
+  };
+}
+
+const adapterProfile = {
+  driver: 'Oracle',
+  dataModel: 'Relational SQL',
+  smokeTest: 'bun run smoke:db:oracle'
+} as const;
+
+const categories = createRepository<Category>();
+const tasks = createRepository<Task>();
+
+export async function seedTaskCatalog() {
+  const operations = await categories.create({ id: crypto.randomUUID(), name: 'Operations' });
+  const finance = await categories.create({ id: crypto.randomUUID(), name: 'Finance' });
+
+  await tasks.create({
+    id: crypto.randomUUID(),
+    title: 'Review adapter smoke test',
+    categoryId: operations.id,
+    completed: false
+  });
+
+  await tasks.create({
+    id: crypto.randomUUID(),
+    title: 'Close billing reconciliation',
+    categoryId: finance.id,
+    completed: true
+  });
+
+  return { adapterProfile, categories: await categories.list(), tasks: await tasks.list() };
+}
+
+export async function listTasksForCategory(categoryId: string): Promise<Task[]> {
+  const category = await categories.getById(categoryId);
+
+  if (!category) {
+    throw new Error('Category not found');
+  }
+
+  return (await tasks.list()).filter((task) => task.categoryId === category.id);
+}
 ```
 
-3. Inicie o adaptador de serviço.
+## O que trocar em produção
 
-## Checklist júnior (“Eu consigo …”)
-
-- [ ] Sei quando escolher este adapter
-- [ ] Consigo iniciá-lo pelo script documentado
-- [ ] Sei o próximo guia/pacote
-
-## Próximo passo
-
-Volte para [Começando](/docs/pt-BR/jumentix/concepts/getting-started) ou o guia correspondente.
+O exemplo acima mostra o contrato completo com uma implementação em memória para ser lido de ponta a ponta. Em produção, a composição injeta o cliente real selecionado por `JUMENTIX_DATABASE_DRIVER=Oracle`; o domínio continua igual.

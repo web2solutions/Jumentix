@@ -19,14 +19,12 @@
     "locale": "en",
     "headings": [
       "Aurora Adapter",
-      "Glossary",
-      "Responsibility in context",
-      "Why it exists",
-      "What it is",
-      "Technology",
-      "Build Services with Aurora",
-      "Junior checklist (“I can …”)",
-      "Next step"
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to validate locally",
+      "Complete example: Task and Category with a database port",
+      "What changes in production"
     ]
   },
   {
@@ -37,14 +35,12 @@
     "locale": "en",
     "headings": [
       "Firebase Adapter",
-      "Glossary",
-      "Responsibility in context",
-      "Why it exists",
-      "What it is",
-      "Technology",
-      "Build Services with Firebase",
-      "Junior checklist (“I can …”)",
-      "Next step"
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to validate locally",
+      "Complete example: Task and Category with a database port",
+      "What changes in production"
     ]
   },
   {
@@ -55,25 +51,25 @@
     "locale": "en",
     "headings": [
       "Oracle Adapter",
-      "Glossary",
-      "Responsibility in context",
-      "Why it exists",
-      "What it is",
-      "Technology",
-      "Build Services with Oracle",
-      "Junior checklist (“I can …”)",
-      "Next step"
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to validate locally",
+      "Complete example: Task and Category with a database port",
+      "What changes in production"
     ]
   },
   {
-    "title": "Database Adapters Documentation",
+    "title": "Database Adapters",
     "url": "https://jumentix-website.vercel.app/docs/jumentix/adapters/databases",
     "description": "Database Adapters documentation.",
     "section": "adapters",
     "locale": "en",
     "headings": [
-      "Database Adapters Documentation",
-      "Database Pages"
+      "Database Adapters",
+      "Database adapter comparison",
+      "Fast guide",
+      "Complete selection example"
     ]
   },
   {
@@ -84,33 +80,28 @@
     "locale": "en",
     "headings": [
       "DynamoDB Adapter",
-      "Glossary",
-      "Responsibility in context",
-      "Why it exists",
-      "What it is",
-      "Technology",
-      "Build Services with DynamoDB",
-      "Junior checklist (“I can …”)",
-      "Next step"
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to validate locally",
+      "Complete example: Task and Category with a database port",
+      "What changes in production"
     ]
   },
   {
-    "title": "InMemory Database Adapter",
+    "title": "InMemory Adapter",
     "url": "https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/inmemory",
     "description": "Database Adapters documentation.",
     "section": "adapters",
     "locale": "en",
     "headings": [
-      "InMemory Database Adapter",
-      "Glossary",
-      "Responsibility in context",
-      "Why it exists",
-      "What it is",
-      "Purpose",
-      "Entrypoints",
-      "Build Services with InMemory",
-      "Junior checklist (“I can …”)",
-      "Next step"
+      "InMemory Adapter",
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to validate locally",
+      "Complete example: Task and Category with a database port",
+      "What changes in production"
     ]
   },
   {
@@ -121,14 +112,12 @@
     "locale": "en",
     "headings": [
       "MongoDB Adapter",
-      "Glossary",
-      "Responsibility in context",
-      "Why it exists",
-      "What it is",
-      "Technology",
-      "Build Services with MongoDB",
-      "Junior checklist (“I can …”)",
-      "Next step"
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to validate locally",
+      "Complete example: Task and Category with a database port",
+      "What changes in production"
     ]
   },
   {
@@ -139,14 +128,12 @@
     "locale": "en",
     "headings": [
       "SQLite Adapter",
-      "Glossary",
-      "Responsibility in context",
-      "Why it exists",
-      "What it is",
-      "Technology",
-      "Build Services with SQLite",
-      "Junior checklist (“I can …”)",
-      "Next step"
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to validate locally",
+      "Complete example: Task and Category with a database port",
+      "What changes in production"
     ]
   },
   {
@@ -157,14 +144,12 @@
     "locale": "en",
     "headings": [
       "SQL Server Adapter",
-      "Glossary",
-      "Responsibility in context",
-      "Why it exists",
-      "What it is",
-      "Technology",
-      "Build Services with SQL Server",
-      "Junior checklist (“I can …”)",
-      "Next step"
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to validate locally",
+      "Complete example: Task and Category with a database port",
+      "What changes in production"
     ]
   },
   {
@@ -175,14 +160,12 @@
     "locale": "en",
     "headings": [
       "RDS Adapter",
-      "Glossary",
-      "Responsibility in context",
-      "Why it exists",
-      "What it is",
-      "Technology",
-      "Build Services with RDS",
-      "Junior checklist (“I can …”)",
-      "Next step"
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to validate locally",
+      "Complete example: Task and Category with a database port",
+      "What changes in production"
     ]
   },
   {
@@ -193,14 +176,12 @@
     "locale": "en",
     "headings": [
       "MySQL Adapter",
-      "Glossary",
-      "Responsibility in context",
-      "Why it exists",
-      "What it is",
-      "Technology",
-      "Build Services with MySQL",
-      "Junior checklist (“I can …”)",
-      "Next step"
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to validate locally",
+      "Complete example: Task and Category with a database port",
+      "What changes in production"
     ]
   },
   {
@@ -211,14 +192,12 @@
     "locale": "en",
     "headings": [
       "Cassandra Adapter",
-      "Glossary",
-      "Responsibility in context",
-      "Why it exists",
-      "What it is",
-      "Technology",
-      "Build Services with Cassandra",
-      "Junior checklist (“I can …”)",
-      "Next step"
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to validate locally",
+      "Complete example: Task and Category with a database port",
+      "What changes in production"
     ]
   },
   {
@@ -229,14 +208,12 @@
     "locale": "en",
     "headings": [
       "PostgreSQL Adapter",
-      "Glossary",
-      "Responsibility in context",
-      "Why it exists",
-      "What it is",
-      "Technology",
-      "Build Services with PostgreSQL",
-      "Junior checklist (“I can …”)",
-      "Next step"
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to validate locally",
+      "Complete example: Task and Category with a database port",
+      "What changes in production"
     ]
   },
   {
@@ -246,7 +223,8 @@
     "section": "adapters",
     "locale": "en",
     "headings": [
-      "Adapters"
+      "Adapters",
+      "How to choose"
     ]
   },
   {
@@ -319,15 +297,14 @@
     "locale": "en",
     "headings": [
       "Cloudflare Workers Adapter",
-      "Glossary",
-      "Responsibility in context",
-      "Why it exists",
-      "What it is",
-      "Purpose",
-      "Entrypoints",
-      "Build a Service with Cloudflare Workers",
-      "Junior checklist (“I can …”)",
-      "Next step"
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to start or compose",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Complete example: Task and Category at the HTTP edge",
+      "Adoption checklist"
     ]
   },
   {
@@ -338,16 +315,12 @@
     "locale": "en",
     "headings": [
       "Restify Adapter",
-      "Glossary",
-      "Responsibility in context",
-      "Why it exists",
-      "What it is",
-      "Purpose",
-      "Entrypoints",
-      "Build a Service with Restify",
-      "Production",
-      "Junior checklist (“I can …”)",
-      "Next step"
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to start or compose",
+      "Complete example: Task and Category at the HTTP edge",
+      "Adoption checklist"
     ]
   },
   {
@@ -358,15 +331,14 @@
     "locale": "en",
     "headings": [
       "Vercel Functions Adapter",
-      "Glossary",
-      "Responsibility in context",
-      "Why it exists",
-      "What it is",
-      "Purpose",
-      "Entrypoints",
-      "Build a Service with Vercel Functions",
-      "Junior checklist (“I can …”)",
-      "Next step"
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to start or compose",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Complete example: Task and Category at the HTTP edge",
+      "Adoption checklist"
     ]
   },
   {
@@ -377,16 +349,12 @@
     "locale": "en",
     "headings": [
       "Express Adapter",
-      "Glossary",
-      "Responsibility in context",
-      "Why it exists",
-      "What it is",
-      "Purpose",
-      "Entrypoints",
-      "Build a Service with Express",
-      "Production",
-      "Junior checklist (“I can …”)",
-      "Next step"
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to start or compose",
+      "Complete example: Task and Category at the HTTP edge",
+      "Adoption checklist"
     ]
   },
   {
@@ -397,26 +365,27 @@
     "locale": "en",
     "headings": [
       "Adonis.js Adapter",
-      "Glossary",
-      "Responsibility in context",
-      "Why it exists",
-      "What it is",
-      "Purpose",
-      "Entrypoints",
-      "Build a Service with Adonis.js",
-      "Junior checklist (“I can …”)",
-      "Next step"
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to start or compose",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Complete example: Task and Category at the HTTP edge",
+      "Adoption checklist"
     ]
   },
   {
-    "title": "HTTP Interface Adapters Documentation",
+    "title": "HTTP Adapters",
     "url": "https://jumentix-website.vercel.app/docs/jumentix/adapters/http",
     "description": "HTTP Adapters documentation.",
     "section": "adapters",
     "locale": "en",
     "headings": [
-      "HTTP Interface Adapters Documentation",
-      "Adapter Pages"
+      "HTTP Adapters",
+      "HTTP framework comparison",
+      "Fast guide",
+      "Complete selection example"
     ]
   },
   {
@@ -427,17 +396,12 @@
     "locale": "en",
     "headings": [
       "Fastify Adapter",
-      "Glossary",
-      "Responsibility in context",
-      "Why it exists",
-      "What it is",
-      "Purpose",
-      "Entrypoints",
-      "Build a Service with Fastify",
-      "Production",
-      "Static Documentation Lifecycle",
-      "Junior checklist (“I can …”)",
-      "Next step"
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to start or compose",
+      "Complete example: Task and Category at the HTTP edge",
+      "Adoption checklist"
     ]
   },
   {
@@ -448,15 +412,14 @@
     "locale": "en",
     "headings": [
       "Feathers Adapter",
-      "Glossary",
-      "Responsibility in context",
-      "Why it exists",
-      "What it is",
-      "Purpose",
-      "Entrypoints",
-      "Build a Service with Feathers",
-      "Junior checklist (“I can …”)",
-      "Next step"
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to start or compose",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Complete example: Task and Category at the HTTP edge",
+      "Adoption checklist"
     ]
   },
   {
@@ -467,15 +430,14 @@
     "locale": "en",
     "headings": [
       "LoopBack Adapter",
-      "Glossary",
-      "Responsibility in context",
-      "Why it exists",
-      "What it is",
-      "Purpose",
-      "Entrypoints",
-      "Build a Service with LoopBack",
-      "Junior checklist (“I can …”)",
-      "Next step"
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to start or compose",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Complete example: Task and Category at the HTTP edge",
+      "Adoption checklist"
     ]
   },
   {
@@ -486,16 +448,14 @@
     "locale": "en",
     "headings": [
       "AWS Lambda Adapter",
-      "Glossary",
-      "Responsibility in context",
-      "Why it exists",
-      "What it is",
-      "Purpose",
-      "Entrypoints",
-      "Build a Service with Lambda",
-      "Notes",
-      "Junior checklist (“I can …”)",
-      "Next step"
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to start or compose",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Complete example: Task and Category at the HTTP edge",
+      "Adoption checklist"
     ]
   },
   {
@@ -506,15 +466,14 @@
     "locale": "en",
     "headings": [
       "Sails.js Adapter",
-      "Glossary",
-      "Responsibility in context",
-      "Why it exists",
-      "What it is",
-      "Purpose",
-      "Entrypoints",
-      "Build a Service with Sails.js",
-      "Junior checklist (“I can …”)",
-      "Next step"
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to start or compose",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Complete example: Task and Category at the HTTP edge",
+      "Adoption checklist"
     ]
   },
   {
@@ -525,15 +484,14 @@
     "locale": "en",
     "headings": [
       "Derby.js Adapter",
-      "Glossary",
-      "Responsibility in context",
-      "Why it exists",
-      "What it is",
-      "Purpose",
-      "Entrypoints",
-      "Build a Service with Derby.js",
-      "Junior checklist (“I can …”)",
-      "Next step"
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to start or compose",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Complete example: Task and Category at the HTTP edge",
+      "Adoption checklist"
     ]
   },
   {
@@ -544,15 +502,14 @@
     "locale": "en",
     "headings": [
       "Total.js Adapter",
-      "Glossary",
-      "Responsibility in context",
-      "Why it exists",
-      "What it is",
-      "Purpose",
-      "Entrypoints",
-      "Build a Service with Total.js",
-      "Junior checklist (“I can …”)",
-      "Next step"
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to start or compose",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Complete example: Task and Category at the HTTP edge",
+      "Adoption checklist"
     ]
   },
   {
@@ -1640,14 +1597,12 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador Aurora",
-      "Glossário",
-      "Responsabilidade no escopo",
-      "Por que existe",
-      "O que é",
-      "Tecnologia",
-      "Crie serviços com Aurora",
-      "Checklist júnior (“Eu consigo …”)",
-      "Próximo passo"
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como validar localmente",
+      "Exemplo completo: Task e Category com porta de banco",
+      "O que trocar em produção"
     ]
   },
   {
@@ -1658,14 +1613,12 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador Firebase",
-      "Glossário",
-      "Responsabilidade no escopo",
-      "Por que existe",
-      "O que é",
-      "Tecnologia",
-      "Crie serviços com Firebase",
-      "Checklist júnior (“Eu consigo …”)",
-      "Próximo passo"
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como validar localmente",
+      "Exemplo completo: Task e Category com porta de banco",
+      "O que trocar em produção"
     ]
   },
   {
@@ -1676,25 +1629,25 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador Oracle",
-      "Glossário",
-      "Responsabilidade no escopo",
-      "Por que existe",
-      "O que é",
-      "Tecnologia",
-      "Crie serviços com Oracle",
-      "Checklist júnior (“Eu consigo …”)",
-      "Próximo passo"
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como validar localmente",
+      "Exemplo completo: Task e Category com porta de banco",
+      "O que trocar em produção"
     ]
   },
   {
-    "title": "Documentação de adaptadores de banco de dados",
+    "title": "Adapters de bancos de dados",
     "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/databases",
     "description": "Documentação de Adaptadores de banco de dados.",
     "section": "adapters",
     "locale": "pt-BR",
     "headings": [
-      "Documentação de adaptadores de banco de dados",
-      "Páginas do banco de dados"
+      "Adapters de bancos de dados",
+      "Tabela de comparação dos bancos integrados",
+      "Guia rápido",
+      "Exemplo completo de seleção"
     ]
   },
   {
@@ -1705,33 +1658,28 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador DynamoDB",
-      "Glossário",
-      "Responsabilidade no escopo",
-      "Por que existe",
-      "O que é",
-      "Tecnologia",
-      "Crie serviços com DynamoDB",
-      "Checklist júnior (“Eu consigo …”)",
-      "Próximo passo"
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como validar localmente",
+      "Exemplo completo: Task e Category com porta de banco",
+      "O que trocar em produção"
     ]
   },
   {
-    "title": "Adaptador de banco de dados InMemory",
+    "title": "Adaptador InMemory",
     "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/databases/inmemory",
     "description": "Documentação de Adaptadores de banco de dados.",
     "section": "adapters",
     "locale": "pt-BR",
     "headings": [
-      "Adaptador de banco de dados InMemory",
-      "Glossário",
-      "Responsabilidade no escopo",
-      "Por que existe",
-      "O que é",
-      "Propósito",
-      "Pontos de entrada",
-      "Crie serviços com InMemory",
-      "Checklist júnior (“Eu consigo …”)",
-      "Próximo passo"
+      "Adaptador InMemory",
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como validar localmente",
+      "Exemplo completo: Task e Category com porta de banco",
+      "O que trocar em produção"
     ]
   },
   {
@@ -1742,14 +1690,12 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador MongoDB",
-      "Glossário",
-      "Responsabilidade no escopo",
-      "Por que existe",
-      "O que é",
-      "Tecnologia",
-      "Construa serviços com MongoDB",
-      "Checklist júnior (“Eu consigo …”)",
-      "Próximo passo"
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como validar localmente",
+      "Exemplo completo: Task e Category com porta de banco",
+      "O que trocar em produção"
     ]
   },
   {
@@ -1760,14 +1706,12 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador SQLite",
-      "Glossário",
-      "Responsabilidade no escopo",
-      "Por que existe",
-      "O que é",
-      "Tecnologia",
-      "Construa serviços com SQLite",
-      "Checklist júnior (“Eu consigo …”)",
-      "Próximo passo"
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como validar localmente",
+      "Exemplo completo: Task e Category com porta de banco",
+      "O que trocar em produção"
     ]
   },
   {
@@ -1778,14 +1722,12 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador SQL Server",
-      "Glossário",
-      "Responsabilidade no escopo",
-      "Por que existe",
-      "O que é",
-      "Tecnologia",
-      "Construa serviços com SQL Server",
-      "Checklist júnior (“Eu consigo …”)",
-      "Próximo passo"
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como validar localmente",
+      "Exemplo completo: Task e Category com porta de banco",
+      "O que trocar em produção"
     ]
   },
   {
@@ -1796,14 +1738,12 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador RDS",
-      "Glossário",
-      "Responsabilidade no escopo",
-      "Por que existe",
-      "O que é",
-      "Tecnologia",
-      "Crie serviços com RDS",
-      "Checklist júnior (“Eu consigo …”)",
-      "Próximo passo"
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como validar localmente",
+      "Exemplo completo: Task e Category com porta de banco",
+      "O que trocar em produção"
     ]
   },
   {
@@ -1814,14 +1754,12 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador MySQL",
-      "Glossário",
-      "Responsabilidade no escopo",
-      "Por que existe",
-      "O que é",
-      "Tecnologia",
-      "Crie serviços com MySQL",
-      "Checklist júnior (“Eu consigo …”)",
-      "Próximo passo"
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como validar localmente",
+      "Exemplo completo: Task e Category com porta de banco",
+      "O que trocar em produção"
     ]
   },
   {
@@ -1832,14 +1770,12 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador Cassandra",
-      "Glossário",
-      "Responsabilidade no escopo",
-      "Por que existe",
-      "O que é",
-      "Tecnologia",
-      "Crie serviços com Cassandra",
-      "Checklist júnior (“Eu consigo …”)",
-      "Próximo passo"
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como validar localmente",
+      "Exemplo completo: Task e Category com porta de banco",
+      "O que trocar em produção"
     ]
   },
   {
@@ -1850,14 +1786,12 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador PostgreSQL",
-      "Glossário",
-      "Responsabilidade no escopo",
-      "Por que existe",
-      "O que é",
-      "Tecnologia",
-      "Crie serviços com PostgreSQL",
-      "Checklist júnior (“Eu consigo …”)",
-      "Próximo passo"
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como validar localmente",
+      "Exemplo completo: Task e Category com porta de banco",
+      "O que trocar em produção"
     ]
   },
   {
@@ -1867,7 +1801,8 @@
     "section": "adapters",
     "locale": "pt-BR",
     "headings": [
-      "Adaptadores"
+      "Adaptadores",
+      "Como escolher"
     ]
   },
   {
@@ -1933,22 +1868,21 @@
     ]
   },
   {
-    "title": "Adaptador de trabalhadores Cloudflare",
+    "title": "Adaptador Cloudflare Workers",
     "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/http/cloudflare-workers",
     "description": "Documentação de Adaptadores HTTP.",
     "section": "adapters",
     "locale": "pt-BR",
     "headings": [
-      "Adaptador de trabalhadores Cloudflare",
-      "Glossário",
-      "Responsabilidade no escopo",
-      "Por que existe",
-      "O que é",
-      "Propósito",
-      "Pontos de entrada",
-      "Crie um serviço com trabalhadores da Cloudflare",
-      "Checklist júnior (“Eu consigo …”)",
-      "Próximo passo"
+      "Adaptador Cloudflare Workers",
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como iniciar ou compor",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Exemplo completo: Task e Category na borda HTTP",
+      "Checklist de adoção"
     ]
   },
   {
@@ -1959,55 +1893,46 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador Restify",
-      "Glossário",
-      "Responsabilidade no escopo",
-      "Por que existe",
-      "O que é",
-      "Propósito",
-      "Pontos de entrada",
-      "Construa um serviço com Restify",
-      "Produção",
-      "Checklist júnior (“Eu consigo …”)",
-      "Próximo passo"
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como iniciar ou compor",
+      "Exemplo completo: Task e Category na borda HTTP",
+      "Checklist de adoção"
     ]
   },
   {
-    "title": "Adaptador de funções Vercel",
+    "title": "Adaptador Vercel Functions",
     "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/http/vercel-functions",
     "description": "Documentação de Adaptadores HTTP.",
     "section": "adapters",
     "locale": "pt-BR",
     "headings": [
-      "Adaptador de funções Vercel",
-      "Glossário",
-      "Responsabilidade no escopo",
-      "Por que existe",
-      "O que é",
-      "Propósito",
-      "Pontos de entrada",
-      "Construa um serviço com funções Vercel",
-      "Checklist júnior (“Eu consigo …”)",
-      "Próximo passo"
+      "Adaptador Vercel Functions",
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como iniciar ou compor",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Exemplo completo: Task e Category na borda HTTP",
+      "Checklist de adoção"
     ]
   },
   {
-    "title": "Adaptador Expresso",
+    "title": "Adaptador Express",
     "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/http/express",
     "description": "Documentação de Adaptadores HTTP.",
     "section": "adapters",
     "locale": "pt-BR",
     "headings": [
-      "Adaptador Expresso",
-      "Glossário",
-      "Responsabilidade no escopo",
-      "Por que existe",
-      "O que é",
-      "Propósito",
-      "Pontos de entrada",
-      "Crie um serviço com Express",
-      "Produção",
-      "Checklist júnior (“Eu consigo …”)",
-      "Próximo passo"
+      "Adaptador Express",
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como iniciar ou compor",
+      "Exemplo completo: Task e Category na borda HTTP",
+      "Checklist de adoção"
     ]
   },
   {
@@ -2018,66 +1943,61 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador Adonis.js",
-      "Glossário",
-      "Responsabilidade no escopo",
-      "Por que existe",
-      "O que é",
-      "Propósito",
-      "Pontos de entrada",
-      "Construa um serviço com Adonis.js",
-      "Checklist júnior (“Eu consigo …”)",
-      "Próximo passo"
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como iniciar ou compor",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Exemplo completo: Task e Category na borda HTTP",
+      "Checklist de adoção"
     ]
   },
   {
-    "title": "Documentação dos adaptadores de interface HTTP",
+    "title": "Adapters HTTP",
     "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/http",
     "description": "Documentação de Adaptadores HTTP.",
     "section": "adapters",
     "locale": "pt-BR",
     "headings": [
-      "Documentação dos adaptadores de interface HTTP",
-      "Páginas adaptadoras"
+      "Adapters HTTP",
+      "Tabela de comparação dos frameworks HTTP",
+      "Guia rápido",
+      "Exemplo completo de seleção"
     ]
   },
   {
-    "title": "Fastify Adaptador",
+    "title": "Adaptador Fastify",
     "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/http/fastify",
     "description": "Documentação de Adaptadores HTTP.",
     "section": "adapters",
     "locale": "pt-BR",
     "headings": [
-      "Fastify Adaptador",
-      "Glossário",
-      "Responsabilidade no escopo",
-      "Por que existe",
-      "O que é",
-      "Propósito",
-      "Pontos de entrada",
-      "Crie um serviço com Fastify",
-      "Produção",
-      "Ciclo de vida da documentação estática",
-      "Checklist júnior (“Eu consigo …”)",
-      "Próximo passo"
+      "Adaptador Fastify",
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como iniciar ou compor",
+      "Exemplo completo: Task e Category na borda HTTP",
+      "Checklist de adoção"
     ]
   },
   {
-    "title": "Adaptador de Penas",
+    "title": "Adaptador Feathers",
     "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/http/feathers",
     "description": "Documentação de Adaptadores HTTP.",
     "section": "adapters",
     "locale": "pt-BR",
     "headings": [
-      "Adaptador de Penas",
-      "Glossário",
-      "Responsabilidade no escopo",
-      "Por que existe",
-      "O que é",
-      "Propósito",
-      "Pontos de entrada",
-      "Construa um serviço com penas",
-      "Checklist júnior (“Eu consigo …”)",
-      "Próximo passo"
+      "Adaptador Feathers",
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como iniciar ou compor",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Exemplo completo: Task e Category na borda HTTP",
+      "Checklist de adoção"
     ]
   },
   {
@@ -2088,15 +2008,14 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador LoopBack",
-      "Glossário",
-      "Responsabilidade no escopo",
-      "Por que existe",
-      "O que é",
-      "Propósito",
-      "Pontos de entrada",
-      "Construa um serviço com LoopBack",
-      "Checklist júnior (“Eu consigo …”)",
-      "Próximo passo"
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como iniciar ou compor",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Exemplo completo: Task e Category na borda HTTP",
+      "Checklist de adoção"
     ]
   },
   {
@@ -2107,16 +2026,14 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador AWS Lambda",
-      "Glossário",
-      "Responsabilidade no escopo",
-      "Por que existe",
-      "O que é",
-      "Propósito",
-      "Pontos de entrada",
-      "Crie um serviço com Lambda",
-      "Notas",
-      "Checklist júnior (“Eu consigo …”)",
-      "Próximo passo"
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como iniciar ou compor",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Exemplo completo: Task e Category na borda HTTP",
+      "Checklist de adoção"
     ]
   },
   {
@@ -2127,15 +2044,14 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador Sails.js",
-      "Glossário",
-      "Responsabilidade no escopo",
-      "Por que existe",
-      "O que é",
-      "Propósito",
-      "Pontos de entrada",
-      "Construa um serviço com Sails.js",
-      "Checklist júnior (“Eu consigo …”)",
-      "Próximo passo"
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como iniciar ou compor",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Exemplo completo: Task e Category na borda HTTP",
+      "Checklist de adoção"
     ]
   },
   {
@@ -2146,15 +2062,14 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador Derby.js",
-      "Glossário",
-      "Responsabilidade no escopo",
-      "Por que existe",
-      "O que é",
-      "Propósito",
-      "Pontos de entrada",
-      "Construa um serviço com Derby.js",
-      "Checklist júnior (“Eu consigo …”)",
-      "Próximo passo"
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como iniciar ou compor",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Exemplo completo: Task e Category na borda HTTP",
+      "Checklist de adoção"
     ]
   },
   {
@@ -2165,15 +2080,14 @@
     "locale": "pt-BR",
     "headings": [
       "Adaptador Total.js",
-      "Glossário",
-      "Responsabilidade no escopo",
-      "Por que existe",
-      "O que é",
-      "Propósito",
-      "Pontos de entrada",
-      "Construa um serviço com Total.js",
-      "Checklist júnior (“Eu consigo …”)",
-      "Próximo passo"
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como iniciar ou compor",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Exemplo completo: Task e Category na borda HTTP",
+      "Checklist de adoção"
     ]
   },
   {

@@ -1,53 +1,111 @@
 # Cassandra Adapter
 
-## Glossary
+The Cassandra adapter connects the Jumentix persistence contract to Cassandra. Use cases keep talking to repository ports; database selection stays in composition.
 
-- **Inbound adapter** — accepts external protocol calls and translates them into use-case calls.
+## Integrated technology
 
-## Responsibility in context
+Apache Cassandra wide-column database
 
-- **Stack layer:** adapter / databases
-- **Owns:** framework-specific wiring for this technology
-- **Used with:** backend-template composition, persistence/SDK packages as needed, matching delivery guide
-- **Not responsible for:** domain rules, OpenAPI authoring, or browser offline storage
+- **Data model:** Wide-column
+- **Jumentix driver:** `Cassandra`
+- **Runtime selection:** `JUMENTIX_DATABASE_DRIVER=Cassandra`
 
-## Why it exists
+## When to use
 
-Framework choice should stay at the edge. This adapter keeps Express/Fastify/DB/realtime details replaceable.
+Use it for: Very high write volume, multi-node distribution, and query patterns known in advance.
 
-## What it is
+## When to avoid
 
-Cassandra adapter for Jumentix databases interfaces — mounts application use-cases without leaking framework types into the domain.
+Avoid for small CRUD systems that need flexible querying.
 
-## Technology
+## How to validate locally
 
-Cassandra driver profile.
-
-## Build Services with Cassandra
-
-1. Start container:
+Use the real monorepo smoke test. It validates the adapter lifecycle and prevents shipping configuration that does not connect.
 
 ```bash
 bun run docker:up:cassandra
+JUMENTIX_DATABASE_DRIVER=Cassandra bun run smoke:db:cassandra
 ```
 
-2. Set env:
+## Complete example: Task and Category with a database port
 
-```bash
-JUMENTIX_DATABASE_DRIVER=Cassandra
-JUMENTIX_CASSANDRA_CONTACT_POINTS=127.0.0.1
-JUMENTIX_CASSANDRA_KEYSPACE=jumentix
-JUMENTIX_CASSANDRA_PORT=9042
+```ts
+type Category = {
+  id: string;
+  name: string;
+};
+
+type Task = {
+  id: string;
+  title: string;
+  categoryId: string;
+  completed: boolean;
+};
+
+type Repository<T extends { id: string }> = {
+  create(record: T): Promise<T>;
+  getById(id: string): Promise<T | undefined>;
+  list(): Promise<T[]>;
+};
+
+function createRepository<T extends { id: string }>(): Repository<T> {
+  const records = new Map<string, T>();
+
+  return {
+    async create(record) {
+      records.set(record.id, record);
+      return record;
+    },
+    async getById(id) {
+      return records.get(id);
+    },
+    async list() {
+      return [...records.values()];
+    }
+  };
+}
+
+const adapterProfile = {
+  driver: 'Cassandra',
+  dataModel: 'Wide-column',
+  smokeTest: 'bun run smoke:db:cassandra'
+} as const;
+
+const categories = createRepository<Category>();
+const tasks = createRepository<Task>();
+
+export async function seedTaskCatalog() {
+  const operations = await categories.create({ id: crypto.randomUUID(), name: 'Operations' });
+  const finance = await categories.create({ id: crypto.randomUUID(), name: 'Finance' });
+
+  await tasks.create({
+    id: crypto.randomUUID(),
+    title: 'Review adapter smoke test',
+    categoryId: operations.id,
+    completed: false
+  });
+
+  await tasks.create({
+    id: crypto.randomUUID(),
+    title: 'Close billing reconciliation',
+    categoryId: finance.id,
+    completed: true
+  });
+
+  return { adapterProfile, categories: await categories.list(), tasks: await tasks.list() };
+}
+
+export async function listTasksForCategory(categoryId: string): Promise<Task[]> {
+  const category = await categories.getById(categoryId);
+
+  if (!category) {
+    throw new Error('Category not found');
+  }
+
+  return (await tasks.list()).filter((task) => task.categoryId === category.id);
+}
 ```
 
-3. Start service adapter.
+## What changes in production
 
-## Junior checklist (“I can …”)
-
-- [ ] I know when to pick this adapter
-- [ ] I can start it from the documented script
-- [ ] I know the next guide/package to read
-
-## Next step
-
-Return to [Getting started](/docs/jumentix/concepts/getting-started) or the matching delivery guide.
+The example above shows the full contract with an in-memory implementation so it can be read end to end. In production, composition injects the real client selected by `JUMENTIX_DATABASE_DRIVER=Cassandra`; the domain stays the same.

@@ -3,59 +3,140 @@ title: "Adaptador AWS Lambda"
 description: "Documentação de Adaptadores HTTP."
 ---
 
-> Source: `../../documentation/md/adapters/http/AWS-LAMBDA.pt-BR.md`
-
 # Adaptador AWS Lambda
 
-## Glossário
+O adapter AWS Lambda conecta o runtime AWS Lambda aos contratos HTTP do Jumentix. Ele fica na borda: recebe request, normaliza entrada, chama use cases e transforma o resultado em response.
 
-- **Adapter de entrada** — aceita chamadas de protocolo externo e traduz para use-cases.
+## Tecnologia integrada
 
-## Responsabilidade no escopo
+Funções serverless da AWS invocadas por API Gateway, EventBridge, filas ou chamadas diretas Lambda.
 
-- **Camada:** adapter / http
-- **Responsável por:** wiring específico deste framework/tecnologia
-- **Usado com:** composição do backend-template, pacotes de persistência/SDK, guia correspondente
-- **Não responsável por:** regras de domínio, autoría OpenAPI ou storage offline no browser
+- **Modelo de runtime:** Invocação serverless por função
+- **Contrato Jumentix:** handlers chamam controllers/use cases sem vazar tipos do framework para o domínio.
 
-## Por que existe
+## Quando usar
 
-A escolha de framework fica na borda. Este adapter mantém detalhes Express/Fastify/DB/realtime substituíveis.
+Use quando: APIs orientadas a eventos, workloads com picos e times que já operam na AWS.
 
-## O que é
+## Quando evitar
 
-Adapter AWS LAMBDA para interfaces http do Jumentix — monta use-cases sem vazar tipos de framework no domínio.
+Evite quando cold starts, paridade local ou conexões long-lived dominam o workload.
 
-## Propósito
+## Como iniciar ou compor
 
-Implante manipuladores como serviços baseados em funções com Serverless.
+Ponto de entrada real:
 
-## Pontos de entrada
+- `apps/backend-template/src/interface/HTTP/adapters/aws/lambda/handlers/localhost.ts`
+- `apps/backend-template/src/interface/HTTP/adapters/start-rest-api.ts` quando o adapter usa bootstrap por ambiente
 
-- `apps/backend-template/src/interface/aws/lambda/handlers/`
-- `apps/backend-template/src/interface/HTTP/adapters/serverless/*`
-
-## Crie um serviço com Lambda
-
-1. Implementar métodos de controlador/caso de uso.
-2. Crie uma solicitação de mapeamento de manipuladores Lambda para a operação do controlador.
-3. Configure a implantação em arquivos `sem servidor`.
-4. Execute o modo local:
+Este adapter é composto pelo runtime/plataforma e não tem script dedicado de `dev:*`.
 
 ```bash
-bun run dev:serverless
+# This adapter is composed by its platform runtime.
+# Keep controllers framework-free and wire them from the adapter entrypoint.
 ```
 
-## Notas
+## Exemplo completo: Task e Category na borda HTTP
 
-- Mantenha o substituto RESTAPI disponível para documentação/substituição operacional.
+```ts
+type Category = {
+  id: string;
+  name: string;
+};
 
-## Checklist júnior (“Eu consigo …”)
+type Task = {
+  id: string;
+  title: string;
+  categoryId: string;
+  completed: boolean;
+};
 
-- [ ] Sei quando escolher este adapter
-- [ ] Consigo iniciá-lo pelo script documentado
-- [ ] Sei o próximo guia/pacote
+type CreateTaskRequest = {
+  title: string;
+  categoryId: string;
+};
 
-## Próximo passo
+type HttpRequest = {
+  body: unknown;
+};
 
-Volte para [Começando](/docs/pt-BR/jumentix/concepts/getting-started) ou o guia correspondente.
+type HttpResponse = {
+  status: number;
+  body: unknown;
+};
+
+const adapterProfile = {
+  adapter: 'aws-lambda',
+  framework: 'AWS Lambda',
+  runtime: 'Serverless function invocation',
+  entrypoint: 'apps/backend-template/src/interface/HTTP/adapters/aws/lambda/handlers/localhost.ts'
+} as const;
+
+class TaskCatalog {
+  private readonly categories = new Map<string, Category>();
+  private readonly tasks = new Map<string, Task>();
+
+  createCategory(name: string): Category {
+    const category = { id: crypto.randomUUID(), name };
+    this.categories.set(category.id, category);
+    return category;
+  }
+
+  createTask(input: CreateTaskRequest): Task {
+    if (!this.categories.has(input.categoryId)) {
+      throw new Error('Category not found');
+    }
+
+    const task = {
+      id: crypto.randomUUID(),
+      title: input.title.trim(),
+      categoryId: input.categoryId,
+      completed: false
+    };
+    this.tasks.set(task.id, task);
+    return task;
+  }
+
+  listTasksByCategory(categoryId: string): Task[] {
+    return [...this.tasks.values()].filter((task) => task.categoryId === categoryId);
+  }
+}
+
+const catalog = new TaskCatalog();
+const delivery = catalog.createCategory('Delivery');
+const finance = catalog.createCategory('Finance');
+
+catalog.createTask({ title: 'Prepare invoice batch', categoryId: finance.id });
+
+export async function createTaskController(request: HttpRequest): Promise<HttpResponse> {
+  const input = request.body as Partial<CreateTaskRequest>;
+
+  if (!input.title || !input.categoryId) {
+    return { status: 400, body: { error: 'title and categoryId are required' } };
+  }
+
+  try {
+    const task = catalog.createTask({ title: input.title, categoryId: input.categoryId });
+    return { status: 201, body: { adapterProfile, task } };
+  } catch (error) {
+    return {
+      status: 404,
+      body: { error: error instanceof Error ? error.message : 'Unknown error' }
+    };
+  }
+}
+
+export async function listDeliveryTasksController(): Promise<HttpResponse> {
+  return {
+    status: 200,
+    body: { category: delivery, tasks: catalog.listTasksByCategory(delivery.id) }
+  };
+}
+```
+
+## Checklist de adoção
+
+- O adapter fica restrito à camada HTTP.
+- Controllers recebem dados normalizados e chamam use cases.
+- `Task` e `Category` pertencem ao domínio, não ao framework.
+- Erros são convertidos para responses na borda.

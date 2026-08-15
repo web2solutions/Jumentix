@@ -7,7 +7,7 @@ export default {
   fastify: 'Fastify Adapter',
   feathers: 'Feathers Adapter',
   loopback: 'LoopBack Adapter',
-  index: { title: 'HTTP Interface Adapters Documentation', display: 'hidden' },
+  index: { title: 'HTTP Adapters', display: 'hidden' },
   restify: 'Restify Adapter',
   'sails-js': 'Sails.js Adapter',
   'total-js': 'Total.js Adapter',

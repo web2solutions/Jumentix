@@ -1,49 +1,110 @@
-<!--
-Arquivo gerado automaticamente a partir de: documentation/md/adapters/databases/SQLITE.md
-Idioma alvo: Português (Brasil)
--->
 # Adaptador SQLite
 
-## Glossário
+O adapter SQLite conecta o contrato de persistência do Jumentix à tecnologia SQLite. Use cases continuam falando com portas de repositório; a escolha de banco fica na composição.
 
-- **Adapter de entrada** — aceita chamadas de protocolo externo e traduz para use-cases.
+## Tecnologia integrada
 
-## Responsabilidade no escopo
+Banco SQL embarcado em arquivo
 
-- **Camada:** adapter / databases
-- **Responsável por:** wiring específico deste framework/tecnologia
-- **Usado com:** composição do backend-template, pacotes de persistência/SDK, guia correspondente
-- **Não responsável por:** regras de domínio, autoría OpenAPI ou storage offline no browser
+- **Modelo de dados:** SQL relacional embarcado
+- **Driver Jumentix:** `SQLite`
+- **Seleção de runtime:** `JUMENTIX_DATABASE_DRIVER=SQLite`
 
-## Por que existe
+## Quando usar
 
-A escolha de framework fica na borda. Este adapter mantém detalhes Express/Fastify/DB/realtime substituíveis.
+Use quando: Desenvolvimento local, protótipos edge, testes e utilitários single-node.
 
-## O que é
+## Quando evitar
 
-Adapter SQLITE para interfaces databases do Jumentix — monta use-cases sem vazar tipos de framework no domínio.
+Evite como banco primário de serviços com escala horizontal e muita escrita.
 
-## Tecnologia
+## Como validar localmente
 
-Perfil Sequelize + SQLite para persistência local leve.
-
-## Construa serviços com SQLite
-
-1. Definir ambiente:
+Use o smoke test real do monorepo. Ele valida o ciclo de vida do adapter e evita publicar configuração que não conecta.
 
 ```bash
-JUMENTIX_DATABASE_DRIVER=SQLite
-JUMENTIX_DB_FILE=.tmp/jumentix.sqlite
+JUMENTIX_DATABASE_DRIVER=SQLite bun run smoke:db:sqlite
 ```
 
-2. Inicie o adaptador API.
+## Exemplo completo: Task e Category com porta de banco
 
-## Checklist júnior (“Eu consigo …”)
+```ts
+type Category = {
+  id: string;
+  name: string;
+};
 
-- [ ] Sei quando escolher este adapter
-- [ ] Consigo iniciá-lo pelo script documentado
-- [ ] Sei o próximo guia/pacote
+type Task = {
+  id: string;
+  title: string;
+  categoryId: string;
+  completed: boolean;
+};
 
-## Próximo passo
+type Repository<T extends { id: string }> = {
+  create(record: T): Promise<T>;
+  getById(id: string): Promise<T | undefined>;
+  list(): Promise<T[]>;
+};
 
-Volte para [Começando](/docs/pt-BR/jumentix/concepts/getting-started) ou o guia correspondente.
+function createRepository<T extends { id: string }>(): Repository<T> {
+  const records = new Map<string, T>();
+
+  return {
+    async create(record) {
+      records.set(record.id, record);
+      return record;
+    },
+    async getById(id) {
+      return records.get(id);
+    },
+    async list() {
+      return [...records.values()];
+    }
+  };
+}
+
+const adapterProfile = {
+  driver: 'SQLite',
+  dataModel: 'Embedded relational SQL',
+  smokeTest: 'bun run smoke:db:sqlite'
+} as const;
+
+const categories = createRepository<Category>();
+const tasks = createRepository<Task>();
+
+export async function seedTaskCatalog() {
+  const operations = await categories.create({ id: crypto.randomUUID(), name: 'Operations' });
+  const finance = await categories.create({ id: crypto.randomUUID(), name: 'Finance' });
+
+  await tasks.create({
+    id: crypto.randomUUID(),
+    title: 'Review adapter smoke test',
+    categoryId: operations.id,
+    completed: false
+  });
+
+  await tasks.create({
+    id: crypto.randomUUID(),
+    title: 'Close billing reconciliation',
+    categoryId: finance.id,
+    completed: true
+  });
+
+  return { adapterProfile, categories: await categories.list(), tasks: await tasks.list() };
+}
+
+export async function listTasksForCategory(categoryId: string): Promise<Task[]> {
+  const category = await categories.getById(categoryId);
+
+  if (!category) {
+    throw new Error('Category not found');
+  }
+
+  return (await tasks.list()).filter((task) => task.categoryId === category.id);
+}
+```
+
+## O que trocar em produção
+
+O exemplo acima mostra o contrato completo com uma implementação em memória para ser lido de ponta a ponta. Em produção, a composição injeta o cliente real selecionado por `JUMENTIX_DATABASE_DRIVER=SQLite`; o domínio continua igual.
