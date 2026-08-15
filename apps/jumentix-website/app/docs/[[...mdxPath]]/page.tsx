@@ -1,4 +1,5 @@
 import { generateStaticParamsFor, importPage } from 'nextra/pages';
+import { MDXCodeSourceProvider } from '@/components/code/MDXCodeSourceProvider';
 import { DocsJsonLd } from '@/components/seo/DocsJsonLd';
 import { useMDXComponents as getMDXComponents } from '@/mdx-components';
 
@@ -100,12 +101,14 @@ export default async function Page(props: any) {
 
   return (
     <Wrapper toc={customToc} metadata={metadata} sourceCode={sourceCode}>
-      <DocsJsonLd
-        title={String((metadata as any)?.title ?? 'Jumentix Docs')}
-        description={String((metadata as any)?.description ?? 'Jumentix framework documentation')}
-        pathSegments={segments}
-      />
-      <MDXContent {...props} params={params} />
+      <MDXCodeSourceProvider sourceCode={sourceCode}>
+        <DocsJsonLd
+          title={String((metadata as any)?.title ?? 'Jumentix Docs')}
+          description={String((metadata as any)?.description ?? 'Jumentix framework documentation')}
+          pathSegments={segments}
+        />
+        <MDXContent {...props} params={params} />
+      </MDXCodeSourceProvider>
     </Wrapper>
   );
 }
