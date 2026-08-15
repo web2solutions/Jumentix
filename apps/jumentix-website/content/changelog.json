@@ -1,5 +1,11 @@
 [
   {
+    "sha": "d9ceeb31ac3f9b6ea91be1d71b8ab6b20c5771d4",
+    "date": "2026-08-15T13:15:18-03:00",
+    "author": "Eduardo A.",
+    "message": "docs(website): expand adapter documentation"
+  },
+  {
     "sha": "c0ec51e6ed7967a838b0aaf290070abcf8721ebc",
     "date": "2026-08-14T00:08:01-03:00",
     "author": "Eduardo A.",

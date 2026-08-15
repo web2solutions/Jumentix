@@ -87,4 +87,25 @@ describe('MonacoCodeBlock mount (JUM-701)', () => {
     // module's life and not on this one.
     await waitFor(() => expect(monacoTestState.activeTheme).toBe('jumentix-light'));
   });
+
+  it('lets capped Monaco panels consume wheel scrolling internally', async () => {
+    expect.hasAssertions();
+
+    render(
+      <MonacoCodeBlock
+        value={Array.from({ length: 40 }, (_, index) => `line ${index + 1}`).join('\n')}
+        maxHeight={180}
+        testId="scroll"
+      />
+    );
+
+    await waitFor(() => expect(monacoTestState.editors).toHaveLength(1));
+
+    const [editor] = monacoTestState.editors;
+    expect(editor.options.scrollbar).toMatchObject({
+      alwaysConsumeMouseWheel: true,
+      horizontalScrollbarSize: 8,
+      verticalScrollbarSize: 8
+    });
+  });
 });

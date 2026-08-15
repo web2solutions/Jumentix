@@ -163,7 +163,7 @@ export function MonacoCodeBlock({
   readOnly = true,
   onChange,
   minHeight = 120,
-  maxHeight = 520,
+  maxHeight = Number.POSITIVE_INFINITY,
   ariaLabel,
   className,
   testId,
@@ -251,7 +251,7 @@ export function MonacoCodeBlock({
         renderLineHighlight: readOnly ? 'none' : 'line',
         scrollBeyondLastLine: false,
         scrollbar: {
-          alwaysConsumeMouseWheel: false,
+          alwaysConsumeMouseWheel: true,
           horizontalScrollbarSize: 8,
           verticalScrollbarSize: 8
         },

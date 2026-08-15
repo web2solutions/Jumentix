@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-15 docs(website): expand adapter documentation - Eduardo A.
 - 2026-08-14 fix(website): organize architecture playground ux - Eduardo A.
 - 2026-08-14 fix(website): organize architecture playground ux - Eduardo A.
 - 2026-08-13 fix(website): show live indexeddb flow in cana canvas - Eduardo A.

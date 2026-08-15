@@ -210,7 +210,7 @@
   .jtx-monaco-code {
     position: relative;
     overflow: hidden;
-    min-height: min(var(--jtx-monaco-height), 100%);
+    height: var(--jtx-monaco-height);
     border: 1px solid color-mix(in srgb, var(--jtx-line-strong) 78%, transparent);
     border-radius: var(--jtx-radius-md);
     background: var(--jtx-code);
