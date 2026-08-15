@@ -48,6 +48,19 @@ const userService = UserService.compile({
 });
 const userProvider = UserProviderLocal.compile(userService);
 
+/** Unset the given variables, returning the undo. */
+function withoutEnv(keys: string[]): () => void {
+  const previous = keys.map((key) => [key, process.env[key]] as const);
+  keys.forEach((key) => { delete process.env[key]; });
+
+  return () => {
+    previous.forEach(([key, value]) => {
+      const restored = value === undefined ? undefined : (process.env[key] = value);
+      return restored;
+    });
+  };
+}
+
 /** Set the given variables, returning the undo. */
 function withEnv(values: Record<string, string>): () => void {
   const previous = Object.keys(values).map((key) => [key, process.env[key]] as const);
@@ -184,5 +197,37 @@ describe('authService under a configured environment (JUM-681)', () => {
       undefined as never,
       {}
     )).toThrow('there is no security schema defined');
+  });
+  it('falls back to the built-in thresholds when the environment sets none', async () => {
+    expect.hasAssertions();
+
+    // The default deployment: five attempts, a five-minute window, a
+    // fifteen-minute lockout. The suite beside this one never reaches these
+    // getters at all — it composes the service without a key-value client, so
+    // the lockout code returns before reading any of them, and the defaults
+    // shipped unmeasured.
+    const restore = withoutEnv([
+      'JUMENTIX_AUTH_MAX_LOGIN_ATTEMPTS',
+      'JUMENTIX_AUTH_LOGIN_WINDOW_SECONDS',
+      'JUMENTIX_AUTH_LOCKOUT_SECONDS'
+    ]);
+
+    const seededUsername = await seedAccount('defaults');
+    const first = await authService.authenticate(
+      seededUsername,
+      'not-the-password',
+      EAuthSchemaType.Bearer
+    );
+    const second = await authService.authenticate(
+      seededUsername,
+      'not-the-password',
+      EAuthSchemaType.Bearer
+    );
+
+    restore();
+
+    // Two failures out of five: still refused, and not yet locked.
+    expect((first.error as Error).name).not.toBe('locked_resource');
+    expect((second.error as Error).name).not.toBe('locked_resource');
   });
 });

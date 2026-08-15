@@ -94,8 +94,8 @@ const ACCEPTED_BELOW_THRESHOLD = {
    * written as `93.28` from a two-decimal display and then failed the build by
    * 0.002.
    *
-   * Measured 2026-08-15: **4249 of 4466 branches, 95.141%**, stable across
-   * repeated clean runs, and the floor ratcheted to match. The 86 branches
+   * Measured 2026-08-15: **4251 of 4466 branches, 95.185%**, stable across
+   * repeated clean runs, and the floor ratcheted to match. The 88 branches
    * closed since are not a number that was chased — each came with the
    * behaviour it was hiding:
    *
@@ -159,7 +159,7 @@ const ACCEPTED_BELOW_THRESHOLD = {
    * threshold with this entry still here fails too.
    */
   branches: {
-    floor: 95.141,
+    floor: 95.185,
     issue: 'JUM-681',
     since: '2026-08-12',
     reason: 'Mostly defaulted-option branches reachable only by dropping the injection tests use deliberately; see the note above.'
