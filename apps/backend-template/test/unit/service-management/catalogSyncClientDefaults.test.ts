@@ -33,7 +33,10 @@ const STORE_NAME = 'designerDocuments';
 const STATE_KEY = 'service-management.v1';
 
 /** The designer state, reduced to the surface the sync client reads. */
-const designerStateWith = (domains: Domain[]) => ({ state: { domains } });
+const designerStateWith = (domains: Domain[]) => ({
+  state: { domains },
+  saveState: async () => undefined
+});
 
 /** The store port: a name, a key and an optional Cana client. */
 const storeWith = (client?: unknown) => ({
@@ -73,6 +76,31 @@ function blockCrypto(): () => void {
     delete (globalThis as { crypto?: unknown }).crypto;
     Object.defineProperties(globalThis, original ? { crypto: original } : {});
   };
+}
+
+/**
+ * A rejection carrying no message, which is what the `|| error` fallback is
+ * for: `String(error.message || error)` on one of these is "undefined" unless
+ * the fallback runs, and "undefined" is what the user would be shown.
+ */
+const messagelessFailure = () => {
+  const failure = new Error('boom');
+  failure.message = '';
+  return failure;
+};
+
+/** A transport whose writes start failing once `state.failing` is set. */
+function transportFailingWrites(state: { failing: boolean }) {
+  return transportDouble({
+    listCatalogs: async () => [{ id: 'cat-1', version: 1, design: {} }],
+    getCatalog: async () => ({ id: 'cat-1', version: 1, design: {} }),
+    updateCatalog: async () => {
+      const failure = state.failing ? messagelessFailure() : null;
+      return failure === null
+        ? { id: 'cat-1', version: 2 }
+        : Promise.reject(failure);
+    }
+  });
 }
 
 describe('createCatalogSyncClient with the app defaults (JUM-681)', () => {
@@ -293,5 +321,99 @@ describe('createCatalogSyncClient with the app defaults (JUM-681)', () => {
     });
 
     expect(client.getStatus().sharedCount).toBe(0);
+  });
+  it('reads a half-written marker without inventing a version or a hash', async () => {
+    expect.hasAssertions();
+
+    // The shape a publish that failed after the create leaves behind: an id and
+    // nothing else. It counts as shared — the record exists on the server — and
+    // the missing version and hash have to read as 0 and "" rather than
+    // `undefined`, which would compare unequal to everything and push forever.
+    const client = createCatalogSyncClient({
+      designerState: designerStateWith([
+        { id: 'd1', name: 'Half', context: { catalog: { id: 'cat-1' } } }
+      ]),
+      store: storeWith(),
+      transport: transportDouble()
+    });
+
+    expect(client.getStatus().sharedCount).toBe(1);
+  });
+
+  it('publishes a domain that carries no context at all', async () => {
+    expect.hasAssertions();
+
+    // A domain created before provenance existed has no `context` key, and the
+    // marker write has to create one rather than throw on the spread.
+    const domain: Domain = { id: 'd1', name: 'Fresh' };
+    const client = createCatalogSyncClient({
+      designerState: designerStateWith([domain]),
+      store: storeWith(),
+      transport: transportDouble()
+    });
+
+    const published = await client.publishDomain('d1');
+
+    expect(published.published).toBe(true);
+    expect((domain.context as { catalog: { id: string } }).catalog.id).toBe('cat-1');
+  });
+
+  it('names a rejection that is not an Error when the catalog is unreachable', async () => {
+    expect.hasAssertions();
+
+    // The message has to name something. A rejection with no message falls back
+    // to the error itself rather than printing "undefined" at the user.
+    const notified: string[] = [];
+    const client = createCatalogSyncClient({
+      designerState: designerStateWith([]),
+      store: storeWith(),
+      notify: (message: string) => { notified.push(message); },
+      transport: transportDouble({
+        listCatalogs: async () => Promise.reject(messagelessFailure())
+      })
+    });
+
+    await client.syncNow();
+
+    expect(notified.join('\n')).toContain('unreachable (Error)');
+  });
+
+  it('names a non-Error rejection when a debounced push fails', async () => {
+    expect.hasAssertions();
+
+    // The outbound side of the same shape, and this one is reported to the user
+    // as "your edit is safe locally" — a message that has to say what failed.
+    //
+    // The first sync has to succeed: a client already degraded skips the push
+    // entirely, so a transport that fails from the start would never reach this
+    // path. The write starts failing after `start`, which is also how it
+    // happens — the catalog goes away while the tab is open.
+    const notified: string[] = [];
+    const scheduled: Array<() => unknown> = [];
+    const writes = { failing: false };
+    const shared: Domain = {
+      id: 'd1',
+      name: 'Shared',
+      context: { catalog: { id: 'cat-1', version: 1, contentHash: 'stale' } }
+    };
+    const client = createCatalogSyncClient({
+      designerState: designerStateWith([shared]),
+      store: storeWith(),
+      notify: (message: string) => { notified.push(message); },
+      schedule: (fn: () => unknown) => { scheduled.push(fn); return scheduled.length; },
+      cancelSchedule: () => undefined,
+      transport: transportFailingWrites(writes)
+    });
+
+    await client.start();
+    writes.failing = true;
+    // The edit that makes the domain dirty again: without it the push has
+    // nothing to write and the failure path is never reached.
+    shared.name = 'Shared, renamed';
+    client.onLocalCommit({ store: STORE_NAME, key: STATE_KEY, type: 'updated' });
+    await scheduled[scheduled.length - 1]();
+
+    expect(client.getStatus().degraded).toBe(true);
+    expect(notified.join('\n')).toContain('Pushing to the shared catalog failed (Error)');
   });
 });
