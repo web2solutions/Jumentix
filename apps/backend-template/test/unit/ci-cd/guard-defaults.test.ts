@@ -327,3 +327,9 @@ describe('ci-cd guards, no injection (JUM-681)', () => {
     guardDefaultsFs.rmSync(root, { recursive: true, force: true });
   });
 });
+
+// This file uses `require` throughout and declares its module-level handles as
+// `const`. Without an `export`, TypeScript treats it as a global script, so
+// those names collide with the identically-named ones in the suites next to it
+// — which only surfaces when the whole project is type-checked as one program.
+export {};
