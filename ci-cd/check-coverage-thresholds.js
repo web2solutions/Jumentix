@@ -94,8 +94,8 @@ const ACCEPTED_BELOW_THRESHOLD = {
    * written as `93.28` from a two-decimal display and then failed the build by
    * 0.002.
    *
-   * Measured 2026-08-15: **4237 of 4466 branches, 94.872%**, stable across
-   * repeated clean runs, and the floor ratcheted to match. The 74 branches
+   * Measured 2026-08-15: **4241 of 4466 branches, 94.961%**, stable across
+   * repeated clean runs, and the floor ratcheted to match. The 78 branches
    * closed since are not a number that was chased — each came with the
    * behaviour it was hiding:
    *
@@ -127,6 +127,12 @@ const ACCEPTED_BELOW_THRESHOLD = {
    * - The catalog aggregate's own defaults, reached only when something other
    *   than the repository constructs it — the version that starts at 1, and the
    *   tombstone and restore that each bump it.
+   * - The rewrite that turns a schema walker's `payload.password: minLength is
+   *   8` into the sentence the API contract promises, including the one
+   *   operation where an empty password means "not typed" rather than "short".
+   * - The BullMQ adapter's routing: a route key and a queue name each resolve
+   *   ahead of the contract, which is how two deployments of one contract are
+   *   told apart.
    *
    * What is left is still mostly **defaulted-option branches** —
    * `options.execute || executeMatrixCell`, `env = process.env`,
@@ -149,7 +155,7 @@ const ACCEPTED_BELOW_THRESHOLD = {
    * threshold with this entry still here fails too.
    */
   branches: {
-    floor: 94.872,
+    floor: 94.961,
     issue: 'JUM-681',
     since: '2026-08-12',
     reason: 'Mostly defaulted-option branches reachable only by dropping the injection tests use deliberately; see the note above.'

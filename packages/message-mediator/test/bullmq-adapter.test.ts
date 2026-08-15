@@ -264,4 +264,71 @@ describe('bullMQ adapter against a queue double (JUM-681)', () => {
 
     await expect(idle.disconnect()).resolves.toBeUndefined();
   });
+  it('reconnects idempotently and honours a custom default queue (JUM-681)', async () => {
+    expect.hasAssertions();
+
+    // `connect` twice is what a composition root does when two modules each make
+    // sure the mediator is up. The second call must not rebuild the connection
+    // and orphan the first one's queues.
+    const broker = fakeBullMq();
+    BullMqMessageMediatorAdapter.importBullMq = async () => broker.lib;
+    const adapter = new BullMqMessageMediatorAdapter({
+      connection: {},
+      defaultRequestQueue: 'tenant.requests'
+    } as never);
+
+    await adapter.connect();
+    await adapter.connect();
+    adapter.registerHandler('orders.create', async () => ({ result: 'ok' } as never));
+    await adapter.request(message());
+
+    expect(broker.added.map((entry) => entry.queue)).toStrictEqual(['tenant.requests']);
+  });
+
+  it('routes to the handler registered for the route key, not the contract (JUM-681)', async () => {
+    expect.hasAssertions();
+
+    // A route key is how two deployments of the same contract are told apart.
+    // Resolving by contract first would send both to whichever registered last.
+    const { adapter } = await connected();
+    adapter.registerHandler('orders.create', async () => ({ result: 'by-contract' } as never));
+    adapter.registerHandler(
+      'orders.create.v2',
+      async () => ({ result: 'by-route-key' } as never),
+      { routeKey: 'orders.create.eu' } as never
+    );
+
+    const response = await adapter.request(message(), { routeKey: 'orders.create.eu' });
+
+    expect(response.result).toBe('by-route-key');
+  });
+
+  it('routes to the handler registered for the queue name (JUM-681)', async () => {
+    expect.hasAssertions();
+
+    const { adapter } = await connected();
+    adapter.registerHandler('orders.create', async () => ({ result: 'by-contract' } as never));
+    adapter.registerHandler(
+      'orders.create.batch',
+      async () => ({ result: 'by-queue' } as never),
+      { queueName: 'batch.queue' } as never
+    );
+
+    const response = await adapter.request(message(), { queueName: 'batch.queue' });
+
+    expect(response.result).toBe('by-queue');
+  });
+
+  it('publishes with no listener registered at all (JUM-681)', async () => {
+    expect.hasAssertions();
+
+    // The queue write still has to happen: a subscriber in another process is
+    // the normal case, and "nobody local is listening" is not a reason to drop
+    // the event.
+    const { adapter, broker } = await connected();
+
+    await adapter.publish({ name: 'orders.shipped', payload: { id: 1 } } as never);
+
+    expect(broker.added.map((entry) => entry.queue)).toStrictEqual(['events.orders.shipped']);
+  });
 });

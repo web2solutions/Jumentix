@@ -442,6 +442,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/interface/HTTP/validators/oasInputMessages.test.ts",
+      "path": "apps/backend-template/test/unit/interface/HTTP/validators/oasInputMessages.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/interface/HTTP/validators/index.test.ts",
       "path": "apps/backend-template/test/unit/interface/HTTP/validators/index.test.ts",
       "layer": "interface/runtime",
@@ -4342,9 +4352,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 222,
+    "unit": 223,
     "integration": 97,
     "smoke": 2,
-    "suites": 369
+    "suites": 370
   }
 }
