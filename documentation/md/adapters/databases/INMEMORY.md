@@ -1,50 +1,110 @@
-# InMemory Database Adapter
+# InMemory Adapter
 
-## Glossary
+The InMemory adapter connects the Jumentix persistence contract to InMemory. Use cases keep talking to repository ports; database selection stays in composition.
 
-- **Inbound adapter** — accepts external protocol calls and translates them into use-case calls.
+## Integrated technology
 
-## Responsibility in context
+Process-local memory store
 
-- **Stack layer:** adapter / databases
-- **Owns:** framework-specific wiring for this technology
-- **Used with:** backend-template composition, persistence/SDK packages as needed, matching delivery guide
-- **Not responsible for:** domain rules, OpenAPI authoring, or browser offline storage
+- **Data model:** Keyed objects
+- **Jumentix driver:** `InMemory`
+- **Runtime selection:** `JUMENTIX_DATABASE_DRIVER=InMemory`
 
-## Why it exists
+## When to use
 
-Framework choice should stay at the edge. This adapter keeps Express/Fastify/DB/realtime details replaceable.
+Use it for: Unit tests, demos, and browser-free contract examples.
 
-## What it is
+## When to avoid
 
-Inmemory adapter for Jumentix databases interfaces — mounts application use-cases without leaking framework types into the domain.
+Avoid for durable data or multi-process services.
 
-## Purpose
+## How to validate locally
 
-Default official adapter for local development and deterministic tests.
-
-## Entrypoints
-
-- `apps/backend-template/src/infra/persistence/InMemoryDatabase/InMemoryDbClient.ts`
-- `apps/backend-template/src/infra/persistence/compileDatabaseClient.ts`
-
-## Build Services with InMemory
-
-1. Set env:
+Use the real monorepo smoke test. It validates the adapter lifecycle and prevents shipping configuration that does not connect.
 
 ```bash
-JUMENTIX_DATABASE_DRIVER=InMemory
+JUMENTIX_DATABASE_DRIVER=InMemory bun run smoke:db:inmemory
 ```
 
-2. Start API adapter.
-3. Repositories will use `dbClient.stores` contract.
+## Complete example: Task and Category with a database port
 
-## Junior checklist (“I can …”)
+```ts
+type Category = {
+  id: string;
+  name: string;
+};
 
-- [ ] I know when to pick this adapter
-- [ ] I can start it from the documented script
-- [ ] I know the next guide/package to read
+type Task = {
+  id: string;
+  title: string;
+  categoryId: string;
+  completed: boolean;
+};
 
-## Next step
+type Repository<T extends { id: string }> = {
+  create(record: T): Promise<T>;
+  getById(id: string): Promise<T | undefined>;
+  list(): Promise<T[]>;
+};
 
-Return to [Getting started](/docs/jumentix/concepts/getting-started) or the matching delivery guide.
+function createRepository<T extends { id: string }>(): Repository<T> {
+  const records = new Map<string, T>();
+
+  return {
+    async create(record) {
+      records.set(record.id, record);
+      return record;
+    },
+    async getById(id) {
+      return records.get(id);
+    },
+    async list() {
+      return [...records.values()];
+    }
+  };
+}
+
+const adapterProfile = {
+  driver: 'InMemory',
+  dataModel: 'Keyed objects',
+  smokeTest: 'bun run smoke:db:inmemory'
+} as const;
+
+const categories = createRepository<Category>();
+const tasks = createRepository<Task>();
+
+export async function seedTaskCatalog() {
+  const operations = await categories.create({ id: crypto.randomUUID(), name: 'Operations' });
+  const finance = await categories.create({ id: crypto.randomUUID(), name: 'Finance' });
+
+  await tasks.create({
+    id: crypto.randomUUID(),
+    title: 'Review adapter smoke test',
+    categoryId: operations.id,
+    completed: false
+  });
+
+  await tasks.create({
+    id: crypto.randomUUID(),
+    title: 'Close billing reconciliation',
+    categoryId: finance.id,
+    completed: true
+  });
+
+  return { adapterProfile, categories: await categories.list(), tasks: await tasks.list() };
+}
+
+export async function listTasksForCategory(categoryId: string): Promise<Task[]> {
+  const category = await categories.getById(categoryId);
+
+  if (!category) {
+    throw new Error('Category not found');
+  }
+
+  return (await tasks.list()).filter((task) => task.categoryId === category.id);
+}
+```
+
+## What changes in production
+
+The example above shows the full contract with an in-memory implementation so it can be read end to end. In production, composition injects the real client selected by `JUMENTIX_DATABASE_DRIVER=InMemory`; the domain stays the same.

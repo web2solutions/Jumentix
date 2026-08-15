@@ -19,14 +19,12 @@ Database Adapters documentation.
 
 Headings:
 - Aurora Adapter
-- Glossary
-- Responsibility in context
-- Why it exists
-- What it is
-- Technology
-- Build Services with Aurora
-- Junior checklist (“I can …”)
-- Next step
+- Integrated technology
+- When to use
+- When to avoid
+- How to validate locally
+- Complete example: Task and Category with a database port
+- What changes in production
 
 ---
 
@@ -38,14 +36,12 @@ Database Adapters documentation.
 
 Headings:
 - Firebase Adapter
-- Glossary
-- Responsibility in context
-- Why it exists
-- What it is
-- Technology
-- Build Services with Firebase
-- Junior checklist (“I can …”)
-- Next step
+- Integrated technology
+- When to use
+- When to avoid
+- How to validate locally
+- Complete example: Task and Category with a database port
+- What changes in production
 
 ---
 
@@ -57,26 +53,26 @@ Database Adapters documentation.
 
 Headings:
 - Oracle Adapter
-- Glossary
-- Responsibility in context
-- Why it exists
-- What it is
-- Technology
-- Build Services with Oracle
-- Junior checklist (“I can …”)
-- Next step
+- Integrated technology
+- When to use
+- When to avoid
+- How to validate locally
+- Complete example: Task and Category with a database port
+- What changes in production
 
 ---
 
-# Database Adapters Documentation
+# Database Adapters
 
 URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases
 
 Database Adapters documentation.
 
 Headings:
-- Database Adapters Documentation
-- Database Pages
+- Database Adapters
+- Database adapter comparison
+- Fast guide
+- Complete selection example
 
 ---
 
@@ -88,34 +84,29 @@ Database Adapters documentation.
 
 Headings:
 - DynamoDB Adapter
-- Glossary
-- Responsibility in context
-- Why it exists
-- What it is
-- Technology
-- Build Services with DynamoDB
-- Junior checklist (“I can …”)
-- Next step
+- Integrated technology
+- When to use
+- When to avoid
+- How to validate locally
+- Complete example: Task and Category with a database port
+- What changes in production
 
 ---
 
-# InMemory Database Adapter
+# InMemory Adapter
 
 URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/inmemory
 
 Database Adapters documentation.
 
 Headings:
-- InMemory Database Adapter
-- Glossary
-- Responsibility in context
-- Why it exists
-- What it is
-- Purpose
-- Entrypoints
-- Build Services with InMemory
-- Junior checklist (“I can …”)
-- Next step
+- InMemory Adapter
+- Integrated technology
+- When to use
+- When to avoid
+- How to validate locally
+- Complete example: Task and Category with a database port
+- What changes in production
 
 ---
 
@@ -127,14 +118,12 @@ Database Adapters documentation.
 
 Headings:
 - MongoDB Adapter
-- Glossary
-- Responsibility in context
-- Why it exists
-- What it is
-- Technology
-- Build Services with MongoDB
-- Junior checklist (“I can …”)
-- Next step
+- Integrated technology
+- When to use
+- When to avoid
+- How to validate locally
+- Complete example: Task and Category with a database port
+- What changes in production
 
 ---
 
@@ -146,14 +135,12 @@ Database Adapters documentation.
 
 Headings:
 - SQLite Adapter
-- Glossary
-- Responsibility in context
-- Why it exists
-- What it is
-- Technology
-- Build Services with SQLite
-- Junior checklist (“I can …”)
-- Next step
+- Integrated technology
+- When to use
+- When to avoid
+- How to validate locally
+- Complete example: Task and Category with a database port
+- What changes in production
 
 ---
 
@@ -165,14 +152,12 @@ Database Adapters documentation.
 
 Headings:
 - SQL Server Adapter
-- Glossary
-- Responsibility in context
-- Why it exists
-- What it is
-- Technology
-- Build Services with SQL Server
-- Junior checklist (“I can …”)
-- Next step
+- Integrated technology
+- When to use
+- When to avoid
+- How to validate locally
+- Complete example: Task and Category with a database port
+- What changes in production
 
 ---
 
@@ -184,14 +169,12 @@ Database Adapters documentation.
 
 Headings:
 - RDS Adapter
-- Glossary
-- Responsibility in context
-- Why it exists
-- What it is
-- Technology
-- Build Services with RDS
-- Junior checklist (“I can …”)
-- Next step
+- Integrated technology
+- When to use
+- When to avoid
+- How to validate locally
+- Complete example: Task and Category with a database port
+- What changes in production
 
 ---
 
@@ -203,14 +186,12 @@ Database Adapters documentation.
 
 Headings:
 - MySQL Adapter
-- Glossary
-- Responsibility in context
-- Why it exists
-- What it is
-- Technology
-- Build Services with MySQL
-- Junior checklist (“I can …”)
-- Next step
+- Integrated technology
+- When to use
+- When to avoid
+- How to validate locally
+- Complete example: Task and Category with a database port
+- What changes in production
 
 ---
 
@@ -222,14 +203,12 @@ Database Adapters documentation.
 
 Headings:
 - Cassandra Adapter
-- Glossary
-- Responsibility in context
-- Why it exists
-- What it is
-- Technology
-- Build Services with Cassandra
-- Junior checklist (“I can …”)
-- Next step
+- Integrated technology
+- When to use
+- When to avoid
+- How to validate locally
+- Complete example: Task and Category with a database port
+- What changes in production
 
 ---
 
@@ -241,14 +220,12 @@ Database Adapters documentation.
 
 Headings:
 - PostgreSQL Adapter
-- Glossary
-- Responsibility in context
-- Why it exists
-- What it is
-- Technology
-- Build Services with PostgreSQL
-- Junior checklist (“I can …”)
-- Next step
+- Integrated technology
+- When to use
+- When to avoid
+- How to validate locally
+- Complete example: Task and Category with a database port
+- What changes in production
 
 ---
 
@@ -260,6 +237,7 @@ Explore the Jumentix Adapters section.
 
 Headings:
 - Adapters
+- How to choose
 
 ---
 
@@ -336,15 +314,14 @@ HTTP Adapters documentation.
 
 Headings:
 - Cloudflare Workers Adapter
-- Glossary
-- Responsibility in context
-- Why it exists
-- What it is
-- Purpose
-- Entrypoints
-- Build a Service with Cloudflare Workers
-- Junior checklist (“I can …”)
-- Next step
+- Integrated technology
+- When to use
+- When to avoid
+- How to start or compose
+- This adapter is composed by its platform runtime.
+- Keep controllers framework-free and wire them from the adapter entrypoint.
+- Complete example: Task and Category at the HTTP edge
+- Adoption checklist
 
 ---
 
@@ -356,16 +333,12 @@ HTTP Adapters documentation.
 
 Headings:
 - Restify Adapter
-- Glossary
-- Responsibility in context
-- Why it exists
-- What it is
-- Purpose
-- Entrypoints
-- Build a Service with Restify
-- Production
-- Junior checklist (“I can …”)
-- Next step
+- Integrated technology
+- When to use
+- When to avoid
+- How to start or compose
+- Complete example: Task and Category at the HTTP edge
+- Adoption checklist
 
 ---
 
@@ -377,15 +350,14 @@ HTTP Adapters documentation.
 
 Headings:
 - Vercel Functions Adapter
-- Glossary
-- Responsibility in context
-- Why it exists
-- What it is
-- Purpose
-- Entrypoints
-- Build a Service with Vercel Functions
-- Junior checklist (“I can …”)
-- Next step
+- Integrated technology
+- When to use
+- When to avoid
+- How to start or compose
+- This adapter is composed by its platform runtime.
+- Keep controllers framework-free and wire them from the adapter entrypoint.
+- Complete example: Task and Category at the HTTP edge
+- Adoption checklist
 
 ---
 
@@ -397,16 +369,12 @@ HTTP Adapters documentation.
 
 Headings:
 - Express Adapter
-- Glossary
-- Responsibility in context
-- Why it exists
-- What it is
-- Purpose
-- Entrypoints
-- Build a Service with Express
-- Production
-- Junior checklist (“I can …”)
-- Next step
+- Integrated technology
+- When to use
+- When to avoid
+- How to start or compose
+- Complete example: Task and Category at the HTTP edge
+- Adoption checklist
 
 ---
 
@@ -418,27 +386,28 @@ HTTP Adapters documentation.
 
 Headings:
 - Adonis.js Adapter
-- Glossary
-- Responsibility in context
-- Why it exists
-- What it is
-- Purpose
-- Entrypoints
-- Build a Service with Adonis.js
-- Junior checklist (“I can …”)
-- Next step
+- Integrated technology
+- When to use
+- When to avoid
+- How to start or compose
+- This adapter is composed by its platform runtime.
+- Keep controllers framework-free and wire them from the adapter entrypoint.
+- Complete example: Task and Category at the HTTP edge
+- Adoption checklist
 
 ---
 
-# HTTP Interface Adapters Documentation
+# HTTP Adapters
 
 URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/http
 
 HTTP Adapters documentation.
 
 Headings:
-- HTTP Interface Adapters Documentation
-- Adapter Pages
+- HTTP Adapters
+- HTTP framework comparison
+- Fast guide
+- Complete selection example
 
 ---
 
@@ -450,17 +419,12 @@ HTTP Adapters documentation.
 
 Headings:
 - Fastify Adapter
-- Glossary
-- Responsibility in context
-- Why it exists
-- What it is
-- Purpose
-- Entrypoints
-- Build a Service with Fastify
-- Production
-- Static Documentation Lifecycle
-- Junior checklist (“I can …”)
-- Next step
+- Integrated technology
+- When to use
+- When to avoid
+- How to start or compose
+- Complete example: Task and Category at the HTTP edge
+- Adoption checklist
 
 ---
 
@@ -472,15 +436,14 @@ HTTP Adapters documentation.
 
 Headings:
 - Feathers Adapter
-- Glossary
-- Responsibility in context
-- Why it exists
-- What it is
-- Purpose
-- Entrypoints
-- Build a Service with Feathers
-- Junior checklist (“I can …”)
-- Next step
+- Integrated technology
+- When to use
+- When to avoid
+- How to start or compose
+- This adapter is composed by its platform runtime.
+- Keep controllers framework-free and wire them from the adapter entrypoint.
+- Complete example: Task and Category at the HTTP edge
+- Adoption checklist
 
 ---
 
@@ -492,15 +455,14 @@ HTTP Adapters documentation.
 
 Headings:
 - LoopBack Adapter
-- Glossary
-- Responsibility in context
-- Why it exists
-- What it is
-- Purpose
-- Entrypoints
-- Build a Service with LoopBack
-- Junior checklist (“I can …”)
-- Next step
+- Integrated technology
+- When to use
+- When to avoid
+- How to start or compose
+- This adapter is composed by its platform runtime.
+- Keep controllers framework-free and wire them from the adapter entrypoint.
+- Complete example: Task and Category at the HTTP edge
+- Adoption checklist
 
 ---
 
@@ -512,16 +474,14 @@ HTTP Adapters documentation.
 
 Headings:
 - AWS Lambda Adapter
-- Glossary
-- Responsibility in context
-- Why it exists
-- What it is
-- Purpose
-- Entrypoints
-- Build a Service with Lambda
-- Notes
-- Junior checklist (“I can …”)
-- Next step
+- Integrated technology
+- When to use
+- When to avoid
+- How to start or compose
+- This adapter is composed by its platform runtime.
+- Keep controllers framework-free and wire them from the adapter entrypoint.
+- Complete example: Task and Category at the HTTP edge
+- Adoption checklist
 
 ---
 
@@ -533,15 +493,14 @@ HTTP Adapters documentation.
 
 Headings:
 - Sails.js Adapter
-- Glossary
-- Responsibility in context
-- Why it exists
-- What it is
-- Purpose
-- Entrypoints
-- Build a Service with Sails.js
-- Junior checklist (“I can …”)
-- Next step
+- Integrated technology
+- When to use
+- When to avoid
+- How to start or compose
+- This adapter is composed by its platform runtime.
+- Keep controllers framework-free and wire them from the adapter entrypoint.
+- Complete example: Task and Category at the HTTP edge
+- Adoption checklist
 
 ---
 
@@ -553,15 +512,14 @@ HTTP Adapters documentation.
 
 Headings:
 - Derby.js Adapter
-- Glossary
-- Responsibility in context
-- Why it exists
-- What it is
-- Purpose
-- Entrypoints
-- Build a Service with Derby.js
-- Junior checklist (“I can …”)
-- Next step
+- Integrated technology
+- When to use
+- When to avoid
+- How to start or compose
+- This adapter is composed by its platform runtime.
+- Keep controllers framework-free and wire them from the adapter entrypoint.
+- Complete example: Task and Category at the HTTP edge
+- Adoption checklist
 
 ---
 
@@ -573,15 +531,14 @@ HTTP Adapters documentation.
 
 Headings:
 - Total.js Adapter
-- Glossary
-- Responsibility in context
-- Why it exists
-- What it is
-- Purpose
-- Entrypoints
-- Build a Service with Total.js
-- Junior checklist (“I can …”)
-- Next step
+- Integrated technology
+- When to use
+- When to avoid
+- How to start or compose
+- This adapter is composed by its platform runtime.
+- Keep controllers framework-free and wire them from the adapter entrypoint.
+- Complete example: Task and Category at the HTTP edge
+- Adoption checklist
 
 ---
 
