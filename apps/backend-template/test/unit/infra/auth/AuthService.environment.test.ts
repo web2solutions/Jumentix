@@ -230,4 +230,95 @@ describe('authService under a configured environment (JUM-681)', () => {
     expect((first.error as Error).name).not.toBe('locked_resource');
     expect((second.error as Error).name).not.toBe('locked_resource');
   });
+
+  it('masks the login error under the short production name too', async () => {
+    expect.hasAssertions();
+
+    // Deployments write `prod` and deployments write `production`, and the two
+    // are the same decision. A masker that only knows one of them leaks the
+    // account-enumeration oracle in half the fleet.
+    const restore = withEnv({ NODE_ENV: 'prod', JUMENTIX_AUTH_MAX_LOGIN_ATTEMPTS: '50' });
+    const seededUsername = await seedAccount('short-prod');
+
+    const wrongPassword = await authService.authenticate(
+      seededUsername,
+      'not-the-password',
+      EAuthSchemaType.Bearer
+    );
+
+    restore();
+
+    expect((wrongPassword.error as Error).message).toBe('invalid credentials');
+  });
+
+  it('logs out a token that carries no id and no expiry, without revoking anything', async () => {
+    expect.hasAssertions();
+
+    // A token minted before `jti` existed still has to log out. Nothing is
+    // written to the revocation list — there is no id to key it on — and the
+    // caller is told the logout succeeded rather than being handed an error it
+    // cannot act on.
+    const restore = withEnv({ NODE_ENV: 'dev' });
+    const bareToken = jwtService.generateToken({
+      id: 'user-1',
+      username: 'alice'
+    } as never);
+
+    const result = await authService.logout(`Bearer ${bareToken}`);
+    const withNoHeader = await authService.logout();
+
+    restore();
+
+    expect(result.result).toBe(true);
+    expect(result.error).toBeUndefined();
+    // No header at all is a logout too — the caller already has no session.
+    expect(withNoHeader.result).toBe(true);
+  });
+
+  it('allows a request whose user holds every scope the route declares', () => {
+    expect.hasAssertions();
+
+    // The granted path, which the refusals never reach: a real user, a real
+    // route security block, and every declared scope present.
+    const allowed = authService.throwIfUserHasNoAccessToResource(
+      {
+        id: 'user-1', username: 'alice', roles: ['user'], organization: 'org-1'
+      } as never,
+      { security: [{ bearerAuth: [] }] }
+    );
+
+    expect(allowed).toBe(true);
+  });
+
+  it('refuses a request whose user carries no roles at all', () => {
+    expect.hasAssertions();
+
+    expect(() => authService.throwIfUserHasNoAccessToResource(
+      { id: 'user-1', username: 'alice' } as never,
+      { security: [{ bearerAuth: ['user'] }] }
+    )).toThrow('user.roles is missing');
+  });
+
+  it('does not mask the failure when NODE_ENV is not set at all', async () => {
+    expect.hasAssertions();
+
+    // A process started with no NODE_ENV is not production. Reading the absent
+    // value as anything other than "not production" would either mask errors on
+    // a developer's machine or, read the other way, expose the enumeration
+    // oracle wherever the variable was forgotten.
+    const restoreEnv = withEnv({ JUMENTIX_AUTH_MAX_LOGIN_ATTEMPTS: '50' });
+    const restoreNodeEnv = withoutEnv(['NODE_ENV']);
+    const seededUsername = await seedAccount('no-node-env');
+
+    const wrongPassword = await authService.authenticate(
+      seededUsername,
+      'not-the-password',
+      EAuthSchemaType.Bearer
+    );
+
+    restoreNodeEnv();
+    restoreEnv();
+
+    expect((wrongPassword.error as Error).message).not.toBe('invalid credentials');
+  });
 });
