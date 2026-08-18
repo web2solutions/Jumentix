@@ -95,7 +95,7 @@ const ACCEPTED_BELOW_THRESHOLD = {
    * 0.002.
    *
    * Measured 2026-08-15: **4257 of 4466 branches, 95.319%**, stable across
-   * repeated clean runs, and the floor ratcheted to match. The 105 branches
+   * repeated clean runs, and the floor ratcheted to match. The 115 branches
    * closed since are not a number that was chased — each came with the
    * behaviour it was hiding:
    *
@@ -145,6 +145,11 @@ const ACCEPTED_BELOW_THRESHOLD = {
    *   `NODE_ENV` is not production, and reading the absent value the other way
    *   exposes the account-enumeration oracle wherever the variable was
    *   forgotten.
+   * - The entity manager's edits: every "keep what is there" is its own
+   *   fallback, and an empty answer that blanks the stored name, format,
+   *   behaviour or description is a silent edit nobody asked for. Plus a second
+   *   field differing only in case, which becomes one OpenAPI property
+   *   overwriting the other.
    * - The Redis connection url composed from a host alone, with the port and
    *   database falling back independently — one missing default produces
    *   `redis://host:undefined/0` and a connection that never opens.
@@ -180,7 +185,7 @@ const ACCEPTED_BELOW_THRESHOLD = {
    * threshold with this entry still here fails too.
    */
   branches: {
-    floor: 95.566,
+    floor: 95.789,
     issue: 'JUM-681',
     since: '2026-08-12',
     reason: 'Mostly defaulted-option branches reachable only by dropping the injection tests use deliberately; see the note above.'

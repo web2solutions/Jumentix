@@ -340,3 +340,126 @@ describe('entity manager flows (JUM-681)', () => {
     expect(empty.logs).toContain('Sample payload is required.');
   });
 });
+
+/**
+ * Editing what is already there, and printing it (JUM-681).
+ *
+ * Creating a field asks every question against an empty slate. Editing one asks
+ * the same questions with the stored answer in the prompt, and every "keep what
+ * is there" is a fallback of its own: an empty answer must leave the name, the
+ * format, the behaviour and the description as they were, not blank them.
+ *
+ * The printers have the same shape. A field that is optional and carries no
+ * rules is the common case, and it is the one whose summary reads
+ * `validations=undefined` when the fallback is missing.
+ */
+describe('entity manager edits and printers (JUM-681)', () => {
+  const optionalField = () => ({
+    name: 'note',
+    type: 'string',
+    required: false,
+    format: 'uuid',
+    defaultValue: 'n/a',
+    validations: [],
+    behavior: 'free text'
+  });
+
+  it('prints an optional field with no rules as optional and ruleless', async () => {
+    expect.hasAssertions();
+
+    const run = scriptedContext(
+      catalogWithEntity([optionalField()]),
+      [5, 0, 0, 1, 0, FIELDS_BACK, BACK],
+      []
+    );
+
+    await entityModelManagerSubApplication.run(run.context as never);
+
+    const printed = run.logs.join('\n');
+    expect(printed).toContain('- note: string | validations=none');
+    expect(printed).toContain('  required: no');
+    expect(printed).toContain('  validations: none');
+  });
+
+  it('keeps every stored answer when the edit is all empty', async () => {
+    expect.hasAssertions();
+
+    // Update field → choose the field → keep the type (index 0, string) and the
+    // format (index 18, uuid, the stored one), answering every text prompt with
+    // nothing. The format is chosen by index because the prompt is a list: the
+    // stored value is shown as "(current)" but still has to be picked.
+    const run = scriptedContext(
+      catalogWithEntity([optionalField()]),
+      [5, 0, 3, 0, 0, 18, 1, FIELDS_BACK, BACK],
+      ['', '', '', '']
+    );
+
+    await entityModelManagerSubApplication.run(run.context as never);
+
+    const [saved] = run.saved;
+    expect(saved.entities[0].fields[0]).toStrictEqual(optionalField());
+  });
+
+  it('keeps the stored behaviour when the behaviour edit is empty', async () => {
+    expect.hasAssertions();
+
+    const run = scriptedContext(
+      catalogWithEntity([optionalField()]),
+      [5, 0, 4, 0, FIELDS_BACK, BACK],
+      ['']
+    );
+
+    await entityModelManagerSubApplication.run(run.context as never);
+
+    expect(run.saved[0].entities[0].fields[0].behavior).toBe('free text');
+  });
+
+  it('refuses a second field with the same name in another case', async () => {
+    expect.hasAssertions();
+
+    // Field names become OpenAPI property names, so two that differ only in
+    // case produce a schema with one of them silently overwriting the other.
+    const run = scriptedContext(
+      catalogWithEntity([optionalField()]),
+      [5, 0, 2, 0, 0, 1, FIELDS_BACK, BACK],
+      ['NOTE', '', '', '']
+    );
+
+    await entityModelManagerSubApplication.run(run.context as never);
+
+    expect(run.logs.join('\n')).toContain('already exists');
+    expect(run.saved).toHaveLength(0);
+  });
+
+  it('keeps the stored description when the update leaves it empty', async () => {
+    expect.hasAssertions();
+
+    const run = scriptedContext(
+      catalogWithEntity([optionalField()]),
+      [3, 0, 0, 0, BACK],
+      ['', '', '']
+    );
+
+    await entityModelManagerSubApplication.run(run.context as never);
+
+    expect(run.saved[0].entities[0].description).toBe('a customer invoice');
+  });
+
+  it('takes a typed domain over the list when the operator asks for one', async () => {
+    expect.hasAssertions();
+
+    // The last option of the domain chooser is "Type custom domain"; the index
+    // that selects it is the length of the list, which is exactly the boundary
+    // an off-by-one gets wrong — and getting it wrong files the entity under a
+    // domain the operator did not pick.
+    const run = scriptedContext(
+      catalogWithDomain(),
+      [2, 0, 1, BACK],
+      ['Invoice', 'Logistics', '', 'n', '']
+    );
+
+    await entityModelManagerSubApplication.run(run.context as never);
+
+    expect(run.saved[0].entities[0].domain).toBe('Logistics');
+  });
+});
