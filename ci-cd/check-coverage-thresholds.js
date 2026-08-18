@@ -95,7 +95,7 @@ const ACCEPTED_BELOW_THRESHOLD = {
    * 0.002.
    *
    * Measured 2026-08-15: **4257 of 4466 branches, 95.319%**, stable across
-   * repeated clean runs, and the floor ratcheted to match. The 98 branches
+   * repeated clean runs, and the floor ratcheted to match. The 105 branches
    * closed since are not a number that was chased — each came with the
    * behaviour it was hiding:
    *
@@ -145,6 +145,15 @@ const ACCEPTED_BELOW_THRESHOLD = {
    *   `NODE_ENV` is not production, and reading the absent value the other way
    *   exposes the account-enumeration oracle wherever the variable was
    *   forgotten.
+   * - The Redis connection url composed from a host alone, with the port and
+   *   database falling back independently — one missing default produces
+   *   `redis://host:undefined/0` and a connection that never opens.
+   * - The PWA shell resolving its dependencies from the ambient globals: on any
+   *   host without a service worker, caches or a location, the reset is a no-op
+   *   rather than a crash on `undefined.getRegistrations()`.
+   * - The authorship CLI with no injection, asserted on the contract that holds
+   *   whatever the checkout's history is: one message, on the channel its exit
+   *   code names.
    * - The toolchain guard read from the real process and the real pin file, and
    *   the override guard's refusal of a dependent that moved to a major the
    *   compatibility table was never told about — the shape that turns "verified"
@@ -171,7 +180,7 @@ const ACCEPTED_BELOW_THRESHOLD = {
    * threshold with this entry still here fails too.
    */
   branches: {
-    floor: 95.409,
+    floor: 95.566,
     issue: 'JUM-681',
     since: '2026-08-12',
     reason: 'Mostly defaulted-option branches reachable only by dropping the injection tests use deliberately; see the note above.'

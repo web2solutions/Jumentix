@@ -371,4 +371,24 @@ describe('ci-cd guards, no injection (JUM-681)', () => {
     expect(raised?.message).toBe('exit:1');
     expect(reported).toContain('Bun toolchain guard failed');
   });
+
+  it('reports through one channel and exits accordingly, with no options injected', () => {
+    expect.hasAssertions();
+
+    // `main` with only an io: the argv default and both check defaults, which is
+    // the shape the `bin` entry runs. What is asserted is the contract that
+    // holds whatever this checkout's history looks like — the guard reports on
+    // exactly one channel, and the exit code agrees with the channel it chose.
+    // A guard that logged a failure and returned 0 would block nothing.
+    const io = { log: jest.fn(), error: jest.fn() };
+
+    const code = guardDefaultsAuthorship.main([], io);
+    const channels = { failures: io.error.mock.calls.length, successes: io.log.mock.calls.length };
+
+    // One message, on the channel the exit code names: [1, 0] for a refusal,
+    // [0, 1] for a pass. Anything else is a guard whose report and whose exit
+    // code disagree.
+    expect([[1, 0], [0, 1]]).toContainEqual([channels.failures, channels.successes]);
+    expect([[1, 1], [0, 0]]).toContainEqual([code, channels.failures]);
+  }, 120_000);
 });

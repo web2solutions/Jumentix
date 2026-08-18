@@ -814,3 +814,16 @@ describe('pwa shell registration and update flow (JUM-489)', () => {
     expect(textOf(banner)).toContain('Reset app shell');
   });
 });
+
+describe('pwa shell ambient dependencies (JUM-681)', () => {
+  it('resolves its dependencies from the ambient globals when given none', async () => {
+    expect.hasAssertions();
+
+    // The banner's "Reset app shell" action calls this with what it has; the
+    // page calls it with nothing. Under a runtime with no service worker, no
+    // caches and no location — which is every non-browser host, including the
+    // build — every dependency resolves to `undefined` and the reset has to be
+    // a no-op rather than a crash on `undefined.getRegistrations()`.
+    await expect(resetPwaShell(undefined as never)).resolves.toBeUndefined();
+  });
+});
