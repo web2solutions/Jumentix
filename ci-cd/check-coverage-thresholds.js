@@ -95,7 +95,7 @@ const ACCEPTED_BELOW_THRESHOLD = {
    * 0.002.
    *
    * Measured 2026-08-15: **4257 of 4466 branches, 95.319%**, stable across
-   * repeated clean runs, and the floor ratcheted to match. The 94 branches
+   * repeated clean runs, and the floor ratcheted to match. The 96 branches
    * closed since are not a number that was chased — each came with the
    * behaviour it was hiding:
    *
@@ -141,6 +141,10 @@ const ACCEPTED_BELOW_THRESHOLD = {
    *   query string and metadata each reach the domain event through a `|| {}`
    *   that the shortest request never exercises, and dropping any of them
    *   answers 401 or 404 for a request that was neither.
+   * - The toolchain guard read from the real process and the real pin file, and
+   *   the override guard's refusal of a dependent that moved to a major the
+   *   compatibility table was never told about — the shape that turns "verified"
+   *   into a word about a check nobody made.
    *
    * What is left is still mostly **defaulted-option branches** —
    * `options.execute || executeMatrixCell`, `env = process.env`,
@@ -163,7 +167,7 @@ const ACCEPTED_BELOW_THRESHOLD = {
    * threshold with this entry still here fails too.
    */
   branches: {
-    floor: 95.319,
+    floor: 95.364,
     issue: 'JUM-681',
     since: '2026-08-12',
     reason: 'Mostly defaulted-option branches reachable only by dropping the injection tests use deliberately; see the note above.'

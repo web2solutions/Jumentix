@@ -29,6 +29,7 @@ const guardDefaultsCoverage = require('../../../../../ci-cd/check-coverage-thres
 const guardDefaultsOverrides = require('../../../../../ci-cd/check-dependency-override-integrity');
 const guardDefaultsAuthorship = require('../../../../../ci-cd/check-commit-authorship');
 const guardDefaultsPackageSuites = require('../../../../../ci-cd/check-package-suites');
+const guardDefaultsToolchain = require('../../../../../ci-cd/check-bun-version');
 
 const guardDefaultsRepoRoot = guardDefaultsPath.resolve(__dirname, '../../../../..');
 
@@ -328,5 +329,46 @@ describe('ci-cd guards, no injection (JUM-681)', () => {
       .toStrictEqual({ outcome: 'passed' });
 
     guardDefaultsFs.rmSync(root, { recursive: true, force: true });
+  });
+
+  it('reads the toolchain facts from the real process and the real pin file', () => {
+    expect.hasAssertions();
+
+    // The inputs the guard judges, taken from where CI takes them: the running
+    // runtime, `.bun-version` on disk, and `packageManager` in the manifest. An
+    // injected fixture cannot catch a pin file that moved.
+    const input = guardDefaultsToolchain.readToolchainInput();
+
+    expect(String(input.rawPin).trim()).toMatch(/^\d+\.\d+\.\d+$/);
+    expect(input.declaredPackageManager).toContain('bun@');
+  });
+
+  it('refuses to pass when the runtime is not the pinned Bun', () => {
+    expect.hasAssertions();
+
+    // `main()` with no argument reads the real environment. This suite runs
+    // under Jest on Node, so the guard's whole reason for existing applies: it
+    // must report the mismatch and exit non-zero rather than pass because the
+    // pin file says the right thing.
+    const exit = jest.spyOn(process, 'exit').mockImplementation(((code: number): never => {
+      throw new Error(`exit:${String(code)}`);
+    }) as never);
+    const error = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    const raised = (() => {
+      try {
+        guardDefaultsToolchain.main();
+        return null;
+      } catch (thrown) {
+        return thrown as Error;
+      }
+    })();
+    const reported = error.mock.calls.map((call) => String(call[0])).join('\n');
+
+    exit.mockRestore();
+    error.mockRestore();
+
+    expect(raised?.message).toBe('exit:1');
+    expect(reported).toContain('Bun toolchain guard failed');
   });
 });
