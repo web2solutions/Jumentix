@@ -94,8 +94,8 @@ const ACCEPTED_BELOW_THRESHOLD = {
    * written as `93.28` from a two-decimal display and then failed the build by
    * 0.002.
    *
-   * Measured 2026-08-15: **4251 of 4466 branches, 95.185%**, stable across
-   * repeated clean runs, and the floor ratcheted to match. The 88 branches
+   * Measured 2026-08-15: **4257 of 4466 branches, 95.319%**, stable across
+   * repeated clean runs, and the floor ratcheted to match. The 94 branches
    * closed since are not a number that was chased — each came with the
    * behaviour it was hiding:
    *
@@ -137,6 +137,10 @@ const ACCEPTED_BELOW_THRESHOLD = {
    *   type, a format and a validation rule; the schema that field generates;
    *   a payload validated against it. That is where the CLI's real output is:
    *   the catalog the designer, the codegen and the exporters all read.
+   * - The realtime runtime handler's request mapping: authorization, params,
+   *   query string and metadata each reach the domain event through a `|| {}`
+   *   that the shortest request never exercises, and dropping any of them
+   *   answers 401 or 404 for a request that was neither.
    *
    * What is left is still mostly **defaulted-option branches** —
    * `options.execute || executeMatrixCell`, `env = process.env`,
@@ -159,7 +163,7 @@ const ACCEPTED_BELOW_THRESHOLD = {
    * threshold with this entry still here fails too.
    */
   branches: {
-    floor: 95.185,
+    floor: 95.319,
     issue: 'JUM-681',
     since: '2026-08-12',
     reason: 'Mostly defaulted-option branches reachable only by dropping the injection tests use deliberately; see the note above.'
