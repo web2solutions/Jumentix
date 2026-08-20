@@ -111,14 +111,19 @@ describe('run-branch-quality-gate', () => {
     });
 
     // Lint runs ahead of the two gates that do not contain it, and not ahead of
-    // the strict matrix, which declares it as its first cell (JUM-596).
+    // the strict matrix, which declares it as its first cell (JUM-596). Test
+    // integrity runs ahead of all three, including the strict matrix, which has
+    // no cell for it (JUM-683).
     expect(stepIds(execute)).toStrictEqual([
-      'lint', 'task-changes',
-      'lint', 'unit',
-      'full-matrix',
-      'lint', 'task-changes'
+      'lint', 'test-integrity', 'task-changes',
+      'lint', 'test-integrity', 'unit',
+      'test-integrity', 'full-matrix',
+      'lint', 'test-integrity', 'task-changes'
     ]);
-    const lintPassed = [{ id: 'lint', script: 'lint', status: 0 }];
+    const lintPassed = [
+      { id: 'lint', script: 'lint', status: 0 },
+      { id: 'test-integrity', script: 'test:integrity', status: 0 }
+    ];
     expect(taskEvidence).toStrictEqual({
       schemaVersion: 2,
       targetBranch: 'codex/ci/191-example',
@@ -151,7 +156,7 @@ describe('run-branch-quality-gate', () => {
       selectedJobs: null,
       gate: 'full-matrix',
       script: 'ci:gate:strict',
-      preflight: [],
+      preflight: [{ id: 'test-integrity', script: 'test:integrity', status: 0 }],
       outcome: 'passed',
       status: 0
     });
@@ -211,7 +216,7 @@ describe('run-branch-quality-gate', () => {
       gate: 'task-changes',
       script: 'ci:gate:task'
     });
-    expect(stepIds(execute)).toStrictEqual(['lint', 'task-changes']);
+    expect(stepIds(execute)).toStrictEqual(['lint', 'test-integrity', 'task-changes']);
   });
 
   it('fails closed when CI pull request context is incomplete', () => {
@@ -275,7 +280,9 @@ describe('run-branch-quality-gate', () => {
     });
 
     expect(evidence.outcome).toBe('failed');
-    expect(logger.error).toHaveBeenCalledTimes(2);
+    // One line for the crashed preflight, one for the crashed gate, one for the
+    // gate's own summary: a crash anywhere is reported everywhere it is known.
+    expect(logger.error).toHaveBeenCalledTimes(3);
   });
 
   /**
@@ -285,11 +292,14 @@ describe('run-branch-quality-gate', () => {
    */
   it('runs lint ahead of the gates that do not already contain it', () => {
     expect.hasAssertions();
-    expect(TASK_QUALITY_GATE.preflight).toStrictEqual([{ id: 'lint', script: 'lint' }]);
-    expect(UNIT_QUALITY_GATE.preflight).toStrictEqual([{ id: 'lint', script: 'lint' }]);
+    const integrity = { id: 'test-integrity', script: 'test:integrity' };
+
+    expect(TASK_QUALITY_GATE.preflight).toStrictEqual([{ id: 'lint', script: 'lint' }, integrity]);
+    expect(UNIT_QUALITY_GATE.preflight).toStrictEqual([{ id: 'lint', script: 'lint' }, integrity]);
     // The strict matrix declares lint as a cell; a second run costs minutes to
-    // learn the same thing.
-    expect(FULL_MATRIX_QUALITY_GATE.preflight).toStrictEqual([]);
+    // learn the same thing. It declares no cell for test integrity, so that one
+    // runs here (JUM-683).
+    expect(FULL_MATRIX_QUALITY_GATE.preflight).toStrictEqual([integrity]);
   });
 
   it('does not run the suites when lint fails', () => {
@@ -323,6 +333,8 @@ describe('run-branch-quality-gate', () => {
       resultFile: ''
     });
 
+    // Lint failed, so the integrity preflight behind it never ran — and the
+    // evidence says so rather than listing it as passed.
     expect(evidence.preflight).toStrictEqual([{ id: 'lint', script: 'lint', status: 1 }]);
   });
 
