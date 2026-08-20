@@ -288,8 +288,28 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/interface/CLI/domainManager.refusals.test.ts",
+      "path": "apps/backend-template/test/unit/interface/CLI/domainManager.refusals.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/interface/CLI/index.test.ts",
       "path": "apps/backend-template/test/unit/interface/CLI/index.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/CLI/entityModelManager.flows.test.ts",
+      "path": "apps/backend-template/test/unit/interface/CLI/entityModelManager.flows.test.ts",
       "layer": "interface/runtime",
       "kind": "hexagonal",
       "type": "unit",
@@ -336,6 +356,16 @@
       "runner": "bun",
       "ciRunner": "node",
       "bunCompat": "pending-resetModules-or-native-gap",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/CLI/entityModelManager.refusals.test.ts",
+      "path": "apps/backend-template/test/unit/interface/CLI/entityModelManager.refusals.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
       "tier": "gate",
       "timeoutMs": 60000
     },
@@ -414,6 +444,16 @@
     {
       "id": "apps/backend-template/test/unit/interface/HTTP/adapters/fastify/FastifyServer.test.ts",
       "path": "apps/backend-template/test/unit/interface/HTTP/adapters/fastify/FastifyServer.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/HTTP/validators/oasInputMessages.test.ts",
+      "path": "apps/backend-template/test/unit/interface/HTTP/validators/oasInputMessages.test.ts",
       "layer": "interface/runtime",
       "kind": "hexagonal",
       "type": "unit",
@@ -522,6 +562,16 @@
       "runner": "bun",
       "ciRunner": "node",
       "bunCompat": "pending-resetModules-or-native-gap",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/infra/auth/AuthService.environment.test.ts",
+      "path": "apps/backend-template/test/unit/infra/auth/AuthService.environment.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
       "tier": "gate",
       "timeoutMs": 60000
     },
@@ -638,6 +688,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/infra/persistence/InMemoryDatabase/InMemoryRelationalStore.indexes.test.ts",
+      "path": "apps/backend-template/test/unit/infra/persistence/InMemoryDatabase/InMemoryRelationalStore.indexes.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/infra/mutex/MutexService.branches.test.ts",
       "path": "apps/backend-template/test/unit/infra/mutex/MutexService.branches.test.ts",
       "layer": "adapters/out+infra",
@@ -730,6 +790,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/shared/openapi/OpenApi31DataEntityEdges.test.ts",
+      "path": "apps/backend-template/test/unit/shared/openapi/OpenApi31DataEntityEdges.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/shared/utils.errorExposure.test.ts",
       "path": "apps/backend-template/test/unit/shared/utils.errorExposure.test.ts",
       "layer": "tooling",
@@ -792,6 +862,16 @@
     {
       "id": "apps/backend-template/test/unit/service-management/modelValidation.test.ts",
       "path": "apps/backend-template/test/unit/service-management/modelValidation.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/service-management/catalogSyncClientDefaults.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/catalogSyncClientDefaults.test.ts",
       "layer": "service-management/designer",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -920,6 +1000,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/service-management/catalogSyncTransport.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/catalogSyncTransport.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/service-management/modelQueries.test.ts",
       "path": "apps/backend-template/test/unit/service-management/modelQueries.test.ts",
       "layer": "service-management/designer",
@@ -942,6 +1032,16 @@
     {
       "id": "apps/backend-template/test/unit/service-management/rbacContract.test.ts",
       "path": "apps/backend-template/test/unit/service-management/rbacContract.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/service-management/canaMigrationFailures.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/canaMigrationFailures.test.ts",
       "layer": "service-management/designer",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -1102,6 +1202,16 @@
     {
       "id": "apps/backend-template/test/unit/ci-cd/check-third-party-review.test.ts",
       "path": "apps/backend-template/test/unit/ci-cd/check-third-party-review.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/ci-cd/guard-defaults.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/guard-defaults.test.ts",
       "layer": "tooling",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -1726,8 +1836,28 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/modules/Catalogs/CatalogModel.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Catalogs/CatalogModel.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/modules/Catalogs/composition/composeCatalogsServices.test.ts",
       "path": "apps/backend-template/test/unit/modules/Catalogs/composition/composeCatalogsServices.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Catalogs/adapters/CatalogDataRepositoryDefaults.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Catalogs/adapters/CatalogDataRepositoryDefaults.test.ts",
       "layer": "application",
       "kind": "hexagonal",
       "type": "unit",
@@ -3243,6 +3373,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "packages/cana-react/test/collection-edges.test.ts",
+      "path": "packages/cana-react/test/collection-edges.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "packages/cana-react/test/collection.test.ts",
       "path": "packages/cana-react/test/collection.test.ts",
       "layer": "adapters/out+infra",
@@ -3253,8 +3393,38 @@
       "timeoutMs": 60000
     },
     {
+      "id": "packages/cana-react/test/hooks.test.ts",
+      "path": "packages/cana-react/test/hooks.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "packages/cana-vue/test/collection-edges.test.ts",
+      "path": "packages/cana-vue/test/collection-edges.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "packages/cana-vue/test/collection.test.ts",
       "path": "packages/cana-vue/test/collection.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "packages/cana-vue/test/composables.test.ts",
+      "path": "packages/cana-vue/test/composables.test.ts",
       "layer": "adapters/out+infra",
       "kind": "hexagonal",
       "type": "unit",
@@ -4192,9 +4362,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 207,
+    "unit": 224,
     "integration": 97,
     "smoke": 2,
-    "suites": 354
+    "suites": 371
   }
 }

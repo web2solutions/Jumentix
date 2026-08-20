@@ -57,8 +57,11 @@ Found in this repository:
 ## Evidence and Scope
 
 - Applies to every suite in the monorepo, including Cypress.
-- Machine-verifiable in part: `ci-cd/check-test-integrity.js`, **inside
-  `ci:gate` since JUM-683**. Its assertion rule is **per test since JUM-702**:
+- Machine-verifiable in part: `ci-cd/check-test-integrity.js`, **a preflight of
+  every branch-gate path since JUM-683**. It was added to the `ci:gate` script
+  first, and that script is not what CI runs: the branch gate selects
+  `ci:gate:strict`, `ci:gate:task` or `test:unit`, and the check was in none of
+  the three, so it ran nowhere for eleven days. Its assertion rule is **per test since JUM-702**:
   the check parses each suite and names the file, line and title of any test
   that does not declare, counting a declaration made once in a `beforeEach` or
   `beforeAll` of an enclosing `describe`.

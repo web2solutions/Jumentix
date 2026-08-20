@@ -321,6 +321,7 @@ describe('override major compatibility, the remaining branches (JUM-681)', () =>
       read: (dependent: string, overridden: string) => string | null
     ) => string[];
     readInstalledDependentRange: (dependent: string, overridden: string) => string | null;
+    main: () => void;
   };
   const [pair] = guard.OVERRIDE_MAJOR_COMPATIBILITY;
 
@@ -365,5 +366,39 @@ describe('override major compatibility, the remaining branches (JUM-681)', () =>
 
     // A missing package must not crash the guard on a partial tree.
     expect(guard.readInstalledDependentRange('no-such-package-here', 'send')).toBeNull();
+  });
+
+  it('rejects a dependent that moved to a major this guard was never told about', () => {
+    expect.hasAssertions();
+
+    // Override and dependent agree — nothing crosses a major — but both moved
+    // past the version the compatibility table records. Passing that silently is
+    // how the table goes stale and stops protecting anything: the pair would
+    // keep being "verified" against a major nobody checked.
+    const failures = guard.validateOverrideMajors(
+      { overrides: { [pair.overridden]: `^${String(pair.requiredMajor + 1)}.0.0` } },
+      () => `^${String(pair.requiredMajor + 1)}.0.0`
+    );
+
+    expect(failures).toHaveLength(1);
+    expect(failures[0]).toContain('this guard expects major');
+  });
+
+  it('reports the whole pin set as intact against the real manifest', () => {
+    expect.hasAssertions();
+
+    // `main` over this repository, which is the invocation CI makes. It exits
+    // non-zero on any failure, so reaching the summary at all is the assertion;
+    // the counts in it are what a reader uses to see the guard checked
+    // something rather than nothing.
+    const log = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+
+    guard.main();
+    const summary = log.mock.calls.map((call) => String(call[0])).join('\n');
+
+    log.mockRestore();
+
+    expect(summary).toContain('Dependency override integrity guard passed');
+    expect(summary).toContain('major-compatibility pair(s) verified');
   });
 });

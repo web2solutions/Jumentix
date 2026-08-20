@@ -294,6 +294,28 @@ describe('run-full-test-matrix', () => {
     expect(crashed.outcome).toBe('failed');
   });
 
+  it('treats a negative exit status as a failure (JUM-681)', () => {
+    expect.hasAssertions();
+
+    // `spawnSync` reports a signal-terminated child as a negative status on
+    // some platforms. It is an integer, so an `Number.isInteger` check alone
+    // would carry it through as the cell's exit code — and a negative number is
+    // not zero, but it is also not a status any reader would trust.
+    const logger = { log: jest.fn(), error: jest.fn() };
+
+    const evidence = runFullTestMatrix({
+      cells: [{ id: 'signalled', script: 'lint' }],
+      execute: () => -9,
+      logger,
+      availableScripts: fullMatrixRootPackage.scripts,
+      env: {},
+      resultFile: ''
+    });
+
+    expect(evidence.outcome).toBe('failed');
+    expect(evidence.results[0].status).toBe(1);
+  });
+
   it('uses repository-owned workflows and keeps Storybook outside the full matrix', () => {
     expect.hasAssertions();
     const read = (file: string) => matrixFs.readFileSync(

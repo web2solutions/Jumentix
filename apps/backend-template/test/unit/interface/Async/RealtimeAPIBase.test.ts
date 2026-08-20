@@ -406,3 +406,78 @@ paths:
     );
   });
 });
+
+/**
+ * What the runtime handler carries from the request into the domain event
+ * (JUM-681).
+ *
+ * The suite above invokes the handler with an operation id and an input, which
+ * is the shortest request a client can send. A real one carries an
+ * authorization header, path params, a query string and correlation metadata,
+ * and every one of those reaches the controller through a `|| {}` that the
+ * short request never exercises.
+ *
+ * Dropping any of them is silent: the controller receives a domain event whose
+ * `authorization` is `''` and answers 401 for an authenticated caller, or whose
+ * `params` are empty and answers 404 for a record that exists. The event is
+ * built correctly either way — it is the copy from the request that fails.
+ */
+describe('realtime runtime handler request mapping (JUM-681)', () => {
+  const databaseClient = {
+    connect: jest.fn(),
+    disconnect: jest.fn()
+  } as any;
+
+  const handlerFor = (controller: Record<string, any>) => {
+    const api = new TestRealtimeAPI({
+      databaseClient,
+      interfaceType: 'websocketapi',
+      frameworkName: 'socket-io'
+    });
+
+    return (api as any).getRuntimeHandlerFactory({
+      moduleName: 'Users',
+      operationId: 'login',
+      controllerMethod: 'login',
+      controller,
+      endPointConfig: { operationId: 'login', security: [{ bearerAuth: [] }] }
+    });
+  };
+
+  it('carries authorization, params, query string and metadata into the event', async () => {
+    expect.hasAssertions();
+
+    const login = jest.fn().mockResolvedValue({ result: { ok: true } });
+    const handler = handlerFor({ login });
+
+    const response = await handler({
+      operationId: 'login',
+      authorization: 'Bearer token-1',
+      input: { username: 'john' },
+      params: { id: 'user-1' },
+      queryString: { verbose: 'true' },
+      metadata: { correlationId: 'corr-1' }
+    });
+
+    const [event] = login.mock.calls[0];
+    expect(event.authorization).toBe('Bearer token-1');
+    expect(event.input).toStrictEqual({ username: 'john' });
+    expect(event.params).toStrictEqual({ id: 'user-1' });
+    expect(event.queryString).toStrictEqual({ verbose: 'true' });
+    expect(response.metadata).toMatchObject({ correlationId: 'corr-1' });
+  });
+
+  it('answers ok with no result when the controller returns nothing', async () => {
+    expect.hasAssertions();
+
+    // A controller that resolves `undefined` is not an error — some operations
+    // acknowledge rather than return — and reading `.result` off it must not
+    // throw on the way out.
+    const handler = handlerFor({ login: jest.fn().mockResolvedValue(undefined) });
+
+    const response = await handler({ operationId: 'login' });
+
+    expect(response.ok).toBe(true);
+    expect(response.result).toBeUndefined();
+  });
+});

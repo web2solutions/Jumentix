@@ -43,4 +43,29 @@ describe('redisStreamsAdapter', () => {
     } as unknown as NodeJS.ProcessEnv);
     expect(url).toBe(`redis://:${redisTestPassword}@127.0.0.1:6380/5`);
   });
+
+  it('reads the ambient environment when none is passed', () => {
+    expect.hasAssertions();
+
+    // Both functions default to `process.env`, which is how the bootstrap calls
+    // them — it passes nothing. A default that read some other object would
+    // enable the adapter, or point it at a host, that the deployment never set.
+    expect(isRedisStreamsSocketIoEnabled()).toBe(
+      process.env.JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER === 'redis-streams'
+    );
+    expect(buildRedisConnectionUrl()).toMatch(/^redis:\/\//);
+  });
+
+  it('composes a url from a host alone, leaving port and database at their defaults', () => {
+    expect.hasAssertions();
+
+    // The common deployment: a hostname from the orchestrator and nothing else.
+    // Each part falls back independently, so a single missing default produces
+    // `redis://host:undefined/0` and a connection that never opens.
+    const url = buildRedisConnectionUrl({
+      JUMENTIX_REDIS_HOST: 'redis.internal'
+    } as unknown as NodeJS.ProcessEnv);
+
+    expect(url).toBe('redis://redis.internal:6379/0');
+  });
 });
