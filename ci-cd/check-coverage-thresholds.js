@@ -94,8 +94,8 @@ const ACCEPTED_BELOW_THRESHOLD = {
    * written as `93.28` from a two-decimal display and then failed the build by
    * 0.002.
    *
-   * Measured 2026-08-15: **4257 of 4466 branches, 95.319%**, stable across
-   * repeated clean runs, and the floor ratcheted to match. The 115 branches
+   * Measured 2026-08-15: **4283 of 4466 branches, 95.902%**, stable across
+   * repeated clean runs, and the floor ratcheted to match. The 120 branches
    * closed since are not a number that was chased — each came with the
    * behaviour it was hiding:
    *
@@ -145,6 +145,10 @@ const ACCEPTED_BELOW_THRESHOLD = {
    *   `NODE_ENV` is not production, and reading the absent value the other way
    *   exposes the account-enumeration oracle wherever the variable was
    *   forgotten.
+   * - Schema resolution: a `$ref` into a document this resolver does not read
+   *   is refused rather than validated against an unresolved node, because
+   *   validating against `{ $ref: ... }` constrains nothing and a bundling
+   *   mistake would read as a pass.
    * - The entity manager's edits: every "keep what is there" is its own
    *   fallback, and an empty answer that blanks the stored name, format,
    *   behaviour or description is a silent edit nobody asked for. Plus a second
@@ -185,7 +189,7 @@ const ACCEPTED_BELOW_THRESHOLD = {
    * threshold with this entry still here fails too.
    */
   branches: {
-    floor: 95.789,
+    floor: 95.902,
     issue: 'JUM-681',
     since: '2026-08-12',
     reason: 'Mostly defaulted-option branches reachable only by dropping the injection tests use deliberately; see the note above.'
