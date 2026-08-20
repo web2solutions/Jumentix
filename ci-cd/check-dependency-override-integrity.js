@@ -48,7 +48,10 @@ const packageJsonPath = path.join(repoRoot, 'package.json');
  */
 const REQUIRED_OVERRIDES = {
   'form-data': '^4.0.4',
-  uuid: '^11.1.1',
+  // Raised on 2026-08-20: Dependabot consolidated the direct/runtime pin, and
+  // the flat override must keep every transitive uuid consumer on the same
+  // reviewed major.
+  uuid: '^14.0.1',
   // Raised on 2026-08-11: GHSA-5p4m-2wfm-xmqj has no 4.x backport.
   'js-yaml': '^5.2.3',
   send: '^1.2.0',

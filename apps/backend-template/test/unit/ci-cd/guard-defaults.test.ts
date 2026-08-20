@@ -346,10 +346,9 @@ describe('ci-cd guards, no injection (JUM-681)', () => {
   it('refuses to pass when the runtime is not the pinned Bun', () => {
     expect.hasAssertions();
 
-    // `main()` with no argument reads the real environment. This suite runs
-    // under Jest on Node, so the guard's whole reason for existing applies: it
-    // must report the mismatch and exit non-zero rather than pass because the
-    // pin file says the right thing.
+    // Keep this path deterministic regardless of the Bun version running the
+    // suite: the no-argument/default path is covered above, while this case
+    // proves the refusal logic with an explicit mismatch.
     const exit = jest.spyOn(process, 'exit').mockImplementation(((code: number): never => {
       throw new Error(`exit:${String(code)}`);
     }) as never);
@@ -357,7 +356,10 @@ describe('ci-cd guards, no injection (JUM-681)', () => {
 
     const raised = (() => {
       try {
-        guardDefaultsToolchain.main();
+        guardDefaultsToolchain.main({
+          ...guardDefaultsToolchain.readToolchainInput(),
+          runningBunVersion: '0.0.0'
+        });
         return null;
       } catch (thrown) {
         return thrown as Error;

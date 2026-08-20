@@ -4,8 +4,38 @@
 
 ## All Changes
 
+- 2026-08-20 chore(deps): consolidate dependabot updates - Eduardo A.
+- 2026-08-20 [JUM-681][Quality] Coverage thresholds at 98%, integrity gate on the real CI paths (#245) - Eduardo A.
+- 2026-08-20 Merge remote-tracking branch 'origin/dev' into claude/governance/JUM-681-threshold-98 - Eduardo A.
+- 2026-08-20 test(service-management): use the shared server harness in both suites (JUM-722) - Eduardo Almeida
+- 2026-08-19 chore(coverage): hand the branches exception to its successor issue (JUM-721) - Eduardo Almeida
+- 2026-08-19 docs(testing): synchronise the coverage and integrity gates with what runs (JUM-720) - Eduardo Almeida
+- 2026-08-19 chore(coverage): ratchet the branch floor to 95.902% (JUM-681) - Eduardo Almeida
+- 2026-08-19 test(cana): wait for the late connection instead of sleeping past it (JUM-679) - Eduardo Almeida
+- 2026-08-19 fix(ci): run the test-integrity guard on the gates CI actually selects (JUM-683) - Eduardo Almeida
+- 2026-08-19 test(coverage): cover how a schema is resolved and how a failure is named (JUM-681) - Eduardo Almeida
+- 2026-08-18 test(coverage): cover the entity manager's edits and its printers (JUM-681) - Eduardo Almeida
+- 2026-08-18 test(coverage): cover the ambient defaults three callers rely on (JUM-681) - Eduardo Almeida
+- 2026-08-18 test(coverage): pin the auth paths an environment decides (JUM-681) - Eduardo Almeida
+- 2026-08-18 test(coverage): read the toolchain facts and refuse a stale compatibility table (JUM-681) - Eduardo Almeida
+- 2026-08-18 test(coverage): map the realtime request into the domain event (JUM-681) - Eduardo Almeida
+- 2026-08-15 fix(website): render complete Monaco code blocks (#247) - Eduardo A.
+- 2026-08-15 chore(website): refresh code block checks - Eduardo A.
+- 2026-08-15 test(coverage): cover the sync client's half-written marker and messageless failures (JUM-681) - Eduardo Almeida
 - 2026-08-15 fix(website): render complete Monaco code blocks - Eduardo A.
+- 2026-08-15 Merge remote-tracking branch 'origin/dev' into claude/governance/JUM-681-threshold-98 - Eduardo A.
+- 2026-08-15 test(coverage): cover the built-in auth thresholds (JUM-681) - Eduardo Almeida
+- 2026-08-15 test(coverage): drive the entity manager to the end of its flows (JUM-681) - Eduardo Almeida
+- 2026-08-15 test(coverage): cover the validation messages, the BullMQ routing and the CLI defaults (JUM-681) - Eduardo Almeida
+- 2026-08-15 test(coverage): cover the store indexes, the catalog aggregate and the empty sync (JUM-681) - Eduardo Almeida
+- 2026-08-15 test(coverage): cover the domain manager refusals, repair the rename (JUM-681) - Eduardo Almeida
+- 2026-08-15 fix(test): rename guard-defaults handles instead of exporting from a test file - Eduardo Almeida
 - 2026-08-15 docs(website): expand adapter documentation - Eduardo A.
+- 2026-08-15 fix(test): scope guard-defaults as a module so its consts stop colliding (JUM-681) - Eduardo Almeida
+- 2026-08-15 test(coverage): cover the auth environment and the CLI refusals (JUM-681) - Eduardo Almeida
+- 2026-08-14 fix(test): make the guard-defaults suite survive CI's own environment (JUM-681) - Eduardo Almeida
+- 2026-08-14 test(coverage): cover the agent bus refusals and the catalog fallbacks (JUM-681) - Eduardo Almeida
+- 2026-08-14 test(coverage): raise the thresholds to 98% and close 58 branches (JUM-681) - Eduardo Almeida
 - 2026-08-14 fix(website): organize architecture playground ux - Eduardo A.
 - 2026-08-14 fix(website): organize architecture playground ux - Eduardo A.
 - 2026-08-13 fix(website): show live indexeddb flow in cana canvas - Eduardo A.

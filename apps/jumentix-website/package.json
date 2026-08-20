@@ -49,7 +49,7 @@
     "@next/bundle-analyzer": "^16.2.11",
     "@reduxjs/toolkit": "^2.12.0",
     "@tabler/icons-react": "^3.44.0",
-    "@vercel/analytics": "^1.6.1",
+    "@vercel/analytics": "^2.0.1",
     "clsx": "^2.1.1",
     "mermaid": "^11.16.1",
     "monaco-editor": "^0.56.0",
@@ -65,10 +65,10 @@
     "vue": "^3.5.41"
   },
   "devDependencies": {
-    "@storybook/addon-a11y": "10.5.7",
-    "@storybook/addon-docs": "10.5.7",
-    "@storybook/addon-themes": "10.5.7",
-    "@storybook/nextjs": "10.5.7",
+    "@storybook/addon-a11y": "10.5.8",
+    "@storybook/addon-docs": "10.5.8",
+    "@storybook/addon-themes": "10.5.8",
+    "@storybook/nextjs": "10.5.8",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
@@ -82,10 +82,10 @@
     "jest-axe": "^11.0.0",
     "jest-environment-jsdom": "^30.4.1",
     "postcss": "^8.5.23",
-    "postcss-import": "^16.1.1",
+    "postcss-import": "^17.0.0",
     "postcss-preset-mantine": "1.18.0",
     "postcss-simple-vars": "^7.0.1",
-    "storybook": "10.5.7",
+    "storybook": "10.5.8",
     "turbopack-inline-svg-loader": "^1.0.3",
     "typescript": "6.0.3"
   }
