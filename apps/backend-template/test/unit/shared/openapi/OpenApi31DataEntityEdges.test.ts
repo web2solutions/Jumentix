@@ -1,4 +1,5 @@
 import {
+  validateValueAgainstOpenApiSchema,
   mapDataEntityToOpenApiSchema,
   throwIfDataEntityIsNotOpenApi31Compliant,
   throwIfDataEntityPayloadIsNotOpenApi31Compliant,
@@ -256,5 +257,91 @@ describe('payload validation type mismatches (JUM-681)', () => {
       { value: 'abc' },
       entityWith('string', { validations: ['minLength:2', 'maxLength:5'] })
     )).not.toThrow();
+  });
+});
+
+/**
+ * Schema resolution, and the message a failure carries (JUM-681).
+ *
+ * A schema reaches the validator as a `$ref`, as an inline object, or as
+ * nothing at all, and each of those has a resolution path. The ones here are
+ * the paths taken when the document is not what the resolver expects: a `$ref`
+ * into another file, which this resolver cannot follow and must decline rather
+ * than half-follow; and no schema at all, which validates everything rather
+ * than crashing on a property read.
+ */
+describe('openAPI schema resolution edges (JUM-681)', () => {
+  const spec = {
+    components: {
+      schemas: {
+        Row: { type: 'object', properties: { id: { type: 'string' } } }
+      }
+    }
+  } as Record<string, unknown>;
+
+  it('refuses a reference into another document rather than validating nothing', () => {
+    expect.hasAssertions();
+
+    // `other.yaml#/components/schemas/Row` is a valid OpenAPI reference and not
+    // one this resolver can follow — it reads the bundled document only. It has
+    // to say so: validating against an unresolved `{ $ref: ... }` constrains
+    // nothing, so a bundling mistake would read as a passing validation of a
+    // schema that was never loaded.
+    expect(() => validateValueAgainstOpenApiSchema(
+      { id: 'a' },
+      { $ref: 'other.yaml#/components/schemas/Row' },
+      spec
+    )).toThrow('could not be resolved');
+  });
+
+  it('accepts anything when there is no schema to validate against', () => {
+    expect.hasAssertions();
+
+    expect(() => validateValueAgainstOpenApiSchema('anything', undefined as never, spec))
+      .not.toThrow();
+  });
+
+  it('names the value itself when the failure has no path', () => {
+    expect.hasAssertions();
+
+    // The top-level call passes an empty path. "failed at \"\"" tells a reader
+    // nothing, so the message says `value`.
+    expect(() => validateValueAgainstOpenApiSchema(
+      1,
+      { type: 'string' },
+      spec,
+      ''
+    )).toThrow('failed at "value"');
+  });
+
+  it('reads a JSON object written as a validation value', () => {
+    expect.hasAssertions();
+
+    const schema = mapDataEntityToOpenApiSchema({
+      name: 'Sample',
+      fields: [{
+        name: 'shape',
+        type: 'string',
+        required: false,
+        validations: ['enum:{"a":1}']
+      }]
+    } as never);
+
+    expect(schema.properties.shape.enum).toStrictEqual([{ a: 1 }]);
+  });
+
+  it('maps a field that declares no validations key at all', () => {
+    expect.hasAssertions();
+
+    // The stored shape has `validations` optional, and a catalog written before
+    // rules existed has no key. Iterating it directly throws on the way into
+    // the schema builder.
+    const schema = mapDataEntityToOpenApiSchema({
+      name: 'Sample',
+      fields: [{ name: 'plain', type: 'string', required: true }]
+    } as never);
+
+    expect(schema.properties.plain).toStrictEqual({ type: 'string' });
+    expect(schema.required).toStrictEqual(['plain']);
   });
 });
