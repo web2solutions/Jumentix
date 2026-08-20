@@ -82,7 +82,7 @@
     "jest-axe": "^11.0.0",
     "jest-environment-jsdom": "^30.4.1",
     "postcss": "^8.5.23",
-    "postcss-import": "^16.1.1",
+    "postcss-import": "^17.0.0",
     "postcss-preset-mantine": "1.18.0",
     "postcss-simple-vars": "^7.0.1",
     "storybook": "10.5.7",
