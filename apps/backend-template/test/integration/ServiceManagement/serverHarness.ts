@@ -30,6 +30,8 @@ export const pinnedDefaultConfigDir = path.resolve(
 export type RuntimeEnvPayload = {
   environment: string;
   fileName: string;
+  /** Keys the endpoint admits for editing; absent keys are read-only by policy. */
+  editableKeys?: string[];
   values: Record<string, string>;
 };
 

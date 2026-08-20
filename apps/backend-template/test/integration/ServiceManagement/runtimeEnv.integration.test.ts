@@ -1,154 +1,82 @@
 /* eslint-disable jest/prefer-expect-assertions, jest/no-conditional-in-test, jest/max-expects */
 import { spawn } from 'node:child_process';
 import path from 'node:path';
-import http from 'node:http';
 import fs from 'node:fs';
-import os from 'node:os';
+import {
+  serverPath,
+  cleanupTempConfigDir,
+  createTempConfigDir,
+  requestJson,
+  startServer,
+  stopServer
+} from './serverHarness';
+import type { RuntimeEnvPayload, StartedServer } from './serverHarness';
 
-const serverPath = path.resolve(process.cwd(), 'apps/service-management/server.js');
+/**
+ * The shared harness rather than a private copy of it (JUM-722).
+ *
+ * This suite carried its own `startServer`: a `3200 + random*1000` port, no
+ * retry on EADDRINUSE, and readiness taken from a probe — the three things
+ * JUM-628 replaced everywhere else. Jest runs suite files in parallel, so two
+ * servers inside a 1000-port window collide, the loser dies unheard, and the
+ * probe is answered by whichever server is actually on that port. That is how
+ * "honors environment parameter on POST" once saw a 200 whose body had no
+ * `environment` field at all: the answer came from another suite's server.
+ *
+ * Readiness now comes from the child's own listen line, so a server that did
+ * not start cannot be mistaken for one that did.
+ */
+const ENV_FILE_CONTENT = [
+  'JUMENTIX_REDIS_HOST=127.0.0.1',
+  'JUMENTIX_REDIS_PORT=6379',
+  'JUMENTIX_REDIS_DATABASE=1',
+  'JUMENTIX_REDIS_PASSWORD=dev-redis-password',
+  'JUMENTIX_JWT_TOKEN_SECRET_KEY=dev-jwt-secret',
+  'JUMENTIX_JWT_ISSUER=jumentix',
+  'JUMENTIX_JWT_AUDIENCE=jumentix-clients',
+  'JUMENTIX_MESSAGE_MEDIATOR_ADAPTER=rabbitmq',
+  'JUMENTIX_HTTP_FRAMEWORK=express',
+  'JUMENTIX_REALTIME_API=no',
+  'JUMENTIX_REALTIME_API_PROTOCOL=websocket',
+  '#JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER=redis-streams',
+  '#JUMENTIX_WEBSOCKET_REDIS_URL=redis://127.0.0.1:6379/1',
+  'JUMENTIX_REALTIME_API_DATABASE_DRIVER=Mongo',
+  'JUMENTIX_DATABASE_DRIVER=InMemory',
+  'JUMENTIX_DATABASE_NAME=jumentix',
+  'JUMENTIX_ENABLE_BASIC_AUTH=yes',
+  'JUMENTIX_AUTH_MAX_LOGIN_ATTEMPTS=5',
+  'JUMENTIX_AUTH_LOGIN_WINDOW_SECONDS=300',
+  'JUMENTIX_AUTH_LOCKOUT_SECONDS=900',
+  'JUMENTIX_CORS_ALLOWED_ORIGINS=http://localhost:3000',
+  'JUMENTIX_RABBITMQ_URL=amqp://guest:guest@127.0.0.1:5672',
+  'JUMENTIX_RABBITMQ_EXCHANGE=app.events',
+  'JUMENTIX_RABBITMQ_REQUEST_QUEUE=app.requests',
+  'JUMENTIX_RABBITMQ_PREFETCH=10',
+  ''
+].join('\n');
 
-type RuntimeEnvPayload = {
-  environment: string;
-  fileName: string;
-  editableKeys: string[];
-  values: Record<string, string>;
-};
-
-function createTempConfigDir() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jumentix-service-management-'));
-  const envContent = [
-    'JUMENTIX_REDIS_HOST=127.0.0.1',
-    'JUMENTIX_REDIS_PORT=6379',
-    'JUMENTIX_REDIS_DATABASE=1',
-    'JUMENTIX_REDIS_PASSWORD=dev-redis-password',
-    'JUMENTIX_JWT_TOKEN_SECRET_KEY=dev-jwt-secret',
-    'JUMENTIX_JWT_ISSUER=jumentix',
-    'JUMENTIX_JWT_AUDIENCE=jumentix-clients',
-    'JUMENTIX_MESSAGE_MEDIATOR_ADAPTER=rabbitmq',
-    'JUMENTIX_HTTP_FRAMEWORK=express',
-    'JUMENTIX_REALTIME_API=no',
-    'JUMENTIX_REALTIME_API_PROTOCOL=websocket',
-    '#JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER=redis-streams',
-    '#JUMENTIX_WEBSOCKET_REDIS_URL=redis://127.0.0.1:6379/1',
-    'JUMENTIX_REALTIME_API_DATABASE_DRIVER=Mongo',
-    'JUMENTIX_DATABASE_DRIVER=InMemory',
-    'JUMENTIX_DATABASE_NAME=jumentix',
-    'JUMENTIX_ENABLE_BASIC_AUTH=yes',
-    'JUMENTIX_AUTH_MAX_LOGIN_ATTEMPTS=5',
-    'JUMENTIX_AUTH_LOGIN_WINDOW_SECONDS=300',
-    'JUMENTIX_AUTH_LOCKOUT_SECONDS=900',
-    'JUMENTIX_CORS_ALLOWED_ORIGINS=http://localhost:3000',
-    'JUMENTIX_RABBITMQ_URL=amqp://guest:guest@127.0.0.1:5672',
-    'JUMENTIX_RABBITMQ_EXCHANGE=app.events',
-    'JUMENTIX_RABBITMQ_REQUEST_QUEUE=app.requests',
-    'JUMENTIX_RABBITMQ_PREFETCH=10',
-    ''
-  ].join('\n');
-  ['.env.dev', '.env.staging', '.env.ci', '.env.dev.example'].forEach((fileName) => {
-    fs.writeFileSync(path.join(dir, fileName), envContent, 'utf8');
-  });
-  return dir;
-}
-
-function cleanupTempConfigDir(dir: string) {
-  fs.rmSync(dir, { recursive: true, force: true });
-}
-
-function startServer(configDir: string, envOverrides: Record<string, string> = {}) {
-  const port = 3200 + Math.floor(Math.random() * 1000);
-  const env = {
-    ...process.env,
-    ...envOverrides,
-    JUMENTIX_SERVICE_MANAGEMENT_PORT: String(port),
-    JUMENTIX_SERVICE_MANAGEMENT_CONFIG_DIR: configDir
-  };
-  const proc = spawn('node', [serverPath], {
-    env,
-    stdio: ['ignore', 'pipe', 'pipe']
-  });
-  return { proc, port };
-}
-
-function waitForServer(port: number, maxAttempts = 30): Promise<void> {
-  return new Promise((resolve, reject) => {
-    let attempts = maxAttempts;
-    const tryConnect = () => {
-      const req = http.get(`http://127.0.0.1:${port}/api/runtime/env`, () => {
-        resolve();
-      });
-      req.on('error', () => {
-        if (attempts <= 0) {
-          reject(new Error('server did not start'));
-          return;
-        }
-        attempts -= 1;
-        setTimeout(tryConnect, 200);
-      });
-      req.end();
-    };
-    tryConnect();
-  });
-}
-
-function requestJson<T>(
-  port: number,
-  method: string,
-  pathname: string,
-  body?: unknown,
-  headers: Record<string, string> = {}
-): Promise<{ status: number; body: T }> {
-  return new Promise((resolve, reject) => {
-    const payload = body ? JSON.stringify(body) : '';
-    const req = http.request(
-      {
-        hostname: '127.0.0.1',
-        port,
-        path: pathname,
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Content-Length': payload ? Buffer.byteLength(payload) : 0,
-          ...headers
-        }
-      },
-      (res) => {
-        let raw = '';
-        res.on('data', (chunk) => {
-          raw += chunk;
-        });
-        res.on('end', () => {
-          resolve({
-            status: res.statusCode || 0,
-            body: raw ? JSON.parse(raw) : ({} as T)
-          });
-        });
-      }
-    );
-    req.on('error', reject);
-    if (payload) req.write(payload);
-    req.end();
-  });
-}
+const configFiles = () => Object.fromEntries(
+  ['.env.dev', '.env.staging', '.env.ci', '.env.dev.example']
+    .map((fileName) => [fileName, ENV_FILE_CONTENT])
+);
 
 describe('serviceManagement runtime env server', () => {
   let tempDir: string;
-  let server: ReturnType<typeof startServer>;
+  let server: StartedServer | undefined;
 
   beforeEach(() => {
-    tempDir = createTempConfigDir();
+    tempDir = createTempConfigDir(configFiles());
   });
 
   afterEach(() => {
-    if (server?.proc) {
-      server.proc.kill();
-    }
+    stopServer(server);
+    server = undefined;
     cleanupTempConfigDir(tempDir);
   });
 
   it('rejects unknown environment with 400 and accepted list', async () => {
     expect.hasAssertions();
-    server = startServer(tempDir);
-    await waitForServer(server.port);
+    server = await startServer(tempDir);
     const res = await requestJson<{ error: string; details: string }>(
       server.port,
       'GET',
@@ -161,8 +89,7 @@ describe('serviceManagement runtime env server', () => {
 
   it('honors environment parameter on GET', async () => {
     expect.hasAssertions();
-    server = startServer(tempDir);
-    await waitForServer(server.port);
+    server = await startServer(tempDir);
     const res = await requestJson<RuntimeEnvPayload>(
       server.port,
       'GET',
@@ -175,8 +102,7 @@ describe('serviceManagement runtime env server', () => {
 
   it('rejects POST without auth token when configured', async () => {
     expect.hasAssertions();
-    server = startServer(tempDir, { JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN: 'secret' });
-    await waitForServer(server.port);
+    server = await startServer(tempDir, { JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN: 'secret' });
     const res = await requestJson<{ error: string }>(
       server.port,
       'POST',
@@ -189,8 +115,7 @@ describe('serviceManagement runtime env server', () => {
 
   it('accepts POST with valid auth token and writes atomically', async () => {
     expect.hasAssertions();
-    server = startServer(tempDir, { JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN: 'secret' });
-    await waitForServer(server.port);
+    server = await startServer(tempDir, { JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN: 'secret' });
     const res = await requestJson<RuntimeEnvPayload>(
       server.port,
       'POST',
@@ -204,8 +129,7 @@ describe('serviceManagement runtime env server', () => {
 
   it('honors environment parameter on POST', async () => {
     expect.hasAssertions();
-    server = startServer(tempDir, { JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN: 'secret' });
-    await waitForServer(server.port);
+    server = await startServer(tempDir, { JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN: 'secret' });
     const res = await requestJson<RuntimeEnvPayload>(
       server.port,
       'POST',
@@ -220,8 +144,7 @@ describe('serviceManagement runtime env server', () => {
 
   it('writes the main and realtime database drivers as distinct keys', async () => {
     expect.hasAssertions();
-    server = startServer(tempDir, { JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN: 'secret' });
-    await waitForServer(server.port);
+    server = await startServer(tempDir, { JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN: 'secret' });
     const res = await requestJson<RuntimeEnvPayload>(
       server.port,
       'POST',
@@ -253,11 +176,11 @@ describe('serviceManagement runtime env server', () => {
       stdio: ['ignore', 'pipe', 'pipe']
     });
     let stderr = '';
-    proc.stderr?.on('data', (chunk) => {
+    proc.stderr?.on('data', (chunk: Buffer) => {
       stderr += chunk;
     });
     await new Promise<void>((resolve) => {
-      proc.on('exit', (code) => {
+      proc.on('exit', (code: number | null) => {
         expect(code).toBe(1);
         expect(stderr).toContain('config directory not found');
         resolve();
@@ -267,8 +190,7 @@ describe('serviceManagement runtime env server', () => {
 
   it('exposes editable and read-only tiers on GET but never secrets', async () => {
     expect.hasAssertions();
-    server = startServer(tempDir);
-    await waitForServer(server.port);
+    server = await startServer(tempDir);
     const res = await requestJson<RuntimeEnvPayload>(server.port, 'GET', '/api/runtime/env?environment=dev');
     expect(res.status).toBe(200);
     expect(res.body.values.JUMENTIX_DATABASE_DRIVER).toBe('InMemory');
@@ -278,7 +200,7 @@ describe('serviceManagement runtime env server', () => {
     expect(res.body.values).not.toHaveProperty('JUMENTIX_JWT_TOKEN_SECRET_KEY');
     expect(res.body.values).not.toHaveProperty('JUMENTIX_REDIS_PASSWORD');
     expect(res.body.values).not.toHaveProperty('JUMENTIX_RABBITMQ_URL');
-    expect(res.body.editableKeys).toStrictEqual(
+    expect(res.body.editableKeys ?? []).toStrictEqual(
       expect.arrayContaining([
         'JUMENTIX_HTTP_FRAMEWORK',
         'JUMENTIX_REALTIME_API',
@@ -291,14 +213,13 @@ describe('serviceManagement runtime env server', () => {
         'JUMENTIX_WEBSOCKET_REDIS_URL'
       ])
     );
-    expect(res.body.editableKeys).not.toContain('JUMENTIX_REDIS_HOST');
-    expect(res.body.editableKeys).not.toContain('JUMENTIX_REDIS_PASSWORD');
+    expect(res.body.editableKeys ?? []).not.toContain('JUMENTIX_REDIS_HOST');
+    expect(res.body.editableKeys ?? []).not.toContain('JUMENTIX_REDIS_PASSWORD');
   });
 
   it('ignores read-only and never-exposed keys on POST', async () => {
     expect.hasAssertions();
-    server = startServer(tempDir);
-    await waitForServer(server.port);
+    server = await startServer(tempDir);
     const res = await requestJson<RuntimeEnvPayload>(server.port, 'POST', '/api/runtime/env', {
       values: {
         JUMENTIX_HTTP_FRAMEWORK: 'fastify',
@@ -319,8 +240,7 @@ describe('serviceManagement runtime env server', () => {
 
   it('rejects out-of-enum values with the accepted list and writes nothing', async () => {
     expect.hasAssertions();
-    server = startServer(tempDir);
-    await waitForServer(server.port);
+    server = await startServer(tempDir);
     const before = fs.readFileSync(path.join(tempDir, '.env.dev'), 'utf8');
     const res = await requestJson<{ error: string; details: string }>(
       server.port,
@@ -337,8 +257,7 @@ describe('serviceManagement runtime env server', () => {
 
   it('rejects credential-bearing JUMENTIX_WEBSOCKET_REDIS_URL values', async () => {
     expect.hasAssertions();
-    server = startServer(tempDir);
-    await waitForServer(server.port);
+    server = await startServer(tempDir);
     const before = fs.readFileSync(path.join(tempDir, '.env.dev'), 'utf8');
     const res = await requestJson<{ error: string; details: string }>(
       server.port,
@@ -354,8 +273,7 @@ describe('serviceManagement runtime env server', () => {
 
   it('writes the widened editable set, uncommenting or appending keys as needed', async () => {
     expect.hasAssertions();
-    server = startServer(tempDir);
-    await waitForServer(server.port);
+    server = await startServer(tempDir);
     const res = await requestJson<RuntimeEnvPayload>(server.port, 'POST', '/api/runtime/env', {
       values: {
         JUMENTIX_DATABASE_DRIVER: 'PostgreSQL',
