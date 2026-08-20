@@ -96,6 +96,12 @@ See also:
 - [124-monorepo-root-layout-governance](requirements/project/124-monorepo-root-layout-governance.md)
 - [125-agent-support-declaration](requirements/project/125-agent-support-declaration.md)
 - [129-mandatory-firebase-agent-bus](requirements/project/129-mandatory-firebase-agent-bus.md)
+- [130-measured-claims-and-bounded-work](requirements/project/130-measured-claims-and-bounded-work.md)
+- [131-built-artifacts-carry-source-exports](requirements/software/131-built-artifacts-carry-source-exports.md)
+- [132-no-orphaned-published-artifacts](requirements/software/132-no-orphaned-published-artifacts.md)
+- [133-declared-indexes-for-ordered-queries](requirements/software/133-declared-indexes-for-ordered-queries.md)
+- [134-no-flaky-tests](requirements/software/134-no-flaky-tests.md)
+- [135-no-fake-tests](requirements/software/135-no-fake-tests.md)
 
 ## Software and Product Requirements
 

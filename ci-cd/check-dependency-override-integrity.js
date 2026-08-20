@@ -48,31 +48,50 @@ const packageJsonPath = path.join(repoRoot, 'package.json');
  */
 const REQUIRED_OVERRIDES = {
   'form-data': '^4.0.4',
-  uuid: '^11.1.1',
-  'js-yaml': '^4.3.0',
+  // Raised on 2026-08-20: Dependabot consolidated the direct/runtime pin, and
+  // the flat override must keep every transitive uuid consumer on the same
+  // reviewed major.
+  uuid: '^14.0.1',
+  // Raised on 2026-08-11: GHSA-5p4m-2wfm-xmqj has no 4.x backport.
+  'js-yaml': '^5.2.3',
   send: '^1.2.0',
   ws: '^8.18.3',
   tar: '^7.5.17',
   'find-my-way': '^9.7.0',
-  postcss: '^8.5.23',
-  'fast-uri': '^3.1.4',
+  // Raised on 2026-08-11: postcss 8.5.26 lifts nanoid to the fixed 3.3.17+ line.
+  postcss: '^8.5.26',
+  nanoid: '^3.3.18',
+  // Raised on 2026-08-11: GHSA-7p8r-x3mc-p8w7 affects fast-uri 3.x.
+  'fast-uri': '^4.1.2',
   svgo: '^4.0.2',
   'fast-xml-parser': '^5.10.1',
   'shell-quote': '^1.9.0',
-  // Raised from ^2.1.2 on 2026-07-30: GHSA-mh99-v99m-4gvg (HIGH, DoS via
-  // unbounded expansion) affects every version below 5.0.8. Found by the
+  // Raised from ^2.1.2 on 2026-07-30 and again on 2026-08-11:
+  // GHSA-rgw5-rvv9-x895 affects 5.0.8. Found by the
   // first-party OSV scanner, including the complete transitive dependency tree.
-  'brace-expansion': '^5.0.8',
+  'brace-expansion': '^5.0.9',
   sharp: '^0.35.0',
   protobufjs: '^7.6.5',
   // Was `cassandra-driver>adm-zip` under pnpm; the only nested selector with no
   // flat counterpart, so the flat pin below is what carries it forward.
   'adm-zip': '^0.6.0',
+  // Raised on 2026-08-13: monaco-editor nested `dompurify@3.4.8` past the
+  // resolutions pin; flat override lifts GHSA-55q2-fjhq-7xh7 / GHSA-cmwh-pvxp-8882.
+  dompurify: '^3.4.13',
+  // Raised on 2026-08-13: openapi-typescript@5 nested `undici@5.29.0` past the
+  // resolutions pin; 5.29.0 is the latest 5.x and carries HIGH WebSocket GHSAs.
+  // Flat override lifts it to the already-resolved 6.28.0 line.
+  undici: '^6.28.0',
 };
 
 /** Resolutions that must survive alongside the overrides. */
 const REQUIRED_RESOLUTIONS = {
-  serverless: '^4.1.12',
+  serverless: '^4.41.0',
+  // Raised on 2026-08-11: undici 6.28.0 keeps the serverless/node-gyp major while
+  // clearing the current moderate advisories.
+  undici: '^6.28.0',
+  mermaid: '^11.16.1',
+  dompurify: '^3.4.13',
 };
 
 /**
@@ -81,6 +100,12 @@ const REQUIRED_RESOLUTIONS = {
  */
 const REQUIRED_PATCHES = {
   'nextra-theme-docs@4.6.1': 'patches/nextra-theme-docs@4.6.1.patch',
+  // JUM-664: removes the IntersectionObserver gate from the Mermaid component
+  // the MDX compiler imports. Without it, no ```mermaid fence on the
+  // documentation site renders — the container it observes is empty, an empty
+  // box has no area, and a box with no area never intersects. Dropped silently,
+  // the site goes back to shipping blank spaces where diagrams should be.
+  '@theguild/remark-mermaid@0.3.0': 'patches/@theguild%2Fremark-mermaid@0.3.0.patch',
 };
 
 /**

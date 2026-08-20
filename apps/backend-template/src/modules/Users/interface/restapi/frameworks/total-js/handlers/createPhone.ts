@@ -2,9 +2,7 @@ import type { TotalJsRequest, TotalJsResponse } from '@src/interface/HTTP/adapte
 import { sendErrorResponse } from '@src/interface/HTTP/adapters/total-js/responses/sendErrorResponse';
 
 import type {
-  IHandlerFactory
-} from '@src/interface/HTTP/ports';
-import type {
+  IHandlerFactory,
   IbaseHandler,
   EndPointFactory
 } from '@src/interface/HTTP/ports';

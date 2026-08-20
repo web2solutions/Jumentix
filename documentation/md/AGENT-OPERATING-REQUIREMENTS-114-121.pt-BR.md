@@ -61,4 +61,8 @@ bun run agent-bus:publish -- --agent-id "<id>" --epic "<epic>" --task "<task>" -
 bun run agent-bus:watch -- --epic "<epic-url-or-id>"
 ```
 
-Exige `FIREBASE_SERVICE_ACCOUNT_KEY` e `FIREBASE_DATABASE_URL`. Firestore continua SSOT de ownership (`089`); Project Updates continuam o broadcast humano (`102` / `121`).
+Reutilize o projeto Firebase existente (`jumentix-service-registry`): defina
+`FIREBASE_SERVICE_ACCOUNT_KEY` ou `FIREBASE_SERVICE_ACCOUNT_KEY_FILE`.
+`FIREBASE_DATABASE_URL` é opcional (padrão
+`https://<project_id>-default-rtdb.firebaseio.com`). Firestore continua SSOT de ownership (`089`);
+Project Updates continuam o broadcast humano (`102` / `121`).

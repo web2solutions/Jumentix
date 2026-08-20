@@ -7,6 +7,7 @@ describe('service management mvp roadmap features', () => {
   const scriptPath = path.resolve(process.cwd(), 'apps/service-management/script.js');
 
   it('exposes schema diff controls in UI', () => {
+    expect.hasAssertions();
     const html = fs.readFileSync(indexPath, 'utf-8');
     expect(html).toContain('id="save-baseline-btn"');
     expect(html).toContain('id="run-schema-diff-btn"');
@@ -14,6 +15,7 @@ describe('service management mvp roadmap features', () => {
   });
 
   it('exposes RBAC and message contract controls in UI', () => {
+    expect.hasAssertions();
     const html = fs.readFileSync(indexPath, 'utf-8');
     expect(html).toContain('id="entity-rbac-action-select"');
     expect(html).toContain('id="entity-contract-name-input"');
@@ -21,6 +23,7 @@ describe('service management mvp roadmap features', () => {
   });
 
   it('includes OAS composition, package IO and export quality gate logic in script', () => {
+    expect.hasAssertions();
     const script = fs.readFileSync(scriptPath, 'utf-8');
     expect(script).toContain('entity-oas-composition-mode-select');
     expect(script).toContain('saveSelectedEntityOasComposition');
@@ -30,6 +33,7 @@ describe('service management mvp roadmap features', () => {
   });
 
   it('includes request/response example generator and JSON Schema exporter hooks', () => {
+    expect.hasAssertions();
     const html = fs.readFileSync(indexPath, 'utf-8');
     const script = fs.readFileSync(scriptPath, 'utf-8');
     expect(html).toContain('id="generate-examples-btn"');
@@ -41,6 +45,7 @@ describe('service management mvp roadmap features', () => {
   });
 
   it('includes advanced roadmap controls: relationship path, templates, OpenAPI advanced, mini-map', () => {
+    expect.hasAssertions();
     const html = fs.readFileSync(indexPath, 'utf-8');
     const script = fs.readFileSync(scriptPath, 'utf-8');
     expect(html).toContain('id="relationship-bend-x-input"');

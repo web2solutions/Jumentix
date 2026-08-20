@@ -2,6 +2,25 @@
 
 This guide is exclusively for the gRPC realtime interface.
 
+## Glossary
+
+- **Inbound adapter** — accepts external protocol calls and translates them into use-case calls.
+
+## Responsibility in context
+
+- **Stack layer:** adapter / realtime
+- **Owns:** framework-specific wiring for this technology
+- **Used with:** backend-template composition, persistence/SDK packages as needed, matching delivery guide
+- **Not responsible for:** domain rules, OpenAPI authoring, or browser offline storage
+
+## Why it exists
+
+Framework choice should stay at the edge. This adapter keeps Express/Fastify/DB/realtime details replaceable.
+
+## What it is
+
+Grpc Api adapter for Jumentix realtime interfaces — mounts application use-cases without leaking framework types into the domain.
+
 ## Scope
 
 - Transport: gRPC
@@ -12,9 +31,9 @@ This guide is exclusively for the gRPC realtime interface.
 
 ## Contract References
 
-- [gRPC Realtime Contracts](../../contracts/GRPC-REALTIME-CONTRACTS.md)
-- [Error Contracts and Responses](../../ERROR-CONTRACTS-AND-RESPONSES.md)
-- [Events and Messages Map](../../EVENTS-AND-MESSAGES-MAP.md)
+- gRPC Realtime Contracts
+- [Error Contracts and Responses](/docs/jumentix/reference/errors-responses)
+- [Events and Messages Map](/docs/jumentix/reference/events-messages)
 
 ## Service Contract
 
@@ -127,3 +146,13 @@ stream.end();
 2. Prefer unary RPC for independent operations.
 3. Use stream exchange for high-frequency operation batches.
 4. Enforce per-request correlation with `metadataJson.requestId`.
+
+## Junior checklist (“I can …”)
+
+- [ ] I know when to pick this adapter
+- [ ] I can start it from the documented script
+- [ ] I know the next guide/package to read
+
+## Next step
+
+Return to [Getting started](/docs/jumentix/concepts/getting-started) or the matching delivery guide.

@@ -1,24 +1,111 @@
 # DynamoDB Adapter
 
-## Technology
+The DynamoDB adapter connects the Jumentix persistence contract to DynamoDB. Use cases keep talking to repository ports; database selection stays in composition.
 
-AWS SDK DynamoDB client profile.
+## Integrated technology
 
-## Build Services with DynamoDB
+AWS DynamoDB key-value and document database
 
-1. Start local container:
+- **Data model:** Key-value/document
+- **Jumentix driver:** `DynamoDB`
+- **Runtime selection:** `JUMENTIX_DATABASE_DRIVER=DynamoDB`
+
+## When to use
+
+Use it for: AWS-native services that need managed scale and access-pattern-first modeling.
+
+## When to avoid
+
+Avoid when ad hoc relational querying is a product requirement.
+
+## How to validate locally
+
+Use the real monorepo smoke test. It validates the adapter lifecycle and prevents shipping configuration that does not connect.
 
 ```bash
 bun run docker:up:dynamodb
+JUMENTIX_DATABASE_DRIVER=DynamoDB bun run smoke:db:dynamodb
 ```
 
-2. Set env:
+## Complete example: Task and Category with a database port
 
-```bash
-JUMENTIX_DATABASE_DRIVER=DynamoDB
-JUMENTIX_DYNAMODB_ENDPOINT=http://127.0.0.1:8000
-JUMENTIX_AWS_REGION=us-east-1
+```ts
+type Category = {
+  id: string;
+  name: string;
+};
+
+type Task = {
+  id: string;
+  title: string;
+  categoryId: string;
+  completed: boolean;
+};
+
+type Repository<T extends { id: string }> = {
+  create(record: T): Promise<T>;
+  getById(id: string): Promise<T | undefined>;
+  list(): Promise<T[]>;
+};
+
+function createRepository<T extends { id: string }>(): Repository<T> {
+  const records = new Map<string, T>();
+
+  return {
+    async create(record) {
+      records.set(record.id, record);
+      return record;
+    },
+    async getById(id) {
+      return records.get(id);
+    },
+    async list() {
+      return [...records.values()];
+    }
+  };
+}
+
+const adapterProfile = {
+  driver: 'DynamoDB',
+  dataModel: 'Key-value/document',
+  smokeTest: 'bun run smoke:db:dynamodb'
+} as const;
+
+const categories = createRepository<Category>();
+const tasks = createRepository<Task>();
+
+export async function seedTaskCatalog() {
+  const operations = await categories.create({ id: crypto.randomUUID(), name: 'Operations' });
+  const finance = await categories.create({ id: crypto.randomUUID(), name: 'Finance' });
+
+  await tasks.create({
+    id: crypto.randomUUID(),
+    title: 'Review adapter smoke test',
+    categoryId: operations.id,
+    completed: false
+  });
+
+  await tasks.create({
+    id: crypto.randomUUID(),
+    title: 'Close billing reconciliation',
+    categoryId: finance.id,
+    completed: true
+  });
+
+  return { adapterProfile, categories: await categories.list(), tasks: await tasks.list() };
+}
+
+export async function listTasksForCategory(categoryId: string): Promise<Task[]> {
+  const category = await categories.getById(categoryId);
+
+  if (!category) {
+    throw new Error('Category not found');
+  }
+
+  return (await tasks.list()).filter((task) => task.categoryId === category.id);
+}
 ```
 
-3. Start service adapter.
+## What changes in production
 
+The example above shows the full contract with an in-memory implementation so it can be read end to end. In production, composition injects the real client selected by `JUMENTIX_DATABASE_DRIVER=DynamoDB`; the domain stays the same.

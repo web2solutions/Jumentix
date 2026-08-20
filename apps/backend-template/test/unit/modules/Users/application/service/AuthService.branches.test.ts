@@ -151,6 +151,45 @@ describe('auth service extra branches', () => {
     expect(response).toStrictEqual(expect.objectContaining({ id: 'u1' }));
   });
 
+  it('honours the configured lockout policy rather than only its defaults (JUM-681)', async () => {
+    expect.hasAssertions();
+
+    // `JUMENTIX_AUTH_MAX_LOGIN_ATTEMPTS`, `_LOGIN_WINDOW_SECONDS` and
+    // `_LOCKOUT_SECONDS` are read on every check, and nothing asserted that a
+    // configured value was used — the defaults were covered and the configured
+    // path was not, so an operator tightening the policy had no evidence it
+    // took effect.
+    process.env.JUMENTIX_AUTH_MAX_LOGIN_ATTEMPTS = '2';
+    process.env.JUMENTIX_AUTH_LOGIN_WINDOW_SECONDS = '30';
+    process.env.JUMENTIX_AUTH_LOCKOUT_SECONDS = '60';
+
+    const store = new Map<string, any>();
+    const keyValueStorageClient = {
+      get: jest.fn().mockImplementation(async (key: string) => ({ result: store.get(key) })),
+      set: jest.fn().mockImplementation(async (key: string, value: any) => {
+        store.set(key, value);
+        return { result: true };
+      }),
+      del: jest.fn().mockImplementation(async (key: string) => {
+        store.delete(key);
+        return { result: true };
+      })
+    };
+    const { service, passwordCryptoService } = setup({ keyValueStorageClient });
+    passwordCryptoService.compare.mockResolvedValue(false);
+
+    await service.authenticate('john', 'wrong', EAuthSchemaType.Bearer);
+    // One failure short of the configured limit: no lock yet.
+    expect(store.has('auth:locked:john')).toBe(false);
+
+    await service.authenticate('john', 'wrong', EAuthSchemaType.Bearer);
+    // The second failure reaches the configured two, not the default five.
+    expect(store.has('auth:locked:john')).toBe(true);
+
+    const locked = await service.authenticate('john', 'wrong', EAuthSchemaType.Bearer);
+    expect(locked.error?.message).toBe('authentication temporarily locked');
+  });
+
   it('covers lockout and audit paths for authentication', async () => {
     expect.hasAssertions();
     const store = new Map<string, any>();

@@ -245,6 +245,22 @@ export class RestAPI<T> {
     });
   }
 
+  /**
+   * "This framework has no handler for that operation", across runtimes.
+   *
+   * The fallback to Express depends on recognising a missing module, and it
+   * used to test `error.code === 'MODULE_NOT_FOUND'` alone. Bun and Node set
+   * that code; **Jest's resolver does not** — it throws its own error whose
+   * message is `Cannot find module ... from ...` and whose `code` is
+   * undefined. So the same adapter fell back correctly under `bun test` and
+   * threw under Jest, which is how the Adonis-JS and Total-JS suites passed on
+   * one runner and failed on the other (JUM-698).
+   */
+  private static isModuleNotFound(error: any): boolean {
+    if (error?.code === 'MODULE_NOT_FOUND') return true;
+    return /cannot find module|could not locate module/i.test(String(error?.message || ''));
+  }
+
   private getHandlerFactory({
     moduleName,
     operationId,
@@ -263,7 +279,7 @@ export class RestAPI<T> {
           return handlerModule.default(factoryDeps);
         }
       } catch (error: any) {
-        if (error?.code !== 'MODULE_NOT_FOUND') {
+        if (!RestAPI.isModuleNotFound(error)) {
           throw error;
         }
       }
@@ -311,10 +327,32 @@ export class RestAPI<T> {
 
     await this.databaseClient.connect();
     await this.server.start();
+    this.startDeadLetterReplay();
     this.started = true;
   }
 
+  /**
+   * JUM-53 — drain the writes the mutex refused.
+   *
+   * The composition builds the worker and deliberately leaves it stopped: a
+   * background timer is the runtime's to own. This is the runtime. Every
+   * adapter reaches here through `start()`, and `stop()` below ends it, so the
+   * timer's life is exactly the server's.
+   *
+   * Without a key-value client the composition returns no queue and no worker,
+   * and this does nothing — the service keeps its previous behaviour of
+   * throwing and discarding.
+   */
+  private startDeadLetterReplay(): void {
+    const worker = this.composeUsersModule().deadLetterWorker;
+    if (!worker) return;
+    worker.start();
+  }
+
   public async stop(): Promise<void> {
+    // Before the clients close, or the drain would run against a disconnected
+    // store and report a failure that means nothing.
+    this.usersComposition?.deadLetterWorker?.stop();
     if (this.keyValueStorageClient) {
       await this.keyValueStorageClient.disconnect();
       // this.keyValueStorageClient = undefined;
@@ -331,52 +369,51 @@ export class RestAPI<T> {
     await this.seedUsers();
   }
 
+  /**
+   * Seeded one at a time, on purpose (JUM-687).
+   *
+   * This used to run every create concurrently through `Promise.all`. Seeding a
+   * handful of fixtures is not a throughput path — the concurrency bought
+   * nothing and put several writers on the same organization record at once,
+   * which is the shape the intermittent CI failures point at: a user that
+   * exists but is not where a later request expects to find it.
+   */
   public async seedOrganizations(): Promise<any[]> {
     const { organizationUseCases } = this.composeUsersModule();
-    const requests: Promise<any>[] = [];
+    const seeded: any[] = [];
+
     for (const organization of organizations) {
-      requests.push(new Promise((resolve, reject) => {
-        (async () => {
-          try {
-            const existing = await organizationUseCases.getOneById(organization.id);
-            if (existing.result) {
-              resolve(existing.result);
-              return;
-            }
-            const created = await organizationUseCases.create(organization as any);
-            if (created.error) throw created.error;
-            if (!created.result) throw new Error('Organization seed failed');
-            resolve(created.result);
-          } catch (error: any) {
-            reject(new Error(error.message));
-          }
-        })();
-      }));
+      // eslint-disable-next-line no-await-in-loop
+      const existing = await organizationUseCases.getOneById(organization.id);
+      if (existing.result) {
+        seeded.push(existing.result);
+      } else {
+        // eslint-disable-next-line no-await-in-loop
+        const created = await organizationUseCases.create(organization as any);
+        if (created.error) throw new Error((created.error as Error).message);
+        if (!created.result) throw new Error('Organization seed failed');
+        seeded.push(created.result);
+      }
     }
-    return Promise.all(requests);
+
+    return seeded;
   }
 
+  /** Sequential for the same reason as `seedOrganizations` (JUM-687). */
   public async seedUsers(): Promise<IUser[]> {
     await this.seedOrganizations();
     const { userUseCases } = this.composeUsersModule();
-    const requests: Promise<IUser>[] = [];
+    const seeded: IUser[] = [];
+
     for (const user of users) {
-      requests.push(new Promise((resolve, reject) => {
-        (async () => {
-          try {
-            const newUser = await userUseCases.create(user);
-            if (newUser.error) throw newUser.error;
-            if (!newUser.result) throw new Error('User seed failed');
-            resolve(newUser.result);
-          } catch (error: any) {
-            // console.log(error.message);
-            reject(new Error(error.message));
-          }
-        })();
-      }));
+      // eslint-disable-next-line no-await-in-loop
+      const newUser = await userUseCases.create(user);
+      if (newUser.error) throw new Error((newUser.error as Error).message);
+      if (!newUser.result) throw new Error('User seed failed');
+      seeded.push(newUser.result);
     }
-    return Promise.all(requests);
-    // console.log('>>>> done');
+
+    return seeded;
   }
 
   public async deleteUsers(): Promise<boolean[]> {

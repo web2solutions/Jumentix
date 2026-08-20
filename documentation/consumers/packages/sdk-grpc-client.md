@@ -1,0 +1,95 @@
+# @jumentix/sdk-grpc-client
+
+AsyncAPI/gRPC client for the realtime gateway — Node-oriented, no browser Run playground.
+
+## What it is
+
+AsyncAPI/gRPC client for the realtime gateway — Node-oriented, no browser Run playground.
+
+## Why it exists
+
+gRPC clients need the proto + envelope conventions; this package standardizes them.
+
+**When to use:** Node services calling the Jumentix gRPC realtime gateway.
+
+**When not to use:** Browser apps (use REST/WS SDKs) or in-process events (message-mediator).
+
+## Responsibility in context
+
+- **Stack layer:** SDK / realtime adapter (Node)
+- **Problem boundary it owns:** `GrpcApiClient` and proto loading for `realtime.AsyncApiGateway`.
+- **Used with:** shared-contracts; server gRPC adapter docs.
+- **Typical composition:** Realtime guide gRPC path → this client in Node workers/services.
+- **Journeys:** [Realtime API guide](/docs/jumentix/guides/realtime-api).
+- **Not responsible for:** Browser networking or DB persistence.
+
+## Prerequisites
+
+- Bun 1.3.13+ (monorepo pin) or the Node runtime your service already uses
+- Read [Getting started](/docs/jumentix/concepts/getting-started) first
+- Basic TypeScript modules/`import` knowledge
+
+## Glossary
+
+- **Port** — TypeScript contract the application depends on (no vendor types).
+- **Adapter** — Concrete implementation that talks to a driver, broker, or protocol.
+- **Composition root** — Process startup code that wires env → adapters → use-cases.
+
+## Numbered steps
+
+### 1. Install
+
+```bash
+bun add @jumentix/sdk-grpc-client
+```
+
+### 2. First success (under 30 min)
+
+```ts
+import { GrpcApiClient } from '@jumentix/sdk-grpc-client';
+
+const client = new GrpcApiClient('localhost:3002');
+const response = await client.request({
+  operationId: 'createUser',
+  input: { username: 'john', password: 'StrongPass#123' }
+});
+```
+
+
+### 3. Core workflows
+
+### 1. Point at host:port
+
+Use the gRPC gateway address from env.
+
+### 2. Send envelope
+
+operationId + input matching AsyncAPI/proto.
+
+### 3. Deploy only on Node
+
+Do not bundle this into a browser app.
+
+
+### 4. Full practical surface (exports)
+
+- `GrpcApiClient`
+
+Use exports from application/adapters layers as described above — not from domain entities.
+
+## Common errors
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| Proto not found | Packaging/path issue | Ensure dist proto is present in the installed package. |
+
+**Verify success:** the first-success snippet runs (or typechecks against your service) and your use-case depends only on ports.
+
+## Junior checklist (“I can …”)
+
+- [ ] I can run a Node hello against a local gRPC gateway
+- [ ] I know this page is docs-only (no browser playground)
+
+## Next step
+
+Continue with [message-mediator](/docs/jumentix/packages/message-mediator).

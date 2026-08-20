@@ -1,0 +1,106 @@
+---
+title: "Getting started with Cana"
+description: "Install Cana and build the minimal categorized task database."
+---
+
+# Getting started with Cana
+
+This page builds the smallest useful Cana database for a categorized task app.
+It creates two tables, writes seed data and reads the records back.
+
+## Install
+
+```bash
+bun add @jumentix/cana
+```
+
+## Complete minimal task app
+
+```ts
+import { createClient, type CanaSchema } from '@jumentix/cana';
+
+type Category = {
+  id: string;
+  name: string;
+  color: string;
+  createdAt: number;
+  updatedAt: number;
+};
+
+type Task = {
+  id: string;
+  title: string;
+  categoryId: string;
+  completed: boolean;
+  priority: 'low' | 'medium' | 'high';
+  createdAt: number;
+  updatedAt: number;
+};
+
+const schema: CanaSchema = {
+  version: 1,
+  stores: [
+    {
+      name: 'categories',
+      keyPath: 'id',
+      indexes: [{ name: 'byName', keyPath: 'name', unique: true }]
+    },
+    {
+      name: 'tasks',
+      keyPath: 'id',
+      indexes: [
+        { name: 'byCategory', keyPath: 'categoryId' },
+        { name: 'byCompleted', keyPath: 'completed' },
+        { name: 'byUpdatedAt', keyPath: 'updatedAt' }
+      ]
+    }
+  ]
+};
+
+const client = createClient({
+  name: 'tasks-app',
+  schema,
+  originId: 'tasks-page'
+});
+
+await client.open();
+
+const now = Date.now();
+await client.table<Category>('categories').bulkAdd([
+  { id: 'work', name: 'Work', color: '#2563eb', createdAt: now, updatedAt: now },
+  { id: 'home', name: 'Home', color: '#16a34a', createdAt: now, updatedAt: now }
+]);
+
+await client.table<Task>('tasks').add({
+  id: 'task-1',
+  title: 'Write the Cana tutorial',
+  categoryId: 'work',
+  completed: false,
+  priority: 'high',
+  createdAt: now,
+  updatedAt: now
+});
+
+const categories = await client.table<Category>('categories').query({ index: 'byName' });
+const tasks = await client.table<Task>('tasks').query({ index: 'byUpdatedAt' });
+
+console.log({ backend: client.backend, categories, tasks });
+```
+
+## What to notice
+
+- `open()` is explicit. Cana never hides a schema upgrade behind an unrelated
+  `get()` or `put()`.
+- `client.backend` tells you which storage backend opened, useful for diagnostics.
+- Table names are strings because they cross worker and IndexedDB boundaries.
+  Keep them stable and small: `categories`, `tasks`.
+- UI state is not stored in Cana. Store rendered state in React, Redux, Pinia or
+  another UI layer, then write durable data through Cana.
+
+## Run it here
+
+<CanaPlayground id="getting-started" />
+
+## Next
+
+Continue to [schema and keys](/docs/jumentix/packages/cana/usage/schema-keys) before adding more tables.

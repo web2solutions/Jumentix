@@ -2,69 +2,70 @@
 import { spawn } from 'node:child_process';
 import path from 'node:path';
 import fs from 'node:fs';
-import os from 'node:os';
 import {
+  serverPath,
+  cleanupTempConfigDir,
+  createTempConfigDir,
   requestJson,
   startServer,
-  stopServer,
-  type StartedServer
+  stopServer
 } from './serverHarness';
+import type { RuntimeEnvPayload, StartedServer } from './serverHarness';
 
-const serverPath = path.resolve(process.cwd(), 'apps/service-management/server.js');
+/**
+ * The shared harness rather than a private copy of it (JUM-722).
+ *
+ * This suite carried its own `startServer`: a `3200 + random*1000` port, no
+ * retry on EADDRINUSE, and readiness taken from a probe — the three things
+ * JUM-628 replaced everywhere else. Jest runs suite files in parallel, so two
+ * servers inside a 1000-port window collide, the loser dies unheard, and the
+ * probe is answered by whichever server is actually on that port. That is how
+ * "honors environment parameter on POST" once saw a 200 whose body had no
+ * `environment` field at all: the answer came from another suite's server.
+ *
+ * Readiness now comes from the child's own listen line, so a server that did
+ * not start cannot be mistaken for one that did.
+ */
+const ENV_FILE_CONTENT = [
+  'JUMENTIX_REDIS_HOST=127.0.0.1',
+  'JUMENTIX_REDIS_PORT=6379',
+  'JUMENTIX_REDIS_DATABASE=1',
+  'JUMENTIX_REDIS_PASSWORD=dev-redis-password',
+  'JUMENTIX_JWT_TOKEN_SECRET_KEY=dev-jwt-secret',
+  'JUMENTIX_JWT_ISSUER=jumentix',
+  'JUMENTIX_JWT_AUDIENCE=jumentix-clients',
+  'JUMENTIX_MESSAGE_MEDIATOR_ADAPTER=rabbitmq',
+  'JUMENTIX_HTTP_FRAMEWORK=express',
+  'JUMENTIX_REALTIME_API=no',
+  'JUMENTIX_REALTIME_API_PROTOCOL=websocket',
+  '#JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER=redis-streams',
+  '#JUMENTIX_WEBSOCKET_REDIS_URL=redis://127.0.0.1:6379/1',
+  'JUMENTIX_REALTIME_API_DATABASE_DRIVER=Mongo',
+  'JUMENTIX_DATABASE_DRIVER=InMemory',
+  'JUMENTIX_DATABASE_NAME=jumentix',
+  'JUMENTIX_ENABLE_BASIC_AUTH=yes',
+  'JUMENTIX_AUTH_MAX_LOGIN_ATTEMPTS=5',
+  'JUMENTIX_AUTH_LOGIN_WINDOW_SECONDS=300',
+  'JUMENTIX_AUTH_LOCKOUT_SECONDS=900',
+  'JUMENTIX_CORS_ALLOWED_ORIGINS=http://localhost:3000',
+  'JUMENTIX_RABBITMQ_URL=amqp://guest:guest@127.0.0.1:5672',
+  'JUMENTIX_RABBITMQ_EXCHANGE=app.events',
+  'JUMENTIX_RABBITMQ_REQUEST_QUEUE=app.requests',
+  'JUMENTIX_RABBITMQ_PREFETCH=10',
+  ''
+].join('\n');
 
-type RuntimeEnvPayload = {
-  environment: string;
-  fileName: string;
-  editableKeys: string[];
-  values: Record<string, string>;
-};
-
-function createTempConfigDir() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jumentix-service-management-'));
-  const envContent = [
-    'JUMENTIX_REDIS_HOST=127.0.0.1',
-    'JUMENTIX_REDIS_PORT=6379',
-    'JUMENTIX_REDIS_DATABASE=1',
-    'JUMENTIX_REDIS_PASSWORD=dev-redis-password',
-    'JUMENTIX_JWT_TOKEN_SECRET_KEY=dev-jwt-secret',
-    'JUMENTIX_JWT_ISSUER=jumentix',
-    'JUMENTIX_JWT_AUDIENCE=jumentix-clients',
-    'JUMENTIX_MESSAGE_MEDIATOR_ADAPTER=rabbitmq',
-    'JUMENTIX_HTTP_FRAMEWORK=express',
-    'JUMENTIX_REALTIME_API=no',
-    'JUMENTIX_REALTIME_API_PROTOCOL=websocket',
-    '#JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER=redis-streams',
-    '#JUMENTIX_WEBSOCKET_REDIS_URL=redis://127.0.0.1:6379/1',
-    'JUMENTIX_REALTIME_API_DATABASE_DRIVER=Mongo',
-    'JUMENTIX_DATABASE_DRIVER=InMemory',
-    'JUMENTIX_DATABASE_NAME=jumentix',
-    'JUMENTIX_ENABLE_BASIC_AUTH=yes',
-    'JUMENTIX_AUTH_MAX_LOGIN_ATTEMPTS=5',
-    'JUMENTIX_AUTH_LOGIN_WINDOW_SECONDS=300',
-    'JUMENTIX_AUTH_LOCKOUT_SECONDS=900',
-    'JUMENTIX_CORS_ALLOWED_ORIGINS=http://localhost:3000',
-    'JUMENTIX_RABBITMQ_URL=amqp://guest:guest@127.0.0.1:5672',
-    'JUMENTIX_RABBITMQ_EXCHANGE=app.events',
-    'JUMENTIX_RABBITMQ_REQUEST_QUEUE=app.requests',
-    'JUMENTIX_RABBITMQ_PREFETCH=10',
-    ''
-  ].join('\n');
-  ['.env.dev', '.env.staging', '.env.ci', '.env.dev.example'].forEach((fileName) => {
-    fs.writeFileSync(path.join(dir, fileName), envContent, 'utf8');
-  });
-  return dir;
-}
-
-function cleanupTempConfigDir(dir: string) {
-  fs.rmSync(dir, { recursive: true, force: true });
-}
+const configFiles = () => Object.fromEntries(
+  ['.env.dev', '.env.staging', '.env.ci', '.env.dev.example']
+    .map((fileName) => [fileName, ENV_FILE_CONTENT])
+);
 
 describe('serviceManagement runtime env server', () => {
   let tempDir: string;
   let server: StartedServer | undefined;
 
   beforeEach(() => {
-    tempDir = createTempConfigDir();
+    tempDir = createTempConfigDir(configFiles());
   });
 
   afterEach(() => {
@@ -175,11 +176,11 @@ describe('serviceManagement runtime env server', () => {
       stdio: ['ignore', 'pipe', 'pipe']
     });
     let stderr = '';
-    proc.stderr?.on('data', (chunk) => {
+    proc.stderr?.on('data', (chunk: Buffer) => {
       stderr += chunk;
     });
     await new Promise<void>((resolve) => {
-      proc.on('exit', (code) => {
+      proc.on('exit', (code: number | null) => {
         expect(code).toBe(1);
         expect(stderr).toContain('config directory not found');
         resolve();
@@ -199,7 +200,7 @@ describe('serviceManagement runtime env server', () => {
     expect(res.body.values).not.toHaveProperty('JUMENTIX_JWT_TOKEN_SECRET_KEY');
     expect(res.body.values).not.toHaveProperty('JUMENTIX_REDIS_PASSWORD');
     expect(res.body.values).not.toHaveProperty('JUMENTIX_RABBITMQ_URL');
-    expect(res.body.editableKeys).toStrictEqual(
+    expect(res.body.editableKeys ?? []).toStrictEqual(
       expect.arrayContaining([
         'JUMENTIX_HTTP_FRAMEWORK',
         'JUMENTIX_REALTIME_API',
@@ -212,8 +213,8 @@ describe('serviceManagement runtime env server', () => {
         'JUMENTIX_WEBSOCKET_REDIS_URL'
       ])
     );
-    expect(res.body.editableKeys).not.toContain('JUMENTIX_REDIS_HOST');
-    expect(res.body.editableKeys).not.toContain('JUMENTIX_REDIS_PASSWORD');
+    expect(res.body.editableKeys ?? []).not.toContain('JUMENTIX_REDIS_HOST');
+    expect(res.body.editableKeys ?? []).not.toContain('JUMENTIX_REDIS_PASSWORD');
   });
 
   it('ignores read-only and never-exposed keys on POST', async () => {

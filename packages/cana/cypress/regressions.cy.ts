@@ -21,6 +21,29 @@ import { rejection, thrownBy } from './harness';
 
 interface Design { id: number; name: string }
 
+/**
+ * Wait for a condition rather than for a duration (JUM-679, Requirement 134 §3).
+ *
+ * A fixed sleep long enough to be reliable on a loaded runner is a sleep that
+ * costs that long on every run, and one short enough to be cheap is a flake
+ * waiting for a slow machine. Polling ends the moment the condition holds, and
+ * the bound exists only so a condition that never holds fails as a named
+ * timeout instead of hanging the suite.
+ */
+async function until(
+  condition: () => boolean,
+  what: string,
+  timeoutMs = 2_000
+): Promise<void> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (condition()) return;
+    // eslint-disable-next-line no-await-in-loop
+    await new Promise((resolve) => { setTimeout(resolve, 5); });
+  }
+  throw new Error(`Timed out after ${timeoutMs}ms waiting for: ${what}`);
+}
+
 const schema = (version = 1): CanaSchema => ({
   version,
   stores: [{ name: 'designs', keyPath: 'id' }]
@@ -369,7 +392,9 @@ describe('regression: orphaned connection after a blocked timeout', () => {
       name: 'designer', schema: schema(), factory, blockedTimeoutMs: 20
     }))).to.deep.include({ code: 'UpgradeBlocked' });
 
-    await new Promise((resolve) => { setTimeout(resolve, 120); });
+    // The connection arrives late; what is asserted is that it gets closed, not
+    // how long that takes.
+    await until(() => closed, 'the late connection to be closed');
 
     expect(closed).to.equal(true);
   });

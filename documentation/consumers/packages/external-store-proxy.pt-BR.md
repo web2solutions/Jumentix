@@ -1,0 +1,94 @@
+# @jumentix/external-store-proxy
+
+Bridges native database clients into the `IStore` shape application code expects.
+
+## O que é
+
+Bridges native database clients into the `IStore` shape application code expects.
+
+## Por que existe
+
+Use-cases should depend on `IStore`, not mongoose/sequelize clients. This package is the bridge.
+
+**Quando usar:** You have an external DB client/repository and need `IStore` instances for application ports.
+
+**Quando não usar:** You are still choosing a driver (start with database-client-factory) or defining contracts (persistence-contracts).
+
+## Responsabilidade no escopo
+
+- **Camada:** persistence / adapter
+- **Fronteira do problema:** `ExternalStoreProxy` and `createExternalStores`.
+- **Usado com:** persistence-contracts (`IStore`), external-db-repositories (drivers), database-client-factory (selection).
+- **Composição típica:** factory selects client → repositories/proxy expose `IStore` → use-cases call ports.
+- **Jornadas:** REST API guide persistence steps.
+- **Não é responsável por:** SQL/Mongo query dialects themselves or HTTP transport.
+
+## Pré-requisitos
+
+- Bun 1.3.13+ (pin do monorepo) ou o Node do seu serviço
+- Leia [Começando](/docs/pt-BR/jumentix/concepts/getting-started)
+- TypeScript básico (`import`/módulos)
+
+## Glossário
+
+- **Porta (port)** — contrato TypeScript da aplicação (sem tipos de vendor).
+- **Adaptador** — implementação concreta de driver/broker/protocolo.
+- **Composition root** — startup que liga env → adaptadores → use-cases.
+
+## Passos numerados
+
+### 1. Instalar
+
+```bash
+bun add @jumentix/external-store-proxy
+```
+
+### 2. Primeiro sucesso (menos de 30 min)
+
+```ts
+import { createExternalStores } from '@jumentix/external-store-proxy';
+
+// `client` comes from your composed database client / repository layer.
+const stores = createExternalStores(client);
+// Pass stores.users (etc.) into use-cases as IStore ports.
+```
+
+
+### 3. Fluxos centrais
+
+### 1. Create stores from a client
+
+Call `createExternalStores` once at composition root.
+
+### 2. Inject into use-cases
+
+Pass `IStore` ports only — not the native client.
+
+### 3. Test with fakes
+
+Swap in an in-memory IStore in unit tests.
+
+
+### 4. Superfície prática (exports)
+
+- `ExternalStoreProxy`
+- `createExternalStores`
+
+Use os exports nas camadas de aplicação/adaptadores — não em entidades de domínio.
+
+## Erros comuns
+
+| Sintoma | Causa | Correção |
+|---------|-------|----------|
+| Use-case imports ExternalStoreProxy directly | Leaky abstraction | Depend on IStore from persistence-contracts. |
+
+**Como verificar:** o snippet de primeiro sucesso roda (ou typechecka no serviço) e o use-case depende só de ports.
+
+## Checklist júnior (“Eu consigo …”)
+
+- [ ] I can create IStore proxies without leaking driver types
+- [ ] I know where this sits between factory and use-cases
+
+## Próximo passo
+
+Continue com [database-client-factory](/docs/pt-BR/jumentix/packages/database-client-factory).

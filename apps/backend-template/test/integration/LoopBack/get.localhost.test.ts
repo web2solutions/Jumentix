@@ -1,31 +1,101 @@
-/* global describe, it, expect, jest */
+/* global describe, it, expect, beforeAll, afterAll */
+import request from 'supertest';
+import { LoopBackServer } from '@src/interface/HTTP/adapters/loopback/LoopBackServer';
 import { infraHandlers } from '@src/interface/HTTP/adapters/loopback/handlers/infraHandlers';
-import { Context } from '@src/infra/context/Context';
+import { RestAPI } from '@src/interface/HTTP/RestAPI';
+import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
+import { InMemoryKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
+import { MutexService } from '@src/infra/mutex/adapter/MutexService';
+import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
+import { JwtService } from '@src/infra/jwt/JwtService';
+import { AuthService } from '@src/modules/Users/service/AuthService';
+import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal';
+import { UserDataRepository, UserService } from '@src/modules/Users';
+import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
+
+/**
+ * JUM-704 — this suite lives in `test/integration/LoopBack/`, and now
+ * integrates.
+ *
+ * It used to call `localhostGetHandlerFactory({}).handler({}, fakeResponse)`
+ * and assert the payload passed to `res.json`. The assertion was real; the
+ * claim the directory makes was not. The router never ran, and neither did the
+ * request context — which is how a defect this suite existed to catch survived:
+ * the adapter established no correlation store, so **every request through it
+ * answered 500**, and the test hid that by calling `Context.run` itself.
+ *
+ * It issues a real request now, against the listener `start` binds. The
+ * correlation id is asserted as *a* UUID rather than a fixed string, because
+ * the adapter mints it per request — pinning a literal would pin the test's own
+ * input again.
+ */
+const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+const webServer = LoopBackServer.compile() as LoopBackServer;
+const passwordCryptoService = PasswordCryptoService.compile();
+const jwtService = JwtService.compile();
+const keyValueStorageClient = InMemoryKeyValueStorageClient.compile();
+const mutexService = MutexService.compile(keyValueStorageClient);
+
+const dataRepository = UserDataRepository.compile({ databaseClient: InMemoryDbClient });
+const userService = UserService.compile({
+  dataRepository,
+  services: { passwordCryptoService, mutexService }
+});
+const authService = AuthService.compile(
+  UserProviderLocal.compile(userService),
+  passwordCryptoService,
+  jwtService
+);
+
+let listener: (req: unknown, res: unknown) => void;
 
 describe('loopback -> /localhost suite', () => {
-  it('localhost should return 200 contract payload', async () => {
+  beforeAll(async () => {
+    await InMemoryDbClient.connect();
+    await keyValueStorageClient.connect();
+    // eslint-disable-next-line no-new
+    new RestAPI<any>({
+      databaseClient: InMemoryDbClient,
+      webServer,
+      infraHandlers,
+      serverType: EHTTPFrameworks.loopback,
+      authService,
+      passwordCryptoService,
+      keyValueStorageClient,
+      mutexService
+    });
+    // LoopBack serves through its own Express handler; the router this adapter
+    // registers into is mounted on it.
+    webServer.mountRouter();
+    listener = webServer.application.requestHandler;
+  });
+
+  afterAll(async () => {
+    await InMemoryDbClient.disconnect();
+    await keyValueStorageClient.disconnect();
+  });
+
+  it('answers the root route through the LoopBack request handler', async () => {
     expect.hasAssertions();
 
-    const endpoint = infraHandlers.localhostGetHandlerFactory({} as any);
-    const response = {
-      statusCode: 200,
-      json: jest.fn()
-    };
+    const response = await request(listener as never)
+      .get('/')
+      .set('Accept', 'application/json');
 
-    await new Promise<void>((resolve, reject) => {
-      Context.run(new Map([['correlationId', 'loopback-correlation-id']]), () => {
-        try {
-          endpoint.handler({} as any, response as any);
-          resolve();
-        } catch (error) {
-          reject(error);
-        }
-      });
-    });
+    expect(response.statusCode).toBe(200);
+    expect(response.body.status).toBe('result');
+    expect(response.body.correlationId).toMatch(UUID_V4);
+  });
 
-    expect(response.json).toHaveBeenCalledWith({
-      status: 'result',
-      correlationId: 'loopback-correlation-id'
-    });
+  it('gives each request its own correlation id', async () => {
+    expect.hasAssertions();
+
+    // Asserting one id proves the adapter produced a string; asserting two
+    // differ proves it produces one per request.
+    const first = await request(listener as never).get('/').set('Accept', 'application/json');
+    const second = await request(listener as never).get('/').set('Accept', 'application/json');
+
+    expect(first.body.correlationId).not.toBe(second.body.correlationId);
   });
 });

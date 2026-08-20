@@ -7,6 +7,7 @@ This folder contains reusable npm packages shared across Jumentix applications.
 ### Runtime and persistence
 
 - [`@jumentix/adapter-runtime-bootstrap`](./adapter-runtime-bootstrap/README.md) - shared adapter runtime composition.
+- [`@jumentix/cana`](./cana/README.md) - IndexedDB offline database adapter with consumer docs and playgrounds.
 - [`@jumentix/database-client-factory`](./database-client-factory/README.md) - database client compilation by selected driver.
 - [`@jumentix/external-db-repositories`](./external-db-repositories/README.md) - reusable external database repositories.
 - [`@jumentix/external-persistence-core`](./external-persistence-core/README.md) - base external-persistence contracts and implementations.
@@ -46,10 +47,10 @@ published or production-ready.
 
 Each package has its own English and Portuguese README, scripts, and ownership boundaries. Import
 packages from applications instead of duplicating adapter logic in each app. The canonical runtime
-is Bun 1.3.14 for internal engineering workflows, with Node.js 22 kept as the explicit
+is Bun 1.3.13 for internal engineering workflows, with Node.js 22 kept as the explicit
 consumer-facing compatibility target where packages expose Node runtime artifacts.
 
 ## Related Docs
 
-- [Jumentix Workspace Packages (Architecture)](../documentation/md/JUMENTIX-WORKSPACE-PACKAGES.md)
-- [SDK Compatibility Bridge](../documentation/md/SDK-COMPATIBILITY-BRIDGE.md)
+- [Jumentix Workspace Packages (Architecture)](/docs/jumentix/concepts/architecture)
+- [SDK Compatibility Bridge](/docs/jumentix/packages)

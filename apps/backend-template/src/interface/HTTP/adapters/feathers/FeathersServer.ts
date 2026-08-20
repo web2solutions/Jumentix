@@ -3,12 +3,12 @@
 /* eslint-disable class-methods-use-this */
 import fs from 'fs';
 import path from 'path';
+import { createUuid } from '@src/modules/port/UUID';
 import { _HTTP_PORT_ } from '@src/config/constants';
+import { Context as RequestContext } from '@src/infra/context/Context';
 import type {
   IHTTPRequest,
-  IHTTPResponse
-} from '@src/interface/HTTP/ports';
-import type {
+  IHTTPResponse,
   IbaseHandler
 } from '@src/interface/HTTP/ports';
 import {
@@ -24,10 +24,31 @@ export type FeathersResponse = {
 
 let feathersServer: HTTPBaseServer<any> | undefined;
 
+type RegisteredRoute = {
+  method: string;
+  path: string;
+  handler: IbaseHandler['handler'];
+};
+
 class FeathersServer extends HTTPBaseServer<any> {
   public readonly application: any;
 
   private httpServer: any;
+
+  /**
+   * Routes this adapter serves (JUM-704).
+   *
+   * `endPointRegister` used to call `this.application[method](path, handler)`.
+   * A Koa/Feathers application has no such method — the call threw
+   * `this.application[method] is undefined` on the first endpoint, which means
+   * **this adapter has never registered a route**. Nothing reported it: the
+   * suite named after it called an Express handler directly, and the framework
+   * was not installed, so no build ever loaded this file.
+   *
+   * Matching here rather than adding a router dependency keeps the shape the
+   * Vercel adapter already uses in this repository.
+   */
+  private readonly routes: RegisteredRoute[] = [];
 
   constructor() {
     super();
@@ -42,6 +63,31 @@ class FeathersServer extends HTTPBaseServer<any> {
     } = require('@feathersjs/koa');
 
     this.application = koa(feathers());
+
+    /*
+     * The per-request store every handler reads (JUM-704).
+     *
+     * Express, Restify, Fastify and Lambda each establish it; this adapter did
+     * not, and it serves the same handlers — `localhost.get` reads
+     * `correlationId` from the store, so every request through it answered 500
+     * with an empty message. JUM-698 found and fixed the same defect in the four
+     * adapters that could be started at the time; this one could not be, because
+     * its framework was not installed.
+     *
+     * First in the chain on purpose: everything downstream runs inside the
+     * store, including the static-doc branch and the route handlers.
+     */
+    this.application.use(async (context: any, next: any) => {
+      const store = new Map();
+      return RequestContext.run(store, () => {
+        store.set('correlationId', createUuid());
+        store.set('timeStart', +new Date());
+        store.set('request', context.request);
+        store.set('authorization', context.request?.headers?.authorization || '');
+        return next();
+      });
+    });
+
     this.application.use(async (context: any, next: any) => {
       const requestPath = context.path || context.request?.path || '';
       const rootDir = process.cwd();
@@ -73,6 +119,9 @@ class FeathersServer extends HTTPBaseServer<any> {
     });
     this.application.use(bodyParser());
     this.application.configure(rest());
+    // After the body parser, before the error handler: the routes need a parsed
+    // body, and a handler that throws should reach `errorHandler` (JUM-704).
+    this.registerRouter();
     this.application.use(errorHandler());
   }
 
@@ -94,17 +143,57 @@ class FeathersServer extends HTTPBaseServer<any> {
   }
 
   public endPointRegister(handlerFactory: IbaseHandler): void {
-    const method = handlerFactory.method.toLowerCase();
-    (this.application as any)[method](handlerFactory.path, async (context: any) => {
+    this.routes.push({
+      method: handlerFactory.method.toUpperCase(),
+      path: handlerFactory.path,
+      handler: handlerFactory.handler
+    });
+  }
+
+  /** `/users/:id` against `/users/7`, returning the parameters it bound. */
+  private static matchPath(template: string, value: string): { matched: boolean; params: any } {
+    const templateParts = template.split('/').filter(Boolean);
+    const valueParts = value.split('/').filter(Boolean);
+    if (templateParts.length !== valueParts.length) return { matched: false, params: {} };
+
+    const params: Record<string, string> = {};
+    for (let index = 0; index < templateParts.length; index += 1) {
+      const templatePart = templateParts[index];
+      const valuePart = valueParts[index];
+      if (templatePart.startsWith(':')) {
+        params[templatePart.slice(1)] = decodeURIComponent(valuePart);
+      } else if (templatePart !== valuePart) {
+        return { matched: false, params: {} };
+      }
+    }
+    return { matched: true, params };
+  }
+
+  private registerRouter(): void {
+    this.application.use(async (context: any, next: any) => {
+      const method = String(context.method || 'GET').toUpperCase();
+      const pathname = context.path || context.request?.path || '/';
+      const matched = this.routes
+        .map((route) => ({ route, match: FeathersServer.matchPath(route.path, pathname) }))
+        .find((candidate) => candidate.route.method === method && candidate.match.matched);
+
+      if (!matched) {
+        await next();
+        return;
+      }
+
       const req = {
         ...context.request,
-        body: context.request.body,
-        params: context.params || {},
-        query: context.request.query || {},
-        headers: context.request.headers || {}
+        body: context.request?.body,
+        params: matched.match.params,
+        query: context.request?.query || {},
+        headers: context.request?.headers || {}
       };
       const res = this.createResponseAdapter(context);
-      await handlerFactory.handler(req as any, res as any);
+      const result = await matched.route.handler(req as any, res as any);
+      if (result !== undefined && context.body === undefined) {
+        context.body = result;
+      }
     });
   }
 

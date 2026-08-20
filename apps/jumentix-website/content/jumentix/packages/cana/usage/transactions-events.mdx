@@ -1,0 +1,128 @@
+---
+title: "Transactions and change events"
+description: "Write atomically and update UI stores from committed Cana events."
+---
+
+# Transactions and change events
+
+Transactions are the commit boundary. Change events are emitted only after the
+IndexedDB transaction completes, so subscribers never react to data that later
+rolls back.
+
+## Multi-store transaction
+
+```ts
+type Category = {
+  id: string;
+  name: string;
+  color: string;
+  createdAt: number;
+  updatedAt: number;
+};
+
+type Task = {
+  id: string;
+  title: string;
+  categoryId: string;
+  completed: boolean;
+  priority: 'low' | 'medium' | 'high';
+  createdAt: number;
+  updatedAt: number;
+};
+
+const result = await client.transaction('readwrite', ['categories', 'tasks'], async (scope) => {
+  const now = Date.now();
+  await scope.table<Category>('categories').put({
+    id: 'ops',
+    name: 'Operations',
+    color: '#f97316',
+    createdAt: now,
+    updatedAt: now
+  });
+  await scope.table<Task>('tasks').put({
+    id: 'ops-1',
+    title: 'Create the operations category',
+    categoryId: 'ops',
+    completed: false,
+    priority: 'high',
+    createdAt: now,
+    updatedAt: now
+  });
+  return { categoryId: 'ops', taskId: 'ops-1' };
+});
+
+console.log({
+  outcome: result.outcome,
+  result: result.result,
+  events: result.events
+});
+```
+
+Do not wait for network, timers or UI work inside the transaction body. The
+IndexedDB transaction auto-commits when the event loop yields with no pending
+IndexedDB request. Cana reports that as `TransactionInactive`.
+
+## Listen to committed events
+
+```ts
+import type { CanaChangeEvent } from '@jumentix/cana';
+
+const events: Array<Pick<CanaChangeEvent, 'cursor' | 'type' | 'store' | 'key'>> = [];
+
+const stop = client.subscribe((event) => {
+  events.push({
+    cursor: event.cursor,
+    type: event.type,
+    store: event.store,
+    key: event.key
+  });
+});
+
+await client.table<Task>('tasks').update('ops-1', {
+  completed: true,
+  updatedAt: Date.now()
+});
+
+stop();
+console.log(events);
+```
+
+## Replay after the UI was gone
+
+```ts
+import { isCanaErrorCode, type CanaChangeEvent } from '@jumentix/cana';
+
+let lastCursor = Number(localStorage.getItem('tasks:lastCursor') ?? 0);
+
+function applyEventToUiStore(event: CanaChangeEvent) {
+  lastCursor = event.cursor;
+  localStorage.setItem('tasks:lastCursor', String(lastCursor));
+  console.log(`${event.cursor}: ${event.type} ${event.store}/${String(event.key)}`);
+}
+
+try {
+  const stop = client.subscribe(applyEventToUiStore, { sinceCursor: lastCursor });
+  window.addEventListener('beforeunload', () => stop(), { once: true });
+} catch (error) {
+  if (isCanaErrorCode(error, 'NotFound')) {
+    const categories = await client.table<Category>('categories').query({ index: 'byName' });
+    const tasks = await client.table<Task>('tasks').query({ index: 'byUpdatedAt' });
+    console.log({ reloadRequired: true, categories, tasks });
+  } else {
+    throw error;
+  }
+}
+```
+
+Replay is bounded by `retainedEvents`. When the cursor is too old, Cana refuses
+to pretend the replay is complete. Reload the table and then subscribe again.
+
+## Run it here
+
+<CanaPlayground id="transactions" />
+
+<CanaPlayground id="change-events" />
+
+## Next
+
+Continue to [hooks and errors](/docs/jumentix/packages/cana/usage/hooks-errors).

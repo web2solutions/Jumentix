@@ -1,0 +1,1662 @@
+# Jumentix Documentation
+
+URL: https://jumentix-website.vercel.app/docs/jumentix
+
+Jumentix technical documentation portal.
+
+Headings:
+- Build with Jumentix
+- Explore the documentation
+- Recommended journeys
+
+---
+
+# Aurora Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/aurora
+
+Database Adapters documentation.
+
+Headings:
+- Aurora Adapter
+- Integrated technology
+- When to use
+- When to avoid
+- How to validate locally
+- Complete example: Task and Category with a database port
+- What changes in production
+
+---
+
+# Firebase Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/firebase
+
+Database Adapters documentation.
+
+Headings:
+- Firebase Adapter
+- Integrated technology
+- When to use
+- When to avoid
+- How to validate locally
+- Complete example: Task and Category with a database port
+- What changes in production
+
+---
+
+# Oracle Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/oracle
+
+Database Adapters documentation.
+
+Headings:
+- Oracle Adapter
+- Integrated technology
+- When to use
+- When to avoid
+- How to validate locally
+- Complete example: Task and Category with a database port
+- What changes in production
+
+---
+
+# Database Adapters
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases
+
+Database Adapters documentation.
+
+Headings:
+- Database Adapters
+- Database adapter comparison
+- Fast guide
+- Complete selection example
+
+---
+
+# DynamoDB Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/dynamodb
+
+Database Adapters documentation.
+
+Headings:
+- DynamoDB Adapter
+- Integrated technology
+- When to use
+- When to avoid
+- How to validate locally
+- Complete example: Task and Category with a database port
+- What changes in production
+
+---
+
+# InMemory Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/inmemory
+
+Database Adapters documentation.
+
+Headings:
+- InMemory Adapter
+- Integrated technology
+- When to use
+- When to avoid
+- How to validate locally
+- Complete example: Task and Category with a database port
+- What changes in production
+
+---
+
+# MongoDB Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/mongodb
+
+Database Adapters documentation.
+
+Headings:
+- MongoDB Adapter
+- Integrated technology
+- When to use
+- When to avoid
+- How to validate locally
+- Complete example: Task and Category with a database port
+- What changes in production
+
+---
+
+# SQLite Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/sqlite
+
+Database Adapters documentation.
+
+Headings:
+- SQLite Adapter
+- Integrated technology
+- When to use
+- When to avoid
+- How to validate locally
+- Complete example: Task and Category with a database port
+- What changes in production
+
+---
+
+# SQL Server Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/mssql
+
+Database Adapters documentation.
+
+Headings:
+- SQL Server Adapter
+- Integrated technology
+- When to use
+- When to avoid
+- How to validate locally
+- Complete example: Task and Category with a database port
+- What changes in production
+
+---
+
+# RDS Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/rds
+
+Database Adapters documentation.
+
+Headings:
+- RDS Adapter
+- Integrated technology
+- When to use
+- When to avoid
+- How to validate locally
+- Complete example: Task and Category with a database port
+- What changes in production
+
+---
+
+# MySQL Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/mysql
+
+Database Adapters documentation.
+
+Headings:
+- MySQL Adapter
+- Integrated technology
+- When to use
+- When to avoid
+- How to validate locally
+- Complete example: Task and Category with a database port
+- What changes in production
+
+---
+
+# Cassandra Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/cassandra
+
+Database Adapters documentation.
+
+Headings:
+- Cassandra Adapter
+- Integrated technology
+- When to use
+- When to avoid
+- How to validate locally
+- Complete example: Task and Category with a database port
+- What changes in production
+
+---
+
+# PostgreSQL Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/postgresql
+
+Database Adapters documentation.
+
+Headings:
+- PostgreSQL Adapter
+- Integrated technology
+- When to use
+- When to avoid
+- How to validate locally
+- Complete example: Task and Category with a database port
+- What changes in production
+
+---
+
+# Adapters
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters
+
+Explore the Jumentix Adapters section.
+
+Headings:
+- Adapters
+- How to choose
+
+---
+
+# Realtime
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/realtime
+
+Explore the Jumentix Realtime section.
+
+Headings:
+- Realtime
+
+---
+
+# gRPC Realtime API
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/realtime/grpc-api
+
+Realtime Adapters documentation.
+
+Headings:
+- gRPC Realtime API
+- Glossary
+- Responsibility in context
+- Why it exists
+- What it is
+- Scope
+- Contract References
+- Service Contract
+- Runtime Flow
+- Deep Example: Unary Request
+- Deep Example: Native gRPC Bi-directional Stream
+- Payload Serialization Rules
+- Operational Guidance
+- Junior checklist (“I can …”)
+- Next step
+
+---
+
+# WebSocket Realtime API
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/realtime/websocket-api
+
+Realtime Adapters documentation.
+
+Headings:
+- WebSocket Realtime API
+- Glossary
+- Responsibility in context
+- Why it exists
+- What it is
+- Scope
+- Contract References
+- Endpoint and Channels
+- Horizontal Scaling with Redis Streams Adapter
+- Multi-thread Resilience with Socket.IO Cluster Adapter
+- Multi-instance Validation Test
+- Runtime Flow
+- Deep Example: Generic Request + ACK correlation
+- Deep Example: Per-operation Channel Request
+- SDK Example
+- Response/Error Handling Rules
+- Operational Guidance
+- Junior checklist (“I can …”)
+- Next step
+
+---
+
+# Cloudflare Workers Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/cloudflare-workers
+
+HTTP Adapters documentation.
+
+Headings:
+- Cloudflare Workers Adapter
+- Integrated technology
+- When to use
+- When to avoid
+- How to start or compose
+- This adapter is composed by its platform runtime.
+- Keep controllers framework-free and wire them from the adapter entrypoint.
+- Complete example: Task and Category at the HTTP edge
+- Adoption checklist
+
+---
+
+# Restify Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/restify
+
+HTTP Adapters documentation.
+
+Headings:
+- Restify Adapter
+- Integrated technology
+- When to use
+- When to avoid
+- How to start or compose
+- Complete example: Task and Category at the HTTP edge
+- Adoption checklist
+
+---
+
+# Vercel Functions Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/vercel-functions
+
+HTTP Adapters documentation.
+
+Headings:
+- Vercel Functions Adapter
+- Integrated technology
+- When to use
+- When to avoid
+- How to start or compose
+- This adapter is composed by its platform runtime.
+- Keep controllers framework-free and wire them from the adapter entrypoint.
+- Complete example: Task and Category at the HTTP edge
+- Adoption checklist
+
+---
+
+# Express Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/express
+
+HTTP Adapters documentation.
+
+Headings:
+- Express Adapter
+- Integrated technology
+- When to use
+- When to avoid
+- How to start or compose
+- Complete example: Task and Category at the HTTP edge
+- Adoption checklist
+
+---
+
+# Adonis.js Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/adonis-js
+
+HTTP Adapters documentation.
+
+Headings:
+- Adonis.js Adapter
+- Integrated technology
+- When to use
+- When to avoid
+- How to start or compose
+- This adapter is composed by its platform runtime.
+- Keep controllers framework-free and wire them from the adapter entrypoint.
+- Complete example: Task and Category at the HTTP edge
+- Adoption checklist
+
+---
+
+# HTTP Adapters
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/http
+
+HTTP Adapters documentation.
+
+Headings:
+- HTTP Adapters
+- HTTP framework comparison
+- Fast guide
+- Complete selection example
+
+---
+
+# Fastify Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/fastify
+
+HTTP Adapters documentation.
+
+Headings:
+- Fastify Adapter
+- Integrated technology
+- When to use
+- When to avoid
+- How to start or compose
+- Complete example: Task and Category at the HTTP edge
+- Adoption checklist
+
+---
+
+# Feathers Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/feathers
+
+HTTP Adapters documentation.
+
+Headings:
+- Feathers Adapter
+- Integrated technology
+- When to use
+- When to avoid
+- How to start or compose
+- This adapter is composed by its platform runtime.
+- Keep controllers framework-free and wire them from the adapter entrypoint.
+- Complete example: Task and Category at the HTTP edge
+- Adoption checklist
+
+---
+
+# LoopBack Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/loopback
+
+HTTP Adapters documentation.
+
+Headings:
+- LoopBack Adapter
+- Integrated technology
+- When to use
+- When to avoid
+- How to start or compose
+- This adapter is composed by its platform runtime.
+- Keep controllers framework-free and wire them from the adapter entrypoint.
+- Complete example: Task and Category at the HTTP edge
+- Adoption checklist
+
+---
+
+# AWS Lambda Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/aws-lambda
+
+HTTP Adapters documentation.
+
+Headings:
+- AWS Lambda Adapter
+- Integrated technology
+- When to use
+- When to avoid
+- How to start or compose
+- This adapter is composed by its platform runtime.
+- Keep controllers framework-free and wire them from the adapter entrypoint.
+- Complete example: Task and Category at the HTTP edge
+- Adoption checklist
+
+---
+
+# Sails.js Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/sails-js
+
+HTTP Adapters documentation.
+
+Headings:
+- Sails.js Adapter
+- Integrated technology
+- When to use
+- When to avoid
+- How to start or compose
+- This adapter is composed by its platform runtime.
+- Keep controllers framework-free and wire them from the adapter entrypoint.
+- Complete example: Task and Category at the HTTP edge
+- Adoption checklist
+
+---
+
+# Derby.js Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/derby-js
+
+HTTP Adapters documentation.
+
+Headings:
+- Derby.js Adapter
+- Integrated technology
+- When to use
+- When to avoid
+- How to start or compose
+- This adapter is composed by its platform runtime.
+- Keep controllers framework-free and wire them from the adapter entrypoint.
+- Complete example: Task and Category at the HTTP edge
+- Adoption checklist
+
+---
+
+# Total.js Adapter
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/total-js
+
+HTTP Adapters documentation.
+
+Headings:
+- Total.js Adapter
+- Integrated technology
+- When to use
+- When to avoid
+- How to start or compose
+- This adapter is composed by its platform runtime.
+- Keep controllers framework-free and wire them from the adapter entrypoint.
+- Complete example: Task and Category at the HTTP edge
+- Adoption checklist
+
+---
+
+# Create a REST API
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/guides/rest-api
+
+Build contract-first REST APIs with Jumentix.
+
+Headings:
+- Creating REST API with Jumentix
+- Responsibility in context
+- What it is
+- Why it exists
+- Prerequisites
+- Glossary
+- Numbered steps
+- Step 1 — Select the REST runtime profile (< 5 minutes)
+- Step 2 — Model domain and contracts (< 15 minutes)
+- Step 3 — Implement the domain flow (< 30 minutes per feature)
+- Step 4 — Bind to the HTTP adapter (< 10 minutes)
+- Step 5 — Validate quality gates (< 10 minutes)
+- Step 6 — Call the API from a client (junior path)
+- Examples
+- Static mock client
+- Interactive REST client playground
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
+
+---
+
+# Create a SPA or Offline PWA
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/guides/spa-pwa
+
+Build frontend products with shared SDKs and offline behavior.
+
+Headings:
+- Creating SPA/PWA with Jumentix
+- Responsibility in context
+- What it is
+- Why it exists
+- Prerequisites
+- Glossary
+- Numbered steps
+- Step 1 — Model business domains first (< 20 minutes)
+- Step 2 — Define communication contracts (< 10 minutes)
+- Step 3 — Configure service runtime (< 10 minutes)
+- Step 4 — Build offline-capable PWA storage (< 30 minutes)
+- Step 5 — Validate delivery readiness (< 15 minutes)
+- Step 6 — Wire designers to storage (hands-on)
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
+
+---
+
+# Guides
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/guides
+
+Explore the Jumentix Guides section.
+
+Headings:
+- Guides
+
+---
+
+# Create a Modular SaaS
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/guides/saas-monolith
+
+Launch a modular monolith with service-ready boundaries.
+
+Headings:
+- Creating SaaS Monolith with Jumentix
+- Responsibility in context
+- Glossary
+- What it is
+- Recommended Strategy
+- Why This Works
+- Delivery Blueprint
+- Target Audience
+- Related Docs
+- Next steps
+- Junior checklist (“I can …”)
+
+---
+
+# Create a Realtime API
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/guides/realtime-api
+
+Build Socket.IO and gRPC interfaces with REST fallback.
+
+Headings:
+- Creating Realtime API with Jumentix
+- Responsibility in context
+- What it is
+- Why it exists
+- Prerequisites
+- Glossary
+- Numbered steps
+- Step 1 — Enable the realtime runtime profile (< 5 minutes)
+- WebSocket + REST fallback (start here for browser apps)
+- gRPC + REST fallback (Node service mesh)
+- Step 2 — Define Async contracts (< 15 minutes)
+- Step 3 — Implement message handlers (< 30 minutes)
+- Step 4 — Keep REST fallback available (< 5 minutes)
+- Step 5 — Validate realtime stability (< 10 minutes)
+- Step 6 — Client integration (junior path)
+- Examples
+- Interactive WebSocket client playground
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
+
+---
+
+# Create a Microservices SaaS
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/guides/saas-microservices
+
+Build distributed services with contract-based communication.
+
+Headings:
+- Creating SaaS Microservices with Jumentix
+- Responsibility in context
+- Glossary
+- What it is
+- Recommended Strategy
+- Evolution Path from Monolith
+- Operational Pattern
+- Product and Engineering Benefits
+- Related Docs
+- Next steps
+- Junior checklist (“I can …”)
+
+---
+
+# @jumentix/sdk-grpc-client
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/sdk-grpc-client
+
+AsyncAPI/gRPC realtime SDK client (Node).
+
+Headings:
+- @jumentix/sdk-grpc-client
+- What it is
+- Why it exists
+- Responsibility in context
+- Prerequisites
+- Glossary
+- Numbered steps
+- 1. Install
+- 2. First success (under 30 min)
+- 3. Core workflows
+- 1. Point at host:port
+- 2. Send envelope
+- 3. Deploy only on Node
+- 4. Full practical surface (exports)
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
+
+---
+
+# @jumentix/external-db-repositories
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/external-db-repositories
+
+Reusable external DB repository adapters.
+
+Headings:
+- @jumentix/external-db-repositories
+- What it is
+- Why it exists
+- Responsibility in context
+- Prerequisites
+- Glossary
+- Numbered steps
+- 1. Install
+- 2. First success (under 30 min)
+- 3. Core workflows
+- 1. Connect with env options
+- 2. Run a repository operation
+- 3. Disconnect on shutdown
+- 4. Full practical surface (exports)
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
+
+---
+
+# @jumentix/external-store-proxy
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/external-store-proxy
+
+IStore proxies over external database clients.
+
+Headings:
+- @jumentix/external-store-proxy
+- What it is
+- Why it exists
+- Responsibility in context
+- Prerequisites
+- Glossary
+- Numbered steps
+- 1. Install
+- 2. First success (under 30 min)
+- 3. Core workflows
+- 1. Create stores from a client
+- 2. Inject into use-cases
+- 3. Test with fakes
+- 4. Full practical surface (exports)
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
+
+---
+
+# @jumentix/external-persistence-core
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/external-persistence-core
+
+Base class and options for external persistence adapters.
+
+Headings:
+- @jumentix/external-persistence-core
+- What it is
+- Why it exists
+- Responsibility in context
+- Prerequisites
+- Glossary
+- Numbered steps
+- 1. Install
+- 2. First success (under 30 min)
+- 3. Core workflows
+- 1. Read connection options
+- 2. Extend base for a new driver
+- 3. Keep domain pure
+- 4. Full practical surface (exports)
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
+
+---
+
+# Jumentix packages
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages
+
+Consumer package map for adopters (public site; private tooling excluded).
+
+Headings:
+- Jumentix packages (consumer map)
+- Start here
+- Browser / offline
+- Persistence
+- Communication
+- Runtime composition
+
+---
+
+# @jumentix/persistence-contracts
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/persistence-contracts
+
+Shared persistence ports (IStore, IDatabaseClient).
+
+Headings:
+- @jumentix/persistence-contracts
+- What it is
+- Why it exists
+- Responsibility in context
+- Prerequisites
+- Glossary
+- Numbered steps
+- 1. Install
+- 2. First success (under 30 min)
+- 3. Core workflows
+- 1. Type a use-case port
+- 2. Keep adapters behind the port
+- 3. Share paging types
+- 4. Full practical surface (exports)
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
+
+---
+
+# @jumentix/designer-core
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/designer-core
+
+Browser-safe design document helpers for Jumentix frontends.
+
+Headings:
+- @jumentix/designer-core
+- Responsibility in context
+- What it is
+- Usage
+- Versioning policy
+- Publish policy: dry-run only
+- Development
+- License
+- Try it in the browser
+- Full documentation
+
+---
+
+# designer-core usage
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/designer-core/usage
+
+Junior guide and playground for @jumentix/designer-core.
+
+Headings:
+- @jumentix/designer-core — usage guide
+- Responsibility in context
+- What it is
+- Why it exists
+- Prerequisites
+- Glossary
+- Steps
+- 1. Install (< 5 minutes)
+- 2. First success — validate the sample model (< 15 minutes)
+- 3. Core workflow — validate before save
+- 4. Core workflow — export and re-import round-trip
+- 5. Full surface — public API map
+- Try it in the docs playground
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
+
+---
+
+# @jumentix/sdk-rest-client
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/sdk-rest-client
+
+OpenAPI-driven REST SDK client.
+
+Headings:
+- @jumentix/sdk-rest-client
+- What it is
+- Why it exists
+- Responsibility in context
+- Prerequisites
+- Glossary
+- Numbered steps
+- 1. Install
+- 2. First success (under 30 min)
+- 3. Core workflows
+- 1. Construct with base URL
+- 2. Call by operationId
+- 3. Handle envelope errors
+- 4. Full practical surface (exports)
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
+
+---
+
+# @jumentix/runtime-infra
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/runtime-infra
+
+Runtime infrastructure helpers for adapters.
+
+Headings:
+- @jumentix/runtime-infra
+- What it is
+- Why it exists
+- Responsibility in context
+- Prerequisites
+- Glossary
+- Numbered steps
+- 1. Install
+- 2. First success (under 30 min)
+- 3. Core workflows
+- 1. Follow REST guide first
+- 2. Read with bootstrap
+- 3. Avoid UI imports
+- 4. Full practical surface (exports)
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
+
+---
+
+# @jumentix/database-client-factory
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/database-client-factory
+
+Compile database clients from env/driver selection.
+
+Headings:
+- @jumentix/database-client-factory
+- What it is
+- Why it exists
+- Responsibility in context
+- Prerequisites
+- Glossary
+- Numbered steps
+- 1. Install
+- 2. First success (under 30 min)
+- 3. Core workflows
+- 1. Read driver from env
+- 2. Compile once at boot
+- 3. Inject ports upward
+- 4. Full practical surface (exports)
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
+
+---
+
+# @jumentix/mutex-service
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/mutex-service
+
+Named locks built on key/value storage.
+
+Headings:
+- @jumentix/mutex-service
+- Responsibility in context
+- Contract
+- Validation
+- Try it in the browser
+- Full documentation
+
+---
+
+# mutex-service usage
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/mutex-service/usage
+
+Junior guide and playground for mutex locks.
+
+Headings:
+- @jumentix/mutex-service — usage guide
+- Responsibility in context
+- What it is
+- Why it exists
+- Prerequisites
+- Glossary
+- Steps
+- 1. Install (< 5 minutes)
+- 2. First success — acquire and release (< 15 minutes)
+- 3. Core workflow — always release in `finally`
+- 4. Core workflow — check before retry
+- 5. Core workflow — production wiring
+- 6. Full surface — API map
+- Try it in the docs playground
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
+
+---
+
+# @jumentix/cana-react
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana-react
+
+Packages documentation.
+
+Headings:
+- @jumentix/cana-react
+- Install
+- Hooks
+- Redux bridge
+
+---
+
+# @jumentix/key-value-storage
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/key-value-storage
+
+Key/value storage clients with an in-memory adapter for tests and demos.
+
+Headings:
+- @jumentix/key-value-storage
+- Responsibility in context
+- Try it in the browser
+- Full documentation
+
+---
+
+# key-value-storage usage
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/key-value-storage/usage
+
+Junior guide and in-memory playground for key/value storage.
+
+Headings:
+- @jumentix/key-value-storage — usage guide
+- Responsibility in context
+- What it is
+- Why it exists
+- Prerequisites
+- Glossary
+- Steps
+- 1. Install (< 5 minutes)
+- 2. First success — in-memory get/set (< 10 minutes)
+- 3. Core workflow — compile by environment
+- 4. Core workflow — error-safe reads
+- 5. Core workflow — pair with mutex-service
+- 6. Full surface — API map
+- Try it in the docs playground
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
+
+---
+
+# @jumentix/shared-contracts
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/shared-contracts
+
+Canonical OpenAPI/AsyncAPI spec loading for SDKs.
+
+Headings:
+- @jumentix/shared-contracts
+- What it is
+- Why it exists
+- Responsibility in context
+- Prerequisites
+- Glossary
+- Numbered steps
+- 1. Install
+- 2. First success (under 30 min)
+- 3. Core workflows
+- 1. Load OpenAPI for REST
+- 2. Load AsyncAPI for realtime
+- 3. Fail closed on missing spec
+- 4. Full practical surface (exports)
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
+
+---
+
+# @jumentix/adapter-runtime-bootstrap
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/adapter-runtime-bootstrap
+
+Shared adapter runtime bootstrap compiler.
+
+Headings:
+- @jumentix/adapter-runtime-bootstrap
+- What it is
+- Why it exists
+- Responsibility in context
+- Prerequisites
+- Glossary
+- Numbered steps
+- 1. Install
+- 2. First success (under 30 min)
+- 3. Core workflows
+- 1. Read env contracts
+- 2. Compile adapters once
+- 3. Mount interfaces
+- 4. Full practical surface (exports)
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
+
+---
+
+# @jumentix/sdk-websocket-client
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/sdk-websocket-client
+
+AsyncAPI/Socket.IO realtime SDK client.
+
+Headings:
+- @jumentix/sdk-websocket-client
+- What it is
+- Why it exists
+- Responsibility in context
+- Prerequisites
+- Glossary
+- Numbered steps
+- 1. Install
+- 2. First success (under 30 min)
+- 3. Core workflows
+- 1. Connect
+- 2. Request with operationId
+- 3. Reconnect policy
+- 4. Full practical surface (exports)
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
+
+---
+
+# @jumentix/message-mediator
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/message-mediator
+
+In-process and broker-backed message mediation.
+
+Headings:
+- @jumentix/message-mediator
+- Responsibility in context
+- Try it in the browser
+- Full documentation
+
+---
+
+# message-mediator usage
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/message-mediator/usage
+
+Junior guide and in-memory mediator playground.
+
+Headings:
+- @jumentix/message-mediator — usage guide
+- Responsibility in context
+- What it is
+- Why it exists
+- Prerequisites
+- Glossary
+- Steps
+- 1. Install (< 5 minutes)
+- 2. First success — publish and subscribe (< 15 minutes)
+- 3. Core workflow — request/response
+- 4. Core workflow — compile by environment
+- 5. Core workflow — timeouts and routing options
+- 6. Full surface — API map
+- Try it in the docs playground
+- When not to use in-memory
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
+
+---
+
+# @jumentix/cana-vue
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana-vue
+
+Packages documentation.
+
+Headings:
+- @jumentix/cana-vue
+- Install
+- Live query
+
+---
+
+# Cana with React Context API
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/react-context
+
+From zero to final implementation: categorized tasks with Cana and React Context.
+
+Headings:
+- Cana with React Context API
+- 1. Start from zero
+- 2. Simple implementation
+- 3. Advanced implementation
+- 4. Final app shape
+- 5. Checklist
+- Next
+
+---
+
+# Cana with Vue 3 and Pinia
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/vue-pinia
+
+From zero to final implementation: categorized tasks with Cana, Vue 3 and Pinia.
+
+Headings:
+- Cana with Vue 3 and Pinia
+- 1. Start from zero
+- 2. Simple implementation
+- 3. Advanced implementation
+- 4. Final app shape
+- 5. Checklist
+- Next
+
+---
+
+# @jumentix/cana
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana
+
+IndexedDB offline database adapter for Jumentix applications.
+
+Headings:
+- @jumentix/cana
+- Responsibility in context
+- Three things to know before using it
+- Errors are plain data
+- Try it in the browser
+- Design notes
+- Mental model in 30 seconds
+- Postgres-shaped architecture
+- Worker model
+- Performance data
+- Junior checklist (“I can …”)
+- Framework tutorials
+- Next step
+
+---
+
+# Cana with React Redux
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/react-redux
+
+From zero to final implementation: categorized tasks with Cana and Redux.
+
+Headings:
+- Cana with React Redux
+- 1. Start from zero
+- 2. Simple implementation
+- 3. Advanced implementation
+- 4. Final app shape
+- 5. Checklist
+- Next
+
+---
+
+# Workers and testing
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/workers-testing
+
+Run Cana through a worker boundary and plan browser tests.
+
+Headings:
+- Workers and testing
+- Worker request flow
+- Complete same-thread worker-host demo
+- Production file layout
+- Testing strategy
+- Next
+
+---
+
+# Querying and plans
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/querying
+
+Query Cana indexes, inspect explain plans and understand complexity.
+
+Headings:
+- Querying and plans
+- Indexed task query
+- Pagination
+- Count and explain
+- Complexity quick map
+- Run it here
+- Next
+
+---
+
+# Reading, writing and bulk operations
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/crud-bulk
+
+Use CRUD and bulk operations with complete task examples.
+
+Headings:
+- Reading, writing and bulk operations
+- Single-record writes
+- Method choice
+- Bulk writes
+- Run it here
+- Next
+
+---
+
+# Cana usage guide
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage
+
+Consumer API guide hub for @jumentix/cana with focused subpages.
+
+Headings:
+- Cana — Usage Guide
+- Choose the next step
+- The running example
+- Complete code policy
+- Framework tutorials
+- Package integrations
+
+---
+
+# API reference
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/api-reference
+
+Compact reference for the Cana APIs used in the guide.
+
+Headings:
+- API reference
+- Client lifecycle
+- Tables
+- Transactions and events
+- Worker APIs
+- Factory adapter
+- Glossary
+
+---
+
+# Schema and keys
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/schema-keys
+
+Version schemas and choose stable key strategies for Cana stores.
+
+Headings:
+- Schema and keys
+- Versioned schema
+- Upgrade rules
+- Key strategies
+- Run it here
+- Next
+
+---
+
+# Hooks and errors
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/hooks-errors
+
+Apply write hooks and handle plain-data Cana errors.
+
+Headings:
+- Hooks and errors
+- Write hooks
+- Plain-data errors
+- Common errors
+- Run it here
+- Next
+
+---
+
+# Getting started with Cana
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/getting-started
+
+Install Cana and build the minimal categorized task database.
+
+Headings:
+- Getting started with Cana
+- Install
+- Complete minimal task app
+- What to notice
+- Run it here
+- Next
+
+---
+
+# Transactions and change events
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/transactions-events
+
+Write atomically and update UI stores from committed Cana events.
+
+Headings:
+- Transactions and change events
+- Multi-store transaction
+- Listen to committed events
+- Replay after the UI was gone
+- Run it here
+- Next
+
+---
+
+# Storage and crash recovery
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/storage-recovery
+
+Assess durability, export/import data and resolve uncertain writes.
+
+Headings:
+- Storage and crash recovery
+- Storage assessment
+- Export and import
+- Resolve an uncertain write
+- Run it here
+- Next
+
+---
+
+# Jumentix Overview
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/concepts/overview
+
+Product, audience, and adoption overview.
+
+Headings:
+- Jumentix Product Overview (Consumer View)
+- What You Can Build
+- Why Teams Adopt Jumentix
+- Adoption Outcome
+
+---
+
+# Concepts
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/concepts
+
+Explore the Jumentix Concepts section.
+
+Headings:
+- Concepts
+
+---
+
+# Architecture and Structure
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/concepts/architecture
+
+DDD, Hexagonal, Event-Driven, and monorepo structure.
+
+Headings:
+- Architecture for Consumers
+- Consumer Impact
+- Interface Options
+- Data and Integration Options
+
+---
+
+# Getting started
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/concepts/getting-started
+
+Junior on-ramp: install, mental model, and first adoption journey.
+
+Headings:
+- Getting started with Jumentix
+- Responsibility in context
+- What it is
+- Why it exists
+- Prerequisites
+- Glossary
+- Numbered steps
+- Step 1 — Install the toolchain (< 5 minutes)
+- Step 2 — Pick your starting path (< 2 minutes)
+- Step 3 — Open the reference backend (< 10 minutes)
+- follow scripts in that app's package.json / README for local run
+- Step 4 — Learn the mental model (< 5 minutes)
+- Step 5 — First success: touch Cana in the browser (< 10 minutes)
+- Step 6 — Core workflows (this week)
+- Step 7 — Full surface (when you need lookup, not tutorials)
+- Examples
+- Minimal REST client call (static)
+- Offline record with Cana (static)
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
+
+---
+
+# jumentix-website
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/apps/jumentix-website
+
+Public docs and marketing site hub.
+
+Headings:
+- jumentix-website (docs + marketing)
+- What it is
+- Why it exists
+- Responsibility in context
+- Prerequisites
+- Glossary
+- Numbered steps
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
+
+---
+
+# apps
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/apps
+
+Explore the Jumentix apps section.
+
+Headings:
+- apps
+
+---
+
+# backend-template
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/apps/backend-template
+
+Reference backend composition for juniors.
+
+Headings:
+- backend-template (reference backend)
+- What it is
+- Why it exists
+- Responsibility in context
+- Prerequisites
+- Glossary
+- Numbered steps
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
+
+---
+
+# service-management
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/apps/service-management
+
+Domain Designer SPA / PWA app hub.
+
+Headings:
+- service-management (Domain Designer SPA)
+- What it is
+- Why it exists
+- Responsibility in context
+- Prerequisites
+- Glossary
+- Numbered steps
+- Common errors
+- Junior checklist (“I can …”)
+- Next step
+
+---
+
+# Reference
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/reference
+
+Explore the Jumentix Reference section.
+
+Headings:
+- Reference
+- Start here
+
+---
+
+# Runtime Environment Contracts
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/reference/runtime-contracts
+
+Environment variables and runtime composition behavior.
+
+Headings:
+- Runtime Capabilities (Consumer View)
+- Service Interfaces
+- Runtime Control
+- Deployment Modes
+- Reliability and Scale
+- Next step
+
+---
+
+# Events and Messages Map
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/reference/events-messages
+
+Application event, request, response, and worker contracts.
+
+Headings:
+- Events and Messages Map
+- 1) Integration Event Envelope
+- 2) Request/Response Message Envelope
+- 3) Message Mediator Adapters
+- 4) Current Domain Event Map (Users)
+- 5) Current Request/Response Contract Map (Users/Auth)
+- 6) Where Contracts Are Consumed
+- 7) Runtime Topology (Current)
+- 8) Extension Guidelines for New Domains
+- 9) Realtime Interface Contract References
+
+---
+
+# Security and PCI Hardening
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/reference/security-compliance
+
+Security controls and compliance evidence.
+
+Headings:
+- Security and Compliance for Consumers
+- Security Baseline
+- Compliance-Oriented Delivery
+- Recommended Consumer Practice
+
+---
+
+# Errors and Responses Map
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/reference/errors-responses
+
+Error contracts and interface response behavior.
+
+Headings:
+- Error Contracts and HTTP Error Responses
+- 1) Base Error Contract
+- 2) Canonical Error Codes
+- 3) Error Class to Code Mapping
+- 4) HTTP Error Response Shape
+- 5) MessageMediator Request/Response Error Contract
+- 6) Current Consistency Notes
+- 7) HTTP Request Validation Contract
+- 8) Extension Rules
+- 9) Realtime Error Envelopes
+
+---
+
+# Package Scripts Reference
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/reference/package-scripts
+
+Every supported monorepo command and its usage.
+
+Headings:
+- Package.json Scripts Reference (Consumer)
+- Next step

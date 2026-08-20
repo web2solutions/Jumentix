@@ -2,6 +2,21 @@
 
 Use this path when you want fast delivery with strong modular boundaries and a clean future migration path.
 
+## Responsibility in context
+
+- **Owns:** Topology guidance for modular monolith SaaS
+- **Used with:** REST/realtime guides, packages hub, backend-template
+- **Not responsible for:** Deep package API reference (see package pages)
+
+## Glossary
+
+- **Guide** — a journey document; follow steps in order before jumping to package API maps.
+- **Composition root** — startup code that wires env → adapters → use-cases.
+
+## What it is
+
+Launch a modular monolith with clear service boundaries ready to extract later.
+
 ## Recommended Strategy
 
 1. Start with bounded contexts in Domain Designer.
@@ -30,6 +45,18 @@ Use this path when you want fast delivery with strong modular boundaries and a c
 
 ## Related Docs
 
-- [Architecture and Structure](../ARCHITECTURE-AND-STRUCTURE.md)
-- [Backend Template Hub](../../../apps/backend-template/documentation/README.md)
-- [Deploy Target and Packaging Matrix](../JUMENTIX-DEPLOY-TARGET-AND-PACKAGING-MATRIX.md)
+- [Architecture and Structure](/docs/jumentix/concepts/architecture)
+- [Backend Template Hub](/docs/jumentix/guides/rest-api)
+- Deploy Target and Packaging Matrix
+
+
+## Next steps
+
+1. [Getting started](/docs/jumentix/concepts/getting-started)
+2. [REST](/docs/jumentix/guides/rest-api)
+
+## Junior checklist (“I can …”)
+
+- [ ] I can explain the goal of this guide in one sentence
+- [ ] I completed the first success path without guessing jargon
+- [ ] I know the single next docs page to open

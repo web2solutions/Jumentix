@@ -4,11 +4,21 @@
       "section": "concepts",
       "slug": "overview",
       "title": "Jumentix Overview",
-      "titlePtBr": "Visão geral do Jumentix",
+      "titlePtBr": "Vis\u00e3o geral do Jumentix",
       "description": "Product, audience, and adoption overview.",
-      "descriptionPtBr": "Visão geral do produto, público e adoção.",
+      "descriptionPtBr": "Vis\u00e3o geral do produto, p\u00fablico e ado\u00e7\u00e3o.",
       "source": "../../documentation/consumers/PRODUCT-OVERVIEW.md",
       "sourcePtBr": "../../documentation/consumers/PRODUCT-OVERVIEW.pt-BR.md"
+    },
+    {
+      "section": "concepts",
+      "slug": "getting-started",
+      "title": "Getting started",
+      "titlePtBr": "Come\u00e7ando",
+      "description": "Junior on-ramp: install, mental model, and first adoption journey.",
+      "descriptionPtBr": "Rampa j\u00fanior: instala\u00e7\u00e3o, modelo mental e primeira jornada de ado\u00e7\u00e3o.",
+      "source": "../../documentation/consumers/GETTING-STARTED.md",
+      "sourcePtBr": "../../documentation/consumers/GETTING-STARTED.pt-BR.md"
     },
     {
       "section": "concepts",
@@ -46,7 +56,7 @@
       "title": "Create a SPA or Offline PWA",
       "titlePtBr": "Crie uma SPA ou PWA offline",
       "description": "Build frontend products with shared SDKs and offline behavior.",
-      "descriptionPtBr": "Construa produtos frontend com SDKs compartilhados e operação offline.",
+      "descriptionPtBr": "Construa produtos frontend com SDKs compartilhados e opera\u00e7\u00e3o offline.",
       "source": "../../apps/service-management/documentation/guides/CREATING-SPA-PWA-WITH-JUMENTIX.md",
       "sourcePtBr": "../../apps/service-management/documentation/guides/CREATING-SPA-PWA-WITH-JUMENTIX.pt-BR.md"
     },
@@ -56,7 +66,7 @@
       "title": "Create a Modular SaaS",
       "titlePtBr": "Crie um SaaS modular",
       "description": "Launch a modular monolith with service-ready boundaries.",
-      "descriptionPtBr": "Lance um monólito modular com limites prontos para serviços.",
+      "descriptionPtBr": "Lance um mon\u00f3lito modular com limites prontos para servi\u00e7os.",
       "source": "../../documentation/md/guides/CREATING-SAAS-MONOLITH-WITH-JUMENTIX.md",
       "sourcePtBr": "../../documentation/md/guides/CREATING-SAAS-MONOLITH-WITH-JUMENTIX.pt-BR.md"
     },
@@ -64,9 +74,9 @@
       "section": "guides",
       "slug": "saas-microservices",
       "title": "Create a Microservices SaaS",
-      "titlePtBr": "Crie um SaaS com microsserviços",
+      "titlePtBr": "Crie um SaaS com microsservi\u00e7os",
       "description": "Build distributed services with contract-based communication.",
-      "descriptionPtBr": "Construa serviços distribuídos com comunicação baseada em contratos.",
+      "descriptionPtBr": "Construa servi\u00e7os distribu\u00eddos com comunica\u00e7\u00e3o baseada em contratos.",
       "source": "../../documentation/md/guides/CREATING-SAAS-MICROSERVICES-WITH-JUMENTIX.md",
       "sourcePtBr": "../../documentation/md/guides/CREATING-SAAS-MICROSERVICES-WITH-JUMENTIX.pt-BR.md"
     },
@@ -76,7 +86,7 @@
       "title": "Runtime Environment Contracts",
       "titlePtBr": "Contratos do ambiente de runtime",
       "description": "Environment variables and runtime composition behavior.",
-      "descriptionPtBr": "Variáveis de ambiente e comportamento da composição de runtime.",
+      "descriptionPtBr": "Vari\u00e1veis de ambiente e comportamento da composi\u00e7\u00e3o de runtime.",
       "source": "../../documentation/consumers/RUNTIME-CAPABILITIES.md",
       "sourcePtBr": "../../documentation/consumers/RUNTIME-CAPABILITIES.pt-BR.md"
     },
@@ -84,9 +94,9 @@
       "section": "reference",
       "slug": "package-scripts",
       "title": "Package Scripts Reference",
-      "titlePtBr": "Referência de scripts dos pacotes",
+      "titlePtBr": "Refer\u00eancia de scripts dos pacotes",
       "description": "Every supported monorepo command and its usage.",
-      "descriptionPtBr": "Todos os comandos suportados pelo monorepo e como utilizá-los.",
+      "descriptionPtBr": "Todos os comandos suportados pelo monorepo e como utiliz\u00e1-los.",
       "source": "../../documentation/consumers/PACKAGE-SCRIPTS-REFERENCE.md",
       "sourcePtBr": "../../documentation/consumers/PACKAGE-SCRIPTS-REFERENCE.pt-BR.md"
     },
@@ -94,9 +104,9 @@
       "section": "reference",
       "slug": "security-compliance",
       "title": "Security and PCI Hardening",
-      "titlePtBr": "Segurança e hardening PCI",
+      "titlePtBr": "Seguran\u00e7a e hardening PCI",
       "description": "Security controls and compliance evidence.",
-      "descriptionPtBr": "Controles de segurança e evidências de compliance.",
+      "descriptionPtBr": "Controles de seguran\u00e7a e evid\u00eancias de compliance.",
       "source": "../../documentation/consumers/SECURITY-AND-COMPLIANCE.md",
       "sourcePtBr": "../../documentation/consumers/SECURITY-AND-COMPLIANCE.pt-BR.md"
     },
@@ -106,7 +116,7 @@
       "title": "Events and Messages Map",
       "titlePtBr": "Mapa de eventos e mensagens",
       "description": "Application event, request, response, and worker contracts.",
-      "descriptionPtBr": "Contratos de eventos, requests, responses e workers da aplicação.",
+      "descriptionPtBr": "Contratos de eventos, requests, responses e workers da aplica\u00e7\u00e3o.",
       "source": "../../documentation/md/EVENTS-AND-MESSAGES-MAP.md",
       "sourcePtBr": "../../documentation/md/EVENTS-AND-MESSAGES-MAP.pt-BR.md"
     },
@@ -119,6 +129,376 @@
       "descriptionPtBr": "Contratos de erro e comportamento de resposta das interfaces.",
       "source": "../../documentation/md/ERROR-CONTRACTS-AND-RESPONSES.md",
       "sourcePtBr": "../../documentation/md/ERROR-CONTRACTS-AND-RESPONSES.pt-BR.md"
+    },
+    {
+      "section": "packages",
+      "slug": "index",
+      "title": "Jumentix packages",
+      "titlePtBr": "Pacotes Jumentix",
+      "description": "Consumer package map for adopters (public site; private tooling excluded).",
+      "descriptionPtBr": "Mapa de pacotes para adotantes (site p\u00fablico; tooling privado exclu\u00eddo).",
+      "source": "../../documentation/consumers/PACKAGES-HUB.md",
+      "sourcePtBr": "../../documentation/consumers/PACKAGES-HUB.pt-BR.md"
+    },
+    {
+      "section": "packages/cana",
+      "slug": "index",
+      "title": "@jumentix/cana",
+      "titlePtBr": "@jumentix/cana",
+      "description": "IndexedDB offline database adapter for Jumentix applications.",
+      "descriptionPtBr": "Adaptador de banco de dados offline sobre IndexedDB para aplica\u00e7\u00f5es Jumentix.",
+      "source": "../../packages/cana/README.md",
+      "sourcePtBr": "../../packages/cana/README.pt-BR.md"
+    },
+    {
+      "section": "packages/cana/usage",
+      "slug": "index",
+      "title": "Cana usage guide",
+      "titlePtBr": "Guia de uso do Cana",
+      "description": "Consumer API guide hub for @jumentix/cana with focused subpages.",
+      "descriptionPtBr": "Hub do guia de API do consumidor para @jumentix/cana com subp\u00e1ginas focadas.",
+      "source": "../../documentation/md/CANA-USAGE-GUIDE.md",
+      "sourcePtBr": "../../documentation/md/CANA-USAGE-GUIDE.pt-BR.md"
+    },
+    {
+      "section": "packages/cana/usage",
+      "slug": "getting-started",
+      "title": "Getting started with Cana",
+      "titlePtBr": "Primeiros passos com Cana",
+      "description": "Install Cana and build the minimal categorized task database.",
+      "descriptionPtBr": "Instale o Cana e construa o banco mínimo de tarefas categorizadas.",
+      "source": "../../documentation/md/CANA-USAGE-GETTING-STARTED.md",
+      "sourcePtBr": "../../documentation/md/CANA-USAGE-GETTING-STARTED.pt-BR.md"
+    },
+    {
+      "section": "packages/cana/usage",
+      "slug": "schema-keys",
+      "title": "Schema and keys",
+      "titlePtBr": "Schema e chaves",
+      "description": "Version schemas and choose stable key strategies for Cana stores.",
+      "descriptionPtBr": "Versione schemas e escolha estratégias de chave estáveis para stores Cana.",
+      "source": "../../documentation/md/CANA-USAGE-SCHEMA-KEYS.md",
+      "sourcePtBr": "../../documentation/md/CANA-USAGE-SCHEMA-KEYS.pt-BR.md"
+    },
+    {
+      "section": "packages/cana/usage",
+      "slug": "crud-bulk",
+      "title": "Reading, writing and bulk operations",
+      "titlePtBr": "Leitura, escrita e operações em lote",
+      "description": "Use CRUD and bulk operations with complete task examples.",
+      "descriptionPtBr": "Use CRUD e operações em lote com exemplos completos de tarefas.",
+      "source": "../../documentation/md/CANA-USAGE-CRUD-BULK.md",
+      "sourcePtBr": "../../documentation/md/CANA-USAGE-CRUD-BULK.pt-BR.md"
+    },
+    {
+      "section": "packages/cana/usage",
+      "slug": "querying",
+      "title": "Querying and plans",
+      "titlePtBr": "Queries e planos",
+      "description": "Query Cana indexes, inspect explain plans and understand complexity.",
+      "descriptionPtBr": "Consulte índices do Cana, inspecione planos explain e entenda complexidade.",
+      "source": "../../documentation/md/CANA-USAGE-QUERYING.md",
+      "sourcePtBr": "../../documentation/md/CANA-USAGE-QUERYING.pt-BR.md"
+    },
+    {
+      "section": "packages/cana/usage",
+      "slug": "transactions-events",
+      "title": "Transactions and change events",
+      "titlePtBr": "Transações e eventos de mudança",
+      "description": "Write atomically and update UI stores from committed Cana events.",
+      "descriptionPtBr": "Grave de forma atômica e atualize stores de UI a partir de eventos Cana commitados.",
+      "source": "../../documentation/md/CANA-USAGE-TRANSACTIONS-EVENTS.md",
+      "sourcePtBr": "../../documentation/md/CANA-USAGE-TRANSACTIONS-EVENTS.pt-BR.md"
+    },
+    {
+      "section": "packages/cana/usage",
+      "slug": "hooks-errors",
+      "title": "Hooks and errors",
+      "titlePtBr": "Hooks e erros",
+      "description": "Apply write hooks and handle plain-data Cana errors.",
+      "descriptionPtBr": "Aplique hooks de escrita e trate erros Cana como dados puros.",
+      "source": "../../documentation/md/CANA-USAGE-HOOKS-ERRORS.md",
+      "sourcePtBr": "../../documentation/md/CANA-USAGE-HOOKS-ERRORS.pt-BR.md"
+    },
+    {
+      "section": "packages/cana/usage",
+      "slug": "storage-recovery",
+      "title": "Storage and crash recovery",
+      "titlePtBr": "Storage e recuperação de crash",
+      "description": "Assess durability, export/import data and resolve uncertain writes.",
+      "descriptionPtBr": "Avalie durabilidade, exporte/importe dados e resolva escritas incertas.",
+      "source": "../../documentation/md/CANA-USAGE-STORAGE-RECOVERY.md",
+      "sourcePtBr": "../../documentation/md/CANA-USAGE-STORAGE-RECOVERY.pt-BR.md"
+    },
+    {
+      "section": "packages/cana/usage",
+      "slug": "workers-testing",
+      "title": "Workers and testing",
+      "titlePtBr": "Workers e testes",
+      "description": "Run Cana through a worker boundary and plan browser tests.",
+      "descriptionPtBr": "Execute Cana através da fronteira de worker e planeje testes no browser.",
+      "source": "../../documentation/md/CANA-USAGE-WORKERS-TESTING.md",
+      "sourcePtBr": "../../documentation/md/CANA-USAGE-WORKERS-TESTING.pt-BR.md"
+    },
+    {
+      "section": "packages/cana/usage",
+      "slug": "api-reference",
+      "title": "API reference",
+      "titlePtBr": "Referência de API",
+      "description": "Compact reference for the Cana APIs used in the guide.",
+      "descriptionPtBr": "Referência compacta das APIs Cana usadas no guia.",
+      "source": "../../documentation/md/CANA-USAGE-API-REFERENCE.md",
+      "sourcePtBr": "../../documentation/md/CANA-USAGE-API-REFERENCE.pt-BR.md"
+    },
+    {
+      "section": "packages/cana",
+      "slug": "react-context",
+      "title": "Cana with React Context API",
+      "titlePtBr": "Cana com React Context API",
+      "description": "From zero to final implementation: categorized tasks with Cana and React Context.",
+      "descriptionPtBr": "Do zero \u00e0 implementa\u00e7\u00e3o final: tarefas categorizadas com Cana e React Context.",
+      "source": "../../documentation/md/CANA-REACT-CONTEXT-TUTORIAL.md",
+      "sourcePtBr": "../../documentation/md/CANA-REACT-CONTEXT-TUTORIAL.pt-BR.md"
+    },
+    {
+      "section": "packages/cana",
+      "slug": "react-redux",
+      "title": "Cana with React Redux",
+      "titlePtBr": "Cana com React Redux",
+      "description": "From zero to final implementation: categorized tasks with Cana and Redux.",
+      "descriptionPtBr": "Do zero \u00e0 implementa\u00e7\u00e3o final: tarefas categorizadas com Cana e Redux.",
+      "source": "../../documentation/md/CANA-REACT-REDUX-TUTORIAL.md",
+      "sourcePtBr": "../../documentation/md/CANA-REACT-REDUX-TUTORIAL.pt-BR.md"
+    },
+    {
+      "section": "packages/cana",
+      "slug": "vue-pinia",
+      "title": "Cana with Vue 3 and Pinia",
+      "titlePtBr": "Cana com Vue 3 e Pinia",
+      "description": "From zero to final implementation: categorized tasks with Cana, Vue 3 and Pinia.",
+      "descriptionPtBr": "Do zero \u00e0 implementa\u00e7\u00e3o final: tarefas categorizadas com Cana, Vue 3 e Pinia.",
+      "source": "../../documentation/md/CANA-VUE-PINIA-TUTORIAL.md",
+      "sourcePtBr": "../../documentation/md/CANA-VUE-PINIA-TUTORIAL.pt-BR.md"
+    },
+    {
+      "section": "packages/designer-core",
+      "slug": "index",
+      "title": "@jumentix/designer-core",
+      "titlePtBr": "@jumentix/designer-core",
+      "description": "Browser-safe design document helpers for Jumentix frontends.",
+      "descriptionPtBr": "Helpers de documento de design seguros para browser em frontends Jumentix.",
+      "source": "../../packages/designer-core/README.md",
+      "sourcePtBr": "../../packages/designer-core/README.pt-BR.md"
+    },
+    {
+      "section": "packages/designer-core",
+      "slug": "usage",
+      "title": "designer-core usage",
+      "titlePtBr": "Uso do designer-core",
+      "description": "Junior guide and playground for @jumentix/designer-core.",
+      "descriptionPtBr": "Guia j\u00fanior e playground para @jumentix/designer-core.",
+      "source": "../../documentation/md/DESIGNER-CORE-USAGE-GUIDE.md",
+      "sourcePtBr": "../../documentation/md/DESIGNER-CORE-USAGE-GUIDE.pt-BR.md"
+    },
+    {
+      "section": "packages/key-value-storage",
+      "slug": "index",
+      "title": "@jumentix/key-value-storage",
+      "titlePtBr": "@jumentix/key-value-storage",
+      "description": "Key/value storage clients with an in-memory adapter for tests and demos.",
+      "descriptionPtBr": "Clientes chave/valor com adaptador em mem\u00f3ria para testes e demos.",
+      "source": "../../packages/key-value-storage/README.md",
+      "sourcePtBr": "../../packages/key-value-storage/README.pt-BR.md"
+    },
+    {
+      "section": "packages/key-value-storage",
+      "slug": "usage",
+      "title": "key-value-storage usage",
+      "titlePtBr": "Uso do key-value-storage",
+      "description": "Junior guide and in-memory playground for key/value storage.",
+      "descriptionPtBr": "Guia j\u00fanior e playground em mem\u00f3ria para chave/valor.",
+      "source": "../../documentation/md/KEY-VALUE-STORAGE-USAGE-GUIDE.md",
+      "sourcePtBr": "../../documentation/md/KEY-VALUE-STORAGE-USAGE-GUIDE.pt-BR.md"
+    },
+    {
+      "section": "packages/mutex-service",
+      "slug": "index",
+      "title": "@jumentix/mutex-service",
+      "titlePtBr": "@jumentix/mutex-service",
+      "description": "Named locks built on key/value storage.",
+      "descriptionPtBr": "Locks nomeados sobre armazenamento chave/valor.",
+      "source": "../../packages/mutex-service/README.md",
+      "sourcePtBr": "../../packages/mutex-service/README.pt-BR.md"
+    },
+    {
+      "section": "packages/mutex-service",
+      "slug": "usage",
+      "title": "mutex-service usage",
+      "titlePtBr": "Uso do mutex-service",
+      "description": "Junior guide and playground for mutex locks.",
+      "descriptionPtBr": "Guia j\u00fanior e playground para locks mutex.",
+      "source": "../../documentation/md/MUTEX-SERVICE-USAGE-GUIDE.md",
+      "sourcePtBr": "../../documentation/md/MUTEX-SERVICE-USAGE-GUIDE.pt-BR.md"
+    },
+    {
+      "section": "packages/message-mediator",
+      "slug": "index",
+      "title": "@jumentix/message-mediator",
+      "titlePtBr": "@jumentix/message-mediator",
+      "description": "In-process and broker-backed message mediation.",
+      "descriptionPtBr": "Media\u00e7\u00e3o de mensagens em processo e via brokers.",
+      "source": "../../packages/message-mediator/README.md",
+      "sourcePtBr": "../../packages/message-mediator/README.pt-BR.md"
+    },
+    {
+      "section": "packages/message-mediator",
+      "slug": "usage",
+      "title": "message-mediator usage",
+      "titlePtBr": "Uso do message-mediator",
+      "description": "Junior guide and in-memory mediator playground.",
+      "descriptionPtBr": "Guia j\u00fanior e playground do mediator em mem\u00f3ria.",
+      "source": "../../documentation/md/MESSAGE-MEDIATOR-USAGE-GUIDE.md",
+      "sourcePtBr": "../../documentation/md/MESSAGE-MEDIATOR-USAGE-GUIDE.pt-BR.md"
+    },
+    {
+      "section": "packages",
+      "slug": "external-db-repositories",
+      "title": "@jumentix/external-db-repositories",
+      "titlePtBr": "@jumentix/external-db-repositories",
+      "description": "Reusable external DB repository adapters.",
+      "descriptionPtBr": "Adaptadores de reposit\u00f3rio para bancos externos.",
+      "source": "../../documentation/consumers/packages/external-db-repositories.md",
+      "sourcePtBr": "../../documentation/consumers/packages/external-db-repositories.pt-BR.md"
+    },
+    {
+      "section": "packages",
+      "slug": "external-persistence-core",
+      "title": "@jumentix/external-persistence-core",
+      "titlePtBr": "@jumentix/external-persistence-core",
+      "description": "Base class and options for external persistence adapters.",
+      "descriptionPtBr": "Classe base e op\u00e7\u00f5es para adaptadores de persist\u00eancia externa.",
+      "source": "../../documentation/consumers/packages/external-persistence-core.md",
+      "sourcePtBr": "../../documentation/consumers/packages/external-persistence-core.pt-BR.md"
+    },
+    {
+      "section": "packages",
+      "slug": "external-store-proxy",
+      "title": "@jumentix/external-store-proxy",
+      "titlePtBr": "@jumentix/external-store-proxy",
+      "description": "IStore proxies over external database clients.",
+      "descriptionPtBr": "Proxies IStore sobre clientes de banco externos.",
+      "source": "../../documentation/consumers/packages/external-store-proxy.md",
+      "sourcePtBr": "../../documentation/consumers/packages/external-store-proxy.pt-BR.md"
+    },
+    {
+      "section": "packages",
+      "slug": "persistence-contracts",
+      "title": "@jumentix/persistence-contracts",
+      "titlePtBr": "@jumentix/persistence-contracts",
+      "description": "Shared persistence ports (IStore, IDatabaseClient).",
+      "descriptionPtBr": "Ports de persist\u00eancia compartilhados (IStore, IDatabaseClient).",
+      "source": "../../documentation/consumers/packages/persistence-contracts.md",
+      "sourcePtBr": "../../documentation/consumers/packages/persistence-contracts.pt-BR.md"
+    },
+    {
+      "section": "packages",
+      "slug": "database-client-factory",
+      "title": "@jumentix/database-client-factory",
+      "titlePtBr": "@jumentix/database-client-factory",
+      "description": "Compile database clients from env/driver selection.",
+      "descriptionPtBr": "Compila clientes de banco a partir do driver/env.",
+      "source": "../../documentation/consumers/packages/database-client-factory.md",
+      "sourcePtBr": "../../documentation/consumers/packages/database-client-factory.pt-BR.md"
+    },
+    {
+      "section": "packages",
+      "slug": "shared-contracts",
+      "title": "@jumentix/shared-contracts",
+      "titlePtBr": "@jumentix/shared-contracts",
+      "description": "Canonical OpenAPI/AsyncAPI spec loading for SDKs.",
+      "descriptionPtBr": "Carga can\u00f4nica de OpenAPI/AsyncAPI para SDKs.",
+      "source": "../../documentation/consumers/packages/shared-contracts.md",
+      "sourcePtBr": "../../documentation/consumers/packages/shared-contracts.pt-BR.md"
+    },
+    {
+      "section": "packages",
+      "slug": "sdk-rest-client",
+      "title": "@jumentix/sdk-rest-client",
+      "titlePtBr": "@jumentix/sdk-rest-client",
+      "description": "OpenAPI-driven REST SDK client.",
+      "descriptionPtBr": "Cliente SDK REST orientado a OpenAPI.",
+      "source": "../../documentation/consumers/packages/sdk-rest-client.md",
+      "sourcePtBr": "../../documentation/consumers/packages/sdk-rest-client.pt-BR.md"
+    },
+    {
+      "section": "packages",
+      "slug": "sdk-websocket-client",
+      "title": "@jumentix/sdk-websocket-client",
+      "titlePtBr": "@jumentix/sdk-websocket-client",
+      "description": "AsyncAPI/Socket.IO realtime SDK client.",
+      "descriptionPtBr": "Cliente SDK realtime AsyncAPI/Socket.IO.",
+      "source": "../../documentation/consumers/packages/sdk-websocket-client.md",
+      "sourcePtBr": "../../documentation/consumers/packages/sdk-websocket-client.pt-BR.md"
+    },
+    {
+      "section": "packages",
+      "slug": "sdk-grpc-client",
+      "title": "@jumentix/sdk-grpc-client",
+      "titlePtBr": "@jumentix/sdk-grpc-client",
+      "description": "AsyncAPI/gRPC realtime SDK client (Node).",
+      "descriptionPtBr": "Cliente SDK realtime AsyncAPI/gRPC (Node).",
+      "source": "../../documentation/consumers/packages/sdk-grpc-client.md",
+      "sourcePtBr": "../../documentation/consumers/packages/sdk-grpc-client.pt-BR.md"
+    },
+    {
+      "section": "packages",
+      "slug": "adapter-runtime-bootstrap",
+      "title": "@jumentix/adapter-runtime-bootstrap",
+      "titlePtBr": "@jumentix/adapter-runtime-bootstrap",
+      "description": "Shared adapter runtime bootstrap compiler.",
+      "descriptionPtBr": "Compilador compartilhado de bootstrap de adapters.",
+      "source": "../../documentation/consumers/packages/adapter-runtime-bootstrap.md",
+      "sourcePtBr": "../../documentation/consumers/packages/adapter-runtime-bootstrap.pt-BR.md"
+    },
+    {
+      "section": "packages",
+      "slug": "runtime-infra",
+      "title": "@jumentix/runtime-infra",
+      "titlePtBr": "@jumentix/runtime-infra",
+      "description": "Runtime infrastructure helpers for adapters.",
+      "descriptionPtBr": "Helpers de infraestrutura de runtime para adapters.",
+      "source": "../../documentation/consumers/packages/runtime-infra.md",
+      "sourcePtBr": "../../documentation/consumers/packages/runtime-infra.pt-BR.md"
+    },
+    {
+      "section": "apps",
+      "slug": "backend-template",
+      "title": "backend-template",
+      "titlePtBr": "backend-template",
+      "description": "Reference backend composition for juniors.",
+      "descriptionPtBr": "Backend de refer\u00eancia para juniores.",
+      "source": "../../documentation/consumers/apps/backend-template.md",
+      "sourcePtBr": "../../documentation/consumers/apps/backend-template.pt-BR.md"
+    },
+    {
+      "section": "apps",
+      "slug": "service-management",
+      "title": "service-management",
+      "titlePtBr": "service-management",
+      "description": "Domain Designer SPA / PWA app hub.",
+      "descriptionPtBr": "Hub do app SPA/PWA Domain Designer.",
+      "source": "../../documentation/consumers/apps/service-management.md",
+      "sourcePtBr": "../../documentation/consumers/apps/service-management.pt-BR.md"
+    },
+    {
+      "section": "apps",
+      "slug": "jumentix-website",
+      "title": "jumentix-website",
+      "titlePtBr": "jumentix-website",
+      "description": "Public docs and marketing site hub.",
+      "descriptionPtBr": "Hub do site p\u00fablico de docs e marketing.",
+      "source": "../../documentation/consumers/apps/jumentix-website.md",
+      "sourcePtBr": "../../documentation/consumers/apps/jumentix-website.pt-BR.md"
     }
   ],
   "collections": [

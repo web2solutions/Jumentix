@@ -36,6 +36,14 @@ const portugueseRoutes = [
   ['/pt-BR/changelog?page=1', ['Changelog do Jumentix']]
 ];
 
+function assertOptionalMonacoWidgetsMount() {
+  cy.get('body').then(($body) => {
+    if ($body.find('.jtx-monaco-code').length > 0) {
+      cy.get('.monaco-editor', { timeout: 20000 }).should('exist');
+    }
+  });
+}
+
 describe('commercial routes (EN + PT-BR)', () => {
   for (const [path, includes] of [...englishRoutes, ...portugueseRoutes]) {
     it(`renders ${path}`, () => {
@@ -44,6 +52,7 @@ describe('commercial routes (EN + PT-BR)', () => {
       for (const fragment of includes) {
         cy.contains(fragment).should('exist');
       }
+      assertOptionalMonacoWidgetsMount();
       cy.get('nav[aria-label="Main navigation"]').should('exist');
     });
   }

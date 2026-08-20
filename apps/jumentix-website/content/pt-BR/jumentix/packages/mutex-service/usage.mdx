@@ -1,0 +1,189 @@
+---
+title: "Uso do mutex-service"
+description: "Guia júnior e playground para locks mutex."
+---
+
+# @jumentix/mutex-service — guia de uso
+
+## Responsabilidade no escopo
+
+- **Camada:** persistência / coordenação
+- **Responsável por:** locks nomeados sobre um cliente KV
+- **Usado com:** `@jumentix/key-value-storage`
+- **Não responsável por:** documentos de negócio ou messaging
+
+## O que é
+
+`@jumentix/mutex-service` fornece **locks nomeados** apoiados em
+`@jumentix/key-value-storage`. Dois workers (ou duas requisições) não podem
+segurar o mesmo id de lock para o mesmo nome de recurso ao mesmo tempo. O
+serviço expõe `lock`, `isLocked` e `unlock` — todos retornando
+`ServiceResponse`.
+
+## Por que existe
+
+Sem lock compartilhado, webhooks duplicados, sobreposição de cron ou escritas
+paralelas em abas podem corromper a mesma fatura, assento ou registro de design.
+Times júnior precisam de uma API de lock pequena e testável que funcione em
+memória no desenvolvimento e no Redis em produção — usando a mesma porta KV que
+o resto da stack já usa.
+
+## Pré-requisitos
+
+- **Pacotes:** `@jumentix/mutex-service` e `@jumentix/key-value-storage`.
+- **Runtime:** browser (KV InMemory + stub do playground) ou Node/Bun (KV InMemory
+  ou Redis).
+- **Leitura prévia:**
+  [guia key-value-storage](/docs/pt-BR/jumentix/packages/key-value-storage/usage).
+- **Conceito:** chave de lock é `{mutexPrefix}:{resourceName}:{uuid}` onde `uuid`
+  identifica esta tentativa (use `crypto.randomUUID()`).
+
+## Glossário
+
+| Termo | Significado |
+| --- | --- |
+| **Nome do recurso** | Nome lógico do que você protege (ex.: `invoice-42`, `design-sync`). |
+| **Uuid do lock** | Id único de uma tentativa; armazenado como marcador no KV. |
+| **Previously locked** | Resultado de `lock()` quando outro holder já possui o recurso. |
+| **Prefixo** | Namespace das chaves de mutex; padrão `mutex:` (configurável via `IMutexServiceOptions`). |
+| **Seção crítica** | Código entre `lock` bem-sucedido e `unlock` — mantenha curta. |
+| **ServiceResponse** | `{ result?, error? }` — inspecione `error` antes de confiar em `result`. |
+
+## Passos
+
+### 1. Instalar (< 5 minutos)
+
+```bash
+bun add @jumentix/mutex-service @jumentix/key-value-storage
+```
+
+### 2. Primeiro sucesso — adquirir e liberar (< 15 minutos)
+
+```ts
+import { MutexService } from '@jumentix/mutex-service';
+import { InMemoryKeyValueStorageClient } from '@jumentix/key-value-storage';
+
+const kv = InMemoryKeyValueStorageClient.compile();
+await kv.connect();
+
+const mutex = MutexService.compile(kv);
+const lockId = crypto.randomUUID();
+const resource = 'docs-demo';
+
+const acquired = await mutex.lock(resource, lockId);
+if (acquired.error) throw acquired.error;
+
+if (!acquired.result?.locked) {
+  console.log('Recurso ocupado', acquired.result?.previouslyLocked);
+} else {
+  try {
+    // seção crítica — mantenha pequena
+    await doWork(resource);
+  } finally {
+    await mutex.unlock(resource, lockId);
+  }
+}
+```
+
+**Verifique o sucesso:** primeiro `lock` retorna `{ locked: true }`; após
+`unlock`, `isLocked` retorna `{ result: false }`.
+
+### 3. Fluxo central — sempre liberar em `finally`
+
+```ts
+async function withLock<T>(
+  mutex: MutexService,
+  resource: string,
+  fn: () => Promise<T>
+): Promise<T | null> {
+  const lockId = crypto.randomUUID();
+  const { result, error } = await mutex.lock(resource, lockId);
+  if (error) throw error;
+  if (!result?.locked) return null;
+
+  try {
+    return await fn();
+  } finally {
+    await mutex.unlock(resource, lockId);
+  }
+}
+```
+
+Nunca segure lock através de I/O remoto lento a menos que aceite risco de timeout
+e lock obsoleto.
+
+### 4. Fluxo central — verificar antes de repetir
+
+```ts
+const status = await mutex.isLocked(resource, lockId);
+if (status.result) {
+  // ainda segurado — espere ou mostre "ocupado" ao usuário
+}
+```
+
+### 5. Fluxo central — wiring de produção
+
+```ts
+import { compileKeyValueStorageClient } from '@jumentix/key-value-storage';
+import { MutexService } from '@jumentix/mutex-service';
+
+const kv = compileKeyValueStorageClient(); // Redis em produção
+await kv.connect();
+const mutex = MutexService.compile(kv, { prefix: 'myapp-mutex' });
+```
+
+Use prefixo dedicado por serviço para chaves de lock não colidirem com cache.
+
+### 6. Superfície completa — mapa da API
+
+| Membro | Retorna | Notas |
+| --- | --- | --- |
+| `MutexService.compile(kv, options?)` | Singleton `MutexService` | Exige client KV conectado |
+| `lock(resourceName, uuid)` | `ServiceResponse` com `{ locked, previouslyLocked }` | Não bloqueia esperando; retorna estado ocupado |
+| `isLocked(resourceName, uuid)` | `ServiceResponse<boolean>` | Verifica marcador no KV |
+| `unlock(resourceName, uuid)` | `ServiceResponse` | Delete idempotente da chave de lock |
+| `MutexService.reset()` | `void` | Helper de teste — limpa singleton |
+
+Este pacote **não** implementa fila nem renovação de lease — quem chama repete ou
+recua quando `locked: false`.
+
+## Experimente no playground de docs
+
+<DocsPlayground runtime="mutex-service" id="getting-started" />
+
+O playground usa API simplificada acquire/release:
+
+```js
+const mutex = api.create();
+const lock = await mutex.acquire('docs-demo');
+await mutex.release(lock);
+```
+
+Mapeie mentalmente para `lock` / `unlock` com nome de recurso e uuid no código
+real.
+
+## Erros comuns
+
+| Sintoma | Causa | Correção | Verificar sucesso |
+| --- | --- | --- | --- |
+| `locked: false` sempre | Mesmo recurso já lockado | Espere ou use outro nome; chame `unlock` no fluxo anterior | Segunda tentativa após unlock funciona |
+| Lock nunca liberado | Falta `finally` / return antecipado | Envolva corpo em `try/finally` com `unlock` | `isLocked` false após fluxo |
+| Lock obsoleto após crash | Processo morreu antes de `unlock` | Estratégia TTL fora deste pacote ou `unlock` manual com uuid conhecido | Recurso gravável de novo |
+| `MutexService depends on KeyValueStorageClient` | Passou client KV nulo | Compile KV primeiro | `MutexService.compile(kv)` funciona |
+| Testes interferem | Mutex singleton + KV compartilhado | `MutexService.reset()` entre testes | Resultados de lock isolados por teste |
+
+## Checklist júnior (“Eu consigo …”)
+
+- [ ] Ligar `MutexService.compile` com client KV in-memory.
+- [ ] Adquirir lock com uuid novo e liberar em `finally`.
+- [ ] Explicar diferença entre `locked: false` e resposta com `error`.
+- [ ] Manter seção crítica pequena e sem cadeias longas de `await fetch`.
+- [ ] Configurar `prefix` customizado para Redis de produção.
+- [ ] Descrever quando **não** usar locks in-memory (workers multi-processo).
+
+## Próximo passo
+
+Volte à porta de armazenamento em
+[key-value-storage](/docs/pt-BR/jumentix/packages/key-value-storage/usage) e
+aprenda mensageria desacoplada em
+[message-mediator](/docs/pt-BR/jumentix/packages/message-mediator/usage).

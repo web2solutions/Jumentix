@@ -101,6 +101,7 @@ const EXPECTED_INVOICE_PROPERTIES = {
 
 describe('designer exporters (JUM-469)', () => {
   it('builds the JSON export as the versioned full-suite document carrying all four tabs (JUM-547)', () => {
+    expect.hasAssertions();
     const state = createState();
     state.interfaces = [
       {
@@ -162,6 +163,7 @@ describe('designer exporters (JUM-469)', () => {
   });
 
   it('defaults the suite sections when the state predates the four-tab shape', () => {
+    expect.hasAssertions();
     const document = buildJsonExportDocument({
       domains: [], relationships: [], view: { zoom: 1 }
     });
@@ -174,6 +176,7 @@ describe('designer exporters (JUM-469)', () => {
   });
 
   it('builds the markdown export verbatim', () => {
+    expect.hasAssertions();
     const markdown = buildMarkdownExport(createState());
     const expected = [
       '# Domain Designer Model',
@@ -218,10 +221,12 @@ describe('designer exporters (JUM-469)', () => {
   });
 
   it('builds the markdown export for an empty model', () => {
+    expect.hasAssertions();
     expect(buildMarkdownExport({ domains: [], relationships: [] })).toBe('# Domain Designer Model\n');
   });
 
   it('builds the markdown export for entities without contracts', () => {
+    expect.hasAssertions();
     const markdown = buildMarkdownExport(normalizeStatePayload({
       domains: [{
         id: 'domain-1',
@@ -235,6 +240,7 @@ describe('designer exporters (JUM-469)', () => {
   });
 
   it('builds the JSON Schema document with draft 2020-12 definitions', () => {
+    expect.hasAssertions();
     const document = buildJsonSchemaDocument(createState());
     expect(document).toStrictEqual({
       $schema: 'https://json-schema.org/draft/2020-12/schema',
@@ -253,6 +259,7 @@ describe('designer exporters (JUM-469)', () => {
   });
 
   it('builds the boilerplate bundle with the hexagonal file layout', () => {
+    expect.hasAssertions();
     const document = buildBoilerplateBundleDocument(createState(), '2026-08-05T00:00:00.000Z');
     expect(Object.keys(document)).toStrictEqual(['kind', 'version', 'generatedAt', 'modules']);
     expect(document.kind).toBe('boilerplate-bundle');
@@ -307,11 +314,13 @@ describe('designer exporters (JUM-469)', () => {
   });
 
   it('defaults the bundle timestamp to the current ISO time', () => {
+    expect.hasAssertions();
     const document = buildBoilerplateBundleDocument(createState());
     expect(document.generatedAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
   });
 
   it('builds the domain package around the selected domain', () => {
+    expect.hasAssertions();
     const state = createState();
     const document = buildDomainPackageDocument(state.domains[0], '2026-08-05T00:00:00.000Z');
     expect(document.kind).toBe('domain-package');
@@ -332,6 +341,7 @@ describe('designer exporters (JUM-469)', () => {
   });
 
   it('builds the OAS 3.1 document with schemas, paths and x- extensions', () => {
+    expect.hasAssertions();
     const document = buildOasDocument(createState());
     expect(document.openapi).toBe('3.1.0');
     expect(document.info).toStrictEqual({
@@ -514,6 +524,7 @@ describe('designer exporters (JUM-469)', () => {
   });
 
   it('omits composition extensions for entities without OAS composition', () => {
+    expect.hasAssertions();
     // Literal state (not normalizeStatePayload, which drops dangling
     // relationships) so the x-relations null-schema branch is reachable.
     const state = {
@@ -556,6 +567,7 @@ describe('designer exporters (JUM-469)', () => {
   });
 
   it('carries the JUM-478 meta extensions: x-rbac only when non-default, x-fieldless, x-field-flags', () => {
+    expect.hasAssertions();
     const document = buildOasDocument(normalizeStatePayload({
       domains: [{
         id: 'domain-1',
@@ -608,6 +620,7 @@ describe('designer exporters (JUM-469)', () => {
   });
 
   it('emits discriminator mapping only for declared refs', () => {
+    expect.hasAssertions();
     const document = buildOasDocument(normalizeStatePayload({
       domains: [{
         id: 'domain-1',
@@ -631,6 +644,7 @@ describe('designer exporters (JUM-469)', () => {
   });
 
   it('renders markdown for sparse entities: no context, partial meta, fallbacks', () => {
+    expect.hasAssertions();
     const markdown = buildMarkdownExport({
       domains: [{
         id: 'domain-1',
@@ -664,6 +678,7 @@ describe('designer exporters (JUM-469)', () => {
   });
 
   it('ignores unknown composition modes and parses string refs in OAS export', () => {
+    expect.hasAssertions();
     const document = buildOasDocument({
       domains: [{
         id: 'domain-1',
@@ -701,6 +716,7 @@ describe('designer exporters (JUM-469)', () => {
   });
 
   it('tolerates entities without meta in the jsonschema and OAS builders', () => {
+    expect.hasAssertions();
     const state = {
       domains: [{
         id: 'domain-1',
@@ -716,6 +732,7 @@ describe('designer exporters (JUM-469)', () => {
   });
 
   it('renders markdown context lines and partial RBAC rules verbatim', () => {
+    expect.hasAssertions();
     const markdown = buildMarkdownExport({
       domains: [{
         id: 'domain-1',
@@ -750,6 +767,7 @@ describe('designer exporters (JUM-469)', () => {
 
 describe('sparse-input exporter fallbacks (JUM-493)', () => {
   it('renders dashes for absent domain context fields in markdown', () => {
+    expect.hasAssertions();
     const markdown = buildMarkdownExport({
       domains: [{
         name: 'D', color: '#60a5fa', x: 0, y: 0, entities: [], context: {}
@@ -763,6 +781,7 @@ describe('sparse-input exporter fallbacks (JUM-493)', () => {
   });
 
   it('derives the package identity from the domain name, then from the default', () => {
+    expect.hasAssertions();
     const named = buildDomainPackageDocument({ name: 'Billing', entities: [] });
     expect(named.package.name).toBe('Billing');
     expect(named.package.version).toBe('1.0.0');
@@ -772,6 +791,7 @@ describe('sparse-input exporter fallbacks (JUM-493)', () => {
   });
 
   it('exports a JSON Schema document for an entity without fields', () => {
+    expect.hasAssertions();
     const document = buildJsonSchemaDocument({
       domains: [{ name: 'D', entities: [{ name: 'Empty' }] }],
       relationships: []

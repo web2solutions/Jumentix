@@ -1,7 +1,7 @@
 # Bun Install Compatibility Audit
 
 Deliverable of Linear task JUM-538, project `[Tooling] Replace Internal Node and pnpm Workflows with Bun`.
-Evidence collected 2026-07-29 against `XpertMinds/Jumentix` `dev` (`6796b06`), Bun `1.3.14`, macOS (APFS), in
+Evidence collected 2026-07-29 against `XpertMinds/Jumentix` `dev` (`6796b06`), Bun `1.3.13`, macOS (APFS), in
 an isolated worktree.
 
 This audit pulls three of the epic's recorded risks forward so they are discovered here rather than inside
@@ -112,7 +112,7 @@ Verified end state on the same tree, same vendored copy:
 | Runtime | ABI | `require('hyper-express')` |
 | --- | --- | --- |
 | Node 22 | 127 | **OK** |
-| Bun 1.3.14 | 137 | FAILED — `napi_register_module_v1` not found |
+| Bun 1.3.13 | 137 | FAILED — `napi_register_module_v1` not found |
 
 The three install-layer defects were real and are fixed. They were also masking this one, which is why fixing
 them in isolation looked like progress and changed nothing.

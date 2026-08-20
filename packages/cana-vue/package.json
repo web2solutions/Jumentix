@@ -1,0 +1,56 @@
+{
+  "name": "@jumentix/cana-vue",
+  "version": "0.1.0",
+  "description": "Vue composables and Pinia-friendly helpers for @jumentix/cana.",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "default": "./dist/index.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "README.md",
+    "README.pt-BR.md",
+    "LICENSE.md"
+  ],
+  "peerDependencies": {
+    "@jumentix/cana": "^0.1.0",
+    "vue": ">=3.3.0"
+  },
+  "peerDependenciesMeta": {
+    "pinia": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@jumentix/cana": "workspace:*",
+    "vue": "^3.5.41"
+  },
+  "scripts": {
+    "build": "bun run --filter @jumentix/cana build && tsc -p tsconfig.json --noEmit false && bun run build:esm",
+    "build:esm": "bun build src/index.ts --outfile dist/index.mjs --format esm --target browser --external vue --external pinia --external @jumentix/cana",
+    "test": "bun test --isolate test",
+    "lint": "echo \"cana-vue: covered by the root eslint run\"",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "indexeddb",
+    "offline-first",
+    "vue",
+    "pinia",
+    "jumentix",
+    "cana"
+  ]
+}

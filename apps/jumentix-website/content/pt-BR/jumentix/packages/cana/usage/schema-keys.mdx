@@ -1,0 +1,128 @@
+---
+title: "Schema e chaves"
+description: "Versione schemas e escolha estratégias de chave estáveis para stores Cana."
+---
+
+# Schema e chaves
+
+O schema do Cana é dado puro. O IndexedDB aplica mudanças de schema somente
+quando a versão do banco aumenta, então versionamento faz parte do contrato da
+aplicação.
+
+## Schema versionado
+
+```ts
+import { createClient, validateSchema, type CanaSchema } from '@jumentix/cana';
+
+const schemaV1: CanaSchema = {
+  version: 1,
+  stores: [
+    {
+      name: 'categories',
+      keyPath: 'id',
+      indexes: [{ name: 'byName', keyPath: 'name', unique: true }]
+    }
+  ]
+};
+
+const schemaV2: CanaSchema = {
+  version: 2,
+  stores: [
+    {
+      name: 'categories',
+      keyPath: 'id',
+      indexes: [{ name: 'byName', keyPath: 'name', unique: true }]
+    },
+    {
+      name: 'tasks',
+      keyPath: 'id',
+      indexes: [
+        { name: 'byCategory', keyPath: 'categoryId' },
+        { name: 'byUpdatedAt', keyPath: 'updatedAt' }
+      ]
+    }
+  ]
+};
+
+const problems = validateSchema(schemaV2);
+if (problems.length > 0) {
+  throw new Error(problems.join('\n'));
+}
+
+const firstClient = createClient({ name: 'tasks-schema-demo', schema: schemaV1 });
+await firstClient.open();
+await firstClient.table('categories').put({ id: 'work', name: 'Work' });
+await firstClient.close();
+
+const upgradedClient = createClient({ name: 'tasks-schema-demo', schema: schemaV2 });
+await upgradedClient.open();
+await upgradedClient.table('tasks').put({
+  id: 'task-1',
+  title: 'Created after schema upgrade',
+  categoryId: 'work',
+  completed: false,
+  priority: 'medium',
+  createdAt: Date.now(),
+  updatedAt: Date.now()
+});
+```
+
+## Regras de upgrade
+
+| Mudança | Comportamento do Cana |
+| --- | --- |
+| Adicionar store | Aplicado na próxima versão maior. |
+| Adicionar índice | Aplicado na próxima versão maior. |
+| Remover uma store do objeto de schema | A store antiga permanece. O Cana evita perda acidental de dados. |
+| Alterar definição de índice existente | O índice antigo permanece. Use um novo nome de índice para reconstruir de propósito. |
+| Abrir versão antiga sobre dados novos | Recusado com `UpgradeFailed`. |
+
+## Estratégias de chave
+
+```ts
+const inboundSchema: CanaSchema = {
+  version: 1,
+  stores: [{ name: 'tasks', keyPath: 'id' }]
+};
+
+const generatedInboundSchema: CanaSchema = {
+  version: 1,
+  stores: [{ name: 'tasks', keyPath: 'id', autoIncrement: true }]
+};
+
+const outboundSchema: CanaSchema = {
+  version: 1,
+  stores: [{ name: 'cache' }]
+};
+```
+
+Use chaves inbound para registros de aplicação como `categories` e `tasks`.
+Use chaves outbound para entradas de cache em que a chave é metadado fora do
+objeto armazenado.
+
+```ts
+await client.table('tasks').put({
+  id: 'task-1',
+  title: 'Stable inbound key',
+  categoryId: 'work',
+  completed: false,
+  priority: 'medium',
+  createdAt: 1,
+  updatedAt: 1
+});
+
+await client.table('cache').put(
+  { body: '<html>cached response</html>', savedAt: Date.now() },
+  'https://example.com/tasks'
+);
+```
+
+## Execute aqui
+
+<CanaPlayground id="schema-versioning" />
+
+<CanaPlayground id="keys" />
+
+## Próximo
+
+Continue em [leitura, escrita e operações em lote](/docs/pt-BR/jumentix/packages/cana/usage/crud-bulk).

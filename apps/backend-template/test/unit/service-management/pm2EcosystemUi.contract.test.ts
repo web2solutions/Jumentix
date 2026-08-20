@@ -18,6 +18,7 @@ describe('service management PM2 preview UI contract (JUM-480)', () => {
   const designerSources = ['script.js', 'index.html', 'src/ui/inspectors.js'];
 
   it('hardcodes no package-manager PM2 invocation anywhere in the designer', () => {
+    expect.hasAssertions();
     designerSources.forEach((relative) => {
       const source = readDesignerSource(relative);
       expect(source).not.toContain('pnpm run');
@@ -28,6 +29,7 @@ describe('service management PM2 preview UI contract (JUM-480)', () => {
   });
 
   it('fetches the real ecosystem through the runtime API instead of a literal map', () => {
+    expect.hasAssertions();
     const script = readDesignerSource('script.js');
     expect(script).toContain('/api/runtime/pm2-ecosystem');
     const inspectors = readDesignerSource('src/ui/inspectors.js');
@@ -38,6 +40,7 @@ describe('service management PM2 preview UI contract (JUM-480)', () => {
   });
 
   it('offers a preview environment per ecosystem the repository defines', () => {
+    expect.hasAssertions();
     const html = readDesignerSource('index.html');
     const selectMatch = html.match(/<select id="pm2-preview-environment-select">([\s\S]*?)<\/select>/);
     expect(selectMatch).not.toBeNull();
@@ -46,6 +49,7 @@ describe('service management PM2 preview UI contract (JUM-480)', () => {
   });
 
   it('names the exact env file the next save writes (per-file targeting)', () => {
+    expect.hasAssertions();
     const html = readDesignerSource('index.html');
     expect(html).toContain('id="runtime-env-target-file"');
     const script = readDesignerSource('script.js');
@@ -53,6 +57,7 @@ describe('service management PM2 preview UI contract (JUM-480)', () => {
   });
 
   it('keeps the server ecosystem mapping aligned with the repository files', () => {
+    expect.hasAssertions();
     const server = readDesignerSource('server.js');
     expect(server).toContain('dev: \'ecosystem.dev.cjs\'');
     expect(server).toContain('staging: \'ecosystem.staging.cjs\'');

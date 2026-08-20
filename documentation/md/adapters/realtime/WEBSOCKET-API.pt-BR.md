@@ -6,6 +6,25 @@ Idioma alvo: Português (Brasil)
 
 Este guia é exclusivo para a interface em tempo real do Socket.IO.
 
+## Glossário
+
+- **Adapter de entrada** — aceita chamadas de protocolo externo e traduz para use-cases.
+
+## Responsabilidade no escopo
+
+- **Camada:** adapter / realtime
+- **Responsável por:** wiring específico deste framework/tecnologia
+- **Usado com:** composição do backend-template, pacotes de persistência/SDK, guia correspondente
+- **Não responsável por:** regras de domínio, autoría OpenAPI ou storage offline no browser
+
+## Por que existe
+
+A escolha de framework fica na borda. Este adapter mantém detalhes Express/Fastify/DB/realtime substituíveis.
+
+## O que é
+
+Adapter WEBSOCKET API para interfaces realtime do Jumentix — monta use-cases sem vazar tipos de framework no domínio.
+
 ## Escopo
 
 - Transporte: WebSocket (protocolo Socket.IO)
@@ -15,9 +34,9 @@ Este guia é exclusivo para a interface em tempo real do Socket.IO.
 
 ## Referências de contrato
 
-- [Contratos em tempo real WebSocket](../../contracts/WEBSOCKET-REALTIME-CONTRACTS.md)
-- [Contratos e respostas de erro](../../ERROR-CONTRACTS-AND-RESPONSES.md)
-- [Mapa de eventos e mensagens](../../EVENTS-AND-MESSAGES-MAP.md)
+- Contratos em tempo real WebSocket
+- [Contratos e respostas de erro](/docs/jumentix/reference/errors-responses)
+- [Mapa de eventos e mensagens](/docs/jumentix/reference/events-messages)
 
 ## Endpoint e canais
 
@@ -208,3 +227,13 @@ client.disconnect();
 1. Sempre envie `metadata.requestId` do cliente.
 2. Assine `api:response` e ​​`api:{operationId}:response` ao construir clientes genéricos.
 3. Mantenha uma estratégia de tempo limite e nova tentativa do lado do cliente para falhas transitórias de rede.
+
+## Checklist júnior (“Eu consigo …”)
+
+- [ ] Sei quando escolher este adapter
+- [ ] Consigo iniciá-lo pelo script documentado
+- [ ] Sei o próximo guia/pacote
+
+## Próximo passo
+
+Volte para [Começando](/docs/pt-BR/jumentix/concepts/getting-started) ou o guia correspondente.

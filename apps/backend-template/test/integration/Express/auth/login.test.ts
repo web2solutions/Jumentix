@@ -203,7 +203,7 @@ describe('express -> login suite', () => {
     const { username, password } = createdUser1;
     const response = await request(server)
       .post('/api/1.0.0/auth/login')
-      .send({ username, usernames: username, password })
+      .send({ usernames: username, password })
       .set('Content-Type', 'application/json; charset=utf-8')
       .set('Accept', 'application/json; charset=utf-8');
     expect(response.statusCode).toBe(400);

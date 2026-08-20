@@ -27,12 +27,16 @@ import type {
   CanaChangeType,
   CanaKey,
   CanaQuery,
+  CanaCountMetrics,
+  CanaQueryMetrics,
   CanaQueryPlan,
   CanaTable,
   CanaWriteResult
 } from '../contracts';
 import { canaError, requestToPromise, translateError } from './errors';
-import { planQuery, runCount, runQuery } from './query';
+import {
+  planQuery, runCount, runCountWithMetrics, runQuery, runQueryWithMetrics
+} from './query';
 import type { CanaHooks } from './hooks';
 import { applyBeforeWrite } from './hooks';
 import type { ChangeBuffer } from './transaction';
@@ -329,16 +333,30 @@ export function createTable<TRecord, TKey extends CanaKey = CanaKey>(
       return runCount(store(), query);
     },
 
+    async explainCount(
+      query?: CanaQuery
+    ): Promise<{ count: number; metrics: CanaCountMetrics }> {
+      const { count, recordsExamined, usedNativeCount } = await runCountWithMetrics(store(), query);
+      return { count, metrics: { recordsExamined, usedNativeCount } };
+    },
+
     query(query?: CanaQuery): Promise<readonly TRecord[]> {
       return runQuery<TRecord>(store(), query);
     },
 
     async explain(
       query?: CanaQuery
-    ): Promise<{ records: readonly TRecord[]; plan: CanaQueryPlan }> {
+    ): Promise<{
+      records: readonly TRecord[];
+      plan: CanaQueryPlan;
+      metrics: CanaQueryMetrics;
+    }> {
       const plan = planQuery(name, query);
-      const records = await runQuery<TRecord>(store(), query);
-      return { records, plan };
+      const { records, recordsExamined, cursorAdvanced } = await runQueryWithMetrics<TRecord>(
+        store(),
+        query
+      );
+      return { records, plan, metrics: { recordsExamined, cursorAdvanced } };
     }
   };
 }

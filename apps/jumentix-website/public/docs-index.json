@@ -1,0 +1,3153 @@
+[
+  {
+    "title": "Jumentix Documentation",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix",
+    "description": "Jumentix technical documentation portal.",
+    "section": "index.mdx",
+    "locale": "en",
+    "headings": [
+      "Build with Jumentix",
+      "Explore the documentation",
+      "Recommended journeys"
+    ]
+  },
+  {
+    "title": "Aurora Adapter",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/aurora",
+    "description": "Database Adapters documentation.",
+    "section": "adapters",
+    "locale": "en",
+    "headings": [
+      "Aurora Adapter",
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to validate locally",
+      "Complete example: Task and Category with a database port",
+      "What changes in production"
+    ]
+  },
+  {
+    "title": "Firebase Adapter",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/firebase",
+    "description": "Database Adapters documentation.",
+    "section": "adapters",
+    "locale": "en",
+    "headings": [
+      "Firebase Adapter",
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to validate locally",
+      "Complete example: Task and Category with a database port",
+      "What changes in production"
+    ]
+  },
+  {
+    "title": "Oracle Adapter",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/oracle",
+    "description": "Database Adapters documentation.",
+    "section": "adapters",
+    "locale": "en",
+    "headings": [
+      "Oracle Adapter",
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to validate locally",
+      "Complete example: Task and Category with a database port",
+      "What changes in production"
+    ]
+  },
+  {
+    "title": "Database Adapters",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/adapters/databases",
+    "description": "Database Adapters documentation.",
+    "section": "adapters",
+    "locale": "en",
+    "headings": [
+      "Database Adapters",
+      "Database adapter comparison",
+      "Fast guide",
+      "Complete selection example"
+    ]
+  },
+  {
+    "title": "DynamoDB Adapter",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/dynamodb",
+    "description": "Database Adapters documentation.",
+    "section": "adapters",
+    "locale": "en",
+    "headings": [
+      "DynamoDB Adapter",
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to validate locally",
+      "Complete example: Task and Category with a database port",
+      "What changes in production"
+    ]
+  },
+  {
+    "title": "InMemory Adapter",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/inmemory",
+    "description": "Database Adapters documentation.",
+    "section": "adapters",
+    "locale": "en",
+    "headings": [
+      "InMemory Adapter",
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to validate locally",
+      "Complete example: Task and Category with a database port",
+      "What changes in production"
+    ]
+  },
+  {
+    "title": "MongoDB Adapter",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/mongodb",
+    "description": "Database Adapters documentation.",
+    "section": "adapters",
+    "locale": "en",
+    "headings": [
+      "MongoDB Adapter",
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to validate locally",
+      "Complete example: Task and Category with a database port",
+      "What changes in production"
+    ]
+  },
+  {
+    "title": "SQLite Adapter",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/sqlite",
+    "description": "Database Adapters documentation.",
+    "section": "adapters",
+    "locale": "en",
+    "headings": [
+      "SQLite Adapter",
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to validate locally",
+      "Complete example: Task and Category with a database port",
+      "What changes in production"
+    ]
+  },
+  {
+    "title": "SQL Server Adapter",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/mssql",
+    "description": "Database Adapters documentation.",
+    "section": "adapters",
+    "locale": "en",
+    "headings": [
+      "SQL Server Adapter",
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to validate locally",
+      "Complete example: Task and Category with a database port",
+      "What changes in production"
+    ]
+  },
+  {
+    "title": "RDS Adapter",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/rds",
+    "description": "Database Adapters documentation.",
+    "section": "adapters",
+    "locale": "en",
+    "headings": [
+      "RDS Adapter",
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to validate locally",
+      "Complete example: Task and Category with a database port",
+      "What changes in production"
+    ]
+  },
+  {
+    "title": "MySQL Adapter",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/mysql",
+    "description": "Database Adapters documentation.",
+    "section": "adapters",
+    "locale": "en",
+    "headings": [
+      "MySQL Adapter",
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to validate locally",
+      "Complete example: Task and Category with a database port",
+      "What changes in production"
+    ]
+  },
+  {
+    "title": "Cassandra Adapter",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/cassandra",
+    "description": "Database Adapters documentation.",
+    "section": "adapters",
+    "locale": "en",
+    "headings": [
+      "Cassandra Adapter",
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to validate locally",
+      "Complete example: Task and Category with a database port",
+      "What changes in production"
+    ]
+  },
+  {
+    "title": "PostgreSQL Adapter",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/postgresql",
+    "description": "Database Adapters documentation.",
+    "section": "adapters",
+    "locale": "en",
+    "headings": [
+      "PostgreSQL Adapter",
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to validate locally",
+      "Complete example: Task and Category with a database port",
+      "What changes in production"
+    ]
+  },
+  {
+    "title": "Adapters",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/adapters",
+    "description": "Explore the Jumentix Adapters section.",
+    "section": "adapters",
+    "locale": "en",
+    "headings": [
+      "Adapters",
+      "How to choose"
+    ]
+  },
+  {
+    "title": "Realtime",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/adapters/realtime",
+    "description": "Explore the Jumentix Realtime section.",
+    "section": "adapters",
+    "locale": "en",
+    "headings": [
+      "Realtime"
+    ]
+  },
+  {
+    "title": "gRPC Realtime API",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/adapters/realtime/grpc-api",
+    "description": "Realtime Adapters documentation.",
+    "section": "adapters",
+    "locale": "en",
+    "headings": [
+      "gRPC Realtime API",
+      "Glossary",
+      "Responsibility in context",
+      "Why it exists",
+      "What it is",
+      "Scope",
+      "Contract References",
+      "Service Contract",
+      "Runtime Flow",
+      "Deep Example: Unary Request",
+      "Deep Example: Native gRPC Bi-directional Stream",
+      "Payload Serialization Rules",
+      "Operational Guidance",
+      "Junior checklist (“I can …”)",
+      "Next step"
+    ]
+  },
+  {
+    "title": "WebSocket Realtime API",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/adapters/realtime/websocket-api",
+    "description": "Realtime Adapters documentation.",
+    "section": "adapters",
+    "locale": "en",
+    "headings": [
+      "WebSocket Realtime API",
+      "Glossary",
+      "Responsibility in context",
+      "Why it exists",
+      "What it is",
+      "Scope",
+      "Contract References",
+      "Endpoint and Channels",
+      "Horizontal Scaling with Redis Streams Adapter",
+      "Multi-thread Resilience with Socket.IO Cluster Adapter",
+      "Multi-instance Validation Test",
+      "Runtime Flow",
+      "Deep Example: Generic Request + ACK correlation",
+      "Deep Example: Per-operation Channel Request",
+      "SDK Example",
+      "Response/Error Handling Rules",
+      "Operational Guidance",
+      "Junior checklist (“I can …”)",
+      "Next step"
+    ]
+  },
+  {
+    "title": "Cloudflare Workers Adapter",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/adapters/http/cloudflare-workers",
+    "description": "HTTP Adapters documentation.",
+    "section": "adapters",
+    "locale": "en",
+    "headings": [
+      "Cloudflare Workers Adapter",
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to start or compose",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Complete example: Task and Category at the HTTP edge",
+      "Adoption checklist"
+    ]
+  },
+  {
+    "title": "Restify Adapter",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/adapters/http/restify",
+    "description": "HTTP Adapters documentation.",
+    "section": "adapters",
+    "locale": "en",
+    "headings": [
+      "Restify Adapter",
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to start or compose",
+      "Complete example: Task and Category at the HTTP edge",
+      "Adoption checklist"
+    ]
+  },
+  {
+    "title": "Vercel Functions Adapter",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/adapters/http/vercel-functions",
+    "description": "HTTP Adapters documentation.",
+    "section": "adapters",
+    "locale": "en",
+    "headings": [
+      "Vercel Functions Adapter",
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to start or compose",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Complete example: Task and Category at the HTTP edge",
+      "Adoption checklist"
+    ]
+  },
+  {
+    "title": "Express Adapter",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/adapters/http/express",
+    "description": "HTTP Adapters documentation.",
+    "section": "adapters",
+    "locale": "en",
+    "headings": [
+      "Express Adapter",
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to start or compose",
+      "Complete example: Task and Category at the HTTP edge",
+      "Adoption checklist"
+    ]
+  },
+  {
+    "title": "Adonis.js Adapter",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/adapters/http/adonis-js",
+    "description": "HTTP Adapters documentation.",
+    "section": "adapters",
+    "locale": "en",
+    "headings": [
+      "Adonis.js Adapter",
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to start or compose",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Complete example: Task and Category at the HTTP edge",
+      "Adoption checklist"
+    ]
+  },
+  {
+    "title": "HTTP Adapters",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/adapters/http",
+    "description": "HTTP Adapters documentation.",
+    "section": "adapters",
+    "locale": "en",
+    "headings": [
+      "HTTP Adapters",
+      "HTTP framework comparison",
+      "Fast guide",
+      "Complete selection example"
+    ]
+  },
+  {
+    "title": "Fastify Adapter",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/adapters/http/fastify",
+    "description": "HTTP Adapters documentation.",
+    "section": "adapters",
+    "locale": "en",
+    "headings": [
+      "Fastify Adapter",
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to start or compose",
+      "Complete example: Task and Category at the HTTP edge",
+      "Adoption checklist"
+    ]
+  },
+  {
+    "title": "Feathers Adapter",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/adapters/http/feathers",
+    "description": "HTTP Adapters documentation.",
+    "section": "adapters",
+    "locale": "en",
+    "headings": [
+      "Feathers Adapter",
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to start or compose",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Complete example: Task and Category at the HTTP edge",
+      "Adoption checklist"
+    ]
+  },
+  {
+    "title": "LoopBack Adapter",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/adapters/http/loopback",
+    "description": "HTTP Adapters documentation.",
+    "section": "adapters",
+    "locale": "en",
+    "headings": [
+      "LoopBack Adapter",
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to start or compose",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Complete example: Task and Category at the HTTP edge",
+      "Adoption checklist"
+    ]
+  },
+  {
+    "title": "AWS Lambda Adapter",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/adapters/http/aws-lambda",
+    "description": "HTTP Adapters documentation.",
+    "section": "adapters",
+    "locale": "en",
+    "headings": [
+      "AWS Lambda Adapter",
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to start or compose",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Complete example: Task and Category at the HTTP edge",
+      "Adoption checklist"
+    ]
+  },
+  {
+    "title": "Sails.js Adapter",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/adapters/http/sails-js",
+    "description": "HTTP Adapters documentation.",
+    "section": "adapters",
+    "locale": "en",
+    "headings": [
+      "Sails.js Adapter",
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to start or compose",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Complete example: Task and Category at the HTTP edge",
+      "Adoption checklist"
+    ]
+  },
+  {
+    "title": "Derby.js Adapter",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/adapters/http/derby-js",
+    "description": "HTTP Adapters documentation.",
+    "section": "adapters",
+    "locale": "en",
+    "headings": [
+      "Derby.js Adapter",
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to start or compose",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Complete example: Task and Category at the HTTP edge",
+      "Adoption checklist"
+    ]
+  },
+  {
+    "title": "Total.js Adapter",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/adapters/http/total-js",
+    "description": "HTTP Adapters documentation.",
+    "section": "adapters",
+    "locale": "en",
+    "headings": [
+      "Total.js Adapter",
+      "Integrated technology",
+      "When to use",
+      "When to avoid",
+      "How to start or compose",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Complete example: Task and Category at the HTTP edge",
+      "Adoption checklist"
+    ]
+  },
+  {
+    "title": "Create a REST API",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/guides/rest-api",
+    "description": "Build contract-first REST APIs with Jumentix.",
+    "section": "guides",
+    "locale": "en",
+    "headings": [
+      "Creating REST API with Jumentix",
+      "Responsibility in context",
+      "What it is",
+      "Why it exists",
+      "Prerequisites",
+      "Glossary",
+      "Numbered steps",
+      "Step 1 — Select the REST runtime profile (< 5 minutes)",
+      "Step 2 — Model domain and contracts (< 15 minutes)",
+      "Step 3 — Implement the domain flow (< 30 minutes per feature)",
+      "Step 4 — Bind to the HTTP adapter (< 10 minutes)",
+      "Step 5 — Validate quality gates (< 10 minutes)",
+      "Step 6 — Call the API from a client (junior path)",
+      "Examples",
+      "Static mock client",
+      "Interactive REST client playground",
+      "Common errors",
+      "Junior checklist (“I can …”)",
+      "Next step"
+    ]
+  },
+  {
+    "title": "Create a SPA or Offline PWA",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/guides/spa-pwa",
+    "description": "Build frontend products with shared SDKs and offline behavior.",
+    "section": "guides",
+    "locale": "en",
+    "headings": [
+      "Creating SPA/PWA with Jumentix",
+      "Responsibility in context",
+      "What it is",
+      "Why it exists",
+      "Prerequisites",
+      "Glossary",
+      "Numbered steps",
+      "Step 1 — Model business domains first (< 20 minutes)",
+      "Step 2 — Define communication contracts (< 10 minutes)",
+      "Step 3 — Configure service runtime (< 10 minutes)",
+      "Step 4 — Build offline-capable PWA storage (< 30 minutes)",
+      "Step 5 — Validate delivery readiness (< 15 minutes)",
+      "Step 6 — Wire designers to storage (hands-on)",
+      "Common errors",
+      "Junior checklist (“I can …”)",
+      "Next step"
+    ]
+  },
+  {
+    "title": "Guides",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/guides",
+    "description": "Explore the Jumentix Guides section.",
+    "section": "guides",
+    "locale": "en",
+    "headings": [
+      "Guides"
+    ]
+  },
+  {
+    "title": "Create a Modular SaaS",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/guides/saas-monolith",
+    "description": "Launch a modular monolith with service-ready boundaries.",
+    "section": "guides",
+    "locale": "en",
+    "headings": [
+      "Creating SaaS Monolith with Jumentix",
+      "Responsibility in context",
+      "Glossary",
+      "What it is",
+      "Recommended Strategy",
+      "Why This Works",
+      "Delivery Blueprint",
+      "Target Audience",
+      "Related Docs",
+      "Next steps",
+      "Junior checklist (“I can …”)"
+    ]
+  },
+  {
+    "title": "Create a Realtime API",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/guides/realtime-api",
+    "description": "Build Socket.IO and gRPC interfaces with REST fallback.",
+    "section": "guides",
+    "locale": "en",
+    "headings": [
+      "Creating Realtime API with Jumentix",
+      "Responsibility in context",
+      "What it is",
+      "Why it exists",
+      "Prerequisites",
+      "Glossary",
+      "Numbered steps",
+      "Step 1 — Enable the realtime runtime profile (< 5 minutes)",
+      "WebSocket + REST fallback (start here for browser apps)",
+      "gRPC + REST fallback (Node service mesh)",
+      "Step 2 — Define Async contracts (< 15 minutes)",
+      "Step 3 — Implement message handlers (< 30 minutes)",
+      "Step 4 — Keep REST fallback available (< 5 minutes)",
+      "Step 5 — Validate realtime stability (< 10 minutes)",
+      "Step 6 — Client integration (junior path)",
+      "Examples",
+      "Interactive WebSocket client playground",
+      "Common errors",
+      "Junior checklist (“I can …”)",
+      "Next step"
+    ]
+  },
+  {
+    "title": "Create a Microservices SaaS",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/guides/saas-microservices",
+    "description": "Build distributed services with contract-based communication.",
+    "section": "guides",
+    "locale": "en",
+    "headings": [
+      "Creating SaaS Microservices with Jumentix",
+      "Responsibility in context",
+      "Glossary",
+      "What it is",
+      "Recommended Strategy",
+      "Evolution Path from Monolith",
+      "Operational Pattern",
+      "Product and Engineering Benefits",
+      "Related Docs",
+      "Next steps",
+      "Junior checklist (“I can …”)"
+    ]
+  },
+  {
+    "title": "@jumentix/sdk-grpc-client",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/sdk-grpc-client",
+    "description": "AsyncAPI/gRPC realtime SDK client (Node).",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "@jumentix/sdk-grpc-client",
+      "What it is",
+      "Why it exists",
+      "Responsibility in context",
+      "Prerequisites",
+      "Glossary",
+      "Numbered steps",
+      "1. Install",
+      "2. First success (under 30 min)",
+      "3. Core workflows",
+      "1. Point at host:port",
+      "2. Send envelope",
+      "3. Deploy only on Node",
+      "4. Full practical surface (exports)",
+      "Common errors",
+      "Junior checklist (“I can …”)",
+      "Next step"
+    ]
+  },
+  {
+    "title": "@jumentix/external-db-repositories",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/external-db-repositories",
+    "description": "Reusable external DB repository adapters.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "@jumentix/external-db-repositories",
+      "What it is",
+      "Why it exists",
+      "Responsibility in context",
+      "Prerequisites",
+      "Glossary",
+      "Numbered steps",
+      "1. Install",
+      "2. First success (under 30 min)",
+      "3. Core workflows",
+      "1. Connect with env options",
+      "2. Run a repository operation",
+      "3. Disconnect on shutdown",
+      "4. Full practical surface (exports)",
+      "Common errors",
+      "Junior checklist (“I can …”)",
+      "Next step"
+    ]
+  },
+  {
+    "title": "@jumentix/external-store-proxy",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/external-store-proxy",
+    "description": "IStore proxies over external database clients.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "@jumentix/external-store-proxy",
+      "What it is",
+      "Why it exists",
+      "Responsibility in context",
+      "Prerequisites",
+      "Glossary",
+      "Numbered steps",
+      "1. Install",
+      "2. First success (under 30 min)",
+      "3. Core workflows",
+      "1. Create stores from a client",
+      "2. Inject into use-cases",
+      "3. Test with fakes",
+      "4. Full practical surface (exports)",
+      "Common errors",
+      "Junior checklist (“I can …”)",
+      "Next step"
+    ]
+  },
+  {
+    "title": "@jumentix/external-persistence-core",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/external-persistence-core",
+    "description": "Base class and options for external persistence adapters.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "@jumentix/external-persistence-core",
+      "What it is",
+      "Why it exists",
+      "Responsibility in context",
+      "Prerequisites",
+      "Glossary",
+      "Numbered steps",
+      "1. Install",
+      "2. First success (under 30 min)",
+      "3. Core workflows",
+      "1. Read connection options",
+      "2. Extend base for a new driver",
+      "3. Keep domain pure",
+      "4. Full practical surface (exports)",
+      "Common errors",
+      "Junior checklist (“I can …”)",
+      "Next step"
+    ]
+  },
+  {
+    "title": "Jumentix packages",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages",
+    "description": "Consumer package map for adopters (public site; private tooling excluded).",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "Jumentix packages (consumer map)",
+      "Start here",
+      "Browser / offline",
+      "Persistence",
+      "Communication",
+      "Runtime composition"
+    ]
+  },
+  {
+    "title": "@jumentix/persistence-contracts",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/persistence-contracts",
+    "description": "Shared persistence ports (IStore, IDatabaseClient).",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "@jumentix/persistence-contracts",
+      "What it is",
+      "Why it exists",
+      "Responsibility in context",
+      "Prerequisites",
+      "Glossary",
+      "Numbered steps",
+      "1. Install",
+      "2. First success (under 30 min)",
+      "3. Core workflows",
+      "1. Type a use-case port",
+      "2. Keep adapters behind the port",
+      "3. Share paging types",
+      "4. Full practical surface (exports)",
+      "Common errors",
+      "Junior checklist (“I can …”)",
+      "Next step"
+    ]
+  },
+  {
+    "title": "@jumentix/designer-core",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/designer-core",
+    "description": "Browser-safe design document helpers for Jumentix frontends.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "@jumentix/designer-core",
+      "Responsibility in context",
+      "What it is",
+      "Usage",
+      "Versioning policy",
+      "Publish policy: dry-run only",
+      "Development",
+      "License",
+      "Try it in the browser",
+      "Full documentation"
+    ]
+  },
+  {
+    "title": "designer-core usage",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/designer-core/usage",
+    "description": "Junior guide and playground for @jumentix/designer-core.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "@jumentix/designer-core — usage guide",
+      "Responsibility in context",
+      "What it is",
+      "Why it exists",
+      "Prerequisites",
+      "Glossary",
+      "Steps",
+      "1. Install (< 5 minutes)",
+      "2. First success — validate the sample model (< 15 minutes)",
+      "3. Core workflow — validate before save",
+      "4. Core workflow — export and re-import round-trip",
+      "5. Full surface — public API map",
+      "Try it in the docs playground",
+      "Common errors",
+      "Junior checklist (“I can …”)",
+      "Next step"
+    ]
+  },
+  {
+    "title": "@jumentix/sdk-rest-client",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/sdk-rest-client",
+    "description": "OpenAPI-driven REST SDK client.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "@jumentix/sdk-rest-client",
+      "What it is",
+      "Why it exists",
+      "Responsibility in context",
+      "Prerequisites",
+      "Glossary",
+      "Numbered steps",
+      "1. Install",
+      "2. First success (under 30 min)",
+      "3. Core workflows",
+      "1. Construct with base URL",
+      "2. Call by operationId",
+      "3. Handle envelope errors",
+      "4. Full practical surface (exports)",
+      "Common errors",
+      "Junior checklist (“I can …”)",
+      "Next step"
+    ]
+  },
+  {
+    "title": "@jumentix/runtime-infra",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/runtime-infra",
+    "description": "Runtime infrastructure helpers for adapters.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "@jumentix/runtime-infra",
+      "What it is",
+      "Why it exists",
+      "Responsibility in context",
+      "Prerequisites",
+      "Glossary",
+      "Numbered steps",
+      "1. Install",
+      "2. First success (under 30 min)",
+      "3. Core workflows",
+      "1. Follow REST guide first",
+      "2. Read with bootstrap",
+      "3. Avoid UI imports",
+      "4. Full practical surface (exports)",
+      "Common errors",
+      "Junior checklist (“I can …”)",
+      "Next step"
+    ]
+  },
+  {
+    "title": "@jumentix/database-client-factory",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/database-client-factory",
+    "description": "Compile database clients from env/driver selection.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "@jumentix/database-client-factory",
+      "What it is",
+      "Why it exists",
+      "Responsibility in context",
+      "Prerequisites",
+      "Glossary",
+      "Numbered steps",
+      "1. Install",
+      "2. First success (under 30 min)",
+      "3. Core workflows",
+      "1. Read driver from env",
+      "2. Compile once at boot",
+      "3. Inject ports upward",
+      "4. Full practical surface (exports)",
+      "Common errors",
+      "Junior checklist (“I can …”)",
+      "Next step"
+    ]
+  },
+  {
+    "title": "@jumentix/mutex-service",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/mutex-service",
+    "description": "Named locks built on key/value storage.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "@jumentix/mutex-service",
+      "Responsibility in context",
+      "Contract",
+      "Validation",
+      "Try it in the browser",
+      "Full documentation"
+    ]
+  },
+  {
+    "title": "mutex-service usage",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/mutex-service/usage",
+    "description": "Junior guide and playground for mutex locks.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "@jumentix/mutex-service — usage guide",
+      "Responsibility in context",
+      "What it is",
+      "Why it exists",
+      "Prerequisites",
+      "Glossary",
+      "Steps",
+      "1. Install (< 5 minutes)",
+      "2. First success — acquire and release (< 15 minutes)",
+      "3. Core workflow — always release in `finally`",
+      "4. Core workflow — check before retry",
+      "5. Core workflow — production wiring",
+      "6. Full surface — API map",
+      "Try it in the docs playground",
+      "Common errors",
+      "Junior checklist (“I can …”)",
+      "Next step"
+    ]
+  },
+  {
+    "title": "@jumentix/cana-react",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana-react",
+    "description": "Packages documentation.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "@jumentix/cana-react",
+      "Install",
+      "Hooks",
+      "Redux bridge"
+    ]
+  },
+  {
+    "title": "@jumentix/key-value-storage",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/key-value-storage",
+    "description": "Key/value storage clients with an in-memory adapter for tests and demos.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "@jumentix/key-value-storage",
+      "Responsibility in context",
+      "Try it in the browser",
+      "Full documentation"
+    ]
+  },
+  {
+    "title": "key-value-storage usage",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/key-value-storage/usage",
+    "description": "Junior guide and in-memory playground for key/value storage.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "@jumentix/key-value-storage — usage guide",
+      "Responsibility in context",
+      "What it is",
+      "Why it exists",
+      "Prerequisites",
+      "Glossary",
+      "Steps",
+      "1. Install (< 5 minutes)",
+      "2. First success — in-memory get/set (< 10 minutes)",
+      "3. Core workflow — compile by environment",
+      "4. Core workflow — error-safe reads",
+      "5. Core workflow — pair with mutex-service",
+      "6. Full surface — API map",
+      "Try it in the docs playground",
+      "Common errors",
+      "Junior checklist (“I can …”)",
+      "Next step"
+    ]
+  },
+  {
+    "title": "@jumentix/shared-contracts",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/shared-contracts",
+    "description": "Canonical OpenAPI/AsyncAPI spec loading for SDKs.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "@jumentix/shared-contracts",
+      "What it is",
+      "Why it exists",
+      "Responsibility in context",
+      "Prerequisites",
+      "Glossary",
+      "Numbered steps",
+      "1. Install",
+      "2. First success (under 30 min)",
+      "3. Core workflows",
+      "1. Load OpenAPI for REST",
+      "2. Load AsyncAPI for realtime",
+      "3. Fail closed on missing spec",
+      "4. Full practical surface (exports)",
+      "Common errors",
+      "Junior checklist (“I can …”)",
+      "Next step"
+    ]
+  },
+  {
+    "title": "@jumentix/adapter-runtime-bootstrap",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/adapter-runtime-bootstrap",
+    "description": "Shared adapter runtime bootstrap compiler.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "@jumentix/adapter-runtime-bootstrap",
+      "What it is",
+      "Why it exists",
+      "Responsibility in context",
+      "Prerequisites",
+      "Glossary",
+      "Numbered steps",
+      "1. Install",
+      "2. First success (under 30 min)",
+      "3. Core workflows",
+      "1. Read env contracts",
+      "2. Compile adapters once",
+      "3. Mount interfaces",
+      "4. Full practical surface (exports)",
+      "Common errors",
+      "Junior checklist (“I can …”)",
+      "Next step"
+    ]
+  },
+  {
+    "title": "@jumentix/sdk-websocket-client",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/sdk-websocket-client",
+    "description": "AsyncAPI/Socket.IO realtime SDK client.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "@jumentix/sdk-websocket-client",
+      "What it is",
+      "Why it exists",
+      "Responsibility in context",
+      "Prerequisites",
+      "Glossary",
+      "Numbered steps",
+      "1. Install",
+      "2. First success (under 30 min)",
+      "3. Core workflows",
+      "1. Connect",
+      "2. Request with operationId",
+      "3. Reconnect policy",
+      "4. Full practical surface (exports)",
+      "Common errors",
+      "Junior checklist (“I can …”)",
+      "Next step"
+    ]
+  },
+  {
+    "title": "@jumentix/message-mediator",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/message-mediator",
+    "description": "In-process and broker-backed message mediation.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "@jumentix/message-mediator",
+      "Responsibility in context",
+      "Try it in the browser",
+      "Full documentation"
+    ]
+  },
+  {
+    "title": "message-mediator usage",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/message-mediator/usage",
+    "description": "Junior guide and in-memory mediator playground.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "@jumentix/message-mediator — usage guide",
+      "Responsibility in context",
+      "What it is",
+      "Why it exists",
+      "Prerequisites",
+      "Glossary",
+      "Steps",
+      "1. Install (< 5 minutes)",
+      "2. First success — publish and subscribe (< 15 minutes)",
+      "3. Core workflow — request/response",
+      "4. Core workflow — compile by environment",
+      "5. Core workflow — timeouts and routing options",
+      "6. Full surface — API map",
+      "Try it in the docs playground",
+      "When not to use in-memory",
+      "Common errors",
+      "Junior checklist (“I can …”)",
+      "Next step"
+    ]
+  },
+  {
+    "title": "@jumentix/cana-vue",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana-vue",
+    "description": "Packages documentation.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "@jumentix/cana-vue",
+      "Install",
+      "Live query"
+    ]
+  },
+  {
+    "title": "Cana with React Context API",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana/react-context",
+    "description": "From zero to final implementation: categorized tasks with Cana and React Context.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "Cana with React Context API",
+      "1. Start from zero",
+      "2. Simple implementation",
+      "3. Advanced implementation",
+      "4. Final app shape",
+      "5. Checklist",
+      "Next"
+    ]
+  },
+  {
+    "title": "Cana with Vue 3 and Pinia",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana/vue-pinia",
+    "description": "From zero to final implementation: categorized tasks with Cana, Vue 3 and Pinia.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "Cana with Vue 3 and Pinia",
+      "1. Start from zero",
+      "2. Simple implementation",
+      "3. Advanced implementation",
+      "4. Final app shape",
+      "5. Checklist",
+      "Next"
+    ]
+  },
+  {
+    "title": "@jumentix/cana",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana",
+    "description": "IndexedDB offline database adapter for Jumentix applications.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "@jumentix/cana",
+      "Responsibility in context",
+      "Three things to know before using it",
+      "Errors are plain data",
+      "Try it in the browser",
+      "Design notes",
+      "Mental model in 30 seconds",
+      "Postgres-shaped architecture",
+      "Worker model",
+      "Performance data",
+      "Junior checklist (“I can …”)",
+      "Framework tutorials",
+      "Next step"
+    ]
+  },
+  {
+    "title": "Cana with React Redux",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana/react-redux",
+    "description": "From zero to final implementation: categorized tasks with Cana and Redux.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "Cana with React Redux",
+      "1. Start from zero",
+      "2. Simple implementation",
+      "3. Advanced implementation",
+      "4. Final app shape",
+      "5. Checklist",
+      "Next"
+    ]
+  },
+  {
+    "title": "Workers and testing",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/workers-testing",
+    "description": "Run Cana through a worker boundary and plan browser tests.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "Workers and testing",
+      "Worker request flow",
+      "Complete same-thread worker-host demo",
+      "Production file layout",
+      "Testing strategy",
+      "Next"
+    ]
+  },
+  {
+    "title": "Querying and plans",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/querying",
+    "description": "Query Cana indexes, inspect explain plans and understand complexity.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "Querying and plans",
+      "Indexed task query",
+      "Pagination",
+      "Count and explain",
+      "Complexity quick map",
+      "Run it here",
+      "Next"
+    ]
+  },
+  {
+    "title": "Reading, writing and bulk operations",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/crud-bulk",
+    "description": "Use CRUD and bulk operations with complete task examples.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "Reading, writing and bulk operations",
+      "Single-record writes",
+      "Method choice",
+      "Bulk writes",
+      "Run it here",
+      "Next"
+    ]
+  },
+  {
+    "title": "Cana usage guide",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage",
+    "description": "Consumer API guide hub for @jumentix/cana with focused subpages.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "Cana — Usage Guide",
+      "Choose the next step",
+      "The running example",
+      "Complete code policy",
+      "Framework tutorials",
+      "Package integrations"
+    ]
+  },
+  {
+    "title": "API reference",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/api-reference",
+    "description": "Compact reference for the Cana APIs used in the guide.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "API reference",
+      "Client lifecycle",
+      "Tables",
+      "Transactions and events",
+      "Worker APIs",
+      "Factory adapter",
+      "Glossary"
+    ]
+  },
+  {
+    "title": "Schema and keys",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/schema-keys",
+    "description": "Version schemas and choose stable key strategies for Cana stores.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "Schema and keys",
+      "Versioned schema",
+      "Upgrade rules",
+      "Key strategies",
+      "Run it here",
+      "Next"
+    ]
+  },
+  {
+    "title": "Hooks and errors",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/hooks-errors",
+    "description": "Apply write hooks and handle plain-data Cana errors.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "Hooks and errors",
+      "Write hooks",
+      "Plain-data errors",
+      "Common errors",
+      "Run it here",
+      "Next"
+    ]
+  },
+  {
+    "title": "Getting started with Cana",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/getting-started",
+    "description": "Install Cana and build the minimal categorized task database.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "Getting started with Cana",
+      "Install",
+      "Complete minimal task app",
+      "What to notice",
+      "Run it here",
+      "Next"
+    ]
+  },
+  {
+    "title": "Transactions and change events",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/transactions-events",
+    "description": "Write atomically and update UI stores from committed Cana events.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "Transactions and change events",
+      "Multi-store transaction",
+      "Listen to committed events",
+      "Replay after the UI was gone",
+      "Run it here",
+      "Next"
+    ]
+  },
+  {
+    "title": "Storage and crash recovery",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/storage-recovery",
+    "description": "Assess durability, export/import data and resolve uncertain writes.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "Storage and crash recovery",
+      "Storage assessment",
+      "Export and import",
+      "Resolve an uncertain write",
+      "Run it here",
+      "Next"
+    ]
+  },
+  {
+    "title": "Jumentix Overview",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/concepts/overview",
+    "description": "Product, audience, and adoption overview.",
+    "section": "concepts",
+    "locale": "en",
+    "headings": [
+      "Jumentix Product Overview (Consumer View)",
+      "What You Can Build",
+      "Why Teams Adopt Jumentix",
+      "Adoption Outcome"
+    ]
+  },
+  {
+    "title": "Concepts",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/concepts",
+    "description": "Explore the Jumentix Concepts section.",
+    "section": "concepts",
+    "locale": "en",
+    "headings": [
+      "Concepts"
+    ]
+  },
+  {
+    "title": "Architecture and Structure",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/concepts/architecture",
+    "description": "DDD, Hexagonal, Event-Driven, and monorepo structure.",
+    "section": "concepts",
+    "locale": "en",
+    "headings": [
+      "Architecture for Consumers",
+      "Consumer Impact",
+      "Interface Options",
+      "Data and Integration Options"
+    ]
+  },
+  {
+    "title": "Getting started",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/concepts/getting-started",
+    "description": "Junior on-ramp: install, mental model, and first adoption journey.",
+    "section": "concepts",
+    "locale": "en",
+    "headings": [
+      "Getting started with Jumentix",
+      "Responsibility in context",
+      "What it is",
+      "Why it exists",
+      "Prerequisites",
+      "Glossary",
+      "Numbered steps",
+      "Step 1 — Install the toolchain (< 5 minutes)",
+      "Step 2 — Pick your starting path (< 2 minutes)",
+      "Step 3 — Open the reference backend (< 10 minutes)",
+      "follow scripts in that app's package.json / README for local run",
+      "Step 4 — Learn the mental model (< 5 minutes)",
+      "Step 5 — First success: touch Cana in the browser (< 10 minutes)",
+      "Step 6 — Core workflows (this week)",
+      "Step 7 — Full surface (when you need lookup, not tutorials)",
+      "Examples",
+      "Minimal REST client call (static)",
+      "Offline record with Cana (static)",
+      "Common errors",
+      "Junior checklist (“I can …”)",
+      "Next step"
+    ]
+  },
+  {
+    "title": "jumentix-website",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/apps/jumentix-website",
+    "description": "Public docs and marketing site hub.",
+    "section": "apps",
+    "locale": "en",
+    "headings": [
+      "jumentix-website (docs + marketing)",
+      "What it is",
+      "Why it exists",
+      "Responsibility in context",
+      "Prerequisites",
+      "Glossary",
+      "Numbered steps",
+      "Common errors",
+      "Junior checklist (“I can …”)",
+      "Next step"
+    ]
+  },
+  {
+    "title": "apps",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/apps",
+    "description": "Explore the Jumentix apps section.",
+    "section": "apps",
+    "locale": "en",
+    "headings": [
+      "apps"
+    ]
+  },
+  {
+    "title": "backend-template",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/apps/backend-template",
+    "description": "Reference backend composition for juniors.",
+    "section": "apps",
+    "locale": "en",
+    "headings": [
+      "backend-template (reference backend)",
+      "What it is",
+      "Why it exists",
+      "Responsibility in context",
+      "Prerequisites",
+      "Glossary",
+      "Numbered steps",
+      "Common errors",
+      "Junior checklist (“I can …”)",
+      "Next step"
+    ]
+  },
+  {
+    "title": "service-management",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/apps/service-management",
+    "description": "Domain Designer SPA / PWA app hub.",
+    "section": "apps",
+    "locale": "en",
+    "headings": [
+      "service-management (Domain Designer SPA)",
+      "What it is",
+      "Why it exists",
+      "Responsibility in context",
+      "Prerequisites",
+      "Glossary",
+      "Numbered steps",
+      "Common errors",
+      "Junior checklist (“I can …”)",
+      "Next step"
+    ]
+  },
+  {
+    "title": "Reference",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/reference",
+    "description": "Explore the Jumentix Reference section.",
+    "section": "reference",
+    "locale": "en",
+    "headings": [
+      "Reference",
+      "Start here"
+    ]
+  },
+  {
+    "title": "Runtime Environment Contracts",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/reference/runtime-contracts",
+    "description": "Environment variables and runtime composition behavior.",
+    "section": "reference",
+    "locale": "en",
+    "headings": [
+      "Runtime Capabilities (Consumer View)",
+      "Service Interfaces",
+      "Runtime Control",
+      "Deployment Modes",
+      "Reliability and Scale",
+      "Next step"
+    ]
+  },
+  {
+    "title": "Events and Messages Map",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/reference/events-messages",
+    "description": "Application event, request, response, and worker contracts.",
+    "section": "reference",
+    "locale": "en",
+    "headings": [
+      "Events and Messages Map",
+      "1) Integration Event Envelope",
+      "2) Request/Response Message Envelope",
+      "3) Message Mediator Adapters",
+      "4) Current Domain Event Map (Users)",
+      "5) Current Request/Response Contract Map (Users/Auth)",
+      "6) Where Contracts Are Consumed",
+      "7) Runtime Topology (Current)",
+      "8) Extension Guidelines for New Domains",
+      "9) Realtime Interface Contract References"
+    ]
+  },
+  {
+    "title": "Security and PCI Hardening",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/reference/security-compliance",
+    "description": "Security controls and compliance evidence.",
+    "section": "reference",
+    "locale": "en",
+    "headings": [
+      "Security and Compliance for Consumers",
+      "Security Baseline",
+      "Compliance-Oriented Delivery",
+      "Recommended Consumer Practice"
+    ]
+  },
+  {
+    "title": "Errors and Responses Map",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/reference/errors-responses",
+    "description": "Error contracts and interface response behavior.",
+    "section": "reference",
+    "locale": "en",
+    "headings": [
+      "Error Contracts and HTTP Error Responses",
+      "1) Base Error Contract",
+      "2) Canonical Error Codes",
+      "3) Error Class to Code Mapping",
+      "4) HTTP Error Response Shape",
+      "5) MessageMediator Request/Response Error Contract",
+      "6) Current Consistency Notes",
+      "7) HTTP Request Validation Contract",
+      "8) Extension Rules",
+      "9) Realtime Error Envelopes"
+    ]
+  },
+  {
+    "title": "Package Scripts Reference",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/reference/package-scripts",
+    "description": "Every supported monorepo command and its usage.",
+    "section": "reference",
+    "locale": "en",
+    "headings": [
+      "Package.json Scripts Reference (Consumer)",
+      "Next step"
+    ]
+  },
+  {
+    "title": "Documentação do Jumentix",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix",
+    "description": "Portal técnico do Jumentix.",
+    "section": "index.mdx",
+    "locale": "pt-BR",
+    "headings": [
+      "Construa com o Jumentix",
+      "Explore a documentação",
+      "Jornadas recomendadas"
+    ]
+  },
+  {
+    "title": "Adaptador Aurora",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/databases/aurora",
+    "description": "Documentação de Adaptadores de banco de dados.",
+    "section": "adapters",
+    "locale": "pt-BR",
+    "headings": [
+      "Adaptador Aurora",
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como validar localmente",
+      "Exemplo completo: Task e Category com porta de banco",
+      "O que trocar em produção"
+    ]
+  },
+  {
+    "title": "Adaptador Firebase",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/databases/firebase",
+    "description": "Documentação de Adaptadores de banco de dados.",
+    "section": "adapters",
+    "locale": "pt-BR",
+    "headings": [
+      "Adaptador Firebase",
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como validar localmente",
+      "Exemplo completo: Task e Category com porta de banco",
+      "O que trocar em produção"
+    ]
+  },
+  {
+    "title": "Adaptador Oracle",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/databases/oracle",
+    "description": "Documentação de Adaptadores de banco de dados.",
+    "section": "adapters",
+    "locale": "pt-BR",
+    "headings": [
+      "Adaptador Oracle",
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como validar localmente",
+      "Exemplo completo: Task e Category com porta de banco",
+      "O que trocar em produção"
+    ]
+  },
+  {
+    "title": "Adapters de bancos de dados",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/databases",
+    "description": "Documentação de Adaptadores de banco de dados.",
+    "section": "adapters",
+    "locale": "pt-BR",
+    "headings": [
+      "Adapters de bancos de dados",
+      "Tabela de comparação dos bancos integrados",
+      "Guia rápido",
+      "Exemplo completo de seleção"
+    ]
+  },
+  {
+    "title": "Adaptador DynamoDB",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/databases/dynamodb",
+    "description": "Documentação de Adaptadores de banco de dados.",
+    "section": "adapters",
+    "locale": "pt-BR",
+    "headings": [
+      "Adaptador DynamoDB",
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como validar localmente",
+      "Exemplo completo: Task e Category com porta de banco",
+      "O que trocar em produção"
+    ]
+  },
+  {
+    "title": "Adaptador InMemory",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/databases/inmemory",
+    "description": "Documentação de Adaptadores de banco de dados.",
+    "section": "adapters",
+    "locale": "pt-BR",
+    "headings": [
+      "Adaptador InMemory",
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como validar localmente",
+      "Exemplo completo: Task e Category com porta de banco",
+      "O que trocar em produção"
+    ]
+  },
+  {
+    "title": "Adaptador MongoDB",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/databases/mongodb",
+    "description": "Documentação de Adaptadores de banco de dados.",
+    "section": "adapters",
+    "locale": "pt-BR",
+    "headings": [
+      "Adaptador MongoDB",
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como validar localmente",
+      "Exemplo completo: Task e Category com porta de banco",
+      "O que trocar em produção"
+    ]
+  },
+  {
+    "title": "Adaptador SQLite",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/databases/sqlite",
+    "description": "Documentação de Adaptadores de banco de dados.",
+    "section": "adapters",
+    "locale": "pt-BR",
+    "headings": [
+      "Adaptador SQLite",
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como validar localmente",
+      "Exemplo completo: Task e Category com porta de banco",
+      "O que trocar em produção"
+    ]
+  },
+  {
+    "title": "Adaptador SQL Server",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/databases/mssql",
+    "description": "Documentação de Adaptadores de banco de dados.",
+    "section": "adapters",
+    "locale": "pt-BR",
+    "headings": [
+      "Adaptador SQL Server",
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como validar localmente",
+      "Exemplo completo: Task e Category com porta de banco",
+      "O que trocar em produção"
+    ]
+  },
+  {
+    "title": "Adaptador RDS",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/databases/rds",
+    "description": "Documentação de Adaptadores de banco de dados.",
+    "section": "adapters",
+    "locale": "pt-BR",
+    "headings": [
+      "Adaptador RDS",
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como validar localmente",
+      "Exemplo completo: Task e Category com porta de banco",
+      "O que trocar em produção"
+    ]
+  },
+  {
+    "title": "Adaptador MySQL",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/databases/mysql",
+    "description": "Documentação de Adaptadores de banco de dados.",
+    "section": "adapters",
+    "locale": "pt-BR",
+    "headings": [
+      "Adaptador MySQL",
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como validar localmente",
+      "Exemplo completo: Task e Category com porta de banco",
+      "O que trocar em produção"
+    ]
+  },
+  {
+    "title": "Adaptador Cassandra",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/databases/cassandra",
+    "description": "Documentação de Adaptadores de banco de dados.",
+    "section": "adapters",
+    "locale": "pt-BR",
+    "headings": [
+      "Adaptador Cassandra",
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como validar localmente",
+      "Exemplo completo: Task e Category com porta de banco",
+      "O que trocar em produção"
+    ]
+  },
+  {
+    "title": "Adaptador PostgreSQL",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/databases/postgresql",
+    "description": "Documentação de Adaptadores de banco de dados.",
+    "section": "adapters",
+    "locale": "pt-BR",
+    "headings": [
+      "Adaptador PostgreSQL",
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como validar localmente",
+      "Exemplo completo: Task e Category com porta de banco",
+      "O que trocar em produção"
+    ]
+  },
+  {
+    "title": "Adaptadores",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters",
+    "description": "Explore a seção Adaptadores do Jumentix.",
+    "section": "adapters",
+    "locale": "pt-BR",
+    "headings": [
+      "Adaptadores",
+      "Como escolher"
+    ]
+  },
+  {
+    "title": "Realtime",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/realtime",
+    "description": "Explore a seção Realtime do Jumentix.",
+    "section": "adapters",
+    "locale": "pt-BR",
+    "headings": [
+      "Realtime"
+    ]
+  },
+  {
+    "title": "API gRPC em tempo real",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/realtime/grpc-api",
+    "description": "Documentação de Adaptadores realtime.",
+    "section": "adapters",
+    "locale": "pt-BR",
+    "headings": [
+      "API gRPC em tempo real",
+      "Glossário",
+      "Responsabilidade no escopo",
+      "Por que existe",
+      "O que é",
+      "Escopo",
+      "Referências de contrato",
+      "Contrato de serviço",
+      "Fluxo de tempo de execução",
+      "Exemplo profundo: solicitação unária",
+      "Exemplo profundo: fluxo bidirecional gRPC nativo",
+      "Regras de serialização de carga útil",
+      "Orientação Operacional",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
+    ]
+  },
+  {
+    "title": "API WebSocket em tempo real",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/realtime/websocket-api",
+    "description": "Documentação de Adaptadores realtime.",
+    "section": "adapters",
+    "locale": "pt-BR",
+    "headings": [
+      "API WebSocket em tempo real",
+      "Glossário",
+      "Responsabilidade no escopo",
+      "Por que existe",
+      "O que é",
+      "Escopo",
+      "Referências de contrato",
+      "Endpoint e canais",
+      "Dimensionamento horizontal com adaptador Redis Streams",
+      "Resiliência multithread com adaptador de cluster Socket.IO",
+      "Teste de validação de múltiplas instâncias",
+      "Fluxo de tempo de execução",
+      "Exemplo profundo: solicitação genérica + correlação ACK",
+      "Exemplo profundo: solicitação de canal por operação",
+      "Exemplo de SDK",
+      "Regras de resposta/tratamento de erros",
+      "Orientação Operacional",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
+    ]
+  },
+  {
+    "title": "Adaptador Cloudflare Workers",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/http/cloudflare-workers",
+    "description": "Documentação de Adaptadores HTTP.",
+    "section": "adapters",
+    "locale": "pt-BR",
+    "headings": [
+      "Adaptador Cloudflare Workers",
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como iniciar ou compor",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Exemplo completo: Task e Category na borda HTTP",
+      "Checklist de adoção"
+    ]
+  },
+  {
+    "title": "Adaptador Restify",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/http/restify",
+    "description": "Documentação de Adaptadores HTTP.",
+    "section": "adapters",
+    "locale": "pt-BR",
+    "headings": [
+      "Adaptador Restify",
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como iniciar ou compor",
+      "Exemplo completo: Task e Category na borda HTTP",
+      "Checklist de adoção"
+    ]
+  },
+  {
+    "title": "Adaptador Vercel Functions",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/http/vercel-functions",
+    "description": "Documentação de Adaptadores HTTP.",
+    "section": "adapters",
+    "locale": "pt-BR",
+    "headings": [
+      "Adaptador Vercel Functions",
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como iniciar ou compor",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Exemplo completo: Task e Category na borda HTTP",
+      "Checklist de adoção"
+    ]
+  },
+  {
+    "title": "Adaptador Express",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/http/express",
+    "description": "Documentação de Adaptadores HTTP.",
+    "section": "adapters",
+    "locale": "pt-BR",
+    "headings": [
+      "Adaptador Express",
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como iniciar ou compor",
+      "Exemplo completo: Task e Category na borda HTTP",
+      "Checklist de adoção"
+    ]
+  },
+  {
+    "title": "Adaptador Adonis.js",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/http/adonis-js",
+    "description": "Documentação de Adaptadores HTTP.",
+    "section": "adapters",
+    "locale": "pt-BR",
+    "headings": [
+      "Adaptador Adonis.js",
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como iniciar ou compor",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Exemplo completo: Task e Category na borda HTTP",
+      "Checklist de adoção"
+    ]
+  },
+  {
+    "title": "Adapters HTTP",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/http",
+    "description": "Documentação de Adaptadores HTTP.",
+    "section": "adapters",
+    "locale": "pt-BR",
+    "headings": [
+      "Adapters HTTP",
+      "Tabela de comparação dos frameworks HTTP",
+      "Guia rápido",
+      "Exemplo completo de seleção"
+    ]
+  },
+  {
+    "title": "Adaptador Fastify",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/http/fastify",
+    "description": "Documentação de Adaptadores HTTP.",
+    "section": "adapters",
+    "locale": "pt-BR",
+    "headings": [
+      "Adaptador Fastify",
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como iniciar ou compor",
+      "Exemplo completo: Task e Category na borda HTTP",
+      "Checklist de adoção"
+    ]
+  },
+  {
+    "title": "Adaptador Feathers",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/http/feathers",
+    "description": "Documentação de Adaptadores HTTP.",
+    "section": "adapters",
+    "locale": "pt-BR",
+    "headings": [
+      "Adaptador Feathers",
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como iniciar ou compor",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Exemplo completo: Task e Category na borda HTTP",
+      "Checklist de adoção"
+    ]
+  },
+  {
+    "title": "Adaptador LoopBack",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/http/loopback",
+    "description": "Documentação de Adaptadores HTTP.",
+    "section": "adapters",
+    "locale": "pt-BR",
+    "headings": [
+      "Adaptador LoopBack",
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como iniciar ou compor",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Exemplo completo: Task e Category na borda HTTP",
+      "Checklist de adoção"
+    ]
+  },
+  {
+    "title": "Adaptador AWS Lambda",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/http/aws-lambda",
+    "description": "Documentação de Adaptadores HTTP.",
+    "section": "adapters",
+    "locale": "pt-BR",
+    "headings": [
+      "Adaptador AWS Lambda",
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como iniciar ou compor",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Exemplo completo: Task e Category na borda HTTP",
+      "Checklist de adoção"
+    ]
+  },
+  {
+    "title": "Adaptador Sails.js",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/http/sails-js",
+    "description": "Documentação de Adaptadores HTTP.",
+    "section": "adapters",
+    "locale": "pt-BR",
+    "headings": [
+      "Adaptador Sails.js",
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como iniciar ou compor",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Exemplo completo: Task e Category na borda HTTP",
+      "Checklist de adoção"
+    ]
+  },
+  {
+    "title": "Adaptador Derby.js",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/http/derby-js",
+    "description": "Documentação de Adaptadores HTTP.",
+    "section": "adapters",
+    "locale": "pt-BR",
+    "headings": [
+      "Adaptador Derby.js",
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como iniciar ou compor",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Exemplo completo: Task e Category na borda HTTP",
+      "Checklist de adoção"
+    ]
+  },
+  {
+    "title": "Adaptador Total.js",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/adapters/http/total-js",
+    "description": "Documentação de Adaptadores HTTP.",
+    "section": "adapters",
+    "locale": "pt-BR",
+    "headings": [
+      "Adaptador Total.js",
+      "Tecnologia integrada",
+      "Quando usar",
+      "Quando evitar",
+      "Como iniciar ou compor",
+      "This adapter is composed by its platform runtime.",
+      "Keep controllers framework-free and wire them from the adapter entrypoint.",
+      "Exemplo completo: Task e Category na borda HTTP",
+      "Checklist de adoção"
+    ]
+  },
+  {
+    "title": "Crie uma API REST",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/guides/rest-api",
+    "description": "Construa APIs REST orientadas a contratos com o Jumentix.",
+    "section": "guides",
+    "locale": "pt-BR",
+    "headings": [
+      "Criando API REST com Jumentix",
+      "Responsabilidade no escopo",
+      "O que é",
+      "Por que existe",
+      "Pré-requisitos",
+      "Glossário",
+      "Passos numerados",
+      "Passo 1 — Selecionar perfil REST (< 5 minutos)",
+      "Passo 2 — Modelar domínio e contratos (< 15 minutos)",
+      "Passo 3 — Implementar fluxo de domínio (< 30 minutos por feature)",
+      "Passo 4 — Vincular ao adaptador HTTP (< 10 minutos)",
+      "Passo 5 — Validar portões de qualidade (< 10 minutos)",
+      "Passo 6 — Chamar a API de um client (caminho júnior)",
+      "Exemplos",
+      "Client mock estático",
+      "Playground interativo REST client",
+      "Erros comuns",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
+    ]
+  },
+  {
+    "title": "Crie uma SPA ou PWA offline",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/guides/spa-pwa",
+    "description": "Construa produtos frontend com SDKs compartilhados e operação offline.",
+    "section": "guides",
+    "locale": "pt-BR",
+    "headings": [
+      "Criando SPA/PWA com Jumentix",
+      "Responsabilidade no escopo",
+      "Glossário",
+      "O que é",
+      "1. Modele primeiro os domínios de negócios",
+      "2. Definir contratos de comunicação",
+      "3. Configurar o tempo de execução do serviço",
+      "4. Crie um PWA com capacidade offline",
+      "5. Validar a disponibilidade de entrega",
+      "6. Offline com Cana + designs",
+      "Próximos passos",
+      "Referências",
+      "Checklist júnior (“Eu consigo …”)"
+    ]
+  },
+  {
+    "title": "Guias",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/guides",
+    "description": "Explore a seção Guias do Jumentix.",
+    "section": "guides",
+    "locale": "pt-BR",
+    "headings": [
+      "Guias"
+    ]
+  },
+  {
+    "title": "Crie um SaaS modular",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/guides/saas-monolith",
+    "description": "Lance um monólito modular com limites prontos para serviços.",
+    "section": "guides",
+    "locale": "pt-BR",
+    "headings": [
+      "Criando SaaS Monolith com Jumentix",
+      "Responsabilidade no escopo",
+      "Glossário",
+      "O que é",
+      "Estratégia recomendada",
+      "Por que isso funciona",
+      "Plano de entrega",
+      "Público-alvo",
+      "Documentos relacionados",
+      "Próximos passos",
+      "Checklist júnior (“Eu consigo …”)"
+    ]
+  },
+  {
+    "title": "Crie uma API realtime",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/guides/realtime-api",
+    "description": "Construa interfaces Socket.IO e gRPC com fallback REST.",
+    "section": "guides",
+    "locale": "pt-BR",
+    "headings": [
+      "Criando API em tempo real com Jumentix",
+      "Responsabilidade no escopo",
+      "O que é",
+      "Por que existe",
+      "Pré-requisitos",
+      "Glossário",
+      "Passos numerados",
+      "Passo 1 — Habilitar perfil de runtime realtime (< 5 minutos)",
+      "WebSocket + fallback REST (comece aqui para apps browser)",
+      "gRPC + fallback REST (malha de serviços Node)",
+      "Passo 2 — Definir contratos Async (< 15 minutos)",
+      "Passo 3 — Implementar handlers de mensagem (< 30 minutos)",
+      "Passo 4 — Manter fallback REST disponível (< 5 minutos)",
+      "Passo 5 — Validar estabilidade realtime (< 10 minutos)",
+      "Passo 6 — Integração com client (caminho júnior)",
+      "Exemplos",
+      "Playground interativo WebSocket client",
+      "Erros comuns",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
+    ]
+  },
+  {
+    "title": "Crie um SaaS com microsserviços",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/guides/saas-microservices",
+    "description": "Construa serviços distribuídos com comunicação baseada em contratos.",
+    "section": "guides",
+    "locale": "pt-BR",
+    "headings": [
+      "Criando microsserviços SaaS com Jumentix",
+      "Responsabilidade no escopo",
+      "Glossário",
+      "O que é",
+      "Estratégia recomendada",
+      "Caminho de evolução do Monolith",
+      "Padrão Operacional",
+      "Benefícios de produto e engenharia",
+      "Documentos relacionados",
+      "Próximos passos",
+      "Checklist júnior (“Eu consigo …”)"
+    ]
+  },
+  {
+    "title": "@jumentix/sdk-grpc-client",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/sdk-grpc-client",
+    "description": "Cliente SDK realtime AsyncAPI/gRPC (Node).",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "@jumentix/sdk-grpc-client",
+      "O que é",
+      "Por que existe",
+      "Responsabilidade no escopo",
+      "Pré-requisitos",
+      "Glossário",
+      "Passos numerados",
+      "1. Instalar",
+      "2. Primeiro sucesso (menos de 30 min)",
+      "3. Fluxos centrais",
+      "1. Point at host:port",
+      "2. Send envelope",
+      "3. Deploy only on Node",
+      "4. Superfície prática (exports)",
+      "Erros comuns",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
+    ]
+  },
+  {
+    "title": "@jumentix/external-db-repositories",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/external-db-repositories",
+    "description": "Adaptadores de repositório para bancos externos.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "@jumentix/external-db-repositories",
+      "O que é",
+      "Por que existe",
+      "Responsabilidade no escopo",
+      "Pré-requisitos",
+      "Glossário",
+      "Passos numerados",
+      "1. Instalar",
+      "2. Primeiro sucesso (menos de 30 min)",
+      "3. Fluxos centrais",
+      "1. Connect with env options",
+      "2. Run a repository operation",
+      "3. Disconnect on shutdown",
+      "4. Superfície prática (exports)",
+      "Erros comuns",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
+    ]
+  },
+  {
+    "title": "@jumentix/external-store-proxy",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/external-store-proxy",
+    "description": "Proxies IStore sobre clientes de banco externos.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "@jumentix/external-store-proxy",
+      "O que é",
+      "Por que existe",
+      "Responsabilidade no escopo",
+      "Pré-requisitos",
+      "Glossário",
+      "Passos numerados",
+      "1. Instalar",
+      "2. Primeiro sucesso (menos de 30 min)",
+      "3. Fluxos centrais",
+      "1. Create stores from a client",
+      "2. Inject into use-cases",
+      "3. Test with fakes",
+      "4. Superfície prática (exports)",
+      "Erros comuns",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
+    ]
+  },
+  {
+    "title": "@jumentix/external-persistence-core",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/external-persistence-core",
+    "description": "Classe base e opções para adaptadores de persistência externa.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "@jumentix/external-persistence-core",
+      "O que é",
+      "Por que existe",
+      "Responsabilidade no escopo",
+      "Pré-requisitos",
+      "Glossário",
+      "Passos numerados",
+      "1. Instalar",
+      "2. Primeiro sucesso (menos de 30 min)",
+      "3. Fluxos centrais",
+      "1. Read connection options",
+      "2. Extend base for a new driver",
+      "3. Keep domain pure",
+      "4. Superfície prática (exports)",
+      "Erros comuns",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
+    ]
+  },
+  {
+    "title": "Pacotes Jumentix",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages",
+    "description": "Mapa de pacotes para adotantes (site público; tooling privado excluído).",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "Pacotes Jumentix (mapa do consumidor)",
+      "Comece aqui",
+      "Browser / offline",
+      "Persistência",
+      "Comunicação",
+      "Composição de runtime"
+    ]
+  },
+  {
+    "title": "@jumentix/persistence-contracts",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/persistence-contracts",
+    "description": "Ports de persistência compartilhados (IStore, IDatabaseClient).",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "@jumentix/persistence-contracts",
+      "O que é",
+      "Por que existe",
+      "Responsabilidade no escopo",
+      "Pré-requisitos",
+      "Glossário",
+      "Passos numerados",
+      "1. Instalar",
+      "2. Primeiro sucesso (menos de 30 min)",
+      "3. Fluxos centrais",
+      "1. Type a use-case port",
+      "2. Keep adapters behind the port",
+      "3. Share paging types",
+      "4. Superfície prática (exports)",
+      "Erros comuns",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
+    ]
+  },
+  {
+    "title": "@jumentix/designer-core",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/designer-core",
+    "description": "Helpers de documento de design seguros para browser em frontends Jumentix.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "@jumentix/designer-core",
+      "Responsabilidade no escopo",
+      "O que é",
+      "Uso",
+      "Política de versionamento",
+      "Política de publicação: apenas dry-run",
+      "Desenvolvimento",
+      "Licença",
+      "Experimente no navegador",
+      "Documentação completa"
+    ]
+  },
+  {
+    "title": "Uso do designer-core",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/designer-core/usage",
+    "description": "Guia júnior e playground para @jumentix/designer-core.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "@jumentix/designer-core — guia de uso",
+      "Responsabilidade no escopo",
+      "O que é",
+      "Por que existe",
+      "Pré-requisitos",
+      "Glossário",
+      "Passos",
+      "1. Instalar (< 5 minutos)",
+      "2. Primeiro sucesso — validar o modelo sample (< 15 minutos)",
+      "3. Fluxo central — validar antes de salvar",
+      "4. Fluxo central — exportação e round-trip de reimportação",
+      "5. Superfície completa — mapa da API pública",
+      "Experimente no playground de docs",
+      "Erros comuns",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
+    ]
+  },
+  {
+    "title": "@jumentix/sdk-rest-client",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/sdk-rest-client",
+    "description": "Cliente SDK REST orientado a OpenAPI.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "@jumentix/sdk-rest-client",
+      "O que é",
+      "Por que existe",
+      "Responsabilidade no escopo",
+      "Pré-requisitos",
+      "Glossário",
+      "Passos numerados",
+      "1. Instalar",
+      "2. Primeiro sucesso (menos de 30 min)",
+      "3. Fluxos centrais",
+      "1. Construct with base URL",
+      "2. Call by operationId",
+      "3. Handle envelope errors",
+      "4. Superfície prática (exports)",
+      "Erros comuns",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
+    ]
+  },
+  {
+    "title": "@jumentix/runtime-infra",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/runtime-infra",
+    "description": "Helpers de infraestrutura de runtime para adapters.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "@jumentix/runtime-infra",
+      "O que é",
+      "Por que existe",
+      "Responsabilidade no escopo",
+      "Pré-requisitos",
+      "Glossário",
+      "Passos numerados",
+      "1. Instalar",
+      "2. Primeiro sucesso (menos de 30 min)",
+      "3. Fluxos centrais",
+      "1. Follow REST guide first",
+      "2. Read with bootstrap",
+      "3. Avoid UI imports",
+      "4. Superfície prática (exports)",
+      "Erros comuns",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
+    ]
+  },
+  {
+    "title": "@jumentix/database-client-factory",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/database-client-factory",
+    "description": "Compila clientes de banco a partir do driver/env.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "@jumentix/database-client-factory",
+      "O que é",
+      "Por que existe",
+      "Responsabilidade no escopo",
+      "Pré-requisitos",
+      "Glossário",
+      "Passos numerados",
+      "1. Instalar",
+      "2. Primeiro sucesso (menos de 30 min)",
+      "3. Fluxos centrais",
+      "1. Read driver from env",
+      "2. Compile once at boot",
+      "3. Inject ports upward",
+      "4. Superfície prática (exports)",
+      "Erros comuns",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
+    ]
+  },
+  {
+    "title": "@jumentix/mutex-service",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/mutex-service",
+    "description": "Locks nomeados sobre armazenamento chave/valor.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "@jumentix/mutex-service",
+      "Responsabilidade no escopo",
+      "Contrato",
+      "Validação",
+      "Experimente no navegador",
+      "Documentação completa"
+    ]
+  },
+  {
+    "title": "Uso do mutex-service",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/mutex-service/usage",
+    "description": "Guia júnior e playground para locks mutex.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "@jumentix/mutex-service — guia de uso",
+      "Responsabilidade no escopo",
+      "O que é",
+      "Por que existe",
+      "Pré-requisitos",
+      "Glossário",
+      "Passos",
+      "1. Instalar (< 5 minutos)",
+      "2. Primeiro sucesso — adquirir e liberar (< 15 minutos)",
+      "3. Fluxo central — sempre liberar em `finally`",
+      "4. Fluxo central — verificar antes de repetir",
+      "5. Fluxo central — wiring de produção",
+      "6. Superfície completa — mapa da API",
+      "Experimente no playground de docs",
+      "Erros comuns",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
+    ]
+  },
+  {
+    "title": "@jumentix/cana-react",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana-react",
+    "description": "Documentação de Pacotes.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "@jumentix/cana-react",
+      "Instalação",
+      "Hooks",
+      "Bridge Redux"
+    ]
+  },
+  {
+    "title": "@jumentix/key-value-storage",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/key-value-storage",
+    "description": "Clientes chave/valor com adaptador em memória para testes e demos.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "@jumentix/key-value-storage",
+      "Responsabilidade no escopo",
+      "Experimente no navegador",
+      "Documentação completa"
+    ]
+  },
+  {
+    "title": "Uso do key-value-storage",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/key-value-storage/usage",
+    "description": "Guia júnior e playground em memória para chave/valor.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "@jumentix/key-value-storage — guia de uso",
+      "Responsabilidade no escopo",
+      "O que é",
+      "Por que existe",
+      "Pré-requisitos",
+      "Glossário",
+      "Passos",
+      "1. Instalar (< 5 minutos)",
+      "2. Primeiro sucesso — get/set em memória (< 10 minutos)",
+      "3. Fluxo central — compilar por ambiente",
+      "4. Fluxo central — leituras seguras a erro",
+      "5. Fluxo central — parear com mutex-service",
+      "6. Superfície completa — mapa da API",
+      "Experimente no playground de docs",
+      "Erros comuns",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
+    ]
+  },
+  {
+    "title": "@jumentix/shared-contracts",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/shared-contracts",
+    "description": "Carga canônica de OpenAPI/AsyncAPI para SDKs.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "@jumentix/shared-contracts",
+      "O que é",
+      "Por que existe",
+      "Responsabilidade no escopo",
+      "Pré-requisitos",
+      "Glossário",
+      "Passos numerados",
+      "1. Instalar",
+      "2. Primeiro sucesso (menos de 30 min)",
+      "3. Fluxos centrais",
+      "1. Load OpenAPI for REST",
+      "2. Load AsyncAPI for realtime",
+      "3. Fail closed on missing spec",
+      "4. Superfície prática (exports)",
+      "Erros comuns",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
+    ]
+  },
+  {
+    "title": "@jumentix/adapter-runtime-bootstrap",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/adapter-runtime-bootstrap",
+    "description": "Compilador compartilhado de bootstrap de adapters.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "@jumentix/adapter-runtime-bootstrap",
+      "O que é",
+      "Por que existe",
+      "Responsabilidade no escopo",
+      "Pré-requisitos",
+      "Glossário",
+      "Passos numerados",
+      "1. Instalar",
+      "2. Primeiro sucesso (menos de 30 min)",
+      "3. Fluxos centrais",
+      "1. Read env contracts",
+      "2. Compile adapters once",
+      "3. Mount interfaces",
+      "4. Superfície prática (exports)",
+      "Erros comuns",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
+    ]
+  },
+  {
+    "title": "@jumentix/sdk-websocket-client",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/sdk-websocket-client",
+    "description": "Cliente SDK realtime AsyncAPI/Socket.IO.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "@jumentix/sdk-websocket-client",
+      "O que é",
+      "Por que existe",
+      "Responsabilidade no escopo",
+      "Pré-requisitos",
+      "Glossário",
+      "Passos numerados",
+      "1. Instalar",
+      "2. Primeiro sucesso (menos de 30 min)",
+      "3. Fluxos centrais",
+      "1. Connect",
+      "2. Request with operationId",
+      "3. Reconnect policy",
+      "4. Superfície prática (exports)",
+      "Erros comuns",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
+    ]
+  },
+  {
+    "title": "@jumentix/message-mediator",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/message-mediator",
+    "description": "Mediação de mensagens em processo e via brokers.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "@jumentix/message-mediator",
+      "Responsabilidade no escopo",
+      "Experimente no navegador",
+      "Documentação completa"
+    ]
+  },
+  {
+    "title": "Uso do message-mediator",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/message-mediator/usage",
+    "description": "Guia júnior e playground do mediator em memória.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "@jumentix/message-mediator — guia de uso",
+      "Responsabilidade no escopo",
+      "O que é",
+      "Por que existe",
+      "Pré-requisitos",
+      "Glossário",
+      "Passos",
+      "1. Instalar (< 5 minutos)",
+      "2. Primeiro sucesso — publicar e assinar (< 15 minutos)",
+      "3. Fluxo central — request/response",
+      "4. Fluxo central — compilar por ambiente",
+      "5. Fluxo central — timeouts e opções de roteamento",
+      "6. Superfície completa — mapa da API",
+      "Experimente no playground de docs",
+      "Quando não usar in-memory",
+      "Erros comuns",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
+    ]
+  },
+  {
+    "title": "@jumentix/cana-vue",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana-vue",
+    "description": "Documentação de Pacotes.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "@jumentix/cana-vue",
+      "Instalação",
+      "Live query"
+    ]
+  },
+  {
+    "title": "Cana com React Context API",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana/react-context",
+    "description": "Do zero à implementação final: tarefas categorizadas com Cana e React Context.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "Cana com React Context API",
+      "1. Comece do zero",
+      "2. Implementação simples",
+      "3. Implementação avançada",
+      "4. Formato final do app",
+      "5. Checklist",
+      "Próximo"
+    ]
+  },
+  {
+    "title": "Cana com Vue 3 e Pinia",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana/vue-pinia",
+    "description": "Do zero à implementação final: tarefas categorizadas com Cana, Vue 3 e Pinia.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "Cana com Vue 3 e Pinia",
+      "1. Comece do zero",
+      "2. Implementação simples",
+      "3. Implementação avançada",
+      "4. Formato final do app",
+      "5. Checklist",
+      "Próximo"
+    ]
+  },
+  {
+    "title": "@jumentix/cana",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana",
+    "description": "Adaptador de banco de dados offline sobre IndexedDB para aplicações Jumentix.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "@jumentix/cana",
+      "Responsabilidade no escopo",
+      "Três coisas a saber antes de usar",
+      "Erros são dados puros",
+      "Experimente no navegador",
+      "Design notes",
+      "Modelo mental em 30 segundos",
+      "Arquitetura no estilo Postgres",
+      "Modelo de workers",
+      "Dados de performance",
+      "Checklist júnior (“Eu consigo …”)",
+      "Tutoriais por framework",
+      "Próximo passo"
+    ]
+  },
+  {
+    "title": "Cana com React Redux",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana/react-redux",
+    "description": "Do zero à implementação final: tarefas categorizadas com Cana e Redux.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "Cana com React Redux",
+      "1. Comece do zero",
+      "2. Implementação simples",
+      "3. Implementação avançada",
+      "4. Formato final do app",
+      "5. Checklist",
+      "Próximo"
+    ]
+  },
+  {
+    "title": "Workers e testes",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana/usage/workers-testing",
+    "description": "Execute Cana através da fronteira de worker e planeje testes no browser.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "Workers e testes",
+      "Fluxo de requisição do worker",
+      "Demo completa de worker-host na mesma thread",
+      "Layout de arquivos em produção",
+      "Estratégia de testes",
+      "Próximo"
+    ]
+  },
+  {
+    "title": "Queries e planos",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana/usage/querying",
+    "description": "Consulte índices do Cana, inspecione planos explain e entenda complexidade.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "Queries e planos",
+      "Query indexada de tarefas",
+      "Paginação",
+      "Count e explain",
+      "Mapa rápido de complexidade",
+      "Execute aqui",
+      "Próximo"
+    ]
+  },
+  {
+    "title": "Leitura, escrita e operações em lote",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana/usage/crud-bulk",
+    "description": "Use CRUD e operações em lote com exemplos completos de tarefas.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "Leitura, escrita e operações em lote",
+      "Escritas de registro único",
+      "Escolha do método",
+      "Escritas em lote",
+      "Execute aqui",
+      "Próximo"
+    ]
+  },
+  {
+    "title": "Guia de uso do Cana",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana/usage",
+    "description": "Hub do guia de API do consumidor para @jumentix/cana com subpáginas focadas.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "Cana — Guia de uso",
+      "Escolha o próximo passo",
+      "O exemplo contínuo",
+      "Política de código completo",
+      "Tutoriais por framework",
+      "Integrações de pacote"
+    ]
+  },
+  {
+    "title": "Referência de API",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana/usage/api-reference",
+    "description": "Referência compacta das APIs Cana usadas no guia.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "Referência de API",
+      "Ciclo de vida do client",
+      "Tabelas",
+      "Transações e eventos",
+      "APIs de worker",
+      "Factory adapter",
+      "Glossário"
+    ]
+  },
+  {
+    "title": "Schema e chaves",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana/usage/schema-keys",
+    "description": "Versione schemas e escolha estratégias de chave estáveis para stores Cana.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "Schema e chaves",
+      "Schema versionado",
+      "Regras de upgrade",
+      "Estratégias de chave",
+      "Execute aqui",
+      "Próximo"
+    ]
+  },
+  {
+    "title": "Hooks e erros",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana/usage/hooks-errors",
+    "description": "Aplique hooks de escrita e trate erros Cana como dados puros.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "Hooks e erros",
+      "Hooks de escrita",
+      "Erros como dados puros",
+      "Erros comuns",
+      "Execute aqui",
+      "Próximo"
+    ]
+  },
+  {
+    "title": "Primeiros passos com Cana",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana/usage/getting-started",
+    "description": "Instale o Cana e construa o banco mínimo de tarefas categorizadas.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "Primeiros passos com Cana",
+      "Instalação",
+      "App mínimo completo de tarefas",
+      "O que observar",
+      "Execute aqui",
+      "Próximo"
+    ]
+  },
+  {
+    "title": "Transações e eventos de mudança",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana/usage/transactions-events",
+    "description": "Grave de forma atômica e atualize stores de UI a partir de eventos Cana commitados.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "Transações e eventos de mudança",
+      "Transação multi-store",
+      "Ouvir eventos commitados",
+      "Replay depois que a UI ficou ausente",
+      "Execute aqui",
+      "Próximo"
+    ]
+  },
+  {
+    "title": "Storage e recuperação de crash",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana/usage/storage-recovery",
+    "description": "Avalie durabilidade, exporte/importe dados e resolva escritas incertas.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "Storage e recuperação de crash",
+      "Avaliação de storage",
+      "Export e import",
+      "Resolver uma escrita incerta",
+      "Execute aqui",
+      "Próximo"
+    ]
+  },
+  {
+    "title": "Visão geral do Jumentix",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/concepts/overview",
+    "description": "Visão geral do produto, público e adoção.",
+    "section": "concepts",
+    "locale": "pt-BR",
+    "headings": [
+      "Visão Geral do Produto Jumentix (Visão do Consumidor)",
+      "O que você pode construir",
+      "Por que times adotam Jumentix",
+      "Resultado para consumidores"
+    ]
+  },
+  {
+    "title": "Conceitos",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/concepts",
+    "description": "Explore a seção Conceitos do Jumentix.",
+    "section": "concepts",
+    "locale": "pt-BR",
+    "headings": [
+      "Conceitos"
+    ]
+  },
+  {
+    "title": "Arquitetura e estrutura",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/concepts/architecture",
+    "description": "DDD, Hexagonal, Event-Driven e estrutura do monorepo.",
+    "section": "concepts",
+    "locale": "pt-BR",
+    "headings": [
+      "Arquitetura para Consumidores",
+      "Impacto para consumidores",
+      "Opções de interface",
+      "Opções de dados e integração"
+    ]
+  },
+  {
+    "title": "Começando",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/concepts/getting-started",
+    "description": "Rampa júnior: instalação, modelo mental e primeira jornada de adoção.",
+    "section": "concepts",
+    "locale": "pt-BR",
+    "headings": [
+      "Começando com o Jumentix",
+      "Responsabilidade no escopo",
+      "O que é",
+      "Por que existe",
+      "Pré-requisitos",
+      "Glossário",
+      "Passos numerados",
+      "Passo 1 — Instalar a toolchain (< 5 minutos)",
+      "Passo 2 — Escolher o caminho inicial (< 2 minutos)",
+      "Passo 3 — Abrir o backend de referência (< 10 minutos)",
+      "siga os scripts do package.json / README desse app para subir localmente",
+      "Passo 4 — Aprender o modelo mental (< 5 minutos)",
+      "Passo 5 — Primeiro sucesso: tocar o Cana no browser (< 10 minutos)",
+      "Passo 6 — Fluxos centrais (esta semana)",
+      "Passo 7 — Superfície completa (lookup, não tutoriais)",
+      "Exemplos",
+      "Chamada mínima de client REST (estático)",
+      "Registro offline com Cana (estático)",
+      "Erros comuns",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
+    ]
+  },
+  {
+    "title": "jumentix-website",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/apps/jumentix-website",
+    "description": "Hub do site público de docs e marketing.",
+    "section": "apps",
+    "locale": "pt-BR",
+    "headings": [
+      "jumentix-website (docs + marketing)",
+      "O que é",
+      "Por que existe",
+      "Responsabilidade no escopo",
+      "Pré-requisitos",
+      "Glossário",
+      "Passos numerados",
+      "Erros comuns",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
+    ]
+  },
+  {
+    "title": "apps",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/apps",
+    "description": "Explore a seção apps do Jumentix.",
+    "section": "apps",
+    "locale": "pt-BR",
+    "headings": [
+      "apps"
+    ]
+  },
+  {
+    "title": "backend-template",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/apps/backend-template",
+    "description": "Backend de referência para juniores.",
+    "section": "apps",
+    "locale": "pt-BR",
+    "headings": [
+      "backend-template (backend de referência)",
+      "O que é",
+      "Por que existe",
+      "Responsabilidade no escopo",
+      "Pré-requisitos",
+      "Glossário",
+      "Passos numerados",
+      "Erros comuns",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
+    ]
+  },
+  {
+    "title": "service-management",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/apps/service-management",
+    "description": "Hub do app SPA/PWA Domain Designer.",
+    "section": "apps",
+    "locale": "pt-BR",
+    "headings": [
+      "service-management (SPA Domain Designer)",
+      "O que é",
+      "Por que existe",
+      "Responsabilidade no escopo",
+      "Pré-requisitos",
+      "Glossário",
+      "Passos numerados",
+      "Erros comuns",
+      "Checklist júnior (“Eu consigo …”)",
+      "Próximo passo"
+    ]
+  },
+  {
+    "title": "Referência",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/reference",
+    "description": "Explore a seção Referência do Jumentix.",
+    "section": "reference",
+    "locale": "pt-BR",
+    "headings": [
+      "Referência",
+      "Comece aqui"
+    ]
+  },
+  {
+    "title": "Contratos do ambiente de runtime",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/reference/runtime-contracts",
+    "description": "Variáveis de ambiente e comportamento da composição de runtime.",
+    "section": "reference",
+    "locale": "pt-BR",
+    "headings": [
+      "Capacidades de Runtime (Visão do Consumidor)",
+      "Interfaces de serviço",
+      "Controle de runtime",
+      "Modos de deploy",
+      "Confiabilidade e escala"
+    ]
+  },
+  {
+    "title": "Mapa de eventos e mensagens",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/reference/events-messages",
+    "description": "Contratos de eventos, requests, responses e workers da aplicação.",
+    "section": "reference",
+    "locale": "pt-BR",
+    "headings": [
+      "Mapa de eventos e mensagens",
+      "1) Envelope de Evento de Integração",
+      "2) Envelope de mensagem de solicitação/resposta",
+      "3) Adaptadores Mediadores de Mensagens",
+      "4) Mapa de eventos de domínio atual (usuários)",
+      "5) Mapa atual do contrato de solicitação/resposta (usuários/autenticação)",
+      "6) Onde os contratos são consumidos",
+      "7) Topologia de tempo de execução (atual)",
+      "8) Diretrizes de extensão para novos domínios",
+      "9) Referências de contrato de interface em tempo real"
+    ]
+  },
+  {
+    "title": "Segurança e hardening PCI",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/reference/security-compliance",
+    "description": "Controles de segurança e evidências de compliance.",
+    "section": "reference",
+    "locale": "pt-BR",
+    "headings": [
+      "Segurança e Compliance para Consumidores",
+      "Baseline de segurança",
+      "Entrega orientada a compliance",
+      "Prática recomendada para consumidores"
+    ]
+  },
+  {
+    "title": "Mapa de erros e respostas",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/reference/errors-responses",
+    "description": "Contratos de erro e comportamento de resposta das interfaces.",
+    "section": "reference",
+    "locale": "pt-BR",
+    "headings": [
+      "Contratos de erro e respostas de erro HTTP",
+      "1) Contrato de erro básico",
+      "2) Códigos de erro canônicos",
+      "3) Classe de erro para mapeamento de código",
+      "4) Formato de resposta de erro HTTP",
+      "5) Contrato de erro de solicitação/resposta do MessageMediator",
+      "6) Notas de Consistência Atual",
+      "7) Contrato de validação de requisições HTTP",
+      "8) Regras de extensão",
+      "9) Envelopes de erro em tempo real"
+    ]
+  },
+  {
+    "title": "Referência de scripts dos pacotes",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/reference/package-scripts",
+    "description": "Todos os comandos suportados pelo monorepo e como utilizá-los.",
+    "section": "reference",
+    "locale": "pt-BR",
+    "headings": [
+      "Referência de Scripts do Package.json (Consumidor)"
+    ]
+  }
+]

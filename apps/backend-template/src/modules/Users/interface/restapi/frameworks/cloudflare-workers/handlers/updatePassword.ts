@@ -2,9 +2,7 @@ import type { CloudflareWorkersRequest, CloudflareWorkersResponse } from '@src/i
 import { sendErrorResponse } from '@src/interface/HTTP/adapters/cloudflare-workers/responses/sendErrorResponse';
 
 import type {
-  IHandlerFactory
-} from '@src/interface/HTTP/ports';
-import type {
+  IHandlerFactory,
   IbaseHandler,
   EndPointFactory
 } from '@src/interface/HTTP/ports';

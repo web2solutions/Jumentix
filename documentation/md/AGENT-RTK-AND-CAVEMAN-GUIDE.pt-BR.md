@@ -140,7 +140,9 @@ rtk proxy bun run agent-bus:publish -- --agent-id "<id>" --epic "<epic>" --task 
 rtk proxy bun run agent-bus:watch -- --epic "<epic-url-or-id>"
 ```
 
-Exige `FIREBASE_SERVICE_ACCOUNT_KEY` e `FIREBASE_DATABASE_URL`. Firestore continua SSOT de ownership
+Reutilize as credenciais existentes de `jumentix-service-registry`
+(`FIREBASE_SERVICE_ACCOUNT_KEY` ou `FIREBASE_SERVICE_ACCOUNT_KEY_FILE`).
+`FIREBASE_DATABASE_URL` é opcional (derivada do `project_id`). Firestore continua SSOT de ownership
 (`089`). Project Updates continuam o broadcast humano (`102` / `121`).
 
 ## Relacionados

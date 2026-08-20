@@ -132,6 +132,8 @@ function classifyIntegration(file) {
       adapter: 'vercel-functions',
       script: 'test:integration:vercel-functions'
     },
+    // Restored by JUM-704, which added the four framework packages the adapters
+    // require. Removed by JUM-698 when nothing could construct them.
     LoopBack: { layer: 'adapters/in', adapter: 'loopback', script: 'test:integration:loopback' },
     'Sails-JS': { layer: 'adapters/in', adapter: 'sails-js', script: 'test:integration:sails-js' },
     Feathers: { layer: 'adapters/in', adapter: 'feathers', script: 'test:integration:feathers' },
@@ -176,6 +178,63 @@ function browserSpecPaths(root) {
   )
     .map((file) => path.relative(root, file).replace(/\\/g, '/'))
     .sort(byPath);
+}
+
+/**
+ * The quarantine, carried across but not past the file's own deletion.
+ *
+ * Carrying it forward is right: regenerating the map must not silently
+ * un-quarantine a suite. Carrying an entry whose file no longer exists is not —
+ * `packages/cana/test/performance.test.ts` was deleted in JUM-581 and its entry
+ * sat in the manifest for months afterwards, describing a suite nobody could
+ * read, run or fix (JUM-682).
+ *
+ * A quarantine says "this suite exists and is knowingly not gating". When the
+ * suite is gone the sentence has no subject.
+ */
+function carriedQuarantine(root, previousManifest) {
+  const previous = previousManifest?.quarantine || [];
+  const kept = previous.filter((entry) => fs.existsSync(path.join(root, entry.path)));
+  for (const entry of previous) {
+    if (!kept.includes(entry)) {
+      console.log(`[ci] quarantine entry dropped, file no longer exists: ${entry.path} (${entry.issue})`);
+    }
+  }
+  return kept;
+}
+
+/**
+ * The website's own suites (JUM-680).
+ *
+ * Two kinds with different costs, so they carry different tiers:
+ *
+ *  - unit suites — React components and the `scripts/*.mjs` helpers — run under
+ *    the website's own Jest config in milliseconds, so they belong in the gate;
+ *  - the Cypress specs need a production build and a running server, which is
+ *    minutes, so they are nightly and say so.
+ *
+ * Both name the script that runs them, exactly as the Redis integration suites
+ * do: the root runner must not try to execute a `.tsx` React test under Bun
+ * without the website's config.
+ */
+function websiteSuitePaths(root) {
+  const websiteRoot = path.join(root, 'apps', 'jumentix-website');
+  const unit = walk(
+    websiteRoot,
+    (file) => /\.test\.(ts|tsx|mjs)$/.test(file)
+      && !file.includes(`${path.sep}node_modules${path.sep}`)
+      && !file.includes(`${path.sep}.next${path.sep}`)
+  );
+  const cypress = walk(
+    path.join(websiteRoot, 'cypress', 'e2e'),
+    (file) => /\.cy\.(js|ts)$/.test(file)
+  );
+
+  const relative = (file) => path.relative(root, file).replace(/\\/g, '/');
+  return {
+    unit: unit.map(relative).sort(byPath),
+    cypress: cypress.map(relative).sort(byPath)
+  };
 }
 
 function readPreviousManifest(root) {
@@ -378,6 +437,23 @@ function buildManifest(root = process.cwd()) {
     // as depending on `adapters/out+infra` would drag a full browser run into
     // every backend infra change. These specs exercise cana's IndexedDB engine
     // and nothing else; the only changes that can affect them are cana's own.
+    //
+    // JUM-680: the website had no layer at all. Its five Cypress specs and six
+    // unit suites were absent from the manifest, so the selector could not see
+    // them and no `branch-gate` job ran them — the `website` job in
+    // `.github/workflows/ci.yml` is gated on `base_ref == 'main'`. A website
+    // change reached `dev` with its own tests never having run.
+    //
+    // `dependsOn: []` for the same reason as `browser-harness`: blast radius
+    // is outward, and nothing in the backend can change what the website
+    // renders. The site consumes published packages, not their sources.
+    website: {
+      dependsOn: [],
+      sourceGlobs: ['apps/jumentix-website/**'],
+      runner: 'bun',
+      tier: 'gate',
+      kind: 'non-hexagonal'
+    },
     'browser-harness': {
       dependsOn: [],
       //
@@ -518,6 +594,37 @@ function buildManifest(root = process.cwd()) {
   // invocation because `createLayerAwarePlan` de-duplicates integration scripts;
   // registering them individually is what makes each spec visible to the
   // manifest checks and to coverage, not eighteen Cypress runs.
+  const websiteSuites = websiteSuitePaths(root);
+  for (const file of websiteSuites.unit) {
+    suites.push({
+      id: file,
+      path: file,
+      layer: 'website',
+      kind: 'non-hexagonal',
+      type: 'unit',
+      script: 'website:test:unit',
+      runner: 'bun',
+      tier: 'gate',
+      timeoutMs: 60000,
+      reason: 'Runs under the website\'s own Jest config; the root runner cannot execute it directly.'
+    });
+  }
+  for (const file of websiteSuites.cypress) {
+    suites.push({
+      id: file,
+      path: file,
+      layer: 'website',
+      kind: 'non-hexagonal',
+      type: 'integration',
+      adapter: 'cypress',
+      script: 'website:test:cypress',
+      runner: 'bun',
+      tier: 'nightly',
+      timeoutMs: 600000,
+      reason: 'Needs a production build and a running server; nightly rather than gate for that cost alone.'
+    });
+  }
+
   for (const file of browserSpecPaths(root)) {
     suites.push({
       id: file,
@@ -571,7 +678,7 @@ function buildManifest(root = process.cwd()) {
     // would have silently un-quarantined it and put a known-flaky suite back in
     // front of every commit — the same class of loss as dropping the package
     // suites, in the opposite direction.
-    quarantine: previousManifest?.quarantine || [],
+    quarantine: carriedQuarantine(root, previousManifest),
     sourceRoots: [
       'apps/backend-template/src',
       'apps/backend-template/test',
@@ -625,6 +732,7 @@ if (isEntryPoint(module)) {
 module.exports = {
   SERVICE_MANAGEMENT_INTEGRATION_AREA,
   buildManifest,
+  carriedQuarantine,
   classifyIntegration,
   classifyUnit,
   loadPackageSuiteClassification,

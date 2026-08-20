@@ -4,7 +4,7 @@ import helmet from '@fastify/helmet';
 import fastifyStatic from '@fastify/static';
 import formBody from '@fastify/formbody';
 import path from 'node:path';
-import { v4 } from 'uuid';
+import { createUuid } from '@src/modules/port/UUID';
 
 import { _HTTP_PORT_ } from '@src/config/constants';
 import { isCorsOriginAllowed } from '@src/config/security';
@@ -42,7 +42,7 @@ class FastifyServer extends HTTPBaseServer<Fastify> {
     (this.application as any).addHook('preHandler', (req: FastifyRequest, res: FastifyReply, next: any) => {
       const store = new Map();
       Context.run(store, () => {
-        store.set('correlationId', v4());
+        store.set('correlationId', createUuid());
         store.set('timeStart', +new Date());
         store.set('request', req);
         store.set('authorization', req.headers.authorization || '');
@@ -57,7 +57,7 @@ class FastifyServer extends HTTPBaseServer<Fastify> {
     this.application.use((req: FastifyRequest, res: FastifyReply, next: any) => {
       const store = new Map();
       Context.run(store, () => {
-        store.set('correlationId', v4());
+        store.set('correlationId', createUuid());
         store.set('timeStart', +new Date());
         store.set('request', req);
         store.set('authorization', req.headers.authorization || '');

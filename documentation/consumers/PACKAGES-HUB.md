@@ -1,0 +1,42 @@
+# Jumentix packages (consumer map)
+
+This hub lists **packages documented for adopters** on the public site.
+
+Internal/private workspace packages (shared ESLint/Jest/TS configs, agent registry,
+security scanner, CLI bootstrap, and any `package.json` `"private": true` package
+without a curated consumer page) are **not** published here.
+
+## Start here
+
+1. [Getting started](/docs/jumentix/concepts/getting-started)
+2. Offline UI: [designer-core](/docs/jumentix/packages/designer-core) → [cana](/docs/jumentix/packages/cana)
+3. HTTP consumers: [sdk-rest-client](/docs/jumentix/packages/sdk-rest-client)
+4. Persistence ports: [persistence-contracts](/docs/jumentix/packages/persistence-contracts)
+
+## Browser / offline
+
+- [@jumentix/cana](/docs/jumentix/packages/cana)
+- [@jumentix/designer-core](/docs/jumentix/packages/designer-core)
+
+## Persistence
+
+- [@jumentix/persistence-contracts](/docs/jumentix/packages/persistence-contracts)
+- [@jumentix/external-persistence-core](/docs/jumentix/packages/external-persistence-core)
+- [@jumentix/external-db-repositories](/docs/jumentix/packages/external-db-repositories)
+- [@jumentix/external-store-proxy](/docs/jumentix/packages/external-store-proxy)
+- [@jumentix/database-client-factory](/docs/jumentix/packages/database-client-factory)
+- [@jumentix/key-value-storage](/docs/jumentix/packages/key-value-storage)
+- [@jumentix/mutex-service](/docs/jumentix/packages/mutex-service)
+
+## Communication
+
+- [@jumentix/shared-contracts](/docs/jumentix/packages/shared-contracts)
+- [@jumentix/sdk-rest-client](/docs/jumentix/packages/sdk-rest-client)
+- [@jumentix/sdk-websocket-client](/docs/jumentix/packages/sdk-websocket-client)
+- [@jumentix/sdk-grpc-client](/docs/jumentix/packages/sdk-grpc-client)
+- [@jumentix/message-mediator](/docs/jumentix/packages/message-mediator)
+
+## Runtime composition
+
+- [@jumentix/adapter-runtime-bootstrap](/docs/jumentix/packages/adapter-runtime-bootstrap)
+- [@jumentix/runtime-infra](/docs/jumentix/packages/runtime-infra)

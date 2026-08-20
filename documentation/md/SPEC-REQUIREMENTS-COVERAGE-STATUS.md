@@ -1,6 +1,6 @@
 # Spec Requirements Coverage Status
 
-<!-- requirements-inventory: files=129 unique=129 mapped=129 duplicates= -->
+<!-- requirements-inventory: files=135 unique=135 mapped=135 duplicates= -->
 
 This document certifies current coverage of implemented requirements by Spec Development Driven resources.
 
@@ -8,9 +8,9 @@ This document certifies current coverage of implemented requirements by Spec Dev
 
 Date: `2026-08-05`
 
-1. Requirement files in `.agents/requirements/project/` and `.agents/requirements/software/`: `129`
-2. Unique requirement IDs: `129`
-3. IDs covered in `SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`: `129`
+1. Requirement files in `.agents/requirements/project/` and `.agents/requirements/software/`: `135`
+2. Unique requirement IDs: `135`
+3. IDs covered in `SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md`: `135`
 4. Coverage status: `100%`
 
 Notes:
@@ -21,9 +21,9 @@ Notes:
 
 ## Non-Functional Requirements Coverage
 
-NFR IDs covered (`85`):
+NFR IDs covered (`91`):
 
-`001`, `011`, `014`, `015`, `016`, `017`, `018`, `020`, `025`, `029`, `036`, `041`, `042`, `043`, `044`, `050`, `053`, `056`, `057`, `063`, `064`, `065`, `066`, `067`, `068`, `069`, `070`, `071`, `072`, `073`, `074`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `091`, `092`, `093`, `094`, `095`, `096`, `097`, `098`, `099`, `100`, `101`, `102`, `103`, `104`, `105`, `106`, `107`, `108`, `109`, `110`, `111`, `112`, `113`, `114`, `115`, `116`, `117`, `118`, `119`, `120`, `121`, `122`, `124`, `125`, `126`, `127`, `128`, `129`
+`001`, `011`, `014`, `015`, `016`, `017`, `018`, `020`, `025`, `029`, `036`, `041`, `042`, `043`, `044`, `050`, `053`, `056`, `057`, `063`, `064`, `065`, `066`, `067`, `068`, `069`, `070`, `071`, `072`, `073`, `074`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `091`, `092`, `093`, `094`, `095`, `096`, `097`, `098`, `099`, `100`, `101`, `102`, `103`, `104`, `105`, `106`, `107`, `108`, `109`, `110`, `111`, `112`, `113`, `114`, `115`, `116`, `117`, `118`, `119`, `120`, `121`, `122`, `124`, `125`, `126`, `127`, `128`, `129`, `130`, `131`, `132`, `133`, `134`, `135`
 
 NFR mapping sources:
 

@@ -1,0 +1,93 @@
+# @jumentix/adapter-runtime-bootstrap
+
+Shared compiler that boots adapter runtimes from environment-driven composition.
+
+## O que é
+
+Shared compiler that boots adapter runtimes from environment-driven composition.
+
+## Por que existe
+
+Each service copied bootstrap glue. Drift caused subtle env bugs. This package centralizes composition.
+
+**Quando usar:** Composing HTTP/realtime/DB adapters in a backend service.
+
+**Quando não usar:** Frontend-only apps or package-level unit tests that fake ports.
+
+## Responsabilidade no escopo
+
+- **Camada:** runtime / composition
+- **Fronteira do problema:** Adapter runtime bootstrap compilation helpers.
+- **Usado com:** runtime-infra, database-client-factory, HTTP/realtime adapter docs.
+- **Composição típica:** backend-template composition root.
+- **Jornadas:** REST / Realtime guides → runtime reference.
+- **Não é responsável por:** Domain rules or OpenAPI authoring.
+
+## Pré-requisitos
+
+- Bun 1.3.13+ (pin do monorepo) ou o Node do seu serviço
+- Leia [Começando](/docs/pt-BR/jumentix/concepts/getting-started)
+- TypeScript básico (`import`/módulos)
+
+## Glossário
+
+- **Porta (port)** — contrato TypeScript da aplicação (sem tipos de vendor).
+- **Adaptador** — implementação concreta de driver/broker/protocolo.
+- **Composition root** — startup que liga env → adaptadores → use-cases.
+
+## Passos numerados
+
+### 1. Instalar
+
+```bash
+Used from the monorepo/backend-template composition — prefer following the REST guide first.
+```
+
+### 2. Primeiro sucesso (menos de 30 min)
+
+```ts
+// At the service composition root (backend-template pattern):
+// 1) read env
+// 2) compile adapters through the bootstrap helpers
+// 3) mount HTTP/realtime servers
+// Follow the REST guide for the full walkthrough.
+```
+
+
+### 3. Fluxos centrais
+
+### 1. Read env contracts
+
+Use documented runtime env vars.
+
+### 2. Compile adapters once
+
+Bootstrap at process start.
+
+### 3. Mount interfaces
+
+HTTP/realtime adapters receive compiled deps.
+
+
+### 4. Superfície prática (exports)
+
+- `(see package barrel — bootstrap compilers/helpers)`
+
+Use os exports nas camadas de aplicação/adaptadores — não em entidades de domínio.
+
+## Erros comuns
+
+| Sintoma | Causa | Correção |
+|---------|-------|----------|
+| Missing env | Incomplete .env | Compare with runtime contracts reference. |
+
+**Como verificar:** o snippet de primeiro sucesso roda (ou typechecka no serviço) e o use-case depende só de ports.
+
+## Checklist júnior (“Eu consigo …”)
+
+- [ ] I can point to where bootstrap runs in backend-template
+- [ ] I know this is backend composition, not a browser package
+
+## Próximo passo
+
+Continue com [runtime-infra](/docs/pt-BR/jumentix/packages/runtime-infra).

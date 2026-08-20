@@ -1,0 +1,109 @@
+# Leitura, escrita e operações em lote
+
+Use os métodos de registro único para ações de UI e os métodos em lote para
+setup, imports, lotes de sincronização e migrações.
+
+## Escritas de registro único
+
+```ts
+type Task = {
+  id: string;
+  title: string;
+  categoryId: string;
+  completed: boolean;
+  priority: 'low' | 'medium' | 'high';
+  createdAt: number;
+  updatedAt: number;
+};
+
+const tasks = client.table<Task>('tasks');
+
+await tasks.add({
+  id: 'task-1',
+  title: 'Draft the tutorial',
+  categoryId: 'work',
+  completed: false,
+  priority: 'high',
+  createdAt: 1,
+  updatedAt: 1
+});
+
+await tasks.update('task-1', {
+  completed: true,
+  updatedAt: 2
+});
+
+const afterUpdate = await tasks.get('task-1');
+await tasks.delete('task-1');
+const afterDelete = await tasks.get('task-1');
+
+console.log({ afterUpdate, afterDelete });
+```
+
+## Escolha do método
+
+| Método | Chave existente | Chave ausente | Melhor uso |
+| --- | --- | --- | --- |
+| `add(record)` | Falha com `ConstraintViolation`. | Insere. | Ações de criação pura. |
+| `put(record)` | Substitui o registro inteiro. | Insere. | Upsert vindo de sync/import. |
+| `update(key, changes)` | Mescla campos. | Falha com `NotFound`. | Edições de UI que não devem ressuscitar linhas apagadas. |
+| `delete(key)` | Apaga. | Nenhum registro fica armazenado. | Ações de remoção. |
+| `clear()` | Remove todos os registros da store. | A store fica vazia. | Fluxos de reset/import. |
+
+## Escritas em lote
+
+```ts
+type Category = {
+  id: string;
+  name: string;
+  color: string;
+  createdAt: number;
+  updatedAt: number;
+};
+
+const now = Date.now();
+const categories = client.table<Category>('categories');
+const tasks = client.table<Task>('tasks');
+
+await categories.bulkAdd([
+  { id: 'work', name: 'Work', color: '#2563eb', createdAt: now, updatedAt: now },
+  { id: 'home', name: 'Home', color: '#16a34a', createdAt: now, updatedAt: now }
+]);
+
+const insertedKeys = await tasks.bulkAdd([
+  {
+    id: 'task-1',
+    title: 'Write the guide',
+    categoryId: 'work',
+    completed: false,
+    priority: 'high',
+    createdAt: now,
+    updatedAt: now
+  },
+  {
+    id: 'task-2',
+    title: 'Review examples',
+    categoryId: 'home',
+    completed: false,
+    priority: 'medium',
+    createdAt: now,
+    updatedAt: now + 1
+  }
+]);
+
+console.log({ insertedKeys });
+```
+
+`bulkAdd()` continua sendo uma única transação IndexedDB. Se um registro viola
+uma constraint, o erro nomeia a store e a operação para o caller reportar a
+falha do lote sem adivinhar.
+
+## Execute aqui
+
+<CanaPlayground id="crud" />
+
+<CanaPlayground id="bulk" />
+
+## Próximo
+
+Continue em [queries e planos](./CANA-USAGE-QUERYING.pt-BR.md).

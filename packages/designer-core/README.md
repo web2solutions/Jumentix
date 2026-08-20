@@ -9,6 +9,13 @@ implementation.
 A versão em português deste documento está em
 [README.pt-BR.md](./README.pt-BR.md).
 
+## Responsibility in context
+
+- **Stack layer:** domain-model toolkit (no DOM)
+- **Owns:** normalize/validate/export/import of design documents
+- **Used with:** cana, SPA/PWA guide, service-management
+- **Not responsible for:** rendering UI, IndexedDB itself, HTTP APIs
+
 ## What it is
 
 The designer core is the separable logic the JUM-468/JUM-469 modularization
@@ -108,3 +115,12 @@ bun test        # run this package's suites (packaging, DOM-free proof, consumer
 ## License
 
 MIT — see [LICENSE.md](./LICENSE.md).
+
+## Try it in the browser
+
+<DocsPlayground runtime="designer-core" id="getting-started" />
+
+## Full documentation
+
+Continue with the consumer [usage guide](../../documentation/md/DESIGNER-CORE-USAGE-GUIDE.md)
+for normalize → validate → export flows and troubleshooting.

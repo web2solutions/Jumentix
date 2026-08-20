@@ -1,0 +1,34 @@
+---
+title: "@jumentix/message-mediator"
+description: "In-process and broker-backed message mediation."
+---
+
+# @jumentix/message-mediator
+
+Workspace package for Jumentix message-mediator contracts and baseline in-memory adapter.
+
+Current extracted scope:
+
+- core contracts (`IMessage`, `IMessageResponse`, metadata)
+- event bus and mediator interfaces
+- in-memory mediator adapter
+- RabbitMQ mediator adapter
+- BullMQ mediator adapter
+- environment-aware `compileMessageMediator` helper
+
+## Responsibility in context
+
+- **Stack layer:** messaging / application adapter
+- **Owns:** in-process and broker-backed mediation
+- **Used with:** backend use-cases
+- **Not responsible for:** OpenAPI HTTP routing or database persistence
+
+## Try it in the browser
+
+In-memory mediator:
+
+<DocsPlayground runtime="message-mediator" id="getting-started" />
+
+## Full documentation
+
+See the consumer [usage guide](/docs/jumentix/packages/message-mediator/usage).

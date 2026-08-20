@@ -2,6 +2,13 @@
 
 Private reusable mutex adapter for Jumentix runtimes.
 
+## Responsibility in context
+
+- **Stack layer:** persistence / coordination
+- **Owns:** named locks backed by a KV client
+- **Used with:** key-value-storage
+- **Not responsible for:** business documents or messaging
+
 ## Contract
 
 `MutexService.compile(keyValueStorageClient, options)` creates a process-wide singleton backed by an
@@ -24,3 +31,11 @@ bun run --filter @jumentix/mutex-service typecheck
 bun run --filter @jumentix/mutex-service lint
 bun run --filter @jumentix/mutex-service test
 ```
+
+## Try it in the browser
+
+<DocsPlayground runtime="mutex-service" id="getting-started" />
+
+## Full documentation
+
+See the consumer [usage guide](../../documentation/md/MUTEX-SERVICE-USAGE-GUIDE.md).

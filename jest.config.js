@@ -53,6 +53,7 @@ module.exports = {
   coverageDirectory: 'coverage',
   testEnvironment: 'node',
   moduleNameMapper: {
+    '^uuid$': '<rootDir>/ci-cd/jest/uuid-cjs-shim.js',
     '@src/(.*)$': '<rootDir>/apps/backend-template/src/$1',
     '@seed/(.*)$': '<rootDir>/apps/backend-template/seed/$1',
     '@test/(.*)$': '<rootDir>/apps/backend-template/test/$1',
@@ -99,10 +100,13 @@ module.exports = {
   // block is a fail-fast inner guard so a coverage run stops before the scan.
   coverageThreshold: {
     global: {
-      branches: 90,
-      functions: 99,
-      lines: 99,
-      statements: 99
+      // JUM-681: 98, matching the authority. This inner guard has no exception
+      // mechanism, so the runs that enforce it pass `--coverageThreshold='{}'`
+      // and defer to the checker, which holds the floor.
+      branches: 98,
+      functions: 98,
+      lines: 98,
+      statements: 98
     }
   },
   setupFiles: ["./ci-cd/loadEnvironment.js"],

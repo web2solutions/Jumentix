@@ -3,13 +3,12 @@ import { Hono } from 'hono';
 import type { Context } from 'hono';
 import fs from 'fs';
 import path from 'path';
+import { createUuid } from '@src/modules/port/UUID';
 
 import { RestAPI } from '@src/interface/HTTP/RestAPI';
 import type {
   IHTTPRequest,
-  IHTTPResponse
-} from '@src/interface/HTTP/ports';
-import type {
+  IHTTPResponse,
   IbaseHandler
 } from '@src/interface/HTTP/ports';
 import {
@@ -17,6 +16,7 @@ import {
   HTTPBaseServer
 } from '@src/interface/HTTP/ports';
 import { infraHandlers } from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
+import { Context as RequestContext } from '@src/infra/context/Context';
 import { compileMessageMediator } from '@src/infra/messages/compileMessageMediator';
 import { compileDatabaseClient } from '@src/infra/persistence/compileDatabaseClient';
 import { compileKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/compileKeyValueStorageClient';
@@ -43,7 +43,31 @@ class CloudflareWorkersServer extends HTTPBaseServer<Hono> {
   constructor() {
     super();
     this.application = new Hono();
+    this.registerRequestContext();
     this.registerStaticDocsRoutes();
+  }
+
+  /**
+   * The per-request store every handler reads (JUM-698).
+   *
+   * Express, Restify, Fastify and Lambda each establish this; this adapter did
+   * not, and it registers the same `infraHandlers`. `localhost.get` calls
+   * `Context.getStore().get('correlationId')`, so **every request through the
+   * worker answered 500** with an empty message. Nothing caught it because the
+   * suite named after this adapter called an Express handler directly and ran
+   * `Context.run` itself — the test supplied the very thing that was missing.
+   */
+  private registerRequestContext(): void {
+    this.application.use(async (c: Context, next) => {
+      const store = new Map();
+      return RequestContext.run(store, () => {
+        store.set('correlationId', createUuid());
+        store.set('timeStart', +new Date());
+        store.set('request', c.req);
+        store.set('authorization', c.req.header('authorization') || '');
+        return next();
+      });
+    });
   }
 
   private registerStaticDocsRoutes(): void {

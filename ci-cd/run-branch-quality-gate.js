@@ -18,22 +18,40 @@ const { classifyCiContext, CONTEXTS } = require('./classify-ci-context.js');
  */
 const LINT_PREFLIGHT = Object.freeze({ id: 'lint', script: 'lint' });
 
+/**
+ * Test integrity runs before every gate, including the strict matrix (JUM-683).
+ *
+ * JUM-683 added `test:integrity` to the `ci:gate` script and stopped there. No
+ * CI job runs that script: the branch gate selects `ci:gate:strict`,
+ * `ci:gate:task` or `test:unit`, and none of the three contained the check. So
+ * a suite that declares no assertions, asserts nothing about state, or sits
+ * outside `test-map.json` reached `dev` and `main` with every required check
+ * green — which is the shape Requirement 065 exists to stop, arrived at by
+ * adding a guard to the one entry point CI does not use.
+ *
+ * It is a preflight rather than a matrix cell for the same reason lint is: it
+ * reads the suites without running them, it takes seconds, and a tree whose
+ * tests assert nothing has nothing to learn from running them.
+ */
+const TEST_INTEGRITY_PREFLIGHT = Object.freeze({ id: 'test-integrity', script: 'test:integrity' });
+
 const FULL_MATRIX_QUALITY_GATE = Object.freeze({
   id: 'full-matrix',
   script: 'ci:gate:strict',
-  // No preflight: the strict matrix declares `lint` as its first cell, and
-  // running it twice would cost minutes to learn the same thing.
-  preflight: Object.freeze([])
+  // Lint is not repeated here: the strict matrix declares it as its first cell,
+  // and running it twice would cost minutes to learn the same thing. Test
+  // integrity is not a cell of that matrix, so it runs here.
+  preflight: Object.freeze([TEST_INTEGRITY_PREFLIGHT])
 });
 const UNIT_QUALITY_GATE = Object.freeze({
   id: 'unit',
   script: 'test:unit',
-  preflight: Object.freeze([LINT_PREFLIGHT])
+  preflight: Object.freeze([LINT_PREFLIGHT, TEST_INTEGRITY_PREFLIGHT])
 });
 const TASK_QUALITY_GATE = Object.freeze({
   id: 'task-changes',
   script: 'ci:gate:task',
-  preflight: Object.freeze([LINT_PREFLIGHT])
+  preflight: Object.freeze([LINT_PREFLIGHT, TEST_INTEGRITY_PREFLIGHT])
 });
 
 function resolveTargetBranch(value = process.env.JUMENTIX_QUALITY_GATE_TARGET) {

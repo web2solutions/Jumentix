@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import { createUuid } from '@src/modules/port/UUID';
+
 import { RestAPI } from '@src/interface/HTTP/RestAPI';
+import { Context as RequestContext } from '@src/infra/context/Context';
 import type {
   IHTTPRequest,
-  IHTTPResponse
-} from '@src/interface/HTTP/ports';
-import type {
+  IHTTPResponse,
   IbaseHandler
 } from '@src/interface/HTTP/ports';
 import {
@@ -122,7 +123,28 @@ class VercelFunctionsServer extends HTTPBaseServer<Record<string, never>> {
     return new URL(`${protocol}://${host}${requestPath}`);
   }
 
+  /**
+   * The per-request store every handler reads (JUM-698).
+   *
+   * Express, Restify, Fastify and Lambda each establish this; this adapter did
+   * not, and it registers the same `infraHandlers`. `localhost.get` calls
+   * `Context.getStore().get('correlationId')`, so **every request through this
+   * function answered 500** with an empty message. The suite named after this
+   * adapter hid it by calling an Express handler directly and running
+   * `Context.run` itself — supplying the very thing that was missing.
+   */
   public async handle(req: VercelRequest, res: VercelResponse): Promise<void> {
+    const store = new Map();
+    return RequestContext.run(store, () => {
+      store.set('correlationId', createUuid());
+      store.set('timeStart', +new Date());
+      store.set('request', req);
+      store.set('authorization', req.headers.authorization || '');
+      return this.route(req, res);
+    });
+  }
+
+  private async route(req: VercelRequest, res: VercelResponse): Promise<void> {
     const url = VercelFunctionsServer.getUrl(req);
     const { pathname } = url;
     const method = (req.method || 'GET').toUpperCase();

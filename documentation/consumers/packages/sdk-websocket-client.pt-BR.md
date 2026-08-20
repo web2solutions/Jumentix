@@ -1,0 +1,97 @@
+# @jumentix/sdk-websocket-client
+
+AsyncAPI/Socket.IO client that sends the standard realtime request envelope.
+
+## O que é
+
+AsyncAPI/Socket.IO client that sends the standard realtime request envelope.
+
+## Por que existe
+
+Ad-hoc socket emit/ack code drifts from the AsyncAPI contract.
+
+**Quando usar:** You need request/response over WebSocket against a Jumentix realtime gateway.
+
+**Quando não usar:** Plain REST (sdk-rest-client) or Node gRPC (sdk-grpc-client).
+
+## Responsabilidade no escopo
+
+- **Camada:** SDK / realtime adapter (consumer)
+- **Fronteira do problema:** `WebSocketApiClient` connect/request helpers.
+- **Usado com:** shared-contracts for AsyncAPI load; server realtime adapters; message-mediator for in-process messaging.
+- **Composição típica:** Realtime guide → gateway → this client in SPA/services.
+- **Jornadas:** [Realtime API guide](/docs/jumentix/guides/realtime-api).
+- **Não é responsável por:** Persisting data or rendering UI.
+
+## Pré-requisitos
+
+- Bun 1.3.13+ (pin do monorepo) ou o Node do seu serviço
+- Leia [Começando](/docs/pt-BR/jumentix/concepts/getting-started)
+- TypeScript básico (`import`/módulos)
+
+## Glossário
+
+- **Porta (port)** — contrato TypeScript da aplicação (sem tipos de vendor).
+- **Adaptador** — implementação concreta de driver/broker/protocolo.
+- **Composition root** — startup que liga env → adaptadores → use-cases.
+
+## Passos numerados
+
+### 1. Instalar
+
+```bash
+bun add @jumentix/sdk-websocket-client
+```
+
+### 2. Primeiro sucesso (menos de 30 min)
+
+```ts
+import { WebSocketApiClient } from '@jumentix/sdk-websocket-client';
+
+const client = new WebSocketApiClient('ws://localhost:3001');
+client.connect();
+const response = await client.request({
+  operationId: 'createUser',
+  input: { username: 'john', password: 'StrongPass#123' }
+});
+```
+
+<DocsPlayground runtime="sdk-websocket-client" id="getting-started" />
+
+### 3. Fluxos centrais
+
+### 1. Connect
+
+Call `connect()` before requests.
+
+### 2. Request with operationId
+
+Use the AsyncAPI operation identifiers.
+
+### 3. Reconnect policy
+
+Handle disconnects in the app shell — do not ignore socket errors.
+
+
+### 4. Superfície prática (exports)
+
+- `WebSocketApiClient`
+
+Use os exports nas camadas de aplicação/adaptadores — não em entidades de domínio.
+
+## Erros comuns
+
+| Sintoma | Causa | Correção |
+|---------|-------|----------|
+| Timeout waiting for ack | Server down or wrong path | Confirm `/ws` gateway and env ports. |
+
+**Como verificar:** o snippet de primeiro sucesso roda (ou typechecka no serviço) e o use-case depende só de ports.
+
+## Checklist júnior (“Eu consigo …”)
+
+- [ ] I can connect and complete one operationId request
+- [ ] I know when to pick WebSocket vs REST
+
+## Próximo passo
+
+Continue com [sdk-grpc-client](/docs/pt-BR/jumentix/packages/sdk-grpc-client).

@@ -294,6 +294,28 @@ describe('run-full-test-matrix', () => {
     expect(crashed.outcome).toBe('failed');
   });
 
+  it('treats a negative exit status as a failure (JUM-681)', () => {
+    expect.hasAssertions();
+
+    // `spawnSync` reports a signal-terminated child as a negative status on
+    // some platforms. It is an integer, so an `Number.isInteger` check alone
+    // would carry it through as the cell's exit code — and a negative number is
+    // not zero, but it is also not a status any reader would trust.
+    const logger = { log: jest.fn(), error: jest.fn() };
+
+    const evidence = runFullTestMatrix({
+      cells: [{ id: 'signalled', script: 'lint' }],
+      execute: () => -9,
+      logger,
+      availableScripts: fullMatrixRootPackage.scripts,
+      env: {},
+      resultFile: ''
+    });
+
+    expect(evidence.outcome).toBe('failed');
+    expect(evidence.results[0].status).toBe(1);
+  });
+
   it('uses repository-owned workflows and keeps Storybook outside the full matrix', () => {
     expect.hasAssertions();
     const read = (file: string) => matrixFs.readFileSync(
@@ -344,5 +366,118 @@ describe('run-full-test-matrix', () => {
         (cell: FullMatrixTestCell) => cell.script.startsWith('website:storybook')
       )
     ]).toStrictEqual(Array(33).fill(true));
+  });
+});
+
+/**
+ * The manifest guard's refusals (JUM-681).
+ *
+ * The matrix is the list of everything that must pass before a promotion. A
+ * malformed entry that slips through is a cell nobody runs and nobody misses —
+ * the same false green as an unmapped suite, one level up.
+ */
+describe('full matrix manifest refusals (JUM-681)', () => {
+  const scripts = { lint: 'eslint .', 'test:unit': 'bun test' };
+
+  it('refuses an empty matrix', () => {
+    expect.hasAssertions();
+
+    expect(() => validateMatrixManifest([], scripts)).toThrow('at least one required cell');
+    expect(() => validateMatrixManifest(null, scripts)).toThrow('at least one required cell');
+  });
+
+  it('refuses a cell with no id or no script', () => {
+    expect.hasAssertions();
+
+    expect(() => validateMatrixManifest([{ id: '', script: 'lint' }], scripts))
+      .toThrow('non-empty id and script');
+    expect(() => validateMatrixManifest([{ id: 'lint' }], scripts))
+      .toThrow('non-empty id and script');
+  });
+
+  it('refuses a duplicate id and a duplicate script separately', () => {
+    expect.hasAssertions();
+
+    // Two names for one script is a cell that reports twice; two scripts under
+    // one name is a cell that reports once for two things.
+    expect(() => validateMatrixManifest([
+      { id: 'lint', script: 'lint' },
+      { id: 'lint', script: 'test:unit' }
+    ], scripts)).toThrow('Duplicate full-matrix cell id: lint');
+
+    expect(() => validateMatrixManifest([
+      { id: 'lint', script: 'lint' },
+      { id: 'lint-again', script: 'lint' }
+    ], scripts)).toThrow('Duplicate full-matrix script: lint');
+  });
+
+  it('refuses a script that package.json does not define', () => {
+    expect.hasAssertions();
+
+    // The failure mode this prevents: a renamed script leaves a matrix cell
+    // pointing at nothing, and `bun run missing` is not a test that ran.
+    expect(() => validateMatrixManifest([{ id: 'gone', script: 'no:such:script' }], scripts))
+      .toThrow('missing from package.json: no:such:script');
+  });
+});
+
+/**
+ * Skipping a cell, and the evidence file (JUM-681).
+ *
+ * `JUMENTIX_FULL_MATRIX_SKIP_CELLS` is how a promotion drops a cell that cannot
+ * run in a given environment. An unnoticed typo there would silently skip
+ * nothing — or worse, silently skip the wrong thing — and the matrix would
+ * report a clean pass over a smaller list than the one it claims.
+ */
+describe('full matrix skip list and evidence (JUM-681)', () => {
+  const cells = [
+    { id: 'lint', script: 'lint' },
+    { id: 'unit', script: 'test:unit' }
+  ];
+
+  it('runs everything when nothing is skipped', () => {
+    expect.hasAssertions();
+
+    expect(resolveMatrixCells(cells, {})).toStrictEqual(cells);
+    expect(resolveMatrixCells(cells, { JUMENTIX_FULL_MATRIX_SKIP_CELLS: '   ' })).toStrictEqual(cells);
+  });
+
+  it('drops only the named cells, ignoring blanks and spacing', () => {
+    expect.hasAssertions();
+
+    const remaining = resolveMatrixCells(cells, {
+      JUMENTIX_FULL_MATRIX_SKIP_CELLS: ' lint , '
+    });
+
+    expect(remaining).toStrictEqual([{ id: 'unit', script: 'test:unit' }]);
+  });
+
+  it('refuses a skip list that names a cell the matrix does not have', () => {
+    expect.hasAssertions();
+
+    // The failure this prevents: a typo skips nothing, the matrix runs the cell
+    // anyway, and whoever wrote the list believes it was excluded.
+    expect(() => resolveMatrixCells(cells, {
+      JUMENTIX_FULL_MATRIX_SKIP_CELLS: 'lint,typo-cell'
+    })).toThrow('unknown cell(s): typo-cell');
+  });
+
+  it('writes evidence only when a destination is given, creating its directory', () => {
+    expect.hasAssertions();
+
+    const root = matrixFs.mkdtempSync(matrixPath.join(require('os').tmpdir(), 'jum681-matrix-'));
+    const target = matrixPath.join(root, 'nested', 'matrix.json');
+
+    // No destination: nothing written, and no crash for the caller that does
+    // not collect evidence.
+    expect(writeMatrixEvidence({ outcome: 'passed' }, '')).toBeUndefined();
+
+    writeMatrixEvidence({ outcome: 'passed', results: [] }, target);
+
+    expect(JSON.parse(matrixFs.readFileSync(target, 'utf8'))).toStrictEqual({
+      outcome: 'passed', results: []
+    });
+
+    matrixFs.rmSync(root, { recursive: true, force: true });
   });
 });

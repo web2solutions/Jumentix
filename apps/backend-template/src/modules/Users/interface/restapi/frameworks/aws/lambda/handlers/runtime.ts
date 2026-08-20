@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { OpenAPIV3 } from 'openapi-types';
 import YAML from 'yaml';
-import { v4 } from 'uuid';
+import { createUuid } from '@src/modules/port/UUID';
 import type { APIGatewayProxyEvent } from 'aws-lambda';
 
 import { Context } from '@src/infra/context/Context';
@@ -93,7 +93,7 @@ export const withLambdaContext = async <T>(
   return new Promise((resolve, reject) => {
     Context.run(store, async () => {
       try {
-        store.set('correlationId', v4());
+        store.set('correlationId', createUuid());
         store.set('timeStart', +new Date());
         store.set('request', event);
         store.set('authorization', authorization);

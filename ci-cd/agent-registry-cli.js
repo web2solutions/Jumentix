@@ -13,19 +13,69 @@ function resolveRegistryEntrypoint(root = packageRoot) {
   return path.join(root, manifest.main || 'dist/index.js');
 }
 
+/**
+ * Exports every command here needs. A build older than the source loads without
+ * throwing and is simply missing the newer ones, which is how the mandatory
+ * agent bus (Requirement 129) came to fail with
+ * `registry.createRtdbClient is not a function` while `dist/index.js` sat on
+ * disk looking perfectly built.
+ */
+const REQUIRED_REGISTRY_EXPORTS = Object.freeze([
+  'createFirestoreClient',
+  'createRtdbClient',
+  'publishProgress'
+]);
+
+function missingExports(registry) {
+  return REQUIRED_REGISTRY_EXPORTS.filter((name) => typeof registry?.[name] !== 'function');
+}
+
+function buildRegistryPackage() {
+  const { execFileSync } = require('child_process');
+  console.log('[agent-registry-cli] building package...');
+  execFileSync('bun', ['--filter', '@jumentix/agent-registry', 'build'], {
+    cwd: path.resolve(__dirname, '..'),
+    stdio: 'inherit'
+  });
+}
+
 async function loadRegistry() {
+  let registry;
   try {
-    return require(resolveRegistryEntrypoint());
-  } catch (error) {
-    // Package not built yet — try to build on the fly for local dev
-    const { execFileSync } = require('child_process');
-    console.log('[agent-registry-cli] building package...');
-    execFileSync('bun', ['--filter', '@jumentix/agent-registry', 'build'], {
-      cwd: path.resolve(__dirname, '..'),
-      stdio: 'inherit'
-    });
-    return require(resolveRegistryEntrypoint());
+    registry = require(resolveRegistryEntrypoint());
+  } catch {
+    // Package not built yet.
+    buildRegistryPackage();
+    registry = require(resolveRegistryEntrypoint());
+    const stillMissing = missingExports(registry);
+    if (stillMissing.length > 0) {
+      throw new Error(
+        `@jumentix/agent-registry build is missing: ${stillMissing.join(', ')}`
+      );
+    }
+    return registry;
   }
+
+  // The case the original fallback did not cover: a stale build. It requires
+  // cleanly and is only detectable by asking whether it carries what the
+  // caller needs.
+  const stale = missingExports(registry);
+  if (stale.length === 0) return registry;
+
+  console.log(`[agent-registry-cli] stale build (missing ${stale.join(', ')}); rebuilding...`);
+  delete require.cache[require.resolve(resolveRegistryEntrypoint())];
+  buildRegistryPackage();
+  registry = require(resolveRegistryEntrypoint());
+
+  const stillMissing = missingExports(registry);
+  if (stillMissing.length > 0) {
+    // Fail closed and name the exports. Continuing here reproduces the original
+    // defect one layer deeper, with a worse message.
+    throw new Error(
+      `@jumentix/agent-registry build is missing after rebuild: ${stillMissing.join(', ')}`
+    );
+  }
+  return registry;
 }
 
 function parseArgs() {
@@ -114,10 +164,15 @@ Flags for status:
   --limit           Recent event limit (optional, default 50)
 
 Environment:
-  FIREBASE_SERVICE_ACCOUNT_KEY  Service account JSON (required)
-  FIREBASE_DATABASE_URL         RTDB URL (required for heartbeat/assign/complete/publish/watch/status)
+  FIREBASE_SERVICE_ACCOUNT_KEY       Service account JSON (inline)
+  FIREBASE_SERVICE_ACCOUNT_KEY_FILE  Path to existing adminsdk JSON (alternative)
+  FIREBASE_DATABASE_URL              RTDB URL (optional; defaults to
+                                     https://<project_id>-default-rtdb.firebaseio.com)
+
+Reuse the existing Firebase project (jumentix-service-registry) — same key as Firestore.
 
 Examples:
+  export FIREBASE_SERVICE_ACCOUNT_KEY_FILE=/path/to/jumentix-service-registry-firebase-adminsdk-....json
   bun ci-cd/agent-registry-cli.js heartbeat --agent-id kimi-code-primary-001 --status busy
   bun ci-cd/agent-registry-cli.js publish --agent-id kimi-code-primary-001 --epic https://linear.app/... --task JUM-615 --kind progress --summary "fallback wired"
   bun ci-cd/agent-registry-cli.js watch --epic https://linear.app/...
@@ -136,6 +191,8 @@ function isFirestoreUnavailable(error) {
       && message.includes('Firestore database')
     )
     || message.includes('FIREBASE_SERVICE_ACCOUNT_KEY is not valid JSON')
+    || message.includes('FIREBASE_SERVICE_ACCOUNT_KEY_FILE is not valid JSON')
+    || message.includes('Missing Firebase credentials')
     || message.includes('Invalid service account structure');
 }
 
@@ -159,12 +216,13 @@ const RTDB_COMMANDS = new Set([
   'status'
 ]);
 
-function requireDatabaseUrl(command) {
-  if (!RTDB_COMMANDS.has(command)) return;
-  if (!process.env.FIREBASE_DATABASE_URL || !String(process.env.FIREBASE_DATABASE_URL).trim()) {
-    console.error('Missing required environment variable: FIREBASE_DATABASE_URL');
-    process.exit(1);
-  }
+function hasFirebaseCredentials() {
+  return Boolean(
+    (process.env.FIREBASE_SERVICE_ACCOUNT_KEY
+      && String(process.env.FIREBASE_SERVICE_ACCOUNT_KEY).trim())
+    || (process.env.FIREBASE_SERVICE_ACCOUNT_KEY_FILE
+      && String(process.env.FIREBASE_SERVICE_ACCOUNT_KEY_FILE).trim())
+  );
 }
 
 async function main() {
@@ -174,17 +232,21 @@ async function main() {
     return;
   }
 
-  if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+  if (!hasFirebaseCredentials()) {
     if (command === 'check') {
       // Optional check: skip when Firestore credentials are not configured yet.
-      console.log('[agent-registry-cli] skipping check: FIREBASE_SERVICE_ACCOUNT_KEY is not set.');
+      console.log(
+        '[agent-registry-cli] skipping check: Firebase credentials are not set '
+          + '(FIREBASE_SERVICE_ACCOUNT_KEY or FIREBASE_SERVICE_ACCOUNT_KEY_FILE).'
+      );
       process.exit(0);
     }
-    console.error('Missing required environment variable: FIREBASE_SERVICE_ACCOUNT_KEY');
+    console.error(
+      'Missing Firebase credentials: set FIREBASE_SERVICE_ACCOUNT_KEY '
+        + 'or FIREBASE_SERVICE_ACCOUNT_KEY_FILE'
+    );
     process.exit(1);
   }
-
-  requireDatabaseUrl(command);
 
   const registry = await loadRegistry();
   let firestore;

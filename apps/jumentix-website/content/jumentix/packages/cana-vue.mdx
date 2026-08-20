@@ -1,0 +1,31 @@
+---
+title: "@jumentix/cana-vue"
+description: "Packages documentation."
+---
+
+# @jumentix/cana-vue
+
+Vue composables and Pinia-friendly helpers for `@jumentix/cana`.
+
+## Install
+
+```bash
+npm install @jumentix/cana @jumentix/cana-vue vue
+```
+
+## Live query
+
+```ts
+import { useCanaLiveQuery } from '@jumentix/cana-vue';
+
+const tasks = useCanaLiveQuery<Task>({
+  client,
+  store: 'tasks',
+  query: { index: 'byCategory', equals: categoryId },
+  getKey: (task) => task.id
+});
+```
+
+`useCanaLiveQuery()` loads a table and keeps a Vue `ref` updated from committed
+Cana events. Pinia stores can use the same `applyCanaEventToRecords()` helper
+inside actions.

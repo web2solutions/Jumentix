@@ -2,9 +2,7 @@ import type { LoopBackRequest, LoopBackResponse } from '@src/interface/HTTP/adap
 import { sendErrorResponse } from '@src/interface/HTTP/adapters/loopback/responses/sendErrorResponse';
 
 import type {
-  IHandlerFactory
-} from '@src/interface/HTTP/ports';
-import type {
+  IHandlerFactory,
   IbaseHandler,
   EndPointFactory
 } from '@src/interface/HTTP/ports';

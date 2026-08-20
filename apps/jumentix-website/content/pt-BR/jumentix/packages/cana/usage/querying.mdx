@@ -1,0 +1,102 @@
+---
+title: "Queries e planos"
+description: "Consulte índices do Cana, inspecione planos explain e entenda complexidade."
+---
+
+# Queries e planos
+
+O Cana mantém queries pequenas de propósito: escolha uma tabela, opcionalmente
+escolha um índice, depois restrinja o cursor com `equals`, `limit`, `offset` e
+direção.
+
+## Query indexada de tarefas
+
+```ts
+type Task = {
+  id: string;
+  title: string;
+  categoryId: string;
+  completed: boolean;
+  priority: 'low' | 'medium' | 'high';
+  createdAt: number;
+  updatedAt: number;
+};
+
+const workTasks = await client.table<Task>('tasks').query({
+  index: 'byCategory',
+  equals: 'work',
+  direction: 'next',
+  limit: 20
+});
+
+console.log(workTasks.map((task) => task.title));
+```
+
+Não existe `filter(record => record.completed)` baseado em expressão. Filtrar em
+JavaScript força leitura completa e esconde problemas de performance. Adicione
+um índice como `byCompleted` quando a query fizer parte do fluxo do usuário.
+
+## Paginação
+
+```ts
+const firstPage = await client.table<Task>('tasks').query({
+  index: 'byUpdatedAt',
+  direction: 'next',
+  offset: 0,
+  limit: 20
+});
+
+const secondPage = await client.table<Task>('tasks').query({
+  index: 'byUpdatedAt',
+  direction: 'next',
+  offset: 20,
+  limit: 20
+});
+
+console.log({
+  firstPageSize: firstPage.length,
+  secondPageSize: secondPage.length
+});
+```
+
+Paginação profunda por offset avança o cursor IndexedDB. Ela não clona os
+registros pulados para um array JavaScript, mas o cursor ainda precisa andar, o
+que deixa o formato em `O(offset + limit)`.
+
+## Count e explain
+
+```ts
+const openCount = await client.table<Task>('tasks').count({
+  index: 'byCompleted',
+  equals: false
+});
+
+const explained = await client.table<Task>('tasks').explain({
+  index: 'byCategory',
+  equals: 'work'
+});
+
+console.log({
+  openCount,
+  plan: explained.plan,
+  records: explained.records
+});
+```
+
+## Mapa rápido de complexidade
+
+| Forma de query | Modelo de complexidade | Observações |
+| --- | --- | --- |
+| `get(key)` por chave primária | Modelo comum de lookup por chave no IndexedDB: `O(log n)`. | O browser controla os detalhes da árvore. |
+| `equals` indexado | Modelo comum de índice IndexedDB: `O(log n + matches)`. | O tamanho do resultado ainda importa. |
+| `limit: n` depois do cursor abrir | `O(limit)`. | O Cana não materializa a store inteira. |
+| `offset + limit` | `O(offset + limit)`. | Movimento de cursor é o custo. |
+| `count()` nativo | Uma requisição nativa. | O Cana não lê cada registro para JavaScript. |
+
+## Execute aqui
+
+<CanaPlayground id="query-explain" />
+
+## Próximo
+
+Continue em [transações e eventos de mudança](/docs/pt-BR/jumentix/packages/cana/usage/transactions-events).

@@ -18,9 +18,7 @@ import {
 } from '@test/mock';
 
 import type {
-  IUser
-} from '@src/modules/Users';
-import type {
+  IUser,
   RequestUpdatePhone
 } from '@src/modules/Users';
 import {
@@ -84,7 +82,6 @@ describe('express -> User updatePhone suite', () => {
     server = API.server.application;
 
     // await server.ready();
-    await API.deleteUsers();
     usersAll = await API.seedUsers();
     [user1] = usersAll;
     [phone1] = user1.phones || [];

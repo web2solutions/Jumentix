@@ -733,19 +733,39 @@ describe('catalogSyncClient — more declared edges', () => {
       render: () => undefined
     });
     await core.loadState();
+    // JUM-679: the debounce is driven, not waited out. This was the one test in
+    // the file using real timers and a 40ms sleep, while every other test uses
+    // the injected `schedule`/`cancelSchedule` pair the client already accepts.
+    // A sleep long enough for a 5ms debounce on a quiet machine is a guess on a
+    // loaded one.
+    const timers: Map<number, { fn: () => unknown }> = new Map();
+    let timerSeq = 0;
     const syncClient = createCatalogSyncClient({
       designerState: core,
       store,
       transport,
       notify: (message: string, severity: string) => notifications.push({ message, severity }),
       pushDebounceMs: 5,
-      pollIntervalMs: 3600000
+      pollIntervalMs: 3600000,
+      schedule: (fn: () => unknown) => {
+        timerSeq += 1;
+        timers.set(timerSeq, { fn });
+        return timerSeq;
+      },
+      cancelSchedule: (handle: number) => { timers.delete(handle); }
     });
     await syncClient.start();
     await syncClient.publishDomain('domain-1');
     core.state.domains[0].entities.push(makeEntity('entity-1', 'Invoice'));
     await core.saveState();
-    await new Promise((resolve) => { setTimeout(resolve, 40); });
+
+    const pending = [...timers.values()];
+    timers.clear();
+    for (const timer of pending) {
+      // eslint-disable-next-line no-await-in-loop
+      await timer.fn();
+    }
+
     const remote = await transport.getCatalog('catalog-1');
     expect(remote.version).toBe(2);
     syncClient.stop();

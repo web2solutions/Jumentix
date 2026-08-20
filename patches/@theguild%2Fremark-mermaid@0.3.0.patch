@@ -1,0 +1,83 @@
+diff --git a/dist/mermaid.js b/dist/mermaid.js
+index 1753db256fae9d39aec08eadb34df5d07a2fa2e3..9a864810fb7737bc8685ae00c1d2df6751c9c64a 100644
+--- a/dist/mermaid.js
++++ b/dist/mermaid.js
+@@ -1,27 +1,29 @@
+ "use client";
+ import { jsx } from "react/jsx-runtime";
+ import { useEffect, useId, useRef, useState } from "react";
+-function useIsVisible(ref) {
+-  const [isIntersecting, setIsIntersecting] = useState(false);
+-  useEffect(() => {
+-    const observer = new IntersectionObserver(([entry]) => {
+-      if (entry.isIntersecting) {
+-        observer.disconnect();
+-        setIsIntersecting(true);
+-      }
+-    });
+-    observer.observe(ref.current);
+-    return () => {
+-      observer.disconnect();
+-    };
+-  }, [ref]);
+-  return isIntersecting;
++// JUM-664: render on mount instead of on intersection.
++//
++// The container this observed is an empty div. A box with no content has no
++// area, a box with no area never reports an intersection, and the content only
++// arrives once the intersection is reported — so no diagram on the Jumentix
++// documentation site had ever rendered. Nextra's layout also scrolls an inner
++// element rather than the document, so the observer's implicit root is not the
++// element that moves.
++//
++// A diagram is a few kilobytes of SVG. Deferring it was never worth a failure
++// mode where the reader sees nothing and nothing is logged.
++function useIsVisible() {
++  return true;
+ }
+ function Mermaid({ chart }) {
+   const id = useId();
+   const [svg, setSvg] = useState("");
++  // JUM-664: a diagram that fails to render shows its source and the reason.
++  // The original logged to the console and rendered an empty div, which is how
++  // this went unnoticed for as long as the fences have existed.
++  const [failure, setFailure] = useState("");
+   const containerRef = useRef(null);
+-  const isVisible = useIsVisible(containerRef);
++  const isVisible = useIsVisible();
+   useEffect(() => {
+     if (!isVisible) {
+       return;
+@@ -51,13 +53,31 @@ function Mermaid({ chart }) {
+           chart.replaceAll("\\n", "\n"),
+           containerRef.current
+         );
++        setFailure("");
+         setSvg(svg2);
+       } catch (error) {
+         console.error("Error while rendering mermaid", error);
++        setSvg("");
++        setFailure(error instanceof Error ? error.message : String(error));
+       }
+     }
+   }, [chart, isVisible]);
+-  return /* @__PURE__ */ jsx("div", { ref: containerRef, dangerouslySetInnerHTML: { __html: svg } });
++  if (failure) {
++    return /* @__PURE__ */ jsx("figure", {
++      className: "jtx-mermaid jtx-mermaid--failed",
++      "data-testid": "mermaid-fallback",
++      children: [
++        /* @__PURE__ */ jsx("pre", { children: /* @__PURE__ */ jsx("code", { children: chart }) }),
++        /* @__PURE__ */ jsx("figcaption", { children: `Diagram could not be rendered: ${failure}` })
++      ]
++    });
++  }
++  return /* @__PURE__ */ jsx("div", {
++    ref: containerRef,
++    "data-testid": "mermaid",
++    "data-rendered": svg ? "true" : "false",
++    dangerouslySetInnerHTML: { __html: svg }
++  });
+ }
+ export {
+   Mermaid

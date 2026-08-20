@@ -724,3 +724,43 @@ describe('repository policy', () => {
     expect(BOILERPLATE_REPOSITORY).not.toContain('web2solutions');
   });
 });
+
+describe('bootstrap defaults (JUM-681)', () => {
+  it('builds a prompt over the process streams when given none', () => {
+    expect.hasAssertions();
+
+    // Production passes nothing and gets stdin/stdout. The interface is closed
+    // immediately: an open readline on stdin keeps the process — and the test
+    // runner — alive.
+    const prompt = createPrompt();
+
+    expect(typeof prompt.ask).toBe('function');
+
+    prompt.close();
+  });
+
+  it('reads argv and logs through the console when neither is passed', async () => {
+    expect.hasAssertions();
+
+    // `run()` as the `bin` entry calls it: no argv, no logger. Under the test
+    // runner the ambient argv carries none of the CLI's flags, so this lands on
+    // the interactive path and stops at the first prompt — which is why the
+    // prompt is the one thing injected, answering nothing.
+    const logged: unknown[] = [];
+    const log = jest.spyOn(console, 'log').mockImplementation((...args) => {
+      logged.push(args.join(' '));
+    });
+
+    await expect(bootstrap.run({
+      createPrompt: () => ({ ask: async () => '', close: () => undefined }),
+      execute: () => undefined,
+      workingDirectory: os.tmpdir()
+    })).rejects.toThrow('Invalid service type selection.');
+
+    log.mockRestore();
+
+    // It got as far as the banner before refusing, which is what proves the
+    // defaulted logger was the one writing.
+    expect(logged.join('\n')).toContain('Jumentix Bootstrap CLI');
+  });
+});

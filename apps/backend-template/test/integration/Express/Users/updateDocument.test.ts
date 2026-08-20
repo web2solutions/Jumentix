@@ -17,9 +17,7 @@ import {
   BasicAuthorizationHeaderUserGuest
 } from '@test/mock';
 import type {
-  IUser
-} from '@src/modules/Users';
-import type {
+  IUser,
   RequestUpdateDocument
 } from '@src/modules/Users';
 import {
@@ -83,7 +81,6 @@ describe('express -> User updateDocument suite', () => {
     server = API.server.application;
 
     // await server.ready();
-    await API.deleteUsers();
     usersAll = await API.seedUsers();
     [user1] = usersAll;
     [document1] = user1.documents || [];

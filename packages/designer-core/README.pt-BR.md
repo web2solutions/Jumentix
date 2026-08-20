@@ -8,6 +8,13 @@ implementação de armazenamento.
 
 The English version of this document is in [README.md](./README.md).
 
+## Responsabilidade no escopo
+
+- **Camada:** toolkit de modelo de domínio (sem DOM)
+- **Responsável por:** normalize/validate/export/import de documentos de design
+- **Usado com:** cana, guia SPA/PWA, service-management
+- **Não responsável por:** renderizar UI, IndexedDB em si, APIs HTTP
+
 ## O que é
 
 O núcleo do designer é a lógica separável que a modularização JUM-468/JUM-469
@@ -110,3 +117,12 @@ bun test        # executa as suítes deste pacote (packaging, prova DOM-free, sm
 ## Licença
 
 MIT — veja [LICENSE.md](./LICENSE.md).
+
+## Experimente no navegador
+
+<DocsPlayground runtime="designer-core" id="getting-started" />
+
+## Documentação completa
+
+Continue com o [guia de uso](../../documentation/md/DESIGNER-CORE-USAGE-GUIDE.pt-BR.md)
+para fluxos normalize → validate → export e troubleshooting.

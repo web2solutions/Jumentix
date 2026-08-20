@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import {
   IconAlertTriangle,
   IconArrowLeft,
@@ -15,8 +15,9 @@ import {
   IconLanguage,
   IconMenu2,
   IconSearch,
-  IconTopologyStar3,
 } from '@tabler/icons-react';
+import { MonacoCodeBlock } from '../code/MonacoCodeBlock';
+import { trimTrailingBlankCodeLines } from '../code/normalizeCode';
 import classes from './DesignSystem.module.css';
 
 export type ActionLinkProps = {
@@ -26,13 +27,40 @@ export type ActionLinkProps = {
   external?: boolean;
 };
 
-export function BrandMark({ href = '/' }: { href?: string }) {
+/**
+ * JUM-664 — `asLink={false}` is not cosmetic.
+ *
+ * Nextra's `Navbar` wraps whatever it is given as `logo` in its own anchor to
+ * the home page. An anchor inside an anchor is invalid HTML, and React does not
+ * merely warn: hydration of that tree fails, so **every client component below
+ * the navbar never mounts**. That is why no ```mermaid diagram has ever
+ * rendered on this site — the component that draws them is one of those.
+ *
+ * The marketing header renders its own link, so it keeps the anchor.
+ */
+export function BrandMark({ href = '/', asLink = true }: { href?: string; asLink?: boolean }) {
+  const content = (
+    <>
+      <span className={classes.brandIcon} aria-hidden="true">
+        <img
+          data-testid="jumentix-brand-icon"
+          src="/brand/jumentix-icon.png"
+          alt=""
+          width="48"
+          height="48"
+        />
+      </span>
+      <span className={classes.brandType}>Jumentix</span>
+    </>
+  );
+
+  if (!asLink) {
+    return <span className={classes.brand}>{content}</span>;
+  }
+
   return (
     <a className={classes.brand} href={href} aria-label="Jumentix home">
-      <span className={classes.brandIcon} aria-hidden="true">
-        <IconTopologyStar3 size={22} stroke={2} />
-      </span>
-      <span>Jumentix</span>
+      {content}
     </a>
   );
 }
@@ -64,7 +92,7 @@ export function StatusBadge({
 }) {
   return (
     <span className={classes.badge} data-tone={tone}>
-      {tone === 'success' ? <IconCheck size={14} aria-hidden="true" /> : null}
+      {tone === 'success' ? <IconCheck size={14} aria-hidden="true" data-testid="status-badge-icon" /> : null}
       {children}
     </span>
   );
@@ -122,11 +150,11 @@ export function Callout({
   return (
     <aside className={classes.callout} data-tone={tone}>
       {tone === 'warning' ? (
-        <IconAlertTriangle size={20} aria-hidden="true" />
+        <IconAlertTriangle size={20} aria-hidden="true" data-testid="callout-icon" />
       ) : tone === 'success' ? (
-        <IconCheck size={20} aria-hidden="true" />
+        <IconCheck size={20} aria-hidden="true" data-testid="callout-icon" />
       ) : (
-        <IconBook2 size={20} aria-hidden="true" />
+        <IconBook2 size={20} aria-hidden="true" data-testid="callout-icon" />
       )}
       <div>
         <strong>{title}</strong>
@@ -195,11 +223,13 @@ export function CodeShowcase({
 }) {
   const [active, setActive] = useState(0);
   const [copied, setCopied] = useState(false);
+  const panelId = useId();
   const sample = samples[active] ?? samples[0];
+  const sampleCode = sample ? trimTrailingBlankCodeLines(sample.code) : '';
 
   const copy = async () => {
     if (!sample) return;
-    await navigator.clipboard?.writeText(sample.code);
+    await navigator.clipboard?.writeText(sampleCode);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1200);
   };
@@ -217,7 +247,7 @@ export function CodeShowcase({
               type="button"
               role="tab"
               aria-selected={active === index}
-              aria-controls="jtx-code-panel"
+              aria-controls={panelId}
               onClick={() => setActive(index)}
             >
               {entry.label}
@@ -234,9 +264,71 @@ export function CodeShowcase({
           {copied ? <IconCheck size={17} /> : <IconClipboard size={17} />}
         </button>
       </div>
-      <pre className={classes.code} id="jtx-code-panel" role="tabpanel">
-        <code data-language={sample.language}>{sample.code}</code>
-      </pre>
+      <div id={panelId} role="tabpanel">
+        <MonacoCodeBlock
+          value={sampleCode}
+          language={sample.language}
+          readOnly
+          minHeight={160}
+          maxHeight={360}
+          ariaLabel={`${sample.label} code sample`}
+          className={classes.code}
+        />
+      </div>
+    </section>
+  );
+}
+
+export type JourneyStep = {
+  label: string;
+  title: string;
+  description: string;
+  output: string;
+  tasks: string[];
+  code: CodeSample[];
+  playground?: ReactNode;
+};
+
+export function MvpJourney({
+  steps,
+  ariaLabel = 'Zero to first MVP journey',
+}: {
+  steps: JourneyStep[];
+  ariaLabel?: string;
+}) {
+  const [active, setActive] = useState(0);
+  const panelId = useId();
+  const step = steps[active] ?? steps[0];
+
+  if (!step) return null;
+
+  return (
+    <section className={classes.journey} aria-label={ariaLabel}>
+      <div className={classes.journeyTabs} role="tablist" aria-label={ariaLabel}>
+        {steps.map((entry, index) => (
+          <button
+            className={classes.journeyTab}
+            key={`${entry.label}-${entry.title}`}
+            type="button"
+            role="tab"
+            aria-selected={active === index}
+            aria-controls={panelId}
+            onClick={() => setActive(index)}
+          >
+            {entry.label}
+          </button>
+        ))}
+      </div>
+      <div className={classes.journeyPanel} id={panelId} role="tabpanel">
+        <h3>{step.title}</h3>
+        <p>{step.description}</p>
+        <ul className={classes.journeyTasks}>
+          {step.tasks.map((task) => <li key={task}>{task}</li>)}
+        </ul>
+        <p className={classes.journeyMeta}>{step.output}</p>
+        {step.playground}
+        {step.code.length > 0 ? <CodeShowcase samples={step.code} title={step.title} /> : null}
+      </div>
     </section>
   );
 }
@@ -442,8 +534,8 @@ export function SiteFooter({ locale = 'en' }: { locale?: 'en' | 'pt-BR' }) {
           <BrandMark href={localizePath('/', locale)} />
           <p className={classes.footerDescription}>
             {isPortuguese
-              ? 'Uma fábrica de software open source para produtos Node.js escaláveis e orientados a contratos.'
-              : 'An open-source software factory for contract-first, scalable Node.js products.'}
+              ? 'A fábrica open source do jegue Jumentix: produtos Node.js escaláveis, orientados a contratos e feitos para carregar trabalho real.'
+              : 'The open-source factory behind the Jumentix jegue: scalable, contract-first Node.js products built to carry real work.'}
           </p>
         </div>
         <div className={classes.footerColumn}>

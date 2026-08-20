@@ -79,12 +79,12 @@ describe('express -> User updatePassword suite', () => {
     });
 
     server = API.server.application;
+    await API.seedData();
     // await server.ready();
   });
 
   beforeEach(async () => {
-    await API.deleteUsers();
-    await API.seedData();
+    await authService.updatePassword(createdUser1.id, createdUser1.password);
   });
 
   afterAll(async () => {

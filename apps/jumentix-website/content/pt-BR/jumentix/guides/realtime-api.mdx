@@ -3,53 +3,180 @@ title: "Crie uma API realtime"
 description: "Construa interfaces Socket.IO e gRPC com fallback REST."
 ---
 
-> Source: `../backend-template/documentation/guides/CREATING-REALTIME-API-WITH-JUMENTIX.pt-BR.md`
-
 # Criando API em tempo real com Jumentix
 
-Este guia aborda a configuração de serviços em tempo real usando WebSocket ou gRPC com REST substituto.
+## Responsabilidade no escopo
 
-## 1. Habilitar tempo de execução em tempo real
+- **Responsável por:** Adapters realtime (Socket.IO / gRPC) em torno dos mesmos use-cases
+- **Usado com:** sdk-websocket-client, sdk-grpc-client, shared-contracts
+- **Não responsável por:** Fluxos só REST ou IndexedDB no browser
 
-Definir perfil de ambiente:
+## O que é
 
-- `JUMENTIX_REALTIME_API = sim`
-- `JUMENTIX_REALTIME_API_PROTOCOL=websocket` ou `grpc`
-- `JUMENTIX_HTTP_FRAMEWORK=express` para documentação REST substituta e fallback operacional
+Este guia cobre como habilitar **comunicação push e bidirecional** no template de
+backend usando WebSocket (amigável ao browser) ou gRPC (servidor-a-servidor), com
+REST mantido como fallback operacional.
 
-Iniciar perfil de tempo de execução:
+## Por que existe
+
+Muitos produtos precisam de atualizações ao vivo — chat, notificações, dashboards —
+mas times colam código WebSocket em controllers REST e perdem alinhamento de
+contrato. O Jumentix trata **AsyncAPI como OpenAPI**: canais e payloads são
+especificados primeiro, handlers invocam os mesmos controllers e casos de uso do
+REST, e realtime degradado cai para HTTP.
+
+## Pré-requisitos
+
+| Item | Obrigatório | Notas |
+| --- | --- | --- |
+| Bun 1.3.13+ | Sim | [Começando](/docs/pt-BR/jumentix/concepts/getting-started) |
+| Perfil REST funcionando | Recomendado | Complete o [guia REST](/docs/pt-BR/jumentix/guides/rest-api) primeiro |
+| Specs AsyncAPI | Sim | Em `spec/` junto com OpenAPI |
+| Arquivo de env | Sim | `apps/backend-template/src/config/.env.dev` |
+
+## Glossário
+
+| Termo | Significado nesta página |
+| --- | --- |
+| **API em tempo real** | Interface primária não-HTTP — WebSocket ou gRPC — para mensagens push/pull. |
+| **AsyncAPI** | Spec descrevendo canais, mensagens e schemas de payload para tempo real. |
+| **WebSocket** | Conexão persistente amigável ao browser; protocolo padrão para SPAs. |
+| **gRPC** | Protocolo RPC binário; use serviço-a-serviço, não clients de browser. |
+| **Fallback REST** | Endpoints HTTP ainda disponíveis quando o canal realtime cai ou não é suportado. |
+| **Handler de mensagem** | Código adaptador que recebe mensagem, chama controller e responde no mesmo id de correlação. |
+| **Id de correlação** | Token ligando request do client à response no mesmo socket. |
+| **JUMENTIX_REALTIME_API** | Flag de env `yes`/`no` habilitando perfil de startup realtime. |
+
+## Passos numerados
+
+### Passo 1 — Habilitar perfil de runtime realtime (< 5 minutos)
+
+1. Edite seu arquivo de env:
 
 ```bash
+JUMENTIX_REALTIME_API=yes
+JUMENTIX_REALTIME_API_PROTOCOL=websocket   # ou grpc
+JUMENTIX_HTTP_FRAMEWORK=express            # fallback REST + docs
+```
+
+2. Inicie o perfil dev correspondente na raiz do monorepo:
+
+```bash
+# WebSocket + fallback REST (comece aqui para apps browser)
 bun run dev:websocket
-# or
+
+# gRPC + fallback REST (malha de serviços Node)
 bun run dev:grpc
 ```
 
-## 2. Definir contratos assíncronos
+De `apps/backend-template` também pode rodar `bun run dev:websocket-rest` ou
+`bun run dev:grpc-rest`.
 
-1. Defina canais/mensagens em arquivos AsyncAPI em `spec/`.
-2. Mantenha os contratos de carga alinhados com modelos de domínio e assinaturas de métodos de controlador.
-3. Referência a contratos de resposta/erro em implementações de manipuladores.
+**Verificação de sucesso:** PM2 mostra processo websocket ou grpc online; REST `/health`
+ainda responde.
 
-## 3. Implementar manipuladores de mensagens
+### Passo 2 — Definir contratos Async (< 15 minutos)
 
-- Os manipuladores WebSocket recebem mensagens, invocam métodos de controlador e respondem à mesma correlação cliente/mensagem.
-- Os manipuladores gRPC recebem solicitações, invocam métodos de controlador e retornam respostas nativas do protocolo.
+1. Adicione ou atualize arquivos AsyncAPI em `spec/` — defina **canais**, **mensagens**
+   e schemas de payload.
+2. Alinhe formas de payload com modelos de domínio e assinaturas de métodos do controller.
+3. Referencie contratos compartilhados de erro/response nos handlers — mesmos tipos
+   dos DTOs REST quando possível.
+4. Confira [Eventos e mensagens](/docs/pt-BR/jumentix/reference/events-messages) para
+   convenções de nomenclatura.
 
-## 4. Mantenha o substituto REST disponível
+**Verificação de sucesso:** nomes de canal AsyncAPI batem com registros de handler; sem mensagens órfãs.
 
-Os serviços em tempo real são executados com REST como interface secundária. Use documentos REST e endpoints se o canal em tempo real estiver degradado.
+### Passo 3 — Implementar handlers de mensagem (< 30 minutos)
 
-## 5. Valide a estabilidade em tempo real
+**Caminho WebSocket (apps browser):**
+
+1. Handler recebe mensagem enquadrada em um canal.
+2. Handler parseia payload → chama método do controller.
+3. Handler envia resposta na **mesma conexão do client** usando o id de correlação da mensagem.
+
+**Caminho gRPC (Node-a-Node):**
+
+1. Método gRPC recebe request protobuf.
+2. Invoca o mesmo controller usado pelo REST.
+3. Retorna response protobuf mapeada do resultado de domínio.
+
+Regra: **controllers e casos de uso permanecem idênticos** — só código adaptador difere do REST.
+
+**Verificação de sucesso:** teste unitário/integração invoca handler sem subir cluster completo.
+
+### Passo 4 — Manter fallback REST disponível (< 5 minutos)
+
+Serviços realtime sempre rodam com REST como interface secundária:
+
+- Ferramentas operacionais e modo degradado usam endpoints REST.
+- Docs OpenAPI permanecem contrato de backup quando sockets falham.
+- Não remova rotas REST ao adicionar realtime — clients podem degradar graciosamente.
+
+**Verificação de sucesso:** com processo realtime parado, endpoints REST ainda servem leituras críticas.
+
+### Passo 5 — Validar estabilidade realtime (< 10 minutos)
+
+Na raiz do monorepo:
 
 ```bash
 bun run test:integration:realtime
 bun run test:smoke:realtime
 ```
 
-## Referências
+Para scaling Socket.IO com Redis (caminho avançado opcional):
 
-- [API WebSocket em tempo real](/docs/jumentix/adapters/realtime/websocket-api)
-- [API gRPC em tempo real](/docs/jumentix/adapters/realtime/grpc-api)
-- [Contratos em tempo real WebSocket](https://github.com/XpertMinds/Jumentix/blob/dev/documentation/md/contracts/WEBSOCKET-REALTIME-CONTRACTS.md)
-- [Contratos em tempo real gRPC](https://github.com/XpertMinds/Jumentix/blob/dev/documentation/md/contracts/GRPC-REALTIME-CONTRACTS.md)
+```bash
+bun run test:integration:realtime:redis-streams
+```
+
+**Verificação de sucesso:** ambos os comandos saem com 0; smoke test cobre connect → mensagem → resposta.
+
+### Passo 6 — Integração com client (caminho júnior)
+
+**Prefira WebSocket para apps browser.** gRPC fica Node-a-Node — use snippets estáticos
+na página do [adaptador gRPC](/docs/pt-BR/jumentix/adapters/realtime/grpc-api), não botão Run no browser.
+
+Padrão estático de subscribe:
+
+```js
+const ws = api.createMockClient();
+const sub = await ws.subscribe({ channel: 'notifications' });
+sub.on('message', (msg) => console.log(msg.payload));
+```
+
+## Exemplos
+
+### Playground interativo WebSocket client
+
+<DocsPlayground runtime="sdk-websocket-client" id="getting-started" />
+
+**Verificação de sucesso:** **Run** conecta client mock e recebe mensagem; **Reset** limpa estado.
+
+## Erros comuns
+
+| Sintoma | Causa provável | Correção | Verificar sucesso |
+| --- | --- | --- | --- |
+| Realtime sobe mas REST 404 | Adaptador HTTP não carregado no perfil combinado | Mantenha `JUMENTIX_HTTP_FRAMEWORK=express`; use `dev:websocket` | `/health` retorna 200 |
+| Handler nunca responde | Id de correlação ausente na resposta | Ecoe id da mensagem do client no reply do adaptador | Teste de integração verde |
+| Browser não usa gRPC | gRPC não é protocolo de browser | Use WebSocket para SPA; gRPC para serviços backend | Run do playground WS verde |
+| `test:integration:realtime` falha no grpc | `JUMENTIX_REALTIME_API_PROTOCOL` errado | Alinhe env ao script (`websocket` vs `grpc`) | Teste do protocolo alvo passa |
+| Handling duplicado de mensagem | Handler registrado duas vezes | Um registro por canal no bootstrap do adaptador | Uma resposta por envio |
+| Teste redis streams pulado | `RUN_REDIS_INTEGRATION` não definido | Suba compose redis; defina flag de env | Integração redis-streams verde |
+
+## Checklist júnior (“Eu consigo …”)
+
+- [ ] Definir `JUMENTIX_REALTIME_API=yes` e escolher `websocket` ou `grpc`.
+- [ ] Iniciar `bun run dev:websocket` e confirmar que fallback REST ainda funciona.
+- [ ] Localizar AsyncAPI em `spec/` e citar um canal e seu schema de payload.
+- [ ] Rastrear uma mensagem: handler adaptador → controller → caso de uso.
+- [ ] Rodar `bun run test:integration:realtime` e `bun run test:smoke:realtime`.
+- [ ] Usar playground sdk-websocket-client (**Run** verde).
+- [ ] Explicar quando escolher gRPC em vez de WebSocket.
+
+## Próximo passo
+
+Construa o frontend que consome estes canais em
+[Criar SPA ou PWA offline](/docs/pt-BR/jumentix/guides/spa-pwa). Para detalhes de
+adaptadores, veja [Adaptador WebSocket](/docs/pt-BR/jumentix/adapters/realtime/websocket-api) e
+[Adaptador gRPC](/docs/pt-BR/jumentix/adapters/realtime/grpc-api).

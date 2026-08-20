@@ -3,9 +3,7 @@ import { formatErrorMessage, toHttpStatus } from '@src/shared/utils';
 import { BaseDomainEvent } from '@src/modules/port/BaseDomainEvent';
 import { UserController } from '@src/modules/Users';
 import type {
-  IHandlerFactory
-} from '@src/interface/HTTP/ports';
-import type {
+  IHandlerFactory,
   EndPointFactory,
   IbaseHandler
 } from '@src/interface/HTTP/ports';
