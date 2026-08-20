@@ -88,6 +88,7 @@ function createCore(storage = createFakeStorage()) {
 
 describe('designer state core (JUM-468)', () => {
   it('is DOM-free: no document/window references in the extracted modules', () => {
+    expect.hasAssertions();
     // Since JUM-493 the core modules live in the publishable package; the
     // store adapters stay in the app. Both sides keep the DOM-free rule.
     const movedCore = ['state/designerState.js', 'store/IDesignerStore.js', 'model/rbacContract.js']
@@ -109,6 +110,7 @@ describe('designer state core (JUM-468)', () => {
 
   describe('normalizeStatePayload', () => {
     it('normalises garbage input to the same defaults the pre-refactor load used', () => {
+      expect.hasAssertions();
       const normalized = normalizeStatePayload(null);
       expect(normalized.domains).toStrictEqual([]);
       expect(normalized.relationships).toStrictEqual([]);
@@ -118,6 +120,7 @@ describe('designer state core (JUM-468)', () => {
     });
 
     it('drops relationships pointing at unknown entities and clamps the view', () => {
+      expect.hasAssertions();
       const normalized = normalizeStatePayload({
         domains: [{
           id: 'domain-1',
@@ -141,6 +144,7 @@ describe('designer state core (JUM-468)', () => {
 
   describe('loadState', () => {
     it('seeds and persists the default template on an empty store (first run)', async () => {
+      expect.hasAssertions();
       const { core, storage } = createCore();
       await core.loadState();
       expect(core.state.domains[0].name).toBe('Seed');
@@ -149,6 +153,7 @@ describe('designer state core (JUM-468)', () => {
     });
 
     it('restores a previously saved model identically (no behaviour change)', async () => {
+      expect.hasAssertions();
       const first = createCore();
       await first.core.loadState();
       first.core.withPersist(() => {
@@ -165,6 +170,7 @@ describe('designer state core (JUM-468)', () => {
     });
 
     it('restores deployments migrated to the Requirement 059 metadata contract (JUM-481)', async () => {
+      expect.hasAssertions();
       const storage = createFakeStorage({
         'service-management.v1': JSON.stringify({
           domains: [],
@@ -209,6 +215,7 @@ describe('designer state core (JUM-468)', () => {
     });
 
     it('recovers from lost (corrupted) storage by reseeding, persisting and resetting the view', async () => {
+      expect.hasAssertions();
       const storage = createFakeStorage({ 'service-management.v1': '{corrupted' });
       const { core } = createCore(storage);
       core.state.view = { ...createDefaultView(), zoom: 2 };
@@ -220,6 +227,7 @@ describe('designer state core (JUM-468)', () => {
     });
 
     it('seeds in memory only when storage is unavailable — no fallback, no write', async () => {
+      expect.hasAssertions();
       const storage = createFakeStorage();
       storage.getItem = () => { throw new Error('SecurityError'); };
       storage.setItem = () => { throw new Error('SecurityError'); };
@@ -232,6 +240,7 @@ describe('designer state core (JUM-468)', () => {
 
   describe('loadState outcome reporting (JUM-626)', () => {
     it('reports empty on a first run, ok on a healthy restore', async () => {
+      expect.hasAssertions();
       const first = createCore();
       await expect(first.core.loadState()).resolves.toStrictEqual({ status: 'empty' });
 
@@ -240,6 +249,7 @@ describe('designer state core (JUM-468)', () => {
     });
 
     it('reports lost with the port reason on a corrupted payload — recovery still happens', async () => {
+      expect.hasAssertions();
       const storage = createFakeStorage({ 'service-management.v1': '{corrupted' });
       const { core } = createCore(storage);
       const outcome = await core.loadState();
@@ -250,6 +260,7 @@ describe('designer state core (JUM-468)', () => {
     });
 
     it('reports unavailable with the reason when storage cannot be read', async () => {
+      expect.hasAssertions();
       const storage = createFakeStorage();
       storage.getItem = () => { throw new Error('SecurityError'); };
       storage.setItem = () => { throw new Error('SecurityError'); };
@@ -260,6 +271,7 @@ describe('designer state core (JUM-468)', () => {
     });
 
     it('reports recovered with the cause when a decodable payload fails normalisation', async () => {
+      expect.hasAssertions();
       const storage = createFakeStorage({
         'service-management.v1': JSON.stringify({ domains: [], relationships: [null] })
       });
@@ -273,6 +285,7 @@ describe('designer state core (JUM-468)', () => {
 
   describe('withPersist / history / undo / redo', () => {
     it('records history before the action and saves after it', async () => {
+      expect.hasAssertions();
       const { core, storage } = createCore();
       await core.loadState();
       core.withPersist(() => {
@@ -284,6 +297,7 @@ describe('designer state core (JUM-468)', () => {
     });
 
     it('skips history when recordHistory is false but still saves', async () => {
+      expect.hasAssertions();
       const { core, storage } = createCore();
       await core.loadState();
       core.withPersist(() => {
@@ -294,6 +308,7 @@ describe('designer state core (JUM-468)', () => {
     });
 
     it('undo restores the previous snapshot and redo reapplies it, rendering each time', async () => {
+      expect.hasAssertions();
       const { core, renders } = createCore();
       await core.loadState();
       core.withPersist(() => {
@@ -308,6 +323,7 @@ describe('designer state core (JUM-468)', () => {
     });
 
     it('undo with an empty past is a no-op', async () => {
+      expect.hasAssertions();
       const { core, renders } = createCore();
       await core.loadState();
       core.undo();
@@ -316,6 +332,7 @@ describe('designer state core (JUM-468)', () => {
     });
 
     it('caps history at 100 entries', () => {
+      expect.hasAssertions();
       const { core } = createCore();
       for (let i = 0; i < 110; i += 1) {
         core.withPersist(() => {
@@ -326,6 +343,7 @@ describe('designer state core (JUM-468)', () => {
     });
 
     it('exposes state and history by reference for the UI layer', () => {
+      expect.hasAssertions();
       const { core } = createCore();
       core.state.activeTab = 'service-config';
       expect(core.snapshotState().activeTab).toBe('service-config');
@@ -336,6 +354,7 @@ describe('designer state core (JUM-468)', () => {
 
   describe('buildModelSnapshot (schema-baseline shape)', () => {
     it('emits the pinned Requirement 126 baseline sections', async () => {
+      expect.hasAssertions();
       const { core } = createCore();
       await core.loadState();
       const snapshot = core.buildModelSnapshot();
@@ -346,6 +365,7 @@ describe('designer state core (JUM-468)', () => {
     });
 
     it('falls back for missing context/meta and maps populated contracts and fields', () => {
+      expect.hasAssertions();
       const { core } = createCore();
       core.state.domains = [{
         id: 'domain-1',
@@ -415,18 +435,21 @@ describe('designer state core (JUM-468)', () => {
 
   describe('pure normalisation helpers', () => {
     it('parseEnumValues handles falsy, array and comma-separated inputs', () => {
+      expect.hasAssertions();
       expect(parseEnumValues(null)).toStrictEqual([]);
       expect(parseEnumValues([' a ', 'b', ''])).toStrictEqual(['a', 'b']);
       expect(parseEnumValues('a, b,,c')).toStrictEqual(['a', 'b', 'c']);
     });
 
     it('parseCommaSeparated handles array, string and empty inputs', () => {
+      expect.hasAssertions();
       expect(parseCommaSeparated(['a', ' b ', ''])).toStrictEqual(['a', 'b']);
       expect(parseCommaSeparated('a,b, ,c')).toStrictEqual(['a', 'b', 'c']);
       expect(parseCommaSeparated('')).toStrictEqual([]);
     });
 
     it('normalizeOptionalNumber maps blanks and non-numerics to null', () => {
+      expect.hasAssertions();
       expect(normalizeOptionalNumber(null)).toBeNull();
       expect(normalizeOptionalNumber(undefined)).toBeNull();
       expect(normalizeOptionalNumber('')).toBeNull();
@@ -435,16 +458,19 @@ describe('designer state core (JUM-468)', () => {
     });
 
     it('clampZoom clamps to the pinned 0.5–2 range', () => {
+      expect.hasAssertions();
       expect(clampZoom(0.1)).toBe(0.5);
       expect(clampZoom(5)).toBe(2);
       expect(clampZoom(1.3)).toBe(1.3);
     });
 
     it('fallbackId embeds prefix and seed', () => {
+      expect.hasAssertions();
       expect(fallbackId('domain', 3)).toMatch(/^domain-import-3-[a-z0-9]+$/);
     });
 
     it('normalizeField applies defaults to an empty field', () => {
+      expect.hasAssertions();
       expect(normalizeField(undefined, 2)).toStrictEqual({
         name: 'field_3',
         type: 'string',
@@ -466,6 +492,7 @@ describe('designer state core (JUM-468)', () => {
     });
 
     it('normalizeField keeps valid input and resolves array item types', () => {
+      expect.hasAssertions();
       const rich = normalizeField({
         name: 'tags',
         type: 'array',
@@ -510,6 +537,7 @@ describe('designer state core (JUM-468)', () => {
     });
 
     it('normalizeContractInput applies defaults and validates the type enum', () => {
+      expect.hasAssertions();
       const sparse = normalizeContractInput();
       expect(sparse.id).toMatch(/^contract-import-0-[a-z0-9]+$/);
       expect(sparse).toStrictEqual({
@@ -525,6 +553,7 @@ describe('designer state core (JUM-468)', () => {
     });
 
     it('normalizeRelationship fills anchors, cardinals and offsets', () => {
+      expect.hasAssertions();
       const sparse = normalizeRelationship({ fromEntityId: 'a', toEntityId: 'b' });
       expect(sparse).toStrictEqual({
         fromEntityId: 'a',
@@ -562,6 +591,7 @@ describe('designer state core (JUM-468)', () => {
     });
 
     it('getDefaultRbacPolicy and defaultFields return the pinned shapes', () => {
+      expect.hasAssertions();
       const rbac = getDefaultRbacPolicy();
       expect(Object.keys(rbac).sort()).toStrictEqual(['create', 'delete', 'getById', 'list', 'update']);
       expect(rbac.getById.roles).toContain('user');
@@ -572,6 +602,7 @@ describe('designer state core (JUM-468)', () => {
 
   describe('normalizeEntityInput', () => {
     it('builds a fully defaulted entity from empty input', () => {
+      expect.hasAssertions();
       const entity = normalizeEntityInput(undefined, 0);
       expect(entity.id).toMatch(/^entity-import-0-[a-z0-9]+$/);
       expect(entity.name).toBe('Entity_1');
@@ -589,6 +620,7 @@ describe('designer state core (JUM-468)', () => {
     });
 
     it('keeps rich input, merging rbac rules over the defaults', () => {
+      expect.hasAssertions();
       const entity = normalizeEntityInput({
         id: 'e-9',
         name: 'Order',
@@ -632,6 +664,7 @@ describe('designer state core (JUM-468)', () => {
 
   describe('normalizeDomainInput', () => {
     it('builds a fully defaulted domain from empty input', () => {
+      expect.hasAssertions();
       const domain = normalizeDomainInput(undefined, 0);
       expect(domain.id).toMatch(/^domain-import-0-[a-z0-9]+$/);
       expect(domain.name).toBe('Domain_1');
@@ -651,6 +684,7 @@ describe('designer state core (JUM-468)', () => {
     });
 
     it('keeps rich input including context lists and a valid color', () => {
+      expect.hasAssertions();
       const domain = normalizeDomainInput({
         id: 'd-1',
         name: 'Sales',
@@ -682,6 +716,7 @@ describe('designer state core (JUM-468)', () => {
 
   describe('normalizeStatePayload selection and view arms', () => {
     it('keeps explicit selections, idCounter and a fully overridden view', () => {
+      expect.hasAssertions();
       const normalized = normalizeStatePayload({
         domains: [],
         relationships: [],
@@ -717,6 +752,7 @@ describe('designer state core (JUM-468)', () => {
 
   describe('applySnapshot defaults', () => {
     it('restores every section to defaults from an empty snapshot', () => {
+      expect.hasAssertions();
       const { core } = createCore();
       core.applySnapshot({});
       expect(core.state.domains).toStrictEqual([]);
@@ -734,6 +770,7 @@ describe('designer state core (JUM-468)', () => {
     });
 
     it('falls back to the first domain when the snapshot has no selection', () => {
+      expect.hasAssertions();
       const { core } = createCore();
       core.applySnapshot({
         domains: [{ id: 'd-1', name: 'D', entities: [] }],
@@ -750,6 +787,7 @@ describe('designer state core (JUM-468)', () => {
 
   describe('saveState payload contract', () => {
     it('writes exactly the twelve pinned Requirement 126 sections', async () => {
+      expect.hasAssertions();
       const { core, storage } = createCore();
       await core.loadState();
       const payload = JSON.parse(storage.map.get('service-management.v1') as string);
@@ -772,6 +810,7 @@ describe('designer state core (JUM-468)', () => {
 
   describe('history edge cases', () => {
     it('redo with an empty future is a no-op', async () => {
+      expect.hasAssertions();
       const { core, renders } = createCore();
       await core.loadState();
       core.redo();
@@ -780,6 +819,7 @@ describe('designer state core (JUM-468)', () => {
     });
 
     it('a new record clears the redo future', async () => {
+      expect.hasAssertions();
       const { core } = createCore();
       await core.loadState();
       core.withPersist(() => {
@@ -796,6 +836,7 @@ describe('designer state core (JUM-468)', () => {
 
   describe('loadState corrupt-but-decodable payload', () => {
     it('recovers through the catch path when normalisation throws', async () => {
+      expect.hasAssertions();
       const storage = createFakeStorage({
         'service-management.v1': JSON.stringify({ domains: [], relationships: [null] })
       });
@@ -811,6 +852,7 @@ describe('designer state core (JUM-468)', () => {
 
 describe('additive metadata fallback arms (JUM-493)', () => {
   it('carries entity provenance with missing fields as empty strings', () => {
+    expect.hasAssertions();
     const normalized = normalizeStatePayload({
       domains: [{ name: 'D', entities: [{ name: 'E', fields: [], meta: { provenance: {} } }] }]
     });
@@ -818,6 +860,7 @@ describe('additive metadata fallback arms (JUM-493)', () => {
   });
 
   it('carries domain package identity and catalog metadata with field defaults', () => {
+    expect.hasAssertions();
     const normalized = normalizeStatePayload({
       domains: [{ name: 'D', context: { packageName: 'pkg', provenance: {}, catalog: {} } }]
     });
@@ -830,6 +873,7 @@ describe('additive metadata fallback arms (JUM-493)', () => {
   });
 
   it('reports a non-Error save rejection with the raw reason, never unhandled', async () => {
+    expect.hasAssertions();
     const seen: Array<{ status: string; reason?: string }> = [];
     // A non-Error rejection is exactly the path under test: the reporter's
     // `(error && error.message) || error` fallback exists for rejections that

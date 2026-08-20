@@ -1,4 +1,6 @@
 import { generateStaticParamsFor, importPage } from 'nextra/pages';
+import { MDXCodeSourceProvider } from '@/components/code/MDXCodeSourceProvider';
+import { DocsJsonLd } from '@/components/seo/DocsJsonLd';
 import { useMDXComponents as getMDXComponents } from '@/mdx-components';
 
 export const generateStaticParams = generateStaticParamsFor('mdxPath');
@@ -62,7 +64,30 @@ async function loadPageWithFallback(mdxPath: MdxPath) {
 export async function generateMetadata(props: any) {
   const params = await props.params;
   const { metadata } = await loadPageWithFallback(params?.mdxPath);
-  return metadata;
+  const segments: string[] = Array.isArray(params?.mdxPath) ? params.mdxPath : [];
+  const isPt = segments[0] === 'pt-BR';
+  const canonicalPath = (() => {
+    const candidates = getCandidates(params?.mdxPath);
+    const canonical = candidates[0] ?? ['jumentix'];
+    return `/docs/${canonical.join('/')}`;
+  })();
+  const languages: Record<string, string> = isPt
+    ? {
+        'pt-BR': `https://jumentix-website.vercel.app${canonicalPath}`,
+        en: `https://jumentix-website.vercel.app${canonicalPath.replace('/docs/pt-BR/', '/docs/')}`
+      }
+    : {
+        en: `https://jumentix-website.vercel.app${canonicalPath}`,
+        'pt-BR': `https://jumentix-website.vercel.app${canonicalPath.replace('/docs/', '/docs/pt-BR/')}`
+      };
+
+  return {
+    ...metadata,
+    alternates: {
+      canonical: `https://jumentix-website.vercel.app${canonicalPath}`,
+      languages
+    }
+  };
 }
 
 export default async function Page(props: any) {
@@ -72,10 +97,18 @@ export default async function Page(props: any) {
 
   const customToc = [...toc, ...((metadata as any)?.toc || [])];
   const Wrapper = getMDXComponents().wrapper;
+  const segments: string[] = Array.isArray(params?.mdxPath) ? params.mdxPath : ['jumentix'];
 
   return (
     <Wrapper toc={customToc} metadata={metadata} sourceCode={sourceCode}>
-      <MDXContent {...props} params={params} />
+      <MDXCodeSourceProvider sourceCode={sourceCode}>
+        <DocsJsonLd
+          title={String((metadata as any)?.title ?? 'Jumentix Docs')}
+          description={String((metadata as any)?.description ?? 'Jumentix framework documentation')}
+          pathSegments={segments}
+        />
+        <MDXContent {...props} params={params} />
+      </MDXCodeSourceProvider>
     </Wrapper>
   );
 }

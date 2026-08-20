@@ -70,4 +70,21 @@ describe('in memory relational store', () => {
     await expect(store.getByRelation('organization', 'org-3')).resolves.toHaveLength(0);
     await expect(store.delete('missing')).resolves.toBe(false);
   });
+
+  it('clears records and indexes for a clean in-memory lifecycle', async () => {
+    expect.hasAssertions();
+    const store = new InMemoryRelationalStore<IRecord>({
+      uniqueIndexes: ['username'],
+      relationIndexes: ['organization']
+    });
+
+    await store.create('1', { id: '1', username: 'john', organization: 'org-1' });
+    store.clear();
+
+    await expect(store.getOneById('1')).rejects.toThrow('Record not found');
+    await expect(store.getByRelation('organization', 'org-1')).resolves.toHaveLength(0);
+    await expect(store.create('2', { id: '2', username: 'john', organization: 'org-1' }))
+      .resolves
+      .toMatchObject({ id: '2' });
+  });
 });

@@ -1,25 +1,62 @@
 ---
-title: "HTTP Interface Adapters Documentation"
+title: "HTTP Adapters"
 description: "HTTP Adapters documentation."
 ---
 
-> Source: `../../documentation/md/adapters/http/README.md`
+# HTTP Adapters
 
-# HTTP Interface Adapters Documentation
+Choose the HTTP adapter by the way the service will run. The simple rule: the adapter knows the framework, but the domain only knows Jumentix contracts.
 
-Use this index to choose the HTTP/runtime adapter you want to use as the inbound interface of your service.
+## HTTP framework comparison
 
-## Adapter Pages
+| Adapter | Integrated technology | Best fit | Runtime | How to start |
+| --- | --- | --- | --- | --- |
+| [Express](/docs/jumentix/adapters/http/express) | Minimal Node.js HTTP framework with middleware, routers, and a broad ecosystem. | Teams that want the most familiar REST edge and many off-the-shelf middleware options. | Long-running Node/Bun process | `bun run dev:express` |
+| [Fastify](/docs/jumentix/adapters/http/fastify) | High-performance Node.js HTTP framework with plugin encapsulation and schema-first request handling. | APIs with high request volume, strong validation boundaries, and predictable plugin composition. | Long-running Node/Bun process | `bun run dev:fastify` |
+| [Restify](/docs/jumentix/adapters/http/restify) | REST-focused Node.js framework designed for service APIs and explicit request/response handling. | Service APIs where explicit REST semantics and operational clarity matter more than ecosystem size. | Long-running Node/Bun process | `bun run dev:restify` |
+| [AWS Lambda](/docs/jumentix/adapters/http/aws-lambda) | AWS serverless functions invoked by API Gateway, EventBridge, queues, or direct Lambda calls. | Event-driven APIs, bursty workloads, and teams already operating on AWS. | Serverless function invocation | platform entrypoint |
+| [Cloudflare Workers](/docs/jumentix/adapters/http/cloudflare-workers) | Edge runtime based on the Web Fetch API, deployed close to users through Cloudflare. | Low-latency edge APIs, auth gateways, and browser-aligned request handling. | Edge Fetch handler | platform entrypoint |
+| [Vercel Functions](/docs/jumentix/adapters/http/vercel-functions) | Serverless HTTP functions deployed with Vercel applications and routing. | Frontend-adjacent APIs, product teams already deploying through Vercel, and route-level scaling. | Serverless request handler | platform entrypoint |
+| [LoopBack](/docs/jumentix/adapters/http/loopback) | API framework with strong model, controller, and OpenAPI conventions. | Model-heavy APIs that benefit from convention-driven controllers and OpenAPI metadata. | Framework-managed Node process | platform entrypoint |
+| [Sails.js](/docs/jumentix/adapters/http/sails-js) | MVC-oriented Node.js framework with batteries-included conventions. | Convention-heavy server apps that need REST endpoints plus MVC-style structure. | Framework-managed Node process | platform entrypoint |
+| [Feathers](/docs/jumentix/adapters/http/feathers) | Service-oriented Node.js framework for REST and realtime service endpoints. | Service APIs that may expose the same behavior through HTTP and realtime channels. | Framework-managed Node process | platform entrypoint |
+| [Derby.js](/docs/jumentix/adapters/http/derby-js) | Full-stack realtime MVC framework for collaborative applications. | Collaborative product surfaces that benefit from realtime MVC conventions at the edge. | Framework-managed Node process | platform entrypoint |
+| [Adonis.js](/docs/jumentix/adapters/http/adonis-js) | TypeScript-first Node.js web framework with strong application conventions. | Teams that want a cohesive TypeScript framework around the Jumentix domain boundary. | Framework-managed Node process | platform entrypoint |
+| [Total.js](/docs/jumentix/adapters/http/total-js) | Full-stack Node.js framework with integrated web, API, and application tooling. | Applications that want a broader framework shell while keeping Jumentix use cases isolated. | Framework-managed Node process | platform entrypoint |
 
-- [Express Adapter](/docs/jumentix/adapters/http/express)
-- [Fastify Adapter](/docs/jumentix/adapters/http/fastify)
-- [Restify Adapter](/docs/jumentix/adapters/http/restify)
-- [AWS Lambda Adapter](/docs/jumentix/adapters/http/aws-lambda)
-- [Cloudflare Workers Adapter](/docs/jumentix/adapters/http/cloudflare-workers)
-- [Vercel Functions Adapter](/docs/jumentix/adapters/http/vercel-functions)
-- [LoopBack Adapter](/docs/jumentix/adapters/http/loopback)
-- [Sails.js Adapter](/docs/jumentix/adapters/http/sails-js)
-- [Feathers Adapter](/docs/jumentix/adapters/http/feathers)
-- [Derby.js Adapter](/docs/jumentix/adapters/http/derby-js)
-- [Adonis.js Adapter](/docs/jumentix/adapters/http/adonis-js)
-- [Total.js Adapter](/docs/jumentix/adapters/http/total-js)
+## Fast guide
+
+- Use **Express** for familiarity and compatibility.
+- Use **Fastify** for performance, plugins, and schemas.
+- Use **Restify** for explicit service REST APIs.
+- Use **AWS Lambda**, **Cloudflare Workers**, or **Vercel Functions** for serverless or edge.
+- Use full frameworks when you want larger edge conventions without contaminating the domain.
+
+## Complete selection example
+
+```ts
+type HttpAdapterChoice = {
+  adapter: string;
+  runtime: string;
+  command?: string;
+};
+
+const choices: HttpAdapterChoice[] = [
+  { adapter: 'express', runtime: 'Node/Bun process', command: 'bun run dev:express' },
+  { adapter: 'fastify', runtime: 'Node/Bun process', command: 'bun run dev:fastify' },
+  { adapter: 'restify', runtime: 'Node/Bun process', command: 'bun run dev:restify' },
+  { adapter: 'cloudflare-workers', runtime: 'Edge Fetch handler' },
+  { adapter: 'aws-lambda', runtime: 'Serverless function' },
+  { adapter: 'vercel-functions', runtime: 'Serverless request handler' }
+];
+
+export function chooseHttpAdapter(adapter: string): HttpAdapterChoice {
+  const choice = choices.find((item) => item.adapter === adapter);
+
+  if (!choice) {
+    throw new Error('Unsupported HTTP adapter: ' + adapter);
+  }
+
+  return choice;
+}
+```

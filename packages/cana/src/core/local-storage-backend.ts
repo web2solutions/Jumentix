@@ -15,6 +15,8 @@ import type {
   CanaChangeType,
   CanaKey,
   CanaQuery,
+  CanaCountMetrics,
+  CanaQueryMetrics,
   CanaQueryPlan,
   CanaSchema,
   CanaStoreSchema,
@@ -697,14 +699,35 @@ export class LocalStorageBackend {
         return runLocalQuery<TRecord>(schema, bag(), query);
       },
 
+      async explainCount(
+        query?: CanaQuery
+      ): Promise<{ count: number; metrics: CanaCountMetrics }> {
+        // The fallback filters the whole bag in memory, so its count reads
+        // every record. Reporting a native count here would claim a cheapness
+        // this backend does not have (JUM-706).
+        const records = runLocalQuery(schema, bag(), query);
+        return {
+          count: records.length,
+          metrics: { recordsExamined: Object.keys(bag()).length, usedNativeCount: false }
+        };
+      },
+
       async explain(
         query?: CanaQuery
-      ): Promise<{ records: readonly TRecord[]; plan: CanaQueryPlan }> {
+      ): Promise<{
+        records: readonly TRecord[];
+        plan: CanaQueryPlan;
+        metrics: CanaQueryMetrics;
+      }> {
         // localStorage has no real indexes — report the same plan shape, but
         // fullScan is always true for the fallback store.
         const plan = { ...planQuery(name, query), fullScan: true };
         const records = runLocalQuery<TRecord>(schema, bag(), query);
-        return { records, plan };
+        // The fallback reads the whole bag and filters it in memory. Reporting
+        // the returned length would claim a laziness this backend does not
+        // have, so it reports what it actually touched (JUM-682).
+        const examined = Object.keys(bag()).length;
+        return { records, plan, metrics: { recordsExamined: examined, cursorAdvanced: false } };
       }
     };
   }

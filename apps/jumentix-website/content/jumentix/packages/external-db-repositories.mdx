@@ -1,15 +1,84 @@
 ---
 title: "@jumentix/external-db-repositories"
-description: "Packages documentation."
+description: "Reusable external DB repository adapters."
 ---
-
-> Source: `../../packages/external-db-repositories/README.md`
 
 # @jumentix/external-db-repositories
 
-Reusable external database connection adapters for Jumentix runtimes.
+Reusable repository adapters that talk to external databases (Mongo, SQL, DynamoDB, and peers) behind Jumentix persistence ports.
 
-## Exports
+## What it is
+
+Reusable repository adapters that talk to external databases (Mongo, SQL, DynamoDB, and peers) behind Jumentix persistence ports.
+
+## Why it exists
+
+Each service used to invent its own Mongo/SQL/Dynamo wiring. Juniors copied insecure connection code and leaked driver details into use-cases.
+
+**When to use:** You need a concrete external DB repository behind `IStore` / persistence ports in a backend service.
+
+**When not to use:** Browser/offline storage (use Cana), key-value locks (use key-value-storage + mutex-service), or HTTP clients (use sdk-rest-client).
+
+## Responsibility in context
+
+- **Stack layer:** persistence / adapter
+- **Problem boundary it owns:** Driver-specific repository classes and connection lifecycle for supported external databases.
+- **Used with:** Contracts live in `@jumentix/persistence-contracts` and `@jumentix/external-persistence-core`. Store bridging is `@jumentix/external-store-proxy`. Driver selection is `@jumentix/database-client-factory`.
+- **Typical composition:** Typically: persistence-contracts → external-persistence-core → external-db-repositories → external-store-proxy, selected via database-client-factory in backend-template.
+- **Journeys:** [Create a REST API](/docs/jumentix/guides/rest-api) and persistence reference pages.
+- **Not responsible for:** OpenAPI/HTTP, domain rules, Redis KV, IndexedDB, or choosing env drivers by itself.
+
+## Prerequisites
+
+- Bun 1.3.13+ (monorepo pin) or the Node runtime your service already uses
+- Read [Getting started](/docs/jumentix/concepts/getting-started) first
+- Basic TypeScript modules/`import` knowledge
+
+## Glossary
+
+- **Port** — TypeScript contract the application depends on (no vendor types).
+- **Adapter** — Concrete implementation that talks to a driver, broker, or protocol.
+- **Composition root** — Process startup code that wires env → adapters → use-cases.
+
+## Numbered steps
+
+### 1. Install
+
+```bash
+bun add @jumentix/external-db-repositories
+```
+
+### 2. First success (under 30 min)
+
+```ts
+import { MongoMongooseRepository } from '@jumentix/external-db-repositories';
+
+// Wire options from env (URI, db name). Do not hardcode secrets.
+const repo = new MongoMongooseRepository({
+  uri: process.env.MONGO_URI!,
+  database: process.env.MONGO_DB ?? 'app'
+});
+await repo.connect();
+// Use through your IStore / use-case ports — never call drivers from domain code.
+```
+
+
+### 3. Core workflows
+
+### 1. Connect with env options
+
+Load URI/region/credentials from environment; call `connect()` once at composition root.
+
+### 2. Run a repository operation
+
+Call repository methods from an application adapter, not from entities.
+
+### 3. Disconnect on shutdown
+
+Hook process shutdown to `disconnect()` so pools do not leak.
+
+
+### 4. Full practical surface (exports)
 
 - `MongoMongooseRepository`
 - `SqlSequelizeRepository`
@@ -19,3 +88,24 @@ Reusable external database connection adapters for Jumentix runtimes.
 - `AuroraRepository`
 - `RdsRepository`
 - `OracleRepository`
+
+Use exports from application/adapters layers as described above — not from domain entities.
+
+## Common errors
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| Connection refused / auth failed | Bad URI or secrets | Verify env vars locally; never commit credentials. |
+| Used repository inside a domain entity | Layering violation | Keep repositories in adapters; domain talks ports only. |
+
+**Verify success:** the first-success snippet runs (or typechecks against your service) and your use-case depends only on ports.
+
+## Junior checklist (“I can …”)
+
+- [ ] I can name when to pick this package vs Cana or KV
+- [ ] I can connect a repository from env at the composition root
+- [ ] I know which sibling packages own contracts vs store proxies
+
+## Next step
+
+Continue with [external-persistence-core](/docs/jumentix/packages/external-persistence-core).

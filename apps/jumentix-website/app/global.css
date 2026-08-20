@@ -26,10 +26,10 @@
   }
 
   :root {
-    --x-color-nextra-bg: var(--mantine-color-gray-1);
+    --x-color-nextra-bg: var(--jtx-page-bg);
 
     &:where(.dark) {
-      --x-color-nextra-bg: var(--mantine-color-dark-9);
+      --x-color-nextra-bg: var(--jtx-page-bg);
     }
   }
 
@@ -74,7 +74,8 @@
   .nextra-sidebar {
     border-right: 1px solid var(--jtx-line);
     background:
-      linear-gradient(180deg, color-mix(in srgb, var(--jtx-blue-50) 45%, transparent), transparent 220px),
+      linear-gradient(180deg, color-mix(in srgb, var(--jtx-blue-50) 58%, transparent), transparent 240px),
+      linear-gradient(90deg, color-mix(in srgb, var(--jtx-green-50) 26%, transparent), transparent 72%),
       var(--x-color-nextra-bg);
   }
 
@@ -89,6 +90,7 @@
 
   .nextra-content {
     max-width: 880px;
+    color: var(--jtx-ink);
   }
 
   .nextra-content h1 {
@@ -107,16 +109,86 @@
     letter-spacing: 0;
   }
 
+  .nextra-content h3,
+  .nextra-content h4 {
+    color: var(--jtx-ink);
+    letter-spacing: 0;
+  }
+
   .nextra-content p,
   .nextra-content li {
     color: var(--jtx-ink-muted);
     line-height: 1.75;
   }
 
+  .nextra-content a {
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+  }
+
+  .nextra-content .cana-brand-scene {
+    margin: var(--jtx-space-6) 0 var(--jtx-space-7);
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--jtx-coral-500) 24%, var(--jtx-line));
+    border-radius: var(--jtx-radius-md);
+    background:
+      linear-gradient(135deg, color-mix(in srgb, var(--jtx-green-50) 46%, transparent), transparent 48%),
+      linear-gradient(180deg, color-mix(in srgb, var(--jtx-yellow-100) 44%, var(--jtx-surface)), var(--jtx-surface));
+    box-shadow: var(--jtx-shadow-md);
+  }
+
+  .nextra-content .cana-brand-scene img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1280 / 853;
+    object-fit: cover;
+  }
+
+  .nextra-content .cana-brand-scene figcaption {
+    margin: 0;
+    padding: var(--jtx-space-3) var(--jtx-space-4);
+    border-top: 1px solid color-mix(in srgb, var(--jtx-coral-500) 18%, var(--jtx-line));
+    background: color-mix(in srgb, var(--jtx-surface-raised) 88%, transparent);
+    color: var(--jtx-ink-muted);
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+
   .nextra-content pre {
     border: 1px solid color-mix(in srgb, var(--jtx-blue-600) 26%, var(--jtx-line));
     border-radius: var(--jtx-radius-md);
-    box-shadow: 0 18px 50px rgb(14 32 56 / 10%);
+    background: var(--jtx-code) !important;
+    box-shadow: 0 18px 50px rgb(14 32 56 / 12%);
+  }
+
+  .nextra-content code:not(pre code) {
+    border: 1px solid color-mix(in srgb, var(--jtx-line) 76%, transparent);
+    border-radius: var(--jtx-radius-sm);
+    background: color-mix(in srgb, var(--jtx-surface-raised) 82%, transparent);
+    color: var(--jtx-ink);
+  }
+
+  .jtx-inline-code {
+    --jtx-inline-code-accent: var(--jtx-blue-600);
+    display: inline-flex;
+    align-items: center;
+    min-height: 22px;
+    padding: 0 6px;
+    border: 1px solid color-mix(in srgb, var(--jtx-inline-code-accent) 36%, var(--jtx-line));
+    border-radius: var(--jtx-radius-sm);
+    background: color-mix(in srgb, var(--jtx-inline-code-accent) 12%, var(--jtx-surface));
+    color: var(--jtx-ink);
+    font-family: var(--jtx-font-mono);
+    font-size: 0.82em;
+    font-weight: 700;
+    line-height: 1.45;
+  }
+
+  .jtx-inline-code-lg {
+    min-height: 28px;
+    padding-inline: 8px;
+    font-size: 0.96em;
   }
 
   .nextra-content blockquote {
@@ -134,6 +206,177 @@
   .nextra-toc {
     border-left: 1px solid var(--jtx-line);
   }
+
+  .jtx-monaco-code {
+    position: relative;
+    overflow: hidden;
+    height: var(--jtx-monaco-height);
+    border: 1px solid color-mix(in srgb, var(--jtx-line-strong) 78%, transparent);
+    border-radius: var(--jtx-radius-md);
+    background: var(--jtx-code);
+    box-shadow: 0 18px 44px rgb(0 0 0 / 16%);
+  }
+
+  .jtx-monaco-code__editor {
+    height: var(--jtx-monaco-height);
+    min-height: 120px;
+  }
+
+  .jtx-monaco-code__fallback {
+    min-height: var(--jtx-monaco-height);
+    margin: 0;
+    padding: 14px 16px;
+    overflow: auto;
+    background: var(--jtx-code);
+    color: var(--jtx-code-ink);
+    font-family: var(--jtx-font-mono);
+    font-size: 0.82rem;
+    line-height: 1.55;
+    white-space: pre-wrap;
+  }
+
+  .jtx-monaco-code__fallback[data-mounted='true'] {
+    display: none;
+  }
+
+  .jtx-monaco-code .monaco-editor,
+  .jtx-monaco-code .monaco-editor-background,
+  .jtx-monaco-code .monaco-editor .margin {
+    background-color: var(--jtx-code) !important;
+  }
+
+  .jtx-monaco-code .monaco-scrollable-element > .scrollbar > .slider {
+    border-radius: var(--jtx-radius-sm);
+    background: color-mix(in srgb, var(--jtx-blue-500) 52%, var(--jtx-line-strong)) !important;
+  }
+
+  .cana-framework-playground {
+    border-color: color-mix(in srgb, var(--jtx-line-strong) 72%, transparent) !important;
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--jtx-surface-raised) 92%, transparent), var(--jtx-surface)),
+      var(--jtx-surface);
+    color: var(--jtx-ink);
+    box-shadow: var(--jtx-shadow-md);
+  }
+
+  .cana-framework-playground [data-mantine-color-scheme],
+  .cana-framework-playground .mantine-Paper-root,
+  .cana-framework-playground .mantine-Input-input,
+  .cana-framework-playground .mantine-Tabs-list {
+    color: var(--jtx-ink);
+  }
+
+  .cana-framework-preview {
+    min-height: 180px;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--jtx-line-strong) 76%, transparent);
+    border-radius: var(--jtx-radius-md);
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--jtx-blue-50) 36%, transparent), transparent 160px),
+      var(--jtx-surface-subtle);
+    color: var(--jtx-ink);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--jtx-surface-raised) 82%, transparent);
+  }
+
+  .cana-framework-demo {
+    color: var(--jtx-ink);
+  }
+
+  .cana-framework-demo-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--jtx-space-2);
+    margin-bottom: var(--jtx-space-3);
+  }
+
+  .cana-framework-demo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--jtx-space-3);
+  }
+
+  .cana-framework-demo-card {
+    border-color: color-mix(in srgb, var(--jtx-line-strong) 72%, transparent) !important;
+    background: color-mix(in srgb, var(--jtx-surface) 92%, var(--jtx-blue-50));
+    color: var(--jtx-ink);
+  }
+
+  .cana-framework-demo-count {
+    margin-left: var(--jtx-space-2);
+    color: var(--jtx-ink-muted);
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+
+  .cana-framework-demo-list {
+    display: grid;
+    gap: var(--jtx-space-1);
+    margin-top: var(--jtx-space-2);
+  }
+
+  .cana-framework-demo-action,
+  .cana-framework-demo-native-action,
+  .cana-framework-demo-task,
+  .cana-framework-demo-native-task {
+    min-height: 30px;
+    border-radius: var(--jtx-radius-sm);
+    font: inherit;
+  }
+
+  .cana-framework-demo-native-action,
+  .cana-framework-demo-native-task {
+    cursor: pointer;
+    border: 1px solid color-mix(in srgb, var(--jtx-line-strong) 82%, transparent);
+    background: var(--jtx-surface-raised);
+    color: var(--jtx-ink);
+  }
+
+  .cana-framework-demo-native-action {
+    padding: 6px 10px;
+    font-size: 0.78rem;
+    font-weight: 800;
+  }
+
+  .cana-framework-demo-native-task {
+    width: 100%;
+    padding: 5px 8px;
+    text-align: left;
+  }
+
+  .cana-framework-demo-events,
+  .cana-framework-demo-native-events {
+    margin-top: var(--jtx-space-3);
+    border: 1px solid color-mix(in srgb, var(--jtx-line) 70%, transparent);
+    border-radius: var(--jtx-radius-sm);
+    background: var(--jtx-code) !important;
+    color: var(--jtx-code-ink) !important;
+    white-space: pre-wrap;
+  }
+
+  .cana-framework-demo-native-events {
+    padding: var(--jtx-space-3);
+    font-family: var(--jtx-font-mono);
+    font-size: 0.8rem;
+    line-height: 1.55;
+  }
 }
 
 @layer components, mantine, nextra, overwrite;
+
+/*
+ * JUM-53 — make Mermaid diagrams render at all.
+ *
+ * `@theguild/remark-mermaid` renders its chart only once an
+ * IntersectionObserver reports the container visible, and the container it
+ * observes is an empty `div` with no height. A zero-area box never reports an
+ * intersection, so the chart never renders, so the box stays zero-area. Every
+ * ```mermaid fence in the documentation was a blank space on the page, in
+ * silence: `WEBSOCKET-API`, `GRPC-API` and the dead-letter queue reference.
+ *
+ * Giving the empty container a sliver of height breaks the deadlock. The rule
+ * stops applying the moment the SVG lands, because the container is no longer
+ * empty.
+ */
+main > div:empty {
+  min-height: 2px;
+}

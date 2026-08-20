@@ -1,0 +1,42 @@
+# Pacotes Jumentix (mapa do consumidor)
+
+Este hub lista **pacotes documentados para adotantes** no site público.
+
+Pacotes internos/privados do workspace (configs ESLint/Jest/TS, agent registry,
+security scanner, CLI de bootstrap e qualquer pacote `"private": true` sem página
+curada) **não** são publicados aqui.
+
+## Comece aqui
+
+1. [Começando](/docs/pt-BR/jumentix/concepts/getting-started)
+2. UI offline: [designer-core](/docs/pt-BR/jumentix/packages/designer-core) → [cana](/docs/pt-BR/jumentix/packages/cana)
+3. HTTP: [sdk-rest-client](/docs/pt-BR/jumentix/packages/sdk-rest-client)
+4. Persistência: [persistence-contracts](/docs/pt-BR/jumentix/packages/persistence-contracts)
+
+## Browser / offline
+
+- [@jumentix/cana](/docs/pt-BR/jumentix/packages/cana)
+- [@jumentix/designer-core](/docs/pt-BR/jumentix/packages/designer-core)
+
+## Persistência
+
+- [@jumentix/persistence-contracts](/docs/pt-BR/jumentix/packages/persistence-contracts)
+- [@jumentix/external-persistence-core](/docs/pt-BR/jumentix/packages/external-persistence-core)
+- [@jumentix/external-db-repositories](/docs/pt-BR/jumentix/packages/external-db-repositories)
+- [@jumentix/external-store-proxy](/docs/pt-BR/jumentix/packages/external-store-proxy)
+- [@jumentix/database-client-factory](/docs/pt-BR/jumentix/packages/database-client-factory)
+- [@jumentix/key-value-storage](/docs/pt-BR/jumentix/packages/key-value-storage)
+- [@jumentix/mutex-service](/docs/pt-BR/jumentix/packages/mutex-service)
+
+## Comunicação
+
+- [@jumentix/shared-contracts](/docs/pt-BR/jumentix/packages/shared-contracts)
+- [@jumentix/sdk-rest-client](/docs/pt-BR/jumentix/packages/sdk-rest-client)
+- [@jumentix/sdk-websocket-client](/docs/pt-BR/jumentix/packages/sdk-websocket-client)
+- [@jumentix/sdk-grpc-client](/docs/pt-BR/jumentix/packages/sdk-grpc-client)
+- [@jumentix/message-mediator](/docs/pt-BR/jumentix/packages/message-mediator)
+
+## Composição de runtime
+
+- [@jumentix/adapter-runtime-bootstrap](/docs/pt-BR/jumentix/packages/adapter-runtime-bootstrap)
+- [@jumentix/runtime-infra](/docs/pt-BR/jumentix/packages/runtime-infra)

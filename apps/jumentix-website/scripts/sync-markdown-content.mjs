@@ -2,14 +2,76 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
+import {
+  assertNoCanaContentLeaks,
+  isCanaPublishedSource,
+  isCanaUsageGuideSource,
+  toCanaConsumerMarkdown
+} from './cana-consumer-filter.mjs';
+import {
+  assertNoContentLeaks,
+  stripGitHubContentLinks
+} from './content-leaks.mjs';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const appRoot = path.resolve(scriptDir, '..');
 const monorepoRoot = path.resolve(appRoot, '../..');
 const sourcesPath = path.join(appRoot, 'config', 'content-sources.json');
 const contentRoot = path.join(appRoot, 'content');
-const repositoryBlobBase =
-  'https://github.com/XpertMinds/Jumentix/blob/dev';
+
+
+/**
+ * Public site package docs policy (fail-closed):
+ * - Never auto-publish a package whose package.json has `"private": true`.
+ * - Never publish internal tooling/governance packages even if mis-labeled.
+ * - Consumer-facing workspace packages appear only via explicit content-sources
+ *   entries pointing at curated consumer markdown (not raw private READMEs).
+ */
+const NEVER_PUBLISH_PACKAGE_SLUGS = new Set([
+  'config-eslint',
+  'config-jest',
+  'config-ts',
+  'agent-registry',
+  'security-scanner',
+  'cli-init',
+]);
+
+const NESTED_PACKAGE_HUB_SLUGS = new Set([
+  'cana',
+  'designer-core',
+  'key-value-storage',
+  'mutex-service',
+  'message-mediator',
+]);
+
+async function readPackagePrivateFlag(packageDir) {
+  try {
+    const raw = await fs.readFile(path.join(packageDir, 'package.json'), 'utf8');
+    const meta = JSON.parse(raw);
+    return Boolean(meta.private);
+  } catch {
+    // Fail closed: missing/unreadable package.json → treat as private.
+    return true;
+  }
+}
+
+async function shouldSkipPackagesCollectionSource(sourceDir, englishSource, slug) {
+  if (slug === 'index') {
+    // Monorepo packages/README lists private tooling; use the consumer hub entry instead.
+    return true;
+  }
+  if (NEVER_PUBLISH_PACKAGE_SLUGS.has(slug) || NESTED_PACKAGE_HUB_SLUGS.has(slug)) {
+    return true;
+  }
+  const packageDir = path.dirname(englishSource);
+  // Only apply private:true to package folders directly under packages/.
+  if (path.basename(path.dirname(packageDir)) === 'packages' || path.basename(sourceDir) === 'packages') {
+    const isPrivate = await readPackagePrivateFlag(packageDir);
+    if (isPrivate) return true;
+  }
+  return false;
+}
+
 
 const localeConfig = {
   en: {
@@ -76,12 +138,6 @@ const sanitizeDocBody = (markdown) => {
   return normalized || 'No content available.';
 };
 
-const toRepositoryUrl = (filePath, anchor) => {
-  const relativePath = path.relative(monorepoRoot, filePath).replaceAll('\\', '/');
-  const encodedPath = relativePath.split('/').map(encodeURIComponent).join('/');
-  return `${repositoryBlobBase}/${encodedPath}${anchor}`;
-};
-
 async function readJsonFile(filePath) {
   return JSON.parse(await fs.readFile(filePath, 'utf8'));
 }
@@ -99,17 +155,30 @@ async function resolveMarkdownTarget(sourceFile, hrefPath) {
 }
 
 async function rewriteRepositoryLinks(markdown, sourceFile, routesBySource) {
+  // Site-wide: never keep Jumentix GitHub content URLs in published bodies.
+  const sanitized = stripGitHubContentLinks(markdown);
   const linkPattern = /(?<!!)\[([^\]]+)\]\(([^)\s]+)\)/g;
   const replacements = new Map();
+  const labelOnly = new Map();
 
-  for (const match of markdown.matchAll(linkPattern)) {
+  for (const match of sanitized.matchAll(linkPattern)) {
     const href = match[2];
+    const label = match[1];
     if (
-      replacements.has(href) ||
-      href.startsWith('#') ||
-      href.startsWith('/') ||
-      /^[a-z][a-z\d+.-]*:/i.test(href)
+      replacements.has(href)
+      || labelOnly.has(href)
+      || href.startsWith('#')
+      || href.startsWith('/')
     ) {
+      continue;
+    }
+
+    if (/^[a-z][a-z\d+.-]*:/i.test(href)) {
+      if (/github\.com\/XpertMinds\/Jumentix/i.test(href)) {
+        throw new Error(
+          `Published docs cannot keep GitHub content link ${href} (${sourceFile})`
+        );
+      }
       continue;
     }
 
@@ -117,17 +186,26 @@ async function rewriteRepositoryLinks(markdown, sourceFile, routesBySource) {
     const hrefPath = hashIndex === -1 ? href : href.slice(0, hashIndex);
     const anchor = hashIndex === -1 ? '' : href.slice(hashIndex);
     const target = await resolveMarkdownTarget(sourceFile, hrefPath);
-    if (!target) continue;
+    if (!target) {
+      // Fail closed: do not invent GitHub URLs; keep the label for juniors.
+      labelOnly.set(href, label);
+      continue;
+    }
     const publishedTarget = routesBySource.get(target);
-    replacements.set(
-      href,
-      publishedTarget ? `${publishedTarget.route}${anchor}` : toRepositoryUrl(target, anchor)
-    );
+    if (!publishedTarget) {
+      // Fail closed: unpublished relative targets stay on-site as label text
+      // until a content-sources entry publishes them.
+      labelOnly.set(href, label);
+      continue;
+    }
+    replacements.set(href, `${publishedTarget.route}${anchor}`);
   }
 
-  return markdown.replace(linkPattern, (fullMatch, label, href) =>
-    replacements.has(href) ? `[${label}](${replacements.get(href)})` : fullMatch
-  );
+  return sanitized.replace(linkPattern, (fullMatch, label, href) => {
+    if (replacements.has(href)) return `[${label}](${replacements.get(href)})`;
+    if (labelOnly.has(href)) return labelOnly.get(href);
+    return fullMatch;
+  });
 }
 
 async function listMarkdownFiles(directory) {
@@ -194,6 +272,14 @@ async function prepareRecords(config) {
     );
 
     for (const englishSource of englishFiles) {
+      const slug = collectionSlug(sourceDir, englishSource);
+      if (
+        collection.section === 'packages'
+        && await shouldSkipPackagesCollectionSource(sourceDir, englishSource, slug)
+      ) {
+        continue;
+      }
+
       const portugueseSource = englishSource.replace(/\.md$/i, '.pt-BR.md');
       try {
         await fs.access(portugueseSource);
@@ -208,7 +294,7 @@ async function prepareRecords(config) {
         records.push({
           locale,
           section: collection.section,
-          slug: collectionSlug(sourceDir, source),
+          slug,
           title: inferTitle(markdown, fallbackTitle),
           description:
             locale === 'pt-BR'
@@ -231,17 +317,25 @@ const recordRoute = (record) =>
 async function writeGeneratedDoc(record, routesBySource) {
   const outputDirectory = path.join(localeConfig[record.locale].outputDir, record.section);
   await fs.mkdir(outputDirectory, { recursive: true });
-  const raw = await fs.readFile(record.source, 'utf8');
+  let raw = await fs.readFile(record.source, 'utf8');
+  if (isCanaUsageGuideSource(record.source)) {
+    raw = toCanaConsumerMarkdown(raw, { locale: record.locale });
+  }
   const body = sanitizeDocBody(
     await rewriteRepositoryLinks(raw, record.source, routesBySource)
   );
-  const relativeSource = path.relative(appRoot, record.source).replaceAll('\\', '/');
+  if (isCanaPublishedSource(record.source)) {
+    assertNoCanaContentLeaks(body, record.source);
+  }
+  assertNoContentLeaks(body, record.source);
+  const description = record.description
+    || (record.locale === 'pt-BR'
+      ? 'Documentação do framework Jumentix para adoção rápida.'
+      : 'Jumentix framework documentation for fast adoption.');
   const content = `---
 title: ${JSON.stringify(record.title)}
-description: ${JSON.stringify(record.description)}
+description: ${JSON.stringify(description)}
 ---
-
-> Source: \`${relativeSource}\`
 
 ${body}
 `;
@@ -297,10 +391,11 @@ ${links}
 
 ## ${portuguese ? 'Jornadas recomendadas' : 'Recommended journeys'}
 
-1. [${portuguese ? 'Compreenda a arquitetura' : 'Understand the architecture'}](${localeConfig[locale].basePath}/concepts/architecture)
-2. [${portuguese ? 'Crie uma API REST' : 'Create a REST API'}](${localeConfig[locale].basePath}/guides/rest-api)
-3. [${portuguese ? 'Escolha os adaptadores' : 'Choose adapters'}](${localeConfig[locale].basePath}/adapters/http)
-4. [${portuguese ? 'Valide os contratos de runtime' : 'Validate runtime contracts'}](${localeConfig[locale].basePath}/reference/runtime-contracts)
+1. [${portuguese ? 'Começando' : 'Getting started'}](${localeConfig[locale].basePath}/concepts/getting-started)
+2. [${portuguese ? 'Compreenda a arquitetura' : 'Understand the architecture'}](${localeConfig[locale].basePath}/concepts/architecture)
+3. [${portuguese ? 'Crie uma API REST' : 'Create a REST API'}](${localeConfig[locale].basePath}/guides/rest-api)
+4. [${portuguese ? 'Escolha os adaptadores' : 'Choose adapters'}](${localeConfig[locale].basePath}/adapters/http)
+5. [${portuguese ? 'Valide os contratos de runtime' : 'Validate runtime contracts'}](${localeConfig[locale].basePath}/reference/runtime-contracts)
 `;
 }
 
@@ -335,6 +430,27 @@ function sectionLandingContent(locale, section, records) {
     ...directRecords.map((record) => ({ title: record.title, route: recordRoute(record) })),
   ];
 
+  const juniorIntro = (() => {
+    if (section === 'reference') {
+      return portuguese
+        ? `Mapas e contratos do dia a dia — exemplos primeiro.\n\n## Comece aqui\n\n1. Erros quando um adapter devolve \`error\`.\n2. Eventos/mensagens para realtime e mediators.\n3. Contratos de runtime antes do deploy.\n4. Scripts de pacotes ao contribuir no monorepo.\n\n**Próximo:** [Começando](/docs/pt-BR/jumentix/concepts/getting-started).`
+        : `Maps and contracts for day-to-day work — examples first.\n\n## Start here\n\n1. Errors when an adapter returns \`error\`.\n2. Events/messages for realtime and mediators.\n3. Runtime contracts before deploy.\n4. Package scripts when contributing.\n\n**Next:** [Getting started](/docs/jumentix/concepts/getting-started).`;
+    }
+    if (section === 'concepts') {
+      return portuguese
+        ? `Comece por **Começando**, depois visão geral e arquitetura.\n\n**Próximo:** [Começando](/docs/pt-BR/jumentix/concepts/getting-started).`
+        : `Start with **Getting started**, then overview and architecture.\n\n**Next:** [Getting started](/docs/jumentix/concepts/getting-started).`;
+    }
+    if (section === 'adapters') {
+      return portuguese
+        ? `Adapters são a borda substituível do Jumentix. Eles recebem protocolo, runtime ou banco de dados, traduzem para contratos da aplicação e mantêm o domínio livre de detalhes de framework.\n\n## Como escolher\n\n1. Escolha o adapter HTTP que melhor combina com seu runtime de entrega.\n2. Escolha o adapter de banco pelo modelo de dados, operação e smoke test disponível.\n3. Use realtime quando o produto precisar de mensagens long-lived, streams ou comunicação entre clientes.\n4. Mantenha regras de negócio em use cases; adapters só conectam o mundo externo.\n\n**Próximo:** [Adapters HTTP](/docs/pt-BR/jumentix/adapters/http) ou [Adapters de bancos de dados](/docs/pt-BR/jumentix/adapters/databases).`
+        : `Adapters are Jumentix's replaceable edge. They receive protocol, runtime, or database details, translate them into application contracts, and keep the domain free from framework concerns.\n\n## How to choose\n\n1. Pick the HTTP adapter that matches your delivery runtime.\n2. Pick the database adapter by data model, operations profile, and available smoke test.\n3. Use realtime when the product needs long-lived messages, streams, or client-to-client communication.\n4. Keep business rules in use cases; adapters only connect the outside world.\n\n**Next:** [HTTP adapters](/docs/jumentix/adapters/http) or [Database adapters](/docs/jumentix/adapters/databases).`;
+    }
+    return portuguese
+      ? 'Escolha um recurso para continuar sua jornada técnica com o Jumentix.'
+      : 'Choose a resource to continue your technical journey with Jumentix.';
+  })();
+
   return `---
 title: ${JSON.stringify(title)}
 description: ${JSON.stringify(
@@ -344,9 +460,7 @@ description: ${JSON.stringify(
 
 # ${title}
 
-${portuguese
-    ? 'Escolha um recurso para continuar sua jornada técnica com o Jumentix.'
-    : 'Choose a resource to continue your technical journey with Jumentix.'}
+${juniorIntro}
 
 ${links.map((link) => `- [${link.title}](${link.route})`).join('\n')}
 `;
@@ -387,32 +501,69 @@ async function writeNavigation(locale, records) {
         'utf8'
       );
     }
-    if (sectionRecords.length > 0) {
-      await writeMeta(
-        directory,
-        sectionRecords.map((record) => ({
-          slug: record.slug,
-          title: record.title,
-          display: record.slug === 'index' ? 'hidden' : undefined,
-        }))
-      );
-      continue;
-    }
-
-    const children = [...new Set(
+    const childSlugs = [...new Set(
       records
         .map((record) => record.section)
         .filter((candidate) => candidate.startsWith(`${section}/`))
-        .map((candidate) => candidate.split('/')[1])
+        .map((candidate) => candidate.split('/')[section.split('/').length])
+        .filter(Boolean)
     )];
+
+    const childTitle = (slug) => {
+      const packageTitles = {
+        cana: '@jumentix/cana',
+        usage: locale === 'pt-BR' ? 'Guia de uso' : 'Usage guide',
+        'designer-core': '@jumentix/designer-core',
+        'key-value-storage': '@jumentix/key-value-storage',
+        'mutex-service': '@jumentix/mutex-service',
+        'message-mediator': '@jumentix/message-mediator'
+      };
+      if (packageTitles[slug]) return packageTitles[slug];
+      if (locale === 'pt-BR') {
+        return ({ http: 'HTTP', databases: 'Bancos de dados', realtime: 'Realtime' }[slug] ?? slug);
+      }
+      return ({ http: 'HTTP', databases: 'Databases', realtime: 'Realtime' }[slug] ?? slug);
+    };
+
+    if (sectionRecords.length > 0 || childSlugs.length > 0) {
+      const metaEntries = [
+        ...sectionRecords.map((record) => ({
+          slug: record.slug,
+          title: record.title,
+          display: record.slug === 'index' ? 'hidden' : undefined,
+        })),
+        ...childSlugs.map((slug) => ({
+          slug,
+          title: childTitle(slug),
+        })),
+      ];
+      if (section === 'packages/cana') {
+        const order = ['index', 'usage', 'react-context', 'react-redux', 'vue-pinia'];
+        metaEntries.sort((a, b) => {
+          const aIndex = order.indexOf(a.slug);
+          const bIndex = order.indexOf(b.slug);
+          if (aIndex === -1 && bIndex === -1) return 0;
+          if (aIndex === -1) return 1;
+          if (bIndex === -1) return -1;
+          return aIndex - bIndex;
+        });
+      }
+      // Prefer nested package folders ahead of flat package pages when titles collide.
+      const seen = new Set();
+      const deduped = metaEntries.filter((entry) => {
+        if (seen.has(entry.slug)) return false;
+        seen.add(entry.slug);
+        return true;
+      });
+      await writeMeta(directory, deduped);
+      continue;
+    }
+
     await writeMeta(
       directory,
-      children.map((slug) => ({
+      childSlugs.map((slug) => ({
         slug,
-        title:
-          locale === 'pt-BR'
-            ? ({ http: 'HTTP', databases: 'Bancos de dados', realtime: 'Realtime' }[slug] ?? slug)
-            : ({ http: 'HTTP', databases: 'Databases', realtime: 'Realtime' }[slug] ?? slug),
+        title: childTitle(slug),
       }))
     );
   }
@@ -441,6 +592,18 @@ async function main() {
   await writeMeta(path.join(contentRoot, 'pt-BR'), [
     { slug: 'jumentix', title: 'Documentação Jumentix' },
   ]);
+
+  const { spawn } = await import('node:child_process');
+  await new Promise((resolve, reject) => {
+    const child = spawn('bun', [path.join(scriptDir, 'generate-ai-surfaces.mjs')], {
+      stdio: 'inherit',
+      cwd: appRoot
+    });
+    child.on('exit', (code) => {
+      if (code === 0) resolve();
+      else reject(new Error(`generate-ai-surfaces failed with ${code}`));
+    });
+  });
 
   console.log(
     `Generated ${records.length} localized documentation pages across English and Portuguese.`

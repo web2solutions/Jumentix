@@ -72,6 +72,7 @@ function messages(issues: Array<{ message: string }>) {
 
 describe('deploy capability matrix reader — deploy-target half (JUM-481)', () => {
   it('pins the Requirement 059 metadata contract vocabularies', () => {
+    expect.hasAssertions();
     expect(SERVICE_TYPES).toStrictEqual(['restapi', 'websocket+restapi', 'grpc+restapi', 'functions']);
     expect(DEPLOY_TARGETS).toStrictEqual([
       'dedicated-server', 'vm', 'ec2', 'lambda', 'vercel-functions', 'cloudflare-workers'
@@ -81,6 +82,7 @@ describe('deploy capability matrix reader — deploy-target half (JUM-481)', () 
   });
 
   it('keeps the driver vocabularies in parity with the runtime env contract enums', () => {
+    expect.hasAssertions();
     // The matrix defines databaseDriver/keyValueDriver by reference to the
     // JUMENTIX_DATABASE_DRIVER / JUMENTIX_KEYVALUESTORAGE_DRIVER enums — this
     // is the drift guard between the reader and both declared mirrors
@@ -94,6 +96,7 @@ describe('deploy capability matrix reader — deploy-target half (JUM-481)', () 
   });
 
   it('maps every matrix row to its service types, PM2 management and protocols', () => {
+    expect.hasAssertions();
     expect(DEPLOY_TARGET_SERVICE_TYPES).toStrictEqual({
       'dedicated-server': ['restapi', 'websocket+restapi', 'grpc+restapi'],
       vm: ['restapi', 'websocket+restapi', 'grpc+restapi'],
@@ -112,6 +115,7 @@ describe('deploy capability matrix reader — deploy-target half (JUM-481)', () 
   });
 
   it('lookups fall back to empty/false for unknown values', () => {
+    expect.hasAssertions();
     expect(getSupportedServiceTypes('azure-functions')).toStrictEqual([]);
     expect(isServiceTypeSupportedByDeployTarget('functions', 'dedicated-server')).toBe(false);
     expect(isServiceTypeSupportedByDeployTarget('grpc+restapi', 'ec2')).toBe(true);
@@ -125,10 +129,12 @@ describe('deploy capability matrix reader — deploy-target half (JUM-481)', () 
 
 describe('collectDeployTargetIssues (JUM-481)', () => {
   it('accepts a valid PM2-managed target', () => {
+    expect.hasAssertions();
     expect(collectDeployTargetIssues(createTarget())).toStrictEqual([]);
   });
 
   it('accepts every PM2-managed row with each non-function service type', () => {
+    expect.hasAssertions();
     ['dedicated-server', 'vm', 'ec2'].forEach((deployTarget) => {
       expect(collectDeployTargetIssues(createTarget({ deployTarget }))).toStrictEqual([]);
       expect(collectDeployTargetIssues(createTarget({
@@ -141,6 +147,7 @@ describe('collectDeployTargetIssues (JUM-481)', () => {
   });
 
   it('accepts every function row with an empty PM2 profile', () => {
+    expect.hasAssertions();
     ['lambda', 'vercel-functions', 'cloudflare-workers'].forEach((deployTarget) => {
       expect(collectDeployTargetIssues(createTarget({
         deployTarget, serviceType: 'functions', runtimeProtocol: 'http', pm2Profile: ''
@@ -149,6 +156,7 @@ describe('collectDeployTargetIssues (JUM-481)', () => {
   });
 
   it('rejects a functions service on a PM2-managed target, naming the supported rows', () => {
+    expect.hasAssertions();
     const issues = collectDeployTargetIssues(createTarget({ serviceType: 'functions' }));
     expect(messages(issues)).toStrictEqual([
       'Deploy target "dedicated-server" cannot run service type "functions" — the Requirement 059 deploy matrix supports it on: lambda, vercel-functions, cloudflare-workers.'
@@ -156,6 +164,7 @@ describe('collectDeployTargetIssues (JUM-481)', () => {
   });
 
   it('rejects a REST service on a function target, naming the supported rows', () => {
+    expect.hasAssertions();
     const issues = collectDeployTargetIssues(createTarget({
       deployTarget: 'lambda', serviceType: 'restapi', pm2Profile: ''
     }));
@@ -165,6 +174,7 @@ describe('collectDeployTargetIssues (JUM-481)', () => {
   });
 
   it('rejects a protocol the service type does not expose', () => {
+    expect.hasAssertions();
     const issues = collectDeployTargetIssues(createTarget({ runtimeProtocol: 'websocket' }));
     expect(messages(issues)).toStrictEqual([
       'Service type "restapi" does not expose protocol "websocket" — the Requirement 059 deploy matrix gives it: http.'
@@ -172,6 +182,7 @@ describe('collectDeployTargetIssues (JUM-481)', () => {
   });
 
   it('rejects a functions deploy target with a PM2 profile', () => {
+    expect.hasAssertions();
     const issues = collectDeployTargetIssues(createTarget({
       deployTarget: 'cloudflare-workers', serviceType: 'functions', pm2Profile: 'production'
     }));
@@ -181,6 +192,7 @@ describe('collectDeployTargetIssues (JUM-481)', () => {
   });
 
   it('rejects a PM2-managed target without a PM2 profile', () => {
+    expect.hasAssertions();
     const issues = collectDeployTargetIssues(createTarget({ deployTarget: 'ec2', pm2Profile: '' }));
     expect(messages(issues)).toStrictEqual([
       'Deploy target "ec2" is PM2-managed and requires a PM2 profile — choose one of: dev, staging, production.'
@@ -188,6 +200,7 @@ describe('collectDeployTargetIssues (JUM-481)', () => {
   });
 
   it('rejects unknown vocabulary values without running the combination rules', () => {
+    expect.hasAssertions();
     const issues = collectDeployTargetIssues(createTarget({
       serviceType: 'soap',
       deployTarget: 'azure-functions',
@@ -206,6 +219,7 @@ describe('collectDeployTargetIssues (JUM-481)', () => {
   });
 
   it('treats a missing candidate as all-vocabulary errors', () => {
+    expect.hasAssertions();
     expect(collectDeployTargetIssues(null)).toHaveLength(5);
     expect(collectDeployTargetIssues({})).toHaveLength(5);
   });
@@ -213,6 +227,7 @@ describe('collectDeployTargetIssues (JUM-481)', () => {
 
 describe('normalizeDeploymentInput (JUM-481 migration)', () => {
   it('migrates a legacy dedicated entry forward without loss', () => {
+    expect.hasAssertions();
     expect(normalizeDeploymentInput({
       name: 'prod', type: 'dedicated', region: 'us-east-1', runtime: 'nodejs22.x'
     })).toStrictEqual({
@@ -229,6 +244,7 @@ describe('normalizeDeploymentInput (JUM-481 migration)', () => {
   });
 
   it('migrates a legacy lambda entry to a functions target with no PM2 profile', () => {
+    expect.hasAssertions();
     const migrated = normalizeDeploymentInput({
       name: 'fn', type: 'lambda', region: 'us-east-1', runtime: 'nodejs22.x'
     });
@@ -240,6 +256,7 @@ describe('normalizeDeploymentInput (JUM-481 migration)', () => {
   });
 
   it('keeps legacy values with no matrix counterpart verbatim (lossless)', () => {
+    expect.hasAssertions();
     const migrated = normalizeDeploymentInput({
       name: 'legacy', type: 'azure-functions', region: 'eastus', runtime: 'node20'
     });
@@ -251,6 +268,7 @@ describe('normalizeDeploymentInput (JUM-481 migration)', () => {
   });
 
   it('keeps an explicit Requirement 059 entry unchanged', () => {
+    expect.hasAssertions();
     const entry = createTarget({
       deployTarget: 'vm', serviceType: 'grpc+restapi', runtimeProtocol: 'grpc', pm2Profile: 'production'
     });
@@ -258,6 +276,7 @@ describe('normalizeDeploymentInput (JUM-481 migration)', () => {
   });
 
   it('normalizes garbage input to the default shape', () => {
+    expect.hasAssertions();
     expect(normalizeDeploymentInput(null)).toStrictEqual({
       name: '',
       region: '',
@@ -274,6 +293,7 @@ describe('normalizeDeploymentInput (JUM-481 migration)', () => {
 
 describe('normalizeStatePayload deployments (JUM-481)', () => {
   it('returns migrated deployments from a stored payload', () => {
+    expect.hasAssertions();
     const normalized = normalizeStatePayload({
       deployments: [{
         name: 'prod', type: 'dedicated', region: 'us-east-1', runtime: 'nodejs22.x'
@@ -285,6 +305,7 @@ describe('normalizeStatePayload deployments (JUM-481)', () => {
   });
 
   it('defaults a missing or non-array deployments section to empty', () => {
+    expect.hasAssertions();
     expect(normalizeStatePayload({}).deployments).toStrictEqual([]);
     expect(normalizeStatePayload({ deployments: 'junk' }).deployments).toStrictEqual([]);
   });

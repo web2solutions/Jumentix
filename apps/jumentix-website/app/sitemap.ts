@@ -55,10 +55,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...documentationRoutes(path.join(contentRoot, 'pt-BR', 'jumentix'), '/docs/pt-BR/jumentix')
   ];
 
+  const routePriority = (route: string): number => {
+    if (route === '' || route === '/pt-BR') return 1;
+    if (
+      route.includes('/concepts/getting-started')
+      || route.includes('/guides/rest-api')
+      || route.endsWith('/docs/jumentix')
+      || route.endsWith('/docs/pt-BR/jumentix')
+    ) {
+      return 0.9;
+    }
+    if (route.includes('/packages/')) return 0.8;
+    return 0.7;
+  };
+
   return routes.map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: now,
     changeFrequency: route.includes('changelog') ? 'daily' : 'weekly',
-    priority: route === '' || route === '/pt-BR' ? 1 : 0.7
+    priority: routePriority(route)
   }));
 }

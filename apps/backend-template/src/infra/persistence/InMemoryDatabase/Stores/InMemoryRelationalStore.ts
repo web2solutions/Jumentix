@@ -168,4 +168,10 @@ export class InMemoryRelationalStore<T extends Record<string, any>> implements I
       .map((id) => this.records.get(id))
       .filter((entry): entry is T => !!entry);
   }
+
+  public clear(): void {
+    this.records.clear();
+    Object.values(this.uniqueIndexes).forEach((index) => index.clear());
+    Object.values(this.relationIndexes).forEach((index) => index.clear());
+  }
 }

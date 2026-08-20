@@ -10,3 +10,20 @@ Current extracted scope:
 - RabbitMQ mediator adapter
 - BullMQ mediator adapter
 - environment-aware `compileMessageMediator` helper
+
+## Responsibility in context
+
+- **Stack layer:** messaging / application adapter
+- **Owns:** in-process and broker-backed mediation
+- **Used with:** backend use-cases
+- **Not responsible for:** OpenAPI HTTP routing or database persistence
+
+## Try it in the browser
+
+In-memory mediator:
+
+<DocsPlayground runtime="message-mediator" id="getting-started" />
+
+## Full documentation
+
+See the consumer [usage guide](../../documentation/md/MESSAGE-MEDIATOR-USAGE-GUIDE.md).

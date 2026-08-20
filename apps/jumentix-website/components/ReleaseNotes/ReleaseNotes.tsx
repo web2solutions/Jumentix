@@ -25,12 +25,12 @@ export function ReleaseNotes() {
   if (error) {
     return (
       <Alert my={32} icon="⚠️" title="Failed to load releases" color="red">
-        {error}
+        {error instanceof Error ? error.message : String(error)}
       </Alert>
     );
   }
 
-  if (isLoading || data.length === 0) {
+  if (isLoading) {
     return (
       <Stack mt={24} w="100%" align="center">
         <Group>
@@ -40,6 +40,29 @@ export function ReleaseNotes() {
         <Skeleton height={200} width="100%" radius={12} />
         <Skeleton height={50} width="100%" radius={12} />
         <Skeleton height={20} width="100%" radius={12} />
+      </Stack>
+    );
+  }
+
+  if (data.length === 0) {
+    return (
+      <Stack mt={24} align="flex-start">
+        <Text>
+          No tagged releases yet — the first one is coming. Follow the
+          day-to-day history on the changelog page meanwhile.
+        </Text>
+        <Button
+          color="orange"
+          component="a"
+          href="/changelog"
+          variant="gradient"
+          size="sm"
+          gradient={{ from: 'dark.9', to: 'dark.8', deg: 45 }}
+          leftSection={<IconBrandGithub size={18} />}
+          radius="xl"
+        >
+          Open the changelog
+        </Button>
       </Stack>
     );
   }

@@ -80,10 +80,14 @@ function createTaskTestPlan(files) {
   }
 
   if (integrationTests.length > 0) {
+    const needsHttpHeadroom = integrationTests.some(
+      (file) => file.includes('/Express/') || file.includes('/Restify/')
+    );
+
     return {
       type: 'changed-integration-tests',
       files: normalizeFiles([...unitTests, ...governanceTests, ...integrationTests]),
-      testTimeoutMs: integrationTests.some((file) => file.includes('/Restify/')) ? 15_000 : undefined
+      testTimeoutMs: needsHttpHeadroom ? 15_000 : undefined
     };
   }
 
@@ -159,6 +163,15 @@ function executeTaskTestPlan(plan) {
     });
     if (websiteResult.status !== 0) return Number(websiteResult.status ?? 1);
 
+    // JUM-158: website component, accessibility, and link-quality jest suites
+    // are owned by the website workflow (Requirement 091). Run them whenever a
+    // website file changes so a dev task branch cannot merge past them.
+    const websiteUnitResult = spawnSync(process.execPath, ['run', '--filter', '@jumentix/website', 'test:unit'], {
+      stdio: 'inherit',
+      env: { ...process.env }
+    });
+    if (websiteUnitResult.status !== 0) return Number(websiteUnitResult.status ?? 1);
+
     if (plan.unitTests.length > 0) {
       const status = runSuitePaths(plan.unitTests, { label: 'website-unit' });
       if (status !== 0) return status;
@@ -214,8 +227,31 @@ function executeLayerAwarePlan(plan, options = {}) {
 
   if (plan.unitSuites.length > 0) {
     const runtime = resolveTestRuntime();
-    const unitPaths = plan.suites.filter((suite) => suite.type === 'unit').map((s) => s.path);
-    const status = runSuites(unitPaths, { label: 'layer-aware-unit', runtime });
+    const unitSuites = plan.suites.filter((suite) => suite.type === 'unit');
+    // JUM-680: a suite that names its own script is run by that script, not by
+    // handing its path to the default runner. The website's React suites need
+    // jsdom and the website's Jest config; `bun test` cannot run them at all.
+    const scripted = [...new Set(unitSuites.filter((s) => s.script).map((s) => s.script))];
+    const unitPaths = unitSuites.filter((suite) => !suite.script).map((s) => s.path);
+    let status = unitPaths.length > 0
+      ? runSuites(unitPaths, { label: 'layer-aware-unit', runtime })
+      : 0;
+    for (const script of scripted) {
+      if (status !== 0) break;
+      console.log(`[ci] layer-aware unit script: ${script}`);
+      const result = spawn('bun', ['run', script], { stdio: 'inherit', env: process.env });
+      status = typeof result.status === 'number' ? result.status : 1;
+      // Recorded as executed, or the fail-closed evidence check reports them as
+      // planned-but-missing — which it did, correctly, the first time.
+      for (const suite of unitSuites.filter((s) => s.script === script)) {
+        executedSuites.push(suite.path);
+        suiteResults.push({
+          suite: suite.path,
+          status: status === 0 ? 'passed' : 'failed',
+          runner: script
+        });
+      }
+    }
     for (const suite of unitPaths) {
       executedSuites.push(suite);
       suiteResults.push({
@@ -296,7 +332,16 @@ function runTaskChangeTests(options = {}) {
   let shadow = null;
 
   if (useV2 || useShadow) {
-    const v2Plan = createLayerAwarePlan(changedFiles, options);
+    /*
+     * Injectable for the same reason `execute` and `logger` are (JUM-697).
+     *
+     * Resolving the layer-aware plan reads `test-map.json` and walks the tree.
+     * A suite asserting the outcome mapping did that four times per test, which
+     * grew with the manifest until the four crossed a 5-second timeout — a test
+     * failing on the cost of what it was not testing.
+     */
+    const resolvePlan = options.resolvePlan || createLayerAwarePlan;
+    const v2Plan = resolvePlan(changedFiles, options);
     if (useShadow && !useV2) {
       shadow = {
         mode: 'report-only',

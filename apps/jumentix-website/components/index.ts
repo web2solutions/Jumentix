@@ -3,6 +3,11 @@ export { Logo } from './Logo/Logo';
 export { MantineFooter } from './MantineFooter/MantineFooter';
 export { MantineNavBar } from './MantineNavBar/MantineNavBar';
 export { MantineNextraThemeObserver } from './MantineNextraThemeObserver/MantineNextraThemeObserver';
+export { CanaFrameworkPlayground } from './cana-framework';
+export { CanaPlayground } from './cana/CanaPlayground';
+export { CANA_SNIPPETS, getCanaSnippet } from './cana/snippets';
+export { DocsPlayground, getDocsSnippet, listDocsSnippets } from './docs-playground';
+export { DocsJsonLd } from './seo/DocsJsonLd';
 export {
   ActionLink,
   ArchitectureFlow,

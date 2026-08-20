@@ -43,7 +43,7 @@ import {
 /**
  * The runtime/version shape: a runtime name followed by a version, with
  * optional dotted segments and the provider wildcard (`nodejs22.x`,
- * `node20`, `python3.12`, `bun1.3.14`). Free-text values like `latest` —
+ * `node20`, `python3.12`, `bun1.3.13`). Free-text values like `latest` —
  * or a bare version with no runtime name — tell the operator nothing about
  * what the target runs and are rejected.
  */

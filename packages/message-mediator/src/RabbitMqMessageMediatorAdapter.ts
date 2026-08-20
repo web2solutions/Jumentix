@@ -5,9 +5,7 @@ import type {
   IMessageHandlerRegistrationOptions,
   IMessageMediator,
   IMessageRequestOptions,
-  IMessageResponse
-} from './contracts';
-import type {
+  IMessageResponse,
   MessageHandler
 } from './contracts';
 

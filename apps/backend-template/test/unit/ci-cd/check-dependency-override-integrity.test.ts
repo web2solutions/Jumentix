@@ -42,7 +42,7 @@ describe('check-dependency-override-integrity', () => {
     const failures = validateOverrideIntegrity(manifest);
 
     expect(failures).toHaveLength(1);
-    expect(failures[0]).toContain('expected "^8.5.23"');
+    expect(failures[0]).toContain('expected "^8.5.26"');
   });
 
   it('rejects pnpm nested-selector syntax, which resolves to nothing under Bun and npm', () => {
@@ -106,7 +106,7 @@ describe('check-dependency-override-integrity CLI', () => {
 
     main();
 
-    expect(log.mock.calls.flat().join('\n')).toContain('16 pins');
+    expect(log.mock.calls.flat().join('\n')).toContain('19 pins');
   });
 
   it('prints each failure and exits non-zero when a pin is missing', () => {
@@ -253,5 +253,152 @@ describe('installed dependent range reader', () => {
   it('returns null when the dependent does not declare that dependency', () => {
     expect.hasAssertions();
     expect(guardModule.readInstalledDependentRange('express', 'not-a-real-dependency')).toBeNull();
+  });
+});
+
+/**
+ * The two paths the major-compatibility guard takes before it compares
+ * anything (JUM-681).
+ *
+ * The mismatch itself is covered above. What was not: the early return for an
+ * override the manifest does not carry, and the accepting path. Between them
+ * they are the difference between "this pin is fine" and "this pin was never
+ * looked at", which read the same in a passing build.
+ */
+describe('override major compatibility, before the comparison (JUM-681)', () => {
+  // Required locally, matching the suite above: the module is CommonJS and the
+  // top-level import list is the shape the other describes already use.
+  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+  const majors = require('../../../../../ci-cd/check-dependency-override-integrity') as {
+    OVERRIDE_MAJOR_COMPATIBILITY: Array<{
+      dependent: string; overridden: string; requiredMajor: number;
+    }>;
+    validateOverrideMajors: (
+      pkg: { overrides?: Record<string, string> },
+      read: (dependent: string, overridden: string) => string | null
+    ) => string[];
+  };
+  const [firstPair] = majors.OVERRIDE_MAJOR_COMPATIBILITY;
+
+  it('says nothing about an override the manifest does not carry', () => {
+    expect.hasAssertions();
+
+    // Absence is the concern of `validateOverrideIntegrity`; reporting it twice
+    // would make one dropped pin look like two unrelated problems.
+    expect(majors.validateOverrideMajors({ overrides: {} }, () => '^1.0.0')).toStrictEqual([]);
+  });
+
+  it('accepts a dependent still declaring the expected major', () => {
+    expect.hasAssertions();
+
+    const failures = majors.validateOverrideMajors(
+      { overrides: { [firstPair.overridden]: '1.2.3' } },
+      () => `^${String(firstPair.requiredMajor)}.0.0`
+    );
+
+    expect(failures).toStrictEqual([]);
+  });
+});
+
+/**
+ * The rest of the major-compatibility guard (JUM-681).
+ *
+ * The pairing it enforces is the one that broke LoopBack and Sails: `send` was
+ * overridden to `^1.2.0` for Express 5 while Express 4 still reached into
+ * `send@0`'s `mime.charsets`. Each branch below is a way that guard can go
+ * quiet — a dependent that dropped the dependency, a range it cannot parse, a
+ * mismatch it should report.
+ */
+describe('override major compatibility, the remaining branches (JUM-681)', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+  const guard = require('../../../../../ci-cd/check-dependency-override-integrity') as {
+    OVERRIDE_MAJOR_COMPATIBILITY: Array<{
+      dependent: string; overridden: string; requiredMajor: number;
+    }>;
+    rangeMajor: (range: string) => number | null;
+    validateOverrideMajors: (
+      pkg: { overrides?: Record<string, string> },
+      read: (dependent: string, overridden: string) => string | null
+    ) => string[];
+    readInstalledDependentRange: (dependent: string, overridden: string) => string | null;
+    main: () => void;
+  };
+  const [pair] = guard.OVERRIDE_MAJOR_COMPATIBILITY;
+
+  it('reads the leading major out of every range shape it will meet', () => {
+    expect.hasAssertions();
+
+    expect(guard.rangeMajor('^1.2.0')).toBe(1);
+    expect(guard.rangeMajor('~0.19.0')).toBe(0);
+    expect(guard.rangeMajor('2.x')).toBe(2);
+    // Not a version at all — reported as unknown rather than coerced to 0,
+    // which would read as "major 0" and compare equal to `~0.x`.
+    expect(guard.rangeMajor('latest')).toBeNull();
+  });
+
+  it('says so when the dependent no longer depends on the overridden package', () => {
+    expect.hasAssertions();
+
+    // The pairing outlived its reason: the override may now be pinning
+    // something for nobody.
+    const failures = guard.validateOverrideMajors(
+      { overrides: { [pair.overridden]: '1.2.3' } },
+      () => null
+    );
+
+    expect(failures).toHaveLength(1);
+    expect(failures[0]).toContain('no longer depends on');
+  });
+
+  it('rejects an override whose major differs from the dependent declaration', () => {
+    expect.hasAssertions();
+
+    const failures = guard.validateOverrideMajors(
+      { overrides: { [pair.overridden]: '9.0.0' } },
+      () => `^${String(pair.requiredMajor)}.0.0`
+    );
+
+    expect(failures.join(' ')).toContain(pair.dependent);
+  });
+
+  it('returns null for a dependent that is not installed', () => {
+    expect.hasAssertions();
+
+    // A missing package must not crash the guard on a partial tree.
+    expect(guard.readInstalledDependentRange('no-such-package-here', 'send')).toBeNull();
+  });
+
+  it('rejects a dependent that moved to a major this guard was never told about', () => {
+    expect.hasAssertions();
+
+    // Override and dependent agree — nothing crosses a major — but both moved
+    // past the version the compatibility table records. Passing that silently is
+    // how the table goes stale and stops protecting anything: the pair would
+    // keep being "verified" against a major nobody checked.
+    const failures = guard.validateOverrideMajors(
+      { overrides: { [pair.overridden]: `^${String(pair.requiredMajor + 1)}.0.0` } },
+      () => `^${String(pair.requiredMajor + 1)}.0.0`
+    );
+
+    expect(failures).toHaveLength(1);
+    expect(failures[0]).toContain('this guard expects major');
+  });
+
+  it('reports the whole pin set as intact against the real manifest', () => {
+    expect.hasAssertions();
+
+    // `main` over this repository, which is the invocation CI makes. It exits
+    // non-zero on any failure, so reaching the summary at all is the assertion;
+    // the counts in it are what a reader uses to see the guard checked
+    // something rather than nothing.
+    const log = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+
+    guard.main();
+    const summary = log.mock.calls.map((call) => String(call[0])).join('\n');
+
+    log.mockRestore();
+
+    expect(summary).toContain('Dependency override integrity guard passed');
+    expect(summary).toContain('major-compatibility pair(s) verified');
   });
 });

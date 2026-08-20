@@ -98,6 +98,15 @@
       "tier": "gate",
       "kind": "non-hexagonal"
     },
+    "website": {
+      "dependsOn": [],
+      "sourceGlobs": [
+        "apps/jumentix-website/**"
+      ],
+      "runner": "bun",
+      "tier": "gate",
+      "kind": "non-hexagonal"
+    },
     "browser-harness": {
       "dependsOn": [],
       "sourceGlobs": [
@@ -279,8 +288,28 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/interface/CLI/domainManager.refusals.test.ts",
+      "path": "apps/backend-template/test/unit/interface/CLI/domainManager.refusals.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/interface/CLI/index.test.ts",
       "path": "apps/backend-template/test/unit/interface/CLI/index.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/CLI/entityModelManager.flows.test.ts",
+      "path": "apps/backend-template/test/unit/interface/CLI/entityModelManager.flows.test.ts",
       "layer": "interface/runtime",
       "kind": "hexagonal",
       "type": "unit",
@@ -331,8 +360,38 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/interface/CLI/entityModelManager.refusals.test.ts",
+      "path": "apps/backend-template/test/unit/interface/CLI/entityModelManager.refusals.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/HTTP/RestAPI.deadLetterReplay.test.ts",
+      "path": "apps/backend-template/test/unit/interface/HTTP/RestAPI.deadLetterReplay.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/interface/HTTP/RestAPI.catalogs.test.ts",
       "path": "apps/backend-template/test/unit/interface/HTTP/RestAPI.catalogs.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/HTTP/RestAPI.handlerFallback.test.ts",
+      "path": "apps/backend-template/test/unit/interface/HTTP/RestAPI.handlerFallback.test.ts",
       "layer": "interface/runtime",
       "kind": "hexagonal",
       "type": "unit",
@@ -385,6 +444,16 @@
     {
       "id": "apps/backend-template/test/unit/interface/HTTP/adapters/fastify/FastifyServer.test.ts",
       "path": "apps/backend-template/test/unit/interface/HTTP/adapters/fastify/FastifyServer.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/HTTP/validators/oasInputMessages.test.ts",
+      "path": "apps/backend-template/test/unit/interface/HTTP/validators/oasInputMessages.test.ts",
       "layer": "interface/runtime",
       "kind": "hexagonal",
       "type": "unit",
@@ -493,6 +562,16 @@
       "runner": "bun",
       "ciRunner": "node",
       "bunCompat": "pending-resetModules-or-native-gap",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/infra/auth/AuthService.environment.test.ts",
+      "path": "apps/backend-template/test/unit/infra/auth/AuthService.environment.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
       "tier": "gate",
       "timeoutMs": 60000
     },
@@ -609,6 +688,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/infra/persistence/InMemoryDatabase/InMemoryRelationalStore.indexes.test.ts",
+      "path": "apps/backend-template/test/unit/infra/persistence/InMemoryDatabase/InMemoryRelationalStore.indexes.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/infra/mutex/MutexService.branches.test.ts",
       "path": "apps/backend-template/test/unit/infra/mutex/MutexService.branches.test.ts",
       "layer": "adapters/out+infra",
@@ -701,6 +790,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/shared/openapi/OpenApi31DataEntityEdges.test.ts",
+      "path": "apps/backend-template/test/unit/shared/openapi/OpenApi31DataEntityEdges.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/shared/utils.errorExposure.test.ts",
       "path": "apps/backend-template/test/unit/shared/utils.errorExposure.test.ts",
       "layer": "tooling",
@@ -763,6 +862,16 @@
     {
       "id": "apps/backend-template/test/unit/service-management/modelValidation.test.ts",
       "path": "apps/backend-template/test/unit/service-management/modelValidation.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/service-management/catalogSyncClientDefaults.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/catalogSyncClientDefaults.test.ts",
       "layer": "service-management/designer",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -891,6 +1000,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/service-management/catalogSyncTransport.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/catalogSyncTransport.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/service-management/modelQueries.test.ts",
       "path": "apps/backend-template/test/unit/service-management/modelQueries.test.ts",
       "layer": "service-management/designer",
@@ -913,6 +1032,16 @@
     {
       "id": "apps/backend-template/test/unit/service-management/rbacContract.test.ts",
       "path": "apps/backend-template/test/unit/service-management/rbacContract.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/service-management/canaMigrationFailures.test.ts",
+      "path": "apps/backend-template/test/unit/service-management/canaMigrationFailures.test.ts",
       "layer": "service-management/designer",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -1081,6 +1210,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/ci-cd/guard-defaults.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/guard-defaults.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/ci-cd/run-full-test-matrix.test.ts",
       "path": "apps/backend-template/test/unit/ci-cd/run-full-test-matrix.test.ts",
       "layer": "tooling",
@@ -1111,8 +1250,28 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/ci-cd/check-rtdb-indexes.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/check-rtdb-indexes.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/ci-cd/run-suite-resolution.test.ts",
       "path": "apps/backend-template/test/unit/ci-cd/run-suite-resolution.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/ci-cd/run-suite-execution.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/run-suite-execution.test.ts",
       "layer": "tooling",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -1281,6 +1440,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/ci-cd/check-test-integrity.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/check-test-integrity.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/ci-cd/check-fail-closed.test.ts",
       "path": "apps/backend-template/test/unit/ci-cd/check-fail-closed.test.ts",
       "layer": "tooling",
@@ -1325,6 +1494,16 @@
     {
       "id": "apps/backend-template/test/unit/ci-cd/sync-service-management-cana-bundle.test.ts",
       "path": "apps/backend-template/test/unit/ci-cd/sync-service-management-cana-bundle.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/ci-cd/check-prevention-gates.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/check-prevention-gates.test.ts",
       "layer": "tooling",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -1395,6 +1574,16 @@
     {
       "id": "apps/backend-template/test/unit/modules/Users/factories.test.ts",
       "path": "apps/backend-template/test/unit/modules/Users/factories.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Users/composition/composeUserDeadLetterReplay.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Users/composition/composeUserDeadLetterReplay.test.ts",
       "layer": "application",
       "kind": "hexagonal",
       "type": "unit",
@@ -1477,6 +1666,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/modules/Users/application/service/UserService.lockRelease.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Users/application/service/UserService.lockRelease.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/modules/Users/application/service/UserService.test.ts",
       "path": "apps/backend-template/test/unit/modules/Users/application/service/UserService.test.ts",
       "layer": "application",
@@ -1489,6 +1688,16 @@
     {
       "id": "apps/backend-template/test/unit/modules/Users/application/service/UserProviderLocal.test.ts",
       "path": "apps/backend-template/test/unit/modules/Users/application/service/UserProviderLocal.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Users/application/service/UserService.organizationMembership.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Users/application/service/UserService.organizationMembership.test.ts",
       "layer": "application",
       "kind": "hexagonal",
       "type": "unit",
@@ -1539,6 +1748,16 @@
     {
       "id": "apps/backend-template/test/unit/modules/Users/application/service/AuthService.audit.test.ts",
       "path": "apps/backend-template/test/unit/modules/Users/application/service/AuthService.audit.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Users/application/service/UserService.deadLetter.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Users/application/service/UserService.deadLetter.test.ts",
       "layer": "application",
       "kind": "hexagonal",
       "type": "unit",
@@ -1617,8 +1836,38 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/modules/Catalogs/CatalogModel.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Catalogs/CatalogModel.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Catalogs/catalogFeatureDefaults.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Catalogs/catalogFeatureDefaults.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/modules/Catalogs/composition/composeCatalogsServices.test.ts",
       "path": "apps/backend-template/test/unit/modules/Catalogs/composition/composeCatalogsServices.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Catalogs/adapters/CatalogDataRepositoryDefaults.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Catalogs/adapters/CatalogDataRepositoryDefaults.test.ts",
       "layer": "application",
       "kind": "hexagonal",
       "type": "unit",
@@ -3084,6 +3333,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "packages/agent-registry/test/firebase-credentials.test.ts",
+      "path": "packages/agent-registry/test/firebase-credentials.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "packages/agent-registry/test/firestore-client.test.ts",
       "path": "packages/agent-registry/test/firestore-client.test.ts",
       "layer": "adapters/out+infra",
@@ -3124,6 +3383,66 @@
       "timeoutMs": 60000
     },
     {
+      "id": "packages/cana-react/test/collection-edges.test.ts",
+      "path": "packages/cana-react/test/collection-edges.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "packages/cana-react/test/collection.test.ts",
+      "path": "packages/cana-react/test/collection.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "packages/cana-react/test/hooks.test.ts",
+      "path": "packages/cana-react/test/hooks.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "packages/cana-vue/test/collection-edges.test.ts",
+      "path": "packages/cana-vue/test/collection-edges.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "packages/cana-vue/test/collection.test.ts",
+      "path": "packages/cana-vue/test/collection.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "packages/cana-vue/test/composables.test.ts",
+      "path": "packages/cana-vue/test/composables.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "packages/cana/test/packaging.test.ts",
       "path": "packages/cana/test/packaging.test.ts",
       "layer": "adapters/out+infra",
@@ -3152,6 +3471,39 @@
       "runner": "bun",
       "tier": "gate",
       "timeoutMs": 60000
+    },
+    {
+      "id": "packages/dead-letter-queue/test/dead-letter-queue.test.ts",
+      "path": "packages/dead-letter-queue/test/dead-letter-queue.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "packages/dead-letter-queue/test/dead-letter-replay-worker.test.ts",
+      "path": "packages/dead-letter-queue/test/dead-letter-replay-worker.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "packages/dead-letter-queue/test/integration/redis.integration.test.ts",
+      "path": "packages/dead-letter-queue/test/integration/redis.integration.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "redis",
+      "script": "test:integration:dead-letter",
+      "runner": "bun",
+      "tier": "nightly",
+      "timeoutMs": 120000,
+      "reason": "Needs the Redis container from docker-compose-redis.yml; skips itself without RUN_REDIS_INTEGRATION rather than passing."
     },
     {
       "id": "packages/designer-core/test/consumer-smoke.test.ts",
@@ -3250,6 +3602,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "packages/message-mediator/test/bullmq-adapter.test.ts",
+      "path": "packages/message-mediator/test/bullmq-adapter.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "packages/message-mediator/test/integration/brokers.integration.test.ts",
       "path": "packages/message-mediator/test/integration/brokers.integration.test.ts",
       "layer": "adapters/out+infra",
@@ -3265,6 +3627,16 @@
     {
       "id": "packages/message-mediator/test/message-mediator.test.ts",
       "path": "packages/message-mediator/test/message-mediator.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "packages/message-mediator/test/rabbitmq-adapter.test.ts",
+      "path": "packages/message-mediator/test/rabbitmq-adapter.test.ts",
       "layer": "adapters/out+infra",
       "kind": "hexagonal",
       "type": "unit",
@@ -3361,6 +3733,299 @@
       "runner": "bun",
       "tier": "gate",
       "timeoutMs": 60000
+    },
+    {
+      "id": "apps/jumentix-website/app/api/github-releases/route.test.ts",
+      "path": "apps/jumentix-website/app/api/github-releases/route.test.ts",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/components/ReleaseNotes/ReleaseNotes.test.tsx",
+      "path": "apps/jumentix-website/components/ReleaseNotes/ReleaseNotes.test.tsx",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/components/Welcome/Welcome.test.tsx",
+      "path": "apps/jumentix-website/components/Welcome/Welcome.test.tsx",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/components/cana-framework/CanaFrameworkPlayground.test.tsx",
+      "path": "apps/jumentix-website/components/cana-framework/CanaFrameworkPlayground.test.tsx",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/components/cana/CanaPlayground.test.tsx",
+      "path": "apps/jumentix-website/components/cana/CanaPlayground.test.tsx",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/components/code/MDXMonacoPre.test.tsx",
+      "path": "apps/jumentix-website/components/code/MDXMonacoPre.test.tsx",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/components/code/MDXSourceBlockquote.test.tsx",
+      "path": "apps/jumentix-website/components/code/MDXSourceBlockquote.test.tsx",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/components/code/MonacoCodeBlock.test.tsx",
+      "path": "apps/jumentix-website/components/code/MonacoCodeBlock.test.tsx",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/components/commercial/ChangelogPage.test.tsx",
+      "path": "apps/jumentix-website/components/commercial/ChangelogPage.test.tsx",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/components/commercial/CommercialPages.a11y.test.tsx",
+      "path": "apps/jumentix-website/components/commercial/CommercialPages.a11y.test.tsx",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/components/commercial/CommercialPages.link-quality.test.tsx",
+      "path": "apps/jumentix-website/components/commercial/CommercialPages.link-quality.test.tsx",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/components/commercial/CommercialPages.test.tsx",
+      "path": "apps/jumentix-website/components/commercial/CommercialPages.test.tsx",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/components/design-system/DesignSystem.a11y.test.tsx",
+      "path": "apps/jumentix-website/components/design-system/DesignSystem.a11y.test.tsx",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/components/design-system/DesignSystem.link-quality.test.tsx",
+      "path": "apps/jumentix-website/components/design-system/DesignSystem.link-quality.test.tsx",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/components/design-system/DesignSystem.test.tsx",
+      "path": "apps/jumentix-website/components/design-system/DesignSystem.test.tsx",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/components/docs-playground/DocsPlayground.test.tsx",
+      "path": "apps/jumentix-website/components/docs-playground/DocsPlayground.test.tsx",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/scripts/cana-consumer-filter.test.mjs",
+      "path": "apps/jumentix-website/scripts/cana-consumer-filter.test.mjs",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/scripts/discover-routes.test.mjs",
+      "path": "apps/jumentix-website/scripts/discover-routes.test.mjs",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/scripts/private-packages-sync.test.mjs",
+      "path": "apps/jumentix-website/scripts/private-packages-sync.test.mjs",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/cypress/e2e/accessibility.cy.js",
+      "path": "apps/jumentix-website/cypress/e2e/accessibility.cy.js",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "website:test:cypress",
+      "runner": "bun",
+      "tier": "nightly",
+      "timeoutMs": 600000,
+      "reason": "Needs a production build and a running server; nightly rather than gate for that cost alone."
+    },
+    {
+      "id": "apps/jumentix-website/cypress/e2e/commercial-routes.cy.js",
+      "path": "apps/jumentix-website/cypress/e2e/commercial-routes.cy.js",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "website:test:cypress",
+      "runner": "bun",
+      "tier": "nightly",
+      "timeoutMs": 600000,
+      "reason": "Needs a production build and a running server; nightly rather than gate for that cost alone."
+    },
+    {
+      "id": "apps/jumentix-website/cypress/e2e/docs-routes.cy.js",
+      "path": "apps/jumentix-website/cypress/e2e/docs-routes.cy.js",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "website:test:cypress",
+      "runner": "bun",
+      "tier": "nightly",
+      "timeoutMs": 600000,
+      "reason": "Needs a production build and a running server; nightly rather than gate for that cost alone."
+    },
+    {
+      "id": "apps/jumentix-website/cypress/e2e/responsive-nav.cy.js",
+      "path": "apps/jumentix-website/cypress/e2e/responsive-nav.cy.js",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "website:test:cypress",
+      "runner": "bun",
+      "tier": "nightly",
+      "timeoutMs": 600000,
+      "reason": "Needs a production build and a running server; nightly rather than gate for that cost alone."
+    },
+    {
+      "id": "apps/jumentix-website/cypress/e2e/route-integrity.cy.js",
+      "path": "apps/jumentix-website/cypress/e2e/route-integrity.cy.js",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "cypress",
+      "script": "website:test:cypress",
+      "runner": "bun",
+      "tier": "nightly",
+      "timeoutMs": 600000,
+      "reason": "Needs a production build and a running server; nightly rather than gate for that cost alone."
     },
     {
       "id": "packages/cana/cypress/adapter.cy.ts",
@@ -3671,13 +4336,7 @@
       "timeoutMs": 120000
     }
   ],
-  "quarantine": [
-    {
-      "path": "packages/cana/test/performance.test.ts",
-      "issue": "JUM-586",
-      "reason": "Wall-clock ratios measured against fake-indexeddb on shared CI hardware. It fails intermittently (largeTime < max(smallTime*25, 20) on a loaded runner) and, when it passes, it certifies the fake rather than IndexedDB. Requirement 112 §4 moves cana to headless Cypress with no shims; these shape assertions belong there, against a real engine, and are rewritten as part of that work."
-    }
-  ],
+  "quarantine": [],
   "sourceRoots": [
     "apps/backend-template/src",
     "apps/backend-template/test",
@@ -3713,9 +4372,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 189,
+    "unit": 224,
     "integration": 97,
     "smoke": 2,
-    "suites": 312
+    "suites": 371
   }
 }

@@ -49,8 +49,8 @@ bun run website:vercel:link
 A imagem Bun padrão da Vercel pode ficar atrás do pin do repositório (`.bun-version` / `packageManager`).
 `apps/jumentix-website/vercel.json` força:
 
-- `installCommand`: `bunx bun@1.3.14 install --frozen-lockfile`
-- `buildCommand`: `bunx bun@1.3.14 run build`
+- `installCommand`: `bunx bun@1.3.13 install --frozen-lockfile`
+- `buildCommand`: `bunx bun@1.3.13 run build`
 
 ## Configuração
 
@@ -73,13 +73,11 @@ Defina no projeto Vercel (Production + Preview):
 
 | Nome | Propósito |
 | --- | --- |
-| `GITHUB_TOKEN` | Commits do changelog + API de releases (`ChangelogPage`, `/api/github-releases`) |
+| `GITHUB_TOKEN` | Variável legada opcional. Nada em runtime precisa dela: `/changelog` e `/api/github-releases` empacotam seus dados em build (`scripts/sync-changelog.mjs`, `scripts/sync-releases.mjs`). O snapshot de releases a utiliza em build quando presente. |
 
-Opcional:
-
-| Nome | Propósito |
-| --- | --- |
-| `NEXT_PUBLIC_VERCEL_ENV` | Habilita Vercel Analytics apenas quando definido pela plataforma |
+Analytics da Vercel é montado no layout raiz do App Router via
+`@vercel/analytics/react` (`<Analytics />`) e não exige variável de
+ambiente customizada.
 
 ## Verificação pós-deploy
 
@@ -102,3 +100,6 @@ Rollback: use a implantação de Production anterior no painel do projeto Vercel
 - Builds locais e da Vercel usam o lockfile Bun do workspace e seus patches de dependência.
 - Os scripts de implantação raiz são intencionalmente independentes de escopo (sem `--scope` forçado) para suportar
   contextos Vercel de conta pessoal e conta de equipe.
+- O link de projeto do Vercel CLI (`.vercel/project.json`, criado por `vercel link` ou deploy
+  manual) é configuração local da máquina. Está no .gitignore da raiz do repositório e nunca
+  deve ser commitado.

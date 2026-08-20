@@ -13,9 +13,12 @@ committed.
 
 | Source of truth | Value |
 | --- | --- |
-| `.bun-version` | `1.3.14` |
-| `package.json#packageManager` | `bun@1.3.14` |
-| `package.json#engines.bun` | `>=1.3.14` |
+| `.bun-version` | `1.3.13` |
+| `package.json#packageManager` | `bun@1.3.13` |
+| `package.json#engines.bun` | `>=1.3.13` |
+
+> **Why 1.3.13 and not the newest release.** Bun 1.3.14 rejects a lockfile it has just written for some dependency trees — `bun install` succeeds, `bun install --frozen-lockfile` then fails on the same file, and a lock written by 1.3.13 is rejected too. 1.3.13, 1.3.11 and 1.3.9 all accept it. The pin moves back up when a release fixes it (JUM-708).
+
 
 `ci-cd/check-bun-version.js` enforces all three and fails closed. It runs as `preinstall`, so it is
 dependency-free by design: on a cold clone `node_modules` does not exist yet, and requiring `semver` there

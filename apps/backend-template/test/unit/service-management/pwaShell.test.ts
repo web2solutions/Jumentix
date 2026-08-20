@@ -218,12 +218,14 @@ function committedShellAssets(assets: string[]): string[] {
 
 describe('pwa shell service worker (JUM-489)', () => {
   it('derives the cache name from a versioned prefix shared with the page side', () => {
+    expect.hasAssertions();
     expect(sw.SHELL_VERSION).toMatch(/^\d+\.\d+\.\d+$/);
     expect(sw.SHELL_CACHE_NAME).toBe(`${sw.SHELL_CACHE_PREFIX}${sw.SHELL_VERSION}`);
     expect(sw.SHELL_CACHE_PREFIX).toBe(PWA_SHELL_CACHE_PREFIX);
   });
 
   it('precaches a shell that exists on disk and includes every boot-critical asset', () => {
+    expect.hasAssertions();
     expect(sw.SHELL_ASSETS.length).toBeGreaterThan(10);
     sw.SHELL_ASSETS.forEach((asset: string) => {
       expect(asset.startsWith('./')).toBe(true);
@@ -261,6 +263,7 @@ describe('pwa shell service worker (JUM-489)', () => {
   });
 
   it('treats only same-origin non-API URLs as shell', () => {
+    expect.hasAssertions();
     expect(sw.isShellUrl(new URL('http://127.0.0.1:3200/script.js'), 'http://127.0.0.1:3200')).toBe(true);
     expect(sw.isShellUrl(new URL('http://127.0.0.1:3200/'), 'http://127.0.0.1:3200')).toBe(true);
     expect(sw.isShellUrl(new URL('http://127.0.0.1:3200/api/runtime/env'), 'http://127.0.0.1:3200')).toBe(false);
@@ -268,6 +271,7 @@ describe('pwa shell service worker (JUM-489)', () => {
   });
 
   it('installs by precaching every shell asset into the versioned cache', async () => {
+    expect.hasAssertions();
     const cacheStorage = createFakeCacheStorage();
     await sw.handleInstall({ cacheStorage });
     expect(cacheStorage.open.calls).toStrictEqual([[sw.SHELL_CACHE_NAME]]);
@@ -280,6 +284,7 @@ describe('pwa shell service worker (JUM-489)', () => {
   });
 
   it('cleans stale shell caches on activation and claims clients', async () => {
+    expect.hasAssertions();
     const cacheStorage = createFakeCacheStorage({
       'service-management-shell@0.0.1': ['./'],
       [sw.SHELL_CACHE_NAME]: ['./'],
@@ -295,6 +300,7 @@ describe('pwa shell service worker (JUM-489)', () => {
   });
 
   it('serves precached shell requests from the cache without touching the network', async () => {
+    expect.hasAssertions();
     const cacheStorage = createFakeCacheStorage({
       [sw.SHELL_CACHE_NAME]: ['http://127.0.0.1:3200/script.js']
     });
@@ -310,6 +316,7 @@ describe('pwa shell service worker (JUM-489)', () => {
   });
 
   it('falls back to the network on a cache miss', async () => {
+    expect.hasAssertions();
     const cacheStorage = createFakeCacheStorage({ [sw.SHELL_CACHE_NAME]: [] });
     const fetchImpl = createSpy(async () => 'network-response');
     const response = await sw.handleFetchRequest({
@@ -323,6 +330,7 @@ describe('pwa shell service worker (JUM-489)', () => {
   });
 
   it('never serves API, non-GET or cross-origin requests from the cache', async () => {
+    expect.hasAssertions();
     const cacheStorage = createFakeCacheStorage({
       [sw.SHELL_CACHE_NAME]: ['http://127.0.0.1:3200/api/runtime/env']
     });
@@ -353,6 +361,7 @@ describe('pwa shell service worker (JUM-489)', () => {
   });
 
   it('activates on demand only through an explicit SKIP_WAITING message', () => {
+    expect.hasAssertions();
     const skipWaiting = createSpy(async () => undefined);
     sw.handleMessage({ data: { type: SKIP_WAITING_MESSAGE_TYPE }, skipWaiting });
     expect(skipWaiting.calls).toHaveLength(1);
@@ -364,6 +373,7 @@ describe('pwa shell service worker (JUM-489)', () => {
   });
 
   it('wires install, activate, fetch and message listeners onto the worker global', async () => {
+    expect.hasAssertions();
     type WorkerEventHandler = (event: never) => void;
     const handlers = new Map<string, WorkerEventHandler>();
     const waitUntil = createSpy();
@@ -412,6 +422,7 @@ describe('pwa shell service worker (JUM-489)', () => {
 
 describe('pwa shell registration and update flow (JUM-489)', () => {
   it('reports unsupported when no service worker container exists', async () => {
+    expect.hasAssertions();
     const result = await registerPwaShell({
       serviceWorkerContainer: undefined,
       cacheStorage: undefined,
@@ -422,6 +433,7 @@ describe('pwa shell registration and update flow (JUM-489)', () => {
   });
 
   it('resolves default deps from the (absent) globals when called bare', async () => {
+    expect.hasAssertions();
     // Under Node/Bun there is no navigator.serviceWorker: the bare call takes
     // every guarded-default branch and lands on the unsupported outcome.
     const result = await registerPwaShell();
@@ -429,6 +441,7 @@ describe('pwa shell registration and update flow (JUM-489)', () => {
   });
 
   it('honours a custom worker URL and ignores updatefound without an installing worker', async () => {
+    expect.hasAssertions();
     const documentRef = createFakeDocument();
     const registration = createFakeRegistration();
     const container = createFakeContainer({ controller: {} });
@@ -448,11 +461,13 @@ describe('pwa shell registration and update flow (JUM-489)', () => {
   });
 
   it('clearShellCaches with no cache storage is a no-op', async () => {
+    expect.hasAssertions();
     const removed = await clearShellCaches(undefined);
     expect(removed).toStrictEqual([]);
   });
 
   it('reports a non-Error registration failure with its string form', async () => {
+    expect.hasAssertions();
     const documentRef = createFakeDocument();
     const container = createFakeContainer();
     container.register = createSpy(async () => {
@@ -471,6 +486,7 @@ describe('pwa shell registration and update flow (JUM-489)', () => {
   });
 
   it('registers the classic worker script relative to the app root', async () => {
+    expect.hasAssertions();
     const documentRef = createFakeDocument();
     const registration = createFakeRegistration();
     const container = createFakeContainer();
@@ -490,6 +506,7 @@ describe('pwa shell registration and update flow (JUM-489)', () => {
   });
 
   it('prompts when an update is already waiting on a controlled page', async () => {
+    expect.hasAssertions();
     const documentRef = createFakeDocument();
     const waiting = { postMessage: createSpy() };
     const registration = createFakeRegistration({ waiting });
@@ -511,6 +528,7 @@ describe('pwa shell registration and update flow (JUM-489)', () => {
   });
 
   it('prompts when an update installs while the page is controlled, but not on first install', async () => {
+    expect.hasAssertions();
     const documentRef = createFakeDocument();
     const installing = createFakeInstallingWorker();
     const registration = createFakeRegistration();
@@ -549,6 +567,7 @@ describe('pwa shell registration and update flow (JUM-489)', () => {
   });
 
   it('sends SKIP_WAITING and reloads on controllerchange only after the user accepts', () => {
+    expect.hasAssertions();
     const documentRef = createFakeDocument();
     const locationRef = { reload: createSpy() };
     const waiting = { postMessage: createSpy() };
@@ -575,6 +594,7 @@ describe('pwa shell registration and update flow (JUM-489)', () => {
   });
 
   it('does nothing when reload is clicked but no worker is waiting', () => {
+    expect.hasAssertions();
     const documentRef = createFakeDocument();
     const locationRef = { reload: createSpy() };
     const registration = createFakeRegistration({ waiting: null });
@@ -594,6 +614,7 @@ describe('pwa shell registration and update flow (JUM-489)', () => {
   });
 
   it('dismisses the banner on Later without touching the waiting worker', () => {
+    expect.hasAssertions();
     const documentRef = createFakeDocument();
     const waiting = { postMessage: createSpy() };
     const registration = createFakeRegistration({ waiting });
@@ -613,6 +634,7 @@ describe('pwa shell registration and update flow (JUM-489)', () => {
   });
 
   it('resets the shell: unregister, delete shell caches only, reload', async () => {
+    expect.hasAssertions();
     const unregister = createSpy(async () => true);
     const container = createFakeContainer();
     container.getRegistrations = createSpy(async () => [{ unregister }]);
@@ -636,6 +658,7 @@ describe('pwa shell registration and update flow (JUM-489)', () => {
   });
 
   it('reset tolerates a missing container and a missing location', async () => {
+    expect.hasAssertions();
     const cacheStorage = createFakeCacheStorage({
       [`${PWA_SHELL_CACHE_PREFIX}0.1.0`]: ['./']
     });
@@ -648,6 +671,7 @@ describe('pwa shell registration and update flow (JUM-489)', () => {
   });
 
   it('reset action on the update banner unregisters, clears shell caches and reloads', async () => {
+    expect.hasAssertions();
     const documentRef = createFakeDocument();
     const unregister = createSpy(async () => true);
     const container = createFakeContainer({ controller: {} });
@@ -678,6 +702,7 @@ describe('pwa shell registration and update flow (JUM-489)', () => {
   });
 
   it('a failed reset on the update banner ends on the error banner, never silently', async () => {
+    expect.hasAssertions();
     const documentRef = createFakeDocument();
     const container = createFakeContainer({ controller: {} });
     container.getRegistrations = createSpy(async () => {
@@ -703,6 +728,7 @@ describe('pwa shell registration and update flow (JUM-489)', () => {
   });
 
   it('reset action on the error banner retries the reset, and re-reports a failure', async () => {
+    expect.hasAssertions();
     const documentRef = createFakeDocument();
     const container = createFakeContainer();
     container.register = createSpy(async () => {
@@ -748,6 +774,7 @@ describe('pwa shell registration and update flow (JUM-489)', () => {
   });
 
   it('dismisses the error banner without resetting', async () => {
+    expect.hasAssertions();
     const documentRef = createFakeDocument();
     const container = createFakeContainer();
     container.register = createSpy(async () => {
@@ -766,6 +793,7 @@ describe('pwa shell registration and update flow (JUM-489)', () => {
   });
 
   it('surfaces a registration failure on the recovery banner instead of vanishing', async () => {
+    expect.hasAssertions();
     const documentRef = createFakeDocument();
     const container = createFakeContainer();
     container.register = createSpy(async () => {
@@ -784,5 +812,18 @@ describe('pwa shell registration and update flow (JUM-489)', () => {
     expect(banner).not.toBeNull();
     expect(textOf(banner)).toContain('offline shell failed to install');
     expect(textOf(banner)).toContain('Reset app shell');
+  });
+});
+
+describe('pwa shell ambient dependencies (JUM-681)', () => {
+  it('resolves its dependencies from the ambient globals when given none', async () => {
+    expect.hasAssertions();
+
+    // The banner's "Reset app shell" action calls this with what it has; the
+    // page calls it with nothing. Under a runtime with no service worker, no
+    // caches and no location — which is every non-browser host, including the
+    // build — every dependency resolves to `undefined` and the reset has to be
+    // a no-op rather than a crash on `undefined.getRegistrations()`.
+    await expect(resetPwaShell(undefined as never)).resolves.toBeUndefined();
   });
 });

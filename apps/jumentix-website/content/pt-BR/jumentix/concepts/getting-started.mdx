@@ -1,0 +1,219 @@
+---
+title: "Começando"
+description: "Rampa júnior: instalação, modelo mental e primeira jornada de adoção."
+---
+
+# Começando com o Jumentix
+
+## Responsabilidade no escopo
+
+- **Responsável por:** rampa pública para juniores adotarem o Jumentix (modelo mental + primeira jornada)
+- **Camada:** conceitos / caminho de aprendizado (não é um pacote de runtime)
+- **Usado com:** guias (REST, realtime, SPA/PWA), hub de pacotes públicos, hubs de apps
+- **Não responsável por:** docs de tooling privado do workspace
+
+## O que é
+
+Jumentix é um **framework de fábrica de software**: você descreve regras de
+negócio e contratos de API uma vez e gera/executa APIs REST, canais em tempo
+real e clientes offline a partir do mesmo núcleo. Esta página é a rampa de
+entrada para desenvolvedores júnior que nunca usaram Jumentix.
+
+## Por que existe
+
+Times de produto costumam reconstruir a mesma infraestrutura — wiring HTTP,
+alinhamento OpenAPI, handlers WebSocket, sync IndexedDB — em todo projeto.
+Jumentix oferece um caminho repetível para você focar em lógica de domínio em
+vez de cola de adaptadores. Esta página leva do zero a um primeiro sucesso
+verificado em menos de 30 minutos.
+
+## Pré-requisitos
+
+| Item | Mínimo | Como verificar |
+| --- | --- | --- |
+| **Bun** | 1.3.13+ (pinado no monorepo) | `bun --version` imprime `1.3.13` ou superior |
+| **Terminal** | Qualquer shell moderno | Você consegue rodar comandos na pasta do projeto |
+| **Editor** | VS Code, Cursor ou similar | Você consegue abrir arquivos TypeScript |
+| **Node.js** | 22.x (opcional) | Só se alguma ferramenta legada ainda exigir Node |
+
+Instale o Bun se ainda não tiver:
+
+```bash
+curl -fsSL https://bun.sh/install | bash
+bun --version
+```
+
+**Leitura prévia (leia uma vez, volte quando um termo aparecer):**
+
+- [Visão geral](/docs/pt-BR/jumentix/concepts/overview)
+- [Arquitetura](/docs/pt-BR/jumentix/concepts/architecture)
+
+## Glossário
+
+| Termo | Significado simples |
+| --- | --- |
+| **Contrato** | Descrição legível por máquina da forma de uma API — em geral OpenAPI (REST) ou AsyncAPI (tempo real). |
+| **Adaptador** | Código que conecta seu domínio a uma tecnologia (Express, Socket.IO, IndexedDB, Redis, etc.). Adaptadores são substituíveis. |
+| **Domínio** | Entidades, regras e eventos de negócio — código que não deve mudar ao trocar frameworks HTTP. |
+| **Caso de uso** | Lógica da camada de aplicação que orquestra regras de domínio para uma ação do usuário. |
+| **Porta** | Interface que o domínio define; um adaptador a implementa. |
+| **Arquitetura hexagonal** | Domínio no centro; adaptadores na borda. Também chamada de ports and adapters. |
+| **OpenAPI** | Spec YAML/JSON descrevendo endpoints REST, corpos de request e formas de response. |
+| **AsyncAPI** | Spec descrevendo canais e payloads de mensagens para WebSocket ou streams de eventos. |
+| **Bun** | Runtime e gerenciador de pacotes JavaScript/TypeScript usado nos workspaces Jumentix. |
+| **backend-template** | App backend de referência no monorepo que mostra composição REST/realtime para juniores. |
+| **Cana** | `@jumentix/cana` — adaptador IndexedDB para PWAs offline-first. |
+| **Service Management** | App Jumentix onde ficam o Domain Designer e a configuração de serviços. |
+
+## Passos numerados
+
+### Passo 1 — Instalar a toolchain (< 5 minutos)
+
+1. Instale o Bun (veja Pré-requisitos).
+2. Confirme o gate de versão: `bun --version`.
+
+**Verificação de sucesso:** o comando sai com código 0 e imprime semver ≥ 1.3.13.
+
+### Passo 2 — Escolher o caminho inicial (< 2 minutos)
+
+Escolha um caminho — não tente os dois no primeiro dia:
+
+| Caminho | Quando usar | Primeiro comando após setup |
+| --- | --- | --- |
+| **Consumir packages publicados** | Você constrói um app que chama SDKs Jumentix | `bun add @jumentix/sdk-rest-client` |
+| **Trabalhar no monorepo** | Você contribui ou estende a fábrica | `bun install` na raiz do repositório |
+| **Estudar o backend de referência** | Você precisa de um serviço REST/realtime para copiar padrões | Veja Passo 3 (backend-template) |
+
+Para times que consomem packages publicados:
+
+```bash
+bun add @jumentix/cana @jumentix/sdk-rest-client
+```
+
+Para contribuidores no workspace completo:
+
+```bash
+cd Jumentix
+bun install
+```
+
+**Verificação de sucesso:** `bun install` termina sem erros; `node_modules` existe.
+
+### Passo 3 — Abrir o backend de referência (< 10 minutos)
+
+Ferramentas privadas de bootstrap **não** são documentadas neste site público. Para o
+primeiro backend, estude o app de referência do monorepo:
+
+```bash
+cd apps/backend-template
+bun install
+# siga os scripts do package.json / README desse app para subir localmente
+```
+
+Depois abra o [guia REST](/docs/pt-BR/jumentix/guides/rest-api) e reproduza o
+caminho hello nesse template.
+
+**Checagem de sucesso:** você localiza o adapter HTTP + uma pasta de use-case em
+`apps/backend-template` e abre o guia REST em seguida.
+
+### Passo 4 — Aprender o modelo mental (< 5 minutos)
+
+Mantenha esta figura visível enquanto lê os guias:
+
+```
+[ Adaptadores ]  Express / Fastify / Socket.IO / gRPC / IndexedDB (Cana)
+      ↓
+[ Aplicação ] casos de uso, portas
+      ↓
+[ Domínio ] entidades, regras, eventos
+```
+
+Três regras que evitam a maioria dos erros de júnior:
+
+1. **Contratos primeiro** — OpenAPI / AsyncAPI / packages compartilhados descrevem a forma antes de ligar handlers.
+2. **Adaptadores são substituíveis** — troque Express por Fastify sem reescrever o domínio.
+3. **Offline é de primeira classe** — `@jumentix/cana` é o adaptador IndexedDB para PWAs; não é a mesma coisa que `localStorage`.
+
+### Passo 5 — Primeiro sucesso: tocar o Cana no browser (< 10 minutos)
+
+Antes de construir uma API completa, confirme que a toolchain de docs funciona.
+Execute o playground abaixo — **Run** deve retornar verde e **Reset** deve
+restaurar o estado inicial.
+
+<DocsPlayground runtime="cana" id="getting-started" />
+
+**Verificação de sucesso:** Run do playground completa sem erros; você vê
+registros IndexedDB criados no painel de saída.
+
+### Passo 6 — Fluxos centrais (esta semana)
+
+Complete estes guias na ordem quando precisar de cada capacidade:
+
+| Ordem | Guia | Você vai |
+| --- | --- | --- |
+| 1 | [Criar uma API REST](/docs/pt-BR/jumentix/guides/rest-api) | Subir serviço REST, alinhar OpenAPI, chamar com `@jumentix/sdk-rest-client` |
+| 2 | [Criar API em tempo real](/docs/pt-BR/jumentix/guides/realtime-api) | Habilitar WebSocket (ou gRPC servidor-a-servidor) com fallback REST |
+| 3 | [Criar SPA ou PWA offline](/docs/pt-BR/jumentix/guides/spa-pwa) | Modelar domínios no Service Management e persistir offline com Cana |
+| 4 | [SaaS Monolith](/docs/pt-BR/jumentix/guides/saas-monolith) | Entregar uma unidade de deploy com limites modulares |
+| 5 | [SaaS Microservices](/docs/pt-BR/jumentix/guides/saas-microservices) | Dividir contextos limitados quando a escala exigir |
+
+### Passo 7 — Superfície completa (lookup, não tutoriais)
+
+| Área | Caminho | Use quando |
+| --- | --- | --- |
+| Pacotes | [/docs/pt-BR/jumentix/packages](/docs/pt-BR/jumentix/packages) | Precisar de docs de API ou playground **Try it** |
+| Adaptadores | [/docs/pt-BR/jumentix/adapters/http](/docs/pt-BR/jumentix/adapters/http) | Escolher adaptadores HTTP, banco ou tempo real |
+| Referência | [/docs/pt-BR/jumentix/reference/errors-responses](/docs/pt-BR/jumentix/reference/errors-responses) | Depurar status codes e contratos de erro |
+| Mapas para IA | [/llms.txt](/llms.txt), [/docs-index.json](/docs-index.json) | Agentes ou busca precisam de índice legível por máquina |
+
+## Exemplos
+
+### Chamada mínima de client REST (estático)
+
+Injete o documento OpenAPI no browser — não carregue specs com `fs` do Node:
+
+```js
+const client = api.createMockClient();
+const result = await client.request({ method: 'GET', path: '/health' });
+console.log(result.status, result.body);
+```
+
+Veja a versão interativa em [Criar uma API REST](/docs/pt-BR/jumentix/guides/rest-api).
+
+### Registro offline com Cana (estático)
+
+```js
+const client = await cana.open({ name: 'my-app', version: 1 });
+await client.put('tasks', { id: '1', title: 'Olá Jumentix' });
+const task = await client.get('tasks', '1');
+console.log(task.title);
+```
+
+Use o playground Cana no Passo 5 para executar este padrão ao vivo.
+
+## Erros comuns
+
+| Sintoma | Causa provável | Correção | Verificar sucesso |
+| --- | --- | --- | --- |
+| `bun: command not found` | Bun fora do PATH | Reexecute o script de install; reinicie o terminal | `bun --version` funciona |
+| `TransactionInactive` no Cana | `await fetch` (ou I/O fora do IndexedDB) dentro de transação Cana | Só aguarde trabalho IndexedDB dentro do callback da transação | Run do playground verde; sem erros de transação |
+| Cliente REST não carrega specs | Loader `fs` do Node no browser | Injete o objeto OpenAPI (playground do guia REST) | Mock client retorna `/health` |
+| Funciona em memória, falha no Redis | Adaptador key-value errado para o runtime | Comece com InMemory nos testes; Redis só em Node | Testes unitários passam localmente |
+| Dados offline perdidos | Achar que `localStorage` = IndexedDB | Use Cana; leia `client.backend` após `open()` | Registros sobrevivem ao reload |
+| Não acha adapters no backend-template | Pasta errada | Fique em `apps/backend-template` e use o mapa do guia REST | Você nomeia um arquivo de adapter HTTP |
+
+## Checklist júnior (“Eu consigo …”)
+
+- [ ] Instalar Bun 1.3.13+ e confirmar `bun --version`.
+- [ ] Explicar as camadas adaptador → aplicação → domínio usando o diagrama acima.
+- [ ] Gerar ou abrir um serviço Jumentix e localizar `.jumentix/service-profile.json`.
+- [ ] Executar o playground Cana (**Run** verde, **Reset** restaura estado).
+- [ ] Dizer a diferença entre OpenAPI (REST) e AsyncAPI (tempo real).
+- [ ] Abrir o [guia REST](/docs/pt-BR/jumentix/guides/rest-api) e saber que é minha próxima tarefa prática.
+- [ ] Encontrar docs de pacotes e playgrounds em [/docs/pt-BR/jumentix/packages](/docs/pt-BR/jumentix/packages).
+
+## Próximo passo
+
+Vá para [Criar uma API REST](/docs/pt-BR/jumentix/guides/rest-api) e complete o
+caminho hello-world de ponta a ponta — essa é a segunda página padrão da jornada
+de aprendizado.

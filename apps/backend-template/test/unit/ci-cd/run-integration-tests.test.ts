@@ -19,6 +19,8 @@ describe('run-integration-tests', () => {
       'test:integration:lambda',
       'test:integration:cloudflare-workers',
       'test:integration:vercel-functions',
+      // Restored by JUM-704 with the framework packages that make them
+      // runnable; removed by JUM-698 when nothing could construct them.
       'test:integration:loopback',
       'test:integration:sails-js',
       'test:integration:feathers',
@@ -37,17 +39,18 @@ describe('run-integration-tests', () => {
     expect(rootPackage.scripts['test:integration']).toBe('bun ci-cd/run-integration-tests.js');
   });
 
-  it('gives only Restify deterministic per-test headroom under sustained matrix load', () => {
+  it('gives Express and Restify deterministic per-test headroom under sustained matrix load', () => {
     expect.hasAssertions();
     // The flag moved from Jest's `--testTimeout=15000` to the Bun runner's
     // `--timeout 15000` when these scripts migrated. The assertion did not, so
     // it went on checking for a flag no script could contain — a failure that
     // says nothing about the property it names (JUM-583).
     //
-    // Both spellings are rejected for the other two, so migrating back would not
-    // quietly reintroduce headroom where the point is that there is none.
+    // Express also needs the same headroom during dev-to-main release gates:
+    // the full HTTP adapter matrix can make otherwise-subsecond auth refusals
+    // wait behind saturated local resources.
+    expect(rootPackage.scripts['test:integration:express']).toContain('--timeout 15000');
     expect(rootPackage.scripts['test:integration:restify']).toContain('--timeout 15000');
-    expect(rootPackage.scripts['test:integration:express']).not.toMatch(/--(testTimeout|timeout)\b/);
     expect(rootPackage.scripts['test:integration:fastify']).not.toMatch(/--(testTimeout|timeout)\b/);
   });
 

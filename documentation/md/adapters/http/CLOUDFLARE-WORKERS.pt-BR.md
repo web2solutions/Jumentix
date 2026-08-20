@@ -1,26 +1,137 @@
-<!--
-Arquivo gerado automaticamente a partir de: documentation/md/adapters/http/CLOUDFLARE-WORKERS.md
-Idioma alvo: Português (Brasil)
--->
-# Adaptador de trabalhadores Cloudflare
+# Adaptador Cloudflare Workers
 
-## Propósito
+O adapter Cloudflare Workers conecta o runtime Cloudflare Workers aos contratos HTTP do Jumentix. Ele fica na borda: recebe request, normaliza entrada, chama use cases e transforma o resultado em response.
 
-Execute APIs HTTP no estilo Cloudflare Workers (contrato `fetch`), sem tempo de execução Express.
+## Tecnologia integrada
 
-## Pontos de entrada
+Runtime de edge baseado na Web Fetch API, publicado próximo aos usuários via Cloudflare.
+
+- **Modelo de runtime:** Handler Fetch no edge
+- **Contrato Jumentix:** handlers chamam controllers/use cases sem vazar tipos do framework para o domínio.
+
+## Quando usar
+
+Use quando: APIs de baixa latência no edge, gateways de autenticação e tratamento de requests alinhado ao browser.
+
+## Quando evitar
+
+Evite quando o adapter precisa de APIs Node.js irrestritas ou processos server longos.
+
+## Como iniciar ou compor
+
+Ponto de entrada real:
 
 - `apps/backend-template/src/interface/HTTP/adapters/cloudflare-workers/cloudflare-workers.ts`
+- `apps/backend-template/src/interface/HTTP/adapters/start-rest-api.ts` quando o adapter usa bootstrap por ambiente
 
-## Crie um serviço com trabalhadores da Cloudflare
-
-1. Implemente manipuladores de operações para esta estrutura.
-2. Mantenha as camadas de domínio e de caso de uso compartilhadas com outros adaptadores.
-3. Use o despachante de busca de trabalhadores.
-4. Execute:
+Este adapter é composto pelo runtime/plataforma e não tem script dedicado de `dev:*`.
 
 ```bash
-bun run dev:cloudflare-workers
+# This adapter is composed by its platform runtime.
+# Keep controllers framework-free and wire them from the adapter entrypoint.
 ```
 
+## Exemplo completo: Task e Category na borda HTTP
 
+```ts
+type Category = {
+  id: string;
+  name: string;
+};
+
+type Task = {
+  id: string;
+  title: string;
+  categoryId: string;
+  completed: boolean;
+};
+
+type CreateTaskRequest = {
+  title: string;
+  categoryId: string;
+};
+
+type HttpRequest = {
+  body: unknown;
+};
+
+type HttpResponse = {
+  status: number;
+  body: unknown;
+};
+
+const adapterProfile = {
+  adapter: 'cloudflare-workers',
+  framework: 'Cloudflare Workers',
+  runtime: 'Edge Fetch handler',
+  entrypoint: 'apps/backend-template/src/interface/HTTP/adapters/cloudflare-workers/cloudflare-workers.ts'
+} as const;
+
+class TaskCatalog {
+  private readonly categories = new Map<string, Category>();
+  private readonly tasks = new Map<string, Task>();
+
+  createCategory(name: string): Category {
+    const category = { id: crypto.randomUUID(), name };
+    this.categories.set(category.id, category);
+    return category;
+  }
+
+  createTask(input: CreateTaskRequest): Task {
+    if (!this.categories.has(input.categoryId)) {
+      throw new Error('Category not found');
+    }
+
+    const task = {
+      id: crypto.randomUUID(),
+      title: input.title.trim(),
+      categoryId: input.categoryId,
+      completed: false
+    };
+    this.tasks.set(task.id, task);
+    return task;
+  }
+
+  listTasksByCategory(categoryId: string): Task[] {
+    return [...this.tasks.values()].filter((task) => task.categoryId === categoryId);
+  }
+}
+
+const catalog = new TaskCatalog();
+const delivery = catalog.createCategory('Delivery');
+const finance = catalog.createCategory('Finance');
+
+catalog.createTask({ title: 'Prepare invoice batch', categoryId: finance.id });
+
+export async function createTaskController(request: HttpRequest): Promise<HttpResponse> {
+  const input = request.body as Partial<CreateTaskRequest>;
+
+  if (!input.title || !input.categoryId) {
+    return { status: 400, body: { error: 'title and categoryId are required' } };
+  }
+
+  try {
+    const task = catalog.createTask({ title: input.title, categoryId: input.categoryId });
+    return { status: 201, body: { adapterProfile, task } };
+  } catch (error) {
+    return {
+      status: 404,
+      body: { error: error instanceof Error ? error.message : 'Unknown error' }
+    };
+  }
+}
+
+export async function listDeliveryTasksController(): Promise<HttpResponse> {
+  return {
+    status: 200,
+    body: { category: delivery, tasks: catalog.listTasksByCategory(delivery.id) }
+  };
+}
+```
+
+## Checklist de adoção
+
+- O adapter fica restrito à camada HTTP.
+- Controllers recebem dados normalizados e chamam use cases.
+- `Task` e `Category` pertencem ao domínio, não ao framework.
+- Erros são convertidos para responses na borda.

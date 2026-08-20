@@ -72,7 +72,6 @@ describe('express -> delete User suite', () => {
     server = API.server.application;
 
     // await server.ready();
-    await API.deleteUsers();
     usersAll = await API.seedUsers();
   });
   afterAll(async () => {

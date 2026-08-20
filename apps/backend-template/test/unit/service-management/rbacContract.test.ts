@@ -89,14 +89,17 @@ function createState(entityOverrides: Record<string, unknown> = {}) {
 describe('rbacContract module (JUM-477)', () => {
   describe('role vocabulary mirrors the runtime source of truth (Rbac.ts)', () => {
     it('pins the normalized roles to EUserRole exactly', () => {
+      expect.hasAssertions();
       expect(NORMALIZED_ROLES).toStrictEqual(Object.values(EUserRole));
     });
 
     it('pins the five designer actions', () => {
+      expect.hasAssertions();
       expect(RBAC_ACTIONS).toStrictEqual(['list', 'getById', 'create', 'update', 'delete']);
     });
 
     it('offers only legacy scopes the runtime actually resolves', () => {
+      expect.hasAssertions();
       LEGACY_DIRECT_SCOPES.forEach((scope: string) => {
         expect(resolveRoleScopes([scope])).toStrictEqual([scope]);
       });
@@ -104,6 +107,7 @@ describe('rbacContract module (JUM-477)', () => {
     });
 
     it('classifies normalized roles, legacy scopes and unknown strings', () => {
+      expect.hasAssertions();
       expect(isNormalizedRole('admin')).toBe(true);
       expect(isNormalizedRole('read_user')).toBe(false);
       expect(isContractRole('superadmin')).toBe(true);
@@ -129,12 +133,14 @@ describe('rbacContract module (JUM-477)', () => {
     ];
 
     it('agrees with the runtime for every role-set shape', () => {
+      expect.hasAssertions();
       roleSets.forEach((roles) => {
         expect(deriveTenantScoped(roles)).toBe(shouldRequireOrganization(roles));
       });
     });
 
     it('treats a non-array input as an empty role set', () => {
+      expect.hasAssertions();
       expect(deriveTenantScoped(undefined as unknown as string[])).toBe(false);
       expect(deriveTenantScoped('admin' as unknown as string[])).toBe(false);
     });
@@ -142,27 +148,32 @@ describe('rbacContract module (JUM-477)', () => {
 
   describe('normalizeRbacRule', () => {
     it('trims, dedupes and derives tenantScoped from the roles', () => {
+      expect.hasAssertions();
       expect(normalizeRbacRule({ roles: [' admin ', 'admin', '', 'user'], tenantScoped: false }))
         .toStrictEqual({ roles: ['admin', 'user'], tenantScoped: true });
     });
 
     it('repairs a stored tenantScoped flag the runtime could not honour', () => {
+      expect.hasAssertions();
       // superadmin-only is a global boundary: a stored `true` had no runtime meaning.
       expect(normalizeRbacRule({ roles: ['superadmin'], tenantScoped: true }))
         .toStrictEqual({ roles: ['superadmin'], tenantScoped: false });
     });
 
     it('keeps unknown roles for validation to reject instead of dropping them', () => {
+      expect.hasAssertions();
       expect(normalizeRbacRule({ roles: ['admin', 'owner'] }))
         .toStrictEqual({ roles: ['admin', 'owner'], tenantScoped: true });
     });
 
     it('inherits roles from the fallback when the stored roles are not an array', () => {
+      expect.hasAssertions();
       expect(normalizeRbacRule({ roles: 'nope' }, { roles: ['superadmin', 'admin'] }))
         .toStrictEqual({ roles: ['superadmin', 'admin'], tenantScoped: true });
     });
 
     it('defaults to empty roles without a fallback or with a roleless fallback', () => {
+      expect.hasAssertions();
       expect(normalizeRbacRule({})).toStrictEqual({ roles: [], tenantScoped: false });
       expect(normalizeRbacRule({ roles: null }, { tenantScoped: true }))
         .toStrictEqual({ roles: [], tenantScoped: false });
@@ -171,6 +182,7 @@ describe('rbacContract module (JUM-477)', () => {
 
   describe('validateRbacRule (edit-time gate)', () => {
     it('accepts normalized roles and legacy direct scopes', () => {
+      expect.hasAssertions();
       expect(validateRbacRule({ roles: ['superadmin', 'admin', 'user'] })).toStrictEqual({ ok: true });
       expect(validateRbacRule({ roles: ['read_user', 'delete_organization'] })).toStrictEqual({ ok: true });
       expect(validateRbacRule({ roles: [] })).toStrictEqual({ ok: true });
@@ -178,6 +190,7 @@ describe('rbacContract module (JUM-477)', () => {
     });
 
     it('rejects an unenforceable role with an actionable reason', () => {
+      expect.hasAssertions();
       expect(validateRbacRule({ roles: ['create_invoice', 'read_user'] }).ok).toBe(false);
       const verdict = validateRbacRule({ roles: ['admin', 'owner'] });
       expect(verdict.ok).toBe(false);
@@ -189,6 +202,7 @@ describe('rbacContract module (JUM-477)', () => {
 
   describe('designer defaults and load-time normalisation', () => {
     it('pins the default policy: contract roles only, tenantScoped derived', () => {
+      expect.hasAssertions();
       const policy = getDefaultRbacPolicy();
       expect(Object.keys(policy).sort()).toStrictEqual([...RBAC_ACTIONS].sort());
       expect(policy).toStrictEqual({
@@ -205,11 +219,13 @@ describe('rbacContract module (JUM-477)', () => {
     });
 
     it('normalizeRbacPolicyInput returns the defaults for an empty source', () => {
+      expect.hasAssertions();
       expect(normalizeRbacPolicyInput(undefined)).toStrictEqual(getDefaultRbacPolicy());
       expect(normalizeRbacPolicyInput({})).toStrictEqual(getDefaultRbacPolicy());
     });
 
     it('normalizeRbacPolicyInput merges stored rules over the defaults and re-derives tenantScoped', () => {
+      expect.hasAssertions();
       const policy = normalizeRbacPolicyInput({
         list: { roles: ['superadmin'], tenantScoped: true },
         delete: { roles: ['admin'], tenantScoped: false }
@@ -222,6 +238,7 @@ describe('rbacContract module (JUM-477)', () => {
 
   describe('model validation rejects what the contract cannot enforce', () => {
     it('reports an error for an unknown role so the export gate blocks it', () => {
+      expect.hasAssertions();
       const entity = createEntity();
       entity.meta.rbac = {
         ...getDefaultRbacPolicy(),
@@ -239,6 +256,7 @@ describe('rbacContract module (JUM-477)', () => {
     });
 
     it('accepts legacy direct scopes as contract-expressible roles', () => {
+      expect.hasAssertions();
       const entity = createEntity();
       entity.meta.rbac = {
         ...getDefaultRbacPolicy(),
@@ -254,6 +272,7 @@ describe('rbacContract module (JUM-477)', () => {
 
   describe('entity.meta round-trip: RBAC survives export/import', () => {
     it('round-trips the policy through the JSON export and normalizeStatePayload', () => {
+      expect.hasAssertions();
       const custom = normalizeRbacPolicyInput({
         create: { roles: ['superadmin'], tenantScoped: true },
         list: { roles: ['admin', 'user'], tenantScoped: false }
@@ -268,6 +287,7 @@ describe('rbacContract module (JUM-477)', () => {
     });
 
     it('round-trips the policy through the domain-package export and import', () => {
+      expect.hasAssertions();
       const custom = normalizeRbacPolicyInput({
         delete: { roles: ['user'], tenantScoped: false }
       });

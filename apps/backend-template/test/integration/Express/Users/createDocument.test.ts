@@ -22,9 +22,7 @@ import {
 } from '@test/mock';
 
 import type {
-  IUser
-} from '@src/modules/Users';
-import type {
+  IUser,
   RequestCreateDocument
 } from '@src/modules/Users';
 import {
@@ -89,7 +87,6 @@ describe('express -> User createDocument suite', () => {
 
     // await server.ready();
 
-    await API.deleteUsers();
     usersAll = await API.seedUsers();
     [user1] = usersAll;
     [document1] = documents;

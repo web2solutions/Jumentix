@@ -2,9 +2,7 @@ import { Request, Response } from 'express';
 import { sendErrorResponse } from '@src/interface/HTTP/adapters/express/responses/sendErrorResponse';
 
 import type {
-  IHandlerFactory
-} from '@src/interface/HTTP/ports';
-import type {
+  IHandlerFactory,
   IbaseHandler,
   EndPointFactory
 } from '@src/interface/HTTP/ports';

@@ -59,6 +59,7 @@ function entityByName(
 describe('first-run sample model (JUM-548)', () => {
   describe('content and marker', () => {
     it('normalizes into the intended identity model', () => {
+      expect.hasAssertions();
       const state = loadSample();
       expect(state.domains).toHaveLength(1);
       const [users] = state.domains;
@@ -77,6 +78,7 @@ describe('first-run sample model (JUM-548)', () => {
     });
 
     it('marks every sample artifact with the sample id prefix, and only those', () => {
+      expect.hasAssertions();
       const state = loadSample();
       const [users] = state.domains;
       expect(users.id.startsWith(SAMPLE_ID_PREFIX)).toBe(true);
@@ -97,12 +99,14 @@ describe('first-run sample model (JUM-548)', () => {
     });
 
     it('is deterministic: two builds are deep-equal (fixture-grade)', () => {
+      expect.hasAssertions();
       expect(buildSampleModelPayload()).toStrictEqual(buildSampleModelPayload());
     });
   });
 
   describe('export quality gate', () => {
     it('reports zero model issues — the sample passes the export gate and validates clean', () => {
+      expect.hasAssertions();
       // Zero issues at all, not only zero errors: the first "Validate Model"
       // click a new user makes lands on a clean result.
       expect(collectModelIssues(loadSample())).toStrictEqual([]);
@@ -111,6 +115,7 @@ describe('first-run sample model (JUM-548)', () => {
 
   describe('exercised surfaces', () => {
     it('carries a non-default RBAC rule with tenant scoping visibly derived from the roles', () => {
+      expect.hasAssertions();
       const organization = entityByName(loadSample(), 'Organization');
       // superadmin-only create: global boundary (tenantScoped false)...
       expect(organization.meta.rbac.create).toStrictEqual({
@@ -125,6 +130,7 @@ describe('first-run sample model (JUM-548)', () => {
     });
 
     it('carries aggregate invariants and a message contract with a channel and payload schema', () => {
+      expect.hasAssertions();
       const user = entityByName(loadSample(), 'User');
       expect(user.meta.aggregateRoot).toBe(true);
       expect(user.meta.invariants.length).toBeGreaterThan(0);
@@ -139,6 +145,7 @@ describe('first-run sample model (JUM-548)', () => {
     });
 
     it('carries oneOf composition with a discriminator whose refs resolve to real sample schemas', () => {
+      expect.hasAssertions();
       const contactPoint = entityByName(loadSample(), 'ContactPoint');
       expect(contactPoint.meta.oasComposition).toStrictEqual({
         mode: 'oneOf',
@@ -165,6 +172,7 @@ describe('first-run sample model (JUM-548)', () => {
 
   describe('round-trip (the sample doubles as a JUM-471 fixture)', () => {
     it('round-trips deep-equal through the JSON export/import crossing, marker ids included', () => {
+      expect.hasAssertions();
       const state = loadSample();
       const document = buildJsonExportDocument(state);
       const imported = normalizeStatePayload(JSON.parse(JSON.stringify(document)));
@@ -174,6 +182,7 @@ describe('first-run sample model (JUM-548)', () => {
     });
 
     it('reaches the export → import → export fixed point through the OAS crossing', () => {
+      expect.hasAssertions();
       const state = loadSample();
       const first = buildOasDocument(state);
       // The exercised surfaces cross as agreed extensions (JUM-478).
@@ -198,6 +207,7 @@ describe('first-run sample model (JUM-548)', () => {
 
 describe('sample id-marker predicates on nullish subjects (JUM-493)', () => {
   it('treat missing or non-string ids as non-sample, never throwing', () => {
+    expect.hasAssertions();
     expect(isSampleDomain(undefined)).toBe(false);
     expect(isSampleDomain({})).toBe(false);
     expect(isSampleDomain({ id: 'user-1' })).toBe(false);

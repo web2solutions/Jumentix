@@ -12,6 +12,7 @@ pelas aplicações Jumentix.
 ### Runtime e persistência
 
 - [`@jumentix/adapter-runtime-bootstrap`](./adapter-runtime-bootstrap/README.pt-BR.md) - composição compartilhada do runtime de adapters.
+- [`@jumentix/cana`](./cana/README.pt-BR.md) - adaptador IndexedDB offline com documentação e playgrounds para o consumidor.
 - [`@jumentix/database-client-factory`](./database-client-factory/README.pt-BR.md) - compilação do cliente de banco por driver selecionado.
 - [`@jumentix/external-db-repositories`](./external-db-repositories/README.pt-BR.md) - repositórios reutilizáveis para bancos externos.
 - [`@jumentix/external-persistence-core`](./external-persistence-core/README.pt-BR.md) - contratos e implementações-base de persistência externa.
@@ -51,10 +52,10 @@ publicados ou prontos para produção.
 
 Cada pacote possui README em inglês e português, scripts e limites de propriedade. Importe os
 pacotes nas aplicações em vez de duplicar lógica de adapter. O runtime canônico dos fluxos internos
-de engenharia é Bun 1.3.14, com Node.js 22 mantido como alvo explícito de compatibilidade para
+de engenharia é Bun 1.3.13, com Node.js 22 mantido como alvo explícito de compatibilidade para
 artefatos de runtime expostos a consumidores.
 
 ## Documentos relacionados
 
-- [Pacotes Jumentix Workspace (Arquitetura)](../documentation/md/JUMENTIX-WORKSPACE-PACKAGES.md)
-- [Ponte de compatibilidade do SDK](../documentation/md/SDK-COMPATIBILITY-BRIDGE.md)
+- [Pacotes Jumentix Workspace (Arquitetura)](/docs/jumentix/concepts/architecture)
+- [Ponte de compatibilidade do SDK](/docs/jumentix/packages)

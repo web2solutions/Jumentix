@@ -62,6 +62,7 @@ function installedDomain(name: string, version: string, overrides: Record<string
 describe('domain package versioning (JUM-492)', () => {
   describe('parsePackageVersion / comparePackageVersions', () => {
     it('parses strict major.minor.patch versions and rejects everything else', () => {
+      expect.hasAssertions();
       expect(parsePackageVersion('1.2.3')).toStrictEqual({ major: 1, minor: 2, patch: 3 });
       expect(parsePackageVersion('v2.0.0')).toStrictEqual({ major: 2, minor: 0, patch: 0 });
       expect(parsePackageVersion('0.0.0')).toStrictEqual({ major: 0, minor: 0, patch: 0 });
@@ -71,6 +72,7 @@ describe('domain package versioning (JUM-492)', () => {
     });
 
     it('orders by major, then minor, then patch', () => {
+      expect.hasAssertions();
       expect(comparePackageVersions('1.0.0', '1.0.0')).toBe(0);
       expect(comparePackageVersions('2.0.0', '10.0.0')).toBe(-1);
       expect(comparePackageVersions('1.10.0', '1.9.0')).toBe(1);
@@ -84,6 +86,7 @@ describe('domain package versioning (JUM-492)', () => {
 
   describe('parsePackageDependency', () => {
     it('splits name and range on the last @, with a bare name meaning any version', () => {
+      expect.hasAssertions();
       expect(parsePackageDependency('shared-kernel@^1.2.0'))
         .toStrictEqual({ name: 'shared-kernel', range: '^1.2.0' });
       expect(parsePackageDependency('shared-kernel'))
@@ -96,17 +99,20 @@ describe('domain package versioning (JUM-492)', () => {
 
   describe('satisfiesPackageRange', () => {
     it('accepts any version for empty or wildcard ranges', () => {
+      expect.hasAssertions();
       expect(satisfiesPackageRange('0.0.1', '*')).toBe(true);
       expect(satisfiesPackageRange('9.9.9', '')).toBe(true);
     });
 
     it('matches exact versions only', () => {
+      expect.hasAssertions();
       expect(satisfiesPackageRange('1.2.3', '1.2.3')).toBe(true);
       expect(satisfiesPackageRange('1.2.4', '1.2.3')).toBe(false);
       expect(satisfiesPackageRange('1.2.3', '=1.2.3')).toBe(true);
     });
 
     it('caret keeps the major (npm convention, including the 0.x rules)', () => {
+      expect.hasAssertions();
       expect(satisfiesPackageRange('1.9.9', '^1.2.0')).toBe(true);
       expect(satisfiesPackageRange('2.0.0', '^1.2.0')).toBe(false);
       expect(satisfiesPackageRange('1.1.9', '^1.2.0')).toBe(false);
@@ -117,12 +123,14 @@ describe('domain package versioning (JUM-492)', () => {
     });
 
     it('tilde keeps major.minor', () => {
+      expect.hasAssertions();
       expect(satisfiesPackageRange('1.2.9', '~1.2.0')).toBe(true);
       expect(satisfiesPackageRange('1.3.0', '~1.2.0')).toBe(false);
       expect(satisfiesPackageRange('2.0.0', '~1.2.0')).toBe(false);
     });
 
     it('an invalid range satisfies nothing (reported, never silently accepted)', () => {
+      expect.hasAssertions();
       expect(satisfiesPackageRange('1.2.3', 'latest')).toBe(false);
       expect(satisfiesPackageRange('1.2.3', '^banana')).toBe(false);
       expect(satisfiesPackageRange('banana', '*')).toBe(false);
@@ -131,6 +139,7 @@ describe('domain package versioning (JUM-492)', () => {
 
   describe('buildPackageRegistry', () => {
     it('derives the installed packages from provenance only', () => {
+      expect.hasAssertions();
       const installed = installedDomain('billing', '1.2.0', {
         context: { packageDependencies: ['shared-kernel@^1.0.0'] }
       });
@@ -143,6 +152,7 @@ describe('domain package versioning (JUM-492)', () => {
     });
 
     it('keeps the highest version when legacy state carries two domains from one package', () => {
+      expect.hasAssertions();
       const older = installedDomain('billing', '1.0.0');
       const newer = installedDomain('billing', '1.3.0');
       expect(buildPackageRegistry([older, newer]).get('billing').version).toBe('1.3.0');
@@ -159,6 +169,7 @@ describe('domain package versioning (JUM-492)', () => {
     }
 
     it('orders transitively, dependencies before dependents', () => {
+      expect.hasAssertions();
       const registry = registryOf([
         ['app', '1.0.0', ['billing@^1.0.0']],
         ['billing', '1.2.0', ['shared-kernel@*']],
@@ -172,12 +183,14 @@ describe('domain package versioning (JUM-492)', () => {
     });
 
     it('reports missing dependencies with the requiring package', () => {
+      expect.hasAssertions();
       const registry = registryOf([['billing', '1.0.0', ['ghost@^1.0.0']]]);
       const graph = resolvePackageGraph(registry);
       expect(graph.missing).toStrictEqual([{ name: 'ghost', range: '^1.0.0', requiredBy: 'billing' }]);
     });
 
     it('reports installed versions outside the declared range', () => {
+      expect.hasAssertions();
       const registry = registryOf([
         ['billing', '1.0.0', ['shared-kernel@^2.0.0']],
         ['shared-kernel', '1.4.0', []]
@@ -189,6 +202,7 @@ describe('domain package versioning (JUM-492)', () => {
     });
 
     it('detects cycles and reports them by name chain instead of entering them', () => {
+      expect.hasAssertions();
       const registry = registryOf([
         ['a', '1.0.0', ['b@*']],
         ['b', '1.0.0', ['a@*']],
@@ -202,6 +216,7 @@ describe('domain package versioning (JUM-492)', () => {
     });
 
     it('overlays the incoming package on the registry before resolving', () => {
+      expect.hasAssertions();
       const registry = registryOf([['shared-kernel', '1.0.0', []]]);
       const graph = resolvePackageGraph(registry, {
         name: 'billing',
@@ -217,6 +232,7 @@ describe('domain package versioning (JUM-492)', () => {
 
   describe('normalizePackageIdentity', () => {
     it('synthesizes the legacy v1 identity from the domain name', () => {
+      expect.hasAssertions();
       const result = normalizePackageIdentity(
         { kind: 'domain-package', version: '1.0.0', domain: { name: 'Billing' } },
         { name: 'Billing' }
@@ -228,6 +244,7 @@ describe('domain package versioning (JUM-492)', () => {
     });
 
     it('reads the v2 package block and normalizes its dependencies', () => {
+      expect.hasAssertions();
       const result = normalizePackageIdentity({
         kind: 'domain-package',
         version: '2.0.0',
@@ -249,6 +266,7 @@ describe('domain package versioning (JUM-492)', () => {
     });
 
     it('rejects an unparseable package version and a newer document major', () => {
+      expect.hasAssertions();
       expect(normalizePackageIdentity({
         package: { name: 'billing', version: 'soon' }
       }, { name: 'Billing' })).toStrictEqual({ ok: false, reason: 'invalid-package-version', version: 'soon' });
@@ -260,6 +278,7 @@ describe('domain package versioning (JUM-492)', () => {
 
   describe('packageContentsEqual', () => {
     it('ignores ids, provenance, layout, colour and the domain name', () => {
+      expect.hasAssertions();
       const a = normalizeDomainInput({
         id: 'domain-1',
         name: 'Billing',
@@ -336,6 +355,7 @@ describe('domain package versioning (JUM-492)', () => {
     const packageInfo = { name: 'billing', version: '2.0.0' };
 
     it('auto-merges additive and metadata changes; class membership stays disjoint and complete', () => {
+      expect.hasAssertions();
       AUTO_MERGE_CLASSES.forEach((conflictClass: string) => {
         expect(REQUIRES_DECISION_CLASSES.has(conflictClass)).toBe(false);
       });
@@ -404,6 +424,7 @@ describe('domain package versioning (JUM-492)', () => {
     });
 
     it('never auto-merges RBAC, invariants, aggregate, type, flag, tightening or contract removals', () => {
+      expect.hasAssertions();
       const existing = baseInstalled();
       const rbac = getDefaultRbacPolicy();
       rbac.list = { roles: ['superadmin'], tenantScoped: false };
@@ -461,6 +482,7 @@ describe('domain package versioning (JUM-492)', () => {
     });
 
     it('gives new entities collision-free ids through the uniqueId callback', () => {
+      expect.hasAssertions();
       const existing = baseInstalled();
       const incoming = normalizeDomainInput({
         name: 'Billing',
@@ -488,6 +510,7 @@ describe('domain package versioning (JUM-492)', () => {
 
   describe('buildSameVersionConflictPreview', () => {
     it('marks every diverging aspect as refused', () => {
+      expect.hasAssertions();
       const existing = installedDomain('billing', '1.0.0', {
         entities: [{ name: 'Invoice', fields: [{ name: 'id', type: 'uuid', pk: true }] }]
       });
@@ -517,6 +540,7 @@ describe('domain package versioning (JUM-492)', () => {
     }
 
     it('stamps provenance on the domain and every imported entity', () => {
+      expect.hasAssertions();
       const wire = packageWire(
         { name: 'Billing', entities: [{ name: 'Invoice', fields: [] }] },
         { name: 'billing', version: '1.4.2', dependencies: [] }
@@ -530,6 +554,7 @@ describe('domain package versioning (JUM-492)', () => {
     });
 
     it('is idempotent: re-importing the same package version changes nothing (noop)', () => {
+      expect.hasAssertions();
       const wire = packageWire({ name: 'Billing', entities: [{ name: 'Invoice', fields: [] }] });
       const first = buildDomainFromPackage(wire, []);
       const second = buildDomainFromPackage(JSON.parse(JSON.stringify(wire)), [first.domain]);
@@ -542,6 +567,7 @@ describe('domain package versioning (JUM-492)', () => {
     });
 
     it('refuses the same version with different content, listing the divergence', () => {
+      expect.hasAssertions();
       const wire = packageWire({ name: 'Billing', entities: [{ name: 'Invoice', fields: [] }] });
       const first = buildDomainFromPackage(wire, []);
       const altered = JSON.parse(JSON.stringify(wire));
@@ -553,6 +579,7 @@ describe('domain package versioning (JUM-492)', () => {
     });
 
     it('refuses a downgrade naming the installed version', () => {
+      expect.hasAssertions();
       const first = buildDomainFromPackage(
         packageWire({ name: 'Billing', entities: [] }, { name: 'billing', version: '2.0.0', dependencies: [] }),
         []
@@ -570,6 +597,7 @@ describe('domain package versioning (JUM-492)', () => {
     });
 
     it('refuses an import that would close a dependency cycle through the incoming package', () => {
+      expect.hasAssertions();
       const kernel = buildDomainFromPackage(
         packageWire(
           { name: 'Kernel', entities: [], context: { packageDependencies: [] } },
@@ -592,6 +620,7 @@ describe('domain package versioning (JUM-492)', () => {
     });
 
     it('reports a true two-package cycle by name chain and refuses the import that closes it', () => {
+      expect.hasAssertions();
       const pkgB = buildDomainFromPackage(
         packageWire(
           { name: 'B', entities: [], context: { packageDependencies: [] } },
@@ -624,6 +653,7 @@ describe('domain package versioning (JUM-492)', () => {
     });
 
     it('warns on missing and incompatible dependencies without blocking the import', () => {
+      expect.hasAssertions();
       const kernel = buildDomainFromPackage(
         packageWire(
           { name: 'Kernel', entities: [] },
@@ -650,6 +680,7 @@ describe('domain package versioning (JUM-492)', () => {
     });
 
     it('appends a package named like a hand-built domain instead of merging into it', () => {
+      expect.hasAssertions();
       const handBuilt = normalizeDomainInput({ id: 'domain-1', name: 'Billing', entities: [] }, 0);
       const wire = packageWire({ id: 'domain-1', name: 'Billing', entities: [] });
       const result = buildDomainFromPackage(wire, [handBuilt]);
@@ -661,6 +692,7 @@ describe('domain package versioning (JUM-492)', () => {
     });
 
     it('a newer version merges in place and the preview matches the summary counts', () => {
+      expect.hasAssertions();
       const first = buildDomainFromPackage(packageWire({
         name: 'Billing',
         entities: [{ name: 'Invoice', fields: [{ name: 'id', type: 'uuid', pk: true }] }]
@@ -684,6 +716,7 @@ describe('domain package versioning (JUM-492)', () => {
 
   describe('buildDomainPackageDocument package block', () => {
     it('derives the identity from the domain context with name/1.0.0 fallbacks', () => {
+      expect.hasAssertions();
       const plain = normalizeDomainInput({
         name: 'Billing',
         entities: [],
@@ -709,15 +742,18 @@ describe('domain package versioning (JUM-492)', () => {
 
 describe('defensive projection, identity and merge fallbacks (JUM-493)', () => {
   it('treats two unparseable versions as equal and orders by patch', () => {
+    expect.hasAssertions();
     expect(comparePackageVersions('junk', 'also-junk')).toBe(0);
     expect(comparePackageVersions('1.0.0', '1.0.1')).toBe(-1);
   });
 
   it('builds an empty registry from a non-array domain list', () => {
+    expect.hasAssertions();
     expect(buildPackageRegistry(null).size).toBe(0);
   });
 
   it('defaults the provenance version and a non-array dependency list in the registry', () => {
+    expect.hasAssertions();
     const registry = buildPackageRegistry([
       { id: 'd1', name: 'D', context: { provenance: { package: 'p' }, packageDependencies: 'oops' } }
     ]);
@@ -726,17 +762,20 @@ describe('defensive projection, identity and merge fallbacks (JUM-493)', () => {
   });
 
   it('overlays an incoming package without a dependency list', () => {
+    expect.hasAssertions();
     const graph = resolvePackageGraph(buildPackageRegistry([]), { name: 'n', version: '1.0.0' });
     expect(graph).toMatchObject({ missing: [], incompatible: [], cycles: [] });
   });
 
   it('synthesizes the legacy identity when the document has no package block', () => {
+    expect.hasAssertions();
     expect(normalizePackageIdentity({}, {}).package)
       .toStrictEqual({ name: 'package', version: '1.0.0', dependencies: [] });
     expect(normalizePackageIdentity({}, { name: 'Orders' }).package.name).toBe('Orders');
   });
 
   it('rejects a blank package name and defaults a missing or blank version', () => {
+    expect.hasAssertions();
     expect(normalizePackageIdentity({ package: { name: ' ' } }, { name: 'D' }))
       .toStrictEqual({ ok: false, reason: 'invalid-package' });
     expect(normalizePackageIdentity({ package: { name: 'p' } }, { name: 'D' }).package.version).toBe('1.0.0');
@@ -745,6 +784,7 @@ describe('defensive projection, identity and merge fallbacks (JUM-493)', () => {
   });
 
   it('drops a non-array dependency block in the identity', () => {
+    expect.hasAssertions();
     const identity = normalizePackageIdentity(
       { package: { name: 'p', version: '1.0.0', dependencies: 'oops' } },
       { name: 'D' }
@@ -753,6 +793,7 @@ describe('defensive projection, identity and merge fallbacks (JUM-493)', () => {
   });
 
   it('projects sparse content deterministically for comparison', () => {
+    expect.hasAssertions();
     const sparse = { name: 'D' };
     const withSparseEntity = {
       name: 'D',
@@ -768,6 +809,7 @@ describe('defensive projection, identity and merge fallbacks (JUM-493)', () => {
   });
 
   it('merges domains with missing entity lists and no context', () => {
+    expect.hasAssertions();
     const merge = buildPackageMerge({ name: 'D' }, { name: 'D' }, { name: 'p', version: '2.0.0' });
     expect(merge.domain.name).toBe('D');
     expect(merge.autoCount).toBe(0);
@@ -775,6 +817,7 @@ describe('defensive projection, identity and merge fallbacks (JUM-493)', () => {
   });
 
   it('keeps existing on contract and composition changes and appends a meta-less entity', () => {
+    expect.hasAssertions();
     const existing = {
       name: 'D',
       context: { ubiquitousLanguage: 'orders' },

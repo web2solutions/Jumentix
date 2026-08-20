@@ -1,0 +1,127 @@
+---
+title: "Schema and keys"
+description: "Version schemas and choose stable key strategies for Cana stores."
+---
+
+# Schema and keys
+
+Cana schema is plain data. IndexedDB applies schema changes only when the
+database version increases, so versioning is part of your application contract.
+
+## Versioned schema
+
+```ts
+import { createClient, validateSchema, type CanaSchema } from '@jumentix/cana';
+
+const schemaV1: CanaSchema = {
+  version: 1,
+  stores: [
+    {
+      name: 'categories',
+      keyPath: 'id',
+      indexes: [{ name: 'byName', keyPath: 'name', unique: true }]
+    }
+  ]
+};
+
+const schemaV2: CanaSchema = {
+  version: 2,
+  stores: [
+    {
+      name: 'categories',
+      keyPath: 'id',
+      indexes: [{ name: 'byName', keyPath: 'name', unique: true }]
+    },
+    {
+      name: 'tasks',
+      keyPath: 'id',
+      indexes: [
+        { name: 'byCategory', keyPath: 'categoryId' },
+        { name: 'byUpdatedAt', keyPath: 'updatedAt' }
+      ]
+    }
+  ]
+};
+
+const problems = validateSchema(schemaV2);
+if (problems.length > 0) {
+  throw new Error(problems.join('\n'));
+}
+
+const firstClient = createClient({ name: 'tasks-schema-demo', schema: schemaV1 });
+await firstClient.open();
+await firstClient.table('categories').put({ id: 'work', name: 'Work' });
+await firstClient.close();
+
+const upgradedClient = createClient({ name: 'tasks-schema-demo', schema: schemaV2 });
+await upgradedClient.open();
+await upgradedClient.table('tasks').put({
+  id: 'task-1',
+  title: 'Created after schema upgrade',
+  categoryId: 'work',
+  completed: false,
+  priority: 'medium',
+  createdAt: Date.now(),
+  updatedAt: Date.now()
+});
+```
+
+## Upgrade rules
+
+| Change | Cana behavior |
+| --- | --- |
+| Add store | Applied during the next higher version. |
+| Add index | Applied during the next higher version. |
+| Remove a store from the schema object | The old store remains. Cana avoids accidental data loss. |
+| Change an existing index definition | The old index remains. Use a new index name to rebuild intentionally. |
+| Open an older version over newer data | Refused with `UpgradeFailed`. |
+
+## Key strategies
+
+```ts
+const inboundSchema: CanaSchema = {
+  version: 1,
+  stores: [{ name: 'tasks', keyPath: 'id' }]
+};
+
+const generatedInboundSchema: CanaSchema = {
+  version: 1,
+  stores: [{ name: 'tasks', keyPath: 'id', autoIncrement: true }]
+};
+
+const outboundSchema: CanaSchema = {
+  version: 1,
+  stores: [{ name: 'cache' }]
+};
+```
+
+Use inbound keys for application records such as `categories` and `tasks`.
+Use outbound keys for cache entries where the key is metadata outside the
+stored object.
+
+```ts
+await client.table('tasks').put({
+  id: 'task-1',
+  title: 'Stable inbound key',
+  categoryId: 'work',
+  completed: false,
+  priority: 'medium',
+  createdAt: 1,
+  updatedAt: 1
+});
+
+await client.table('cache').put(
+  { body: '<html>cached response</html>', savedAt: Date.now() },
+  'https://example.com/tasks'
+);
+```
+
+## Run it here
+
+<CanaPlayground id="schema-versioning" />
+
+<CanaPlayground id="keys" />
+
+## Next
+
+Continue to [reading, writing and bulk operations](/docs/jumentix/packages/cana/usage/crud-bulk).

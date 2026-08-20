@@ -92,17 +92,37 @@ function sourceFor(store: IDBObjectStore, query: CanaQuery | undefined): IDBObje
  * and cannot stop: it materialises the whole matching set before any limit is
  * applied, which defeats the plan this module publishes.
  */
-export function runQuery<TRecord>(
+/**
+ * The same execution, with what it actually touched (JUM-682).
+ *
+ * "A `limit: 10` query reads ten records, not the table" was until now only
+ * assertable with a stopwatch: an implementation that reads everything and
+ * slices returns identical records and an identical plan, and differs only in
+ * time. Timing it on shared CI hardware is what Requirement 134 §3 forbids, and
+ * the ratios it needed were loose enough to pass a half-broken cursor anyway.
+ *
+ * `recordsExamined` is the count of records actually read from the cursor.
+ * `cursorAdvanced` says the offset was skipped rather than read through. Both
+ * are facts about the execution, so the property becomes an assertion rather
+ * than an inference from a clock.
+ */
+export function runQueryWithMetrics<TRecord>(
   store: IDBObjectStore,
   query: CanaQuery | undefined
-): Promise<readonly TRecord[]> {
+): Promise<{ records: readonly TRecord[]; recordsExamined: number; cursorAdvanced: boolean }> {
   const range = toKeyRange(query);
   const offset = query?.offset ?? 0;
   const limit = query?.limit;
 
-  return new Promise<readonly TRecord[]>((resolve, reject) => {
+  return new Promise<{
+    records: readonly TRecord[];
+    recordsExamined: number;
+    cursorAdvanced: boolean;
+  }>((resolve, reject) => {
     const records: TRecord[] = [];
     let skipped = false;
+    let recordsExamined = 0;
+    const settle = () => resolve({ records, recordsExamined, cursorAdvanced: skipped });
 
     // Resolving the source is inside the executor on purpose. A named index that
     // does not exist throws, and a function typed to return a Promise that can
@@ -122,7 +142,7 @@ export function runQuery<TRecord>(
       const cursor = request.result;
 
       if (!cursor) {
-        resolve(records);
+        settle();
         return;
       }
 
@@ -134,17 +154,26 @@ export function runQuery<TRecord>(
         return;
       }
 
+      recordsExamined += 1;
       records.push(cursor.value as TRecord);
 
       if (limit !== undefined && records.length >= limit) {
         // Stop here. Continuing would read the rest of the range to discard it.
-        resolve(records);
+        settle();
         return;
       }
 
       cursor.continue();
     };
   });
+}
+
+/** The records alone, for callers that do not need the metrics. */
+export function runQuery<TRecord>(
+  store: IDBObjectStore,
+  query: CanaQuery | undefined
+): Promise<readonly TRecord[]> {
+  return runQueryWithMetrics<TRecord>(store, query).then((result) => result.records);
 }
 
 /**
@@ -156,17 +185,43 @@ export function runQuery<TRecord>(
  * the cursor — stated here rather than silently ignoring them, which would make
  * `count` disagree with `query` on the same input.
  */
-export function runCount(
+/**
+ * The same count, with what it actually read (JUM-706).
+ *
+ * "A native count is one request, not a read of every row" was a claim in this
+ * file's own comment and nowhere else. The only way to test it was to time
+ * `count()` against a full read — a wall-clock comparison on shared hardware,
+ * which Requirement 134 §3 forbids and which JUM-682 removed, leaving the
+ * property real and untested.
+ *
+ * `recordsExamined` is 0 on the native path and the number of rows walked on
+ * the cursor fallback, so "did this read the table?" is a number the engine
+ * states rather than a duration a test infers.
+ */
+type CountWithMetrics = {
+  count: number;
+  recordsExamined: number;
+  usedNativeCount: boolean;
+};
+
+export function runCountWithMetrics(
   store: IDBObjectStore,
   query: CanaQuery | undefined
-): Promise<number> {
+): Promise<CountWithMetrics> {
+  // `offset` and `limit` are not expressible in a native count, so those
+  // queries walk the cursor — and the metric says so instead of implying a
+  // cheapness this path does not have.
   if ((query?.offset ?? 0) > 0 || query?.limit !== undefined) {
-    return runQuery(store, query).then((records) => records.length);
+    return runQueryWithMetrics(store, query).then((result) => ({
+      count: result.records.length,
+      recordsExamined: result.recordsExamined,
+      usedNativeCount: false
+    }));
   }
 
   const range = toKeyRange(query);
 
-  return new Promise<number>((resolve, reject) => {
+  return new Promise<CountWithMetrics>((resolve, reject) => {
     // Inside the executor for the same reason as `runQuery`.
     let request: IDBRequest<number>;
     try {
@@ -176,7 +231,19 @@ export function runCount(
       reject(translateError(error, { store: store.name }));
       return;
     }
-    request.onsuccess = () => resolve(request.result);
+    request.onsuccess = () => resolve({
+      count: request.result,
+      recordsExamined: 0,
+      usedNativeCount: true
+    });
     request.onerror = () => reject(translateError(request.error, { store: store.name }));
   });
+}
+
+/** The number alone, for callers that do not need the metrics. */
+export function runCount(
+  store: IDBObjectStore,
+  query: CanaQuery | undefined
+): Promise<number> {
+  return runCountWithMetrics(store, query).then((result) => result.count);
 }

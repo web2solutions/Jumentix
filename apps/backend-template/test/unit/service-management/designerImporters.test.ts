@@ -25,12 +25,14 @@ const { normalizeStatePayload, getDefaultRbacPolicy } = require(
 describe('designer importers (JUM-469)', () => {
   describe('buildDomainFromPackage', () => {
     it('rejects documents without a domain entity list', () => {
+      expect.hasAssertions();
       expect(buildDomainFromPackage(null, [])).toStrictEqual({ ok: false, reason: 'invalid-package' });
       expect(buildDomainFromPackage({}, [])).toStrictEqual({ ok: false, reason: 'invalid-package' });
       expect(buildDomainFromPackage({ domain: { name: 'X' } }, [])).toStrictEqual({ ok: false, reason: 'invalid-package' });
     });
 
     it('normalizes a valid package into a positioned domain', () => {
+      expect.hasAssertions();
       const result = buildDomainFromPackage({
         domain: {
           name: 'Catalog',
@@ -57,6 +59,7 @@ describe('designer importers (JUM-469)', () => {
     });
 
     it('suffixes the domain name until it stops colliding', () => {
+      expect.hasAssertions();
       const existing = [
         {
           id: 'd1', name: 'Catalog', context: {}, entities: []
@@ -73,6 +76,7 @@ describe('designer importers (JUM-469)', () => {
     });
 
     it('keeps incoming package dependencies that no existing domain declares', () => {
+      expect.hasAssertions();
       const existing = [
         { id: 'd0', name: 'Other', entities: [] },
         {
@@ -93,6 +97,7 @@ describe('designer importers (JUM-469)', () => {
     });
 
     it('recomputes domain/entity ids that collide with the existing model, keeps free ids verbatim (JUM-617)', () => {
+      expect.hasAssertions();
       const existing = [
         {
           id: 'domain-1',
@@ -127,6 +132,7 @@ describe('designer importers (JUM-469)', () => {
     });
 
     it('handles a missing context on the incoming domain', () => {
+      expect.hasAssertions();
       const result = buildDomainFromPackage({ domain: { name: 'Bare', entities: [] } }, []);
       expect(result.ok).toBe(true);
       expect(result.domain.context.packageDependencies).toStrictEqual([]);
@@ -136,18 +142,21 @@ describe('designer importers (JUM-469)', () => {
 
   describe('buildDomainsFromOas', () => {
     it('rejects documents without components.schemas', () => {
+      expect.hasAssertions();
       expect(buildDomainsFromOas(null)).toStrictEqual({ ok: false, reason: 'invalid-oas' });
       expect(buildDomainsFromOas({})).toStrictEqual({ ok: false, reason: 'invalid-oas' });
       expect(buildDomainsFromOas({ components: { schemas: 'nope' } })).toStrictEqual({ ok: false, reason: 'invalid-oas' });
     });
 
     it('rejects documents whose schemas hold no usable entry', () => {
+      expect.hasAssertions();
       expect(buildDomainsFromOas({ components: { schemas: {} } })).toStrictEqual({ ok: false, reason: 'no-schemas' });
       expect(buildDomainsFromOas({ components: { schemas: { Broken: null } } }))
         .toStrictEqual({ ok: false, reason: 'no-schemas' });
     });
 
     it('groups schemas by x-domain and maps fields back through fromOasType', () => {
+      expect.hasAssertions();
       const result = buildDomainsFromOas({
         components: {
           schemas: {
@@ -233,6 +242,7 @@ describe('designer importers (JUM-469)', () => {
     });
 
     it('falls back to the Imported domain and schema key for blank markers, tolerating null field schemas', () => {
+      expect.hasAssertions();
       const result = buildDomainsFromOas({
         components: {
           schemas: {
@@ -254,6 +264,7 @@ describe('designer importers (JUM-469)', () => {
     });
 
     it('normalizes the JUM-478 entity meta extension set back into meta', () => {
+      expect.hasAssertions();
       const result = buildDomainsFromOas({
         components: {
           schemas: {
@@ -333,6 +344,7 @@ describe('designer importers (JUM-469)', () => {
     });
 
     it('restores relationships from x-relations, dropping rows that resolve to no entity', () => {
+      expect.hasAssertions();
       const result = buildDomainsFromOas({
         components: {
           schemas: {
@@ -369,6 +381,7 @@ describe('designer importers (JUM-469)', () => {
     });
 
     it('recognizes unmarked port objects by the canonical name and description conventions', () => {
+      expect.hasAssertions();
       const result = buildDomainsFromOas({
         components: {
           schemas: {
@@ -396,6 +409,7 @@ describe('designer importers (JUM-469)', () => {
     });
 
     it('round-trips an exported OAS document back to equivalent fields', () => {
+      expect.hasAssertions();
       const state = normalizeStatePayload({
         domains: [{
           id: 'domain-1',
@@ -468,6 +482,7 @@ describe('package identity, graph warnings and importer-level merge (JUM-493)', 
   });
 
   it('rejects a package block whose name is blank', () => {
+    expect.hasAssertions();
     const result = buildDomainFromPackage(
       packageDocument('   ', '1.0.0', { name: 'X', entities: [] }),
       []
@@ -476,6 +491,7 @@ describe('package identity, graph warnings and importer-level merge (JUM-493)', 
   });
 
   it('rejects a package block whose version does not parse', () => {
+    expect.hasAssertions();
     const result = buildDomainFromPackage(
       packageDocument('p', 'banana', { name: 'X', entities: [] }),
       []
@@ -485,6 +501,7 @@ describe('package identity, graph warnings and importer-level merge (JUM-493)', 
   });
 
   it('tolerates existing domains with a non-array entities field when collecting taken ids', () => {
+    expect.hasAssertions();
     const result = buildDomainFromPackage(
       packageDocument('p', '1.0.0', { name: 'New', entities: [] }),
       [{ id: 'd1', name: 'Old', entities: null }]
@@ -493,6 +510,7 @@ describe('package identity, graph warnings and importer-level merge (JUM-493)', 
   });
 
   it('warns about a registry cycle the incoming package is not part of', () => {
+    expect.hasAssertions();
     const existing = [
       installedDomain('a', '1.0.0', ['b@*']),
       installedDomain('b', '1.0.0', ['a@*'])
@@ -506,6 +524,7 @@ describe('package identity, graph warnings and importer-level merge (JUM-493)', 
   });
 
   it('merges a newer version of an installed package, stamping appended entities through the importer callback', () => {
+    expect.hasAssertions();
     const userEntity = {
       id: 'entity-user',
       name: 'User',
@@ -550,6 +569,7 @@ describe('package identity, graph warnings and importer-level merge (JUM-493)', 
 
 describe('oAS composition and relation fallbacks (JUM-493)', () => {
   it('imports allOf-only schemas, composition entries without $ref, and unnamed relations', () => {
+    expect.hasAssertions();
     const result = buildDomainsFromOas({
       components: {
         schemas: {

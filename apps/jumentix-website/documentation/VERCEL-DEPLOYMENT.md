@@ -45,8 +45,8 @@ bun run website:vercel:link
 Vercel's default Bun image may lag the repo pin (`.bun-version` / `packageManager`).
 `apps/jumentix-website/vercel.json` forces:
 
-- `installCommand`: `bunx bun@1.3.14 install --frozen-lockfile`
-- `buildCommand`: `bunx bun@1.3.14 run build`
+- `installCommand`: `bunx bun@1.3.13 install --frozen-lockfile`
+- `buildCommand`: `bunx bun@1.3.13 run build`
 
 ## Configuration
 
@@ -69,13 +69,11 @@ Set these on the Vercel project (Production + Preview):
 
 | Name | Purpose |
 | --- | --- |
-| `GITHUB_TOKEN` | Changelog commits + GitHub releases API (`ChangelogPage`, `/api/github-releases`) |
+| `GITHUB_TOKEN` | Optional legacy variable. Nothing at runtime needs it: `/changelog` and `/api/github-releases` bundle their data at build time (`scripts/sync-changelog.mjs`, `scripts/sync-releases.mjs`). The releases snapshot uses it at build time when present. |
 
-Optional:
-
-| Name | Purpose |
-| --- | --- |
-| `NEXT_PUBLIC_VERCEL_ENV` | Enables Vercel Analytics only when set by the platform |
+Vercel Analytics is mounted in the root App Router layout via
+`@vercel/analytics/react` (`<Analytics />`) and does not require a custom
+environment variable.
 
 ## Post-deploy verification
 
@@ -98,3 +96,6 @@ Rollback: use the previous Production deployment in the Vercel project dashboard
 - Vercel and local builds use the Bun workspace lockfile and patched dependency declarations.
 - Root deployment scripts are intentionally scope-agnostic (no forced `--scope`) to support
   personal-account and team-account Vercel contexts.
+- The Vercel CLI project link (`.vercel/project.json`, created by `vercel link` or a manual
+  deploy) is machine-specific local config. It is gitignored at the repository root and must
+  never be committed.

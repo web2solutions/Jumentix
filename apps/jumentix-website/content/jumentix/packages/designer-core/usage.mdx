@@ -1,0 +1,173 @@
+---
+title: "designer-core usage"
+description: "Junior guide and playground for @jumentix/designer-core."
+---
+
+# @jumentix/designer-core — usage guide
+
+## Responsibility in context
+
+- **Stack layer:** domain-model toolkit for Service Management / SPA designers (no DOM)
+- **Owns:** normalize/validate/export/import of design documents
+- **Used with:** SPA/PWA guide, `@jumentix/cana` for persistence of designs
+- **Not responsible for:** rendering UI, IndexedDB itself, or HTTP APIs
+
+## What it is
+
+`@jumentix/designer-core` is the browser-safe core of the Service Management
+domain designer. It validates domain models, normalises import payloads, and
+builds export documents — all without DOM, `window`, or Node-only dependencies.
+Use it in SPAs, Storybook, docs playgrounds, and unit tests.
+
+## Why it exists
+
+Junior teams need one shared place to answer: “Is this design valid?”, “Can I
+export it?”, and “Will re-import round-trip cleanly?” Without `designer-core`,
+each app would duplicate validation rules and drift from the designer UI. The
+package keeps the same rules the Service Management app uses, so offline PWAs and
+server-side tests see identical behaviour.
+
+## Prerequisites
+
+- **Runtime:** modern browser or Bun/Node 18+ (no DOM required).
+- **Package manager:** Bun (recommended) or npm/pnpm with workspace linking.
+- **Prior reading:** [Getting started](/docs/jumentix/concepts/getting-started)
+  — you should know what a domain model (domains, entities, relationships) is.
+- **Optional:** a JSON editor or the docs playground below.
+
+## Glossary
+
+| Term | Meaning |
+| --- | --- |
+| **Domain model** | The `{ domains, relationships }` slice describing bounded contexts, entities, fields, and links between entities. |
+| **State** | The full designer state after `normalizeStatePayload` — model slice plus view, deployments, interfaces, and configuration sections. |
+| **Normalise** | `normalizeStatePayload` fills defaults, clamps values, and drops invalid relationships so every consumer sees the same shape. |
+| **Model issue** | One validation finding from `collectModelIssues` — `{ message, entityId, severity }` where severity is `error`, `warn`, or `info`. |
+| **Sample model** | `buildSampleModelPayload()` — a realistic starter domain (Users/Organization) marked with the `sample-` id prefix. |
+| **Suite export** | Full JSON document (`kind: service-management-suite`) produced by `buildJsonExportDocument`. |
+
+## Steps
+
+### 1. Install (< 5 minutes)
+
+```bash
+bun add @jumentix/designer-core
+```
+
+### 2. First success — validate the sample model (< 15 minutes)
+
+Load the built-in sample, normalise it, and collect issues. Zero errors means
+the export gate would pass.
+
+```js
+import {
+  buildSampleModelPayload,
+  normalizeStatePayload,
+  collectModelIssues
+} from '@jumentix/designer-core';
+
+const raw = buildSampleModelPayload();
+const state = normalizeStatePayload(raw);
+const issues = collectModelIssues(state);
+const errors = issues.filter((issue) => issue.severity === 'error');
+
+console.log({ ok: errors.length === 0, totalIssues: issues.length });
+```
+
+**Verify success:** `errors.length === 0` and `state.domains.length >= 1`.
+
+### 3. Core workflow — validate before save
+
+Always run validation on normalised state before persisting to Cana or sending
+to a backend:
+
+```js
+function validateForSave(rawPayload) {
+  const state = normalizeStatePayload(rawPayload);
+  const issues = collectModelIssues(state);
+  const blocking = issues.filter((i) => i.severity === 'error');
+  return { state, ok: blocking.length === 0, issues };
+}
+```
+
+Keep payloads JSON-serialisable (plain objects and arrays only). Bump the
+document `version` when you add export fields your store cannot ignore.
+
+### 4. Core workflow — export and re-import round-trip
+
+Prove your design survives export → parse → normalise:
+
+```js
+import {
+  buildJsonExportDocument,
+  buildStateFromSuiteExport
+} from '@jumentix/designer-core';
+
+const document = buildJsonExportDocument(state);
+const parsed = JSON.parse(JSON.stringify(document));
+const imported = buildStateFromSuiteExport(parsed, state);
+
+if (!imported.ok) {
+  throw new Error(imported.reason);
+}
+
+const roundTrip = normalizeStatePayload(imported.state);
+const roundTripIssues = collectModelIssues(roundTrip);
+```
+
+**Verify success:** `imported.ok === true` and error-severity issues stay at zero.
+
+### 5. Full surface — public API map
+
+| Area | Key exports | Use when |
+| --- | --- | --- |
+| Model | `buildSampleModelPayload`, `isSampleDomain`, model queries | Bootstrapping or marking sample content |
+| State | `normalizeStatePayload`, `createDesignerState` | Load/save pipelines (store injected by app) |
+| Validation | `collectModelIssues`, `collectDeployTargetIssues`, … | Pre-save and export gates |
+| Exporters | `buildJsonExportDocument`, `buildOasDocument`, `buildMarkdownExport`, … | Download / codegen |
+| Importers | `buildStateFromSuiteExport`, `buildDomainFromPackage`, `buildDomainsFromOas` | File upload paths |
+| Codegen | `buildHexagonalBundle`, `buildAsyncApiFileSet` | Boilerplate generation |
+
+Import only what you need — tree-shaking friendly in bundlers that support it.
+
+## Try it in the docs playground
+
+<DocsPlayground runtime="designer-core" id="getting-started" />
+
+The playground exposes `api` with the real functions plus a convenience alias:
+
+```js
+const raw = api.buildSampleModelPayload();
+const state = api.normalizeStatePayload(raw);
+const result = api.validate(state);
+// result: { ok, issues, errorCount }
+```
+
+Do **not** pass a toy `{ version, name, entities }` shape — validation expects
+`domains` and `relationships` after normalisation.
+
+## Common errors
+
+| Symptom | Cause | Fix | Verify success |
+| --- | --- | --- | --- |
+| `domains.forEach is not a function` | Raw payload skipped `normalizeStatePayload` | Call `normalizeStatePayload` first | `Array.isArray(state.domains)` |
+| Many “Duplicate entity name” errors | Copy-pasted entities in one domain | Rename entities or remove duplicates | Re-run `collectModelIssues`; errors gone |
+| Export gate blocks on RBAC | Role outside contract vocabulary | Use roles from the tenant RBAC contract | No error-severity RBAC issues |
+| `buildStateFromSuiteExport` returns `{ ok: false }` | Wrong `kind`/`version` or legacy shape mismatch | Check `reason`; use suite export v2 | `imported.ok === true` |
+| Circular structure in JSON.stringify | Class instances or DOM nodes in state | Keep only plain data | Serialisation succeeds |
+
+## Junior checklist (“I can …”)
+
+- [ ] Install `@jumentix/designer-core` and import `buildSampleModelPayload` in a script or SPA.
+- [ ] Normalise a payload with `normalizeStatePayload` and explain what it fixes.
+- [ ] Run `collectModelIssues` and list only error-severity blockers.
+- [ ] Load the sample model and confirm zero error-severity issues.
+- [ ] Export with `buildJsonExportDocument` and re-import via `buildStateFromSuiteExport`.
+- [ ] Describe when to validate (before save/export) vs when to export (after validation passes).
+
+## Next step
+
+Persist validated designs offline with
+[Cana](/docs/jumentix/packages/cana/usage), then follow the
+[SPA/PWA guide](/docs/jumentix/guides/spa-pwa) to wire designer-core into a
+zero-build frontend.

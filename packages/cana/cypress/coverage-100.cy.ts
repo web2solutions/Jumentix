@@ -6,8 +6,12 @@
  * green path reaches.
  */
 
-import type { CanaSchema } from '../src';
+// `type` marks the individual specifiers, not the statement. `eslint --fix`
+// merged a `import type { CanaSchema }` into this value import and left the
+// modifier on the whole statement, which erased every runtime binding below —
+// the suite failed with `isCanaErrorCode is not defined` (JUM-657).
 import {
+  type CanaSchema,
   canaError,
   createClient,
   createRouter,

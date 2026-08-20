@@ -33,15 +33,15 @@ describe('check-workspace-coverage-policy', () => {
         }
       }
     });
-    // No exception is live, so every metric names its base minimum. When one is
-    // recorded, the affected metric names its floor and the issue instead —
-    // asserted by the test below, which reads the register rather than hardcoding
-    // whichever concession happens to exist.
+    // JUM-681 recorded the first live exception, and this is the branch the
+    // previous version described but could not exercise: the affected metric
+    // names its floor and the issue, the other three name their base minimum.
     expect(failures).toStrictEqual([
-      'Root coverageThreshold.global.statements must be >= 99 (current: 95)',
-      'Root coverageThreshold.global.lines must be >= 99 (current: 95)',
-      'Root coverageThreshold.global.functions must be >= 99 (current: 95)',
-      'Root coverageThreshold.global.branches must be >= 90 (current: 80)'
+      'Root coverageThreshold.global.statements must be >= 98 (current: 95)',
+      'Root coverageThreshold.global.lines must be >= 98 (current: 95)',
+      'Root coverageThreshold.global.functions must be >= 98 (current: 95)',
+      'Root coverageThreshold.global.branches must be >= 95.902'
+        + ' (98 relaxed to the accepted floor under JUM-721) (current: 80)'
     ]);
   });
 
@@ -65,10 +65,10 @@ describe('check-workspace-coverage-policy', () => {
     const failures = validateGlobalCoverageThreshold({
       coverageThreshold: {
         global: {
-          statements: atFloor('statements', 99),
-          lines: atFloor('lines', 99),
-          functions: atFloor('functions', 99),
-          branches: atFloor('branches', 90)
+          statements: atFloor('statements', 98),
+          lines: atFloor('lines', 98),
+          functions: atFloor('functions', 98),
+          branches: atFloor('branches', 98)
         }
       }
     });

@@ -58,30 +58,25 @@ function routeFromPageFile(absolute) {
 }
 
 /**
- * Content entries marked `display: 'hidden'` in a `_meta` file.
+ * `/docs` with no segments, which no content path spells.
  *
- * In this configuration hidden entries are not routable — all six currently
- * hidden top-level pages answer 404 — so sweeping them would make the gate red
- * for a pre-existing condition rather than for a regression.
+ * The resolver answers the bare route from the `jumentix/` index:
  *
- * `index` is the exception and is deliberately kept: it addresses the section
- * root (`content/index.mdx` serves `/docs`), which is a real, reachable page.
- * Dropping it would remove `/docs` from the sweep entirely.
+ *   `app/docs/[[...mdxPath]]/page.tsx`
+ *   if (normalized.length === 0) return [['jumentix']];
  *
- * This exclusion is not an endorsement. Four of the hidden pages are Nextra
- * starter-template leftovers and two — `release-notes` and `versioning` — read
- * as genuine Jumentix documentation that is currently unreachable. That is
- * recorded in its own issue rather than resolved by a route script.
+ * so `content/jumentix/index.mdx` maps to `/docs/jumentix` by the rule below
+ * and `/docs` would be discovered by nothing. It is the site's most-visited
+ * documentation URL, so it is named here rather than left out.
+ *
+ * Until JUM-640 this list was instead filtered by `display: 'hidden'` in
+ * `content/_meta.ts`, which happened to name the seven orphaned top-level files
+ * — a proxy for the real cause (the rewrite above), and one that would have
+ * stopped matching the first time somebody added a top-level page without
+ * hiding it. Those files are gone; `ci-cd/check-website-content-routes.js` now
+ * asks the reachability question directly, on every content file.
  */
-function hiddenContentKeys(metaFile) {
-  if (!fs.existsSync(metaFile)) return new Set();
-  const source = fs.readFileSync(metaFile, 'utf8');
-  const hidden = new Set();
-  for (const match of source.matchAll(/'?([\w-]+)'?\s*:\s*\{[^{}]*display\s*:\s*'hidden'[^{}]*\}/g)) {
-    if (match[1] !== 'index') hidden.add(match[1]);
-  }
-  return hidden;
-}
+const RESOLVER_ONLY_ROUTES = ['/docs'];
 
 /** `content/foo/bar.mdx` serves `/docs/foo/bar`; `index.mdx` serves the parent. */
 function routeFromContentFile(absolute) {
@@ -101,15 +96,12 @@ export function discoverRoutes() {
     .filter(Boolean);
 
   const contentRoot = path.join(websiteRoot, 'content');
-  const hidden = hiddenContentKeys(path.join(contentRoot, '_meta.ts'));
   const docsRoutes = walk(
     contentRoot,
     (file) => /\.mdx?$/.test(file) && !/(^|[\\/])_meta\./.test(file)
-  )
-    .filter((file) => !hidden.has(path.basename(file).replace(/\.mdx?$/, '')))
-    .map(routeFromContentFile);
+  ).map(routeFromContentFile);
 
-  return [...new Set([...staticRoutes, ...docsRoutes])].sort();
+  return [...new Set([...staticRoutes, ...docsRoutes, ...RESOLVER_ONLY_ROUTES])].sort();
 }
 
 if (import.meta.main) {

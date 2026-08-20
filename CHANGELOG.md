@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-08-20 chore(release): promote dev to main for JUM-724 - Eduardo A.
+- 2026-08-10 [JUM-638][Release] Promote dev to main with signed squash (#174) - Eduardo A.
 - 2026-08-10 chore(release): promote dev to main for JUM-638 - Eduardo A.
 - 2026-08-09 [JUM-636][Release] Promote dev to main (#162) - Eduardo A.
 - 2026-08-09 chore(release): promote dev to main - Eduardo A.

@@ -2,6 +2,13 @@
 
 Adapter privado e reutilizável de mutex para runtimes Jumentix.
 
+## Responsabilidade no escopo
+
+- **Camada:** persistência / coordenação
+- **Responsável por:** locks nomeados sobre um cliente KV
+- **Usado com:** key-value-storage
+- **Não responsável por:** documentos de negócio ou messaging
+
 ## Contrato
 
 `MutexService.compile(keyValueStorageClient, options)` cria um singleton por processo apoiado em um
@@ -24,3 +31,11 @@ bun run --filter @jumentix/mutex-service typecheck
 bun run --filter @jumentix/mutex-service lint
 bun run --filter @jumentix/mutex-service test
 ```
+
+## Experimente no navegador
+
+<DocsPlayground runtime="mutex-service" id="getting-started" />
+
+## Documentação completa
+
+Veja o [guia de uso](../../documentation/md/MUTEX-SERVICE-USAGE-GUIDE.pt-BR.md).

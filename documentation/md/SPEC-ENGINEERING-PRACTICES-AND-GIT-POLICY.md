@@ -45,7 +45,7 @@ These rules are part of Spec Development Driven governance and apply to all comp
 
 ## 5) Package and Tooling Policy
 
-1. Bun 1.3.14 is the package manager and script runner standard for the monorepo.
+1. Bun 1.3.13 is the package manager and script runner standard for the monorepo.
 2. New dependencies must respect workspace boundaries and package ownership.
 3. Shared generic adapters should be delivered as reusable packages.
 

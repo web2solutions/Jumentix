@@ -127,6 +127,7 @@ function createMockRtdb() {
         else set.clear();
       },
       orderByChild: () => makeRef(full),
+      orderByKey: () => makeRef(full),
       limitToLast: () => makeRef(full)
     };
   }
@@ -238,6 +239,7 @@ describe('agent-bus commands', () => {
         on: () => () => undefined,
         off: () => undefined,
         orderByChild: function orderByChild() { return this; },
+        orderByKey: function orderByKey() { return this; },
         limitToLast: function limitToLast() { return this; }
       }) as any
     };
@@ -311,6 +313,35 @@ describe('agent-bus commands', () => {
     expect(status.recentEvents[0].kind).toBe('blocked');
   });
 
+  it('reads recent events by key, never by the ts child (JUM-656)', async () => {
+    expect.hasAssertions();
+
+    // `.orderByChild('ts')` needs `.indexOn: "ts"` in the security rules, which
+    // live in the Firebase console and are not part of this repository. Without
+    // it the query still answers — the server ships every child and the client
+    // sorts — so no test would fail and no user would notice until the bill.
+    // Push keys carry the server clock and are indexed by default.
+    const ordering: string[] = [];
+    const query = {
+      orderByChild: (path: string) => { ordering.push(`orderByChild:${path}`); return query; },
+      orderByKey: () => { ordering.push('orderByKey'); return query; },
+      limitToLast: () => query,
+      once: async () => ({ forEach: () => undefined }),
+      set: async () => undefined,
+      child: () => { throw new Error('unused'); },
+      push: () => ({ key: 'push-1', set: async () => undefined }),
+      update: async () => undefined,
+      on: () => () => undefined,
+      off: () => undefined
+    };
+    const rtdb = { ref: () => query } as unknown as RtdbLike;
+
+    await busStatus(rtdb, 'epic-a');
+
+    expect(ordering).toContain('orderByKey');
+    expect(ordering).not.toContain('orderByChild:ts');
+  });
+
   it('fails closed when RTDB status reads fail', async () => {
     expect.hasAssertions();
     const rtdb: RtdbLike = {
@@ -323,6 +354,7 @@ describe('agent-bus commands', () => {
         on: () => () => undefined,
         off: () => undefined,
         orderByChild: function orderByChild() { return this; },
+        orderByKey: function orderByKey() { return this; },
         limitToLast: function limitToLast() { return this; }
       }) as any
     };
@@ -342,11 +374,211 @@ describe('agent-bus commands', () => {
         on: () => () => undefined,
         off: () => undefined,
         orderByChild: function orderByChild() { return this; },
+        orderByKey: function orderByKey() { return this; },
         limitToLast: function limitToLast() { return this; }
       }) as any
     };
 
     await expect(upsertPresence(rtdb, presenceFromAgent(buildAgent())))
       .rejects.toThrow('RTDB presence upsert failed');
+  });
+});
+
+/**
+ * What the bus refuses to read, and what it says when RTDB refuses (JUM-681).
+ *
+ * The suite above drives the paths that work. These are the ones that only run
+ * when the data on the wire is not what this code wrote: a presence record from
+ * an older agent, an event missing a field, a push whose key came back null, a
+ * rejection that is not an `Error`.
+ *
+ * They matter because every one of them is a silent wrong answer rather than a
+ * crash — a malformed event counted as an event puts a status report together
+ * out of records nothing validated, and a non-Error rejection stringified as
+ * "[object Object]" is a failure nobody can act on.
+ */
+function refusingRtdb(rejection: unknown): RtdbLike {
+  return {
+    ref: () => ({
+      set: async () => { throw rejection; },
+      child: () => { throw rejection; },
+      push: () => ({ key: 'push-1', set: async () => { throw rejection; } }),
+      update: async () => undefined,
+      once: async () => { throw rejection; },
+      on: () => () => undefined,
+      off: () => undefined,
+      orderByChild: function orderByChild() { return this; },
+      orderByKey: function orderByKey() { return this; },
+      limitToLast: function limitToLast() { return this; }
+    }) as any
+  };
+}
+
+/** A snapshot that yields the given children to `forEach`. */
+function snapshotOf(children: Array<{ key: string | null; value: unknown }>) {
+  return {
+    key: null,
+    val: () => null,
+    forEach: (visit: (child: { key: string | null; val(): unknown }) => boolean) => {
+      children.forEach((child) => { visit({ key: child.key, val: () => child.value }); });
+    }
+  };
+}
+
+/** An RTDB whose reads answer with fixed snapshots. */
+function readingRtdb(
+  presenceChildren: unknown[],
+  eventChildren: Array<{ key: string | null; value: unknown }>
+): RtdbLike {
+  return {
+    ref: (path: string) => ({
+      set: async () => undefined,
+      child: () => { throw new Error('unused'); },
+      push: () => ({ key: 'push-1', set: async () => undefined }),
+      update: async () => undefined,
+      once: async () => (path.endsWith('/presence')
+        ? snapshotOf(presenceChildren.map((value) => ({ key: 'agent', value })))
+        : snapshotOf(eventChildren)),
+      on: () => () => undefined,
+      off: () => undefined,
+      orderByChild: function orderByChild() { return this; },
+      orderByKey: function orderByKey() { return this; },
+      limitToLast: function limitToLast() { return this; }
+    }) as any
+  };
+}
+
+describe('agent bus refusals (JUM-681)', () => {
+  const event = (overrides: Record<string, unknown> = {}) => ({
+    agentId: 'agent-1',
+    epicId: 'epic-a',
+    taskId: 'JUM-1',
+    kind: 'progress',
+    summary: 'working',
+    ts: '2026-08-14T00:00:00.000Z',
+    ...overrides
+  });
+
+  it('stamps presence with the current time when the agent never heartbeat', () => {
+    expect.hasAssertions();
+
+    // `updatedAt` drives every staleness decision downstream. An empty value
+    // there reads as the epoch, which makes a fresh agent look long dead.
+    const presence = presenceFromAgent(buildAgent({ last_heartbeat_utc: '' }));
+
+    expect(Date.parse(presence.updatedAt)).toBeGreaterThan(Date.parse('2026-01-01T00:00:00.000Z'));
+  });
+
+  it('names a non-Error rejection instead of stringifying it as an object', async () => {
+    expect.hasAssertions();
+
+    // Firebase rejects with plain objects in some paths; `String(error)` on one
+    // is "[object Object]", which is the message an operator would be handed.
+    await expect(upsertPresence(refusingRtdb('permission denied'), presenceFromAgent(buildAgent())))
+      .rejects.toThrow('RTDB presence upsert failed: permission denied');
+    await expect(publishProgress(refusingRtdb('quota'), event() as any))
+      .rejects.toThrow('RTDB progress publish failed: quota');
+    await expect(busStatus(refusingRtdb('offline'), 'epic-a'))
+      .rejects.toThrow('RTDB bus status failed: offline');
+  });
+
+  it('skips presence records that are not presence records', async () => {
+    expect.hasAssertions();
+
+    // A record from an older agent, a null left by a partial delete, a scalar
+    // written by hand in the console: none of them may enter the report.
+    const rtdb = readingRtdb([null, 'a string', { agentId: 'agent-2' }, {
+      agentId: 'agent-1',
+      status: 'busy',
+      epicId: 'epic-a',
+      taskId: 'JUM-1',
+      machineId: 'machine-1',
+      updatedAt: '2026-08-14T00:00:00.000Z'
+    }], []);
+
+    const status = await busStatus(rtdb, 'epic-a');
+
+    expect(status.presence).toHaveLength(1);
+    expect(status.presence[0].agentId).toBe('agent-1');
+  });
+
+  it('skips events that are not events, and names a push with no key', async () => {
+    expect.hasAssertions();
+
+    const rtdb = readingRtdb([], [
+      { key: 'e1', value: null },
+      { key: 'e2', value: { agentId: 'agent-1' } },
+      { key: null, value: event() }
+    ]);
+
+    const status = await busStatus(rtdb, 'epic-a');
+
+    expect(status.recentEvents).toHaveLength(1);
+    expect(status.recentEvents[0].pushId).toBe('unknown');
+  });
+
+  it('delivers only the events a watcher has not already seen', () => {
+    expect.hasAssertions();
+
+    const delivered: Array<{ pushId: string }> = [];
+    let handler: ((snapshot: { key: string | null; val(): unknown }) => void) | undefined;
+    const rtdb: RtdbLike = {
+      ref: () => ({
+        set: async () => undefined,
+        child: () => { throw new Error('unused'); },
+        push: () => ({ key: 'push-1', set: async () => undefined }),
+        update: async () => undefined,
+        once: async () => snapshotOf([]),
+        on: (_event: string, next: (snapshot: any) => void) => { handler = next; return next; },
+        off: () => undefined,
+        orderByChild: function orderByChild() { return this; },
+        orderByKey: function orderByKey() { return this; },
+        limitToLast: function limitToLast() { return this; }
+      }) as any
+    };
+
+    const stop = watchBus(rtdb, {
+      epicId: 'epic-a',
+      since: '2026-08-14T00:00:00.000Z',
+      onEvent: (_value: AgentBusEvent, pushId: string) => { delivered.push({ pushId }); }
+    });
+
+    handler?.({ key: 'e0', val: () => 'not an event' });
+    handler?.({ key: 'e1', val: () => event({ ts: '2026-08-13T00:00:00.000Z' }) });
+    handler?.({ key: 'e2', val: () => event({ ts: '2026-08-15T00:00:00.000Z' }) });
+    handler?.({ key: null, val: () => event({ ts: '2026-08-16T00:00:00.000Z' }) });
+    stop();
+
+    expect(delivered.map((entry) => entry.pushId)).toStrictEqual(['e2', 'unknown']);
+  });
+
+  it('delivers every event when the watcher asks for no cursor', () => {
+    expect.hasAssertions();
+
+    const delivered: string[] = [];
+    let handler: ((snapshot: { key: string | null; val(): unknown }) => void) | undefined;
+    const rtdb: RtdbLike = {
+      ref: () => ({
+        set: async () => undefined,
+        child: () => { throw new Error('unused'); },
+        push: () => ({ key: 'push-1', set: async () => undefined }),
+        update: async () => undefined,
+        once: async () => snapshotOf([]),
+        on: (_event: string, next: (snapshot: any) => void) => { handler = next; return next; },
+        off: () => undefined,
+        orderByChild: function orderByChild() { return this; },
+        orderByKey: function orderByKey() { return this; },
+        limitToLast: function limitToLast() { return this; }
+      }) as any
+    };
+
+    watchBus(rtdb, {
+      epicId: 'epic-a',
+      onEvent: (_value: AgentBusEvent, pushId: string) => { delivered.push(pushId); }
+    });
+
+    handler?.({ key: 'e1', val: () => event({ ts: '2020-01-01T00:00:00.000Z' }) });
+
+    expect(delivered).toStrictEqual(['e1']);
   });
 });

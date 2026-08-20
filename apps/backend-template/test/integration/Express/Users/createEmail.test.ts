@@ -21,9 +21,7 @@ import {
   emails
 } from '@test/mock';
 import type {
-  IUser
-} from '@src/modules/Users';
-import type {
+  IUser,
   RequestCreateEmail
 } from '@src/modules/Users';
 import {
@@ -85,7 +83,6 @@ describe('express -> User createEmail suite', () => {
     server = API.server.application;
 
     // await server.ready();
-    await API.deleteUsers();
     usersAll = await API.seedUsers();
     [user1] = usersAll;
     [email1] = emails;

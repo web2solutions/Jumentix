@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "issue": "JUM-495",
   "capturedAt": "2026-07-30",
-  "source": "JUM-23 baseline + local Bun 1.3.14 samples; CI wall-clock out of scope (Req 106 §5)",
+  "source": "JUM-23 baseline + local Bun 1.3.14 samples, recorded before the pin moved to 1.3.13 (JUM-708); CI wall-clock out of scope (Req 106 \u00a75)",
   "jestEra": {
     "fullUnitMs": 157600,
     "suites": 94,
@@ -18,5 +18,6 @@
     "escalationRateMax": 0.3,
     "shadowMissRateMax": 0,
     "flakeRateMax": 0.005
-  }
+  },
+  "toolchainNote": "These samples were taken under Bun 1.3.14. The pin moved down to 1.3.13 because 1.3.14 rejects a lockfile it writes itself for some dependency trees (JUM-708). The numbers are left as recorded rather than adjusted: a timing nobody measured is worse than a timing with a stated provenance."
 }

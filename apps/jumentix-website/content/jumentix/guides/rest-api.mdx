@@ -3,49 +3,124 @@ title: "Create a REST API"
 description: "Build contract-first REST APIs with Jumentix."
 ---
 
-> Source: `../backend-template/documentation/guides/CREATING-REST-API-WITH-JUMENTIX.md`
-
 # Creating REST API with Jumentix
 
-This guide shows how to bootstrap and run a REST service using the backend template.
+## Responsibility in context
 
-## 1. Select Runtime Profile
+- **Owns:** HTTP adapter + application use-cases for REST
+- **Used with:** sdk-rest-client, persistence packages, backend-template app hub
+- **Not responsible for:** WebSocket/gRPC realtime (see realtime guide) or offline IndexedDB (Cana)
 
-Set environment variables:
+## What it is
 
-- `JUMENTIX_HTTP_FRAMEWORK=express` (or any supported adapter)
-- `JUMENTIX_REALTIME_API=no`
+This guide walks you through bootstrapping, running, and validating a REST service
+using the Jumentix backend template. You will wire domain logic to an HTTP adapter
+(Express by default) and call the API from a typed client.
 
-Then start:
+## Why it exists
+
+Most junior teams start by editing controller files and hope routes stay aligned
+with documentation. Jumentix inverts that: **OpenAPI is the contract**, domain
+code sits in the center, and the HTTP framework is a replaceable adapter. This
+guide gives you a repeatable path from env profile → running server → green tests.
+
+## Prerequisites
+
+| Item | Required | Notes |
+| --- | --- | --- |
+| Bun 1.3.13+ | Yes | See [Getting started](/docs/jumentix/concepts/getting-started) |
+| Completed getting-started | Recommended | Mental model + Cana playground |
+| Backend template scaffold | Yes | Use the monorepo `apps/backend-template` or your internal bootstrap flow |
+| Service Management (optional) | For design-first teams | Domain Designer generates entities aligned with OpenAPI |
+
+**Environment file:** `apps/backend-template/src/config/.env.dev` (or your scaffold’s equivalent).
+
+## Glossary
+
+| Term | Meaning on this page |
+| --- | --- |
+| **REST** | HTTP API using verbs (GET, POST, …) and JSON payloads. |
+| **OpenAPI** | Spec at `spec/1.0.0.yml` describing paths, schemas, and operationIds. |
+| **Runtime profile** | Env vars (`JUMENTIX_HTTP_FRAMEWORK`, `JUMENTIX_REALTIME_API`) selecting adapters. |
+| **Controller** | Interface-layer class mapping HTTP requests to use-case calls. |
+| **Use case** | Application service implementing one business operation. |
+| **Repository port** | Interface for persistence; implemented by a database adapter. |
+| **HTTP adapter** | Express/Fastify/etc. module mounting routes from OpenAPI operationIds. |
+| **oas:check-routes** | Script verifying every OpenAPI path resolves to a registered handler. |
+
+## Numbered steps
+
+### Step 1 — Select the REST runtime profile (< 5 minutes)
+
+1. Open your env file (default: `apps/backend-template/src/config/.env.dev`).
+2. Set REST-only mode:
+
+```bash
+JUMENTIX_HTTP_FRAMEWORK=express
+JUMENTIX_REALTIME_API=no
+```
+
+Supported HTTP frameworks are listed on [HTTP adapters](/docs/jumentix/adapters/http).
+
+3. Start the dev server from the monorepo root:
 
 ```bash
 bun run dev:http
 ```
 
-## 2. Model Domain and Contracts
+Or from inside `apps/backend-template`:
 
-1. Design entities and relationships in Service Management (Domain Designer).
-2. Generate or update OpenAPI definitions in `spec/1.0.0.yml`.
-3. Keep request/response contract objects aligned with controller inputs/outputs.
+```bash
+bun run dev:rest
+```
 
-## 3. Implement Domain Flow
+**Success check:** PM2 reports `jumentix-dev-http` online; curl or browser hits
+`/health` (or your scaffold’s health route) with HTTP 200.
 
-Use the project layering pattern:
+### Step 2 — Model domain and contracts (< 15 minutes)
 
-1. model/entity/value objects
-2. repository ports/adapters
-3. services/use cases
-4. controllers
-5. framework handlers
+1. **Design-first (recommended):** open Service Management → Domain Designer.
+   Define entities, relationships, and bounded contexts.
+2. **Spec-first:** edit OpenAPI at `spec/1.0.0.yml` — add paths, schemas, and
+   stable `operationId` values.
+3. Keep request/response DTOs aligned with controller method inputs/outputs.
+4. Shared contract packages (`@jumentix/shared-contracts`) should mirror the same
+   shapes; see [/docs/jumentix/packages/shared-contracts](/docs/jumentix/packages/shared-contracts).
 
-## 4. Bind to HTTP Adapter
+**Success check:** `bun run oas:check-routes` passes with zero unresolved routes.
 
-Choose adapter by env (`JUMENTIX_HTTP_FRAMEWORK`) and use the REST startup loader.
-REST endpoints are exposed through framework-native handlers under module interfaces.
+### Step 3 — Implement the domain flow (< 30 minutes per feature)
 
-## 5. Validate
+Follow the backend template layering — bottom to top:
 
-Run quality gates:
+1. **Domain** — entities, value objects, domain events under `src/domain/`.
+2. **Ports** — repository and gateway interfaces your use cases depend on.
+3. **Use cases** — application services orchestrating domain rules.
+4. **Controllers** — translate HTTP DTOs ↔ use-case inputs/outputs.
+5. **Handlers** — framework-specific route bindings (Express router modules).
+
+Rule: **domain and use cases must not import Express/Fastify.** Only adapters do.
+
+**Success check:** unit tests for the use case pass without starting HTTP.
+
+### Step 4 — Bind to the HTTP adapter (< 10 minutes)
+
+1. Confirm `JUMENTIX_HTTP_FRAMEWORK` matches the adapter you wired.
+2. REST startup loads `start-rest-api.ts` (or your scaffold entry) which registers
+   handlers from module interfaces.
+3. Each OpenAPI `operationId` maps to one controller method via the adapter registry.
+
+Swap adapters by changing env only — domain code stays untouched:
+
+```bash
+JUMENTIX_HTTP_FRAMEWORK=fastify   # example; confirm support on adapters page
+```
+
+**Success check:** manual request to a new endpoint returns the contract-shaped JSON.
+
+### Step 5 — Validate quality gates (< 10 minutes)
+
+Run from monorepo root (or `bun --cwd ../..` from backend-template):
 
 ```bash
 bun run lint
@@ -54,8 +129,66 @@ bun run oas:check-routes
 bun run test:integration:express
 ```
 
-## References
+Optional smoke before pushing:
 
-- [HTTP Adapters Index](/docs/jumentix/adapters/http)
-- [OpenAPI Spec](https://github.com/XpertMinds/Jumentix/blob/dev/spec/1.0.0.yml)
-- [Setup Runtime and API](https://github.com/XpertMinds/Jumentix/blob/dev/documentation/md/SETUP-RUNTIME-AND-API.md)
+```bash
+cd apps/backend-template && bun run test:integration:smoke
+```
+
+**Success check:** all four commands exit 0; integration test hits real HTTP against the running profile.
+
+### Step 6 — Call the API from a client (junior path)
+
+In Node or the browser docs playground, **inject the OpenAPI document** instead of
+loading it from disk with `fs`:
+
+```js
+const client = api.createMockClient();
+const result = await client.request({ method: 'GET', path: '/health' });
+console.log(result.status, result.body);
+```
+
+For production clients, use `@jumentix/sdk-rest-client` with the same injected spec
+in browser bundles.
+
+## Examples
+
+### Static mock client
+
+```js
+const client = api.createMockClient();
+const result = await client.request({ method: 'GET', path: '/health' });
+```
+
+### Interactive REST client playground
+
+Try the mocked REST client — **Run** should return a successful `/health` response:
+
+<DocsPlayground runtime="sdk-rest-client" id="getting-started" />
+
+## Common errors
+
+| Symptom | Likely cause | Fix | Verify success |
+| --- | --- | --- | --- |
+| PM2 process exits immediately | Invalid env file path or missing secret | Confirm `--env-file=./apps/backend-template/src/config/.env.dev` | `bun run dev:http` stays online |
+| `oas:check-routes` fails | OpenAPI path has no handler | Add handler + controller method; rerun check | Script exits 0 |
+| 404 on documented route | Wrong HTTP framework adapter loaded | Match `JUMENTIX_HTTP_FRAMEWORK` to wired module | curl returns 200 |
+| Integration test timeout | Server not running or wrong port | Start dev profile before integration suite | `test:integration:express` green |
+| Browser client cannot load YAML | `fs.readFile` in bundle | Inject parsed OpenAPI object (playground pattern) | Mock client works in browser |
+| Domain imports Express | Layer violation | Move HTTP code to adapter/handler layer | `arch:check-boundaries` passes |
+
+## Junior checklist (“I can …”)
+
+- [ ] Set `JUMENTIX_HTTP_FRAMEWORK` and `JUMENTIX_REALTIME_API=no` and start `bun run dev:http`.
+- [ ] Locate `spec/1.0.0.yml` and explain what an `operationId` is.
+- [ ] Add or trace one path: OpenAPI → controller → use case → repository port.
+- [ ] Run `bun run oas:check-routes` and `bun run test:integration:express` successfully.
+- [ ] Call `/health` via the sdk-rest-client playground (**Run** green).
+- [ ] Name one HTTP adapter alternative without changing domain code.
+
+## Next step
+
+When you need push notifications or live updates, continue to
+[Create a Realtime API](/docs/jumentix/guides/realtime-api). For adapter
+reference, see [HTTP adapters](/docs/jumentix/adapters/http) and
+[Errors and responses](/docs/jumentix/reference/errors-responses).

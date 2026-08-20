@@ -1,0 +1,159 @@
+# @jumentix/key-value-storage — guia de uso
+
+## Responsabilidade no escopo
+
+- **Camada:** persistência / adaptador de infraestrutura
+- **Responsável por:** porta chave/valor + adapters InMemory/Redis
+- **Usado com:** `@jumentix/mutex-service`
+- **Não responsável por:** repositórios SQL/documentos, IndexedDB (Cana), SDKs HTTP
+
+## O que é
+
+`@jumentix/key-value-storage` é a porta compartilhada chave/valor para caches,
+feature flags, blobs de sessão e backends de mutex nos serviços Jumentix. Cada
+adaptador implementa o mesmo contrato `IKeyValueStorageClient`: `connect`, `get`,
+`set`, `del` e `disconnect`.
+
+## Por que existe
+
+Times júnior não deveriam reimplementar wiring de Redis, doubles em memória para
+testes e wrapping de resposta em cada app. Uma porta permite começar com
+**InMemory** no browser e nos testes unitários e trocar para **Redis** em
+servidores Node via configuração de ambiente — sem mudar os call sites.
+
+## Pré-requisitos
+
+- **Runtime:** browser (só InMemory) ou Node/Bun (InMemory ou Redis).
+- **Para Redis:** instância Redis rodando e dependência `redis` no app consumidor.
+- **Leitura prévia:** [Começando](/docs/pt-BR/jumentix/concepts/getting-started).
+- **Ambiente (Redis):** `JUMENTIX_KEYVALUESTORAGE_DRIVER=redis` mais configuração
+  de conexão documentada no seu deploy.
+
+## Glossário
+
+| Termo | Significado |
+| --- | --- |
+| **Porta** | `IKeyValueStorageClient` — interface que todo adaptador implementa. |
+| **Adaptador** | Client concreto (`InMemoryKeyValueStorageClient`, `RedisKeyValueStorageClient`). |
+| **ServiceResponse** | Wrapper `{ result?, error? }` de todo método — verifique `error` antes de usar `result`. |
+| **Prefixo** | Chaves armazenadas como `{prefix}:{keyName}`; padrão vem de `JUMENTIX_KV_KEY_PREFIX` ou `jumentix__`. |
+| **Driver** | Valor de `JUMENTIX_KEYVALUESTORAGE_DRIVER` passado a `compileKeyValueStorageClient`. |
+| **Connected** | Flag booleana de `connect()`; adaptadores esperam `connect()` antes de I/O em código server. |
+
+## Passos
+
+### 1. Instalar (< 5 minutos)
+
+```bash
+bun add @jumentix/key-value-storage
+```
+
+Para Redis em Node, instale também o client Redis que seu deploy usa (versão
+suportada no README do pacote).
+
+### 2. Primeiro sucesso — get/set em memória (< 10 minutos)
+
+```ts
+import { InMemoryKeyValueStorageClient } from '@jumentix/key-value-storage';
+
+const client = InMemoryKeyValueStorageClient.compile();
+await client.connect();
+
+const write = await client.set('greeting', 'hello jumentix');
+if (write.error) throw write.error;
+
+const read = await client.get('greeting');
+console.log(read.result); // 'hello jumentix'
+
+await client.del('greeting');
+await client.disconnect();
+```
+
+**Verifique o sucesso:** `read.result === 'hello jumentix'` e sem campo `error`.
+
+### 3. Fluxo central — compilar por ambiente
+
+Use a factory quando o driver deve seguir a config do deploy:
+
+```ts
+import { compileKeyValueStorageClient } from '@jumentix/key-value-storage';
+
+// JUMENTIX_KEYVALUESTORAGE_DRIVER=inmemory | redis (padrão: redis)
+const client = compileKeyValueStorageClient();
+await client.connect();
+```
+
+| Valor do driver | Adaptador | Ambiente |
+| --- | --- | --- |
+| `inmemory`, `in-memory`, `memory` | InMemory | Demos no browser, testes unitários |
+| *(padrão / redis)* | Redis | Servidores Node |
+
+### 4. Fluxo central — leituras seguras a erro
+
+Nunca assuma que `result` existe — sempre trate `error`:
+
+```ts
+async function readFlag(client, key: string, fallback = false) {
+  const { result, error } = await client.get(key);
+  if (error) throw error;
+  return result ?? fallback;
+}
+```
+
+### 5. Fluxo central — parear com mutex-service
+
+Locks de mutex são chaves KV sob prefixo configurável. Crie um client KV
+compartilhado e passe a `MutexService.compile` (veja o
+[guia mutex-service](/docs/pt-BR/jumentix/packages/mutex-service/usage)).
+
+### 6. Superfície completa — mapa da API
+
+| Export | Papel |
+| --- | --- |
+| `IKeyValueStorageClient` | Tipo de todo adaptador |
+| `InMemoryKeyValueStorageClient.compile()` | Map singleton em memória |
+| `RedisKeyValueStorageClient.compile()` | Client com Redis (Node) |
+| `compileKeyValueStorageClient(driver?)` | Factory orientada a env |
+| `ServiceResponse` | Helper padrão `{ result, error }` |
+| `BaseKeyValueStorageClient` | Lógica compartilhada de prefix/connect para adaptadores custom |
+
+## Experimente no playground de docs
+
+<DocsPlayground runtime="key-value-storage" id="getting-started" />
+
+O stub do playground expõe API simplificada para demos:
+
+```js
+const client = api.createInMemory();
+await client.set('greeting', 'hello jumentix');
+const value = await client.get('greeting');
+```
+
+Em apps reais, use `InMemoryKeyValueStorageClient.compile()` e trate
+`ServiceResponse` como acima.
+
+## Erros comuns
+
+| Sintoma | Causa | Correção | Verificar sucesso |
+| --- | --- | --- | --- |
+| `result` é `undefined` sem error | Chave nunca setada ou foi apagada | Chame `set` primeiro; confira o nome da chave | `get` retorna valor esperado |
+| Connection refused no Redis | Redis parado ou host/porta errados | Suba Redis; confira env vars | `connect()` retorna sem `error` |
+| Valor errado em testes de carga | Client InMemory singleton reutilizado | Isole chaves por teste ou reinicie estado | Chaves isoladas por teste |
+| Chaves colidem entre apps | Mesmo prefixo no Redis compartilhado | Defina `JUMENTIX_KV_KEY_PREFIX` por serviço | Chaves namespaced no Redis CLI |
+| `connected` permanece false | Pulou `connect()` | Aguarde `connect()` antes de I/O | `client.connected === true` |
+
+## Checklist júnior (“Eu consigo …”)
+
+- [ ] Instalar o pacote e executar ciclo in-memory `set` / `get` / `del`.
+- [ ] Explicar por que todo método retorna `ServiceResponse` em vez de lançar exceção.
+- [ ] Escolher InMemory vs Redis para um ambiente e justificar.
+- [ ] Usar `compileKeyValueStorageClient` com a env var de driver correta.
+- [ ] Ler valor com fallback seguro quando a chave não existe.
+- [ ] Descrever como mutex-service se apoia nesta porta.
+
+## Próximo passo
+
+Adicione acesso coordenado com
+[mutex-service](/docs/pt-BR/jumentix/packages/mutex-service/usage) e continue a
+jornada de persistência a partir de
+[Começando](/docs/pt-BR/jumentix/concepts/getting-started).

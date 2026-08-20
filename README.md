@@ -7,7 +7,7 @@
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Jumentix)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=Jumentix)
 [![Sonar Coverage](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Jumentix)
-[![Bun](https://img.shields.io/badge/bun-1.3.14-000000?logo=bun&logoColor=white)](https://bun.sh/)
+[![Bun](https://img.shields.io/badge/bun-1.3.13-000000?logo=bun&logoColor=white)](https://bun.sh/)
 [![Node compat](https://img.shields.io/badge/node%20compat-22.x-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-6BA539?logo=openapiinitiative&logoColor=white)](./spec/1.0.0.yml)
 [![AsyncAPI](https://img.shields.io/badge/AsyncAPI-3.0-9146FF)](./spec)

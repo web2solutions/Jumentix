@@ -1,16 +1,99 @@
 ---
 title: "@jumentix/database-client-factory"
-description: "Packages documentation."
+description: "Compile database clients from env/driver selection."
 ---
-
-> Source: `../../packages/database-client-factory/README.md`
 
 # @jumentix/database-client-factory
 
-Reusable compiler factory for selecting database clients by environment driver.
+Compiles the correct database client implementation from environment/driver configuration.
 
-## Exports
+## What it is
+
+Compiles the correct database client implementation from environment/driver configuration.
+
+## Why it exists
+
+Services hard-coded a driver. Switching Mongo→SQL meant editing use-cases. The factory keeps selection at the composition root.
+
+**When to use:** Bootstrapping a backend runtime that must pick a DB driver from env.
+
+**When not to use:** Browser apps, or when you only need the port types.
+
+## Responsibility in context
+
+- **Stack layer:** persistence / runtime composition
+- **Problem boundary it owns:** `buildDatabaseClientCompilers`, `DriverName`, and related factory types.
+- **Used with:** Works with persistence-contracts + external-* adapters.
+- **Typical composition:** env driver → factory → client/stores → use-cases.
+- **Journeys:** backend-template / REST guide runtime setup.
+- **Not responsible for:** SQL query building inside use-cases or OpenAPI routing.
+
+## Prerequisites
+
+- Bun 1.3.13+ (monorepo pin) or the Node runtime your service already uses
+- Read [Getting started](/docs/jumentix/concepts/getting-started) first
+- Basic TypeScript modules/`import` knowledge
+
+## Glossary
+
+- **Port** — TypeScript contract the application depends on (no vendor types).
+- **Adapter** — Concrete implementation that talks to a driver, broker, or protocol.
+- **Composition root** — Process startup code that wires env → adapters → use-cases.
+
+## Numbered steps
+
+### 1. Install
+
+```bash
+bun add @jumentix/database-client-factory
+```
+
+### 2. First success (under 30 min)
+
+```ts
+import { buildDatabaseClientCompilers } from '@jumentix/database-client-factory';
+
+const compilers = buildDatabaseClientCompilers();
+// Select compiler from env (e.g. DB_DRIVER=mongo) at composition root.
+```
+
+
+### 3. Core workflows
+
+### 1. Read driver from env
+
+Map `DB_DRIVER` (or project equivalent) to `DriverName`.
+
+### 2. Compile once at boot
+
+Do not rebuild clients per request.
+
+### 3. Inject ports upward
+
+Pass contracts to use-cases, not the factory.
+
+
+### 4. Full practical surface (exports)
 
 - `buildDatabaseClientCompilers`
 - `DriverName`
 - `IDatabaseClientLike`
+
+Use exports from application/adapters layers as described above — not from domain entities.
+
+## Common errors
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| Unknown driver string | Env typo | Fail closed with a clear error listing supported drivers. |
+
+**Verify success:** the first-success snippet runs (or typechecks against your service) and your use-case depends only on ports.
+
+## Junior checklist (“I can …”)
+
+- [ ] I can select a driver from env without touching domain code
+- [ ] I know the factory is Node/backend-only
+
+## Next step
+
+Continue with [external-store-proxy](/docs/jumentix/packages/external-store-proxy).

@@ -6,6 +6,25 @@ Idioma alvo: Português (Brasil)
 
 Este guia é exclusivo para a interface em tempo real do gRPC.
 
+## Glossário
+
+- **Adapter de entrada** — aceita chamadas de protocolo externo e traduz para use-cases.
+
+## Responsabilidade no escopo
+
+- **Camada:** adapter / realtime
+- **Responsável por:** wiring específico deste framework/tecnologia
+- **Usado com:** composição do backend-template, pacotes de persistência/SDK, guia correspondente
+- **Não responsável por:** regras de domínio, autoría OpenAPI ou storage offline no browser
+
+## Por que existe
+
+A escolha de framework fica na borda. Este adapter mantém detalhes Express/Fastify/DB/realtime substituíveis.
+
+## O que é
+
+Adapter GRPC API para interfaces realtime do Jumentix — monta use-cases sem vazar tipos de framework no domínio.
+
 ## Escopo
 
 - Transporte: gRPC
@@ -16,9 +35,9 @@ Este guia é exclusivo para a interface em tempo real do gRPC.
 
 ## Referências de contrato
 
-- [Contratos em tempo real gRPC](../../contracts/GRPC-REALTIME-CONTRACTS.md)
-- [Contratos e respostas de erro](../../ERROR-CONTRACTS-AND-RESPONSES.md)
-- [Mapa de eventos e mensagens](../../EVENTS-AND-MESSAGES-MAP.md)
+- Contratos em tempo real gRPC
+- [Contratos e respostas de erro](/docs/jumentix/reference/errors-responses)
+- [Mapa de eventos e mensagens](/docs/jumentix/reference/events-messages)
 
 ## Contrato de serviço
 
@@ -131,3 +150,13 @@ stream.end();
 2. Prefira RPC unário para operações independentes.
 3. Use troca de fluxo para lotes de operação de alta frequência.
 4. Aplique correlação por solicitação com `metadataJson.requestId`.
+
+## Checklist júnior (“Eu consigo …”)
+
+- [ ] Sei quando escolher este adapter
+- [ ] Consigo iniciá-lo pelo script documentado
+- [ ] Sei o próximo guia/pacote
+
+## Próximo passo
+
+Volte para [Começando](/docs/pt-BR/jumentix/concepts/getting-started) ou o guia correspondente.

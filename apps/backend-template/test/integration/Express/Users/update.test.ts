@@ -76,7 +76,6 @@ describe('express -> update User suite', () => {
     });
 
     server = API.server.application;
-    await API.deleteUsers();
     await API.seedUsers();
     // await server.ready();
 

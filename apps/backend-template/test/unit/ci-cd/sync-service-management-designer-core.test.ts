@@ -81,11 +81,13 @@ function createHarness(options: {
 
 describe('sync-service-management-designer-core (JUM-493)', () => {
   it('pins the package source and vendored-tree paths', () => {
+    expect.hasAssertions();
     expect(PACKAGE_SRC).toBe(path.join('packages', 'designer-core', 'src'));
     expect(VENDORED_DIR).toBe(path.join('apps', 'service-management', 'vendor', 'designer-core'));
   });
 
   it('fails closed when the package source is missing', () => {
+    expect.hasAssertions();
     const { harness, errors, written } = createHarness({ sourceExists: false });
     expect(syncServiceManagementDesignerCore(harness)).toBe(1);
     expect(errors.join('\n')).toContain('package source not found');
@@ -93,6 +95,7 @@ describe('sync-service-management-designer-core (JUM-493)', () => {
   });
 
   it('fails closed when the source tree has no barrel', () => {
+    expect.hasAssertions();
     const { harness, errors, written } = createHarness({
       modules: { 'model/modelQueries.js': 'export {}\n' }
     });
@@ -102,6 +105,7 @@ describe('sync-service-management-designer-core (JUM-493)', () => {
   });
 
   it('replaces the vendored tree with a verbatim copy of the package sources', () => {
+    expect.hasAssertions();
     const {
       harness, logs, written, removed
     } = createHarness();

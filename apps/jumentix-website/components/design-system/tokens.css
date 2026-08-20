@@ -2,6 +2,7 @@
   --jtx-blue-50: #eff7ff;
   --jtx-blue-200: #b8d9ff;
   --jtx-blue-500: #2f88f5;
+  --jtx-blue-600: #166bd5;
   --jtx-blue-700: #1257ae;
   --jtx-green-50: #edfcf4;
   --jtx-green-500: #16b86c;
@@ -10,10 +11,16 @@
   --jtx-yellow-100: #fff2bd;
   --jtx-ink: #142033;
   --jtx-ink-muted: #566277;
+  --jtx-page-bg: #edf2f7;
+  --jtx-page-band: #f7fbff;
+  --jtx-page-warm: #fff7ed;
   --jtx-surface: #ffffff;
+  --jtx-surface-raised: #fbfdff;
   --jtx-surface-subtle: #f5f7fa;
   --jtx-line: #dce2ea;
+  --jtx-line-strong: #bdc9d8;
   --jtx-code: #101722;
+  --jtx-code-ink: #edf3fb;
   --jtx-radius-sm: 4px;
   --jtx-radius-md: 8px;
   --jtx-shadow-sm: 0 1px 2px rgb(20 32 51 / 8%);
@@ -39,10 +46,23 @@
 :root[data-mantine-color-scheme='dark'] {
   --jtx-ink: #edf3fb;
   --jtx-ink-muted: #aebbd0;
+  --jtx-page-bg: #080d14;
+  --jtx-page-band: #0d1721;
+  --jtx-page-warm: #21150f;
   --jtx-surface: #111923;
+  --jtx-surface-raised: #16202d;
   --jtx-surface-subtle: #17212e;
   --jtx-line: #2b3849;
+  --jtx-line-strong: #405066;
   --jtx-code: #080d14;
+  --jtx-code-ink: #e8f0fb;
+  /* Pastel fills must darken in dark mode — light greens/blues + light ink
+     produced white-on-white on marketing quote bands and callouts. */
+  --jtx-blue-50: #152536;
+  --jtx-blue-600: #479bf8;
+  --jtx-green-50: #143528;
+  --jtx-coral-50: #2a1a16;
+  --jtx-yellow-100: #2a2610;
   /* Lighter accent on dark surfaces so large metric text meets WCAG AA. */
   --jtx-blue-700: #6eb0ff;
   --jtx-shadow-sm: 0 1px 2px rgb(0 0 0 / 28%);

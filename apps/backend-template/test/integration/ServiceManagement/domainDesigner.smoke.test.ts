@@ -7,6 +7,7 @@ describe('serviceManagement domain designer smoke', () => {
   const scriptPath = path.resolve(process.cwd(), 'apps/service-management/script.js');
 
   it('has create/edit/export/import controls required for MVP workflow', () => {
+    expect.hasAssertions();
     const html = fs.readFileSync(htmlPath, 'utf-8');
     expect(html).toContain('id="add-domain-btn"');
     expect(html).toContain('id="add-entity-btn"');
@@ -21,6 +22,7 @@ describe('serviceManagement domain designer smoke', () => {
   });
 
   it('wires export and package features in runtime script', () => {
+    expect.hasAssertions();
     const script = fs.readFileSync(scriptPath, 'utf-8');
     expect(script).toContain('exportAsOas');
     expect(script).toContain('exportAsAsyncApi');

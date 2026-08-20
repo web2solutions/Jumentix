@@ -1,32 +1,111 @@
-<!--
-Arquivo gerado automaticamente a partir de: documentation/md/adapters/databases/POSTGRESQL.md
-Idioma alvo: Português (Brasil)
--->
 # Adaptador PostgreSQL
 
-## Tecnologia
+O adapter PostgreSQL conecta o contrato de persistência do Jumentix à tecnologia PostgreSQL. Use cases continuam falando com portas de repositório; a escolha de banco fica na composição.
 
-Perfil de cliente SQL baseado em sequencial.
+## Tecnologia integrada
 
-## Crie serviços com PostgreSQL
+PostgreSQL pelo perfil de cliente SQL
 
-1. Inicie o contêiner:
+- **Modelo de dados:** SQL relacional
+- **Driver Jumentix:** `PostgreSQL`
+- **Seleção de runtime:** `JUMENTIX_DATABASE_DRIVER=PostgreSQL`
+
+## Quando usar
+
+Use quando: Sistemas transacionais com integridade relacional, índices e relatórios.
+
+## Quando evitar
+
+Evite quando escritas globais distribuídas em poucos milissegundos vêm primeiro.
+
+## Como validar localmente
+
+Use o smoke test real do monorepo. Ele valida o ciclo de vida do adapter e evita publicar configuração que não conecta.
 
 ```bash
 bun run docker:up:postgresql
+JUMENTIX_DATABASE_DRIVER=PostgreSQL bun run smoke:db:postgresql
 ```
 
-2. Definir ambiente:
+## Exemplo completo: Task e Category com porta de banco
 
-```bash
-JUMENTIX_DATABASE_DRIVER=PostgreSQL
-JUMENTIX_DB_HOST=127.0.0.1
-JUMENTIX_DB_PORT=5432
-JUMENTIX_DB_NAME=jumentix
-JUMENTIX_DB_USERNAME=postgres
-JUMENTIX_DB_PASSWORD=postgres
+```ts
+type Category = {
+  id: string;
+  name: string;
+};
+
+type Task = {
+  id: string;
+  title: string;
+  categoryId: string;
+  completed: boolean;
+};
+
+type Repository<T extends { id: string }> = {
+  create(record: T): Promise<T>;
+  getById(id: string): Promise<T | undefined>;
+  list(): Promise<T[]>;
+};
+
+function createRepository<T extends { id: string }>(): Repository<T> {
+  const records = new Map<string, T>();
+
+  return {
+    async create(record) {
+      records.set(record.id, record);
+      return record;
+    },
+    async getById(id) {
+      return records.get(id);
+    },
+    async list() {
+      return [...records.values()];
+    }
+  };
+}
+
+const adapterProfile = {
+  driver: 'PostgreSQL',
+  dataModel: 'Relational SQL',
+  smokeTest: 'bun run smoke:db:postgresql'
+} as const;
+
+const categories = createRepository<Category>();
+const tasks = createRepository<Task>();
+
+export async function seedTaskCatalog() {
+  const operations = await categories.create({ id: crypto.randomUUID(), name: 'Operations' });
+  const finance = await categories.create({ id: crypto.randomUUID(), name: 'Finance' });
+
+  await tasks.create({
+    id: crypto.randomUUID(),
+    title: 'Review adapter smoke test',
+    categoryId: operations.id,
+    completed: false
+  });
+
+  await tasks.create({
+    id: crypto.randomUUID(),
+    title: 'Close billing reconciliation',
+    categoryId: finance.id,
+    completed: true
+  });
+
+  return { adapterProfile, categories: await categories.list(), tasks: await tasks.list() };
+}
+
+export async function listTasksForCategory(categoryId: string): Promise<Task[]> {
+  const category = await categories.getById(categoryId);
+
+  if (!category) {
+    throw new Error('Category not found');
+  }
+
+  return (await tasks.list()).filter((task) => task.categoryId === category.id);
+}
 ```
 
-3. Inicie o adaptador de serviço (comando `dev:*`).
+## O que trocar em produção
 
-
+O exemplo acima mostra o contrato completo com uma implementação em memória para ser lido de ponta a ponta. Em produção, a composição injeta o cliente real selecionado por `JUMENTIX_DATABASE_DRIVER=PostgreSQL`; o domínio continua igual.

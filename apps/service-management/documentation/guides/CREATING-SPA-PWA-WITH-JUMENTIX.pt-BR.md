@@ -6,6 +6,21 @@ Idioma alvo: Português (Brasil)
 
 Este guia descreve como usar Jumentix para planejar e entregar aplicativos frontend (SPA/PWA) integrados com serviços backend.
 
+## Responsabilidade no escopo
+
+- **Responsável por:** Jornada frontend/offline para apps no estilo Service Management
+- **Usado com:** designer-core, cana, hub do app service-management
+- **Não responsável por:** Repositórios de banco server-side ou clientes gRPC Node
+
+## Glossário
+
+- **Guia** — documento de jornada; siga os passos em ordem antes de pular para mapas de API.
+- **Composition root** — startup que liga env → adapters → use-cases.
+
+## O que é
+
+Construa uma SPA/PWA com designer-core para o modelo e Cana para persistência offline.
+
 ## 1. Modele primeiro os domínios de negócios
 
 Use o Designer de Domínio para definir:
@@ -49,8 +64,24 @@ Para arquitetura PWA/offline-first:
 - portas CI de back-end
 - construção de front-end e verificações de fumaça offline
 
+## 6. Offline com Cana + designs
+
+<DocsPlayground runtime="designer-core" id="getting-started" />
+
+<DocsPlayground runtime="cana" id="getting-started" />
+
+## Próximos passos
+
+1. [Começando](/docs/pt-BR/jumentix/concepts/getting-started)
+2. [Cana](/docs/pt-BR/jumentix/packages/cana/usage)
+3. [designer-core](/docs/pt-BR/jumentix/packages/designer-core/usage)
+
 ## Referências
 
-- [README do aplicativo de gerenciamento de serviços](../../README.pt-BR.md)
-- [Pacotes do SDK do Workspace](../../../../packages/README.pt-BR.md)
-- [Matriz de capacidades da fábrica de serviços Jumentix](../../../../documentation/md/JUMENTIX-SERVICE-FACTORY-CAPABILITIES-MATRIX.pt-BR.md)
+- Pacotes: [/docs/pt-BR/jumentix/packages](/docs/pt-BR/jumentix/packages)
+
+## Checklist júnior (“Eu consigo …”)
+
+- [ ] Explico o objetivo deste guia em uma frase
+- [ ] Completei o primeiro sucesso sem adivinhar jargão
+- [ ] Sei a próxima página de docs a abrir

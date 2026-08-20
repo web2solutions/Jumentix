@@ -1,7 +1,7 @@
 {
   "inputs": 3,
-  "records": 320,
+  "records": 339,
   "skippedDuplicates": 0,
-  "withBranches": 320,
-  "output": "/Users/eduardoalmeida/apps/XpertMinds/kimi-code-primary-001/Jumentix-jum491/coverage/merged/lcov.info"
+  "withBranches": 339,
+  "output": "/Users/eduardoalmeida/apps/XpertMinds/claude-governance-001/Jumentix/coverage/merged/lcov.info"
 }

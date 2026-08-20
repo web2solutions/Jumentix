@@ -194,6 +194,8 @@ const smokeRoutes = async () => {
     ['/docs/jumentix/adapters/http/express', ['Express', 'Jumentix Docs']],
     ['/docs/jumentix/adapters/databases/mongodb', ['MongoDB', 'Jumentix Docs']],
     ['/docs/jumentix/packages/message-mediator', ['@jumentix/message-mediator', 'Jumentix Docs']],
+    ['/docs/jumentix/packages/cana/usage', ['Cana usage guide', 'Choose the next step']],
+    ['/docs/jumentix/packages/cana/usage/workers-testing', ['Workers and testing', 'Worker request flow']],
     ['/docs/jumentix/reference/runtime-contracts', ['Runtime', 'Jumentix Docs']],
     ['/docs/pt-BR/jumentix', ['Construa com o Jumentix', 'Jumentix Docs']],
     ['/docs/pt-BR/jumentix/concepts', ['Conceitos', 'Jumentix Docs']],
@@ -201,6 +203,8 @@ const smokeRoutes = async () => {
     ['/docs/pt-BR/jumentix/adapters', ['Adaptadores', 'Jumentix Docs']],
     ['/docs/pt-BR/jumentix/adapters/http/express', ['Express', 'Jumentix Docs']],
     ['/docs/pt-BR/jumentix/packages/message-mediator', ['@jumentix/message-mediator', 'Jumentix Docs']],
+    ['/docs/pt-BR/jumentix/packages/cana/usage', ['Guia de uso do Cana', 'Escolha o próximo passo']],
+    ['/docs/pt-BR/jumentix/packages/cana/usage/workers-testing', ['Workers e testes', 'Fluxo de requisição do worker']],
   ];
 
   for (const [path, includes] of canonicalDocumentationRoutes) {

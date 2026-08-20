@@ -1,0 +1,114 @@
+# Storage e recuperação de crash
+
+O Cana armazena dados duráveis no navegador e expõe sinais suficientes para a
+aplicação decidir quando oferecer backup, limpeza ou reconciliação de dados locais.
+
+## Avaliação de storage
+
+```ts
+import { createClient, type CanaSchema } from '@jumentix/cana';
+
+const schema: CanaSchema = {
+  version: 1,
+  stores: [
+    { name: 'categories', keyPath: 'id' },
+    { name: 'tasks', keyPath: 'id', indexes: [{ name: 'byCategory', keyPath: 'categoryId' }] }
+  ]
+};
+
+const client = createClient({
+  name: 'tasks-storage-demo',
+  schema
+});
+
+await client.open();
+
+const storage = await client.storageState();
+const durability = await client.durabilityAssessment();
+
+console.log({
+  backend: client.backend,
+  storage,
+  durability
+});
+```
+
+Use os sinais de storage e durabilidade para decidir quando a UI deve oferecer
+export, limpeza ou nova tentativa.
+
+## Export e import
+
+```ts
+const exported = await client.exportAll();
+
+const restored = createClient({
+  name: 'tasks-restored-demo',
+  schema
+});
+
+await restored.open();
+await restored.importAll(exported);
+
+console.log({
+  categories: await restored.table('categories').query(),
+  tasks: await restored.table('tasks').query()
+});
+```
+
+Use export/import para backup controlado pelo usuário, migração entre versões da
+aplicação ou diagnóstico.
+
+## Resolver uma escrita incerta
+
+```ts
+const ledgerClient = createClient({
+  name: 'tasks-ledger-demo',
+  schema,
+  operationLedger: true
+});
+
+await ledgerClient.open();
+
+const tx = await ledgerClient.transaction('readwrite', ['categories', 'tasks'], async (scope) => {
+  const now = Date.now();
+  await scope.table('categories').put({
+    id: 'support',
+    name: 'Support',
+    color: '#0f766e',
+    createdAt: now,
+    updatedAt: now
+  });
+  await scope.table('tasks').put({
+    id: 'support-1',
+    title: 'Verify uncertain writes',
+    categoryId: 'support',
+    completed: false,
+    priority: 'high',
+    createdAt: now,
+    updatedAt: now
+  });
+  return 'done';
+});
+
+const resolved = await ledgerClient.resolveWrite(tx.correlationId, tx.attemptedAt);
+
+console.log({
+  outcome: tx.outcome,
+  resolved
+});
+```
+
+`resolveWrite()` serve para escritas reportadas como `unknown`, normalmente
+depois que um worker, aba ou conexão morre antes de o caller receber o resultado.
+
+## Execute aqui
+
+<CanaPlayground id="storage-durability" />
+
+<CanaPlayground id="crash-recovery" />
+
+<CanaPlayground id="export-import" />
+
+## Próximo
+
+Continue em [workers e testes](./CANA-USAGE-WORKERS-TESTING.pt-BR.md).

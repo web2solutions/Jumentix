@@ -3,7 +3,7 @@
  *
  * Every other spec in this package imports Cana from `../src` and is bundled
  * by Bun before a browser ever sees it — the bundler stands between the test
- * and the artefact a consumer receives. That gap was real: bun 1.3.14 emitted
+ * and the artefact a consumer receives. That gap was real: bun 1.3.13 emitted
  * `dist/index.mjs` with export statements referencing bindings it had
  * tree-shaken away, and WebKit refused to link the module at all while every
  * source-level suite stayed green.

@@ -3,12 +3,12 @@
 /* eslint-disable class-methods-use-this */
 import fs from 'fs';
 import path from 'path';
+import { createUuid } from '@src/modules/port/UUID';
 import { _HTTP_PORT_ } from '@src/config/constants';
+import { Context as RequestContext } from '@src/infra/context/Context';
 import type {
   IHTTPRequest,
-  IHTTPResponse
-} from '@src/interface/HTTP/ports';
-import type {
+  IHTTPResponse,
   IbaseHandler
 } from '@src/interface/HTTP/ports';
 import {
@@ -97,33 +97,65 @@ class SailsJsServer extends HTTPBaseServer<any> {
     };
   }
 
+  /**
+   * Writes through the native response, not Express 4's helpers (JUM-704).
+   *
+   * Sails runs Express 4 underneath, and this repository overrides `send` to
+   * `^1.2.0` for Express 5. Express 4's `res.json` reaches into that package's
+   * `mime.charsets`, which the new major no longer exposes, so every reply
+   * answers 500. Same cause as the LoopBack adapter, same remedy: write the
+   * status, the content type and the body directly.
+   */
+  // eslint-disable-next-line class-methods-use-this
   private createResponseAdapter(res: any): any {
-    return {
+    let statusCode = 200;
+
+    const write = (payload: any, contentType: string) => {
+      res.statusCode = statusCode;
+      if (res.setHeader) res.setHeader('content-type', contentType);
+      res.end(typeof payload === 'string' ? payload : JSON.stringify(payload));
+      return payload;
+    };
+
+    const adapter = {
       status(code: number) {
-        if (res.status) res.status(code);
-        return this;
+        statusCode = code;
+        return adapter;
       },
       json(payload: any) {
-        if (res.json) return res.json(payload);
-        if (res.send) return res.send(payload);
-        return payload;
+        return write(payload, 'application/json; charset=utf-8');
       },
       send(payload: any) {
-        if (res.send) return res.send(payload);
-        if (res.json) return res.json(payload);
-        return payload;
+        if (typeof payload === 'string') return write(payload, 'text/plain; charset=utf-8');
+        return write(payload, 'application/json; charset=utf-8');
       }
     };
+
+    return adapter;
   }
 
   public endPointRegister(handlerFactory: IbaseHandler): void {
     const routeKey = `${handlerFactory.method.toUpperCase()} ${handlerFactory.path}`;
     this.routes[routeKey] = async (req: any, res: any) => {
-      return handlerFactory.handler(req, this.createResponseAdapter(res));
+      /*
+       * The per-request store every handler reads (JUM-704). Express, Restify,
+       * Fastify and Lambda each establish it; this adapter did not, and it
+       * serves the same handlers, so every request through it would answer 500
+       * with an empty message once it served one at all.
+       */
+      const store = new Map();
+      return RequestContext.run(store, () => {
+        store.set('correlationId', createUuid());
+        store.set('timeStart', +new Date());
+        store.set('request', req);
+        store.set('authorization', req.headers?.authorization || '');
+        return handlerFactory.handler(req, this.createResponseAdapter(res));
+      });
     };
   }
 
-  public async start(): Promise<void> {
+  /** The port is a parameter so a suite can bind an ephemeral one (JUM-704). */
+  public async start(port: number = _HTTP_PORT_): Promise<void> {
     this.registerStaticDocsRoutes();
     // eslint-disable-next-line global-require, import/no-extraneous-dependencies
     const { Sails } = require('sails');
@@ -134,7 +166,7 @@ class SailsJsServer extends HTTPBaseServer<any> {
         {
           hooks: { grunt: false },
           log: { level: 'error' },
-          port: _HTTP_PORT_,
+          port,
           routes: this.routes
         },
         (error: any) => {

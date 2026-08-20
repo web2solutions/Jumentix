@@ -28,6 +28,7 @@ function partitionUnitSuites(manifest, env = process.env) {
   const bunSuites = [];
   const nodeSuites = [];
   const reportOnlySuites = [];
+  const scripts = [];
 
   for (const suite of manifest.suites || []) {
     if (suite.type !== 'unit') continue;
@@ -35,11 +36,50 @@ function partitionUnitSuites(manifest, env = process.env) {
       if (isCiNodeRuntime(env)) reportOnlySuites.push(suite.path);
       continue;
     }
+    // JUM-680: a suite that names its own script is run by that script.
+    //
+    // The website's React suites need jsdom and its own Jest config; handing
+    // their paths to `bun test` here made three of them fail on a runner they
+    // were never written for. The Redis integration suites already declare
+    // `script` for the same reason — this partition simply had not been taught
+    // to look, because until now no *unit* suite needed it.
+    if (suite.script) {
+      if (!scripts.includes(suite.script)) scripts.push(suite.script);
+      continue;
+    }
     if (effectiveRunner(suite, env) === 'node') nodeSuites.push(suite.path);
     else bunSuites.push(suite.path);
   }
 
-  return { bunSuites, nodeSuites, reportOnlySuites };
+  return { bunSuites, nodeSuites, reportOnlySuites, scripts };
+}
+
+/**
+ * Run each declared script once, whatever how many suites named it.
+ *
+ * Gating, not report-only: these are unit suites like any other, and the whole
+ * point of JUM-680 is that they stop being invisible.
+ */
+function runScriptedUnit(scripts, options = {}) {
+  if (scripts.length === 0) return 0;
+  console.log(`[ci] unit tests (declared scripts): ${scripts.join(', ')}`);
+  for (const script of scripts) {
+    // JUM-680: `NODE_ENV` is deliberately not passed through.
+    //
+    // `test:unit` sets `NODE_ENV=dev` for the backend runtime. A workspace
+    // script owns its own environment, and leaking `dev` into the website's
+    // Jest run made 23 accessibility tests fail that pass under the `test`
+    // default — the components render differently in dev. The suites were
+    // right; the environment was the caller's.
+    const { NODE_ENV, ...childEnv } = process.env;
+    const result = (options.spawn || spawnSync)('bun', ['run', script], {
+      stdio: 'inherit',
+      env: childEnv
+    });
+    const status = typeof result.status === 'number' ? result.status : 1;
+    if (status !== 0) return status;
+  }
+  return 0;
 }
 
 /**
@@ -142,12 +182,17 @@ function runUnitTests(options = {}) {
     return runBunUnit([], options);
   }
 
-  // Req 106: local always Bun for all unit suites.
+  // Req 106: local always Bun for all unit suites — except the ones that name
+  // their own script (JUM-680). Handing a jsdom React suite to `bun test` does
+  // not run it under a different runner; it fails to run it at all.
   if (runtime === 'bun') {
-    const all = (manifest.suites || [])
-      .filter((suite) => suite.type === 'unit' && !isQuarantined(manifest, suite.path))
-      .map((suite) => suite.path);
-    return runBunUnit(all, options);
+    const eligible = (manifest.suites || [])
+      .filter((suite) => suite.type === 'unit' && !isQuarantined(manifest, suite.path));
+    const all = eligible.filter((suite) => !suite.script).map((suite) => suite.path);
+    const scripts = [...new Set(eligible.filter((s) => s.script).map((s) => s.script))];
+    const bunStatus = runBunUnit(all, options);
+    if (bunStatus !== 0) return bunStatus;
+    return (options.runScriptedUnit || runScriptedUnit)(scripts, options);
   }
 
   // The three runners are injectable because the composition is the thing that
@@ -157,9 +202,14 @@ function runUnitTests(options = {}) {
   const runNode = options.runNodeUnit || runNodeUnit;
   const runReportOnly = options.runReportOnlyUnit || runReportOnlyUnit;
 
-  const { bunSuites, nodeSuites, reportOnlySuites } = partitionUnitSuites(manifest, env);
+  const runScripted = options.runScriptedUnit || runScriptedUnit;
+
+  const { bunSuites, nodeSuites, reportOnlySuites, scripts } = partitionUnitSuites(manifest, env);
   const bunStatus = runBun(bunSuites, options);
   if (bunStatus !== 0) return bunStatus;
+
+  const scriptedStatus = runScripted(scripts, options);
+  if (scriptedStatus !== 0) return scriptedStatus;
 
   const nodeStatus = runNode(nodeSuites, options);
 
@@ -176,6 +226,7 @@ if (isEntryPoint(module)) {
 
 module.exports = {
   partitionUnitSuites,
+  runScriptedUnit,
   runBunUnit,
   runNodeUnit,
   runReportOnlyUnit,

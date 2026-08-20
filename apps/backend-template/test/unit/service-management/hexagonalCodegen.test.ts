@@ -141,6 +141,7 @@ function buildBundle(state: ReturnType<typeof createState>) {
 describe('hexagonal codegen (JUM-476)', () => {
   describe('layout', () => {
     it('emits one module per domain with the Users hexagonal layer directories', () => {
+      expect.hasAssertions();
       const bundle = buildBundle(createState());
       expect(bundle.modules.map((module: GeneratedModule) => module.module))
         .toStrictEqual(['Billing', 'Catalog']);
@@ -167,6 +168,7 @@ describe('hexagonal codegen (JUM-476)', () => {
     });
 
     it('emits the pinned per-entity file set at the canonical paths', () => {
+      expect.hasAssertions();
       const bundle = buildBundle(createState());
       const [billing] = bundle.modules;
       const invoice = billing.entities.find((entity: GeneratedEntity) => entity.entity === 'Invoice');
@@ -192,6 +194,7 @@ describe('hexagonal codegen (JUM-476)', () => {
     });
 
     it('emits events/contracts only for domains with message contracts', () => {
+      expect.hasAssertions();
       const bundle = buildBundle(createState());
       const catalog = bundle.modules.find((module: GeneratedModule) => module.module === 'Catalog');
       expect(Object.keys(catalog.files)).toStrictEqual(['composition']);
@@ -199,6 +202,7 @@ describe('hexagonal codegen (JUM-476)', () => {
     });
 
     it('sanitizes type identifiers without leaking the toSchemaName empty-domain fallback', () => {
+      expect.hasAssertions();
       expect(toTypeToken('Billing', 'Domain')).toBe('Billing');
       expect(toTypeToken('invoice item', 'Entity')).toBe('InvoiceItem');
       expect(toTypeToken('', 'Entity')).toBe('Entity');
@@ -215,6 +219,7 @@ describe('hexagonal codegen (JUM-476)', () => {
 
   describe('contract consumption', () => {
     it('derives entity field types from the OAS component schema, not the model', () => {
+      expect.hasAssertions();
       const bundle = buildBundle(createState());
       const [billing] = bundle.modules;
       const invoice = billing.entities.find((entity: GeneratedEntity) => entity.entity === 'Invoice');
@@ -230,6 +235,7 @@ describe('hexagonal codegen (JUM-476)', () => {
     });
 
     it('quotes property names that are not identifiers', () => {
+      expect.hasAssertions();
       const bundle = buildBundle(normalizeStatePayload({
         domains: [{
           id: 'd',
@@ -247,6 +253,7 @@ describe('hexagonal codegen (JUM-476)', () => {
     });
 
     it('builds the controller route table from the OAS paths and operationIds', () => {
+      expect.hasAssertions();
       const state = createState();
       const oas = buildOasDocument(state);
       const bundle = buildBundle(state);
@@ -270,6 +277,7 @@ describe('hexagonal codegen (JUM-476)', () => {
     });
 
     it('resolves event channels against the AsyncAPI channels by operationId', () => {
+      expect.hasAssertions();
       const bundle = buildBundle(createState());
       const [billing] = bundle.modules;
       const events = billing.files.eventChannels.content;
@@ -284,6 +292,7 @@ describe('hexagonal codegen (JUM-476)', () => {
     });
 
     it('carries the entity RBAC policy into domain/security', () => {
+      expect.hasAssertions();
       const bundle = buildBundle(createState());
       const [billing] = bundle.modules;
       const receipt = billing.entities.find((entity: GeneratedEntity) => entity.entity === 'Receipt');
@@ -294,6 +303,7 @@ describe('hexagonal codegen (JUM-476)', () => {
     });
 
     it('falls back to empty roles and the default rule for sparse RBAC meta', () => {
+      expect.hasAssertions();
       // Raw (non-normalized) state: rbac meta with a rule missing `roles`,
       // and actions with no rule at all.
       const bundle = buildHexagonalBundle({
@@ -316,6 +326,7 @@ describe('hexagonal codegen (JUM-476)', () => {
     });
 
     it('tolerates contract documents that carry nothing for the model', () => {
+      expect.hasAssertions();
       // Hand-built minimal contracts: no schemas, no paths, no channels. The
       // generator must still emit a consistent skeleton — empty interface,
       // empty route table, no events file.
@@ -353,6 +364,7 @@ describe('hexagonal codegen (JUM-476)', () => {
 
   describe('wiring and architecture', () => {
     it('wires adapters to ports in the composition root like Users/composition does', () => {
+      expect.hasAssertions();
       const bundle = buildBundle(createState());
       const [billing] = bundle.modules;
       const composition = billing.files.composition.content;
@@ -371,6 +383,7 @@ describe('hexagonal codegen (JUM-476)', () => {
     });
 
     it('emits controllers that pass the repository hexagonal boundary check', () => {
+      expect.hasAssertions();
       const bundle = buildBundle(createState());
       bundle.modules.forEach((module: GeneratedModule) => {
         module.entities.forEach((entity: GeneratedEntity) => {
@@ -382,6 +395,7 @@ describe('hexagonal codegen (JUM-476)', () => {
     });
 
     it('keeps the generated import graph pointed inward, self-contained per module', () => {
+      expect.hasAssertions();
       const bundle = buildBundle(createState());
       const files = flattenBundleFiles(bundle);
       const emittedPaths = new Set(files.map((file: GeneratedFile) => file.path));
@@ -434,6 +448,7 @@ describe('hexagonal codegen (JUM-476)', () => {
 
   describe('tsc deliverability', () => {
     it('emits a module set that compiles under tsc --strict', () => {
+      expect.hasAssertions();
       const bundle = buildBundle(createState());
       const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'jum476-codegen-'));
       const files = flattenBundleFiles(bundle);
@@ -459,6 +474,7 @@ describe('hexagonal codegen (JUM-476)', () => {
 
   describe('preview parity', () => {
     it('renders exactly the files the bundle export emits', () => {
+      expect.hasAssertions();
       const state = createState();
       const bundle = buildBundle(state);
       const preview = renderBundlePreview(bundle);
@@ -473,6 +489,7 @@ describe('hexagonal codegen (JUM-476)', () => {
     });
 
     it('renders an empty string for an empty model', () => {
+      expect.hasAssertions();
       expect(renderBundlePreview(buildHexagonalBundle({ domains: [] }))).toBe('');
       expect(buildHexagonalBundle({})).toStrictEqual({ modules: [] });
     });
@@ -480,6 +497,7 @@ describe('hexagonal codegen (JUM-476)', () => {
 
   describe('tsTypeFromOasSchema', () => {
     it('maps the OAS types to TypeScript and defaults to unknown', () => {
+      expect.hasAssertions();
       expect(tsTypeFromOasSchema(null)).toBe('unknown');
       expect(tsTypeFromOasSchema('string')).toBe('unknown');
       expect(tsTypeFromOasSchema({ type: 'integer' })).toBe('number');
@@ -499,16 +517,19 @@ describe('hexagonal codegen (JUM-476)', () => {
 
 describe('partial-contracts fallbacks (JUM-493)', () => {
   it('builds a bundle for a state without domains', () => {
+    expect.hasAssertions();
     const bundle = buildHexagonalBundle({ relationships: [] }, {});
     expect(bundle).toBeDefined();
   });
 
   it('builds a bundle for a domain without entities', () => {
+    expect.hasAssertions();
     const bundle = buildHexagonalBundle({ domains: [{ name: 'D' }], relationships: [] }, {});
     expect(bundle).toBeDefined();
   });
 
   it('tolerates contract documents without schemas, paths, message contracts, operations or channels', () => {
+    expect.hasAssertions();
     const state = createState();
     const bundle = buildHexagonalBundle(state, {
       oasDocument: { components: {} },
@@ -518,6 +539,7 @@ describe('partial-contracts fallbacks (JUM-493)', () => {
   });
 
   it('derives contract tokens for missing and non-alphanumeric contract names', () => {
+    expect.hasAssertions();
     const state = createState();
     const bundle = buildHexagonalBundle(state, {
       oasDocument: {
@@ -534,6 +556,7 @@ describe('partial-contracts fallbacks (JUM-493)', () => {
   });
 
   it('falls back to the channel key when a matched operation has no channel and no address', () => {
+    expect.hasAssertions();
     const state = createState();
     const bundle = buildHexagonalBundle(state, {
       oasDocument: {
