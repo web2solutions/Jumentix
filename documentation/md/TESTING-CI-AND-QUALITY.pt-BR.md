@@ -203,7 +203,7 @@ Importação de cobertura do SonarQube Cloud:
 | GitHub Actions (revisão third-party) | Revisão fail-closed de segredos e análise estática | `.github/workflows/ci.yml` | Executa Gitleaks/Semgrep fixados e retém evidência SARIF |
 | GitHub Actions (website) | Storybook e prontidão de publicação pertencentes ao website | `.github/workflows/ci.yml` | Executa build/smoke do Storybook e prepublish de forma independente |
 | GitHub Actions (SonarQube Cloud) | Análise estática + quality gate + importação de cobertura | `.github/workflows/ci.yml`, `sonar-project.properties` | Requer `SONAR_TOKEN`; importa LCOV retido após cobertura |
-| Gate de cobertura do repositório | Hard gate local contra baixa cobertura | `jest.config.js`, `ci-cd/check-coverage-thresholds.js` | Declarações/linhas/funções/ramos 98%, linhas alteradas 99%; ramos sob piso datado (JUM-681) |
+| Gate de cobertura do repositório | Hard gate local contra baixa cobertura | `jest.config.js`, `ci-cd/check-coverage-thresholds.js` | Declarações/linhas/funções/ramos 98%, linhas alteradas 99%; ramos sob piso datado (JUM-721) |
 | Gate de integridade de testes | Bloqueia suíte que não afirma nada, que só afirma sobre mock, que dorme como sincronização, ou que está fora do mapa | `ci-cd/check-test-integrity.js`, `ci-cd/run-branch-quality-gate.js` | `bun run test:integrity`; preflight de todo caminho do branch gate (JUM-683) |
 | Husky | Ganchos Git locais para verificações de qualidade | `.husky/*` | Instalado por `bun run prepare` |
 | Commitlint + Commitizen | Commits convencionais e fluxo de commits guiados | `commitlint.config.js`, `package.json` | `bun run commit` |
@@ -234,7 +234,7 @@ nunca substitui esse gate como autoridade de merge.
   - `funções >= 98%`
   - `ramos >= 98%`
 - `ramos` é a única métrica ainda abaixo do seu limite. O valor medido fica em
-  `ACCEPTED_BELOW_THRESHOLD` como **piso datado sob JUM-681**, e a entrada é uma
+  `ACCEPTED_BELOW_THRESHOLD` como **piso datado, sob o JUM-721**, e a entrada é uma
   catraca, não uma dispensa: cobertura igual ou acima do piso passa, abaixo
   falha, e atingir 98% com a entrada ainda listada também falha. O piso subiu de
   93,278% para 95,902% durante o JUM-681; cada movimento está registrado na nota

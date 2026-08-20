@@ -190,7 +190,10 @@ const ACCEPTED_BELOW_THRESHOLD = {
    */
   branches: {
     floor: 95.902,
-    issue: 'JUM-681',
+    // JUM-681 set the threshold, closed 120 branches and built this ratchet, and
+    // is done. What remains — the entry itself — is owned by JUM-721, so the
+    // register keeps naming an issue somebody can still act on.
+    issue: 'JUM-721',
     since: '2026-08-12',
     reason: 'Mostly defaulted-option branches reachable only by dropping the injection tests use deliberately; see the note above.'
   }

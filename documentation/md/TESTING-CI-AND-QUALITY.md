@@ -196,7 +196,7 @@ SonarQube Cloud coverage import:
 | GitHub Actions (third-party review) | Fail-closed secret and static-analysis review | `.github/workflows/ci.yml` | Runs pinned Gitleaks/Semgrep and retains SARIF evidence |
 | GitHub Actions (website) | Website-owned Storybook and publication readiness | `.github/workflows/ci.yml` | Runs Storybook build/smoke and prepublish checks independently |
 | GitHub Actions (SonarQube Cloud) | Static analysis + quality gate + coverage import | `.github/workflows/ci.yml`, `sonar-project.properties` | Requires `SONAR_TOKEN`; imports retained LCOV after coverage passes |
-| Repository coverage gate | Local hard gate to prevent low-coverage merges | `jest.config.js`, `ci-cd/check-coverage-thresholds.js` | Statements/lines/functions/branches 98%, changed lines 99%; branches under a dated floor (JUM-681) |
+| Repository coverage gate | Local hard gate to prevent low-coverage merges | `jest.config.js`, `ci-cd/check-coverage-thresholds.js` | Statements/lines/functions/branches 98%, changed lines 99%; branches under a dated floor (JUM-721) |
 | Test integrity gate | Blocks suites that assert nothing, assert only on mocks, sleep as synchronisation, or sit outside the map | `ci-cd/check-test-integrity.js`, `ci-cd/run-branch-quality-gate.js` | `bun run test:integrity`; preflight of every branch-gate path (JUM-683) |
 | Husky | Local Git hooks for quality checks | `.husky/*` | Installed by `bun run prepare` |
 | Commitlint + Commitizen | Conventional commits and guided commit flow | `commitlint.config.js`, `package.json` | `bun run commit` |
@@ -227,7 +227,7 @@ never replaces it as the merge authority.
   - `functions >= 98%`
   - `branches >= 98%`
 - `branches` is the one metric not yet at its threshold. The measured figure sits
-  in `ACCEPTED_BELOW_THRESHOLD` as a **dated floor under JUM-681**, and the
+  in `ACCEPTED_BELOW_THRESHOLD` as a **dated floor, owned by JUM-721**, and the
   entry is a ratchet, not a waiver: coverage at or above the floor passes, below
   it fails, and reaching 98% while the entry is still listed also fails. The
   floor moved from 93.278% to 95.902% during JUM-681; each move is recorded in
