@@ -196,7 +196,8 @@ SonarQube Cloud coverage import:
 | GitHub Actions (third-party review) | Fail-closed secret and static-analysis review | `.github/workflows/ci.yml` | Runs pinned Gitleaks/Semgrep and retains SARIF evidence |
 | GitHub Actions (website) | Website-owned Storybook and publication readiness | `.github/workflows/ci.yml` | Runs Storybook build/smoke and prepublish checks independently |
 | GitHub Actions (SonarQube Cloud) | Static analysis + quality gate + coverage import | `.github/workflows/ci.yml`, `sonar-project.properties` | Requires `SONAR_TOKEN`; imports retained LCOV after coverage passes |
-| Repository coverage gate | Local hard gate to prevent low-coverage merges | `jest.config.js`, `ci-cd/check-coverage-thresholds.js` | Statements/lines/functions 99%, branches 90%, changed lines 99% |
+| Repository coverage gate | Local hard gate to prevent low-coverage merges | `jest.config.js`, `ci-cd/check-coverage-thresholds.js` | Statements/lines/functions/branches 98%, changed lines 99%; branches under a dated floor (JUM-681) |
+| Test integrity gate | Blocks suites that assert nothing, assert only on mocks, sleep as synchronisation, or sit outside the map | `ci-cd/check-test-integrity.js`, `ci-cd/run-branch-quality-gate.js` | `bun run test:integrity`; preflight of every branch-gate path (JUM-683) |
 | Husky | Local Git hooks for quality checks | `.husky/*` | Installed by `bun run prepare` |
 | Commitlint + Commitizen | Conventional commits and guided commit flow | `commitlint.config.js`, `package.json` | `bun run commit` |
 | Changelog sync automation | Keeps `CHANGELOG.md` aligned with Git history | `ci-cd/update-changelog.js`, `.husky/post-commit` | `bun run changelog:update`, `bun run changelog:check` |
@@ -219,12 +220,45 @@ never replaces it as the merge authority.
 ### Coverage Policy (Strict Standard)
 
 - The repository-owned coverage workflow enforces project and patch coverage.
-- Jest enforces the local gate before merge:
-  - `lines >= 99%`
-  - `statements >= 99%`
-  - `branches >= 90%`
-  - `functions >= 99%`
+- The authority is `ci-cd/check-coverage-thresholds.js`, which reads the merged
+  unit + browser report. It enforces four metrics before merge:
+  - `statements >= 98%`
+  - `lines >= 98%`
+  - `functions >= 98%`
+  - `branches >= 98%`
+- `branches` is the one metric not yet at its threshold. The measured figure sits
+  in `ACCEPTED_BELOW_THRESHOLD` as a **dated floor under JUM-681**, and the
+  entry is a ratchet, not a waiver: coverage at or above the floor passes, below
+  it fails, and reaching 98% while the entry is still listed also fails. The
+  floor moved from 93.278% to 95.902% during JUM-681; each move is recorded in
+  the note beside it, with the behaviour the newly covered branches were hiding.
+- Raising or lowering any of the four thresholds is a governance decision under
+  Requirements 020 and 063.
 - Commits and PRs are expected to respect these thresholds before approval.
+
+### Test Integrity Gate (Requirements 134 and 135)
+
+`ci-cd/check-test-integrity.js` enforces the mechanical half of "no flaky
+tests, no fake tests":
+
+1. every test declares that it asserts — **per test since JUM-702**, counting a
+   declaration made once in a `beforeEach`/`beforeAll` of an enclosing
+   `describe`;
+2. no suite asserts only that a mock was called;
+3. no fixed sleep is used as synchronisation;
+4. no suite sits outside `test-map.json`.
+
+It runs as a **preflight of every branch-gate path since JUM-683** — the task
+gate, the unit gate and the strict matrix — beside lint and for the same reason:
+it reads the suites without running them, and a tree whose tests assert nothing
+has nothing to learn from running them. It was in the `ci:gate` script before
+that, which no CI job invokes.
+
+Its three registers (`ACCEPTED_SLEEPS`, `ACCEPTED_MOCK_ONLY`,
+`ACCEPTED_NO_ASSERTIONS`) are **empty**. They are kept rather than deleted: the
+injectable options are what let the suite exercise every failure path, and the
+stale-entry checks — an entry naming a file that no longer offends is itself a
+failure — are what make the next exception as auditable as these were.
 
 ### Bun Runtime and Node Compatibility Enforcement
 

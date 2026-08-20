@@ -203,7 +203,8 @@ Importação de cobertura do SonarQube Cloud:
 | GitHub Actions (revisão third-party) | Revisão fail-closed de segredos e análise estática | `.github/workflows/ci.yml` | Executa Gitleaks/Semgrep fixados e retém evidência SARIF |
 | GitHub Actions (website) | Storybook e prontidão de publicação pertencentes ao website | `.github/workflows/ci.yml` | Executa build/smoke do Storybook e prepublish de forma independente |
 | GitHub Actions (SonarQube Cloud) | Análise estática + quality gate + importação de cobertura | `.github/workflows/ci.yml`, `sonar-project.properties` | Requer `SONAR_TOKEN`; importa LCOV retido após cobertura |
-| Gate de cobertura do repositório | Hard gate local contra baixa cobertura | `jest.config.js`, `ci-cd/check-coverage-thresholds.js` | Statements/linhas/funções 99%, branches 90%, linhas alteradas 99% |
+| Gate de cobertura do repositório | Hard gate local contra baixa cobertura | `jest.config.js`, `ci-cd/check-coverage-thresholds.js` | Declarações/linhas/funções/ramos 98%, linhas alteradas 99%; ramos sob piso datado (JUM-681) |
+| Gate de integridade de testes | Bloqueia suíte que não afirma nada, que só afirma sobre mock, que dorme como sincronização, ou que está fora do mapa | `ci-cd/check-test-integrity.js`, `ci-cd/run-branch-quality-gate.js` | `bun run test:integrity`; preflight de todo caminho do branch gate (JUM-683) |
 | Husky | Ganchos Git locais para verificações de qualidade | `.husky/*` | Instalado por `bun run prepare` |
 | Commitlint + Commitizen | Commits convencionais e fluxo de commits guiados | `commitlint.config.js`, `package.json` | `bun run commit` |
 | Automação de sincronização do changelog | Mantém `CHANGELOG.md` alinhado com a história do Git | `ci-cd/update-changelog.js`, `.husky/post-commit` | `bun run changelog:update`, `bun run changelog:check` |
@@ -226,12 +227,46 @@ nunca substitui esse gate como autoridade de merge.
 ### Política de Cobertura (Padrão Estrito)
 
 - O workflow próprio impõe cobertura de projeto e patch.
-- Jest impõe portão local antes da fusão:
-  - `linhas >= 99%`
-  - `declarações >= 99%`
-  - `ramos >= 90%`
-  - `funções >= 99%`
+- A autoridade é `ci-cd/check-coverage-thresholds.js`, que lê o relatório
+  mesclado (unitário + navegador). Ele impõe quatro métricas antes da fusão:
+  - `declarações >= 98%`
+  - `linhas >= 98%`
+  - `funções >= 98%`
+  - `ramos >= 98%`
+- `ramos` é a única métrica ainda abaixo do seu limite. O valor medido fica em
+  `ACCEPTED_BELOW_THRESHOLD` como **piso datado sob JUM-681**, e a entrada é uma
+  catraca, não uma dispensa: cobertura igual ou acima do piso passa, abaixo
+  falha, e atingir 98% com a entrada ainda listada também falha. O piso subiu de
+  93,278% para 95,902% durante o JUM-681; cada movimento está registrado na nota
+  ao lado dele, com o comportamento que os ramos recém-cobertos escondiam.
+- Subir ou baixar qualquer um dos quatro limites é decisão de governança sob os
+  Requisitos 020 e 063.
 - Espera-se que os commits e PRs respeitem esses limites antes da aprovação.
+
+### Gate de Integridade de Testes (Requisitos 134 e 135)
+
+`ci-cd/check-test-integrity.js` impõe a metade mecânica de "sem teste instável,
+sem teste falso":
+
+1. todo teste declara que afirma — **por teste desde o JUM-702**, contando uma
+   declaração feita uma vez em `beforeEach`/`beforeAll` de um `describe`
+   envolvente;
+2. nenhuma suíte afirma apenas que um mock foi chamado;
+3. nenhum sleep fixo é usado como sincronização;
+4. nenhuma suíte fica fora do `test-map.json`.
+
+Ele roda como **preflight de todo caminho do branch gate desde o JUM-683** — o
+gate de tarefa, o gate unitário e a matriz estrita — ao lado do lint e pelo mesmo
+motivo: lê as suítes sem executá-las, e uma árvore cujos testes não afirmam nada
+não tem o que aprender executando-os. Antes disso ele estava no script
+`ci:gate`, que nenhum job de CI invoca.
+
+Seus três registros (`ACCEPTED_SLEEPS`, `ACCEPTED_MOCK_ONLY`,
+`ACCEPTED_NO_ASSERTIONS`) estão **vazios**. Eles são mantidos em vez de
+removidos: as opções injetáveis são o que permite à suíte exercitar cada caminho
+de falha, e as checagens de entrada obsoleta — uma entrada nomeando arquivo que
+não infringe mais é ela própria uma falha — são o que torna a próxima exceção
+tão auditável quanto estas foram.
 
 ### Runtime Bun e compatibilidade Node
 
