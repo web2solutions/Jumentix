@@ -94,8 +94,8 @@ const ACCEPTED_BELOW_THRESHOLD = {
    * written as `93.28` from a two-decimal display and then failed the build by
    * 0.002.
    *
-   * Measured 2026-08-15: **4283 of 4466 branches, 95.902%**, stable across
-   * repeated clean runs, and the floor ratcheted to match. The 120 branches
+   * Measured 2026-08-20: **4312 of 4472 branches, 96.422%**, stable across
+   * repeated clean runs, and the floor ratcheted to match. The 149 branches
    * closed since are not a number that was chased — each came with the
    * behaviour it was hiding:
    *
@@ -145,6 +145,18 @@ const ACCEPTED_BELOW_THRESHOLD = {
    *   `NODE_ENV` is not production, and reading the absent value the other way
    *   exposes the account-enumeration oracle wherever the variable was
    *   forgotten.
+   * - The dead-letter store's refusals: a failed read that answered `[]` would
+   *   report an empty queue for a store that is merely unreachable, and a
+   *   failed write would drop the record the queue exists to keep.
+   * - The user aggregate a registration produces, which carries a name, a
+   *   username and an email and lets the rest default — `roles: undefined`
+   *   reaching the normaliser is a crash on the first authorisation check.
+   * - The toolchain guard's inputs, now injectable, so "no `.bun-version` on a
+   *   cold clone" is a reported missing pin rather than a filesystem stack
+   *   trace from inside `preinstall`.
+   * - Three audit-outcome defaults that no caller could reach were deleted
+   *   rather than covered: a defaulted outcome would have recorded a denial as
+   *   a success (Requirement 135 §4).
    * - Schema resolution: a `$ref` into a document this resolver does not read
    *   is refused rather than validated against an unresolved node, because
    *   validating against `{ $ref: ... }` constrains nothing and a bundling
@@ -189,7 +201,7 @@ const ACCEPTED_BELOW_THRESHOLD = {
    * threshold with this entry still here fails too.
    */
   branches: {
-    floor: 95.902,
+    floor: 96.422,
     // JUM-681 set the threshold, closed 120 branches and built this ratchet, and
     // is done. What remains — the entry itself — is owned by JUM-721, so the
     // register keeps naming an issue somebody can still act on.

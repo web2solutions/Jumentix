@@ -182,10 +182,14 @@ export class AuthService implements IAuthService {
    * awaiting there means a login failure is recorded before the response goes
    * out rather than racing it.
    */
+  // Every caller states the outcome. The parameter used to default to
+  // 'success', and that default was unreachable — a defaulted outcome would
+  // have recorded a denial as a success, which is the one mistake an audit
+  // trail must not make quietly (JUM-721).
   private async recordAuditEventAsync(
     name: string,
     payload: Record<string, unknown>,
-    outcome: 'success' | 'failed' | 'denied' = 'success'
+    outcome: 'success' | 'failed' | 'denied'
   ): Promise<void> {
     try {
       await this.publishAuditEvent(name, payload, outcome);
@@ -198,7 +202,7 @@ export class AuthService implements IAuthService {
   private recordAuditEvent(
     name: string,
     payload: Record<string, unknown>,
-    outcome: 'success' | 'failed' | 'denied' = 'success'
+    outcome: 'success' | 'failed' | 'denied'
   ): void {
     // Attached to `publishAuditEvent`, which can reject, rather than to the
     // async wrapper, which cannot — a handler over something that never fails is
@@ -209,7 +213,7 @@ export class AuthService implements IAuthService {
   private async publishAuditEvent(
     name: string,
     payload: Record<string, unknown>,
-    outcome: 'success' | 'failed' | 'denied' = 'success'
+    outcome: 'success' | 'failed' | 'denied'
   ): Promise<void> {
     const occurredAt = new Date().toISOString();
     if (this.eventBus?.publish) {

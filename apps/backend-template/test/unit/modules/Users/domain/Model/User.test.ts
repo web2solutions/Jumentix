@@ -88,3 +88,75 @@ describe('user domain model', () => {
     })).toThrow('organization is required');
   });
 });
+
+/**
+ * The user a minimal payload produces (JUM-721).
+ *
+ * Every other test here builds a complete user. Registration does not: it
+ * carries a name, a username and an email, and the aggregate fills the rest.
+ * Each fallback decides what a store persists and what a later read compares
+ * against — `undefined` for `organization` is not the same as `''` to a query
+ * that filters on it, and `roles: undefined` reaching the role normaliser is a
+ * crash on the first authorisation check rather than an empty role set.
+ */
+describe('user aggregate defaults (JUM-721)', () => {
+  const minimalPayload = () => ({
+    firstName: 'Ada',
+    username: 'ada',
+    emails: [{
+      id: '00000000-0000-4000-8000-0000000000a1',
+      email: 'ada@example.com',
+      type: EEmailType.personal,
+      isPrimary: true
+    }]
+  });
+
+  it('fills every optional field a registration does not carry', () => {
+    expect.hasAssertions();
+
+    const user = new User(minimalPayload() as never);
+
+    expect({
+      lastName: user.lastName,
+      avatar: user.avatar,
+      organization: user.organization,
+      password: user.password,
+      salt: user.salt,
+      roles: user.roles
+    }).toStrictEqual({
+      lastName: '',
+      avatar: 'avatar.png',
+      organization: '',
+      password: '',
+      salt: '',
+      roles: []
+    });
+
+    // `readOnly` is private and has no getter, so the assertion is on its
+    // effect: a user that did not ask to be read-only accepts a mutation.
+    expect(() => { user.firstName = 'Grace'; }).not.toThrow();
+  });
+
+  it('accepts a payload with no documents and no phones', () => {
+    expect.hasAssertions();
+
+    // Both are optional collections. Iterating an absent one is a crash in the
+    // constructor, which is where a registration would fail with no useful
+    // message at all.
+    const user = new User(minimalPayload() as never);
+
+    expect(user.documents).toStrictEqual([]);
+    expect(user.phones).toStrictEqual([]);
+    expect(user.emails).toHaveLength(1);
+  });
+
+  it('keeps a read-only flag the payload does declare', () => {
+    expect.hasAssertions();
+
+    // The seeded users are read-only, and the flag is what stops a test run
+    // from mutating them.
+    const user = new User({ ...minimalPayload(), readOnly: true } as never);
+
+    expect(() => { user.firstName = 'Grace'; }).toThrow('read only');
+  });
+});
