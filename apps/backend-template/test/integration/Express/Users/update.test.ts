@@ -75,7 +75,7 @@ describe('express -> update User suite', () => {
       mutexService
     });
 
-    server = API.server.application;
+    server = API.server.application.listen(0);
     await API.seedUsers();
     // await server.ready();
 

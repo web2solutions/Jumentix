@@ -83,7 +83,7 @@ describe('express -> User createDocument suite', () => {
       mutexService
     });
 
-    server = API.server.application;
+    server = API.server.application.listen(0);
 
     // await server.ready();
 

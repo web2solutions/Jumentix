@@ -63,10 +63,11 @@ describe('express -> apiVersions end point', () => {
       keyValueStorageClient,
       mutexService
     });
-    server = API.server.application;
+    server = API.server.application.listen(0);
   });
 
   afterAll(async () => {
+    server?.close();
     await databaseClient.disconnect();
     await keyValueStorageClient.disconnect();
     // await keyValueStorageClient.disconnect();

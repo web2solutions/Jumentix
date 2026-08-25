@@ -69,7 +69,7 @@ describe('express -> delete User suite', () => {
       mutexService
     });
 
-    server = API.server.application;
+    server = API.server.application.listen(0);
 
     // await server.ready();
     usersAll = await API.seedUsers();

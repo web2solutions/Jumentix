@@ -81,7 +81,7 @@ describe('express -> Auth -> Basic suite', () => {
       mutexService
     });
 
-    server = API.server.application;
+    server = API.server.application.listen(0);
 
     await API.seedData();
     // await server.ready();

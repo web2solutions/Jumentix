@@ -120,7 +120,7 @@ describe('express -> Catalogs -> shared catalog sync target', () => {
       messageMediator
     });
 
-    server = API.server.application;
+    server = API.server.application.listen(0);
 
     await API.seedData();
 
@@ -184,6 +184,7 @@ describe('express -> Catalogs -> shared catalog sync target', () => {
   });
 
   afterAll(async () => {
+    server?.close();
     await databaseClient.disconnect();
     await keyValueStorageClient.disconnect();
   });
