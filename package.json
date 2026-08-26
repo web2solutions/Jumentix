@@ -320,7 +320,7 @@
     "fastify": "^5.10.0",
     "find-my-way": "^9.7.0",
     "firebase-admin": "^14.1.0",
-    "helmet": "^7.2.0",
+    "helmet": "^8.3.0",
     "hono": "^4.13.1",
     "jsonwebtoken": "^9.0.2",
     "live-directory": "^3.0.3",
