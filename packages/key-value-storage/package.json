@@ -9,7 +9,7 @@
     "dist"
   ],
   "dependencies": {
-    "redis": "^5.9.0"
+    "redis": "^6.2.1"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
