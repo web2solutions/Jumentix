@@ -42,6 +42,7 @@ if (!fs.existsSync(workflowPath)) {
     /workspace-tests:/,
     /integration:/,
     /coverage:/,
+    /Fetch branch references for patch coverage/,
     /website:/,
     /database-matrix:/,
     /classify-ci-context\.js --result-file artifacts\/ci\/ci-context\.json --require-job branch-gate/,

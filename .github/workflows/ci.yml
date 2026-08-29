@@ -389,6 +389,8 @@ jobs:
           fi
           git checkout --force FETCH_HEAD
           git clean -fdx
+      - name: Fetch branch references for patch coverage
+        run: git fetch --prune origin "+refs/heads/*:refs/remotes/origin/*"
       - name: Use local Node.js 22
         run: |
           set -euo pipefail
