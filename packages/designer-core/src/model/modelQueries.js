@@ -23,8 +23,252 @@
 
 import {
   clampZoom,
+  DOMAIN_DEFAULT_HEIGHT,
+  DOMAIN_DEFAULT_WIDTH,
+  DOMAIN_HEADER_HEIGHT,
+  DOMAIN_MIN_HEIGHT,
+  DOMAIN_MIN_WIDTH,
+  ENTITY_WIDTH,
   getDefaultRbacPolicy
 } from '../state/designerState.js';
+
+
+/**
+ * Where an entity may sit inside its domain.
+ *
+ * The canvas clamped drags against `520 - 200` and `180` written out by hand,
+ * in two files that had to be edited together. Derived from the box instead,
+ * so a resized domain immediately gives its entities the room it gained.
+ */
+export function clampEntityPosition(domain, x, y) {
+  const { width, height } = domainBox(domain);
+  const maxX = Math.max(0, width - ENTITY_WIDTH - 8);
+  const maxY = Math.max(0, height - DOMAIN_HEADER_HEIGHT - 40);
+  return {
+    x: Math.min(Math.max(8, x), maxX),
+    y: Math.min(Math.max(8, y), maxY)
+  };
+}
+
+/**
+ * How tall an entity is drawn (JUM-729 follow-up).
+ *
+ * The edge geometry used to assume one of two fixed heights — 32 + 24 compact,
+ * 32 + 58 otherwise — which was already wrong for an entity with four fields
+ * and is further off now that each field is an editable row with its own
+ * controls. Every edge that anchored to `bottom` therefore started somewhere
+ * inside the card instead of on its border, and the further down the field
+ * list the border was, the worse the miss.
+ *
+ * Derived from what the CSS draws: a header, one row per field, and the "Add
+ * field" row that is only rendered in the full view.
+ */
+export function entityHeight(entity, compactEntities, largeCanvasMode) {
+  const headerHeight = 32;
+  if (compactEntities) return headerHeight + 8;
+  const fields = Array.isArray(entity?.fields) ? entity.fields.length : 0;
+  const rowHeight = largeCanvasMode ? 16 : 22;
+  const addRow = largeCanvasMode ? 0 : 26;
+  return headerHeight + fields * rowHeight + addRow + 8;
+}
+
+/**
+ * The smallest box that still holds every entity currently inside the domain.
+ *
+ * Shrinking below it would strand entities outside their own container, which
+ * the canvas cannot render and the user cannot undo by dragging them back.
+ */
+export function minimumDomainSize(domain) {
+  const entities = Array.isArray(domain?.entities) ? domain.entities : [];
+  const neededWidth = entities.reduce(
+    (widest, entity) => Math.max(widest, (Number(entity?.x) || 0) + ENTITY_WIDTH + 16),
+    DOMAIN_MIN_WIDTH
+  );
+  const neededHeight = entities.reduce(
+    (tallest, entity) => Math.max(
+      tallest,
+      (Number(entity?.y) || 0) + entityHeight(entity, false, false) + 24
+    ),
+    DOMAIN_MIN_HEIGHT
+  );
+  return { width: neededWidth, height: neededHeight };
+}
+
+/**
+ * The box a domain occupies, defaulted for models saved before it was
+ * resizable (JUM-729 follow-up).
+ *
+ * Never smaller than its contents. The CSS used to let the box grow on its own
+ * (`min-height`), so a domain whose entities ran past 280px simply got taller;
+ * with an explicit height that growth has to be computed, or those entities
+ * render outside the container they belong to.
+ */
+export function domainBox(domain) {
+  if (isDomainCollapsed(domain)) {
+    const width = Number.isFinite(domain?.width) ? domain.width : DOMAIN_DEFAULT_WIDTH;
+    return { width, height: DOMAIN_HEADER_HEIGHT };
+  }
+  const floor = minimumDomainSize(domain);
+  const width = Number.isFinite(domain?.width) ? domain.width : DOMAIN_DEFAULT_WIDTH;
+  const height = Number.isFinite(domain?.height) ? domain.height : DOMAIN_DEFAULT_HEIGHT;
+  return {
+    width: Math.max(floor.width, width),
+    height: Math.max(floor.height, height)
+  };
+}
+
+/**
+ * A collapsed domain is its header and nothing else (JUM-729 follow-up).
+ *
+ * A model outgrows the screen long before it outgrows the design: at fifteen
+ * domains the canvas is a wall of cards and the one being worked on is
+ * somewhere inside it. Collapsing is how a domain stays on the diagram —
+ * present, positioned, still the target of its relationships — without
+ * spending the space its contents need.
+ */
+export function isDomainCollapsed(domain) {
+  return Boolean(domain?.collapsed);
+}
+
+/**
+ * Everything in the model that matches `query`, in the order a reader scans
+ * the tree: domain, then its entities, then their fields (JUM-729 follow-up).
+ *
+ * Case-insensitive substring. Not fuzzy: the names here are identifiers people
+ * type from memory, and a fuzzy match on `id` hits every entity in the model,
+ * which is the same as no search at all.
+ */
+export function searchModel(domains, query) {
+  const needle = String(query || '').trim().toLowerCase();
+  if (!needle) return [];
+  const matches = (value) => String(value || '').toLowerCase().includes(needle);
+  const results = [];
+
+  (domains || []).forEach((domain) => {
+    if (matches(domain.name)) {
+      results.push({ kind: 'domain', domainId: domain.id, label: domain.name });
+    }
+    (domain.entities || []).forEach((entity) => {
+      if (matches(entity.name)) {
+        results.push({
+          kind: 'entity',
+          domainId: domain.id,
+          entityId: entity.id,
+          label: `${domain.name} / ${entity.name}`
+        });
+      }
+      (entity.fields || []).forEach((field) => {
+        if (!matches(field.name) && !matches(field.type)) return;
+        results.push({
+          kind: 'field',
+          domainId: domain.id,
+          entityId: entity.id,
+          fieldName: field.name,
+          label: `${domain.name} / ${entity.name}.${field.name}: ${field.type}`
+        });
+      });
+    });
+  });
+
+  return results;
+}
+
+/**
+ * Every entity whose box overlaps the marquee rectangle (JUM-729 follow-up).
+ *
+ * Overlap, not containment: a rubber band that only takes what it fully
+ * encloses forces the user to start the drag off-canvas to catch an entity
+ * near the edge, and it silently drops the one element they were aiming at.
+ *
+ * `rect` is in canvas coordinates, the same space the entities are placed in.
+ */
+export function entitiesInMarquee(domains, rect, compactEntities, largeCanvasMode) {
+  const left = Math.min(rect.x1, rect.x2);
+  const right = Math.max(rect.x1, rect.x2);
+  const top = Math.min(rect.y1, rect.y2);
+  const bottom = Math.max(rect.y1, rect.y2);
+  const hits = [];
+
+  (domains || []).forEach((domain) => {
+    if (isDomainCollapsed(domain)) return;
+    (domain.entities || []).forEach((entity) => {
+      const boxLeft = domain.x + entity.x;
+      const boxTop = domain.y + entity.y;
+      const boxRight = boxLeft + ENTITY_WIDTH;
+      const boxBottom = boxTop + entityHeight(entity, compactEntities, largeCanvasMode);
+      const overlaps = boxLeft < right && boxRight > left && boxTop < bottom && boxBottom > top;
+      if (overlaps) hits.push(entity.id);
+    });
+  });
+
+  return hits;
+}
+
+/**
+ * Where a dragged entity lines up with its siblings, and the position that
+ * snaps it there (JUM-729 follow-up).
+ *
+ * Grid snapping keeps positions tidy without making anything line up: two
+ * entities can both sit on the grid and still be four pixels apart, which is
+ * exactly the misalignment a diagram reader notices. This compares the moving
+ * entity's left, centre and right against every sibling's, and the same for
+ * the vertical edges, and returns the first match inside `tolerance`.
+ *
+ * Returns the adjusted position plus the guide lines to draw, in canvas
+ * coordinates, so the caller can show what it snapped to.
+ */
+export function alignmentGuidesFor(domain, entity, x, y, options = {}) {
+  const tolerance = options.tolerance ?? 6;
+  const compactEntities = options.compactEntities ?? false;
+  const largeCanvasMode = options.largeCanvasMode ?? false;
+  const height = entityHeight(entity, compactEntities, largeCanvasMode);
+  const siblings = (domain?.entities || []).filter((candidate) => candidate.id !== entity.id);
+
+  const verticalEdges = [x, x + ENTITY_WIDTH / 2, x + ENTITY_WIDTH];
+  const horizontalEdges = [y, y + height / 2, y + height];
+  const guides = [];
+  let snappedX = x;
+  let snappedY = y;
+
+  siblings.forEach((sibling) => {
+    const siblingHeight = entityHeight(sibling, compactEntities, largeCanvasMode);
+    const siblingVertical = [
+      sibling.x, sibling.x + ENTITY_WIDTH / 2, sibling.x + ENTITY_WIDTH
+    ];
+    const siblingHorizontal = [
+      sibling.y, sibling.y + siblingHeight / 2, sibling.y + siblingHeight
+    ];
+
+    verticalEdges.forEach((edge, edgeIndex) => {
+      siblingVertical.forEach((siblingEdge) => {
+        if (Math.abs(edge - siblingEdge) > tolerance) return;
+        if (guides.some((guide) => guide.axis === 'x')) return;
+        snappedX = siblingEdge - (ENTITY_WIDTH / 2) * edgeIndex;
+        guides.push({ axis: 'x', at: domain.x + siblingEdge });
+      });
+    });
+
+    horizontalEdges.forEach((edge, edgeIndex) => {
+      siblingHorizontal.forEach((siblingEdge) => {
+        if (Math.abs(edge - siblingEdge) > tolerance) return;
+        if (guides.some((guide) => guide.axis === 'y')) return;
+        snappedY = siblingEdge - (height / 2) * edgeIndex;
+        guides.push({ axis: 'y', at: domain.y + siblingEdge });
+      });
+    });
+  });
+
+  return { x: snappedX, y: snappedY, guides };
+}
+
+/** Resize a domain box, never below its minimum or its contents. */
+export function resizeDomainBox(domain, width, height) {
+  const floor = minimumDomainSize(domain);
+  return {
+    width: Math.max(floor.width, Math.round(width)),
+    height: Math.max(floor.height, Math.round(height))
+  };
+}
 
 export function normalizedName(value) {
   return String(value || '').trim().toLowerCase();
@@ -228,29 +472,77 @@ export function snapCoordinate(snapToGrid, value) {
 }
 
 /** Entity centre in canvas coordinates (the +95/+32 offsets are unchanged). */
-export function entityCenterPoint(domain, entity) {
+export function entityCenterPoint(domain, entity, compactEntities, largeCanvasMode) {
+  // JUM-729 follow-up: the real centre. `+95` was half of the old 190px card and `+32`
+  // was its header, so a centre-anchored edge pointed at the top-left of a
+  // taller entity rather than at its middle.
   return {
-    x: domain.x + entity.x + 95,
-    y: domain.y + entity.y + 32
+    x: domain.x + entity.x + ENTITY_WIDTH / 2,
+    y: domain.y + entity.y + entityHeight(entity, compactEntities, largeCanvasMode) / 2
   };
+}
+
+/** Row height of one field inside an entity card, as the CSS draws it. */
+export function entityFieldRowHeight(largeCanvasMode) {
+  return largeCanvasMode ? 16 : 22;
+}
+
+/**
+ * Where a relationship touches a specific field (JUM-729 follow-up).
+ *
+ * Edges used to land on the middle of an entity's side, so a link that means
+ * "orders.customer_id references customers.id" pointed at two cards and said
+ * nothing about which columns it joined — the reader had to guess, and with
+ * three links between the same pair of entities there was nothing to guess
+ * from. This returns the point on the entity's left or right border level with
+ * that field's row.
+ *
+ * A field that is no longer there (renamed, deleted, or the entity collapsed
+ * into compact view) has no row to point at, and the caller falls back to the
+ * side anchor rather than drawing a line to a row that is not on screen.
+ */
+export function entityFieldAnchorPoint(domain, entity, fieldName, side, compactEntities, largeCanvasMode) {
+  if (compactEntities) return null;
+  const fields = Array.isArray(entity?.fields) ? entity.fields : [];
+  const fieldIndex = fields.findIndex((field) => field.name === fieldName);
+  if (fieldIndex < 0) return null;
+
+  const headerHeight = 32;
+  const rowHeight = entityFieldRowHeight(largeCanvasMode);
+  const originX = domain.x + entity.x;
+  const originY = domain.y + entity.y;
+  const y = originY + headerHeight + fieldIndex * rowHeight + rowHeight / 2;
+  return {
+    x: side === 'left' ? originX : originX + ENTITY_WIDTH,
+    y
+  };
+}
+
+/**
+ * Which side of `target` faces `origin`.
+ *
+ * Used when a link is dropped on an entity rather than on one of its four
+ * anchor dots: the edge should leave and arrive on the sides that face each
+ * other, which is what a person dragging between two cards means.
+ */
+export function facingSide(originX, targetX) {
+  return targetX >= originX ? 'left' : 'right';
 }
 
 /**
  * Anchor point of an entity side in canvas coordinates. Unknown/absent sides
  * fall back to the centre, exactly as `entityAnchorOnCanvas` did.
  */
-export function entityAnchorPoint(domain, entity, side, compactEntities) {
+export function entityAnchorPoint(domain, entity, side, compactEntities, largeCanvasMode) {
   const originX = domain.x + entity.x;
   const originY = domain.y + entity.y;
-  const width = 190;
-  const headerHeight = 32;
-  const bodyHeight = compactEntities ? 24 : 58;
-  const height = headerHeight + bodyHeight;
+  const width = ENTITY_WIDTH;
+  const height = entityHeight(entity, compactEntities, largeCanvasMode);
   if (side === 'left') return { x: originX, y: originY + height / 2 };
   if (side === 'right') return { x: originX + width, y: originY + height / 2 };
   if (side === 'top') return { x: originX + width / 2, y: originY };
   if (side === 'bottom') return { x: originX + width / 2, y: originY + height };
-  return entityCenterPoint(domain, entity);
+  return entityCenterPoint(domain, entity, compactEntities, largeCanvasMode);
 }
 
 /**
@@ -294,8 +586,9 @@ export function computeFitView(domains, viewportWidth, viewportHeight) {
   domains.forEach((domain) => {
     bounds.minX = Math.min(bounds.minX, domain.x);
     bounds.minY = Math.min(bounds.minY, domain.y);
-    bounds.maxX = Math.max(bounds.maxX, domain.x + 520);
-    bounds.maxY = Math.max(bounds.maxY, domain.y + 280);
+    const box = domainBox(domain);
+    bounds.maxX = Math.max(bounds.maxX, domain.x + box.width);
+    bounds.maxY = Math.max(bounds.maxY, domain.y + box.height);
   });
 
   const padding = 80;
@@ -316,23 +609,48 @@ export function computeFitView(domains, viewportWidth, viewportHeight) {
  * and re-renders, as before.
  */
 export function applyAutoLayout(domains) {
-  const domainWidth = 520;
-  const domainHeight = 300;
+  // JUM-729 follow-up widened the entity for its editable field rows, so the steps are
+  // derived from the entity box rather than from the numbers that happened to
+  // suit a 190px card. Two columns of entities, and a domain wide enough to
+  // hold them plus its padding — the previous fixed 520 left the second column
+  // hanging over the domain's right edge.
+  const entityColumns = 2;
+  const entityStepX = ENTITY_WIDTH + 16;
+  const padding = 14;
   const gapX = 70;
   const gapY = 70;
+  const domainWidth = padding * 2 + entityStepX * entityColumns;
   const columns = Math.max(1, Math.floor((3200 - 120) / (domainWidth + gapX)));
 
   domains.forEach((domain, index) => {
     const column = index % columns;
     const row = Math.floor(index / columns);
+    // Each row is as tall as its tallest entity: a fixed step overlapped the
+    // row below as soon as one entity had more fields than the step allowed.
+    const rowTops = [];
+    let nextTop = padding;
+    domain.entities.forEach((entity, entityIndex) => {
+      const entityRow = Math.floor(entityIndex / entityColumns);
+      if (rowTops[entityRow] === undefined) {
+        rowTops[entityRow] = nextTop;
+        const rowEntities = domain.entities.slice(
+          entityRow * entityColumns,
+          entityRow * entityColumns + entityColumns
+        );
+        const rowHeight = rowEntities.reduce(
+          (tallest, member) => Math.max(tallest, entityHeight(member, false, false)),
+          0
+        );
+        nextTop += rowHeight + 20;
+      }
+      entity.x = padding + (entityIndex % entityColumns) * entityStepX;
+      entity.y = rowTops[entityRow];
+    });
+
+    const domainHeight = Math.max(DOMAIN_MIN_HEIGHT, DOMAIN_HEADER_HEIGHT + nextTop);
     domain.x = 40 + column * (domainWidth + gapX);
     domain.y = 40 + row * (domainHeight + gapY);
-
-    domain.entities.forEach((entity, entityIndex) => {
-      const entityColumn = entityIndex % 2;
-      const entityRow = Math.floor(entityIndex / 2);
-      entity.x = 14 + entityColumn * 206;
-      entity.y = 14 + entityRow * 118;
-    });
+    domain.width = domainWidth;
+    domain.height = domainHeight;
   });
 }

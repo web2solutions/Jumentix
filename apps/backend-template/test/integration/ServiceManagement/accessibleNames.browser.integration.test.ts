@@ -23,6 +23,8 @@ import {
   cleanupTempConfigDir,
   envFileContent,
   startServer,
+  clickInPanels,
+  openDesignerPanels,
   stopServer,
   waitForServer
 } from './serverHarness';
@@ -140,8 +142,9 @@ describe('serviceManagement accessible names (JUM-732)', () => {
 
     await page.click('#domain-designer-empty-load-sample-btn');
     await page.waitForTimeout(500);
+    await openDesignerPanels(page, '#entity-search-input');
     await page.fill('#entity-search-input', 'User');
-    await page.click('#entity-search-btn');
+    await clickInPanels(page, '#entity-search-btn');
     await page.waitForTimeout(400);
 
     // The rows are actually there, so an empty result is coverage, not a vacuum.
@@ -161,8 +164,9 @@ describe('serviceManagement accessible names (JUM-732)', () => {
 
     await page.click('#domain-designer-empty-load-sample-btn');
     await page.waitForTimeout(500);
+    await openDesignerPanels(page, '#entity-search-input');
     await page.fill('#entity-search-input', 'User');
-    await page.click('#entity-search-btn');
+    await clickInPanels(page, '#entity-search-btn');
     await page.waitForTimeout(400);
 
     const names = await fieldRowAriaLabels(page);

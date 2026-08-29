@@ -20,6 +20,7 @@ import {
   cleanupTempConfigDir,
   envFileContent,
   startServer,
+  clickInPanels,
   stopServer,
   waitForServer
 } from './serverHarness';
@@ -115,9 +116,11 @@ describe('serviceManagement SPA boot and export gate (JUM-466)', () => {
     const cleanContext = await browser!.newContext();
     const cleanPage = await cleanContext.newPage();
     await cleanPage.goto(baseUrl, { waitUntil: 'load' });
+    // The panels are an overlay now, closed by default (JUM-737): a suite that
+    // reaches for a sidebar control opens it first, the way a person does.
     const [download] = await Promise.all([
       cleanPage.waitForEvent('download'),
-      cleanPage.click('#export-json-btn')
+      clickInPanels(cleanPage, '#export-json-btn')
     ]);
     expect(download.suggestedFilename()).toBe('domain-designer.json');
     await cleanContext.close();
@@ -145,7 +148,7 @@ describe('serviceManagement SPA boot and export gate (JUM-466)', () => {
     page.on('download', () => {
       downloadFired = true;
     });
-    await page.click('#export-json-btn');
+    await clickInPanels(page, '#export-json-btn');
     await page.waitForTimeout(1500);
     expect(downloadFired).toBe(false);
 
@@ -154,10 +157,10 @@ describe('serviceManagement SPA boot and export gate (JUM-466)', () => {
     expect(findings).toContain('no primary key');
 
     // Lifting the gate on the SAME broken model releases the export.
-    await page.click('#export-block-critical-check');
+    await clickInPanels(page, '#export-block-critical-check');
     const [relaxedDownload] = await Promise.all([
       page.waitForEvent('download'),
-      page.click('#export-json-btn')
+      clickInPanels(page, '#export-json-btn')
     ]);
     expect(relaxedDownload.suggestedFilename()).toBe('domain-designer.json');
     await brokenContext.close();

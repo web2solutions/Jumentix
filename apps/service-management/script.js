@@ -92,6 +92,9 @@ import {
   renderBundlePreview
 } from '@jumentix/designer-core/codegen/hexagonalCodegen.js';
 import { createTabs } from './src/ui/tabs.js';
+import { createSidebarGroups } from './src/ui/sidebarGroups.js';
+import { createContextMenu } from './src/ui/contextMenu.js';
+import { drawModel } from './src/ui/canvasImage.js';
 import { createCanvas } from './src/ui/canvas.js';
 import { createInspectors } from './src/ui/inspectors.js';
 
@@ -325,6 +328,15 @@ const dom = {
   clearStorageBtn: document.getElementById('clear-storage-btn'),
   undoBtn: document.getElementById('undo-btn'),
   redoBtn: document.getElementById('redo-btn'),
+  quickAddDomainBtn: document.getElementById('quick-add-domain-btn'),
+  quickAddEntityBtn: document.getElementById('quick-add-entity-btn'),
+  quickUndoBtn: document.getElementById('quick-undo-btn'),
+  quickRedoBtn: document.getElementById('quick-redo-btn'),
+  quickValidateBtn: document.getElementById('quick-validate-btn'),
+  quickAddNoteBtn: document.getElementById('quick-add-note-btn'),
+  exportPngBtn: document.getElementById('export-png-btn'),
+  modelSearchInput: document.getElementById('model-search-input'),
+  modelSearchResults: document.getElementById('model-search-results'),
   runModelCheckBtn: document.getElementById('run-model-check-btn'),
   modelCheckList: document.getElementById('model-check-list'),
   exportBlockCriticalCheck: document.getElementById('export-block-critical-check'),
@@ -379,10 +391,13 @@ const dom = {
 // monolith's closure used to provide. Everything they return is called
 // below exactly where the monolith called its own functions.
 const tabs = createTabs({ dom, state, saveState });
+const sidebarGroups = createSidebarGroups({ documentRef: document, state, saveState });
+const contextMenu = createContextMenu({ documentRef: document });
 const canvas = createCanvas({
   dom,
   state,
   interaction,
+  contextMenu,
   actions: {
     withPersist,
     render,
@@ -390,7 +405,14 @@ const canvas = createCanvas({
     setSelectedDomain,
     setSelectedEntity,
     handleEntityRelationshipPick,
-    addRelationshipFromAnchor
+    addRelationshipFromAnchor,
+    addEntity,
+    deleteEntity,
+    deleteDomain,
+    deleteRelationship,
+    // Injected rather than called directly so the canvas module keeps no
+    // reference to `window`, which is what lets it be unit-tested.
+    confirmAction: (message) => window.confirm(message)
   }
 });
 const inspectors = createInspectors({
@@ -753,6 +775,21 @@ function focusEntity(entityId) {
   });
 }
 
+/**
+ * `Domain 3` — the first numbered name the model does not already use.
+ *
+ * A toolbar that creates without asking still must not create a duplicate:
+ * duplicate domain and entity names are validation errors, so a second
+ * `Domain 1` would add an element and an error in the same click.
+ */
+function nextAvailableName(prefix, isTaken) {
+  for (let index = 1; index < 1000; index += 1) {
+    const candidate = `${prefix} ${String(index)}`;
+    if (!isTaken(candidate)) return candidate;
+  }
+  return `${prefix} ${String(Date.now())}`;
+}
+
 function addDomain(name, options = {}) {
   if (isDomainNameTaken(name)) {
     showStatus(`Domain "${name}" already exists.`);
@@ -855,6 +892,10 @@ function setSelectedDomain(domainId) {
 
 function setSelectedEntity(entityId) {
   state.selectedEntityId = entityId;
+  // JUM-729 follow-up: the Entity Inspector lives in another sidebar group, so a
+  // selection made on the canvas has to bring that group forward — otherwise
+  // clicking an entity fills a panel nobody can see.
+  if (entityId) sidebarGroups.revealGroupFor('entity-inspector-panel');
   render();
 }
 
@@ -1067,6 +1108,8 @@ function addRelationship(fromEntityId, toEntityId, fromCardinality, toCardinalit
       toCardinality,
       fromAnchorSide: options.fromAnchorSide || null,
       toAnchorSide: options.toAnchorSide || null,
+      fromField: options.fromField || null,
+      toField: options.toField || null,
       anchorBehavior: 'auto',
       bendX: null,
       bendY: null,
@@ -1080,9 +1123,19 @@ function addRelationship(fromEntityId, toEntityId, fromCardinality, toCardinalit
       if (fromFound && toFound) {
         if (fromCardinality === 'N' && toCardinality === '1') {
           ensureForeignKeyField(fromFound.entity, toFound.entity.name);
+          // JUM-729 follow-up: the link now points at the foreign key it just created,
+          // rather than at the middle of the card that holds it.
+          if (!relationship.fromField) {
+            relationship.fromField = `${toFound.entity.name.trim().toLowerCase()}Id`;
+          }
+          if (!relationship.toField) relationship.toField = 'id';
         }
         if (fromCardinality === '1' && toCardinality === 'N') {
           ensureForeignKeyField(toFound.entity, fromFound.entity.name);
+          if (!relationship.toField) {
+            relationship.toField = `${fromFound.entity.name.trim().toLowerCase()}Id`;
+          }
+          if (!relationship.fromField) relationship.fromField = 'id';
         }
       }
     }
@@ -1094,12 +1147,16 @@ function addRelationship(fromEntityId, toEntityId, fromCardinality, toCardinalit
 // Canvas anchor drags end on this callback: the cardinality selects live in
 // this file's `dom` map, so the canvas module delegates relationship
 // creation back here with the anchor sides it tracked.
-function addRelationshipFromAnchor(fromEntityId, toEntityId, toSide) {
+function addRelationshipFromAnchor(fromEntityId, toEntityId, toSide, fields = {}) {
   const fromCardinality = dom.fromCardSelect.value || 'N';
   const toCardinality = dom.toCardSelect.value || '1';
   addRelationship(fromEntityId, toEntityId, fromCardinality, toCardinality, {
     fromAnchorSide: interaction.relationshipAnchorFromSide,
-    toAnchorSide: toSide
+    toAnchorSide: toSide,
+    // JUM-729 follow-up: which columns the link joins, when the drag started on a field
+    // row and/or was dropped on one.
+    fromField: fields.fromField || null,
+    toField: fields.toField || null
   });
 }
 
@@ -2013,6 +2070,7 @@ function renderEmptyStates() {
 // preserved here as an explicit call sequence.
 function render() {
   tabs.renderTabs();
+  sidebarGroups.renderSidebarGroups();
   renderEmptyStates();
   inspectors.renderInterfaceAdapters();
   inspectors.renderServiceConfiguration();
@@ -2026,6 +2084,7 @@ function render() {
   inspectors.syncRelationshipInspector();
   inspectors.renderPickStatus();
   inspectors.renderEntityInspector();
+  canvas.renderNotes();
   canvas.renderEdges();
   canvas.renderMiniMap();
   inspectors.renderSchemaDiffStatus();
@@ -2033,6 +2092,13 @@ function render() {
   generateExamplesPreview();
   dom.undoBtn.disabled = history.past.length === 0;
   dom.redoBtn.disabled = history.future.length === 0;
+  // Optional throughout: a returning visitor can be served a cached shell from
+  // before these controls existed (the PWA caches `index.html`), and a render
+  // that throws on a missing button takes the whole designer down for them —
+  // an offline visit is exactly when it must not (JUM-737).
+  if (dom.quickUndoBtn) dom.quickUndoBtn.disabled = dom.undoBtn.disabled;
+  if (dom.quickRedoBtn) dom.quickRedoBtn.disabled = dom.redoBtn.disabled;
+  if (dom.quickAddEntityBtn) dom.quickAddEntityBtn.disabled = !getSelectedDomain();
 }
 
 // Deploy Management lifecycle (JUM-546). The form doubles as the add and the
@@ -2511,6 +2577,86 @@ function wireEvents() {
   };
   dom.undoBtn.onclick = undo;
   dom.redoBtn.onclick = redo;
+
+  /*
+   * JUM-729 follow-up: the toolbar's own creation actions.
+   *
+   * They name the thing they create rather than asking for a name first: the
+   * sidebar flow is "type a name, press Add", which needs the drawer open and
+   * a text field focused before anything appears on the canvas. Here the
+   * element appears immediately and is renamed in place, which is how the
+   * JointJS demo's "Add table" behaves and what makes a first domain one
+   * click away.
+   */
+  if (dom.quickAddDomainBtn) dom.quickAddDomainBtn.onclick = () => {
+    const name = nextAvailableName('Domain', (candidate) => isDomainNameTaken(candidate));
+    withPersist(() => {
+      const created = addDomain(name);
+      state.selectedDomainId = created.id;
+      render();
+    });
+    showStatus(`Domain "${name}" added. Rename it on the canvas.`, 'info');
+  };
+
+  if (dom.quickAddEntityBtn) dom.quickAddEntityBtn.onclick = () => {
+    const selected = getSelectedDomain();
+    if (!selected) return showStatus('Select a domain first.');
+    const name = nextAvailableName(
+      'Entity',
+      (candidate) => isEntityNameTaken(selected, candidate)
+    );
+    withPersist(() => {
+      const created = addEntity(selected.id, name);
+      state.selectedEntityId = created.id;
+      render();
+    });
+    return showStatus(`Entity "${name}" added to ${selected.name}.`, 'info');
+  };
+
+  if (dom.quickUndoBtn) dom.quickUndoBtn.onclick = undo;
+  if (dom.quickRedoBtn) dom.quickRedoBtn.onclick = redo;
+  if (dom.quickValidateBtn) dom.quickValidateBtn.onclick = runModelChecks;
+  if (dom.quickAddNoteBtn) dom.quickAddNoteBtn.onclick = () => canvas.addNote();
+  if (dom.exportPngBtn) dom.exportPngBtn.onclick = exportDiagramPng;
+
+  /*
+   * JUM-729 follow-up: search over the whole model.
+   *
+   * Results are a list of buttons rather than a highlight pass over the
+   * canvas: the match is usually off screen, and the useful answer is "take me
+   * there and select it", not "it is somewhere".
+   */
+  const renderSearchResults = () => {
+    if (!dom.modelSearchInput || !dom.modelSearchResults) return;
+    const query = dom.modelSearchInput.value;
+    const results = model.searchModel(state.domains, query).slice(0, 12);
+    dom.modelSearchResults.innerHTML = '';
+    dom.modelSearchResults.hidden = results.length === 0;
+    results.forEach((result) => {
+      const item = document.createElement('li');
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = `search-result search-result-${result.kind}`;
+      button.textContent = result.label;
+      button.onclick = () => {
+        state.selectedDomainId = result.domainId;
+        if (result.entityId) setSelectedEntity(result.entityId);
+        dom.modelSearchResults.hidden = true;
+        dom.modelSearchInput.value = '';
+        canvas.scrollSelectionIntoView();
+        render();
+      };
+      item.appendChild(button);
+      dom.modelSearchResults.appendChild(item);
+    });
+  };
+  if (dom.modelSearchInput) dom.modelSearchInput.oninput = renderSearchResults;
+  if (dom.modelSearchInput) dom.modelSearchInput.onkeydown = (event) => {
+    if (event.key !== 'Escape') return;
+    dom.modelSearchInput.value = '';
+    dom.modelSearchResults.hidden = true;
+    dom.modelSearchInput.blur();
+  };
   dom.zoomInBtn.onclick = () => canvas.zoomBy(0.1);
   dom.zoomOutBtn.onclick = () => canvas.zoomBy(-0.1);
   dom.edgeStyleSelect.onchange = () => {
@@ -2633,6 +2779,31 @@ function wireEvents() {
       dom.canvas.classList.add('space-mode');
       return;
     }
+    if (!editingInput && key === '/') {
+      // JUM-729 follow-up: `/` focuses search, the convention every tool with a model
+      // this size uses.
+      event.preventDefault();
+      dom.modelSearchInput.focus();
+      return;
+    }
+    if (!editingInput && !event.ctrlKey && !event.metaKey && !event.altKey && key === 'n') {
+      // JUM-729 follow-up: the demo's `N`. A note is the one thing you want to drop
+      // without leaving the diagram, mid-thought.
+      event.preventDefault();
+      canvas.addNote();
+      return;
+    }
+    if (!editingInput && !event.ctrlKey && !event.metaKey && !event.altKey && key === 'p') {
+      // JUM-729 follow-up: one key for the panels, since they are no longer always on
+      // screen. Never while typing — `p` is a letter first.
+      event.preventDefault();
+      sidebarGroups.toggleDrawer();
+      return;
+    }
+    if (key === 'escape' && sidebarGroups.isOpen()) {
+      sidebarGroups.setDrawerOpen(false);
+      return;
+    }
     if (key === 'escape') {
       setRelationshipPickMode(false);
       canvas.stopAnchorDrag();
@@ -2648,6 +2819,24 @@ function wireEvents() {
     if ((event.ctrlKey || event.metaKey) && (key === 'y' || (key === 'z' && event.shiftKey))) {
       event.preventDefault();
       redo();
+      return;
+    }
+    // JUM-729 follow-up: keyboard zoom. `+` needs shift on most layouts and arrives as
+    // `=` unshifted, and the numpad sends `Add`/`Subtract` — all three are
+    // accepted so the shortcut works without knowing the user's keyboard.
+    if (!editingInput && !event.ctrlKey && !event.metaKey && ['+', '=', 'add'].includes(key)) {
+      event.preventDefault();
+      canvas.zoomBy(0.1);
+      return;
+    }
+    if (!editingInput && !event.ctrlKey && !event.metaKey && ['-', '_', 'subtract'].includes(key)) {
+      event.preventDefault();
+      canvas.zoomBy(-0.1);
+      return;
+    }
+    if (!editingInput && !event.ctrlKey && !event.metaKey && key === '0') {
+      event.preventDefault();
+      canvas.resetView();
       return;
     }
     if (event.altKey && key === 'l') {
@@ -2669,13 +2858,18 @@ function wireEvents() {
       const found = findEntity(state.selectedEntityId);
       if (!found) return;
       const step = event.shiftKey ? 16 : 8;
-      const maxX = 520 - 200;
-      const maxY = 180;
       withPersist(() => {
-        if (key === 'arrowleft') found.entity.x = Math.max(8, snapCoordinate(found.entity.x - step));
-        if (key === 'arrowright') found.entity.x = Math.min(maxX, snapCoordinate(found.entity.x + step));
-        if (key === 'arrowup') found.entity.y = Math.max(8, snapCoordinate(found.entity.y - step));
-        if (key === 'arrowdown') found.entity.y = Math.min(maxY, snapCoordinate(found.entity.y + step));
+        // JUM-729 follow-up: the same box the canvas drags against, rather than a second
+        // copy of the old fixed 520x280 numbers.
+        let nextX = found.entity.x;
+        let nextY = found.entity.y;
+        if (key === 'arrowleft') nextX = snapCoordinate(found.entity.x - step);
+        if (key === 'arrowright') nextX = snapCoordinate(found.entity.x + step);
+        if (key === 'arrowup') nextY = snapCoordinate(found.entity.y - step);
+        if (key === 'arrowdown') nextY = snapCoordinate(found.entity.y + step);
+        const clamped = model.clampEntityPosition(found.domain, nextX, nextY);
+        found.entity.x = clamped.x;
+        found.entity.y = clamped.y;
         render();
       });
       event.preventDefault();
@@ -2709,6 +2903,38 @@ function wireEvents() {
 // Pre-migration backup download (JUM-484): the verbatim localStorage payload,
 // offered as a file BEFORE anything is written to Cana — the recourse that
 // replaces the retired fallback.
+/**
+ * The diagram as a PNG (JUM-729 follow-up).
+ *
+ * Drawn from the model, not rasterised from the DOM: the `foreignObject` route
+ * taints the canvas in WebKit and refuses to export at all. The endpoint
+ * resolver is the live canvas's own, so the picture cannot disagree with the
+ * diagram about where a line starts.
+ */
+function exportDiagramPng() {
+  if (state.domains.length === 0) {
+    showStatus('Nothing to export yet — add a domain first.');
+    return;
+  }
+  const target = document.createElement('canvas');
+  drawModel(target, state, (relationship, end) => canvas.endpointForExport(relationship, end));
+  target.toBlob((blob) => {
+    if (!blob) {
+      showStatus('The diagram could not be rendered to an image.');
+      return;
+    }
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = 'domain-model.png';
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+    showStatus('Diagram exported as domain-model.png.', 'info');
+  }, 'image/png');
+}
+
 function downloadMigrationBackup(fileName, rawJson) {
   const blob = new Blob([rawJson], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -2822,6 +3048,17 @@ async function boot() {
   // the pane and its status line, never silently.
   loadPm2EcosystemPreview(dom.pm2PreviewEnvironmentSelect?.value || 'dev')
     .catch((error) => failPm2EcosystemPreview(dom.pm2PreviewEnvironmentSelect?.value || 'dev', error));
+
+  // JUM-737: the model has been loaded and rendered, so the view state on
+  // screen is the stored one and will not be replaced under the user.
+  //
+  // This exists for the browser suites. They navigate and act in the same
+  // tick, which lands between `load` and the state load resolving — a window a
+  // person cannot hit, but one an automated click hits every time, and the
+  // symptom is a control that was opened and is closed again a moment later.
+  // Waiting on a marker the app sets is the alternative to sleeping and hoping
+  // (Requirement 134).
+  document.body.dataset.designerReady = 'true';
 }
 
 boot();

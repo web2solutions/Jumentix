@@ -563,6 +563,10 @@ describe('designer state core (JUM-468)', () => {
         toCardinality: '1',
         fromAnchorSide: null,
         toAnchorSide: null,
+        // JUM-729 follow-up: the columns the link joins, null for a relationship that
+        // names none — every one saved before field anchors existed.
+        fromField: null,
+        toField: null,
         anchorBehavior: 'auto',
         bendX: null,
         bendY: null,
@@ -745,7 +749,11 @@ describe('designer state core (JUM-468)', () => {
         edgeStyle: 'orthogonal',
         modelCheckMinSeverity: 'error',
         exportBlockCritical: false,
-        largeCanvasMode: true
+        largeCanvasMode: true,
+        // JUM-729 follow-up: which sidebar group is on screen and whether the
+        // drawer is open, defaulted for a payload that predates both.
+        sidebarGroup: 'model',
+        sidebarOpen: false
       });
     });
   });
@@ -786,7 +794,7 @@ describe('designer state core (JUM-468)', () => {
   });
 
   describe('saveState payload contract', () => {
-    it('writes exactly the twelve pinned Requirement 126 sections', async () => {
+    it('writes exactly the thirteen pinned Requirement 126 sections', async () => {
       expect.hasAssertions();
       const { core, storage } = createCore();
       await core.loadState();
@@ -797,6 +805,10 @@ describe('designer state core (JUM-468)', () => {
         'domains',
         'idCounter',
         'interfaces',
+        // JUM-729 follow-up: canvas notes are saved with the model. They stay out of the
+        // OAS export and the generator — a note is not part of the contract —
+        // but losing them on reload would make them useless.
+        'notes',
         'relationships',
         'runtimeEnvironment',
         'selectedDomainId',

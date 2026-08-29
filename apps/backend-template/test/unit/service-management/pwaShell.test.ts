@@ -226,12 +226,82 @@ function committedShellAssets(assets: string[]): string[] {
   return assets.filter((asset) => asset !== './' && !isGeneratedShellAsset(asset));
 }
 
+/**
+ * Every module reachable from `entry`, as paths relative to the static root.
+ *
+ * Follows relative imports and the import map's `@jumentix/designer-core/`
+ * prefix, resolved the way the browser resolves it: into the vendored copy the
+ * shell actually serves. Lives outside the suite because the walk is loops and
+ * branches, which the test lint rules keep out of a test body — and because
+ * what the test asserts is the result, not the traversal.
+ */
+const DESIGNER_CORE_PREFIX = '@jumentix/designer-core/';
+
+function resolveSpecifier(specifier: string, fromFile: string, root: string): string | null {
+  if (specifier.startsWith(DESIGNER_CORE_PREFIX)) {
+    return `vendor/designer-core/${specifier.slice(DESIGNER_CORE_PREFIX.length)}`;
+  }
+  if (!specifier.startsWith('.')) return null;
+  const absolute = path.resolve(path.dirname(path.resolve(root, fromFile)), specifier);
+  return path.relative(root, absolute);
+}
+
+function modulesReachableFrom(entry: string): string[] {
+  const staticRoot = path.resolve(repoRoot, 'apps/service-management');
+  const importPattern = /from '([^']+)'/g;
+  const seen = new Set<string>();
+  const queue = [entry];
+  const reachable: string[] = [];
+
+  while (queue.length > 0) {
+    const current = queue.shift() as string;
+    const absolute = path.resolve(staticRoot, current);
+    const unvisited = !seen.has(current) && fs.existsSync(absolute);
+    seen.add(current);
+
+    if (unvisited) {
+      reachable.push(current);
+      const source = fs.readFileSync(absolute, 'utf8');
+      Array.from(source.matchAll(importPattern))
+        .map((match) => resolveSpecifier(match[1], current, staticRoot))
+        .filter((target): target is string => target !== null)
+        .forEach((target) => queue.push(target));
+    }
+  }
+
+  return reachable;
+}
+
 describe('pwa shell service worker (JUM-489)', () => {
   it('derives the cache name from a versioned prefix shared with the page side', () => {
     expect.hasAssertions();
     expect(sw.SHELL_VERSION).toMatch(/^\d+\.\d+\.\d+$/);
     expect(sw.SHELL_CACHE_NAME).toBe(`${sw.SHELL_CACHE_PREFIX}${sw.SHELL_VERSION}`);
     expect(sw.SHELL_CACHE_PREFIX).toBe(PWA_SHELL_CACHE_PREFIX);
+  });
+
+  /*
+   * Every module the shell can reach must be precached (JUM-747).
+   *
+   * The list in `sw.js` is hand-maintained, and the check below spot-checks a
+   * couple of entries. That is not the same requirement: what breaks offline
+   * is any module in the graph that is missing, and the symptom is not a
+   * missing file — it is an app that loads, paints its header and wires
+   * nothing, because one failed import takes the whole module graph with it.
+   *
+   * It has happened twice: `src/state/designerSync.js` (recorded in `sw.js` as
+   * a pre-existing gap) and `model/propertyKeys.js`, whose absence left the
+   * offline shell with dead tabs and no error anyone would connect to it. So
+   * the graph is walked rather than listed.
+   */
+  it('precaches every module reachable from the entry point', () => {
+    expect.hasAssertions();
+
+    const reachable = modulesReachableFrom('script.js');
+
+    // The walk found the graph, not just the entry point.
+    expect(reachable.length).toBeGreaterThan(10);
+    expect(reachable.filter((file) => !sw.SHELL_ASSETS.includes(`./${file}`))).toStrictEqual([]);
   });
 
   it('precaches a shell that exists on disk and includes every boot-critical asset', () => {

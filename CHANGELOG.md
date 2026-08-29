@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-29 chore(service-management): reload the designer when its files change [JUM-729] - Eduardo Almeida
 - 2026-08-29 fix(service-management): warn about field names the generator must quote [JUM-731] - Eduardo Almeida
 - 2026-08-29 [JUM-732][Fix] Name every control in the generated field rows (#282) - Eduardo A.
 - 2026-08-29 fix(service-management): name the runtime env fields explicitly [JUM-732] - Eduardo A.

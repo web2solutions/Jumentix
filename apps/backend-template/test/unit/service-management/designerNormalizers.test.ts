@@ -174,6 +174,10 @@ describe('designer normalisers (JUM-470)', () => {
           toCardinality: 'N',
           fromAnchorSide: 'top',
           toAnchorSide: 'bottom',
+          // JUM-729 follow-up: a link that names the columns it joins survives the
+          // round trip with those names intact.
+          fromField: 'organizationId',
+          toField: 'id',
           anchorBehavior: 'center',
           bendX: 5,
           bendY: 6,
@@ -191,7 +195,9 @@ describe('designer normalisers (JUM-470)', () => {
           edgeStyle: 'orthogonal',
           modelCheckMinSeverity: 'warn',
           exportBlockCritical: false,
-          largeCanvasMode: true
+          largeCanvasMode: true,
+          sidebarGroup: 'quality',
+          sidebarOpen: true
         }
       };
       const once = normalizeStatePayload(input);

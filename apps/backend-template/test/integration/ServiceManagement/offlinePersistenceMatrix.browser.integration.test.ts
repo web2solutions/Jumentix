@@ -56,6 +56,8 @@ import {
   envFileContent,
   startServer,
   staticRoot,
+  clickInPanels,
+  openDesignerPanels,
   stopServer,
   waitForServer
 } from './serverHarness';
@@ -249,8 +251,9 @@ async function waitForHealthyBoot(page: Page) {
 
 /** Add a domain through the real UI and wait until the write is durable. */
 async function addDomainThroughUi(page: Page, name: string) {
+  await openDesignerPanels(page, '#domain-name-input');
   await page.fill('#domain-name-input', name);
-  await page.click('#add-domain-btn');
+  await clickInPanels(page, '#add-domain-btn');
   await page.waitForFunction(
     (domainName) => new Promise((resolve) => {
       const request = indexedDB.open('service-management');
@@ -707,8 +710,9 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       // An edit in this session is doomed: there is nothing behind the store
       // to write to. The startup declaration above is the user-facing warning
       // for this environment; persistence is proven by the reload below.
+      await openDesignerPanels(page, '#domain-name-input');
       await page.fill('#domain-name-input', 'DoomedDomain');
-      await page.click('#add-domain-btn');
+      await clickInPanels(page, '#add-domain-btn');
 
       // Proof the edit was never silently persisted: a fresh page on the same
       // origin loses it and the declared state recurs instead of a phantom
@@ -955,7 +959,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
 
       // The backup/export path is reachable from the warned session.
       const exportDownload = page.waitForEvent('download', { timeout: 15000 });
-      await page.click('#export-json-btn');
+      await clickInPanels(page, '#export-json-btn');
       await exportDownload;
       expect(downloads).toContain('domain-designer.json');
 
@@ -970,8 +974,9 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
         + '   retryable: false'
         + ' }'
         + '}');
+      await openDesignerPanels(page, '#domain-name-input');
       await page.fill('#domain-name-input', 'QuotaDoomedDomain');
-      await page.click('#add-domain-btn');
+      await clickInPanels(page, '#add-domain-btn');
       // No silent acceptance: JUM-485's save-outcome hook surfaces the
       // unconfirmed save and reconciles by read-back.
       await waitForStatusLogged(page, 'could not be confirmed', 45000);

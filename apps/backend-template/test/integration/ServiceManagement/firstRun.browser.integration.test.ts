@@ -26,6 +26,8 @@ import {
   cleanupTempConfigDir,
   envFileContent,
   startServer,
+  clickInPanels,
+  openDesignerPanels,
   stopServer,
   waitForServer
 } from './serverHarness';
@@ -136,7 +138,7 @@ describe('serviceManagement first-run experience (JUM-548)', () => {
     // error-severity issue on it.
     const [download] = await Promise.all([
       page.waitForEvent('download'),
-      page.click('#export-json-btn')
+      clickInPanels(page, '#export-json-btn')
     ]);
     expect(download.suggestedFilename()).toBe('domain-designer.json');
     await context.close();
@@ -150,8 +152,9 @@ describe('serviceManagement first-run experience (JUM-548)', () => {
 
     // Existing work: the sample plus the user's own domain.
     await page.click('#domain-designer-empty-load-sample-btn');
+    await openDesignerPanels(page, '#domain-name-input');
     await page.fill('#domain-name-input', 'Mine');
-    await page.click('#add-domain-btn');
+    await clickInPanels(page, '#add-domain-btn');
     let domainListText = await page.$eval('#domain-list', (el) => el.textContent || '');
     expect(domainListText).toContain('Mine');
 
@@ -159,7 +162,7 @@ describe('serviceManagement first-run experience (JUM-548)', () => {
     page.once('dialog', (dialog) => {
       dialog.dismiss().catch(() => {});
     });
-    await page.click('#load-sample-btn');
+    await clickInPanels(page, '#load-sample-btn');
     await page.waitForTimeout(300);
     domainListText = await page.$eval('#domain-list', (el) => el.textContent || '');
     expect(domainListText).toContain('Mine');
@@ -170,7 +173,7 @@ describe('serviceManagement first-run experience (JUM-548)', () => {
     page.once('dialog', (dialog) => {
       dialog.accept().catch(() => {});
     });
-    await page.click('#load-sample-btn');
+    await clickInPanels(page, '#load-sample-btn');
     await page.waitForTimeout(300);
     domainListText = await page.$eval('#domain-list', (el) => el.textContent || '');
     expect(domainListText).not.toContain('Mine');

@@ -51,7 +51,7 @@
 
 /* eslint-env serviceworker, node */
 
-const SHELL_VERSION = '0.5.0';
+const SHELL_VERSION = '0.6.0';
 
 // Prefix shared with src/pwa/pwaShell.js (the page-side reset deletes by
 // prefix). The two copies cannot import each other — a classic worker has no
@@ -89,6 +89,7 @@ const SHELL_ASSETS = [
   './vendor/designer-core/model/deployCapabilityMatrix.js',
   './vendor/designer-core/model/interfaceFrameworkMatrix.js',
   './vendor/designer-core/model/modelQueries.js',
+  './vendor/designer-core/model/propertyKeys.js',
   './vendor/designer-core/model/rbacContract.js',
   './vendor/designer-core/model/sampleModel.js',
   './vendor/designer-core/packages/packageVersioning.js',
@@ -108,7 +109,10 @@ const SHELL_ASSETS = [
   './src/store/canaMigration.js',
   './src/store/designerStoreFactory.js',
   './src/ui/canvas.js',
+  './src/ui/canvasImage.js',
+  './src/ui/contextMenu.js',
   './src/ui/inspectors.js',
+  './src/ui/sidebarGroups.js',
   './src/ui/tabs.js',
   // The vendored Cana browser bundle (JUM-484) — the designer's sole store
   // crosses the import map to this module at boot, so the offline shell is

@@ -35,6 +35,29 @@ import {
 } from '../model/deployCapabilityMatrix.js';
 
 export const DOMAIN_COLORS = ['#60a5fa', '#34d399', '#f59e0b', '#f472b6', '#22d3ee', '#a78bfa', '#fb7185', '#84cc16'];
+/*
+ * Domain box geometry (JUM-729 follow-up).
+ *
+ * The domain was a fixed 520x280 box in CSS, and the canvas clamped entities
+ * against those two numbers written out by hand in two different files. A
+ * domain that outgrew its box could not be made bigger, so entities piled up
+ * against an invisible wall and the diagram stopped matching the model.
+ *
+ * The size now lives in the state, defaulted to what the CSS drew, so an older
+ * saved model opens exactly as it did. The minimums are the smallest box that
+ * still shows a header and one entity.
+ */
+export const DOMAIN_DEFAULT_WIDTH = 520;
+export const DOMAIN_DEFAULT_HEIGHT = 280;
+export const DOMAIN_MIN_WIDTH = 240;
+export const DOMAIN_MIN_HEIGHT = 160;
+/** Header strip above `.domain-body`, where entities are positioned. */
+export const DOMAIN_HEADER_HEIGHT = 50;
+// Widened for the editable field rows (JUM-729 follow-up): a name, a type select and
+// three toggles do not fit the 190px the read-only text line needed. Kept in
+// step with `.entity { width }` in styles.css.
+export const ENTITY_WIDTH = 260;
+
 export const FIELD_TYPES = ['string', 'integer', 'number', 'boolean', 'array', 'object', 'date', 'datetime', 'uuid'];
 
 /**
@@ -129,6 +152,25 @@ export function normalizeContractInput(contract, contractIndex = 0) {
   };
 }
 
+/**
+ * A canvas note (JUM-729 follow-up).
+ *
+ * The model records what the system *is*; a note records what the people
+ * modelling it need to remember while they work — an open question, a decision
+ * and its reason, a "this mirrors the billing contract". That belongs on the
+ * diagram, next to the thing it is about, and it deliberately does not enter
+ * the OAS export or the code generator: it is not part of the contract.
+ */
+export function normalizeNote(note, noteIndex) {
+  return {
+    id: note?.id || fallbackId('note', noteIndex),
+    text: String(note?.text || '').trim(),
+    x: Number.isFinite(note?.x) ? note.x : 60 + noteIndex * 24,
+    y: Number.isFinite(note?.y) ? note.y : 60 + noteIndex * 24,
+    color: /^#[0-9a-f]{6}$/i.test(note?.color || '') ? note.color : '#fde68a'
+  };
+}
+
 export function normalizeRelationship(relationship) {
   return {
     ...relationship,
@@ -137,6 +179,11 @@ export function normalizeRelationship(relationship) {
     toCardinality: relationship.toCardinality || '1',
     fromAnchorSide: ['top', 'right', 'bottom', 'left'].includes(relationship.fromAnchorSide) ? relationship.fromAnchorSide : null,
     toAnchorSide: ['top', 'right', 'bottom', 'left'].includes(relationship.toAnchorSide) ? relationship.toAnchorSide : null,
+    // JUM-729 follow-up: the columns the link joins. Additive — a relationship saved
+    // before field anchors existed normalises to null on both ends and is
+    // drawn from the entity side exactly as it was.
+    fromField: String(relationship.fromField || '').trim() || null,
+    toField: String(relationship.toField || '').trim() || null,
     anchorBehavior: relationship.anchorBehavior === 'center' ? 'center' : 'auto',
     bendX: normalizeOptionalNumber(relationship.bendX),
     bendY: normalizeOptionalNumber(relationship.bendY),
@@ -364,6 +411,17 @@ export function normalizeDomainInput(domain, domainIndex) {
     color: /^#[0-9a-f]{6}$/i.test(domain?.color || '') ? domain.color : DOMAIN_COLORS[domainIndex % DOMAIN_COLORS.length],
     x: Number.isFinite(domain?.x) ? domain.x : 120 + domainIndex * 40,
     y: Number.isFinite(domain?.y) ? domain.y : 90 + domainIndex * 30,
+    // JUM-729 follow-up: absent in every model saved before the domain box could be
+    // resized, so the default is the size the CSS used to draw.
+    // JUM-729 follow-up: collapsed domains keep their position and their links; only
+    // their contents are out of the way.
+    collapsed: Boolean(domain?.collapsed),
+    width: Number.isFinite(domain?.width)
+      ? Math.max(DOMAIN_MIN_WIDTH, domain.width)
+      : DOMAIN_DEFAULT_WIDTH,
+    height: Number.isFinite(domain?.height)
+      ? Math.max(DOMAIN_MIN_HEIGHT, domain.height)
+      : DOMAIN_DEFAULT_HEIGHT,
     context: {
       ubiquitousLanguage: String(domain?.context?.ubiquitousLanguage || '').trim(),
       ownerTeam: String(domain?.context?.ownerTeam || '').trim(),
@@ -428,6 +486,8 @@ export function normalizeStatePayload(parsed) {
   const relationships = relationshipsInput
     .map(normalizeRelationship)
     .filter((relationship) => entityIds.has(relationship.fromEntityId) && entityIds.has(relationship.toEntityId));
+  const notesInput = Array.isArray(parsed?.notes) ? parsed.notes : [];
+  const notes = notesInput.map(normalizeNote);
   const deploymentsInput = Array.isArray(parsed?.deployments) ? parsed.deployments : [];
   const deployments = deploymentsInput.map(normalizeDeploymentInput);
   const interfacesInput = Array.isArray(parsed?.interfaces) ? parsed.interfaces : [];
@@ -437,6 +497,15 @@ export function normalizeStatePayload(parsed) {
   const view = {
     zoom: clampZoom(parsed?.view?.zoom || 1),
     compactEntities: Boolean(parsed?.view?.compactEntities),
+    // JUM-729 follow-up: which sidebar group is on screen, so a reload does not throw
+    // the user back to Model in the middle of an inspector edit.
+    sidebarGroup: ['model', 'inspector', 'quality', 'share'].includes(parsed?.view?.sidebarGroup)
+      ? parsed.view.sidebarGroup
+      : 'model',
+    // JUM-729 follow-up: the panels overlay the canvas, so whether the drawer is open is
+    // part of the view. Closed by default — the canvas is what the designer is
+    // for, and a first run should show it whole.
+    sidebarOpen: Boolean(parsed?.view?.sidebarOpen),
     snapToGrid: parsed?.view?.snapToGrid !== false,
     edgeStyle: ['curved', 'orthogonal'].includes(parsed?.view?.edgeStyle) ? parsed.view.edgeStyle : 'curved',
     modelCheckMinSeverity: ['info', 'warn', 'error'].includes(parsed?.view?.modelCheckMinSeverity)
@@ -448,6 +517,7 @@ export function normalizeStatePayload(parsed) {
   return {
     domains,
     relationships,
+    notes,
     selectedDomainId: parsed?.selectedDomainId || domains[0]?.id || null,
     selectedEntityId: parsed?.selectedEntityId || null,
     selectedRelationshipId: parsed?.selectedRelationshipId || null,
@@ -464,6 +534,8 @@ export function createDefaultView() {
   return {
     zoom: 1,
     compactEntities: false,
+    sidebarGroup: 'model',
+    sidebarOpen: false,
     snapToGrid: true,
     edgeStyle: 'curved',
     modelCheckMinSeverity: 'info',
@@ -494,6 +566,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
   const state = {
     domains: [],
     relationships: [],
+    notes: [],
     selectedDomainId: null,
     selectedEntityId: null,
     selectedRelationshipId: null,
@@ -529,6 +602,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
     return JSON.parse(JSON.stringify({
       domains: state.domains,
       relationships: state.relationships,
+      notes: state.notes,
       selectedDomainId: state.selectedDomainId,
       selectedEntityId: state.selectedEntityId,
       selectedRelationshipId: state.selectedRelationshipId,
@@ -545,6 +619,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
   function applySnapshot(snapshot) {
     state.domains = snapshot.domains || [];
     state.relationships = (snapshot.relationships || []).map(normalizeRelationship);
+    state.notes = (snapshot.notes || []).map(normalizeNote);
     state.selectedDomainId = snapshot.selectedDomainId || state.domains[0]?.id || null;
     state.selectedEntityId = snapshot.selectedEntityId || null;
     state.selectedRelationshipId = snapshot.selectedRelationshipId || null;
@@ -595,6 +670,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
     const payload = {
       domains: state.domains,
       relationships: state.relationships,
+      notes: state.notes,
       selectedDomainId: state.selectedDomainId,
       selectedEntityId: state.selectedEntityId,
       selectedRelationshipId: state.selectedRelationshipId,

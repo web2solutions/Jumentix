@@ -29,7 +29,12 @@ body {
 
 .service-management-shell {
   display: grid;
-  grid-template-rows: auto auto 1fr;
+  /* The last track is `minmax(0, 1fr)` so the tab sections cannot push the page
+     taller than the viewport: an `fr` track keeps an automatic minimum, and the
+     canvas's 2200px inner surface was setting that minimum all the way up the
+     chain. Everything below scrolls inside `.canvas`, which is what its
+     `overflow: auto` was always for. */
+  grid-template-rows: auto auto minmax(0, 1fr);
   width: 100%;
   height: 100%;
 }
@@ -110,18 +115,226 @@ body {
   height: 100%;
 }
 
+/* JUM-729 follow-up: one column. The canvas gets the whole workspace and the panels
+   overlay it on demand, the way the JointJS data-modeling demo gives its paper
+   the full viewport under a single toolbar. */
 .app-shell {
+  position: relative;
   display: grid;
-  grid-template-columns: 320px 1fr;
+  /* `minmax(0, ...)` on both axes, not `1fr`: an `fr` track keeps an automatic
+     minimum, so the canvas's 3200x2200 inner surface set the shell's floor and
+     it grew past the viewport in both directions instead of scrolling inside
+     `.canvas`. The overlay drawer is sized from this box, so it grew with it
+     and its lower panels ended up off screen — visible to a stylesheet, out of
+     reach for a click. */
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
   width: 100%;
   height: 100%;
+  min-height: 0;
 }
 
 .sidebar {
+  position: absolute;
+  z-index: 30;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 320px;
   border-right: 1px solid var(--jtx-line);
   background: var(--jtx-surface);
   overflow-y: auto;
   padding: var(--jtx-space-3);
+  box-shadow: 6px 0 24px rgba(15, 23, 42, 0.12);
+  transform: translateX(-100%);
+  /* `visibility` is what takes the closed drawer out of focus order and out of
+     hit-testing; the delay lets it finish sliding out before it disappears. */
+  visibility: hidden;
+  transition: transform 140ms ease, visibility 0s linear 140ms;
+}
+
+.sidebar.open {
+  transform: none;
+  visibility: visible;
+  transition: transform 140ms ease, visibility 0s;
+}
+
+/* Reduced motion: the drawer still moves, it just stops animating. */
+@media (prefers-reduced-motion: reduce) {
+  .sidebar {
+    transition: none;
+  }
+}
+
+.workspace-create {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.workspace-create button {
+  padding: 2px 8px;
+  border: 1px solid var(--jtx-line);
+  border-radius: var(--jtx-radius-md);
+  background: var(--jtx-surface);
+  color: var(--jtx-ink);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.workspace-create button:hover:not(:disabled) {
+  border-color: var(--jtx-blue-500);
+  color: var(--jtx-blue-500);
+}
+
+.workspace-create button:disabled {
+  color: var(--jtx-ink-muted);
+  cursor: not-allowed;
+}
+
+#selection-status {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.workspace-search {
+  position: relative;
+}
+
+.workspace-search input {
+  width: 190px;
+  padding: 2px 8px;
+  border: 1px solid var(--jtx-line);
+  border-radius: var(--jtx-radius-md);
+  background: var(--jtx-surface);
+  color: var(--jtx-ink);
+  font-size: 12px;
+}
+
+.search-results {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 4px);
+  right: 0;
+  width: 320px;
+  max-height: 320px;
+  margin: 0;
+  padding: 4px;
+  overflow-y: auto;
+  list-style: none;
+  border: 1px solid var(--jtx-line);
+  border-radius: var(--jtx-radius-md);
+  background: var(--jtx-surface);
+  box-shadow: var(--jtx-shadow-md, 0 8px 24px rgba(15, 23, 42, 0.18));
+}
+
+.search-result {
+  display: block;
+  width: 100%;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: calc(var(--jtx-radius-md) - 3px);
+  background: transparent;
+  color: var(--jtx-ink);
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.search-result:hover {
+  background: color-mix(in srgb, var(--jtx-blue-500) 12%, transparent);
+}
+
+.search-result-field {
+  color: var(--jtx-ink-muted);
+}
+
+/* JUM-729 follow-up: a collapsed domain is its header. */
+.domain.collapsed .domain-body {
+  display: none;
+}
+
+.domain-collapse-btn {
+  margin-right: 6px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--jtx-ink-muted);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+/* JUM-729 follow-up: rubber-band selection. */
+.marquee {
+  position: absolute;
+  z-index: 20;
+  border: 1px solid var(--jtx-blue-500);
+  background: color-mix(in srgb, var(--jtx-blue-500) 12%, transparent);
+  pointer-events: none;
+}
+
+/* JUM-729 follow-up: alignment guides, drawn in the edge layer during a drag. */
+.alignment-guide {
+  stroke: #f472b6;
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+
+/* JUM-729 follow-up: canvas notes. */
+.canvas-note {
+  position: absolute;
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  width: 200px;
+  height: 120px;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  border-radius: var(--jtx-radius-md);
+  box-shadow: var(--jtx-shadow-sm);
+}
+
+.canvas-note-grip {
+  height: 14px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: var(--jtx-radius-md) var(--jtx-radius-md) 0 0;
+  background: rgba(15, 23, 42, 0.06);
+  cursor: move;
+}
+
+.canvas-note-text {
+  flex: 1;
+  padding: 6px;
+  border: 0;
+  background: transparent;
+  color: #0f172a;
+  font: inherit;
+  font-size: 11px;
+  resize: none;
+}
+
+.canvas-note-text:focus {
+  outline: 2px solid var(--jtx-blue-500);
+  outline-offset: -2px;
+}
+
+.panel-toggle {
+  padding: 2px 10px;
+  border: 1px solid var(--jtx-line);
+  border-radius: var(--jtx-radius-md);
+  background: var(--jtx-surface);
+  color: var(--jtx-ink);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.panel-toggle[aria-expanded="true"] {
+  border-color: var(--jtx-blue-500);
+  color: var(--jtx-blue-500);
 }
 
 .sidebar-header h1 {
@@ -328,13 +541,23 @@ body {
 .workspace {
   position: relative;
   display: grid;
-  grid-template-rows: 38px 1fr;
+  /* `minmax(0, 1fr)`, not `1fr`: a `1fr` track keeps an automatic minimum, so
+     the canvas's 2200px inner surface set the row's floor and the workspace
+     grew past the viewport instead of scrolling inside `.canvas`. The overlay
+     drawer is sized from that box, so its lower panels ended up off screen. */
+  grid-template-rows: 38px minmax(0, 1fr);
   height: 100%;
+  min-height: 0;
+}
+
+.workspace > .canvas {
+  min-height: 0;
 }
 
 .workspace-header {
   display: flex;
   align-items: center;
+  gap: var(--jtx-space-2);
   justify-content: space-between;
   padding: 0 var(--jtx-space-3);
   border-bottom: 1px solid var(--jtx-line);
@@ -387,6 +610,45 @@ body {
   overflow: auto;
 }
 
+/* JUM-729 follow-up: the sidebar's group bar. Sized like the app tab bar above it, one
+   step quieter, so it reads as a level below the main tabs. */
+.sidebar-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: var(--jtx-space-2);
+  border: 1px solid var(--jtx-line);
+  border-radius: var(--jtx-radius-md);
+  background: var(--jtx-surface-muted, var(--jtx-surface));
+}
+
+.sidebar-tab {
+  flex: 1;
+  padding: 6px 4px;
+  border: 0;
+  border-radius: calc(var(--jtx-radius-md) - 2px);
+  background: transparent;
+  color: var(--jtx-ink-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sidebar-tab:hover {
+  color: var(--jtx-ink);
+}
+
+.sidebar-tab.active {
+  background: var(--jtx-surface);
+  color: var(--jtx-ink);
+  box-shadow: var(--jtx-shadow-sm);
+}
+
+.sidebar-tab:focus-visible {
+  outline: 2px solid var(--jtx-blue-500);
+  outline-offset: 1px;
+}
+
 .canvas {
   position: relative;
   overflow: auto;
@@ -400,6 +662,9 @@ body {
   display: none;
 }
 
+/* The empty canvas is draggable, so it advertises that before the drag starts
+   (JUM-729 follow-up). Elements on top of it keep their own cursors. */
+.canvas,
 .canvas.space-mode {
   cursor: grab;
 }
@@ -451,8 +716,12 @@ body {
 
 .domain {
   position: absolute;
+  /* JUM-729 follow-up: width/height come from the model, set inline by the canvas. These
+     are the fallback for a domain rendered before that state exists. */
   width: 520px;
-  min-height: 280px;
+  height: 280px;
+  min-width: 240px;
+  min-height: 160px;
   border: 1px solid color-mix(in srgb, var(--domain-color) 65%, var(--jtx-ink-muted));
   background: color-mix(in srgb, var(--domain-color) 16%, var(--jtx-surface));
   border-radius: var(--jtx-radius-md);
@@ -485,12 +754,210 @@ body {
 
 .domain-body {
   position: relative;
-  min-height: 230px;
+  /* Fills whatever height the box has, minus the header, so a resized domain
+     gives its entities the room it gained (JUM-729 follow-up). */
+  height: calc(100% - 50px);
+  min-height: 110px;
+}
+
+/* JUM-729 follow-up: the per-element context menu. Rendered on `body` so it is never
+   clipped by the canvas's own overflow, and positioned in script. */
+.canvas-context-menu {
+  position: fixed;
+  z-index: 50;
+  min-width: 190px;
+  padding: 4px;
+  border: 1px solid var(--jtx-line);
+  border-radius: var(--jtx-radius-md);
+  background: var(--jtx-surface);
+  box-shadow: var(--jtx-shadow-md, 0 8px 24px rgba(15, 23, 42, 0.18));
+}
+
+.canvas-context-menu-title {
+  margin: 2px 8px 6px;
+  color: var(--jtx-ink-muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.canvas-context-menu hr {
+  margin: 4px 0;
+  border: 0;
+  border-top: 1px solid var(--jtx-line);
+}
+
+.canvas-context-menu-item {
+  display: block;
+  width: 100%;
+  padding: 5px 8px;
+  border: 0;
+  border-radius: calc(var(--jtx-radius-md) - 3px);
+  background: transparent;
+  color: var(--jtx-ink);
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.canvas-context-menu-item:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--jtx-blue-500) 12%, transparent);
+}
+
+.canvas-context-menu-item:disabled {
+  color: var(--jtx-ink-muted);
+  cursor: not-allowed;
+}
+
+.canvas-context-menu-item.danger {
+  color: #dc2626;
+}
+
+.canvas-context-menu-item.danger:hover:not(:disabled) {
+  background: color-mix(in srgb, #dc2626 12%, transparent);
+}
+
+/* JUM-729 follow-up: editable field rows, in the shape the JointJS data-modeling demo
+   uses — flag, name, type, flags, link handle — so a field is changed where it
+   is drawn instead of in a sidebar form. */
+.entity-field-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 1px 4px;
+}
+
+.entity-name-input {
+  flex: 1;
+  min-width: 0;
+  padding: 1px 3px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+}
+
+.field-name-input {
+  flex: 1;
+  min-width: 0;
+  padding: 1px 3px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 11px;
+}
+
+.entity-name-input:hover,
+.field-name-input:hover {
+  border-color: var(--jtx-line);
+}
+
+.entity-name-input:focus,
+.field-name-input:focus,
+.field-type-select:focus {
+  outline: 2px solid var(--jtx-blue-500);
+  outline-offset: -1px;
+  background: var(--jtx-surface);
+}
+
+.field-type-select {
+  max-width: 74px;
+  padding: 0 2px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--jtx-ink-muted);
+  font-size: 10px;
+}
+
+.field-type-select:hover {
+  border-color: var(--jtx-line);
+}
+
+.field-flag {
+  padding: 0 3px;
+  border: 1px solid var(--jtx-line);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--jtx-ink-muted);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 14px;
+  cursor: pointer;
+}
+
+.field-flag.on {
+  border-color: var(--jtx-blue-500);
+  background: color-mix(in srgb, var(--jtx-blue-500) 18%, transparent);
+  color: var(--jtx-blue-500);
+}
+
+.field-link-handle {
+  width: 10px;
+  height: 10px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  /* The demo's "coral edge": the one grab point on a row that starts a link. */
+  background: #fb7185;
+  cursor: crosshair;
+}
+
+.entity-field-add {
+  padding: 2px 4px 4px;
+}
+
+.entity-field-add button {
+  width: 100%;
+  padding: 2px;
+  border: 1px dashed var(--jtx-line);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--jtx-ink-muted);
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.entity-field-add button:hover {
+  color: var(--jtx-ink);
+  border-color: var(--jtx-ink-muted);
+}
+
+.domain-resize-handle {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background: linear-gradient(
+    135deg,
+    transparent 0 45%,
+    color-mix(in srgb, var(--domain-color) 70%, var(--jtx-ink-muted)) 45% 55%,
+    transparent 55% 70%,
+    color-mix(in srgb, var(--domain-color) 70%, var(--jtx-ink-muted)) 70% 80%,
+    transparent 80%
+  );
+  cursor: nwse-resize;
+}
+
+.domain-resize-handle:focus-visible {
+  outline: 2px solid var(--jtx-blue-500);
+  outline-offset: 1px;
 }
 
 .entity {
   position: absolute;
-  width: 190px;
+  /* JUM-729 follow-up: matches ENTITY_WIDTH in designer-core's state module, which the
+     canvas geometry uses to place anchors and clamp drags. */
+  width: 260px;
   border: 1px solid var(--jtx-line);
   border-radius: var(--jtx-radius-md);
   background: var(--jtx-surface);
