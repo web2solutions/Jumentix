@@ -1,4 +1,5 @@
 /* global describe, it, expect, beforeAll, afterAll */
+import type { Server } from 'node:http';
 import request from 'supertest';
 import { DerbyJsServer } from '@src/interface/HTTP/adapters/derby-js/DerbyJsServer';
 import { infraHandlers } from '@src/interface/HTTP/adapters/derby-js/handlers/infraHandlers';
@@ -12,6 +13,11 @@ import { AuthService } from '@src/modules/Users/service/AuthService';
 import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal';
 import { UserDataRepository, UserService } from '@src/modules/Users';
 import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
+import {
+  closeSupertestServer,
+  createSupertestServer,
+  supertestServerUrl
+} from '@test/helpers/listenForSupertest';
 
 /**
  * JUM-704 — this suite lives in `test/integration/Derby-JS/`, and now
@@ -49,6 +55,8 @@ const authService = AuthService.compile(
 );
 
 let listener: (req: unknown, res: unknown) => void;
+let server: Server;
+let serverUrl: string;
 
 describe('derby-js -> /localhost suite', () => {
   beforeAll(async () => {
@@ -66,9 +74,12 @@ describe('derby-js -> /localhost suite', () => {
       mutexService
     });
     listener = webServer.requestListener();
+    server = await createSupertestServer(listener as never);
+    serverUrl = supertestServerUrl(server);
   });
 
   afterAll(async () => {
+    await closeSupertestServer(server);
     await InMemoryDbClient.disconnect();
     await keyValueStorageClient.disconnect();
   });
@@ -76,7 +87,7 @@ describe('derby-js -> /localhost suite', () => {
   it('answers the root route through the adapter router', async () => {
     expect.hasAssertions();
 
-    const response = await request(listener as never)
+    const response = await request(serverUrl)
       .get('/')
       .set('Accept', 'application/json');
 
@@ -90,8 +101,8 @@ describe('derby-js -> /localhost suite', () => {
 
     // Asserting one id proves the adapter produced a string; asserting two
     // differ proves it produces one per request.
-    const first = await request(listener as never).get('/').set('Accept', 'application/json');
-    const second = await request(listener as never).get('/').set('Accept', 'application/json');
+    const first = await request(serverUrl).get('/').set('Accept', 'application/json');
+    const second = await request(serverUrl).get('/').set('Accept', 'application/json');
 
     expect(first.body.correlationId).not.toBe(second.body.correlationId);
   });
