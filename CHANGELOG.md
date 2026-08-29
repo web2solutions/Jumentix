@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-29 [JUM-579][Bug] Make review artifact uploads best-effort (#272) - Eduardo A.
 - 2026-08-29 fix(ci): make review artifacts best effort - Eduardo Almeida
 - 2026-08-29 [JUM-579][Bug] Gate project coverage before browser union (#271) - Eduardo A.
 - 2026-08-29 fix(ci): gate coverage before browser union - Eduardo Almeida
