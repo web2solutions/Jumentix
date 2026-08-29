@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-29 fix(ci): bootstrap Docker and Storybook release gates - Eduardo Almeida
 - 2026-08-29 [Release] Sync main ancestry into dev (#267) - Eduardo A.
 - 2026-08-29 chore(release): sync main ancestry into dev - Eduardo Almeida
 - 2026-08-29 test: retire branch coverage exception (JUM-721) (#265) - Eduardo A.
