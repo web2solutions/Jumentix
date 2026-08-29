@@ -83,30 +83,33 @@ Instale as dependências do workspace uma vez:
 rtk proxy bun install
 ```
 
-## 3. Bundles vendorizados — faça isso antes do primeiro boot
+## 3. Bundles vendorizados
 
-A aplicação é uma SPA sem build que resolve dois specifiers bare pelo import
-map do `index.html`. Os dois alvos são gitignorados e precisam ser gerados
-localmente antes do primeiro boot:
+A aplicação é uma SPA sem build que resolve dois specifiers bare pelo import map
+do `index.html`: `@jumentix/cana` e `@jumentix/designer-core/`. Os dois alvos
+ficam em `apps/service-management/vendor/`, são gitignorados e são gerados
+localmente.
+
+Os pontos de entrada de desenvolvimento geram para você — `dev:service-management`
+e os scripts `pm2:start:dev:*` rodam a etapa de vendor antes de subir o
+processo, então um clone novo sobe um designer funcional sem comando extra.
+
+Gere à mão quando subir o servidor diretamente, sem PM2:
 
 ```bash
-rtk proxy bun ci-cd/sync-service-management-cana-bundle.js
+rtk proxy bun run service-management:vendor
 ```
 
-```bash
-rtk proxy bun ci-cd/sync-service-management-designer-core.js
-```
-
-O primeiro vendoriza o bundle de navegador do Cana em
-`apps/service-management/vendor/cana/index.js`; o segundo espelha
+Esse único script escreve o bundle de navegador do Cana em
+`apps/service-management/vendor/cana/index.js` e espelha
 `packages/designer-core/src` em
 `apps/service-management/vendor/designer-core/`.
 
-Pular esta etapa é a falha de primeiro boot mais comum: a página carrega, o
-shell aparece e todos os painéis ficam inertes porque o grafo de módulos nunca
-resolve. As suítes de integração de navegador rodam os dois scripts antes de
-subir o servidor, então um bundle desatualizado nunca se disfarça de falha do
-designer no CI — mas uma execução manual precisa fazer isso explicitamente.
+Sem os bundles, a página carrega, o shell aparece e todos os painéis ficam
+inertes porque o grafo de módulos nunca resolve, com 404 repetidos de
+`/vendor/...` no console do navegador. As suítes de integração de navegador
+geram os bundles antes de subir o servidor, então um bundle desatualizado nunca
+se disfarça de falha do designer no CI.
 
 ## 4. Executando a aplicação
 
@@ -638,8 +641,9 @@ flowchart LR
 
 ### A página carrega mas todos os painéis ficam inertes
 
-Faltam os bundles vendorizados. Rode os dois scripts de sync da seção 3 e
-recarregue. Nesse estado o console do navegador mostra 404 repetidos para
+Faltam os bundles vendorizados. Rode `bun run service-management:vendor` e
+recarregue. Os pontos de entrada de desenvolvimento fazem isso por você; subir o
+`server.js` diretamente, não. Nesse estado o console do navegador mostra 404 repetidos para
 `/vendor/...`.
 
 ### O servidor sai imediatamente
