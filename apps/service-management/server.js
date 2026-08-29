@@ -557,8 +557,105 @@ function logMutation(environment, changedKeys) {
   console.log(`[${timestamp}] /api/runtime/env mutation: environment=${environment} keys=${changedKeys.join(',')}`);
 }
 
+/**
+ * Dev-only live reload (SSE).
+ *
+ * The designer is edited by reloading the page after every change, and the
+ * page carries unsaved canvas state — so "did my change land?" was answered by
+ * a manual reload that also threw away what was on screen. This pushes one
+ * event when a served file changes and lets the page reload itself.
+ *
+ * It is a development affordance and stays out of anything else: the endpoint
+ * is not registered, the watcher is not started and nothing is injected into
+ * `index.html` unless `NODE_ENV` is dev/development. Setting
+ * `JUMENTIX_SERVICE_MANAGEMENT_LIVE_RELOAD=0` turns it off there too.
+ */
+const liveReloadEnabled = (nodeEnvironment === 'dev' || nodeEnvironment === 'development')
+  && String(process.env.JUMENTIX_SERVICE_MANAGEMENT_LIVE_RELOAD || '').trim() !== '0';
+const liveReloadPath = '/dev/live-reload';
+const liveReloadClients = new Set();
+const liveReloadSnippet = `<script>
+(function () {
+  var connected = false;
+  function connect() {
+    var source = new EventSource(${JSON.stringify(liveReloadPath)});
+    source.addEventListener('reload', function () { window.location.reload(); });
+    source.addEventListener('open', function () {
+      // Reconnecting means the server restarted underneath us — pm2 watches
+      // this tree and restarts on every save, which kills the stream before it
+      // can push anything. Without reloading here the page kept running the
+      // code it had loaded before the change, which is exactly the "I am not
+      // seeing the new version" failure this is meant to remove.
+      if (connected) { window.location.reload(); return; }
+      connected = true;
+    });
+    source.addEventListener('error', function () {
+      // The browser retries an EventSource on its own, but not once the server
+      // has gone away long enough for it to give up. Re-arm so a restart that
+      // takes a while still ends with the page reloading.
+      if (source.readyState === 2) { source.close(); setTimeout(connect, 400); }
+    });
+  }
+  connect();
+})();
+</script>`;
+
+let liveReloadTimer = null;
+function notifyLiveReloadClients() {
+  // Debounced: one save can emit several watcher events, and a bundle sync
+  // rewrites twenty files at once — each would otherwise be its own reload.
+  if (liveReloadTimer) clearTimeout(liveReloadTimer);
+  liveReloadTimer = setTimeout(() => {
+    liveReloadTimer = null;
+    liveReloadClients.forEach((client) => {
+      client.write('event: reload\ndata: 1\n\n');
+    });
+  }, 120);
+}
+
+function startLiveReloadWatcher() {
+  try {
+    fs.watch(rootDirectory, { recursive: true }, (_eventType, fileName) => {
+      // The manifest is a boot-time scan; a new file has to enter it before it
+      // can be served, and the page is about to ask for it.
+      if (staticManifestRefreshEnabled) refreshStaticManifest();
+      if (fileName) notifyLiveReloadClients();
+    });
+  } catch (error) {
+    // A watcher that cannot start is not a reason to refuse to serve the app.
+    // eslint-disable-next-line no-console
+    console.warn(`Live reload disabled: ${error.message}`);
+  }
+}
+
+function openLiveReloadStream(request, response) {
+  response.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    Connection: 'keep-alive'
+  });
+  response.write('retry: 500\n\n');
+  liveReloadClients.add(response);
+  request.on('close', () => {
+    liveReloadClients.delete(response);
+  });
+}
+
+/** `index.html` with the reload client appended, in dev only. */
+function withLiveReloadSnippet(content) {
+  const html = content.toString('utf8');
+  if (html.includes(liveReloadPath)) return html;
+  return html.includes('</body>')
+    ? html.replace('</body>', `${liveReloadSnippet}\n</body>`)
+    : `${html}${liveReloadSnippet}`;
+}
+
 const server = http.createServer((request, response) => {
   const requestUrl = new URL(request.url || '/', `http://${host}:${port}`);
+  if (liveReloadEnabled && request.method === 'GET' && requestUrl.pathname === liveReloadPath) {
+    openLiveReloadStream(request, response);
+    return;
+  }
   if (request.method === 'GET' && requestUrl.pathname === '/api/runtime/env') {
     try {
       const environment = requestUrl.searchParams.get('environment') || process.env.NODE_ENV || 'dev';
@@ -660,11 +757,16 @@ const server = http.createServer((request, response) => {
     const extension = path.extname(filePath).toLowerCase();
     response.setHeader('Content-Type', contentTypeByExtension[extension] || 'application/octet-stream');
     response.statusCode = 200;
+    if (liveReloadEnabled && relativePath === 'index.html') {
+      response.end(withLiveReloadSnippet(content));
+      return;
+    }
     response.end(content);
   });
 });
 
 server.listen(port, host, () => {
+  if (liveReloadEnabled) startLiveReloadWatcher();
   // eslint-disable-next-line no-console
   console.log(`Service Management listening on http://${host}:${port}`);
 });
