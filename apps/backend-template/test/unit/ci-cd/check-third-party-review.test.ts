@@ -189,4 +189,47 @@ describe('third-party review contract', () => {
     });
     expect(run(root).output).toContain('Enforce scanner outcomes');
   });
+
+  it('fails when the review job uses JavaScript Actions', () => {
+    expect.hasAssertions();
+
+    const root = fixture((directory) => {
+      addStepToReviewJob(directory, '      - uses: actions/upload-artifact@v7\n');
+    });
+
+    expect(run(root).output).toContain('must avoid JavaScript Actions');
+  });
+
+  it('fails when scanner evidence listing is removed', () => {
+    expect.hasAssertions();
+
+    const root = fixture((directory) => {
+      const file = path.join(directory, contracts[0]);
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('List review evidence', 'Hide review evidence'));
+    });
+
+    expect(run(root).output).toContain('List review evidence');
+  });
+
+  it('fails when scanner enforcement depends on artifact upload success', () => {
+    expect.hasAssertions();
+
+    const root = fixture((directory) => {
+      const file = path.join(directory, contracts[0]);
+      const alwaysEnforce = [
+        '      - name: Enforce scanner outcomes',
+        '        if: always()',
+        ''
+      ].join('\n');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace(
+          alwaysEnforce,
+          '      - name: Enforce scanner outcomes\n'
+        )
+      );
+    });
+
+    expect(run(root).output).toContain('scanner enforcement must run even when evidence upload fails');
+  });
 });

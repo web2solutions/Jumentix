@@ -30,12 +30,12 @@ if (!fs.existsSync(workflowPath)) {
     /pull_request:/,
     /workflow_dispatch:/,
     /schedule:/,
-    /FORCE_JAVASCRIPT_ACTIONS_TO_NODE24:\s*'true'/,
     /runs-on:\s*\[self-hosted,\s*jumentix\]/,
-    /uses:\s*actions\/checkout@v7/,
-    /uses:\s*actions\/setup-node@v7/,
-    /node-version:\s*22/,
-    /uses:\s*actions\/upload-artifact@v7/,
+    /Checkout repository without JavaScript Actions/,
+    /https:\/\/x-access-token:\$\{GITHUB_TOKEN\}@github\.com\/\$\{GITHUB_REPOSITORY\}\.git/,
+    /git -c credential\.helper= fetch --no-tags --prune origin/,
+    /Use local Node\.js 22/,
+    /node --version \| grep -E '\^v22\\\.'/,
     /branch-gate:/,
     /third-party-review:/,
     /workspace-builds:/,
@@ -73,6 +73,7 @@ if (!fs.existsSync(workflowPath)) {
     /website:test:cypress/,
     /gitleaks\.sarif/,
     /semgrep\.sarif/,
+    /List review evidence/,
     /Enforce scanner outcomes/,
     /Install verified Codecov CLI/,
     /Upload coverage to Codecov/,
@@ -115,6 +116,10 @@ if (!fs.existsSync(workflowPath)) {
 
   if (/runs-on:\s*ubuntu-latest/.test(contents)) {
     failures.push('.github/workflows/ci.yml must use the repository-owned self-hosted runner, not ubuntu-latest');
+  }
+
+  if (/uses:\s*actions\//.test(contents)) {
+    failures.push('.github/workflows/ci.yml must avoid JavaScript GitHub Actions on the self-hosted runner');
   }
 }
 
