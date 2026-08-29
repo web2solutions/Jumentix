@@ -57,6 +57,7 @@ if (!fs.existsSync(workflowPath)) {
     /open -ga Docker/,
     /bun install --frozen-lockfile/,
     /bun run mono:build/,
+    /mono:build:deps/,
     /bun run mono:test/,
     /bun run ci:integration/,
     /website:deps:build/,
