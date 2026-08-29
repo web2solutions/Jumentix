@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-08-29 fix(ci): gate coverage before browser union - Eduardo Almeida
+- 2026-08-29 [JUM-579][Bug] Stabilize release website, harness, and coverage gates (#270) - Eduardo A.
 - 2026-08-29 fix(ci): stabilize release website and harness gates - Eduardo Almeida
 - 2026-08-29 [JUM-579][Bug] Prime Cana before monorepo builds (#269) - Eduardo A.
 - 2026-08-29 fix(ci): prime Cana before monorepo builds - Eduardo Almeida

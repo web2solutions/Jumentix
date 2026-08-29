@@ -167,11 +167,12 @@ describe('ci-cd guards, no injection (JUM-681)', () => {
   // runs because of it. A gate whose floor drifts is a gate that fails at
   // random (Requirement 134). The reader is covered with an injected path in
   // `check-coverage-thresholds.test.ts`, where it is deterministic.
-  it('validates coverage against the real thresholds and exceptions', () => {
+  it('surfaces stale live coverage exceptions against the real defaults', () => {
     expect.hasAssertions();
 
     // No thresholds and no exception register passed: both defaults, which is
-    // how the CLI runs it.
+    // how the CLI runs it. A perfect metric must ask the owner to remove a live
+    // exception rather than silently letting the ratchet linger.
     const perfect = {
       statements: { found: 100, hit: 100 },
       lines: { found: 100, hit: 100 },
@@ -181,7 +182,11 @@ describe('ci-cd guards, no injection (JUM-681)', () => {
 
     const { failures } = guardDefaultsCoverage.validateCoverage(perfect);
 
-    expect(failures).toStrictEqual([]);
+    expect(failures).toStrictEqual([
+      'branches: 100.00% now meets the 98% threshold, but an exception is still recorded '
+        + '(JUM-579, since 2026-08-29). Remove it from ACCEPTED_BELOW_THRESHOLD and close '
+        + 'the issue.'
+    ]);
   });
 
   it('checks the real manifest for override integrity', () => {
