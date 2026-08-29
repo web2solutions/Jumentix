@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-08-29 [JUM-726][Fix] Use pinned Bun during GitHub Actions installs (#263) - Eduardo A.
+- 2026-08-29 fix(ci): use pinned Bun during workflow installs (JUM-726) - Eduardo Almeida
 - 2026-08-29 [JUM-687][Fix] Supertest listener churn behind the intermittent 404s, plus JUM-721 coverage (#256) - Eduardo A.
 - 2026-08-29 Merge remote-tracking branch 'origin/dev' into claude/governance/JUM-721-branch-coverage - Eduardo Almeida
 - 2026-08-29 [JUM-725][Chore] Consolidate August 2026 Dependabot updates (#262) - Eduardo A.
