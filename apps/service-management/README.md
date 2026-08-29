@@ -19,6 +19,7 @@
 
 Detailed feature usage:
 
+- [Using the Service Manager and the Domain Designer](../../documentation/md/guides/USING-SERVICE-MANAGER-AND-DOMAIN-DESIGNER.md)
 - [Domain Designer Features and Usage](../../documentation/md/DOMAIN-DESIGNER-FEATURES-AND-USAGE.md)
 - [Module Architecture and IDesignerStore Port Contract](../../documentation/md/SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.md)
 - [Contract Parity Guarantees](../../documentation/md/SERVICE-MANAGEMENT-CONTRACT-PARITY.md)

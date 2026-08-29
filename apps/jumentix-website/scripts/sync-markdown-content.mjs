@@ -18,6 +18,15 @@ const appRoot = path.resolve(scriptDir, '..');
 const monorepoRoot = path.resolve(appRoot, '../..');
 const sourcesPath = path.join(appRoot, 'config', 'content-sources.json');
 const contentRoot = path.join(appRoot, 'content');
+// Documentation images (JUM-727). Repository markdown references images by a
+// path relative to itself, which keeps the file readable in the repository.
+// The site cannot serve that path, so every referenced image inside the
+// monorepo is copied under public/<assetsDirectoryName>/<repo-relative-path>
+// and the reference is rewritten to the served URL. The copy is regenerated on
+// every sync and gitignored: the repository markdown stays the single source.
+const publicRoot = path.join(appRoot, 'public');
+const assetsDirectoryName = 'docs-assets';
+const assetsRoot = path.join(publicRoot, assetsDirectoryName);
 
 
 /**
@@ -152,6 +161,89 @@ async function resolveMarkdownTarget(sourceFile, hrefPath) {
     }
   }
   return undefined;
+}
+
+/**
+ * MDX evaluates `{...}` as a JavaScript expression. A Markdown inline code span
+ * protects braces only while the span stays on one line: when a source document
+ * wraps `` `{ package, version }` `` across a line break, MDX parses the braces
+ * as an expression and fails on reserved words. Repository documents wrap at 80
+ * columns, so this is a formatting artifact of the source, not a content
+ * problem — joining the continuation line restores the single-line span without
+ * changing a rendered character (Markdown treats a single newline inside a
+ * paragraph as a space).
+ *
+ * Table rows are left alone: joining them would merge cells.
+ */
+function joinWrappedInlineCodeSpans(markdown, sourceFile) {
+  const lines = markdown.split('\n');
+  const output = [];
+  let insideFence = false;
+
+  for (let index = 0; index < lines.length; index += 1) {
+    let line = lines[index];
+
+    if (line.trim().startsWith('```')) {
+      insideFence = !insideFence;
+      output.push(line);
+      continue;
+    }
+
+    if (insideFence || line.trimStart().startsWith('|')) {
+      output.push(line);
+      continue;
+    }
+
+    while ((line.split('`').length - 1) % 2 === 1) {
+      const next = lines[index + 1];
+      if (next === undefined || next.trim() === '' || next.trim().startsWith('```')) {
+        throw new Error(`Unterminated inline code span in ${sourceFile}: ${line.trim()}`);
+      }
+      line = `${line} ${next.trim()}`;
+      index += 1;
+    }
+
+    output.push(line);
+  }
+
+  return output.join('\n');
+}
+
+async function copyDocumentationImages(markdown, sourceFile) {
+  const imagePattern = /!\[([^\]]*)\]\(([^)\s]+)(\s+"[^"]*")?\)/g;
+  const replacements = new Map();
+
+  for (const match of markdown.matchAll(imagePattern)) {
+    const href = match[2];
+    if (replacements.has(href) || href.startsWith('/') || /^[a-z][a-z\d+.-]*:/i.test(href)) {
+      continue;
+    }
+
+    const absoluteSource = path.resolve(path.dirname(sourceFile), decodeURIComponent(href));
+    const relativeToRepository = path.relative(monorepoRoot, absoluteSource);
+    // Fail closed on anything outside the monorepo: a published page must never
+    // reference a file the repository does not own.
+    if (relativeToRepository.startsWith('..') || path.isAbsolute(relativeToRepository)) {
+      throw new Error(`Documentation image ${href} in ${sourceFile} resolves outside the repository`);
+    }
+
+    try {
+      if (!(await fs.stat(absoluteSource)).isFile()) continue;
+    } catch {
+      throw new Error(`Documentation image ${href} in ${sourceFile} does not exist`);
+    }
+
+    const destination = path.join(assetsRoot, relativeToRepository);
+    await fs.mkdir(path.dirname(destination), { recursive: true });
+    await fs.copyFile(absoluteSource, destination);
+    replacements.set(href, `/${assetsDirectoryName}/${relativeToRepository.split(path.sep).join('/')}`);
+  }
+
+  if (replacements.size === 0) return markdown;
+
+  return markdown.replace(imagePattern, (fullMatch, alt, href, title) =>
+    (replacements.has(href) ? `![${alt}](${replacements.get(href)}${title || ''})` : fullMatch)
+  );
 }
 
 async function rewriteRepositoryLinks(markdown, sourceFile, routesBySource) {
@@ -322,7 +414,13 @@ async function writeGeneratedDoc(record, routesBySource) {
     raw = toCanaConsumerMarkdown(raw, { locale: record.locale });
   }
   const body = sanitizeDocBody(
-    await rewriteRepositoryLinks(raw, record.source, routesBySource)
+    joinWrappedInlineCodeSpans(
+      await copyDocumentationImages(
+        await rewriteRepositoryLinks(raw, record.source, routesBySource),
+        record.source
+      ),
+      record.source
+    )
   );
   if (isCanaPublishedSource(record.source)) {
     assertNoCanaContentLeaks(body, record.source);
@@ -575,6 +673,9 @@ async function main() {
   const routesBySource = new Map(
     records.map((record) => [record.source, { route: recordRoute(record), locale: record.locale }])
   );
+
+  await fs.rm(assetsRoot, { recursive: true, force: true });
+  await fs.mkdir(assetsRoot, { recursive: true });
 
   for (const settings of Object.values(localeConfig)) {
     await fs.rm(settings.outputDir, { recursive: true, force: true });

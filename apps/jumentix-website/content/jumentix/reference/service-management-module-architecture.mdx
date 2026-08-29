@@ -1,0 +1,467 @@
+---
+title: "Service Management Module Architecture"
+description: "Module boundaries and the IDesignerStore port contract behind the designer."
+---
+
+# Service Management Module Architecture and IDesignerStore Port Contract
+
+This is the E3 document of the Service Management E1–E8 documentation chain
+([JUM-473](https://linear.app/jumentix/issue/JUM-473/docs-e3-documentation-module-architecture-and-storage-port-contract)).
+It documents two things, exactly as the code behaves today:
+
+1. The module architecture of `apps/service-management` as delivered by
+   [JUM-468](https://linear.app/jumentix/issue/JUM-468/refactor-extract-statepersistence-core-as-es-module-behind)
+   (merged in PR #86).
+2. The `IDesignerStore` storage port contract — precisely enough that a new
+   adapter can be implemented from this document alone.
+
+Every behavioural claim below is pinned by the source modules and by the unit
+suites
+`designerStore.test.ts`
+and
+`designerState.test.ts`.
+
+## Audience
+
+Most of the E-chain documents the component for its maintainers. This one also
+has two external readers who need it before their own work starts:
+
+- **H3's `CanaDesignerStore`**
+  ([JUM-483](https://linear.app/jumentix/issue/JUM-483/feature-canadesignerstore-idesignerstore-adapter-over-the-cana-client))
+  implements `IDesignerStore` against the Cana client. Its author needs the
+  port's exact semantics: what `load()` returns when nothing is stored, what
+  `save()` guarantees about durability, and how the port expresses "storage
+  unavailable" and "storage lost". Those states exist in the port precisely
+  because Cana will produce them (Cana
+  [JUM-560](https://linear.app/jumentix/issue/JUM-560/feature-storage-quota-persistence-and-eviction-policy)
+  — storage quota, persistence and eviction policy).
+- **[JUM-493](https://linear.app/jumentix/issue/JUM-493/feature-publish-designer-core-as-jumentix-package-xpertminds-org-dry)**
+  publishes the designer core as an `@jumentix` package. A published package's
+  module boundaries are its public API, so this document is the reference an
+  external consumer reads.
+
+## Module architecture (post-PR #86)
+
+The application is a zero-build vanilla SPA. `index.html` loads `script.js` as
+an ES module; everything else is reached through static imports.
+
+### The layering convention
+
+The architecture is a single rule: **pure logic lives in DOM-free modules;
+DOM access lives in the entry module.** The DOM-free set is what can be
+unit-tested under Bun/Node with no DOM shim — and, since JUM-493, its
+canonical home is the publishable package: the core modules (state, model,
+validation, exporters, importers, packages, codegen and the
+`IDesignerStore` port) live in `packages/designer-core/src/`, while the app's
+own `src/` keeps the DOM glue and the Cana-facing adapters. The SPA consumes
+the package through `@jumentix/designer-core/…` specifiers (import map →
+vendored tree in the browser; tsconfig paths / Jest mapper in tests). The
+boundary is enforced by proof on both sides: `dom-free.test.ts` AST-scans the
+built package for DOM globals, and the designer unit suites exercise the
+canonical sources directly. The set has grown with each extraction and store
+landing; the rule has not.
+
+### Current modules
+
+| Module | Layer | Role |
+| --- | --- | --- |
+| `apps/service-management/script.js` | DOM-bound | Entry module: event wiring, rendering, import/export flows. Owns every `document`/`window` interaction. |
+| `packages/designer-core/src/state/designerState.js` | DOM-free | State and persistence core: the state object, the `normalizeStatePayload` normalisation chain, snapshot/apply, history (undo/redo), `loadState`, `buildModelSnapshot`. |
+| `packages/designer-core/src/store/IDesignerStore.js` | DOM-free, dependency-free | The storage port: contract + base class. Importable under any JavaScript runtime. |
+| `apps/service-management/src/store/CanaDesignerStore.js` | DOM-free | The sole `IDesignerStore` adapter (JUM-483), over the Cana client — injected, never imported. |
+| `apps/service-management/src/store/designerStoreFactory.js` | DOM-free | The store construction seam: `createDesignerStore()` always returns `CanaDesignerStore`; the Cana client is the only variable. |
+| `apps/service-management/src/store/canaMigration.js` | DOM-free | JUM-484's one-way localStorage → Cana migration (run at boot before any state load) and the declared storage-environment states. |
+| `apps/service-management/src/state/designerSync.js` | DOM-free | JUM-485's multi-tab sync engine: subscribes to Cana's ordered write events, bridges them across tabs over `BroadcastChannel`, and reconciles remote changes with the local undo/redo history, the pending local edit and the selection. |
+
+The dependency direction is one-way: `script.js` → `src/state/designerState.js`
+→ (port) `src/store/IDesignerStore.js` ← `src/store/CanaDesignerStore.js`
+(built by `src/store/designerStoreFactory.js`).
+The state core imports nothing DOM-bound and nothing store-concrete — it knows
+only the port.
+
+> **In flight — [JUM-469](https://linear.app/jumentix/issue/JUM-469/refactor-modularize-designer-canvas-validation-exporters-importers).**
+> The exporters, importers, validation, canvas and tabs modules are being
+> extracted in parallel and are not part of this document's module table. They
+> land via JUM-469 and extend the same convention: DOM-free logic in modules
+> under `src/`, DOM-bound wiring in the entry module. When they merge, this
+> table grows; the layering rule does not change.
+
+### The injection pattern
+
+`script.js` constructs the core once, at module top level:
+
+```js
+const store = createDesignerStore();
+const designerState = createDesignerState({
+  store,
+  seed,
+  render,
+  runtimeEnvDefaults: RUNTIME_ENV_EDITABLE_DEFAULTS
+});
+```
+
+`createDesignerState({ store, seed, render, runtimeEnvDefaults })` takes its
+three impure collaborators as injections:
+
+- **`store`** — an `IDesignerStore` adapter. All persistence crosses this
+  boundary; the core never touches `localStorage` itself.
+- **`seed`** — a callback that populates `state` with the default template.
+  The core calls it on first run and on recovery, but does not know what the
+  template is.
+- **`render`** — a callback invoked after undo/redo restores a snapshot, so
+  the core can trigger a re-render without importing the renderer.
+- **`runtimeEnvDefaults`** — default values for the
+  `runtimeEnvironment.values` section, owned by the UI layer's env metadata.
+
+The returned `state` and `history` objects are **shared by reference**: the UI
+layer mutates `state` directly (as it always has) and every core method
+observes the same objects. Mutating operations go through
+`withPersist(action, options)`, which records history before the action
+(unless `options.recordHistory === false`) and saves after it. History is
+capped at 100 entries (`HISTORY_LIMIT`); recording a new entry clears the redo
+future; `undo()`/`redo()` restore a snapshot, save, and call `render()` —
+and are no-ops on an empty past/future.
+
+Startup runs JUM-484's one-way migration first (see the migration section
+below), then a single `await loadState()` in `script.js`.
+
+### The state core (`src/state/designerState.js`)
+
+- **State object.** One object holding the twelve persisted sections of the
+  `service-management.v1` document (schema pinned by
+  Requirement 126, Contract 2
+  — link, not copy).
+- **`normalizeStatePayload(parsed)`** — normalises a decoded payload into the
+  model slice restored on load. Only `domains`, `relationships`, the three
+  selections, `idCounter` and `view` come back; the other pinned sections are
+  intentionally not restored at load time. Normalisation drops relationships
+  pointing at unknown entities and clamps the view (zoom to 0.5–2, edge style
+  and severity to their enums).
+- **`snapshotState()`/`applySnapshot()`** — deep-copy the persisted sections
+  out of `state` and restore them back, recomputing `idCounter` from the
+  highest numeric id suffix.
+- **`saveState()`** — builds the twelve-section payload and calls
+  `store.save(payload)` without awaiting (fire-and-forget, preserving
+  pre-extraction behaviour; see the adapter section for why this is safe
+  today and why callers must not depend on it).
+- **`loadState()`** — maps the port's load outcomes onto designer state; see
+  the outcome table below.
+- **`buildModelSnapshot()`** — builds the schema-diff baseline document
+  (`{ domains, relationships }`, shape pinned by Requirement 126 Contract 2)
+  that `script.js` writes through `store.saveBaseline()`.
+
+### The `service-management.v1` storage schema
+
+The entire suite state (all four tabs) persists as ONE JSON payload under the
+single pinned key `service-management.v1`; the schema-diff baseline lives under
+`service-management.schema-baseline.v1`. Since JUM-484's landed migration, both
+documents live in Cana — one IndexedDB object store (`designerDocuments`,
+database `service-management`, schema version 1) — as byte copies of the same
+JSON documents the localStorage adapter used to write. The localStorage era is
+historical; the pinned wire format did NOT change. The schema — the twelve
+top-level sections, their enums, and the baseline shape — is pinned by
+Requirement 126, Contract 2
+and is **not duplicated here** so the two cannot drift. Any structural change
+must bump the versioned key and update that requirement in the same PR. The
+port itself is schema-agnostic: the pinned wire format belongs to the adapter
+and to JUM-484's (landed) migration.
+
+## The `IDesignerStore` port contract
+
+Source: `packages/designer-core/src/store/IDesignerStore.js`.
+
+### Why the port is shaped around Cana, not localStorage
+
+`LocalStorageDesignerStore` was TRANSITIONAL and is now retired and deleted:
+JUM-484's one-way migration of `service-management.v1` landed, leaving
+`CanaDesignerStore` the sole implementation of the port. Cana has **no fallback
+to localStorage — no fallback at all** (decision 2026-07-29). The port is
+therefore shaped around the semantics Cana (an offline database behind a
+postmaster/worker boundary) produces; the localStorage adapter only ever
+stretched to fit them.
+
+### The no-fallback rule and its consequence
+
+Under the no-fallback rule, an adapter failure surfaces as designer state —
+never as a silent swap to another backend. Concretely, `loadState()` maps the
+port's load outcomes onto recovery behaviour:
+
+| `load()` outcome | Meaning | `loadState()` behaviour |
+| --- | --- | --- |
+| `'ok'` | A stored document was found and decoded. | Normalise and apply the model slice. If normalisation itself throws (corrupt-but-decodable payload), recover exactly like `'lost'`. |
+| `'empty'` | Nothing is stored. First run — NOT an error, NOT data loss. | Seed the default template, persist it, clear history. |
+| `'lost'` | Storage was available and held data that is no longer readable (eviction, corruption). Distinct from `'empty'`. | Seed, persist the recovered state (overwriting the unreadable payload), reset the view, clear history. |
+| `'unavailable'` | The storage backend itself cannot be used (private mode, missing IndexedDB). Terminal under no-fallback. | Seed **in memory only** — there is nothing behind the store to write to, and no fallback. |
+
+JUM-484 made these states visible instead of silent: at boot, the app detects
+and communicates four declared storage-environment states —
+`unsupported-environment`, `non-persisting-session`, `data-lost` and
+`degraded-durability` — through the JUM-543 non-blocking status region, never
+`alert()` (see the migration section below for what each state means). The
+in-memory-only seed on `'unavailable'` stays, but it is now always surfaced to
+the user.
+
+### Operations
+
+All seven operations are async and return Promises. Cana routes through a
+postmaster and workers, so every operation crosses a boundary. Adapters over
+synchronous backends perform their work synchronously and return
+already-resolved Promises — **callers MUST NOT rely on that** and MUST treat
+every result as asynchronous.
+
+- **`probe()` → `DesignerStoreStatus`.** Asks about storage health at startup,
+  before any state exists: `'available'`, `'unavailable'` or `'lost'`, with an
+  optional human-readable `reason` for non-available states. It answers without
+  requiring a prior `load()`, so private mode and browsers without usable
+  IndexedDB become detectable terminal states under the no-fallback rule.
+- **`load()` → `DesignerStoreLoadResult`.** Reads the persisted designer state
+  document: `{ status: 'ok', payload }` when a document was found and decoded;
+  `{ status: 'empty' | 'unavailable' | 'lost', payload: null }` otherwise, with
+  an optional `reason` for `'unavailable'`/`'lost'`.
+- **`save(payload)` → `DesignerStoreSaveResult`.** Guarantees durability or
+  says it cannot:
+  - `'persisted'` — the write is durable: any subsequent `load()` against the
+    same backend returns this payload (until the next `save()`).
+  - `'unknown'` — the outcome is indeterminate (e.g. a worker crashed after
+    the write was dispatched). An unknown outcome **MUST NOT be reported to
+    the user as success**.
+  Adapters MAY throw synchronously for programmer errors (an unserializable
+  payload); backend failures are reported through the result, never as
+  `'persisted'`.
+- **`clear()` → `DesignerStoreSaveResult`.** Removes the state document.
+  Resolving `'persisted'` means the document is gone for good: a subsequent
+  `load()` reports `'empty'`.
+- **`loadBaseline()` / `saveBaseline(snapshot)` / `clearBaseline()`.** The
+  schema-diff baseline document crosses the same storage boundary, so the port
+  carries it: these follow the same result semantics as `load()`, `save()` and
+  `clear()` respectively.
+
+### The base class fails loudly
+
+`IDesignerStore` is the contract, not an implementation: every base method
+throws `IDesignerStore.<method>() must be implemented by the adapter.`
+Adapters MUST subclass and override every method, so a partial adapter fails
+loudly instead of silently dropping designer state. The unit suite asserts all
+seven base methods reject.
+
+## The retired reference implementation — and what its wire format became
+
+`LocalStorageDesignerStore` was the port's reference implementation — a
+transitional adapter over localStorage that stretched to fit a contract shaped
+around Cana. JUM-484's landed migration retired and **deleted** it
+(`apps/service-management/src/store/LocalStorageDesignerStore.js` no longer
+exists); its behaviour is historical. Two facts it pinned remain true of the
+wire format and were carried across unchanged:
+
+- **Pinned keys.** The state document lives under `service-management.v1` and
+  the schema-diff baseline under `service-management.schema-baseline.v1`,
+  pinned by Requirement 126 Contract 2. JUM-484's migration reads the source
+  under those same keys and writes the same documents into Cana — a byte copy,
+  not a transformation.
+- **One JSON document per key.** The wire format is one `JSON.stringify` of the
+  pinned document per key; only WHERE the documents live changed (Cana's
+  `designerDocuments` object store, IndexedDB), never what they contain.
+
+Everything else about that adapter — synchronous work behind resolved Promises,
+corrupt JSON → `'lost'`, never reporting `'unknown'`, `'unavailable'` only for
+a missing/throwing backend — described localStorage's degenerate surface, not
+the port, and no longer describes any shipping code. An implementer must read
+the contract from the port itself; the sole adapter is `CanaDesignerStore`.
+
+## Implementing a new adapter: `CanaDesignerStore` (JUM-483)
+
+A new adapter MUST:
+
+1. Subclass `IDesignerStore` and override **all seven** methods — the base
+   implementations throw.
+2. Honour the async contract: return Promises from every method; never require
+   callers to depend on synchronous completion.
+3. Honour the result semantics: `'persisted'` only when a subsequent `load()`
+   is guaranteed to return the payload; `'unknown'` (never success) when the
+   outcome is indeterminate; `'empty'` only when nothing is stored; `'lost'`
+   when stored data is gone or unreadable — always distinguishable from
+   `'empty'`; `'unavailable'` when the backend itself cannot be used.
+4. Carry the baseline document across the same boundary with the same
+   semantics (`loadBaseline`/`saveBaseline`/`clearBaseline`).
+5. Reserve synchronous throws for programmer errors; report backend failures
+   through the result object.
+
+The states a Cana adapter will produce that localStorage never does:
+
+- **`'unknown'`** — a worker crashed after the write was dispatched; the
+  outcome is indeterminate.
+- **`'lost'` by eviction** — Cana's quota, persistence and eviction policy
+  (Cana [JUM-560](https://linear.app/jumentix/issue/JUM-560/feature-storage-quota-persistence-and-eviction-policy))
+  can remove stored data under quota pressure; with nothing behind Cana this
+  is data loss and must surface as `'lost'`, never as `'empty'`.
+- **`'unavailable'` at `probe()`** — private mode or a browser without usable
+  IndexedDB, detectable at startup before any state exists.
+
+Under the no-fallback rule these surface through `loadState()` as designer
+state (see the outcome table) — the designer never silently swaps to another
+backend.
+
+## The implemented adapter: `CanaDesignerStore` (JUM-483)
+
+Sources:
+`apps/service-management/src/store/CanaDesignerStore.js`
+(adapter) and
+`apps/service-management/src/store/designerStoreFactory.js`
+(factory); unit suite
+`canaDesignerStore.test.ts`.
+
+`CanaDesignerStore` implements all seven port methods over the Cana client,
+and the swap required **no designer-logic change** — the port abstraction
+held. The decisions a reader needs:
+
+- **Wire format unchanged.** Both documents live in one object store
+  (`designerDocuments`, database `service-management`, schema version 1)
+  under the pinned Contract 2 keys, each value the exact `JSON.stringify` of
+  the same document the transitional adapter wrote. JUM-484's migration was a
+  byte copy, not a transformation.
+- **State mapping.** Missing/unusable IndexedDB (Cana `'Unavailable'`) →
+  `'unavailable'` at `probe()`/`load()`; eviction (Cana JUM-560's
+  `storageState().evicted`, or an `'Evicted'` rejection) with no record found
+  → `'lost'`, never `'empty'` — while a record that IS found loads normally;
+  unreadable JSON → `'lost'`, as in the transitional adapter. Quota, eviction
+  and unknown-outcome each surface **distinctly**: within a port state, the
+  `reason` is tagged (`quota:`, `evicted:`, `unknown-outcome:`,
+  `unavailable:`).
+- **Quota pressure → which port state.** A quota-REJECTED write did not
+  happen; the port has no deterministic-failure save state, so `save()`
+  resolves `'unknown'` with a `quota:` reason — never `'persisted'`. Quota
+  pressure that has not failed a write (`nearQuota`, non-persistent storage)
+  is surfaced at `probe()` as `'available'` with a diagnostic `reason`,
+  feeding JUM-484's environment states.
+- **Unknown outcomes carry their reconciliation handles.** Writes go through
+  `client.transaction()` (not the auto-commit table) so an `'unknown'`
+  outcome embeds `correlationId`/`attemptedAt` in the reason — the two values
+  `client.resolveWrite()` needs (Cana JUM-411/559).
+- **Failed opens are not cached.** `UpgradeBlocked` is transient; the next
+  operation retries rather than turning one bad moment into a permanent
+  outage with nothing behind it.
+- **Client injection, factory-style.** The adapter never imports
+  `@jumentix/cana`: the client is injected (`client`/`clientProvider`),
+  mirroring `buildDatabaseClientCompilers`'s `indexedDbClient`. JUM-484 removed
+  the seam's driver switchboard — there is no precedence anymore: no `driver`
+  argument, no ambient `JUMENTIX_DESIGNER_STORE_DRIVER` global, no
+  `?designer-store=` URL parameter, no `localstorage` default.
+  `createDesignerStore()` always returns `CanaDesignerStore`; the only variable
+  is the Cana client itself (`canaClient`, an `indexedDbClient` factory, or
+  `canaModuleSpecifier` for the lazy default provider). With no client wired,
+  the default provider lazily `import()`s `@jumentix/cana` and builds through
+  `createCanaDatabaseClient`; in the browser the bare specifier resolves
+  through the import map in `index.html` to the vendored bundle
+  (`vendor/cana/index.js`, gitignored, regenerated by
+  `ci-cd/sync-service-management-cana-bundle.js`). A host that cannot resolve
+  it gets `'unavailable'`, never a silent fallback.
+
+## The one-way migration: `canaMigration.js` (JUM-484)
+
+Source:
+`apps/service-management/src/store/canaMigration.js`.
+
+JUM-484's migration landed and runs at boot, before any state load. With no
+fallback to retreat to, safety comes from construction:
+
+1. **Export before migrate.** A downloadable backup of the verbatim
+   localStorage payload (`service-management-v1-backup-<timestamp>.json`) is
+   produced BEFORE any Cana write and announced to the user — the recourse
+   that replaces the fallback.
+2. **Verify before cutover.** The state payload and the schema-diff baseline
+   are written through the port, read back, and content-compared against the
+   source. Only a verified migration writes its marker
+   (`service-management.v1.cana-migration`, JSON
+   `{version, status: 'verified', migratedAt, sourceRetainedUntil}`); any
+   failure leaves the source untouched and the migration re-runnable.
+3. **Delayed source retention.** The localStorage source payload stays in
+   place, UNUSED, for 30 days after a verified migration — a manual recovery
+   path, never a fallback: no code reads it as a store. After the retention
+   period the boot removes it; the verified marker stays.
+4. **Idempotent.** The writes are `put`s of the same payload under the same
+   pinned keys, so an interrupted migration re-runs to the identical result,
+   and a verified marker short-circuits re-entry.
+5. **Schema versioning in Cana.** The Cana database is versioned
+   (`schema.version = 1`) and a verified migration writes a provenance record
+   under `service-management.migration.v1` (version, source, timestamps,
+   retention) so a future migration has a version to reason about.
+
+The wire format did NOT change (Requirement 126 Contract 2): same keys, same
+JSON documents — only where they live. The baseline crosses when present; an
+absent baseline stays absent, never fabricated.
+
+The same module declares the storage-environment states the no-fallback
+decision makes mandatory — `describeDesignerStorageEnvironment()` maps
+IndexedDB presence and `probe()` onto four states, rendered at boot through
+the JUM-543 non-blocking status region (never `alert()`):
+
+- **`unsupported-environment`** (severity error) — a browser without usable
+  IndexedDB: the designer can be explored but nothing can be saved.
+- **`non-persisting-session`** (severity error) — private/incognito/blocked
+  storage (`probe()` → `'unavailable'`): the designer cannot persist; anything
+  built this session will be lost.
+- **`data-lost`** (severity error) — `probe()` → `'lost'` (eviction,
+  corruption): previously saved data is no longer readable and there is no
+  fallback store; a fresh template is loaded and the recourse is an earlier
+  backup/export.
+- **`degraded-durability`** (severity info) — `probe()` → `'available'` with a
+  diagnostic reason (near-quota, non-persistent storage): working, but
+  durability is degraded.
+
+## Multi-tab write-event sync: `designerSync.js` (JUM-485)
+
+Source:
+`apps/service-management/src/state/designerSync.js`.
+
+JUM-485 makes the designer consistent across tabs. The sync engine subscribes
+to the local Cana client's ordered write events (`CanaClient.subscribe`, Cana
+JUM-413) and re-publishes the committed state document on a shared
+`BroadcastChannel`, stamped with the tab's own `originId` — the channel is the
+cross-tab boundary, because Cana publishes committed events only to the
+subscribing client instance and each tab holds its own client. The `originId`
+is also the echo guard: a message attributed to this tab is never applied as
+remote. Remote catch-up is always by document read-back; the persisted event
+cursor governs only the local event stream (a cursor the retained window no
+longer covers throws Cana's `'NotFound'`, answered with a full resync), so a
+closed or backgrounded tab resumes without loss or duplication. A remote event
+storm (bulk import) coalesces into one trailing-edge apply.
+
+The issue demanded explicit answers to three questions; they are recorded in
+the module header and enforced by test:
+
+1. **Undo is local-only; remote changes are not undoable.** Remote applies
+   never enter the undo stack, and a remote change truncates the redo branch
+   rather than leaving a stack that replays into a state that no longer
+   exists. Undoing a LOCAL action after a remote change restores the local
+   snapshot as a new, deliberate local write (whole-document
+   last-writer-wins), never an undo OF the remote change.
+2. **A pending local edit keeps its unsaved surface while the committed
+   document wins.** The remote change applies to `state`; the re-render
+   preserves the mid-form input, focus, caret and canvas scroll/zoom, and the
+   remote document's `view`/`activeTab`/selection are never imported. The
+   status region (JUM-543) announces the change; the user's next explicit
+   save asserts their version.
+3. **The selection is per-tab and reconciled, never imported.** A remote
+   delete of the selected relationship/entity clears the selection; a remote
+   delete of the selected domain moves it to the first remaining domain.
+   Every reconciliation is announced — a dangling selection is impossible.
+
+The no-fallback rule holds here too: an unavailable channel or store is a
+DECLARED state through the status region (the designer never quietly reverts
+to a single-tab local session that still writes), and a save whose outcome
+Cana reports `'unknown'` (worker crash after dispatch, Cana JUM-411) is
+surfaced and reconciled by reading the stored document back — never silently
+assumed successful.
+
+## References
+
+- Port contract: `packages/designer-core/src/store/IDesignerStore.js`
+- One-way migration + environment states: `apps/service-management/src/store/canaMigration.js`
+- Cana adapter + factory: `apps/service-management/src/store/CanaDesignerStore.js`, `apps/service-management/src/store/designerStoreFactory.js`
+- State core: `packages/designer-core/src/state/designerState.js`
+- Multi-tab sync engine: `apps/service-management/src/state/designerSync.js`
+- Entry module: `apps/service-management/script.js`
+- Unit suites: `designerStore.test.ts`, `designerState.test.ts`, `canaDesignerStore.test.ts`, `designerSync.test.ts`
+- Storage schema: Requirement 126, Contract 2
+- Component overview: Service Management Application
+- Linear: [JUM-468](https://linear.app/jumentix/issue/JUM-468/refactor-extract-statepersistence-core-as-es-module-behind) (the port), [JUM-469](https://linear.app/jumentix/issue/JUM-469/refactor-modularize-designer-canvas-validation-exporters-importers) (the module graph), [JUM-483](https://linear.app/jumentix/issue/JUM-483/feature-canadesignerstore-idesignerstore-adapter-over-the-cana-client) (CanaDesignerStore), [JUM-484](https://linear.app/jumentix/issue/JUM-484) (the landed one-way migration that retired the transitional adapter), [JUM-485](https://linear.app/jumentix/issue/JUM-485/feature-write-event-integration-multi-tab-sync-via-cana-message) (multi-tab write-event sync), [JUM-493](https://linear.app/jumentix/issue/JUM-493/feature-publish-designer-core-as-jumentix-package-xpertminds-org-dry) (package publish), Cana [JUM-560](https://linear.app/jumentix/issue/JUM-560/feature-storage-quota-persistence-and-eviction-policy) (quota/eviction policy)
