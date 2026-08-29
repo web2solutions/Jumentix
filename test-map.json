@@ -2135,6 +2135,19 @@
       "timeoutMs": 120000
     },
     {
+      "id": "apps/backend-template/test/integration/ServiceManagement/accessibleNames.browser.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/accessibleNames.browser.integration.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
       "id": "apps/backend-template/test/integration/ServiceManagement/multiTabSync.browser.integration.test.ts",
       "path": "apps/backend-template/test/integration/ServiceManagement/multiTabSync.browser.integration.test.ts",
       "layer": "service-management/designer",
@@ -4406,8 +4419,8 @@
   },
   "stats": {
     "unit": 227,
-    "integration": 98,
+    "integration": 99,
     "smoke": 2,
-    "suites": 375
+    "suites": 376
   }
 }
