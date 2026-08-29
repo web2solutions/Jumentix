@@ -371,6 +371,17 @@ describe('cana designer store — quota and unknown outcomes, surfaced distinctl
     expect(probe.reason).toContain('quota:');
   });
 
+  it('reports quota pressure without byte counters when storage omits estimates', async () => {
+    expect.hasAssertions();
+    const { client, script } = createCanaClientDouble();
+    script.storageState = { nearQuota: true, evicted: false };
+    const store = new CanaDesignerStore({ client });
+    const probe = await store.probe();
+    expect(probe.status).toBe('available');
+    expect(probe.reason).toContain('near the origin quota;');
+    expect(probe.reason).not.toContain('bytes');
+  });
+
   it('surfaces non-persistent storage at probe as a durability diagnostic', async () => {
     expect.hasAssertions();
     const { client, script } = createCanaClientDouble();
@@ -397,6 +408,30 @@ describe('cana designer store — quota and unknown outcomes, surfaced distinctl
     expect(clearResult.reason).toContain('unknown-outcome:');
   });
 
+  it('reports indeterminate transactions even when Cana omits reconciliation handles', async () => {
+    expect.hasAssertions();
+    const { client, script } = createCanaClientDouble();
+    script.transactionOutcome = 'unknown';
+    const withoutHandles = {
+      ...client,
+      async transaction(
+        mode: string,
+        stores: readonly string[],
+        body: (scope: unknown) => Promise<unknown>
+      ) {
+        await client.transaction(mode, stores, body);
+        return { outcome: 'unknown', events: [] };
+      }
+    };
+    const store = new CanaDesignerStore({ client: withoutHandles });
+    const saveResult = await store.save(PINNED_PAYLOAD);
+    const clearResult = await store.clear();
+    expect(saveResult.status).toBe('unknown');
+    expect(saveResult.reason).not.toContain('correlationId');
+    expect(clearResult.status).toBe('unknown');
+    expect(clearResult.reason).not.toContain('correlationId');
+  });
+
   it('tags an evicted-mid-write failure distinctly from a quota failure', async () => {
     expect.hasAssertions();
     const { client, script } = createCanaClientDouble();
@@ -419,6 +454,16 @@ describe('cana designer store — quota and unknown outcomes, surfaced distinctl
     expect((await store.save(PINNED_PAYLOAD)).reason).toContain('Internal');
     script.writeError = new Error('foreign failure');
     expect((await store.save(PINNED_PAYLOAD)).reason).toContain('foreign failure');
+  });
+
+  it('stringifies thrown values that carry no message', async () => {
+    expect.hasAssertions();
+    const { client, script } = createCanaClientDouble();
+    script.writeError = 0;
+    const store = new CanaDesignerStore({ client });
+    const saveResult = await store.save(PINNED_PAYLOAD);
+    expect(saveResult.status).toBe('unknown');
+    expect(saveResult.reason).toBe('0');
   });
 
   it('applies the same write-failure mapping to clear and clearBaseline', async () => {

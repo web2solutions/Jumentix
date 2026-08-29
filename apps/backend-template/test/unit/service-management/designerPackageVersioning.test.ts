@@ -506,6 +506,38 @@ describe('domain package versioning (JUM-492)', () => {
       expect(receipt.meta.provenance).toStrictEqual(buildProvenance(packageInfo));
       expect(merge.preview.some((item: { class: string }) => item.class === 'entity-added')).toBe(true);
     });
+
+    it('copies newly added contracts from their source metadata object', () => {
+      expect.hasAssertions();
+      const existing = baseInstalled();
+      const incoming = incomingWith({
+        name: 'Invoice',
+        fields: existing.entities[0].fields,
+        meta: {
+          ...existing.entities[0].meta,
+          contracts: [
+            existing.entities[0].meta.contracts[0],
+            {
+              name: 'settled',
+              type: 'event',
+              channel: 'billing.settled',
+              version: '1.0.0',
+              description: 'Copied from source metadata'
+            }
+          ]
+        }
+      });
+
+      const merge = buildPackageMerge(existing, incoming, packageInfo);
+      const invoice = merge.domain.entities.find((entity: { name: string }) => entity.name === 'Invoice');
+
+      expect(invoice.meta.contracts).toContainEqual(expect.objectContaining({
+        name: 'settled',
+        channel: 'billing.settled',
+        payloadSchema: {}
+      }));
+      expect(merge.preview.some((item: { class: string }) => item.class === 'contract-added')).toBe(true);
+    });
   });
 
   describe('buildSameVersionConflictPreview', () => {
@@ -778,6 +810,8 @@ describe('defensive projection, identity and merge fallbacks (JUM-493)', () => {
     expect.hasAssertions();
     expect(normalizePackageIdentity({ package: { name: ' ' } }, { name: 'D' }))
       .toStrictEqual({ ok: false, reason: 'invalid-package' });
+    expect(normalizePackageIdentity({ package: { name: 0 } }, { name: 'D' }))
+      .toStrictEqual({ ok: false, reason: 'invalid-package' });
     expect(normalizePackageIdentity({ package: { name: 'p' } }, { name: 'D' }).package.version).toBe('1.0.0');
     expect(normalizePackageIdentity({ package: { name: 'p', version: ' ' } }, { name: 'D' }).package.version)
       .toBe('1.0.0');
@@ -792,9 +826,43 @@ describe('defensive projection, identity and merge fallbacks (JUM-493)', () => {
     expect(identity.package.dependencies).toStrictEqual([]);
   });
 
+  it('normalizes sparse object dependencies through the documented fallbacks', () => {
+    expect.hasAssertions();
+
+    const identity = normalizePackageIdentity(
+      {
+        package: {
+          name: 'p',
+          version: '1.0.0',
+          dependencies: [
+            { name: '  shared  ', range: '  ' },
+            { name: 'kernel', range: '^1.2.0' },
+            undefined,
+            7
+          ]
+        }
+      },
+      { name: 'D' }
+    );
+
+    expect(identity.package.dependencies).toStrictEqual([
+      { name: 'shared', range: '*' },
+      { name: 'kernel', range: '^1.2.0' },
+      { name: '7', range: '*' }
+    ]);
+  });
+
+  it('rejects newer documents whose major is not numeric', () => {
+    expect.hasAssertions();
+
+    expect(normalizePackageIdentity({ version: 'beta', domain: {} }, {}))
+      .toStrictEqual({ ok: false, reason: 'unsupported-version', version: 'beta' });
+  });
+
   it('projects sparse content deterministically for comparison', () => {
     expect.hasAssertions();
     const sparse = { name: 'D' };
+    const withFieldlessEntity = { name: 'D', entities: [{ name: 'E' }] };
     const withSparseEntity = {
       name: 'D',
       entities: [{
@@ -804,8 +872,69 @@ describe('defensive projection, identity and merge fallbacks (JUM-493)', () => {
       }]
     };
     expect(packageContentsEqual(sparse, sparse)).toBe(true);
+    expect(packageContentsEqual(withFieldlessEntity, withFieldlessEntity)).toBe(true);
     expect(packageContentsEqual(sparse, withSparseEntity)).toBe(false);
     expect(packageContentsEqual(withSparseEntity, withSparseEntity)).toBe(true);
+  });
+
+  it('projects optional field, contract and context data as package content', () => {
+    expect.hasAssertions();
+
+    const a = {
+      name: 'D',
+      context: {
+        ubiquitousLanguage: 'orders',
+        ownerTeam: 'platform',
+        upstreamDependencies: ['b', 'a'],
+        downstreamDependencies: ['client'],
+        integrationChannel: 'events',
+        packageDependencies: ['money@^1.0.0'],
+        sharedValueObjects: ['Currency']
+      },
+      entities: [{
+        name: 'Invoice',
+        fields: [{
+          name: 'amount',
+          type: 'array',
+          required: true,
+          fk: true,
+          unique: true,
+          nullable: true,
+          format: 'decimal',
+          description: 'Money amount',
+          enumValues: ['low', 'high'],
+          pattern: '^\\d+$',
+          minLength: 1,
+          maxLength: 12,
+          minimum: 0,
+          maximum: 1000,
+          itemsType: 'number'
+        }],
+        meta: {
+          aggregateRoot: true,
+          invariants: ['amount >= 0'],
+          rbac: { roles: ['finance'] },
+          contracts: [{
+            name: 'paid',
+            type: 'event',
+            channel: 'invoice.paid',
+            version: '1.0.0',
+            payloadSchema: { type: 'object' }
+          }],
+          oasComposition: {
+            mode: 'allOf',
+            refs: ['B', 'A'],
+            externalRefs: ['https://example.test/spec.yml'],
+            discriminator: 'kind'
+          }
+        }
+      }]
+    };
+    const b = JSON.parse(JSON.stringify(a));
+
+    expect(packageContentsEqual(a, b)).toBe(true);
+    b.entities[0].meta.contracts[0].payloadSchema.required = ['id'];
+    expect(packageContentsEqual(a, b)).toBe(false);
   });
 
   it('merges domains with missing entity lists and no context', () => {
@@ -814,6 +943,87 @@ describe('defensive projection, identity and merge fallbacks (JUM-493)', () => {
     expect(merge.domain.name).toBe('D');
     expect(merge.autoCount).toBe(0);
     expect(merge.requiresDecision).toBe(0);
+  });
+
+  it('keeps sparse matching entities stable when both sides omit fields and meta', () => {
+    expect.hasAssertions();
+
+    const merge = buildPackageMerge(
+      { name: 'D', entities: [{ name: 'Invoice' }] },
+      { name: 'D', entities: [{ name: 'Invoice' }] },
+      { name: 'p', version: '2.0.0' }
+    );
+
+    expect(merge.domain.entities).toHaveLength(1);
+    expect(merge.domain.entities[0]).toMatchObject({
+      name: 'Invoice',
+      meta: expect.objectContaining({
+        contracts: [],
+        provenance: { package: 'p', version: '2.0.0' }
+      })
+    });
+    expect(merge.preview).toStrictEqual([]);
+  });
+
+  it('keeps existing array item types when package updates a field array shape', () => {
+    expect.hasAssertions();
+
+    const merge = buildPackageMerge(
+      {
+        name: 'D',
+        entities: [{
+          name: 'Invoice',
+          fields: [{ name: 'tags', type: 'array', itemsType: 'string' }]
+        }]
+      },
+      {
+        name: 'D',
+        entities: [{
+          name: 'Invoice',
+          fields: [{ name: 'tags', type: 'array', itemsType: 'number' }]
+        }]
+      },
+      { name: 'p', version: '2.0.0' }
+    );
+
+    expect(merge.preview).toStrictEqual(expect.arrayContaining([
+      expect.objectContaining({
+        class: 'field-type-changed',
+        message: expect.stringContaining('array(string) to array(number)')
+      })
+    ]));
+    expect(merge.domain.entities[0].fields[0].itemsType).toBe('string');
+  });
+
+  it('clears OAS composition hints when the incoming package omits them', () => {
+    expect.hasAssertions();
+
+    const merge = buildPackageMerge(
+      {
+        name: 'D',
+        entities: [{
+          name: 'Invoice',
+          fields: [],
+          meta: {
+            oasComposition: {
+              mode: 'oneOf', refs: ['A'], externalRefs: [], discriminator: 'kind'
+            }
+          }
+        }]
+      },
+      {
+        name: 'D',
+        entities: [{
+          name: 'Invoice',
+          fields: [],
+          meta: {}
+        }]
+      },
+      { name: 'p', version: '2.0.0' }
+    );
+
+    expect(merge.domain.entities[0].meta.oasComposition).toStrictEqual({});
+    expect(merge.preview.map((item: { class: string }) => item.class)).toContain('composition-changed');
   });
 
   it('keeps existing on contract and composition changes and appends a meta-less entity', () => {
@@ -864,6 +1074,65 @@ describe('defensive projection, identity and merge fallbacks (JUM-493)', () => {
     expect(classes).toContain('entity-added');
     const appended = merge.domain.entities.find((entity: { name: string }) => entity.name === 'New');
     expect(appended.meta.provenance).toStrictEqual({ package: 'p', version: '2.0.0' });
+  });
+
+  it('uses identity id generation and source contract fallback when the importer provides no helpers', () => {
+    expect.hasAssertions();
+
+    const incomingContract = {
+      name: 'paid',
+      type: 'event',
+      channel: 'invoice.paid',
+      version: '1.0.0',
+      payloadSchema: { type: 'object' }
+    };
+    const existing = {
+      name: 'D',
+      context: {},
+      entities: [{
+        name: 'Invoice',
+        fields: [{ name: 'id', type: 'uuid' }],
+        meta: {}
+      }]
+    };
+    const incoming = {
+      name: 'D',
+      context: {
+        upstreamDependencies: ['ledger'],
+        downstreamDependencies: ['portal'],
+        packageDependencies: ['money@*'],
+        sharedValueObjects: ['Currency']
+      },
+      entities: [
+        {
+          name: 'Invoice',
+          fields: [
+            { name: 'id', type: 'uuid' },
+            { name: 'total', type: 'number' }
+          ],
+          meta: { contracts: [incomingContract] }
+        },
+        { id: 'entity-new', name: 'Receipt', fields: [] }
+      ]
+    };
+
+    const merge = buildPackageMerge(existing, incoming, { name: 'p', version: '2.0.0' });
+
+    const invoice = merge.domain.entities.find((entity: { name: string }) => entity.name === 'Invoice');
+    const receipt = merge.domain.entities.find((entity: { name: string }) => entity.name === 'Receipt');
+    expect(invoice.meta.contracts).toStrictEqual([incomingContract]);
+    expect(receipt.id).toBe('entity-new');
+    expect(merge.domain.context.upstreamDependencies).toStrictEqual(['ledger']);
+    expect(merge.domain.context.downstreamDependencies).toStrictEqual(['portal']);
+    expect(merge.domain.context.packageDependencies).toStrictEqual(['money@*']);
+    expect(merge.domain.context.sharedValueObjects).toStrictEqual(['Currency']);
+    expect(merge.preview.map((item: { class: string }) => item.class))
+      .toStrictEqual(expect.arrayContaining([
+        'field-added',
+        'contract-added',
+        'entity-added',
+        'context-changed'
+      ]));
   });
 });
 

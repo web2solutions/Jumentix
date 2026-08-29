@@ -239,3 +239,82 @@ describe('run-suite path resolution (JUM-681)', () => {
     expect(result.unmapped).toStrictEqual(['packages/sample/test/unmapped.test.ts']);
   });
 });
+
+/**
+ * The manifest shapes and the child environment (JUM-721).
+ *
+ * A `test-map.json` without a `suites` key is not a hypothetical: it is what a
+ * half-written map, or one being regenerated, looks like on disk. Reading it as
+ * "no suites" rather than crashing is what keeps the runner reporting a
+ * resolution failure the caller can act on instead of a TypeError from inside
+ * the loader.
+ *
+ * The child environment is the other half: a cell that asks for a runtime, a
+ * skip list or a broker flag passes it through `options.env`, and a runner that
+ * dropped it would run a different configuration and report the exit status of
+ * the run it did do.
+ */
+describe('run-suite manifest and environment (JUM-721)', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+  const runner = require('../../../../../ci-cd/run-suite') as {
+    resolveMappedSuitePaths: (paths: string[], options?: Record<string, unknown>) => {
+      resolved: string[]; unmatched: string[]; unmapped: string[];
+    };
+  };
+  const emptyMap = () => ({});
+
+  it('reads a manifest with no suites key as no suites at all', () => {
+    expect.hasAssertions();
+
+    const resolved = runner.resolveMappedSuitePaths(['packages/sample/test'], {
+      root: '/repo',
+      readTestMap: emptyMap,
+      listTestFiles: () => []
+    });
+
+    expect(resolved.resolved).toStrictEqual([]);
+    expect(resolved.unmatched).toStrictEqual(['packages/sample/test']);
+    expect(mapPinsToNode(['packages/sample/test'], emptyMap)).toBe(false);
+  });
+
+  it('passes the caller environment to the child on both runtimes', () => {
+    expect.hasAssertions();
+
+    const bun = jest.fn().mockReturnValue({ status: 0 });
+    const node = jest.fn().mockReturnValue({ status: 0 });
+    const options = {
+      readTestMap,
+      listTestFiles: () => ['packages/sample/test/a.test.ts'],
+      env: { RUN_BROKER_INTEGRATION: '1' }
+    };
+
+    runSuitePaths(['packages/sample/test'], { ...options, spawn: bun, runtime: 'bun' });
+    runSuitePaths(['packages/sample/test'], { ...options, spawn: node, runtime: 'node' });
+
+    expect(bun.mock.calls[0][2].env).toMatchObject({ RUN_BROKER_INTEGRATION: '1' });
+    expect(node.mock.calls[0][2].env).toMatchObject({ RUN_BROKER_INTEGRATION: '1' });
+  });
+
+  it('gives the child a NODE_ENV even when the parent has none', () => {
+    expect.hasAssertions();
+
+    // The suites read `NODE_ENV` to decide error exposure and seeding. A child
+    // that inherited nothing would run in whatever the framework defaults to,
+    // which is not the same thing on every framework.
+    const spawn = jest.fn().mockReturnValue({ status: 0 });
+    const mutableEnv = process.env as Record<string, string | undefined>;
+    const previous = mutableEnv.NODE_ENV;
+    delete mutableEnv.NODE_ENV;
+
+    runSuitePaths(['packages/sample/test'], {
+      spawn,
+      readTestMap,
+      listTestFiles: () => ['packages/sample/test/a.test.ts'],
+      runtime: 'bun'
+    });
+
+    mutableEnv.NODE_ENV = previous;
+
+    expect(spawn.mock.calls[0][2].env.NODE_ENV).toBe('dev');
+  });
+});

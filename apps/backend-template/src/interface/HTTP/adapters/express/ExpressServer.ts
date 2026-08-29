@@ -3,7 +3,7 @@ import express, { Express } from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import helmet from 'helmet';
-import { createUuid } from '@src/modules/port/UUID';
+import { v4 } from 'uuid';
 import { _HTTP_PORT_ } from '@src/config/constants';
 import { isCorsOriginAllowed } from '@src/config/security';
 import { HTTPBaseServer } from '@src/interface/HTTP/ports';
@@ -36,7 +36,7 @@ class ExpressServer extends HTTPBaseServer<Express> {
     this.application.use((req, res, next) => {
       const store = new Map();
       Context.run(store, () => {
-        store.set('correlationId', createUuid());
+        store.set('correlationId', v4());
         store.set('timeStart', +new Date());
         store.set('request', req);
         store.set('authorization', req.headers.authorization || '');

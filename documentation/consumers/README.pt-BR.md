@@ -14,6 +14,7 @@ Ela foca em capacidades, caminhos de integração e em como lançar software com
 
 ## Guias de Construção
 
+- [Usando o Service Manager e o Domain Designer](../md/guides/USING-SERVICE-MANAGER-AND-DOMAIN-DESIGNER.pt-BR.md)
 - [Criando SPA/PWA com Jumentix](../../apps/service-management/documentation/guides/CREATING-SPA-PWA-WITH-JUMENTIX.pt-BR.md)
 - [Criando uma API REST com Jumentix](../../apps/backend-template/documentation/guides/CREATING-REST-API-WITH-JUMENTIX.pt-BR.md)
 - [Criando uma API Realtime com Jumentix](../../apps/backend-template/documentation/guides/CREATING-REALTIME-API-WITH-JUMENTIX.pt-BR.md)

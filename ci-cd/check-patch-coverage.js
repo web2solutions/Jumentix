@@ -39,6 +39,9 @@ const selectedLayers = String(process.env.JUMENTIX_SELECTED_LAYERS || '')
 // instrument, not the subject — same false-green trap as `test/` / `*.test.ts`
 // if counted. Generated browser bundles under `.browser-tests/` are the same.
 const TEST_FILE = /(^|\/)(test|cypress|\.browser-tests)\/|\.test\.ts$|\.spec\.ts$|\.cy\.(ts|js)$/;
+// Website `_meta.ts` files are navigation/content metadata. The website job
+// validates their routes and publishability; Jest coverage cannot execute them.
+const WEBSITE_CONTENT_META = /^apps\/jumentix-website\/content\/.*\/_meta\.ts$/;
 
 const coverageIgnorePatterns = (() => {
   try {
@@ -68,6 +71,7 @@ const ISTANBUL_IGNORE_FILE = /\/\*\s*istanbul\s+ignore\s+file\b/;
 
 const isCoverageSubject = (file) => {
   if (TEST_FILE.test(file)) return false;
+  if (WEBSITE_CONTENT_META.test(file)) return false;
   const absolute = path.join(ROOT, file);
   if (coverageIgnorePatterns.some((pattern) => pattern.test(absolute))) return false;
   if (!fs.existsSync(absolute)) return false;

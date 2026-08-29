@@ -89,6 +89,22 @@ describe('createCatalogHttpTransport (JUM-681)', () => {
     expect(calls).toHaveLength(1);
   });
 
+  it('can be constructed with every option defaulted when the runtime has fetch', async () => {
+    expect.hasAssertions();
+
+    const globalFetch = (globalThis as { fetch?: unknown }).fetch;
+    const { impl, calls } = fetchDouble([{ text: listPayload }]);
+    (globalThis as { fetch?: unknown }).fetch = impl;
+
+    const transport = createCatalogHttpTransport();
+    await transport.listCatalogs();
+
+    (globalThis as { fetch?: unknown }).fetch = globalFetch;
+
+    expect(calls[0].url).toBe('/api/1.0.0/catalogs?page=1&size=500');
+    expect(calls[0].init.headers.Authorization).toBeUndefined();
+  });
+
   it('resolves the base URL per request, so a repointed host is honoured', async () => {
     expect.hasAssertions();
 

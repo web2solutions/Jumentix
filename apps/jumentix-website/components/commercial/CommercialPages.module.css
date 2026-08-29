@@ -626,11 +626,6 @@
   background: var(--jtx-surface);
 }
 
-.matrixWrap:focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--jtx-green-700) 46%, transparent);
-  outline-offset: 4px;
-}
-
 .matrix {
   width: 100%;
   min-width: 860px;

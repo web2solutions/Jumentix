@@ -26,6 +26,7 @@ import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal'
 import { JwtService } from '@src/infra/jwt/JwtService';
 import type { IAuthorizationHeader } from '@src/modules/Users/service/ports/IAuthorizationHeader';
 import { EAuthSchemaType } from '@src/modules/Users/service/ports/EAuthSchemaType';
+import { closeServer } from '../closeServer';
 
 const [createdUser1, createdUser2, createdUser3, createdUser4] = createdUsers;
 
@@ -81,7 +82,7 @@ describe('express -> Auth -> Basic suite', () => {
       mutexService
     });
 
-    server = API.server.application;
+    server = API.server.application.listen(0);
 
     await API.seedData();
     // await server.ready();
@@ -119,7 +120,7 @@ describe('express -> Auth -> Basic suite', () => {
   afterAll(async () => {
     await databaseClient.disconnect();
     await keyValueStorageClient.disconnect();
-    // await server.close();
+    await closeServer(server);
     // await keyValueStorageClient.disconnect();
   });
 

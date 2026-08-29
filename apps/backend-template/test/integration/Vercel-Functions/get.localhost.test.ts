@@ -1,5 +1,11 @@
-/* global describe, it, expect, beforeAll */
+/* global describe, it, expect, beforeAll, afterAll */
+import type { Server } from 'node:http';
 import request from 'supertest';
+import {
+  closeSupertestServer,
+  createSupertestServer,
+  supertestServerUrl
+} from '@test/helpers/listenForSupertest';
 import { vercelListener } from '../../helpers/vercelRuntime';
 
 /**
@@ -34,6 +40,8 @@ const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let handler: (req: any, res: any) => Promise<void>;
+let server: Server;
+let serverUrl: string;
 
 describe('vercel-functions -> /localhost suite', () => {
   beforeAll(async () => {
@@ -42,12 +50,18 @@ describe('vercel-functions -> /localhost suite', () => {
     ({ default: handler } = await import(
       '@src/interface/HTTP/adapters/vercel-functions/vercel-functions'
     ));
+    server = await createSupertestServer(vercelListener(handler));
+    serverUrl = supertestServerUrl(server);
+  });
+
+  afterAll(async () => {
+    await closeSupertestServer(server);
   });
 
   it('answers the root route through the function entry point', async () => {
     expect.hasAssertions();
 
-    const response = await request(vercelListener(handler))
+    const response = await request(serverUrl)
       .get('/')
       .set('Accept', 'application/json');
 
@@ -61,8 +75,8 @@ describe('vercel-functions -> /localhost suite', () => {
   it('gives each request its own correlation id', async () => {
     expect.hasAssertions();
 
-    const first = await request(vercelListener(handler)).get('/').set('Accept', 'application/json');
-    const second = await request(vercelListener(handler)).get('/').set('Accept', 'application/json');
+    const first = await request(serverUrl).get('/').set('Accept', 'application/json');
+    const second = await request(serverUrl).get('/').set('Accept', 'application/json');
 
     expect(first.body.correlationId).not.toBe(second.body.correlationId);
   });
@@ -71,7 +85,7 @@ describe('vercel-functions -> /localhost suite', () => {
     expect.hasAssertions();
 
     // The route matching is the part a direct handler call skips entirely.
-    const response = await request(vercelListener(handler)).get('/not-a-route');
+    const response = await request(serverUrl).get('/not-a-route');
 
     expect(response.statusCode).toBe(404);
   });

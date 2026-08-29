@@ -16,6 +16,7 @@ import { MutexService } from '@src/infra/mutex/adapter/MutexService';
 import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal';
 import createdUsers from '@seed/users';
 import { EAuthSchemaType } from '@src/modules/Users/service/ports/EAuthSchemaType';
+import { closeServer } from '../closeServer';
 
 const webServer = ExpressServer.compile();
 const passwordCryptoService = PasswordCryptoService.compile();
@@ -51,7 +52,7 @@ const API: RestAPI<Express> = new RestAPI<Express>({
   keyValueStorageClient,
   mutexService
 });
-const server = API.server.application;
+const server = API.server.application.listen(0);
 
 describe('express -> organizations relationship e2e', () => {
   let authorizationHeaderUser1: Record<string, string>;
@@ -69,6 +70,7 @@ describe('express -> organizations relationship e2e', () => {
   });
 
   afterAll(async () => {
+    await closeServer(server);
     await API.stop();
   });
 

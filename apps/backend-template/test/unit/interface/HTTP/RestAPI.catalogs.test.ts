@@ -15,6 +15,20 @@ import { composeCatalogsServices } from '@src/modules/Catalogs';
 // eslint-disable-next-line import/no-unresolved
 import { InMemoryMessageMediatorAdapter } from '@jumentix/message-mediator';
 
+type ModuleLoader = (request: string, parent: unknown, isMain: boolean) => unknown;
+
+const loadModule = (
+  moduleLoads: Map<string, ModuleLoader>,
+  originalLoad: ModuleLoader,
+  request: string,
+  parent: unknown,
+  isMain: boolean
+): unknown => {
+  const mockedLoad = moduleLoads.get(request);
+  if (mockedLoad) return mockedLoad(request, parent, isMain);
+  return originalLoad(request, parent, isMain);
+};
+
 /**
  * Unit suite for the Catalogs wiring inside RestAPI (JUM-491): the REAL
  * RestAPI is constructed against the REAL OAS spec, the REAL Express server
@@ -179,6 +193,50 @@ describe('restAPI catalogs composition wiring', () => {
     expect((api as any).eventBus).toBe(eventBus);
   });
 
+  it('defaults to Express and serves API versions without an auth service', () => {
+    expect.hasAssertions();
+    const webServer = ExpressServer.compile();
+    const registered: any[] = [];
+    const registerSpy = jest
+      .spyOn(webServer, 'endPointRegister')
+      .mockImplementation((endPoint: any) => {
+        registered.push(endPoint);
+        return endPoint;
+      });
+    const buildEndPointsSpy = jest
+      .spyOn(RestAPI.prototype as any, 'buildEndPoints')
+      .mockImplementation(() => undefined);
+
+    try {
+      const api = new RestAPI<Express>({
+        databaseClient,
+        webServer,
+        infraHandlers
+      } as any);
+
+      expect((api as any).serverType).toBe(EHTTPFrameworks.express);
+      const versionsEndpoint = registered.find((endPoint) => endPoint.path === '/versions');
+      expect(versionsEndpoint).toBeDefined();
+    } finally {
+      registerSpy.mockRestore();
+      buildEndPointsSpy.mockRestore();
+    }
+  });
+
+  it('treats undefined path blocks in a spec as empty endpoint maps', () => {
+    expect.hasAssertions();
+    const api = Object.create(RestAPI.prototype);
+    const registerOperationEndpoint = jest.fn();
+    api.registerOperationEndpoint = registerOperationEndpoint;
+
+    (api as any).registerSpecVersionEndpoints('1.0.0', {
+      openapi: '3.1.0',
+      paths: { '/ghost': undefined }
+    });
+
+    expect(registerOperationEndpoint).not.toHaveBeenCalled();
+  });
+
   it('declares the users composition dependencies it requires', () => {
     expect.hasAssertions();
     const baseConfig = {
@@ -267,6 +325,45 @@ describe('restAPI catalogs composition wiring', () => {
       }
     };
     await expect(api.deleteUsers()).rejects.toThrow('User delete failed');
+
+    (api as any).usersComposition = {
+      userUseCases: {
+        getAll: async () => ({ result: undefined })
+      },
+      organizationUseCases: {
+        getOneById: async () => ({ result: { id: 'org-1' } })
+      }
+    };
+    await expect(api.deleteUsers()).resolves.toStrictEqual([]);
+  });
+
+  it('falls through handler modules without a default export before failing closed', () => {
+    expect.hasAssertions();
+    handlerFactorySpy?.mockRestore();
+    const nodeModule = require('module');
+    const originalLoad = nodeModule._load;
+    const moduleLoads = new Map<string, ModuleLoader>([
+      [
+        '@src/modules/Catalogs/interface/restapi/frameworks/fastify/handlers/virtualMissing',
+        () => ({})
+      ],
+      [
+        '@src/modules/Catalogs/interface/restapi/frameworks/express/handlers/virtualMissing',
+        () => ({})
+      ]
+    ]);
+    const loadSpy = jest.spyOn(nodeModule, '_load').mockImplementation((...args: unknown[]) => {
+      const [request, parent, isMain] = args as [string, unknown, boolean];
+      return loadModule(moduleLoads, originalLoad, request, parent, isMain);
+    });
+    const api = Object.create(RestAPI.prototype);
+    api.serverType = EHTTPFrameworks.fastify;
+
+    expect(() => (api as any).getHandlerFactory({
+      moduleName: 'Catalogs',
+      operationId: 'virtualMissing'
+    })).toThrow('Handler not found for module Catalogs');
+    loadSpy.mockRestore();
   });
 
   it('serves the asyncapi versions document through the infra handler', () => {
