@@ -858,7 +858,10 @@ function addFieldToSelectedEntity() {
     return;
   }
   const name = dom.fieldNameInput.value.trim();
-  if (!name) return;
+  if (!name) {
+    showStatus('Type a field name before adding.');
+    return;
+  }
   if (isFieldNameTaken(found.entity, name)) {
     showStatus(`Field "${name}" already exists in ${found.entity.name}.`);
     return;
@@ -881,6 +884,7 @@ function addFieldToSelectedEntity() {
     dom.fieldNullableCheck.checked = false;
     render();
   });
+  showStatus(`Field "${name}" added to ${found.entity.name}.`, 'info');
 }
 
 function applyFieldTemplateToSelectedEntity() {
@@ -927,6 +931,7 @@ function applyFieldTemplateToSelectedEntity() {
     });
     render();
   });
+  showStatus(`Field template "${template}" applied to ${found.entity.name}.`, 'info');
 }
 
 function updateField(entityId, fieldName, nextPartial) {
@@ -1423,6 +1428,7 @@ function moveSelectedEntityToDomain(targetDomainId) {
     state.selectedDomainId = targetDomain.id;
     render();
   });
+  showStatus(`Entity "${found.entity.name}" moved to ${targetDomain.name}.`, 'info');
 }
 
 function editFieldMetadata(entityId, fieldName) {
@@ -2188,6 +2194,7 @@ function wireEvents() {
         dom.interfaceControllerInput.value = '';
         inspectors.renderInterfaceAdapters();
       });
+      showStatus(`${candidate.type} adapter registered for ${candidate.controller}.`, 'info');
     };
   }
 
@@ -2298,7 +2305,10 @@ function wireEvents() {
 
   dom.addDomainBtn.onclick = () => {
     const value = dom.domainNameInput.value.trim();
-    if (!value) return;
+    if (!value) {
+      showStatus('Type a domain name before adding.');
+      return;
+    }
     if (isDomainNameTaken(value)) {
       showStatus(`Domain "${value}" already exists.`);
       return;
@@ -2308,6 +2318,7 @@ function wireEvents() {
       dom.domainNameInput.value = '';
       render();
     });
+    showStatus(`Domain "${value}" added.`, 'info');
   };
   dom.domainNameInput.onkeydown = (event) => {
     if (event.key !== 'Enter') return;
@@ -2337,27 +2348,34 @@ function wireEvents() {
       showStatus(`Domain "${next.trim()}" already exists.`);
       return;
     }
+    const previousName = selected.name;
     withPersist(() => {
       selected.name = next.trim();
       render();
     });
+    showStatus(`Domain "${previousName}" renamed to "${next.trim()}".`, 'info');
   };
 
   dom.deleteDomainBtn.onclick = () => {
     const selected = getSelectedDomain();
     if (!selected) return;
     if (!window.confirm(`Delete domain "${selected.name}" and all entities?`)) return;
+    const deletedName = selected.name;
     withPersist(() => {
       deleteDomain(selected.id);
       render();
     });
+    showStatus(`Domain "${deletedName}" deleted.`, 'info');
   };
 
   dom.addEntityBtn.onclick = () => {
     const selected = getSelectedDomain();
     if (!selected) return showStatus('Select a domain first.');
     const value = dom.entityNameInput.value.trim();
-    if (!value) return;
+    if (!value) {
+      showStatus('Type an entity name before adding.');
+      return;
+    }
     if (isEntityNameTaken(selected, value)) {
       showStatus(`Entity "${value}" already exists in ${selected.name}.`);
       return;
@@ -2367,6 +2385,7 @@ function wireEvents() {
       dom.entityNameInput.value = '';
       render();
     });
+    showStatus(`Entity "${value}" added to ${selected.name}.`, 'info');
   };
   dom.applyEntityTemplateBtn.onclick = () => {
     const found = findEntity(state.selectedEntityId);
@@ -2394,6 +2413,7 @@ function wireEvents() {
       }
       render();
     });
+    showStatus(`Entity template "${template}" applied to ${found.entity.name}.`, 'info');
   };
   dom.entityNameInput.onkeydown = (event) => {
     if (event.key !== 'Enter') return;
@@ -2410,10 +2430,12 @@ function wireEvents() {
     const found = findEntity(state.selectedEntityId);
     if (!found) return;
     if (!window.confirm(`Delete entity "${found.entity.name}" and related links?`)) return;
+    const deletedName = found.entity.name;
     withPersist(() => {
       deleteEntity(found.entity.id);
       render();
     });
+    showStatus(`Entity "${deletedName}" deleted.`, 'info');
   };
   dom.entitySearchBtn.onclick = () => {
     const search = dom.entitySearchInput.value.trim();

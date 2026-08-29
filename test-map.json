@@ -2109,6 +2109,19 @@
       "timeoutMs": 120000
     },
     {
+      "id": "apps/backend-template/test/integration/ServiceManagement/statusOutcome.browser.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/statusOutcome.browser.integration.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
       "id": "apps/backend-template/test/integration/ServiceManagement/firstRun.browser.integration.test.ts",
       "path": "apps/backend-template/test/integration/ServiceManagement/firstRun.browser.integration.test.ts",
       "layer": "service-management/designer",
@@ -4393,8 +4406,8 @@
   },
   "stats": {
     "unit": 227,
-    "integration": 97,
+    "integration": 98,
     "smoke": 2,
-    "suites": 374
+    "suites": 375
   }
 }
