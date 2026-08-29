@@ -3,7 +3,7 @@
 /* eslint-disable class-methods-use-this */
 import fs from 'fs';
 import path from 'path';
-import { v4 } from 'uuid';
+import { createUuid } from '@src/modules/port/UUID';
 import { _HTTP_PORT_ } from '@src/config/constants';
 import { Context as RequestContext } from '@src/infra/context/Context';
 import type {
@@ -145,7 +145,7 @@ class SailsJsServer extends HTTPBaseServer<any> {
        */
       const store = new Map();
       return RequestContext.run(store, () => {
-        store.set('correlationId', v4());
+        store.set('correlationId', createUuid());
         store.set('timeStart', +new Date());
         store.set('request', req);
         store.set('authorization', req.headers?.authorization || '');

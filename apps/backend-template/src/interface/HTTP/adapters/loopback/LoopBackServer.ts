@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable class-methods-use-this */
-import { v4 } from 'uuid';
+import { createUuid } from '@src/modules/port/UUID';
 import { _HTTP_PORT_ } from '@src/config/constants';
 import { Context as RequestContext } from '@src/infra/context/Context';
 import type {
@@ -124,7 +124,7 @@ class LoopBackServer extends HTTPBaseServer<any> {
     this.router[method](handlerFactory.path, (req: any, res: any) => {
       const store = new Map();
       RequestContext.run(store, () => {
-        store.set('correlationId', v4());
+        store.set('correlationId', createUuid());
         store.set('timeStart', +new Date());
         store.set('request', req);
         store.set('authorization', req.headers?.authorization || '');

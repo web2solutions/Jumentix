@@ -25,7 +25,7 @@ env:
 
 jobs:
   branch-gate:
-    name: branch-gate
+    name: ${{ github.event_name == 'push' && github.ref_name != 'dev' && github.ref_name != 'main' && 'task-branch-push' || 'branch-gate' }}
     runs-on: [self-hosted, jumentix]
     env:
       AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key

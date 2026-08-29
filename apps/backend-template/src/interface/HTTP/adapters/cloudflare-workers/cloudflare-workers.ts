@@ -3,7 +3,7 @@ import { Hono } from 'hono';
 import type { Context } from 'hono';
 import fs from 'fs';
 import path from 'path';
-import { v4 } from 'uuid';
+import { createUuid } from '@src/modules/port/UUID';
 
 import { RestAPI } from '@src/interface/HTTP/RestAPI';
 import type {
@@ -61,7 +61,7 @@ class CloudflareWorkersServer extends HTTPBaseServer<Hono> {
     this.application.use(async (c: Context, next) => {
       const store = new Map();
       return RequestContext.run(store, () => {
-        store.set('correlationId', v4());
+        store.set('correlationId', createUuid());
         store.set('timeStart', +new Date());
         store.set('request', c.req);
         store.set('authorization', c.req.header('authorization') || '');
