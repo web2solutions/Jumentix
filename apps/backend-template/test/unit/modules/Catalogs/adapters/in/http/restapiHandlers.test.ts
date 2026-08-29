@@ -222,6 +222,60 @@ describe('catalog REST handlers — express', () => {
     expect(captured[0].queryString.page).toBe('3');
     expect(captured[0].queryString.size).toBe('5');
   });
+
+  it('defaults absent query strings and reports absent authorization as an invalid event', async () => {
+    expect.hasAssertions();
+    const { double: getAllDouble, captured: getAllCaptured } = createControllerDouble(
+      OPERATIONS[0],
+      'success'
+    );
+    const getAllEndpoint = HANDLERS.express.getAllCatalogs({
+      endPointConfig,
+      controller: getAllDouble
+    });
+    const getAllRes = makeRes();
+    await getAllEndpoint.handler({ params: {}, headers: { authorization: 'Bearer token' } }, getAllRes);
+
+    const { double: deleteDouble, captured: deleteCaptured } = createControllerDouble(
+      OPERATIONS[4],
+      'success'
+    );
+    const deleteEndpoint = HANDLERS.express.deleteCatalog({
+      endPointConfig,
+      controller: deleteDouble
+    });
+    const deleteRes = makeRes();
+    await deleteEndpoint.handler({ params: { id: 'catalog-1' }, headers: { authorization: 'Bearer token' } }, deleteRes);
+
+    const authRes = makeRes();
+    await getAllEndpoint.handler({ params: {}, query: {}, headers: {} }, authRes);
+
+    expect(getAllCaptured[0].authorization).toBe('Bearer token');
+    expect(getAllCaptured[0].queryString).toStrictEqual({ page: '1' });
+    expect(deleteCaptured).toHaveLength(0);
+    expect(deleteRes.status).toHaveBeenCalledWith(400);
+    expect(authRes.status).toHaveBeenCalledWith(400);
+  });
+
+  it.each([OPERATIONS[1], OPERATIONS[2], OPERATIONS[3], OPERATIONS[5]])(
+    '$operationId reports absent authorization as an invalid event',
+    async (operation) => {
+      expect.hasAssertions();
+      const { double, captured } = createControllerDouble(operation, 'success');
+      const endpoint = HANDLERS.express[operation.operationId]({
+        endPointConfig,
+        controller: double
+      });
+      const res = makeRes();
+      const req = freshReq(operation);
+      req.headers = {};
+
+      await endpoint.handler(req, res);
+
+      expect(captured).toHaveLength(0);
+      expect(res.status).toHaveBeenCalledWith(400);
+    }
+  );
 });
 
 describe('catalog REST handlers — fastify', () => {
@@ -271,6 +325,60 @@ describe('catalog REST handlers — fastify', () => {
     await endpoint.handler({ query: { page: '2' }, headers: { authorization: 'Bearer token' } }, res);
     expect(captured[0].queryString.page).toBe('2');
   });
+
+  it('defaults absent query strings and reports absent authorization as an invalid event', async () => {
+    expect.hasAssertions();
+    const { double: getAllDouble, captured: getAllCaptured } = createControllerDouble(
+      OPERATIONS[0],
+      'success'
+    );
+    const getAllEndpoint = HANDLERS.fastify.getAllCatalogs({
+      endPointConfig,
+      controller: getAllDouble
+    });
+    const getAllRes = makeRes();
+    await getAllEndpoint.handler({ params: {}, headers: { authorization: 'Bearer token' } }, getAllRes);
+
+    const { double: deleteDouble, captured: deleteCaptured } = createControllerDouble(
+      OPERATIONS[4],
+      'success'
+    );
+    const deleteEndpoint = HANDLERS.fastify.deleteCatalog({
+      endPointConfig,
+      controller: deleteDouble
+    });
+    const deleteRes = makeRes();
+    await deleteEndpoint.handler({ params: { id: 'catalog-1' }, headers: { authorization: 'Bearer token' } }, deleteRes);
+
+    const authRes = makeRes();
+    await getAllEndpoint.handler({ params: {}, query: {}, headers: {} }, authRes);
+
+    expect(getAllCaptured[0].authorization).toBe('Bearer token');
+    expect(getAllCaptured[0].queryString).toStrictEqual({ page: '1' });
+    expect(deleteCaptured).toHaveLength(0);
+    expect(deleteRes.code).toHaveBeenCalledWith(400);
+    expect(authRes.code).toHaveBeenCalledWith(400);
+  });
+
+  it.each([OPERATIONS[1], OPERATIONS[2], OPERATIONS[3], OPERATIONS[5]])(
+    '$operationId reports absent authorization as an invalid event',
+    async (operation) => {
+      expect.hasAssertions();
+      const { double, captured } = createControllerDouble(operation, 'success');
+      const endpoint = HANDLERS.fastify[operation.operationId]({
+        endPointConfig,
+        controller: double
+      });
+      const res = makeRes();
+      const req = freshReq(operation);
+      req.headers = {};
+
+      await endpoint.handler(req, res);
+
+      expect(captured).toHaveLength(0);
+      expect(res.code).toHaveBeenCalledWith(400);
+    }
+  );
 });
 
 describe('catalog REST handlers — restify', () => {
@@ -321,4 +429,58 @@ describe('catalog REST handlers — restify', () => {
     await endpoint.handler({ query: { page: '4' }, headers: { authorization: 'Bearer token' } }, res);
     expect(captured[0].queryString.page).toBe('4');
   });
+
+  it('defaults absent query strings and reports absent authorization as an invalid event', async () => {
+    expect.hasAssertions();
+    const { double: getAllDouble, captured: getAllCaptured } = createControllerDouble(
+      OPERATIONS[0],
+      'success'
+    );
+    const getAllEndpoint = HANDLERS.restify.getAllCatalogs({
+      endPointConfig,
+      controller: getAllDouble
+    });
+    const getAllRes = makeRes();
+    await getAllEndpoint.handler({ params: {}, headers: { authorization: 'Bearer token' } }, getAllRes);
+
+    const { double: deleteDouble, captured: deleteCaptured } = createControllerDouble(
+      OPERATIONS[4],
+      'success'
+    );
+    const deleteEndpoint = HANDLERS.restify.deleteCatalog({
+      endPointConfig,
+      controller: deleteDouble
+    });
+    const deleteRes = makeRes();
+    await deleteEndpoint.handler({ params: { id: 'catalog-1' }, headers: { authorization: 'Bearer token' } }, deleteRes);
+
+    const authRes = makeRes();
+    await getAllEndpoint.handler({ params: {}, query: {}, headers: {} }, authRes);
+
+    expect(getAllCaptured[0].authorization).toBe('Bearer token');
+    expect(getAllCaptured[0].queryString).toStrictEqual({ page: '1' });
+    expect(deleteCaptured).toHaveLength(0);
+    expect(deleteRes.status).toHaveBeenCalledWith(400);
+    expect(authRes.status).toHaveBeenCalledWith(400);
+  });
+
+  it.each([OPERATIONS[1], OPERATIONS[2], OPERATIONS[3], OPERATIONS[5]])(
+    '$operationId reports absent authorization as an invalid event',
+    async (operation) => {
+      expect.hasAssertions();
+      const { double, captured } = createControllerDouble(operation, 'success');
+      const endpoint = HANDLERS.restify[operation.operationId]({
+        endPointConfig,
+        controller: double
+      });
+      const res = makeRes();
+      const req = freshReq(operation);
+      req.headers = {};
+
+      await endpoint.handler(req, res);
+
+      expect(captured).toHaveLength(0);
+      expect(res.status).toHaveBeenCalledWith(400);
+    }
+  );
 });

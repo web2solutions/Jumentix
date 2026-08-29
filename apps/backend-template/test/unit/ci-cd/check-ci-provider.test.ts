@@ -27,7 +27,10 @@ function fixture(change?: (directory: string) => void): string {
   fs.mkdirSync(path.join(directory, 'ci-cd'), { recursive: true });
   fs.mkdirSync(path.join(directory, '.github/workflows'), { recursive: true });
   fs.copyFileSync(checker, path.join(directory, 'ci-cd', 'check-ci-provider.js'));
+  fs.copyFileSync(path.join(repoRoot, 'ci-cd', 'ensure-local-ci-services.sh'), path.join(directory, 'ci-cd', 'ensure-local-ci-services.sh'));
+  fs.copyFileSync(path.join(repoRoot, 'ci-cd', 'ensure-docker-runtime.sh'), path.join(directory, 'ci-cd', 'ensure-docker-runtime.sh'));
   fs.copyFileSync(path.join(repoRoot, '.github/workflows/ci.yml'), path.join(directory, '.github/workflows/ci.yml'));
+  fs.copyFileSync(path.join(repoRoot, 'package.json'), path.join(directory, 'package.json'));
   change?.(directory);
   return directory;
 }
@@ -87,6 +90,35 @@ describe('check-ci-provider', () => {
       fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('runs-on: [self-hosted, jumentix]', 'runs-on: ubuntu-latest'));
     });
     expect(run(directory).output).toContain('repository-owned self-hosted runner');
+  });
+
+  it('fails when Docker runtime bootstrap is removed from container-backed jobs', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      fs.unlinkSync(path.join(root, 'ci-cd', 'ensure-docker-runtime.sh'));
+    });
+    expect(run(directory).output).toContain('open -ga Docker');
+  });
+
+  it('fails when the website Storybook build no longer builds exported workspace dependencies', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, 'package.json');
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace(/website:deps:build/g, 'website:deps:removed'));
+    });
+    expect(run(directory).output).toContain('website:deps:build');
+  });
+
+  it('fails when monorepo builds no longer prime exported workspace dependencies', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, 'package.json');
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace(/mono:build:deps/g, 'mono:build:parallel'));
+    });
+    expect(run(directory).output).toContain('mono:build:deps');
   });
 
   it('fails when expensive jobs lose the release/full context guard', () => {

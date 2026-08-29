@@ -1,5 +1,5 @@
 /* eslint-disable func-names */
-/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import { UserMessageContracts } from '@src/modules/Users/events/contracts/UserMessageContracts';
 
 export function Authorize(): Function {

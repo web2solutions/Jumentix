@@ -33,15 +33,11 @@ describe('check-workspace-coverage-policy', () => {
         }
       }
     });
-    // JUM-681 recorded the first live exception, and this is the branch the
-    // previous version described but could not exercise: the affected metric
-    // names its floor and the issue, the other three name their base minimum.
     expect(failures).toStrictEqual([
       'Root coverageThreshold.global.statements must be >= 98 (current: 95)',
       'Root coverageThreshold.global.lines must be >= 98 (current: 95)',
       'Root coverageThreshold.global.functions must be >= 98 (current: 95)',
-      'Root coverageThreshold.global.branches must be >= 95.902'
-        + ' (98 relaxed to the accepted floor under JUM-721) (current: 80)'
+      'Root coverageThreshold.global.branches must be >= 97.47 (98 relaxed to the accepted floor under JUM-579) (current: 80)'
     ]);
   });
 

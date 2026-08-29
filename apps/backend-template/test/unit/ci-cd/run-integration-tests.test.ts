@@ -39,18 +39,17 @@ describe('run-integration-tests', () => {
     expect(rootPackage.scripts['test:integration']).toBe('bun ci-cd/run-integration-tests.js');
   });
 
-  it('gives Express and Restify deterministic per-test headroom under sustained matrix load', () => {
+  it('gives only Restify deterministic per-test headroom under sustained matrix load', () => {
     expect.hasAssertions();
     // The flag moved from Jest's `--testTimeout=15000` to the Bun runner's
     // `--timeout 15000` when these scripts migrated. The assertion did not, so
     // it went on checking for a flag no script could contain — a failure that
     // says nothing about the property it names (JUM-583).
     //
-    // Express also needs the same headroom during dev-to-main release gates:
-    // the full HTTP adapter matrix can make otherwise-subsecond auth refusals
-    // wait behind saturated local resources.
-    expect(rootPackage.scripts['test:integration:express']).toContain('--timeout 15000');
+    // Both spellings are rejected for the other two, so migrating back would not
+    // quietly reintroduce headroom where the point is that there is none.
     expect(rootPackage.scripts['test:integration:restify']).toContain('--timeout 15000');
+    expect(rootPackage.scripts['test:integration:express']).not.toMatch(/--(testTimeout|timeout)\b/);
     expect(rootPackage.scripts['test:integration:fastify']).not.toMatch(/--(testTimeout|timeout)\b/);
   });
 

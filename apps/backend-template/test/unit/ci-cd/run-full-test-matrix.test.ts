@@ -15,6 +15,15 @@ const fullMatrixRootPackage = require('../../../../../package.json');
 const fullMatrixRootDir = matrixPath.resolve(__dirname, '../../../../..');
 type FullMatrixTestCell = { id: string; script: string };
 
+const restoreEnv = (name: string, previous: string | undefined): void => {
+  if (previous === undefined) {
+    delete process.env[name];
+    return;
+  }
+
+  process.env[name] = previous;
+};
+
 describe('run-full-test-matrix', () => {
   it('keeps the canonical ci gate free of missing script references', () => {
     expect.hasAssertions();
@@ -67,6 +76,8 @@ describe('run-full-test-matrix', () => {
 
     expect(fullMatrixRootPackage.scripts['test:coverage'])
       .toContain('--coverageThreshold=\'{}\'');
+    expect(fullMatrixRootPackage.scripts['test:coverage'])
+      .not.toContain('apps/backend-template/test/integration/');
     expect(fullMatrixRootPackage.scripts['coverage:browser-lcov'])
       .toBe('bun ci-cd/write-browser-lcov.js');
     expect(fullMatrixRootPackage.scripts['coverage:patch'])
@@ -89,6 +100,19 @@ describe('run-full-test-matrix', () => {
     expect(cells).toStrictEqual(expect.arrayContaining([
       expect.objectContaining({ id: 'backend-build' })
     ]));
+  });
+
+  it('uses the real environment when no explicit skip environment is injected', () => {
+    expect.hasAssertions();
+    const previous = process.env.JUMENTIX_FULL_MATRIX_SKIP_CELLS;
+    process.env.JUMENTIX_FULL_MATRIX_SKIP_CELLS = 'workspace-builds';
+
+    const cells = resolveMatrixCells(FULL_TEST_MATRIX);
+
+    expect(cells).toStrictEqual(expect.not.arrayContaining([
+      expect.objectContaining({ id: 'workspace-builds' })
+    ]));
+    restoreEnv('JUMENTIX_FULL_MATRIX_SKIP_CELLS', previous);
   });
 
   it('fails closed when the delegated matrix skip list names an unknown cell', () => {
@@ -268,6 +292,35 @@ describe('run-full-test-matrix', () => {
     });
   });
 
+  it('uses the default matrix and result file from the environment when options are omitted', () => {
+    expect.assertions(2);
+    const dir = matrixFs.mkdtempSync(
+      matrixPath.join(require('node:os').tmpdir(), 'matrix-defaults-')
+    );
+    const resultFile = matrixPath.join(dir, 'matrix.json');
+    const previousResultFile = process.env.JUMENTIX_CI_MATRIX_RESULT_FILE;
+    const previousSkipCells = process.env.JUMENTIX_FULL_MATRIX_SKIP_CELLS;
+    process.env.JUMENTIX_CI_MATRIX_RESULT_FILE = resultFile;
+    delete process.env.JUMENTIX_FULL_MATRIX_SKIP_CELLS;
+
+    try {
+      const evidence = runFullTestMatrix({
+        cells: [{ id: 'version', script: 'check-bun-version' }],
+        execute: () => 0,
+        logger: { log: jest.fn(), error: jest.fn() },
+        availableScripts: fullMatrixRootPackage.scripts
+      });
+
+      expect(evidence.outcome).toBe('passed');
+      expect(JSON.parse(matrixFs.readFileSync(resultFile, 'utf8')).outcome)
+        .toBe('passed');
+    } finally {
+      restoreEnv('JUMENTIX_CI_MATRIX_RESULT_FILE', previousResultFile);
+      restoreEnv('JUMENTIX_FULL_MATRIX_SKIP_CELLS', previousSkipCells);
+      matrixFs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   it('treats missing execution status and crashes as failures', () => {
     expect.hasAssertions();
     const logger = { log: jest.fn(), error: jest.fn() };
@@ -330,6 +383,8 @@ describe('run-full-test-matrix', () => {
     expect(fullMatrixRootPackage.scripts['ci:gate:task'])
       .toBe('bun ci-cd/run-task-change-tests.js');
     expect([
+      fullMatrixRootPackage.scripts['mono:build'].includes('bun run mono:build:deps && bun run --filter'),
+      fullMatrixRootPackage.scripts['mono:build:deps'] === 'bun run --filter @jumentix/cana build',
       read('.husky/pre-commit').includes('bun run ci:gate:branch'),
       read('.husky/pre-push').includes('bun run ci:gate:branch'),
       read('.husky/pre-merge-commit').includes('bun run ci:gate:branch'),
@@ -348,8 +403,10 @@ describe('run-full-test-matrix', () => {
       read('.github/workflows/ci.yml').includes('bun run mono:test'),
       read('.github/workflows/ci.yml').includes('name: Run integration matrix'),
       read('.github/workflows/ci.yml').includes('bun run ci:integration'),
+      read('.github/workflows/ci.yml').includes('ci-cd/ensure-docker-runtime.sh'),
       !read('.github/workflows/ci.yml').includes('requirepass'),
       !read('.github/workflows/ci.yml').includes('AAA_REDIS_PASSWORD'),
+      fullMatrixRootPackage.scripts['website:deps:build'].includes('@jumentix/cana'),
       read('.github/workflows/ci.yml').includes('bun run website:storybook:build'),
       read('.github/workflows/ci.yml').includes('bun run website:storybook:smoke'),
       read('.github/workflows/ci.yml').includes('bun run website:test:cypress'),
@@ -365,7 +422,7 @@ describe('run-full-test-matrix', () => {
       !FULL_TEST_MATRIX.some(
         (cell: FullMatrixTestCell) => cell.script.startsWith('website:storybook')
       )
-    ]).toStrictEqual(Array(33).fill(true));
+    ]).toStrictEqual(Array(37).fill(true));
   });
 });
 

@@ -141,3 +141,6 @@ next-env.d.ts
 .claude/settings.local.json
 .vercel
 .env*
+
+# Documentation images copied from repository markdown at content-sync time (JUM-727)
+public/docs-assets/

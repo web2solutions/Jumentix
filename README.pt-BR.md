@@ -129,6 +129,7 @@ Jumentix elimina esse desperdício. Sua equipe começa em uma fábrica de softwa
 
 ## Lançar manuais
 
+- [Usando o Service Manager e o Domain Designer](./documentation/md/guides/USING-SERVICE-MANAGER-AND-DOMAIN-DESIGNER.pt-BR.md)
 - [Criando SPA/PWA com Jumentix](./apps/service-management/documentation/guides/CREATING-SPA-PWA-WITH-JUMENTIX.md)
 - [Criando uma API REST com Jumentix](./apps/backend-template/documentation/guides/CREATING-REST-API-WITH-JUMENTIX.md)
 - [Criando uma API em tempo real com Jumentix](./apps/backend-template/documentation/guides/CREATING-REALTIME-API-WITH-JUMENTIX.md)

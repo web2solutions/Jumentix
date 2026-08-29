@@ -80,14 +80,10 @@ function createTaskTestPlan(files) {
   }
 
   if (integrationTests.length > 0) {
-    const needsHttpHeadroom = integrationTests.some(
-      (file) => file.includes('/Express/') || file.includes('/Restify/')
-    );
-
     return {
       type: 'changed-integration-tests',
       files: normalizeFiles([...unitTests, ...governanceTests, ...integrationTests]),
-      testTimeoutMs: needsHttpHeadroom ? 15_000 : undefined
+      testTimeoutMs: integrationTests.some((file) => file.includes('/Restify/')) ? 15_000 : undefined
     };
   }
 

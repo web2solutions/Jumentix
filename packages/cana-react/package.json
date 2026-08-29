@@ -40,7 +40,7 @@
     "react-test-renderer": "19.2.8"
   },
   "scripts": {
-    "build": "bun run --filter @jumentix/cana build && tsc -p tsconfig.json --noEmit false && bun run build:esm",
+    "build": "tsc -p tsconfig.json --noEmit false && bun run build:esm",
     "build:esm": "bun build src/index.ts --outfile dist/index.mjs --format esm --target browser --external react --external @jumentix/cana && bun build src/redux.ts --outfile dist/redux.mjs --format esm --target browser --external @jumentix/cana",
     "test": "bun test --isolate test",
     "lint": "echo \"cana-react: covered by the root eslint run\"",

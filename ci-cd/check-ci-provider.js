@@ -9,6 +9,7 @@ const failures = [];
 
 const circleciPath = path.join(root, '.circleci', 'config.yml');
 const workflowPath = path.join(root, '.github', 'workflows', 'ci.yml');
+const packagePath = path.join(root, 'package.json');
 
 if (fs.existsSync(circleciPath)) {
   failures.push('CircleCI is disabled by Requirement 113: remove .circleci/config.yml');
@@ -19,25 +20,30 @@ if (!fs.existsSync(workflowPath)) {
 } else {
   const contents = fs.readFileSync(workflowPath, 'utf8');
   const servicesPath = path.join(root, 'ci-cd', 'ensure-local-ci-services.sh');
+  const dockerRuntimePath = path.join(root, 'ci-cd', 'ensure-docker-runtime.sh');
   const serviceContents = fs.existsSync(servicesPath) ? fs.readFileSync(servicesPath, 'utf8') : '';
-  const ciContents = `${contents}\n${serviceContents}`;
+  const dockerRuntimeContents = fs.existsSync(dockerRuntimePath) ? fs.readFileSync(dockerRuntimePath, 'utf8') : '';
+  const packageContents = fs.existsSync(packagePath) ? fs.readFileSync(packagePath, 'utf8') : '';
+  const ciContents = `${contents}\n${serviceContents}\n${dockerRuntimeContents}\n${packageContents}`;
   const requiredMarkers = [
     /name:\s*CI/,
     /pull_request:/,
     /workflow_dispatch:/,
     /schedule:/,
-    /FORCE_JAVASCRIPT_ACTIONS_TO_NODE24:\s*'true'/,
     /runs-on:\s*\[self-hosted,\s*jumentix\]/,
-    /uses:\s*actions\/checkout@v7/,
-    /uses:\s*actions\/setup-node@v7/,
-    /node-version:\s*22/,
-    /uses:\s*actions\/upload-artifact@v7/,
+    /Checkout repository without JavaScript Actions/,
+    /https:\/\/x-access-token:\$\{GITHUB_TOKEN\}@github\.com\/\$\{GITHUB_REPOSITORY\}\.git/,
+    /git -c credential\.helper= fetch --no-tags --prune origin/,
+    /Use local Node\.js 22/,
+    /node --version \| grep -E '\^v22\\\.'/,
     /branch-gate:/,
+    /task-branch-push/,
     /third-party-review:/,
     /workspace-builds:/,
     /workspace-tests:/,
     /integration:/,
     /coverage:/,
+    /Fetch branch references for patch coverage/,
     /website:/,
     /database-matrix:/,
     /classify-ci-context\.js --result-file artifacts\/ci\/ci-context\.json --require-job branch-gate/,
@@ -49,10 +55,14 @@ if (!fs.existsSync(workflowPath)) {
     /AAA_PR_BODY<<__JUMENTIX_BODY__/,
     /redis:7\.2-alpine/,
     /rabbitmq:3\.13-alpine/,
+    /ci-cd\/ensure-docker-runtime\.sh/,
+    /open -ga Docker/,
     /bun install --frozen-lockfile/,
     /bun run mono:build/,
+    /mono:build:deps/,
     /bun run mono:test/,
     /bun run ci:integration/,
+    /website:deps:build/,
     /FIREBASE_SERVICE_ACCOUNT_KEY/,
     /ci-cd\/ensure-local-ci-services\.sh/,
     /bun run test:coverage/,
@@ -65,6 +75,7 @@ if (!fs.existsSync(workflowPath)) {
     /website:test:cypress/,
     /gitleaks\.sarif/,
     /semgrep\.sarif/,
+    /List review evidence/,
     /Enforce scanner outcomes/,
     /Install verified Codecov CLI/,
     /Upload coverage to Codecov/,
@@ -107,6 +118,10 @@ if (!fs.existsSync(workflowPath)) {
 
   if (/runs-on:\s*ubuntu-latest/.test(contents)) {
     failures.push('.github/workflows/ci.yml must use the repository-owned self-hosted runner, not ubuntu-latest');
+  }
+
+  if (/uses:\s*actions\//.test(contents)) {
+    failures.push('.github/workflows/ci.yml must avoid JavaScript GitHub Actions on the self-hosted runner');
   }
 }
 

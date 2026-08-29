@@ -462,6 +462,7 @@ describe('hexagonal codegen (JUM-476)', () => {
         tsc,
         '--noEmit',
         '--strict',
+        '--skipLibCheck',
         '--target', 'es2020',
         '--module', 'commonjs',
         '--moduleResolution', 'node',

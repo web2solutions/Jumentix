@@ -106,8 +106,7 @@ Conforme o
 Requisito 070,
 **não existe publicação automática**. A superfície de dry-run do repositório
 (`bun run npm:publish:dry-run:packages`) reconhece este pacote como qualquer
-outro pacote de workspace não privado e executa `bun publish --dry-run
---access public`, que roda o `prepublishOnly` — um rebuild limpo — antes de
+outro pacote de workspace não privado e executa `bun publish --dry-run --access public`, que roda o `prepublishOnly` — um rebuild limpo — antes de
 montar o tarball. O `test/packaging.test.ts` valida o manifesto e o conteúdo
 empacotado, de modo que o dry-run verifica um artefato cujo conteúdo é
 provado, não presumido.

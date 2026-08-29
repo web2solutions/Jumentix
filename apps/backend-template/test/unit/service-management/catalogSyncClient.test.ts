@@ -511,6 +511,33 @@ describe('catalogSyncClient — conflicts are reviewable, never destructive', ()
     await host.syncClient.stop();
   });
 
+  it('take-server tolerates a context-less server domain while rebasing the marker', async () => {
+    expect.hasAssertions();
+    const host = await createHost([makeDomain('domain-1', 'Billing', [makeEntity('entity-1', 'Invoice')])]);
+    await host.syncClient.start();
+    host.timers.clear();
+    const { record } = await host.syncClient.publishDomain('domain-1');
+    host.timers.clear();
+
+    await host.transport.updateCatalog(record.id, {
+      version: 1,
+      design: {
+        kind: 'domain-package',
+        version: '2.0.0',
+        domain: { id: 'remote-domain', name: 'Billing', entities: [makeEntity('entity-2', 'RemoteOnly')] }
+      }
+    });
+    host.core.state.domains[0].entities.push(makeEntity('entity-3', 'LocalEntity'));
+    await host.core.saveState();
+    await host.flushTimers();
+
+    const { resolved } = await host.syncClient.resolveConflict(record.id, 'take-server');
+    expect(resolved).toBe(true);
+    expect(host.core.state.domains[0].context.catalog.version).toBe(2);
+    expect(host.core.state.domains[0].entities.map((entity: any) => entity.name)).toStrictEqual(['RemoteOnly']);
+    await host.syncClient.stop();
+  });
+
   it('a remote delete over a dirty local copy raises a conflict instead of deleting', async () => {
     expect.hasAssertions();
     const host = await createHost([makeDomain('domain-1', 'Billing', [makeEntity('entity-1', 'Invoice')])]);
@@ -684,6 +711,22 @@ describe('catalogSyncClient — declared boundaries and edge paths', () => {
     await host.flushTimers();
     const remote = await host.transport.getCatalog('catalog-1');
     expect(remote.version).toBe(1);
+  });
+
+  it('unpublishes a shared domain even if its context object was removed', async () => {
+    expect.hasAssertions();
+    const host = await createHost([makeDomain('domain-1', 'Billing')]);
+    await host.syncClient.start();
+    host.timers.clear();
+    const { record } = await host.syncClient.publishDomain('domain-1');
+    const marker = host.core.state.domains[0].context.catalog;
+    delete host.core.state.domains[0].context;
+    host.core.state.domains[0].context = { catalog: marker };
+
+    await expect(host.syncClient.unpublishDomain('domain-1')).resolves.toStrictEqual({ unpublished: true });
+    expect(host.core.state.domains[0].context.catalog).toBeUndefined();
+    expect((await host.transport.getCatalog(record.id)).deletedAt).not.toBe('');
+    await host.syncClient.stop();
   });
 });
 

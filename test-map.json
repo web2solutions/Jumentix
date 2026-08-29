@@ -432,6 +432,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/interface/HTTP/adapters/errorResponses.test.ts",
+      "path": "apps/backend-template/test/unit/interface/HTTP/adapters/errorResponses.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/interface/HTTP/adapters/vercel-functions/vercelFunctionsSecurity.test.ts",
       "path": "apps/backend-template/test/unit/interface/HTTP/adapters/vercel-functions/vercelFunctionsSecurity.test.ts",
       "layer": "interface/runtime",
@@ -1796,6 +1806,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/modules/Users/lambdaRuntime.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Users/lambdaRuntime.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/modules/Users/domain/security/TenantAuthorizationPolicy.test.ts",
       "path": "apps/backend-template/test/unit/modules/Users/domain/security/TenantAuthorizationPolicy.test.ts",
       "layer": "domain",
@@ -1838,16 +1858,6 @@
     {
       "id": "apps/backend-template/test/unit/modules/Catalogs/CatalogModel.test.ts",
       "path": "apps/backend-template/test/unit/modules/Catalogs/CatalogModel.test.ts",
-      "layer": "application",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/modules/Catalogs/catalogFeatureDefaults.test.ts",
-      "path": "apps/backend-template/test/unit/modules/Catalogs/catalogFeatureDefaults.test.ts",
       "layer": "application",
       "kind": "hexagonal",
       "type": "unit",
@@ -4372,9 +4382,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 224,
+    "unit": 226,
     "integration": 97,
     "smoke": 2,
-    "suites": 371
+    "suites": 373
   }
 }

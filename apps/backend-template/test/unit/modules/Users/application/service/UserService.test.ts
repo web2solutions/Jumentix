@@ -448,4 +448,53 @@ describe('user service', () => {
       expect.objectContaining({ users: [baseUser.id] })
     );
   });
+
+  it('does nothing when organization sync is called with default organizations', async () => {
+    expect.hasAssertions();
+    const { service, organizationDataRepository, cacheService } = setup();
+
+    await (service as any).syncOrganizationUsers(baseUser.id);
+
+    expect(organizationDataRepository.update).not.toHaveBeenCalled();
+    expect(cacheService.bumpVersion).not.toHaveBeenCalledWith('organizations');
+  });
+
+  it('does not write organization links when create/update/delete see no organization', async () => {
+    expect.hasAssertions();
+    const { service, dataRepository, organizationDataRepository } = setup();
+    mockedCreateUser.mockResolvedValueOnce({
+      ...baseUser,
+      organization: undefined
+    } as any);
+
+    const created = await service.create({
+      firstName: 'John',
+      username: 'john',
+      password: '12345678',
+      emails: [{ email: 'john@example.com', type: EEmailType.personal }]
+    } as any);
+    expect(created.result?.id).toBe(baseUser.id);
+
+    (dataRepository.getOneById as jest.Mock).mockResolvedValueOnce({
+      ...baseUser,
+      organization: undefined,
+      roles: []
+    });
+    mockedUpdateUser.mockResolvedValueOnce({
+      ...baseUser,
+      organization: undefined,
+      roles: []
+    } as any);
+    const updated = await service.update(baseUser.id, { firstName: 'No Org' } as any);
+    expect(updated.result?.id).toBe(baseUser.id);
+
+    (dataRepository.getOneById as jest.Mock).mockResolvedValueOnce({
+      ...baseUser,
+      organization: undefined
+    });
+    const deleted = await service.delete(baseUser.id);
+    expect(deleted.result).toBe(true);
+
+    expect(organizationDataRepository.update).not.toHaveBeenCalled();
+  });
 });

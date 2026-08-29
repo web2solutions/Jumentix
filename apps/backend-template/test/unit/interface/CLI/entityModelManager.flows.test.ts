@@ -463,3 +463,68 @@ describe('entity manager edits and printers (JUM-681)', () => {
     expect(run.saved[0].entities[0].domain).toBe('Logistics');
   });
 });
+
+/**
+ * The empty-on-empty answers (JUM-721).
+ *
+ * Every "keep what is there" fallback has a third arm for when there is nothing
+ * to keep either: an entity with no description, a field with no behaviour, a
+ * custom domain prompt answered with nothing. Those arms are what stop the
+ * catalog gaining `undefined` where it should hold an empty string — a
+ * difference the designer renders as the word "undefined" and the exporters
+ * write into a contract.
+ */
+describe('entity manager empty answers (JUM-721)', () => {
+  const bareEntity = () => ({
+    ...catalogWithEntity([{
+      name: 'note',
+      type: 'string',
+      required: false,
+      format: '',
+      defaultValue: '',
+      validations: [],
+      behavior: ''
+    }])
+  });
+
+  const withoutDescription = () => {
+    const catalog = bareEntity();
+    catalog.entities[0].description = '';
+    return catalog;
+  };
+
+  it('keeps an empty description empty rather than undefined', async () => {
+    expect.hasAssertions();
+
+    const run = scriptedContext(withoutDescription(), [3, 0, 0, 0, BACK], ['', '', '']);
+
+    await entityModelManagerSubApplication.run(run.context as never);
+
+    expect(run.saved[0].entities[0].description).toBe('');
+    expect(run.saved[0].entities[0].behaviors).toStrictEqual([]);
+  });
+
+  it('keeps an empty behaviour empty rather than undefined', async () => {
+    expect.hasAssertions();
+
+    const run = scriptedContext(bareEntity(), [5, 0, 4, 0, FIELDS_BACK, BACK], ['']);
+
+    await entityModelManagerSubApplication.run(run.context as never);
+
+    expect(run.saved[0].entities[0].fields[0].behavior).toBe('');
+  });
+
+  it('refuses a create whose typed domain is also empty', async () => {
+    expect.hasAssertions();
+
+    // The custom-domain prompt with nothing typed and nothing to fall back on:
+    // the create stops rather than filing the entity under "".
+    const empty: IWorkspaceCatalog = { version: 1, domains: [], entities: [] };
+    const run = scriptedContext(empty, [2, 0, BACK], ['Invoice', '']);
+
+    await entityModelManagerSubApplication.run(run.context as never);
+
+    expect(run.logs).toContain('Domain is required.');
+    expect(run.saved).toHaveLength(0);
+  });
+});

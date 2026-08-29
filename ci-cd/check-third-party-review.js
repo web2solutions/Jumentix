@@ -13,7 +13,7 @@ const contracts = [
       'gitleaks.sarif',
       'semgrep.sarif',
       'Enforce scanner outcomes',
-      'actions/upload-artifact@v7',
+      'List review evidence',
       '$HOME/review-tools/semgrep'
     ]
   },
@@ -94,6 +94,23 @@ function reviewJobFailures(configText) {
 
   if (commands.some((command) => /\buses:\s*\S+@(v\d+|main|master)\b/.test(command))) {
     problems.push('third-party GitHub Actions job contains a mutable action reference');
+  }
+
+  const javascriptActionStep = steps.find((step) => step && typeof step === 'object' && step.uses);
+  if (javascriptActionStep) {
+    problems.push('third-party GitHub Actions job must avoid JavaScript Actions on the self-hosted runner');
+  }
+
+  const evidenceStep = steps.find((step) => step?.name === 'List review evidence');
+  if (!evidenceStep) {
+    problems.push('third-party GitHub Actions job must list scanner evidence without uploading artifacts');
+  }
+
+  const enforceStep = steps.find((step) => step?.name === 'Enforce scanner outcomes');
+  if (!enforceStep) {
+    problems.push('third-party GitHub Actions job must enforce scanner outcomes');
+  } else if (enforceStep.if !== 'always()') {
+    problems.push('third-party GitHub Actions scanner enforcement must run even when evidence upload fails');
   }
 
   return problems;

@@ -16,6 +16,7 @@ Docs index JSON: https://jumentix-website.vercel.app/docs-index.json
 - Guides: https://jumentix-website.vercel.app/docs/jumentix/guides
 - Create a Modular SaaS: https://jumentix-website.vercel.app/docs/jumentix/guides/saas-monolith
 - Create a Realtime API: https://jumentix-website.vercel.app/docs/jumentix/guides/realtime-api
+- Run and Use the Service Manager: https://jumentix-website.vercel.app/docs/jumentix/guides/service-management
 - Create a Microservices SaaS: https://jumentix-website.vercel.app/docs/jumentix/guides/saas-microservices
 
 ## Packages
@@ -89,11 +90,19 @@ Docs index JSON: https://jumentix-website.vercel.app/docs-index.json
 - Total.js Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/total-js
 
 ## Reference
+- Domain Designer Features and Usage: https://jumentix-website.vercel.app/docs/jumentix/reference/domain-designer-features
+- Service Management Contract Parity: https://jumentix-website.vercel.app/docs/jumentix/reference/service-management-contract-parity
 - Reference: https://jumentix-website.vercel.app/docs/jumentix/reference
+- Service Management Operations Console: https://jumentix-website.vercel.app/docs/jumentix/reference/service-management-operations-console
 - Runtime Environment Contracts: https://jumentix-website.vercel.app/docs/jumentix/reference/runtime-contracts
+- Service Management Cana Adoption: https://jumentix-website.vercel.app/docs/jumentix/reference/service-management-cana-adoption
 - Events and Messages Map: https://jumentix-website.vercel.app/docs/jumentix/reference/events-messages
+- Service Management Module Architecture: https://jumentix-website.vercel.app/docs/jumentix/reference/service-management-module-architecture
 - Security and PCI Hardening: https://jumentix-website.vercel.app/docs/jumentix/reference/security-compliance
+- Service Management Design System and PWA: https://jumentix-website.vercel.app/docs/jumentix/reference/service-management-design-system-pwa
+- Service Management Collaboration and Packaging: https://jumentix-website.vercel.app/docs/jumentix/reference/service-management-collaboration-packaging
 - Errors and Responses Map: https://jumentix-website.vercel.app/docs/jumentix/reference/errors-responses
+- Runtime Environment Contracts: https://jumentix-website.vercel.app/docs/jumentix/reference/service-management-runtime-environment
 - Package Scripts Reference: https://jumentix-website.vercel.app/docs/jumentix/reference/package-scripts
 
 ## Portuguese

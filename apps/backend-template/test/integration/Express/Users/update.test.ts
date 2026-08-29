@@ -22,6 +22,7 @@ import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal'
 import createdUsers from '@seed/users';
 import { EAuthSchemaType } from '@src/modules/Users/service/ports/EAuthSchemaType';
 import type { IAuthorizationHeader } from '@src/modules/Users/service/ports/IAuthorizationHeader';
+import { closeServer } from '../closeServer';
 
 const [createdUser1, createdUser2, createdUser3, createdUser4] = createdUsers;
 
@@ -75,7 +76,7 @@ describe('express -> update User suite', () => {
       mutexService
     });
 
-    server = API.server.application;
+    server = API.server.application.listen(0);
     await API.seedUsers();
     // await server.ready();
 
@@ -111,7 +112,7 @@ describe('express -> update User suite', () => {
 
   afterAll(async () => {
     await API.stop();
-    // await server.close();
+    await closeServer(server);
   });
 
   it('user1 must be able to update an user', async () => {

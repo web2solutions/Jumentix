@@ -1664,11 +1664,9 @@ function CommercialMatrix({
   headers: string[];
   rows: CommercialMatrixRow[];
 }) {
-  const accessibleLabel = headers.join(', ');
-
   return (
     <div
-      aria-label={accessibleLabel}
+      aria-label={headers.join(' / ')}
       className={classes.matrixWrap}
       role="region"
       tabIndex={0}

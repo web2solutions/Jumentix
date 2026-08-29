@@ -16,6 +16,7 @@ import { MutexService } from '@src/infra/mutex/adapter/MutexService';
 import { UserDataRepository, UserService } from '@src/modules/Users';
 import { JwtService } from '@src/infra/jwt/JwtService';
 import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal';
+import { closeServer } from './closeServer';
 
 const webServer = ExpressServer.compile();
 const databaseClient = InMemoryDbClient;
@@ -63,10 +64,11 @@ describe('express -> apiVersions end point', () => {
       keyValueStorageClient,
       mutexService
     });
-    server = API.server.application;
+    server = API.server.application.listen(0);
   });
 
   afterAll(async () => {
+    await closeServer(server);
     await databaseClient.disconnect();
     await keyValueStorageClient.disconnect();
     // await keyValueStorageClient.disconnect();

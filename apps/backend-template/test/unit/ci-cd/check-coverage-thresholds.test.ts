@@ -26,10 +26,14 @@ const coverageGuard = require('../../../../../ci-cd/check-coverage-thresholds') 
   THRESHOLDS: Record<string, number>;
   ACCEPTED_BELOW_THRESHOLD: Record<string, { floor: number; issue: string; since: string }>;
   formatPercentage: (value: number) => string;
-  main: (readReport?: () => unknown) => void;
+  main: (
+    readReport?: () => unknown,
+    exceptions?: Record<string, { floor: number; issue: string; since: string }>
+  ) => void;
   defaultReadReport: () => unknown;
   filterThresholdSubjects: (report: Record<string, unknown>) => Record<string, unknown>;
   isThresholdSubject: (filePath: string) => boolean;
+  readsEnvFlag: (name: string, defaultValue?: boolean) => boolean;
 };
 
 /** Counters where the first `hit` of `found` are covered. */
@@ -61,6 +65,14 @@ const reportWith = ({
     b: branches(brf, brh)
   }
 });
+
+const restoreEnvValue = (name: string, value: string | undefined) => {
+  if (value === undefined) {
+    delete process.env[name];
+    return;
+  }
+  process.env[name] = value;
+};
 
 describe('check-coverage-thresholds', () => {
   it('sums found and hit counters across records', () => {
@@ -178,7 +190,10 @@ describe('check-coverage-thresholds', () => {
  * coverage report.
  */
 describe('check-coverage-thresholds CLI', () => {
-  const runMain = (report: unknown) => {
+  const runMain = (
+    report: unknown,
+    exceptions?: Record<string, { floor: number; issue: string; since: string }>
+  ) => {
     const errors: unknown[] = [];
     const logs: unknown[] = [];
     jest.spyOn(process, 'exit').mockImplementation(((code: number): never => {
@@ -189,7 +204,7 @@ describe('check-coverage-thresholds CLI', () => {
 
     let thrown: Error | null = null;
     try {
-      coverageGuard.main(() => report);
+      coverageGuard.main(() => report, exceptions);
     } catch (error) {
       thrown = error as Error;
     }
@@ -206,10 +221,7 @@ describe('check-coverage-thresholds CLI', () => {
     const result = runMain(reportWith({ brf: 100, brh: 50 }));
 
     expect(result.thrown?.message).toBe('exit:1');
-    // JUM-681: branches is under a tracked floor, so the message names the
-    // floor and the exception rather than the bare threshold. That is the more
-    // useful failure — it says how far it may fall and who owns the debt.
-    expect(result.errors).toContain('branches: 50.00% is below the accepted floor of 95.902% (JUM-721)');
+    expect(result.errors).toContain('branches: 50.00% is below the accepted floor of 97.47%');
   });
 
   it('exits non-zero when the report is absent, rather than treating it as a pass', () => {
@@ -224,18 +236,11 @@ describe('check-coverage-thresholds CLI', () => {
 
   it('reports every metric when all pass', () => {
     expect.hasAssertions();
-    // Above the recorded floor, which is what "all pass" means while the
-    // exception is live — a fixture at the floor would start failing the moment
-    // the ratchet moves, which it does on every branch that gets covered.
-    const result = runMain(reportWith({ brf: 100, brh: 96 }));
+    const result = runMain(reportWith({ brf: 100, brh: 98 }), {});
 
     expect(result.thrown).toBeNull();
-    expect(result.logs).toContain('branches 96.00%');
-    // JUM-681 recorded the first live exception, and this is the behaviour the
-    // previous version of this test described but could not exercise: a reader
-    // is never shown the number without being told it sits under a tracked
-    // concession, and who owns it.
-    expect(result.logs).toContain('under JUM-721');
+    expect(result.logs).toContain('branches 98.00%');
+    expect(result.logs).not.toContain('under JUM-579');
   });
 });
 
@@ -267,13 +272,61 @@ describe('check-coverage-thresholds report reader', () => {
     // Requirement 112 §4: cana is measured in the browser. Returning the Jest
     // half alone would pass the gate with cana unmeasured.
     // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
-    const nodeFs = require('fs') as { existsSync: (path: string) => boolean };
-    const spy = jest.spyOn(nodeFs, 'existsSync').mockImplementation((filePath) => (
+    const nodeFs = require('fs') as {
+      existsSync: (path: string) => boolean;
+      readFileSync: (path: string, encoding: string) => string;
+    };
+    const exists = jest.spyOn(nodeFs, 'existsSync').mockImplementation((filePath) => (
       String(filePath).endsWith('coverage/coverage-final.json')
     ));
+    const read = jest.spyOn(nodeFs, 'readFileSync').mockReturnValue(JSON.stringify({
+      'jest.ts': {
+        b: {},
+        f: {},
+        s: counters(1, 1),
+        statementMap: statements(1)
+      }
+    }));
 
     expect(coverageGuard.defaultReadReport()).toStrictEqual({ missingBrowserReport: true });
-    spy.mockRestore();
+    exists.mockRestore();
+    read.mockRestore();
+  });
+
+  it('can read only the preserved Jest report when the release job gates project coverage before browser publishing', () => {
+    expect.hasAssertions();
+    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+    const nodeFs = require('fs') as {
+      existsSync: (path: string) => boolean;
+      readFileSync: (path: string, encoding: string) => string;
+    };
+    const previousIncludeBrowser = process.env.JUMENTIX_COVERAGE_INCLUDE_BROWSER;
+    const previousRequireBrowser = process.env.JUMENTIX_COVERAGE_REQUIRE_BROWSER;
+    process.env.JUMENTIX_COVERAGE_INCLUDE_BROWSER = '0';
+    process.env.JUMENTIX_COVERAGE_REQUIRE_BROWSER = '0';
+    const exists = jest.spyOn(nodeFs, 'existsSync').mockImplementation((filePath) => (
+      String(filePath).endsWith('coverage/coverage-final.json')
+    ));
+    const read = jest.spyOn(nodeFs, 'readFileSync').mockReturnValue(JSON.stringify({
+      'jest.ts': {
+        b: {},
+        f: {},
+        s: counters(1, 1),
+        statementMap: statements(1)
+      }
+    }));
+
+    try {
+      const report = coverageGuard.defaultReadReport() as Record<string, { s: unknown }>;
+
+      expect(Object.keys(report)).toStrictEqual(['jest.ts']);
+      expect(report['jest.ts'].s).toStrictEqual({ 0: 1 });
+    } finally {
+      restoreEnvValue('JUMENTIX_COVERAGE_INCLUDE_BROWSER', previousIncludeBrowser);
+      restoreEnvValue('JUMENTIX_COVERAGE_REQUIRE_BROWSER', previousRequireBrowser);
+      exists.mockRestore();
+      read.mockRestore();
+    }
   });
 
   it('parses a report from disk', () => {
@@ -543,5 +596,65 @@ describe('check-coverage-thresholds line counting (JUM-681)', () => {
     });
 
     expect(totals).toStrictEqual({ found: 2, hit: 0 });
+  });
+});
+
+/**
+ * Records that carry less than the format promises (JUM-721).
+ *
+ * Istanbul writes a record per file, and a file with no functions has no `f`
+ * map, one with no branches has no `b`, and a file the instrumenter skipped has
+ * no `statementMap` at all. The summariser has to read each of those as "none
+ * of that metric here" rather than throwing — a checker that crashes on one odd
+ * record reports nothing about the other nine hundred, and a crashed checker in
+ * CI reads as a failed build with no coverage number in it.
+ */
+describe('check-coverage-thresholds partial records (JUM-721)', () => {
+  it('reads a record with no counter maps as contributing nothing', () => {
+    expect.hasAssertions();
+
+    const totals = coverageGuard.summarize({
+      'apps/backend-template/src/empty.ts': { statementMap: {} },
+      ...reportWith({
+        sf: 10, sh: 10, fnf: 2, fnh: 2, brf: 4, brh: 4
+      })
+    });
+
+    expect(totals).toStrictEqual({
+      statements: { found: 10, hit: 10 },
+      functions: { found: 2, hit: 2 },
+      branches: { found: 4, hit: 4 },
+      lines: { found: 10, hit: 10 }
+    });
+  });
+
+  it('counts no lines for a record with no statement map', () => {
+    expect.hasAssertions();
+
+    // `lines` is derived from the statement map, so a record without one has
+    // no lines rather than a line whose count is `undefined`.
+    const totals = coverageGuard.summarize({
+      'apps/backend-template/src/skipped.ts': { s: {}, f: {}, b: {} }
+    });
+
+    expect(totals.lines).toStrictEqual({ found: 0, hit: 0 });
+  });
+
+  it('treats a statement with no recorded count as missed', () => {
+    expect.hasAssertions();
+
+    // A statement map entry with no matching `s` count is not a covered line.
+    // Reading the absent count as anything but zero would report a file as
+    // fully covered because its counters failed to serialise.
+    const totals = coverageGuard.summarize({
+      'apps/backend-template/src/partial.ts': {
+        statementMap: { 0: { start: { line: 1 } }, 1: { start: { line: 2 } } },
+        s: { 0: 3 },
+        f: {},
+        b: {}
+      }
+    });
+
+    expect(totals.lines).toStrictEqual({ found: 2, hit: 1 });
   });
 });

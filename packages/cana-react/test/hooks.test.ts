@@ -166,6 +166,47 @@ describe('useCanaClient (JUM-681)', () => {
     // next version upgrade, which is the failure users see as a frozen app.
     expect(broker.closes()).toBe(1);
   });
+
+  it('closes a client that finishes opening after the component unmounted', async () => {
+    expect.hasAssertions();
+
+    let releaseOpen!: () => void;
+    const broker = brokerDouble();
+    const openedClient = broker.client as any;
+    const slowClient = {
+      ...openedClient,
+      open: async () => new Promise<void>((resolve) => {
+        releaseOpen = resolve;
+      }),
+      close: openedClient.close
+    };
+    const { unmount, flush } = await renderHook(() => useCanaClient(() => slowClient as never));
+    await unmount();
+
+    releaseOpen();
+    await flush();
+
+    expect(broker.closes()).toBeGreaterThanOrEqual(1);
+  });
+
+  it('ignores open failures that arrive after the component unmounted', async () => {
+    expect.hasAssertions();
+
+    let rejectOpen!: (error: Error) => void;
+    const client = {
+      open: async () => new Promise<void>((_resolve, reject) => {
+        rejectOpen = reject;
+      }),
+      close: async () => undefined
+    };
+    const { latest, unmount, flush } = await renderHook(() => useCanaClient(() => client as never));
+    await unmount();
+
+    rejectOpen(new Error('late open refused'));
+    await flush();
+
+    expect(latest.current.error).toBeNull();
+  });
 });
 
 describe('useCanaSubscription (JUM-681)', () => {
@@ -422,5 +463,35 @@ describe('useCanaLiveQuery (JUM-681)', () => {
     await unmount();
 
     expect(broker.stops()).toBe(1);
+  });
+
+  it('ignores subscription events that race after unmount', async () => {
+    expect.hasAssertions();
+
+    let queries = 0;
+    const broker = brokerDouble();
+    const client = {
+      subscribe: (broker.client as unknown as {
+        subscribe: (next: (event: CanaChangeEvent) => void) => () => void;
+      }).subscribe,
+      table: () => ({
+        query: async () => {
+          queries += 1;
+          return [];
+        }
+      })
+    };
+    const { unmount, flush } = await renderHook(() => useCanaLiveQuery<Row>({
+      client: client as never,
+      store: 'rows',
+      query: { limit: 1 }
+    }));
+    expect(queries).toBe(1);
+
+    await unmount();
+    await act(async () => { broker.emit({}); });
+    await flush();
+
+    expect(queries).toBe(1);
   });
 });

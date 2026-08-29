@@ -606,3 +606,77 @@ describe('describeLoadTimeDataLoss (JUM-681)', () => {
     expect(withNothing.message).not.toContain(CANA_MIGRATION_SOURCE_STATE_KEY);
   });
 });
+
+/**
+ * The last shapes a caller can hand the migration (JUM-721).
+ *
+ * Called with nothing at all, with a marker that names no retention window, and
+ * with a store whose refusal carries no reason: three inputs the app produces
+ * and the suite above does not. Each lands on a fallback whose job is to keep
+ * the message readable — "written to Cana ()" and "undefined" are what the user
+ * is shown when they are missing.
+ */
+describe('migration inputs at their edges (JUM-721)', () => {
+  it('is callable with no options at all', async () => {
+    expect.hasAssertions();
+
+    // The boot path calls it with an options object; a caller that forgets is
+    // answered rather than crashed on a destructure.
+    const result = await migrateLocalStorageToCana();
+
+    expect(result.status).toBe('no-source');
+  });
+
+  it('treats a verified marker with no retention window as still retained', async () => {
+    expect.hasAssertions();
+
+    // `Date.parse(undefined)` is NaN, and a NaN window must not read as
+    // "expired" — that would delete the user's only pre-migration copy.
+    const storage = storageDouble({
+      [MARKER_KEY]: JSON.stringify({ status: 'verified', migratedAt: '2026-01-01T00:00:00.000Z' }),
+      [CANA_MIGRATION_SOURCE_STATE_KEY]: STATE
+    });
+
+    const result = await migrateLocalStorageToCana({
+      storage,
+      store: storeDouble(),
+      now: () => new Date('2030-01-01T00:00:00.000Z')
+    });
+
+    expect(result.sourceRetained).toBe(true);
+    expect(storage.items.get(CANA_MIGRATION_SOURCE_STATE_KEY)).toBe(STATE);
+  });
+
+  it('names the status when a baseline refusal carries no reason', async () => {
+    expect.hasAssertions();
+
+    const result = await migrateLocalStorageToCana({
+      storage: storageDouble({
+        [CANA_MIGRATION_SOURCE_STATE_KEY]: STATE,
+        [CANA_MIGRATION_SOURCE_BASELINE_KEY]: '{"schema":1}'
+      }),
+      store: storeDouble({ saveBaseline: { status: 'unavailable' } })
+    });
+
+    expect(result.reason).toContain('written to Cana (unavailable)');
+  });
+
+  it('names a storage refusal that carries no message', async () => {
+    expect.hasAssertions();
+
+    // `String(error.message || error)` prints "undefined" without the fallback,
+    // and this message is the one the user is shown when the migration cannot
+    // read their data.
+    const messageless = new Error('boom');
+    messageless.message = '';
+    const storage = {
+      ...storageDouble(),
+      getItem: () => { throw messageless; }
+    };
+
+    const result = await migrateLocalStorageToCana({ storage, store: storeDouble() });
+
+    expect(result.status).toBe('no-source');
+    expect(result.reason).toContain('localStorage could not be read: Error');
+  });
+});

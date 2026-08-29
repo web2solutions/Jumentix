@@ -2,6 +2,10 @@
 import { CatalogService } from '@src/modules/Catalogs/service/CatalogService';
 import { CatalogDataRepository } from '@src/modules/Catalogs/adapters/out/persistence/CatalogDataRepository';
 import { CatalogUseCases } from '@src/modules/Catalogs/application/use-cases/CatalogUseCases';
+import { deleteCatalogById } from '@src/modules/Catalogs/features/deleteCatalogById';
+import { getAllCatalogs } from '@src/modules/Catalogs/features/getAllCatalogs';
+import { restoreCatalog } from '@src/modules/Catalogs/features/restoreCatalog';
+import { updateCatalog } from '@src/modules/Catalogs/features/updateCatalog';
 import { CatalogIntegrationEventName } from '@src/modules/Catalogs/events/contracts/CatalogIntegrationEventName';
 import { InMemoryRelationalStore } from '@src/infra/persistence/InMemoryDatabase/Stores/InMemoryRelationalStore';
 import type { ICatalog } from '@src/modules/Catalogs/domain/Entity/ICatalog';
@@ -245,5 +249,31 @@ describe('catalogService — optimistic concurrency and events', () => {
       { version: 1, description: 'ghost' }
     );
     expect((error as any).code).toBe('GENERIC.NOT_FOUND');
+  });
+});
+
+describe('catalog feature functions — repository port mapping', () => {
+  it('serializes empty list results and forwards default actors', async () => {
+    expect.hasAssertions();
+    const repository = {
+      getAll: jest.fn().mockResolvedValue({
+        result: undefined, page: 1, size: 10, total: 0
+      }),
+      delete: jest.fn().mockResolvedValue(true),
+      update: jest.fn().mockResolvedValue({ serialize: () => ({ id: 'catalog-1', version: 2 }) }),
+      restore: jest.fn().mockResolvedValue({ serialize: () => ({ id: 'catalog-1', version: 3 }) })
+    };
+
+    await expect(getAllCatalogs({ organization: 'org-1' }, { page: 1, size: 10 }, repository as never))
+      .resolves.toMatchObject({ result: [] });
+    await expect(deleteCatalogById('catalog-1', 2, repository as never)).resolves.toBe(true);
+    await expect(updateCatalog('catalog-1', { version: 1 }, repository as never))
+      .resolves.toStrictEqual({ id: 'catalog-1', version: 2 });
+    await expect(restoreCatalog('catalog-1', 2, repository as never))
+      .resolves.toStrictEqual({ id: 'catalog-1', version: 3 });
+
+    expect(repository.delete).toHaveBeenCalledWith('catalog-1', 2, '');
+    expect(repository.update).toHaveBeenCalledWith('catalog-1', { version: 1 }, '');
+    expect(repository.restore).toHaveBeenCalledWith('catalog-1', 2, '');
   });
 });

@@ -96,11 +96,10 @@ describe('run-task-change-tests', () => {
     });
   });
 
-  it('runs changed integration and planner tests with HTTP timeout headroom', () => {
+  it('runs changed integration and planner tests with Restify timeout headroom', () => {
     expect.hasAssertions();
     expect(createTaskTestPlan([
       'apps/backend-template/test/helpers/listenForSupertest.ts',
-      'apps/backend-template/test/integration/Express/auth/login.test.ts',
       'apps/backend-template/test/integration/Fastify/auth/login.test.ts',
       'apps/backend-template/test/integration/Restify/auth/login.test.ts',
       'apps/backend-template/test/unit/ci-cd/run-task-change-tests.test.ts'
@@ -108,7 +107,6 @@ describe('run-task-change-tests', () => {
       type: 'changed-integration-tests',
       files: [
         'apps/backend-template/test/unit/ci-cd/run-task-change-tests.test.ts',
-        'apps/backend-template/test/integration/Express/auth/login.test.ts',
         'apps/backend-template/test/integration/Fastify/auth/login.test.ts',
         'apps/backend-template/test/integration/Restify/auth/login.test.ts'
       ],

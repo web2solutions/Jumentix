@@ -321,6 +321,7 @@ describe('override major compatibility, the remaining branches (JUM-681)', () =>
       read: (dependent: string, overridden: string) => string | null
     ) => string[];
     readInstalledDependentRange: (dependent: string, overridden: string) => string | null;
+    validateOverrideIntegrity: (pkg: Record<string, unknown>) => string[];
     main: () => void;
   };
   const [pair] = guard.OVERRIDE_MAJOR_COMPATIBILITY;
@@ -400,5 +401,32 @@ describe('override major compatibility, the remaining branches (JUM-681)', () =>
 
     expect(summary).toContain('Dependency override integrity guard passed');
     expect(summary).toContain('major-compatibility pair(s) verified');
+  });
+
+  it('reads a manifest that declares no overrides, resolutions or patches', () => {
+    expect.hasAssertions();
+
+    // Not hypothetical: it is every manifest in this workspace except the root
+    // one, and the guard is pointed at manifests by path. Reading an absent key
+    // as an empty set is what lets it report "this pin is missing" instead of
+    // throwing on the way in.
+    const failures = guard.validateOverrideIntegrity({});
+
+    // Every pin, resolution and patch is reported missing — which is the right
+    // answer for a manifest that declares none of them, and proves the guard
+    // read the absent keys as empty rather than throwing on the way in.
+    expect(failures.length).toBeGreaterThan(0);
+    expect(failures.join(' ')).toContain('override "send" is missing');
+    expect(failures.join(' ')).toContain('patchedDependencies is missing');
+  });
+
+  it('reads null for a dependent that declares no dependencies at all', () => {
+    expect.hasAssertions();
+
+    // `typescript` is installed and depends on nothing. The absent
+    // `dependencies` map has to read as "no declaration for that package",
+    // which is the same answer as an uninstalled dependent and a different one
+    // from a declared range.
+    expect(guard.readInstalledDependentRange('typescript', 'send')).toBeNull();
   });
 });

@@ -202,6 +202,19 @@ function spawnServerProcess(
   };
 }
 
+function loopbackPortAcceptsConnection(port: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    const req = http.get(`http://127.0.0.1:${String(port)}/`, () => {
+      resolve(true);
+    });
+    req.on('error', () => resolve(false));
+    req.setTimeout(250, () => {
+      req.destroy();
+      resolve(false);
+    });
+  });
+}
+
 /**
  * Settles one boot attempt: resolves once THIS child reports its listen line
  * (a probe would be answered just as happily by the stale server we are
@@ -230,9 +243,17 @@ function waitForListening(server: SpawnedServer): Promise<void> {
         )
       );
     }, LISTEN_TIMEOUT_MS);
-    server.proc.on('exit', (code, signal) => {
+    server.proc.on('exit', async (code, signal) => {
       const stderr = server.stderr();
       if (stderr.includes('EADDRINUSE')) {
+        const error: NodeJS.ErrnoException = new Error(
+          `port ${String(server.port)} is already in use (EADDRINUSE)`
+        );
+        error.code = 'EADDRINUSE';
+        finish(error);
+        return;
+      }
+      if (await loopbackPortAcceptsConnection(server.port)) {
         const error: NodeJS.ErrnoException = new Error(
           `port ${String(server.port)} is already in use (EADDRINUSE)`
         );

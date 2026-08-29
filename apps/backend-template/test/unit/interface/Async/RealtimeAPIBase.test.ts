@@ -32,6 +32,20 @@ class TestRealtimeAPI extends RealtimeAPIBase {
   }
 }
 
+type ModuleLoader = (request: string, parent: unknown, isMain: boolean) => unknown;
+
+const loadModule = (
+  moduleLoads: Map<string, ModuleLoader>,
+  originalLoad: ModuleLoader,
+  request: string,
+  parent: unknown,
+  isMain: boolean
+): unknown => {
+  const mockedLoad = moduleLoads.get(request);
+  if (mockedLoad) return mockedLoad(request, parent, isMain);
+  return originalLoad(request, parent, isMain);
+};
+
 describe('realtime api base', () => {
   const databaseClient = {
     connect: jest.fn(),
@@ -280,6 +294,102 @@ paths:
     fs.rmSync(specDir, { recursive: true, force: true });
   });
 
+  it('ignores non-OpenAPI files and endpoints without operation ids while building operations', () => {
+    expect.hasAssertions();
+    const specDir = fs.mkdtempSync(path.join(os.tmpdir(), 'realtime-oas-sparse-'));
+    fs.writeFileSync(path.join(specDir, 'readme.txt'), 'not a spec', 'utf8');
+    fs.writeFileSync(path.join(specDir, 'broken.yml'), 'openapi: 3.1.0\ninfo:\n  version: 1.0.0\n', 'utf8');
+    fs.writeFileSync(path.join(specDir, '2.0.0.yaml'), `
+openapi: 3.1.0
+info:
+  version: 2.0.0
+  title: sparse
+paths:
+  /health:
+    get:
+      summary: no operation id
+`, 'utf8');
+
+    const api = new TestRealtimeAPI({ databaseClient, specDir }, true);
+
+    expect((api as any).listOperationIds()).toStrictEqual([]);
+    fs.rmSync(specDir, { recursive: true, force: true });
+  });
+
+  it('maps unmapped endpoint operation ids to a same-named controller method', () => {
+    expect.hasAssertions();
+    const spec = {
+      openapi: '3.1.0',
+      info: { version: '1.0.0', title: 'test' },
+      paths: { '/reports': { post: { operationId: 'publishReport' } } }
+    };
+    const controller = { publishReport: jest.fn().mockResolvedValue({ result: { ok: true } }) };
+    const controllerFactory = jest.fn().mockImplementation(() => controller);
+    const getControllerModuleSpy = jest
+      .spyOn(RealtimeAPIBase as any, 'getControllerModule')
+      .mockReturnValue(controllerFactory);
+    const api = new TestRealtimeAPI({ databaseClient });
+
+    (api as any).registerOperationsFromSpec('1.0.0', spec);
+
+    expect((api as any).operations.get('1.0.0:publishReport').controllerMethod)
+      .toBe('publishReport');
+    getControllerModuleSpy.mockRestore();
+  });
+
+  it('registers no operations for empty OAS paths and treats missing path blocks as empty', () => {
+    expect.hasAssertions();
+    const api = new TestRealtimeAPI({ databaseClient });
+
+    (api as any).registerOperationsFromSpec('1.0.0', { openapi: '3.1.0', paths: undefined });
+    (api as any).registerOperationsFromSpec('1.0.1', {
+      openapi: '3.1.0',
+      paths: { '/missing': undefined }
+    });
+
+    expect((api as any).listOperationIds()).toStrictEqual([]);
+  });
+
+  it('composes Users dependencies when registering auth endpoints', () => {
+    expect.hasAssertions();
+    const authService = { login: jest.fn() };
+    const userService = { getOneById: jest.fn() };
+    const userUseCases = { create: jest.fn() };
+    const organizationUseCases = { list: jest.fn() };
+    const authUseCases = { authenticate: jest.fn() };
+    const controllerFactory = jest.fn();
+    controllerFactory.mockImplementation(() => ({ login: jest.fn() }));
+    const getControllerModuleSpy = jest
+      .spyOn(RealtimeAPIBase as any, 'getControllerModule')
+      .mockReturnValue(controllerFactory);
+    const api = new TestRealtimeAPI({ databaseClient });
+    const composeUsersModuleSpy = jest.spyOn(api as any, 'composeUsersModule').mockReturnValue({
+      authService,
+      userService,
+      userUseCases,
+      organizationUseCases,
+      authUseCases
+    });
+
+    (api as any).registerOperationFromEndpoint({
+      version: '1.0.0',
+      spec: { openapi: '3.1.0', info: { version: '1.0.0', title: 'test' }, paths: {} },
+      path: '/auth/login',
+      endPointConfig: { operationId: 'login' }
+    });
+
+    expect(composeUsersModuleSpy).toHaveBeenCalledTimes(1);
+    expect(controllerFactory).toHaveBeenCalledWith(expect.objectContaining({
+      authService,
+      userService,
+      userUseCases,
+      organizationUseCases,
+      authUseCases
+    }));
+    composeUsersModuleSpy.mockRestore();
+    getControllerModuleSpy.mockRestore();
+  });
+
   it('returns undefined runtime handler when interface runtime factory is disabled', () => {
     expect.hasAssertions();
     const apiWithoutInterface = new TestRealtimeAPI({ databaseClient });
@@ -308,6 +418,38 @@ paths:
       endPointConfig: {}
     });
     expect(missing).toBeUndefined();
+  });
+
+  it('returns undefined when the runtime handler module exports no factory', () => {
+    expect.hasAssertions();
+    const nodeModule = require('module');
+    const originalLoad = nodeModule._load;
+    const moduleLoads = new Map<string, ModuleLoader>([
+      [
+        '@src/modules/Users/interface/websocketapi/frameworks/socket-io/handlers/notFactory',
+        () => ({ default: 'not a function' })
+      ]
+    ]);
+    const loadSpy = jest.spyOn(nodeModule, '_load').mockImplementation((...args: unknown[]) => {
+      const [request, parent, isMain] = args as [string, unknown, boolean];
+      return loadModule(moduleLoads, originalLoad, request, parent, isMain);
+    });
+    const api = new TestRealtimeAPI({
+      databaseClient,
+      interfaceType: 'websocketapi',
+      frameworkName: 'socket-io'
+    });
+
+    const handler = (api as any).getRuntimeHandlerFactory({
+      moduleName: 'Users',
+      operationId: 'notFactory',
+      controllerMethod: 'notFactory',
+      controller: {},
+      endPointConfig: {}
+    });
+
+    expect(handler).toBeUndefined();
+    loadSpy.mockRestore();
   });
 
   it('uses message mediator as event bus in constructor', () => {
@@ -390,6 +532,113 @@ paths:
       endPointConfig: { operationId: 'missing-handler' }
     });
     expect(missingHandler).toBeUndefined();
+  });
+
+  it('maps minimal runtime requests through default event payloads', async () => {
+    expect.hasAssertions();
+    const api = new TestRealtimeAPI({
+      databaseClient,
+      interfaceType: 'websocketapi',
+      frameworkName: 'socket-io'
+    });
+    const login = jest.fn().mockResolvedValue({ result: { ok: true } });
+
+    const runtimeHandler = (api as any).getRuntimeHandlerFactory({
+      moduleName: 'Users',
+      operationId: 'login',
+      controllerMethod: 'login',
+      controller: { login },
+      endPointConfig: { operationId: 'login' }
+    });
+    const response = await runtimeHandler({ operationId: 'login' });
+
+    const [event] = login.mock.calls[0];
+    expect(event.authorization).toBe('');
+    expect(event.input).toStrictEqual({});
+    expect(event.params).toStrictEqual({});
+    expect(event.queryString).toStrictEqual({});
+    expect(response.metadata).toMatchObject({
+      channel: 'api:login:response',
+      clientId: '',
+      requestId: ''
+    });
+  });
+
+  it('treats resolver-shaped non-Error runtime module failures as missing handlers', () => {
+    expect.hasAssertions();
+    const nodeModule = require('module');
+    const originalLoad = nodeModule._load;
+    const moduleLoads = new Map<string, ModuleLoader>([
+      [
+        '@src/modules/Users/interface/websocketapi/frameworks/socket-io/handlers/resolverString',
+        () => {
+          throw new Error('Could not locate module from virtual resolver');
+        }
+      ]
+    ]);
+    const loadSpy = jest.spyOn(nodeModule, '_load').mockImplementation((...args: unknown[]) => {
+      const [request, parent, isMain] = args as [string, unknown, boolean];
+      return loadModule(moduleLoads, originalLoad, request, parent, isMain);
+    });
+    const api = new TestRealtimeAPI({
+      databaseClient,
+      interfaceType: 'websocketapi',
+      frameworkName: 'socket-io'
+    });
+
+    expect((api as any).getRuntimeHandlerFactory({
+      moduleName: 'Users',
+      operationId: 'resolverString',
+      controllerMethod: 'resolverString',
+      controller: {},
+      endPointConfig: {}
+    })).toBeUndefined();
+    loadSpy.mockRestore();
+  });
+
+  it('treats resolver-shaped non-Error controller module failures as missing controllers', () => {
+    expect.hasAssertions();
+    const nodeModule = require('module');
+    const originalLoad = nodeModule._load;
+    const moduleLoads = new Map<string, ModuleLoader>([
+      [
+        '@src/modules/Virtual/adapters/in/http/controllers/VirtualController',
+        () => {
+          throw new Error('Could not locate module from virtual resolver');
+        }
+      ]
+    ]);
+    const loadSpy = jest.spyOn(nodeModule, '_load').mockImplementation((...args: unknown[]) => {
+      const [request, parent, isMain] = args as [string, unknown, boolean];
+      return loadModule(moduleLoads, originalLoad, request, parent, isMain);
+    });
+
+    expect(() => (RealtimeAPIBase as any).getControllerModule('Virtual', 'VirtualController')).toThrow(
+      'Controller VirtualController not found for module Virtual.'
+    );
+    loadSpy.mockRestore();
+  });
+
+  it('rethrows non-resolution errors from runtime handler modules', () => {
+    expect.hasAssertions();
+    const api = new TestRealtimeAPI({
+      databaseClient,
+      interfaceType: 'websocketapi',
+      frameworkName: 'socket-io'
+    });
+
+    jest.spyOn(RealtimeAPIBase as any, 'getControllerModule').mockImplementationOnce(() => {
+      throw new Error('controller init failed');
+    });
+
+    expect(() => (api as any).registerOperationFromEndpoint({
+      version: '1.0.0',
+      spec: { openapi: '3.1.0', info: { version: '1.0.0', title: 'test' }, paths: {} },
+      path: '/reports',
+      endPointConfig: { operationId: 'publishReport' }
+    })).toThrow('controller init failed');
+
+    (RealtimeAPIBase as any).getControllerModule.mockRestore();
   });
 
   it('throws when controller module resolution fails for missing controllers', () => {

@@ -104,8 +104,7 @@ Per
 Requirement 070,
 **no automatic publish exists**. The repository-wide dry-run surface
 (`bun run npm:publish:dry-run:packages`) picks this package up like every
-other non-private workspace package and runs `bun publish --dry-run
---access public`, which executes `prepublishOnly` — a clean rebuild — before
+other non-private workspace package and runs `bun publish --dry-run --access public`, which executes `prepublishOnly` — a clean rebuild — before
 assembling the tarball. `test/packaging.test.ts` asserts the manifest and the
 packed contents, so the dry run verifies an artifact whose contents are
 proven, not assumed.

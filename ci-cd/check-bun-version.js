@@ -103,13 +103,27 @@ function validateToolchain({ runningBunVersion, rawPin, declaredPackageManager }
   return failures;
 }
 
-/** Read the guard's inputs from disk and the current process. */
-function readToolchainInput() {
+/**
+ * Read the guard's inputs from disk and the current process.
+ *
+ * The three sources are parameters with their production values as defaults
+ * (JUM-721). The absent cases are the ones that matter and the ones a test
+ * cannot otherwise reach: a cold clone with no `.bun-version`, or a checkout
+ * whose `package.json` has not landed yet. Both must be reported as a missing
+ * pin rather than crash the `preinstall` hook with a filesystem error, and
+ * neither is producible by moving the real files out from under a running
+ * suite.
+ */
+function readToolchainInput(sources = {}) {
+  const versions = sources.versions || process.versions;
+  const pinPath = sources.pinPath || pinFile;
+  const manifestPath = sources.manifestPath || packageJsonPath;
+
   return {
-    runningBunVersion: (process.versions && process.versions.bun) || null,
-    rawPin: fs.existsSync(pinFile) ? fs.readFileSync(pinFile, 'utf8') : null,
-    declaredPackageManager: fs.existsSync(packageJsonPath)
-      ? JSON.parse(fs.readFileSync(packageJsonPath, 'utf8')).packageManager || null
+    runningBunVersion: (versions && versions.bun) || null,
+    rawPin: fs.existsSync(pinPath) ? fs.readFileSync(pinPath, 'utf8') : null,
+    declaredPackageManager: fs.existsSync(manifestPath)
+      ? JSON.parse(fs.readFileSync(manifestPath, 'utf8')).packageManager || null
       : null,
   };
 }
