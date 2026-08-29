@@ -37,6 +37,7 @@ if (!fs.existsSync(workflowPath)) {
     /Use local Node\.js 22/,
     /node --version \| grep -E '\^v22\\\.'/,
     /branch-gate:/,
+    /task-branch-push/,
     /third-party-review:/,
     /workspace-builds:/,
     /workspace-tests:/,

@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-29 fix(coverage): keep uuid generation covered centrally - Eduardo Almeida
 - 2026-08-29 [JUM-579][Bug] Fetch main ref for patch coverage (#273) - Eduardo A.
 - 2026-08-29 fix(ci): fetch main ref for patch coverage - Eduardo Almeida
 - 2026-08-29 [JUM-579][Bug] Make review artifact uploads best-effort (#272) - Eduardo A.
