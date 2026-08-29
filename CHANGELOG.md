@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-29 fix(service-management): name every control in the generated field rows [JUM-732] - Eduardo A.
 - 2026-08-29 [JUM-730][Fix] Report the outcome of the action that just ran (#281) - Eduardo A.
 - 2026-08-29 fix(service-management): report the outcome of the action that just ran [JUM-730] - Eduardo A.
 - 2026-08-29 [JUM-734][Fix] Vendor the browser bundles before starting the designer (#280) - Eduardo A.

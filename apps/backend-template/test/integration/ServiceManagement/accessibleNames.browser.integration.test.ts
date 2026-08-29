@@ -122,6 +122,11 @@ describe('serviceManagement accessible names (JUM-732)', () => {
     const page = await context.newPage();
     await page.goto(baseUrl, { waitUntil: 'load' });
 
+    // Wait for the app to finish its boot render rather than sampling an
+    // arbitrary instant: the runtime-env fields are generated late, and a CI
+    // run read them before they were named while a local run read them after.
+    await page.waitForSelector('[id^=runtime-env-field-]', { state: 'attached' });
+
     await expect(unnamedControls(page)).resolves.toStrictEqual([]);
 
     await context.close();
