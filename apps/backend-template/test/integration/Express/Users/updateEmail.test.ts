@@ -30,6 +30,7 @@ import { EmailValueObject } from '@src/modules/ddd/valueObjects';
 import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
 import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal';
 import { JwtService } from '@src/infra/jwt/JwtService';
+import { closeServer } from '../closeServer';
 
 const webServer = ExpressServer.compile();
 const databaseClient = InMemoryDbClient;
@@ -91,7 +92,7 @@ describe('express -> User updateEmail suite', () => {
   afterAll(async () => {
     await databaseClient.disconnect();
     await keyValueStorageClient.disconnect();
-    // await server.close();
+    await closeServer(server);
   });
 
   it('user1 must be able to update a email for an user', async () => {

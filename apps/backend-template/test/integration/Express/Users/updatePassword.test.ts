@@ -29,6 +29,7 @@ import { JwtService } from '@src/infra/jwt/JwtService';
 import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal';
 
 import createdUsers from '@seed/users';
+import { closeServer } from '../closeServer';
 
 const [createdUser1] = createdUsers;
 
@@ -90,7 +91,7 @@ describe('express -> User updatePassword suite', () => {
   afterAll(async () => {
     await databaseClient.disconnect();
     await keyValueStorageClient.disconnect();
-    // await server.close();
+    await closeServer(server);
   });
 
   it('user1 must be able to update an user password', async () => {

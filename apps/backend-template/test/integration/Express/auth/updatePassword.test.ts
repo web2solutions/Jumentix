@@ -18,6 +18,7 @@ import {
 } from '@src/modules/Users';
 
 import createdUsers from '@seed/users';
+import { closeServer } from '../closeServer';
 
 const [createdUser1] = createdUsers;
 
@@ -75,7 +76,7 @@ describe('express -> updatePassword suite', () => {
   });
 
   afterAll(async () => {
-    server?.close();
+    await closeServer(server);
     await API.deleteUsers();
     await databaseClient.disconnect();
     await keyValueStorageClient.disconnect();

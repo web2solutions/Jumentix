@@ -22,6 +22,7 @@ import { PhoneValueObject } from '@src/modules/ddd/valueObjects';
 import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
 import { JwtService } from '@src/infra/jwt/JwtService';
 import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal';
+import { closeServer } from '../closeServer';
 
 const webServer = ExpressServer.compile();
 const databaseClient = InMemoryDbClient;
@@ -83,7 +84,7 @@ describe('express -> User deletePhone suite', () => {
   afterAll(async () => {
     await databaseClient.disconnect();
     await keyValueStorageClient.disconnect();
-    // await server.close();
+    await closeServer(server);
   });
 
   it('user1 must be able to delete a phone of an user', async () => {

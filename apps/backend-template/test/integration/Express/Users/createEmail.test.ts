@@ -29,6 +29,7 @@ import {
   UserService
 } from '@src/modules/Users';
 import { EmailValueObject } from '@src/modules/ddd/valueObjects';
+import { closeServer } from '../closeServer';
 
 const webServer = ExpressServer.compile();
 const databaseClient = InMemoryDbClient;
@@ -91,7 +92,7 @@ describe('express -> User createEmail suite', () => {
   afterAll(async () => {
     await databaseClient.disconnect();
     await keyValueStorageClient.disconnect();
-    // await server.close();
+    await closeServer(server);
   });
 
   it('user1 must be able to create a email for an user', async () => {

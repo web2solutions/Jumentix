@@ -21,6 +21,7 @@ import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService
 import { UserDataRepository, UserService } from '@src/modules/Users';
 import { JwtService } from '@src/infra/jwt/JwtService';
 import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal';
+import { closeServer } from '../closeServer';
 
 const webServer = ExpressServer.compile();
 const databaseClient = InMemoryDbClient;
@@ -82,7 +83,7 @@ describe('express -> get Users suite', () => {
     await API.deleteUsers();
     await databaseClient.disconnect();
     await keyValueStorageClient.disconnect();
-    // await server.close();
+    await closeServer(server);
   });
 
   it('user1 must be able to read all users', async () => {

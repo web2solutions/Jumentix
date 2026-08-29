@@ -47,6 +47,9 @@ module.exports = {
     '^.+\\.tsx?$': ['ts-jest', {}],
     '^.+\\.m?js$': '<rootDir>/ci-cd/jest/javascript-transformer.js'
   },
+  transformIgnorePatterns: [
+    '<rootDir>/node_modules/(?!\\.bun/uuid@)'
+  ],
   verbose: true,
   detectOpenHandles: true,
   collectCoverage: true,

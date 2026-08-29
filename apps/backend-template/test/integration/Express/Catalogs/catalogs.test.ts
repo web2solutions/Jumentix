@@ -28,6 +28,7 @@ import { EAuthSchemaType } from '@src/modules/Users/service/ports/EAuthSchemaTyp
 // eslint-disable-next-line import/no-unresolved
 import { InMemoryMessageMediatorAdapter } from '@jumentix/message-mediator';
 import { CatalogIntegrationEventName } from '@src/modules/Catalogs/events/contracts/CatalogIntegrationEventName';
+import { closeServer } from '../closeServer';
 
 /**
  * API integration suite for the shared catalog module (JUM-491), over the
@@ -184,7 +185,7 @@ describe('express -> Catalogs -> shared catalog sync target', () => {
   });
 
   afterAll(async () => {
-    server?.close();
+    await closeServer(server);
     await databaseClient.disconnect();
     await keyValueStorageClient.disconnect();
   });

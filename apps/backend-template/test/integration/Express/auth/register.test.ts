@@ -19,6 +19,7 @@ import {
 } from '@src/modules/Users';
 
 import users from '@seed/users';
+import { closeServer } from '../closeServer';
 
 const [user1] = users;
 
@@ -76,7 +77,7 @@ describe('express -> register suite', () => {
   });
 
   afterAll(async () => {
-    server?.close();
+    await closeServer(server);
     await databaseClient.disconnect();
     await keyValueStorageClient.disconnect();
     // await keyValueStorageClient.disconnect();
