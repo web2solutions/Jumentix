@@ -156,14 +156,17 @@ NODE_ENV=dev bun apps/service-management/server.js
 
 ### 4.4 Variáveis de ambiente
 
+Todas as variáveis abaixo têm o prefixo `JUMENTIX_SERVICE_MANAGEMENT_`, exceto
+`NODE_ENV`.
+
 | Variável | Padrão | Finalidade |
 | --- | --- | --- |
-| `JUMENTIX_SERVICE_MANAGEMENT_PORT` | `3200` | Porta HTTP |
-| `JUMENTIX_SERVICE_MANAGEMENT_HOST` | `127.0.0.1` | Endereço de bind |
-| `JUMENTIX_SERVICE_MANAGEMENT_CONFIG_DIR` | `apps/backend-template/src/config` | Diretório que a API de runtime env lê e grava |
-| `JUMENTIX_SERVICE_MANAGEMENT_PM2_DIR` | `pm2/` | Diretório que o preview de ecossistema PM2 lê |
-| `JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN` | não definida | Quando definida, `POST /api/runtime/env` exige `Authorization: Bearer <token>` |
-| `JUMENTIX_SERVICE_MANAGEMENT_STATIC_MANIFEST_REFRESH` | derivada de `NODE_ENV` | `on-miss` refaz o manifesto estático em uma falha de busca; `boot-only` nunca refaz |
+| `…_PORT` | `3200` | Porta HTTP |
+| `…_HOST` | `127.0.0.1` | Endereço de bind |
+| `…_CONFIG_DIR` | `apps/backend-template/src/config` | Onde a API de runtime env lê e grava |
+| `…_PM2_DIR` | `pm2/` | Onde o preview de ecossistema PM2 lê |
+| `…_AUTH_TOKEN` | não definida | Exige `Authorization: Bearer <token>` no `POST` de ambiente |
+| `…_STATIC_MANIFEST_REFRESH` | de `NODE_ENV` | `on-miss` refaz o manifesto estático; `boot-only` nunca refaz |
 | `NODE_ENV` | `dev` | Ambiente de fallback quando a requisição não informa um |
 
 O servidor **falha fechado no boot** quando o diretório configurado não existe:
@@ -278,7 +281,7 @@ Com uma entidade selecionada, o Entity Inspector oferece `Save Name`,
 agregado e as invariantes (uma regra por linha). Raízes de agregado exibem o
 marcador `AR` no card.
 
-![Entity Inspector: raiz de agregado, invariantes, matriz RBAC, contrato de mensagem, composição OpenAPI, campos e o preview de API CRUD gerado](../../images/service-manager/03-entity-inspector.png "Entity Inspector")
+![Entity Inspector: o nome da entidade, a flag de raiz de agregado, as invariantes e a matriz RBAC](../../images/service-manager/03a-entity-inspector-rules-and-rbac.png "Entity Inspector — regras e RBAC")
 
 Os campos carregam metadados alinhados ao OpenAPI:
 
@@ -330,8 +333,15 @@ diferentes, e não é possível duplicar um relacionamento entre o mesmo par.
 ### 6.5 RBAC, contratos de mensagem e composição OpenAPI
 
 Para cada entidade e ação (`list`, `getById`, `create`, `update`, `delete`),
-marque `superadmin`, `admin` e `user`, além da flag de escopo por tenant, e
-clique em `Save RBAC Rule`.
+marque `superadmin`, `admin` e `user` e clique em `Save RBAC Rule`. O escopo por
+tenant é **derivado dos papéis**, não definido à mão: `admin` e `user` ficam no
+escopo da própria organização e `superadmin` é global, que é o que o runtime
+aplica. Escopos diretos legados continuam funcionando, mas não são editáveis
+aqui.
+
+![Entity Inspector: contratos de mensagem e os controles de composição OpenAPI](../../images/service-manager/03b-entity-inspector-contracts-and-composition.png "Entity Inspector — contratos e composição")
+
+![Entity Inspector: o editor de campos e o preview de CRUD OpenAPI gerado](../../images/service-manager/03c-entity-inspector-fields-and-api-preview.png "Entity Inspector — campos e preview de API")
 
 Declare contratos `event`, `command`, `request` e `response` por entidade com
 nome, canal ou tópico, versão e um schema JSON de payload. `Add Contract`
@@ -380,7 +390,9 @@ caso de uso, controller e handler. `Generate Examples` renderiza exemplos de
 payload de request e response. Selecione uma entidade para limitar a saída, ou
 deixe nada selecionado para gerar a partir de todo o canvas.
 
-![Painel Export com o preview de esqueleto de código e os exemplos de request e response gerados](../../images/service-manager/05-export-panel.png "Painel Export")
+![Painel Export: os botões de exportação, importação e geração](../../images/service-manager/05a-export-and-import-targets.png "Alvos de exportação e importação")
+
+![Os esqueletos de código gerados e os exemplos de request e response](../../images/service-manager/05b-code-preview-and-examples.png "Preview de código e exemplos gerados")
 
 | Botão | Arquivo baixado | Uso |
 | --- | --- | --- |

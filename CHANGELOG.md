@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-08-29 [JUM-579][Bug] Ignore website metadata in patch coverage (#276) - Eduardo A.
+- 2026-08-29 fix(coverage): ignore website navigation metadata in patch gate - Eduardo Almeida
 - 2026-08-29 [JUM-579][Bug] Keep UUID generation covered centrally (#275) - Eduardo A.
 - 2026-08-29 fix(ci): avoid duplicate required branch gate checks - Eduardo Almeida
 - 2026-08-29 fix(coverage): keep uuid generation covered centrally - Eduardo Almeida

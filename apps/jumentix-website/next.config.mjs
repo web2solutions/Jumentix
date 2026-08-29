@@ -12,6 +12,9 @@ const withBundleAnalyzer = bundleAnalyzer({
 
 const withNextra = nextra({
   latex: true,
+  // Shell fences render through the theme's own `pre` (JUM-728); this is what
+  // gives every fenced block its copy button.
+  defaultShowCopyCode: true,
   search: {
     codeblocks: false
   },
