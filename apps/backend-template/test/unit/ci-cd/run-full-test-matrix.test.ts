@@ -15,6 +15,15 @@ const fullMatrixRootPackage = require('../../../../../package.json');
 const fullMatrixRootDir = matrixPath.resolve(__dirname, '../../../../..');
 type FullMatrixTestCell = { id: string; script: string };
 
+const restoreEnv = (name: string, previous: string | undefined): void => {
+  if (previous === undefined) {
+    delete process.env[name];
+    return;
+  }
+
+  process.env[name] = previous;
+};
+
 describe('run-full-test-matrix', () => {
   it('keeps the canonical ci gate free of missing script references', () => {
     expect.hasAssertions();
@@ -89,6 +98,19 @@ describe('run-full-test-matrix', () => {
     expect(cells).toStrictEqual(expect.arrayContaining([
       expect.objectContaining({ id: 'backend-build' })
     ]));
+  });
+
+  it('uses the real environment when no explicit skip environment is injected', () => {
+    expect.hasAssertions();
+    const previous = process.env.JUMENTIX_FULL_MATRIX_SKIP_CELLS;
+    process.env.JUMENTIX_FULL_MATRIX_SKIP_CELLS = 'workspace-builds';
+
+    const cells = resolveMatrixCells(FULL_TEST_MATRIX);
+
+    expect(cells).toStrictEqual(expect.not.arrayContaining([
+      expect.objectContaining({ id: 'workspace-builds' })
+    ]));
+    restoreEnv('JUMENTIX_FULL_MATRIX_SKIP_CELLS', previous);
   });
 
   it('fails closed when the delegated matrix skip list names an unknown cell', () => {
@@ -266,6 +288,35 @@ describe('run-full-test-matrix', () => {
       state: 'failed',
       status: 17
     });
+  });
+
+  it('uses the default matrix and result file from the environment when options are omitted', () => {
+    expect.assertions(2);
+    const dir = matrixFs.mkdtempSync(
+      matrixPath.join(require('node:os').tmpdir(), 'matrix-defaults-')
+    );
+    const resultFile = matrixPath.join(dir, 'matrix.json');
+    const previousResultFile = process.env.JUMENTIX_CI_MATRIX_RESULT_FILE;
+    const previousSkipCells = process.env.JUMENTIX_FULL_MATRIX_SKIP_CELLS;
+    process.env.JUMENTIX_CI_MATRIX_RESULT_FILE = resultFile;
+    delete process.env.JUMENTIX_FULL_MATRIX_SKIP_CELLS;
+
+    try {
+      const evidence = runFullTestMatrix({
+        cells: [{ id: 'version', script: 'check-bun-version' }],
+        execute: () => 0,
+        logger: { log: jest.fn(), error: jest.fn() },
+        availableScripts: fullMatrixRootPackage.scripts
+      });
+
+      expect(evidence.outcome).toBe('passed');
+      expect(JSON.parse(matrixFs.readFileSync(resultFile, 'utf8')).outcome)
+        .toBe('passed');
+    } finally {
+      restoreEnv('JUMENTIX_CI_MATRIX_RESULT_FILE', previousResultFile);
+      restoreEnv('JUMENTIX_FULL_MATRIX_SKIP_CELLS', previousSkipCells);
+      matrixFs.rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   it('treats missing execution status and crashes as failures', () => {

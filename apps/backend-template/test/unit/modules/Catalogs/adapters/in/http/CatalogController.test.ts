@@ -315,6 +315,21 @@ describe('catalogController actor stamping (JUM-721)', () => {
     expect(result?.createdBy).toBe('svc-1');
   });
 
+  it('uses an empty actor when the principal carries neither username nor id', async () => {
+    expect.hasAssertions();
+
+    const { controller } = createStack({ organization: 'org-1', roles: ['admin'] });
+
+    const { result, error } = await controller.create(new CatalogCreateRequestEvent({
+      authorization: 'Bearer token',
+      input: { name: 'Billing', design },
+      schemaOAS: operations['/catalogs'].post
+    }));
+
+    expect(error).toBeUndefined();
+    expect(result?.createdBy).toBe('');
+  });
+
   it('refuses a read of a catalog the store does not have', async () => {
     expect.hasAssertions();
 

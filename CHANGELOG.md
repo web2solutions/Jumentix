@@ -4,6 +4,9 @@
 
 ## All Changes
 
+- 2026-08-29 test: retire branch coverage exception (JUM-721) - Eduardo Almeida
+- 2026-08-29 [JUM-687][Fix] Reuse Supertest listeners across remaining HTTP adapter suites (#264) - Eduardo A.
+- 2026-08-29 test(http): reuse listeners across adapter integration suites (JUM-687) - Eduardo Almeida
 - 2026-08-29 [JUM-726][Fix] Use pinned Bun during GitHub Actions installs (#263) - Eduardo A.
 - 2026-08-29 fix(ci): use pinned Bun during workflow installs (JUM-726) - Eduardo Almeida
 - 2026-08-29 [JUM-687][Fix] Supertest listener churn behind the intermittent 404s, plus JUM-721 coverage (#256) - Eduardo A.

@@ -528,6 +528,82 @@ describe('the Aurora repository', () => {
     }
   });
 
+  it('uses a default-exported postgres driver and passes fallback pool settings', async () => {
+    expect.hasAssertions();
+
+    const postgres = jest.fn().mockReturnValue({ end: jest.fn() });
+    const repository = new AuroraRepository({
+      extra: { connectionUrl: 'postgres://user:pass@127.0.0.1:5999/ledger' }
+    });
+    jest.spyOn(repository as any, 'loadModule').mockResolvedValue({ default: postgres });
+    jest.spyOn(repository as any, 'loadOptionalModule').mockResolvedValue(undefined);
+
+    await repository.connect();
+
+    expect(postgres).toHaveBeenCalledWith(
+      'postgres://user:pass@127.0.0.1:5999/ledger',
+      expect.objectContaining({
+        max: 20,
+        connect_timeout: 10,
+        idle_timeout: 30
+      })
+    );
+    expect(repository.isConnected()).toBe(true);
+    await repository.disconnect();
+  });
+
+  it('uses an Aurora DSQL connector when one is available', async () => {
+    expect.hasAssertions();
+
+    const client = { close: jest.fn() };
+    const createClient = jest.fn().mockResolvedValue(client);
+    const repository = new AuroraRepository({
+      region: 'sa-east-1',
+      endpoint: 'cluster.example.test',
+      database: 'ledger',
+      extra: { poolMax: 7 }
+    });
+    jest.spyOn(repository as any, 'loadModule').mockResolvedValue(jest.fn());
+    jest.spyOn(repository as any, 'loadOptionalModule').mockResolvedValue({ default: { createClient } });
+
+    await repository.connect();
+
+    expect(createClient).toHaveBeenCalledWith({
+      region: 'sa-east-1',
+      endpoint: 'cluster.example.test',
+      database: 'ledger',
+      max: 7
+    });
+    expect(repository.getClient()).toBe(client);
+    await repository.disconnect();
+    expect(client.close).toHaveBeenCalledTimes(1);
+  });
+
+  it('falls back to DSQL region, endpoint and database from extra options', async () => {
+    expect.hasAssertions();
+
+    const createClient = jest.fn().mockResolvedValue({});
+    const repository = new AuroraRepository({
+      extra: {
+        region: 'eu-west-1',
+        endpoint: 'fallback.example.test',
+        database: 'orders'
+      }
+    });
+    jest.spyOn(repository as any, 'loadModule').mockResolvedValue(jest.fn());
+    jest.spyOn(repository as any, 'loadOptionalModule').mockResolvedValue({ createClient });
+
+    await repository.connect();
+
+    expect(createClient).toHaveBeenCalledWith(expect.objectContaining({
+      region: 'eu-west-1',
+      endpoint: 'fallback.example.test',
+      database: 'orders',
+      max: 20
+    }));
+    await repository.disconnect();
+  });
+
   /**
    * With no DSQL connector installed and no URL there is nothing to connect to,
    * and saying so is the only useful answer. Silently building a client that

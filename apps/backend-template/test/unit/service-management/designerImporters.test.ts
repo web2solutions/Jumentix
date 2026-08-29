@@ -138,6 +138,25 @@ describe('designer importers (JUM-469)', () => {
       expect(result.domain.context.packageDependencies).toStrictEqual([]);
       expect(result.domain.context.sharedValueObjects).toStrictEqual([]);
     });
+
+    it('normalizes null context package collections and sparse entity meta', () => {
+      expect.hasAssertions();
+      const result = buildDomainFromPackage({
+        domain: {
+          name: 'Sparse',
+          context: { packageDependencies: null, sharedValueObjects: null },
+          entities: [{ name: 'Entry', fields: [], meta: null }]
+        }
+      }, []);
+
+      expect(result.ok).toBe(true);
+      expect(result.domain.context.packageDependencies).toStrictEqual([]);
+      expect(result.domain.context.sharedValueObjects).toStrictEqual([]);
+      expect(result.domain.entities[0].meta.provenance).toStrictEqual({
+        package: 'Sparse',
+        version: '1.0.0'
+      });
+    });
   });
 
   describe('buildDomainsFromOas', () => {
@@ -261,6 +280,43 @@ describe('designer importers (JUM-469)', () => {
       expect(result.domains[0].name).toBe('Imported');
       expect(result.domains[0].entities[0].name).toBe('Legacy');
       expect(result.domains[0].entities[0].fields[0]).toMatchObject({ name: 'ghost', type: 'string' });
+    });
+
+    it('treats composition-only schemas as object contracts', () => {
+      expect.hasAssertions();
+      const result = buildDomainsFromOas({
+        components: {
+          schemas: {
+            AnyShape: {
+              anyOf: [
+                { type: 'object', properties: { id: { type: 'string' } } },
+                { type: 'object', properties: { code: { type: 'string' } } }
+              ]
+            }
+          }
+        }
+      });
+
+      expect(result.ok).toBe(true);
+      expect(result.domains[0].entities[0].name).toBe('AnyShape');
+    });
+
+    it('treats all composition keywords as object contracts', () => {
+      expect.hasAssertions();
+      const result = buildDomainsFromOas({
+        components: {
+          schemas: {
+            OneShape: { oneOf: [{ type: 'object', properties: { id: { type: 'string' } } }] },
+            AllShape: { allOf: [{ type: 'object', properties: { id: { type: 'string' } } }] },
+            WithProps: { properties: { id: { type: 'string' } } },
+            Scalar: { type: 'string' }
+          }
+        }
+      });
+
+      expect(result.ok).toBe(true);
+      expect(result.domains[0].entities.map((entity: { name: string }) => entity.name))
+        .toStrictEqual(['OneShape', 'AllShape', 'WithProps']);
     });
 
     it('normalizes the JUM-478 entity meta extension set back into meta', () => {

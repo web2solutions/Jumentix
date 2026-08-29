@@ -23,6 +23,7 @@ const appRoot = path.join(repoRoot, 'apps', 'service-management');
 const sw = require(path.join(appRoot, 'sw.js'));
 const {
   PWA_SHELL_CACHE_PREFIX,
+  SERVICE_WORKER_URL,
   SKIP_WAITING_MESSAGE_TYPE,
   UPDATE_BANNER_ID,
   clearShellCaches,
@@ -34,6 +35,15 @@ const {
 type Spy = {
   (...args: unknown[]): unknown;
   calls: unknown[][];
+};
+
+const restoreGlobalProperty = (name: string, previous: PropertyDescriptor | undefined): void => {
+  if (previous) {
+    Object.defineProperty(globalThis, name, previous);
+    return;
+  }
+
+  delete (globalThis as Record<string, unknown>)[name];
 };
 
 function createSpy(impl?: (...args: unknown[]) => unknown): Spy {
@@ -438,6 +448,42 @@ describe('pwa shell registration and update flow (JUM-489)', () => {
     // every guarded-default branch and lands on the unsupported outcome.
     const result = await registerPwaShell();
     expect(result).toStrictEqual({ status: 'unsupported' });
+  });
+
+  it('resolves browser globals when no explicit deps are injected', async () => {
+    expect.hasAssertions();
+    const previousNavigator = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+    const previousWindow = Object.getOwnPropertyDescriptor(globalThis, 'window');
+    const previousDocument = Object.getOwnPropertyDescriptor(globalThis, 'document');
+    const documentRef = createFakeDocument();
+    const registration = createFakeRegistration();
+    const container = createFakeContainer();
+    container.register = createSpy(async () => registration);
+    const cacheStorage = createFakeCacheStorage();
+    const locationRef = { reload: createSpy() };
+    try {
+      Object.defineProperty(globalThis, 'navigator', {
+        configurable: true,
+        value: { serviceWorker: container }
+      });
+      Object.defineProperty(globalThis, 'window', {
+        configurable: true,
+        value: { caches: cacheStorage, location: locationRef }
+      });
+      Object.defineProperty(globalThis, 'document', {
+        configurable: true,
+        value: documentRef
+      });
+
+      const result = await registerPwaShell();
+
+      expect(result.status).toBe('registered');
+      expect(container.register.calls).toStrictEqual([[SERVICE_WORKER_URL]]);
+    } finally {
+      restoreGlobalProperty('navigator', previousNavigator);
+      restoreGlobalProperty('window', previousWindow);
+      restoreGlobalProperty('document', previousDocument);
+    }
   });
 
   it('honours a custom worker URL and ignores updatefound without an installing worker', async () => {

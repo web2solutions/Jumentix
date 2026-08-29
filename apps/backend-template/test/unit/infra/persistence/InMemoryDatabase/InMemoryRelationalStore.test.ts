@@ -70,4 +70,16 @@ describe('in memory relational store', () => {
     await expect(store.getByRelation('organization', 'org-3')).resolves.toHaveLength(0);
     await expect(store.delete('missing')).resolves.toBe(false);
   });
+
+  it('tolerates stale relation index entries during delete cleanup', async () => {
+    expect.hasAssertions();
+    const store = new InMemoryRelationalStore<IRecord>({
+      relationIndexes: ['organization']
+    });
+
+    await store.create('1', { id: '1', username: 'john', organization: 'org-1' });
+    (store as any).relationIndexes.organization.delete('org-1');
+
+    await expect(store.delete('1')).resolves.toBe(true);
+  });
 });

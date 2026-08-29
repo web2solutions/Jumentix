@@ -91,6 +91,22 @@ describe('user dead-letter replay composition (JUM-53)', () => {
     expect(pending.lastError).toBe('User is locked');
   });
 
+  it('keeps a record queued when the service reports a non-Error failure', async () => {
+    expect.hasAssertions();
+
+    const service = serviceDouble({ error: 'locked as text' });
+    const queue = new DeadLetterQueue();
+    await queue.enqueue({
+      entityName: 'User', resourceId: RESOURCE, operation: 'delete', payload: null
+    });
+
+    const report = await queue.replay(userReplayHandlers(service as never));
+
+    expect(report.retried).toHaveLength(1);
+    const [pending] = await queue.pending();
+    expect(pending.lastError).toBe('locked as text');
+  });
+
   it('unpacks the aggregate payloads into the right arguments', async () => {
     expect.hasAssertions();
 
@@ -114,6 +130,22 @@ describe('user dead-letter replay composition (JUM-53)', () => {
     ]);
   });
 
+  it('defaults missing aggregate payloads to empty child arguments', async () => {
+    expect.hasAssertions();
+
+    const service = serviceDouble();
+    const queue = new DeadLetterQueue();
+    await queue.enqueue({
+      entityName: 'User', resourceId: RESOURCE, operation: 'updateDocument', payload: null
+    });
+
+    await queue.replay(userReplayHandlers(service as never));
+
+    expect(service.calls).toStrictEqual([
+      { method: 'updateDocument', args: [RESOURCE, undefined, undefined] }
+    ]);
+  });
+
   it('builds nothing without a shared store', () => {
     expect.hasAssertions();
 
@@ -131,7 +163,7 @@ describe('user dead-letter replay composition (JUM-53)', () => {
       del: jest.fn().mockResolvedValue({ result: 1 })
     };
     const queue = composeUserDeadLetterQueue(client as never);
-    const worker = composeUserDeadLetterWorker(queue, serviceDouble() as never);
+    const worker = composeUserDeadLetterWorker(queue, serviceDouble() as never, 250);
 
     expect(queue).toBeDefined();
     // Composition builds; starting a background timer is the runtime's call,

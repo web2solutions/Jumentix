@@ -453,6 +453,25 @@ describe('the Redis client', () => {
     expect(socket.connectTimeout).toBe(750);
   });
 
+  it('passes optional authentication settings and malformed port fallbacks to Redis', async () => {
+    expect.hasAssertions();
+
+    const client = await withEnvironmentVars({
+      JUMENTIX_REDIS_HOST: '',
+      JUMENTIX_REDIS_PORT: 'not-a-port',
+      JUMENTIX_REDIS_USERNAME: 'service-user',
+      JUMENTIX_REDIS_PASSWORD: 'service-secret',
+      JUMENTIX_REDIS_DB: '3'
+    }, () => RedisKeyValueStorageClient.create());
+    const socket = client.client.options.socket as any;
+
+    expect(socket.host).toBe('127.0.0.1');
+    expect(socket.port).toBe(6379);
+    expect(client.client.options.username).toBe('service-user');
+    expect(client.client.options.password).toBe('service-secret');
+    expect(client.client.options.database).toBe(3);
+  });
+
   it('falls back to the defaults when the timeout environment is malformed', async () => {
     expect.hasAssertions();
 
@@ -462,6 +481,18 @@ describe('the Redis client', () => {
     }, () => RedisKeyValueStorageClient.create());
 
     expect((client.client.options.socket as any).connectTimeout).toBe(5000);
+  });
+
+  it('returns capped retry delays before the configured reconnect ceiling', async () => {
+    expect.hasAssertions();
+
+    const client = await withEnvironmentVars({
+      JUMENTIX_REDIS_MAX_RECONNECT_ATTEMPTS: '5'
+    }, () => RedisKeyValueStorageClient.create());
+    const { reconnectStrategy } = (client.client.options.socket as any);
+
+    expect(reconnectStrategy(0)).toBe(100);
+    expect(reconnectStrategy(4)).toBe(1000);
   });
 
   it('reports a connection failure within a bounded time against an unreachable port', async () => {

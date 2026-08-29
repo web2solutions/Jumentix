@@ -549,6 +549,29 @@ describe('check-commit-authorship', () => {
         expect(typeof result.message).toBe('string');
       }
     });
+
+    it('dispatches through the real defaults when main is called bare', () => {
+      expect.hasAssertions();
+
+      const logged: string[] = [];
+      const errors: string[] = [];
+      const logSpy = jest.spyOn(console, 'log').mockImplementation((message) => {
+        logged.push(String(message));
+      });
+      const errorSpy = jest.spyOn(console, 'error').mockImplementation((message) => {
+        errors.push(String(message));
+      });
+
+      try {
+        const status = main();
+
+        expect([0, 1]).toContain(status);
+        expect([...logged, ...errors].join('\n')).toContain('Commit authorship check');
+      } finally {
+        logSpy.mockRestore();
+        errorSpy.mockRestore();
+      }
+    });
   });
 
   describe('parseDeclaration', () => {

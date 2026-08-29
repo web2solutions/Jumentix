@@ -11,6 +11,15 @@ const soundInput = {
   declaredPackageManager: 'bun@1.3.14'
 };
 
+const restoreBunVersion = (bunVersion: string | undefined): void => {
+  if (bunVersion === undefined) {
+    delete (process.versions as Record<string, string | undefined>).bun;
+    return;
+  }
+
+  Object.defineProperty(process.versions, 'bun', { configurable: true, value: bunVersion });
+};
+
 describe('check-bun-version', () => {
   it('accepts a toolchain whose three sources of truth agree', () => {
     expect.hasAssertions();
@@ -133,6 +142,7 @@ describe('check-bun-version input reading (JUM-721)', () => {
       rawPin: string | null;
       declaredPackageManager: string | null;
     };
+    main: (input?: Record<string, unknown>) => void;
     validateToolchain: (input: Record<string, unknown>) => string[];
   };
 
@@ -168,5 +178,36 @@ describe('check-bun-version input reading (JUM-721)', () => {
     });
 
     expect(input.runningBunVersion).toBe('1.3.13');
+  });
+
+  it('uses default source paths when only the version table is injected', () => {
+    expect.hasAssertions();
+
+    const input = guard.readToolchainInput({ versions: { bun: '1.3.13' } });
+
+    expect(input.runningBunVersion).toBe('1.3.13');
+    expect(String(input.rawPin).trim()).toMatch(EXACT_VERSION);
+    expect(input.declaredPackageManager).toBe(`bun@${String(input.rawPin).trim()}`);
+  });
+
+  it('uses the real input reader when main is called without an explicit input', () => {
+    expect.hasAssertions();
+    const log = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+    const exit = jest.spyOn(process, 'exit').mockImplementation(((): never => {
+      throw new Error('process.exit called');
+    }) as never);
+    const bunVersion = (process.versions as Record<string, string | undefined>).bun;
+    try {
+      Object.defineProperty(process.versions, 'bun', {
+        configurable: true,
+        value: String(readToolchainInput().rawPin).trim()
+      });
+
+      expect(() => guard.main()).not.toThrow();
+    } finally {
+      restoreBunVersion(bunVersion);
+      log.mockRestore();
+      exit.mockRestore();
+    }
   });
 });
