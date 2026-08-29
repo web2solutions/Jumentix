@@ -32,6 +32,16 @@
     },
     {
       "section": "guides",
+      "slug": "service-management",
+      "title": "Run and Use the Service Manager",
+      "titlePtBr": "Execute e use o Service Manager",
+      "description": "Install, run, model, export, configure and troubleshoot the Service Manager and the Domain Designer.",
+      "descriptionPtBr": "Instale, execute, modele, exporte, configure e resolva problemas do Service Manager e do Domain Designer.",
+      "source": "../../documentation/md/guides/USING-SERVICE-MANAGER-AND-DOMAIN-DESIGNER.md",
+      "sourcePtBr": "../../documentation/md/guides/USING-SERVICE-MANAGER-AND-DOMAIN-DESIGNER.pt-BR.md"
+    },
+    {
+      "section": "guides",
       "slug": "rest-api",
       "title": "Create a REST API",
       "titlePtBr": "Crie uma API REST",
@@ -499,6 +509,86 @@
       "descriptionPtBr": "Hub do site p\u00fablico de docs e marketing.",
       "source": "../../documentation/consumers/apps/jumentix-website.md",
       "sourcePtBr": "../../documentation/consumers/apps/jumentix-website.pt-BR.md"
+    },
+    {
+      "section": "reference",
+      "slug": "service-management-runtime-environment",
+      "title": "Runtime Environment Contracts",
+      "titlePtBr": "Contratos de Ambiente de Runtime",
+      "description": "Env-file locations, key tiers and the canonical enum sets the runtime API enforces.",
+      "descriptionPtBr": "Locais dos arquivos de ambiente, níveis de chave e os enums canônicos que a API de runtime aplica.",
+      "source": "../../documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md",
+      "sourcePtBr": "../../documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.pt-BR.md"
+    },
+    {
+      "section": "reference",
+      "slug": "domain-designer-features",
+      "title": "Domain Designer Features and Usage",
+      "titlePtBr": "Recursos e Uso do Domain Designer",
+      "description": "Every Domain Designer capability and how to use it in practice.",
+      "descriptionPtBr": "Todos os recursos do Domain Designer e como usá-los na prática.",
+      "source": "../../documentation/md/DOMAIN-DESIGNER-FEATURES-AND-USAGE.md",
+      "sourcePtBr": "../../documentation/md/DOMAIN-DESIGNER-FEATURES-AND-USAGE.pt-BR.md"
+    },
+    {
+      "section": "reference",
+      "slug": "service-management-module-architecture",
+      "title": "Service Management Module Architecture",
+      "titlePtBr": "Arquitetura de Módulos do Service Management",
+      "description": "Module boundaries and the IDesignerStore port contract behind the designer.",
+      "descriptionPtBr": "Fronteiras de módulo e o contrato da porta IDesignerStore por trás do designer.",
+      "source": "../../documentation/md/SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.md",
+      "sourcePtBr": "../../documentation/md/SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.pt-BR.md"
+    },
+    {
+      "section": "reference",
+      "slug": "service-management-contract-parity",
+      "title": "Service Management Contract Parity",
+      "titlePtBr": "Paridade de Contrato do Service Management",
+      "description": "What each export guarantees: OAS 3.1, AsyncAPI, proto, codegen bundle and round-trip fidelity.",
+      "descriptionPtBr": "O que cada exportação garante: OAS 3.1, AsyncAPI, proto, bundle de codegen e fidelidade de ida e volta.",
+      "source": "../../documentation/md/SERVICE-MANAGEMENT-CONTRACT-PARITY.md",
+      "sourcePtBr": "../../documentation/md/SERVICE-MANAGEMENT-CONTRACT-PARITY.pt-BR.md"
+    },
+    {
+      "section": "reference",
+      "slug": "service-management-operations-console",
+      "title": "Service Management Operations Console",
+      "titlePtBr": "Console de Operações do Service Management",
+      "description": "The capabilities matrix, PM2 ecosystem preview and the deploy-target metadata contract.",
+      "descriptionPtBr": "A matriz de capacidades, o preview do ecossistema PM2 e o contrato de metadados dos alvos de deploy.",
+      "source": "../../documentation/md/SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.md",
+      "sourcePtBr": "../../documentation/md/SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.pt-BR.md"
+    },
+    {
+      "section": "reference",
+      "slug": "service-management-cana-adoption",
+      "title": "Service Management Cana Adoption",
+      "titlePtBr": "Adoção do Cana no Service Management",
+      "description": "The single-store decision, the one-way migration and the offline state matrix.",
+      "descriptionPtBr": "A decisão de store único, a migração unidirecional e a matriz de estados offline.",
+      "source": "../../documentation/md/SERVICE-MANAGEMENT-CANA-ADOPTION.md",
+      "sourcePtBr": "../../documentation/md/SERVICE-MANAGEMENT-CANA-ADOPTION.pt-BR.md"
+    },
+    {
+      "section": "reference",
+      "slug": "service-management-design-system-pwa",
+      "title": "Service Management Design System and PWA",
+      "titlePtBr": "Design System e PWA do Service Management",
+      "description": "Design tokens, the accessibility model, and installing, updating and recovering the app shell.",
+      "descriptionPtBr": "Tokens de design, o modelo de acessibilidade e como instalar, atualizar e recuperar o app shell.",
+      "source": "../../documentation/md/SERVICE-MANAGEMENT-DESIGN-SYSTEM-PWA.md",
+      "sourcePtBr": "../../documentation/md/SERVICE-MANAGEMENT-DESIGN-SYSTEM-PWA.pt-BR.md"
+    },
+    {
+      "section": "reference",
+      "slug": "service-management-collaboration-packaging",
+      "title": "Service Management Collaboration and Packaging",
+      "titlePtBr": "Colaboração e Empacotamento do Service Management",
+      "description": "The shared catalog, domain-package versioning and the designer-core packaging boundary.",
+      "descriptionPtBr": "O catálogo compartilhado, o versionamento de pacotes de domínio e a fronteira de empacotamento do designer-core.",
+      "source": "../../documentation/md/SERVICE-MANAGEMENT-COLLABORATION-PACKAGING.md",
+      "sourcePtBr": "../../documentation/md/SERVICE-MANAGEMENT-COLLABORATION-PACKAGING.pt-BR.md"
     }
   ],
   "collections": [

@@ -23,6 +23,7 @@ Idioma alvo: Português (Brasil)
 
 Uso detalhado de recursos:
 
+- [Usando o Service Manager e o Domain Designer](../../documentation/md/guides/USING-SERVICE-MANAGER-AND-DOMAIN-DESIGNER.pt-BR.md)
 - [Recursos e uso do designer de domínio](../../documentation/md/DOMAIN-DESIGNER-FEATURES-AND-USAGE.pt-BR.md)
 - [Arquitetura de módulos e contrato da porta IDesignerStore](../../documentation/md/SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.pt-BR.md)
 - [Garantias de paridade de contratos](../../documentation/md/SERVICE-MANAGEMENT-CONTRACT-PARITY.pt-BR.md)

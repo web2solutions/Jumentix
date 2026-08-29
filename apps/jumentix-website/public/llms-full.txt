@@ -659,6 +659,40 @@ Headings:
 
 ---
 
+# Run and Use the Service Manager
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/guides/service-management
+
+Install, run, model, export, configure and troubleshoot the Service Manager and the Domain Designer.
+
+Headings:
+- Using the Service Manager and the Domain Designer
+- 1. What the Service Manager is
+- 2. Prerequisites
+- 3. Vendored browser bundles — do this before the first run
+- 4. Running the application
+- 4.1 Start it alone
+- 4.2 Start it with the backend
+- 4.3 Run it without PM2
+- 4.4 Environment variables
+- 4.5 Process control
+- 5. First run
+- 6. Domain Designer
+- 6.1 Canvas and navigation
+- 6.2 Domains and bounded context
+- 6.3 Entities, fields and templates
+- 6.4 Relationships
+- 6.5 RBAC, message contracts and OpenAPI composition
+- 6.6 Validation, the export gate and schema diff
+- 6.7 Generation, export and import
+- 7. Communication Interface Designer
+- 8. Service Configuration
+- 8.1 Runtime profile
+- 8.2 PM2 ecosystem preview
+- 8.3 Runtime environment variables
+
+---
+
 # Create a Microservices SaaS
 
 URL: https://jumentix-website.vercel.app/docs/jumentix/guides/saas-microservices
@@ -1569,6 +1603,53 @@ Headings:
 
 ---
 
+# Domain Designer Features and Usage
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/reference/domain-designer-features
+
+Every Domain Designer capability and how to use it in practice.
+
+Headings:
+- Domain Designer Features and Usage
+- 1) Canvas and Navigation
+- 2) Relationship Design
+- 3) Domain Context Metadata
+- 4) Entity Editing and Templates
+- 5) RBAC Policy Mapping
+- 6) Message Contract Designer
+- 7) OpenAPI Advanced Composition
+- 8) Validation, Quality Gate, and Diff
+- 9) Example and Code Generation
+- 10) Export and Import Targets
+- 10.1) OAS 3.1 export contract (Requirement 036, JUM-474)
+- 10.2) Lossless OAS round-trip (JUM-478)
+- 11) Smoke Coverage
+
+---
+
+# Service Management Contract Parity
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/reference/service-management-contract-parity
+
+What each export guarantees: OAS 3.1, AsyncAPI, proto, codegen bundle and round-trip fidelity.
+
+Headings:
+- Service Management Contract Parity Guarantees
+- Guarantee 1 — the OAS 3.1 export is boilerplate-consumable (JUM-474)
+- Guarantee 2 — AsyncAPI 3.0 per transport and a canonical proto (JUM-475)
+- Guarantee 3 — the codegen bundle is deliverable code (JUM-476)
+- Guarantee 4 — round-trip fidelity, with the honest boundaries (JUM-471, JUM-478)
+- Symmetric crossings (lossless, deep-equal asserted)
+- The OAS crossing: fixed point, empty loss list
+- The boundaries that remain (named, asserted, not swept away)
+- One-way exporters
+- Where the gates enforce all of this
+- RBAC alignment and the divergence it reconciled (JUM-477)
+- Full-suite export and the `runtimeEnvironment` decision (JUM-547, landed)
+- References
+
+---
+
 # Reference
 
 URL: https://jumentix-website.vercel.app/docs/jumentix/reference
@@ -1578,6 +1659,27 @@ Explore the Jumentix Reference section.
 Headings:
 - Reference
 - Start here
+
+---
+
+# Service Management Operations Console
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/reference/service-management-operations-console
+
+The capabilities matrix, PM2 ecosystem preview and the deploy-target metadata contract.
+
+Headings:
+- Service Management Operations Console
+- The shared capabilities matrix (JUM-544, JUM-481)
+- Service Configuration: validate before state (JUM-544)
+- Multi-environment editing (JUM-480) — by cross-reference
+- The PM2 ecosystem preview (JUM-480) — by source, not by command string
+- Deploy Management: the Requirement 059 metadata contract (JUM-481)
+- Deploy target lifecycle: edit, duplicate and field validation (JUM-546)
+- Lifecycle rules — what exists today, and what is open
+- The status-surface contract every console surface follows (JUM-543)
+- What this document deliberately does not cover
+- References
 
 ---
 
@@ -1594,6 +1696,35 @@ Headings:
 - Deployment Modes
 - Reliability and Scale
 - Next step
+
+---
+
+# Service Management Cana Adoption
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/reference/service-management-cana-adoption
+
+The single-store decision, the one-way migration and the offline state matrix.
+
+Headings:
+- Service Management Cana Adoption, Migration and Offline Behaviour
+- The one fact everything else follows from: no fallback
+- Migration: one-way, verified, terminal (JUM-484)
+- Offline behaviour: everything works, and "offline" is not "safe"
+- The state matrix: what you see, what you can do
+- Private/incognito or blocked storage — non-persisting session
+- A browser without usable IndexedDB — unsupported environment
+- Persistence not granted — degraded durability
+- Quota near exhaustion — warning before failure
+- Quota exhausted — the write did not happen
+- Evicted database — data loss, declared
+- Corrupted record — lost, not empty, announced, and the designer recovers
+- Unknown write outcome — worker crash after dispatch
+- Multi-tab behaviour (JUM-485)
+- Export and backup
+- Troubleshooting
+- Known follow-ups
+- What this document deliberately does not cover
+- References
 
 ---
 
@@ -1617,6 +1748,35 @@ Headings:
 
 ---
 
+# Service Management Module Architecture
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/reference/service-management-module-architecture
+
+Module boundaries and the IDesignerStore port contract behind the designer.
+
+Headings:
+- Service Management Module Architecture and IDesignerStore Port Contract
+- Audience
+- Module architecture (post-PR #86)
+- The layering convention
+- Current modules
+- The injection pattern
+- The state core (`src/state/designerState.js`)
+- The `service-management.v1` storage schema
+- The `IDesignerStore` port contract
+- Why the port is shaped around Cana, not localStorage
+- The no-fallback rule and its consequence
+- Operations
+- The base class fails loudly
+- The retired reference implementation — and what its wire format became
+- Implementing a new adapter: `CanaDesignerStore` (JUM-483)
+- The implemented adapter: `CanaDesignerStore` (JUM-483)
+- The one-way migration: `canaMigration.js` (JUM-484)
+- Multi-tab write-event sync: `designerSync.js` (JUM-485)
+- References
+
+---
+
 # Security and PCI Hardening
 
 URL: https://jumentix-website.vercel.app/docs/jumentix/reference/security-compliance
@@ -1628,6 +1788,58 @@ Headings:
 - Security Baseline
 - Compliance-Oriented Delivery
 - Recommended Consumer Practice
+
+---
+
+# Service Management Design System and PWA
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/reference/service-management-design-system-pwa
+
+Design tokens, the accessibility model, and installing, updating and recovering the app shell.
+
+Headings:
+- Service Management Design System and PWA Shell
+- Design system adoption at the token layer (JUM-488)
+- Which tokens the designer uses
+- How tokens stay in sync — the vendored-copy rule
+- How to add a component without reintroducing ad-hoc styles
+- Where the Storybook inventory lives
+- Accessibility: the keyboard and screen-reader model
+- The tab bar is a real tablist
+- Reaching the canvas: the skip link
+- The canvas's non-visual equivalent
+- What a screen reader announces
+- Installing the designer as an app (JUM-489)
+- Updates and recovery — written for the user
+- The storage boundary: what installing does not do
+- What this document deliberately does not cover
+- References
+
+---
+
+# Service Management Collaboration and Packaging
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/reference/service-management-collaboration-packaging
+
+The shared catalog, domain-package versioning and the designer-core packaging boundary.
+
+Headings:
+- Service Management Collaboration and Packaging
+- Collaboration: the shared catalog (JUM-491)
+- What shipped
+- What JUM-491 deliberately descoped (12-01 carry-over candidates)
+- What this changes for the user — and what it does not
+- Domain-package versioning (JUM-492)
+- The versioned package document
+- Version semantics, redefined for a data model
+- Provenance and the installed-package registry
+- The dependency graph
+- Semantic conflict resolution
+- Packaging: the `@jumentix` designer core (JUM-493)
+- The full-suite export (JUM-547), the portable bundle
+- Chain closure: the E1–E8 gate evidence (Req 094)
+- What this document deliberately does not cover
+- References
 
 ---
 
@@ -1648,6 +1860,33 @@ Headings:
 - 7) HTTP Request Validation Contract
 - 8) Extension Rules
 - 9) Realtime Error Envelopes
+
+---
+
+# Runtime Environment Contracts
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/reference/service-management-runtime-environment
+
+Env-file locations, key tiers and the canonical enum sets the runtime API enforces.
+
+Headings:
+- Runtime Environment Contracts
+- Purpose
+- Runtime Keys
+- Startup Entrypoints
+- PM2 Process Model
+- Service Management Runtime Env API
+- PM2 ecosystem preview API (JUM-480)
+- Env file location
+- Key tiers and allowlists
+- Enum validation
+- Accepted environments
+- Key classification
+- Enum sets and alias decision
+- Security posture
+- Error contract
+- Guardrails
+- Operational Examples
 
 ---
 
