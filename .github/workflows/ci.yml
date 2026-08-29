@@ -183,6 +183,7 @@ jobs:
       - name: Install Bun and dependencies
         run: |
           curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
+          export PATH="$HOME/.bun/bin:$PATH"
           echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
           "$HOME/.bun/bin/bun" install --frozen-lockfile
       - name: Run workspace package builds
@@ -210,6 +211,7 @@ jobs:
       - name: Install Bun and dependencies
         run: |
           curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
+          export PATH="$HOME/.bun/bin:$PATH"
           echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
           "$HOME/.bun/bin/bun" install --frozen-lockfile
       - name: Run workspace package tests
@@ -246,6 +248,7 @@ jobs:
       - name: Install Bun and dependencies
         run: |
           curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
+          export PATH="$HOME/.bun/bin:$PATH"
           echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
           "$HOME/.bun/bin/bun" install --frozen-lockfile
       - name: Start Redis and RabbitMQ containers
@@ -291,6 +294,7 @@ jobs:
       - name: Install Bun and dependencies
         run: |
           curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
+          export PATH="$HOME/.bun/bin:$PATH"
           echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
           "$HOME/.bun/bin/bun" install --frozen-lockfile
       - name: Start Redis and RabbitMQ containers
@@ -414,6 +418,7 @@ jobs:
       - name: Install Bun and dependencies
         run: |
           curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
+          export PATH="$HOME/.bun/bin:$PATH"
           echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
           "$HOME/.bun/bin/bun" install --frozen-lockfile
       - name: Build Storybook
@@ -453,6 +458,7 @@ jobs:
       - name: Install Bun and dependencies
         run: |
           curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
+          export PATH="$HOME/.bun/bin:$PATH"
           echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
           "$HOME/.bun/bin/bun" install --frozen-lockfile
       - name: Database driver smoke matrix against real containers
