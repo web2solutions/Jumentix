@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-08-29 [JUM-728][Fix] Render shell documentation fences as copyable code blocks (#279) - Eduardo A.
+- 2026-08-29 fix(website): render shell fences as copyable code blocks, not editors [JUM-728] - Eduardo A.
 - 2026-08-29 [JUM-579][Bug] Ignore website metadata in patch coverage (#276) - Eduardo A.
 - 2026-08-29 fix(coverage): ignore website navigation metadata in patch gate - Eduardo Almeida
 - 2026-08-29 [JUM-579][Bug] Keep UUID generation covered centrally (#275) - Eduardo A.

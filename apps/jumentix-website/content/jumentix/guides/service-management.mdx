@@ -82,30 +82,33 @@ Install the workspace dependencies once:
 rtk proxy bun install
 ```
 
-## 3. Vendored browser bundles — do this before the first run
+## 3. Vendored browser bundles
 
 The application is a zero-build SPA that resolves two bare specifiers through
-the import map in `index.html`. Both targets are gitignored and must be
-generated locally before the first boot:
+the import map in `index.html`: `@jumentix/cana` and `@jumentix/designer-core/`.
+Both targets live under `apps/service-management/vendor/`, are gitignored, and
+are generated locally.
+
+The dev entry points generate them for you — `dev:service-management` and the
+`pm2:start:dev:*` scripts run the vendor step before starting the process, so a
+fresh clone boots a working designer with no extra command.
+
+Generate them by hand when you start the server directly, without PM2:
 
 ```bash
-rtk proxy bun ci-cd/sync-service-management-cana-bundle.js
+rtk proxy bun run service-management:vendor
 ```
 
-```bash
-rtk proxy bun ci-cd/sync-service-management-designer-core.js
-```
-
-The first vendors the Cana browser bundle into
-`apps/service-management/vendor/cana/index.js`; the second mirrors
+That single script writes the Cana browser bundle to
+`apps/service-management/vendor/cana/index.js` and mirrors
 `packages/designer-core/src` into
 `apps/service-management/vendor/designer-core/`.
 
-Skipping this step is the single most common first-run failure: the page loads,
-the shell renders, and every panel stays inert because the module graph never
-resolves. The browser integration suites run both scripts before booting the
-server, so a stale bundle can never read as a designer outage in CI — but a
-manual run has to do it explicitly.
+Without the bundles the page loads, the shell renders, and every panel stays
+inert because the module graph never resolves, with repeated `/vendor/...` 404s
+in the browser console. The browser integration suites generate them before
+booting the server, so a stale bundle can never read as a designer outage in
+CI.
 
 ## 4. Running the application
 
@@ -627,8 +630,9 @@ flowchart LR
 
 ### The page loads but every panel is inert
 
-The vendored bundles are missing. Run both sync scripts from section 3, then
-reload. The browser console shows repeated 404s for `/vendor/...` in this
+The vendored bundles are missing. Run `bun run service-management:vendor`, then
+reload. The dev entry points do this for you; starting `server.js` directly does
+not. The browser console shows repeated 404s for `/vendor/...` in this
 state.
 
 ### The server exits immediately
