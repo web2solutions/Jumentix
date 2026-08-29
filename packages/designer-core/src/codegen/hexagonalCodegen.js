@@ -39,6 +39,7 @@
  * `apps/backend-template/test/unit/service-management/hexagonalCodegen.test.ts`.
  */
 
+import { isBarePropertyKey } from '../model/propertyKeys.js';
 import { getEntityRbacPolicy, toSchemaName } from '../model/modelQueries.js';
 
 const MODULES_ROOT = 'src/modules';
@@ -80,7 +81,9 @@ function toInstanceToken(value, fallback) {
 
 /** Object-literal/property key: bare when a valid identifier, quoted otherwise. */
 function toPropertyKey(name) {
-  return /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(name) ? name : JSON.stringify(name);
+  // JUM-731: the rule lives in model/propertyKeys.js so the designer's warning
+  // and this quoting decision cannot drift apart.
+  return isBarePropertyKey(name) ? name : JSON.stringify(name);
 }
 
 /** Map an OAS schema (from the JUM-474 export) to a TypeScript type. */

@@ -128,6 +128,61 @@ describe('model validation engine (JUM-469)', () => {
     ]);
   });
 
+  /*
+   * JUM-731 — a field name the code generator will quote.
+   *
+   * `toPropertyKey` emits a bare key for an identifier and a quoted one for
+   * anything else, and validation said nothing: `my field name!` passed with
+   * `No issues found.` and reached three OAS schemas, the code preview and the
+   * boilerplate bundle as `"my field name!"?: string;`, reachable only by
+   * index. Asserted against the name that used to pass silently.
+   */
+  it('warns about a field name the generator will have to quote', () => {
+    expect.hasAssertions();
+    const issues = collectModelIssues(createState({
+      domains: [{
+        id: 'domain-1',
+        name: 'Billing',
+        entities: [createEntity({
+          fields: [
+            normalizeField({ name: 'id', type: 'uuid', pk: true }, 0),
+            normalizeField({ name: 'my field name!', type: 'string' }, 1)
+          ]
+        })]
+      }]
+    }));
+
+    expect(issues).toStrictEqual([{
+      message: 'Field Billing/Invoice.my field name! will be emitted as '
+        + '"my field name!" in the OpenAPI schema and the generated code, '
+        + 'reachable only by index. A name starting with a letter, `_` or `$` '
+        + 'and continuing with letters, digits, `_` or `$` is emitted bare.',
+      entityId: 'entity-1',
+      severity: 'warn'
+    }]);
+  });
+
+  it('accepts the names the generator emits bare, including `_` and `$`', () => {
+    expect.hasAssertions();
+
+    // The rule must not fire on legitimate identifiers, or every model warns.
+    const issues = collectModelIssues(createState({
+      domains: [{
+        id: 'domain-1',
+        name: 'Billing',
+        entities: [createEntity({
+          fields: [
+            normalizeField({ name: 'id', type: 'uuid', pk: true }, 0),
+            normalizeField({ name: '_internal', type: 'string' }, 1),
+            normalizeField({ name: '$ref2', type: 'string' }, 2)
+          ]
+        })]
+      }]
+    }));
+
+    expect(messages(issues)).toStrictEqual([]);
+  });
+
   it('flags array fields without itemsType', () => {
     expect.hasAssertions();
     const field = normalizeField({ name: 'tags', type: 'array', itemsType: 'string' }, 1);
