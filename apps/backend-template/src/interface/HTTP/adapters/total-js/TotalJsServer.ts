@@ -4,7 +4,7 @@
 import { createServer, Server } from 'http';
 import fs from 'fs';
 import path from 'path';
-import { v4 } from 'uuid';
+import { createUuid } from '@src/modules/port/UUID';
 import { _HTTP_PORT_ } from '@src/config/constants';
 import { Context as RequestContext } from '@src/infra/context/Context';
 import type {
@@ -211,7 +211,7 @@ class TotalJsServer extends HTTPBaseServer<any> {
     return (req: any, res: any) => {
       const store = new Map();
       RequestContext.run(store, () => {
-        store.set('correlationId', v4());
+        store.set('correlationId', createUuid());
         store.set('timeStart', +new Date());
         store.set('request', req);
         store.set('authorization', req.headers?.authorization || '');

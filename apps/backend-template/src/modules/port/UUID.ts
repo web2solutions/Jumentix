@@ -1,5 +1,9 @@
 import { v4 as uuidv4, parse, stringify } from 'uuid';
 
+export function createUuid(): string {
+  return uuidv4();
+}
+
 export class UUID {
   private readonly uuid: string;
 
@@ -8,7 +12,7 @@ export class UUID {
       if (id) {
         this.uuid = stringify(parse(id));
       } else {
-        this.uuid = uuidv4();
+        this.uuid = createUuid();
       }
     } catch (error) {
       throw new Error('Invalid UUID');

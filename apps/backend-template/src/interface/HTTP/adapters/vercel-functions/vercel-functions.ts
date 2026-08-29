@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { v4 } from 'uuid';
+import { createUuid } from '@src/modules/port/UUID';
 
 import { RestAPI } from '@src/interface/HTTP/RestAPI';
 import { Context as RequestContext } from '@src/infra/context/Context';
@@ -136,7 +136,7 @@ class VercelFunctionsServer extends HTTPBaseServer<Record<string, never>> {
   public async handle(req: VercelRequest, res: VercelResponse): Promise<void> {
     const store = new Map();
     return RequestContext.run(store, () => {
-      store.set('correlationId', v4());
+      store.set('correlationId', createUuid());
       store.set('timeStart', +new Date());
       store.set('request', req);
       store.set('authorization', req.headers.authorization || '');

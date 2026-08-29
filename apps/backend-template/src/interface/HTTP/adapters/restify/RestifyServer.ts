@@ -5,7 +5,7 @@ import type { IbaseHandler } from '@src/interface/HTTP/ports/IbaseHandler';
 import { HTTPBaseServer } from '@src/interface/HTTP/ports/HTTPBaseServer';
 import path from 'path';
 import { Context } from '@src/infra/context/Context';
-import { v4 } from 'uuid';
+import { createUuid } from '@src/modules/port/UUID';
 import { BaseError } from '@src/infra/exceptions';
 
 type Restify = restify.Server;
@@ -34,7 +34,7 @@ class RestifyServer extends HTTPBaseServer<Restify> {
     this.application.use((req, res, next) => {
       const store = new Map();
       Context.run(store, () => {
-        store.set('correlationId', v4());
+        store.set('correlationId', createUuid());
         store.set('timeStart', +new Date());
         store.set('request', req);
         store.set('authorization', req.headers.authorization || '');
