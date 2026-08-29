@@ -1665,7 +1665,12 @@ function CommercialMatrix({
   rows: CommercialMatrixRow[];
 }) {
   return (
-    <div className={classes.matrixWrap}>
+    <div
+      aria-label={headers.join(' / ')}
+      className={classes.matrixWrap}
+      role="region"
+      tabIndex={0}
+    >
       <table className={classes.matrix}>
         <thead>
           <tr>

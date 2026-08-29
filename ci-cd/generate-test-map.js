@@ -34,7 +34,11 @@ function classifyUnit(file) {
   ) {
     return { layer: 'application', kind: 'hexagonal' };
   }
-  if (rel.startsWith('modules/Users/adapters/in/') || rel.startsWith('modules/Users/interface/')) {
+  if (
+    rel.startsWith('modules/Users/adapters/in/')
+    || rel.startsWith('modules/Users/interface/')
+    || rel === 'modules/Users/lambdaRuntime.test.ts'
+  ) {
     return { layer: 'adapters/in', kind: 'hexagonal' };
   }
   if (rel.startsWith('interface/')) {

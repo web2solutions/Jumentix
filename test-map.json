@@ -420,16 +420,6 @@
       "timeoutMs": 60000
     },
     {
-      "id": "apps/backend-template/test/unit/interface/HTTP/adapters/errorResponses.test.ts",
-      "path": "apps/backend-template/test/unit/interface/HTTP/adapters/errorResponses.test.ts",
-      "layer": "interface/runtime",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
       "id": "apps/backend-template/test/unit/interface/HTTP/adapters/start-rest-api.test.ts",
       "path": "apps/backend-template/test/unit/interface/HTTP/adapters/start-rest-api.test.ts",
       "layer": "interface/runtime",
@@ -438,6 +428,16 @@
       "runner": "bun",
       "ciRunner": "node",
       "bunCompat": "pending-resetModules-or-native-gap",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/HTTP/adapters/errorResponses.test.ts",
+      "path": "apps/backend-template/test/unit/interface/HTTP/adapters/errorResponses.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
       "tier": "gate",
       "timeoutMs": 60000
     },
@@ -1799,6 +1799,16 @@
       "id": "apps/backend-template/test/unit/modules/Users/application/events/registerUserEventListeners.test.ts",
       "path": "apps/backend-template/test/unit/modules/Users/application/events/registerUserEventListeners.test.ts",
       "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Users/lambdaRuntime.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Users/lambdaRuntime.test.ts",
+      "layer": "adapters/in",
       "kind": "hexagonal",
       "type": "unit",
       "runner": "bun",
@@ -4372,9 +4382,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 224,
+    "unit": 226,
     "integration": 97,
     "smoke": 2,
-    "suites": 371
+    "suites": 373
   }
 }
