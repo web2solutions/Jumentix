@@ -496,6 +496,13 @@ function renderRuntimeEnvFields(runtimeValues) {
     }
     field.id = fieldId;
     field.dataset.runtimeKey = key;
+    // JUM-732: the `for`/`id` association above already names the control, but
+    // the name is then only as reliable as the label being in the tree at the
+    // moment it is read — a CI run caught these nine fields unnamed while the
+    // same page named them locally. An explicit `aria-label` is stable
+    // regardless, and says the tier as well, which the visible label only
+    // carries for read-only keys.
+    field.setAttribute('aria-label', isEditable ? key : `${key} (read-only)`);
     wrapper.appendChild(field);
     const hint = RUNTIME_ENV_FIELD_HINTS[key];
     if (hint) {

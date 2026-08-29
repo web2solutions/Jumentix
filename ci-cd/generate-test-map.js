@@ -90,6 +90,7 @@ const SERVICE_MANAGEMENT_INTEGRATION_AREA = {
   'catalogSync.integration.test.ts': 'service-management/designer',
   'interfaceAdapters.browser.integration.test.ts': 'service-management/designer',
   'statusOutcome.browser.integration.test.ts': 'service-management/designer',
+  'accessibleNames.browser.integration.test.ts': 'service-management/designer',
   'runtimeEnv.integration.test.ts': 'service-management/server',
   'runtimeEnvContract.integration.test.ts': 'service-management/server',
   'pm2Ecosystem.integration.test.ts': 'service-management/server',
