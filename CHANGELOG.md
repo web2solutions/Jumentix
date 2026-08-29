@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-20 [JUM-723][Chore] Consolidate Dependabot dependency updates (#253) - Eduardo A.
 - 2026-08-20 chore(deps): consolidate dependabot updates - Eduardo A.
 - 2026-08-20 [JUM-681][Quality] Coverage thresholds at 98%, integrity gate on the real CI paths (#245) - Eduardo A.
 - 2026-08-20 Merge remote-tracking branch 'origin/dev' into claude/governance/JUM-681-threshold-98 - Eduardo A.

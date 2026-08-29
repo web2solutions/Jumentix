@@ -61,6 +61,14 @@ module.exports = {
       '@typescript-eslint/no-explicit-any': 'off',
       'import/no-cycle' : 'off',
       'arrow-body-style' : 'off',
+      '@typescript-eslint/no-empty-object-type': 'off',
+      '@typescript-eslint/no-require-imports': 'off',
+      '@typescript-eslint/no-unsafe-function-type': 'off',
+      '@typescript-eslint/no-unused-vars': ['error', {
+        caughtErrors: 'none',
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_'
+      }],
       'import/no-extraneous-dependencies': ['error', {
         packageDir: [
           __dirname,
@@ -102,6 +110,7 @@ module.exports = {
          */
         rules: {
           'jest/no-hooks': 'off',
+          'jest/no-untyped-mock-factory': 'off',
           'jest/unbound-method': 'off'
         }
       },

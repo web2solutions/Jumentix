@@ -8,7 +8,10 @@ export class Prompt {
 
   constructor(
     /* istanbul ignore next */
-    createInterface: () => readline.Interface = () => readline.createInterface({ input, output })
+    createInterface: () => readline.Interface = () => readline.createInterface({
+      input: input as unknown as NodeJS.ReadableStream,
+      output: output as unknown as NodeJS.WritableStream
+    })
   ) {
     this.rl = createInterface();
   }

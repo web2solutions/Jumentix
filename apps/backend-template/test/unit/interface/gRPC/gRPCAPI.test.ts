@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable jest/no-untyped-mock-factory */
-/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 /* eslint-disable jest/max-expects */
 /* eslint-disable jest/prefer-spy-on */
 
