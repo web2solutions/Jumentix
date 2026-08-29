@@ -21,6 +21,7 @@ import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService
 import { JwtService } from '@src/infra/jwt/JwtService';
 import { UserDataRepository, UserService } from '@src/modules/Users';
 import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal';
+import { closeServer } from '../closeServer';
 
 const webServer = ExpressServer.compile();
 const databaseClient = InMemoryDbClient;
@@ -69,7 +70,7 @@ describe('express -> delete User suite', () => {
       mutexService
     });
 
-    server = API.server.application;
+    server = API.server.application.listen(0);
 
     // await server.ready();
     usersAll = await API.seedUsers();
@@ -77,7 +78,7 @@ describe('express -> delete User suite', () => {
   afterAll(async () => {
     await databaseClient.disconnect();
     await keyValueStorageClient.disconnect();
-    // await server.close();
+    await closeServer(server);
   });
 
   it('user1 must be able to delete an user - user data 1', async () => {

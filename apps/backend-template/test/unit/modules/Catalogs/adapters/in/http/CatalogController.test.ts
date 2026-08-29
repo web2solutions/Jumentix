@@ -283,3 +283,51 @@ describe('catalogController — TENANT-RBAC enforcement', () => {
     } as any)).toThrow('CatalogUseCases is not implemented');
   });
 });
+
+/**
+ * The principal the controller stamps, and the one it does not have (JUM-721).
+ *
+ * Every test above authorises to a complete principal. Two shapes reach the
+ * controller in production that do not: a token whose subject carries an id but
+ * no username — machine credentials — and, on the paths where the decorator has
+ * not attached one, no authenticated user at all.
+ *
+ * `createdBy` and `updatedBy` come from that principal, and they are the
+ * audit trail for a shared catalog. `undefined` written there is a record whose
+ * author cannot be named afterwards, which is exactly what the tenant policy
+ * exists to make answerable.
+ */
+describe('catalogController actor stamping (JUM-721)', () => {
+  const machinePrincipal = { id: 'svc-1', organization: 'org-1', roles: ['admin'] };
+
+  it('falls back to the principal id when the token carries no username', async () => {
+    expect.hasAssertions();
+
+    const { controller } = createStack(machinePrincipal);
+
+    const { result, error } = await controller.create(new CatalogCreateRequestEvent({
+      authorization: 'Bearer token',
+      input: { name: 'Billing', design },
+      schemaOAS: operations['/catalogs'].post
+    }));
+
+    expect(error).toBeUndefined();
+    expect(result?.createdBy).toBe('svc-1');
+  });
+
+  it('refuses a read of a catalog the store does not have', async () => {
+    expect.hasAssertions();
+
+    // The read-scope check asks the store for the target before deciding, and
+    // a missing record is not a tenant decision it can make. It raises the
+    // store's own refusal rather than answering "allowed" and letting the read
+    // continue against nothing.
+    const { controller } = createStack(adminOrg1);
+
+    await expect(controller.getOneById(new CatalogGetOneRequestEvent({
+      authorization: 'Bearer token',
+      params: { id: '00000000-0000-4000-8000-0000000000ff' },
+      schemaOAS: operations['/catalogs/{id}'].get
+    }))).rejects.toThrow('Record not found');
+  });
+});

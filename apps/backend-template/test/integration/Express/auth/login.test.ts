@@ -19,6 +19,7 @@ import {
 } from '@src/modules/Users';
 
 import createdUsers from '@seed/users';
+import { closeServer } from '../closeServer';
 
 const [createdUser1] = createdUsers;
 
@@ -70,12 +71,13 @@ describe('express -> login suite', () => {
       mutexService
     });
 
-    server = API.server.application;
+    server = API.server.application.listen(0);
 
     await API.seedData();
   });
 
   afterAll(async () => {
+    await closeServer(server);
     await databaseClient.disconnect();
     await keyValueStorageClient.disconnect();
     // await keyValueStorageClient.disconnect();

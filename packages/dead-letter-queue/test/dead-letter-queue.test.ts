@@ -243,3 +243,122 @@ describe('keyValueDeadLetterStore (JUM-53)', () => {
     expect(() => new KeyValueDeadLetterStore(undefined as never)).toThrow('key-value client');
   });
 });
+
+/**
+ * What the store does when the client refuses (JUM-721).
+ *
+ * The suites above drive the store against a client that always succeeds, so
+ * the four `if (error) throw error` guards and the "already indexed" short
+ * circuit have never run. Every one of them decides whether a dead letter is
+ * lost silently:
+ *
+ * - a failed read that returned `[]` instead of throwing would report an empty
+ *   queue for a store that is merely unreachable, and the operator would
+ *   conclude there is nothing to replay;
+ * - a failed write that returned normally would drop the record the queue
+ *   exists to keep;
+ * - an index that appends the same id twice replays that record twice, which
+ *   for a non-idempotent write is a second charge, a second email, a second
+ *   anything.
+ *
+ * The client is a **double** of the Redis key-value port (Requirement 135 §5):
+ * these are the refusals a real Redis produces and cannot be asked for.
+ */
+describe('keyValueDeadLetterStore refusals (JUM-721)', () => {
+  const record = (id: string): DeadLetterRecord => ({
+    id,
+    entityName: 'User',
+    resourceId: 'user-1',
+    operation: 'update',
+    payload: { firstName: 'Ada' },
+    actorId: 'actor-1',
+    attempts: 0,
+    status: 'pending',
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z'
+  } as DeadLetterRecord);
+
+  /** A client whose named operation answers with an error rather than a result. */
+  const failingOn = (operation: 'get' | 'set') => {
+    const client = fakeKeyValueClient();
+    return {
+      ...client,
+      get: async (key: string) => (
+        operation === 'get' ? { error: new Error('store unreachable') } : client.get(key)
+      ),
+      set: async (key: string, value: unknown) => (
+        operation === 'set' ? { error: new Error('store read-only') } : client.set(key, value)
+      )
+    };
+  };
+
+  it('raises a failed read instead of reporting an empty queue', async () => {
+    expect.hasAssertions();
+
+    const store = new KeyValueDeadLetterStore(failingOn('get') as never);
+
+    await expect(store.list()).rejects.toThrow('store unreachable');
+    await expect(store.get('dlq-1')).rejects.toThrow('store unreachable');
+  });
+
+  it('raises a failed write instead of dropping the record', async () => {
+    expect.hasAssertions();
+
+    const store = new KeyValueDeadLetterStore(failingOn('set') as never);
+
+    await expect(store.put(record('dlq-1'))).rejects.toThrow('store read-only');
+  });
+
+  it('raises when the index write fails after the record was stored', async () => {
+    expect.hasAssertions();
+
+    // The record landed and the index did not: the entry exists and nothing
+    // lists it. Reporting success here is how a dead letter becomes invisible.
+    const client = fakeKeyValueClient();
+    const behaviours: Array<(key: string, value: unknown) => Promise<unknown>> = [
+      client.set,
+      async () => ({ error: new Error('index write refused') })
+    ];
+    const failingIndexWrite = {
+      ...client,
+      set: async (key: string, value: unknown) => {
+        const [behaviour = client.set] = behaviours.splice(0, 1);
+        return behaviour(key, value);
+      }
+    };
+
+    const store = new KeyValueDeadLetterStore(failingIndexWrite as never);
+
+    await expect(store.put(record('dlq-1'))).rejects.toThrow('index write refused');
+  });
+
+  it('indexes an id once, however many times it is put', async () => {
+    expect.hasAssertions();
+
+    // A replay worker re-puts a record on every attempt. A second index entry
+    // means the record is listed twice and replayed twice.
+    const client = fakeKeyValueClient();
+    const store = new KeyValueDeadLetterStore(client as never);
+
+    await store.put(record('dlq-1'));
+    await store.put(record('dlq-1'));
+
+    await expect(store.list()).resolves.toHaveLength(1);
+  });
+
+  it('reads an absent or empty value as nothing rather than as a record', async () => {
+    expect.hasAssertions();
+
+    // Redis answers a missing key with null and a cleared one with the empty
+    // string; `JSON.parse` on either throws, and a store that let that escape
+    // would fail a list because one entry had been deleted.
+    const client = fakeKeyValueClient();
+    client.values.set('dlq:index', JSON.stringify(['dlq-1', 'dlq-2']));
+    client.values.set('dlq:record:dlq-1', '');
+    const store = new KeyValueDeadLetterStore(client as never);
+
+    await expect(store.get('dlq-missing')).resolves.toBeUndefined();
+    await expect(store.get('dlq-1')).resolves.toBeUndefined();
+    await expect(store.list()).resolves.toStrictEqual([]);
+  });
+});

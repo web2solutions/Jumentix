@@ -730,13 +730,20 @@ describe('bootstrap defaults (JUM-681)', () => {
     expect.hasAssertions();
 
     // Production passes nothing and gets stdin/stdout. The interface is closed
-    // immediately: an open readline on stdin keeps the process — and the test
-    // runner — alive.
-    const prompt = createPrompt();
+    // inside a subprocess so Jest's open-handle detector never inherits the
+    // readline handle that Node creates for the parent process streams.
+    const script = [
+      'const { createPrompt } = require(\'./packages/cli-init/src/bootstrap\');',
+      'const prompt = createPrompt();',
+      'if (typeof prompt.ask !== \'function\') process.exit(2);',
+      'prompt.close();'
+    ].join('\n');
 
-    expect(typeof prompt.ask).toBe('function');
-
-    prompt.close();
+    expect(() => execFileSync(process.execPath, ['-e', script], {
+      cwd: path.resolve(__dirname, '../../..'),
+      stdio: 'pipe',
+      timeout: 3000
+    })).not.toThrow();
   });
 
   it('reads argv and logs through the console when neither is passed', async () => {

@@ -602,3 +602,69 @@ describe('oAS composition and relation fallbacks (JUM-493)', () => {
 // scope with every other script-mode suite in ts-jest's program (TS2451).
 // eslint-disable-next-line jest/no-export
 export {};
+
+/**
+ * Packages and schemas that carry less than the format allows (JUM-721).
+ *
+ * The importer reads documents other tools wrote: a package exported before
+ * `context` existed, an entity with no `meta`, an OAS schema that declares its
+ * object contract through `allOf`/`anyOf` rather than `type: object`. Each of
+ * those reaches a fallback, and each fallback decides whether the import
+ * succeeds or drops something silently — an entity the importer does not
+ * recognise as a contract is an entity the designer never shows, with no error
+ * to explain the absence.
+ */
+describe('designer importer fallbacks (JUM-721)', () => {
+  it('imports a package whose domain carries no context at all', () => {
+    expect.hasAssertions();
+
+    const result = buildDomainFromPackage({
+      domain: { name: 'Legacy', entities: [{ name: 'Order', fields: [] }] }
+    }, []);
+
+    expect(result.ok).toBe(true);
+    expect(result.domain.context.packageDependencies).toStrictEqual([]);
+    expect(result.domain.context.sharedValueObjects).toStrictEqual([]);
+  });
+
+  it('stamps provenance onto an entity that carries no meta', () => {
+    expect.hasAssertions();
+
+    // Provenance is what the dependency graph is derived from. An entity whose
+    // `meta` was absent must gain one rather than lose the stamp.
+    const result = buildDomainFromPackage({
+      package: { name: '@acme/orders', version: '1.2.3' },
+      domain: { name: 'Orders', entities: [{ name: 'Order', fields: [] }] }
+    }, []);
+
+    expect(result.ok).toBe(true);
+    expect(result.domain.entities[0].meta.provenance).toMatchObject({
+      package: '@acme/orders',
+      version: '1.2.3'
+    });
+  });
+
+  it('recognises an object contract declared through composition', () => {
+    expect.hasAssertions();
+
+    // `allOf`/`anyOf`/`oneOf` are how a generated spec expresses inheritance.
+    // A schema that only looks for `type: object` drops those entities.
+    const document = {
+      openapi: '3.0.3',
+      info: { title: 'acme', version: '1.0.0' },
+      paths: {},
+      components: {
+        schemas: {
+          Composed: { allOf: [{ type: 'object', properties: { id: { type: 'string' } } }] },
+          Alternative: { anyOf: [{ type: 'object', properties: { id: { type: 'string' } } }] }
+        }
+      }
+    };
+
+    const result = buildDomainsFromOas(document);
+
+    expect(result.ok).toBe(true);
+    expect(result.domains[0].entities.map((entity: { name: string }) => entity.name))
+      .toStrictEqual(expect.arrayContaining(['Composed', 'Alternative']));
+  });
+});

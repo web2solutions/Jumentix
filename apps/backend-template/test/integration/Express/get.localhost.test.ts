@@ -13,6 +13,7 @@ import { AuthService } from '@src/modules/Users/service/AuthService';
 import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal';
 import { UserDataRepository, UserService } from '@src/modules/Users';
 import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
+import { closeServer } from './closeServer';
 
 /**
  * JUM-678 — this suite lives in `test/integration/Express/`, and now integrates.
@@ -65,10 +66,11 @@ describe('express -> /localhost suite', () => {
       keyValueStorageClient,
       mutexService
     });
-    server = API.server.application;
+    server = API.server.application.listen(0);
   });
 
   afterAll(async () => {
+    await closeServer(server);
     await InMemoryDbClient.disconnect();
     await keyValueStorageClient.disconnect();
   });

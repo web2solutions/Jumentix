@@ -4,6 +4,12 @@
 
 ## All Changes
 
+- 2026-08-29 Merge remote-tracking branch 'origin/dev' into claude/governance/JUM-721-branch-coverage - Eduardo Almeida
+- 2026-08-29 [JUM-725][Chore] Consolidate August 2026 Dependabot updates (#262) - Eduardo A.
+- 2026-08-29 chore(deps): consolidate dependabot updates (JUM-725) - Eduardo Almeida
+- 2026-08-25 test(coverage): close 29 more branches and ratchet to 96.422% (JUM-721) - Eduardo Almeida
+- 2026-08-25 test(express): listen once per suite instead of per request (JUM-687) - Eduardo Almeida
+- 2026-08-25 fix(http): stop swallowing endpoint registration failures (JUM-687) - Eduardo Almeida
 - 2026-08-20 [JUM-723][Chore] Consolidate Dependabot dependency updates (#253) - Eduardo A.
 - 2026-08-20 chore(deps): consolidate dependabot updates - Eduardo A.
 - 2026-08-20 [JUM-681][Quality] Coverage thresholds at 98%, integrity gate on the real CI paths (#245) - Eduardo A.
