@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-08-29 [JUM-579][Bug] Restore release gate prerequisites (#268) - Eduardo A.
+- 2026-08-29 chore(ci): refresh release gate checks - Eduardo Almeida
 - 2026-08-29 fix(ci): bootstrap Docker and Storybook release gates - Eduardo Almeida
 - 2026-08-29 [Release] Sync main ancestry into dev (#267) - Eduardo A.
 - 2026-08-29 chore(release): sync main ancestry into dev - Eduardo Almeida

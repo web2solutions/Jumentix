@@ -111,6 +111,16 @@ describe('check-ci-provider', () => {
     expect(run(directory).output).toContain('website:deps:build');
   });
 
+  it('fails when monorepo builds no longer prime exported workspace dependencies', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, 'package.json');
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace(/mono:build:deps/g, 'mono:build:parallel'));
+    });
+    expect(run(directory).output).toContain('mono:build:deps');
+  });
+
   it('fails when expensive jobs lose the release/full context guard', () => {
     expect.hasAssertions();
 
