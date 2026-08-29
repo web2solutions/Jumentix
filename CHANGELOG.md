@@ -4,7 +4,12 @@
 
 ## All Changes
 
+- 2026-08-29 [JUM-579][Bug] Keep UUID generation covered centrally (#275) - Eduardo A.
+- 2026-08-29 fix(ci): avoid duplicate required branch gate checks - Eduardo Almeida
 - 2026-08-29 fix(coverage): keep uuid generation covered centrally - Eduardo Almeida
+- 2026-08-29 [JUM-727][Docs] Publish the Service Manager and Domain Designer guide (#274) - Eduardo A.
+- 2026-08-29 Merge remote-tracking branch 'origin/dev' into claude/docs/JUM-727-service-manager-guide - Eduardo A.
+- 2026-08-29 docs(website): publish the Service Manager and Domain Designer guide [JUM-727] - Eduardo A.
 - 2026-08-29 [JUM-579][Bug] Fetch main ref for patch coverage (#273) - Eduardo A.
 - 2026-08-29 fix(ci): fetch main ref for patch coverage - Eduardo Almeida
 - 2026-08-29 [JUM-579][Bug] Make review artifact uploads best-effort (#272) - Eduardo A.
