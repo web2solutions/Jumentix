@@ -41,4 +41,32 @@ describe('fastify server', () => {
 
     await first.stop();
   });
+
+  it('fails loudly when endpoint registration throws a non-Error value', () => {
+    expect.hasAssertions();
+
+    class ServerUnderTest extends HTTPBaseServer<Record<string, any>> {
+      public application = {
+        get: () => {
+          // eslint-disable-next-line no-throw-literal
+          throw 'route refused';
+        }
+      };
+
+      public start = async () => {
+        Object.keys(this.application);
+      };
+
+      public stop = async () => {
+        Object.keys(this.application);
+      };
+    }
+
+    const server = new ServerUnderTest();
+    expect(() => server.endPointRegister({
+      method: 'get',
+      path: '/broken',
+      handler: () => undefined
+    })).toThrow('Endpoint registration failed for GET /broken: route refused');
+  });
 });

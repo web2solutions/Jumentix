@@ -28,6 +28,7 @@ describe('firebase-credentials', () => {
     expect(defaultDatabaseUrl('jumentix-service-registry')).toBe(
       'https://jumentix-service-registry-default-rtdb.firebaseio.com'
     );
+    expect(() => defaultDatabaseUrl('   ')).toThrow('empty project_id');
   });
 
   it('loads credentials from FIREBASE_SERVICE_ACCOUNT_KEY_FILE', () => {
@@ -89,5 +90,13 @@ describe('firebase-credentials', () => {
 
     expect(hasFirebaseCredentials()).toBe(false);
     expect(() => loadServiceAccount()).toThrow('Missing Firebase credentials');
+  });
+
+  it('reports unreadable credential files with the configured path', () => {
+    expect.hasAssertions();
+    delete process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+    process.env.FIREBASE_SERVICE_ACCOUNT_KEY_FILE = path.join(os.tmpdir(), 'missing-jumentix-sa.json');
+
+    expect(() => loadServiceAccount()).toThrow('Unable to read FIREBASE_SERVICE_ACCOUNT_KEY_FILE');
   });
 });

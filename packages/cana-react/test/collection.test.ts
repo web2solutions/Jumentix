@@ -28,6 +28,14 @@ const event = (overrides: Partial<CanaChangeEvent<Task>>): CanaChangeEvent<Task>
   ...overrides
 });
 
+const reduxActionsForEvent = (entry: CanaChangeEvent<unknown>): unknown => {
+  const mapped = new Map<number, unknown>([
+    [8, [{ type: 'first' }, { type: 'second' }]]
+  ]);
+
+  return mapped.get(entry.cursor) ?? { type: 'cana/eventCommitted', payload: entry };
+};
+
 describe('applyCanaEventToRecords', () => {
   it('adds and replaces records from committed Cana events', () => {
     expect.hasAssertions();
@@ -82,9 +90,11 @@ describe('connectCanaToRedux', () => {
   it('dispatches mapped actions and records the last cursor', () => {
     expect.hasAssertions();
 
+    const subscribeOptions: unknown[] = [];
     let listener: ((entry: CanaChangeEvent) => void) | undefined;
     const client = {
-      subscribe(next: (entry: CanaChangeEvent) => void) {
+      subscribe(next: (entry: CanaChangeEvent) => void, options?: unknown) {
+        subscribeOptions.push(options);
         listener = next;
         return () => undefined;
       }
@@ -94,12 +104,47 @@ describe('connectCanaToRedux', () => {
     const bridge = connectCanaToRedux({
       client: client as never,
       dispatch: (action) => actions.push(action),
-      mapEvent: (entry) => ({ type: 'cana/eventCommitted', payload: entry })
+      mapEvent: reduxActionsForEvent,
+      sinceCursor: 3
     });
 
     listener?.(event({ cursor: 7 }));
+    listener?.(event({ cursor: 8 }));
 
-    expect(actions).toHaveLength(1);
-    expect(bridge.getLastCursor()).toBe(7);
+    expect(subscribeOptions).toStrictEqual([{ sinceCursor: 3 }]);
+    expect(actions).toHaveLength(3);
+    expect(bridge.getLastCursor()).toBe(8);
+  });
+
+  it('records cursors for ignored events and reports subscribe failures', () => {
+    expect.hasAssertions();
+
+    let listener: ((entry: CanaChangeEvent) => void) | undefined;
+    const client = {
+      subscribe(next: (entry: CanaChangeEvent) => void) {
+        listener = next;
+        return () => undefined;
+      }
+    };
+    const actions: unknown[] = [];
+    const bridge = connectCanaToRedux({
+      client: client as never,
+      dispatch: (action) => actions.push(action),
+      mapEvent: () => undefined
+    });
+
+    listener?.(event({ cursor: 4 }));
+    expect(actions).toStrictEqual([]);
+    expect(bridge.getLastCursor()).toBe(4);
+
+    const subscribeError = new Error('subscribe refused');
+    const onError = jest.fn();
+    expect(() => connectCanaToRedux({
+      client: { subscribe: () => { throw subscribeError; } } as never,
+      dispatch: jest.fn(),
+      mapEvent: jest.fn(),
+      onError
+    })).toThrow('subscribe refused');
+    expect(onError).toHaveBeenCalledWith(subscribeError);
   });
 });

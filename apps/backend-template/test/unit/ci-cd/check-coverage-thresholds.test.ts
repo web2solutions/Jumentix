@@ -206,10 +206,7 @@ describe('check-coverage-thresholds CLI', () => {
     const result = runMain(reportWith({ brf: 100, brh: 50 }));
 
     expect(result.thrown?.message).toBe('exit:1');
-    // JUM-681: branches is under a tracked floor, so the message names the
-    // floor and the exception rather than the bare threshold. That is the more
-    // useful failure — it says how far it may fall and who owns the debt.
-    expect(result.errors).toContain('branches: 50.00% is below the accepted floor of 96.422% (JUM-721)');
+    expect(result.errors).toContain('branches: 50.00% is below the required 98%');
   });
 
   it('exits non-zero when the report is absent, rather than treating it as a pass', () => {
@@ -224,18 +221,11 @@ describe('check-coverage-thresholds CLI', () => {
 
   it('reports every metric when all pass', () => {
     expect.hasAssertions();
-    // Above the recorded floor, which is what "all pass" means while the
-    // exception is live — a fixture at the floor would start failing the moment
-    // the ratchet moves, which it does on every branch that gets covered.
-    const result = runMain(reportWith({ brf: 100, brh: 97 }));
+    const result = runMain(reportWith({ brf: 100, brh: 98 }));
 
     expect(result.thrown).toBeNull();
-    expect(result.logs).toContain('branches 97.00%');
-    // JUM-681 recorded the first live exception, and this is the behaviour the
-    // previous version of this test described but could not exercise: a reader
-    // is never shown the number without being told it sits under a tracked
-    // concession, and who owns it.
-    expect(result.logs).toContain('under JUM-721');
+    expect(result.logs).toContain('branches 98.00%');
+    expect(result.logs).not.toContain('under JUM-721');
   });
 });
 

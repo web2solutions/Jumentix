@@ -49,6 +49,18 @@ function scratch(prefix: string): string {
   return dir;
 }
 
+const restoreProcessProperty = (
+  name: 'stdin' | 'stdout',
+  previous: PropertyDescriptor | undefined
+): void => {
+  if (previous) {
+    Object.defineProperty(process, name, previous);
+    return;
+  }
+
+  delete (process as unknown as Record<string, unknown>)[name];
+};
+
 // A file-level hook, deliberately: every scratch directory in this file is
 // removed by the same teardown, and per-describe copies would be four chances
 // to leave one behind in the OS temp directory.
@@ -728,43 +740,53 @@ describe('repository policy', () => {
 describe('bootstrap defaults (JUM-681)', () => {
   it('builds a prompt over the process streams when given none', () => {
     expect.hasAssertions();
+    const input = new PassThrough();
+    const output = new PassThrough();
+    const previousStdin = Object.getOwnPropertyDescriptor(process, 'stdin');
+    const previousStdout = Object.getOwnPropertyDescriptor(process, 'stdout');
 
-    // Production passes nothing and gets stdin/stdout. The interface is closed
-    // inside a subprocess so Jest's open-handle detector never inherits the
-    // readline handle that Node creates for the parent process streams.
-    const script = [
-      'const { createPrompt } = require(\'./packages/cli-init/src/bootstrap\');',
-      'const prompt = createPrompt();',
-      'if (typeof prompt.ask !== \'function\') process.exit(2);',
-      'prompt.close();'
-    ].join('\n');
+    Object.defineProperty(process, 'stdin', { configurable: true, value: input });
+    Object.defineProperty(process, 'stdout', { configurable: true, value: output });
 
-    expect(() => execFileSync(process.execPath, ['-e', script], {
-      cwd: path.resolve(__dirname, '../../..'),
-      stdio: 'pipe',
-      timeout: 3000
-    })).not.toThrow();
+    // Production passes nothing and gets stdin/stdout. Closing immediately keeps
+    // Jest's open-handle detector happy while still exercising the default path
+    // in this process, where Istanbul can measure it.
+    try {
+      const prompt = createPrompt();
+
+      expect(typeof prompt.ask).toBe('function');
+      prompt.close();
+    } finally {
+      input.destroy();
+      output.destroy();
+      restoreProcessProperty('stdin', previousStdin);
+      restoreProcessProperty('stdout', previousStdout);
+    }
   });
 
   it('reads argv and logs through the console when neither is passed', async () => {
     expect.hasAssertions();
 
-    // `run()` as the `bin` entry calls it: no argv, no logger. Under the test
-    // runner the ambient argv carries none of the CLI's flags, so this lands on
-    // the interactive path and stops at the first prompt — which is why the
-    // prompt is the one thing injected, answering nothing.
+    // `run()` as the `bin` entry calls it: no argv, no logger. The ambient argv
+    // is temporarily reduced to the executable and script names so this lands on
+    // the interactive path and stops at the first prompt.
     const logged: unknown[] = [];
     const log = jest.spyOn(console, 'log').mockImplementation((...args) => {
       logged.push(args.join(' '));
     });
+    const previousArgv = process.argv;
 
-    await expect(bootstrap.run({
-      createPrompt: () => ({ ask: async () => '', close: () => undefined }),
-      execute: () => undefined,
-      workingDirectory: os.tmpdir()
-    })).rejects.toThrow('Invalid service type selection.');
-
-    log.mockRestore();
+    try {
+      process.argv = ['node', 'jumentix-init'];
+      await expect(bootstrap.run({
+        createPrompt: () => ({ ask: async () => '', close: () => undefined }),
+        execute: () => undefined,
+        workingDirectory: os.tmpdir()
+      })).rejects.toThrow('Invalid service type selection.');
+    } finally {
+      process.argv = previousArgv;
+      log.mockRestore();
+    }
 
     // It got as far as the banner before refusing, which is what proves the
     // defaulted logger was the one writing.

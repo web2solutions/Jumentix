@@ -1,4 +1,5 @@
 import * as exceptions from '@src/infra/exceptions';
+import { Context } from '@src/infra/context/Context';
 import { BaseError } from '@src/infra/exceptions/BaseError';
 import { NotImplemented } from '@src/infra/exceptions/NotImplemented';
 
@@ -60,6 +61,18 @@ describe('infra exceptions', () => {
       }));
       expect(error.name).toMatch(/^database_/);
     }
+  });
+
+  it('registers persistence-contract errors against the application correlation context', () => {
+    expect.hasAssertions();
+
+    Context.run(new Map([['correlationId', 'corr-db-1']]), () => {
+      expect(new exceptions.ConflictError('boom').correlationId).toBe('corr-db-1');
+    });
+    Context.run(new Map([['correlationId', null]]), () => {
+      expect(new exceptions.DataBaseNotFoundError('boom').correlationId).toBe('');
+    });
+    expect(new exceptions.DatabasePagingError('boom').correlationId).toBe('');
   });
 
   it('serializes BaseError with metadata and cause', () => {

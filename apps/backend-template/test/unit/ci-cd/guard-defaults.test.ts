@@ -179,13 +179,9 @@ describe('ci-cd guards, no injection (JUM-681)', () => {
       branches: { found: 100, hit: 100 }
     };
 
-    // The ratchet, running against the register as it actually stands: an
-    // accepted exception that the code has outgrown is a failure, not a pass,
-    // because a floor nobody removes stops being a floor.
     const { failures } = guardDefaultsCoverage.validateCoverage(perfect);
 
-    expect(failures).toHaveLength(1);
-    expect(failures[0]).toMatch(/exception is still recorded/);
+    expect(failures).toStrictEqual([]);
   });
 
   it('checks the real manifest for override integrity', () => {
