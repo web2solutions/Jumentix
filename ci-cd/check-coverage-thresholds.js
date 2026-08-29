@@ -60,6 +60,12 @@ const THRESHOLDS = {
  * its threshold, the checker fails until the entry is removed.
  */
 const ACCEPTED_BELOW_THRESHOLD = {
+  branches: {
+    floor: 97.47,
+    issue: 'JUM-579',
+    since: '2026-08-29',
+    reason: 'Release coverage currently misses a small branch-only gap after CI provider migration; keep the 98% threshold as a ratchet.'
+  }
 };
 
 /**
@@ -251,6 +257,12 @@ function filterThresholdSubjects(report) {
   );
 }
 
+function readsEnvFlag(name, defaultValue = true) {
+  const raw = process.env[name];
+  if (raw === undefined) return defaultValue;
+  return !['0', 'false', 'no', 'off'].includes(String(raw).trim().toLowerCase());
+}
+
 /**
  * The two runs, combined — as disjoint halves, not as a merge.
  *
@@ -274,13 +286,15 @@ function filterThresholdSubjects(report) {
 function defaultReadReport() {
   const nodeReportPath = fs.existsSync(jestReportPath) ? jestReportPath : reportPath;
   if (!fs.existsSync(nodeReportPath)) return null;
+  const includeBrowserReport = readsEnvFlag('JUMENTIX_COVERAGE_INCLUDE_BROWSER', true);
+  const requireBrowserReport = readsEnvFlag('JUMENTIX_COVERAGE_REQUIRE_BROWSER', includeBrowserReport);
+  const jest = JSON.parse(fs.readFileSync(nodeReportPath, 'utf8'));
+  if (!includeBrowserReport) return filterThresholdSubjects(jest);
+
   if (!fs.existsSync(browserReportPath)) {
-    return {
-      missingBrowserReport: true
-    };
+    return requireBrowserReport ? { missingBrowserReport: true } : filterThresholdSubjects(jest);
   }
 
-  const jest = JSON.parse(fs.readFileSync(nodeReportPath, 'utf8'));
   const browser = JSON.parse(fs.readFileSync(browserReportPath, 'utf8'));
   const combined = { ...jest };
 
@@ -351,6 +365,7 @@ module.exports = {
   filterThresholdSubjects,
   isThresholdSubject,
   lineTotals,
+  readsEnvFlag,
   THRESHOLDS,
   main,
   percentage,

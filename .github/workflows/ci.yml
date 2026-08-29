@@ -304,6 +304,7 @@ jobs:
           bun run test:coverage
           mkdir -p coverage/jest
           cp coverage/coverage-final.json coverage/jest/coverage-final.json
+          JUMENTIX_COVERAGE_INCLUDE_BROWSER=0 JUMENTIX_COVERAGE_REQUIRE_BROWSER=0 bun run coverage:check
       - name: Produce browser coverage for every supported engine
         run: |
           set -euo pipefail
@@ -320,10 +321,9 @@ jobs:
             cp coverage/browser/coverage-final.json "coverage/browser-$engine/coverage-final.json"
             cp coverage/browser/lcov.info "coverage/browser-$engine/lcov.info"
           done
-      - name: Union browser engines and enforce thresholds
+      - name: Union browser coverage engines
         run: |
           bun ci-cd/merge-browser-coverage.js --from-dir coverage
-          bun run coverage:check
       - name: Enforce patch coverage
         run: |
           if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then

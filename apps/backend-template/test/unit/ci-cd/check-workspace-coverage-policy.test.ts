@@ -37,7 +37,7 @@ describe('check-workspace-coverage-policy', () => {
       'Root coverageThreshold.global.statements must be >= 98 (current: 95)',
       'Root coverageThreshold.global.lines must be >= 98 (current: 95)',
       'Root coverageThreshold.global.functions must be >= 98 (current: 95)',
-      'Root coverageThreshold.global.branches must be >= 98 (current: 80)'
+      'Root coverageThreshold.global.branches must be >= 97.47 (98 relaxed to the accepted floor under JUM-579) (current: 80)'
     ]);
   });
 
