@@ -193,10 +193,14 @@ const dom = {
   tabInterfaceDesignerBtn: document.getElementById('tab-interface-designer-btn'),
   tabServiceConfigBtn: document.getElementById('tab-service-config-btn'),
   tabDeployManagementBtn: document.getElementById('tab-deploy-management-btn'),
+  tabMonitoringBtn: document.getElementById('tab-monitoring-btn'),
+  tabCodeWorkspaceBtn: document.getElementById('tab-code-workspace-btn'),
   tabDomainDesigner: document.getElementById('tab-domain-designer'),
   tabInterfaceDesigner: document.getElementById('tab-interface-designer'),
   tabServiceConfig: document.getElementById('tab-service-config'),
   tabDeployManagement: document.getElementById('tab-deploy-management'),
+  tabMonitoring: document.getElementById('tab-monitoring'),
+  tabCodeWorkspace: document.getElementById('tab-code-workspace'),
   canvas: document.getElementById('canvas'),
   canvasInner: document.getElementById('canvas-inner'),
   edges: document.getElementById('edges'),
@@ -383,7 +387,31 @@ const dom = {
   addDeployTargetBtn: document.getElementById('add-deploy-target-btn'),
   cancelDeployTargetEditBtn: document.getElementById('cancel-deploy-target-edit-btn'),
   deployFieldHint: document.getElementById('deploy-field-hint'),
-  deployTargetList: document.getElementById('deploy-target-list')
+  deployTargetList: document.getElementById('deploy-target-list'),
+  pm2MetricsEnvironmentSelect: document.getElementById('pm2-metrics-environment-select'),
+  pm2MetricsRefreshBtn: document.getElementById('pm2-metrics-refresh-btn'),
+  pm2MetricsAutoRefreshCheck: document.getElementById('pm2-metrics-auto-refresh-check'),
+  pm2MetricsStatus: document.getElementById('pm2-metrics-status'),
+  pm2MetricProcessCount: document.getElementById('pm2-metric-process-count'),
+  pm2MetricOnlineCount: document.getElementById('pm2-metric-online-count'),
+  pm2MetricCpu: document.getElementById('pm2-metric-cpu'),
+  pm2MetricMemory: document.getElementById('pm2-metric-memory'),
+  pm2MetricRestarts: document.getElementById('pm2-metric-restarts'),
+  pm2MetricsProcessList: document.getElementById('pm2-metrics-process-list'),
+  pm2MetricsEcosystemSummary: document.getElementById('pm2-metrics-ecosystem-summary'),
+  codeWorkspaceRegenerateBtn: document.getElementById('code-workspace-regenerate-btn'),
+  codeWorkspaceKeepMineBtn: document.getElementById('code-workspace-keep-mine-btn'),
+  codeWorkspaceTakeGeneratedBtn: document.getElementById('code-workspace-take-generated-btn'),
+  codeWorkspaceStatus: document.getElementById('code-workspace-status'),
+  codeWorkspaceSummary: document.getElementById('code-workspace-summary'),
+  codeWorkspaceFileList: document.getElementById('code-workspace-file-list'),
+  codeWorkspaceActiveFile: document.getElementById('code-workspace-active-file'),
+  codeWorkspaceActiveState: document.getElementById('code-workspace-active-state'),
+  monacoWorkspaceEditor: document.getElementById('monaco-workspace-editor'),
+  codeWorkspaceEditor: document.getElementById('code-workspace-editor'),
+  codeWorkspaceConflictPanel: document.getElementById('code-workspace-conflict-panel'),
+  codeWorkspaceUserVersion: document.getElementById('code-workspace-user-version'),
+  codeWorkspaceGeneratedVersion: document.getElementById('code-workspace-generated-version')
 };
 
 // The UI modules. Their factories receive the shared state/interaction
@@ -415,6 +443,13 @@ const canvas = createCanvas({
     confirmAction: (message) => window.confirm(message)
   }
 });
+
+let codeWorkspaceMonacoEditor = null;
+let codeWorkspaceMonacoSubscription = null;
+let codeWorkspaceMonacoLoadPromise = null;
+let suppressCodeWorkspaceEditorChange = false;
+let pm2MetricsSnapshot = null;
+let pm2MetricsTimer = null;
 const inspectors = createInspectors({
   dom,
   state,
@@ -747,6 +782,116 @@ function failPm2EcosystemPreview(environment, error) {
   pm2EcosystemPreview = { environment: String(environment || 'dev'), error: message };
   inspectors.renderPm2EcosystemPreview();
   showPm2PreviewStatus(`PM2 ecosystem "${String(environment || 'dev')}": ${message}`);
+}
+
+function showPm2MetricsStatus(message, severity = 'info') {
+  if (!dom.pm2MetricsStatus) return;
+  dom.pm2MetricsStatus.textContent = String(message);
+  dom.pm2MetricsStatus.className = `hint status-line status-${severity}`;
+}
+
+function formatBytes(bytes) {
+  const value = Number(bytes || 0);
+  if (value >= 1024 * 1024 * 1024) return `${(value / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+  if (value >= 1024 * 1024) return `${(value / (1024 * 1024)).toFixed(1)} MB`;
+  if (value >= 1024) return `${(value / 1024).toFixed(1)} KB`;
+  return `${value} B`;
+}
+
+function formatDuration(ms) {
+  const seconds = Math.floor(Number(ms || 0) / 1000);
+  if (seconds <= 0) return '-';
+  const days = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  if (days > 0) return `${days}d ${hours}h`;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m`;
+}
+
+function renderPm2Metrics() {
+  const snapshot = pm2MetricsSnapshot;
+  const summary = snapshot?.summary || {};
+  if (dom.pm2MetricProcessCount) dom.pm2MetricProcessCount.textContent = String(summary.processCount || 0);
+  if (dom.pm2MetricOnlineCount) dom.pm2MetricOnlineCount.textContent = String(summary.onlineCount || 0);
+  if (dom.pm2MetricCpu) dom.pm2MetricCpu.textContent = `${Number(summary.totalCpuPercent || 0).toFixed(1)}%`;
+  if (dom.pm2MetricMemory) dom.pm2MetricMemory.textContent = formatBytes(summary.totalMemoryBytes || 0);
+  if (dom.pm2MetricRestarts) {
+    const restarts = (snapshot?.processes || [])
+      .reduce((total, processEntry) => total + Number(processEntry.restartCount || 0), 0);
+    dom.pm2MetricRestarts.textContent = String(restarts);
+  }
+  if (dom.pm2MetricsProcessList) {
+    dom.pm2MetricsProcessList.innerHTML = '';
+    (snapshot?.processes || []).forEach((processEntry) => {
+      const row = document.createElement('tr');
+      row.innerHTML = [
+        '<td><strong></strong><span class="table-subtle"></span></td>',
+        '<td><span class="process-status"></span></td>',
+        '<td></td>',
+        '<td></td>',
+        '<td></td>',
+        '<td></td>',
+        '<td></td>'
+      ].join('');
+      row.querySelector('strong').textContent = processEntry.name || `pm_id ${processEntry.pmId ?? '-'}`;
+      row.querySelector('.table-subtle').textContent = processEntry.namespace || 'default';
+      const status = row.querySelector('.process-status');
+      status.textContent = processEntry.status || 'unknown';
+      status.dataset.status = processEntry.status || 'unknown';
+      row.children[2].textContent = `${Number(processEntry.cpuPercent || 0).toFixed(1)}%`;
+      row.children[3].textContent = formatBytes(processEntry.memoryBytes || 0);
+      row.children[4].textContent = String(processEntry.restartCount || 0);
+      row.children[5].textContent = formatDuration(processEntry.uptimeMs || 0);
+      row.children[6].textContent = processEntry.watching ? 'on' : 'off';
+      dom.pm2MetricsProcessList.appendChild(row);
+    });
+    if (!snapshot?.processes?.length) {
+      const row = document.createElement('tr');
+      const cell = document.createElement('td');
+      cell.colSpan = 7;
+      cell.textContent = 'No PM2 processes returned.';
+      row.appendChild(cell);
+      dom.pm2MetricsProcessList.appendChild(row);
+    }
+  }
+  if (dom.pm2MetricsEcosystemSummary) {
+    const ecosystem = snapshot?.ecosystem;
+    if (!ecosystem) {
+      dom.pm2MetricsEcosystemSummary.textContent = 'No ecosystem comparison loaded.';
+    } else if (!ecosystem.exists) {
+      dom.pm2MetricsEcosystemSummary.textContent = `${ecosystem.fileName} does not exist for this environment.`;
+    } else if (ecosystem.missingExpected?.length) {
+      dom.pm2MetricsEcosystemSummary.textContent = `${ecosystem.missingExpected.length} expected PM2 app(s) are not running: ${ecosystem.missingExpected.join(', ')}.`;
+    } else {
+      dom.pm2MetricsEcosystemSummary.textContent = `All ${ecosystem.expectedProcessCount} app(s) from ${ecosystem.fileName} are present in PM2.`;
+    }
+  }
+}
+
+async function loadPm2Metrics() {
+  const environment = dom.pm2MetricsEnvironmentSelect?.value || 'dev';
+  showPm2MetricsStatus(`Collecting PM2 metrics for "${environment}"...`, 'info');
+  const query = new URLSearchParams({ environment }).toString();
+  const response = await fetch(`/api/runtime/pm2-metrics?${query}`);
+  if (!response.ok) {
+    throw await runtimeEnvApiError(response, `Could not collect PM2 metrics for ${environment}.`);
+  }
+  pm2MetricsSnapshot = await response.json();
+  renderPm2Metrics();
+  showPm2MetricsStatus(`PM2 metrics collected at ${pm2MetricsSnapshot.collectedAt}.`, 'info');
+}
+
+function schedulePm2MetricsRefresh() {
+  if (pm2MetricsTimer) clearInterval(pm2MetricsTimer);
+  pm2MetricsTimer = null;
+  if (!dom.pm2MetricsAutoRefreshCheck?.checked) return;
+  pm2MetricsTimer = setInterval(() => {
+    if (state.activeTab !== 'monitoring') return;
+    loadPm2Metrics().catch((error) => {
+      showPm2MetricsStatus(error instanceof Error ? error.message : 'Could not collect PM2 metrics.', 'error');
+    });
+  }, 5000);
 }
 
 function nextId(prefix) {
@@ -1951,6 +2096,313 @@ function generateCodePreview() {
     : '// Select an entity or create domains/entities to preview generated skeletons.';
 }
 
+function ensureCodeWorkspaceState() {
+  if (!state.codeWorkspace || typeof state.codeWorkspace !== 'object') {
+    state.codeWorkspace = { files: {}, activePath: '' };
+  }
+  if (!state.codeWorkspace.files || typeof state.codeWorkspace.files !== 'object') {
+    state.codeWorkspace.files = {};
+  }
+  if (typeof state.codeWorkspace.activePath !== 'string') {
+    state.codeWorkspace.activePath = '';
+  }
+  return state.codeWorkspace;
+}
+
+function buildGeneratedCodeWorkspaceFiles() {
+  const generatedState = {
+    ...state,
+    codeWorkspace: { files: {}, activePath: '' }
+  };
+  return flattenBundleFiles(buildBoilerplateBundleDocument(generatedState))
+    .map((file) => ({
+      path: file.path,
+      generatedContent: String(file.content || '')
+    }))
+    .sort((left, right) => left.path.localeCompare(right.path));
+}
+
+function reconcileCodeWorkspaceFiles({ forceGenerated = false } = {}) {
+  const workspace = ensureCodeWorkspaceState();
+  const generatedFiles = buildGeneratedCodeWorkspaceFiles();
+  const generatedByPath = new Map(generatedFiles.map((file) => [file.path, file]));
+  const nextFiles = {};
+
+  generatedFiles.forEach((generatedFile) => {
+    const existing = workspace.files[generatedFile.path];
+    if (!existing || forceGenerated) {
+      nextFiles[generatedFile.path] = {
+        path: generatedFile.path,
+        state: 'generated',
+        baseContent: generatedFile.generatedContent,
+        generatedContent: generatedFile.generatedContent,
+        content: generatedFile.generatedContent,
+        updatedAt: ''
+      };
+      return;
+    }
+
+    const content = String(existing.content ?? existing.generatedContent ?? generatedFile.generatedContent);
+    const previousGenerated = String(existing.generatedContent ?? existing.baseContent ?? '');
+    const generatorChanged = previousGenerated !== generatedFile.generatedContent;
+    const userEdited = content !== previousGenerated || ['edited', 'stale'].includes(existing.state);
+    const nextState = generatorChanged && userEdited
+      ? 'stale'
+      : !userEdited || content === generatedFile.generatedContent
+        ? 'generated'
+        : existing.state === 'stale'
+          ? 'stale'
+          : 'edited';
+
+    nextFiles[generatedFile.path] = {
+      path: generatedFile.path,
+      state: nextState,
+      baseContent: String(existing.baseContent ?? previousGenerated),
+      generatedContent: generatedFile.generatedContent,
+      content: nextState === 'generated' ? generatedFile.generatedContent : content,
+      updatedAt: existing.updatedAt || ''
+    };
+  });
+
+  Object.values(workspace.files).forEach((existing) => {
+    if (!existing?.path || generatedByPath.has(existing.path)) return;
+    if (!['edited', 'stale'].includes(existing.state)) return;
+    nextFiles[existing.path] = {
+      ...existing,
+      state: 'stale',
+      generatedContent: '',
+      updatedAt: existing.updatedAt || ''
+    };
+  });
+
+  workspace.files = nextFiles;
+  if (!workspace.activePath || !workspace.files[workspace.activePath]) {
+    workspace.activePath = generatedFiles[0]?.path || Object.keys(workspace.files)[0] || '';
+  }
+  return workspace;
+}
+
+function getActiveCodeWorkspaceFile() {
+  const workspace = ensureCodeWorkspaceState();
+  return workspace.activePath ? workspace.files[workspace.activePath] : null;
+}
+
+function codeWorkspaceFileLanguage(path) {
+  if (path.endsWith('.json')) return 'json';
+  if (path.endsWith('.ts') || path.endsWith('.tsx')) return 'typescript';
+  if (path.endsWith('.js') || path.endsWith('.mjs') || path.endsWith('.cjs')) return 'javascript';
+  if (path.endsWith('.md')) return 'markdown';
+  if (path.endsWith('.yml') || path.endsWith('.yaml')) return 'yaml';
+  return 'plaintext';
+}
+
+function buildCodeWorkspaceTree(files) {
+  const root = { name: 'root', children: new Map(), file: null };
+  files.forEach((file) => {
+    const parts = file.path.split('/').filter(Boolean);
+    let node = root;
+    parts.forEach((part, index) => {
+      if (!node.children.has(part)) {
+        node.children.set(part, { name: part, children: new Map(), file: null });
+      }
+      node = node.children.get(part);
+      if (index === parts.length - 1) node.file = file;
+    });
+  });
+  return root;
+}
+
+function renderCodeWorkspaceTreeNode(node, container, depth = 0) {
+  [...node.children.values()]
+    .sort((left, right) => {
+      if (left.file && !right.file) return 1;
+      if (!left.file && right.file) return -1;
+      return left.name.localeCompare(right.name);
+    })
+    .forEach((child) => {
+      const item = document.createElement('li');
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.style.setProperty('--depth', String(depth));
+      if (child.file) {
+        button.className = `code-file-item code-file-${child.file.state}`;
+        button.dataset.filePath = child.file.path;
+        button.classList.toggle('active', child.file.path === state.codeWorkspace.activePath);
+        button.innerHTML = `<span class="code-file-icon">TS</span><span class="code-file-name"></span><span class="code-file-state">${child.file.state}</span>`;
+        button.querySelector('.code-file-name').textContent = child.name;
+        button.onclick = () => {
+          ensureCodeWorkspaceState().activePath = child.file.path;
+          saveState();
+          renderCodeWorkspace();
+        };
+      } else {
+        button.className = 'code-folder-item';
+        button.disabled = true;
+        button.innerHTML = '<span class="code-file-icon">DIR</span><span class="code-file-name"></span>';
+        button.querySelector('.code-file-name').textContent = child.name;
+      }
+      item.appendChild(button);
+      container.appendChild(item);
+      if (!child.file) renderCodeWorkspaceTreeNode(child, container, depth + 1);
+    });
+}
+
+function setCodeWorkspaceStatus(message) {
+  if (dom.codeWorkspaceStatus) dom.codeWorkspaceStatus.textContent = message;
+}
+
+function updateCodeWorkspaceChrome() {
+  const workspace = ensureCodeWorkspaceState();
+  const files = Object.values(workspace.files).sort((left, right) => left.path.localeCompare(right.path));
+  const editedCount = files.filter((file) => file.state === 'edited').length;
+  const staleCount = files.filter((file) => file.state === 'stale').length;
+  if (dom.codeWorkspaceSummary) {
+    dom.codeWorkspaceSummary.textContent = `${files.length} files | ${editedCount} edited | ${staleCount} conflict${staleCount === 1 ? '' : 's'}`;
+  }
+  if (!dom.codeWorkspaceFileList) return;
+  dom.codeWorkspaceFileList.innerHTML = '';
+  renderCodeWorkspaceTreeNode(buildCodeWorkspaceTree(files), dom.codeWorkspaceFileList);
+}
+
+function syncCodeWorkspaceEditor(file) {
+  if (!dom.codeWorkspaceEditor) return;
+  suppressCodeWorkspaceEditorChange = true;
+  dom.codeWorkspaceEditor.value = file?.content || '';
+  suppressCodeWorkspaceEditorChange = false;
+  syncMonacoWorkspaceEditor(file);
+}
+
+function renderCodeWorkspace({ skipEditorSync = false } = {}) {
+  const workspace = reconcileCodeWorkspaceFiles();
+  const file = getActiveCodeWorkspaceFile();
+  updateCodeWorkspaceChrome();
+  if (dom.codeWorkspaceActiveFile) dom.codeWorkspaceActiveFile.textContent = file?.path || 'Preview';
+  if (dom.codeWorkspaceActiveState) {
+    dom.codeWorkspaceActiveState.textContent = file?.state || 'generated';
+    dom.codeWorkspaceActiveState.dataset.state = file?.state || 'generated';
+  }
+  const hasConflict = file?.state === 'stale';
+  if (dom.codeWorkspaceConflictPanel) dom.codeWorkspaceConflictPanel.hidden = !hasConflict;
+  if (dom.codeWorkspaceUserVersion) dom.codeWorkspaceUserVersion.textContent = file?.content || '';
+  if (dom.codeWorkspaceGeneratedVersion) dom.codeWorkspaceGeneratedVersion.textContent = file?.generatedContent || '';
+  if (dom.codeWorkspaceKeepMineBtn) dom.codeWorkspaceKeepMineBtn.disabled = !file || file.state === 'generated';
+  if (dom.codeWorkspaceTakeGeneratedBtn) dom.codeWorkspaceTakeGeneratedBtn.disabled = !file;
+  setCodeWorkspaceStatus(file ? `Editing ${file.path}` : 'No generated files yet.');
+  if (!skipEditorSync) syncCodeWorkspaceEditor(file);
+}
+
+function updateActiveCodeWorkspaceFileContent(content) {
+  if (suppressCodeWorkspaceEditorChange) return;
+  const workspace = ensureCodeWorkspaceState();
+  const file = getActiveCodeWorkspaceFile();
+  if (!file) return;
+  file.content = String(content);
+  file.updatedAt = new Date().toISOString();
+  if (file.state !== 'stale') {
+    file.state = file.content === file.generatedContent ? 'generated' : 'edited';
+    file.baseContent = file.generatedContent;
+  }
+  workspace.files[file.path] = file;
+  saveState();
+  updateCodeWorkspaceChrome();
+  if (dom.codeWorkspaceActiveState) {
+    dom.codeWorkspaceActiveState.textContent = file.state;
+    dom.codeWorkspaceActiveState.dataset.state = file.state;
+  }
+  if (dom.codeWorkspaceKeepMineBtn) dom.codeWorkspaceKeepMineBtn.disabled = file.state === 'generated';
+}
+
+function keepActiveCodeWorkspaceFile() {
+  const file = getActiveCodeWorkspaceFile();
+  if (!file) return;
+  file.state = file.content === file.generatedContent ? 'generated' : 'edited';
+  file.baseContent = file.generatedContent;
+  file.updatedAt = new Date().toISOString();
+  saveState();
+  renderCodeWorkspace();
+  showStatus(`Kept your edit for ${file.path}.`, 'info');
+}
+
+function takeGeneratedCodeWorkspaceFile() {
+  const file = getActiveCodeWorkspaceFile();
+  if (!file) return;
+  file.content = file.generatedContent;
+  file.baseContent = file.generatedContent;
+  file.state = 'generated';
+  file.updatedAt = new Date().toISOString();
+  saveState();
+  renderCodeWorkspace();
+  showStatus(`Took regenerated content for ${file.path}.`, 'info');
+}
+
+function regenerateCodeWorkspace() {
+  renderCodeWorkspace();
+  saveState();
+  const staleCount = Object.values(ensureCodeWorkspaceState().files)
+    .filter((file) => file.state === 'stale').length;
+  showStatus(
+    staleCount > 0
+      ? `${staleCount} generated file conflict${staleCount === 1 ? '' : 's'} need review.`
+      : 'Code workspace regenerated.',
+    staleCount > 0 ? 'error' : 'info'
+  );
+}
+
+function syncMonacoWorkspaceEditor(file) {
+  if (!codeWorkspaceMonacoEditor || !dom.monacoWorkspaceEditor) return;
+  suppressCodeWorkspaceEditorChange = true;
+  const language = codeWorkspaceFileLanguage(file?.path || '');
+  const modelUri = window.monaco.Uri.parse(`jumentix://generated/${file?.path || 'preview.txt'}`);
+  const previous = codeWorkspaceMonacoEditor.getModel();
+  let nextModel = window.monaco.editor.getModel(modelUri);
+  if (!nextModel) {
+    nextModel = window.monaco.editor.createModel(file?.content || '', language, modelUri);
+  } else if (nextModel.getValue() !== (file?.content || '')) {
+    nextModel.setValue(file?.content || '');
+  }
+  if (previous !== nextModel) codeWorkspaceMonacoEditor.setModel(nextModel);
+  window.monaco.editor.setModelLanguage(nextModel, language);
+  suppressCodeWorkspaceEditorChange = false;
+}
+
+function ensureMonacoWorkspaceEditor() {
+  if (!dom.monacoWorkspaceEditor || codeWorkspaceMonacoEditor || codeWorkspaceMonacoLoadPromise) {
+    return codeWorkspaceMonacoLoadPromise || Promise.resolve(codeWorkspaceMonacoEditor);
+  }
+  if (window.JUMENTIX_DISABLE_MONACO === true || !window.require?.config) return Promise.resolve(null);
+  codeWorkspaceMonacoLoadPromise = new Promise((resolve) => {
+    const start = () => {
+      if (!window.require) {
+        dom.monacoWorkspaceEditor.hidden = true;
+        resolve(null);
+        return;
+      }
+      window.require(['vs/editor/editor.main'], () => {
+        if (dom.codeWorkspaceEditor) dom.codeWorkspaceEditor.hidden = true;
+        dom.monacoWorkspaceEditor.hidden = false;
+        codeWorkspaceMonacoEditor = window.monaco.editor.create(dom.monacoWorkspaceEditor, {
+          value: '',
+          language: 'typescript',
+          automaticLayout: true,
+          minimap: { enabled: true },
+          fontSize: 13,
+          tabSize: 2,
+          theme: 'vs-dark'
+        });
+        if (codeWorkspaceMonacoSubscription) codeWorkspaceMonacoSubscription.dispose();
+        codeWorkspaceMonacoSubscription = codeWorkspaceMonacoEditor.onDidChangeModelContent(() => {
+          if (suppressCodeWorkspaceEditorChange) return;
+          updateActiveCodeWorkspaceFileContent(codeWorkspaceMonacoEditor.getValue());
+        });
+        syncMonacoWorkspaceEditor(getActiveCodeWorkspaceFile());
+        resolve(codeWorkspaceMonacoEditor);
+      });
+    };
+    start();
+  });
+  return codeWorkspaceMonacoLoadPromise;
+}
+
 function generateExamplesPreview() {
   const selected = findEntity(state.selectedEntityId);
   const targets = selected
@@ -2088,7 +2540,9 @@ function render() {
   canvas.renderEdges();
   canvas.renderMiniMap();
   inspectors.renderSchemaDiffStatus();
+  renderPm2Metrics();
   generateCodePreview();
+  renderCodeWorkspace({ skipEditorSync: document.activeElement === dom.codeWorkspaceEditor });
   generateExamplesPreview();
   dom.undoBtn.disabled = history.past.length === 0;
   dom.redoBtn.disabled = history.future.length === 0;
@@ -2237,6 +2691,40 @@ function wireEvents() {
   if (dom.tabInterfaceDesignerBtn) dom.tabInterfaceDesignerBtn.onclick = () => tabs.setActiveTab('interface-designer');
   if (dom.tabServiceConfigBtn) dom.tabServiceConfigBtn.onclick = () => tabs.setActiveTab('service-config');
   if (dom.tabDeployManagementBtn) dom.tabDeployManagementBtn.onclick = () => tabs.setActiveTab('deploy-management');
+  if (dom.tabMonitoringBtn) {
+    dom.tabMonitoringBtn.onclick = () => {
+      tabs.setActiveTab('monitoring');
+      loadPm2Metrics().catch((error) => {
+        showPm2MetricsStatus(error instanceof Error ? error.message : 'Could not collect PM2 metrics.', 'error');
+      });
+      schedulePm2MetricsRefresh();
+    };
+  }
+  if (dom.tabCodeWorkspaceBtn) {
+    dom.tabCodeWorkspaceBtn.onclick = () => {
+      tabs.setActiveTab('code-workspace');
+      renderCodeWorkspace();
+      ensureMonacoWorkspaceEditor();
+    };
+  }
+
+  if (dom.codeWorkspaceEditor) {
+    dom.codeWorkspaceEditor.oninput = () => updateActiveCodeWorkspaceFileContent(dom.codeWorkspaceEditor.value);
+  }
+  if (dom.codeWorkspaceRegenerateBtn) dom.codeWorkspaceRegenerateBtn.onclick = regenerateCodeWorkspace;
+  if (dom.codeWorkspaceKeepMineBtn) dom.codeWorkspaceKeepMineBtn.onclick = keepActiveCodeWorkspaceFile;
+  if (dom.codeWorkspaceTakeGeneratedBtn) dom.codeWorkspaceTakeGeneratedBtn.onclick = takeGeneratedCodeWorkspaceFile;
+  if (dom.pm2MetricsRefreshBtn) {
+    dom.pm2MetricsRefreshBtn.onclick = () => loadPm2Metrics().catch((error) => {
+      showPm2MetricsStatus(error instanceof Error ? error.message : 'Could not collect PM2 metrics.', 'error');
+    });
+  }
+  if (dom.pm2MetricsEnvironmentSelect) {
+    dom.pm2MetricsEnvironmentSelect.onchange = () => loadPm2Metrics().catch((error) => {
+      showPm2MetricsStatus(error instanceof Error ? error.message : 'Could not collect PM2 metrics.', 'error');
+    });
+  }
+  if (dom.pm2MetricsAutoRefreshCheck) dom.pm2MetricsAutoRefreshCheck.onchange = schedulePm2MetricsRefresh;
 
   if (dom.interfaceTypeSelect) {
     dom.interfaceTypeSelect.onchange = () => inspectors.renderInterfaceFrameworkOptions(dom.interfaceTypeSelect.value);
@@ -3027,6 +3515,7 @@ async function boot() {
   });
   window.addEventListener('pagehide', () => {
     if (designerSync) designerSync.stop();
+    if (pm2MetricsTimer) clearInterval(pm2MetricsTimer);
   });
   // A page restored from the back/forward cache was stopped at pagehide;
   // restarting re-runs the cursor resume/resync path inside start().
@@ -3048,6 +3537,12 @@ async function boot() {
   // the pane and its status line, never silently.
   loadPm2EcosystemPreview(dom.pm2PreviewEnvironmentSelect?.value || 'dev')
     .catch((error) => failPm2EcosystemPreview(dom.pm2PreviewEnvironmentSelect?.value || 'dev', error));
+  if (state.activeTab === 'monitoring') {
+    loadPm2Metrics().catch((error) => {
+      showPm2MetricsStatus(error instanceof Error ? error.message : 'Could not collect PM2 metrics.', 'error');
+    });
+    schedulePm2MetricsRefresh();
+  }
 
   // JUM-737: the model has been loaded and rendered, so the view state on
   // screen is the stored one and will not be replaced under the user.

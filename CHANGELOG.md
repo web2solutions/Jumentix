@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-08-29 chore(test-map): register the canvas workspace suite [JUM-729] - Eduardo Almeida
 - 2026-08-29 feat(service-management): rebuild the Domain Designer around the canvas [JUM-729] - Eduardo Almeida
 - 2026-08-29 chore(service-management): reload the designer when its files change [JUM-729] - Eduardo Almeida
 - 2026-08-29 fix(service-management): warn about field names the generator must quote [JUM-731] - Eduardo Almeida

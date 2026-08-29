@@ -14,7 +14,7 @@
  * (canonical `spec/asyncapi/` targeting) and is pinned by
  * `designerAsyncApiExport.test.ts`. The one deliberate shape change since the
  * extraction is the JSON export: JUM-547 turned it into the versioned
- * full-suite document (`kind`/`version`, all four tabs), pinned here. The
+ * full-suite document (`kind`/`version`, all five tabs), pinned here. The
  * domain package followed under JUM-492: the v2 document adds the `package`
  * identity block (name, semantic version, dependency ranges), pinned here.
  */
@@ -100,7 +100,7 @@ const EXPECTED_INVOICE_PROPERTIES = {
 };
 
 describe('designer exporters (JUM-469)', () => {
-  it('builds the JSON export as the versioned full-suite document carrying all four tabs (JUM-547)', () => {
+  it('builds the JSON export as the versioned full-suite document carrying all five tabs (JUM-547)', () => {
     expect.hasAssertions();
     const state = createState();
     state.interfaces = [
@@ -141,6 +141,7 @@ describe('designer exporters (JUM-469)', () => {
       serviceConfiguration: state.serviceConfiguration,
       // JUM-547 decision: the environment selection crosses, values never do.
       runtimeEnvironment: { environment: 'staging', fileName: '.env.staging' },
+      codeWorkspace: state.codeWorkspace,
       deployments: state.deployments,
       view: state.view
     });
@@ -152,6 +153,7 @@ describe('designer exporters (JUM-469)', () => {
       'interfaces',
       'serviceConfiguration',
       'runtimeEnvironment',
+      'codeWorkspace',
       'deployments',
       'view'
     ]);
@@ -162,7 +164,7 @@ describe('designer exporters (JUM-469)', () => {
     expect(wireText).not.toContain('fastify');
   });
 
-  it('defaults the suite sections when the state predates the four-tab shape', () => {
+  it('defaults the suite sections when the state predates the five-tab shape', () => {
     expect.hasAssertions();
     const document = buildJsonExportDocument({
       domains: [], relationships: [], view: { zoom: 1 }
@@ -311,6 +313,29 @@ describe('designer exporters (JUM-469)', () => {
       expect(typeof file.content).toBe('string');
       expect(file.content.length).toBeGreaterThan(0);
     });
+  });
+
+  it('applies edited code workspace files to the boilerplate bundle export', () => {
+    expect.hasAssertions();
+    const state = createState();
+    state.codeWorkspace = {
+      activePath: 'src/modules/Billing/domain/Model/Invoice.ts',
+      files: {
+        'src/modules/Billing/domain/Model/Invoice.ts': {
+          path: 'src/modules/Billing/domain/Model/Invoice.ts',
+          state: 'edited',
+          baseContent: 'generated-before-edit',
+          generatedContent: 'generated-after-edit',
+          content: '// user edited model\nexport class Invoice {}\n',
+          updatedAt: '2026-08-29T00:00:00.000Z'
+        }
+      }
+    };
+
+    const document = buildBoilerplateBundleDocument(state, '2026-08-05T00:00:00.000Z');
+    const file = document.modules[0].entities[0].files.model;
+    expect(file.content).toBe('// user edited model\nexport class Invoice {}\n');
+    expect(file.workspaceState).toBe('edited');
   });
 
   it('defaults the bundle timestamp to the current ISO time', () => {

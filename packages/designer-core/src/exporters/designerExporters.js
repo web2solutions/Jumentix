@@ -56,7 +56,7 @@ const DEFAULT_RBAC_POLICY = getDefaultRbacPolicy();
  * `exportAsJson` payload: the full-suite document (JUM-547, Requirement 126
  * Contract 3). The pre-JUM-547 shape carried `{ domains, relationships, view }`
  * only — a four-tab design exported as one tab. The document now carries all
- * four tabs, schema-versioned (`kind` + `version`, the
+ * five tabs, schema-versioned (`kind` + `version`, the
  * boilerplate-bundle/domain-package convention), so import can tell a legacy
  * domain-only document (no `kind`/`version`) from the full-suite shape and
  * fail clearly on a document newer than the importer.
@@ -81,6 +81,7 @@ export function buildJsonExportDocument(state) {
       environment: String(state.runtimeEnvironment?.environment || '').trim() || 'dev',
       fileName: String(state.runtimeEnvironment?.fileName || '').trim() || '.env.dev'
     },
+    codeWorkspace: state.codeWorkspace || { files: {}, activePath: '' },
     deployments: Array.isArray(state.deployments) ? state.deployments : [],
     view: state.view
   };
@@ -184,6 +185,26 @@ export function buildBoilerplateBundleDocument(state, generatedAt = new Date().t
     // Both transports carry the same channel set (JUM-475); the websocket
     // document is the canonical event-channel source for the codegen.
     asyncApiDocument: buildAsyncApiTransportDocument(state, 'websocket')
+  });
+  const overlays = state?.codeWorkspace?.files || {};
+  const applyWorkspaceOverlay = (file) => {
+    const overlay = overlays[file.path];
+    if (!overlay || !['edited', 'stale'].includes(overlay.state)) return file;
+    return {
+      ...file,
+      content: String(overlay.content ?? file.content),
+      workspaceState: overlay.state
+    };
+  };
+  bundle.modules.forEach((module) => {
+    Object.keys(module.files || {}).forEach((role) => {
+      module.files[role] = applyWorkspaceOverlay(module.files[role]);
+    });
+    (module.entities || []).forEach((entity) => {
+      Object.keys(entity.files || {}).forEach((role) => {
+        entity.files[role] = applyWorkspaceOverlay(entity.files[role]);
+      });
+    });
   });
   return {
     kind: 'boilerplate-bundle',

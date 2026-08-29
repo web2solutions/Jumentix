@@ -40,6 +40,7 @@ import {
   fieldLabel,
   findEntity,
   resizeDomainBox,
+  relationshipControlPoint,
   snapCoordinate
 } from '@jumentix/designer-core/model/modelQueries.js';
 
@@ -70,6 +71,37 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
     deleteRelationship,
     confirmAction
   } = actions;
+  let edgeRenderFrame = 0;
+  let miniMapRenderFrame = 0;
+  let pendingAlignmentGuides = null;
+
+  function nextAnimationFrame(callback) {
+    if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') {
+      return window.requestAnimationFrame(callback);
+    }
+    return setTimeout(callback, 16);
+  }
+
+  function scheduleEdgesRender(guides = null) {
+    pendingAlignmentGuides = guides;
+    if (edgeRenderFrame) return;
+    edgeRenderFrame = nextAnimationFrame(() => {
+      edgeRenderFrame = 0;
+      renderEdges();
+      if (pendingAlignmentGuides?.length) {
+        renderAlignmentGuides(pendingAlignmentGuides);
+      }
+      pendingAlignmentGuides = null;
+    });
+  }
+
+  function scheduleMiniMapRender() {
+    if (miniMapRenderFrame) return;
+    miniMapRenderFrame = nextAnimationFrame(() => {
+      miniMapRenderFrame = 0;
+      renderMiniMap();
+    });
+  }
 
   /**
    * Right-click management for the element under the pointer (JUM-729 follow-up).
@@ -341,15 +373,19 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
     fitView();
   }
 
-  function attachDrag(el, onMove) {
+  function attachDrag(el, onMove, options = {}) {
     let pointerId = null;
     let startX = 0;
     let startY = 0;
+    let moved = false;
+    let started = false;
 
     el.addEventListener('pointerdown', (event) => {
       pointerId = event.pointerId;
       startX = event.clientX;
       startY = event.clientY;
+      moved = false;
+      started = false;
       el.setPointerCapture(pointerId);
     });
 
@@ -360,13 +396,19 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
       const dy = (event.clientY - startY) / zoom;
       startX = event.clientX;
       startY = event.clientY;
+      if (dx !== 0 || dy !== 0) moved = true;
+      if (moved && !started && typeof options.onStart === 'function') {
+        started = true;
+        options.onStart(event);
+      }
       onMove(dx, dy);
     });
 
     const end = (event) => {
       if (pointerId !== event.pointerId) return;
-      el.releasePointerCapture(pointerId);
+      if (el.hasPointerCapture(pointerId)) el.releasePointerCapture(pointerId);
       pointerId = null;
+      if (typeof options.onEnd === 'function') options.onEnd(event, moved);
     };
 
     el.addEventListener('pointerup', end);
@@ -428,13 +470,19 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
       bodyEl.className = 'domain-body';
 
       attachDrag(headerEl, (dx, dy) => {
-        withPersist(() => {
-          domain.x = Math.max(0, snapCoordinate(state.view.snapToGrid, domain.x + dx));
-          domain.y = Math.max(0, snapCoordinate(state.view.snapToGrid, domain.y + dy));
-          domainEl.style.left = `${domain.x}px`;
-          domainEl.style.top = `${domain.y}px`;
-          renderEdges();
-        });
+        domain.x = Math.max(0, snapCoordinate(state.view.snapToGrid, domain.x + dx));
+        domain.y = Math.max(0, snapCoordinate(state.view.snapToGrid, domain.y + dy));
+        domainEl.style.left = `${domain.x}px`;
+        domainEl.style.top = `${domain.y}px`;
+        scheduleEdgesRender();
+        scheduleMiniMapRender();
+      }, {
+        onStart: () => withPersist(() => {}),
+        onEnd: (_event, moved) => {
+          if (!moved) return;
+          saveState();
+          render();
+        }
       });
 
       if (collapsed) {
@@ -521,6 +569,14 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
         }
         attachDrag(entityHeader, (dx, dy) => {
           moveEntityInsideDomain(entity, entityEl, dx, dy);
+        }, {
+          onStart: () => withPersist(() => {}),
+          onEnd: (_event, moved) => {
+            clearAlignmentGuides();
+            if (!moved) return;
+            saveState();
+            render();
+          }
         });
 
         const fieldsEl = document.createElement('ul');
@@ -721,20 +777,25 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
     resizeHandle.setAttribute('aria-label', `Resize domain "${domain.name}"`);
     resizeHandle.title = `Resize domain "${domain.name}"`;
     attachDrag(resizeHandle, (dx, dy) => {
-      withPersist(() => {
-        const current = domainBox(domain);
-        const resized = resizeDomainBox(
-          domain,
-          snapCoordinate(state.view.snapToGrid, current.width + dx),
-          snapCoordinate(state.view.snapToGrid, current.height + dy)
-        );
-        domain.width = resized.width;
-        domain.height = resized.height;
-        domainEl.style.width = `${resized.width}px`;
-        domainEl.style.height = `${resized.height}px`;
-        renderEdges();
-        renderMiniMap();
-      });
+      const current = domainBox(domain);
+      const resized = resizeDomainBox(
+        domain,
+        snapCoordinate(state.view.snapToGrid, current.width + dx),
+        snapCoordinate(state.view.snapToGrid, current.height + dy)
+      );
+      domain.width = resized.width;
+      domain.height = resized.height;
+      domainEl.style.width = `${resized.width}px`;
+      domainEl.style.height = `${resized.height}px`;
+      scheduleEdgesRender();
+      scheduleMiniMapRender();
+    }, {
+      onStart: () => withPersist(() => {}),
+      onEnd: (_event, moved) => {
+        if (!moved) return;
+        saveState();
+        render();
+      }
     });
     resizeHandle.addEventListener('keydown', (event) => {
       const step = event.shiftKey ? 40 : 16;
@@ -758,33 +819,30 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
   }
 
   function moveEntityInsideDomain(entity, entityEl, dx, dy) {
-    withPersist(() => {
-      // JUM-729 follow-up: the limits come from the domain's own box, so an entity can
-      // use the room a resize just added.
-      const owner = state.domains.find(
-        (candidate) => candidate.entities.some((member) => member.id === entity.id)
-      );
-      const clamped = clampEntityPosition(
-        owner,
-        snapCoordinate(state.view.snapToGrid, entity.x + dx),
-        snapCoordinate(state.view.snapToGrid, entity.y + dy)
-      );
-      // JUM-729 follow-up: grid snapping keeps positions tidy without making anything
-      // line up — two entities can both sit on the grid four pixels apart,
-      // which is exactly the misalignment a reader notices. This pulls the
-      // dragged entity onto a sibling's edge or centre when it comes close,
-      // and draws what it snapped to.
-      const aligned = alignmentGuidesFor(owner, entity, clamped.x, clamped.y, {
-        compactEntities: state.view.compactEntities,
-        largeCanvasMode: state.view.largeCanvasMode
-      });
-      renderAlignmentGuides(aligned.guides);
-      entity.x = aligned.x;
-      entity.y = aligned.y;
-      entityEl.style.left = `${entity.x}px`;
-      entityEl.style.top = `${entity.y}px`;
-      renderEdges();
+    // JUM-729 follow-up: the limits come from the domain's own box, so an entity can
+    // use the room a resize just added.
+    const owner = state.domains.find(
+      (candidate) => candidate.entities.some((member) => member.id === entity.id)
+    );
+    const clamped = clampEntityPosition(
+      owner,
+      snapCoordinate(state.view.snapToGrid, entity.x + dx),
+      snapCoordinate(state.view.snapToGrid, entity.y + dy)
+    );
+    // JUM-729 follow-up: grid snapping keeps positions tidy without making anything
+    // line up — two entities can both sit on the grid four pixels apart,
+    // which is exactly the misalignment a reader notices. This pulls the
+    // dragged entity onto a sibling's edge or centre when it comes close,
+    // and draws what it snapped to.
+    const aligned = alignmentGuidesFor(owner, entity, clamped.x, clamped.y, {
+      compactEntities: state.view.compactEntities,
+      largeCanvasMode: state.view.largeCanvasMode
     });
+    entity.x = aligned.x;
+    entity.y = aligned.y;
+    entityEl.style.left = `${entity.x}px`;
+    entityEl.style.top = `${entity.y}px`;
+    scheduleEdgesRender(aligned.guides);
   }
 
   /**
@@ -840,12 +898,15 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
       grip.className = 'canvas-note-grip';
       grip.title = 'Drag to move this note';
       attachDrag(grip, (dx, dy) => {
-        withPersist(() => {
-          note.x = Math.max(0, snapCoordinate(state.view.snapToGrid, note.x + dx));
-          note.y = Math.max(0, snapCoordinate(state.view.snapToGrid, note.y + dy));
-          noteEl.style.left = `${note.x}px`;
-          noteEl.style.top = `${note.y}px`;
-        });
+        note.x = Math.max(0, snapCoordinate(state.view.snapToGrid, note.x + dx));
+        note.y = Math.max(0, snapCoordinate(state.view.snapToGrid, note.y + dy));
+        noteEl.style.left = `${note.x}px`;
+        noteEl.style.top = `${note.y}px`;
+      }, {
+        onStart: () => withPersist(() => {}),
+        onEnd: (_event, moved) => {
+          if (moved) saveState();
+        }
       });
       noteEl.appendChild(grip);
 
@@ -1085,8 +1146,9 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
         : edgeEndpoint(relationship.toEntityId, relationship.toAnchorSide, relationship.toField);
       if (!from || !to) return;
 
-      const controlX = Number.isFinite(relationship.bendX) ? relationship.bendX : (from.x + to.x) / 2;
-      const controlY = Number.isFinite(relationship.bendY) ? relationship.bendY : (from.y + to.y) / 2;
+      const control = relationshipControlPoint(relationship, from, to);
+      const controlX = control.x;
+      const controlY = control.y;
       const isOrthogonal = state.view.edgeStyle === 'orthogonal';
       const edgePathD = buildEdgePathD(from, to, controlX, controlY, isOrthogonal);
       const labelX = isOrthogonal ? controlX : controlX;
@@ -1133,11 +1195,56 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
         dom.edges.appendChild(toLabel);
 
         const nameLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        nameLabel.setAttribute('class', 'edge-label');
+        nameLabel.setAttribute('class', 'edge-label edge-name-label');
         nameLabel.setAttribute('x', String(labelX + 6 + labelOffsetX));
         nameLabel.setAttribute('y', String(labelY - 6 + labelOffsetY));
         nameLabel.textContent = relationship.name || '';
+        nameLabel.setAttribute('tabindex', '0');
+        nameLabel.setAttribute('role', 'button');
+        nameLabel.setAttribute('aria-label', `Move label for ${relationship.name || 'relationship'}`);
+        attachDrag(nameLabel, (dx, dy) => {
+          relationship.labelOffsetX = (Number.isFinite(relationship.labelOffsetX) ? relationship.labelOffsetX : 0) + dx;
+          relationship.labelOffsetY = (Number.isFinite(relationship.labelOffsetY) ? relationship.labelOffsetY : 0) + dy;
+          renderEdges();
+        }, {
+          onStart: () => withPersist(() => {}),
+          onEnd: (_event, moved) => {
+            if (!moved) return;
+            saveState();
+            render();
+          }
+        });
         dom.edges.appendChild(nameLabel);
+      }
+
+      if (state.selectedRelationshipId === relationship.id) {
+        const bendHandle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        bendHandle.setAttribute('class', `edge-bend-handle${control.explicit ? ' explicit' : ''}`);
+        bendHandle.setAttribute('cx', String(controlX));
+        bendHandle.setAttribute('cy', String(controlY));
+        bendHandle.setAttribute('r', '7');
+        bendHandle.setAttribute('tabindex', '0');
+        bendHandle.setAttribute('role', 'slider');
+        bendHandle.setAttribute('aria-label', `Move route handle for ${relationship.name || 'relationship'}`);
+        attachDrag(bendHandle, (dx, dy) => {
+          relationship.bendX = snapCoordinate(
+            state.view.snapToGrid,
+            (Number.isFinite(relationship.bendX) ? relationship.bendX : controlX) + dx
+          );
+          relationship.bendY = snapCoordinate(
+            state.view.snapToGrid,
+            (Number.isFinite(relationship.bendY) ? relationship.bendY : controlY) + dy
+          );
+          renderEdges();
+        }, {
+          onStart: () => withPersist(() => {}),
+          onEnd: (_event, moved) => {
+            if (!moved) return;
+            saveState();
+            render();
+          }
+        });
+        dom.edges.appendChild(bendHandle);
       }
     });
   }

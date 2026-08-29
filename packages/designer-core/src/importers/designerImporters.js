@@ -452,6 +452,7 @@ const SUITE_EXPORT_KNOWN_SECTIONS = new Set([
   'interfaces',
   'serviceConfiguration',
   'runtimeEnvironment',
+  'codeWorkspace',
   'deployments',
   'view'
 ]);

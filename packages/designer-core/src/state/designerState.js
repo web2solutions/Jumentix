@@ -192,6 +192,34 @@ export function normalizeRelationship(relationship) {
   };
 }
 
+export function normalizeCodeWorkspaceFile(file) {
+  const state = ['generated', 'edited', 'stale'].includes(file?.state) ? file.state : 'generated';
+  const generatedContent = String(file?.generatedContent || '');
+  const baseContent = String(file?.baseContent ?? generatedContent);
+  const content = String(file?.content ?? generatedContent);
+  return {
+    path: String(file?.path || '').trim(),
+    state,
+    baseContent,
+    generatedContent,
+    content,
+    updatedAt: String(file?.updatedAt || '')
+  };
+}
+
+export function normalizeCodeWorkspaceInput(input) {
+  const files = {};
+  const source = input?.files && typeof input.files === 'object' ? input.files : {};
+  Object.entries(source).forEach(([path, file]) => {
+    const normalized = normalizeCodeWorkspaceFile({ path, ...(file || {}) });
+    if (normalized.path) files[normalized.path] = normalized;
+  });
+  return {
+    files,
+    activePath: String(input?.activePath || '').trim()
+  };
+}
+
 /**
  * Legacy deploy-target `type` values (the pre-JUM-481 UI select) that differ
  * from the Requirement 059 `deployTarget` vocabulary. Values already spelled
@@ -469,11 +497,12 @@ export function normalizeDomainInput(domain, domainIndex) {
 /**
  * Normalise a decoded `service-management.v1` payload (or a full-suite export
  * document, JUM-547) into the model slice the designer restores. The load
- * path restores the domain slice plus `deployments` (migrated forward to the
- * Requirement 059 metadata contract by `normalizeDeploymentInput`, JUM-481);
- * the remaining pinned sections (`interfaces`, `serviceConfiguration`,
- * `runtimeEnvironment`, `activeTab`) are intentionally not restored at load
- * time. Since JUM-547 the sections ARE normalised and returned here — the
+ * path restores the domain slice, deployments (migrated forward to the
+ * Requirement 059 metadata contract by `normalizeDeploymentInput`, JUM-481)
+ * and the generated-code workspace (JUM-736); the remaining pinned sections
+ * (`interfaces`, `serviceConfiguration`, `runtimeEnvironment`, `activeTab`)
+ * are intentionally not restored at load time. Since JUM-547/JUM-736 the sections
+ * ARE normalised and returned here — the
  * full-suite import path (`buildStateFromSuiteExport`) applies them with the
  * same normalisation discipline as a load — so both crossings share one
  * normaliser.
@@ -494,6 +523,7 @@ export function normalizeStatePayload(parsed) {
   const interfaces = interfacesInput.map(normalizeInterfaceInput);
   const serviceConfiguration = normalizeServiceConfigurationInput(parsed?.serviceConfiguration);
   const runtimeEnvironment = normalizeRuntimeEnvironmentInput(parsed?.runtimeEnvironment);
+  const codeWorkspace = normalizeCodeWorkspaceInput(parsed?.codeWorkspace);
   const view = {
     zoom: clampZoom(parsed?.view?.zoom || 1),
     compactEntities: Boolean(parsed?.view?.compactEntities),
@@ -525,6 +555,7 @@ export function normalizeStatePayload(parsed) {
     interfaces,
     serviceConfiguration,
     runtimeEnvironment,
+    codeWorkspace,
     deployments,
     view
   };
@@ -589,6 +620,10 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
       fileName: '.env.dev',
       values: { ...runtimeEnvDefaults }
     },
+    codeWorkspace: {
+      files: {},
+      activePath: ''
+    },
     deployments: [],
     view: createDefaultView()
   };
@@ -611,6 +646,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
       interfaces: state.interfaces,
       serviceConfiguration: state.serviceConfiguration,
       runtimeEnvironment: state.runtimeEnvironment,
+      codeWorkspace: state.codeWorkspace,
       deployments: state.deployments,
       view: state.view
     }));
@@ -634,6 +670,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
       ...state.runtimeEnvironment,
       ...(snapshot.runtimeEnvironment || {})
     };
+    state.codeWorkspace = normalizeCodeWorkspaceInput(snapshot.codeWorkspace);
     state.deployments = Array.isArray(snapshot.deployments)
       ? snapshot.deployments.map(normalizeDeploymentInput)
       : [];
@@ -679,6 +716,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
       interfaces: state.interfaces,
       serviceConfiguration: state.serviceConfiguration,
       runtimeEnvironment: state.runtimeEnvironment,
+      codeWorkspace: state.codeWorkspace,
       deployments: state.deployments,
       view: state.view
     };
@@ -775,6 +813,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
       state.selectedEntityId = parsed.selectedEntityId;
       state.selectedRelationshipId = parsed.selectedRelationshipId;
       state.idCounter = parsed.idCounter;
+      state.codeWorkspace = parsed.codeWorkspace;
       state.deployments = parsed.deployments;
       state.view = parsed.view;
       recomputeIdCounter();

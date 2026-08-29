@@ -21,6 +21,21 @@ describe('serviceManagement domain designer smoke', () => {
     expect(html).toContain('id="mini-map"');
   });
 
+  it('exposes direct manipulation affordances for a responsive diagram canvas', () => {
+    expect.hasAssertions();
+    const canvasSource = fs.readFileSync(
+      path.resolve(process.cwd(), 'apps/service-management/src/ui/canvas.js'),
+      'utf-8'
+    );
+    const css = fs.readFileSync(path.resolve(process.cwd(), 'apps/service-management/styles.css'), 'utf-8');
+    expect(canvasSource).toContain('scheduleEdgesRender');
+    expect(canvasSource).toContain('edge-bend-handle');
+    expect(canvasSource).toContain('edge-name-label');
+    expect(css).toContain('touch-action: none');
+    expect(css).toContain('contain: layout style');
+    expect(css).toContain('@media (max-width: 900px)');
+  });
+
   it('wires export and package features in runtime script', () => {
     expect.hasAssertions();
     const script = fs.readFileSync(scriptPath, 'utf-8');

@@ -174,6 +174,21 @@ describe('model queries (JUM-469)', () => {
     });
   });
 
+  describe('relationship route handles', () => {
+    it('uses the midpoint until a relationship bend is explicitly placed', () => {
+      expect.hasAssertions();
+
+      expect(model.relationshipControlPoint({}, { x: 10, y: 20 }, { x: 110, y: 80 }))
+        .toStrictEqual({ x: 60, y: 50, explicit: false });
+      expect(model.relationshipControlPoint(
+        { bendX: 140, bendY: 72 },
+        { x: 10, y: 20 },
+        { x: 110, y: 80 }
+      ))
+        .toStrictEqual({ x: 140, y: 72, explicit: true });
+    });
+  });
+
   describe('rbac policy', () => {
     it('installs the default policy on entities without meta', () => {
       expect.hasAssertions();

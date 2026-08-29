@@ -32,6 +32,8 @@
       <button id="tab-interface-designer-btn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-interface-designer" tabindex="-1">Communication Interface Designer</button>
       <button id="tab-service-config-btn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-service-config" tabindex="-1">Service Configuration</button>
       <button id="tab-deploy-management-btn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-deploy-management" tabindex="-1">Deploy Management</button>
+      <button id="tab-monitoring-btn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-monitoring" tabindex="-1">Monitoring</button>
+      <button id="tab-code-workspace-btn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-code-workspace" tabindex="-1">Code Workspace</button>
     </nav>
 
     <!-- Non-blocking status surface (JUM-543): validation messages and API
@@ -737,6 +739,113 @@
           <p id="deploy-field-hint" class="hint"></p>
           <ul id="deploy-target-list" class="list"></ul>
         </section>
+      </div>
+    </section>
+
+    <section id="tab-monitoring" class="tab-section" role="tabpanel" aria-labelledby="tab-monitoring-btn">
+      <div class="tab-body monitoring-dashboard">
+        <header class="monitoring-header">
+          <div>
+            <h2>PM2 Monitoring</h2>
+            <p class="hint">Live runtime metrics are collected from PM2, including process status, CPU, memory, restarts and uptime.</p>
+          </div>
+          <div class="monitoring-controls">
+            <label for="pm2-metrics-environment-select">Environment</label>
+            <select id="pm2-metrics-environment-select">
+              <option value="dev">dev</option>
+              <option value="staging">staging</option>
+              <option value="production">production</option>
+            </select>
+            <button id="pm2-metrics-refresh-btn" type="button">Refresh</button>
+            <label class="check"><input id="pm2-metrics-auto-refresh-check" type="checkbox" checked /> auto refresh</label>
+          </div>
+        </header>
+        <p id="pm2-metrics-status" class="hint status-line" role="status" aria-live="polite">PM2 metrics have not been loaded yet.</p>
+        <section class="monitoring-summary" aria-label="PM2 metrics summary">
+          <article class="metric-tile">
+            <span class="metric-label">Processes</span>
+            <strong id="pm2-metric-process-count">0</strong>
+          </article>
+          <article class="metric-tile">
+            <span class="metric-label">Online</span>
+            <strong id="pm2-metric-online-count">0</strong>
+          </article>
+          <article class="metric-tile">
+            <span class="metric-label">CPU</span>
+            <strong id="pm2-metric-cpu">0%</strong>
+          </article>
+          <article class="metric-tile">
+            <span class="metric-label">Memory</span>
+            <strong id="pm2-metric-memory">0 MB</strong>
+          </article>
+          <article class="metric-tile">
+            <span class="metric-label">Restarts</span>
+            <strong id="pm2-metric-restarts">0</strong>
+          </article>
+        </section>
+        <section class="panel monitoring-panel">
+          <h3>Processes</h3>
+          <div class="table-scroll">
+            <table class="monitoring-table">
+              <thead>
+                <tr>
+                  <th scope="col">Name</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">CPU</th>
+                  <th scope="col">Memory</th>
+                  <th scope="col">Restarts</th>
+                  <th scope="col">Uptime</th>
+                  <th scope="col">Watch</th>
+                </tr>
+              </thead>
+              <tbody id="pm2-metrics-process-list"></tbody>
+            </table>
+          </div>
+        </section>
+        <section class="panel monitoring-panel">
+          <h3>Ecosystem Coverage</h3>
+          <p id="pm2-metrics-ecosystem-summary" class="hint"></p>
+        </section>
+      </div>
+    </section>
+
+    <section id="tab-code-workspace" class="tab-section" role="tabpanel" aria-labelledby="tab-code-workspace-btn">
+      <div class="code-workspace">
+        <aside class="code-explorer" aria-label="Generated code worktree">
+          <header class="code-explorer-header">
+            <h2>Worktree Explorer</h2>
+            <p id="code-workspace-status" class="hint" role="status" aria-live="polite">No generated files yet.</p>
+          </header>
+          <div class="code-workspace-actions">
+            <button id="code-workspace-regenerate-btn" type="button">Regenerate</button>
+            <button id="code-workspace-keep-mine-btn" type="button" disabled>Keep Mine</button>
+            <button id="code-workspace-take-generated-btn" type="button" disabled>Take Generated</button>
+          </div>
+          <div id="code-workspace-summary" class="code-workspace-summary"></div>
+          <div class="worktree-root-label">JUMENTIX-GENERATED</div>
+          <ul id="code-workspace-file-list" class="list code-file-list"></ul>
+        </aside>
+        <main class="code-editor-shell" aria-label="Generated code IDE workspace">
+          <header class="code-editor-titlebar">
+            <span id="code-workspace-active-file">Preview</span>
+            <span id="code-workspace-active-state" class="code-editor-badge">generated</span>
+          </header>
+          <div id="monaco-workspace-editor" class="monaco-editor-host" hidden></div>
+          <textarea id="code-workspace-editor" class="code-editor" spellcheck="false" aria-label="Generated code editor"></textarea>
+          <section id="code-workspace-conflict-panel" class="panel code-conflict-panel" hidden>
+            <h3>Regeneration Conflict</h3>
+            <div class="code-conflict-grid">
+              <div>
+                <h4>Your Edit</h4>
+                <pre id="code-workspace-user-version" class="code-preview-output"></pre>
+              </div>
+              <div>
+                <h4>Generated Version</h4>
+                <pre id="code-workspace-generated-version" class="code-preview-output"></pre>
+              </div>
+            </div>
+          </section>
+        </main>
       </div>
     </section>
   </div>

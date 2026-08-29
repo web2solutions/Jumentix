@@ -6,7 +6,7 @@
  * runs) against the REAL server. No DOM shims, no fakes (Requirement 115).
  *
  * Pins:
- *  - The SPA boots and each of the four tabs renders without console errors.
+ *  - The SPA boots and each of the six tabs renders without console errors.
  *  - The export quality gate (Requirement 126 §5): with
  *    `view.exportBlockCritical` true (the default), an export is refused while
  *    model validation reports any error-severity issue; lifting the gate on
@@ -15,6 +15,7 @@
  */
 import { webkit } from 'playwright-webkit';
 import type { Browser } from 'playwright-webkit';
+import fs from 'node:fs';
 import {
   createTempConfigDir,
   cleanupTempConfigDir,
@@ -30,7 +31,9 @@ const TABS = [
   'domain-designer',
   'interface-designer',
   'service-config',
-  'deploy-management'
+  'deploy-management',
+  'monitoring',
+  'code-workspace'
 ];
 
 // Requirement 126 §4: the whole suite state lives under this single key.
@@ -89,7 +92,7 @@ describe('serviceManagement SPA boot and export gate (JUM-466)', () => {
     cleanupTempConfigDir(tempDir);
   });
 
-  it('boots the SPA and renders all four tabs without console errors', async () => {
+  it('boots the SPA and renders all six tabs without console errors', async () => {
     expect.hasAssertions();
     const context = await browser!.newContext();
     const page = await context.newPage();
@@ -106,6 +109,35 @@ describe('serviceManagement SPA boot and export gate (JUM-466)', () => {
       expect(isActive).toBe(true);
     }
     expect(consoleErrors).toStrictEqual([]);
+    await context.close();
+  }, 60000);
+
+  it('exports edits made in the Code Workspace boilerplate files', async () => {
+    expect.hasAssertions();
+    const context = await browser!.newContext();
+    const page = await context.newPage();
+    await page.goto(baseUrl, { waitUntil: 'load' });
+    await page.click('#quick-add-domain-btn');
+    await page.click('#quick-add-entity-btn');
+    await page.click('#tab-code-workspace-btn');
+    await page.waitForSelector('#code-workspace-file-list button[data-file-path]', { state: 'attached' });
+
+    const activePath = await page.$eval('#code-workspace-active-file', (el) => el.textContent || '');
+    await page.fill('#code-workspace-editor', '// edited in the code workspace\nexport const jumentixWorkspaceEdit = true;\n');
+    await page.click('#tab-domain-designer-btn');
+    const [download] = await Promise.all([
+      page.waitForEvent('download'),
+      clickInPanels(page, '#export-boilerplate-bundle-btn')
+    ]);
+    const filePath = await download.path();
+    const document = JSON.parse(fs.readFileSync(filePath!, 'utf8'));
+    const exportedFiles = document.modules.flatMap((module: any) => [
+      ...Object.values(module.files),
+      ...module.entities.flatMap((entity: any) => Object.values(entity.files))
+    ]);
+    const editedFile = exportedFiles.find((file: any) => file.path === activePath);
+    expect(editedFile.content).toContain('jumentixWorkspaceEdit');
+    expect(editedFile.workspaceState).toBe('edited');
     await context.close();
   }, 60000);
 

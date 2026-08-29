@@ -361,13 +361,13 @@ que existe — portanto ela deve ser óbvia, não meramente disponível.
   Designer baixa `domain-designer.json` — o documento de suíte completa
   (JUM-547: `{ kind: "service-management-suite", version: "2.0.0", domains,
   relationships, interfaces, serviceConfiguration, runtimeEnvironment,
-  deployments, view }`). O **Import JSON** na mesma barra o restaura. Os
+  codeWorkspace, deployments, view }`). O **Import JSON** na mesma barra o restaura. Os
   outros botões de exportação (Markdown, JSON Schema, OAS 3.1, AsyncAPI, gRPC
   proto, boilerplate bundle, pacote de domínio) são artefatos de design para
   ferramentas downstream, não backups.
 - **O escopo da exportação, honestamente:** a exportação JSON carrega as
-  quatro abas do estado da suíte — o modelo de domínio, os adaptadores de
-  interface, a configuração do serviço e os alvos de deploy — com um limite
+  cinco abas do estado da suíte — o modelo de domínio, os adaptadores de
+  interface, a configuração do serviço, o workspace de código gerado e os alvos de deploy — com um limite
   registrado: o ambiente de runtime atravessa apenas como a *seleção* de
   ambiente (`environment`, `fileName`), nunca seus valores, então nenhuma
   configuração da máquina (e nenhum segredo) sai em um bundle; a importação
@@ -452,7 +452,7 @@ Registradas honestamente, com suas issues responsáveis:
   adaptador e a construção do módulo de migração pertencem ao documento E3,
   [Arquitetura de módulos do Service Management](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.pt-BR.md).
 - **Garantias de paridade** — incluindo o escopo da exportação de suíte
-  completa e a decisão do JUM-547 sobre `runtimeEnvironment` — pertencem ao
+  completa, a travessia de `codeWorkspace` e a decisão do JUM-547 sobre `runtimeEnvironment` — pertencem ao
   documento E4,
   [Garantias de paridade de contratos do Service Management](./SERVICE-MANAGEMENT-CONTRACT-PARITY.pt-BR.md).
 - **O contrato das superfícies de status** — como as mensagens são renderizadas

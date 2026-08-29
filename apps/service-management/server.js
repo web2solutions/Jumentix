@@ -154,7 +154,13 @@ const contentTypeByExtension = {
 function buildStaticManifest() {
   const manifest = new Map();
   const walk = (currentPath) => {
-    const entries = fs.readdirSync(currentPath, { withFileTypes: true });
+    let entries;
+    try {
+      entries = fs.readdirSync(currentPath, { withFileTypes: true });
+    } catch (error) {
+      if (error && error.code === 'ENOENT') return;
+      throw error;
+    }
     entries.forEach((entry) => {
       const absoluteEntryPath = path.join(currentPath, entry.name);
       if (entry.isDirectory()) {
@@ -466,6 +472,120 @@ function readPm2Ecosystem(runtime) {
   };
 }
 
+function toFiniteNumber(value, fallback = 0) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : fallback;
+}
+
+function normalizePm2Process(processEntry) {
+  const pm2Env = processEntry?.pm2_env || {};
+  const monit = processEntry?.monit || {};
+  const uptime = toFiniteNumber(pm2Env.pm_uptime);
+  const startedAt = uptime > 0 ? new Date(uptime).toISOString() : '';
+  const uptimeMs = uptime > 0 ? Math.max(0, Date.now() - uptime) : 0;
+  const customMetrics = {};
+  const axmMonitor = pm2Env.axm_monitor && typeof pm2Env.axm_monitor === 'object'
+    ? pm2Env.axm_monitor
+    : {};
+  Object.entries(axmMonitor).forEach(([key, metric]) => {
+    const value = metric && typeof metric === 'object' && 'value' in metric ? metric.value : metric;
+    customMetrics[key] = value;
+  });
+  return {
+    name: String(processEntry?.name || pm2Env.name || ''),
+    pmId: processEntry?.pm_id === undefined ? null : toFiniteNumber(processEntry.pm_id, null),
+    namespace: String(pm2Env.namespace || 'default'),
+    status: String(pm2Env.status || 'unknown'),
+    cpuPercent: toFiniteNumber(monit.cpu),
+    memoryBytes: toFiniteNumber(monit.memory),
+    restartCount: toFiniteNumber(pm2Env.restart_time),
+    unstableRestarts: toFiniteNumber(pm2Env.unstable_restarts),
+    uptimeMs,
+    startedAt,
+    script: String(pm2Env.pm_exec_path || ''),
+    interpreter: String(pm2Env.exec_interpreter || ''),
+    watching: Boolean(pm2Env.watch),
+    customMetrics
+  };
+}
+
+function summarizePm2Processes(processes) {
+  const statusCounts = processes.reduce((counts, processEntry) => {
+    counts[processEntry.status] = (counts[processEntry.status] || 0) + 1;
+    return counts;
+  }, {});
+  const totalCpuPercent = processes.reduce((total, processEntry) => total + processEntry.cpuPercent, 0);
+  const totalMemoryBytes = processes.reduce((total, processEntry) => total + processEntry.memoryBytes, 0);
+  return {
+    processCount: processes.length,
+    onlineCount: statusCounts.online || 0,
+    stoppedCount: statusCounts.stopped || 0,
+    erroredCount: statusCounts.errored || 0,
+    totalCpuPercent,
+    totalMemoryBytes,
+    statusCounts
+  };
+}
+
+function readPm2ProcessList() {
+  return new Promise((resolve, reject) => {
+    let pm2;
+    try {
+      // Loaded on demand so the static designer server can boot even when a
+      // stripped production package omits PM2. The metrics endpoint itself is
+      // fail-closed and reports that installation error.
+      const pm2Module = process.env.JUMENTIX_SERVICE_MANAGEMENT_PM2_MODULE || 'pm2';
+      // eslint-disable-next-line global-require, import/no-dynamic-require
+      pm2 = require(pm2Module);
+    } catch (error) {
+      reject(error);
+      return;
+    }
+    pm2.connect((connectError) => {
+      if (connectError) {
+        reject(connectError);
+        return;
+      }
+      pm2.list((listError, processList) => {
+        try {
+          pm2.disconnect();
+        } catch (_disconnectError) {
+          // Disconnect best-effort: a failed disconnect must not hide the PM2
+          // list result, because the endpoint is read-only.
+        }
+        if (listError) {
+          reject(listError);
+          return;
+        }
+        resolve(Array.isArray(processList) ? processList : []);
+      });
+    });
+  });
+}
+
+async function readPm2Metrics(runtime) {
+  const environment = normalizeEcosystemEnvironment(runtime);
+  const ecosystem = readPm2Ecosystem(environment);
+  const expectedNames = new Set((ecosystem.apps || []).map((app) => app.name).filter(Boolean));
+  const processes = (await readPm2ProcessList()).map(normalizePm2Process);
+  const processNames = new Set(processes.map((processEntry) => processEntry.name));
+  const missingExpected = [...expectedNames].filter((name) => !processNames.has(name)).sort();
+  return {
+    source: 'pm2',
+    collectedAt: new Date().toISOString(),
+    environment,
+    ecosystem: {
+      fileName: ecosystem.fileName,
+      path: ecosystem.path,
+      exists: ecosystem.exists,
+      expectedProcessCount: expectedNames.size,
+      missingExpected
+    },
+    summary: summarizePm2Processes(processes),
+    processes
+  };
+}
+
 function writeJson(response, statusCode, payload) {
   const sanitizedJson = JSON.stringify(payload)
     .replace(/</g, '\\u003c')
@@ -531,6 +651,15 @@ function writeEcosystemFileFailure(response, error) {
     error: 'PM2 ecosystem file operation failed.',
     code,
     path: filePath ? String(filePath) : null,
+    details: error instanceof Error ? error.message : String(error)
+  });
+}
+
+function writePm2MetricsFailure(response, error) {
+  const code = error instanceof Error && error.code ? String(error.code) : 'PM2_METRICS_ERROR';
+  writeJson(response, 500, {
+    error: 'PM2 metrics collection failed.',
+    code,
     details: error instanceof Error ? error.message : String(error)
   });
 }
@@ -683,6 +812,20 @@ const server = http.createServer((request, response) => {
       }
       writeEcosystemFileFailure(response, error);
     }
+    return;
+  }
+
+  if (request.method === 'GET' && requestUrl.pathname === '/api/runtime/pm2-metrics') {
+    const environment = requestUrl.searchParams.get('environment') || process.env.NODE_ENV || 'dev';
+    readPm2Metrics(environment)
+      .then((payload) => writeJson(response, 200, payload))
+      .catch((error) => {
+        if (isUnsupportedEnvironmentError(error)) {
+          writeInvalidEnvironment(response, error);
+          return;
+        }
+        writePm2MetricsFailure(response, error);
+      });
     return;
   }
 

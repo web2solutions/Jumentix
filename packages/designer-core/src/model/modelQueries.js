@@ -568,6 +568,22 @@ export function buildPreviewEdgePathD(from, to, orthogonal) {
 }
 
 /**
+ * Editable relationship route point.
+ *
+ * Without a stored bend, the route follows the midpoint between its current
+ * endpoints. Once the user drags the handle, the explicit point is persisted
+ * until Straighten clears it.
+ */
+export function relationshipControlPoint(relationship, from, to) {
+  const hasBend = Number.isFinite(relationship?.bendX) && Number.isFinite(relationship?.bendY);
+  return {
+    x: hasBend ? relationship.bendX : (from.x + to.x) / 2,
+    y: hasBend ? relationship.bendY : (from.y + to.y) / 2,
+    explicit: hasBend
+  };
+}
+
+/**
  * Pure geometry of `fitView`: zoom and scroll target that frame every domain.
  * The DOM caller applies them (`renderView`, `scrollTo`, `saveState`).
  */

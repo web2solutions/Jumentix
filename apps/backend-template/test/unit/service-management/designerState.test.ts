@@ -24,6 +24,7 @@ const {
   fallbackId,
   getDefaultRbacPolicy,
   normalizeContractInput,
+  normalizeCodeWorkspaceInput,
   normalizeDomainInput,
   normalizeEntityInput,
   normalizeField,
@@ -116,6 +117,7 @@ describe('designer state core (JUM-468)', () => {
       expect(normalized.relationships).toStrictEqual([]);
       expect(normalized.selectedDomainId).toBeNull();
       expect(normalized.idCounter).toBe(1);
+      expect(normalized.codeWorkspace).toStrictEqual({ files: {}, activePath: '' });
       expect(normalized.view).toStrictEqual(createDefaultView());
     });
 
@@ -139,6 +141,44 @@ describe('designer state core (JUM-468)', () => {
       expect(normalized.view.edgeStyle).toBe('curved');
       expect(normalized.view.modelCheckMinSeverity).toBe('info');
       expect(normalized.view.exportBlockCritical).toBe(true);
+    });
+  });
+
+  describe('normalizeCodeWorkspaceInput', () => {
+    it('keeps generated, edited and stale files in the persisted code workspace', () => {
+      expect.hasAssertions();
+      const normalized = normalizeCodeWorkspaceInput({
+        activePath: 'src/modules/Billing/domain/Model/Invoice.ts',
+        files: {
+          'src/modules/Billing/domain/Model/Invoice.ts': {
+            state: 'edited',
+            baseContent: 'generated-v1',
+            generatedContent: 'generated-v2',
+            content: 'user-edit',
+            updatedAt: '2026-08-29T00:00:00.000Z'
+          },
+          '': { state: 'edited', content: 'ignored' },
+          'src/modules/Billing/domain/Entity/IInvoice.ts': {
+            state: 'not-real',
+            generatedContent: 'interface'
+          }
+        }
+      });
+
+      expect(normalized.activePath).toBe('src/modules/Billing/domain/Model/Invoice.ts');
+      expect(Object.keys(normalized.files).sort()).toStrictEqual([
+        'src/modules/Billing/domain/Entity/IInvoice.ts',
+        'src/modules/Billing/domain/Model/Invoice.ts'
+      ]);
+      expect(normalized.files['src/modules/Billing/domain/Model/Invoice.ts']).toStrictEqual({
+        path: 'src/modules/Billing/domain/Model/Invoice.ts',
+        state: 'edited',
+        baseContent: 'generated-v1',
+        generatedContent: 'generated-v2',
+        content: 'user-edit',
+        updatedAt: '2026-08-29T00:00:00.000Z'
+      });
+      expect(normalized.files['src/modules/Billing/domain/Entity/IInvoice.ts'].state).toBe('generated');
     });
   });
 
@@ -771,6 +811,7 @@ describe('designer state core (JUM-468)', () => {
       expect(core.state.idCounter).toBe(1);
       expect(core.state.activeTab).toBe('domain-designer');
       expect(core.state.interfaces).toStrictEqual([]);
+      expect(core.state.codeWorkspace).toStrictEqual({ files: {}, activePath: '' });
       expect(core.state.deployments).toStrictEqual([]);
       expect(core.state.view).toStrictEqual({ zoom: 1 });
       expect(core.state.serviceConfiguration.serviceKind).toBe('rest-api');
@@ -794,13 +835,14 @@ describe('designer state core (JUM-468)', () => {
   });
 
   describe('saveState payload contract', () => {
-    it('writes exactly the thirteen pinned Requirement 126 sections', async () => {
+    it('writes exactly the fourteen pinned Requirement 126 sections', async () => {
       expect.hasAssertions();
       const { core, storage } = createCore();
       await core.loadState();
       const payload = JSON.parse(storage.map.get('service-management.v1') as string);
       expect(Object.keys(payload).sort()).toStrictEqual([
         'activeTab',
+        'codeWorkspace',
         'deployments',
         'domains',
         'idCounter',

@@ -39,6 +39,20 @@ describe('service management PM2 preview UI contract (JUM-480)', () => {
     expect(inspectors).toContain('--only');
   });
 
+  it('exposes a dedicated PM2 metrics dashboard backed by PM2 runtime collection', () => {
+    expect.hasAssertions();
+    const html = readDesignerSource('index.html');
+    const script = readDesignerSource('script.js');
+    const server = readDesignerSource('server.js');
+    expect(html).toContain('id="tab-monitoring-btn"');
+    expect(html).toContain('id="pm2-metrics-process-list"');
+    expect(script).toContain('/api/runtime/pm2-metrics');
+    const quote = String.fromCharCode(39);
+    expect(server).toContain(`|| ${quote}pm2${quote}`);
+    expect(server).toContain('pm2.list');
+    expect(server).toContain(`source: ${quote}pm2${quote}`);
+  });
+
   it('offers a preview environment per ecosystem the repository defines', () => {
     expect.hasAssertions();
     const html = readDesignerSource('index.html');

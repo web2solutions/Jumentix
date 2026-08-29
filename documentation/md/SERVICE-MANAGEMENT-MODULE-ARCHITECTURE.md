@@ -122,20 +122,20 @@ below), then a single `await loadState()` in `script.js`.
 
 ### The state core (`src/state/designerState.js`)
 
-- **State object.** One object holding the twelve persisted sections of the
+- **State object.** One object holding the fourteen persisted sections of the
   `service-management.v1` document (schema pinned by
   [Requirement 126, Contract 2](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md)
   — link, not copy).
 - **`normalizeStatePayload(parsed)`** — normalises a decoded payload into the
-  model slice restored on load. Only `domains`, `relationships`, the three
-  selections, `idCounter` and `view` come back; the other pinned sections are
+  model slice restored on load. `domains`, `relationships`, the three
+  selections, `idCounter`, `codeWorkspace` and `view` come back; the other pinned sections are
   intentionally not restored at load time. Normalisation drops relationships
   pointing at unknown entities and clamps the view (zoom to 0.5–2, edge style
   and severity to their enums).
 - **`snapshotState()`/`applySnapshot()`** — deep-copy the persisted sections
   out of `state` and restore them back, recomputing `idCounter` from the
   highest numeric id suffix.
-- **`saveState()`** — builds the twelve-section payload and calls
+- **`saveState()`** — builds the fourteen-section payload and calls
   `store.save(payload)` without awaiting (fire-and-forget, preserving
   pre-extraction behaviour; see the adapter section for why this is safe
   today and why callers must not depend on it).
@@ -147,13 +147,13 @@ below), then a single `await loadState()` in `script.js`.
 
 ### The `service-management.v1` storage schema
 
-The entire suite state (all four tabs) persists as ONE JSON payload under the
+The entire suite state (all five tabs) persists as ONE JSON payload under the
 single pinned key `service-management.v1`; the schema-diff baseline lives under
 `service-management.schema-baseline.v1`. Since JUM-484's landed migration, both
 documents live in Cana — one IndexedDB object store (`designerDocuments`,
 database `service-management`, schema version 1) — as byte copies of the same
 JSON documents the localStorage adapter used to write. The localStorage era is
-historical; the pinned wire format did NOT change. The schema — the twelve
+historical; the pinned wire format now includes `codeWorkspace`. The schema — the fourteen
 top-level sections, their enums, and the baseline shape — is pinned by
 [Requirement 126, Contract 2](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md)
 and is **not duplicated here** so the two cannot drift. Any structural change
