@@ -76,6 +76,8 @@ describe('run-full-test-matrix', () => {
 
     expect(fullMatrixRootPackage.scripts['test:coverage'])
       .toContain('--coverageThreshold=\'{}\'');
+    expect(fullMatrixRootPackage.scripts['test:coverage'])
+      .toContain('apps/backend-template/test/integration/(Adonis-JS|Cloudflare-Workers|Derby-JS|Feathers|Lambda|LoopBack|Restify|Sails-JS|Total-JS|Vercel-Functions)/get.localhost.test.ts');
     expect(fullMatrixRootPackage.scripts['coverage:browser-lcov'])
       .toBe('bun ci-cd/write-browser-lcov.js');
     expect(fullMatrixRootPackage.scripts['coverage:patch'])

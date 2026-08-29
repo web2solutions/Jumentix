@@ -4,6 +4,9 @@
 
 ## All Changes
 
+- 2026-08-29 fix(ci): stabilize release website and harness gates - Eduardo Almeida
+- 2026-08-29 [JUM-579][Bug] Prime Cana before monorepo builds (#269) - Eduardo A.
+- 2026-08-29 fix(ci): prime Cana before monorepo builds - Eduardo Almeida
 - 2026-08-29 [JUM-579][Bug] Restore release gate prerequisites (#268) - Eduardo A.
 - 2026-08-29 chore(ci): refresh release gate checks - Eduardo Almeida
 - 2026-08-29 fix(ci): bootstrap Docker and Storybook release gates - Eduardo Almeida
