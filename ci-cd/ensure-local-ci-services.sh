@@ -4,6 +4,8 @@ set -euo pipefail
 redis_container="jumentix-ci-redis"
 rabbitmq_container="jumentix-ci-rabbitmq"
 
+"$(dirname "$0")/ensure-docker-runtime.sh"
+
 port_open() {
   nc -z 127.0.0.1 "$1" >/dev/null 2>&1
 }

@@ -9,6 +9,7 @@ const failures = [];
 
 const circleciPath = path.join(root, '.circleci', 'config.yml');
 const workflowPath = path.join(root, '.github', 'workflows', 'ci.yml');
+const packagePath = path.join(root, 'package.json');
 
 if (fs.existsSync(circleciPath)) {
   failures.push('CircleCI is disabled by Requirement 113: remove .circleci/config.yml');
@@ -19,8 +20,11 @@ if (!fs.existsSync(workflowPath)) {
 } else {
   const contents = fs.readFileSync(workflowPath, 'utf8');
   const servicesPath = path.join(root, 'ci-cd', 'ensure-local-ci-services.sh');
+  const dockerRuntimePath = path.join(root, 'ci-cd', 'ensure-docker-runtime.sh');
   const serviceContents = fs.existsSync(servicesPath) ? fs.readFileSync(servicesPath, 'utf8') : '';
-  const ciContents = `${contents}\n${serviceContents}`;
+  const dockerRuntimeContents = fs.existsSync(dockerRuntimePath) ? fs.readFileSync(dockerRuntimePath, 'utf8') : '';
+  const packageContents = fs.existsSync(packagePath) ? fs.readFileSync(packagePath, 'utf8') : '';
+  const ciContents = `${contents}\n${serviceContents}\n${dockerRuntimeContents}\n${packageContents}`;
   const requiredMarkers = [
     /name:\s*CI/,
     /pull_request:/,
@@ -49,10 +53,13 @@ if (!fs.existsSync(workflowPath)) {
     /AAA_PR_BODY<<__JUMENTIX_BODY__/,
     /redis:7\.2-alpine/,
     /rabbitmq:3\.13-alpine/,
+    /ci-cd\/ensure-docker-runtime\.sh/,
+    /open -ga Docker/,
     /bun install --frozen-lockfile/,
     /bun run mono:build/,
     /bun run mono:test/,
     /bun run ci:integration/,
+    /website:deps:build/,
     /FIREBASE_SERVICE_ACCOUNT_KEY/,
     /ci-cd\/ensure-local-ci-services\.sh/,
     /bun run test:coverage/,

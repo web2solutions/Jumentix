@@ -4,7 +4,9 @@
 
 ## All Changes
 
-- 2026-08-29 test: retire branch coverage exception (JUM-721) - Eduardo Almeida
+- 2026-08-29 [Release] Sync main ancestry into dev (#267) - Eduardo A.
+- 2026-08-29 chore(release): sync main ancestry into dev - Eduardo Almeida
+- 2026-08-29 test: retire branch coverage exception (JUM-721) (#265) - Eduardo A.
 - 2026-08-29 [JUM-687][Fix] Reuse Supertest listeners across remaining HTTP adapter suites (#264) - Eduardo A.
 - 2026-08-29 test(http): reuse listeners across adapter integration suites (JUM-687) - Eduardo Almeida
 - 2026-08-29 [JUM-726][Fix] Use pinned Bun during GitHub Actions installs (#263) - Eduardo A.
@@ -16,6 +18,8 @@
 - 2026-08-25 test(coverage): close 29 more branches and ratchet to 96.422% (JUM-721) - Eduardo Almeida
 - 2026-08-25 test(express): listen once per suite instead of per request (JUM-687) - Eduardo Almeida
 - 2026-08-25 fix(http): stop swallowing endpoint registration failures (JUM-687) - Eduardo Almeida
+- 2026-08-20 [JUM-724][Release] Promote dev to main with signed squash (#254) - Eduardo A.
+- 2026-08-20 chore(release): promote dev to main for JUM-724 - Eduardo A.
 - 2026-08-20 [JUM-723][Chore] Consolidate Dependabot dependency updates (#253) - Eduardo A.
 - 2026-08-20 chore(deps): consolidate dependabot updates - Eduardo A.
 - 2026-08-20 [JUM-681][Quality] Coverage thresholds at 98%, integrity gate on the real CI paths (#245) - Eduardo A.
@@ -150,6 +154,8 @@
 - 2026-08-10 docs(website): state the real cause of the orphaned docs content - Eduardo Almeida
 - 2026-08-10 [JUM-654][Fix] Make the mandatory agent bus usable (#175) - Eduardo A.
 - 2026-08-10 fix(agent-registry): make the mandatory agent bus usable - Eduardo Almeida
+- 2026-08-10 [JUM-638][Release] Promote dev to main with signed squash (#174) - Eduardo A.
+- 2026-08-10 chore(release): promote dev to main for JUM-638 - Eduardo A.
 - 2026-08-10 chore(changelog): regenerate after rebase onto latest dev - Eduardo A.
 - 2026-08-10 fix(agent-registry): lock canonical RTDB URL and strip undefined writes - Eduardo A.
 - 2026-08-10 fix(agent-registry): reuse existing Firebase registry credentials for RTDB bus - Eduardo A.
