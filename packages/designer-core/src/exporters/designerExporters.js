@@ -283,12 +283,22 @@ export function buildOasDocument(state) {
       const required = [];
       entity.fields.forEach((field) => {
         const fieldSchema = toOasFieldSchema(field);
-        // JUM-478: PK/FK/unique are designer flags OAS cannot express. Fields
+        // JUM-478: PK/FK/unique/indexed are designer flags OAS cannot express. Fields
         // that match the importer's name heuristic cross silently; a divergent
         // field carries its flags explicitly so the crossing stays lossless.
-        const flags = { pk: Boolean(field.pk), fk: Boolean(field.fk), unique: Boolean(field.unique) };
+        const flags = {
+          pk: Boolean(field.pk),
+          fk: Boolean(field.fk),
+          unique: Boolean(field.unique),
+          indexed: Boolean(field.indexed)
+        };
         const heuristic = oasFieldNameFlags(field.name);
-        if (flags.pk !== heuristic.pk || flags.fk !== heuristic.fk || flags.unique !== heuristic.unique) {
+        if (
+          flags.pk !== heuristic.pk
+          || flags.fk !== heuristic.fk
+          || flags.unique !== heuristic.unique
+          || flags.indexed
+        ) {
           fieldSchema['x-field-flags'] = flags;
         }
         properties[field.name] = fieldSchema;

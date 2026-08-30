@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-08-29 feat(service-management): refine domain designer workbench [JUM-736] - Eduardo Almeida
+- 2026-08-29 feat(service-management): improve designer workspace and pm2 monitoring [JUM-736] - Eduardo Almeida
 - 2026-08-29 chore(test-map): register the canvas workspace suite [JUM-729] - Eduardo Almeida
 - 2026-08-29 feat(service-management): rebuild the Domain Designer around the canvas [JUM-729] - Eduardo Almeida
 - 2026-08-29 chore(service-management): reload the designer when its files change [JUM-729] - Eduardo Almeida

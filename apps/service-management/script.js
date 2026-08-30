@@ -31,6 +31,10 @@
 
 import {
   DOMAIN_COLORS,
+  DOMAIN_HEADER_HEIGHT,
+  DOMAIN_MIN_HEIGHT,
+  DOMAIN_MIN_WIDTH,
+  ENTITY_WIDTH,
   FIELD_TYPES,
   createDesignerState,
   defaultFields,
@@ -426,6 +430,7 @@ const canvas = createCanvas({
   state,
   interaction,
   contextMenu,
+  sidebarGroups,
   actions: {
     withPersist,
     render,
@@ -434,6 +439,7 @@ const canvas = createCanvas({
     setSelectedEntity,
     handleEntityRelationshipPick,
     addRelationshipFromAnchor,
+    addDomain,
     addEntity,
     deleteEntity,
     deleteDomain,
@@ -962,6 +968,43 @@ function addDomain(name, options = {}) {
   return domain;
 }
 
+function boxesOverlap(box, other) {
+  return box.left < other.right
+    && box.right > other.left
+    && box.top < other.bottom
+    && box.bottom > other.top;
+}
+
+function findAvailableEntityPosition(domain, entityDraft) {
+  const padding = 24;
+  const gapX = 28;
+  const gapY = 26;
+  const boxWidth = ENTITY_WIDTH;
+  const boxHeight = model.entityHeight(entityDraft, false, false);
+  const domainWidth = Math.max(DOMAIN_MIN_WIDTH, Number(domain.width) || DOMAIN_MIN_WIDTH);
+  const domainHeight = Math.max(DOMAIN_MIN_HEIGHT, Number(domain.height) || DOMAIN_MIN_HEIGHT);
+  const maxX = Math.max(padding, domainWidth - boxWidth - padding);
+  const maxY = Math.max(DOMAIN_HEADER_HEIGHT + padding, domainHeight - boxHeight - padding);
+  const occupied = domain.entities.map((entity) => ({
+    left: Number(entity.x) || 0,
+    top: Number(entity.y) || 0,
+    right: (Number(entity.x) || 0) + ENTITY_WIDTH,
+    bottom: (Number(entity.y) || 0) + model.entityHeight(entity, false, false)
+  }));
+  for (let y = DOMAIN_HEADER_HEIGHT + padding; y <= maxY; y += boxHeight + gapY) {
+    for (let x = padding; x <= maxX; x += boxWidth + gapX) {
+      const candidate = { left: x, top: y, right: x + boxWidth, bottom: y + boxHeight };
+      if (!occupied.some((box) => boxesOverlap(candidate, box))) {
+        return { x, y };
+      }
+    }
+  }
+  return {
+    x: padding,
+    y: Math.min(maxY, DOMAIN_HEADER_HEIGHT + padding + occupied.length * Math.round((boxHeight + gapY) / 2))
+  };
+}
+
 function addEntity(domainId, name, options = {}) {
   const domain = state.domains.find((candidate) => candidate.id === domainId);
   if (!domain) return null;
@@ -969,13 +1012,16 @@ function addEntity(domainId, name, options = {}) {
     showStatus(`Entity "${name}" already exists in ${domain.name}.`);
     return null;
   }
-  const index = domain.entities.length;
+  const fields = (options.fields || defaultFields()).map((field, fieldIndex) => normalizeField(field, fieldIndex));
+  const position = options.x !== undefined || options.y !== undefined
+    ? { x: options.x ?? 24, y: options.y ?? DOMAIN_HEADER_HEIGHT + 24 }
+    : findAvailableEntityPosition(domain, { fields });
   const entity = {
     id: nextId('entity'),
     name,
-    x: options.x ?? 14 + (index % 2) * 206,
-    y: options.y ?? 14 + Math.floor(index / 2) * 120,
-    fields: (options.fields || defaultFields()).map((field, fieldIndex) => normalizeField(field, fieldIndex)),
+    x: position.x,
+    y: position.y,
+    fields,
     meta: {
       aggregateRoot: Boolean(options?.meta?.aggregateRoot),
       invariants: Array.isArray(options?.meta?.invariants)
@@ -1090,11 +1136,11 @@ function applyFieldTemplateToSelectedEntity() {
   if (!template) return;
   const templates = {
     tenant: [
-      { name: 'organizationId', type: 'uuid', required: true, fk: true }
+      { name: 'organizationId', type: 'uuid', required: true, fk: true, indexed: true }
     ],
     audit: [
-      { name: 'createdBy', type: 'uuid', required: true, fk: true },
-      { name: 'updatedBy', type: 'uuid', required: true, fk: true }
+      { name: 'createdBy', type: 'uuid', required: true, fk: true, indexed: true },
+      { name: 'updatedBy', type: 'uuid', required: true, fk: true, indexed: true }
     ],
     softDelete: [
       { name: 'isDeleted', type: 'boolean', required: true },
@@ -1117,6 +1163,7 @@ function applyFieldTemplateToSelectedEntity() {
         pk: false,
         fk: Boolean(candidate.fk),
         unique: false,
+        indexed: Boolean(candidate.indexed),
         nullable: Boolean(candidate.nullable),
         itemsType: candidate.itemsType || '',
         description: candidate.description || ''
@@ -1148,6 +1195,7 @@ function updateField(entityId, fieldName, nextPartial) {
     if ('pk' in nextPartial) target.pk = Boolean(nextPartial.pk);
     if ('fk' in nextPartial) target.fk = Boolean(nextPartial.fk);
     if ('unique' in nextPartial) target.unique = Boolean(nextPartial.unique);
+    if ('indexed' in nextPartial) target.indexed = Boolean(nextPartial.indexed);
     if ('nullable' in nextPartial) target.nullable = Boolean(nextPartial.nullable);
     if ('format' in nextPartial) target.format = String(nextPartial.format || '').trim();
     if ('description' in nextPartial) target.description = String(nextPartial.description || '').trim();
@@ -2455,6 +2503,80 @@ function seed() {
   };
 }
 
+function repairLegacySampleDiagramLayout() {
+  const sampleDomain = state.domains.find((domain) => domain.id === 'sample-domain-users')
+    || state.domains.find((domain) => (
+      String(domain.name || '').toLowerCase() === 'users'
+      && (domain.entities || []).some((entity) => entity.id === 'sample-entity-user')
+    ));
+  if (!sampleDomain) return false;
+  let repaired = false;
+  const samplePayload = buildSampleModelPayload();
+  const sampleTasksDomain = samplePayload.domains.find((domain) => domain.id === 'sample-domain-tasks');
+  const sampleTaskRelationships = samplePayload.relationships.filter((relationship) => (
+    [
+      'sample-rel-project-organization',
+      'sample-rel-task-project',
+      'sample-rel-task-assignee',
+      'sample-rel-comment-task',
+      'sample-rel-comment-author'
+    ].includes(relationship.id)
+  ));
+  const hasOnlySampleDomains = state.domains.every((domain) => String(domain.id || '').startsWith('sample-'));
+  const isIsolatedLegacySample = state.domains.length === 1
+    && (sampleDomain.entities || []).some((entity) => entity.id === 'sample-entity-user');
+  if (
+    sampleTasksDomain
+    && (hasOnlySampleDomains || isIsolatedLegacySample)
+    && !state.domains.some((domain) => domain.id === sampleTasksDomain.id)
+  ) {
+    state.domains.push(JSON.parse(JSON.stringify(sampleTasksDomain)));
+    const relationshipIds = new Set(state.relationships.map((relationship) => relationship.id));
+    sampleTaskRelationships.forEach((relationship) => {
+      if (!relationshipIds.has(relationship.id)) {
+        state.relationships.push(JSON.parse(JSON.stringify(relationship)));
+      }
+    });
+    repaired = true;
+  }
+  const entitiesById = new Map(sampleDomain.entities.map((entity) => [entity.id, entity]));
+  const legacyPositions = {
+    'sample-entity-user': { x: 14, y: 14 },
+    'sample-entity-organization': { x: 240, y: 14 },
+    'sample-entity-email': { x: 14, y: 134 },
+    'sample-entity-phone': { x: 240, y: 134 },
+    'sample-entity-contact-point': { x: 127, y: 254 }
+  };
+  const nextPositions = {
+    'sample-entity-user': { x: 14, y: 14 },
+    'sample-entity-organization': { x: 330, y: 14 },
+    'sample-entity-email': { x: 14, y: 380 },
+    'sample-entity-phone': { x: 330, y: 380 },
+    'sample-entity-contact-point': { x: 168, y: 650 }
+  };
+  const allSampleEntitiesPresent = Object.keys(legacyPositions)
+    .every((entityId) => entitiesById.has(entityId));
+  if (!allSampleEntitiesPresent) return repaired;
+  const stillLegacy = Object.entries(legacyPositions).every(([entityId, position]) => {
+    const entity = entitiesById.get(entityId);
+    return entity.x === position.x && entity.y === position.y;
+  });
+  const legacyDomainBox = (!Number.isFinite(sampleDomain.width) || sampleDomain.width <= 540)
+    && (!Number.isFinite(sampleDomain.height) || sampleDomain.height <= 430);
+  const crampedNewLayout = sampleDomain.height < 900
+    || Object.entries(nextPositions).some(([entityId, position]) => {
+      const entity = entitiesById.get(entityId);
+      return entity.x !== position.x || entity.y !== position.y;
+    });
+  if (!stillLegacy && !legacyDomainBox && !crampedNewLayout) return repaired;
+  sampleDomain.width = 620;
+  sampleDomain.height = 900;
+  Object.entries(nextPositions).forEach(([entityId, position]) => {
+    Object.assign(entitiesById.get(entityId), position);
+  });
+  return true;
+}
+
 /**
  * JUM-548: load the sample model (src/model/sampleModel.js) through the same
  * normalisation crossing a JSON import takes. Non-destructive by contract:
@@ -2493,8 +2615,8 @@ function loadSampleModel() {
     render();
   });
   showStatus(
-    'Sample model loaded: the "Users" domain (marked "sample" in the domain list) demonstrates '
-    + 'relationships, per-entity RBAC, a message contract and OAS composition. It passes the export '
+    'Sample model loaded: the "Users" and "Tasks" domains (marked "sample" in the domain list) demonstrate '
+    + 'field-level relationships, per-entity RBAC, a message contract and OAS composition. It passes the export '
     + 'gate — try "Validate Model", export it, then delete the sample and start your own model.',
     'info'
   );
@@ -3484,6 +3606,7 @@ async function boot() {
   // the single region. 'unavailable' likewise stays with the probe-time
   // states above; 'ok'/'empty' announce nothing.
   const loadOutcome = await loadState();
+  if (repairLegacySampleDiagramLayout()) saveState();
   if ((loadOutcome.status === 'lost' || loadOutcome.status === 'recovered') && !probeDeclaredDataLoss) {
     const announcement = describeLoadTimeDataLoss({
       reason: loadOutcome.reason,

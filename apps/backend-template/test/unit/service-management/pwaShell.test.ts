@@ -379,19 +379,19 @@ describe('pwa shell service worker (JUM-489)', () => {
     expect(claim.calls).toHaveLength(1);
   });
 
-  it('serves precached shell requests from the cache without touching the network', async () => {
+  it('serves static precached shell requests from the cache without touching the network', async () => {
     expect.hasAssertions();
     const cacheStorage = createFakeCacheStorage({
-      [sw.SHELL_CACHE_NAME]: ['http://127.0.0.1:3200/script.js']
+      [sw.SHELL_CACHE_NAME]: ['http://127.0.0.1:3200/icons/icon.svg']
     });
     const fetchImpl = createSpy();
     const response = await sw.handleFetchRequest({
-      request: { method: 'GET', url: 'http://127.0.0.1:3200/script.js' },
+      request: { method: 'GET', url: 'http://127.0.0.1:3200/icons/icon.svg' },
       cacheStorage,
       fetchImpl,
       scopeOrigin: 'http://127.0.0.1:3200'
     });
-    expect(response).toBe('cached:http://127.0.0.1:3200/script.js');
+    expect(response).toBe('cached:http://127.0.0.1:3200/icons/icon.svg');
     expect(fetchImpl.calls).toHaveLength(0);
   });
 
@@ -407,6 +407,58 @@ describe('pwa shell service worker (JUM-489)', () => {
     });
     expect(response).toBe('network-response');
     expect(fetchImpl.calls).toHaveLength(1);
+  });
+
+  it('fetches versioned shell assets from the network first for dev hot reload', async () => {
+    expect.hasAssertions();
+    const cacheStorage = createFakeCacheStorage({
+      [sw.SHELL_CACHE_NAME]: ['http://127.0.0.1:3200/styles.css']
+    });
+    const fetchImpl = createSpy(async () => 'network-versioned-css');
+    const response = await sw.handleFetchRequest({
+      request: { method: 'GET', url: 'http://127.0.0.1:3200/styles.css?v=0.9.1' },
+      cacheStorage,
+      fetchImpl,
+      scopeOrigin: 'http://127.0.0.1:3200'
+    });
+    expect(response).toBe('network-versioned-css');
+    expect(fetchImpl.calls).toHaveLength(1);
+    expect(cacheStorage.match.calls).toHaveLength(0);
+  });
+
+  it('fetches unversioned JS module graph assets from the network first for dev hot reload', async () => {
+    expect.hasAssertions();
+    const cacheStorage = createFakeCacheStorage({
+      [sw.SHELL_CACHE_NAME]: ['http://127.0.0.1:3200/src/ui/canvas.js']
+    });
+    const fetchImpl = createSpy(async () => 'network-canvas-module');
+    const response = await sw.handleFetchRequest({
+      request: { method: 'GET', url: 'http://127.0.0.1:3200/src/ui/canvas.js' },
+      cacheStorage,
+      fetchImpl,
+      scopeOrigin: 'http://127.0.0.1:3200'
+    });
+    expect(response).toBe('network-canvas-module');
+    expect(fetchImpl.calls).toHaveLength(1);
+    expect(cacheStorage.match.calls).toHaveLength(0);
+  });
+
+  it('answers shell fetch failures without leaking uncaught promise errors', async () => {
+    expect.hasAssertions();
+    const cacheStorage = createFakeCacheStorage({ [sw.SHELL_CACHE_NAME]: [] });
+    const fetchImpl = createSpy(async () => {
+      throw new TypeError('Failed to fetch');
+    });
+    const response = await sw.handleFetchRequest({
+      request: { method: 'GET', url: 'http://127.0.0.1:3200/styles.css?v=0.9.1' },
+      cacheStorage,
+      fetchImpl,
+      scopeOrigin: 'http://127.0.0.1:3200'
+    });
+    expect(response.status).toBe(503);
+    expect(response.statusText).toBe('Service Unavailable');
+    expect(fetchImpl.calls).toHaveLength(1);
+    expect(cacheStorage.match.calls).toHaveLength(1);
   });
 
   it('never serves API, non-GET or cross-origin requests from the cache', async () => {

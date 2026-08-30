@@ -98,7 +98,7 @@ export function normalizeOptionalNumber(value) {
 }
 
 export function clampZoom(value) {
-  return Math.max(0.5, Math.min(2, value));
+  return Math.max(0.25, Math.min(2, value));
 }
 
 export function fallbackId(prefix, seed) {
@@ -125,6 +125,7 @@ export function normalizeField(field, fieldIndex) {
     pk: Boolean(field?.pk),
     fk: Boolean(field?.fk),
     unique: Boolean(field?.unique),
+    indexed: Boolean(field?.indexed),
     nullable: Boolean(field?.nullable),
     format,
     description,
@@ -852,6 +853,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
           pk: Boolean(field.pk),
           fk: Boolean(field.fk),
           unique: Boolean(field.unique),
+          indexed: Boolean(field.indexed),
           nullable: Boolean(field.nullable),
           format: field.format || '',
           itemsType: field.itemsType || '',

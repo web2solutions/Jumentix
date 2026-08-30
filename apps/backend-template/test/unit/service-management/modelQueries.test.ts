@@ -17,6 +17,18 @@ import path from 'node:path';
 const repoRoot = path.resolve(__dirname, '../../../../..');
 const model = require('@jumentix/designer-core/model/modelQueries.js');
 
+type LayoutBox = { left: number; top: number; right: number; bottom: number };
+
+function boxesOverlap(
+  box: LayoutBox,
+  other: LayoutBox
+) {
+  return box.left < other.right
+    && box.right > other.left
+    && box.top < other.bottom
+    && box.bottom > other.top;
+}
+
 function createDomains() {
   return [
     {
@@ -472,7 +484,7 @@ describe('model queries (JUM-469)', () => {
       expect(fit.top).toBe(0);
       const spread = [{ x: 0, y: 0 }, { x: 5000, y: 4000 }];
       const clamped = model.computeFitView(spread, 800, 600);
-      expect(clamped.zoom).toBe(0.5);
+      expect(clamped.zoom).toBe(0.25);
       expect(clamped.left).toBe(0);
       expect(clamped.top).toBe(0);
       const tiny = [{ x: 500, y: 400 }];
@@ -480,6 +492,27 @@ describe('model queries (JUM-469)', () => {
       expect(zoomed.zoom).toBe(2);
       expect(zoomed.left).toBe((500 - 80) * 2);
       expect(zoomed.top).toBe((400 - 80) * 2);
+    });
+
+    it('packs fifteen domains densely enough for overview fit', () => {
+      expect.hasAssertions();
+      const domains: Array<Record<string, any>> = Array.from({ length: 15 }, (_, index) => ({
+        id: `domain-${index}`,
+        name: `Domain ${index}`,
+        entities: [
+          {
+            id: `entity-${index}`,
+            name: `Entity ${index}`,
+            fields: [{ name: 'id', type: 'uuid', pk: true }]
+          }
+        ]
+      }));
+      model.applyAutoLayout(domains);
+      const fit = model.computeFitView(domains, 1440, 820);
+      const columns = new Set(domains.map((domain) => domain.x));
+      expect(columns.size).toBeGreaterThanOrEqual(5);
+      expect(fit.zoom).toBeGreaterThanOrEqual(0.25);
+      expect(fit.zoom).toBeLessThanOrEqual(0.6);
     });
 
     it('lays out domains in a grid and entities in two columns', () => {
@@ -504,11 +537,41 @@ describe('model queries (JUM-469)', () => {
 
       expect([domains[0].x, domains[0].y]).toStrictEqual([40, 40]);
       // Second column: the first domain's own width plus the gap.
-      expect(domains[1].x).toBe(40 + domains[0].width + 70);
-      expect([domains[0].entities[0].x, domains[0].entities[0].y]).toStrictEqual([14, 14]);
-      expect(domains[0].entities[1].x).toBe(14 + 260 + 16);
-      expect(domains[0].entities[1].y).toBe(14);
-      expect(domains[0].entities[2].x).toBe(14);
+      expect(domains[1].x).toBe(40 + domains[0].width + 72);
+      expect([domains[0].entities[0].x, domains[0].entities[0].y]).toStrictEqual([24, 74]);
+      expect(domains[0].entities[1].x).toBe(24 + 260 + 28);
+      expect(domains[0].entities[1].y).toBe(74);
+      expect(domains[0].entities[2].x).toBe(24);
+      expect(domains[0].entities[2].y).toBeGreaterThan(domains[0].entities[0].y);
+    });
+
+    it('spaces entities evenly inside the domain without overlap', () => {
+      expect.hasAssertions();
+      const domains: Array<Record<string, any>> = [{
+        x: 0,
+        y: 0,
+        entities: Array.from({ length: 5 }, (_, index) => ({
+          x: 0,
+          y: 0,
+          fields: Array.from({ length: index + 1 }, (__, fieldIndex) => ({ name: `f${fieldIndex}` }))
+        }))
+      }];
+
+      model.applyAutoLayout(domains);
+
+      const boxes: LayoutBox[] = domains[0].entities.map((entity: Record<string, any>) => ({
+        left: entity.x,
+        top: entity.y,
+        right: entity.x + 260,
+        bottom: entity.y + model.entityHeight(entity, false, false)
+      }));
+      boxes.forEach((box: LayoutBox, index: number) => {
+        expect(box.right).toBeLessThanOrEqual(domains[0].width - 24);
+        expect(box.bottom).toBeLessThanOrEqual(domains[0].height - 24);
+        boxes.slice(index + 1).forEach((other: LayoutBox) => {
+          expect(boxesOverlap(box, other)).toBe(false);
+        });
+      });
     });
 
     /*
@@ -533,7 +596,7 @@ describe('model queries (JUM-469)', () => {
       model.applyAutoLayout(domains);
 
       const secondRowTop = domains[0].entities[2].y;
-      expect(secondRowTop).toBeGreaterThanOrEqual(14 + model.entityHeight(tall, false, false));
+      expect(secondRowTop).toBeGreaterThanOrEqual(74 + model.entityHeight(tall, false, false));
       // And the box grew to hold both rows rather than clipping the second.
       const shortHeight = model.entityHeight(short, false, false);
       expect(domains[0].height).toBeGreaterThan(secondRowTop + shortHeight);

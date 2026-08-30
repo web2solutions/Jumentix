@@ -51,7 +51,7 @@
 
 /* eslint-env serviceworker, node */
 
-const SHELL_VERSION = '0.6.0';
+const SHELL_VERSION = '0.9.1';
 
 // Prefix shared with src/pwa/pwaShell.js (the page-side reset deletes by
 // prefix). The two copies cannot import each other — a classic worker has no
@@ -164,19 +164,32 @@ function handleActivate({ cacheStorage, workerClients }) {
 }
 
 /**
- * Cache-first for the precached shell: a cache hit never touches the network.
- * The versioned cache name makes this safe — the running shell is internally
- * consistent, and a shipped update arrives through the prompt flow, never by
- * silently mixing versions. Misses and non-shell requests go to the network
- * unchanged (offline, they fail naturally — the shell owns no data to serve).
+ * JS/CSS shell assets are network-first, including their unversioned module
+ * graph entries, so PM2 dev hot reload does not display stale designer code.
+ * Static installability assets remain cache-first. Every path still falls
+ * back to the current precache when the network is unavailable.
  */
 function handleFetchRequest({ request, cacheStorage, fetchImpl, scopeOrigin }) {
-  if (request.method !== 'GET' || !isShellUrl(new URL(request.url), scopeOrigin)) {
+  const requestUrl = new URL(request.url);
+  if (request.method !== 'GET' || !isShellUrl(requestUrl, scopeOrigin)) {
     return fetchImpl(request);
+  }
+  const unavailable = () => new Response('Service Management shell asset unavailable', {
+    status: 503,
+    statusText: 'Service Unavailable',
+    headers: { 'content-type': 'text/plain; charset=utf-8' }
+  });
+  const networkFirst = requestUrl.search
+    || requestUrl.pathname.endsWith('.js')
+    || requestUrl.pathname.endsWith('.css');
+  if (networkFirst) {
+    return fetchImpl(request).catch(() => cacheStorage
+      .match(request, { ignoreSearch: true })
+      .then((cached) => cached || unavailable()));
   }
   return cacheStorage
     .match(request, { ignoreSearch: true })
-    .then((cached) => cached || fetchImpl(request));
+    .then((cached) => cached || fetchImpl(request).catch(unavailable));
 }
 
 /** The ONLY path to activation on demand: an explicit page-side message. */

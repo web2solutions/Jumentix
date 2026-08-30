@@ -457,6 +457,7 @@ describe('designer state core (JUM-468)', () => {
         pk: false,
         fk: false,
         unique: false,
+        indexed: false,
         nullable: false,
         format: '',
         itemsType: '',
@@ -497,9 +498,9 @@ describe('designer state core (JUM-468)', () => {
       expect(normalizeOptionalNumber('nope')).toBeNull();
     });
 
-    it('clampZoom clamps to the pinned 0.5–2 range', () => {
+    it('clampZoom clamps to the pinned 0.25–2 range', () => {
       expect.hasAssertions();
-      expect(clampZoom(0.1)).toBe(0.5);
+      expect(clampZoom(0.1)).toBe(0.25);
       expect(clampZoom(5)).toBe(2);
       expect(clampZoom(1.3)).toBe(1.3);
     });
@@ -518,6 +519,7 @@ describe('designer state core (JUM-468)', () => {
         pk: false,
         fk: false,
         unique: false,
+        indexed: false,
         nullable: false,
         format: '',
         description: '',
@@ -549,6 +551,7 @@ describe('designer state core (JUM-468)', () => {
         pk: true,
         fk: true,
         unique: true,
+        indexed: true,
         nullable: true
       }, 0);
       expect(rich).toStrictEqual({
@@ -558,6 +561,7 @@ describe('designer state core (JUM-468)', () => {
         pk: true,
         fk: true,
         unique: true,
+        indexed: true,
         nullable: true,
         format: 'f',
         description: 'd',

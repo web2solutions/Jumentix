@@ -122,16 +122,19 @@ describe('serviceManagement first-run experience (JUM-548)', () => {
     await expect(isVisible(await page.$('#domain-designer-empty-state'))).resolves.toBe(false);
     const domainListText = await page.$eval('#domain-list', (el) => el.textContent || '');
     expect(domainListText).toContain('Users');
-    // ...which is marked as sample in the domain list...
+    expect(domainListText).toContain('Tasks');
+    // ...which are marked as sample in the domain list...
     const badges = await page.$$('#domain-list .sample-badge');
-    expect(badges).toHaveLength(1);
-    await expect(badges[0].textContent()).resolves.toBe('sample');
+    expect(badges).toHaveLength(2);
+    await Promise.all(badges.map((badge) => (
+      expect(badge.textContent()).resolves.toBe('sample')
+    )));
     // ...announced through the non-blocking status surface (JUM-543), never an alert.
     const statusText = await page.$eval('#status-region', (el) => el.textContent || '');
     expect(statusText).toContain('Sample model loaded');
     // ...and the canvas renders the sample's entities.
     const entityCards = await page.$$('.canvas .entity');
-    expect(entityCards.length).toBeGreaterThan(0);
+    expect(entityCards).toHaveLength(8);
 
     // The sample passes the export quality gate at its default blocking
     // setting — the export fires, proving collectModelIssues reports no

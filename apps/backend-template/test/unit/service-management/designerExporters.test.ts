@@ -633,7 +633,12 @@ describe('designer exporters (JUM-469)', () => {
       delete: { roles: ['superadmin', 'admin'], tenantScoped: true }
     });
     // `code` diverges from the name heuristic; `id` matches it and stays bare.
-    expect(invoice.properties.code['x-field-flags']).toStrictEqual({ pk: false, fk: false, unique: true });
+    expect(invoice.properties.code['x-field-flags']).toStrictEqual({
+      pk: false,
+      fk: false,
+      unique: true,
+      indexed: false
+    });
     expect(invoice.properties.id['x-field-flags']).toBeUndefined();
     expect(invoice['x-fieldless']).toBeUndefined();
     const receipt = document.components.schemas.Billing_Receipt;

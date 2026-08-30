@@ -14,7 +14,7 @@
        styles.css, which consumes them. tokens.css is vendored from
        apps/jumentix-website/components/design-system/tokens.css. -->
   <link rel="stylesheet" href="./tokens.css" />
-  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./styles.css?v=0.9.1" />
 </head>
 <body>
   <div class="service-management-shell">
@@ -864,7 +864,7 @@
       }
     }
   </script>
-  <script type="module" src="./script.js"></script>
+  <script type="module" src="./script.js?v=0.9.1"></script>
   <!-- PWA shell registration (JUM-489). Kept out of script.js on purpose:
        the service worker owns installability and shell caching, orthogonal to
        the designer boot — this snippet never reorders load → wire → render.

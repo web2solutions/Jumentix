@@ -19,18 +19,21 @@
 
 import {
   clampZoom,
+  ENTITY_WIDTH,
   FIELD_TYPES,
-  normalizeField
+  normalizeField,
+  normalizeOptionalNumber
 } from '@jumentix/designer-core/state/designerState.js';
 import {
   applyAutoLayout,
   minimumDomainSize,
-  buildEdgePathD,
   buildPreviewEdgePathD,
   alignmentGuidesFor,
   clampEntityPosition,
   computeFitView,
   entitiesInMarquee,
+  entityFieldRowHeight,
+  entityHeight,
   entityFieldAnchorPoint,
   facingSide,
   isDomainCollapsed,
@@ -56,7 +59,7 @@ import {
  * `handleEntityRelationshipPick(id)`,
  * `addRelationshipFromAnchor(fromEntityId, toEntityId, toSide)`.
  */
-export function createCanvas({ dom, state, interaction, actions, contextMenu }) {
+export function createCanvas({ dom, state, interaction, actions, contextMenu, sidebarGroups }) {
   const {
     withPersist,
     render,
@@ -65,6 +68,7 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
     setSelectedEntity,
     handleEntityRelationshipPick,
     addRelationshipFromAnchor,
+    addDomain,
     addEntity,
     deleteEntity,
     deleteDomain,
@@ -115,6 +119,61 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
     event.preventDefault();
     event.stopPropagation();
     contextMenu.open(event, title, items);
+  }
+
+  function canvasMenuItems(event) {
+    const point = pointerToCanvasPoint(event.clientX, event.clientY);
+    const selectedDomain = state.domains.find((domain) => domain.id === state.selectedDomainId);
+    const nextDomainName = (() => {
+      const names = new Set(state.domains.map((domain) => String(domain.name || '').toLowerCase()));
+      for (let index = 1; index < 1000; index += 1) {
+        const candidate = `Domain ${index}`;
+        if (!names.has(candidate.toLowerCase())) return candidate;
+      }
+      return `Domain ${Date.now()}`;
+    })();
+    return [
+      {
+        label: 'Add domain here',
+        run: () => {
+          if (!addDomain) return;
+          const domain = addDomain(nextDomainName, {
+            x: snapCoordinate(state.view.snapToGrid, Math.max(0, point.x - 240)),
+            y: snapCoordinate(state.view.snapToGrid, Math.max(0, point.y - 80))
+          });
+          if (domain) render();
+        }
+      },
+      {
+        label: selectedDomain ? `Add entity to ${selectedDomain.name}` : 'Add entity to selected domain',
+        disabled: !selectedDomain,
+        run: () => {
+          if (!selectedDomain) return;
+          addEntity(selectedDomain.id, `Entity_${selectedDomain.entities.length + 1}`);
+        }
+      },
+      {
+        label: 'Add note here',
+        run: () => addNote({
+          x: snapCoordinate(state.view.snapToGrid, point.x),
+          y: snapCoordinate(state.view.snapToGrid, point.y)
+        })
+      },
+      { separator: true },
+      { label: 'Auto layout', run: () => autoLayout() },
+      { label: 'Fit view', run: () => fitView() },
+      { label: 'Reset view', run: () => resetView() },
+      { separator: true },
+      { label: state.view.compactEntities ? 'Show full entities' : 'Compact entities', run: () => toggleCompactView() },
+      {
+        label: state.view.largeCanvasMode ? 'Show editable fields' : 'Optimize large canvas',
+        run: () => {
+          state.view.largeCanvasMode = !state.view.largeCanvasMode;
+          render();
+          saveState();
+        }
+      }
+    ];
   }
 
   function domainMenuItems(domain) {
@@ -215,6 +274,7 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
       { label: 'Foreign key', checked: Boolean(field.fk), run: () => toggle('fk') },
       { label: 'Required', checked: Boolean(field.required), run: () => toggle('required') },
       { label: 'Unique', checked: Boolean(field.unique), run: () => toggle('unique') },
+      { label: 'Indexed', checked: Boolean(field.indexed), run: () => toggle('indexed') },
       { label: 'Nullable', checked: Boolean(field.nullable), run: () => toggle('nullable') },
       { separator: true },
       { label: 'Move up', disabled: fieldIndex === 0, run: () => move(-1) },
@@ -236,6 +296,141 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
         })
       }
     ];
+  }
+
+  function stopCanvasInteraction(event) {
+    event.stopPropagation();
+  }
+
+  function createFieldSchemaInput(field, label, key, options = {}) {
+    const wrapper = document.createElement('label');
+    wrapper.className = 'field-schema-control';
+    const labelEl = document.createElement('span');
+    labelEl.textContent = label;
+    wrapper.appendChild(labelEl);
+    const input = document.createElement('input');
+    input.type = options.type || 'text';
+    input.placeholder = options.placeholder || '';
+    input.value = options.serialize ? options.serialize(field[key]) : String(field[key] ?? '');
+    input.addEventListener('click', stopCanvasInteraction);
+    input.addEventListener('pointerdown', stopCanvasInteraction);
+    input.addEventListener('change', () => {
+      withPersist(() => {
+        field[key] = options.parse ? options.parse(input.value) : input.value.trim();
+        render();
+      });
+    });
+    wrapper.appendChild(input);
+    return wrapper;
+  }
+
+  function createFieldSchemaSelect(field, label, key, options) {
+    const wrapper = document.createElement('label');
+    wrapper.className = 'field-schema-control';
+    const labelEl = document.createElement('span');
+    labelEl.textContent = label;
+    wrapper.appendChild(labelEl);
+    const select = document.createElement('select');
+    options.forEach((optionValue) => {
+      const option = document.createElement('option');
+      option.value = optionValue;
+      option.textContent = optionValue || 'none';
+      if (optionValue === (field[key] || '')) option.selected = true;
+      select.appendChild(option);
+    });
+    select.addEventListener('click', stopCanvasInteraction);
+    select.addEventListener('pointerdown', stopCanvasInteraction);
+    select.addEventListener('change', () => {
+      withPersist(() => {
+        field[key] = select.value;
+        render();
+      });
+    });
+    wrapper.appendChild(select);
+    return wrapper;
+  }
+
+  function createFieldSchemaEditor(field) {
+    const details = document.createElement('details');
+    details.className = 'field-schema-editor';
+    details.addEventListener('click', stopCanvasInteraction);
+    details.addEventListener('pointerdown', stopCanvasInteraction);
+    const summary = document.createElement('summary');
+    summary.textContent = 'OAS';
+    summary.title = 'Edit OpenAPI schema attributes for this field';
+    details.appendChild(summary);
+
+    const grid = document.createElement('div');
+    grid.className = 'field-schema-grid';
+    grid.appendChild(createFieldSchemaSelect(field, 'format', 'format', [
+      '',
+      'uuid',
+      'date',
+      'date-time',
+      'email',
+      'uri',
+      'int32',
+      'int64',
+      'float',
+      'double'
+    ]));
+    grid.appendChild(createFieldSchemaInput(field, 'mask', 'pattern', { placeholder: 'regex pattern' }));
+    grid.appendChild(createFieldSchemaInput(field, 'enum', 'enumValues', {
+      placeholder: 'a,b,c',
+      serialize: (value) => (Array.isArray(value) ? value.join(', ') : ''),
+      parse: (value) => value.split(',').map((item) => item.trim()).filter(Boolean)
+    }));
+    grid.appendChild(createFieldSchemaSelect(field, 'items', 'itemsType', ['', ...FIELD_TYPES]));
+    grid.appendChild(createFieldSchemaInput(field, 'min len', 'minLength', {
+      type: 'number',
+      parse: normalizeOptionalNumber
+    }));
+    grid.appendChild(createFieldSchemaInput(field, 'max len', 'maxLength', {
+      type: 'number',
+      parse: normalizeOptionalNumber
+    }));
+    grid.appendChild(createFieldSchemaInput(field, 'min', 'minimum', {
+      type: 'number',
+      parse: normalizeOptionalNumber
+    }));
+    grid.appendChild(createFieldSchemaInput(field, 'max', 'maximum', {
+      type: 'number',
+      parse: normalizeOptionalNumber
+    }));
+    const nullableLabel = document.createElement('label');
+    nullableLabel.className = 'field-schema-check';
+    const nullable = document.createElement('input');
+    nullable.type = 'checkbox';
+    nullable.checked = Boolean(field.nullable);
+    nullable.addEventListener('click', stopCanvasInteraction);
+    nullable.addEventListener('pointerdown', stopCanvasInteraction);
+    nullable.addEventListener('change', () => {
+      withPersist(() => {
+        field.nullable = nullable.checked;
+        render();
+      });
+    });
+    nullableLabel.appendChild(nullable);
+    nullableLabel.append(' nullable');
+    grid.appendChild(nullableLabel);
+    const indexedLabel = document.createElement('label');
+    indexedLabel.className = 'field-schema-check';
+    const indexed = document.createElement('input');
+    indexed.type = 'checkbox';
+    indexed.checked = Boolean(field.indexed);
+    indexed.addEventListener('click', stopCanvasInteraction);
+    indexed.addEventListener('pointerdown', stopCanvasInteraction);
+    indexed.addEventListener('change', () => {
+      withPersist(() => {
+        field.indexed = indexed.checked;
+        render();
+      });
+    });
+    indexedLabel.appendChild(indexed);
+    indexedLabel.append(' indexed');
+    grid.appendChild(indexedLabel);
+    details.appendChild(grid);
+    return details;
   }
 
   function relationshipMenuItems(relationship) {
@@ -336,6 +531,7 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
   function setZoom(zoomValue) {
     state.view.zoom = clampZoom(zoomValue);
     renderView();
+    scheduleMiniMapRender();
     saveState();
   }
 
@@ -380,16 +576,7 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
     let moved = false;
     let started = false;
 
-    el.addEventListener('pointerdown', (event) => {
-      pointerId = event.pointerId;
-      startX = event.clientX;
-      startY = event.clientY;
-      moved = false;
-      started = false;
-      el.setPointerCapture(pointerId);
-    });
-
-    el.addEventListener('pointermove', (event) => {
+    const move = (event) => {
       if (pointerId !== event.pointerId) return;
       const zoom = state.view.zoom || 1;
       const dx = (event.clientX - startX) / zoom;
@@ -401,18 +588,44 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
         started = true;
         options.onStart(event);
       }
-      onMove(dx, dy);
-    });
+      onMove(dx, dy, event);
+    };
 
     const end = (event) => {
       if (pointerId !== event.pointerId) return;
       if (el.hasPointerCapture(pointerId)) el.releasePointerCapture(pointerId);
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', end);
+      window.removeEventListener('pointercancel', end);
       pointerId = null;
       if (typeof options.onEnd === 'function') options.onEnd(event, moved);
     };
 
+    el.addEventListener('pointerdown', (event) => {
+      if (typeof options.shouldStart === 'function' && !options.shouldStart(event)) return;
+      pointerId = event.pointerId;
+      startX = event.clientX;
+      startY = event.clientY;
+      moved = false;
+      started = false;
+      el.setPointerCapture(pointerId);
+      window.addEventListener('pointermove', move);
+      window.addEventListener('pointerup', end);
+      window.addEventListener('pointercancel', end);
+    });
+
     el.addEventListener('pointerup', end);
     el.addEventListener('pointercancel', end);
+  }
+
+  function isDragInteractiveTarget(target) {
+    return Boolean(target?.closest?.(
+      'button, input, select, textarea, a, .entity-anchor, .field-link-handle, .domain-resize-handle, .edge-end-handle, .edge-bend-handle, .edge-hit'
+    ));
+  }
+
+  function closeSidebarForCanvasWork() {
+    if (sidebarGroups?.isOpen?.()) sidebarGroups.setDrawerOpen(false);
   }
 
   function renderDomains() {
@@ -439,8 +652,9 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
 
       const headerEl = document.createElement('header');
       headerEl.className = 'domain-header';
-      headerEl.innerHTML = `<div class="domain-title">${domain.name}</div><div class="entity-count">${domain.entities.length} entities</div>`;
+      headerEl.innerHTML = `<button class="domain-drag-grip" type="button" aria-label="Move domain ${domain.name}" title="Drag to move domain">::::</button><div class="domain-title">${domain.name}</div><div class="entity-count">${domain.entities.length} entities</div>`;
       domainEl.appendChild(headerEl);
+      const domainDragGrip = headerEl.querySelector('.domain-drag-grip');
 
       const collapsed = isDomainCollapsed(domain);
       if (collapsed) domainEl.classList.add('collapsed');
@@ -469,20 +683,35 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
       const bodyEl = document.createElement('div');
       bodyEl.className = 'domain-body';
 
-      attachDrag(headerEl, (dx, dy) => {
+      const moveDomain = (dx, dy) => {
         domain.x = Math.max(0, snapCoordinate(state.view.snapToGrid, domain.x + dx));
         domain.y = Math.max(0, snapCoordinate(state.view.snapToGrid, domain.y + dy));
         domainEl.style.left = `${domain.x}px`;
         domainEl.style.top = `${domain.y}px`;
         scheduleEdgesRender();
         scheduleMiniMapRender();
-      }, {
-        onStart: () => withPersist(() => {}),
+      };
+      const persistMovedDomain = {
+        onStart: () => {
+          closeSidebarForCanvasWork();
+        },
         onEnd: (_event, moved) => {
           if (!moved) return;
           saveState();
           render();
         }
+      };
+      attachDrag(headerEl, moveDomain, {
+        ...persistMovedDomain,
+        shouldStart: (event) => event.button === 0 && !isDragInteractiveTarget(event.target)
+      });
+      attachDrag(domainDragGrip, moveDomain, persistMovedDomain);
+
+      attachDrag(bodyEl, moveDomain, {
+        ...persistMovedDomain,
+        shouldStart: (event) => event.button === 0
+          && !event.target.closest('.entity')
+          && !isDragInteractiveTarget(event.target)
       });
 
       if (collapsed) {
@@ -543,6 +772,13 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
 
         const entityHeader = document.createElement('header');
         entityHeader.className = 'entity-header';
+        const entityDragGrip = document.createElement('button');
+        entityDragGrip.type = 'button';
+        entityDragGrip.className = 'entity-drag-grip';
+        entityDragGrip.textContent = '::::';
+        entityDragGrip.setAttribute('aria-label', `Move entity "${entity.name}"`);
+        entityDragGrip.title = `Drag to move entity "${entity.name}"`;
+        entityHeader.appendChild(entityDragGrip);
         const entityNameEl = document.createElement('input');
         entityNameEl.className = 'entity-name-input';
         entityNameEl.value = entity.name;
@@ -567,16 +803,30 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
           aggregateTag.textContent = 'AR';
           entityHeader.appendChild(aggregateTag);
         }
-        attachDrag(entityHeader, (dx, dy) => {
+        const moveEntity = (dx, dy) => {
           moveEntityInsideDomain(entity, entityEl, dx, dy);
-        }, {
-          onStart: () => withPersist(() => {}),
+        };
+        const persistMovedEntity = {
+          onStart: () => {
+            closeSidebarForCanvasWork();
+          },
           onEnd: (_event, moved) => {
             clearAlignmentGuides();
             if (!moved) return;
             saveState();
             render();
           }
+        };
+        attachDrag(entityHeader, moveEntity, {
+          ...persistMovedEntity,
+          shouldStart: (event) => event.button === 0 && !isDragInteractiveTarget(event.target)
+        });
+        attachDrag(entityDragGrip, moveEntity, persistMovedEntity);
+        attachDrag(entityEl, moveEntity, {
+          ...persistMovedEntity,
+          shouldStart: (event) => event.button === 0
+            && !event.target.closest('.entity-header')
+            && !isDragInteractiveTarget(event.target)
         });
 
         const fieldsEl = document.createElement('ul');
@@ -649,6 +899,8 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
             typeEl.addEventListener('change', () => {
               withPersist(() => {
                 field.type = typeEl.value;
+                if (field.type !== 'array') field.itemsType = '';
+                if (field.type === 'array' && !field.itemsType) field.itemsType = 'string';
                 render();
               });
             });
@@ -656,7 +908,8 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
 
             [
               { key: 'required', label: 'REQ', title: 'required' },
-              { key: 'unique', label: 'UQ', title: 'unique' }
+              { key: 'unique', label: 'UQ', title: 'unique' },
+              { key: 'indexed', label: 'IDX', title: 'indexed' }
             ].forEach((flag) => {
               const flagBtn = document.createElement('button');
               flagBtn.type = 'button';
@@ -689,6 +942,7 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
               startAnchorDrag(entity.id, 'right', event, field.name);
             });
             li.appendChild(linkBtn);
+            li.appendChild(createFieldSchemaEditor(field));
 
             li.dataset.fieldIndex = String(fieldIndex);
             li.addEventListener('contextmenu', (event) => {
@@ -790,7 +1044,7 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
       scheduleEdgesRender();
       scheduleMiniMapRender();
     }, {
-      onStart: () => withPersist(() => {}),
+      onStart: () => closeSidebarForCanvasWork(),
       onEnd: (_event, moved) => {
         if (!moved) return;
         saveState();
@@ -940,11 +1194,11 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
     });
   }
 
-  /** Drop a note at the centre of what is currently on screen. */
-  function addNote() {
+  /** Drop a note at a point or at the centre of what is currently on screen. */
+  function addNote(position = null) {
     withPersist(() => {
       const zoom = state.view.zoom || 1;
-      const centre = {
+      const centre = position || {
         x: Math.round((dom.canvas.scrollLeft + dom.canvas.clientWidth / 2) / zoom),
         y: Math.round((dom.canvas.scrollTop + dom.canvas.clientHeight / 2) / zoom)
       };
@@ -957,6 +1211,237 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
       }];
       render();
     });
+  }
+
+  function pointOffsetBySide(point, side, distance) {
+    if (side === 'left') return { x: point.x - distance, y: point.y };
+    if (side === 'right') return { x: point.x + distance, y: point.y };
+    if (side === 'top') return { x: point.x, y: point.y - distance };
+    if (side === 'bottom') return { x: point.x, y: point.y + distance };
+    return point;
+  }
+
+  function normalizeRoutePoints(points) {
+    return points.filter((point, index) => {
+      const previous = points[index - 1];
+      return !previous || previous.x !== point.x || previous.y !== point.y;
+    });
+  }
+
+  function allEntityBounds(excludeIds = new Set()) {
+    const compact = Boolean(state.view.compactEntities);
+    const large = Boolean(state.view.largeCanvasMode);
+    return state.domains.flatMap((domain) => domain.entities
+      .filter((entity) => !excludeIds.has(entity.id))
+      .map((entity) => ({
+        x: domain.x + entity.x - 14,
+        y: domain.y + entity.y - 14,
+        width: ENTITY_WIDTH + 28,
+        height: entityHeight(entity, compact, large) + 28
+      })));
+  }
+
+  function segmentIntersectsBox(a, b, box) {
+    if (a.x === b.x) {
+      const minY = Math.min(a.y, b.y);
+      const maxY = Math.max(a.y, b.y);
+      return a.x >= box.x
+        && a.x <= box.x + box.width
+        && maxY >= box.y
+        && minY <= box.y + box.height;
+    }
+    if (a.y === b.y) {
+      const minX = Math.min(a.x, b.x);
+      const maxX = Math.max(a.x, b.x);
+      return a.y >= box.y
+        && a.y <= box.y + box.height
+        && maxX >= box.x
+        && minX <= box.x + box.width;
+    }
+    return false;
+  }
+
+  function routeLength(points) {
+    return points.slice(1).reduce((total, point, index) => {
+      const previous = points[index];
+      return total + Math.abs(point.x - previous.x) + Math.abs(point.y - previous.y);
+    }, 0);
+  }
+
+  function routeCollisionCount(points, obstacles) {
+    return points.slice(1).reduce((total, point, index) => {
+      const previous = points[index];
+      return total + obstacles.filter((box) => segmentIntersectsBox(previous, point, box)).length;
+    }, 0);
+  }
+
+  function pointInsideBox(point, box, padding = 0) {
+    return point.x >= box.x - padding
+      && point.x <= box.x + box.width + padding
+      && point.y >= box.y - padding
+      && point.y <= box.y + box.height + padding;
+  }
+
+  function routeBendCount(points) {
+    return points.slice(2).reduce((total, point, index) => {
+      const previous = points[index + 1];
+      const beforePrevious = points[index];
+      const previousHorizontal = beforePrevious.y === previous.y;
+      const currentHorizontal = previous.y === point.y;
+      return total + (previousHorizontal === currentHorizontal ? 0 : 1);
+    }, 0);
+  }
+
+  function relationshipRouteOrdinal(relationship) {
+    const sorted = [...state.relationships]
+      .filter((candidate) => {
+        const sameDirection = candidate.fromEntityId === relationship.fromEntityId
+          && candidate.toEntityId === relationship.toEntityId;
+        const oppositeDirection = candidate.fromEntityId === relationship.toEntityId
+          && candidate.toEntityId === relationship.fromEntityId;
+        return sameDirection || oppositeDirection;
+      })
+      .sort((left, right) => String(left.id).localeCompare(String(right.id)));
+    const index = Math.max(0, sorted.findIndex((candidate) => candidate.id === relationship.id));
+    return index - (sorted.length - 1) / 2;
+  }
+
+  function scoreRoute(points, obstacles) {
+    const collisions = routeCollisionCount(points, obstacles);
+    const labelPoint = routeLabelPoint(points);
+    const labelCollisions = obstacles.filter((box) => pointInsideBox(labelPoint, box, 18)).length;
+    return collisions * 120000
+      + labelCollisions * 45000
+      + routeLength(points)
+      + routeBendCount(points) * 120
+      + points.length * 18;
+  }
+
+  function automaticEdgeRoutePoints(relationship, from, to, fromStub, toStub, obstacles) {
+    const minX = Math.min(from.x, to.x, fromStub.x, toStub.x);
+    const maxX = Math.max(from.x, to.x, fromStub.x, toStub.x);
+    const minY = Math.min(from.y, to.y, fromStub.y, toStub.y);
+    const maxY = Math.max(from.y, to.y, fromStub.y, toStub.y);
+    const ordinal = relationshipRouteOrdinal(relationship);
+    const stagger = ordinal * 20;
+    const midX = Math.round((fromStub.x + toStub.x) / 2 + stagger);
+    const midY = Math.round((fromStub.y + toStub.y) / 2 + stagger);
+    const nearLane = 34 + Math.abs(stagger);
+    const farLane = 72 + Math.abs(stagger);
+    const candidates = [
+      [from, fromStub, { x: midX, y: fromStub.y }, { x: midX, y: toStub.y }, toStub, to],
+      [from, fromStub, { x: fromStub.x, y: midY }, { x: toStub.x, y: midY }, toStub, to],
+      [from, fromStub, { x: fromStub.x + nearLane, y: fromStub.y }, { x: fromStub.x + nearLane, y: toStub.y }, toStub, to],
+      [from, fromStub, { x: fromStub.x - nearLane, y: fromStub.y }, { x: fromStub.x - nearLane, y: toStub.y }, toStub, to],
+      [from, fromStub, { x: fromStub.x, y: fromStub.y + nearLane }, { x: toStub.x, y: fromStub.y + nearLane }, toStub, to],
+      [from, fromStub, { x: fromStub.x, y: fromStub.y - nearLane }, { x: toStub.x, y: fromStub.y - nearLane }, toStub, to],
+      [from, fromStub, { x: minX - farLane, y: fromStub.y }, { x: minX - farLane, y: toStub.y }, toStub, to],
+      [from, fromStub, { x: maxX + farLane, y: fromStub.y }, { x: maxX + farLane, y: toStub.y }, toStub, to],
+      [from, fromStub, { x: fromStub.x, y: minY - farLane }, { x: toStub.x, y: minY - farLane }, toStub, to],
+      [from, fromStub, { x: fromStub.x, y: maxY + farLane }, { x: toStub.x, y: maxY + farLane }, toStub, to]
+    ].map(normalizeRoutePoints);
+    candidates.sort((left, right) => {
+      return scoreRoute(left, obstacles) - scoreRoute(right, obstacles);
+    });
+    return candidates[0];
+  }
+
+  function edgeRoutePoints(relationship, from, to, controlX, controlY, explicit) {
+    const spacing = explicit ? 28 : 44;
+    const fromStub = pointOffsetBySide(from, relationship.fromAnchorSide, spacing);
+    const toStub = pointOffsetBySide(to, relationship.toAnchorSide, spacing);
+    if (explicit) {
+      return normalizeRoutePoints([from, fromStub, { x: controlX, y: controlY }, toStub, to]);
+    }
+    return automaticEdgeRoutePoints(
+      relationship,
+      from,
+      to,
+      fromStub,
+      toStub,
+      allEntityBounds(new Set([relationship.fromEntityId, relationship.toEntityId]))
+    );
+  }
+
+  function roundedRoutePathD(points) {
+    if (points.length <= 2) {
+      const [from, to] = points;
+      return `M ${from.x} ${from.y} L ${to.x} ${to.y}`;
+    }
+    const commands = [`M ${points[0].x} ${points[0].y}`];
+    const radius = 14;
+    for (let index = 1; index < points.length - 1; index += 1) {
+      const previous = points[index - 1];
+      const point = points[index];
+      const next = points[index + 1];
+      const beforeLength = Math.abs(point.x - previous.x) + Math.abs(point.y - previous.y);
+      const afterLength = Math.abs(next.x - point.x) + Math.abs(next.y - point.y);
+      const before = Math.min(radius, beforeLength / 2);
+      const after = Math.min(radius, afterLength / 2);
+      const start = {
+        x: point.x + Math.sign(previous.x - point.x) * before,
+        y: point.y + Math.sign(previous.y - point.y) * before
+      };
+      const end = {
+        x: point.x + Math.sign(next.x - point.x) * after,
+        y: point.y + Math.sign(next.y - point.y) * after
+      };
+      commands.push(`L ${start.x} ${start.y}`);
+      commands.push(`Q ${point.x} ${point.y} ${end.x} ${end.y}`);
+    }
+    const last = points[points.length - 1];
+    commands.push(`L ${last.x} ${last.y}`);
+    return commands.join(' ');
+  }
+
+  function routeLabelPoint(points) {
+    const total = routeLength(points);
+    let remaining = total / 2;
+    for (let index = 1; index < points.length; index += 1) {
+      const previous = points[index - 1];
+      const point = points[index];
+      const length = Math.abs(point.x - previous.x) + Math.abs(point.y - previous.y);
+      if (remaining <= length) {
+        const ratio = length ? remaining / length : 0;
+        return {
+          x: previous.x + (point.x - previous.x) * ratio,
+          y: previous.y + (point.y - previous.y) * ratio
+        };
+      }
+      remaining -= length;
+    }
+    return points[Math.floor(points.length / 2)];
+  }
+
+  function routeMiddleSegment(points) {
+    const total = routeLength(points);
+    let remaining = total / 2;
+    for (let index = 1; index < points.length; index += 1) {
+      const previous = points[index - 1];
+      const point = points[index];
+      const length = Math.abs(point.x - previous.x) + Math.abs(point.y - previous.y);
+      if (remaining <= length) return { from: previous, to: point };
+      remaining -= length;
+    }
+    return { from: points[0], to: points[points.length - 1] };
+  }
+
+  function routeLabelOffset(relationship, points) {
+    const segment = routeMiddleSegment(points);
+    const ordinal = relationshipRouteOrdinal(relationship);
+    const spread = ordinal * 16;
+    if (segment.from.y === segment.to.y) {
+      return { x: 0, y: -8 + spread };
+    }
+    return { x: 8 + spread, y: -4 };
+  }
+
+  function buildRoutedEdgePathD(relationship, from, to, controlX, controlY, orthogonal, explicit) {
+    const points = edgeRoutePoints(relationship, from, to, controlX, controlY, explicit);
+    if (orthogonal || explicit) {
+      return points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ');
+    }
+    return roundedRoutePathD(points);
   }
 
   /**
@@ -1019,11 +1504,7 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
         end === 'from' ? relationship.fromEntityId : relationship.toEntityId
       );
     }
-    return end === 'from'
-      ? edgeEndpoint(
-        relationship.fromEntityId, relationship.fromAnchorSide, relationship.fromField
-      )
-      : edgeEndpoint(relationship.toEntityId, relationship.toAnchorSide, relationship.toField);
+    return relationshipEndpoint(relationship, end).point;
   }
 
   /**
@@ -1079,6 +1560,92 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
       : entityCenterOnCanvas(entityId);
   }
 
+  function relationshipSide(entityId, otherEntityId, fallbackSide) {
+    if (fallbackSide) return fallbackSide;
+    const current = entityCenterOnCanvas(entityId);
+    const other = entityCenterOnCanvas(otherEntityId);
+    if (!current || !other) return 'right';
+    if (Math.abs(current.x - other.x) >= Math.abs(current.y - other.y)) {
+      return current.x <= other.x ? 'right' : 'left';
+    }
+    return current.y <= other.y ? 'bottom' : 'top';
+  }
+
+  function inferRelationshipFieldName(relationship, end) {
+    const explicit = end === 'from' ? relationship.fromField : relationship.toField;
+    if (explicit) return explicit;
+    const entityId = end === 'from' ? relationship.fromEntityId : relationship.toEntityId;
+    const otherEntityId = end === 'from' ? relationship.toEntityId : relationship.fromEntityId;
+    const found = findEntity(state.domains, entityId);
+    const other = findEntity(state.domains, otherEntityId);
+    const fields = found?.entity?.fields || [];
+    if (!fields.length) return null;
+    if (end === 'to') {
+      return fields.find((field) => field.pk)?.name
+        || fields.find((field) => field.name === 'id')?.name
+        || null;
+    }
+    const otherToken = String(other?.entity?.name || '')
+      .replace(/[^a-zA-Z0-9]/g, '')
+      .toLowerCase();
+    const candidates = [
+      `${otherToken}id`,
+      `${otherToken}_id`,
+      `${otherToken}-id`
+    ];
+    return fields.find((field) => candidates.includes(String(field.name || '').toLowerCase()))?.name
+      || fields.find((field) => field.fk)?.name
+      || null;
+  }
+
+  function relationshipEndpoint(relationship, end) {
+    const entityId = end === 'from' ? relationship.fromEntityId : relationship.toEntityId;
+    const otherEntityId = end === 'from' ? relationship.toEntityId : relationship.fromEntityId;
+    const side = relationshipSide(
+      entityId,
+      otherEntityId,
+      end === 'from' ? relationship.fromAnchorSide : relationship.toAnchorSide
+    );
+    const fieldName = inferRelationshipFieldName(relationship, end);
+    return {
+      entityId,
+      side,
+      fieldName,
+      point: edgeEndpoint(entityId, side, fieldName)
+    };
+  }
+
+  function relationshipFieldLabel(relationship, fromEndpoint, toEndpoint) {
+    const from = findEntity(state.domains, relationship.fromEntityId)?.entity?.name || relationship.fromEntityId;
+    const to = findEntity(state.domains, relationship.toEntityId)?.entity?.name || relationship.toEntityId;
+    if (fromEndpoint.fieldName || toEndpoint.fieldName) {
+      return `${from}.${fromEndpoint.fieldName || '?'} -> ${to}.${toEndpoint.fieldName || '?'}`;
+    }
+    return relationship.name || '';
+  }
+
+  function compactRelationshipFieldLabel(relationship, fromEndpoint, toEndpoint) {
+    const fullLabel = relationshipFieldLabel(relationship, fromEndpoint, toEndpoint);
+    if (!fromEndpoint.fieldName && !toEndpoint.fieldName) return fullLabel;
+    const from = findEntity(state.domains, relationship.fromEntityId)?.entity?.name || relationship.fromEntityId;
+    const to = findEntity(state.domains, relationship.toEntityId)?.entity?.name || relationship.toEntityId;
+    const sameEntityNames = from === to;
+    const source = sameEntityNames ? fromEndpoint.fieldName : `${fromEndpoint.fieldName || '?'}`;
+    const target = sameEntityNames ? toEndpoint.fieldName : `${toEndpoint.fieldName || '?'}`;
+    const compact = `${source} -> ${target}`;
+    return compact.length <= 34 ? compact : fullLabel;
+  }
+
+  function cardinalityLabelPoint(endpoint, otherPoint) {
+    const deltaX = endpoint.x - otherPoint.x;
+    const deltaY = endpoint.y - otherPoint.y;
+    const axisX = Math.abs(deltaX) >= Math.abs(deltaY);
+    return {
+      x: Math.round(endpoint.x + (axisX ? Math.sign(deltaX || 1) * 12 : 6)),
+      y: Math.round(endpoint.y + (axisX ? -7 : Math.sign(deltaY || -1) * 13))
+    };
+  }
+
   function entityAnchorOnCanvas(entityId, side) {
     const found = findEntity(state.domains, entityId);
     if (!found) return null;
@@ -1111,11 +1678,116 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
     dom.edges.appendChild(previewPath);
   }
 
+  function nearestRelationshipEndpointTarget(point) {
+    const searchRadius = 34;
+    const candidates = [];
+    state.domains.forEach((domain) => {
+      if (isDomainCollapsed(domain)) return;
+      (domain.entities || []).forEach((entity) => {
+        const left = domain.x + entity.x;
+        const top = domain.y + entity.y;
+        const height = entityHeight(entity, state.view.compactEntities, state.view.largeCanvasMode);
+        const right = left + ENTITY_WIDTH;
+        const bottom = top + height;
+        const inside =
+          point.x >= left - searchRadius
+          && point.x <= right + searchRadius
+          && point.y >= top - searchRadius
+          && point.y <= bottom + searchRadius;
+        if (!inside) return;
+
+        const sideDistances = [
+          { side: 'left', distance: Math.abs(point.x - left) },
+          { side: 'right', distance: Math.abs(point.x - right) },
+          { side: 'top', distance: Math.abs(point.y - top) },
+          { side: 'bottom', distance: Math.abs(point.y - bottom) }
+        ].sort((a, b) => a.distance - b.distance);
+        const side = sideDistances[0].side;
+        const sidePoint = edgeEndpoint(entity.id, side, null);
+        if (sidePoint) {
+          candidates.push({
+            entityId: entity.id,
+            side,
+            fieldName: null,
+            score: Math.hypot(point.x - sidePoint.x, point.y - sidePoint.y)
+          });
+        }
+
+        if (!state.view.compactEntities) {
+          const rowHeight = entityFieldRowHeight(state.view.largeCanvasMode);
+          const rowIndex = Math.floor((point.y - top - 32) / rowHeight);
+          const field = entity.fields?.[rowIndex];
+          if (field) {
+            const fieldSide = Math.abs(point.x - left) <= Math.abs(point.x - right) ? 'left' : 'right';
+            const fieldPoint = edgeEndpoint(entity.id, fieldSide, field.name);
+            if (fieldPoint) {
+              candidates.push({
+                entityId: entity.id,
+                side: fieldSide,
+                fieldName: field.name,
+                score: Math.hypot(point.x - fieldPoint.x, point.y - fieldPoint.y) - 8
+              });
+            }
+          }
+        }
+      });
+    });
+    return candidates.sort((a, b) => a.score - b.score)[0] || null;
+  }
+
+  function applyRelationshipEndpointTarget(relationship, end, target) {
+    if (!target) return false;
+    if (end === 'from') {
+      if (target.entityId === relationship.toEntityId) return false;
+      relationship.fromEntityId = target.entityId;
+      relationship.fromAnchorSide = target.side;
+      relationship.fromField = target.fieldName;
+      return true;
+    }
+    if (target.entityId === relationship.fromEntityId) return false;
+    relationship.toEntityId = target.entityId;
+    relationship.toAnchorSide = target.side;
+    relationship.toField = target.fieldName;
+    return true;
+  }
+
+  function attachRelationshipEndpointDrag(handle, relationship, end, fixedPoint) {
+    attachDrag(handle, (_dx, _dy, event) => {
+      const pointer = pointerToCanvasPoint(event.clientX, event.clientY);
+      if (end === 'from') {
+        renderAnchorPreviewEdge(pointer, fixedPoint);
+      } else {
+        renderAnchorPreviewEdge(fixedPoint, pointer);
+      }
+    }, {
+      onStart: () => {
+        closeSidebarForCanvasWork();
+        dom.canvas.classList.add('relationship-routing');
+      },
+      onEnd: (event, moved) => {
+        dom.canvas.classList.remove('relationship-routing');
+        clearAnchorPreviewEdge();
+        if (!moved) return;
+        const target = nearestRelationshipEndpointTarget(
+          pointerToCanvasPoint(event.clientX, event.clientY)
+        );
+        const changed = applyRelationshipEndpointTarget(relationship, end, target);
+        if (!changed) {
+          render();
+          return;
+        }
+        saveState();
+        render();
+      }
+    });
+  }
+
   function stopAnchorDrag() {
     interaction.relationshipAnchorDragActive = false;
     interaction.relationshipAnchorFromEntityId = null;
     interaction.relationshipAnchorFromSide = null;
     interaction.relationshipAnchorFromField = null;
+    dom.canvas.classList.remove('relationship-dragging');
     clearAnchorPreviewEdge();
   }
 
@@ -1128,6 +1800,7 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
     interaction.relationshipAnchorFromEntityId = entityId;
     interaction.relationshipAnchorFromSide = side;
     interaction.relationshipAnchorFromField = fieldName || null;
+    dom.canvas.classList.add('relationship-dragging');
     const pointer = pointerToCanvasPoint(event.clientX, event.clientY);
     renderAnchorPreviewEdge(fromPoint, pointer);
   }
@@ -1136,27 +1809,42 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
     dom.edges.innerHTML = '';
     state.relationships.forEach((relationship) => {
       const useCenter = relationship.anchorBehavior === 'center';
-      const from = useCenter
-        ? entityCenterOnCanvas(relationship.fromEntityId)
-        : edgeEndpoint(
-          relationship.fromEntityId, relationship.fromAnchorSide, relationship.fromField
-        );
-      const to = useCenter
-        ? entityCenterOnCanvas(relationship.toEntityId)
-        : edgeEndpoint(relationship.toEntityId, relationship.toAnchorSide, relationship.toField);
+      const fromEndpoint = relationshipEndpoint(relationship, 'from');
+      const toEndpoint = relationshipEndpoint(relationship, 'to');
+      const from = useCenter ? entityCenterOnCanvas(relationship.fromEntityId) : fromEndpoint.point;
+      const to = useCenter ? entityCenterOnCanvas(relationship.toEntityId) : toEndpoint.point;
       if (!from || !to) return;
 
       const control = relationshipControlPoint(relationship, from, to);
       const controlX = control.x;
       const controlY = control.y;
       const isOrthogonal = state.view.edgeStyle === 'orthogonal';
-      const edgePathD = buildEdgePathD(from, to, controlX, controlY, isOrthogonal);
-      const labelX = isOrthogonal ? controlX : controlX;
-      const labelY = isOrthogonal ? controlY : ((from.y + to.y) / 2);
+      const routedRelationship = useCenter
+        ? relationship
+        : {
+          ...relationship,
+          fromAnchorSide: fromEndpoint.side,
+          toAnchorSide: toEndpoint.side,
+          fromField: fromEndpoint.fieldName,
+          toField: toEndpoint.fieldName
+        };
+      const edgePathD = buildRoutedEdgePathD(
+        routedRelationship,
+        from,
+        to,
+        controlX,
+        controlY,
+        isOrthogonal,
+        control.explicit
+      );
+      const routePoints = edgeRoutePoints(routedRelationship, from, to, controlX, controlY, control.explicit);
+      const routeLabel = routeLabelPoint(routePoints);
+      const labelX = routeLabel.x;
+      const labelY = routeLabel.y;
       const labelOffsetX = Number.isFinite(relationship.labelOffsetX) ? relationship.labelOffsetX : 0;
       const labelOffsetY = Number.isFinite(relationship.labelOffsetY) ? relationship.labelOffsetY : 0;
-      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       const activeClass = state.selectedRelationshipId === relationship.id ? ' active' : '';
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       path.setAttribute('class', `edge-line${activeClass}`);
       path.setAttribute('d', edgePathD);
       dom.edges.appendChild(path);
@@ -1180,34 +1868,39 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
       dom.edges.appendChild(hit);
 
       if (!state.view.largeCanvasMode) {
+        const sourceCardinality = cardinalityLabelPoint(from, to);
+        const targetCardinality = cardinalityLabelPoint(to, from);
         const fromLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         fromLabel.setAttribute('class', 'edge-label');
-        fromLabel.setAttribute('x', String(from.x + 6));
-        fromLabel.setAttribute('y', String(from.y - 6));
+        fromLabel.setAttribute('x', String(sourceCardinality.x));
+        fromLabel.setAttribute('y', String(sourceCardinality.y));
         fromLabel.textContent = relationship.fromCardinality;
         dom.edges.appendChild(fromLabel);
 
         const toLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         toLabel.setAttribute('class', 'edge-label');
-        toLabel.setAttribute('x', String(to.x + 6));
-        toLabel.setAttribute('y', String(to.y - 6));
+        toLabel.setAttribute('x', String(targetCardinality.x));
+        toLabel.setAttribute('y', String(targetCardinality.y));
         toLabel.textContent = relationship.toCardinality;
         dom.edges.appendChild(toLabel);
 
+        const autoLabelOffset = routeLabelOffset(routedRelationship, routePoints);
         const nameLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         nameLabel.setAttribute('class', 'edge-label edge-name-label');
-        nameLabel.setAttribute('x', String(labelX + 6 + labelOffsetX));
-        nameLabel.setAttribute('y', String(labelY - 6 + labelOffsetY));
-        nameLabel.textContent = relationship.name || '';
+        nameLabel.setAttribute('x', String(labelX + autoLabelOffset.x + labelOffsetX));
+        nameLabel.setAttribute('y', String(labelY + autoLabelOffset.y + labelOffsetY));
+        const fullLabel = relationshipFieldLabel(relationship, fromEndpoint, toEndpoint);
+        nameLabel.textContent = compactRelationshipFieldLabel(relationship, fromEndpoint, toEndpoint);
+        nameLabel.dataset.fullLabel = fullLabel;
         nameLabel.setAttribute('tabindex', '0');
         nameLabel.setAttribute('role', 'button');
-        nameLabel.setAttribute('aria-label', `Move label for ${relationship.name || 'relationship'}`);
+        nameLabel.setAttribute('aria-label', `Move label for ${fullLabel || relationship.name || 'relationship'}`);
         attachDrag(nameLabel, (dx, dy) => {
           relationship.labelOffsetX = (Number.isFinite(relationship.labelOffsetX) ? relationship.labelOffsetX : 0) + dx;
           relationship.labelOffsetY = (Number.isFinite(relationship.labelOffsetY) ? relationship.labelOffsetY : 0) + dy;
           renderEdges();
         }, {
-          onStart: () => withPersist(() => {}),
+          onStart: () => closeSidebarForCanvasWork(),
           onEnd: (_event, moved) => {
             if (!moved) return;
             saveState();
@@ -1218,14 +1911,41 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
       }
 
       if (state.selectedRelationshipId === relationship.id) {
+        [
+          { end: 'from', point: from, fixedPoint: to, label: 'source' },
+          { end: 'to', point: to, fixedPoint: from, label: 'target' }
+        ].forEach((endpoint) => {
+          const endHandle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          endHandle.setAttribute('class', `edge-end-handle edge-end-handle-${endpoint.end}`);
+          endHandle.setAttribute('cx', String(endpoint.point.x));
+          endHandle.setAttribute('cy', String(endpoint.point.y));
+          endHandle.setAttribute('r', '5');
+          endHandle.setAttribute('tabindex', '0');
+          endHandle.setAttribute('role', 'button');
+          endHandle.setAttribute(
+            'aria-label',
+            `Drag ${endpoint.label} endpoint for ${relationship.name || 'relationship'}`
+          );
+          attachRelationshipEndpointDrag(endHandle, relationship, endpoint.end, endpoint.fixedPoint);
+          dom.edges.appendChild(endHandle);
+        });
+
         const bendHandle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
         bendHandle.setAttribute('class', `edge-bend-handle${control.explicit ? ' explicit' : ''}`);
         bendHandle.setAttribute('cx', String(controlX));
         bendHandle.setAttribute('cy', String(controlY));
-        bendHandle.setAttribute('r', '7');
+        bendHandle.setAttribute('r', '5.5');
         bendHandle.setAttribute('tabindex', '0');
         bendHandle.setAttribute('role', 'slider');
         bendHandle.setAttribute('aria-label', `Move route handle for ${relationship.name || 'relationship'}`);
+        bendHandle.addEventListener('dblclick', (event) => {
+          event.stopPropagation();
+          withPersist(() => {
+            delete relationship.bendX;
+            delete relationship.bendY;
+            render();
+          });
+        });
         attachDrag(bendHandle, (dx, dy) => {
           relationship.bendX = snapCoordinate(
             state.view.snapToGrid,
@@ -1237,7 +1957,7 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
           );
           renderEdges();
         }, {
-          onStart: () => withPersist(() => {}),
+          onStart: () => closeSidebarForCanvasWork(),
           onEnd: (_event, moved) => {
             if (!moved) return;
             saveState();
@@ -1252,7 +1972,11 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
   function renderMiniMap() {
     if (!dom.miniMap) return;
     dom.miniMap.innerHTML = '';
-    const scale = 0.055;
+    const canvasWidth = dom.canvasInner.offsetWidth || 3200;
+    const canvasHeight = dom.canvasInner.offsetHeight || 2200;
+    const mapWidth = dom.miniMap.clientWidth || 180;
+    const mapHeight = dom.miniMap.clientHeight || 130;
+    const scale = Math.min(mapWidth / canvasWidth, mapHeight / canvasHeight);
     state.domains.forEach((domain) => {
       const box = document.createElement('div');
       box.className = 'mini-map-domain';
@@ -1264,8 +1988,70 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
       box.style.borderColor = domain.color || '#64748b';
       if (state.selectedDomainId === domain.id) box.classList.add('active');
       box.title = domain.name;
-      box.onclick = () => setSelectedDomain(domain.id);
       dom.miniMap.appendChild(box);
+    });
+    const zoom = clampZoom(state.view.zoom || 1);
+    const viewport = document.createElement('div');
+    viewport.className = 'mini-map-viewport';
+    viewport.style.left = `${(dom.canvas.scrollLeft / zoom) * scale}px`;
+    viewport.style.top = `${(dom.canvas.scrollTop / zoom) * scale}px`;
+    viewport.style.width = `${(dom.canvas.clientWidth / zoom) * scale}px`;
+    viewport.style.height = `${(dom.canvas.clientHeight / zoom) * scale}px`;
+    dom.miniMap.appendChild(viewport);
+  }
+
+  function centerCanvasFromMiniMapPointer(event) {
+    if (!dom.miniMap) return;
+    const rect = dom.miniMap.getBoundingClientRect();
+    const canvasWidth = dom.canvasInner.offsetWidth || 3200;
+    const canvasHeight = dom.canvasInner.offsetHeight || 2200;
+    const mapWidth = dom.miniMap.clientWidth || rect.width || 180;
+    const mapHeight = dom.miniMap.clientHeight || rect.height || 130;
+    const scale = Math.min(mapWidth / canvasWidth, mapHeight / canvasHeight);
+    const zoom = clampZoom(state.view.zoom || 1);
+    const canvasX = Math.max(0, Math.min(canvasWidth, (event.clientX - rect.left) / scale));
+    const canvasY = Math.max(0, Math.min(canvasHeight, (event.clientY - rect.top) / scale));
+    dom.canvas.scrollTo({
+      left: Math.max(0, canvasX * zoom - dom.canvas.clientWidth / 2),
+      top: Math.max(0, canvasY * zoom - dom.canvas.clientHeight / 2),
+      behavior: 'auto'
+    });
+    scheduleMiniMapRender();
+  }
+
+  function wireMiniMapEvents() {
+    if (!dom.miniMap) return;
+    dom.miniMap.addEventListener('pointerdown', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      closeSidebarForCanvasWork();
+      centerCanvasFromMiniMapPointer(event);
+      dom.miniMap.classList.add('mini-map-dragging');
+      const pointerId = event.pointerId;
+      if (typeof dom.miniMap.setPointerCapture === 'function') {
+        dom.miniMap.setPointerCapture(pointerId);
+      }
+      const move = (moveEvent) => {
+        if (moveEvent.pointerId !== pointerId) return;
+        centerCanvasFromMiniMapPointer(moveEvent);
+      };
+      const end = (endEvent) => {
+        if (endEvent.pointerId !== pointerId) return;
+        dom.miniMap.classList.remove('mini-map-dragging');
+        if (typeof dom.miniMap.releasePointerCapture === 'function') {
+          try {
+            dom.miniMap.releasePointerCapture(pointerId);
+          } catch (_error) {
+            // The pointer may already have been released by the browser.
+          }
+        }
+        window.removeEventListener('pointermove', move);
+        window.removeEventListener('pointerup', end);
+        window.removeEventListener('pointercancel', end);
+      };
+      window.addEventListener('pointermove', move);
+      window.addEventListener('pointerup', end);
+      window.addEventListener('pointercancel', end);
     });
   }
 
@@ -1282,6 +2068,14 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
       render();
     });
 
+    dom.canvas.addEventListener('contextmenu', (event) => {
+      const onBackground = event.target === dom.canvas
+        || event.target === dom.canvasInner
+        || event.target === dom.edges;
+      if (!onBackground) return;
+      openElementMenu(event, 'Canvas', canvasMenuItems(event));
+    });
+
     dom.canvas.addEventListener('wheel', (event) => {
       // JUM-729 follow-up: the wheel zooms on its own. It used to demand ctrl/cmd, which
       // is the browser's page-zoom gesture, not a canvas one — the plain wheel
@@ -1292,6 +2086,10 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
       const direction = event.deltaY > 0 ? -0.1 : 0.1;
       zoomBy(direction);
     }, { passive: false });
+
+    dom.canvas.addEventListener('scroll', () => {
+      scheduleMiniMapRender();
+    }, { passive: true });
 
     dom.canvas.addEventListener('pointerdown', (event) => {
       // JUM-729 follow-up: dragging the empty canvas moves the whole document, the way
@@ -1308,11 +2106,13 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
         || event.target === dom.edges;
       const primaryDragOnBackground = event.button === 0 && onBackground;
       if (primaryDragOnBackground && event.shiftKey) {
+        closeSidebarForCanvasWork();
         event.preventDefault();
         beginMarquee(event);
         return;
       }
       if (event.button !== 1 && !interaction.spacePressed && !primaryDragOnBackground) return;
+      closeSidebarForCanvasWork();
       interaction.panning = true;
       interaction.panStartX = event.clientX;
       interaction.panStartY = event.clientY;
@@ -1340,9 +2140,10 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
 
     window.addEventListener('pointermove', (event) => {
       if (!interaction.relationshipAnchorDragActive) return;
-      const fromPoint = entityAnchorOnCanvas(
+      const fromPoint = edgeEndpoint(
         interaction.relationshipAnchorFromEntityId,
-        interaction.relationshipAnchorFromSide
+        interaction.relationshipAnchorFromSide,
+        interaction.relationshipAnchorFromField
       );
       if (!fromPoint) {
         stopAnchorDrag();
@@ -1356,6 +2157,8 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu }) 
       if (!interaction.relationshipAnchorDragActive) return;
       stopAnchorDrag();
     });
+
+    wireMiniMapEvents();
   }
 
   return {

@@ -323,6 +323,7 @@ export function fieldLabel(field) {
   if (field.pk) flags.push('PK');
   if (field.fk) flags.push('FK');
   if (field.unique) flags.push('UQ');
+  if (field.indexed) flags.push('IDX');
   if (field.required) flags.push('REQ');
   if (field.nullable) flags.push('NULL');
   return `${field.name}: ${field.type}${field.format ? `(${field.format})` : ''}${flags.length ? ` [${flags.join(', ')}]` : ''}`;
@@ -607,7 +608,7 @@ export function computeFitView(domains, viewportWidth, viewportHeight) {
     bounds.maxY = Math.max(bounds.maxY, domain.y + box.height);
   });
 
-  const padding = 80;
+  const padding = domains.length >= 10 ? 32 : 80;
   const contentWidth = Math.max(300, bounds.maxX - bounds.minX + padding * 2);
   const contentHeight = Math.max(220, bounds.maxY - bounds.minY + padding * 2);
   const zoomX = viewportWidth / contentWidth;
@@ -625,26 +626,32 @@ export function computeFitView(domains, viewportWidth, viewportHeight) {
  * and re-renders, as before.
  */
 export function applyAutoLayout(domains) {
-  // JUM-729 follow-up widened the entity for its editable field rows, so the steps are
-  // derived from the entity box rather than from the numbers that happened to
-  // suit a 190px card. Two columns of entities, and a domain wide enough to
-  // hold them plus its padding — the previous fixed 520 left the second column
-  // hanging over the domain's right edge.
-  const entityColumns = 2;
-  const entityStepX = ENTITY_WIDTH + 16;
-  const padding = 14;
-  const gapX = 70;
-  const gapY = 70;
-  const domainWidth = padding * 2 + entityStepX * entityColumns;
-  const columns = Math.max(1, Math.floor((3200 - 120) / (domainWidth + gapX)));
+  const denseOverview = domains.length >= 10;
+  const padding = denseOverview ? 18 : 24;
+  const entityGapX = denseOverview ? 18 : 28;
+  const entityGapY = denseOverview ? 18 : 26;
+  const domainGapX = denseOverview ? 26 : 72;
+  const domainGapY = denseOverview ? 26 : 72;
+  const origin = denseOverview ? 24 : 40;
+  const maxCanvasWidth = 3200 - (denseOverview ? 80 : 120);
+  const plannedDomainWidths = domains.map((domain) => {
+    const entityCount = Math.max(1, domain.entities.length);
+    const entityColumns = Math.max(1, Math.min(entityCount, Math.ceil(Math.sqrt(entityCount))));
+    return padding * 2 + entityColumns * ENTITY_WIDTH + (entityColumns - 1) * entityGapX;
+  });
+  const widestDomain = Math.max(DOMAIN_MIN_WIDTH, ...plannedDomainWidths);
+  const columns = Math.max(1, Math.floor(maxCanvasWidth / (widestDomain + domainGapX)));
+  const rowHeights = [];
 
   domains.forEach((domain, index) => {
     const column = index % columns;
     const row = Math.floor(index / columns);
-    // Each row is as tall as its tallest entity: a fixed step overlapped the
-    // row below as soon as one entity had more fields than the step allowed.
+    const entityCount = domain.entities.length;
+    const entityColumns = entityCount > 0
+      ? Math.max(1, Math.min(entityCount, Math.ceil(Math.sqrt(entityCount))))
+      : 1;
     const rowTops = [];
-    let nextTop = padding;
+    let nextTop = DOMAIN_HEADER_HEIGHT + padding;
     domain.entities.forEach((entity, entityIndex) => {
       const entityRow = Math.floor(entityIndex / entityColumns);
       if (rowTops[entityRow] === undefined) {
@@ -657,15 +664,18 @@ export function applyAutoLayout(domains) {
           (tallest, member) => Math.max(tallest, entityHeight(member, false, false)),
           0
         );
-        nextTop += rowHeight + 20;
+        nextTop += rowHeight + entityGapY;
       }
-      entity.x = padding + (entityIndex % entityColumns) * entityStepX;
+      entity.x = padding + (entityIndex % entityColumns) * (ENTITY_WIDTH + entityGapX);
       entity.y = rowTops[entityRow];
     });
 
-    const domainHeight = Math.max(DOMAIN_MIN_HEIGHT, DOMAIN_HEADER_HEIGHT + nextTop);
-    domain.x = 40 + column * (domainWidth + gapX);
-    domain.y = 40 + row * (domainHeight + gapY);
+    if (domain.entities.length > 0) nextTop -= entityGapY;
+    const domainWidth = Math.max(DOMAIN_MIN_WIDTH, plannedDomainWidths[index]);
+    const domainHeight = Math.max(DOMAIN_MIN_HEIGHT, nextTop + padding);
+    rowHeights[row] = Math.max(rowHeights[row] || 0, domainHeight);
+    domain.x = origin + column * (widestDomain + domainGapX);
+    domain.y = origin + rowHeights.slice(0, row).reduce((top, height) => top + height + domainGapY, 0);
     domain.width = domainWidth;
     domain.height = domainHeight;
   });
