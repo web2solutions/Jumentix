@@ -229,6 +229,22 @@ provável de ser desfeita por um atalho futuro — é **de onde ela lê**:
   nunca no payload persistido `service-management.v1` (Requisito 126,
   Contrato 2) — um retrato derivado do servidor não é estado de design.
 
+## O dashboard de monitoramento PM2 (JUM-736) — pelo PM2, não pelo ecosystem
+
+A aba **Monitoramento** é telemetria runtime, não outra prévia estática. Seu
+endpoint, `GET /api/runtime/pm2-metrics` (Requisito 126, Contrato 1c), conecta
+ao PM2 pela API Node do PM2 e lê `pm2.list`. O dashboard relata status de
+processo, CPU, memória, restarts, uptime, namespace, modo watch e métricas
+customizadas do PM2. Ele também compara esses nomes live com o arquivo
+`pm2/ecosystem.*.cjs` selecionado, de modo que um app esperado que não está
+rodando fique visível na UI sem exigir inspeção do terminal.
+
+O retrato de Monitoramento é intencionalmente transitório: é atualizado
+manualmente ou a cada cinco segundos enquanto a aba está ativa, e nunca é
+gravado em `service-management.v1` nem exportado no JSON da suíte. Se o PM2 não
+puder ser carregado, conectado ou listado, o endpoint falha com o envelope
+explícito de métricas PM2 em vez de cair para dados somente do ecosystem.
+
 **Comprovado por:**
 [`pm2Ecosystem.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/pm2Ecosystem.integration.test.ts)
 (leituras do ecossistema real, edição refletida sem reinício, estado explícito

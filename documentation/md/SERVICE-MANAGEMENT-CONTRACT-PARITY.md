@@ -163,9 +163,9 @@ behind fixed expected outputs.
 ### Symmetric crossings (lossless, deep-equal asserted)
 
 - **JSON** (`buildJsonExportDocument` → `buildStateFromSuiteExport` over
-  `normalizeStatePayload`): the versioned full-suite document (JUM-547) —
-  `domains`, `relationships`, `view`, `interfaces`, `serviceConfiguration`
-  and `deployments` round-trip deep-equal, and the export is idempotent. The
+  `normalizeStatePayload`): the versioned full-suite document (JUM-547/JUM-736) —
+  `domains`, `relationships`, `view`, `interfaces`, `serviceConfiguration`,
+  `codeWorkspace` and `deployments` round-trip deep-equal, and the export is idempotent. The
   boundary is documented and asserted: selections and `idCounter` are not
   part of the document and are recomputed on import, and `runtimeEnvironment`
   crosses as the environment *selection* only (see the JUM-547 section
@@ -326,13 +326,13 @@ the importer rebuilds it against the same contract.
 
 ## Full-suite export and the `runtimeEnvironment` decision (JUM-547, landed)
 
-Export and import now carry **all four tabs**, not just the domain model. The
+Export and import now carry **all five tabs**, not just the domain model. The
 JSON export (`domain-designer.json`) is the versioned full-suite document:
 `{ kind: "service-management-suite", version: "2.0.0", domains, relationships,
-interfaces, serviceConfiguration, runtimeEnvironment, deployments, view }` —
+interfaces, serviceConfiguration, runtimeEnvironment, codeWorkspace, deployments, view }` —
 the same sections the pinned `service-management.v1` document persists in
 Cana (Requirement 126, Contract 2), minus the session selections and
-`idCounter`. A model designed across all four tabs exports and re-imports
+`idCounter`. A model designed across all five tabs exports and re-imports
 with every tab intact; a bundle exported before this change (the domain-only
 shape, no `kind`/`version`) imports cleanly with the missing sections
 defaulted, and a bundle with an unknown section or a newer major version

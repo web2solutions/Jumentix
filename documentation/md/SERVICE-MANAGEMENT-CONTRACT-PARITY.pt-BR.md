@@ -173,8 +173,8 @@ esperadas.
 
 - **JSON** (`buildJsonExportDocument` → `buildStateFromSuiteExport` sobre
   `normalizeStatePayload`): o documento versionado de suíte completa
-  (JUM-547) — `domains`, `relationships`, `view`, `interfaces`,
-  `serviceConfiguration` e `deployments` fazem ida e volta com deep-equal, e
+  (JUM-547/JUM-736) — `domains`, `relationships`, `view`, `interfaces`,
+  `serviceConfiguration`, `codeWorkspace` e `deployments` fazem ida e volta com deep-equal, e
   a exportação é idempotente. A fronteira é documentada e assertada: seleções
   e `idCounter` não fazem parte do documento e são recomputados na
   importação, e `runtimeEnvironment` atravessa apenas como a *seleção* de
@@ -345,13 +345,13 @@ o importador a reconstrói contra o mesmo contrato.
 
 ## Exportação de suíte completa e a decisão sobre `runtimeEnvironment` (JUM-547, entregue)
 
-Exportação e importação agora carregam **as quatro abas**, não apenas o
+Exportação e importação agora carregam **as cinco abas**, não apenas o
 modelo de domínio. A exportação JSON (`domain-designer.json`) é o documento
 versionado de suíte completa: `{ kind: "service-management-suite",
 version: "2.0.0", domains, relationships, interfaces, serviceConfiguration,
-runtimeEnvironment, deployments, view }` — as mesmas seções que o documento
+runtimeEnvironment, codeWorkspace, deployments, view }` — as mesmas seções que o documento
 fixado `service-management.v1` persiste no Cana (Requisito 126, Contrato 2),
-menos as seleções de sessão e o `idCounter`. Um modelo desenhado nas quatro
+menos as seleções de sessão e o `idCounter`. Um modelo desenhado nas cinco
 abas exporta e reimporta com todas as abas intactas; um bundle exportado
 antes desta mudança (o formato só de domínio, sem `kind`/`version`) importa
 normalmente com as seções ausentes preenchidas com padrões, e um bundle com

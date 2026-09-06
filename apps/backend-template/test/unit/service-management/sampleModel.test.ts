@@ -7,9 +7,9 @@
  * The sample is the designer's first impression, so the properties pinned
  * here are the ones a broken sample would silently lose:
  *
- * - It normalizes into the intended model: one `Users` domain with the five
- *   identity entities and three relationships, every artifact carrying the
- *   `sample-` id marker that distinguishes it from user work.
+ * - It normalizes into the intended model: `Users` plus `Tasks`, with
+ *   identity/task entities and field-to-field relationships, every artifact
+ *   carrying the `sample-` id marker that distinguishes it from user work.
  * - It is deterministic: two builds are deep-equal, so the sample can serve
  *   as a fixture (JUM-471's round-trip reference) without id drift.
  * - It passes the export quality gate: `collectModelIssues` reports NOTHING
@@ -61,19 +61,39 @@ describe('first-run sample model (JUM-548)', () => {
     it('normalizes into the intended identity model', () => {
       expect.hasAssertions();
       const state = loadSample();
-      expect(state.domains).toHaveLength(1);
-      const [users] = state.domains;
+      expect(state.domains).toHaveLength(2);
+      const [users, tasks] = state.domains;
       expect(users.name).toBe('Users');
+      expect(tasks.name).toBe('Tasks');
       expect(users.entities.map((entity: { name: string }) => entity.name))
         .toStrictEqual(['User', 'Organization', 'Email', 'Phone', 'ContactPoint']);
+      expect(tasks.entities.map((entity: { name: string }) => entity.name))
+        .toStrictEqual(['Project', 'Task', 'Comment']);
       expect(state.relationships.map((relationship: { name: string }) => relationship.name))
-        .toStrictEqual(['User belongs to Organization', 'Email belongs to User', 'Phone belongs to User']);
+        .toStrictEqual([
+          'User belongs to Organization',
+          'Email belongs to User',
+          'Phone belongs to User',
+          'Project belongs to Organization',
+          'Task belongs to Project',
+          'Task assigned to User',
+          'Comment belongs to Task',
+          'Comment authored by User'
+        ]);
       // Relationships resolve to real sample entities with valid cardinalities.
       state.relationships.forEach((relationship: { fromEntityId: string; toEntityId: string }) => {
-        const ids = new Set(users.entities.map((entity: { id: string }) => entity.id));
+        const ids = new Set(state.domains.flatMap((domain: { entities: Array<{ id: string }> }) => (
+          domain.entities.map((entity) => entity.id)
+        )));
         expect(ids.has(relationship.fromEntityId)).toBe(true);
         expect(ids.has(relationship.toEntityId)).toBe(true);
       });
+      expect(state.relationships).toContainEqual(expect.objectContaining({
+        fromEntityId: 'sample-entity-task',
+        fromField: 'assigneeId',
+        toEntityId: 'sample-entity-user',
+        toField: 'id'
+      }));
       expect(state.selectedDomainId).toBe(users.id);
     });
 
@@ -83,10 +103,15 @@ describe('first-run sample model (JUM-548)', () => {
       const [users] = state.domains;
       expect(users.id.startsWith(SAMPLE_ID_PREFIX)).toBe(true);
       expect(isSampleDomain(users)).toBe(true);
-      users.entities.forEach((entity: { id: string }) => {
-        expect(entity.id.startsWith(SAMPLE_ID_PREFIX)).toBe(true);
-        expect(isSampleEntity(entity)).toBe(true);
+      state.domains.forEach((domain: { id: string; entities: Array<{ id: string }> }) => {
+        expect(domain.id.startsWith(SAMPLE_ID_PREFIX)).toBe(true);
+        expect(isSampleDomain(domain)).toBe(true);
       });
+      state.domains.flatMap((domain: { entities: Array<{ id: string }> }) => domain.entities)
+        .forEach((entity: { id: string }) => {
+          expect(entity.id.startsWith(SAMPLE_ID_PREFIX)).toBe(true);
+          expect(isSampleEntity(entity)).toBe(true);
+        });
       state.relationships.forEach((relationship: { id: string }) => {
         expect(relationship.id.startsWith(SAMPLE_ID_PREFIX)).toBe(true);
         expect(isSampleRelationship(relationship)).toBe(true);
@@ -186,11 +211,14 @@ describe('first-run sample model (JUM-548)', () => {
       const state = loadSample();
       const first = buildOasDocument(state);
       // The exercised surfaces cross as agreed extensions (JUM-478).
-      expect(first['x-relations']).toHaveLength(3);
+      expect(first['x-relations']).toHaveLength(8);
       const firstImport = buildDomainsFromOas(JSON.parse(JSON.stringify(first)));
       expect(firstImport.ok).toBe(true);
-      expect(firstImport.domains[0].entities).toHaveLength(5);
-      expect(firstImport.relationships).toHaveLength(3);
+      expect(firstImport.domains).toHaveLength(2);
+      expect(firstImport.domains.flatMap(
+        (domain: { entities: Array<unknown> }) => domain.entities
+      )).toHaveLength(8);
+      expect(firstImport.relationships).toHaveLength(8);
       const second = buildOasDocument({
         domains: firstImport.domains,
         relationships: firstImport.relationships

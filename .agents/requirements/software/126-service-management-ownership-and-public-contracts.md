@@ -228,19 +228,45 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
        empty preview. An unreadable or broken ecosystem file is the 500 class
        `{ "error": "PM2 ecosystem file operation failed.", "code", "path",
        "details" }`, parallel to the env-file filesystem class.
+   - **Contract 1c — `GET /api/runtime/pm2-metrics` (amended by `JUM-736`).**
+     Read-only; the single source of the Monitoring tab's PM2 runtime dashboard.
+     - **Metrics source.** The endpoint MUST collect live process data through
+       the PM2 Node API (`pm2.connect`, `pm2.list`, `pm2.disconnect`). It MUST NOT
+       infer process health from the ecosystem file, shell output or command
+       strings. `JUMENTIX_SERVICE_MANAGEMENT_PM2_MODULE` may replace the module
+       path only for tests.
+     - **Environment comparison.** Accepted `environment` values and ecosystem
+       file resolution match Contract 1b. The response compares the selected
+       ecosystem's expected app names with PM2's live process list so missing
+       expected processes are visible without reading a terminal.
+     - **Response shape.** Success is `{ source: "pm2", collectedAt,
+       environment, ecosystem, summary, processes }`. `ecosystem` carries
+       `{ fileName, path, exists, expectedProcessCount, missingExpected }`;
+       `summary` carries process counts, online/stopped/errored counts, total CPU,
+       total memory and status counts; each process carries `{ name, pmId,
+       namespace, status, cpuPercent, memoryBytes, restartCount,
+       unstableRestarts, uptimeMs, startedAt, script, interpreter, watching,
+       customMetrics }`.
+     - **Honest failure state.** Unsupported environments reuse Contract 1's
+       `400` invalid-environment envelope. PM2 connection/list/module failures
+       are `500` with `{ "error": "PM2 metrics collection failed.", "code",
+       "details" }`.
 
 4. **Contract 2 — `service-management.v1` storage schema (historically the
    localStorage storage schema).**
-   - The entire suite state (all four tabs) persists as ONE JSON payload under the
+   - The entire suite state (all persisted authoring tabs) persists as ONE JSON payload under the
      single pinned key `service-management.v1` — historically a localStorage key;
      since `JUM-484`'s landed one-way migration, a key in Cana's
      `designerDocuments` IndexedDB object store. The migration copied the exact
-     documents across without changing the wire format — with exactly these top-level
-     sections: `domains`, `relationships`, `selectedDomainId`, `selectedEntityId`,
-     `selectedRelationshipId`, `idCounter`, `activeTab`, `interfaces`,
-     `serviceConfiguration`, `runtimeEnvironment`, `deployments`, `view`.
+     documents across without changing the persisted domain/interface/deploy wire
+     format. `JUM-736` adds the generated-code workspace as another additive
+     section. The current document has exactly these top-level
+   sections: `domains`, `relationships`, `selectedDomainId`, `selectedEntityId`,
+   `selectedRelationshipId`, `idCounter`, `activeTab`, `interfaces`,
+   `serviceConfiguration`, `runtimeEnvironment`, `codeWorkspace`, `deployments`,
+   `view`.
    - `activeTab` ∈ { `domain-designer`, `interface-designer`, `service-config`,
-     `deploy-management` } — one per tab.
+     `deploy-management`, `monitoring`, `code-workspace` } — one per visible tab.
    - `serviceConfiguration`: `{ serviceKind, runMode, cloudProvider,
      staticAssetsPath, ports: { rest, websocket, grpc } }` with
      `serviceKind` ∈ { `rest-api`, `websocket-rest-api`, `grpc-rest-api` },
@@ -250,6 +276,13 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
    - `runtimeEnvironment`: `{ environment, fileName, values }` mirroring Contract 1
      (environment enum and the visible runtime keys — the editable and read-only
      tiers; never-exposed keys never enter this state).
+   - `codeWorkspace`: `{ activePath, files }`, where `files` is keyed by generated
+     path and each value is `{ path, state, baseContent, generatedContent, content,
+     updatedAt }`. `state` ∈ { `generated`, `edited`, `stale` }. Generated files
+     follow the current model automatically; user-edited files become `stale` when
+     the generator output changes underneath them until the user explicitly keeps
+     their edit or takes the regenerated version. This is a backward-compatible
+     additive section; older payloads normalize to `{ files: {}, activePath: "" }`.
    - `deployments`: array of deploy targets aligned to the Requirement 059
      Service Management metadata contract (`JUM-481`), each
      `{ name, region, runtime, serviceType, deployTarget, runtimeProtocol,
@@ -299,10 +332,11 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
    - **JSON** (`domain-designer.json`): the full-suite document (shape landed
      by `JUM-547`): `{ kind: "service-management-suite", version: "2.0.0",
      domains, relationships, interfaces, serviceConfiguration,
-     runtimeEnvironment, deployments, view }` — all four tabs, re-importable
-     shape. `interfaces` entries are `{ type, framework, entrypoint,
-     controller }`; `serviceConfiguration` and `deployments` carry the
-     Contract 2 shapes. The pre-`JUM-547` shape was `{ domains, relationships,
+     runtimeEnvironment, codeWorkspace, deployments, view }` — all persisted
+     authoring sections, re-importable shape. `interfaces` entries are
+     `{ type, framework, entrypoint, controller }`; `serviceConfiguration` and
+     `deployments` carry the Contract 2 shapes. The pre-`JUM-547` shape was
+     `{ domains, relationships,
      view }` with no `kind`/`version`; import MUST keep accepting it,
      defaulting the missing sections (backward compatibility). Import MUST
      refuse a document whose `version` major is newer than the importer's, a
@@ -530,14 +564,28 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
   (designer-side no-hardcoded-command rule).
 - Contract 3 amended by `JUM-547` (branch
   `kimi/feature/JUM-547-full-suite-export-import`): the JSON export became the
-  versioned full-suite document carrying all four tabs, and the
+  versioned full-suite document carrying all persisted authoring sections, and the
   `runtimeEnvironment` decision (selection crosses, values never leave the
   machine) is recorded above, in the JSON export bullet. Pinned by
   `apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts`
   (full-suite deep-equal, backward/forward compatibility) and
   `apps/backend-template/test/unit/service-management/designerExporters.test.ts`
-  (document shape). The Contract 2 storage schema is unchanged — no versioned
-  key bump.
+  (document shape).
+- Contract 2 and 3 amended by `JUM-736`: the Code Workspace tab persists
+  generated-file overlays in `codeWorkspace`, suite JSON export/import carries that
+  section, and boilerplate bundle export applies edited/stale file content. Pinned
+  by `apps/backend-template/test/unit/service-management/designerState.test.ts`,
+  `apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts`
+  and `apps/backend-template/test/unit/service-management/designerExporters.test.ts`.
+  This is additive and normalizes old payloads to an empty workspace, so there is
+  no versioned key bump.
+- Contract 1c amended by `JUM-736`: the Monitoring tab now reads PM2 runtime
+  metrics from the PM2 Node API through `GET /api/runtime/pm2-metrics`, compares
+  live processes with the selected ecosystem file and reports CPU, memory,
+  restarts, uptime, watch state and custom PM2 metrics without shell scraping.
+  Pinned by
+  `apps/backend-template/test/integration/ServiceManagement/pm2Ecosystem.integration.test.ts`
+  and `apps/backend-template/test/unit/service-management/pm2EcosystemUi.contract.test.ts`.
 - Contract 3 amended by `JUM-492` (branch
   `kimi/feature/JUM-492-domain-package-versioning`): the domain package became
   a versioned document (`package` block with name/version/dependencies), with

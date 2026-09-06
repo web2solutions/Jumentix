@@ -469,6 +469,11 @@ export function createInspectors({ dom, state, interaction, actions }) {
       uniqueCheck.checked = field.unique;
       uniqueCheck.title = 'unique';
       uniqueCheck.setAttribute('aria-label', `Unique — ${fieldLabel}`);
+      const indexedCheck = document.createElement('input');
+      indexedCheck.type = 'checkbox';
+      indexedCheck.checked = Boolean(field.indexed);
+      indexedCheck.title = 'indexed';
+      indexedCheck.setAttribute('aria-label', `Indexed — ${fieldLabel}`);
       const nullableCheck = document.createElement('input');
       nullableCheck.type = 'checkbox';
       nullableCheck.checked = field.nullable;
@@ -490,6 +495,7 @@ export function createInspectors({ dom, state, interaction, actions }) {
         pk: pkCheck.checked,
         fk: fkCheck.checked,
         unique: uniqueCheck.checked,
+        indexed: indexedCheck.checked,
         nullable: nullableCheck.checked
       });
       const del = document.createElement('button');
@@ -503,6 +509,7 @@ export function createInspectors({ dom, state, interaction, actions }) {
       row.appendChild(pkCheck);
       row.appendChild(fkCheck);
       row.appendChild(uniqueCheck);
+      row.appendChild(indexedCheck);
       row.appendChild(nullableCheck);
       row.appendChild(meta);
       row.appendChild(save);

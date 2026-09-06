@@ -22,6 +22,8 @@ import {
   cleanupTempConfigDir,
   envFileContent,
   startServer,
+  clickInPanels,
+  openDesignerPanels,
   stopServer,
   waitForServer
 } from './serverHarness';
@@ -62,8 +64,9 @@ describe('serviceManagement status region reports outcomes (JUM-730)', () => {
   }
 
   const addDomain = async (page: import('playwright-webkit').Page, name: string): Promise<void> => {
+    await openDesignerPanels(page, '#domain-name-input');
     await page.fill('#domain-name-input', name);
-    await page.click('#add-domain-btn');
+    await clickInPanels(page, '#add-domain-btn');
     await page.waitForTimeout(150);
   };
 
@@ -96,8 +99,9 @@ describe('serviceManagement status region reports outcomes (JUM-730)', () => {
     await addDomain(page, 'Alpha');
     await expect(statusText(page)).resolves.toBe('Domain "Alpha" already exists.');
 
+    await openDesignerPanels(page, '#domain-name-input');
     await page.fill('#domain-name-input', '   ');
-    await page.click('#add-domain-btn');
+    await clickInPanels(page, '#add-domain-btn');
     await page.waitForTimeout(150);
 
     await expect(statusText(page)).resolves.toBe('Type a domain name before adding.');
@@ -112,20 +116,23 @@ describe('serviceManagement status region reports outcomes (JUM-730)', () => {
     await page.goto(baseUrl, { waitUntil: 'load' });
 
     await addDomain(page, 'Billing');
-    await page.click('#domain-list li');
+    await clickInPanels(page, '#domain-list li');
     await page.waitForTimeout(150);
 
+    await openDesignerPanels(page, '#entity-name-input');
     await page.fill('#entity-name-input', 'Invoice');
-    await page.click('#add-entity-btn');
+    await clickInPanels(page, '#add-entity-btn');
     await page.waitForTimeout(200);
     await expect(statusText(page)).resolves.toBe('Entity "Invoice" added to Billing.');
 
+    await openDesignerPanels(page, '#entity-search-input');
     await page.fill('#entity-search-input', 'Invoice');
-    await page.click('#entity-search-btn');
+    await clickInPanels(page, '#entity-search-btn');
     await page.waitForTimeout(200);
 
+    await openDesignerPanels(page, '#field-name-input');
     await page.fill('#field-name-input', 'total');
-    await page.click('#add-field-btn');
+    await clickInPanels(page, '#add-field-btn');
     await page.waitForTimeout(200);
     await expect(statusText(page)).resolves.toBe('Field "total" added to Invoice.');
 
@@ -142,10 +149,10 @@ describe('serviceManagement status region reports outcomes (JUM-730)', () => {
     await page.goto(baseUrl, { waitUntil: 'load' });
 
     await addDomain(page, 'Scratch');
-    await page.click('#domain-list li');
+    await clickInPanels(page, '#domain-list li');
     await page.waitForTimeout(150);
 
-    await page.click('#delete-domain-btn');
+    await clickInPanels(page, '#delete-domain-btn');
     await page.waitForTimeout(300);
 
     await expect(statusText(page)).resolves.toBe('Domain "Scratch" deleted.');

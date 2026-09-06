@@ -6,7 +6,7 @@
  * runs) against the REAL server. No DOM shims, no fakes (Requirement 115).
  *
  * Pins:
- *  - The SPA boots and each of the four tabs renders without console errors.
+ *  - The SPA boots and each of the six tabs renders without console errors.
  *  - The export quality gate (Requirement 126 §5): with
  *    `view.exportBlockCritical` true (the default), an export is refused while
  *    model validation reports any error-severity issue; lifting the gate on
@@ -15,11 +15,13 @@
  */
 import { webkit } from 'playwright-webkit';
 import type { Browser } from 'playwright-webkit';
+import fs from 'node:fs';
 import {
   createTempConfigDir,
   cleanupTempConfigDir,
   envFileContent,
   startServer,
+  clickInPanels,
   stopServer,
   waitForServer
 } from './serverHarness';
@@ -29,7 +31,9 @@ const TABS = [
   'domain-designer',
   'interface-designer',
   'service-config',
-  'deploy-management'
+  'deploy-management',
+  'monitoring',
+  'code-workspace'
 ];
 
 // Requirement 126 §4: the whole suite state lives under this single key.
@@ -88,7 +92,7 @@ describe('serviceManagement SPA boot and export gate (JUM-466)', () => {
     cleanupTempConfigDir(tempDir);
   });
 
-  it('boots the SPA and renders all four tabs without console errors', async () => {
+  it('boots the SPA and renders all six tabs without console errors', async () => {
     expect.hasAssertions();
     const context = await browser!.newContext();
     const page = await context.newPage();
@@ -108,6 +112,47 @@ describe('serviceManagement SPA boot and export gate (JUM-466)', () => {
     await context.close();
   }, 60000);
 
+  it('exports edits made in the Code Workspace boilerplate files', async () => {
+    expect.hasAssertions();
+    const context = await browser!.newContext();
+    const page = await context.newPage();
+    await page.goto(baseUrl, { waitUntil: 'load' });
+    await page.click('#quick-add-domain-btn');
+    await page.click('#quick-add-entity-btn');
+    await page.click('#tab-code-workspace-btn');
+    await page.waitForSelector('#code-workspace-file-list button[data-file-path]', { state: 'attached' });
+
+    const activePath = await page.$eval('#code-workspace-active-file', (el) => el.textContent || '');
+    const editedContent = '// edited in the code workspace\nexport const jumentixWorkspaceEdit = true;\n';
+    let editedThroughTextarea = false;
+    try {
+      await page.fill('#code-workspace-editor', editedContent, { timeout: 1000 });
+      editedThroughTextarea = true;
+    } catch (_) {
+      editedThroughTextarea = false;
+    }
+    if (!editedThroughTextarea) {
+      await page.click('#monaco-workspace-editor');
+      await page.keyboard.press(process.platform === 'darwin' ? 'Meta+A' : 'Control+A');
+      await page.keyboard.type(editedContent);
+    }
+    await page.click('#tab-domain-designer-btn');
+    const [download] = await Promise.all([
+      page.waitForEvent('download'),
+      clickInPanels(page, '#export-boilerplate-bundle-btn')
+    ]);
+    const filePath = await download.path();
+    const document = JSON.parse(fs.readFileSync(filePath!, 'utf8'));
+    const exportedFiles = document.modules.flatMap((module: any) => [
+      ...Object.values(module.files),
+      ...module.entities.flatMap((entity: any) => Object.values(entity.files))
+    ]);
+    const editedFile = exportedFiles.find((file: any) => file.path === activePath);
+    expect(editedFile.content).toContain('jumentixWorkspaceEdit');
+    expect(editedFile.workspaceState).toBe('edited');
+    await context.close();
+  }, 60000);
+
   it('blocks export while error-severity issues exist and exports once the gate lifts', async () => {
     expect.hasAssertions();
 
@@ -115,9 +160,11 @@ describe('serviceManagement SPA boot and export gate (JUM-466)', () => {
     const cleanContext = await browser!.newContext();
     const cleanPage = await cleanContext.newPage();
     await cleanPage.goto(baseUrl, { waitUntil: 'load' });
+    // The panels are an overlay now, closed by default (JUM-737): a suite that
+    // reaches for a sidebar control opens it first, the way a person does.
     const [download] = await Promise.all([
       cleanPage.waitForEvent('download'),
-      cleanPage.click('#export-json-btn')
+      clickInPanels(cleanPage, '#export-json-btn')
     ]);
     expect(download.suggestedFilename()).toBe('domain-designer.json');
     await cleanContext.close();
@@ -145,7 +192,7 @@ describe('serviceManagement SPA boot and export gate (JUM-466)', () => {
     page.on('download', () => {
       downloadFired = true;
     });
-    await page.click('#export-json-btn');
+    await clickInPanels(page, '#export-json-btn');
     await page.waitForTimeout(1500);
     expect(downloadFired).toBe(false);
 
@@ -154,10 +201,10 @@ describe('serviceManagement SPA boot and export gate (JUM-466)', () => {
     expect(findings).toContain('no primary key');
 
     // Lifting the gate on the SAME broken model releases the export.
-    await page.click('#export-block-critical-check');
+    await clickInPanels(page, '#export-block-critical-check');
     const [relaxedDownload] = await Promise.all([
       page.waitForEvent('download'),
-      page.click('#export-json-btn')
+      clickInPanels(page, '#export-json-btn')
     ]);
     expect(relaxedDownload.suggestedFilename()).toBe('domain-designer.json');
     await brokenContext.close();
