@@ -416,7 +416,7 @@ describe('pwa shell service worker (JUM-489)', () => {
     });
     const fetchImpl = createSpy(async () => 'network-versioned-css');
     const response = await sw.handleFetchRequest({
-      request: { method: 'GET', url: 'http://127.0.0.1:3200/styles.css?v=0.9.1' },
+      request: { method: 'GET', url: 'http://127.0.0.1:3200/styles.css?v=0.9.11' },
       cacheStorage,
       fetchImpl,
       scopeOrigin: 'http://127.0.0.1:3200'
@@ -450,7 +450,7 @@ describe('pwa shell service worker (JUM-489)', () => {
       throw new TypeError('Failed to fetch');
     });
     const response = await sw.handleFetchRequest({
-      request: { method: 'GET', url: 'http://127.0.0.1:3200/styles.css?v=0.9.1' },
+      request: { method: 'GET', url: 'http://127.0.0.1:3200/styles.css?v=0.9.11' },
       cacheStorage,
       fetchImpl,
       scopeOrigin: 'http://127.0.0.1:3200'
@@ -490,6 +490,25 @@ describe('pwa shell service worker (JUM-489)', () => {
       scopeOrigin: 'http://127.0.0.1:3200'
     });
     expect(fetchImpl.calls).toHaveLength(3);
+  });
+
+  it('answers non-shell fetch failures without rejecting respondWith', async () => {
+    expect.hasAssertions();
+    const cacheStorage = createFakeCacheStorage({});
+    const fetchImpl = createSpy(async () => {
+      throw new TypeError('Failed to fetch');
+    });
+
+    const response = await sw.handleFetchRequest({
+      request: { method: 'GET', url: 'http://127.0.0.1:3200/api/runtime/env' },
+      cacheStorage,
+      fetchImpl,
+      scopeOrigin: 'http://127.0.0.1:3200'
+    });
+
+    expect(response.status).toBe(503);
+    expect(fetchImpl.calls).toHaveLength(1);
+    expect(cacheStorage.match.calls).toHaveLength(0);
   });
 
   it('activates on demand only through an explicit SKIP_WAITING message', () => {

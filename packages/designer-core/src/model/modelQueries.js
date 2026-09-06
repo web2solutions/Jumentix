@@ -28,6 +28,10 @@ import {
   DOMAIN_HEADER_HEIGHT,
   DOMAIN_MIN_HEIGHT,
   DOMAIN_MIN_WIDTH,
+  ENTITY_MAX_HEIGHT,
+  ENTITY_MAX_WIDTH,
+  ENTITY_MIN_HEIGHT,
+  ENTITY_MIN_WIDTH,
   ENTITY_WIDTH,
   getDefaultRbacPolicy
 } from '../state/designerState.js';
@@ -40,13 +44,37 @@ import {
  * in two files that had to be edited together. Derived from the box instead,
  * so a resized domain immediately gives its entities the room it gained.
  */
-export function clampEntityPosition(domain, x, y) {
-  const { width, height } = domainBox(domain);
-  const maxX = Math.max(0, width - ENTITY_WIDTH - 8);
-  const maxY = Math.max(0, height - DOMAIN_HEADER_HEIGHT - 40);
+export function entityWidth(entity) {
+  return Number.isFinite(entity?.width)
+    ? Math.min(ENTITY_MAX_WIDTH, Math.max(ENTITY_MIN_WIDTH, entity.width))
+    : ENTITY_WIDTH;
+}
+
+export function entityMinHeight(entity, compactEntities, largeCanvasMode) {
+  return Math.max(ENTITY_MIN_HEIGHT, entityHeight(entity, compactEntities, largeCanvasMode));
+}
+
+export function entityBoxHeight(entity, compactEntities, largeCanvasMode) {
+  return Number.isFinite(entity?.height)
+    ? Math.min(ENTITY_MAX_HEIGHT, Math.max(entityMinHeight(entity, compactEntities, largeCanvasMode), entity.height))
+    : entityHeight(entity, compactEntities, largeCanvasMode);
+}
+
+export function resizeEntityBox(entity, width, height, compactEntities = false, largeCanvasMode = false) {
   return {
-    x: Math.min(Math.max(8, x), maxX),
-    y: Math.min(Math.max(8, y), maxY)
+    width: Math.min(ENTITY_MAX_WIDTH, Math.max(ENTITY_MIN_WIDTH, width)),
+    height: Math.min(ENTITY_MAX_HEIGHT, Math.max(entityMinHeight(entity, compactEntities, largeCanvasMode), height))
+  };
+}
+
+export function clampEntityPosition(domain, x, y, entity = null, compactEntities = false, largeCanvasMode = false) {
+  void domain;
+  void entity;
+  void compactEntities;
+  void largeCanvasMode;
+  return {
+    x: Number.isFinite(x) ? x : 0,
+    y: Number.isFinite(y) ? y : 0
   };
 }
 
@@ -80,14 +108,25 @@ export function entityHeight(entity, compactEntities, largeCanvasMode) {
  */
 export function minimumDomainSize(domain) {
   const entities = Array.isArray(domain?.entities) ? domain.entities : [];
+  const minEntityX = entities.reduce(
+    (leftmost, entity) => Math.min(leftmost, Number(entity?.x) || 0),
+    0
+  );
+  const minEntityY = entities.reduce(
+    (topmost, entity) => Math.min(topmost, Number(entity?.y) || 0),
+    0
+  );
   const neededWidth = entities.reduce(
-    (widest, entity) => Math.max(widest, (Number(entity?.x) || 0) + ENTITY_WIDTH + 16),
+    (widest, entity) => Math.max(
+      widest,
+      (Number(entity?.x) || 0) - minEntityX + entityWidth(entity) + 16
+    ),
     DOMAIN_MIN_WIDTH
   );
   const neededHeight = entities.reduce(
     (tallest, entity) => Math.max(
       tallest,
-      (Number(entity?.y) || 0) + entityHeight(entity, false, false) + 24
+      (Number(entity?.y) || 0) - minEntityY + entityBoxHeight(entity, false, false) + 24
     ),
     DOMAIN_MIN_HEIGHT
   );
@@ -194,8 +233,8 @@ export function entitiesInMarquee(domains, rect, compactEntities, largeCanvasMod
     (domain.entities || []).forEach((entity) => {
       const boxLeft = domain.x + entity.x;
       const boxTop = domain.y + entity.y;
-      const boxRight = boxLeft + ENTITY_WIDTH;
-      const boxBottom = boxTop + entityHeight(entity, compactEntities, largeCanvasMode);
+      const boxRight = boxLeft + entityWidth(entity);
+      const boxBottom = boxTop + entityBoxHeight(entity, compactEntities, largeCanvasMode);
       const overlaps = boxLeft < right && boxRight > left && boxTop < bottom && boxBottom > top;
       if (overlaps) hits.push(entity.id);
     });
@@ -221,10 +260,11 @@ export function alignmentGuidesFor(domain, entity, x, y, options = {}) {
   const tolerance = options.tolerance ?? 6;
   const compactEntities = options.compactEntities ?? false;
   const largeCanvasMode = options.largeCanvasMode ?? false;
-  const height = entityHeight(entity, compactEntities, largeCanvasMode);
+  const width = entityWidth(entity);
+  const height = entityBoxHeight(entity, compactEntities, largeCanvasMode);
   const siblings = (domain?.entities || []).filter((candidate) => candidate.id !== entity.id);
 
-  const verticalEdges = [x, x + ENTITY_WIDTH / 2, x + ENTITY_WIDTH];
+  const verticalEdges = [x, x + width / 2, x + width];
   const horizontalEdges = [y, y + height / 2, y + height];
   const guides = [];
   let snappedX = x;
@@ -232,8 +272,9 @@ export function alignmentGuidesFor(domain, entity, x, y, options = {}) {
 
   siblings.forEach((sibling) => {
     const siblingHeight = entityHeight(sibling, compactEntities, largeCanvasMode);
+    const siblingWidth = entityWidth(sibling);
     const siblingVertical = [
-      sibling.x, sibling.x + ENTITY_WIDTH / 2, sibling.x + ENTITY_WIDTH
+      sibling.x, sibling.x + siblingWidth / 2, sibling.x + siblingWidth
     ];
     const siblingHorizontal = [
       sibling.y, sibling.y + siblingHeight / 2, sibling.y + siblingHeight
@@ -243,7 +284,7 @@ export function alignmentGuidesFor(domain, entity, x, y, options = {}) {
       siblingVertical.forEach((siblingEdge) => {
         if (Math.abs(edge - siblingEdge) > tolerance) return;
         if (guides.some((guide) => guide.axis === 'x')) return;
-        snappedX = siblingEdge - (ENTITY_WIDTH / 2) * edgeIndex;
+        snappedX = siblingEdge - (width / 2) * edgeIndex;
         guides.push({ axis: 'x', at: domain.x + siblingEdge });
       });
     });
@@ -478,8 +519,8 @@ export function entityCenterPoint(domain, entity, compactEntities, largeCanvasMo
   // was its header, so a centre-anchored edge pointed at the top-left of a
   // taller entity rather than at its middle.
   return {
-    x: domain.x + entity.x + ENTITY_WIDTH / 2,
-    y: domain.y + entity.y + entityHeight(entity, compactEntities, largeCanvasMode) / 2
+    x: domain.x + entity.x + entityWidth(entity) / 2,
+    y: domain.y + entity.y + entityBoxHeight(entity, compactEntities, largeCanvasMode) / 2
   };
 }
 
@@ -514,7 +555,7 @@ export function entityFieldAnchorPoint(domain, entity, fieldName, side, compactE
   const originY = domain.y + entity.y;
   const y = originY + headerHeight + fieldIndex * rowHeight + rowHeight / 2;
   return {
-    x: side === 'left' ? originX : originX + ENTITY_WIDTH,
+    x: side === 'left' ? originX : originX + entityWidth(entity),
     y
   };
 }
@@ -537,8 +578,8 @@ export function facingSide(originX, targetX) {
 export function entityAnchorPoint(domain, entity, side, compactEntities, largeCanvasMode) {
   const originX = domain.x + entity.x;
   const originY = domain.y + entity.y;
-  const width = ENTITY_WIDTH;
-  const height = entityHeight(entity, compactEntities, largeCanvasMode);
+  const width = entityWidth(entity);
+  const height = entityBoxHeight(entity, compactEntities, largeCanvasMode);
   if (side === 'left') return { x: originX, y: originY + height / 2 };
   if (side === 'right') return { x: originX + width, y: originY + height / 2 };
   if (side === 'top') return { x: originX + width / 2, y: originY };
@@ -637,7 +678,8 @@ export function applyAutoLayout(domains) {
   const plannedDomainWidths = domains.map((domain) => {
     const entityCount = Math.max(1, domain.entities.length);
     const entityColumns = Math.max(1, Math.min(entityCount, Math.ceil(Math.sqrt(entityCount))));
-    return padding * 2 + entityColumns * ENTITY_WIDTH + (entityColumns - 1) * entityGapX;
+    const widestEntity = Math.max(ENTITY_WIDTH, ...domain.entities.map((entity) => entityWidth(entity)));
+    return padding * 2 + entityColumns * widestEntity + (entityColumns - 1) * entityGapX;
   });
   const widestDomain = Math.max(DOMAIN_MIN_WIDTH, ...plannedDomainWidths);
   const columns = Math.max(1, Math.floor(maxCanvasWidth / (widestDomain + domainGapX)));
@@ -661,12 +703,14 @@ export function applyAutoLayout(domains) {
           entityRow * entityColumns + entityColumns
         );
         const rowHeight = rowEntities.reduce(
-          (tallest, member) => Math.max(tallest, entityHeight(member, false, false)),
+          (tallest, member) => Math.max(tallest, entityBoxHeight(member, false, false)),
           0
         );
         nextTop += rowHeight + entityGapY;
       }
-      entity.x = padding + (entityIndex % entityColumns) * (ENTITY_WIDTH + entityGapX);
+      const columnIndex = entityIndex % entityColumns;
+      const widestEntity = Math.max(ENTITY_WIDTH, ...domain.entities.map((member) => entityWidth(member)));
+      entity.x = padding + columnIndex * (widestEntity + entityGapX);
       entity.y = rowTops[entityRow];
     });
 

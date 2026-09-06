@@ -381,7 +381,7 @@ describe('model queries (JUM-469)', () => {
       const entity = { x: 14, y: 14, fields: [{ name: 'id' }, { name: 'email' }] };
       const originX = 114;
       const originY = 64;
-      const width = 260;
+      const width = model.entityWidth(entity);
       const height = model.entityHeight(entity, false, false);
 
       expect(height).toBe(32 + 2 * 22 + 26 + 8);
@@ -440,7 +440,7 @@ describe('model queries (JUM-469)', () => {
       expect(model.entityFieldAnchorPoint(domain, entity, 'organizationId', 'left', false, false))
         .toStrictEqual({ x: 114, y: 64 + 32 + 22 + 11 });
       expect(model.entityFieldAnchorPoint(domain, entity, 'organizationId', 'right', false, false))
-        .toStrictEqual({ x: 114 + 260, y: 64 + 32 + 22 + 11 });
+        .toStrictEqual({ x: 114 + model.entityWidth(entity), y: 64 + 32 + 22 + 11 });
     });
 
     it('reports no field anchor when the row is not on screen', () => {
@@ -472,6 +472,23 @@ describe('model queries (JUM-469)', () => {
       expect(model.buildEdgePathD(from, to, 50, 100, true)).toBe('M 1 2 L 50 2 L 50 100 L 50 200 L 100 200');
       expect(model.buildPreviewEdgePathD(from, to, false)).toBe('M 1 2 C 50.5 2, 50.5 200, 100 200');
       expect(model.buildPreviewEdgePathD(from, to, true)).toBe('M 1 2 L 50.5 2 L 50.5 200 L 100 200');
+    });
+
+    it('allows entities to move freely outside the domain origin without snapping back', () => {
+      expect.hasAssertions();
+      const domain = {
+        width: 520,
+        height: 280,
+        entities: [
+          { x: -120, y: 24, fields: [{ name: 'id' }] },
+          { x: 340, y: 24, fields: [{ name: 'id' }] }
+        ]
+      };
+
+      expect(model.clampEntityPosition(domain, -1600, -320, domain.entities[0], false, false))
+        .toMatchObject({ x: -1600, y: -320 });
+      expect(model.minimumDomainSize(domain).width)
+        .toBeGreaterThanOrEqual(340 - (-120) + model.entityWidth(domain.entities[1]) + 16);
     });
 
     it('computes fit-view zoom and scroll for the empty and populated canvas', () => {
@@ -539,7 +556,7 @@ describe('model queries (JUM-469)', () => {
       // Second column: the first domain's own width plus the gap.
       expect(domains[1].x).toBe(40 + domains[0].width + 72);
       expect([domains[0].entities[0].x, domains[0].entities[0].y]).toStrictEqual([24, 74]);
-      expect(domains[0].entities[1].x).toBe(24 + 260 + 28);
+      expect(domains[0].entities[1].x).toBe(24 + model.entityWidth(domains[0].entities[0]) + 28);
       expect(domains[0].entities[1].y).toBe(74);
       expect(domains[0].entities[2].x).toBe(24);
       expect(domains[0].entities[2].y).toBeGreaterThan(domains[0].entities[0].y);
@@ -562,7 +579,7 @@ describe('model queries (JUM-469)', () => {
       const boxes: LayoutBox[] = domains[0].entities.map((entity: Record<string, any>) => ({
         left: entity.x,
         top: entity.y,
-        right: entity.x + 260,
+        right: entity.x + model.entityWidth(entity),
         bottom: entity.y + model.entityHeight(entity, false, false)
       }));
       boxes.forEach((box: LayoutBox, index: number) => {

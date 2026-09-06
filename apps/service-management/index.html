@@ -14,7 +14,7 @@
        styles.css, which consumes them. tokens.css is vendored from
        apps/jumentix-website/components/design-system/tokens.css. -->
   <link rel="stylesheet" href="./tokens.css" />
-  <link rel="stylesheet" href="./styles.css?v=0.9.1" />
+  <link rel="stylesheet" href="./styles.css?v=0.9.48" />
 </head>
 <body>
   <div class="service-management-shell">
@@ -747,7 +747,7 @@
         <header class="monitoring-header">
           <div>
             <h2>PM2 Monitoring</h2>
-            <p class="hint">Live runtime metrics are collected from PM2, including process status, CPU, memory, restarts and uptime.</p>
+            <p class="hint">Runtime status, load, memory, restarts and ecosystem drift from PM2.</p>
           </div>
           <div class="monitoring-controls">
             <label for="pm2-metrics-environment-select">Environment</label>
@@ -760,91 +760,145 @@
             <label class="check"><input id="pm2-metrics-auto-refresh-check" type="checkbox" checked /> auto refresh</label>
           </div>
         </header>
-        <p id="pm2-metrics-status" class="hint status-line" role="status" aria-live="polite">PM2 metrics have not been loaded yet.</p>
+        <section class="monitoring-health-strip" aria-label="PM2 health">
+          <div class="monitoring-health-indicator">
+            <span id="pm2-health-dot" class="pm2-health-dot" aria-hidden="true"></span>
+            <strong id="pm2-health-label">Waiting for PM2</strong>
+          </div>
+          <p id="pm2-metrics-status" class="hint status-line" role="status" aria-live="polite">PM2 metrics have not been loaded yet.</p>
+          <span id="pm2-metrics-updated-at" class="monitoring-updated-at">--</span>
+        </section>
         <section class="monitoring-summary" aria-label="PM2 metrics summary">
           <article class="metric-tile">
             <span class="metric-label">Processes</span>
             <strong id="pm2-metric-process-count">0</strong>
+            <span class="metric-footnote" id="pm2-metric-process-footnote">0 expected</span>
           </article>
           <article class="metric-tile">
             <span class="metric-label">Online</span>
             <strong id="pm2-metric-online-count">0</strong>
+            <span class="metric-bar" aria-hidden="true"><span id="pm2-online-bar"></span></span>
           </article>
           <article class="metric-tile">
             <span class="metric-label">CPU</span>
             <strong id="pm2-metric-cpu">0%</strong>
+            <span class="metric-bar" aria-hidden="true"><span id="pm2-cpu-bar"></span></span>
           </article>
           <article class="metric-tile">
             <span class="metric-label">Memory</span>
             <strong id="pm2-metric-memory">0 MB</strong>
+            <span class="metric-footnote" id="pm2-metric-memory-footnote">resident set</span>
           </article>
           <article class="metric-tile">
             <span class="metric-label">Restarts</span>
             <strong id="pm2-metric-restarts">0</strong>
+            <span class="metric-footnote" id="pm2-metric-restarts-footnote">0 unstable</span>
           </article>
         </section>
-        <section class="panel monitoring-panel">
-          <h3>Processes</h3>
-          <div class="table-scroll">
-            <table class="monitoring-table">
-              <thead>
-                <tr>
-                  <th scope="col">Name</th>
-                  <th scope="col">Status</th>
-                  <th scope="col">CPU</th>
-                  <th scope="col">Memory</th>
-                  <th scope="col">Restarts</th>
-                  <th scope="col">Uptime</th>
-                  <th scope="col">Watch</th>
-                </tr>
-              </thead>
-              <tbody id="pm2-metrics-process-list"></tbody>
-            </table>
-          </div>
-        </section>
-        <section class="panel monitoring-panel">
-          <h3>Ecosystem Coverage</h3>
-          <p id="pm2-metrics-ecosystem-summary" class="hint"></p>
+        <section class="monitoring-grid">
+          <section class="panel monitoring-panel monitoring-process-panel">
+            <div class="monitoring-panel-header">
+              <h3>Processes</h3>
+              <span id="pm2-process-density-label" class="monitoring-chip">live list</span>
+            </div>
+            <div class="table-scroll">
+              <table class="monitoring-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Process</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">CPU</th>
+                    <th scope="col">Memory</th>
+                    <th scope="col">Restarts</th>
+                    <th scope="col">Uptime</th>
+                    <th scope="col">Watch</th>
+                  </tr>
+                </thead>
+                <tbody id="pm2-metrics-process-list"></tbody>
+              </table>
+            </div>
+          </section>
+          <aside class="panel monitoring-panel monitoring-ecosystem-panel">
+            <div class="monitoring-panel-header">
+              <h3>Ecosystem</h3>
+              <span id="pm2-ecosystem-state" class="monitoring-chip">checking</span>
+            </div>
+            <p id="pm2-metrics-ecosystem-summary" class="hint"></p>
+            <ul id="pm2-metrics-missing-list" class="monitoring-missing-list"></ul>
+          </aside>
+          <section class="panel monitoring-panel monitoring-command-panel">
+            <div class="monitoring-panel-header">
+              <h3>PM2 Commands</h3>
+              <span class="monitoring-chip">ops</span>
+            </div>
+            <code id="pm2-monitoring-command">pm2 monit</code>
+            <code id="pm2-list-command">pm2 list</code>
+          </section>
         </section>
       </div>
     </section>
 
     <section id="tab-code-workspace" class="tab-section" role="tabpanel" aria-labelledby="tab-code-workspace-btn">
       <div class="code-workspace">
+        <nav class="code-activity-bar" aria-label="Code workspace views">
+          <button class="active" type="button" title="Explorer" aria-label="Explorer">EX</button>
+          <button type="button" title="Search" aria-label="Search">SE</button>
+          <button type="button" title="Source Control" aria-label="Source Control">SC</button>
+          <button type="button" title="Problems" aria-label="Problems">PR</button>
+        </nav>
         <aside class="code-explorer" aria-label="Generated code worktree">
           <header class="code-explorer-header">
-            <h2>Worktree Explorer</h2>
+            <h2>Explorer</h2>
             <p id="code-workspace-status" class="hint" role="status" aria-live="polite">No generated files yet.</p>
           </header>
           <div class="code-workspace-actions">
-            <button id="code-workspace-regenerate-btn" type="button">Regenerate</button>
-            <button id="code-workspace-keep-mine-btn" type="button" disabled>Keep Mine</button>
-            <button id="code-workspace-take-generated-btn" type="button" disabled>Take Generated</button>
+            <button id="code-workspace-regenerate-btn" type="button" title="Regenerate generated workspace">Regenerate</button>
+            <button id="code-workspace-keep-mine-btn" type="button" title="Keep your edit for this file" disabled>Keep Mine</button>
+            <button id="code-workspace-take-generated-btn" type="button" title="Replace this file with generated content" disabled>Take Generated</button>
           </div>
+          <label class="code-workspace-search" for="code-workspace-search-input">
+            <span>Search files</span>
+            <input id="code-workspace-search-input" type="search" autocomplete="off" placeholder="Filter by path" />
+          </label>
           <div id="code-workspace-summary" class="code-workspace-summary"></div>
-          <div class="worktree-root-label">JUMENTIX-GENERATED</div>
+          <div class="worktree-root-label"><span class="code-folder-chevron">v</span>JUMENTIX-GENERATED</div>
           <ul id="code-workspace-file-list" class="list code-file-list"></ul>
         </aside>
         <main class="code-editor-shell" aria-label="Generated code IDE workspace">
           <header class="code-editor-titlebar">
-            <span id="code-workspace-active-file">Preview</span>
+            <div id="code-workspace-open-tabs" class="code-editor-tabs" role="tablist" aria-label="Open files">
+            <div class="code-editor-tab active" role="tab" aria-selected="true">
+              <span id="code-workspace-active-icon" class="code-editor-tab-icon">TS</span>
+              <span id="code-workspace-active-file" class="code-editor-tab-title">Preview</span>
+              <button id="code-workspace-close-tab-btn" class="code-editor-tab-close" type="button" title="Close file" aria-label="Close file">x</button>
+            </div>
+            </div>
             <span id="code-workspace-active-state" class="code-editor-badge">generated</span>
           </header>
-          <div id="monaco-workspace-editor" class="monaco-editor-host" hidden></div>
-          <textarea id="code-workspace-editor" class="code-editor" spellcheck="false" aria-label="Generated code editor"></textarea>
-          <section id="code-workspace-conflict-panel" class="panel code-conflict-panel" hidden>
-            <h3>Regeneration Conflict</h3>
-            <div class="code-conflict-grid">
-              <div>
-                <h4>Your Edit</h4>
-                <pre id="code-workspace-user-version" class="code-preview-output"></pre>
+          <div id="code-workspace-breadcrumbs" class="code-editor-breadcrumbs">No file selected</div>
+          <div class="code-editor-body">
+            <div id="monaco-workspace-editor" class="monaco-editor-host" hidden></div>
+            <textarea id="code-workspace-editor" class="code-editor" spellcheck="false" aria-label="Generated code editor"></textarea>
+            <section id="code-workspace-conflict-panel" class="panel code-conflict-panel" hidden>
+              <h3>Regeneration Conflict</h3>
+              <div class="code-conflict-grid">
+                <div>
+                  <h4>Your Edit</h4>
+                  <pre id="code-workspace-user-version" class="code-preview-output"></pre>
+                </div>
+                <div>
+                  <h4>Generated Version</h4>
+                  <pre id="code-workspace-generated-version" class="code-preview-output"></pre>
+                </div>
               </div>
-              <div>
-                <h4>Generated Version</h4>
-                <pre id="code-workspace-generated-version" class="code-preview-output"></pre>
-              </div>
-            </div>
-          </section>
+            </section>
+          </div>
+          <footer class="code-editor-statusbar" aria-label="Code editor status">
+            <span id="code-workspace-language">Plain Text</span>
+            <span id="code-workspace-file-count">0 files</span>
+            <span id="code-workspace-edit-count">0 edited</span>
+            <span id="code-workspace-conflict-count">0 conflicts</span>
+          </footer>
         </main>
       </div>
     </section>
@@ -864,7 +918,7 @@
       }
     }
   </script>
-  <script type="module" src="./script.js?v=0.9.1"></script>
+  <script type="module" src="./script.js?v=0.9.48"></script>
   <!-- PWA shell registration (JUM-489). Kept out of script.js on purpose:
        the service worker owns installability and shell caching, orthogonal to
        the designer boot — this snippet never reorders load → wire → render.

@@ -21,7 +21,7 @@ import {
 } from '@jumentix/designer-core/model/modelQueries.js';
 
 const PADDING = 40;
-const ENTITY_WIDTH = 260;
+const ENTITY_WIDTH = 340;
 const HEADER_HEIGHT = 32;
 const ROW_HEIGHT = 22;
 

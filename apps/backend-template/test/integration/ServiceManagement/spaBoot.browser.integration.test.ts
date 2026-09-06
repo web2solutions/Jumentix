@@ -123,7 +123,19 @@ describe('serviceManagement SPA boot and export gate (JUM-466)', () => {
     await page.waitForSelector('#code-workspace-file-list button[data-file-path]', { state: 'attached' });
 
     const activePath = await page.$eval('#code-workspace-active-file', (el) => el.textContent || '');
-    await page.fill('#code-workspace-editor', '// edited in the code workspace\nexport const jumentixWorkspaceEdit = true;\n');
+    const editedContent = '// edited in the code workspace\nexport const jumentixWorkspaceEdit = true;\n';
+    let editedThroughTextarea = false;
+    try {
+      await page.fill('#code-workspace-editor', editedContent, { timeout: 1000 });
+      editedThroughTextarea = true;
+    } catch (_) {
+      editedThroughTextarea = false;
+    }
+    if (!editedThroughTextarea) {
+      await page.click('#monaco-workspace-editor');
+      await page.keyboard.press(process.platform === 'darwin' ? 'Meta+A' : 'Control+A');
+      await page.keyboard.type(editedContent);
+    }
     await page.click('#tab-domain-designer-btn');
     const [download] = await Promise.all([
       page.waitForEvent('download'),

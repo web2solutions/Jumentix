@@ -51,7 +51,7 @@
 
 /* eslint-env serviceworker, node */
 
-const SHELL_VERSION = '0.9.1';
+const SHELL_VERSION = '0.9.48';
 
 // Prefix shared with src/pwa/pwaShell.js (the page-side reset deletes by
 // prefix). The two copies cannot import each other — a classic worker has no
@@ -171,25 +171,26 @@ function handleActivate({ cacheStorage, workerClients }) {
  */
 function handleFetchRequest({ request, cacheStorage, fetchImpl, scopeOrigin }) {
   const requestUrl = new URL(request.url);
-  if (request.method !== 'GET' || !isShellUrl(requestUrl, scopeOrigin)) {
-    return fetchImpl(request);
-  }
   const unavailable = () => new Response('Service Management shell asset unavailable', {
     status: 503,
     statusText: 'Service Unavailable',
     headers: { 'content-type': 'text/plain; charset=utf-8' }
   });
+  const safeFetch = (fetchRequest) => Promise.resolve().then(() => fetchImpl(fetchRequest));
+  if (request.method !== 'GET' || !isShellUrl(requestUrl, scopeOrigin)) {
+    return safeFetch(request).catch(unavailable);
+  }
   const networkFirst = requestUrl.search
     || requestUrl.pathname.endsWith('.js')
     || requestUrl.pathname.endsWith('.css');
   if (networkFirst) {
-    return fetchImpl(request).catch(() => cacheStorage
+    return safeFetch(request).catch(() => cacheStorage
       .match(request, { ignoreSearch: true })
       .then((cached) => cached || unavailable()));
   }
   return cacheStorage
     .match(request, { ignoreSearch: true })
-    .then((cached) => cached || fetchImpl(request).catch(unavailable));
+    .then((cached) => cached || safeFetch(request).catch(unavailable));
 }
 
 /** The ONLY path to activation on demand: an explicit page-side message. */

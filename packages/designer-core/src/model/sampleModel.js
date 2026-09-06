@@ -76,7 +76,7 @@ export function buildSampleModelPayload() {
         color: '#60a5fa',
         x: 80,
         y: 80,
-        width: 620,
+        width: 780,
         height: 900,
         context: {
           ubiquitousLanguage: 'identity, organization, tenant, contact point',
@@ -144,7 +144,7 @@ export function buildSampleModelPayload() {
           {
             id: 'sample-entity-organization',
             name: 'Organization',
-            x: 330,
+            x: 390,
             y: 14,
             fields: [
               { name: 'id', type: 'uuid', required: true, pk: true, unique: true },
@@ -178,7 +178,7 @@ export function buildSampleModelPayload() {
           {
             id: 'sample-entity-phone',
             name: 'Phone',
-            x: 330,
+            x: 390,
             y: 380,
             fields: [
               { name: 'id', type: 'uuid', required: true, pk: true, unique: true },
@@ -190,7 +190,7 @@ export function buildSampleModelPayload() {
           {
             id: 'sample-entity-contact-point',
             name: 'ContactPoint',
-            x: 168,
+            x: 220,
             y: 650,
             fields: [
               { name: 'id', type: 'uuid', required: true, pk: true, unique: true },
@@ -216,9 +216,9 @@ export function buildSampleModelPayload() {
         id: 'sample-domain-tasks',
         name: 'Tasks',
         color: '#34d399',
-        x: 780,
+        x: 920,
         y: 80,
-        width: 620,
+        width: 780,
         height: 650,
         context: {
           ubiquitousLanguage: 'project, task, assignee, comment',
@@ -254,7 +254,7 @@ export function buildSampleModelPayload() {
           {
             id: 'sample-entity-task',
             name: 'Task',
-            x: 336,
+            x: 390,
             y: 74,
             fields: [
               { name: 'id', type: 'uuid', required: true, pk: true, unique: true },
@@ -268,7 +268,7 @@ export function buildSampleModelPayload() {
           {
             id: 'sample-entity-comment',
             name: 'Comment',
-            x: 336,
+            x: 390,
             y: 318,
             fields: [
               { name: 'id', type: 'uuid', required: true, pk: true, unique: true },

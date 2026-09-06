@@ -116,6 +116,10 @@ const envFileByRuntime = {
 // not exist in the repository; the endpoint reports that as an explicit
 // exists=false state rather than an error or a silently empty list.
 const repoRoot = path.resolve(__dirname, '..', '..');
+const monacoPackageDirectory = process.env.JUMENTIX_SERVICE_MANAGEMENT_MONACO_DIR
+  ? path.resolve(process.env.JUMENTIX_SERVICE_MANAGEMENT_MONACO_DIR)
+  : path.join(repoRoot, 'apps', 'jumentix-website', 'node_modules', 'monaco-editor');
+const requireJsFile = require.resolve('requirejs/require');
 const pm2EcosystemDirectory = process.env.JUMENTIX_SERVICE_MANAGEMENT_PM2_DIR
   ? path.resolve(process.env.JUMENTIX_SERVICE_MANAGEMENT_PM2_DIR)
   : path.join(repoRoot, 'pm2');
@@ -148,7 +152,11 @@ const contentTypeByExtension = {
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
   '.svg': 'image/svg+xml',
-  '.ico': 'image/x-icon'
+  '.ico': 'image/x-icon',
+  '.ttf': 'font/ttf',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.wasm': 'application/wasm'
 };
 
 function buildStaticManifest() {
@@ -231,6 +239,30 @@ function resolveRequestPath(urlPath) {
   const safePath = path.posix.normalize(`/${normalized}`).replace(/^\/+/, '');
   if (!safePath || safePath.includes('..')) return null;
   return safePath;
+}
+
+function findMonacoFile(urlPath) {
+  const prefix = '/vendor/monaco/';
+  if (!String(urlPath || '').startsWith(prefix)) return null;
+  const relative = path.posix.normalize(String(urlPath).slice(prefix.length));
+  if (!relative || relative.startsWith('..') || relative.includes('/../')) return null;
+  const resolvedPath = path.resolve(monacoPackageDirectory, relative);
+  if (!resolvedPath.startsWith(`${monacoPackageDirectory}${path.sep}`)) return null;
+  return fs.existsSync(resolvedPath) ? resolvedPath : null;
+}
+
+function serveFile(response, filePath) {
+  fs.readFile(filePath, (error, content) => {
+    if (error) {
+      response.statusCode = error.code === 'ENOENT' ? 404 : 500;
+      response.end(error.code === 'ENOENT' ? 'Not Found' : 'Internal Server Error');
+      return;
+    }
+    const extension = path.extname(filePath).toLowerCase();
+    response.setHeader('Content-Type', contentTypeByExtension[extension] || 'application/octet-stream');
+    response.statusCode = 200;
+    response.end(content);
+  });
 }
 
 function normalizeEnvironment(runtime) {
@@ -862,6 +894,22 @@ const server = http.createServer((request, response) => {
         writeEnvironmentFileFailure(response, error);
       }
     });
+    return;
+  }
+
+  if (request.method === 'GET' && requestUrl.pathname === '/vendor/requirejs/require.js') {
+    serveFile(response, requireJsFile);
+    return;
+  }
+
+  if (request.method === 'GET' && requestUrl.pathname.startsWith('/vendor/monaco/')) {
+    const filePath = findMonacoFile(requestUrl.pathname);
+    if (!filePath) {
+      response.statusCode = 404;
+      response.end('Not Found');
+      return;
+    }
+    serveFile(response, filePath);
     return;
   }
 

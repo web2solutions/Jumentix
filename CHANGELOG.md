@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-09-06 feat(service-management): polish designer and code workspace [JUM-736] - Eduardo Almeida
 - 2026-08-29 feat(service-management): refine domain designer workbench [JUM-736] - Eduardo Almeida
 - 2026-08-29 feat(service-management): improve designer workspace and pm2 monitoring [JUM-736] - Eduardo Almeida
 - 2026-08-29 chore(test-map): register the canvas workspace suite [JUM-729] - Eduardo Almeida

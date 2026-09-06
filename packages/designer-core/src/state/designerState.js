@@ -56,7 +56,11 @@ export const DOMAIN_HEADER_HEIGHT = 50;
 // Widened for the editable field rows (JUM-729 follow-up): a name, a type select and
 // three toggles do not fit the 190px the read-only text line needed. Kept in
 // step with `.entity { width }` in styles.css.
-export const ENTITY_WIDTH = 260;
+export const ENTITY_WIDTH = 340;
+export const ENTITY_MIN_WIDTH = 320;
+export const ENTITY_MAX_WIDTH = 720;
+export const ENTITY_MIN_HEIGHT = 96;
+export const ENTITY_MAX_HEIGHT = 640;
 
 export const FIELD_TYPES = ['string', 'integer', 'number', 'boolean', 'array', 'object', 'date', 'datetime', 'uuid'];
 
@@ -410,6 +414,12 @@ export function normalizeEntityInput(entity, entityIndex) {
     name: entityName,
     x: Number.isFinite(entity?.x) ? entity.x : 14 + (entityIndex % 2) * 206,
     y: Number.isFinite(entity?.y) ? entity.y : 14 + Math.floor(entityIndex / 2) * 120,
+    width: Number.isFinite(entity?.width)
+      ? Math.min(ENTITY_MAX_WIDTH, Math.max(ENTITY_MIN_WIDTH, entity.width))
+      : ENTITY_WIDTH,
+    height: Number.isFinite(entity?.height)
+      ? Math.min(ENTITY_MAX_HEIGHT, Math.max(ENTITY_MIN_HEIGHT, entity.height))
+      : undefined,
     fields,
     meta: {
       aggregateRoot: Boolean(entity?.meta?.aggregateRoot),

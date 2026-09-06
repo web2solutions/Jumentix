@@ -9,5 +9,8 @@
     "lint": "bun run lint",
     "typecheck": "echo \"service-management is plain JavaScript server\"",
     "dev": "bun run dev:service-management"
+  },
+  "dependencies": {
+    "requirejs": "^2.3.8"
   }
 }

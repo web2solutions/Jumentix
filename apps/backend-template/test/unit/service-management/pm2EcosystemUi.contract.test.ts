@@ -46,7 +46,17 @@ describe('service management PM2 preview UI contract (JUM-480)', () => {
     const server = readDesignerSource('server.js');
     expect(html).toContain('id="tab-monitoring-btn"');
     expect(html).toContain('id="pm2-metrics-process-list"');
+    expect(html).toContain('class="monitoring-health-strip"');
+    expect(html).toContain('id="pm2-online-bar"');
+    expect(html).toContain('id="pm2-cpu-bar"');
+    expect(html).toContain('id="pm2-metrics-missing-list"');
+    expect(html).toContain('id="pm2-monitoring-command"');
     expect(script).toContain('/api/runtime/pm2-metrics');
+    expect(script).toContain('function normalizePm2Process(processEntry)');
+    expect(script).toContain('function pm2Processes(snapshot)');
+    expect(script).toContain('pm2Health(snapshot)');
+    expect(script).toContain('setMetricBar(dom.pm2CpuBar');
+    expect(script).toContain('process-bar');
     const quote = String.fromCharCode(39);
     expect(server).toContain(`|| ${quote}pm2${quote}`);
     expect(server).toContain('pm2.list');

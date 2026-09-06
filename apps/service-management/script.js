@@ -102,6 +102,9 @@ import { drawModel } from './src/ui/canvasImage.js';
 import { createCanvas } from './src/ui/canvas.js';
 import { createInspectors } from './src/ui/inspectors.js';
 
+const CANVAS_ORIGIN_X = 3200;
+const CANVAS_ORIGIN_Y = 2200;
+
 // Runtime env editor metadata — mirrors the allowlists and enum sets enforced by
 // server.js (write allowlist = editable tier; read-only keys render disabled).
 const RUNTIME_ENV_EDITABLE_DEFAULTS = {
@@ -396,21 +399,43 @@ const dom = {
   pm2MetricsRefreshBtn: document.getElementById('pm2-metrics-refresh-btn'),
   pm2MetricsAutoRefreshCheck: document.getElementById('pm2-metrics-auto-refresh-check'),
   pm2MetricsStatus: document.getElementById('pm2-metrics-status'),
+  pm2HealthDot: document.getElementById('pm2-health-dot'),
+  pm2HealthLabel: document.getElementById('pm2-health-label'),
+  pm2MetricsUpdatedAt: document.getElementById('pm2-metrics-updated-at'),
   pm2MetricProcessCount: document.getElementById('pm2-metric-process-count'),
+  pm2MetricProcessFootnote: document.getElementById('pm2-metric-process-footnote'),
   pm2MetricOnlineCount: document.getElementById('pm2-metric-online-count'),
+  pm2OnlineBar: document.getElementById('pm2-online-bar'),
   pm2MetricCpu: document.getElementById('pm2-metric-cpu'),
+  pm2CpuBar: document.getElementById('pm2-cpu-bar'),
   pm2MetricMemory: document.getElementById('pm2-metric-memory'),
+  pm2MetricMemoryFootnote: document.getElementById('pm2-metric-memory-footnote'),
   pm2MetricRestarts: document.getElementById('pm2-metric-restarts'),
+  pm2MetricRestartsFootnote: document.getElementById('pm2-metric-restarts-footnote'),
+  pm2ProcessDensityLabel: document.getElementById('pm2-process-density-label'),
   pm2MetricsProcessList: document.getElementById('pm2-metrics-process-list'),
   pm2MetricsEcosystemSummary: document.getElementById('pm2-metrics-ecosystem-summary'),
+  pm2MetricsMissingList: document.getElementById('pm2-metrics-missing-list'),
+  pm2EcosystemState: document.getElementById('pm2-ecosystem-state'),
+  pm2MonitoringCommand: document.getElementById('pm2-monitoring-command'),
+  pm2ListCommand: document.getElementById('pm2-list-command'),
   codeWorkspaceRegenerateBtn: document.getElementById('code-workspace-regenerate-btn'),
   codeWorkspaceKeepMineBtn: document.getElementById('code-workspace-keep-mine-btn'),
   codeWorkspaceTakeGeneratedBtn: document.getElementById('code-workspace-take-generated-btn'),
   codeWorkspaceStatus: document.getElementById('code-workspace-status'),
+  codeWorkspaceSearchInput: document.getElementById('code-workspace-search-input'),
   codeWorkspaceSummary: document.getElementById('code-workspace-summary'),
   codeWorkspaceFileList: document.getElementById('code-workspace-file-list'),
+  codeWorkspaceOpenTabs: document.getElementById('code-workspace-open-tabs'),
+  codeWorkspaceActiveIcon: document.getElementById('code-workspace-active-icon'),
   codeWorkspaceActiveFile: document.getElementById('code-workspace-active-file'),
+  codeWorkspaceCloseTabBtn: document.getElementById('code-workspace-close-tab-btn'),
   codeWorkspaceActiveState: document.getElementById('code-workspace-active-state'),
+  codeWorkspaceBreadcrumbs: document.getElementById('code-workspace-breadcrumbs'),
+  codeWorkspaceLanguage: document.getElementById('code-workspace-language'),
+  codeWorkspaceFileCount: document.getElementById('code-workspace-file-count'),
+  codeWorkspaceEditCount: document.getElementById('code-workspace-edit-count'),
+  codeWorkspaceConflictCount: document.getElementById('code-workspace-conflict-count'),
   monacoWorkspaceEditor: document.getElementById('monaco-workspace-editor'),
   codeWorkspaceEditor: document.getElementById('code-workspace-editor'),
   codeWorkspaceConflictPanel: document.getElementById('code-workspace-conflict-panel'),
@@ -454,6 +479,8 @@ let codeWorkspaceMonacoEditor = null;
 let codeWorkspaceMonacoSubscription = null;
 let codeWorkspaceMonacoLoadPromise = null;
 let suppressCodeWorkspaceEditorChange = false;
+let codeWorkspaceMonacoConfigured = false;
+const collapsedCodeWorkspaceFolders = new Set();
 let pm2MetricsSnapshot = null;
 let pm2MetricsTimer = null;
 const inspectors = createInspectors({
@@ -815,44 +842,130 @@ function formatDuration(ms) {
   return `${minutes}m`;
 }
 
+function percentWidth(value, max = 100) {
+  const number = Number(value || 0);
+  if (!Number.isFinite(number) || max <= 0) return '0%';
+  return `${Math.max(0, Math.min(100, (number / max) * 100)).toFixed(1)}%`;
+}
+
+function setMetricBar(bar, value, max = 100) {
+  if (!bar) return;
+  bar.style.width = percentWidth(value, max);
+}
+
+function formatCollectedAt(value) {
+  if (!value) return '--';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
+function normalizePm2Process(processEntry) {
+  const monit = processEntry?.monit || {};
+  const pm2Env = processEntry?.pm2_env || {};
+  return {
+    name: processEntry?.name || pm2Env.name,
+    namespace: processEntry?.namespace || pm2Env.namespace,
+    interpreter: processEntry?.interpreter || pm2Env.exec_interpreter || pm2Env.interpreter,
+    pmId: processEntry?.pmId ?? processEntry?.pm_id ?? pm2Env.pm_id,
+    status: processEntry?.status || pm2Env.status || 'unknown',
+    cpuPercent: processEntry?.cpuPercent ?? monit.cpu ?? processEntry?.cpu,
+    memoryBytes: processEntry?.memoryBytes ?? monit.memory ?? processEntry?.memory,
+    restartCount: processEntry?.restartCount ?? pm2Env.restart_time ?? processEntry?.restarts,
+    unstableRestarts: processEntry?.unstableRestarts ?? pm2Env.unstable_restarts,
+    uptimeMs: processEntry?.uptimeMs ?? (pm2Env.pm_uptime ? Date.now() - Number(pm2Env.pm_uptime) : 0),
+    watching: processEntry?.watching ?? pm2Env.watch
+  };
+}
+
+function pm2Processes(snapshot) {
+  const candidates = [snapshot?.processes, snapshot?.apps, snapshot?.processList];
+  const source = candidates.find(Array.isArray) || [];
+  return source.map(normalizePm2Process);
+}
+
+function pm2Health(snapshot) {
+  const processes = pm2Processes(snapshot);
+  const ecosystem = snapshot?.ecosystem;
+  if (!snapshot) return { state: 'waiting', label: 'Waiting for PM2' };
+  if (!processes.length) return { state: 'critical', label: 'No PM2 processes' };
+  if (ecosystem?.missingExpected?.length) return { state: 'warning', label: 'Ecosystem drift' };
+  if (processes.some((processEntry) => processEntry.status !== 'online')) {
+    return { state: 'critical', label: 'Process down' };
+  }
+  if (processes.some((processEntry) => Number(processEntry.unstableRestarts || 0) > 0)) {
+    return { state: 'warning', label: 'Unstable restarts' };
+  }
+  return { state: 'online', label: 'All systems online' };
+}
+
 function renderPm2Metrics() {
   const snapshot = pm2MetricsSnapshot;
   const summary = snapshot?.summary || {};
+  const processes = pm2Processes(snapshot);
+  const expectedProcessCount = Number(snapshot?.ecosystem?.expectedProcessCount || 0);
+  const restartCount = processes
+    .reduce((total, processEntry) => total + Number(processEntry.restartCount || 0), 0);
+  const unstableCount = processes
+    .reduce((total, processEntry) => total + Number(processEntry.unstableRestarts || 0), 0);
+  const health = pm2Health(snapshot);
+  if (dom.pm2HealthDot) dom.pm2HealthDot.dataset.state = health.state;
+  if (dom.pm2HealthLabel) dom.pm2HealthLabel.textContent = health.label;
+  if (dom.pm2MetricsUpdatedAt) dom.pm2MetricsUpdatedAt.textContent = `updated ${formatCollectedAt(snapshot?.collectedAt)}`;
   if (dom.pm2MetricProcessCount) dom.pm2MetricProcessCount.textContent = String(summary.processCount || 0);
-  if (dom.pm2MetricOnlineCount) dom.pm2MetricOnlineCount.textContent = String(summary.onlineCount || 0);
-  if (dom.pm2MetricCpu) dom.pm2MetricCpu.textContent = `${Number(summary.totalCpuPercent || 0).toFixed(1)}%`;
-  if (dom.pm2MetricMemory) dom.pm2MetricMemory.textContent = formatBytes(summary.totalMemoryBytes || 0);
-  if (dom.pm2MetricRestarts) {
-    const restarts = (snapshot?.processes || [])
-      .reduce((total, processEntry) => total + Number(processEntry.restartCount || 0), 0);
-    dom.pm2MetricRestarts.textContent = String(restarts);
+  if (dom.pm2MetricProcessFootnote) {
+    dom.pm2MetricProcessFootnote.textContent = `${expectedProcessCount || summary.processCount || 0} expected`;
   }
+  if (dom.pm2MetricOnlineCount) dom.pm2MetricOnlineCount.textContent = String(summary.onlineCount || 0);
+  setMetricBar(dom.pm2OnlineBar, summary.onlineCount || 0, summary.processCount || 1);
+  if (dom.pm2MetricCpu) dom.pm2MetricCpu.textContent = `${Number(summary.totalCpuPercent || 0).toFixed(1)}%`;
+  setMetricBar(dom.pm2CpuBar, summary.totalCpuPercent || 0, 100);
+  if (dom.pm2MetricMemory) dom.pm2MetricMemory.textContent = formatBytes(summary.totalMemoryBytes || 0);
+  if (dom.pm2MetricMemoryFootnote) dom.pm2MetricMemoryFootnote.textContent = `${processes.length} sampled`;
+  if (dom.pm2MetricRestarts) dom.pm2MetricRestarts.textContent = String(restartCount);
+  if (dom.pm2MetricRestartsFootnote) dom.pm2MetricRestartsFootnote.textContent = `${unstableCount} unstable`;
+  if (dom.pm2ProcessDensityLabel) dom.pm2ProcessDensityLabel.textContent = `${processes.length} process${processes.length === 1 ? '' : 'es'}`;
   if (dom.pm2MetricsProcessList) {
     dom.pm2MetricsProcessList.innerHTML = '';
-    (snapshot?.processes || []).forEach((processEntry) => {
+    processes.forEach((processEntry) => {
+      const cpuPercent = Number(processEntry.cpuPercent || 0);
+      const memoryBytes = Number(processEntry.memoryBytes || 0);
+      const memoryPercent = summary.totalMemoryBytes
+        ? (memoryBytes / Number(summary.totalMemoryBytes || 1)) * 100
+        : 0;
       const row = document.createElement('tr');
       row.innerHTML = [
         '<td><strong></strong><span class="table-subtle"></span></td>',
         '<td><span class="process-status"></span></td>',
-        '<td></td>',
-        '<td></td>',
-        '<td></td>',
+        '<td><span class="metric-cell-value"></span><span class="process-bar"><span></span></span></td>',
+        '<td><span class="metric-cell-value"></span><span class="process-bar"><span></span></span></td>',
+        '<td><span class="restart-pill"></span></td>',
         '<td></td>',
         '<td></td>'
       ].join('');
       row.querySelector('strong').textContent = processEntry.name || `pm_id ${processEntry.pmId ?? '-'}`;
-      row.querySelector('.table-subtle').textContent = processEntry.namespace || 'default';
+      row.querySelector('.table-subtle').textContent = [
+        processEntry.namespace || 'default',
+        processEntry.interpreter || '',
+        processEntry.pmId !== undefined ? `pm_id ${processEntry.pmId}` : ''
+      ].filter(Boolean).join(' / ');
       const status = row.querySelector('.process-status');
       status.textContent = processEntry.status || 'unknown';
       status.dataset.status = processEntry.status || 'unknown';
-      row.children[2].textContent = `${Number(processEntry.cpuPercent || 0).toFixed(1)}%`;
-      row.children[3].textContent = formatBytes(processEntry.memoryBytes || 0);
-      row.children[4].textContent = String(processEntry.restartCount || 0);
+      row.children[2].querySelector('.metric-cell-value').textContent = `${cpuPercent.toFixed(1)}%`;
+      row.children[2].querySelector('.process-bar span').style.width = percentWidth(cpuPercent, 100);
+      row.children[3].querySelector('.metric-cell-value').textContent = formatBytes(memoryBytes);
+      row.children[3].querySelector('.process-bar span').style.width = percentWidth(memoryPercent, 100);
+      const restartPill = row.children[4].querySelector('.restart-pill');
+      restartPill.textContent = String(processEntry.restartCount || 0);
+      restartPill.dataset.risk = Number(processEntry.unstableRestarts || 0) > 0 || Number(processEntry.restartCount || 0) > 50
+        ? 'high'
+        : 'normal';
       row.children[5].textContent = formatDuration(processEntry.uptimeMs || 0);
       row.children[6].textContent = processEntry.watching ? 'on' : 'off';
       dom.pm2MetricsProcessList.appendChild(row);
     });
-    if (!snapshot?.processes?.length) {
+    if (!processes.length) {
       const row = document.createElement('tr');
       const cell = document.createElement('td');
       cell.colSpan = 7;
@@ -863,16 +976,31 @@ function renderPm2Metrics() {
   }
   if (dom.pm2MetricsEcosystemSummary) {
     const ecosystem = snapshot?.ecosystem;
+    if (dom.pm2MetricsMissingList) dom.pm2MetricsMissingList.innerHTML = '';
     if (!ecosystem) {
       dom.pm2MetricsEcosystemSummary.textContent = 'No ecosystem comparison loaded.';
+      if (dom.pm2EcosystemState) dom.pm2EcosystemState.textContent = 'unknown';
     } else if (!ecosystem.exists) {
       dom.pm2MetricsEcosystemSummary.textContent = `${ecosystem.fileName} does not exist for this environment.`;
+      if (dom.pm2EcosystemState) dom.pm2EcosystemState.textContent = 'missing file';
     } else if (ecosystem.missingExpected?.length) {
       dom.pm2MetricsEcosystemSummary.textContent = `${ecosystem.missingExpected.length} expected PM2 app(s) are not running: ${ecosystem.missingExpected.join(', ')}.`;
+      if (dom.pm2EcosystemState) dom.pm2EcosystemState.textContent = 'drift';
+      if (dom.pm2MetricsMissingList) {
+        ecosystem.missingExpected.forEach((name) => {
+          const item = document.createElement('li');
+          item.textContent = name;
+          dom.pm2MetricsMissingList.appendChild(item);
+        });
+      }
     } else {
       dom.pm2MetricsEcosystemSummary.textContent = `All ${ecosystem.expectedProcessCount} app(s) from ${ecosystem.fileName} are present in PM2.`;
+      if (dom.pm2EcosystemState) dom.pm2EcosystemState.textContent = 'covered';
     }
   }
+  const environment = dom.pm2MetricsEnvironmentSelect?.value || snapshot?.environment || 'dev';
+  if (dom.pm2MonitoringCommand) dom.pm2MonitoringCommand.textContent = `pm2 monit --namespace ${environment}`;
+  if (dom.pm2ListCommand) dom.pm2ListCommand.textContent = `pm2 list --namespace ${environment}`;
 }
 
 async function loadPm2Metrics() {
@@ -917,8 +1045,8 @@ function focusEntity(entityId) {
   state.selectedEntityId = found.entity.id;
   render();
   const zoom = state.view.zoom || 1;
-  const targetLeft = (found.domain.x + found.entity.x - 120) * zoom;
-  const targetTop = (found.domain.y + found.entity.y - 80) * zoom;
+  const targetLeft = (found.domain.x + found.entity.x + CANVAS_ORIGIN_X - 120) * zoom;
+  const targetTop = (found.domain.y + found.entity.y + CANVAS_ORIGIN_Y - 80) * zoom;
   dom.canvas.scrollTo({
     left: Math.max(0, targetLeft),
     top: Math.max(0, targetTop),
@@ -2146,7 +2274,7 @@ function generateCodePreview() {
 
 function ensureCodeWorkspaceState() {
   if (!state.codeWorkspace || typeof state.codeWorkspace !== 'object') {
-    state.codeWorkspace = { files: {}, activePath: '' };
+    state.codeWorkspace = { files: {}, activePath: '', openPaths: [], activeClosed: false };
   }
   if (!state.codeWorkspace.files || typeof state.codeWorkspace.files !== 'object') {
     state.codeWorkspace.files = {};
@@ -2154,13 +2282,18 @@ function ensureCodeWorkspaceState() {
   if (typeof state.codeWorkspace.activePath !== 'string') {
     state.codeWorkspace.activePath = '';
   }
+  if (!Array.isArray(state.codeWorkspace.openPaths)) {
+    state.codeWorkspace.openPaths = state.codeWorkspace.activePath ? [state.codeWorkspace.activePath] : [];
+  }
+  state.codeWorkspace.openPaths = [...new Set(state.codeWorkspace.openPaths.filter((path) => typeof path === 'string' && path))];
+  state.codeWorkspace.activeClosed = state.codeWorkspace.activeClosed === true;
   return state.codeWorkspace;
 }
 
 function buildGeneratedCodeWorkspaceFiles() {
   const generatedState = {
     ...state,
-    codeWorkspace: { files: {}, activePath: '' }
+    codeWorkspace: { files: {}, activePath: '', openPaths: [], activeClosed: false }
   };
   return flattenBundleFiles(buildBoilerplateBundleDocument(generatedState))
     .map((file) => ({
@@ -2224,8 +2357,12 @@ function reconcileCodeWorkspaceFiles({ forceGenerated = false } = {}) {
   });
 
   workspace.files = nextFiles;
-  if (!workspace.activePath || !workspace.files[workspace.activePath]) {
+  workspace.openPaths = workspace.openPaths.filter((path) => workspace.files[path]);
+  if ((!workspace.activePath || !workspace.files[workspace.activePath]) && !workspace.activeClosed) {
     workspace.activePath = generatedFiles[0]?.path || Object.keys(workspace.files)[0] || '';
+  }
+  if (workspace.activePath && !workspace.openPaths.includes(workspace.activePath)) {
+    workspace.openPaths.push(workspace.activePath);
   }
   return workspace;
 }
@@ -2244,14 +2381,140 @@ function codeWorkspaceFileLanguage(path) {
   return 'plaintext';
 }
 
+function codeWorkspaceFileKind(path) {
+  const extension = path.split('.').pop() || '';
+  if (extension === path) return 'TXT';
+  return extension.slice(0, 3).toUpperCase();
+}
+
+function codeWorkspaceLanguageLabel(path) {
+  const language = codeWorkspaceFileLanguage(path);
+  return {
+    json: 'JSON',
+    typescript: 'TypeScript',
+    javascript: 'JavaScript',
+    markdown: 'Markdown',
+    yaml: 'YAML',
+    plaintext: 'Plain Text'
+  }[language] || 'Plain Text';
+}
+
+function codeWorkspaceBreadcrumbLabel(path) {
+  return path ? path.split('/').join(' > ') : 'No file selected';
+}
+
+function normalizeCodeWorkspacePath(path) {
+  const stack = [];
+  String(path || '').split('/').forEach((part) => {
+    if (!part || part === '.') return;
+    if (part === '..') {
+      stack.pop();
+      return;
+    }
+    stack.push(part);
+  });
+  return stack.join('/');
+}
+
+function resolveCodeWorkspaceImportPath(fromPath, specifier) {
+  if (!specifier || !specifier.startsWith('.')) return '';
+  const directory = String(fromPath || '').split('/').slice(0, -1).join('/');
+  return normalizeCodeWorkspacePath(`${directory}/${specifier}`);
+}
+
+function codeWorkspaceImportCandidates(fromPath, specifier) {
+  const resolved = resolveCodeWorkspaceImportPath(fromPath, specifier);
+  if (!resolved) return [];
+  return [
+    resolved,
+    `${resolved}.ts`,
+    `${resolved}.tsx`,
+    `${resolved}.js`,
+    `${resolved}.mjs`,
+    `${resolved}.cjs`,
+    `${resolved}.json`,
+    `${resolved}/index.ts`,
+    `${resolved}/index.tsx`,
+    `${resolved}/index.js`
+  ];
+}
+
+function importSpecifierAtCodePosition(line, column) {
+  const text = String(line || '');
+  if (!/\bimport\b/.test(text)) return '';
+  const specifierPattern = /(?:from\s+)?['"]([^'"]+)['"]/g;
+  let match = specifierPattern.exec(text);
+  const importKeyword = text.indexOf('import');
+  while (match) {
+    const specifier = match[1];
+    const quotedStart = match.index + match[0].lastIndexOf(specifier);
+    const quotedEnd = quotedStart + specifier.length;
+    if (column >= importKeyword + 1 && column <= quotedEnd + 2) return specifier;
+    match = specifierPattern.exec(text);
+  }
+  return '';
+}
+
+function openCodeWorkspaceFile(path, reason = 'Opened file') {
+  const workspace = ensureCodeWorkspaceState();
+  if (!path || !workspace.files[path]) return false;
+  if (!workspace.openPaths.includes(path)) workspace.openPaths.push(path);
+  workspace.activePath = path;
+  workspace.activeClosed = false;
+  if (dom.codeWorkspaceSearchInput) dom.codeWorkspaceSearchInput.value = '';
+  saveState();
+  renderCodeWorkspace();
+  setCodeWorkspaceStatus(`${reason}: ${path}`);
+  return true;
+}
+
+function closeCodeWorkspaceTab(path = ensureCodeWorkspaceState().activePath) {
+  const workspace = ensureCodeWorkspaceState();
+  const closedPath = path || workspace.activePath;
+  if (!closedPath) {
+    workspace.activePath = '';
+    workspace.activeClosed = true;
+    saveState();
+    renderCodeWorkspace();
+    setCodeWorkspaceStatus('No file is open.');
+    return;
+  }
+  const closedIndex = workspace.openPaths.indexOf(closedPath);
+  workspace.openPaths = workspace.openPaths.filter((openPath) => openPath !== closedPath);
+  if (workspace.activePath === closedPath) {
+    const fallbackIndex = Math.min(Math.max(closedIndex, 0), workspace.openPaths.length - 1);
+    workspace.activePath = workspace.openPaths[fallbackIndex] || workspace.openPaths[fallbackIndex - 1] || '';
+  }
+  workspace.activeClosed = !workspace.activePath;
+  saveState();
+  renderCodeWorkspace();
+  setCodeWorkspaceStatus(closedPath ? `Closed file: ${closedPath}` : 'No file is open.');
+}
+
+function closeActiveCodeWorkspaceTab() {
+  closeCodeWorkspaceTab();
+}
+
+function openCodeWorkspaceImport(specifier, fromPath = ensureCodeWorkspaceState().activePath) {
+  const workspace = ensureCodeWorkspaceState();
+  const targetPath = codeWorkspaceImportCandidates(fromPath, specifier)
+    .find((candidate) => workspace.files[candidate]);
+  if (!targetPath) {
+    setCodeWorkspaceStatus(`Import target not found in generated workspace: ${specifier}`);
+    return false;
+  }
+  return openCodeWorkspaceFile(targetPath, `Opened import ${specifier}`);
+}
+
 function buildCodeWorkspaceTree(files) {
-  const root = { name: 'root', children: new Map(), file: null };
+  const root = { name: 'root', path: '', children: new Map(), file: null };
   files.forEach((file) => {
     const parts = file.path.split('/').filter(Boolean);
     let node = root;
     parts.forEach((part, index) => {
       if (!node.children.has(part)) {
-        node.children.set(part, { name: part, children: new Map(), file: null });
+        const nodePath = parts.slice(0, index + 1).join('/');
+        node.children.set(part, { name: part, path: nodePath, children: new Map(), file: null });
       }
       node = node.children.get(part);
       if (index === parts.length - 1) node.file = file;
@@ -2276,22 +2539,31 @@ function renderCodeWorkspaceTreeNode(node, container, depth = 0) {
         button.className = `code-file-item code-file-${child.file.state}`;
         button.dataset.filePath = child.file.path;
         button.classList.toggle('active', child.file.path === state.codeWorkspace.activePath);
-        button.innerHTML = `<span class="code-file-icon">TS</span><span class="code-file-name"></span><span class="code-file-state">${child.file.state}</span>`;
+        button.innerHTML = `<span class="code-file-icon"></span><span class="code-file-name"></span><span class="code-file-state">${child.file.state}</span>`;
+        button.querySelector('.code-file-icon').textContent = codeWorkspaceFileKind(child.file.path);
         button.querySelector('.code-file-name').textContent = child.name;
         button.onclick = () => {
-          ensureCodeWorkspaceState().activePath = child.file.path;
-          saveState();
-          renderCodeWorkspace();
+          openCodeWorkspaceFile(child.file.path, 'Editing');
         };
       } else {
+        const isCollapsed = collapsedCodeWorkspaceFolders.has(child.path);
         button.className = 'code-folder-item';
-        button.disabled = true;
-        button.innerHTML = '<span class="code-file-icon">DIR</span><span class="code-file-name"></span>';
+        button.dataset.folderPath = child.path;
+        button.setAttribute('aria-expanded', String(!isCollapsed));
+        button.innerHTML = '<span class="code-folder-chevron"></span><span class="code-file-icon">DIR</span><span class="code-file-name"></span>';
+        button.querySelector('.code-folder-chevron').textContent = isCollapsed ? '>' : 'v';
         button.querySelector('.code-file-name').textContent = child.name;
+        button.onclick = () => {
+          if (isCollapsed) collapsedCodeWorkspaceFolders.delete(child.path);
+          else collapsedCodeWorkspaceFolders.add(child.path);
+          renderCodeWorkspace({ skipEditorSync: true });
+        };
       }
       item.appendChild(button);
       container.appendChild(item);
-      if (!child.file) renderCodeWorkspaceTreeNode(child, container, depth + 1);
+      if (!child.file && !collapsedCodeWorkspaceFolders.has(child.path)) {
+        renderCodeWorkspaceTreeNode(child, container, depth + 1);
+      }
     });
 }
 
@@ -2299,23 +2571,88 @@ function setCodeWorkspaceStatus(message) {
   if (dom.codeWorkspaceStatus) dom.codeWorkspaceStatus.textContent = message;
 }
 
+function renderCodeWorkspaceOpenTabs(activeFile) {
+  if (!dom.codeWorkspaceOpenTabs) return;
+  const workspace = ensureCodeWorkspaceState();
+  const openFiles = workspace.openPaths
+    .map((path) => workspace.files[path])
+    .filter(Boolean);
+  dom.codeWorkspaceOpenTabs.innerHTML = '';
+  if (!openFiles.length) {
+    const closedTab = document.createElement('div');
+    closedTab.className = 'code-editor-tab active is-empty';
+    closedTab.setAttribute('role', 'tab');
+    closedTab.setAttribute('aria-selected', 'true');
+    closedTab.innerHTML = `
+      <span id="code-workspace-active-icon" class="code-editor-tab-icon">--</span>
+      <span id="code-workspace-active-file" class="code-editor-tab-title">No file open</span>
+      <button id="code-workspace-close-tab-btn" class="code-editor-tab-close" type="button" title="Close file" aria-label="Close file" disabled>x</button>
+    `;
+    dom.codeWorkspaceOpenTabs.appendChild(closedTab);
+    return;
+  }
+  openFiles.forEach((file) => {
+    const isActive = file.path === activeFile?.path;
+    const tab = document.createElement('div');
+    tab.className = `code-editor-tab${isActive ? ' active' : ''}`;
+    tab.dataset.filePath = file.path;
+    tab.setAttribute('role', 'tab');
+    tab.setAttribute('aria-selected', String(isActive));
+    tab.tabIndex = 0;
+    tab.innerHTML = `
+      <span ${isActive ? 'id="code-workspace-active-icon" ' : ''}class="code-editor-tab-icon"></span>
+      <span ${isActive ? 'id="code-workspace-active-file" ' : ''}class="code-editor-tab-title"></span>
+      <span class="code-file-state">${file.state}</span>
+      <button ${isActive ? 'id="code-workspace-close-tab-btn" ' : ''}class="code-editor-tab-close" type="button" title="Close file" aria-label="Close ${file.path}">x</button>
+    `;
+    tab.querySelector('.code-editor-tab-icon').textContent = codeWorkspaceFileKind(file.path);
+    tab.querySelector('.code-editor-tab-title').textContent = file.path;
+    tab.onclick = () => openCodeWorkspaceFile(file.path, 'Editing');
+    tab.onkeydown = (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        openCodeWorkspaceFile(file.path, 'Editing');
+      }
+    };
+    tab.querySelector('.code-editor-tab-close').onclick = (event) => {
+      event.stopPropagation();
+      closeCodeWorkspaceTab(file.path);
+    };
+    dom.codeWorkspaceOpenTabs.appendChild(tab);
+  });
+}
+
 function updateCodeWorkspaceChrome() {
   const workspace = ensureCodeWorkspaceState();
   const files = Object.values(workspace.files).sort((left, right) => left.path.localeCompare(right.path));
+  const query = String(dom.codeWorkspaceSearchInput?.value || '').trim().toLowerCase();
+  const visibleFiles = query
+    ? files.filter((file) => file.path.toLowerCase().includes(query))
+    : files;
   const editedCount = files.filter((file) => file.state === 'edited').length;
   const staleCount = files.filter((file) => file.state === 'stale').length;
   if (dom.codeWorkspaceSummary) {
     dom.codeWorkspaceSummary.textContent = `${files.length} files | ${editedCount} edited | ${staleCount} conflict${staleCount === 1 ? '' : 's'}`;
   }
+  if (dom.codeWorkspaceFileCount) dom.codeWorkspaceFileCount.textContent = `${files.length} file${files.length === 1 ? '' : 's'}`;
+  if (dom.codeWorkspaceEditCount) dom.codeWorkspaceEditCount.textContent = `${editedCount} edited`;
+  if (dom.codeWorkspaceConflictCount) dom.codeWorkspaceConflictCount.textContent = `${staleCount} conflict${staleCount === 1 ? '' : 's'}`;
   if (!dom.codeWorkspaceFileList) return;
   dom.codeWorkspaceFileList.innerHTML = '';
-  renderCodeWorkspaceTreeNode(buildCodeWorkspaceTree(files), dom.codeWorkspaceFileList);
+  renderCodeWorkspaceTreeNode(buildCodeWorkspaceTree(visibleFiles), dom.codeWorkspaceFileList);
+  if (!visibleFiles.length) {
+    const item = document.createElement('li');
+    item.className = 'code-empty-state';
+    item.textContent = query ? 'No files match this filter.' : 'No generated files yet.';
+    dom.codeWorkspaceFileList.appendChild(item);
+  }
 }
 
 function syncCodeWorkspaceEditor(file) {
   if (!dom.codeWorkspaceEditor) return;
   suppressCodeWorkspaceEditorChange = true;
   dom.codeWorkspaceEditor.value = file?.content || '';
+  dom.codeWorkspaceEditor.disabled = !file;
   suppressCodeWorkspaceEditorChange = false;
   syncMonacoWorkspaceEditor(file);
 }
@@ -2324,10 +2661,12 @@ function renderCodeWorkspace({ skipEditorSync = false } = {}) {
   const workspace = reconcileCodeWorkspaceFiles();
   const file = getActiveCodeWorkspaceFile();
   updateCodeWorkspaceChrome();
-  if (dom.codeWorkspaceActiveFile) dom.codeWorkspaceActiveFile.textContent = file?.path || 'Preview';
+  renderCodeWorkspaceOpenTabs(file);
+  if (dom.codeWorkspaceBreadcrumbs) dom.codeWorkspaceBreadcrumbs.textContent = codeWorkspaceBreadcrumbLabel(file?.path || '');
+  if (dom.codeWorkspaceLanguage) dom.codeWorkspaceLanguage.textContent = codeWorkspaceLanguageLabel(file?.path || '');
   if (dom.codeWorkspaceActiveState) {
-    dom.codeWorkspaceActiveState.textContent = file?.state || 'generated';
-    dom.codeWorkspaceActiveState.dataset.state = file?.state || 'generated';
+    dom.codeWorkspaceActiveState.textContent = file?.state || 'closed';
+    dom.codeWorkspaceActiveState.dataset.state = file?.state || 'closed';
   }
   const hasConflict = file?.state === 'stale';
   if (dom.codeWorkspaceConflictPanel) dom.codeWorkspaceConflictPanel.hidden = !hasConflict;
@@ -2335,7 +2674,7 @@ function renderCodeWorkspace({ skipEditorSync = false } = {}) {
   if (dom.codeWorkspaceGeneratedVersion) dom.codeWorkspaceGeneratedVersion.textContent = file?.generatedContent || '';
   if (dom.codeWorkspaceKeepMineBtn) dom.codeWorkspaceKeepMineBtn.disabled = !file || file.state === 'generated';
   if (dom.codeWorkspaceTakeGeneratedBtn) dom.codeWorkspaceTakeGeneratedBtn.disabled = !file;
-  setCodeWorkspaceStatus(file ? `Editing ${file.path}` : 'No generated files yet.');
+  setCodeWorkspaceStatus(file ? `Editing ${file.path}` : 'No file open. Select a file from Explorer.');
   if (!skipEditorSync) syncCodeWorkspaceEditor(file);
 }
 
@@ -2396,11 +2735,74 @@ function regenerateCodeWorkspace() {
   );
 }
 
+function codeWorkspaceMonacoUri(path) {
+  const safePath = String(path || 'preview.txt').split('/').map(encodeURIComponent).join('/');
+  return window.monaco.Uri.parse(`file:///jumentix-generated/${safePath}`);
+}
+
+function configureCodeWorkspaceMonaco() {
+  if (codeWorkspaceMonacoConfigured || !window.monaco?.languages?.typescript) return;
+  const typescript = window.monaco.languages.typescript;
+  const moduleResolution = typescript.ModuleResolutionKind?.NodeJs
+    ?? typescript.ModuleResolutionKind?.Node10
+    ?? 2;
+  typescript.typescriptDefaults.setCompilerOptions({
+    allowNonTsExtensions: true,
+    allowSyntheticDefaultImports: true,
+    esModuleInterop: true,
+    module: typescript.ModuleKind?.ESNext ?? 99,
+    moduleResolution,
+    noEmit: true,
+    strict: true,
+    target: typescript.ScriptTarget?.ES2022 ?? 9
+  });
+  typescript.typescriptDefaults.setDiagnosticsOptions({
+    noSemanticValidation: false,
+    noSyntaxValidation: false,
+    noSuggestionDiagnostics: false
+  });
+  if (typeof typescript.typescriptDefaults.setEagerModelSync === 'function') {
+    typescript.typescriptDefaults.setEagerModelSync(true);
+  }
+  codeWorkspaceMonacoConfigured = true;
+}
+
+function syncCodeWorkspaceMonacoModels() {
+  if (!window.monaco?.editor) return;
+  configureCodeWorkspaceMonaco();
+  const workspace = ensureCodeWorkspaceState();
+  const files = Object.values(workspace.files);
+  const workspaceUriPrefix = 'file:///jumentix-generated/';
+  const liveUris = new Set();
+  files.forEach((file) => {
+    const uri = codeWorkspaceMonacoUri(file.path);
+    const uriText = uri.toString();
+    liveUris.add(uriText);
+    const language = codeWorkspaceFileLanguage(file.path);
+    let model = window.monaco.editor.getModel(uri);
+    if (!model) {
+      model = window.monaco.editor.createModel(file.content || '', language, uri);
+    } else if (model.getValue() !== (file.content || '')) {
+      model.setValue(file.content || '');
+    }
+    window.monaco.editor.setModelLanguage(model, language);
+  });
+  window.monaco.editor.getModels().forEach((model) => {
+    const uriText = model.uri.toString();
+    if (uriText.startsWith(workspaceUriPrefix) && !liveUris.has(uriText)) {
+      model.dispose();
+    }
+  });
+}
+
 function syncMonacoWorkspaceEditor(file) {
   if (!codeWorkspaceMonacoEditor || !dom.monacoWorkspaceEditor) return;
   suppressCodeWorkspaceEditorChange = true;
+  syncCodeWorkspaceMonacoModels();
   const language = codeWorkspaceFileLanguage(file?.path || '');
-  const modelUri = window.monaco.Uri.parse(`jumentix://generated/${file?.path || 'preview.txt'}`);
+  const modelUri = file
+    ? codeWorkspaceMonacoUri(file.path)
+    : window.monaco.Uri.parse('inmemory://jumentix-generated/closed-tab.txt');
   const previous = codeWorkspaceMonacoEditor.getModel();
   let nextModel = window.monaco.editor.getModel(modelUri);
   if (!nextModel) {
@@ -2410,30 +2812,80 @@ function syncMonacoWorkspaceEditor(file) {
   }
   if (previous !== nextModel) codeWorkspaceMonacoEditor.setModel(nextModel);
   window.monaco.editor.setModelLanguage(nextModel, language);
+  codeWorkspaceMonacoEditor.updateOptions({ domReadOnly: !file, readOnly: !file });
   suppressCodeWorkspaceEditorChange = false;
+}
+
+function loadExternalScript(src) {
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector(`script[src="${src}"]`);
+    if (existing) {
+      existing.addEventListener('load', resolve, { once: true });
+      existing.addEventListener('error', reject, { once: true });
+      if (existing.dataset.loaded === 'true') resolve();
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = src;
+    script.async = true;
+    script.onload = () => {
+      script.dataset.loaded = 'true';
+      resolve();
+    };
+    script.onerror = () => reject(new Error(`Could not load script: ${src}`));
+    document.head.appendChild(script);
+  });
+}
+
+async function ensureMonacoLoader() {
+  if (window.require?.config) return true;
+  try {
+    await loadExternalScript('/vendor/requirejs/require.js');
+  } catch (_error) {
+    return false;
+  }
+  return Boolean(window.require?.config);
 }
 
 function ensureMonacoWorkspaceEditor() {
   if (!dom.monacoWorkspaceEditor || codeWorkspaceMonacoEditor || codeWorkspaceMonacoLoadPromise) {
     return codeWorkspaceMonacoLoadPromise || Promise.resolve(codeWorkspaceMonacoEditor);
   }
-  if (window.JUMENTIX_DISABLE_MONACO === true || !window.require?.config) return Promise.resolve(null);
-  codeWorkspaceMonacoLoadPromise = new Promise((resolve) => {
-    const start = () => {
-      if (!window.require) {
-        dom.monacoWorkspaceEditor.hidden = true;
-        resolve(null);
-        return;
-      }
+  if (window.JUMENTIX_DISABLE_MONACO === true) return Promise.resolve(null);
+  codeWorkspaceMonacoLoadPromise = ensureMonacoLoader().then((hasLoader) => new Promise((resolve) => {
+    if (!hasLoader || !window.require) {
+      dom.monacoWorkspaceEditor.hidden = true;
+      resolve(null);
+      return;
+    }
+    try {
+      window.require.config({ paths: { vs: '/vendor/monaco/min/vs' } });
       window.require(['vs/editor/editor.main'], () => {
+        dom.monacoWorkspaceEditor.hidden = true;
+        if (!window.monaco?.editor) {
+          resolve(null);
+          return;
+        }
         if (dom.codeWorkspaceEditor) dom.codeWorkspaceEditor.hidden = true;
         dom.monacoWorkspaceEditor.hidden = false;
         codeWorkspaceMonacoEditor = window.monaco.editor.create(dom.monacoWorkspaceEditor, {
           value: '',
           language: 'typescript',
           automaticLayout: true,
-          minimap: { enabled: true },
-          fontSize: 13,
+          bracketPairColorization: { enabled: true },
+          cursorBlinking: 'smooth',
+          cursorSmoothCaretAnimation: 'on',
+          folding: true,
+          fontLigatures: false,
+          fontSize: 12,
+          lineDecorationsWidth: 12,
+          lineNumbersMinChars: 3,
+          minimap: { enabled: true, renderCharacters: false, scale: 1 },
+          padding: { top: 12, bottom: 12 },
+          renderWhitespace: 'selection',
+          roundedSelection: false,
+          scrollBeyondLastLine: false,
+          smoothScrolling: true,
           tabSize: 2,
           theme: 'vs-dark'
         });
@@ -2442,12 +2894,26 @@ function ensureMonacoWorkspaceEditor() {
           if (suppressCodeWorkspaceEditorChange) return;
           updateActiveCodeWorkspaceFileContent(codeWorkspaceMonacoEditor.getValue());
         });
+        codeWorkspaceMonacoEditor.onMouseDown((event) => {
+          const position = event.target?.position;
+          const editorModel = codeWorkspaceMonacoEditor?.getModel();
+          if (!position || !editorModel) return;
+          const line = editorModel.getLineContent(position.lineNumber);
+          const specifier = importSpecifierAtCodePosition(line, position.column);
+          if (!specifier) return;
+          openCodeWorkspaceImport(specifier, getActiveCodeWorkspaceFile()?.path);
+        });
         syncMonacoWorkspaceEditor(getActiveCodeWorkspaceFile());
         resolve(codeWorkspaceMonacoEditor);
+      }, () => {
+        dom.monacoWorkspaceEditor.hidden = true;
+        resolve(null);
       });
-    };
-    start();
-  });
+    } catch (_error) {
+      dom.monacoWorkspaceEditor.hidden = true;
+      resolve(null);
+    }
+  }));
   return codeWorkspaceMonacoLoadPromise;
 }
 
@@ -2549,10 +3015,10 @@ function repairLegacySampleDiagramLayout() {
   };
   const nextPositions = {
     'sample-entity-user': { x: 14, y: 14 },
-    'sample-entity-organization': { x: 330, y: 14 },
+    'sample-entity-organization': { x: 390, y: 14 },
     'sample-entity-email': { x: 14, y: 380 },
-    'sample-entity-phone': { x: 330, y: 380 },
-    'sample-entity-contact-point': { x: 168, y: 650 }
+    'sample-entity-phone': { x: 390, y: 380 },
+    'sample-entity-contact-point': { x: 220, y: 650 }
   };
   const allSampleEntitiesPresent = Object.keys(legacyPositions)
     .every((entityId) => entitiesById.has(entityId));
@@ -2568,13 +3034,40 @@ function repairLegacySampleDiagramLayout() {
       const entity = entitiesById.get(entityId);
       return entity.x !== position.x || entity.y !== position.y;
     });
-  if (!stillLegacy && !legacyDomainBox && !crampedNewLayout) return repaired;
-  sampleDomain.width = 620;
-  sampleDomain.height = 900;
-  Object.entries(nextPositions).forEach(([entityId, position]) => {
-    Object.assign(entitiesById.get(entityId), position);
-  });
-  return true;
+  if (stillLegacy || legacyDomainBox || crampedNewLayout) {
+    sampleDomain.width = 780;
+    sampleDomain.height = 900;
+    Object.entries(nextPositions).forEach(([entityId, position]) => {
+      Object.assign(entitiesById.get(entityId), position);
+    });
+    repaired = true;
+  }
+  const taskDomain = state.domains.find((domain) => domain.id === 'sample-domain-tasks');
+  if (taskDomain) {
+    const taskEntitiesById = new Map((taskDomain.entities || []).map((entity) => [entity.id, entity]));
+    const taskPositions = [
+      ['sample-entity-project', { x: 24, y: 74 }],
+      ['sample-entity-task', { x: 390, y: 74 }],
+      ['sample-entity-comment', { x: 390, y: 318 }]
+    ];
+    const taskNeedsRepair = taskDomain.width < 780
+      || taskDomain.x < 920
+      || taskPositions.some(([entityId, position]) => {
+        const entity = taskEntitiesById.get(entityId);
+        return entity && (entity.x !== position.x || entity.y !== position.y);
+      });
+    if (taskNeedsRepair) {
+      taskDomain.x = Math.max(920, Number(taskDomain.x) || 920);
+      taskDomain.width = 780;
+      taskDomain.height = Math.max(650, Number(taskDomain.height) || 650);
+      repaired = true;
+    }
+    taskPositions.forEach(([entityId, position]) => {
+      const entity = taskEntitiesById.get(entityId);
+      if (entity) Object.assign(entity, position);
+    });
+  }
+  return repaired;
 }
 
 /**
@@ -2833,9 +3326,13 @@ function wireEvents() {
   if (dom.codeWorkspaceEditor) {
     dom.codeWorkspaceEditor.oninput = () => updateActiveCodeWorkspaceFileContent(dom.codeWorkspaceEditor.value);
   }
+  if (dom.codeWorkspaceSearchInput) {
+    dom.codeWorkspaceSearchInput.oninput = () => renderCodeWorkspace({ skipEditorSync: true });
+  }
   if (dom.codeWorkspaceRegenerateBtn) dom.codeWorkspaceRegenerateBtn.onclick = regenerateCodeWorkspace;
   if (dom.codeWorkspaceKeepMineBtn) dom.codeWorkspaceKeepMineBtn.onclick = keepActiveCodeWorkspaceFile;
   if (dom.codeWorkspaceTakeGeneratedBtn) dom.codeWorkspaceTakeGeneratedBtn.onclick = takeGeneratedCodeWorkspaceFile;
+  if (dom.codeWorkspaceCloseTabBtn) dom.codeWorkspaceCloseTabBtn.onclick = closeActiveCodeWorkspaceTab;
   if (dom.pm2MetricsRefreshBtn) {
     dom.pm2MetricsRefreshBtn.onclick = () => loadPm2Metrics().catch((error) => {
       showPm2MetricsStatus(error instanceof Error ? error.message : 'Could not collect PM2 metrics.', 'error');
