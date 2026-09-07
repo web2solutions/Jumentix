@@ -298,7 +298,7 @@ describe('service-management classification (JUM-472)', () => {
   it('files SM unit suites under the designer sub-layer, not tooling', () => {
     expect.hasAssertions();
 
-    expect(classifyUnit('apps/backend-template/test/unit/service-management/designerStore.test.ts'))
+    expect(classifyUnit('apps/service-management/test/unit/designerStore.test.ts'))
       .toStrictEqual({ layer: 'service-management/designer', kind: 'non-hexagonal' });
   });
 

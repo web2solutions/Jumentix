@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-09-06 fix(service-management): flush Code Workspace edits before export - Eduardo A.
 - 2026-09-06 test(ci): align readme badge contract with private dashboards (#292) - Eduardo A.
 - 2026-09-06 docs(readme): replace broken coverage and sonar badges (#290) - Eduardo A.
 - 2026-09-06 feat(service-management): polish designer workbench (#289) - Eduardo A.

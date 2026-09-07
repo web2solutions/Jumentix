@@ -24,7 +24,7 @@ import path from 'node:path';
  * Contract 2 and MUST NOT change here.
  */
 
-const repoRoot = path.resolve(__dirname, '../../../../..');
+const repoRoot = path.resolve(__dirname, '../../../..');
 const {
   CANA_MIGRATION_MARKER_KEY,
   CANA_MIGRATION_RECORD_KEY,

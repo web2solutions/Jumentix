@@ -23,7 +23,7 @@ import path from 'node:path';
  * be asked for on demand — a quota-exceeded `setItem`, a read-back mismatch.
  * The migration itself is real.
  */
-const repoRoot = path.resolve(__dirname, '../../../../..');
+const repoRoot = path.resolve(__dirname, '../../../..');
 const migrationPath = path.join(repoRoot, 'apps', 'service-management', 'src', 'store', 'canaMigration.js');
 const {
   migrateLocalStorageToCana,

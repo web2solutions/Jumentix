@@ -21,6 +21,10 @@ function walk(dir, pred, out = []) {
 }
 
 function classifyUnit(file) {
+  if (file.startsWith('apps/service-management/test/unit/')) {
+    return { layer: 'service-management/designer', kind: 'non-hexagonal' };
+  }
+
   const rel = file.replace(/^apps\/backend-template\/test\/unit\//, '');
   if (rel.startsWith('modules/Users/domain/')) return { layer: 'domain', kind: 'hexagonal' };
   if (
@@ -46,13 +50,6 @@ function classifyUnit(file) {
   }
   if (rel.startsWith('infra/') || rel.startsWith('modules/Users/adapters/out/')) {
     return { layer: 'adapters/out+infra', kind: 'hexagonal' };
-  }
-  // Service Management is a declared non-hexagonal kind (JUM-552), not tooling:
-  // lumping it into `tooling` meant a ci-cd change ran the SM designer suites and
-  // an SM change did not. Its unit suites cover the designer SPA (state, store,
-  // validation, exporters), so they belong to the designer sub-layer (JUM-472).
-  if (rel.startsWith('service-management/')) {
-    return { layer: 'service-management/designer', kind: 'non-hexagonal' };
   }
   if (
     rel.startsWith('ci-cd/')
@@ -308,10 +305,13 @@ function loadPackageSuiteClassification(root, previous = readPreviousManifest(ro
 }
 
 function buildManifest(root = process.cwd()) {
-  const unitTests = walk(
+  const unitTests = [
     path.join(root, 'apps/backend-template/test/unit'),
+    path.join(root, 'apps/service-management/test/unit')
+  ].flatMap((unitRoot) => walk(
+    unitRoot,
     (p) => /\.test\.ts$/.test(p)
-  ).map((p) => path.relative(root, p).replace(/\\/g, '/'));
+  )).map((p) => path.relative(root, p).replace(/\\/g, '/'));
   const integrationTests = walk(
     path.join(root, 'apps/backend-template/test/integration'),
     (p) => /\.test\.ts$/.test(p)

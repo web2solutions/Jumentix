@@ -247,15 +247,15 @@ rule, so ids can never be the match key; new incoming entities receive
 collision-free ids through the importer's `uniqueId` callback.
 
 **Proven by:**
-[`designerPackageVersioning.test.ts`](../../apps/backend-template/test/unit/service-management/designerPackageVersioning.test.ts)
+[`designerPackageVersioning.test.ts`](../../apps/service-management/test/unit/designerPackageVersioning.test.ts)
 (version parsing/ordering, range satisfaction, dependency parsing and
 transitive resolution, cycle detection, every conflict class),
-[`designerRoundTrip.test.ts`](../../apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts)
+[`designerRoundTrip.test.ts`](../../apps/service-management/test/unit/designerRoundTrip.test.ts)
 (versioned export→import deep-equal with provenance, re-export fixed point,
 idempotent re-import, conflicting re-import refusal, deterministic merge
 with RBAC kept, compatible/incompatible dependency pairs, JUM-617 preserved
 on the append path) and
-[`designerExporters.test.ts`](../../apps/backend-template/test/unit/service-management/designerExporters.test.ts)
+[`designerExporters.test.ts`](../../apps/service-management/test/unit/designerExporters.test.ts)
 (the v2 package document shape, pinned).
 
 ## Packaging: the `@jumentix` designer core (JUM-493)
@@ -458,11 +458,11 @@ when the gate closes.
   the source of truth remains the DOM-free boundary under
   [`apps/service-management/src/`](../../apps/service-management/src)
 - Suites:
-  [`catalogSyncClient.test.ts`](../../apps/backend-template/test/unit/service-management/catalogSyncClient.test.ts),
+  [`catalogSyncClient.test.ts`](../../apps/service-management/test/unit/catalogSyncClient.test.ts),
   [`catalogSync.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/catalogSync.integration.test.ts),
-  [`designerPackageVersioning.test.ts`](../../apps/backend-template/test/unit/service-management/designerPackageVersioning.test.ts),
-  [`designerRoundTrip.test.ts`](../../apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts),
-  [`designerExporters.test.ts`](../../apps/backend-template/test/unit/service-management/designerExporters.test.ts)
+  [`designerPackageVersioning.test.ts`](../../apps/service-management/test/unit/designerPackageVersioning.test.ts),
+  [`designerRoundTrip.test.ts`](../../apps/service-management/test/unit/designerRoundTrip.test.ts),
+  [`designerExporters.test.ts`](../../apps/service-management/test/unit/designerExporters.test.ts)
 - Requirements:
   [094](../../.agents/requirements/project/094-epic-documentation-completion-gate.md)
   (epic documentation completion gate),

@@ -338,6 +338,26 @@ describe('designer exporters (JUM-469)', () => {
     expect(file.workspaceState).toBe('edited');
   });
 
+  it('falls back to generated content when a stale workspace overlay has no edited content', () => {
+    expect.hasAssertions();
+    const state = createState();
+    state.codeWorkspace = {
+      activePath: 'src/modules/Billing/domain/Model/Invoice.ts',
+      files: {
+        'src/modules/Billing/domain/Model/Invoice.ts': {
+          path: 'src/modules/Billing/domain/Model/Invoice.ts',
+          state: 'stale',
+          generatedContent: 'generated-after-edit'
+        }
+      }
+    };
+
+    const document = buildBoilerplateBundleDocument(state, '2026-08-05T00:00:00.000Z');
+    const file = document.modules[0].entities[0].files.model;
+    expect(file.content).toContain('export class Invoice');
+    expect(file.workspaceState).toBe('stale');
+  });
+
   it('defaults the bundle timestamp to the current ISO time', () => {
     expect.hasAssertions();
     const document = buildBoilerplateBundleDocument(createState());

@@ -92,6 +92,7 @@ module.exports = {
     '<rootDir>/packages/[^/]+/test/',
     // Test fixtures and helpers are instruments, not product coverage subjects.
     '<rootDir>/apps/backend-template/test/',
+    '<rootDir>/apps/service-management/test/',
     // ci-cd is excluded from coverage wholesale, with named opt-ins. Sonar reads
     // this same lcov, so a new ci-cd file that is not listed here reports as 0%
     // covered on new code and fails the quality gate even when it has tests.

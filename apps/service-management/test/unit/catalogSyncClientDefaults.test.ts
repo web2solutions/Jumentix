@@ -20,7 +20,7 @@ import path from 'node:path';
  * and the store (Requirement 135 §5/§7), as in the suite beside this one. The
  * sync client is real.
  */
-const repoRoot = path.resolve(__dirname, '../../../../..');
+const repoRoot = path.resolve(__dirname, '../../../..');
 const {
   createCatalogSyncClient,
   CATALOG_SYNC_POLL_INTERVAL_MS,

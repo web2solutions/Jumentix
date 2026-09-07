@@ -186,7 +186,7 @@ describe('service-management selection (JUM-472)', () => {
     },
     suites: [
       smSuite(
-        'apps/backend-template/test/unit/service-management/designerStore.test.ts',
+        'apps/service-management/test/unit/designerStore.test.ts',
         'service-management/designer',
         'unit'
       ),
@@ -222,7 +222,7 @@ describe('service-management selection (JUM-472)', () => {
 
     expect(plan.selectedLayers).toStrictEqual(['service-management/designer']);
     expect(plan.unitSuites).toStrictEqual([
-      'apps/backend-template/test/unit/service-management/designerStore.test.ts'
+      'apps/service-management/test/unit/designerStore.test.ts'
     ]);
     expect(plan.integrationScripts).toStrictEqual(['test:integration:service-management']);
   });
@@ -239,14 +239,14 @@ describe('service-management selection (JUM-472)', () => {
       'service-management/server'
     ]);
     expect(plan.unitSuites).toStrictEqual([
-      'apps/backend-template/test/unit/service-management/designerStore.test.ts'
+      'apps/service-management/test/unit/designerStore.test.ts'
     ]);
   });
 
   it('selects the SM suites for a changed SM suite file, not the tooling layer', () => {
     expect.hasAssertions();
 
-    const plan = planFor(['apps/backend-template/test/unit/service-management/designerStore.test.ts']);
+    const plan = planFor(['apps/service-management/test/unit/designerStore.test.ts']);
 
     expect(plan.selectedLayers).toStrictEqual(['service-management/designer']);
     expect(plan.unitSuites).not.toContain('apps/backend-template/test/unit/ci-cd/check-test-map.test.ts');

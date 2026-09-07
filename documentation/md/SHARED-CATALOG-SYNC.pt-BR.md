@@ -213,7 +213,7 @@ NODE_ENV=dev node_modules/.bin/jest --runInBand --coverage=false \
   --testPathPattern "modules/Catalogs|Express/Catalogs"
 # cliente do designer
 NODE_ENV=dev node_modules/.bin/jest --runInBand --coverage=false \
-  apps/backend-template/test/unit/service-management/catalogSyncClient.test.ts
+  apps/service-management/test/unit/catalogSyncClient.test.ts
 # convergência de dois clientes sobre HTTP real após partição real
 NODE_ENV=dev node_modules/.bin/jest --runInBand --coverage=false \
   apps/backend-template/test/integration/ServiceManagement/catalogSync.integration.test.ts

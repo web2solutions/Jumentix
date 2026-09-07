@@ -19,7 +19,7 @@ import path from 'node:path';
  * All are exercised as pure functions — no DOM, no store.
  */
 
-const repoRoot = path.resolve(__dirname, '../../../../..');
+const repoRoot = path.resolve(__dirname, '../../../..');
 const {
   GRPC_FRAMEWORKS,
   HTTP_FRAMEWORKS,

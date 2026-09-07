@@ -7,7 +7,10 @@ const { effectiveRunner, isCiNodeRuntime, resolveTestRuntime } = require('./lib/
 const { runSuitePaths } = require('./run-suite');
 const { isEntryPoint } = require('./lib/entry-point.js');
 
-const UNIT_DIR = 'apps/backend-template/test/unit';
+const UNIT_DIRS = [
+  'apps/backend-template/test/unit',
+  'apps/service-management/test/unit'
+];
 
 /**
  * Split the unit suites into what gates and what only reports.
@@ -114,7 +117,7 @@ function runBunUnit(suites, options = {}) {
   const spawn = options.spawn || spawnSync;
   const args = suites.length > 0
     ? ['test', BUN_ISOLATION, ...suites]
-    : ['test', BUN_ISOLATION, UNIT_DIR];
+    : ['test', BUN_ISOLATION, ...UNIT_DIRS];
   console.log(`[ci] unit tests (bun:test, isolated): ${suites.length || 'directory'} target(s)`);
   const result = spawn('bun', args, {
     stdio: 'inherit',
@@ -169,8 +172,9 @@ function runUnitTests(options = {}) {
   const env = options.env || process.env;
   const runtime = resolveTestRuntime(env);
 
-  if (!fs.existsSync(path.join(root, UNIT_DIR))) {
-    console.error(`[ci] unit tests: missing ${UNIT_DIR}`);
+  const missingUnitDirs = UNIT_DIRS.filter((dir) => !fs.existsSync(path.join(root, dir)));
+  if (missingUnitDirs.length > 0) {
+    console.error(`[ci] unit tests: missing ${missingUnitDirs.join(', ')}`);
     return 1;
   }
 

@@ -242,6 +242,16 @@ describe('check-coverage-thresholds CLI', () => {
     expect(result.logs).toContain('branches 98.00%');
     expect(result.logs).not.toContain('under JUM-579');
   });
+
+  it('reports a passing metric under a live exception with its ratchet note', () => {
+    expect.hasAssertions();
+    const result = runMain(reportWith({ brf: 10000, brh: 9747 }), {
+      branches: { floor: 97.47, issue: 'JUM-579', since: '2026-08-29' }
+    });
+
+    expect(result.thrown).toBeNull();
+    expect(result.logs).toContain('branches 97.47% (under JUM-579, floor 97.47%)');
+  });
 });
 
 /**
@@ -359,6 +369,74 @@ describe('check-coverage-thresholds report reader', () => {
     read.mockRestore();
   });
 
+  it('reads the canonical report when the preserved Jest report is absent', () => {
+    expect.hasAssertions();
+    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+    const nodeFs = require('fs') as {
+      existsSync: (path: string) => boolean;
+      readFileSync: (path: string, encoding: string) => string;
+    };
+    const previousIncludeBrowser = process.env.JUMENTIX_COVERAGE_INCLUDE_BROWSER;
+    process.env.JUMENTIX_COVERAGE_INCLUDE_BROWSER = '0';
+    const exists = jest.spyOn(nodeFs, 'existsSync').mockImplementation((filePath) => (
+      String(filePath).endsWith('coverage/coverage-final.json')
+    ));
+    const read = jest.spyOn(nodeFs, 'readFileSync').mockReturnValue(JSON.stringify({
+      'canonical.ts': {
+        b: {},
+        f: {},
+        s: counters(1, 1),
+        statementMap: statements(1)
+      }
+    }));
+
+    try {
+      const report = coverageGuard.defaultReadReport() as Record<string, { s: unknown }>;
+
+      expect(Object.keys(report)).toStrictEqual(['canonical.ts']);
+      expect(read).toHaveBeenCalledWith(expect.stringContaining('coverage/coverage-final.json'), 'utf8');
+    } finally {
+      restoreEnvValue('JUMENTIX_COVERAGE_INCLUDE_BROWSER', previousIncludeBrowser);
+      exists.mockRestore();
+      read.mockRestore();
+    }
+  });
+
+  it('uses the canonical report without requiring browser coverage when explicitly allowed', () => {
+    expect.hasAssertions();
+    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+    const nodeFs = require('fs') as {
+      existsSync: (path: string) => boolean;
+      readFileSync: (path: string, encoding: string) => string;
+    };
+    const previousIncludeBrowser = process.env.JUMENTIX_COVERAGE_INCLUDE_BROWSER;
+    const previousRequireBrowser = process.env.JUMENTIX_COVERAGE_REQUIRE_BROWSER;
+    process.env.JUMENTIX_COVERAGE_INCLUDE_BROWSER = '1';
+    process.env.JUMENTIX_COVERAGE_REQUIRE_BROWSER = '0';
+    const exists = jest.spyOn(nodeFs, 'existsSync').mockImplementation((filePath) => (
+      String(filePath).endsWith('/coverage/coverage-final.json')
+    ));
+    const read = jest.spyOn(nodeFs, 'readFileSync').mockReturnValue(JSON.stringify({
+      'canonical.ts': {
+        b: {},
+        f: {},
+        s: counters(1, 1),
+        statementMap: statements(1)
+      }
+    }));
+
+    try {
+      const report = coverageGuard.defaultReadReport() as Record<string, { s: unknown }>;
+
+      expect(Object.keys(report)).toStrictEqual(['canonical.ts']);
+    } finally {
+      restoreEnvValue('JUMENTIX_COVERAGE_INCLUDE_BROWSER', previousIncludeBrowser);
+      restoreEnvValue('JUMENTIX_COVERAGE_REQUIRE_BROWSER', previousRequireBrowser);
+      exists.mockRestore();
+      read.mockRestore();
+    }
+  });
+
   it('prefers the preserved Jest report when browser coverage rewrites the canonical file', () => {
     expect.hasAssertions();
     // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
@@ -427,6 +505,23 @@ describe('check-coverage-thresholds report reader', () => {
       .toBe(false);
     expect(coverageGuard.isThresholdSubject('/repo/packages/designer-core/dist/index.js'))
       .toBe(false);
+  });
+
+  it('parses boolean environment flags with absent and negative values', () => {
+    expect.hasAssertions();
+    const previous = process.env.JUMENTIX_TEST_BOOLEAN_FLAG;
+    delete process.env.JUMENTIX_TEST_BOOLEAN_FLAG;
+
+    try {
+      expect(coverageGuard.readsEnvFlag('JUMENTIX_TEST_BOOLEAN_FLAG')).toBe(true);
+      expect(coverageGuard.readsEnvFlag('JUMENTIX_TEST_BOOLEAN_FLAG', false)).toBe(false);
+      process.env.JUMENTIX_TEST_BOOLEAN_FLAG = 'off';
+      expect(coverageGuard.readsEnvFlag('JUMENTIX_TEST_BOOLEAN_FLAG')).toBe(false);
+      process.env.JUMENTIX_TEST_BOOLEAN_FLAG = 'yes';
+      expect(coverageGuard.readsEnvFlag('JUMENTIX_TEST_BOOLEAN_FLAG')).toBe(true);
+    } finally {
+      restoreEnvValue('JUMENTIX_TEST_BOOLEAN_FLAG', previous);
+    }
   });
 });
 
