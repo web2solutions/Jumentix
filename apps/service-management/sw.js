@@ -51,7 +51,7 @@
 
 /* eslint-env serviceworker, node */
 
-const SHELL_VERSION = '0.5.0';
+const SHELL_VERSION = '0.9.48';
 
 // Prefix shared with src/pwa/pwaShell.js (the page-side reset deletes by
 // prefix). The two copies cannot import each other — a classic worker has no
@@ -89,6 +89,7 @@ const SHELL_ASSETS = [
   './vendor/designer-core/model/deployCapabilityMatrix.js',
   './vendor/designer-core/model/interfaceFrameworkMatrix.js',
   './vendor/designer-core/model/modelQueries.js',
+  './vendor/designer-core/model/propertyKeys.js',
   './vendor/designer-core/model/rbacContract.js',
   './vendor/designer-core/model/sampleModel.js',
   './vendor/designer-core/packages/packageVersioning.js',
@@ -108,7 +109,10 @@ const SHELL_ASSETS = [
   './src/store/canaMigration.js',
   './src/store/designerStoreFactory.js',
   './src/ui/canvas.js',
+  './src/ui/canvasImage.js',
+  './src/ui/contextMenu.js',
   './src/ui/inspectors.js',
+  './src/ui/sidebarGroups.js',
   './src/ui/tabs.js',
   // The vendored Cana browser bundle (JUM-484) — the designer's sole store
   // crosses the import map to this module at boot, so the offline shell is
@@ -160,19 +164,33 @@ function handleActivate({ cacheStorage, workerClients }) {
 }
 
 /**
- * Cache-first for the precached shell: a cache hit never touches the network.
- * The versioned cache name makes this safe — the running shell is internally
- * consistent, and a shipped update arrives through the prompt flow, never by
- * silently mixing versions. Misses and non-shell requests go to the network
- * unchanged (offline, they fail naturally — the shell owns no data to serve).
+ * JS/CSS shell assets are network-first, including their unversioned module
+ * graph entries, so PM2 dev hot reload does not display stale designer code.
+ * Static installability assets remain cache-first. Every path still falls
+ * back to the current precache when the network is unavailable.
  */
 function handleFetchRequest({ request, cacheStorage, fetchImpl, scopeOrigin }) {
-  if (request.method !== 'GET' || !isShellUrl(new URL(request.url), scopeOrigin)) {
-    return fetchImpl(request);
+  const requestUrl = new URL(request.url);
+  const unavailable = () => new Response('Service Management shell asset unavailable', {
+    status: 503,
+    statusText: 'Service Unavailable',
+    headers: { 'content-type': 'text/plain; charset=utf-8' }
+  });
+  const safeFetch = (fetchRequest) => Promise.resolve().then(() => fetchImpl(fetchRequest));
+  if (request.method !== 'GET' || !isShellUrl(requestUrl, scopeOrigin)) {
+    return safeFetch(request).catch(unavailable);
+  }
+  const networkFirst = requestUrl.search
+    || requestUrl.pathname.endsWith('.js')
+    || requestUrl.pathname.endsWith('.css');
+  if (networkFirst) {
+    return safeFetch(request).catch(() => cacheStorage
+      .match(request, { ignoreSearch: true })
+      .then((cached) => cached || unavailable()));
   }
   return cacheStorage
     .match(request, { ignoreSearch: true })
-    .then((cached) => cached || fetchImpl(request));
+    .then((cached) => cached || safeFetch(request).catch(unavailable));
 }
 
 /** The ONLY path to activation on demand: an explicit page-side message. */

@@ -31,6 +31,10 @@ import {
   toPathToken,
   toSchemaName
 } from '../model/modelQueries.js';
+import {
+  describeQuotedPropertyKey,
+  isBarePropertyKey
+} from '../model/propertyKeys.js';
 
 /**
  * @typedef {Object} ModelIssue
@@ -91,6 +95,21 @@ export function collectModelIssues(state) {
           pushIssue(`Entity ${domain.name}/${entity.name} has duplicated field: ${field.name}`, entity.id, 'error');
         }
         seenFields.add(fieldKey);
+        // JUM-731: the codegen quotes a field name that is not a bare
+        // identifier, and said so nowhere. `my field name!` validated with
+        // `No issues found.` and travelled into three OAS schemas, the code
+        // preview and the boilerplate bundle as `"my field name!"?: string;`.
+        // A warning, not an error: nothing produced is invalid, and names that
+        // mirror an external contract (`content-type`) are legitimate — the
+        // person typing it just has to know the property becomes index-only.
+        if (field.name && !isBarePropertyKey(field.name)) {
+          pushIssue(
+            `Field ${domain.name}/${entity.name}.${field.name} `
+              + describeQuotedPropertyKey(field.name),
+            entity.id,
+            'warn'
+          );
+        }
         if (field.type === 'array' && !field.itemsType) {
           pushIssue(`Field ${domain.name}/${entity.name}.${field.name} is array but has no itemsType.`, entity.id, 'error');
         }

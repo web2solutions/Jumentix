@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -15,6 +16,18 @@ import path from 'node:path';
 
 const repoRoot = path.resolve(__dirname, '../../../../..');
 const model = require('@jumentix/designer-core/model/modelQueries.js');
+
+type LayoutBox = { left: number; top: number; right: number; bottom: number };
+
+function boxesOverlap(
+  box: LayoutBox,
+  other: LayoutBox
+) {
+  return box.left < other.right
+    && box.right > other.left
+    && box.top < other.bottom
+    && box.bottom > other.top;
+}
 
 function createDomains() {
   return [
@@ -170,6 +183,21 @@ describe('model queries (JUM-469)', () => {
       expect(model.severityRank('warn')).toBe(2);
       expect(model.severityRank('info')).toBe(1);
       expect(model.severityRank('bogus')).toBe(1);
+    });
+  });
+
+  describe('relationship route handles', () => {
+    it('uses the midpoint until a relationship bend is explicitly placed', () => {
+      expect.hasAssertions();
+
+      expect(model.relationshipControlPoint({}, { x: 10, y: 20 }, { x: 110, y: 80 }))
+        .toStrictEqual({ x: 60, y: 50, explicit: false });
+      expect(model.relationshipControlPoint(
+        { bendX: 140, bendY: 72 },
+        { x: 10, y: 20 },
+        { x: 110, y: 80 }
+      ))
+        .toStrictEqual({ x: 140, y: 72, explicit: true });
     });
   });
 
@@ -337,18 +365,103 @@ describe('model queries (JUM-469)', () => {
       expect(model.snapCoordinate(false, 13)).toBe(13);
     });
 
-    it('computes entity centres and side anchors in canvas coordinates', () => {
+    /*
+     * JUM-729 follow-up: the anchor points follow the entity's real height.
+     *
+     * They used to assume one of two fixed heights (32 + 24 compact, 32 + 58
+     * otherwise), which was already wrong for an entity with four fields and
+     * is further off now that each field is an editable row. A `bottom` anchor
+     * therefore started inside the card instead of on its border, and the
+     * further down the field list the border was, the worse the miss — so the
+     * expectations here are derived from `entityHeight`, not restated.
+     */
+    it('computes entity centres and side anchors from the entity height', () => {
       expect.hasAssertions();
       const domain = { x: 100, y: 50 };
-      const entity = { x: 14, y: 14 };
-      expect(model.entityCenterPoint(domain, entity)).toStrictEqual({ x: 209, y: 96 });
-      expect(model.entityAnchorPoint(domain, entity, 'left', false)).toStrictEqual({ x: 114, y: 109 });
-      expect(model.entityAnchorPoint(domain, entity, 'right', false)).toStrictEqual({ x: 304, y: 109 });
-      expect(model.entityAnchorPoint(domain, entity, 'top', false)).toStrictEqual({ x: 209, y: 64 });
-      expect(model.entityAnchorPoint(domain, entity, 'bottom', false)).toStrictEqual({ x: 209, y: 154 });
-      expect(model.entityAnchorPoint(domain, entity, 'left', true)).toStrictEqual({ x: 114, y: 92 });
-      expect(model.entityAnchorPoint(domain, entity, 'diagonal', false))
-        .toStrictEqual(model.entityCenterPoint(domain, entity));
+      const entity = { x: 14, y: 14, fields: [{ name: 'id' }, { name: 'email' }] };
+      const originX = 114;
+      const originY = 64;
+      const width = model.entityWidth(entity);
+      const height = model.entityHeight(entity, false, false);
+
+      expect(height).toBe(32 + 2 * 22 + 26 + 8);
+      expect(model.entityCenterPoint(domain, entity, false, false))
+        .toStrictEqual({ x: originX + width / 2, y: originY + height / 2 });
+      expect(model.entityAnchorPoint(domain, entity, 'left', false, false))
+        .toStrictEqual({ x: originX, y: originY + height / 2 });
+      expect(model.entityAnchorPoint(domain, entity, 'right', false, false))
+        .toStrictEqual({ x: originX + width, y: originY + height / 2 });
+      expect(model.entityAnchorPoint(domain, entity, 'top', false, false))
+        .toStrictEqual({ x: originX + width / 2, y: originY });
+      expect(model.entityAnchorPoint(domain, entity, 'bottom', false, false))
+        .toStrictEqual({ x: originX + width / 2, y: originY + height });
+    });
+
+    it('collapses to the header height in compact view', () => {
+      expect.hasAssertions();
+      const domain = { x: 100, y: 50 };
+      const entity = { x: 14, y: 14, fields: [{ name: 'id' }, { name: 'email' }] };
+
+      // Compact view hides the field rows, so the card is a header and nothing
+      // else — an anchor placed as if the rows were still there would point at
+      // empty canvas below it.
+      expect(model.entityHeight(entity, true, false)).toBe(40);
+      expect(model.entityAnchorPoint(domain, entity, 'left', true, false))
+        .toStrictEqual({ x: 114, y: 84 });
+    });
+
+    it('falls back to the centre for a side it does not know', () => {
+      expect.hasAssertions();
+      const domain = { x: 100, y: 50 };
+      const entity = { x: 14, y: 14, fields: [{ name: 'id' }] };
+
+      expect(model.entityAnchorPoint(domain, entity, 'diagonal', false, false))
+        .toStrictEqual(model.entityCenterPoint(domain, entity, false, false));
+    });
+
+    /*
+     * JUM-729 follow-up: an edge that names a field lands on that field's row.
+     *
+     * Without this an edge meaning "User.organizationId references
+     * Organization.id" pointed at the middle of two cards and said nothing
+     * about which columns it joined — with three links between the same pair
+     * there was nothing to read the join from.
+     */
+    it('anchors an edge end on the named field row', () => {
+      expect.hasAssertions();
+      const domain = { x: 100, y: 50 };
+      const entity = {
+        x: 14,
+        y: 14,
+        fields: [{ name: 'id' }, { name: 'organizationId' }, { name: 'email' }]
+      };
+
+      // Second row: header, one row above it, and half a row down.
+      expect(model.entityFieldAnchorPoint(domain, entity, 'organizationId', 'left', false, false))
+        .toStrictEqual({ x: 114, y: 64 + 32 + 22 + 11 });
+      expect(model.entityFieldAnchorPoint(domain, entity, 'organizationId', 'right', false, false))
+        .toStrictEqual({ x: 114 + model.entityWidth(entity), y: 64 + 32 + 22 + 11 });
+    });
+
+    it('reports no field anchor when the row is not on screen', () => {
+      expect.hasAssertions();
+      const domain = { x: 100, y: 50 };
+      const entity = { x: 14, y: 14, fields: [{ name: 'id' }] };
+
+      // A renamed or deleted field, and compact view, have no row to point at.
+      // Answering with a point anyway would draw the edge to a row that is not
+      // there; the caller falls back to the side anchor instead.
+      expect(model.entityFieldAnchorPoint(domain, entity, 'gone', 'left', false, false)).toBeNull();
+      expect(model.entityFieldAnchorPoint(domain, entity, 'id', 'left', true, false)).toBeNull();
+    });
+
+    it('picks the side of the target that faces the origin', () => {
+      expect.hasAssertions();
+
+      // A link dropped on a card should leave and arrive on the sides facing
+      // each other, which is what dragging between two cards means.
+      expect(model.facingSide(100, 400)).toBe('left');
+      expect(model.facingSide(400, 100)).toBe('right');
     });
 
     it('builds edge paths byte-identically for both styles', () => {
@@ -361,6 +474,23 @@ describe('model queries (JUM-469)', () => {
       expect(model.buildPreviewEdgePathD(from, to, true)).toBe('M 1 2 L 50.5 2 L 50.5 200 L 100 200');
     });
 
+    it('allows entities to move freely outside the domain origin without snapping back', () => {
+      expect.hasAssertions();
+      const domain = {
+        width: 520,
+        height: 280,
+        entities: [
+          { x: -120, y: 24, fields: [{ name: 'id' }] },
+          { x: 340, y: 24, fields: [{ name: 'id' }] }
+        ]
+      };
+
+      expect(model.clampEntityPosition(domain, -1600, -320, domain.entities[0], false, false))
+        .toMatchObject({ x: -1600, y: -320 });
+      expect(model.minimumDomainSize(domain).width)
+        .toBeGreaterThanOrEqual(340 - (-120) + model.entityWidth(domain.entities[1]) + 16);
+    });
+
     it('computes fit-view zoom and scroll for the empty and populated canvas', () => {
       expect.hasAssertions();
       expect(model.computeFitView([], 800, 600)).toStrictEqual({ zoom: 1, left: 0, top: 0 });
@@ -371,7 +501,7 @@ describe('model queries (JUM-469)', () => {
       expect(fit.top).toBe(0);
       const spread = [{ x: 0, y: 0 }, { x: 5000, y: 4000 }];
       const clamped = model.computeFitView(spread, 800, 600);
-      expect(clamped.zoom).toBe(0.5);
+      expect(clamped.zoom).toBe(0.25);
       expect(clamped.left).toBe(0);
       expect(clamped.top).toBe(0);
       const tiny = [{ x: 500, y: 400 }];
@@ -381,18 +511,112 @@ describe('model queries (JUM-469)', () => {
       expect(zoomed.top).toBe((400 - 80) * 2);
     });
 
+    it('packs fifteen domains densely enough for overview fit', () => {
+      expect.hasAssertions();
+      const domains: Array<Record<string, any>> = Array.from({ length: 15 }, (_, index) => ({
+        id: `domain-${index}`,
+        name: `Domain ${index}`,
+        entities: [
+          {
+            id: `entity-${index}`,
+            name: `Entity ${index}`,
+            fields: [{ name: 'id', type: 'uuid', pk: true }]
+          }
+        ]
+      }));
+      model.applyAutoLayout(domains);
+      const fit = model.computeFitView(domains, 1440, 820);
+      const columns = new Set(domains.map((domain) => domain.x));
+      expect(columns.size).toBeGreaterThanOrEqual(5);
+      expect(fit.zoom).toBeGreaterThanOrEqual(0.25);
+      expect(fit.zoom).toBeLessThanOrEqual(0.6);
+    });
+
     it('lays out domains in a grid and entities in two columns', () => {
       expect.hasAssertions();
-      const domains = [
-        { x: 0, y: 0, entities: [{ x: 0, y: 0 }, { x: 0, y: 0 }, { x: 0, y: 0 }] },
+      // `applyAutoLayout` writes `width` and `height` onto each domain, so the
+      // fixture declares them: without it the literal's inferred type has no
+      // such properties and the suite does not compile.
+      const domains: Array<Record<string, any>> = [
+        {
+          x: 0,
+          y: 0,
+          entities: [
+            { x: 0, y: 0, fields: [{ name: 'id' }] },
+            { x: 0, y: 0, fields: [{ name: 'id' }] },
+            { x: 0, y: 0, fields: [{ name: 'id' }] }
+          ]
+        },
         { x: 0, y: 0, entities: [] }
       ];
+
       model.applyAutoLayout(domains);
+
       expect([domains[0].x, domains[0].y]).toStrictEqual([40, 40]);
-      expect([domains[1].x, domains[1].y]).toStrictEqual([630, 40]);
-      expect([domains[0].entities[0].x, domains[0].entities[0].y]).toStrictEqual([14, 14]);
-      expect([domains[0].entities[1].x, domains[0].entities[1].y]).toStrictEqual([220, 14]);
-      expect([domains[0].entities[2].x, domains[0].entities[2].y]).toStrictEqual([14, 132]);
+      // Second column: the first domain's own width plus the gap.
+      expect(domains[1].x).toBe(40 + domains[0].width + 72);
+      expect([domains[0].entities[0].x, domains[0].entities[0].y]).toStrictEqual([24, 74]);
+      expect(domains[0].entities[1].x).toBe(24 + model.entityWidth(domains[0].entities[0]) + 28);
+      expect(domains[0].entities[1].y).toBe(74);
+      expect(domains[0].entities[2].x).toBe(24);
+      expect(domains[0].entities[2].y).toBeGreaterThan(domains[0].entities[0].y);
+    });
+
+    it('spaces entities evenly inside the domain without overlap', () => {
+      expect.hasAssertions();
+      const domains: Array<Record<string, any>> = [{
+        x: 0,
+        y: 0,
+        entities: Array.from({ length: 5 }, (_, index) => ({
+          x: 0,
+          y: 0,
+          fields: Array.from({ length: index + 1 }, (__, fieldIndex) => ({ name: `f${fieldIndex}` }))
+        }))
+      }];
+
+      model.applyAutoLayout(domains);
+
+      const boxes: LayoutBox[] = domains[0].entities.map((entity: Record<string, any>) => ({
+        left: entity.x,
+        top: entity.y,
+        right: entity.x + model.entityWidth(entity),
+        bottom: entity.y + model.entityHeight(entity, false, false)
+      }));
+      boxes.forEach((box: LayoutBox, index: number) => {
+        expect(box.right).toBeLessThanOrEqual(domains[0].width - 24);
+        expect(box.bottom).toBeLessThanOrEqual(domains[0].height - 24);
+        boxes.slice(index + 1).forEach((other: LayoutBox) => {
+          expect(boxesOverlap(box, other)).toBe(false);
+        });
+      });
+    });
+
+    /*
+     * JUM-729 follow-up: rows are as tall as the tallest entity in them.
+     *
+     * A fixed vertical step was fine while every card was a header and three
+     * lines of text. With editable field rows an entity with eight fields is
+     * twice the height of one with two, and the fixed step drew the next row
+     * straight through it.
+     */
+    it('gives a row enough height for its tallest entity', () => {
+      expect.hasAssertions();
+      const manyFields = Array.from({ length: 8 }, (_, index) => ({ name: `f${String(index)}` }));
+      const tall = { x: 0, y: 0, fields: manyFields };
+      const short = { x: 0, y: 0, fields: [{ name: 'id' }] };
+      const domains: Array<Record<string, any>> = [{
+        x: 0,
+        y: 0,
+        entities: [tall, short, { x: 0, y: 0, fields: [{ name: 'id' }] }]
+      }];
+
+      model.applyAutoLayout(domains);
+
+      const secondRowTop = domains[0].entities[2].y;
+      expect(secondRowTop).toBeGreaterThanOrEqual(74 + model.entityHeight(tall, false, false));
+      // And the box grew to hold both rows rather than clipping the second.
+      const shortHeight = model.entityHeight(short, false, false);
+      expect(domains[0].height).toBeGreaterThan(secondRowTop + shortHeight);
     });
   });
 });

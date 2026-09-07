@@ -154,7 +154,7 @@ itself is exercised end-to-end by the browser suites below.
 
 ### The tab bar is a real tablist
 
-The four tabs are a WAI-ARIA tablist (`role="tablist"`, `role="tab"`,
+The six visible tabs are a WAI-ARIA tablist (`role="tablist"`, `role="tab"`,
 `aria-selected`, `aria-controls` in
 [`index.html`](../../apps/service-management/index.html); behaviour in
 [`src/ui/tabs.js`](../../apps/service-management/src/ui/tabs.js)):

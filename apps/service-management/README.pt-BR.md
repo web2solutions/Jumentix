@@ -4,16 +4,16 @@ Idioma alvo: Português (Brasil)
 -->
 # Aplicativo de gerenciamento de serviços
 
-[![CircleCI](https://dl.circleci.com/status-badge/img/gh/XpertMinds/Jumentix/tree/dev.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/XpertMinds/Jumentix/tree/dev)
-[![codecov](https://codecov.io/gh/XpertMinds/Jumentix/branch/dev/graph/badge.svg)](https://codecov.io/gh/XpertMinds/Jumentix)
-[![Status do Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Jumentix)
+[![GitHub Actions dev](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml?query=branch%3Adev)
+[![Mapa Codecov dev](https://img.shields.io/badge/Codecov-mapa%20dev-f01f7a?logo=codecov&logoColor=white)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev)
+[![Qualidade SonarCloud](https://img.shields.io/badge/SonarCloud-quality%20gate-F3702A?logo=sonarcloud&logoColor=white)](https://sonarcloud.io/summary/new_code?id=Jumentix)
 [![Nó](https://img.shields.io/badge/node-22.x-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-6BA539?logo=openapiinitiative&logoColor=white)](../../spec/1.0.0.yml)
 [![AsyncAPI](https://img.shields.io/badge/AsyncAPI-3.0-9146FF)](../../spec)
 [![Licença](https://img.shields.io/github/license/XpertMinds/Jumentix)](../../LICENSE.md)
-[![Cheiros de código](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=Jumentix)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=bugs)](https://sonarcloud.io/summary/new_code?id=Jumentix)
-[![Vulnerabilidades](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=Jumentix)
+[![Manutenibilidade SonarCloud](https://img.shields.io/badge/SonarCloud-manutenibilidade-F3702A?logo=sonarcloud&logoColor=white)](https://sonarcloud.io/summary/new_code?id=Jumentix)
+[![Bugs SonarCloud](https://img.shields.io/badge/SonarCloud-bugs-F3702A?logo=sonarcloud&logoColor=white)](https://sonarcloud.io/summary/new_code?id=Jumentix)
+[![Vulnerabilidades SonarCloud](https://img.shields.io/badge/SonarCloud-vulnerabilidades-F3702A?logo=sonarcloud&logoColor=white)](https://sonarcloud.io/summary/new_code?id=Jumentix)
 [![Commitizen amigável](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 ![Feito no Brasil com Amor](https://img.shields.io/badge/made%20in-%F0%9F%87%A7%F0%9F%87%B7%20Brasil%20with%E2%9D%A4%EF%B8%8F-blue)
 [![#StandWithUkraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://vshymanskyy.github.io/StandWithUkraine)
@@ -71,6 +71,12 @@ definido em `@jumentix/designer-core` (`packages/designer-core/src/model/sampleM
    - Exportadores: JSON, OpenAPI 3.1, Markdown, JSON Schema, AsyncAPI 3.0 por transporte
      (`<version>.websocket.yml` / `<version>.grpc.yml`, convenções canônicas de
      `spec/asyncapi/`), proto gRPC (`async-api.proto`) e pacote padrão.
+   - A exportação JSON é o documento versionado de suíte completa (JUM-547/JUM-736):
+     carrega todas as seções autorais persistidas (`domains`/`relationships`, `interfaces`,
+     `serviceConfiguration`, `deployments`, `codeWorkspace`) mais a seleção de
+     ambiente de runtime — nunca seus valores — e o Import JSON restaura essas
+     seções, aceitando arquivos pré-JUM-547 só de domínio e recusando claramente
+     seções desconhecidas ou versões major mais novas.
    - Controles de composição OpenAPI (`oneOf`, `allOf`, `anyOf`, externo `$ref`, discriminador) por entidade.
    - Exportação/importação de pacotes de domínio para compartilhamento de modelos reutilizáveis — versionada
      (JUM-492): pacotes carregam versão semântica e faixas de dependências,
@@ -80,6 +86,11 @@ definido em `@jumentix/designer-core` (`packages/designer-core/src/model/sampleM
      usuário para RBAC, invariantes, remoções e estreitamentos em uma versão
      mais nova).
    - Navegação em minimapa e modo de desempenho em tela grande.
+   - Passada de performance responsiva do canvas (JUM-736): drags de
+     entidade/domínio/nota atualizam o diagrama por animation frame e
+     persistem uma vez no fim do drag; relacionamentos selecionados exibem
+     handles de rota e label diretamente no canvas, então o layout da relação
+     é editado visualmente antes de recorrer aos campos numéricos.
 2. **Designer de interface de comunicação**
    - Registrar adaptadores de interface de entrada (`HTTP/REST`, `gRPC`, `WebSocket`, `SSE`).
    - Ciclo de vida completo do adaptador (JUM-545): cada adaptador registrado é editado
@@ -140,6 +151,27 @@ definido em `@jumentix/designer-core` (`packages/designer-core/src/model/sampleM
      obrigatória em alvos de nuvem (opcional no servidor dedicado
      self-hosted, onde o campo carrega informação de host), com dicas de
      campo por tipo de alvo.
+5. **Monitoramento**
+   - Dashboard runtime PM2 alimentado pela API real do PM2 (`pm2.list`): status
+     de processo, CPU, memória, restarts, uptime, modo watch e namespace.
+   - Compara o ecosystem selecionado (`pm2/ecosystem.*.cjs`) com a lista live do
+     PM2 para deixar apps esperados ausentes visíveis sem ler o terminal.
+   - Atualiza manualmente ou a cada cinco segundos enquanto a guia está ativa.
+     Métricas são telemetria runtime; não são persistidas em `service-management.v1`
+     nem exportadas no JSON da suíte.
+6. **Workspace de Código**
+   - Worktree de código gerado em estilo VS Code: explorer de pastas, barra de
+     título do arquivo ativo, texto TypeScript/JSON editável e Monaco quando o
+     loader do editor estiver disponível.
+   - Regenerate reconcilia a saída mais recente do modelo com edições locais.
+     Arquivos nunca editados pelo usuário acompanham o gerador automaticamente;
+     arquivos editados viram `stale` quando a geração muda por baixo deles.
+   - Controles de conflito tornam o merge explícito: **Keep Mine** aceita a
+     edição local contra o novo baseline gerado, e **Take Generated** restaura o
+     arquivo gerado.
+   - A exportação do boilerplate bundle aplica arquivos editados/stale do
+     workspace, então o código baixado reflete o workspace revisado e não uma
+     prévia somente leitura separada.
 
 ## Design System e Acessibilidade
 
@@ -301,6 +333,10 @@ Integrada em `apps/service-management/server.js`:
   derivados da definição do ecossistema, um estado explícito `exists: false`
   quando o arquivo está ausente, e o envelope 500 honesto quando o arquivo está
   ilegível ou quebrado)
+- `GET /api/runtime/pm2-metrics?environment=dev|development|staging|production|prod|ci|test`
+  (somente leitura; telemetria live coletada pela API Node do PM2, incluindo
+  status de processo, CPU, memória, restarts, uptime, modo watch, namespace,
+  métricas customizadas e comparação ecosystem-vs-live de apps esperados ausentes)
 
 O contrato completo (conjuntos de enum, semântica de escrita, higiene de resposta) está em
 [Contratos de ambiente de tempo de execução](../../documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.pt-BR.md).

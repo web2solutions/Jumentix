@@ -708,8 +708,10 @@ describe('browser wiring — the Cana bundle is servable by the zero-build SPA (
     expect(importMapMatch).not.toBeNull();
     const importMap = JSON.parse((importMapMatch as RegExpMatchArray)[1]);
     expect(importMap.imports[CANA_MODULE_SPECIFIER]).toBe('./vendor/cana/index.js');
+    const scriptMatch = html.match(/<script type="module" src="\.\/script\.js(?:\?v=[^"]+)?"><\/script>/);
+    expect(scriptMatch).not.toBeNull();
     // The import map must precede the module script that triggers the import.
-    expect(html.indexOf('type="importmap"')).toBeLessThan(html.indexOf('src="./script.js"'));
+    expect(html.indexOf('type="importmap"')).toBeLessThan(scriptMatch?.index ?? -1);
   });
 
   it('ignores the vendored bundle in git and regenerates it with the sync script', () => {

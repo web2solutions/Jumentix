@@ -35,6 +35,33 @@ import {
 } from '../model/deployCapabilityMatrix.js';
 
 export const DOMAIN_COLORS = ['#60a5fa', '#34d399', '#f59e0b', '#f472b6', '#22d3ee', '#a78bfa', '#fb7185', '#84cc16'];
+/*
+ * Domain box geometry (JUM-729 follow-up).
+ *
+ * The domain was a fixed 520x280 box in CSS, and the canvas clamped entities
+ * against those two numbers written out by hand in two different files. A
+ * domain that outgrew its box could not be made bigger, so entities piled up
+ * against an invisible wall and the diagram stopped matching the model.
+ *
+ * The size now lives in the state, defaulted to what the CSS drew, so an older
+ * saved model opens exactly as it did. The minimums are the smallest box that
+ * still shows a header and one entity.
+ */
+export const DOMAIN_DEFAULT_WIDTH = 520;
+export const DOMAIN_DEFAULT_HEIGHT = 280;
+export const DOMAIN_MIN_WIDTH = 240;
+export const DOMAIN_MIN_HEIGHT = 160;
+/** Header strip above `.domain-body`, where entities are positioned. */
+export const DOMAIN_HEADER_HEIGHT = 50;
+// Widened for the editable field rows (JUM-729 follow-up): a name, a type select and
+// three toggles do not fit the 190px the read-only text line needed. Kept in
+// step with `.entity { width }` in styles.css.
+export const ENTITY_WIDTH = 340;
+export const ENTITY_MIN_WIDTH = 320;
+export const ENTITY_MAX_WIDTH = 720;
+export const ENTITY_MIN_HEIGHT = 96;
+export const ENTITY_MAX_HEIGHT = 640;
+
 export const FIELD_TYPES = ['string', 'integer', 'number', 'boolean', 'array', 'object', 'date', 'datetime', 'uuid'];
 
 /**
@@ -75,7 +102,7 @@ export function normalizeOptionalNumber(value) {
 }
 
 export function clampZoom(value) {
-  return Math.max(0.5, Math.min(2, value));
+  return Math.max(0.25, Math.min(2, value));
 }
 
 export function fallbackId(prefix, seed) {
@@ -102,6 +129,7 @@ export function normalizeField(field, fieldIndex) {
     pk: Boolean(field?.pk),
     fk: Boolean(field?.fk),
     unique: Boolean(field?.unique),
+    indexed: Boolean(field?.indexed),
     nullable: Boolean(field?.nullable),
     format,
     description,
@@ -129,6 +157,25 @@ export function normalizeContractInput(contract, contractIndex = 0) {
   };
 }
 
+/**
+ * A canvas note (JUM-729 follow-up).
+ *
+ * The model records what the system *is*; a note records what the people
+ * modelling it need to remember while they work — an open question, a decision
+ * and its reason, a "this mirrors the billing contract". That belongs on the
+ * diagram, next to the thing it is about, and it deliberately does not enter
+ * the OAS export or the code generator: it is not part of the contract.
+ */
+export function normalizeNote(note, noteIndex) {
+  return {
+    id: note?.id || fallbackId('note', noteIndex),
+    text: String(note?.text || '').trim(),
+    x: Number.isFinite(note?.x) ? note.x : 60 + noteIndex * 24,
+    y: Number.isFinite(note?.y) ? note.y : 60 + noteIndex * 24,
+    color: /^#[0-9a-f]{6}$/i.test(note?.color || '') ? note.color : '#fde68a'
+  };
+}
+
 export function normalizeRelationship(relationship) {
   return {
     ...relationship,
@@ -137,11 +184,44 @@ export function normalizeRelationship(relationship) {
     toCardinality: relationship.toCardinality || '1',
     fromAnchorSide: ['top', 'right', 'bottom', 'left'].includes(relationship.fromAnchorSide) ? relationship.fromAnchorSide : null,
     toAnchorSide: ['top', 'right', 'bottom', 'left'].includes(relationship.toAnchorSide) ? relationship.toAnchorSide : null,
+    // JUM-729 follow-up: the columns the link joins. Additive — a relationship saved
+    // before field anchors existed normalises to null on both ends and is
+    // drawn from the entity side exactly as it was.
+    fromField: String(relationship.fromField || '').trim() || null,
+    toField: String(relationship.toField || '').trim() || null,
     anchorBehavior: relationship.anchorBehavior === 'center' ? 'center' : 'auto',
     bendX: normalizeOptionalNumber(relationship.bendX),
     bendY: normalizeOptionalNumber(relationship.bendY),
     labelOffsetX: normalizeOptionalNumber(relationship.labelOffsetX) ?? 0,
     labelOffsetY: normalizeOptionalNumber(relationship.labelOffsetY) ?? 0
+  };
+}
+
+export function normalizeCodeWorkspaceFile(file) {
+  const state = ['generated', 'edited', 'stale'].includes(file?.state) ? file.state : 'generated';
+  const generatedContent = String(file?.generatedContent || '');
+  const baseContent = String(file?.baseContent ?? generatedContent);
+  const content = String(file?.content ?? generatedContent);
+  return {
+    path: String(file?.path || '').trim(),
+    state,
+    baseContent,
+    generatedContent,
+    content,
+    updatedAt: String(file?.updatedAt || '')
+  };
+}
+
+export function normalizeCodeWorkspaceInput(input) {
+  const files = {};
+  const source = input?.files && typeof input.files === 'object' ? input.files : {};
+  Object.entries(source).forEach(([path, file]) => {
+    const normalized = normalizeCodeWorkspaceFile({ path, ...(file || {}) });
+    if (normalized.path) files[normalized.path] = normalized;
+  });
+  return {
+    files,
+    activePath: String(input?.activePath || '').trim()
   };
 }
 
@@ -334,6 +414,12 @@ export function normalizeEntityInput(entity, entityIndex) {
     name: entityName,
     x: Number.isFinite(entity?.x) ? entity.x : 14 + (entityIndex % 2) * 206,
     y: Number.isFinite(entity?.y) ? entity.y : 14 + Math.floor(entityIndex / 2) * 120,
+    width: Number.isFinite(entity?.width)
+      ? Math.min(ENTITY_MAX_WIDTH, Math.max(ENTITY_MIN_WIDTH, entity.width))
+      : ENTITY_WIDTH,
+    height: Number.isFinite(entity?.height)
+      ? Math.min(ENTITY_MAX_HEIGHT, Math.max(ENTITY_MIN_HEIGHT, entity.height))
+      : undefined,
     fields,
     meta: {
       aggregateRoot: Boolean(entity?.meta?.aggregateRoot),
@@ -364,6 +450,17 @@ export function normalizeDomainInput(domain, domainIndex) {
     color: /^#[0-9a-f]{6}$/i.test(domain?.color || '') ? domain.color : DOMAIN_COLORS[domainIndex % DOMAIN_COLORS.length],
     x: Number.isFinite(domain?.x) ? domain.x : 120 + domainIndex * 40,
     y: Number.isFinite(domain?.y) ? domain.y : 90 + domainIndex * 30,
+    // JUM-729 follow-up: absent in every model saved before the domain box could be
+    // resized, so the default is the size the CSS used to draw.
+    // JUM-729 follow-up: collapsed domains keep their position and their links; only
+    // their contents are out of the way.
+    collapsed: Boolean(domain?.collapsed),
+    width: Number.isFinite(domain?.width)
+      ? Math.max(DOMAIN_MIN_WIDTH, domain.width)
+      : DOMAIN_DEFAULT_WIDTH,
+    height: Number.isFinite(domain?.height)
+      ? Math.max(DOMAIN_MIN_HEIGHT, domain.height)
+      : DOMAIN_DEFAULT_HEIGHT,
     context: {
       ubiquitousLanguage: String(domain?.context?.ubiquitousLanguage || '').trim(),
       ownerTeam: String(domain?.context?.ownerTeam || '').trim(),
@@ -411,11 +508,12 @@ export function normalizeDomainInput(domain, domainIndex) {
 /**
  * Normalise a decoded `service-management.v1` payload (or a full-suite export
  * document, JUM-547) into the model slice the designer restores. The load
- * path restores the domain slice plus `deployments` (migrated forward to the
- * Requirement 059 metadata contract by `normalizeDeploymentInput`, JUM-481);
- * the remaining pinned sections (`interfaces`, `serviceConfiguration`,
- * `runtimeEnvironment`, `activeTab`) are intentionally not restored at load
- * time. Since JUM-547 the sections ARE normalised and returned here — the
+ * path restores the domain slice, deployments (migrated forward to the
+ * Requirement 059 metadata contract by `normalizeDeploymentInput`, JUM-481)
+ * and the generated-code workspace (JUM-736); the remaining pinned sections
+ * (`interfaces`, `serviceConfiguration`, `runtimeEnvironment`, `activeTab`)
+ * are intentionally not restored at load time. Since JUM-547/JUM-736 the sections
+ * ARE normalised and returned here — the
  * full-suite import path (`buildStateFromSuiteExport`) applies them with the
  * same normalisation discipline as a load — so both crossings share one
  * normaliser.
@@ -428,15 +526,27 @@ export function normalizeStatePayload(parsed) {
   const relationships = relationshipsInput
     .map(normalizeRelationship)
     .filter((relationship) => entityIds.has(relationship.fromEntityId) && entityIds.has(relationship.toEntityId));
+  const notesInput = Array.isArray(parsed?.notes) ? parsed.notes : [];
+  const notes = notesInput.map(normalizeNote);
   const deploymentsInput = Array.isArray(parsed?.deployments) ? parsed.deployments : [];
   const deployments = deploymentsInput.map(normalizeDeploymentInput);
   const interfacesInput = Array.isArray(parsed?.interfaces) ? parsed.interfaces : [];
   const interfaces = interfacesInput.map(normalizeInterfaceInput);
   const serviceConfiguration = normalizeServiceConfigurationInput(parsed?.serviceConfiguration);
   const runtimeEnvironment = normalizeRuntimeEnvironmentInput(parsed?.runtimeEnvironment);
+  const codeWorkspace = normalizeCodeWorkspaceInput(parsed?.codeWorkspace);
   const view = {
     zoom: clampZoom(parsed?.view?.zoom || 1),
     compactEntities: Boolean(parsed?.view?.compactEntities),
+    // JUM-729 follow-up: which sidebar group is on screen, so a reload does not throw
+    // the user back to Model in the middle of an inspector edit.
+    sidebarGroup: ['model', 'inspector', 'quality', 'share'].includes(parsed?.view?.sidebarGroup)
+      ? parsed.view.sidebarGroup
+      : 'model',
+    // JUM-729 follow-up: the panels overlay the canvas, so whether the drawer is open is
+    // part of the view. Closed by default — the canvas is what the designer is
+    // for, and a first run should show it whole.
+    sidebarOpen: Boolean(parsed?.view?.sidebarOpen),
     snapToGrid: parsed?.view?.snapToGrid !== false,
     edgeStyle: ['curved', 'orthogonal'].includes(parsed?.view?.edgeStyle) ? parsed.view.edgeStyle : 'curved',
     modelCheckMinSeverity: ['info', 'warn', 'error'].includes(parsed?.view?.modelCheckMinSeverity)
@@ -448,6 +558,7 @@ export function normalizeStatePayload(parsed) {
   return {
     domains,
     relationships,
+    notes,
     selectedDomainId: parsed?.selectedDomainId || domains[0]?.id || null,
     selectedEntityId: parsed?.selectedEntityId || null,
     selectedRelationshipId: parsed?.selectedRelationshipId || null,
@@ -455,6 +566,7 @@ export function normalizeStatePayload(parsed) {
     interfaces,
     serviceConfiguration,
     runtimeEnvironment,
+    codeWorkspace,
     deployments,
     view
   };
@@ -464,6 +576,8 @@ export function createDefaultView() {
   return {
     zoom: 1,
     compactEntities: false,
+    sidebarGroup: 'model',
+    sidebarOpen: false,
     snapToGrid: true,
     edgeStyle: 'curved',
     modelCheckMinSeverity: 'info',
@@ -494,6 +608,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
   const state = {
     domains: [],
     relationships: [],
+    notes: [],
     selectedDomainId: null,
     selectedEntityId: null,
     selectedRelationshipId: null,
@@ -516,6 +631,10 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
       fileName: '.env.dev',
       values: { ...runtimeEnvDefaults }
     },
+    codeWorkspace: {
+      files: {},
+      activePath: ''
+    },
     deployments: [],
     view: createDefaultView()
   };
@@ -529,6 +648,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
     return JSON.parse(JSON.stringify({
       domains: state.domains,
       relationships: state.relationships,
+      notes: state.notes,
       selectedDomainId: state.selectedDomainId,
       selectedEntityId: state.selectedEntityId,
       selectedRelationshipId: state.selectedRelationshipId,
@@ -537,6 +657,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
       interfaces: state.interfaces,
       serviceConfiguration: state.serviceConfiguration,
       runtimeEnvironment: state.runtimeEnvironment,
+      codeWorkspace: state.codeWorkspace,
       deployments: state.deployments,
       view: state.view
     }));
@@ -545,6 +666,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
   function applySnapshot(snapshot) {
     state.domains = snapshot.domains || [];
     state.relationships = (snapshot.relationships || []).map(normalizeRelationship);
+    state.notes = (snapshot.notes || []).map(normalizeNote);
     state.selectedDomainId = snapshot.selectedDomainId || state.domains[0]?.id || null;
     state.selectedEntityId = snapshot.selectedEntityId || null;
     state.selectedRelationshipId = snapshot.selectedRelationshipId || null;
@@ -559,6 +681,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
       ...state.runtimeEnvironment,
       ...(snapshot.runtimeEnvironment || {})
     };
+    state.codeWorkspace = normalizeCodeWorkspaceInput(snapshot.codeWorkspace);
     state.deployments = Array.isArray(snapshot.deployments)
       ? snapshot.deployments.map(normalizeDeploymentInput)
       : [];
@@ -595,6 +718,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
     const payload = {
       domains: state.domains,
       relationships: state.relationships,
+      notes: state.notes,
       selectedDomainId: state.selectedDomainId,
       selectedEntityId: state.selectedEntityId,
       selectedRelationshipId: state.selectedRelationshipId,
@@ -603,6 +727,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
       interfaces: state.interfaces,
       serviceConfiguration: state.serviceConfiguration,
       runtimeEnvironment: state.runtimeEnvironment,
+      codeWorkspace: state.codeWorkspace,
       deployments: state.deployments,
       view: state.view
     };
@@ -699,6 +824,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
       state.selectedEntityId = parsed.selectedEntityId;
       state.selectedRelationshipId = parsed.selectedRelationshipId;
       state.idCounter = parsed.idCounter;
+      state.codeWorkspace = parsed.codeWorkspace;
       state.deployments = parsed.deployments;
       state.view = parsed.view;
       recomputeIdCounter();
@@ -737,6 +863,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
           pk: Boolean(field.pk),
           fk: Boolean(field.fk),
           unique: Boolean(field.unique),
+          indexed: Boolean(field.indexed),
           nullable: Boolean(field.nullable),
           format: field.format || '',
           itemsType: field.itemsType || '',

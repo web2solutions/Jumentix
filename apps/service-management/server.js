@@ -116,6 +116,10 @@ const envFileByRuntime = {
 // not exist in the repository; the endpoint reports that as an explicit
 // exists=false state rather than an error or a silently empty list.
 const repoRoot = path.resolve(__dirname, '..', '..');
+const monacoPackageDirectory = process.env.JUMENTIX_SERVICE_MANAGEMENT_MONACO_DIR
+  ? path.resolve(process.env.JUMENTIX_SERVICE_MANAGEMENT_MONACO_DIR)
+  : path.join(repoRoot, 'apps', 'jumentix-website', 'node_modules', 'monaco-editor');
+const requireJsFile = require.resolve('requirejs/require');
 const pm2EcosystemDirectory = process.env.JUMENTIX_SERVICE_MANAGEMENT_PM2_DIR
   ? path.resolve(process.env.JUMENTIX_SERVICE_MANAGEMENT_PM2_DIR)
   : path.join(repoRoot, 'pm2');
@@ -148,13 +152,23 @@ const contentTypeByExtension = {
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
   '.svg': 'image/svg+xml',
-  '.ico': 'image/x-icon'
+  '.ico': 'image/x-icon',
+  '.ttf': 'font/ttf',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.wasm': 'application/wasm'
 };
 
 function buildStaticManifest() {
   const manifest = new Map();
   const walk = (currentPath) => {
-    const entries = fs.readdirSync(currentPath, { withFileTypes: true });
+    let entries;
+    try {
+      entries = fs.readdirSync(currentPath, { withFileTypes: true });
+    } catch (error) {
+      if (error && error.code === 'ENOENT') return;
+      throw error;
+    }
     entries.forEach((entry) => {
       const absoluteEntryPath = path.join(currentPath, entry.name);
       if (entry.isDirectory()) {
@@ -225,6 +239,30 @@ function resolveRequestPath(urlPath) {
   const safePath = path.posix.normalize(`/${normalized}`).replace(/^\/+/, '');
   if (!safePath || safePath.includes('..')) return null;
   return safePath;
+}
+
+function findMonacoFile(urlPath) {
+  const prefix = '/vendor/monaco/';
+  if (!String(urlPath || '').startsWith(prefix)) return null;
+  const relative = path.posix.normalize(String(urlPath).slice(prefix.length));
+  if (!relative || relative.startsWith('..') || relative.includes('/../')) return null;
+  const resolvedPath = path.resolve(monacoPackageDirectory, relative);
+  if (!resolvedPath.startsWith(`${monacoPackageDirectory}${path.sep}`)) return null;
+  return fs.existsSync(resolvedPath) ? resolvedPath : null;
+}
+
+function serveFile(response, filePath) {
+  fs.readFile(filePath, (error, content) => {
+    if (error) {
+      response.statusCode = error.code === 'ENOENT' ? 404 : 500;
+      response.end(error.code === 'ENOENT' ? 'Not Found' : 'Internal Server Error');
+      return;
+    }
+    const extension = path.extname(filePath).toLowerCase();
+    response.setHeader('Content-Type', contentTypeByExtension[extension] || 'application/octet-stream');
+    response.statusCode = 200;
+    response.end(content);
+  });
 }
 
 function normalizeEnvironment(runtime) {
@@ -466,6 +504,120 @@ function readPm2Ecosystem(runtime) {
   };
 }
 
+function toFiniteNumber(value, fallback = 0) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : fallback;
+}
+
+function normalizePm2Process(processEntry) {
+  const pm2Env = processEntry?.pm2_env || {};
+  const monit = processEntry?.monit || {};
+  const uptime = toFiniteNumber(pm2Env.pm_uptime);
+  const startedAt = uptime > 0 ? new Date(uptime).toISOString() : '';
+  const uptimeMs = uptime > 0 ? Math.max(0, Date.now() - uptime) : 0;
+  const customMetrics = {};
+  const axmMonitor = pm2Env.axm_monitor && typeof pm2Env.axm_monitor === 'object'
+    ? pm2Env.axm_monitor
+    : {};
+  Object.entries(axmMonitor).forEach(([key, metric]) => {
+    const value = metric && typeof metric === 'object' && 'value' in metric ? metric.value : metric;
+    customMetrics[key] = value;
+  });
+  return {
+    name: String(processEntry?.name || pm2Env.name || ''),
+    pmId: processEntry?.pm_id === undefined ? null : toFiniteNumber(processEntry.pm_id, null),
+    namespace: String(pm2Env.namespace || 'default'),
+    status: String(pm2Env.status || 'unknown'),
+    cpuPercent: toFiniteNumber(monit.cpu),
+    memoryBytes: toFiniteNumber(monit.memory),
+    restartCount: toFiniteNumber(pm2Env.restart_time),
+    unstableRestarts: toFiniteNumber(pm2Env.unstable_restarts),
+    uptimeMs,
+    startedAt,
+    script: String(pm2Env.pm_exec_path || ''),
+    interpreter: String(pm2Env.exec_interpreter || ''),
+    watching: Boolean(pm2Env.watch),
+    customMetrics
+  };
+}
+
+function summarizePm2Processes(processes) {
+  const statusCounts = processes.reduce((counts, processEntry) => {
+    counts[processEntry.status] = (counts[processEntry.status] || 0) + 1;
+    return counts;
+  }, {});
+  const totalCpuPercent = processes.reduce((total, processEntry) => total + processEntry.cpuPercent, 0);
+  const totalMemoryBytes = processes.reduce((total, processEntry) => total + processEntry.memoryBytes, 0);
+  return {
+    processCount: processes.length,
+    onlineCount: statusCounts.online || 0,
+    stoppedCount: statusCounts.stopped || 0,
+    erroredCount: statusCounts.errored || 0,
+    totalCpuPercent,
+    totalMemoryBytes,
+    statusCounts
+  };
+}
+
+function readPm2ProcessList() {
+  return new Promise((resolve, reject) => {
+    let pm2;
+    try {
+      // Loaded on demand so the static designer server can boot even when a
+      // stripped production package omits PM2. The metrics endpoint itself is
+      // fail-closed and reports that installation error.
+      const pm2Module = process.env.JUMENTIX_SERVICE_MANAGEMENT_PM2_MODULE || 'pm2';
+      // eslint-disable-next-line global-require, import/no-dynamic-require
+      pm2 = require(pm2Module);
+    } catch (error) {
+      reject(error);
+      return;
+    }
+    pm2.connect((connectError) => {
+      if (connectError) {
+        reject(connectError);
+        return;
+      }
+      pm2.list((listError, processList) => {
+        try {
+          pm2.disconnect();
+        } catch (_disconnectError) {
+          // Disconnect best-effort: a failed disconnect must not hide the PM2
+          // list result, because the endpoint is read-only.
+        }
+        if (listError) {
+          reject(listError);
+          return;
+        }
+        resolve(Array.isArray(processList) ? processList : []);
+      });
+    });
+  });
+}
+
+async function readPm2Metrics(runtime) {
+  const environment = normalizeEcosystemEnvironment(runtime);
+  const ecosystem = readPm2Ecosystem(environment);
+  const expectedNames = new Set((ecosystem.apps || []).map((app) => app.name).filter(Boolean));
+  const processes = (await readPm2ProcessList()).map(normalizePm2Process);
+  const processNames = new Set(processes.map((processEntry) => processEntry.name));
+  const missingExpected = [...expectedNames].filter((name) => !processNames.has(name)).sort();
+  return {
+    source: 'pm2',
+    collectedAt: new Date().toISOString(),
+    environment,
+    ecosystem: {
+      fileName: ecosystem.fileName,
+      path: ecosystem.path,
+      exists: ecosystem.exists,
+      expectedProcessCount: expectedNames.size,
+      missingExpected
+    },
+    summary: summarizePm2Processes(processes),
+    processes
+  };
+}
+
 function writeJson(response, statusCode, payload) {
   const sanitizedJson = JSON.stringify(payload)
     .replace(/</g, '\\u003c')
@@ -535,6 +687,15 @@ function writeEcosystemFileFailure(response, error) {
   });
 }
 
+function writePm2MetricsFailure(response, error) {
+  const code = error instanceof Error && error.code ? String(error.code) : 'PM2_METRICS_ERROR';
+  writeJson(response, 500, {
+    error: 'PM2 metrics collection failed.',
+    code,
+    details: error instanceof Error ? error.message : String(error)
+  });
+}
+
 function readBody(request, callback) {
   let body = '';
   request.on('data', (chunk) => {
@@ -557,8 +718,105 @@ function logMutation(environment, changedKeys) {
   console.log(`[${timestamp}] /api/runtime/env mutation: environment=${environment} keys=${changedKeys.join(',')}`);
 }
 
+/**
+ * Dev-only live reload (SSE).
+ *
+ * The designer is edited by reloading the page after every change, and the
+ * page carries unsaved canvas state — so "did my change land?" was answered by
+ * a manual reload that also threw away what was on screen. This pushes one
+ * event when a served file changes and lets the page reload itself.
+ *
+ * It is a development affordance and stays out of anything else: the endpoint
+ * is not registered, the watcher is not started and nothing is injected into
+ * `index.html` unless `NODE_ENV` is dev/development. Setting
+ * `JUMENTIX_SERVICE_MANAGEMENT_LIVE_RELOAD=0` turns it off there too.
+ */
+const liveReloadEnabled = (nodeEnvironment === 'dev' || nodeEnvironment === 'development')
+  && String(process.env.JUMENTIX_SERVICE_MANAGEMENT_LIVE_RELOAD || '').trim() !== '0';
+const liveReloadPath = '/dev/live-reload';
+const liveReloadClients = new Set();
+const liveReloadSnippet = `<script>
+(function () {
+  var connected = false;
+  function connect() {
+    var source = new EventSource(${JSON.stringify(liveReloadPath)});
+    source.addEventListener('reload', function () { window.location.reload(); });
+    source.addEventListener('open', function () {
+      // Reconnecting means the server restarted underneath us — pm2 watches
+      // this tree and restarts on every save, which kills the stream before it
+      // can push anything. Without reloading here the page kept running the
+      // code it had loaded before the change, which is exactly the "I am not
+      // seeing the new version" failure this is meant to remove.
+      if (connected) { window.location.reload(); return; }
+      connected = true;
+    });
+    source.addEventListener('error', function () {
+      // The browser retries an EventSource on its own, but not once the server
+      // has gone away long enough for it to give up. Re-arm so a restart that
+      // takes a while still ends with the page reloading.
+      if (source.readyState === 2) { source.close(); setTimeout(connect, 400); }
+    });
+  }
+  connect();
+})();
+</script>`;
+
+let liveReloadTimer = null;
+function notifyLiveReloadClients() {
+  // Debounced: one save can emit several watcher events, and a bundle sync
+  // rewrites twenty files at once — each would otherwise be its own reload.
+  if (liveReloadTimer) clearTimeout(liveReloadTimer);
+  liveReloadTimer = setTimeout(() => {
+    liveReloadTimer = null;
+    liveReloadClients.forEach((client) => {
+      client.write('event: reload\ndata: 1\n\n');
+    });
+  }, 120);
+}
+
+function startLiveReloadWatcher() {
+  try {
+    fs.watch(rootDirectory, { recursive: true }, (_eventType, fileName) => {
+      // The manifest is a boot-time scan; a new file has to enter it before it
+      // can be served, and the page is about to ask for it.
+      if (staticManifestRefreshEnabled) refreshStaticManifest();
+      if (fileName) notifyLiveReloadClients();
+    });
+  } catch (error) {
+    // A watcher that cannot start is not a reason to refuse to serve the app.
+    // eslint-disable-next-line no-console
+    console.warn(`Live reload disabled: ${error.message}`);
+  }
+}
+
+function openLiveReloadStream(request, response) {
+  response.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    Connection: 'keep-alive'
+  });
+  response.write('retry: 500\n\n');
+  liveReloadClients.add(response);
+  request.on('close', () => {
+    liveReloadClients.delete(response);
+  });
+}
+
+/** `index.html` with the reload client appended, in dev only. */
+function withLiveReloadSnippet(content) {
+  const html = content.toString('utf8');
+  if (html.includes(liveReloadPath)) return html;
+  return html.includes('</body>')
+    ? html.replace('</body>', `${liveReloadSnippet}\n</body>`)
+    : `${html}${liveReloadSnippet}`;
+}
+
 const server = http.createServer((request, response) => {
   const requestUrl = new URL(request.url || '/', `http://${host}:${port}`);
+  if (liveReloadEnabled && request.method === 'GET' && requestUrl.pathname === liveReloadPath) {
+    openLiveReloadStream(request, response);
+    return;
+  }
   if (request.method === 'GET' && requestUrl.pathname === '/api/runtime/env') {
     try {
       const environment = requestUrl.searchParams.get('environment') || process.env.NODE_ENV || 'dev';
@@ -586,6 +844,20 @@ const server = http.createServer((request, response) => {
       }
       writeEcosystemFileFailure(response, error);
     }
+    return;
+  }
+
+  if (request.method === 'GET' && requestUrl.pathname === '/api/runtime/pm2-metrics') {
+    const environment = requestUrl.searchParams.get('environment') || process.env.NODE_ENV || 'dev';
+    readPm2Metrics(environment)
+      .then((payload) => writeJson(response, 200, payload))
+      .catch((error) => {
+        if (isUnsupportedEnvironmentError(error)) {
+          writeInvalidEnvironment(response, error);
+          return;
+        }
+        writePm2MetricsFailure(response, error);
+      });
     return;
   }
 
@@ -625,6 +897,22 @@ const server = http.createServer((request, response) => {
     return;
   }
 
+  if (request.method === 'GET' && requestUrl.pathname === '/vendor/requirejs/require.js') {
+    serveFile(response, requireJsFile);
+    return;
+  }
+
+  if (request.method === 'GET' && requestUrl.pathname.startsWith('/vendor/monaco/')) {
+    const filePath = findMonacoFile(requestUrl.pathname);
+    if (!filePath) {
+      response.statusCode = 404;
+      response.end('Not Found');
+      return;
+    }
+    serveFile(response, filePath);
+    return;
+  }
+
   const relativePath = resolveRequestPath(request.url);
   if (!relativePath) {
     response.statusCode = 403;
@@ -660,11 +948,16 @@ const server = http.createServer((request, response) => {
     const extension = path.extname(filePath).toLowerCase();
     response.setHeader('Content-Type', contentTypeByExtension[extension] || 'application/octet-stream');
     response.statusCode = 200;
+    if (liveReloadEnabled && relativePath === 'index.html') {
+      response.end(withLiveReloadSnippet(content));
+      return;
+    }
     response.end(content);
   });
 });
 
 server.listen(port, host, () => {
+  if (liveReloadEnabled) startLiveReloadWatcher();
   // eslint-disable-next-line no-console
   console.log(`Service Management listening on http://${host}:${port}`);
 });

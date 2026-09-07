@@ -31,6 +31,7 @@
 
 // The domain model: queries, matrices, RBAC contract and the sample model.
 export * from './model/modelQueries.js';
+export * from './model/propertyKeys.js';
 export * from './model/rbacContract.js';
 export * from './model/sampleModel.js';
 export * from './model/deployCapabilityMatrix.js';

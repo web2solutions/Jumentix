@@ -39,6 +39,30 @@ describe('service management PM2 preview UI contract (JUM-480)', () => {
     expect(inspectors).toContain('--only');
   });
 
+  it('exposes a dedicated PM2 metrics dashboard backed by PM2 runtime collection', () => {
+    expect.hasAssertions();
+    const html = readDesignerSource('index.html');
+    const script = readDesignerSource('script.js');
+    const server = readDesignerSource('server.js');
+    expect(html).toContain('id="tab-monitoring-btn"');
+    expect(html).toContain('id="pm2-metrics-process-list"');
+    expect(html).toContain('class="monitoring-health-strip"');
+    expect(html).toContain('id="pm2-online-bar"');
+    expect(html).toContain('id="pm2-cpu-bar"');
+    expect(html).toContain('id="pm2-metrics-missing-list"');
+    expect(html).toContain('id="pm2-monitoring-command"');
+    expect(script).toContain('/api/runtime/pm2-metrics');
+    expect(script).toContain('function normalizePm2Process(processEntry)');
+    expect(script).toContain('function pm2Processes(snapshot)');
+    expect(script).toContain('pm2Health(snapshot)');
+    expect(script).toContain('setMetricBar(dom.pm2CpuBar');
+    expect(script).toContain('process-bar');
+    const quote = String.fromCharCode(39);
+    expect(server).toContain(`|| ${quote}pm2${quote}`);
+    expect(server).toContain('pm2.list');
+    expect(server).toContain(`source: ${quote}pm2${quote}`);
+  });
+
   it('offers a preview environment per ecosystem the repository defines', () => {
     expect.hasAssertions();
     const html = readDesignerSource('index.html');

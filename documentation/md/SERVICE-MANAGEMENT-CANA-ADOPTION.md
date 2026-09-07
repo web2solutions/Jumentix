@@ -341,13 +341,13 @@ must be obvious, not merely available.
   downloads `domain-designer.json` — the full-suite document (JUM-547:
   `{ kind: "service-management-suite", version: "2.0.0", domains,
   relationships, interfaces, serviceConfiguration, runtimeEnvironment,
-  deployments, view }`). **Import JSON** on the same toolbar restores it. The
+  codeWorkspace, deployments, view }`). **Import JSON** on the same toolbar restores it. The
   other export buttons (Markdown, JSON Schema, OAS 3.1, AsyncAPI, gRPC proto,
   boilerplate bundle, domain package) are design artifacts for downstream
   tooling, not backups.
-- **The export's scope, honestly:** the JSON export carries all four tabs of
+- **The export's scope, honestly:** the JSON export carries all five tabs of
   the suite state — the domain model, the interface adapters, the service
-  configuration and the deploy targets — with one recorded boundary: the
+  configuration, the generated-code workspace and the deploy targets — with one recorded boundary: the
   runtime environment crosses as the environment *selection* only
   (`environment`, `fileName`), never its values, so no machine configuration
   (and no secret) leaves in a bundle; import restores the selection and keeps
@@ -426,8 +426,8 @@ Recorded honestly, with their owning issues:
   sets, the adapter's error-taxonomy mapping and the migration module's
   construction belong to the E3 document,
   [Service Management Module Architecture](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.md).
-- **Parity guarantees** — including the full-suite export scope and the
-  JUM-547 `runtimeEnvironment` decision — belong to the E4 document,
+- **Parity guarantees** — including the full-suite export scope, the
+  `codeWorkspace` crossing and the JUM-547 `runtimeEnvironment` decision — belong to the E4 document,
   [Service Management Contract Parity Guarantees](./SERVICE-MANAGEMENT-CONTRACT-PARITY.md).
 - **The status-surface contract** — how messages are rendered (aria-live
   region, severities, no `alert()`) belongs to the E5 document,

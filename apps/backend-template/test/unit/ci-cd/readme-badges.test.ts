@@ -55,16 +55,23 @@ describe('rEADME badges', () => {
     expect(badges).not.toContain('dl.circleci.com/status-badge');
   });
 
-  it('points SonarCloud at the project key the scanner actually reports to', () => {
+  it('links SonarCloud dashboards without using broken public badge endpoints', () => {
     expect.hasAssertions();
 
     expect.hasAssertions();
-    // The failure this catches: a badge that renders green for a project nobody
-    // is scanning.
+    // The failure this catches: a badge endpoint that renders a red
+    // "Project not found" image for a private SonarCloud project.
     const key = sonarProperties.match(/sonar\.projectKey=(\S+)/)?.[1];
+    const expectedBadgeSlugs = [
+      'img.shields.io/badge/SonarCloud-quality%20gate',
+      'img.shields.io/badge/SonarCloud-security',
+      'img.shields.io/badge/SonarCloud-coverage'
+    ];
 
     expect(key).toBe('Jumentix');
-    expect(badges).toContain(`project=${key}`);
+    expect(badges).toContain(`sonarcloud.io/summary/new_code?id=${key}`);
+    expect(expectedBadgeSlugs.every((slug) => badges.includes(slug))).toBe(true);
+    expect(badges).not.toContain('sonarcloud.io/api/project_badges');
     expect(badges).not.toContain('web2solutions_aaa-typescript-boilerplate');
   });
 
@@ -78,15 +85,14 @@ describe('rEADME badges', () => {
     expect(badges).not.toContain('badge/codecov-via%20CircleCI');
   });
 
-  it('badges real Codecov branch coverage and links to the file maps', () => {
+  it('badges Codecov file maps without using broken private coverage endpoints', () => {
     expect.hasAssertions();
 
     for (const branch of ['dev', 'main']) {
-      expect(readme).toContain(
-        `https://codecov.io/gh/XpertMinds/Jumentix/branch/${branch}/graph/badge.svg?flag=project`
-      );
+      expect(readme).toContain(`img.shields.io/badge/Codecov-${branch}%20file%20map`);
       expect(readme).toContain(`https://app.codecov.io/gh/XpertMinds/Jumentix/tree/${branch}`);
     }
+    expect(readme).not.toContain('codecov.io/gh/XpertMinds/Jumentix/branch');
     expect(readme).toContain('Codecov file map for `dev`');
     expect(readme).toContain('Codecov file map for `main`');
   });
@@ -95,7 +101,7 @@ describe('rEADME badges', () => {
     expect.hasAssertions();
 
     expect(readme).toContain('## Coverage and CI Map');
-    expect(readme).toContain('| Codecov project coverage |');
+    expect(readme).toContain('| Codecov file map |');
     expect(readme).toContain('| ≥ 99% | ≥ 99% | ≥ 99% | ≥ 90% | ≥ 99% |');
     expect(readme).toContain('Istanbul JSON and LCOV evidence');
   });

@@ -77,30 +77,33 @@ Install the workspace dependencies once:
 rtk proxy bun install
 ```
 
-## 3. Vendored browser bundles — do this before the first run
+## 3. Vendored browser bundles
 
 The application is a zero-build SPA that resolves two bare specifiers through
-the import map in `index.html`. Both targets are gitignored and must be
-generated locally before the first boot:
+the import map in `index.html`: `@jumentix/cana` and `@jumentix/designer-core/`.
+Both targets live under `apps/service-management/vendor/`, are gitignored, and
+are generated locally.
+
+The dev entry points generate them for you — `dev:service-management` and the
+`pm2:start:dev:*` scripts run the vendor step before starting the process, so a
+fresh clone boots a working designer with no extra command.
+
+Generate them by hand when you start the server directly, without PM2:
 
 ```bash
-rtk proxy bun ci-cd/sync-service-management-cana-bundle.js
+rtk proxy bun run service-management:vendor
 ```
 
-```bash
-rtk proxy bun ci-cd/sync-service-management-designer-core.js
-```
-
-The first vendors the Cana browser bundle into
-`apps/service-management/vendor/cana/index.js`; the second mirrors
+That single script writes the Cana browser bundle to
+`apps/service-management/vendor/cana/index.js` and mirrors
 `packages/designer-core/src` into
 `apps/service-management/vendor/designer-core/`.
 
-Skipping this step is the single most common first-run failure: the page loads,
-the shell renders, and every panel stays inert because the module graph never
-resolves. The browser integration suites run both scripts before booting the
-server, so a stale bundle can never read as a designer outage in CI — but a
-manual run has to do it explicitly.
+Without the bundles the page loads, the shell renders, and every panel stays
+inert because the module graph never resolves, with repeated `/vendor/...` 404s
+in the browser console. The browser integration suites generate them before
+booting the server, so a stale bundle can never read as a designer outage in
+CI.
 
 ## 4. Running the application
 
@@ -155,15 +158,18 @@ NODE_ENV=dev bun apps/service-management/server.js
 
 ### 4.4 Environment variables
 
+Every variable below is prefixed `JUMENTIX_SERVICE_MANAGEMENT_`, except
+`NODE_ENV`.
+
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `JUMENTIX_SERVICE_MANAGEMENT_PORT` | `3200` | HTTP port |
-| `JUMENTIX_SERVICE_MANAGEMENT_HOST` | `127.0.0.1` | Bind address |
-| `JUMENTIX_SERVICE_MANAGEMENT_CONFIG_DIR` | `apps/backend-template/src/config` | Directory the runtime env API reads and writes |
-| `JUMENTIX_SERVICE_MANAGEMENT_PM2_DIR` | `pm2/` | Directory the PM2 ecosystem preview reads |
-| `JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN` | unset | When set, `POST /api/runtime/env` requires `Authorization: Bearer <token>` |
-| `JUMENTIX_SERVICE_MANAGEMENT_STATIC_MANIFEST_REFRESH` | derived from `NODE_ENV` | `on-miss` re-scans the static manifest on a miss; `boot-only` never re-scans |
-| `NODE_ENV` | `dev` | Fallback environment when a request does not name one |
+| `…_PORT` | `3200` | HTTP port |
+| `…_HOST` | `127.0.0.1` | Bind address |
+| `…_CONFIG_DIR` | `apps/backend-template/src/config` | Where the runtime env API reads and writes |
+| `…_PM2_DIR` | `pm2/` | Where the PM2 ecosystem preview reads |
+| `…_AUTH_TOKEN` | unset | Requires `Authorization: Bearer <token>` on the env `POST` |
+| `…_STATIC_MANIFEST_REFRESH` | from `NODE_ENV` | `on-miss` re-scans the static manifest; `boot-only` never does |
+| `NODE_ENV` | `dev` | Fallback environment when a request names none |
 
 The server **fails closed at boot** when the configured directory does not
 exist: it prints `Service Management config directory not found: <path>` on
@@ -276,7 +282,7 @@ With an entity selected, the Entity Inspector offers `Save Name`,
 flag and the invariants (one rule per line). Aggregate roots show an `AR`
 marker on their card.
 
-![Entity Inspector: aggregate root, invariants, the RBAC matrix, a message contract, OpenAPI composition, fields and the generated CRUD API preview](../../images/service-manager/03-entity-inspector.png "Entity Inspector")
+![Entity Inspector: the entity name, aggregate-root flag, invariants and the RBAC matrix](../../images/service-manager/03a-entity-inspector-rules-and-rbac.png "Entity Inspector — rules and RBAC")
 
 Fields carry OpenAPI-aligned metadata:
 
@@ -326,8 +332,14 @@ a relationship between the same pair cannot be duplicated.
 ### 6.5 RBAC, message contracts and OpenAPI composition
 
 For each entity and action (`list`, `getById`, `create`, `update`, `delete`),
-toggle `superadmin`, `admin` and `user`, plus the tenant-scope flag, then click
-`Save RBAC Rule`.
+toggle `superadmin`, `admin` and `user`, then click `Save RBAC Rule`. Tenant
+scope is **derived from the roles**, not set by hand: `admin` and `user` scope to
+their organization, `superadmin` is global, which is what the runtime enforces.
+Legacy direct scopes still run but are not editable here.
+
+![Entity Inspector: message contracts and the OpenAPI composition controls](../../images/service-manager/03b-entity-inspector-contracts-and-composition.png "Entity Inspector — contracts and composition")
+
+![Entity Inspector: the field editor and the generated OpenAPI CRUD preview](../../images/service-manager/03c-entity-inspector-fields-and-api-preview.png "Entity Inspector — fields and API preview")
 
 Declare `event`, `command`, `request` and `response` contracts per entity with a
 name, channel or topic, version, and a JSON payload schema. `Add Contract`
@@ -377,7 +389,9 @@ case, controller and handler. `Generate Examples` renders request and response
 payload examples. Select an entity to scope the output, or leave nothing
 selected for the whole canvas.
 
-![Export panel with the code skeleton preview and the generated request and response examples](../../images/service-manager/05-export-panel.png "Export panel")
+![Export panel: the export, import and generation buttons](../../images/service-manager/05a-export-and-import-targets.png "Export and import targets")
+
+![The generated code skeletons and the request and response examples](../../images/service-manager/05b-code-preview-and-examples.png "Code preview and generated examples")
 
 | Button | Downloaded file | Use |
 | --- | --- | --- |
@@ -611,8 +625,9 @@ flowchart LR
 
 ### The page loads but every panel is inert
 
-The vendored bundles are missing. Run both sync scripts from section 3, then
-reload. The browser console shows repeated 404s for `/vendor/...` in this
+The vendored bundles are missing. Run `bun run service-management:vendor`, then
+reload. The dev entry points do this for you; starting `server.js` directly does
+not. The browser console shows repeated 404s for `/vendor/...` in this
 state.
 
 ### The server exits immediately

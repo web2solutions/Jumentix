@@ -320,7 +320,7 @@ function createJunctionState() {
 }
 
 /**
- * A state designed across all four tabs (JUM-547): the reference model plus
+ * A state designed across all five tabs (JUM-547 + JUM-736): the reference model plus
  * interface adapters, a non-default service configuration, a runtime
  * environment selection with local values, and deploy targets — one in the
  * Requirement 059 shape, one in the legacy pre-JUM-481 shape that migrates
@@ -351,6 +351,19 @@ function createFullSuiteState() {
       values: {
         JUMENTIX_HTTP_FRAMEWORK: 'fastify',
         JUMENTIX_REDIS_URL: 'redis://internal-host:6379'
+      }
+    },
+    codeWorkspace: {
+      activePath: 'src/modules/Billing/domain/Model/Invoice.ts',
+      files: {
+        'src/modules/Billing/domain/Model/Invoice.ts': {
+          path: 'src/modules/Billing/domain/Model/Invoice.ts',
+          state: 'edited',
+          baseContent: 'generated-v1',
+          generatedContent: 'generated-v2',
+          content: '// user edit survives suite export\n',
+          updatedAt: '2026-08-29T00:00:00.000Z'
+        }
       }
     },
     deployments: [
@@ -562,6 +575,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
         'interfaces',
         'serviceConfiguration',
         'runtimeEnvironment',
+        'codeWorkspace',
         'deployments',
         'view'
       ]);
@@ -591,7 +605,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
   });
 
   describe('full-suite export/import (JUM-547)', () => {
-    it('round-trips all four tabs deep-equal through the suite crossing', () => {
+    it('round-trips all five tabs deep-equal through the suite crossing', () => {
       expect.hasAssertions();
       const state = createFullSuiteState();
       const document = buildJsonExportDocument(state);
@@ -604,6 +618,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
       expect(result.state.view).toStrictEqual(state.view);
       expect(result.state.interfaces).toStrictEqual(state.interfaces);
       expect(result.state.serviceConfiguration).toStrictEqual(state.serviceConfiguration);
+      expect(result.state.codeWorkspace).toStrictEqual(state.codeWorkspace);
       expect(result.state.deployments).toStrictEqual(state.deployments);
       // The environment selection crosses; the local machine's values (here
       // the source state's own) are preserved, so the section is deep-equal.

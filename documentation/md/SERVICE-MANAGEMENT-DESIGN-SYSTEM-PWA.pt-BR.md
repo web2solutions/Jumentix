@@ -166,7 +166,7 @@ abaixo.
 
 ### A barra de abas é uma tablist de verdade
 
-As quatro abas formam uma tablist WAI-ARIA (`role="tablist"`, `role="tab"`,
+As seis abas visíveis formam uma tablist WAI-ARIA (`role="tablist"`, `role="tab"`,
 `aria-selected`, `aria-controls` no
 [`index.html`](../../apps/service-management/index.html); comportamento em
 [`src/ui/tabs.js`](../../apps/service-management/src/ui/tabs.js)):
