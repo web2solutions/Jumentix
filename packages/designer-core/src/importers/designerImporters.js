@@ -363,13 +363,14 @@ export function buildDomainsFromOas(parsed) {
 
     const fields = Object.entries(properties).map(([fieldName, fieldSchema]) => {
       const field = fieldSchema || {};
-      // PK/FK/unique default to the name heuristic; an explicit
+      // PK/FK/unique default to the name heuristic; indexed defaults to false. An explicit
       // `x-field-flags` extension (JUM-478) overrides it per flag.
       const heuristic = oasFieldNameFlags(fieldName);
       const flagOverrides = field['x-field-flags'] && typeof field['x-field-flags'] === 'object'
         ? field['x-field-flags']
         : {};
       const flag = (key) => (typeof flagOverrides[key] === 'boolean' ? flagOverrides[key] : heuristic[key]);
+      const indexed = typeof flagOverrides.indexed === 'boolean' ? flagOverrides.indexed : false;
       return normalizeField({
         name: fieldName,
         type: fromOasType(field),
@@ -386,7 +387,8 @@ export function buildDomainsFromOas(parsed) {
         required: required.includes(fieldName),
         pk: flag('pk'),
         fk: flag('fk'),
-        unique: flag('unique')
+        unique: flag('unique'),
+        indexed
       }, 0);
     });
 
@@ -452,6 +454,7 @@ const SUITE_EXPORT_KNOWN_SECTIONS = new Set([
   'interfaces',
   'serviceConfiguration',
   'runtimeEnvironment',
+  'codeWorkspace',
   'deployments',
   'view'
 ]);

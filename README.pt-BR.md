@@ -6,11 +6,11 @@ Idioma alvo: Português (Brasil)
 
 [![GitHub Actions dev](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml?query=branch%3Adev)
 [![GitHub Actions main](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml?query=branch%3Amain)
-[![Codecov dev](https://codecov.io/gh/XpertMinds/Jumentix/branch/dev/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev)
-[![Codecov main](https://codecov.io/gh/XpertMinds/Jumentix/branch/main/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/main)
-[![Status do Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Jumentix)
-[![Classificação de Segurança](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=Jumentix)
-[![Cobertura Sonar](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Jumentix)
+[![Mapa Codecov dev](https://img.shields.io/badge/Codecov-mapa%20dev-f01f7a?logo=codecov&logoColor=white)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev)
+[![Mapa Codecov main](https://img.shields.io/badge/Codecov-mapa%20main-f01f7a?logo=codecov&logoColor=white)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/main)
+[![Qualidade SonarCloud](https://img.shields.io/badge/SonarCloud-quality%20gate-F3702A?logo=sonarcloud&logoColor=white)](https://sonarcloud.io/summary/new_code?id=Jumentix)
+[![Segurança SonarCloud](https://img.shields.io/badge/SonarCloud-seguran%C3%A7a-F3702A?logo=sonarcloud&logoColor=white)](https://sonarcloud.io/summary/new_code?id=Jumentix)
+[![Cobertura SonarCloud](https://img.shields.io/badge/SonarCloud-cobertura-F3702A?logo=sonarcloud&logoColor=white)](https://sonarcloud.io/summary/new_code?id=Jumentix)
 [![Bun](https://img.shields.io/badge/bun-1.3.13-000000?logo=bun&logoColor=white)](https://bun.sh/)
 [![Compatibilidade Node](https://img.shields.io/badge/node%20compat-22.x-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-6BA539?logo=openapiinitiative&logoColor=white)](./spec/1.0.0.yml)
@@ -36,7 +36,7 @@ Idioma alvo: Português (Brasil)
 | Gate obrigatório | `main` | `dev` |
 | --- | :---: | :---: |
 | Workflow GitHub Actions | [![GitHub Actions main](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml?query=branch%3Amain) | [![GitHub Actions dev](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml?query=branch%3Adev) |
-| Cobertura de projeto no Codecov | [![Codecov main](https://codecov.io/gh/XpertMinds/Jumentix/branch/main/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/main) | [![Codecov dev](https://codecov.io/gh/XpertMinds/Jumentix/branch/dev/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev) |
+| Mapa de arquivos Codecov | [![Mapa Codecov main](https://img.shields.io/badge/Codecov-mapa%20main-f01f7a?logo=codecov&logoColor=white)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/main) | [![Mapa Codecov dev](https://img.shields.io/badge/Codecov-mapa%20dev-f01f7a?logo=codecov&logoColor=white)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev) |
 | Testes por branch | `branch-gate` | `branch-gate` |
 | Cobertura de projeto + patch | `coverage` | somente promoção de release |
 | Review de segurança third-party | `third-party-review` | somente PR |
@@ -47,10 +47,12 @@ completos de workspace, browser, cobertura, website e banco ficam reservados
 para promoções de release `dev -> main`, pushes em `main` e execuções completas
 agendadas.
 
-A cobertura é produzida e aplicada pelo job GitHub Actions `coverage` quando a suite
-completa roda. O workflow envia LCOV ao Codecov com a flag `project` quando
-`CODECOV_TOKEN` está configurado. O Codecov fornece o mapa de cobertura arquivo
-a arquivo para cada branch longa:
+A cobertura é produzida e aplicada pelo job GitHub Actions `coverage` quando a
+suite completa roda. O workflow envia LCOV ao Codecov quando `CODECOV_TOKEN`
+está configurado. O Codecov fornece o mapa de cobertura arquivo a arquivo para
+cada branch longa; o README usa badges estáveis de dashboard porque o endpoint
+privado de badges do Codecov retorna `unknown` sem acesso de badge do
+repositório:
 
 - [Mapa de arquivos Codecov para `dev`](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev)
 - [Mapa de arquivos Codecov para `main`](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/main)

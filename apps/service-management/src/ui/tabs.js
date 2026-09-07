@@ -41,6 +41,16 @@ export function createTabs({ dom, state, saveState }) {
       key: 'deploy-management',
       button: dom.tabDeployManagementBtn,
       section: dom.tabDeployManagement
+    },
+    {
+      key: 'monitoring',
+      button: dom.tabMonitoringBtn,
+      section: dom.tabMonitoring
+    },
+    {
+      key: 'code-workspace',
+      button: dom.tabCodeWorkspaceBtn,
+      section: dom.tabCodeWorkspace
     }
   ];
 

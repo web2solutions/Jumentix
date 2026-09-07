@@ -133,20 +133,20 @@ seção de migração abaixo) e depois um único `await loadState()` em
 
 ### O núcleo de estado (`src/state/designerState.js`)
 
-- **Objeto de estado.** Um único objeto contendo as doze seções persistidas do
+- **Objeto de estado.** Um único objeto contendo as quatorze seções persistidas do
   documento `service-management.v1` (esquema fixado pelo
   [Requisito 126, Contrato 2](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md)
   — link, não cópia).
 - **`normalizeStatePayload(parsed)`** — normaliza um payload decodificado no
-  recorte do modelo restaurado no load. Apenas `domains`, `relationships`, as
-  três seleções, `idCounter` e `view` retornam; as demais seções fixadas
+  recorte do modelo restaurado no load. `domains`, `relationships`, as três
+  seleções, `idCounter`, `codeWorkspace` e `view` retornam; as demais seções fixadas
   intencionalmente não são restauradas no load. A normalização descarta
   relacionamentos que apontam para entidades desconhecidas e limita a view
   (zoom para 0.5–2, estilo de aresta e severidade para seus enums).
 - **`snapshotState()`/`applySnapshot()`** — copiam profundamente as seções
   persistidas para fora de `state` e as restauram de volta, recomputando
   `idCounter` a partir do maior sufixo numérico de id.
-- **`saveState()`** — monta o payload de doze seções e chama
+- **`saveState()`** — monta o payload de quatorze seções e chama
   `store.save(payload)` sem await (fire-and-forget, preservando o comportamento
   anterior à extração; veja a seção do adaptador para entender por que isso é
   seguro hoje e por que os chamadores não devem depender disso).
@@ -158,14 +158,14 @@ seção de migração abaixo) e depois um único `await loadState()` em
 
 ### O esquema de armazenamento `service-management.v1`
 
-Todo o estado da suíte (as quatro guias) persiste como UM payload JSON sob a
+Todo o estado da suíte (as cinco guias) persiste como UM payload JSON sob a
 chave única fixada `service-management.v1`; o baseline de diff de esquema vive
 sob `service-management.schema-baseline.v1`. Desde a migração entregue do
 JUM-484, ambos os documentos vivem no Cana — um único object store IndexedDB
 (`designerDocuments`, banco `service-management`, esquema versão 1) — como
 cópias de bytes dos mesmos documentos JSON que o adaptador localStorage
-gravava. A era do localStorage é histórica; o formato de transmissão fixado NÃO
-mudou. O esquema — as doze
+gravava. A era do localStorage é histórica; o formato de transmissão fixado agora
+inclui `codeWorkspace`. O esquema — as quatorze
 seções de nível superior, seus enums e o formato do baseline — é fixado pelo
 [Requisito 126, Contrato 2](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md)
 e **não é duplicado aqui** para que os dois não divirjam. Qualquer mudança

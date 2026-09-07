@@ -23,6 +23,10 @@ const customJestConfig = {
     // component that had switched itself off. The double lets the mount path
     // run; the real editor is covered by the Cypress suites, in a real browser.
     '^monaco-editor$': '<rootDir>/test/mocks/monaco-editor.ts',
+    // JUM-728: the theme package is ESM-only and does not resolve under jsdom.
+    // `MDXMonacoPre` imports it for one thing — the `pre` it delegates shell
+    // fences to — and the double provides exactly that.
+    '^nextra-theme-docs$': '<rootDir>/test/mocks/nextra-theme-docs.tsx',
   },
   testEnvironment: 'jest-environment-jsdom',
   // JUM-158: the route-discovery suite is ESM (.mjs) because the script it

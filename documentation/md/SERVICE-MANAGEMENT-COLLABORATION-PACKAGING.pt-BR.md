@@ -359,7 +359,7 @@ armazenado.
 A exportação JSON é o documento full-suite versionado
 (`{ kind: "service-management-suite", version: "2.0.0", domains,
 relationships, interfaces, serviceConfiguration, runtimeEnvironment,
-deployments, view }`) carregando **as quatro abas** em um formato
+codeWorkspace, deployments, view }`) carregando **as cinco abas** em um formato
 reimportável
 ([JUM-547](https://linear.app/jumentix/issue/JUM-547/feature-full-suite-exportimport-carry-interfaces-service-configuration)).
 Uma decisão de segurança registrada importa para o empacotamento: o pacote

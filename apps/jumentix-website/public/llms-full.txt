@@ -669,7 +669,7 @@ Headings:
 - Using the Service Manager and the Domain Designer
 - 1. What the Service Manager is
 - 2. Prerequisites
-- 3. Vendored browser bundles — do this before the first run
+- 3. Vendored browser bundles
 - 4. Running the application
 - 4.1 Start it alone
 - 4.2 Start it with the backend

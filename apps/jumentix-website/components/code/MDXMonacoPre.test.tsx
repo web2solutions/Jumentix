@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from '@/test-utils';
 import { monacoTestState, resetMonacoTestState } from '../../test/mocks/monaco-editor';
 import { MDXCodeSourceProvider, parseMDXCodeBlocks } from './MDXCodeSourceProvider';
+import type { ReactNode } from 'react';
 import { MDXMonacoPre } from './MDXMonacoPre';
 
 describe('MDXMonacoPre', () => {
@@ -38,6 +39,81 @@ describe('MDXMonacoPre', () => {
       '});'
     ].join('\n'));
     expect(screen.getByText(/categories/)).toBeInTheDocument();
+  });
+
+  it.each(['bash', 'sh', 'shell', 'zsh', 'console'])(
+    'renders a %s fence through the theme pre instead of mounting an editor',
+    async (language) => {
+      expect.hasAssertions();
+
+      const { container } = render(
+        <MDXMonacoPre data-copy="">
+          <code className={`language-${language}`}>{'bun install\n'}</code>
+        </MDXMonacoPre>
+      );
+
+      const pre = container.querySelector('pre');
+      expect(pre).toBeInTheDocument();
+      expect(pre).toHaveAttribute('data-copy');
+      expect(pre?.textContent).toContain('bun install');
+      expect(monacoTestState.models).toHaveLength(0);
+    }
+  );
+
+  it('still mounts an editor for a language that is read rather than copied', async () => {
+    expect.hasAssertions();
+
+    render(
+      <MDXMonacoPre>
+        <code className="language-ts">{'const port = 3200;\n'}</code>
+      </MDXMonacoPre>
+    );
+
+    await waitFor(() => expect(monacoTestState.models).toHaveLength(1));
+    expect(monacoTestState.models[0].getValue()).toBe('const port = 3200;');
+  });
+
+  it('renders a shell fence through the pre component it is given', () => {
+    expect.hasAssertions();
+
+    function ThemePre(props: { children?: ReactNode; [key: string]: unknown }) {
+      return <pre data-theme-pre="" {...props} />;
+    }
+
+    const { container } = render(
+      <MDXMonacoPre DefaultPre={ThemePre}>
+        <code className="language-bash">{'bun run dev\n'}</code>
+      </MDXMonacoPre>
+    );
+
+    expect(container.querySelector('pre')).toHaveAttribute('data-theme-pre');
+    expect(monacoTestState.models).toHaveLength(0);
+  });
+
+  it('reads the fence language from the data-language attribute Nextra sets', () => {
+    expect.hasAssertions();
+
+    const { container } = render(
+      <MDXMonacoPre data-language="bash" data-copy="">
+        <code>{'bun run dev\n'}</code>
+      </MDXMonacoPre>
+    );
+
+    expect(container.querySelector('pre')).toBeInTheDocument();
+    expect(monacoTestState.models).toHaveLength(0);
+  });
+
+  it('passes the data-language fence language to the editor for read languages', async () => {
+    expect.hasAssertions();
+
+    render(
+      <MDXMonacoPre data-language="json">
+        <code>{'{ "port": 3200 }\n'}</code>
+      </MDXMonacoPre>
+    );
+
+    await waitFor(() => expect(monacoTestState.models).toHaveLength(1));
+    expect(monacoTestState.models[0].language).toBe('json');
   });
 
   it('keeps empty pre blocks as plain pre elements', () => {

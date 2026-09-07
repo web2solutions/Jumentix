@@ -380,3 +380,51 @@
 main > div:empty {
   min-height: 2px;
 }
+
+/*
+ * JUM-728 — documentation screenshots must not dominate the page.
+ *
+ * A tall, narrow capture (the Entity Inspector is 611x1800) renders at its
+ * natural height and pushes everything after it a full screen away: measured on
+ * the Service Manager guide, one image accounted for 1800px of a 24786px page.
+ * Capping the height and letting the width follow keeps the aspect ratio, keeps
+ * the image readable, and keeps the page navigable.
+ *
+ * The selector targets `main p`, not `.nextra-content` — this site's Nextra
+ * layout renders documentation straight into `main` and never emits that class,
+ * so a `.nextra-content` rule matches nothing (verified in the built page).
+ *
+ * `next/image` wraps the image in sized spans, so the cap is applied to those
+ * as well; capping only the `img` leaves the reserved space behind.
+ */
+main p > span:has(img),
+main p > span > span:has(img) {
+  display: block;
+  max-width: 100%;
+}
+
+main p img {
+  max-height: 70vh;
+  max-width: 100%;
+  width: auto !important;
+  height: auto !important;
+  margin-inline: auto;
+  object-fit: contain;
+}
+
+/*
+ * JUM-728 — a command must not need a horizontal scrollbar on a phone.
+ *
+ * Shell fences render through the theme `pre` now, and a long command
+ * (`NODE_ENV=dev bun apps/service-management/server.js`) overflows a 358px
+ * content column: measured on the Service Manager guide, seven code blocks
+ * scrolled horizontally at 390px wide. Wrapping them below the theme's own
+ * breakpoint keeps the whole command on screen; the theme's word-wrap toggle
+ * still works on wider screens, where lines mostly fit anyway.
+ */
+@media (width < 768px) {
+  main pre code {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+}

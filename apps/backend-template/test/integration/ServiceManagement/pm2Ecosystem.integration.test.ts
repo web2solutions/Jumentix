@@ -75,6 +75,14 @@ function ecosystemSource(apps: Array<{ name: string; marker: string }>) {
   return `module.exports = {\n  apps: [\n${entries}\n  ]\n};\n`;
 }
 
+function pm2ModuleSource(processes: unknown[]) {
+  return `module.exports = {
+  connect(callback) { callback(null); },
+  list(callback) { callback(null, ${JSON.stringify(processes)}); },
+  disconnect() {}
+};\n`;
+}
+
 describe('service management PM2 ecosystem preview API (JUM-480)', () => {
   let configDir: string;
   let pm2Dir: string;
@@ -92,7 +100,30 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
       // No ecosystem.ci.cjs on purpose: the missing-file state is an
       // acceptance criterion, asserted below.
     });
-    server = await startServer(configDir, { JUMENTIX_SERVICE_MANAGEMENT_PM2_DIR: pm2Dir });
+    const pm2ModulePath = path.join(pm2Dir, 'pm2-fixture.cjs');
+    fs.writeFileSync(pm2ModulePath, pm2ModuleSource([
+      {
+        name: 'jumentix-dev-restapi',
+        pm_id: 1,
+        monit: { cpu: 3.5, memory: 52428800 },
+        pm2_env: {
+          name: 'jumentix-dev-restapi',
+          namespace: 'default',
+          status: 'online',
+          restart_time: 2,
+          unstable_restarts: 0,
+          pm_uptime: Date.now() - 120000,
+          pm_exec_path: './apps/backend-template/src/interface/HTTP/adapters/start-rest-api.ts',
+          exec_interpreter: 'bun',
+          watch: true,
+          axm_monitor: { latency: { value: '12ms' } }
+        }
+      }
+    ]), 'utf8');
+    server = await startServer(configDir, {
+      JUMENTIX_SERVICE_MANAGEMENT_PM2_DIR: pm2Dir,
+      JUMENTIX_SERVICE_MANAGEMENT_PM2_MODULE: pm2ModulePath
+    });
     await waitForServer(server.port);
   });
 
@@ -128,6 +159,34 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
     expect(restApi.command).not.toContain('pnpm');
     expect(restApi.command).not.toContain('bun run');
     expect(restApi.command).not.toContain('npm run');
+  });
+
+  it('collects runtime process metrics through the PM2 API', async () => {
+    expect.hasAssertions();
+    const { status, body } = await requestJson<any>(
+      server!.port,
+      'GET',
+      '/api/runtime/pm2-metrics?environment=dev'
+    );
+    expect(status).toBe(200);
+    expect(body.source).toBe('pm2');
+    expect(body.environment).toBe('dev');
+    expect(body.summary.processCount).toBe(1);
+    expect(body.summary.onlineCount).toBe(1);
+    expect(body.summary.totalCpuPercent).toBe(3.5);
+    expect(body.summary.totalMemoryBytes).toBe(52428800);
+    expect(body.ecosystem.missingExpected).toContain('jumentix-dev-service-management');
+    expect(body.processes[0]).toMatchObject({
+      name: 'jumentix-dev-restapi',
+      pmId: 1,
+      status: 'online',
+      cpuPercent: 3.5,
+      memoryBytes: 52428800,
+      restartCount: 2,
+      interpreter: 'bun',
+      watching: true,
+      customMetrics: { latency: '12ms' }
+    });
   });
 
   it('reflects an ecosystem edit with no code change and no server restart', async () => {

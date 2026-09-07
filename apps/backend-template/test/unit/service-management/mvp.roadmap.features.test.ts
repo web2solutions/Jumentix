@@ -44,6 +44,43 @@ describe('service management mvp roadmap features', () => {
     expect(script).toContain('exportAsJsonSchema');
   });
 
+  it('exposes a generated-code IDE workspace instead of a flat preview pane', () => {
+    expect.hasAssertions();
+    const html = fs.readFileSync(indexPath, 'utf-8');
+    const script = fs.readFileSync(scriptPath, 'utf-8');
+    const server = fs.readFileSync(path.resolve(process.cwd(), 'apps/service-management/server.js'), 'utf-8');
+    expect(html).toContain('class="code-activity-bar"');
+    expect(html).toContain('id="code-workspace-search-input"');
+    expect(html).toContain('id="code-workspace-breadcrumbs"');
+    expect(html).toContain('id="code-workspace-language"');
+    expect(html).toContain('id="code-workspace-file-count"');
+    expect(html).toContain('id="code-workspace-conflict-count"');
+    expect(html).toContain('id="code-workspace-open-tabs"');
+    expect(html).toContain('id="code-workspace-close-tab-btn"');
+    expect(script).toContain('collapsedCodeWorkspaceFolders');
+    expect(script).toContain('codeWorkspaceBreadcrumbLabel');
+    expect(script).toContain('codeWorkspaceFileKind');
+    expect(script).toContain('codeWorkspaceSearchInput.oninput');
+    expect(script).toContain('openPaths');
+    expect(script).toContain('renderCodeWorkspaceOpenTabs');
+    expect(script).toContain('activeClosed');
+    expect(script).toContain('closeActiveCodeWorkspaceTab');
+    expect(script).toContain('closeCodeWorkspaceTab(file.path)');
+    expect(script).toContain('readOnly: !file');
+    expect(script).toContain('file:///jumentix-generated/');
+    expect(script).toContain('syncCodeWorkspaceMonacoModels');
+    expect(script).toContain('moduleResolution');
+    expect(script).toContain('setEagerModelSync');
+    expect(script).toContain('openCodeWorkspaceImport');
+    expect(script).toContain('importSpecifierAtCodePosition');
+    expect(script).toContain('codeWorkspaceImportCandidates');
+    expect(script).toContain('onMouseDown');
+    expect(script).toContain('/vendor/requirejs/require.js');
+    expect(script).toContain('/vendor/monaco/min/vs');
+    expect(server).toContain('/vendor/requirejs/require.js');
+    expect(server).toContain('/vendor/monaco/');
+  });
+
   it('includes advanced roadmap controls: relationship path, templates, OpenAPI advanced, mini-map', () => {
     expect.hasAssertions();
     const html = fs.readFileSync(indexPath, 'utf-8');

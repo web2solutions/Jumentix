@@ -187,6 +187,10 @@ describe('hexagonal codegen (JUM-476)', () => {
         .toBe('src/modules/Billing/adapters/out/persistence/InvoiceDataRepository.ts');
       expect(invoice.files.controller.path)
         .toBe('src/modules/Billing/adapters/in/http/controllers/InvoiceController.ts');
+      expect(invoice.files.controller.content)
+        .toContain('from \'../../../../domain/Entity/IInvoice\';');
+      expect(invoice.files.controller.content)
+        .toContain('from \'../../../../application/ports/IInvoiceUseCases\';');
       expect(billing.files.composition.path)
         .toBe('src/modules/Billing/composition/composeBillingServices.ts');
       expect(billing.files.eventChannels.path)
