@@ -1,5 +1,20 @@
 <script setup lang="ts">
-const itemsCount = 42
+import { useRouter } from 'vue-router';
+
+import { useAuthStore } from '@/stores/auth';
+
+const itemsCount = 42;
+
+const router = useRouter();
+const auth = useAuthStore();
+
+const logout = async () => {
+  try {
+    await auth.logout();
+  } finally {
+    await router.push('/login');
+  }
+};
 </script>
 
 <template>
@@ -48,7 +63,7 @@ const itemsCount = 42
       </CDropdownItem>
       <CDropdownDivider />
       <CDropdownItem> <CIcon icon="cil-shield-alt" /> Lock Account </CDropdownItem>
-      <CDropdownItem> <CIcon icon="cil-lock-locked" /> Logout </CDropdownItem>
+      <CDropdownItem @click="logout"> <CIcon icon="cil-lock-locked" /> Logout </CDropdownItem>
     </CDropdownMenu>
   </CDropdown>
 </template>

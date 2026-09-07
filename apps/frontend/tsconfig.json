@@ -11,14 +11,40 @@
     "isolatedModules": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "types": ["vite/client"],
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "types": [
+      "vite/client",
+      "node"
+    ],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@": ["src"]
+      "@/*": [
+        "src/*"
+      ],
+      "@": [
+        "src"
+      ],
+      "@jumentix/sdk-rest-client": [
+        "../../packages/sdk-rest-client/src/index.ts"
+      ],
+      "@jumentix/shared-contracts": [
+        "src/contracts/sharedContractsBrowserShim.ts"
+      ]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.vue", "vite.config.mjs"],
-  "exclude": ["dist", "node_modules", "template"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.vue",
+    "vite.config.mjs"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules",
+    "template"
+  ]
 }
