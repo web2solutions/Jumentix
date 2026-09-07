@@ -119,6 +119,15 @@
       "tier": "gate",
       "kind": "non-hexagonal"
     },
+    "frontend": {
+      "dependsOn": [],
+      "sourceGlobs": [
+        "apps/frontend/**"
+      ],
+      "runner": "bun",
+      "tier": "gate",
+      "kind": "non-hexagonal"
+    },
     "browser-harness": {
       "dependsOn": [],
       "sourceGlobs": [
@@ -2046,6 +2055,42 @@
       "kind": "non-hexagonal",
       "type": "unit",
       "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/contracts/apiClient.test.ts",
+      "path": "apps/frontend/test/unit/contracts/apiClient.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/stores/auth.test.ts",
+      "path": "apps/frontend/test/unit/stores/auth.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/router/guard.test.ts",
+      "path": "apps/frontend/test/unit/router/guard.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
       "tier": "gate",
       "timeoutMs": 60000
     },
@@ -4430,6 +4475,7 @@
     "apps/backend-template/test",
     "apps/service-management",
     "apps/jumentix-website",
+    "apps/frontend",
     "packages",
     "ci-cd",
     "tooling"
@@ -4460,9 +4506,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 230,
+    "unit": 233,
     "integration": 99,
     "smoke": 2,
-    "suites": 379
+    "suites": 382
   }
 }

@@ -300,7 +300,8 @@
     "website:check-content-routes": "bun ci-cd/check-website-content-routes.js",
     "rtdb:check-indexes": "bun ci-cd/check-rtdb-indexes.js",
     "test:integrity": "bun ci-cd/check-test-integrity.js",
-    "rtdb:export-rules": "bun ci-cd/export-database-rules.js"
+    "rtdb:export-rules": "bun ci-cd/export-database-rules.js",
+    "frontend:test:unit": "bun run --filter @jumentix/frontend test"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.940.0",

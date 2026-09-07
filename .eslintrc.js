@@ -146,6 +146,18 @@ module.exports = {
       },
       {
         /*
+         * The frontend suites are bun:test, not Jest (JUM-760): fixture state
+         * lives in describe-scoped bindings shared between `beforeEach` and the
+         * tests, which is exactly what `jest/require-hook` forbids for Jest.
+         * Same exception shape as the package integration suites above.
+         */
+        files: ['apps/frontend/test/**/*.ts'],
+        rules: {
+          'jest/require-hook': 'off'
+        }
+      },
+      {
+        /*
          * The browser suites are Mocha and Chai, not Jest (Requirement 112 §4).
          *
          * `eslint-plugin-jest` reads every `it()` it can see, so without this it

@@ -21,6 +21,9 @@ function walk(dir, pred, out = []) {
 }
 
 function classifyUnit(file) {
+  if (file.startsWith('apps/frontend/test/unit/')) {
+    return { layer: 'frontend', kind: 'non-hexagonal' };
+  }
   if (file.startsWith('apps/service-management-api/test/unit/')) {
     return { layer: 'service-management/catalog-api', kind: 'non-hexagonal' };
   }
@@ -331,7 +334,9 @@ function buildManifest(root = process.cwd()) {
   const unitTests = [
     path.join(root, 'apps/backend-template/test/unit'),
     path.join(root, 'apps/service-management/test/unit'),
-    path.join(root, 'apps/service-management-api/test/unit')
+    path.join(root, 'apps/service-management-api/test/unit'),
+    // JUM-760: the frontend workspace runs bun:test suites like the backend apps.
+    path.join(root, 'apps/frontend/test/unit')
   ].flatMap((unitRoot) => walk(
     unitRoot,
     (p) => /\.test\.ts$/.test(p)
@@ -496,6 +501,16 @@ function buildManifest(root = process.cwd()) {
       tier: 'gate',
       kind: 'non-hexagonal'
     },
+    // JUM-760: the frontend workspace, like the website, is outward-facing
+    // (consumes published packages and the OAS document, never backend source
+    // — requirement 136), so nothing in the backend can change what it does.
+    frontend: {
+      dependsOn: [],
+      sourceGlobs: ['apps/frontend/**'],
+      runner: 'bun',
+      tier: 'gate',
+      kind: 'non-hexagonal'
+    },
     'browser-harness': {
       dependsOn: [],
       //
@@ -553,6 +568,15 @@ function buildManifest(root = process.cwd()) {
       kind,
       type: 'unit',
       runner: 'bun',
+      // JUM-760: frontend suites import 'bun:test' and resolve '@/' through the
+      // app's own tsconfig — a jest batch cannot run them, exactly the website
+      // situation (JUM-680). A script pin runs them through the app script.
+      ...(layer === 'frontend'
+        ? {
+          script: 'frontend:test:unit',
+          reason: 'bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.'
+        }
+        : {}),
       ...(ciRunner ? { ciRunner } : {}),
       ...(previous.bunCompat ? { bunCompat: previous.bunCompat } : {}),
       tier: 'gate',
@@ -726,6 +750,7 @@ function buildManifest(root = process.cwd()) {
       'apps/backend-template/test',
       'apps/service-management',
       'apps/jumentix-website',
+      'apps/frontend',
       'packages',
       'ci-cd',
       'tooling'

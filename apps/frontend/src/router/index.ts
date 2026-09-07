@@ -1,8 +1,25 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 
 import DefaultLayout from '@/layouts/DefaultLayout.vue';
+import { requireAuthRedirect } from '@/router/guards';
 
+/**
+ * Public routes bypass the shell; everything under DefaultLayout requires an
+ * authenticated session (requirement: dashboard only after /auth/login).
+ */
 const routes = [
+  {
+    path: '/login',
+    name: 'Login',
+    component: () => import('@/features/auth/LoginView.vue'),
+    meta: { public: true }
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: () => import('@/features/auth/RegisterView.vue'),
+    meta: { public: true }
+  },
   {
     path: '/',
     name: 'Home',
@@ -28,5 +45,7 @@ const router = createRouter({
   routes,
   scrollBehavior: () => ({ top: 0 })
 });
+
+router.beforeEach((to) => requireAuthRedirect(to) ?? true);
 
 export default router;

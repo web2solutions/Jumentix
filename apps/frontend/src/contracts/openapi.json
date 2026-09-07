@@ -1,0 +1,2868 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Jumentix API",
+    "description": "`REST API` built with `Jumentix` and `Domain Designer`",
+    "termsOfService": "https://www.xpertminds.dev/terms/",
+    "contact": {
+      "email": "apiteam@xpertminds.dev"
+    },
+    "license": {
+      "name": "Unlicensed",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "version": "1.0.0"
+  },
+  "externalDocs": {
+    "description": "Find out more about Xpertminds",
+    "url": "http://xpertminds.dev"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/api/1.0.0"
+    }
+  ],
+  "tags": [
+    {
+      "name": "user",
+      "description": "System users",
+      "externalDocs": {
+        "description": "Find out more",
+        "url": "http://xpertminds.dev"
+      }
+    },
+    {
+      "name": "auth",
+      "description": "API access end points"
+    },
+    {
+      "name": "organization",
+      "description": "Tenant organizations"
+    },
+    {
+      "name": "catalog",
+      "description": "Multi-user shared catalog of domain designs (JUM-491)"
+    }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Do login",
+        "description": "Do login",
+        "operationId": "login",
+        "requestBody": {
+          "description": "Do login in the system",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestLogin"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "User did login successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthorizationHeader"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Do logout",
+        "description": "Do logout",
+        "operationId": "logout",
+        "requestBody": {
+          "description": "Logout of the system",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestLogout"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "User did logout successfully",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/BooleanStringResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": [
+              "access_allow"
+            ]
+          }
+        ]
+      }
+    },
+    "/auth/updateUserPassword": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Update password",
+        "description": "Update password",
+        "operationId": "updateUserPassword",
+        "requestBody": {
+          "description": "Update password",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestUpdatePassword"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "User did update password successfully",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/BooleanStringResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": [
+              "access_allow"
+            ]
+          }
+        ]
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Register an account",
+        "description": "Register an account",
+        "operationId": "register",
+        "requestBody": {
+          "description": "Create a new account",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestRegister"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "User did update password successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Get all users",
+        "description": "Returns a collection of all users",
+        "operationId": "getAll",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "path",
+            "description": "Page number to fetch",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "default": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserArrayOf"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": [
+              "read_user"
+            ]
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Add a new user to the store",
+        "description": "Add a new user to the store",
+        "operationId": "create",
+        "requestBody": {
+          "description": "Create a new user in the store",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestCreateUser"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "User created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "409": {
+            "description": "Conflict"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": [
+              "create_user"
+            ]
+          }
+        ]
+      }
+    },
+    "/users/{id}": {
+      "delete": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Delete user",
+        "description": "Deletes a single user",
+        "operationId": "deleteOne",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of user to return",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResourceDeleteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": [
+              "delete_user"
+            ]
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Update user",
+        "description": "Updates a single user",
+        "operationId": "update",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of user to update",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Update an user from Store",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestUpdateUser"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "409": {
+            "description": "Conflict"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": [
+              "update_user"
+            ]
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Get an user by ID",
+        "description": "Returns a single user",
+        "operationId": "getOneById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of user to return",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": [
+              "read_user"
+            ]
+          }
+        ]
+      }
+    },
+    "/users/{id}/updatePassword": {
+      "put": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Updates user password",
+        "description": "Updates user password",
+        "operationId": "updatePassword",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of user",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Old and new password",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestUpdatePassword"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "409": {
+            "description": "Conflict"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": [
+              "update_user"
+            ]
+          }
+        ]
+      }
+    },
+    "/users/{id}/createEmail": {
+      "post": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Create email address for a given user",
+        "description": "Create email address for a given user",
+        "operationId": "createEmail",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of user",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Email create data",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestCreateEmail"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Email"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "409": {
+            "description": "Conflict"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": [
+              "update_user"
+            ]
+          }
+        ]
+      }
+    },
+    "/users/{id}/updateEmail/{emailId}": {
+      "put": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Update email address for a given user",
+        "description": "Update email address for a given user",
+        "operationId": "updateEmail",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of user",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "emailId",
+            "in": "path",
+            "description": "emailId to update",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Email update data",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestUpdateEmail"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Email"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "409": {
+            "description": "Conflict"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": [
+              "update_user"
+            ]
+          }
+        ]
+      }
+    },
+    "/users/{id}/deleteEmail/{emailId}": {
+      "delete": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Delete email address of an user",
+        "description": "Deletes email address of an user",
+        "operationId": "deleteEmail",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of user",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "emailId",
+            "in": "path",
+            "description": "emailId to delete",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResourceDeleteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": [
+              "delete_user"
+            ]
+          }
+        ]
+      }
+    },
+    "/users/{id}/createDocument": {
+      "post": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Create document for a given user",
+        "description": "Create document for a given user",
+        "operationId": "createDocument",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of user",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Document create data",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestCreateDocument"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Document"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "409": {
+            "description": "Conflict"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": [
+              "update_user"
+            ]
+          }
+        ]
+      }
+    },
+    "/users/{id}/updateDocument/{documentId}": {
+      "put": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Update document for a given user",
+        "description": "Update document for a given user",
+        "operationId": "updateDocument",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of user",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "documentId",
+            "in": "path",
+            "description": "documentId to update",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Document update data",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestUpdateDocument"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Document"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "409": {
+            "description": "Conflict"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": [
+              "update_user"
+            ]
+          }
+        ]
+      }
+    },
+    "/users/{id}/documentDelete/{documentId}": {
+      "delete": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Delete document of an user",
+        "description": "Deletes document of an user",
+        "operationId": "deleteDocument",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of user",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "documentId",
+            "in": "path",
+            "description": "documentId to delete",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResourceDeleteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": [
+              "delete_user"
+            ]
+          }
+        ]
+      }
+    },
+    "/users/{id}/createPhone": {
+      "post": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Create phone address for a given user",
+        "description": "Create phone address for a given user",
+        "operationId": "createPhone",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of user",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Phone create data",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestCreatePhone"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Phone"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "409": {
+            "description": "Conflict"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": [
+              "update_user"
+            ]
+          }
+        ]
+      }
+    },
+    "/users/{id}/updatePhone/{phoneId}": {
+      "put": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Update phone address for a given user",
+        "description": "Update phone address for a given user",
+        "operationId": "updatePhone",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of user",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "phoneId",
+            "in": "path",
+            "description": "phoneId to update",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Phone update data",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestUpdatePhone"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Phone"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "409": {
+            "description": "Conflict"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": [
+              "update_user"
+            ]
+          }
+        ]
+      }
+    },
+    "/users/{id}/phoneDelete/{phoneId}": {
+      "delete": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Delete phone of an user",
+        "description": "Deletes phone of an user",
+        "operationId": "deletePhone",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of user",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "phoneId",
+            "in": "path",
+            "description": "phoneId to delete",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResourceDeleteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": [
+              "delete_user"
+            ]
+          }
+        ]
+      }
+    },
+    "/organizations": {
+      "get": {
+        "tags": [
+          "organization"
+        ],
+        "summary": "Get all organizations",
+        "description": "Returns a collection of organizations",
+        "operationId": "getAllOrganizations",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "path",
+            "description": "Page number to fetch",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "default": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationArrayOf"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": [
+              "read_organization"
+            ]
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "organization"
+        ],
+        "summary": "Add a new organization",
+        "description": "Add a new organization",
+        "operationId": "createOrganization",
+        "requestBody": {
+          "description": "Create organization payload",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestCreateOrganization"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Organization created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "409": {
+            "description": "Conflict"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": [
+              "create_organization"
+            ]
+          }
+        ]
+      }
+    },
+    "/organizations/{id}": {
+      "get": {
+        "tags": [
+          "organization"
+        ],
+        "summary": "Get organization by ID",
+        "description": "Returns a single organization",
+        "operationId": "getOrganizationById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Organization ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Organization not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": [
+              "read_organization"
+            ]
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "organization"
+        ],
+        "summary": "Update organization",
+        "description": "Updates a single organization",
+        "operationId": "updateOrganization",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Organization ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Organization update payload",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestUpdateOrganization"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Organization not found"
+          },
+          "409": {
+            "description": "Conflict"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": [
+              "update_organization"
+            ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "organization"
+        ],
+        "summary": "Delete organization",
+        "description": "Deletes a single organization",
+        "operationId": "deleteOrganization",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Organization ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResourceDeleteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Organization not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": [
+              "delete_organization"
+            ]
+          }
+        ]
+      }
+    },
+    "/organizations/{id}/createAddress": {
+      "post": {
+        "tags": [
+          "organization"
+        ],
+        "summary": "Create organization address entry",
+        "description": "Creates an address value object entry for an organization",
+        "operationId": "createOrganizationAddress",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Organization ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Address create payload",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestCreateAddress"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Organization not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": [
+              "update_organization"
+            ]
+          }
+        ]
+      }
+    },
+    "/organizations/{id}/updateAddress/{addressId}": {
+      "put": {
+        "tags": [
+          "organization"
+        ],
+        "summary": "Update organization address entry",
+        "description": "Updates an address value object entry from an organization",
+        "operationId": "updateOrganizationAddress",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Organization ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "addressId",
+            "in": "path",
+            "description": "Address entry ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Address update payload",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestUpdateAddress"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Organization or address not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": [
+              "update_organization"
+            ]
+          }
+        ]
+      }
+    },
+    "/organizations/{id}/deleteAddress/{addressId}": {
+      "delete": {
+        "tags": [
+          "organization"
+        ],
+        "summary": "Delete organization address entry",
+        "description": "Deletes an address value object entry from an organization",
+        "operationId": "deleteOrganizationAddress",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Organization ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "addressId",
+            "in": "path",
+            "description": "Address entry ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Organization or address not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": [
+              "update_organization"
+            ]
+          }
+        ]
+      }
+    },
+    "/organizations/{id}/createPhone": {
+      "post": {
+        "tags": [
+          "organization"
+        ],
+        "summary": "Create organization phone entry",
+        "description": "Creates a phone value object entry for an organization",
+        "operationId": "createOrganizationPhone",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Organization ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Phone create payload",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestCreatePhone"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Organization not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": [
+              "update_organization"
+            ]
+          }
+        ]
+      }
+    },
+    "/organizations/{id}/updatePhone/{phoneId}": {
+      "put": {
+        "tags": [
+          "organization"
+        ],
+        "summary": "Update organization phone entry",
+        "description": "Updates a phone value object entry from an organization",
+        "operationId": "updateOrganizationPhone",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Organization ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "phoneId",
+            "in": "path",
+            "description": "Phone entry ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Phone update payload",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestUpdatePhone"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Organization or phone not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": [
+              "update_organization"
+            ]
+          }
+        ]
+      }
+    },
+    "/organizations/{id}/deletePhone/{phoneId}": {
+      "delete": {
+        "tags": [
+          "organization"
+        ],
+        "summary": "Delete organization phone entry",
+        "description": "Deletes a phone value object entry from an organization",
+        "operationId": "deleteOrganizationPhone",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Organization ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "phoneId",
+            "in": "path",
+            "description": "Phone entry ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Organization or phone not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": [
+              "update_organization"
+            ]
+          }
+        ]
+      }
+    },
+    "/organizations/{id}/createEmail": {
+      "post": {
+        "tags": [
+          "organization"
+        ],
+        "summary": "Create organization email entry",
+        "description": "Creates an email value object entry for an organization",
+        "operationId": "createOrganizationEmail",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Organization ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Email create payload",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestCreateEmail"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Organization not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": [
+              "update_organization"
+            ]
+          }
+        ]
+      }
+    },
+    "/organizations/{id}/updateEmail/{emailId}": {
+      "put": {
+        "tags": [
+          "organization"
+        ],
+        "summary": "Update organization email entry",
+        "description": "Updates an email value object entry from an organization",
+        "operationId": "updateOrganizationEmail",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Organization ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "emailId",
+            "in": "path",
+            "description": "Email entry ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Email update payload",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestUpdateEmail"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Organization or email not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": [
+              "update_organization"
+            ]
+          }
+        ]
+      }
+    },
+    "/organizations/{id}/deleteEmail/{emailId}": {
+      "delete": {
+        "tags": [
+          "organization"
+        ],
+        "summary": "Delete organization email entry",
+        "description": "Deletes an email value object entry from an organization",
+        "operationId": "deleteOrganizationEmail",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Organization ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "emailId",
+            "in": "path",
+            "description": "Email entry ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Organization or email not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": [
+              "update_organization"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ResourceDeleteResponse": {
+        "description": "Port output object for delete operations.",
+        "required": [
+          "data"
+        ],
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "boolean",
+            "default": false,
+            "description": "Result of request to delete resource"
+          }
+        }
+      },
+      "RequestLogin": {
+        "description": "Port input object for authentication login endpoint.",
+        "required": [
+          "username",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "minLength": 1,
+            "example": "me@mydomain.com",
+            "description": "Username"
+          },
+          "password": {
+            "type": "string",
+            "description": "Password",
+            "minLength": 2,
+            "format": "password"
+          },
+          "schemaType": {
+            "type": "string",
+            "example": "Bearer",
+            "default": "Bearer",
+            "description": "HTTP token schema type",
+            "enum": [
+              "Basic",
+              "Bearer"
+            ]
+          }
+        }
+      },
+      "RequestLogout": {
+        "description": "Port input object for logout endpoint.",
+        "required": [
+          "username"
+        ],
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "minLength": 1,
+            "example": "me@mydomain.com",
+            "description": "Username"
+          }
+        }
+      },
+      "RequestRegister": {
+        "description": "Port input object for user registration endpoint.",
+        "required": [
+          "firstName",
+          "username",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Abraham",
+            "description": "User's first name"
+          },
+          "username": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Username to access the system"
+          },
+          "organization": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Organization id for tenant users (admin/user)"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "format": "password",
+            "description": "Password to access the system"
+          }
+        }
+      },
+      "AuthorizationHeader": {
+        "description": "Port output object containing authorization header response contract.",
+        "required": [
+          "Authorization"
+        ],
+        "type": "object",
+        "properties": {
+          "Authorization": {
+            "type": "string",
+            "example": "Bearer saiudyas87dahsd8sahdas87dhas8d7hsa87dhas78dh=",
+            "description": "Authorization Header"
+          }
+        }
+      },
+      "RequestCreateUser": {
+        "description": "Port input object for user creation endpoint.",
+        "required": [
+          "firstName",
+          "username",
+          "password",
+          "emails"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Abraham",
+            "description": "User's first name"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Abraham",
+            "nullable": true,
+            "description": "User's last name"
+          },
+          "avatar": {
+            "type": "string",
+            "example": "avatar.png",
+            "default": "avatar.png",
+            "description": "User's avatar"
+          },
+          "username": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Username to access the system"
+          },
+          "organization": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Organization id for tenant users (admin/user)"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "format": "password",
+            "description": "Password to access the system"
+          },
+          "emails": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Email"
+            },
+            "description": "User's e-mail addresses",
+            "minItems": 1
+          },
+          "documents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Document"
+            },
+            "description": "User's attached documents"
+          },
+          "phones": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Phone"
+            },
+            "description": "User's attached documents"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "User's access roles"
+          }
+        }
+      },
+      "RequestUpdateUser": {
+        "description": "Port input object for user update endpoint.",
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Abraham",
+            "description": "User's first name"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Abraham",
+            "nullable": true,
+            "description": "User's last name"
+          },
+          "avatar": {
+            "type": "string",
+            "example": "avatar.png",
+            "default": "avatar.png",
+            "description": "User's avatar"
+          },
+          "username": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Username to access the system"
+          },
+          "organization": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Organization id for tenant users (admin/user)"
+          },
+          "emails": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Email"
+            },
+            "description": "User's e-mail addresses",
+            "minItems": 1
+          },
+          "documents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Document"
+            },
+            "description": "User's attached documents"
+          },
+          "phones": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Phone"
+            },
+            "description": "User's attached documents"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "User's access roles"
+          }
+        }
+      },
+      "RequestCreateOrganization": {
+        "description": "Port input object for organization creation endpoint.",
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "address": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Address"
+            }
+          },
+          "phone": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Phone"
+            }
+          },
+          "email": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Email"
+            }
+          },
+          "users": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "RequestUpdateOrganization": {
+        "description": "Port input object for organization update endpoint.",
+        "required": [
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "address": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Address"
+            }
+          },
+          "phone": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Phone"
+            }
+          },
+          "email": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Email"
+            }
+          },
+          "users": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "RequestCreatePhone": {
+        "description": "Port input object for phone create endpoint.",
+        "type": "object",
+        "required": [
+          "countryCode",
+          "localCode",
+          "number"
+        ],
+        "properties": {
+          "countryCode": {
+            "type": "string"
+          },
+          "localCode": {
+            "type": "string"
+          },
+          "number": {
+            "type": "string"
+          },
+          "isPrimary": {
+            "type": "boolean",
+            "example": true,
+            "description": "Is this the primary User's phone number?",
+            "default": false
+          }
+        }
+      },
+      "RequestUpdatePhone": {
+        "description": "Port input object for phone update endpoint.",
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "countryCode": {
+            "type": "string"
+          },
+          "localCode": {
+            "type": "string"
+          },
+          "number": {
+            "type": "string"
+          },
+          "isPrimary": {
+            "type": "boolean",
+            "example": true,
+            "description": "Is this the primary User's phone number?"
+          }
+        }
+      },
+      "RequestCreateAddress": {
+        "description": "Port input object for address create endpoint.",
+        "type": "object",
+        "required": [
+          "email",
+          "type"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "work",
+              "home",
+              "vacation"
+            ]
+          },
+          "isPrimary": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      },
+      "RequestUpdateAddress": {
+        "description": "Port input object for address update endpoint.",
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "work",
+              "home",
+              "vacation"
+            ]
+          },
+          "isPrimary": {
+            "type": "boolean"
+          }
+        }
+      },
+      "RequestCreateEmail": {
+        "description": "Port input object for email create endpoint.",
+        "type": "object",
+        "required": [
+          "email",
+          "type"
+        ],
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "work",
+              "personal"
+            ]
+          },
+          "isPrimary": {
+            "type": "boolean",
+            "example": true,
+            "description": "Is this the primary User's e-mail address?",
+            "default": false
+          }
+        }
+      },
+      "RequestUpdateEmail": {
+        "description": "Port input object for email update endpoint.",
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "work",
+              "personal"
+            ]
+          },
+          "isPrimary": {
+            "type": "boolean",
+            "example": true,
+            "description": "Is this the primary User's e-mail address?"
+          }
+        }
+      },
+      "RequestCreateDocument": {
+        "description": "Port input object for document create endpoint.",
+        "type": "object",
+        "required": [
+          "data",
+          "type",
+          "countryIssue"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "CPF",
+              "RG",
+              "SSN",
+              "passport"
+            ],
+            "example": "CPF",
+            "description": "Type of document"
+          },
+          "countryIssue": {
+            "type": "string",
+            "example": "BR",
+            "description": "Country which emitted the document"
+          },
+          "data": {
+            "type": "string"
+          }
+        }
+      },
+      "RequestUpdateDocument": {
+        "description": "Port input object for document update endpoint.",
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "CPF",
+              "RG",
+              "SSN",
+              "passport"
+            ],
+            "example": "CPF",
+            "description": "Type of document"
+          },
+          "countryIssue": {
+            "type": "string",
+            "example": "BR",
+            "description": "Country which emitted the document"
+          },
+          "data": {
+            "type": "string"
+          }
+        }
+      },
+      "RequestUpdatePassword": {
+        "description": "Port input object for password update endpoint.",
+        "type": "object",
+        "required": [
+          "password"
+        ],
+        "properties": {
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "format": "password"
+          }
+        }
+      },
+      "UserArrayOf": {
+        "description": "Port output array of users.",
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/User"
+        }
+      },
+      "OrganizationArrayOf": {
+        "description": "Port output array of organizations.",
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Organization"
+        }
+      },
+      "Document": {
+        "description": "Value object contract for Document.",
+        "type": "object",
+        "required": [
+          "data",
+          "type"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "CPF",
+              "RG",
+              "SSN",
+              "passport"
+            ],
+            "example": "CPF",
+            "description": "Type of document"
+          },
+          "countryIssue": {
+            "type": "string",
+            "example": "BR",
+            "description": "Country which emitted the document"
+          },
+          "data": {
+            "type": "string"
+          }
+        }
+      },
+      "Email": {
+        "description": "Value object contract for Email.",
+        "type": "object",
+        "required": [
+          "email",
+          "type"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "work",
+              "personal"
+            ]
+          },
+          "isPrimary": {
+            "type": "boolean",
+            "example": true,
+            "description": "Is this the primary User's e-mail address?",
+            "default": false
+          }
+        }
+      },
+      "Address": {
+        "description": "Value object contract for Address.",
+        "type": "object",
+        "required": [
+          "email",
+          "type"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "work",
+              "home",
+              "vacation"
+            ]
+          },
+          "isPrimary": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      },
+      "Phone": {
+        "description": "Value object contract for Phone.",
+        "type": "object",
+        "required": [
+          "countryCode",
+          "localCode",
+          "number"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "countryCode": {
+            "type": "string"
+          },
+          "localCode": {
+            "type": "string"
+          },
+          "number": {
+            "type": "string"
+          },
+          "isPrimary": {
+            "type": "boolean",
+            "example": true,
+            "description": "Is this the primary User's phone number?",
+            "default": false
+          }
+        }
+      },
+      "User": {
+        "description": "Port output object for User resource.",
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "firstName",
+          "username",
+          "password",
+          "emails"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Abraham",
+            "description": "User's first name"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Abraham",
+            "nullable": true,
+            "description": "User's last name"
+          },
+          "username": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Username to access the system"
+          },
+          "organization": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Organization id for tenant users (admin/user)"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "format": "password",
+            "description": "Password to access the system"
+          },
+          "emails": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Email"
+            },
+            "description": "User's e-mail addresses",
+            "minItems": 1
+          },
+          "documents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Document"
+            },
+            "description": "User's attached documents"
+          },
+          "phones": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Phone"
+            },
+            "description": "User's attached documents"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "User's access roles"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Organization": {
+        "description": "Port output object for Organization resource.",
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "address": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Address"
+            }
+          },
+          "phone": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Phone"
+            }
+          },
+          "email": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Email"
+            }
+          },
+          "users": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "BooleanStringResult": {
+        "description": "Port output object for legacy text/plain success responses (`true`/`false`).",
+        "type": "string",
+        "example": true
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}
