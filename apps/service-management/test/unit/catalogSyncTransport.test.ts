@@ -89,20 +89,19 @@ describe('createCatalogHttpTransport (JUM-681)', () => {
     expect(calls).toHaveLength(1);
   });
 
-  it('can be constructed with every option defaulted when the runtime has fetch', async () => {
+  it('fails closed when the platform catalog endpoint is not declared', async () => {
     expect.hasAssertions();
 
     const globalFetch = (globalThis as { fetch?: unknown }).fetch;
-    const { impl, calls } = fetchDouble([{ text: listPayload }]);
+    const { impl } = fetchDouble([{ text: listPayload }]);
     (globalThis as { fetch?: unknown }).fetch = impl;
 
     const transport = createCatalogHttpTransport();
-    await transport.listCatalogs();
+    await expect(transport.listCatalogs()).rejects.toThrow(
+      'Service Management catalog API endpoint is not configured. Set JUMENTIX_SERVICE_MANAGEMENT_CATALOG_API_URL.'
+    );
 
     (globalThis as { fetch?: unknown }).fetch = globalFetch;
-
-    expect(calls[0].url).toBe('/api/1.0.0/catalogs?page=1&size=500');
-    expect(calls[0].init.headers.Authorization).toBeUndefined();
   });
 
   it('uses the injected fetch even when the runtime fetch is absent', async () => {
@@ -113,13 +112,13 @@ describe('createCatalogHttpTransport (JUM-681)', () => {
     const { impl, calls } = fetchDouble([{ text: listPayload }]);
 
     try {
-      const transport = createCatalogHttpTransport({ fetchImpl: impl });
+      const transport = createCatalogHttpTransport({ baseUrl: 'http://catalog.invalid', fetchImpl: impl });
       await transport.listCatalogs();
     } finally {
       (globalThis as { fetch?: unknown }).fetch = globalFetch;
     }
 
-    expect(calls[0].url).toBe('/api/1.0.0/catalogs?page=1&size=500');
+    expect(calls[0].url).toBe('http://catalog.invalid/api/1.0.0/catalogs?page=1&size=500');
   });
 
   it('resolves the base URL per request, so a repointed host is honoured', async () => {
@@ -141,27 +140,26 @@ describe('createCatalogHttpTransport (JUM-681)', () => {
     expect(calls[1].url).toBe('http://second.invalid/api/1.0.0/catalogs?page=1&size=500');
   });
 
-  it('builds a usable path from an absent base URL and a custom prefix', async () => {
+  it('builds a usable path from the declared base URL and a custom prefix', async () => {
     expect.hasAssertions();
 
-    // Same-origin deployments pass no base at all, which has to produce a
-    // relative path rather than the string "undefined" in the URL.
     const { impl, calls } = fetchDouble([{ text: listPayload }]);
-    const transport = createCatalogHttpTransport({ fetchImpl: impl, apiPrefix: '/api/2.0.0' });
+    const transport = createCatalogHttpTransport({ baseUrl: 'http://catalog.invalid', fetchImpl: impl, apiPrefix: '/api/2.0.0' });
 
     await transport.listCatalogs();
 
-    expect(calls[0].url).toBe('/api/2.0.0/catalogs?page=1&size=500');
+    expect(calls[0].url).toBe('http://catalog.invalid/api/2.0.0/catalogs?page=1&size=500');
   });
 
   it('sends the bearer token only when the provider returns one', async () => {
     expect.hasAssertions();
 
     const anonymous = fetchDouble([{ text: listPayload }]);
-    await createCatalogHttpTransport({ fetchImpl: anonymous.impl }).listCatalogs();
+    await createCatalogHttpTransport({ baseUrl: 'http://catalog.invalid', fetchImpl: anonymous.impl }).listCatalogs();
 
     const authenticated = fetchDouble([{ text: listPayload }]);
     await createCatalogHttpTransport({
+      baseUrl: 'http://catalog.invalid',
       fetchImpl: authenticated.impl,
       tokenProvider: () => 'Bearer token-1'
     }).listCatalogs();
@@ -176,7 +174,7 @@ describe('createCatalogHttpTransport (JUM-681)', () => {
     expect.hasAssertions();
 
     const { impl, calls } = fetchDouble([{ text: '{"id":"cat-1"}' }, { text: '{"id":"cat-1"}' }]);
-    const transport = createCatalogHttpTransport({ fetchImpl: impl });
+    const transport = createCatalogHttpTransport({ baseUrl: 'http://catalog.invalid', fetchImpl: impl });
 
     await transport.createCatalog({ name: 'Domain' });
     await transport.getCatalog('cat-1');
@@ -193,15 +191,15 @@ describe('createCatalogHttpTransport (JUM-681)', () => {
     // An id with a slash would otherwise address a different resource
     // entirely — `/catalogs/a/b` is not `/catalogs/a%2Fb`.
     const { impl, calls } = fetchDouble([{ text: '' }, { text: '' }, { text: '' }]);
-    const transport = createCatalogHttpTransport({ fetchImpl: impl });
+    const transport = createCatalogHttpTransport({ baseUrl: 'http://catalog.invalid', fetchImpl: impl });
 
     await transport.getCatalog('a/b');
     await transport.updateCatalog('a b', { version: 2 });
     await transport.restoreCatalog('a#b', 4);
 
-    expect(calls[0].url).toBe('/api/1.0.0/catalogs/a%2Fb');
-    expect(calls[1].url).toBe('/api/1.0.0/catalogs/a%20b');
-    expect(calls[2].url).toBe('/api/1.0.0/catalogs/a%23b/restore');
+    expect(calls[0].url).toBe('http://catalog.invalid/api/1.0.0/catalogs/a%2Fb');
+    expect(calls[1].url).toBe('http://catalog.invalid/api/1.0.0/catalogs/a%20b');
+    expect(calls[2].url).toBe('http://catalog.invalid/api/1.0.0/catalogs/a%23b/restore');
     expect(calls[2].init.body).toBe('{"version":4}');
   });
 
@@ -212,23 +210,23 @@ describe('createCatalogHttpTransport (JUM-681)', () => {
     // string, the backend has nothing to compare and a stale delete succeeds.
     const { impl, calls } = fetchDouble([{ text: '' }]);
 
-    await createCatalogHttpTransport({ fetchImpl: impl }).deleteCatalog('cat-1', 7);
+    await createCatalogHttpTransport({ baseUrl: 'http://catalog.invalid', fetchImpl: impl }).deleteCatalog('cat-1', 7);
 
     expect(calls[0].init.method).toBe('DELETE');
-    expect(calls[0].url).toBe('/api/1.0.0/catalogs/cat-1?version=7');
+    expect(calls[0].url).toBe('http://catalog.invalid/api/1.0.0/catalogs/cat-1?version=7');
   });
 
   it('pages the listing, and asks for tombstones only when told to', async () => {
     expect.hasAssertions();
 
     const { impl, calls } = fetchDouble([{ text: listPayload }, { text: listPayload }]);
-    const transport = createCatalogHttpTransport({ fetchImpl: impl });
+    const transport = createCatalogHttpTransport({ baseUrl: 'http://catalog.invalid', fetchImpl: impl });
 
     await transport.listCatalogs({ page: 2, size: 10 });
     await transport.listCatalogs({ includeDeleted: true });
 
-    expect(calls[0].url).toBe('/api/1.0.0/catalogs?page=2&size=10');
-    expect(calls[1].url).toBe('/api/1.0.0/catalogs?page=1&size=500&includeDeleted=true');
+    expect(calls[0].url).toBe('http://catalog.invalid/api/1.0.0/catalogs?page=2&size=10');
+    expect(calls[1].url).toBe('http://catalog.invalid/api/1.0.0/catalogs?page=1&size=500&includeDeleted=true');
   });
 
   it('returns an empty list rather than a non-list payload', async () => {
@@ -241,7 +239,7 @@ describe('createCatalogHttpTransport (JUM-681)', () => {
       { text: JSON.stringify({ message: 'no' }) },
       { text: '' }
     ]);
-    const transport = createCatalogHttpTransport({ fetchImpl: impl });
+    const transport = createCatalogHttpTransport({ baseUrl: 'http://catalog.invalid', fetchImpl: impl });
 
     await expect(transport.listCatalogs()).resolves.toStrictEqual([{ id: 'cat-1' }]);
     await expect(transport.listCatalogs()).resolves.toStrictEqual([]);
@@ -254,7 +252,7 @@ describe('createCatalogHttpTransport (JUM-681)', () => {
     // 204-shaped answers are normal for delete; `JSON.parse('')` throws.
     const { impl } = fetchDouble([{ text: '' }]);
 
-    await expect(createCatalogHttpTransport({ fetchImpl: impl }).deleteCatalog('cat-1', 1)).resolves
+    await expect(createCatalogHttpTransport({ baseUrl: 'http://catalog.invalid', fetchImpl: impl }).deleteCatalog('cat-1', 1)).resolves
       .toBeNull();
   });
 
@@ -265,7 +263,7 @@ describe('createCatalogHttpTransport (JUM-681)', () => {
     // softly, because throwing here would report as a transport outage.
     const { impl } = fetchDouble([{ text: '<html>gateway</html>' }]);
 
-    await expect(createCatalogHttpTransport({ fetchImpl: impl }).getCatalog('cat-1')).resolves.toBeNull();
+    await expect(createCatalogHttpTransport({ baseUrl: 'http://catalog.invalid', fetchImpl: impl }).getCatalog('cat-1')).resolves.toBeNull();
   });
 
   it('turns a rejected write into an error carrying the status and the body', async () => {
@@ -279,7 +277,7 @@ describe('createCatalogHttpTransport (JUM-681)', () => {
       text: JSON.stringify({ result: { version: 9 } })
     }]);
 
-    const failure = await createCatalogHttpTransport({ fetchImpl: impl })
+    const failure = await createCatalogHttpTransport({ baseUrl: 'http://catalog.invalid', fetchImpl: impl })
       .updateCatalog('cat-1', { version: 3 })
       .catch((error: Error & { status?: number; body?: unknown }) => error);
 
@@ -293,7 +291,7 @@ describe('createCatalogHttpTransport (JUM-681)', () => {
 
     const { impl } = fetchDouble([{ ok: false, status: 502, text: 'Bad Gateway' }]);
 
-    const failure = await createCatalogHttpTransport({ fetchImpl: impl })
+    const failure = await createCatalogHttpTransport({ baseUrl: 'http://catalog.invalid', fetchImpl: impl })
       .listCatalogs()
       .catch((error: Error & { status?: number; body?: unknown }) => error);
 

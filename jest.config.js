@@ -56,6 +56,7 @@ module.exports = {
   coverageDirectory: 'coverage',
   testEnvironment: 'node',
   moduleNameMapper: {
+    '^@service-management-api/(.*)$': '<rootDir>/apps/service-management-api/src/$1',
     '@src/(.*)$': '<rootDir>/apps/backend-template/src/$1',
     '@seed/(.*)$': '<rootDir>/apps/backend-template/seed/$1',
     '@test/(.*)$': '<rootDir>/apps/backend-template/test/$1',
@@ -93,6 +94,7 @@ module.exports = {
     // Test fixtures and helpers are instruments, not product coverage subjects.
     '<rootDir>/apps/backend-template/test/',
     '<rootDir>/apps/service-management/test/',
+    '<rootDir>/apps/service-management-api/test/',
     // ci-cd is excluded from coverage wholesale, with named opt-ins. Sonar reads
     // this same lcov, so a new ci-cd file that is not listed here reports as 0%
     // covered on new code and fails the quality gate even when it has tests.

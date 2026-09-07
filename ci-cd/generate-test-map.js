@@ -21,6 +21,9 @@ function walk(dir, pred, out = []) {
 }
 
 function classifyUnit(file) {
+  if (file.startsWith('apps/service-management-api/test/unit/')) {
+    return { layer: 'service-management/catalog-api', kind: 'non-hexagonal' };
+  }
   if (file.startsWith('apps/service-management/test/unit/')) {
     return { layer: 'service-management/designer', kind: 'non-hexagonal' };
   }
@@ -84,7 +87,6 @@ const SERVICE_MANAGEMENT_INTEGRATION_AREA = {
   'multiTabSync.browser.integration.test.ts': 'service-management/designer',
   'deployTargetLifecycle.browser.integration.test.ts': 'service-management/designer',
   'offlinePersistenceMatrix.browser.integration.test.ts': 'service-management/designer',
-  'catalogSync.integration.test.ts': 'service-management/designer',
   'interfaceAdapters.browser.integration.test.ts': 'service-management/designer',
   'statusOutcome.browser.integration.test.ts': 'service-management/designer',
   'accessibleNames.browser.integration.test.ts': 'service-management/designer',
@@ -95,10 +97,31 @@ const SERVICE_MANAGEMENT_INTEGRATION_AREA = {
   'staticServing.integration.test.ts': 'service-management/server'
 };
 
+const SERVICE_MANAGEMENT_API_INTEGRATION_AREA = {
+  'catalogSync.integration.test.ts': 'service-management/catalog-api',
+  'catalogs.http.integration.test.ts': 'service-management/catalog-api'
+};
+
 function classifyIntegration(file) {
   const parts = file.split('/');
   const idx = parts.indexOf('integration');
   const bucket = parts[idx + 1] || 'unknown';
+  if (file.startsWith('apps/service-management-api/test/integration/')) {
+    const area = SERVICE_MANAGEMENT_API_INTEGRATION_AREA[parts[parts.length - 1]];
+    if (!area) {
+      throw new Error(
+        `Service Management API integration suite with no recorded area: ${file}\n`
+          + '  Name it in SERVICE_MANAGEMENT_API_INTEGRATION_AREA (ci-cd/generate-test-map.js)'
+          + '  — service-management/catalog-api — and regenerate.'
+      );
+    }
+    return {
+      layer: area,
+      kind: 'non-hexagonal',
+      adapter: 'service-management-api',
+      script: 'test:integration:service-management'
+    };
+  }
   // Service Management is a declared non-hexagonal kind with its own internal
   // structure (JUM-552/JUM-472): server suites and designer-SPA suites live in
   // separate sub-layers so a `server.js` change and a `script.js` change do not
@@ -307,15 +330,19 @@ function loadPackageSuiteClassification(root, previous = readPreviousManifest(ro
 function buildManifest(root = process.cwd()) {
   const unitTests = [
     path.join(root, 'apps/backend-template/test/unit'),
-    path.join(root, 'apps/service-management/test/unit')
+    path.join(root, 'apps/service-management/test/unit'),
+    path.join(root, 'apps/service-management-api/test/unit')
   ].flatMap((unitRoot) => walk(
     unitRoot,
     (p) => /\.test\.ts$/.test(p)
   )).map((p) => path.relative(root, p).replace(/\\/g, '/'));
-  const integrationTests = walk(
+  const integrationTests = [
     path.join(root, 'apps/backend-template/test/integration'),
+    path.join(root, 'apps/service-management-api/test/integration')
+  ].flatMap((integrationRoot) => walk(
+    integrationRoot,
     (p) => /\.test\.ts$/.test(p)
-  ).map((p) => path.relative(root, p).replace(/\\/g, '/'));
+  )).map((p) => path.relative(root, p).replace(/\\/g, '/'));
   const smokeTests = walk(
     path.join(root, 'apps/backend-template/test/smoke'),
     (p) => /\.test\.ts$/.test(p)
@@ -413,8 +440,17 @@ function buildManifest(root = process.cwd()) {
       tier: 'gate',
       kind: 'non-hexagonal'
     },
+    'service-management/catalog-api': {
+      dependsOn: ['contracts'],
+      sourceGlobs: [
+        'apps/service-management-api/**'
+      ],
+      runner: 'bun',
+      tier: 'gate',
+      kind: 'non-hexagonal'
+    },
     'service-management/designer': {
-      dependsOn: ['service-management/server'],
+      dependsOn: ['service-management/server', 'service-management/catalog-api'],
       sourceGlobs: [
         'apps/service-management/script.js',
         'apps/service-management/src/**',

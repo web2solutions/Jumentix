@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-09-07 feat(frontend): add frontend workspace seed and MVP shell with OAS boundary (JUM-758) - Eduardo Almeida
 - 2026-09-07 test(service-management): move designer suites to app ownership (#296) - Eduardo A.
 - 2026-09-06 fix(service-management): flush Code Workspace edits before export - Eduardo A.
 - 2026-09-06 test(ci): align readme badge contract with private dashboards (#292) - Eduardo A.

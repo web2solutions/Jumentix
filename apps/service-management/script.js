@@ -2393,6 +2393,12 @@ function flushActiveCodeWorkspaceEditor() {
   }
 }
 
+function isCodeWorkspaceEditorActive() {
+  if (document.activeElement === dom.codeWorkspaceEditor) return true;
+  if (!dom.monacoWorkspaceEditor || dom.monacoWorkspaceEditor.hidden) return false;
+  return dom.monacoWorkspaceEditor.contains(document.activeElement);
+}
+
 function codeWorkspaceFileLanguage(path) {
   if (path.endsWith('.json')) return 'json';
   if (path.endsWith('.ts') || path.endsWith('.tsx')) return 'typescript';
@@ -2477,6 +2483,7 @@ function importSpecifierAtCodePosition(line, column) {
 }
 
 function openCodeWorkspaceFile(path, reason = 'Opened file') {
+  flushActiveCodeWorkspaceEditor();
   const workspace = ensureCodeWorkspaceState();
   if (!path || !workspace.files[path]) return false;
   if (!workspace.openPaths.includes(path)) workspace.openPaths.push(path);
@@ -2490,6 +2497,7 @@ function openCodeWorkspaceFile(path, reason = 'Opened file') {
 }
 
 function closeCodeWorkspaceTab(path = ensureCodeWorkspaceState().activePath) {
+  flushActiveCodeWorkspaceEditor();
   const workspace = ensureCodeWorkspaceState();
   const closedPath = path || workspace.activePath;
   if (!closedPath) {
@@ -3180,7 +3188,7 @@ function render() {
   inspectors.renderSchemaDiffStatus();
   renderPm2Metrics();
   generateCodePreview();
-  renderCodeWorkspace({ skipEditorSync: document.activeElement === dom.codeWorkspaceEditor });
+  renderCodeWorkspace({ skipEditorSync: isCodeWorkspaceEditorActive() });
   generateExamplesPreview();
   dom.undoBtn.disabled = history.past.length === 0;
   dom.redoBtn.disabled = history.future.length === 0;
@@ -3324,14 +3332,21 @@ function syncDeploymentEditStateAfterRemoval(removedIndex) {
   }
 }
 
+function setActiveDesignerTab(tab) {
+  if ((state.activeTab || 'domain-designer') === 'code-workspace' && tab !== 'code-workspace') {
+    flushActiveCodeWorkspaceEditor();
+  }
+  tabs.setActiveTab(tab);
+}
+
 function wireEvents() {
-  if (dom.tabDomainDesignerBtn) dom.tabDomainDesignerBtn.onclick = () => tabs.setActiveTab('domain-designer');
-  if (dom.tabInterfaceDesignerBtn) dom.tabInterfaceDesignerBtn.onclick = () => tabs.setActiveTab('interface-designer');
-  if (dom.tabServiceConfigBtn) dom.tabServiceConfigBtn.onclick = () => tabs.setActiveTab('service-config');
-  if (dom.tabDeployManagementBtn) dom.tabDeployManagementBtn.onclick = () => tabs.setActiveTab('deploy-management');
+  if (dom.tabDomainDesignerBtn) dom.tabDomainDesignerBtn.onclick = () => setActiveDesignerTab('domain-designer');
+  if (dom.tabInterfaceDesignerBtn) dom.tabInterfaceDesignerBtn.onclick = () => setActiveDesignerTab('interface-designer');
+  if (dom.tabServiceConfigBtn) dom.tabServiceConfigBtn.onclick = () => setActiveDesignerTab('service-config');
+  if (dom.tabDeployManagementBtn) dom.tabDeployManagementBtn.onclick = () => setActiveDesignerTab('deploy-management');
   if (dom.tabMonitoringBtn) {
     dom.tabMonitoringBtn.onclick = () => {
-      tabs.setActiveTab('monitoring');
+      setActiveDesignerTab('monitoring');
       loadPm2Metrics().catch((error) => {
         showPm2MetricsStatus(error instanceof Error ? error.message : 'Could not collect PM2 metrics.', 'error');
       });
@@ -3340,7 +3355,7 @@ function wireEvents() {
   }
   if (dom.tabCodeWorkspaceBtn) {
     dom.tabCodeWorkspaceBtn.onclick = () => {
-      tabs.setActiveTab('code-workspace');
+      setActiveDesignerTab('code-workspace');
       renderCodeWorkspace();
       ensureMonacoWorkspaceEditor();
     };

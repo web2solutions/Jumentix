@@ -207,6 +207,10 @@
         "requirejs": "^2.3.8",
       },
     },
+    "apps/service-management-api": {
+      "name": "@jumentix/service-management-api",
+      "version": "0.0.0",
+    },
     "packages/adapter-runtime-bootstrap": {
       "name": "@jumentix/adapter-runtime-bootstrap",
       "version": "0.1.0",
@@ -1141,6 +1145,8 @@
     "@jumentix/security-scanner": ["@jumentix/security-scanner@workspace:packages/security-scanner"],
 
     "@jumentix/service-management": ["@jumentix/service-management@workspace:apps/service-management"],
+
+    "@jumentix/service-management-api": ["@jumentix/service-management-api@workspace:apps/service-management-api"],
 
     "@jumentix/shared-contracts": ["@jumentix/shared-contracts@workspace:packages/shared-contracts"],
 

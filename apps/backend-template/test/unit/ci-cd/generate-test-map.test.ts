@@ -335,7 +335,7 @@ describe('service-management classification (JUM-472)', () => {
     )).toThrow('brand-new.integration.test.ts');
   });
 
-  it('declares the two sub-layers with enumerated globs and the component dependency direction', () => {
+  it('declares the Service Management sub-layers with enumerated globs and dependency direction', () => {
     expect.hasAssertions();
 
     const { layers } = buildManifest(workspace({}));
@@ -346,7 +346,7 @@ describe('service-management classification (JUM-472)', () => {
       sourceGlobs: ['apps/service-management/server.js', 'apps/service-management/package.json']
     });
     expect(layers['service-management/designer']).toMatchObject({
-      dependsOn: ['service-management/server'],
+      dependsOn: ['service-management/server', 'service-management/catalog-api'],
       kind: 'non-hexagonal',
       sourceGlobs: [
         'apps/service-management/script.js',
@@ -357,6 +357,11 @@ describe('service-management classification (JUM-472)', () => {
         // its manifest, build and suites belong to the same layer.
         'packages/designer-core/**'
       ]
+    });
+    expect(layers['service-management/catalog-api']).toMatchObject({
+      dependsOn: ['contracts'],
+      kind: 'non-hexagonal',
+      sourceGlobs: ['apps/service-management-api/**']
     });
   });
 

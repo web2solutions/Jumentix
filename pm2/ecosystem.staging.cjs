@@ -37,12 +37,23 @@ module.exports = {
       }
     },
     {
+      name: 'jumentix-staging-service-management-api',
+      script: './apps/service-management-api/src/start-service-management-catalog-api.ts',
+      interpreter: 'bun',
+      interpreter_args: '-r tsconfig-paths/register --env-file=./apps/backend-template/src/config/.env.staging',
+      env: {
+        NODE_ENV: 'staging',
+        JUMENTIX_HTTP_PORT: '4003'
+      }
+    },
+    {
       name: 'jumentix-staging-service-management',
       script: './apps/service-management/server.js',
       interpreter: 'bun',
       env: {
         NODE_ENV: 'staging',
-        JUMENTIX_SERVICE_MANAGEMENT_PORT: '4200'
+        JUMENTIX_SERVICE_MANAGEMENT_PORT: '4200',
+        JUMENTIX_SERVICE_MANAGEMENT_CATALOG_API_URL: 'http://127.0.0.1:4003'
       }
     }
   ]
