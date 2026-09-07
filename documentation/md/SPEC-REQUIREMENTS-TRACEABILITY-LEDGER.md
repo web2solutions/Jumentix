@@ -1,6 +1,6 @@
 # Spec Requirements Traceability Ledger
 
-<!-- requirements-inventory: files=135 unique=135 mapped=135 duplicates= -->
+<!-- requirements-inventory: files=136 unique=136 mapped=136 duplicates= -->
 
 This ledger maps requirement IDs to spec resources and validation evidence expectations.
 
@@ -42,16 +42,18 @@ For any change, identify impacted requirement IDs and ensure:
 
 ## C. Contract and Interface Conformance
 
-- `008`, `010`, `021`, `026`, `027`, `028`, `036`, `047`
+- `008`, `010`, `021`, `026`, `027`, `028`, `036`, `047`, `136`
 - Spec resources:
   - `spec/1.0.0.yml`
   - `spec/asyncapi/1.0.0.websocket.yml`
   - `spec/asyncapi/1.0.0.grpc.yml`
   - `documentation/md/EVENTS-AND-MESSAGES-MAP.md`
   - `documentation/md/contracts/*`
+  - `apps/frontend/*` (consumes only the OAS surface and generated SDKs)
 - Evidence:
   - route/channel resolution checks
   - realtime integration/smoke tests
+  - workspace boundary checks with the frontend workspace present
 
 ## D. Data Adapter and Persistence Interoperability
 

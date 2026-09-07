@@ -1,0 +1,100 @@
+import { createApp } from 'vue';
+import { createPinia } from 'pinia';
+
+import CoreuiVue from '@coreui/vue';
+import CIcon from '@coreui/icons-vue';
+import {
+  cilMenu,
+  cilSpeedometer,
+  cilSun,
+  cilMoon,
+  cilContrast,
+  cilBell,
+  cilList,
+  cilEnvelopeOpen,
+  cilArrowBottom,
+  cilArrowTop,
+  cilOptions,
+  cilCloudDownload,
+  cilPeople,
+  cilUser,
+  cilUserFemale,
+  cilSettings,
+  cilTask,
+  cilCommentSquare,
+  cilDollar,
+  cilFile,
+  cilShieldAlt,
+  cilLockLocked,
+  cilCalendar,
+  cibFacebook,
+  cibTwitter,
+  cibLinkedin,
+  cibGoogle,
+  cibCcMastercard,
+  cibCcVisa,
+  cibCcStripe,
+  cibCcPaypal,
+  cibCcApplePay,
+  cibCcAmex,
+  cifUs,
+  cifBr,
+  cifIn,
+  cifFr,
+  cifEs,
+  cifPl
+} from '@coreui/icons';
+import router from './router';
+import App from './App.vue';
+
+const app = createApp(App);
+
+app.use(createPinia());
+app.use(router);
+app.use(CoreuiVue);
+
+// Only the icons the shell + dashboard actually use — the full set stays in the template catalog.
+app.provide('icons', {
+  cilMenu,
+  cilSpeedometer,
+  cilSun,
+  cilMoon,
+  cilContrast,
+  cilBell,
+  cilList,
+  cilEnvelopeOpen,
+  cilArrowBottom,
+  cilArrowTop,
+  cilOptions,
+  cilCloudDownload,
+  cilPeople,
+  cilUser,
+  cilUserFemale,
+  cilSettings,
+  cilTask,
+  cilCommentSquare,
+  cilDollar,
+  cilFile,
+  cilShieldAlt,
+  cilLockLocked,
+  cilCalendar,
+  cibFacebook,
+  cibTwitter,
+  cibLinkedin,
+  cibGoogle,
+  cibCcMastercard,
+  cibCcVisa,
+  cibCcStripe,
+  cibCcPaypal,
+  cibCcApplePay,
+  cibCcAmex,
+  cifUs,
+  cifBr,
+  cifIn,
+  cifFr,
+  cifEs,
+  cifPl
+});
+app.component('CIcon', CIcon);
+
+app.mount('#app');

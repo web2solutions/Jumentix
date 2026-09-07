@@ -3,6 +3,11 @@ const path = require('path');
 module.exports = {
     ignorePatterns: [
       'apps/jumentix-website/next-env.d.ts',
+      // apps/frontend/template is a vendored, frozen third-party catalog
+      // (CoreUI, MIT) kept as reference for generated frontends — like dist,
+      // vendored code is not held to this ruleset. apps/frontend/src follows
+      // the Jumentix standard (airbnb + semicolons) and IS linted here.
+      'apps/frontend/template',
       '**/dist/**'
     ],
     parser: '@typescript-eslint/parser',
@@ -73,6 +78,7 @@ module.exports = {
         packageDir: [
           __dirname,
           path.join(__dirname, 'apps/backend-template'),
+          path.join(__dirname, 'apps/frontend'),
           path.join(__dirname, 'apps/jumentix-website'),
           path.join(__dirname, 'packages/sdk-rest-client'),
           path.join(__dirname, 'packages/sdk-websocket-client'),
