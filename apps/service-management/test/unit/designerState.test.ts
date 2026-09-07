@@ -14,7 +14,7 @@ import path from 'node:path';
  * criterion and the precondition for JUM-470/JUM-471.
  */
 
-const repoRoot = path.resolve(__dirname, '../../../../..');
+const repoRoot = path.resolve(__dirname, '../../../..');
 const {
   DOMAIN_COLORS,
   clampZoom,
@@ -178,7 +178,14 @@ describe('designer state core (JUM-468)', () => {
         content: 'user-edit',
         updatedAt: '2026-08-29T00:00:00.000Z'
       });
-      expect(normalized.files['src/modules/Billing/domain/Entity/IInvoice.ts'].state).toBe('generated');
+      expect(normalized.files['src/modules/Billing/domain/Entity/IInvoice.ts']).toStrictEqual({
+        path: 'src/modules/Billing/domain/Entity/IInvoice.ts',
+        state: 'generated',
+        baseContent: 'interface',
+        generatedContent: 'interface',
+        content: 'interface',
+        updatedAt: ''
+      });
     });
   });
 

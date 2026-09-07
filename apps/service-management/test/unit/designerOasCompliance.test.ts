@@ -24,7 +24,7 @@ import path from 'node:path';
  * the `it` callbacks.
  */
 
-const repoRoot = path.resolve(__dirname, '../../../../..');
+const repoRoot = path.resolve(__dirname, '../../../..');
 const { buildOasDocument } = require(
   '@jumentix/designer-core/exporters/designerExporters.js'
 );

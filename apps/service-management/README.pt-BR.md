@@ -312,7 +312,7 @@ intocados.
 
 ### Testes do PWA
 
-- Unidade: `apps/backend-template/test/unit/service-management/pwaShell.test.ts`
+- Unidade: `apps/service-management/test/unit/pwaShell.test.ts`
   (handlers do worker, fluxo de atualização, recuperação — com fakes
   injetados).
 - Smoke de navegador:

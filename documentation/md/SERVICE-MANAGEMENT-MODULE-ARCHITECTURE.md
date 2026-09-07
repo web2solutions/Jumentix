@@ -12,9 +12,9 @@ It documents two things, exactly as the code behaves today:
 
 Every behavioural claim below is pinned by the source modules and by the unit
 suites
-[`designerStore.test.ts`](../../apps/backend-template/test/unit/service-management/designerStore.test.ts)
+[`designerStore.test.ts`](../../apps/service-management/test/unit/designerStore.test.ts)
 and
-[`designerState.test.ts`](../../apps/backend-template/test/unit/service-management/designerState.test.ts).
+[`designerState.test.ts`](../../apps/service-management/test/unit/designerState.test.ts).
 
 ## Audience
 
@@ -303,7 +303,7 @@ Sources:
 (adapter) and
 [`apps/service-management/src/store/designerStoreFactory.js`](../../apps/service-management/src/store/designerStoreFactory.js)
 (factory); unit suite
-[`canaDesignerStore.test.ts`](../../apps/backend-template/test/unit/service-management/canaDesignerStore.test.ts).
+[`canaDesignerStore.test.ts`](../../apps/service-management/test/unit/canaDesignerStore.test.ts).
 
 `CanaDesignerStore` implements all seven port methods over the Cana client,
 and the swap required **no designer-logic change** — the port abstraction
@@ -456,7 +456,7 @@ assumed successful.
 - State core: [`packages/designer-core/src/state/designerState.js`](../../packages/designer-core/src/state/designerState.js)
 - Multi-tab sync engine: [`apps/service-management/src/state/designerSync.js`](../../apps/service-management/src/state/designerSync.js)
 - Entry module: [`apps/service-management/script.js`](../../apps/service-management/script.js)
-- Unit suites: [`designerStore.test.ts`](../../apps/backend-template/test/unit/service-management/designerStore.test.ts), [`designerState.test.ts`](../../apps/backend-template/test/unit/service-management/designerState.test.ts), [`canaDesignerStore.test.ts`](../../apps/backend-template/test/unit/service-management/canaDesignerStore.test.ts), [`designerSync.test.ts`](../../apps/backend-template/test/unit/service-management/designerSync.test.ts)
+- Unit suites: [`designerStore.test.ts`](../../apps/service-management/test/unit/designerStore.test.ts), [`designerState.test.ts`](../../apps/service-management/test/unit/designerState.test.ts), [`canaDesignerStore.test.ts`](../../apps/service-management/test/unit/canaDesignerStore.test.ts), [`designerSync.test.ts`](../../apps/service-management/test/unit/designerSync.test.ts)
 - Storage schema: [Requirement 126, Contract 2](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md)
 - Component overview: [Service Management Application](./SERVICE-MANAGEMENT-APPLICATION.md)
 - Linear: [JUM-468](https://linear.app/jumentix/issue/JUM-468/refactor-extract-statepersistence-core-as-es-module-behind) (the port), [JUM-469](https://linear.app/jumentix/issue/JUM-469/refactor-modularize-designer-canvas-validation-exporters-importers) (the module graph), [JUM-483](https://linear.app/jumentix/issue/JUM-483/feature-canadesignerstore-idesignerstore-adapter-over-the-cana-client) (CanaDesignerStore), [JUM-484](https://linear.app/jumentix/issue/JUM-484) (the landed one-way migration that retired the transitional adapter), [JUM-485](https://linear.app/jumentix/issue/JUM-485/feature-write-event-integration-multi-tab-sync-via-cana-message) (multi-tab write-event sync), [JUM-493](https://linear.app/jumentix/issue/JUM-493/feature-publish-designer-core-as-jumentix-package-xpertminds-org-dry) (package publish), Cana [JUM-560](https://linear.app/jumentix/issue/JUM-560/feature-storage-quota-persistence-and-eviction-policy) (quota/eviction policy)

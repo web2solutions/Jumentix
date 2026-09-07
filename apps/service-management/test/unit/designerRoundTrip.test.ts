@@ -51,7 +51,7 @@ import path from 'node:path';
  * discovered tests" acceptance criterion lives in that gate.
  */
 
-const repoRoot = path.resolve(__dirname, '../../../../..');
+const repoRoot = path.resolve(__dirname, '../../../..');
 const {
   buildAsyncApiFileSet,
   buildAsyncApiTransportDocument

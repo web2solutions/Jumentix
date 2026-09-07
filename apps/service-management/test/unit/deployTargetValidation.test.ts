@@ -19,7 +19,7 @@ import path from 'node:path';
  * All three are exercised as pure functions — no DOM, no store.
  */
 
-const repoRoot = path.resolve(__dirname, '../../../../..');
+const repoRoot = path.resolve(__dirname, '../../../..');
 const { collectDeployTargetIssues } = require(
   '@jumentix/designer-core/validation/deployTargetValidation.js'
 );

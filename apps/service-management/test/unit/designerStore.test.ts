@@ -15,7 +15,7 @@ import path from 'node:path';
  * port never touches one.
  */
 
-const repoRoot = path.resolve(__dirname, '../../../../..');
+const repoRoot = path.resolve(__dirname, '../../../..');
 const storeDir = path.join(repoRoot, 'apps', 'service-management', 'src', 'store');
 const {
   IDesignerStore

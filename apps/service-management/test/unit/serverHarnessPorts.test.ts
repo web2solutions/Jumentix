@@ -1,3 +1,4 @@
+/* eslint-disable import/no-relative-packages */
 /* eslint-disable jest/prefer-expect-assertions, jest/max-expects, jest/no-conditional-in-test */
 /*
  * JUM-628 — unit contract for the ServiceManagement harness port allocator
@@ -29,8 +30,8 @@ import {
   startServer,
   stopServer,
   waitForServer
-} from '../../integration/ServiceManagement/serverHarness';
-import type { StartedServer } from '../../integration/ServiceManagement/serverHarness';
+} from '../../../backend-template/test/integration/ServiceManagement/serverHarness';
+import type { StartedServer } from '../../../backend-template/test/integration/ServiceManagement/serverHarness';
 
 function addrInUse(port: number): NodeJS.ErrnoException {
   const error: NodeJS.ErrnoException = new Error(
@@ -175,10 +176,15 @@ describe('serverHarness runtime helpers against the real server (JUM-628)', () =
       const raw = await requestRaw(server.port, 'GET', '/api/runtime/env?environment=dev');
       expect(raw.status).toBe(200);
       expect(raw.rawBody).toContain('"environment"');
-      // A request carrying a body exercises the write path of requestRaw; the
-      // server answers with its honest rejection, not a hang.
-      const posted = await requestRaw(server.port, 'POST', '/api/runtime/env', '{}');
-      expect([200, 400, 401, 403, 422]).toContain(posted.status);
+      // A request carrying a body exercises the write path of requestRaw; an
+      // empty values patch is a no-op save against the temp config directory.
+      const posted = await requestRaw(
+        server.port,
+        'POST',
+        '/api/runtime/env',
+        JSON.stringify({ environment: 'dev', values: {} })
+      );
+      expect(posted.status).toBe(200);
       await expect(probeConnection('127.0.0.1', server.port)).resolves.toBe('connected');
       // The machine may or may not expose a non-loopback address; both are
       // honest answers — the contract is the shape, not the value.

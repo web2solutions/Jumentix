@@ -116,9 +116,9 @@ Dois fatos de vocabulário que vale conhecer antes de estender a matriz:
   verificada por teste, não presumida (abaixo).
 
 **Comprovado por:**
-[`serviceConfigurationValidation.test.ts`](../../apps/backend-template/test/unit/service-management/serviceConfigurationValidation.test.ts)
+[`serviceConfigurationValidation.test.ts`](../../apps/service-management/test/unit/serviceConfigurationValidation.test.ts)
 e
-[`deployTargetValidation.test.ts`](../../apps/backend-template/test/unit/service-management/deployTargetValidation.test.ts)
+[`deployTargetValidation.test.ts`](../../apps/service-management/test/unit/deployTargetValidation.test.ts)
 — este último também lê o `script.js` e os enums da allowlist do `server.js`
 para garantir que os vocabulários de drivers não possam divergir do contrato
 de ambiente de runtime.
@@ -165,7 +165,7 @@ do console:
   payload da API); e uma gravação escreve **somente aquele arquivo** — não
   existe edição em lote entre arquivos. A linha de direcionamento por arquivo
   é fixada por
-  [`pm2EcosystemUi.contract.test.ts`](../../apps/backend-template/test/unit/service-management/pm2EcosystemUi.contract.test.ts).
+  [`pm2EcosystemUi.contract.test.ts`](../../apps/service-management/test/unit/pm2EcosystemUi.contract.test.ts).
 - **Um ambiente não aceito é rejeitado, nunca coagido.** O servidor resolve o
   parâmetro `environment` contra um conjunto explícito de valores aceitos
   (`dev`/`development` → `.env.dev`, `staging` → `.env.staging`,
@@ -250,7 +250,7 @@ explícito de métricas PM2 em vez de cair para dados somente do ecosystem.
 (leituras do ecossistema real, edição refletida sem reinício, estado explícito
 de arquivo ausente, envelope 500 honesto, rejeição explícita de ambientes
 desconhecidos) e
-[`pm2EcosystemUi.contract.test.ts`](../../apps/backend-template/test/unit/service-management/pm2EcosystemUi.contract.test.ts)
+[`pm2EcosystemUi.contract.test.ts`](../../apps/service-management/test/unit/pm2EcosystemUi.contract.test.ts)
 (a garantia estrutural de nenhum comando embutido sobre os fontes do designer).
 
 ## Deploy Management: o contrato de metadados do Requisito 059 (JUM-481)
@@ -290,9 +290,9 @@ Contrato 2: a chave versionada permanece inalterada). As regras da aba:
   JUM-481 ao recorte de carga fixado.
 
 **Comprovado por:**
-[`deployTargetValidation.test.ts`](../../apps/backend-template/test/unit/service-management/deployTargetValidation.test.ts)
+[`deployTargetValidation.test.ts`](../../apps/service-management/test/unit/deployTargetValidation.test.ts)
 e a cobertura de migração na carga em
-[`designerState.test.ts`](../../apps/backend-template/test/unit/service-management/designerState.test.ts).
+[`designerState.test.ts`](../../apps/service-management/test/unit/designerState.test.ts).
 
 ## Ciclo de vida dos deploy targets: edição, duplicação e validação de campos (JUM-546)
 
@@ -333,7 +333,7 @@ editar in-place, duplicar e excluir**:
   select de perfil PM2 desabilitado e limpo — perfil PM2 não se aplica.
 
 **Comprovado por:**
-[`deployTargetLifecycle.test.ts`](../../apps/backend-template/test/unit/service-management/deployTargetLifecycle.test.ts)
+[`deployTargetLifecycle.test.ts`](../../apps/service-management/test/unit/deployTargetLifecycle.test.ts)
 (as regras como funções puras) e
 [`deployTargetLifecycle.browser.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/deployTargetLifecycle.browser.integration.test.ts)
 (a UI real em WebKit: adição validada, razões de rejeição na região de
@@ -425,7 +425,7 @@ console segue o mesmo modelo:
 - Validadores: [`serviceConfigurationValidation.js`](../../packages/designer-core/src/validation/serviceConfigurationValidation.js), [`deployTargetValidation.js`](../../packages/designer-core/src/validation/deployTargetValidation.js), [`deployTargetLifecycleValidation.js`](../../packages/designer-core/src/validation/deployTargetLifecycleValidation.js)
 - Endpoints do servidor: [`server.js`](../../apps/service-management/server.js); cola da UI: [`script.js`](../../apps/service-management/script.js), [`inspectors.js`](../../apps/service-management/src/ui/inspectors.js), estado/migração: [`designerState.js`](../../packages/designer-core/src/state/designerState.js)
 - Fontes de ecossistema: [`pm2/ecosystem.dev.cjs`](../../pm2/ecosystem.dev.cjs), [`pm2/ecosystem.staging.cjs`](../../pm2/ecosystem.staging.cjs), [`pm2/ecosystem.production.cjs`](../../pm2/ecosystem.production.cjs)
-- Suítes: [`serviceConfigurationValidation.test.ts`](../../apps/backend-template/test/unit/service-management/serviceConfigurationValidation.test.ts), [`deployTargetValidation.test.ts`](../../apps/backend-template/test/unit/service-management/deployTargetValidation.test.ts), [`deployTargetLifecycle.test.ts`](../../apps/backend-template/test/unit/service-management/deployTargetLifecycle.test.ts), [`designerState.test.ts`](../../apps/backend-template/test/unit/service-management/designerState.test.ts), [`pm2EcosystemUi.contract.test.ts`](../../apps/backend-template/test/unit/service-management/pm2EcosystemUi.contract.test.ts), [`runtimeEnvUi.contract.test.ts`](../../apps/backend-template/test/unit/service-management/runtimeEnvUi.contract.test.ts), [`pm2Ecosystem.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/pm2Ecosystem.integration.test.ts), [`runtimeEnv.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/runtimeEnv.integration.test.ts), [`runtimeEnvContract.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/runtimeEnvContract.integration.test.ts), [`deployTargetLifecycle.browser.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/deployTargetLifecycle.browser.integration.test.ts)
+- Suítes: [`serviceConfigurationValidation.test.ts`](../../apps/service-management/test/unit/serviceConfigurationValidation.test.ts), [`deployTargetValidation.test.ts`](../../apps/service-management/test/unit/deployTargetValidation.test.ts), [`deployTargetLifecycle.test.ts`](../../apps/service-management/test/unit/deployTargetLifecycle.test.ts), [`designerState.test.ts`](../../apps/service-management/test/unit/designerState.test.ts), [`pm2EcosystemUi.contract.test.ts`](../../apps/service-management/test/unit/pm2EcosystemUi.contract.test.ts), [`runtimeEnvUi.contract.test.ts`](../../apps/service-management/test/unit/runtimeEnvUi.contract.test.ts), [`pm2Ecosystem.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/pm2Ecosystem.integration.test.ts), [`runtimeEnv.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/runtimeEnv.integration.test.ts), [`runtimeEnvContract.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/runtimeEnvContract.integration.test.ts), [`deployTargetLifecycle.browser.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/deployTargetLifecycle.browser.integration.test.ts)
 - Requisitos: [126](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md) (Contratos 1, 1b e 2), [059](../../.agents/requirements/software/059-jumentix-service-factory-and-deploy-template-matrices.md) (as matrizes de deploy e da factory), [076](../../.agents/requirements/project/076-task-documentation-and-bilingual-governance.md) (paridade EN/PT)
 - Documentos irmãos da cadeia E: [Contratos de ambiente de runtime](./RUNTIME-ENVIRONMENT-CONTRACTS.pt-BR.md) (E1), [Arquitetura de módulos do Service Management](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.pt-BR.md) (E3), [Garantias de paridade de contratos do Service Management](./SERVICE-MANAGEMENT-CONTRACT-PARITY.pt-BR.md) (E4), [Aplicativo Service Management](./SERVICE-MANAGEMENT-APPLICATION.pt-BR.md), [Funcionalidades e uso do Domain Designer](./DOMAIN-DESIGNER-FEATURES-AND-USAGE.pt-BR.md)
 - Linear: [JUM-480](https://linear.app/jumentix/issue/JUM-480/feature-real-multi-environment-editing-and-pm2-ecosystem-preview), [JUM-481](https://linear.app/jumentix/issue/JUM-481/feature-deploy-management-aligned-to-req-059-matrix-with-per-service), [JUM-543](https://linear.app/jumentix/issue/JUM-543/fix-replace-blocking-alerts-with-non-blocking-status-surfaces-and), [JUM-544](https://linear.app/jumentix/issue/JUM-544/fix-service-configuration-validation-port-conflicts-and-run-mode), [JUM-545](https://linear.app/jumentix/issue/JUM-545/feature-interface-adapter-lifecycle-edit-in-place-uniqueness-and), [JUM-546](https://linear.app/jumentix/issue/JUM-546/feature-deploy-target-lifecycle-edit-duplicate-and-field-validation), [JUM-547](https://linear.app/jumentix/issue/JUM-547/feature-full-suite-exportimport-carry-interfaces-service-configuration), [JUM-464](https://linear.app/jumentix/issue/JUM-464/docs-e1-documentation-enpt-runtime-env-contract-and-fixed-paths), [JUM-33](https://linear.app/jumentix/issue/JUM-33/refactor-migrate-internal-development-cli-and-pm2-workflows-to-bun), [JUM-40](https://linear.app/jumentix/issue/JUM-40/release-complete-the-bun-only-internal-tooling-cutover)

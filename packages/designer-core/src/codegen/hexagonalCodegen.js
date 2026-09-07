@@ -36,7 +36,7 @@
  * application ports, and only the composition root wires adapters to ports —
  * so the output passes `ci-cd/check-hexagonal-boundaries.js` and compiles
  * under `tsc --strict`. Both properties are pinned by
- * `apps/backend-template/test/unit/service-management/hexagonalCodegen.test.ts`.
+ * `apps/service-management/test/unit/hexagonalCodegen.test.ts`.
  */
 
 import { isBarePropertyKey } from '../model/propertyKeys.js';

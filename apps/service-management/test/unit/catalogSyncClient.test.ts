@@ -28,7 +28,7 @@ import path from 'node:path';
  * - The scheduler is manual so the poll/push cycles are deterministic.
  */
 
-const repoRoot = path.resolve(__dirname, '../../../../..');
+const repoRoot = path.resolve(__dirname, '../../../..');
 const {
   createDesignerState,
   createDefaultView

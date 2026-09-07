@@ -285,7 +285,7 @@ the `service-management-shell@*` caches and reloads — Cana data is untouched.
 
 ### PWA tests
 
-- Unit: `apps/backend-template/test/unit/service-management/pwaShell.test.ts`
+- Unit: `apps/service-management/test/unit/pwaShell.test.ts`
   (worker handlers, update flow, recovery — with injected fakes).
 - Browser smoke:
   `apps/backend-template/test/integration/ServiceManagement/pwaShell.browser.integration.test.ts`

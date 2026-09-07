@@ -14,7 +14,7 @@ import path from 'node:path';
  * exporters, importers and UI layer share are DOM-free.
  */
 
-const repoRoot = path.resolve(__dirname, '../../../../..');
+const repoRoot = path.resolve(__dirname, '../../../..');
 const model = require('@jumentix/designer-core/model/modelQueries.js');
 
 type LayoutBox = { left: number; top: number; right: number; bottom: number };
@@ -162,6 +162,8 @@ describe('model queries (JUM-469)', () => {
         .toBe('email: string(email) [NULL]');
       expect(model.fieldLabel({ name: 'total', type: 'number', fk: true }))
         .toBe('total: number [FK]');
+      expect(model.fieldLabel({ name: 'slug', type: 'string', indexed: true }))
+        .toBe('slug: string [IDX]');
     });
 
     it('builds relationship names per cardinality pair', () => {
@@ -397,6 +399,59 @@ describe('model queries (JUM-469)', () => {
         .toStrictEqual({ x: originX + width / 2, y: originY + height });
     });
 
+    it('clamps custom entity dimensions and resize requests to supported bounds', () => {
+      expect.hasAssertions();
+      const tallEntity = {
+        width: 1000,
+        height: 9999,
+        fields: [{ name: 'id' }, { name: 'status' }]
+      };
+      const narrowEntity = {
+        width: 120,
+        height: 10,
+        fields: [{ name: 'id' }]
+      };
+
+      expect(model.entityWidth(tallEntity)).toBe(720);
+      expect(model.entityWidth(narrowEntity)).toBe(320);
+      expect(model.entityBoxHeight(tallEntity, false, false)).toBe(640);
+      expect(model.entityBoxHeight(narrowEntity, false, false)).toBe(
+        model.entityMinHeight(narrowEntity, false, false)
+      );
+      expect(model.resizeEntityBox(narrowEntity, 120, 10)).toStrictEqual({
+        width: 320,
+        height: model.entityMinHeight(narrowEntity, false, false)
+      });
+      expect(model.resizeEntityBox(tallEntity, 1000, 9999, false, false)).toStrictEqual({
+        width: 720,
+        height: 640
+      });
+    });
+
+    it('keeps malformed positions and sparse collections renderable', () => {
+      expect.hasAssertions();
+
+      expect(model.clampEntityPosition(null, Number.NaN, Infinity)).toStrictEqual({ x: 0, y: 0 });
+      expect(model.minimumDomainSize({ entities: [{ x: Number.NaN, y: Number.NaN }] }))
+        .toStrictEqual({ width: 356, height: 160 });
+      expect(model.searchModel(null, 'anything')).toStrictEqual([]);
+      expect(model.searchModel([
+        { id: 'domain-without-name' },
+        { id: 'domain-1', name: 'Billing', entities: [{ id: 'entity-without-fields', name: 'Invoice' }] },
+        { id: 'domain-2', name: 'Empty', entities: [{ id: 'entity-1', fields: [{}] }] }
+      ], 'billing')).toStrictEqual([
+        { kind: 'domain', domainId: 'domain-1', label: 'Billing' }
+      ]);
+      expect(model.entitiesInMarquee(null, {
+        x1: 0, y1: 0, x2: 10, y2: 10
+      }, false, false)).toStrictEqual([]);
+      expect(model.entitiesInMarquee([{ x: 0, y: 0 }], {
+        x1: 0, y1: 0, x2: 10, y2: 10
+      }, false, false)).toStrictEqual([]);
+      expect(model.alignmentGuidesFor({}, { id: 'entity', fields: [] }, 12, 20))
+        .toStrictEqual({ x: 12, y: 20, guides: [] });
+    });
+
     it('collapses to the header height in compact view', () => {
       expect.hasAssertions();
       const domain = { x: 100, y: 50 };
@@ -408,6 +463,8 @@ describe('model queries (JUM-469)', () => {
       expect(model.entityHeight(entity, true, false)).toBe(40);
       expect(model.entityAnchorPoint(domain, entity, 'left', true, false))
         .toStrictEqual({ x: 114, y: 84 });
+      expect(model.entityHeight(entity, false, true)).toBe(72);
+      expect(model.entityFieldRowHeight(true)).toBe(16);
     });
 
     it('falls back to the centre for a side it does not know', () => {
@@ -453,6 +510,8 @@ describe('model queries (JUM-469)', () => {
       // there; the caller falls back to the side anchor instead.
       expect(model.entityFieldAnchorPoint(domain, entity, 'gone', 'left', false, false)).toBeNull();
       expect(model.entityFieldAnchorPoint(domain, entity, 'id', 'left', true, false)).toBeNull();
+      expect(model.entityFieldAnchorPoint(domain, { ...entity, fields: null }, 'id', 'left', false, false))
+        .toBeNull();
     });
 
     it('picks the side of the target that faces the origin', () => {

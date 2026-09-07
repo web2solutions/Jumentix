@@ -17,7 +17,7 @@ import path from 'node:path';
  * and under `bun test`.
  */
 
-const repoRoot = path.resolve(__dirname, '../../../../..');
+const repoRoot = path.resolve(__dirname, '../../../..');
 const appRoot = path.join(repoRoot, 'apps', 'service-management');
 
 const sw = require(path.join(appRoot, 'sw.js'));

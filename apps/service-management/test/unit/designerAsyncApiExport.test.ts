@@ -29,7 +29,7 @@ import path from 'node:path';
  * live once under `components.schemas` and are referenced, never inlined.
  */
 
-const repoRoot = path.resolve(__dirname, '../../../../..');
+const repoRoot = path.resolve(__dirname, '../../../..');
 const YAML = require('yaml');
 
 const {

@@ -31,7 +31,7 @@ import { execFileSync } from 'node:child_process';
  *   export emits — same builder, same files.
  */
 
-const repoRoot = path.resolve(__dirname, '../../../../..');
+const repoRoot = path.resolve(__dirname, '../../../..');
 const {
   buildHexagonalBundle,
   flattenBundleFiles,

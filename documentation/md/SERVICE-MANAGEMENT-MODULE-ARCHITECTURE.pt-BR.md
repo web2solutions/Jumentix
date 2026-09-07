@@ -17,9 +17,9 @@ Ele documenta duas coisas, exatamente como o código se comporta hoje:
 
 Cada afirmação comportamental abaixo é garantida pelos módulos-fonte e pelas
 suítes de unidade
-[`designerStore.test.ts`](../../apps/backend-template/test/unit/service-management/designerStore.test.ts)
+[`designerStore.test.ts`](../../apps/service-management/test/unit/designerStore.test.ts)
 e
-[`designerState.test.ts`](../../apps/backend-template/test/unit/service-management/designerState.test.ts).
+[`designerState.test.ts`](../../apps/service-management/test/unit/designerState.test.ts).
 
 ## Público
 
@@ -324,7 +324,7 @@ Fontes:
 (adaptador) e
 [`apps/service-management/src/store/designerStoreFactory.js`](../../apps/service-management/src/store/designerStoreFactory.js)
 (fábrica); suíte de unidade
-[`canaDesignerStore.test.ts`](../../apps/backend-template/test/unit/service-management/canaDesignerStore.test.ts).
+[`canaDesignerStore.test.ts`](../../apps/service-management/test/unit/canaDesignerStore.test.ts).
 
 O `CanaDesignerStore` implementa todos os sete métodos da porta sobre o
 cliente Cana, e a troca **não exigiu nenhuma mudança na lógica do designer** —
@@ -484,7 +484,7 @@ silenciosamente.
 - Núcleo de estado: [`packages/designer-core/src/state/designerState.js`](../../packages/designer-core/src/state/designerState.js)
 - Motor de sincronização multi-abas: [`apps/service-management/src/state/designerSync.js`](../../apps/service-management/src/state/designerSync.js)
 - Módulo de entrada: [`apps/service-management/script.js`](../../apps/service-management/script.js)
-- Suítes de unidade: [`designerStore.test.ts`](../../apps/backend-template/test/unit/service-management/designerStore.test.ts), [`designerState.test.ts`](../../apps/backend-template/test/unit/service-management/designerState.test.ts), [`canaDesignerStore.test.ts`](../../apps/backend-template/test/unit/service-management/canaDesignerStore.test.ts), [`designerSync.test.ts`](../../apps/backend-template/test/unit/service-management/designerSync.test.ts)
+- Suítes de unidade: [`designerStore.test.ts`](../../apps/service-management/test/unit/designerStore.test.ts), [`designerState.test.ts`](../../apps/service-management/test/unit/designerState.test.ts), [`canaDesignerStore.test.ts`](../../apps/service-management/test/unit/canaDesignerStore.test.ts), [`designerSync.test.ts`](../../apps/service-management/test/unit/designerSync.test.ts)
 - Esquema de armazenamento: [Requisito 126, Contrato 2](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md)
 - Visão geral do componente: [Aplicativo de gerenciamento de serviços](./SERVICE-MANAGEMENT-APPLICATION.pt-BR.md)
 - Linear: [JUM-468](https://linear.app/jumentix/issue/JUM-468/refactor-extract-statepersistence-core-as-es-module-behind) (a porta), [JUM-469](https://linear.app/jumentix/issue/JUM-469/refactor-modularize-designer-canvas-validation-exporters-importers) (o grafo de módulos), [JUM-483](https://linear.app/jumentix/issue/JUM-483/feature-canadesignerstore-idesignerstore-adapter-over-the-cana-client) (CanaDesignerStore), [JUM-484](https://linear.app/jumentix/issue/JUM-484) (a migração unidirecional entregue que aposentou o adaptador transicional), [JUM-485](https://linear.app/jumentix/issue/JUM-485/feature-write-event-integration-multi-tab-sync-via-cana-message) (sincronização multi-abas por eventos de escrita), [JUM-493](https://linear.app/jumentix/issue/JUM-493/feature-publish-designer-core-as-jumentix-package-xpertminds-org-dry) (publicação do pacote), Cana [JUM-560](https://linear.app/jumentix/issue/JUM-560/feature-storage-quota-persistence-and-eviction-policy) (política de cota/despejo)

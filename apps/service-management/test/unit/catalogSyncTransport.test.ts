@@ -20,7 +20,7 @@ import path from 'node:path';
  * exactly what it was called with. Everything else — the transport, the URL
  * building, the error shape — is the production code.
  */
-const repoRoot = path.resolve(__dirname, '../../../../..');
+const repoRoot = path.resolve(__dirname, '../../../..');
 const {
   createCatalogHttpTransport
 } = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'catalogSyncClient.js'));
@@ -103,6 +103,23 @@ describe('createCatalogHttpTransport (JUM-681)', () => {
 
     expect(calls[0].url).toBe('/api/1.0.0/catalogs?page=1&size=500');
     expect(calls[0].init.headers.Authorization).toBeUndefined();
+  });
+
+  it('uses the injected fetch even when the runtime fetch is absent', async () => {
+    expect.hasAssertions();
+
+    const globalFetch = (globalThis as { fetch?: unknown }).fetch;
+    delete (globalThis as { fetch?: unknown }).fetch;
+    const { impl, calls } = fetchDouble([{ text: listPayload }]);
+
+    try {
+      const transport = createCatalogHttpTransport({ fetchImpl: impl });
+      await transport.listCatalogs();
+    } finally {
+      (globalThis as { fetch?: unknown }).fetch = globalFetch;
+    }
+
+    expect(calls[0].url).toBe('/api/1.0.0/catalogs?page=1&size=500');
   });
 
   it('resolves the base URL per request, so a repointed host is honoured', async () => {

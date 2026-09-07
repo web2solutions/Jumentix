@@ -265,15 +265,15 @@ entrantes recebem ids livres de colisão através do callback `uniqueId` do
 importador.
 
 **Provado por:**
-[`designerPackageVersioning.test.ts`](../../apps/backend-template/test/unit/service-management/designerPackageVersioning.test.ts)
+[`designerPackageVersioning.test.ts`](../../apps/service-management/test/unit/designerPackageVersioning.test.ts)
 (parsing/ordenação de versões, satisfação de ranges, parsing de dependências
 e resolução transitiva, detecção de ciclos, toda classe de conflito),
-[`designerRoundTrip.test.ts`](../../apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts)
+[`designerRoundTrip.test.ts`](../../apps/service-management/test/unit/designerRoundTrip.test.ts)
 (exportação→importação versionada deep-equal com proveniência, ponto fixo de
 reexportação, reimportação idempotente, recusa de reimportação conflitante,
 merge determinístico com RBAC preservado, pares de dependências
 compatíveis/incompatíveis, JUM-617 preservado no caminho de acréscimo) e
-[`designerExporters.test.ts`](../../apps/backend-template/test/unit/service-management/designerExporters.test.ts)
+[`designerExporters.test.ts`](../../apps/service-management/test/unit/designerExporters.test.ts)
 (o formato do documento de pacote v2, fixado).
 
 ## Empacotamento: o núcleo do designer `@jumentix` (JUM-493)
@@ -491,11 +491,11 @@ quando o portão fecha.
   a fonte da verdade permanece a fronteira livre de DOM sob
   [`apps/service-management/src/`](../../apps/service-management/src)
 - Suítes:
-  [`catalogSyncClient.test.ts`](../../apps/backend-template/test/unit/service-management/catalogSyncClient.test.ts),
+  [`catalogSyncClient.test.ts`](../../apps/service-management/test/unit/catalogSyncClient.test.ts),
   [`catalogSync.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/catalogSync.integration.test.ts),
-  [`designerPackageVersioning.test.ts`](../../apps/backend-template/test/unit/service-management/designerPackageVersioning.test.ts),
-  [`designerRoundTrip.test.ts`](../../apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts),
-  [`designerExporters.test.ts`](../../apps/backend-template/test/unit/service-management/designerExporters.test.ts)
+  [`designerPackageVersioning.test.ts`](../../apps/service-management/test/unit/designerPackageVersioning.test.ts),
+  [`designerRoundTrip.test.ts`](../../apps/service-management/test/unit/designerRoundTrip.test.ts),
+  [`designerExporters.test.ts`](../../apps/service-management/test/unit/designerExporters.test.ts)
 - Requisitos:
   [094](../../.agents/requirements/project/094-epic-documentation-completion-gate.md)
   (portão de conclusão de documentação do épico),

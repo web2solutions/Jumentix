@@ -32,7 +32,7 @@ import { until } from '@test/helpers/until';
  * delete can never leave a dangling selection.
  */
 
-const repoRoot = path.resolve(__dirname, '../../../../..');
+const repoRoot = path.resolve(__dirname, '../../../..');
 const {
   createDesignerState,
   createDefaultView,
