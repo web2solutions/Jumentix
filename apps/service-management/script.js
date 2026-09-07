@@ -2030,11 +2030,13 @@ function exportAsProto() {
 
 function exportBoilerplateBundle() {
   if (!canExportModel()) return;
+  flushActiveCodeWorkspaceEditor();
   downloadTextFile('domain-designer-boilerplate-bundle.json', JSON.stringify(buildBoilerplateBundleDocument(state), null, 2), 'application/json');
 }
 
 function exportAsPackage() {
   if (!canExportModel()) return;
+  flushActiveCodeWorkspaceEditor();
   const selected = getSelectedDomain();
   if (!selected) {
     showStatus('Select a domain to export package.');
@@ -2372,6 +2374,25 @@ function getActiveCodeWorkspaceFile() {
   return workspace.activePath ? workspace.files[workspace.activePath] : null;
 }
 
+function flushActiveCodeWorkspaceEditor() {
+  if (suppressCodeWorkspaceEditorChange) return;
+  const file = getActiveCodeWorkspaceFile();
+  if (!file) return;
+
+  if (codeWorkspaceMonacoEditor?.getModel) {
+    const model = codeWorkspaceMonacoEditor.getModel();
+    const activeUri = codeWorkspaceMonacoUri(file.path).toString();
+    if (model?.uri?.toString() === activeUri) {
+      updateActiveCodeWorkspaceFileContent(model.getValue());
+      return;
+    }
+  }
+
+  if (dom.codeWorkspaceEditor && !dom.codeWorkspaceEditor.hidden) {
+    updateActiveCodeWorkspaceFileContent(dom.codeWorkspaceEditor.value);
+  }
+}
+
 function codeWorkspaceFileLanguage(path) {
   if (path.endsWith('.json')) return 'json';
   if (path.endsWith('.ts') || path.endsWith('.tsx')) return 'typescript';
@@ -2658,6 +2679,7 @@ function syncCodeWorkspaceEditor(file) {
 }
 
 function renderCodeWorkspace({ skipEditorSync = false } = {}) {
+  if (skipEditorSync) flushActiveCodeWorkspaceEditor();
   const workspace = reconcileCodeWorkspaceFiles();
   const file = getActiveCodeWorkspaceFile();
   updateCodeWorkspaceChrome();
@@ -2723,6 +2745,7 @@ function takeGeneratedCodeWorkspaceFile() {
 }
 
 function regenerateCodeWorkspace() {
+  flushActiveCodeWorkspaceEditor();
   renderCodeWorkspace();
   saveState();
   const staleCount = Object.values(ensureCodeWorkspaceState().files)
