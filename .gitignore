@@ -99,6 +99,8 @@ out
 !src/modules/**/adapters/out/**
 !apps/backend-template/src/modules/**/adapters/out/
 !apps/backend-template/src/modules/**/adapters/out/**
+!apps/service-management-api/src/modules/**/adapters/out/
+!apps/service-management-api/src/modules/**/adapters/out/**
 !test/**/out/
 !test/**/out/**
 

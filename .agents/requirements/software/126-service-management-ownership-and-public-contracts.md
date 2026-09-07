@@ -6,7 +6,7 @@
   adoption", milestone H1 (Correctness & runtime alignment), 2026-08-05.
 - Strengthens: `038`, `043`. Relates to: `044`, `052`, `123` and Linear `JUM-458`,
   `JUM-558`, `JUM-459`, `JUM-460`, `JUM-461`, `JUM-462`, `JUM-543`, `JUM-466`,
-  `JUM-468`, `JUM-475`, `JUM-484`, `JUM-547`, `JUM-492`.
+  `JUM-468`, `JUM-475`, `JUM-484`, `JUM-547`, `JUM-492`, `JUM-748`.
 
 ## Context
 
@@ -26,6 +26,11 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
    - `apps/service-management` MUST have a registered owner in the component ownership
      registry `.agents/COMPONENT-OWNERSHIP.md` (established by this requirement).
      The registered owner is agent `kimi-code-primary-001`.
+   - `apps/service-management-api` owns platform Service Management APIs that support
+     the designer itself, including the shared `Catalogs` runtime. Generated-service
+     template code in `apps/backend-template` MUST NOT ship the Service Management
+     `Catalogs` module, `/catalogs` OAS paths, catalog stores, or catalog sync runtime
+     by default.
    - Any change to a public contract pinned here MUST update this requirement (and the
      registry sync set listed in Evidence) in the same PR.
 
@@ -58,7 +63,7 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
        `JUMENTIX_RABBITMQ_URL`); MUST NOT appear in the GET response and MUST NOT be
        writable, since the response crosses the same boundary as the write. The tier
        is enforced by omission from both allowlists and proven by test.
-     The full 23-key classification of `.env.dev` (each addition to the editable set
+     The full 24-key classification of `.env.dev` (each addition to the editable set
      is a security decision with a written reason):
      - *Editable (write allowlist, 9 keys):*
        - `JUMENTIX_HTTP_FRAMEWORK` — REST framework selector; the designer's primary
@@ -89,7 +94,7 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
          in the template env files, and the endpoint rejects values with embedded
          credentials (userinfo) or non-`redis://`/`rediss://` protocols, so the tool
          cannot be used to store secrets through this key.
-     - *Read-only (read allowlist only, 14 keys):*
+     - *Read-only (read allowlist only, 15 keys):*
        - `JUMENTIX_DATABASE_NAME` — logical database name; non-secret config, not a
          topology selector.
        - `JUMENTIX_ENABLE_BASIC_AUTH` — authentication posture toggle;
@@ -105,6 +110,10 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
        - `JUMENTIX_AUTH_MAX_LOGIN_ATTEMPTS`, `JUMENTIX_AUTH_LOGIN_WINDOW_SECONDS`,
          `JUMENTIX_AUTH_LOCKOUT_SECONDS` — brute-force protection policy
          (Requirement `044`); security-relevant.
+       - `JUMENTIX_SERVICE_MANAGEMENT_CATALOG_API_URL` — explicit endpoint for the
+         platform-owned Service Management catalog API. The designer reads it to
+         avoid same-origin fallback to generated-service template routes; it is
+         non-secret and never writable through the browser.
      - *Never exposed (3 keys):* `JUMENTIX_JWT_TOKEN_SECRET_KEY` (signing key),
        `JUMENTIX_REDIS_PASSWORD` (credential), `JUMENTIX_RABBITMQ_URL`
        (credential-bearing URL embedding `user:password`).
@@ -536,6 +545,8 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
   first entry names `kimi-code-primary-001` as owner of `apps/service-management`.
 - Contract sources of truth: `apps/service-management/server.js`,
   `apps/service-management/script.js`, `apps/service-management/index.html`,
+  `apps/service-management-api/src/ServiceManagementCatalogAPI.ts`,
+  `apps/service-management-api/spec/1.0.0.yml`,
   `apps/backend-template/src/interface/runtime/RuntimeEnvironment.ts`,
   `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md`,
   `documentation/md/SERVICE-MANAGEMENT-APPLICATION.md`.
@@ -586,6 +597,14 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
   Pinned by
   `apps/backend-template/test/integration/ServiceManagement/pm2Ecosystem.integration.test.ts`
   and `apps/backend-template/test/unit/service-management/pm2EcosystemUi.contract.test.ts`.
+- Contract 1d amended by `JUM-748`: the shared catalog moved out of
+  `apps/backend-template` into the Service Management platform API
+  `apps/service-management-api`. The designer's `catalogSyncClient` now fails closed
+  without an explicit `JUMENTIX_SERVICE_MANAGEMENT_CATALOG_API_URL`; PM2 starts a
+  dedicated catalog API process next to the designer; and
+  `apps/backend-template/test/unit/ownership/backendTemplateCatalogOwnership.test.ts`
+  prevents catalog runtime, `/catalogs` OAS paths, catalog stores, and catalog role
+  scopes from drifting back into the generated-service template.
 - Contract 3 amended by `JUM-492` (branch
   `kimi/feature/JUM-492-domain-package-versioning`): the domain package became
   a versioned document (`package` block with name/version/dependencies), with

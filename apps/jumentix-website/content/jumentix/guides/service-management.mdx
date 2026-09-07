@@ -577,7 +577,7 @@ the boot surfaces, never a silent fallback.
 flowchart TB
   EDIT["You edit the model"] --> STORE[("Cana · IndexedDB")]
   STORE --> TABS["Other tabs in this browser<br/>designerSync"]
-  STORE --> CAT["Shared catalog<br/>other users, via the backend Catalogs module"]
+  STORE --> CAT["Shared catalog<br/>other users, via the Service Management Catalog API"]
   STORE --> EXPORT["Export JSON<br/>the portable backup"]
   CAT -->|409 on a stale write| CONFLICT["Conflict raised<br/>take-server or take-local<br/>the local edit is never discarded"]
 ```

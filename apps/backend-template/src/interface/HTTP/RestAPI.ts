@@ -23,9 +23,6 @@ import type {
 import {
   composeUsersAuthServices
 } from '@src/modules/Users';
-import {
-  composeCatalogsServices
-} from '@src/modules/Catalogs';
 
 import users from '@seed/users';
 import organizations from '@seed/organizations';
@@ -56,8 +53,6 @@ export class RestAPI<T> {
   private readonly messageMediator: IMessageMediator | undefined;
 
   private usersComposition: ReturnType<typeof composeUsersAuthServices> | undefined;
-
-  private catalogsComposition: ReturnType<typeof composeCatalogsServices> | undefined;
 
   constructor(config: IAPIFactory<T>) {
     this.serverType = config.serverType ?? EHTTPFrameworks.express;
@@ -212,7 +207,6 @@ export class RestAPI<T> {
     const { moduleName, controllerName } = RestAPI.resolveControllerMetadata(module);
     const ControllerModule = RestAPI.getControllerModule(moduleName, controllerName);
     const usersModuleComposition = moduleName === 'Users' ? this.composeUsersModule() : undefined;
-    const catalogsModuleComposition = moduleName === 'Catalogs' ? this.composeCatalogsModule() : undefined;
 
     const controller = new ControllerModule({
       authService: usersModuleComposition?.authService ?? this.authService,
@@ -222,7 +216,6 @@ export class RestAPI<T> {
       userUseCases: usersModuleComposition?.userUseCases,
       organizationUseCases: usersModuleComposition?.organizationUseCases,
       authUseCases: usersModuleComposition?.authUseCases,
-      catalogUseCases: catalogsModuleComposition?.catalogUseCases,
       mutexService: this.mutexClient,
       passwordCryptoService: this.passwordCryptoService,
       messageMediator: this.messageMediator
@@ -437,17 +430,6 @@ export class RestAPI<T> {
     }
     return Promise.all(requests);
     // console.log('>>>> done');
-  }
-
-  private composeCatalogsModule(): ReturnType<typeof composeCatalogsServices> {
-    if (this.catalogsComposition) return this.catalogsComposition;
-
-    this.catalogsComposition = composeCatalogsServices({
-      databaseClient: this.databaseClient,
-      eventBus: this.eventBus,
-      messageMediator: this.messageMediator
-    });
-    return this.catalogsComposition;
   }
 
   private composeUsersModule(): ReturnType<typeof composeUsersAuthServices> {

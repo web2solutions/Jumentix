@@ -1,0 +1,10 @@
+{
+  "name": "@jumentix/service-management-api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "test:unit": "bun test ../../apps/service-management-api/test/unit",
+    "test:integration": "NODE_ENV=dev bun x jest apps/service-management-api/test/integration --runInBand --forceExit"
+  }
+}

@@ -56,18 +56,18 @@ explanation.
 ### What shipped
 
 - **A contract-first `Catalogs` backend module**
-  ([`apps/backend-template/src/modules/Catalogs/domain/Model/Catalog.ts`](../../apps/backend-template/src/modules/Catalogs/domain/Model/Catalog.ts)),
+  ([`apps/service-management-api/src/modules/Catalogs/domain/Model/Catalog.ts`](../../apps/service-management-api/src/modules/Catalogs/domain/Model/Catalog.ts)),
   hexagonal like the Users reference module: domain aggregate (version bump,
   tombstone, restore), pure
-  [`CatalogAuthorizationPolicy`](../../apps/backend-template/src/modules/Catalogs/domain/security/CatalogAuthorizationPolicy.ts),
+  [`CatalogAuthorizationPolicy`](../../apps/service-management-api/src/modules/Catalogs/domain/security/CatalogAuthorizationPolicy.ts),
   use cases
-  ([`CatalogUseCases.ts`](../../apps/backend-template/src/modules/Catalogs/application/use-cases/CatalogUseCases.ts)),
+  ([`CatalogUseCases.ts`](../../apps/service-management-api/src/modules/Catalogs/application/use-cases/CatalogUseCases.ts)),
   the optimistic-concurrency enforcement point
-  ([`CatalogDataRepository.ts`](../../apps/backend-template/src/modules/Catalogs/adapters/out/persistence/CatalogDataRepository.ts)),
+  ([`CatalogDataRepository.ts`](../../apps/service-management-api/src/modules/Catalogs/adapters/out/persistence/CatalogDataRepository.ts)),
   the OAS-validated
-  [`CatalogController`](../../apps/backend-template/src/modules/Catalogs/adapters/in/http/controllers/CatalogController.ts)
+  [`CatalogController`](../../apps/service-management-api/src/modules/Catalogs/adapters/in/http/controllers/CatalogController.ts)
   and composition
-  ([`composeCatalogsServices.ts`](../../apps/backend-template/src/modules/Catalogs/composition/composeCatalogsServices.ts)).
+  ([`composeCatalogsServices.ts`](../../apps/service-management-api/src/modules/Catalogs/composition/composeCatalogsServices.ts)).
   Six operations on `/catalogs` in the canonical
   [`spec/1.0.0.yml`](../../spec/1.0.0.yml) — list, create, get, update,
   delete, restore — enforced by `bun run oas:check-routes`.
@@ -94,7 +94,7 @@ explanation.
   `catalogs.catalog.created | updated | deleted | restored` with
   `{ id, organization, version, actor }` — the same version token the API
   enforces — on the message mediator
-  ([`CatalogService.ts`](../../apps/backend-template/src/modules/Catalogs/service/CatalogService.ts));
+  ([`CatalogService.ts`](../../apps/service-management-api/src/modules/Catalogs/service/CatalogService.ts));
   publication never breaks the primary write.
 - **A DOM-free designer sync client**
   ([`apps/service-management/src/state/catalogSyncClient.js`](../../apps/service-management/src/state/catalogSyncClient.js)):
@@ -109,7 +109,7 @@ explanation.
   changes cross the same `applyRemoteDocument` one-path as tab sync, so undo
   isolation, selection reconciliation and redo truncation are identical.
 - **A real convergence proof.**
-  [`catalogSync.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/catalogSync.integration.test.ts)
+  [`catalogSync.integration.test.ts`](../../apps/service-management-api/test/integration/catalogSync.integration.test.ts)
   boots the real Express backend (real JWT auth, real mediator) and runs two
   real designer clients over real `fetch`; one is partitioned behind a real
   `ECONNREFUSED`, both keep editing, and on heal the read-back converges
@@ -431,13 +431,13 @@ when the gate closes.
 ## References
 
 - Collaboration (JUM-491):
-  [`apps/backend-template/src/modules/Catalogs/domain/Model/Catalog.ts`](../../apps/backend-template/src/modules/Catalogs/domain/Model/Catalog.ts),
-  [`domain/security/CatalogAuthorizationPolicy.ts`](../../apps/backend-template/src/modules/Catalogs/domain/security/CatalogAuthorizationPolicy.ts),
-  [`application/use-cases/CatalogUseCases.ts`](../../apps/backend-template/src/modules/Catalogs/application/use-cases/CatalogUseCases.ts),
-  [`service/CatalogService.ts`](../../apps/backend-template/src/modules/Catalogs/service/CatalogService.ts),
-  [`adapters/out/persistence/CatalogDataRepository.ts`](../../apps/backend-template/src/modules/Catalogs/adapters/out/persistence/CatalogDataRepository.ts),
-  [`adapters/in/http/controllers/CatalogController.ts`](../../apps/backend-template/src/modules/Catalogs/adapters/in/http/controllers/CatalogController.ts),
-  [`composition/composeCatalogsServices.ts`](../../apps/backend-template/src/modules/Catalogs/composition/composeCatalogsServices.ts),
+  [`apps/service-management-api/src/modules/Catalogs/domain/Model/Catalog.ts`](../../apps/service-management-api/src/modules/Catalogs/domain/Model/Catalog.ts),
+  [`domain/security/CatalogAuthorizationPolicy.ts`](../../apps/service-management-api/src/modules/Catalogs/domain/security/CatalogAuthorizationPolicy.ts),
+  [`application/use-cases/CatalogUseCases.ts`](../../apps/service-management-api/src/modules/Catalogs/application/use-cases/CatalogUseCases.ts),
+  [`service/CatalogService.ts`](../../apps/service-management-api/src/modules/Catalogs/service/CatalogService.ts),
+  [`adapters/out/persistence/CatalogDataRepository.ts`](../../apps/service-management-api/src/modules/Catalogs/adapters/out/persistence/CatalogDataRepository.ts),
+  [`adapters/in/http/controllers/CatalogController.ts`](../../apps/service-management-api/src/modules/Catalogs/adapters/in/http/controllers/CatalogController.ts),
+  [`composition/composeCatalogsServices.ts`](../../apps/service-management-api/src/modules/Catalogs/composition/composeCatalogsServices.ts),
   [`spec/1.0.0.yml`](../../spec/1.0.0.yml),
   [`apps/service-management/src/state/catalogSyncClient.js`](../../apps/service-management/src/state/catalogSyncClient.js),
   [Shared Catalog Sync](./SHARED-CATALOG-SYNC.md)
@@ -459,7 +459,7 @@ when the gate closes.
   [`apps/service-management/src/`](../../apps/service-management/src)
 - Suites:
   [`catalogSyncClient.test.ts`](../../apps/service-management/test/unit/catalogSyncClient.test.ts),
-  [`catalogSync.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/catalogSync.integration.test.ts),
+  [`catalogSync.integration.test.ts`](../../apps/service-management-api/test/integration/catalogSync.integration.test.ts),
   [`designerPackageVersioning.test.ts`](../../apps/service-management/test/unit/designerPackageVersioning.test.ts),
   [`designerRoundTrip.test.ts`](../../apps/service-management/test/unit/designerRoundTrip.test.ts),
   [`designerExporters.test.ts`](../../apps/service-management/test/unit/designerExporters.test.ts)

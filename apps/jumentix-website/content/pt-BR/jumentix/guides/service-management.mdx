@@ -586,7 +586,7 @@ fallback silencioso.
 flowchart TB
   EDIT["Você edita o modelo"] --> STORE[("Cana · IndexedDB")]
   STORE --> TABS["Outras abas deste navegador<br/>designerSync"]
-  STORE --> CAT["Catálogo compartilhado<br/>outros usuários, via módulo Catalogs do backend"]
+  STORE --> CAT["Catálogo compartilhado<br/>outros usuários, via API de Catálogo do Service Management"]
   STORE --> EXPORT["Export JSON<br/>o backup portátil"]
   CAT -->|409 em escrita obsoleta| CONFLICT["Conflito levantado<br/>take-server ou take-local<br/>a edição local nunca é descartada"]
 ```
