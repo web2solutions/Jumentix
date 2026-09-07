@@ -1,4 +1,7 @@
+import tseslint from '@typescript-eslint/eslint-plugin'
+import tsParser from '@typescript-eslint/parser'
 import eslintPluginVue from 'eslint-plugin-vue'
+import vueParser from 'vue-eslint-parser'
 import globals from 'globals'
 
 export default [
@@ -17,14 +20,22 @@ export default [
   },
   ...eslintPluginVue.configs['flat/essential'],
   {
-    files: ['src/**/*.{js,vue}'],
+    files: ['src/**/*.{ts,vue}', 'vite.config.mjs'],
     languageOptions: {
+      parser: vueParser,
+      parserOptions: {
+        ecmaVersion: 'latest',
+        extraFileExtensions: ['.vue'],
+        parser: tsParser,
+        sourceType: 'module',
+      },
       globals: {
         ...globals.browser,
         ...globals.node,
       },
-      ecmaVersion: 'latest',
-      sourceType: 'module',
+    },
+    plugins: {
+      '@typescript-eslint': tseslint,
     },
     rules: {
       'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
