@@ -2,11 +2,11 @@
 
 [![GitHub Actions dev](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml?query=branch%3Adev)
 [![GitHub Actions main](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml?query=branch%3Amain)
-[![Codecov dev](https://codecov.io/gh/XpertMinds/Jumentix/branch/dev/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev)
-[![Codecov main](https://codecov.io/gh/XpertMinds/Jumentix/branch/main/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/main)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Jumentix)
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=Jumentix)
-[![Sonar Coverage](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Jumentix)
+[![Codecov dev map](https://img.shields.io/badge/Codecov-dev%20file%20map-f01f7a?logo=codecov&logoColor=white)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev)
+[![Codecov main map](https://img.shields.io/badge/Codecov-main%20file%20map-f01f7a?logo=codecov&logoColor=white)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/main)
+[![SonarCloud quality](https://img.shields.io/badge/SonarCloud-quality%20gate-F3702A?logo=sonarcloud&logoColor=white)](https://sonarcloud.io/summary/new_code?id=Jumentix)
+[![SonarCloud security](https://img.shields.io/badge/SonarCloud-security-F3702A?logo=sonarcloud&logoColor=white)](https://sonarcloud.io/summary/new_code?id=Jumentix)
+[![SonarCloud coverage](https://img.shields.io/badge/SonarCloud-coverage-F3702A?logo=sonarcloud&logoColor=white)](https://sonarcloud.io/summary/new_code?id=Jumentix)
 [![Bun](https://img.shields.io/badge/bun-1.3.13-000000?logo=bun&logoColor=white)](https://bun.sh/)
 [![Node compat](https://img.shields.io/badge/node%20compat-22.x-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-6BA539?logo=openapiinitiative&logoColor=white)](./spec/1.0.0.yml)
@@ -32,7 +32,7 @@
 | Required gate | `main` | `dev` |
 | --- | :---: | :---: |
 | GitHub Actions workflow | [![main GitHub Actions](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml?query=branch%3Amain) | [![dev GitHub Actions](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml?query=branch%3Adev) |
-| Codecov project coverage | [![main Codecov](https://codecov.io/gh/XpertMinds/Jumentix/branch/main/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/main) | [![dev Codecov](https://codecov.io/gh/XpertMinds/Jumentix/branch/dev/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev) |
+| Codecov file map | [![main Codecov file map](https://img.shields.io/badge/Codecov-main%20file%20map-f01f7a?logo=codecov&logoColor=white)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/main) | [![dev Codecov file map](https://img.shields.io/badge/Codecov-dev%20file%20map-f01f7a?logo=codecov&logoColor=white)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev) |
 | Branch-aware tests | `branch-gate` | `branch-gate` |
 | Project + patch coverage | `coverage` | release-promotion only |
 | Third-party security review | `third-party-review` | PR-only |
@@ -43,9 +43,10 @@ workspace, browser, coverage, website and database jobs are reserved for
 `dev -> main` release promotions, `main` pushes and scheduled full runs.
 
 Coverage is produced and enforced by the GitHub Actions `coverage` job when the
-full suite runs. GitHub Actions uploads LCOV to Codecov under the `project` flag when
-`CODECOV_TOKEN` is configured. Codecov provides the file-by-file coverage map
-for each long-lived branch:
+full suite runs. GitHub Actions uploads LCOV to Codecov when `CODECOV_TOKEN` is
+configured. Codecov provides the file-by-file coverage map for each long-lived
+branch; the README uses stable dashboard badges because the private Codecov
+badge endpoint returns `unknown` without repository badge access:
 
 - [Codecov file map for `dev`](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev)
 - [Codecov file map for `main`](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/main)
