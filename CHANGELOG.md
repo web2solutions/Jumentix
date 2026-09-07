@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-09-06 docs(readme): replace broken coverage and sonar badges (#290) - Eduardo A.
 - 2026-09-06 feat(service-management): polish designer workbench (#289) - Eduardo A.
 - 2026-08-29 [JUM-732][Fix] Name every control in the generated field rows (#282) - Eduardo A.
 - 2026-08-29 fix(service-management): name the runtime env fields explicitly [JUM-732] - Eduardo A.
