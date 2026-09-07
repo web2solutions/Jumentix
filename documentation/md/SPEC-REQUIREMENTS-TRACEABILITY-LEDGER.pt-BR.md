@@ -4,7 +4,7 @@ Idioma alvo: Português (Brasil)
 -->
 # Especificações de rastreabilidade de requisitos
 
-<!-- requirements-inventory: files=135 unique=135 mapped=135 duplicates= -->
+<!-- requirements-inventory: files=136 unique=136 mapped=136 duplicates= -->
 
 Este livro-razão mapeia IDs de requisitos para especificações de recursos e expectativas de evidências de validação.
 
@@ -46,7 +46,7 @@ Para qualquer alteração, identifique os IDs dos requisitos afetados e garanta:
 
 ## C. Conformidade de contrato e interface
 
-- `008`, `010`, `021`, `026`, `027`, `028`, `036`, `047`
+- `008`, `010`, `021`, `026`, `027`, `028`, `036`, `047`, `136`
 - Recursos de especificações:
   - `spec/1.0.0.yml`
   - `spec/asyncapi/1.0.0.websocket.yml`

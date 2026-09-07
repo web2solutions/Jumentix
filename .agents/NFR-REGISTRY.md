@@ -46,6 +46,7 @@ This file consolidates non-functional requirements already requested and stored 
 - `133` Declared indexes for ordered queries: `.indexOn` in versioned rules, or order by key
 - `134` No flaky tests: a suite establishes what it depends on, never sleeps to synchronise
 - `135` No fake tests: assert the effect, declare the assertions, never target a percentage
+- `136` Frontend knows the backend only through its OAS: spec document or generated SDKs, never backend source
 
 ## Documentation and Governance NFRs
 
