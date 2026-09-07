@@ -17,6 +17,19 @@ describe('service management catalog API CORS defaults', () => {
     ]);
   });
 
+  it('adds CI designer origins without dropping the inherited backend origin', () => {
+    expect.assertions(1);
+
+    const normalized = normalizeCatalogCorsAllowedOrigins('http://localhost:3000,http://127.0.0.1:3000', 'ci');
+
+    expect(normalized.split(',')).toStrictEqual([
+      'http://localhost:3000',
+      'http://127.0.0.1:3000',
+      'http://localhost:3200',
+      'http://127.0.0.1:3200'
+    ]);
+  });
+
   it('derives the staging designer origins when no staging allowlist is explicit', () => {
     expect.assertions(1);
 
@@ -51,6 +64,7 @@ describe('service management catalog API CORS defaults', () => {
     ['development', '3200'],
     ['local', '3200'],
     ['test', '3200'],
+    ['ci', '3200'],
     ['stage', '4200'],
     ['production', '5200'],
     ['preview', '3200'],

@@ -3,6 +3,7 @@ const SERVICE_MANAGEMENT_DESIGNER_PORT_BY_ENV: Record<string, string> = {
   development: '3200',
   local: '3200',
   test: '3200',
+  ci: '3200',
   staging: '4200',
   stage: '4200',
   prod: '5200',
@@ -35,7 +36,7 @@ export const normalizeCatalogCorsAllowedOrigins = (
   const configuredOrigins = splitOrigins(configured);
   const origins = new Set(configuredOrigins);
   const hasExplicitNonDevAllowlist = configuredOrigins.length > 0
-    && !['dev', 'development', 'local', 'test'].includes(runtimeEnv);
+    && !['dev', 'development', 'local', 'test', 'ci'].includes(runtimeEnv);
   if (!hasExplicitNonDevAllowlist) {
     serviceManagementLocalOrigins(runtimeEnv, serviceManagementPort)
       .forEach((origin) => origins.add(origin));
