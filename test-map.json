@@ -1930,6 +1930,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/service-management-api/test/unit/runtime/catalogCors.test.ts",
+      "path": "apps/service-management-api/test/unit/runtime/catalogCors.test.ts",
+      "layer": "service-management/catalog-api",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/service-management-api/test/unit/ServiceManagementCatalogAPI.test.ts",
       "path": "apps/service-management-api/test/unit/ServiceManagementCatalogAPI.test.ts",
       "layer": "service-management/catalog-api",
@@ -4450,9 +4460,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 229,
+    "unit": 230,
     "integration": 99,
     "smoke": 2,
-    "suites": 378
+    "suites": 379
   }
 }

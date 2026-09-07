@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-09-07 chore(ci): update bun lock for service management api - Eduardo Almeida
 - 2026-09-07 refactor(service-management): extract catalog ownership - Eduardo Almeida
 - 2026-09-07 test(service-management): move designer suites to app ownership (#296) - Eduardo A.
 - 2026-09-06 fix(service-management): flush Code Workspace edits before export - Eduardo A.

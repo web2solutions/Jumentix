@@ -13,6 +13,9 @@ import { ServiceManagementCatalogAPI } from '@service-management-api/ServiceMana
 import {
   createServiceManagementCatalogDbClient
 } from '@service-management-api/infra/persistence/InMemoryDatabase/InMemoryCatalogDbClient';
+import { applyCatalogCorsDefaults } from '@service-management-api/runtime/catalogCors';
+
+applyCatalogCorsDefaults();
 
 const webServer = new ExpressServer();
 
