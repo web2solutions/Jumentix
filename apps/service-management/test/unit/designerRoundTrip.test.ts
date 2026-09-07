@@ -1188,12 +1188,13 @@ describe('designer export/import round-trip (JUM-471)', () => {
   describe('canonical spec/1.0.0.yml round-trip (JUM-478)', () => {
     const specDocument = loadCanonicalSpec();
 
-    it('pins the canonical fixture: openapi 3.1.0 with 39 operationIds', () => {
+    it('pins the canonical fixture: openapi 3.1.0 with 33 generated-service operationIds', () => {
       expect.hasAssertions();
-      // 33 pre-JUM-491 operations plus the six shared-catalog operations
-      // (getAll/create/getOneById/update/deleteOne/restore on /catalogs).
+      // JUM-748 moved the six shared-catalog operations to
+      // apps/service-management-api/spec/1.0.0.yml, so the backend template
+      // fixture now carries only generated-service resources.
       expect(specDocument.openapi).toBe('3.1.0');
-      expect(countOperationIds(specDocument)).toBe(39);
+      expect(countOperationIds(specDocument)).toBe(33);
     });
 
     it('imports the six contract schemas with full meta normalization and no phantom port objects', () => {

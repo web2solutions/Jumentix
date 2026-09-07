@@ -83,9 +83,21 @@
       "tier": "gate",
       "kind": "non-hexagonal"
     },
+    "service-management/catalog-api": {
+      "dependsOn": [
+        "contracts"
+      ],
+      "sourceGlobs": [
+        "apps/service-management-api/**"
+      ],
+      "runner": "bun",
+      "tier": "gate",
+      "kind": "non-hexagonal"
+    },
     "service-management/designer": {
       "dependsOn": [
-        "service-management/server"
+        "service-management/server",
+        "service-management/catalog-api"
       ],
       "sourceGlobs": [
         "apps/service-management/script.js",
@@ -268,16 +280,6 @@
       "timeoutMs": 60000
     },
     {
-      "id": "apps/backend-template/test/unit/interface/Async/RealtimeAPIBase.catalogs.test.ts",
-      "path": "apps/backend-template/test/unit/interface/Async/RealtimeAPIBase.catalogs.test.ts",
-      "layer": "interface/runtime",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
       "id": "apps/backend-template/test/unit/interface/runtime/RuntimeEnvironment.test.ts",
       "path": "apps/backend-template/test/unit/interface/runtime/RuntimeEnvironment.test.ts",
       "layer": "interface/runtime",
@@ -372,16 +374,6 @@
     {
       "id": "apps/backend-template/test/unit/interface/HTTP/RestAPI.deadLetterReplay.test.ts",
       "path": "apps/backend-template/test/unit/interface/HTTP/RestAPI.deadLetterReplay.test.ts",
-      "layer": "interface/runtime",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/interface/HTTP/RestAPI.catalogs.test.ts",
-      "path": "apps/backend-template/test/unit/interface/HTTP/RestAPI.catalogs.test.ts",
       "layer": "interface/runtime",
       "kind": "hexagonal",
       "type": "unit",
@@ -812,6 +804,16 @@
     {
       "id": "apps/backend-template/test/unit/shared/utils.errorExposure.test.ts",
       "path": "apps/backend-template/test/unit/shared/utils.errorExposure.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/ownership/backendTemplateCatalogOwnership.test.ts",
+      "path": "apps/backend-template/test/unit/ownership/backendTemplateCatalogOwnership.test.ts",
       "layer": "tooling",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -1566,106 +1568,6 @@
       "timeoutMs": 60000
     },
     {
-      "id": "apps/backend-template/test/unit/modules/Catalogs/CatalogModel.test.ts",
-      "path": "apps/backend-template/test/unit/modules/Catalogs/CatalogModel.test.ts",
-      "layer": "application",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/modules/Catalogs/composition/composeCatalogsServices.test.ts",
-      "path": "apps/backend-template/test/unit/modules/Catalogs/composition/composeCatalogsServices.test.ts",
-      "layer": "application",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/modules/Catalogs/adapters/CatalogDataRepositoryDefaults.test.ts",
-      "path": "apps/backend-template/test/unit/modules/Catalogs/adapters/CatalogDataRepositoryDefaults.test.ts",
-      "layer": "application",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/modules/Catalogs/adapters/in/http/CatalogController.test.ts",
-      "path": "apps/backend-template/test/unit/modules/Catalogs/adapters/in/http/CatalogController.test.ts",
-      "layer": "application",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/modules/Catalogs/adapters/in/http/restapiHandlers.test.ts",
-      "path": "apps/backend-template/test/unit/modules/Catalogs/adapters/in/http/restapiHandlers.test.ts",
-      "layer": "application",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/modules/Catalogs/index.exports.test.ts",
-      "path": "apps/backend-template/test/unit/modules/Catalogs/index.exports.test.ts",
-      "layer": "application",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/modules/Catalogs/application/catalogBoundaries.test.ts",
-      "path": "apps/backend-template/test/unit/modules/Catalogs/application/catalogBoundaries.test.ts",
-      "layer": "application",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/modules/Catalogs/service/CatalogService.test.ts",
-      "path": "apps/backend-template/test/unit/modules/Catalogs/service/CatalogService.test.ts",
-      "layer": "application",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/modules/Catalogs/domain/security/CatalogAuthorizationPolicy.test.ts",
-      "path": "apps/backend-template/test/unit/modules/Catalogs/domain/security/CatalogAuthorizationPolicy.test.ts",
-      "layer": "application",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/modules/Catalogs/domain/Model/Catalog.test.ts",
-      "path": "apps/backend-template/test/unit/modules/Catalogs/domain/Model/Catalog.test.ts",
-      "layer": "application",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
       "id": "apps/backend-template/test/unit/modules/port/core.test.ts",
       "path": "apps/backend-template/test/unit/modules/port/core.test.ts",
       "layer": "application",
@@ -2028,22 +1930,119 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/service-management-api/test/unit/ServiceManagementCatalogAPI.test.ts",
+      "path": "apps/service-management-api/test/unit/ServiceManagementCatalogAPI.test.ts",
+      "layer": "service-management/catalog-api",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management-api/test/unit/Catalogs/CatalogModel.test.ts",
+      "path": "apps/service-management-api/test/unit/Catalogs/CatalogModel.test.ts",
+      "layer": "service-management/catalog-api",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management-api/test/unit/Catalogs/composition/composeCatalogsServices.test.ts",
+      "path": "apps/service-management-api/test/unit/Catalogs/composition/composeCatalogsServices.test.ts",
+      "layer": "service-management/catalog-api",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management-api/test/unit/Catalogs/adapters/CatalogDataRepositoryDefaults.test.ts",
+      "path": "apps/service-management-api/test/unit/Catalogs/adapters/CatalogDataRepositoryDefaults.test.ts",
+      "layer": "service-management/catalog-api",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management-api/test/unit/Catalogs/adapters/in/http/CatalogController.test.ts",
+      "path": "apps/service-management-api/test/unit/Catalogs/adapters/in/http/CatalogController.test.ts",
+      "layer": "service-management/catalog-api",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management-api/test/unit/Catalogs/adapters/in/http/restapiHandlers.test.ts",
+      "path": "apps/service-management-api/test/unit/Catalogs/adapters/in/http/restapiHandlers.test.ts",
+      "layer": "service-management/catalog-api",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management-api/test/unit/Catalogs/index.exports.test.ts",
+      "path": "apps/service-management-api/test/unit/Catalogs/index.exports.test.ts",
+      "layer": "service-management/catalog-api",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management-api/test/unit/Catalogs/application/catalogBoundaries.test.ts",
+      "path": "apps/service-management-api/test/unit/Catalogs/application/catalogBoundaries.test.ts",
+      "layer": "service-management/catalog-api",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management-api/test/unit/Catalogs/service/CatalogService.test.ts",
+      "path": "apps/service-management-api/test/unit/Catalogs/service/CatalogService.test.ts",
+      "layer": "service-management/catalog-api",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management-api/test/unit/Catalogs/domain/security/CatalogAuthorizationPolicy.test.ts",
+      "path": "apps/service-management-api/test/unit/Catalogs/domain/security/CatalogAuthorizationPolicy.test.ts",
+      "layer": "service-management/catalog-api",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management-api/test/unit/Catalogs/domain/Model/Catalog.test.ts",
+      "path": "apps/service-management-api/test/unit/Catalogs/domain/Model/Catalog.test.ts",
+      "layer": "service-management/catalog-api",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/integration/ServiceManagement/pm2Ecosystem.integration.test.ts",
       "path": "apps/backend-template/test/integration/ServiceManagement/pm2Ecosystem.integration.test.ts",
       "layer": "service-management/server",
-      "kind": "non-hexagonal",
-      "type": "integration",
-      "adapter": "service-management",
-      "script": "test:integration:service-management",
-      "runner": "bun",
-      "ciRunner": "node",
-      "tier": "gate",
-      "timeoutMs": 120000
-    },
-    {
-      "id": "apps/backend-template/test/integration/ServiceManagement/catalogSync.integration.test.ts",
-      "path": "apps/backend-template/test/integration/ServiceManagement/catalogSync.integration.test.ts",
-      "layer": "service-management/designer",
       "kind": "non-hexagonal",
       "type": "integration",
       "adapter": "service-management",
@@ -2537,19 +2536,6 @@
     {
       "id": "apps/backend-template/test/integration/Express/Users/createPhone.test.ts",
       "path": "apps/backend-template/test/integration/Express/Users/createPhone.test.ts",
-      "layer": "adapters/in",
-      "kind": "hexagonal",
-      "type": "integration",
-      "adapter": "express",
-      "script": "test:integration:express",
-      "runner": "bun",
-      "ciRunner": "node",
-      "tier": "gate",
-      "timeoutMs": 300000
-    },
-    {
-      "id": "apps/backend-template/test/integration/Express/Catalogs/catalogs.test.ts",
-      "path": "apps/backend-template/test/integration/Express/Catalogs/catalogs.test.ts",
       "layer": "adapters/in",
       "kind": "hexagonal",
       "type": "integration",
@@ -3335,6 +3321,32 @@
       "ciRunner": "node",
       "tier": "gate",
       "timeoutMs": 300000
+    },
+    {
+      "id": "apps/service-management-api/test/integration/catalogSync.integration.test.ts",
+      "path": "apps/service-management-api/test/integration/catalogSync.integration.test.ts",
+      "layer": "service-management/catalog-api",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "service-management-api",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/service-management-api/test/integration/catalogs.http.integration.test.ts",
+      "path": "apps/service-management-api/test/integration/catalogs.http.integration.test.ts",
+      "layer": "service-management/catalog-api",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "service-management-api",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
     },
     {
       "id": "apps/backend-template/test/smoke/database/DatabaseDrivers.smoke.test.ts",

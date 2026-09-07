@@ -44,7 +44,7 @@ Designer A (navegador)              Backend (backend-template)              Desi
 
 ### Backend: o módulo `Catalogs`
 
-`apps/backend-template/src/modules/Catalogs/` segue a estrutura hexagonal de
+`apps/service-management-api/src/modules/Catalogs/` segue a estrutura hexagonal de
 módulos do repositório (Reqs 015/016/036), espelhando o módulo de referência
 Users:
 
@@ -62,8 +62,8 @@ Users:
 - **Interface** — `interface/restapi/frameworks/{express,fastify,restify}/handlers/*`
   (seis operações), DTOs em `interface/dto/`.
 - **Composição** — `composition/composeCatalogsServices.ts`, ligada em
-  `RestAPI.composeCatalogsModule()` exatamente como o módulo Users; o driver
-  in-memory registra `CatalogStoreAPI` no `InMemoryDbClient`.
+  `ServiceManagementCatalogAPI`; o host de catálogo do Service Management
+  envolve o database client compartilhado e registra `CatalogStoreAPI` apenas ali.
 
 ### Contrato OAS
 
@@ -155,7 +155,7 @@ irmão do mesmo fluxo de eventos confirmados do Cana que o `designerSync`
 ## Convergência após partição
 
 Provada, não afirmada:
-`apps/backend-template/test/integration/ServiceManagement/catalogSync.integration.test.ts`
+`apps/service-management-api/test/integration/catalogSync.integration.test.ts`
 sobe o backend Express **real** (autenticação JWT real, mediator real) em uma
  porta loopback efêmera e executa **dois clientes designer reais** sobre o
 `fetch` real do Node. Bob é particionado ao ter seu transporte apontado para
@@ -210,13 +210,13 @@ Fora deste PR:
 ```bash
 # módulo de backend (unitários + integração de API)
 NODE_ENV=dev node_modules/.bin/jest --runInBand --coverage=false \
-  --testPathPattern "modules/Catalogs|Express/Catalogs"
+  --testPathPattern "apps/service-management-api/test/unit/Catalogs|apps/service-management-api/test/integration"
 # cliente do designer
 NODE_ENV=dev node_modules/.bin/jest --runInBand --coverage=false \
   apps/service-management/test/unit/catalogSyncClient.test.ts
 # convergência de dois clientes sobre HTTP real após partição real
 NODE_ENV=dev node_modules/.bin/jest --runInBand --coverage=false \
-  apps/backend-template/test/integration/ServiceManagement/catalogSync.integration.test.ts
+  apps/service-management-api/test/integration/catalogSync.integration.test.ts
 # gates de contrato
 bun run oas:check-routes && bun run arch:check-boundaries
 ```
