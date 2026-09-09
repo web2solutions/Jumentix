@@ -8,6 +8,10 @@ const itemsCount = 42;
 const router = useRouter();
 const auth = useAuthStore();
 
+const goToProfile = async () => {
+  await router.push('/profile');
+};
+
 const logout = async () => {
   try {
     await auth.logout();
@@ -27,7 +31,7 @@ const logout = async () => {
         component="h6"
         class="bg-body-secondary text-body-secondary fw-semibold mb-2 rounded-top"
       >
-        Account
+        User menu
       </CDropdownHeader>
       <CDropdownItem>
         <CIcon icon="cil-bell" /> Updates
@@ -51,7 +55,7 @@ const logout = async () => {
       >
         Settings
       </CDropdownHeader>
-      <CDropdownItem> <CIcon icon="cil-user" /> Profile </CDropdownItem>
+      <CDropdownItem @click="goToProfile"> <CIcon icon="cil-user" /> Profile </CDropdownItem>
       <CDropdownItem> <CIcon icon="cil-settings" /> Settings </CDropdownItem>
       <CDropdownItem>
         <CIcon icon="cil-dollar" /> Payments
