@@ -12,7 +12,26 @@ interface AuthorizationHeader {
 interface PersistedAuth {
   token: string;
   username: string;
+  userId: string;
 }
+
+/**
+ * The login response carries only the Authorization header, but the JWT
+ * payload holds the user id (and username/firstName). Decoded client-side as
+ * an identity claim — never verified, never trusted for authorization.
+ */
+export const decodeJwtUserId = (token: string): string => {
+  const payload = token.split('.')[1];
+  if (!payload) {
+    return '';
+  }
+  try {
+    const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/'))) as { id?: string };
+    return decoded.id ?? '';
+  } catch {
+    return '';
+  }
+};
 
 const readPersisted = (): PersistedAuth | null => {
   if (typeof localStorage === 'undefined') {
@@ -44,6 +63,7 @@ export const useAuthStore = defineStore('auth', () => {
   const persisted = readPersisted();
   const token = ref<string>(persisted?.token ?? '');
   const username = ref<string>(persisted?.username ?? '');
+  const userId = ref<string>(persisted?.userId ?? '');
 
   const isAuthenticated = () => token.value.length > 0;
 
@@ -101,7 +121,8 @@ export const useAuthStore = defineStore('auth', () => {
 
     token.value = response.Authorization;
     username.value = input.username.trim();
-    persist({ token: token.value, username: username.value });
+    userId.value = decodeJwtUserId(response.Authorization);
+    persist({ token: token.value, username: username.value, userId: userId.value });
   };
 
   /** POST /auth/logout — bearer-secured; OAS RequestLogout: username. */
@@ -115,10 +136,11 @@ export const useAuthStore = defineStore('auth', () => {
     }
     token.value = '';
     username.value = '';
+    userId.value = '';
     persist(null);
   };
 
   return {
-    token, username, isAuthenticated, register, login, logout
+    token, username, userId, isAuthenticated, register, login, logout
   };
 });

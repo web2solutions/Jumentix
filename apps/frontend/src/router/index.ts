@@ -30,6 +30,11 @@ const routes = [
         path: '/dashboard',
         name: 'Dashboard',
         component: () => import('@/features/dashboard/DashboardView.vue')
+      },
+      {
+        path: '/profile',
+        name: 'Profile',
+        component: () => import('@/features/profile/ProfileView.vue')
       }
     ]
   },

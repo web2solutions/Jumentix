@@ -24,6 +24,7 @@ const firstName = ref('');
 const username = ref('');
 const password = ref('');
 const passwordRepeat = ref('');
+const organization = ref('');
 const errorMessage = ref('');
 const submitting = ref(false);
 
@@ -38,7 +39,8 @@ const submit = async () => {
     await auth.register({
       firstName: firstName.value,
       username: username.value,
-      password: password.value
+      password: password.value,
+      ...(organization.value.trim() ? { organization: organization.value.trim() } : {})
     });
     await router.push({ path: '/login', query: { registered: '1' } });
   } catch (error) {
@@ -71,6 +73,16 @@ const submit = async () => {
                 <CInputGroup class="mb-3">
                   <CInputGroupText>@</CInputGroupText>
                   <CFormInput v-model="username" placeholder="Username" autocomplete="username" required />
+                </CInputGroup>
+                <CInputGroup class="mb-3">
+                  <CInputGroupText>
+                    <CIcon icon="cil-people" />
+                  </CInputGroupText>
+                  <CFormInput
+                    v-model="organization"
+                    placeholder="Organization id (optional, uuid)"
+                    aria-label="Organization id (optional)"
+                  />
                 </CInputGroup>
                 <CInputGroup class="mb-3">
                   <CInputGroupText>

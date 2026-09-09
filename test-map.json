@@ -2071,6 +2071,18 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/frontend/test/unit/stores/profile.test.ts",
+      "path": "apps/frontend/test/unit/stores/profile.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/frontend/test/unit/stores/auth.test.ts",
       "path": "apps/frontend/test/unit/stores/auth.test.ts",
       "layer": "frontend",
@@ -4506,9 +4518,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 233,
+    "unit": 234,
     "integration": 99,
     "smoke": 2,
-    "suites": 382
+    "suites": 383
   }
 }

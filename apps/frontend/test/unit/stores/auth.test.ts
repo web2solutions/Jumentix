@@ -87,4 +87,18 @@ describe('auth store (JUM-760)', () => {
     expect(auth.username).toBe('');
     expect(calls.some((url) => url.endsWith('/auth/logout'))).toBe(true);
   });
+
+  it('decodes the user id from the login JWT payload', async () => {
+    expect.assertions(2);
+    const payload = btoa(JSON.stringify({ id: 'user-42', username: 'me@mydomain.com' }))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_');
+    responseBody = { Authorization: `Bearer header.${payload}.signature` };
+    const auth = useAuthStore();
+
+    await auth.login({ username: 'me@mydomain.com', password: 'secret' });
+
+    expect(auth.userId).toBe('user-42');
+    expect(auth.token).toBe(`Bearer header.${payload}.signature`);
+  });
 });
