@@ -23,6 +23,10 @@ export const collectBody = (
 };
 
 /** Per-field validation against every facet the OAS declares for it. */
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
 export const validateField = (descriptor: FieldDescriptor, value: unknown): string | null => {
   const text = value === undefined || value === null ? '' : String(value);
   if (descriptor.required && !text.trim()) {
@@ -42,6 +46,12 @@ export const validateField = (descriptor: FieldDescriptor, value: unknown): stri
   }
   if (descriptor.enum && !descriptor.enum.includes(text)) {
     return `${descriptor.name} deve ser um de: ${descriptor.enum.join(', ')}.`;
+  }
+  if (descriptor.format === 'uuid' && !UUID_PATTERN.test(text)) {
+    return `${descriptor.name} deve ser um uuid válido.`;
+  }
+  if (descriptor.format === 'email' && !EMAIL_PATTERN.test(text)) {
+    return `${descriptor.name} deve ser um email válido.`;
   }
   return null;
 };

@@ -8,7 +8,6 @@ import {
   CCardHeader,
   CFormCheck,
   CFormInput,
-  CFormSelect,
   CTable,
   CTableBody,
   CTableDataCell,
@@ -94,13 +93,18 @@ const remove = (id: string) => run(() => profile.removeEmail(id), 'Email removid
         <CTableBody>
           <CTableRow v-for="item in emails" :key="item.id">
             <CTableDataCell v-for="d in updateDescriptors" :key="d.name">
-              <CFormSelect
-                v-if="cellControl(d) === 'select'"
-                :model-value="String(edits[item.id][d.name] ?? '')"
-                @update:model-value="edits[item.id][d.name] = $event"
-                :options="d.enum"
-                :aria-label="d.name"
-              />
+              <template v-if="cellControl(d) === 'select'">
+                <CFormInput
+                  :model-value="String(edits[item.id][d.name] ?? '')"
+                  :list="`oas-cell-${item.id}-${d.name}`"
+                  :aria-label="d.name"
+                  :maxlength="d.maxLength"
+                  @update:model-value="edits[item.id][d.name] = $event"
+                />
+                <datalist :id="`oas-cell-${item.id}-${d.name}`">
+                  <option v-for="option in d.enum" :key="option" :value="option" />
+                </datalist>
+              </template>
               <CFormCheck
                 v-else-if="cellControl(d) === 'checkbox'"
                 :model-value="Boolean(edits[item.id][d.name])"

@@ -2083,6 +2083,18 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/frontend/test/unit/contracts/edgeCases.test.ts",
+      "path": "apps/frontend/test/unit/contracts/edgeCases.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/frontend/test/unit/contracts/apiClient.test.ts",
       "path": "apps/frontend/test/unit/contracts/apiClient.test.ts",
       "layer": "frontend",
@@ -4576,9 +4588,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 239,
+    "unit": 240,
     "integration": 99,
     "smoke": 2,
-    "suites": 388
+    "suites": 389
   }
 }

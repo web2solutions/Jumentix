@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-09-10 feat(frontend): build forms from the OAS schema at runtime (JUM-766) (#307) - Eduardo A.
 - 2026-09-10 feat(frontend): align OAS delete paths, section alerts, masks and network widget (JUM-765) (#306) - Eduardo A.
 - 2026-09-09 chore(backend-template): seed admin eduardo with requested credentials (JUM-764) (#305) - Eduardo A.
 - 2026-09-09 fix(backend-template): make seeding idempotent for persistent databases (JUM-763) (#304) - Eduardo A.

@@ -19,7 +19,7 @@ import {
 import OasFormField from '@/components/OasFormField.vue';
 import { fieldDescriptors, type FieldDescriptor } from '@/contracts/formSchema';
 import { collectBody, validateAll } from '@/contracts/oasForm';
-import { maskPhone, validatePhone } from '@/contracts/validation';
+import { maskPhone, phoneMaskCap, validatePhone } from '@/contracts/validation';
 import { useProfileStore, type UserPhone } from '@/stores/profile';
 import { useSectionNotify } from './useSectionNotify';
 
@@ -122,6 +122,7 @@ const cellControl = (descriptor: FieldDescriptor): 'checkbox' | 'text' => (
                 v-else
                 :model-value="String(edits[item.id][d.name] ?? '')"
                 :aria-label="d.name === 'number' ? `Phone ${item.number}` : d.name"
+                :maxlength="d.maxLength ?? (d.name === 'number' ? phoneMaskCap(String(edits[item.id].countryCode ?? '')) : undefined)"
                 @update:model-value="d.name === 'number'
                   ? (edits[item.id].number = maskNumber(edits[item.id])($event))
                   : (edits[item.id][d.name] = $event)"
@@ -141,6 +142,7 @@ const cellControl = (descriptor: FieldDescriptor): 'checkbox' | 'text' => (
           v-model="newValues[d.name]"
           :descriptor="d"
           :mask="d.name === 'number' ? maskNumber(newValues) : undefined"
+          :mask-cap="d.name === 'number' ? phoneMaskCap(String(newValues.countryCode ?? '')) : undefined"
           class="mb-0"
         />
         <CButton color="success" class="mb-3" @click="add">Add</CButton>
