@@ -2059,8 +2059,32 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/frontend/test/unit/contracts/errors.test.ts",
+      "path": "apps/frontend/test/unit/contracts/errors.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/frontend/test/unit/contracts/apiClient.test.ts",
       "path": "apps/frontend/test/unit/contracts/apiClient.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/contracts/validation.test.ts",
+      "path": "apps/frontend/test/unit/contracts/validation.test.ts",
       "layer": "frontend",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -2085,6 +2109,18 @@
     {
       "id": "apps/frontend/test/unit/stores/auth.test.ts",
       "path": "apps/frontend/test/unit/stores/auth.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/stores/network.test.ts",
+      "path": "apps/frontend/test/unit/stores/network.test.ts",
       "layer": "frontend",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -3840,6 +3876,16 @@
       "timeoutMs": 120000
     },
     {
+      "id": "packages/sdk-rest-client/test/RestApiClient.events.test.ts",
+      "path": "packages/sdk-rest-client/test/RestApiClient.events.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "packages/sdk-rest-client/test/RestApiClient.test.ts",
       "path": "packages/sdk-rest-client/test/RestApiClient.test.ts",
       "layer": "tooling",
@@ -4518,9 +4564,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 234,
+    "unit": 238,
     "integration": 99,
     "smoke": 2,
-    "suites": 383
+    "suites": 387
   }
 }

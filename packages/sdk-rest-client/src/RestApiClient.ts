@@ -10,6 +10,24 @@ export interface IRestApiRequest {
   headers?: Record<string, string>;
 }
 
+/**
+ * Lifecycle of one SDK request (JUM-765). The SDK is the intermediary between
+ * the UI and the server, so it is the authoritative source for what the UI
+ * shows about network activity.
+ */
+export interface RestApiRequestEvent {
+  type: 'request:start' | 'request:success' | 'request:error';
+  operationId: string;
+  method: HttpMethod;
+  url: string;
+  startedAt: number;
+  durationMs?: number;
+  status?: number;
+  error?: string;
+}
+
+export type RestApiEventListener = (event: RestApiRequestEvent) => void;
+
 const compilePath = (
   pathTemplate: string,
   pathParams?: Record<string, string | number>
@@ -24,6 +42,8 @@ export class RestApiClient {
   private readonly baseUrl: string;
 
   private readonly operationToRoute: Map<string, { method: HttpMethod; path: string }> = new Map();
+
+  private readonly listeners: Set<RestApiEventListener> = new Set();
 
   /**
    * @param baseUrl Overrides the server declared in the spec.
@@ -50,6 +70,18 @@ export class RestApiClient {
     }
   }
 
+  /** Subscribe to request lifecycle events; returns the unsubscribe function. */
+  public subscribe(listener: RestApiEventListener): () => void {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  }
+
+  private emit(event: RestApiRequestEvent): void {
+    for (const listener of this.listeners) {
+      listener(event);
+    }
+  }
+
   public async request<TResponse = unknown>(request: IRestApiRequest): Promise<TResponse> {
     const route = this.operationToRoute.get(request.operationId);
     if (!route) {
@@ -64,25 +96,72 @@ export class RestApiClient {
       }
     }
 
-    const response = await fetch(url.toString(), {
-      method: route.method.toUpperCase(),
-      headers: {
-        'content-type': 'application/json',
-        ...(request.headers || {})
-      },
-      body: request.body === undefined ? undefined : JSON.stringify(request.body)
+    const startedAt = Date.now();
+    this.emit({
+      type: 'request:start',
+      operationId: request.operationId,
+      method: route.method,
+      url: url.toString(),
+      startedAt
     });
 
-    if (!response.ok) {
-      const message = await response.text();
-      throw new Error(`REST request failed: ${response.status} ${message}`);
-    }
+    try {
+      const response = await fetch(url.toString(), {
+        method: route.method.toUpperCase(),
+        headers: {
+          'content-type': 'application/json',
+          ...(request.headers || {})
+        },
+        body: request.body === undefined ? undefined : JSON.stringify(request.body)
+      });
 
-    const contentType = response.headers.get('content-type') || '';
-    if (contentType.includes('application/json')) {
-      return response.json() as Promise<TResponse>;
+      const durationMs = Date.now() - startedAt;
+
+      if (!response.ok) {
+        const message = await response.text();
+        this.emit({
+          type: 'request:error',
+          operationId: request.operationId,
+          method: route.method,
+          url: url.toString(),
+          startedAt,
+          durationMs,
+          status: response.status,
+          error: `REST request failed: ${response.status}`
+        });
+        throw new Error(`REST request failed: ${response.status} ${message}`);
+      }
+
+      this.emit({
+        type: 'request:success',
+        operationId: request.operationId,
+        method: route.method,
+        url: url.toString(),
+        startedAt,
+        durationMs,
+        status: response.status
+      });
+
+      const contentType = response.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        return response.json() as Promise<TResponse>;
+      }
+      return response.text() as TResponse;
+    } catch (error) {
+      if (error instanceof Error && error.message.startsWith('REST request failed:')) {
+        throw error;
+      }
+      this.emit({
+        type: 'request:error',
+        operationId: request.operationId,
+        method: route.method,
+        url: url.toString(),
+        startedAt,
+        durationMs: Date.now() - startedAt,
+        error: error instanceof Error ? error.message : String(error)
+      });
+      throw error;
     }
-    return response.text() as TResponse;
   }
 }
 

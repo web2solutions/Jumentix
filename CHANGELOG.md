@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-09-09 chore(backend-template): seed admin eduardo with requested credentials (JUM-764) (#305) - Eduardo A.
 - 2026-09-09 fix(backend-template): make seeding idempotent for persistent databases (JUM-763) (#304) - Eduardo A.
 - 2026-09-09 fix(frontend): redirect invalid sessions to login automatically (JUM-762) (#303) - Eduardo A.
 - 2026-09-09 feat(frontend): add editable profile page through the user menu (JUM-761) (#302) - Eduardo A.

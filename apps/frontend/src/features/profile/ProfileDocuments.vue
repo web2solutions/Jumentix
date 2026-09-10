@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { reactive, watch } from 'vue';
 import {
+  CAlert,
   CButton,
   CCard,
   CCardBody,
@@ -16,15 +17,21 @@ import {
 } from '@coreui/vue';
 
 import { useProfileStore, type UserDocument } from '@/stores/profile';
+import { maskCpf, maskSsn, validateDocumentData } from '@/contracts/validation';
+import { useSectionNotify } from './useSectionNotify';
 
 const props = defineProps<{ documents: UserDocument[] }>();
-const emit = defineEmits<{
-  saved: [message: string];
-  failed: [error: unknown];
-}>();
 
 const profile = useProfileStore();
+const { errorMessage, successMessage, run } = useSectionNotify();
 const typeOptions = ['CPF', 'RG', 'SSN', 'passport']; // OAS enum
+
+// Masks follow the OAS x-validation rules for the type+country (JUM-765).
+const maskDocumentData = (type: string, countryIssue: string, raw: string): string => {
+  if (type === 'CPF') return maskCpf(raw);
+  if (type === 'SSN') return maskSsn(raw);
+  return raw;
+};
 
 const edits = reactive<Record<string, { type: string; countryIssue: string; data: string }>>({});
 watch(
@@ -39,30 +46,43 @@ watch(
 
 const newDocument = reactive({ type: 'CPF', countryIssue: 'BR', data: '' });
 
-const run = async (action: () => Promise<void>, message: string) => {
-  try {
-    await action();
-    emit('saved', message);
-  } catch (error) {
-    emit('failed', error);
-  }
+const onDataInput = (id: string | null, value: string) => {
+  const state = id ? edits[id] : newDocument;
+  state.data = maskDocumentData(state.type, state.countryIssue, value);
 };
 
-const add = () => run(async () => {
-  await profile.addDocument({ ...newDocument });
-  newDocument.type = 'CPF';
-  newDocument.countryIssue = 'BR';
-  newDocument.data = '';
-}, 'Document added.');
+const add = () => {
+  const invalid = validateDocumentData(newDocument.type, newDocument.countryIssue, newDocument.data);
+  if (invalid) {
+    errorMessage.value = invalid;
+    return;
+  }
+  return run(async () => {
+    await profile.addDocument({ ...newDocument });
+    newDocument.type = 'CPF';
+    newDocument.countryIssue = 'BR';
+    newDocument.data = '';
+  }, 'Documento adicionado.');
+};
 
-const update = (id: string) => run(() => profile.updateDocument(id, { ...edits[id] }), 'Document updated.');
-const remove = (id: string) => run(() => profile.removeDocument(id), 'Document removed.');
+const update = (id: string) => {
+  const state = edits[id];
+  const invalid = validateDocumentData(state.type, state.countryIssue, state.data);
+  if (invalid) {
+    errorMessage.value = invalid;
+    return;
+  }
+  return run(() => profile.updateDocument(id, { ...state }), 'Documento atualizado.');
+};
+const remove = (id: string) => run(() => profile.removeDocument(id), 'Documento removido.');
 </script>
 
 <template>
   <CCard class="mb-4">
     <CCardHeader><strong>Documents</strong></CCardHeader>
     <CCardBody>
+      <CAlert v-if="errorMessage" color="danger" role="alert">{{ errorMessage }}</CAlert>
+      <CAlert v-if="successMessage" color="success" role="alert">{{ successMessage }}</CAlert>
       <CTable responsive align="middle" class="mb-3">
         <CTableHead>
           <CTableRow>
@@ -81,7 +101,11 @@ const remove = (id: string) => run(() => profile.removeDocument(id), 'Document r
               <CFormInput v-model="edits[item.id].countryIssue" aria-label="Country of issue" />
             </CTableDataCell>
             <CTableDataCell>
-              <CFormInput v-model="edits[item.id].data" :aria-label="`Document ${item.data}`" />
+              <CFormInput
+                :model-value="edits[item.id].data"
+                :aria-label="`Document ${item.data}`"
+                @update:model-value="onDataInput(item.id, $event)"
+              />
             </CTableDataCell>
             <CTableDataCell class="text-end">
               <CButton size="sm" color="primary" class="me-2" @click="update(item.id)">Save</CButton>
@@ -93,7 +117,12 @@ const remove = (id: string) => run(() => profile.removeDocument(id), 'Document r
       <div class="d-flex gap-2 align-items-center">
         <CFormSelect v-model="newDocument.type" :options="typeOptions" aria-label="New document type" style="max-width: 140px" />
         <CFormInput v-model="newDocument.countryIssue" placeholder="BR" aria-label="New document country" style="max-width: 100px" />
-        <CFormInput v-model="newDocument.data" placeholder="Document number" aria-label="New document number" />
+        <CFormInput
+          :model-value="newDocument.data"
+          placeholder="Document number"
+          aria-label="New document number"
+          @update:model-value="onDataInput(null, $event)"
+        />
         <CButton color="success" @click="add">Add</CButton>
       </div>
     </CCardBody>

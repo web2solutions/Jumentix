@@ -1,7 +1,8 @@
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
 
-import { createApiClient } from '@/contracts/apiClient';
+import { getSharedApiClient } from '@/contracts/apiClient';
+import { isNotFoundError } from '@/contracts/errors';
 import { useAuthStore } from '@/stores/auth';
 
 export interface UserEmail {
@@ -68,7 +69,7 @@ export const useProfileStore = defineStore('profile', () => {
     const { userId, headers } = session();
     loading.value = true;
     try {
-      record.value = await createApiClient().request<UserRecord>({
+      record.value = await getSharedApiClient().request<UserRecord>({
         operationId: 'getOneById',
         pathParams: { id: userId },
         headers
@@ -88,7 +89,7 @@ export const useProfileStore = defineStore('profile', () => {
       throw new Error('Profile not loaded.');
     }
     const { userId, headers } = session();
-    await createApiClient().request<UserRecord>({
+    await getSharedApiClient().request<UserRecord>({
       operationId: 'update',
       pathParams: { id: userId },
       body: { ...record.value, ...input, id: userId },
@@ -103,7 +104,7 @@ export const useProfileStore = defineStore('profile', () => {
       throw new Error('Password must be at least 8 characters.');
     }
     const { userId, headers } = session();
-    await createApiClient().request<UserRecord>({
+    await getSharedApiClient().request<UserRecord>({
       operationId: 'updatePassword',
       pathParams: { id: userId },
       body: { password },
@@ -111,19 +112,33 @@ export const useProfileStore = defineStore('profile', () => {
     });
   };
 
+  /**
+   * Runs a sub-resource mutation and reloads. A 404 from a delete means the
+   * record is already gone (double click or stale list) — that is not an
+   * error for the user: the list reloads and the caller gets 'already-removed'.
+   */
   const reloadAfter = async (
     operationId: string,
     extraPathParams: Record<string, string>,
     body?: unknown
-  ) => {
+  ): Promise<'updated' | 'already-removed'> => {
     const { userId, headers } = session();
-    await createApiClient().request({
-      operationId,
-      pathParams: { id: userId, ...extraPathParams },
-      body,
-      headers
-    });
-    await load();
+    try {
+      await getSharedApiClient().request({
+        operationId,
+        pathParams: { id: userId, ...extraPathParams },
+        body,
+        headers
+      });
+      await load();
+      return 'updated';
+    } catch (error) {
+      if (isNotFoundError(error)) {
+        await load();
+        return 'already-removed';
+      }
+      throw error;
+    }
   };
 
   const addEmail = (input: { email: string; type: string; isPrimary?: boolean }) => {

@@ -1,31 +1,34 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { CButton, CCard, CCardBody, CCardHeader, CForm, CFormInput, CFormLabel } from '@coreui/vue';
+import {
+  CAlert,
+  CButton,
+  CCard,
+  CCardBody,
+  CCardHeader,
+  CForm,
+  CFormInput,
+  CFormLabel
+} from '@coreui/vue';
 
 import { useProfileStore } from '@/stores/profile';
-
-const emit = defineEmits<{
-  saved: [message: string];
-  failed: [error: unknown];
-}>();
+import { useSectionNotify } from './useSectionNotify';
 
 const profile = useProfileStore();
+const { errorMessage, successMessage, run } = useSectionNotify();
 const password = ref('');
 const repeat = ref('');
 
 const save = async () => {
   if (password.value !== repeat.value) {
-    emit('failed', new Error('Passwords do not match.'));
+    errorMessage.value = 'As senhas não conferem.';
     return;
   }
-  try {
+  await run(async () => {
     await profile.changePassword(password.value);
     password.value = '';
     repeat.value = '';
-    emit('saved', 'Password updated.');
-  } catch (error) {
-    emit('failed', error);
-  }
+  }, 'Senha atualizada.');
 };
 </script>
 
@@ -33,6 +36,8 @@ const save = async () => {
   <CCard class="mb-4">
     <CCardHeader><strong>Change password</strong></CCardHeader>
     <CCardBody>
+      <CAlert v-if="errorMessage" color="danger" role="alert">{{ errorMessage }}</CAlert>
+      <CAlert v-if="successMessage" color="success" role="alert">{{ successMessage }}</CAlert>
       <CForm @submit.prevent="save">
         <div class="mb-3">
           <CFormLabel for="profile-password">New password</CFormLabel>

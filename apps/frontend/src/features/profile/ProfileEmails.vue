@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { reactive, watch } from 'vue';
 import {
+  CAlert,
   CButton,
   CCard,
   CCardBody,
@@ -17,14 +18,12 @@ import {
 } from '@coreui/vue';
 
 import { useProfileStore, type UserEmail } from '@/stores/profile';
+import { useSectionNotify } from './useSectionNotify';
 
 const props = defineProps<{ emails: UserEmail[] }>();
-const emit = defineEmits<{
-  saved: [message: string];
-  failed: [error: unknown];
-}>();
 
 const profile = useProfileStore();
+const { errorMessage, successMessage, run } = useSectionNotify();
 
 // Editable copies per row, keyed by email id.
 const edits = reactive<Record<string, { email: string; type: string; isPrimary: boolean }>>({});
@@ -41,30 +40,23 @@ watch(
 const newEmail = reactive({ email: '', type: 'work', isPrimary: false });
 const typeOptions = ['work', 'personal']; // OAS enum
 
-const run = async (action: () => Promise<void>, message: string) => {
-  try {
-    await action();
-    emit('saved', message);
-  } catch (error) {
-    emit('failed', error);
-  }
-};
-
 const add = () => run(async () => {
   await profile.addEmail({ ...newEmail });
   newEmail.email = '';
   newEmail.type = 'work';
   newEmail.isPrimary = false;
-}, 'Email added.');
+}, 'Email adicionado.');
 
-const update = (id: string) => run(() => profile.updateEmail(id, { ...edits[id] }), 'Email updated.');
-const remove = (id: string) => run(() => profile.removeEmail(id), 'Email removed.');
+const update = (id: string) => run(() => profile.updateEmail(id, { ...edits[id] }), 'Email atualizado.');
+const remove = (id: string) => run(() => profile.removeEmail(id), 'Email removido.');
 </script>
 
 <template>
   <CCard class="mb-4">
     <CCardHeader><strong>Email addresses</strong></CCardHeader>
     <CCardBody>
+      <CAlert v-if="errorMessage" color="danger" role="alert">{{ errorMessage }}</CAlert>
+      <CAlert v-if="successMessage" color="success" role="alert">{{ successMessage }}</CAlert>
       <CTable responsive align="middle" class="mb-3">
         <CTableHead>
           <CTableRow>
