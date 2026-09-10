@@ -30,6 +30,7 @@ describe('service management vendor wiring', () => {
     expect(vendor).toBeDefined();
     expect(vendor).toContain('sync-service-management-cana-bundle.js');
     expect(vendor).toContain('sync-service-management-designer-core.js');
+    expect(vendor).toContain('sync-service-management-d3.js');
   });
 
   it('names generator scripts that exist on disk', () => {
@@ -40,7 +41,7 @@ describe('service management vendor wiring', () => {
       .map((part) => part.trim().replace(/^bun\s+/, ''))
       .filter((part) => part.endsWith('.js'));
 
-    expect(referenced).toHaveLength(2);
+    expect(referenced).toHaveLength(3);
     referenced.forEach((script) => {
       expect(fs.existsSync(path.resolve(process.cwd(), script))).toBe(true);
     });

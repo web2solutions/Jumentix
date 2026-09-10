@@ -17,6 +17,10 @@ import os from 'node:os';
 const { syncServiceManagementDesignerCore } = require(
   path.resolve(process.cwd(), 'ci-cd', 'sync-service-management-designer-core.js')
 ) as { syncServiceManagementDesignerCore: (options: { root: string }) => number };
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { syncServiceManagementD3 } = require(
+  path.resolve(process.cwd(), 'ci-cd', 'sync-service-management-d3.js')
+) as { syncServiceManagementD3: (options?: { root?: string }) => number };
 
 export const serverPath = path.resolve(process.cwd(), 'apps/service-management/server.js');
 export const staticRoot = path.resolve(process.cwd(), 'apps/service-management');
@@ -306,6 +310,10 @@ export async function startServer(
   const syncResult = syncServiceManagementDesignerCore({ root: process.cwd() });
   if (syncResult !== 0) {
     throw new Error('designer-core vendor sync failed; the SPA cannot boot without it.');
+  }
+  const d3SyncResult = syncServiceManagementD3({ root: process.cwd() });
+  if (d3SyncResult !== 0) {
+    throw new Error('d3 vendor sync failed; Monitoring charts cannot boot without it.');
   }
   return runWithPortRetry({
     pinnedPort: options.pinnedPort,

@@ -110,6 +110,18 @@ export class RestAPI<T> {
     const localhostGet = config.infraHandlers.localhostGetHandlerFactory({ ...noServiceInjection });
     this.server.endPointRegister(localhostGet);
 
+    // AsyncLocalStorage request-context metrics for Service Management scrape
+    // (Monitoring tab / Contract 1c+1d). Loopback-oriented; no request body.
+    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+    const { snapshotAsyncContextMetrics } = require('@src/infra/context/Context');
+    this.server.endPointRegister({
+      method: 'get',
+      path: '/async-context-metrics',
+      handler: (_req: any, res: any): void => {
+        res.status(200).json(snapshotAsyncContextMetrics());
+      }
+    });
+
     // serve API docs as JSON
     const apiVersionsGet = config.infraHandlers.apiVersionsGetHandlerFactory({
       ...noServiceInjection,

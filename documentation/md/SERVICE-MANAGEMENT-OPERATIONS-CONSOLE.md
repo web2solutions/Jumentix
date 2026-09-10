@@ -217,28 +217,34 @@ from**:
   the persisted `service-management.v1` payload (Requirement 126, Contract 2)
   — a server-derived snapshot is not design state.
 
-## The PM2 monitoring dashboard (JUM-736) — by PM2, not by ecosystem
+## The PM2 monitoring dashboard — WebSocket live stream (Contract 1e) + HTTP one-shot (1c)
 
-The **Monitoring** tab is runtime telemetry, not another static preview. Its
-endpoint, `GET /api/runtime/pm2-metrics` (Requirement 126, Contract 1c), connects
-to PM2 through the PM2 Node API and reads `pm2.list`. The dashboard reports live
-process status, CPU, memory, restarts, uptime, namespace, watch mode and PM2
-custom metrics. It also compares those live process names with the selected
-`pm2/ecosystem.*.cjs` file so an expected app that is not running is visible in
-the UI without asking the operator to inspect a terminal.
+The **Monitoring** tab is runtime telemetry, not another static preview.
 
-The Monitoring snapshot is intentionally transient: it is refreshed manually or
-every five seconds while the tab is active, and it is never written into
-`service-management.v1` or exported in the suite JSON. If PM2 cannot be loaded,
-connected or listed, the endpoint fails with the explicit PM2 metrics envelope
-rather than falling back to ecosystem-only data.
+- **Primary UI path:** `WS /api/runtime/pm2-ws` (Requirement 126, Contract 1e).
+  The tab opens a WebSocket when active, subscribes with environment + refresh
+  interval (500–2000 ms, default 1000), and renders host CPU/memory/disk charts
+  (D3, vendored — no CDN), process stacks, filters, and start/stop/restart
+  actions. Aggregate + per-process spark history persists in Cana under
+  `monitoringHistory` in `service-management.v1` (Contract 2). Leaving the tab
+  closes the socket.
+- **HTTP one-shot:** `GET /api/runtime/pm2-metrics` (Contract 1c) remains for
+  tests and tooling. Both transports collect through the PM2 Node API, compare
+  live names with the selected ecosystem, include host metrics, per-process
+  disk I/O (Linux/Darwin/Windows), and optional `async-context-metrics` scrapes
+  (counters + redacted ALS Map `recentStores`).
+
+If PM2 cannot be loaded, connected or listed, the HTTP endpoint fails with the
+explicit PM2 metrics envelope and the WebSocket emits an `error` / failed
+`action-result` frame rather than inventing healthy process data.
 
 **Proven by:**
 [`pm2Ecosystem.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/pm2Ecosystem.integration.test.ts)
-(real ecosystem reads, edit-reflected-without-restart, explicit missing-file
-state, honest 500 envelope, explicit rejection of unknown environments) and
+(real ecosystem reads, metrics + host shape, WebSocket subscribe/actions,
+edit-reflected-without-restart, explicit missing-file state, honest 500 envelope,
+explicit rejection of unknown environments) and
 [`pm2EcosystemUi.contract.test.ts`](../../apps/service-management/test/unit/pm2EcosystemUi.contract.test.ts)
-(the structural no-hardcoded-commands guarantee over the designer sources).
+(the structural no-hardcoded-commands guarantee and WebSocket-backed Monitoring UI).
 
 ## Deploy Management: the Requirement 059 metadata contract (JUM-481)
 

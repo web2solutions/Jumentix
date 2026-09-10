@@ -76,11 +76,31 @@ function ecosystemSource(apps: Array<{ name: string; marker: string }>) {
 }
 
 function pm2ModuleSource(processes: unknown[]) {
-  return `module.exports = {
+  return `const state = {
+  processes: ${JSON.stringify(processes)},
+  actions: []
+};
+module.exports = {
   connect(callback) { callback(null); },
-  list(callback) { callback(null, ${JSON.stringify(processes)}); },
-  disconnect() {}
-};\n`;
+  list(callback) { callback(null, state.processes); },
+  start(target, optsOrCb, maybeCb) {
+    const opts = typeof optsOrCb === 'function' ? undefined : optsOrCb;
+    const callback = typeof optsOrCb === 'function' ? optsOrCb : maybeCb;
+    state.actions.push({ method: 'start', target, opts: opts || null });
+    if (typeof callback === 'function') callback(null);
+  },
+  stop(target, callback) {
+    state.actions.push({ method: 'stop', target });
+    if (typeof callback === 'function') callback(null);
+  },
+  restart(target, callback) {
+    state.actions.push({ method: 'restart', target });
+    if (typeof callback === 'function') callback(null);
+  },
+  disconnect() {},
+  __dumpActions() { return state.actions.slice(); }
+};
+`;
 }
 
 describe('service management PM2 ecosystem preview API (JUM-480)', () => {
@@ -187,6 +207,64 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
       watching: true,
       customMetrics: { latency: '12ms' }
     });
+    expect(body.host).toBeTruthy();
+    expect(body.host.cpu).toBeTruthy();
+    expect(body.host.memory).toBeTruthy();
+    expect(Array.isArray(body.host.disk)).toBe(true);
+    expect(typeof body.summary.asyncContextActiveSum).toBe('number');
+    expect(body.processes[0].diskIo).toBeTruthy();
+    expect(typeof body.processes[0].diskIo.supported).toBe('boolean');
+    expect(body.processes[0].diskIo.platform).toBeTruthy();
+  });
+
+  it('streams Contract 1c-shaped metrics over WebSocket and accepts process actions', async () => {
+    expect.hasAssertions();
+    // Node 22+ provides a WHATWG WebSocket global; avoid importing the `ws`
+    // package from the backend-template package boundary.
+    const result = await new Promise<{ metrics: any; action: any }>((resolve, reject) => {
+      const socket = new WebSocket(`ws://127.0.0.1:${server!.port}/api/runtime/pm2-ws`);
+      let metricsFrame: any = null;
+      const timer = setTimeout(() => {
+        socket.close();
+        reject(new Error('WebSocket metrics/action timeout'));
+      }, 8000);
+      socket.addEventListener('open', () => {
+        socket.send(JSON.stringify({
+          type: 'subscribe',
+          environment: 'dev',
+          intervalMs: 2000
+        }));
+      });
+      socket.addEventListener('message', (event) => {
+        const message = JSON.parse(String((event as MessageEvent).data));
+        if (message.type === 'metrics' && !metricsFrame) {
+          metricsFrame = message;
+          socket.send(JSON.stringify({
+            type: 'action',
+            action: 'restart',
+            scope: 'process',
+            name: 'jumentix-dev-restapi',
+            pmId: 1
+          }));
+          return;
+        }
+        if (message.type === 'action-result' && metricsFrame) {
+          clearTimeout(timer);
+          socket.close();
+          resolve({ metrics: metricsFrame, action: message });
+        }
+      });
+      socket.addEventListener('error', () => {
+        clearTimeout(timer);
+        reject(new Error('WebSocket connection error'));
+      });
+    });
+    expect(result.metrics.type).toBe('metrics');
+    expect(result.metrics.payload.source).toBe('pm2');
+    expect(result.metrics.payload.host).toBeTruthy();
+    expect(result.action.type).toBe('action-result');
+    expect(result.action.ok).toBe(true);
+    expect(result.action.action).toBe('restart');
   });
 
   it('reflects an ecosystem edit with no code change and no server restart', async () => {
