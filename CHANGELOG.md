@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-09-09 fix(frontend): redirect invalid sessions to login automatically (JUM-762) (#303) - Eduardo A.
 - 2026-09-09 feat(frontend): add editable profile page through the user menu (JUM-761) (#302) - Eduardo A.
 - 2026-09-07 feat(frontend): add login and register over OAS via sdk-rest-client (JUM-760) (#301) - Eduardo A.
 - 2026-09-07 fix(frontend): make frontend lint run on eslint 10 with scoped eslint-scope (JUM-759) (#300) - Eduardo A.

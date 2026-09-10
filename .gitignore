@@ -167,3 +167,6 @@ apps/service-management/vendor/
 
 # Vercel CLI local project link (machine-specific)
 .vercel/
+
+# Backend dev SQLite databases (JUMENTIX_DATABASE_DRIVER=sqlite)
+localhost/

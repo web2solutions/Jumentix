@@ -1,4 +1,3 @@
-import { UUID } from '@src/modules/port';
 import {
   AddressValueObject,
   EAddressType,
@@ -12,7 +11,7 @@ const now = new Date();
 
 const organizations: IOrganization[] = [
   {
-    id: UUID.create().toString(),
+    id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
     createdAt: now,
     updatedAt: now,
     name: 'ACME',
@@ -35,7 +34,7 @@ const organizations: IOrganization[] = [
     users: []
   },
   {
-    id: UUID.create().toString(),
+    id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
     createdAt: now,
     updatedAt: now,
     name: 'Umbrella',

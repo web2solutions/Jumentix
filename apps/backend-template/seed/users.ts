@@ -1,6 +1,5 @@
 // file deepcode ignore NoHardcodedPasswords: <mocked passwords>
 import type { IUser } from '@src/modules/Users';
-import { UUID } from '@src/modules/port';
 import {
   DocumentValueObject,
   EDocumentType,
@@ -14,7 +13,7 @@ const buildSeedCredential = (account: string): string => `seed-${account}-A1!`;
 const now = new Date();
 
 const users: Array<IUser> = [{
-  id: UUID.create().toString(),
+  id: 'b1ffc4d2-1a2b-4c3d-9e8f-7a6b5c4d3e01',
   createdAt: now,
   updatedAt: now,
   firstName: 'Abraham',
@@ -80,7 +79,7 @@ const users: Array<IUser> = [{
   ]
 },
 {
-  id: UUID.create().toString(),
+  id: 'b1ffc4d2-1a2b-4c3d-9e8f-7a6b5c4d3e02',
   createdAt: now,
   updatedAt: now,
   firstName: 'Barack',
@@ -106,7 +105,7 @@ const users: Array<IUser> = [{
   ]
 },
 {
-  id: UUID.create().toString(),
+  id: 'b1ffc4d2-1a2b-4c3d-9e8f-7a6b5c4d3e03',
   createdAt: now,
   updatedAt: now,
   firstName: 'Jimmy',
@@ -131,7 +130,7 @@ const users: Array<IUser> = [{
   ]
 },
 {
-  id: UUID.create().toString(),
+  id: 'b1ffc4d2-1a2b-4c3d-9e8f-7a6b5c4d3e04',
   createdAt: now,
   updatedAt: now,
   firstName: 'James',
