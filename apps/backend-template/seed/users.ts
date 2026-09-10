@@ -16,8 +16,8 @@ const users: Array<IUser> = [{
   id: 'b1ffc4d2-1a2b-4c3d-9e8f-7a6b5c4d3e01',
   createdAt: now,
   updatedAt: now,
-  firstName: 'Abraham',
-  lastName: 'Lincoln',
+  firstName: 'eduardo',
+  lastName: 'Almeida',
   emails: [
     {
       email: 'eduardo@xpertminds.dev',
@@ -37,7 +37,7 @@ const users: Array<IUser> = [{
   ],
   avatar: 'avatar.png',
   username: 'eduardo@xpertminds.dev',
-  password: buildSeedCredential('user1'),
+  password: 'eduardo@123456',
   organization: organizations[0].id,
   roles: ['superadmin'],
   documents: [
