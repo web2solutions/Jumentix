@@ -715,13 +715,33 @@ async function runPm2Action(request) {
       throw error;
     }
     if (action === 'start') {
+      const live = (await readPm2ProcessList()).map(normalizePm2Process);
+      const existing = live.find((entry) => (
+        (request?.name && entry.name === request.name)
+        || (request?.pmId != null && entry.pmId === Number(request.pmId))
+        || entry.name === String(target)
+        || entry.pmId === Number(target)
+      ));
+      if (existing) {
+        // Already registered (e.g. stopped): start by name, not ecosystem --only.
+        await runPm2Method('start', String(existing.name || existing.pmId));
+        return;
+      }
       const ecosystem = readPm2Ecosystem(environment);
+      const onlyName = String(request?.name || target);
+      if (ecosystem.exists && request?.name) {
+        await runPm2Method('start', ecosystem.path, { only: onlyName });
+        return;
+      }
       if (!ecosystem.exists) {
         await runPm2Method('start', String(target));
         return;
       }
-      await runPm2Method('start', ecosystem.path, { only: String(request?.name || target) });
-      return;
+      const error = new Error(
+        `Process "${onlyName}" is not in the PM2 list and cannot be started from the ecosystem without a name.`
+      );
+      error.code = 'INVALID_PM2_TARGET';
+      throw error;
     }
     await runPm2Method(action, target);
     return;
@@ -732,16 +752,8 @@ async function runPm2Action(request) {
       .filter((processEntry) => processEntry.namespace === namespace);
     for (const processEntry of list) {
       const target = processEntry.name || processEntry.pmId;
-      if (action === 'start') {
-        const ecosystem = readPm2Ecosystem(environment);
-        if (ecosystem.exists && processEntry.name) {
-          await runPm2Method('start', ecosystem.path, { only: processEntry.name });
-        } else {
-          await runPm2Method('start', String(target));
-        }
-      } else {
-        await runPm2Method(action, target);
-      }
+      // Namespace start operates on processes already listed — start by name.
+      await runPm2Method(action === 'start' ? 'start' : action, String(target));
     }
     return;
   }

@@ -1659,6 +1659,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/service-management/test/unit/processHelpCatalog.test.ts",
+      "path": "apps/service-management/test/unit/processHelpCatalog.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/service-management/test/unit/pm2EcosystemUi.contract.test.ts",
       "path": "apps/service-management/test/unit/pm2EcosystemUi.contract.test.ts",
       "layer": "service-management/designer",
@@ -2713,6 +2723,19 @@
     {
       "id": "apps/backend-template/test/integration/Express/Users/createPhone.test.ts",
       "path": "apps/backend-template/test/integration/Express/Users/createPhone.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "express",
+      "script": "test:integration:express",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Express/get.async-context-metrics.test.ts",
+      "path": "apps/backend-template/test/integration/Express/get.async-context-metrics.test.ts",
       "layer": "adapters/in",
       "kind": "hexagonal",
       "type": "integration",
@@ -4638,9 +4661,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 240,
-    "integration": 99,
+    "unit": 246,
+    "integration": 100,
     "smoke": 2,
-    "suites": 389
+    "suites": 396
   }
 }

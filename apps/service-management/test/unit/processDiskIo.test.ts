@@ -1,4 +1,6 @@
 /* eslint-disable jest/prefer-expect-assertions */
+const fs = require('fs');
+const path = require('path');
 const {
   parseLinuxIoText,
   readProcessDiskIo
@@ -31,5 +33,16 @@ describe('service-management processDiskIo', () => {
     expect(result.supported).toBe(false);
     expect(result.code).toBe('UNSUPPORTED_PLATFORM');
     expect(result.readBytes).toBeUndefined();
+  });
+
+  it('does not spawn python3 for Darwin collection', () => {
+    expect.hasAssertions();
+    const source = fs.readFileSync(
+      path.join(__dirname, '../../src/runtime/processDiskIo.js'),
+      'utf8'
+    );
+    expect(source).not.toContain('python3');
+    expect(source).not.toContain('darwinProcessDiskIo.py');
+    expect(source).toContain('darwinProcessDiskIo');
   });
 });

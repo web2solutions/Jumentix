@@ -7,6 +7,7 @@ import {
   drawStackedArea,
   drawStatusBars
 } from './monitoringCharts.js';
+import { describeProcessHelp } from './processHelpCatalog.js';
 
 const HISTORY_CAP = 60;
 const PROCESS_HISTORY_LIMIT = 40;
@@ -15,6 +16,25 @@ const PERSIST_DEBOUNCE_MS = 2000;
 function pushSample(series, value) {
   series.push(Number.isFinite(Number(value)) ? Number(value) : 0);
   if (series.length > HISTORY_CAP) series.shift();
+}
+
+function formatDiskIoSummary(diskIo, formatBytes) {
+  if (!diskIo || typeof diskIo !== 'object') return '—';
+  if (diskIo.error) {
+    return `unavailable (${diskIo.code || 'error'})`;
+  }
+  if (diskIo.readBytes == null && diskIo.writeBytes == null) return '—';
+  return `R ${formatBytes(diskIo.readBytes)} / W ${formatBytes(diskIo.writeBytes)}`;
+}
+
+function formatAsyncContextSummary(asyncContext) {
+  if (asyncContext == null) return '— (no HTTP port)';
+  if (asyncContext.error) {
+    return `unavailable (${asyncContext.code || 'error'})`;
+  }
+  const active = asyncContext.active != null ? String(asyncContext.active) : '—';
+  const entered = asyncContext.enteredTotal != null ? String(asyncContext.enteredTotal) : '—';
+  return `active ${active} · entered ${entered}`;
 }
 
 export function createMonitoringController(dom, options = {}) {
@@ -346,7 +366,14 @@ export function createMonitoringController(dom, options = {}) {
       const hist = state.history.processes.get(key) || { cpu: [], mem: [] };
       tr.innerHTML = `
         <td><button type="button" class="linkish expand-btn">${state.expanded.has(key) ? '−' : '+'}</button></td>
-        <td><strong></strong><div class="table-subtle"></div></td>
+        <td class="process-name-cell">
+          <div class="process-name-row">
+            <strong></strong>
+            <button type="button" class="process-help-btn" aria-expanded="false">?</button>
+          </div>
+          <div class="table-subtle"></div>
+          <div class="process-help-popover" hidden role="dialog"></div>
+        </td>
         <td><span class="process-status"></span></td>
         <td><span class="metric-cell-value"></span><canvas class="mini-spark cpu" width="72" height="24"></canvas></td>
         <td><span class="metric-cell-value"></span><canvas class="mini-spark mem" width="72" height="24"></canvas></td>
@@ -358,7 +385,27 @@ export function createMonitoringController(dom, options = {}) {
           <button type="button" data-action="stop">Stop</button>
           <button type="button" data-action="restart">Restart</button>
         </td>`;
-      tr.querySelector('strong').textContent = processEntry.name || `pm_id ${processEntry.pmId}`;
+      const processLabel = processEntry.name || `pm_id ${processEntry.pmId}`;
+      tr.querySelector('strong').textContent = processLabel;
+      const help = describeProcessHelp(processEntry);
+      const helpBtn = tr.querySelector('.process-help-btn');
+      const helpPop = tr.querySelector('.process-help-popover');
+      helpBtn.setAttribute('aria-label', `What is ${processLabel}?`);
+      helpPop.textContent = help.summary;
+      helpBtn.onclick = (event) => {
+        event.stopPropagation();
+        const open = helpPop.hasAttribute('hidden');
+        document.querySelectorAll('.process-help-popover').forEach((node) => {
+          node.setAttribute('hidden', '');
+        });
+        document.querySelectorAll('.process-help-btn').forEach((node) => {
+          node.setAttribute('aria-expanded', 'false');
+        });
+        if (open) {
+          helpPop.removeAttribute('hidden');
+          helpBtn.setAttribute('aria-expanded', 'true');
+        }
+      };
       tr.querySelector('.table-subtle').textContent = [
         processEntry.namespace,
         processEntry.interpreter,
@@ -414,8 +461,8 @@ export function createMonitoringController(dom, options = {}) {
           </div>`;
         cell.querySelector('pre').textContent = JSON.stringify(metrics, null, 2);
         cell.querySelector('pre.custom').textContent = JSON.stringify(custom, null, 2);
-        cell.querySelector('pre.async').textContent = JSON.stringify(asyncContext, null, 2);
-        cell.querySelector('pre.disk').textContent = JSON.stringify(processEntry.diskIo || {}, null, 2);
+        cell.querySelector('pre.async').textContent = formatAsyncContextSummary(asyncContext);
+        cell.querySelector('pre.disk').textContent = formatDiskIoSummary(processEntry.diskIo, formatBytes);
         detail.appendChild(cell);
         dom.pm2MetricsProcessList.appendChild(detail);
       }
@@ -571,6 +618,17 @@ export function createMonitoringController(dom, options = {}) {
   }
 
   function wire() {
+    if (typeof document !== 'undefined') {
+      document.addEventListener('keydown', (event) => {
+        if (event.key !== 'Escape') return;
+        document.querySelectorAll('.process-help-popover').forEach((node) => {
+          node.setAttribute('hidden', '');
+        });
+        document.querySelectorAll('.process-help-btn').forEach((node) => {
+          node.setAttribute('aria-expanded', 'false');
+        });
+      });
+    }
     if (dom.pm2MetricsEnvironmentSelect) {
       dom.pm2MetricsEnvironmentSelect.onchange = () => {
         state.environment = dom.pm2MetricsEnvironmentSelect.value;

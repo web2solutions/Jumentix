@@ -1,10 +1,11 @@
 /* eslint-disable no-console */
 const fs = require('fs');
-const path = require('path');
 const { execFile } = require('child_process');
+const { readDarwinDiskIo: readDarwinDiskIoNative } = require('./darwinProcessDiskIo');
 
 const DEFAULT_TIMEOUT_MS = 80;
-const DARWIN_HELPER = path.join(__dirname, 'darwinProcessDiskIo.py');
+const DARWIN_CACHE_TTL_MS = 1000;
+const darwinCache = new Map();
 
 function toFiniteNumber(value, fallback = 0) {
   const number = Number(value);
@@ -76,34 +77,15 @@ function execFileJson(command, args, timeoutMs) {
   });
 }
 
-async function readDarwinDiskIo(pid, timeoutMs) {
-  const result = await execFileJson('python3', [DARWIN_HELPER, String(pid)], timeoutMs);
-  if (!result.ok) {
-    return {
-      supported: true,
-      platform: 'darwin',
-      error: result.error,
-      code: result.code,
-      collectedAt: new Date().toISOString()
-    };
+function readDarwinDiskIo(pid) {
+  const cached = darwinCache.get(pid);
+  const now = Date.now();
+  if (cached && (now - cached.at) < DARWIN_CACHE_TTL_MS) {
+    return { ...cached.value, collectedAt: new Date().toISOString() };
   }
-  const payload = result.payload || {};
-  if (payload.error) {
-    return {
-      supported: true,
-      platform: 'darwin',
-      error: String(payload.error),
-      code: String(payload.code || 'DARWIN_IO_ERROR'),
-      collectedAt: new Date().toISOString()
-    };
-  }
-  return {
-    supported: true,
-    platform: 'darwin',
-    readBytes: toFiniteNumber(payload.readBytes),
-    writeBytes: toFiniteNumber(payload.writeBytes),
-    collectedAt: new Date().toISOString()
-  };
+  const value = readDarwinDiskIoNative(pid);
+  darwinCache.set(pid, { at: now, value });
+  return value;
 }
 
 async function readWindowsDiskIo(pid, timeoutMs) {
@@ -147,7 +129,7 @@ async function readProcessDiskIo(pid, options = {}) {
     };
   }
   if (platform === 'linux') return readLinuxDiskIo(numericPid);
-  if (platform === 'darwin') return readDarwinDiskIo(numericPid, timeoutMs);
+  if (platform === 'darwin') return readDarwinDiskIo(numericPid);
   if (platform === 'win32') return readWindowsDiskIo(numericPid, timeoutMs);
   return {
     supported: false,
@@ -170,5 +152,6 @@ module.exports = {
   attachProcessDiskIo,
   parseLinuxIoText,
   readProcessDiskIo,
-  DEFAULT_TIMEOUT_MS
+  DEFAULT_TIMEOUT_MS,
+  DARWIN_CACHE_TTL_MS
 };
