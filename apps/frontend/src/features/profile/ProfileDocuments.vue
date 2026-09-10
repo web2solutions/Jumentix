@@ -7,7 +7,6 @@ import {
   CCardBody,
   CCardHeader,
   CFormInput,
-  CFormSelect,
   CTable,
   CTableBody,
   CTableDataCell,
@@ -19,7 +18,7 @@ import {
 import OasFormField from '@/components/OasFormField.vue';
 import { fieldDescriptors, type FieldDescriptor } from '@/contracts/formSchema';
 import { collectBody, validateAll } from '@/contracts/oasForm';
-import { maskDocumentData, validateDocumentData } from '@/contracts/validation';
+import { documentMaskCap, maskDocumentData, validateDocumentData } from '@/contracts/validation';
 import { useProfileStore, type UserDocument } from '@/stores/profile';
 import { useSectionNotify } from './useSectionNotify';
 
@@ -106,17 +105,23 @@ const cellControl = (descriptor: FieldDescriptor): 'select' | 'text' => (
         <CTableBody>
           <CTableRow v-for="item in documents" :key="item.id">
             <CTableDataCell v-for="d in updateDescriptors" :key="d.name">
-              <CFormSelect
-                v-if="cellControl(d) === 'select'"
-                :model-value="String(edits[item.id][d.name] ?? '')"
-                :options="d.enum"
-                :aria-label="d.name"
-                @update:model-value="edits[item.id][d.name] = $event"
-              />
+              <template v-if="cellControl(d) === 'select'">
+                <CFormInput
+                  :model-value="String(edits[item.id][d.name] ?? '')"
+                  :list="`oas-cell-${item.id}-${d.name}`"
+                  :aria-label="d.name"
+                  :maxlength="d.maxLength"
+                  @update:model-value="edits[item.id][d.name] = $event"
+                />
+                <datalist :id="`oas-cell-${item.id}-${d.name}`">
+                  <option v-for="option in d.enum" :key="option" :value="option" />
+                </datalist>
+              </template>
               <CFormInput
                 v-else
                 :model-value="String(edits[item.id][d.name] ?? '')"
                 :aria-label="d.name === 'data' ? `Document ${item.data}` : d.name"
+                :maxlength="d.maxLength"
                 @update:model-value="d.name === 'data'
                   ? (edits[item.id].data = maskData(edits[item.id])($event))
                   : (edits[item.id][d.name] = $event)"
@@ -136,6 +141,7 @@ const cellControl = (descriptor: FieldDescriptor): 'select' | 'text' => (
           v-model="newValues[d.name]"
           :descriptor="d"
           :mask="d.name === 'data' ? maskData(newValues) : undefined"
+          :mask-cap="d.name === 'data' ? documentMaskCap(String(newValues.type ?? ''), String(newValues.countryIssue ?? '')) : undefined"
           class="mb-0"
         />
         <CButton color="success" class="mb-3" @click="add">Add</CButton>

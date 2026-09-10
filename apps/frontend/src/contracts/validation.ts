@@ -79,6 +79,18 @@ export const maskDocumentData = (type: string, countryIssue: string, raw: string
   return raw;
 };
 
+/** Input cap derived from the OAS mask: typing beyond it is blocked, not invalidated. */
+export const documentMaskCap = (type: string, countryIssue: string): number | undefined => {
+  const rule = documentRuleFor(type, countryIssue);
+  return rule?.mask ? rule.mask.length : undefined;
+};
+
+/** Input cap for a phone number from the OAS mask of the country rule. */
+export const phoneMaskCap = (countryCode: string): number | undefined => {
+  const rule = phoneRuleFor(countryCode);
+  return rule?.mask ? rule.mask.length : undefined;
+};
+
 /** Modulo-11 checksum for the two CPF verification digits. */
 export const isValidCpf = (value: string): boolean => {
   const digits = digitsOnly(value);
