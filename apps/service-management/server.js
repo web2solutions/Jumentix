@@ -1,6 +1,10 @@
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
+const { collectHostMetrics } = require('./src/runtime/hostMetrics');
+const { attachAsyncContextMetrics } = require('./src/runtime/asyncContextScrape');
+const { attachProcessDiskIo } = require('./src/runtime/processDiskIo');
+const { createPm2WsHub } = require('./src/runtime/pm2WsHub');
 
 const rootDirectory = __dirname;
 const projectRoot = path.resolve(__dirname, '..');
@@ -526,9 +530,13 @@ function normalizePm2Process(processEntry) {
     const value = metric && typeof metric === 'object' && 'value' in metric ? metric.value : metric;
     customMetrics[key] = value;
   });
+  const axmActions = Array.isArray(pm2Env.axm_actions)
+    ? pm2Env.axm_actions.map((action) => (action && typeof action === 'object' ? action.action_name || action.name : action)).filter(Boolean)
+    : [];
   return {
     name: String(processEntry?.name || pm2Env.name || ''),
     pmId: processEntry?.pm_id === undefined ? null : toFiniteNumber(processEntry.pm_id, null),
+    pid: processEntry?.pid === undefined ? null : toFiniteNumber(processEntry.pid, null),
     namespace: String(pm2Env.namespace || 'default'),
     status: String(pm2Env.status || 'unknown'),
     cpuPercent: toFiniteNumber(monit.cpu),
@@ -539,8 +547,29 @@ function normalizePm2Process(processEntry) {
     startedAt,
     script: String(pm2Env.pm_exec_path || ''),
     interpreter: String(pm2Env.exec_interpreter || ''),
+    execMode: String(pm2Env.exec_mode || ''),
+    instances: toFiniteNumber(pm2Env.instances, 1),
     watching: Boolean(pm2Env.watch),
-    customMetrics
+    nodeVersion: String(pm2Env.node_version || ''),
+    version: String(pm2Env.version || pm2Env.axm_options?.module_version || ''),
+    exitCode: pm2Env.exit_code === undefined || pm2Env.exit_code === null
+      ? null
+      : toFiniteNumber(pm2Env.exit_code, null),
+    axmActions,
+    customMetrics,
+    asyncContext: null,
+    pm2_env: {
+      namespace: String(pm2Env.namespace || 'default'),
+      status: String(pm2Env.status || 'unknown'),
+      pm_exec_path: String(pm2Env.pm_exec_path || ''),
+      exec_interpreter: String(pm2Env.exec_interpreter || ''),
+      JUMENTIX_HTTP_PORT: pm2Env.JUMENTIX_HTTP_PORT
+        || (pm2Env.env && pm2Env.env.JUMENTIX_HTTP_PORT)
+        || undefined
+    },
+    env: pm2Env.env && typeof pm2Env.env === 'object'
+      ? { JUMENTIX_HTTP_PORT: pm2Env.env.JUMENTIX_HTTP_PORT }
+      : {}
   };
 }
 
@@ -566,12 +595,7 @@ function readPm2ProcessList() {
   return new Promise((resolve, reject) => {
     let pm2;
     try {
-      // Loaded on demand so the static designer server can boot even when a
-      // stripped production package omits PM2. The metrics endpoint itself is
-      // fail-closed and reports that installation error.
-      const pm2Module = process.env.JUMENTIX_SERVICE_MANAGEMENT_PM2_MODULE || 'pm2';
-      // eslint-disable-next-line global-require, import/no-dynamic-require
-      pm2 = require(pm2Module);
+      pm2 = loadPm2Module();
     } catch (error) {
       reject(error);
       return;
@@ -605,6 +629,17 @@ async function readPm2Metrics(runtime) {
   const processes = (await readPm2ProcessList()).map(normalizePm2Process);
   const processNames = new Set(processes.map((processEntry) => processEntry.name));
   const missingExpected = [...expectedNames].filter((name) => !processNames.has(name)).sort();
+  const summary = summarizePm2Processes(processes);
+  const { processes: withAsyncContext, asyncContextActiveSum } = await attachAsyncContextMetrics(
+    processes,
+    { ecosystemApps: ecosystem.apps || [] }
+  );
+  const withDiskIo = await attachProcessDiskIo(withAsyncContext);
+  const host = await collectHostMetrics({
+    projectRoot: path.resolve(__dirname, '../..'),
+    processRssSumBytes: summary.totalMemoryBytes,
+    processCpuPercentSum: summary.totalCpuPercent
+  });
   return {
     source: 'pm2',
     collectedAt: new Date().toISOString(),
@@ -616,9 +651,119 @@ async function readPm2Metrics(runtime) {
       expectedProcessCount: expectedNames.size,
       missingExpected
     },
-    summary: summarizePm2Processes(processes),
-    processes
+    summary: {
+      ...summary,
+      asyncContextActiveSum
+    },
+    host,
+    processes: withDiskIo
   };
+}
+
+function loadPm2Module() {
+  const pm2Module = process.env.JUMENTIX_SERVICE_MANAGEMENT_PM2_MODULE || 'pm2';
+  // eslint-disable-next-line global-require, import/no-dynamic-require
+  return require(pm2Module);
+}
+
+function runPm2Method(methodName, ...args) {
+  return new Promise((resolve, reject) => {
+    let pm2;
+    try {
+      pm2 = loadPm2Module();
+    } catch (error) {
+      reject(error);
+      return;
+    }
+    pm2.connect((connectError) => {
+      if (connectError) {
+        reject(connectError);
+        return;
+      }
+      const method = pm2[methodName];
+      if (typeof method !== 'function') {
+        try { pm2.disconnect(); } catch (_error) { /* ignore */ }
+        reject(new Error(`PM2 method not available: ${methodName}`));
+        return;
+      }
+      method.call(pm2, ...args, (error, result) => {
+        try { pm2.disconnect(); } catch (_error) { /* ignore */ }
+        if (error) {
+          reject(error);
+          return;
+        }
+        resolve(result);
+      });
+    });
+  });
+}
+
+async function runPm2Action(request) {
+  const action = String(request?.action || '');
+  const scope = String(request?.scope || 'process');
+  const environment = normalizeEcosystemEnvironment(request?.environment || 'dev');
+  if (!['start', 'stop', 'restart'].includes(action)) {
+    const error = new Error(`Unsupported PM2 action: ${action}`);
+    error.code = 'UNSUPPORTED_PM2_ACTION';
+    throw error;
+  }
+  if (scope === 'process') {
+    const target = request?.name || request?.pmId;
+    if (target === undefined || target === null || target === '') {
+      const error = new Error('Process action requires name or pmId.');
+      error.code = 'INVALID_PM2_TARGET';
+      throw error;
+    }
+    if (action === 'start') {
+      const ecosystem = readPm2Ecosystem(environment);
+      if (!ecosystem.exists) {
+        await runPm2Method('start', String(target));
+        return;
+      }
+      await runPm2Method('start', ecosystem.path, { only: String(request?.name || target) });
+      return;
+    }
+    await runPm2Method(action, target);
+    return;
+  }
+  if (scope === 'namespace') {
+    const namespace = String(request?.namespace || 'default');
+    const list = (await readPm2ProcessList()).map(normalizePm2Process)
+      .filter((processEntry) => processEntry.namespace === namespace);
+    for (const processEntry of list) {
+      const target = processEntry.name || processEntry.pmId;
+      if (action === 'start') {
+        const ecosystem = readPm2Ecosystem(environment);
+        if (ecosystem.exists && processEntry.name) {
+          await runPm2Method('start', ecosystem.path, { only: processEntry.name });
+        } else {
+          await runPm2Method('start', String(target));
+        }
+      } else {
+        await runPm2Method(action, target);
+      }
+    }
+    return;
+  }
+  if (scope === 'ecosystem-missing') {
+    const name = String(request?.name || '');
+    if (!name) {
+      const error = new Error('ecosystem-missing start requires name.');
+      error.code = 'INVALID_PM2_TARGET';
+      throw error;
+    }
+    const ecosystem = readPm2Ecosystem(environment);
+    if (!ecosystem.exists) {
+      const error = new Error(`Ecosystem file missing for ${environment}.`);
+      error.code = 'ECOSYSTEM_MISSING';
+      throw error;
+    }
+    await runPm2Method('start', ecosystem.path, { only: name });
+    return;
+  }
+  const error = new Error(`Unsupported PM2 action scope: ${scope}`);
+  error.code = 'UNSUPPORTED_PM2_SCOPE';
+  throw error;
 }
 
 function writeJson(response, statusCode, payload) {
@@ -963,4 +1108,13 @@ server.listen(port, host, () => {
   if (liveReloadEnabled) startLiveReloadWatcher();
   // eslint-disable-next-line no-console
   console.log(`Service Management listening on http://${host}:${port}`);
+});
+
+createPm2WsHub(server, {
+  collectMetrics: async ({ environment }) => readPm2Metrics(environment || 'dev'),
+  runAction: runPm2Action,
+  isAuthorized: (token) => {
+    if (!authToken) return true;
+    return token === authToken || token === `Bearer ${authToken}`;
+  }
 });

@@ -11,6 +11,8 @@
     "dev": "bun run dev:service-management"
   },
   "dependencies": {
-    "requirejs": "^2.3.8"
+    "d3": "^7.9.0",
+    "requirejs": "^2.3.8",
+    "ws": "^8.18.3"
   }
 }

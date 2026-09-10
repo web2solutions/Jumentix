@@ -237,8 +237,10 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
        empty preview. An unreadable or broken ecosystem file is the 500 class
        `{ "error": "PM2 ecosystem file operation failed.", "code", "path",
        "details" }`, parallel to the env-file filesystem class.
-   - **Contract 1c — `GET /api/runtime/pm2-metrics` (amended by `JUM-736`).**
-     Read-only; the single source of the Monitoring tab's PM2 runtime dashboard.
+   - **Contract 1c — `GET /api/runtime/pm2-metrics` (amended by `JUM-736`, host/async-context by Monitoring WebSocket delivery).**
+     Read-only one-shot snapshot; remains the HTTP Contract for tests and tools.
+     The Monitoring tab's **primary live UI path** is Contract 1e (WebSocket);
+     this GET MUST stay available and shape-compatible for Contract 1c consumers.
      - **Metrics source.** The endpoint MUST collect live process data through
        the PM2 Node API (`pm2.connect`, `pm2.list`, `pm2.disconnect`). It MUST NOT
        infer process health from the ecosystem file, shell output or command
@@ -248,18 +250,51 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
        file resolution match Contract 1b. The response compares the selected
        ecosystem's expected app names with PM2's live process list so missing
        expected processes are visible without reading a terminal.
+     - **Host metrics.** Success payloads MUST include `host` with CPU usage
+       (aggregate + per-core sample), memory (total/used/free/process RSS sum),
+       and disk volumes for the project root, temp dir, and optional
+       `JUMENTIX_SERVICE_MANAGEMENT_DISK_PATHS` entries (`fs.statfs`).
+     - **Async context scrape.** When a process exposes a local HTTP port via
+       ecosystem env (`JUMENTIX_HTTP_PORT` / `PORT`), the collector MAY scrape
+       `GET http://127.0.0.1:<port>/async-context-metrics` with a short timeout
+       and attach `asyncContext` on that process; `summary.asyncContextActiveSum`
+       aggregates successful scrapes. The scrape payload includes counters,
+       `lastCorrelationIds`, and `recentStores` (redacted Map snapshots —
+       keys matching `/password|token|secret|authorization|cookie/i` become
+       `[REDACTED]`). Scrape failures MUST NOT fail the whole metrics response.
+     - **Per-process disk I/O.** Each process SHOULD carry `diskIo` collected from
+       the OS using the process `pid`: Linux `/proc/<pid>/io`; Darwin
+       `proc_pid_rusage` via the in-repo Python helper; Windows PowerShell
+       `IOReadBytes`/`IOWriteBytes`. Failures and unsupported platforms MUST use
+       honest envelopes (`supported: false` or `error`/`code`) — never invent zeros.
      - **Response shape.** Success is `{ source: "pm2", collectedAt,
-       environment, ecosystem, summary, processes }`. `ecosystem` carries
+       environment, ecosystem, summary, host, processes }`. `ecosystem` carries
        `{ fileName, path, exists, expectedProcessCount, missingExpected }`;
        `summary` carries process counts, online/stopped/errored counts, total CPU,
-       total memory and status counts; each process carries `{ name, pmId,
-       namespace, status, cpuPercent, memoryBytes, restartCount,
+       total memory, status counts and `asyncContextActiveSum`; each process carries
+       `{ name, pmId, pid, namespace, status, cpuPercent, memoryBytes, restartCount,
        unstableRestarts, uptimeMs, startedAt, script, interpreter, watching,
-       customMetrics }`.
+       customMetrics, asyncContext?, diskIo? }`.
      - **Honest failure state.** Unsupported environments reuse Contract 1's
        `400` invalid-environment envelope. PM2 connection/list/module failures
        are `500` with `{ "error": "PM2 metrics collection failed.", "code",
        "details" }`.
+
+   - **Contract 1e — `WS /api/runtime/pm2-ws` (Monitoring live stream + actions).**
+     Primary Monitoring-tab transport. Uses the `ws` package on the Service
+     Management HTTP server upgrade path; MUST NOT replace Contract 1c.
+     - **Subscribe.** Client sends `{ type: "subscribe", environment, intervalMs,
+       filters? }`. `intervalMs` is clamped to `[500, 2000]` (default `1000`).
+       Server pushes `{ type: "metrics", payload }` where `payload` matches
+       Contract 1c success shape.
+     - **Actions.** Client may send `{ type: "action", action, scope, name?,
+       pmId?, namespace? }` with `action` ∈ { `start`, `stop`, `restart` } and
+       `scope` ∈ { `process`, `namespace`, `ecosystem-missing` }. Server replies
+       `{ type: "action-result", ok, action, scope, name?, error? }` and MAY push
+       a fresh metrics frame after success.
+     - **Honesty.** Unauthorized/invalid payloads and PM2 failures return
+       explicit `error` / `action-result` frames; the stream MUST NOT invent
+       healthy process data when PM2 collection fails.
 
 4. **Contract 2 — `service-management.v1` storage schema (historically the
    localStorage storage schema).**
@@ -272,8 +307,8 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
      section. The current document has exactly these top-level
    sections: `domains`, `relationships`, `selectedDomainId`, `selectedEntityId`,
    `selectedRelationshipId`, `idCounter`, `activeTab`, `interfaces`,
-   `serviceConfiguration`, `runtimeEnvironment`, `codeWorkspace`, `deployments`,
-   `view`.
+   `serviceConfiguration`, `runtimeEnvironment`, `codeWorkspace`,
+   `monitoringHistory`, `deployments`, `view`.
    - `activeTab` ∈ { `domain-designer`, `interface-designer`, `service-config`,
      `deploy-management`, `monitoring`, `code-workspace` } — one per visible tab.
    - `serviceConfiguration`: `{ serviceKind, runMode, cloudProvider,
@@ -292,6 +327,14 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
      the generator output changes underneath them until the user explicitly keeps
      their edit or takes the regenerated version. This is a backward-compatible
      additive section; older payloads normalize to `{ files: {}, activePath: "" }`.
+   - `monitoringHistory`: `{ version: 1, updatedAt, environment, samples, processes }`
+     — local Monitoring telemetry cache (not domain-package export). `samples` is a
+     ring (max 60) of aggregate ticks `{ t, hostCpu, hostMemUsedPercent, cpuTotal,
+     memTotal, onlineRatio, asyncActiveSum }`. `processes` maps
+     `${namespace}::${name}` to spark series `{ cpu, mem, restarts, asyncActive,
+     diskReadBytes, diskWriteBytes }` (each series max 60; max 40 process keys,
+     LRU). Older payloads normalize to an empty history. Charts use D3 vendored
+     under `vendor/d3` (no CDN).
    - `deployments`: array of deploy targets aligned to the Requirement 059
      Service Management metadata contract (`JUM-481`), each
      `{ name, region, runtime, serviceType, deployTarget, runtimeProtocol,
@@ -590,13 +633,17 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
   and `apps/backend-template/test/unit/service-management/designerExporters.test.ts`.
   This is additive and normalizes old payloads to an empty workspace, so there is
   no versioned key bump.
-- Contract 1c amended by `JUM-736`: the Monitoring tab now reads PM2 runtime
-  metrics from the PM2 Node API through `GET /api/runtime/pm2-metrics`, compares
-  live processes with the selected ecosystem file and reports CPU, memory,
-  restarts, uptime, watch state and custom PM2 metrics without shell scraping.
-  Pinned by
+- Contract 1c amended by `JUM-736` and extended for host + async-context fields:
+  the Monitoring HTTP one-shot `GET /api/runtime/pm2-metrics` still collects via
+  the PM2 Node API, compares live processes with the selected ecosystem file, and
+  now also returns `host` CPU/memory/disk plus optional per-process
+  `asyncContext` scrapes. Pinned by
   `apps/backend-template/test/integration/ServiceManagement/pm2Ecosystem.integration.test.ts`
-  and `apps/backend-template/test/unit/service-management/pm2EcosystemUi.contract.test.ts`.
+  and `apps/service-management/test/unit/pm2EcosystemUi.contract.test.ts`.
+- Contract 1e: Monitoring live UI uses `WS /api/runtime/pm2-ws` (500–2000 ms
+  interval, default 1000) with process/namespace/ecosystem-missing start/stop/
+  restart actions. Contract 1c remains the HTTP one-shot. Pinned by the same
+  integration + UI contract suites.
 - Contract 1d amended by `JUM-748`: the shared catalog moved out of
   `apps/backend-template` into the Service Management platform API
   `apps/service-management-api`. The designer's `catalogSyncClient` now fails closed

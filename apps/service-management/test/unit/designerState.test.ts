@@ -846,7 +846,7 @@ describe('designer state core (JUM-468)', () => {
   });
 
   describe('saveState payload contract', () => {
-    it('writes exactly the fourteen pinned Requirement 126 sections', async () => {
+    it('writes exactly the fifteen pinned Requirement 126 sections', async () => {
       expect.hasAssertions();
       const { core, storage } = createCore();
       await core.loadState();
@@ -858,6 +858,9 @@ describe('designer state core (JUM-468)', () => {
         'domains',
         'idCounter',
         'interfaces',
+        // JUM-767: monitoringHistory is additive Cana state (aggregate samples
+        // + per-process sparks). Not part of OAS/codegen — ops UI only.
+        'monitoringHistory',
         // JUM-729 follow-up: canvas notes are saved with the model. They stay out of the
         // OAS export and the generator — a note is not part of the contract —
         // but losing them on reload would make them useless.

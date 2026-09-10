@@ -229,29 +229,34 @@ provável de ser desfeita por um atalho futuro — é **de onde ela lê**:
   nunca no payload persistido `service-management.v1` (Requisito 126,
   Contrato 2) — um retrato derivado do servidor não é estado de design.
 
-## O dashboard de monitoramento PM2 (JUM-736) — pelo PM2, não pelo ecosystem
+## O dashboard de monitoramento PM2 — stream WebSocket (Contrato 1e) + HTTP one-shot (1c)
 
-A aba **Monitoramento** é telemetria runtime, não outra prévia estática. Seu
-endpoint, `GET /api/runtime/pm2-metrics` (Requisito 126, Contrato 1c), conecta
-ao PM2 pela API Node do PM2 e lê `pm2.list`. O dashboard relata status de
-processo, CPU, memória, restarts, uptime, namespace, modo watch e métricas
-customizadas do PM2. Ele também compara esses nomes live com o arquivo
-`pm2/ecosystem.*.cjs` selecionado, de modo que um app esperado que não está
-rodando fique visível na UI sem exigir inspeção do terminal.
+A aba **Monitoramento** é telemetria runtime, não outra prévia estática.
 
-O retrato de Monitoramento é intencionalmente transitório: é atualizado
-manualmente ou a cada cinco segundos enquanto a aba está ativa, e nunca é
-gravado em `service-management.v1` nem exportado no JSON da suíte. Se o PM2 não
-puder ser carregado, conectado ou listado, o endpoint falha com o envelope
-explícito de métricas PM2 em vez de cair para dados somente do ecosystem.
+- **Caminho primário da UI:** `WS /api/runtime/pm2-ws` (Requisito 126, Contrato 1e).
+  A aba abre um WebSocket quando ativa, assina ambiente + intervalo de refresh
+  (500–2000 ms, padrão 1000) e renderiza gráficos de host (CPU/memória/disco)
+  com D3 vendored (sem CDN), stacks de processo, filtros e ações
+  start/stop/restart. O histórico agregado + sparks por processo persiste no
+  Cana em `monitoringHistory` dentro de `service-management.v1` (Contrato 2).
+  Sair da aba fecha o socket.
+- **HTTP one-shot:** `GET /api/runtime/pm2-metrics` (Contrato 1c) permanece para
+  testes e ferramentas. Ambos os transportes coletam via API Node do PM2,
+  comparam nomes live com o ecosystem, incluem métricas de host, disk I/O por
+  processo (Linux/Darwin/Windows) e scrapes opcionais de `async-context-metrics`
+  (counters + `recentStores` do Map ALS com redact).
+
+Se o PM2 não puder ser carregado, conectado ou listado, o endpoint HTTP falha
+com o envelope explícito de métricas PM2 e o WebSocket emite `error` /
+`action-result` falho em vez de inventar processos saudáveis.
 
 **Comprovado por:**
 [`pm2Ecosystem.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/pm2Ecosystem.integration.test.ts)
-(leituras do ecossistema real, edição refletida sem reinício, estado explícito
-de arquivo ausente, envelope 500 honesto, rejeição explícita de ambientes
-desconhecidos) e
+(leituras do ecossistema, shape de métricas + host, subscribe/ações WebSocket,
+edição refletida sem reinício, arquivo ausente, envelope 500, rejeição de
+ambientes desconhecidos) e
 [`pm2EcosystemUi.contract.test.ts`](../../apps/service-management/test/unit/pm2EcosystemUi.contract.test.ts)
-(a garantia estrutural de nenhum comando embutido sobre os fontes do designer).
+(garantia estrutural de nenhum comando embutido e UI de Monitoring via WebSocket).
 
 ## Deploy Management: o contrato de metadados do Requisito 059 (JUM-481)
 
