@@ -33,6 +33,12 @@ export const decodeJwtUserId = (token: string): string => {
   }
 };
 
+/**
+ * Sessions persisted before JUM-761 carry no userId. Recover it from the
+ * stored JWT when possible; a session whose user id cannot be recovered is
+ * invalid, so it is dropped — and the route guard then redirects to /login
+ * instead of letting a stale session reach protected pages.
+ */
 const readPersisted = (): PersistedAuth | null => {
   if (typeof localStorage === 'undefined') {
     return null;
@@ -42,7 +48,16 @@ const readPersisted = (): PersistedAuth | null => {
     return null;
   }
   try {
-    return JSON.parse(raw) as PersistedAuth;
+    const parsed = JSON.parse(raw) as Partial<PersistedAuth>;
+    if (!parsed.token || !parsed.username) {
+      return null;
+    }
+    const userId = parsed.userId || decodeJwtUserId(parsed.token);
+    if (!userId) {
+      localStorage.removeItem(STORAGE_KEY);
+      return null;
+    }
+    return { token: parsed.token, username: parsed.username, userId };
   } catch {
     return null;
   }
@@ -140,7 +155,18 @@ export const useAuthStore = defineStore('auth', () => {
     persist(null);
   };
 
+  /**
+   * Local-only session clear: the backend already rejected this session (401)
+   * or the persisted shape is invalid, so there is nothing to log out from.
+   */
+  const expire = (): void => {
+    token.value = '';
+    username.value = '';
+    userId.value = '';
+    persist(null);
+  };
+
   return {
-    token, username, userId, isAuthenticated, register, login, logout
+    token, username, userId, isAuthenticated, register, login, logout, expire
   };
 });
