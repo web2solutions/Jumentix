@@ -16,8 +16,11 @@ import {
   CTableRow
 } from '@coreui/vue';
 
-import { useProfileStore, type UserPhone } from '@/stores/profile';
+import OasFormField from '@/components/OasFormField.vue';
+import { fieldDescriptors, type FieldDescriptor } from '@/contracts/formSchema';
+import { collectBody, validateAll } from '@/contracts/oasForm';
 import { maskPhone, validatePhone } from '@/contracts/validation';
+import { useProfileStore, type UserPhone } from '@/stores/profile';
 import { useSectionNotify } from './useSectionNotify';
 
 const props = defineProps<{ phones: UserPhone[] }>();
@@ -25,12 +28,16 @@ const props = defineProps<{ phones: UserPhone[] }>();
 const profile = useProfileStore();
 const { errorMessage, successMessage, run } = useSectionNotify();
 
-const onNumberInput = (id: string | null, value: string) => {
-  const state = id ? edits[id] : newPhone;
-  state.number = maskPhone(state.countryCode, value);
-};
+// OAS-driven fields (JUM-766): RequestCreatePhone / RequestUpdatePhone.
+const createDescriptors = fieldDescriptors('RequestCreatePhone');
+const updateDescriptors = fieldDescriptors('RequestUpdatePhone').filter((d) => d.name !== 'id');
 
-const edits = reactive<Record<string, { countryCode: string; localCode: string; number: string; isPrimary: boolean }>>({});
+// The `number` field carries the OAS x-validation rule selected by countryCode.
+const maskNumber = (values: Record<string, unknown>) => (raw: string) => (
+  maskPhone(String(values.countryCode ?? ''), raw)
+);
+
+const edits = reactive<Record<string, Record<string, string | boolean>>>({});
 watch(
   () => props.phones,
   (phones) => {
@@ -46,33 +53,46 @@ watch(
   { immediate: true, deep: true }
 );
 
-const newPhone = reactive({ countryCode: '+55', localCode: '', number: '', isPrimary: false });
+const newValues = reactive<Record<string, string | boolean>>({ countryCode: '+55' });
 
 const add = () => {
-  const invalid = validatePhone(newPhone.countryCode, newPhone.localCode, newPhone.number);
+  const invalid = validateAll(createDescriptors, newValues)
+    ?? validatePhone(
+      String(newValues.countryCode ?? ''),
+      String(newValues.localCode ?? ''),
+      String(newValues.number ?? '')
+    );
   if (invalid) {
     errorMessage.value = invalid;
     return;
   }
   return run(async () => {
-    await profile.addPhone({ ...newPhone });
-    newPhone.countryCode = '+55';
-    newPhone.localCode = '';
-    newPhone.number = '';
-    newPhone.isPrimary = false;
+    await profile.addPhone(collectBody(createDescriptors, newValues) as {
+      countryCode: string;
+      localCode: string;
+      number: string;
+    });
+    newValues.localCode = '';
+    newValues.number = '';
+    newValues.isPrimary = false;
   }, 'Telefone adicionado.');
 };
 
 const update = (id: string) => {
   const state = edits[id];
-  const invalid = validatePhone(state.countryCode, state.localCode, state.number);
+  const invalid = validateAll(updateDescriptors, state)
+    ?? validatePhone(String(state.countryCode ?? ''), String(state.localCode ?? ''), String(state.number ?? ''));
   if (invalid) {
     errorMessage.value = invalid;
     return;
   }
-  return run(() => profile.updatePhone(id, { ...state }), 'Telefone atualizado.');
+  return run(() => profile.updatePhone(id, collectBody(updateDescriptors, state)), 'Telefone atualizado.');
 };
 const remove = (id: string) => run(() => profile.removePhone(id), 'Telefone removido.');
+
+const cellControl = (descriptor: FieldDescriptor): 'checkbox' | 'text' => (
+  descriptor.type === 'boolean' ? 'checkbox' : 'text'
+);
 </script>
 
 <template>
@@ -84,30 +104,28 @@ const remove = (id: string) => run(() => profile.removePhone(id), 'Telefone remo
       <CTable responsive align="middle" class="mb-3">
         <CTableHead>
           <CTableRow>
-            <CTableHeaderCell>Country code</CTableHeaderCell>
-            <CTableHeaderCell>Area code</CTableHeaderCell>
-            <CTableHeaderCell>Number</CTableHeaderCell>
-            <CTableHeaderCell>Primary</CTableHeaderCell>
+            <CTableHeaderCell v-for="d in updateDescriptors" :key="d.name">
+              {{ d.description ?? d.name }}
+            </CTableHeaderCell>
             <CTableHeaderCell class="text-end">Actions</CTableHeaderCell>
           </CTableRow>
         </CTableHead>
         <CTableBody>
           <CTableRow v-for="item in phones" :key="item.id">
-            <CTableDataCell>
-              <CFormInput v-model="edits[item.id].countryCode" aria-label="Country code" />
-            </CTableDataCell>
-            <CTableDataCell>
-              <CFormInput v-model="edits[item.id].localCode" aria-label="Area code" />
-            </CTableDataCell>
-            <CTableDataCell>
-              <CFormInput
-                :model-value="edits[item.id].number"
-                :aria-label="`Phone ${item.number}`"
-                @update:model-value="onNumberInput(item.id, $event)"
+            <CTableDataCell v-for="d in updateDescriptors" :key="d.name">
+              <CFormCheck
+                v-if="cellControl(d) === 'checkbox'"
+                v-model="edits[item.id][d.name]"
+                :aria-label="d.name"
               />
-            </CTableDataCell>
-            <CTableDataCell>
-              <CFormCheck v-model="edits[item.id].isPrimary" aria-label="Primary phone" />
+              <CFormInput
+                v-else
+                :model-value="String(edits[item.id][d.name] ?? '')"
+                :aria-label="d.name === 'number' ? `Phone ${item.number}` : d.name"
+                @update:model-value="d.name === 'number'
+                  ? (edits[item.id].number = maskNumber(edits[item.id])($event))
+                  : (edits[item.id][d.name] = $event)"
+              />
             </CTableDataCell>
             <CTableDataCell class="text-end">
               <CButton size="sm" color="primary" class="me-2" @click="update(item.id)">Save</CButton>
@@ -116,17 +134,16 @@ const remove = (id: string) => run(() => profile.removePhone(id), 'Telefone remo
           </CTableRow>
         </CTableBody>
       </CTable>
-      <div class="d-flex gap-2 align-items-center">
-        <CFormInput v-model="newPhone.countryCode" placeholder="+55" aria-label="New phone country code" style="max-width: 90px" />
-        <CFormInput v-model="newPhone.localCode" placeholder="11" aria-label="New phone area code" style="max-width: 90px" />
-        <CFormInput
-          :model-value="newPhone.number"
-          placeholder="98765-4321"
-          aria-label="New phone number"
-          @update:model-value="onNumberInput(null, $event)"
+      <div class="d-flex gap-2 align-items-end">
+        <OasFormField
+          v-for="d in createDescriptors"
+          :key="d.name"
+          v-model="newValues[d.name]"
+          :descriptor="d"
+          :mask="d.name === 'number' ? maskNumber(newValues) : undefined"
+          class="mb-0"
         />
-        <CFormCheck v-model="newPhone.isPrimary" label="Primary" />
-        <CButton color="success" @click="add">Add</CButton>
+        <CButton color="success" class="mb-3" @click="add">Add</CButton>
       </div>
     </CCardBody>
   </CCard>

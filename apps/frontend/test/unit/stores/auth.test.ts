@@ -34,24 +34,15 @@ describe('auth store (JUM-760)', () => {
     globalThis.fetch = originalFetch;
   });
 
-  it('rejects register with a password shorter than the OAS minimum before any HTTP call', async () => {
-    expect.assertions(2);
+  it('passes the collected OAS body through to register unchanged', async () => {
+    expect.assertions(1);
+    responseStatus = 201;
+    responseBody = { id: 'user-1' };
     const auth = useAuthStore();
-
-    await expect(
-      auth.register({ firstName: 'Abraham', username: 'me@mydomain.com', password: 'short' })
-    ).rejects.toThrow('Password must be at least 8 characters.');
-    expect(calls).toHaveLength(0);
-  });
-
-  it('rejects register without first name before any HTTP call', async () => {
-    expect.assertions(2);
-    const auth = useAuthStore();
-
-    await expect(
-      auth.register({ firstName: ' ', username: 'me@mydomain.com', password: 'StrongPass#123' })
-    ).rejects.toThrow('First name is required.');
-    expect(calls).toHaveLength(0);
+    // Field-level validation moved to the OAS-driven form layer (JUM-766):
+    // the store is transport + session, and never re-shapes the contract body.
+    await auth.register({ firstName: 'Abraham', username: 'me@mydomain.com', password: 'StrongPass#123' });
+    expect(calls.some((url) => url.endsWith('/auth/register'))).toBe(true);
   });
 
   it('stores the bearer token on a successful login', async () => {

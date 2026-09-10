@@ -16,24 +16,28 @@ import {
   CTableRow
 } from '@coreui/vue';
 
+import OasFormField from '@/components/OasFormField.vue';
+import { fieldDescriptors, type FieldDescriptor } from '@/contracts/formSchema';
+import { collectBody, validateAll } from '@/contracts/oasForm';
+import { maskDocumentData, validateDocumentData } from '@/contracts/validation';
 import { useProfileStore, type UserDocument } from '@/stores/profile';
-import { maskCpf, maskSsn, validateDocumentData } from '@/contracts/validation';
 import { useSectionNotify } from './useSectionNotify';
 
 const props = defineProps<{ documents: UserDocument[] }>();
 
 const profile = useProfileStore();
 const { errorMessage, successMessage, run } = useSectionNotify();
-const typeOptions = ['CPF', 'RG', 'SSN', 'passport']; // OAS enum
 
-// Masks follow the OAS x-validation rules for the type+country (JUM-765).
-const maskDocumentData = (type: string, countryIssue: string, raw: string): string => {
-  if (type === 'CPF') return maskCpf(raw);
-  if (type === 'SSN') return maskSsn(raw);
-  return raw;
-};
+// OAS-driven fields (JUM-766): RequestCreateDocument / RequestUpdateEmail shape.
+const createDescriptors = fieldDescriptors('RequestCreateDocument');
+const updateDescriptors = fieldDescriptors('RequestUpdateDocument').filter((d) => d.name !== 'id');
 
-const edits = reactive<Record<string, { type: string; countryIssue: string; data: string }>>({});
+// The `data` field carries the OAS x-validation rules (CPF checksum, SSN).
+const maskData = (values: Record<string, unknown>) => (raw: string) => (
+  maskDocumentData(String(values.type ?? ''), String(values.countryIssue ?? ''), raw)
+);
+
+const edits = reactive<Record<string, Record<string, unknown>>>({});
 watch(
   () => props.documents,
   (documents) => {
@@ -44,37 +48,44 @@ watch(
   { immediate: true, deep: true }
 );
 
-const newDocument = reactive({ type: 'CPF', countryIssue: 'BR', data: '' });
-
-const onDataInput = (id: string | null, value: string) => {
-  const state = id ? edits[id] : newDocument;
-  state.data = maskDocumentData(state.type, state.countryIssue, value);
-};
+const newValues = reactive<Record<string, unknown>>({ type: 'CPF', countryIssue: 'BR' });
 
 const add = () => {
-  const invalid = validateDocumentData(newDocument.type, newDocument.countryIssue, newDocument.data);
+  const invalid = validateAll(createDescriptors, newValues)
+    ?? validateDocumentData(
+      String(newValues.type ?? ''),
+      String(newValues.countryIssue ?? ''),
+      String(newValues.data ?? '')
+    );
   if (invalid) {
     errorMessage.value = invalid;
     return;
   }
   return run(async () => {
-    await profile.addDocument({ ...newDocument });
-    newDocument.type = 'CPF';
-    newDocument.countryIssue = 'BR';
-    newDocument.data = '';
+    await profile.addDocument(collectBody(createDescriptors, newValues) as {
+      type: string;
+      countryIssue: string;
+      data: string;
+    });
+    newValues.data = '';
   }, 'Documento adicionado.');
 };
 
 const update = (id: string) => {
   const state = edits[id];
-  const invalid = validateDocumentData(state.type, state.countryIssue, state.data);
+  const invalid = validateAll(updateDescriptors, state)
+    ?? validateDocumentData(String(state.type ?? ''), String(state.countryIssue ?? ''), String(state.data ?? ''));
   if (invalid) {
     errorMessage.value = invalid;
     return;
   }
-  return run(() => profile.updateDocument(id, { ...state }), 'Documento atualizado.');
+  return run(() => profile.updateDocument(id, collectBody(updateDescriptors, state)), 'Documento atualizado.');
 };
 const remove = (id: string) => run(() => profile.removeDocument(id), 'Documento removido.');
+
+const cellControl = (descriptor: FieldDescriptor): 'select' | 'text' => (
+  descriptor.enum ? 'select' : 'text'
+);
 </script>
 
 <template>
@@ -86,25 +97,29 @@ const remove = (id: string) => run(() => profile.removeDocument(id), 'Documento 
       <CTable responsive align="middle" class="mb-3">
         <CTableHead>
           <CTableRow>
-            <CTableHeaderCell>Type</CTableHeaderCell>
-            <CTableHeaderCell>Country</CTableHeaderCell>
-            <CTableHeaderCell>Number</CTableHeaderCell>
+            <CTableHeaderCell v-for="d in updateDescriptors" :key="d.name">
+              {{ d.description ?? d.name }}
+            </CTableHeaderCell>
             <CTableHeaderCell class="text-end">Actions</CTableHeaderCell>
           </CTableRow>
         </CTableHead>
         <CTableBody>
           <CTableRow v-for="item in documents" :key="item.id">
-            <CTableDataCell>
-              <CFormSelect v-model="edits[item.id].type" :options="typeOptions" aria-label="Document type" />
-            </CTableDataCell>
-            <CTableDataCell>
-              <CFormInput v-model="edits[item.id].countryIssue" aria-label="Country of issue" />
-            </CTableDataCell>
-            <CTableDataCell>
+            <CTableDataCell v-for="d in updateDescriptors" :key="d.name">
+              <CFormSelect
+                v-if="cellControl(d) === 'select'"
+                :model-value="String(edits[item.id][d.name] ?? '')"
+                :options="d.enum"
+                :aria-label="d.name"
+                @update:model-value="edits[item.id][d.name] = $event"
+              />
               <CFormInput
-                :model-value="edits[item.id].data"
-                :aria-label="`Document ${item.data}`"
-                @update:model-value="onDataInput(item.id, $event)"
+                v-else
+                :model-value="String(edits[item.id][d.name] ?? '')"
+                :aria-label="d.name === 'data' ? `Document ${item.data}` : d.name"
+                @update:model-value="d.name === 'data'
+                  ? (edits[item.id].data = maskData(edits[item.id])($event))
+                  : (edits[item.id][d.name] = $event)"
               />
             </CTableDataCell>
             <CTableDataCell class="text-end">
@@ -114,16 +129,16 @@ const remove = (id: string) => run(() => profile.removeDocument(id), 'Documento 
           </CTableRow>
         </CTableBody>
       </CTable>
-      <div class="d-flex gap-2 align-items-center">
-        <CFormSelect v-model="newDocument.type" :options="typeOptions" aria-label="New document type" style="max-width: 140px" />
-        <CFormInput v-model="newDocument.countryIssue" placeholder="BR" aria-label="New document country" style="max-width: 100px" />
-        <CFormInput
-          :model-value="newDocument.data"
-          placeholder="Document number"
-          aria-label="New document number"
-          @update:model-value="onDataInput(null, $event)"
+      <div class="d-flex gap-2 align-items-end">
+        <OasFormField
+          v-for="d in createDescriptors"
+          :key="d.name"
+          v-model="newValues[d.name]"
+          :descriptor="d"
+          :mask="d.name === 'data' ? maskData(newValues) : undefined"
+          class="mb-0"
         />
-        <CButton color="success" @click="add">Add</CButton>
+        <CButton color="success" class="mb-3" @click="add">Add</CButton>
       </div>
     </CCardBody>
   </CCard>

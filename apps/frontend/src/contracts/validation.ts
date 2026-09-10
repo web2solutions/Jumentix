@@ -72,6 +72,13 @@ export const maskPhone = (countryCode: string, raw: string): string => {
   return applyMask(digits, rule.mask);
 };
 
+/** Progressive mask for a document's data per OAS rule (CPF/SSN masked, others free-form). */
+export const maskDocumentData = (type: string, countryIssue: string, raw: string): string => {
+  if (type === 'CPF') return maskCpf(raw);
+  if (type === 'SSN') return maskSsn(raw);
+  return raw;
+};
+
 /** Modulo-11 checksum for the two CPF verification digits. */
 export const isValidCpf = (value: string): boolean => {
   const digits = digitsOnly(value);

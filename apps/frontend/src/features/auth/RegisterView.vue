@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import {
   CAlert,
@@ -9,39 +9,38 @@ import {
   CCol,
   CContainer,
   CForm,
-  CFormInput,
-  CInputGroup,
-  CInputGroupText,
   CRow
 } from '@coreui/vue';
 
+import OasFormField from '@/components/OasFormField.vue';
+import { fieldDescriptors } from '@/contracts/formSchema';
+import { collectBody, validateAll } from '@/contracts/oasForm';
 import { useAuthStore } from '@/stores/auth';
 
 const router = useRouter();
 const auth = useAuthStore();
 
-const firstName = ref('');
-const username = ref('');
-const password = ref('');
-const passwordRepeat = ref('');
-const organization = ref('');
+// The form is built from the OAS RequestRegister schema at runtime (JUM-766).
+const descriptors = fieldDescriptors('RequestRegister');
+const values = reactive<Record<string, unknown>>({});
+const repeatPassword = ref('');
 const errorMessage = ref('');
 const submitting = ref(false);
 
 const submit = async () => {
   errorMessage.value = '';
-  if (password.value !== passwordRepeat.value) {
-    errorMessage.value = 'Passwords do not match.';
+  const invalid = validateAll(descriptors, values);
+  if (invalid) {
+    errorMessage.value = invalid;
+    return;
+  }
+  if (values.password !== repeatPassword.value) {
+    errorMessage.value = 'As senhas não conferem.';
     return;
   }
   submitting.value = true;
   try {
-    await auth.register({
-      firstName: firstName.value,
-      username: username.value,
-      password: password.value,
-      ...(organization.value.trim() ? { organization: organization.value.trim() } : {})
-    });
+    await auth.register(collectBody(descriptors, values));
     await router.push({ path: '/login', query: { registered: '1' } });
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : String(error);
@@ -64,52 +63,23 @@ const submit = async () => {
                 <CAlert v-if="errorMessage" color="danger" role="alert">
                   {{ errorMessage }}
                 </CAlert>
-                <CInputGroup class="mb-3">
-                  <CInputGroupText>
-                    <CIcon icon="cil-user" />
-                  </CInputGroupText>
-                  <CFormInput v-model="firstName" placeholder="First name" autocomplete="given-name" required />
-                </CInputGroup>
-                <CInputGroup class="mb-3">
-                  <CInputGroupText>@</CInputGroupText>
-                  <CFormInput v-model="username" placeholder="Username" autocomplete="username" required />
-                </CInputGroup>
-                <CInputGroup class="mb-3">
-                  <CInputGroupText>
-                    <CIcon icon="cil-people" />
-                  </CInputGroupText>
-                  <CFormInput
-                    v-model="organization"
-                    placeholder="Organization id (optional, uuid)"
-                    aria-label="Organization id (optional)"
-                  />
-                </CInputGroup>
-                <CInputGroup class="mb-3">
-                  <CInputGroupText>
-                    <CIcon icon="cil-lock-locked" />
-                  </CInputGroupText>
-                  <CFormInput
-                    v-model="password"
+                <OasFormField
+                  v-for="descriptor in descriptors"
+                  :key="descriptor.name"
+                  v-model="values[descriptor.name]"
+                  :descriptor="descriptor"
+                />
+                <div class="mb-4">
+                  <label class="form-label" for="register-password-repeat">Repeat password</label>
+                  <input
+                    id="register-password-repeat"
+                    v-model="repeatPassword"
                     type="password"
-                    placeholder="Password (min 8 characters)"
+                    class="form-control"
                     autocomplete="new-password"
-                    minlength="8"
                     required
                   />
-                </CInputGroup>
-                <CInputGroup class="mb-4">
-                  <CInputGroupText>
-                    <CIcon icon="cil-lock-locked" />
-                  </CInputGroupText>
-                  <CFormInput
-                    v-model="passwordRepeat"
-                    type="password"
-                    placeholder="Repeat password"
-                    autocomplete="new-password"
-                    minlength="8"
-                    required
-                  />
-                </CInputGroup>
+                </div>
                 <div class="d-grid gap-2">
                   <CButton color="success" type="submit" :disabled="submitting">
                     {{ submitting ? 'Creating account…' : 'Create account' }}

@@ -17,6 +17,9 @@ import {
   CTableRow
 } from '@coreui/vue';
 
+import OasFormField from '@/components/OasFormField.vue';
+import { fieldDescriptors, type FieldDescriptor } from '@/contracts/formSchema';
+import { collectBody, validateAll } from '@/contracts/oasForm';
 import { useProfileStore, type UserEmail } from '@/stores/profile';
 import { useSectionNotify } from './useSectionNotify';
 
@@ -25,8 +28,18 @@ const props = defineProps<{ emails: UserEmail[] }>();
 const profile = useProfileStore();
 const { errorMessage, successMessage, run } = useSectionNotify();
 
-// Editable copies per row, keyed by email id.
-const edits = reactive<Record<string, { email: string; type: string; isPrimary: boolean }>>({});
+// Fields from the OAS (JUM-766): create form iterates RequestCreateEmail,
+// row edits iterate RequestUpdateEmail (minus id, which travels in the path).
+const createDescriptors = fieldDescriptors('RequestCreateEmail');
+const updateDescriptors = fieldDescriptors('RequestUpdateEmail').filter((d) => d.name !== 'id');
+
+const cellControl = (descriptor: FieldDescriptor): 'select' | 'checkbox' | 'text' => {
+  if (descriptor.enum) return 'select';
+  if (descriptor.type === 'boolean') return 'checkbox';
+  return 'text';
+};
+
+const edits = reactive<Record<string, Record<string, string | boolean>>>({});
 watch(
   () => props.emails,
   (emails) => {
@@ -37,17 +50,29 @@ watch(
   { immediate: true, deep: true }
 );
 
-const newEmail = reactive({ email: '', type: 'work', isPrimary: false });
-const typeOptions = ['work', 'personal']; // OAS enum
+const newValues = reactive<Record<string, string | boolean>>({ type: 'work' });
 
-const add = () => run(async () => {
-  await profile.addEmail({ ...newEmail });
-  newEmail.email = '';
-  newEmail.type = 'work';
-  newEmail.isPrimary = false;
-}, 'Email adicionado.');
+const add = () => {
+  const invalid = validateAll(createDescriptors, newValues);
+  if (invalid) {
+    errorMessage.value = invalid;
+    return;
+  }
+  return run(async () => {
+    await profile.addEmail(collectBody(createDescriptors, newValues) as { email: string; type: string });
+    newValues.email = '';
+    newValues.isPrimary = false;
+  }, 'Email adicionado.');
+};
 
-const update = (id: string) => run(() => profile.updateEmail(id, { ...edits[id] }), 'Email atualizado.');
+const update = (id: string) => {
+  const invalid = validateAll(updateDescriptors, edits[id]);
+  if (invalid) {
+    errorMessage.value = invalid;
+    return;
+  }
+  return run(() => profile.updateEmail(id, collectBody(updateDescriptors, edits[id])), 'Email atualizado.');
+};
 const remove = (id: string) => run(() => profile.removeEmail(id), 'Email removido.');
 </script>
 
@@ -60,22 +85,36 @@ const remove = (id: string) => run(() => profile.removeEmail(id), 'Email removid
       <CTable responsive align="middle" class="mb-3">
         <CTableHead>
           <CTableRow>
-            <CTableHeaderCell>Email</CTableHeaderCell>
-            <CTableHeaderCell>Type</CTableHeaderCell>
-            <CTableHeaderCell>Primary</CTableHeaderCell>
+            <CTableHeaderCell v-for="d in updateDescriptors" :key="d.name">
+              {{ d.description ?? d.name }}
+            </CTableHeaderCell>
             <CTableHeaderCell class="text-end">Actions</CTableHeaderCell>
           </CTableRow>
         </CTableHead>
         <CTableBody>
           <CTableRow v-for="item in emails" :key="item.id">
-            <CTableDataCell>
-              <CFormInput v-model="edits[item.id].email" :aria-label="`Email ${item.email}`" />
-            </CTableDataCell>
-            <CTableDataCell>
-              <CFormSelect v-model="edits[item.id].type" :options="typeOptions" aria-label="Email type" />
-            </CTableDataCell>
-            <CTableDataCell>
-              <CFormCheck v-model="edits[item.id].isPrimary" aria-label="Primary email" />
+            <CTableDataCell v-for="d in updateDescriptors" :key="d.name">
+              <CFormSelect
+                v-if="cellControl(d) === 'select'"
+                :model-value="String(edits[item.id][d.name] ?? '')"
+                @update:model-value="edits[item.id][d.name] = $event"
+                :options="d.enum"
+                :aria-label="d.name"
+              />
+              <CFormCheck
+                v-else-if="cellControl(d) === 'checkbox'"
+                :model-value="Boolean(edits[item.id][d.name])"
+                @update:model-value="edits[item.id][d.name] = $event"
+                :aria-label="d.name"
+              />
+              <CFormInput
+                v-else
+                :model-value="String(edits[item.id][d.name] ?? '')"
+                @update:model-value="edits[item.id][d.name] = $event"
+                :aria-label="`Email ${item.email}`"
+                :minlength="d.minLength"
+                :maxlength="d.maxLength"
+              />
             </CTableDataCell>
             <CTableDataCell class="text-end">
               <CButton size="sm" color="primary" class="me-2" @click="update(item.id)">Save</CButton>
@@ -84,11 +123,15 @@ const remove = (id: string) => run(() => profile.removeEmail(id), 'Email removid
           </CTableRow>
         </CTableBody>
       </CTable>
-      <div class="d-flex gap-2 align-items-center">
-        <CFormInput v-model="newEmail.email" placeholder="new@email.com" aria-label="New email" />
-        <CFormSelect v-model="newEmail.type" :options="typeOptions" aria-label="New email type" style="max-width: 140px" />
-        <CFormCheck v-model="newEmail.isPrimary" label="Primary" />
-        <CButton color="success" @click="add">Add</CButton>
+      <div class="d-flex gap-2 align-items-end">
+        <OasFormField
+          v-for="d in createDescriptors"
+          :key="d.name"
+          v-model="newValues[d.name]"
+          :descriptor="d"
+          class="mb-0"
+        />
+        <CButton color="success" class="mb-3" @click="add">Add</CButton>
       </div>
     </CCardBody>
   </CCard>

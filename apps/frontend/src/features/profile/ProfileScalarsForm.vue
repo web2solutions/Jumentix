@@ -1,16 +1,10 @@
 <script setup lang="ts">
 import { reactive, watch } from 'vue';
-import {
-  CAlert,
-  CButton,
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CForm,
-  CFormInput,
-  CFormLabel
-} from '@coreui/vue';
+import { CAlert, CButton, CCard, CCardBody, CCardHeader, CForm } from '@coreui/vue';
 
+import OasFormField from '@/components/OasFormField.vue';
+import { fieldDescriptors } from '@/contracts/formSchema';
+import { collectBody, validateAll } from '@/contracts/oasForm';
 import { useProfileStore, type UserRecord } from '@/stores/profile';
 import { useSectionNotify } from './useSectionNotify';
 
@@ -19,36 +13,31 @@ const props = defineProps<{ record: UserRecord }>();
 const profile = useProfileStore();
 const { errorMessage, successMessage, run } = useSectionNotify();
 
-// OAS RequestUpdateUser scalars (id goes in path + body; arrays have their
-// own sub-resource operations below in the page).
-const form = reactive({
-  firstName: '',
-  lastName: '',
-  avatar: '',
-  username: '',
-  organization: ''
-});
+// OAS RequestUpdateUser drives the fields (JUM-766): arrays (emails/
+// documents/phones) are managed by their own sub-resource cards, and `id`
+// travels in the path + body rather than as a form field.
+const descriptors = fieldDescriptors('RequestUpdateUser').filter((descriptor) => (
+  descriptor.name !== 'id' && descriptor.type !== 'array'
+));
+
+const form = reactive<Record<string, unknown>>({});
 
 watch(
   () => props.record,
   (record) => {
-    form.firstName = record?.firstName ?? '';
-    form.lastName = record?.lastName ?? '';
-    form.avatar = record?.avatar ?? '';
-    form.username = record?.username ?? '';
-    form.organization = record?.organization ?? '';
+    for (const descriptor of descriptors) {
+      form[descriptor.name] = (record as unknown as Record<string, unknown> | null)?.[descriptor.name] ?? '';
+    }
   },
   { immediate: true }
 );
 
 const save = () => run(async () => {
-  await profile.saveScalars({
-    firstName: form.firstName,
-    lastName: form.lastName,
-    avatar: form.avatar,
-    username: form.username,
-    organization: form.organization
-  });
+  const invalid = validateAll(descriptors, form);
+  if (invalid) {
+    throw new Error(invalid);
+  }
+  await profile.saveScalars(collectBody(descriptors, form));
 }, 'Perfil atualizado.');
 </script>
 
@@ -59,26 +48,12 @@ const save = () => run(async () => {
       <CAlert v-if="errorMessage" color="danger" role="alert">{{ errorMessage }}</CAlert>
       <CAlert v-if="successMessage" color="success" role="alert">{{ successMessage }}</CAlert>
       <CForm @submit.prevent="save">
-        <div class="mb-3">
-          <CFormLabel for="profile-firstName">First name</CFormLabel>
-          <CFormInput id="profile-firstName" v-model="form.firstName" required minlength="1" />
-        </div>
-        <div class="mb-3">
-          <CFormLabel for="profile-lastName">Last name</CFormLabel>
-          <CFormInput id="profile-lastName" v-model="form.lastName" />
-        </div>
-        <div class="mb-3">
-          <CFormLabel for="profile-avatar">Avatar</CFormLabel>
-          <CFormInput id="profile-avatar" v-model="form.avatar" placeholder="avatar.png" />
-        </div>
-        <div class="mb-3">
-          <CFormLabel for="profile-username">Username</CFormLabel>
-          <CFormInput id="profile-username" v-model="form.username" required minlength="1" />
-        </div>
-        <div class="mb-3">
-          <CFormLabel for="profile-organization">Organization (uuid)</CFormLabel>
-          <CFormInput id="profile-organization" v-model="form.organization" placeholder="optional" />
-        </div>
+        <OasFormField
+          v-for="descriptor in descriptors"
+          :key="descriptor.name"
+          v-model="form[descriptor.name]"
+          :descriptor="descriptor"
+        />
         <CButton color="primary" type="submit">Save profile</CButton>
       </CForm>
     </CCardBody>
