@@ -158,17 +158,17 @@ describe('profile store (JUM-761)', () => {
     expect(recorded[2].url).toBe('http://localhost:3001/api/1.0.0/users/user-1/createPhone');
   });
 
-  it('deletes documents and phones through documentDelete/phoneDelete', async () => {
+  it('deletes documents and phones through deleteDocument/deletePhone', async () => {
     expect.assertions(4);
     const profile = useProfileStore();
 
     await profile.removeDocument('doc-1');
     expect(recorded[0].method).toBe('DELETE');
-    expect(recorded[0].url).toBe('http://localhost:3001/api/1.0.0/users/user-1/documentDelete/doc-1');
+    expect(recorded[0].url).toBe('http://localhost:3001/api/1.0.0/users/user-1/deleteDocument/doc-1');
 
     await profile.removePhone('phone-1');
     expect(recorded[2].method).toBe('DELETE');
-    expect(recorded[2].url).toBe('http://localhost:3001/api/1.0.0/users/user-1/phoneDelete/phone-1');
+    expect(recorded[2].url).toBe('http://localhost:3001/api/1.0.0/users/user-1/deletePhone/phone-1');
   });
 
   it('fails every action without an authenticated user id', async () => {
@@ -179,5 +179,32 @@ describe('profile store (JUM-761)', () => {
 
     await expect(profile.load()).rejects.toThrow('No authenticated session.');
     expect(recorded).toHaveLength(0);
+  });
+
+  it('treats a 404 on delete as benign and reloads (JUM-765)', async () => {
+    expect.assertions(3);
+    const originalResponse = responseBody;
+    globalThis.fetch = mock((url: string, init: { method: string; body?: string }) => {
+      recorded.push({
+        url: String(url),
+        method: init.method,
+        body: init.body ? JSON.parse(init.body) : undefined
+      });
+      const isDelete = init.method === 'DELETE';
+      return Promise.resolve({
+        ok: !isDelete,
+        status: isDelete ? 404 : 200,
+        headers: { get: () => 'application/json' },
+        json: () => Promise.resolve(isDelete ? {} : originalResponse),
+        text: () => Promise.resolve('not found')
+      } as unknown as Response);
+    });
+
+    const profile = useProfileStore();
+    const outcome = await profile.removeEmail('email-9');
+
+    expect(outcome).toBe('already-removed');
+    expect(recorded.some((call) => call.method === 'GET')).toBe(true);
+    expect(profile.record?.id).toBe('user-1');
   });
 });

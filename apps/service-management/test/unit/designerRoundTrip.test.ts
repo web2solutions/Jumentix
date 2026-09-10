@@ -459,13 +459,15 @@ function countOperationIds(document: {
  * them, so designer-exported documents are unaffected, but the canonical
  * spec carries them and they do not cross.
  */
-const UNSUPPORTED_SOURCE_FACETS = ['example', 'default', 'minItems', 'maxItems'];
+const UNSUPPORTED_SOURCE_FACETS = ['example', 'default', 'minItems', 'maxItems', 'x-validation'];
 
 /**
  * Project a source schema's property set onto the facet surface the designer
  * model can express: the unsupported facets dropped, and array item `$ref`s
  * flattened to the `itemsType` vocabulary (the designer cannot represent a
  * value-object reference as an item type — a named remaining loss).
+ * `x-validation` (JUM-765) joins the same class: contract-level validation
+ * annotations the designer model does not carry yet.
  */
 function projectSourceProperties(properties: Record<string, Record<string, any>>) {
   return Object.fromEntries(Object.entries(properties).map(([fieldName, schema]) => {

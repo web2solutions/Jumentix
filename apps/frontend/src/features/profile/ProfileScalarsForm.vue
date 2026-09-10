@@ -1,16 +1,23 @@
 <script setup lang="ts">
 import { reactive, watch } from 'vue';
-import { CButton, CCard, CCardBody, CCardHeader, CForm, CFormInput, CFormLabel } from '@coreui/vue';
+import {
+  CAlert,
+  CButton,
+  CCard,
+  CCardBody,
+  CCardHeader,
+  CForm,
+  CFormInput,
+  CFormLabel
+} from '@coreui/vue';
 
 import { useProfileStore, type UserRecord } from '@/stores/profile';
+import { useSectionNotify } from './useSectionNotify';
 
 const props = defineProps<{ record: UserRecord }>();
-const emit = defineEmits<{
-  saved: [message: string];
-  failed: [error: unknown];
-}>();
 
 const profile = useProfileStore();
+const { errorMessage, successMessage, run } = useSectionNotify();
 
 // OAS RequestUpdateUser scalars (id goes in path + body; arrays have their
 // own sub-resource operations below in the page).
@@ -34,26 +41,23 @@ watch(
   { immediate: true }
 );
 
-const save = async () => {
-  try {
-    await profile.saveScalars({
-      firstName: form.firstName,
-      lastName: form.lastName,
-      avatar: form.avatar,
-      username: form.username,
-      organization: form.organization
-    });
-    emit('saved', 'Profile updated.');
-  } catch (error) {
-    emit('failed', error);
-  }
-};
+const save = () => run(async () => {
+  await profile.saveScalars({
+    firstName: form.firstName,
+    lastName: form.lastName,
+    avatar: form.avatar,
+    username: form.username,
+    organization: form.organization
+  });
+}, 'Perfil atualizado.');
 </script>
 
 <template>
   <CCard class="mb-4">
     <CCardHeader><strong>Account details</strong></CCardHeader>
     <CCardBody>
+      <CAlert v-if="errorMessage" color="danger" role="alert">{{ errorMessage }}</CAlert>
+      <CAlert v-if="successMessage" color="success" role="alert">{{ successMessage }}</CAlert>
       <CForm @submit.prevent="save">
         <div class="mb-3">
           <CFormLabel for="profile-firstName">First name</CFormLabel>

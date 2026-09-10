@@ -4,6 +4,7 @@ import { useColorModes } from '@coreui/vue'
 
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
 import AppHeaderDropdownAccnt from '@/components/AppHeaderDropdownAccnt.vue'
+import NetworkActivity from '@/components/NetworkActivity.vue'
 import { useSidebarStore } from '@/stores/sidebar'
 
 const headerClassNames = ref('mb-4 p-0')
@@ -101,6 +102,7 @@ onUnmounted(() => {
         <li class="nav-item py-1">
           <div class="vr h-100 mx-2 text-body text-opacity-75"></div>
         </li>
+        <NetworkActivity />
         <AppHeaderDropdownAccnt />
       </CHeaderNav>
     </CContainer>

@@ -890,7 +890,7 @@
         ]
       }
     },
-    "/users/{id}/documentDelete/{documentId}": {
+    "/users/{id}/deleteDocument/{documentId}": {
       "delete": {
         "tags": [
           "user"
@@ -1092,7 +1092,7 @@
         ]
       }
     },
-    "/users/{id}/phoneDelete/{phoneId}": {
+    "/users/{id}/deletePhone/{phoneId}": {
       "delete": {
         "tags": [
           "user"
@@ -2626,7 +2626,43 @@
             "description": "Country which emitted the document"
           },
           "data": {
-            "type": "string"
+            "type": "string",
+            "x-validation": {
+              "description": "Format rules per document type and issuing country. CPF uses the modulo-11 checksum with two verification digits; SSN uses the US AAA-GG-SSSS layout.",
+              "rules": [
+                {
+                  "when": {
+                    "type": "CPF",
+                    "countryIssue": "BR"
+                  },
+                  "pattern": "^\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}$",
+                  "mask": "000.000.000-00",
+                  "checksum": "cpf-mod11",
+                  "example": "123.456.789-09"
+                },
+                {
+                  "when": {
+                    "type": "SSN",
+                    "countryIssue": "US"
+                  },
+                  "pattern": "^\\d{3}-\\d{2}-\\d{4}$",
+                  "mask": "000-00-0000",
+                  "example": "123-45-6789"
+                },
+                {
+                  "when": {
+                    "type": "RG"
+                  },
+                  "pattern": "^[A-Za-z0-9.-]{4,20}$"
+                },
+                {
+                  "when": {
+                    "type": "passport"
+                  },
+                  "pattern": "^[A-Za-z0-9]{5,20}$"
+                }
+              ]
+            }
           }
         }
       },
@@ -2707,7 +2743,28 @@
             "type": "string"
           },
           "number": {
-            "type": "string"
+            "type": "string",
+            "x-validation": {
+              "description": "National number format per country (countryCode selects the rule).",
+              "rules": [
+                {
+                  "when": {
+                    "countryCode": "+55"
+                  },
+                  "pattern": "^\\d{4,5}-\\d{4}$",
+                  "mask": "00000-0000",
+                  "example": "99805-4033"
+                },
+                {
+                  "when": {
+                    "countryCode": "+1"
+                  },
+                  "pattern": "^\\d{3}-\\d{4}$",
+                  "mask": "000-0000",
+                  "example": "555-0100"
+                }
+              ]
+            }
           },
           "isPrimary": {
             "type": "boolean",

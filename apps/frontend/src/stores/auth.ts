@@ -1,7 +1,7 @@
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
 
-import { createApiClient } from '@/contracts/apiClient';
+import { getSharedApiClient } from '@/contracts/apiClient';
 
 const STORAGE_KEY = 'jumentix-frontend-auth';
 
@@ -102,7 +102,7 @@ export const useAuthStore = defineStore('auth', () => {
       throw new Error('Password must be at least 8 characters.');
     }
 
-    await createApiClient().request({
+    await getSharedApiClient().request({
       operationId: 'register',
       body: {
         firstName: input.firstName.trim(),
@@ -125,7 +125,7 @@ export const useAuthStore = defineStore('auth', () => {
       throw new Error('Password must be at least 2 characters.');
     }
 
-    const response = await createApiClient().request<AuthorizationHeader>({
+    const response = await getSharedApiClient().request<AuthorizationHeader>({
       operationId: 'login',
       body: {
         username: input.username.trim(),
@@ -143,7 +143,7 @@ export const useAuthStore = defineStore('auth', () => {
   /** POST /auth/logout — bearer-secured; OAS RequestLogout: username. */
   const logout = async (): Promise<void> => {
     if (token.value) {
-      await createApiClient().request({
+      await getSharedApiClient().request({
         operationId: 'logout',
         body: { username: username.value },
         headers: { Authorization: token.value }

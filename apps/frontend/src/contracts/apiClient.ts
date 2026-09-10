@@ -27,3 +27,22 @@ export const createApiClient = (baseUrl: string = defaultBaseUrl()): RestApiClie
   const injectBundledSpec = () => ({ openApi: openApi as Record<string, unknown> });
   return new RestApiClient(baseUrl, injectBundledSpec);
 };
+
+/**
+ * Shared client (JUM-765): every store talks to the server through this one
+ * instance, so the NetworkActivity widget sees all UI↔server traffic through
+ * a single subscription to the SDK's request lifecycle events.
+ */
+let sharedClient: RestApiClient | undefined;
+
+export const getSharedApiClient = (): RestApiClient => {
+  if (!sharedClient) {
+    sharedClient = createApiClient();
+  }
+  return sharedClient;
+};
+
+/** Test hook: resets the singleton so suites do not leak subscriptions. */
+export const resetSharedApiClient = (): void => {
+  sharedClient = undefined;
+};
