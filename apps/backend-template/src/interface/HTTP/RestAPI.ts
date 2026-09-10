@@ -400,6 +400,13 @@ export class RestAPI<T> {
 
     for (const user of users) {
       // eslint-disable-next-line no-await-in-loop
+      const existing = await userUseCases.getOneById(user.id);
+      if (existing.result) {
+        seeded.push(existing.result);
+        // eslint-disable-next-line no-continue
+        continue;
+      }
+      // eslint-disable-next-line no-await-in-loop
       const newUser = await userUseCases.create(user);
       if (newUser.error) throw new Error((newUser.error as Error).message);
       if (!newUser.result) throw new Error('User seed failed');
