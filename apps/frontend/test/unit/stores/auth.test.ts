@@ -3,7 +3,7 @@ import {
 } from 'bun:test';
 import { createPinia, setActivePinia } from 'pinia';
 
-import { useAuthStore } from '@/stores/auth';
+import { useAuthStore, decodeJwtUserId } from '@/stores/auth';
 
 const calls: string[] = [];
 let responseStatus = 200;
@@ -100,5 +100,27 @@ describe('auth store (JUM-760)', () => {
 
     expect(auth.userId).toBe('user-42');
     expect(auth.token).toBe(`Bearer header.${payload}.signature`);
+  });
+
+  it('returns empty id for malformed tokens (JUM-762)', () => {
+    expect.assertions(3);
+    expect(decodeJwtUserId('Bearer deadbeef.signature')).toBe('');
+    expect(decodeJwtUserId('')).toBe('');
+    expect(decodeJwtUserId('a.b.c')).toBe('');
+  });
+
+  it('expire clears the session without any HTTP call (JUM-762)', () => {
+    expect.assertions(4);
+    const auth = useAuthStore();
+    auth.token = 'Bearer session-token';
+    auth.username = 'me@mydomain.com';
+    auth.userId = 'user-42';
+
+    auth.expire();
+
+    expect(auth.token).toBe('');
+    expect(auth.username).toBe('');
+    expect(auth.userId).toBe('');
+    expect(calls).toHaveLength(0);
   });
 });
