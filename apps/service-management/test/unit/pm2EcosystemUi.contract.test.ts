@@ -66,9 +66,13 @@ describe('service management PM2 preview UI contract (JUM-480)', () => {
     expect(monitoringApp).toContain(`type: ${quote}subscribe${quote}`);
     expect(monitoringApp).toContain(`type: ${quote}action${quote}`);
     expect(monitoringApp).toContain('diskReadBytes');
+    expect(monitoringApp).toContain('process-help-btn');
+    expect(monitoringApp).toContain('describeProcessHelp');
     expect(server).toContain('/api/runtime/pm2-metrics');
     expect(server).toContain('createPm2WsHub');
     expect(server).toContain('attachProcessDiskIo');
+    expect(server).not.toContain('darwinProcessDiskIo.py');
+    expect(server).toContain('Already registered');
     expect(wsHub).toContain('/api/runtime/pm2-ws');
     expect(wsHub).toContain('createPm2WsHub');
     const charts = readDesignerSource('src/ui/monitoringCharts.js');
@@ -77,6 +81,14 @@ describe('service management PM2 preview UI contract (JUM-480)', () => {
     expect(server).toContain(`|| ${quote}pm2${quote}`);
     expect(server).toContain('pm2.list');
     expect(server).toContain(`source: ${quote}pm2${quote}`);
+    const helpCatalog = readDesignerSource('src/ui/processHelpCatalog.js');
+    expect(helpCatalog).toContain('describeProcessHelp');
+    expect(helpCatalog).toContain('jumentix-dev-restapi');
+    const diskIo = readDesignerSource('src/runtime/processDiskIo.js');
+    expect(diskIo).not.toContain('python3');
+    expect(diskIo).toContain('darwinProcessDiskIo');
+    const scrape = readDesignerSource('src/runtime/asyncContextScrape.js');
+    expect(scrape).toContain('ASYNC_CONTEXT_ROUTE_MISSING');
   });
 
   it('offers a preview environment per ecosystem the repository defines', () => {

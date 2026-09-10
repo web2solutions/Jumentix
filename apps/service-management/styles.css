@@ -2107,6 +2107,51 @@ body {
   cursor: not-allowed;
 }
 
+.process-name-cell {
+  position: relative;
+  vertical-align: top;
+}
+
+.process-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.process-help-btn {
+  flex: 0 0 auto;
+  width: 1.35rem;
+  height: 1.35rem;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid #2c3440;
+  background: transparent;
+  color: inherit;
+  font-size: 0.75rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.process-help-btn[aria-expanded="true"] {
+  border-color: #38bdf8;
+}
+
+.process-help-popover {
+  position: absolute;
+  z-index: 5;
+  left: 0;
+  top: calc(100% + 4px);
+  max-width: min(28rem, 70vw);
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #2c3440;
+  border-radius: 6px;
+  background: #0f172a;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  font-size: 0.82rem;
+  line-height: 1.35;
+  white-space: normal;
+}
+
 .linkish {
   min-width: 28px;
   font-weight: 700;

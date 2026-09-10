@@ -264,7 +264,7 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
        `[REDACTED]`). Scrape failures MUST NOT fail the whole metrics response.
      - **Per-process disk I/O.** Each process SHOULD carry `diskIo` collected from
        the OS using the process `pid`: Linux `/proc/<pid>/io`; Darwin
-       `proc_pid_rusage` via the in-repo Python helper; Windows PowerShell
+       `proc_pid_rusage` via in-process Bun FFI (`darwinProcessDiskIo.js`); Windows PowerShell
        `IOReadBytes`/`IOWriteBytes`. Failures and unsupported platforms MUST use
        honest envelopes (`supported: false` or `error`/`code`) — never invent zeros.
      - **Response shape.** Success is `{ source: "pm2", collectedAt,

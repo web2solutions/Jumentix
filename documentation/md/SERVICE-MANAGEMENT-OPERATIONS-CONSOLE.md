@@ -231,8 +231,12 @@ The **Monitoring** tab is runtime telemetry, not another static preview.
 - **HTTP one-shot:** `GET /api/runtime/pm2-metrics` (Contract 1c) remains for
   tests and tooling. Both transports collect through the PM2 Node API, compare
   live names with the selected ecosystem, include host metrics, per-process
-  disk I/O (Linux/Darwin/Windows), and optional `async-context-metrics` scrapes
-  (counters + redacted ALS Map `recentStores`).
+  disk I/O (Linux; Darwin via in-process Bun FFI / `proc_pid_rusage`; Windows),
+  and optional `async-context-metrics` scrapes (counters + redacted ALS Map
+  `recentStores`). The scrape targets `GET http://127.0.0.1:<JUMENTIX_HTTP_PORT>/async-context-metrics`
+  on each process that exposes that port — restart RestAPI from a checkout that
+  includes the route (JUM-767+) if Monitoring reports `ASYNC_CONTEXT_ROUTE_MISSING`.
+  Each process row exposes a help control describing the app's role.
 
 If PM2 cannot be loaded, connected or listed, the HTTP endpoint fails with the
 explicit PM2 metrics envelope and the WebSocket emits an `error` / failed

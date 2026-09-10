@@ -114,6 +114,7 @@ const SHELL_ASSETS = [
   './src/ui/inspectors.js',
   './src/ui/monitoringApp.js',
   './src/ui/monitoringCharts.js',
+  './src/ui/processHelpCatalog.js',
   './src/ui/sidebarGroups.js',
   './src/ui/tabs.js',
   // The vendored Cana browser bundle (JUM-484) — the designer's sole store

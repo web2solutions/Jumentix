@@ -47,9 +47,19 @@ function fetchAsyncContextMetrics(port, options = {}) {
             return;
           }
         }
+        const status = response.statusCode || 0;
+        if (status === 404) {
+          resolve({
+            error: 'Route /async-context-metrics missing on this RestAPI — restart the process from a checkout that includes the route (JUM-767+).',
+            code: 'ASYNC_CONTEXT_ROUTE_MISSING',
+            status
+          });
+          return;
+        }
         resolve({
-          error: `HTTP ${response.statusCode || 0}`,
-          code: 'ASYNC_CONTEXT_HTTP_ERROR'
+          error: `HTTP ${status}`,
+          code: 'ASYNC_CONTEXT_HTTP_ERROR',
+          status
         });
       });
     });

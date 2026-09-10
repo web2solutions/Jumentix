@@ -75,26 +75,33 @@ function ecosystemSource(apps: Array<{ name: string; marker: string }>) {
   return `module.exports = {\n  apps: [\n${entries}\n  ]\n};\n`;
 }
 
-function pm2ModuleSource(processes: unknown[]) {
-  return `const state = {
+function pm2ModuleSource(processes: unknown[], dumpPath: string) {
+  return `const fs = require('fs');
+const state = {
   processes: ${JSON.stringify(processes)},
   actions: []
 };
+function record(entry) {
+  state.actions.push(entry);
+  try {
+    fs.writeFileSync(${JSON.stringify(dumpPath)}, JSON.stringify(state.actions), 'utf8');
+  } catch (_error) { /* ignore */ }
+}
 module.exports = {
   connect(callback) { callback(null); },
   list(callback) { callback(null, state.processes); },
   start(target, optsOrCb, maybeCb) {
     const opts = typeof optsOrCb === 'function' ? undefined : optsOrCb;
     const callback = typeof optsOrCb === 'function' ? optsOrCb : maybeCb;
-    state.actions.push({ method: 'start', target, opts: opts || null });
+    record({ method: 'start', target, opts: opts || null });
     if (typeof callback === 'function') callback(null);
   },
   stop(target, callback) {
-    state.actions.push({ method: 'stop', target });
+    record({ method: 'stop', target });
     if (typeof callback === 'function') callback(null);
   },
   restart(target, callback) {
-    state.actions.push({ method: 'restart', target });
+    record({ method: 'restart', target });
     if (typeof callback === 'function') callback(null);
   },
   disconnect() {},
@@ -121,6 +128,7 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
       // acceptance criterion, asserted below.
     });
     const pm2ModulePath = path.join(pm2Dir, 'pm2-fixture.cjs');
+    const pm2ActionsDump = path.join(pm2Dir, 'pm2-actions.json');
     fs.writeFileSync(pm2ModulePath, pm2ModuleSource([
       {
         name: 'jumentix-dev-restapi',
@@ -139,12 +147,13 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
           axm_monitor: { latency: { value: '12ms' } }
         }
       }
-    ]), 'utf8');
+    ], pm2ActionsDump), 'utf8');
     server = await startServer(configDir, {
       JUMENTIX_SERVICE_MANAGEMENT_PM2_DIR: pm2Dir,
       JUMENTIX_SERVICE_MANAGEMENT_PM2_MODULE: pm2ModulePath
     });
     await waitForServer(server.port);
+    (globalThis as any).__pm2ActionsDump = pm2ActionsDump;
   });
 
   afterAll(() => {
@@ -265,6 +274,65 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
     expect(result.action.type).toBe('action-result');
     expect(result.action.ok).toBe(true);
     expect(result.action.action).toBe('restart');
+  });
+
+  it('starts a stopped process by name instead of ecosystem --only', async () => {
+    expect.hasAssertions();
+    const dumpPath = (globalThis as any).__pm2ActionsDump as string;
+    if (fs.existsSync(dumpPath)) fs.unlinkSync(dumpPath);
+    const result = await new Promise<{ action: any }>((resolve, reject) => {
+      const socket = new WebSocket(`ws://127.0.0.1:${server!.port}/api/runtime/pm2-ws`);
+      const timer = setTimeout(() => {
+        socket.close();
+        reject(new Error('WebSocket start-after-stop timeout'));
+      }, 8000);
+      let subscribed = false;
+      socket.addEventListener('open', () => {
+        socket.send(JSON.stringify({
+          type: 'subscribe',
+          environment: 'dev',
+          intervalMs: 2000
+        }));
+      });
+      socket.addEventListener('message', (event) => {
+        const message = JSON.parse(String((event as MessageEvent).data));
+        if (message.type === 'metrics' && !subscribed) {
+          subscribed = true;
+          socket.send(JSON.stringify({
+            type: 'action',
+            action: 'start',
+            scope: 'process',
+            name: 'jumentix-dev-restapi',
+            pmId: 1
+          }));
+          return;
+        }
+        if (message.type === 'action-result') {
+          clearTimeout(timer);
+          socket.close();
+          resolve({ action: message });
+        }
+      });
+      socket.addEventListener('error', () => {
+        clearTimeout(timer);
+        reject(new Error('WebSocket connection error'));
+      });
+    });
+    expect(result.action.ok).toBe(true);
+    expect(result.action.action).toBe('start');
+    const actions = JSON.parse(fs.readFileSync(dumpPath, 'utf8')) as Array<{
+      method: string;
+      target: string;
+      opts: unknown;
+    }>;
+    const startCalls = actions.filter((entry) => entry.method === 'start');
+    expect(startCalls.length).toBeGreaterThan(0);
+    expect(startCalls.some((entry) => (
+      entry.target === 'jumentix-dev-restapi' && entry.opts === null
+    ))).toBe(true);
+    expect(startCalls.every((entry) => (
+      typeof entry.target === 'string' && !String(entry.target).includes('ecosystem.')
+    ))).toBe(true);
   });
 
   it('reflects an ecosystem edit with no code change and no server restart', async () => {
