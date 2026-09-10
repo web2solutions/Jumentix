@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import {
   CAlert,
@@ -10,27 +10,34 @@ import {
   CCol,
   CContainer,
   CForm,
-  CFormInput,
-  CInputGroup,
-  CInputGroupText,
   CRow
 } from '@coreui/vue';
 
+import OasFormField from '@/components/OasFormField.vue';
+import { fieldDescriptors } from '@/contracts/formSchema';
+import { collectBody, validateAll } from '@/contracts/oasForm';
 import { useAuthStore } from '@/stores/auth';
 
 const router = useRouter();
 const auth = useAuthStore();
 
-const username = ref('');
-const password = ref('');
+// The form is built from the OAS RequestLogin schema at runtime (JUM-766).
+const descriptors = fieldDescriptors('RequestLogin');
+const values = reactive<Record<string, unknown>>({});
+const fieldErrors = reactive<Record<string, string | null>>({});
 const errorMessage = ref('');
 const submitting = ref(false);
 
 const submit = async () => {
   errorMessage.value = '';
+  const invalid = validateAll(descriptors, values);
+  if (invalid) {
+    errorMessage.value = invalid;
+    return;
+  }
   submitting.value = true;
   try {
-    await auth.login({ username: username.value, password: password.value });
+    await auth.login(collectBody(descriptors, values));
     await router.push('/dashboard');
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : String(error);
@@ -54,29 +61,13 @@ const submit = async () => {
                   <CAlert v-if="errorMessage" color="danger" role="alert">
                     {{ errorMessage }}
                   </CAlert>
-                  <CInputGroup class="mb-3">
-                    <CInputGroupText>
-                      <CIcon icon="cil-user" />
-                    </CInputGroupText>
-                    <CFormInput
-                      v-model="username"
-                      placeholder="Username"
-                      autocomplete="username"
-                      required
-                    />
-                  </CInputGroup>
-                  <CInputGroup class="mb-4">
-                    <CInputGroupText>
-                      <CIcon icon="cil-lock-locked" />
-                    </CInputGroupText>
-                    <CFormInput
-                      v-model="password"
-                      type="password"
-                      placeholder="Password"
-                      autocomplete="current-password"
-                      required
-                    />
-                  </CInputGroup>
+                  <OasFormField
+                    v-for="descriptor in descriptors"
+                    :key="descriptor.name"
+                    v-model="values[descriptor.name]"
+                    :descriptor="descriptor"
+                    :invalid="fieldErrors[descriptor.name]"
+                  />
                   <CRow>
                     <CCol :xs="6">
                       <CButton color="primary" class="px-4" type="submit" :disabled="submitting">

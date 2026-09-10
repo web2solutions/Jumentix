@@ -17,21 +17,25 @@ interface PersistedAuth {
 
 /**
  * The login response carries only the Authorization header, but the JWT
- * payload holds the user id (and username/firstName). Decoded client-side as
- * an identity claim — never verified, never trusted for authorization.
+ * payload holds the user id and username. Decoded client-side as an identity
+ * claim — never verified, never trusted for authorization.
  */
-export const decodeJwtUserId = (token: string): string => {
+const decodeJwtPayload = (token: string): { id?: string; username?: string } => {
   const payload = token.split('.')[1];
   if (!payload) {
-    return '';
+    return {};
   }
   try {
-    const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/'))) as { id?: string };
-    return decoded.id ?? '';
+    return JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/'))) as {
+      id?: string;
+      username?: string;
+    };
   } catch {
-    return '';
+    return {};
   }
 };
+
+export const decodeJwtUserId = (token: string): string => decodeJwtPayload(token).id ?? '';
 
 /**
  * Sessions persisted before JUM-761 carry no userId. Recover it from the
@@ -83,60 +87,28 @@ export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = () => token.value.length > 0;
 
   /**
-   * POST /auth/register — OAS RequestRegister: firstName, username,
-   * password (minLength 8), optional organization uuid.
+   * POST /auth/register. The body is the OAS RequestRegister collected by the
+   * schema-driven form — field names come from the spec, not from this file
+   * (JUM-766).
    */
-  const register = async (input: {
-    firstName: string;
-    username: string;
-    password: string;
-    organization?: string;
-  }): Promise<void> => {
-    if (!input.firstName.trim()) {
-      throw new Error('First name is required.');
-    }
-    if (!input.username.trim()) {
-      throw new Error('Username is required.');
-    }
-    if (input.password.length < 8) {
-      throw new Error('Password must be at least 8 characters.');
-    }
-
-    await getSharedApiClient().request({
-      operationId: 'register',
-      body: {
-        firstName: input.firstName.trim(),
-        username: input.username.trim(),
-        password: input.password,
-        ...(input.organization ? { organization: input.organization } : {})
-      }
-    });
+  const register = async (body: Record<string, unknown>): Promise<void> => {
+    await getSharedApiClient().request({ operationId: 'register', body });
   };
 
   /**
-   * POST /auth/login — OAS RequestLogin: username, password (minLength 2),
-   * schemaType default Bearer. Response: { Authorization: 'Bearer …' }.
+   * POST /auth/login. Response: { Authorization: 'Bearer …' } — session
+   * identity (id + username) is read from the JWT payload.
    */
-  const login = async (input: { username: string; password: string }): Promise<void> => {
-    if (!input.username.trim()) {
-      throw new Error('Username is required.');
-    }
-    if (input.password.length < 2) {
-      throw new Error('Password must be at least 2 characters.');
-    }
-
+  const login = async (body: Record<string, unknown>): Promise<void> => {
     const response = await getSharedApiClient().request<AuthorizationHeader>({
       operationId: 'login',
-      body: {
-        username: input.username.trim(),
-        password: input.password,
-        schemaType: 'Bearer'
-      }
+      body
     });
 
+    const claims = decodeJwtPayload(response.Authorization);
     token.value = response.Authorization;
-    username.value = input.username.trim();
-    userId.value = decodeJwtUserId(response.Authorization);
+    username.value = claims.username ?? String(body.username ?? '');
+    userId.value = claims.id ?? '';
     persist({ token: token.value, username: username.value, userId: userId.value });
   };
 

@@ -1,32 +1,34 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import {
-  CAlert,
-  CButton,
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CForm,
-  CFormInput,
-  CFormLabel
-} from '@coreui/vue';
+import { reactive, ref } from 'vue';
+import { CAlert, CButton, CCard, CCardBody, CCardHeader, CForm } from '@coreui/vue';
 
+import OasFormField from '@/components/OasFormField.vue';
+import { fieldDescriptors } from '@/contracts/formSchema';
+import { collectBody, validateAll } from '@/contracts/oasForm';
 import { useProfileStore } from '@/stores/profile';
 import { useSectionNotify } from './useSectionNotify';
 
 const profile = useProfileStore();
 const { errorMessage, successMessage, run } = useSectionNotify();
-const password = ref('');
+
+// OAS RequestUpdatePassword drives the field (JUM-766).
+const descriptors = fieldDescriptors('RequestUpdatePassword');
+const form = reactive<Record<string, unknown>>({});
 const repeat = ref('');
 
 const save = async () => {
-  if (password.value !== repeat.value) {
+  const invalid = validateAll(descriptors, form);
+  if (invalid) {
+    errorMessage.value = invalid;
+    return;
+  }
+  if (form.password !== repeat.value) {
     errorMessage.value = 'As senhas não conferem.';
     return;
   }
   await run(async () => {
-    await profile.changePassword(password.value);
-    password.value = '';
+    await profile.changePassword(String(collectBody(descriptors, form).password));
+    form.password = '';
     repeat.value = '';
   }, 'Senha atualizada.');
 };
@@ -39,26 +41,21 @@ const save = async () => {
       <CAlert v-if="errorMessage" color="danger" role="alert">{{ errorMessage }}</CAlert>
       <CAlert v-if="successMessage" color="success" role="alert">{{ successMessage }}</CAlert>
       <CForm @submit.prevent="save">
+        <OasFormField
+          v-for="descriptor in descriptors"
+          :key="descriptor.name"
+          v-model="form[descriptor.name]"
+          :descriptor="descriptor"
+        />
         <div class="mb-3">
-          <CFormLabel for="profile-password">New password</CFormLabel>
-          <CFormInput
-            id="profile-password"
-            v-model="password"
-            type="password"
-            minlength="8"
-            required
-            autocomplete="new-password"
-          />
-        </div>
-        <div class="mb-3">
-          <CFormLabel for="profile-password-repeat">Repeat new password</CFormLabel>
-          <CFormInput
+          <label class="form-label" for="profile-password-repeat">Repeat new password</label>
+          <input
             id="profile-password-repeat"
             v-model="repeat"
             type="password"
-            minlength="8"
-            required
+            class="form-control"
             autocomplete="new-password"
+            required
           />
         </div>
         <CButton color="warning" type="submit">Update password</CButton>
