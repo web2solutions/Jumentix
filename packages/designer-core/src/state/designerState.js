@@ -225,6 +225,73 @@ export function normalizeCodeWorkspaceInput(input) {
   };
 }
 
+const MONITORING_HISTORY_CAP = 60;
+const MONITORING_HISTORY_PROCESS_LIMIT = 40;
+const MONITORING_ENVIRONMENTS = new Set(['dev', 'staging', 'production']);
+
+function clampNumberSeries(input, cap = MONITORING_HISTORY_CAP) {
+  const source = Array.isArray(input) ? input : [];
+  return source
+    .map((value) => Number(value))
+    .filter((value) => Number.isFinite(value))
+    .slice(-cap);
+}
+
+export function normalizeMonitoringHistoryInput(input) {
+  const source = input && typeof input === 'object' ? input : {};
+  const environment = MONITORING_ENVIRONMENTS.has(String(source.environment || ''))
+    ? String(source.environment)
+    : 'dev';
+  const samplesInput = Array.isArray(source.samples) ? source.samples : [];
+  const samples = samplesInput.slice(-MONITORING_HISTORY_CAP).map((sample) => ({
+    t: String(sample?.t || ''),
+    hostCpu: sample?.hostCpu == null || !Number.isFinite(Number(sample.hostCpu))
+      ? null
+      : Number(sample.hostCpu),
+    hostMemUsedPercent: sample?.hostMemUsedPercent == null
+      || !Number.isFinite(Number(sample.hostMemUsedPercent))
+      ? null
+      : Number(sample.hostMemUsedPercent),
+    cpuTotal: Number(sample?.cpuTotal) || 0,
+    memTotal: Number(sample?.memTotal) || 0,
+    onlineRatio: Number(sample?.onlineRatio) || 0,
+    asyncActiveSum: Number(sample?.asyncActiveSum) || 0
+  }));
+  const processes = {};
+  const processSource = source.processes && typeof source.processes === 'object'
+    ? source.processes
+    : {};
+  Object.entries(processSource).slice(0, MONITORING_HISTORY_PROCESS_LIMIT).forEach(([key, bucket]) => {
+    const name = String(key || '').trim();
+    if (!name) return;
+    processes[name] = {
+      cpu: clampNumberSeries(bucket?.cpu),
+      mem: clampNumberSeries(bucket?.mem),
+      restarts: clampNumberSeries(bucket?.restarts),
+      asyncActive: clampNumberSeries(bucket?.asyncActive),
+      diskReadBytes: clampNumberSeries(bucket?.diskReadBytes),
+      diskWriteBytes: clampNumberSeries(bucket?.diskWriteBytes)
+    };
+  });
+  return {
+    version: 1,
+    updatedAt: String(source.updatedAt || ''),
+    environment,
+    samples,
+    processes
+  };
+}
+
+export function createEmptyMonitoringHistory() {
+  return {
+    version: 1,
+    updatedAt: '',
+    environment: 'dev',
+    samples: [],
+    processes: {}
+  };
+}
+
 /**
  * Legacy deploy-target `type` values (the pre-JUM-481 UI select) that differ
  * from the Requirement 059 `deployTarget` vocabulary. Values already spelled
@@ -535,6 +602,7 @@ export function normalizeStatePayload(parsed) {
   const serviceConfiguration = normalizeServiceConfigurationInput(parsed?.serviceConfiguration);
   const runtimeEnvironment = normalizeRuntimeEnvironmentInput(parsed?.runtimeEnvironment);
   const codeWorkspace = normalizeCodeWorkspaceInput(parsed?.codeWorkspace);
+  const monitoringHistory = normalizeMonitoringHistoryInput(parsed?.monitoringHistory);
   const view = {
     zoom: clampZoom(parsed?.view?.zoom || 1),
     compactEntities: Boolean(parsed?.view?.compactEntities),
@@ -567,6 +635,7 @@ export function normalizeStatePayload(parsed) {
     serviceConfiguration,
     runtimeEnvironment,
     codeWorkspace,
+    monitoringHistory,
     deployments,
     view
   };
@@ -635,6 +704,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
       files: {},
       activePath: ''
     },
+    monitoringHistory: createEmptyMonitoringHistory(),
     deployments: [],
     view: createDefaultView()
   };
@@ -658,6 +728,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
       serviceConfiguration: state.serviceConfiguration,
       runtimeEnvironment: state.runtimeEnvironment,
       codeWorkspace: state.codeWorkspace,
+      monitoringHistory: state.monitoringHistory,
       deployments: state.deployments,
       view: state.view
     }));
@@ -682,6 +753,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
       ...(snapshot.runtimeEnvironment || {})
     };
     state.codeWorkspace = normalizeCodeWorkspaceInput(snapshot.codeWorkspace);
+    state.monitoringHistory = normalizeMonitoringHistoryInput(snapshot.monitoringHistory);
     state.deployments = Array.isArray(snapshot.deployments)
       ? snapshot.deployments.map(normalizeDeploymentInput)
       : [];
@@ -728,6 +800,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
       serviceConfiguration: state.serviceConfiguration,
       runtimeEnvironment: state.runtimeEnvironment,
       codeWorkspace: state.codeWorkspace,
+      monitoringHistory: state.monitoringHistory,
       deployments: state.deployments,
       view: state.view
     };
@@ -825,6 +898,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
       state.selectedRelationshipId = parsed.selectedRelationshipId;
       state.idCounter = parsed.idCounter;
       state.codeWorkspace = parsed.codeWorkspace;
+      state.monitoringHistory = parsed.monitoringHistory;
       state.deployments = parsed.deployments;
       state.view = parsed.view;
       recomputeIdCounter();

@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-09-10 fix(contracts): complete oas-driven form validation (JUM-768) - Eduardo Almeida
 - 2026-09-10 feat(frontend): build forms from the OAS schema at runtime (JUM-766) (#307) - Eduardo A.
 - 2026-09-10 feat(frontend): align OAS delete paths, section alerts, masks and network widget (JUM-765) (#306) - Eduardo A.
 - 2026-09-09 chore(backend-template): seed admin eduardo with requested credentials (JUM-764) (#305) - Eduardo A.

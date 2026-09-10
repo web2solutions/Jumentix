@@ -101,6 +101,7 @@ import { createContextMenu } from './src/ui/contextMenu.js';
 import { drawModel } from './src/ui/canvasImage.js';
 import { createCanvas } from './src/ui/canvas.js';
 import { createInspectors } from './src/ui/inspectors.js';
+import { createMonitoringController } from './src/ui/monitoringApp.js';
 
 const CANVAS_ORIGIN_X = 3200;
 const CANVAS_ORIGIN_Y = 2200;
@@ -396,22 +397,38 @@ const dom = {
   deployFieldHint: document.getElementById('deploy-field-hint'),
   deployTargetList: document.getElementById('deploy-target-list'),
   pm2MetricsEnvironmentSelect: document.getElementById('pm2-metrics-environment-select'),
-  pm2MetricsRefreshBtn: document.getElementById('pm2-metrics-refresh-btn'),
-  pm2MetricsAutoRefreshCheck: document.getElementById('pm2-metrics-auto-refresh-check'),
+  pm2IntervalSelect: document.getElementById('pm2-interval-select'),
+  pm2WsStatus: document.getElementById('pm2-ws-status'),
   pm2MetricsStatus: document.getElementById('pm2-metrics-status'),
-  pm2HealthDot: document.getElementById('pm2-health-dot'),
+  pm2HealthGauge: document.getElementById('pm2-health-gauge'),
   pm2HealthLabel: document.getElementById('pm2-health-label'),
   pm2MetricsUpdatedAt: document.getElementById('pm2-metrics-updated-at'),
-  pm2MetricProcessCount: document.getElementById('pm2-metric-process-count'),
-  pm2MetricProcessFootnote: document.getElementById('pm2-metric-process-footnote'),
-  pm2MetricOnlineCount: document.getElementById('pm2-metric-online-count'),
-  pm2OnlineBar: document.getElementById('pm2-online-bar'),
-  pm2MetricCpu: document.getElementById('pm2-metric-cpu'),
-  pm2CpuBar: document.getElementById('pm2-cpu-bar'),
-  pm2MetricMemory: document.getElementById('pm2-metric-memory'),
-  pm2MetricMemoryFootnote: document.getElementById('pm2-metric-memory-footnote'),
-  pm2MetricRestarts: document.getElementById('pm2-metric-restarts'),
-  pm2MetricRestartsFootnote: document.getElementById('pm2-metric-restarts-footnote'),
+  hostCpuGauge: document.getElementById('host-cpu-gauge'),
+  hostCpuSpark: document.getElementById('host-cpu-spark'),
+  hostCpuCores: document.getElementById('host-cpu-cores'),
+  hostCpuMeta: document.getElementById('host-cpu-meta'),
+  hostMemGauge: document.getElementById('host-mem-gauge'),
+  hostMemSpark: document.getElementById('host-mem-spark'),
+  hostMemBreakdown: document.getElementById('host-mem-breakdown'),
+  hostMemMeta: document.getElementById('host-mem-meta'),
+  hostDiskBars: document.getElementById('host-disk-bars'),
+  hostDiskMeta: document.getElementById('host-disk-meta'),
+  procCpuSpark: document.getElementById('proc-cpu-spark'),
+  procMemSpark: document.getElementById('proc-mem-spark'),
+  asyncActiveSum: document.getElementById('async-active-sum'),
+  asyncActiveSpark: document.getElementById('async-active-spark'),
+  stackCpuCanvas: document.getElementById('stack-cpu-canvas'),
+  stackMemCanvas: document.getElementById('stack-mem-canvas'),
+  statusBarsCanvas: document.getElementById('status-bars-canvas'),
+  pm2FilterQuery: document.getElementById('pm2-filter-query'),
+  pm2FilterStatus: document.getElementById('pm2-filter-status'),
+  pm2FilterNamespace: document.getElementById('pm2-filter-namespace'),
+  pm2FilterExpectedOnly: document.getElementById('pm2-filter-expected-only'),
+  pm2FilterMissingOnly: document.getElementById('pm2-filter-missing-only'),
+  pm2NamespaceOpsSelect: document.getElementById('pm2-namespace-ops-select'),
+  pm2NsStartBtn: document.getElementById('pm2-ns-start-btn'),
+  pm2NsStopBtn: document.getElementById('pm2-ns-stop-btn'),
+  pm2NsRestartBtn: document.getElementById('pm2-ns-restart-btn'),
   pm2ProcessDensityLabel: document.getElementById('pm2-process-density-label'),
   pm2MetricsProcessList: document.getElementById('pm2-metrics-process-list'),
   pm2MetricsEcosystemSummary: document.getElementById('pm2-metrics-ecosystem-summary'),
@@ -447,7 +464,37 @@ const dom = {
 // objects plus callbacks into this file — the explicit interface the
 // monolith's closure used to provide. Everything they return is called
 // below exactly where the monolith called its own functions.
-const tabs = createTabs({ dom, state, saveState });
+const monitoringController = createMonitoringController(dom, {
+  getHistory: () => state.monitoringHistory,
+  setHistory: (next) => {
+    state.monitoringHistory = next;
+  },
+  persist: () => saveState()
+});
+const tabs = createTabs({
+  dom,
+  state,
+  saveState,
+  beforeTabChange(previous, tab) {
+    if (previous === 'code-workspace' && tab !== 'code-workspace') {
+      flushActiveCodeWorkspaceEditor();
+    }
+    if (previous === 'monitoring' && tab !== 'monitoring') {
+      monitoringController.stop();
+    }
+  },
+  afterTabChange(_previous, tab) {
+    if (tab !== 'monitoring') return;
+    const environment = dom.pm2MetricsEnvironmentSelect?.value || 'dev';
+    if (dom.pm2MonitoringCommand) {
+      dom.pm2MonitoringCommand.textContent = `pm2 monit --namespace ${environment}`;
+    }
+    if (dom.pm2ListCommand) {
+      dom.pm2ListCommand.textContent = `pm2 list --namespace ${environment}`;
+    }
+    monitoringController.start();
+  }
+});
 const sidebarGroups = createSidebarGroups({ documentRef: document, state, saveState });
 const contextMenu = createContextMenu({ documentRef: document });
 const canvas = createCanvas({
@@ -481,8 +528,6 @@ let codeWorkspaceMonacoLoadPromise = null;
 let suppressCodeWorkspaceEditorChange = false;
 let codeWorkspaceMonacoConfigured = false;
 const collapsedCodeWorkspaceFolders = new Set();
-let pm2MetricsSnapshot = null;
-let pm2MetricsTimer = null;
 const inspectors = createInspectors({
   dom,
   state,
@@ -815,217 +860,6 @@ function failPm2EcosystemPreview(environment, error) {
   pm2EcosystemPreview = { environment: String(environment || 'dev'), error: message };
   inspectors.renderPm2EcosystemPreview();
   showPm2PreviewStatus(`PM2 ecosystem "${String(environment || 'dev')}": ${message}`);
-}
-
-function showPm2MetricsStatus(message, severity = 'info') {
-  if (!dom.pm2MetricsStatus) return;
-  dom.pm2MetricsStatus.textContent = String(message);
-  dom.pm2MetricsStatus.className = `hint status-line status-${severity}`;
-}
-
-function formatBytes(bytes) {
-  const value = Number(bytes || 0);
-  if (value >= 1024 * 1024 * 1024) return `${(value / (1024 * 1024 * 1024)).toFixed(1)} GB`;
-  if (value >= 1024 * 1024) return `${(value / (1024 * 1024)).toFixed(1)} MB`;
-  if (value >= 1024) return `${(value / 1024).toFixed(1)} KB`;
-  return `${value} B`;
-}
-
-function formatDuration(ms) {
-  const seconds = Math.floor(Number(ms || 0) / 1000);
-  if (seconds <= 0) return '-';
-  const days = Math.floor(seconds / 86400);
-  const hours = Math.floor((seconds % 86400) / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  if (days > 0) return `${days}d ${hours}h`;
-  if (hours > 0) return `${hours}h ${minutes}m`;
-  return `${minutes}m`;
-}
-
-function percentWidth(value, max = 100) {
-  const number = Number(value || 0);
-  if (!Number.isFinite(number) || max <= 0) return '0%';
-  return `${Math.max(0, Math.min(100, (number / max) * 100)).toFixed(1)}%`;
-}
-
-function setMetricBar(bar, value, max = 100) {
-  if (!bar) return;
-  bar.style.width = percentWidth(value, max);
-}
-
-function formatCollectedAt(value) {
-  if (!value) return '--';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return String(value);
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-}
-
-function normalizePm2Process(processEntry) {
-  const monit = processEntry?.monit || {};
-  const pm2Env = processEntry?.pm2_env || {};
-  return {
-    name: processEntry?.name || pm2Env.name,
-    namespace: processEntry?.namespace || pm2Env.namespace,
-    interpreter: processEntry?.interpreter || pm2Env.exec_interpreter || pm2Env.interpreter,
-    pmId: processEntry?.pmId ?? processEntry?.pm_id ?? pm2Env.pm_id,
-    status: processEntry?.status || pm2Env.status || 'unknown',
-    cpuPercent: processEntry?.cpuPercent ?? monit.cpu ?? processEntry?.cpu,
-    memoryBytes: processEntry?.memoryBytes ?? monit.memory ?? processEntry?.memory,
-    restartCount: processEntry?.restartCount ?? pm2Env.restart_time ?? processEntry?.restarts,
-    unstableRestarts: processEntry?.unstableRestarts ?? pm2Env.unstable_restarts,
-    uptimeMs: processEntry?.uptimeMs ?? (pm2Env.pm_uptime ? Date.now() - Number(pm2Env.pm_uptime) : 0),
-    watching: processEntry?.watching ?? pm2Env.watch
-  };
-}
-
-function pm2Processes(snapshot) {
-  const candidates = [snapshot?.processes, snapshot?.apps, snapshot?.processList];
-  const source = candidates.find(Array.isArray) || [];
-  return source.map(normalizePm2Process);
-}
-
-function pm2Health(snapshot) {
-  const processes = pm2Processes(snapshot);
-  const ecosystem = snapshot?.ecosystem;
-  if (!snapshot) return { state: 'waiting', label: 'Waiting for PM2' };
-  if (!processes.length) return { state: 'critical', label: 'No PM2 processes' };
-  if (ecosystem?.missingExpected?.length) return { state: 'warning', label: 'Ecosystem drift' };
-  if (processes.some((processEntry) => processEntry.status !== 'online')) {
-    return { state: 'critical', label: 'Process down' };
-  }
-  if (processes.some((processEntry) => Number(processEntry.unstableRestarts || 0) > 0)) {
-    return { state: 'warning', label: 'Unstable restarts' };
-  }
-  return { state: 'online', label: 'All systems online' };
-}
-
-function renderPm2Metrics() {
-  const snapshot = pm2MetricsSnapshot;
-  const summary = snapshot?.summary || {};
-  const processes = pm2Processes(snapshot);
-  const expectedProcessCount = Number(snapshot?.ecosystem?.expectedProcessCount || 0);
-  const restartCount = processes
-    .reduce((total, processEntry) => total + Number(processEntry.restartCount || 0), 0);
-  const unstableCount = processes
-    .reduce((total, processEntry) => total + Number(processEntry.unstableRestarts || 0), 0);
-  const health = pm2Health(snapshot);
-  if (dom.pm2HealthDot) dom.pm2HealthDot.dataset.state = health.state;
-  if (dom.pm2HealthLabel) dom.pm2HealthLabel.textContent = health.label;
-  if (dom.pm2MetricsUpdatedAt) dom.pm2MetricsUpdatedAt.textContent = `updated ${formatCollectedAt(snapshot?.collectedAt)}`;
-  if (dom.pm2MetricProcessCount) dom.pm2MetricProcessCount.textContent = String(summary.processCount || 0);
-  if (dom.pm2MetricProcessFootnote) {
-    dom.pm2MetricProcessFootnote.textContent = `${expectedProcessCount || summary.processCount || 0} expected`;
-  }
-  if (dom.pm2MetricOnlineCount) dom.pm2MetricOnlineCount.textContent = String(summary.onlineCount || 0);
-  setMetricBar(dom.pm2OnlineBar, summary.onlineCount || 0, summary.processCount || 1);
-  if (dom.pm2MetricCpu) dom.pm2MetricCpu.textContent = `${Number(summary.totalCpuPercent || 0).toFixed(1)}%`;
-  setMetricBar(dom.pm2CpuBar, summary.totalCpuPercent || 0, 100);
-  if (dom.pm2MetricMemory) dom.pm2MetricMemory.textContent = formatBytes(summary.totalMemoryBytes || 0);
-  if (dom.pm2MetricMemoryFootnote) dom.pm2MetricMemoryFootnote.textContent = `${processes.length} sampled`;
-  if (dom.pm2MetricRestarts) dom.pm2MetricRestarts.textContent = String(restartCount);
-  if (dom.pm2MetricRestartsFootnote) dom.pm2MetricRestartsFootnote.textContent = `${unstableCount} unstable`;
-  if (dom.pm2ProcessDensityLabel) dom.pm2ProcessDensityLabel.textContent = `${processes.length} process${processes.length === 1 ? '' : 'es'}`;
-  if (dom.pm2MetricsProcessList) {
-    dom.pm2MetricsProcessList.innerHTML = '';
-    processes.forEach((processEntry) => {
-      const cpuPercent = Number(processEntry.cpuPercent || 0);
-      const memoryBytes = Number(processEntry.memoryBytes || 0);
-      const memoryPercent = summary.totalMemoryBytes
-        ? (memoryBytes / Number(summary.totalMemoryBytes || 1)) * 100
-        : 0;
-      const row = document.createElement('tr');
-      row.innerHTML = [
-        '<td><strong></strong><span class="table-subtle"></span></td>',
-        '<td><span class="process-status"></span></td>',
-        '<td><span class="metric-cell-value"></span><span class="process-bar"><span></span></span></td>',
-        '<td><span class="metric-cell-value"></span><span class="process-bar"><span></span></span></td>',
-        '<td><span class="restart-pill"></span></td>',
-        '<td></td>',
-        '<td></td>'
-      ].join('');
-      row.querySelector('strong').textContent = processEntry.name || `pm_id ${processEntry.pmId ?? '-'}`;
-      row.querySelector('.table-subtle').textContent = [
-        processEntry.namespace || 'default',
-        processEntry.interpreter || '',
-        processEntry.pmId !== undefined ? `pm_id ${processEntry.pmId}` : ''
-      ].filter(Boolean).join(' / ');
-      const status = row.querySelector('.process-status');
-      status.textContent = processEntry.status || 'unknown';
-      status.dataset.status = processEntry.status || 'unknown';
-      row.children[2].querySelector('.metric-cell-value').textContent = `${cpuPercent.toFixed(1)}%`;
-      row.children[2].querySelector('.process-bar span').style.width = percentWidth(cpuPercent, 100);
-      row.children[3].querySelector('.metric-cell-value').textContent = formatBytes(memoryBytes);
-      row.children[3].querySelector('.process-bar span').style.width = percentWidth(memoryPercent, 100);
-      const restartPill = row.children[4].querySelector('.restart-pill');
-      restartPill.textContent = String(processEntry.restartCount || 0);
-      restartPill.dataset.risk = Number(processEntry.unstableRestarts || 0) > 0 || Number(processEntry.restartCount || 0) > 50
-        ? 'high'
-        : 'normal';
-      row.children[5].textContent = formatDuration(processEntry.uptimeMs || 0);
-      row.children[6].textContent = processEntry.watching ? 'on' : 'off';
-      dom.pm2MetricsProcessList.appendChild(row);
-    });
-    if (!processes.length) {
-      const row = document.createElement('tr');
-      const cell = document.createElement('td');
-      cell.colSpan = 7;
-      cell.textContent = 'No PM2 processes returned.';
-      row.appendChild(cell);
-      dom.pm2MetricsProcessList.appendChild(row);
-    }
-  }
-  if (dom.pm2MetricsEcosystemSummary) {
-    const ecosystem = snapshot?.ecosystem;
-    if (dom.pm2MetricsMissingList) dom.pm2MetricsMissingList.innerHTML = '';
-    if (!ecosystem) {
-      dom.pm2MetricsEcosystemSummary.textContent = 'No ecosystem comparison loaded.';
-      if (dom.pm2EcosystemState) dom.pm2EcosystemState.textContent = 'unknown';
-    } else if (!ecosystem.exists) {
-      dom.pm2MetricsEcosystemSummary.textContent = `${ecosystem.fileName} does not exist for this environment.`;
-      if (dom.pm2EcosystemState) dom.pm2EcosystemState.textContent = 'missing file';
-    } else if (ecosystem.missingExpected?.length) {
-      dom.pm2MetricsEcosystemSummary.textContent = `${ecosystem.missingExpected.length} expected PM2 app(s) are not running: ${ecosystem.missingExpected.join(', ')}.`;
-      if (dom.pm2EcosystemState) dom.pm2EcosystemState.textContent = 'drift';
-      if (dom.pm2MetricsMissingList) {
-        ecosystem.missingExpected.forEach((name) => {
-          const item = document.createElement('li');
-          item.textContent = name;
-          dom.pm2MetricsMissingList.appendChild(item);
-        });
-      }
-    } else {
-      dom.pm2MetricsEcosystemSummary.textContent = `All ${ecosystem.expectedProcessCount} app(s) from ${ecosystem.fileName} are present in PM2.`;
-      if (dom.pm2EcosystemState) dom.pm2EcosystemState.textContent = 'covered';
-    }
-  }
-  const environment = dom.pm2MetricsEnvironmentSelect?.value || snapshot?.environment || 'dev';
-  if (dom.pm2MonitoringCommand) dom.pm2MonitoringCommand.textContent = `pm2 monit --namespace ${environment}`;
-  if (dom.pm2ListCommand) dom.pm2ListCommand.textContent = `pm2 list --namespace ${environment}`;
-}
-
-async function loadPm2Metrics() {
-  const environment = dom.pm2MetricsEnvironmentSelect?.value || 'dev';
-  showPm2MetricsStatus(`Collecting PM2 metrics for "${environment}"...`, 'info');
-  const query = new URLSearchParams({ environment }).toString();
-  const response = await fetch(`/api/runtime/pm2-metrics?${query}`);
-  if (!response.ok) {
-    throw await runtimeEnvApiError(response, `Could not collect PM2 metrics for ${environment}.`);
-  }
-  pm2MetricsSnapshot = await response.json();
-  renderPm2Metrics();
-  showPm2MetricsStatus(`PM2 metrics collected at ${pm2MetricsSnapshot.collectedAt}.`, 'info');
-}
-
-function schedulePm2MetricsRefresh() {
-  if (pm2MetricsTimer) clearInterval(pm2MetricsTimer);
-  pm2MetricsTimer = null;
-  if (!dom.pm2MetricsAutoRefreshCheck?.checked) return;
-  pm2MetricsTimer = setInterval(() => {
-    if (state.activeTab !== 'monitoring') return;
-    loadPm2Metrics().catch((error) => {
-      showPm2MetricsStatus(error instanceof Error ? error.message : 'Could not collect PM2 metrics.', 'error');
-    });
-  }, 5000);
 }
 
 function nextId(prefix) {
@@ -3186,7 +3020,7 @@ function render() {
   canvas.renderEdges();
   canvas.renderMiniMap();
   inspectors.renderSchemaDiffStatus();
-  renderPm2Metrics();
+  monitoringController.render();
   generateCodePreview();
   renderCodeWorkspace({ skipEditorSync: isCodeWorkspaceEditorActive() });
   generateExamplesPreview();
@@ -3333,9 +3167,6 @@ function syncDeploymentEditStateAfterRemoval(removedIndex) {
 }
 
 function setActiveDesignerTab(tab) {
-  if ((state.activeTab || 'domain-designer') === 'code-workspace' && tab !== 'code-workspace') {
-    flushActiveCodeWorkspaceEditor();
-  }
   tabs.setActiveTab(tab);
 }
 
@@ -3345,13 +3176,7 @@ function wireEvents() {
   if (dom.tabServiceConfigBtn) dom.tabServiceConfigBtn.onclick = () => setActiveDesignerTab('service-config');
   if (dom.tabDeployManagementBtn) dom.tabDeployManagementBtn.onclick = () => setActiveDesignerTab('deploy-management');
   if (dom.tabMonitoringBtn) {
-    dom.tabMonitoringBtn.onclick = () => {
-      setActiveDesignerTab('monitoring');
-      loadPm2Metrics().catch((error) => {
-        showPm2MetricsStatus(error instanceof Error ? error.message : 'Could not collect PM2 metrics.', 'error');
-      });
-      schedulePm2MetricsRefresh();
-    };
+    dom.tabMonitoringBtn.onclick = () => setActiveDesignerTab('monitoring');
   }
   if (dom.tabCodeWorkspaceBtn) {
     dom.tabCodeWorkspaceBtn.onclick = () => {
@@ -3371,17 +3196,7 @@ function wireEvents() {
   if (dom.codeWorkspaceKeepMineBtn) dom.codeWorkspaceKeepMineBtn.onclick = keepActiveCodeWorkspaceFile;
   if (dom.codeWorkspaceTakeGeneratedBtn) dom.codeWorkspaceTakeGeneratedBtn.onclick = takeGeneratedCodeWorkspaceFile;
   if (dom.codeWorkspaceCloseTabBtn) dom.codeWorkspaceCloseTabBtn.onclick = closeActiveCodeWorkspaceTab;
-  if (dom.pm2MetricsRefreshBtn) {
-    dom.pm2MetricsRefreshBtn.onclick = () => loadPm2Metrics().catch((error) => {
-      showPm2MetricsStatus(error instanceof Error ? error.message : 'Could not collect PM2 metrics.', 'error');
-    });
-  }
-  if (dom.pm2MetricsEnvironmentSelect) {
-    dom.pm2MetricsEnvironmentSelect.onchange = () => loadPm2Metrics().catch((error) => {
-      showPm2MetricsStatus(error instanceof Error ? error.message : 'Could not collect PM2 metrics.', 'error');
-    });
-  }
-  if (dom.pm2MetricsAutoRefreshCheck) dom.pm2MetricsAutoRefreshCheck.onchange = schedulePm2MetricsRefresh;
+  monitoringController.wire();
 
   if (dom.interfaceTypeSelect) {
     dom.interfaceTypeSelect.onchange = () => inspectors.renderInterfaceFrameworkOptions(dom.interfaceTypeSelect.value);
@@ -4173,7 +3988,7 @@ async function boot() {
   });
   window.addEventListener('pagehide', () => {
     if (designerSync) designerSync.stop();
-    if (pm2MetricsTimer) clearInterval(pm2MetricsTimer);
+    monitoringController.stop();
   });
   // A page restored from the back/forward cache was stopped at pagehide;
   // restarting re-runs the cursor resume/resync path inside start().
@@ -4196,10 +4011,7 @@ async function boot() {
   loadPm2EcosystemPreview(dom.pm2PreviewEnvironmentSelect?.value || 'dev')
     .catch((error) => failPm2EcosystemPreview(dom.pm2PreviewEnvironmentSelect?.value || 'dev', error));
   if (state.activeTab === 'monitoring') {
-    loadPm2Metrics().catch((error) => {
-      showPm2MetricsStatus(error instanceof Error ? error.message : 'Could not collect PM2 metrics.', 'error');
-    });
-    schedulePm2MetricsRefresh();
+    monitoringController.start();
   }
 
   // JUM-737: the model has been loaded and rendered, so the view state on

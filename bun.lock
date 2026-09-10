@@ -12,6 +12,7 @@
         "@fastify/static": "^10.1.1",
         "@grpc/grpc-js": "^1.14.1",
         "@grpc/proto-loader": "^0.8.0",
+        "@loopback/repository": "^8.0.14",
         "@socket.io/cluster-adapter": "^0.3.0",
         "@socket.io/redis-streams-adapter": "^0.3.1",
         "amqplib": "^2.0.1",
@@ -210,7 +211,9 @@
       "name": "@jumentix/service-management",
       "version": "0.0.2",
       "dependencies": {
+        "d3": "^7.9.0",
         "requirejs": "^2.3.8",
+        "ws": "^8.18.3",
       },
     },
     "apps/service-management-api": {
