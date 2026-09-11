@@ -1,7 +1,7 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 
 import DefaultLayout from '@/layouts/DefaultLayout.vue';
-import { requireAuthRedirect } from '@/router/guards';
+import { requireAuthRedirect, requireScopeRedirect } from '@/router/guards';
 
 /**
  * Public routes bypass the shell; everything under DefaultLayout requires an
@@ -35,6 +35,18 @@ const routes = [
         path: '/profile',
         name: 'Profile',
         component: () => import('@/features/profile/ProfileView.vue')
+      },
+      {
+        path: '/users',
+        name: 'Users',
+        component: () => import('@/features/users/UsersView.vue'),
+        meta: { operationId: 'getAll' }
+      },
+      {
+        path: '/organizations',
+        name: 'Organizations',
+        component: () => import('@/features/organizations/OrganizationsView.vue'),
+        meta: { operationId: 'getAllOrganizations' }
       }
     ]
   },
@@ -51,6 +63,8 @@ const router = createRouter({
   scrollBehavior: () => ({ top: 0 })
 });
 
-router.beforeEach((to) => requireAuthRedirect(to) ?? true);
+router.beforeEach(async (to) => (
+  requireAuthRedirect(to) ?? (await requireScopeRedirect(to)) ?? true
+));
 
 export default router;

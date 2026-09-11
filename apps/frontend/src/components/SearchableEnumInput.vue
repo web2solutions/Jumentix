@@ -10,7 +10,8 @@ import { CFormInput } from '@coreui/vue';
 defineProps<{
   id: string;
   modelValue: string;
-  options: string[];
+  /** Plain values, or { value, label } pairs (labels render in the dropdown). */
+  options: Array<string | { value: string; label: string }>;
   maxlength?: number;
   ariaLabel?: string;
   placeholder?: string;
@@ -20,6 +21,13 @@ defineProps<{
 const emit = defineEmits<{
   'update:modelValue': [value: string];
 }>();
+
+const optionValue = (option: string | { value: string; label: string }) => (
+  typeof option === 'string' ? option : option.value
+);
+const optionLabel = (option: string | { value: string; label: string }) => (
+  typeof option === 'string' ? undefined : option.label
+);
 </script>
 
 <template>
@@ -37,7 +45,12 @@ const emit = defineEmits<{
     />
     <span class="oas-enum-caret" aria-hidden="true">▾</span>
     <datalist :id="`${id}-list`">
-      <option v-for="option in options" :key="option" :value="option" />
+      <option
+        v-for="option in options"
+        :key="optionValue(option)"
+        :value="optionValue(option)"
+        :label="optionLabel(option)"
+      />
     </datalist>
   </div>
 </template>

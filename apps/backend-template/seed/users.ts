@@ -38,7 +38,7 @@ const users: Array<IUser> = [{
   avatar: 'avatar.png',
   username: 'eduardo@xpertminds.dev',
   password: 'eduardo@123456',
-  organization: organizations[0].id,
+  organization: organizations[2].id, // XpertMinds (JUM-772)
   roles: ['superadmin'],
   documents: [
     {
@@ -148,6 +148,41 @@ const users: Array<IUser> = [{
     'access_allow',
     'create_transaction'
   ]
+},
+// One seed user per RBAC role, all in XpertMinds (JUM-772).
+{
+  id: 'b1ffc4d2-1a2b-4c3d-9e8f-7a6b5c4d3e05',
+  createdAt: now,
+  updatedAt: now,
+  firstName: 'Admin',
+  lastName: 'XpertMinds',
+  emails: [{
+    email: 'admin@xpertminds.dev',
+    type: EEmailType.work,
+    isPrimary: true
+  } as EmailValueObject],
+  avatar: 'avatar.png',
+  username: 'admin@xpertminds.dev',
+  password: 'admin@123456',
+  organization: organizations[2].id,
+  roles: ['admin']
+},
+{
+  id: 'b1ffc4d2-1a2b-4c3d-9e8f-7a6b5c4d3e06',
+  createdAt: now,
+  updatedAt: now,
+  firstName: 'User',
+  lastName: 'XpertMinds',
+  emails: [{
+    email: 'user@xpertminds.dev',
+    type: EEmailType.work,
+    isPrimary: true
+  } as EmailValueObject],
+  avatar: 'avatar.png',
+  username: 'user@xpertminds.dev',
+  password: 'user@123456',
+  organization: organizations[2].id,
+  roles: ['user']
 }
 ];
 export default users;

@@ -9,6 +9,26 @@ info:
     name: Unlicensed
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   version: 1.0.0
+  # RBAC matrix consumed by generated/OAS-driven frontends (JUM-772): the UI
+  # computes effective scopes from the user's roles using this map and the
+  # per-operation `security` scopes below — it never reads backend code
+  # (requirement 136). Only superadmins manage multiple organizations.
+  x-rbac:
+    description: Role-to-scope matrix enforced by the backend and mirrored here for OAS-driven clients.
+    roles:
+      superadmin:
+        - "*"
+      admin:
+        - access_allow
+        - read_user
+        - create_user
+        - update_user
+        - delete_user
+        - read_organization
+        - update_organization
+      user:
+        - access_allow
+        - read_user
 externalDocs:
   description: Find out more about Xpertminds
   url: http://xpertminds.dev
@@ -1319,6 +1339,10 @@ components:
           format: uuid
           nullable: true
           description: Organization id for tenant users (admin/user)
+          x-references:
+            entity: Organization
+            operationId: getAllOrganizations
+            labelField: name
         password:
           type: string
           minLength: 8
@@ -1370,6 +1394,10 @@ components:
           format: uuid
           nullable: true
           description: Organization id for tenant users (admin/user)
+          x-references:
+            entity: Organization
+            operationId: getAllOrganizations
+            labelField: name
         password:
           type: string
           minLength: 8
@@ -1429,6 +1457,10 @@ components:
           format: uuid
           nullable: true
           description: Organization id for tenant users (admin/user)
+          x-references:
+            entity: Organization
+            operationId: getAllOrganizations
+            labelField: name
         emails:
           type: array
           items:
@@ -2376,6 +2408,10 @@ components:
           format: uuid
           nullable: true
           description: Organization id for tenant users (admin/user)
+          x-references:
+            entity: Organization
+            operationId: getAllOrganizations
+            labelField: name
         password:
           type: string
           minLength: 8
