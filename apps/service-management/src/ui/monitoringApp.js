@@ -1,13 +1,20 @@
 import {
+  computeWindowThroughput,
   drawCoreBars,
   drawDiskBars,
   drawMemoryBreakdown,
   drawRingGauge,
   drawSparkline,
   drawStackedArea,
-  drawStatusBars
+  drawStatusBars,
+  formatBytesValue,
+  formatPercentValue,
+  formatSeriesSummary,
+  formatThroughputValue,
+  legendEntriesForStack
 } from './monitoringCharts.js';
 import { describeProcessHelp } from './processHelpCatalog.js';
+import { createHelpPopoverState, resolveOpenHelpKey } from './helpPopoverState.js';
 
 const HISTORY_CAP = 60;
 const PROCESS_HISTORY_LIMIT = 40;
@@ -47,6 +54,23 @@ export function createMonitoringController(dom, options = {}) {
   const persistHistory = typeof options.persist === 'function'
     ? options.persist
     : () => {};
+  // Which process-help popover is open, tracked by process key so it survives
+  // the table re-render each WebSocket push triggers (JUM-770).
+  const helpPopover = createHelpPopoverState();
+
+  // Visible, hard-to-miss action feedback (JUM-770): a status line is easy to
+  // overlook; refused/unsent actions also raise a toast.
+  function showToast(message, tone = 'error') {
+    if (typeof document === 'undefined' || !document.body) return;
+    const toast = document.createElement('div');
+    toast.className = `monitoring-toast monitoring-toast-${tone}`;
+    toast.setAttribute('role', 'alert');
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      try { toast.remove(); } catch (_error) { /* ignore */ }
+    }, 4500);
+  }
 
   const state = {
     ws: null,
@@ -169,11 +193,7 @@ export function createMonitoringController(dom, options = {}) {
   }
 
   function formatBytes(bytes) {
-    const value = Number(bytes || 0);
-    if (value >= 1024 ** 3) return `${(value / 1024 ** 3).toFixed(1)} GB`;
-    if (value >= 1024 ** 2) return `${(value / 1024 ** 2).toFixed(1)} MB`;
-    if (value >= 1024) return `${(value / 1024).toFixed(1)} KB`;
-    return `${value} B`;
+    return formatBytesValue(bytes);
   }
 
   function processKey(processEntry) {
@@ -259,22 +279,54 @@ export function createMonitoringController(dom, options = {}) {
     });
   }
 
+  function setStats(element, text) {
+    if (element) element.textContent = text;
+  }
+
+  function renderStackLegend(listElement, seriesByName, format) {
+    if (!listElement) return;
+    listElement.innerHTML = '';
+    legendEntriesForStack(seriesByName).forEach((entry) => {
+      const item = document.createElement('li');
+      const swatch = document.createElement('span');
+      swatch.className = 'chart-legend-swatch';
+      swatch.style.backgroundColor = entry.color;
+      const label = document.createElement('span');
+      label.textContent = `${entry.name} ${format(entry.current)}`;
+      item.appendChild(swatch);
+      item.appendChild(label);
+      listElement.appendChild(item);
+    });
+  }
+
   function paintCharts() {
     const host = state.snapshot?.host || {};
+    const summary = state.snapshot?.summary || {};
+    const aggregate = state.history.aggregate;
+    const percentTick = (value) => formatPercentValue(value);
+    const intervalSeconds = Math.max(0.5, Number(state.intervalMs || 1000) / 1000);
+    const coreCount = Math.max(1, Number(host.cpu?.coreCount) || 1);
+    // load1 plotted next to CPU, normalized to per-core capacity percent so
+    // the two series share one scale (JUM-770).
+    const loadSeries = aggregate.hostLoad1.map((value) => (Number(value) / coreCount) * 100);
     drawRingGauge(dom.hostCpuGauge, (Number(host.cpu?.usagePercent) || 0) / 100, {
       label: host.cpu?.usagePercent == null ? '—' : `${Number(host.cpu.usagePercent).toFixed(0)}%`,
       labelColor: '#f8fafc'
     });
-    drawSparkline(dom.hostCpuSpark, state.history.aggregate.hostCpu);
+    drawSparkline(dom.hostCpuSpark, aggregate.hostCpu, {
+      overlay: { series: loadSeries, stroke: '#f59e0b' },
+      yAxis: { format: percentTick }
+    });
     drawCoreBars(dom.hostCpuCores, (host.cpu?.perCore || []).slice(0, 16));
     drawRingGauge(dom.hostMemGauge, (Number(host.memory?.usedPercent) || 0) / 100, {
       label: `${Number(host.memory?.usedPercent || 0).toFixed(0)}%`,
       color: '#7c3aed',
       labelColor: '#f8fafc'
     });
-    drawSparkline(dom.hostMemSpark, state.history.aggregate.hostMemUsedPercent, {
+    drawSparkline(dom.hostMemSpark, aggregate.hostMemUsedPercent, {
       stroke: '#7c3aed',
-      fill: 'rgba(124, 58, 237, 0.12)'
+      fill: 'rgba(124, 58, 237, 0.12)',
+      yAxis: { format: percentTick }
     });
     drawMemoryBreakdown(dom.hostMemBreakdown, {
       rss: host.memory?.processRssSumBytes,
@@ -282,20 +334,23 @@ export function createMonitoringController(dom, options = {}) {
       free: host.memory?.freeBytes
     });
     drawDiskBars(dom.hostDiskBars, host.disk || []);
+    const online = Number(summary.onlineCount || 0);
+    const total = Number(summary.processCount || 0);
     drawRingGauge(
       dom.pm2HealthGauge,
-      state.snapshot ? (Number(state.snapshot.summary?.onlineCount || 0)
-        / Math.max(1, Number(state.snapshot.summary?.processCount || 1))) : 0,
-      { label: 'PM2', labelColor: '#f8fafc' }
+      state.snapshot ? online / Math.max(1, total) : 0,
+      { label: state.snapshot ? `${online}/${total}` : '—', labelColor: '#f8fafc' }
     );
-    drawSparkline(dom.procCpuSpark, state.history.aggregate.cpuTotal);
-    drawSparkline(dom.procMemSpark, state.history.aggregate.memTotal, {
+    drawSparkline(dom.procCpuSpark, aggregate.cpuTotal, { yAxis: { format: percentTick } });
+    drawSparkline(dom.procMemSpark, aggregate.memTotal, {
       stroke: '#7c3aed',
-      fill: 'rgba(124, 58, 237, 0.12)'
+      fill: 'rgba(124, 58, 237, 0.12)',
+      yAxis: { format: formatBytesValue }
     });
-    drawSparkline(dom.asyncActiveSpark, state.history.aggregate.asyncActiveSum, {
+    drawSparkline(dom.asyncActiveSpark, aggregate.asyncActiveSum, {
       stroke: '#0d9488',
-      fill: 'rgba(13, 148, 136, 0.12)'
+      fill: 'rgba(13, 148, 136, 0.12)',
+      yAxis: { format: (value) => String(Math.round(value)) }
     });
     const filtered = filteredProcesses();
     const cpuSeries = {};
@@ -310,6 +365,65 @@ export function createMonitoringController(dom, options = {}) {
     drawStackedArea(dom.stackCpuCanvas, cpuSeries);
     drawStackedArea(dom.stackMemCanvas, memSeries);
     drawStatusBars(dom.statusBarsCanvas, state.snapshot?.summary?.statusCounts || {});
+
+    // Numbers over shapes (JUM-770): every chart gets a readable header.
+    setStats(dom.hostCpuGaugeStats, formatSeriesSummary(aggregate.hostCpu, percentTick));
+    setStats(
+      dom.hostCpuSparkStats,
+      `load1 ${Number(host.cpu?.loadAvg?.one || 0).toFixed(2)} (${formatPercentValue(loadSeries.length ? loadSeries[loadSeries.length - 1] : 0)}/core)`
+    );
+    const perCore = (host.cpu?.perCore || []).map(Number).filter(Number.isFinite);
+    setStats(
+      dom.hostCpuCoresStats,
+      perCore.length
+        ? `avg ${formatPercentValue(perCore.reduce((sum, value) => sum + value, 0) / perCore.length, 1)} · peak core ${formatPercentValue(Math.max(...perCore))}`
+        : '—'
+    );
+    setStats(
+      dom.hostMemGaugeStats,
+      host.memory
+        ? `${formatPercentValue(host.memory.usedPercent)} · ${formatBytesValue(host.memory.usedBytes)} / ${formatBytesValue(host.memory.totalBytes)}`
+        : '—'
+    );
+    setStats(dom.hostMemSparkStats, formatSeriesSummary(aggregate.hostMemUsedPercent, percentTick));
+    setStats(
+      dom.hostMemBreakdownStats,
+      host.memory
+        ? `RSS ${formatBytesValue(host.memory.processRssSumBytes)} · other ${formatBytesValue(host.memory.otherBytes)} · free ${formatBytesValue(host.memory.freeBytes)}`
+        : '—'
+    );
+    let readRate = 0;
+    let writeRate = 0;
+    let hasIo = false;
+    state.history.processes.forEach((bucket) => {
+      const read = computeWindowThroughput(bucket.diskReadBytes, intervalSeconds);
+      const write = computeWindowThroughput(bucket.diskWriteBytes, intervalSeconds);
+      if (read != null) { readRate += read; hasIo = true; }
+      if (write != null) { writeRate += write; hasIo = true; }
+    });
+    const volumeText = (host.disk || [])
+      .filter((volume) => !volume.error)
+      .map((volume) => `${volume.path} ${formatPercentValue(volume.usedPercent)}`)
+      .join(' · ');
+    setStats(
+      dom.hostDiskBarsStats,
+      `${volumeText || '—'}${hasIo ? ` · IO R ${formatThroughputValue(readRate)} · W ${formatThroughputValue(writeRate)}` : ''}`
+    );
+    const restartSummary = aggregate.restartTotal.length
+      ? aggregate.restartTotal[aggregate.restartTotal.length - 1]
+      : 0;
+    setStats(dom.pm2HealthGaugeStats, `Σ restarts ${Math.round(restartSummary)}`);
+    setStats(dom.procCpuSparkStats, formatSeriesSummary(aggregate.cpuTotal, (value) => formatPercentValue(value, 1)));
+    setStats(dom.procMemSparkStats, formatSeriesSummary(aggregate.memTotal, formatBytesValue));
+    setStats(dom.asyncActiveSparkStats, formatSeriesSummary(aggregate.asyncActiveSum, (value) => String(Math.round(value))));
+    renderStackLegend(dom.stackCpuLegend, cpuSeries, (value) => formatPercentValue(value, 1));
+    renderStackLegend(dom.stackMemLegend, memSeries, formatBytesValue);
+    const statusCounts = state.snapshot?.summary?.statusCounts || {};
+    const statusText = Object.entries(statusCounts)
+      .filter(([, count]) => Number(count) > 0)
+      .map(([status, count]) => `${status} ${count}`)
+      .join(' · ');
+    setStats(dom.statusBarsStats, statusText || '—');
   }
 
   function renderHostText() {
@@ -341,7 +455,11 @@ export function createMonitoringController(dom, options = {}) {
 
   function sendAction(payload) {
     if (!state.ws || state.ws.readyState !== WebSocket.OPEN) {
-      if (dom.pm2MetricsStatus) dom.pm2MetricsStatus.textContent = 'WebSocket offline.';
+      if (dom.pm2MetricsStatus) {
+        dom.pm2MetricsStatus.textContent = `WebSocket offline — "${payload.action}" was NOT sent. Wait for reconnect and try again.`;
+        dom.pm2MetricsStatus.className = 'hint status-line status-error';
+      }
+      showToast(`WebSocket offline: "${payload.action}" was not sent.`, 'error');
       return;
     }
     state.pendingAction = `${payload.action}:${payload.name || payload.namespace || ''}`;
@@ -394,14 +512,14 @@ export function createMonitoringController(dom, options = {}) {
       helpPop.textContent = help.summary;
       helpBtn.onclick = (event) => {
         event.stopPropagation();
-        const open = helpPop.hasAttribute('hidden');
+        const openedKey = helpPopover.toggle(key);
         document.querySelectorAll('.process-help-popover').forEach((node) => {
           node.setAttribute('hidden', '');
         });
         document.querySelectorAll('.process-help-btn').forEach((node) => {
           node.setAttribute('aria-expanded', 'false');
         });
-        if (open) {
+        if (openedKey) {
           helpPop.removeAttribute('hidden');
           helpBtn.setAttribute('aria-expanded', 'true');
         }
@@ -467,6 +585,17 @@ export function createMonitoringController(dom, options = {}) {
         dom.pm2MetricsProcessList.appendChild(detail);
       }
     });
+    // Re-open the tracked help popover after this rebuild, so it survives the
+    // render each WebSocket push triggers (JUM-770).
+    const openKey = resolveOpenHelpKey(helpPopover.current(), rows.map((entry) => processKey(entry)));
+    if (openKey) {
+      const row = [...dom.pm2MetricsProcessList.querySelectorAll('tr[data-key]')]
+        .find((node) => node.dataset.key === openKey);
+      if (row) {
+        row.querySelector('.process-help-popover')?.removeAttribute('hidden');
+        row.querySelector('.process-help-btn')?.setAttribute('aria-expanded', 'true');
+      }
+    }
   }
 
   function renderEcosystem() {
@@ -582,11 +711,25 @@ export function createMonitoringController(dom, options = {}) {
       }
       if (message.type === 'action-result') {
         state.pendingAction = null;
+        // Bulk (namespace) results report how many processes were affected and
+        // which were skipped — the service manager is never in the batch.
+        let bulkSuffix = '';
+        if (message.ok && message.result && typeof message.result === 'object') {
+          const affected = Number(message.result.affected);
+          const skipped = Array.isArray(message.result.skipped) ? message.result.skipped : [];
+          bulkSuffix = ` · affected ${Number.isFinite(affected) ? affected : 0}`;
+          if (skipped.length) {
+            bulkSuffix += ` · skipped (self-guard): ${skipped.join(', ')}`;
+          }
+        }
         if (dom.pm2MetricsStatus) {
           dom.pm2MetricsStatus.textContent = message.ok
-            ? `${message.action} ok`
+            ? `${message.action} ok${bulkSuffix}`
             : `${message.action} failed: ${message.error || 'unknown'}`;
           dom.pm2MetricsStatus.className = `hint status-line status-${message.ok ? 'info' : 'error'}`;
+        }
+        if (!message.ok) {
+          showToast(`${message.action} failed: ${message.error || 'unknown'}`, 'error');
         }
         render();
       }
@@ -621,6 +764,7 @@ export function createMonitoringController(dom, options = {}) {
     if (typeof document !== 'undefined') {
       document.addEventListener('keydown', (event) => {
         if (event.key !== 'Escape') return;
+        helpPopover.close();
         document.querySelectorAll('.process-help-popover').forEach((node) => {
           node.setAttribute('hidden', '');
         });

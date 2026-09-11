@@ -118,12 +118,12 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
   beforeAll(async () => {
     configDir = createTempConfigDir({ '.env.dev': envFileContent('express') });
     pm2Dir = createTempPm2Dir({
-      'ecosystem.dev.cjs': ecosystemSource([
+      'ecosystem.dev.config.cjs': ecosystemSource([
         { name: 'jumentix-dev-restapi', marker: 'rest-marker' },
         { name: 'jumentix-dev-service-management', marker: 'sm-marker' }
       ]),
-      'ecosystem.staging.cjs': ecosystemSource([{ name: 'jumentix-staging-restapi', marker: 'staging-marker' }]),
-      'ecosystem.production.cjs': ecosystemSource([{ name: 'jumentix-prod-restapi', marker: 'prod-marker' }])
+      'ecosystem.staging.config.cjs': ecosystemSource([{ name: 'jumentix-staging-restapi', marker: 'staging-marker' }]),
+      'ecosystem.production.config.cjs': ecosystemSource([{ name: 'jumentix-prod-restapi', marker: 'prod-marker' }])
       // No ecosystem.ci.cjs on purpose: the missing-file state is an
       // acceptance criterion, asserted below.
     });
@@ -171,7 +171,7 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
     );
     expect(status).toBe(200);
     expect(body.environment).toBe('dev');
-    expect(body.fileName).toBe('ecosystem.dev.cjs');
+    expect(body.fileName).toBe('ecosystem.dev.config.cjs');
     expect(body.exists).toBe(true);
     expect(body.apps.map((app) => app.name)).toStrictEqual([
       'jumentix-dev-restapi',
@@ -183,7 +183,7 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
     // The command derives from the ecosystem definition (file + app name).
     expect(restApi.command).toContain('pm2 start ');
     expect(restApi.command).toContain('--only jumentix-dev-restapi --update-env');
-    expect(restApi.command).toContain('ecosystem.dev.cjs');
+    expect(restApi.command).toContain('ecosystem.dev.config.cjs');
     // No package-manager invocation may be embedded (JUM-33/JUM-40 hazard).
     expect(restApi.command).not.toContain('pnpm');
     expect(restApi.command).not.toContain('bun run');
@@ -338,7 +338,7 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
   it('reflects an ecosystem edit with no code change and no server restart', async () => {
     expect.hasAssertions();
     fs.writeFileSync(
-      path.join(pm2Dir, 'ecosystem.dev.cjs'),
+      path.join(pm2Dir, 'ecosystem.dev.config.cjs'),
       ecosystemSource([
         { name: 'jumentix-dev-restapi', marker: 'rest-marker' },
         { name: 'jumentix-dev-service-management', marker: 'sm-marker' },
@@ -363,7 +363,7 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
       '/api/runtime/pm2-ecosystem?environment=staging'
     );
     expect(staging.status).toBe(200);
-    expect(staging.body.fileName).toBe('ecosystem.staging.cjs');
+    expect(staging.body.fileName).toBe('ecosystem.staging.config.cjs');
     expect(staging.body.apps.map((app) => app.name)).toStrictEqual(['jumentix-staging-restapi']);
 
     const production = await requestJson<Pm2EcosystemPayload>(
@@ -372,7 +372,7 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
       '/api/runtime/pm2-ecosystem?environment=production'
     );
     expect(production.status).toBe(200);
-    expect(production.body.fileName).toBe('ecosystem.production.cjs');
+    expect(production.body.fileName).toBe('ecosystem.production.config.cjs');
     expect(production.body.apps.map((app) => app.name)).toStrictEqual(['jumentix-prod-restapi']);
 
     const prodAlias = await requestJson<Pm2EcosystemPayload>(
@@ -381,7 +381,7 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
       '/api/runtime/pm2-ecosystem?environment=prod'
     );
     expect(prodAlias.status).toBe(200);
-    expect(prodAlias.body.fileName).toBe('ecosystem.production.cjs');
+    expect(prodAlias.body.fileName).toBe('ecosystem.production.config.cjs');
   });
 
   it('reports a missing ecosystem file as an explicit state, not a silent empty preview or a 500', async () => {
@@ -414,7 +414,7 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
 
   it('surfaces a broken ecosystem file as the honest 500 envelope with code and path', async () => {
     expect.hasAssertions();
-    fs.writeFileSync(path.join(pm2Dir, 'ecosystem.staging.cjs'), 'module.exports = { apps: [', 'utf8');
+    fs.writeFileSync(path.join(pm2Dir, 'ecosystem.staging.config.cjs'), 'module.exports = { apps: [', 'utf8');
     const { status, body } = await requestJson<ErrorEnvelope>(
       server!.port,
       'GET',
@@ -423,14 +423,14 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
     expect(status).toBe(500);
     expect(body.error).toBe('PM2 ecosystem file operation failed.');
     expect(body.code).toBeTruthy();
-    expect(body.path).toContain('ecosystem.staging.cjs');
+    expect(body.path).toContain('ecosystem.staging.config.cjs');
     expect(body.details).toContain('Could not load PM2 ecosystem file');
   });
 
   it('resolves the repository pm2/ directory by default when the override is unset', async () => {
     expect.hasAssertions();
     // A second server WITHOUT JUMENTIX_SERVICE_MANAGEMENT_PM2_DIR must find the
-    // repo's real pm2/ecosystem.dev.cjs — the pinned default resolution, same
+    // repo's real pm2/ecosystem.dev.config.cjs — the pinned default resolution, same
     // discipline as the config directory (Requirement 126 §2).
     const defaultServer = await startServer(configDir);
     try {
@@ -442,7 +442,7 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
       );
       expect(status).toBe(200);
       expect(body.exists).toBe(true);
-      expect(body.path).toBe('pm2/ecosystem.dev.cjs');
+      expect(body.path).toBe('pm2/ecosystem.dev.config.cjs');
       expect(body.apps.map((app) => app.name)).toContain('jumentix-dev-restapi');
       expect(body.apps.map((app) => app.name)).toContain('jumentix-dev-service-management');
     } finally {

@@ -107,7 +107,7 @@ function createPm2WsHub(httpServer, options = {}) {
           return;
         }
         try {
-          await runAction({
+          const result = await runAction({
             action: message.action,
             scope: message.scope,
             name: message.name,
@@ -120,7 +120,8 @@ function createPm2WsHub(httpServer, options = {}) {
             ok: true,
             action: message.action,
             scope: message.scope,
-            name: message.name
+            name: message.name,
+            ...(result && typeof result === 'object' ? { result } : {})
           });
           await pushMetrics(client);
         } catch (error) {

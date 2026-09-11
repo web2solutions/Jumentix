@@ -102,6 +102,7 @@ import { drawModel } from './src/ui/canvasImage.js';
 import { createCanvas } from './src/ui/canvas.js';
 import { createInspectors } from './src/ui/inspectors.js';
 import { createMonitoringController } from './src/ui/monitoringApp.js';
+import { createRenderGuard, stableSerialize } from './src/ui/renderGuard.js';
 
 const CANVAS_ORIGIN_X = 3200;
 const CANVAS_ORIGIN_Y = 2200;
@@ -420,6 +421,20 @@ const dom = {
   stackCpuCanvas: document.getElementById('stack-cpu-canvas'),
   stackMemCanvas: document.getElementById('stack-mem-canvas'),
   statusBarsCanvas: document.getElementById('status-bars-canvas'),
+  hostCpuGaugeStats: document.getElementById('host-cpu-gauge-stats'),
+  hostCpuSparkStats: document.getElementById('host-cpu-spark-stats'),
+  hostCpuCoresStats: document.getElementById('host-cpu-cores-stats'),
+  hostMemGaugeStats: document.getElementById('host-mem-gauge-stats'),
+  hostMemSparkStats: document.getElementById('host-mem-spark-stats'),
+  hostMemBreakdownStats: document.getElementById('host-mem-breakdown-stats'),
+  hostDiskBarsStats: document.getElementById('host-disk-bars-stats'),
+  pm2HealthGaugeStats: document.getElementById('pm2-health-gauge-stats'),
+  procCpuSparkStats: document.getElementById('proc-cpu-spark-stats'),
+  procMemSparkStats: document.getElementById('proc-mem-spark-stats'),
+  asyncActiveSparkStats: document.getElementById('async-active-spark-stats'),
+  stackCpuLegend: document.getElementById('stack-cpu-legend'),
+  stackMemLegend: document.getElementById('stack-mem-legend'),
+  statusBarsStats: document.getElementById('status-bars-stats'),
   pm2FilterQuery: document.getElementById('pm2-filter-query'),
   pm2FilterStatus: document.getElementById('pm2-filter-status'),
   pm2FilterNamespace: document.getElementById('pm2-filter-namespace'),
@@ -3000,7 +3015,23 @@ function renderEmptyStates() {
 // the domain panel, domain list before the canvas, entity options before the
 // inspectors that read them, edges and mini-map after the canvas — is
 // preserved here as an explicit call sequence.
+//
+// JUM-770 blink guard: a render whose inputs are unchanged since the previous
+// pass is a no-op. The signature covers everything this pass reads — the
+// whole designer state (domains, selections, view, code workspace, active
+// tab), the interaction flags, undo/redo depth and the PM2 preview. Anything
+// mutating outside these inputs must call designerRenderGuard.invalidate() —
+// when in doubt, mark dirty.
+const designerRenderGuard = createRenderGuard(() => stableSerialize({
+  state,
+  interaction,
+  undoDepth: history.past.length,
+  redoDepth: history.future.length,
+  pm2EcosystemPreview
+}));
+
 function render() {
+  if (!designerRenderGuard.shouldRender()) return;
   tabs.renderTabs();
   sidebarGroups.renderSidebarGroups();
   renderEmptyStates();
