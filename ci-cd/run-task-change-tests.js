@@ -29,6 +29,20 @@ function normalizeFiles(files) {
 }
 
 function readChangedFiles(options = {}) {
+  // Injected `spawn` means the caller is asserting git discovery — never short-circuit
+  // via the Docker host-side file list.
+  const allowEnv = Object.prototype.hasOwnProperty.call(options, 'spawn')
+    ? false
+    : (options.useChangedFilesEnv ?? process.env.JUMENTIX_TASK_CHANGED_FILES_ACTIVE === '1');
+  const envList = allowEnv
+    ? (options.changedFilesEnv ?? process.env.JUMENTIX_TASK_CHANGED_FILES)
+    : options.changedFilesEnv;
+  if (typeof envList === 'string' && envList.trim()) {
+    // Host-side list for Dockerized runners: nested `git` during `git commit`
+    // cannot always read the index across a macOS→Linux volume mount.
+    return normalizeFiles(envList.split(/\r?\n|,/));
+  }
+
   const mode = options.mode || process.env.JUMENTIX_TASK_TEST_MODE || 'staged';
   const baseRef = options.baseRef || process.env.JUMENTIX_TASK_TEST_BASE || 'origin/dev';
   const args = mode === 'staged'

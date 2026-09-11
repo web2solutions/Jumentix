@@ -1,0 +1,225 @@
+.root {
+  display: grid;
+  gap: 20px;
+  padding: 28px;
+  border: 1px solid color-mix(in srgb, var(--jtx-ink) 12%, transparent);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--jtx-surface-elevated, var(--jtx-surface)) 92%, #0b1220 8%);
+}
+
+.intro {
+  display: grid;
+  gap: 8px;
+  max-width: 720px;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--jtx-accent, #c45c26);
+  font-weight: 700;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(1.35rem, 2vw, 1.85rem);
+  line-height: 1.2;
+  color: var(--jtx-ink);
+}
+
+.lead {
+  margin: 0;
+  color: color-mix(in srgb, var(--jtx-ink) 72%, transparent);
+  line-height: 1.55;
+}
+
+.grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+  align-items: start;
+}
+
+.diagramPane {
+  display: grid;
+  gap: 14px;
+}
+
+.svg {
+  width: 100%;
+  max-width: 480px;
+  height: auto;
+  margin: 0 auto;
+  display: block;
+}
+
+.ring {
+  cursor: pointer;
+  stroke: color-mix(in srgb, var(--jtx-ink) 22%, transparent);
+  stroke-width: 1.25;
+  transition: stroke-width 120ms ease, stroke 120ms ease;
+}
+
+.ring:focus-visible {
+  outline: 2px solid var(--jtx-accent, #c45c26);
+  outline-offset: 2px;
+}
+
+.ring0 { fill: color-mix(in srgb, var(--jtx-accent, #c45c26) 34%, white); }
+.ring1 { fill: color-mix(in srgb, var(--jtx-accent, #c45c26) 22%, white); }
+.ring2 { fill: color-mix(in srgb, var(--jtx-ink) 10%, white); }
+.ring3 { fill: color-mix(in srgb, #1f6f5b 18%, white); }
+.ring4 { fill: color-mix(in srgb, var(--jtx-ink) 8%, white); }
+.ring5 { fill: color-mix(in srgb, var(--jtx-ink) 5%, white); }
+
+.ringActive {
+  stroke: var(--jtx-accent, #c45c26);
+  stroke-width: 3;
+}
+
+.centerLabel {
+  fill: var(--jtx-ink);
+  font-size: 13px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.centerSub {
+  fill: color-mix(in srgb, var(--jtx-ink) 65%, transparent);
+  font-size: 10px;
+  pointer-events: none;
+}
+
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.pill {
+  border: 1px solid color-mix(in srgb, var(--jtx-ink) 16%, transparent);
+  background: transparent;
+  color: var(--jtx-ink);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.pillActive {
+  border-color: var(--jtx-accent, #c45c26);
+  background: color-mix(in srgb, var(--jtx-accent, #c45c26) 14%, transparent);
+  font-weight: 650;
+}
+
+.detail {
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--jtx-ink) 10%, transparent);
+  background: color-mix(in srgb, white 88%, var(--jtx-surface));
+  min-height: 360px;
+}
+
+.detailEyebrow {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--jtx-ink) 55%, transparent);
+}
+
+.detailTitle {
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--jtx-ink);
+}
+
+.detailSubtitle,
+.detailRole {
+  margin: 0;
+  color: color-mix(in srgb, var(--jtx-ink) 72%, transparent);
+  line-height: 1.5;
+}
+
+.detailRole {
+  font-weight: 600;
+  color: var(--jtx-ink);
+}
+
+.detailSection {
+  margin: 10px 0 0;
+  font-size: 0.85rem;
+  color: var(--jtx-ink);
+}
+
+.pathList,
+.exampleList {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 4px;
+  color: color-mix(in srgb, var(--jtx-ink) 78%, transparent);
+}
+
+.pathList code {
+  font-size: 0.78rem;
+}
+
+.flow {
+  display: grid;
+  gap: 8px;
+}
+
+.flowLabel {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--jtx-ink) 60%, transparent);
+}
+
+.flowList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.flowList li {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--jtx-ink) 14%, transparent);
+  font-size: 0.8rem;
+  color: var(--jtx-ink);
+}
+
+.flowList li:not(:last-child)::after {
+  content: '→';
+  margin-left: 8px;
+  color: color-mix(in srgb, var(--jtx-ink) 45%, transparent);
+}
+
+.source {
+  margin: 0;
+  font-size: 0.75rem;
+  color: color-mix(in srgb, var(--jtx-ink) 50%, transparent);
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .detail {
+    min-height: 0;
+  }
+}
