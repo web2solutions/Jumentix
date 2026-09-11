@@ -2205,6 +2205,18 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/frontend/test/unit/contracts/rbac.test.ts",
+      "path": "apps/frontend/test/unit/contracts/rbac.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/frontend/test/unit/contracts/patternRules.test.ts",
       "path": "apps/frontend/test/unit/contracts/patternRules.test.ts",
       "layer": "frontend",
@@ -2267,6 +2279,30 @@
     {
       "id": "apps/frontend/test/unit/stores/network.test.ts",
       "path": "apps/frontend/test/unit/stores/network.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/xcrud/useXCrud.test.ts",
+      "path": "apps/frontend/test/unit/xcrud/useXCrud.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/router/scopeGuard.test.ts",
+      "path": "apps/frontend/test/unit/router/scopeGuard.test.ts",
       "layer": "frontend",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -4723,9 +4759,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 252,
+    "unit": 255,
     "integration": 100,
     "smoke": 2,
-    "suites": 402
+    "suites": 405
   }
 }

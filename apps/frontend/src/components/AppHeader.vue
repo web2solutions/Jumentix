@@ -33,13 +33,13 @@ onUnmounted(() => {
       </CHeaderToggler>
       <CHeaderNav class="d-none d-md-flex">
         <CNavItem>
-          <CNavLink href="/dashboard"> Dashboard </CNavLink>
+          <CNavLink href="#/dashboard"> Dashboard </CNavLink>
         </CNavItem>
         <CNavItem>
-          <CNavLink href="#">Users</CNavLink>
+          <CNavLink href="#/users">Users</CNavLink>
         </CNavItem>
         <CNavItem>
-          <CNavLink href="#">Settings</CNavLink>
+          <CNavLink href="#/organizations">Organizations</CNavLink>
         </CNavItem>
       </CHeaderNav>
       <CHeaderNav class="ms-auto">

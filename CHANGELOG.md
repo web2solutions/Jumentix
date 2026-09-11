@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-09-11 fix(service-management): repair pm2 lifecycle, self-guard, stable help, richer charts (JUM-770) (#313) - Eduardo A.
 - 2026-09-10 [JUM-769][Fix] Enforce pattern-only OAS rules at input level, visible enum affordance, x-hide (#311) - Eduardo A.
 - 2026-09-10 [JUM-767][Fix] Harden monitoring disk I/O, start-after-stop, async context, process help (#310) - Eduardo A.
 - 2026-09-10 fix(service-management): harden monitoring disk I/O, start, async, help - Eduardo A.

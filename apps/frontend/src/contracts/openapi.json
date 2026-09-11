@@ -11,7 +11,28 @@
       "name": "Unlicensed",
       "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "version": "1.0.0"
+    "version": "1.0.0",
+    "x-rbac": {
+      "description": "Role-to-scope matrix enforced by the backend and mirrored here for OAS-driven clients.",
+      "roles": {
+        "superadmin": [
+          "*"
+        ],
+        "admin": [
+          "access_allow",
+          "read_user",
+          "create_user",
+          "update_user",
+          "delete_user",
+          "read_organization",
+          "update_organization"
+        ],
+        "user": [
+          "access_allow",
+          "read_user"
+        ]
+      }
+    }
   },
   "externalDocs": {
     "description": "Find out more about Xpertminds",
@@ -2096,7 +2117,12 @@
             "type": "string",
             "format": "uuid",
             "nullable": true,
-            "description": "Organization id for tenant users (admin/user)"
+            "description": "Organization id for tenant users (admin/user)",
+            "x-references": {
+              "entity": "Organization",
+              "operationId": "getAllOrganizations",
+              "labelField": "name"
+            }
           },
           "password": {
             "type": "string",
@@ -2161,7 +2187,12 @@
             "type": "string",
             "format": "uuid",
             "nullable": true,
-            "description": "Organization id for tenant users (admin/user)"
+            "description": "Organization id for tenant users (admin/user)",
+            "x-references": {
+              "entity": "Organization",
+              "operationId": "getAllOrganizations",
+              "labelField": "name"
+            }
           },
           "password": {
             "type": "string",
@@ -2238,7 +2269,12 @@
             "type": "string",
             "format": "uuid",
             "nullable": true,
-            "description": "Organization id for tenant users (admin/user)"
+            "description": "Organization id for tenant users (admin/user)",
+            "x-references": {
+              "entity": "Organization",
+              "operationId": "getAllOrganizations",
+              "labelField": "name"
+            }
           },
           "emails": {
             "type": "array",
@@ -3360,7 +3396,12 @@
             "type": "string",
             "format": "uuid",
             "nullable": true,
-            "description": "Organization id for tenant users (admin/user)"
+            "description": "Organization id for tenant users (admin/user)",
+            "x-references": {
+              "entity": "Organization",
+              "operationId": "getAllOrganizations",
+              "labelField": "name"
+            }
           },
           "password": {
             "type": "string",

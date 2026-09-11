@@ -34,6 +34,7 @@ export interface UserRecord {
   avatar?: string;
   username: string;
   organization?: string;
+  roles?: string[];
   emails: UserEmail[];
   documents: UserDocument[];
   phones: UserPhone[];
@@ -171,6 +172,7 @@ export const useProfileStore = defineStore('profile', () => {
   ) => reloadAfter('updatePhone', { phoneId }, { id: phoneId, ...input });
   const removePhone = (phoneId: string) => reloadAfter('deletePhone', { phoneId });
 
+  // roles of the signed-in user: `record.value?.roles` after `load()` (JUM-772).
   return {
     record,
     loading,
