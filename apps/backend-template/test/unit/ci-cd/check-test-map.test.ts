@@ -447,3 +447,26 @@ describe('requirement 110 runner rules', () => {
     expect(unexplained).toStrictEqual([]);
   });
 });
+
+describe('interface GUI placeholder docs do not select interface/runtime (JUM-757)', () => {
+  const repoRoot = path.resolve(__dirname, '../../../../..');
+  const realManifest = readTestMap(path.join(repoRoot, 'test-map.json'));
+  const planFor = (files: string[]) => createLayerAwarePlan(files, {
+    manifest: realManifest,
+    root: repoRoot,
+    graph: new Map()
+  });
+
+  it('keeps README-only GUI placeholders out of the interface/runtime blast radius', () => {
+    expect.hasAssertions();
+
+    const plan = planFor([
+      'apps/backend-template/src/interface/GUI/README.md',
+      'apps/backend-template/src/interface/GUI/web/README.md',
+      'apps/jumentix-website/components/architecture/HexagonalArchitectureMap.tsx'
+    ]);
+
+    expect(plan.selectedLayers).not.toContain('interface/runtime');
+    expect([...plan.selectedLayers].sort()).toStrictEqual(['tooling', 'website']);
+  });
+});

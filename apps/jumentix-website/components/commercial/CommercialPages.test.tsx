@@ -139,6 +139,8 @@ describe('Commercial pages', () => {
     expect.hasAssertions();
       renderPage('architecture', 'en');
       expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Domain ownership at the center, technology at the edges');
+      expect(screen.getByTestId('hexagonal-architecture-map')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { level: 2, name: 'Backend-template hexagonal map' })).toBeInTheDocument();
       expect(screen.getByText('External request')).toBeInTheDocument();
       expect(screen.getByText('Input adapter')).toBeInTheDocument();
       expect(screen.getByText('Application core')).toBeInTheDocument();

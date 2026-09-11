@@ -5,8 +5,12 @@
 ```txt
 apps/backend-template/src/
   config/
-  infra/                           # cross-cutting infrastructure adapters
-  interface/                       # HTTP runtime adapters and transport plumbing
+  infra/                           # cross-cutting infrastructure adapters (outbound)
+  interface/                       # inbound adapters and transport plumbing
+    HTTP/ WebSocket/ gRPC/ CLI/ Async/ runtime/
+    GUI/                           # inbound GUI slot (web + desktop placeholders)
+      web/                         # SPA/PWA/sites (React, Vue, …) — no implementations yet
+      desktop/                     # Electron/GTK/… — no implementations yet
   modules/
     Users/
       adapters/                    # canonical adapter namespace (in/out)

@@ -9,21 +9,25 @@ Idioma alvo: Português (Brasil)
 ```txt
 apps/backend-template/src/
   config/
-  infra/                           # cross-cutting infrastructure adapters
-  interface/                       # HTTP runtime adapters and transport plumbing
+  infra/                           # adapters de infraestrutura (outbound)
+  interface/                       # adapters inbound e plumbing de transporte
+    HTTP/ WebSocket/ gRPC/ CLI/ Async/ runtime/
+    GUI/                           # slot GUI inbound (placeholders web + desktop)
+      web/                         # SPA/PWA/sites (React, Vue, …) — sem implementações ainda
+      desktop/                     # Electron/GTK/… — sem implementações ainda
   modules/
     Users/
-      adapters/                    # canonical adapter namespace (in/out)
+      adapters/                    # namespace canônico de adapters (in/out)
         in/http/controllers/
         out/persistence/
-      application/                 # application layer + use-case contracts
+      application/                 # camada de aplicação + contratos de caso de uso
         use-cases/
-      composition/                 # module wiring/composition root
-      domain/                      # core entities/models
-      events/                      # integration/domain events contracts/listeners
-      features/                    # use-case style operations used by services
-      infra/                       # legacy compatibility namespace (bridges)
-      interface/                   # legacy compatibility namespace (bridges)
+      composition/                 # composition root / wiring do módulo
+      domain/                      # entidades/modelos do núcleo
+      events/                      # contratos/listeners de eventos
+      features/                    # operações estilo caso de uso usadas pelos services
+      infra/                       # namespace legado de compatibilidade (bridges)
+      interface/                   # namespace legado de compatibilidade (bridges)
   shared/
 ```
 

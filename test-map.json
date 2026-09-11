@@ -4121,6 +4121,18 @@
       "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
     },
     {
+      "id": "apps/jumentix-website/components/architecture/HexagonalArchitectureMap.test.tsx",
+      "path": "apps/jumentix-website/components/architecture/HexagonalArchitectureMap.test.tsx",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
       "id": "apps/jumentix-website/components/cana-framework/CanaFrameworkPlayground.test.tsx",
       "path": "apps/jumentix-website/components/cana-framework/CanaFrameworkPlayground.test.tsx",
       "layer": "website",
