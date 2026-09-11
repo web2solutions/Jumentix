@@ -4,6 +4,9 @@
 
 ## All Changes
 
+- 2026-09-10 fix(contracts): enforce pattern-only oas rules at input level (JUM-769) - Eduardo Almeida
+- 2026-09-10 [JUM-767][Fix] Harden monitoring disk I/O, start-after-stop, async context, process help (#310) - Eduardo A.
+- 2026-09-10 fix(service-management): harden monitoring disk I/O, start, async, help - Eduardo A.
 - 2026-09-10 fix(contracts): complete oas-driven form validation (JUM-768) (#309) - Eduardo A.
 - 2026-09-10 [JUM-767][Feature] Service Management monitoring WebSocket + D3/Cana/disk I/O/ALS (#308) - Eduardo A.
 - 2026-09-10 feat(service-management): live PM2 monitoring over WebSocket - Eduardo A.

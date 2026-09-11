@@ -72,17 +72,52 @@ export const maskPhone = (countryCode: string, raw: string): string => {
   return applyMask(digits, rule.mask);
 };
 
-/** Progressive mask for a document's data per OAS rule (CPF/SSN masked, others free-form). */
-export const maskDocumentData = (type: string, countryIssue: string, raw: string): string => {
-  if (type === 'CPF') return maskCpf(raw);
-  if (type === 'SSN') return maskSsn(raw);
-  return raw;
+/**
+ * Extracts the declared char class from anchored class patterns
+ * (`^[A-Za-z0-9]{5,20}$` → `A-Za-z0-9`). Returns undefined for any other
+ * shape — digit-pattern rules (CPF/SSN/phone) are handled by masks instead.
+ */
+export const patternAlphabet = (pattern: string | undefined): string | undefined => (
+  pattern?.match(/^\^\[([^\]]+)\]\{\d+(?:,\d*)?\}\$$/)?.[1]
+);
+
+/**
+ * Extracts the upper bound of the quantifier in an anchored class pattern
+ * (`{5,20}` → 20, `{11}` → 11, `{5,}` → undefined = unbounded).
+ */
+export const patternCap = (pattern: string | undefined): number | undefined => {
+  const quantifier = pattern?.match(/^\^\[[^\]]+\]\{(\d+)(,(\d*))?\}\$$/);
+  if (!quantifier) return undefined;
+  if (quantifier[2] !== undefined) {
+    // `{m,}` is unbounded; `{m,n}` caps at n.
+    return quantifier[3] ? Number(quantifier[3]) : undefined;
+  }
+  return Number(quantifier[1]);
 };
 
-/** Input cap derived from the OAS mask: typing beyond it is blocked, not invalidated. */
-export const documentMaskCap = (type: string, countryIssue: string): number | undefined => {
+/**
+ * Input filter for a document's data (JUM-769): CPF/SSN keep their masks;
+ * pattern-only rules (passport, RG) strip characters outside the declared
+ * alphabet and hard-cap at the pattern's upper bound, so over-typing is
+ * blocked at the input instead of failing at save time. Types with no
+ * declared rule stay free-form per OAS.
+ */
+export const filterDocumentData = (type: string, countryIssue: string, raw: string): string => {
+  if (type === 'CPF') return maskCpf(raw);
+  if (type === 'SSN') return maskSsn(raw);
   const rule = documentRuleFor(type, countryIssue);
-  return rule?.mask ? rule.mask.length : undefined;
+  const alphabet = patternAlphabet(rule?.pattern);
+  if (!alphabet) return raw;
+  const filtered = raw.replace(new RegExp(`[^${alphabet}]`, 'g'), '');
+  const cap = patternCap(rule?.pattern);
+  return cap === undefined ? filtered : filtered.slice(0, cap);
+};
+
+/** Input cap for a document's data: OAS mask length, or the pattern's upper bound. */
+export const documentInputCap = (type: string, countryIssue: string): number | undefined => {
+  const rule = documentRuleFor(type, countryIssue);
+  if (!rule) return undefined;
+  return rule.mask ? rule.mask.length : patternCap(rule.pattern);
 };
 
 /** Input cap for a phone number from the OAS mask of the country rule. */

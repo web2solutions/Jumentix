@@ -16,9 +16,10 @@ import {
 } from '@coreui/vue';
 
 import OasFormField from '@/components/OasFormField.vue';
+import SearchableEnumInput from '@/components/SearchableEnumInput.vue';
 import { fieldDescriptors, type FieldDescriptor } from '@/contracts/formSchema';
 import { collectBody, validateAll } from '@/contracts/oasForm';
-import { documentMaskCap, maskDocumentData, validateDocumentData } from '@/contracts/validation';
+import { documentInputCap, filterDocumentData, validateDocumentData } from '@/contracts/validation';
 import { useProfileStore, type UserDocument } from '@/stores/profile';
 import { useSectionNotify } from './useSectionNotify';
 
@@ -33,7 +34,13 @@ const updateDescriptors = fieldDescriptors('RequestUpdateDocument').filter((d) =
 
 // The `data` field carries the OAS x-validation rules (CPF checksum, SSN).
 const maskData = (values: Record<string, unknown>) => (raw: string) => (
-  maskDocumentData(String(values.type ?? ''), String(values.countryIssue ?? ''), raw)
+  filterDocumentData(String(values.type ?? ''), String(values.countryIssue ?? ''), raw)
+);
+
+// Effective input cap per row (JUM-769): declared maxLength, else the cap
+// derived from the x-validation rule (mask length or pattern upper bound).
+const dataCap = (values: Record<string, unknown>, declared?: number) => (
+  declared ?? documentInputCap(String(values.type ?? ''), String(values.countryIssue ?? ''))
 );
 
 const edits = reactive<Record<string, Record<string, unknown>>>({});
@@ -105,23 +112,20 @@ const cellControl = (descriptor: FieldDescriptor): 'select' | 'text' => (
         <CTableBody>
           <CTableRow v-for="item in documents" :key="item.id">
             <CTableDataCell v-for="d in updateDescriptors" :key="d.name">
-              <template v-if="cellControl(d) === 'select'">
-                <CFormInput
-                  :model-value="String(edits[item.id][d.name] ?? '')"
-                  :list="`oas-cell-${item.id}-${d.name}`"
-                  :aria-label="d.name"
-                  :maxlength="d.maxLength"
-                  @update:model-value="edits[item.id][d.name] = $event"
-                />
-                <datalist :id="`oas-cell-${item.id}-${d.name}`">
-                  <option v-for="option in d.enum" :key="option" :value="option" />
-                </datalist>
-              </template>
+              <SearchableEnumInput
+                v-if="cellControl(d) === 'select'"
+                :id="`oas-cell-${item.id}-${d.name}`"
+                :model-value="String(edits[item.id][d.name] ?? '')"
+                :options="d.enum ?? []"
+                :maxlength="d.maxLength"
+                :aria-label="d.name"
+                @update:model-value="edits[item.id][d.name] = $event"
+              />
               <CFormInput
                 v-else
                 :model-value="String(edits[item.id][d.name] ?? '')"
                 :aria-label="d.name === 'data' ? `Document ${item.data}` : d.name"
-                :maxlength="d.maxLength"
+                :maxlength="d.name === 'data' ? dataCap(edits[item.id], d.maxLength) : d.maxLength"
                 @update:model-value="d.name === 'data'
                   ? (edits[item.id].data = maskData(edits[item.id])($event))
                   : (edits[item.id][d.name] = $event)"
@@ -141,7 +145,7 @@ const cellControl = (descriptor: FieldDescriptor): 'select' | 'text' => (
           v-model="newValues[d.name]"
           :descriptor="d"
           :mask="d.name === 'data' ? maskData(newValues) : undefined"
-          :mask-cap="d.name === 'data' ? documentMaskCap(String(newValues.type ?? ''), String(newValues.countryIssue ?? '')) : undefined"
+          :mask-cap="d.name === 'data' ? dataCap(newValues) : undefined"
           class="mb-0"
         />
         <CButton color="success" class="mb-3" @click="add">Add</CButton>

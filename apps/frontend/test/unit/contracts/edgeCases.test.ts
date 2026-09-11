@@ -3,7 +3,7 @@ import { describe, expect, it } from 'bun:test';
 import { fieldDescriptors } from '@/contracts/formSchema';
 import { validateAll, validateField } from '@/contracts/oasForm';
 import {
-  documentMaskCap,
+  documentInputCap,
   maskCpf,
   maskPhone,
   maskSsn,
@@ -80,7 +80,7 @@ describe('OAS facets closed (JUM-768)', () => {
     expect(maskCpf('12345678901234567')).toBe('123.456.789-01'); // corta no cap
     expect(maskSsn('123456789999')).toBe('123-45-6789');
     expect(maskPhone('+55', '99805403399')).toBe('99805-4033');
-    expect(documentMaskCap('CPF', 'BR')).toBe(14);
+    expect(documentInputCap('CPF', 'BR')).toBe(14);
   });
 
   it('phone mask cap comes from the OAS mask', () => {
@@ -100,5 +100,18 @@ describe('OAS facets closed (JUM-768)', () => {
     expect.assertions(2);
     expect(validateAll(emailDescriptors, { email: 'sem-arroba', type: 'work' })).not.toBeNull();
     expect(validateAll(emailDescriptors, { email: 'ok@xpertminds.dev', type: 'work' })).toBeNull();
+  });
+});
+
+describe('x-hide hides contract fields from OAS-driven forms (JUM-769)', () => {
+  it('RequestLogin schemaType stays in the contract but never renders', () => {
+    expect.assertions(4);
+    const loginDescriptors = fieldDescriptors('RequestLogin');
+    const names = loginDescriptors.map((d) => d.name);
+    expect(names).toContain('username');
+    expect(names).toContain('password');
+    expect(names).not.toContain('schemaType'); // x-hide: true in the OAS
+    // The hidden field is optional and defaulted server-side: login validates without it.
+    expect(validateAll(loginDescriptors, { username: 'a@b.co', password: 'x'.repeat(8) })).toBeNull();
   });
 });

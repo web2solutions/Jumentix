@@ -2049,6 +2049,7 @@
             "example": "Bearer",
             "default": "Bearer",
             "description": "HTTP token schema type",
+            "x-hide": true,
             "enum": [
               "Basic",
               "Bearer"
@@ -2897,7 +2898,8 @@
             "description": "Country which emitted the document"
           },
           "data": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 20
           }
         }
       },
@@ -2930,7 +2932,8 @@
             "description": "Country which emitted the document"
           },
           "data": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 20
           }
         }
       },
@@ -2993,6 +2996,7 @@
           },
           "data": {
             "type": "string",
+            "maxLength": 20,
             "x-validation": {
               "description": "Format rules per document type and issuing country. CPF uses the modulo-11 checksum with two verification digits; SSN uses the US AAA-GG-SSSS layout.",
               "rules": [

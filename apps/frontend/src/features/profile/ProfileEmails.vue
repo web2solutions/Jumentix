@@ -17,6 +17,7 @@ import {
 } from '@coreui/vue';
 
 import OasFormField from '@/components/OasFormField.vue';
+import SearchableEnumInput from '@/components/SearchableEnumInput.vue';
 import { fieldDescriptors, type FieldDescriptor } from '@/contracts/formSchema';
 import { collectBody, validateAll } from '@/contracts/oasForm';
 import { useProfileStore, type UserEmail } from '@/stores/profile';
@@ -93,18 +94,15 @@ const remove = (id: string) => run(() => profile.removeEmail(id), 'Email removid
         <CTableBody>
           <CTableRow v-for="item in emails" :key="item.id">
             <CTableDataCell v-for="d in updateDescriptors" :key="d.name">
-              <template v-if="cellControl(d) === 'select'">
-                <CFormInput
-                  :model-value="String(edits[item.id][d.name] ?? '')"
-                  :list="`oas-cell-${item.id}-${d.name}`"
-                  :aria-label="d.name"
-                  :maxlength="d.maxLength"
-                  @update:model-value="edits[item.id][d.name] = $event"
-                />
-                <datalist :id="`oas-cell-${item.id}-${d.name}`">
-                  <option v-for="option in d.enum" :key="option" :value="option" />
-                </datalist>
-              </template>
+              <SearchableEnumInput
+                v-if="cellControl(d) === 'select'"
+                :id="`oas-cell-${item.id}-${d.name}`"
+                :model-value="String(edits[item.id][d.name] ?? '')"
+                :options="d.enum ?? []"
+                :maxlength="d.maxLength"
+                :aria-label="d.name"
+                @update:model-value="edits[item.id][d.name] = $event"
+              />
               <CFormCheck
                 v-else-if="cellControl(d) === 'checkbox'"
                 :model-value="Boolean(edits[item.id][d.name])"
