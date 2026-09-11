@@ -50,9 +50,9 @@ Este mapa rastreia reescritas de caminho de tempo de execução para o modelo de
 
 ## Arquivos de propriedade reescritos
 
-1. `pm2/ecosystem.dev.cjs`
-2. `pm2/ecosystem.staging.cjs`
-3. `pm2/ecosystem.production.cjs`
+1. `pm2/ecosystem.dev.config.cjs`
+2. `pm2/ecosystem.staging.config.cjs`
+3. `pm2/ecosystem.production.config.cjs`
 4. Scripts raiz `package.json` contendo:
    - iniciadores de tempo de execução
    - comandos de construção/teste apontando para `apps/backend-template/*`

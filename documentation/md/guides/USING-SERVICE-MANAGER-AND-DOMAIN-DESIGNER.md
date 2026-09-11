@@ -128,7 +128,7 @@ rtk proxy bun run dev
 
 `dev` maps to `pm2:start:dev:restapi`, which starts
 `jumentix-dev-service-management` and `jumentix-dev-restapi` from
-`pm2/ecosystem.dev.cjs`. Use the realtime variants when you also need a
+`pm2/ecosystem.dev.config.cjs`. Use the realtime variants when you also need a
 WebSocket or gRPC process:
 
 ```bash
@@ -141,7 +141,7 @@ rtk proxy bun run dev:grpc
 
 ```mermaid
 flowchart LR
-  CMD["bun run dev"] --> PM2["PM2 · pm2/ecosystem.dev.cjs"]
+  CMD["bun run dev"] --> PM2["PM2 · pm2/ecosystem.dev.config.cjs"]
   WS["bun run dev:websocket"] --> PM2
   GRPC["bun run dev:grpc"] --> PM2
   PM2 --> SM["jumentix-dev-service-management<br/>:3200"]
@@ -180,9 +180,9 @@ Ports per PM2 profile:
 
 | Ecosystem | Process | Port |
 | --- | --- | --- |
-| `pm2/ecosystem.dev.cjs` | `jumentix-dev-service-management` | `3200` |
-| `pm2/ecosystem.staging.cjs` | `jumentix-staging-service-management` | `4200` |
-| `pm2/ecosystem.production.cjs` | `jumentix-prod-service-management` | `5200` |
+| `pm2/ecosystem.dev.config.cjs` | `jumentix-dev-service-management` | `3200` |
+| `pm2/ecosystem.staging.config.cjs` | `jumentix-staging-service-management` | `4200` |
+| `pm2/ecosystem.production.config.cjs` | `jumentix-prod-service-management` | `5200` |
 
 ### 4.5 Process control
 

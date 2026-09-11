@@ -1699,8 +1699,28 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/service-management/test/unit/pm2Lifecycle.test.ts",
+      "path": "apps/service-management/test/unit/pm2Lifecycle.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/service-management/test/unit/designerNormalizers.test.ts",
       "path": "apps/service-management/test/unit/designerNormalizers.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/pm2DaemonLock.test.ts",
+      "path": "apps/service-management/test/unit/pm2DaemonLock.test.ts",
       "layer": "service-management/designer",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -1791,6 +1811,16 @@
     {
       "id": "apps/service-management/test/unit/designerSync.test.ts",
       "path": "apps/service-management/test/unit/designerSync.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/helpPopoverState.test.ts",
+      "path": "apps/service-management/test/unit/helpPopoverState.test.ts",
       "layer": "service-management/designer",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -1929,6 +1959,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/service-management/test/unit/monitoringChartFormat.test.ts",
+      "path": "apps/service-management/test/unit/monitoringChartFormat.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/service-management/test/unit/canaMigrationFailures.test.ts",
       "path": "apps/service-management/test/unit/canaMigrationFailures.test.ts",
       "layer": "service-management/designer",
@@ -1981,6 +2021,16 @@
     {
       "id": "apps/service-management/test/unit/designerPackageVersioning.test.ts",
       "path": "apps/service-management/test/unit/designerPackageVersioning.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/renderGuard.test.ts",
+      "path": "apps/service-management/test/unit/renderGuard.test.ts",
       "layer": "service-management/designer",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -4673,9 +4723,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 247,
+    "unit": 252,
     "integration": 100,
     "smoke": 2,
-    "suites": 397
+    "suites": 402
   }
 }

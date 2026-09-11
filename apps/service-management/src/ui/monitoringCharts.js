@@ -5,7 +5,6 @@ import {
   min as d3Min,
   pie as d3Pie,
   scaleLinear,
-  scaleOrdinal,
   sum as d3Sum
 } from 'd3';
 
@@ -20,6 +19,77 @@ export function colorForStatus(status) {
   if (key === 'stopped') return '#6b7280';
   if (key === 'errored') return '#dc2626';
   return '#9ca3af';
+}
+
+export function formatBytesValue(bytes) {
+  const value = Number(bytes || 0);
+  if (value >= 1024 ** 3) return `${(value / 1024 ** 3).toFixed(1)} GB`;
+  if (value >= 1024 ** 2) return `${(value / 1024 ** 2).toFixed(1)} MB`;
+  if (value >= 1024) return `${(value / 1024).toFixed(1)} KB`;
+  return `${value} B`;
+}
+
+export function formatPercentValue(value, digits = 0) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return '—';
+  return `${number.toFixed(digits)}%`;
+}
+
+// Window statistics for the chart headers (JUM-770): current value plus the
+// min/max of the retained window, so every chart is readable as numbers, not
+// only as a shape.
+export function summarizeSeries(series) {
+  const values = Array.isArray(series) ? series.map(Number).filter(Number.isFinite) : [];
+  if (!values.length) return null;
+  return {
+    current: values[values.length - 1],
+    min: d3Min(values) ?? 0,
+    max: d3Max(values) ?? 0,
+    count: values.length
+  };
+}
+
+export function formatSeriesSummary(series, format = (value) => String(value)) {
+  const summary = summarizeSeries(series);
+  if (!summary) return '—';
+  return `now ${format(summary.current)} · min ${format(summary.min)} · max ${format(summary.max)}`;
+}
+
+// Throughput between the two most recent samples of a cumulative byte counter
+// (e.g. diskIo readBytes/writeBytes), in bytes per second.
+export function computeWindowThroughput(series, intervalSeconds = 1) {
+  const values = Array.isArray(series) ? series.map(Number).filter(Number.isFinite) : [];
+  if (values.length < 2) return null;
+  const delta = values[values.length - 1] - values[values.length - 2];
+  const seconds = Number(intervalSeconds) > 0 ? Number(intervalSeconds) : 1;
+  return Math.max(0, delta / seconds);
+}
+
+export function formatThroughputValue(bytesPerSecond) {
+  if (bytesPerSecond == null || !Number.isFinite(Number(bytesPerSecond))) return '—';
+  return `${formatBytesValue(bytesPerSecond)}/s`;
+}
+
+// Shared palette + index mapping for the stacked-area charts and their DOM
+// legends, so a legend swatch always matches the area it labels.
+export const STACK_PALETTE = ['#2563eb', '#7c3aed', '#059669', '#d97706', '#dc2626', '#0891b2'];
+
+export function stackColorAt(index, palette = STACK_PALETTE) {
+  const colors = Array.isArray(palette) && palette.length ? palette : STACK_PALETTE;
+  return colors[index % colors.length];
+}
+
+export function legendEntriesForStack(seriesByName, options = {}) {
+  const names = Object.keys(seriesByName || {});
+  const palette = options.colors || STACK_PALETTE;
+  return names.map((name, index) => {
+    const series = Array.isArray(seriesByName[name]) ? seriesByName[name].map(Number).filter(Number.isFinite) : [];
+    return {
+      name,
+      color: stackColorAt(index, palette),
+      current: series.length ? series[series.length - 1] : 0
+    };
+  });
 }
 
 function clearCanvas(canvas) {
@@ -51,9 +121,13 @@ export function drawSparkline(canvas, series, options = {}) {
     ctx.stroke();
     return;
   }
+  const overlayValues = Array.isArray(options.overlay?.series)
+    ? options.overlay.series.map(Number).filter(Number.isFinite)
+    : [];
+  const allValues = overlayValues.length ? values.concat(overlayValues) : values;
   const x = scaleLinear().domain([0, values.length - 1]).range([0, width]);
   const y = scaleLinear()
-    .domain([d3Min(values) ?? 0, d3Max(values) ?? 1])
+    .domain([d3Min(allValues) ?? 0, d3Max(allValues) ?? 1])
     .range([height - 2, 2]);
   ctx.beginPath();
   values.forEach((value, index) => {
@@ -70,6 +144,35 @@ export function drawSparkline(canvas, series, options = {}) {
   ctx.closePath();
   ctx.fillStyle = options.fill || 'rgba(37, 99, 235, 0.12)';
   ctx.fill();
+  // Optional second series drawn as a bare line on the same scale (e.g. load1
+  // next to host CPU) — no fill, its own stroke.
+  if (overlayValues.length >= 2) {
+    const overlayX = scaleLinear().domain([0, overlayValues.length - 1]).range([0, width]);
+    ctx.beginPath();
+    overlayValues.forEach((value, index) => {
+      const px = overlayX(index);
+      const py = y(value);
+      if (index === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    });
+    ctx.strokeStyle = options.overlay.stroke || '#f59e0b';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+  // Optional Y-axis ticks (min/max with unit) — sparklines otherwise carry no
+  // readable scale at all.
+  if (options.yAxis) {
+    const format = typeof options.yAxis.format === 'function'
+      ? options.yAxis.format
+      : (value) => String(value);
+    ctx.fillStyle = options.yAxis.color || 'rgba(226, 232, 240, 0.75)';
+    ctx.font = '9px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.fillText(format(d3Max(allValues) ?? 0), 2, 1);
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(format(d3Min(allValues) ?? 0), 2, height - 1);
+  }
 }
 
 export function drawRingGauge(canvas, ratio, options = {}) {
@@ -126,10 +229,9 @@ export function drawStackedArea(canvas, seriesByName, options = {}) {
   const max = d3Max(totals) || 1;
   const x = scaleLinear().domain([0, length - 1]).range([0, width]);
   const y = scaleLinear().domain([0, max]).range([height, 0]);
-  const palette = options.colors || ['#2563eb', '#7c3aed', '#059669', '#d97706', '#dc2626', '#0891b2'];
-  const color = scaleOrdinal().domain(names).range(palette);
+  const palette = options.colors || STACK_PALETTE;
   const stack = Array(length).fill(0);
-  names.forEach((name) => {
+  names.forEach((name, nameIndex) => {
     const series = seriesByName[name] || [];
     ctx.beginPath();
     for (let index = 0; index < length; index += 1) {
@@ -141,7 +243,7 @@ export function drawStackedArea(canvas, seriesByName, options = {}) {
       ctx.lineTo(x(index), y(stack[index]));
     }
     ctx.closePath();
-    ctx.fillStyle = color(name);
+    ctx.fillStyle = stackColorAt(nameIndex, palette);
     ctx.globalAlpha = 0.55;
     ctx.fill();
     ctx.globalAlpha = 1;
@@ -168,6 +270,15 @@ export function drawStatusBars(canvas, statusCounts) {
     generator(slice);
     ctx.fillStyle = colorForStatus(slice.data[0]);
     ctx.fill();
+  });
+  // Count labels at each slice centroid — the donut alone never said how many.
+  arcs.forEach((slice) => {
+    const [labelX, labelY] = generator.centroid(slice);
+    ctx.fillStyle = '#f8fafc';
+    ctx.font = '600 10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(String(slice.data[1]), labelX, labelY);
   });
   ctx.restore();
   void d3Sum;

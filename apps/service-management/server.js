@@ -5,6 +5,8 @@ const { collectHostMetrics } = require('./src/runtime/hostMetrics');
 const { attachAsyncContextMetrics } = require('./src/runtime/asyncContextScrape');
 const { attachProcessDiskIo } = require('./src/runtime/processDiskIo');
 const { createPm2WsHub } = require('./src/runtime/pm2WsHub');
+const { createPm2ActionRunner } = require('./src/runtime/pm2Lifecycle');
+const { withPm2DaemonLock } = require('./src/runtime/pm2DaemonLock');
 
 const rootDirectory = __dirname;
 const projectRoot = path.resolve(__dirname, '..');
@@ -130,12 +132,16 @@ const requireJsFile = require.resolve('requirejs/require');
 const pm2EcosystemDirectory = process.env.JUMENTIX_SERVICE_MANAGEMENT_PM2_DIR
   ? path.resolve(process.env.JUMENTIX_SERVICE_MANAGEMENT_PM2_DIR)
   : path.join(repoRoot, 'pm2');
+// JUM-770: ecosystem files carry the `.config.cjs` suffix because pm2 only
+// treats `.json/.yml/.yaml/.config.js/.config.cjs/.config.mjs` as config
+// files (pm2 Common.isConfigFile). A plain `.cjs` file is launched as a
+// script — `--only` is ignored and the start reports a phantom success.
 const ecosystemFileByRuntime = {
-  dev: 'ecosystem.dev.cjs',
-  development: 'ecosystem.dev.cjs',
-  staging: 'ecosystem.staging.cjs',
-  production: 'ecosystem.production.cjs',
-  prod: 'ecosystem.production.cjs',
+  dev: 'ecosystem.dev.config.cjs',
+  development: 'ecosystem.dev.config.cjs',
+  staging: 'ecosystem.staging.config.cjs',
+  production: 'ecosystem.production.config.cjs',
+  prod: 'ecosystem.production.config.cjs',
   ci: 'ecosystem.ci.cjs',
   test: 'ecosystem.ci.cjs'
 };
@@ -592,7 +598,9 @@ function summarizePm2Processes(processes) {
 }
 
 function readPm2ProcessList() {
-  return new Promise((resolve, reject) => {
+  // Serialized (pm2DaemonLock): the pm2 module is a singleton — a concurrent
+  // disconnect would kill this RPC mid-flight (JUM-770).
+  return withPm2DaemonLock(() => new Promise((resolve, reject) => {
     let pm2;
     try {
       pm2 = loadPm2Module();
@@ -619,7 +627,7 @@ function readPm2ProcessList() {
         resolve(Array.isArray(processList) ? processList : []);
       });
     });
-  });
+  }));
 }
 
 async function readPm2Metrics(runtime) {
@@ -667,7 +675,9 @@ function loadPm2Module() {
 }
 
 function runPm2Method(methodName, ...args) {
-  return new Promise((resolve, reject) => {
+  // Serialized (pm2DaemonLock): same singleton-client race as
+  // readPm2ProcessList — an overlapping disconnect hangs the action (JUM-770).
+  return withPm2DaemonLock(() => new Promise((resolve, reject) => {
     let pm2;
     try {
       pm2 = loadPm2Module();
@@ -695,88 +705,18 @@ function runPm2Method(methodName, ...args) {
         resolve(result);
       });
     });
-  });
+  }));
 }
 
-async function runPm2Action(request) {
-  const action = String(request?.action || '');
-  const scope = String(request?.scope || 'process');
-  const environment = normalizeEcosystemEnvironment(request?.environment || 'dev');
-  if (!['start', 'stop', 'restart'].includes(action)) {
-    const error = new Error(`Unsupported PM2 action: ${action}`);
-    error.code = 'UNSUPPORTED_PM2_ACTION';
-    throw error;
-  }
-  if (scope === 'process') {
-    const target = request?.name || request?.pmId;
-    if (target === undefined || target === null || target === '') {
-      const error = new Error('Process action requires name or pmId.');
-      error.code = 'INVALID_PM2_TARGET';
-      throw error;
-    }
-    if (action === 'start') {
-      const live = (await readPm2ProcessList()).map(normalizePm2Process);
-      const existing = live.find((entry) => (
-        (request?.name && entry.name === request.name)
-        || (request?.pmId != null && entry.pmId === Number(request.pmId))
-        || entry.name === String(target)
-        || entry.pmId === Number(target)
-      ));
-      if (existing) {
-        // Already registered (e.g. stopped): start by name, not ecosystem --only.
-        await runPm2Method('start', String(existing.name || existing.pmId));
-        return;
-      }
-      const ecosystem = readPm2Ecosystem(environment);
-      const onlyName = String(request?.name || target);
-      if (ecosystem.exists && request?.name) {
-        await runPm2Method('start', ecosystem.path, { only: onlyName });
-        return;
-      }
-      if (!ecosystem.exists) {
-        await runPm2Method('start', String(target));
-        return;
-      }
-      const error = new Error(
-        `Process "${onlyName}" is not in the PM2 list and cannot be started from the ecosystem without a name.`
-      );
-      error.code = 'INVALID_PM2_TARGET';
-      throw error;
-    }
-    await runPm2Method(action, target);
-    return;
-  }
-  if (scope === 'namespace') {
-    const namespace = String(request?.namespace || 'default');
-    const list = (await readPm2ProcessList()).map(normalizePm2Process)
-      .filter((processEntry) => processEntry.namespace === namespace);
-    for (const processEntry of list) {
-      const target = processEntry.name || processEntry.pmId;
-      // Namespace start operates on processes already listed — start by name.
-      await runPm2Method(action === 'start' ? 'start' : action, String(target));
-    }
-    return;
-  }
-  if (scope === 'ecosystem-missing') {
-    const name = String(request?.name || '');
-    if (!name) {
-      const error = new Error('ecosystem-missing start requires name.');
-      error.code = 'INVALID_PM2_TARGET';
-      throw error;
-    }
-    const ecosystem = readPm2Ecosystem(environment);
-    if (!ecosystem.exists) {
-      const error = new Error(`Ecosystem file missing for ${environment}.`);
-      error.code = 'ECOSYSTEM_MISSING';
-      throw error;
-    }
-    await runPm2Method('start', ecosystem.path, { only: name });
-    return;
-  }
-  const error = new Error(`Unsupported PM2 action scope: ${scope}`);
-  error.code = 'UNSUPPORTED_PM2_SCOPE';
-  throw error;
-}
+// Lifecycle rules (start verification, service-manager self-guard, bulk
+// skip-and-report) live in src/runtime/pm2Lifecycle.js (JUM-770) where they
+// are unit-testable without a PM2 daemon; this is only the wiring.
+const runPm2Action = createPm2ActionRunner({
+  normalizeEnvironment: normalizeEcosystemEnvironment,
+  readEcosystem: readPm2Ecosystem,
+  listProcesses: async () => (await readPm2ProcessList()).map(normalizePm2Process),
+  runMethod: runPm2Method
+});
 
 function writeJson(response, statusCode, payload) {
   const sanitizedJson = JSON.stringify(payload)

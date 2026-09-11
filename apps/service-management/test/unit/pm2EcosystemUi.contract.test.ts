@@ -72,7 +72,10 @@ describe('service management PM2 preview UI contract (JUM-480)', () => {
     expect(server).toContain('createPm2WsHub');
     expect(server).toContain('attachProcessDiskIo');
     expect(server).not.toContain('darwinProcessDiskIo.py');
-    expect(server).toContain('Already registered');
+    const lifecycle = readDesignerSource('src/runtime/pm2Lifecycle.js');
+    expect(lifecycle).toContain('Already registered');
+    expect(lifecycle).toContain('SELF_ACTION_BLOCKED');
+    expect(lifecycle).toContain('START_VERIFY_FAILED');
     expect(wsHub).toContain('/api/runtime/pm2-ws');
     expect(wsHub).toContain('createPm2WsHub');
     const charts = readDesignerSource('src/ui/monitoringCharts.js');
@@ -111,13 +114,40 @@ describe('service management PM2 preview UI contract (JUM-480)', () => {
   it('keeps the server ecosystem mapping aligned with the repository files', () => {
     expect.hasAssertions();
     const server = readDesignerSource('server.js');
-    expect(server).toContain('dev: \'ecosystem.dev.cjs\'');
-    expect(server).toContain('staging: \'ecosystem.staging.cjs\'');
-    expect(server).toContain('production: \'ecosystem.production.cjs\'');
+    expect(server).toContain('dev: \'ecosystem.dev.config.cjs\'');
+    expect(server).toContain('staging: \'ecosystem.staging.config.cjs\'');
+    expect(server).toContain('production: \'ecosystem.production.config.cjs\'');
     expect(server).toContain('ci: \'ecosystem.ci.cjs\'');
     ['dev', 'staging', 'production'].forEach((environment) => {
-      const ecosystemPath = path.resolve(process.cwd(), 'pm2', `ecosystem.${environment}.cjs`);
+      const ecosystemPath = path.resolve(process.cwd(), 'pm2', `ecosystem.${environment}.config.cjs`);
       expect(fs.existsSync(ecosystemPath)).toBe(true);
+    });
+  });
+
+  it('carries no reference to the pre-JUM-770 ecosystem file names (pm2 would launch them as scripts)', () => {
+    expect.hasAssertions();
+    // pm2 only treats .json/.yml/.yaml/.config.js/.config.cjs/.config.mjs as
+    // config files; ecosystem.dev.cjs fell through to _startScript, ignored
+    // --only and reported a phantom success. The old names must stay gone.
+    const staleNames = ['ecosystem.dev.cjs', 'ecosystem.staging.cjs', 'ecosystem.production.cjs'];
+    const sourcesToScan = [
+      'server.js',
+      'script.js',
+      'index.html',
+      'src/ui/monitoringApp.js',
+      'src/runtime/pm2Lifecycle.js'
+    ];
+    sourcesToScan.forEach((relative) => {
+      const source = readDesignerSource(relative);
+      staleNames.forEach((stale) => {
+        expect(source).not.toContain(`'${stale}'`);
+        expect(source).not.toContain(`"${stale}"`);
+        expect(source).not.toContain(`/${stale}`);
+      });
+    });
+    const rootPackageJson = fs.readFileSync(path.resolve(process.cwd(), 'package.json'), 'utf-8');
+    staleNames.forEach((stale) => {
+      expect(rootPackageJson).not.toContain(stale);
     });
   });
 });

@@ -221,7 +221,7 @@ export const StatusSurfaces: Story = {
         </div>
       </FixedSurfaceDemo>
       <p className="hint status-line status-info" role="status" aria-live="polite">
-        Loaded ecosystem.dev.cjs — 2 processes.
+        Loaded ecosystem.dev.config.cjs — 2 processes.
       </p>
       <p className="hint status-line status-error" role="status" aria-live="polite">
         Port 70000 is outside the accepted range (1-65535).

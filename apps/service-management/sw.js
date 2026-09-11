@@ -51,7 +51,7 @@
 
 /* eslint-env serviceworker, node */
 
-const SHELL_VERSION = '0.9.48';
+const SHELL_VERSION = '0.9.49';
 
 // Prefix shared with src/pwa/pwaShell.js (the page-side reset deletes by
 // prefix). The two copies cannot import each other — a classic worker has no
@@ -111,10 +111,12 @@ const SHELL_ASSETS = [
   './src/ui/canvas.js',
   './src/ui/canvasImage.js',
   './src/ui/contextMenu.js',
+  './src/ui/helpPopoverState.js',
   './src/ui/inspectors.js',
   './src/ui/monitoringApp.js',
   './src/ui/monitoringCharts.js',
   './src/ui/processHelpCatalog.js',
+  './src/ui/renderGuard.js',
   './src/ui/sidebarGroups.js',
   './src/ui/tabs.js',
   // The vendored Cana browser bundle (JUM-484) — the designer's sole store

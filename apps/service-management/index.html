@@ -14,7 +14,7 @@
        styles.css, which consumes them. tokens.css is vendored from
        apps/jumentix-website/components/design-system/tokens.css. -->
   <link rel="stylesheet" href="./tokens.css" />
-  <link rel="stylesheet" href="./styles.css?v=0.9.48" />
+  <link rel="stylesheet" href="./styles.css?v=0.9.49" />
 </head>
 <body>
   <div class="service-management-shell">
@@ -772,6 +772,7 @@
           <div class="monitoring-health-indicator">
             <canvas id="pm2-health-gauge" width="56" height="56" aria-hidden="true"></canvas>
             <strong id="pm2-health-label">Waiting for stream</strong>
+            <span id="pm2-health-gauge-stats" class="chart-stats">—</span>
           </div>
           <p id="pm2-metrics-status" class="hint status-line" role="status" aria-live="polite">Open this tab to connect the PM2 WebSocket stream.</p>
           <span id="pm2-metrics-updated-at" class="monitoring-updated-at">--</span>
@@ -784,9 +785,18 @@
               <p id="host-cpu-meta" class="hint">—</p>
             </header>
             <div class="monitoring-host-visuals">
-              <canvas id="host-cpu-gauge" width="96" height="96"></canvas>
-              <canvas id="host-cpu-spark" width="180" height="48"></canvas>
-              <canvas id="host-cpu-cores" width="220" height="64"></canvas>
+              <div class="chart-block">
+                <canvas id="host-cpu-gauge" width="96" height="96"></canvas>
+                <p id="host-cpu-gauge-stats" class="chart-stats">—</p>
+              </div>
+              <div class="chart-block">
+                <canvas id="host-cpu-spark" width="180" height="48"></canvas>
+                <p id="host-cpu-spark-stats" class="chart-stats">—</p>
+              </div>
+              <div class="chart-block">
+                <canvas id="host-cpu-cores" width="220" height="64"></canvas>
+                <p id="host-cpu-cores-stats" class="chart-stats">—</p>
+              </div>
             </div>
           </article>
           <article class="monitoring-host-card">
@@ -795,9 +805,18 @@
               <p id="host-mem-meta" class="hint">—</p>
             </header>
             <div class="monitoring-host-visuals">
-              <canvas id="host-mem-gauge" width="96" height="96"></canvas>
-              <canvas id="host-mem-spark" width="180" height="48"></canvas>
-              <canvas id="host-mem-breakdown" width="220" height="64"></canvas>
+              <div class="chart-block">
+                <canvas id="host-mem-gauge" width="96" height="96"></canvas>
+                <p id="host-mem-gauge-stats" class="chart-stats">—</p>
+              </div>
+              <div class="chart-block">
+                <canvas id="host-mem-spark" width="180" height="48"></canvas>
+                <p id="host-mem-spark-stats" class="chart-stats">—</p>
+              </div>
+              <div class="chart-block">
+                <canvas id="host-mem-breakdown" width="220" height="64"></canvas>
+                <p id="host-mem-breakdown-stats" class="chart-stats">—</p>
+              </div>
             </div>
           </article>
           <article class="monitoring-host-card">
@@ -806,7 +825,10 @@
               <p id="host-disk-meta" class="hint">—</p>
             </header>
             <div class="monitoring-host-visuals">
-              <canvas id="host-disk-bars" width="320" height="96"></canvas>
+              <div class="chart-block">
+                <canvas id="host-disk-bars" width="320" height="96"></canvas>
+                <p id="host-disk-bars-stats" class="chart-stats">—</p>
+              </div>
             </div>
           </article>
           <article class="monitoring-host-card">
@@ -815,12 +837,19 @@
               <p class="hint">CPU · memory · async ALS</p>
             </header>
             <div class="monitoring-host-visuals monitoring-host-visuals-agg">
-              <canvas id="proc-cpu-spark" width="140" height="48"></canvas>
-              <canvas id="proc-mem-spark" width="140" height="48"></canvas>
+              <div class="chart-block">
+                <canvas id="proc-cpu-spark" width="140" height="48"></canvas>
+                <p id="proc-cpu-spark-stats" class="chart-stats">—</p>
+              </div>
+              <div class="chart-block">
+                <canvas id="proc-mem-spark" width="140" height="48"></canvas>
+                <p id="proc-mem-spark-stats" class="chart-stats">—</p>
+              </div>
               <div class="async-sum-block">
                 <span class="metric-label">ALS active Σ</span>
                 <strong id="async-active-sum">0</strong>
                 <canvas id="async-active-spark" width="140" height="40"></canvas>
+                <p id="async-active-spark-stats" class="chart-stats">—</p>
               </div>
             </div>
           </article>
@@ -830,14 +859,17 @@
           <article class="monitoring-chart-panel">
             <h3>CPU stack (filtered)</h3>
             <canvas id="stack-cpu-canvas" width="420" height="140"></canvas>
+            <ul id="stack-cpu-legend" class="chart-legend"></ul>
           </article>
           <article class="monitoring-chart-panel">
             <h3>Memory stack (filtered)</h3>
             <canvas id="stack-mem-canvas" width="420" height="140"></canvas>
+            <ul id="stack-mem-legend" class="chart-legend"></ul>
           </article>
           <article class="monitoring-chart-panel">
             <h3>Status mix</h3>
             <canvas id="status-bars-canvas" width="280" height="140"></canvas>
+            <p id="status-bars-stats" class="chart-stats">—</p>
           </article>
         </section>
 
@@ -1002,7 +1034,7 @@
       }
     }
   </script>
-  <script type="module" src="./script.js?v=0.9.48"></script>
+  <script type="module" src="./script.js?v=0.9.49"></script>
   <!-- PWA shell registration (JUM-489). Kept out of script.js on purpose:
        the service worker owns installability and shell caching, orthogonal to
        the designer boot — this snippet never reorders load → wire → render.

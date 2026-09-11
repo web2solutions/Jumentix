@@ -215,8 +215,8 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
    - **Contract 1b — `GET /api/runtime/pm2-ecosystem` (landed by `JUM-480`).**
      Read-only; the single source of the designer's PM2 runtime profile preview.
      - **Environments and file mapping.** Accepted `environment` values:
-       `dev`/`development` → `ecosystem.dev.cjs`, `staging` →
-       `ecosystem.staging.cjs`, `production`/`prod` → `ecosystem.production.cjs`,
+       `dev`/`development` → `ecosystem.dev.config.cjs`, `staging` →
+       `ecosystem.staging.config.cjs`, `production`/`prod` → `ecosystem.production.config.cjs`,
        `ci`/`test` → `ecosystem.ci.cjs`. Same resolution discipline as Contract 1:
        case-insensitive after trimming, unknown values explicitly rejected with
        `400` and the accepted list, default `NODE_ENV` or `dev` when omitted.
