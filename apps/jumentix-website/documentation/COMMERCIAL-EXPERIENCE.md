@@ -22,7 +22,7 @@ open-source framework websites while preserving Jumentix language, product asset
 | `/product` | Complete platform capability and delivery lifecycle |
 | `/use-cases` and children | REST, realtime, modular SaaS, microservices, and offline PWA blueprints |
 | `/integrations` | HTTP, realtime, persistence, messaging, and deployment inventory |
-| `/architecture` | DDD, Hexagonal, Event-Driven, SOLID, and contract boundaries |
+| `/architecture` | DDD, Hexagonal, Event-Driven, SOLID, and contract boundaries, plus an interactive backend-template hexagonal map (including `interface/GUI`) |
 | `/security-compliance` | RBAC, PCI-oriented controls, secret safety, and evidence |
 | `/pricing-or-engagement` | Open-source, pilot, and platform adoption paths |
 | `/community` | Contribution workflow and governance |
