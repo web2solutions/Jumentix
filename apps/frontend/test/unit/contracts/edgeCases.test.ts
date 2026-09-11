@@ -3,7 +3,7 @@ import { describe, expect, it } from 'bun:test';
 import { fieldDescriptors } from '@/contracts/formSchema';
 import { validateAll, validateField } from '@/contracts/oasForm';
 import {
-  documentMaskCap,
+  documentInputCap,
   maskCpf,
   maskPhone,
   maskSsn,
@@ -80,7 +80,7 @@ describe('OAS facets closed (JUM-768)', () => {
     expect(maskCpf('12345678901234567')).toBe('123.456.789-01'); // corta no cap
     expect(maskSsn('123456789999')).toBe('123-45-6789');
     expect(maskPhone('+55', '99805403399')).toBe('99805-4033');
-    expect(documentMaskCap('CPF', 'BR')).toBe(14);
+    expect(documentInputCap('CPF', 'BR')).toBe(14);
   });
 
   it('phone mask cap comes from the OAS mask', () => {

@@ -17,6 +17,7 @@ import {
 } from '@coreui/vue';
 
 import OasFormField from '@/components/OasFormField.vue';
+import SearchableEnumInput from '@/components/SearchableEnumInput.vue';
 import { fieldDescriptors, type FieldDescriptor } from '@/contracts/formSchema';
 import { collectBody, validateAll } from '@/contracts/oasForm';
 import { maskPhone, phoneMaskCap, validatePhone } from '@/contracts/validation';
@@ -90,9 +91,10 @@ const update = (id: string) => {
 };
 const remove = (id: string) => run(() => profile.removePhone(id), 'Telefone removido.');
 
-const cellControl = (descriptor: FieldDescriptor): 'checkbox' | 'text' => (
-  descriptor.type === 'boolean' ? 'checkbox' : 'text'
-);
+const cellControl = (descriptor: FieldDescriptor): 'checkbox' | 'select' | 'text' => {
+  if (descriptor.type === 'boolean') return 'checkbox';
+  return descriptor.enum ? 'select' : 'text';
+};
 </script>
 
 <template>
@@ -117,6 +119,15 @@ const cellControl = (descriptor: FieldDescriptor): 'checkbox' | 'text' => (
                 v-if="cellControl(d) === 'checkbox'"
                 v-model="edits[item.id][d.name]"
                 :aria-label="d.name"
+              />
+              <SearchableEnumInput
+                v-else-if="cellControl(d) === 'select'"
+                :id="`oas-cell-${item.id}-${d.name}`"
+                :model-value="String(edits[item.id][d.name] ?? '')"
+                :options="d.enum ?? []"
+                :maxlength="d.maxLength"
+                :aria-label="d.name"
+                @update:model-value="edits[item.id][d.name] = $event"
               />
               <CFormInput
                 v-else

@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { CFormCheck, CFormInput, CFormLabel } from '@coreui/vue';
 
+import SearchableEnumInput from '@/components/SearchableEnumInput.vue';
 import type { FieldDescriptor } from '@/contracts/formSchema';
 
 /**
@@ -25,7 +26,6 @@ const emit = defineEmits<{
 }>();
 
 const inputId = computed(() => `oas-field-${props.descriptor.name}`);
-const listId = computed(() => `oas-list-${props.descriptor.name}`);
 
 // Effective cap: declared maxLength wins; a mask derives its own length.
 const maxLength = computed(() => props.descriptor.maxLength ?? props.maskCap);
@@ -74,19 +74,15 @@ const placeholder = computed(() => (
         <span v-if="descriptor.required" class="text-danger">*</span>
       </CFormLabel>
       <template v-if="descriptor.enum">
-        <CFormInput
+        <SearchableEnumInput
           :id="inputId"
-          v-model="text"
-          type="text"
-          :list="listId"
-          :placeholder="placeholder"
-          :required="descriptor.required"
+          :model-value="text"
+          :options="descriptor.enum"
           :maxlength="maxLength"
+          :aria-label="descriptor.name"
           :invalid="Boolean(invalid)"
+          @update:model-value="text = $event"
         />
-        <datalist :id="listId">
-          <option v-for="option in descriptor.enum" :key="option" :value="option" />
-        </datalist>
       </template>
       <CFormInput
         v-else
