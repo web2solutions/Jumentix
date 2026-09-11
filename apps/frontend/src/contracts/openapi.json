@@ -2049,6 +2049,7 @@
             "example": "Bearer",
             "default": "Bearer",
             "description": "HTTP token schema type",
+            "x-hide": true,
             "enum": [
               "Basic",
               "Bearer"

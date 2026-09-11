@@ -9,13 +9,16 @@ describe('formSchema runtime engine (JUM-766)', () => {
     const descriptors = fieldDescriptors('RequestLogin');
     const username = descriptors.find((d) => d.name === 'username');
     const password = descriptors.find((d) => d.name === 'password');
-    const schemaType = descriptors.find((d) => d.name === 'schemaType');
 
     expect(username).toMatchObject({ type: 'string', required: true, minLength: 1 });
     expect(password).toMatchObject({ required: true, minLength: 2, format: 'password' });
+    // schemaType is `x-hide: true` (JUM-769): still in the contract…
+    const schema = resolveSchema('RequestLogin');
+    const schemaType = schema.properties?.schemaType as Record<string, unknown>;
     expect(schemaType?.enum).toEqual(['Basic', 'Bearer']);
     expect(schemaType?.default).toBe('Bearer');
-    expect(descriptors.map((d) => d.name)).toEqual(['username', 'password', 'schemaType']);
+    // …but never surfaces as a form field.
+    expect(descriptors.map((d) => d.name)).toEqual(['username', 'password']);
     expect(schemaType?.example).toBe('Bearer');
     expect(username?.description).toBe('Username');
   });
@@ -60,8 +63,9 @@ describe('oasForm collect/validate (JUM-766)', () => {
   it('collectBody keys come from descriptor names and declared defaults fill gaps', () => {
     expect.assertions(2);
     const body = collectBody(descriptors, { username: 'me@mydomain.com', password: 'secret' });
-    expect(body).toEqual({ username: 'me@mydomain.com', password: 'secret', schemaType: 'Bearer' });
-    expect(Object.keys(body)).toEqual(['username', 'password', 'schemaType']);
+    // schemaType is x-hidden (JUM-769): not collected; the server default applies.
+    expect(body).toEqual({ username: 'me@mydomain.com', password: 'secret' });
+    expect(Object.keys(body)).toEqual(['username', 'password']);
   });
 
   it('validateAll enforces minLength from the OAS', () => {
@@ -72,8 +76,8 @@ describe('oasForm collect/validate (JUM-766)', () => {
 
   it('validateField enforces enum membership', () => {
     expect.assertions(1);
-    const schemaType = descriptors.find((d) => d.name === 'schemaType');
-    expect(validateField(schemaType!, 'Digest')).toBe('schemaType deve ser um de: Basic, Bearer.');
+    const type = fieldDescriptors('RequestCreateDocument').find((d) => d.name === 'type');
+    expect(validateField(type!, 'RG3')).toBe('type deve ser um de: CPF, RG, SSN, passport.');
   });
 
   it('validateAll enforces the register password minimum from the OAS', () => {

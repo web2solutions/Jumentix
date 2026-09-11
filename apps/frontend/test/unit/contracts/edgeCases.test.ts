@@ -102,3 +102,16 @@ describe('OAS facets closed (JUM-768)', () => {
     expect(validateAll(emailDescriptors, { email: 'ok@xpertminds.dev', type: 'work' })).toBeNull();
   });
 });
+
+describe('x-hide hides contract fields from OAS-driven forms (JUM-769)', () => {
+  it('RequestLogin schemaType stays in the contract but never renders', () => {
+    expect.assertions(4);
+    const loginDescriptors = fieldDescriptors('RequestLogin');
+    const names = loginDescriptors.map((d) => d.name);
+    expect(names).toContain('username');
+    expect(names).toContain('password');
+    expect(names).not.toContain('schemaType'); // x-hide: true in the OAS
+    // The hidden field is optional and defaulted server-side: login validates without it.
+    expect(validateAll(loginDescriptors, { username: 'a@b.co', password: 'x'.repeat(8) })).toBeNull();
+  });
+});
