@@ -24,7 +24,9 @@ export const requireScopeRedirect = async (
   const operationId = to.meta.operationId as string | undefined;
   if (!operationId) return null;
   const profile = useProfileStore();
-  if (!profile.record && !profile.loading) {
+  // Always go through load(): concurrent callers share the in-flight request,
+  // so a guard firing while the shell is still loading waits for it (JUM-772).
+  if (!profile.record) {
     try {
       await profile.load();
     } catch {

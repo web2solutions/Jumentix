@@ -8,9 +8,9 @@ export const usePermissions = () => {
   const profile = useProfileStore();
   const roles = computed<string[]>(() => profile.record?.roles ?? []);
 
-  /** Idempotent: roles come from the already-loaded profile record. */
+  /** Idempotent: roles come from the profile record; concurrent calls share one flight. */
   const ensure = async (): Promise<void> => {
-    if (!profile.record && !profile.loading) {
+    if (!profile.record) {
       try {
         await profile.load();
       } catch {

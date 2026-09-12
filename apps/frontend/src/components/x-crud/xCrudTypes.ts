@@ -50,4 +50,14 @@ export interface XCrudEntityConfig {
   rowId?: (row: Record<string, unknown>) => string;
   /** Extra row-menu actions injected by the consuming app. */
   rowActions?: Array<{ key: string; label: string; operationId?: string }>;
+  /** Short column labels (override the OAS description in the grid header). */
+  columnLabels?: Record<string, string>;
+  /** Quick context filter in the toolbar (e.g. organization select). */
+  quickFilter?: { field: string; optionsOperationId?: string; allLabel?: string };
+  /** Export-visible-rows-as-JSON toolbar action (default true). */
+  exportable?: boolean;
+  /** Bulk delete via row selection (default true). */
+  bulkDelete?: boolean;
+  /** Field rendered as a round avatar in the grid/forms (e.g. avatar). */
+  avatarField?: string;
 }

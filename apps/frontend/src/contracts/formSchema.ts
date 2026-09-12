@@ -32,6 +32,7 @@ interface RawSchema {
   properties?: Record<string, RawSchema>;
   required?: string[];
   $ref?: string;
+  items?: RawSchema;
   allOf?: RawSchema[];
   [facet: string]: unknown;
 }
@@ -103,4 +104,22 @@ export const fieldDescriptors = (schemaName: string): FieldDescriptor[] => {
         xReferences: property['x-references'] as FieldDescriptor['xReferences']
       };
     });
+};
+
+/**
+ * Descriptors for the items of an array-of-objects field (JUM-772): resolves
+ * `properties[field].items.$ref` to the item schema and iterates it. Returns
+ * undefined for scalar arrays or fields without a $ref — those are not
+ * object editors.
+ */
+export const arrayItemDescriptors = (
+  schemaName: string,
+  fieldName: string
+): FieldDescriptor[] | undefined => {
+  const schema = resolveSchema(schemaName);
+  const property = schema.properties?.[fieldName];
+  const itemRef = property?.items?.$ref;
+  if (!itemRef) return undefined;
+  const itemSchema = itemRef.replace('#/components/schemas/', '');
+  return fieldDescriptors(itemSchema).filter((d) => d.name !== 'id');
 };

@@ -18,7 +18,17 @@ export const organizationsCrudConfig: XCrudEntityConfig = {
   searchFields: ['name'],
   pagination: 'pager',
   inlineEdit: true,
-  createFields: { exclude: ['address', 'phone', 'email', 'users'] },
+  columnLabels: {
+    id: 'ID',
+    name: 'Name',
+    address: 'Addresses',
+    phone: 'Phones',
+    email: 'Emails',
+    users: 'Members',
+    createdAt: 'Created',
+    updatedAt: 'Updated'
+  },
+  createFields: { exclude: ['users'] },
   aggregates: [
     { field: 'id', op: 'count', label: 'Total organizations' },
     { field: 'users', op: 'sum', label: 'Total members' }

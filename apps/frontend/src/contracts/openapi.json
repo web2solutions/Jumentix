@@ -2220,7 +2220,7 @@
             "items": {
               "$ref": "#/components/schemas/Phone"
             },
-            "description": "User's attached documents"
+            "description": "User's attached phone numbers"
           },
           "roles": {
             "type": "array",
@@ -2296,7 +2296,7 @@
             "items": {
               "$ref": "#/components/schemas/Phone"
             },
-            "description": "User's attached documents"
+            "description": "User's attached phone numbers"
           },
           "roles": {
             "type": "array",
@@ -3429,7 +3429,7 @@
             "items": {
               "$ref": "#/components/schemas/Phone"
             },
-            "description": "User's attached documents"
+            "description": "User's attached phone numbers"
           },
           "roles": {
             "type": "array",
