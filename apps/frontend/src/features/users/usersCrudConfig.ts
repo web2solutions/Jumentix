@@ -25,6 +25,21 @@ export const usersCrudConfig: XCrudEntityConfig = {
   searchFields: ['firstName', 'lastName', 'username'],
   pagination: 'pager',
   inlineEdit: true,
+  avatarField: 'avatar',
+  quickFilter: { field: 'organization', optionsOperationId: 'getAllOrganizations', allLabel: 'All Organizations' },
+  columnLabels: {
+    id: 'ID',
+    firstName: 'First name',
+    lastName: 'Last name',
+    username: 'Username',
+    organization: 'Organization',
+    emails: 'Emails',
+    documents: 'Documents',
+    phones: 'Phones',
+    roles: 'Roles',
+    createdAt: 'Created',
+    updatedAt: 'Updated'
+  },
   aggregates: [
     { field: 'id', op: 'count', label: 'Total users' },
     {
@@ -35,7 +50,7 @@ export const usersCrudConfig: XCrudEntityConfig = {
   arrayOptions: { roles: rbacRoleNames() },
   createFields: {
     // RequestCreateUser.emails (minItems 1) is satisfied by one primary email.
-    exclude: ['emails', 'documents', 'phones'],
+    exclude: ['emails'],
     extra: [primaryEmailField]
   },
   beforeSubmit: (body, mode) => {

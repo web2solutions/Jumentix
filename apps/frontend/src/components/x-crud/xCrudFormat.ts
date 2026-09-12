@@ -38,3 +38,29 @@ export const isInlineEditable = (descriptor: FieldDescriptor): boolean => (
 
 /** True for array-of-scalars fields (chips/checkbox groups). */
 export const isScalarArray = (descriptor: FieldDescriptor): boolean => descriptor.type === 'array';
+
+/** Stable palette for enum badges: same value → same CoreUI color. */
+const BADGE_COLORS = ['primary', 'success', 'info', 'warning', 'danger', 'secondary'] as const;
+
+export const badgeColorFor = (value: unknown): string => {
+  const text = String(value ?? '');
+  let hash = 0;
+  for (let index = 0; index < text.length; index += 1) {
+    hash = (hash * 31 + text.charCodeAt(index)) % 997;
+  }
+  return BADGE_COLORS[hash % BADGE_COLORS.length];
+};
+
+/** Short id for grid cells: first 8 chars, uuid-style. */
+export const shortId = (value: unknown): string => {
+  const text = String(value ?? '');
+  return text.length > 10 ? `${text.slice(0, 8)}…` : text;
+};
+
+/** "x–y de N" counter for the pager footer. */
+export const pageWindow = (page: number, pageSize: number, total: number): string => {
+  if (total === 0) return '0 de 0';
+  const from = (page - 1) * pageSize + 1;
+  const to = Math.min(page * pageSize, total);
+  return `${from}–${to} de ${total}`;
+};

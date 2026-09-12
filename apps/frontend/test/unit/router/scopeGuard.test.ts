@@ -69,4 +69,17 @@ describe('router scope guard (JUM-772)', () => {
     expect(visibleFor(['user'])).toStrictEqual(['Users']);
     expect(visibleFor(['admin'])).toStrictEqual(['Users', 'Organizations']);
   });
+
+  it('nav filtering is correct once roles load late (shell loads the profile record)', () => {
+    expect.assertions(2);
+    const group = nav.find((item) => item.name === 'Users Domain');
+    const visibleFor = (roles: string[]) => (group?.items ?? [])
+      .filter((item) => !item.operationId || can(roles, item.operationId))
+      .map((item) => item.name);
+    // Before the profile record lands (dashboard landing), nothing shows…
+    expect(visibleFor([])).toStrictEqual([]);
+    // …after the shell-level load (DefaultLayout onMounted), it does.
+    setRoles(['superadmin']);
+    expect(visibleFor(useProfileStore().record?.roles ?? [])).toStrictEqual(['Users', 'Organizations']);
+  });
 });

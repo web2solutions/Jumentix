@@ -4,6 +4,10 @@
 
 ## All Changes
 
+- 2026-09-12 feat(frontend): x-crud enterprise redesign with array editors and fk labels (JUM-773) - Eduardo Almeida
+- 2026-09-11 feat(frontend): generic x-crud kit with users domain sub-apps and oas rbac (JUM-772) (#314) - Eduardo A.
+- 2026-09-11 [JUM-757][Feature] GUI interface slot + interactive hexagonal architecture map (#298) - Eduardo A.
+- 2026-09-11 feat: add GUI interface slot and interactive hexagonal architecture map [JUM-757] - Eduardo Almeida
 - 2026-09-11 fix(service-management): repair pm2 lifecycle, self-guard, stable help, richer charts (JUM-770) (#313) - Eduardo A.
 - 2026-09-10 [JUM-769][Fix] Enforce pattern-only OAS rules at input level, visible enum affordance, x-hide (#311) - Eduardo A.
 - 2026-09-10 [JUM-767][Fix] Harden monitoring disk I/O, start-after-stop, async context, process help (#310) - Eduardo A.

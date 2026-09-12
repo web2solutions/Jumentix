@@ -108,8 +108,56 @@ Responsabilidades:
 7. Rode validações disponíveis (`lint`, `typecheck`, `build`, testes) quando existirem.
 8. Ao final de tarefas complexas, atualize este arquivo se houver novo aprendizado estrutural relevante.
 
-## 9. Estado Esperado Após Esta Limpeza
+## 9. Estado Atual
 
-- `src` vazio, pronto para reconstrução do produto final.
-- `template` preservado como catálogo TypeScript.
-- Agentes futuros devem iniciar novas features em `src` e não continuar o antigo starter CoreUI que foi removido.
+- `src` contém o produto: engine de formulários OAS-driven, auth/RBAC, profile e o kit X-CRUD (ver seção 10) com as sub-aplicações Users e Organizations.
+- `template` preservado como catálogo TypeScript de referência visual/técnica.
+- Novas features continuam nascendo em `src` seguindo as seções 5 e 10.
+
+## 10. Requisitos consolidados do produto construído em `src` (JUM-760 → JUM-772)
+
+Estado real construído e verificado. Estes requisitos são mandatórios para qualquer agente que evolua este frontend.
+
+### 10.1 Motor de formulários e contratos OAS (JUM-766/768/769)
+
+- **Formulários são montados em runtime** iterando as propriedades do schema OAS bundled (`src/contracts/openapi.json`, gerado por `scripts/sync-contracts.mjs` a partir de `spec/1.0.0.yml`). Nenhum campo é estático: renomear campo/faceta na spec reflete no próximo load sem tocar componente.
+- Facetas respeitadas: `type`, `format` (email, uuid, password, date), `required`, `minLength`, `maxLength`, `enum`, `pattern`, `default`, `nullable`, `description`, `example`, `readOnly`.
+- `x-validation` (blocos na OAS): regras por tipo+país para `Document.data` (CPF com checksum mod-11, SSN, RG, passport) e `Phone.number` (BR/US). `contracts/validation.ts` executa as regras: máscaras progressivas, checksum antes de qualquer HTTP, mensagens amigáveis.
+- **Regras pattern-only** (passport/RG) filtram o alfabeto e capam no input (`patternAlphabet`/`patternCap`/`filterDocumentData`/`documentInputCap`) — nunca "válido até falhar no save".
+- `x-hide: true` na OAS remove o campo de qualquer formulário (ex.: `RequestLogin.schemaType`; o default server-side se aplica).
+- `x-references` em propriedades uuid FK (ex.: `User.organization` → `getAllOrganizations`): base do `XCrudReferenceInput` e da resolução de labels (a grid/preview/gráficos mostram o **nome** da entidade referenciada, nunca o uuid cru).
+- **maxlength efetivo** = `maxLength` declarado ou tamanho da máscara/cap do pattern — over-typing é bloqueado no input.
+- Enums renderizam como dropdown buscável (`SearchableEnumInput`: datalist nativo + indicador ▾ + suporte a `{value,label}`); edição inline de células usa o mesmo motor.
+
+### 10.2 Autenticação, sessão e RBAC (JUM-760/761/772)
+
+- Login/registro seguem a OAS; `@jumentix/sdk-rest-client` é o único canal UI↔servidor (`getSharedApiClient`, singleton — alimenta o NetworkActivity widget via eventos `request:start/success/error` do SDK).
+- Não autenticado → redirect automático para `/login` (guard). Rotas com `meta.operationId` passam por **scope guard**: roles vêm de `profile.record` (carregado no mount da `DefaultLayout`; `profile.load()` deduplica chamadas concorrentes — callers compartilham o mesmo flight).
+- **RBAC lido da OAS**: `info.x-rbac` (matriz role→scope) + `security` por operation. `contracts/rbac.ts`: `effectiveScopes`, `can(roles, operationId)`, `hasSuperadmin`, `rbacRoleNames`. A UI esconde o que o role não pode; o backend enforça (superadmin bypassa; admin tem tenant scope; user é self-only/read).
+- **Somente superadmin gerencia múltiplas organizações** (admin não tem `create_organization`/`delete_organization`).
+- Seeds esperados: organização **XpertMinds**; `eduardo@xpertminds.dev` (superadmin), `admin@xpertminds.dev`, `user@xpertminds.dev` (senhas `eduardo@123456`/`admin@123456`/`user@123456`).
+
+### 10.3 Kit X-CRUD (`src/components/x-crud/`) — padrão enterprise (referência X-SYNTH)
+
+Componente genérico agregador, alvo de geração para qualquer domínio (pagamentos, estoque, CRM…): apps gerados emitem apenas uma `XCrudEntityConfig` por entidade (`xCrudTypes.ts`).
+
+- **Shell**: card `border-0 shadow-sm`; pills "New ${entity} | ${entity} Listing" no card header; widgets agregadores no topo da listing; grid+forms preservam estado entre views.
+- **Toolbar**: search (cil-search), quick filter de contexto (select), Delete bulk com contador de selecionados, Export JSON (linhas filtradas, client-side), Columns (visibilidade por checkbox), Refresh — botões outline sm com ícones cil.
+- **Grid** (`XCrudGrid`): coluna de seleção (select-all), headers uppercase com setas de sort (asc/desc/none, tipado), **linha de filtros por coluna no thead** (enum→select, boolean→tri-state, datas→intervalo, demais→texto capado), ids truncados mono, badges coloridos com paleta estável, booleano → ✓/✗, arrays → badge de contagem, FK → label. Coluna Actions estreita com botões-ícone (preview/edit/delete por `can()`). **A coluna `id` fica oculta por default** (Columns a reexibe). Inline edit opcional por célula com confirm/cancel explícitos. Footer: "x–y de N · Rows: [per-page] · páginas numeradas · Go to". Paginação `pager` ou smart rendering `scroll`. Loading = skeleton rows; vazio = estado central.
+- **Row detail**: card expansível abaixo da linha (borda primária) com tabs: "${entity} Data" (scalars, readonly), **uma tab exclusiva por campo array-de-objetos** (emails/documents/phones — tabela readonly limpa), "Edit ${entity}" (RBAC). Fechar via ✕.
+- **3 formulários por entidade** (`XCrudForm`): create (pill "New"), update (tab Edit), preview (readonly, grade 4 colunas, labels da spec, sensíveis mascarados, avatar como imagem). Grade 2 colunas; arrays de scalars → checkbox group (`arrayOptions`); **arrays de objetos editáveis** via `XCrudArrayEditor` (add/remove/edit inline por item, campos com as facetas da OAS); referências via `XCrudReferenceInput`; `beforeSubmit` para mapeamentos (ex.: primaryEmail → `emails[0]`).
+- **Agregadores**: widgets estilo CWidgetStatsA (fundo colorido, valor grande) + chart (`@coreui/vue-chartjs`) por faceta/`groupBy` — somente dados reais.
+- Densidade/tipografia/spacing seguem o padrão enterprise compacto (linhas e células apertadas); mobile: scroll horizontal + forms 1 coluna.
+- Ícones: `CIcon` por nome exige registro em `app.provide('icons', …)` no `main.ts` — **toda iconografia nova deve ser adicionada lá** (subconjunto curado; o set completo fica no template).
+
+### 10.4 Shell
+
+- `DefaultLayout` carrega roles no mount (nav correta em qualquer página, inclusive dashboard pós-login).
+- Header usa rotas hash (`#/users`, `#/organizations`) — links absolutos quebram o hash router.
+- Sidebar: `CNavGroup` com filtro RBAC por `operationId` (`_nav.ts`); item sem escopo de leitura não renderiza.
+
+### 10.5 Testes e qualidade
+
+- bun:test com `expect.assertions`/`expect.hasAssertions`; mocks via `globalThis.fetch` (o SDK usa fetch); sem condicionais em testes.
+- Testes de drift obrigatórios: mudança na OAS (faceta, matriz rbac) deve refletir sem mudança de código.
+- Gates: `bun run test` + `typecheck` + `lint` (frontend) verdes antes de qualquer entrega; gates completos do monorepo rodam nos hooks de commit/push.

@@ -56,6 +56,7 @@ export interface ScalarProfileInput {
 export const useProfileStore = defineStore('profile', () => {
   const record = ref<UserRecord | null>(null);
   const loading = ref(false);
+  let inflight: Promise<void> | null = null;
 
   const session = () => {
     const auth = useAuthStore();
@@ -65,19 +66,24 @@ export const useProfileStore = defineStore('profile', () => {
     return { userId: auth.userId, headers: { Authorization: auth.token } };
   };
 
-  /** GET /users/{id} (operationId getOneById). */
+  /** GET /users/{id} (operationId getOneById). Concurrent callers share one flight. */
   const load = async (): Promise<void> => {
+    if (inflight) return inflight;
     const { userId, headers } = session();
     loading.value = true;
-    try {
-      record.value = await getSharedApiClient().request<UserRecord>({
-        operationId: 'getOneById',
-        pathParams: { id: userId },
-        headers
-      });
-    } finally {
-      loading.value = false;
-    }
+    inflight = (async () => {
+      try {
+        record.value = await getSharedApiClient().request<UserRecord>({
+          operationId: 'getOneById',
+          pathParams: { id: userId },
+          headers
+        });
+      } finally {
+        loading.value = false;
+        inflight = null;
+      }
+    })();
+    return inflight;
   };
 
   /**

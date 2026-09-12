@@ -181,4 +181,32 @@ describe('useXCrud over the Users X-CRUD config', () => {
     expect.assertions(1);
     expect(usersCrudConfig.arrayOptions?.roles).toStrictEqual(['superadmin', 'admin', 'user']);
   });
+
+  it('row selection supports single, all-visible and bulk delete', async () => {
+    expect.assertions(4);
+    const crud = useXCrud(usersCrudConfig);
+    await crud.load();
+    crud.toggleSelect('u1');
+    expect([...crud.selected.value]).toStrictEqual(['u1']);
+    crud.toggleSelectAllVisible();
+    expect(crud.selected.value.size).toBe(3);
+    await crud.submitBulkDelete();
+    const deletes = recorded.filter((call) => call.method === 'DELETE');
+    expect(deletes).toHaveLength(3);
+    expect(crud.selected.value.size).toBe(0);
+  });
+
+  it('column visibility toggles hide/show and pageSize is switchable', async () => {
+    expect.assertions(4);
+    const crud = useXCrud(usersCrudConfig);
+    await crud.load();
+    const total = crud.visibleColumns.value.length;
+    crud.toggleColumn('username');
+    expect(crud.visibleColumns.value.length).toBe(total - 1);
+    crud.toggleColumn('username');
+    expect(crud.visibleColumns.value.length).toBe(total);
+    crud.setPageSize(50);
+    expect(crud.pageSize.value).toBe(50);
+    expect(crud.page.value).toBe(1);
+  });
 });

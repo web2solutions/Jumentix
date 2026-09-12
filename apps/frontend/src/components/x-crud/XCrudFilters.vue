@@ -1,80 +1,69 @@
 <script setup lang="ts">
 import { CFormInput, CFormSelect } from '@coreui/vue';
 
-import SearchableEnumInput from '@/components/SearchableEnumInput.vue';
 import type { FieldDescriptor } from '@/contracts/formSchema';
 
 /**
- * XCrudFilters (JUM-772): one filter per known data field, with the control
- * that makes sense for the OAS facet — enum → dropdown, boolean → tri-state,
- * date-time → range, everything else → text with the field's maxlength.
+ * XCrudColumnFilter (JUM-772 redesign): one compact filter control per column,
+ * rendered in the grid's second thead row (Smart Table style). The control
+ * matches the OAS facet: enum → select, boolean → tri-state, date → range.
  */
-defineProps<{
-  columns: FieldDescriptor[];
-  filters: Record<string, unknown>;
+const props = defineProps<{
+  descriptor: FieldDescriptor;
+  value: unknown;
 }>();
 
-const emit = defineEmits<{ setFilter: [field: string, value: unknown] }>();
-
-const filterable = (d: FieldDescriptor): boolean => (
-  d.type !== 'array' && d.type !== 'object' && d.format !== 'password'
-);
+const emit = defineEmits<{ set: [value: unknown] }>();
 
 const isDate = (d: FieldDescriptor): boolean => d.format === 'date-time' || d.format === 'date'
   || ['createdAt', 'updatedAt'].includes(d.name);
+
+const range = () => (Array.isArray(props.value) ? props.value as [string?, string?] : ['', '']);
 </script>
 
 <template>
-  <div class="row g-2 mb-3 xcrud-filters">
-    <div v-for="d in columns.filter(filterable)" :key="d.name" class="col-auto">
-      <label class="form-label small mb-1" :for="`filter-${d.name}`">{{ d.description ?? d.name }}</label>
-
-      <SearchableEnumInput
-        v-if="d.enum"
-        :id="`filter-${d.name}`"
-        :model-value="String(filters[d.name] ?? '')"
-        :options="d.enum"
-        :maxlength="d.maxLength"
-        @update:model-value="emit('setFilter', d.name, $event)"
-      />
-
-      <CFormSelect
-        v-else-if="d.type === 'boolean'"
-        :id="`filter-${d.name}`"
-        :model-value="String(filters[d.name] ?? '')"
-        :options="[
-          { label: 'todos', value: '' },
-          { label: 'sim', value: 'true' },
-          { label: 'não', value: 'false' }
-        ]"
-        @update:model-value="emit('setFilter', d.name, $event === '' ? '' : $event === 'true')"
-      />
-
-      <div v-else-if="isDate(d)" class="d-flex gap-1">
-        <CFormInput
-          :id="`filter-${d.name}-from`"
-          type="date"
-          aria-label="from"
-          :model-value="String((filters[d.name] as string[] | undefined)?.[0] ?? '')"
-          @update:model-value="emit('setFilter', d.name, [String($event), (filters[d.name] as string[] | undefined)?.[1] ?? ''])"
-        />
-        <CFormInput
-          :id="`filter-${d.name}-to`"
-          type="date"
-          aria-label="to"
-          :model-value="String((filters[d.name] as string[] | undefined)?.[1] ?? '')"
-          @update:model-value="emit('setFilter', d.name, [(filters[d.name] as string[] | undefined)?.[0] ?? '', String($event)])"
-        />
-      </div>
-
-      <CFormInput
-        v-else
-        :id="`filter-${d.name}`"
-        :model-value="String(filters[d.name] ?? '')"
-        :maxlength="d.maxLength"
-        size="sm"
-        @update:model-value="emit('setFilter', d.name, $event)"
-      />
-    </div>
+  <CFormSelect
+    v-if="descriptor.enum"
+    size="sm"
+    :aria-label="`filter-${descriptor.name}`"
+    :model-value="String(value ?? '')"
+    :options="[{ label: 'All', value: '' }, ...descriptor.enum.map((option) => ({ label: option, value: option }))]"
+    @update:model-value="emit('set', String($event))"
+  />
+  <CFormSelect
+    v-else-if="descriptor.type === 'boolean'"
+    size="sm"
+    :aria-label="`filter-${descriptor.name}`"
+    :model-value="String(value ?? '')"
+    :options="[
+      { label: 'All', value: '' },
+      { label: 'Yes', value: 'true' },
+      { label: 'No', value: 'false' }
+    ]"
+    @update:model-value="emit('set', $event === '' ? '' : $event === 'true')"
+  />
+  <div v-else-if="isDate(descriptor)" class="d-flex gap-1">
+    <CFormInput
+      size="sm"
+      type="date"
+      :aria-label="`filter-${descriptor.name}-from`"
+      :model-value="String(range()[0] ?? '')"
+      @update:model-value="emit('set', [String($event), range()[1] ?? ''])"
+    />
+    <CFormInput
+      size="sm"
+      type="date"
+      :aria-label="`filter-${descriptor.name}-to`"
+      :model-value="String(range()[1] ?? '')"
+      @update:model-value="emit('set', [range()[0] ?? '', String($event)])"
+    />
   </div>
+  <CFormInput
+    v-else
+    size="sm"
+    :aria-label="`filter-${descriptor.name}`"
+    :model-value="String(value ?? '')"
+    :maxlength="descriptor.maxLength"
+    @update:model-value="emit('set', $event)"
+  />
 </template>
