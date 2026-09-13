@@ -60,6 +60,7 @@ Para engenheiros que mantêm e evoluem o Jumentix:
 ## Hubs Técnicos de Componentes
 
 - [Documentação do Backend Template](../apps/backend-template/documentation/README.pt-BR.md)
+- [Seed de Frontend (@jumentix/frontend)](../apps/frontend/README.pt-BR.md)
 - [Documentação do Service Management](../apps/service-management/documentation/README.pt-BR.md)
 - [Jumentix Website](../apps/jumentix-website/README.pt-BR.md)
 - [Documentação Técnica do Jumentix Website](../apps/jumentix-website/documentation/README.pt-BR.md)
@@ -68,6 +69,8 @@ Para engenheiros que mantêm e evoluem o Jumentix:
 
 ## Referências de Contratos e Runtime
 
+- [Contrato de Listagem Paginada](./md/PAGINATED-LIST-CONTRACT.pt-BR.md) ([EN](./md/PAGINATED-LIST-CONTRACT.md))
+- [Seed de Frontend e o Kit X-CRUD](./md/FRONTEND-SEED-AND-XCRUD.pt-BR.md) ([EN](./md/FRONTEND-SEED-AND-XCRUD.md))
 - [Especificação OpenAPI](../spec/1.0.0.yml)
 - [Mapa de Eventos e Mensagens](./md/EVENTS-AND-MESSAGES-MAP.pt-BR.md)
 - [Contratos de Erro e Respostas](./md/ERROR-CONTRACTS-AND-RESPONSES.pt-BR.md)

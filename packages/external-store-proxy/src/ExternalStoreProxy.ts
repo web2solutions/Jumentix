@@ -2,7 +2,10 @@
 import {
   ConflictError,
   DataBaseNotFoundError,
-  DatabasePagingError
+  applyListFilters,
+  applyListSearch,
+  applyListSort,
+  paginateList
 } from '@jumentix/persistence-contracts';
 import type { IPagingRequest, IPagingResponse, IStore } from '@jumentix/persistence-contracts';
 import { BaseExternalDataRepository } from '@jumentix/external-persistence-core';
@@ -68,37 +71,22 @@ const normalize = (value: TPrimitive): string => String(value ?? '');
 
 const normalizeCI = (value: TPrimitive): string => normalize(value).toLowerCase();
 
+// Filters, search, sort and paging come from `@jumentix/persistence-contracts`
+// (JUM-777) so this proxy and the in-memory store answer the REST list contract
+// identically; `buildPaging` also applies `paging.q` and `paging.sort`.
 const applyFilters = (
   records: Record<string, any>[],
   filters: Record<string, string | number>
-): Record<string, any>[] => {
-  const entries = Object.entries(filters || {});
-  if (entries.length === 0) return records;
-  return records.filter((record) => entries.every(([key, value]) => record[key] === value));
-};
+): Record<string, any>[] => applyListFilters(records, filters);
 
 const buildPaging = <T>(
   records: T[],
   paging: IPagingRequest
 ): IPagingResponse<T[]> => {
-  const page = paging.page ?? paging.currentPage ?? 1;
-  const size = paging.size ?? paging.perPage ?? 10;
-  if (page < 1) {
-    throw new DatabasePagingError('page must be greater than 0');
-  }
-  const total = records.length;
-  const totalPages = Math.max(1, Math.ceil(total / size));
-  if (page > totalPages && total > 0) {
-    throw new DatabasePagingError('page number must be smaller than the number of total pages');
-  }
-  const startAt = (page * size) - size;
-  const result = records.slice(startAt, startAt + size);
-  return {
-    result,
-    total,
-    page,
-    size
-  };
+  const rows = records as unknown as Record<string, unknown>[];
+  const searched = applyListSearch(rows, paging.q, paging.searchFields);
+  const sorted = applyListSort(searched, paging.sort);
+  return paginateList(sorted as unknown as T[], paging);
 };
 
 const unsupportedDriverError = (driver: string, entity: string): Error => new Error(

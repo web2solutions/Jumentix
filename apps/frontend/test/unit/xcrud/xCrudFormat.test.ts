@@ -5,6 +5,10 @@ import {
 } from '@/components/x-crud/xCrudFormat';
 
 /** JUM-772 redesign: grid formatters (X-SYNTH/Smart Table visual language). */
+import { setLocale } from '@/i18n';
+
+setLocale('pt-BR');
+
 describe('xCrudFormat helpers', () => {
   it('shortId truncates long ids to 8 chars + ellipsis', () => {
     expect.assertions(3);

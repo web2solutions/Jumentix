@@ -2,9 +2,13 @@ import { describe, expect, it } from 'bun:test';
 
 import { formatApiError, isNotFoundError } from '@/contracts/errors';
 
+import { setLocale } from '@/i18n';
+
 const apiError = (status: number, body: unknown) => (
   new Error(`REST request failed: ${status} ${typeof body === 'string' ? body : JSON.stringify(body)}`)
 );
+
+setLocale('pt-BR');
 
 describe('formatApiError (JUM-765)', () => {
   it('keeps the backend message on 400', () => {

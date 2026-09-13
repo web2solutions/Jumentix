@@ -19,8 +19,10 @@ import {
 import OasFormField from '@/components/OasFormField.vue';
 import SearchableEnumInput from '@/components/SearchableEnumInput.vue';
 import { fieldDescriptors, type FieldDescriptor } from '@/contracts/formSchema';
+import { fieldLabel } from '@/contracts/labels';
 import { collectBody, validateAll } from '@/contracts/oasForm';
 import { useProfileStore, type UserEmail } from '@/stores/profile';
+import { t } from '@/i18n';
 import { useSectionNotify } from './useSectionNotify';
 
 const props = defineProps<{ emails: UserEmail[] }>();
@@ -62,7 +64,7 @@ const add = () => {
     await profile.addEmail(collectBody(createDescriptors, newValues) as { email: string; type: string });
     newValues.email = '';
     newValues.isPrimary = false;
-  }, 'Email adicionado.');
+  }, t('profile.updated'));
 };
 
 const update = (id: string) => {
@@ -71,14 +73,14 @@ const update = (id: string) => {
     errorMessage.value = invalid;
     return;
   }
-  return run(() => profile.updateEmail(id, collectBody(updateDescriptors, edits[id])), 'Email atualizado.');
+  return run(() => profile.updateEmail(id, collectBody(updateDescriptors, edits[id])), t('profile.updated'));
 };
-const remove = (id: string) => run(() => profile.removeEmail(id), 'Email removido.');
+const remove = (id: string) => run(() => profile.removeEmail(id), t('profile.updated'));
 </script>
 
 <template>
   <CCard class="mb-4">
-    <CCardHeader><strong>Email addresses</strong></CCardHeader>
+    <CCardHeader><strong>{{ t('profile.emails') }}</strong></CCardHeader>
     <CCardBody>
       <CAlert v-if="errorMessage" color="danger" role="alert">{{ errorMessage }}</CAlert>
       <CAlert v-if="successMessage" color="success" role="alert">{{ successMessage }}</CAlert>
@@ -86,9 +88,9 @@ const remove = (id: string) => run(() => profile.removeEmail(id), 'Email removid
         <CTableHead>
           <CTableRow>
             <CTableHeaderCell v-for="d in updateDescriptors" :key="d.name">
-              {{ d.description ?? d.name }}
+              {{ fieldLabel(d) }}
             </CTableHeaderCell>
-            <CTableHeaderCell class="text-end">Actions</CTableHeaderCell>
+            <CTableHeaderCell class="text-end">{{ t('profile.actions') }}</CTableHeaderCell>
           </CTableRow>
         </CTableHead>
         <CTableBody>
@@ -119,8 +121,8 @@ const remove = (id: string) => run(() => profile.removeEmail(id), 'Email removid
               />
             </CTableDataCell>
             <CTableDataCell class="text-end">
-              <CButton size="sm" color="primary" class="me-2" @click="update(item.id)">Save</CButton>
-              <CButton size="sm" color="danger" variant="outline" @click="remove(item.id)">Delete</CButton>
+              <CButton size="sm" color="primary" class="me-2" @click="update(item.id)">{{ t('profile.save.row') }}</CButton>
+              <CButton size="sm" color="danger" variant="outline" @click="remove(item.id)">{{ t('profile.delete') }}</CButton>
             </CTableDataCell>
           </CTableRow>
         </CTableBody>
@@ -133,7 +135,7 @@ const remove = (id: string) => run(() => profile.removeEmail(id), 'Email removid
           :descriptor="d"
           class="mb-0"
         />
-        <CButton color="success" class="mb-3" @click="add">Add</CButton>
+        <CButton color="success" class="mb-3" @click="add">{{ t('profile.add') }}</CButton>
       </div>
     </CCardBody>
   </CCard>

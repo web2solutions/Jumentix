@@ -156,7 +156,9 @@ describe('fastify -> get Users suite', () => {
       .set(BasicAuthorizationHeaderUser1);
     expect(response.statusCode).toBe(400);
     // console.log(response.body);
-    expect(response.body.message).toBe('Bad Request - page must be greater than 0');
+    // JUM-777: `page` is a query parameter with `minimum: 1` in the OAS, so the
+    // contract validator rejects 0 before the store's own guard runs.
+    expect(response.body.message).toBe('Bad Request - OpenAPI validation failed at "params.page": minimum is 1, got 0');
     expect(response.body.page).toBeUndefined();
     expect(response.body.size).toBeUndefined();
     expect(response.body.total).toBeUndefined();

@@ -16,10 +16,14 @@ import {
 import OasFormField from '@/components/OasFormField.vue';
 import { fieldDescriptors } from '@/contracts/formSchema';
 import { collectBody, validateAll } from '@/contracts/oasForm';
+import { useI18n } from '@/i18n';
 import { useAuthStore } from '@/stores/auth';
+import { useProfileStore } from '@/stores/profile';
 
 const router = useRouter();
 const auth = useAuthStore();
+const profile = useProfileStore();
+const { t } = useI18n();
 
 // The form is built from the OAS RequestLogin schema at runtime (JUM-766).
 const descriptors = fieldDescriptors('RequestLogin');
@@ -38,6 +42,7 @@ const submit = async () => {
   submitting.value = true;
   try {
     await auth.login(collectBody(descriptors, values));
+    profile.reset(); // a new session never inherits the previous account's roles (JUM-781)
     await router.push('/dashboard');
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : String(error);
@@ -56,8 +61,8 @@ const submit = async () => {
             <CCard class="p-4">
               <CCardBody>
                 <CForm @submit.prevent="submit">
-                  <h1>Login</h1>
-                  <p class="text-body-secondary">Sign in to your Jumentix account</p>
+                  <h1>{{ t('auth.login.title') }}</h1>
+                  <p class="text-body-secondary">{{ t('auth.login.subtitle') }}</p>
                   <CAlert v-if="errorMessage" color="danger" role="alert">
                     {{ errorMessage }}
                   </CAlert>
@@ -71,13 +76,13 @@ const submit = async () => {
                   <CRow>
                     <CCol :xs="6">
                       <CButton color="primary" class="px-4" type="submit" :disabled="submitting">
-                        {{ submitting ? 'Signing in…' : 'Login' }}
+                        {{ submitting ? t('auth.login.submitting') : t('auth.login.submit') }}
                       </CButton>
                     </CCol>
                     <CCol :xs="6" class="text-end">
                       <RouterLink to="/register" custom v-slot="{ href, navigate }">
                         <CButton color="link" class="px-0" :href="href" @click="navigate">
-                          Need an account? Register
+                          {{ t('auth.login.needAccount') }}
                         </CButton>
                       </RouterLink>
                     </CCol>

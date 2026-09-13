@@ -3,21 +3,23 @@ import { BaseDomainEvent } from '@src/modules/port/BaseDomainEvent';
 import { _DEFAULT_PAGE_SIZE_ } from '@src/config/constants';
 import { Security } from '@src/infra/security';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const setPaging = (event: BaseDomainEvent): IPagingRequest => {
-  const paging: IPagingRequest = {
-    page: 1,
-    size: _DEFAULT_PAGE_SIZE_
-  };
-  if (event.queryString?.page) {
-    if (!Number.isNaN(event.queryString.page)) {
-      paging.page = +(Security.xss(event.queryString.page));
-    }
-  }
-  if (event.queryString?.size) {
-    if (!Number.isNaN(event.queryString.size)) {
-      paging.size = +(Security.xss(event.queryString.size));
-    }
-  }
-  return paging;
+const toPositiveInteger = (raw: unknown): number | undefined => {
+  if (raw === undefined || raw === null || raw === '') return undefined;
+  const value = Number(Security.xss(String(raw)));
+  if (!Number.isInteger(value) || value < 1) return undefined;
+  return value;
 };
+
+/**
+ * `page` and `size` from the query string; `defaultSize` comes from the
+ * operation's `x-list-capabilities` when declared (JUM-777). Non-numeric or
+ * non-positive values fall back to the defaults here — the OAS parameter
+ * schema (`integer`, `minimum: 1`) rejects them earlier for validated routes.
+ */
+export const setPaging = (
+  event: BaseDomainEvent,
+  defaultSize: number = _DEFAULT_PAGE_SIZE_
+): IPagingRequest => ({
+  page: toPositiveInteger(event.queryString?.page) ?? 1,
+  size: toPositiveInteger(event.queryString?.size) ?? defaultSize
+});

@@ -1,0 +1,43 @@
+# Backend under test for the frontend e2e suite (JUM-776, Requirement 118).
+#
+# Built from the monorepo root so the image runs the *same* Express REST API
+# the frontend seed targets — `apps/backend-template` with the shared
+# `@jumentix/*` packages — on the pinned Bun toolchain. InMemory persistence
+# and in-process mediator/key-value keep the container self-contained; the
+# seeds (`apps/backend-template/seed`) provide the accounts the specs sign in
+# with.
+FROM oven/bun:1.3.13
+
+WORKDIR /app
+
+COPY package.json bun.lock bunfig.toml .bun-version tsconfig.json tsconfig.build.json ./
+COPY patches ./patches
+COPY apps/backend-template/package.json ./apps/backend-template/package.json
+COPY apps/frontend/package.json ./apps/frontend/package.json
+COPY apps/service-management/package.json ./apps/service-management/package.json
+COPY apps/service-management-api/package.json ./apps/service-management-api/package.json
+COPY apps/jumentix-website/package.json ./apps/jumentix-website/package.json
+COPY packages ./packages
+COPY tooling ./tooling
+COPY ci-cd ./ci-cd
+
+RUN bun install --frozen-lockfile
+
+COPY spec ./spec
+COPY apps/backend-template ./apps/backend-template
+COPY apps/service-management-api ./apps/service-management-api
+
+ENV NODE_ENV=dev \
+    JUMENTIX_HTTP_FRAMEWORK=express \
+    JUMENTIX_HTTP_PORT=3000 \
+    JUMENTIX_DATABASE_DRIVER=InMemory \
+    JUMENTIX_KEYVALUESTORAGE_DRIVER=inmemory \
+    JUMENTIX_MESSAGE_MEDIATOR_ADAPTER=inmemory \
+    JUMENTIX_REALTIME_API=no
+
+EXPOSE 3000
+
+HEALTHCHECK --interval=5s --timeout=3s --retries=20 \
+  CMD bun -e "fetch('http://127.0.0.1:3000/').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+
+CMD ["bun", "-r", "tsconfig-paths/register", "--env-file=./apps/backend-template/src/config/.env.dev", "apps/backend-template/src/interface/HTTP/adapters/start-rest-api.ts"]

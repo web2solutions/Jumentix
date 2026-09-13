@@ -9,9 +9,11 @@ import {
   CSpinner
 } from '@coreui/vue';
 
+import { useI18n } from '@/i18n';
 import { useNetworkStore } from '@/stores/network';
 
 const network = useNetworkStore();
+const { t } = useI18n();
 
 onMounted(() => network.start());
 onUnmounted(() => network.stop());
@@ -23,10 +25,10 @@ const statusColor = (ok: boolean, status?: number): string => {
 </script>
 
 <template>
-  <CDropdown variant="nav-item" placement="bottom-end" aria-label="Network activity">
+  <CDropdown variant="nav-item" placement="bottom-end" :aria-label="t('network.title')">
     <CDropdownToggle :caret="false">
       <span class="position-relative d-inline-flex align-items-center">
-        <CSpinner v-if="network.inFlight > 0" color="primary" size="sm" aria-label="Requests in flight" />
+        <CSpinner v-if="network.inFlight > 0" color="primary" size="sm" :aria-label="t('network.inFlight', { count: network.inFlight })" />
         <CIcon v-else icon="cil-cloud-download" size="lg" />
         <CBadge
           v-if="network.inFlight > 0"
@@ -44,7 +46,7 @@ const statusColor = (ok: boolean, status?: number): string => {
         disabled
         class="text-body-secondary"
       >
-        Nenhuma requisição ainda nesta sessão.
+        {{ t('network.empty') }}
       </CDropdownItem>
       <CDropdownItem
         v-for="(item, index) in network.recent"

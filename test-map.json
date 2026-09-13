@@ -120,9 +120,13 @@
       "kind": "non-hexagonal"
     },
     "frontend": {
-      "dependsOn": [],
+      "dependsOn": [
+        "contracts"
+      ],
       "sourceGlobs": [
-        "apps/frontend/**"
+        "apps/frontend/**",
+        "packages/sdk-rest-client/src/**",
+        "spec/1.0.0.yml"
       ],
       "runner": "bun",
       "tier": "gate",
@@ -1161,6 +1165,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/ci-cd/check-frontend-coverage.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/check-frontend-coverage.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/ci-cd/check-pr-governance.test.ts",
       "path": "apps/backend-template/test/unit/ci-cd/check-pr-governance.test.ts",
       "layer": "tooling",
@@ -1589,6 +1603,16 @@
     {
       "id": "apps/backend-template/test/unit/modules/port/core.test.ts",
       "path": "apps/backend-template/test/unit/modules/port/core.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/port/setListQuery.test.ts",
+      "path": "apps/backend-template/test/unit/modules/port/setListQuery.test.ts",
       "layer": "application",
       "kind": "hexagonal",
       "type": "unit",
@@ -2181,6 +2205,30 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/frontend/test/unit/contracts/labels.test.ts",
+      "path": "apps/frontend/test/unit/contracts/labels.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/contracts/appOperations.test.ts",
+      "path": "apps/frontend/test/unit/contracts/appOperations.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/frontend/test/unit/contracts/formSchema.test.ts",
       "path": "apps/frontend/test/unit/contracts/formSchema.test.ts",
       "layer": "frontend",
@@ -2195,6 +2243,18 @@
     {
       "id": "apps/frontend/test/unit/contracts/edgeCases.test.ts",
       "path": "apps/frontend/test/unit/contracts/edgeCases.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/contracts/listSchema.test.ts",
+      "path": "apps/frontend/test/unit/contracts/listSchema.test.ts",
       "layer": "frontend",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -2313,6 +2373,18 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/frontend/test/unit/i18n/i18n.test.ts",
+      "path": "apps/frontend/test/unit/i18n/i18n.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/frontend/test/unit/router/scopeGuard.test.ts",
       "path": "apps/frontend/test/unit/router/scopeGuard.test.ts",
       "layer": "frontend",
@@ -2333,6 +2405,54 @@
       "runner": "bun",
       "script": "frontend:test:unit",
       "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/component/Profile.test.ts",
+      "path": "apps/frontend/test/component/Profile.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites mounting shipped .vue components through @vue/test-utils + happy-dom (JUM-776); the app-scoped bunfig preload registers the SFC loader.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/component/Shell.test.ts",
+      "path": "apps/frontend/test/component/Shell.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites mounting shipped .vue components through @vue/test-utils + happy-dom (JUM-776); the app-scoped bunfig preload registers the SFC loader.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/component/OasFormField.test.ts",
+      "path": "apps/frontend/test/component/OasFormField.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites mounting shipped .vue components through @vue/test-utils + happy-dom (JUM-776); the app-scoped bunfig preload registers the SFC loader.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/component/XCrud.test.ts",
+      "path": "apps/frontend/test/component/XCrud.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites mounting shipped .vue components through @vue/test-utils + happy-dom (JUM-776); the app-scoped bunfig preload registers the SFC loader.",
       "tier": "gate",
       "timeoutMs": 60000
     },
@@ -4063,6 +4183,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "packages/persistence-contracts/test/listQuery.test.ts",
+      "path": "packages/persistence-contracts/test/listQuery.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "packages/runtime-infra/test/compileRuntimeInfra.test.ts",
       "path": "packages/runtime-infra/test/compileRuntimeInfra.test.ts",
       "layer": "adapters/out+infra",
@@ -4783,9 +4913,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 256,
+    "unit": 267,
     "integration": 100,
     "smoke": 2,
-    "suites": 407
+    "suites": 418
   }
 }

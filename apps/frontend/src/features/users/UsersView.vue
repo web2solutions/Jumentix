@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from '@/i18n';
 import { computed } from 'vue';
 
 import XCrud from '@/components/x-crud/XCrud.vue';
@@ -24,11 +25,12 @@ const referenceRestrictions = computed(() => {
 });
 
 const canDeleteRow = (row: Record<string, unknown>) => String(row.id) !== auth.userId;
+const { t } = useI18n();
 </script>
 
 <template>
   <div>
-    <h3 class="mb-3">Users</h3>
+    <h3 class="mb-3">{{ t('nav.users') }}</h3>
     <XCrud
       :config="usersCrudConfig"
       :can-delete-row="canDeleteRow"

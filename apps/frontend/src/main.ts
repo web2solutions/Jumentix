@@ -42,6 +42,8 @@ import {
   cilCheckCircle,
   cilXCircle,
   cilFeaturedPlaylist,
+  cilFilter,
+  cilSquare,
   cibFacebook,
   cibTwitter,
   cibLinkedin,
@@ -61,6 +63,10 @@ import {
 } from '@coreui/icons';
 import router from './router';
 import App from './App.vue';
+import { configureAppOperations } from './contracts/appOperations';
+
+// Fail loudly at boot when the bundled OAS lacks an operation the shell relies on (JUM-780).
+configureAppOperations();
 
 const app = createApp(App);
 
@@ -108,6 +114,8 @@ app.provide('icons', {
   cilCheckCircle,
   cilXCircle,
   cilFeaturedPlaylist,
+  cilFilter,
+  cilSquare,
   cibFacebook,
   cibTwitter,
   cibLinkedin,

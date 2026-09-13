@@ -1,3 +1,6 @@
+import { organizationsCrudConfig } from '@/features/organizations/organizationsCrudConfig';
+import { usersCrudConfig } from '@/features/users/usersCrudConfig';
+
 export type NavComponent = 'CNavItem' | 'CNavGroup' | 'CNavTitle'
 
 export interface NavBadge {
@@ -8,6 +11,7 @@ export interface NavBadge {
 
 export interface NavItem {
   component: NavComponent
+  /** i18n key (JUM-780); resolved by `AppSidebarNav` through `t()`. */
   name: string
   to?: string
   href?: string
@@ -22,26 +26,26 @@ export interface NavItem {
 const navItems: NavItem[] = [
   {
     component: 'CNavItem',
-    name: 'Dashboard',
+    name: 'nav.dashboard',
     to: '/dashboard',
     icon: 'cil-speedometer'
   },
   {
     component: 'CNavGroup',
-    name: 'Users Domain',
+    name: 'nav.usersDomain',
     icon: 'cil-people',
     items: [
       {
         component: 'CNavItem',
-        name: 'Users',
+        name: 'nav.users',
         to: '/users',
-        operationId: 'getAll'
+        operationId: usersCrudConfig.operations.list
       },
       {
         component: 'CNavItem',
-        name: 'Organizations',
+        name: 'nav.organizations',
         to: '/organizations',
-        operationId: 'getAllOrganizations'
+        operationId: organizationsCrudConfig.operations.list
       }
     ]
   }

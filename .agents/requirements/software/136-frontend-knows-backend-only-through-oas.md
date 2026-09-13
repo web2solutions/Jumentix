@@ -57,6 +57,11 @@ frontend may know.
   workspace boundary checks in `ci:gate` run with `apps/frontend` present.
 - Stated in `apps/frontend/README.md`, `apps/frontend/AGENTS.md` and
   `apps/frontend/CLAUDE.md` (JUM-758).
+- The contract surface the frontend consumes grew vendor extensions it renders
+  from (`x-label`, `x-list-capabilities`, `x-references` on arrays) and the
+  frontend proves it with unit, component (`@vue/test-utils` under bun:test) and
+  Docker-backed Cypress suites — `documentation/md/FRONTEND-SEED-AND-XCRUD.md`,
+  `documentation/md/PAGINATED-LIST-CONTRACT.md` (JUM-776, JUM-777, JUM-778, JUM-780).
 - The backend side of the contract surface — Swagger UI and the route/spec
   parity gate (`oas:check-routes`) — already exists; this requirement binds
   the frontend to consume only that surface.

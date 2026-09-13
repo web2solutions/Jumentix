@@ -45,3 +45,8 @@ Thumbs.db
 *.vi
 *.zip
 *~
+
+# Cypress artifacts (frontend e2e, JUM-776)
+cypress/screenshots/
+cypress/videos/
+cypress/downloads/

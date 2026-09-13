@@ -2,11 +2,14 @@
 import { CFormInput, CFormSelect } from '@coreui/vue';
 
 import type { FieldDescriptor } from '@/contracts/formSchema';
+import { isTimestampField } from '@/components/x-crud/xCrudFormat';
+import { t } from '@/i18n';
 
 /**
  * XCrudColumnFilter (JUM-772 redesign): one compact filter control per column,
  * rendered in the grid's second thead row (Smart Table style). The control
- * matches the OAS facet: enum → select, boolean → tri-state, date → range.
+ * matches the OAS facet: enum → select, boolean → tri-state, date → range
+ * (stacked, so the column keeps its width — JUM-781).
  */
 const props = defineProps<{
   descriptor: FieldDescriptor;
@@ -14,9 +17,6 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{ set: [value: unknown] }>();
-
-const isDate = (d: FieldDescriptor): boolean => d.format === 'date-time' || d.format === 'date'
-  || ['createdAt', 'updatedAt'].includes(d.name);
 
 const range = () => (Array.isArray(props.value) ? props.value as [string?, string?] : ['', '']);
 </script>
@@ -27,7 +27,7 @@ const range = () => (Array.isArray(props.value) ? props.value as [string?, strin
     size="sm"
     :aria-label="`filter-${descriptor.name}`"
     :model-value="String(value ?? '')"
-    :options="[{ label: 'All', value: '' }, ...descriptor.enum.map((option) => ({ label: option, value: option }))]"
+    :options="[{ label: t('app.all'), value: '' }, ...descriptor.enum.map((option) => ({ label: option, value: option }))]"
     @update:model-value="emit('set', String($event))"
   />
   <CFormSelect
@@ -36,13 +36,13 @@ const range = () => (Array.isArray(props.value) ? props.value as [string?, strin
     :aria-label="`filter-${descriptor.name}`"
     :model-value="String(value ?? '')"
     :options="[
-      { label: 'All', value: '' },
-      { label: 'Yes', value: 'true' },
-      { label: 'No', value: 'false' }
+      { label: t('app.all'), value: '' },
+      { label: t('app.yes'), value: 'true' },
+      { label: t('app.no'), value: 'false' }
     ]"
     @update:model-value="emit('set', $event === '' ? '' : $event === 'true')"
   />
-  <div v-else-if="isDate(descriptor)" class="d-flex gap-1">
+  <div v-else-if="isTimestampField(descriptor)" class="d-flex flex-column gap-1 xcrud-date-filter">
     <CFormInput
       size="sm"
       type="date"

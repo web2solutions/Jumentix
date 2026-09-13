@@ -61,18 +61,18 @@ describe('router scope guard (JUM-772)', () => {
 
   it('nav group renders only items the roles can read', () => {
     expect.assertions(3);
-    const group = nav.find((item) => item.name === 'Users Domain');
+    const group = nav.find((item) => item.name === 'nav.usersDomain');
     expect(group?.items?.length).toBe(2);
     const visibleFor = (roles: string[]) => (group?.items ?? [])
       .filter((item) => !item.operationId || can(roles, item.operationId))
       .map((item) => item.name);
-    expect(visibleFor(['user'])).toStrictEqual(['Users']);
-    expect(visibleFor(['admin'])).toStrictEqual(['Users', 'Organizations']);
+    expect(visibleFor(['user'])).toStrictEqual(['nav.users']);
+    expect(visibleFor(['admin'])).toStrictEqual(['nav.users', 'nav.organizations']);
   });
 
   it('nav filtering is correct once roles load late (shell loads the profile record)', () => {
     expect.assertions(2);
-    const group = nav.find((item) => item.name === 'Users Domain');
+    const group = nav.find((item) => item.name === 'nav.usersDomain');
     const visibleFor = (roles: string[]) => (group?.items ?? [])
       .filter((item) => !item.operationId || can(roles, item.operationId))
       .map((item) => item.name);
@@ -80,6 +80,6 @@ describe('router scope guard (JUM-772)', () => {
     expect(visibleFor([])).toStrictEqual([]);
     // …after the shell-level load (DefaultLayout onMounted), it does.
     setRoles(['superadmin']);
-    expect(visibleFor(useProfileStore().record?.roles ?? [])).toStrictEqual(['Users', 'Organizations']);
+    expect(visibleFor(useProfileStore().record?.roles ?? [])).toStrictEqual(['nav.users', 'nav.organizations']);
   });
 });

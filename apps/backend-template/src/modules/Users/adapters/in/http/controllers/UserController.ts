@@ -12,10 +12,7 @@ import { BaseDomainEvent } from '@src/modules/port/BaseDomainEvent';
 import type {
   IServiceResponse
 } from '@src/modules/port';
-import {
-  setFilter,
-  setPaging
-} from '@src/modules/port';
+import { setListQuery } from '@src/modules/port';
 import type {
   IUser
 } from '@src/modules/Users/domain/Entity/IUser';
@@ -170,11 +167,11 @@ export class UserController extends BaseController implements IController {
       event.schemaOAS,
       event
     );
-    const filters = setFilter(event);
+    // JUM-777: page/size/filter/sort/q validated against x-list-capabilities.
+    const { filters, paging } = setListQuery(event);
     const authenticatedUser = this.getAuthenticatedUser(event);
     const tenantScope = resolveUserCollectionScope(authenticatedUser);
     this.throwIfTenantAccessDenied(tenantScope.decision);
-    const paging = setPaging(event);
     const result = await this.userUseCases.getAll(
       { ...filters, ...tenantScope.filters },
       paging

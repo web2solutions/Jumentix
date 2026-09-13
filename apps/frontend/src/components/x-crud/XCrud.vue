@@ -10,6 +10,7 @@ import XCrudToolbar from '@/components/x-crud/XCrudToolbar.vue';
 import { useXCrud } from '@/components/x-crud/useXCrud';
 import type { XCrudEntityConfig } from '@/components/x-crud/xCrudTypes';
 import { usePermissions } from '@/contracts/usePermissions';
+import { t } from '@/i18n';
 
 /**
  * XCrud (JUM-772 redesign, X-SYNTH pattern): one card; pills "New ${entity} |
@@ -28,6 +29,7 @@ const permissions = usePermissions();
 
 const view = ref<'listing' | 'new'>('listing');
 const detailTab = ref<'preview' | 'edit'>('preview');
+const filtersOpen = ref(false);
 
 const canCreate = permissions.canOp(props.config.operations.create);
 const canUpdateOp = permissions.canOp(props.config.operations.update);
@@ -72,7 +74,7 @@ onMounted(async () => {
             :class="{ active: view === 'new' }"
             @click.prevent="view = 'new'"
           >
-            New {{ config.title }}
+            {{ t('crud.new', { entity: crud.title.value }) }}
           </a>
         </CNavItem>
         <CNavItem>
@@ -82,7 +84,7 @@ onMounted(async () => {
             :class="{ active: view === 'listing' }"
             @click.prevent="view = 'listing'"
           >
-            {{ config.title }} Listing
+            {{ t('crud.listing', { entity: crud.title.value }) }}
           </a>
         </CNavItem>
       </CNav>
@@ -97,11 +99,12 @@ onMounted(async () => {
 
       <template v-if="view === 'listing'">
         <XCrudPanels v-if="(config.aggregates ?? []).length" :crud="crud" />
-        <XCrudToolbar :crud="crud" />
+        <XCrudToolbar v-model:filters-open="filtersOpen" :crud="crud" />
         <XCrudGrid
           :crud="crud"
           :can-update="canUpdateRow"
           :can-delete="canDeleteRow"
+          :show-filters="filtersOpen"
           @expand="expand"
           @delete="crud.submitDelete"
           @inline-commit="crud.submitInline"
@@ -114,6 +117,7 @@ onMounted(async () => {
               :can-update="canUpdateRow(row)"
               :initial-tab="detailTab"
               :reference-restrictions="referenceRestrictions"
+              :reference-labels="crud.referenceLabels"
               @submit-update="submitRowUpdate"
               @close="crud.toggleExpanded(crud.rowId(row))"
             />
@@ -122,7 +126,7 @@ onMounted(async () => {
       </template>
 
       <template v-else>
-        <h5 class="mb-3">New {{ config.title }}</h5>
+        <h5 class="mb-3">{{ t('crud.new', { entity: crud.title.value }) }}</h5>
         <XCrudForm
           :config="config"
           mode="create"

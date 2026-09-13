@@ -6,6 +6,8 @@ import { createPinia, setActivePinia } from 'pinia';
 import { useAuthStore } from '@/stores/auth';
 import { useProfileStore, type UserRecord } from '@/stores/profile';
 
+import { setLocale } from '@/i18n';
+
 interface RecordedCall {
   url: string;
   method: string;
@@ -27,6 +29,8 @@ const recordFixture: UserRecord = {
   documents: [],
   phones: []
 };
+
+setLocale('en');
 
 describe('profile store (JUM-761)', () => {
   const originalFetch = globalThis.fetch;
@@ -103,7 +107,7 @@ describe('profile store (JUM-761)', () => {
     const profile = useProfileStore();
 
     await expect(profile.changePassword('short')).rejects.toThrow(
-      'Password must be at least 8 characters.'
+      'password needs at least 8 characters.'
     );
     expect(recorded).toHaveLength(0);
   });

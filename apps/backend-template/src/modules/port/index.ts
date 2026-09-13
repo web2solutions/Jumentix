@@ -38,6 +38,8 @@ export type { IPagingRequest } from '@src/modules/port/IPagingRequest';
 export type { IPagingResponse } from '@src/modules/port/IPagingResponse';
 export { setFilter } from '@src/modules/port/setFilter';
 export { setPaging } from '@src/modules/port/setPaging';
+export { setListQuery, readListCapabilities } from '@src/modules/port/setListQuery';
+export type { IListCapabilities, TListFilterKind } from '@src/modules/port/setListQuery';
 export { operators } from '@src/modules/port/operators';
 export type { IFilter } from '@src/modules/port/IFilter';
 export type { ISearch } from '@src/modules/port/ISearch';

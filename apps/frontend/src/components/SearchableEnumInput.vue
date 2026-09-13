@@ -1,17 +1,26 @@
 <script setup lang="ts">
+import { computed, ref, watch } from 'vue';
 import { CFormInput } from '@coreui/vue';
+
+import { t } from '@/i18n';
 
 /**
  * Searchable enum input (JUM-769): a text input bound to a native datalist
  * (typing filters the options, zero deps) plus a visible "▾" affordance so
  * the control reads as a dropdown, not a plain text field. Options come from
  * the OAS enum — never hardcoded (requirement 136).
+ *
+ * With `{ value, label }` options the input shows the **label** and emits the
+ * **value** (JUM-781): an organization reference displays "ACME", never the
+ * uuid, while the form body still carries the id.
  */
-defineProps<{
+type Option = string | { value: string; label: string };
+
+const props = defineProps<{
   id: string;
   modelValue: string;
   /** Plain values, or { value, label } pairs (labels render in the dropdown). */
-  options: Array<string | { value: string; label: string }>;
+  options: Option[];
   maxlength?: number;
   ariaLabel?: string;
   placeholder?: string;
@@ -22,34 +31,56 @@ const emit = defineEmits<{
   'update:modelValue': [value: string];
 }>();
 
-const optionValue = (option: string | { value: string; label: string }) => (
-  typeof option === 'string' ? option : option.value
+const optionValue = (option: Option) => (typeof option === 'string' ? option : option.value);
+const optionLabel = (option: Option) => (typeof option === 'string' ? option : option.label);
+
+const labelFor = (value: string): string => {
+  const match = props.options.find((option) => optionValue(option) === value);
+  return match ? optionLabel(match) : value;
+};
+
+/** What the user sees: the label of the selected value, or their in-progress text. */
+const text = ref(labelFor(props.modelValue));
+
+watch(
+  () => [props.modelValue, props.options] as const,
+  () => {
+    text.value = labelFor(props.modelValue);
+  }
 );
-const optionLabel = (option: string | { value: string; label: string }) => (
-  typeof option === 'string' ? undefined : option.label
-);
+
+const onInput = (raw: string): void => {
+  text.value = raw;
+  // A typed label (or a raw value) that matches an option resolves to its value;
+  // anything else is passed through so plain enums keep free typing + validation.
+  const byLabel = props.options.find((option) => optionLabel(option) === raw);
+  const byValue = props.options.find((option) => optionValue(option) === raw);
+  emit('update:modelValue', byLabel ? optionValue(byLabel) : byValue ? optionValue(byValue) : raw);
+};
+
+const placeholderText = computed(() => props.placeholder ?? t('crud.typeToFilter'));
 </script>
 
 <template>
   <div class="oas-enum-input">
     <CFormInput
       :id="id"
-      :model-value="modelValue"
+      :model-value="text"
       type="text"
       :list="`${id}-list`"
       :aria-label="ariaLabel"
-      :placeholder="placeholder ?? 'digite para filtrar'"
+      :placeholder="placeholderText"
       :maxlength="maxlength"
       :invalid="invalid"
-      @update:model-value="emit('update:modelValue', String($event))"
+      autocomplete="off"
+      @update:model-value="onInput(String($event))"
     />
     <span class="oas-enum-caret" aria-hidden="true">▾</span>
     <datalist :id="`${id}-list`">
       <option
         v-for="option in options"
         :key="optionValue(option)"
-        :value="optionValue(option)"
-        :label="optionLabel(option)"
+        :value="optionLabel(option)"
       />
     </datalist>
   </div>

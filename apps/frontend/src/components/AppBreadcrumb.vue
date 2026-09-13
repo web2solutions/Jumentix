@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import router from '@/router'
+import { useI18n } from '@/i18n'
+
+const { t } = useI18n()
 
 interface Breadcrumb {
   active: boolean
@@ -13,7 +16,7 @@ const breadcrumbs = ref<Breadcrumb[]>([])
 const getBreadcrumbs = (): Breadcrumb[] => {
   return router.currentRoute.value.matched.map((route) => ({
     active: route.path === router.currentRoute.value.fullPath,
-    name: route.name,
+    name: (route.meta.titleKey as string | undefined) ?? route.name,
     path: `${router.options.history.base}${route.path}`,
   }))
 }
@@ -35,7 +38,7 @@ onMounted(() => {
       :href="item.active ? '' : item.path"
       :active="item.active"
     >
-      {{ item.name }}
+      {{ typeof item.name === 'string' && item.name.startsWith('nav.') ? t(item.name) : String(item.name ?? '') }}
     </CBreadcrumbItem>
   </CBreadcrumb>
 </template>

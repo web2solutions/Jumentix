@@ -6,6 +6,7 @@ import OasFormField from '@/components/OasFormField.vue';
 import { fieldDescriptors } from '@/contracts/formSchema';
 import { collectBody, validateAll } from '@/contracts/oasForm';
 import { useProfileStore } from '@/stores/profile';
+import { t } from '@/i18n';
 import { useSectionNotify } from './useSectionNotify';
 
 const profile = useProfileStore();
@@ -23,20 +24,20 @@ const save = async () => {
     return;
   }
   if (form.password !== repeat.value) {
-    errorMessage.value = 'As senhas não conferem.';
+    errorMessage.value = t('profile.passwordMismatch');
     return;
   }
   await run(async () => {
     await profile.changePassword(String(collectBody(descriptors, form).password));
     form.password = '';
     repeat.value = '';
-  }, 'Senha atualizada.');
+  }, t('profile.passwordUpdated'));
 };
 </script>
 
 <template>
   <CCard class="mb-4">
-    <CCardHeader><strong>Change password</strong></CCardHeader>
+    <CCardHeader><strong>{{ t('profile.changePassword') }}</strong></CCardHeader>
     <CCardBody>
       <CAlert v-if="errorMessage" color="danger" role="alert">{{ errorMessage }}</CAlert>
       <CAlert v-if="successMessage" color="success" role="alert">{{ successMessage }}</CAlert>
@@ -48,7 +49,7 @@ const save = async () => {
           :descriptor="descriptor"
         />
         <div class="mb-3">
-          <label class="form-label" for="profile-password-repeat">Repeat new password</label>
+          <label class="form-label" for="profile-password-repeat">{{ t('profile.repeatPassword') }}</label>
           <input
             id="profile-password-repeat"
             v-model="repeat"
@@ -58,7 +59,7 @@ const save = async () => {
             required
           />
         </div>
-        <CButton color="warning" type="submit">Update password</CButton>
+        <CButton color="warning" type="submit">{{ t('profile.updatePassword') }}</CButton>
       </CForm>
     </CCardBody>
   </CCard>

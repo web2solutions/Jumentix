@@ -1,0 +1,12 @@
+# Frontend e2e stack (JUM-776, Requirement 118): the real Jumentix REST API
+# in a container, seeded, InMemory. `scripts/run-e2e.mjs` brings it up, runs
+# Cypress against a Vite server that proxies `/api` here, and tears it down.
+services:
+  backend:
+    build:
+      context: ../../..
+      dockerfile: apps/frontend/e2e/Dockerfile.backend
+    environment:
+      JUMENTIX_CORS_ALLOWED_ORIGINS: http://localhost:${FRONTEND_E2E_PORT:-3131},http://127.0.0.1:${FRONTEND_E2E_PORT:-3131}
+    ports:
+      - '${FRONTEND_E2E_BACKEND_PORT:-3130}:3000'

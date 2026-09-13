@@ -3,6 +3,10 @@ import { describe, expect, it } from 'bun:test';
 import { fieldDescriptors, resolveSchema } from '@/contracts/formSchema';
 import { collectBody, validateAll, validateField } from '@/contracts/oasForm';
 
+import { setLocale } from '@/i18n';
+
+setLocale('pt-BR');
+
 describe('formSchema runtime engine (JUM-766)', () => {
   it('builds descriptors for RequestLogin with every OAS facet', () => {
     expect.assertions(7);
@@ -71,13 +75,13 @@ describe('oasForm collect/validate (JUM-766)', () => {
   it('validateAll enforces minLength from the OAS', () => {
     expect.assertions(1);
     expect(validateAll(descriptors, { username: 'me@mydomain.com', password: 'x' }))
-      .toBe('password precisa de ao menos 2 caracteres.');
+      .toBe('Senha precisa de ao menos 2 caracteres.');
   });
 
   it('validateField enforces enum membership', () => {
     expect.assertions(1);
     const type = fieldDescriptors('RequestCreateDocument').find((d) => d.name === 'type');
-    expect(validateField(type!, 'RG3')).toBe('type deve ser um de: CPF, RG, SSN, passport.');
+    expect(validateField(type!, 'RG3')).toBe('Tipo deve ser um de: CPF, RG, SSN, passport.');
   });
 
   it('validateAll enforces the register password minimum from the OAS', () => {
@@ -88,7 +92,7 @@ describe('oasForm collect/validate (JUM-766)', () => {
       username: 'a@b.c',
       password: 'short'
     });
-    expect(invalid).toBe('password precisa de ao menos 8 caracteres.');
+    expect(invalid).toBe('Senha precisa de ao menos 8 caracteres.');
     expect(validateAll(registerDescriptors, {
       firstName: 'A',
       username: 'a@b.c',
@@ -98,6 +102,6 @@ describe('oasForm collect/validate (JUM-766)', () => {
 
   it('validateAll reports required fields first', () => {
     expect.assertions(1);
-    expect(validateAll(descriptors, {})).toBe('username é obrigatório.');
+    expect(validateAll(descriptors, {})).toBe('Usuário é obrigatório.');
   });
 });

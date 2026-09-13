@@ -63,6 +63,7 @@ For engineers maintaining and evolving Jumentix:
 ## Component Technical Hubs
 
 - [Backend Template Documentation](../apps/backend-template/documentation/README.md)
+- [Frontend Seed (@jumentix/frontend)](../apps/frontend/README.md)
 - [Service Management Documentation](../apps/service-management/documentation/README.md)
 - [Jumentix Website](../apps/jumentix-website/README.md)
 - [Jumentix Website Technical Docs](../apps/jumentix-website/documentation/README.md)
@@ -72,6 +73,8 @@ For engineers maintaining and evolving Jumentix:
 ## Contract and Runtime References
 
 - [OpenAPI Spec](../spec/1.0.0.yml)
+- [Paginated List Contract](./md/PAGINATED-LIST-CONTRACT.md) ([pt-BR](./md/PAGINATED-LIST-CONTRACT.pt-BR.md))
+- [Frontend Seed and the X-CRUD Kit](./md/FRONTEND-SEED-AND-XCRUD.md) ([pt-BR](./md/FRONTEND-SEED-AND-XCRUD.pt-BR.md))
 - [Events and Messages Map](./md/EVENTS-AND-MESSAGES-MAP.md)
 - [Error Contracts and Responses](./md/ERROR-CONTRACTS-AND-RESPONSES.md)
 - [Tenant and RBAC Authorization Contract](./md/TENANT-RBAC-AUTHORIZATION-CONTRACT.md)

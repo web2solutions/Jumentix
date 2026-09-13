@@ -1,0 +1,7 @@
+# Frontend workspace test runtime (JUM-776).
+#
+# `vue-sfc.ts` teaches bun:test to load `.vue` files with @vue/compiler-sfc;
+# `dom.ts` registers happy-dom so @vue/test-utils can mount the shipped
+# components. Unit suites under test/unit need neither but tolerate both.
+[test]
+preload = ["./test/setup/vue-sfc.ts", "./test/setup/dom.ts"]

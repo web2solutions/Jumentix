@@ -241,16 +241,86 @@
         "summary": "Get all users",
         "description": "Returns a collection of all users",
         "operationId": "getAll",
+        "x-list-capabilities": {
+          "sortable": [
+            "firstName",
+            "lastName",
+            "username",
+            "organization",
+            "createdAt",
+            "updatedAt"
+          ],
+          "filterable": {
+            "firstName": "text",
+            "lastName": "text",
+            "username": "text",
+            "organization": "uuid",
+            "roles": "enum",
+            "createdAt": "date",
+            "updatedAt": "date"
+          },
+          "searchable": [
+            "firstName",
+            "lastName",
+            "username"
+          ],
+          "defaultSize": 30,
+          "maxSize": 100
+        },
         "parameters": [
           {
             "name": "page",
-            "in": "path",
-            "description": "Page number to fetch",
+            "in": "query",
+            "description": "Page number to fetch (1-based).",
             "required": false,
             "schema": {
-              "type": "string"
-            },
-            "default": 1
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "Page size; bounded by `x-list-capabilities.maxSize`.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 30
+            }
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "description": "Base64-encoded JSON object keyed by a field listed in `x-list-capabilities.filterable`. A scalar value means equality; an object `{ \"operator\": \"contains\" | \"eq\" | \"ne\" | \"in\" | \"gte\" | \"lte\" | \"between\", \"value\": ... }` applies that operator. Unknown fields or operators are rejected with 400.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Comma-separated `field:asc|desc` pairs, fields limited to `x-list-capabilities.sortable`. Unknown fields are rejected with 400.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 256,
+              "pattern": "^[A-Za-z0-9_.]+(:(asc|desc))?(,[A-Za-z0-9_.]+(:(asc|desc))?)*$"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Case-insensitive free-text search over `x-list-capabilities.searchable`.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
           }
         ],
         "responses": {
@@ -1182,16 +1252,77 @@
         "summary": "Get all organizations",
         "description": "Returns a collection of organizations",
         "operationId": "getAllOrganizations",
+        "x-list-capabilities": {
+          "sortable": [
+            "name",
+            "createdAt",
+            "updatedAt"
+          ],
+          "filterable": {
+            "name": "text",
+            "createdAt": "date",
+            "updatedAt": "date"
+          },
+          "searchable": [
+            "name"
+          ],
+          "defaultSize": 30,
+          "maxSize": 100
+        },
         "parameters": [
           {
             "name": "page",
-            "in": "path",
-            "description": "Page number to fetch",
+            "in": "query",
+            "description": "Page number to fetch (1-based).",
             "required": false,
             "schema": {
-              "type": "string"
-            },
-            "default": 1
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "Page size; bounded by `x-list-capabilities.maxSize`.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 30
+            }
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "description": "Base64-encoded JSON object keyed by a field listed in `x-list-capabilities.filterable`. A scalar value means equality; an object `{ \"operator\": \"contains\" | \"eq\" | \"ne\" | \"in\" | \"gte\" | \"lte\" | \"between\", \"value\": ... }` applies that operator. Unknown fields or operators are rejected with 400.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Comma-separated `field:asc|desc` pairs, fields limited to `x-list-capabilities.sortable`. Unknown fields are rejected with 400.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 256,
+              "pattern": "^[A-Za-z0-9_.]+(:(asc|desc))?(,[A-Za-z0-9_.]+(:(asc|desc))?)*$"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Case-insensitive free-text search over `x-list-capabilities.searchable`.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
           }
         ],
         "responses": {
@@ -2039,6 +2170,10 @@
         "type": "object",
         "properties": {
           "data": {
+            "x-label": {
+              "en": "Number",
+              "pt-BR": "Número"
+            },
             "type": "boolean",
             "default": false,
             "description": "Result of request to delete resource"
@@ -2054,18 +2189,30 @@
         "type": "object",
         "properties": {
           "username": {
+            "x-label": {
+              "en": "Username",
+              "pt-BR": "Usuário"
+            },
             "type": "string",
             "minLength": 1,
             "example": "me@mydomain.com",
             "description": "Username"
           },
           "password": {
+            "x-label": {
+              "en": "Password",
+              "pt-BR": "Senha"
+            },
             "type": "string",
             "description": "Password",
             "minLength": 2,
             "format": "password"
           },
           "schemaType": {
+            "x-label": {
+              "en": "Schema type",
+              "pt-BR": "Tipo de esquema"
+            },
             "type": "string",
             "example": "Bearer",
             "default": "Bearer",
@@ -2086,6 +2233,10 @@
         "type": "object",
         "properties": {
           "username": {
+            "x-label": {
+              "en": "Username",
+              "pt-BR": "Usuário"
+            },
             "type": "string",
             "minLength": 1,
             "example": "me@mydomain.com",
@@ -2103,17 +2254,29 @@
         "type": "object",
         "properties": {
           "firstName": {
+            "x-label": {
+              "en": "First name",
+              "pt-BR": "Nome"
+            },
             "type": "string",
             "minLength": 1,
             "example": "Abraham",
             "description": "User's first name"
           },
           "username": {
+            "x-label": {
+              "en": "Username",
+              "pt-BR": "Usuário"
+            },
             "type": "string",
             "minLength": 1,
             "description": "Username to access the system"
           },
           "organization": {
+            "x-label": {
+              "en": "Organization",
+              "pt-BR": "Organização"
+            },
             "type": "string",
             "format": "uuid",
             "nullable": true,
@@ -2125,6 +2288,10 @@
             }
           },
           "password": {
+            "x-label": {
+              "en": "Password",
+              "pt-BR": "Senha"
+            },
             "type": "string",
             "minLength": 8,
             "format": "password",
@@ -2157,21 +2324,37 @@
         "type": "object",
         "properties": {
           "id": {
+            "x-label": {
+              "en": "ID",
+              "pt-BR": "ID"
+            },
             "type": "string"
           },
           "firstName": {
+            "x-label": {
+              "en": "First name",
+              "pt-BR": "Nome"
+            },
             "type": "string",
             "minLength": 1,
             "example": "Abraham",
             "description": "User's first name"
           },
           "lastName": {
+            "x-label": {
+              "en": "Last name",
+              "pt-BR": "Sobrenome"
+            },
             "type": "string",
             "example": "Abraham",
             "nullable": true,
             "description": "User's last name"
           },
           "avatar": {
+            "x-label": {
+              "en": "Avatar",
+              "pt-BR": "Avatar"
+            },
             "type": "string",
             "maxLength": 255,
             "example": "avatar.png",
@@ -2179,11 +2362,19 @@
             "description": "User's avatar"
           },
           "username": {
+            "x-label": {
+              "en": "Username",
+              "pt-BR": "Usuário"
+            },
             "type": "string",
             "minLength": 1,
             "description": "Username to access the system"
           },
           "organization": {
+            "x-label": {
+              "en": "Organization",
+              "pt-BR": "Organização"
+            },
             "type": "string",
             "format": "uuid",
             "nullable": true,
@@ -2195,12 +2386,20 @@
             }
           },
           "password": {
+            "x-label": {
+              "en": "Password",
+              "pt-BR": "Senha"
+            },
             "type": "string",
             "minLength": 8,
             "format": "password",
             "description": "Password to access the system"
           },
           "emails": {
+            "x-label": {
+              "en": "Emails",
+              "pt-BR": "E-mails"
+            },
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Email"
@@ -2209,6 +2408,10 @@
             "minItems": 1
           },
           "documents": {
+            "x-label": {
+              "en": "Documents",
+              "pt-BR": "Documentos"
+            },
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Document"
@@ -2216,6 +2419,10 @@
             "description": "User's attached documents"
           },
           "phones": {
+            "x-label": {
+              "en": "Phones",
+              "pt-BR": "Telefones"
+            },
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Phone"
@@ -2223,6 +2430,10 @@
             "description": "User's attached phone numbers"
           },
           "roles": {
+            "x-label": {
+              "en": "Roles",
+              "pt-BR": "Papéis"
+            },
             "type": "array",
             "items": {
               "type": "string"
@@ -2239,21 +2450,37 @@
         ],
         "properties": {
           "id": {
+            "x-label": {
+              "en": "ID",
+              "pt-BR": "ID"
+            },
             "type": "string"
           },
           "firstName": {
+            "x-label": {
+              "en": "First name",
+              "pt-BR": "Nome"
+            },
             "type": "string",
             "minLength": 1,
             "example": "Abraham",
             "description": "User's first name"
           },
           "lastName": {
+            "x-label": {
+              "en": "Last name",
+              "pt-BR": "Sobrenome"
+            },
             "type": "string",
             "example": "Abraham",
             "nullable": true,
             "description": "User's last name"
           },
           "avatar": {
+            "x-label": {
+              "en": "Avatar",
+              "pt-BR": "Avatar"
+            },
             "type": "string",
             "maxLength": 255,
             "example": "avatar.png",
@@ -2261,11 +2488,19 @@
             "description": "User's avatar"
           },
           "username": {
+            "x-label": {
+              "en": "Username",
+              "pt-BR": "Usuário"
+            },
             "type": "string",
             "minLength": 1,
             "description": "Username to access the system"
           },
           "organization": {
+            "x-label": {
+              "en": "Organization",
+              "pt-BR": "Organização"
+            },
             "type": "string",
             "format": "uuid",
             "nullable": true,
@@ -2277,6 +2512,10 @@
             }
           },
           "emails": {
+            "x-label": {
+              "en": "Emails",
+              "pt-BR": "E-mails"
+            },
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Email"
@@ -2285,6 +2524,10 @@
             "minItems": 1
           },
           "documents": {
+            "x-label": {
+              "en": "Documents",
+              "pt-BR": "Documentos"
+            },
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Document"
@@ -2292,6 +2535,10 @@
             "description": "User's attached documents"
           },
           "phones": {
+            "x-label": {
+              "en": "Phones",
+              "pt-BR": "Telefones"
+            },
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Phone"
@@ -2299,6 +2546,10 @@
             "description": "User's attached phone numbers"
           },
           "roles": {
+            "x-label": {
+              "en": "Roles",
+              "pt-BR": "Papéis"
+            },
             "type": "array",
             "items": {
               "type": "string"
@@ -2315,32 +2566,56 @@
         "type": "object",
         "properties": {
           "id": {
+            "x-label": {
+              "en": "ID",
+              "pt-BR": "ID"
+            },
             "type": "string",
             "format": "uuid"
           },
           "name": {
+            "x-label": {
+              "en": "Name",
+              "pt-BR": "Nome"
+            },
             "type": "string",
             "minLength": 1
           },
           "address": {
+            "x-label": {
+              "en": "Addresses",
+              "pt-BR": "Endereços"
+            },
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Address"
             }
           },
           "phone": {
+            "x-label": {
+              "en": "Phones",
+              "pt-BR": "Telefones"
+            },
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Phone"
             }
           },
           "email": {
+            "x-label": {
+              "en": "Email",
+              "pt-BR": "E-mail"
+            },
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Email"
             }
           },
           "users": {
+            "x-label": {
+              "en": "Members",
+              "pt-BR": "Membros"
+            },
             "type": "array",
             "items": {
               "type": "string"
@@ -2356,32 +2631,56 @@
         "type": "object",
         "properties": {
           "id": {
+            "x-label": {
+              "en": "ID",
+              "pt-BR": "ID"
+            },
             "type": "string",
             "format": "uuid"
           },
           "name": {
+            "x-label": {
+              "en": "Name",
+              "pt-BR": "Nome"
+            },
             "type": "string",
             "minLength": 1
           },
           "address": {
+            "x-label": {
+              "en": "Addresses",
+              "pt-BR": "Endereços"
+            },
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Address"
             }
           },
           "phone": {
+            "x-label": {
+              "en": "Phones",
+              "pt-BR": "Telefones"
+            },
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Phone"
             }
           },
           "email": {
+            "x-label": {
+              "en": "Email",
+              "pt-BR": "E-mail"
+            },
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Email"
             }
           },
           "users": {
+            "x-label": {
+              "en": "Members",
+              "pt-BR": "Membros"
+            },
             "type": "array",
             "items": {
               "type": "string"
@@ -2399,6 +2698,10 @@
         ],
         "properties": {
           "countryCode": {
+            "x-label": {
+              "en": "Country code",
+              "pt-BR": "Código do país"
+            },
             "type": "string",
             "maxLength": 4,
             "description": "E.164 country calling code",
@@ -2576,14 +2879,26 @@
             ]
           },
           "localCode": {
+            "x-label": {
+              "en": "Area code",
+              "pt-BR": "DDD"
+            },
             "type": "string",
             "pattern": "^\\d{2,3}$",
             "maxLength": 3
           },
           "number": {
+            "x-label": {
+              "en": "Number",
+              "pt-BR": "Número"
+            },
             "type": "string"
           },
           "isPrimary": {
+            "x-label": {
+              "en": "Primary",
+              "pt-BR": "Principal"
+            },
             "type": "boolean",
             "example": true,
             "description": "Is this the primary User's phone number?",
@@ -2599,9 +2914,17 @@
         ],
         "properties": {
           "id": {
+            "x-label": {
+              "en": "ID",
+              "pt-BR": "ID"
+            },
             "type": "string"
           },
           "countryCode": {
+            "x-label": {
+              "en": "Country code",
+              "pt-BR": "Código do país"
+            },
             "type": "string",
             "maxLength": 4,
             "description": "E.164 country calling code",
@@ -2779,14 +3102,26 @@
             ]
           },
           "localCode": {
+            "x-label": {
+              "en": "Area code",
+              "pt-BR": "DDD"
+            },
             "type": "string",
             "pattern": "^\\d{2,3}$",
             "maxLength": 3
           },
           "number": {
+            "x-label": {
+              "en": "Number",
+              "pt-BR": "Número"
+            },
             "type": "string"
           },
           "isPrimary": {
+            "x-label": {
+              "en": "Primary",
+              "pt-BR": "Principal"
+            },
             "type": "boolean",
             "example": true,
             "description": "Is this the primary User's phone number?"
@@ -2802,10 +3137,18 @@
         ],
         "properties": {
           "email": {
+            "x-label": {
+              "en": "Email",
+              "pt-BR": "E-mail"
+            },
             "type": "string",
             "format": "email"
           },
           "type": {
+            "x-label": {
+              "en": "Type",
+              "pt-BR": "Tipo"
+            },
             "type": "string",
             "enum": [
               "work",
@@ -2814,6 +3157,10 @@
             ]
           },
           "isPrimary": {
+            "x-label": {
+              "en": "Primary",
+              "pt-BR": "Principal"
+            },
             "type": "boolean",
             "default": false
           }
@@ -2827,14 +3174,26 @@
         ],
         "properties": {
           "id": {
+            "x-label": {
+              "en": "ID",
+              "pt-BR": "ID"
+            },
             "type": "string",
             "format": "uuid"
           },
           "email": {
+            "x-label": {
+              "en": "Email",
+              "pt-BR": "E-mail"
+            },
             "type": "string",
             "format": "email"
           },
           "type": {
+            "x-label": {
+              "en": "Type",
+              "pt-BR": "Tipo"
+            },
             "type": "string",
             "enum": [
               "work",
@@ -2843,6 +3202,10 @@
             ]
           },
           "isPrimary": {
+            "x-label": {
+              "en": "Primary",
+              "pt-BR": "Principal"
+            },
             "type": "boolean"
           }
         }
@@ -2856,12 +3219,20 @@
         ],
         "properties": {
           "email": {
+            "x-label": {
+              "en": "Email",
+              "pt-BR": "E-mail"
+            },
             "type": "string",
             "format": "email",
             "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
             "maxLength": 254
           },
           "type": {
+            "x-label": {
+              "en": "Type",
+              "pt-BR": "Tipo"
+            },
             "type": "string",
             "enum": [
               "work",
@@ -2869,6 +3240,10 @@
             ]
           },
           "isPrimary": {
+            "x-label": {
+              "en": "Primary",
+              "pt-BR": "Principal"
+            },
             "type": "boolean",
             "example": true,
             "description": "Is this the primary User's e-mail address?",
@@ -2884,15 +3259,27 @@
         ],
         "properties": {
           "id": {
+            "x-label": {
+              "en": "ID",
+              "pt-BR": "ID"
+            },
             "type": "string"
           },
           "email": {
+            "x-label": {
+              "en": "Email",
+              "pt-BR": "E-mail"
+            },
             "type": "string",
             "format": "email",
             "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
             "maxLength": 254
           },
           "type": {
+            "x-label": {
+              "en": "Type",
+              "pt-BR": "Tipo"
+            },
             "type": "string",
             "enum": [
               "work",
@@ -2900,6 +3287,10 @@
             ]
           },
           "isPrimary": {
+            "x-label": {
+              "en": "Primary",
+              "pt-BR": "Principal"
+            },
             "type": "boolean",
             "example": true,
             "description": "Is this the primary User's e-mail address?"
@@ -2916,6 +3307,10 @@
         ],
         "properties": {
           "type": {
+            "x-label": {
+              "en": "Type",
+              "pt-BR": "Tipo"
+            },
             "type": "string",
             "enum": [
               "CPF",
@@ -2927,6 +3322,10 @@
             "description": "Type of document"
           },
           "countryIssue": {
+            "x-label": {
+              "en": "Issuing country",
+              "pt-BR": "País emissor"
+            },
             "type": "string",
             "pattern": "^[A-Z]{2}$",
             "maxLength": 2,
@@ -2934,6 +3333,10 @@
             "description": "Country which emitted the document"
           },
           "data": {
+            "x-label": {
+              "en": "Number",
+              "pt-BR": "Número"
+            },
             "type": "string",
             "maxLength": 20
           }
@@ -2947,9 +3350,17 @@
         ],
         "properties": {
           "id": {
+            "x-label": {
+              "en": "ID",
+              "pt-BR": "ID"
+            },
             "type": "string"
           },
           "type": {
+            "x-label": {
+              "en": "Type",
+              "pt-BR": "Tipo"
+            },
             "type": "string",
             "enum": [
               "CPF",
@@ -2961,6 +3372,10 @@
             "description": "Type of document"
           },
           "countryIssue": {
+            "x-label": {
+              "en": "Issuing country",
+              "pt-BR": "País emissor"
+            },
             "type": "string",
             "pattern": "^[A-Z]{2}$",
             "maxLength": 2,
@@ -2968,6 +3383,10 @@
             "description": "Country which emitted the document"
           },
           "data": {
+            "x-label": {
+              "en": "Number",
+              "pt-BR": "Número"
+            },
             "type": "string",
             "maxLength": 20
           }
@@ -2981,6 +3400,10 @@
         ],
         "properties": {
           "password": {
+            "x-label": {
+              "en": "Password",
+              "pt-BR": "Senha"
+            },
             "type": "string",
             "minLength": 8,
             "format": "password"
@@ -2988,17 +3411,65 @@
         }
       },
       "UserArrayOf": {
-        "description": "Port output array of users.",
-        "type": "array",
-        "items": {
-          "$ref": "#/components/schemas/User"
+        "description": "Port output page of users: the `result` slice selected by `page`/`size`/`filter`/`sort`/`q` plus the matching `total` (JUM-777).",
+        "type": "object",
+        "required": [
+          "result",
+          "page",
+          "size",
+          "total"
+        ],
+        "properties": {
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of records matching the filters and search, across all pages."
+          }
         }
       },
       "OrganizationArrayOf": {
-        "description": "Port output array of organizations.",
-        "type": "array",
-        "items": {
-          "$ref": "#/components/schemas/Organization"
+        "description": "Port output page of organizations: the `result` slice selected by `page`/`size`/`filter`/`sort`/`q` plus the matching `total` (JUM-777).",
+        "type": "object",
+        "required": [
+          "result",
+          "page",
+          "size",
+          "total"
+        ],
+        "properties": {
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Organization"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of records matching the filters and search, across all pages."
+          }
         }
       },
       "Document": {
@@ -3010,9 +3481,17 @@
         ],
         "properties": {
           "id": {
+            "x-label": {
+              "en": "ID",
+              "pt-BR": "ID"
+            },
             "type": "string"
           },
           "type": {
+            "x-label": {
+              "en": "Type",
+              "pt-BR": "Tipo"
+            },
             "type": "string",
             "enum": [
               "CPF",
@@ -3024,6 +3503,10 @@
             "description": "Type of document"
           },
           "countryIssue": {
+            "x-label": {
+              "en": "Issuing country",
+              "pt-BR": "País emissor"
+            },
             "type": "string",
             "pattern": "^[A-Z]{2}$",
             "maxLength": 2,
@@ -3031,6 +3514,10 @@
             "description": "Country which emitted the document"
           },
           "data": {
+            "x-label": {
+              "en": "Number",
+              "pt-BR": "Número"
+            },
             "type": "string",
             "maxLength": 20,
             "x-validation": {
@@ -3081,15 +3568,27 @@
         ],
         "properties": {
           "id": {
+            "x-label": {
+              "en": "ID",
+              "pt-BR": "ID"
+            },
             "type": "string"
           },
           "email": {
+            "x-label": {
+              "en": "Email",
+              "pt-BR": "E-mail"
+            },
             "type": "string",
             "format": "email",
             "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
             "maxLength": 254
           },
           "type": {
+            "x-label": {
+              "en": "Type",
+              "pt-BR": "Tipo"
+            },
             "type": "string",
             "enum": [
               "work",
@@ -3097,6 +3596,10 @@
             ]
           },
           "isPrimary": {
+            "x-label": {
+              "en": "Primary",
+              "pt-BR": "Principal"
+            },
             "type": "boolean",
             "example": true,
             "description": "Is this the primary User's e-mail address?",
@@ -3113,13 +3616,25 @@
         ],
         "properties": {
           "id": {
+            "x-label": {
+              "en": "ID",
+              "pt-BR": "ID"
+            },
             "type": "string",
             "format": "uuid"
           },
           "email": {
+            "x-label": {
+              "en": "Email",
+              "pt-BR": "E-mail"
+            },
             "type": "string"
           },
           "type": {
+            "x-label": {
+              "en": "Type",
+              "pt-BR": "Tipo"
+            },
             "type": "string",
             "enum": [
               "work",
@@ -3128,6 +3643,10 @@
             ]
           },
           "isPrimary": {
+            "x-label": {
+              "en": "Primary",
+              "pt-BR": "Principal"
+            },
             "type": "boolean",
             "default": false
           }
@@ -3143,9 +3662,17 @@
         ],
         "properties": {
           "id": {
+            "x-label": {
+              "en": "ID",
+              "pt-BR": "ID"
+            },
             "type": "string"
           },
           "countryCode": {
+            "x-label": {
+              "en": "Country code",
+              "pt-BR": "Código do país"
+            },
             "type": "string",
             "maxLength": 4,
             "description": "E.164 country calling code",
@@ -3323,11 +3850,19 @@
             ]
           },
           "localCode": {
+            "x-label": {
+              "en": "Area code",
+              "pt-BR": "DDD"
+            },
             "type": "string",
             "pattern": "^\\d{2,3}$",
             "maxLength": 3
           },
           "number": {
+            "x-label": {
+              "en": "Number",
+              "pt-BR": "Número"
+            },
             "type": "string",
             "x-validation": {
               "description": "National number format per country (countryCode selects the rule).",
@@ -3352,6 +3887,10 @@
             }
           },
           "isPrimary": {
+            "x-label": {
+              "en": "Primary",
+              "pt-BR": "Principal"
+            },
             "type": "boolean",
             "example": true,
             "description": "Is this the primary User's phone number?",
@@ -3373,26 +3912,46 @@
         "type": "object",
         "properties": {
           "id": {
+            "x-label": {
+              "en": "ID",
+              "pt-BR": "ID"
+            },
             "type": "string"
           },
           "firstName": {
+            "x-label": {
+              "en": "First name",
+              "pt-BR": "Nome"
+            },
             "type": "string",
             "minLength": 1,
             "example": "Abraham",
             "description": "User's first name"
           },
           "lastName": {
+            "x-label": {
+              "en": "Last name",
+              "pt-BR": "Sobrenome"
+            },
             "type": "string",
             "example": "Abraham",
             "nullable": true,
             "description": "User's last name"
           },
           "username": {
+            "x-label": {
+              "en": "Username",
+              "pt-BR": "Usuário"
+            },
             "type": "string",
             "minLength": 1,
             "description": "Username to access the system"
           },
           "organization": {
+            "x-label": {
+              "en": "Organization",
+              "pt-BR": "Organização"
+            },
             "type": "string",
             "format": "uuid",
             "nullable": true,
@@ -3404,12 +3963,20 @@
             }
           },
           "password": {
+            "x-label": {
+              "en": "Password",
+              "pt-BR": "Senha"
+            },
             "type": "string",
             "minLength": 8,
             "format": "password",
             "description": "Password to access the system"
           },
           "emails": {
+            "x-label": {
+              "en": "Emails",
+              "pt-BR": "E-mails"
+            },
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Email"
@@ -3418,6 +3985,10 @@
             "minItems": 1
           },
           "documents": {
+            "x-label": {
+              "en": "Documents",
+              "pt-BR": "Documentos"
+            },
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Document"
@@ -3425,6 +3996,10 @@
             "description": "User's attached documents"
           },
           "phones": {
+            "x-label": {
+              "en": "Phones",
+              "pt-BR": "Telefones"
+            },
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Phone"
@@ -3432,6 +4007,10 @@
             "description": "User's attached phone numbers"
           },
           "roles": {
+            "x-label": {
+              "en": "Roles",
+              "pt-BR": "Papéis"
+            },
             "type": "array",
             "items": {
               "type": "string"
@@ -3439,10 +4018,18 @@
             "description": "User's access roles"
           },
           "createdAt": {
+            "x-label": {
+              "en": "Created at",
+              "pt-BR": "Criado em"
+            },
             "type": "string",
             "format": "date-time"
           },
           "updatedAt": {
+            "x-label": {
+              "en": "Updated at",
+              "pt-BR": "Atualizado em"
+            },
             "type": "string",
             "format": "date-time"
           }
@@ -3459,41 +4046,79 @@
         "type": "object",
         "properties": {
           "id": {
+            "x-label": {
+              "en": "ID",
+              "pt-BR": "ID"
+            },
             "type": "string",
             "format": "uuid"
           },
           "name": {
+            "x-label": {
+              "en": "Name",
+              "pt-BR": "Nome"
+            },
             "type": "string"
           },
           "address": {
+            "x-label": {
+              "en": "Addresses",
+              "pt-BR": "Endereços"
+            },
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Address"
             }
           },
           "phone": {
+            "x-label": {
+              "en": "Phones",
+              "pt-BR": "Telefones"
+            },
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Phone"
             }
           },
           "email": {
+            "x-label": {
+              "en": "Email",
+              "pt-BR": "E-mail"
+            },
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Email"
             }
           },
           "users": {
+            "x-label": {
+              "en": "Members",
+              "pt-BR": "Membros"
+            },
             "type": "array",
+            "description": "Member user ids.",
+            "x-references": {
+              "entity": "User",
+              "operationId": "getAll",
+              "labelField": "username"
+            },
             "items": {
               "type": "string"
             }
           },
           "createdAt": {
+            "x-label": {
+              "en": "Created at",
+              "pt-BR": "Criado em"
+            },
             "type": "string",
             "format": "date-time"
           },
           "updatedAt": {
+            "x-label": {
+              "en": "Updated at",
+              "pt-BR": "Atualizado em"
+            },
             "type": "string",
             "format": "date-time"
           }

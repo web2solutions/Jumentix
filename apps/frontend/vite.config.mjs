@@ -23,34 +23,36 @@ export default defineConfig(() => {
         },
         {
           find: '@/',
-          replacement: `${path.resolve(__dirname, 'src')}/`,
+          replacement: `${path.resolve(import.meta.dirname, 'src')}/`,
         },
         {
           find: '@',
-          replacement: path.resolve(__dirname, '/src'),
+          replacement: path.resolve(import.meta.dirname, '/src'),
         },
         {
           // JUM-680 pattern: consume workspace packages from source, not from
           // a dist that may not exist on a clean checkout.
           find: /^@jumentix\/sdk-rest-client$/,
-          replacement: path.resolve(__dirname, '../../packages/sdk-rest-client/src/index.ts'),
+          replacement: path.resolve(import.meta.dirname, '../../packages/sdk-rest-client/src/index.ts'),
         },
         {
           // The canonical loader reads the spec from disk (node:fs) — the
           // browser always injects the bundled OAS instead (requirement 136).
           find: /^@jumentix\/shared-contracts$/,
-          replacement: path.resolve(__dirname, 'src/contracts/sharedContractsBrowserShim.ts'),
+          replacement: path.resolve(import.meta.dirname, 'src/contracts/sharedContractsBrowserShim.ts'),
         },
       ],
       extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue', '.scss'],
     },
     server: {
-      port: 3001,
+      port: Number(process.env.VITE_DEV_PORT ?? 3001),
       proxy: {
         // Dev-only: same-origin tunnel to the standalone backend instance
         // (express + InMemory). 3000 is the repo default; this workspace uses
         // JUMENTIX_HTTP_PORT=3010 so parallel agent backends never collide.
-        '/api': 'http://localhost:3010',
+        // Override both with VITE_DEV_PORT / VITE_API_PROXY_TARGET when
+        // another agent already holds those ports on the same host.
+        '/api': process.env.VITE_API_PROXY_TARGET ?? 'http://localhost:3010',
       },
     },
   }

@@ -379,6 +379,30 @@ describe('http validators', () => {
  * into a mock, and spreading touches every re-export getter. Removing that dead
  * mock (JUM-583) revealed the barrel had no coverage of its own.
  */
+describe('validateRequestParams query coercion (JUM-777)', () => {
+  const endPoint = {
+    parameters: [
+      { name: 'page', in: 'query', schema: { type: 'integer', minimum: 1 } },
+      { name: 'size', in: 'query', schema: { type: 'integer', minimum: 1, maximum: 100 } },
+      { name: 'active', in: 'query', schema: { type: 'boolean' } }
+    ]
+  };
+
+  it('coerces numeric and boolean query strings before validating their schema', () => {
+    expect.hasAssertions();
+    expect(validateRequestParams(endPoint, {}, { page: '2', size: '30', active: 'true' })).toBe(true);
+    expect(validateRequestParams(endPoint, {}, { page: 1 })).toBe(true);
+  });
+
+  it('still rejects values that do not parse or violate the bounds', () => {
+    expect.hasAssertions();
+    expect(() => validateRequestParams(endPoint, {}, { page: 'two' })).toThrow(ValidationError);
+    expect(() => validateRequestParams(endPoint, {}, { page: '0' })).toThrow(ValidationError);
+    expect(() => validateRequestParams(endPoint, {}, { size: '101' })).toThrow(ValidationError);
+    expect(() => validateRequestParams(endPoint, {}, { active: 'yes' })).toThrow(ValidationError);
+  });
+});
+
 describe('http validators barrel', () => {
   it.each([
     'throwIfOASInputValidationFails',

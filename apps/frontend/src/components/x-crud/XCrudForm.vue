@@ -10,7 +10,9 @@ import type { XCrudEntityConfig, XCrudMode } from '@/components/x-crud/xCrudType
 import {
   arrayItemDescriptors, fieldDescriptors, type FieldDescriptor
 } from '@/contracts/formSchema';
+import { fieldHelp, fieldLabel } from '@/contracts/labels';
 import { collectBody, validateAll } from '@/contracts/oasForm';
+import { t } from '@/i18n';
 
 /**
  * XCrudForm (JUM-772 redesign, X-SYNTH pattern): 2-column field grid with
@@ -24,6 +26,8 @@ const props = defineProps<{
   descriptors: FieldDescriptor[];
   record?: Record<string, unknown>;
   referenceRestrictions?: Record<string, string[]>;
+  /** Resolved `x-references` labels (field → id → label) for preview cells (JUM-781). */
+  referenceLabels?: Record<string, Record<string, string>>;
 }>();
 
 const emit = defineEmits<{
@@ -90,18 +94,33 @@ const previewEntries = computed(() => {
   return Object.entries(props.record).filter(([key]) => key !== 'password');
 });
 
-/** Preview labels come from the entity schema (description), not raw keys. */
-const previewLabels = computed<Record<string, string>>(() => {
+/** Entity descriptors drive preview labels, formats and reference resolution. */
+const entityDescriptors = computed<Record<string, FieldDescriptor>>(() => {
   try {
-    const descriptors = fieldDescriptors(props.config.entity);
-    return Object.fromEntries(descriptors.map((d) => [
-      d.name,
-      props.config.columnLabels?.[d.name] ?? d.description ?? d.name
-    ]));
+    return Object.fromEntries(fieldDescriptors(props.config.entity).map((d) => [d.name, d]));
   } catch {
     return {};
   }
 });
+
+const previewLabel = (key: string): string => {
+  const descriptor = entityDescriptors.value[key];
+  return descriptor ? fieldLabel(descriptor, props.config.columnLabels) : fieldLabel({ name: key }, props.config.columnLabels);
+};
+
+const previewValue = (key: string, value: unknown): string => {
+  const descriptor = entityDescriptors.value[key] ?? { name: key, type: typeof value, required: false };
+  return formatCellValue(descriptor, value);
+};
+
+const referenceLabelFor = (key: string, value: unknown): string => (
+  props.referenceLabels?.[key]?.[String(value ?? '')] ?? String(value ?? '')
+);
+
+const isReference = (key: string): boolean => Boolean(entityDescriptors.value[key]?.xReferences);
+
+const label = (d: FieldDescriptor): string => fieldLabel(d, props.config.columnLabels);
+const help = (d: FieldDescriptor): string | undefined => fieldHelp(d);
 </script>
 
 <template>
@@ -111,19 +130,29 @@ const previewLabels = computed<Record<string, string>>(() => {
       <div class="row g-3">
         <template v-for="[key, value] in previewEntries" :key="key">
           <div class="col-12 col-md-3">
-            <div class="small text-uppercase text-body-secondary">{{ previewLabels[key] ?? key }}</div>
+            <div class="small text-uppercase text-body-secondary">{{ previewLabel(key) }}</div>
             <div class="fw-medium">
               <template v-if="Array.isArray(value) && value.length && typeof value[0] === 'object'">
                 <div v-for="(item, index) in value" :key="index" class="border rounded p-2 mb-1 small">
                   <div v-for="(fieldValue, fieldKey) in item" :key="fieldKey">
-                    <strong>{{ fieldKey }}:</strong> {{ fieldValue }}
+                    <strong>{{ fieldLabel({ name: String(fieldKey) }) }}:</strong> {{ fieldValue }}
                   </div>
                 </div>
+              </template>
+              <template v-else-if="Array.isArray(value) && isReference(key)">
+                <span v-for="(chip, index) in value" :key="index" class="badge text-bg-light me-1">
+                  {{ referenceLabelFor(key, chip) }}
+                </span>
+                <span v-if="value.length === 0">—</span>
               </template>
               <template v-else-if="Array.isArray(value)">
                 <span v-for="(chip, index) in value" :key="index" class="badge text-bg-secondary me-1">
                   {{ chip }}
                 </span>
+                <span v-if="value.length === 0">—</span>
+              </template>
+              <template v-else-if="isReference(key)">
+                {{ referenceLabelFor(key, value) }}
               </template>
               <template v-else-if="key === config.avatarField">
                 <CAvatar :src="String(value ?? '')" size="lg" color="secondary" text-color="white">
@@ -134,7 +163,7 @@ const previewLabels = computed<Record<string, string>>(() => {
                 <span class="font-monospace small" :title="String(value ?? '')">{{ shortId(value) }}</span>
               </template>
               <template v-else>
-                {{ formatCellValue({ name: key, type: typeof value, required: false }, value) }}
+                {{ previewValue(key, value) }}
               </template>
             </div>
           </div>
@@ -157,7 +186,7 @@ const previewLabels = computed<Record<string, string>>(() => {
         </CAvatar>
         <CButton color="secondary" variant="outline" size="sm" type="button">
           <CIcon icon="cil-cloud-upload" size="sm" />
-          {{ mode === 'create' ? 'Upload Photo' : 'Change Photo' }}
+          {{ mode === 'create' ? t('crud.uploadPhoto') : t('crud.changePhoto') }}
         </CButton>
       </div>
 
@@ -178,7 +207,7 @@ const previewLabels = computed<Record<string, string>>(() => {
           <!-- array-of-strings as checkbox group (options from the config) -->
           <div v-if="isArrayField(d) && config.arrayOptions?.[d.name]" class="col-12 col-md-6">
             <label class="form-label fw-semibold mb-1">
-              {{ d.description ?? d.name }}
+              {{ label(d) }}
               <span v-if="d.required" class="text-danger">*</span>
             </label>
             <div>
@@ -201,7 +230,7 @@ const previewLabels = computed<Record<string, string>>(() => {
           <!-- entity reference (x-references) -->
           <div v-else-if="d.xReferences?.operationId" class="col-12 col-md-6">
             <label class="form-label fw-semibold mb-1" :for="`xref-${d.name}`">
-              {{ d.description ?? d.name }}
+              {{ label(d) }}
               <span v-if="d.required" class="text-danger">*</span>
             </label>
             <XCrudReferenceInput
@@ -210,6 +239,7 @@ const previewLabels = computed<Record<string, string>>(() => {
               :restrict-to="referenceRestrictions?.[d.name]"
               @update:model-value="values[d.name] = $event"
             />
+            <div v-if="help(d)" class="form-text">{{ help(d) }}</div>
           </div>
           <!-- plain OAS field -->
           <div v-else-if="!isArrayField(d)" class="col-12 col-md-6">
@@ -220,10 +250,10 @@ const previewLabels = computed<Record<string, string>>(() => {
 
       <div class="d-flex gap-2 mt-3 pt-3 border-top">
         <CButton color="primary" type="button" @click="submit">
-          <CIcon icon="cil-save" size="sm" /> {{ mode === 'create' ? 'Create' : 'Save' }}
+          <CIcon icon="cil-save" size="sm" /> {{ mode === 'create' ? t('crud.create') : t('crud.save') }}
         </CButton>
         <CButton color="secondary" variant="outline" type="button" @click="emit('cancel')">
-          Cancel
+          {{ t('crud.cancel') }}
         </CButton>
       </div>
     </template>

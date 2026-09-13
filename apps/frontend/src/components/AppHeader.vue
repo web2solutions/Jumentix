@@ -5,11 +5,13 @@ import { useColorModes } from '@coreui/vue'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
 import AppHeaderDropdownAccnt from '@/components/AppHeaderDropdownAccnt.vue'
 import NetworkActivity from '@/components/NetworkActivity.vue'
+import { useI18n } from '@/i18n'
 import { useSidebarStore } from '@/stores/sidebar'
 
 const headerClassNames = ref('mb-4 p-0')
 const { colorMode, setColorMode } = useColorModes('jumentix-frontend-theme')
 const sidebar = useSidebarStore()
+const { t } = useI18n()
 
 const updateHeaderShadow = () => {
   headerClassNames.value =
@@ -28,38 +30,21 @@ onUnmounted(() => {
 <template>
   <CHeader position="sticky" :class="headerClassNames">
     <CContainer class="border-bottom px-4" fluid>
-      <CHeaderToggler @click="sidebar.toggleVisible()" style="margin-inline-start: -14px">
+      <CHeaderToggler :aria-label="t('nav.toggleNavigation')" @click="sidebar.toggleVisible()" style="margin-inline-start: -14px">
         <CIcon icon="cil-menu" size="lg" />
       </CHeaderToggler>
       <CHeaderNav class="d-none d-md-flex">
         <CNavItem>
-          <CNavLink href="#/dashboard"> Dashboard </CNavLink>
+          <CNavLink href="#/dashboard">{{ t('nav.dashboard') }}</CNavLink>
         </CNavItem>
         <CNavItem>
-          <CNavLink href="#/users">Users</CNavLink>
+          <CNavLink href="#/users">{{ t('nav.users') }}</CNavLink>
         </CNavItem>
         <CNavItem>
-          <CNavLink href="#/organizations">Organizations</CNavLink>
+          <CNavLink href="#/organizations">{{ t('nav.organizations') }}</CNavLink>
         </CNavItem>
       </CHeaderNav>
       <CHeaderNav class="ms-auto">
-        <CNavItem>
-          <CNavLink href="#">
-            <CIcon icon="cil-bell" size="lg" />
-          </CNavLink>
-        </CNavItem>
-        <CNavItem>
-          <CNavLink href="#">
-            <CIcon icon="cil-list" size="lg" />
-          </CNavLink>
-        </CNavItem>
-        <CNavItem>
-          <CNavLink href="#">
-            <CIcon icon="cil-envelope-open" size="lg" />
-          </CNavLink>
-        </CNavItem>
-      </CHeaderNav>
-      <CHeaderNav>
         <li class="nav-item py-1">
           <div class="vr h-100 mx-2 text-body text-opacity-75"></div>
         </li>

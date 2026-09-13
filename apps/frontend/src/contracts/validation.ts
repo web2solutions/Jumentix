@@ -1,4 +1,5 @@
 import openApi from './openapi.json';
+import { t } from '@/i18n';
 
 /**
  * Document/phone masks and validations driven by the `x-validation` blocks
@@ -14,15 +15,21 @@ interface ValidationRule {
   example?: string;
 }
 
-const documentRules = (): ValidationRule[] => {
-  const data = (openApi as any)?.components?.schemas?.Document?.properties?.data;
-  return (data?.['x-validation']?.rules ?? []) as ValidationRule[];
-};
+interface RuleCarrier {
+  components?: {
+    schemas?: Record<string, {
+      properties?: Record<string, { 'x-validation'?: { rules?: ValidationRule[] } }>;
+    }>;
+  };
+}
 
-const phoneRules = (): ValidationRule[] => {
-  const number = (openApi as any)?.components?.schemas?.Phone?.properties?.number;
-  return (number?.['x-validation']?.rules ?? []) as ValidationRule[];
-};
+const rulesOf = (schema: string, property: string): ValidationRule[] => (
+  (openApi as RuleCarrier).components?.schemas?.[schema]?.properties?.[property]?.['x-validation']?.rules ?? []
+);
+
+const documentRules = (): ValidationRule[] => rulesOf('Document', 'data');
+
+const phoneRules = (): ValidationRule[] => rulesOf('Phone', 'number');
 
 export const documentRuleFor = (type: string, countryIssue: string): ValidationRule | undefined => (
   documentRules().find((rule) => (
@@ -155,17 +162,18 @@ export const validateDocumentData = (
   value: string
 ): string | null => {
   if (!value.trim()) {
-    return 'Número do documento é obrigatório.';
+    return t('validation.documentRequired');
   }
   const rule = documentRuleFor(type, countryIssue);
   if (!rule) {
     return null; // no declared rule for this type+country — free-form per OAS
   }
   if (!matches(rule.pattern, value)) {
-    return `Formato inválido para ${type}${rule.example ? ` — exemplo: ${rule.example}` : ''}.`;
+    const example = rule.example ? t('validation.documentExample', { example: rule.example }) : '';
+    return `${t('validation.documentFormat', { type })}${example}.`;
   }
   if (rule.checksum === 'cpf-mod11' && !isValidCpf(value)) {
-    return 'CPF inválido — dígitos verificadores não conferem.';
+    return t('validation.cpfChecksum');
   }
   return null;
 };
@@ -177,11 +185,11 @@ export const validatePhone = (
   value: string
 ): string | null => {
   if (!value.trim()) {
-    return 'Número de telefone é obrigatório.';
+    return t('validation.phoneRequired');
   }
   const rule = phoneRuleFor(countryCode);
   if (rule?.pattern && !matches(rule.pattern, value)) {
-    return `Telefone inválido para ${countryCode} — exemplo: ${rule.example ?? '0000-0000'}.`;
+    return t('validation.phoneFormat', { country: countryCode, example: rule.example ?? '0000-0000' });
   }
   return null;
 };

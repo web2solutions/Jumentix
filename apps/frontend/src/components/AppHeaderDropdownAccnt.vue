@@ -1,12 +1,34 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
+import {
+  CAvatar, CDropdown, CDropdownDivider, CDropdownHeader, CDropdownItem, CDropdownMenu, CDropdownToggle
+} from '@coreui/vue';
 
+import { useI18n } from '@/i18n';
 import { useAuthStore } from '@/stores/auth';
+import { useProfileStore } from '@/stores/profile';
 
-const itemsCount = 42;
-
+/**
+ * Account menu (JUM-781): only what the product has — the signed-in identity,
+ * Profile, language and Logout. The CoreUI template entries (Updates 42,
+ * Messages, Payments, Lock Account…) were dead links and are gone.
+ */
 const router = useRouter();
 const auth = useAuthStore();
+const profile = useProfileStore();
+const { t, locale, locales, setLocale } = useI18n();
+
+const initials = computed(() => {
+  const first = profile.record?.firstName?.trim() ?? '';
+  const last = profile.record?.lastName?.trim() ?? '';
+  const fromName = `${first.charAt(0)}${last.charAt(0)}`.toUpperCase();
+  return fromName || (auth.username.charAt(0).toUpperCase() || 'J');
+});
+
+const displayName = computed(() => (
+  profile.record ? `${profile.record.firstName ?? ''} ${profile.record.lastName ?? ''}`.trim() : auth.username
+));
 
 const goToProfile = async () => {
   await router.push('/profile');
@@ -16,6 +38,7 @@ const logout = async () => {
   try {
     await auth.logout();
   } finally {
+    profile.reset();
     await router.push('/login');
   }
 };
@@ -23,51 +46,41 @@ const logout = async () => {
 
 <template>
   <CDropdown placement="bottom-end" variant="nav-item">
-    <CDropdownToggle class="py-0 pe-0" :caret="false">
-      <CAvatar color="primary" text-color="white" size="md">J</CAvatar>
+    <CDropdownToggle class="py-0 pe-0" :caret="false" :aria-label="t('nav.account')">
+      <CAvatar
+        v-if="profile.record?.avatar"
+        :src="String(profile.record.avatar)"
+        size="md"
+      />
+      <CAvatar v-else color="primary" text-color="white" size="md">{{ initials }}</CAvatar>
     </CDropdownToggle>
     <CDropdownMenu class="pt-0">
       <CDropdownHeader
         component="h6"
         class="bg-body-secondary text-body-secondary fw-semibold mb-2 rounded-top"
       >
-        User menu
+        {{ displayName || t('nav.account') }}
       </CDropdownHeader>
-      <CDropdownItem>
-        <CIcon icon="cil-bell" /> Updates
-        <CBadge color="info" class="ms-auto">{{ itemsCount }}</CBadge>
+      <CDropdownItem component="button" @click="goToProfile">
+        <CIcon icon="cil-user" /> {{ t('nav.profile') }}
       </CDropdownItem>
-      <CDropdownItem>
-        <CIcon icon="cil-envelope-open" /> Messages
-        <CBadge color="success" class="ms-auto">{{ itemsCount }}</CBadge>
-      </CDropdownItem>
-      <CDropdownItem>
-        <CIcon icon="cil-task" /> Tasks
-        <CBadge color="danger" class="ms-auto">{{ itemsCount }}</CBadge>
-      </CDropdownItem>
-      <CDropdownItem>
-        <CIcon icon="cil-comment-square" /> Comments
-        <CBadge color="warning" class="ms-auto">{{ itemsCount }}</CBadge>
-      </CDropdownItem>
-      <CDropdownHeader
-        component="h6"
-        class="bg-body-secondary text-body-secondary fw-semibold my-2"
+      <CDropdownHeader component="h6" class="bg-body-secondary text-body-secondary fw-semibold my-2">
+        {{ t('app.language') }}
+      </CDropdownHeader>
+      <CDropdownItem
+        v-for="code in locales"
+        :key="code"
+        component="button"
+        :active="locale === code"
+        :aria-pressed="locale === code"
+        @click="setLocale(code)"
       >
-        Settings
-      </CDropdownHeader>
-      <CDropdownItem @click="goToProfile"> <CIcon icon="cil-user" /> Profile </CDropdownItem>
-      <CDropdownItem> <CIcon icon="cil-settings" /> Settings </CDropdownItem>
-      <CDropdownItem>
-        <CIcon icon="cil-dollar" /> Payments
-        <CBadge color="secondary" class="ms-auto">{{ itemsCount }}</CBadge>
-      </CDropdownItem>
-      <CDropdownItem>
-        <CIcon icon="cil-file" /> Projects
-        <CBadge color="primary" class="ms-auto">{{ itemsCount }}</CBadge>
+        {{ code === 'pt-BR' ? 'Português (BR)' : 'English' }}
       </CDropdownItem>
       <CDropdownDivider />
-      <CDropdownItem> <CIcon icon="cil-shield-alt" /> Lock Account </CDropdownItem>
-      <CDropdownItem @click="logout"> <CIcon icon="cil-lock-locked" /> Logout </CDropdownItem>
+      <CDropdownItem component="button" @click="logout">
+        <CIcon icon="cil-lock-locked" /> {{ t('nav.logout') }}
+      </CDropdownItem>
     </CDropdownMenu>
   </CDropdown>
 </template>
