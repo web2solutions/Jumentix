@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-09-13 docs: fix ci coverage badges (JUM-568) - Eduardo Almeida
+- 2026-09-13 test: isolate frontend auth guard storage (JUM-568) (#320) - Eduardo A.
 - 2026-09-13 [JUM-568][CI] Rebind public CI providers (#319) - Eduardo A.
 - 2026-09-13 [JUM-774][Feature] Frontend seed and X-CRUD kit hardening (JUM-774…782) (#318) - Eduardo A.
 - 2026-09-13 feat(frontend): auto-redirect to login when the session expires (JUM-783) (#317) - Eduardo A.
