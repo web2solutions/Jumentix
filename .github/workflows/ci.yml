@@ -334,27 +334,14 @@ jobs:
           else
             echo "Patch coverage is PR-only; project coverage already passed."
           fi
-      - name: Install verified Codecov CLI
-        run: |
-          set -euo pipefail
-          case "$(uname -s)" in
-            Darwin) codecov_os="macos" ;;
-            Linux) codecov_os="linux" ;;
-            *) echo "Unsupported Codecov CLI OS: $(uname -s)" >&2; exit 1 ;;
-          esac
-          curl -Os "https://cli.codecov.io/latest/${codecov_os}/codecov"
-          curl -Os "https://cli.codecov.io/latest/${codecov_os}/codecov.SHA256SUM"
-          shasum -a 256 -c codecov.SHA256SUM
-          chmod +x codecov
-      - name: Upload coverage to Codecov
-        run: |
-          test -n "${CODECOV_TOKEN:-}"
-          ./codecov --verbose upload-process --disable-search --fail-on-error \
-            -t "$CODECOV_TOKEN" \
-            -n "jumentix-${GITHUB_RUN_ID}" \
-            -F project \
-            -f coverage/lcov.info \
-            -f coverage/browser/lcov.info
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage/lcov.info,coverage/browser/lcov.info
+          flags: project
+          name: jumentix-${{ github.run_id }}
+          fail_ci_if_error: true
       - name: Install Sonar scanner
         if: vars.JUMENTIX_ENABLE_SONAR == 'true'
         run: |

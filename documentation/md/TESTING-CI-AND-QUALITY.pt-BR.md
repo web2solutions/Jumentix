@@ -199,7 +199,7 @@ Importação de cobertura do SonarQube Cloud:
 |------------|---------|----------------------------|-----------------------------|
 | GitHub Actions (branch gate) | Validação orientada ao destino em push/PR | `.github/workflows/ci.yml` | Seleciona pelo destino do PR ou branch enviada e retém evidência do gate |
 | GitHub Actions (cobertura) | Cobertura de projeto e patch pertencente ao repositório | `.github/workflows/ci.yml` | Aplica `coverage:check` e `coverage:patch` e retém evidência JSON/LCOV |
-| GitHub Actions (Codecov) | Publicação de dashboard de cobertura | `.github/workflows/ci.yml` | Requer `CODECOV_TOKEN`; envia LCOV pelo Codecov CLI após thresholds locais |
+| GitHub Actions (Codecov) | Publicação de dashboard de cobertura | `.github/workflows/ci.yml` | Requer `CODECOV_TOKEN`; envia LCOV via `codecov/codecov-action@v5` após thresholds locais |
 | GitHub Actions (revisão third-party) | Revisão fail-closed de segredos e análise estática | `.github/workflows/ci.yml` | Executa Gitleaks/Semgrep fixados e retém evidência SARIF |
 | GitHub Actions (website) | Storybook e prontidão de publicação pertencentes ao website | `.github/workflows/ci.yml` | Executa build/smoke do Storybook e prepublish de forma independente |
 | GitHub Actions (SonarQube Cloud) | Análise estática + quality gate + importação de cobertura | `.github/workflows/ci.yml`, `sonar-project.properties` | Requer `SONAR_TOKEN`; importa LCOV retido após cobertura |

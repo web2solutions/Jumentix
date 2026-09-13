@@ -411,7 +411,7 @@ describe('run-full-test-matrix', () => {
       read('.github/workflows/ci.yml').includes('bun run website:storybook:smoke'),
       read('.github/workflows/ci.yml').includes('bun run website:test:cypress'),
       read('.github/workflows/ci.yml').includes('bun run coverage:patch'),
-      read('.github/workflows/ci.yml').includes('codecov --verbose upload-process'),
+      read('.github/workflows/ci.yml').includes('codecov/codecov-action@v5'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'pr:governance:check'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'requirements:check'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'integrations:check'),
