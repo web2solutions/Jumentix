@@ -139,7 +139,11 @@ function layersForFile(manifest, filePath) {
   const exactSuite = (manifest.suites || []).find((suite) => suite.path === filePath);
   if (exactSuite) matched.add(exactSuite.layer);
 
-  if (filePath.startsWith('ci-cd/') || filePath.startsWith('tooling/') || filePath.startsWith('apps/jumentix-website/')) {
+  if (filePath.startsWith('ci-cd/')
+    || filePath.startsWith('tooling/')
+    || filePath.startsWith('apps/jumentix-website/')
+    || filePath.startsWith('.github/')
+    || filePath.startsWith('.circleci/')) {
     matched.add('tooling');
   }
   // Root toolchain pins (lockfile, package manifests, version pins) gate the

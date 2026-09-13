@@ -268,10 +268,10 @@ describe('buildManifest', () => {
     // no layer, and the task gate refuses it as an unsupported change set.
     expect(globs).toStrictEqual(expect.arrayContaining([
       '.github/**',
+      '.circleci/**',
       'test-map.json',
       'jest.config.js'
     ]));
-    expect(globs).not.toContain('.circleci/**');
   });
 
   it('declares cheap dev health and full main matrix in the generated gate table', () => {
