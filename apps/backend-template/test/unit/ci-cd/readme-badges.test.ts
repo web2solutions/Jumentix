@@ -8,9 +8,9 @@ import path from 'node:path';
  * authoritative, and it reports the health of something else entirely. Three
  * were live before this suite existed —
  *
- *   - both SonarCloud badges pointed at `web2solutions_aaa-typescript-boilerplate`,
+ *   - SonarCloud badges pointed at the wrong project key,
  *     the pre-migration project key, so they had been showing another project's
- *     quality gate since the move to `XpertMinds/Jumentix` (Requirement 103);
+ *     quality gate since the move to `web2solutions/Jumentix` (Requirement 103);
  *   - a Snyk badge remained after Snyk was retired in JUM-540, advertising a
  *     scanner the repository no longer runs;
  *   - a `node 22.x` badge implied Node is the runtime, which Requirement 096
@@ -48,30 +48,29 @@ describe('rEADME badges', () => {
 
     expect.hasAssertions();
     for (const branch of ['dev', 'main']) {
-      expect(readme).toContain(`https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml/badge.svg?branch=${branch}`);
-      expect(readme).toContain(`https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml?query=branch%3A${branch}`);
+      expect(readme).toContain(`https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml/badge.svg?branch=${branch}`);
+      expect(readme).toContain(`https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml?query=branch%3A${branch}`);
     }
-    expect(badges).not.toContain('CircleCI');
-    expect(badges).not.toContain('dl.circleci.com/status-badge');
+    for (const branch of ['dev', 'main']) {
+      expect(readme).toContain(`https://dl.circleci.com/status-badge/img/gh/web2solutions/Jumentix/tree/${branch}.svg?style=svg`);
+      expect(readme).toContain(`https://app.circleci.com/pipelines/github/web2solutions/Jumentix?branch=${branch}`);
+    }
   });
 
-  it('links SonarCloud dashboards without using broken public badge endpoints', () => {
+  it('links SonarCloud dashboards through the public project badge endpoints', () => {
     expect.hasAssertions();
 
     expect.hasAssertions();
-    // The failure this catches: a badge endpoint that renders a red
-    // "Project not found" image for a private SonarCloud project.
     const key = sonarProperties.match(/sonar\.projectKey=(\S+)/)?.[1];
     const expectedBadgeSlugs = [
-      'img.shields.io/badge/SonarCloud-quality%20gate',
-      'img.shields.io/badge/SonarCloud-security',
-      'img.shields.io/badge/SonarCloud-coverage'
+      `sonarcloud.io/api/project_badges/measure?project=${key}&metric=alert_status`,
+      `sonarcloud.io/api/project_badges/measure?project=${key}&metric=reliability_rating`,
+      `sonarcloud.io/api/project_badges/measure?project=${key}&metric=coverage`
     ];
 
-    expect(key).toBe('Jumentix');
+    expect(key).toBe('web2solutions_Jumentix');
     expect(badges).toContain(`sonarcloud.io/summary/new_code?id=${key}`);
     expect(expectedBadgeSlugs.every((slug) => badges.includes(slug))).toBe(true);
-    expect(badges).not.toContain('sonarcloud.io/api/project_badges');
     expect(badges).not.toContain('web2solutions_aaa-typescript-boilerplate');
   });
 
@@ -85,14 +84,13 @@ describe('rEADME badges', () => {
     expect(badges).not.toContain('badge/codecov-via%20CircleCI');
   });
 
-  it('badges Codecov file maps without using broken private coverage endpoints', () => {
+  it('badges public Codecov coverage and links the file maps', () => {
     expect.hasAssertions();
 
     for (const branch of ['dev', 'main']) {
-      expect(readme).toContain(`img.shields.io/badge/Codecov-${branch}%20file%20map`);
-      expect(readme).toContain(`https://app.codecov.io/gh/XpertMinds/Jumentix/tree/${branch}`);
+      expect(readme).toContain(`https://codecov.io/gh/web2solutions/Jumentix/branch/${branch}/graph/badge.svg`);
+      expect(readme).toContain(`https://app.codecov.io/gh/web2solutions/Jumentix/tree/${branch}`);
     }
-    expect(readme).not.toContain('codecov.io/gh/XpertMinds/Jumentix/branch');
     expect(readme).toContain('Codecov file map for `dev`');
     expect(readme).toContain('Codecov file map for `main`');
   });
@@ -101,7 +99,7 @@ describe('rEADME badges', () => {
     expect.hasAssertions();
 
     expect(readme).toContain('## Coverage and CI Map');
-    expect(readme).toContain('| Codecov file map |');
+    expect(readme).toContain('| Codecov coverage |');
     expect(readme).toContain('| ≥ 99% | ≥ 99% | ≥ 99% | ≥ 90% | ≥ 99% |');
     expect(readme).toContain('Istanbul JSON and LCOV evidence');
   });
@@ -129,8 +127,8 @@ describe('rEADME badges', () => {
     expect.hasAssertions();
 
     expect.hasAssertions();
-    // Requirement 103: `web2solutions` is deprecated and read-only.
-    expect(badges).not.toContain('web2solutions');
+    // Requirement 103: the canonical repository lives under `web2solutions`.
+    expect(badges).not.toContain('XpertMinds/Jumentix');
   });
 });
 

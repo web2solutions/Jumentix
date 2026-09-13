@@ -2,11 +2,11 @@
 
 ## Active repositories
 
-Jumentix development and coordination use these private canonical repositories:
+Jumentix development and coordination use these canonical repositories:
 
 | Responsibility | Canonical repository |
 | --- | --- |
-| Product, source, requirements, specs, docs, CI, and releases | `XpertMinds/Jumentix` |
+| Product, source, requirements, specs, docs, CI, and releases | `web2solutions/Jumentix` |
 | Agent registration, assignments, and branch checks | `XpertMinds/jumentix-agent-registry` |
 
 New work must be created only in these repositories. Access requires an identity
@@ -26,7 +26,7 @@ be retained only when they are clearly historical delivery evidence.
 ## Clone and registry setup
 
 ```bash
-git clone git@github.com:XpertMinds/Jumentix.git
+git clone git@github.com:web2solutions/Jumentix.git
 cd Jumentix
 git switch dev
 bun install --frozen-lockfile

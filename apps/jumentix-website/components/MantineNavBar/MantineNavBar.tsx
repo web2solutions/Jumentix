@@ -41,7 +41,7 @@ export const MantineNavBar = () => {
             <IconBrandGithub size={20} aria-hidden="true" focusable="false" />
           </>
         }
-        projectLink="https://github.com/XpertMinds/Jumentix"
+        projectLink="https://github.com/web2solutions/Jumentix"
       >
         <nav className={classes.docsNav} aria-label={portuguese ? 'Seções da documentação' : 'Documentation sections'}>
           {links.map(([label, href]) => (

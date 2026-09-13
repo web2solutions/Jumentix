@@ -4,7 +4,12 @@
 
 ## All Changes
 
-- 2026-09-13 feat(frontend): harden the frontend seed and X-CRUD kit (JUM-774) - Eduardo A.
+- 2026-09-13 ci: use codecov action in github coverage job (JUM-568) - Eduardo Almeida
+- 2026-09-13 ci: rebind public CI providers (JUM-568) - Eduardo Almeida
+- 2026-09-13 [JUM-774][Feature] Frontend seed and X-CRUD kit hardening (JUM-774…782) (#318) - Eduardo A.
+- 2026-09-13 feat(frontend): auto-redirect to login when the session expires (JUM-783) (#317) - Eduardo A.
+- 2026-09-13 [JUM-733] Complete Service Management audit help epic (#316) - Eduardo A.
+- 2026-09-13 fix(service-management): add accessible control help [JUM-733] - Eduardo Almeida
 - 2026-09-12 [JUM-773][Feature] X-CRUD enterprise redesign: X-SYNTH toolbar/grid, array editors, FK labels (#315) - Eduardo A.
 - 2026-09-11 feat(frontend): generic x-crud kit with users domain sub-apps and oas rbac (JUM-772) (#314) - Eduardo A.
 - 2026-09-11 [JUM-757][Feature] GUI interface slot + interactive hexagonal architecture map (#298) - Eduardo A.

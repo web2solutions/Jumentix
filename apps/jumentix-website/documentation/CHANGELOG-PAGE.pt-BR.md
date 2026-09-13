@@ -11,7 +11,7 @@ O site expõe `/changelog` como uma página de histórico de alterações verifi
 - Snapshot em tempo de build: `content/changelog.json`, gerado por `scripts/sync-changelog.mjs`
 - Entrada primária: `git log` do checkout em build (sha, data ISO, autor, assunto)
 - Entrada de fallback: o `CHANGELOG.md` gerado na raiz do monorepo (usado quando o histórico git não está disponível, por exemplo em clones rasos)
-- A página importa o JSON diretamente, então o Next.js empacota os dados no deploy. Não há dependência em runtime da API do GitHub nem exigência de `GITHUB_TOKEN` — é isso que mantém `/changelog` funcionando em produção, onde o repositório privado responderia 404 a chamadas de API não autenticadas.
+- A página importa o JSON diretamente, então o Next.js empacota os dados no deploy. Não há dependência em runtime da API do GitHub nem exigência de `GITHUB_TOKEN` — é isso que mantém `/changelog` funcionando em produção, onde o repositório canônico anteriormente privado responderia 404 a chamadas de API não autenticadas.
 
 ## Contrato de paginação
 

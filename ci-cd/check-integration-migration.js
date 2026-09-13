@@ -11,7 +11,7 @@ const REGISTRY_SOURCE_PATH = '.agents/registry-source.json';
 const README_PATH = 'README.md';
 
 const INTEGRATION_MARKERS = Object.freeze([
-  'XpertMinds/Jumentix',
+  'web2solutions/Jumentix',
   'web2solutions/aaa-typescript-boilerplate',
   'GitHub Actions',
   'Repository webhooks',
@@ -25,7 +25,6 @@ const INTEGRATION_MARKERS = Object.freeze([
   'Dependabot',
   'JUMENTIX_JWT_TOKEN_SECRET_KEY',
   'JUMENTIX_REDIS_PASSWORD',
-  'owner-auth blocker',
   'JUM-568',
   'JUM-569'
 ]);
@@ -34,13 +33,13 @@ const CANONICAL_CONFIG_EXPECTATIONS = Object.freeze([
   {
     path: PACKAGE_JSON_PATH,
     markers: [
-      'https://github.com/XpertMinds/Jumentix#readme',
-      'https://github.com/XpertMinds/Jumentix/issues'
+      'https://github.com/web2solutions/Jumentix#readme',
+      'https://github.com/web2solutions/Jumentix/issues'
     ]
   },
   {
     path: BOOTSTRAP_PATH,
-    markers: ['https://github.com/XpertMinds/Jumentix.git']
+    markers: ['https://github.com/web2solutions/Jumentix.git']
   },
   {
     path: REGISTRY_SOURCE_PATH,
@@ -49,7 +48,7 @@ const CANONICAL_CONFIG_EXPECTATIONS = Object.freeze([
   {
     path: README_PATH,
     markers: [
-      'XpertMinds/Jumentix',
+      'web2solutions/Jumentix',
       'web2solutions/aaa-typescript-boilerplate',
       '`103`'
     ]

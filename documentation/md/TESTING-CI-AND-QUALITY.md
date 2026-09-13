@@ -192,7 +192,7 @@ SonarQube Cloud coverage import:
 |------------|---------|-------------------------|-----------------------------|
 | GitHub Actions (branch gate) | Target-aware CI validation on push/PR | `.github/workflows/ci.yml` | Uses pinned Bun, selects by PR base/pushed branch, stores selected-gate evidence |
 | GitHub Actions (coverage) | Repository-owned project and patch coverage | `.github/workflows/ci.yml` | Enforces `coverage:check` and `coverage:patch`, then retains JSON/LCOV evidence |
-| GitHub Actions (Codecov) | Coverage dashboard publishing | `.github/workflows/ci.yml` | Requires `CODECOV_TOKEN`; uploads LCOV through Codecov CLI after local thresholds pass |
+| GitHub Actions (Codecov) | Coverage dashboard publishing | `.github/workflows/ci.yml` | Requires `CODECOV_TOKEN`; uploads LCOV through `codecov/codecov-action@v5` after local thresholds pass |
 | GitHub Actions (third-party review) | Fail-closed secret and static-analysis review | `.github/workflows/ci.yml` | Runs pinned Gitleaks/Semgrep and retains SARIF evidence |
 | GitHub Actions (website) | Website-owned Storybook and publication readiness | `.github/workflows/ci.yml` | Runs Storybook build/smoke and prepublish checks independently |
 | GitHub Actions (SonarQube Cloud) | Static analysis + quality gate + coverage import | `.github/workflows/ci.yml`, `sonar-project.properties` | Requires `SONAR_TOKEN`; imports retained LCOV after coverage passes |
@@ -211,8 +211,7 @@ SonarQube Cloud coverage import:
 
 #### Active hosted provider
 
-GitHub Actions is active by Requirement 113, CircleCI is disabled, and the
-workflow runs on the repository-owned `jumentix` self-hosted runner. It runs on
+GitHub Actions is active by Requirement 113, CircleCI is enabled as the secondary public CI provider, and the workflow runs on GitHub-hosted `ubuntu-latest` runners. It runs on
 `dev`, `main`, and pull requests, with Sonar filtered to the two long-lived
 branches. Codecov publishing runs after the repository-owned coverage gate and
 never replaces it as the merge authority.

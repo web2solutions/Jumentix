@@ -1,6 +1,6 @@
 # Hub de Documentação Jumentix
 
-> Repositório privado canônico: `XpertMinds/Jumentix`. Consulte
+> Repositório público canônico: `web2solutions/Jumentix`. Consulte
 > [Migração dos repositórios canônicos](./md/CANONICAL-REPOSITORY-MIGRATION.pt-BR.md) ·
 > [Requisito de migração de integrações](../INTEGRATION-MIGRATION-REQUIREMENT.pt-BR.md) ·
 > [Integrações canônicas e revinculação de provedores](./md/CANONICAL-INTEGRATIONS-AND-PROVIDER-REBINDING.pt-BR.md).

@@ -423,9 +423,9 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/XpertMinds/Jumentix/issues"
+    "url": "https://github.com/web2solutions/Jumentix/issues"
   },
-  "homepage": "https://github.com/XpertMinds/Jumentix#readme",
+  "homepage": "https://github.com/web2solutions/Jumentix#readme",
   "author": {
     "name": "Eduardo Almeida",
     "url": "https://github.com/XpertMinds",
@@ -454,5 +454,9 @@
     "vue-eslint-parser": {
       "eslint-scope": "^9.1.2"
     }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/web2solutions/Jumentix.git"
   }
 }

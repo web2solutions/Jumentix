@@ -67,7 +67,7 @@ const localize = (href: string, locale: CommercialLocale) =>
 
 const t = <T,>(locale: CommercialLocale, en: T, pt: T) => (locale === 'pt-BR' ? pt : en);
 
-const repositoryUrl = 'https://github.com/XpertMinds/Jumentix';
+const repositoryUrl = 'https://github.com/web2solutions/Jumentix';
 const playgroundRuntimeOrder: readonly DocsRuntimeId[] = [
   'jumentix-browser-lab',
   'cana',
