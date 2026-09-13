@@ -186,6 +186,31 @@ Aplicação remota:
 - o Storybook não é executado pela matriz global
 - `ci:monorepo` permanece como entrada de compatibilidade, mas não pode selecionar um plano reduzido somente para documentação
 
+#### Matriz de jobs hospedados por contexto (JUM-786)
+
+`ci-cd/classify-ci-context.js` (`JOBS_BY_CONTEXT`) e os `if:` em
+`.github/workflows/ci.yml` precisam concordar. Jobs pesados (`workspace-builds`,
+`workspace-tests`, `integration`, `coverage`, `website`, `database-matrix`)
+correm só em release/`main`/agendado (Requisitos `087`/`113`). Em push de
+tarefa, PR para `dev` e push barato para `dev` eles **pulam de propósito** —
+pular não é passar.
+
+| Contexto | Jobs que rodam | Script do branch-gate + preflight |
+| --- | --- | --- |
+| Push de branch de tarefa | `branch-gate` | `ci:gate:task` + lint, `test:integrity`, `arch:check-workspace-boundaries`, `build:dev` |
+| PR para `dev` | `branch-gate`, `third-party-review` | mesmo gate de tarefa + preflight |
+| Push para `dev` | `branch-gate` | `test:unit` + lint, integrity, boundaries, `build:dev` |
+| PR de release para `main` / push `main` / schedule / `workflow_dispatch` | lista completa (`FULL_JOBS`) | `ci:gate:strict` (+ integrity, boundaries, `build:dev` preflight) |
+
+`build:dev` (`tsc -p tsconfig.build.json`) tipa o TypeScript de backend/pacotes
+do compilador raiz. `apps/frontend/**` fica de fora: o workspace dono é
+`vue-tsc` (`bun run --cwd apps/frontend typecheck`). Testes unitários de
+service-management ficam de fora como os do backend-template (JUM-785).
+
+Boundaries e `build:dev` são **preflight de todo caminho do branch-gate desde
+o JUM-786**, para um passo vermelho de `ci:gate` não esconder atrás de jobs
+pesados pulados num PR para `dev`.
+
 Importação de cobertura do SonarQube Cloud:
 
 - Fluxo de trabalho: `.github/workflows/ci.yml`
@@ -205,6 +230,7 @@ Importação de cobertura do SonarQube Cloud:
 | GitHub Actions (SonarQube Cloud) | Análise estática + quality gate + importação de cobertura | `.github/workflows/ci.yml`, `sonar-project.properties` | Requer `SONAR_TOKEN`; importa LCOV retido após cobertura |
 | Gate de cobertura do repositório | Hard gate local contra baixa cobertura | `jest.config.js`, `ci-cd/check-coverage-thresholds.js` | Declarações/linhas/funções/ramos 98%, linhas alteradas 99%; ramos sob piso datado (JUM-721) |
 | Gate de integridade de testes | Bloqueia suíte que não afirma nada, que só afirma sobre mock, que dorme como sincronização, ou que está fora do mapa | `ci-cd/check-test-integrity.js`, `ci-cd/run-branch-quality-gate.js` | `bun run test:integrity`; preflight de todo caminho do branch gate (JUM-683) |
+| Boundaries de workspace + `build:dev` | Arquitetura e emit TypeScript raiz falham fechados antes dos gates baratos | `ci-cd/check-workspace-boundaries.js`, `tsconfig.build.json`, `ci-cd/run-branch-quality-gate.js` | `bun run arch:check-workspace-boundaries` + `bun run build:dev`; preflight de todo caminho do branch-gate (JUM-786) |
 | Husky | Ganchos Git locais para verificações de qualidade | `.husky/*` | Instalado por `bun run prepare` |
 | Commitlint + Commitizen | Commits convencionais e fluxo de commits guiados | `commitlint.config.js`, `package.json` | `bun run commit` |
 | Automação de sincronização do changelog | Mantém `CHANGELOG.md` alinhado com a história do Git | `ci-cd/update-changelog.js`, `.husky/post-commit` | `bun run changelog:update`, `bun run changelog:check` |

@@ -179,6 +179,31 @@ Remote enforcement:
 - Storybook is absent from the repository full matrix
 - `ci:monorepo` remains a compatibility entrypoint but cannot select a reduced docs-only plan
 
+#### Hosted job matrix by context (JUM-786)
+
+`ci-cd/classify-ci-context.js` (`JOBS_BY_CONTEXT`) and the job-level `if:` guards in
+`.github/workflows/ci.yml` must agree. Heavy jobs (`workspace-builds`,
+`workspace-tests`, `integration`, `coverage`, `website`, `database-matrix`) run
+only for release/`main`/scheduled contexts (Requirements `087`/`113`). They
+**intentionally skip** on task-branch pushes, PRs to `dev`, and cheap `dev`
+pushes — a skip there is not a pass.
+
+| Context | Hosted jobs that run | Branch-gate script + preflight |
+| --- | --- | --- |
+| Task-branch push | `branch-gate` | `ci:gate:task` + lint, `test:integrity`, `arch:check-workspace-boundaries`, `build:dev` |
+| PR to `dev` | `branch-gate`, `third-party-review` | same task gate + preflight |
+| Push to `dev` | `branch-gate` | `test:unit` + lint, integrity, workspace boundaries, `build:dev` |
+| Release PR to `main` / push to `main` / schedule / `workflow_dispatch` | full list (`FULL_JOBS`) | `ci:gate:strict` (+ integrity, workspace boundaries, `build:dev` preflight) |
+
+`build:dev` (`tsc -p tsconfig.build.json`) typechecks backend/package TypeScript
+owned by the root compiler. `apps/frontend/**` is excluded: that workspace owns
+`vue-tsc` (`bun run --cwd apps/frontend typecheck`). Service-management unit
+tests are excluded like backend-template tests (JUM-785).
+
+Workspace-boundary and `build:dev` steps are **preflight of every branch-gate
+path since JUM-786**, so a red `ci:gate` step cannot hide behind skipped heavy
+jobs on a PR to `dev`.
+
 SonarQube Cloud coverage import:
 
 - Workflow: `.github/workflows/ci.yml`
@@ -198,6 +223,7 @@ SonarQube Cloud coverage import:
 | GitHub Actions (SonarQube Cloud) | Static analysis + quality gate + coverage import | `.github/workflows/ci.yml`, `sonar-project.properties` | Requires `SONAR_TOKEN`; imports retained LCOV after coverage passes |
 | Repository coverage gate | Local hard gate to prevent low-coverage merges | `jest.config.js`, `ci-cd/check-coverage-thresholds.js` | Statements/lines/functions/branches 98%, changed lines 99%; branches under a dated floor (JUM-721) |
 | Test integrity gate | Blocks suites that assert nothing, assert only on mocks, sleep as synchronisation, or sit outside the map | `ci-cd/check-test-integrity.js`, `ci-cd/run-branch-quality-gate.js` | `bun run test:integrity`; preflight of every branch-gate path (JUM-683) |
+| Workspace boundaries + `build:dev` | Fail-closed architecture and root TypeScript emit before cheap gates | `ci-cd/check-workspace-boundaries.js`, `tsconfig.build.json`, `ci-cd/run-branch-quality-gate.js` | `bun run arch:check-workspace-boundaries` + `bun run build:dev`; preflight of every branch-gate path (JUM-786) |
 | Husky | Local Git hooks for quality checks | `.husky/*` | Installed by `bun run prepare` |
 | Commitlint + Commitizen | Conventional commits and guided commit flow | `commitlint.config.js`, `package.json` | `bun run commit` |
 | Changelog sync automation | Keeps `CHANGELOG.md` aligned with Git history | `ci-cd/update-changelog.js`, `.husky/post-commit` | `bun run changelog:update`, `bun run changelog:check` |

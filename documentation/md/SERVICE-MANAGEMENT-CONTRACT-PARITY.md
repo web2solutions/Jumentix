@@ -318,7 +318,7 @@ recorded here rather than quietly fixed:
   exporting a policy the runtime would drop.
 
 **Proven by:**
-[`rbacContract.test.ts`](../../apps/service-management/test/unit/rbacContract.test.ts),
+[`rbacContract.test.ts`](../../apps/backend-template/test/unit/ServiceManagement/rbacContract.test.ts),
 which pins the mirror against `Rbac.ts` itself — if the domain vocabulary
 drifts, the suite fails. This is also why `x-rbac` round-trips losslessly
 (Guarantee 4): the exported policy is the normalized, enforceable one, and
@@ -367,7 +367,7 @@ and
 - Codegen: [`hexagonalCodegen.js`](../../packages/designer-core/src/codegen/hexagonalCodegen.js)
 - Model validation / export gate: [`modelValidation.js`](../../packages/designer-core/src/validation/modelValidation.js), [`script.js`](../../apps/service-management/script.js)
 - RBAC mirror: [`rbacContract.js`](../../packages/designer-core/src/model/rbacContract.js); contract: [Tenant and RBAC Authorization Contract](./TENANT-RBAC-AUTHORIZATION-CONTRACT.md)
-- Suites: [`designerRoundTrip.test.ts`](../../apps/service-management/test/unit/designerRoundTrip.test.ts), [`designerPackageVersioning.test.ts`](../../apps/service-management/test/unit/designerPackageVersioning.test.ts), [`designerOasCompliance.test.ts`](../../apps/service-management/test/unit/designerOasCompliance.test.ts), [`designerAsyncApiExport.test.ts`](../../apps/service-management/test/unit/designerAsyncApiExport.test.ts), [`hexagonalCodegen.test.ts`](../../apps/service-management/test/unit/hexagonalCodegen.test.ts), [`rbacContract.test.ts`](../../apps/service-management/test/unit/rbacContract.test.ts), [`modelValidation.test.ts`](../../apps/service-management/test/unit/modelValidation.test.ts)
+- Suites: [`designerRoundTrip.test.ts`](../../apps/service-management/test/unit/designerRoundTrip.test.ts), [`designerPackageVersioning.test.ts`](../../apps/service-management/test/unit/designerPackageVersioning.test.ts), [`designerOasCompliance.test.ts`](../../apps/service-management/test/unit/designerOasCompliance.test.ts), [`designerAsyncApiExport.test.ts`](../../apps/service-management/test/unit/designerAsyncApiExport.test.ts), [`hexagonalCodegen.test.ts`](../../apps/service-management/test/unit/hexagonalCodegen.test.ts), [`rbacContract.test.ts`](../../apps/backend-template/test/unit/ServiceManagement/rbacContract.test.ts), [`modelValidation.test.ts`](../../apps/service-management/test/unit/modelValidation.test.ts)
 - Gates: [`check-oas-route-resolution.js`](../../ci-cd/check-oas-route-resolution.js), [`check-hexagonal-boundaries.js`](../../ci-cd/check-hexagonal-boundaries.js), [`run-unit-tests.js`](../../ci-cd/run-unit-tests.js)
 - Canonical targets: [`spec/1.0.0.yml`](../../spec/1.0.0.yml), [`spec/asyncapi/1.0.0.websocket.yml`](../../spec/asyncapi/1.0.0.websocket.yml), [`spec/asyncapi/1.0.0.grpc.yml`](../../spec/asyncapi/1.0.0.grpc.yml), [`spec/asyncapi/async-api.proto`](../../spec/asyncapi/async-api.proto)
 - Requirements: [036](../../.agents/requirements/software/036-openapi-port-objects-contracts.md) (port objects), [026](../../.agents/requirements/software/026-openapi31-data-entity-model-compliance.md) (OAS 3.1 entity compliance), [126](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md) (ownership and public contracts, Contracts 2–3)

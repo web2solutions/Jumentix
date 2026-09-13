@@ -1,5 +1,12 @@
 {
   "extends": "./tsconfig.json",
+  // JUM-785: `build:dev` (`tsc -p tsconfig.build.json`) typechecks the backend
+  // and package TypeScript that this root compiler owns. `apps/frontend/**` is
+  // excluded because that workspace owns its own check via `vue-tsc`
+  // (`bun run --cwd apps/frontend typecheck`). `apps/service-management/test/**`
+  // is excluded the same way as `apps/backend-template/test/**` — unit suites
+  // are exercised by Jest/`bun test`, not by the root emit build. Do not paper
+  // over alias/`import.meta` failures with `skipLibCheck` or blanket suppressions.
   "exclude": [
     "node_modules",
     ".build",
@@ -8,7 +15,7 @@
     "**/*.cy.ts",
     "apps/backend-template/test/**/*",
     "apps/jumentix-website/**/*",
-    "apps/frontend/cypress/**/*",
-    "apps/frontend/test/**/*"
+    "apps/frontend/**/*",
+    "apps/service-management/test/**/*"
   ]
 }

@@ -112,17 +112,24 @@ describe('run-branch-quality-gate', () => {
 
     // Lint runs ahead of the two gates that do not contain it, and not ahead of
     // the strict matrix, which declares it as its first cell (JUM-596). Test
-    // integrity runs ahead of all three, including the strict matrix, which has
-    // no cell for it (JUM-683).
+    // integrity, workspace boundaries, and build:dev run ahead of all three,
+    // including the strict matrix path used by release/main (JUM-683 / JUM-786).
     expect(stepIds(execute)).toStrictEqual([
-      'lint', 'test-integrity', 'task-changes',
-      'lint', 'test-integrity', 'unit',
-      'test-integrity', 'full-matrix',
-      'lint', 'test-integrity', 'task-changes'
+      'lint', 'test-integrity', 'workspace-boundaries', 'build-dev', 'task-changes',
+      'lint', 'test-integrity', 'workspace-boundaries', 'build-dev', 'unit',
+      'test-integrity', 'workspace-boundaries', 'build-dev', 'full-matrix',
+      'lint', 'test-integrity', 'workspace-boundaries', 'build-dev', 'task-changes'
     ]);
     const lintPassed = [
       { id: 'lint', script: 'lint', status: 0 },
-      { id: 'test-integrity', script: 'test:integrity', status: 0 }
+      { id: 'test-integrity', script: 'test:integrity', status: 0 },
+      { id: 'workspace-boundaries', script: 'arch:check-workspace-boundaries', status: 0 },
+      { id: 'build-dev', script: 'build:dev', status: 0 }
+    ];
+    const integrityOnlyPassed = [
+      { id: 'test-integrity', script: 'test:integrity', status: 0 },
+      { id: 'workspace-boundaries', script: 'arch:check-workspace-boundaries', status: 0 },
+      { id: 'build-dev', script: 'build:dev', status: 0 }
     ];
     expect(taskEvidence).toStrictEqual({
       schemaVersion: 2,
@@ -156,7 +163,7 @@ describe('run-branch-quality-gate', () => {
       selectedJobs: null,
       gate: 'full-matrix',
       script: 'ci:gate:strict',
-      preflight: [{ id: 'test-integrity', script: 'test:integrity', status: 0 }],
+      preflight: integrityOnlyPassed,
       outcome: 'passed',
       status: 0
     });
@@ -216,7 +223,9 @@ describe('run-branch-quality-gate', () => {
       gate: 'task-changes',
       script: 'ci:gate:task'
     });
-    expect(stepIds(execute)).toStrictEqual(['lint', 'test-integrity', 'task-changes']);
+    expect(stepIds(execute)).toStrictEqual([
+      'lint', 'test-integrity', 'workspace-boundaries', 'build-dev', 'task-changes'
+    ]);
   });
 
   it('fails closed when CI pull request context is incomplete', () => {
@@ -290,16 +299,36 @@ describe('run-branch-quality-gate', () => {
    * nowhere else — so a task branch and a direct push to `dev` were both
    * unlinted. That is how twenty lint errors reached `dev`.
    */
-  it('runs lint ahead of the gates that do not already contain it', () => {
+  it('runs lint, integrity, workspace boundaries, and build:dev ahead of cheap gates (JUM-786)', () => {
     expect.hasAssertions();
     const integrity = { id: 'test-integrity', script: 'test:integrity' };
+    const workspaceBoundaries = {
+      id: 'workspace-boundaries',
+      script: 'arch:check-workspace-boundaries'
+    };
+    const buildDev = { id: 'build-dev', script: 'build:dev' };
 
-    expect(TASK_QUALITY_GATE.preflight).toStrictEqual([{ id: 'lint', script: 'lint' }, integrity]);
-    expect(UNIT_QUALITY_GATE.preflight).toStrictEqual([{ id: 'lint', script: 'lint' }, integrity]);
+    expect(TASK_QUALITY_GATE.preflight).toStrictEqual([
+      { id: 'lint', script: 'lint' },
+      integrity,
+      workspaceBoundaries,
+      buildDev
+    ]);
+    expect(UNIT_QUALITY_GATE.preflight).toStrictEqual([
+      { id: 'lint', script: 'lint' },
+      integrity,
+      workspaceBoundaries,
+      buildDev
+    ]);
     // The strict matrix declares lint as a cell; a second run costs minutes to
-    // learn the same thing. It declares no cell for test integrity, so that one
-    // runs here (JUM-683).
-    expect(FULL_MATRIX_QUALITY_GATE.preflight).toStrictEqual([integrity]);
+    // learn the same thing. It already cells architecture-workspaces +
+    // backend-build, but task/dev CI never selects that matrix — so those two
+    // also preflight here (JUM-786) alongside test integrity (JUM-683).
+    expect(FULL_MATRIX_QUALITY_GATE.preflight).toStrictEqual([
+      integrity,
+      workspaceBoundaries,
+      buildDev
+    ]);
   });
 
   it('does not run the suites when lint fails', () => {

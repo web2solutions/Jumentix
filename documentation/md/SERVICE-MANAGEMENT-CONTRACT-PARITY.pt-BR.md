@@ -337,7 +337,7 @@ real, registrada aqui em vez de corrigida silenciosamente:
   descartaria.
 
 **Comprovado por:**
-[`rbacContract.test.ts`](../../apps/service-management/test/unit/rbacContract.test.ts),
+[`rbacContract.test.ts`](../../apps/backend-template/test/unit/ServiceManagement/rbacContract.test.ts),
 que fixa o espelho contra o próprio `Rbac.ts` — se o vocabulário do domínio
 divergir, a suíte reprova. É também por isso que o `x-rbac` faz ida e volta
 sem perdas (Garantia 4): a política exportada é a normalizada e aplicável, e
@@ -387,7 +387,7 @@ retroativa/para frente) e
 - Codegen: [`hexagonalCodegen.js`](../../packages/designer-core/src/codegen/hexagonalCodegen.js)
 - Validação de modelo / portão de exportação: [`modelValidation.js`](../../packages/designer-core/src/validation/modelValidation.js), [`script.js`](../../apps/service-management/script.js)
 - Espelho RBAC: [`rbacContract.js`](../../packages/designer-core/src/model/rbacContract.js); contrato: [Contrato de autorização de tenant e RBAC](./TENANT-RBAC-AUTHORIZATION-CONTRACT.pt-BR.md)
-- Suítes: [`designerRoundTrip.test.ts`](../../apps/service-management/test/unit/designerRoundTrip.test.ts), [`designerPackageVersioning.test.ts`](../../apps/service-management/test/unit/designerPackageVersioning.test.ts), [`designerOasCompliance.test.ts`](../../apps/service-management/test/unit/designerOasCompliance.test.ts), [`designerAsyncApiExport.test.ts`](../../apps/service-management/test/unit/designerAsyncApiExport.test.ts), [`hexagonalCodegen.test.ts`](../../apps/service-management/test/unit/hexagonalCodegen.test.ts), [`rbacContract.test.ts`](../../apps/service-management/test/unit/rbacContract.test.ts), [`modelValidation.test.ts`](../../apps/service-management/test/unit/modelValidation.test.ts)
+- Suítes: [`designerRoundTrip.test.ts`](../../apps/service-management/test/unit/designerRoundTrip.test.ts), [`designerPackageVersioning.test.ts`](../../apps/service-management/test/unit/designerPackageVersioning.test.ts), [`designerOasCompliance.test.ts`](../../apps/service-management/test/unit/designerOasCompliance.test.ts), [`designerAsyncApiExport.test.ts`](../../apps/service-management/test/unit/designerAsyncApiExport.test.ts), [`hexagonalCodegen.test.ts`](../../apps/service-management/test/unit/hexagonalCodegen.test.ts), [`rbacContract.test.ts`](../../apps/backend-template/test/unit/ServiceManagement/rbacContract.test.ts), [`modelValidation.test.ts`](../../apps/service-management/test/unit/modelValidation.test.ts)
 - Portões: [`check-oas-route-resolution.js`](../../ci-cd/check-oas-route-resolution.js), [`check-hexagonal-boundaries.js`](../../ci-cd/check-hexagonal-boundaries.js), [`run-unit-tests.js`](../../ci-cd/run-unit-tests.js)
 - Alvos canônicos: [`spec/1.0.0.yml`](../../spec/1.0.0.yml), [`spec/asyncapi/1.0.0.websocket.yml`](../../spec/asyncapi/1.0.0.websocket.yml), [`spec/asyncapi/1.0.0.grpc.yml`](../../spec/asyncapi/1.0.0.grpc.yml), [`spec/asyncapi/async-api.proto`](../../spec/asyncapi/async-api.proto)
 - Requisitos: [036](../../.agents/requirements/software/036-openapi-port-objects-contracts.md) (objetos de porta), [026](../../.agents/requirements/software/026-openapi31-data-entity-model-compliance.md) (conformidade de entidades OAS 3.1), [126](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md) (ownership e contratos públicos, Contratos 2–3)
