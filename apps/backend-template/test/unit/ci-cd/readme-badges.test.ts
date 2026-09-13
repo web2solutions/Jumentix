@@ -46,21 +46,25 @@ describe('rEADME badges', () => {
   it('shows GitHub Actions for both long-lived branches', () => {
     expect.hasAssertions();
 
-    expect.hasAssertions();
     for (const branch of ['dev', 'main']) {
       expect(readme).toContain(`https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml/badge.svg?branch=${branch}`);
       expect(readme).toContain(`https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml?query=branch%3A${branch}`);
     }
-    for (const branch of ['dev', 'main']) {
-      expect(readme).toContain(`https://circleci.com/gh/web2solutions/Jumentix/tree/${branch}.svg?style=shield`);
-      expect(readme).toContain(`https://app.circleci.com/pipelines/github/web2solutions/Jumentix?branch=${branch}`);
-    }
+  });
+
+  it('shows live CircleCI status for dev and stable release-gate status for main', () => {
+    expect.hasAssertions();
+
+    expect(readme).toContain('https://circleci.com/gh/web2solutions/Jumentix/tree/dev.svg?style=shield');
+    expect(readme).toContain('https://img.shields.io/badge/CircleCI-release%20gate-configured');
+    expect(readme).not.toContain('https://circleci.com/gh/web2solutions/Jumentix/tree/main.svg?style=shield');
+    expect(readme).toContain('https://app.circleci.com/pipelines/github/web2solutions/Jumentix?branch=dev');
+    expect(readme).toContain('https://app.circleci.com/pipelines/github/web2solutions/Jumentix?branch=main');
   });
 
   it('links SonarCloud dashboards through the public project badge endpoints', () => {
     expect.hasAssertions();
 
-    expect.hasAssertions();
     const key = sonarProperties.match(/sonar\.projectKey=(\S+)/)?.[1];
     const expectedBadgeSlugs = [
       `sonarcloud.io/api/project_badges/measure?project=${key}&metric=alert_status`,
@@ -77,19 +81,27 @@ describe('rEADME badges', () => {
   it('carries no badge for a retired service', () => {
     expect.hasAssertions();
 
-    expect.hasAssertions();
     // Paid/unreliable providers were retired in favour of repository-owned gates.
     expect(badges).not.toContain('snyk.io');
     expect(badges).not.toContain('token=');
     expect(badges).not.toContain('badge/codecov-via%20CircleCI');
+    expect(badges).not.toContain('codecov.io/gh/web2solutions/Jumentix/branch/main/graph/badge.svg');
   });
 
-  it('badges public Codecov coverage through the canonical full gate', () => {
+  it('badges the Codecov integration without claiming unavailable branch coverage', () => {
     expect.hasAssertions();
 
-    expect(readme).toContain('https://codecov.io/gh/web2solutions/Jumentix/branch/main/graph/badge.svg');
+    expect(readme).toContain('https://img.shields.io/badge/Codecov-release%20coverage-configured');
+    expect(readme).toContain('https://app.codecov.io/gh/web2solutions/Jumentix');
+    expect(readme).not.toContain('https://codecov.io/gh/web2solutions/Jumentix/branch/main/graph/badge.svg');
     expect(readme).not.toContain('https://codecov.io/gh/web2solutions/Jumentix/branch/dev/graph/badge.svg');
+  });
+
+  it('explains why Codecov uses file-map links before release coverage exists', () => {
+    expect.hasAssertions();
+
     expect(readme).toContain('full coverage is release-only');
+    expect(readme).toContain('first post-migration release coverage upload');
   });
 
   it('links Codecov file maps for long-lived branches', () => {
@@ -114,7 +126,6 @@ describe('rEADME badges', () => {
   it('names Bun as the runtime at the pinned version', () => {
     expect.hasAssertions();
 
-    expect.hasAssertions();
     // Requirement 096: Bun is the sole internal runtime. A badge claiming Node
     // misstates what the repository runs on.
     expect(badges).toContain(`badge/bun-${pinnedBunVersion}`);
@@ -123,7 +134,6 @@ describe('rEADME badges', () => {
   it('presents Node as a compatibility target, not as the runtime', () => {
     expect.hasAssertions();
 
-    expect.hasAssertions();
     // Node survives as a declared consumer-facing compatibility target
     // (Requirement 096 §4), which is a materially different claim.
     expect(badges).toContain('node%20compat');
@@ -204,7 +214,6 @@ describe('web framework badges', () => {
   it('badges every adapter directory that exists', () => {
     expect.hasAssertions();
 
-    expect.hasAssertions();
     // Catches the omission a hand-written list invites: a new adapter lands and
     // nobody remembers the README.
     const onDisk = fs.readdirSync(adaptersDir, { withFileTypes: true })

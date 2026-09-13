@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-09-13 fix(ci): restore ci:gate health on task and dev paths - Eduardo A.
 - 2026-09-13 docs: fix ci coverage badges (JUM-568) (#321) - Eduardo A.
 - 2026-09-13 test: isolate frontend auth guard storage (JUM-568) (#320) - Eduardo A.
 - 2026-09-13 [JUM-568][CI] Rebind public CI providers (#319) - Eduardo A.
