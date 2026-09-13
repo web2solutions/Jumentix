@@ -2,8 +2,8 @@
 
 Rastreamento:
 
-- Épico: [#167](https://github.com/XpertMinds/Jumentix/issues/167)
-- Implementação: [#171](https://github.com/XpertMinds/Jumentix/issues/171)
+- Épico: [#167](https://github.com/web2solutions/Jumentix/issues/167)
+- Implementação: [#171](https://github.com/web2solutions/Jumentix/issues/171)
 
 ## Propósito
 

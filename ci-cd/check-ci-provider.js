@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-/** Requirement 113 — zero-cost, repository-owned private CI. */
+/** Requirement 113 — public open-source CI provider contract. */
 
 const fs = require('node:fs');
 const path = require('node:path');
@@ -11,8 +11,8 @@ const circleciPath = path.join(root, '.circleci', 'config.yml');
 const workflowPath = path.join(root, '.github', 'workflows', 'ci.yml');
 const packagePath = path.join(root, 'package.json');
 
-if (fs.existsSync(circleciPath)) {
-  failures.push('CircleCI is disabled by Requirement 113: remove .circleci/config.yml');
+if (!fs.existsSync(circleciPath)) {
+  failures.push('Missing required CircleCI workflow: .circleci/config.yml');
 }
 
 if (!fs.existsSync(workflowPath)) {
@@ -30,12 +30,10 @@ if (!fs.existsSync(workflowPath)) {
     /pull_request:/,
     /workflow_dispatch:/,
     /schedule:/,
-    /runs-on:\s*\[self-hosted,\s*jumentix\]/,
-    /Checkout repository without JavaScript Actions/,
-    /https:\/\/x-access-token:\$\{GITHUB_TOKEN\}@github\.com\/\$\{GITHUB_REPOSITORY\}\.git/,
-    /git -c credential\.helper= fetch --no-tags --prune origin/,
-    /Use local Node\.js 22/,
-    /node --version \| grep -E '\^v22\\\.'/,
+    /runs-on:\s*ubuntu-latest/,
+    /uses:\s*actions\/checkout@v5/,
+    /uses:\s*actions\/setup-node@v5/,
+    /node-version:\s*22/,
     /branch-gate:/,
     /task-branch-push/,
     /third-party-review:/,
@@ -116,12 +114,35 @@ if (!fs.existsSync(workflowPath)) {
     }
   });
 
-  if (/runs-on:\s*ubuntu-latest/.test(contents)) {
-    failures.push('.github/workflows/ci.yml must use the repository-owned self-hosted runner, not ubuntu-latest');
+  if (/runs-on:\s*\[self-hosted,\s*jumentix\]/.test(contents)) {
+    failures.push('.github/workflows/ci.yml must use GitHub-hosted ubuntu-latest runners for the public open-source repository');
   }
 
-  if (/uses:\s*actions\//.test(contents)) {
-    failures.push('.github/workflows/ci.yml must avoid JavaScript GitHub Actions on the self-hosted runner');
+  if (/Checkout repository without JavaScript Actions/.test(contents)) {
+    failures.push('.github/workflows/ci.yml must not keep the old self-hosted manual checkout path');
+  }
+}
+
+if (fs.existsSync(circleciPath)) {
+  const contents = fs.readFileSync(circleciPath, 'utf8');
+  const requiredMarkers = [
+    /version:\s*2\.1/,
+    /cimg\/node:22/,
+    /branch-gate:/,
+    /third-party-review:/,
+    /workspace-builds:/,
+    /workspace-tests:/,
+    /integration:/,
+    /coverage:/,
+    /website:/,
+    /database-matrix:/,
+    /classify-ci-context\.js/,
+    /circleci-agent step halt/,
+    /codecov --verbose upload-process --disable-search --fail-on-error/,
+    /sonar-scanner -Dsonar\.scm\.disabled=true/
+  ];
+  for (const marker of requiredMarkers) {
+    if (!marker.test(contents)) failures.push(`CircleCI CI is missing ${String(marker)}`);
   }
 }
 
@@ -138,6 +159,6 @@ if (failures.length > 0) {
 }
 
 console.log(
-  'CI provider check passed: GitHub Actions covers cheap dev gates, full main promotion gates, '
-    + 'coverage, website validation, third-party review, and in-job Codecov/Sonar publishing.'
+  'CI provider check passed: GitHub Actions and CircleCI cover cheap dev gates, full main promotion gates, '
+    + 'coverage, website validation, third-party review, and Codecov/Sonar publishing.'
 );

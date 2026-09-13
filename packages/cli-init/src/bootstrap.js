@@ -4,7 +4,7 @@ const path = require('path');
 const readline = require('readline');
 const { spawnSync } = require('child_process');
 
-const BOILERPLATE_REPOSITORY = 'https://github.com/XpertMinds/Jumentix.git';
+const BOILERPLATE_REPOSITORY = 'https://github.com/web2solutions/Jumentix.git';
 const SERVICE_TYPES = [
   {
     id: 'rest',

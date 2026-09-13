@@ -6,8 +6,8 @@ const INTEGRATION_CONTRACTS = Object.freeze([
   {
     file: 'sonar-project.properties',
     markers: [
-      'sonar.organization=xpertminds',
-      'sonar.projectKey=Jumentix',
+      'sonar.organization=web2solutions',
+      'sonar.projectKey=web2solutions_Jumentix',
       'sonar.projectName=Jumentix',
       'sonar.javascript.lcov.reportPaths=./coverage/lcov.info'
     ]
@@ -41,12 +41,22 @@ const INTEGRATION_CONTRACTS = Object.freeze([
     ]
   },
   {
+    file: '.circleci/config.yml',
+    markers: [
+      'cimg/node:22',
+      'branch-gate',
+      'coverage',
+      'codecov --verbose upload-process --disable-search --fail-on-error',
+      'sonar-scanner -Dsonar.scm.disabled=true'
+    ]
+  },
+  {
     file: 'documentation/md/CANONICAL-INTEGRATIONS-AND-PROVIDER-REBINDING.md',
     markers: [
-      'XpertMinds/Jumentix',
+      'web2solutions/Jumentix',
       'repository-owned coverage',
       'GitHub Actions canonical',
-      'CircleCI disabled',
+      'CircleCI enabled',
       'Codecov publishing',
       'SonarQube Cloud',
       'OSV.dev',
@@ -59,9 +69,9 @@ const INTEGRATION_CONTRACTS = Object.freeze([
   {
     file: 'documentation/md/CANONICAL-INTEGRATIONS-AND-PROVIDER-REBINDING.pt-BR.md',
     markers: [
-      'XpertMinds/Jumentix',
+      'web2solutions/Jumentix',
       'GitHub Actions',
-      'CircleCI desabilitado',
+      'CircleCI habilitado',
       'Codecov',
       'SonarQube Cloud',
       'OSV.dev',

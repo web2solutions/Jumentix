@@ -199,7 +199,7 @@ describe('run-branch-quality-gate', () => {
     const evidence = runBranchQualityGate({
       env: {
         CIRCLE_BRANCH: 'codex/feature/JUM-631-fast-ci',
-        CIRCLE_PULL_REQUEST: 'https://github.com/XpertMinds/Jumentix/pull/200',
+        CIRCLE_PULL_REQUEST: 'https://github.com/web2solutions/Jumentix/pull/200',
         CIRCLE_PR_BASE_BRANCH: 'dev'
       },
       spawn: jest.fn().mockReturnValue({ status: 0, stdout: 'ci-cd/run-branch-quality-gate.js\n' }),
@@ -225,7 +225,7 @@ describe('run-branch-quality-gate', () => {
     const evidence = runBranchQualityGate({
       env: {
         CIRCLE_BRANCH: 'codex/feature/JUM-631-fast-ci',
-        CIRCLE_PULL_REQUEST: 'https://github.com/XpertMinds/Jumentix/pull/200'
+        CIRCLE_PULL_REQUEST: 'https://github.com/web2solutions/Jumentix/pull/200'
       },
       execute,
       logger: { log: jest.fn(), error: jest.fn() },

@@ -2,7 +2,7 @@
 
 **Status:** Implemented on PR #184 (2026-08-11) — public allowlist + fail-closed private exclusion  
 **Workspace:** `apps/jumentix-website`  
-**Related prior work:** [PR #184](https://github.com/XpertMinds/Jumentix/pull/184), Linear project [epicdocs-jumentix-website-deep-docs-playgrounds-seoai](https://linear.app/jumentix/project/epicdocs-jumentix-website-deep-docs-playgrounds-seoai-dae8af894bf6)  
+**Related prior work:** [PR #184](https://github.com/web2solutions/Jumentix/pull/184), Linear project [epicdocs-jumentix-website-deep-docs-playgrounds-seoai](https://linear.app/jumentix/project/epicdocs-jumentix-website-deep-docs-playgrounds-seoai-dae8af894bf6)
 **Language policy:** EN + pt-BR parity on every page (no orphan locale)  
 **Hard rules:** zero GitHub content links in MDX bodies; fail-closed content smoke; no assumed jargon without prior definition or link
 

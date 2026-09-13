@@ -2,7 +2,7 @@
  * Build-time release notes data source for /api/github-releases.
  *
  * Same failure mode as the changelog page (JUM-718): the route proxied the
- * GitHub releases API at request time, and this private repository answers
+ * GitHub releases API at request time, and the public canonical repository answers
  * unauthenticated calls with 404, so production rendered a permanent error.
  * Releases are part of the deployed artifact: bake them at build time.
  *
@@ -23,7 +23,7 @@ import { fileURLToPath } from 'node:url';
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const appRoot = path.resolve(scriptDir, '..');
 const outputPath = path.join(appRoot, 'content', 'releases.json');
-const REPO = 'XpertMinds/Jumentix';
+const REPO = 'web2solutions/Jumentix';
 const MAX_RELEASES = 20;
 
 const RELEASE_FIELDS = [

@@ -94,8 +94,8 @@ If a PR is not linked to project work items, it is out of process.
 10. A `dev` to `main` promotion PR introduces no changes outside the task PRs already merged
     into `dev` and references their Linear Issues.
 11. Direct pushes, merges, or task/topic PRs to `main` are prohibited.
-12. Task-branch commits and pushes run changed/related tests; `dev` and PRs targeting `dev` run
-    the complete unit gate; `main` and promotions targeting `main` run the complete matrix.
+12. Task-branch commits and pushes run changed/related tests; PRs targeting `dev` run
+    the layer-aware task gate, `dev` pushes run the cheap unit health gate, and `main` plus promotions targeting `main` run the complete matrix.
 13. Missing, skipped, empty, cancelled, timed-out, aborted, or unreported required tests or
     matrix cells fail the selected gate.
 14. Test failures and discovery failures must propagate a non-zero status; false-green fallbacks are prohibited.

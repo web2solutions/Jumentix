@@ -148,7 +148,7 @@ describe('designer-core packaging manifest', () => {
   it('carries provenance metadata pointing at the monorepo location', () => {
     expect.hasAssertions();
     expect(manifest.repository?.type).toBe('git');
-    expect(manifest.repository?.url).toContain('github.com/XpertMinds/Jumentix');
+    expect(manifest.repository?.url).toContain('github.com/web2solutions/Jumentix');
     expect(manifest.repository?.directory).toBe('packages/designer-core');
   });
 

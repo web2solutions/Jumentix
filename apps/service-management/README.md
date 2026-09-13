@@ -1,19 +1,19 @@
 # Service Management Application
 
-[![GitHub Actions dev](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml?query=branch%3Adev)
-[![Codecov dev map](https://img.shields.io/badge/Codecov-dev%20file%20map-f01f7a?logo=codecov&logoColor=white)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev)
+[![GitHub Actions dev](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml?query=branch%3Adev)
+[![Codecov dev map](https://img.shields.io/badge/Codecov-dev%20file%20map-f01f7a?logo=codecov&logoColor=white)](https://app.codecov.io/gh/web2solutions/Jumentix/tree/dev)
 [![SonarCloud quality](https://img.shields.io/badge/SonarCloud-quality%20gate-F3702A?logo=sonarcloud&logoColor=white)](https://sonarcloud.io/summary/new_code?id=Jumentix)
 [![Node](https://img.shields.io/badge/node-22.x-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-6BA539?logo=openapiinitiative&logoColor=white)](../../spec/1.0.0.yml)
 [![AsyncAPI](https://img.shields.io/badge/AsyncAPI-3.0-9146FF)](../../spec)
-[![License](https://img.shields.io/github/license/XpertMinds/Jumentix)](../../LICENSE.md)
+[![License](https://img.shields.io/github/license/web2solutions/Jumentix)](../../LICENSE.md)
 [![SonarCloud maintainability](https://img.shields.io/badge/SonarCloud-maintainability-F3702A?logo=sonarcloud&logoColor=white)](https://sonarcloud.io/summary/new_code?id=Jumentix)
 [![SonarCloud bugs](https://img.shields.io/badge/SonarCloud-bugs-F3702A?logo=sonarcloud&logoColor=white)](https://sonarcloud.io/summary/new_code?id=Jumentix)
 [![SonarCloud vulnerabilities](https://img.shields.io/badge/SonarCloud-vulnerabilities-F3702A?logo=sonarcloud&logoColor=white)](https://sonarcloud.io/summary/new_code?id=Jumentix)
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 ![Made in Brazil with Love](https://img.shields.io/badge/made%20in-%F0%9F%87%A7%F0%9F%87%B7%20Brazil%20with%E2%9D%A4%EF%B8%8F-blue)
 [![#StandWithUkraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://vshymanskyy.github.io/StandWithUkraine)
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/XpertMinds/Jumentix)
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/web2solutions/Jumentix)
 
 `service-management` is a tabbed local application for engineering setup and design workflows in this boilerplate.
 

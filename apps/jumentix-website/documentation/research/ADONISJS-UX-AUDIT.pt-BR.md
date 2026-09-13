@@ -10,10 +10,10 @@ Data da pesquisa: `2026-07-26`
 
 Governança relacionada:
 
-- Épico: [#167](https://github.com/XpertMinds/Jumentix/issues/167)
-- Tarefa: [#168](https://github.com/XpertMinds/Jumentix/issues/168)
+- Épico: [#167](https://github.com/web2solutions/Jumentix/issues/167)
+- Tarefa: [#168](https://github.com/web2solutions/Jumentix/issues/168)
 - Milestone:
-  [Jumentix OSS website rebuild - 2026-08-23](https://github.com/XpertMinds/Jumentix/milestone/3)
+  [Jumentix OSS website rebuild - 2026-08-23](https://github.com/web2solutions/Jumentix/milestone/3)
 
 ## Evidências
 

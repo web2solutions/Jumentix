@@ -2,12 +2,11 @@
 
 ## Repositórios ativos
 
-O desenvolvimento e a coordenação do Jumentix usam estes repositórios privados
-canônicos:
+O desenvolvimento e a coordenação do Jumentix usam estes repositórios canônicos:
 
 | Responsabilidade | Repositório canônico |
 | --- | --- |
-| Produto, código, requisitos, especificações, documentação, CI e releases | `XpertMinds/Jumentix` |
+| Produto, código, requisitos, especificações, documentação, CI e releases | `web2solutions/Jumentix` |
 | Registro de agentes, atribuições e checagens de branches | `XpertMinds/jumentix-agent-registry` |
 
 Novos trabalhos devem ser criados somente nesses repositórios. O acesso exige
@@ -28,7 +27,7 @@ como evidência histórica de entrega.
 ## Clone e configuração do registry
 
 ```bash
-git clone git@github.com:XpertMinds/Jumentix.git
+git clone git@github.com:web2solutions/Jumentix.git
 cd Jumentix
 git switch dev
 bun install --frozen-lockfile

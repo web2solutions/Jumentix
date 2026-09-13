@@ -190,14 +190,14 @@ describe('third-party review contract', () => {
     expect(run(root).output).toContain('Enforce scanner outcomes');
   });
 
-  it('fails when the review job uses JavaScript Actions', () => {
+  it('fails when the review job uses an unapproved JavaScript Action', () => {
     expect.hasAssertions();
 
     const root = fixture((directory) => {
       addStepToReviewJob(directory, '      - uses: actions/upload-artifact@v7\n');
     });
 
-    expect(run(root).output).toContain('must avoid JavaScript Actions');
+    expect(run(root).output).toContain('may only use bootstrap actions');
   });
 
   it('fails when scanner evidence listing is removed', () => {

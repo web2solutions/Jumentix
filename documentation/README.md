@@ -1,6 +1,6 @@
 # Jumentix Documentation Hub
 
-> Canonical private repository: `XpertMinds/Jumentix`. See
+> Canonical public repository: `web2solutions/Jumentix`. See
 > [Canonical Repository Migration](./md/CANONICAL-REPOSITORY-MIGRATION.md) ·
 > [Integration Migration Requirement](../INTEGRATION-MIGRATION-REQUIREMENT.md) ·
 > [Canonical Integrations and Provider Rebinding](./md/CANONICAL-INTEGRATIONS-AND-PROVIDER-REBINDING.md).

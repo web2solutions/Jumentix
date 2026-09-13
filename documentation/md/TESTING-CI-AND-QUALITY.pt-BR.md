@@ -218,8 +218,7 @@ Importação de cobertura do SonarQube Cloud:
 
 #### Provedor hospedado ativo
 
-GitHub Actions está ativo pelo Requisito 113, CircleCI está desabilitado, e o
-workflow roda no runner self-hosted `jumentix` pertencente ao repositório. Ele
+GitHub Actions está ativo pelo Requisito 113, CircleCI está habilitado como provedor público secundário de CI, e o workflow roda em runners GitHub-hosted `ubuntu-latest`. Ele
 roda em `dev`, `main` e pull requests, com Sonar filtrado para as duas branches
 longas. A publicação Codecov roda depois do gate de cobertura do repositório e
 nunca substitui esse gate como autoridade de merge.

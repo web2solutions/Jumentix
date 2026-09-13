@@ -14,7 +14,7 @@ describe('check-integration-migration', () => {
     expect(validateIntegrationPolicy('incomplete integration policy').length).toBeGreaterThan(0);
   });
 
-  it('requires repository-owned configuration to target XpertMinds', () => {
+  it('requires repository-owned configuration to target web2solutions', () => {
     expect.hasAssertions();
     expect(validateCanonicalConfig(process.cwd())).toStrictEqual([]);
   });
