@@ -2191,6 +2191,18 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/frontend/test/unit/contracts/sessionGuard.test.ts",
+      "path": "apps/frontend/test/unit/contracts/sessionGuard.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/frontend/test/unit/contracts/formSchema.test.ts",
       "path": "apps/frontend/test/unit/contracts/formSchema.test.ts",
       "layer": "frontend",
