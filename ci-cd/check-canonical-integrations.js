@@ -20,6 +20,7 @@ const INTEGRATION_CONTRACTS = Object.freeze([
       'bun run coverage:check',
       'bun run coverage:patch',
       'codecov/codecov-action@v5',
+      'codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac',
       'Upload coverage reports to Codecov',
       'third-party-review',
       'sonar-scanner'

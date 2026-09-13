@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-09-13 ci: use codecov action in github coverage job (JUM-568) - Eduardo Almeida
 - 2026-09-13 ci: rebind public CI providers (JUM-568) - Eduardo Almeida
 - 2026-09-13 [JUM-774][Feature] Frontend seed and X-CRUD kit hardening (JUM-774…782) (#318) - Eduardo A.
 - 2026-09-13 feat(frontend): auto-redirect to login when the session expires (JUM-783) (#317) - Eduardo A.

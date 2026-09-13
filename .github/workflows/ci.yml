@@ -335,7 +335,8 @@ jobs:
             echo "Patch coverage is PR-only; project coverage already passed."
           fi
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v5
+        # codecov/codecov-action@v5, pinned to the peeled tag commit for Sonar/GitHub Actions supply-chain policy.
+        uses: codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage/lcov.info,coverage/browser/lcov.info
