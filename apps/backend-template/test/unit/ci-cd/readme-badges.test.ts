@@ -52,7 +52,7 @@ describe('rEADME badges', () => {
       expect(readme).toContain(`https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml?query=branch%3A${branch}`);
     }
     for (const branch of ['dev', 'main']) {
-      expect(readme).toContain(`https://dl.circleci.com/status-badge/img/gh/web2solutions/Jumentix/tree/${branch}.svg?style=svg`);
+      expect(readme).toContain(`https://circleci.com/gh/web2solutions/Jumentix/tree/${branch}.svg?style=shield`);
       expect(readme).toContain(`https://app.circleci.com/pipelines/github/web2solutions/Jumentix?branch=${branch}`);
     }
   });
@@ -84,11 +84,18 @@ describe('rEADME badges', () => {
     expect(badges).not.toContain('badge/codecov-via%20CircleCI');
   });
 
-  it('badges public Codecov coverage and links the file maps', () => {
+  it('badges public Codecov coverage through the canonical full gate', () => {
+    expect.hasAssertions();
+
+    expect(readme).toContain('https://codecov.io/gh/web2solutions/Jumentix/branch/main/graph/badge.svg');
+    expect(readme).not.toContain('https://codecov.io/gh/web2solutions/Jumentix/branch/dev/graph/badge.svg');
+    expect(readme).toContain('full coverage is release-only');
+  });
+
+  it('links Codecov file maps for long-lived branches', () => {
     expect.hasAssertions();
 
     for (const branch of ['dev', 'main']) {
-      expect(readme).toContain(`https://codecov.io/gh/web2solutions/Jumentix/branch/${branch}/graph/badge.svg`);
       expect(readme).toContain(`https://app.codecov.io/gh/web2solutions/Jumentix/tree/${branch}`);
     }
     expect(readme).toContain('Codecov file map for `dev`');

@@ -88,6 +88,7 @@ commands:
             set -e
             if [ "$status" = "78" ]; then
               circleci-agent step halt
+              exit 0
             fi
             exit "$status"
 
@@ -190,11 +191,11 @@ jobs:
   integration:
     executor: node_bun
     steps:
-      - setup_remote_docker
       - prepare_checkout
       - resolve_pr_metadata
       - require_ci_job:
           job: integration
+      - setup_remote_docker
       - run:
           name: Start Redis and RabbitMQ containers
           command: ci-cd/ensure-local-ci-services.sh
@@ -224,11 +225,11 @@ jobs:
       AAA_BULLMQ_REDIS_PORT: "6379"
       AAA_RABBITMQ_URL: amqp://127.0.0.1:5672
     steps:
-      - setup_remote_docker
       - prepare_checkout
       - resolve_pr_metadata
       - require_ci_job:
           job: coverage
+      - setup_remote_docker
       - run:
           name: Start Redis and RabbitMQ containers
           command: ci-cd/ensure-local-ci-services.sh
@@ -366,11 +367,11 @@ jobs:
   database-matrix:
     executor: node_bun
     steps:
-      - setup_remote_docker
       - prepare_checkout
       - resolve_pr_metadata
       - require_ci_job:
           job: database-matrix
+      - setup_remote_docker
       - run:
           name: Ensure Docker runtime
           command: ci-cd/ensure-docker-runtime.sh
