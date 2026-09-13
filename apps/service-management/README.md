@@ -85,6 +85,9 @@ sample is ordinary domain/entity deletion. Content is defined in
      selected relationships expose route and label handles directly on the
      canvas, so relationship layout is edited visually before the numeric
      fallback fields are needed.
+   - Every static control carries a keyboard/touch reachable help affordance
+     (JUM-733). Generated rows keep dense in-row labels and inherit group-level
+     guidance, while hidden file inputs remain deliberately exempt.
 2. **Communication Interface Designer**
    - Register inbound interface adapters (`HTTP/REST`, `gRPC`, `WebSocket`, `SSE`).
    - Full adapter lifecycle (JUM-545): every registered adapter edits in place (type,

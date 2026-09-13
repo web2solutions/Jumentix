@@ -91,6 +91,10 @@ definido em `@jumentix/designer-core` (`packages/designer-core/src/model/sampleM
      persistem uma vez no fim do drag; relacionamentos selecionados exibem
      handles de rota e label diretamente no canvas, então o layout da relação
      é editado visualmente antes de recorrer aos campos numéricos.
+   - Todo controle estático tem uma ajuda acessível por teclado e toque
+     (JUM-733). Linhas geradas mantêm rótulos densos no próprio item e herdam
+     a orientação do grupo, enquanto inputs de arquivo ocultos seguem
+     deliberadamente isentos.
 2. **Designer de interface de comunicação**
    - Registrar adaptadores de interface de entrada (`HTTP/REST`, `gRPC`, `WebSocket`, `SSE`).
    - Ciclo de vida completo do adaptador (JUM-545): cada adaptador registrado é editado

@@ -222,6 +222,12 @@ keyboard path — selection is never pointer-only:
 - **Every control has an accessible name** — visible label or `aria-label` —
   and the PWA update banner is `role="alert"`, so the update prompt is
   announced, not just shown.
+- **Every static control has reachable help** — JUM-733 turns static browser
+  `title` text into an adjacent `?` control with `aria-expanded`,
+  `aria-controls` and `aria-describedby`. The help text is available to
+  keyboard and touch users, not only mouse hover. Hidden file inputs are the
+  only static exemption because their visible import buttons carry the user
+  action.
 
 ## Installing the designer as an app (JUM-489)
 

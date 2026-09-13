@@ -383,6 +383,10 @@ same model:
   Configuration status, the runtime-env status and the per-file targeting
   line — carry failures *with environment, file and cause* where the user is
   looking, instead of a silent console error.
+- **Reachable help controls** — each static form, toolbar and action control
+  exposes the same `?` help affordance used by the console surfaces. The text
+  states what the control changes downstream: generated contracts, runtime
+  files, deploy matrix rows, PM2 streams or exports.
 - **The client renders the API's error envelope verbatim.** `error` /
   `details`, plus `code` and `path` on the 500 filesystem classes, are
   surfaced exactly as returned — there is no client-side error remapping, so
