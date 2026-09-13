@@ -35,6 +35,11 @@ Operation ids the shell needs (login, register, logout, profile) live in
 fails loudly instead of rendering an empty, permission-less UI. Sub-apps declare their own ids in
 their `XCrudEntityConfig`.
 
+Session expiry (JUM-783, merged alongside this epic): `contracts/sessionGuard.ts` subscribes to
+the SDK event stream — a 401 on any operation other than the configured `auth.login` /
+`auth.register` expires the session, resets the cached profile and lands on `/login` from any
+page; the router guard and a 30 s timer in `DefaultLayout` catch a JWT whose `exp` already passed.
+
 ## X-CRUD: server-side data (JUM-778)
 
 The kit chooses its data mode from the contract, never from component config:

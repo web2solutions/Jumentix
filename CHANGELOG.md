@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-09-13 feat(frontend): harden the frontend seed and X-CRUD kit (JUM-774) - Eduardo A.
 - 2026-09-12 [JUM-773][Feature] X-CRUD enterprise redesign: X-SYNTH toolbar/grid, array editors, FK labels (#315) - Eduardo A.
 - 2026-09-11 feat(frontend): generic x-crud kit with users domain sub-apps and oas rbac (JUM-772) (#314) - Eduardo A.
 - 2026-09-11 [JUM-757][Feature] GUI interface slot + interactive hexagonal architecture map (#298) - Eduardo A.

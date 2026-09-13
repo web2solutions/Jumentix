@@ -35,6 +35,11 @@ Os ids de operação do shell (login, register, logout, perfil) ficam em
 de forma visível em vez de renderizar uma UI vazia e sem permissões. Sub-apps declaram os seus na
 `XCrudEntityConfig`.
 
+Expiração de sessão (JUM-783, mesclado junto com este épico): `contracts/sessionGuard.ts` assina o
+fluxo de eventos do SDK — um 401 em qualquer operação que não seja `auth.login` / `auth.register`
+configurados expira a sessão, limpa o perfil em cache e leva a `/login` de qualquer página; o guard
+do router e um timer de 30 s no `DefaultLayout` pegam um JWT cujo `exp` já passou.
+
 ## X-CRUD: dados no servidor (JUM-778)
 
 O kit escolhe o modo de dados pelo contrato, nunca pela config do componente:

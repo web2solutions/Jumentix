@@ -21,7 +21,7 @@ interface PersistedAuth {
  * payload holds the user id and username. Decoded client-side as an identity
  * claim — never verified, never trusted for authorization.
  */
-const decodeJwtPayload = (token: string): { id?: string; username?: string } => {
+const decodeJwtPayload = (token: string): { id?: string; username?: string; exp?: number } => {
   const payload = token.split('.')[1];
   if (!payload) {
     return {};
@@ -30,6 +30,7 @@ const decodeJwtPayload = (token: string): { id?: string; username?: string } => 
     return JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/'))) as {
       id?: string;
       username?: string;
+      exp?: number;
     };
   } catch {
     return {};
@@ -88,6 +89,17 @@ export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = () => token.value.length > 0;
 
   /**
+   * JWT exp check (JUM-773 follow-up): a session past its exp claim is already
+   * dead even before the server rejects it. exp is in seconds (epoch).
+   */
+  const isSessionExpired = (): boolean => {
+    if (!token.value) return false;
+    const { exp } = decodeJwtPayload(token.value.replace(/^Bearer\s+/i, ''));
+    if (!exp) return false;
+    return Date.now() >= exp * 1000;
+  };
+
+  /**
    * POST /auth/register. The body is the OAS RequestRegister collected by the
    * schema-driven form — field names come from the spec, not from this file
    * (JUM-766).
@@ -140,6 +152,6 @@ export const useAuthStore = defineStore('auth', () => {
   };
 
   return {
-    token, username, userId, isAuthenticated, register, login, logout, expire
+    token, username, userId, isAuthenticated, isSessionExpired, register, login, logout, expire
   };
 });

@@ -1,5 +1,6 @@
 import type { RouteLocationNormalized } from 'vue-router';
 
+import { expireIfStaleSession } from '@/contracts/sessionGuard';
 import { can } from '@/contracts/rbac';
 import { useAuthStore } from '@/stores/auth';
 import { useProfileStore } from '@/stores/profile';
@@ -10,6 +11,9 @@ export const requireAuthRedirect = (to: RouteLocationNormalized): string | null 
     return null;
   }
   const auth = useAuthStore();
+  if (expireIfStaleSession(auth)) {
+    return '/login';
+  }
   return auth.isAuthenticated() ? null : '/login';
 };
 

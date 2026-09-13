@@ -8,13 +8,13 @@
   <!-- PWA shell (JUM-489): installable manifest + icons. The service worker
        registration lives in the inline module at the end of <body>. -->
   <link rel="manifest" href="./manifest.webmanifest" />
-  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
+  <link rel="icon" href="data:," />
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
   <!-- Design system (JUM-488): the shared --jtx-* tokens must load before
        styles.css, which consumes them. tokens.css is vendored from
        apps/jumentix-website/components/design-system/tokens.css. -->
   <link rel="stylesheet" href="./tokens.css" />
-  <link rel="stylesheet" href="./styles.css?v=0.9.49" />
+  <link rel="stylesheet" href="./styles.css?v=0.9.51" />
 </head>
 <body>
   <div class="service-management-shell">
@@ -1034,7 +1034,7 @@
       }
     }
   </script>
-  <script type="module" src="./script.js?v=0.9.49"></script>
+  <script type="module" src="./script.js?v=0.9.51"></script>
   <!-- PWA shell registration (JUM-489). Kept out of script.js on purpose:
        the service worker owns installability and shell caching, orthogonal to
        the designer boot — this snippet never reorders load → wire → render.

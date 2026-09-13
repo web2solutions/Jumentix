@@ -103,6 +103,7 @@ import { createCanvas } from './src/ui/canvas.js';
 import { createInspectors } from './src/ui/inspectors.js';
 import { createMonitoringController } from './src/ui/monitoringApp.js';
 import { createRenderGuard, stableSerialize } from './src/ui/renderGuard.js';
+import { installControlHelp } from './src/ui/controlHelp.js';
 
 const CANVAS_ORIGIN_X = 3200;
 const CANVAS_ORIGIN_Y = 2200;
@@ -3997,6 +3998,7 @@ async function boot() {
   }
   wireEvents();
   render();
+  installControlHelp(document);
 
   // JUM-485: multi-tab sync starts only after the initial load — the boot
   // load IS this tab's resume from whatever happened while it was closed.
