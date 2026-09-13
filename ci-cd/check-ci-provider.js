@@ -10,6 +10,7 @@ const failures = [];
 const circleciPath = path.join(root, '.circleci', 'config.yml');
 const workflowPath = path.join(root, '.github', 'workflows', 'ci.yml');
 const packagePath = path.join(root, 'package.json');
+const sonarPath = path.join(root, 'sonar-project.properties');
 
 if (!fs.existsSync(circleciPath)) {
   failures.push('Missing required CircleCI workflow: .circleci/config.yml');
@@ -145,6 +146,25 @@ if (fs.existsSync(circleciPath)) {
   ];
   for (const marker of requiredMarkers) {
     if (!marker.test(contents)) failures.push(`CircleCI CI is missing ${String(marker)}`);
+  }
+}
+
+if (!fs.existsSync(sonarPath)) {
+  failures.push('Missing required Sonar project configuration: sonar-project.properties');
+} else {
+  const sonarContents = fs.readFileSync(sonarPath, 'utf8').replace(/\\\s*\n\s*/g, '');
+  const requiredMarkers = [
+    /^sonar\.sourceEncoding=UTF-8$/m,
+    /^sonar\.exclusions=.*\*\*\/\*\.png/m,
+    /^sonar\.exclusions=.*\*\*\/\*\.jpg/m,
+    /^sonar\.exclusions=.*\*\*\/\*\.webp/m,
+    /^sonar\.exclusions=.*\*\*\/\*\.ico/m,
+    /^sonar\.exclusions=.*\*\*\/\*\.woff2/m
+  ];
+  for (const marker of requiredMarkers) {
+    if (!marker.test(sonarContents)) {
+      failures.push(`Sonar configuration is missing encoding-safe source scan marker: ${String(marker)}`);
+    }
   }
 }
 
