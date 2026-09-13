@@ -1689,6 +1689,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/service-management/test/unit/controlHelp.test.ts",
+      "path": "apps/service-management/test/unit/controlHelp.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/service-management/test/unit/designerAsyncApiExport.test.ts",
       "path": "apps/service-management/test/unit/designerAsyncApiExport.test.ts",
       "layer": "service-management/designer",

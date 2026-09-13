@@ -100,6 +100,11 @@ describe('serviceManagement SPA boot and export gate (JUM-466)', () => {
     page.on('console', (message) => {
       if (message.type() === 'error') consoleErrors.push(message.text());
     });
+    page.on('response', (response) => {
+      if (response.status() >= 400) {
+        consoleErrors.push(`HTTP ${String(response.status())}: ${response.url()}`);
+      }
+    });
     page.on('pageerror', (error) => consoleErrors.push(String(error)));
 
     await page.goto(baseUrl, { waitUntil: 'load' });
@@ -122,28 +127,51 @@ describe('serviceManagement SPA boot and export gate (JUM-466)', () => {
     await page.click('#tab-code-workspace-btn');
     await page.waitForSelector('#code-workspace-file-list button[data-file-path]', { state: 'attached' });
 
-    const activePath = await page.$eval('#code-workspace-active-file', (el) => el.textContent || '');
+    const activePath = await page.$eval(
+      '.code-editor-tab.active[data-file-path]',
+      (el) => (el as HTMLElement).dataset.filePath || ''
+    );
+    expect(activePath).toBeTruthy();
     const editedContent = '// edited in the code workspace\nexport const jumentixWorkspaceEdit = true;\n';
-    let editedThroughTextarea = false;
-    try {
-      await page.fill('#code-workspace-editor', editedContent, { timeout: 1000 });
-      editedThroughTextarea = true;
-    } catch (_) {
-      editedThroughTextarea = false;
-    }
-    if (!editedThroughTextarea) {
-      await page.click('#monaco-workspace-editor');
-      await page.keyboard.press(process.platform === 'darwin' ? 'Meta+A' : 'Control+A');
-      await page.keyboard.type(editedContent);
-    }
+    await page.evaluate(({ content, path: filePath }) => {
+      const editor = document.querySelector<HTMLTextAreaElement>('#code-workspace-editor');
+      if (!editor) throw new Error('Code Workspace fallback editor not found');
+      editor.value = content;
+      editor.dispatchEvent(new InputEvent('input', {
+        bubbles: true,
+        data: content,
+        inputType: 'insertText'
+      }));
+
+      const { monaco } = window as Window & {
+        monaco?: {
+          editor?: {
+            getModels?: () => Array<{
+              getValue: () => string;
+              setValue: (value: string) => void;
+              uri: { toString: () => string };
+            }>;
+          };
+        };
+      };
+      const encodedPath = filePath.split('/').map(encodeURIComponent).join('/');
+      const modelUri = `file:///jumentix-generated/${encodedPath}`;
+      const model = monaco?.editor?.getModels?.().find(
+        (candidate) => candidate.uri.toString() === modelUri
+      );
+      if (model && model.getValue() !== content) model.setValue(content);
+    }, { content: editedContent, path: activePath });
+    await page.waitForFunction(() => {
+      return document.querySelector('#code-workspace-active-state')?.textContent?.trim() === 'edited';
+    }, undefined, { timeout: 10000 });
     await page.click('#tab-domain-designer-btn');
     const [download] = await Promise.all([
       page.waitForEvent('download'),
       clickInPanels(page, '#export-boilerplate-bundle-btn')
     ]);
     const filePath = await download.path();
-    const document = JSON.parse(fs.readFileSync(filePath!, 'utf8'));
-    const exportedFiles = document.modules.flatMap((module: any) => [
+    const exportedBundle = JSON.parse(fs.readFileSync(filePath!, 'utf8'));
+    const exportedFiles = exportedBundle.modules.flatMap((module: any) => [
       ...Object.values(module.files),
       ...module.entities.flatMap((entity: any) => Object.values(entity.files))
     ]);
@@ -187,6 +215,10 @@ describe('serviceManagement SPA boot and export gate (JUM-466)', () => {
     await page.goto(baseUrl, { waitUntil: 'load' });
     const backupDownload = await backupDownloadPromise;
     expect(backupDownload.suggestedFilename()).toMatch(/^service-management-v1-backup-.*\.json$/);
+    await clickInPanels(page, '#run-model-check-btn');
+    await page.waitForFunction(() => {
+      return document.querySelector('#model-check-list')?.textContent?.includes('[ERROR]');
+    }, undefined, { timeout: 10000 });
 
     let downloadFired = false;
     page.on('download', () => {

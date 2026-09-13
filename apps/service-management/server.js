@@ -1002,6 +1002,11 @@ const server = http.createServer((request, response) => {
     return;
   }
 
+  if (request.method === 'GET' && requestUrl.pathname === '/favicon.ico') {
+    serveFile(response, path.join(rootDirectory, 'icons/icon.svg'));
+    return;
+  }
+
   if (request.method === 'GET' && requestUrl.pathname.startsWith('/vendor/monaco/')) {
     const filePath = findMonacoFile(requestUrl.pathname);
     if (!filePath) {

@@ -401,6 +401,11 @@ console segue o mesmo modelo:
   do Service Configuration, o status do ambiente de runtime e a linha de
   direcionamento por arquivo — carregam falhas *com ambiente, arquivo e causa*
   onde o usuário está olhando, em vez de um erro silencioso no console.
+- **Controles de ajuda alcançáveis** — cada formulário, barra de ferramentas e
+  ação estática expõe a mesma affordance de ajuda `?` usada pelas superfícies
+  do console. O texto declara o que o controle altera a jusante: contratos
+  gerados, arquivos de runtime, linhas da matriz de deploy, streams PM2 ou
+  exportações.
 - **O cliente renderiza o envelope de erro da API literalmente.** `error` /
   `details`, mais `code` e `path` nas classes 500 de sistema de arquivos, são
   exibidos exatamente como retornados — não há remapeamento de erro no lado do

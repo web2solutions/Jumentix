@@ -21,6 +21,10 @@ const { syncServiceManagementDesignerCore } = require(
 const { syncServiceManagementD3 } = require(
   path.resolve(process.cwd(), 'ci-cd', 'sync-service-management-d3.js')
 ) as { syncServiceManagementD3: (options?: { root?: string }) => number };
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { syncServiceManagementCanaBundle } = require(
+  path.resolve(process.cwd(), 'ci-cd', 'sync-service-management-cana-bundle.js')
+) as { syncServiceManagementCanaBundle: (options?: { root?: string }) => number };
 
 export const serverPath = path.resolve(process.cwd(), 'apps/service-management/server.js');
 export const staticRoot = path.resolve(process.cwd(), 'apps/service-management');
@@ -300,6 +304,10 @@ export async function startServer(
   envOverrides: Record<string, string> = {},
   options: { pinnedPort?: number; maxAttempts?: number } = {}
 ): Promise<StartedServer> {
+  const canaSyncResult = syncServiceManagementCanaBundle({ root: process.cwd() });
+  if (canaSyncResult !== 0) {
+    throw new Error('Cana vendor sync failed; the SPA cannot boot without it.');
+  }
   // The SPA statically imports the designer core through the import map's
   // `@jumentix/designer-core/` prefix (JUM-493), which resolves to the
   // vendored, gitignored module tree. Booting without it is a module-load

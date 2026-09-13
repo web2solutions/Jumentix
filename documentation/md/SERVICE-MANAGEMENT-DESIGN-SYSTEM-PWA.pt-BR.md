@@ -237,6 +237,12 @@ um caminho de teclado — a seleção nunca é exclusiva do ponteiro:
 - **Todo controle tem um nome acessível** — rótulo visível ou `aria-label` —
   e o banner de atualização do PWA é `role="alert"`, de modo que o aviso de
   atualização é anunciado, não apenas exibido.
+- **Todo controle estático tem ajuda alcançável** — a JUM-733 troca textos
+  `title` estáticos do navegador por um controle `?` adjacente com
+  `aria-expanded`, `aria-controls` e `aria-describedby`. O texto de ajuda fica
+  disponível para teclado e toque, não só para hover do mouse. Inputs de
+  arquivo ocultos são a única isenção estática porque os botões visíveis de
+  importação carregam a ação do usuário.
 
 ## Instalando o designer como aplicativo (JUM-489)
 
