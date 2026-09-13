@@ -60,6 +60,7 @@ import {
   cifPl
 } from '@coreui/icons';
 import router from './router';
+import { installSessionGuard } from '@/contracts/sessionGuard';
 import App from './App.vue';
 
 const app = createApp(App);
@@ -126,5 +127,9 @@ app.provide('icons', {
   cifPl
 });
 app.component('CIcon', CIcon);
+
+// Global session guard: any non-auth 401 from the SDK expires the session and
+// lands on /login from any page (not only /profile).
+installSessionGuard(router);
 
 app.mount('#app');
