@@ -14,7 +14,13 @@ executors:
 commands:
   prepare_checkout:
     steps:
-      - checkout
+      - run:
+          name: Checkout repository over public HTTPS
+          command: |
+            set -euo pipefail
+            repository_url="https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git"
+            git clone --filter=blob:none "$repository_url" .
+            git checkout "${CIRCLE_SHA1}"
       - run:
           name: Fetch branch references
           command: git fetch --prune origin "+refs/heads/*:refs/remotes/origin/*"
