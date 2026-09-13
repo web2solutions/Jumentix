@@ -156,6 +156,9 @@ jobs:
 
   workspace-builds:
     name: workspace-builds
+    # Intentional: release/main/scheduled only (Req 087/113). Task PRs to `dev`
+    # and cheap `dev` pushes skip this job; `arch:check-workspace-boundaries`
+    # and `build:dev` still fail closed as branch-gate preflight (JUM-786).
     if: >-
       github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch' ||

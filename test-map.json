@@ -756,6 +756,26 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/ServiceManagement/serverHarnessPorts.test.ts",
+      "path": "apps/backend-template/test/unit/ServiceManagement/serverHarnessPorts.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/ServiceManagement/rbacContract.test.ts",
+      "path": "apps/backend-template/test/unit/ServiceManagement/rbacContract.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/domains/validators/index.test.ts",
       "path": "apps/backend-template/test/unit/domains/validators/index.test.ts",
       "layer": "tooling",
@@ -1814,16 +1834,6 @@
       "timeoutMs": 60000
     },
     {
-      "id": "apps/service-management/test/unit/serverHarnessPorts.test.ts",
-      "path": "apps/service-management/test/unit/serverHarnessPorts.test.ts",
-      "layer": "service-management/designer",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
       "id": "apps/service-management/test/unit/catalogSyncClient.test.ts",
       "path": "apps/service-management/test/unit/catalogSyncClient.test.ts",
       "layer": "service-management/designer",
@@ -1966,16 +1976,6 @@
     {
       "id": "apps/service-management/test/unit/designerStore.test.ts",
       "path": "apps/service-management/test/unit/designerStore.test.ts",
-      "layer": "service-management/designer",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/service-management/test/unit/rbacContract.test.ts",
-      "path": "apps/service-management/test/unit/rbacContract.test.ts",
       "layer": "service-management/designer",
       "kind": "non-hexagonal",
       "type": "unit",

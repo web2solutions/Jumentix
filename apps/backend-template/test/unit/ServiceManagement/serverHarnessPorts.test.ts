@@ -30,8 +30,8 @@ import {
   startServer,
   stopServer,
   waitForServer
-} from '../../../backend-template/test/integration/ServiceManagement/serverHarness';
-import type { StartedServer } from '../../../backend-template/test/integration/ServiceManagement/serverHarness';
+} from '../../integration/ServiceManagement/serverHarness';
+import type { StartedServer } from '../../integration/ServiceManagement/serverHarness';
 
 function addrInUse(port: number): NodeJS.ErrnoException {
   const error: NodeJS.ErrnoException = new Error(
